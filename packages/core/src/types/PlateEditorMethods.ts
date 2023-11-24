@@ -1,6 +1,6 @@
 import { Value } from '@udecode/slate';
 
-import { SetRecord } from '../atoms';
+import { SetRecord } from '../jotai-factory';
 import { EXPOSED_STORE_KEYS, PlateStoreState } from './PlateStore';
 
 export type PlateEditorMethods<V extends Value = Value> = {

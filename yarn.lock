@@ -7269,7 +7269,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-comments@npm:25.0.1, @udecode/plate-comments@workspace:^, @udecode/plate-comments@workspace:packages/comments":
+"@udecode/plate-comments@npm:26.0.0, @udecode/plate-comments@workspace:^, @udecode/plate-comments@workspace:packages/comments":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-comments@workspace:packages/comments"
   dependencies:
@@ -7316,7 +7316,7 @@ __metadata:
     "@udecode/zustood": "npm:^1.1.3"
     clsx: "npm:^1.2.1"
     is-hotkey: "npm:^0.2.0"
-    jotai: "npm:1.7.2"
+    jotai: "npm:^2.4.3"
     lodash: "npm:^4.17.21"
     nanoid: "npm:^3.3.6"
     react-hotkeys-hook: "npm:^4.4.1"
@@ -7747,13 +7747,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-csv@npm:25.0.1, @udecode/plate-serializer-csv@workspace:^, @udecode/plate-serializer-csv@workspace:packages/serializer-csv":
+"@udecode/plate-serializer-csv@npm:26.0.0, @udecode/plate-serializer-csv@workspace:^, @udecode/plate-serializer-csv@workspace:packages/serializer-csv":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-csv@workspace:packages/serializer-csv"
   dependencies:
     "@types/papaparse": "npm:^5.3.7"
     "@udecode/plate-common": "npm:25.0.1"
-    "@udecode/plate-table": "npm:25.0.1"
+    "@udecode/plate-table": "npm:26.0.0"
     papaparse: "npm:^5.4.1"
   peerDependencies:
     react: ">=16.8.0"
@@ -7765,7 +7765,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-docx@npm:25.0.1, @udecode/plate-serializer-docx@workspace:^, @udecode/plate-serializer-docx@workspace:packages/serializer-docx":
+"@udecode/plate-serializer-docx@npm:26.0.0, @udecode/plate-serializer-docx@workspace:^, @udecode/plate-serializer-docx@workspace:packages/serializer-docx":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-docx@workspace:packages/serializer-docx"
   dependencies:
@@ -7775,7 +7775,7 @@ __metadata:
     "@udecode/plate-indent-list": "npm:25.0.1"
     "@udecode/plate-media": "npm:25.0.1"
     "@udecode/plate-paragraph": "npm:25.0.1"
-    "@udecode/plate-table": "npm:25.0.1"
+    "@udecode/plate-table": "npm:26.0.0"
     validator: "npm:^13.9.0"
   peerDependencies:
     react: ">=16.8.0"
@@ -7787,7 +7787,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-html@npm:25.0.1, @udecode/plate-serializer-html@workspace:^, @udecode/plate-serializer-html@workspace:packages/serializer-html":
+"@udecode/plate-serializer-html@npm:26.0.0, @udecode/plate-serializer-html@workspace:^, @udecode/plate-serializer-html@workspace:packages/serializer-html":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-html@workspace:packages/serializer-html"
   dependencies:
@@ -7861,7 +7861,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-table@npm:25.0.1, @udecode/plate-table@workspace:^, @udecode/plate-table@workspace:packages/table":
+"@udecode/plate-table@npm:26.0.0, @udecode/plate-table@workspace:^, @udecode/plate-table@workspace:packages/table":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-table@workspace:packages/table"
   dependencies:
@@ -7982,7 +7982,7 @@ __metadata:
     "@udecode/plate-break": "npm:25.0.1"
     "@udecode/plate-code-block": "npm:25.0.1"
     "@udecode/plate-combobox": "npm:25.0.1"
-    "@udecode/plate-comments": "npm:25.0.1"
+    "@udecode/plate-comments": "npm:26.0.0"
     "@udecode/plate-common": "npm:25.0.1"
     "@udecode/plate-find-replace": "npm:25.0.1"
     "@udecode/plate-floating": "npm:25.0.1"
@@ -8004,13 +8004,13 @@ __metadata:
     "@udecode/plate-reset-node": "npm:25.0.1"
     "@udecode/plate-resizable": "npm:25.0.1"
     "@udecode/plate-select": "npm:25.0.1"
-    "@udecode/plate-serializer-csv": "npm:25.0.1"
-    "@udecode/plate-serializer-docx": "npm:25.0.1"
-    "@udecode/plate-serializer-html": "npm:25.0.1"
+    "@udecode/plate-serializer-csv": "npm:26.0.0"
+    "@udecode/plate-serializer-docx": "npm:26.0.0"
+    "@udecode/plate-serializer-html": "npm:26.0.0"
     "@udecode/plate-serializer-md": "npm:25.0.1"
     "@udecode/plate-suggestion": "npm:25.0.1"
     "@udecode/plate-tabbable": "npm:25.0.1"
-    "@udecode/plate-table": "npm:25.0.1"
+    "@udecode/plate-table": "npm:26.0.0"
     "@udecode/plate-trailing-block": "npm:25.0.1"
   peerDependencies:
     react: ">=16.8.0"
@@ -15541,43 +15541,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jotai@npm:1.7.2":
-  version: 1.7.2
-  resolution: "jotai@npm:1.7.2"
-  peerDependencies:
-    "@babel/core": "*"
-    "@babel/template": "*"
-    "@urql/core": "*"
-    immer: "*"
-    optics-ts: "*"
-    react: ">=16.8"
-    react-query: "*"
-    valtio: "*"
-    wonka: "*"
-    xstate: "*"
-  peerDependenciesMeta:
-    "@babel/core":
-      optional: true
-    "@babel/template":
-      optional: true
-    "@urql/core":
-      optional: true
-    immer:
-      optional: true
-    optics-ts:
-      optional: true
-    react-query:
-      optional: true
-    valtio:
-      optional: true
-    wonka:
-      optional: true
-    xstate:
-      optional: true
-  checksum: 8a69bad1347d30c2f7f9a89cd60088af3a757b536ca0b8712d8b3d853c4489145fa15089380b4b7fccb30151506dd020341e967a33e5b40cf4823a65e6775c5d
-  languageName: node
-  linkType: hard
-
 "jotai@npm:^2.2.2":
   version: 2.2.2
   resolution: "jotai@npm:2.2.2"
@@ -15587,6 +15550,21 @@ __metadata:
     react:
       optional: true
   checksum: 73268192beb6cf511774ad075ba19adabbc2e118706c080daaab15da8ad6d19f7af4f001af5ac86ae7b527b7a20056b5a31667407df9a3492136f70fedaf6292
+  languageName: node
+  linkType: hard
+
+"jotai@npm:^2.4.3":
+  version: 2.5.1
+  resolution: "jotai@npm:2.5.1"
+  peerDependencies:
+    "@types/react": ">=17.0.0"
+    react: ">=17.0.0"
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    react:
+      optional: true
+  checksum: dfc43d97d072423866fa74e381f1444f7fd0f8fc7b52b957dc6ba0d96f9365d303c548af33ba7b629f5fcf91120b8e1a5c7cb3c095cad978dec9a68bc200235a
   languageName: node
   linkType: hard
 

@@ -7,8 +7,8 @@ import {
   GetRecord,
   SetRecord,
   UseRecord,
-} from '../../atoms/index';
-import { useAtom } from '../../libs/index';
+} from '../../jotai-factory';
+import { useAtom } from '../../libs';
 import { PlateEditor } from '../../types/PlateEditor';
 import { PlateStoreState } from '../../types/PlateStore';
 

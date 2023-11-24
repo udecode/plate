@@ -1,6 +1,14 @@
 import { TElement } from '@udecode/slate';
+import {createAtomStore} from './createAtomStore';
 
-import { SCOPE_ELEMENT, useElementStore } from './elementAtom';
+export const SCOPE_ELEMENT = 'element';
+
+export type ElementStoreValue = { element: TElement | null };
+
+export const { useElementStore, ElementProvider } = createAtomStore(
+  { element: null } satisfies ElementStoreValue as ElementStoreValue,
+  { name: 'element' } as const
+);
 
 /**
  * Get the element by plugin key.
@@ -9,7 +17,7 @@ import { SCOPE_ELEMENT, useElementStore } from './elementAtom';
 export const useElement = <T extends TElement = TElement>(
   pluginKey = SCOPE_ELEMENT
 ): T => {
-  const value = useElementStore().get.element(pluginKey);
+  const value = useElementStore().get.element({ scope: pluginKey });
 
   if (!value) {
     console.warn(
