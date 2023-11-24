@@ -1,5 +1,12 @@
 # @udecode/plate-table
 
+## 26.0.0
+
+### Minor Changes
+
+- [#2733](https://github.com/udecode/plate/pull/2733) by [@dimaanj](https://github.com/dimaanj) –
+  - Table plugin has now merging support. To enable it, use option `enableMerging: true`
+
 ## 25.0.1
 
 ## 25.0.0
