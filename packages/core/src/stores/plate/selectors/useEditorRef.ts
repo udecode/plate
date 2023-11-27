@@ -11,4 +11,4 @@ export const useEditorRef = <
   E extends PlateEditor<V> = PlateEditor<V>,
 >(
   id?: PlateId
-) => usePlateSelectors<V, E>().editor({ scope: id });
+) => usePlateSelectors<V, E>(id).editor();

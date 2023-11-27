@@ -92,16 +92,16 @@ export const usePlateEffects = <
 }: UsePlateEffectsProps<V, E>) => {
   const editor = useEditorRef<V, E>(id);
 
-  const states = usePlateStates<V, E>();
-  const [value, setValue] = states.value({ scope: id });
-  const [editorRef, setEditorRef] = states.editorRef({ scope: id });
-  const [decorate, setDecorate] = states.decorate({ scope: id });
-  const [renderElement, setRenderElement] = states.renderElement({ scope: id });
-  const [renderLeaf, setRenderLeaf] = states.renderLeaf({ scope: id });
-  const [rawPlugins, setRawPlugins] = states.rawPlugins({ scope: id });
-  const [, setPlugins] = states.plugins({ scope: id });
-  const [onChange, setOnChange] = states.onChange({ scope: id });
-  const [readOnly, setReadOnly] = states.readOnly({ scope: id });
+  const states = usePlateStates<V, E>(id);
+  const [value, setValue] = states.value();
+  const [editorRef, setEditorRef] = states.editorRef();
+  const [decorate, setDecorate] = states.decorate();
+  const [renderElement, setRenderElement] = states.renderElement();
+  const [renderLeaf, setRenderLeaf] = states.renderLeaf();
+  const [rawPlugins, setRawPlugins] = states.rawPlugins();
+  const [, setPlugins] = states.plugins();
+  const [onChange, setOnChange] = states.onChange();
+  const [readOnly, setReadOnly] = states.readOnly();
 
   // Store Slate.value
   usePlateStoreOnChange({

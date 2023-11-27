@@ -6,7 +6,7 @@ import { PlateId, usePlateActions } from '../createPlateStore';
 export const useIncrementVersion = (key: PlateChangeKey, id?: PlateId) => {
   const previousVersionRef = useRef(1);
 
-  const set = usePlateActions()[key]({ scope: id });
+  const set = usePlateActions(id)[key]();
 
   return useCallback(() => {
     const nextVersion = previousVersionRef.current + 1;

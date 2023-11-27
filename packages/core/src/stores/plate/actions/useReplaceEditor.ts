@@ -10,7 +10,7 @@ import { useEditorRef } from '../selectors/index';
  */
 export const useReplaceEditor = (id?: PlateId) => {
   const editor = useEditorRef(id);
-  const setEditor = usePlateActions().editor({ scope: id });
+  const setEditor = usePlateActions(id).editor();
 
   return useCallback(() => {
     const newEditor = createPlateEditor({
