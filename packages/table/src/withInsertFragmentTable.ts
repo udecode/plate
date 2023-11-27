@@ -156,6 +156,10 @@ export const withInsertFragmentTable = <
 
           return;
         }
+      } else if (fragment.length === 1 && fragment[0].type === ELEMENT_TABLE) {
+        // needed to insert as node, otherwise it will be inserted as text
+        editor.insertNode(fragment[0]);
+        return;
       }
     }
 
