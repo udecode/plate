@@ -75,17 +75,21 @@ export const {
 export const usePlateSelectors = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
->(): GetRecord<PlateStoreState<V, E>> => usePlateStore().get as any;
-
+>(
+  id?: PlateId
+): GetRecord<PlateStoreState<V, E>> => usePlateStore(id).get as any;
 export const usePlateActions = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
->(): SetRecord<PlateStoreState<V, E>> => usePlateStore().set as any;
-
+>(
+  id?: PlateId
+): SetRecord<PlateStoreState<V, E>> => usePlateStore(id).set as any;
 export const usePlateStates = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
->(): UseRecord<PlateStoreState<V, E>> => usePlateStore().use as any;
+>(
+  id?: PlateId
+): UseRecord<PlateStoreState<V, E>> => usePlateStore(id).use as any;
 
 /**
  * Get the closest `Plate` id.
