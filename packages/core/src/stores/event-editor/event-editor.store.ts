@@ -1,4 +1,4 @@
-import {createAtomStore} from '../../jotai-factory';
+import { createStore } from '../../libs';
 import { PlateId } from '../plate/index';
 
 export type EventEditorState = {
@@ -19,17 +19,12 @@ export type EventEditorState = {
 /**
  * Store where the keys are event names and the values are editor ids.
  */
-export const {
-  eventEditorStore,
-  useEventEditorStore,
-} = createAtomStore({
+export const eventEditorStore = createStore('event-editor')({
   blur: null,
   focus: null,
   last: null,
-} satisfies EventEditorState as EventEditorState, {
-  name: 'eventEditor',
-});
+} as EventEditorState);
 
-export const eventEditorActions = () => useEventEditorStore().set;
-export const eventEditorSelectors = () => useEventEditorStore().get;
-export const useEventEditorSelectors = () => useEventEditorStore().use;
+export const eventEditorActions = eventEditorStore.set;
+export const eventEditorSelectors = eventEditorStore.get;
+export const useEventEditorSelectors = eventEditorStore.use;

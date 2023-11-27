@@ -5,9 +5,9 @@ import { useEventEditorSelectors } from '../event-editor.store';
  * Get last event editor id: focus, blur or last.
  */
 export const useEventPlateId = (id?: PlateId) => {
-  const focus = useEventEditorSelectors().focus();
-  const blur = useEventEditorSelectors().blur();
-  const last = useEventEditorSelectors().last();
+  const focus = useEventEditorSelectors.focus();
+  const blur = useEventEditorSelectors.blur();
+  const last = useEventEditorSelectors.last();
   const providerId = usePlateSelectors().id();
 
   if (id) return id;

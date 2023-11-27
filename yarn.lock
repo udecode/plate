@@ -7313,6 +7313,7 @@ __metadata:
     "@udecode/slate-react": "npm:25.0.0"
     "@udecode/slate-utils": "npm:25.0.0"
     "@udecode/utils": "npm:24.3.0"
+    "@udecode/zustood": "npm:^1.1.3"
     clsx: "npm:^1.2.1"
     is-hotkey: "npm:^0.2.0"
     jotai: "npm:^2.4.3"
@@ -8065,6 +8066,18 @@ __metadata:
   resolution: "@udecode/utils@workspace:packages/utils"
   languageName: unknown
   linkType: soft
+
+"@udecode/zustood@npm:^1.1.3":
+  version: 1.1.3
+  resolution: "@udecode/zustood@npm:1.1.3"
+  dependencies:
+    immer: "npm:^9.0.6"
+    react-tracked: "npm:^1.7.9"
+  peerDependencies:
+    zustand: ">=3.5.10"
+  checksum: 7d1cac86b4f4882d5b2a887389e5746d184e9e0b697af03e5d7bca5b37036e3ef9e4d444280f81fc48deb533b475172e18b26491032c32426452527cd3e444f0
+  languageName: node
+  linkType: hard
 
 "@vercel/analytics@npm:^1.0.1":
   version: 1.0.1
@@ -19841,6 +19854,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"proxy-compare@npm:2.4.0":
+  version: 2.4.0
+  resolution: "proxy-compare@npm:2.4.0"
+  checksum: 69e5829db06f6101c4ec61742875a33e8d84f1cae907ccfee0399351c856f538037a33810742b14b9b6e2ad47363e439954b369c089e5410237b058c4977b1dc
+  languageName: node
+  linkType: hard
+
 "prr@npm:~0.0.0":
   version: 0.0.0
   resolution: "prr@npm:0.0.0"
@@ -20252,6 +20272,26 @@ __metadata:
   peerDependencies:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0
   checksum: 144b3106df359d608ebd1dd4f92dd4fe78db65c0a17c469daf20e73b3fdd5e6022b0a0892ad92c7e0fe0bb74fcbf66572476173e6650cfdad52745ef0ca6b918
+  languageName: node
+  linkType: hard
+
+"react-tracked@npm:^1.7.9":
+  version: 1.7.11
+  resolution: "react-tracked@npm:1.7.11"
+  dependencies:
+    proxy-compare: "npm:2.4.0"
+    use-context-selector: "npm:1.4.1"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: "*"
+    react-native: "*"
+    scheduler: ">=0.19.0"
+  peerDependenciesMeta:
+    react-dom:
+      optional: true
+    react-native:
+      optional: true
+  checksum: b30152d08d34e0fe0a833018697359dc71ad66306bf099660c72ccb74ca51be4b767fe420f4a52078a594d7b50b24d2364284a3e7efb1cce8674c533e3bfa2a2
   languageName: node
   linkType: hard
 
@@ -23756,6 +23796,23 @@ __metadata:
   peerDependencies:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0
   checksum: fa16d45f2693bd93491c792b504e4494a5aeb901fb4d6cf198d370e1396b90aa10bc2535355f27b00f43b7ca6930d6914f701ab2c72e85a3641d1fdccd7f9f17
+  languageName: node
+  linkType: hard
+
+"use-context-selector@npm:1.4.1":
+  version: 1.4.1
+  resolution: "use-context-selector@npm:1.4.1"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: "*"
+    react-native: "*"
+    scheduler: ">=0.19.0"
+  peerDependenciesMeta:
+    react-dom:
+      optional: true
+    react-native:
+      optional: true
+  checksum: fe3f9d4a205033178b03f7a9a84e8a7a3eb88ed6d854c82be946a33e81989fe301f1f116db73bbe499271db6a77cfedd8bc034a92113f6f873c8480277313f2b
   languageName: node
   linkType: hard
 
