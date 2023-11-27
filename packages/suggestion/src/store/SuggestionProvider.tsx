@@ -1,15 +1,13 @@
 import React, { ReactNode } from 'react';
 import {
   createAtomStore,
-  getJotaiProviderInitialValues,
-  JotaiProvider,
   nanoid,
   WithPartial,
 } from '@udecode/plate-common';
 
 import { SuggestionUser, TSuggestion } from '../types';
 
-export const SCOPE_SUGGESTION = Symbol('suggestion');
+export const SCOPE_SUGGESTION = 'suggestion';
 
 export interface SuggestionStoreState {
   /**
@@ -40,7 +38,7 @@ export interface SuggestionStoreState {
   onSuggestionDelete: ((id: string) => void) | null;
 }
 
-export const { suggestionStore, useSuggestionStore } = createAtomStore(
+const { useSuggestionStore, SuggestionProvider: PrimitiveSuggestionProvider } = createAtomStore(
   {
     /**
      * Id of the current user.
@@ -70,7 +68,6 @@ export const { suggestionStore, useSuggestionStore } = createAtomStore(
   } as SuggestionStoreState,
   {
     name: 'suggestion',
-    scope: SCOPE_SUGGESTION,
   }
 );
 
@@ -79,12 +76,12 @@ export function SuggestionProvider({
   ...props
 }: Partial<SuggestionStoreState> & { children: ReactNode }) {
   return (
-    <JotaiProvider
-      initialValues={getJotaiProviderInitialValues(suggestionStore, props)}
+    <PrimitiveSuggestionProvider
       scope={SCOPE_SUGGESTION}
+      {...props}
     >
       {children}
-    </JotaiProvider>
+    </PrimitiveSuggestionProvider>
   );
 }
 

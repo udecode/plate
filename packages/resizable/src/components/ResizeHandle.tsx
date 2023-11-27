@@ -5,49 +5,16 @@ import React, {
   useState,
 } from 'react';
 import {
-  atom,
+  createAtomStore,
   createPrimitiveComponent,
-  JotaiProvider,
-  useAtom,
 } from '@udecode/plate-common';
 
 import { ResizeDirection, ResizeEvent } from '../types';
 import { isTouchEvent } from '../utils';
 
-export const resizeHandleAtoms = {
-  onResize: atom<{ fn: any } | null>(null),
-};
-
-export const ResizeHandleEffects = ({
-  onResize,
-}: {
-  onResize?: ResizeHandleOptions['onResize'];
-}) => {
-  const [, setHandleResize] = useAtom(resizeHandleAtoms.onResize);
-
-  useEffect(() => {
-    setHandleResize({ fn: onResize });
-  }, [onResize, setHandleResize]);
-
-  return null;
-};
-
-export const ResizeHandleProvider = ({
-  children,
-  onResize,
-}: {
-  children: React.ReactNode;
-  onResize?: ResizeHandleOptions['onResize'];
-}) => {
-  return (
-    <JotaiProvider
-      initialValues={[[resizeHandleAtoms.onResize, { fn: onResize }]]}
-    >
-      <ResizeHandleEffects onResize={onResize} />
-      {children}
-    </JotaiProvider>
-  );
-};
+export const { ResizeHandleProvider, useResizeHandleStore } = createAtomStore({
+  onResize: null as ResizeHandleOptions['onResize'] | null,
+}, { name: 'resizeHandle' });
 
 export type ResizeHandleOptions = {
   direction?: ResizeDirection;
@@ -68,8 +35,8 @@ export const useResizeHandleState = ({
   onHover,
   onHoverEnd,
 }: ResizeHandleOptions) => {
-  const [_onResize] = useAtom(resizeHandleAtoms.onResize);
-  if (!onResize) onResize = _onResize?.fn;
+  const _onResize = useResizeHandleStore().get.onResize();
+  if (!onResize) onResize = _onResize ?? undefined;
 
   const [isResizing, setIsResizing] = useState(false);
   const [initialPosition, setInitialPosition] = useState(0);

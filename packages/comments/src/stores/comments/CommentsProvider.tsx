@@ -1,9 +1,7 @@
-import React, { createContext, ReactNode, useContext, useMemo } from 'react';
+import React, { ReactNode } from 'react';
 import {
   createAtomStore,
-  getJotaiProviderInitialValues,
   getNodeString,
-  JotaiProvider,
   nanoid,
   Value,
   WithPartial,
@@ -11,7 +9,9 @@ import {
 
 import { CommentUser, TComment } from '../../types';
 
-export interface CommentsContext {
+export const SCOPE_COMMENTS = 'comments';
+
+export interface CommentsStoreState {
   /**
    * Id of the current user.
    */
@@ -22,16 +22,6 @@ export interface CommentsContext {
    */
   users: Record<string, CommentUser>;
 
-  onCommentAdd: ((value: WithPartial<TComment, 'userId'>) => void) | null;
-  onCommentUpdate:
-    | ((value: Pick<TComment, 'id'> & Partial<Omit<TComment, 'id'>>) => void)
-    | null;
-  onCommentDelete: ((id: string) => void) | null;
-}
-
-export const SCOPE_COMMENTS = Symbol('comments');
-
-export interface CommentsStoreState {
   /**
    * Comments data.
    */
@@ -47,10 +37,26 @@ export interface CommentsStoreState {
   newValue: Value;
 
   focusTextarea: boolean;
+
+  onCommentAdd: ((value: WithPartial<TComment, 'userId'>) => void) | null;
+  onCommentUpdate:
+    | ((value: Pick<TComment, 'id'> & Partial<Omit<TComment, 'id'>>) => void)
+    | null;
+  onCommentDelete: ((id: string) => void) | null;
 }
 
-export const { commentsStore, useCommentsStore } = createAtomStore(
+const { commentsStore, useCommentsStore, CommentsProvider: PrimitiveCommentsProvider } = createAtomStore(
   {
+    /**
+     * Id of the current user.
+     */
+    myUserId: null,
+
+    /**
+     * Users data.
+     */
+    users: {},
+
     /**
      * Comments data.
      */
@@ -66,82 +72,33 @@ export const { commentsStore, useCommentsStore } = createAtomStore(
     newValue: [{ type: 'p', children: [{ text: '' }] }],
 
     focusTextarea: false,
-  } satisfies CommentsStoreState as CommentsStoreState,
+
+    onCommentAdd: null,
+    onCommentUpdate: null,
+    onCommentDelete: null,
+  } as CommentsStoreState,
   {
     name: 'comments',
-    scope: SCOPE_COMMENTS,
   }
 );
 
-export const CommentsContext = createContext<CommentsContext>({
-  myUserId: null,
-  users: {},
-  onCommentAdd: null,
-  onCommentUpdate: null,
-  onCommentDelete: null,
-});
-
-export interface CommentsProviderProps extends Partial<CommentsContext> {
-  initialComments?: CommentsStoreState['comments'];
-  children: ReactNode;
-}
-
 export function CommentsProvider({
   children,
-  initialComments,
-  myUserId = null,
-  users = {},
-  onCommentAdd = null,
-  onCommentUpdate = null,
-  onCommentDelete = null,
-}: CommentsProviderProps) {
+  ...props
+}: Partial<CommentsStoreState> & { children: ReactNode }) {
   return (
-    <JotaiProvider
-      initialValues={getJotaiProviderInitialValues(commentsStore, {
-        comments: initialComments,
-      })}
+    <PrimitiveCommentsProvider
       scope={SCOPE_COMMENTS}
+      {...props}
     >
-      <CommentsContext.Provider
-        value={{
-          myUserId,
-          users,
-          onCommentAdd,
-          onCommentUpdate,
-          onCommentDelete,
-        }}
-      >
-        {children}
-      </CommentsContext.Provider>
-    </JotaiProvider>
+      {children}
+    </PrimitiveCommentsProvider>
   );
 }
 
 export const useCommentsStates = () => useCommentsStore().use;
+export const useCommentsSelectors = () => useCommentsStore().get;
 export const useCommentsActions = () => useCommentsStore().set;
-
-export const useCommentsSelectors = () => {
-  const context = useContext(CommentsContext);
-
-  const contextGetters = useMemo(
-    () =>
-      Object.fromEntries(
-        Object.entries(context).map(([key, value]) => [key, () => value])
-      ) as { [K in keyof CommentsContext]: () => CommentsContext[K] },
-    [context]
-  );
-
-  const storeGetters = useCommentsStore().get;
-
-  // Combine getters from context and store
-  return useMemo(
-    () => ({
-      ...contextGetters,
-      ...storeGetters,
-    }),
-    [contextGetters, storeGetters]
-  );
-};
 
 export const useCommentById = (id?: string | null): TComment | null => {
   const comments = useCommentsSelectors().comments();
