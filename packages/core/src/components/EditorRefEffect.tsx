@@ -23,10 +23,10 @@ export function EditorRefPluginEffect({
 }
 
 export function EditorRefEffect({ id }: { id?: PlateId }) {
-  const setIsMounted = usePlateActions(id).isMounted();
-  const plugins = usePlateSelectors(id).plugins();
+  const setIsMounted = usePlateActions().isMounted({ scope: id });
+  const plugins = usePlateSelectors().plugins({ scope: id });
   const editorState = useEditorRef(id);
-  const editorRef = usePlateSelectors(id).editorRef()?.ref;
+  const editorRef = usePlateSelectors().editorRef({ scope: id })?.ref;
 
   useEffect(() => {
     setIsMounted(true);

@@ -1,12 +1,9 @@
 import React, { useMemo } from 'react';
 import { normalizeEditor, Value } from '@udecode/slate';
 
-import { JotaiProvider } from '../libs/jotai';
 import {
-  GLOBAL_PLATE_SCOPE,
   PLATE_SCOPE,
-  plateIdAtom,
-  plateStore,
+  PlateStoreProvider,
 } from '../stores';
 import { PlateEditor, PlateStoreState } from '../types';
 import { createPlateEditor, normalizeInitialValue } from '../utils';
@@ -102,29 +99,22 @@ function PlateInner<
   );
 
   return (
-    <JotaiProvider
-      initialValues={[
-        [plateStore.atom.id, id],
-        [plateStore.atom.editor, editor],
-        [plateStore.atom.plugins, editor.plugins],
-        [plateStore.atom.rawPlugins, pluginsProp],
-        [plateStore.atom.readOnly, readOnly],
-        [plateStore.atom.value, value],
-        [plateStore.atom.decorate, { fn: decorate }],
-        [plateStore.atom.onChange, { fn: onChange }],
-        [plateStore.atom.editorRef, { ref: editorRef }],
-        [plateStore.atom.renderElement, { fn: renderElement }],
-        [plateStore.atom.renderLeaf, { fn: renderLeaf }],
-      ]}
+    <PlateStoreProvider
+      id={id}
+      editor={editor as any}
+      plugins={editor.plugins as any}
+      rawPlugins={pluginsProp}
+      readOnly={readOnly}
+      value={value}
+      decorate={{ fn: decorate as any }}
+      onChange={{ fn: onChange as any }}
+      editorRef={{ ref: editorRef as any }}
+      renderElement={{ fn: renderElement as any }}
+      renderLeaf={{ fn: renderLeaf as any }}
       scope={id}
     >
-      <JotaiProvider
-        initialValues={[[plateIdAtom, id]]}
-        scope={GLOBAL_PLATE_SCOPE}
-      >
-        <PlateEffects {...props}>{children}</PlateEffects>
-      </JotaiProvider>
-    </JotaiProvider>
+      <PlateEffects {...props}>{children}</PlateEffects>
+    </PlateStoreProvider>
   );
 }
 

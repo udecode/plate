@@ -5,5 +5,5 @@ import { PlateId, usePlateSelectors } from '../createPlateStore';
  * You can also use `useReadOnly` from `slate-react` in node components.
  */
 export const useEditorReadOnly = (id?: PlateId) => {
-  return usePlateSelectors(id).readOnly();
+  return usePlateSelectors().readOnly({ scope: id });
 };

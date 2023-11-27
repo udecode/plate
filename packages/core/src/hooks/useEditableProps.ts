@@ -18,12 +18,12 @@ export const useEditableProps = (
   const { id } = editableProps;
 
   const editor = useEditorRef(id);
-  const selectors = usePlateSelectors(id);
-  const versionDecorate = selectors.versionDecorate();
-  const readOnly = selectors.readOnly();
-  const storeDecorate = selectors.decorate()?.fn;
-  const storeRenderLeaf = selectors.renderLeaf()?.fn;
-  const storeRenderElement = selectors.renderElement()?.fn;
+  const selectors = usePlateSelectors();
+  const versionDecorate = selectors.versionDecorate({ scope: id });
+  const readOnly = selectors.readOnly({ scope: id });
+  const storeDecorate = selectors.decorate({ scope: id })?.fn;
+  const storeRenderLeaf = selectors.renderLeaf({ scope: id })?.fn;
+  const storeRenderElement = selectors.renderElement({ scope: id })?.fn;
 
   const decorateMemo = useMemo(() => {
     return pipeDecorate(editor, storeDecorate ?? editableProps?.decorate);

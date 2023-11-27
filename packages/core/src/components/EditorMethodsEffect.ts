@@ -7,11 +7,11 @@ export const EditorMethodsEffect = ({ id }: { id?: PlateId }) => {
   const editor = useEditorRef(id);
   const redecorate = useRedecorate(id);
 
-  const plateStore = usePlateStore(id);
+  const plateStore = usePlateStore();
 
   // Must be in a scope where hooks can be called.
   const storeSetters = Object.fromEntries(
-    EXPOSED_STORE_KEYS.map((key) => [key, plateStore.set[key]()])
+    EXPOSED_STORE_KEYS.map((key) => [key, plateStore.set[key]({ scope: id })])
   ) as any;
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
