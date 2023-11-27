@@ -1,9 +1,9 @@
-import { createStore } from '@udecode/plate-common';
+import { createZustoodStore } from '@udecode/plate-common';
 
 import { ChangedElements } from './components/SelectionArea';
 import { extractSelectableIds } from './utils/extractSelectableIds';
 
-export const blockSelectionStore = createStore('selection')({
+export const blockSelectionStore = createZustoodStore('selection')({
   selectedIds: new Set(),
   isSelecting: false,
 })

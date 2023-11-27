@@ -1,6 +1,6 @@
-import { createStore, TPath } from '@udecode/plate-common';
+import { createZustoodStore, TPath } from '@udecode/plate-common';
 
-export const captionGlobalStore = createStore('caption')({
+export const captionGlobalStore = createZustoodStore('caption')({
   /**
    * When defined, focus end of caption textarea with the same path.
    */

@@ -1,4 +1,4 @@
-import { createStore } from '../../libs';
+import { createZustoodStore } from '../../libs';
 import { PlateId } from '../plate/index';
 
 export type EventEditorState = {
@@ -19,7 +19,7 @@ export type EventEditorState = {
 /**
  * Store where the keys are event names and the values are editor ids.
  */
-export const eventEditorStore = createStore('event-editor')({
+export const eventEditorStore = createZustoodStore('event-editor')({
   blur: null,
   focus: null,
   last: null,

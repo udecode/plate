@@ -1,6 +1,6 @@
 'use client';
 
-import { createStore } from '@udecode/plate-common';
+import { createZustoodStore } from '@udecode/plate-common';
 
 import { customizerItems, SettingPlugin } from '@/config/customizer-items';
 import { customizerList } from '@/config/customizer-list';
@@ -40,7 +40,7 @@ export const getDefaultCheckedComponents = () => {
   } as Record<string, boolean>;
 };
 
-export const settingsStore = createStore('settings')({
+export const settingsStore = createZustoodStore('settings')({
   showSettings: false,
   loadingSettings: true,
   showComponents: true,
