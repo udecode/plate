@@ -76,9 +76,6 @@ export const withSetFragmentDataTable = <
 
     withoutNormalizing(editor, () => {
       tableRows.forEach((row, rowIndex) => {
-        // need to clean data before every iteration
-        data.clearData();
-
         const rowCells = row.children as TElement[];
         const rowPath = tablePath.concat(y + rowIndex);
 
@@ -89,6 +86,9 @@ export const withSetFragmentDataTable = <
             : document.createElement('tr');
 
         rowCells.forEach((_, cellIndex) => {
+          // need to clean data before every iteration
+          data.clearData();
+
           const cellPath = rowPath.concat(x + cellIndex);
 
           // select cell by cell
