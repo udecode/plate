@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 26.0.1
+
+### Patch Changes
+
+- [#2768](https://github.com/udecode/plate/pull/2768) by [@KorovinQuantori](https://github.com/KorovinQuantori) – Fixed copy behaviour, when not all table cells are filled with some nodes
+
 ## 26.0.0
 
 ### Minor Changes
