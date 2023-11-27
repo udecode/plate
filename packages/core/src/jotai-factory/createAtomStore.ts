@@ -177,7 +177,7 @@ export const createAtomStore = <
       const options = convertScopeShorthand(optionsOrScope);
       const contextStore = useContextStore(getStoreScope(name, options.scope));
 
-      return useSetAtom(atomConfig, {
+      return useSetAtom(atomConfig as any, {
         store: options.store ?? contextStore,
       });
     };
