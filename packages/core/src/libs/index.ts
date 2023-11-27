@@ -5,4 +5,3 @@
 export * from './jotai';
 export * from './nanoid';
 export * from './react-hotkeys-hook';
-export * from './zustood';
