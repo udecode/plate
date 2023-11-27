@@ -127,27 +127,28 @@ export const createAtomStore = <
     effect,
   }: CreateAtomStoreOptions<IT, N> = {}
 ): AtomStoreApi<T & IT, N> => {
-  const useInitialStoreIndex = getUseStoreIndex(initialStore?.name);
-  const initialStoreIndex = getStoreIndex(initialStore?.name);
-  const providerIndex = getProviderIndex(name);
-  const useStoreIndex = getUseStoreIndex(name);
-  const storeIndex = getStoreIndex(name);
+  const useInitialStoreIndex = getUseStoreIndex(initialStore?.name) as UseNameStore<N>;
+  const initialStoreIndex = getStoreIndex(initialStore?.name) as NameStore<N>;
+  const providerIndex = getProviderIndex(name) as NameProvider<N>;
+  const useStoreIndex = getUseStoreIndex(name) as UseNameStore<N>;
+  const storeIndex = getStoreIndex(name) as NameStore<N>;
 
+  // FIXME: These constants have type any
   const getAtoms = initialStore
-    ? initialStore[useInitialStoreIndex]().get
+    ? (initialStore[useInitialStoreIndex] as any)().get
     : ({} as GetRecord<T & IT>);
   const setAtoms = initialStore
-    ? initialStore[useInitialStoreIndex]().set
+    ? (initialStore[useInitialStoreIndex] as any)().set
     : ({} as SetRecord<T & IT>);
   const useAtoms = initialStore
-    ? initialStore[useInitialStoreIndex]().use
+    ? (initialStore[useInitialStoreIndex] as any)().use
     : ({} as UseRecord<T & IT>);
   const atoms = initialStore
-    ? initialStore[initialStoreIndex].atom
+    ? (initialStore[initialStoreIndex] as any).atom
     : ({} as AtomRecord<T & IT>);
 
   for (const key of Object.keys(initialState)) {
-    const atomConfig = atom(initialState[key]);
+    const atomConfig = atom(initialState[key as keyof T]);
 
     atoms[key] = atomConfig;
     getAtoms[key] = (options: UseAtomOptions = {}) => {
