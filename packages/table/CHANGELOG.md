@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 26.0.2
+
+### Patch Changes
+
+- [#2771](https://github.com/udecode/plate/pull/2771) by [@KorovinQuantori](https://github.com/KorovinQuantori) – Fixed table insertion inside text nodes
+
 ## 26.0.1
 
 ### Patch Changes
