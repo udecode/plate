@@ -30,14 +30,16 @@ export type UseAtomOptions = {
   delay?: number;
 };
 
+type UseAtomOptionsOrScope = UseAtomOptions | string;
+
 export type GetRecord<O> = {
-  [K in keyof O]: (options?: UseAtomOptions) => O[K];
+  [K in keyof O]: (options?: UseAtomOptionsOrScope) => O[K];
 };
 export type SetRecord<O> = {
-  [K in keyof O]: (options?: UseAtomOptions) => (value: O[K]) => void;
+  [K in keyof O]: (options?: UseAtomOptionsOrScope) => (value: O[K]) => void;
 };
 export type UseRecord<O> = {
-  [K in keyof O]: (options?: UseAtomOptions) => [O[K], (value: O[K]) => void];
+  [K in keyof O]: (options?: UseAtomOptionsOrScope) => [O[K], (value: O[K]) => void];
 };
 export type AtomRecord<O> = {
   [K in keyof O]: Atom<O[K]>;
@@ -69,7 +71,7 @@ export type StoreApi<T extends object, N extends string = ''> = {
   ) => AtomStoreApi<T & ET, EN extends string ? EN : N>;
 };
 
-export type UseStoreApi<T> = () => {
+export type UseStoreApi<T> = (options?: UseAtomOptionsOrScope) => {
   get: GetRecord<T>;
   set: SetRecord<T>;
   use: UseRecord<T>;
@@ -93,6 +95,17 @@ const getStoreIndex = (name = '') =>
   name.length > 0 ? `${name}Store` : 'store';
 const getUseStoreIndex = (name = '') =>
   `use${capitalizeFirstLetter(name)}Store`;
+
+const withDefaultOptions = <T>(atomRecord: AtomRecord<T>, defaultOptions: UseAtomOptions): AtomRecord<T> =>
+  Object.fromEntries(
+    Object.entries(atomRecord).map(([key, fn]) => [
+      key,
+      (options: UseAtomOptions = {}) => (fn as any)({ ...defaultOptions, ...options }),
+    ])
+  ) as any;
+
+const convertScopeShorthand = (optionsOrScope: UseAtomOptionsOrScope = {}): UseAtomOptions =>
+  typeof optionsOrScope === 'string' ? { scope: optionsOrScope } : optionsOrScope;
 
 export interface CreateAtomStoreOptions<T extends object, N extends string> {
   store?: UseAtomOptions['store'];
@@ -151,7 +164,8 @@ export const createAtomStore = <
     const atomConfig = atom(initialState[key as keyof T]);
 
     atoms[key] = atomConfig;
-    getAtoms[key] = (options: UseAtomOptions = {}) => {
+    getAtoms[key] = (optionsOrScope: UseAtomOptionsOrScope = {}) => {
+      const options = convertScopeShorthand(optionsOrScope);
       const contextStore = useContextStore(getStoreScope(name, options.scope));
 
       return useAtomValue(atomConfig, {
@@ -159,14 +173,16 @@ export const createAtomStore = <
         delay: options.delay ?? delayRoot,
       });
     };
-    setAtoms[key] = (options: UseAtomOptions = {}) => {
+    setAtoms[key] = (optionsOrScope: UseAtomOptionsOrScope = {}) => {
+      const options = convertScopeShorthand(optionsOrScope);
       const contextStore = useContextStore(getStoreScope(name, options.scope));
 
       return useSetAtom(atomConfig, {
         store: options.store ?? contextStore,
       });
     };
-    useAtoms[key] = (options: UseAtomOptions = {}) => {
+    useAtoms[key] = (optionsOrScope: UseAtomOptionsOrScope = {}) => {
+      const options = convertScopeShorthand(optionsOrScope);
       const contextStore = useContextStore(getStoreScope(name, options.scope));
 
       return useAtom(atomConfig, {
@@ -176,12 +192,13 @@ export const createAtomStore = <
     };
   }
 
+
   const api: any = {
     [providerIndex]: createAtomProvider(name, atoms, { effect }),
-    [useStoreIndex]: () => ({
-      get: getAtoms,
-      set: setAtoms,
-      use: useAtoms,
+    [useStoreIndex]: (options: UseAtomOptionsOrScope = {}) => ({
+      get: withDefaultOptions(getAtoms, convertScopeShorthand(options)),
+      set: withDefaultOptions(setAtoms, convertScopeShorthand(options)),
+      use: withDefaultOptions(useAtoms, convertScopeShorthand(options)),
     }),
     [storeIndex]: {
       atom: atoms,

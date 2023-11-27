@@ -174,6 +174,16 @@ describe('createAtomStore', () => {
       );
     };
 
+    const ReadOnlyConsumerWithScopeShorthand = ({ scope }: { scope: string }) => {
+      const [age] = useMyScopedTestStoreStore(scope).use.age();
+
+      return (
+        <div>
+          <span>{JSON.stringify(age)}</span>
+        </div>
+      );
+    };
+
     it('returns default value when no provider is present', () => {
       const { getByText } = render(
         <ReadOnlyConsumer scope="scope1" />
@@ -203,6 +213,26 @@ describe('createAtomStore', () => {
                 <MyScopedTestStoreProvider scope="scope2" age={5} />
                 <MyScopedTestStoreProvider scope="scope1" age={6}>
                   <ReadOnlyConsumer scope="scope2" />
+                </MyScopedTestStoreProvider>
+                <MyScopedTestStoreProvider scope="scope2" age={7} />
+              </MyScopedTestStoreProvider>
+            </MyScopedTestStoreProvider>
+          </MyScopedTestStoreProvider>
+        </MyScopedTestStoreProvider>
+      );
+
+      expect(getByText('4')).toBeInTheDocument();
+    });
+
+    it('allows shorthand to specify scope', () => {
+      const { getByText } = render(
+        <MyScopedTestStoreProvider scope="scope1" age={1}>
+          <MyScopedTestStoreProvider scope="scope2" age={2}>
+            <MyScopedTestStoreProvider scope="scope3" age={3}>
+              <MyScopedTestStoreProvider scope="scope2" age={4}>
+                <MyScopedTestStoreProvider scope="scope2" age={5} />
+                <MyScopedTestStoreProvider scope="scope1" age={6}>
+                  <ReadOnlyConsumerWithScopeShorthand scope="scope2" />
                 </MyScopedTestStoreProvider>
                 <MyScopedTestStoreProvider scope="scope2" age={7} />
               </MyScopedTestStoreProvider>
