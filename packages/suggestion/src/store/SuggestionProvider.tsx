@@ -2,8 +2,6 @@ import { createAtomStore, nanoid, WithPartial } from '@udecode/plate-common';
 
 import { SuggestionUser, TSuggestion } from '../types';
 
-export const SCOPE_SUGGESTION = 'suggestion';
-
 export interface SuggestionStoreState {
   /**
    * Users data.

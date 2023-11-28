@@ -8,8 +8,6 @@ import {
 
 import { CommentUser, TComment } from '../../types';
 
-export const SCOPE_COMMENTS = 'comments';
-
 export interface CommentsStoreState {
   /**
    * Id of the current user.

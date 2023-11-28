@@ -6,7 +6,6 @@ import {
   useCommentsSelectors,
 } from '../comments/CommentsProvider';
 
-export const SCOPE_COMMENT = 'comment';
 export const SCOPE_ACTIVE_COMMENT = 'activeComment';
 
 export interface CommentStoreState {
