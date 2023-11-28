@@ -11,6 +11,8 @@ import { useReadOnly, useSelected } from 'slate-react';
 
 import { ELEMENT_TABLE } from '../createTablePlugin';
 import { getTableGridAbove } from '../queries';
+import { getColSpan } from '../queries/getColSpan';
+import { getRowSpan } from '../queries/getRowSpan';
 import { useTableStore } from '../stores';
 import { TablePlugin } from '../types';
 import { isTableRectangular } from './isTableRectangular';
@@ -53,11 +55,11 @@ export const useTableMergeState = () => {
   }, [readOnly, selected, editor.selection, selectedTable]);
 
   const canUnmerge =
-    collapsed &&
-    selectedCellEntries &&
-    selectedCellEntries.length === 1 &&
-    ((selectedCellEntries[0][0] as any)?.colSpan > 1 ||
-      (selectedCellEntries[0][0] as any)?.rowSpan > 1);
+    (collapsed &&
+      selectedCellEntries &&
+      selectedCellEntries.length === 1 &&
+      getColSpan(selectedCellEntries[0][0] as any) > 1) ||
+    getRowSpan(selectedCellEntries[0][0] as any) > 1;
 
   return { canMerge, canUnmerge };
 };

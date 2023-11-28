@@ -1,6 +1,7 @@
 import { getPluginOptions, PlateEditor, Value } from '@udecode/plate-common';
 
 import { ELEMENT_TABLE } from '../createTablePlugin';
+import { getRowSpan } from '../queries/getRowSpan';
 import {
   TablePlugin,
   TTableCellElement,
@@ -40,15 +41,16 @@ export function computeCellIndices<V extends Value>(
     prevRow.children.forEach((pC) => {
       const prevCell = pC as TTableCellElement;
       const prevIndices = options?._cellIndices?.get(prevCell);
+      const _rowSpan = getRowSpan(prevCell);
       if (prevIndices) {
         const { col: prevColIndex } = prevIndices;
         if (
           // colIndex affects
           prevColIndex <= colIndex &&
           // rowSpan affects
-          prevCell.rowSpan &&
-          prevCell.rowSpan > 1 &&
-          rowIndex - _rowIndex < prevCell.rowSpan
+          _rowSpan &&
+          _rowSpan > 1 &&
+          rowIndex - _rowIndex < _rowSpan
         ) {
           colIndex += prevCell.colSpan || 1;
         }
