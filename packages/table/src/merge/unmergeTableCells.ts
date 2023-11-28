@@ -13,6 +13,7 @@ import {
 import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
 import { getTableGridAbove } from '../queries';
 import { getColSpan } from '../queries/getColSpan';
+import { getRowSpan } from '../queries/getRowSpan';
 import { TablePlugin, TTableCellElement, TTableRowElement } from '../types';
 import { getEmptyCellNode } from '../utils';
 import { getCellIndices } from './getCellIndices';
@@ -45,8 +46,8 @@ export const unmergeTableCells = <V extends Value = Value>(
 
     const cellPath = path.slice(-2);
     const [rowPath, colPath] = cellPath;
-    const colSpan = cellElem.colSpan as number;
-    const rowSpan = cellElem.rowSpan as number;
+    const colSpan = getColSpan(cellElem as TTableCellElement);
+    const rowSpan = getRowSpan(cellElem as TTableCellElement);
 
     // Generate an array of column paths from the colspan
     const colPaths: number[] = [];
