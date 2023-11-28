@@ -1,17 +1,14 @@
 import React, {
+  Context,
   createContext,
+  FC,
   useContext,
   useEffect,
   useState,
-  Context,
-  FC,
 } from 'react';
 import { createStore } from 'jotai/vanilla';
 
-import {
-  AtomProvider,
-  AtomProviderProps,
-} from './atomProvider';
+import { AtomProvider, AtomProviderProps } from './atomProvider';
 import { AtomRecord, JotaiStore } from './createAtomStore';
 import { useHydrateStore, useSyncStore } from './useHydrateStore';
 
@@ -25,7 +22,11 @@ export const getFullyQualifiedScope = (storeScope: string, scope: string) => {
   return `${storeScope}:${scope}`;
 };
 
-export const getContext = (storeScope = GLOBAL_STORE_SCOPE, scope = GLOBAL_SCOPE, createIfNotExists = false) => {
+export const getContext = (
+  storeScope = GLOBAL_STORE_SCOPE,
+  scope = GLOBAL_SCOPE,
+  createIfNotExists = false
+) => {
   const fullyQualifiedScope = getFullyQualifiedScope(storeScope, scope);
   if (createIfNotExists && !storeContexts.has(fullyQualifiedScope)) {
     storeContexts.set(fullyQualifiedScope, createContext(undefined as any));
@@ -33,8 +34,13 @@ export const getContext = (storeScope = GLOBAL_STORE_SCOPE, scope = GLOBAL_SCOPE
   return storeContexts.get(fullyQualifiedScope);
 };
 
-export const useContextStore = (storeScope = GLOBAL_STORE_SCOPE, scope = GLOBAL_SCOPE) => {
-  const Context = getContext(storeScope, scope) ?? getContext(storeScope, GLOBAL_SCOPE, true)!;
+export const useContextStore = (
+  storeScope = GLOBAL_STORE_SCOPE,
+  scope = GLOBAL_SCOPE
+) => {
+  const Context =
+    getContext(storeScope, scope) ??
+    getContext(storeScope, GLOBAL_SCOPE, true)!;
   return useContext(Context);
 };
 

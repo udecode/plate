@@ -1,5 +1,6 @@
 import { TElement } from '@udecode/slate';
-import {createAtomStore} from './createAtomStore';
+
+import { createAtomStore } from './createAtomStore';
 
 export const SCOPE_ELEMENT = 'element';
 

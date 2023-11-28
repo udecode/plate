@@ -39,29 +39,30 @@ export const createPlateStore = <
   renderLeaf = null,
   value = null as any,
   ...state
-}: Partial<PlateStoreState<V, E>> = {}) => createAtomStore(
-  {
-    decorate,
-    editor,
-    id,
-    isMounted,
-    versionDecorate,
-    versionEditor,
-    versionSelection,
-    onChange,
-    editorRef,
-    plugins,
-    rawPlugins,
-    readOnly,
-    renderElement,
-    renderLeaf,
-    value,
-    ...state,
-  } as PlateStoreState<V, E>,
-  {
-    name: 'plate',
-  }
-);
+}: Partial<PlateStoreState<V, E>> = {}) =>
+  createAtomStore(
+    {
+      decorate,
+      editor,
+      id,
+      isMounted,
+      versionDecorate,
+      versionEditor,
+      versionSelection,
+      onChange,
+      editorRef,
+      plugins,
+      rawPlugins,
+      readOnly,
+      renderElement,
+      renderLeaf,
+      value,
+      ...state,
+    } as PlateStoreState<V, E>,
+    {
+      name: 'plate',
+    }
+  );
 
 export const {
   plateStore,

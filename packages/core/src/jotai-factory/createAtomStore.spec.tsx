@@ -1,4 +1,4 @@
-import React, {ReactNode, useState} from 'react';
+import React, { ReactNode, useState } from 'react';
 import { act, render } from '@testing-library/react';
 
 import { createAtomStore } from './createAtomStore';
@@ -55,9 +55,7 @@ describe('createAtomStore', () => {
 
       return (
         <>
-          <MyTestStoreProvider age={age}>
-            {children}
-          </MyTestStoreProvider>
+          <MyTestStoreProvider age={age}>{children}</MyTestStoreProvider>
 
           <button onClick={() => setAge(MUTABLE_PROVIDER_NEW_AGE)}>
             providerSetAge
@@ -79,10 +77,7 @@ describe('createAtomStore', () => {
 
     it('passes non-default values from provider to consumer', () => {
       const { getByText } = render(
-        <MyTestStoreProvider
-          name="Jane"
-          age={94}
-        >
+        <MyTestStoreProvider name="Jane" age={94}>
           <ReadOnlyConsumer />
         </MyTestStoreProvider>
       );
@@ -159,10 +154,10 @@ describe('createAtomStore', () => {
       age: null,
     };
 
-    const { useMyScopedTestStoreStore, MyScopedTestStoreProvider } = createAtomStore(
-      initialScopedTestStoreValue,
-      { name: 'myScopedTestStore' as const }
-    );
+    const { useMyScopedTestStoreStore, MyScopedTestStoreProvider } =
+      createAtomStore(initialScopedTestStoreValue, {
+        name: 'myScopedTestStore' as const,
+      });
 
     const ReadOnlyConsumer = ({ scope }: { scope: string }) => {
       const [age] = useMyScopedTestStoreStore().use.age({ scope });
@@ -174,7 +169,11 @@ describe('createAtomStore', () => {
       );
     };
 
-    const ReadOnlyConsumerWithScopeShorthand = ({ scope }: { scope: string }) => {
+    const ReadOnlyConsumerWithScopeShorthand = ({
+      scope,
+    }: {
+      scope: string;
+    }) => {
       const [age] = useMyScopedTestStoreStore(scope).use.age();
 
       return (
@@ -185,9 +184,7 @@ describe('createAtomStore', () => {
     };
 
     it('returns default value when no provider is present', () => {
-      const { getByText } = render(
-        <ReadOnlyConsumer scope="scope1" />
-      );
+      const { getByText } = render(<ReadOnlyConsumer scope="scope1" />);
 
       expect(getByText('null')).toBeInTheDocument();
     });
@@ -257,15 +254,15 @@ describe('createAtomStore', () => {
       age: 72,
     };
 
-    const { useMyFirstTestStoreStore, MyFirstTestStoreProvider } = createAtomStore(
-      initialFirstTestStoreValue,
-      { name: 'myFirstTestStore' as const }
-    );
+    const { useMyFirstTestStoreStore, MyFirstTestStoreProvider } =
+      createAtomStore(initialFirstTestStoreValue, {
+        name: 'myFirstTestStore' as const,
+      });
 
-    const { useMySecondTestStoreStore, MySecondTestStoreProvider } = createAtomStore(
-      initialSecondTestStoreValue,
-      { name: 'mySecondTestStore' as const }
-    );
+    const { useMySecondTestStoreStore, MySecondTestStoreProvider } =
+      createAtomStore(initialSecondTestStoreValue, {
+        name: 'mySecondTestStore' as const,
+      });
 
     const FirstReadOnlyConsumer = () => {
       const [name] = useMyFirstTestStoreStore().use.name();

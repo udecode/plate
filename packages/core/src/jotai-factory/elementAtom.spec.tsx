@@ -1,4 +1,4 @@
-import React, {ReactNode, useMemo, useState} from 'react';
+import React, { ReactNode, useMemo, useState } from 'react';
 import { act, render } from '@testing-library/react';
 import { TElement } from '@udecode/slate';
 
@@ -27,7 +27,13 @@ describe('ElementProvider', () => {
     children: [],
   });
 
-  const NameElementProvider = ({ name, children }: { name: string; children: ReactNode }) => {
+  const NameElementProvider = ({
+    name,
+    children,
+  }: {
+    name: string;
+    children: ReactNode;
+  }) => {
     const element = useMemo(() => makeNameElement(name), [name]);
 
     return (
@@ -37,7 +43,13 @@ describe('ElementProvider', () => {
     );
   };
 
-  const AgeElementProvider = ({ age, children }: { age: number; children: ReactNode }) => {
+  const AgeElementProvider = ({
+    age,
+    children,
+  }: {
+    age: number;
+    children: ReactNode;
+  }) => {
     const element = useMemo(() => makeAgeElement(age), [age]);
 
     return (
@@ -62,9 +74,7 @@ describe('ElementProvider', () => {
 
     return (
       <AgeElementProvider age={age}>
-        <button onClick={() => setAge(age + increment)}>
-          {buttonLabel}
-        </button>
+        <button onClick={() => setAge(age + increment)}>{buttonLabel}</button>
         {children}
       </AgeElementProvider>
     );
@@ -84,12 +94,18 @@ describe('ElementProvider', () => {
     return <div>{label + element.age}</div>;
   };
 
-  const TypeConsumer = ({ type, label = '' }: ConsumerProps & { type?: 'name' | 'age' }) => {
+  const TypeConsumer = ({
+    type,
+    label = '',
+  }: ConsumerProps & { type?: 'name' | 'age' }) => {
     const element = useElement(type);
     return <div>{label + element.type}</div>;
   };
 
-  const JsonConsumer = ({ type, label = '' }: ConsumerProps & { type?: 'name' | 'age' }) => {
+  const JsonConsumer = ({
+    type,
+    label = '',
+  }: ConsumerProps & { type?: 'name' | 'age' }) => {
     const element = useElement(type);
     return <div>{label + JSON.stringify(element)}</div>;
   };

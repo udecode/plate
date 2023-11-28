@@ -1,9 +1,4 @@
-import React from 'react';
-import {
-  createAtomStore,
-  getNodeString,
-  Value,
-} from '@udecode/plate-common';
+import { createAtomStore, getNodeString, Value } from '@udecode/plate-common';
 
 import { CommentUser, TComment } from '../../types';
 import {
@@ -20,16 +15,17 @@ export interface CommentStoreState {
   editingValue: Value | null;
 }
 
-export const { commentStore, useCommentStore, CommentProvider } = createAtomStore(
-  {
-    id: '',
-    isMenuOpen: false,
-    editingValue: null,
-  } as CommentStoreState,
-  {
-    name: 'comment',
-  }
-);
+export const { commentStore, useCommentStore, CommentProvider } =
+  createAtomStore(
+    {
+      id: '',
+      isMenuOpen: false,
+      editingValue: null,
+    } as CommentStoreState,
+    {
+      name: 'comment',
+    }
+  );
 
 export const useCommentStates = () => useCommentStore().use;
 export const useCommentSelectors = () => useCommentStore().get;

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { isDefined } from '@udecode/utils';
 import { useSetAtom } from 'jotai';
 import { useHydrateAtoms } from 'jotai/utils';
 
@@ -7,7 +8,6 @@ import type {
   UseHydrateAtoms,
   UseSyncAtoms,
 } from './createAtomStore';
-import {isDefined} from '@udecode/utils';
 
 /**
  * Hydrate atoms with initial values for SSR.

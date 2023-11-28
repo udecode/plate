@@ -12,9 +12,12 @@ import {
 import { ResizeDirection, ResizeEvent } from '../types';
 import { isTouchEvent } from '../utils';
 
-export const { ResizeHandleProvider, useResizeHandleStore } = createAtomStore({
-  onResize: null as ResizeHandleOptions['onResize'] | null,
-}, { name: 'resizeHandle' });
+export const { ResizeHandleProvider, useResizeHandleStore } = createAtomStore(
+  {
+    onResize: null as ResizeHandleOptions['onResize'] | null,
+  },
+  { name: 'resizeHandle' }
+);
 
 export type ResizeHandleOptions = {
   direction?: ResizeDirection;

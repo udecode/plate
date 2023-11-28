@@ -1,21 +1,13 @@
 /* eslint-disable react-hooks/rules-of-hooks */
+import { atom, useAtom, useAtomValue, useSetAtom } from 'jotai';
 
+import { createAtomProvider, useContextStore } from './createAtomProvider';
+
+import type { ProviderProps } from './createAtomProvider';
 import type { FC } from 'react';
-import {
-  atom,
-  useAtom,
-  useAtomValue,
-  useSetAtom,
-  type PrimitiveAtom,
-} from 'jotai';
+import type { PrimitiveAtom } from 'jotai';
 import type { useHydrateAtoms } from 'jotai/utils';
 import type { createStore } from 'jotai/vanilla';
-
-import {
-  createAtomProvider,
-  useContextStore,
-  type ProviderProps,
-} from './createAtomProvider';
 
 type WithInitialValue<Value> = {
   init: Value;
@@ -38,7 +30,9 @@ export type SetRecord<O> = {
   [K in keyof O]: (options?: UseAtomOptionsOrScope) => (value: O[K]) => void;
 };
 export type UseRecord<O> = {
-  [K in keyof O]: (options?: UseAtomOptionsOrScope) => [O[K], (value: O[K]) => void];
+  [K in keyof O]: (
+    options?: UseAtomOptionsOrScope
+  ) => [O[K], (value: O[K]) => void];
 };
 export type AtomRecord<O> = {
   [K in keyof O]: Atom<O[K]>;
@@ -95,16 +89,24 @@ const getStoreIndex = (name = '') =>
 const getUseStoreIndex = (name = '') =>
   `use${capitalizeFirstLetter(name)}Store`;
 
-const withDefaultOptions = <T>(atomRecord: AtomRecord<T>, defaultOptions: UseAtomOptions): AtomRecord<T> =>
+const withDefaultOptions = <T>(
+  atomRecord: AtomRecord<T>,
+  defaultOptions: UseAtomOptions
+): AtomRecord<T> =>
   Object.fromEntries(
     Object.entries(atomRecord).map(([key, fn]) => [
       key,
-      (options: UseAtomOptions = {}) => (fn as any)({ ...defaultOptions, ...options }),
+      (options: UseAtomOptions = {}) =>
+        (fn as any)({ ...defaultOptions, ...options }),
     ])
   ) as any;
 
-const convertScopeShorthand = (optionsOrScope: UseAtomOptionsOrScope = {}): UseAtomOptions =>
-  typeof optionsOrScope === 'string' ? { scope: optionsOrScope } : optionsOrScope;
+const convertScopeShorthand = (
+  optionsOrScope: UseAtomOptionsOrScope = {}
+): UseAtomOptions =>
+  typeof optionsOrScope === 'string'
+    ? { scope: optionsOrScope }
+    : optionsOrScope;
 
 export interface CreateAtomStoreOptions<T extends object, N extends string> {
   store?: UseAtomOptions['store'];
@@ -139,7 +141,9 @@ export const createAtomStore = <
     effect,
   }: CreateAtomStoreOptions<IT, N> = {}
 ): AtomStoreApi<T & IT, N> => {
-  const useInitialStoreIndex = getUseStoreIndex(initialStore?.name) as UseNameStore<N>;
+  const useInitialStoreIndex = getUseStoreIndex(
+    initialStore?.name
+  ) as UseNameStore<N>;
   const initialStoreIndex = getStoreIndex(initialStore?.name) as NameStore<N>;
   const providerIndex = getProviderIndex(name) as NameProvider<N>;
   const useStoreIndex = getUseStoreIndex(name) as UseNameStore<N>;
@@ -190,7 +194,6 @@ export const createAtomStore = <
       });
     };
   }
-
 
   const api: any = {
     [providerIndex]: createAtomProvider(name, atoms, { effect }),

@@ -1,9 +1,4 @@
-import React from 'react';
-import {
-  createAtomStore,
-  nanoid,
-  WithPartial,
-} from '@udecode/plate-common';
+import { createAtomStore, nanoid, WithPartial } from '@udecode/plate-common';
 
 import { SuggestionUser, TSuggestion } from '../types';
 
@@ -38,38 +33,39 @@ export interface SuggestionStoreState {
   onSuggestionDelete: ((id: string) => void) | null;
 }
 
-export const { suggestionStore, useSuggestionStore, SuggestionProvider } = createAtomStore(
-  {
-    /**
-     * Id of the current user.
-     */
-    currentUserId: null,
+export const { suggestionStore, useSuggestionStore, SuggestionProvider } =
+  createAtomStore(
+    {
+      /**
+       * Id of the current user.
+       */
+      currentUserId: null,
 
-    /**
-     * Users data.
-     */
-    users: {},
+      /**
+       * Users data.
+       */
+      users: {},
 
-    /**
-     * Suggestion data.
-     */
-    suggestions: {},
+      /**
+       * Suggestion data.
+       */
+      suggestions: {},
 
-    isSuggesting: false,
+      isSuggesting: false,
 
-    /**
-     * Id of the active suggestion. If null, no suggestion is active.
-     */
-    activeSuggestionId: null,
+      /**
+       * Id of the active suggestion. If null, no suggestion is active.
+       */
+      activeSuggestionId: null,
 
-    onSuggestionAdd: null,
-    onSuggestionUpdate: null,
-    onSuggestionDelete: null,
-  } as SuggestionStoreState,
-  {
-    name: 'suggestion',
-  }
-);
+      onSuggestionAdd: null,
+      onSuggestionUpdate: null,
+      onSuggestionDelete: null,
+    } as SuggestionStoreState,
+    {
+      name: 'suggestion',
+    }
+  );
 
 export const useSuggestionStates = () => useSuggestionStore().use;
 export const useSuggestionSelectors = () => useSuggestionStore().get;

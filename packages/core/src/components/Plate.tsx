@@ -1,10 +1,7 @@
 import React, { useMemo } from 'react';
 import { normalizeEditor, Value } from '@udecode/slate';
 
-import {
-  PLATE_SCOPE,
-  PlateStoreProvider,
-} from '../stores';
+import { PLATE_SCOPE, PlateStoreProvider } from '../stores';
 import { PlateEditor, PlateStoreState } from '../types';
 import { createPlateEditor, normalizeInitialValue } from '../utils';
 import { PlateEffects, PlateEffectsProps } from './PlateEffects';

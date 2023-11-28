@@ -1,4 +1,3 @@
-import React, { ReactNode } from 'react';
 import {
   createAtomStore,
   getNodeString,
@@ -45,42 +44,43 @@ export interface CommentsStoreState {
   onCommentDelete: ((id: string) => void) | null;
 }
 
-export const { commentsStore, useCommentsStore, CommentsProvider } = createAtomStore(
-  {
-    /**
-     * Id of the current user.
-     */
-    myUserId: null,
+export const { commentsStore, useCommentsStore, CommentsProvider } =
+  createAtomStore(
+    {
+      /**
+       * Id of the current user.
+       */
+      myUserId: null,
 
-    /**
-     * Users data.
-     */
-    users: {},
+      /**
+       * Users data.
+       */
+      users: {},
 
-    /**
-     * Comments data.
-     */
-    comments: {},
+      /**
+       * Comments data.
+       */
+      comments: {},
 
-    /**
-     * Id of the active comment. If null, no comment is active.
-     */
-    activeCommentId: null,
+      /**
+       * Id of the active comment. If null, no comment is active.
+       */
+      activeCommentId: null,
 
-    addingCommentId: null,
+      addingCommentId: null,
 
-    newValue: [{ type: 'p', children: [{ text: '' }] }],
+      newValue: [{ type: 'p', children: [{ text: '' }] }],
 
-    focusTextarea: false,
+      focusTextarea: false,
 
-    onCommentAdd: null,
-    onCommentUpdate: null,
-    onCommentDelete: null,
-  } as CommentsStoreState,
-  {
-    name: 'comments',
-  }
-);
+      onCommentAdd: null,
+      onCommentUpdate: null,
+      onCommentDelete: null,
+    } as CommentsStoreState,
+    {
+      name: 'comments',
+    }
+  );
 
 export const useCommentsStates = () => useCommentsStore().use;
 export const useCommentsSelectors = () => useCommentsStore().get;
