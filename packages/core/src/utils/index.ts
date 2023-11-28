@@ -42,5 +42,4 @@ export * from './pluginRenderLeaf';
 export * from './setDefaultPlugin';
 export * from './setPlatePlugins';
 export * from './withHOC';
-export * from './jotai/index';
 export * from './misc/index';
