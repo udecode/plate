@@ -65,16 +65,18 @@ export const insertTableRow = <V extends Value>(
 
   const getEmptyRowNode = () => ({
     type: getPluginType(editor, ELEMENT_TR),
-    children: (trNode.children as TElement[]).map((_, i) =>
-      getEmptyCellNode(editor, {
-        header:
-          header ??
-          (tableEntry[0].children as TElement[]).every(
-            (n) => n.children[i].type === ELEMENT_TH
-          ),
+    children: (trNode.children as TElement[]).map((_, i) => {
+      const hasSingleRow = tableEntry[0].children.length === 1;
+      const isHeaderColumn =
+        !hasSingleRow &&
+        (tableEntry[0].children as TElement[]).every(
+          (n) => n.children[i].type === ELEMENT_TH
+        );
+      return getEmptyCellNode(editor, {
+        header: header ?? isHeaderColumn,
         ...newCellChildren,
-      })
-    ),
+      });
+    }),
   });
 
   withoutNormalizing(editor, () => {
