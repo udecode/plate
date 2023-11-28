@@ -276,9 +276,21 @@ An interface representing a user who can make comments.
 
 ### CommentsStoreState
 
-An interface representing the internal state of the comments store.
+An interface representing the state of the comments store.
 
 <APIState>
+  <APIItem name="myUserId" type="string | null">
+    The unique ID of the currently logged in or active user.
+  </APIItem>
+  <APIItem name="users" type="Record&lt;string, CommentUser&gt;">
+    An object where each key is a user's unique ID and the corresponding value
+    is an instance of the `CommentUser` type, representing the user's data.
+  </APIItem>
+  <APIItem name="comments" type="Record&lt;string, TComment&gt;">
+    An object where each key is a comment's unique ID and the corresponding
+    value is an instance of the `TComment` type, representing the comment's
+    data.
+  </APIItem>
   <APIItem name="activeCommentId" type="string | null">
     The unique ID of the currently active or focused comment.
   </APIItem>
@@ -290,6 +302,18 @@ An interface representing the internal state of the comments store.
   </APIItem>
   <APIItem name="focusTextarea" type="boolean">
     Indicates whether the comment textarea is focused.
+  </APIItem>
+  <APIItem name="onCommentAdd" type="function">
+    A function that is invoked when a new comment is added. It accepts a partial
+    comment object, which must include the user's ID.
+  </APIItem>
+  <APIItem name="onCommentUpdate" type="function">
+    A function that is invoked when a comment is updated. It accepts a comment
+    object, which must include the comment's ID.
+  </APIItem>
+  <APIItem name="onCommentDelete" type="function">
+    A function that is invoked when a comment is deleted. It accepts the unique
+    ID of the comment to be deleted.
   </APIItem>
 </APIState>
 
@@ -539,33 +563,12 @@ A div component for positioning comments in the editor.
 
 ### CommentsProvider
 
-A provider for comments data and users data.
+A jotai provider for comments data and users data.
 
 <APIProps>
-  <APIItem name="myUserId" type="string | null">
-    The unique ID of the currently logged in or active user.
-  </APIItem>
-  <APIItem name="users" type="Record&lt;string, CommentUser&gt;">
-    An object where each key is a user's unique ID and the corresponding value
-    is an instance of the `CommentUser` type, representing the user's data.
-  </APIItem>
-  <APIItem name="initialComments" type="Record&lt;string, TComment&gt;">
-    An object where each key is a comment's unique ID and the corresponding
-    value is an instance of the `TComment` type, representing the comment's
-    data.
-  </APIItem>
-  <APIItem name="onCommentAdd" type="function">
-    A function that is invoked when a new comment is added. It accepts a partial
-    comment object, which must include the user's ID.
-  </APIItem>
-  <APIItem name="onCommentUpdate" type="function">
-    A function that is invoked when a comment is updated. It accepts a comment
-    object, which must include the comment's ID.
-  </APIItem>
-  <APIItem name="onCommentDelete" type="function">
-    A function that is invoked when a comment is deleted. It accepts the unique
-    ID of the comment to be deleted.
-  </APIItem>
+
+Extends `CommentsStoreState`.
+
 </APIProps>
 
 ### useActiveCommentNode
