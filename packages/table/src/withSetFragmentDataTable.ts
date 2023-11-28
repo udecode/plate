@@ -86,6 +86,9 @@ export const withSetFragmentDataTable = <
             : document.createElement('tr');
 
         rowCells.forEach((_, cellIndex) => {
+          // need to clean data before every iteration
+          data.clearData();
+
           const cellPath = rowPath.concat(x + cellIndex);
 
           // select cell by cell

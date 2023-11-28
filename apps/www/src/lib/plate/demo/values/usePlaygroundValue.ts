@@ -31,7 +31,7 @@ import { mediaValue } from './mediaValue';
 import { mentionValue } from './mentionValue';
 import { softBreakValue } from './softBreakValue';
 import { tabbableValue } from './tabbableValue';
-import { tableValue } from './tableValue';
+import { tableMergeValue, tableValue } from './tableValue';
 
 export const usePlaygroundValue = (id?: ValueId) => {
   let valueId = settingsStore.use.valueId();
@@ -48,8 +48,13 @@ export const usePlaygroundValue = (id?: ValueId) => {
 
     value.push(...basicMarksValue);
 
+    console.log(valueId);
+    if (valueId === 'tableMerge') {
+      return mapNodeId(tableMergeValue);
+    }
+
     if (valueId !== customizerPlugins.playground.id) {
-      const newValue = customizerPlugins[valueId].value ?? [];
+      const newValue = customizerPlugins[valueId]?.value ?? [];
 
       if (newValue.length === 0) {
         return mapNodeId(value);

@@ -4,31 +4,42 @@ import { jsx } from '@udecode/plate-test-utils';
 
 jsx;
 
-export const createTable = (): any => (
+export const createTable = (spanning?: boolean): any => (
   <fragment>
-    <htable colSizes={[150, 150, 150, 150]} marginLeft={50}>
-      <htr>
-        <hth>
-          <hp>
-            <htext bold>Plugin</htext>
-          </hp>
-        </hth>
-        <hth>
-          <hp>
-            <htext bold>Element</htext>
-          </hp>
-        </hth>
-        <hth>
-          <hp>
-            <htext bold>Inline</htext>
-          </hp>
-        </hth>
-        <hth>
-          <hp>
-            <htext bold>Void</htext>
-          </hp>
-        </hth>
-      </htr>
+    <htable colSizes={[100, 100, 100, 100]} marginLeft={20}>
+      {spanning ? (
+        <htr>
+          <hth colSpan={4}>
+            <hp>
+              <htext bold>Plugin</htext>
+            </hp>
+          </hth>
+        </htr>
+      ) : (
+        <htr>
+          <hth>
+            <hp>
+              <htext bold>Plugin</htext>
+            </hp>
+          </hth>
+          <hth>
+            <hp>
+              <htext bold>Element</htext>
+            </hp>
+          </hth>
+          <hth>
+            <hp>
+              <htext bold>Inline</htext>
+            </hp>
+          </hth>
+          <hth>
+            <hp>
+              <htext bold>Void</htext>
+            </hp>
+          </hth>
+        </htr>
+      )}
+
       <htr>
         <htd>
           <hp>
@@ -81,30 +92,6 @@ export const createTable = (): any => (
   </fragment>
 );
 
-export const createSpanningTable = (): any => (
-  <fragment>
-    <htable colSizes={[300, 300]}>
-      <htr>
-        <hth colSpan={2}>
-          <hp>
-            <htext bold>Heading</htext>
-          </hp>
-        </hth>
-      </htr>
-      <htr>
-        <htd>
-          <hp>
-            <htext bold>Cell 1</htext>
-          </hp>
-        </htd>
-        <htd>
-          <hp>Cell 2</hp>
-        </htd>
-      </htr>
-    </htable>
-  </fragment>
-);
-
 export const tableValue: any = (
   <fragment>
     <hh2>🏓 Table</hh2>
@@ -113,9 +100,16 @@ export const tableValue: any = (
       to design structured layouts.
     </hp>
     {createTable()}
+  </fragment>
+);
+
+export const tableMergeValue: any = (
+  <fragment>
+    <hh3>Table Merge</hh3>
     <hp>
-      This table is an example of rendering a table spanning multiple columns:
+      You can enable merging using <htext code>enableMerging: true</htext>{' '}
+      option. Try it out:
     </hp>
-    {createSpanningTable()}
+    {createTable(true)}
   </fragment>
 );

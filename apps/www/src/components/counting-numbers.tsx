@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -56,17 +57,23 @@ export function CountingNumbers({
   start = reverse ? 1000 : 0,
   interval = 10,
   duration = 800,
+  noAnimation,
 }) {
   const ref = useRef(null);
-  const isInView = useInView(ref);
-  const number = useCounting({
-    start,
-    end: value,
-    interval,
-    duration,
-    reverse,
-    isInView,
-  });
+
+  let number = value;
+
+  if (!noAnimation) {
+    const isInView = useInView(ref);
+    number = useCounting({
+      start,
+      end: value,
+      interval,
+      duration,
+      reverse,
+      isInView,
+    });
+  }
 
   const formattedNumber = useMemo(
     () => Intl.NumberFormat().format(number),

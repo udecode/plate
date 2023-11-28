@@ -104,7 +104,7 @@ const ToolbarButton = React.forwardRef<
       typeof pressed === 'boolean' ? (
         <ToolbarToggleGroup
           type="single"
-          value={pressed ? 'single' : undefined}
+          value="single"
         >
           <ToolbarToggleItem
             ref={ref}
@@ -116,7 +116,7 @@ const ToolbarButton = React.forwardRef<
               isDropdown && 'my-1 justify-between pr-1',
               className
             )}
-            value="single"
+            value={pressed ? 'single' : ''}
             {...props}
           >
             <div className="flex flex-1">{children}</div>

@@ -66,7 +66,7 @@ import { KEY_TABBABLE } from '@udecode/plate-tabbable';
 import { ELEMENT_TABLE } from '@udecode/plate-table';
 import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
 
-export type ValueId = keyof typeof customizerPlugins;
+export type ValueId = keyof typeof customizerPlugins | 'tableMerge';
 
 // cmdk needs lowercase
 export const customizerPlugins = {

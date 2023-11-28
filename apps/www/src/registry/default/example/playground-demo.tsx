@@ -150,7 +150,12 @@ export const usePlaygroundPlugins = ({
               triggerPreviousCharPattern: /^$|^[\s"']$/,
             },
           }),
-          createTablePlugin({ enabled: !!enabled.table }),
+          createTablePlugin({
+            enabled: !!enabled.table,
+            options: {
+              enableMerging: id === 'tableMerge',
+            },
+          }),
           createTodoListPlugin({ enabled: !!enabled.action_item }),
           createExcalidrawPlugin({ enabled: !!enabled.excalidraw }),
 
