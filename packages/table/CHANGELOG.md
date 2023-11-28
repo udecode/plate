@@ -1,5 +1,17 @@
 # @udecode/plate-table
 
+## 26.0.3
+
+### Patch Changes
+
+- [#2724](https://github.com/udecode/plate/pull/2724) by [@duckRabbitPy](https://github.com/duckRabbitPy) – Table row insertion: cells in a newly added row will now receive header styling only if they satisfy specific criteria:
+
+  - Every cell in the column is a header cell,
+  - The table contains more than one row, or
+  - The column possesses a predefined header property.
+
+- [`0b5962d0`](https://github.com/udecode/plate/commit/0b5962d06d6121526e09ff8b3e164d358bbc881c) by [@zbeyens](https://github.com/zbeyens) – Fix: `useTableMergeState` should return false values when `enableMerging: false`
+
 ## 26.0.2
 
 ### Patch Changes
