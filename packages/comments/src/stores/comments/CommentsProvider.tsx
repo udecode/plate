@@ -45,7 +45,7 @@ export interface CommentsStoreState {
   onCommentDelete: ((id: string) => void) | null;
 }
 
-const { useCommentsStore, CommentsProvider: PrimitiveCommentsProvider } = createAtomStore(
+export const { commentsStore, useCommentsStore, CommentsProvider } = createAtomStore(
   {
     /**
      * Id of the current user.
@@ -81,20 +81,6 @@ const { useCommentsStore, CommentsProvider: PrimitiveCommentsProvider } = create
     name: 'comments',
   }
 );
-
-export function CommentsProvider({
-  children,
-  ...props
-}: Partial<CommentsStoreState> & { children: ReactNode }) {
-  return (
-    <PrimitiveCommentsProvider
-      scope={SCOPE_COMMENTS}
-      {...props}
-    >
-      {children}
-    </PrimitiveCommentsProvider>
-  );
-}
 
 export const useCommentsStates = () => useCommentsStore().use;
 export const useCommentsSelectors = () => useCommentsStore().get;

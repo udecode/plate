@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React from 'react';
 import {
   createAtomStore,
   nanoid,
@@ -38,7 +38,7 @@ export interface SuggestionStoreState {
   onSuggestionDelete: ((id: string) => void) | null;
 }
 
-const { useSuggestionStore, SuggestionProvider: PrimitiveSuggestionProvider } = createAtomStore(
+export const { suggestionStore, useSuggestionStore, SuggestionProvider } = createAtomStore(
   {
     /**
      * Id of the current user.
@@ -70,20 +70,6 @@ const { useSuggestionStore, SuggestionProvider: PrimitiveSuggestionProvider } = 
     name: 'suggestion',
   }
 );
-
-export function SuggestionProvider({
-  children,
-  ...props
-}: Partial<SuggestionStoreState> & { children: ReactNode }) {
-  return (
-    <PrimitiveSuggestionProvider
-      scope={SCOPE_SUGGESTION}
-      {...props}
-    >
-      {children}
-    </PrimitiveSuggestionProvider>
-  );
-}
 
 export const useSuggestionStates = () => useSuggestionStore().use;
 export const useSuggestionSelectors = () => useSuggestionStore().get;

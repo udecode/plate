@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React from 'react';
 import {
   createAtomStore,
   getNodeString,
@@ -20,10 +20,7 @@ export interface CommentStoreState {
   editingValue: Value | null;
 }
 
-const {
-  useCommentStore,
-  CommentProvider: PrimitiveCommentProvider
-} = createAtomStore(
+export const { commentStore, useCommentStore, CommentProvider } = createAtomStore(
   {
     id: '',
     isMenuOpen: false,
@@ -37,21 +34,6 @@ const {
 export const useCommentStates = () => useCommentStore().use;
 export const useCommentSelectors = () => useCommentStore().get;
 export const useCommentActions = () => useCommentStore().set;
-
-export function CommentProvider({
-  children,
-  scope,
-  ...props
-}: Partial<CommentStoreState> & { children: ReactNode; scope?: string }) {
-  return (
-    <PrimitiveCommentProvider
-      scope={scope ?? SCOPE_COMMENT}
-      {...props}
-    >
-      {children}
-    </PrimitiveCommentProvider>
-  );
-}
 
 export const useCommentUser = (scope?: string): CommentUser | null => {
   const commentId = useCommentSelectors().id(scope);
