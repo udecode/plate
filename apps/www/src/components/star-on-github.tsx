@@ -45,6 +45,7 @@ export function StarOnGithub({ count }: { count: number }) {
             <CountingNumbers
               value={count}
               className="font-medium text-background dark:text-foreground"
+              noAnimation
             />
           )}
         </div>
