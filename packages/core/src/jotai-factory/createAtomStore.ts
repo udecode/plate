@@ -13,7 +13,6 @@ import type { createStore } from 'jotai/vanilla';
 
 import {
   createAtomProvider,
-  getStoreScope,
   useContextStore,
   type ProviderProps,
 } from './createAtomProvider';
@@ -166,7 +165,7 @@ export const createAtomStore = <
     atoms[key] = atomConfig;
     getAtoms[key] = (optionsOrScope: UseAtomOptionsOrScope = {}) => {
       const options = convertScopeShorthand(optionsOrScope);
-      const contextStore = useContextStore(getStoreScope(name, options.scope));
+      const contextStore = useContextStore(name, options.scope);
 
       return useAtomValue(atomConfig, {
         store: options.store ?? contextStore,
@@ -175,7 +174,7 @@ export const createAtomStore = <
     };
     setAtoms[key] = (optionsOrScope: UseAtomOptionsOrScope = {}) => {
       const options = convertScopeShorthand(optionsOrScope);
-      const contextStore = useContextStore(getStoreScope(name, options.scope));
+      const contextStore = useContextStore(name, options.scope);
 
       return useSetAtom(atomConfig as any, {
         store: options.store ?? contextStore,
@@ -183,7 +182,7 @@ export const createAtomStore = <
     };
     useAtoms[key] = (optionsOrScope: UseAtomOptionsOrScope = {}) => {
       const options = convertScopeShorthand(optionsOrScope);
-      const contextStore = useContextStore(getStoreScope(name, options.scope));
+      const contextStore = useContextStore(name, options.scope);
 
       return useAtom(atomConfig, {
         store: options.store ?? contextStore,

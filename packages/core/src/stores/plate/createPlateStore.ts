@@ -1,6 +1,4 @@
 import { Value } from '@udecode/slate';
-import { isDefined } from '@udecode/utils';
-import { atom } from 'jotai';
 
 import {
   createAtomStore,
@@ -8,7 +6,6 @@ import {
   SetRecord,
   UseRecord,
 } from '../../jotai-factory';
-import { useAtom } from '../../libs';
 import { PlateEditor } from '../../types/PlateEditor';
 import { PlateStoreState } from '../../types/PlateStore';
 

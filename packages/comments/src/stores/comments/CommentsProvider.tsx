@@ -45,7 +45,7 @@ export interface CommentsStoreState {
   onCommentDelete: ((id: string) => void) | null;
 }
 
-const { commentsStore, useCommentsStore, CommentsProvider: PrimitiveCommentsProvider } = createAtomStore(
+const { useCommentsStore, CommentsProvider: PrimitiveCommentsProvider } = createAtomStore(
   {
     /**
      * Id of the current user.

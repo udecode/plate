@@ -18,19 +18,23 @@ import { useHydrateStore, useSyncStore } from './useHydrateStore';
 // Global store contexts
 const storeContexts = new Map<string, Context<JotaiStore | undefined>>();
 
-export const getStoreScope = (storeScope = 'global', scope = 'global') => {
+const GLOBAL_STORE_SCOPE = 'global';
+const GLOBAL_SCOPE = 'global';
+
+export const getFullyQualifiedScope = (storeScope: string, scope: string) => {
   return `${storeScope}:${scope}`;
 };
 
-export const getContext = (scope = getStoreScope()) => {
-  if (!storeContexts.has(scope)) {
-    storeContexts.set(scope, createContext(undefined as any));
+export const getContext = (storeScope = GLOBAL_STORE_SCOPE, scope = GLOBAL_SCOPE, createIfNotExists = false) => {
+  const fullyQualifiedScope = getFullyQualifiedScope(storeScope, scope);
+  if (createIfNotExists && !storeContexts.has(fullyQualifiedScope)) {
+    storeContexts.set(fullyQualifiedScope, createContext(undefined as any));
   }
-  return storeContexts.get(scope);
+  return storeContexts.get(fullyQualifiedScope);
 };
 
-export const useContextStore = (scope: string) => {
-  const Context = getContext(scope)!;
+export const useContextStore = (storeScope = GLOBAL_STORE_SCOPE, scope = GLOBAL_SCOPE) => {
+  const Context = getContext(storeScope, scope) ?? getContext(storeScope, GLOBAL_SCOPE, true)!;
   return useContext(Context);
 };
 
@@ -74,7 +78,8 @@ export const createAtomProvider = <T extends object, N extends string = ''>(
 
   // eslint-disable-next-line react/display-name
   return ({ store, scope, children, resetKey, ...props }: ProviderProps<T>) => {
-    const Context = getContext(getStoreScope(storeScope, scope))!;
+    const ScopedContext = getContext(storeScope, scope, true)!;
+    const GlobalContext = getContext(storeScope, GLOBAL_SCOPE, true)!;
 
     const [storeState, setStoreState] = useState<JotaiStore>(createStore());
 
@@ -85,15 +90,17 @@ export const createAtomProvider = <T extends object, N extends string = ''>(
     }, [resetKey]);
 
     return (
-      <Context.Provider value={storeState}>
-        <AtomProvider store={storeState}>
-          <HydrateAtoms store={storeState} atoms={atoms} {...(props as any)}>
-            {!!Effect && <Effect />}
+      <ScopedContext.Provider value={storeState}>
+        <GlobalContext.Provider value={storeState}>
+          <AtomProvider store={storeState}>
+            <HydrateAtoms store={storeState} atoms={atoms} {...(props as any)}>
+              {!!Effect && <Effect />}
 
-            {children}
-          </HydrateAtoms>
-        </AtomProvider>
-      </Context.Provider>
+              {children}
+            </HydrateAtoms>
+          </AtomProvider>
+        </GlobalContext.Provider>
+      </ScopedContext.Provider>
     );
   };
 };

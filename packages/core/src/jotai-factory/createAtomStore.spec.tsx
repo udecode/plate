@@ -244,4 +244,61 @@ describe('createAtomStore', () => {
       expect(getByText('4')).toBeInTheDocument();
     });
   });
+
+  describe('multiple unrelated stores', () => {
+    type MyFirstTestStoreValue = { name: string };
+    type MySecondTestStoreValue = { age: number };
+
+    const initialFirstTestStoreValue: MyFirstTestStoreValue = {
+      name: 'My name',
+    };
+
+    const initialSecondTestStoreValue: MySecondTestStoreValue = {
+      age: 72,
+    };
+
+    const { useMyFirstTestStoreStore, MyFirstTestStoreProvider } = createAtomStore(
+      initialFirstTestStoreValue,
+      { name: 'myFirstTestStore' as const }
+    );
+
+    const { useMySecondTestStoreStore, MySecondTestStoreProvider } = createAtomStore(
+      initialSecondTestStoreValue,
+      { name: 'mySecondTestStore' as const }
+    );
+
+    const FirstReadOnlyConsumer = () => {
+      const [name] = useMyFirstTestStoreStore().use.name();
+
+      return (
+        <div>
+          <span>{name}</span>
+        </div>
+      );
+    };
+
+    const SecondReadOnlyConsumer = () => {
+      const [age] = useMySecondTestStoreStore().use.age();
+
+      return (
+        <div>
+          <span>{age}</span>
+        </div>
+      );
+    };
+
+    it('returns the value for the correct store', () => {
+      const { getByText } = render(
+        <MyFirstTestStoreProvider name="Jane" scope="firstScope">
+          <MySecondTestStoreProvider age={98} scope="secondScope">
+            <FirstReadOnlyConsumer />
+            <SecondReadOnlyConsumer />
+          </MySecondTestStoreProvider>
+        </MyFirstTestStoreProvider>
+      );
+
+      expect(getByText('Jane')).toBeInTheDocument();
+      expect(getByText('98')).toBeInTheDocument();
+    });
+  });
 });
