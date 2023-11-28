@@ -74,7 +74,9 @@ describe('ElementProvider', () => {
 
     return (
       <AgeElementProvider age={age}>
-        <button onClick={() => setAge(age + increment)}>{buttonLabel}</button>
+        <button type="button" onClick={() => setAge(age + increment)}>
+          {buttonLabel}
+        </button>
         {children}
       </AgeElementProvider>
     );

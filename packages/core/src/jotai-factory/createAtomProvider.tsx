@@ -38,10 +38,10 @@ export const useContextStore = (
   storeScope = GLOBAL_STORE_SCOPE,
   scope = GLOBAL_SCOPE
 ) => {
-  const Context =
+  const context =
     getContext(storeScope, scope) ??
     getContext(storeScope, GLOBAL_SCOPE, true)!;
-  return useContext(Context);
+  return useContext(context);
 };
 
 export type ProviderProps<T extends object> = AtomProviderProps &

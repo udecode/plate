@@ -41,7 +41,7 @@ describe('createAtomStore', () => {
       const setAge = useMyTestStoreStore().set.age();
 
       return (
-        <button onClick={() => setAge(WRITE_ONLY_CONSUMER_AGE)}>
+        <button type="button" onClick={() => setAge(WRITE_ONLY_CONSUMER_AGE)}>
           consumerSetAge
         </button>
       );
@@ -57,7 +57,10 @@ describe('createAtomStore', () => {
         <>
           <MyTestStoreProvider age={age}>{children}</MyTestStoreProvider>
 
-          <button onClick={() => setAge(MUTABLE_PROVIDER_NEW_AGE)}>
+          <button
+            type="button"
+            onClick={() => setAge(MUTABLE_PROVIDER_NEW_AGE)}
+          >
             providerSetAge
           </button>
         </>
