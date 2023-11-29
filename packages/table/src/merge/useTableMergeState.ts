@@ -55,11 +55,11 @@ export const useTableMergeState = () => {
   }, [readOnly, selected, editor.selection, selectedTable]);
 
   const canUnmerge =
-    (collapsed &&
-      selectedCellEntries &&
-      selectedCellEntries.length === 1 &&
-      getColSpan(selectedCellEntries[0][0] as any) > 1) ||
-    getRowSpan(selectedCellEntries[0][0] as any) > 1;
+    collapsed &&
+    selectedCellEntries &&
+    selectedCellEntries.length === 1 &&
+    (getColSpan(selectedCellEntries[0][0] as any) > 1 ||
+      getRowSpan(selectedCellEntries[0][0] as any) > 1);
 
   return { canMerge, canUnmerge };
 };
