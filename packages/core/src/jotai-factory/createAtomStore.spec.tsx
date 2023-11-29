@@ -1,5 +1,6 @@
 import React, { ReactNode, useState } from 'react';
-import { act, render } from '@testing-library/react';
+import { act, render, renderHook } from '@testing-library/react';
+import { useSetAtom } from 'jotai';
 
 import { createAtomStore } from './createAtomStore';
 
@@ -18,10 +19,8 @@ describe('createAtomStore', () => {
       age: INITIAL_AGE,
     };
 
-    const { useMyTestStoreStore, MyTestStoreProvider } = createAtomStore(
-      initialTestStoreValue,
-      { name: 'myTestStore' as const }
-    );
+    const { useMyTestStoreStore, MyTestStoreProvider, myTestStoreStore } =
+      createAtomStore(initialTestStoreValue, { name: 'myTestStore' as const });
 
     const ReadOnlyConsumer = () => {
       const [name] = useMyTestStoreStore().use.name();
@@ -66,6 +65,11 @@ describe('createAtomStore', () => {
         </>
       );
     };
+
+    beforeEach(() => {
+      renderHook(() => useSetAtom(myTestStoreStore.atom.name)(INITIAL_NAME));
+      renderHook(() => useSetAtom(myTestStoreStore.atom.age)(INITIAL_AGE));
+    });
 
     it('passes default values from provider to consumer', () => {
       const { getByText } = render(
@@ -147,6 +151,42 @@ describe('createAtomStore', () => {
 
       expect(getByText(INITIAL_NAME)).toBeInTheDocument();
       expect(getByText(WRITE_ONLY_CONSUMER_AGE)).toBeInTheDocument();
+    });
+
+    it('works without a provider', () => {
+      const { getByText } = render(
+        <>
+          <ReadOnlyConsumer />
+          <WriteOnlyConsumer />
+        </>
+      );
+
+      expect(getByText(INITIAL_NAME)).toBeInTheDocument();
+      expect(getByText(INITIAL_AGE)).toBeInTheDocument();
+
+      act(() => getByText('consumerSetAge').click());
+
+      expect(getByText(INITIAL_NAME)).toBeInTheDocument();
+      expect(getByText(WRITE_ONLY_CONSUMER_AGE)).toBeInTheDocument();
+    });
+
+    it('works adjacent to a provider', () => {
+      const { getByText } = render(
+        <>
+          <ReadOnlyConsumer />
+          <MyTestStoreProvider name="Jane" age={94}>
+            <WriteOnlyConsumer />
+          </MyTestStoreProvider>
+        </>
+      );
+
+      expect(getByText(INITIAL_NAME)).toBeInTheDocument();
+      expect(getByText(INITIAL_AGE)).toBeInTheDocument();
+
+      act(() => getByText('consumerSetAge').click());
+
+      expect(getByText(INITIAL_NAME)).toBeInTheDocument();
+      expect(getByText(INITIAL_AGE)).toBeInTheDocument();
     });
   });
 
