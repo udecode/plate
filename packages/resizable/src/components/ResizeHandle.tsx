@@ -14,7 +14,7 @@ import { isTouchEvent } from '../utils';
 
 export const { ResizeHandleProvider, useResizeHandleStore } = createAtomStore(
   {
-    onResize: null as ResizeHandleOptions['onResize'] | null,
+    onResize: null as { fn: ResizeHandleOptions['onResize'] } | null,
   },
   { name: 'resizeHandle' }
 );
@@ -39,7 +39,7 @@ export const useResizeHandleState = ({
   onHoverEnd,
 }: ResizeHandleOptions) => {
   const _onResize = useResizeHandleStore().get.onResize();
-  if (!onResize) onResize = _onResize ?? undefined;
+  if (!onResize) onResize = _onResize?.fn;
 
   const [isResizing, setIsResizing] = useState(false);
   const [initialPosition, setInitialPosition] = useState(0);
