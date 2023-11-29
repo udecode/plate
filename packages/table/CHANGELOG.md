@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 26.0.4
+
+### Patch Changes
+
+- [#2776](https://github.com/udecode/plate/pull/2776) by [@dimaanj](https://github.com/dimaanj) – Fix unmerging a single column
+
 ## 26.0.3
 
 ### Patch Changes

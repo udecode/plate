@@ -1,5 +1,11 @@
 # @udecode/plate-floating
 
+## 26.0.4
+
+### Patch Changes
+
+- [#2777](https://github.com/udecode/plate/pull/2777) by [@zbeyens](https://github.com/zbeyens) – Vendor: remove radix-ui package
+
 ## 25.0.1
 
 ## 25.0.0
