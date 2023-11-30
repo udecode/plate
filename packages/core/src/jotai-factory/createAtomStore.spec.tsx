@@ -1,6 +1,5 @@
 import React, { ReactNode, useState } from 'react';
 import { act, render, renderHook } from '@testing-library/react';
-import { useSetAtom } from 'jotai';
 
 import { createAtomStore } from './createAtomStore';
 
@@ -19,8 +18,10 @@ describe('createAtomStore', () => {
       age: INITIAL_AGE,
     };
 
-    const { useMyTestStoreStore, MyTestStoreProvider, myTestStoreStore } =
-      createAtomStore(initialTestStoreValue, { name: 'myTestStore' as const });
+    const { useMyTestStoreStore, MyTestStoreProvider } = createAtomStore(
+      initialTestStoreValue,
+      { name: 'myTestStore' as const }
+    );
 
     const ReadOnlyConsumer = () => {
       const [name] = useMyTestStoreStore().use.name();
@@ -67,8 +68,8 @@ describe('createAtomStore', () => {
     };
 
     beforeEach(() => {
-      renderHook(() => useSetAtom(myTestStoreStore.atom.name)(INITIAL_NAME));
-      renderHook(() => useSetAtom(myTestStoreStore.atom.age)(INITIAL_AGE));
+      renderHook(() => useMyTestStoreStore().set.name()(INITIAL_NAME));
+      renderHook(() => useMyTestStoreStore().set.age()(INITIAL_AGE));
     });
 
     it('passes default values from provider to consumer', () => {
@@ -339,6 +340,16 @@ describe('createAtomStore', () => {
 
       expect(getByText('Jane')).toBeInTheDocument();
       expect(getByText('98')).toBeInTheDocument();
+    });
+
+    it('works without provider', () => {
+      const { getByText } = render(
+        <MyFirstTestStoreProvider name="Jane" scope="firstScope">
+          <SecondReadOnlyConsumer />
+        </MyFirstTestStoreProvider>
+      );
+
+      expect(getByText('72')).toBeInTheDocument();
     });
   });
 });

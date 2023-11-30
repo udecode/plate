@@ -13,7 +13,7 @@ import { AtomRecord, JotaiStore } from './createAtomStore';
 import { useHydrateStore, useSyncStore } from './useHydrateStore';
 
 // Global store contexts
-const storeContexts = new Map<string, Context<JotaiStore | undefined>>();
+const storeContexts = new Map<string, Context<JotaiStore>>();
 
 const GLOBAL_STORE_SCOPE = 'global';
 const GLOBAL_SCOPE = 'global';
@@ -29,7 +29,18 @@ export const getContext = (
 ) => {
   const fullyQualifiedScope = getFullyQualifiedScope(storeScope, scope);
   if (createIfNotExists && !storeContexts.has(fullyQualifiedScope)) {
-    storeContexts.set(fullyQualifiedScope, createContext(undefined as any));
+    /**
+     * In some circumstances, when used without a store, jotai presents
+     * multiple different versions of the same atom depending on where the atom
+     * is accessed from. (See https://github.com/pmndrs/jotai/discussions/2044)
+     *
+     * To avoid this case, we return a default store for use in the absence of
+     * a provider.
+     *
+     * This is not covered by any test; when editing this code, please manually
+     * verify that table cell selection and column resizing are not broken.
+     */
+    storeContexts.set(fullyQualifiedScope, createContext(createStore()));
   }
   return storeContexts.get(fullyQualifiedScope);
 };
