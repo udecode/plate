@@ -1,5 +1,5 @@
 import React from 'react';
-import { PlateElement, PlateElementProps, Value } from '@udecode/plate-common';
+import { PlateElement, PlateElementProps, Value, withHOC } from '@udecode/plate-common';
 import {
   ELEMENT_MEDIA_EMBED,
   parseTwitterUrl,
@@ -21,7 +21,7 @@ import {
   ResizeHandle,
 } from './resizable';
 
-const InnerMediaEmbedElement = React.forwardRef<
+const MediaEmbedElement = withHOC(ResizableProvider, React.forwardRef<
   React.ElementRef<typeof PlateElement>,
   PlateElementProps<Value, TMediaEmbedElement>
 >(({ className, children, ...props }, ref) => {
@@ -135,16 +135,7 @@ const InnerMediaEmbedElement = React.forwardRef<
       </PlateElement>
     </MediaPopover>
   );
-});
-InnerMediaEmbedElement.displayName = 'InnerMediaEmbedElement';
-
-const MediaEmbedElement: typeof InnerMediaEmbedElement = React.forwardRef(
-  (props, ref) => (
-    <ResizableProvider>
-      <InnerMediaEmbedElement {...props} ref={ref} />
-    </ResizableProvider>
-  )
-);
+}));
 MediaEmbedElement.displayName = 'MediaEmbedElement';
 
 export { MediaEmbedElement };

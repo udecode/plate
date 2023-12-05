@@ -1,5 +1,5 @@
 import React from 'react';
-import { PlateElement, PlateElementProps, Value } from '@udecode/plate-common';
+import { PlateElement, PlateElementProps, Value, withHOC } from '@udecode/plate-common';
 import {
   ELEMENT_IMAGE,
   Image,
@@ -18,12 +18,12 @@ import {
   ResizeHandle,
 } from './resizable';
 
-function InnerImageElement({
+const ImageElement = withHOC(ResizableProvider, ({
   className,
   children,
   nodeProps,
   ...props
-}: PlateElementProps<Value, TImageElement>) {
+}: PlateElementProps<Value, TImageElement>) => {
   const { readOnly, focused, selected, align = 'center' } = useMediaState();
   const width = useResizableStore().get.width();
 
@@ -69,12 +69,7 @@ function InnerImageElement({
       </PlateElement>
     </MediaPopover>
   );
-}
+});
+ImageElement.displayName = 'ImageElement';
 
-export function ImageElement(props: PlateElementProps<Value, TImageElement>) {
-  return (
-    <ResizableProvider>
-      <InnerImageElement {...props} />
-    </ResizableProvider>
-  );
-}
+export { ImageElement };

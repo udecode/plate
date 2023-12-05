@@ -1,0 +1,53 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`withHOC renders component with HOC 1`] = `
+<div>
+  <div>
+    {}
+    null
+    <div>
+      {"myProp":"component-prop"}
+      null
+    </div>
+  </div>
+</div>
+`;
+
+exports[`withHOC renders component with HOC and HOC props 1`] = `
+<div>
+  <div>
+    {"myProp":"hoc-prop"}
+    null
+    <div>
+      {"myProp":"component-prop"}
+      null
+    </div>
+  </div>
+</div>
+`;
+
+exports[`withHOC renders component with HOC and HOC ref 1`] = `
+<div>
+  <div>
+    {}
+    {"current":{"myRef":"hoc-ref"}}
+    <div>
+      {"myProp":"component-prop"}
+      null
+    </div>
+  </div>
+</div>
+`;
+
+exports[`withHOC renders component with HOC and component ref 1`] = `
+<div>
+  <div>
+    {}
+    null
+    <div>
+      {"myProp":"component-prop"}
+      {"current":{"myRef":"component-ref"}}
+    </div>
+  </div>
+</div>
+`;
