@@ -1,9 +1,9 @@
 import React, {
-  Context,
   createContext,
   FC,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from 'react';
 import { createStore } from 'jotai/vanilla';
@@ -12,47 +12,46 @@ import { AtomProvider, AtomProviderProps } from './atomProvider';
 import { AtomRecord, JotaiStore } from './createAtomStore';
 import { useHydrateStore, useSyncStore } from './useHydrateStore';
 
-// Global store contexts
-const storeContexts = new Map<string, Context<JotaiStore>>();
-
-const GLOBAL_STORE_SCOPE = 'global';
-const GLOBAL_SCOPE = 'global';
-
-export const getFullyQualifiedScope = (storeScope: string, scope: string) => {
-  return `${storeScope}:${scope}`;
+const getFullyQualifiedScope = (storeName: string, scope: string) => {
+  return `${storeName}:${scope}`;
 };
 
-export const getContext = (
-  storeScope = GLOBAL_STORE_SCOPE,
-  scope = GLOBAL_SCOPE,
-  createIfNotExists = false
-) => {
-  const fullyQualifiedScope = getFullyQualifiedScope(storeScope, scope);
-  if (createIfNotExists && !storeContexts.has(fullyQualifiedScope)) {
-    /**
-     * In some circumstances, when used without a store, jotai presents
-     * multiple different versions of the same atom depending on where the atom
-     * is accessed from. (See https://github.com/pmndrs/jotai/discussions/2044)
-     *
-     * To avoid this case, we return a default store for use in the absence of
-     * a provider.
-     *
-     * This is not covered by any test; when editing this code, please manually
-     * verify that table cell selection and column resizing are not broken.
-     */
-    storeContexts.set(fullyQualifiedScope, createContext(createStore()));
+// Map from store name to store. Used for provider-less stores only.
+const globalAtomStores = new Map<string, JotaiStore>();
+
+/**
+ * Context mapping store name and scope to store. Used for providers. The
+ * 'provider' scope is used to reference any provider belonging to the store,
+ * regardless of scope.
+ */
+const PROVIDER_SCOPE = 'provider';
+const AtomStoreContext = createContext<Map<string, JotaiStore>>(new Map());
+
+// Get the global store for the given store name, creating it if necessary.
+const getGlobalAtomStore = (storeName: string): JotaiStore => {
+  if (!globalAtomStores.has(storeName)) {
+    globalAtomStores.set(storeName, createStore());
   }
-  return storeContexts.get(fullyQualifiedScope);
+
+  return globalAtomStores.get(storeName)!;
 };
 
-export const useContextStore = (
-  storeScope = GLOBAL_STORE_SCOPE,
-  scope = GLOBAL_SCOPE
-) => {
-  const context =
-    getContext(storeScope, scope) ??
-    getContext(storeScope, GLOBAL_SCOPE, true)!;
-  return useContext(context);
+/**
+ * Tries to find a store in each of the following places, in order:
+ * 1. The store context, matching the store name and scope
+ * 2. The store context, matching the store name and 'provider' scope
+ * 3. The global store for the store name
+ */
+export const useAtomStore = (
+  storeName: string,
+  scope: string = PROVIDER_SCOPE
+): JotaiStore => {
+  const storeContext = useContext(AtomStoreContext);
+  return (
+    storeContext.get(getFullyQualifiedScope(storeName, scope)) ??
+    storeContext.get(getFullyQualifiedScope(storeName, PROVIDER_SCOPE)) ??
+    getGlobalAtomStore(storeName)
+  );
 };
 
 export type ProviderProps<T extends object> = AtomProviderProps &
@@ -95,9 +94,6 @@ export const createAtomProvider = <T extends object, N extends string = ''>(
 
   // eslint-disable-next-line react/display-name
   return ({ store, scope, children, resetKey, ...props }: ProviderProps<T>) => {
-    const ScopedContext = getContext(storeScope, scope, true)!;
-    const GlobalContext = getContext(storeScope, GLOBAL_SCOPE, true)!;
-
     const [storeState, setStoreState] = useState<JotaiStore>(createStore());
 
     useEffect(() => {
@@ -106,18 +102,38 @@ export const createAtomProvider = <T extends object, N extends string = ''>(
       }
     }, [resetKey]);
 
-    return (
-      <ScopedContext.Provider value={storeState}>
-        <GlobalContext.Provider value={storeState}>
-          <AtomProvider store={storeState}>
-            <HydrateAtoms store={storeState} atoms={atoms} {...(props as any)}>
-              {!!Effect && <Effect />}
+    const previousStoreContext = useContext(AtomStoreContext);
 
-              {children}
-            </HydrateAtoms>
-          </AtomProvider>
-        </GlobalContext.Provider>
-      </ScopedContext.Provider>
+    const storeContext = useMemo(() => {
+      const newStoreContext = new Map(previousStoreContext);
+
+      if (scope) {
+        // Make the store findable by its fully qualified scope
+        newStoreContext.set(
+          getFullyQualifiedScope(storeScope, scope),
+          storeState
+        );
+      }
+
+      // Make the store findable by its store name alone
+      newStoreContext.set(
+        getFullyQualifiedScope(storeScope, PROVIDER_SCOPE),
+        storeState
+      );
+
+      return newStoreContext;
+    }, [previousStoreContext, scope, storeState]);
+
+    return (
+      <AtomStoreContext.Provider value={storeContext}>
+        <AtomProvider store={storeState}>
+          <HydrateAtoms store={storeState} atoms={atoms} {...(props as any)}>
+            {!!Effect && <Effect />}
+
+            {children}
+          </HydrateAtoms>
+        </AtomProvider>
+      </AtomStoreContext.Provider>
     );
   };
 };

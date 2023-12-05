@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import { atom, useAtom, useAtomValue, useSetAtom } from 'jotai';
 
-import { createAtomProvider, useContextStore } from './createAtomProvider';
+import { createAtomProvider, useAtomStore } from './createAtomProvider';
 
 import type { ProviderProps } from './createAtomProvider';
 import type { FC } from 'react';
@@ -169,7 +169,7 @@ export const createAtomStore = <
     atoms[key] = atomConfig;
     getAtoms[key] = (optionsOrScope: UseAtomOptionsOrScope = {}) => {
       const options = convertScopeShorthand(optionsOrScope);
-      const contextStore = useContextStore(name, options.scope);
+      const contextStore = useAtomStore(name, options.scope);
 
       return useAtomValue(atomConfig, {
         store: options.store ?? contextStore,
@@ -178,7 +178,7 @@ export const createAtomStore = <
     };
     setAtoms[key] = (optionsOrScope: UseAtomOptionsOrScope = {}) => {
       const options = convertScopeShorthand(optionsOrScope);
-      const contextStore = useContextStore(name, options.scope);
+      const contextStore = useAtomStore(name, options.scope);
 
       return useSetAtom(atomConfig as any, {
         store: options.store ?? contextStore,
@@ -186,7 +186,7 @@ export const createAtomStore = <
     };
     useAtoms[key] = (optionsOrScope: UseAtomOptionsOrScope = {}) => {
       const options = convertScopeShorthand(optionsOrScope);
-      const contextStore = useContextStore(name, options.scope);
+      const contextStore = useAtomStore(name, options.scope);
 
       return useAtom(atomConfig, {
         store: options.store ?? contextStore,
