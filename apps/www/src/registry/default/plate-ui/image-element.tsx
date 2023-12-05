@@ -6,7 +6,7 @@ import {
   TImageElement,
   useMediaState,
 } from '@udecode/plate-media';
-import { useResizableStore } from '@udecode/plate-resizable';
+import { ResizableProvider, useResizableStore } from '@udecode/plate-resizable';
 
 import { cn } from '@/lib/utils';
 
@@ -18,7 +18,7 @@ import {
   ResizeHandle,
 } from './resizable';
 
-export function ImageElement({
+function InnerImageElement({
   className,
   children,
   nodeProps,
@@ -68,5 +68,13 @@ export function ImageElement({
         {children}
       </PlateElement>
     </MediaPopover>
+  );
+}
+
+export function ImageElement(props: PlateElementProps<Value, TImageElement>) {
+  return (
+    <ResizableProvider>
+      <InnerImageElement {...props} />
+    </ResizableProvider>
   );
 }

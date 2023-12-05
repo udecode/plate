@@ -153,42 +153,6 @@ describe('createAtomStore', () => {
       expect(getByText(INITIAL_NAME)).toBeInTheDocument();
       expect(getByText(WRITE_ONLY_CONSUMER_AGE)).toBeInTheDocument();
     });
-
-    it('works without a provider', () => {
-      const { getByText } = render(
-        <>
-          <ReadOnlyConsumer />
-          <WriteOnlyConsumer />
-        </>
-      );
-
-      expect(getByText(INITIAL_NAME)).toBeInTheDocument();
-      expect(getByText(INITIAL_AGE)).toBeInTheDocument();
-
-      act(() => getByText('consumerSetAge').click());
-
-      expect(getByText(INITIAL_NAME)).toBeInTheDocument();
-      expect(getByText(WRITE_ONLY_CONSUMER_AGE)).toBeInTheDocument();
-    });
-
-    it('works adjacent to a provider', () => {
-      const { getByText } = render(
-        <>
-          <ReadOnlyConsumer />
-          <MyTestStoreProvider name="Jane" age={94}>
-            <WriteOnlyConsumer />
-          </MyTestStoreProvider>
-        </>
-      );
-
-      expect(getByText(INITIAL_NAME)).toBeInTheDocument();
-      expect(getByText(INITIAL_AGE)).toBeInTheDocument();
-
-      act(() => getByText('consumerSetAge').click());
-
-      expect(getByText(INITIAL_NAME)).toBeInTheDocument();
-      expect(getByText(INITIAL_AGE)).toBeInTheDocument();
-    });
   });
 
   describe('scoped providers', () => {
@@ -226,12 +190,6 @@ describe('createAtomStore', () => {
         </div>
       );
     };
-
-    it('returns default value when no provider is present', () => {
-      const { getByText } = render(<ReadOnlyConsumer scope="scope1" />);
-
-      expect(getByText('null')).toBeInTheDocument();
-    });
 
     it('returns value of first ancestor when scope matches no provider', () => {
       const { getByText } = render(
@@ -340,16 +298,6 @@ describe('createAtomStore', () => {
 
       expect(getByText('Jane')).toBeInTheDocument();
       expect(getByText('98')).toBeInTheDocument();
-    });
-
-    it('works without provider', () => {
-      const { getByText } = render(
-        <MyFirstTestStoreProvider name="Jane" scope="firstScope">
-          <SecondReadOnlyConsumer />
-        </MyFirstTestStoreProvider>
-      );
-
-      expect(getByText('72')).toBeInTheDocument();
     });
   });
 });

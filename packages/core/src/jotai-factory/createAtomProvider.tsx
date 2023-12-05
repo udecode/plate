@@ -16,42 +16,36 @@ const getFullyQualifiedScope = (storeName: string, scope: string) => {
   return `${storeName}:${scope}`;
 };
 
-// Map from store name to store. Used for provider-less stores only.
-const globalAtomStores = new Map<string, JotaiStore>();
-
 /**
- * Context mapping store name and scope to store. Used for providers. The
- * 'provider' scope is used to reference any provider belonging to the store,
- * regardless of scope.
+ * Context mapping store name and scope to store. The 'provider' scope is used
+ * to reference any provider belonging to the store, regardless of scope.
  */
 const PROVIDER_SCOPE = 'provider';
 const AtomStoreContext = createContext<Map<string, JotaiStore>>(new Map());
-
-// Get the global store for the given store name, creating it if necessary.
-const getGlobalAtomStore = (storeName: string): JotaiStore => {
-  if (!globalAtomStores.has(storeName)) {
-    globalAtomStores.set(storeName, createStore());
-  }
-
-  return globalAtomStores.get(storeName)!;
-};
 
 /**
  * Tries to find a store in each of the following places, in order:
  * 1. The store context, matching the store name and scope
  * 2. The store context, matching the store name and 'provider' scope
- * 3. The global store for the store name
+ * 3. Otherwise, return undefined
  */
 export const useAtomStore = (
   storeName: string,
-  scope: string = PROVIDER_SCOPE
-): JotaiStore => {
+  scope: string = PROVIDER_SCOPE,
+  warnIfUndefined: boolean = true
+): JotaiStore | undefined => {
   const storeContext = useContext(AtomStoreContext);
-  return (
+  const store =
     storeContext.get(getFullyQualifiedScope(storeName, scope)) ??
-    storeContext.get(getFullyQualifiedScope(storeName, PROVIDER_SCOPE)) ??
-    getGlobalAtomStore(storeName)
-  );
+    storeContext.get(getFullyQualifiedScope(storeName, PROVIDER_SCOPE));
+
+  if (!store && warnIfUndefined) {
+    console.warn(
+      `Tried to access jotai store '${storeName}' outside of a matching provider.`
+    );
+  }
+
+  return store;
 };
 
 export type ProviderProps<T extends object> = AtomProviderProps &

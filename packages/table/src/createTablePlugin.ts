@@ -1,6 +1,7 @@
 import { createPluginFactory } from '@udecode/plate-common';
 
 import { onKeyDownTable } from './onKeyDownTable';
+import { TableProvider } from './stores';
 import { insertTableColumn, insertTableRow } from './transforms/index';
 import { TablePlugin, TableStoreCellAttributes } from './types';
 import { withTable } from './withTable';
@@ -40,6 +41,7 @@ export const createTablePlugin = createPluginFactory<TablePlugin>({
     _cellIndices: new WeakMap() as TableStoreCellAttributes,
   },
   withOverrides: withTable,
+  renderAboveEditable: TableProvider,
   plugins: [
     {
       key: ELEMENT_TR,

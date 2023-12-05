@@ -3,7 +3,7 @@ import { createAtomStore, TElement } from '@udecode/plate-common';
 
 export type TableStoreSizeOverrides = Map<number, number>;
 
-export const { tableStore, useTableStore } = createAtomStore(
+export const { tableStore, useTableStore, TableProvider } = createAtomStore(
   {
     colSizeOverrides: new Map() as TableStoreSizeOverrides,
     rowSizeOverrides: new Map() as TableStoreSizeOverrides,

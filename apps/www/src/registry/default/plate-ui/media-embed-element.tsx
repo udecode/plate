@@ -7,7 +7,7 @@ import {
   TMediaEmbedElement,
   useMediaState,
 } from '@udecode/plate-media';
-import { useResizableStore } from '@udecode/plate-resizable';
+import { ResizableProvider, useResizableStore } from '@udecode/plate-resizable';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import { Tweet } from 'react-tweet';
 
@@ -21,7 +21,7 @@ import {
   ResizeHandle,
 } from './resizable';
 
-const MediaEmbedElement = React.forwardRef<
+const InnerMediaEmbedElement = React.forwardRef<
   React.ElementRef<typeof PlateElement>,
   PlateElementProps<Value, TMediaEmbedElement>
 >(({ className, children, ...props }, ref) => {
@@ -136,6 +136,15 @@ const MediaEmbedElement = React.forwardRef<
     </MediaPopover>
   );
 });
+InnerMediaEmbedElement.displayName = 'InnerMediaEmbedElement';
+
+const MediaEmbedElement: typeof InnerMediaEmbedElement = React.forwardRef(
+  (props, ref) => (
+    <ResizableProvider>
+      <InnerMediaEmbedElement {...props} ref={ref} />
+    </ResizableProvider>
+  )
+);
 MediaEmbedElement.displayName = 'MediaEmbedElement';
 
 export { MediaEmbedElement };
