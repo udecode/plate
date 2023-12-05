@@ -84,12 +84,12 @@ const PlateContent = React.forwardRef(
     );
 
     editor.plugins.forEach((plugin) => {
-      const { renderAboveEditable } = plugin;
+      const { renderAboveEditable: RenderAboveEditable } = plugin;
 
-      if (renderAboveEditable)
-        aboveEditable = renderAboveEditable({
-          children: aboveEditable,
-        }) as any;
+      if (RenderAboveEditable)
+        aboveEditable = (
+          <RenderAboveEditable>{aboveEditable}</RenderAboveEditable>
+        );
     });
 
     return <PlateSlate id={id}>{aboveEditable}</PlateSlate>;
