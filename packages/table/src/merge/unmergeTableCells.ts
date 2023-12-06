@@ -13,6 +13,7 @@ import {
 import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
 import { getTableGridAbove } from '../queries';
 import { getColSpan } from '../queries/getColSpan';
+import { getRowSpan } from '../queries/getRowSpan';
 import { TablePlugin, TTableCellElement, TTableRowElement } from '../types';
 import { getEmptyCellNode } from '../utils';
 import { getCellIndices } from './getCellIndices';
@@ -45,8 +46,8 @@ export const unmergeTableCells = <V extends Value = Value>(
 
     const cellPath = path.slice(-2);
     const [rowPath, colPath] = cellPath;
-    const colSpan = cellElem.colSpan as number;
-    const rowSpan = cellElem.rowSpan as number;
+    const colSpan = getColSpan(cellElem as TTableCellElement);
+    const rowSpan = getRowSpan(cellElem as TTableCellElement);
 
     // Generate an array of column paths from the colspan
     const colPaths: number[] = [];
@@ -69,8 +70,12 @@ export const unmergeTableCells = <V extends Value = Value>(
         at: [...tablePath, row],
         match: { type: getPluginType(editor, ELEMENT_TR) },
       })!; // TODO: improve typing
-      const rowEl = rowEntry[0] as TTableRowElement;
 
+      if (!rowEntry) {
+        return newColPath;
+      }
+
+      const rowEl = rowEntry[0] as TTableRowElement;
       for (const item of rowEl.children) {
         const { col: c } = getCellIndices(
           cellIndices!,
@@ -93,16 +98,39 @@ export const unmergeTableCells = <V extends Value = Value>(
     for (let i = 0; i < rowSpan; i++) {
       const currentRowPath = rowPath + i;
       const pathForNextRows = getColPathForRow(currentRowPath);
-      for (let j = 0; j < colPaths.length; j++) {
-        const currentColPath = i === 0 ? colPaths[j] : pathForNextRows;
+      const newRowChildren = [];
+      const _rowPath = [...tablePath, currentRowPath];
+      const rowEntry = findNode(editor, {
+        at: _rowPath,
+        match: { type: getPluginType(editor, ELEMENT_TABLE) },
+      });
 
-        const pathForNewCell = [...tablePath, currentRowPath, currentColPath];
+      for (let j = 0; j < colPaths.length; j++) {
         const cellToInsert =
           i === 0 && j === 0
             ? createEmptyCell(cellElem.children)
             : createEmptyCell();
 
-        insertElements(editor, cellToInsert, { at: pathForNewCell });
+        // if row exists, insert into it, otherwise insert row
+        if (rowEntry) {
+          const currentColPath = i === 0 ? colPaths[j] : pathForNextRows;
+          const pathForNewCell = [...tablePath, currentRowPath, currentColPath];
+
+          insertElements(editor, cellToInsert, { at: pathForNewCell });
+        } else {
+          newRowChildren.push(cellToInsert);
+        }
+      }
+
+      if (!rowEntry) {
+        insertElements(
+          editor,
+          {
+            type: getPluginType(editor, ELEMENT_TR),
+            children: newRowChildren,
+          },
+          { at: _rowPath }
+        );
       }
     }
   });

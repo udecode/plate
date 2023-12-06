@@ -1,5 +1,11 @@
 # @udecode/plate-resizable
 
+## 26.0.5
+
+### Patch Changes
+
+- [#2781](https://github.com/udecode/plate/pull/2781) by [@dimaanj](https://github.com/dimaanj) – Add initial size for resize handle
+
 ## 25.0.1
 
 ## 25.0.0

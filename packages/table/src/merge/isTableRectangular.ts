@@ -1,3 +1,4 @@
+import { getRowSpan } from '../queries/getRowSpan';
 import { TTableCellElement, TTableElement, TTableRowElement } from '../types';
 
 const allEqual = (arr: number[]) => arr.every((val) => val === arr[0]);
@@ -14,7 +15,7 @@ export const isTableRectangular = (table?: TTableElement) => {
       const cellElem = cell as TTableCellElement;
 
       Array.from({
-        length: cellElem?.rowSpan || 1,
+        length: getRowSpan(cellElem) || 1,
       } as ArrayLike<number>).forEach((_, i) => {
         if (!arr[rI + i]) {
           arr[rI + i] = 0;
