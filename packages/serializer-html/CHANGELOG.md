@@ -1,5 +1,11 @@
 # @udecode/plate-serializer-html
 
+## 26.0.6
+
+### Patch Changes
+
+- [#2797](https://github.com/udecode/plate/pull/2797) by [@12joan](https://github.com/12joan) – Fix: `serializeHtml` mutates the live `editor` instance
+
 ## 26.0.0
 
 ### Major Changes
