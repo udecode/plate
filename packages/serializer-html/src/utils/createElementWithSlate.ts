@@ -1,5 +1,5 @@
 import React, { ComponentClass, FunctionComponent } from 'react';
-import { Plate, PlateProps } from '@udecode/plate-common';
+import { createPlateEditor, Plate, PlateProps } from '@udecode/plate-common';
 
 /**
  * Create a React element wrapped in a Plate provider.
@@ -9,7 +9,7 @@ export const createElementWithSlate = (
   dndWrapper?: string | FunctionComponent | ComponentClass
 ) => {
   const {
-    editor,
+    editor = createPlateEditor(),
     value = [],
     onChange = () => {},
     children,
