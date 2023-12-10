@@ -1,5 +1,11 @@
 # @udecode/plate-dnd
 
+## 27.0.0
+
+### Patch Changes
+
+- [#2763](https://github.com/udecode/plate/pull/2763) by [@12joan](https://github.com/12joan) – Update Zustood imports
+
 ## 25.0.1
 
 ## 25.0.0

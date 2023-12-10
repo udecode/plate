@@ -1,5 +1,7 @@
 # @udecode/plate-find-replace
 
+## 27.0.0
+
 ## 25.0.1
 
 ## 25.0.0
