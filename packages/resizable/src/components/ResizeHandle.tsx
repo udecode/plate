@@ -7,15 +7,24 @@ import React, {
 import {
   createAtomStore,
   createPrimitiveComponent,
+  Nullable,
 } from '@udecode/plate-common';
 
 import { ResizeDirection, ResizeEvent } from '../types';
 import { isTouchEvent } from '../utils';
 
+export type ResizeHandleStoreState = {
+  onResize: {
+    fn: (event: ResizeEvent) => void;
+  };
+};
+
+const initialState: Nullable<ResizeHandleStoreState> = {
+  onResize: null,
+};
+
 export const { ResizeHandleProvider, useResizeHandleStore } = createAtomStore(
-  {
-    onResize: null as { fn: ResizeHandleOptions['onResize'] } | null,
-  },
+  initialState as ResizeHandleStoreState,
   { name: 'resizeHandle' }
 );
 
@@ -32,14 +41,14 @@ export type ResizeHandleOptions = {
 export const useResizeHandleState = ({
   direction = 'left',
   initialSize: _initialSize,
-  onResize,
+  onResize: onResizeProp,
   onMouseDown,
   onTouchStart,
   onHover,
   onHoverEnd,
 }: ResizeHandleOptions) => {
-  const _onResize = useResizeHandleStore().get.onResize();
-  if (!onResize) onResize = _onResize?.fn;
+  const onResizeStore = useResizeHandleStore().get.onResize();
+  const onResize = onResizeProp ?? onResizeStore.fn;
 
   const [isResizing, setIsResizing] = useState(false);
   const [initialPosition, setInitialPosition] = useState(0);
@@ -60,7 +69,7 @@ export const useResizeHandleState = ({
 
       const currentPosition = isHorizontal ? clientX : clientY;
       const delta = currentPosition - initialPosition;
-      onResize?.({
+      onResize({
         initialSize: _initialSize || initialSize,
         delta,
         finished,

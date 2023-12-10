@@ -5,7 +5,6 @@
 export * from './components/index';
 export * from './constants/index';
 export * from './hooks/index';
-export * from './jotai-factory/index';
 export * from './libs/index';
 export * from './plugins/index';
 export * from './stores/index';

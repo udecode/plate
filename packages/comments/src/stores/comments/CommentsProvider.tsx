@@ -45,32 +45,13 @@ export interface CommentsStoreState {
 export const { commentsStore, useCommentsStore, CommentsProvider } =
   createAtomStore(
     {
-      /**
-       * Id of the current user.
-       */
       myUserId: null,
-
-      /**
-       * Users data.
-       */
       users: {},
-
-      /**
-       * Comments data.
-       */
       comments: {},
-
-      /**
-       * Id of the active comment. If null, no comment is active.
-       */
       activeCommentId: null,
-
       addingCommentId: null,
-
       newValue: [{ type: 'p', children: [{ text: '' }] }],
-
       focusTextarea: false,
-
       onCommentAdd: null,
       onCommentUpdate: null,
       onCommentDelete: null,

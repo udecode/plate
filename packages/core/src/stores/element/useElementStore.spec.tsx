@@ -2,7 +2,8 @@ import React, { ReactNode, useMemo, useState } from 'react';
 import { act, render } from '@testing-library/react';
 import { TElement } from '@udecode/slate';
 
-import { ElementProvider, useElement } from './elementAtom';
+import { useElement } from './useElement';
+import { ElementProvider } from './useElementStore';
 
 describe('ElementProvider', () => {
   interface TNameElement extends TElement {

@@ -1,5 +1,5 @@
 import { PLATE_SCOPE, PlateId } from '../../plate/index';
-import { eventEditorSelectors } from '../event-editor.store';
+import { eventEditorSelectors } from '../eventEditorStore';
 
 export const getEventPlateId = (id?: PlateId) => {
   if (id) return id;

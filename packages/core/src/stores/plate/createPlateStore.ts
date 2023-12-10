@@ -5,7 +5,7 @@ import {
   GetRecord,
   SetRecord,
   UseRecord,
-} from '../../jotai-factory';
+} from '../../libs/jotai';
 import { PlateEditor } from '../../types/PlateEditor';
 import { PlateStoreState } from '../../types/PlateStore';
 

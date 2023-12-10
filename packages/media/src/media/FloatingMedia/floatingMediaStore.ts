@@ -1,6 +1,6 @@
-import { createZustoodStore } from '@udecode/plate-common';
+import { createZustandStore } from '@udecode/plate-common';
 
-export const floatingMediaStore = createZustoodStore('floatingMedia')({
+export const floatingMediaStore = createZustandStore('floatingMedia')({
   url: '',
   isEditing: false,
 }).extendActions((set) => ({

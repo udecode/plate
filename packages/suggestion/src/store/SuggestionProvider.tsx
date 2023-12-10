@@ -8,6 +8,9 @@ export interface SuggestionStoreState {
    */
   users: Record<string, SuggestionUser>;
 
+  /**
+   * Id of the current user.
+   */
   currentUserId: string | null;
 
   /**
@@ -34,28 +37,11 @@ export interface SuggestionStoreState {
 export const { suggestionStore, useSuggestionStore, SuggestionProvider } =
   createAtomStore(
     {
-      /**
-       * Id of the current user.
-       */
       currentUserId: null,
-
-      /**
-       * Users data.
-       */
       users: {},
-
-      /**
-       * Suggestion data.
-       */
       suggestions: {},
-
       isSuggesting: false,
-
-      /**
-       * Id of the active suggestion. If null, no suggestion is active.
-       */
       activeSuggestionId: null,
-
       onSuggestionAdd: null,
       onSuggestionUpdate: null,
       onSuggestionDelete: null,

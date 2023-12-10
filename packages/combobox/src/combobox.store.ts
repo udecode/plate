@@ -1,7 +1,7 @@
 import {
-  createZustoodStore,
-  ZustoodStateActions,
-  ZustoodStoreApi,
+  createZustandStore,
+  ZustandStateActions,
+  ZustandStoreApi,
 } from '@udecode/plate-common';
 import { Range } from 'slate';
 
@@ -53,10 +53,10 @@ export type ComboboxStateById<TData = NoData> = {
   controlled?: boolean;
 };
 
-export type ComboboxStoreById<TData = NoData> = ZustoodStoreApi<
+export type ComboboxStoreById<TData = NoData> = ZustandStoreApi<
   string,
   ComboboxStateById<TData>,
-  ZustoodStateActions<ComboboxStateById<TData>>
+  ZustandStateActions<ComboboxStateById<TData>>
 >;
 
 export type ComboboxState<TData = NoData> = {
@@ -98,9 +98,9 @@ export type ComboboxState<TData = NoData> = {
 };
 
 const createComboboxStore = (state: ComboboxStateById) =>
-  createZustoodStore(`combobox-${state.id}`)(state);
+  createZustandStore(`combobox-${state.id}`)(state);
 
-export const comboboxStore = createZustoodStore('combobox')<ComboboxState>({
+export const comboboxStore = createZustandStore('combobox')<ComboboxState>({
   activeId: null,
   byId: {},
   highlightedIndex: 0,

@@ -1,15 +1,6 @@
 import { TElement } from '@udecode/slate';
 
-import { createAtomStore } from './createAtomStore';
-
-export const SCOPE_ELEMENT = 'element';
-
-export type ElementStoreValue = { element: TElement | null };
-
-export const { useElementStore, ElementProvider } = createAtomStore(
-  { element: null } satisfies ElementStoreValue as ElementStoreValue,
-  { name: 'element' } as const
-);
+import { SCOPE_ELEMENT, useElementStore } from './useElementStore';
 
 /**
  * Get the element by plugin key.

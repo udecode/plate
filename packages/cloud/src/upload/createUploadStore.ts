@@ -1,4 +1,4 @@
-import { createZustoodStore } from '@udecode/plate-common';
+import { createZustandStore } from '@udecode/plate-common';
 
 import { Upload } from './types';
 
@@ -15,7 +15,7 @@ export const createUploadStore = ({
 }: {
   uploads?: Record<string, Upload>;
 } = {}) => {
-  return createZustoodStore('upload')({ uploads: initialUploads })
+  return createZustandStore('upload')({ uploads: initialUploads })
     .extendActions((set, get) => ({
       upload: (id: string, upload: Upload): void => {
         const uploads = get.uploads();

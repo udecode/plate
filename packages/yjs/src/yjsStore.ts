@@ -1,6 +1,6 @@
-import { createZustoodStore } from '@udecode/plate-common';
+import { createZustandStore } from '@udecode/plate-common';
 
-export const yjsStore = createZustoodStore('yjs')({
+export const yjsStore = createZustandStore('yjs')({
   isConnected: false,
   isSynced: false,
 });

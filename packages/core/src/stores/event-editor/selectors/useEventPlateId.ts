@@ -1,5 +1,5 @@
 import { PLATE_SCOPE, PlateId, usePlateSelectors } from '../../plate/index';
-import { useEventEditorSelectors } from '../event-editor.store';
+import { useEventEditorSelectors } from '../eventEditorStore';
 
 /**
  * Get last event editor id: focus, blur or last.
