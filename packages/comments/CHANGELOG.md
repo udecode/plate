@@ -1,5 +1,13 @@
 # @udecode/plate-comments
 
+## 27.0.0
+
+### Major Changes
+
+- [#2763](https://github.com/udecode/plate/pull/2763) by [@12joan](https://github.com/12joan) –
+  - Migrate store to jotai@2
+  - Revert the breaking changes to `@udecode/plate-comments` made in 26.0.0
+
 ## 26.0.0
 
 ### Major Changes

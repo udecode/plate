@@ -1,5 +1,13 @@
 # @udecode/plate-resizable
 
+## 27.0.0
+
+### Major Changes
+
+- [#2763](https://github.com/udecode/plate/pull/2763) by [@12joan](https://github.com/12joan) –
+  - Migrate store to jotai@2
+  - Resizable components must now be wrapped inside a `ResizableProvider`
+
 ## 26.0.5
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @udecode/plate-table
 
+## 27.0.0
+
+### Patch Changes
+
+- [#2763](https://github.com/udecode/plate/pull/2763) by [@12joan](https://github.com/12joan) –
+  - Migrate store to jotai@2
+  - Render `TableProvider` above editable
+
 ## 26.0.5
 
 ## 26.0.4

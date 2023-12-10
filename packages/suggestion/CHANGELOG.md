@@ -1,5 +1,12 @@
 # @udecode/plate-suggestion
 
+## 27.0.0
+
+### Patch Changes
+
+- [#2763](https://github.com/udecode/plate/pull/2763) by [@12joan](https://github.com/12joan) –
+  - Migrate store to jotai@2
+
 ## 25.0.1
 
 ## 25.0.0
