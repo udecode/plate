@@ -5,49 +5,28 @@ import React, {
   useState,
 } from 'react';
 import {
-  atom,
+  createAtomStore,
   createPrimitiveComponent,
-  JotaiProvider,
-  useAtom,
+  Nullable,
 } from '@udecode/plate-common';
 
 import { ResizeDirection, ResizeEvent } from '../types';
 import { isTouchEvent } from '../utils';
 
-export const resizeHandleAtoms = {
-  onResize: atom<{ fn: any } | null>(null),
+export type ResizeHandleStoreState = {
+  onResize: {
+    fn: (event: ResizeEvent) => void;
+  };
 };
 
-export const ResizeHandleEffects = ({
-  onResize,
-}: {
-  onResize?: ResizeHandleOptions['onResize'];
-}) => {
-  const [, setHandleResize] = useAtom(resizeHandleAtoms.onResize);
-
-  useEffect(() => {
-    setHandleResize({ fn: onResize });
-  }, [onResize, setHandleResize]);
-
-  return null;
+const initialState: Nullable<ResizeHandleStoreState> = {
+  onResize: null,
 };
 
-export const ResizeHandleProvider = ({
-  children,
-  onResize,
-}: {
-  children: React.ReactNode;
-  onResize?: ResizeHandleOptions['onResize'];
-}) => {
-  return (
-    <JotaiProvider
-      initialValues={[[resizeHandleAtoms.onResize, { fn: onResize }]]}
-    >
-      <ResizeHandleEffects onResize={onResize} />
-      {children}
-    </JotaiProvider>
-  );
-};
+export const { ResizeHandleProvider, useResizeHandleStore } = createAtomStore(
+  initialState as ResizeHandleStoreState,
+  { name: 'resizeHandle' }
+);
 
 export type ResizeHandleOptions = {
   direction?: ResizeDirection;
@@ -62,14 +41,14 @@ export type ResizeHandleOptions = {
 export const useResizeHandleState = ({
   direction = 'left',
   initialSize: _initialSize,
-  onResize,
+  onResize: onResizeProp,
   onMouseDown,
   onTouchStart,
   onHover,
   onHoverEnd,
 }: ResizeHandleOptions) => {
-  const [_onResize] = useAtom(resizeHandleAtoms.onResize);
-  if (!onResize) onResize = _onResize?.fn;
+  const onResizeStore = useResizeHandleStore().get.onResize();
+  const onResize = onResizeProp ?? onResizeStore.fn;
 
   const [isResizing, setIsResizing] = useState(false);
   const [initialPosition, setInitialPosition] = useState(0);
@@ -90,7 +69,7 @@ export const useResizeHandleState = ({
 
       const currentPosition = isHorizontal ? clientX : clientY;
       const delta = currentPosition - initialPosition;
-      onResize?.({
+      onResize({
         initialSize: _initialSize || initialSize,
         delta,
         finished,

@@ -1,15 +1,6 @@
-import React, { ReactNode } from 'react';
-import {
-  createAtomStore,
-  getJotaiProviderInitialValues,
-  JotaiProvider,
-  nanoid,
-  WithPartial,
-} from '@udecode/plate-common';
+import { createAtomStore, nanoid, WithPartial } from '@udecode/plate-common';
 
 import { SuggestionUser, TSuggestion } from '../types';
-
-export const SCOPE_SUGGESTION = Symbol('suggestion');
 
 export interface SuggestionStoreState {
   /**
@@ -17,6 +8,9 @@ export interface SuggestionStoreState {
    */
   users: Record<string, SuggestionUser>;
 
+  /**
+   * Id of the current user.
+   */
   currentUserId: string | null;
 
   /**
@@ -40,53 +34,22 @@ export interface SuggestionStoreState {
   onSuggestionDelete: ((id: string) => void) | null;
 }
 
-export const { suggestionStore, useSuggestionStore } = createAtomStore(
-  {
-    /**
-     * Id of the current user.
-     */
-    currentUserId: null,
-
-    /**
-     * Users data.
-     */
-    users: {},
-
-    /**
-     * Suggestion data.
-     */
-    suggestions: {},
-
-    isSuggesting: false,
-
-    /**
-     * Id of the active suggestion. If null, no suggestion is active.
-     */
-    activeSuggestionId: null,
-
-    onSuggestionAdd: null,
-    onSuggestionUpdate: null,
-    onSuggestionDelete: null,
-  } as SuggestionStoreState,
-  {
-    name: 'suggestion',
-    scope: SCOPE_SUGGESTION,
-  }
-);
-
-export function SuggestionProvider({
-  children,
-  ...props
-}: Partial<SuggestionStoreState> & { children: ReactNode }) {
-  return (
-    <JotaiProvider
-      initialValues={getJotaiProviderInitialValues(suggestionStore, props)}
-      scope={SCOPE_SUGGESTION}
-    >
-      {children}
-    </JotaiProvider>
+export const { suggestionStore, useSuggestionStore, SuggestionProvider } =
+  createAtomStore(
+    {
+      currentUserId: null,
+      users: {},
+      suggestions: {},
+      isSuggesting: false,
+      activeSuggestionId: null,
+      onSuggestionAdd: null,
+      onSuggestionUpdate: null,
+      onSuggestionDelete: null,
+    } as SuggestionStoreState,
+    {
+      name: 'suggestion',
+    }
   );
-}
 
 export const useSuggestionStates = () => useSuggestionStore().use;
 export const useSuggestionSelectors = () => useSuggestionStore().get;

@@ -1,12 +1,4 @@
-import React, { ReactNode } from 'react';
-import {
-  createAtomStore,
-  getJotaiProviderInitialValues,
-  getNodeString,
-  JotaiProvider,
-  Scope,
-  Value,
-} from '@udecode/plate-common';
+import { createAtomStore, getNodeString, Value } from '@udecode/plate-common';
 
 import { CommentUser, TComment } from '../../types';
 import {
@@ -14,8 +6,7 @@ import {
   useCommentsSelectors,
 } from '../comments/CommentsProvider';
 
-export const SCOPE_COMMENT = Symbol('comment');
-export const SCOPE_ACTIVE_COMMENT = Symbol('activeComment');
+export const SCOPE_ACTIVE_COMMENT = 'activeComment';
 
 export interface CommentStoreState {
   id: string;
@@ -23,38 +14,23 @@ export interface CommentStoreState {
   editingValue: Value | null;
 }
 
-export const { commentStore, useCommentStore } = createAtomStore(
-  {
-    id: '',
-    isMenuOpen: false,
-    editingValue: null,
-  } as CommentStoreState,
-  {
-    name: 'comment',
-    scope: SCOPE_COMMENT,
-  }
-);
+export const { commentStore, useCommentStore, CommentProvider } =
+  createAtomStore(
+    {
+      id: '',
+      isMenuOpen: false,
+      editingValue: null,
+    } as CommentStoreState,
+    {
+      name: 'comment',
+    }
+  );
 
 export const useCommentStates = () => useCommentStore().use;
 export const useCommentSelectors = () => useCommentStore().get;
 export const useCommentActions = () => useCommentStore().set;
 
-export function CommentProvider({
-  children,
-  scope,
-  ...props
-}: Partial<CommentStoreState> & { children: ReactNode; scope?: Scope }) {
-  return (
-    <JotaiProvider
-      initialValues={getJotaiProviderInitialValues(commentStore, props)}
-      scope={scope ?? SCOPE_COMMENT}
-    >
-      {children}
-    </JotaiProvider>
-  );
-}
-
-export const useCommentUser = (scope?: Scope): CommentUser | null => {
+export const useCommentUser = (scope?: string): CommentUser | null => {
   const commentId = useCommentSelectors().id(scope);
   const users = useCommentsSelectors().users();
   const comment = useCommentById(commentId);
@@ -63,7 +39,7 @@ export const useCommentUser = (scope?: Scope): CommentUser | null => {
   return users[comment.userId];
 };
 
-export const useCommentReplies = (scope?: Scope) => {
+export const useCommentReplies = (scope?: string) => {
   const commentId = useCommentSelectors().id(scope);
   const comments = useCommentsSelectors().comments();
 
@@ -81,13 +57,13 @@ export const useCommentReplies = (scope?: Scope) => {
   return replies;
 };
 
-export const useComment = (scope?: Scope) => {
+export const useComment = (scope?: string) => {
   const commentId = useCommentSelectors().id(scope);
 
   return useCommentById(commentId);
 };
 
-export const useCommentText = (scope?: Scope) => {
+export const useCommentText = (scope?: string) => {
   const comment = useComment(scope);
   if (!comment) return null;
 

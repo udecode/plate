@@ -1,14 +1,18 @@
-import React, { FunctionComponent } from 'react';
+import React from 'react';
 
-export const withHOC = <T,>(
-  HOC: FunctionComponent<any>,
-  Component: FunctionComponent<T>,
-  hocProps?: any
-): FunctionComponent<T> =>
-  function hoc(props: T) {
-    return (
-      <HOC {...hocProps}>
-        <Component {...(props as any)} />
-      </HOC>
-    );
-  };
+type RefComponent<P, R> = React.FC<P> & {
+  ref?: React.Ref<R>;
+};
+
+/* eslint-disable react/display-name */
+export const withHOC = <ComponentProps, HOCProps, ComponentRef, HOCRef>(
+  HOC: RefComponent<HOCProps, HOCRef>,
+  Component: RefComponent<ComponentProps, ComponentRef>,
+  hocProps?: Omit<HOCProps, 'children'>,
+  hocRef?: React.Ref<HOCRef>
+) =>
+  React.forwardRef<ComponentRef, ComponentProps>((props, componentRef) => (
+    <HOC {...(hocProps as any)} ref={hocRef}>
+      <Component {...props} ref={componentRef} />
+    </HOC>
+  ));

@@ -1,7 +1,8 @@
 import { Value } from '@udecode/slate';
 
-import { SetRecord } from '../atoms';
 import { EXPOSED_STORE_KEYS, PlateStoreState } from './PlateStore';
+
+import type { SetRecord } from '../libs/jotai';
 
 export type PlateEditorMethods<V extends Value = Value> = {
   reset: () => void;

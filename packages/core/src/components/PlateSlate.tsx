@@ -26,12 +26,10 @@ export function PlateSlate({
   );
 
   editor.plugins?.forEach((plugin) => {
-    const { renderAboveSlate } = plugin;
+    const { renderAboveSlate: RenderAboveSlate } = plugin;
 
-    if (renderAboveSlate)
-      aboveSlate = renderAboveSlate({
-        children: aboveSlate,
-      }) as any;
+    if (RenderAboveSlate)
+      aboveSlate = <RenderAboveSlate>{aboveSlate}</RenderAboveSlate>;
   });
 
   return aboveSlate;

@@ -310,16 +310,16 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
           plugins={plugins}
           normalizeInitialValue
         >
-          {enabled['fixed-toolbar'] && (
-            <FixedToolbar>
-              {enabled['fixed-toolbar-buttons'] && (
-                <PlaygroundFixedToolbarButtons id={id} />
-              )}
-            </FixedToolbar>
-          )}
+          <CommentsProvider>
+            {enabled['fixed-toolbar'] && (
+              <FixedToolbar>
+                {enabled['fixed-toolbar-buttons'] && (
+                  <PlaygroundFixedToolbarButtons id={id} />
+                )}
+              </FixedToolbar>
+            )}
 
-          <div className="flex w-full">
-            <CommentsProvider>
+            <div className="flex w-full">
               <div
                 ref={containerRef}
                 className={cn(
@@ -364,8 +364,8 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
               {isEnabled('comment', id, enabled['comments-popover']) && (
                 <CommentsPopover />
               )}
-            </CommentsProvider>
-          </div>
+            </div>
+          </CommentsProvider>
         </Plate>
       </div>
     </DndProvider>

@@ -1,5 +1,5 @@
-import { createStore } from '@udecode/plate-common';
+import { createZustandStore } from '@udecode/plate-common';
 
-export const dndStore = createStore('dnd')({
+export const dndStore = createZustandStore('dnd')({
   isDragging: false,
 });

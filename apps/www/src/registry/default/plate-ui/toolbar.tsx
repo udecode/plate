@@ -102,10 +102,7 @@ const ToolbarButton = React.forwardRef<
 
     const content =
       typeof pressed === 'boolean' ? (
-        <ToolbarToggleGroup
-          type="single"
-          value="single"
-        >
+        <ToolbarToggleGroup type="single" value="single">
           <ToolbarToggleItem
             ref={ref}
             className={cn(

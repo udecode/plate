@@ -1,8 +1,8 @@
-import { createStore } from '@udecode/plate-common';
+import { createZustandStore } from '@udecode/plate-common';
 
 export type FloatingLinkMode = '' | 'insert' | 'edit';
 
-export const floatingLinkStore = createStore('floatingLink')({
+export const floatingLinkStore = createZustandStore('floatingLink')({
   openEditorId: null as null | string,
   mouseDown: false,
   updated: false,

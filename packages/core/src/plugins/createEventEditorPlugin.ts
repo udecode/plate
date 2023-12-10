@@ -1,7 +1,7 @@
 import {
   eventEditorActions,
   eventEditorSelectors,
-} from '../stores/event-editor/event-editor.store';
+} from '../stores/event-editor/eventEditorStore';
 import { createPluginFactory } from '../utils/createPluginFactory';
 
 export const KEY_EVENT_EDITOR = 'event-editor';

@@ -1,14 +1,11 @@
 import { Value } from '@udecode/slate';
-import { isDefined } from '@udecode/utils';
-import { atom } from 'jotai';
 
 import {
   createAtomStore,
   GetRecord,
   SetRecord,
   UseRecord,
-} from '../../atoms/index';
-import { useAtom } from '../../libs/index';
+} from '../../libs/jotai';
 import { PlateEditor } from '../../types/PlateEditor';
 import { PlateStoreState } from '../../types/PlateStore';
 
@@ -21,13 +18,6 @@ export type PlateId = string;
 
 export const PLATE_SCOPE = 'plate';
 export const GLOBAL_PLATE_SCOPE = Symbol('global-plate');
-
-export const plateIdAtom = atom(PLATE_SCOPE);
-
-/**
- * Get the closest `Plate` id.
- */
-export const usePlateId = () => useAtom(plateIdAtom, GLOBAL_PLATE_SCOPE)[0];
 
 export const createPlateStore = <
   V extends Value = Value,
@@ -49,8 +39,8 @@ export const createPlateStore = <
   renderLeaf = null,
   value = null as any,
   ...state
-}: Partial<PlateStoreState<V, E>> = {}) => {
-  const stores = createAtomStore(
+}: Partial<PlateStoreState<V, E>> = {}) =>
+  createAtomStore(
     {
       decorate,
       editor,
@@ -70,28 +60,15 @@ export const createPlateStore = <
       ...state,
     } as PlateStoreState<V, E>,
     {
-      scope: PLATE_SCOPE,
       name: 'plate',
     }
   );
 
-  return {
-    plateStore: stores.plateStore,
-    usePlateStore: (_id?: PlateId) => {
-      const closestId = usePlateId();
-
-      // get targeted store if id defined and if the store is found
-      if (isDefined(_id) && stores.usePlateStore(_id).get.id(_id)) {
-        return stores.usePlateStore(_id);
-      }
-
-      // if targeted store not found, get the closest store
-      return stores.usePlateStore(closestId);
-    },
-  };
-};
-
-export const { plateStore, usePlateStore } = createPlateStore();
+export const {
+  plateStore,
+  usePlateStore,
+  PlateProvider: PlateStoreProvider,
+} = createPlateStore();
 
 export const usePlateSelectors = <
   V extends Value = Value,
@@ -111,3 +88,8 @@ export const usePlateStates = <
 >(
   id?: PlateId
 ): UseRecord<PlateStoreState<V, E>> => usePlateStore(id).use as any;
+
+/**
+ * Get the closest `Plate` id.
+ */
+export const usePlateId = (): PlateId => usePlateSelectors().id();

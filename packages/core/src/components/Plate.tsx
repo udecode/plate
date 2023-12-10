@@ -1,27 +1,60 @@
-import React, { useMemo } from 'react';
+import React, { ForwardedRef, ReactNode, useMemo } from 'react';
 import { normalizeEditor, Value } from '@udecode/slate';
 
-import { JotaiProvider } from '../libs/jotai';
+import { PLATE_SCOPE, PlateStoreProvider } from '../stores';
 import {
-  GLOBAL_PLATE_SCOPE,
-  PLATE_SCOPE,
-  plateIdAtom,
-  plateStore,
-} from '../stores';
-import { PlateEditor, PlateStoreState } from '../types';
+  PlateEditor,
+  PlatePlugin,
+  PlateStoreState,
+  TEditableProps,
+} from '../types';
 import { createPlateEditor, normalizeInitialValue } from '../utils';
-import { PlateEffects, PlateEffectsProps } from './PlateEffects';
+import { PlateEffects } from './PlateEffects';
 
 export interface PlateProps<
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
-> extends PlateEffectsProps<V, E>,
-    Partial<Pick<PlateStoreState<V, E>, 'id' | 'editor'>> {
+> extends Partial<
+    Pick<PlateStoreState<V, E>, 'id' | 'editor' | 'value' | 'readOnly'>
+  > {
+  children: ReactNode;
+  decorate?: TEditableProps['decorate'];
+
+  /**
+   * If `true`, disable all the core plugins.
+   * If an object, disable the core plugin properties that are `true` in the object.
+   */
+  disableCorePlugins?:
+    | {
+        deserializeAst?: boolean;
+        deserializeHtml?: boolean;
+        editorProtocol?: boolean;
+        eventEditor?: boolean;
+        inlineVoid?: boolean;
+        insertData?: boolean;
+        history?: boolean;
+        nodeFactory?: boolean;
+        react?: boolean;
+        selection?: boolean;
+        length?: boolean;
+      }
+    | boolean;
+
+  /**
+   * Access the editor object using a React ref.
+   */
+  editorRef?: ForwardedRef<E>;
+
   /**
    * Initial value of the editor.
    * @default editor.childrenFactory()
    */
   initialValue?: PlateStoreState<V>['value'];
+
+  /**
+   * Specifies the maximum number of characters allowed in the editor.
+   */
+  maxLength?: number;
 
   /**
    * When `true`, it will normalize the initial value passed to the `editor` once it gets created.
@@ -31,9 +64,13 @@ export interface PlateProps<
   normalizeInitialValue?: boolean;
 
   /**
-   * Specifies the maximum number of characters allowed in the editor.
+   * Controlled callback called when the editor state changes.
    */
-  maxLength?: number;
+  onChange?: (value: V) => void;
+
+  plugins?: PlatePlugin[];
+  renderElement?: TEditableProps['renderElement'];
+  renderLeaf?: TEditableProps['renderLeaf'];
 }
 
 function PlateInner<
@@ -41,25 +78,21 @@ function PlateInner<
   E extends PlateEditor<V> = PlateEditor<V>,
 >({
   normalizeInitialValue: shouldNormalizeInitialValue,
-  ...props
+  id = PLATE_SCOPE,
+  editor: editorProp,
+  initialValue,
+  value: valueProp,
+  children,
+  plugins: pluginsProp,
+  disableCorePlugins,
+  onChange,
+  editorRef,
+  decorate,
+  renderElement,
+  renderLeaf,
+  readOnly,
+  maxLength,
 }: PlateProps<V, E>) {
-  const {
-    id = PLATE_SCOPE,
-    editor: editorProp,
-    initialValue,
-    value: valueProp,
-    children,
-    plugins: pluginsProp,
-    disableCorePlugins,
-    onChange,
-    editorRef,
-    decorate,
-    renderElement,
-    renderLeaf,
-    readOnly,
-    maxLength,
-  } = props;
-
   const editor: E = useMemo(
     () =>
       editorProp ??
@@ -102,29 +135,28 @@ function PlateInner<
   );
 
   return (
-    <JotaiProvider
-      initialValues={[
-        [plateStore.atom.id, id],
-        [plateStore.atom.editor, editor],
-        [plateStore.atom.plugins, editor.plugins],
-        [plateStore.atom.rawPlugins, pluginsProp],
-        [plateStore.atom.readOnly, readOnly],
-        [plateStore.atom.value, value],
-        [plateStore.atom.decorate, { fn: decorate }],
-        [plateStore.atom.onChange, { fn: onChange }],
-        [plateStore.atom.editorRef, { ref: editorRef }],
-        [plateStore.atom.renderElement, { fn: renderElement }],
-        [plateStore.atom.renderLeaf, { fn: renderLeaf }],
-      ]}
+    <PlateStoreProvider
+      id={id}
+      editor={editor as any}
+      plugins={editor.plugins as any}
+      rawPlugins={pluginsProp}
+      readOnly={readOnly}
+      value={value}
+      decorate={{ fn: decorate as any }}
+      onChange={{ fn: onChange as any }}
+      editorRef={{ ref: editorRef as any }}
+      renderElement={{ fn: renderElement as any }}
+      renderLeaf={{ fn: renderLeaf as any }}
       scope={id}
     >
-      <JotaiProvider
-        initialValues={[[plateIdAtom, id]]}
-        scope={GLOBAL_PLATE_SCOPE}
+      <PlateEffects
+        id={id}
+        disableCorePlugins={disableCorePlugins}
+        plugins={pluginsProp}
       >
-        <PlateEffects {...props}>{children}</PlateEffects>
-      </JotaiProvider>
-    </JotaiProvider>
+        {children}
+      </PlateEffects>
+    </PlateStoreProvider>
   );
 }
 
