@@ -16,8 +16,6 @@ export type EventEditorState = {
   last: PlateId | null;
 };
 
-console.log(createZustandStore);
-
 /**
  * Store where the keys are event names and the values are editor ids.
  */
