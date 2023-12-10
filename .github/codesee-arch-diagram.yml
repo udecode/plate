@@ -13,7 +13,7 @@ permissions: read-all
 
 jobs:
   codesee:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     continue-on-error: true
     name: Analyze the repo with CodeSee
     steps:

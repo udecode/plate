@@ -1,8 +1,6 @@
 import React from 'react';
-import { useEditorRef } from '@udecode/plate-common';
 
 export const useCommentsShowResolvedButton = () => {
-  const editor = useEditorRef();
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
     null
   );

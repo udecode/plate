@@ -12,8 +12,9 @@ on:
 jobs:
   build:
     name: build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
+      node-version: [20.x]
       fail-fast: false
       matrix:
         template:
@@ -23,12 +24,7 @@ jobs:
       run:
         working-directory: templates/${{ matrix.template }}
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v3
-        with:
-          # Fetch all git history so that yarn workspaces --since can compare with the correct commits
-          # @link https://github.com/actions/checkout#fetch-all-history-for-all-tags-and-branches
-          fetch-depth: 0
+      - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v2.2.4
         name: Install pnpm
@@ -36,17 +32,18 @@ jobs:
           version: 8.6.1
           run_install: false
 
-      - name: Use Node.js 16
-        uses: actions/setup-node@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
         with:
-          node-version: 16
-          cache: "pnpm"
-          cache-dependency-path: '**/pnpm-lock.yaml' # THIS PATTERN did the trick for me.
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Get pnpm store directory
         id: pnpm-cache
         run: |
           echo "pnpm_cache_dir=$(pnpm store path)" >> $GITHUB_OUTPUT
+
       - uses: actions/cache@v3
         name: Setup pnpm cache
         with:
@@ -55,15 +52,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
-      - name: Install dependencies
+      - name: 📥 Install dependencies
         run: pnpm install
 
-      - name: Build
+      - name: 🏗 Run build
         run: pnpm build
 
   sync:
     needs: build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -72,10 +69,7 @@ jobs:
           - plate-playground-template
     if: ${{ success() }}
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
       - name: Sync Templates
         env:
           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}

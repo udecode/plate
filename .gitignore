@@ -4,7 +4,6 @@ packages/cli/components
 **/tsconfig.tsbuildinfo
 
 .yarn/*
-!.yarn/cache
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases
