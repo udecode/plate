@@ -50,7 +50,6 @@ export const elementToHtml = <V extends Value>(
       renderToStaticMarkup(
         createElementWithSlate(
           {
-            editor: editor as any,
             ...plateProps,
             children:
               plugin.serializeHtml?.(props as any) ??
