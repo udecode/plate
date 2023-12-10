@@ -52,7 +52,8 @@ export const useResizeHandleState = ({
 
   const [isResizing, setIsResizing] = useState(false);
   const [initialPosition, setInitialPosition] = useState(0);
-  const [initialSize, setInitialSize] = useState(0);
+  const [initialSizeState, setInitialSize] = useState(0);
+  const initialSize = _initialSize ?? initialSizeState;
 
   const isHorizontal = direction === 'left' || direction === 'right';
 
@@ -70,7 +71,7 @@ export const useResizeHandleState = ({
       const currentPosition = isHorizontal ? clientX : clientY;
       const delta = currentPosition - initialPosition;
       onResize({
-        initialSize: _initialSize || initialSize,
+        initialSize,
         delta,
         finished,
         direction,
