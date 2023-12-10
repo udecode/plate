@@ -5,6 +5,7 @@ on:
     branches:
       - main
     paths:
+      - '.github/actions/**'
       - '.github/workflows/sync-templates.yml'
       - 'scripts/sync-templates.sh'
       - 'templates/**'

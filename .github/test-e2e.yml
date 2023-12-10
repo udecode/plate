@@ -7,6 +7,7 @@ on:
       - next
     paths:
       - 'packages/**'
+      - '.github/actions/**'
       - '.github/workflows/**'
       - '.yarnrc.yml'
       - 'yarn.lock'
@@ -109,7 +110,7 @@ jobs:
     needs:
       - test-e2e
     if: ${{ failure() }}
-    
+
     steps:
       - name: Notify
         uses: nobrayner/discord-webhook@v1

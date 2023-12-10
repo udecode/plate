@@ -5,6 +5,7 @@ on:
     branches:
       - main
     paths:
+      - '.github/actions/**'
       - '.github/workflows/registry.yml'
       - 'apps/www/src/registry/**'
 
