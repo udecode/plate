@@ -23224,58 +23224,58 @@ __metadata:
   languageName: node
   linkType: hard
 
-"turbo-darwin-64@npm:1.10.7":
-  version: 1.10.7
-  resolution: "turbo-darwin-64@npm:1.10.7"
+"turbo-darwin-64@npm:1.11.1":
+  version: 1.11.1
+  resolution: "turbo-darwin-64@npm:1.11.1"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"turbo-darwin-arm64@npm:1.10.7":
-  version: 1.10.7
-  resolution: "turbo-darwin-arm64@npm:1.10.7"
+"turbo-darwin-arm64@npm:1.11.1":
+  version: 1.11.1
+  resolution: "turbo-darwin-arm64@npm:1.11.1"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"turbo-linux-64@npm:1.10.7":
-  version: 1.10.7
-  resolution: "turbo-linux-64@npm:1.10.7"
+"turbo-linux-64@npm:1.11.1":
+  version: 1.11.1
+  resolution: "turbo-linux-64@npm:1.11.1"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"turbo-linux-arm64@npm:1.10.7":
-  version: 1.10.7
-  resolution: "turbo-linux-arm64@npm:1.10.7"
+"turbo-linux-arm64@npm:1.11.1":
+  version: 1.11.1
+  resolution: "turbo-linux-arm64@npm:1.11.1"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"turbo-windows-64@npm:1.10.7":
-  version: 1.10.7
-  resolution: "turbo-windows-64@npm:1.10.7"
+"turbo-windows-64@npm:1.11.1":
+  version: 1.11.1
+  resolution: "turbo-windows-64@npm:1.11.1"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"turbo-windows-arm64@npm:1.10.7":
-  version: 1.10.7
-  resolution: "turbo-windows-arm64@npm:1.10.7"
+"turbo-windows-arm64@npm:1.11.1":
+  version: 1.11.1
+  resolution: "turbo-windows-arm64@npm:1.11.1"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
 "turbo@npm:^1.10.7":
-  version: 1.10.7
-  resolution: "turbo@npm:1.10.7"
+  version: 1.11.1
+  resolution: "turbo@npm:1.11.1"
   dependencies:
-    turbo-darwin-64: "npm:1.10.7"
-    turbo-darwin-arm64: "npm:1.10.7"
-    turbo-linux-64: "npm:1.10.7"
-    turbo-linux-arm64: "npm:1.10.7"
-    turbo-windows-64: "npm:1.10.7"
-    turbo-windows-arm64: "npm:1.10.7"
+    turbo-darwin-64: "npm:1.11.1"
+    turbo-darwin-arm64: "npm:1.11.1"
+    turbo-linux-64: "npm:1.11.1"
+    turbo-linux-arm64: "npm:1.11.1"
+    turbo-windows-64: "npm:1.11.1"
+    turbo-windows-arm64: "npm:1.11.1"
   dependenciesMeta:
     turbo-darwin-64:
       optional: true
@@ -23291,7 +23291,7 @@ __metadata:
       optional: true
   bin:
     turbo: bin/turbo
-  checksum: d0b8a40de58392e27f3bd4ca10b36e611687785e67cd0efd1d5aaaeaf8f154e598dfca692299f8b387bfa175d39d352f01743c24509a6ded0007255ca95984d6
+  checksum: d9be21dac27fae58f64fc709b3f2eb9d4a6ae9d06097f827ab9ad83a1d4b8ccf589b2ce45c643e89b5e423b0ea831947ee9034a1664682d7cfc8aa9dd5727fac
   languageName: node
   linkType: hard
 
