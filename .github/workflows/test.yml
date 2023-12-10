@@ -42,61 +42,39 @@ on:
 jobs:
   test:
     name: ${{ matrix.command }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x]
+
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v3
-        with:
-          # Fetch all git history so that yarn workspaces --since can compare with the correct commits
-          # @link https://github.com/actions/checkout#fetch-all-history-for-all-tags-and-branches
-          fetch-depth: 0
+      - uses: actions/checkout@v4
 
-      - name: Use Node.js 16.x
-        uses: actions/setup-node@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
         with:
-          node-version: 16.x
+          node-version: ${{ matrix.node-version }}
 
-      # Why not using setup-node 2.2+ cache option (yet) ?
-      # see https://github.com/belgattitude/nextjs-monorepo-example/pull/369
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+      - name: 📥 Monorepo install
+        uses: ./.github/actions/yarn-nm-install
 
-      - name: Restore yarn cache
-        uses: actions/cache@v3
-        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: yarn-cache-folder-${{ hashFiles('**/yarn.lock', '.yarnrc.yml') }}
-          restore-keys: |
-            yarn-cache-folder-
-      - name: Restore packages cache
+      - name: ♻️ Restore packages cache
         uses: actions/cache@v3
         with:
           path: |
             ${{ github.workspace }}/.cache
             ${{ github.workspace }}/**/tsconfig.tsbuildinfo
-          key: ${{ runner.os }}-packages-cache-${{ hashFiles('**/yarn.lock') }}-${{ hashFiles('packages/**.[jt]sx?', 'packages/**.json') }}
-          restore-keys: |
-            ${{ runner.os }}-packages-cache-${{ hashFiles('**/yarn.lock') }}-
+          key: packages-cache-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
 
-      - name: Install
-        run: YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn install
-
-      # Build packages that have changed (--include & --since), assuming that
-      # apps build are done already. Otherwise --from & --since
-      - name: Build
+      - name: 🏗 Run build
         run: yarn build
 
-      # Test packages that have changed (--include & --since)
-      - name: Test
+      - name: 🧪 Unit tests
         run: yarn test
-        env:
-          CI: true
 
   notify-test-failure:
     name: Discord Notification
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs:
       - test
     if: ${{ github.event_name == 'push' && failure() }}

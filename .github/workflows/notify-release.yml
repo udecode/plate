@@ -7,7 +7,7 @@ on:
 jobs:
   notify:
     name: Discord Notification
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     if: ${{ startsWith(github.ref, 'refs/tags/@udecode/plate@') }}
     steps:
       - name: get-version

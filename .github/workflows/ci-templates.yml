@@ -17,10 +17,11 @@ on:
 jobs:
   build:
     name: build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
+        node-version: [20.x]
         template:
           - plate-template
           - plate-playground-template
@@ -28,12 +29,7 @@ jobs:
       run:
         working-directory: templates/${{ matrix.template }}
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v3
-        with:
-          # Fetch all git history so that yarn workspaces --since can compare with the correct commits
-          # @link https://github.com/actions/checkout#fetch-all-history-for-all-tags-and-branches
-          fetch-depth: 0
+      - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v2.2.4
         name: Install pnpm
@@ -41,27 +37,27 @@ jobs:
           version: 8.6.1
           run_install: false
 
-      - name: Use Node.js 16
-        uses: actions/setup-node@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: ${{ matrix.node-version }}
           cache: "pnpm"
-          cache-dependency-path: '**/pnpm-lock.yaml' # THIS PATTERN did the trick for me.
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Get pnpm store directory
         id: pnpm-cache
         run: |
           echo "pnpm_cache_dir=$(pnpm store path)" >> $GITHUB_OUTPUT
       - uses: actions/cache@v3
-        name: Setup pnpm cache
+        name: ♻️ Setup pnpm cache
         with:
           path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
-      - name: Install dependencies
+      - name: 📥 Install
         run: pnpm install
 
-      - name: Build
+      - name: 🏗 Run build
         run: pnpm build
