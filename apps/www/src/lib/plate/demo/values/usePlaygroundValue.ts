@@ -48,7 +48,6 @@ export const usePlaygroundValue = (id?: ValueId) => {
 
     value.push(...basicMarksValue);
 
-    console.log(valueId);
     if (valueId === 'tableMerge') {
       return mapNodeId(tableMergeValue);
     }
