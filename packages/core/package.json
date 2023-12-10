@@ -46,13 +46,13 @@
     "clsx": "^1.2.1",
     "is-hotkey": "^0.2.0",
     "jotai": "^2.6.0",
-    "jotai-x": "^1.0.0",
+    "jotai-x": "^1.0.1",
     "lodash": "^4.17.21",
     "nanoid": "^3.3.6",
     "react-hotkeys-hook": "^4.4.1",
     "use-deep-compare": "^1.1.0",
     "zustand": "^4.4.7",
-    "zustand-x": "^3.0.0"
+    "zustand-x": "^3.0.1"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
