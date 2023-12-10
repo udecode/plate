@@ -11,6 +11,8 @@ import { registrySchema } from '../src/registry/schema';
 import { styles } from '../src/registry/styles';
 import { themes } from '../src/registry/themes';
 
+// Until https://github.com/TypeStrong/ts-node/issues/1997 is fixed.
+
 const REGISTRY_PATH = path.join(process.cwd(), 'public/registry');
 
 const result = registrySchema.safeParse(registry);
