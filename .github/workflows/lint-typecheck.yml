@@ -44,7 +44,7 @@ jobs:
     strategy:
       matrix:
         node-version: [20.x]
-    
+
     steps:
       - uses: actions/checkout@v4
 
@@ -79,7 +79,7 @@ jobs:
     needs:
       - lint-typecheck
     if: ${{ github.event_name == 'push' && failure() }}
-    
+
     steps:
       - name: Notify
         uses: nobrayner/discord-webhook@v1
