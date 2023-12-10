@@ -2,10 +2,12 @@
 '@udecode/plate-core': major
 ---
 
-- Migrate from jotai@1 to jotai@2
-  - TODO: Add link to jotai-factory README
+- Migrate store from `jotai@1` to `jotai@2`
+  - New dependency: `jotai-x`. See https://github.com/udecode/jotai-x
   - Accessing a store without an explicit provider component is no longer supported. Attempting to do so will result in a warning in the console: `Tried to access jotai store '${storeName}' outside of a matching provider.`
-- Rename Zustood exports
+- Upgraded from `zustand@3` to `zustand@4`
+  - See https://github.com/udecode/zustand-x
+- Rename `zustand-x` exports
   - `StateActions` -> `ZustandStateActions`
   - `StoreApi` -> `ZustandStoreApi`
   - `createStore` -> `createZustandStore`

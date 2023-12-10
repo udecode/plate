@@ -7315,13 +7315,13 @@ __metadata:
     "@udecode/utils": "npm:24.3.0"
     clsx: "npm:^1.2.1"
     is-hotkey: "npm:^0.2.0"
-    jotai: "npm:^2.4.3"
+    jotai: "npm:^2.6.0"
     jotai-x: "npm:^1.0.0"
     lodash: "npm:^4.17.21"
     nanoid: "npm:^3.3.6"
     react-hotkeys-hook: "npm:^4.4.1"
     use-deep-compare: "npm:^1.1.0"
-    zustand: "npm:^3.7.2"
+    zustand: "npm:^4.4.7"
     zustand-x: "npm:^3.0.0"
   peerDependencies:
     react: ">=16.8.0"
@@ -15557,9 +15557,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jotai@npm:^2.4.3":
-  version: 2.5.1
-  resolution: "jotai@npm:2.5.1"
+"jotai@npm:^2.6.0":
+  version: 2.6.0
+  resolution: "jotai@npm:2.6.0"
   peerDependencies:
     "@types/react": ">=17.0.0"
     react: ">=17.0.0"
@@ -15568,7 +15568,7 @@ __metadata:
       optional: true
     react:
       optional: true
-  checksum: dfc43d97d072423866fa74e381f1444f7fd0f8fc7b52b957dc6ba0d96f9365d303c548af33ba7b629f5fcf91120b8e1a5c7cb3c095cad978dec9a68bc200235a
+  checksum: 6f98fcaa6158ce067681d83c2353200c1e6b2b40f630effd766657807b203f4f6b6b1106f4c077a61584032e8724615846e33c37fd619dfc3e5a1540a3be0687
   languageName: node
   linkType: hard
 
@@ -23873,7 +23873,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"use-sync-external-store@npm:^1.2.0":
+"use-sync-external-store@npm:1.2.0, use-sync-external-store@npm:^1.2.0":
   version: 1.2.0
   resolution: "use-sync-external-store@npm:1.2.0"
   peerDependencies:
@@ -24979,15 +24979,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zustand@npm:^3.7.2":
-  version: 3.7.2
-  resolution: "zustand@npm:3.7.2"
+"zustand@npm:^4.4.7":
+  version: 4.4.7
+  resolution: "zustand@npm:4.4.7"
+  dependencies:
+    use-sync-external-store: "npm:1.2.0"
   peerDependencies:
+    "@types/react": ">=16.8"
+    immer: ">=9.0"
     react: ">=16.8"
   peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    immer:
+      optional: true
     react:
       optional: true
-  checksum: c85c072742287d7a8e622b5c1ea9f1e37d6fdffc32634531e5bfb364c3e61a75bb36bee757866ef264a8ff9b7fd75021a122b3bb5a9c9ee108961a68b3f23506
+  checksum: af8b8655c7dca04d2eb600a8a662172d5b0e0e211f3b1b33fe7e8842d289e50dc8a743146367556916e85a7e531666c39da69c994582748527faa57687b7fedf
   languageName: node
   linkType: hard
 
