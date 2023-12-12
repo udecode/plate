@@ -10,6 +10,8 @@ packages/cli/components
 !.yarn/sdks
 !.yarn/versions
 
+.netrc
+
 # Generated files
 .history
 node_modules/
