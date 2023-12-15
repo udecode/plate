@@ -5,6 +5,5 @@ import { TTableCellElement } from '../types';
  * @default 1 if undefined
  */
 export const getRowSpan = (cellElem: TTableCellElement) => {
-  const attrRowSpan = Number(cellElem.attributes?.rowspan);
-  return cellElem.rowSpan || attrRowSpan || 1;
+  return cellElem.rowSpan || Number(cellElem.attributes?.rowspan) || 1;
 };
