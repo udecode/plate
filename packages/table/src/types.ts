@@ -111,7 +111,7 @@ export interface TTableCellElement extends TElement {
      */
     right?: BorderStyle;
   };
-  attributes: {
+  attributes?: {
     colspan?: string;
     rowspan?: string;
   };
