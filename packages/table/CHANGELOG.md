@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 27.0.1
+
+### Patch Changes
+
+- [#2806](https://github.com/udecode/plate/pull/2806) by [@zbeyens](https://github.com/zbeyens) – Types: `TTableCellElement['attributes']` is now optional
+
 ## 27.0.0
 
 ### Patch Changes
