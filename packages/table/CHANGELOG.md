@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 27.0.2
+
+### Patch Changes
+
+- [#2808](https://github.com/udecode/plate/pull/2808) by [@zbeyens](https://github.com/zbeyens) – Fix merging cells inside nested tables using the relative paths.
+
 ## 27.0.1
 
 ### Patch Changes
