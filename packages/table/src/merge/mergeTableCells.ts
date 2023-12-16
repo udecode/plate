@@ -42,8 +42,10 @@ export const mergeTableCells = <V extends Value = Value>(
     for (const entry of cellEntries) {
       const [data, path] = entry;
 
+      const rowIndex = path.at(-2)!;
+
       // count only those cells that are in the first selected row.
-      if (path[1] === cellEntries[0][1][1]) {
+      if (rowIndex === cellEntries[0][1].at(-2)!) {
         const cellColSpan = getColSpan(data as TTableCellElement);
         colSpan += cellColSpan;
       }
@@ -83,10 +85,13 @@ export const mergeTableCells = <V extends Value = Value>(
       if (!hasHeaderCell && entry.type === 'table_header_cell') {
         hasHeaderCell = true;
       }
-      if (cols[path[1]]) {
-        cols[path[1]].push(path);
+
+      const rowIndex = path.at(-2)!;
+
+      if (cols[rowIndex]) {
+        cols[rowIndex].push(path);
       } else {
-        cols[path[1]] = [path];
+        cols[rowIndex] = [path];
       }
     });
 
