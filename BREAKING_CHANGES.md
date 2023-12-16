@@ -1,3 +1,64 @@
+# 27.0.0
+
+## @udecode/plate-comments@27.0.0
+
+### Major Changes
+
+- [#2763](https://github.com/udecode/plate/pull/2763) by [@12joan](https://github.com/12joan) –
+  - Migrate store to `jotai@2`
+  - Revert the breaking changes to `@udecode/plate-comments` made in 26.0.0
+
+## @udecode/plate-core@27.0.0
+
+### Major Changes
+
+- [#2763](https://github.com/udecode/plate/pull/2763) by [@12joan](https://github.com/12joan) –
+  - Migrate store from `jotai@1` to `jotai@2`
+    - New dependency: `jotai-x`. See <https://github.com/udecode/jotai-x>
+    - Accessing a store without an explicit provider component is no longer supported. Attempting to do so will result in a warning in the console: `Tried to access jotai store '${storeName}' outside of a matching provider.`
+  - Upgraded from `zustand@3` to `zustand@4`
+    - See <https://github.com/udecode/zustand-x>
+  - Rename `zustand-x` exports
+    - `StateActions` -> `ZustandStateActions`
+    - `StoreApi` -> `ZustandStoreApi`
+    - `createStore` -> `createZustandStore`
+    - Note that these exports are deprecated and should not be used in new code. They may be removed in a future version of Plate.
+
+## @udecode/plate-resizable@27.0.0
+
+### Major Changes
+
+- [#2763](https://github.com/udecode/plate/pull/2763) by [@12joan](https://github.com/12joan) –
+  - Migrate store to `jotai@2`
+  - Resizable components must now be wrapped inside a `ResizableProvider`
+
+# 26.0.0
+
+## @udecode/plate-comments@26.0.0
+
+### Major Changes
+
+- [#2760](https://github.com/udecode/plate/pull/2760) by [@12joan](https://github.com/12joan) –
+  - Renamed the `comments` prop on CommentsProvider to `initialComments` to reflect the fact that updating its value after the initial render has no effect
+  - Removed the following props from CommentsProvider, since they represent the internal state of the comments plugin and should not be controlled externally:
+    - `activeCommentId`
+    - `addingCommentId`
+    - `newValue`
+    - `focusTextarea`
+  - The following props on CommentsProvider can now be updated after the initial render (whereas prior to this version, doing so had no effect):
+    - `myUserId`
+    - `users`
+    - `onCommentAdd`
+    - `onCommentUpdate`
+    - `onCommentDelete`
+
+## @udecode/plate-serializer-html@26.0.0
+
+### Major Changes
+
+- [#2733](https://github.com/udecode/plate/pull/2733) by [@dimaanj](https://github.com/dimaanj) –
+  - [Breaking] `serializeHtml`: replaced option `slateProps` by `plateProps`.
+
 # 25.0.1
 
 ## @udecode/plate-core@25.0.1
@@ -11,7 +72,7 @@
 
 ### Major Changes
 
--   [#2725](https://github.com/udecode/plate/pull/2725) by [@EandrewJones](https://github.com/EandrewJones) – Remove `useCommentValue`, which was redundant with the hooks applied automatically in `CommentEditTextarea.tsx`.
+- [#2725](https://github.com/udecode/plate/pull/2725) by [@EandrewJones](https://github.com/EandrewJones) – Remove `useCommentValue`, which was redundant with the hooks applied automatically in `CommentEditTextarea.tsx`.
 
 # 24.0.0
 
@@ -19,38 +80,38 @@
 
 ### Major Changes
 
--   [#2629](https://github.com/udecode/plate/pull/2629) by [@zbeyens](https://github.com/zbeyens) –
+- [#2629](https://github.com/udecode/plate/pull/2629) by [@zbeyens](https://github.com/zbeyens) –
 
-    -   [**Breaking**] Rename `Plate` to `PlateContent`.
-    -   [**Breaking**] Rename `PlateProvider` to `Plate`.
-    -   [**Breaking**] Rendering `PlateContent` is now required in `Plate`. This allows you to choose where to render the editor next to other components like toolbar. Example:
+  - [**Breaking**] Rename `Plate` to `PlateContent`.
+  - [**Breaking**] Rename `PlateProvider` to `Plate`.
+  - [**Breaking**] Rendering `PlateContent` is now required in `Plate`. This allows you to choose where to render the editor next to other components like toolbar. Example:
 
-    ```tsx
-    // Before
+  ```tsx
+  // Before
+  <Plate />
+  // or
+  <PlateProvider>
     <Plate />
-    // or
-    <PlateProvider>
-      <Plate />
-    </PlateProvider>
+  </PlateProvider>
 
-    // After
-    <Plate>
-      <PlateContent />
-    </Plate>
-    ```
+  // After
+  <Plate>
+    <PlateContent />
+  </Plate>
+  ```
 
-    -   [**Breaking**] Remove provider props such as `plugins` from `PlateContent`. These props should be passed to `Plate`.
-    -   [**Breaking**] Remove `editableProps` prop from `PlateContent`. Move these as`PlateContent` props.
-    -   [**Breaking**] Remove `children` prop from `PlateContent`. Render instead these components after `PlateContent`.
-    -   [**Breaking**] Remove `firstChildren` prop from `PlateContent`. Render instead these components before `PlateContent`.
-    -   [**Breaking**] Remove `editableRef` prop from `PlateContent`. Use `ref` instead.
-    -   [**Breaking**] Remove `withPlateProvider`.
-    -   [**Breaking**] Rename `usePlateEditorRef` to `useEditorRef`.
-    -   [**Breaking**] Rename `usePlateEditorState` to `useEditorState`.
-    -   [**Breaking**] Rename `usePlateReadOnly` to `useEditorReadOnly`. This hook can be used below `Plate` while `useReadOnly` can only be used in node components.
-    -   [**Breaking**] Rename `usePlateSelection` to `useEditorSelection`.
-    -   [**Breaking**] Rename store attributes `keyDecorate`, `keyEditor` and `keySelection` to `versionDecorate`, `versionEditor` and `versionSelection`. These are now numbers incremented on each change.
-    -   [**Breaking**] Rename store attribute `isRendered` to `isMounted`.
+  - [**Breaking**] Remove provider props such as `plugins` from `PlateContent`. These props should be passed to `Plate`.
+  - [**Breaking**] Remove `editableProps` prop from `PlateContent`. Move these as`PlateContent` props.
+  - [**Breaking**] Remove `children` prop from `PlateContent`. Render instead these components after `PlateContent`.
+  - [**Breaking**] Remove `firstChildren` prop from `PlateContent`. Render instead these components before `PlateContent`.
+  - [**Breaking**] Remove `editableRef` prop from `PlateContent`. Use `ref` instead.
+  - [**Breaking**] Remove `withPlateProvider`.
+  - [**Breaking**] Rename `usePlateEditorRef` to `useEditorRef`.
+  - [**Breaking**] Rename `usePlateEditorState` to `useEditorState`.
+  - [**Breaking**] Rename `usePlateReadOnly` to `useEditorReadOnly`. This hook can be used below `Plate` while `useReadOnly` can only be used in node components.
+  - [**Breaking**] Rename `usePlateSelection` to `useEditorSelection`.
+  - [**Breaking**] Rename store attributes `keyDecorate`, `keyEditor` and `keySelection` to `versionDecorate`, `versionEditor` and `versionSelection`. These are now numbers incremented on each change.
+  - [**Breaking**] Rename store attribute `isRendered` to `isMounted`.
 
 # 23.0.0
 
@@ -58,47 +119,47 @@
 
 ### Major Changes
 
--   [#2537](https://github.com/udecode/plate/pull/2537) by [@haydencarlson](https://github.com/haydencarlson) – `MediaEmbedElement` is now more headless with a smaller bundle size.
-    Update the following components:
+- [#2537](https://github.com/udecode/plate/pull/2537) by [@haydencarlson](https://github.com/haydencarlson) – `MediaEmbedElement` is now more headless with a smaller bundle size.
+  Update the following components:
 
-    -   `npx @udecode/plate-ui@latest add media-embed-element`
-        -   now uses `react-lite-youtube-embed` for YouTube videos.
-        -   now uses `react-tweet` for Twitter tweets.
-    -   `npx @udecode/plate-ui@latest add image-element`
+  - `npx @udecode/plate-ui@latest add media-embed-element`
+    - now uses `react-lite-youtube-embed` for YouTube videos.
+    - now uses `react-tweet` for Twitter tweets.
+  - `npx @udecode/plate-ui@latest add image-element`
 
-    Breaking changes:
+  Breaking changes:
 
-    -   Moved `Resizable` to `@udecode/plate-resizable`
-    -   Moved `Caption`, `CaptionTextarea` to `@udecode/plate-caption`
-    -   Removed `useMediaEmbed`, `MediaEmbedVideo`, `MediaEmbedTweet`, `Tweet`, `parseMediaUrl`, `mediaStore`
-    -   Removed `@udecode/resizable`, `scriptjs`, `react-textarea-autosize` dependencies
-    -   `MediaPlugin`
-        -   removed `rules`. Use `parsers` option instead.
-        -   removed `disableCaption`. Use `createCaptionPlugin` instead.
-    -   Caption is now a separate plugin. Install `@udecode/plate-caption` and add it to your plugins:
+  - Moved `Resizable` to `@udecode/plate-resizable`
+  - Moved `Caption`, `CaptionTextarea` to `@udecode/plate-caption`
+  - Removed `useMediaEmbed`, `MediaEmbedVideo`, `MediaEmbedTweet`, `Tweet`, `parseMediaUrl`, `mediaStore`
+  - Removed `@udecode/resizable`, `scriptjs`, `react-textarea-autosize` dependencies
+  - `MediaPlugin`
+    - removed `rules`. Use `parsers` option instead.
+    - removed `disableCaption`. Use `createCaptionPlugin` instead.
+  - Caption is now a separate plugin. Install `@udecode/plate-caption` and add it to your plugins:
 
-    ```ts
-    import { ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from '@udecode/plate-media';
+  ```ts
+  import { ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from '@udecode/plate-media';
 
-    createCaptionPlugin({
-      options: { pluginKeys: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED] },
-    });
-    ```
+  createCaptionPlugin({
+    options: { pluginKeys: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED] },
+  });
+  ```
 
- ## @udecode/plate-resizable@23.0.0
+## @udecode/plate-resizable@23.0.0
 
 ### Major Changes
 
--   [#2541](https://github.com/udecode/plate/pull/2541) by [@zbeyens](https://github.com/zbeyens) –
-    -   Package renamed to `@udecode/plate-resizable`.
-    -   `ResizeHandle` is now fully headless: no style is applied by default. Add your own `Resizable`, `ResizeHandle` components:
-        -   `npx @udecode/plate-ui@latest add resizable`
- 
+- [#2541](https://github.com/udecode/plate/pull/2541) by [@zbeyens](https://github.com/zbeyens) –
+  - Package renamed to `@udecode/plate-resizable`.
+  - `ResizeHandle` is now fully headless: no style is applied by default. Add your own `Resizable`, `ResizeHandle` components:
+    - `npx @udecode/plate-ui@latest add resizable`
+
 ## @udecode/plate-table@23.0
 
 ### Major Changes
 
--  Removed `TableCellElementResizable`. Use `useTableCellElementResizableState` and `useTableCellElementResizable` instead.
+- Removed `TableCellElementResizable`. Use `useTableCellElementResizableState` and `useTableCellElementResizable` instead.
 
 # 22.0.0
 
