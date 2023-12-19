@@ -6672,13 +6672,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-csv@npm:27.0.0, @udecode/plate-serializer-csv@workspace:^, @udecode/plate-serializer-csv@workspace:packages/serializer-csv":
+"@udecode/plate-serializer-csv@npm:27.0.2, @udecode/plate-serializer-csv@workspace:^, @udecode/plate-serializer-csv@workspace:packages/serializer-csv":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-csv@workspace:packages/serializer-csv"
   dependencies:
     "@types/papaparse": "npm:^5.3.7"
     "@udecode/plate-common": "npm:27.0.0"
-    "@udecode/plate-table": "npm:27.0.0"
+    "@udecode/plate-table": "npm:27.0.2"
     papaparse: "npm:^5.4.1"
   peerDependencies:
     react: ">=16.8.0"
@@ -6690,7 +6690,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-docx@npm:27.0.0, @udecode/plate-serializer-docx@workspace:^, @udecode/plate-serializer-docx@workspace:packages/serializer-docx":
+"@udecode/plate-serializer-docx@npm:27.0.2, @udecode/plate-serializer-docx@workspace:^, @udecode/plate-serializer-docx@workspace:packages/serializer-docx":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-docx@workspace:packages/serializer-docx"
   dependencies:
@@ -6700,7 +6700,7 @@ __metadata:
     "@udecode/plate-indent-list": "npm:27.0.0"
     "@udecode/plate-media": "npm:27.0.0"
     "@udecode/plate-paragraph": "npm:27.0.0"
-    "@udecode/plate-table": "npm:27.0.0"
+    "@udecode/plate-table": "npm:27.0.2"
     validator: "npm:^13.9.0"
   peerDependencies:
     react: ">=16.8.0"
@@ -6786,7 +6786,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-table@npm:27.0.0, @udecode/plate-table@workspace:^, @udecode/plate-table@workspace:packages/table":
+"@udecode/plate-table@npm:27.0.2, @udecode/plate-table@workspace:^, @udecode/plate-table@workspace:packages/table":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-table@workspace:packages/table"
   dependencies:
@@ -6929,13 +6929,13 @@ __metadata:
     "@udecode/plate-reset-node": "npm:27.0.0"
     "@udecode/plate-resizable": "npm:27.0.0"
     "@udecode/plate-select": "npm:27.0.0"
-    "@udecode/plate-serializer-csv": "npm:27.0.0"
-    "@udecode/plate-serializer-docx": "npm:27.0.0"
+    "@udecode/plate-serializer-csv": "npm:27.0.2"
+    "@udecode/plate-serializer-docx": "npm:27.0.2"
     "@udecode/plate-serializer-html": "npm:27.0.0"
     "@udecode/plate-serializer-md": "npm:27.0.0"
     "@udecode/plate-suggestion": "npm:27.0.0"
     "@udecode/plate-tabbable": "npm:27.0.0"
-    "@udecode/plate-table": "npm:27.0.0"
+    "@udecode/plate-table": "npm:27.0.2"
     "@udecode/plate-trailing-block": "npm:27.0.0"
   peerDependencies:
     react: ">=16.8.0"
