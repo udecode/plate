@@ -48,22 +48,25 @@ const PlateContent = React.forwardRef(
     let beforeEditable: React.ReactNode = null;
 
     editor.plugins.forEach((plugin) => {
-      const { renderBeforeEditable, renderAfterEditable } = plugin;
+      const {
+        renderBeforeEditable: RenderBeforeEditable,
+        renderAfterEditable: RenderAfterEditable,
+      } = plugin;
 
-      if (renderAfterEditable) {
+      if (RenderAfterEditable) {
         afterEditable = (
           <>
             {afterEditable}
-            {renderAfterEditable(editableProps)}
+            <RenderAfterEditable {...editableProps} />
           </>
         );
       }
 
-      if (renderBeforeEditable) {
+      if (RenderBeforeEditable) {
         beforeEditable = (
           <>
             {beforeEditable}
-            {renderBeforeEditable(editableProps)}
+            <RenderBeforeEditable {...editableProps} />
           </>
         );
       }
