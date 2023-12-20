@@ -1,5 +1,13 @@
 # @udecode/plate-core
 
+## 27.0.3
+
+### Patch Changes
+
+- [#2814](https://github.com/udecode/plate/pull/2814) by [@12joan](https://github.com/12joan) –
+  - Fix `renderBeforeEditable` and `renderAfterEditable`
+    - Like `renderAboveEditable` and `renderAboveSlate`, the given component is now rendered using JSX syntax, separately from the parent component.
+
 ## 27.0.0
 
 ### Major Changes

@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-link",
-  "version": "27.0.0",
+  "version": "27.0.3",
   "description": "Link plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -39,9 +39,9 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-common": "27.0.0",
-    "@udecode/plate-floating": "27.0.0",
-    "@udecode/plate-normalizers": "27.0.0"
+    "@udecode/plate-common": "27.0.3",
+    "@udecode/plate-floating": "27.0.3",
+    "@udecode/plate-normalizers": "27.0.3"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

@@ -1,5 +1,7 @@
 # @udecode/plate-comments
 
+## 27.0.3
+
 ## 27.0.0
 
 ### Major Changes
