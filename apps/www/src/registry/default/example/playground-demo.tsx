@@ -103,6 +103,8 @@ import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
 import { FloatingToolbar } from '@/registry/default/plate-ui/floating-toolbar';
 import { MentionCombobox } from '@/registry/default/plate-ui/mention-combobox';
 
+import { TestToolbar } from './test-toolbar';
+
 export const usePlaygroundPlugins = ({
   id,
   components = createPlateUI(),
@@ -343,6 +345,8 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
                     id && 'pb-8 pt-2'
                   )}
                 />
+
+                <TestToolbar />
 
                 {enabled['floating-toolbar'] && (
                   <FloatingToolbar>

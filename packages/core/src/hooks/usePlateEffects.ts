@@ -21,7 +21,7 @@ export const usePlateEffects = <
 }: UsePlateEffectsProps<V, E>) => {
   const editor = useEditorRef<V, E>(id);
 
-  const states = usePlateStates<V, E>(id);
+  const states = usePlateStates(id);
   const [rawPlugins, setRawPlugins] = states.rawPlugins();
   const [, setPlugins] = states.plugins();
 
