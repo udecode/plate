@@ -13,7 +13,7 @@ export const useTableBordersDropdownMenuContentState = () => {
     hasTopBorder,
     hasLeftBorder,
     hasRightBorder,
-    // eslint-disable-next-line no-shadow
+    // eslint-disable-next-line @typescript-eslint/no-shadow
   } = useEditorSelector((editor) => ({
     hasBottomBorder: !isTableBorderHidden(editor, 'bottom'),
     hasTopBorder: !isTableBorderHidden(editor, 'top'),

@@ -79,7 +79,7 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
   const editor = useEditorRef();
   const openState = useOpenState();
 
-  // eslint-disable-next-line no-shadow
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const value: string = useEditorSelector((editor) => {
     if (isCollapsed(editor.selection)) {
       const entry = findNode<TElement>(editor, {

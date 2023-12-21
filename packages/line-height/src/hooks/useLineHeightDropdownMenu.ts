@@ -15,7 +15,7 @@ export const useLineHeightDropdownMenuState = () => {
   const { validNodeValues: values = [], defaultNodeValue } =
     getPluginInjectProps(editor, KEY_LINE_HEIGHT);
 
-  // eslint-disable-next-line no-shadow
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const value: string | undefined = useEditorSelector((editor) => {
     if (isCollapsed(editor.selection)) {
       const entry = getBlockAbove<TElement>(editor);

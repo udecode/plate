@@ -28,7 +28,7 @@ import { ToolbarButton } from './toolbar';
 export function TableDropdownMenu(props: DropdownMenuProps) {
   const editor = useEditorRef();
 
-  // eslint-disable-next-line no-shadow
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const tableSelected = useEditorSelector((editor) =>
     someNode(editor, { match: { type: ELEMENT_TABLE } }),
     []

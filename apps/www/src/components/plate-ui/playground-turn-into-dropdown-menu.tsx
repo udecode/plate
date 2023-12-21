@@ -109,7 +109,7 @@ export function PlaygroundTurnIntoDropdownMenu(props: DropdownMenuProps) {
   const editor = useEditorRef();
   const openState = useOpenState();
 
-  // eslint-disable-next-line no-shadow
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const value: string = useEditorSelector((editor) => {
     if (!isSelectionExpanded(editor)) {
       const entry = findNode<TElement>(editor!, {
