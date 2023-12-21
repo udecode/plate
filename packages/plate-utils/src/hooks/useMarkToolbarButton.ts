@@ -1,4 +1,4 @@
-import { useEditorRef, useEditorState } from '@udecode/plate-core';
+import { useEditorRef, useEditorSelector } from '@udecode/plate-core';
 import { isMarkActive, toggleMark } from '@udecode/slate-utils';
 
 export const useMarkToolbarButtonState = ({
@@ -8,8 +8,10 @@ export const useMarkToolbarButtonState = ({
   nodeType: string;
   clear?: string | string[];
 }) => {
-  const editor = useEditorState();
-  const pressed = !!editor?.selection && isMarkActive(editor, nodeType);
+  const pressed = useEditorSelector(
+    (editor) => isMarkActive(editor, nodeType),
+    [nodeType]
+  );
 
   return {
     pressed,

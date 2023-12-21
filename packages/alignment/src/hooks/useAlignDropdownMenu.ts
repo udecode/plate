@@ -4,26 +4,28 @@ import {
   isCollapsed,
   isDefined,
   useEditorRef,
-  useEditorState,
+  useEditorSelector,
 } from '@udecode/plate-common';
 
 import { Alignment, KEY_ALIGN, setAlign } from '../index';
 
 export const useAlignDropdownMenuState = () => {
-  const editor = useEditorState();
+  const value: Alignment = useEditorSelector((editor) => {
+    if (isCollapsed(editor.selection)) {
+      const entry = findNode(editor, {
+        match: (n) => isDefined(n[KEY_ALIGN]),
+      });
 
-  let value: Alignment = 'left';
-  if (isCollapsed(editor?.selection)) {
-    const entry = findNode(editor!, {
-      match: (n) => isDefined(n[KEY_ALIGN]),
-    });
-    if (entry) {
-      const nodeValue = entry[0][KEY_ALIGN] as string;
-      if (nodeValue === 'right') value = 'right';
-      if (nodeValue === 'center') value = 'center';
-      if (nodeValue === 'justify') value = 'justify';
+      if (entry) {
+        const nodeValue = entry[0][KEY_ALIGN] as string;
+        if (nodeValue === 'right') return 'right';
+        if (nodeValue === 'center') return 'center';
+        if (nodeValue === 'justify') return 'justify';
+      }
     }
-  }
+
+    return 'left';
+  }, []);
 
   return {
     value,

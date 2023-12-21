@@ -5,7 +5,8 @@ import {
   removeMark,
   select,
   setMarks,
-  useEditorState,
+  useEditorRef,
+  useEditorSelector,
 } from '@udecode/plate-common';
 
 export const useColorDropdownMenuState = ({
@@ -19,9 +20,19 @@ export const useColorDropdownMenuState = ({
   customColors: { name: string; value: string; isBrightColor: boolean }[];
   closeOnSelect?: boolean;
 }) => {
-  const editor = useEditorState();
+  const editor = useEditorRef();
 
-  const color = editor && (getMark(editor, nodeType) as string);
+  const selectionDefined = useEditorSelector(
+    // eslint-disable-next-line no-shadow
+    (editor) => !!editor.selection,
+    []
+  );
+
+  const color = useEditorSelector(
+    // eslint-disable-next-line no-shadow
+    (editor) => getMark(editor, nodeType) as string,
+    [nodeType]
+  );
 
   const [selectedColor, setSelectedColor] = useState<string>();
 
@@ -35,7 +46,7 @@ export const useColorDropdownMenuState = ({
 
   const updateColor = useCallback(
     (value: string) => {
-      if (editor && editor && editor.selection) {
+      if (editor.selection) {
         setSelectedColor(value);
 
         select(editor, editor.selection);
@@ -56,7 +67,7 @@ export const useColorDropdownMenuState = ({
   );
 
   const clearColor = useCallback(() => {
-    if (editor && editor && editor.selection) {
+    if (editor.selection) {
       select(editor, editor.selection);
       focusEditor(editor);
 
@@ -69,10 +80,10 @@ export const useColorDropdownMenuState = ({
   }, [editor, selectedColor, closeOnSelect, onToggle, nodeType]);
 
   useEffect(() => {
-    if (editor?.selection) {
+    if (selectionDefined) {
       setSelectedColor(color);
     }
-  }, [color, editor?.selection]);
+  }, [color, selectionDefined]);
 
   return {
     open,

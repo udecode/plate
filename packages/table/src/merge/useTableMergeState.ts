@@ -1,11 +1,9 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { useMemo } from 'react';
 import {
   getPluginOptions,
-  isCollapsed,
-  isExpanded,
+  isSelectionExpanded,
   useEditorRef,
-  useEditorState,
+  useEditorSelector,
 } from '@udecode/plate-common';
 import { useReadOnly, useSelected } from 'slate-react';
 
@@ -27,32 +25,24 @@ export const useTableMergeState = () => {
 
   if (!enableMerging) return { canMerge: false, canUnmerge: false };
 
-  const editor = useEditorState();
-
   const readOnly = useReadOnly();
   const selected = useSelected();
+  const selectionExpanded = useEditorSelector(isSelectionExpanded, []);
 
-  const collapsed = !readOnly && selected && isCollapsed(editor.selection);
+  const collapsed = !readOnly && selected && !selectionExpanded;
   const selectedTables = useTableStore().get.selectedTable();
   const selectedTable = selectedTables?.[0];
 
-  const selectedCellEntries = useMemo(
-    () =>
-      getTableGridAbove(editor, {
-        format: 'cell',
-      }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [editor.selection]
+  const selectedCellEntries = useEditorSelector((editor) =>
+    getTableGridAbove(editor, {
+      format: 'cell',
+    }), []
   );
 
-  const canMerge = useMemo(() => {
-    return (
-      !readOnly &&
-      selected &&
-      isExpanded(editor.selection) &&
-      isTableRectangular(selectedTable)
-    );
-  }, [readOnly, selected, editor.selection, selectedTable]);
+  const canMerge = !readOnly &&
+    selected &&
+    selectionExpanded &&
+    isTableRectangular(selectedTable);
 
   const canUnmerge =
     collapsed &&

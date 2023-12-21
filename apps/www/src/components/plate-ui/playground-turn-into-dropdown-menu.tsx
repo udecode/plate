@@ -6,10 +6,11 @@ import {
   findNode,
   focusEditor,
   isBlock,
-  isCollapsed,
+  isSelectionExpanded,
   TElement,
   toggleNodeType,
-  useEditorState,
+  useEditorRef,
+  useEditorSelector,
 } from '@udecode/plate-common';
 import {
   ELEMENT_H1,
@@ -105,20 +106,24 @@ const items = [
 const defaultItem = items.find((item) => item.value === ELEMENT_PARAGRAPH)!;
 
 export function PlaygroundTurnIntoDropdownMenu(props: DropdownMenuProps) {
-  const editor = useEditorState();
+  const editor = useEditorRef();
   const openState = useOpenState();
 
-  let value: string = ELEMENT_PARAGRAPH;
-  if (isCollapsed(editor?.selection)) {
-    const entry = findNode<TElement>(editor!, {
-      match: (n) => isBlock(editor, n),
-    });
-    if (entry) {
-      value =
-        items.find((item) => item.value === entry[0].type)?.value ??
-        ELEMENT_PARAGRAPH;
+  // eslint-disable-next-line no-shadow
+  const value: string = useEditorSelector((editor) => {
+    if (!isSelectionExpanded(editor)) {
+      const entry = findNode<TElement>(editor!, {
+        match: (n) => isBlock(editor, n),
+      });
+
+      if (entry) {
+        return items.find((item) => item.value === entry[0].type)?.value ??
+          ELEMENT_PARAGRAPH;
+      }
     }
-  }
+
+    return ELEMENT_PARAGRAPH;
+  }, []);
 
   const selectedItem =
     items.find((item) => item.value === value) ?? defaultItem;
