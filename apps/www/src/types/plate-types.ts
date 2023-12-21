@@ -371,12 +371,6 @@ export const getMyEditor = (editor: MyEditor) =>
   getTEditor<MyValue, MyEditor>(editor);
 export const useMyEditorRef = () => useEditorRef<MyValue, MyEditor>();
 export const useMyEditorState = () => useEditorState<MyValue, MyEditor>();
-export const useMyPlateSelectors = (id?: PlateId) =>
-  usePlateSelectors<MyValue, MyEditor>(id);
-export const useMyPlateActions = (id?: PlateId) =>
-  usePlateActions<MyValue, MyEditor>(id);
-export const useMyPlateStates = (id?: PlateId) =>
-  usePlateStates<MyValue, MyEditor>(id);
 
 /**
  * Utils
