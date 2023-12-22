@@ -12,7 +12,7 @@ import {
 } from '../stores/comments/CommentsProvider';
 
 export const useCommentEditSaveButtonState = () => {
-  const onCommentUpdate = useCommentsSelectors().onCommentUpdate()?.fn;
+  const onCommentUpdate = useCommentsSelectors().onCommentUpdate();
   const editingValue = useCommentSelectors().editingValue();
   const setEditingValue = useCommentActions().editingValue();
   const id = useCommentSelectors().id();

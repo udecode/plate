@@ -26,7 +26,7 @@ export function EditorRefEffect({ id }: { id?: PlateId }) {
   const setIsMounted = usePlateActions(id).isMounted();
   const plugins = usePlateSelectors(id).plugins();
   const editorState = useEditorRef(id);
-  const editorRef = usePlateSelectors(id).editorRef()?.ref;
+  const editorRef = usePlateSelectors(id).editorRef();
 
   useEffect(() => {
     setIsMounted(true);

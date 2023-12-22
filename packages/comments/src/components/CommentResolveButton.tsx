@@ -8,7 +8,7 @@ import {
 } from '../stores/comments/CommentsProvider';
 
 export const useCommentResolveButton = () => {
-  const onCommentUpdate = useCommentsSelectors().onCommentUpdate()?.fn;
+  const onCommentUpdate = useCommentsSelectors().onCommentUpdate();
   const activeCommentId = useCommentsSelectors().activeCommentId();
   const setActiveCommentId = useCommentsActions().activeCommentId();
   const updateComment = useUpdateComment(activeCommentId);

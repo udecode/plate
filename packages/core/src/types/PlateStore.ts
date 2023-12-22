@@ -76,16 +76,16 @@ export type PlateStoreState<
   /**
    * Controlled callback called when the editor state changes.
    */
-  onChange: { fn: (value: V) => void };
+  onChange: (value: V) => void;
 
   /**
    * Access the editor object using a React ref.
    */
-  editorRef: { ref: ForwardedRef<E> };
+  editorRef: ForwardedRef<E>;
 
-  decorate: { fn: NonNullable<TEditableProps['decorate']> };
-  renderElement: { fn: NonNullable<TEditableProps['renderElement']> };
-  renderLeaf: { fn: NonNullable<TEditableProps['renderLeaf']> };
+  decorate: NonNullable<TEditableProps['decorate']>;
+  renderElement: NonNullable<TEditableProps['renderElement']>;
+  renderLeaf: NonNullable<TEditableProps['renderLeaf']>;
 }>;
 
 // A list of store keys to be exposed in `editor.plate.set`.

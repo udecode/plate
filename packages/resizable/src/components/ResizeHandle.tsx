@@ -14,9 +14,7 @@ import { ResizeDirection, ResizeEvent } from '../types';
 import { isTouchEvent } from '../utils';
 
 export type ResizeHandleStoreState = {
-  onResize: {
-    fn: (event: ResizeEvent) => void;
-  };
+  onResize: (event: ResizeEvent) => void;
 };
 
 const initialState: Nullable<ResizeHandleStoreState> = {
@@ -48,7 +46,7 @@ export const useResizeHandleState = ({
   onHoverEnd,
 }: ResizeHandleOptions) => {
   const onResizeStore = useResizeHandleStore().get.onResize();
-  const onResize = onResizeProp ?? onResizeStore.fn;
+  const onResize = onResizeProp ?? onResizeStore;
 
   const [isResizing, setIsResizing] = useState(false);
   const [initialPosition, setInitialPosition] = useState(0);

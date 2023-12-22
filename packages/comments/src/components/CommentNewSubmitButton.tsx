@@ -12,7 +12,7 @@ import {
 } from '../stores/comments/CommentsProvider';
 
 export const useCommentNewSubmitButtonState = () => {
-  const onCommentAdd = useCommentsSelectors().onCommentAdd()?.fn;
+  const onCommentAdd = useCommentsSelectors().onCommentAdd();
   const activeCommentId = useCommentsSelectors().activeCommentId()!;
   const comment = useComment(SCOPE_ACTIVE_COMMENT)!;
   const newValue = useCommentsSelectors().newValue();

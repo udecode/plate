@@ -137,7 +137,7 @@ const Resizable = React.forwardRef<
   return (
     <div ref={wrapperRef} {...wrapperProps}>
       <div ref={ref} {...props} {...rest}>
-        <ResizeHandleProvider onResize={{ fn: context.onResize }}>
+        <ResizeHandleProvider onResize={context.onResize}>
           {children}
         </ResizeHandleProvider>
       </div>
