@@ -8,18 +8,24 @@ export const useTableBordersDropdownMenuContentState = () => {
   const editor = useEditorRef();
   const selectedCells = useTableStore().get.selectedCells();
 
-  const {
-    hasBottomBorder,
-    hasTopBorder,
-    hasLeftBorder,
-    hasRightBorder,
-    // eslint-disable-next-line @typescript-eslint/no-shadow
-  } = useEditorSelector((editor) => ({
-    hasBottomBorder: !isTableBorderHidden(editor, 'bottom'),
-    hasTopBorder: !isTableBorderHidden(editor, 'top'),
-    hasLeftBorder: !isTableBorderHidden(editor, 'left'),
-    hasRightBorder: !isTableBorderHidden(editor, 'right'),
-  }), []);
+  /* eslint-disable @typescript-eslint/no-shadow */
+  const hasBottomBorder = useEditorSelector(
+    (editor) => !isTableBorderHidden(editor, 'bottom'),
+    []
+  );
+  const hasTopBorder = useEditorSelector(
+    (editor) => !isTableBorderHidden(editor, 'top'),
+    []
+  );
+  const hasLeftBorder = useEditorSelector(
+    (editor) => !isTableBorderHidden(editor, 'left'),
+    []
+  );
+  const hasRightBorder = useEditorSelector(
+    (editor) => !isTableBorderHidden(editor, 'right'),
+    []
+  );
+  /* eslint-enable @typescript-eslint/no-shadow */
 
   const hasOuterBorders =
     hasBottomBorder && hasTopBorder && hasLeftBorder && hasRightBorder;

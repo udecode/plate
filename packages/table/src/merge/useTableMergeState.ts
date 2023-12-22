@@ -33,13 +33,16 @@ export const useTableMergeState = () => {
   const selectedTables = useTableStore().get.selectedTable();
   const selectedTable = selectedTables?.[0];
 
-  const selectedCellEntries = useEditorSelector((editor) =>
-    getTableGridAbove(editor, {
-      format: 'cell',
-    }), []
+  const selectedCellEntries = useEditorSelector(
+    (editor) =>
+      getTableGridAbove(editor, {
+        format: 'cell',
+      }),
+    []
   );
 
-  const canMerge = !readOnly &&
+  const canMerge =
+    !readOnly &&
     selected &&
     selectionExpanded &&
     isTableRectangular(selectedTable);
