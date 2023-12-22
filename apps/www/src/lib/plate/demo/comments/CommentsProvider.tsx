@@ -8,6 +8,11 @@ export function CommentsProvider({ children }: { children: ReactNode }) {
       comments={commentsData}
       users={usersData}
       myUserId="1"
+      /* eslint-disable no-console */
+      onCommentAdd={(comment) => console.log('Comment added', comment)}
+      onCommentDelete={(comment) => console.log('Comment deleted', comment)}
+      onCommentUpdate={(comment) => console.log('Comment updated', comment)}
+      /* eslint-enable no-console */
     >
       {children}
     </CommentsProviderPrimitive>
