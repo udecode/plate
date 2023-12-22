@@ -1,5 +1,12 @@
 # @udecode/plate-font
 
+## 28.0.0
+
+### Patch Changes
+
+- [#2816](https://github.com/udecode/plate/pull/2816) by [@12joan](https://github.com/12joan) –
+  - Replace `useEdtiorState` with `useEditorSelector`
+
 ## 27.0.3
 
 ## 27.0.0

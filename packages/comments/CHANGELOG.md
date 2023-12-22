@@ -1,5 +1,12 @@
 # @udecode/plate-comments
 
+## 28.0.0
+
+### Patch Changes
+
+- [#2816](https://github.com/udecode/plate/pull/2816) by [@12joan](https://github.com/12joan) –
+  - Remove `{ fn: ... }` workaround for jotai stores that contain functions
+
 ## 27.0.4
 
 ### Patch Changes
