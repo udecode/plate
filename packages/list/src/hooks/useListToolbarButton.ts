@@ -8,9 +8,10 @@ import {
 import { ELEMENT_UL, toggleList } from '../index';
 
 export const useListToolbarButtonState = ({ nodeType = ELEMENT_UL } = {}) => {
-  const pressed = useEditorSelector((editor) =>
-    !!editor.selection &&
-    someNode(editor, { match: { type: getPluginType(editor, nodeType) } }),
+  const pressed = useEditorSelector(
+    (editor) =>
+      !!editor.selection &&
+      someNode(editor, { match: { type: getPluginType(editor, nodeType) } }),
     [nodeType]
   );
 

@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   createAtomStore,
   getNodeString,
@@ -37,31 +36,30 @@ export interface CommentsStoreState {
   focusTextarea: boolean;
 
   onCommentAdd: ((value: WithPartial<TComment, 'userId'>) => void) | null;
-  onCommentUpdate: ((value: Pick<TComment, 'id'> & Partial<Omit<TComment, 'id'>>) => void) | null;
+  onCommentUpdate:
+    | ((value: Pick<TComment, 'id'> & Partial<Omit<TComment, 'id'>>) => void)
+    | null;
   onCommentDelete: ((id: string) => void) | null;
 }
 
-export const {
-  commentsStore,
-  useCommentsStore,
-  CommentsProvider,
-} = createAtomStore(
-  {
-    myUserId: null,
-    users: {},
-    comments: {},
-    activeCommentId: null,
-    addingCommentId: null,
-    newValue: [{ type: 'p', children: [{ text: '' }] }],
-    focusTextarea: false,
-    onCommentAdd: null,
-    onCommentUpdate: null,
-    onCommentDelete: null,
-  } as CommentsStoreState,
-  {
-    name: 'comments',
-  }
-);
+export const { commentsStore, useCommentsStore, CommentsProvider } =
+  createAtomStore(
+    {
+      myUserId: null,
+      users: {},
+      comments: {},
+      activeCommentId: null,
+      addingCommentId: null,
+      newValue: [{ type: 'p', children: [{ text: '' }] }],
+      focusTextarea: false,
+      onCommentAdd: null,
+      onCommentUpdate: null,
+      onCommentDelete: null,
+    } as CommentsStoreState,
+    {
+      name: 'comments',
+    }
+  );
 
 export const useCommentsStates = () => useCommentsStore().use;
 export const useCommentsSelectors = () => useCommentsStore().get;
