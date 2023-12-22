@@ -1,5 +1,12 @@
 # @udecode/plate-comments
 
+## 27.0.4
+
+### Patch Changes
+
+- [#2817](https://github.com/udecode/plate/pull/2817) by [@12joan](https://github.com/12joan) –
+  - Fix the `onCommentAdd`, `onCommentUpdate` and `onCommentDelete` callbacks on CommentsProvider
+
 ## 27.0.3
 
 ## 27.0.0
