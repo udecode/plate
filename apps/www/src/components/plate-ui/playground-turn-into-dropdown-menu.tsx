@@ -106,10 +106,6 @@ const items = [
 const defaultItem = items.find((item) => item.value === ELEMENT_PARAGRAPH)!;
 
 export function PlaygroundTurnIntoDropdownMenu(props: DropdownMenuProps) {
-  const editor = useEditorRef();
-  const openState = useOpenState();
-
-  // eslint-disable-next-line @typescript-eslint/no-shadow
   const value: string = useEditorSelector((editor) => {
     if (!isSelectionExpanded(editor)) {
       const entry = findNode<TElement>(editor!, {
@@ -126,6 +122,9 @@ export function PlaygroundTurnIntoDropdownMenu(props: DropdownMenuProps) {
 
     return ELEMENT_PARAGRAPH;
   }, []);
+
+  const editor = useEditorRef();
+  const openState = useOpenState();
 
   const selectedItem =
     items.find((item) => item.value === value) ?? defaultItem;

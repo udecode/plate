@@ -115,15 +115,15 @@ const TableFloatingToolbar = React.forwardRef<
   const element = useElement<TTableElement>();
   const { props: buttonProps } = useRemoveNodeButton({ element });
 
+  const selectionCollapsed = useEditorSelector(
+    (editor) => !isSelectionExpanded(editor),
+    []
+  );
+
   const readOnly = useReadOnly();
   const selected = useSelected();
   const editor = useEditorRef();
 
-  const selectionCollapsed = useEditorSelector(
-    // eslint-disable-next-line @typescript-eslint/no-shadow
-    (editor) => !isSelectionExpanded(editor),
-    []
-  );
   const collapsed = !readOnly && selected && selectionCollapsed;
   const open = !readOnly && selected;
 
