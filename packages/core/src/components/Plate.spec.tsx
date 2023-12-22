@@ -132,6 +132,28 @@ describe('Plate', () => {
         expect(result.current.at(-1)!.key).toBe('test2');
       });
     });
+
+    it('should use plugins from editor', () => {
+      const _plugins = [{ key: 'test' }];
+      const editor = createPlateEditor({ plugins: _plugins });
+
+      const wrapper = ({ children }: any) => (
+        <Plate editor={editor}>{children}</Plate>
+      );
+
+      const { result, rerender } = renderHook(
+        () => usePlateSelectors().plugins(),
+        {
+          wrapper,
+        }
+      );
+
+      expect(result.current.some((p: any) => p.key === 'test')).toBe(true);
+
+      rerender();
+
+      expect(result.current.some((p: any) => p.key === 'test')).toBe(true);
+    });
   });
 
   describe('when id updates', () => {
