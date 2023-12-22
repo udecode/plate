@@ -6,7 +6,7 @@ import {
   useEffect,
   useRef,
 } from 'react';
-import { PlateEditor } from '@udecode/plate-common';
+import { useEditorRef } from '@udecode/plate-common';
 
 import { i18n } from '../../constants';
 import { getEmojiOnInsert } from '../../handlers/getEmojiOnInsert';
@@ -31,7 +31,6 @@ export type MutableRefs = MutableRefObject<{
 
 export type UseEmojiPickerProps = {
   closeOnSelect: boolean;
-  editor: PlateEditor;
   emojiLibrary: IEmojiFloatingLibrary;
   indexSearch: AIndexSearch<Emoji>;
 };
@@ -62,11 +61,12 @@ export type UseEmojiPickerType<
 };
 
 export const useEmojiPicker = ({
-  editor,
   emojiLibrary,
   indexSearch,
   closeOnSelect,
 }: UseEmojiPickerProps): Omit<UseEmojiPickerType, 'icons' | 'settings'> => {
+  const editor = useEditorRef();
+
   const [state, dispatch] = EmojiPickerState();
   const refs = useRef({
     contentRoot: createRef<HTMLDivElement>(),

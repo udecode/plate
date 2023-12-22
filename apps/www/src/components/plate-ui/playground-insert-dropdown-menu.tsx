@@ -10,7 +10,7 @@ import {
 import {
   focusEditor,
   insertEmptyElement,
-  useEditorState,
+  useEditorRef,
 } from '@udecode/plate-common';
 import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
 import {
@@ -170,7 +170,7 @@ const items = [
 ];
 
 export function PlaygroundInsertDropdownMenu(props: DropdownMenuProps) {
-  const editor = useEditorState();
+  const editor = useEditorRef();
   const openState = useOpenState();
 
   return (

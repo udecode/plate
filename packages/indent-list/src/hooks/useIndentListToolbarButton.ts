@@ -1,4 +1,4 @@
-import { useEditorRef, useEditorState } from '@udecode/plate-common';
+import { useEditorRef, useEditorSelector } from '@udecode/plate-common';
 
 import { ListStyleType, toggleIndentList } from '../index';
 import { someIndentList } from './someIndentList';
@@ -6,10 +6,13 @@ import { someIndentList } from './someIndentList';
 export const useIndentListToolbarButtonState = ({
   nodeType = ListStyleType.Disc,
 }: { nodeType?: string } = {}) => {
-  const editor = useEditorState();
+  const pressed = useEditorSelector(
+    (editor) => someIndentList(editor, nodeType),
+    [nodeType]
+  );
 
   return {
-    pressed: someIndentList(editor, nodeType),
+    pressed,
     nodeType,
   };
 };

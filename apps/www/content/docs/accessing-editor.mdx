@@ -57,11 +57,37 @@ const createMyPlugin = createPluginFactory({
 
 ## From a Child of Plate
 
-Use the **`useEditorRef`** or **`useEditorState`** hooks.
+Use the **`useEditorRef`**, **`useEditorSelector`** or **`useEditorState`** hooks. Which of these hooks you should use depends on when you want your component to re-render in response to changes to **`editor`**.
 
-Internally, **`useEditorState`** is a wrapper for **`useEditorRef`**. The only difference is that **`useEditorState`** causes React to re-render whenever the **`editor`** state changes, whereas **`useEditorRef`** does not cause a re-render. Since **`editor`** is mutable and is updated by reference, **`useEditorRef`** will be sufficient (and more efficient) in most situations.
+- **`useEditorRef`** - Use a reference to **`editor`** that almost never gets replaced. **This should be the default choice.**
+  - Since **`editor`** is a mutable object that gets updated by reference, **`useEditorRef`** is always sufficient for accessing the **`editor`** inside callbacks.
+  - **`useEditorRef`** will almost never cause your component to re-render, so it's the best choice for performance.
+- **`useEditorSelector`** - Subscribe to a specific selector based on **`editor`**. **This is the most performant option for subscribing to state changes.**
+  - Example usage: `const hasSelection = useEditorSelector((editor) => !!editor.selection, []);`
+  - When you want your component to re-render in response to a specific change that you're interested in, you can use **`useEditorSelector`** to access the relevant property.
+  - The selector function is called every time the **`editor`** changes (i.e. on every keystroke or selection change), but the component only re-renders when the return value changes.
+    - For this to work properly, you should make sure that the return value can be compared using `===`. In most cases, this means returning a primitive value, like a number, string or boolean.
+    - You can provide a custom **`equalityFn`** in the options to **`useEditorSelector`** for cases where `===` isn't sufficient.
+  - If the selector function depends on any locally scoped variables, you should include these in the dependency list.
+- **`useEditorState`** - Re-render every time the **`editor`** changes.
+  - Using **`useEditorState`** will cause your component to re-render every time the user presses a key or changes the selection.
+  - This may cause performance issues for large documents, or when re-rendering is particularly expensive.
 
 You can call these hooks from any React component that is rendered as a descendant of the **`Plate`** component, including [Plugin Components](/docs/plugin-components).
+
+```tsx
+const Toolbar = () => {
+  const boldActive = useEditorSelector((editor) => isMarkActive(editor, MARK_BOLD), []);
+  // ...
+};
+
+const Editor = () => (
+  <Plate>
+    <Toolbar />
+    <PlateContent />
+  </Plate>
+);
+```
 
 ```tsx showLineNumbers {6}
 const ParagraphElement = ({
@@ -117,25 +143,6 @@ export default () => (
   there are some situations in which it's replaced with a fresh instance, such
   as when the editor is reset.
 </Callout>
-
-## From a Sibling of Plate
-
-Wrap **`PlateContent`** and the sibling in **`Plate`**, and then use **`useEditorRef`** or **`useEditorState`** from within the sibling.
-
-```tsx showLineNumbers {2,8,11}
-const Toolbar = () => {
-  const editor = useEditorState();
-  // Do something with editor
-  // ...
-};
-
-const Editor = () => (
-  <Plate>
-    <Toolbar />
-    <PlateContent />
-  </Plate>
-);
-```
 
 ## From an Ancestor
 

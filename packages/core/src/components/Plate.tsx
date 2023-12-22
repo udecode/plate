@@ -142,11 +142,11 @@ function PlateInner<
       rawPlugins={pluginsProp}
       readOnly={readOnly}
       value={value}
-      decorate={{ fn: decorate as any }}
-      onChange={{ fn: onChange as any }}
-      editorRef={{ ref: editorRef as any }}
-      renderElement={{ fn: renderElement as any }}
-      renderLeaf={{ fn: renderLeaf as any }}
+      decorate={decorate}
+      onChange={onChange as PlateStoreState['onChange']}
+      editorRef={editorRef as PlateStoreState['editorRef']}
+      renderElement={renderElement}
+      renderLeaf={renderLeaf}
       scope={id}
     >
       <PlateEffects

@@ -17,7 +17,7 @@ export const useSlateProps = <V extends Value>({
   const editor = useEditorRef(id);
   const value = usePlateSelectors(id).value();
   const setValue = usePlateActions(id).value();
-  const onChangeProp = usePlateSelectors(id).onChange()?.fn;
+  const onChangeProp = usePlateSelectors(id).onChange();
 
   const onChange = useCallback(
     (newValue: V) => {

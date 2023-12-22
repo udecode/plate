@@ -3,8 +3,9 @@ import {
   getSelectionText,
   isSelectionExpanded,
   mergeProps,
-  useEditorState,
+  useEditorSelector,
   useEventEditorSelectors,
+  usePlateSelectors,
 } from '@udecode/plate-common';
 import { useFocused } from 'slate-react';
 
@@ -25,16 +26,16 @@ export const useFloatingToolbarState = ({
   hideToolbar,
   ignoreReadOnly,
 }: FloatingToolbarState) => {
-  const editor = useEditorState();
+  const editorId = usePlateSelectors().id();
+  const selectionExpanded = useEditorSelector(isSelectionExpanded, []);
+  const selectionText = useEditorSelector(getSelectionText, []);
+
   const focusedEditorId = useEventEditorSelectors.focus();
   const focused = useFocused();
 
   const [open, setOpen] = useState(false);
   const [waitForCollapsedSelection, setWaitForCollapsedSelection] =
     useState(false);
-
-  const selectionExpanded = editor && isSelectionExpanded(editor);
-  const selectionText = editor && getSelectionText(editor);
 
   const floating = useVirtualFloating(
     mergeProps(
@@ -48,7 +49,7 @@ export const useFloatingToolbarState = ({
   );
 
   return {
-    editor,
+    editorId,
     open,
     setOpen,
     waitForCollapsedSelection,
@@ -64,7 +65,7 @@ export const useFloatingToolbarState = ({
 };
 
 export const useFloatingToolbar = ({
-  editor,
+  editorId,
   selectionExpanded,
   selectionText,
   waitForCollapsedSelection,
@@ -98,7 +99,7 @@ export const useFloatingToolbar = ({
     if (
       !selectionExpanded ||
       !selectionText ||
-      (!(editor.id === focusedEditorId || ignoreReadOnly) && hideToolbar)
+      (!(editorId === focusedEditorId || ignoreReadOnly) && hideToolbar)
     ) {
       setOpen(false);
     } else if (
@@ -110,8 +111,7 @@ export const useFloatingToolbar = ({
     }
   }, [
     setOpen,
-    editor.id,
-    editor.selection,
+    editorId,
     focusedEditorId,
     hideToolbar,
     ignoreReadOnly,

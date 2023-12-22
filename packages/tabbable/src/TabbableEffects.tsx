@@ -6,7 +6,7 @@ import {
   toDOMNode,
   toSlateNode,
   useEditorReadOnly,
-  useEditorState,
+  useEditorRef,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 import { tabbable } from 'tabbable';
@@ -16,13 +16,14 @@ import { findTabDestination } from './findTabDestination';
 import { TabbableEntry, TabbablePlugin } from './types';
 
 export function TabbableEffects() {
-  const editor = useEditorState();
+  const editor = useEditorRef();
   const readOnly = useEditorReadOnly();
-  const { query, globalEventListener, insertTabbableEntries, isTabbable } =
-    getPluginOptions<TabbablePlugin>(editor, KEY_TABBABLE);
 
   useEffect(() => {
     if (readOnly) return;
+
+    const { query, globalEventListener, insertTabbableEntries, isTabbable } =
+      getPluginOptions<TabbablePlugin>(editor, KEY_TABBABLE);
 
     const editorDOMNode = toDOMNode(editor, editor);
     if (!editorDOMNode) return;
@@ -127,14 +128,7 @@ export function TabbableEffects() {
     eventListenerNode.addEventListener('keydown', handler, true);
     return () =>
       eventListenerNode.removeEventListener('keydown', handler, true);
-  }, [
-    readOnly,
-    editor,
-    globalEventListener,
-    isTabbable,
-    insertTabbableEntries,
-    query,
-  ]);
+  }, [readOnly, editor]);
 
   return null;
 }

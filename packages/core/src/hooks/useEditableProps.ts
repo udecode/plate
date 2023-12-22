@@ -21,9 +21,9 @@ export const useEditableProps = (
   const selectors = usePlateSelectors(id);
   const versionDecorate = selectors.versionDecorate();
   const readOnly = selectors.readOnly();
-  const storeDecorate = selectors.decorate()?.fn;
-  const storeRenderLeaf = selectors.renderLeaf()?.fn;
-  const storeRenderElement = selectors.renderElement()?.fn;
+  const storeDecorate = selectors.decorate();
+  const storeRenderLeaf = selectors.renderLeaf();
+  const storeRenderElement = selectors.renderElement();
 
   const decorateMemo = useMemo(() => {
     return pipeDecorate(editor, storeDecorate ?? editableProps?.decorate);

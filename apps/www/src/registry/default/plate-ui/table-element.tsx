@@ -2,10 +2,11 @@ import React, { forwardRef } from 'react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { PopoverAnchor, PopoverContentProps } from '@radix-ui/react-popover';
 import {
-  isCollapsed,
+  isSelectionExpanded,
   PlateElement,
   PlateElementProps,
-  useEditorState,
+  useEditorRef,
+  useEditorSelector,
   useElement,
   useRemoveNodeButton,
 } from '@udecode/plate-common';
@@ -116,9 +117,14 @@ const TableFloatingToolbar = React.forwardRef<
 
   const readOnly = useReadOnly();
   const selected = useSelected();
-  const editor = useEditorState();
+  const editor = useEditorRef();
 
-  const collapsed = !readOnly && selected && isCollapsed(editor.selection);
+  const selectionCollapsed = useEditorSelector(
+    // eslint-disable-next-line @typescript-eslint/no-shadow
+    (editor) => !isSelectionExpanded(editor),
+    []
+  );
+  const collapsed = !readOnly && selected && selectionCollapsed;
   const open = !readOnly && selected;
 
   const { canMerge, canUnmerge } = useTableMergeState();

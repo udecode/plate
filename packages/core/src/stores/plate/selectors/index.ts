@@ -5,6 +5,7 @@
 export * from './useEditorReadOnly';
 export * from './useEditorRef';
 export * from './useEditorSelection';
+export * from './useEditorSelector';
 export * from './useEditorState';
 export * from './useEditorVersion';
 export * from './useSelectionVersion';

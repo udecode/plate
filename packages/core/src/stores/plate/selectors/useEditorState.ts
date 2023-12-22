@@ -1,9 +1,7 @@
 import { Value } from '@udecode/slate';
 
 import { PlateEditor } from '../../../types/PlateEditor';
-import { PlateId } from '../createPlateStore';
-import { useEditorRef } from './useEditorRef';
-import { useEditorVersion } from './useEditorVersion';
+import { PlateId, usePlateSelectors } from '../createPlateStore';
 
 /**
  * Get editor state which is updated on editor change.
@@ -13,8 +11,6 @@ export const useEditorState = <
   E extends PlateEditor<V> = PlateEditor<V>,
 >(
   id?: PlateId
-) => {
-  useEditorVersion(id);
-
-  return useEditorRef<V, E>(id);
+): E => {
+  return usePlateSelectors(id).trackedEditor().editor;
 };

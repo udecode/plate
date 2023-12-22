@@ -1,11 +1,7 @@
 import { Value } from '@udecode/slate';
+import { atom } from 'jotai';
 
-import {
-  createAtomStore,
-  GetRecord,
-  SetRecord,
-  UseRecord,
-} from '../../libs/jotai';
+import { createAtomStore } from '../../libs/jotai';
 import { PlateEditor } from '../../types/PlateEditor';
 import { PlateStoreState } from '../../types/PlateStore';
 
@@ -61,6 +57,16 @@ export const createPlateStore = <
     } as PlateStoreState<V, E>,
     {
       name: 'plate',
+      extend: (atoms) => ({
+        trackedEditor: atom((get) => ({
+          editor: get(atoms.editor),
+          version: get(atoms.versionEditor),
+        })),
+        trackedSelection: atom((get) => ({
+          selection: get(atoms.editor).selection,
+          version: get(atoms.versionSelection),
+        })),
+      }),
     }
   );
 
@@ -70,24 +76,9 @@ export const {
   PlateProvider: PlateStoreProvider,
 } = createPlateStore();
 
-export const usePlateSelectors = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  id?: PlateId
-): GetRecord<PlateStoreState<V, E>> => usePlateStore(id).get as any;
-export const usePlateActions = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  id?: PlateId
-): SetRecord<PlateStoreState<V, E>> => usePlateStore(id).set as any;
-export const usePlateStates = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  id?: PlateId
-): UseRecord<PlateStoreState<V, E>> => usePlateStore(id).use as any;
+export const usePlateSelectors = (id?: PlateId) => usePlateStore(id).get;
+export const usePlateActions = (id?: PlateId) => usePlateStore(id).set;
+export const usePlateStates = (id?: PlateId) => usePlateStore(id).use;
 
 /**
  * Get the closest `Plate` id.

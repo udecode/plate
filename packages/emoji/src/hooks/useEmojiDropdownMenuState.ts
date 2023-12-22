@@ -1,4 +1,4 @@
-import { useEditorState, useStableMemo } from '@udecode/plate-common';
+import { useStableMemo } from '@udecode/plate-common';
 
 import {
   EmojiFloatingIndexSearch,
@@ -18,8 +18,6 @@ export function useEmojiDropdownMenuState({
   settings = EmojiSettings,
   closeOnSelect = true,
 }: EmojiDropdownMenuOptions = {}) {
-  const editor = useEditorState();
-
   const [emojiLibrary, indexSearch] = useStableMemo(() => {
     const frequentEmojiStorage = new FrequentEmojiStorage({
       limit: settings.showFrequent.limit,
@@ -39,7 +37,6 @@ export function useEmojiDropdownMenuState({
 
   const { isOpen, setIsOpen, ...emojiPickerState } = useEmojiPicker({
     closeOnSelect,
-    editor,
     emojiLibrary,
     indexSearch,
   });

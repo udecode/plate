@@ -6194,7 +6194,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-comments@npm:27.0.3, @udecode/plate-comments@workspace:^, @udecode/plate-comments@workspace:packages/comments":
+"@udecode/plate-comments@npm:27.0.4, @udecode/plate-comments@workspace:^, @udecode/plate-comments@workspace:packages/comments":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-comments@workspace:packages/comments"
   dependencies:
@@ -6241,7 +6241,7 @@ __metadata:
     clsx: "npm:^1.2.1"
     is-hotkey: "npm:^0.2.0"
     jotai: "npm:^2.6.0"
-    jotai-x: "npm:^1.0.1"
+    jotai-x: "npm:^1.1.0"
     lodash: "npm:^4.17.21"
     nanoid: "npm:^3.3.6"
     react-hotkeys-hook: "npm:^4.4.1"
@@ -6907,7 +6907,7 @@ __metadata:
     "@udecode/plate-break": "npm:27.0.3"
     "@udecode/plate-code-block": "npm:27.0.3"
     "@udecode/plate-combobox": "npm:27.0.3"
-    "@udecode/plate-comments": "npm:27.0.3"
+    "@udecode/plate-comments": "npm:27.0.4"
     "@udecode/plate-common": "npm:27.0.3"
     "@udecode/plate-find-replace": "npm:27.0.3"
     "@udecode/plate-floating": "npm:27.0.3"
@@ -13522,9 +13522,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jotai-x@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "jotai-x@npm:1.0.1"
+"jotai-x@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "jotai-x@npm:1.1.0"
   peerDependencies:
     "@types/react": ">=17.0.0"
     jotai: ">=2.0.0"
@@ -13534,7 +13534,7 @@ __metadata:
       optional: true
     react:
       optional: true
-  checksum: 67cbcd3ead992765b7a6f72e369f63da4a13519474c13a9d9f4acb35f2c205ee79c3e6ed0e698d17de6662f2c6cf97eb4e89486c6cd3e0d4f266b21094eaec1d
+  checksum: 1f42e706f9f7ba28ffd713623672ba46b00afb1b5ee62507948aeacf2f58a1b9074c30445757f387bae5a278050ec0b82b624a59aafdd732403c1d3b64eb87af
   languageName: node
   linkType: hard
 

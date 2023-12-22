@@ -1,3 +1,11 @@
+# 28.0.0
+
+## @udecode/plate-core@28.0.0
+
+### Major Changes
+
+- `usePlateSelectors`, `usePlateActions` and `usePlateStates` no longer accept generic type arguments. If custom types are required, cast the resulting values at the point of use, or use hooks like `useEditorRef` that still provide generics.
+
 # 27.0.0
 
 ## @udecode/plate-comments@27.0.0
