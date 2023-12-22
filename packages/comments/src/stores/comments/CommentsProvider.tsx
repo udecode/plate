@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   createAtomStore,
   getNodeString,
@@ -35,31 +36,57 @@ export interface CommentsStoreState {
 
   focusTextarea: boolean;
 
-  onCommentAdd: ((value: WithPartial<TComment, 'userId'>) => void) | null;
-  onCommentUpdate:
-    | ((value: Pick<TComment, 'id'> & Partial<Omit<TComment, 'id'>>) => void)
-    | null;
-  onCommentDelete: ((id: string) => void) | null;
+  onCommentAdd: { fn: (value: WithPartial<TComment, 'userId'>) => void } | null;
+  onCommentUpdate: {
+    fn: (value: Pick<TComment, 'id'> & Partial<Omit<TComment, 'id'>>) => void;
+  } | null;
+  onCommentDelete: { fn: (id: string) => void } | null;
 }
 
-export const { commentsStore, useCommentsStore, CommentsProvider } =
-  createAtomStore(
-    {
-      myUserId: null,
-      users: {},
-      comments: {},
-      activeCommentId: null,
-      addingCommentId: null,
-      newValue: [{ type: 'p', children: [{ text: '' }] }],
-      focusTextarea: false,
-      onCommentAdd: null,
-      onCommentUpdate: null,
-      onCommentDelete: null,
-    } as CommentsStoreState,
-    {
-      name: 'comments',
-    }
-  );
+export const {
+  commentsStore,
+  useCommentsStore,
+  CommentsProvider: PrimitiveCommentsProvider,
+} = createAtomStore(
+  {
+    myUserId: null,
+    users: {},
+    comments: {},
+    activeCommentId: null,
+    addingCommentId: null,
+    newValue: [{ type: 'p', children: [{ text: '' }] }],
+    focusTextarea: false,
+    onCommentAdd: null,
+    onCommentUpdate: null,
+    onCommentDelete: null,
+  } as CommentsStoreState,
+  {
+    name: 'comments',
+  }
+);
+
+export const CommentsProvider = ({
+  onCommentAdd,
+  onCommentUpdate,
+  onCommentDelete,
+  ...props
+}: Omit<
+  React.ComponentProps<typeof PrimitiveCommentsProvider>,
+  'onCommentAdd' | 'onCommentUpdate' | 'onCommentDelete'
+> & {
+  onCommentAdd?: (value: WithPartial<TComment, 'userId'>) => void;
+  onCommentUpdate?: (
+    value: Pick<TComment, 'id'> & Partial<Omit<TComment, 'id'>>
+  ) => void;
+  onCommentDelete?: (id: string) => void;
+}) => (
+  <PrimitiveCommentsProvider
+    {...props}
+    onCommentAdd={onCommentAdd ? { fn: onCommentAdd } : null}
+    onCommentUpdate={onCommentUpdate ? { fn: onCommentUpdate } : null}
+    onCommentDelete={onCommentDelete ? { fn: onCommentDelete } : null}
+  />
+);
 
 export const useCommentsStates = () => useCommentsStore().use;
 export const useCommentsSelectors = () => useCommentsStore().get;
