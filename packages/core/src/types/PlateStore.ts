@@ -38,9 +38,6 @@ export type PlateStoreState<
    */
   rawPlugins: PlatePlugin<PluginOptions, V, E>[];
 
-  // Whether the editor is read-only.
-  readOnly: boolean;
-
   /**
    * Flattened plugins.
    */
@@ -56,6 +53,9 @@ export type PlateStoreState<
    * Whether `Editable` is rendered so slate DOM is resolvable.
    */
   isMounted: boolean;
+
+  // Whether the editor is read-only.
+  readOnly: boolean;
 
   /**
    * Version incremented on each editor change.
