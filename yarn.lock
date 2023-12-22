@@ -6241,7 +6241,7 @@ __metadata:
     clsx: "npm:^1.2.1"
     is-hotkey: "npm:^0.2.0"
     jotai: "npm:^2.6.0"
-    jotai-x: "npm:0.0.0-20231222135748"
+    jotai-x: "npm:^1.1.0"
     lodash: "npm:^4.17.21"
     nanoid: "npm:^3.3.6"
     react-hotkeys-hook: "npm:^4.4.1"
@@ -13522,9 +13522,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jotai-x@npm:0.0.0-20231222135748":
-  version: 0.0.0-20231222135748
-  resolution: "jotai-x@npm:0.0.0-20231222135748"
+"jotai-x@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "jotai-x@npm:1.1.0"
   peerDependencies:
     "@types/react": ">=17.0.0"
     jotai: ">=2.0.0"
@@ -13534,7 +13534,7 @@ __metadata:
       optional: true
     react:
       optional: true
-  checksum: 9cc399aa535df9b020efa27dec8a158dbd95fec8afb6ce59995fc59aa3f1980098de83dbae85c40d9ef56dad383871f419fd6c613a082d9a098909d70e028fcc
+  checksum: 1f42e706f9f7ba28ffd713623672ba46b00afb1b5ee62507948aeacf2f58a1b9074c30445757f387bae5a278050ec0b82b624a59aafdd732403c1d3b64eb87af
   languageName: node
   linkType: hard
 
