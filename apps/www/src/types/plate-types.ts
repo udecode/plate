@@ -45,9 +45,6 @@ import {
   TReactEditor,
   useEditorRef,
   useEditorState,
-  usePlateActions,
-  usePlateSelectors,
-  usePlateStates,
   WithOverride,
 } from '@udecode/plate-common';
 import {

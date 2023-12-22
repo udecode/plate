@@ -1,6 +1,11 @@
 import React from 'react';
 import { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
-import { focusEditor, someNode, useEditorRef, useEditorSelector } from '@udecode/plate-common';
+import {
+  focusEditor,
+  someNode,
+  useEditorRef,
+  useEditorSelector,
+} from '@udecode/plate-common';
 import {
   deleteColumn,
   deleteRow,
@@ -29,8 +34,8 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
   const editor = useEditorRef();
 
   // eslint-disable-next-line @typescript-eslint/no-shadow
-  const tableSelected = useEditorSelector((editor) =>
-    someNode(editor, { match: { type: ELEMENT_TABLE } }),
+  const tableSelected = useEditorSelector(
+    (editor) => someNode(editor, { match: { type: ELEMENT_TABLE } }),
     []
   );
 

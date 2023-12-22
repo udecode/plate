@@ -117,8 +117,10 @@ export function PlaygroundTurnIntoDropdownMenu(props: DropdownMenuProps) {
       });
 
       if (entry) {
-        return items.find((item) => item.value === entry[0].type)?.value ??
-          ELEMENT_PARAGRAPH;
+        return (
+          items.find((item) => item.value === entry[0].type)?.value ??
+          ELEMENT_PARAGRAPH
+        );
       }
     }
 

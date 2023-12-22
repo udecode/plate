@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import {
-  isCollapsed,
   isSelectionExpanded,
   useEditorSelector,
   useElement,
@@ -29,7 +28,10 @@ export function MediaPopover({ pluginKey, children }: MediaPopoverProps) {
   const readOnly = useReadOnly();
   const selected = useSelected();
 
-  const selectionCollapsed = useEditorSelector((editor) => !isSelectionExpanded(editor), []);
+  const selectionCollapsed = useEditorSelector(
+    (editor) => !isSelectionExpanded(editor),
+    []
+  );
   const isOpen = !readOnly && selected && selectionCollapsed;
   const isEditing = useFloatingMediaSelectors().isEditing();
 

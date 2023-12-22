@@ -120,7 +120,10 @@ const TableFloatingToolbar = React.forwardRef<
   const editor = useEditorRef();
 
   // eslint-disable-next-line @typescript-eslint/no-shadow
-  const selectionCollapsed = useEditorSelector((editor) => !isSelectionExpanded(editor), []);
+  const selectionCollapsed = useEditorSelector(
+    (editor) => !isSelectionExpanded(editor),
+    []
+  );
   const collapsed = !readOnly && selected && selectionCollapsed;
   const open = !readOnly && selected;
 

@@ -17,7 +17,12 @@ import {
   useComboboxItem,
   useComboboxSelectors,
 } from '@udecode/plate-combobox';
-import { useEditorRef, useEditorSelector, useEventEditorSelectors, usePlateSelectors } from '@udecode/plate-common';
+import {
+  useEditorRef,
+  useEditorSelector,
+  useEventEditorSelectors,
+  usePlateSelectors,
+} from '@udecode/plate-common';
 import { createVirtualRef } from '@udecode/plate-floating';
 
 import { cn } from '@/lib/utils';
@@ -118,7 +123,10 @@ export function Combobox<TData extends Data = NoData>({
   const focusedEditorId = useEventEditorSelectors.focus?.();
   const combobox = useComboboxControls();
   const activeId = useComboboxSelectors.activeId();
-  const selectionDefined = useEditorSelector((editor => !!editor.selection), []);
+  const selectionDefined = useEditorSelector(
+    (editor) => !!editor.selection,
+    []
+  );
   const editorId = usePlateSelectors().id();
 
   useEffect(() => {
