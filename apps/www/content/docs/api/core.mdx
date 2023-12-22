@@ -31,20 +31,6 @@ Plugin attributes to override by plugin key.
   An array of plugins with overridden components or attributes.
 </APIReturns>
 
-<APIReturns>
-  An object containing the following properties:
-  <APIItem name="pressed" type="boolean">
-    A boolean indicating whether the `nodeType` mark is active in the current
-    selection.
-  </APIItem>
-  <APIItem name="nodeType" type="string">
-    The type of the node.
-  </APIItem>
-  <APIItem name="clear" type="string | string[]">
-    Type or types of the node to clear.
-  </APIItem>
-</APIReturns>
-
 ### createAtomStore
 
 Creates an atom store from an initial value. Each property of the initial value will have a getter and setter.
@@ -344,6 +330,40 @@ A `PlateEditor` object, which is the Slate editor.
 
 </APIReturns>
 
+### useEditorSelector
+
+Subscribe to a specific property of the editor.
+
+- Calls the selector function on editor change.
+- Re-renders when the result of the selector changes.
+- Should be used inside `Plate`.
+
+<APIParameters>
+  <APIItem name="selector" type="(editor: PlateEditor<V>, prev?: T) => T">
+    The selector function.
+  </APIItem>
+
+  <APIItem name="deps" type="DependencyList">
+    The dependency list for the selector function.
+  </APIItem>
+
+  <APIItem name="options" type="UseEditorSelectorOptions<T>" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="id" type="PlateId" optional>
+        The ID of the plate editor. Useful only when nesting editors. Default is using the closest editor id.
+      </APISubListItem>
+
+      <APISubListItem parent="options" name="equalityFn" type="(a: T, b: T) => boolean" optional>
+        Equality function to determine whether the result of the selector function has changed. Default is `(a, b) => a === b`.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  The return value of the selector function.
+</APIReturns>
+
 ### useEditorState
 
 Get the Slate editor reference with re-rendering.
@@ -352,6 +372,7 @@ Get the Slate editor reference with re-rendering.
 - Supports nested editors.
 - Should be used inside `Plate`.
 - Note the reference does not change when the editor changes.
+- If performance is a concern, `useEditorSelector` should be used instead.
 
 <APIParameters>
   <APIItem name="id" type="PlateId" optional>
