@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate",
-  "version": "27.0.3",
+  "version": "27.0.4",
   "description": "Plate – a plugin system for slate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -50,7 +50,7 @@
     "@udecode/plate-break": "27.0.3",
     "@udecode/plate-code-block": "27.0.3",
     "@udecode/plate-combobox": "27.0.3",
-    "@udecode/plate-comments": "27.0.3",
+    "@udecode/plate-comments": "27.0.4",
     "@udecode/plate-common": "27.0.3",
     "@udecode/plate-find-replace": "27.0.3",
     "@udecode/plate-floating": "27.0.3",
