@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Value } from '@udecode/slate';
+import { isDefined } from '@udecode/utils';
 
 import { PlateProps } from '../components';
 import { useEditorRef, usePlateStates } from '../stores';
@@ -26,7 +27,7 @@ export const usePlateEffects = <
   const [, setPlugins] = states.plugins();
 
   useEffect(() => {
-    if (pluginsProp !== rawPlugins) {
+    if (isDefined(pluginsProp) && pluginsProp !== rawPlugins) {
       setRawPlugins(rawPlugins);
 
       setPlatePlugins<V, E>(editor, {
