@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-core",
-  "version": "27.0.3",
+  "version": "28.0.0",
   "description": "The core architecture of Plate – a plugin system for slate",
   "license": "MIT",
   "homepage": "https://platejs.org",
