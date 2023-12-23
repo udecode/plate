@@ -68,7 +68,7 @@ test('init config-full', async () => {
   );
   expect(mockWriteFile).toHaveBeenNthCalledWith(
     3,
-    expect.stringMatching(/src\/lib\/utils.ts$/),
+    expect.stringMatching(/src\/lib\/utils.tsx$/),
     expect.stringContaining(`import { type ClassValue, clsx } from 'clsx'`),
     'utf8'
   );
@@ -138,7 +138,7 @@ test('init config-partial', async () => {
   );
   expect(mockWriteFile).toHaveBeenNthCalledWith(
     3,
-    expect.stringMatching(/utils.ts$/),
+    expect.stringMatching(/utils.tsx$/),
     expect.stringContaining(`import { type ClassValue, clsx } from 'clsx'`),
     'utf8'
   );
