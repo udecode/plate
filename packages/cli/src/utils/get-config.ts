@@ -36,6 +36,7 @@ export const rawConfigSchema = z.object({
     css: z.string(),
     baseColor: z.string(),
     cssVariables: z.boolean().default(true),
+    prefix: z.string().default('').optional(),
   }),
   aliases: z.object({
     components: z.string(),

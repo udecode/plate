@@ -9,6 +9,7 @@ import { registryBaseColorSchema } from '../registry/schema';
 import { transformCssVars } from './transform-css-vars';
 import { transformImport } from './transform-import';
 import { transformRsc } from './transform-rsc';
+import { transformTwPrefixes } from './transform-tw-prefix';
 
 import type { SourceFile } from 'ts-morph';
 
@@ -29,6 +30,7 @@ const transformers: Transformer[] = [
   transformImport,
   transformRsc,
   transformCssVars,
+  transformTwPrefixes,
 ];
 
 const project = new Project({
