@@ -42,8 +42,6 @@ export default function CustomizerDrawer() {
 
   if (!mounted) return null;
 
-  console.log(open);
-
   return (
     <div className="flex items-center space-x-2">
       {width <= 768 && (
