@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-media",
-  "version": "27.0.3",
+  "version": "28.0.0",
   "description": "Plate Media plugin",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -39,7 +39,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-common": "27.0.3",
+    "@udecode/plate-common": "28.0.0",
     "js-video-url-parser": "^0.5.1"
   },
   "peerDependencies": {
