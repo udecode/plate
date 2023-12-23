@@ -1,15 +1,12 @@
 import '@/styles/globals.css';
 
 import React from 'react';
-import { Metadata } from 'next';
+import { Metadata, Viewport } from 'next';
 
 import { siteConfig } from '@/config/site';
 import { fontSans } from '@/lib/fonts';
 import { cn } from '@/lib/utils';
-import {
-  Toaster as DefaultToaster,
-  Toaster as NewYorkToaster,
-} from '@/components/ui/toaster';
+import { Toaster } from '@/components/ui/sonner';
 import { Analytics } from '@/components/analytics';
 import { Body } from '@/components/body';
 import { Providers } from '@/components/context/providers';
@@ -22,6 +19,7 @@ export const metadata: Metadata = {
     default: siteConfig.name,
     template: `%s - ${siteConfig.name}`,
   },
+  metadataBase: new URL(siteConfig.url),
   description: siteConfig.description,
   keywords: [
     'Plate',
@@ -41,10 +39,6 @@ export const metadata: Metadata = {
     },
   ],
   creator: siteConfig.author,
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' },
-  ],
   openGraph: {
     type: 'website',
     locale: 'en_US',
@@ -61,7 +55,6 @@ export const metadata: Metadata = {
       },
     ],
   },
-  metadataBase: new URL(siteConfig.url),
   twitter: {
     card: 'summary_large_image',
     title: siteConfig.name,
@@ -75,6 +68,13 @@ export const metadata: Metadata = {
     apple: '/apple-touch-icon.png',
   },
   manifest: `${siteConfig.url}/site.webmanifest`,
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: 'white' },
+    { media: '(prefers-color-scheme: dark)', color: 'black' },
+  ],
 };
 
 interface RootLayoutProps {
@@ -95,17 +95,18 @@ export default function RootLayout({ children }: RootLayoutProps) {
         suppressHydrationWarning
       >
         <Providers>
-          <div className="relative flex min-h-screen flex-col">
-            <SiteHeader />
-            <div className="flex-1">{children}</div>
-            <SiteFooter />
+          <div vaul-drawer-wrapper="">
+            <div className="relative flex min-h-screen flex-col bg-background">
+              <SiteHeader />
+              <main className="flex-1">{children}</main>
+              <SiteFooter />
+            </div>
           </div>
         </Providers>
         <TailwindIndicator />
         <Analytics />
 
-        <NewYorkToaster />
-        <DefaultToaster />
+        <Toaster />
       </Body>
     </html>
   );

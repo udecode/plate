@@ -24,7 +24,7 @@ export function SiteHeader() {
                   variant: 'ghost',
                 })}
               >
-                <Icons.gitHub className="h-5 w-5" />
+                <Icons.gitHub className="h-4 w-4" />
                 <span className="sr-only">GitHub</span>
               </div>
             </Link>

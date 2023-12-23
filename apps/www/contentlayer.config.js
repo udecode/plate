@@ -27,13 +27,10 @@ const computedFields = {
   },
 };
 
-const RadixProperties = defineNestedType(() => ({
-  name: 'RadixProperties',
+const LinksProperties = defineNestedType(() => ({
+  name: 'LinksProperties',
   fields: {
-    shadcn: {
-      type: 'string',
-    },
-    link: {
+    doc: {
       type: 'string',
     },
     api: {
@@ -71,9 +68,9 @@ export const Doc = defineDocumentType(() => ({
       type: 'boolean',
       default: true,
     },
-    radix: {
+    links: {
       type: 'nested',
-      of: RadixProperties,
+      of: LinksProperties,
     },
     docs: {
       type: 'list',

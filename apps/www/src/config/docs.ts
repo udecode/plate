@@ -657,24 +657,6 @@ export const docsConfig: DocsConfig = {
         {
           title: 'Installation',
           href: '/docs/components/installation',
-          items: [
-            {
-              title: 'Manual',
-              href: '/docs/components/installation/manual',
-            },
-            {
-              title: 'Next.js',
-              href: '/docs/components/installation/next',
-            },
-            {
-              title: 'Vite',
-              href: '/docs/components/installation/vite',
-            },
-            {
-              title: 'Remix',
-              href: '/docs/components/installation/remix',
-            },
-          ],
         },
         {
           title: 'components.json',
@@ -695,19 +677,6 @@ export const docsConfig: DocsConfig = {
         {
           title: 'Changelog',
           href: '/docs/components/changelog',
-        },
-      ],
-    },
-    {
-      title: 'Dark Mode',
-      items: [
-        {
-          title: 'Next.js',
-          href: '/docs/components/dark-mode/next',
-        },
-        {
-          title: 'Vite',
-          href: '/docs/components/dark-mode/vite',
         },
       ],
     },
