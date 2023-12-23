@@ -58,7 +58,7 @@ export const findTabDestination = <V extends Value = Value>(
      * Otherwise, return the focus to the editor. If we're moving forward,
      * focus the first point after the active tabbable's path. If we're moving
      * backward, focus the point of the active tabbable's path.
-     * TODO: Let a tabable entry specify custom before and after points.
+     * TODO: Let a tabbable entry specify custom before and after points.
      */
 
     if (direction === 'forward') {
