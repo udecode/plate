@@ -9,7 +9,7 @@ export function CustomizerTabs() {
   const customizerTab = settingsStore.use.customizerTab();
 
   return (
-    <div className="flex w-full flex-col space-y-4 md:space-y-6">
+    <div className="flex w-full flex-col space-y-4 pt-4 md:space-y-6 md:pt-0">
       <Tabs
         value={customizerTab}
         onValueChange={(value) => {

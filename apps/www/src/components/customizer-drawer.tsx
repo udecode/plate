@@ -7,24 +7,23 @@ import { useViewport } from '@/hooks/use-viewport';
 import { Button } from '@/registry/default/plate-ui/button';
 
 import { CustomizerTabs } from './customizer-tabs';
+import { Drawer, DrawerContent } from './ui/drawer';
 
 import '@/styles/mdx.css';
 
 import * as React from 'react';
 import * as SheetPrimitive from '@radix-ui/react-dialog';
 import { ChevronsRight } from 'lucide-react';
-import { Drawer } from 'vaul';
 
 import { settingsStore } from './context/settings-store';
-import { DrawerContent } from './drawer';
 import { Sheet, SheetContent } from './ui/sheet';
 
 export default function CustomizerDrawer() {
   const open = settingsStore.use.showSettings();
   const setOpen = settingsStore.set.showSettings;
-  const { width } = useViewport();
   const cancelLoadingRef = useRef<any>('');
   const mounted = useMounted();
+  const { width } = useViewport();
 
   useEffect(() => {
     if (open) {
@@ -46,21 +45,17 @@ export default function CustomizerDrawer() {
   return (
     <div className="flex items-center space-x-2">
       {width <= 768 && (
-        <Drawer.Root
+        <Drawer
           open={open}
           onOpenChange={(value) => {
             setOpen(value);
           }}
-          // modal={false}
+          shouldScaleBackground={false}
         >
-          <DrawerContent
-            className="h-[85%] p-6 pt-10 md:hidden"
-            overlayClassName="md:hidden"
-            portalClassName="md:hidden"
-          >
+          <DrawerContent className="p-6 pt-0">
             <CustomizerTabs />
           </DrawerContent>
-        </Drawer.Root>
+        </Drawer>
       )}
 
       <div className="hidden md:flex">

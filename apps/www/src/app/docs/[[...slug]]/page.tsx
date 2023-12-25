@@ -3,7 +3,7 @@ import '@/styles/mdx.css';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { allDocs } from 'contentlayer/generated';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, ExternalLinkIcon } from 'lucide-react';
 import Balancer from 'react-wrap-balancer';
 
 import { docToPackage } from '@/config/doc-to-package';
@@ -14,7 +14,6 @@ import { absoluteUrl, cn } from '@/lib/utils';
 import { PackageInfoType } from '@/hooks/use-package-info';
 import { badgeVariants } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Icons } from '@/components/icons';
 import { Mdx } from '@/components/mdx-components';
 import { DocsPager } from '@/components/pager';
 import { DashboardTableOfContents } from '@/components/toc';
@@ -32,7 +31,7 @@ async function getDocFromParams({ params }: DocPageProps) {
   const doc = allDocs.find((_doc) => _doc.slugAsParams === slug);
 
   if (!doc) {
-    null;
+    return null;
   }
 
   return doc;
@@ -141,37 +140,28 @@ export default async function DocPage({ params }: DocPageProps) {
             </p>
           )}
         </div>
-        {doc.radix || doc.docs ? (
+        {doc.links ? (
           <div className="flex flex-wrap items-center gap-1 pt-4">
-            {doc.radix?.shadcn && (
+            {doc.links?.doc && (
               <Link
-                href={doc.radix.shadcn}
+                href={doc.links.doc}
                 target="_blank"
                 rel="noreferrer"
-                className={cn(badgeVariants({ variant: 'secondary' }))}
+                className={cn(badgeVariants({ variant: 'secondary' }), 'gap-1')}
               >
-                shadcn/ui
+                Docs
+                <ExternalLinkIcon className="h-3 w-3" />
               </Link>
             )}
-            {doc.radix?.link && (
+            {doc.links?.api && (
               <Link
-                href={doc.radix.link}
+                href={doc.links.api}
                 target="_blank"
                 rel="noreferrer"
-                className={cn(badgeVariants({ variant: 'secondary' }))}
-              >
-                <Icons.radix className="mr-1 h-3 w-3" />
-                Radix UI
-              </Link>
-            )}
-            {doc.radix?.api && (
-              <Link
-                href={doc.radix.api}
-                target="_blank"
-                rel="noreferrer"
-                className={cn(badgeVariants({ variant: 'secondary' }))}
+                className={cn(badgeVariants({ variant: 'secondary' }), 'gap-1')}
               >
                 API Reference
+                <ExternalLinkIcon className="h-3 w-3" />
               </Link>
             )}
             {doc.docs?.map((item) => (

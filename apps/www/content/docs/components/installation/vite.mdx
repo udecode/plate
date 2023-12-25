@@ -25,18 +25,26 @@ npx tailwindcss init -p
 
 ### Edit tsconfig.json
 
-Add the code below to the compilerOptions of your tsconfig.json so your app can resolve paths without error
+Add the following code to the `tsconfig.json` file to resolve paths:
 
-```bash
-"baseUrl": ".",
-"paths": {
-  "@/*": ["./src/*"]
+```bash {4-9} showLineNumbers
+{
+  "compilerOptions": {
+    // ...
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
+    // ...
+  }
 }
 ```
 
 ### Update vite.config.ts
 
-Add the code below to the vite.config.ts so your app can resolve paths without error
+Add the following code to the vite.config.ts so your app can resolve paths without error
 
 ```bash
 # (so you can import "path" without error)

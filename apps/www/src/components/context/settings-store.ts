@@ -1,11 +1,11 @@
 'use client';
 
 import { createZustandStore } from '@udecode/plate-common';
+import { toast } from 'sonner';
 
 import { customizerItems, SettingPlugin } from '@/config/customizer-items';
 import { customizerList } from '@/config/customizer-list';
 import { customizerPlugins } from '@/config/customizer-plugins';
-import { toast } from '@/components/ui/use-toast';
 
 export const categoryIds = customizerList.map((item) => item.id);
 
@@ -96,10 +96,7 @@ export const settingsStore = createZustandStore('settings')({
 
           const label = customizerItems[item]?.label;
           if (label) {
-            toast({
-              description: `${label} plugin disabled.`,
-              variant: 'default',
-            });
+            toast(`${label} plugin disabled.`);
           }
         });
 

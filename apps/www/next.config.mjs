@@ -31,7 +31,6 @@ const nextConfig = async (phase, { defaultConfig }) => {
     // Enable experimental features.
     experimental: {
       esmExternals: false,
-      serverActions: true,
       // Specify external packages that should be excluded from server-side rendering.
       // https://beta.nextjs.org/docs/api-reference/next-config#servercomponentsexternalpackages
       serverComponentsExternalPackages: ['@prisma/client'],
