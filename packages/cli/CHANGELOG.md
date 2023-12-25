@@ -1,5 +1,13 @@
 # @udecode/plate-ui
 
+## 28.1.0
+
+### Minor Changes
+
+- [#2824](https://github.com/udecode/plate/pull/2824) by [@zbeyens](https://github.com/zbeyens) –
+  - add support for custom tailwind prefix
+  - minify build
+
 ## 24.1.1
 
 ### Patch Changes
