@@ -1,8 +1,11 @@
 import {
+  ComponentPropsWithoutRef,
+  ComponentPropsWithRef,
   createElement,
   ElementRef,
   forwardRef,
-  ForwardRefExoticComponent,
+  ForwardRefRenderFunction,
+  FunctionComponent,
 } from 'react';
 import { cva, VariantProps } from 'class-variance-authority';
 import { clsx } from 'clsx';
@@ -15,8 +18,8 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function withProps<T extends { className?: string }>(
-  Component: ForwardRefExoticComponent<T>,
-  defaultProps: T
+  Component: FunctionComponent<T>,
+  defaultProps: Partial<T>
 ) {
   return forwardRef<ElementRef<typeof Component>, T>(
     function ExtendComponent(props, ref) {
@@ -32,37 +35,97 @@ export function withProps<T extends { className?: string }>(
   );
 }
 
+export function withCn<T extends { className?: string }>(
+  Component: FunctionComponent<T>,
+  className: string
+) {
+  return withProps<T>(Component, { className } as any);
+}
+
+export function withRef<T>(
+  Component: FunctionComponent<T>,
+  renderFunction: ForwardRefRenderFunction<
+    ElementRef<typeof Component>,
+    ComponentPropsWithRef<typeof Component>
+  >
+) {
+  return forwardRef(renderFunction);
+}
+
+export function withElementRef<E extends keyof HTMLElementTagNameMap>(
+  element: E,
+  renderFunction: ForwardRefRenderFunction<
+    ElementRef<typeof element>,
+    ComponentPropsWithRef<typeof element>
+  >
+) {
+  return forwardRef(renderFunction);
+}
+
+export function extendProps<E>(Component: FunctionComponent<E>) {
+  return function extended<T>(
+    renderFunction: ForwardRefRenderFunction<
+      ElementRef<typeof Component>,
+      ComponentPropsWithoutRef<typeof Component> & T
+    >
+  ) {
+    return forwardRef<
+      ElementRef<typeof Component>,
+      ComponentPropsWithoutRef<typeof Component> & T
+    >(renderFunction);
+  };
+}
+
+export function extendElementProps<E extends keyof HTMLElementTagNameMap>(
+  element: E
+) {
+  return function extended<T>(
+    renderFunction: ForwardRefRenderFunction<
+      ElementRef<typeof element>,
+      ComponentPropsWithoutRef<typeof element> & T
+    >
+  ) {
+    return forwardRef<
+      ElementRef<typeof element>,
+      ComponentPropsWithoutRef<typeof element> & T
+    >(renderFunction);
+  };
+}
+
 export function withVariants<
   T extends { className?: string },
   V extends ReturnType<typeof cva>,
 >(
-  Component: ForwardRefExoticComponent<T>,
+  Component: FunctionComponent<T>,
   variants: V,
   onlyVariantsProps?: (keyof VariantProps<V>)[]
 ) {
   return forwardRef<ElementRef<typeof Component>, T & VariantProps<V>>(
-    function ExtendComponent(props, ref) {
-      const variantProps = {} as VariantProps<V>;
+    function ExtendComponent({ className, ...props }, ref) {
+      const rest = { ...props };
 
       if (onlyVariantsProps) {
-        Object.keys(onlyVariantsProps).forEach((key) => {
-          variantProps[key] = props[key];
-          delete props[key];
+        onlyVariantsProps.forEach((key) => {
+          if (props[key as string] !== undefined) {
+            delete rest[key as string];
+          }
         });
       }
 
       return (
         <Component
           ref={ref}
-          {...props}
-          className={cn(variants(variantProps), props.className)}
+          className={cn(variants(props), className)}
+          {...(rest as any)}
         />
       );
     }
   );
 }
 
-export function create<T extends keyof HTMLElementTagNameMap>(tag: T) {
+export function createElementWithRef<T extends keyof HTMLElementTagNameMap>(
+  tag: T
+) {
   return forwardRef<HTMLElementTagNameMap[T], JSX.IntrinsicElements[T]>(
     function CreateComponent(props, ref) {
       return createElement(tag, { ...props, ref });

@@ -1,30 +1,29 @@
 import React from 'react';
-import { PlateElement, PlateElementProps, Value } from '@udecode/plate-common';
-import {
-  TExcalidrawElement,
-  useExcalidrawElement,
-} from '@udecode/plate-excalidraw';
+import { PlateElement } from '@udecode/plate-common';
+import { useExcalidrawElement } from '@udecode/plate-excalidraw';
 
-export function ExcalidrawElement({
-  nodeProps,
-  ...props
-}: PlateElementProps<Value, TExcalidrawElement>) {
-  const { children, element } = props;
+import { withRef } from '@/lib/utils';
 
-  const { Excalidraw, excalidrawProps } = useExcalidrawElement({
-    element,
-  });
+export const ExcalidrawElement = withRef(
+  PlateElement,
+  ({ nodeProps, ...props }, ref) => {
+    const { children, element } = props;
 
-  return (
-    <PlateElement {...props}>
-      <div contentEditable={false}>
-        <div className="h-[600px]">
-          {Excalidraw && (
-            <Excalidraw {...nodeProps} {...(excalidrawProps as any)} />
-          )}
+    const { Excalidraw, excalidrawProps } = useExcalidrawElement({
+      element,
+    });
+
+    return (
+      <PlateElement ref={ref} {...props}>
+        <div contentEditable={false}>
+          <div className="h-[600px]">
+            {Excalidraw && (
+              <Excalidraw {...nodeProps} {...(excalidrawProps as any)} />
+            )}
+          </div>
         </div>
-      </div>
-      {children}
-    </PlateElement>
-  );
-}
+        {children}
+      </PlateElement>
+    );
+  }
+);

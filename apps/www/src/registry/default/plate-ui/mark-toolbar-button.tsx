@@ -6,24 +6,16 @@ import {
   useMarkToolbarButtonState,
 } from '@udecode/plate-common';
 
-import { ToolbarButton, ToolbarButtonProps } from './toolbar';
+import { extendProps } from '@/lib/utils';
 
-export interface MarkToolbarButtonProps
-  extends Pick<ToolbarButtonProps, 'tooltip' | 'children'> {
+import { ToolbarButton } from './toolbar';
+
+export const MarkToolbarButton = extendProps(ToolbarButton)<{
   nodeType: string;
   clear?: string | string[];
-}
-
-/**
- * Toolbar button to toggle the mark of the leaves in selection.
- */
-export function MarkToolbarButton({
-  clear,
-  nodeType,
-  ...props
-}: MarkToolbarButtonProps) {
+}>(({ clear, nodeType, ...rest }, ref) => {
   const state = useMarkToolbarButtonState({ clear, nodeType });
-  const { props: buttonProps } = useMarkToolbarButton(state);
+  const { props } = useMarkToolbarButton(state);
 
-  return <ToolbarButton {...buttonProps} {...props} />;
-}
+  return <ToolbarButton ref={ref} {...props} {...rest} />;
+});

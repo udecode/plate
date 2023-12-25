@@ -10,18 +10,13 @@ import {
   useFloatingToolbarState,
 } from '@udecode/plate-floating';
 
-import { cn } from '@/lib/utils';
+import { cn, extendProps } from '@/lib/utils';
 
-import { Toolbar, ToolbarProps } from './toolbar';
+import { Toolbar } from './toolbar';
 
-export interface FloatingToolbarProps extends ToolbarProps {
+export const FloatingToolbar = extendProps(Toolbar)<{
   state?: FloatingToolbarState;
-}
-
-const FloatingToolbar = React.forwardRef<
-  React.ElementRef<typeof Toolbar>,
-  FloatingToolbarProps
->(({ state, children, ...props }, componentRef) => {
+}>(({ state, children, ...props }, componentRef) => {
   const floatingToolbarState = useFloatingToolbarState({
     ...state,
     floatingOptions: {
@@ -67,6 +62,3 @@ const FloatingToolbar = React.forwardRef<
     </PortalBody>
   );
 });
-FloatingToolbar.displayName = 'FloatingToolbar';
-
-export { FloatingToolbar };

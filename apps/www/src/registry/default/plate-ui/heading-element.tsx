@@ -1,6 +1,8 @@
 import React from 'react';
-import { PlateElement, PlateElementProps } from '@udecode/plate-common';
-import { cva, VariantProps } from 'class-variance-authority';
+import { PlateElement } from '@udecode/plate-common';
+import { cva } from 'class-variance-authority';
+
+import { withRef, withVariants } from '@/lib/utils';
 
 const headingVariants = cva('', {
   variants: {
@@ -19,28 +21,28 @@ const headingVariants = cva('', {
   },
 });
 
-export function HeadingElement({
-  className,
-  variant = 'h1',
-  isFirstBlock,
-  children,
-  ...props
-}: PlateElementProps & VariantProps<typeof headingVariants>) {
-  const { element, editor } = props;
+const HeadingElementVariants = withVariants(PlateElement, headingVariants, [
+  'isFirstBlock',
+  'variant',
+]);
 
-  const Element = variant!;
+export const HeadingElement = withRef(
+  HeadingElementVariants,
+  ({ variant = 'h1', isFirstBlock, children, ...props }, ref) => {
+    const { element, editor } = props;
 
-  return (
-    <PlateElement
-      asChild
-      className={headingVariants({
-        variant,
-        className,
-        isFirstBlock: element === editor.children[0],
-      })}
-      {...props}
-    >
-      <Element>{children}</Element>
-    </PlateElement>
-  );
-}
+    const Element = variant!;
+
+    return (
+      <HeadingElementVariants
+        ref={ref}
+        asChild
+        variant={variant}
+        isFirstBlock={element === editor.children[0]}
+        {...props}
+      >
+        <Element>{children}</Element>
+      </HeadingElementVariants>
+    );
+  }
+);

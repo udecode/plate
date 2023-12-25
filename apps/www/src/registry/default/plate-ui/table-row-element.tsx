@@ -1,16 +1,11 @@
 import React from 'react';
-import { PlateElement, PlateElementProps } from '@udecode/plate-common';
+import { PlateElement } from '@udecode/plate-common';
 
-import { cn } from '@/lib/utils';
+import { cn, extendProps } from '@/lib/utils';
 
-export interface PlateTableRowElementProps extends PlateElementProps {
+export const TableRowElement = extendProps(PlateElement)<{
   hideBorder?: boolean;
-}
-
-const TableRowElement = React.forwardRef<
-  React.ElementRef<typeof PlateElement>,
-  PlateTableRowElementProps
->(({ hideBorder, children, ...props }, ref) => {
+}>(({ hideBorder, children, ...props }, ref) => {
   return (
     <PlateElement
       asChild
@@ -22,6 +17,3 @@ const TableRowElement = React.forwardRef<
     </PlateElement>
   );
 });
-TableRowElement.displayName = 'TableRowElement';
-
-export { TableRowElement };

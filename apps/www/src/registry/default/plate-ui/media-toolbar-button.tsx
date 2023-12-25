@@ -5,20 +5,19 @@ import {
   useMediaToolbarButton,
 } from '@udecode/plate-media';
 
+import { extendProps } from '@/lib/utils';
 import { Icons } from '@/components/icons';
 
 import { ToolbarButton } from './toolbar';
 
-export function MediaToolbarButton({
-  nodeType,
-}: {
+export const MediaToolbarButton = extendProps(ToolbarButton)<{
   nodeType?: typeof ELEMENT_IMAGE | typeof ELEMENT_MEDIA_EMBED;
-}) {
+}>(({ nodeType, ...rest }, ref) => {
   const { props } = useMediaToolbarButton({ nodeType });
 
   return (
-    <ToolbarButton {...props}>
+    <ToolbarButton ref={ref} {...props} {...rest}>
       <Icons.image />
     </ToolbarButton>
   );
-}
+});

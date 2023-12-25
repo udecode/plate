@@ -4,17 +4,18 @@ import {
   useLinkToolbarButtonState,
 } from '@udecode/plate-link';
 
+import { withRef } from '@/lib/utils';
 import { Icons } from '@/components/icons';
 
 import { ToolbarButton } from './toolbar';
 
-export function LinkToolbarButton() {
+export const LinkToolbarButton = withRef(ToolbarButton, (rest, ref) => {
   const state = useLinkToolbarButtonState();
   const { props } = useLinkToolbarButton(state);
 
   return (
-    <ToolbarButton tooltip="Link" {...props}>
+    <ToolbarButton ref={ref} tooltip="Link" {...props} {...rest}>
       <Icons.link />
     </ToolbarButton>
   );
-}
+});

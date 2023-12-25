@@ -20,7 +20,7 @@ module.exports = {
   },
   settings: {
     tailwindcss: {
-      callees: ['cn', 'cva'],
+      callees: ['cn', 'cva', 'withCn'],
     },
   },
   extends: [

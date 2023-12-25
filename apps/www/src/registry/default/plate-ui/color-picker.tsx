@@ -2,36 +2,41 @@
 
 import React from 'react';
 
-import { cn } from '@/lib/utils';
-import { buttonVariants } from '@/registry/default/plate-ui/button';
-import { DropdownMenuItem } from '@/registry/default/plate-ui/dropdown-menu';
-import { Separator } from '@/registry/default/plate-ui/separator';
+import { cn, extendElementProps } from '@/lib/utils';
 
+import { buttonVariants } from './button';
 import { TColor } from './color-dropdown-menu';
 import { ColorDropdownMenuItems } from './color-dropdown-menu-items';
 import { ColorsCustom } from './colors-custom';
+import { DropdownMenuItem } from './dropdown-menu';
+import { Separator } from './separator';
 
-type ColorPickerProps = {
+export const ColorPickerContent = extendElementProps('div')<{
   color?: string;
   colors: TColor[];
   customColors: TColor[];
   updateColor: (color: string) => void;
   updateCustomColor: (color: string) => void;
   clearColor: () => void;
-} & React.HTMLAttributes<HTMLDivElement>;
-
-export function ColorPickerContent({
-  color,
-  colors,
-  customColors,
-  updateColor,
-  updateCustomColor,
-  clearColor,
-  className,
-  ...props
-}: ColorPickerProps) {
+}>((
+  {
+    color,
+    colors,
+    customColors,
+    updateColor,
+    updateCustomColor,
+    clearColor,
+    className,
+    ...props
+  },
+  ref
+) => {
   return (
-    <div className={cn('flex flex-col gap-4 p-4', className)} {...props}>
+    <div
+      ref={ref}
+      className={cn('flex flex-col gap-4 p-4', className)}
+      {...props}
+    >
       <ColorsCustom
         color={color}
         colors={colors}
@@ -60,7 +65,7 @@ export function ColorPickerContent({
       )}
     </div>
   );
-}
+});
 
 export const ColorPicker = React.memo(
   ColorPickerContent,

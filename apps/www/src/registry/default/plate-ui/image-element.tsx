@@ -1,19 +1,9 @@
 import React from 'react';
-import {
-  PlateElement,
-  PlateElementProps,
-  Value,
-  withHOC,
-} from '@udecode/plate-common';
-import {
-  ELEMENT_IMAGE,
-  Image,
-  TImageElement,
-  useMediaState,
-} from '@udecode/plate-media';
+import { PlateElement, withHOC } from '@udecode/plate-common';
+import { ELEMENT_IMAGE, Image, useMediaState } from '@udecode/plate-media';
 import { ResizableProvider, useResizableStore } from '@udecode/plate-resizable';
 
-import { cn } from '@/lib/utils';
+import { cn, withRef } from '@/lib/utils';
 
 import { Caption, CaptionTextarea } from './caption';
 import { MediaPopover } from './media-popover';
@@ -23,20 +13,15 @@ import {
   ResizeHandle,
 } from './resizable';
 
-const ImageElement = withHOC(
+export const ImageElement = withHOC(
   ResizableProvider,
-  ({
-    className,
-    children,
-    nodeProps,
-    ...props
-  }: PlateElementProps<Value, TImageElement>) => {
+  withRef(PlateElement, ({ className, children, nodeProps, ...props }, ref) => {
     const { readOnly, focused, selected, align = 'center' } = useMediaState();
     const width = useResizableStore().get.width();
 
     return (
       <MediaPopover pluginKey={ELEMENT_IMAGE}>
-        <PlateElement className={cn('py-2.5', className)} {...props}>
+        <PlateElement ref={ref} className={cn('py-2.5', className)} {...props}>
           <figure className="group relative m-0" contentEditable={false}>
             <Resizable
               align={align}
@@ -76,8 +61,5 @@ const ImageElement = withHOC(
         </PlateElement>
       </MediaPopover>
     );
-  }
+  })
 );
-ImageElement.displayName = 'ImageElement';
-
-export { ImageElement };
