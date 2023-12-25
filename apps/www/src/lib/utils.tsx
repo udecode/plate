@@ -4,6 +4,7 @@ import {
   forwardRef,
   ForwardRefExoticComponent,
 } from 'react';
+import { cva, VariantProps } from 'class-variance-authority';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -13,7 +14,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function extend<T extends { className?: string }>(
+export function withProps<T extends { className?: string }>(
   Component: ForwardRefExoticComponent<T>,
   defaultProps: T
 ) {
@@ -25,6 +26,36 @@ export function extend<T extends { className?: string }>(
           {...defaultProps}
           {...props}
           className={cn(defaultProps.className, props.className)}
+        />
+      );
+    }
+  );
+}
+
+export function withVariants<
+  T extends { className?: string },
+  V extends ReturnType<typeof cva>,
+>(
+  Component: ForwardRefExoticComponent<T>,
+  variants: V,
+  onlyVariantsProps?: (keyof VariantProps<V>)[]
+) {
+  return forwardRef<ElementRef<typeof Component>, T & VariantProps<V>>(
+    function ExtendComponent(props, ref) {
+      const variantProps = {} as VariantProps<V>;
+
+      if (onlyVariantsProps) {
+        Object.keys(onlyVariantsProps).forEach((key) => {
+          variantProps[key] = props[key];
+          delete props[key];
+        });
+      }
+
+      return (
+        <Component
+          ref={ref}
+          {...props}
+          className={cn(variants(variantProps), props.className)}
         />
       );
     }

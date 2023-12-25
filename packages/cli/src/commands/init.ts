@@ -268,7 +268,7 @@ export async function runInit(cwd: string, config: Config) {
 
   // Write utils file.
   await fs.writeFile(
-    `${config.resolvedPaths.utils}.tsx`,
+    `${config.resolvedPaths.utils}.ts`,
     templates.UTILS,
     'utf8'
   );
