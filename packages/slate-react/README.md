@@ -2,7 +2,7 @@
 
 ## Documentation
 
-[Slate](https://platejs.org/docs/api/slate)
+Visit https://platejs.org/docs/api/slate-react to view the documentation.
 
 ## License
 
