@@ -71,7 +71,7 @@ export const useTableCellElementState = ({
     const rowIndex = getTableRowIndex(editor, cellElement);
 
     const rowSize =
-      rowSizeOverrides.get(rowIndex) ?? rowElement?.size ?? undefined;
+      rowSizeOverrides.get?.(rowIndex) ?? rowElement?.size ?? undefined;
 
     const isFirstCell = colIndex === 0;
     const isFirstRow = tableElement.children?.[0] === rowElement;
@@ -115,7 +115,7 @@ export const useTableCellElementState = ({
   const endingColIndex = colIndex + colSpan - 1;
 
   const rowSize =
-    rowSizeOverrides.get(endingRowIndex) ?? rowElement?.size ?? undefined;
+    rowSizeOverrides.get?.(endingRowIndex) ?? rowElement?.size ?? undefined;
 
   const isFirstCell = colIndex === 0;
   const isFirstRow = tableElement.children?.[0] === rowElement;
