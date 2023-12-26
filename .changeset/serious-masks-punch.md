@@ -1,5 +1,6 @@
 ---
-"@udecode/plate-table": minor
+"@udecode/plate-table": patch
 ---
 
-fix merge of header cells in table
+- Fix: merge of header cells in table
+- Fix: #2831
