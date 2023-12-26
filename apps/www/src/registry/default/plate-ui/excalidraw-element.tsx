@@ -6,7 +6,7 @@ import { withRef } from '@/lib/utils';
 
 export const ExcalidrawElement = withRef(
   PlateElement,
-  ({ nodeProps, ...props }, ref) => {
+  ({ nodeProps, ...props }) => {
     const { children, element } = props;
 
     const { Excalidraw, excalidrawProps } = useExcalidrawElement({
@@ -14,7 +14,7 @@ export const ExcalidrawElement = withRef(
     });
 
     return (
-      <PlateElement ref={ref} {...props}>
+      <PlateElement {...props}>
         <div contentEditable={false}>
           <div className="h-[600px]">
             {Excalidraw && (

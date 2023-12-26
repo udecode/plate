@@ -6,14 +6,14 @@ import { cn, withRef } from '@/lib/utils';
 
 export const HrElement = withRef(
   PlateElement,
-  ({ className, nodeProps, ...props }, ref) => {
+  ({ className, nodeProps, ...props }) => {
     const { children } = props;
 
     const selected = useSelected();
     const focused = useFocused();
 
     return (
-      <PlateElement ref={ref} {...props}>
+      <PlateElement {...props}>
         <div className="py-6" contentEditable={false}>
           <hr
             {...nodeProps}

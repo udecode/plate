@@ -19,11 +19,11 @@ const ListElementVariants = withVariants(PlateElement, listVariants, [
 
 export const ListElement = withRef(
   ListElementVariants,
-  ({ className, children, variant = 'ul', ...props }, ref) => {
+  ({ className, children, variant = 'ul', ...props }) => {
     const Component = variant!;
 
     return (
-      <ListElementVariants ref={ref} asChild {...props}>
+      <ListElementVariants asChild {...props}>
         <Component>{children}</Component>
       </ListElementVariants>
     );

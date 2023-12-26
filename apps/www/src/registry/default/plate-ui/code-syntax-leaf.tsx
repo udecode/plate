@@ -8,13 +8,13 @@ import { withRef } from '@/lib/utils';
 
 export const CodeSyntaxLeaf = withRef(
   PlateLeaf,
-  ({ children, ...props }, ref) => {
+  ({ children, ...props }) => {
     const { leaf } = props;
 
     const { tokenProps } = useCodeSyntaxLeaf({ leaf });
 
     return (
-      <PlateLeaf ref={ref} {...props}>
+      <PlateLeaf {...props}>
         <span {...tokenProps}>{children}</span>
       </PlateLeaf>
     );

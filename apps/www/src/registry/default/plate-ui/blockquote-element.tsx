@@ -7,11 +7,10 @@ import { cn, withRef } from '@/lib/utils';
 
 export const BlockquoteElement = withRef(
   PlateElement,
-  ({ className, children, ...props }, ref) => {
+  ({ className, children, ...props }) => {
     return (
       <PlateElement
         asChild
-        ref={ref}
         className={cn('my-1 border-l-2 pl-6 italic', className)}
         {...props}
       >

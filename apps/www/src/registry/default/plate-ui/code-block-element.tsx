@@ -12,13 +12,12 @@ import { CodeBlockCombobox } from './code-block-combobox';
 
 export const CodeBlockElement = withRef(
   PlateElement,
-  ({ className, children, ...props }, ref) => {
+  ({ className, children, ...props }) => {
     const { element } = props;
     const state = useCodeBlockElementState({ element });
 
     return (
       <PlateElement
-        ref={ref}
         className={cn('relative py-1', state.className, className)}
         {...props}
       >

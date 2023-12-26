@@ -5,6 +5,6 @@ import { PlateElement } from '@udecode/plate-common';
 
 import { withRef } from '@/lib/utils';
 
-export const CodeLineElement = withRef(PlateElement, (props, ref) => (
-  <PlateElement ref={ref} {...props} />
+export const CodeLineElement = withRef(PlateElement, (props) => (
+  <PlateElement {...props} />
 ));

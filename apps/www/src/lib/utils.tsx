@@ -4,8 +4,10 @@ import {
   createElement,
   ElementRef,
   forwardRef,
+  ForwardRefExoticComponent,
   ForwardRefRenderFunction,
   FunctionComponent,
+  PropsWithRef,
 } from 'react';
 import { cva, VariantProps } from 'class-variance-authority';
 import { clsx } from 'clsx';
@@ -43,13 +45,14 @@ export function withCn<T extends { className?: string }>(
 }
 
 export function withRef<T>(
-  Component: FunctionComponent<T>,
-  renderFunction: ForwardRefRenderFunction<
-    ElementRef<typeof Component>,
-    ComponentPropsWithRef<typeof Component>
-  >
+  Component: ForwardRefExoticComponent<T>,
+  RenderFunction: (props: PropsWithRef<T>) => JSX.Element
 ) {
-  return forwardRef(renderFunction);
+  return forwardRef<ElementRef<typeof Component>, PropsWithRef<T>>(
+    function ExtendComponent(props, ref) {
+      return <RenderFunction ref={ref} {...props} />;
+    }
+  );
 }
 
 export function withElementRef<E extends keyof HTMLElementTagNameMap>(

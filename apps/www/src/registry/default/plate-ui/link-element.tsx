@@ -6,14 +6,13 @@ import { cn, withRef } from '@/lib/utils';
 
 export const LinkElement = withRef(
   PlateElement,
-  ({ className, children, ...props }, ref) => {
+  ({ className, children, ...props }) => {
     const element = useElement<TLinkElement>();
     const { props: linkProps } = useLink({ element });
 
     return (
       <PlateElement
         asChild
-        ref={ref}
         className={cn(
           'font-medium text-primary underline decoration-primary underline-offset-4',
           className

@@ -6,11 +6,11 @@ import { Icons } from '@/components/icons';
 
 import { ToolbarButton } from './toolbar';
 
-export const OutdentToolbarButton = withRef(ToolbarButton, (rest, ref) => {
+export const OutdentToolbarButton = withRef(ToolbarButton, (rest) => {
   const { props } = useOutdentButton();
 
   return (
-    <ToolbarButton ref={ref} tooltip="Outdent" {...props} {...rest}>
+    <ToolbarButton tooltip="Outdent" {...props} {...rest}>
       <Icons.outdent />
     </ToolbarButton>
   );

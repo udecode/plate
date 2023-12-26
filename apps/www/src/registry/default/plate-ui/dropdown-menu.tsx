@@ -26,9 +26,8 @@ export const DropdownMenuSubTrigger = extendProps(
   DropdownMenuPrimitive.SubTrigger
 )<{
   inset?: boolean;
-}>(({ className, inset, children, ...props }, ref) => (
+}>(({ className, inset, children, ...props }) => (
   <DropdownMenuPrimitive.SubTrigger
-    ref={ref}
     className={cn(
       'flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent',
       'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
@@ -49,10 +48,9 @@ export const DropdownMenuSubContent = withCn(
 
 export const DropdownMenuContent = withRef(
   DropdownMenuPrimitive.Content,
-  ({ className, sideOffset = 4, ...props }, ref) => (
+  ({ className, sideOffset = 4, ...props }) => (
     <DropdownMenuPrimitive.Portal>
       <DropdownMenuPrimitive.Content
-        ref={ref}
         sideOffset={sideOffset}
         className={cn(
           'z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
@@ -86,9 +84,8 @@ export const DropdownMenuItem = withVariants(
 
 export const DropdownMenuCheckboxItem = withRef(
   DropdownMenuPrimitive.CheckboxItem,
-  ({ className, children, ...props }, ref) => (
+  ({ className, children, ...props }) => (
     <DropdownMenuPrimitive.CheckboxItem
-      ref={ref}
       className={cn(
         'relative flex select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
         'cursor-pointer',
@@ -110,9 +107,8 @@ export const DropdownMenuRadioItem = extendProps(
   DropdownMenuPrimitive.RadioItem
 )<{
   hideIcon?: boolean;
-}>(({ className, children, hideIcon, ...props }, ref) => (
+}>(({ className, children, hideIcon, ...props }) => (
   <DropdownMenuPrimitive.RadioItem
-    ref={ref}
     className={cn(
       'relative flex select-none items-center rounded-sm pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       'h-9 cursor-pointer px-2 data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground',

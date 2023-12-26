@@ -9,12 +9,12 @@ import { Icons } from '@/components/icons';
 
 import { ToolbarButton } from './toolbar';
 
-export const LinkToolbarButton = withRef(ToolbarButton, (rest, ref) => {
+export const LinkToolbarButton = withRef(ToolbarButton, (rest) => {
   const state = useLinkToolbarButtonState();
   const { props } = useLinkToolbarButton(state);
 
   return (
-    <ToolbarButton ref={ref} tooltip="Link" {...props} {...rest}>
+    <ToolbarButton tooltip="Link" {...props} {...rest}>
       <Icons.link />
     </ToolbarButton>
   );

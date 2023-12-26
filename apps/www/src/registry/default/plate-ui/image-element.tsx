@@ -15,13 +15,13 @@ import {
 
 export const ImageElement = withHOC(
   ResizableProvider,
-  withRef(PlateElement, ({ className, children, nodeProps, ...props }, ref) => {
+  withRef(PlateElement, ({ className, children, nodeProps, ...props }) => {
     const { readOnly, focused, selected, align = 'center' } = useMediaState();
     const width = useResizableStore().get.width();
 
     return (
       <MediaPopover pluginKey={ELEMENT_IMAGE}>
-        <PlateElement ref={ref} className={cn('py-2.5', className)} {...props}>
+        <PlateElement className={cn('py-2.5', className)} {...props}>
           <figure className="group relative m-0" contentEditable={false}>
             <Resizable
               align={align}

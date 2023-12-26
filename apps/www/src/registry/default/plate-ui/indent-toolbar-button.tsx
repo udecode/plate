@@ -6,11 +6,11 @@ import { Icons } from '@/components/icons';
 
 import { ToolbarButton } from './toolbar';
 
-export const IndentToolbarButton = withRef(ToolbarButton, (rest, ref) => {
+export const IndentToolbarButton = withRef(ToolbarButton, (rest) => {
   const { props } = useIndentButton();
 
   return (
-    <ToolbarButton ref={ref} tooltip="Indent" {...props} {...rest}>
+    <ToolbarButton tooltip="Indent" {...props} {...rest}>
       <Icons.indent />
     </ToolbarButton>
   );

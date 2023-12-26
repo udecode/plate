@@ -36,7 +36,7 @@ import { Separator } from './separator';
 
 export const TableBordersDropdownMenuContent = withRef(
   DropdownMenuPrimitive.Content,
-  (props, ref) => {
+  (props) => {
     const {
       getOnSelectTableBorder,
       hasOuterBorders,
@@ -49,7 +49,6 @@ export const TableBordersDropdownMenuContent = withRef(
 
     return (
       <DropdownMenuContent
-        ref={ref}
         className={cn('min-w-[220px]')}
         side="right"
         align="start"
@@ -108,7 +107,7 @@ export const TableBordersDropdownMenuContent = withRef(
 
 export const TableFloatingToolbar = withRef(
   PopoverContent,
-  ({ children, ...props }, ref) => {
+  ({ children, ...props }) => {
     const element = useElement<TTableElement>();
     const { props: buttonProps } = useRemoveNodeButton({ element });
 
@@ -177,7 +176,6 @@ export const TableFloatingToolbar = withRef(
         <PopoverAnchor asChild>{children}</PopoverAnchor>
         {(canMerge || canUnmerge || collapsed) && (
           <PopoverContent
-            ref={ref}
             className={cn(
               popoverVariants(),
               'flex w-[220px] flex-col gap-1 p-1'
@@ -197,7 +195,7 @@ export const TableFloatingToolbar = withRef(
 
 export const TableElement = withRef(
   PlateElement,
-  ({ className, children, ...props }, ref) => {
+  ({ className, children, ...props }) => {
     const { colSizes, isSelectingCell, minColumnWidth, marginLeft } =
       useTableElementState();
     const { props: tableProps, colGroupProps } = useTableElement();
@@ -206,7 +204,6 @@ export const TableElement = withRef(
       <TableFloatingToolbar>
         <div style={{ paddingLeft: marginLeft }}>
           <PlateElement
-            ref={ref}
             asChild
             className={cn(
               'my-4 ml-px mr-0 table h-px w-full table-fixed border-collapse',

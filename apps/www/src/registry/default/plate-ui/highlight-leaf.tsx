@@ -5,9 +5,8 @@ import { cn, withRef } from '@/lib/utils';
 
 export const HighlightLeaf = withRef(
   PlateLeaf,
-  ({ className, children, ...props }, ref) => (
+  ({ className, children, ...props }) => (
     <PlateLeaf
-      ref={ref}
       asChild
       className={cn('bg-primary/20 text-inherit dark:bg-primary/40', className)}
       {...props}

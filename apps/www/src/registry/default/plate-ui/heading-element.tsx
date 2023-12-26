@@ -28,14 +28,13 @@ const HeadingElementVariants = withVariants(PlateElement, headingVariants, [
 
 export const HeadingElement = withRef(
   HeadingElementVariants,
-  ({ variant = 'h1', isFirstBlock, children, ...props }, ref) => {
+  ({ variant = 'h1', isFirstBlock, children, ...props }) => {
     const { element, editor } = props;
 
     const Element = variant!;
 
     return (
       <HeadingElementVariants
-        ref={ref}
         asChild
         variant={variant}
         isFirstBlock={element === editor.children[0]}

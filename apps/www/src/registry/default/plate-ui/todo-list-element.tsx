@@ -11,14 +11,13 @@ import { Checkbox } from './checkbox';
 
 export const TodoListElement = withRef(
   PlateElement,
-  ({ className, children, ...props }, ref) => {
+  ({ className, children, ...props }) => {
     const { element } = props;
     const state = useTodoListElementState({ element });
     const { checkboxProps } = useTodoListElement(state);
 
     return (
       <PlateElement
-        ref={ref}
         className={cn('flex flex-row py-1', className)}
         {...props}
       >
