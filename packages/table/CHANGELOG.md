@@ -1,5 +1,13 @@
 # @udecode/plate-table
 
+## 28.1.1
+
+### Patch Changes
+
+- [#2832](https://github.com/udecode/plate/pull/2832) by [@dimaanj](https://github.com/dimaanj) –
+  - Fix: merge of header cells in table
+  - Fix: #2831
+
 ## 28.0.0
 
 ### Patch Changes
