@@ -5,8 +5,7 @@ import { PlateLeaf } from '@udecode/plate-common';
 
 import { cn, withRef } from '@/lib/utils';
 
-export const CodeLeaf = withRef(
-  PlateLeaf,
+export const CodeLeaf = withRef<typeof PlateLeaf>(
   ({ className, children, ...props }) => {
     return (
       <PlateLeaf

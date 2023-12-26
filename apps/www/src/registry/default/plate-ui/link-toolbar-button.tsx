@@ -9,7 +9,7 @@ import { Icons } from '@/components/icons';
 
 import { ToolbarButton } from './toolbar';
 
-export const LinkToolbarButton = withRef(ToolbarButton, (rest) => {
+export const LinkToolbarButton = withRef<typeof ToolbarButton>((rest) => {
   const state = useLinkToolbarButtonState();
   const { props } = useLinkToolbarButton(state);
 

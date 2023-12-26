@@ -22,7 +22,7 @@ import {
 
 export const MediaEmbedElement = withHOC(
   ResizableProvider,
-  withRef(PlateElement, ({ className, children, ...props }) => {
+  withRef<typeof PlateElement>(({ className, children, ...props }) => {
     const {
       align = 'center',
       focused,
@@ -40,10 +40,7 @@ export const MediaEmbedElement = withHOC(
 
     return (
       <MediaPopover pluginKey={ELEMENT_MEDIA_EMBED}>
-        <PlateElement
-          className={cn('relative py-2.5', className)}
-          {...props}
-        >
+        <PlateElement className={cn('relative py-2.5', className)} {...props}>
           <figure className="group relative m-0 w-full" contentEditable={false}>
             <Resizable
               align={align}

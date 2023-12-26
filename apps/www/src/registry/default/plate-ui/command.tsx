@@ -26,8 +26,7 @@ export function CommandDialog({ children, ...props }: DialogProps) {
   );
 }
 
-export const CommandInput = withRef(
-  CommandPrimitive.Input,
+export const CommandInput = withRef<typeof CommandPrimitive.Input>(
   ({ className, ...props }) => (
     <div className="flex items-center border-b px-3" cmdk-input-wrapper="">
       <Icons.search className="mr-2 h-4 w-4 shrink-0 opacity-50" />

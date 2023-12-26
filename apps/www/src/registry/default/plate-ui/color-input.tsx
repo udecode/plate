@@ -4,11 +4,10 @@ import React from 'react';
 import { useComposedRef } from '@udecode/plate-common';
 import { useColorInput } from '@udecode/plate-font';
 
-import { cn, withElementRef } from '@/lib/utils';
+import { cn, withRef } from '@/lib/utils';
 
-export const ColorInput = withElementRef(
-  'input',
-  ({ value = '#000000', children, className, ...props }, ref) => {
+export const ColorInput = withRef<'input'>(
+  ({ value = '#000000', children, className, ref, ...props }) => {
     const { inputRef, childProps } = useColorInput();
 
     return (

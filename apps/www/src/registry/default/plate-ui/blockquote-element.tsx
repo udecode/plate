@@ -5,8 +5,7 @@ import { PlateElement } from '@udecode/plate-common';
 
 import { cn, withRef } from '@/lib/utils';
 
-export const BlockquoteElement = withRef(
-  PlateElement,
+export const BlockquoteElement = withRef<typeof PlateElement>(
   ({ className, children, ...props }) => {
     return (
       <PlateElement

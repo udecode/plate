@@ -10,8 +10,7 @@ import { cn, withRef } from '@/lib/utils';
 
 import { CodeBlockCombobox } from './code-block-combobox';
 
-export const CodeBlockElement = withRef(
-  PlateElement,
+export const CodeBlockElement = withRef<typeof PlateElement>(
   ({ className, children, ...props }) => {
     const { element } = props;
     const state = useCodeBlockElementState({ element });

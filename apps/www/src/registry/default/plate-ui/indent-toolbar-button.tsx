@@ -6,7 +6,7 @@ import { Icons } from '@/components/icons';
 
 import { ToolbarButton } from './toolbar';
 
-export const IndentToolbarButton = withRef(ToolbarButton, (rest) => {
+export const IndentToolbarButton = withRef<typeof ToolbarButton>((rest) => {
   const { props } = useIndentButton();
 
   return (

@@ -4,8 +4,7 @@ import { TLinkElement, useLink } from '@udecode/plate-link';
 
 import { cn, withRef } from '@/lib/utils';
 
-export const LinkElement = withRef(
-  PlateElement,
+export const LinkElement = withRef<typeof PlateElement>(
   ({ className, children, ...props }) => {
     const element = useElement<TLinkElement>();
     const { props: linkProps } = useLink({ element });

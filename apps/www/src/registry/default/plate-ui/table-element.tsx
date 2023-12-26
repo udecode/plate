@@ -34,79 +34,77 @@ import {
 import { Popover, PopoverContent, popoverVariants } from './popover';
 import { Separator } from './separator';
 
-export const TableBordersDropdownMenuContent = withRef(
-  DropdownMenuPrimitive.Content,
-  (props) => {
-    const {
-      getOnSelectTableBorder,
-      hasOuterBorders,
-      hasBottomBorder,
-      hasLeftBorder,
-      hasNoBorders,
-      hasRightBorder,
-      hasTopBorder,
-    } = useTableBordersDropdownMenuContentState();
+export const TableBordersDropdownMenuContent = withRef<
+  typeof DropdownMenuPrimitive.Content
+>((props) => {
+  const {
+    getOnSelectTableBorder,
+    hasOuterBorders,
+    hasBottomBorder,
+    hasLeftBorder,
+    hasNoBorders,
+    hasRightBorder,
+    hasTopBorder,
+  } = useTableBordersDropdownMenuContentState();
 
-    return (
-      <DropdownMenuContent
-        className={cn('min-w-[220px]')}
-        side="right"
-        align="start"
-        sideOffset={0}
-        {...props}
+  return (
+    <DropdownMenuContent
+      className={cn('min-w-[220px]')}
+      side="right"
+      align="start"
+      sideOffset={0}
+      {...props}
+    >
+      <DropdownMenuCheckboxItem
+        checked={hasBottomBorder}
+        onCheckedChange={getOnSelectTableBorder('bottom')}
       >
-        <DropdownMenuCheckboxItem
-          checked={hasBottomBorder}
-          onCheckedChange={getOnSelectTableBorder('bottom')}
-        >
-          <Icons.borderBottom className={iconVariants({ size: 'sm' })} />
-          <div>Bottom Border</div>
-        </DropdownMenuCheckboxItem>
-        <DropdownMenuCheckboxItem
-          checked={hasTopBorder}
-          onCheckedChange={getOnSelectTableBorder('top')}
-        >
-          <Icons.borderTop className={iconVariants({ size: 'sm' })} />
-          <div>Top Border</div>
-        </DropdownMenuCheckboxItem>
-        <DropdownMenuCheckboxItem
-          checked={hasLeftBorder}
-          onCheckedChange={getOnSelectTableBorder('left')}
-        >
-          <Icons.borderLeft className={iconVariants({ size: 'sm' })} />
-          <div>Left Border</div>
-        </DropdownMenuCheckboxItem>
-        <DropdownMenuCheckboxItem
-          checked={hasRightBorder}
-          onCheckedChange={getOnSelectTableBorder('right')}
-        >
-          <Icons.borderRight className={iconVariants({ size: 'sm' })} />
-          <div>Right Border</div>
-        </DropdownMenuCheckboxItem>
+        <Icons.borderBottom className={iconVariants({ size: 'sm' })} />
+        <div>Bottom Border</div>
+      </DropdownMenuCheckboxItem>
+      <DropdownMenuCheckboxItem
+        checked={hasTopBorder}
+        onCheckedChange={getOnSelectTableBorder('top')}
+      >
+        <Icons.borderTop className={iconVariants({ size: 'sm' })} />
+        <div>Top Border</div>
+      </DropdownMenuCheckboxItem>
+      <DropdownMenuCheckboxItem
+        checked={hasLeftBorder}
+        onCheckedChange={getOnSelectTableBorder('left')}
+      >
+        <Icons.borderLeft className={iconVariants({ size: 'sm' })} />
+        <div>Left Border</div>
+      </DropdownMenuCheckboxItem>
+      <DropdownMenuCheckboxItem
+        checked={hasRightBorder}
+        onCheckedChange={getOnSelectTableBorder('right')}
+      >
+        <Icons.borderRight className={iconVariants({ size: 'sm' })} />
+        <div>Right Border</div>
+      </DropdownMenuCheckboxItem>
 
-        <Separator />
+      <Separator />
 
-        <DropdownMenuCheckboxItem
-          checked={hasNoBorders}
-          onCheckedChange={getOnSelectTableBorder('none')}
-        >
-          <Icons.borderNone className={iconVariants({ size: 'sm' })} />
-          <div>No Border</div>
-        </DropdownMenuCheckboxItem>
-        <DropdownMenuCheckboxItem
-          checked={hasOuterBorders}
-          onCheckedChange={getOnSelectTableBorder('outer')}
-        >
-          <Icons.borderAll className={iconVariants({ size: 'sm' })} />
-          <div>Outside Borders</div>
-        </DropdownMenuCheckboxItem>
-      </DropdownMenuContent>
-    );
-  }
-);
+      <DropdownMenuCheckboxItem
+        checked={hasNoBorders}
+        onCheckedChange={getOnSelectTableBorder('none')}
+      >
+        <Icons.borderNone className={iconVariants({ size: 'sm' })} />
+        <div>No Border</div>
+      </DropdownMenuCheckboxItem>
+      <DropdownMenuCheckboxItem
+        checked={hasOuterBorders}
+        onCheckedChange={getOnSelectTableBorder('outer')}
+      >
+        <Icons.borderAll className={iconVariants({ size: 'sm' })} />
+        <div>Outside Borders</div>
+      </DropdownMenuCheckboxItem>
+    </DropdownMenuContent>
+  );
+});
 
-export const TableFloatingToolbar = withRef(
-  PopoverContent,
+export const TableFloatingToolbar = withRef<typeof PopoverContent>(
   ({ children, ...props }) => {
     const element = useElement<TTableElement>();
     const { props: buttonProps } = useRemoveNodeButton({ element });
@@ -193,8 +191,7 @@ export const TableFloatingToolbar = withRef(
   }
 );
 
-export const TableElement = withRef(
-  PlateElement,
+export const TableElement = withRef<typeof PlateElement>(
   ({ className, children, ...props }) => {
     const { colSizes, isSelectingCell, minColumnWidth, marginLeft } =
       useTableElementState();

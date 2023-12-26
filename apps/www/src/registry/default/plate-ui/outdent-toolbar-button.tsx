@@ -6,7 +6,7 @@ import { Icons } from '@/components/icons';
 
 import { ToolbarButton } from './toolbar';
 
-export const OutdentToolbarButton = withRef(ToolbarButton, (rest) => {
+export const OutdentToolbarButton = withRef<typeof ToolbarButton>((rest) => {
   const { props } = useOutdentButton();
 
   return (

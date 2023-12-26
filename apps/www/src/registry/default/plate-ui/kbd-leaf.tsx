@@ -3,8 +3,7 @@ import { PlateLeaf } from '@udecode/plate-common';
 
 import { cn, withRef } from '@/lib/utils';
 
-export const KbdLeaf = withRef(
-  PlateLeaf,
+export const KbdLeaf = withRef<typeof PlateLeaf>(
   ({ className, children, ...props }) => (
     <PlateLeaf
       asChild

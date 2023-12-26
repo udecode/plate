@@ -4,8 +4,7 @@ import { useExcalidrawElement } from '@udecode/plate-excalidraw';
 
 import { withRef } from '@/lib/utils';
 
-export const ExcalidrawElement = withRef(
-  PlateElement,
+export const ExcalidrawElement = withRef<typeof PlateElement>(
   ({ nodeProps, ...props }) => {
     const { children, element } = props;
 

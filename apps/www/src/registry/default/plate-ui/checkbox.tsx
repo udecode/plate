@@ -6,8 +6,7 @@ import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
 import { cn, withRef } from '@/lib/utils';
 import { Icons } from '@/components/icons';
 
-export const Checkbox = withRef(
-  CheckboxPrimitive.Root,
+export const Checkbox = withRef<typeof CheckboxPrimitive.Root>(
   ({ className, ...props }) => (
     <CheckboxPrimitive.Root
       className={cn(

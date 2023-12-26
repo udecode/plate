@@ -9,18 +9,14 @@ import { cn, withRef } from '@/lib/utils';
 
 import { Checkbox } from './checkbox';
 
-export const TodoListElement = withRef(
-  PlateElement,
+export const TodoListElement = withRef<typeof PlateElement>(
   ({ className, children, ...props }) => {
     const { element } = props;
     const state = useTodoListElementState({ element });
     const { checkboxProps } = useTodoListElement(state);
 
     return (
-      <PlateElement
-        className={cn('flex flex-row py-1', className)}
-        {...props}
-      >
+      <PlateElement className={cn('flex flex-row py-1', className)} {...props}>
         <div
           className="mr-1.5 flex select-none items-center justify-center"
           contentEditable={false}

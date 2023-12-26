@@ -26,8 +26,7 @@ const HeadingElementVariants = withVariants(PlateElement, headingVariants, [
   'variant',
 ]);
 
-export const HeadingElement = withRef(
-  HeadingElementVariants,
+export const HeadingElement = withRef<typeof HeadingElementVariants>(
   ({ variant = 'h1', isFirstBlock, children, ...props }) => {
     const { element, editor } = props;
 
