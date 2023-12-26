@@ -119,18 +119,6 @@ If true, merges its props onto its immediate child.
 </APIItem>
 </APIAttributes>
 
-### PortalBody
-
-Renders a React component in the `document.body` using a portal.
-
-### Text
-
-Generic component for rendering a span.
-
-### Box
-
-Generic component for rendering a div.
-
 ## Hooks
 
 ### useMarkToolbarButtonState
@@ -306,35 +294,6 @@ Selects an editor at a target location or an edge (start, end).
 
 ## Utils
 
-### createPrimitiveComponent
-
-Creates a primitive component factory which utilizes hooks for managing state, props, and forwards references to child components.
-
-<APIParameters>
-  <APIItem name="element" type="React.ElementType">
-    The base component or native HTML element.
-  </APIItem>
-</APIParameters>
-<APIReturns>
-  A function returning a primitive component with hooks for state and props
-  management.
-</APIReturns>
-
-### createSlotComponent
-
-Creates a Slot component, which is useful when you want a component to behave as its child.
-
-<APIParameters>
-  <APIItem name="element" type="React.ElementType">
-    The base component or native HTML element.
-  </APIItem>
-</APIParameters>
-<APIReturns>
-
-A function returning a Slot component.
-
-</APIReturns>
-
 ### defaultsDeepToNodes
 
 Recursively merges a source object into children nodes using a query.
@@ -383,44 +342,4 @@ A function that toggles the mark of the node in the editor when a hotkey is pres
 <APIReturns>
   A keyboard handler function that toggles the mark when a specified hotkey is
   pressed.
-</APIReturns>
-
-### withProps
-
-A Higher-Order Component (HOC) that adds props to a component.
-
-<APIParameters>
-  <APIItem name="Component" type="FunctionComponent<T>">
-    The component to which props will be added.
-  </APIItem>
-  <APIItem name="props" type="Partial<T>">
-    The props to be added to the component.
-  </APIItem>
-</APIParameters>
-<APIReturns>
-
-A new component that includes the additional props.
-
-</APIReturns>
-
-### withProviders
-
-A function that wraps a component into multiple providers.
-
-<APIParameters>
-<APIItem name="providers" type="any[]">
-Providers with which to wrap the component.
-
-If there are any props that you want a provider to receive, you can simply pass an array.
-
-</APIItem>
-<APIItem name="WrappedComponent" type="FunctionComponent<T>">
-The component to be wrapped.
-</APIItem>
-<APIItem name="props" type="T">
-The props to be passed to the wrapped component.
-</APIItem>
-</APIParameters>
-<APIReturns>
-A new component that is wrapped by the specified providers.
 </APIReturns>

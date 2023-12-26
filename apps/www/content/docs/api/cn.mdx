@@ -1,0 +1,78 @@
+---
+title: cn
+description: API reference for @udecode/cn.
+---
+
+`@udecode/cn` contains utility functions for React & Tailwind.
+
+### cn
+
+Conditionally add Tailwind CSS classes without conflicts.
+
+<APIParameters>
+  <APIItem name="...inputs" type="CxOptions">
+    Class values set using `clsx` and `tailwind-merge`.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+`className` string.
+
+</APIReturns>
+
+### withCn
+
+Set default `className` to a component.
+
+<APIParameters>
+  <APIItem name="Component" type="React.ComponentType">
+    The component to which props will be added.
+  </APIItem>
+  <APIItem name="...inputs" type="CxOptions">
+    The default `className` to set using `cn`.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+A new component that includes the default `className`.
+
+</APIReturns>
+
+### withProps
+
+Set default props to a component.
+
+<APIParameters>
+  <APIItem name="Component" type="React.ComponentType | ElementType">
+    The component to which props will be added.
+  </APIItem>
+  <APIItem name="props" type="Partial<T>">
+    The props to be added to the component.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+A new component that includes the default props.
+
+</APIReturns>
+
+### withVariants
+
+Set default `className` to a component using variants from `class-variance-authority`.
+
+<APIParameters>
+  <APIItem name="Component" type="React.ComponentType | ElementType">
+    The component to which props will be added.
+  </APIItem>
+  <APIItem name="variants" type="V extends ReturnType<typeof cva>">
+    The variants as the default `className`.
+  </APIItem>
+  <APIItem name="onlyVariantsProps" type="(keyof VariantProps<V>)[]">
+    The props to exclude from `Component`. Set the props that are only used for variants.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+A new component that includes the default `className`.
+
+</APIReturns>

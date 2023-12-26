@@ -5,9 +5,9 @@ import { cn } from './cn';
 
 /**
  * Set default `className` with `cn` and `variants`.
- * @param Component
+ * @param Component - The component to which props will be added.
  * @param variants - Variants from `cva`. `Component` props will be extended with `variants` props.
- * @param onlyVariantsProps - Props to exclude from `Component` props. Set the props that are only used for variants.
+ * @param onlyVariantsProps - Props to exclude from `Component`. Set the props that are only used for variants.
  */
 export function withVariants<
   T extends keyof HTMLElementTagNameMap | React.ComponentType<object>,
