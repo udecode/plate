@@ -10,7 +10,7 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 
-import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
+import { ELEMENT_TABLE, ELEMENT_TH, ELEMENT_TR } from '../createTablePlugin';
 import { getTableGridAbove } from '../queries';
 import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';
@@ -34,7 +34,7 @@ export const unmergeTableCells = <V extends Value = Value>(
     const createEmptyCell = (children?: TDescendant[]) => {
       return {
         ...getEmptyCellNode(editor, {
-          header: cellElem.type === 'th',
+          header: cellElem.type === getPluginType(editor, ELEMENT_TH),
           newCellChildren: children,
         }),
         colSpan: 1,
