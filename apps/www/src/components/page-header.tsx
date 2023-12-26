@@ -1,6 +1,5 @@
+import { cn } from '@udecode/cn';
 import Balance from 'react-wrap-balancer';
-
-import { cn } from '@/lib/utils';
 
 function PageHeader({
   className,

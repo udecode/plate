@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React from 'react';
 import {
   collapseSelection,
   getPluginOptions,
@@ -43,7 +43,7 @@ export const useTableElementState = ({
 
   let colSizes = useTableColSizes(element);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (enableMerging) {
       computeAllCellIndices(editor, element);
     }

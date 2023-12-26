@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React from 'react';
 import { Value } from '@udecode/slate';
 import { isDefined } from '@udecode/utils';
 
@@ -26,7 +26,7 @@ export const usePlateEffects = <
   const [rawPlugins, setRawPlugins] = states.rawPlugins();
   const [, setPlugins] = states.plugins();
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (isDefined(pluginsProp) && pluginsProp !== rawPlugins) {
       setRawPlugins(rawPlugins);
 

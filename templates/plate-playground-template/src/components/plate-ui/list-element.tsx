@@ -1,8 +1,7 @@
 import React from 'react';
+import { cn } from '@udecode/cn';
 import { PlateElement, PlateElementProps } from '@udecode/plate-common';
 import { cva, VariantProps } from 'class-variance-authority';
-
-import { cn } from '@/lib/utils';
 
 const listVariants = cva('m-0 ps-6', {
   variants: {

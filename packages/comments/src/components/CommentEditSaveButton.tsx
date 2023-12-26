@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import React from 'react';
 import { createPrimitiveComponent } from '@udecode/plate-common';
 
 import {
@@ -39,7 +39,7 @@ export const useCommentEditSaveButton = ({
 }: ReturnType<typeof useCommentEditSaveButtonState>) => {
   return {
     props: {
-      onClick: useCallback(() => {
+      onClick: React.useCallback(() => {
         if (!editingValue) return;
 
         updateComment({

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useRef } from 'react';
+import { cn } from '@udecode/cn';
 import { CommentsProvider } from '@udecode/plate-comments';
 import { Plate } from '@udecode/plate-common';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
@@ -10,7 +11,6 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { commentsUsers, myUserId } from '@/lib/plate/comments';
 import { MENTIONABLES } from '@/lib/plate/mentionables';
 import { plugins } from '@/lib/plate/plate-plugins';
-import { cn } from '@/lib/utils';
 import { CommentsPopover } from '@/components/plate-ui/comments-popover';
 import { CursorOverlay } from '@/components/plate-ui/cursor-overlay';
 import { Editor } from '@/components/plate-ui/editor';

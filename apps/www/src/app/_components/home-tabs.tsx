@@ -2,10 +2,10 @@
 
 import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import { cn } from '@udecode/cn';
 import { Settings2 } from 'lucide-react';
 import { useQueryState } from 'next-usequerystate';
 
-import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { settingsStore } from '@/components/context/settings-store';
 import PlaygroundDemo from '@/registry/default/example/playground-demo';

@@ -1,4 +1,4 @@
-import { SyntheticEvent } from 'react';
+import React from 'react';
 import { Value } from '@udecode/slate';
 
 import { PlateEditor } from '../types/PlateEditor';
@@ -9,7 +9,7 @@ import { TEditableProps } from '../types/slate-react/TEditableProps';
  * Check if an event is overrided by a handler.
  */
 export const isEventHandled = <
-  EventType extends SyntheticEvent<unknown, unknown>,
+  EventType extends React.SyntheticEvent<unknown, unknown>,
 >(
   event: EventType,
   handler?: (event: EventType) => void | boolean

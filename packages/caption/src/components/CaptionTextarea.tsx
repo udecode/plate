@@ -1,10 +1,4 @@
-import React, {
-  RefObject,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import React from 'react';
 import {
   createPrimitiveComponent,
   findNodePath,
@@ -29,14 +23,14 @@ import { TextareaAutosize } from './TextareaAutosize';
  * Focus textareaRef when focusCaptionPath is set to the image path.
  */
 export const useCaptionTextareaFocus = (
-  textareaRef: RefObject<HTMLTextAreaElement>
+  textareaRef: React.RefObject<HTMLTextAreaElement>
 ) => {
   const editor = useEditorRef();
   const element = useElement<TCaptionElement>();
 
   const focusCaptionPath = captionGlobalStore.use.focusEndCaptionPath();
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (focusCaptionPath && textareaRef.current) {
       const path = findNodePath(editor, element);
       if (path && Path.equals(path, focusCaptionPath)) {
@@ -54,13 +48,13 @@ export const useCaptionTextareaState = () => {
     caption: nodeCaption = [{ children: [{ text: '' }] }] as [TElement],
   } = element;
 
-  const [captionValue, setCaptionValue] = useState<
+  const [captionValue, setCaptionValue] = React.useState<
     TextareaAutosizeProps['value']
   >(getNodeString(nodeCaption[0]));
 
   const readOnly = useReadOnly();
 
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   useCaptionTextareaFocus(textareaRef);
 
@@ -82,7 +76,7 @@ export const useCaptionTextarea = ({
 }: ReturnType<typeof useCaptionTextareaState>) => {
   const editor = useEditorRef();
 
-  const onChange: TextareaAutosizeProps['onChange'] = useCallback(
+  const onChange: TextareaAutosizeProps['onChange'] = React.useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const newValue = e.target.value;
 

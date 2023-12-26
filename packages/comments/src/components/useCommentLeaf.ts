@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import React from 'react';
 import { useEditorRef } from '@udecode/plate-common';
 
 import {
@@ -12,14 +12,14 @@ import {
 
 export const useCommentLeafState = ({ leaf }: { leaf: TCommentText }) => {
   const editor = useEditorRef();
-  const [commentIds, setCommentIds] = useState<string[]>([]);
+  const [commentIds, setCommentIds] = React.useState<string[]>([]);
   const activeCommentId = useCommentsSelectors().activeCommentId();
   const setActiveCommentId = useCommentsActions().activeCommentId();
   const comments = useCommentsSelectors().comments();
-  const [commentCount, setCommentCount] = useState(1);
-  const [isActive, setIsActive] = useState(false);
+  const [commentCount, setCommentCount] = React.useState(1);
+  const [isActive, setIsActive] = React.useState(false);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const ids: string[] = [];
     let count = 0;
 
@@ -72,7 +72,7 @@ export const useCommentLeaf = ({
 }: ReturnType<typeof useCommentLeafState>) => {
   return {
     props: {
-      onClick: useCallback(
+      onClick: React.useCallback(
         (e: MouseEvent) => {
           e.stopPropagation();
           setActiveCommentId(lastCommentId);

@@ -1,10 +1,4 @@
-import React, {
-  CSSProperties,
-  HTMLAttributes,
-  RefObject,
-  useEffect,
-  useRef,
-} from 'react';
+import React from 'react';
 import throttle from 'lodash/throttle.js';
 import raf from 'raf';
 
@@ -23,8 +17,8 @@ export interface ScrollAreaProps {
   zIndex?: number;
   minStrength?: number;
   strengthMultiplier?: number;
-  containerRef?: RefObject<any>;
-  scrollAreaProps?: HTMLAttributes<HTMLDivElement>;
+  containerRef?: React.RefObject<any>;
+  scrollAreaProps?: React.HTMLAttributes<HTMLDivElement>;
 }
 
 export function ScrollArea({
@@ -37,16 +31,16 @@ export function ScrollArea({
   containerRef,
   scrollAreaProps,
 }: ScrollAreaProps) {
-  const ref = useRef<HTMLDivElement>();
+  const ref = React.useRef<HTMLDivElement>();
 
-  const scaleYRef = useRef(0);
-  const frameRef = useRef<number | null>(null);
+  const scaleYRef = React.useRef(0);
+  const frameRef = React.useRef<number | null>(null);
 
   const direction = placement === 'top' ? -1 : 1;
 
   // Drag a fixed, invisible box of custom height at the top, and bottom
   // of the window. Make sure to show it only when dragging something.
-  const style: CSSProperties = {
+  const style: React.CSSProperties = {
     position: 'fixed',
     height,
     width: '100%',
@@ -122,7 +116,7 @@ export function ScrollArea({
     updateScrolling(e);
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!enabled) {
       stopScrolling();
     }

@@ -1,4 +1,4 @@
-import { ChangeEventHandler, useCallback, useEffect } from 'react';
+import React from 'react';
 import {
   focusEditor,
   getPluginOptions,
@@ -67,9 +67,10 @@ export const useFloatingLinkInsert = ({
   isOpen,
   readOnly,
 }: ReturnType<typeof useFloatingLinkInsertState>) => {
-  const onChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
-    floatingLinkActions.text(e.target.value);
-  }, []);
+  const onChange: React.ChangeEventHandler<HTMLInputElement> =
+    React.useCallback((e) => {
+      floatingLinkActions.text(e.target.value);
+    }, []);
 
   const ref = useOnClickOutside(
     () => {
@@ -84,7 +85,7 @@ export const useFloatingLinkInsert = ({
   );
 
   // wait for update before focusing input
-  useEffect(() => {
+  React.useEffect(() => {
     if (isOpen) {
       floating.update();
       floatingLinkActions.updated(true);

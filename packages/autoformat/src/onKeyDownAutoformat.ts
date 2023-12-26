@@ -1,4 +1,4 @@
-import { KeyboardEvent } from 'react';
+import React from 'react';
 import {
   deleteBackward,
   getEditorString,
@@ -21,7 +21,7 @@ export const onKeyDownAutoformat =
       options: { rules, enableUndoOnDelete },
     }: WithPlatePlugin<AutoformatPlugin, V, E>
   ): KeyboardHandlerReturnType =>
-  (e: KeyboardEvent) => {
+  (e: React.KeyboardEvent) => {
     if (e.defaultPrevented) return false;
 
     // Abort quicky if hotKey was not pressed.

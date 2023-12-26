@@ -2,6 +2,7 @@
 
 import React, { useEffect } from 'react';
 import * as Popover from '@radix-ui/react-popover';
+import { cn, withRef } from '@udecode/cn';
 import {
   comboboxActions,
   ComboboxContentItemProps,
@@ -22,9 +23,7 @@ import {
 } from '@udecode/plate-common';
 import { createVirtualRef } from '@udecode/plate-floating';
 
-import { cn, extendElementProps } from '@/lib/utils';
-
-export const ComboboxItem = extendElementProps('div')<ComboboxContentItemProps>(
+export const ComboboxItem = withRef<'div', ComboboxContentItemProps>(
   ({ combobox, index, item, onRenderItem, className, ...rest }, ref) => {
     const { props } = useComboboxItem({ item, index, combobox, onRenderItem });
 

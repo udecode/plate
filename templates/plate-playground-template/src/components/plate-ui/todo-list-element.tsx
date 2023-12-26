@@ -1,12 +1,11 @@
 import React from 'react';
+import { cn } from '@udecode/cn';
 import { PlateElement, PlateElementProps, Value } from '@udecode/plate-common';
 import {
   TTodoListItemElement,
   useTodoListElement,
   useTodoListElementState,
 } from '@udecode/plate-list';
-
-import { cn } from '@/lib/utils';
 
 import { Checkbox } from './checkbox';
 

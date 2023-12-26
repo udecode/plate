@@ -14,7 +14,6 @@ import {
   DEFAULT_COMPONENTS,
   DEFAULT_TAILWIND_CONFIG,
   DEFAULT_TAILWIND_CSS,
-  DEFAULT_UTILS,
   getConfig,
   rawConfigSchema,
   resolveConfigPaths,
@@ -35,7 +34,6 @@ import type { Config } from '../utils/get-config';
 const PROJECT_DEPENDENCIES = [
   'tailwindcss-animate',
   'class-variance-authority',
-  'clsx',
   'tailwind-merge',
 ];
 
@@ -148,12 +146,6 @@ export async function promptForConfig(
       initial: defaultConfig?.aliases['components'] ?? DEFAULT_COMPONENTS,
     },
     {
-      type: 'text',
-      name: 'utils',
-      message: `Configure the import alias for ${highlight('utils')}:`,
-      initial: defaultConfig?.aliases['utils'] ?? DEFAULT_UTILS,
-    },
-    {
       type: 'toggle',
       name: 'rsc',
       message: `Are you using ${highlight('React Server Components')}?`,
@@ -176,7 +168,6 @@ export async function promptForConfig(
     rsc: options.rsc,
     tsx: true,
     aliases: {
-      utils: options.utils,
       components: options.components,
     },
   });
@@ -210,20 +201,12 @@ export async function runInit(cwd: string, config: Config) {
   const spinner = ora(`Initializing project...`)?.start();
 
   // Ensure all resolved paths directories exist.
-  for (const [key, resolvedPath] of Object.entries(config.resolvedPaths)) {
+  for (const [, resolvedPath] of Object.entries(config.resolvedPaths)) {
     // Determine if the path is a file or directory.
     // TODO: is there a better way to do this?
-    let dirname = path.extname(resolvedPath)
+    const dirname = path.extname(resolvedPath)
       ? path.dirname(resolvedPath)
       : resolvedPath;
-
-    // If the utils alias is set to something like "@/lib/utils",
-    // assume this is a file and remove the "utils" file name.
-    // TODO: In future releases we should add support for individual utils.
-    if (key === 'utils' && resolvedPath.endsWith('/utils')) {
-      // Remove /utils at the end.
-      dirname = dirname.replace(/\/utils$/, '');
-    }
 
     if (!existsSync(dirname)) {
       await fs.mkdir(dirname, { recursive: true });
@@ -265,13 +248,6 @@ export async function runInit(cwd: string, config: Config) {
       'utf8'
     );
   }
-
-  // Write utils file.
-  await fs.writeFile(
-    `${config.resolvedPaths.utils}.ts`,
-    templates.UTILS,
-    'utf8'
-  );
 
   spinner?.succeed();
 

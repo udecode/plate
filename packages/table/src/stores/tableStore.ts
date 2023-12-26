@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import React from 'react';
 import { createAtomStore, TElement } from '@udecode/plate-common';
 
 export type TableStoreSizeOverrides = Map<number, number>;
@@ -20,7 +20,7 @@ const useOverrideSizeFactory = (
     fn: (overrides: TableStoreSizeOverrides) => TableStoreSizeOverrides
   ) => void
 ) =>
-  useCallback(
+  React.useCallback(
     (index: number, size: number | null) => {
       setOverrides((overrides) => {
         const newOverrides = new Map(overrides);

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { forwardRef } from 'react';
+import { cn } from '@udecode/cn';
 import { ClassNames, PlateElementProps, TEditor } from '@udecode/plate-common';
 import {
   DragItemNode,
@@ -9,7 +10,6 @@ import {
 } from '@udecode/plate-dnd';
 import { DropTargetMonitor } from 'react-dnd';
 
-import { cn } from '@/lib/utils';
 import { Icons } from '@/components/icons';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';

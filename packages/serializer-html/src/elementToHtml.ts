@@ -1,4 +1,4 @@
-import { ComponentClass, FunctionComponent } from 'react';
+import React from 'react';
 import {
   pipeInjectProps,
   PlateEditor,
@@ -24,7 +24,7 @@ export const elementToHtml = <V extends Value>(
     props: PlateRenderElementProps<V>;
     plateProps?: Partial<PlateProps>;
     preserveClassNames?: string[];
-    dndWrapper?: string | FunctionComponent | ComponentClass;
+    dndWrapper?: string | React.FC | React.ComponentClass;
   }
 ) => {
   let html = `<div>${props.children}</div>`;

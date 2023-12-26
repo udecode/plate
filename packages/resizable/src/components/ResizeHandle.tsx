@@ -1,9 +1,4 @@
-import React, {
-  MouseEventHandler,
-  TouchEventHandler,
-  useEffect,
-  useState,
-} from 'react';
+import React from 'react';
 import {
   createAtomStore,
   createPrimitiveComponent,
@@ -30,8 +25,8 @@ export type ResizeHandleOptions = {
   direction?: ResizeDirection;
   initialSize?: number;
   onResize?: (event: ResizeEvent) => void;
-  onMouseDown?: MouseEventHandler;
-  onTouchStart?: TouchEventHandler;
+  onMouseDown?: React.MouseEventHandler;
+  onTouchStart?: React.TouchEventHandler;
   onHover?: () => void;
   onHoverEnd?: () => void;
 };
@@ -48,14 +43,14 @@ export const useResizeHandleState = ({
   const onResizeStore = useResizeHandleStore().get.onResize();
   const onResize = onResizeProp ?? onResizeStore;
 
-  const [isResizing, setIsResizing] = useState(false);
-  const [initialPosition, setInitialPosition] = useState(0);
-  const [initialSizeState, setInitialSize] = useState(0);
+  const [isResizing, setIsResizing] = React.useState(false);
+  const [initialPosition, setInitialPosition] = React.useState(0);
+  const [initialSizeState, setInitialSize] = React.useState(0);
   const initialSize = _initialSize ?? initialSizeState;
 
   const isHorizontal = direction === 'left' || direction === 'right';
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!isResizing) return;
 
     const sendResizeEvent = (
@@ -134,7 +129,7 @@ export const useResizeHandle = ({
   onHover,
   onHoverEnd,
 }: ReturnType<typeof useResizeHandleState>) => {
-  const handleMouseDown: MouseEventHandler = (event) => {
+  const handleMouseDown: React.MouseEventHandler = (event) => {
     const { clientX, clientY } = event;
     setInitialPosition(isHorizontal ? clientX : clientY);
 
@@ -146,7 +141,7 @@ export const useResizeHandle = ({
     onMouseDown?.(event);
   };
 
-  const handleTouchStart: TouchEventHandler = (event) => {
+  const handleTouchStart: React.TouchEventHandler = (event) => {
     const { touches } = event;
     const touch = touches[0];
     const { clientX, clientY } = touch;

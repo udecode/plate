@@ -1,10 +1,4 @@
-import {
-  ChangeEventHandler,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import React from 'react';
 import { createPrimitiveComponent } from '@udecode/plate-common';
 
 import {
@@ -15,12 +9,12 @@ import {
 
 export const useFloatingLinkNewTabInputState = () => {
   const updated = useFloatingLinkSelectors().updated();
-  const ref = useRef<HTMLInputElement>(null);
-  const [checked, setChecked] = useState<boolean>(
+  const ref = React.useRef<HTMLInputElement>(null);
+  const [checked, setChecked] = React.useState<boolean>(
     floatingLinkSelectors.newTab()
   );
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (ref.current && updated) {
       setTimeout(() => {
         ref.current?.focus();
@@ -40,13 +34,14 @@ export const useFloatingLinkNewTabInput = ({
   ref,
   setChecked,
 }: ReturnType<typeof useFloatingLinkNewTabInputState>) => {
-  const onChange: ChangeEventHandler<HTMLInputElement> = useCallback(
-    (e) => {
-      setChecked(e.target.checked);
-      floatingLinkActions.newTab(e.target.checked);
-    },
-    [setChecked]
-  );
+  const onChange: React.ChangeEventHandler<HTMLInputElement> =
+    React.useCallback(
+      (e) => {
+        setChecked(e.target.checked);
+        floatingLinkActions.newTab(e.target.checked);
+      },
+      [setChecked]
+    );
 
   return {
     ref,

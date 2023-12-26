@@ -1,7 +1,7 @@
-import { CSSProperties } from 'react';
+import React from 'react';
 import { EElement, EText, isElement, Value } from '@udecode/slate';
 import { AnyObject, isDefined } from '@udecode/utils';
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 
 import { TransformOptions } from '../types';
 import { PlateEditor } from '../types/PlateEditor';
@@ -26,12 +26,12 @@ export interface GetInjectPropsOptions<V extends Value = Value> {
   /**
    * Existing style.
    */
-  style?: CSSProperties;
+  style?: React.CSSProperties;
 }
 
 export interface GetInjectPropsReturnType extends AnyObject {
   className?: string;
-  style?: CSSProperties;
+  style?: React.CSSProperties;
 }
 
 /**

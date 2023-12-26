@@ -3,13 +3,12 @@
 import './code-block-element.css';
 
 import React, { forwardRef } from 'react';
+import { cn } from '@udecode/cn';
 import {
   TCodeBlockElement,
   useCodeBlockElementState,
 } from '@udecode/plate-code-block';
 import { PlateElement, PlateElementProps, Value } from '@udecode/plate-common';
-
-import { cn } from '@/lib/utils';
 
 import { CodeBlockCombobox } from './code-block-combobox';
 

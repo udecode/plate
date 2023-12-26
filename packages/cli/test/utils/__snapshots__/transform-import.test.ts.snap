@@ -7,7 +7,7 @@ import { Foo } from \\"bar\\"
     import { Label} from \\"ui/label\\"
     import { Box } from \\"@/components/box\\"
 
-    import { cn } from \\"@/lib/utils\\"
+    import { cn } from \\"@udecode/cn\\"
     "
 `;
 
@@ -18,8 +18,7 @@ import { Foo } from \\"bar\\"
     import { Label} from \\"ui/label\\"
     import { Box } from \\"~/src/components/box\\"
 
-    import { cn, foo, bar } from \\"~/lib\\"
-    import { bar } from \\"@/lib/utils/bar\\"
+    import { cn, foo, bar } from \\"@udecode/cn\\"
     "
 `;
 
@@ -30,7 +29,6 @@ import { Foo } from \\"bar\\"
     import { Label} from \\"ui/label\\"
     import { Box } from \\"~/src/components/box\\"
 
-    import { cn } from \\"~/src/utils\\"
-    import { bar } from \\"@/lib/utils/bar\\"
+    import { cn } from \\"@udecode/cn\\"
     "
 `;

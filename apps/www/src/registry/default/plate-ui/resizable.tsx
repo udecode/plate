@@ -1,13 +1,12 @@
 'use client';
 
 import React from 'react';
+import { cn, withRef, withVariants } from '@udecode/cn';
 import {
   Resizable as ResizablePrimitive,
   ResizeHandle as ResizeHandlePrimitive,
 } from '@udecode/plate-resizable';
 import { cva } from 'class-variance-authority';
-
-import { cn, withRef, withVariants } from '@/lib/utils';
 
 export const mediaResizeHandleVariants = cva(
   cn(
@@ -41,9 +40,15 @@ const ResizeHandleVariants = withVariants(
   ['direction']
 );
 
-export const ResizeHandle = withRef<typeof ResizeHandlePrimitive>((props) => (
-  <ResizeHandleVariants direction={props.options?.direction} {...props} />
-));
+export const ResizeHandle = withRef<typeof ResizeHandlePrimitive>(
+  (props, ref) => (
+    <ResizeHandleVariants
+      ref={ref}
+      direction={props.options?.direction}
+      {...props}
+    />
+  )
+);
 
 const resizableVariants = cva('', {
   variants: {

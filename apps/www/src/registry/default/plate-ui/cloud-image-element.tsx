@@ -1,13 +1,12 @@
 'use client';
 
 import React from 'react';
+import { cn } from '@udecode/cn';
 import {
   TCloudImageElement,
   useCloudImageElementState,
 } from '@udecode/plate-cloud';
 import { PlateElement, PlateElementProps, Value } from '@udecode/plate-common';
-
-import { cn } from '@/lib/utils';
 
 import { ResizeControls } from './cloud-resize-controls';
 import { StatusBar } from './cloud-status-bar';

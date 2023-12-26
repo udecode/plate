@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import React from 'react';
 
 import { PlateId, useEditorRef, usePlateStore, useRedecorate } from '../stores';
 import { EXPOSED_STORE_KEYS } from '../types/PlateStore';
@@ -15,9 +15,9 @@ export const EditorMethodsEffect = ({ id }: { id?: PlateId }) => {
   ) as any;
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const memorizedStoreSetters = useMemo(() => storeSetters, []);
+  const memorizedStoreSetters = React.useMemo(() => storeSetters, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     editor.redecorate = redecorate;
     editor.plate = {
       set: memorizedStoreSetters,

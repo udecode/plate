@@ -1,18 +1,21 @@
 import React from 'react';
+import { withRef } from '@udecode/cn';
 import {
   ListStyleType,
   useIndentListToolbarButton,
   useIndentListToolbarButtonState,
 } from '@udecode/plate-indent-list';
 
-import { extendProps } from '@/lib/utils';
 import { Icons } from '@/components/icons';
 
 import { ToolbarButton } from './toolbar';
 
-export const IndentListToolbarButton = extendProps(ToolbarButton)<{
-  nodeType?: ListStyleType;
-}>(({ nodeType = ListStyleType.Disc }, ref) => {
+export const IndentListToolbarButton = withRef<
+  typeof ToolbarButton,
+  {
+    nodeType?: ListStyleType;
+  }
+>(({ nodeType = ListStyleType.Disc }, ref) => {
   const state = useIndentListToolbarButtonState({ nodeType });
   const { props } = useIndentListToolbarButton(state);
 

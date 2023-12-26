@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import React from 'react';
 
 import { createPlateEditor } from '../../../utils/index';
 import { PlateId, usePlateActions } from '../createPlateStore';
@@ -12,7 +12,7 @@ export const useReplaceEditor = (id?: PlateId) => {
   const editor = useEditorRef(id);
   const setEditor = usePlateActions(id).editor();
 
-  return useCallback(() => {
+  return React.useCallback(() => {
     const newEditor = createPlateEditor({
       id: editor.id,
       plugins: editor.plugins,

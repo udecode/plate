@@ -3,20 +3,20 @@
 import './code-block-element.css';
 
 import React from 'react';
+import { cn, withRef } from '@udecode/cn';
 import { useCodeBlockElementState } from '@udecode/plate-code-block';
 import { PlateElement } from '@udecode/plate-common';
-
-import { cn, withRef } from '@/lib/utils';
 
 import { CodeBlockCombobox } from './code-block-combobox';
 
 export const CodeBlockElement = withRef<typeof PlateElement>(
-  ({ className, children, ...props }) => {
+  ({ className, children, ...props }, ref) => {
     const { element } = props;
     const state = useCodeBlockElementState({ element });
 
     return (
       <PlateElement
+        ref={ref}
         className={cn('relative py-1', state.className, className)}
         {...props}
       >

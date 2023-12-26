@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React from 'react';
 import {
   getSelectionText,
   isSelectionExpanded,
@@ -33,9 +33,9 @@ export const useFloatingToolbarState = ({
   const focusedEditorId = useEventEditorSelectors.focus();
   const focused = useFocused();
 
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = React.useState(false);
   const [waitForCollapsedSelection, setWaitForCollapsedSelection] =
-    useState(false);
+    React.useState(false);
 
   const floating = useVirtualFloating(
     mergeProps(
@@ -80,7 +80,7 @@ export const useFloatingToolbar = ({
 }: ReturnType<typeof useFloatingToolbarState>) => {
   // On refocus, the editor keeps the previous selection,
   // so we need to wait it's collapsed at the new position before displaying the floating toolbar.
-  useEffect(() => {
+  React.useEffect(() => {
     if (!focused || ignoreReadOnly) {
       setWaitForCollapsedSelection(true);
     }
@@ -95,7 +95,7 @@ export const useFloatingToolbar = ({
     setWaitForCollapsedSelection,
   ]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (
       !selectionExpanded ||
       !selectionText ||
@@ -124,7 +124,7 @@ export const useFloatingToolbar = ({
 
   const selectionTextLength = selectionText?.length ?? 0;
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (selectionTextLength > 0) {
       update?.();
     }

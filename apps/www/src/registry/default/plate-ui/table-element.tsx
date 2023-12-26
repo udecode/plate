@@ -1,6 +1,7 @@
 import React from 'react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { PopoverAnchor } from '@radix-ui/react-popover';
+import { cn, withRef } from '@udecode/cn';
 import {
   isSelectionExpanded,
   PlateElement,
@@ -20,7 +21,6 @@ import {
 } from '@udecode/plate-table';
 import { useReadOnly, useSelected } from 'slate-react';
 
-import { cn, withRef } from '@/lib/utils';
 import { Icons, iconVariants } from '@/components/icons';
 
 import { Button } from './button';
@@ -36,7 +36,7 @@ import { Separator } from './separator';
 
 export const TableBordersDropdownMenuContent = withRef<
   typeof DropdownMenuPrimitive.Content
->((props) => {
+>((props, ref) => {
   const {
     getOnSelectTableBorder,
     hasOuterBorders,
@@ -49,6 +49,7 @@ export const TableBordersDropdownMenuContent = withRef<
 
   return (
     <DropdownMenuContent
+      ref={ref}
       className={cn('min-w-[220px]')}
       side="right"
       align="start"
@@ -105,7 +106,7 @@ export const TableBordersDropdownMenuContent = withRef<
 });
 
 export const TableFloatingToolbar = withRef<typeof PopoverContent>(
-  ({ children, ...props }) => {
+  ({ children, ...props }, ref) => {
     const element = useElement<TTableElement>();
     const { props: buttonProps } = useRemoveNodeButton({ element });
 
@@ -174,6 +175,7 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
         <PopoverAnchor asChild>{children}</PopoverAnchor>
         {(canMerge || canUnmerge || collapsed) && (
           <PopoverContent
+            ref={ref}
             className={cn(
               popoverVariants(),
               'flex w-[220px] flex-col gap-1 p-1'
@@ -192,7 +194,7 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
 );
 
 export const TableElement = withRef<typeof PlateElement>(
-  ({ className, children, ...props }) => {
+  ({ className, children, ...props }, ref) => {
     const { colSizes, isSelectingCell, minColumnWidth, marginLeft } =
       useTableElementState();
     const { props: tableProps, colGroupProps } = useTableElement();
@@ -201,6 +203,7 @@ export const TableElement = withRef<typeof PlateElement>(
       <TableFloatingToolbar>
         <div style={{ paddingLeft: marginLeft }}>
           <PlateElement
+            ref={ref}
             asChild
             className={cn(
               'my-4 ml-px mr-0 table h-px w-full table-fixed border-collapse',

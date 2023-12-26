@@ -3,14 +3,8 @@
 import * as React from 'react';
 import { ComponentPropsWithoutRef, ReactNode } from 'react';
 import * as ToolbarPrimitive from '@radix-ui/react-toolbar';
+import { cn, withCn, withRef, withVariants } from '@udecode/cn';
 
-import {
-  cn,
-  extendElementProps,
-  extendProps,
-  withCn,
-  withVariants,
-} from '@/lib/utils';
 import { Icons } from '@/components/icons';
 
 import { Separator } from './separator';
@@ -39,86 +33,89 @@ export const ToolbarSeparator = withCn(
   'my-1 w-[1px] shrink-0 bg-border'
 );
 
-export const ToolbarButton = extendProps(ToolbarPrimitive.Button)<
+export const ToolbarButton = withRef<
+  typeof ToolbarPrimitive.Button,
   Omit<ComponentPropsWithoutRef<typeof Toggle>, 'type'> & {
     buttonType?: 'button' | 'toggle';
     pressed?: boolean;
     tooltip?: ReactNode;
     isDropdown?: boolean;
   }
->((
-  {
-    className,
-    variant,
-    size = 'sm',
-    isDropdown,
-    children,
-    pressed,
-    value,
-    tooltip,
-    ...props
-  },
-  ref
-) => {
-  const [isLoaded, setIsLoaded] = React.useState(false);
+>(
+  (
+    {
+      className,
+      variant,
+      size = 'sm',
+      isDropdown,
+      children,
+      pressed,
+      value,
+      tooltip,
+      ...props
+    },
+    ref
+  ) => {
+    const [isLoaded, setIsLoaded] = React.useState(false);
 
-  React.useEffect(() => {
-    setIsLoaded(true);
-  }, []);
+    React.useEffect(() => {
+      setIsLoaded(true);
+    }, []);
 
-  const content =
-    typeof pressed === 'boolean' ? (
-      <ToolbarToggleGroup type="single" value="single">
-        <ToolbarToggleItem
+    const content =
+      typeof pressed === 'boolean' ? (
+        <ToolbarToggleGroup type="single" value="single">
+          <ToolbarToggleItem
+            ref={ref}
+            className={cn(
+              toggleVariants({
+                variant,
+                size,
+              }),
+              isDropdown && 'my-1 justify-between pr-1',
+              className
+            )}
+            value={pressed ? 'single' : ''}
+            {...props}
+          >
+            <div className="flex flex-1">{children}</div>
+            <div>
+              {isDropdown && (
+                <Icons.arrowDown className="ml-0.5 h-4 w-4" data-icon />
+              )}
+            </div>
+          </ToolbarToggleItem>
+        </ToolbarToggleGroup>
+      ) : (
+        <ToolbarPrimitive.Button
           ref={ref}
           className={cn(
             toggleVariants({
               variant,
               size,
             }),
-            isDropdown && 'my-1 justify-between pr-1',
+            isDropdown && 'pr-1',
             className
           )}
-          value={pressed ? 'single' : ''}
           {...props}
         >
-          <div className="flex flex-1">{children}</div>
-          <div>
-            {isDropdown && (
-              <Icons.arrowDown className="ml-0.5 h-4 w-4" data-icon />
-            )}
-          </div>
-        </ToolbarToggleItem>
-      </ToolbarToggleGroup>
+          {children}
+        </ToolbarPrimitive.Button>
+      );
+
+    return isLoaded && tooltip ? (
+      <Tooltip>
+        <TooltipTrigger asChild>{content}</TooltipTrigger>
+
+        <TooltipPortal>
+          <TooltipContent>{tooltip}</TooltipContent>
+        </TooltipPortal>
+      </Tooltip>
     ) : (
-      <ToolbarPrimitive.Button
-        ref={ref}
-        className={cn(
-          toggleVariants({
-            variant,
-            size,
-          }),
-          isDropdown && 'pr-1',
-          className
-        )}
-        {...props}
-      >
-        {children}
-      </ToolbarPrimitive.Button>
+      <>{content}</>
     );
-
-  return isLoaded && tooltip ? (
-    <Tooltip>
-      <TooltipTrigger asChild>{content}</TooltipTrigger>
-
-      <TooltipPortal>
-        <TooltipContent>{tooltip}</TooltipContent>
-      </TooltipPortal>
-    </Tooltip>
-  ) : (
-    <>{content}</>
-  );
-});
+  }
+);
 
 export const ToolbarToggleItem = withVariants(
   ToolbarPrimitive.ToggleItem,
@@ -126,9 +123,12 @@ export const ToolbarToggleItem = withVariants(
   ['variant', 'size']
 );
 
-export const ToolbarGroup = extendElementProps('div')<{
-  noSeparator?: boolean;
-}>(({ className, children, noSeparator }, ref) => {
+export const ToolbarGroup = withRef<
+  'div',
+  {
+    noSeparator?: boolean;
+  }
+>(({ className, children, noSeparator }, ref) => {
   const childArr = React.Children.map(children, (c) => c);
   if (!childArr || childArr.length === 0) return null;
 

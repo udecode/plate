@@ -1,4 +1,5 @@
 import React from 'react';
+import { cn } from '@udecode/cn';
 import { PlateElement, PlateElementProps, Value } from '@udecode/plate-common';
 import {
   TTableCellElement,
@@ -7,8 +8,6 @@ import {
   useTableCellElementResizableState,
   useTableCellElementState,
 } from '@udecode/plate-table';
-
-import { cn } from '@/lib/utils';
 
 import { ResizeHandle } from './resizable';
 

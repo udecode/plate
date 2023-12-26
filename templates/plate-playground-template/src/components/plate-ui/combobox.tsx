@@ -2,6 +2,7 @@
 
 import React, { useEffect } from 'react';
 import * as Popover from '@radix-ui/react-popover';
+import { cn } from '@udecode/cn';
 import {
   comboboxActions,
   ComboboxContentItemProps,
@@ -19,8 +20,6 @@ import {
 } from '@udecode/plate-combobox';
 import { useEditorState, useEventEditorSelectors } from '@udecode/plate-common';
 import { createVirtualRef } from '@udecode/plate-floating';
-
-import { cn } from '@/lib/utils';
 
 export function ComboboxItem<TData extends Data = NoData>({
   combobox,

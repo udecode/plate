@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React from 'react';
 import {
   PlateEditor,
   useEditorVersion,
@@ -27,7 +27,7 @@ export const useHooksSuggestion = <
    * suggestion if there are multiple). If there is no selected suggestion,
    * set the active suggestion to null.
    */
-  useEffect(() => {
+  React.useEffect(() => {
     if (!editor.selection) return;
 
     const resetActiveSuggestion = () => {

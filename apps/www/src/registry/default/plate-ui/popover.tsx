@@ -2,9 +2,8 @@
 
 import * as React from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
+import { cn, withRef } from '@udecode/cn';
 import { cva } from 'class-variance-authority';
-
-import { cn, withRef } from '@/lib/utils';
 
 export const Popover = PopoverPrimitive.Root;
 export const PopoverTrigger = PopoverPrimitive.Trigger;
@@ -15,9 +14,10 @@ export const popoverVariants = cva(
 );
 
 export const PopoverContent = withRef<typeof PopoverPrimitive.Content>(
-  ({ className, style, align = 'center', sideOffset = 4, ...props }) => (
+  ({ className, style, align = 'center', sideOffset = 4, ...props }, ref) => (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Content
+        ref={ref}
         align={align}
         sideOffset={sideOffset}
         className={cn(popoverVariants(), className)}

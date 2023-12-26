@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import React from 'react';
 
 export const useRequestReRender = () => {
-  const [, setUpdateCounter] = useState(0);
-  const animationFrameRef = useRef<number | null>(null);
+  const [, setUpdateCounter] = React.useState(0);
+  const animationFrameRef = React.useRef<number | null>(null);
 
-  const requestReRender = useCallback((immediate = false) => {
+  const requestReRender = React.useCallback((immediate = false) => {
     if (animationFrameRef.current && !immediate) {
       return;
     }
@@ -25,14 +25,14 @@ export const useRequestReRender = () => {
     setUpdateCounter((state) => state + 1);
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
       animationFrameRef.current = null;
     }
   });
 
-  useEffect(
+  React.useEffect(
     () => () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);

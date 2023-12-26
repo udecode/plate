@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { cn } from '@udecode/cn';
 import {
   flip,
   offset,
@@ -16,7 +17,6 @@ import {
   useFloatingLinkInsertState,
 } from '@udecode/plate-link';
 
-import { cn } from '@/lib/utils';
 import { Icons } from '@/components/icons';
 
 import { buttonVariants } from './button';

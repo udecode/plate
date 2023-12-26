@@ -1,9 +1,8 @@
 'use client';
 
 import React, { HTMLAttributes, useEffect, useRef, useState } from 'react';
+import { cn } from '@udecode/cn';
 import { Upload, UploadProgress } from '@udecode/plate-cloud';
-
-import { cn } from '@/lib/utils';
 
 export function ProgressBar({
   upload,

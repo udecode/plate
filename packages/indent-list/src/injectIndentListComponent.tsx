@@ -1,9 +1,9 @@
-import React, { CSSProperties } from 'react';
+import React from 'react';
 import {
   InjectComponentProps,
   InjectComponentReturnType,
 } from '@udecode/plate-common';
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 
 import { KEY_LIST_START, KEY_LIST_STYLE_TYPE } from './createIndentListPlugin';
 import { ListStyleType } from './types';
@@ -18,7 +18,7 @@ export const injectIndentListComponent = (
 
   if (listStyleType) {
     let className = clsx(`slate-${KEY_LIST_STYLE_TYPE}-${listStyleType}`);
-    const style: CSSProperties = {
+    const style: React.CSSProperties = {
       padding: 0,
       margin: 0,
       listStyleType,

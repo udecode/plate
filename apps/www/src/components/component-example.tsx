@@ -1,8 +1,7 @@
 'use client';
 
 import * as React from 'react';
-
-import { cn } from '@/lib/utils';
+import { cn } from '@udecode/cn';
 
 import { CopyButton, CopyWithClassNames } from './copy-button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { cn } from '@udecode/cn';
 import {
   CommentProvider,
   CommentsPositioner,
@@ -10,7 +11,6 @@ import {
 } from '@udecode/plate-comments';
 import { PortalBody } from '@udecode/plate-common';
 
-import { cn } from '@/lib/utils';
 import { popoverVariants } from '@/components/plate-ui/popover';
 
 import { CommentCreateForm } from './comment-create-form';

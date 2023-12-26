@@ -424,7 +424,6 @@ export const docsConfig: DocsConfig = {
             'createPrimitiveComponent',
             'createSlotComponent',
             'defaultsDeepToNodes',
-            'getRootProps',
             'onKeyDownToggleElement',
             'onKeyDownToggleMark',
             'withProps',

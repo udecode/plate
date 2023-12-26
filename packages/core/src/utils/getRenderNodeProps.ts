@@ -1,6 +1,6 @@
 import { Value } from '@udecode/slate';
 import { AnyObject } from '@udecode/utils';
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 
 import { PlateRenderNodeProps } from '../types/PlateRenderNodeProps';
 import { WithPlatePlugin } from '../types/plugin/PlatePlugin';

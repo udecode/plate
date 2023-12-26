@@ -1,8 +1,7 @@
 'use client';
 
 import * as AvatarPrimitive from '@radix-ui/react-avatar';
-
-import { withCn } from '@/lib/utils';
+import { withCn } from '@udecode/cn';
 
 export const Avatar = withCn(
   AvatarPrimitive.Root,

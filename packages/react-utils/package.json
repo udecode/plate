@@ -1,0 +1,55 @@
+{
+  "name": "@udecode/react-utils",
+  "version": "24.3.0",
+  "description": "Udecode React utils",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/react-utils"
+  },
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
+  "sideEffects": false,
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "module": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "yarn p:build",
+    "build:watch": "yarn p:build:watch",
+    "brl": "yarn p:brl",
+    "clean": "yarn p:clean",
+    "lint": "yarn p:lint",
+    "lint:fix": "yarn p:lint:fix",
+    "test": "yarn p:test",
+    "test:watch": "yarn p:test:watch",
+    "typecheck": "yarn p:typecheck"
+  },
+  "dependencies": {
+    "@radix-ui/react-slot": "^1.0.2",
+    "@udecode/utils": "24.3.0",
+    "clsx": "^1.2.1"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0"
+  },
+  "keywords": [
+    "utils"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

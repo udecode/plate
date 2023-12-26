@@ -2,8 +2,8 @@
 
 /* eslint-disable tailwindcss/no-custom-classname */
 import { usePathname } from 'next/navigation';
+import { cn } from '@udecode/cn';
 
-import { cn } from '@/lib/utils';
 import { useConfig } from '@/hooks/use-config';
 import { useMounted } from '@/hooks/use-mounted';
 

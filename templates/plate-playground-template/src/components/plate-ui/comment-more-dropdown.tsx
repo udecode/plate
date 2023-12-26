@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { cn } from '@udecode/cn';
 import {
   useCommentDeleteButton,
   useCommentDeleteButtonState,
@@ -8,7 +9,6 @@ import {
   useCommentEditButtonState,
 } from '@udecode/plate-comments';
 
-import { cn } from '@/lib/utils';
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/plate-ui/button';
 import {

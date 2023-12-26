@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React from 'react';
 import {
   getPluginOptions,
   useEditorRef,
@@ -146,7 +146,7 @@ export const useTableCellElement = ({
 }) => {
   const setHoveredColIndex = useTableStore().set.hoveredColIndex();
 
-  useEffect(() => {
+  React.useEffect(() => {
     setHoveredColIndex(null);
   }, [element, setHoveredColIndex]);
 

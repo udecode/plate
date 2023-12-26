@@ -1,4 +1,4 @@
-import { FC, ReactNode } from 'react';
+import React from 'react';
 import { Value } from '@udecode/slate';
 import { AnyObject, WithRequired } from '@udecode/utils';
 
@@ -161,15 +161,15 @@ export type PlatePlugin<
     /**
      * Render a component above `Editable`.
      */
-    renderAboveEditable?: FC<{
-      children: ReactNode;
+    renderAboveEditable?: React.FC<{
+      children: React.ReactNode;
     }>;
 
     /**
      * Render a component above `Slate`.
      */
-    renderAboveSlate?: FC<{
-      children: ReactNode;
+    renderAboveSlate?: React.FC<{
+      children: React.ReactNode;
     }>;
 
     /**

@@ -2,10 +2,10 @@ import '@/styles/globals.css';
 
 import React from 'react';
 import { Metadata, Viewport } from 'next';
+import { cn } from '@udecode/cn';
 
 import { siteConfig } from '@/config/site';
 import { fontSans } from '@/lib/fonts';
-import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/sonner';
 import { Analytics } from '@/components/analytics';
 import { Body } from '@/components/body';

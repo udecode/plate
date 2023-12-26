@@ -1,4 +1,4 @@
-import { ForwardedRef } from 'react';
+import React from 'react';
 import { Value } from '@udecode/slate';
 
 import { PlateId } from '../stores';
@@ -81,7 +81,7 @@ export type PlateStoreState<
   /**
    * Access the editor object using a React ref.
    */
-  editorRef: ForwardedRef<E>;
+  editorRef: React.ForwardedRef<E>;
 
   decorate: NonNullable<TEditableProps['decorate']>;
   renderElement: NonNullable<TEditableProps['renderElement']>;

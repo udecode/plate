@@ -20,7 +20,6 @@ test('transform tailwind prefix', async () => {
         },
         aliases: {
           components: '@/components',
-          utils: '@/lib/utils',
         },
       },
       baseColor: 'stone',
@@ -43,7 +42,6 @@ export function Foo() {
         },
         aliases: {
           components: '@/components',
-          utils: '@/lib/utils',
         },
       },
       baseColor: stone,
@@ -66,7 +64,6 @@ export function Foo() {
         },
         aliases: {
           components: '@/components',
-          utils: '@/lib/utils',
         },
       },
       baseColor: stone,

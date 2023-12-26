@@ -1,8 +1,7 @@
 import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
+import { cn, withRef } from '@udecode/cn';
 import { cva, VariantProps } from 'class-variance-authority';
-
-import { cn, extendElementProps } from '@/lib/utils';
 
 export const buttonVariants = cva(
   'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
@@ -40,7 +39,8 @@ export const buttonVariants = cva(
   }
 );
 
-export const Button = extendElementProps('button')<
+export const Button = withRef<
+  'button',
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean;
   }

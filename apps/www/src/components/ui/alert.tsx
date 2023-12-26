@@ -1,7 +1,6 @@
 import * as React from 'react';
+import { cn } from '@udecode/cn';
 import { cva, VariantProps } from 'class-variance-authority';
-
-import { cn } from '@/lib/utils';
 
 const alertVariants = cva(
   'relative w-full rounded-lg border p-4',

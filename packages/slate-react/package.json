@@ -39,6 +39,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
+    "@udecode/react-utils": "24.3.0",
     "@udecode/slate": "25.0.0",
     "@udecode/utils": "24.3.0"
   },

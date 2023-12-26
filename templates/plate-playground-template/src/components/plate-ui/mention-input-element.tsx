@@ -1,4 +1,5 @@
 import React from 'react';
+import { cn } from '@udecode/cn';
 import {
   getHandler,
   PlateElement,
@@ -7,8 +8,6 @@ import {
 } from '@udecode/plate-common';
 import { TMentionElement } from '@udecode/plate-mention';
 import { useFocused, useSelected } from 'slate-react';
-
-import { cn } from '@/lib/utils';
 
 export interface MentionInputElementProps
   extends PlateElementProps<Value, TMentionElement> {

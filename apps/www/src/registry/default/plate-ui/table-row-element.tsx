@@ -1,11 +1,13 @@
 import React from 'react';
+import { cn, withRef } from '@udecode/cn';
 import { PlateElement } from '@udecode/plate-common';
 
-import { cn, extendProps } from '@/lib/utils';
-
-export const TableRowElement = extendProps(PlateElement)<{
-  hideBorder?: boolean;
-}>(({ hideBorder, children, ...props }, ref) => {
+export const TableRowElement = withRef<
+  typeof PlateElement,
+  {
+    hideBorder?: boolean;
+  }
+>(({ hideBorder, children, ...props }, ref) => {
   return (
     <PlateElement
       asChild

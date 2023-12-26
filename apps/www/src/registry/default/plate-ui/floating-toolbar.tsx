@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { cn, withRef } from '@udecode/cn';
 import { PortalBody, useComposedRef } from '@udecode/plate-common';
 import {
   flip,
@@ -10,13 +11,14 @@ import {
   useFloatingToolbarState,
 } from '@udecode/plate-floating';
 
-import { cn, extendProps } from '@/lib/utils';
-
 import { Toolbar } from './toolbar';
 
-export const FloatingToolbar = extendProps(Toolbar)<{
-  state?: FloatingToolbarState;
-}>(({ state, children, ...props }, componentRef) => {
+export const FloatingToolbar = withRef<
+  typeof Toolbar,
+  {
+    state?: FloatingToolbarState;
+  }
+>(({ state, children, ...props }, componentRef) => {
   const floatingToolbarState = useFloatingToolbarState({
     ...state,
     floatingOptions: {

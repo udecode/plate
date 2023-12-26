@@ -1,12 +1,14 @@
 import React from 'react';
+import { cn, withRef } from '@udecode/cn';
 import { getHandler, PlateElement } from '@udecode/plate-common';
 import { useFocused, useSelected } from 'slate-react';
 
-import { cn, extendProps } from '@/lib/utils';
-
-export const MentionInputElement = extendProps(PlateElement)<{
-  onClick?: (mentionNode: any) => void;
-}>(({ className, onClick, ...props }, ref) => {
+export const MentionInputElement = withRef<
+  typeof PlateElement,
+  {
+    onClick?: (mentionNode: any) => void;
+  }
+>(({ className, onClick, ...props }, ref) => {
   const { children, element } = props;
 
   const selected = useSelected();

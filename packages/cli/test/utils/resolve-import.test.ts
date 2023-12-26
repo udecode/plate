@@ -39,17 +39,6 @@ test('resolve import', async () => {
       },
     })
   ).toEqual('/Users/shadcn/Projects/foobar/src/app/components/foo/bar');
-
-  expect(
-    await resolveImport('lib/utils', {
-      absoluteBaseUrl: '/Users/shadcn/Projects/foobar',
-      paths: {
-        'components/*': ['./src/app/components/*'],
-        'ui/*': ['./src/ui/primities/*'],
-        lib: ['./lib'],
-      },
-    })
-  ).toEqual('/Users/shadcn/Projects/foobar/lib/utils');
 });
 
 test('resolve import with base url', async () => {
@@ -58,9 +47,6 @@ test('resolve import with base url', async () => {
 
   expect(await resolveImport('@/components/ui', config)).toEqual(
     path.resolve(cwd, 'components/ui')
-  );
-  expect(await resolveImport('@/lib/utils', config)).toEqual(
-    path.resolve(cwd, 'lib/utils')
   );
   expect(await resolveImport('foo/bar', config)).toEqual(
     path.resolve(cwd, 'foo/bar')
@@ -73,9 +59,6 @@ test('resolve import without base url', async () => {
 
   expect(await resolveImport('~/components/ui', config)).toEqual(
     path.resolve(cwd, 'components/ui')
-  );
-  expect(await resolveImport('~/lib/utils', config)).toEqual(
-    path.resolve(cwd, 'lib/utils')
   );
   expect(await resolveImport('foo/bar', config)).toEqual(
     path.resolve(cwd, 'foo/bar')

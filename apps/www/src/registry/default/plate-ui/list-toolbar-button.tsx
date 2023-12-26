@@ -1,18 +1,21 @@
 import React from 'react';
+import { withRef } from '@udecode/cn';
 import {
   ELEMENT_UL,
   useListToolbarButton,
   useListToolbarButtonState,
 } from '@udecode/plate-list';
 
-import { extendProps } from '@/lib/utils';
 import { Icons } from '@/components/icons';
 
 import { ToolbarButton } from './toolbar';
 
-export const ListToolbarButton = extendProps(ToolbarButton)<{
-  nodeType?: string;
-}>(({ nodeType = ELEMENT_UL, ...rest }, ref) => {
+export const ListToolbarButton = withRef<
+  typeof ToolbarButton,
+  {
+    nodeType?: string;
+  }
+>(({ nodeType = ELEMENT_UL, ...rest }, ref) => {
   const state = useListToolbarButtonState({ nodeType });
   const { props } = useListToolbarButton(state);
 

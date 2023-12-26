@@ -1,4 +1,4 @@
-import { CSSProperties } from 'react';
+import React from 'react';
 import { Value } from '@udecode/slate';
 import { AnyObject } from '@udecode/utils';
 
@@ -47,7 +47,7 @@ export interface InjectProps<V extends Value> {
        * Style key to override.
        * @default nodeKey
        */
-      styleKey?: keyof CSSProperties;
+      styleKey?: keyof React.CSSProperties;
 
       /**
        * Transform the className.
@@ -73,7 +73,7 @@ export interface InjectProps<V extends Value> {
        * Transform the style.
        * @default { ...style, [styleKey]: value }
        */
-      transformStyle?: (options: TransformOptions<V>) => CSSProperties;
+      transformStyle?: (options: TransformOptions<V>) => React.CSSProperties;
 
       /**
        * List of supported node values.

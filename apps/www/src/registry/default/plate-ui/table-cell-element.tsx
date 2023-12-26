@@ -1,4 +1,5 @@
 import React from 'react';
+import { cn, withProps, withRef } from '@udecode/cn';
 import { PlateElement } from '@udecode/plate-common';
 import {
   useTableCellElement,
@@ -7,14 +8,15 @@ import {
   useTableCellElementState,
 } from '@udecode/plate-table';
 
-import { cn, extendProps, withProps } from '@/lib/utils';
-
 import { ResizeHandle } from './resizable';
 
-export const TableCellElement = extendProps(PlateElement)<{
-  hideBorder?: boolean;
-  isHeader?: boolean;
-}>(({ children, className, style, hideBorder, isHeader, ...props }, ref) => {
+export const TableCellElement = withRef<
+  typeof PlateElement,
+  {
+    hideBorder?: boolean;
+    isHeader?: boolean;
+  }
+>(({ children, className, style, hideBorder, isHeader, ...props }, ref) => {
   const { element } = props;
 
   const {

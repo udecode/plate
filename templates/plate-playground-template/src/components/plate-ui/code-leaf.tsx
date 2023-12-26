@@ -1,9 +1,8 @@
 'use client';
 
 import React from 'react';
+import { cn } from '@udecode/cn';
 import { PlateLeaf, PlateLeafProps } from '@udecode/plate-common';
-
-import { cn } from '@/lib/utils';
 
 export function CodeLeaf({ className, children, ...props }: PlateLeafProps) {
   return (

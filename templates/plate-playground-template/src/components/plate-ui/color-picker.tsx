@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
+import { cn } from '@udecode/cn';
 
-import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/plate-ui/button';
 import { DropdownMenuItem } from '@/components/plate-ui/dropdown-menu';
 import { Separator } from '@/components/plate-ui/separator';

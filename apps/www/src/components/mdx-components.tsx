@@ -3,10 +3,10 @@
 import * as React from 'react';
 import { ReactNode } from 'react';
 import Image from 'next/image';
+import { cn } from '@udecode/cn';
 import { Provider } from 'jotai';
 import { useMDXComponent } from 'next-contentlayer/hooks';
 
-import { cn } from '@/lib/utils';
 import { useConfig } from '@/hooks/use-config';
 import { packageInfoAtom } from '@/hooks/use-package-info';
 

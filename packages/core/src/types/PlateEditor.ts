@@ -1,4 +1,4 @@
-import { KeyboardEvent } from 'react';
+import React from 'react';
 import {
   EElement,
   TEditor,
@@ -35,5 +35,5 @@ export type PlateEditor<V extends Value = Value> = TEditor<V> &
      */
     childrenFactory: () => V;
 
-    currentKeyboardEvent: KeyboardEvent | null;
+    currentKeyboardEvent: React.KeyboardEvent | null;
   };

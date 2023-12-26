@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React from 'react';
 import {
   findNodePath,
   focusEditor,
@@ -19,7 +19,7 @@ export function TabbableEffects() {
   const editor = useEditorRef();
   const readOnly = useEditorReadOnly();
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (readOnly) return;
 
     const { query, globalEventListener, insertTabbableEntries, isTabbable } =
