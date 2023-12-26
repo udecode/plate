@@ -52,10 +52,9 @@ const PlateElement = React.forwardRef<HTMLDivElement, PlateElementProps>(
 
     return <Box {...rootProps} ref={rootRef} />;
   }
-)/* as (<V extends Value = Value, N extends TElement = EElement<V>>(
+) as (<V extends Value = Value, N extends TElement = EElement<V>>(
   props: PlateElementProps<V, N> & RefAttributes<HTMLDivElement>
-) => ReactElement) & { displayName?: string }*/;
-console.log('TODO: PlateElement \'as\' needs review');
+) => ReactElement) & { displayName?: string };
 PlateElement.displayName = 'PlateElement';
 
 export { PlateElement };

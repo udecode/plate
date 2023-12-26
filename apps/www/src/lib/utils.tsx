@@ -1,10 +1,10 @@
 import {
   ComponentPropsWithoutRef,
   ComponentPropsWithRef,
+  ComponentType,
   createElement,
   ElementRef,
   forwardRef,
-  ForwardRefExoticComponent,
   ForwardRefRenderFunction,
   FunctionComponent,
 } from 'react';
@@ -44,7 +44,7 @@ export function withCn<T extends { className?: string }>(
 }
 
 export function withRef<
-  T extends keyof HTMLElementTagNameMap | ForwardRefExoticComponent<object>,
+  T extends keyof HTMLElementTagNameMap | ComponentType<object>,
 >(RenderFunction: (props: ComponentPropsWithRef<T>) => JSX.Element) {
   return forwardRef<ElementRef<T>, ComponentPropsWithRef<T>>(
     function ExtendComponent(props, ref) {
