@@ -650,7 +650,7 @@ export const docsConfig: DocsConfig = {
         {
           title: 'cn',
           href: '/docs/api/cn',
-          headings: ['withCn', 'withProps', 'withVariants'],
+          headings: ['cn', 'withCn', 'withProps', 'withVariants'],
         },
       ],
     },
