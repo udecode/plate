@@ -9,7 +9,7 @@
   "files": [
     {
       "name": "outdent-toolbar-button.tsx",
-      "content": "import React from 'react';\nimport { useOutdentButton } from '@udecode/plate-indent';\n\nimport { Icons } from '@/components/icons';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function OutdentToolbarButton() {\n  const { props } = useOutdentButton();\n\n  return (\n    <ToolbarButton tooltip=\"Outdent\" {...props}>\n      <Icons.outdent />\n    </ToolbarButton>\n  );\n}\n"
+      "content": "import React from 'react';\nimport { withRef } from '@udecode/cn';\nimport { useOutdentButton } from '@udecode/plate-indent';\n\nimport { Icons } from '@/components/icons';\n\nimport { ToolbarButton } from './toolbar';\n\nexport const OutdentToolbarButton = withRef<typeof ToolbarButton>(\n  (rest, ref) => {\n    const { props } = useOutdentButton();\n\n    return (\n      <ToolbarButton ref={ref} tooltip=\"Outdent\" {...props} {...rest}>\n        <Icons.outdent />\n      </ToolbarButton>\n    );\n  }\n);\n"
     }
   ],
   "type": "components:plate-ui"

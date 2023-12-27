@@ -7,7 +7,7 @@
   "files": [
     {
       "name": "code-line-element.tsx",
-      "content": "'use client';\n\nimport React, { forwardRef } from 'react';\nimport { PlateElement, PlateElementProps } from '@udecode/plate-common';\n\nconst CodeLineElement = forwardRef<HTMLDivElement, PlateElementProps>(\n  (props, ref) => <PlateElement ref={ref} {...props} />\n);\nCodeLineElement.displayName = 'CodeLineElement';\n\nexport { CodeLineElement };\n"
+      "content": "'use client';\n\nimport React from 'react';\nimport { withRef } from '@udecode/cn';\nimport { PlateElement } from '@udecode/plate-common';\n\nexport const CodeLineElement = withRef<typeof PlateElement>((props, ref) => (\n  <PlateElement ref={ref} {...props} />\n));\n"
     }
   ],
   "type": "components:plate-ui"
