@@ -9,7 +9,7 @@ import {
   Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import { cloneDeep } from 'lodash';
+import cloneDeep from 'lodash/cloneDeep.js';
 
 import { ELEMENT_TABLE, ELEMENT_TH } from '../createTablePlugin';
 import { getTableGridAbove } from '../queries';
