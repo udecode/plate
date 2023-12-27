@@ -15,9 +15,9 @@ jobs:
     name: build
     runs-on: ubuntu-latest
     strategy:
-      node-version: [18.18.x]
       fail-fast: false
       matrix:
+        node-version: [18.18.x]
         template:
           - plate-template
           - plate-playground-template
