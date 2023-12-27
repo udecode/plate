@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn } from '@udecode/cn';
 
 function Skeleton({
   className,

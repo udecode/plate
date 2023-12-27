@@ -1,4 +1,4 @@
-import React, { ForwardedRef, ReactNode, useMemo } from 'react';
+import React from 'react';
 import { normalizeEditor, Value } from '@udecode/slate';
 
 import { PLATE_SCOPE, PlateStoreProvider } from '../stores';
@@ -17,7 +17,7 @@ export interface PlateProps<
 > extends Partial<
     Pick<PlateStoreState<V, E>, 'id' | 'editor' | 'value' | 'readOnly'>
   > {
-  children: ReactNode;
+  children: React.ReactNode;
   decorate?: TEditableProps['decorate'];
 
   /**
@@ -43,7 +43,7 @@ export interface PlateProps<
   /**
    * Access the editor object using a React ref.
    */
-  editorRef?: ForwardedRef<E>;
+  editorRef?: React.ForwardedRef<E>;
 
   /**
    * Initial value of the editor.
@@ -93,7 +93,7 @@ function PlateInner<
   readOnly,
   maxLength,
 }: PlateProps<V, E>) {
-  const editor: E = useMemo(
+  const editor: E = React.useMemo(
     () =>
       editorProp ??
       createPlateEditor({
@@ -106,7 +106,7 @@ function PlateInner<
     []
   );
 
-  const value = useMemo(
+  const value = React.useMemo(
     () => {
       let currValue = initialValue ?? valueProp;
 

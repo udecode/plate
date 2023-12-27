@@ -1,10 +1,12 @@
-import { RefObject } from 'react';
+import React from 'react';
 import { TReactEditor, Value } from '@udecode/plate-common';
 import { Location } from 'slate';
 
 import { getBoundingClientRect } from './getBoundingClientRect';
 
-export type VirtualRef = RefObject<Pick<HTMLElement, 'getBoundingClientRect'>>;
+export type VirtualRef = React.RefObject<
+  Pick<HTMLElement, 'getBoundingClientRect'>
+>;
 
 export const createVirtualRef = <V extends Value>(
   editor: TReactEditor<V>,

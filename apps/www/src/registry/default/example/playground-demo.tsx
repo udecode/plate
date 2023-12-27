@@ -23,6 +23,7 @@ import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
 import { trailingBlockPlugin } from '@/plate/demo/plugins/trailingBlockPlugin';
 import { MENTIONABLES } from '@/plate/demo/values/mentionables';
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
+import { cn } from '@udecode/cn';
 import { createAlignPlugin } from '@udecode/plate-alignment';
 import { createAutoformatPlugin } from '@udecode/plate-autoformat';
 import {
@@ -92,7 +93,6 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import { ValueId } from '@/config/customizer-plugins';
 import { captionPlugin } from '@/lib/plate/demo/plugins/captionPlugin';
-import { cn } from '@/lib/utils';
 import { settingsStore } from '@/components/context/settings-store';
 import { PlaygroundFixedToolbarButtons } from '@/components/plate-ui/playground-fixed-toolbar-buttons';
 import { PlaygroundFloatingToolbarButtons } from '@/components/plate-ui/playground-floating-toolbar-buttons';

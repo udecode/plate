@@ -1,10 +1,10 @@
 import React from 'react';
 import Link from 'next/link';
+import { cn } from '@udecode/cn';
 import { Check } from 'lucide-react';
 
 import { customizerItems, SettingPlugin } from '@/config/customizer-items';
 import { customizerPlugins } from '@/config/customizer-plugins';
-import { cn } from '@/lib/utils';
 import { useFixHydration } from '@/hooks/use-fix-hydration';
 import { Button, buttonVariants } from '@/registry/default/plate-ui/button';
 import {

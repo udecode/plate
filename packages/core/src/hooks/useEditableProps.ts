@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import React from 'react';
 import { isDefined } from '@udecode/utils';
 import omit from 'lodash/omit.js';
 import { useDeepCompareMemo } from 'use-deep-compare';
@@ -25,24 +25,24 @@ export const useEditableProps = (
   const storeRenderLeaf = selectors.renderLeaf();
   const storeRenderElement = selectors.renderElement();
 
-  const decorateMemo = useMemo(() => {
+  const decorateMemo = React.useMemo(() => {
     return pipeDecorate(editor, storeDecorate ?? editableProps?.decorate);
   }, [editableProps?.decorate, editor, storeDecorate]);
 
-  const decorate: typeof decorateMemo = useMemo(() => {
+  const decorate: typeof decorateMemo = React.useMemo(() => {
     if (!versionDecorate || !decorateMemo) return;
 
     return (entry) => decorateMemo(entry);
   }, [decorateMemo, versionDecorate]);
 
-  const renderElement = useMemo(() => {
+  const renderElement = React.useMemo(() => {
     return pipeRenderElement(
       editor,
       storeRenderElement ?? editableProps?.renderElement
     );
   }, [editableProps?.renderElement, editor, storeRenderElement]);
 
-  const renderLeaf = useMemo(() => {
+  const renderLeaf = React.useMemo(() => {
     return pipeRenderLeaf(editor, storeRenderLeaf ?? editableProps?.renderLeaf);
   }, [editableProps?.renderLeaf, editor, storeRenderLeaf]);
 

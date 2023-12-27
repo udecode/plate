@@ -1,4 +1,5 @@
 module.exports = {
+  '@udecode/cn': 'cn',
   '@udecode/slate': 'slate',
   '@udecode/slate-react': 'slate-react',
   '@udecode/slate-utils': 'slate-utils',
@@ -47,6 +48,7 @@ module.exports = {
   '@udecode/plate-test-utils': 'test-utils',
   '@udecode/plate-trailing-block': 'trailing-block',
   '@udecode/plate-utils': 'plate-utils',
+  '@udecode/react-utils': 'react-utils',
   '@udecode/utils': 'utils',
   '@udecode/plate-excalidraw': 'excalidraw',
 };

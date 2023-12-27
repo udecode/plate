@@ -1,4 +1,4 @@
-import { Dispatch, Reducer, useReducer } from 'react';
+import React from 'react';
 
 import { EmojiCategory, EmojiCategoryList } from '../../types';
 import { Emoji } from '../EmojiLibrary/index';
@@ -36,10 +36,10 @@ const initialState: EmojiPickerStateProps = {
 
 export const EmojiPickerState = (): [
   EmojiPickerStateProps,
-  Dispatch<EmojiPickerStateDispatch>,
+  React.Dispatch<EmojiPickerStateDispatch>,
 ] => {
-  const [cache, dispatch] = useReducer<
-    Reducer<EmojiPickerStateProps, EmojiPickerStateDispatch>
+  const [cache, dispatch] = React.useReducer<
+    React.Reducer<EmojiPickerStateProps, EmojiPickerStateDispatch>
   >((state, action) => {
     const { type, payload } = action;
 

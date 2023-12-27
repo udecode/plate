@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React from 'react';
 import { Value } from '@udecode/slate';
 
 import { usePlateEffects, UsePlateEffectsProps } from '../hooks';
@@ -8,7 +8,7 @@ export interface PlateEffectsProps<
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
 > extends UsePlateEffectsProps<V, E> {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 export function PlateEffects<

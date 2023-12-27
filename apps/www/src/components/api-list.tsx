@@ -1,8 +1,8 @@
 'use client';
 
 import React, { ReactNode, useState } from 'react';
+import { cn } from '@udecode/cn';
 
-import { cn } from '@/lib/utils';
 import { Separator } from '@/registry/default/plate-ui/separator';
 
 import { Icons } from './icons';

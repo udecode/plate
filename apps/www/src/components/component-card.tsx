@@ -1,6 +1,5 @@
 import React from 'react';
-
-import { cn } from '@/lib/utils';
+import { cn } from '@udecode/cn';
 
 import { AspectRatio } from './ui/aspect-ratio';
 

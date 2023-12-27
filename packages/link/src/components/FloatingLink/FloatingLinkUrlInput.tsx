@@ -1,4 +1,4 @@
-import { ChangeEventHandler, useCallback, useEffect, useRef } from 'react';
+import React from 'react';
 import { createPrimitiveComponent } from '@udecode/plate-common';
 
 import {
@@ -9,9 +9,9 @@ import {
 
 export const useFloatingLinkUrlInputState = () => {
   const updated = useFloatingLinkSelectors().updated();
-  const ref = useRef<HTMLInputElement>(null);
+  const ref = React.useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (ref.current && updated) {
       setTimeout(() => {
         ref.current?.focus();
@@ -27,9 +27,10 @@ export const useFloatingLinkUrlInputState = () => {
 export const useFloatingLinkUrlInput = (
   state: ReturnType<typeof useFloatingLinkUrlInputState>
 ) => {
-  const onChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
-    floatingLinkActions.url(e.target.value);
-  }, []);
+  const onChange: React.ChangeEventHandler<HTMLInputElement> =
+    React.useCallback((e) => {
+      floatingLinkActions.url(e.target.value);
+    }, []);
 
   return {
     ref: state.ref,

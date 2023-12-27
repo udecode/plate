@@ -85,6 +85,23 @@ export default function InstallationTab() {
     return Array.from(uniqueImports).join(', ');
   }, [plugins, components]);
 
+  // Create cnImports string
+  const cnImports = useMemo(() => {
+    const combinedArray = [...plugins, ...components];
+
+    const uniqueImports = combinedArray.reduce(
+      (acc, { cnImports: _cnImports }) => {
+        if (_cnImports) {
+          _cnImports.forEach((importItem) => acc.add(importItem));
+        }
+        return acc;
+      },
+      new Set<string>()
+    );
+
+    return Array.from(uniqueImports).join(', ');
+  }, [plugins, components]);
+
   const installCommands = useMemo(() => {
     return {
       plugins: `npm install ${Array.from(
@@ -191,7 +208,11 @@ export default function InstallationTab() {
         )} } from '@/components/plate-ui/${componentId}';`
     );
     return [
-      `import { createPlugins, Plate${hasEditor ? '' : ', PlateContent'}${
+      `${
+        cnImports.length > 0
+          ? `import { ${cnImports} } from '@udecode/cn';\n`
+          : ''
+      }import { createPlugins, Plate${hasEditor ? '' : ', PlateContent'}${
         plateImports.length > 0 ? ', ' + plateImports : ''
       } } from '@udecode/plate-common';`,
       ...importsGroups,
@@ -397,7 +418,9 @@ export default function InstallationTab() {
           bash
           code={[
             `npm install react react-dom slate slate-react slate-history slate-hyperscript`,
-            `npm install @udecode/plate-common`,
+            `npm install @udecode/plate-common${
+              someComponents ? ' @udecode/cn' : ''
+            }`,
           ].join('\n')}
         >
           Start from our{' '}

@@ -10,6 +10,42 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ## December 2023 #6
 
+### December 27 #6.3
+
+- remove `clsx` from dependency: `class-variance-utility` already exports it as `cx`
+- new dependency: `@udecode/cn`
+- remove `@/lib/utils.ts` in favor of `cn` from `@udecode/cn`. Replace all imports from `@/lib/utils` with `@udecode/cn`
+- import `withProps` from `@udecode/cn` instead of `@udecode/plate-common`
+- all components using `forwardRef` are now using `withRef`. `withProps`, `withCn` and `withVariants` are also used to reduce boilerplate.
+- add `withCn` to ESLint `settings.tailwindcss.callees` and `classAttributes` in your IDE settings 
+
+```tsx
+// before
+const Avatar = React.forwardRef<
+  React.ElementRef<typeof AvatarPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
+>(({ className, ...props }, ref) => (
+  <AvatarPrimitive.Root
+    ref={ref}
+    className={cn(
+      'relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full',
+      className
+    )}
+    {...props}
+  />
+));
+Avatar.displayName = AvatarPrimitive.Root.displayName;
+
+export { Avatar };
+
+// after
+export const Avatar = withCn(
+  AvatarPrimitive.Root,
+  'relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full'
+);
+```
+
+
 ### December 25 #6.2
 
 - [dialog](https://github.com/udecode/plate/pull/2824/files#diff-5f7205cdd85718b7f26cef1e746ad67d69c83703135a7e3ad1a9a09ca69c38c8)

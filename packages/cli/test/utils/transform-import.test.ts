@@ -12,7 +12,7 @@ import { Foo } from "bar"
     import { Label} from "ui/label"
     import { Box } from "@/registry/new-york/box"
 
-    import { cn } from "@/lib/utils"
+    import { cn } from "@udecode/cn"
     `,
       config: {
         tailwind: {
@@ -21,7 +21,6 @@ import { Foo } from "bar"
         },
         aliases: {
           components: '@/components',
-          utils: '@/lib/utils',
         },
       },
     })
@@ -36,13 +35,11 @@ import { Foo } from "bar"
     import { Label} from "ui/label"
     import { Box } from "@/registry/new-york/box"
 
-    import { cn, foo, bar } from "@/lib/utils"
-    import { bar } from "@/lib/utils/bar"
+    import { cn, foo, bar } from "@udecode/cn"
     `,
       config: {
         aliases: {
           components: '~/src/components',
-          utils: '~/lib',
         },
       },
     })
@@ -57,13 +54,11 @@ import { Foo } from "bar"
     import { Label} from "ui/label"
     import { Box } from "@/registry/new-york/box"
 
-    import { cn } from "@/lib/utils"
-    import { bar } from "@/lib/utils/bar"
+    import { cn } from "@udecode/cn"
     `,
       config: {
         aliases: {
           components: '~/src/components',
-          utils: '~/src/utils',
         },
       },
     })

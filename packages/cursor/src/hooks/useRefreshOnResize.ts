@@ -1,24 +1,24 @@
-import { MutableRefObject, useCallback, useEffect } from 'react';
+import React from 'react';
 import { Range } from 'slate';
 
 import { CursorOverlayProps } from '../components';
 import { SelectionRect } from '../types';
 import { useRequestReRender } from './useRequestReRender';
 
-export interface UseRefreshOnResizeOptions
+export interface useRefreshOnResizeOptions
   extends Pick<CursorOverlayProps, 'refreshOnResize' | 'containerRef'> {
-  selectionRectCache: MutableRefObject<WeakMap<Range, SelectionRect[]>>;
+  selectionRectCache: React.MutableRefObject<WeakMap<Range, SelectionRect[]>>;
 }
 
 export const useRefreshOnResize = ({
   containerRef,
   refreshOnResize,
   selectionRectCache,
-}: UseRefreshOnResizeOptions) => {
+}: useRefreshOnResizeOptions) => {
   const requestReRender = useRequestReRender();
 
   // Reset the selection rect cache and request re-render.
-  const refresh = useCallback(
+  const refresh = React.useCallback(
     (sync = false) => {
       selectionRectCache.current = new WeakMap();
       requestReRender(sync);
@@ -27,7 +27,7 @@ export const useRefreshOnResize = ({
   );
 
   // Refresh on container resize
-  useEffect(() => {
+  React.useEffect(() => {
     if (!refreshOnResize || !containerRef?.current) {
       return;
     }

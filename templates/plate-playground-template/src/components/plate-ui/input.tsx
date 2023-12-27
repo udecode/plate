@@ -1,7 +1,6 @@
 import * as React from 'react';
+import { cn } from '@udecode/cn';
 import { cva, VariantProps } from 'class-variance-authority';
-
-import { cn } from '@/lib/utils';
 
 export const inputVariants = cva(
   'flex w-full rounded-md bg-transparent text-sm file:border-0 file:bg-background file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',

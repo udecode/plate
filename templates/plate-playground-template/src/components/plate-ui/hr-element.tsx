@@ -1,8 +1,7 @@
 import React from 'react';
+import { cn } from '@udecode/cn';
 import { PlateElement, PlateElementProps } from '@udecode/plate-common';
 import { useFocused, useSelected } from 'slate-react';
-
-import { cn } from '@/lib/utils';
 
 const HrElement = React.forwardRef<
   React.ElementRef<typeof PlateElement>,

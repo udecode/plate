@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React from 'react';
 import { findNodePath, setNodes, useEditorRef } from '@udecode/plate-common';
 import { useFocused, useSelected } from 'slate-react';
 
@@ -14,7 +14,7 @@ export const useCloudImageElementState = ({
 
   const url = upload.status === 'not-found' ? undefined : upload.url;
 
-  useEffect(() => {
+  React.useEffect(() => {
     /**
      * We only want to update the actual URL of the element if the URL is not
      * a blob URL and if it's different from the current URL.
@@ -42,12 +42,12 @@ export const useCloudImageElementState = ({
     }
   }, [editor, element, url]);
 
-  const [size, setSize] = useState<{ width: number; height: number }>({
+  const [size, setSize] = React.useState<{ width: number; height: number }>({
     width: element.width,
     height: element.height,
   });
 
-  useEffect(() => {
+  React.useEffect(() => {
     setSize({ width: element.width, height: element.height });
   }, [element.width, element.height]);
 

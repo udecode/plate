@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import React from 'react';
 import {
   getAboveNode,
   getEndPoint,
@@ -42,7 +42,7 @@ export const useFloatingLinkEditState = ({
   const mode = useFloatingLinkSelectors().mode();
   const open = useFloatingLinkSelectors().isOpen(editor.id);
 
-  const getBoundingClientRect = useCallback(() => {
+  const getBoundingClientRect = React.useCallback(() => {
     const entry = getAboveNode(editor, {
       match: { type: getPluginType(editor, ELEMENT_LINK) },
     });
@@ -86,7 +86,7 @@ export const useFloatingLinkEdit = ({
   isOpen,
   readOnly,
 }: ReturnType<typeof useFloatingLinkEditState>) => {
-  useEffect(() => {
+  React.useEffect(() => {
     if (
       editor.selection &&
       someNode(editor, {

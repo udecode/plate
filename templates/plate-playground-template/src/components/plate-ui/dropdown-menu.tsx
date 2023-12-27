@@ -3,9 +3,9 @@
 import * as React from 'react';
 import { useCallback, useState } from 'react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
+import { cn } from '@udecode/cn';
 import { cva, VariantProps } from 'class-variance-authority';
 
-import { cn } from '@/lib/utils';
 import { Icons } from '@/components/icons';
 
 const DropdownMenu = DropdownMenuPrimitive.Root;

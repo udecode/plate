@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   findNodePath,
   getPluginOptions,
@@ -25,7 +25,7 @@ export const useCodeBlockComboboxState = () => {
     ELEMENT_CODE_BLOCK
   );
 
-  useEffect(() => {
+  React.useEffect(() => {
     setValue(element.lang ?? 'text');
   }, [element.lang]);
 

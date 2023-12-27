@@ -1,8 +1,8 @@
 import * as React from 'react';
+import { cn } from '@udecode/cn';
 
 import { NpmCommands } from '@/types/unist';
 import { Event } from '@/lib/events';
-import { cn } from '@/lib/utils';
 import { Style } from '@/registry/styles';
 
 import { CopyButton, CopyNpmCommandButton } from './copy-button';

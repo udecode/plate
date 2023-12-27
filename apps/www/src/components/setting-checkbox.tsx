@@ -1,9 +1,9 @@
 import React from 'react';
 import Link from 'next/link';
+import { cn } from '@udecode/cn';
 
 import { customizerItems, SettingPlugin } from '@/config/customizer-items';
 import { descriptions } from '@/config/descriptions';
-import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/registry/default/plate-ui/button';
 import { Checkbox } from '@/registry/default/plate-ui/checkbox';
 import {

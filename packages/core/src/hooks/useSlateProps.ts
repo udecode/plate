@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import React from 'react';
 import { Value } from '@udecode/slate';
 import { SlateProps } from '@udecode/slate-react';
 
@@ -19,7 +19,7 @@ export const useSlateProps = <V extends Value>({
   const setValue = usePlateActions(id).value();
   const onChangeProp = usePlateSelectors(id).onChange();
 
-  const onChange = useCallback(
+  const onChange = React.useCallback(
     (newValue: V) => {
       const eventIsHandled = pipeOnChange(editor)(newValue);
 
@@ -32,7 +32,7 @@ export const useSlateProps = <V extends Value>({
     [editor, setValue, onChangeProp]
   );
 
-  return useMemo(() => {
+  return React.useMemo(() => {
     return {
       key: editor.key,
       editor,

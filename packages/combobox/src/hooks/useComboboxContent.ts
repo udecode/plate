@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React from 'react';
 
 import {
   comboboxActions,
@@ -39,12 +39,12 @@ export const useComboboxContentState = <TData extends Data = NoData>({
     activeComboboxStore.use.maxSuggestions?.() ?? storeItems.length;
 
   // Update items
-  useEffect(() => {
+  React.useEffect(() => {
     items && comboboxActions.items(items);
   }, [items]);
 
   // Filter items
-  useEffect(() => {
+  React.useEffect(() => {
     comboboxActions.filteredItems(
       storeItems
         .filter(

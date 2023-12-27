@@ -1,6 +1,7 @@
 import React, { forwardRef } from 'react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { PopoverAnchor, PopoverContentProps } from '@radix-ui/react-popover';
+import { cn } from '@udecode/cn';
 import {
   isCollapsed,
   PlateElement,
@@ -17,7 +18,6 @@ import {
 } from '@udecode/plate-table';
 import { useReadOnly, useSelected } from 'slate-react';
 
-import { cn } from '@/lib/utils';
 import { Icons, iconVariants } from '@/components/icons';
 
 import { Button } from './button';

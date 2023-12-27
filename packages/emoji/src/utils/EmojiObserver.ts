@@ -1,4 +1,4 @@
-import { MutableRefObject } from 'react';
+import React from 'react';
 
 import { EmojiCategoryList } from '../types';
 import { IEmojiFloatingLibrary } from './EmojiLibrary/index';
@@ -30,7 +30,7 @@ export type SetFocusedAndVisibleSectionsType = (
 ) => void;
 
 export type ObserverCategoriesType = {
-  ancestorRef: MutableRefObject<HTMLDivElement | null>;
+  ancestorRef: React.MutableRefObject<HTMLDivElement | null>;
   emojiLibrary: IEmojiFloatingLibrary;
   setFocusedAndVisibleSections: SetFocusedAndVisibleSectionsType;
 };

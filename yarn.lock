@@ -6146,6 +6146,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@udecode/cn@workspace:packages/cn":
+  version: 0.0.0-use.local
+  resolution: "@udecode/cn@workspace:packages/cn"
+  dependencies:
+    "@udecode/react-utils": "npm:24.3.0"
+    clsx: "npm:^1.2.1"
+  peerDependencies:
+    class-variance-authority: ">=0.7.0"
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    tailwind-merge: ">=2.2.0"
+  languageName: unknown
+  linkType: soft
+
 "@udecode/plate-alignment@npm:28.0.0, @udecode/plate-alignment@workspace:^, @udecode/plate-alignment@workspace:packages/alignment":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-alignment@workspace:packages/alignment"
@@ -6329,6 +6343,7 @@ __metadata:
   dependencies:
     "@udecode/plate-core": "npm:28.0.0"
     "@udecode/plate-utils": "npm:28.0.0"
+    "@udecode/react-utils": "npm:24.3.0"
     "@udecode/slate": "npm:25.0.0"
     "@udecode/slate-react": "npm:25.0.0"
     "@udecode/slate-utils": "npm:25.0.0"
@@ -6973,8 +6988,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate-utils@workspace:packages/plate-utils"
   dependencies:
-    "@radix-ui/react-slot": "npm:^1.0.2"
     "@udecode/plate-core": "npm:28.0.0"
+    "@udecode/react-utils": "npm:24.3.0"
     "@udecode/slate": "npm:25.0.0"
     "@udecode/slate-react": "npm:25.0.0"
     "@udecode/slate-utils": "npm:25.0.0"
@@ -7061,10 +7076,24 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@udecode/react-utils@npm:24.3.0, @udecode/react-utils@workspace:packages/react-utils":
+  version: 0.0.0-use.local
+  resolution: "@udecode/react-utils@workspace:packages/react-utils"
+  dependencies:
+    "@radix-ui/react-slot": "npm:^1.0.2"
+    "@udecode/utils": "npm:24.3.0"
+    clsx: "npm:^1.2.1"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+  languageName: unknown
+  linkType: soft
+
 "@udecode/slate-react@npm:25.0.0, @udecode/slate-react@workspace:^, @udecode/slate-react@workspace:packages/slate-react":
   version: 0.0.0-use.local
   resolution: "@udecode/slate-react@workspace:packages/slate-react"
   dependencies:
+    "@udecode/react-utils": "npm:24.3.0"
     "@udecode/slate": "npm:25.0.0"
     "@udecode/utils": "npm:24.3.0"
   peerDependencies:
@@ -8371,12 +8400,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"class-variance-authority@npm:^0.6.1":
-  version: 0.6.1
-  resolution: "class-variance-authority@npm:0.6.1"
+"class-variance-authority@npm:^0.7.0":
+  version: 0.7.0
+  resolution: "class-variance-authority@npm:0.7.0"
   dependencies:
-    clsx: "npm:1.2.1"
-  checksum: 0685b1a92d97fbb26b1031a9dcb9d419c4bbb163aa20a6025a11f3a92ebd6209da277c63f789b294d890a0d500558de285fd842068c824d40b5beda97e01aa1a
+    clsx: "npm:2.0.0"
+  checksum: e11c57edf4bf50ef1c97bae41d68885afbaaedba26c48b7cc5dfb033390fed7012147e9532168d8c4f3497fce4dff15e20e6e60b8c9c9a4b0fe26b0e804513db
   languageName: node
   linkType: hard
 
@@ -8475,7 +8504,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"clsx@npm:1.2.1, clsx@npm:^1.1.1, clsx@npm:^1.2.1":
+"clsx@npm:2.0.0":
+  version: 2.0.0
+  resolution: "clsx@npm:2.0.0"
+  checksum: c09f43b3144a0b7826b6b11b6a111b2c7440831004eecc02d333533c5e58ef0aa5f2dce071d3b25fbb8c8ea97b45df96c74bcc1d51c8c2027eb981931107b0cd
+  languageName: node
+  linkType: hard
+
+"clsx@npm:^1.1.1, clsx@npm:^1.2.1":
   version: 1.2.1
   resolution: "clsx@npm:1.2.1"
   checksum: 34dead8bee24f5e96f6e7937d711978380647e936a22e76380290e35486afd8634966ce300fc4b74a32f3762c7d4c0303f442c3e259f4ce02374eb0c82834f27
@@ -21625,7 +21661,7 @@ __metadata:
     "@vercel/og": "npm:^0.5.8"
     autoprefixer: "npm:^10.4.14"
     change-case: "npm:^4.1.2"
-    class-variance-authority: "npm:^0.6.1"
+    class-variance-authority: "npm:^0.7.0"
     clsx: "npm:^1.2.1"
     cmdk: "npm:^0.2.0"
     concurrently: "npm:^8.2.0"

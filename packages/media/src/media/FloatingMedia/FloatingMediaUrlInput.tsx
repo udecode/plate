@@ -1,4 +1,4 @@
-import { ChangeEventHandler, useCallback } from 'react';
+import React from 'react';
 import {
   createPrimitiveComponent,
   focusEditor,
@@ -58,9 +58,10 @@ export const useFloatingMediaUrlInputState = ({
 export const useFloatingMediaUrlInput = ({
   defaultValue,
 }: ReturnType<typeof useFloatingMediaUrlInputState>) => {
-  const onChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
-    floatingMediaActions.url(e.target.value);
-  }, []);
+  const onChange: React.ChangeEventHandler<HTMLInputElement> =
+    React.useCallback((e) => {
+      floatingMediaActions.url(e.target.value);
+    }, []);
 
   return {
     props: {

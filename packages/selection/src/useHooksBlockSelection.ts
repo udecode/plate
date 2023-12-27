@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React from 'react';
 import {
   findNode,
   focusEditor,
@@ -33,7 +33,7 @@ export const useHooksBlockSelection = <
   const selectedIds = useBlockSelectionSelectors().selectedIds();
 
   // TODO: test
-  useEffect(() => {
+  React.useEffect(() => {
     const el = document.querySelector('#slate-shadow-input');
     if (el) {
       el.remove();

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React from 'react';
 import {
   findNodePath,
   isDefined,
@@ -20,7 +20,7 @@ export const useCloudAttachmentElementState = ({
 
   const url = upload.status === 'not-found' ? undefined : upload.url;
 
-  useEffect(() => {
+  React.useEffect(() => {
     /**
      * We only want to update the actual URL of the element if the URL is not
      * a blob URL and if it's different from the current URL.

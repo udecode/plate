@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import React from 'react';
 import {
   createPrimitiveComponent,
   findNode,
@@ -15,7 +15,7 @@ export const useLinkOpenButtonState = () => {
   const editor = useEditorRef();
   const selection = useEditorSelection();
 
-  const entry = useMemo(
+  const entry = React.useMemo(
     () =>
       findNode<TLinkElement>(editor, {
         match: { type: getPluginType(editor, ELEMENT_LINK) },

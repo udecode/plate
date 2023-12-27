@@ -15,17 +15,6 @@ export const transformImport: Transformer = async ({ sourceFile, config }) => {
         )
       );
     }
-
-    // Replace `import { cn } from "@/lib/utils"`
-    if (moduleSpecifier == '@/lib/utils') {
-      const namedImports = importDeclaration.getNamedImports();
-      const cnImport = namedImports.find((i) => i.getName() === 'cn');
-      if (cnImport) {
-        importDeclaration.setModuleSpecifier(
-          moduleSpecifier.replace(/^@\/lib\/utils/, config.aliases.utils)
-        );
-      }
-    }
   }
 
   return sourceFile;

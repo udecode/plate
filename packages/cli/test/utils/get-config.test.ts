@@ -21,7 +21,6 @@ test('get raw config', async () => {
     rsc: false,
     aliases: {
       components: '@/components',
-      utils: '@/lib/utils',
     },
   });
 
@@ -52,7 +51,6 @@ test('get config', async () => {
     rsc: false,
     aliases: {
       components: '@/components',
-      utils: '@/lib/utils',
     },
     resolvedPaths: {
       tailwindConfig: path.resolve(
@@ -69,11 +67,6 @@ test('get config', async () => {
         __dirname,
         '../fixtures/config-partial',
         './components'
-      ),
-      utils: path.resolve(
-        __dirname,
-        '../fixtures/config-partial',
-        './lib/utils'
       ),
     },
   });
@@ -92,7 +85,6 @@ test('get config', async () => {
     },
     aliases: {
       components: '~/components',
-      utils: '~/lib/utils',
     },
     resolvedPaths: {
       tailwindConfig: path.resolve(
@@ -109,11 +101,6 @@ test('get config', async () => {
         __dirname,
         '../fixtures/config-full',
         './src/components'
-      ),
-      utils: path.resolve(
-        __dirname,
-        '../fixtures/config-full',
-        './src/lib/utils'
       ),
     },
   });

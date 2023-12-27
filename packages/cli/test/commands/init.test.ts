@@ -46,11 +46,6 @@ test('init config-full', async () => {
   );
   expect(mockMkdir).toHaveBeenNthCalledWith(
     2,
-    expect.stringMatching(/src\/lib$/),
-    expect.anything()
-  );
-  expect(mockMkdir).toHaveBeenNthCalledWith(
-    3,
     expect.stringMatching(/src\/components$/),
     expect.anything()
   );
@@ -66,19 +61,12 @@ test('init config-full', async () => {
     expect.stringContaining(`@tailwind base`),
     'utf8'
   );
-  expect(mockWriteFile).toHaveBeenNthCalledWith(
-    3,
-    expect.stringMatching(/src\/lib\/utils.ts$/),
-    expect.stringContaining(`import { type ClassValue, clsx } from 'clsx'`),
-    'utf8'
-  );
   expect(execa).toHaveBeenCalledWith(
     'pnpm',
     [
       'add',
       'tailwindcss-animate',
       'class-variance-authority',
-      'clsx',
       'tailwind-merge',
       '@radix-ui/react-icons',
     ],
@@ -116,11 +104,6 @@ test('init config-partial', async () => {
   );
   expect(mockMkdir).toHaveBeenNthCalledWith(
     2,
-    expect.stringMatching(/lib$/),
-    expect.anything()
-  );
-  expect(mockMkdir).toHaveBeenNthCalledWith(
-    3,
     expect.stringMatching(/components$/),
     expect.anything()
   );
@@ -136,19 +119,12 @@ test('init config-partial', async () => {
     expect.stringContaining(`@tailwind base`),
     'utf8'
   );
-  expect(mockWriteFile).toHaveBeenNthCalledWith(
-    3,
-    expect.stringMatching(/utils.ts$/),
-    expect.stringContaining(`import { type ClassValue, clsx } from 'clsx'`),
-    'utf8'
-  );
   expect(execa).toHaveBeenCalledWith(
     'npm',
     [
       'install',
       'tailwindcss-animate',
       'class-variance-authority',
-      'clsx',
       'tailwind-merge',
       'lucide-react',
     ],

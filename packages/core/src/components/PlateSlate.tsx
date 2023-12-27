@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React from 'react';
 import { Slate } from 'slate-react';
 
 import { useSlateProps } from '../hooks';
@@ -15,7 +15,7 @@ export function PlateSlate({
   children,
 }: {
   id?: PlateId;
-  children: ReactNode;
+  children: React.ReactNode;
 }) {
   const slateProps = useSlateProps({ id });
 

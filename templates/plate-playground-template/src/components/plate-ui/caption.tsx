@@ -1,11 +1,10 @@
 import React, { ComponentProps } from 'react';
+import { cn } from '@udecode/cn';
 import {
   Caption as CaptionPrimitive,
   CaptionTextarea as CaptionTextareaPrimitive,
 } from '@udecode/plate-caption';
 import { cva, VariantProps } from 'class-variance-authority';
-
-import { cn } from '@/lib/utils';
 
 const captionVariants = cva('max-w-full', {
   variants: {

@@ -1,4 +1,4 @@
-import { MouseEventHandler, useCallback } from 'react';
+import React from 'react';
 
 import {
   useAddCommentMark,
@@ -11,7 +11,7 @@ export const useCommentAddButton = () => {
   const setFocusTextarea = useCommentsActions().focusTextarea();
   const myUserId = useCommentsSelectors().myUserId();
 
-  const onClick = useCallback<MouseEventHandler<HTMLSpanElement>>(
+  const onClick = React.useCallback<React.MouseEventHandler<HTMLSpanElement>>(
     (e) => {
       e.preventDefault();
       e.stopPropagation();

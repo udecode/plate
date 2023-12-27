@@ -1,22 +1,15 @@
 import React from 'react';
-import {
-  PlateElement,
-  PlateElementProps,
-  Value,
-  withHOC,
-} from '@udecode/plate-common';
+import { cn, withRef } from '@udecode/cn';
+import { PlateElement, withHOC } from '@udecode/plate-common';
 import {
   ELEMENT_MEDIA_EMBED,
   parseTwitterUrl,
   parseVideoUrl,
-  TMediaEmbedElement,
   useMediaState,
 } from '@udecode/plate-media';
 import { ResizableProvider, useResizableStore } from '@udecode/plate-resizable';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import { Tweet } from 'react-tweet';
-
-import { cn } from '@/lib/utils';
 
 import { Caption, CaptionTextarea } from './caption';
 import { MediaPopover } from './media-popover';
@@ -26,13 +19,9 @@ import {
   ResizeHandle,
 } from './resizable';
 
-const MediaEmbedElement = withHOC(
+export const MediaEmbedElement = withHOC(
   ResizableProvider,
-  // eslint-disable-next-line react/display-name
-  React.forwardRef<
-    React.ElementRef<typeof PlateElement>,
-    PlateElementProps<Value, TMediaEmbedElement>
-  >(({ className, children, ...props }, ref) => {
+  withRef<typeof PlateElement>(({ className, children, ...props }, ref) => {
     const {
       align = 'center',
       focused,
@@ -145,6 +134,3 @@ const MediaEmbedElement = withHOC(
     );
   })
 );
-MediaEmbedElement.displayName = 'MediaEmbedElement';
-
-export { MediaEmbedElement };

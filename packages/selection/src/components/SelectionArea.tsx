@@ -1,4 +1,4 @@
-import React, { createRef, useEffect } from 'react';
+import React from 'react';
 import VanillaSelectionArea, {
   SelectionEvents,
   SelectionOptions,
@@ -39,10 +39,10 @@ export function SelectionArea({
   getBoundaries = (boundaries) => boundaries,
   ...props
 }: SelectionAreaProps) {
-  const ref = createRef<HTMLDivElement>();
+  const ref = React.createRef<HTMLDivElement>();
 
   /* eslint-disable react-hooks/exhaustive-deps */
-  useEffect(() => {
+  React.useEffect(() => {
     const opt = {
       selectionAreaClass,
       selectionContainerClass,

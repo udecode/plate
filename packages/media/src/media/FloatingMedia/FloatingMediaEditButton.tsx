@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import React from 'react';
 import { createPrimitiveComponent, useElement } from '@udecode/plate-common';
 
 import { TMediaElement } from '../types';
@@ -9,7 +9,7 @@ export const useFloatingMediaEditButton = () => {
 
   return {
     props: {
-      onClick: useCallback(() => {
+      onClick: React.useCallback(() => {
         floatingMediaActions.url(element.url);
         floatingMediaActions.isEditing(true);
       }, [element.url]),

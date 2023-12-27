@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import React from 'react';
 import debounce from 'lodash/debounce.js';
 
 export const useColorsCustomState = ({
@@ -12,11 +12,11 @@ export const useColorsCustomState = ({
   customColors: any[];
   updateCustomColor: (color: string) => void;
 }) => {
-  const [customColor, setCustomColor] = useState<string>();
+  const [customColor, setCustomColor] = React.useState<string>();
 
-  const [value, setValue] = useState<string>(color || '#000000');
+  const [value, setValue] = React.useState<string>(color || '#000000');
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (
       !color ||
       customColors.some((c) => c.value === color) ||
@@ -28,7 +28,7 @@ export const useColorsCustomState = ({
     setCustomColor(color);
   }, [color, colors, customColors]);
 
-  const computedColors = useMemo(
+  const computedColors = React.useMemo(
     () =>
       customColor
         ? [
@@ -57,7 +57,7 @@ export const useColorsCustom = ({
   setValue,
 }: ReturnType<typeof useColorsCustomState>) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const updateCustomColorDebounced = useCallback(
+  const updateCustomColorDebounced = React.useCallback(
     debounce(updateCustomColor, 100),
     [updateCustomColor]
   );

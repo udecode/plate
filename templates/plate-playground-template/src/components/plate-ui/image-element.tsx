@@ -1,4 +1,5 @@
 import React from 'react';
+import { cn } from '@udecode/cn';
 import { PlateElement, PlateElementProps, Value } from '@udecode/plate-common';
 import {
   ELEMENT_IMAGE,
@@ -7,8 +8,6 @@ import {
   useMediaState,
 } from '@udecode/plate-media';
 import { useResizableStore } from '@udecode/plate-resizable';
-
-import { cn } from '@/lib/utils';
 
 import { Caption, CaptionTextarea } from './caption';
 import { MediaPopover } from './media-popover';

@@ -1,4 +1,4 @@
-import { ComponentPropsWithoutRef, useCallback } from 'react';
+import React from 'react';
 import {
   findNodePath,
   getPluginOptions,
@@ -76,9 +76,9 @@ export const useTableCellElementResizable = ({
   stepY,
   colSpan,
 }: ReturnType<typeof useTableCellElementResizableState>): {
-  rightProps: ComponentPropsWithoutRef<typeof ResizeHandle>;
-  bottomProps: ComponentPropsWithoutRef<typeof ResizeHandle>;
-  leftProps: ComponentPropsWithoutRef<typeof ResizeHandle>;
+  rightProps: React.ComponentPropsWithoutRef<typeof ResizeHandle>;
+  bottomProps: React.ComponentPropsWithoutRef<typeof ResizeHandle>;
+  leftProps: React.ComponentPropsWithoutRef<typeof ResizeHandle>;
   hiddenLeft: boolean;
 } => {
   const editor = useEditorRef();
@@ -107,7 +107,7 @@ export const useTableCellElementResizable = ({
   const overrideMarginLeft = useOverrideMarginLeft();
 
   /* eslint-disable @typescript-eslint/no-shadow */
-  const setColSize = useCallback(
+  const setColSize = React.useCallback(
     (colIndex: number, width: number) => {
       setTableColSize(
         editor,
@@ -122,7 +122,7 @@ export const useTableCellElementResizable = ({
   );
 
   /* eslint-disable @typescript-eslint/no-shadow */
-  const setRowSize = useCallback(
+  const setRowSize = React.useCallback(
     (rowIndex: number, height: number) => {
       setTableRowSize(
         editor,
@@ -136,7 +136,7 @@ export const useTableCellElementResizable = ({
     [editor, element, overrideRowSize]
   );
 
-  const setMarginLeft = useCallback(
+  const setMarginLeft = React.useCallback(
     (marginLeft: number) => {
       setTableMarginLeft(
         editor,
@@ -150,7 +150,7 @@ export const useTableCellElementResizable = ({
     [editor, element, overrideMarginLeft]
   );
 
-  const handleResizeRight = useCallback(
+  const handleResizeRight = React.useCallback(
     ({ initialSize: currentInitial, delta, finished }: ResizeEvent) => {
       const nextInitial = colSizesWithoutOverrides[colIndex + 1];
 
@@ -181,7 +181,7 @@ export const useTableCellElementResizable = ({
     ]
   );
 
-  const handleResizeBottom = useCallback(
+  const handleResizeBottom = React.useCallback(
     (event: ResizeEvent) => {
       const newHeight = roundCellSizeToStep(
         event.initialSize + event.delta,
@@ -197,7 +197,7 @@ export const useTableCellElementResizable = ({
     [overrideRowSize, rowIndex, setRowSize, stepY]
   );
 
-  const handleResizeLeft = useCallback(
+  const handleResizeLeft = React.useCallback(
     (event: ResizeEvent) => {
       const initial = colSizesWithoutOverrides[colIndex];
 

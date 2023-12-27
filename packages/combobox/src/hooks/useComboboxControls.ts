@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import React from 'react';
 import { useCombobox } from 'downshift';
 
 import { useComboboxSelectors } from '../combobox.store';
@@ -26,7 +26,7 @@ export const useComboboxControls = () => {
   getComboboxProps({}, { suppressRefError: true });
   getInputProps({}, { suppressRefError: true });
 
-  return useMemo(
+  return React.useMemo(
     () => ({
       closeMenu,
       getMenuProps,

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { forwardRef } from 'react';
+import React from 'react';
+import { cn, withRef } from '@udecode/cn';
 import { ClassNames, PlateElementProps, TEditor } from '@udecode/plate-common';
 import {
   DragItemNode,
@@ -9,7 +10,6 @@ import {
 } from '@udecode/plate-dnd';
 import { DropTargetMonitor } from 'react-dnd';
 
-import { cn } from '@/lib/utils';
 import { Icons } from '@/components/icons';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
@@ -86,7 +86,7 @@ const dragHandle = (
   </Tooltip>
 );
 
-const Draggable = forwardRef<HTMLDivElement, DraggableProps>(
+export const Draggable = withRef<'div', DraggableProps>(
   ({ className, classNames = {}, onDropHandler, ...props }, ref) => {
     const { children, element } = props;
 
@@ -102,13 +102,13 @@ const Draggable = forwardRef<HTMLDivElement, DraggableProps>(
 
     return (
       <div
+        ref={ref}
         className={cn(
           'relative',
           isDragging && 'opacity-50',
           'group',
           className
         )}
-        ref={ref}
         {...groupProps}
       >
         <div
@@ -132,7 +132,7 @@ const Draggable = forwardRef<HTMLDivElement, DraggableProps>(
           </div>
         </div>
 
-        <div className={cn('', classNames.blockWrapper)} ref={previewRef}>
+        <div className={classNames.blockWrapper} ref={previewRef}>
           {children}
 
           {!!dropLine && (
@@ -152,6 +152,3 @@ const Draggable = forwardRef<HTMLDivElement, DraggableProps>(
     );
   }
 );
-Draggable.displayName = 'Draggable';
-
-export { Draggable };

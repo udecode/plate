@@ -1,4 +1,4 @@
-import { DependencyList, useMemo } from 'react';
+import React from 'react';
 import { Value } from '@udecode/slate';
 import { selectAtom } from 'jotai/utils';
 
@@ -16,10 +16,10 @@ export const useEditorSelector = <
   E extends PlateEditor<V> = PlateEditor<V>,
 >(
   selector: (editor: E, prev?: T) => T,
-  deps: DependencyList,
+  deps: React.DependencyList,
   { id, equalityFn = (a: T, b: T) => a === b }: UseEditorSelectorOptions<T> = {}
 ): T => {
-  const selectorAtom = useMemo(
+  const selectorAtom = React.useMemo(
     () =>
       selectAtom<{ editor: E }, T>(
         plateStore.atom.trackedEditor,

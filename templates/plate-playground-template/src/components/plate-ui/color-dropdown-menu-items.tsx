@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { DropdownMenuItemProps } from '@radix-ui/react-dropdown-menu';
+import { cn } from '@udecode/cn';
 
-import { cn } from '@/lib/utils';
 import { Icons } from '@/components/icons';
 import { buttonVariants } from '@/components/plate-ui/button';
 import { DropdownMenuItem } from '@/components/plate-ui/dropdown-menu';

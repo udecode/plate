@@ -1,8 +1,8 @@
 /* eslint-disable turbo/no-undeclared-env-vars */
 import Link from 'next/link';
+import { cn } from '@udecode/cn';
 
 import { siteConfig } from '@/config/site';
-import { cn } from '@/lib/utils';
 import ModeToggle from '@/registry/default/example/mode-toggle';
 import { buttonVariants } from '@/registry/default/plate-ui/button';
 

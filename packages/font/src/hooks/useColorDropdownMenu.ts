@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import React from 'react';
 import {
   focusEditor,
   getMark,
@@ -34,17 +34,17 @@ export const useColorDropdownMenuState = ({
     [nodeType]
   );
 
-  const [selectedColor, setSelectedColor] = useState<string>();
+  const [selectedColor, setSelectedColor] = React.useState<string>();
 
-  const [open, setOpen] = useState(false);
-  const onToggle = useCallback(
+  const [open, setOpen] = React.useState(false);
+  const onToggle = React.useCallback(
     (value = !open) => {
       setOpen(value);
     },
     [open, setOpen]
   );
 
-  const updateColor = useCallback(
+  const updateColor = React.useCallback(
     (value: string) => {
       if (editor.selection) {
         setSelectedColor(value);
@@ -58,7 +58,7 @@ export const useColorDropdownMenuState = ({
     [editor, nodeType]
   );
 
-  const updateColorAndClose = useCallback(
+  const updateColorAndClose = React.useCallback(
     (value: string) => {
       updateColor(value);
       closeOnSelect && onToggle();
@@ -66,7 +66,7 @@ export const useColorDropdownMenuState = ({
     [closeOnSelect, onToggle, updateColor]
   );
 
-  const clearColor = useCallback(() => {
+  const clearColor = React.useCallback(() => {
     if (editor.selection) {
       select(editor, editor.selection);
       focusEditor(editor);
@@ -79,7 +79,7 @@ export const useColorDropdownMenuState = ({
     }
   }, [editor, selectedColor, closeOnSelect, onToggle, nodeType]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (selectionDefined) {
       setSelectedColor(color);
     }
