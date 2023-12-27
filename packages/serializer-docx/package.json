@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-serializer-docx",
-  "version": "28.1.2",
+  "version": "29.0.0",
   "description": "Docx serializer plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -39,13 +39,13 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-common": "28.0.0",
-    "@udecode/plate-heading": "28.0.0",
-    "@udecode/plate-indent": "28.0.0",
-    "@udecode/plate-indent-list": "28.0.0",
-    "@udecode/plate-media": "28.0.0",
-    "@udecode/plate-paragraph": "28.0.0",
-    "@udecode/plate-table": "28.1.2",
+    "@udecode/plate-common": "29.0.0",
+    "@udecode/plate-heading": "29.0.0",
+    "@udecode/plate-indent": "29.0.0",
+    "@udecode/plate-indent-list": "29.0.0",
+    "@udecode/plate-media": "29.0.0",
+    "@udecode/plate-paragraph": "29.0.0",
+    "@udecode/plate-table": "29.0.0",
     "validator": "^13.9.0"
   },
   "peerDependencies": {

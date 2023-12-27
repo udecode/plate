@@ -1,5 +1,7 @@
 # @udecode/plate-core
 
+## 29.0.0
+
 ## 28.0.0
 
 ### Major Changes
@@ -534,12 +536,12 @@
     V extends Value = Value,
     E extends PlateEditor<V> = PlateEditor<V>,
   > extends PlateProviderEffectsProps<V, E>,
-      Partial<Pick<PlateStoreState<V, E>, 'id' | 'editor'>> {
+      Partial<Pick<PlateStoreState<V, E>, "id" | "editor">> {
     /**
      * Initial value of the editor.
      * @default [{ children: [{ text: '' }]}]
      */
-    initialValue?: PlateStoreState<V>['value'];
+    initialValue?: PlateStoreState<V>["value"];
 
     /**
      * When `true`, it will normalize the initial value passed to the `editor` once it gets created.
@@ -583,7 +585,7 @@
   }
 
   export interface PlateEditableProps<V extends Value = Value>
-    extends Omit<TEditableProps<V>, 'id'>,
+    extends Omit<TEditableProps<V>, "id">,
       PlateEditableExtendedProps {}
   ```
 
@@ -888,7 +890,7 @@ Those Slate functions should be replaced by the new typed ones:
   // before
   export type WithOverride<T = {}, P = {}> = (
     editor: PlateEditor<T>,
-    plugin: WithPlatePlugin<T, P>
+    plugin: WithPlatePlugin<T, P>,
   ) => PlateEditor<T>;
 
   // after - where E is the Editor type (input), and EE is the Extended Editor type (output)
@@ -896,7 +898,7 @@ Those Slate functions should be replaced by the new typed ones:
     P = PluginOptions,
     V extends Value = Value,
     E extends PlateEditor<V> = PlateEditor<V>,
-    EE extends E = E
+    EE extends E = E,
   > = (editor: E, plugin: WithPlatePlugin<P, V, E>) => EE;
   ```
 
@@ -1290,7 +1292,7 @@ Removing node props types in favor of element types (same props + extends `TElem
   // option 1: use the plugin factory
   let plugins = [
     createParagraphPlugin({
-      type: 'paragraph',
+      type: "paragraph",
     }),
   ];
 
@@ -1298,7 +1300,7 @@ Removing node props types in favor of element types (same props + extends `TElem
   plugins = createPlugins(plugins, {
     overrideByKey: {
       [ELEMENT_PARAGRAPH]: {
-        type: 'paragraph',
+        type: "paragraph",
       },
     },
   });
@@ -1320,7 +1322,7 @@ Removing node props types in favor of element types (same props + extends `TElem
   // After
   export type X<T = {}, P = {}> = (
     editor: PlateEditor<T>,
-    plugin: WithPlatePlugin<T, P>
+    plugin: WithPlatePlugin<T, P>,
   ) => Y;
   ```
 
@@ -1534,7 +1536,7 @@ Removing node props types in favor of element types (same props + extends `TElem
          * Deserialize data to fragment
          */
         getFragment?: (
-          options: PlatePluginInsertDataOptions
+          options: PlatePluginInsertDataOptions,
         ) => TDescendant[] | undefined;
 
         // injected
@@ -1547,7 +1549,7 @@ Removing node props types in favor of element types (same props + extends `TElem
          */
         preInsert?: (
           fragment: TDescendant[],
-          options: PlatePluginInsertDataOptions
+          options: PlatePluginInsertDataOptions,
         ) => HandlerReturnType;
 
         /**
@@ -1555,7 +1557,7 @@ Removing node props types in favor of element types (same props + extends `TElem
          */
         transformData?: (
           data: string,
-          options: { dataTransfer: DataTransfer }
+          options: { dataTransfer: DataTransfer },
         ) => string;
 
         /**
@@ -1563,7 +1565,7 @@ Removing node props types in favor of element types (same props + extends `TElem
          */
         transformFragment?: (
           fragment: TDescendant[],
-          options: PlatePluginInsertDataOptions
+          options: PlatePluginInsertDataOptions,
         ) => TDescendant[];
       };
     }>;
@@ -1609,7 +1611,7 @@ Removing node props types in favor of element types (same props + extends `TElem
      */
     then?: (
       editor: PlateEditor<T>,
-      plugin: WithPlatePlugin<T, P>
+      plugin: WithPlatePlugin<T, P>,
     ) => Partial<PlatePlugin<T, P>>;
   }
   ```
@@ -1762,7 +1764,7 @@ Removing node props types in favor of element types (same props + extends `TElem
 
   ```ts
   type InjectComponent = <T = AnyObject>(
-    props: PlateRenderElementProps & T
+    props: PlateRenderElementProps & T,
   ) => RenderFunction<PlateRenderElementProps> | undefined;
   ```
 
