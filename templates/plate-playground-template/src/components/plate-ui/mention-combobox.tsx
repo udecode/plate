@@ -1,5 +1,5 @@
 import React from 'react';
-import { ComboboxProps, Data, NoData } from '@udecode/plate-combobox';
+import { ComboboxProps } from '@udecode/plate-combobox';
 import { getPluginOptions, useEditorRef } from '@udecode/plate-common';
 import {
   ELEMENT_MENTION,
@@ -9,16 +9,13 @@ import {
 
 import { Combobox } from './combobox';
 
-export interface MentionComboboxProps<TData extends Data = NoData>
-  extends Partial<ComboboxProps<TData>> {
-  pluginKey?: string;
-}
-
-export function MentionCombobox<TData extends Data = NoData>({
+export function MentionCombobox({
   pluginKey = ELEMENT_MENTION,
   id = pluginKey,
   ...props
-}: MentionComboboxProps<TData>) {
+}: Partial<ComboboxProps> & {
+  pluginKey?: string;
+}) {
   const editor = useEditorRef();
 
   const { trigger } = getPluginOptions<MentionPlugin>(editor, pluginKey);

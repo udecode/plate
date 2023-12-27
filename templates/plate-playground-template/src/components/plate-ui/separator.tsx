@@ -1,30 +1,25 @@
 'use client';
 
-import * as React from 'react';
 import * as SeparatorPrimitive from '@radix-ui/react-separator';
-import { cn } from '@udecode/cn';
+import { withProps, withVariants } from '@udecode/cn';
+import { cva } from 'class-variance-authority';
 
-const Separator = React.forwardRef<
-  React.ElementRef<typeof SeparatorPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof SeparatorPrimitive.Root>
->(
-  (
-    { className, orientation = 'horizontal', decorative = true, ...props },
-    ref
-  ) => (
-    <SeparatorPrimitive.Root
-      ref={ref}
-      decorative={decorative}
-      orientation={orientation}
-      className={cn(
-        'shrink-0 bg-border',
-        orientation === 'horizontal' ? 'h-[1px] w-full' : 'h-full w-[1px]',
-        className
-      )}
-      {...props}
-    />
-  )
+const separatorVariants = cva('shrink-0 bg-border', {
+  variants: {
+    orientation: {
+      horizontal: 'h-[1px] w-full',
+      vertical: 'h-full w-[1px]',
+    },
+  },
+  defaultVariants: {
+    orientation: 'horizontal',
+  },
+});
+
+export const Separator = withVariants(
+  withProps(SeparatorPrimitive.Root, {
+    orientation: 'horizontal',
+    decorative: true,
+  }),
+  separatorVariants
 );
-Separator.displayName = SeparatorPrimitive.Root.displayName;
-
-export { Separator };

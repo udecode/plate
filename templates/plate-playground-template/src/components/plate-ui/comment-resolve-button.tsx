@@ -8,7 +8,8 @@ import {
 } from '@udecode/plate-comments';
 
 import { Icons } from '@/components/icons';
-import { buttonVariants } from '@/components/plate-ui/button';
+
+import { buttonVariants } from './button';
 
 export function CommentResolveButton() {
   const comment = useComment()!;
