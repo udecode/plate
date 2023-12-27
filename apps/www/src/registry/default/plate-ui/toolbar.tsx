@@ -21,7 +21,10 @@ export const Toolbar = withCn(
   'relative flex select-none items-stretch gap-1 bg-background'
 );
 
-export const ToolbarToggleGroup = ToolbarPrimitive.ToggleGroup;
+export const ToolbarToggleGroup = withCn(
+  ToolbarPrimitive.ToolbarToggleGroup,
+  'flex items-center'
+);
 
 export const ToolbarLink = withCn(
   ToolbarPrimitive.Link,

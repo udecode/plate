@@ -38,12 +38,7 @@ const items = [
   },
 ];
 
-export interface AlignDropdownMenuProps extends DropdownMenuProps {}
-
-export function AlignDropdownMenu({
-  children,
-  ...props
-}: AlignDropdownMenuProps) {
+export function AlignDropdownMenu({ children, ...props }: DropdownMenuProps) {
   const state = useAlignDropdownMenuState();
   const { radioGroupProps } = useAlignDropdownMenu(state);
 

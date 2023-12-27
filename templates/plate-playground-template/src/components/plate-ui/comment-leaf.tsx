@@ -18,7 +18,6 @@ export function CommentLeaf({
   const state = useCommentLeafState({ leaf });
   const { props: rootProps } = useCommentLeaf(state);
 
-  // hide resolved comments
   if (!state.commentCount) return <>{children}</>;
 
   let aboveChildren = <>{children}</>;

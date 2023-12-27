@@ -1,7 +1,7 @@
 'use client';
 
-import React, { forwardRef } from 'react';
-import { cn } from '@udecode/cn';
+import React from 'react';
+import { cn, withRef } from '@udecode/cn';
 import { ClassNames, PlateElementProps, TEditor } from '@udecode/plate-common';
 import {
   DragItemNode,
@@ -77,24 +77,39 @@ export interface DraggableProps
   ) => boolean;
 }
 
-const Draggable = forwardRef<HTMLDivElement, DraggableProps>(
+const dragHandle = (
+  <Tooltip>
+    <TooltipTrigger>
+      <Icons.dragHandle className="h-4 w-4 text-muted-foreground" />
+    </TooltipTrigger>
+    <TooltipContent>Drag to move</TooltipContent>
+  </Tooltip>
+);
+
+export const Draggable = withRef<'div', DraggableProps>(
   ({ className, classNames = {}, onDropHandler, ...props }, ref) => {
     const { children, element } = props;
 
     const state = useDraggableState({ element, onDropHandler });
-    const { dropLine, isDragging } = state;
-    const { droplineProps, gutterLeftProps, previewRef, handleRef } =
-      useDraggable(state);
+    const { dropLine, isDragging, isHovered } = state;
+    const {
+      groupProps,
+      droplineProps,
+      gutterLeftProps,
+      previewRef,
+      handleRef,
+    } = useDraggable(state);
 
     return (
       <div
+        ref={ref}
         className={cn(
           'relative',
           isDragging && 'opacity-50',
           'group',
           className
         )}
-        ref={ref}
+        {...groupProps}
       >
         <div
           className={cn(
@@ -110,17 +125,14 @@ const Draggable = forwardRef<HTMLDivElement, DraggableProps>(
                 classNames.blockToolbar
               )}
             >
-              <Tooltip>
-                <TooltipTrigger ref={handleRef}>
-                  <Icons.dragHandle className="h-4 w-4 text-muted-foreground" />
-                </TooltipTrigger>
-                <TooltipContent>Drag to move</TooltipContent>
-              </Tooltip>
+              <div ref={handleRef} className="h-4 w-4">
+                {isHovered && dragHandle}
+              </div>
             </div>
           </div>
         </div>
 
-        <div className={cn('', classNames.blockWrapper)} ref={previewRef}>
+        <div className={classNames.blockWrapper} ref={previewRef}>
           {children}
 
           {!!dropLine && (
@@ -140,6 +152,3 @@ const Draggable = forwardRef<HTMLDivElement, DraggableProps>(
     );
   }
 );
-Draggable.displayName = 'Draggable';
-
-export { Draggable };

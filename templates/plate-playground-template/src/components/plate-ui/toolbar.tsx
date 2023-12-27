@@ -1,15 +1,14 @@
 'use client';
 
 import * as React from 'react';
-import { ReactNode } from 'react';
+import { ComponentPropsWithoutRef, ReactNode } from 'react';
 import * as ToolbarPrimitive from '@radix-ui/react-toolbar';
-import { cn } from '@udecode/cn';
-import { cva, VariantProps } from 'class-variance-authority';
+import { cn, withCn, withRef, withVariants } from '@udecode/cn';
 
 import { Icons } from '@/components/icons';
 
 import { Separator } from './separator';
-import { ToggleProps, toggleVariants } from './toggle';
+import { Toggle, toggleVariants } from './toggle';
 import {
   Tooltip,
   TooltipContent,
@@ -17,68 +16,34 @@ import {
   TooltipTrigger,
 } from './tooltip';
 
-const toolbarVariants = cva(
+export const Toolbar = withCn(
+  ToolbarPrimitive.Root,
   'relative flex select-none items-stretch gap-1 bg-background'
 );
 
-export const linkVariants = cva('font-medium underline underline-offset-4');
+export const ToolbarToggleGroup = withCn(
+  ToolbarPrimitive.ToolbarToggleGroup,
+  'flex items-center'
+);
 
-const ToolbarToggleGroup = ToolbarPrimitive.ToggleGroup;
+export const ToolbarLink = withCn(
+  ToolbarPrimitive.Link,
+  'font-medium underline underline-offset-4'
+);
 
-export interface ToolbarProps
-  extends React.ComponentPropsWithoutRef<typeof Toolbar> {}
+export const ToolbarSeparator = withCn(
+  ToolbarPrimitive.Separator,
+  'my-1 w-[1px] shrink-0 bg-border'
+);
 
-const Toolbar = React.forwardRef<
-  React.ElementRef<typeof ToolbarPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof ToolbarPrimitive.Root> &
-    VariantProps<typeof toolbarVariants>
->(({ className, ...props }, ref) => (
-  <ToolbarPrimitive.Root
-    ref={ref}
-    className={cn(toolbarVariants(), className)}
-    {...props}
-  />
-));
-Toolbar.displayName = ToolbarPrimitive.Root.displayName;
-
-const ToolbarLink = React.forwardRef<
-  React.ElementRef<typeof ToolbarPrimitive.Link>,
-  React.ComponentPropsWithoutRef<typeof ToolbarPrimitive.Link> &
-    VariantProps<typeof linkVariants>
->(({ className, ...props }, ref) => (
-  <ToolbarPrimitive.Link
-    ref={ref}
-    className={cn(linkVariants(), className)}
-    {...props}
-  />
-));
-ToolbarLink.displayName = ToolbarPrimitive.Link.displayName;
-
-const ToolbarSeparator = React.forwardRef<
-  React.ElementRef<typeof ToolbarPrimitive.Separator>,
-  React.ComponentPropsWithoutRef<typeof ToolbarPrimitive.Separator>
->(({ className, ...props }, ref) => (
-  <ToolbarPrimitive.Separator
-    ref={ref}
-    className={cn('shrink-0 bg-border', 'my-1 w-[1px]', className)}
-    {...props}
-  />
-));
-ToolbarSeparator.displayName = ToolbarPrimitive.Separator.displayName;
-
-export interface ToolbarButtonProps
-  extends React.ComponentPropsWithoutRef<typeof ToolbarPrimitive.Button>,
-    VariantProps<typeof toggleVariants>,
-    Omit<ToggleProps, 'type'> {
-  buttonType?: 'button' | 'toggle';
-  pressed?: boolean;
-  tooltip?: ReactNode;
-  isDropdown?: boolean;
-}
-
-const ToolbarButton = React.forwardRef<
-  React.ElementRef<typeof ToolbarPrimitive.Button>,
-  ToolbarButtonProps
+export const ToolbarButton = withRef<
+  typeof ToolbarPrimitive.Button,
+  Omit<ComponentPropsWithoutRef<typeof Toggle>, 'type'> & {
+    buttonType?: 'button' | 'toggle';
+    pressed?: boolean;
+    tooltip?: ReactNode;
+    isDropdown?: boolean;
+  }
 >(
   (
     {
@@ -102,10 +67,7 @@ const ToolbarButton = React.forwardRef<
 
     const content =
       typeof pressed === 'boolean' ? (
-        <ToolbarToggleGroup
-          type="single"
-          value={pressed ? 'single' : undefined}
-        >
+        <ToolbarToggleGroup type="single" value="single">
           <ToolbarToggleItem
             ref={ref}
             className={cn(
@@ -116,7 +78,7 @@ const ToolbarButton = React.forwardRef<
               isDropdown && 'my-1 justify-between pr-1',
               className
             )}
-            value="single"
+            value={pressed ? 'single' : ''}
             {...props}
           >
             <div className="flex flex-1">{children}</div>
@@ -146,7 +108,7 @@ const ToolbarButton = React.forwardRef<
 
     return isLoaded && tooltip ? (
       <Tooltip>
-        <TooltipTrigger>{content}</TooltipTrigger>
+        <TooltipTrigger asChild>{content}</TooltipTrigger>
 
         <TooltipPortal>
           <TooltipContent>{tooltip}</TooltipContent>
@@ -157,25 +119,19 @@ const ToolbarButton = React.forwardRef<
     );
   }
 );
-ToolbarButton.displayName = ToolbarPrimitive.Button.displayName;
 
-const ToolbarToggleItem = React.forwardRef<
-  React.ElementRef<typeof ToolbarPrimitive.ToggleItem>,
-  React.ComponentPropsWithoutRef<typeof ToolbarPrimitive.ToggleItem> &
-    VariantProps<typeof toggleVariants>
->(({ className, variant, size, ...props }, ref) => (
-  <ToolbarPrimitive.ToggleItem
-    ref={ref}
-    className={cn(toggleVariants({ variant, size }), className)}
-    {...props}
-  />
-));
-ToolbarToggleItem.displayName = ToolbarPrimitive.ToggleItem.displayName;
+export const ToolbarToggleItem = withVariants(
+  ToolbarPrimitive.ToggleItem,
+  toggleVariants,
+  ['variant', 'size']
+);
 
-const ToolbarGroup = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & { noSeparator?: boolean }
->(({ noSeparator, className, children }, ref) => {
+export const ToolbarGroup = withRef<
+  'div',
+  {
+    noSeparator?: boolean;
+  }
+>(({ className, children, noSeparator }, ref) => {
   const childArr = React.Children.map(children, (c) => c);
   if (!childArr || childArr.length === 0) return null;
 
@@ -191,14 +147,3 @@ const ToolbarGroup = React.forwardRef<
     </div>
   );
 });
-ToolbarGroup.displayName = 'ToolbarGroup';
-
-export {
-  Toolbar,
-  ToolbarLink,
-  ToolbarToggleGroup,
-  ToolbarSeparator,
-  ToolbarToggleItem,
-  ToolbarButton,
-  ToolbarGroup,
-};
