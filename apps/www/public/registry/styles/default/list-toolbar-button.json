@@ -9,7 +9,7 @@
   "files": [
     {
       "name": "list-toolbar-button.tsx",
-      "content": "import React from 'react';\nimport {\n  ELEMENT_UL,\n  useListToolbarButton,\n  useListToolbarButtonState,\n} from '@udecode/plate-list';\n\nimport { Icons } from '@/components/icons';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function ListToolbarButton({\n  nodeType = ELEMENT_UL,\n}: {\n  nodeType?: string;\n}) {\n  const state = useListToolbarButtonState({ nodeType });\n  const { props } = useListToolbarButton(state);\n\n  return (\n    <ToolbarButton\n      tooltip={nodeType === ELEMENT_UL ? 'Bulleted List' : 'Numbered List'}\n      {...props}\n    >\n      {nodeType === ELEMENT_UL ? <Icons.ul /> : <Icons.ol />}\n    </ToolbarButton>\n  );\n}\n"
+      "content": "import React from 'react';\nimport { withRef } from '@udecode/cn';\nimport {\n  ELEMENT_UL,\n  useListToolbarButton,\n  useListToolbarButtonState,\n} from '@udecode/plate-list';\n\nimport { Icons } from '@/components/icons';\n\nimport { ToolbarButton } from './toolbar';\n\nexport const ListToolbarButton = withRef<\n  typeof ToolbarButton,\n  {\n    nodeType?: string;\n  }\n>(({ nodeType = ELEMENT_UL, ...rest }, ref) => {\n  const state = useListToolbarButtonState({ nodeType });\n  const { props } = useListToolbarButton(state);\n\n  return (\n    <ToolbarButton\n      ref={ref}\n      tooltip={nodeType === ELEMENT_UL ? 'Bulleted List' : 'Numbered List'}\n      {...props}\n      {...rest}\n    >\n      {nodeType === ELEMENT_UL ? <Icons.ul /> : <Icons.ol />}\n    </ToolbarButton>\n  );\n});\n"
     }
   ],
   "type": "components:plate-ui"
