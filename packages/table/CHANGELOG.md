@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 28.1.2
+
+### Patch Changes
+
+- [#2833](https://github.com/udecode/plate/pull/2833) by [@AndreyMarchuk](https://github.com/AndreyMarchuk) – Fix lodash import
+
 ## 28.1.1
 
 ### Patch Changes
