@@ -30,14 +30,11 @@
     "aliases": {
       "type": "object",
       "properties": {
-        "utils": {
-          "type": "string"
-        },
         "components": {
           "type": "string"
         }
       },
-      "required": ["utils", "components"]
+      "required": ["components"]
     }
   },
   "required": ["style", "tailwind", "rsc", "aliases"]
