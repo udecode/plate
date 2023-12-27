@@ -70,7 +70,7 @@ export const insertTableRow = <V extends Value>(
       const isHeaderColumn =
         !hasSingleRow &&
         (tableEntry[0].children as TElement[]).every(
-          (n) => n.children[i].type === ELEMENT_TH
+          (n) => n.children[i].type === getPluginType(editor, ELEMENT_TH)
         );
       return getEmptyCellNode(editor, {
         header: header ?? isHeaderColumn,
