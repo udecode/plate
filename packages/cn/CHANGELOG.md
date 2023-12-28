@@ -1,5 +1,11 @@
 # @udecode/cn
 
+## 29.0.1
+
+### Patch Changes
+
+- [#2841](https://github.com/udecode/plate/pull/2841) by [@zbeyens](https://github.com/zbeyens) – Fix `withCn`, `withProps` and `withVariants` component type errors in strict mode
+
 ## 29.0.0
 
 ### Minor Changes
