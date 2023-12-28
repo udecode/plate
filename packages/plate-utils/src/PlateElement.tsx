@@ -51,9 +51,7 @@ const PlateElement = React.forwardRef<HTMLDivElement, PlateElementProps>(
 
     return <Box {...rootProps} ref={rootRef} />;
   }
-) as (<V extends Value = Value, N extends TElement = EElement<V>>(
-  props: PlateElementProps<V, N> & React.RefAttributes<HTMLDivElement>
-) => React.ReactElement) & { displayName?: string };
+);
 PlateElement.displayName = 'PlateElement';
 
 export { PlateElement };
