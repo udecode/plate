@@ -12,11 +12,11 @@ dependencies:
     specifier: ^1.0.7
     version: 1.0.7(@types/react-dom@18.2.18)(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)
   '@udecode/cn':
-    specifier: ^29.0.0
-    version: 29.0.0(@types/react@18.2.45)(class-variance-authority@0.7.0)(react-dom@18.2.0)(react@18.2.0)(tailwind-merge@2.2.0)
+    specifier: ^29.0.1
+    version: 29.0.1(@types/react@18.2.45)(class-variance-authority@0.7.0)(react-dom@18.2.0)(react@18.2.0)(tailwind-merge@2.2.0)
   '@udecode/plate-common':
-    specifier: ^29.0.0
-    version: 29.0.0(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)(scheduler@0.23.0)(slate-history@0.100.0)(slate-hyperscript@0.100.0)(slate-react@0.101.5)(slate@0.101.5)
+    specifier: ^29.0.1
+    version: 29.0.1(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)(scheduler@0.23.0)(slate-history@0.100.0)(slate-hyperscript@0.100.0)(slate-react@0.101.5)(slate@0.101.5)
   class-variance-authority:
     specifier: 0.7.0
     version: 0.7.0
@@ -24,8 +24,8 @@ dependencies:
     specifier: ^5.1.2
     version: 5.1.2(eslint-config-prettier@9.1.0)(eslint@8.56.0)(prettier@3.1.1)
   lucide-react:
-    specifier: 0.302.0
-    version: 0.302.0(react@18.2.0)
+    specifier: 0.303.0
+    version: 0.303.0(react@18.2.0)
   next:
     specifier: ^14.0.4
     version: 14.0.4(@babel/core@7.23.6)(react-dom@18.2.0)(react@18.2.0)
@@ -1043,15 +1043,15 @@ packages:
       eslint-visitor-keys: 3.4.3
     dev: true
 
-  /@udecode/cn@29.0.0(@types/react@18.2.45)(class-variance-authority@0.7.0)(react-dom@18.2.0)(react@18.2.0)(tailwind-merge@2.2.0):
-    resolution: {integrity: sha512-FofO9XJfXrgrT9jh49L05Mj2nZFHIPwWaQBKNHJge+/G/2zn9UU/jKXF48rMrGYe2d9mbTa+aU8Xs3S22Ednfg==}
+  /@udecode/cn@29.0.1(@types/react@18.2.45)(class-variance-authority@0.7.0)(react-dom@18.2.0)(react@18.2.0)(tailwind-merge@2.2.0):
+    resolution: {integrity: sha512-U41vXvTBKU+06CiQivy4pIWB7RzfaB3DlqkQMNv8UNK164pJhM3v6P0D45kFpbU2uOSOCGpYRSo4kMp9y8RtcQ==}
     peerDependencies:
       class-variance-authority: '>=0.7.0'
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
       tailwind-merge: '>=2.2.0'
     dependencies:
-      '@udecode/react-utils': 29.0.0(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)
+      '@udecode/react-utils': 29.0.1(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)
       class-variance-authority: 0.7.0
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
@@ -1060,8 +1060,8 @@ packages:
       - '@types/react'
     dev: false
 
-  /@udecode/plate-common@29.0.0(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)(scheduler@0.23.0)(slate-history@0.100.0)(slate-hyperscript@0.100.0)(slate-react@0.101.5)(slate@0.101.5):
-    resolution: {integrity: sha512-0srH1g4fkPMuV81SvRyMVdd5XoNhviR5qUFulZHbhz3jSVxgGHv1zTs2zi6gRJDkhP0//H3cVCQJpS5jO2zG7w==}
+  /@udecode/plate-common@29.0.1(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)(scheduler@0.23.0)(slate-history@0.100.0)(slate-hyperscript@0.100.0)(slate-react@0.101.5)(slate@0.101.5):
+    resolution: {integrity: sha512-DAPYSPZiK3G831MV/m+MhMOlGiYTFwyrhtf7eLc1KGx8226ZGxHqUaoh6tVvIKIrMYQutz9fmfCx1+CiaHB4Qg==}
     peerDependencies:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
@@ -1070,11 +1070,11 @@ packages:
       slate-hyperscript: '>=0.66.0'
       slate-react: '>=0.99.0'
     dependencies:
-      '@udecode/plate-core': 29.0.0(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)(scheduler@0.23.0)(slate-history@0.100.0)(slate-hyperscript@0.100.0)(slate-react@0.101.5)(slate@0.101.5)
-      '@udecode/plate-utils': 29.0.0(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)(scheduler@0.23.0)(slate-history@0.100.0)(slate-hyperscript@0.100.0)(slate-react@0.101.5)(slate@0.101.5)
-      '@udecode/react-utils': 29.0.0(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)
+      '@udecode/plate-core': 29.0.1(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)(scheduler@0.23.0)(slate-history@0.100.0)(slate-hyperscript@0.100.0)(slate-react@0.101.5)(slate@0.101.5)
+      '@udecode/plate-utils': 29.0.1(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)(scheduler@0.23.0)(slate-history@0.100.0)(slate-hyperscript@0.100.0)(slate-react@0.101.5)(slate@0.101.5)
+      '@udecode/react-utils': 29.0.1(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)
       '@udecode/slate': 25.0.0(slate-history@0.100.0)(slate@0.101.5)
-      '@udecode/slate-react': 29.0.0(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)(slate-history@0.100.0)(slate-react@0.101.5)(slate@0.101.5)
+      '@udecode/slate-react': 29.0.1(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)(slate-history@0.100.0)(slate-react@0.101.5)(slate@0.101.5)
       '@udecode/slate-utils': 25.0.0(slate-history@0.100.0)(slate@0.101.5)
       '@udecode/utils': 24.3.0
       react: 18.2.0
@@ -1090,8 +1090,8 @@ packages:
       - scheduler
     dev: false
 
-  /@udecode/plate-core@29.0.0(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)(scheduler@0.23.0)(slate-history@0.100.0)(slate-hyperscript@0.100.0)(slate-react@0.101.5)(slate@0.101.5):
-    resolution: {integrity: sha512-U5EQBCXHt+3hy97/atvD7OEGN1JZB/HEYxycc2BMKht4Zld+JCO1GWuqoKZ/zh5DR9/+TTehlpsul96FdbguKQ==}
+  /@udecode/plate-core@29.0.1(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)(scheduler@0.23.0)(slate-history@0.100.0)(slate-hyperscript@0.100.0)(slate-react@0.101.5)(slate@0.101.5):
+    resolution: {integrity: sha512-0Nn8oxK0HZiKtORji0X/iSWzhbw2WnaAbPjZU+AY3wvT9ui752e/YRedg1V2SG7L0zhDFCTSyVFhY1SQuEYEgA==}
     peerDependencies:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
@@ -1101,7 +1101,7 @@ packages:
       slate-react: '>=0.99.0'
     dependencies:
       '@udecode/slate': 25.0.0(slate-history@0.100.0)(slate@0.101.5)
-      '@udecode/slate-react': 29.0.0(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)(slate-history@0.100.0)(slate-react@0.101.5)(slate@0.101.5)
+      '@udecode/slate-react': 29.0.1(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)(slate-history@0.100.0)(slate-react@0.101.5)(slate@0.101.5)
       '@udecode/slate-utils': 25.0.0(slate-history@0.100.0)(slate@0.101.5)
       '@udecode/utils': 24.3.0
       clsx: 1.2.1
@@ -1127,8 +1127,8 @@ packages:
       - scheduler
     dev: false
 
-  /@udecode/plate-utils@29.0.0(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)(scheduler@0.23.0)(slate-history@0.100.0)(slate-hyperscript@0.100.0)(slate-react@0.101.5)(slate@0.101.5):
-    resolution: {integrity: sha512-9rTkAG6FKE3HNSiKjwHjkkRQX7UcjyYsEDbwiwN5FQnKmuQjdUjO8qR2EZ2zMUMfH/qnLxS/zf66gEXmoCC0mw==}
+  /@udecode/plate-utils@29.0.1(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)(scheduler@0.23.0)(slate-history@0.100.0)(slate-hyperscript@0.100.0)(slate-react@0.101.5)(slate@0.101.5):
+    resolution: {integrity: sha512-AAXW726O/1CiUURM4hrZwzqn97YDluugQI5SntZK0y3caI7WaxieqJNbJzjGak46Rtpg3q/dmQjq7nA+Od9IFQ==}
     peerDependencies:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
@@ -1137,10 +1137,10 @@ packages:
       slate-hyperscript: '>=0.66.0'
       slate-react: '>=0.99.0'
     dependencies:
-      '@udecode/plate-core': 29.0.0(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)(scheduler@0.23.0)(slate-history@0.100.0)(slate-hyperscript@0.100.0)(slate-react@0.101.5)(slate@0.101.5)
-      '@udecode/react-utils': 29.0.0(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)
+      '@udecode/plate-core': 29.0.1(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)(scheduler@0.23.0)(slate-history@0.100.0)(slate-hyperscript@0.100.0)(slate-react@0.101.5)(slate@0.101.5)
+      '@udecode/react-utils': 29.0.1(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)
       '@udecode/slate': 25.0.0(slate-history@0.100.0)(slate@0.101.5)
-      '@udecode/slate-react': 29.0.0(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)(slate-history@0.100.0)(slate-react@0.101.5)(slate@0.101.5)
+      '@udecode/slate-react': 29.0.1(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)(slate-history@0.100.0)(slate-react@0.101.5)(slate@0.101.5)
       '@udecode/slate-utils': 25.0.0(slate-history@0.100.0)(slate@0.101.5)
       '@udecode/utils': 24.3.0
       clsx: 1.2.1
@@ -1158,8 +1158,8 @@ packages:
       - scheduler
     dev: false
 
-  /@udecode/react-utils@29.0.0(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-ds49LWYodIPsg/DGEqDJlBuIYME2T1T+qoXUN5WTzsSUckUR6qYnrqljfWQLZzxhdV/l87NtIIDg55POyAW+Rg==}
+  /@udecode/react-utils@29.0.1(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-+bFJFTDsWArFaC4AZFap0VdCvEbu5ZA16avj4xjjdBBho4TiHOZ7RMDliwTUetA3DOm5LG02dmZ1U4ORNC0m3w==}
     peerDependencies:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
@@ -1173,8 +1173,8 @@ packages:
       - '@types/react'
     dev: false
 
-  /@udecode/slate-react@29.0.0(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)(slate-history@0.100.0)(slate-react@0.101.5)(slate@0.101.5):
-    resolution: {integrity: sha512-q3Zl6O9NyNT69DeRg4awKHh4O10SHN4hgm/dGXo8NNAj2GLwmUH0PRTYMNo/vNtwnsDCm/a2KGVkAiw6EXl98w==}
+  /@udecode/slate-react@29.0.1(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)(slate-history@0.100.0)(slate-react@0.101.5)(slate@0.101.5):
+    resolution: {integrity: sha512-DOiGXxfL43tVyNg0LneTQGQBW/HkF2srwIM8b0Al/x082HHfo2PP2WkFqPqTh1uGUAa2RBRh9xFKmNkKeuyWSw==}
     peerDependencies:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
@@ -1182,7 +1182,7 @@ packages:
       slate-history: '>=0.93.0'
       slate-react: '>=0.99.0'
     dependencies:
-      '@udecode/react-utils': 29.0.0(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)
+      '@udecode/react-utils': 29.0.1(@types/react@18.2.45)(react-dom@18.2.0)(react@18.2.0)
       '@udecode/slate': 25.0.0(slate-history@0.100.0)(slate@0.101.5)
       '@udecode/utils': 24.3.0
       react: 18.2.0
@@ -2917,8 +2917,8 @@ packages:
       yallist: 4.0.0
     dev: true
 
-  /lucide-react@0.302.0(react@18.2.0):
-    resolution: {integrity: sha512-JZX+1fjpqxvQmEgItvPOAwRlqf0Eg9dSZMxljA2/V2M6dluOhQCPBhewIlSJWgkNu0M36kViOgmTAMnDaAMOFw==}
+  /lucide-react@0.303.0(react@18.2.0):
+    resolution: {integrity: sha512-B0B9T3dLEFBYPCUlnUS1mvAhW1craSbF9HO+JfBjAtpFUJ7gMIqmEwNSclikY3RiN2OnCkj/V1ReAQpaHae8Bg==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0
     dependencies:
