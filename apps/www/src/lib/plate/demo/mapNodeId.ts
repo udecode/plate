@@ -1,5 +1,5 @@
 const cleanNode = (nodes: any) => {
-  nodes.forEach((node) => {
+  nodes.forEach((node: any) => {
     delete node.__source;
     delete node.__self;
 

@@ -10,7 +10,7 @@ import { cn } from './cn';
  * @param onlyVariantsProps - Props to exclude from `Component`. Set the props that are only used for variants.
  */
 export function withVariants<
-  T extends keyof HTMLElementTagNameMap | React.ComponentType<object>,
+  T extends keyof HTMLElementTagNameMap | React.ComponentType<any>,
   V extends ReturnType<typeof cva>,
 >(Component: T, variants: V, onlyVariantsProps?: (keyof VariantProps<V>)[]) {
   const ComponentWithClassName = Component as React.FC<{ className: string }>;

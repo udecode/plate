@@ -13,14 +13,20 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { settingsStore } from '@/components/context/settings-store';
+import {
+  settingsStore,
+  SettingsStoreValue,
+} from '@/components/context/settings-store';
 import { Link } from '@/components/link';
 import * as Typography from '@/components/typography';
 import { H2, Step, Steps } from '@/components/typography';
 
 import { InstallationCode } from './installation-code';
 
-function getEditorCodeGeneratorResult({ checkedPlugins, checkedComponents }) {
+function getEditorCodeGeneratorResult({
+  checkedPlugins,
+  checkedComponents,
+}: Pick<SettingsStoreValue, 'checkedPlugins' | 'checkedComponents'>) {
   const plugins = allPlugins.filter((plugin) => {
     return checkedPlugins[plugin.id];
   });
@@ -221,6 +227,7 @@ export default function InstallationTab() {
       ...componentImportsGroup,
     ].join('\n');
   }, [
+    cnImports,
     componentImports,
     customImports,
     groupedImportsByPackage,
