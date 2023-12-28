@@ -9,7 +9,7 @@ import { withProps } from './withProps';
  * - IntelliSense: add `withCn` to `classAttributes`
  * - ESLint: add `withCn` to `settings.tailwindcss.callees`
  */
-export function withCn<T extends React.ComponentType<object>>(
+export function withCn<T extends React.ComponentType<any>>(
   Component: T,
   ...inputs: CxOptions
 ) {

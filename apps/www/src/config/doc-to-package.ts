@@ -38,10 +38,11 @@ const plateOverrides = {
 };
 
 export const docToPackage = (name?: string) => {
-  if (name && plateOverrides[name]) {
+  if (name && name in plateOverrides) {
+    const packageName: string = (plateOverrides as any)[name];
     return {
-      name: plateOverrides[name],
-      sourcePath: plateOverrides[name].replace('plate-', ''),
+      name: packageName,
+      sourcePath: packageName.replace('plate-', ''),
     };
   }
 };

@@ -4,7 +4,7 @@ import { cn } from '@udecode/cn';
 import { Check } from 'lucide-react';
 
 import { customizerItems, SettingPlugin } from '@/config/customizer-items';
-import { customizerPlugins } from '@/config/customizer-plugins';
+import { customizerPlugins, ValueId } from '@/config/customizer-plugins';
 import { useFixHydration } from '@/hooks/use-fix-hydration';
 import { Button, buttonVariants } from '@/registry/default/plate-ui/button';
 import {
@@ -76,7 +76,7 @@ export function SettingsCombobox() {
 
   const loaded = useFixHydration();
 
-  const route = customizerPlugins[valueId]?.route;
+  const route: string | undefined = (customizerPlugins as any)[valueId]?.route;
 
   return (
     <>
@@ -95,7 +95,8 @@ export function SettingsCombobox() {
                 }, 0);
               }}
             >
-              {customizerPlugins[valueId]?.label ?? 'Select a value...'}
+              {(customizerPlugins as any)[valueId]?.label ??
+                'Select a value...'}
               <Icons.chevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           )}
@@ -114,10 +115,10 @@ export function SettingsCombobox() {
                         key={item.id}
                         value={item.id}
                         onSelect={(newId) => {
-                          settingsStore.set.valueId(newId);
+                          settingsStore.set.valueId(newId as ValueId);
 
-                          const valuePlugins =
-                            customizerPlugins[newId]?.plugins ?? [];
+                          const valuePlugins: string[] =
+                            (customizerPlugins as any)[newId]?.plugins ?? [];
 
                           valuePlugins.forEach((pluginKey) => {
                             const deps = (

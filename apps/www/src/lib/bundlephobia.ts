@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 
-export function formatBytes(bytes, decimals = 2) {
+export function formatBytes(bytes: number, decimals = 2) {
   if (bytes === 0) return '0 Bytes';
   const k = 1024;
   const dm = decimals < 0 ? 0 : decimals;
@@ -11,7 +11,7 @@ export function formatBytes(bytes, decimals = 2) {
   );
 }
 
-export async function getPackageData(name) {
+export async function getPackageData(name: string) {
   // export async function getPackageData(name, version) {
   const bundlephobiaResponse = await fetch(
     // `https://bundlephobia.com/api/size?package=@udecode/${name}@${version}`

@@ -24,9 +24,6 @@ export function PlaygroundModeDropdownMenu(props: DropdownMenuProps) {
   const readOnly = useEditorReadOnly();
   const openState = useOpenState();
 
-  let value = 'editing';
-  if (readOnly) value = 'viewing';
-
   const item = {
     editing: (
       <>
@@ -47,6 +44,9 @@ export function PlaygroundModeDropdownMenu(props: DropdownMenuProps) {
       </>
     ),
   };
+
+  let value: keyof typeof item = 'editing';
+  if (readOnly) value = 'viewing';
 
   return (
     <DropdownMenu modal={false} {...openState} {...props}>

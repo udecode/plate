@@ -53,11 +53,7 @@ export const usePlaygroundValue = (id?: ValueId) => {
     }
 
     if (valueId !== customizerPlugins.playground.id) {
-      const newValue = customizerPlugins[valueId]?.value ?? [];
-
-      if (newValue.length === 0) {
-        return mapNodeId(value);
-      }
+      const newValue = (customizerPlugins as any)[valueId]?.value ?? value;
       return mapNodeId(newValue);
     }
 

@@ -6,7 +6,7 @@ import React from 'react';
  * @generic2 Extended prop types
  */
 export function withRef<
-  T extends keyof HTMLElementTagNameMap | React.ComponentType<object>,
+  T extends keyof HTMLElementTagNameMap | React.ComponentType<any>,
   E = {},
 >(
   renderFunction: React.ForwardRefRenderFunction<
