@@ -1,5 +1,10 @@
 import React, { ComponentClass, FunctionComponent } from 'react';
-import { createPlateEditor, Plate, PlateProps } from '@udecode/plate-common';
+import {
+  createPlateEditor,
+  Plate,
+  PlateContent,
+  PlateProps,
+} from '@udecode/plate-common';
 
 /**
  * Create a React element wrapped in a Plate provider.
@@ -16,6 +21,8 @@ export const createElementWithSlate = (
     ...props
   } = plateProps || {};
 
+  const plateContent = React.createElement(PlateContent, children);
+
   const plate = React.createElement(
     Plate,
     {
@@ -24,7 +31,7 @@ export const createElementWithSlate = (
       onChange,
       ...props,
     } as PlateProps,
-    children
+    plateContent
   );
 
   if (dndWrapper) {
