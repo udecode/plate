@@ -1,4 +1,4 @@
-import React, { HTMLAttributes, useMemo } from 'react';
+import React from 'react';
 import {
   findNodePath,
   getPluginOptions,
@@ -27,7 +27,10 @@ export const useBlockSelectableState = ({
 }: BlockSelectableOptions) => {
   const editor = useEditorRef();
 
-  const path = useMemo(() => findNodePath(editor, element), [editor, element]);
+  const path = React.useMemo(
+    () => findNodePath(editor, element),
+    [editor, element]
+  );
 
   if (!path || isInline(editor, element)) {
     return {
@@ -84,7 +87,7 @@ export function BlockSelectable({
   options,
   children,
   ...props
-}: { options: BlockSelectableOptions } & HTMLAttributes<HTMLDivElement>) {
+}: { options: BlockSelectableOptions } & React.HTMLAttributes<HTMLDivElement>) {
   const state = useBlockSelectableState(options);
   const { props: rootProps } = useBlockSelectable(state);
 

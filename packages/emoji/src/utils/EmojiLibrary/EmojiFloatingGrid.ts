@@ -1,27 +1,27 @@
-import { createRef, RefObject } from 'react';
+import React from 'react';
 
 import { EmojiCategoryList } from '../../types';
 import { AGridSection, Grid, IGrid } from '../Grid/index';
 
 export type EmojiFloatingGridType = IGrid<
-  RefObject<HTMLDivElement>,
+  React.RefObject<HTMLDivElement>,
   EmojiCategoryList
 >;
 
 export class EmojiFloatingGrid extends Grid<
-  RefObject<HTMLDivElement>,
+  React.RefObject<HTMLDivElement>,
   EmojiCategoryList
 > {
   public createRootRef() {
-    return createRef<HTMLDivElement>();
+    return React.createRef<HTMLDivElement>();
   }
 }
 
 export class EmojiGridSectionWithRoot extends AGridSection<
-  RefObject<HTMLDivElement>,
+  React.RefObject<HTMLDivElement>,
   EmojiCategoryList
 > {
   protected createRootRef() {
-    this._root = createRef<HTMLDivElement>();
+    this._root = React.createRef<HTMLDivElement>();
   }
 }

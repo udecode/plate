@@ -1,7 +1,7 @@
-import { useRef } from 'react';
+import React from 'react';
 
 export const useColorInput = () => {
-  const ref = useRef<HTMLInputElement | null>(null);
+  const ref = React.useRef<HTMLInputElement | null>(null);
 
   const onClick = () => {
     // force click action on the input to open color picker

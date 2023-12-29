@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React from 'react';
 import { TEditor, TElement } from '@udecode/plate-common';
 import { ConnectDragSource, DropTargetMonitor } from 'react-dnd';
 
@@ -27,8 +27,8 @@ export const useDraggableState = (props: {
 }): DraggableState => {
   const { element, onDropHandler } = props;
 
-  const nodeRef = useRef<HTMLDivElement>(null);
-  const [isHovered, setIsHovered] = useState(false);
+  const nodeRef = React.useRef<HTMLDivElement>(null);
+  const [isHovered, setIsHovered] = React.useState(false);
   const { dropLine, isDragging, dragRef } = useDndBlock({
     id: element.id as string,
     nodeRef,

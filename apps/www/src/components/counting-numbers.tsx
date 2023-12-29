@@ -50,6 +50,16 @@ export const useCounting = ({
   return number;
 };
 
+export interface CountingNumbersProps {
+  value: number;
+  className?: string;
+  reverse?: boolean;
+  start?: number;
+  interval?: number;
+  duration?: number;
+  noAnimation?: boolean;
+}
+
 export function CountingNumbers({
   value,
   className,
@@ -58,7 +68,7 @@ export function CountingNumbers({
   interval = 10,
   duration = 800,
   noAnimation,
-}) {
+}: CountingNumbersProps) {
   const ref = useRef(null);
 
   let number = value;

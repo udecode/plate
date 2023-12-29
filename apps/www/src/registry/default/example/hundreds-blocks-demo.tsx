@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { editableProps } from '@/plate/demo/editableProps';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { createHugeDocumentValue } from '@/plate/demo/values/createHugeDocumentValue';
-import { Plate, TElement } from '@udecode/plate-common';
+import { Plate, TElement, Value } from '@udecode/plate-common';
 import { createEditor } from 'slate';
 import {
   Editable,
@@ -37,15 +37,12 @@ function Element({ attributes, children, element }: RenderElementProps) {
 
 function WithoutPlate() {
   const [value, setValue] = useState(initialValue);
-  const renderElement = useCallback((p) => <Element {...p} />, []);
+  const renderElement = useCallback((p: any) => <Element {...p} />, []);
   const editor = useMemo(() => withReact(createEditor() as ReactEditor), []);
+  const onChange = useCallback((newValue: Value) => setValue(newValue), []);
 
   return (
-    <Slate
-      editor={editor}
-      initialValue={value}
-      onChange={useCallback((v) => setValue(v), [])}
-    >
+    <Slate editor={editor} initialValue={value} onChange={onChange as any}>
       <Editable renderElement={renderElement} {...(editableProps as any)} />
     </Slate>
   );

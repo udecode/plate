@@ -1,5 +1,19 @@
 # @udecode/plate-common
 
+## 29.0.1
+
+## 29.0.0
+
+### Minor Changes
+
+- [#2829](https://github.com/udecode/plate/pull/2829) by [@zbeyens](https://github.com/zbeyens) –
+  - re-export `@udecode/react-utils`
+
+### Patch Changes
+
+- [#2829](https://github.com/udecode/plate/pull/2829) by [@zbeyens](https://github.com/zbeyens) –
+  - Fix import from RSC
+
 ## 28.0.0
 
 ## 27.0.3

@@ -1,29 +1,23 @@
 'use client';
 
 import React from 'react';
+import { withRef } from '@udecode/cn';
 import {
   useMarkToolbarButton,
   useMarkToolbarButtonState,
 } from '@udecode/plate-common';
 
-import { ToolbarButton, ToolbarButtonProps } from './toolbar';
+import { ToolbarButton } from './toolbar';
 
-export interface MarkToolbarButtonProps
-  extends Pick<ToolbarButtonProps, 'tooltip' | 'children'> {
-  nodeType: string;
-  clear?: string | string[];
-}
-
-/**
- * Toolbar button to toggle the mark of the leaves in selection.
- */
-export function MarkToolbarButton({
-  clear,
-  nodeType,
-  ...props
-}: MarkToolbarButtonProps) {
+export const MarkToolbarButton = withRef<
+  typeof ToolbarButton,
+  {
+    nodeType: string;
+    clear?: string | string[];
+  }
+>(({ clear, nodeType, ...rest }, ref) => {
   const state = useMarkToolbarButtonState({ clear, nodeType });
-  const { props: buttonProps } = useMarkToolbarButton(state);
+  const { props } = useMarkToolbarButton(state);
 
-  return <ToolbarButton {...buttonProps} {...props} />;
-}
+  return <ToolbarButton ref={ref} {...props} {...rest} />;
+});

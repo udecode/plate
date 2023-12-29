@@ -1,4 +1,4 @@
-import { KeyboardEvent } from 'react';
+import React from 'react';
 import { isComposing, TReactEditor } from '@udecode/slate-react';
 import { IS_APPLE } from '@udecode/utils';
 import { isKeyHotkey } from 'is-hotkey';
@@ -62,7 +62,7 @@ const create = (key: string) => {
   const isApple = apple && isKeyHotkey(apple);
   const isWindows = windows && isKeyHotkey(windows);
 
-  return (event: KeyboardEvent) => {
+  return (event: React.KeyboardEvent) => {
     if (isGeneric && isGeneric(event)) return true;
     if (IS_APPLE && isApple && isApple(event)) return true;
     if (!IS_APPLE && isWindows && isWindows(event)) return true;
@@ -74,7 +74,7 @@ const createComposing =
   (key: string) =>
   (
     editor: TReactEditor,
-    event: KeyboardEvent,
+    event: React.KeyboardEvent,
     {
       composing,
     }: {

@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React from 'react';
 import { render } from '@testing-library/react';
 
 import { withHOC } from './withHOC';
@@ -8,15 +8,16 @@ describe('withHOC', () => {
   type DummyRef = { myRef: string };
   type DummyProps = { myProp: string };
 
-  const HOC = React.forwardRef<DummyRef, DummyProps & { children: ReactNode }>(
-    ({ children, ...props }, ref) => (
-      <div>
-        {JSON.stringify(props)}
-        {JSON.stringify(ref)}
-        {children}
-      </div>
-    )
-  );
+  const HOC = React.forwardRef<
+    DummyRef,
+    DummyProps & { children: React.ReactNode }
+  >(({ children, ...props }, ref) => (
+    <div>
+      {JSON.stringify(props)}
+      {JSON.stringify(ref)}
+      {children}
+    </div>
+  ));
 
   const Component = React.forwardRef<DummyRef, DummyProps>((props, ref) => (
     <div>

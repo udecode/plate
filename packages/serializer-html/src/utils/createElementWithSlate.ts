@@ -1,4 +1,4 @@
-import React, { ComponentClass, FunctionComponent } from 'react';
+import React from 'react';
 import {
   createPlateEditor,
   Plate,
@@ -11,7 +11,7 @@ import {
  */
 export const createElementWithSlate = (
   plateProps?: Partial<PlateProps>,
-  dndWrapper?: string | FunctionComponent | ComponentClass
+  dndWrapper?: string | React.FC | React.ComponentClass
 ) => {
   const {
     editor = createPlateEditor(),

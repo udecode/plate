@@ -1,10 +1,4 @@
-import React, {
-  CSSProperties,
-  HTMLAttributes,
-  useCallback,
-  useEffect,
-  useRef,
-} from 'react';
+import React from 'react';
 import {
   findNodePath,
   select,
@@ -43,7 +37,7 @@ export const useResizableState = ({
 
   const [width, setWidth] = useResizableStore().use.width();
 
-  const setNodeWidth = useCallback(
+  const setNodeWidth = React.useCallback(
     (w: number) => {
       const path = findNodePath(editor, element!);
       if (!path) return;
@@ -58,7 +52,7 @@ export const useResizableState = ({
     [editor, element, nodeWidth]
   );
 
-  useEffect(() => {
+  React.useEffect(() => {
     setWidth(nodeWidth);
   }, [nodeWidth, setWidth]);
 
@@ -80,14 +74,14 @@ export const useResizable = ({
   setWidth,
   width,
 }: ReturnType<typeof useResizableState>) => {
-  const wrapperRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = React.useRef<HTMLDivElement>(null);
 
   return {
     wrapperRef,
     wrapperProps: {
       style: {
         position: 'relative',
-      } as CSSProperties,
+      } as React.CSSProperties,
     },
     props: {
       style: {
@@ -95,10 +89,10 @@ export const useResizable = ({
         minWidth,
         maxWidth,
         position: 'relative',
-      } as CSSProperties,
+      } as React.CSSProperties,
     },
     context: {
-      onResize: useCallback(
+      onResize: React.useCallback(
         ({ initialSize, delta, finished, direction }: ResizeEvent) => {
           const wrapperStaticWidth = wrapperRef.current!.offsetWidth;
           const deltaFactor =
@@ -127,7 +121,7 @@ export const useResizable = ({
 
 const Resizable = React.forwardRef<
   HTMLDivElement,
-  HTMLAttributes<HTMLDivElement> & {
+  React.HTMLAttributes<HTMLDivElement> & {
     options: ResizableOptions;
   }
 >(({ children, options, ...rest }, ref) => {

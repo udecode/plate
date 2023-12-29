@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React from 'react';
 import { useEditorRef } from '@udecode/plate-common';
 import { useReadOnly, useSelected } from 'slate-react';
 
@@ -18,14 +18,14 @@ export const useSelectedCells = () => {
   const [selectedCells, setSelectedCells] = useTableStore().use.selectedCells();
   const setSelectedTable = useTableStore().set.selectedTable();
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!selected || readOnly) {
       setSelectedCells(null);
       setSelectedTable(null);
     }
   }, [selected, editor, setSelectedCells, readOnly, setSelectedTable]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (readOnly) return;
 
     const tableEntries = getTableGridAbove(editor, { format: 'table' });

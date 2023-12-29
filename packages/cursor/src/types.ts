@@ -1,4 +1,4 @@
-import { CSSProperties } from 'react';
+import React from 'react';
 import { UnknownObject } from '@udecode/plate-common';
 import { Range } from 'slate';
 
@@ -30,6 +30,6 @@ export interface CursorOverlayState<TCursorData extends Record<string, unknown>>
 }
 
 export type CursorData = {
-  style?: CSSProperties;
-  selectionStyle?: CSSProperties;
+  style?: React.CSSProperties;
+  selectionStyle?: React.CSSProperties;
 };

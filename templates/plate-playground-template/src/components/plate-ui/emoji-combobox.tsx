@@ -21,11 +21,11 @@ export function EmojiComboboxItem({ item }: ComboboxItemProps<EmojiItemData>) {
   );
 }
 
-export function EmojiCombobox<TData extends EmojiItemData = EmojiItemData>({
+export function EmojiCombobox({
   pluginKey = KEY_EMOJI,
   id = pluginKey,
   ...props
-}: TEmojiCombobox<TData>) {
+}: TEmojiCombobox) {
   const { trigger, onSelectItem } = useEmojiComboboxState({ pluginKey });
 
   return (
@@ -33,7 +33,7 @@ export function EmojiCombobox<TData extends EmojiItemData = EmojiItemData>({
       id={id}
       trigger={trigger}
       controlled
-      onSelectItem={onSelectItem}
+      onSelectItem={onSelectItem as any}
       onRenderItem={EmojiComboboxItem}
       {...props}
     />

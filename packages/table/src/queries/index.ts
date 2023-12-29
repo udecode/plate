@@ -4,9 +4,11 @@
 
 export * from './getCellInNextTableRow';
 export * from './getCellInPreviousTableRow';
+export * from './getColSpan';
 export * from './getLeftTableCell';
 export * from './getNextTableCell';
 export * from './getPreviousTableCell';
+export * from './getRowSpan';
 export * from './getTableAbove';
 export * from './getTableColumnCount';
 export * from './getTableColumnIndex';

@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import React from 'react';
 
 import { useCommentById, useCommentsSelectors } from '../stores/index';
 
@@ -7,7 +7,7 @@ export const useFloatingCommentsContentState = () => {
   const activeComment = useCommentById(activeCommentId);
   const myUserId = useCommentsSelectors().myUserId();
 
-  const ref = useRef(null);
+  const ref = React.useRef(null);
 
   return {
     ref,

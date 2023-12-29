@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React from 'react';
 import {
   findNodePath,
   getPluginOptions,
@@ -37,7 +37,7 @@ export const useTableColSizes = (
 
   const colCount = getTableColumnCount(tableNode);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (
       enableUnsetSingleColSize &&
       colCount < 2 &&

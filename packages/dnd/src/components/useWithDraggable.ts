@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import React from 'react';
 import {
   findNodePath,
   PlateRenderElementProps,
@@ -36,9 +36,12 @@ export const useWithDraggable = <T = any>({
   draggableProps,
 }: WithDraggableOptions<T> & PlateRenderElementProps) => {
   const readOnly = useReadOnly();
-  const path = useMemo(() => findNodePath(editor, element), [editor, element]);
+  const path = React.useMemo(
+    () => findNodePath(editor, element),
+    [editor, element]
+  );
 
-  const filteredOut = useMemo(
+  const filteredOut = React.useMemo(
     () =>
       path &&
       ((Number.isInteger(level) && level !== path.length - 1) ||

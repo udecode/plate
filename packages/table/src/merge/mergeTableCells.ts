@@ -1,4 +1,5 @@
 import {
+  collapseSelection,
   getBlockAbove,
   getPluginOptions,
   getPluginType,
@@ -8,9 +9,9 @@ import {
   Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import { cloneDeep } from 'lodash';
+import cloneDeep from 'lodash/cloneDeep.js';
 
-import { ELEMENT_TABLE } from '../createTablePlugin';
+import { ELEMENT_TABLE, ELEMENT_TH } from '../createTablePlugin';
 import { getTableGridAbove } from '../queries';
 import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';
@@ -78,14 +79,7 @@ export const mergeTableCells = <V extends Value = Value>(
     // and values are an array of all paths with that column
     const cols: { [key: string]: number[][] } = {};
 
-    // A boolean to keep track if we have a header cell among the cells we are merging
-    let hasHeaderCell = false;
-
     cellEntries.forEach(([entry, path]) => {
-      if (!hasHeaderCell && entry.type === 'table_header_cell') {
-        hasHeaderCell = true;
-      }
-
       const rowIndex = path.at(-2)!;
 
       if (cols[rowIndex]) {
@@ -107,7 +101,7 @@ export const mergeTableCells = <V extends Value = Value>(
     // calculated colSpan and rowSpan attributes and combined content
     const mergedCell = {
       ...getEmptyCellNode(editor, {
-        header: cellEntries[0][0].type === 'th',
+        header: cellEntries[0][0].type === getPluginType(editor, ELEMENT_TH),
         newCellChildren: contents,
       }),
       colSpan,
@@ -116,5 +110,6 @@ export const mergeTableCells = <V extends Value = Value>(
 
     // insert the new merged cell in place of the first cell in the selection
     insertElements(editor, mergedCell, { at: cellEntries[0][1] });
+    collapseSelection(editor);
   });
 };

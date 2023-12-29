@@ -1,11 +1,4 @@
-import {
-  createRef,
-  MutableRefObject,
-  RefObject,
-  useCallback,
-  useEffect,
-  useRef,
-} from 'react';
+import React from 'react';
 import { useEditorRef } from '@udecode/plate-common';
 
 import { i18n } from '../../constants';
@@ -24,9 +17,9 @@ import {
 import { AIndexSearch } from '../IndexSearch/index';
 import { EmojiPickerState, MapEmojiCategoryList } from './EmojiPickerState';
 
-export type MutableRefs = MutableRefObject<{
-  contentRoot: RefObject<HTMLDivElement> | undefined;
-  content: RefObject<HTMLDivElement> | undefined;
+export type MutableRefs = React.MutableRefObject<{
+  contentRoot: React.RefObject<HTMLDivElement> | undefined;
+  content: React.RefObject<HTMLDivElement> | undefined;
 }>;
 
 export type UseEmojiPickerProps = {
@@ -68,12 +61,12 @@ export const useEmojiPicker = ({
   const editor = useEditorRef();
 
   const [state, dispatch] = EmojiPickerState();
-  const refs = useRef({
-    contentRoot: createRef<HTMLDivElement>(),
-    content: createRef<HTMLDivElement>(),
+  const refs = React.useRef({
+    contentRoot: React.createRef<HTMLDivElement>(),
+    content: React.createRef<HTMLDivElement>(),
   });
 
-  const setIsOpen = useCallback(
+  const setIsOpen = React.useCallback(
     (isOpen: boolean) => {
       dispatch({
         type: isOpen ? 'SET_OPEN' : 'SET_CLOSE',
@@ -83,7 +76,7 @@ export const useEmojiPicker = ({
   );
 
   const setFocusedAndVisibleSections =
-    useCallback<SetFocusedAndVisibleSectionsType>(
+    React.useCallback<SetFocusedAndVisibleSectionsType>(
       (visibleSections, categoryId) => {
         dispatch({
           type: 'SET_FOCUSED_AND_VISIBLE_CATEGORIES',
@@ -96,7 +89,7 @@ export const useEmojiPicker = ({
       [dispatch]
     );
 
-  const handleSearchInput = useCallback(
+  const handleSearchInput = React.useCallback(
     (input: string) => {
       const value = String(input).replaceAll(/\s/g, '');
       if (!value && !input) {
@@ -118,25 +111,25 @@ export const useEmojiPicker = ({
     [dispatch, indexSearch]
   );
 
-  const setSearch = useCallback(
+  const setSearch = React.useCallback(
     (value: string) => {
       value ? handleSearchInput(value) : dispatch({ type: 'CLEAR_SEARCH' });
     },
     [dispatch, handleSearchInput]
   );
 
-  const clearSearch = useCallback(() => {
+  const clearSearch = React.useCallback(() => {
     dispatch({ type: 'CLEAR_SEARCH' });
   }, [dispatch]);
 
-  const onMouseOver = useCallback(
+  const onMouseOver = React.useCallback(
     (emoji?: Emoji) => {
       dispatch({ type: 'SET_EMOJI', payload: { emoji } });
     },
     [dispatch]
   );
 
-  const updateFrequentEmojis = useCallback(
+  const updateFrequentEmojis = React.useCallback(
     (emojiId: string) => {
       emojiLibrary.updateFrequentCategory(emojiId);
 
@@ -151,7 +144,7 @@ export const useEmojiPicker = ({
     [closeOnSelect, dispatch, emojiLibrary, state.isOpen]
   );
 
-  const onSelectEmoji = useCallback(
+  const onSelectEmoji = React.useCallback(
     (emoji: Emoji) => {
       const selectItem = getEmojiOnInsert();
       selectItem(editor, {
@@ -170,7 +163,7 @@ export const useEmojiPicker = ({
     [editor, updateFrequentEmojis]
   );
 
-  const handleCategoryClick = useCallback(
+  const handleCategoryClick = React.useCallback(
     (categoryId: EmojiCategoryList) => {
       dispatch({
         type: 'SET_FOCUSED_CATEGORY',
@@ -204,7 +197,7 @@ export const useEmojiPicker = ({
     [dispatch, emojiLibrary]
   );
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (state.isOpen && !state.isSearching) {
       // Timeout to allow the category element refs to populate
       setTimeout(() => {

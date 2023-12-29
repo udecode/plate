@@ -1,10 +1,10 @@
 // Pre is deeply coupled to Contentlayer, so we need a wrapper to make it work
 import * as React from 'react';
 import { ReactNode } from 'react';
+import { cn } from '@udecode/cn';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus as theme } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
-import { cn } from '@/lib/utils';
 import { CopyButton, CopyNpmCommandButton } from '@/components/copy-button';
 import * as Typography from '@/components/typography';
 

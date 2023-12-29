@@ -1,4 +1,4 @@
-import React, { forwardRef, useState } from 'react';
+import React from 'react';
 import { useIsomorphicLayoutEffect } from '@udecode/plate-common';
 import ReactTextareaAutosize, {
   TextareaAutosizeProps,
@@ -9,15 +9,16 @@ import ReactTextareaAutosize, {
  * @see https://github.com/Andarist/react-textarea-autosize
  * @see https://github.com/Andarist/react-textarea-autosize/issues/337
  */
-const TextareaAutosize = forwardRef<HTMLTextAreaElement, TextareaAutosizeProps>(
-  (props, ref) => {
-    const [isRerendered, setIsRerendered] = useState(false);
+const TextareaAutosize = React.forwardRef<
+  HTMLTextAreaElement,
+  TextareaAutosizeProps
+>((props, ref) => {
+  const [isRerendered, setIsRerendered] = React.useState(false);
 
-    useIsomorphicLayoutEffect(() => setIsRerendered(true), []);
+  useIsomorphicLayoutEffect(() => setIsRerendered(true), []);
 
-    return isRerendered ? <ReactTextareaAutosize {...props} ref={ref} /> : null;
-  }
-);
+  return isRerendered ? <ReactTextareaAutosize {...props} ref={ref} /> : null;
+});
 TextareaAutosize.displayName = 'TextareaAutosize';
 
 export { TextareaAutosize };

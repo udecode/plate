@@ -57,6 +57,7 @@ export type SettingPlugin = {
   npmPackage?: string;
   packageImports?: string[];
   customImports?: string[];
+  cnImports?: string[];
   plateImports?: string[];
   pluginFactory?: string;
   pluginOptions?: string[];
@@ -71,6 +72,7 @@ export type SettingPlugin = {
     registry?: string;
     filename?: string; // e.g. 'blockquote-element' (default: id)
     customImports?: string[];
+    cnImports?: string[];
     plateImports?: string[];
     pluginOptions?: string[];
     route?: string;
@@ -264,7 +266,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
       {
         id: 'h1',
         filename: 'heading-element',
-        plateImports: ['withProps'],
+        cnImports: ['withProps'],
         label: 'H1Element',
         pluginKey: 'ELEMENT_H1',
         import: 'HeadingElement',
@@ -274,7 +276,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
       {
         id: 'h2',
         filename: 'heading-element',
-        plateImports: ['withProps'],
+        cnImports: ['withProps'],
         label: 'H2Element',
         pluginKey: 'ELEMENT_H2',
         import: 'HeadingElement',
@@ -284,7 +286,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
       {
         id: 'h3',
         filename: 'heading-element',
-        plateImports: ['withProps'],
+        cnImports: ['withProps'],
         label: 'H3Element',
         pluginKey: 'ELEMENT_H3',
         import: 'HeadingElement',
@@ -294,7 +296,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
       {
         id: 'h4',
         filename: 'heading-element',
-        plateImports: ['withProps'],
+        cnImports: ['withProps'],
         label: 'H4Element',
         pluginKey: 'ELEMENT_H4',
         import: 'HeadingElement',
@@ -304,7 +306,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
       {
         id: 'h5',
         filename: 'heading-element',
-        plateImports: ['withProps'],
+        cnImports: ['withProps'],
         label: 'H5Element',
         pluginKey: 'ELEMENT_H5',
         import: 'HeadingElement',
@@ -314,7 +316,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
       {
         id: 'h6',
         filename: 'heading-element',
-        plateImports: ['withProps'],
+        cnImports: ['withProps'],
         label: 'H6Element',
         pluginKey: 'ELEMENT_H6',
         import: 'HeadingElement',
@@ -335,6 +337,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
       {
         id: 'ul',
         filename: 'list-element',
+        cnImports: ['withProps'],
         label: 'BulletedListElement',
         pluginKey: 'ELEMENT_UL',
         import: 'ListElement',
@@ -344,6 +347,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
       {
         id: 'ol',
         filename: 'list-element',
+        cnImports: ['withProps'],
         label: 'NumberedListElement',
         pluginKey: 'ELEMENT_OL',
         noImport: true,
@@ -354,6 +358,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
       {
         id: 'li',
         filename: 'list-element',
+        cnImports: ['withProps'],
         plateImports: ['PlateElement'],
         label: 'ListItemElement',
         pluginKey: 'ELEMENT_LI',
@@ -499,6 +504,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
       {
         id: 'bold',
         label: 'BoldLeaf',
+        cnImports: ['withProps'],
         plateImports: ['PlateLeaf'],
         pluginKey: 'MARK_BOLD',
         noImport: true,
@@ -599,6 +605,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
       {
         id: 'italic',
         label: 'ItalicLeaf',
+        cnImports: ['withProps'],
         plateImports: ['PlateLeaf'],
         pluginKey: 'MARK_ITALIC',
         noImport: true,
@@ -634,6 +641,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
       {
         id: 'strikethrough',
         label: 'StrikethroughLeaf',
+        cnImports: ['withProps'],
         plateImports: ['PlateLeaf'],
         pluginKey: 'MARK_STRIKETHROUGH',
         noImport: true,
@@ -652,6 +660,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
       {
         id: 'subscript',
         label: 'SubscriptLeaf',
+        cnImports: ['withProps'],
         plateImports: ['PlateLeaf'],
         pluginKey: 'MARK_SUBSCRIPT',
         noImport: true,
@@ -670,6 +679,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
       {
         id: 'superscript',
         label: 'SuperscriptLeaf',
+        cnImports: ['withProps'],
         plateImports: ['PlateLeaf'],
         pluginKey: 'MARK_SUPERSCRIPT',
         noImport: true,
@@ -688,6 +698,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
       {
         id: 'underline',
         label: 'UnderlineLeaf',
+        cnImports: ['withProps'],
         plateImports: ['PlateLeaf'],
         pluginKey: 'MARK_UNDERLINE',
         noImport: true,

@@ -1,4 +1,3 @@
-import { AnchorHTMLAttributes } from 'react';
 import {
   createPluginFactory,
   isUrl,
@@ -47,7 +46,7 @@ export interface LinkPlugin {
    * Default HTML attributes for link elements.
    * @default {}
    */
-  defaultLinkAttributes?: AnchorHTMLAttributes<HTMLAnchorElement>;
+  defaultLinkAttributes?: React.AnchorHTMLAttributes<HTMLAnchorElement>;
 
   /**
    * Keeps selected text on pasting links by default.

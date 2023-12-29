@@ -1,27 +1,27 @@
 /* eslint-disable react/display-name */
-import { memo, useEffect, useRef } from 'react';
+import React from 'react';
 import { Range, Selection } from 'slate';
 import { useSlate } from 'slate-react';
 
 import { PlateId, useIncrementVersion } from '../stores';
 
-export const EditorStateEffect = memo(({ id }: { id?: PlateId }) => {
+export const EditorStateEffect = React.memo(({ id }: { id?: PlateId }) => {
   const editorState = useSlate();
   const updateVersionEditor = useIncrementVersion('versionEditor', id);
 
-  useEffect(() => {
+  React.useEffect(() => {
     updateVersionEditor();
   });
 
   const updateVersionSelection = useIncrementVersion('versionSelection', id);
-  const prevSelectionRef = useRef(editorState.selection);
+  const prevSelectionRef = React.useRef(editorState.selection);
 
   const sameSelection = isSelectionEqual(
     prevSelectionRef.current,
     editorState.selection
   );
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!sameSelection) {
       updateVersionSelection();
     }

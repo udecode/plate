@@ -1,4 +1,4 @@
-import { CSSProperties, MutableRefObject, useRef, useState } from 'react';
+import React from 'react';
 import { ClientRectObject } from '@floating-ui/core';
 import { useIsomorphicLayoutEffect } from '@udecode/plate-common';
 
@@ -21,8 +21,8 @@ export interface UseVirtualFloatingOptions extends Partial<UseFloatingProps> {
 export interface UseVirtualFloatingReturn<
   RT extends ReferenceType = ReferenceType,
 > extends UseFloatingReturn<RT> {
-  virtualElementRef: MutableRefObject<VirtualElement>;
-  style: CSSProperties;
+  virtualElementRef: React.MutableRefObject<VirtualElement>;
+  style: React.CSSProperties;
 }
 
 /**
@@ -46,8 +46,8 @@ export const useVirtualFloating = <RT extends ReferenceType = ReferenceType>({
   getBoundingClientRect = getSelectionBoundingClientRect,
   ...floatingOptions
 }: UseVirtualFloatingOptions): UseVirtualFloatingReturn<RT> => {
-  const virtualElementRef = useRef<RT>(createVirtualElement() as RT);
-  const [visible, setVisible] = useState(true);
+  const virtualElementRef = React.useRef<RT>(createVirtualElement() as RT);
+  const [visible, setVisible] = React.useState(true);
 
   const floatingResult = useFloating<RT>({
     // update on scroll and resize

@@ -4,7 +4,7 @@ import { TooltipProvider } from '@/registry/default/plate-ui/tooltip';
 
 import { ThemeProvider } from './theme-provider';
 
-export function Providers({ children }) {
+export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider
       attribute="class"

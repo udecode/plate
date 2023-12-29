@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React from 'react';
 import { getPluginOptions, useEditorRef } from '@udecode/plate-common';
 
 import {
@@ -13,12 +13,12 @@ export const useCodeBlockElementState = ({
   element: TCodeBlockElement;
 }) => {
   const editor = useEditorRef();
-  const [domLoaded, setDomLoaded] = useState(false);
+  const [domLoaded, setDomLoaded] = React.useState(false);
   const { lang } = element;
 
   const codeClassName = lang ? `${lang} language-${lang}` : '';
 
-  useEffect(() => {
+  React.useEffect(() => {
     setDomLoaded(true);
   }, []);
 

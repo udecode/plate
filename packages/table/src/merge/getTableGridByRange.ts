@@ -24,18 +24,18 @@ import {
 import { getCellTypes } from '../utils';
 import { getEmptyTableNode } from '../utils/getEmptyTableNode';
 
-export type FormatType = 'table' | 'cell' | 'all';
+type FormatType = 'table' | 'cell' | 'all';
 
-export interface TableGridEntries {
+interface TableGridEntries {
   tableEntries: TElementEntry[];
   cellEntries: TElementEntry[];
 }
 
-export type GetTableGridReturnType<T> = T extends 'all'
+type GetTableGridReturnType<T> = T extends 'all'
   ? TableGridEntries
   : TElementEntry[];
 
-export interface GetTableGridByRangeOptions<T extends FormatType> {
+interface GetTableGridByRangeOptions<T extends FormatType> {
   at: Range;
 
   /**

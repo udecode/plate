@@ -1,4 +1,4 @@
-import { ComponentClass, FunctionComponent } from 'react';
+import React from 'react';
 import {
   EDescendant,
   EElement,
@@ -64,7 +64,7 @@ export const serializeHtml = <V extends Value>(
     /**
      *  Drag and drop component
      */
-    dndWrapper?: string | FunctionComponent | ComponentClass;
+    dndWrapper?: string | React.FC | React.ComponentClass;
   }
 ): string => {
   let result = nodes

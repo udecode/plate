@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React from 'react';
 import {
   createPrimitiveComponent,
   toDOMNode,
@@ -13,10 +13,12 @@ export const useCommentsPositionerState = () => {
   const editor = useEditorRef();
   let activeCommentId = useCommentsSelectors().activeCommentId();
 
-  const [position, setPosition] = useState<{ top: number; left: number }>({
-    left: 0,
-    top: 0,
-  });
+  const [position, setPosition] = React.useState<{ top: number; left: number }>(
+    {
+      left: 0,
+      top: 0,
+    }
+  );
 
   if (position.left === 0 && position.top === 0) {
     activeCommentId = null;
@@ -24,7 +26,7 @@ export const useCommentsPositionerState = () => {
 
   const [node] = useActiveCommentNode() ?? [];
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!node) return;
 
     const domNode = toDOMNode(editor, node);

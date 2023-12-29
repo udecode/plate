@@ -4,12 +4,12 @@ import { ReactNode } from 'react';
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { DialogProps } from '@radix-ui/react-alert-dialog';
+import { cn } from '@udecode/cn';
 import { Circle, File, Laptop, Moon, SunMedium } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
 import { NavItemWithChildren, SidebarNavItem } from '@/types/nav';
 import { docsConfig } from '@/config/docs';
-import { cn } from '@/lib/utils';
 import { Button } from '@/registry/default/plate-ui/button';
 import {
   CommandDialog,

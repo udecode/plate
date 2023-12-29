@@ -3,10 +3,10 @@
 import * as React from 'react';
 import Link, { LinkProps } from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { cn } from '@udecode/cn';
 
 import { docsConfig } from '@/config/docs';
 import { siteConfig } from '@/config/site';
-import { cn } from '@/lib/utils';
 import { Button } from '@/registry/default/plate-ui/button';
 
 import { Logo } from './icons/Logo';

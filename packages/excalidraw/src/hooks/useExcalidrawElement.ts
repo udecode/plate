@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import {
   ExcalidrawImperativeAPI,
   LibraryItems,
@@ -15,14 +15,14 @@ export const useExcalidrawElement = ({
   scrollToContent?: boolean;
   libraryItems?: LibraryItems;
 }) => {
-  const [Excalidraw, setExcalidraw] = useState<any>(null);
-  useEffect(() => {
+  const [Excalidraw, setExcalidraw] = React.useState<any>(null);
+  React.useEffect(() => {
     import('@excalidraw/excalidraw').then((comp) =>
       setExcalidraw(comp.Excalidraw)
     );
   });
 
-  const _excalidrawRef = useRef<ExcalidrawImperativeAPI>(null);
+  const _excalidrawRef = React.useRef<ExcalidrawImperativeAPI>(null);
 
   // const editor = useEditorRef();
 

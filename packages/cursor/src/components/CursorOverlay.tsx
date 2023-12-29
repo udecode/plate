@@ -1,4 +1,4 @@
-import React, { RefObject } from 'react';
+import React from 'react';
 import {
   ClassNames,
   UnknownObject,
@@ -67,7 +67,7 @@ export interface CursorOverlayProps<
    * Container the overlay will be rendered in.
    * If set, all returned overlay positions will be relative to this container.
    */
-  containerRef?: RefObject<HTMLElement>;
+  containerRef?: React.RefObject<HTMLElement>;
 
   /**
    * Whether to refresh the cursor overlay positions on container resize.

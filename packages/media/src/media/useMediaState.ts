@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import React from 'react';
 import { useElement } from '@udecode/plate-common';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
 
@@ -25,7 +25,7 @@ export const useMediaState = ({
 
   const { url, align } = element;
 
-  const embed = useMemo(() => {
+  const embed = React.useMemo(() => {
     if (!urlParsers) return;
 
     for (const parser of urlParsers) {

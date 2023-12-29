@@ -1,26 +1,21 @@
 import React from 'react';
-import { PlateElement, PlateElementProps, Value } from '@udecode/plate-common';
+import { cn, withProps, withRef } from '@udecode/cn';
+import { PlateElement } from '@udecode/plate-common';
 import {
-  TTableCellElement,
   useTableCellElement,
   useTableCellElementResizable,
   useTableCellElementResizableState,
   useTableCellElementState,
 } from '@udecode/plate-table';
 
-import { cn } from '@/lib/utils';
-
 import { ResizeHandle } from './resizable';
 
-export interface TableCellElementProps
-  extends PlateElementProps<Value, TTableCellElement> {
-  hideBorder?: boolean;
-  isHeader?: boolean;
-}
-
-const TableCellElement = React.forwardRef<
-  React.ElementRef<typeof PlateElement>,
-  TableCellElementProps
+export const TableCellElement = withRef<
+  typeof PlateElement,
+  {
+    hideBorder?: boolean;
+    isHeader?: boolean;
+  }
 >(({ children, className, style, hideBorder, isHeader, ...props }, ref) => {
   const { element } = props;
 
@@ -50,8 +45,8 @@ const TableCellElement = React.forwardRef<
 
   return (
     <PlateElement
-      asChild
       ref={ref}
+      asChild
       className={cn(
         'relative h-full overflow-visible border-none bg-background p-0',
         hideBorder && 'before:border-none',
@@ -141,12 +136,6 @@ const TableCellElement = React.forwardRef<
 });
 TableCellElement.displayName = 'TableCellElement';
 
-const TableCellHeaderElement = React.forwardRef<
-  React.ElementRef<typeof TableCellElement>,
-  TableCellElementProps
->((props, ref) => {
-  return <TableCellElement ref={ref} {...props} isHeader />;
+export const TableCellHeaderElement = withProps(TableCellElement, {
+  isHeader: true,
 });
-TableCellHeaderElement.displayName = 'TableCellHeaderElement';
-
-export { TableCellElement, TableCellHeaderElement };

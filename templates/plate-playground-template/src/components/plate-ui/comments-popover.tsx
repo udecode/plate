@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { cn } from '@udecode/cn';
 import {
   CommentProvider,
   CommentsPositioner,
@@ -10,12 +11,10 @@ import {
 } from '@udecode/plate-comments';
 import { PortalBody } from '@udecode/plate-common';
 
-import { cn } from '@/lib/utils';
-import { popoverVariants } from '@/components/plate-ui/popover';
-
 import { CommentCreateForm } from './comment-create-form';
 import { CommentItem } from './comment-item';
 import { CommentReplyItems } from './comment-reply-items';
+import { popoverVariants } from './popover';
 
 export type FloatingCommentsContentProps = {
   disableForm?: boolean;

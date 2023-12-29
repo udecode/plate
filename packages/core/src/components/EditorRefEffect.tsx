@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import {
   PlateId,
@@ -28,7 +28,7 @@ export function EditorRefEffect({ id }: { id?: PlateId }) {
   const editorState = useEditorRef(id);
   const editorRef = usePlateSelectors(id).editorRef();
 
-  useEffect(() => {
+  React.useEffect(() => {
     setIsMounted(true);
 
     return () => {
@@ -42,7 +42,7 @@ export function EditorRefEffect({ id }: { id?: PlateId }) {
    * consumers will need to manually trigger a re-render inside `onChange` if
    * they want to use `editorRef` with `useState`.
    */
-  useEffect(() => {
+  React.useEffect(() => {
     if (typeof editorRef === 'function') {
       editorRef(editorState);
       return () => editorRef(null);

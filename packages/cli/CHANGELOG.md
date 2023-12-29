@@ -1,5 +1,13 @@
 # @udecode/plate-ui
 
+## 29.0.0
+
+### Minor Changes
+
+- [#2829](https://github.com/udecode/plate/pull/2829) by [@zbeyens](https://github.com/zbeyens) –
+  - Remove `utils` aliases: `@udecode/cn` dependency is now used
+  - Remove `clsx` dependency
+
 ## 28.1.0
 
 ### Minor Changes

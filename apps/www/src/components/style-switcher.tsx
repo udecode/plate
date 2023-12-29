@@ -2,8 +2,8 @@
 
 import * as React from 'react';
 import { type SelectTriggerProps } from '@radix-ui/react-select';
+import { cn } from '@udecode/cn';
 
-import { cn } from '@/lib/utils';
 import { useConfig } from '@/hooks/use-config';
 import { Style, styles } from '@/registry/styles';
 

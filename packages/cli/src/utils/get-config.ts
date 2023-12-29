@@ -16,7 +16,6 @@ import { resolveImport } from './resolve-import';
 
 export const DEFAULT_STYLE = 'default';
 export const DEFAULT_COMPONENTS = '@/components';
-export const DEFAULT_UTILS = '@/lib/utils';
 export const DEFAULT_TAILWIND_CSS = 'src/styles/globals.css';
 export const DEFAULT_TAILWIND_CONFIG = 'tailwind.config.js';
 export const DEFAULT_TAILWIND_BASE_COLOR = 'slate';
@@ -40,7 +39,6 @@ export const rawConfigSchema = z.object({
   }),
   aliases: z.object({
     components: z.string(),
-    utils: z.string(),
   }),
 });
 
@@ -50,7 +48,6 @@ export const configSchema = rawConfigSchema.extend({
   resolvedPaths: z.object({
     tailwindConfig: z.string(),
     tailwindCss: z.string(),
-    utils: z.string(),
     components: z.string(),
   }),
 });
@@ -82,7 +79,6 @@ export async function resolveConfigPaths(cwd: string, config: RawConfig) {
     resolvedPaths: {
       tailwindConfig: path.resolve(cwd, config.tailwind.config),
       tailwindCss: path.resolve(cwd, config.tailwind.css),
-      utils: await resolveImport(config.aliases['utils'], tsConfig),
       components: await resolveImport(config.aliases['components'], tsConfig),
     },
   });

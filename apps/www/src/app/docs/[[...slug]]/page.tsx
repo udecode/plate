@@ -2,15 +2,16 @@ import '@/styles/mdx.css';
 
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { cn } from '@udecode/cn';
 import { allDocs } from 'contentlayer/generated';
 import { ChevronRight, ExternalLinkIcon } from 'lucide-react';
 import Balancer from 'react-wrap-balancer';
 
 import { docToPackage } from '@/config/doc-to-package';
 import { siteConfig } from '@/config/site';
+import { absoluteUrl } from '@/lib/absoluteUrl';
 import { formatBytes, getPackageData } from '@/lib/bundlephobia';
 import { getTableOfContents } from '@/lib/toc';
-import { absoluteUrl, cn } from '@/lib/utils';
 import { PackageInfoType } from '@/hooks/use-package-info';
 import { badgeVariants } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';

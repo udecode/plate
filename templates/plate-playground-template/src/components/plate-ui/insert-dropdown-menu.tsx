@@ -6,7 +6,7 @@ import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
 import {
   focusEditor,
   insertEmptyElement,
-  useEditorState,
+  useEditorRef,
 } from '@udecode/plate-common';
 import { ELEMENT_H1, ELEMENT_H2, ELEMENT_H3 } from '@udecode/plate-heading';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
@@ -127,7 +127,7 @@ const items = [
 ];
 
 export function InsertDropdownMenu(props: DropdownMenuProps) {
-  const editor = useEditorState();
+  const editor = useEditorRef();
   const openState = useOpenState();
 
   return (

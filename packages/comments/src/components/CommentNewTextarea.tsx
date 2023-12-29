@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import React from 'react';
 import { createPrimitiveComponent } from '@udecode/plate-common';
 
 import {
@@ -17,9 +17,9 @@ export const useCommentNewTextareaState = () => {
   const focusTextarea = useCommentsSelectors().focusTextarea();
   const setFocusTextarea = useCommentsActions().focusTextarea();
 
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const textareaRef = React.useRef<HTMLTextAreaElement | null>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (focusTextarea) {
       textareaRef.current?.focus();
       setFocusTextarea(false);

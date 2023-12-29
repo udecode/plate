@@ -1,23 +1,13 @@
 import React from 'react';
-import {
-  getHandler,
-  PlateElement,
-  PlateElementProps,
-  Value,
-} from '@udecode/plate-common';
-import { TMentionElement } from '@udecode/plate-mention';
+import { cn, withRef } from '@udecode/cn';
+import { getHandler, PlateElement } from '@udecode/plate-common';
 import { useFocused, useSelected } from 'slate-react';
 
-import { cn } from '@/lib/utils';
-
-export interface MentionInputElementProps
-  extends PlateElementProps<Value, TMentionElement> {
-  onClick?: (mentionNode: any) => void;
-}
-
-const MentionInputElement = React.forwardRef<
-  React.ElementRef<typeof PlateElement>,
-  MentionInputElementProps
+export const MentionInputElement = withRef<
+  typeof PlateElement,
+  {
+    onClick?: (mentionNode: any) => void;
+  }
 >(({ className, onClick, ...props }, ref) => {
   const { children, element } = props;
 
@@ -26,8 +16,8 @@ const MentionInputElement = React.forwardRef<
 
   return (
     <PlateElement
-      asChild
       ref={ref}
+      asChild
       data-slate-value={element.value}
       className={cn(
         'inline-block rounded-md bg-muted px-1.5 py-0.5 align-baseline text-sm',
@@ -41,6 +31,3 @@ const MentionInputElement = React.forwardRef<
     </PlateElement>
   );
 });
-MentionInputElement.displayName = 'MentionInputElement';
-
-export { MentionInputElement };

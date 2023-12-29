@@ -1,5 +1,23 @@
 # @udecode/plate-table
 
+## 29.0.1
+
+## 29.0.0
+
+## 28.1.2
+
+### Patch Changes
+
+- [#2833](https://github.com/udecode/plate/pull/2833) by [@AndreyMarchuk](https://github.com/AndreyMarchuk) – Fix lodash import
+
+## 28.1.1
+
+### Patch Changes
+
+- [#2832](https://github.com/udecode/plate/pull/2832) by [@dimaanj](https://github.com/dimaanj) –
+  - Fix: merge of header cells in table
+  - Fix: #2831
+
 ## 28.0.0
 
 ### Patch Changes

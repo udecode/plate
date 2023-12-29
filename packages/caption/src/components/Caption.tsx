@@ -1,4 +1,4 @@
-import { ComponentPropsWithoutRef } from 'react';
+import React from 'react';
 import { createPrimitiveComponent } from '@udecode/plate-common';
 import { useReadOnly, useSelected } from 'slate-react';
 
@@ -8,7 +8,8 @@ export interface CaptionOptions {
   readOnly?: boolean;
 }
 
-export interface CaptionProps extends ComponentPropsWithoutRef<'figcaption'> {
+export interface CaptionProps
+  extends React.ComponentPropsWithoutRef<'figcaption'> {
   options?: CaptionOptions;
 }
 

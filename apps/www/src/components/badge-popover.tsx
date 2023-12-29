@@ -3,7 +3,7 @@ import React, { ReactNode } from 'react';
 import { Badge } from './ui/badge';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from './ui/hover-card';
 
-export function BadgeList({ children }) {
+export function BadgeList({ children }: { children: ReactNode }) {
   return <div className="flex gap-2">{children}</div>;
 }
 

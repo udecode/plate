@@ -2,10 +2,10 @@
 
 import * as React from 'react';
 import { DropdownMenuTriggerProps } from '@radix-ui/react-dropdown-menu';
+import { cn } from '@udecode/cn';
 
 import { NpmCommands } from '@/types/unist';
 import { Event, trackEvent } from '@/lib/events';
-import { cn } from '@/lib/utils';
 import { Button } from '@/registry/default/plate-ui/button';
 import {
   DropdownMenu,

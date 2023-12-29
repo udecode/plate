@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 
 import { customizerItems, SettingPlugin } from '@/config/customizer-items';
 import { customizerList } from '@/config/customizer-list';
-import { customizerPlugins } from '@/config/customizer-plugins';
+import { customizerPlugins, ValueId } from '@/config/customizer-plugins';
 
 export const categoryIds = customizerList.map((item) => item.id);
 
@@ -40,7 +40,19 @@ export const getDefaultCheckedComponents = () => {
   } as Record<string, boolean>;
 };
 
-export const settingsStore = createZustandStore('settings')({
+export type SettingsStoreValue = {
+  showSettings: boolean;
+  loadingSettings: boolean;
+  showComponents: boolean;
+  homeTab: string;
+  customizerTab: string;
+  valueId: ValueId;
+  checkedPluginsNext: Record<string, boolean>;
+  checkedPlugins: Record<string, boolean>;
+  checkedComponents: Record<string, boolean>;
+};
+
+const initialState: SettingsStoreValue = {
   showSettings: false,
   loadingSettings: true,
   showComponents: true,
@@ -48,13 +60,15 @@ export const settingsStore = createZustandStore('settings')({
   // homeTab: 'installation',
   customizerTab: 'plugins',
 
-  valueId: customizerPlugins.playground.id,
+  valueId: customizerPlugins.playground.id as ValueId,
 
   checkedPluginsNext: getDefaultCheckedPlugins(),
 
   checkedPlugins: getDefaultCheckedPlugins(),
   checkedComponents: getDefaultCheckedComponents(),
-})
+};
+
+export const settingsStore = createZustandStore('settings')(initialState)
   .extendActions((set) => ({
     resetPlugins: ({
       exclude,

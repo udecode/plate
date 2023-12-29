@@ -7,7 +7,6 @@
     "cssVariables": false
   },
   "aliases": {
-    "utils": "@/lib/utils",
     "components": "@/components"
   }
 }

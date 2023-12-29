@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React from 'react';
 import {
   someNode,
   useEditorRef,
@@ -19,11 +19,11 @@ export const useFloatingCommentsState = () => {
   const editor = useEditorRef();
   const version = useEditorVersion();
 
-  const [loaded, setLoaded] = useState(false);
+  const [loaded, setLoaded] = React.useState(false);
 
-  const [active, setActive] = useState(false);
+  const [active, setActive] = React.useState(false);
 
-  useEffect(() => {
+  React.useEffect(() => {
     // there is a delay between activeCommentId and someNode, so we sync in `active`
     if (
       activeCommentId &&
@@ -40,12 +40,12 @@ export const useFloatingCommentsState = () => {
     }
   }, [active, activeCommentId, editor, version, setActiveCommentId]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     setLoaded(true);
   }, []);
 
   // reset comment editing value when active comment id changes
-  useEffect(() => {
+  React.useEffect(() => {
     if (activeCommentId) {
       resetNewCommentValue();
     }

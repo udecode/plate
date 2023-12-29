@@ -16,7 +16,7 @@ import {
   TText, Value
 } from "@udecode/plate-common";
 
-import { cn } from '@/lib/utils';
+import { cn } from '@udecode/cn';
 import { Editor } from '@/registry/default/plate-ui/editor';
 
 /**

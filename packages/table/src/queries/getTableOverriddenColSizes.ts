@@ -16,7 +16,7 @@ export const getTableOverriddenColSizes = (
     tableNode.colSizes
       ? [...tableNode.colSizes]
       : (Array.from({ length: colCount }).fill(0) as number[])
-  ).map((size, index) => colSizeOverrides?.get(index) ?? size);
+  ).map((size, index) => colSizeOverrides?.get?.(index) ?? size);
 
   return colSizes;
 };

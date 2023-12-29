@@ -1,5 +1,16 @@
 # @udecode/plate-utils
 
+## 29.0.1
+
+## 29.0.0
+
+### Major Changes
+
+- [#2829](https://github.com/udecode/plate/pull/2829) by [@zbeyens](https://github.com/zbeyens) –
+  - Moved `withProps` to `@udecode/cn`
+  - Moved `PortalBody`, `Text`, `Box`, `createPrimitiveComponent`, `createSlotComponent`, `withProviders` to `@udecode/react-utils`
+  - Removed `getRootProps` (unused)
+
 ## 28.0.0
 
 ### Patch Changes

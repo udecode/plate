@@ -3,9 +3,9 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { cn } from '@udecode/cn';
 
 import { siteConfig } from '@/config/site';
-import { cn } from '@/lib/utils';
 
 import { Logo } from './icons/Logo';
 import { Badge } from './ui/badge';

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import React from 'react';
 import {
   UnknownObject,
   useEditorRef,
@@ -23,15 +23,15 @@ export const useCursorOverlayPositions = <TCursorData extends UnknownObject>({
 }: CursorOverlayProps<TCursorData> = {}) => {
   const editor = useEditorRef();
 
-  const selectionRectCache = useRef<WeakMap<Range, SelectionRect[]>>(
+  const selectionRectCache = React.useRef<WeakMap<Range, SelectionRect[]>>(
     new WeakMap()
   );
 
-  const [selectionRects, setSelectionRects] = useState<
+  const [selectionRects, setSelectionRects] = React.useState<
     Record<string, SelectionRect[]>
   >({});
 
-  const updateSelectionRects = useCallback(() => {
+  const updateSelectionRects = React.useCallback(() => {
     // We have a container ref but the ref is null => container
     // isn't mounted to we can't calculate the selection rects.
     if (!containerRef?.current) return;
@@ -91,7 +91,7 @@ export const useCursorOverlayPositions = <TCursorData extends UnknownObject>({
     updateSelectionRects();
   });
 
-  const cursors = useMemo(
+  const cursors = React.useMemo(
     () =>
       getCursorOverlayState({
         selectionRects,

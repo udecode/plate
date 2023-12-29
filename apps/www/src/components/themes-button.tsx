@@ -2,10 +2,10 @@
 
 import * as React from 'react';
 import { CheckIcon } from '@radix-ui/react-icons';
+import { cn } from '@udecode/cn';
 import { Paintbrush } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
-import { cn } from '@/lib/utils';
 import { useConfig } from '@/hooks/use-config';
 import { Button } from '@/registry/default/plate-ui/button';
 import {

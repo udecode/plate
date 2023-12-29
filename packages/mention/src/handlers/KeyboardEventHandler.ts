@@ -1,5 +1,7 @@
-import { KeyboardEvent } from 'react';
+import React from 'react';
 import { HandlerReturnType } from '@udecode/plate-common';
 
 // TODO: move to core
-export type KeyboardEventHandler = (event: KeyboardEvent) => HandlerReturnType;
+export type KeyboardEventHandler = (
+  event: React.KeyboardEvent
+) => HandlerReturnType;

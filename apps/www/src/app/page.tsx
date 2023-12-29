@@ -8,9 +8,9 @@ import { AnnouncementButton } from './announcement-button';
 import '../../public/registry/themes.css';
 
 import * as React from 'react';
+import { cn } from '@udecode/cn';
 
 import { siteConfig } from '@/config/site';
-import { cn } from '@/lib/utils';
 import { Icons } from '@/components/icons';
 import {
   PageHeader,
