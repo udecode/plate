@@ -20,9 +20,9 @@ export type EAncestor<V extends Value> = AncestorOf<TEditor<V>>;
 export type AncestorOf<N extends TNode> = TEditor extends N
   ? TEditor | TElement
   : TElement extends N
-  ? TElement
-  : N extends TEditor
-  ? N | N['children'][number] | ElementOf<N['children'][number]>
-  : N extends TElement
-  ? N | ElementOf<N>
-  : never;
+    ? TElement
+    : N extends TEditor
+      ? N | N['children'][number] | ElementOf<N['children'][number]>
+      : N extends TElement
+        ? N | ElementOf<N>
+        : never;
