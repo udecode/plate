@@ -162,7 +162,7 @@ export const customizerPlugins = {
     id: 'deserializemd',
     label: 'Deserialize Markdown',
     value: deserializeMdValue,
-    route: '/docs/serializing-markdown',
+    route: '/docs/serializing-md',
     plugins: [KEY_DESERIALIZE_MD],
   },
   dnd: {
