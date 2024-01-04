@@ -5,6 +5,29 @@ import { PlateEditor } from '../types/PlateEditor';
 import { DOMHandlers, HandlerReturnType } from '../types/plugin/DOMHandlers';
 import { TEditableProps } from '../types/slate-react/TEditableProps';
 
+function convertDomEventToSyntheticEvent(domEvent: Event) {
+  const syntheticEvent = {
+    ...domEvent,
+    nativeEvent: domEvent,
+    currentTarget: domEvent.currentTarget as EventTarget,
+    target: domEvent.target as EventTarget,
+    bubbles: domEvent.bubbles,
+    cancelable: domEvent.cancelable,
+    defaultPrevented: domEvent.defaultPrevented,
+    eventPhase: domEvent.eventPhase,
+    isTrusted: domEvent.isTrusted,
+    timeStamp: domEvent.timeStamp,
+    type: domEvent.type,
+    isDefaultPrevented: () => domEvent.defaultPrevented,
+    isPropagationStopped: () => false,
+    preventDefault: () => domEvent.preventDefault(),
+    stopPropagation: () => domEvent.stopPropagation(),
+  };
+
+  return syntheticEvent;
+}
+
+
 /**
  * Check if an event is overrided by a handler.
  */
@@ -54,11 +77,15 @@ export const pipeHandler = <V extends Value, K extends keyof DOMHandlers<V>>(
   if (pluginsHandlers.length === 0 && !propsHandler) return;
 
   return (event: any) => {
+    const isDomEvent = event instanceof Event;
+    const handledEvent = isDomEvent ? convertDomEventToSyntheticEvent(event) : event;
+
     const eventIsHandled = pluginsHandlers.some((handler) =>
-      isEventHandled(event, handler)
+      isEventHandled(handledEvent, handler)
     );
     if (eventIsHandled) return true;
 
-    return isEventHandled(event, propsHandler);
+    return isEventHandled(handledEvent, propsHandler);
   };
 };
+
