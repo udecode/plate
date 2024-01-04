@@ -62,4 +62,5 @@ export type RemarkPluginOptions<V extends Value> = {
   editor: PlateEditor<V>;
   elementRules: RemarkElementRules<V>;
   textRules: RemarkTextRules<V>;
+  indentList?: boolean;
 };
