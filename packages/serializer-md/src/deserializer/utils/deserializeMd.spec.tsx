@@ -345,22 +345,22 @@ describe('deserializeMdIndentList', () => {
 
     const output = [
       {
-        type: "p",
-        listStyleType: "decimal",
+        type: 'p',
+        listStyleType: 'decimal',
         indent: 1,
         children: [
           {
-            text: "List item 1",
+            text: 'List item 1',
           },
         ],
       },
       {
-        type: "p",
-        listStyleType: "decimal",
+        type: 'p',
+        listStyleType: 'decimal',
         indent: 1,
         children: [
           {
-            text: "List item 2",
+            text: 'List item 2',
           },
         ],
       },
@@ -374,22 +374,22 @@ describe('deserializeMdIndentList', () => {
 
     const output = [
       {
-        type: "p",
-        listStyleType: "disc",
+        type: 'p',
+        listStyleType: 'disc',
         indent: 1,
         children: [
           {
-            text: "List item 1",
+            text: 'List item 1',
           },
         ],
       },
       {
-        type: "p",
-        listStyleType: "disc",
+        type: 'p',
+        listStyleType: 'disc',
         indent: 2,
         children: [
           {
-            text: "List item 1.1",
+            text: 'List item 1.1',
           },
         ],
       },
