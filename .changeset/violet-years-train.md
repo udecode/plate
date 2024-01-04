@@ -1,5 +1,5 @@
 ---
-"@udecode/plate-core": major
+"@udecode/plate-core": patch
 ---
 
-The problem involved unexpected behavior when users attempted to perform a specific action within the editor. The implemented solution corrects this behavior by adjusting the editor's internal state management, ensuring that the action now produces the expected outcome without causing any side effects.
+Ensure that beforeinput event is handled as a React.SyntheticEvent rather than a native DOM event
