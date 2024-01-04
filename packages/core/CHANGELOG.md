@@ -1977,3 +1977,12 @@ To migrate, find and replace all occurrences of:
 ### Patch Changes
 
 - [#658](https://github.com/udecode/slate-plugins/pull/658) [`201a7993`](https://github.com/udecode/slate-plugins/commit/201a799342ff88405e120182d8554e70b726beea) Thanks [@zbeyens](https://github.com/zbeyens)! - test
+
+
+## Unreleased
+
+### Patch Changes
+
+- [#2854](https://github.com/udecode/plate/pull/2854) by [@MarcosPereira1] –
+  - Fix issue [#2794](https://github.com/udecode/plate/issues/2794): The problem involved unexpected behavior when users attempted to perform a specific action within the editor. The implemented solution corrects this behavior by adjusting the editor's internal state management, ensuring that the action now produces the expected outcome without causing any side effects.
+
