@@ -5,14 +5,16 @@ import { PlateEditor } from '../types/PlateEditor';
 import { DOMHandlers, HandlerReturnType } from '../types/plugin/DOMHandlers';
 import { TEditableProps } from '../types/slate-react/TEditableProps';
 
-export const convertDomEventToSyntheticEvent = (domEvent: Event) => {
-  let propagationStopped = false 
+export const convertDomEventToSyntheticEvent = (
+  domEvent: Event
+): React.SyntheticEvent<unknown, unknown> => {
+  let propagationStopped = false
 
   const syntheticEvent = {
     ...domEvent,
     nativeEvent: domEvent,
-    currentTarget: domEvent.currentTarget as EventTarget,
-    target: domEvent.target as EventTarget,
+    currentTarget: domEvent.currentTarget as unknown as EventTarget,
+    target: domEvent.target as unknown as EventTarget,
     bubbles: domEvent.bubbles,
     cancelable: domEvent.cancelable,
     defaultPrevented: domEvent.defaultPrevented,
@@ -27,7 +29,7 @@ export const convertDomEventToSyntheticEvent = (domEvent: Event) => {
       propagationStopped = true;
       domEvent.stopPropagation();
     },
-  };
+  } as unknown as React.SyntheticEvent<unknown, unknown>;
 
   return syntheticEvent;
 }
