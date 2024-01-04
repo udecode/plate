@@ -13,8 +13,8 @@ export const convertDomEventToSyntheticEvent = (
   return {
     ...domEvent,
     nativeEvent: domEvent,
-    currentTarget: domEvent.currentTarget as EventTarget,
-    target: domEvent.target as EventTarget,
+    currentTarget: domEvent.currentTarget!,
+    target: domEvent.target!,
     bubbles: domEvent.bubbles,
     cancelable: domEvent.cancelable,
     defaultPrevented: domEvent.defaultPrevented,
