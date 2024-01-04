@@ -5,7 +5,9 @@ import { PlateEditor } from '../types/PlateEditor';
 import { DOMHandlers, HandlerReturnType } from '../types/plugin/DOMHandlers';
 import { TEditableProps } from '../types/slate-react/TEditableProps';
 
-function convertDomEventToSyntheticEvent(domEvent: Event) {
+export const convertDomEventToSyntheticEvent = (domEvent: Event) => {
+  let propagationStopped = false 
+
   const syntheticEvent = {
     ...domEvent,
     nativeEvent: domEvent,
@@ -19,9 +21,12 @@ function convertDomEventToSyntheticEvent(domEvent: Event) {
     timeStamp: domEvent.timeStamp,
     type: domEvent.type,
     isDefaultPrevented: () => domEvent.defaultPrevented,
-    isPropagationStopped: () => false,
+    isPropagationStopped: () => propagationStopped,
     preventDefault: () => domEvent.preventDefault(),
-    stopPropagation: () => domEvent.stopPropagation(),
+    stopPropagation: () => {
+      propagationStopped = true;
+      domEvent.stopPropagation();
+    },
   };
 
   return syntheticEvent;
