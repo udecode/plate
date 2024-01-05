@@ -38,8 +38,8 @@ export type ModifyDeep<A extends AnyObject, B extends DeepPartialAny<A>> = {
   [K in keyof A]: B[K] extends never
     ? A[K]
     : B[K] extends AnyObject
-    ? ModifyDeep<A[K], B[K]>
-    : B[K];
+      ? ModifyDeep<A[K], B[K]>
+      : B[K];
 } & (A extends AnyObject ? Omit<B, keyof A> : A);
 
 export type PartialPick<T, K extends keyof T> = {

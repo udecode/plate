@@ -36,5 +36,6 @@ export const createDeserializeMdPlugin =
     options: {
       elementRules: remarkDefaultElementRules,
       textRules: remarkDefaultTextRules,
+      indentList: false,
     },
   });
