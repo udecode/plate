@@ -59,7 +59,7 @@ export type PlateStoreState<
 
   /**
    * Whether the editor is primary. If no editor is active, then
-   * PlateController will use the first primary editor to mount.
+   * PlateController will use the first-mounted primary editor.
    * @default true
    */
   primary: boolean;
