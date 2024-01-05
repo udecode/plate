@@ -9,7 +9,7 @@ export const useEditorMounted = (
   options: UsePlateEditorStoreOptions = {}
 ): boolean => {
   return !!usePlateSelectors(id, {
-    debugHookName: 'useEditorReadOnly',
+    debugHookName: 'useEditorMounted',
     ...options,
   }).isMounted();
 };
