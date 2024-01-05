@@ -23,13 +23,13 @@ export type PlateStoreState<
   /**
    * A unique id used as a provider scope.
    * Use it if you have multiple `Plate` in the same React tree.
-   * @default PLATE_SCOPE
+   * @default random id
    */
   id: PlateId;
 
   /**
    * Slate editor reference.
-   * @default pipe(createTEditor(), withPlate({ id, plugins, options, components }))
+   * @default createPlateFallbackEditor()
    */
   editor: E;
 
@@ -56,6 +56,13 @@ export type PlateStoreState<
 
   // Whether the editor is read-only.
   readOnly: boolean;
+
+  /**
+   * Whether the editor is primary. If no editor is active, then
+   * PlateController will use the first primary editor to mount.
+   * @default true
+   */
+  primary: boolean;
 
   /**
    * Version incremented on each editor change.

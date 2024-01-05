@@ -2,38 +2,28 @@ import { Value } from '@udecode/slate';
 import { isDefined } from '@udecode/utils';
 
 import { PlateProps } from '../components/index';
-import { createPrevSelectionPlugin, KEY_PREV_SELECTION } from '../plugins';
 import {
   createDeserializeAstPlugin,
-  KEY_DESERIALIZE_AST,
-} from '../plugins/createDeserializeAstPlugin';
-import {
-  createEditorProtocolPlugin,
-  KEY_EDITOR_PROTOCOL,
-} from '../plugins/createEditorProtocolPlugin';
-import {
-  createEventEditorPlugin,
-  KEY_EVENT_EDITOR,
-} from '../plugins/createEventEditorPlugin';
-import { createHistoryPlugin } from '../plugins/createHistoryPlugin';
-import {
-  createInlineVoidPlugin,
-  KEY_INLINE_VOID,
-} from '../plugins/createInlineVoidPlugin';
-import {
-  createInsertDataPlugin,
-  KEY_INSERT_DATA,
-} from '../plugins/createInsertDataPlugin';
-import { createLengthPlugin, KEY_LENGTH } from '../plugins/createLengthPlugin';
-import {
-  createNodeFactoryPlugin,
-  KEY_NODE_FACTORY,
-} from '../plugins/createNodeFactoryPlugin';
-import { createReactPlugin } from '../plugins/createReactPlugin';
-import {
   createDeserializeHtmlPlugin,
+  createEditorProtocolPlugin,
+  createEventEditorPlugin,
+  createHistoryPlugin,
+  createInlineVoidPlugin,
+  createInsertDataPlugin,
+  createLengthPlugin,
+  createNodeFactoryPlugin,
+  createPrevSelectionPlugin,
+  createReactPlugin,
+  KEY_DESERIALIZE_AST,
   KEY_DESERIALIZE_HTML,
-} from '../plugins/html-deserializer/createDeserializeHtmlPlugin';
+  KEY_EDITOR_PROTOCOL,
+  KEY_EVENT_EDITOR,
+  KEY_INLINE_VOID,
+  KEY_INSERT_DATA,
+  KEY_LENGTH,
+  KEY_NODE_FACTORY,
+  KEY_PREV_SELECTION,
+} from '../plugins';
 import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin } from '../types/plugin/PlatePlugin';
 import { flattenDeepPlugins } from './flattenDeepPlugins';

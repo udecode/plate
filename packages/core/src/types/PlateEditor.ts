@@ -35,5 +35,12 @@ export type PlateEditor<V extends Value = Value> = TEditor<V> &
      */
     childrenFactory: () => V;
 
+    /**
+     * Whether the editor is a fallback editor.
+     * @see {@link createPlateFallbackEditor}
+     * @default false
+     */
+    isFallback: boolean;
+
     currentKeyboardEvent: React.KeyboardEvent | null;
   };

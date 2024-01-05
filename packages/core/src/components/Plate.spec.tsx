@@ -6,7 +6,7 @@ import {
   usePlateSelectors,
 } from '@udecode/plate-common';
 
-import { PLATE_SCOPE } from '../stores/index';
+import { PlateController, usePlateEditorStore } from '../stores';
 import { Plate } from './Plate';
 
 describe('Plate', () => {
@@ -27,24 +27,36 @@ describe('Plate', () => {
     });
     describe('when editor is not defined', () => {
       it('should be default', async () => {
-        const wrapper = ({ children }: any) => <Plate>{children}</Plate>;
+        const wrapper = ({ children }: any) => (
+          <Plate id="test1">
+            <Plate id="test2">{children}</Plate>
+          </Plate>
+        );
+
         const { result } = renderHook(() => useEditorRef(), {
           wrapper,
         });
 
-        expect(result.current.id).toBe(PLATE_SCOPE.toString());
+        expect(result.current.id).toBe('test2');
       });
     });
     describe('when id is defined', () => {
       it('should be id', async () => {
         const wrapper = ({ children }: any) => (
-          <Plate id="test">{children}</Plate>
+          <Plate id="test1">
+            <Plate id="test2">{children}</Plate>
+          </Plate>
         );
-        const { result } = renderHook(() => useEditorRef('test'), {
+
+        const { result: result1 } = renderHook(() => useEditorRef('test1'), {
+          wrapper,
+        });
+        const { result: result2 } = renderHook(() => useEditorRef('test2'), {
           wrapper,
         });
 
-        expect(result.current.id).toBe('test');
+        expect(result1.current.id).toBe('test1');
+        expect(result2.current.id).toBe('test2');
       });
     });
   });
@@ -224,19 +236,75 @@ describe('Plate', () => {
         expect(result.current).toBe('test');
       });
     });
+  });
 
-    describe('when Plate with id > Plate without id', () => {
-      it('should be that id', () => {
+  describe('usePlateEditorStore', () => {
+    const getStore = (wrapper: any) =>
+      renderHook(() => usePlateEditorStore(), { wrapper }).result.current;
+
+    const getId = (wrapper: any) =>
+      renderHook(() => usePlateSelectors().id(), { wrapper }).result.current;
+
+    const getIsFallback = (wrapper: any) =>
+      renderHook(() => useEditorRef().isFallback, { wrapper }).result.current;
+
+    describe('when Plate exists', () => {
+      it('returns the store', () => {
         const wrapper = ({ children }: any) => (
-          <Plate id="test">
-            <Plate>{children}</Plate>
-          </Plate>
+          <Plate id="test">{children}</Plate>
         );
-        const { result } = renderHook(() => usePlateSelectors().id(), {
-          wrapper,
+
+        expect(getStore(wrapper)).toBeDefined();
+        expect(getId(wrapper)).toBe('test');
+        expect(getIsFallback(wrapper)).toBe(false);
+      });
+    });
+
+    describe('when Plate does not exist', () => {
+      describe('when PlateController exists', () => {
+        describe('when PlateController returns a store', () => {
+          it('returns the store', () => {
+            const EXPECTED_STORE = 'expected store' as any;
+
+            const wrapper = ({ children }: any) => (
+              <PlateController
+                editorStores={{
+                  test: EXPECTED_STORE,
+                }}
+                activeId="test"
+              >
+                {children}
+              </PlateController>
+            );
+
+            expect(getStore(wrapper)).toBe(EXPECTED_STORE);
+          });
         });
 
-        expect(result.current).toBe(PLATE_SCOPE);
+        describe('when PlateController returns null', () => {
+          it('returns the fallback store', () => {
+            const wrapper = ({ children }: any) => (
+              <PlateController
+                editorStores={{
+                  test: null,
+                }}
+                activeId="test"
+              >
+                {children}
+              </PlateController>
+            );
+
+            expect(getStore(wrapper)).toBeDefined();
+            expect(getIsFallback(wrapper)).toBe(true);
+          });
+        });
+      });
+
+      describe('when PlateController does not exist', () => {
+        it('throws an error', () => {
+          const wrapper = ({ children }: any) => <>{children}</>;
+          expect(() => getStore(wrapper)).toThrowError();
+        });
       });
     });
   });

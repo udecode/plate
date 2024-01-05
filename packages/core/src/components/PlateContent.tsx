@@ -7,6 +7,7 @@ import { TEditableProps } from '../types/slate-react/TEditableProps';
 import { EditorMethodsEffect } from './EditorMethodsEffect';
 import { EditorRefEffect } from './EditorRefEffect';
 import { EditorStateEffect } from './EditorStateEffect';
+import { PlateControllerEffect } from './PlateControllerEffect';
 import { PlateSlate } from './PlateSlate';
 
 export type PlateContentProps = TEditableProps & {
@@ -81,6 +82,7 @@ const PlateContent = React.forwardRef(
         <EditorMethodsEffect id={id} />
         <EditorStateEffect id={id} />
         <EditorRefEffect id={id} />
+        <PlateControllerEffect id={id} />
 
         {afterEditable}
       </>
