@@ -33,7 +33,7 @@ export const PlateControllerEffect = ({
   const store = usePlateStore(id).store();
 
   const primary = usePlateSelectors(id).primary();
-  const setPrimaryEdtorIds = usePlateControllerActions().primaryEditorIds({
+  const setPrimaryEditorIds = usePlateControllerActions().primaryEditorIds({
     warnIfNoStore: false,
   });
 
@@ -53,13 +53,13 @@ export const PlateControllerEffect = ({
 
   React.useEffect(() => {
     if (primary) {
-      setPrimaryEdtorIds((ids) => [...ids, id]);
+      setPrimaryEditorIds((ids) => [...ids, id]);
 
       return () => {
-        setPrimaryEdtorIds((ids) => ids.filter((i) => i !== id));
+        setPrimaryEditorIds((ids) => ids.filter((i) => i !== id));
       };
     }
-  }, [id, primary, setPrimaryEdtorIds]);
+  }, [id, primary, setPrimaryEditorIds]);
 
   React.useEffect(() => {
     if (id && focused) {
