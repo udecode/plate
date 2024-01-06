@@ -30,7 +30,7 @@ import { ELEMENT_IMAGE } from '@udecode/plate-media';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 
 import { remarkTransformElementChildren } from './remarkTransformElementChildren';
-import { RemarkElementRules } from './types';
+import { MdastNode, RemarkElementRules } from './types';
 
 // FIXME: underline, subscript superscript not yet supported by remark-slate
 export const remarkDefaultElementRules: RemarkElementRules<Value> = {
@@ -52,13 +52,44 @@ export const remarkDefaultElementRules: RemarkElementRules<Value> = {
     },
   },
   list: {
-    transform: (node, options) => ({
-      type: getPluginType(
-        options.editor,
-        node.ordered ? ELEMENT_OL : ELEMENT_UL
-      ),
-      children: remarkTransformElementChildren(node, options),
-    }),
+    transform: (node, options) => {
+      if (options.indentList) {
+        const listStyleType = node.ordered ? 'decimal' : 'disc';
+
+        const parseListItems = (
+          _node: MdastNode,
+          listItems: TElement[] = [],
+          indent = 1
+        ) => {
+          _node.children!.forEach((listItem) => {
+            const [paragraph, ...subLists] = listItem.children!;
+
+            listItems.push({
+              type: getPluginType(options.editor, ELEMENT_PARAGRAPH),
+              listStyleType,
+              indent,
+              children: remarkTransformElementChildren(paragraph, options),
+            });
+
+            subLists.forEach((subList) => {
+              parseListItems(subList, listItems, indent + 1);
+            });
+          });
+
+          return listItems;
+        };
+
+        return parseListItems(node);
+      } else {
+        return {
+          type: getPluginType(
+            options.editor,
+            node.ordered ? ELEMENT_OL : ELEMENT_UL
+          ),
+          children: remarkTransformElementChildren(node, options),
+        };
+      }
+    },
   },
   listItem: {
     transform: (node, options) => ({

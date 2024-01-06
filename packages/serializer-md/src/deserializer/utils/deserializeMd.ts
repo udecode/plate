@@ -14,10 +14,10 @@ export const deserializeMd = <V extends Value>(
   editor: PlateEditor<V>,
   data: string
 ) => {
-  const { elementRules, textRules } = getPluginOptions<DeserializeMdPlugin, V>(
-    editor,
-    KEY_DESERIALIZE_MD
-  );
+  const { elementRules, textRules, indentList } = getPluginOptions<
+    DeserializeMdPlugin,
+    V
+  >(editor, KEY_DESERIALIZE_MD);
 
   const tree: any = unified()
     .use(markdown)
@@ -25,6 +25,7 @@ export const deserializeMd = <V extends Value>(
       editor,
       elementRules,
       textRules,
+      indentList,
     } as unknown as RemarkPluginOptions<V>)
     .processSync(data);
 
