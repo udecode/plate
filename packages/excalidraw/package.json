@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-excalidraw",
-  "version": "29.0.1",
+  "version": "29.1.0",
   "description": "Excalidraw plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@excalidraw/excalidraw": "0.12.0",
-    "@udecode/plate-common": "29.0.1"
+    "@udecode/plate-common": "29.1.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

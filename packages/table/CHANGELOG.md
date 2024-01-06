@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 29.1.0
+
+### Patch Changes
+
+- [#2860](https://github.com/udecode/plate/pull/2860) by [@johnrazeur](https://github.com/johnrazeur) – Remove unused code from withDeleteTable
+
 ## 29.0.1
 
 ## 29.0.0
