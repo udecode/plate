@@ -1,3 +1,11 @@
+# 30.0.0
+
+## @udecode/plate-table@30.0.0
+
+### Major Changes
+
+-   [#2867](https://github.com/udecode/plate/pull/2867) by [@12joan](https://github.com/12joan) – Fix: TableProvider is incorrectly shared by all tables in the editor. TableProvider must now be rendered as part of TableElement.
+
 # 29.0.0
 
 ## @udecode/plate-utils@29.0.0
