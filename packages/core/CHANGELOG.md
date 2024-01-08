@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 29.1.0
+
+### Patch Changes
+
+- [#2854](https://github.com/udecode/plate/pull/2854) by [@MarcosPereira1](https://github.com/MarcosPereira1) – Ensure that beforeinput event is handled as a React.SyntheticEvent rather than a native DOM event
+
 ## 29.0.1
 
 ## 29.0.0

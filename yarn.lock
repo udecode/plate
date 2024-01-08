@@ -15794,17 +15794,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"next-usequerystate@npm:^1.13.2":
-  version: 1.13.2
-  resolution: "next-usequerystate@npm:1.13.2"
-  dependencies:
-    mitt: "npm:^3.0.1"
-  peerDependencies:
-    next: ">=13.4 <14.0.2 || ^14.0.3"
-  checksum: 983b726ccc93abc5734773fa82c4b2d53d1cc6288bdc7e7ffb2fe1288800eafd6115ebb8d52e42a6aa0dc08f75cf3134301796f35d86c4c7c140805fc5757711
-  languageName: node
-  linkType: hard
-
 "next@npm:14.0.4":
   version: 14.0.4
   resolution: "next@npm:14.0.4"
@@ -16064,6 +16053,17 @@ __metadata:
   dependencies:
     boolbase: "npm:^1.0.0"
   checksum: 5fee7ff309727763689cfad844d979aedd2204a817fbaaf0e1603794a7c20db28548d7b024692f953557df6ce4a0ee4ae46cd8ebd9b36cfb300b9226b567c479
+  languageName: node
+  linkType: hard
+
+"nuqs@npm:^1.14.0":
+  version: 1.14.0
+  resolution: "nuqs@npm:1.14.0"
+  dependencies:
+    mitt: "npm:^3.0.1"
+  peerDependencies:
+    next: ">=13.4 <14.0.2 || ^14.0.3"
+  checksum: dbc8e8223ff208e586fc9e4e8cecc83c53cd66d2969c07897f35da4908dee35e3220f584d4ca5edb73fd8703c08e73d1a525f6afc1a913383d2d6188aab169aa
   languageName: node
   linkType: hard
 
@@ -21697,7 +21697,7 @@ __metadata:
     next: "npm:14.0.4"
     next-contentlayer: "npm:0.3.4"
     next-themes: "npm:^0.2.1"
-    next-usequerystate: "npm:^1.13.2"
+    nuqs: "npm:^1.14.0"
     postcss: "npm:^8.4.25"
     prism-react-renderer: "npm:^1.3.5"
     react: "npm:^18.2.0"
