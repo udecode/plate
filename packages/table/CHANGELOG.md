@@ -4,7 +4,7 @@
 
 ### Major Changes
 
-- [#2867](https://github.com/udecode/plate/pull/2867) by [@12joan](https://github.com/12joan) – Fix: TableProvider is incorrectly shared by all tables in the editor. TableProvider must now be rendered as part of TableElement.
+- [#2867](https://github.com/udecode/plate/pull/2867) by [@12joan](https://github.com/12joan) – Fix: in v28, `TableProvider` was incorrectly shared by all tables in the editor. `TableProvider` must now be rendered as part of `TableElement`.
 
 ### Patch Changes
 
