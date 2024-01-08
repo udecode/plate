@@ -37,8 +37,8 @@ export const ToolbarSeparator = withCn(
 );
 
 export const ToolbarButton = withRef<
-  typeof ToolbarPrimitive.Button,
-  Omit<ComponentPropsWithoutRef<typeof Toggle>, 'type'> & {
+  React.ComponentType<Omit<typeof ToolbarPrimitive.Button, 'value'>>,
+  Omit<ComponentPropsWithoutRef<typeof Toggle>, 'type' | 'value'> & {
     buttonType?: 'button' | 'toggle';
     pressed?: boolean;
     tooltip?: ReactNode;
@@ -53,7 +53,6 @@ export const ToolbarButton = withRef<
       isDropdown,
       children,
       pressed,
-      value,
       tooltip,
       ...props
     },
