@@ -1,10 +1,27 @@
+# 29.0.0
+
+## @udecode/plate-utils@29.0.0
+
+### Major Changes
+
+-   [#2829](https://github.com/udecode/plate/pull/2829) by [@zbeyens](https://github.com/zbeyens) –
+    -   Moved `withProps` to `@udecode/cn`
+    -   Moved `PortalBody`, `Text`, `Box`, `createPrimitiveComponent`, `createSlotComponent`, `withProviders` to `@udecode/react-utils`
+    -   Removed `getRootProps` (unused)
+
 # 28.0.0
 
 ## @udecode/plate-core@28.0.0
 
 ### Major Changes
 
-- `usePlateSelectors`, `usePlateActions` and `usePlateStates` no longer accept generic type arguments. If custom types are required, cast the resulting values at the point of use, or use hooks like `useEditorRef` that still provide generics.
+-   [`822f6f56b`](https://github.com/udecode/plate/commit/822f6f56be526a6e26f904b9e767c0bc09f1e28b) by [@12joan](https://github.com/12joan) –
+    -   Upgrade to `jotai-x@1.1.0`
+    -   Add `useEditorSelector` hook to only re-render when a specific property of `editor` changes
+    -   Remove `{ fn: ... }` workaround for jotai stores that contain functions
+    -   Breaking change: `usePlateSelectors`, `usePlateActions` and `usePlateStates` no longer accept generic type arguments. If custom types are required, cast the resulting values at the point of use, or use hooks like `useEditorRef` that still provide generics.
+    -   Fix: `readOnly` on Plate store defaults to false and overrides `readOnly` on PlateContent
+    -   Fix: Plate ignores plugins passed via `editor`
 
 # 27.0.0
 
