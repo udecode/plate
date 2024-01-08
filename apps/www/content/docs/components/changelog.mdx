@@ -10,6 +10,25 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ## January 2024 #7
 
+### January 8 #7.2
+
+- `table-element` - TableProvider must now be rendered above TableElement
+
+```tsx
+// Before
+export const TableElement = withRef<typeof PlateElement>(({ className, children, ...props }, ref) => {
+	// ...
+});
+
+// After
+export const TableElement = withHOC(
+  TableProvider,
+  withRef<typeof PlateElement>(({ className, children, ...props }, ref) => {
+    // ...
+  })
+);
+```
+
 ### January 2 #7.1
 
 - `dropdown-menu` - fix: do not exclude `className` in `DropdownMenuContent`
