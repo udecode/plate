@@ -9,9 +9,11 @@ import {
   useEditorSelector,
   useElement,
   useRemoveNodeButton,
+  withHOC,
 } from '@udecode/plate-common';
 import {
   mergeTableCells,
+  TableProvider,
   TTableElement,
   unmergeTableCells,
   useTableBordersDropdownMenuContentState,
@@ -193,8 +195,9 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
   }
 );
 
-export const TableElement = withRef<typeof PlateElement>(
-  ({ className, children, ...props }, ref) => {
+export const TableElement = withHOC(
+  TableProvider,
+  withRef<typeof PlateElement>(({ className, children, ...props }, ref) => {
     const { colSizes, isSelectingCell, minColumnWidth, marginLeft } =
       useTableElementState();
     const { props: tableProps, colGroupProps } = useTableElement();
@@ -232,5 +235,5 @@ export const TableElement = withRef<typeof PlateElement>(
         </div>
       </TableFloatingToolbar>
     );
-  }
+  })
 );
