@@ -6368,9 +6368,11 @@ __metadata:
     clsx: "npm:^1.2.1"
     is-hotkey: "npm:^0.2.0"
     jotai: "npm:^2.6.0"
-    jotai-x: "npm:^1.1.0"
+    jotai-optics: "npm:0.3.1"
+    jotai-x: "npm:^1.2.1"
     lodash: "npm:^4.17.21"
     nanoid: "npm:^3.3.6"
+    optics-ts: "npm:2.4.1"
     react-hotkeys-hook: "npm:^4.4.1"
     use-deep-compare: "npm:^1.1.0"
     zustand: "npm:^4.4.7"
@@ -13726,9 +13728,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jotai-x@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "jotai-x@npm:1.1.0"
+"jotai-optics@npm:0.3.1":
+  version: 0.3.1
+  resolution: "jotai-optics@npm:0.3.1"
+  peerDependencies:
+    jotai: ">=1.11.0"
+    optics-ts: "*"
+  checksum: eee46c1bd1e29e538f99d8018823f80d6982562d207b058046fb834f2f9558300c85d5fe79069ace22308c7c568a1e3e40dcb2bbe562a7613e283904baa8abe8
+  languageName: node
+  linkType: hard
+
+"jotai-x@npm:^1.2.1":
+  version: 1.2.1
+  resolution: "jotai-x@npm:1.2.1"
   peerDependencies:
     "@types/react": ">=17.0.0"
     jotai: ">=2.0.0"
@@ -13738,7 +13750,7 @@ __metadata:
       optional: true
     react:
       optional: true
-  checksum: 1f42e706f9f7ba28ffd713623672ba46b00afb1b5ee62507948aeacf2f58a1b9074c30445757f387bae5a278050ec0b82b624a59aafdd732403c1d3b64eb87af
+  checksum: 7906e626b332ef7c1d42d4d7fdf54a19f5c195a944c1ea7cee8101d668298860d34885a35fa6a82998b8b78d96171679e58fdec7d28df0c5e3930bca82ad2d73
   languageName: node
   linkType: hard
 
@@ -16246,6 +16258,13 @@ __metadata:
     is-inside-container: "npm:^1.0.0"
     is-wsl: "npm:^2.2.0"
   checksum: 8073ec0dd8994a7a7d9bac208bd17d093993a65ce10f2eb9b62b6d3a91c9366ae903938a237c275493c130171d339f6dcbdd2a2de7e32953452c0867b97825af
+  languageName: node
+  linkType: hard
+
+"optics-ts@npm:2.4.1":
+  version: 2.4.1
+  resolution: "optics-ts@npm:2.4.1"
+  checksum: 104865a15a4466a3a4fbb23966118337b0ab89737a599a81ea35d47d7691e96c0c29fa0b8e8f6303b2e772b096deebb126b1ab519cbffaa2ca01b3e220bca252
   languageName: node
   linkType: hard
 

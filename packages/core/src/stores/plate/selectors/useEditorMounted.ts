@@ -4,16 +4,12 @@ import {
   usePlateSelectors,
 } from '../createPlateStore';
 
-/**
- * Whether the editor is read-only.
- * You can also use `useReadOnly` from `slate-react` in node components.
- */
-export const useEditorReadOnly = (
+export const useEditorMounted = (
   id?: PlateId,
   options: UsePlateEditorStoreOptions = {}
 ): boolean => {
   return !!usePlateSelectors(id, {
-    debugHookName: 'useEditorReadOnly',
+    debugHookName: 'useEditorMounted',
     ...options,
-  }).readOnly();
+  }).isMounted();
 };

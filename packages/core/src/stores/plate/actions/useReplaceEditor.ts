@@ -1,16 +1,30 @@
 import React from 'react';
 
 import { createPlateEditor } from '../../../utils/index';
-import { PlateId, usePlateActions } from '../createPlateStore';
+import {
+  PlateId,
+  usePlateActions,
+  UsePlateEditorStoreOptions,
+} from '../createPlateStore';
 import { useEditorRef } from '../selectors/index';
 
 /**
  * Replace plate editor with the same id and plugins.
  * Remounts `PlateContent`.
  */
-export const useReplaceEditor = (id?: PlateId) => {
-  const editor = useEditorRef(id);
-  const setEditor = usePlateActions(id).editor();
+export const useReplaceEditor = (
+  id?: PlateId,
+  options: UsePlateEditorStoreOptions = {}
+) => {
+  const editor = useEditorRef(id, {
+    debugHookName: 'useReplaceEditor',
+    ...options,
+  });
+
+  const setEditor = usePlateActions(id, {
+    debugHookName: 'useReplaceEditor',
+    ...options,
+  }).editor();
 
   return React.useCallback(() => {
     const newEditor = createPlateEditor({

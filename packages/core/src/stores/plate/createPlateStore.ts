@@ -1,9 +1,16 @@
+import React from 'react';
 import { Value } from '@udecode/slate';
-import { atom } from 'jotai';
+import { atom, createStore } from 'jotai';
+import { JotaiStore } from 'jotai-x';
 
 import { createAtomStore } from '../../libs/jotai';
 import { PlateEditor } from '../../types/PlateEditor';
 import { PlateStoreState } from '../../types/PlateStore';
+import { createPlateFallbackEditor } from '../../utils';
+import {
+  usePlateControllerEditorStore,
+  usePlateControllerExists,
+} from '../plate-controller';
 
 /**
  * A unique id used as a provider scope.
@@ -20,7 +27,7 @@ export const createPlateStore = <
   E extends PlateEditor<V> = PlateEditor<V>,
 >({
   decorate = null,
-  editor = null as any,
+  editor = createPlateFallbackEditor<V, E>(),
   id,
   isMounted = false,
   versionDecorate = 1,
@@ -31,6 +38,7 @@ export const createPlateStore = <
   plugins = [],
   rawPlugins = [],
   readOnly = null,
+  primary = true,
   renderElement = null,
   renderLeaf = null,
   value = null as any,
@@ -50,6 +58,7 @@ export const createPlateStore = <
       plugins,
       rawPlugins,
       readOnly,
+      primary,
       renderElement,
       renderLeaf,
       value,
@@ -76,11 +85,93 @@ export const {
   PlateProvider: PlateStoreProvider,
 } = createPlateStore();
 
-export const usePlateSelectors = (id?: PlateId) => usePlateStore(id).get;
-export const usePlateActions = (id?: PlateId) => usePlateStore(id).set;
-export const usePlateStates = (id?: PlateId) => usePlateStore(id).use;
+export interface UsePlateEditorStoreOptions {
+  debugHookName?: string;
+}
+
+export const usePlateEditorStore = (
+  id?: PlateId,
+  { debugHookName = 'usePlateEditorStore' }: UsePlateEditorStoreOptions = {}
+): JotaiStore => {
+  // Try to fetch the store from a Plate provider
+  const localStore = usePlateStore(id).store({ warnIfNoStore: false }) ?? null;
+
+  /**
+   * To preserve hook order, only use `localStore` if it was present on first
+   * render. This lets us call `usePlateControllerEditorStore` conditionally.
+   */
+  const [localStoreExists] = React.useState(!!localStore);
+
+  // If no store was found, try to fetch the store from a PlateController
+  const store = localStoreExists
+    ? localStore
+    : // eslint-disable-next-line react-hooks/rules-of-hooks
+      usePlateControllerEditorStore(id);
+
+  /**
+   * If we still have no store, there are two possibilities.
+   *
+   * Case 1: There is neither a Plate nor a PlateController above us in the
+   * tree. In this case, throw an error, since calling the hook will never
+   * work.
+   *
+   * Case 2: There is a PlateController, but it has no active editor. In this
+   * case, return a fallback store until an editor becomes active.
+   */
+  const plateControllerExists = usePlateControllerExists();
+  const fallbackStore = React.useMemo(() => createStore(), []);
+
+  if (!store) {
+    if (plateControllerExists) {
+      return fallbackStore;
+    }
+
+    throw new Error(
+      `${debugHookName} must be used inside a Plate or PlateController`
+    );
+  }
+
+  return store;
+};
+
+export const usePlateSelectors = (
+  id?: PlateId,
+  options?: UsePlateEditorStoreOptions
+) => {
+  const store = usePlateEditorStore(id, {
+    debugHookName: 'usePlateSelectors',
+    ...options,
+  });
+
+  return usePlateStore({ store }).get;
+};
+
+export const usePlateActions = (
+  id?: PlateId,
+  options?: UsePlateEditorStoreOptions
+) => {
+  const store = usePlateEditorStore(id, {
+    debugHookName: 'usePlateActions',
+    ...options,
+  });
+
+  return usePlateStore({ store }).set;
+};
+
+export const usePlateStates = (
+  id?: PlateId,
+  options?: UsePlateEditorStoreOptions
+) => {
+  const store = usePlateEditorStore(id, {
+    debugHookName: 'usePlateStates',
+    ...options,
+  });
+
+  return usePlateStore({ store }).use;
+};
 
 /**
  * Get the closest `Plate` id.
  */
-export const usePlateId = (): PlateId => usePlateSelectors().id();
+export const usePlateId = (): PlateId =>
+  usePlateSelectors(undefined, { debugHookName: 'usePlateId' }).id();
