@@ -57,7 +57,7 @@ const DropdownMenuContentVariants = withProps(DropdownMenuPrimitive.Content, {
 
 export const DropdownMenuContent = withRef<
   typeof DropdownMenuPrimitive.Content
->(({ className, ...props }, ref) => (
+>(({ ...props }, ref) => (
   <DropdownMenuPrimitive.Portal>
     <DropdownMenuContentVariants ref={ref} {...props} />
   </DropdownMenuPrimitive.Portal>
