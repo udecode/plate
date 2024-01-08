@@ -1,5 +1,15 @@
 # @udecode/plate-table
 
+## 30.0.0
+
+### Major Changes
+
+- [#2867](https://github.com/udecode/plate/pull/2867) by [@12joan](https://github.com/12joan) – Fix: in v28, `TableProvider` was incorrectly shared by all tables in the editor. `TableProvider` must now be rendered as part of `TableElement`.
+
+### Patch Changes
+
+- [#2867](https://github.com/udecode/plate/pull/2867) by [@12joan](https://github.com/12joan) – Fix: Row and column size overrides not being applied correctly
+
 ## 29.1.0
 
 ### Patch Changes
