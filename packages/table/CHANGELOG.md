@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 30.0.1
+
+### Patch Changes
+
+- [#2873](https://github.com/udecode/plate/pull/2873) by [@zbeyens](https://github.com/zbeyens) – Fix: merging empty cells should result into a single empty paragraph
+
 ## 30.0.0
 
 ### Major Changes
