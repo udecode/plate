@@ -7,7 +7,7 @@ export const someIndentList = <V extends Value>(
   type: string
 ) => {
   return (
-    editor.selection &&
+    !!editor.selection &&
     someNode(editor, {
       match: (n) => {
         const list = n[KEY_LIST_STYLE_TYPE];
