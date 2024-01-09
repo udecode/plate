@@ -758,7 +758,6 @@ export const docsConfig: DocsConfig = {
         customizerComponents.tableElement,
         customizerComponents.tableRowElement,
         customizerComponents.todoListElement,
-        customizerComponents.toggle,
         customizerComponents.toolbar,
         customizerComponents.tooltip,
         customizerComponents.turnIntoDropdownMenu,
