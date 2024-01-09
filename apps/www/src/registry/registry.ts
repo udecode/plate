@@ -522,17 +522,10 @@ const ui: Registry = [
     files: ['plate-ui/todo-list-element.tsx'],
   },
   {
-    name: 'toggle',
-    type: 'components:plate-ui',
-    dependencies: ['@radix-ui/react-toggle'],
-    registryDependencies: [],
-    files: ['plate-ui/toggle.tsx'],
-  },
-  {
     name: 'toolbar',
     type: 'components:plate-ui',
     dependencies: ['@radix-ui/react-toolbar'],
-    registryDependencies: ['tooltip', 'toggle', 'separator'],
+    registryDependencies: ['tooltip', 'separator'],
     files: ['plate-ui/toolbar.tsx'],
   },
   {

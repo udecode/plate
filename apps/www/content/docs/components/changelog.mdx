@@ -10,6 +10,16 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ## January 2024 #7
 
+### January 9 #7.3
+
+- `toolbar`
+  - `Toolbar`: replace `items-stretch` with `items-center` 
+  - use `toolbarButtonVariants` instead of `toggleVariants`
+  - fix `value` prop type bug
+  - uses now `withTooltip`, so replace `[data-state=on]` with `aria-checked` to avoid conflicts
+- `toggle`: removed as unused
+- `tooltip`: add `withTooltip`, which is used by `ToolbarButton`
+
 ### January 8 #7.2
 
 - `table-element` - TableProvider must now be rendered above TableElement
