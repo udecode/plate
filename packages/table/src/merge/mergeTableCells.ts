@@ -4,6 +4,7 @@ import {
   getPluginOptions,
   getPluginType,
   insertElements,
+  isElementEmpty,
   PlateEditor,
   removeNodes,
   Value,
@@ -72,7 +73,12 @@ export const mergeTableCells = <V extends Value = Value>(
     const contents = [];
     for (const cellEntry of cellEntries) {
       const [el] = cellEntry;
-      contents.push(...cloneDeep(el.children));
+      if (
+        el.children.length !== 1 ||
+        !isElementEmpty(editor, el.children[0] as any)
+      ) {
+        contents.push(...cloneDeep(el.children));
+      }
     }
 
     // Create a hash map where keys are col paths,
