@@ -644,7 +644,7 @@ export const Index: Record<string, any> = {
     'toolbar': {
       name: 'toolbar',
       type: 'components:plate-ui',
-      registryDependencies: ["tooltip","toggle","separator"],
+      registryDependencies: ["tooltip","separator"],
       files: ['registry/default/plate-ui/toolbar.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/toolbar')),
     },
