@@ -1,5 +1,7 @@
 # @udecode/plate-docx-serializer
 
+## 30.0.1
+
 ## 30.0.0
 
 ## 29.1.0
