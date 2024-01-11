@@ -146,6 +146,15 @@ export async function promptForConfig(
       initial: defaultConfig?.aliases['components'] ?? DEFAULT_COMPONENTS,
     },
     {
+      type: 'text',
+      name: 'plate-ui',
+      message: `Configure the import alias for ${highlight('plate-ui')}:`,
+      initial:
+        defaultConfig?.aliases['plate-ui'] ??
+        defaultConfig?.aliases['ui'] ??
+        DEFAULT_COMPONENTS,
+    },
+    {
       type: 'toggle',
       name: 'rsc',
       message: `Are you using ${highlight('React Server Components')}?`,
@@ -169,6 +178,7 @@ export async function promptForConfig(
     tsx: true,
     aliases: {
       components: options.components,
+      'plate-ui': options['plate-ui'],
     },
   });
 
