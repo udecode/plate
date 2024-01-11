@@ -1,5 +1,13 @@
 # @udecode/plate-ui
 
+## 30.1.0
+
+### Minor Changes
+
+- [#2877](https://github.com/udecode/plate/pull/2877) by [@zbeyens](https://github.com/zbeyens) –
+  - add support for `plate-components.json` to avoid conflict with shadcn's `components.json`. If `plate-components.json` does not exist, `components.json` will be used.
+  - add support for custom ui dir in `components.json`: use `aliases > plate-ui`.
+
 ## 29.0.0
 
 ### Minor Changes
