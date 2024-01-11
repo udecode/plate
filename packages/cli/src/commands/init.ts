@@ -12,6 +12,7 @@ import * as z from 'zod';
 
 import {
   DEFAULT_COMPONENTS,
+  DEFAULT_PLATE_UI,
   DEFAULT_TAILWIND_CONFIG,
   DEFAULT_TAILWIND_CSS,
   getConfig,
@@ -146,6 +147,12 @@ export async function promptForConfig(
       initial: defaultConfig?.aliases['components'] ?? DEFAULT_COMPONENTS,
     },
     {
+      type: 'text',
+      name: 'plate-ui',
+      message: `Configure the import alias for ${highlight('plate-ui')}:`,
+      initial: defaultConfig?.aliases['plate-ui'] ?? DEFAULT_PLATE_UI,
+    },
+    {
       type: 'toggle',
       name: 'rsc',
       message: `Are you using ${highlight('React Server Components')}?`,
@@ -169,6 +176,7 @@ export async function promptForConfig(
     tsx: true,
     aliases: {
       components: options.components,
+      'plate-ui': options['plate-ui'],
     },
   });
 
@@ -177,7 +185,7 @@ export async function promptForConfig(
       type: 'confirm',
       name: 'proceed',
       message: `Write configuration to ${highlight(
-        'components.json'
+        'plate-components.json'
       )}. Proceed?`,
       initial: true,
     });
@@ -189,8 +197,8 @@ export async function promptForConfig(
 
   // Write to file.
   logger.info('');
-  const spinner = ora(`Writing components.json...`).start();
-  const targetPath = path.resolve(cwd, 'components.json');
+  const spinner = ora(`Writing plate-components.json...`).start();
+  const targetPath = path.resolve(cwd, 'plate-components.json');
   await fs.writeFile(targetPath, JSON.stringify(config, null, 2), 'utf8');
   spinner.succeed();
 
