@@ -12,6 +12,7 @@ import * as z from 'zod';
 
 import {
   DEFAULT_COMPONENTS,
+  DEFAULT_PLATE_UI,
   DEFAULT_TAILWIND_CONFIG,
   DEFAULT_TAILWIND_CSS,
   getConfig,
@@ -149,10 +150,7 @@ export async function promptForConfig(
       type: 'text',
       name: 'plate-ui',
       message: `Configure the import alias for ${highlight('plate-ui')}:`,
-      initial:
-        defaultConfig?.aliases['plate-ui'] ??
-        defaultConfig?.aliases['ui'] ??
-        DEFAULT_COMPONENTS,
+      initial: defaultConfig?.aliases['plate-ui'] ?? DEFAULT_PLATE_UI,
     },
     {
       type: 'toggle',

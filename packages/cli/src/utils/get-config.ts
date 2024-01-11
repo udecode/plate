@@ -15,6 +15,7 @@ import { resolveImport } from './resolve-import';
  */
 
 export const DEFAULT_STYLE = 'default';
+export const DEFAULT_PLATE_UI = '@/components/plate-ui';
 export const DEFAULT_COMPONENTS = '@/components';
 export const DEFAULT_TAILWIND_CSS = 'src/styles/globals.css';
 export const DEFAULT_TAILWIND_CONFIG = 'tailwind.config.js';
