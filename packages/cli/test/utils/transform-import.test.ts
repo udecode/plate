@@ -8,9 +8,9 @@ test('transform import', async () => {
       filename: 'test.ts',
       raw: `import * as React from "react"
 import { Foo } from "bar"
-    import { Button } from "@/registry/new-york/ui/button"
+    import { Button } from "@/registry/default/plate-ui/button"
     import { Label} from "ui/label"
-    import { Box } from "@/registry/new-york/box"
+    import { Box } from "@/registry/default/box"
 
     import { cn } from "@udecode/cn"
     `,
@@ -31,9 +31,9 @@ import { Foo } from "bar"
       filename: 'test.ts',
       raw: `import * as React from "react"
 import { Foo } from "bar"
-    import { Button } from "@/registry/new-york/ui/button"
+    import { Button } from "@/registry/default/plate-ui/button"
     import { Label} from "ui/label"
-    import { Box } from "@/registry/new-york/box"
+    import { Box } from "@/registry/default/box"
 
     import { cn, foo, bar } from "@udecode/cn"
     `,
@@ -50,15 +50,95 @@ import { Foo } from "bar"
       filename: 'test.ts',
       raw: `import * as React from "react"
 import { Foo } from "bar"
-    import { Button } from "@/registry/new-york/ui/button"
+    import { Button } from "@/registry/default/plate-ui/button"
     import { Label} from "ui/label"
-    import { Box } from "@/registry/new-york/box"
+    import { Box } from "@/registry/default/box"
 
     import { cn } from "@udecode/cn"
     `,
       config: {
         aliases: {
           components: '~/src/components',
+        },
+      },
+    })
+  ).toMatchSnapshot();
+
+  expect(
+    await transform({
+      filename: 'test.ts',
+      raw: `import * as React from "react"
+import { Foo } from "bar"
+    import { Button } from "@/registry/default/plate-ui/button"
+    import { Label} from "ui/label"
+    import { Box } from "@/registry/default/box"
+    import { cn } from "@/lib/utils"
+    import { bar } from "@/lib/utils/bar"
+    `,
+      config: {
+        aliases: {
+          components: '~/src/components',
+          'plate-ui': '~/src/components',
+        },
+      },
+    })
+  ).toMatchSnapshot();
+
+  expect(
+    await transform({
+      filename: 'test.ts',
+      raw: `import * as React from "react"
+import { Foo } from "bar"
+    import { Button } from "@/registry/default/plate-ui/button"
+    import { Label} from "ui/label"
+    import { Box } from "@/registry/default/box"
+    import { cn } from "@/lib/utils"
+    import { bar } from "@/lib/utils/bar"
+    `,
+      config: {
+        aliases: {
+          components: '~/src/components',
+          'plate-ui': '~/src/plate-ui',
+        },
+      },
+    })
+  ).toMatchSnapshot();
+
+  expect(
+    await transform({
+      filename: 'test.ts',
+      raw: `import * as React from "react"
+import { Foo } from "bar"
+    import { Button } from "@/registry/default/plate-ui/button"
+    import { Label} from "ui/label"
+    import { Box } from "@/registry/default/box"
+    import { cn } from "@/lib/utils"
+    import { bar } from "@/lib/utils/bar"
+    `,
+      config: {
+        aliases: {
+          components: '~/src/components',
+          ui: '~/src/components',
+        },
+      },
+    })
+  ).toMatchSnapshot();
+
+  expect(
+    await transform({
+      filename: 'test.ts',
+      raw: `import * as React from "react"
+import { Foo } from "bar"
+    import { Button } from "@/registry/default/plate-ui/button"
+    import { Label} from "ui/label"
+    import { Box } from "@/registry/default/box"
+    import { cn } from "@/lib/utils"
+    import { bar } from "@/lib/utils/bar"
+    `,
+      config: {
+        aliases: {
+          components: '~/src/components',
+          ui: '~/src/ui',
         },
       },
     })

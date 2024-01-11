@@ -20,6 +20,9 @@
         },
         "cssVariables": {
           "type": "boolean"
+        },
+        "prefix": {
+          "type": "string"
         }
       },
       "required": ["config", "css", "baseColor", "cssVariables"]
@@ -31,6 +34,12 @@
       "type": "object",
       "properties": {
         "components": {
+          "type": "string"
+        },
+        "ui": {
+          "type": "string"
+        },
+        "plate-ui": {
           "type": "string"
         }
       },

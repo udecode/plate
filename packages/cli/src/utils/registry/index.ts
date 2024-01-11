@@ -120,13 +120,20 @@ export async function getItemTargetPath(
   item: Pick<z.infer<typeof registryItemWithContentSchema>, 'type'>,
   override?: string
 ) {
-  // Allow overrides for all items but ui.
-  if (override && item.type !== 'components:plate-ui') {
+  if (override) {
     return override;
   }
 
+  if (item.type === 'components:plate-ui' && config?.aliases['plate-ui']) {
+    return config.resolvedPaths['plate-ui'];
+  }
+
+  if (item.type === 'components:plate-ui' && config?.aliases['ui']) {
+    return config.resolvedPaths['ui'];
+  }
+
   const [parent, type] = item.type.split(':');
-  if (!(parent in config.resolvedPaths)) {
+  if (!config || !(parent in config.resolvedPaths)) {
     return null;
   }
 

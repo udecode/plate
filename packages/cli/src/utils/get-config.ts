@@ -39,6 +39,8 @@ export const rawConfigSchema = z.object({
   }),
   aliases: z.object({
     components: z.string(),
+    ui: z.string().optional(),
+    'plate-ui': z.string().optional(),
   }),
 });
 
@@ -49,6 +51,8 @@ export const configSchema = rawConfigSchema.extend({
     tailwindConfig: z.string(),
     tailwindCss: z.string(),
     components: z.string(),
+    ui: z.string(),
+    'plate-ui': z.string(),
   }),
 });
 
@@ -74,12 +78,20 @@ export async function resolveConfigPaths(cwd: string, config: RawConfig) {
     );
   }
 
+  const ui = config.aliases['ui']
+    ? await resolveImport(config.aliases['ui'], tsConfig)
+    : await resolveImport(config.aliases['components'], tsConfig);
+
   return configSchema.parse({
     ...config,
     resolvedPaths: {
       tailwindConfig: path.resolve(cwd, config.tailwind.config),
       tailwindCss: path.resolve(cwd, config.tailwind.css),
       components: await resolveImport(config.aliases['components'], tsConfig),
+      ui: ui,
+      'plate-ui': config.aliases['plate-ui']
+        ? await resolveImport(config.aliases['plate-ui'], tsConfig)
+        : ui,
     },
   });
 }
