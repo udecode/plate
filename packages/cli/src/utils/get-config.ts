@@ -8,7 +8,7 @@ import { resolveImport } from './resolve-import';
 /**
  * This module is primarily concerned with loading and validating a project's
  * configuration. It makes use of `cosmiconfig` to find and load a configuration
- * file, in this case, it's looking for a `components.json` file in the root
+ * file, in this case, it's looking for a `plate-components.json` or `components.json` file in the root
  * directory of your project. The schema for this config file is defined with
  * the `zod` library. In case there's no configuration file available, it
  * provides a set of default paths and configuration options.
@@ -22,8 +22,10 @@ export const DEFAULT_TAILWIND_CONFIG = 'tailwind.config.js';
 export const DEFAULT_TAILWIND_BASE_COLOR = 'slate';
 
 // TODO: Figure out if we want to support all cosmiconfig formats.
-// A simple components.json file would be nice.
-const explorer = cosmiconfig('components', {
+const explorerPlateComponents = cosmiconfig('components', {
+  searchPlaces: ['plate-components.json'],
+});
+const explorerComponents = cosmiconfig('components', {
   searchPlaces: ['components.json'],
 });
 
@@ -98,15 +100,22 @@ export async function resolveConfigPaths(cwd: string, config: RawConfig) {
 }
 
 export async function getRawConfig(cwd: string): Promise<RawConfig | null> {
+  let filename = 'plate-components';
+
   try {
-    const configResult = await explorer.search(cwd);
+    let configResult = await explorerPlateComponents.search(cwd);
 
     if (!configResult) {
-      return null;
+      filename = 'components';
+      configResult = await explorerComponents.search(cwd);
+
+      if (!configResult) {
+        return null;
+      }
     }
 
     return rawConfigSchema.parse(configResult.config);
   } catch (error) {
-    throw new Error(`Invalid configuration found in ${cwd}/components.json.`);
+    throw new Error(`Invalid configuration found in ${cwd}/${filename}.json.`);
   }
 }
