@@ -75,7 +75,7 @@ Use the **`useEditorRef`**, **`useEditorSelector`** or **`useEditorState`** hook
 
 You can call these hooks from any React component that is rendered as a descendant of the **`Plate`** component, including [Plugin Components](/docs/plugin-components).
 
-```tsx
+```tsx showLineNumbers {2}
 const Toolbar = () => {
   const boldActive = useEditorSelector((editor) => isMarkActive(editor, MARK_BOLD), []);
   // ...
@@ -136,7 +136,7 @@ export default () => (
 ```
 
 <Callout className="my-4">
-  **If **`editor`** is modified by reference, why include it in dependency
+  **If `editor` is modified by reference, why include it in dependency
   lists?**
   <br />
   Good question! Even though **`editor`** is usually modified by reference,
@@ -144,80 +144,64 @@ export default () => (
   as when the editor is reset.
 </Callout>
 
-## From an Ancestor
+## From a Sibling or Ancestor of Plate
 
-If you need to access the **`editor`** instance from an ancestor of **`PlateContent`**, wrapping the relevant components in a **`Plate`** is the preferred solution. If this is not an option, you can instead use the **`editorRef`** prop to pass a reference to the **`editor`** instance up the React component tree to where it is needed.
+If you need to access the **`editor`** outside of the **`Plate`** component, or if you're working with multiple editors and want to access whichever editor is currently active, you can use a **`PlateController`** component. **`PlateController`** is an optional component that can be rendered as an ancestor of one or more **`Plate`** components. For example, you can render a **`PlateController`** at the root of your app.
 
-The **`editorRef`** prop can be used with **`useRef`**, **`useState`**, or a custom ref callback. Regardless of which you use, you'll need to handle the case where **`editor`** is null. This happens when the editor hasn't had a chance to render yet or has unmounted.
+The **`PlateController`** will keep track of which editor is currently active. By default, the first mounted editor inside the **`PlateController`** will be used as the active editor (this can be disabled for individual editors by passing **`primary={false}`** to the **`Plate`** component). After that, every time an editor is focused, that editor becomes active. An editor remains active until another editor is focused or the active editor unmounts.
 
-### With a Ref Object
+Inside a **`PlateController`**, hooks like **`useEditorRef`** and **`useEditorSelector`** will return or operate on the currently active editor. If no editor is active, these hooks may return a fallback editor. This can happen under the following circumstances:
 
-```tsx showLineNumbers {2,21}
+- When no **`Plate`** component is mounted inside the **`PlateController`**
+- When all mounted **`Plate`** components are marked as non-primary
+- Temporarily while **`PlateContent`** is in the process of mounting
+
+The fallback editor is designed to ensure that code querying the **`editor`** produces sensible default values, the same as if they had been given an empty editor with no plugins. The fallback editor cannot be mutated, and will throw a runtime error if any state-changing operations are applied to it. To check if your component is accessing a real editor or a fallback editor, use the **`useEditorMounted`** hook (which returns false for a fallback editor), or check **`editor.isFallback`**.
+
+```tsx showLineNumbers {2-3,9,19}
+const Toolbar = () => {
+  const editor = useEditorState(); // Returns the active editor (or a fallback editor)
+  const isMounted = useEditorMounted(); // Returns false if no editor is mounted
+  // ...
+};
+
+const App = () => {
+  return (
+    <PlateController>
+      <Toolbar />
+
+      <Plate>
+        <PlateContent />
+      </Plate>
+
+      <Plate>
+        <PlateContent />
+      </Plate>
+    </PlateController>
+  );
+};
+```
+
+## From the Parent of Plate
+
+The **`editorRef`** prop is an older, alternative way of accessing the **`editor`** outside of **`Plate`**, and works best in cases where the **`editor`** instance must be accessed in the **`Plate`** component's parent. In all other cases, **`PlateController`** is the preferred solution (see above).
+
+The ref can be created with  **`useRef`**, the setter function of **`useState`**, or a custom ref callback. It is populated with the **`editor`** instance when **`Plate`** mounts, and **`null`** when **`Plate`** unmounts. Since the **`editor`** is unavailable during the first render, and may become unavailable if the **`Plate`** component unmounts, you must handle the case where **`editor`** is **`null`**.
+
+```tsx showLineNumbers {2,13}
 const App = () => {
   const editorRef = useRef<PlateEditor | null>(null);
 
   const handleSomeEvent = useCallback(() => {
-    // editor has type PlateEditor | null
     const editor = editorRef.current;
 
+    // Handle the case where editor is null
     if (editor) {
       // Do something with editor
     }
   }, []);
 
-  // Pass editorRef and handleSomeEvent down to where they're needed
-  // ...
-};
-
-const Editor = ({
-  editorRef,
-}: {
-  editorRef: MutableRefObject<PlateEditor | null>;
-}) => (
   <Plate editorRef={editorRef}>
-    <PlateContent />
-  </Plate>
-);
-```
-
-### With State
-
-If you want your ancestor component to re-render when the editor content changes, you may want to use **`useState`** to store your **`editor`** instance. Since the **`editorRef`** callback is only called once when the editor first mounts, you'll also need to manually trigger a re-render by updating a counter whenever the **`onChange`** handler of **`Plate`** is called.
-
-Using **`editorRef`** with **`useState`** without a counter is equivalent to using **`useEditorRef`** instead of **`useEditorState`** (the difference is discussed above). Most of the time, if you don't need the ancestor component to re-render on every change, you should be using **`useRef`** instead.
-
-```tsx showLineNumbers {2-3,34-35}
-const App = () => {
-  const [editor, setEditor] = useState<PlateEditor | null>(null);
-  const [, handleUpdateEditor] = useReducer((x) => x + 1, 0);
-
-  // Pass editor, setEditor and handleUpdateEditor down to where they're needed
-  // ...
-};
-
-const EditorPreview = ({ editor }: { editor: PlateEditor | null }) => {
-  // html has type string | null
-  const html = useMemo(
-    () =>
-      editor &&
-      serializeHtml(editor, {
-        nodes: editor.children,
-      }),
-    [editor, editor?.children]
-  );
-
-  if (!html) return null;
-  return <div dangerouslySetInnerHTML={{ __html: html }} />;
-};
-
-const Editor = ({
-  setEditor,
-  handleUpdateEditor,
-}: {
-  setEditor: (editor: PlateEditor | null) => void;
-  handleUpdateEditor: () => void;
-}) => (
-  <Plate editorRef={setEditor} onChange={handleUpdateEditor}>
     <PlateContent />
   </Plate>
 );

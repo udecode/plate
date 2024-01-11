@@ -4,6 +4,7 @@
 
 export * from './applyDeepToNodes';
 export * from './createPlateEditor';
+export * from './createPlateFallbackEditor';
 export * from './createPluginFactory';
 export * from './createPlugins';
 export * from './flattenDeepPlugins';

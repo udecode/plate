@@ -1,5 +1,13 @@
 # @udecode/plate-md-serializer
 
+## 30.0.0
+
+## 29.1.0
+
+### Minor Changes
+
+- [#2856](https://github.com/udecode/plate/pull/2856) by [@FranciscoMoretti](https://github.com/FranciscoMoretti) – New option in markdown deserializer plugin: `indentList?: boolean`. Set it to true if you're using Indent List plugin instead of the List plugin.
+
 ## 29.0.1
 
 ## 29.0.0

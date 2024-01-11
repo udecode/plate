@@ -75,5 +75,4 @@ export const MENTIONABLES: TComboboxItem[] = [
   { key: '47', text: 'Bren Derlin' },
   { key: '48', text: 'Brendol Hux' },
   { key: '49', text: 'BT-1' },
-  { key: '50', text: 'C-3PO' },
 ];

@@ -1,5 +1,15 @@
 # @udecode/plate-indent-list
 
+## 30.0.1
+
+### Patch Changes
+
+- [#2873](https://github.com/udecode/plate/pull/2873) by [@zbeyens](https://github.com/zbeyens) – fix someIndentList: handle the case when editor.selection is null
+
+## 30.0.0
+
+## 29.1.0
+
 ## 29.0.1
 
 ## 29.0.0

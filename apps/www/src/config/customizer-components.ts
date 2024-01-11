@@ -240,7 +240,6 @@ export const customizerComponents = {
     href: '/docs/components/todo-list-element',
     label: 'Element',
   },
-  toggle: { title: 'Toggle', href: '/docs/components/toggle' },
   toolbar: { title: 'Toolbar', href: '/docs/components/toolbar' },
   tooltip: { title: 'Tooltip', href: '/docs/components/tooltip' },
   turnIntoDropdownMenu: {

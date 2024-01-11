@@ -3,9 +3,15 @@ import { Value } from '@udecode/slate';
 import { selectAtom } from 'jotai/utils';
 
 import { PlateEditor } from '../../../types/PlateEditor';
-import { PlateId, plateStore, usePlateSelectors } from '../createPlateStore';
+import {
+  PlateId,
+  plateStore,
+  UsePlateEditorStoreOptions,
+  usePlateSelectors,
+} from '../createPlateStore';
 
-export interface UseEditorSelectorOptions<T> {
+export interface UseEditorSelectorOptions<T>
+  extends UsePlateEditorStoreOptions {
   id?: PlateId;
   equalityFn?: (a: T, b: T) => boolean;
 }
@@ -17,7 +23,11 @@ export const useEditorSelector = <
 >(
   selector: (editor: E, prev?: T) => T,
   deps: React.DependencyList,
-  { id, equalityFn = (a: T, b: T) => a === b }: UseEditorSelectorOptions<T> = {}
+  {
+    id,
+    equalityFn = (a: T, b: T) => a === b,
+    ...storeOptions
+  }: UseEditorSelectorOptions<T> = {}
 ): T => {
   const selectorAtom = React.useMemo(
     () =>
@@ -30,5 +40,8 @@ export const useEditorSelector = <
     deps
   );
 
-  return usePlateSelectors(id).atom(selectorAtom);
+  return usePlateSelectors(id, {
+    debugHookName: 'useEditorSelector',
+    ...storeOptions,
+  }).atom(selectorAtom);
 };

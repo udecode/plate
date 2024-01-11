@@ -292,6 +292,21 @@ export const docsConfig: DocsConfig = {
               ],
             },
             {
+              title: 'PlateController',
+              href: '/docs/api/core/plate-controller',
+              headings: [
+                'platecontroller-store',
+                'state',
+                'activeId',
+                'primaryEditorIds',
+                'editorStores',
+                'usage-patterns',
+                'specific-editor-by-id',
+                'active-editor',
+                'dealing-with-fallback-editors',
+              ],
+            },
+            {
               title: 'PlateEditor',
               href: '/docs/api/core/plate-editor',
               headings: [
@@ -758,7 +773,6 @@ export const docsConfig: DocsConfig = {
         customizerComponents.tableElement,
         customizerComponents.tableRowElement,
         customizerComponents.todoListElement,
-        customizerComponents.toggle,
         customizerComponents.toolbar,
         customizerComponents.tooltip,
         customizerComponents.turnIntoDropdownMenu,

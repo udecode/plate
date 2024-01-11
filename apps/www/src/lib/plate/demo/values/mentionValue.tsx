@@ -13,11 +13,11 @@ export const mentionValue: any = (
     </hp>
     <hp>
       Try mentioning{' '}
-      <hmention value="R2-D2">
+      <hmention value="BB-8">
         <htext />
       </hmention>{' '}
       or{' '}
-      <hmention value="Mace Windu">
+      <hmention value="Boba Fett">
         <htext />
       </hmention>
       .

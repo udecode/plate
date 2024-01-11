@@ -641,17 +641,10 @@ export const Index: Record<string, any> = {
       files: ['registry/default/plate-ui/todo-list-element.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/todo-list-element')),
     },
-    'toggle': {
-      name: 'toggle',
-      type: 'components:plate-ui',
-      registryDependencies: [],
-      files: ['registry/default/plate-ui/toggle.tsx'],
-      component: React.lazy(() => import('@/registry/default/plate-ui/toggle')),
-    },
     'toolbar': {
       name: 'toolbar',
       type: 'components:plate-ui',
-      registryDependencies: ["tooltip","toggle","separator"],
+      registryDependencies: ["tooltip","separator"],
       files: ['registry/default/plate-ui/toolbar.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/toolbar')),
     },

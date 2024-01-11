@@ -1,5 +1,27 @@
 # @udecode/plate-table
 
+## 30.0.1
+
+### Patch Changes
+
+- [#2873](https://github.com/udecode/plate/pull/2873) by [@zbeyens](https://github.com/zbeyens) – Fix: merging empty cells should result into a single empty paragraph
+
+## 30.0.0
+
+### Major Changes
+
+- [#2867](https://github.com/udecode/plate/pull/2867) by [@12joan](https://github.com/12joan) – Fix: in v28, `TableProvider` was incorrectly shared by all tables in the editor. `TableProvider` must now be rendered as part of `TableElement`.
+
+### Patch Changes
+
+- [#2867](https://github.com/udecode/plate/pull/2867) by [@12joan](https://github.com/12joan) – Fix: Row and column size overrides not being applied correctly
+
+## 29.1.0
+
+### Patch Changes
+
+- [#2860](https://github.com/udecode/plate/pull/2860) by [@johnrazeur](https://github.com/johnrazeur) – Remove unused code from withDeleteTable
+
 ## 29.0.1
 
 ## 29.0.0

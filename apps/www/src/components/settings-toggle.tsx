@@ -2,7 +2,6 @@
 
 import React from 'react';
 
-import { Toggle } from '@/registry/default/plate-ui/toggle';
 import {
   Tooltip,
   TooltipContent,
@@ -11,6 +10,7 @@ import {
 
 import { settingsStore } from './context/settings-store';
 import { Icons } from './icons';
+import { Toggle } from './ui/toggle';
 
 export function SettingsToggle() {
   const showSettings = settingsStore.use.showSettings();

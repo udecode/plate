@@ -1,7 +1,17 @@
-import { PlateId, usePlateSelectors } from '../createPlateStore';
+import {
+  PlateId,
+  UsePlateEditorStoreOptions,
+  usePlateSelectors,
+} from '../createPlateStore';
 
 /**
  * Get the editor selection (deeply memoized).
  */
-export const useEditorSelection = (id?: PlateId) =>
-  usePlateSelectors(id).trackedSelection().selection;
+export const useEditorSelection = (
+  id?: PlateId,
+  options: UsePlateEditorStoreOptions = {}
+) =>
+  usePlateSelectors(id, {
+    debugHookName: 'useEditorSelection',
+    ...options,
+  }).trackedSelection().selection;

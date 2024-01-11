@@ -85,7 +85,7 @@ export function CommandMenuGroup({
             item={navItem}
             runCommand={runCommand}
           >
-            {navItem.items?.map((item) => {
+            {navItem?.items?.map((item) => {
               return (
                 <CommandItems
                   key={item.title}
