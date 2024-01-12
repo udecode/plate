@@ -33,6 +33,7 @@ import { applyPrefixesCss } from '../utils/transformers/transform-tw-prefix';
 import type { Config } from '../utils/get-config';
 
 const PROJECT_DEPENDENCIES = [
+  '@udecode/cn',
   'tailwindcss-animate',
   'class-variance-authority',
   'tailwind-merge',
