@@ -1,5 +1,11 @@
 # @udecode/plate-ui
 
+## 30.1.1
+
+### Patch Changes
+
+- [#2879](https://github.com/udecode/plate/pull/2879) by [@zbeyens](https://github.com/zbeyens) – 🔧 add `@udecode/cn` dependency to cli `init`
+
 ## 30.1.0
 
 ### Minor Changes
