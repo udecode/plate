@@ -98,7 +98,7 @@ function PlateInner<
   primary,
   maxLength,
 }: PlateProps<V, E>) {
-  const [id] = React.useState(() => idProp ?? nanoid());
+  const [id] = React.useState(() => editorProp?.id ?? idProp ?? nanoid());
 
   const editor: E = React.useMemo(
     () =>
