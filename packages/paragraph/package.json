@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-paragraph",
-  "version": "30.0.0",
+  "version": "30.1.2",
   "description": "Paragraph plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -39,7 +39,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-common": "30.0.0"
+    "@udecode/plate-common": "30.1.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
