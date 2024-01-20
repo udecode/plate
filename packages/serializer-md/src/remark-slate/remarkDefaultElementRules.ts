@@ -68,7 +68,10 @@ export const remarkDefaultElementRules: RemarkElementRules<Value> = {
               type: getPluginType(options.editor, ELEMENT_PARAGRAPH),
               listStyleType,
               indent,
-              children: remarkTransformElementChildren(paragraph, options),
+              children: remarkTransformElementChildren(
+                paragraph || '',
+                options
+              ),
             });
 
             subLists.forEach((subList) => {
