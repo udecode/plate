@@ -1,5 +1,11 @@
 # @udecode/plate-ui
 
+## 30.2.0
+
+### Minor Changes
+
+- [#2887](https://github.com/udecode/plate/pull/2887) by [@zbeyens](https://github.com/zbeyens) – add automatic config detection for Next.js, add support for devDependencies
+
 ## 30.1.1
 
 ### Patch Changes
