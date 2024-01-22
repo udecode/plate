@@ -15,11 +15,12 @@ import {
   DEFAULT_PLATE_UI,
   DEFAULT_TAILWIND_CONFIG,
   DEFAULT_TAILWIND_CSS,
+  getConfig,
   rawConfigSchema,
   resolveConfigPaths,
 } from '../utils/get-config';
 import { getPackageManager } from '../utils/get-package-manager';
-import { preFlight } from '../utils/get-project-info';
+import { getProjectConfig, preFlight } from '../utils/get-project-info';
 import { handleError } from '../utils/handle-error';
 import { logger } from '../utils/logger';
 import {
