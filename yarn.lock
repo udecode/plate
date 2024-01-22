@@ -21704,7 +21704,6 @@ __metadata:
     embla-carousel-react: "npm:8.0.0-rc15"
     framer-motion: "npm:^10.16.4"
     geist: "npm:^1.1.0"
-    jotai: "npm:^2.6.0"
     lodash.template: "npm:^4.5.0"
     lucide-react: "npm:^0.288.0"
     mdast-util-toc: "npm:^6.1.1"

@@ -115,7 +115,6 @@
     "embla-carousel-react": "8.0.0-rc15",
     "framer-motion": "^10.16.4",
     "geist": "^1.1.0",
-    "jotai": "^2.6.0",
     "lodash.template": "^4.5.0",
     "lucide-react": "^0.288.0",
     "next": "14.0.4",
