@@ -87,6 +87,7 @@ import { createDeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
 import { createDeserializeMdPlugin } from '@udecode/plate-serializer-md';
 import { createTabbablePlugin } from '@udecode/plate-tabbable';
 import { createTablePlugin } from '@udecode/plate-table';
+import { createTogglePlugin } from '@udecode/plate-toggle';
 import { createTrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -157,6 +158,7 @@ export const usePlaygroundPlugins = ({
             },
           }),
           createTodoListPlugin({ enabled: !!enabled.action_item }),
+          createTogglePlugin({ enabled: !!enabled.toggle }),
           createExcalidrawPlugin({ enabled: !!enabled.excalidraw }),
 
           // Marks

@@ -818,6 +818,30 @@
     "type": "components:plate-ui"
   },
   {
+    "name": "toggle-element",
+    "dependencies": [
+      "@udecode/plate-toggle"
+    ],
+    "registryDependencies": [],
+    "files": [
+      "plate-ui/toggle-element.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "name": "toggle-toolbar-button",
+    "dependencies": [
+      "@udecode/plate-toggle"
+    ],
+    "registryDependencies": [
+      "toolbar"
+    ],
+    "files": [
+      "plate-ui/toggle-toolbar-button.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
     "name": "toolbar",
     "dependencies": [
       "@radix-ui/react-toolbar"

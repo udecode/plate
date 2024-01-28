@@ -65,6 +65,7 @@ const categories = [
       customizerPlugins.tabbable,
       customizerPlugins.table,
       customizerPlugins.todoli,
+      customizerPlugins.toggle,
       customizerPlugins.trailingblock,
     ],
   },

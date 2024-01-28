@@ -228,6 +228,11 @@ export const docsConfig: DocsConfig = {
           href: '/docs/table',
           label: 'Element',
         },
+        {
+          title: 'Toggle',
+          href: '/docs/toggle',
+          label: 'Element',
+        },
       ],
     },
     {
@@ -773,6 +778,8 @@ export const docsConfig: DocsConfig = {
         customizerComponents.tableElement,
         customizerComponents.tableRowElement,
         customizerComponents.todoListElement,
+        customizerComponents.toggleElement,
+        customizerComponents.toggleToolbarButton,
         customizerComponents.toolbar,
         customizerComponents.tooltip,
         customizerComponents.turnIntoDropdownMenu,

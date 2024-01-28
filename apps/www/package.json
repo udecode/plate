@@ -97,6 +97,7 @@
     "@udecode/plate-tabbable": "workspace:^",
     "@udecode/plate-table": "workspace:^",
     "@udecode/plate-test-utils": "workspace:^",
+    "@udecode/plate-toggle": "workspace:^",
     "@udecode/plate-trailing-block": "workspace:^",
     "@udecode/plate-utils": "workspace:^",
     "@udecode/react-utils": "workspace:^",

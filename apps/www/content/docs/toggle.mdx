@@ -1,0 +1,110 @@
+---
+title: Toggle
+description: Turn any block into a toggle.
+docs:
+  - route: /docs/components/toggle-toolbar-button
+    title: Toggle Button
+---
+
+<ComponentPreview name="playground-demo" id="toggle" />
+
+<PackageInfo>
+
+## Features
+
+- Turn any bock into a toggle:
+  - Toggles are closed by default, and can be opened to reveal the content inside
+- Refer to the [Indent documentation](/docs/indent) for more information.
+
+## Plugin dependencies
+
+- [Indent](/docs/indent)
+- [Indent List](/docs/indent-list)
+- [Node id](/docs/node-id)
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-indent @udecode/plate-indent-list @udecode/plate-node-id @udecode/toggle
+```
+
+## Usage
+
+```tsx
+// ...
+import { createIndentPlugin } from '@udecode/plate-indent';
+import { createIndentListPlugin } from '@udecode/plate-indent-list';
+import { createNodeIdPlugin } from '@udecode/plate-node-id';
+import { createTogglePlugin } from '@udecode/plate-toggle';
+
+const plugins = [
+  // ...otherPlugins,
+  createHeadingPlugin(),
+  createParagraphPlugin(),
+  createIndentPlugin({
+    inject: {
+      props: {
+        validTypes: [ELEMENT_PARAGRAPH, ELEMENT_H1],
+      },
+    },
+  }),
+  createIndentListPlugin({
+    inject: {
+      props: {
+        validTypes: [ELEMENT_PARAGRAPH, ELEMENT_H1],
+      },
+    },
+  }),
+  createNodeIdPlugin(),
+  createTogglePlugin(),
+];
+```
+
+## API
+
+### createTogglePlugin
+
+<APIOptions>
+  {/* TODO */}
+</APIOptions>
+
+### openFutureToggles
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+</APIParameters>
+
+{/* TODO Add API DOC */}
+
+## API Components
+
+### useToggleToolbarButton
+
+A behavior hook for the toggle toolbar button.
+
+<APIState>
+  <APIItem name="pressed" type="boolean">
+    A boolean indicating whether the button is pressed or not.
+  </APIItem>
+</APIState>
+
+<APIReturns>
+  <APIItem name="props" type="object">
+    <APISubList>
+      <APISubListItem parent="props" name="pressed" type="boolean">
+        A boolean indicating whether the button is pressed or not.
+      </APISubListItem>
+      <APISubListItem parent="props" name="onClick" type="function">
+        A callback function to handle the click event of the button. It toggles
+        the toggle of the specified node type in the editor and focuses the
+        editor.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+
+{/* TODO Add components DOC */}

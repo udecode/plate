@@ -132,3 +132,5 @@ describe('when [x].space', () => {
     expect(input.children).toEqual(output.children);
   });
 });
+
+// TODO Add toggle test

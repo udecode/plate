@@ -35,6 +35,7 @@ const plateOverrides = {
   'soft-break': 'plate-break',
   tabbable: 'plate-tabbable',
   table: 'plate-table',
+  toggle: 'plate-toggle',
 };
 
 export const docToPackage = (name?: string) => {

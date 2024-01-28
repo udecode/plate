@@ -46,6 +46,7 @@ import { KEY_DESERIALIZE_DOCX } from '@udecode/plate-serializer-docx';
 import { KEY_DESERIALIZE_MD } from '@udecode/plate-serializer-md';
 import { KEY_TABBABLE } from '@udecode/plate-tabbable';
 import { ELEMENT_TABLE } from '@udecode/plate-table';
+import { ELEMENT_TOGGLE } from '@udecode/plate-toggle';
 import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
 import { uniqBy } from 'lodash';
 
@@ -62,6 +63,7 @@ export const customizerList = [
       customizerItems[ELEMENT_HR],
       customizerItems[ELEMENT_IMAGE],
       customizerItems[ELEMENT_LINK],
+      customizerItems[ELEMENT_TOGGLE],
       customizerItems.heading,
       customizerItems.list,
       customizerItems[ELEMENT_MEDIA_EMBED],

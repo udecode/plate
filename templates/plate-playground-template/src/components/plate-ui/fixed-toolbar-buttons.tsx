@@ -24,6 +24,7 @@ import { MediaToolbarButton } from '@/components/plate-ui/media-toolbar-button';
 import { MoreDropdownMenu } from '@/components/plate-ui/more-dropdown-menu';
 import { OutdentToolbarButton } from '@/components/plate-ui/outdent-toolbar-button';
 import { TableDropdownMenu } from '@/components/plate-ui/table-dropdown-menu';
+import { ToggleToolbarButton } from '@/components/plate-ui/toggle-toolbar-button';
 
 import { InsertDropdownMenu } from './insert-dropdown-menu';
 import { MarkToolbarButton } from './mark-toolbar-button';
@@ -100,6 +101,8 @@ export function FixedToolbarButtons() {
 
             <ToolbarGroup>
               <LinkToolbarButton />
+
+              <ToggleToolbarButton />
 
               <MediaToolbarButton nodeType={ELEMENT_IMAGE} />
 

@@ -14,6 +14,7 @@ import {
   ELEMENT_H6,
 } from '@udecode/plate-heading';
 import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
+import { ELEMENT_TOGGLE, openFutureToggles } from '@udecode/plate-toggle';
 
 import { preFormat } from '@/lib/plate/autoformatUtils';
 
@@ -72,6 +73,12 @@ export const autoformatBlocks: AutoformatRule[] = [
         insertNodesOptions: { select: true },
       });
     },
+  },
+  {
+    mode: 'block',
+    type: ELEMENT_TOGGLE,
+    match: '|> ',
+    preFormat: openFutureToggles,
   },
   {
     mode: 'block',
