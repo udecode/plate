@@ -1,5 +1,11 @@
 # @udecode/plate-md-serializer
 
+## 30.2.1
+
+### Patch Changes
+
+- [#2885](https://github.com/udecode/plate/pull/2885) by [@FranciscoMoretti](https://github.com/FranciscoMoretti) – Fix(deserialize md): support empty list item
+
 ## 30.1.2
 
 ## 30.0.0
