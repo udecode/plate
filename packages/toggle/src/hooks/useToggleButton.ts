@@ -17,6 +17,9 @@ export const useToggleButton = (
   return {
     ...state,
     buttonProps: {
+      onMouseDown: (e: React.MouseEvent) => {
+        e.preventDefault();
+      },
       onClick: (e: React.MouseEvent) => {
         e.preventDefault();
         toggleIds(editor, [state.toggleId]);
