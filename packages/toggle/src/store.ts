@@ -19,17 +19,6 @@ export const {
   { name: 'toggleController' as const }
 );
 
-export const triggerStoreUpdate = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E
-) => {
-  const options = getPluginOptions<TogglePlugin, V, E>(editor, ELEMENT_TOGGLE);
-  // TODO fix At this point openIds can be undefined
-  options.setOpenIds?.(new Set(options.openIds?.values() || []));
-};
-
 export const someToggleClosed = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,

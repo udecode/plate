@@ -6,13 +6,12 @@ import {
   PlateEditor,
   toggleNodeType,
   Value,
-  WithPlatePlugin,
 } from '@udecode/plate-common';
 import { indent, TIndentElement } from '@udecode/plate-indent';
 
 import { getEnclosingToggleIds, getLastEntryEnclosedInToggle } from './queries';
-import { isToggleOpen, someToggleClosed, triggerStoreUpdate } from './store';
-import { ELEMENT_TOGGLE, TogglePlugin } from './types';
+import { isToggleOpen, someToggleClosed } from './store';
+import { ELEMENT_TOGGLE } from './types';
 
 export const withToggle = <
   V extends Value = Value,
@@ -20,7 +19,7 @@ export const withToggle = <
 >(
   editor: E
 ) => {
-  const { insertBreak, isSelectable, apply } = editor;
+  const { insertBreak, isSelectable } = editor;
 
   editor.isSelectable = (element) => {
     if (!isNode(element)) return isSelectable(element);
@@ -77,24 +76,6 @@ export const withToggle = <
         }
       }
     });
-  };
-
-  editor.apply = (operation) => {
-    // MNake sure all elements' visibility is re-calculated
-    apply(operation);
-
-    // TODO Be more restrictive to improve performance, for instance by restricting operations on toggles
-    if (
-      [
-        'merge_node',
-        'move_node',
-        'set_node',
-        'insert_node',
-        'remove_node',
-      ].includes(operation.type)
-    ) {
-      triggerStoreUpdate<V, E>(editor);
-    }
   };
 
   return editor;

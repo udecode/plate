@@ -14,7 +14,7 @@ export function getEnclosingToggleIds(
 }
 
 // Returns, for each child, the enclosing toggle ids
-function buildToggleIndex(elements: TIndentElement[]): string[][] {
+export const buildToggleIndex = (elements: TIndentElement[]): string[][] => {
   const result: string[][] = [];
   let currentEnclosingToggles: [string, number][] = []; // [toggleId, indent][]
   elements.forEach((element, index) => {
@@ -40,6 +40,6 @@ function buildToggleIndex(elements: TIndentElement[]): string[][] {
   });
 
   return result;
-}
+};
 
 const memoizedBuildToggleIndex = memoize(buildToggleIndex);

@@ -3,7 +3,6 @@
  */
 
 export * from './createTogglePlugin';
-export * from './injectToggle';
 export * from './types';
 export * from './withToggle';
 export * from './hooks/index';
