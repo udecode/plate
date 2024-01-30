@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 30.1.2
+
+### Patch Changes
+
+- [#2881](https://github.com/udecode/plate/pull/2881) by [@johnrazeur](https://github.com/johnrazeur) – fix plate store id when plate use the editor prop.
+
 ## 30.0.0
 
 ### Minor Changes

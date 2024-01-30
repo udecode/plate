@@ -65,6 +65,7 @@ test('init config-full', async () => {
     'pnpm',
     [
       'add',
+      '@udecode/cn',
       'tailwindcss-animate',
       'class-variance-authority',
       'tailwind-merge',
@@ -123,6 +124,7 @@ test('init config-partial', async () => {
     'npm',
     [
       'install',
+      '@udecode/cn',
       'tailwindcss-animate',
       'class-variance-authority',
       'tailwind-merge',

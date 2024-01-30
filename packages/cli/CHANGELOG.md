@@ -1,5 +1,25 @@
 # @udecode/plate-ui
 
+## 30.2.0
+
+### Minor Changes
+
+- [#2887](https://github.com/udecode/plate/pull/2887) by [@zbeyens](https://github.com/zbeyens) – add automatic config detection for Next.js, add support for devDependencies
+
+## 30.1.1
+
+### Patch Changes
+
+- [#2879](https://github.com/udecode/plate/pull/2879) by [@zbeyens](https://github.com/zbeyens) – 🔧 add `@udecode/cn` dependency to cli `init`
+
+## 30.1.0
+
+### Minor Changes
+
+- [#2877](https://github.com/udecode/plate/pull/2877) by [@zbeyens](https://github.com/zbeyens) –
+  - add support for `plate-components.json` to avoid conflict with shadcn's `components.json`. If `plate-components.json` does not exist, `components.json` will be used.
+  - add support for custom ui dir in `components.json`: use `aliases > plate-ui`.
+
 ## 29.0.0
 
 ### Minor Changes

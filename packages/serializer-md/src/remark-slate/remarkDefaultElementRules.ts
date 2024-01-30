@@ -69,7 +69,10 @@ export const remarkDefaultElementRules: RemarkElementRules<Value> = {
               listStyleType,
               indent,
               listStart: index + 1,
-              children: remarkTransformElementChildren(paragraph, options),
+              children: remarkTransformElementChildren(
+                paragraph || '',
+                options
+              ),
             });
 
             subLists.forEach((subList) => {

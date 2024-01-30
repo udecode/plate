@@ -2,6 +2,7 @@ module.exports = {
   extends: ['plugin:unicorn/recommended'],
   plugins: ['unicorn'],
   rules: {
+    'unicorn/prefer-module': 'off',
     'unicorn/consistent-destructuring': 'off',
     'unicorn/consistent-function-scoping': [
       'error',

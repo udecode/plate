@@ -11,9 +11,9 @@ You can choose between using CSS variables or Tailwind CSS utility classes for t
 <div className="bg-slate-950 dark:bg-white" />
 ```
 
-To use utility classes for theming set `tailwind.cssVariables` to `false` in your `components.json` file.
+To use utility classes for theming set `tailwind.cssVariables` to `false` in your `plate-components.json` file.
 
-```json {8} title="components.json"
+```json {8} title="plate-components.json"
 {
   "style": "default",
   "rsc": true,
@@ -24,8 +24,7 @@ To use utility classes for theming set `tailwind.cssVariables` to `false` in you
     "cssVariables": false
   },
   "aliases": {
-    "components": "@/components",
-    "utils": "@udecode/cn"
+    "components": "@/components"
   }
 }
 ```
@@ -36,9 +35,9 @@ To use utility classes for theming set `tailwind.cssVariables` to `false` in you
 <div className="bg-background text-foreground" />
 ```
 
-To use CSS variables for theming set `tailwind.cssVariables` to `true` in your `components.json` file.
+To use CSS variables for theming set `tailwind.cssVariables` to `true` in your `plate-components.json` file.
 
-```json {8} title="components.json"
+```json {8} title="plate-components.json"
 {
   "style": "default",
   "rsc": true,
@@ -49,8 +48,7 @@ To use CSS variables for theming set `tailwind.cssVariables` to `true` in your `
     "cssVariables": true
   },
   "aliases": {
-    "components": "@/components",
-    "utils": "@udecode/cn"
+    "components": "@/components"
   }
 }
 ```

@@ -236,6 +236,21 @@ describe('Plate', () => {
         expect(result.current).toBe('test');
       });
     });
+
+    describe('when Plate has an editor', () => {
+      it('should be editor id', async () => {
+        const editor = createPlateEditor({ id: 'test' });
+
+        const wrapper = ({ children }: any) => (
+          <Plate editor={editor}>{children}</Plate>
+        );
+        const { result } = renderHook(() => usePlateSelectors().id(), {
+          wrapper,
+        });
+
+        expect(result.current).toBe('test');
+      });
+    });
   });
 
   describe('usePlateEditorStore', () => {
@@ -249,14 +264,29 @@ describe('Plate', () => {
       renderHook(() => useEditorRef().isFallback, { wrapper }).result.current;
 
     describe('when Plate exists', () => {
-      it('returns the store', () => {
-        const wrapper = ({ children }: any) => (
-          <Plate id="test">{children}</Plate>
-        );
+      describe('when editor is defined', () => {
+        it('returns the store', async () => {
+          const editor = createPlateEditor({ id: 'test' });
 
-        expect(getStore(wrapper)).toBeDefined();
-        expect(getId(wrapper)).toBe('test');
-        expect(getIsFallback(wrapper)).toBe(false);
+          const wrapper = ({ children }: any) => (
+            <Plate editor={editor}>{children}</Plate>
+          );
+          expect(getStore(wrapper)).toBeDefined();
+          expect(getId(wrapper)).toBe('test');
+          expect(getIsFallback(wrapper)).toBe(false);
+        });
+      });
+
+      describe('when editor is not defined', () => {
+        it('returns the store', () => {
+          const wrapper = ({ children }: any) => (
+            <Plate id="test">{children}</Plate>
+          );
+
+          expect(getStore(wrapper)).toBeDefined();
+          expect(getId(wrapper)).toBe('test');
+          expect(getIsFallback(wrapper)).toBe(false);
+        });
       });
     });
 
