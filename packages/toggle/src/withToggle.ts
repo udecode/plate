@@ -6,25 +6,20 @@ import {
   PlateEditor,
   toggleNodeType,
   Value,
+  WithPlatePlugin,
 } from '@udecode/plate-common';
 import { indent, TIndentElement } from '@udecode/plate-indent';
 
 import { getEnclosingToggleIds, getLastEntryEnclosedInToggle } from './queries';
-import {
-  createToggleStore,
-  someToggleClosed,
-  triggerStoreUpdate,
-} from './store';
-import { ELEMENT_TOGGLE, ToggleEditor } from './types';
+import { isToggleOpen, someToggleClosed, triggerStoreUpdate } from './store';
+import { ELEMENT_TOGGLE, TogglePlugin } from './types';
 
 export const withToggle = <
   V extends Value = Value,
-  E extends PlateEditor<V> & ToggleEditor = PlateEditor<V> & ToggleEditor,
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E
-  // { options }: WithPlatePlugin<TogglePlugin, V, E>
 ) => {
-  editor.toggleStore = createToggleStore();
   const { insertBreak, isSelectable, apply } = editor;
 
   editor.isSelectable = (element) => {
@@ -36,7 +31,7 @@ export const withToggle = <
       element,
       path,
     ]);
-    if (someToggleClosed(editor.toggleStore, enclosingToggleIds)) {
+    if (someToggleClosed<V, E>(editor, enclosingToggleIds)) {
       return false;
     }
 
@@ -58,8 +53,7 @@ export const withToggle = <
     }
 
     const toggleId = currentBlockEntry[0].id as string;
-    const openIds = editor.toggleStore.get.openIds();
-    const isOpen = openIds.has(toggleId);
+    const isOpen = isToggleOpen<V, E>(editor, toggleId);
 
     editor.withoutNormalizing(() => {
       if (isOpen) {
@@ -99,7 +93,7 @@ export const withToggle = <
         'remove_node',
       ].includes(operation.type)
     ) {
-      triggerStoreUpdate(editor.toggleStore);
+      triggerStoreUpdate<V, E>(editor);
     }
   };
 

@@ -1,37 +1,25 @@
-import { PlateEditor, useEditorRef } from '@udecode/plate-common';
-import { Value } from '@udecode/slate';
+import { useEditorRef } from '@udecode/plate-common';
 
-import { toggleToggleId } from '../store';
-import { ToggleEditor } from '../types';
+import { toggleIds, useToggleControllerStore } from '../store';
 
-type ToggleButtonState = {
-  toggleId: string;
-  open: boolean;
-  openIds: Set<string>;
-};
-
-const useToggleStore = () =>
-  useEditorRef<Value, PlateEditor & ToggleEditor>().toggleStore;
-
-export const useToggleButtonState = (toggleId: string): ToggleButtonState => {
-  const store = useToggleStore();
-  const openIds = store.use.openIds();
-  const open = openIds.has(toggleId);
+export const useToggleButtonState = (toggleId: string) => {
+  const [openIds] = useToggleControllerStore().use.openIds();
   return {
     toggleId,
-    open,
-    openIds,
+    open: openIds.has(toggleId),
   };
 };
 
-export const useToggleButton = (state: ToggleButtonState) => {
-  const store = useToggleStore();
+export const useToggleButton = (
+  state: ReturnType<typeof useToggleButtonState>
+) => {
+  const editor = useEditorRef();
   return {
     ...state,
     buttonProps: {
       onClick: (e: React.MouseEvent) => {
         e.preventDefault();
-        store.set.openIds(toggleToggleId(state));
+        toggleIds(editor, [state.toggleId]);
       },
     },
   };

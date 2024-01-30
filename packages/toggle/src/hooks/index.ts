@@ -4,3 +4,4 @@
 
 export * from './useToggleButton';
 export * from './useToggleToolbarButton';
+export * from './useHooksToggle';

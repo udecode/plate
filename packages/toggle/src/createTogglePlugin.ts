@@ -1,18 +1,22 @@
 import { createPluginFactory, PlateEditor, Value } from '@udecode/plate-common';
 
-import { injectToggleWrapper } from './injectToggleWrapper';
-import { ELEMENT_TOGGLE, ToggleEditor, TogglePlugin } from './types';
+import { useHooksToggle } from './hooks/useHooksToggle';
+import { injectToggle } from './injectToggle';
+import { ToggleControllerProvider } from './store';
+import { ELEMENT_TOGGLE, TogglePlugin } from './types';
 import { withToggle } from './withToggle';
 
 export const createTogglePlugin = createPluginFactory<
   TogglePlugin,
   Value,
-  PlateEditor<Value> & ToggleEditor
+  PlateEditor<Value>
 >({
   key: ELEMENT_TOGGLE,
   isElement: true,
+  useHooks: useHooksToggle,
+  renderAboveEditable: ToggleControllerProvider,
   inject: {
-    aboveComponent: injectToggleWrapper,
+    aboveComponent: injectToggle,
   },
   withOverrides: withToggle,
 });

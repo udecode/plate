@@ -1,5 +1,5 @@
 import { PlateEditor, TNodeEntry } from '@udecode/plate-common';
-import { last } from 'lodash';
+import last from 'lodash/last';
 
 import { getEnclosingToggleIds } from './getEnclosingToggleIds';
 

@@ -1,37 +1,85 @@
-import { createZustandStore } from '@udecode/plate-common';
+import {
+  atom,
+  createAtomStore,
+  getPluginOptions,
+  PlateEditor,
+  Value,
+} from '@udecode/plate-common';
 
-import { ELEMENT_TOGGLE } from './types';
+import { ELEMENT_TOGGLE, TogglePlugin } from './types';
 
-export const createToggleStore = () => {
-  return createZustandStore(ELEMENT_TOGGLE)({
-    openIds: new Set() as Set<string>,
-  });
+export const {
+  toggleControllerStore,
+  ToggleControllerProvider,
+  useToggleControllerStore,
+} = createAtomStore(
+  {
+    openIds: atom(new Set<string>()),
+  },
+  { name: 'toggleController' as const }
+);
+
+export const triggerStoreUpdate = <
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>,
+>(
+  editor: E
+) => {
+  const options = getPluginOptions<TogglePlugin, V, E>(editor, ELEMENT_TOGGLE);
+  // TODO fix At this point openIds can be undefined
+  options.setOpenIds?.(new Set(options.openIds?.values() || []));
 };
 
-export type ToggleStore = ReturnType<typeof createToggleStore>;
-
-export const someToggleClosed = (
-  store: ToggleStore,
+export const someToggleClosed = <
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>,
+>(
+  editor: E,
   toggleIds: string[]
 ): boolean => {
-  const openIds = store.get.openIds();
+  const options = getPluginOptions<TogglePlugin, V, E>(editor, ELEMENT_TOGGLE);
+  const openIds = options.openIds;
   return toggleIds.some((id) => !openIds.has(id));
 };
 
-export const triggerStoreUpdate = (store: ToggleStore) => {
-  store.set.openIds(new Set(store.get.openIds().values()));
+export const isToggleOpen = <
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>,
+>(
+  editor: E,
+  toggleId: string
+): boolean => {
+  const options = getPluginOptions<TogglePlugin, V, E>(editor, ELEMENT_TOGGLE);
+  const openIds = options.openIds;
+  return openIds.has(toggleId);
 };
 
-export const toggleToggleId = (state: {
-  toggleId: string;
-  open: boolean; // current open state
-  openIds: Set<string>;
-}): Set<string> => {
-  const newOpenIds = new Set<string>(state.openIds.values());
-  if (state.open) {
-    newOpenIds.delete(state.toggleId);
-  } else {
-    newOpenIds.add(state.toggleId);
-  }
+export const toggleIds = <
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>,
+>(
+  editor: E,
+  toggleIds: string[],
+  force: boolean | undefined = undefined
+): void => {
+  const options = getPluginOptions<TogglePlugin, V, E>(editor, ELEMENT_TOGGLE);
+  options.setOpenIds((openIds) => _toggleIds(openIds, toggleIds, force));
+};
+
+const _toggleIds = (
+  openIds: Set<string>,
+  toggleIds: string[],
+  force: boolean | undefined = undefined
+) => {
+  const newOpenIds = new Set(openIds.values());
+  toggleIds.forEach((toggleId) => {
+    const isCurrentlyOpen = openIds.has(toggleId);
+    const newIsOpen = force === undefined ? !isCurrentlyOpen : force;
+    if (newIsOpen) {
+      newOpenIds.add(toggleId);
+    } else {
+      newOpenIds.delete(toggleId);
+    }
+  });
   return newOpenIds;
 };

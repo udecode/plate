@@ -8,7 +8,7 @@ export const ToggleElement = withRef<typeof PlateElement>(
   ({ children, ...props }, ref) => {
     const element = useElement();
     const state = useToggleButtonState(element.id);
-    const { buttonProps } = useToggleButton(state);
+    const { open, buttonProps } = useToggleButton(state);
 
     // TODO use tailwind instead of inline styles
     return (
@@ -33,7 +33,7 @@ export const ToggleElement = withRef<typeof PlateElement>(
             }}
             {...buttonProps}
           >
-            {state.open ? <Icons.chevronDown /> : <Icons.chevronRight />}
+            {open ? <Icons.chevronDown /> : <Icons.chevronRight />}
           </span>
           {children}
         </div>

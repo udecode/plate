@@ -9,8 +9,8 @@ import {
 } from '@udecode/plate-common';
 
 import { someToggle } from '../queries/someToggle';
-import { openFutureToggles } from '../transforms';
-import { ELEMENT_TOGGLE, ToggleEditor } from '../types';
+import { openNextToggles } from '../transforms';
+import { ELEMENT_TOGGLE } from '../types';
 
 export const useToggleToolbarButtonState = () => {
   const pressed = useEditorSelector((editor) => someToggle(editor), []);
@@ -23,7 +23,7 @@ export const useToggleToolbarButtonState = () => {
 export const useToggleToolbarButton = ({
   pressed,
 }: ReturnType<typeof useToggleToolbarButtonState>) => {
-  const editor = useEditorRef<Value, PlateEditor<Value> & ToggleEditor>();
+  const editor = useEditorRef<Value, PlateEditor<Value>>();
 
   return {
     props: {
@@ -32,7 +32,7 @@ export const useToggleToolbarButton = ({
         e.preventDefault();
       },
       onClick: () => {
-        openFutureToggles(editor);
+        openNextToggles(editor);
         toggleNodeType(editor, { activeType: ELEMENT_TOGGLE });
         collapseSelection(editor);
         focusEditor(editor);
