@@ -1,24 +1,23 @@
-import { KEY_INDENT, TIndentElement } from '@udecode/plate-indent';
+import { Value } from '@udecode/plate-common';
+import { KEY_INDENT } from '@udecode/plate-indent';
 import { KEY_LIST_STYLE_TYPE } from '@udecode/plate-indent-list';
 import { memoize } from 'lodash';
-import { NodeEntry } from 'slate';
 
 import { ELEMENT_TOGGLE } from '../types';
 
 export function getEnclosingToggleIds(
-  elements: TIndentElement[],
-  [_node, path]: NodeEntry
+  elements: Value,
+  elementId: string
 ): string[] {
-  // TODO Type so that there is no need to cast as indent elements
-  return memoizedBuildToggleIndex(elements)[path[0]];
+  return memoizedBuildToggleIndex(elements).get(elementId) || [];
 }
 
 // Returns, for each child, the enclosing toggle ids
-export const buildToggleIndex = (elements: TIndentElement[]): string[][] => {
-  const result: string[][] = [];
+export const buildToggleIndex = (elements: Value): Map<string, string[]> => {
+  const result: Map<string, string[]> = new Map();
   let currentEnclosingToggles: [string, number][] = []; // [toggleId, indent][]
-  elements.forEach((element, index) => {
-    const elementIndent = element[KEY_INDENT] || 0;
+  elements.forEach((element) => {
+    const elementIndent = (element[KEY_INDENT] as number) || 0;
     // For some reason, indent lists have a min indent of 1, even though they are not indented
     const elementIndentWithIndentListCorrection =
       element[KEY_LIST_STYLE_TYPE] && element[KEY_INDENT]
@@ -29,13 +28,12 @@ export const buildToggleIndex = (elements: TIndentElement[]): string[][] => {
       return indent < elementIndentWithIndentListCorrection;
     });
     currentEnclosingToggles = enclosingToggles;
-    result[index] = enclosingToggles.map(([toggleId]) => toggleId);
+    result.set(
+      element.id as string,
+      enclosingToggles.map(([toggleId]) => toggleId)
+    );
     if (element.type === ELEMENT_TOGGLE) {
-      // TODO Use the identifier provided as option instead of the default identifier of the node-id plugin, and type accordingly
-      currentEnclosingToggles.push([
-        element.id as string,
-        element[KEY_INDENT] || 0,
-      ]);
+      currentEnclosingToggles.push([element.id as string, elementIndent]);
     }
   });
 

@@ -3,7 +3,7 @@ import { useEditorRef } from '@udecode/plate-common';
 import { TIndentElement } from '@udecode/plate-indent';
 
 import { idToClassName } from './injectNodeIdClassName';
-import { buildToggleIndex } from './queries';
+import { findElementIdsHiddenInToggle } from './queries';
 import { useToggleControllerStore } from './store';
 
 // TODO restrict to the editor
@@ -22,23 +22,8 @@ const hideElementsInToggleCSS = (
   openIds: Set<string>,
   elements: TIndentElement[]
 ) => {
-  const elementIdsToHide = findElementIdsToHide(openIds, elements);
+  const elementIdsToHide = findElementIdsHiddenInToggle(openIds, elements);
   return `${elementIdsToSelector(elementIdsToHide)} ${hiddenElementsStyle}`;
-};
-
-const findElementIdsToHide = (
-  openIds: Set<string>,
-  elements: TIndentElement[]
-): string[] => {
-  const toggleIndex = buildToggleIndex(elements);
-  return (
-    elements
-      .filter((_, index) =>
-        toggleIndex[index].some((toggleId) => !openIds.has(toggleId))
-      )
-      // TODO do not rely on id being the key for the identifier
-      .map((element) => element.id as string)
-  );
 };
 
 const elementIdsToSelector = (ids: string[]) => {

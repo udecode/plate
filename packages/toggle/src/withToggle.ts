@@ -1,5 +1,4 @@
 import {
-  findNodePath,
   getBlockAbove,
   isNode,
   moveNodes,
@@ -9,8 +8,8 @@ import {
 } from '@udecode/plate-common';
 import { indent, TIndentElement } from '@udecode/plate-indent';
 
-import { getEnclosingToggleIds, getLastEntryEnclosedInToggle } from './queries';
-import { isToggleOpen, someToggleClosed } from './store';
+import { getLastEntryEnclosedInToggle, isInClosedToggle } from './queries';
+import { isToggleOpen } from './store';
 import { ELEMENT_TOGGLE } from './types';
 
 export const withToggle = <
@@ -22,18 +21,8 @@ export const withToggle = <
   const { insertBreak, isSelectable } = editor;
 
   editor.isSelectable = (element) => {
-    if (!isNode(element)) return isSelectable(element);
-    const path = findNodePath(editor, element);
-    if (!path) return isSelectable(element);
-    // @ts-ignore TODO Instead of relying on editor.children, use the element's siblings
-    const enclosingToggleIds = getEnclosingToggleIds(editor.children, [
-      element,
-      path,
-    ]);
-    if (someToggleClosed<V, E>(editor, enclosingToggleIds)) {
+    if (isNode(element) && isInClosedToggle<V, E>(editor, element.id as string))
       return false;
-    }
-
     return isSelectable(element);
   };
 
@@ -60,9 +49,8 @@ export const withToggle = <
         toggleNodeType(editor, { activeType: ELEMENT_TOGGLE });
         indent(editor);
       } else {
-        const lastEntryEnclosedInToggle = getLastEntryEnclosedInToggle(
-          // TODO typing: There should be no need for casting
-          editor as PlateEditor,
+        const lastEntryEnclosedInToggle = getLastEntryEnclosedInToggle<V, E>(
+          editor,
           toggleId
         );
 

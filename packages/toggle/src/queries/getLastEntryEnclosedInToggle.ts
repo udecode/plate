@@ -1,19 +1,19 @@
-import { PlateEditor, TNodeEntry } from '@udecode/plate-common';
+import { PlateEditor, TNodeEntry, Value } from '@udecode/plate-common';
 import last from 'lodash/last';
 
 import { getEnclosingToggleIds } from './getEnclosingToggleIds';
 
-export const getLastEntryEnclosedInToggle = (
-  editor: PlateEditor,
+export const getLastEntryEnclosedInToggle = <
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>,
+>(
+  editor: E,
   toggleId: string
 ): TNodeEntry | undefined => {
   const entriesInToggle = editor.children
     .map((node, index) => [node, [index]] as TNodeEntry)
-    .filter(([node, path]) => {
-      // @ts-ignore TODO Instead of relying on editor.children, use the element's siblings
-      return getEnclosingToggleIds(editor.children, [node, path]).includes(
-        toggleId
-      );
+    .filter(([node]) => {
+      return getEnclosingToggleIds(editor.children, node.id).includes(toggleId);
     });
   return last(entriesInToggle);
 };
