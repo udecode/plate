@@ -120,7 +120,6 @@ import {
   ELEMENT_TH,
   ELEMENT_TR,
 } from '@udecode/plate-table';
-import { createTogglePlugin, ELEMENT_TOGGLE } from '@udecode/plate-toggle';
 import { createTrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
 import { autoformatPlugin } from '@/lib/plate/autoformatPlugin';
@@ -153,7 +152,6 @@ import {
 import { TableElement } from '@/components/plate-ui/table-element';
 import { TableRowElement } from '@/components/plate-ui/table-row-element';
 import { TodoListElement } from '@/components/plate-ui/todo-list-element';
-import { ToggleElement } from '@/components/plate-ui/toggle-element';
 import { withDraggables } from '@/components/plate-ui/with-draggables';
 import { TabbableElement } from '@/components/tabbable-element';
 
@@ -187,7 +185,6 @@ export const plugins = createPlugins(
     createMentionPlugin(),
     createTablePlugin(),
     createTodoListPlugin(),
-    createTogglePlugin(),
     createExcalidrawPlugin(),
 
     // Marks
@@ -222,7 +219,6 @@ export const plugins = createPlugins(
             ELEMENT_H3,
             ELEMENT_BLOCKQUOTE,
             ELEMENT_CODE_BLOCK,
-            ELEMENT_TOGGLE,
           ],
         },
       },
@@ -406,7 +402,6 @@ export const plugins = createPlugins(
         [ELEMENT_TD]: TableCellElement,
         [ELEMENT_TH]: TableCellHeaderElement,
         [ELEMENT_TODO_LI]: TodoListElement,
-        [ELEMENT_TOGGLE]: ToggleElement,
         [ELEMENT_TR]: TableRowElement,
         [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
         [MARK_BOLD]: withProps(PlateLeaf, { as: 'strong' }),

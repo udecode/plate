@@ -70,10 +70,6 @@ import {
   TTodoListItemElement,
 } from '@udecode/plate-list';
 import {
-  ELEMENT_TOGGLE,
-  TToggleElement,
-} from '@udecode/plate-toggle';
-import {
   ELEMENT_IMAGE,
   ELEMENT_MEDIA_EMBED,
   TImageElement,
@@ -266,13 +262,6 @@ export interface MyTodoListElement
   children: MyInlineChildren;
 }
 
-export interface MyToggleElement
-  extends TToggleElement,
-    MyBlockElement {
-  type: typeof ELEMENT_TOGGLE;
-  children: MyInlineChildren;
-}
-
 export interface MyImageElement extends TImageElement, MyBlockElement {
   type: typeof ELEMENT_IMAGE;
   children: [EmptyText];
@@ -316,7 +305,6 @@ export type MyRootBlock =
   | MyBulletedListElement
   | MyNumberedListElement
   | MyTodoListElement
-  | MyToggleElement
   | MyImageElement
   | MyMediaEmbedElement
   | MyHrElement
