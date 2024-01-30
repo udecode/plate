@@ -7,6 +7,7 @@ export * from './createSuggestionPlugin';
 export * from './types';
 export * from './useHooksSuggestion';
 export * from './withSuggestion';
+export * from './diff/index';
 export * from './queries/index';
 export * from './store/index';
 export * from './transforms/index';

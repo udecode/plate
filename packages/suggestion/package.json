@@ -2,7 +2,6 @@
   "name": "@udecode/plate-suggestion",
   "version": "30.1.2",
   "description": "Plate plugin for suggestions",
-  "license": "MIT",
   "homepage": "https://platejs.org",
   "repository": {
     "type": "git",
@@ -39,7 +38,9 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-common": "30.1.2"
+    "@udecode/plate-common": "30.1.2",
+    "diff-match-patch-ts": "0.3.0",
+    "lodash": "^4.17.21"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
