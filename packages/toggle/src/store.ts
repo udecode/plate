@@ -3,9 +3,13 @@ import {
   createAtomStore,
   getPluginOptions,
   PlateEditor,
+  plateStore,
+  usePlateStore,
   Value,
 } from '@udecode/plate-common';
+import { TIndentElement } from '@udecode/plate-indent';
 
+import { buildToggleIndex } from './queries';
 import { ELEMENT_TOGGLE, TogglePlugin } from './types';
 
 export const {
@@ -18,6 +22,12 @@ export const {
   },
   { name: 'toggleController' as const }
 );
+
+const editorAtom = plateStore.atom.trackedEditor;
+export const toggleIndexAtom = atom((get) =>
+  buildToggleIndex(get(editorAtom).editor.children as TIndentElement[])
+);
+export const useToggleIndex = () => usePlateStore().get.atom(toggleIndexAtom);
 
 export const someToggleClosed = <
   V extends Value = Value,
