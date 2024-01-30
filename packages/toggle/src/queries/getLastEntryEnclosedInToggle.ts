@@ -1,7 +1,7 @@
 import { PlateEditor, TNodeEntry, Value } from '@udecode/plate-common';
 import last from 'lodash/last';
 
-import { getEnclosingToggleIds } from './getEnclosingToggleIds';
+import { buildToggleIndex } from '../store';
 
 export const getLastEntryEnclosedInToggle = <
   V extends Value = Value,
@@ -10,10 +10,11 @@ export const getLastEntryEnclosedInToggle = <
   editor: E,
   toggleId: string
 ): TNodeEntry | undefined => {
+  const toggleIndex = buildToggleIndex(editor.children);
   const entriesInToggle = editor.children
     .map((node, index) => [node, [index]] as TNodeEntry)
     .filter(([node]) => {
-      return getEnclosingToggleIds(editor.children, node.id).includes(toggleId);
+      return (toggleIndex.get(node.id) || []).includes(toggleId);
     });
   return last(entriesInToggle);
 };

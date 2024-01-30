@@ -1,29 +1,20 @@
 import React from 'react';
 import { InjectComponentReturnType } from '@udecode/plate-common';
 
-import { useToggleControllerStore, useToggleIndex } from './store';
+import { useIsVisible } from './store';
 
 export const injectToggle = (): InjectComponentReturnType => WithToggle;
 
 const WithToggle: InjectComponentReturnType = ({ element, children }) => {
-  // Instead of using both the toggle index and the open ids atoms,
-  //    use a single atom that is subscribed to the sole value relevant for this element: isOpen
-  const [openIds] = useToggleControllerStore().use.openIds();
-  const toggleIndex = useToggleIndex();
-  const enclosedInToggleIds = toggleIndex.get(element.id as string) || [];
-  const isOpen = enclosedInToggleIds.every((id) => openIds.has(id));
+  const isVisible = useIsVisible(element.id as string);
 
-  if (isOpen) return children;
+  if (isVisible) return children;
 
-  return (
-    <div
-      style={{
-        visibility: 'hidden',
-        height: 0,
-        margin: 0,
-      }}
-    >
-      {children}
-    </div>
-  );
+  return <div style={hiddenStyle}>{children}</div>;
+};
+
+const hiddenStyle: React.CSSProperties = {
+  visibility: 'hidden',
+  height: 0,
+  margin: 0,
 };

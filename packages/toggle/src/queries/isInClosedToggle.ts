@@ -10,6 +10,6 @@ export const isInClosedToggle = <
   editor: E,
   elementId: string
 ) => {
-  const enclosingToggleIds = getEnclosingToggleIds(editor.children, elementId);
+  const enclosingToggleIds = getEnclosingToggleIds<V, E>(editor, elementId);
   return someToggleClosed<V, E>(editor, enclosingToggleIds);
 };

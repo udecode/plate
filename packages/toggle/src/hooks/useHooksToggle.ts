@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { getPluginOptions, PlateEditor, Value } from '@udecode/plate-common';
 
-import { useToggleControllerStore } from '../store';
+import { useToggleControllerStore, useToggleIndex } from '../store';
 import { ELEMENT_TOGGLE, TogglePlugin } from '../types';
 
 export const useHooksToggle = <
@@ -11,7 +11,10 @@ export const useHooksToggle = <
   editor: E
 ) => {
   const [openIds, setOpenIds] = useToggleControllerStore().use.openIds();
+  const toggleIndex = useToggleIndex();
 
+  // This is hacky
+  // TODO a JOTAI layer in plate-core instead of relying on plugin options
   useEffect(() => {
     const options = getPluginOptions<TogglePlugin, V, E>(
       editor,
@@ -19,5 +22,6 @@ export const useHooksToggle = <
     );
     options.openIds = openIds;
     options.setOpenIds = setOpenIds;
-  }, [openIds, setOpenIds]);
+    options.toggleIndex = toggleIndex;
+  }, [openIds, setOpenIds, toggleIndex]);
 };
