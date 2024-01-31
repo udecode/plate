@@ -170,7 +170,7 @@ describe('when +space', () => {
       },
     };
 
-    let editor = withAutoformat(
+    const editor = withAutoformat(
       withReact(input),
       mockPlugin(autoformatPluginWitoutTogglePreformat)
     );
