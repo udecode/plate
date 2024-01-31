@@ -71,10 +71,10 @@ type UpdatedProperties = {
   newProperties: Record<string, any>;
 };
 
-const insertedNodes: InsertedNode[] = [];
-const insertedRanges: InsertedRange[] = [];
-const removedNodes: RemovedNodes[] = [];
-const updatedProperties: UpdatedProperties[] = [];
+let insertedNodes: InsertedNode[] = [];
+let insertedRanges: InsertedRange[] = [];
+let removedNodes: RemovedNodes[] = [];
+let updatedProperties: UpdatedProperties[] = [];
 
 const handleUpdatedProperties = () => {
   // console.log('updatedProperties', JSON.stringify(updatedProperties.map(({ rangeRef, ...rest }) => ({ range: rangeRef.current, ...rest })), null, 2));
@@ -510,6 +510,11 @@ export const applyDiffToSuggestions = (
       );
     });
   });
+
+  insertedNodes = [];
+  insertedRanges = [];
+  removedNodes = [];
+  updatedProperties = [];
 
   // console.log(JSON.stringify(editor.children, null, 2));
 };

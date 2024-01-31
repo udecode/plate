@@ -253,6 +253,10 @@ export const docsConfig: DocsConfig = {
           title: 'Preview Markdown',
           href: '/docs/examples/preview-markdown',
         },
+        {
+          title: 'Version History',
+          href: '/docs/examples/version-history',
+        },
       ],
     },
     {

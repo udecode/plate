@@ -682,6 +682,12 @@ const example: Registry = [
     files: ['example/multiple-editors-demo.tsx'],
   },
   {
+    name: 'version-history-demo',
+    type: 'components:example',
+    registryDependencies: [],
+    files: ['example/version-history-demo.tsx'],
+  },
+  {
     name: 'playground-demo',
     type: 'components:example',
     registryDependencies: [],

@@ -816,6 +816,13 @@ export const Index: Record<string, any> = {
       files: ['registry/default/example/multiple-editors-demo.tsx'],
       component: React.lazy(() => import('@/registry/default/example/multiple-editors-demo')),
     },
+    'version-history-demo': {
+      name: 'version-history-demo',
+      type: 'components:example',
+      registryDependencies: [],
+      files: ['registry/default/example/version-history-demo.tsx'],
+      component: React.lazy(() => import('@/registry/default/example/version-history-demo')),
+    },
     'playground-demo': {
       name: 'playground-demo',
       type: 'components:example',
