@@ -15,6 +15,7 @@ Check out [Toggle](https://platejs.org/docs/toggle).
 4. An option to specify how to get the id of elements, right now we are using the default id attribute from the `node-id` plugin.
 5. Adding a placeholder below the toggle, like Notion does, when the toggle is expanded without any elements below.
 6. Make toggle button more accessible
+7. When indenting an element right of a closed toggle, it becomes hidden. This makes sense, but a nicer UI would be to open the toggle in that case, like Notion does.
 
 ## License
 
