@@ -6940,6 +6940,24 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@udecode/plate-toggle@npm:30.1.2, @udecode/plate-toggle@workspace:^, @udecode/plate-toggle@workspace:packages/toggle":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-toggle@workspace:packages/toggle"
+  dependencies:
+    "@udecode/plate-common": "npm:30.1.2"
+    "@udecode/plate-indent": "npm:30.1.2"
+    "@udecode/plate-node-id": "npm:30.1.2"
+    lodash: "npm:^4.17.21"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.94.0"
+    slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
+    slate-react: ">=0.99.0"
+  languageName: unknown
+  linkType: soft
+
 "@udecode/plate-trailing-block@npm:30.1.2, @udecode/plate-trailing-block@workspace:^, @udecode/plate-trailing-block@workspace:packages/trailing-block":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-trailing-block@workspace:packages/trailing-block"
@@ -7067,6 +7085,7 @@ __metadata:
     "@udecode/plate-suggestion": "npm:30.1.2"
     "@udecode/plate-tabbable": "npm:30.1.2"
     "@udecode/plate-table": "npm:30.1.2"
+    "@udecode/plate-toggle": "npm:30.1.2"
     "@udecode/plate-trailing-block": "npm:30.1.2"
   peerDependencies:
     react: ">=16.8.0"
@@ -21684,6 +21703,7 @@ __metadata:
     "@udecode/plate-tabbable": "workspace:^"
     "@udecode/plate-table": "workspace:^"
     "@udecode/plate-test-utils": "workspace:^"
+    "@udecode/plate-toggle": "workspace:^"
     "@udecode/plate-trailing-block": "workspace:^"
     "@udecode/plate-utils": "workspace:^"
     "@udecode/react-utils": "workspace:^"

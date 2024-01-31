@@ -31,6 +31,7 @@ import { singleLineValue } from '@/plate/demo/values/singleLineValue';
 import { softBreakValue } from '@/plate/demo/values/softBreakValue';
 import { tabbableValue } from '@/plate/demo/values/tabbableValue';
 import { tableValue } from '@/plate/demo/values/tableValue';
+import { toggleValue } from '@/plate/demo/values/toggleValue';
 import { KEY_ALIGN } from '@udecode/plate-alignment';
 import { KEY_AUTOFORMAT } from '@udecode/plate-autoformat';
 import {
@@ -64,6 +65,7 @@ import { KEY_DESERIALIZE_DOCX } from '@udecode/plate-serializer-docx';
 import { KEY_DESERIALIZE_MD } from '@udecode/plate-serializer-md';
 import { KEY_TABBABLE } from '@udecode/plate-tabbable';
 import { ELEMENT_TABLE } from '@udecode/plate-table';
+import { ELEMENT_TOGGLE } from '@udecode/plate-toggle';
 import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
 
 export type ValueId = keyof typeof customizerPlugins | 'tableMerge';
@@ -330,6 +332,13 @@ export const customizerPlugins = {
     value: todoListValue,
     route: '/docs/todo-list',
     plugins: [ELEMENT_TODO_LI],
+  },
+  toggle: {
+    id: 'toggle',
+    label: 'Toggle',
+    value: toggleValue,
+    route: '/docs/toggle',
+    plugins: [ELEMENT_TOGGLE],
   },
   trailingblock: {
     id: 'trailingblock',

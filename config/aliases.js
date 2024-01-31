@@ -46,6 +46,7 @@ module.exports = {
   '@udecode/plate-tabbable': 'tabbable',
   '@udecode/plate-table': 'table',
   '@udecode/plate-test-utils': 'test-utils',
+  '@udecode/plate-toggle': 'toggle',
   '@udecode/plate-trailing-block': 'trailing-block',
   '@udecode/plate-utils': 'plate-utils',
   '@udecode/react-utils': 'react-utils',

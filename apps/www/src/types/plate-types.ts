@@ -87,6 +87,7 @@ import {
   ELEMENT_TR,
   TTableElement,
 } from '@udecode/plate-table';
+import { ELEMENT_TOGGLE, TToggleElement } from '@udecode/plate-toggle';
 import { TText } from '@udecode/slate';
 
 /**
@@ -262,6 +263,11 @@ export interface MyTodoListElement
   children: MyInlineChildren;
 }
 
+export interface MyToggleElement extends TToggleElement, MyBlockElement {
+  type: typeof ELEMENT_TOGGLE;
+  children: MyInlineChildren;
+}
+
 export interface MyImageElement extends TImageElement, MyBlockElement {
   type: typeof ELEMENT_IMAGE;
   children: [EmptyText];
@@ -305,6 +311,7 @@ export type MyRootBlock =
   | MyBulletedListElement
   | MyNumberedListElement
   | MyTodoListElement
+  | MyToggleElement
   | MyImageElement
   | MyMediaEmbedElement
   | MyHrElement
