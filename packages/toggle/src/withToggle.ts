@@ -9,7 +9,7 @@ import {
 import { indent, TIndentElement } from '@udecode/plate-indent';
 
 import { getLastEntryEnclosedInToggle, isInClosedToggle } from './queries';
-import { isToggleOpen } from './store';
+import { isToggleOpen } from './toggle-controller-store';
 import { ELEMENT_TOGGLE } from './types';
 
 export const withToggle = <

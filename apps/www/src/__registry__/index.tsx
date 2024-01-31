@@ -645,7 +645,7 @@ export const Index: Record<string, any> = {
       name: 'toggle-element',
       type: 'components:plate-ui',
       registryDependencies: [],
-      files: ['registry/default/plate-ui/toggle-element.tsx'],
+      files: ['registry/default/plate-ui/link-element.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/toggle-element')),
     },
     'toggle-toolbar-button': {

@@ -1,6 +1,6 @@
 import { getNodeEntries, PlateEditor } from '@udecode/plate-common';
 
-import { toggleIds } from '../store';
+import { toggleIds } from '../toggle-controller-store';
 
 // When creating a toggle, we open it by default.
 // So before inserting the toggle, we update the store to mark the id of the blocks about to be turned into toggles as open.

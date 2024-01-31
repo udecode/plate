@@ -69,10 +69,6 @@ import {
   TTodoListItemElement,
 } from '@udecode/plate-list';
 import {
-  ELEMENT_TOGGLE,
-  TToggleElement,
-} from '@udecode/plate-toggle';
-import {
   ELEMENT_IMAGE,
   ELEMENT_MEDIA_EMBED,
   TImageElement,
@@ -91,6 +87,7 @@ import {
   ELEMENT_TR,
   TTableElement,
 } from '@udecode/plate-table';
+import { ELEMENT_TOGGLE, TToggleElement } from '@udecode/plate-toggle';
 import { TText } from '@udecode/slate';
 
 /**
@@ -266,9 +263,7 @@ export interface MyTodoListElement
   children: MyInlineChildren;
 }
 
-export interface MyToggleElement
-  extends TToggleElement,
-    MyBlockElement {
+export interface MyToggleElement extends TToggleElement, MyBlockElement {
   type: typeof ELEMENT_TOGGLE;
   children: MyInlineChildren;
 }

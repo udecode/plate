@@ -1,7 +1,7 @@
 import React from 'react';
 import { InjectComponentReturnType } from '@udecode/plate-common';
 
-import { useIsVisible } from './store';
+import { useIsVisible } from './toggle-controller-store';
 
 export const injectToggle = (): InjectComponentReturnType => WithToggle;
 

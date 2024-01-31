@@ -1,7 +1,10 @@
 import { useEffect } from 'react';
 import { getPluginOptions, PlateEditor, Value } from '@udecode/plate-common';
 
-import { useToggleControllerStore, useToggleIndex } from '../store';
+import {
+  useToggleControllerStore,
+  useToggleIndex,
+} from '../toggle-controller-store';
 import { ELEMENT_TOGGLE, TogglePlugin } from '../types';
 
 export const useHooksToggle = <

@@ -1,0 +1,14 @@
+{
+  "name": "toggle-element",
+  "dependencies": [
+    "@udecode/plate-toggle"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "name": "link-element.tsx",
+      "content": "import React from 'react';\nimport { cn, withRef } from '@udecode/cn';\nimport { PlateElement, useElement } from '@udecode/plate-common';\nimport { TLinkElement, useLink } from '@udecode/plate-link';\n\nexport const LinkElement = withRef<typeof PlateElement>(\n  ({ className, children, ...props }, ref) => {\n    const element = useElement<TLinkElement>();\n    const { props: linkProps } = useLink({ element });\n\n    return (\n      <PlateElement\n        ref={ref}\n        asChild\n        className={cn(\n          'font-medium text-primary underline decoration-primary underline-offset-4',\n          className\n        )}\n        {...(linkProps as any)}\n        {...props}\n      >\n        <a>{children}</a>\n      </PlateElement>\n    );\n  }\n);\n"
+    }
+  ],
+  "type": "components:plate-ui"
+}

@@ -1,6 +1,6 @@
 import { PlateEditor, Value } from '@udecode/plate-common';
 
-import { someToggleClosed } from '../store';
+import { someToggleClosed } from '../toggle-controller-store';
 import { getEnclosingToggleIds } from './getEnclosingToggleIds';
 
 export const isInClosedToggle = <

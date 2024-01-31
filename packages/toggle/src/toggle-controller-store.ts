@@ -60,7 +60,7 @@ export const someToggleClosed = <
   toggleIds: string[]
 ): boolean => {
   const options = getPluginOptions<TogglePlugin, V, E>(editor, ELEMENT_TOGGLE);
-  const openIds = options.openIds;
+  const openIds = options.openIds!;
   return toggleIds.some((id) => !openIds.has(id));
 };
 
@@ -72,7 +72,7 @@ export const isToggleOpen = <
   toggleId: string
 ): boolean => {
   const options = getPluginOptions<TogglePlugin, V, E>(editor, ELEMENT_TOGGLE);
-  const openIds = options.openIds;
+  const openIds = options.openIds!;
   return openIds.has(toggleId);
 };
 
@@ -85,7 +85,7 @@ export const toggleIds = <
   force: boolean | null = null
 ): void => {
   const options = getPluginOptions<TogglePlugin, V, E>(editor, ELEMENT_TOGGLE);
-  options.setOpenIds((openIds) => _toggleIds(openIds, ids, force));
+  options.setOpenIds!((openIds) => _toggleIds(openIds, ids, force));
 };
 
 const _toggleIds = (

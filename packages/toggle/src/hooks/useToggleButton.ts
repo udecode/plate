@@ -1,6 +1,9 @@
 import { useEditorRef } from '@udecode/plate-common';
 
-import { toggleIds, useToggleControllerStore } from '../store';
+import {
+  toggleIds,
+  useToggleControllerStore,
+} from '../toggle-controller-store';
 
 export const useToggleButtonState = (toggleId: string) => {
   const [openIds] = useToggleControllerStore().use.openIds();

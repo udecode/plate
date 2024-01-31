@@ -824,7 +824,7 @@
     ],
     "registryDependencies": [],
     "files": [
-      "plate-ui/toggle-element.tsx"
+      "plate-ui/link-element.tsx"
     ],
     "type": "components:plate-ui"
   },

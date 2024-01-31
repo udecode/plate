@@ -19,7 +19,6 @@ import { fontValue } from '@/plate/demo/values/fontValue';
 import { highlightValue } from '@/plate/demo/values/highlightValue';
 import { horizontalRuleValue } from '@/plate/demo/values/horizontalRuleValue';
 import { indentListValue } from '@/plate/demo/values/indentListValue';
-import { toggleValue } from '@/plate/demo/values/toggleValue';
 import { indentValue } from '@/plate/demo/values/indentValue';
 import { kbdValue } from '@/plate/demo/values/kbdValue';
 import { lineHeightValue } from '@/plate/demo/values/lineHeightValue';
@@ -32,6 +31,7 @@ import { singleLineValue } from '@/plate/demo/values/singleLineValue';
 import { softBreakValue } from '@/plate/demo/values/softBreakValue';
 import { tabbableValue } from '@/plate/demo/values/tabbableValue';
 import { tableValue } from '@/plate/demo/values/tableValue';
+import { toggleValue } from '@/plate/demo/values/toggleValue';
 import { KEY_ALIGN } from '@udecode/plate-alignment';
 import { KEY_AUTOFORMAT } from '@udecode/plate-autoformat';
 import {

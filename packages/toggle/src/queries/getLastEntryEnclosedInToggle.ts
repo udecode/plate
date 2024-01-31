@@ -1,7 +1,7 @@
 import { PlateEditor, TNodeEntry, Value } from '@udecode/plate-common';
 import last from 'lodash/last';
 
-import { buildToggleIndex } from '../store';
+import { buildToggleIndex } from '../toggle-controller-store';
 
 export const getLastEntryEnclosedInToggle = <
   V extends Value = Value,

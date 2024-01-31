@@ -8,4 +8,4 @@ export * from './withToggle';
 export * from './hooks/index';
 export * from './queries/index';
 export * from './transforms/index';
-export * from './store';
+export * from './toggle-controller-store';

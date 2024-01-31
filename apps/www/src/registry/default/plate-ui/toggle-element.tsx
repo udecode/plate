@@ -15,9 +15,7 @@ export const ToggleElement = withRef<typeof PlateElement>(
         <div className="relative pl-6">
           <span
             contentEditable={false}
-            className={
-              'absolute -left-0.5 -top-0.5 cursor-pointer select-none p-0.25 flex justify-center items-center rounded-sm hover:bg-slate-200 transition-colors'
-            }
+            className="absolute -left-0.5 -top-0.5 flex cursor-pointer select-none items-center justify-center rounded-sm p-px transition-colors hover:bg-slate-200"
             {...buttonProps}
           >
             {open ? <Icons.chevronDown /> : <Icons.chevronRight />}
