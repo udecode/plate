@@ -1,3 +1,4 @@
+import {mergeTwoTextFixtures} from '../diff-to-suggestions/applyDiffToSuggestions.fixtures';
 import { slateDiff } from './slate-diff';
 import {
   addMarkFixtures,
@@ -31,6 +32,12 @@ describe('slate-diff', () => {
     expect(
       slateDiff(mergeTextFixtures.doc1, mergeTextFixtures.doc2)
     ).toStrictEqual(mergeTextFixtures.expected);
+  });
+
+  it('merge-two-text', () => {
+    expect(
+      slateDiff(mergeTwoTextFixtures.doc1, mergeTwoTextFixtures.doc2)
+    ).toStrictEqual(mergeTwoTextFixtures.expected);
   });
 
   it('insert-and-update-paragraph', () => {

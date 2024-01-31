@@ -12,7 +12,13 @@ export const addMarkFixtures = {
       type: 'paragraph',
       children: [
         { text: 'PingCode ' },
-        { text: 'Wiki', bold: true },
+        {
+          text: 'Wiki',
+          bold: true,
+          suggestionUpdate: {
+            bold: true,
+          },
+        },
         {
           text: ' & Worktile',
           // TODO
@@ -235,9 +241,13 @@ export const insertTextAddMarkFixtures = {
         },
         {
           text: ' & ',
+          bold: undefined,
           suggestion: true,
           suggestion_0: true,
           suggestionId: '1',
+          suggestionUpdate: {
+            bold: undefined,
+          },
         },
         {
           text: 'Worktile',
@@ -357,21 +367,13 @@ export const mergeTextFixtures = {
         {
           text: 'PingCode',
           bold: true,
-          // suggestionUpdate: true,
-        },
-        {
-          text: ' & ',
-          suggestion: true,
-          suggestion_0: true,
-          suggestionId: '1',
-          suggestionDeletion: true,
         },
         {
           text: ' & ',
           bold: true,
-          suggestion: true,
-          suggestion_0: true,
-          suggestionId: '1',
+          suggestionUpdate: {
+            bold: true,
+          },
         },
       ],
     },
@@ -487,30 +489,17 @@ export const mergeTwoTextFixtures = {
         {
           text: 'PingCode',
           bold: true,
-          // suggestionUpdate: true,
-        },
-        {
-          text: ' & ',
-          suggestion: true,
-          suggestion_0: true,
-          suggestionId: '1',
-          suggestionDeletion: true,
         },
         {
           text: ' & ',
           bold: true,
-          suggestion: true,
-          suggestion_0: true,
-          suggestionId: '1',
-          suggestionDeletion: true,
+          suggestionUpdate: {
+            bold: true,
+          },
         },
         {
           text: 'Worktile',
           bold: true,
-          suggestion: true,
-          suggestion_0: true,
-          suggestionId: '1',
-          suggestionDeletion: true,
         },
       ],
     },
@@ -559,14 +548,7 @@ export const mergeRemoveTextFixtures = {
           // suggestionUpdate: true,
         },
         {
-          text: ' & ',
-          suggestion: true,
-          suggestion_0: true,
-          suggestionId: '1',
-          suggestionDeletion: true,
-        },
-        {
-          text: 'Worktile',
+          text: ' & Worktile',
           bold: true,
           suggestion: true,
           suggestion_0: true,
