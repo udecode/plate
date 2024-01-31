@@ -46,6 +46,7 @@ export function transformDiffTexts(
 function slateTextDiff(a: string, b: string): Omit<TOperation, 'path'>[] {
   // Compute the diff between two strings
   const diff = dmp.diff_main(a, b);
+  console.log({ a, b, diff });
 
   const operations: Omit<TOperation, 'path'>[] = [];
 

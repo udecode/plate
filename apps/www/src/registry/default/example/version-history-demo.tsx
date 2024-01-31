@@ -4,6 +4,8 @@ import { ELEMENT_PARAGRAPH, createParagraphPlugin } from '@udecode/plate-paragra
 import {ParagraphElement} from '../plate-ui/paragraph-element';
 import {Button} from '../plate-ui/button';
 import {slateDiff, applyDiffToSuggestions} from '@udecode/plate-suggestion';
+import { createBoldPlugin, MARK_BOLD } from '@udecode/plate-basic-marks';
+import {withProps} from '@udecode/cn';
 
 const initialValue: Value = [
   {
@@ -12,7 +14,11 @@ const initialValue: Value = [
   },
   {
     type: ELEMENT_PARAGRAPH,
-    children: [{ text: 'Try editing the text and see what happens.' }],
+    children: [
+      { text: 'Try editing the ' },
+      { text: 'text and see what', bold: true },
+      { text: ' happens.' }
+    ],
   },
 ];
 
@@ -44,22 +50,27 @@ const createDiffPlugin = createPluginFactory({
 
 function SuggestionLeaf({ children, ...props }: PlateLeafProps) {
   const isDeletion = props.leaf.suggestionDeletion;
+  const isUpdate = !isDeletion && props.leaf.suggestionUpdate;
   const Component = isDeletion ? 'del' : 'ins';
 
   return (
     <PlateLeaf {...props} asChild>
-      <Component>{children}</Component>
+      <Component className={isDeletion ? 'bg-red-200' : (isUpdate ? 'bg-blue-200' : 'bg-green-200')}>
+        {children}
+      </Component>
     </PlateLeaf>
   );
 }
 
 const plugins = createPlugins([
   createParagraphPlugin(),
+  createBoldPlugin(),
   createDiffPlugin(),
 ], {
   components: {
     [ELEMENT_PARAGRAPH]: ParagraphElement,
     [MARK_SUGGESTION]: SuggestionLeaf,
+    [MARK_BOLD]: withProps(PlateLeaf, { as: 'strong' }),
   },
 });
 

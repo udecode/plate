@@ -504,6 +504,7 @@ export const applyDiffToSuggestions = (
       addRangeMarks(
         editor,
         {
+          ...getSuggestionProps(editor, idFactory()),
           suggestionUpdate: diffProps,
         },
         { at: range }
