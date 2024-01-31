@@ -6,8 +6,8 @@
   "registryDependencies": [],
   "files": [
     {
-      "name": "link-element.tsx",
-      "content": "import React from 'react';\nimport { cn, withRef } from '@udecode/cn';\nimport { PlateElement, useElement } from '@udecode/plate-common';\nimport { TLinkElement, useLink } from '@udecode/plate-link';\n\nexport const LinkElement = withRef<typeof PlateElement>(\n  ({ className, children, ...props }, ref) => {\n    const element = useElement<TLinkElement>();\n    const { props: linkProps } = useLink({ element });\n\n    return (\n      <PlateElement\n        ref={ref}\n        asChild\n        className={cn(\n          'font-medium text-primary underline decoration-primary underline-offset-4',\n          className\n        )}\n        {...(linkProps as any)}\n        {...props}\n      >\n        <a>{children}</a>\n      </PlateElement>\n    );\n  }\n);\n"
+      "name": "toggle-element.tsx",
+      "content": "import { withRef } from '@udecode/cn';\nimport { PlateElement, useElement } from '@udecode/plate-common';\nimport { useToggleButton, useToggleButtonState } from '@udecode/plate-toggle';\n\nimport { Icons } from '@/components/icons';\n\nexport const ToggleElement = withRef<typeof PlateElement>(\n  ({ children, ...props }, ref) => {\n    const element = useElement();\n    const state = useToggleButtonState(element.id as string);\n    const { open, buttonProps } = useToggleButton(state);\n\n    return (\n      <PlateElement ref={ref} asChild {...props}>\n        <div className=\"relative pl-6\">\n          <span\n            contentEditable={false}\n            className=\"absolute -left-0.5 -top-0.5 flex cursor-pointer select-none items-center justify-center rounded-sm p-px transition-colors hover:bg-slate-200\"\n            {...buttonProps}\n          >\n            {open ? <Icons.chevronDown /> : <Icons.chevronRight />}\n          </span>\n          {children}\n        </div>\n      </PlateElement>\n    );\n  }\n);\n"
     }
   ],
   "type": "components:plate-ui"

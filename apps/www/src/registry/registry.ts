@@ -526,7 +526,7 @@ const ui: Registry = [
     type: 'components:plate-ui',
     dependencies: ['@udecode/plate-toggle'],
     registryDependencies: [],
-    files: ['plate-ui/link-element.tsx'],
+    files: ['plate-ui/toggle-element.tsx'],
   },
   {
     name: 'toggle-toolbar-button',
