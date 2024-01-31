@@ -7,30 +7,17 @@ import { Icons } from '@/components/icons';
 export const ToggleElement = withRef<typeof PlateElement>(
   ({ children, ...props }, ref) => {
     const element = useElement();
-    const state = useToggleButtonState(element.id);
+    const state = useToggleButtonState(element.id as string);
     const { open, buttonProps } = useToggleButton(state);
 
-    // TODO use tailwind instead of inline styles
     return (
       <PlateElement ref={ref} asChild {...props}>
-        <div style={{ position: 'relative', paddingLeft: '24px' }}>
+        <div className="relative pl-6">
           <span
             contentEditable={false}
-            style={{
-              position: 'absolute',
-              left: '-4px',
-              top: '-4px',
-              cursor: 'pointer',
-              padding: '4px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: '2px',
-              transition: 'background-color 0.3s ease',
-              '&:hover': {
-                backgroundColor: '#D4DBF1',
-              },
-            }}
+            className={
+              'absolute -left-0.5 -top-0.5 cursor-pointer select-none p-0.25 flex justify-center items-center rounded-sm hover:bg-slate-200 transition-colors'
+            }
             {...buttonProps}
           >
             {open ? <Icons.chevronDown /> : <Icons.chevronRight />}

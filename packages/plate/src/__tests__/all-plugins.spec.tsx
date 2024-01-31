@@ -1,4 +1,3 @@
-// TODO add toggle
 import React from 'react';
 import { render } from '@testing-library/react';
 import { createAlignPlugin } from '@udecode/plate-alignment';

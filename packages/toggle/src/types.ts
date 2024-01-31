@@ -1,4 +1,5 @@
 import { SetStateAction } from 'react';
+
 import { buildToggleIndex } from './store';
 
 export interface TogglePlugin {

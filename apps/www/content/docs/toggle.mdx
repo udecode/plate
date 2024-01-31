@@ -19,7 +19,6 @@ docs:
 ## Plugin dependencies
 
 - [Indent](/docs/indent)
-- [Indent List](/docs/indent-list)
 - [Node id](/docs/node-id)
 
 </PackageInfo>
@@ -27,7 +26,7 @@ docs:
 ## Installation
 
 ```bash
-npm install @udecode/plate-indent @udecode/plate-indent-list @udecode/plate-node-id @udecode/plate-toggle
+npm install @udecode/plate-indent @udecode/plate-node-id @udecode/plate-toggle
 ```
 
 ## Usage
@@ -35,9 +34,8 @@ npm install @udecode/plate-indent @udecode/plate-indent-list @udecode/plate-node
 ```tsx
 // ...
 import { createIndentPlugin } from '@udecode/plate-indent';
-import { createIndentListPlugin } from '@udecode/plate-indent-list';
 import { createNodeIdPlugin } from '@udecode/plate-node-id';
-import { createTogglePlugin } from '@udecode/plate-toggle';
+import { createTogglePlugin, ELEMENT_TOGGLE } from '@udecode/plate-toggle';
 
 const plugins = [
   // ...otherPlugins,
@@ -46,14 +44,7 @@ const plugins = [
   createIndentPlugin({
     inject: {
       props: {
-        validTypes: [ELEMENT_PARAGRAPH, ELEMENT_H1],
-      },
-    },
-  }),
-  createIndentListPlugin({
-    inject: {
-      props: {
-        validTypes: [ELEMENT_PARAGRAPH, ELEMENT_H1],
+        validTypes: [ELEMENT_TOGGLE, ELEMENT_PARAGRAPH, ELEMENT_H1],
       },
     },
   }),
@@ -66,11 +57,10 @@ const plugins = [
 
 ### createTogglePlugin
 
-<APIOptions>
-  {/* TODO */}
-</APIOptions>
-
 ### openNextToggles
+
+Marks the block at the current selection as an open toggle.
+Use this function right before inserting a block so that the toggle is expanded upon insertion.
 
 <APIParameters>
   <APIItem name="editor" type="TEditor">
@@ -78,9 +68,33 @@ const plugins = [
   </APIItem>
 </APIParameters>
 
-{/* TODO Add API DOC */}
+### toggleIds
+
+Toggles the open state of toggles.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="toggleIds" type="string[]">
+    An array of element ids.
+  </APIItem>
+  <APIItem name="force" type="boolean" optional>
+    Set to true if you want to expand all toggles regardless of their current
+    state. Set to false if you want to collapse all toggles regardless of their
+    current state.
+  </APIItem>
+</APIParameters>
 
 ## API Components
+
+### useToggleToolbarButtonState
+
+<APIReturns>
+  <APIItem name="pressed" type="boolean">
+    A boolean indicating whether the button is pressed or not.
+  </APIItem>
+</APIReturns>
 
 ### useToggleToolbarButton
 
@@ -103,8 +117,66 @@ A behavior hook for the toggle toolbar button.
         the toggle of the specified node type in the editor and focuses the
         editor.
       </APISubListItem>
+      <APISubListItem parent="props" name="onMouseDown" type="function">
+        A callback function to handle the mouse down event of the button. It
+        just prevents default so that focus is not lost when clicking on the
+        button.
+      </APISubListItem>
     </APISubList>
   </APIItem>
 </APIReturns>
 
-{/* TODO Add components DOC */}
+### useToggleButtonState
+
+<APIParameters>
+  <APIItem name="toggleId" type="string">
+    The id of the toggle element.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="toggleId" type="string">
+    The id of the toggle element.
+  </APIItem>
+  <APIItem name="open" type="boolean">
+    A boolean indicating whether the toggle is open (expanded) or not
+    (collapsed).
+  </APIItem>
+</APIReturns>
+
+### useToggleButton
+
+A behavior hook for the toggle button that expands or collapses a toggle element.
+
+<APIParameters>
+  <APIItem name="toggleId" type="string">
+    The id of the toggle element.
+  </APIItem>
+  <APIItem name="open" type="boolean">
+    A boolean indicating whether the toggle is open (expanded) or not
+    (collapsed).
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="toggleId" type="string">
+    The id of the toggle element.
+  </APIItem>
+  <APIItem name="open" type="boolean">
+    A boolean indicating whether the toggle is open (expanded) or not
+    (collapsed).
+  </APIItem>
+  <APIItem name="buttonProps" type="object">
+    <APISubList>
+      <APISubListItem parent="buttonProps" name="onClick" type="function">
+        A callback function to handle the click event of the button. It toggles
+        the open state of the toggle.
+      </APISubListItem>
+      <APISubListItem parent="buttonProps" name="onMouseDown" type="function">
+        A callback function to handle the mouse down event of the button. It
+        just prevents default so that focus is not lost when clicking on the
+        button.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>

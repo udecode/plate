@@ -9,9 +9,11 @@ import {
   Value,
 } from '@udecode/plate-common';
 import { KEY_INDENT, TIndentElement } from '@udecode/plate-indent';
-import { KEY_LIST_STYLE_TYPE } from '@udecode/plate-indent-list';
 
 import { ELEMENT_TOGGLE, TogglePlugin } from './types';
+
+// Duplicate constant instead of importing from "plate-indent-list" to avoid a dependency.
+const KEY_LIST_STYLE_TYPE = 'listStyleType';
 
 export const {
   toggleControllerStore,
@@ -79,26 +81,26 @@ export const toggleIds = <
   E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
-  toggleIds: string[],
-  force: boolean | undefined = undefined
+  ids: string[],
+  force: boolean | null = null
 ): void => {
   const options = getPluginOptions<TogglePlugin, V, E>(editor, ELEMENT_TOGGLE);
-  options.setOpenIds((openIds) => _toggleIds(openIds, toggleIds, force));
+  options.setOpenIds((openIds) => _toggleIds(openIds, ids, force));
 };
 
 const _toggleIds = (
   openIds: Set<string>,
-  toggleIds: string[],
-  force: boolean | undefined = undefined
+  ids: string[],
+  force: boolean | null = null
 ) => {
   const newOpenIds = new Set(openIds.values());
-  toggleIds.forEach((toggleId) => {
-    const isCurrentlyOpen = openIds.has(toggleId);
-    const newIsOpen = force === undefined ? !isCurrentlyOpen : force;
+  ids.forEach((id) => {
+    const isCurrentlyOpen = openIds.has(id);
+    const newIsOpen = force === null ? !isCurrentlyOpen : force;
     if (newIsOpen) {
-      newOpenIds.add(toggleId);
+      newOpenIds.add(id);
     } else {
-      newOpenIds.delete(toggleId);
+      newOpenIds.delete(id);
     }
   });
   return newOpenIds;

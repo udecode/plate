@@ -23,5 +23,5 @@ export const useHooksToggle = <
     options.openIds = openIds;
     options.setOpenIds = setOpenIds;
     options.toggleIndex = toggleIndex;
-  }, [openIds, setOpenIds, toggleIndex]);
+  }, [editor, openIds, setOpenIds, toggleIndex]);
 };
