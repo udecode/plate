@@ -77,7 +77,7 @@ export const autoformatBlocks: AutoformatRule[] = [
   {
     mode: 'block',
     type: ELEMENT_TOGGLE,
-    match: '|> ',
+    match: '+ ',
     preFormat: openNextToggles,
   },
   {

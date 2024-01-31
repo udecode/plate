@@ -134,12 +134,12 @@ describe('when [x].space', () => {
   });
 });
 
-describe('when |>space', () => {
+describe('when +space', () => {
   it('should format to a toggle', () => {
     const input = (
       <editor>
         <hp>
-          {'|>'}
+          +
           <cursor />
           hello
         </hp>
@@ -158,7 +158,7 @@ describe('when |>space', () => {
     const autoformatPluginRulesWitoutTogglePreformat =
       autoformatPlugin.options!.rules!.map((rule) => {
         const { preFormat, ...rest } = rule as AutoformatBlockRule;
-        if (rule.match === '|> ') return rest;
+        if (rule.match === '+ ') return rest;
         return rule;
       });
 
