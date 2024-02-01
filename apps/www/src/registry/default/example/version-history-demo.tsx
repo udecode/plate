@@ -1,26 +1,39 @@
 import React from 'react';
-import { Plate, PlateContent, PlateProps, Value, createPlugins, createPlateEditor, createPluginFactory, PlateLeafProps, PlateLeaf } from '@udecode/plate-common';
+import { Plate, PlateContent, PlateProps, Value, createPlugins, createPlateEditor, createPluginFactory, PlateLeafProps, PlateLeaf, PlateElementProps, PlateElement } from '@udecode/plate-common';
 import { ELEMENT_PARAGRAPH, createParagraphPlugin } from '@udecode/plate-paragraph';
 import {ParagraphElement} from '../plate-ui/paragraph-element';
 import {Button} from '../plate-ui/button';
 import {slateDiff, applyDiffToSuggestions} from '@udecode/plate-suggestion';
 import { createBoldPlugin, MARK_BOLD } from '@udecode/plate-basic-marks';
-import {withProps} from '@udecode/cn';
+import {cn, withProps} from '@udecode/cn';
+import {useSelected} from 'slate-react';
 
-const initialValue: Value = [
-  {
-    type: ELEMENT_PARAGRAPH,
-    children: [{ text: 'This is a version history demo.' }],
-  },
-  {
-    type: ELEMENT_PARAGRAPH,
-    children: [
-      { text: 'Try editing the ' },
-      { text: 'text and see what', bold: true },
-      { text: ' happens.' }
-    ],
-  },
-];
+const ELEMENT_INLINE_VOID = 'inlineVoid';
+
+const createInlineVoidPlugin = createPluginFactory({
+  key: ELEMENT_INLINE_VOID,
+  isElement: true,
+  isInline: true,
+  isVoid: true,
+});
+
+const InlineVoidElement = ({ children, ...props }: PlateElementProps) => {
+  const selected = useSelected();
+  return (
+    <PlateElement {...props} as="span">
+      <span
+        contentEditable={false}
+        className={cn(
+          'p-1 bg-slate-200 rounded-sm',
+          selected && 'bg-blue-500 text-white'
+        )}
+      >
+        Inline void
+      </span>
+      {children}
+    </PlateElement>
+  );
+};
 
 const KEY_DIFF = 'diff';
 const MARK_SUGGESTION = 'suggestion';
@@ -64,15 +77,40 @@ function SuggestionLeaf({ children, ...props }: PlateLeafProps) {
 
 const plugins = createPlugins([
   createParagraphPlugin(),
+  createInlineVoidPlugin(),
   createBoldPlugin(),
   createDiffPlugin(),
 ], {
   components: {
     [ELEMENT_PARAGRAPH]: ParagraphElement,
-    [MARK_SUGGESTION]: SuggestionLeaf,
+    [ELEMENT_INLINE_VOID]: InlineVoidElement,
     [MARK_BOLD]: withProps(PlateLeaf, { as: 'strong' }),
+    [MARK_SUGGESTION]: SuggestionLeaf,
   },
 });
+
+const initialValue: Value = [
+  {
+    type: ELEMENT_PARAGRAPH,
+    children: [{ text: 'This is a version history demo.' }],
+  },
+  {
+    type: ELEMENT_PARAGRAPH,
+    children: [
+      { text: 'Try editing the ' },
+      { text: 'text and see what', bold: true },
+      { text: ' happens.' }
+    ],
+  },
+  {
+    type: ELEMENT_PARAGRAPH,
+    children: [
+      { text: 'This is an ' },
+      { type: ELEMENT_INLINE_VOID, children: [{ text: '' }] },
+      { text: '. Try removing it.' },
+    ],
+  },
+];
 
 function VersionHistoryPlate(props: Omit<PlateProps, 'children' | 'plugins'>) {
   return (
@@ -91,7 +129,7 @@ function Diff({ previous, current }: DiffProps) {
   const operations = React.useMemo(() => slateDiff(previous, current), [previous, current]);
 
   const diffValue: Value = React.useMemo(() => {
-    const editor = createPlateEditor();
+    const editor = createPlateEditor({ plugins });
     editor.children = previous;
     applyDiffToSuggestions(editor, operations);
     return editor.children;
