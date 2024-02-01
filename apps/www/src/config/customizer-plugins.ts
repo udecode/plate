@@ -330,7 +330,7 @@ export const customizerPlugins = {
     id: 'todoli',
     label: 'Todo List',
     value: todoListValue,
-    route: '/docs/todo-list',
+    route: '/docs/list',
     plugins: [ELEMENT_TODO_LI],
   },
   toggle: {
