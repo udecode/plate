@@ -15,6 +15,9 @@ export const addMarkFixtures = {
         {
           text: 'Wiki',
           bold: true,
+          suggestion: true,
+          suggestion_0: true,
+          suggestionId: '1',
           suggestionUpdate: {
             bold: true,
           },
@@ -42,6 +45,91 @@ export const addMarkFixtures = {
       },
       type: 'split_node',
     },
+  ] as TOperation[],
+}
+
+export const addTwoMarkFixtures = {
+  doc1: [
+    {
+      type: 'paragraph',
+      children: [{ text: 'These words are bold!' }],
+    },
+  ],
+  doc2: [
+    {
+      type: 'paragraph',
+      children: [
+        { text: 'These ' },
+        {
+          text: 'words',
+          bold: true,
+          suggestion: true,
+          suggestion_0: true,
+          suggestionId: '1',
+          suggestionUpdate: {
+            bold: true,
+          },
+        },
+        {
+          text: ' are ',
+        },
+        {
+          text: 'bold',
+          bold: true,
+          suggestion: true,
+          suggestion_0: true,
+          suggestionId: '1',
+          suggestionUpdate: {
+            bold: true,
+          },
+        },
+        {
+          text: '!',
+        },
+      ],
+    },
+  ],
+  operations: [
+    {
+      type: "split_node",
+      path: [
+        0,
+        0
+      ],
+      position: 6,
+      properties: {
+        bold: true
+      }
+    },
+    {
+      type: "split_node",
+      path: [
+        0,
+        1
+      ],
+      position: 5,
+      properties: {}
+    },
+    {
+      type: "split_node",
+      path: [
+        0,
+        2
+      ],
+      position: 5,
+      properties: {
+        bold: true
+      }
+    },
+    {
+      type: "split_node",
+      path: [
+        0,
+        3
+      ],
+      position: 4,
+      properties: {}
+    }
   ] as TOperation[],
 }
 
@@ -237,7 +325,6 @@ export const insertTextAddMarkFixtures = {
         {
           text: 'PingCode',
           bold: true,
-          // suggestionUpdate: true,
         },
         {
           text: ' & ',
@@ -371,6 +458,9 @@ export const mergeTextFixtures = {
         {
           text: ' & ',
           bold: true,
+          suggestion: true,
+          suggestion_0: true,
+          suggestionId: '1',
           suggestionUpdate: {
             bold: true,
           },
@@ -419,7 +509,6 @@ export const mergeNodeFixtures = {
         {
           text: 'PingCode',
           bold: true,
-          // suggestionUpdate: true,
         },
         {
           text: ' & ',
@@ -493,6 +582,9 @@ export const mergeTwoTextFixtures = {
         {
           text: ' & ',
           bold: true,
+          suggestion: true,
+          suggestion_0: true,
+          suggestionId: '1',
           suggestionUpdate: {
             bold: true,
           },
@@ -545,7 +637,6 @@ export const mergeRemoveTextFixtures = {
       children: [
         {
           text: 'PingCode',
-          // suggestionUpdate: true,
         },
         {
           text: ' & Worktile',

@@ -88,8 +88,9 @@ interface DiffProps {
 }
 
 function Diff({ previous, current }: DiffProps) {
+  const operations = React.useMemo(() => slateDiff(previous, current), [previous, current]);
+
   const diffValue: Value = React.useMemo(() => {
-    const operations = slateDiff(previous, current);
     const editor = createPlateEditor();
     editor.children = previous;
     applyDiffToSuggestions(editor, operations);
@@ -99,6 +100,10 @@ function Diff({ previous, current }: DiffProps) {
   return (
     <>
       <VersionHistoryPlate key={JSON.stringify(diffValue)} value={diffValue} readOnly />
+
+      <pre>
+        {JSON.stringify(operations, null, 2)}
+      </pre>
 
       <pre>
         {JSON.stringify(diffValue, null, 2)}

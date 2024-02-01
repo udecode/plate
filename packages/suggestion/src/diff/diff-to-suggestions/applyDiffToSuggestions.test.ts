@@ -3,6 +3,7 @@ import { createPlateEditor } from '@udecode/plate-common';
 import { applyDiffToSuggestions } from './applyDiffToSuggestions';
 import {
   addMarkFixtures,
+  addTwoMarkFixtures,
   insertTextAddMarkFixtures,
   insertTextFixtures,
   insertUpdateParagraphFixtures,
@@ -38,6 +39,12 @@ describe('slate-diff', () => {
     editor.children = addMarkFixtures.doc1;
     applyDiffToSuggestions(editor, addMarkFixtures.operations, options);
     expect(editor.children).toStrictEqual(addMarkFixtures.doc2);
+  });
+
+  it('add-two-mark', () => {
+    editor.children = addTwoMarkFixtures.doc1;
+    applyDiffToSuggestions(editor, addTwoMarkFixtures.operations, options);
+    expect(editor.children).toStrictEqual(addTwoMarkFixtures.doc2);
   });
 
   it('insert-text-and-add-mark', () => {

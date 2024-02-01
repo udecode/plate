@@ -35,6 +35,18 @@ import uniqWith from 'lodash/uniqWith.js';
 import { getSuggestionProps } from '../../transforms';
 import { TSuggestionText } from '../../types';
 
+const objectWithoutUndefined = (obj: Record<string, any>) => {
+  const newObj: Record<string, any> = {};
+
+  Object.keys(obj).forEach((key) => {
+    if (obj[key] !== undefined) {
+      newObj[key] = obj[key];
+    }
+  });
+
+  return newObj;
+};
+
 const addPropsToTextsInFragment = (fragment: TDescendant[], props: any): TDescendant[] => {
   return fragment.map((node) => {
     if (isText(node)) {
@@ -93,7 +105,11 @@ const handleUpdatedProperties = () => {
     focus: rangePoints[i + 1],
   }));
 
-  const flatUpdates = flatRanges.map((flatRange) => {
+  // console.log('flatRanges', JSON.stringify(flatRanges, null, 2));
+
+  const flatUpdates = flatRanges.map((flatRange, i) => {
+    const debug = i == 1;
+
     const intersectingUpdates = updatedProperties.filter(({ rangeRef }) => {
       const range = rangeRef.current;
       if (!range) return false;
@@ -102,16 +118,28 @@ const handleUpdatedProperties = () => {
       return Range.isExpanded(intersection);
     });
 
+    if (debug) {
+      // console.log('flatRange', flatRange);
+      // console.log('intersectingUpdates', intersectingUpdates);
+    }
+
     if (intersectingUpdates.length === 0) return null;
 
-    const initialProps = intersectingUpdates[0].properties;
+    const initialProps = objectWithoutUndefined(intersectingUpdates[0].properties);
 
-    const finalProps = intersectingUpdates.reduce((props, { newProperties }) => ({
-      ...props,
-      ...newProperties,
-    }), initialProps);
+    // const finalProps = intersectingUpdates.reduce((props, { newProperties }) => ({
+    //   ...props,
+    //   ...newProperties,
+    // }), initialProps);
 
-    // if (isEqual(initialProps, finalProps)) return null;
+    const finalProps = objectWithoutUndefined(intersectingUpdates.at(-1)!.newProperties);
+
+    if (isEqual(initialProps, finalProps)) return null;
+
+    if (debug) {
+      // console.log('initialProps', initialProps);
+      // console.log('finalProps', finalProps);
+    }
 
     const diffProps: Record<string, any> = {};
 
@@ -498,7 +526,10 @@ export const applyDiffToSuggestions = (
       pointRef.unref();
     });
 
-    const flatUpdates = handleUpdatedProperties();
+    // Reverse the array to prevent path changes
+    const flatUpdates = handleUpdatedProperties().reverse();
+
+    // console.log('flatUpdates', JSON.stringify(flatUpdates, null, 2));
 
     flatUpdates.forEach(({ range, diffProps }) => {
       addRangeMarks(
