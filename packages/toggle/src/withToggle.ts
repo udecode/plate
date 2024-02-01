@@ -10,6 +10,10 @@ import { indent, TIndentElement } from '@udecode/plate-indent';
 
 import { getLastEntryEnclosedInToggle, isInClosedToggle } from './queries';
 import { isToggleOpen } from './toggle-controller-store';
+import {
+  moveCurrentBlockAfterPreviousSelectable,
+  moveNextSelectableAfterCurrentBlock,
+} from './transforms';
 import { ELEMENT_TOGGLE } from './types';
 
 export const withToggle = <
@@ -18,12 +22,26 @@ export const withToggle = <
 >(
   editor: E
 ) => {
-  const { insertBreak, isSelectable } = editor;
+  const { insertBreak, isSelectable, deleteBackward, deleteForward } = editor;
 
   editor.isSelectable = (element) => {
     if (isNode(element) && isInClosedToggle<V, E>(editor, element.id as string))
       return false;
     return isSelectable(element);
+  };
+
+  editor.deleteBackward = (unit) => {
+    if (
+      moveCurrentBlockAfterPreviousSelectable(editor as PlateEditor) === false
+    )
+      return;
+    deleteBackward(unit);
+  };
+
+  editor.deleteForward = (unit) => {
+    if (moveNextSelectableAfterCurrentBlock(editor as PlateEditor) === false)
+      return;
+    deleteForward(unit);
   };
 
   editor.insertBreak = () => {
@@ -57,9 +75,13 @@ export const withToggle = <
         insertBreak();
 
         if (lastEntryEnclosedInToggle) {
+          const newlyInsertedTogglePath = [currentBlockEntry[1][0] + 1];
+          const afterLastEntryEncloseInToggle = [
+            lastEntryEnclosedInToggle[1][0] + 1,
+          ];
           moveNodes(editor, {
-            at: [currentBlockEntry[1][0] + 1], // Newly inserted toggle
-            to: [lastEntryEnclosedInToggle[1][0] + 1], // Right after the last enclosed element
+            at: newlyInsertedTogglePath,
+            to: afterLastEntryEncloseInToggle,
           });
         }
       }
