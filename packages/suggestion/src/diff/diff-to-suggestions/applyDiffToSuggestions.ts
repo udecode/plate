@@ -8,6 +8,7 @@ import {
   getNode,
   getNodeParent,
   getNodeProps,
+  getPointBefore,
   getPreviousPath,
   getStartPoint,
   insertFragment,
@@ -401,9 +402,31 @@ export const removeNodeSuggestion = (
   editor: PlateEditor,
   op: TRemoveNodeOperation,
 ) => {
+  // const pointBefore = getPointBefore(editor, op.path);
+  // const locationRef = pointBefore
+  //   ? createPointRef(editor, pointBefore)
+  //   : createPathRef(editor, op.path);
+
+  // console.log('removeNodeSuggestion', op.path, pointBefore, locationRef.current);
+
   editor.apply(op);
-  const pathRef = createPathRef(editor, op.path);
-  removedNodes.push({ locationRef: pathRef, nodes: [op.node], isFragment: false });
+
+  let nodes = [op.node];
+
+  /**
+   * If the current remove invalidated the PathRef of any previous remove,
+   * insert the previous remove's nodes into the current remove's node list.
+   */
+  removedNodes.forEach((removedNodeEntry) => {
+    const { locationRef, nodes: oldNodes } = removedNodeEntry;
+    if (locationRef.current === null) {
+      nodes = [...oldNodes, ...nodes];
+      removedNodeEntry.nodes = [];
+    }
+  });
+
+  const locationRef = createPathRef(editor, op.path);
+  removedNodes.push({ locationRef, nodes, isFragment: false });
 };
 
 export const applyDiffToSuggestions = (
@@ -488,6 +511,7 @@ export const applyDiffToSuggestions = (
 
     removedNodes.forEach(({ locationRef, nodes, isFragment }) => {
       const location = locationRef.current;
+      // console.log({ location, nodes, isFragment });
       if (location) {
         const suggestionProps = getSuggestionProps(editor, idFactory(), {
           suggestionDeletion: true,
@@ -498,6 +522,8 @@ export const applyDiffToSuggestions = (
             nodes,
             suggestionProps
           );
+
+          // console.log('fragmentWithSuggestion', fragmentWithSuggestion);
 
           insertFragment(editor, fragmentWithSuggestion, {
             at: location,

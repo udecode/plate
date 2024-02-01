@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plate, PlateContent, PlateProps, Value, createPlugins, createPlateEditor, createPluginFactory, PlateLeafProps, PlateLeaf, PlateElementProps, PlateElement } from '@udecode/plate-common';
+import { Plate, PlateContent, PlateProps, Value, createPlugins, createPlateEditor, createPluginFactory, PlateLeafProps, PlateLeaf, PlateElementProps, PlateElement, isInline } from '@udecode/plate-common';
 import { ELEMENT_PARAGRAPH, createParagraphPlugin } from '@udecode/plate-paragraph';
 import {ParagraphElement} from '../plate-ui/paragraph-element';
 import {Button} from '../plate-ui/button';
@@ -47,15 +47,16 @@ const createDiffPlugin = createPluginFactory({
     },
   ],
   inject: {
-    aboveComponent: () => ({ element, children }) => {
+    aboveComponent: () => ({ element, children, editor }) => {
       if (!element.suggestion) return children;
+      const Component = isInline(editor, element) ? 'span' : 'div';
       return (
-        <div
+        <Component
           className={element.suggestionDeletion ? 'bg-red-200' : 'bg-green-200'}
           aria-label={element.suggestionDeletion ? 'deletion' : 'insertion'}
         >
           {children}
-        </div>
+        </Component>
       );
     },
   },
