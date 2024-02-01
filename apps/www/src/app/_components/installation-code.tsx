@@ -39,7 +39,7 @@ export function InstallationCode({
               __npmCommand__: code,
               __pnpmCommand__: code.replaceAll('npm install', 'pnpm add'),
               __yarnCommand__: code.replaceAll('npm install', 'yarn add'),
-              __bunCommand__: code.replaceAll('npm install', 'yarn add'),
+              __bunCommand__: code.replaceAll('npm install', 'bun add'),
             }}
             className={cn('absolute right-4 top-4')}
           />
