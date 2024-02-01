@@ -12,6 +12,7 @@ import {
   mergeRemoveTextFixtures,
   mergeTextFixtures,
   mergeTwoTextFixtures,
+  removeNodeFixtures,
   removeTextFixtures,
 } from './applyDiffToSuggestions.fixtures';
 
@@ -27,6 +28,12 @@ describe('slate-diff', () => {
     editor.children = insertTextFixtures.doc1;
     applyDiffToSuggestions(editor, insertTextFixtures.operations, options);
     expect(editor.children).toStrictEqual(insertTextFixtures.doc2);
+  });
+
+  it('remove-node', () => {
+    editor.children = removeNodeFixtures.doc1;
+    applyDiffToSuggestions(editor, removeNodeFixtures.operations, options);
+    expect(editor.children).toStrictEqual(removeNodeFixtures.doc2);
   });
 
   it('remove-text', () => {

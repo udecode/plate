@@ -406,6 +406,43 @@ export const insertTextFixtures = {
   ] as TOperation[],
 }
 
+export const removeNodeFixtures = {
+  doc1: [
+    {
+      type: 'paragraph',
+      children: [{ text: 'PingCode' }],
+    },
+    {
+      type: 'paragraph',
+      children: [{ text: 'Worktile' }],
+    },
+  ],
+  doc2: [
+    {
+      type: 'paragraph',
+      children: [{ text: 'PingCode' }],
+    },
+    {
+      type: 'paragraph',
+      children: [{ text: 'Worktile' }],
+      suggestion: true,
+      suggestion_0: true,
+      suggestionId: '1',
+      suggestionDeletion: true,
+    },
+  ],
+  operations: [
+    {
+      type: 'remove_node',
+      path: [1],
+      node: {
+        type: 'paragraph',
+        children: [{ text: 'Worktile' }],
+      },
+    },
+  ] as TOperation[],
+}
+
 export const removeTextFixtures = {
   doc1: [
     {

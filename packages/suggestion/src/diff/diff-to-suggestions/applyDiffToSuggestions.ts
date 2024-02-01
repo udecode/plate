@@ -72,7 +72,7 @@ type InsertedRange = {
 };
 
 type RemovedNodes = {
-  pointRef: PointRef;
+  locationRef: PathRef | PointRef;
   nodes: TDescendant[];
   isFragment: boolean;
 };
@@ -245,7 +245,7 @@ export const mergeNodeSuggestion = (
     insertedRanges.push({ rangeRef: mergedRangeRef });
 
     removedNodes.push({
-      pointRef: createPointRef(editor, endOfMerged),
+      locationRef: createPointRef(editor, endOfMerged),
       nodes: [node],
       isFragment: false,
     });
@@ -376,7 +376,7 @@ export const removeTextSuggestion = (
   const fragment = getFragment(editor, range);
   editor.apply(op);
   const pointRef = createPointRef(editor, range.anchor);
-  removedNodes.push({ pointRef, nodes: fragment, isFragment: true });
+  removedNodes.push({ locationRef: pointRef, nodes: fragment, isFragment: true });
   // const id = idFactory();
 
   // addRangeMarks(
@@ -400,19 +400,10 @@ export const removeTextSuggestion = (
 export const removeNodeSuggestion = (
   editor: PlateEditor,
   op: TRemoveNodeOperation,
-  {
-    idFactory,
-  }: {
-    idFactory: () => string;
-  }
 ) => {
-  setNodes(
-    editor,
-    getSuggestionProps(editor, idFactory(), {
-      suggestionDeletion: true,
-    }),
-    { at: op.path }
-  );
+  editor.apply(op);
+  const pathRef = createPathRef(editor, op.path);
+  removedNodes.push({ locationRef: pathRef, nodes: [op.node], isFragment: false });
 };
 
 export const applyDiffToSuggestions = (
@@ -440,8 +431,7 @@ export const applyDiffToSuggestions = (
           return;
         }
         case 'remove_node': {
-          // removeNodeSuggestion(editor, op, { idFactory });
-          editor.apply(op);
+          removeNodeSuggestion(editor, op);
           return;
         }
         case 'merge_node': {
@@ -496,9 +486,9 @@ export const applyDiffToSuggestions = (
       rangeRef.unref();
     });
 
-    removedNodes.forEach(({ pointRef, nodes, isFragment }) => {
-      const point = pointRef.current;
-      if (point) {
+    removedNodes.forEach(({ locationRef, nodes, isFragment }) => {
+      const location = locationRef.current;
+      if (location) {
         const suggestionProps = getSuggestionProps(editor, idFactory(), {
           suggestionDeletion: true,
         });
@@ -510,7 +500,7 @@ export const applyDiffToSuggestions = (
           );
 
           insertFragment(editor, fragmentWithSuggestion, {
-            at: point,
+            at: location,
           });
         } else {
           const nodesWithSuggestion = nodes.map((node) => ({
@@ -519,11 +509,11 @@ export const applyDiffToSuggestions = (
           }));
 
           insertNodes(editor, nodesWithSuggestion, {
-            at: point,
+            at: location,
           });
         }
       }
-      pointRef.unref();
+      locationRef.unref();
     });
 
     // Reverse the array to prevent path changes
