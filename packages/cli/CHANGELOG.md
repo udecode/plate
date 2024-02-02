@@ -1,5 +1,11 @@
 # @udecode/plate-ui
 
+## 30.3.3
+
+### Patch Changes
+
+- [#2913](https://github.com/udecode/plate/pull/2913) by [@zbeyens](https://github.com/zbeyens) – fix tw prefix
+
 ## 30.2.0
 
 ### Minor Changes
