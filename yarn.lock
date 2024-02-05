@@ -6940,7 +6940,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-toggle@npm:30.1.2, @udecode/plate-toggle@workspace:^, @udecode/plate-toggle@workspace:packages/toggle":
+"@udecode/plate-toggle@npm:30.3.2, @udecode/plate-toggle@workspace:^, @udecode/plate-toggle@workspace:packages/toggle":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-toggle@workspace:packages/toggle"
   dependencies:
@@ -7085,7 +7085,7 @@ __metadata:
     "@udecode/plate-suggestion": "npm:30.1.2"
     "@udecode/plate-tabbable": "npm:30.1.2"
     "@udecode/plate-table": "npm:30.1.2"
-    "@udecode/plate-toggle": "npm:30.1.2"
+    "@udecode/plate-toggle": "npm:30.3.2"
     "@udecode/plate-trailing-block": "npm:30.1.2"
   peerDependencies:
     react: ">=16.8.0"
