@@ -21,14 +21,16 @@ export function MentionCombobox({
   const { trigger } = getPluginOptions<MentionPlugin>(editor, pluginKey);
 
   return (
-    <Combobox
-      id={id}
-      trigger={trigger!}
-      controlled
-      onSelectItem={getMentionOnSelectItem({
-        key: pluginKey,
-      })}
-      {...props}
-    />
+    <div onMouseDown={(e) => e.preventDefault()}>
+      <Combobox
+        id={id}
+        trigger={trigger!}
+        controlled
+        onSelectItem={getMentionOnSelectItem({
+          key: pluginKey,
+        })}
+        {...props}
+      />
+    </div>
   );
 }
