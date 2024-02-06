@@ -90,6 +90,12 @@ Configure the import alias for ui: › @/components/plate-ui
 Are you using React Server Components? › no / yes (no)
 ```
 
+### Add TooltipProvider
+
+Wrap your editor with `TooltipProvider`. Here's an example:
+
+<ComponentSource src="../../templates/plate-template/src/app/layout.tsx" />
+
 ### Add icons
 
 Add the icons you'll use in `components/icons.tsx`:
@@ -98,7 +104,7 @@ Add the icons you'll use in `components/icons.tsx`:
 
 We use icons from [Lucide](https://lucide.dev). You can use any icon library you want.
 
-### That's it
+### Add components
 
 You can now start adding components to your project.
 
@@ -109,7 +115,7 @@ npx @udecode/plate-ui@latest add button
 The command above will add the `Button` component to your project. You can then import it like this:
 
 ```tsx {1,6} showLineNumbers
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/plate-ui/button';
 
 export default function Home() {
   return (
@@ -119,5 +125,9 @@ export default function Home() {
   );
 }
 ```
+
+### Register components
+
+To add the components to your plugins, see [Plugin Components](/docs/plugin-components#register-components).
 
 </Steps>

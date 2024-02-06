@@ -109,7 +109,7 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
           isDropdown
           className="lg:min-w-[130px]"
         >
-          <SelectedItemIcon className="h-5 w-5 lg:hidden" />
+          <SelectedItemIcon className="size-5 lg:hidden" />
           <span className="max-lg:hidden">{selectedItemLabel}</span>
         </ToolbarButton>
       </DropdownMenuTrigger>
@@ -144,7 +144,7 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
               value={itemValue}
               className="min-w-[180px]"
             >
-              <Icon className="mr-2 h-5 w-5" />
+              <Icon className="mr-2 size-5" />
               {label}
             </DropdownMenuRadioItem>
           ))}

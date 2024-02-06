@@ -1,6 +1,9 @@
 'use client';
 
+import { KEY_SINGLE_LINE } from '@udecode/plate-break';
 import { createZustandStore } from '@udecode/plate-common';
+import { KEY_NORMALIZE_TYPES } from '@udecode/plate-normalizers';
+import { KEY_SELECT_ON_BACKSPACE } from '@udecode/plate-select';
 import { toast } from 'sonner';
 
 import { customizerItems, SettingPlugin } from '@/config/customizer-items';
@@ -28,8 +31,9 @@ const defaultCheckedPlugins = customizerList.reduce(
 export const getDefaultCheckedPlugins = () => {
   return {
     ...defaultCheckedPlugins,
-    normalizeTypes: false,
-    singleLine: false,
+    [KEY_NORMALIZE_TYPES]: false,
+    [KEY_SINGLE_LINE]: false,
+    [KEY_SELECT_ON_BACKSPACE]: false,
     list: false,
   } as Record<string, boolean>;
 };

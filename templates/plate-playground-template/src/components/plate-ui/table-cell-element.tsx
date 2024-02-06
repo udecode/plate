@@ -54,7 +54,7 @@ export const TableCellElement = withRef<
         !hideBorder &&
           cn(
             isHeader && 'text-left [&_>_*]:m-0',
-            'before:h-full before:w-full',
+            'before:size-full',
             selected && 'before:z-10 before:bg-muted',
             "before:absolute before:box-border before:select-none before:content-['']",
             borders &&
@@ -89,7 +89,7 @@ export const TableCellElement = withRef<
 
         {!isSelectingCell && (
           <div
-            className="group absolute top-0 h-full w-full select-none"
+            className="group absolute top-0 size-full select-none"
             contentEditable={false}
             suppressContentEditableWarning={true}
           >

@@ -96,15 +96,7 @@ module.exports = {
 }
 ```
 
-### Add icons
-
-Add the icons you'll use in `components/icons.tsx`:
-
-<ComponentSource src="../../templates/plate-playground-template/src/components/icons.tsx" />
-
-We use icons from [Lucide](https://lucide.dev). You can use any icon library you want.
-
-## App structure
+### App structure
 
 Here's how we structure our Next.js apps. You can use this as a reference:
 
@@ -135,6 +127,20 @@ Here's how we structure our Next.js apps. You can use this as a reference:
 - We place the UI components in the `components/ui` folder. If you already have one and want to keep them separated, you could use `components/plate-ui`.
 - The rest of the components such as `<PageHeader />` and `<MainNav />` are placed in the `components` folder.
 - The `styles` folder contains the global CSS.
+
+### Add TooltipProvider
+
+Wrap your editor with `TooltipProvider`. Here's an example:
+
+<ComponentSource src="../../templates/plate-template/src/app/layout.tsx" />
+
+### Add icons
+
+Add the icons you'll use in `components/icons.tsx`:
+
+<ComponentSource src="../../templates/plate-playground-template/src/components/icons.tsx" />
+
+We use icons from [Lucide](https://lucide.dev). You can use any icon library you want.
 
 ### Add components
 

@@ -244,12 +244,12 @@ export const Icons = {
 export const iconVariants = cva('', {
   variants: {
     variant: {
-      toolbar: 'h-5 w-5',
-      menuItem: 'mr-2 h-5 w-5',
+      toolbar: 'size-5',
+      menuItem: 'mr-2 size-5',
     },
     size: {
-      sm: 'mr-2 h-4 w-4',
-      md: 'mr-2 h-6 w-6',
+      sm: 'mr-2 size-4',
+      md: 'mr-2 size-6',
     },
   },
   defaultVariants: {},

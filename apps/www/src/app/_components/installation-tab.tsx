@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { KEY_DND } from '@udecode/plate-dnd';
 import { uniqBy } from 'lodash';
 
@@ -13,6 +13,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   settingsStore,
   SettingsStoreValue,
@@ -59,6 +61,7 @@ export default function InstallationTab() {
   const checkedPlugins = settingsStore.use.checkedPlugins();
   const checkedComponents = settingsStore.use.checkedComponents();
   const mounted = useMounted();
+  const [isManual, setIsManual] = useState(false);
 
   // Assign initial values to plugins and components using useMemo
   const { plugins, components } = useMemo(
@@ -128,9 +131,9 @@ export default function InstallationTab() {
           },
           new Set<string>()
         )
-      ).join(' ')}`,
+      ).join(' ')}${isManual && ' tooltip'}`,
     };
-  }, [plugins, components]);
+  }, [plugins, components, isManual]);
 
   const componentImports = useMemo(() => {
     return components.reduce(
@@ -213,7 +216,8 @@ export default function InstallationTab() {
           ', '
         )} } from '@/components/plate-ui/${componentId}';`
     );
-    return [
+
+    const imports = [
       `${
         cnImports.length > 0
           ? `import { ${cnImports} } from '@udecode/cn';\n`
@@ -225,13 +229,21 @@ export default function InstallationTab() {
       ...customImports,
       '',
       ...componentImportsGroup,
-    ].join('\n');
+    ];
+
+    if (someComponents && isManual) {
+      imports.push(
+        `import { TooltipProvider } from '@/components/plate-ui/tooltip';`
+      );
+    }
+    return imports.join('\n');
   }, [
     cnImports,
     componentImports,
     customImports,
     groupedImportsByPackage,
     hasEditor,
+    isManual,
     plateImports,
   ]);
 
@@ -327,6 +339,10 @@ export default function InstallationTab() {
     }
   };
 
+  if (isManual) {
+    addLine(`<TooltipProvider>`, true);
+  }
+
   if (hasDnd) {
     addLine(`<DndProvider backend={HTML5Backend}>`, true);
   }
@@ -383,6 +399,10 @@ export default function InstallationTab() {
     addLine(`</DndProvider>`, false, true);
   }
 
+  if (isManual) {
+    addLine(`</TooltipProvider>`, false, true);
+  }
+
   const plateCode = [
     `const initialValue = [`,
     `  {`,
@@ -421,24 +441,54 @@ export default function InstallationTab() {
 
       <Steps>
         <Step>Install Plate</Step>
-        <InstallationCode
-          bash
-          code={[
-            `npm install react react-dom slate slate-react slate-history slate-hyperscript`,
-            `npm install @udecode/plate-common${
-              someComponents ? ' @udecode/cn' : ''
-            }`,
-          ].join('\n')}
+        <RadioGroup
+          value={isManual ? 'manual' : 'template'}
+          onValueChange={(value) => {
+            setIsManual(value === 'manual');
+          }}
         >
-          Start from our{' '}
-          <Link
-            href="https://github.com/udecode/plate-template"
-            target="_blank"
-          >
-            template
-          </Link>{' '}
-          or install the peer dependencies and Plate:
-        </InstallationCode>
+          <div className="mt-4 flex items-center space-x-2">
+            <RadioGroupItem value="template" id="r2" />
+            <Label htmlFor="r2">Start from Template</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="manual" id="r1" />
+            <Label htmlFor="r1">Manual installation</Label>
+          </div>
+        </RadioGroup>
+        {isManual ? (
+          <div>
+            <InstallationCode
+              bash
+              code={[
+                `npm install react react-dom slate slate-react slate-history slate-hyperscript`,
+                `npm install @udecode/plate-common`,
+              ].join('\n')}
+            >
+              Install the peer dependencies and Plate:
+            </InstallationCode>
+            {someComponents && (
+              <p className="mt-4">
+                Next,{' '}
+                <Link href="/docs/components/installation" target="_blank">
+                  install Plate UI
+                </Link>
+                .
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="mt-6">
+            Use{' '}
+            <Link
+              href="https://github.com/udecode/plate-template"
+              target="_blank"
+            >
+              this template
+            </Link>
+            .
+          </div>
+        )}
         {somePlugins && (
           <>
             <Step>Install Plugins</Step>
