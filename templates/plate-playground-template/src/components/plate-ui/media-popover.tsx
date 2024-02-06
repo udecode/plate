@@ -59,7 +59,7 @@ export function MediaPopover({ pluginKey, children }: MediaPopoverProps) {
           <div className="flex w-[330px] flex-col">
             <div className="flex items-center">
               <div className="flex items-center pl-3 text-muted-foreground">
-                <Icons.link className="h-4 w-4" />
+                <Icons.link className="size-4" />
               </div>
 
               <FloatingMediaPrimitive.UrlInput
@@ -82,7 +82,7 @@ export function MediaPopover({ pluginKey, children }: MediaPopoverProps) {
             <Separator orientation="vertical" className="my-1" />
 
             <Button variant="ghost" size="sms" {...buttonProps}>
-              <Icons.delete className="h-4 w-4" />
+              <Icons.delete className="size-4" />
             </Button>
           </div>
         )}
