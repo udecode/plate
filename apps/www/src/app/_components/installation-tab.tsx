@@ -522,8 +522,7 @@ export default function InstallationTab() {
         </InstallationCode>
         <Step>Finally, render the editor</Step>
         <InstallationCode code={plateCode} />
-        {/*<Step>Not using the template?</Step>*/}
-        {/*<InstallationCode code={usageCode}>Wrap your </InstallationCode>*/}
+
         <Accordion
           type="single"
           collapsible
