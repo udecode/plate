@@ -1,5 +1,11 @@
 # @udecode/plate-suggestion
 
+## 30.4.2
+
+### Patch Changes
+
+- [#2933](https://github.com/udecode/plate/pull/2933) by [@zbeyens](https://github.com/zbeyens) – fix slateTextDiff
+
 ## 30.4.1
 
 ### Patch Changes
