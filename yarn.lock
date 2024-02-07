@@ -6889,6 +6889,8 @@ __metadata:
   resolution: "@udecode/plate-suggestion@workspace:packages/suggestion"
   dependencies:
     "@udecode/plate-common": "npm:30.1.2"
+    diff-match-patch-ts: "npm:0.3.0"
+    lodash: "npm:^4.17.21"
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
@@ -9311,6 +9313,13 @@ __metadata:
   version: 1.2.2
   resolution: "didyoumean@npm:1.2.2"
   checksum: 95d0b53d23b851aacff56dfadb7ecfedce49da4232233baecfeecb7710248c4aa03f0aa8995062f0acafaf925adf8536bd7044a2e68316fd7d411477599bc27b
+  languageName: node
+  linkType: hard
+
+"diff-match-patch-ts@npm:0.3.0":
+  version: 0.3.0
+  resolution: "diff-match-patch-ts@npm:0.3.0"
+  checksum: 046607a76a6b01ac45a50cc1732648f59790fbc2e32014ecc42627369c538fa1624f875f473f41c6732f8fd867404ae44438215b11b465aace76d0e5fb7fa1a2
   languageName: node
   linkType: hard
 
