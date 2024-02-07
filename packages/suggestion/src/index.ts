@@ -9,6 +9,7 @@ export * from './useHooksSuggestion';
 export * from './withSuggestion';
 export * from './diff-to-suggestions/index';
 export * from './queries/index';
+export * from './slate-diff/index';
 export * from './store/index';
 export * from './transforms/index';
 export * from './utils/index';
