@@ -1,5 +1,11 @@
 # @udecode/plate-suggestion
 
+## 30.4.1
+
+### Patch Changes
+
+- [#2930](https://github.com/udecode/plate/pull/2930) by [@zbeyens](https://github.com/zbeyens) – fork diff-match-patch to fix ESM import
+
 ## 30.4.0
 
 ### Minor Changes
