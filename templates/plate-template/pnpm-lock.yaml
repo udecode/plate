@@ -50,6 +50,9 @@ dependencies:
   slate-history:
     specifier: 0.100.0
     version: 0.100.0(slate@0.101.5)
+  slate-hyperscript:
+    specifier: 0.100.0
+    version: 0.100.0(slate@0.101.5)
   slate-react:
     specifier: 0.101.6
     version: 0.101.6(react-dom@18.2.0)(react@18.2.0)(slate@0.101.5)
