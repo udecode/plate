@@ -1,4 +1,4 @@
-import { dmp } from './utils/dmp';
+import { dmp } from './internal/utils/dmp';
 
 describe('dmp', () => {
   it('modify BC -> FM', () => {

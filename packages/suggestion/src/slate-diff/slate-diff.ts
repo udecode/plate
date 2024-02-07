@@ -1,9 +1,9 @@
 import { TDescendant, TOperation } from '@udecode/plate-common';
 
-import { StringCharMapping } from './string-char-mapping';
-import { childrenToStrings } from './utils/children-to-strings';
-import { dmp } from './utils/dmp';
-import { generateOperations } from './utils/generate-operations';
+import { childrenToStrings } from './internal/utils/children-to-strings';
+import { dmp } from './internal/utils/dmp';
+import { generateOperations } from './internal/utils/generate-operations';
+import { StringCharMapping } from './internal/utils/string-char-mapping';
 
 export function slateDiff(
   doc0: TDescendant[],

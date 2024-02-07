@@ -1,9 +1,9 @@
 import { isTextList, TOperation, TPath } from '@udecode/plate-common';
 
-import { StringCharMapping } from '../string-char-mapping';
 import { transformDiffNodes } from '../transforms/transformDiffNodes';
 import { transformDiffTexts } from '../transforms/transformDiffTexts';
 import { diffNodes, NodeRelatedItem } from './diff-nodes';
+import { StringCharMapping } from './string-char-mapping';
 import { stringToNodes } from './string-to-nodes';
 
 export function generateOperations(
