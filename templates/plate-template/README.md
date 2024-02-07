@@ -5,7 +5,8 @@ A minimal template for building rich-text editors with [Plate](https://platejs.o
 ## Usage
 
 ```bash
-pnpm create next-app -e https://github.com/udecode/plate-template
+pnpm install
+pnpm dev
 ```
 
 ## Features
