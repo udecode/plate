@@ -39,7 +39,6 @@
   },
   "dependencies": {
     "@udecode/plate-common": "30.1.2",
-    "diff-match-patch-ts": "0.3.0",
     "lodash": "^4.17.21"
   },
   "peerDependencies": {
