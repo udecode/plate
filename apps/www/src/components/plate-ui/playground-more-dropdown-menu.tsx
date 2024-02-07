@@ -65,8 +65,8 @@ export function PlaygroundMoreDropdownMenu(props: DropdownMenuProps) {
         <DropdownMenuItem
           onSelect={() => {
             toggleMark(editor, {
-              key: MARK_SUBSCRIPT,
-              clear: MARK_SUPERSCRIPT,
+              key: MARK_SUPERSCRIPT,
+              clear: MARK_SUBSCRIPT,
             });
             focusEditor(editor);
           }}
@@ -78,8 +78,8 @@ export function PlaygroundMoreDropdownMenu(props: DropdownMenuProps) {
         <DropdownMenuItem
           onSelect={() => {
             toggleMark(editor, {
-              key: MARK_SUPERSCRIPT,
-              clear: MARK_SUBSCRIPT,
+              key: MARK_SUBSCRIPT,
+              clear: MARK_SUPERSCRIPT,
             });
             focusEditor(editor);
           }}
