@@ -21,10 +21,10 @@ export const transformTwPrefixes: Transformer = async ({
         const defaultClassNames = node.getArguments()[0];
         if (defaultClassNames) {
           defaultClassNames.replaceWithText(
-            `"${applyPrefix(
-              defaultClassNames.getText()?.replace(/"/g, ''),
+            `'${applyPrefix(
+              defaultClassNames.getText()?.replace(/'/g, '').replace(/"/g, ''),
               config.tailwind.prefix
-            )}"`
+            )}'`
           );
         }
       }
@@ -45,10 +45,10 @@ export const transformTwPrefixes: Transformer = async ({
                 );
                 if (classNames) {
                   classNames?.replaceWithText(
-                    `"${applyPrefix(
-                      classNames.getText()?.replace(/"/g, ''),
+                    `'${applyPrefix(
+                      classNames.getText()?.replace(/'/g, '').replace(/"/g, ''),
                       config.tailwind.prefix
-                    )}"`
+                    )}'`
                   );
                 }
               });
@@ -59,15 +59,15 @@ export const transformTwPrefixes: Transformer = async ({
   // Find all jsx attributes with the name className.
   sourceFile.getDescendantsOfKind(SyntaxKind.JsxAttribute).forEach((node) => {
     if (node.getName() === 'className') {
-      // className="..."
+      // className='...'
       if (node.getInitializer()?.isKind(SyntaxKind.StringLiteral)) {
         const value = node.getInitializer();
         if (value) {
           value.replaceWithText(
-            `"${applyPrefix(
-              value.getText()?.replace(/"/g, ''),
+            `'${applyPrefix(
+              value.getText()?.replace(/'/g, '').replace(/"/g, ''),
               config.tailwind.prefix
-            )}"`
+            )}'`
           );
         }
       }
@@ -90,20 +90,20 @@ export const transformTwPrefixes: Transformer = async ({
                 .getChildrenOfKind(SyntaxKind.StringLiteral)
                 .forEach((node) => {
                   node.replaceWithText(
-                    `"${applyPrefix(
-                      node.getText()?.replace(/"/g, ''),
+                    `'${applyPrefix(
+                      node.getText()?.replace(/'/g, '').replace(/"/g, ''),
                       config.tailwind.prefix
-                    )}"`
+                    )}'`
                   );
                 });
             }
 
             if (node.isKind(SyntaxKind.StringLiteral)) {
               node.replaceWithText(
-                `"${applyPrefix(
-                  node.getText()?.replace(/"/g, ''),
+                `'${applyPrefix(
+                  node.getText()?.replace(/'/g, '').replace(/"/g, ''),
                   config.tailwind.prefix
-                )}"`
+                )}'`
               );
             }
           });
@@ -131,20 +131,20 @@ export const transformTwPrefixes: Transformer = async ({
                     .getChildrenOfKind(SyntaxKind.StringLiteral)
                     .forEach((node) => {
                       node.replaceWithText(
-                        `"${applyPrefix(
-                          node.getText()?.replace(/"/g, ''),
+                        `'${applyPrefix(
+                          node.getText()?.replace(/'/g, '').replace(/"/g, ''),
                           config.tailwind.prefix
-                        )}"`
+                        )}'`
                       );
                     });
                 }
 
                 if (arg.isKind(SyntaxKind.StringLiteral)) {
                   arg.replaceWithText(
-                    `"${applyPrefix(
-                      arg.getText()?.replace(/"/g, ''),
+                    `'${applyPrefix(
+                      arg.getText()?.replace(/'/g, '').replace(/"/g, ''),
                       config.tailwind.prefix
-                    )}"`
+                    )}'`
                   );
                 }
               });
@@ -158,10 +158,10 @@ export const transformTwPrefixes: Transformer = async ({
             const classNames = node.getInitializer();
             if (classNames) {
               classNames.replaceWithText(
-                `"${applyPrefix(
-                  classNames.getText()?.replace(/"/g, ''),
+                `'${applyPrefix(
+                  classNames.getText()?.replace(/'/g, '').replace(/"/g, ''),
                   config.tailwind.prefix
-                )}"`
+                )}'`
               );
             }
           }

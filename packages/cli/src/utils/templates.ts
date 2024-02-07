@@ -17,7 +17,7 @@ module.exports = {
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
 	],
-	prefix: "<%- prefix %>",
+	prefix: '<%- prefix %>',
   theme: {
     container: {
       center: true,
@@ -55,7 +55,7 @@ module.exports = {
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
 	],
-  prefix: "<%- prefix %>",
+  prefix: '<%- prefix %>',
   theme: {
     container: {
       center: true,

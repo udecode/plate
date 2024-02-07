@@ -59,6 +59,7 @@ const ELEMENT_TABLE = 'table';
 const ELEMENT_TD = 'td';
 const ELEMENT_TH = 'th';
 const ELEMENT_TODO_LI = 'action_item';
+const ELEMENT_TOGGLE = 'toggle';
 const ELEMENT_TR = 'tr';
 const ELEMENT_UL = 'ul';
 
@@ -88,6 +89,7 @@ const elements: HyperscriptShorthands = {
   htd: { type: ELEMENT_TD },
   hth: { type: ELEMENT_TH },
   htodoli: { type: ELEMENT_TODO_LI },
+  htoggle: { type: ELEMENT_TOGGLE },
   htr: { type: ELEMENT_TR },
   hul: { type: ELEMENT_UL },
 };
