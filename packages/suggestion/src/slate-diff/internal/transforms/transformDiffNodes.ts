@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-syntax */
 import { TDescendant, TOperation } from '@udecode/plate-common';
-import { isEqual } from 'lodash';
+import isEqual from 'lodash/isEqual.js';
 
 import { slateDiff } from '../../slate-diff';
 import { copyWithout } from '../utils/copy-without';
