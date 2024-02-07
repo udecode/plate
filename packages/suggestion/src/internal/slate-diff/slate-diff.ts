@@ -1,16 +1,11 @@
-import {
-  PlateEditor,
-  TDescendant,
-  TOperation,
-  withoutNormalizing,
-} from '@udecode/plate-common';
+import { TDescendant, TOperation } from '@udecode/plate-common';
 
 import { StringCharMapping } from './string-char-mapping';
 import { childrenToStrings } from './utils/children-to-strings';
 import { dmp } from './utils/dmp';
-import { generateSuggestions } from './utils/generate-suggestions';
+import { generateOperations } from './utils/generate-operations';
 
-export function slateDiffSuggestions(
+export function slateDiff(
   doc0: TDescendant[],
   doc1: TDescendant[],
   path: number[] = []
@@ -25,16 +20,5 @@ export function slateDiffSuggestions(
 
   const diff = dmp.diff_main(m0, m1);
 
-  return generateSuggestions(diff, path, string_mapping);
+  return generateOperations(diff, path, string_mapping);
 }
-
-export const applyDiffSuggestions = (
-  editor: PlateEditor,
-  operations: TOperation[]
-) => {
-  withoutNormalizing(editor, () => {
-    operations.forEach((op) => {
-      editor.apply(op);
-    });
-  });
-};

@@ -1,7 +1,7 @@
+/* eslint-disable no-restricted-syntax */
 import { TDescendant, TOperation } from '@udecode/plate-common';
-import isEqual from 'lodash/isEqual.js';
+import { isEqual } from 'lodash';
 
-import { getSuggestionNode } from '../../diff-to-suggestions/getSuggestionNode';
 import { slateDiff } from '../slate-diff';
 import { copyWithout } from '../utils/copy-without';
 
@@ -78,28 +78,19 @@ STRATEGIES.push(
     ];
   },
   (node, nextNode, path) => {
-    const { text, children, ...properties } = node;
+    // const { text, children, ...properties } = node;
 
     // If no specific strategy applies, remove the original node and insert the new node
     return [
       {
-        // type: 'remove_node',
-        // path,
-        // node,
-        type: 'set_node',
+        type: 'remove_node',
         path,
-        properties,
-        newProperties: getSuggestionNode({ ...properties } as any, {
-          deletion: true,
-        }),
+        node,
       },
       {
-        // type: 'insert_node',
-        // path,
-        // node: nextNode,
         type: 'insert_node',
         path,
-        node: getSuggestionNode(nextNode),
+        node: nextNode,
       },
     ];
   }

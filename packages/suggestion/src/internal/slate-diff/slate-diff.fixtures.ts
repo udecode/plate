@@ -8,7 +8,11 @@ export const addMarkFixtures = {
   doc2: [
     {
       type: 'paragraph',
-      children: [{ text: 'PingCode ' }, { text: 'Wiki', bold: true }, { text: ' & Worktile' }],
+      children: [
+        { text: 'PingCode ' },
+        { text: 'Wiki', bold: true },
+        { text: ' & Worktile' },
+      ],
     },
   ],
   expected: [
@@ -27,7 +31,7 @@ export const addMarkFixtures = {
       type: 'split_node',
     },
   ],
-}
+};
 
 export const insertUpdateParagraphFixtures = {
   doc1: [
@@ -60,7 +64,9 @@ export const insertUpdateParagraphFixtures = {
     },
     {
       type: 'paragraph',
-      children: [{ text: 'This is the third paragraph, and insert some text.' }],
+      children: [
+        { text: 'This is the third paragraph, and insert some text.' },
+      ],
       key: '3',
     },
     {
@@ -86,7 +92,7 @@ export const insertUpdateParagraphFixtures = {
       type: 'insert_text',
     },
   ],
-}
+};
 export const insertUpdateTwoParagraphsFixtures = {
   doc1: [
     {
@@ -118,7 +124,9 @@ export const insertUpdateTwoParagraphsFixtures = {
     },
     {
       type: 'paragraph',
-      children: [{ text: 'This is the third paragraph, and insert some text.' }],
+      children: [
+        { text: 'This is the third paragraph, and insert some text.' },
+      ],
       key: '3',
     },
     {
@@ -128,7 +136,9 @@ export const insertUpdateTwoParagraphsFixtures = {
     },
     {
       type: 'paragraph',
-      children: [{ text: 'This is the fourth paragraph, and insert some text.' }],
+      children: [
+        { text: 'This is the fourth paragraph, and insert some text.' },
+      ],
       key: '4',
     },
   ],
@@ -164,7 +174,7 @@ export const insertUpdateTwoParagraphsFixtures = {
       type: 'insert_text',
     },
   ],
-}
+};
 export const insertTextAddMarkFixtures = {
   doc1: [
     {
@@ -222,7 +232,7 @@ export const insertTextAddMarkFixtures = {
       },
     },
   ],
-}
+};
 
 export const insertTextFixtures = {
   doc1: [
@@ -245,7 +255,7 @@ export const insertTextFixtures = {
       text: ' & Worktile',
     },
   ],
-}
+};
 export const mergeTextFixtures = {
   doc1: [
     {
@@ -301,4 +311,4 @@ export const mergeTextFixtures = {
       },
     },
   ],
-}
+};

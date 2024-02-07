@@ -1,4 +1,4 @@
-import { TOperation } from '@udecode/plate-common'
+import { TOperation } from '@udecode/plate-common';
 
 export const addMarkFixtures = {
   doc1: [
@@ -46,7 +46,7 @@ export const addMarkFixtures = {
       type: 'split_node',
     },
   ] as TOperation[],
-}
+};
 
 export const addTwoMarkFixtures = {
   doc1: [
@@ -91,47 +91,35 @@ export const addTwoMarkFixtures = {
   ],
   operations: [
     {
-      type: "split_node",
-      path: [
-        0,
-        0
-      ],
+      type: 'split_node',
+      path: [0, 0],
       position: 6,
       properties: {
-        bold: true
-      }
+        bold: true,
+      },
     },
     {
-      type: "split_node",
-      path: [
-        0,
-        1
-      ],
+      type: 'split_node',
+      path: [0, 1],
       position: 5,
-      properties: {}
+      properties: {},
     },
     {
-      type: "split_node",
-      path: [
-        0,
-        2
-      ],
+      type: 'split_node',
+      path: [0, 2],
       position: 5,
       properties: {
-        bold: true
-      }
+        bold: true,
+      },
     },
     {
-      type: "split_node",
-      path: [
-        0,
-        3
-      ],
+      type: 'split_node',
+      path: [0, 3],
       position: 4,
-      properties: {}
-    }
+      properties: {},
+    },
   ] as TOperation[],
-}
+};
 
 export const insertUpdateParagraphFixtures = {
   doc1: [
@@ -204,7 +192,7 @@ export const insertUpdateParagraphFixtures = {
       type: 'insert_text',
     },
   ] as TOperation[],
-}
+};
 export const insertUpdateTwoParagraphsFixtures = {
   doc1: [
     {
@@ -310,7 +298,7 @@ export const insertUpdateTwoParagraphsFixtures = {
       type: 'insert_text',
     },
   ] as TOperation[],
-}
+};
 export const insertTextAddMarkFixtures = {
   doc1: [
     {
@@ -378,7 +366,7 @@ export const insertTextAddMarkFixtures = {
       },
     },
   ] as TOperation[],
-}
+};
 
 export const insertTextFixtures = {
   doc1: [
@@ -392,7 +380,12 @@ export const insertTextFixtures = {
       type: 'paragraph',
       children: [
         { text: 'PingCode' },
-        { text: ' & Worktile', suggestion: true, suggestion_0: true, suggestionId: '1' },
+        {
+          text: ' & Worktile',
+          suggestion: true,
+          suggestion_0: true,
+          suggestionId: '1',
+        },
       ],
     },
   ],
@@ -404,7 +397,7 @@ export const insertTextFixtures = {
       text: ' & Worktile',
     },
   ] as TOperation[],
-}
+};
 
 export const removeNodeFixtures = {
   doc1: [
@@ -441,7 +434,7 @@ export const removeNodeFixtures = {
       },
     },
   ] as TOperation[],
-}
+};
 
 export const removeTextFixtures = {
   doc1: [
@@ -455,7 +448,13 @@ export const removeTextFixtures = {
       type: 'paragraph',
       children: [
         { text: 'PingCode' },
-        { text: ' & Worktile', suggestion: true, suggestion_0: true, suggestionId: '1', suggestionDeletion: true },
+        {
+          text: ' & Worktile',
+          suggestion: true,
+          suggestion_0: true,
+          suggestionId: '1',
+          suggestionDeletion: true,
+        },
       ],
     },
   ],
@@ -467,7 +466,7 @@ export const removeTextFixtures = {
       text: ' & Worktile',
     },
   ] as TOperation[],
-}
+};
 
 export const mergeTextFixtures = {
   doc1: [
@@ -513,7 +512,7 @@ export const mergeTextFixtures = {
       properties: {},
     },
   ] as TOperation[],
-}
+};
 
 export const mergeNodeFixtures = {
   doc1: [
@@ -587,7 +586,7 @@ export const mergeNodeFixtures = {
       properties: {},
     },
   ] as TOperation[],
-}
+};
 
 export const mergeTwoTextFixtures = {
   doc1: [
@@ -647,7 +646,7 @@ export const mergeTwoTextFixtures = {
       properties: {},
     },
   ] as TOperation[],
-}
+};
 
 export const mergeRemoveTextFixtures = {
   doc1: [
@@ -716,4 +715,4 @@ export const mergeRemoveTextFixtures = {
       },
     },
   ] as TOperation[],
-}
+};

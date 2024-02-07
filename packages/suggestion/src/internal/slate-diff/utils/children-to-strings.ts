@@ -1,6 +1,6 @@
-import { TDescendant } from '@udecode/plate-common'
+import { TDescendant } from '@udecode/plate-common';
 
-const stringify = JSON.stringify
+const stringify = JSON.stringify;
 
 // We could instead use
 //    import * as stringify from "json-stable-stringify";
@@ -8,9 +8,9 @@ const stringify = JSON.stringify
 
 // less efficient patch), but is significantly slower.
 export function childrenToStrings(children: TDescendant[]): string[] {
-  const v: string[] = []
+  const v: string[] = [];
   for (const node of children) {
-    v.push(stringify(node))
+    v.push(stringify(node));
   }
-  return v
+  return v;
 }

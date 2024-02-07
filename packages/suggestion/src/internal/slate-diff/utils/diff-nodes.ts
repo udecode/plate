@@ -1,5 +1,5 @@
 import { isElement, isText, TDescendant } from '@udecode/plate-common';
-import isEqual from 'lodash/isEqual.js';
+import { isEqual } from 'lodash';
 
 import { copyWithout } from './copy-without';
 

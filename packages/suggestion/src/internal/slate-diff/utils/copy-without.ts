@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 // copy of map but without some keys
 // I.e., restrict a function to the complement of a subset of the domain.
 export function copyWithout(obj: any, w: string | string[]): any {

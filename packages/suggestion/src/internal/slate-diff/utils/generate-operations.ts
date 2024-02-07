@@ -1,13 +1,12 @@
 import { isTextList, TOperation, TPath } from '@udecode/plate-common';
 
-import { getSuggestionNode } from '../../diff-to-suggestions/getSuggestionNode';
 import { StringCharMapping } from '../string-char-mapping';
-import { transformDiffNodes } from '../transforms';
+import { transformDiffNodes } from '../transforms/transformDiffNodes';
 import { transformDiffTexts } from '../transforms/transformDiffTexts';
 import { diffNodes, NodeRelatedItem } from './diff-nodes';
 import { stringToNodes } from './string-to-nodes';
 
-export function generateSuggestions(
+export function generateOperations(
   diff: {
     // op: -1 = delete, 0 = leave unchanged, 1 = insert
     0: number;
@@ -51,13 +50,13 @@ export function generateSuggestions(
 
         // If both current and next chunks are text nodes, use transformTextNodes
         if (isTextList(nodes) && isTextList(nextNodes)) {
-          for (const operation of transformDiffTexts(
+          for (const textOp of transformDiffTexts(
             nodes,
             nextNodes,
             path.concat([index])
           )) {
             // Add operations from transforming text nodes
-            operations.push(operation);
+            operations.push(textOp);
           }
           // Advance the index by the length of the next nodes
           index += nextNodes.length;
@@ -117,7 +116,7 @@ export function generateSuggestions(
         operations.push({
           type: 'insert_node',
           path: path.concat([index]),
-          node: getSuggestionNode(node),
+          node,
         });
         index += 1;
       }

@@ -1,22 +1,22 @@
-import { TDescendant } from '@udecode/plate-common'
+import { TDescendant } from '@udecode/plate-common';
 
 export const getSuggestionNode = (
   node: TDescendant,
   {
     deletion,
   }: {
-    deletion?: boolean
-  } = {},
+    deletion?: boolean;
+  } = {}
 ) => {
   const nextNode: TDescendant = {
     ...node,
     suggestion: true,
     suggestionId: '1',
     suggestion_0: true,
-  }
+  };
   if (deletion) {
-    nextNode.suggestionDeletion = true
+    nextNode.suggestionDeletion = true;
   }
 
-  return nextNode
-}
+  return nextNode;
+};

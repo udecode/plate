@@ -6,14 +6,11 @@ import {
   getEndPoint,
   getFragment,
   getNode,
-  getNodeParent,
   getNodeProps,
-  getPointBefore,
   getPreviousPath,
   getStartPoint,
   insertFragment,
   insertNodes,
-  isElement,
   isText,
   nanoid,
   PlateEditor,
@@ -26,15 +23,13 @@ import {
   TRemoveNodeOperation,
   TRemoveTextOperation,
   TSplitNodeOperation,
-  TText,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import { Path, PathRef, Point, PointRef, Range, rangeRef, RangeRef } from 'slate';
 import isEqual from 'lodash/isEqual.js';
 import uniqWith from 'lodash/uniqWith.js';
+import { PathRef, Point, PointRef, Range, RangeRef } from 'slate';
 
-import { getSuggestionProps } from '../../transforms';
-import { TSuggestionText } from '../../types';
+import { getSuggestionProps } from '../transforms';
 
 const objectWithoutUndefined = (obj: Record<string, any>) => {
   const newObj: Record<string, any> = {};
@@ -48,7 +43,10 @@ const objectWithoutUndefined = (obj: Record<string, any>) => {
   return newObj;
 };
 
-const addPropsToTextsInFragment = (fragment: TDescendant[], props: any): TDescendant[] => {
+const addPropsToTextsInFragment = (
+  fragment: TDescendant[],
+  props: any
+): TDescendant[] => {
   return fragment.map((node) => {
     if (isText(node)) {
       return {
@@ -98,13 +96,18 @@ const handleUpdatedProperties = () => {
     return [range.anchor, range.focus];
   });
 
-  const rangePoints = uniqWith(unsortedRangePoints.sort(Point.compare), Point.equals);
+  const rangePoints = uniqWith(
+    unsortedRangePoints.sort(Point.compare),
+    Point.equals
+  );
   if (rangePoints.length < 2) return [];
 
-  const flatRanges = Array(rangePoints.length - 1).fill(null).map((_, i) => ({
-    anchor: rangePoints[i],
-    focus: rangePoints[i + 1],
-  }));
+  const flatRanges = Array.from({ length: rangePoints.length - 1 })
+    .fill(null)
+    .map((_, i) => ({
+      anchor: rangePoints[i],
+      focus: rangePoints[i + 1],
+    }));
 
   // console.log('flatRanges', JSON.stringify(flatRanges, null, 2));
 
@@ -126,14 +129,18 @@ const handleUpdatedProperties = () => {
 
     if (intersectingUpdates.length === 0) return null;
 
-    const initialProps = objectWithoutUndefined(intersectingUpdates[0].properties);
+    const initialProps = objectWithoutUndefined(
+      intersectingUpdates[0].properties
+    );
 
     // const finalProps = intersectingUpdates.reduce((props, { newProperties }) => ({
     //   ...props,
     //   ...newProperties,
     // }), initialProps);
 
-    const finalProps = objectWithoutUndefined(intersectingUpdates.at(-1)!.newProperties);
+    const finalProps = objectWithoutUndefined(
+      intersectingUpdates.at(-1)!.newProperties
+    );
 
     if (isEqual(initialProps, finalProps)) return null;
 
@@ -166,12 +173,15 @@ const handleUpdatedProperties = () => {
     rangeRef.unref();
   });
 
-  return flatUpdates.filter(Boolean) as Exclude<typeof flatUpdates[number], null>[];
+  return flatUpdates.filter(Boolean) as Exclude<
+    (typeof flatUpdates)[number],
+    null
+  >[];
 };
 
 const insertTextSuggestion = (
   editor: PlateEditor,
-  op: TInsertTextOperation,
+  op: TInsertTextOperation
 ) => {
   const anchor = { path: op.path, offset: op.offset };
   editor.apply(op);
@@ -203,7 +213,7 @@ const insertTextSuggestion = (
 
 export const insertNodeSuggestion = (
   editor: PlateEditor,
-  op: TInsertNodeOperation,
+  op: TInsertNodeOperation
 ) => {
   editor.apply(op);
   const pathRef = createPathRef(editor, op.path);
@@ -212,7 +222,7 @@ export const insertNodeSuggestion = (
 
 export const mergeNodeSuggestion = (
   editor: PlateEditor,
-  op: TMergeNodeOperation,
+  op: TMergeNodeOperation
 ) => {
   const { path } = op;
 
@@ -263,7 +273,7 @@ export const mergeNodeSuggestion = (
 
 export const splitNodeSuggestion = (
   editor: PlateEditor,
-  op: TSplitNodeOperation,
+  op: TSplitNodeOperation
 ) => {
   const { path } = op;
 
@@ -274,7 +284,7 @@ export const splitNodeSuggestion = (
 
   editor.apply(op);
 
-  const nextPath = [...path.slice(0, -1), path[path.length - 1] + 1];
+  const nextPath = [...path.slice(0, -1), path.at(-1)! + 1];
 
   const range = {
     anchor: getStartPoint(editor, nextPath),
@@ -301,18 +311,18 @@ export const splitNodeSuggestion = (
 // ) => {
 //   const { path } = op;
 //   const node = getNode<TDescendant>(editor, path);
-// 
+//
 //   if (!node) return;
-// 
+//
 //   const prevPath = getPreviousPath(path);
 //   if (!prevPath) return;
-// 
+//
 //   const prev = getNode<TDescendant>(editor, prevPath);
 //   if (!prev) return;
-// 
+//
 //   const parent = getNodeParent(editor, path);
 //   if (!parent) return;
-// 
+//
 //   if (isText(node) && isText(prev)) {
 //     removeTextSuggestion(
 //       editor,
@@ -324,7 +334,7 @@ export const splitNodeSuggestion = (
 //       },
 //       { idFactory }
 //     );
-// 
+//
 //     insertNodeSuggestion(
 //       editor,
 //       {
@@ -351,7 +361,7 @@ export const splitNodeSuggestion = (
 //       );
 //       index += 1;
 //     });
-// 
+//
 //     removeNodeSuggestion(
 //       editor,
 //       {
@@ -368,7 +378,7 @@ export const splitNodeSuggestion = (
 
 export const removeTextSuggestion = (
   editor: PlateEditor,
-  op: TRemoveTextOperation,
+  op: TRemoveTextOperation
 ) => {
   const range = {
     anchor: { path: op.path, offset: op.offset },
@@ -377,7 +387,11 @@ export const removeTextSuggestion = (
   const fragment = getFragment(editor, range);
   editor.apply(op);
   const pointRef = createPointRef(editor, range.anchor);
-  removedNodes.push({ locationRef: pointRef, nodes: fragment, isFragment: true });
+  removedNodes.push({
+    locationRef: pointRef,
+    nodes: fragment,
+    isFragment: true,
+  });
   // const id = idFactory();
 
   // addRangeMarks(
@@ -400,7 +414,7 @@ export const removeTextSuggestion = (
 
 export const removeNodeSuggestion = (
   editor: PlateEditor,
-  op: TRemoveNodeOperation,
+  op: TRemoveNodeOperation
 ) => {
   // const pointBefore = getPointBefore(editor, op.path);
   // const locationRef = pointBefore
@@ -488,11 +502,9 @@ export const applyDiffToSuggestions = (
       if (path) {
         const node = getNode(editor, path);
         if (node) {
-          setNodes(
-            editor,
-            getSuggestionProps(editor, idFactory()),
-            { at: path }
-          );
+          setNodes(editor, getSuggestionProps(editor, idFactory()), {
+            at: path,
+          });
         }
       }
     });
@@ -500,11 +512,9 @@ export const applyDiffToSuggestions = (
     insertedRanges.forEach(({ rangeRef }) => {
       const range = rangeRef.current;
       if (range) {
-        addRangeMarks(
-          editor,
-          getSuggestionProps(editor, idFactory()),
-          { at: range }
-        );
+        addRangeMarks(editor, getSuggestionProps(editor, idFactory()), {
+          at: range,
+        });
       }
       rangeRef.unref();
     });
