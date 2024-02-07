@@ -1,5 +1,11 @@
 # @udecode/plate-suggestion
 
+## 30.4.0
+
+### Minor Changes
+
+- [#2900](https://github.com/udecode/plate/pull/2900) by [@zbeyens](https://github.com/zbeyens) – slate-diff
+
 ## 30.1.2
 
 ## 30.0.0
