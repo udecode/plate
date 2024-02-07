@@ -1,5 +1,11 @@
 # @udecode/plate-suggestion
 
+## 30.4.3
+
+### Patch Changes
+
+- [#2935](https://github.com/udecode/plate/pull/2935) by [@zbeyens](https://github.com/zbeyens) – fix lodash import
+
 ## 30.4.2
 
 ### Patch Changes
