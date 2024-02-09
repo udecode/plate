@@ -1,4 +1,5 @@
-import { isTextList, TOperation, TPath } from '@udecode/plate-common';
+import { isTextList, PlateEditor, TDescendant, Value } from '@udecode/plate-common';
+import {DiffToSuggestionsOptions} from '../../slateDiff';
 
 import { transformDiffNodes } from '../transforms/transformDiffNodes';
 import { transformDiffTexts } from '../transforms/transformDiffTexts';
@@ -6,38 +7,63 @@ import { diffNodes, NodeRelatedItem } from './diff-nodes';
 import { StringCharMapping } from './string-char-mapping';
 import { stringToNodes } from './string-to-nodes';
 
-export function generateOperations(
+export interface GenerateOperationsOptions extends Required<DiffToSuggestionsOptions> {
+  stringCharMapping: StringCharMapping;
+}
+
+export function generateOperations<
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  editor: E,
   diff: {
     // op: -1 = delete, 0 = leave unchanged, 1 = insert
     0: number;
     // value of the diff chunk
     1: string;
   }[],
-  path: TPath,
-  stringCharMapping: StringCharMapping
-) {
+  {
+    stringCharMapping,
+    getInsertProps,
+    getRemoveProps,
+    getUpdateProps,
+  }: GenerateOperationsOptions
+): TDescendant[] {
   // Current index in the document
   let index = 0;
   // Current index in the diff array
   let i = 0;
-  const operations: TOperation[] = [];
+  const children: TDescendant[] = [];
+
+  const insertNodes = (...nodes: TDescendant[]) =>
+    children.push(...nodes.map((node) => ({
+      ...node,
+      ...getInsertProps(node),
+    })));
+
+  const removeNodes = (...nodes: TDescendant[]) =>
+    children.push(...nodes.map((node) => ({
+      ...node,
+      ...getRemoveProps(node),
+    })));
 
   while (i < diff.length) {
     const chunk = diff[i];
     const op = chunk[0]; //
     const val = chunk[1];
 
+    // Convert the string value to document nodes based on the stringCharMapping
+    const nodes = stringToNodes(val, stringCharMapping);
+
     // If operation code is 0, it means the chunk is unchanged
     if (op === 0) {
+      children.push(...nodes);
       // Skip over unchanged text by advancing the index
       index += val.length;
       // Move to the next diff chunk
       i += 1;
       continue;
     }
-
-    // Convert the string value to document nodes based on the stringCharMapping
-    const nodes = stringToNodes(val, stringCharMapping);
 
     // Handle deletion (-1)
     if (op === -1) {
@@ -50,14 +76,15 @@ export function generateOperations(
 
         // If both current and next chunks are text nodes, use transformTextNodes
         if (isTextList(nodes) && isTextList(nextNodes)) {
-          for (const textOp of transformDiffTexts(
-            nodes,
-            nextNodes,
-            path.concat([index])
-          )) {
-            // Add operations from transforming text nodes
-            operations.push(textOp);
-          }
+          // TODO:
+          // for (const textOp of transformDiffTexts(
+          //   nodes,
+          //   nextNodes,
+          //   path.concat([index])
+          // )) {
+          //   // Add operations from transforming text nodes
+          //   operations.push(textOp);
+          // }
           // Advance the index by the length of the next nodes
           index += nextNodes.length;
           // Consume two diff chunks (delete and insert)
@@ -69,29 +96,20 @@ export function generateOperations(
         const diffResult = diffNodes(nodes, nextNodes);
         diffResult.forEach((item: NodeRelatedItem) => {
           if (item.delete) {
-            operations.push({
-              type: 'remove_node',
-              path: path.concat([index]),
-              node: item.originNode,
-            } as TOperation);
+            removeNodes(item.originNode);
           }
           if (item.insert) {
-            operations.push({
-              type: 'insert_node',
-              path: path.concat([index]),
-              node: item.originNode,
-            } as TOperation);
+            insertNodes(item.originNode);
             // Adjust index for each inserted node
             index += 1;
           }
           if (item.relatedNode) {
-            operations.push(
-              ...transformDiffNodes(
-                item.originNode,
-                item.relatedNode,
-                path.concat([index])
-              )
-            );
+            children.push(...transformDiffNodes<V, E>(
+              editor,
+              item.originNode,
+              item.relatedNode,
+              { getInsertProps, getRemoveProps, getUpdateProps }
+            ));
             index += 1;
           }
         });
@@ -100,11 +118,7 @@ export function generateOperations(
       } else {
         // Plain delete of some nodes (with no insert immediately after)
         for (const node of nodes) {
-          operations.push({
-            type: 'remove_node',
-            path: path.concat([index]),
-            node,
-          } as TOperation);
+          removeNodes(node);
         }
         i += 1; // consumes only one entry from diff array.
         continue;
@@ -113,18 +127,14 @@ export function generateOperations(
     if (op === 1) {
       // insert new nodes.
       for (const node of nodes) {
-        operations.push({
-          type: 'insert_node',
-          path: path.concat([index]),
-          node,
-        });
+        insertNodes(node);
         index += 1;
       }
       i += 1;
       continue;
     }
-    throw new Error('BUG');
+    throw new Error('generateOperations: Missing continue statement or unhandled operation');
   }
 
-  return operations;
+  return children;
 }

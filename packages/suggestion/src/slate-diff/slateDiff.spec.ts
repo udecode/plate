@@ -419,7 +419,41 @@ const fixtures: Record<string, SlateDiffFixture> = {
     ],
   },
 
+  addNode: {
+    it: it.only,
+    input1: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'PingCode' }],
+      },
+    ],
+    input2: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'PingCode' }],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: 'Worktile' }],
+      },
+    ],
+    output: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'PingCode' }],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: 'Worktile' }],
+        suggestion: true,
+        suggestion_0: true,
+        suggestionId: '1',
+      },
+    ],
+  },
+
   removeNode: {
+    it: it.only,
     input1: [
       {
         type: 'paragraph',
@@ -448,6 +482,180 @@ const fixtures: Record<string, SlateDiffFixture> = {
         suggestion_0: true,
         suggestionId: '1',
         suggestionDeletion: true,
+      },
+    ],
+  },
+
+  setNodeAdd: {
+    it: it.only,
+    input1: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'PingCode' }],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: 'Worktile' }],
+      },
+    ],
+    input2: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'PingCode' }],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: 'Worktile' }],
+        someProp: 'World',
+      },
+    ],
+    output: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'PingCode' }],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: 'Worktile' }],
+        someProp: 'World',
+        suggestion: true,
+        suggestion_0: true,
+        suggestionId: '1',
+        suggestionUpdate: {
+          someProp: 'World',
+        },
+      },
+    ],
+  },
+
+  setNodeRemove: {
+    it: it.only,
+    input1: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'PingCode' }],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: 'Worktile' }],
+        someProp: 'Hello',
+      },
+    ],
+    input2: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'PingCode' }],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: 'Worktile' }],
+      },
+    ],
+    output: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'PingCode' }],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: 'Worktile' }],
+        suggestion: true,
+        suggestion_0: true,
+        suggestionId: '1',
+        suggestionUpdate: {
+          someProp: undefined,
+        },
+      },
+    ],
+  },
+
+  setNodeChange: {
+    it: it.only,
+    input1: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'PingCode' }],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: 'Worktile' }],
+        someProp: 'Hello',
+      },
+    ],
+    input2: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'PingCode' }],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: 'Worktile' }],
+        someProp: 'World',
+      },
+    ],
+    output: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'PingCode' }],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: 'Worktile' }],
+        someProp: 'World',
+        suggestion: true,
+        suggestion_0: true,
+        suggestionId: '1',
+        suggestionUpdate: {
+          someProp: 'World',
+        },
+      },
+    ],
+  },
+
+  addNodeChildren: {
+    it: it.only,
+    input1: [
+      {
+        type: 'container',
+        children: [
+          {
+            type: 'paragraph',
+            children: [{ text: 'PingCode' }],
+          },
+        ],
+      },
+    ],
+    input2: [
+      {
+        type: 'container',
+        children: [
+          {
+            type: 'paragraph',
+            children: [{ text: 'PingCode' }],
+          },
+          {
+            type: 'paragraph',
+            children: [{ text: 'Worktile' }],
+          },
+        ],
+      },
+    ],
+    output: [
+      {
+        type: 'container',
+        children: [
+          {
+            type: 'paragraph',
+            children: [{ text: 'PingCode' }],
+          },
+          {
+            type: 'paragraph',
+            children: [{ text: 'Worktile' }],
+            suggestion: true,
+            suggestion_0: true,
+            suggestionId: '1',
+          },
+        ],
       },
     ],
   },
