@@ -16,7 +16,7 @@ import {
   removeTextFixtures,
 } from './applyDiffToSuggestions.fixtures';
 
-describe('slate-diff', () => {
+describe('applyDiffToSuggestions', () => {
   let editor: any;
   const options = { idFactory: () => '1' };
 

@@ -2,7 +2,7 @@
 import { TDescendant, TOperation } from '@udecode/plate-common';
 import isEqual from 'lodash/isEqual.js';
 
-import { slateDiff } from '../../slate-diff';
+import { slateDiff } from '../../slateDiff';
 import { copyWithout } from '../utils/copy-without';
 
 // We try each of the Handler functions listed below until one of them

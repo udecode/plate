@@ -1,4 +1,5 @@
-import { TDescendant, TOperation } from '@udecode/plate-common';
+import { createPlateEditor, PlateEditor, TDescendant, TOperation, Value } from '@udecode/plate-common';
+import {applyDiffToSuggestions} from '../diff-to-suggestions';
 
 import { childrenToStrings } from './internal/utils/children-to-strings';
 import { dmp } from './internal/utils/dmp';
@@ -21,4 +22,20 @@ export function slateDiff(
   const diff = dmp.diff_main(m0, m1);
 
   return generateOperations(diff, path, string_mapping);
+}
+
+export function diffToSuggestions<
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  editor: E,
+  doc0: V,
+  doc1: V,
+  path: number[] = []
+): TDescendant[] {
+  const operations = slateDiff(doc0, doc1, path);
+  const tmpEditor = createPlateEditor({ editor });
+  tmpEditor.children = doc0;
+  applyDiffToSuggestions(tmpEditor, operations);
+  return tmpEditor.children;
 }
