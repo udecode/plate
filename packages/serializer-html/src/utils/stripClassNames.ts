@@ -1,26 +1,27 @@
+const classAttrRegExp = / class="([^"]*)"/g;
 /**
  * Remove all class names that do not start with one of preserveClassNames (`slate-` by default)
  */
 export const stripClassNames = (
   html: string,
-  { preserveClassNames = ['slate-'] }: { preserveClassNames?: string[] }
+  { preserveClassNames = ['slate-'] }: { preserveClassNames?: string[] },
 ) => {
-  const allClasses = html.split(/(class="[^"]*")/g);
+  if (preserveClassNames.length === 0) {
+    return html.replaceAll(classAttrRegExp, '');
+  }
 
-  let filteredHtml = '';
-  allClasses.forEach((item, index) => {
-    if (index % 2 === 0) {
-      return (filteredHtml += item);
-    }
-    const preserveRegExp = new RegExp(
-      preserveClassNames.map((cn) => `${cn}[^"\\s]*`).join('|'),
-      'g'
-    );
-    const classNames = item.split('"')[1].match(preserveRegExp);
-    if (classNames) {
-      filteredHtml += `class="${classNames.join(' ')}"`;
-    }
-  });
+  const preserveRegExp = new RegExp(
+    preserveClassNames.map((cn) => `^${cn}`).join('|')
+  );
 
-  return filteredHtml;
+  return html.replaceAll(classAttrRegExp, (match: string, className: string) => {
+      const classesToKeep = className
+        .split(/\s+/)
+        .filter((cn) => preserveRegExp.test(cn));
+
+      return classesToKeep.length === 0
+        ? ''
+        : ` class="${classesToKeep.join(' ')}"`;
+    }
+  );
 };
