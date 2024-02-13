@@ -3,7 +3,7 @@ import { Plate, PlateContent, PlateProps, Value, createPlugins, createPlateEdito
 import { ELEMENT_PARAGRAPH, createParagraphPlugin } from '@udecode/plate-paragraph';
 import {ParagraphElement} from '../plate-ui/paragraph-element';
 import {Button} from '../plate-ui/button';
-import {slateDiff, applyDiffToSuggestions} from '@udecode/plate-suggestion';
+import {diffToSuggestions} from '@udecode/plate-suggestion';
 import { createBoldPlugin, MARK_BOLD } from '@udecode/plate-basic-marks';
 import {cn, withProps} from '@udecode/cn';
 import {useSelected} from 'slate-react';
@@ -24,7 +24,7 @@ const InlineVoidElement = ({ children, ...props }: PlateElementProps) => {
       <span
         contentEditable={false}
         className={cn(
-          'p-1 bg-slate-200 rounded-sm',
+          'p-1 bg-slate-200/50 rounded-sm',
           selected && 'bg-blue-500 text-white'
         )}
       >
@@ -64,7 +64,7 @@ const createDiffPlugin = createPluginFactory({
 
 function SuggestionLeaf({ children, ...props }: PlateLeafProps) {
   const isDeletion = props.leaf.suggestionDeletion;
-  const isUpdate = !isDeletion && props.leaf.suggestionUpdate;
+  const isUpdate = !isDeletion && !!props.leaf.suggestionUpdate;
   const Component = isDeletion ? 'del' : 'ins';
 
   return (
@@ -127,22 +127,14 @@ interface DiffProps {
 }
 
 function Diff({ previous, current }: DiffProps) {
-  const operations = React.useMemo(() => slateDiff(previous, current), [previous, current]);
-
   const diffValue: Value = React.useMemo(() => {
     const editor = createPlateEditor({ plugins });
-    editor.children = previous;
-    applyDiffToSuggestions(editor, operations);
-    return editor.children;
+    return diffToSuggestions(editor, previous, current);
   }, [previous, current]);
 
   return (
     <>
       <VersionHistoryPlate key={JSON.stringify(diffValue)} value={diffValue} readOnly />
-
-      <pre>
-        {JSON.stringify(operations, null, 2)}
-      </pre>
 
       <pre>
         {JSON.stringify(diffValue, null, 2)}

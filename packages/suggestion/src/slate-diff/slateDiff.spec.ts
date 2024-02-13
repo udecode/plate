@@ -1,6 +1,8 @@
-import { createPlateEditor, Value } from '@udeCode/plate-common';
+import { createPlateEditor, createPluginFactory, Value } from '@udeCode/plate-common';
 
 import { diffToSuggestions } from './slateDiff';
+
+const ELEMENT_INLINE_VOID = 'inline-void';
 
 interface SlateDiffFixture {
   it?: typeof it;
@@ -777,6 +779,140 @@ const fixtures: Record<string, SlateDiffFixture> = {
     ],
   },
 
+  removeInlineVoid: {
+    input1: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'This is an ' },
+          {
+            type: ELEMENT_INLINE_VOID,
+            children: [{ text: '' }],
+          },
+          { text: '!' },
+        ],
+      },
+    ],
+    input2: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'This is an !' }],
+      },
+    ],
+    output: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'This is an ' },
+          {
+            type: ELEMENT_INLINE_VOID,
+            children: [{ text: '' }],
+            suggestion: true,
+            suggestion_0: true,
+            suggestionId: '1',
+            suggestionDeletion: true,
+          },
+          { text: '!' },
+        ],
+      },
+    ],
+  },
+
+  insertInlineVoid: {
+    input1: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'This is an !' }],
+      },
+    ],
+    input2: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'This is an ' },
+          {
+            type: ELEMENT_INLINE_VOID,
+            children: [{ text: '' }],
+          },
+          { text: '!' },
+        ],
+      },
+    ],
+    output: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'This is an ' },
+          {
+            type: ELEMENT_INLINE_VOID,
+            children: [{ text: '' }],
+            suggestion: true,
+            suggestion_0: true,
+            suggestionId: '1',
+          },
+          { text: '!' },
+        ],
+      },
+    ],
+  },
+
+  updateInlineVoid: {
+    input1: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'This is an ' },
+          {
+            type: ELEMENT_INLINE_VOID,
+            someProp: 'Hello',
+            children: [{ text: '' }],
+          },
+          { text: '!' },
+        ],
+      },
+    ],
+    input2: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'This is an ' },
+          {
+            type: ELEMENT_INLINE_VOID,
+            someProp: 'World',
+            children: [{ text: '' }],
+          },
+          { text: '!' },
+        ],
+      },
+    ],
+    output: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'This is an ' },
+          {
+            type: ELEMENT_INLINE_VOID,
+            someProp: 'Hello',
+            children: [{ text: '' }],
+            suggestion: true,
+            suggestion_0: true,
+            suggestionId: '1',
+            suggestionDeletion: true,
+          },
+          {
+            type: ELEMENT_INLINE_VOID,
+            someProp: 'World',
+            children: [{ text: '' }],
+            suggestion: true,
+            suggestion_0: true,
+            suggestionId: '1',
+          },
+          { text: '!' },
+        ],
+      },
+    ],
+  },
+
   mergeText: {
     input1: [
       {
@@ -1023,11 +1159,18 @@ const fixtures: Record<string, SlateDiffFixture> = {
   },
 };
 
+const createInlineVoidPlugin = createPluginFactory({
+  key: ELEMENT_INLINE_VOID,
+  isElement: true,
+  isInline: true,
+  isVoid: true,
+});
+
 describe('slateDiff', () => {
   Object.entries(fixtures).forEach(
     ([name, { it: itFn = it, input1, input2, output }]) => {
       itFn(name, () => {
-        const editor = createPlateEditor();
+        const editor = createPlateEditor({ plugins: [createInlineVoidPlugin()] });
         expect(diffToSuggestions(editor, input1, input2)).toStrictEqual(output);
       });
     }

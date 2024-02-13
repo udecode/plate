@@ -1,5 +1,6 @@
 import {
   addRangeMarks,
+  isText,
   PlateEditor,
   TDescendant,
   TOperation,
@@ -346,8 +347,8 @@ export function transformDiffTexts<
   E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
-  nodes: TText[],
-  nextNodes: TText[],
+  nodes: TDescendant[],
+  nextNodes: TDescendant[],
   options: Required<DiffToSuggestionsOptions>
 ): TDescendant[] {
   // Validate input - both arrays must have at least one node
@@ -355,16 +356,80 @@ export function transformDiffTexts<
   if (nextNodes.length === 0)
     throw new Error('must have at least one nextNodes');
 
+  let nextChar = 'A';
+  const usedChars = nodes.concat(nextNodes).filter(isText).map((n) => n.text).join('');
+
+  const getUnusedChar = () => {
+    const incrementNextChar = () => {
+      nextChar = String.fromCharCode(nextChar.charCodeAt(0) + 1);
+    };
+
+    while (usedChars.includes(nextChar)) {
+      incrementNextChar();
+    }
+
+    const c = nextChar;
+    incrementNextChar();
+    return c;
+  };
+
+  const nodeMap = new Map<string, TDescendant>();
+
+  const mapNodeToText = (node: TDescendant): TText => {
+    if (isText(node)) {
+      return node;
+    }
+
+    const c = getUnusedChar();
+    nodeMap.set(c, node);
+    return { text: c };
+  };
+
+  const mapTextToNodes = (initialTextNode: TText): TDescendant[] => {
+    let outputNodes: TDescendant[] = [initialTextNode];
+
+    for (const [c, nodeForC] of nodeMap) {
+      outputNodes = outputNodes.flatMap((outputNode) => {
+        if (isText(outputNode)) {
+          const splitText = outputNode.text.split(c);
+
+          return splitText.flatMap((textChunk, i) => {
+            const nodeForTextChunk = { ...outputNode, text: textChunk };
+
+            if (i === splitText.length - 1) return nodeForTextChunk;
+
+            const nodeForCWithProps = {
+              ...nodeForC,
+              ...Node.extractProps(outputNode),
+            } as TDescendant;
+
+            return [
+              nodeForTextChunk,
+              nodeForCWithProps,
+            ];
+          }).filter((n) => !isText(n) || n.text.length > 0);
+        }
+
+        return [outputNode];
+      });
+    }
+
+    return outputNodes;
+  };
+
+  const texts = nodes.map(mapNodeToText);
+  const nextTexts = nextNodes.map(mapNodeToText);
+
   const nodesEditor = withNodesEditor(createEditor() as any, options);
-  nodesEditor.children = [{ children: nodes }];
+  nodesEditor.children = [{ children: texts }];
 
   withoutNormalizing(nodesEditor, () => {
     // Start with the first node in the array, assuming all nodes are to be merged into one
-    let node = nodes[0];
+    let node = texts[0];
 
-    if (nodes.length > 1) {
+    if (texts.length > 1) {
       // If there are multiple nodes, merge them into one, adding merge operations
-      for (let i = 1; i < nodes.length; i++) {
+      for (let i = 1; i < texts.length; i++) {
         nodesEditor.apply({
           type: 'merge_node',
           path: [0, 1],
@@ -372,19 +437,20 @@ export function transformDiffTexts<
           properties: {}, // Required by type; not actually used here
         });
         // Update the node's text with the merged text (for splitTextNodes)
-        node = { ...node, text: node.text + nodes[i].text };
+        node = { ...node, text: node.text + texts[i].text };
       }
     }
 
-    // After merging, apply split operations based on the target state (`nextNodes`)
-    for (const op of splitTextNodes(node, nextNodes)) {
+    // After merging, apply split operations based on the target state (`nextTexts`)
+    for (const op of splitTextNodes(node, nextTexts)) {
       nodesEditor.apply(op);
     }
 
     nodesEditor.commitDiffs();
   });
 
-  return (nodesEditor.children[0] as any).children;
+  const diffTexts = (nodesEditor.children[0] as any).children;
+  return diffTexts.flatMap(mapTextToNodes);
 }
 
 // Function to compute the text operations needed to transform string `a` into string `b`

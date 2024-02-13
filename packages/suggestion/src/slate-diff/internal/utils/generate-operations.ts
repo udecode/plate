@@ -1,5 +1,6 @@
 import {
-  isTextList,
+  isInline,
+  isText,
   PlateEditor,
   TDescendant,
   Value,
@@ -11,6 +12,13 @@ import { transformDiffTexts } from '../transforms/transformDiffTexts';
 import { diffNodes, NodeRelatedItem } from './diff-nodes';
 import { StringCharMapping } from './string-char-mapping';
 import { stringToNodes } from './string-to-nodes';
+
+const isInlineList = <
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(editor: E, nodes: TDescendant[]) => {
+  return nodes.every((node) => isText(node) || isInline(editor, node));
+};
 
 export interface GenerateOperationsOptions
   extends Required<DiffToSuggestionsOptions> {
@@ -81,7 +89,7 @@ export function generateOperations<
         const nextNodes = stringToNodes(nextVal, stringCharMapping);
 
         // If both current and next chunks are text nodes, use transformTextNodes
-        if (isTextList(nodes) && isTextList(nextNodes)) {
+        if (isInlineList<V, E>(editor, nodes) && isInlineList<V, E>(editor, nextNodes)) {
           children.push(
             ...transformDiffTexts<V, E>(editor, nodes, nextNodes, {
               getInsertProps,
