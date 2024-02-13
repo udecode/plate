@@ -56,6 +56,57 @@ const fixtures: Record<string, SlateDiffFixture> = {
     ],
   },
 
+  addMarkFirst: {
+    input1: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'PingCode' },
+          {
+            text: ' Wiki & Worktile',
+            italic: true,
+          },
+        ],
+      },
+    ],
+    input2: [
+      {
+        type: 'paragraph',
+        children: [
+          {
+            text: 'PingCode',
+            bold: true,
+          },
+          {
+            text: ' Wiki & Worktile',
+            italic: true,
+          },
+        ],
+      },
+    ],
+    output: [
+      {
+        type: 'paragraph',
+        children: [
+          {
+            text: 'PingCode',
+            bold: true,
+            suggestion: true,
+            suggestion_0: true,
+            suggestionId: '1',
+            suggestionUpdate: {
+              bold: true,
+            },
+          },
+          {
+            text: ' Wiki & Worktile',
+            italic: true,
+          },
+        ],
+      },
+    ],
+  },
+
   addTwoMark: {
     input1: [
       {
@@ -346,7 +397,6 @@ const fixtures: Record<string, SlateDiffFixture> = {
           },
           {
             text: ' & ',
-            bold: undefined,
           },
           {
             text: 'Worktile',
@@ -362,6 +412,12 @@ const fixtures: Record<string, SlateDiffFixture> = {
           {
             text: 'PingCode',
             bold: true,
+            suggestion: true,
+            suggestion_0: true,
+            suggestionId: '1',
+            suggestionUpdate: {
+              bold: true,
+            },
           },
           {
             text: ' & ',
@@ -369,9 +425,6 @@ const fixtures: Record<string, SlateDiffFixture> = {
             suggestion: true,
             suggestion_0: true,
             suggestionId: '1',
-            suggestionUpdate: {
-              bold: undefined,
-            },
           },
           {
             text: 'Worktile',
@@ -379,6 +432,9 @@ const fixtures: Record<string, SlateDiffFixture> = {
             suggestion: true,
             suggestion_0: true,
             suggestionId: '1',
+            suggestionUpdate: {
+              bold: true,
+            },
           },
         ],
       },
@@ -420,7 +476,6 @@ const fixtures: Record<string, SlateDiffFixture> = {
   },
 
   addNode: {
-    it: it.only,
     input1: [
       {
         type: 'paragraph',
@@ -453,7 +508,6 @@ const fixtures: Record<string, SlateDiffFixture> = {
   },
 
   removeNode: {
-    it: it.only,
     input1: [
       {
         type: 'paragraph',
@@ -487,7 +541,6 @@ const fixtures: Record<string, SlateDiffFixture> = {
   },
 
   setNodeAdd: {
-    it: it.only,
     input1: [
       {
         type: 'paragraph',
@@ -529,7 +582,6 @@ const fixtures: Record<string, SlateDiffFixture> = {
   },
 
   setNodeRemove: {
-    it: it.only,
     input1: [
       {
         type: 'paragraph',
@@ -570,7 +622,6 @@ const fixtures: Record<string, SlateDiffFixture> = {
   },
 
   setNodeChange: {
-    it: it.only,
     input1: [
       {
         type: 'paragraph',
@@ -613,7 +664,6 @@ const fixtures: Record<string, SlateDiffFixture> = {
   },
 
   addNodeChildren: {
-    it: it.only,
     input1: [
       {
         type: 'container',
@@ -686,6 +736,44 @@ const fixtures: Record<string, SlateDiffFixture> = {
             suggestion_0: true,
             suggestionId: '1',
             suggestionDeletion: true,
+          },
+        ],
+      },
+    ],
+  },
+
+  replaceText: {
+    input1: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'PingCode & Worktile' }],
+      },
+    ],
+    input2: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'PingCode & Whatever' },
+        ],
+      },
+    ],
+    output: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'PingCode & W' },
+          {
+            text: 'orktile',
+            suggestion: true,
+            suggestion_0: true,
+            suggestionId: '1',
+            suggestionDeletion: true,
+          },
+          {
+            text: 'hatever',
+            suggestion: true,
+            suggestion_0: true,
+            suggestionId: '1',
           },
         ],
       },
@@ -917,6 +1005,12 @@ const fixtures: Record<string, SlateDiffFixture> = {
         children: [
           {
             text: 'PingCode',
+            suggestion: true,
+            suggestion_0: true,
+            suggestionId: '1',
+            suggestionUpdate: {
+              bold: undefined,
+            },
           },
           {
             text: ' & Worktile',

@@ -1,45 +1,355 @@
-import { TOperation, TText } from '@udecode/plate-common';
-import { Path } from 'slate';
+import { addRangeMarks, PlateEditor, TDescendant, TOperation, TText, Value } from '@udecode/plate-common';
+import { BaseEditor, createEditor, Path, Node, RemoveTextOperation, MergeNodeOperation, RangeRef, SplitNodeOperation, Editor, Point, Range, PointRef, SetNodeOperation, InsertTextOperation, withoutNormalizing } from 'slate';
+import {DiffToSuggestionsOptions} from '../../slateDiff';
+import isEqual from 'lodash/isEqual.js';
+import uniqWith from 'lodash/uniqWith.js';
 
 import { dmp } from '../utils/dmp';
 import { getProperties } from '../utils/get-properties';
 
+interface NodesEditor extends BaseEditor {
+  propsChanges: {
+    rangeRef: RangeRef;
+    properties: Record<string, any>;
+    newProperties: Record<string, any>;
+  }[];
+
+  insertedTexts: {
+    rangeRef: RangeRef;
+    node: TText;
+  }[];
+
+  removedTexts: {
+    pointRef: PointRef;
+    node: TText;
+  }[],
+
+  commitDiffs: () => void;
+}
+
+const objectWithoutUndefined = (obj: Record<string, any>) => {
+  const newObj: Record<string, any> = {};
+
+  Object.keys(obj).forEach((key) => {
+    if (obj[key] !== undefined) {
+      newObj[key] = obj[key];
+    }
+  });
+
+  return newObj;
+};
+
+const flattenPropsChanges = (editor: NodesEditor) => {
+  // The set of points at which some `propChanges` range starts or ends
+  const unsortedRangePoints = editor.propsChanges.flatMap(({ rangeRef }) => {
+    const range = rangeRef.current;
+    if (!range) return [];
+    return [range.anchor, range.focus];
+  });
+
+  const rangePoints = uniqWith(
+    unsortedRangePoints.sort(Point.compare),
+    Point.equals
+  );
+  if (rangePoints.length < 2) return [];
+
+  /**
+   * A continuous set of non-overlapping ranges spanning the first and last
+   * `rangePoints`.
+   */
+  const flatRanges = Array.from({ length: rangePoints.length - 1 })
+    .fill(null)
+    .map((_, i) => ({
+      anchor: rangePoints[i],
+      focus: rangePoints[i + 1],
+    }));
+
+  const flatUpdates = flatRanges.map((flatRange) => {
+    // The set of `propChanges` that intersect with `flatRange`
+    const intersectingUpdates = editor.propsChanges.filter(({ rangeRef }) => {
+      const range = rangeRef.current;
+      if (!range) return false;
+      const intersection = Range.intersection(range, flatRange);
+      if (!intersection) return false;
+      return Range.isExpanded(intersection);
+    });
+
+    if (intersectingUpdates.length === 0) return null;
+
+    // Get the props of the range before and after the updates
+    const initialProps = objectWithoutUndefined(
+      intersectingUpdates[0].properties
+    );
+
+    const finalProps = objectWithoutUndefined(
+      intersectingUpdates.at(-1)!.newProperties
+    );
+
+    if (isEqual(initialProps, finalProps)) return null;
+
+    const properties = {} as Record<string, any>;
+    const newProperties = {} as Record<string, any>;
+
+    for (const key of Object.keys(finalProps)) {
+      if (!isEqual(initialProps[key], finalProps[key])) {
+        properties[key] = initialProps[key];
+        newProperties[key] = finalProps[key];
+      }
+    }
+
+    for (const key of Object.keys(initialProps)) {
+      if (finalProps[key] === undefined) {
+        properties[key] = initialProps[key];
+        newProperties[key] = undefined;
+      }
+    }
+
+    return {
+      range: flatRange,
+      properties,
+      newProperties,
+    };
+  });
+
+  editor.propsChanges.forEach(({ rangeRef }) => {
+    rangeRef.unref();
+  });
+
+  return flatUpdates.filter(Boolean) as Exclude<
+    (typeof flatUpdates)[number],
+    null
+  >[];
+}
+
+const withNodesEditor = (editor: NodesEditor, { getInsertProps, getRemoveProps, getUpdateProps }: Required<DiffToSuggestionsOptions>) => {
+  const { apply } = editor;
+
+  editor.propsChanges = [];
+  editor.insertedTexts = [];
+  editor.removedTexts = [];
+
+  let recordingOperations = true;
+
+  const applyInsertText = (op: InsertTextOperation) => {
+    const node = Node.get(editor, op.path) as TText;
+
+    apply(op);
+
+    const startPoint = { path: op.path, offset: op.offset };
+    const endPoint = { path: op.path, offset: op.offset + op.text.length };
+    const range = { anchor: startPoint, focus: endPoint };
+    const rangeRef = Editor.rangeRef(editor, range);
+
+    editor.insertedTexts.push({
+      rangeRef,
+      node: {
+        ...node,
+        text: op.text,
+      },
+    });
+  };
+
+  const applyRemoveText = (op: RemoveTextOperation) => {
+    const node = Node.get(editor, op.path) as TText;
+
+    apply(op);
+
+    const point = { path: op.path, offset: op.offset };
+    const pointRef = Editor.pointRef(editor, point, {
+      affinity: 'backward',
+    });
+
+    editor.removedTexts.push({
+      pointRef,
+      node: {
+        ...node,
+        text: op.text,
+      },
+    });
+  };
+
+  const applyMergeNode = (op: MergeNodeOperation) => {
+    const oldNode = Node.get(editor, op.path) as TText;
+    const properties = Node.extractProps(oldNode);
+
+    const prevNodePath = Path.previous(op.path);
+    const prevNode = Node.get(editor, prevNodePath) as TText;
+    const newProperties = Node.extractProps(prevNode);
+
+    apply(op);
+
+    const startPoint = { path: prevNodePath, offset: prevNode.text.length };
+    const endPoint = Editor.end(editor, prevNodePath);
+    const range = { anchor: startPoint, focus: endPoint };
+    const rangeRef = Editor.rangeRef(editor, range);
+
+    editor.propsChanges.push({
+      rangeRef,
+      properties,
+      newProperties,
+    });
+  };
+
+  const applySplitNode = (op: SplitNodeOperation) => {
+    const oldNode = Node.get(editor, op.path) as TText;
+    const properties = Node.extractProps(oldNode);
+    const newProperties = op.properties;
+
+    apply(op);
+
+    const newNodePath = Path.next(op.path);
+    const newNodeRange = Editor.range(editor, newNodePath);
+    const rangeRef = Editor.rangeRef(editor, newNodeRange);
+
+    editor.propsChanges.push({
+      rangeRef,
+      properties,
+      newProperties,
+    });
+  };
+
+  const applySetNode = (op: SetNodeOperation) => {
+    apply(op);
+
+    const range = Editor.range(editor, op.path);
+    const rangeRef = Editor.rangeRef(editor, range);
+
+    editor.propsChanges.push({
+      rangeRef,
+      properties: op.properties,
+      newProperties: op.newProperties,
+    });
+  };
+
+  editor.apply = (op) => {
+    if (!recordingOperations) {
+      return apply(op);
+    }
+
+    recordingOperations = false;
+
+    switch (op.type) {
+      case 'insert_text':
+        applyInsertText(op);
+        break;
+
+      case 'remove_text':
+        applyRemoveText(op);
+        break;
+
+      case 'merge_node':
+        applyMergeNode(op);
+        break;
+
+      case 'split_node':
+        applySplitNode(op);
+        break;
+
+      case 'set_node':
+        applySetNode(op);
+        break;
+
+      default:
+        apply(op);
+    }
+
+    recordingOperations = true;
+  };
+
+  editor.commitDiffs = () => {
+    recordingOperations = false;
+
+    editor.removedTexts.forEach(({ pointRef, node }) => {
+      const point = pointRef.current;
+
+      if (point) {
+        editor.insertNode({
+          ...node,
+          ...getRemoveProps(node),
+        }, { at: point });
+      }
+
+      pointRef.unref();
+    });
+
+    editor.insertedTexts.forEach(({ rangeRef, node }) => {
+      const range = rangeRef.current;
+
+      if (range) {
+        addRangeMarks(
+          editor as any,
+          getInsertProps(node),
+          { at: range }
+        );
+      }
+
+      rangeRef.unref();
+    });
+
+    // Reverse the array to prevent path changes
+    const flatUpdates = flattenPropsChanges(editor).reverse();
+
+    flatUpdates.forEach(({ range, properties, newProperties }) => {
+      const node = Node.get(editor, range.anchor.path) as TText;
+
+      addRangeMarks(
+        editor as any,
+        getUpdateProps(node, properties, newProperties),
+        { at: range }
+      );
+    });
+
+    recordingOperations = true;
+  };
+
+  return editor;
+};
+
 // Main function to transform an array of text nodes into another array of text nodes
-export function transformDiffTexts(
+export function transformDiffTexts<
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>
+>(
+  editor: E,
   nodes: TText[],
   nextNodes: TText[],
-  path: number[]
-): TOperation[] {
+  options: Required<DiffToSuggestionsOptions>
+): TDescendant[] {
   // Validate input - both arrays must have at least one node
   if (nodes.length === 0) throw new Error('must have at least one nodes');
   if (nextNodes.length === 0)
     throw new Error('must have at least one nextNodes');
 
-  const operations: TOperation[] = [];
+  const nodesEditor = withNodesEditor(createEditor() as any, options);
+  nodesEditor.children = [{ children: nodes }];
 
-  // Start with the first node in the array, assuming all nodes are to be merged into one
-  let node = nodes[0];
+  withoutNormalizing(nodesEditor, () => {
+    // Start with the first node in the array, assuming all nodes are to be merged into one
+    let node = nodes[0];
 
-  if (nodes.length > 1) {
-    // If there are multiple nodes, merge them into one, adding merge operations
-    for (let i = 1; i < nodes.length; i++) {
-      operations.push({
-        type: 'merge_node',
-        path: Path.next(path),
-        position: 0, // Required by type; not actually used here
-        properties: {}, // Required by type; not actually used here
-      });
-      // Update the node's text with the merged text (for splitTextNodes)
-      node = { ...node, text: node.text + nodes[i].text };
+    if (nodes.length > 1) {
+      // If there are multiple nodes, merge them into one, adding merge operations
+      for (let i = 1; i < nodes.length; i++) {
+        nodesEditor.apply({
+          type: 'merge_node',
+          path: [0, 1],
+          position: 0, // Required by type; not actually used here
+          properties: {}, // Required by type; not actually used here
+        });
+        // Update the node's text with the merged text (for splitTextNodes)
+        node = { ...node, text: node.text + nodes[i].text };
+      }
     }
-  }
 
-  // After merging, apply split operations based on the target state (`nextNodes`)
-  for (const op of splitTextNodes(node, nextNodes, path)) {
-    operations.push(op);
-  }
+    // After merging, apply split operations based on the target state (`nextNodes`)
+    for (const op of splitTextNodes(node, nextNodes)) {
+      nodesEditor.apply(op);
+    }
 
-  return operations;
+    nodesEditor.commitDiffs();
+  });
+
+  return (nodesEditor.children[0] as any).children;
 }
 
 // Function to compute the text operations needed to transform string `a` into string `b`
@@ -86,7 +396,6 @@ function slateTextDiff(a: string, b: string): Op[] {
     // Move to the next diff chunk
     i += 1;
   }
-  // console.info("slateTextDiff", { a, b, diff, operations });
 
   return operations;
 }
@@ -103,7 +412,6 @@ operations.
 function splitTextNodes(
   node: TText,
   split: TText[],
-  path: number[] // the path to node.
 ): TOperation[] {
   if (split.length === 0) {
     // If there are no target nodes, simply remove the original node
@@ -111,7 +419,7 @@ function splitTextNodes(
       {
         type: 'remove_node',
         node,
-        path,
+        path: [0, 0],
       },
     ];
   }
@@ -131,7 +439,7 @@ function splitTextNodes(
     // we can then worry about splitting up the resulting source node.
     for (const op of slateTextDiff(nodeText, splitText)) {
       // TODO: maybe path has to be changed if there are multiple OPS?
-      operations.push({ path, ...op });
+      operations.push({ path: [0, 0], ...op });
     }
   }
 
@@ -140,7 +448,7 @@ function splitTextNodes(
   if (getKeysLength(newProperties) > 0) {
     operations.push({
       type: 'set_node',
-      path,
+      path: [0, 0],
       properties: getProperties(node),
       newProperties,
     });
@@ -148,7 +456,7 @@ function splitTextNodes(
 
   let properties = getProperties(split[0]);
   // For each segment in the target state, split the node and adjust properties as needed
-  let splitPath = path;
+  let splitPath = [0, 0];
   for (let i = 0; i < split.length - 1; i++) {
     const part = split[i];
     const nextPart = split[i + 1];

@@ -76,15 +76,12 @@ export function generateOperations<
 
         // If both current and next chunks are text nodes, use transformTextNodes
         if (isTextList(nodes) && isTextList(nextNodes)) {
-          // TODO:
-          // for (const textOp of transformDiffTexts(
-          //   nodes,
-          //   nextNodes,
-          //   path.concat([index])
-          // )) {
-          //   // Add operations from transforming text nodes
-          //   operations.push(textOp);
-          // }
+          children.push(...transformDiffTexts<V, E>(
+            editor,
+            nodes,
+            nextNodes,
+            { getInsertProps, getRemoveProps, getUpdateProps }
+          ));
           // Advance the index by the length of the next nodes
           index += nextNodes.length;
           // Consume two diff chunks (delete and insert)
