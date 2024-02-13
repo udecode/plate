@@ -24,6 +24,23 @@ it('serialize with slate className', () => {
   ).toBe('<div class="slate-p">I am centered text!</div>');
 });
 
+it('serialize with without modifying content', () => {
+  const editor = createPlateUIEditor({
+    plugins: [createParagraphPlugin()],
+  });
+
+  expect(
+    serializeHtml(editor, {
+      nodes: [
+        {
+          type: ELEMENT_PARAGRAPH,
+          children: [{ text: 'I am class="preserved" text!' }],
+        },
+      ],
+    })
+  ).toBe('<div class="slate-p">I am class=&quot;preserved&quot; text!</div>');
+});
+
 it('serialize with slate classNames: a+slate', () => {
   const editor = createPlateUIEditor({
     plugins: [
@@ -169,6 +186,30 @@ it('serialize with custom preserved classname: a+custom', () => {
       preserveClassNames: ['custom-'],
     })
   ).toBe('<div class="custom-align-center">I am centered text!</div>');
+});
+
+it('serialize without preserving classnames', () => {
+  const editor = createPlateUIEditor({
+    plugins: [
+      createParagraphPlugin({
+        props: {
+          className: 'a custom-align-center slate-test',
+        },
+      }),
+    ],
+  });
+
+  expect(
+    serializeHtml(editor, {
+      nodes: [
+        {
+          type: ELEMENT_PARAGRAPH,
+          children: [{ text: 'I am centered text!' }],
+        },
+      ],
+      preserveClassNames: [],
+    })
+  ).toBe('<div>I am centered text!</div>');
 });
 
 it('serialize nested with custom preserved classname: a+custom', () => {

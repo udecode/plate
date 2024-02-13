@@ -6884,7 +6884,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-suggestion@npm:30.4.1, @udecode/plate-suggestion@workspace:^, @udecode/plate-suggestion@workspace:packages/suggestion":
+"@udecode/plate-suggestion@npm:30.4.3, @udecode/plate-suggestion@workspace:^, @udecode/plate-suggestion@workspace:packages/suggestion":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-suggestion@workspace:packages/suggestion"
   dependencies:
@@ -7083,7 +7083,7 @@ __metadata:
     "@udecode/plate-serializer-docx": "npm:30.1.2"
     "@udecode/plate-serializer-html": "npm:30.1.2"
     "@udecode/plate-serializer-md": "npm:30.2.1"
-    "@udecode/plate-suggestion": "npm:30.4.1"
+    "@udecode/plate-suggestion": "npm:30.4.3"
     "@udecode/plate-tabbable": "npm:30.1.2"
     "@udecode/plate-table": "npm:30.1.2"
     "@udecode/plate-toggle": "npm:30.3.2"
