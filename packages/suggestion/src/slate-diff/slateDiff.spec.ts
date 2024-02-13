@@ -1,4 +1,8 @@
-import { createPlateEditor, createPluginFactory, Value } from '@udeCode/plate-common';
+import {
+  createPlateEditor,
+  createPluginFactory,
+  Value,
+} from '@udeCode/plate-common';
 
 import { diffToSuggestions } from './slateDiff';
 
@@ -1170,7 +1174,9 @@ describe('slateDiff', () => {
   Object.entries(fixtures).forEach(
     ([name, { it: itFn = it, input1, input2, output }]) => {
       itFn(name, () => {
-        const editor = createPlateEditor({ plugins: [createInlineVoidPlugin()] });
+        const editor = createPlateEditor({
+          plugins: [createInlineVoidPlugin()],
+        });
         expect(diffToSuggestions(editor, input1, input2)).toStrictEqual(output);
       });
     }

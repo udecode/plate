@@ -357,11 +357,15 @@ export function transformDiffTexts<
     throw new Error('must have at least one nextNodes');
 
   let nextChar = 'A';
-  const usedChars = nodes.concat(nextNodes).filter(isText).map((n) => n.text).join('');
+  const usedChars = nodes
+    .concat(nextNodes)
+    .filter(isText)
+    .map((n) => n.text)
+    .join('');
 
   const getUnusedChar = () => {
     const incrementNextChar = () => {
-      nextChar = String.fromCharCode(nextChar.charCodeAt(0) + 1);
+      nextChar = String.fromCodePoint(nextChar.codePointAt(0)! + 1);
     };
 
     while (usedChars.includes(nextChar)) {
@@ -393,21 +397,20 @@ export function transformDiffTexts<
         if (isText(outputNode)) {
           const splitText = outputNode.text.split(c);
 
-          return splitText.flatMap((textChunk, i) => {
-            const nodeForTextChunk = { ...outputNode, text: textChunk };
+          return splitText
+            .flatMap((textChunk, i) => {
+              const nodeForTextChunk = { ...outputNode, text: textChunk };
 
-            if (i === splitText.length - 1) return nodeForTextChunk;
+              if (i === splitText.length - 1) return nodeForTextChunk;
 
-            const nodeForCWithProps = {
-              ...nodeForC,
-              ...Node.extractProps(outputNode),
-            } as TDescendant;
+              const nodeForCWithProps = {
+                ...nodeForC,
+                ...Node.extractProps(outputNode),
+              } as TDescendant;
 
-            return [
-              nodeForTextChunk,
-              nodeForCWithProps,
-            ];
-          }).filter((n) => !isText(n) || n.text.length > 0);
+              return [nodeForTextChunk, nodeForCWithProps];
+            })
+            .filter((n) => !isText(n) || n.text.length > 0);
         }
 
         return [outputNode];

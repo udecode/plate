@@ -15,8 +15,11 @@ import { stringToNodes } from './string-to-nodes';
 
 const isInlineList = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
->(editor: E, nodes: TDescendant[]) => {
+  E extends PlateEditor<V> = PlateEditor<V>,
+>(
+  editor: E,
+  nodes: TDescendant[]
+) => {
   return nodes.every((node) => isText(node) || isInline(editor, node));
 };
 
@@ -89,7 +92,10 @@ export function generateOperations<
         const nextNodes = stringToNodes(nextVal, stringCharMapping);
 
         // If both current and next chunks are text nodes, use transformTextNodes
-        if (isInlineList<V, E>(editor, nodes) && isInlineList<V, E>(editor, nextNodes)) {
+        if (
+          isInlineList<V, E>(editor, nodes) &&
+          isInlineList<V, E>(editor, nextNodes)
+        ) {
           children.push(
             ...transformDiffTexts<V, E>(editor, nodes, nextNodes, {
               getInsertProps,
