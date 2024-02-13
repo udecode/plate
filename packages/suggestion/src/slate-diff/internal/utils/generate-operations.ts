@@ -1,19 +1,25 @@
-import { isTextList, PlateEditor, TDescendant, Value } from '@udecode/plate-common';
-import {DiffToSuggestionsOptions} from '../../slateDiff';
+import {
+  isTextList,
+  PlateEditor,
+  TDescendant,
+  Value,
+} from '@udecode/plate-common';
 
+import { DiffToSuggestionsOptions } from '../../slateDiff';
 import { transformDiffNodes } from '../transforms/transformDiffNodes';
 import { transformDiffTexts } from '../transforms/transformDiffTexts';
 import { diffNodes, NodeRelatedItem } from './diff-nodes';
 import { StringCharMapping } from './string-char-mapping';
 import { stringToNodes } from './string-to-nodes';
 
-export interface GenerateOperationsOptions extends Required<DiffToSuggestionsOptions> {
+export interface GenerateOperationsOptions
+  extends Required<DiffToSuggestionsOptions> {
   stringCharMapping: StringCharMapping;
 }
 
 export function generateOperations<
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
   diff: {
@@ -29,23 +35,25 @@ export function generateOperations<
     getUpdateProps,
   }: GenerateOperationsOptions
 ): TDescendant[] {
-  // Current index in the document
-  let index = 0;
   // Current index in the diff array
   let i = 0;
   const children: TDescendant[] = [];
 
   const insertNodes = (...nodes: TDescendant[]) =>
-    children.push(...nodes.map((node) => ({
-      ...node,
-      ...getInsertProps(node),
-    })));
+    children.push(
+      ...nodes.map((node) => ({
+        ...node,
+        ...getInsertProps(node),
+      }))
+    );
 
   const removeNodes = (...nodes: TDescendant[]) =>
-    children.push(...nodes.map((node) => ({
-      ...node,
-      ...getRemoveProps(node),
-    })));
+    children.push(
+      ...nodes.map((node) => ({
+        ...node,
+        ...getRemoveProps(node),
+      }))
+    );
 
   while (i < diff.length) {
     const chunk = diff[i];
@@ -58,8 +66,6 @@ export function generateOperations<
     // If operation code is 0, it means the chunk is unchanged
     if (op === 0) {
       children.push(...nodes);
-      // Skip over unchanged text by advancing the index
-      index += val.length;
       // Move to the next diff chunk
       i += 1;
       continue;
@@ -76,14 +82,13 @@ export function generateOperations<
 
         // If both current and next chunks are text nodes, use transformTextNodes
         if (isTextList(nodes) && isTextList(nextNodes)) {
-          children.push(...transformDiffTexts<V, E>(
-            editor,
-            nodes,
-            nextNodes,
-            { getInsertProps, getRemoveProps, getUpdateProps }
-          ));
-          // Advance the index by the length of the next nodes
-          index += nextNodes.length;
+          children.push(
+            ...transformDiffTexts<V, E>(editor, nodes, nextNodes, {
+              getInsertProps,
+              getRemoveProps,
+              getUpdateProps,
+            })
+          );
           // Consume two diff chunks (delete and insert)
           i += 2;
           continue;
@@ -97,17 +102,16 @@ export function generateOperations<
           }
           if (item.insert) {
             insertNodes(item.originNode);
-            // Adjust index for each inserted node
-            index += 1;
           }
           if (item.relatedNode) {
-            children.push(...transformDiffNodes<V, E>(
-              editor,
-              item.originNode,
-              item.relatedNode,
-              { getInsertProps, getRemoveProps, getUpdateProps }
-            ));
-            index += 1;
+            children.push(
+              ...transformDiffNodes<V, E>(
+                editor,
+                item.originNode,
+                item.relatedNode,
+                { getInsertProps, getRemoveProps, getUpdateProps }
+              )
+            );
           }
         });
         i += 2; // this consumed two entries from the diff array.
@@ -125,12 +129,13 @@ export function generateOperations<
       // insert new nodes.
       for (const node of nodes) {
         insertNodes(node);
-        index += 1;
       }
       i += 1;
       continue;
     }
-    throw new Error('generateOperations: Missing continue statement or unhandled operation');
+    throw new Error(
+      'generateOperations: Missing continue statement or unhandled operation'
+    );
   }
 
   return children;

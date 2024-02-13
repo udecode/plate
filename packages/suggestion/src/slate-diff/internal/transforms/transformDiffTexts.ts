@@ -1,9 +1,32 @@
-import { addRangeMarks, PlateEditor, TDescendant, TOperation, TText, Value } from '@udecode/plate-common';
-import { BaseEditor, createEditor, Path, Node, RemoveTextOperation, MergeNodeOperation, RangeRef, SplitNodeOperation, Editor, Point, Range, PointRef, SetNodeOperation, InsertTextOperation, withoutNormalizing } from 'slate';
-import {DiffToSuggestionsOptions} from '../../slateDiff';
+import {
+  addRangeMarks,
+  PlateEditor,
+  TDescendant,
+  TOperation,
+  TText,
+  Value,
+} from '@udecode/plate-common';
 import isEqual from 'lodash/isEqual.js';
 import uniqWith from 'lodash/uniqWith.js';
+import {
+  BaseEditor,
+  createEditor,
+  Editor,
+  InsertTextOperation,
+  MergeNodeOperation,
+  Node,
+  Path,
+  Point,
+  PointRef,
+  Range,
+  RangeRef,
+  RemoveTextOperation,
+  SetNodeOperation,
+  SplitNodeOperation,
+  withoutNormalizing,
+} from 'slate';
 
+import { DiffToSuggestionsOptions } from '../../slateDiff';
 import { dmp } from '../utils/dmp';
 import { getProperties } from '../utils/get-properties';
 
@@ -22,7 +45,7 @@ interface NodesEditor extends BaseEditor {
   removedTexts: {
     pointRef: PointRef;
     node: TText;
-  }[],
+  }[];
 
   commitDiffs: () => void;
 }
@@ -119,9 +142,16 @@ const flattenPropsChanges = (editor: NodesEditor) => {
     (typeof flatUpdates)[number],
     null
   >[];
-}
+};
 
-const withNodesEditor = (editor: NodesEditor, { getInsertProps, getRemoveProps, getUpdateProps }: Required<DiffToSuggestionsOptions>) => {
+const withNodesEditor = (
+  editor: NodesEditor,
+  {
+    getInsertProps,
+    getRemoveProps,
+    getUpdateProps,
+  }: Required<DiffToSuggestionsOptions>
+) => {
   const { apply } = editor;
 
   editor.propsChanges = [];
@@ -229,28 +259,34 @@ const withNodesEditor = (editor: NodesEditor, { getInsertProps, getRemoveProps, 
     recordingOperations = false;
 
     switch (op.type) {
-      case 'insert_text':
+      case 'insert_text': {
         applyInsertText(op);
         break;
+      }
 
-      case 'remove_text':
+      case 'remove_text': {
         applyRemoveText(op);
         break;
+      }
 
-      case 'merge_node':
+      case 'merge_node': {
         applyMergeNode(op);
         break;
+      }
 
-      case 'split_node':
+      case 'split_node': {
         applySplitNode(op);
         break;
+      }
 
-      case 'set_node':
+      case 'set_node': {
         applySetNode(op);
         break;
+      }
 
-      default:
+      default: {
         apply(op);
+      }
     }
 
     recordingOperations = true;
@@ -263,10 +299,13 @@ const withNodesEditor = (editor: NodesEditor, { getInsertProps, getRemoveProps, 
       const point = pointRef.current;
 
       if (point) {
-        editor.insertNode({
-          ...node,
-          ...getRemoveProps(node),
-        }, { at: point });
+        editor.insertNode(
+          {
+            ...node,
+            ...getRemoveProps(node),
+          },
+          { at: point }
+        );
       }
 
       pointRef.unref();
@@ -276,11 +315,7 @@ const withNodesEditor = (editor: NodesEditor, { getInsertProps, getRemoveProps, 
       const range = rangeRef.current;
 
       if (range) {
-        addRangeMarks(
-          editor as any,
-          getInsertProps(node),
-          { at: range }
-        );
+        addRangeMarks(editor as any, getInsertProps(node), { at: range });
       }
 
       rangeRef.unref();
@@ -308,7 +343,7 @@ const withNodesEditor = (editor: NodesEditor, { getInsertProps, getRemoveProps, 
 // Main function to transform an array of text nodes into another array of text nodes
 export function transformDiffTexts<
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
   nodes: TText[],
@@ -409,10 +444,7 @@ via a combination of remove_text/insert_text as above and split_node
 operations.
 */
 // Function to split a single text node into multiple nodes based on the desired target state
-function splitTextNodes(
-  node: TText,
-  split: TText[],
-): TOperation[] {
+function splitTextNodes(node: TText, split: TText[]): TOperation[] {
   if (split.length === 0) {
     // If there are no target nodes, simply remove the original node
     return [

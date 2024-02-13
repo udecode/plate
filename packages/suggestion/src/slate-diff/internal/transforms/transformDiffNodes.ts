@@ -14,7 +14,7 @@ import { copyWithout } from '../utils/copy-without';
 
 type Handler = <
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
   node: TDescendant,
@@ -41,16 +41,23 @@ const childrenOnlyStrategy: Handler = (editor, node, nextNode, options) => {
       nextNode['children'] as TDescendant[],
       options
     );
-    return [{
-      ...node,
-      children,
-    }];
+    return [
+      {
+        ...node,
+        children,
+      },
+    ];
   }
   return false;
 };
 
 // Only the props have changed. Return the node with the props updated.
-const propsOnlyStrategy: Handler = (_editor, node, nextNode, { getUpdateProps }) => {
+const propsOnlyStrategy: Handler = (
+  _editor,
+  node,
+  nextNode,
+  { getUpdateProps }
+) => {
   const properties: any = {};
   const newProperties: any = {};
 
@@ -82,7 +89,12 @@ const propsOnlyStrategy: Handler = (_editor, node, nextNode, { getUpdateProps })
 };
 
 // No other strategy applies, so remove and insert the node.
-const fallbackStrategy: Handler = (_editor, node, nextNode, { getInsertProps, getRemoveProps }) => {
+const fallbackStrategy: Handler = (
+  _editor,
+  node,
+  nextNode,
+  { getInsertProps, getRemoveProps }
+) => {
   return [
     {
       ...node,
@@ -101,13 +113,12 @@ const strategies: Handler[] = [
   fallbackStrategy,
 ];
 
-export interface TransformDiffNodesOptions {
-}
+export interface TransformDiffNodesOptions {}
 
 // Replace node at path by nextNode using the first strategy that works.
 export function transformDiffNodes<
   V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
+  E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
   node: TDescendant,

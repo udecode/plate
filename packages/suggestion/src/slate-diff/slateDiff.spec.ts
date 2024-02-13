@@ -1,5 +1,6 @@
-import { diffToSuggestions } from './slateDiff';
 import { createPlateEditor, Value } from '@udeCode/plate-common';
+
+import { diffToSuggestions } from './slateDiff';
 
 interface SlateDiffFixture {
   it?: typeof it;
@@ -720,9 +721,7 @@ const fixtures: Record<string, SlateDiffFixture> = {
     input2: [
       {
         type: 'paragraph',
-        children: [
-          { text: 'PingCode' },
-        ],
+        children: [{ text: 'PingCode' }],
       },
     ],
     output: [
@@ -752,9 +751,7 @@ const fixtures: Record<string, SlateDiffFixture> = {
     input2: [
       {
         type: 'paragraph',
-        children: [
-          { text: 'PingCode & Whatever' },
-        ],
+        children: [{ text: 'PingCode & Whatever' }],
       },
     ],
     output: [
@@ -1027,10 +1024,12 @@ const fixtures: Record<string, SlateDiffFixture> = {
 };
 
 describe('slateDiff', () => {
-  Object.entries(fixtures).forEach(([name, { it: itFn = it, input1, input2, output }]) => {
-    itFn(name, () => {
-      const editor = createPlateEditor();
-      expect(diffToSuggestions(editor, input1, input2)).toStrictEqual(output);
-    });
-  });
+  Object.entries(fixtures).forEach(
+    ([name, { it: itFn = it, input1, input2, output }]) => {
+      itFn(name, () => {
+        const editor = createPlateEditor();
+        expect(diffToSuggestions(editor, input1, input2)).toStrictEqual(output);
+      });
+    }
+  );
 });
