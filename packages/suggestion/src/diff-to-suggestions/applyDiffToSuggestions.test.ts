@@ -1,5 +1,7 @@
 import { createPlateEditor } from '@udecode/plate-common';
+import { createMentionPlugin } from '@udecode/plate-mention';
 
+import { slateDiff } from '../slate-diff';
 import { applyDiffToSuggestions } from './applyDiffToSuggestions';
 import {
   addMarkFixtures,
@@ -21,7 +23,9 @@ describe('slate-diff', () => {
   const options = { idFactory: () => '1' };
 
   beforeEach(() => {
-    editor = createPlateEditor();
+    editor = createPlateEditor({
+      plugins: [createMentionPlugin()],
+    });
   });
 
   it('insert-text', () => {
@@ -108,5 +112,58 @@ describe('slate-diff', () => {
     expect(editor.children).toStrictEqual(
       insertUpdateTwoParagraphsFixtures.doc2
     );
+  });
+
+  describe('inline void nodes', () => {
+    it('diff', () => {
+      const previous = [
+        {
+          type: 'p',
+          id: 'block2',
+          children: [
+            {
+              text: 'world in a [__] and [__].',
+            },
+          ],
+        },
+      ];
+
+      const next = [
+        { text: 'world in a ' },
+        {
+          type: 'mention',
+          children: [{ text: '' }],
+        },
+        { text: ' and ' },
+        {
+          type: 'mention',
+          children: [{ text: '' }],
+        },
+        { text: '.' },
+      ] as any;
+
+      const operations = slateDiff(previous, next);
+      applyDiffToSuggestions(editor, operations);
+
+      expect(editor.children).toStrictEqual([
+        {
+          type: 'p',
+          id: 'block2',
+          children: [
+            { text: 'world in a ' },
+            {
+              type: 'mention',
+              children: [{ text: '' }],
+            },
+            { text: ' and ' },
+            {
+              type: 'mention',
+              children: [{ text: '' }],
+            },
+            { text: '.' },
+          ],
+        },
+      ]);
+    });
   });
 });
