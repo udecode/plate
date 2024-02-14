@@ -235,16 +235,6 @@ const commitChangesToDiffs = <E extends BaseEditor>(
       pointRef.unref();
     });
 
-    editor.insertedTexts.forEach(({ rangeRef, node }) => {
-      const range = rangeRef.current;
-
-      if (range) {
-        addRangeMarks(editor as any, getInsertProps(node), { at: range });
-      }
-
-      rangeRef.unref();
-    });
-
     // Reverse the array to prevent path changes
     const flatUpdates = flattenPropsChanges(editor).reverse();
 
@@ -257,12 +247,35 @@ const commitChangesToDiffs = <E extends BaseEditor>(
         { at: range }
       );
     });
+
+    editor.insertedTexts.forEach(({ rangeRef, node }) => {
+      const range = rangeRef.current;
+
+      if (range) {
+        addRangeMarks(editor as any, getInsertProps(node), { at: range });
+      }
+
+      rangeRef.unref();
+    });
   });
 };
 
 const flattenPropsChanges = (editor: ChangeTrackingEditor) => {
-  // The set of points at which some `propChanges` range starts or ends
-  const unsortedRangePoints = editor.propsChanges.flatMap(({ rangeRef }) => {
+  const propChangeRangeRefs = editor.propsChanges.map(
+    ({ rangeRef }) => rangeRef
+  );
+  const insertedTextRangeRefs = editor.insertedTexts.map(
+    ({ rangeRef }) => rangeRef
+  );
+
+  /**
+   * The set of points at which some range starts or ends. Insertion ranges are
+   * included because we don't want to return props changes for them.
+   */
+  const unsortedRangePoints = [
+    ...propChangeRangeRefs,
+    ...insertedTextRangeRefs,
+  ].flatMap((rangeRef) => {
     const range = rangeRef.current;
     if (!range) return [];
     return [range.anchor, range.focus];
@@ -286,15 +299,22 @@ const flattenPropsChanges = (editor: ChangeTrackingEditor) => {
     }));
 
   const flatUpdates = flatRanges.map((flatRange) => {
-    // The set of `propChanges` that intersect with `flatRange`
-    const intersectingUpdates = editor.propsChanges.filter(({ rangeRef }) => {
-      const range = rangeRef.current;
-      if (!range) return false;
-      const intersection = Range.intersection(range, flatRange);
-      if (!intersection) return false;
-      return Range.isExpanded(intersection);
-    });
+    // The set of changes of a certain type that intersect with `flatRange`
+    const getIntersectingChanges = <T extends { rangeRef: RangeRef }>(
+      changes: T[]
+    ) =>
+      changes.filter(({ rangeRef }) => {
+        const range = rangeRef.current;
+        if (!range) return false;
+        const intersection = Range.intersection(range, flatRange);
+        if (!intersection) return false;
+        return Range.isExpanded(intersection);
+      });
 
+    // If the range is part of an insertion, return null
+    if (getIntersectingChanges(editor.insertedTexts).length > 0) return null;
+
+    const intersectingUpdates = getIntersectingChanges(editor.propsChanges);
     if (intersectingUpdates.length === 0) return null;
 
     // Get the props of the range before and after the updates
@@ -332,9 +352,7 @@ const flattenPropsChanges = (editor: ChangeTrackingEditor) => {
     };
   });
 
-  editor.propsChanges.forEach(({ rangeRef }) => {
-    rangeRef.unref();
-  });
+  propChangeRangeRefs.forEach((rangeRef) => rangeRef.unref());
 
   return flatUpdates.filter(Boolean) as Exclude<
     (typeof flatUpdates)[number],

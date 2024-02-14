@@ -439,9 +439,6 @@ const fixtures: Record<string, ComputeDiffFixture> = {
             suggestion: true,
             suggestion_0: true,
             suggestionId: '1',
-            suggestionUpdate: {
-              bold: true,
-            },
           },
         ],
       },
