@@ -184,6 +184,47 @@ const fixtures: Record<string, ComputeDiffFixture> = {
     ],
   },
 
+  addMarkToMarkedText: {
+    input1: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'One two three', bold: true },
+        ],
+      },
+    ],
+    input2: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'One ', bold: true },
+          { text: 'two', bold: true, italic: true },
+          { text: ' three', bold: true },
+        ],
+      },
+    ],
+    expected: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'One ', bold: true },
+          {
+            text: 'two',
+            bold: true,
+            italic: true,
+            diff: true,
+            diffOperation: {
+              type: 'update',
+              properties: {},
+              newProperties: { italic: true },
+            },
+          },
+          { text: ' three', bold: true },
+        ],
+      },
+    ],
+  },
+
   insertUpdateParagraph: {
     input1: [
       {
