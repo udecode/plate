@@ -1176,6 +1176,60 @@ const fixtures: Record<string, ComputeDiffFixture> = {
     ],
   },
 
+  addMarkRemoveText: {
+    input1: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'A B C' }
+        ],
+      },
+    ],
+    input2: [
+      {
+        type: 'paragraph',
+        children: [
+          {
+            text: 'A  C',
+            bold: true,
+          },
+        ],
+      },
+    ],
+    expected: [
+      {
+        type: 'paragraph',
+        children: [
+          {
+            text: 'A ',
+            bold: true,
+            diff: true,
+            diffOperation: {
+              type: 'update',
+              properties: {},
+              newProperties: { bold: true },
+            },
+          },
+          {
+            text: 'B',
+            diff: true,
+            diffOperation: { type: 'delete' },
+          },
+          {
+            text: ' C',
+            bold: true,
+            diff: true,
+            diffOperation: {
+              type: 'update',
+              properties: {},
+              newProperties: { bold: true },
+            },
+          },
+        ],
+      },
+    ],
+  },
+
   changeIdBlock: {
     input1: [
       {

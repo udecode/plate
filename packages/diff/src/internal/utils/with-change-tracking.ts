@@ -219,6 +219,19 @@ const commitChangesToDiffs = <E extends BaseEditor>(
   { getInsertProps, getDeleteProps, getUpdateProps }: ComputeDiffOptions
 ) => {
   withoutRecordingOperations(editor, () => {
+    // Reverse the array to prevent path changes
+    const flatUpdates = flattenPropsChanges(editor).reverse();
+
+    flatUpdates.forEach(({ range, properties, newProperties }) => {
+      const node = Node.get(editor, range.anchor.path) as TText;
+
+      addRangeMarks(
+        editor as any,
+        getUpdateProps(node, properties, newProperties),
+        { at: range }
+      );
+    });
+
     editor.removedTexts.forEach(({ pointRef, node }) => {
       const point = pointRef.current;
 
@@ -233,19 +246,6 @@ const commitChangesToDiffs = <E extends BaseEditor>(
       }
 
       pointRef.unref();
-    });
-
-    // Reverse the array to prevent path changes
-    const flatUpdates = flattenPropsChanges(editor).reverse();
-
-    flatUpdates.forEach(({ range, properties, newProperties }) => {
-      const node = Node.get(editor, range.anchor.path) as TText;
-
-      addRangeMarks(
-        editor as any,
-        getUpdateProps(node, properties, newProperties),
-        { at: range }
-      );
     });
 
     editor.insertedTexts.forEach(({ rangeRef, node }) => {
