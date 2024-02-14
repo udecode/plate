@@ -53,11 +53,11 @@ export function diffToSuggestions<
         suggestionUpdate: newProps,
       }),
   }: Partial<ComputeDiffOptions> = {}
-) {
+): V {
   return computeDiff(doc0, doc1, {
     isInline,
     getInsertProps,
     getRemoveProps,
     getUpdateProps,
-  });
+  }) as V;
 }
