@@ -1,8 +1,8 @@
 /* eslint-disable no-restricted-syntax */
-import { PlateEditor, TDescendant, Value } from '@udecode/plate-common';
+import { TDescendant } from '@udecode/plate-common';
 import isEqual from 'lodash/isEqual.js';
 
-import { diffToSuggestions, DiffToSuggestionsOptions } from '../../slateDiff';
+import { computeDiff, ComputeDiffOptions } from '../../computeDiff';
 import { copyWithout } from '../utils/copy-without';
 
 /**
@@ -12,21 +12,17 @@ import { copyWithout } from '../utils/copy-without';
  * input.
  */
 
-type Handler = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E,
+type Handler = (
   node: TDescendant,
   nextNode: TDescendant,
-  options: Required<DiffToSuggestionsOptions>
+  options: ComputeDiffOptions
 ) => TDescendant[] | false;
 
 /**
  * Only the children have changed. Recursively call the top-level diff
  * algorithm on the children.
  */
-const childrenOnlyStrategy: Handler = (editor, node, nextNode, options) => {
+const childrenOnlyStrategy: Handler = (node, nextNode, options) => {
   if (
     node['children'] != null &&
     nextNode['children'] != null &&
@@ -35,8 +31,7 @@ const childrenOnlyStrategy: Handler = (editor, node, nextNode, options) => {
       copyWithout(nextNode, ['children'])
     )
   ) {
-    const children = diffToSuggestions(
-      editor as any,
+    const children = computeDiff(
       node['children'] as TDescendant[],
       nextNode['children'] as TDescendant[],
       options
@@ -52,12 +47,7 @@ const childrenOnlyStrategy: Handler = (editor, node, nextNode, options) => {
 };
 
 // Only the props have changed. Return the node with the props updated.
-const propsOnlyStrategy: Handler = (
-  _editor,
-  node,
-  nextNode,
-  { getUpdateProps }
-) => {
+const propsOnlyStrategy: Handler = (node, nextNode, { getUpdateProps }) => {
   const properties: any = {};
   const newProperties: any = {};
 
@@ -90,7 +80,6 @@ const propsOnlyStrategy: Handler = (
 
 // No other strategy applies, so remove and insert the node.
 const fallbackStrategy: Handler = (
-  _editor,
   node,
   nextNode,
   { getInsertProps, getRemoveProps }
@@ -113,22 +102,16 @@ const strategies: Handler[] = [
   fallbackStrategy,
 ];
 
-export interface TransformDiffNodesOptions {}
-
 // Replace node at path by nextNode using the first strategy that works.
-export function transformDiffNodes<
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E,
+export function transformDiffNodes(
   node: TDescendant,
   nextNode: TDescendant,
-  options: Required<DiffToSuggestionsOptions>
+  options: ComputeDiffOptions
 ): TDescendant[] {
   // Try each strategy in turn
   for (const strategy of strategies) {
     // Attempt to generate operations with the current strategy and return the operations if the strategy succeeds
-    const ops = strategy(editor as any, node, nextNode, options);
+    const ops = strategy(node, nextNode, options);
     if (ops) {
       return ops;
     }

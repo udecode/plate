@@ -1,28 +1,17 @@
-import {
-  isText,
-  PlateEditor,
-  TDescendant,
-  TOperation,
-  TText,
-  Value,
-} from '@udecode/plate-common';
+import { isText, TDescendant, TOperation, TText } from '@udecode/plate-common';
 import { createEditor, Path, withoutNormalizing } from 'slate';
 
-import { DiffToSuggestionsOptions } from '../../slateDiff';
+import { ComputeDiffOptions } from '../../computeDiff';
 import { dmp } from '../utils/dmp';
 import { getProperties } from '../utils/get-properties';
 import { InlineNodeCharMap } from '../utils/inline-node-char-map';
 import { withChangeTracking } from '../utils/with-change-tracking';
 
 // Main function to transform an array of text nodes into another array of text nodes
-export function transformDiffTexts<
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E,
+export function transformDiffTexts(
   nodes: TDescendant[],
   nextNodes: TDescendant[],
-  options: Required<DiffToSuggestionsOptions>
+  options: ComputeDiffOptions
 ): TDescendant[] {
   // Validate input - both arrays must have at least one node
   if (nodes.length === 0) throw new Error('must have at least one nodes');

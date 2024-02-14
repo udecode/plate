@@ -4,18 +4,18 @@ import {
   Value,
 } from '@udecode/plate-common';
 
-import { diffToSuggestions } from './slateDiff';
+import { diffToSuggestions } from './computeDiff';
 
 const ELEMENT_INLINE_VOID = 'inline-void';
 
-interface SlateDiffFixture {
+interface ComputeDiffFixture {
   it?: typeof it;
   input1: Value;
   input2: Value;
   output: Value;
 }
 
-const fixtures: Record<string, SlateDiffFixture> = {
+const fixtures: Record<string, ComputeDiffFixture> = {
   addMark: {
     input1: [
       {
@@ -1170,7 +1170,7 @@ const createInlineVoidPlugin = createPluginFactory({
   isVoid: true,
 });
 
-describe('slateDiff', () => {
+describe('computeDiff', () => {
   Object.entries(fixtures).forEach(
     ([name, { it: itFn = it, input1, input2, output }]) => {
       itFn(name, () => {

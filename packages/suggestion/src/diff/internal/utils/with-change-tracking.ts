@@ -18,7 +18,7 @@ import {
   SplitNodeOperation,
 } from 'slate';
 
-import { DiffToSuggestionsOptions } from '../../slateDiff';
+import { ComputeDiffOptions } from '../../computeDiff';
 
 export interface ChangeTrackingEditor {
   propsChanges: {
@@ -43,7 +43,7 @@ export interface ChangeTrackingEditor {
 
 export const withChangeTracking = <E extends BaseEditor>(
   editor: E,
-  options: Required<DiffToSuggestionsOptions>
+  options: ComputeDiffOptions
 ): E & ChangeTrackingEditor => {
   const e = editor as E & ChangeTrackingEditor;
 
@@ -216,11 +216,7 @@ const applySetNode = <E extends BaseEditor>(
 
 const commitChangesToDiffs = <E extends BaseEditor>(
   editor: E & ChangeTrackingEditor,
-  {
-    getInsertProps,
-    getRemoveProps,
-    getUpdateProps,
-  }: Required<DiffToSuggestionsOptions>
+  { getInsertProps, getRemoveProps, getUpdateProps }: ComputeDiffOptions
 ) => {
   withoutRecordingOperations(editor, () => {
     editor.removedTexts.forEach(({ pointRef, node }) => {

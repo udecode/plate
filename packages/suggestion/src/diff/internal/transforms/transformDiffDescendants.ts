@@ -1,51 +1,27 @@
-import {
-  isInline,
-  isText,
-  PlateEditor,
-  TDescendant,
-  Value,
-} from '@udecode/plate-common';
+import { isText, TDescendant } from '@udecode/plate-common';
 
-import { DiffToSuggestionsOptions } from '../../slateDiff';
+import { ComputeDiffOptions } from '../../computeDiff';
 import { transformDiffNodes } from '../transforms/transformDiffNodes';
 import { transformDiffTexts } from '../transforms/transformDiffTexts';
-import { diffNodes, NodeRelatedItem } from './diff-nodes';
-import { StringCharMapping } from './string-char-mapping';
-import { stringToNodes } from './string-to-nodes';
+import { diffNodes, NodeRelatedItem } from '../utils/diff-nodes';
+import { StringCharMapping } from '../utils/string-char-mapping';
+import { stringToNodes } from '../utils/string-to-nodes';
 
-const isInlineList = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E,
-  nodes: TDescendant[]
-) => {
-  return nodes.every((node) => isText(node) || isInline(editor, node));
-};
-
-export interface GenerateOperationsOptions
-  extends Required<DiffToSuggestionsOptions> {
+export interface TransformDiffDescendantsOptions extends ComputeDiffOptions {
   stringCharMapping: StringCharMapping;
 }
 
-export function generateOperations<
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E,
+export function transformDiffDescendants(
   diff: {
     // op: -1 = delete, 0 = leave unchanged, 1 = insert
     0: number;
     // value of the diff chunk
     1: string;
   }[],
-  {
-    stringCharMapping,
-    getInsertProps,
-    getRemoveProps,
-    getUpdateProps,
-  }: GenerateOperationsOptions
+  { stringCharMapping, ...options }: TransformDiffDescendantsOptions
 ): TDescendant[] {
+  const { isInline, getInsertProps, getRemoveProps } = options;
+
   // Current index in the diff array
   let i = 0;
   const children: TDescendant[] = [];
@@ -65,6 +41,9 @@ export function generateOperations<
         ...getRemoveProps(node),
       }))
     );
+
+  const isInlineList = (nodes: TDescendant[]) =>
+    nodes.every((node) => isText(node) || isInline(node));
 
   while (i < diff.length) {
     const chunk = diff[i];
@@ -92,17 +71,8 @@ export function generateOperations<
         const nextNodes = stringToNodes(nextVal, stringCharMapping);
 
         // If both current and next chunks are text nodes, use transformTextNodes
-        if (
-          isInlineList<V, E>(editor, nodes) &&
-          isInlineList<V, E>(editor, nextNodes)
-        ) {
-          children.push(
-            ...transformDiffTexts<V, E>(editor, nodes, nextNodes, {
-              getInsertProps,
-              getRemoveProps,
-              getUpdateProps,
-            })
-          );
+        if (isInlineList(nodes) && isInlineList(nextNodes)) {
+          children.push(...transformDiffTexts(nodes, nextNodes, options));
           // Consume two diff chunks (delete and insert)
           i += 2;
           continue;
@@ -119,12 +89,7 @@ export function generateOperations<
           }
           if (item.relatedNode) {
             children.push(
-              ...transformDiffNodes<V, E>(
-                editor,
-                item.originNode,
-                item.relatedNode,
-                { getInsertProps, getRemoveProps, getUpdateProps }
-              )
+              ...transformDiffNodes(item.originNode, item.relatedNode, options)
             );
           }
         });
@@ -148,7 +113,7 @@ export function generateOperations<
       continue;
     }
     throw new Error(
-      'generateOperations: Missing continue statement or unhandled operation'
+      'transformDiffDescendants: Missing continue statement or unhandled operation'
     );
   }
 
