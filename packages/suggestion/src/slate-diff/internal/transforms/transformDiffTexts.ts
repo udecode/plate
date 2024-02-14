@@ -30,6 +30,7 @@ import {
 import { DiffToSuggestionsOptions } from '../../slateDiff';
 import { dmp } from '../utils/dmp';
 import { getProperties } from '../utils/get-properties';
+import { InlineNodeCharMap } from '../utils/inline-node-char-map';
 
 interface NodesEditor extends BaseEditor {
   propsChanges: {
@@ -356,72 +357,18 @@ export function transformDiffTexts<
   if (nextNodes.length === 0)
     throw new Error('must have at least one nextNodes');
 
-  let nextChar = 'A';
-  const usedChars = nodes
-    .concat(nextNodes)
-    .filter(isText)
-    .map((n) => n.text)
-    .join('');
+  const inlineNodeCharMap = new InlineNodeCharMap({
+    // Do not use any char that is present in the text
+    unavailableChars: nodes
+      .concat(nextNodes)
+      .filter(isText)
+      .map((n) => n.text)
+      .join(''),
+  });
 
-  const getUnusedChar = () => {
-    const incrementNextChar = () => {
-      nextChar = String.fromCodePoint(nextChar.codePointAt(0)! + 1);
-    };
-
-    while (usedChars.includes(nextChar)) {
-      incrementNextChar();
-    }
-
-    const c = nextChar;
-    incrementNextChar();
-    return c;
-  };
-
-  const nodeMap = new Map<string, TDescendant>();
-
-  const mapNodeToText = (node: TDescendant): TText => {
-    if (isText(node)) {
-      return node;
-    }
-
-    const c = getUnusedChar();
-    nodeMap.set(c, node);
-    return { text: c };
-  };
-
-  const mapTextToNodes = (initialTextNode: TText): TDescendant[] => {
-    let outputNodes: TDescendant[] = [initialTextNode];
-
-    for (const [c, nodeForC] of nodeMap) {
-      outputNodes = outputNodes.flatMap((outputNode) => {
-        if (isText(outputNode)) {
-          const splitText = outputNode.text.split(c);
-
-          return splitText
-            .flatMap((textChunk, i) => {
-              const nodeForTextChunk = { ...outputNode, text: textChunk };
-
-              if (i === splitText.length - 1) return nodeForTextChunk;
-
-              const nodeForCWithProps = {
-                ...nodeForC,
-                ...Node.extractProps(outputNode),
-              } as TDescendant;
-
-              return [nodeForTextChunk, nodeForCWithProps];
-            })
-            .filter((n) => !isText(n) || n.text.length > 0);
-        }
-
-        return [outputNode];
-      });
-    }
-
-    return outputNodes;
-  };
-
-  const texts = nodes.map(mapNodeToText);
-  const nextTexts = nextNodes.map(mapNodeToText);
+  // Map inlines nodes to unique text nodes
+  const texts = nodes.map((n) => inlineNodeCharMap.nodeToText(n));
+  const nextTexts = nextNodes.map((n) => inlineNodeCharMap.nodeToText(n));
 
   const nodesEditor = withNodesEditor(createEditor() as any, options);
   nodesEditor.children = [{ children: texts }];
@@ -452,8 +399,10 @@ export function transformDiffTexts<
     nodesEditor.commitDiffs();
   });
 
-  const diffTexts = (nodesEditor.children[0] as any).children;
-  return diffTexts.flatMap(mapTextToNodes);
+  const diffTexts: TText[] = (nodesEditor.children[0] as any).children;
+
+  // Restore the original inline nodes
+  return diffTexts.flatMap((t) => inlineNodeCharMap.textToNode(t));
 }
 
 // Function to compute the text operations needed to transform string `a` into string `b`

@@ -2,7 +2,7 @@ import {
   createPlateEditor,
   createPluginFactory,
   Value,
-} from '@udeCode/plate-common';
+} from '@udecode/plate-common';
 
 import { diffToSuggestions } from './slateDiff';
 
