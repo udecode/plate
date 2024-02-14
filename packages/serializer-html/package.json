@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-serializer-html",
-  "version": "30.1.2",
+  "version": "30.4.4",
   "description": "HTML serializer plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",

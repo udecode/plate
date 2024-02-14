@@ -1,5 +1,15 @@
 # @udecode/plate-serializer-html
 
+## 30.4.4
+
+### Patch Changes
+
+- [#2943](https://github.com/udecode/plate/pull/2943) by [@shaungrady](https://github.com/shaungrady) –
+  - Fix handling of empty `preserveClassNames` array
+    - Previously, would output `<div class="                 ">`
+    - Now, it outputs `<div>`
+  - Reduce time complexity of `stripClassNames` function
+
 ## 30.1.2
 
 ## 30.0.0
