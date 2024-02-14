@@ -1,3 +1,8 @@
+/**
+ * This Apache-2.0 licensed file has been modified by Udecode and other
+ * contributors. See /packages/diff/LICENSE for more information.
+ */
+
 import { TDescendant } from '@udecode/plate-common';
 
 export class StringCharMapping {

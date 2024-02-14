@@ -3,3 +3,4 @@
  */
 
 export * from './computeDiff';
+export * from './types';

@@ -1,3 +1,8 @@
+/**
+ * This Apache-2.0 licensed file has been modified by Udecode and other
+ * contributors. See /packages/diff/LICENSE for more information.
+ */
+
 import { isText, TDescendant } from '@udecode/plate-common';
 import isEqual from 'lodash/isEqual.js';
 
@@ -21,7 +26,7 @@ export function transformDiffDescendants(
   }[],
   { stringCharMapping, ...options }: TransformDiffDescendantsOptions
 ): TDescendant[] {
-  const { isInline, ignoreProps, getInsertProps, getRemoveProps } = options;
+  const { isInline, ignoreProps, getInsertProps, getDeleteProps } = options;
 
   // Current index in the diff array
   let i = 0;
@@ -39,7 +44,7 @@ export function transformDiffDescendants(
     children.push(
       ...nodes.map((node) => ({
         ...node,
-        ...getRemoveProps(node),
+        ...getDeleteProps(node),
       }))
     );
 

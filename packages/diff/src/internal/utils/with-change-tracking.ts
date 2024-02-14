@@ -216,7 +216,7 @@ const applySetNode = <E extends BaseEditor>(
 
 const commitChangesToDiffs = <E extends BaseEditor>(
   editor: E & ChangeTrackingEditor,
-  { getInsertProps, getRemoveProps, getUpdateProps }: ComputeDiffOptions
+  { getInsertProps, getDeleteProps, getUpdateProps }: ComputeDiffOptions
 ) => {
   withoutRecordingOperations(editor, () => {
     editor.removedTexts.forEach(({ pointRef, node }) => {
@@ -226,7 +226,7 @@ const commitChangesToDiffs = <E extends BaseEditor>(
         editor.insertNode(
           {
             ...node,
-            ...getRemoveProps(node),
+            ...getDeleteProps(node),
           },
           { at: point }
         );

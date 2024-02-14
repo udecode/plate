@@ -1,3 +1,8 @@
+/**
+ * This Apache-2.0 licensed file has been modified by Udecode and other
+ * contributors. See /packages/diff/LICENSE for more information.
+ */
+
 /* eslint-disable no-restricted-syntax */
 import { TDescendant } from '@udecode/plate-common';
 import isEqual from 'lodash/isEqual.js';
@@ -82,12 +87,12 @@ const propsOnlyStrategy: Handler = (node, nextNode, { getUpdateProps }) => {
 const fallbackStrategy: Handler = (
   node,
   nextNode,
-  { getInsertProps, getRemoveProps }
+  { getInsertProps, getDeleteProps }
 ) => {
   return [
     {
       ...node,
-      ...getRemoveProps(node),
+      ...getDeleteProps(node),
     },
     {
       ...nextNode,

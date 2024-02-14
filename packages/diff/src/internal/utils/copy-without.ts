@@ -1,3 +1,8 @@
+/**
+ * This Apache-2.0 licensed file has been modified by Udecode and other
+ * contributors. See /packages/diff/LICENSE for more information.
+ */
+
 /* eslint-disable no-restricted-syntax */
 // copy of map but without some keys
 // I.e., restrict a function to the complement of a subset of the domain.

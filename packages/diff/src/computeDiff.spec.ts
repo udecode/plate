@@ -1,10 +1,11 @@
-import {
-  createPlateEditor,
-  createPluginFactory,
-  Value,
-} from '@udecode/plate-common';
+/**
+ * This Apache-2.0 licensed file has been modified by Udecode and other
+ * contributors. See /packages/diff/LICENSE for more information.
+ */
 
-import { diffToSuggestions } from './computeDiff';
+import { Value } from '@udecode/plate-common';
+
+import { computeDiff } from './computeDiff';
 
 const ELEMENT_INLINE_VOID = 'inline-void';
 
@@ -46,11 +47,11 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             text: 'Wiki',
             bold: true,
-            suggestion: true,
-            suggestion_0: true,
-            suggestionId: '1',
-            suggestionUpdate: {
-              bold: true,
+            diff: true,
+            diffOperation: {
+              type: 'update',
+              properties: {},
+              newProperties: { bold: true },
             },
           },
           {
@@ -98,11 +99,11 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             text: 'PingCode',
             bold: true,
-            suggestion: true,
-            suggestion_0: true,
-            suggestionId: '1',
-            suggestionUpdate: {
-              bold: true,
+            diff: true,
+            diffOperation: {
+              type: 'update',
+              properties: {},
+              newProperties: { bold: true },
             },
           },
           {
@@ -151,11 +152,11 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             text: 'words',
             bold: true,
-            suggestion: true,
-            suggestion_0: true,
-            suggestionId: '1',
-            suggestionUpdate: {
-              bold: true,
+            diff: true,
+            diffOperation: {
+              type: 'update',
+              properties: {},
+              newProperties: { bold: true },
             },
           },
           {
@@ -166,11 +167,11 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             text: 'bold',
             bold: true,
-            suggestion: true,
-            suggestion_0: true,
-            suggestionId: '1',
-            suggestionUpdate: {
-              bold: true,
+            diff: true,
+            diffOperation: {
+              type: 'update',
+              properties: {},
+              newProperties: { bold: true },
             },
           },
           {
@@ -241,9 +242,10 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         type: 'paragraph',
         children: [{ text: 'This is the second paragraph.' }],
         key: '2',
-        suggestion: true,
-        suggestion_0: true,
-        suggestionId: '1',
+        diff: true,
+        diffOperation: {
+          type: 'insert',
+        },
       },
       {
         type: 'paragraph',
@@ -251,9 +253,10 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           { text: 'This is the third paragraph' },
           {
             text: ', and insert some text',
-            suggestion: true,
-            suggestion_0: true,
-            suggestionId: '1',
+            diff: true,
+            diffOperation: {
+              type: 'insert',
+            },
           },
           {
             text: '.',
@@ -340,9 +343,8 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         type: 'paragraph',
         children: [{ text: 'This is the second paragraph.' }],
         key: '2',
-        suggestion: true,
-        suggestion_0: true,
-        suggestionId: '1',
+        diff: true,
+        diffOperation: { type: 'insert' },
       },
       {
         type: 'paragraph',
@@ -350,9 +352,8 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           { text: 'This is the third paragraph' },
           {
             text: ', and insert some text',
-            suggestion: true,
-            suggestion_0: true,
-            suggestionId: '1',
+            diff: true,
+            diffOperation: { type: 'insert' },
           },
           {
             text: '.',
@@ -364,9 +365,8 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         type: 'paragraph',
         children: [{ text: 'This is the fifth paragraph.' }],
         key: '5',
-        suggestion: true,
-        suggestion_0: true,
-        suggestionId: '1',
+        diff: true,
+        diffOperation: { type: 'insert' },
       },
       {
         type: 'paragraph',
@@ -374,9 +374,8 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           { text: 'This is the fourth paragraph' },
           {
             text: ', and insert some text',
-            suggestion: true,
-            suggestion_0: true,
-            suggestionId: '1',
+            diff: true,
+            diffOperation: { type: 'insert' },
           },
           {
             text: '.',
@@ -419,26 +418,25 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             text: 'PingCode',
             bold: true,
-            suggestion: true,
-            suggestion_0: true,
-            suggestionId: '1',
-            suggestionUpdate: {
-              bold: true,
+            diff: true,
+            diffOperation: {
+              type: 'update',
+              properties: {},
+              newProperties: { bold: true },
             },
           },
           {
             text: ' & ',
+            // TODO:
             bold: undefined,
-            suggestion: true,
-            suggestion_0: true,
-            suggestionId: '1',
+            diff: true,
+            diffOperation: { type: 'insert' },
           },
           {
             text: 'Worktile',
             bold: true,
-            suggestion: true,
-            suggestion_0: true,
-            suggestionId: '1',
+            diff: true,
+            diffOperation: { type: 'insert' },
           },
         ],
       },
@@ -470,9 +468,8 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           { text: 'PingCode' },
           {
             text: ' & Worktile',
-            suggestion: true,
-            suggestion_0: true,
-            suggestionId: '1',
+            diff: true,
+            diffOperation: { type: 'insert' },
           },
         ],
       },
@@ -504,9 +501,8 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         type: 'paragraph',
         children: [{ text: 'Worktile' }],
-        suggestion: true,
-        suggestion_0: true,
-        suggestionId: '1',
+        diff: true,
+        diffOperation: { type: 'insert' },
       },
     ],
   },
@@ -536,10 +532,8 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         type: 'paragraph',
         children: [{ text: 'Worktile' }],
-        suggestion: true,
-        suggestion_0: true,
-        suggestionId: '1',
-        suggestionDeletion: true,
+        diff: true,
+        diffOperation: { type: 'delete' },
       },
     ],
   },
@@ -575,11 +569,11 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         type: 'paragraph',
         children: [{ text: 'Worktile' }],
         someProp: 'World',
-        suggestion: true,
-        suggestion_0: true,
-        suggestionId: '1',
-        suggestionUpdate: {
-          someProp: 'World',
+        diff: true,
+        diffOperation: {
+          type: 'update',
+          properties: {},
+          newProperties: { someProp: 'World' },
         },
       },
     ],
@@ -615,11 +609,11 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         type: 'paragraph',
         children: [{ text: 'Worktile' }],
-        suggestion: true,
-        suggestion_0: true,
-        suggestionId: '1',
-        suggestionUpdate: {
-          someProp: undefined,
+        diff: true,
+        diffOperation: {
+          type: 'update',
+          properties: { someProp: 'Hello' },
+          newProperties: { someProp: undefined },
         },
       },
     ],
@@ -657,11 +651,11 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         type: 'paragraph',
         children: [{ text: 'Worktile' }],
         someProp: 'World',
-        suggestion: true,
-        suggestion_0: true,
-        suggestionId: '1',
-        suggestionUpdate: {
-          someProp: 'World',
+        diff: true,
+        diffOperation: {
+          type: 'update',
+          properties: { someProp: 'Hello' },
+          newProperties: { someProp: 'World' },
         },
       },
     ],
@@ -705,9 +699,8 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             type: 'paragraph',
             children: [{ text: 'Worktile' }],
-            suggestion: true,
-            suggestion_0: true,
-            suggestionId: '1',
+            diff: true,
+            diffOperation: { type: 'insert' },
           },
         ],
       },
@@ -734,10 +727,8 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           { text: 'PingCode' },
           {
             text: ' & Worktile',
-            suggestion: true,
-            suggestion_0: true,
-            suggestionId: '1',
-            suggestionDeletion: true,
+            diff: true,
+            diffOperation: { type: 'delete' },
           },
         ],
       },
@@ -764,16 +755,13 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           { text: 'PingCode & W' },
           {
             text: 'orktile',
-            suggestion: true,
-            suggestion_0: true,
-            suggestionId: '1',
-            suggestionDeletion: true,
+            diff: true,
+            diffOperation: { type: 'delete' },
           },
           {
             text: 'hatever',
-            suggestion: true,
-            suggestion_0: true,
-            suggestionId: '1',
+            diff: true,
+            diffOperation: { type: 'insert' },
           },
         ],
       },
@@ -808,10 +796,8 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             type: ELEMENT_INLINE_VOID,
             children: [{ text: '' }],
-            suggestion: true,
-            suggestion_0: true,
-            suggestionId: '1',
-            suggestionDeletion: true,
+            diff: true,
+            diffOperation: { type: 'delete' },
           },
           { text: '!' },
         ],
@@ -847,9 +833,8 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             type: ELEMENT_INLINE_VOID,
             children: [{ text: '' }],
-            suggestion: true,
-            suggestion_0: true,
-            suggestionId: '1',
+            diff: true,
+            diffOperation: { type: 'insert' },
           },
           { text: '!' },
         ],
@@ -895,18 +880,15 @@ const fixtures: Record<string, ComputeDiffFixture> = {
             type: ELEMENT_INLINE_VOID,
             someProp: 'Hello',
             children: [{ text: '' }],
-            suggestion: true,
-            suggestion_0: true,
-            suggestionId: '1',
-            suggestionDeletion: true,
+            diff: true,
+            diffOperation: { type: 'delete' },
           },
           {
             type: ELEMENT_INLINE_VOID,
             someProp: 'World',
             children: [{ text: '' }],
-            suggestion: true,
-            suggestion_0: true,
-            suggestionId: '1',
+            diff: true,
+            diffOperation: { type: 'insert' },
           },
           { text: '!' },
         ],
@@ -951,11 +933,11 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             text: ' & ',
             bold: true,
-            suggestion: true,
-            suggestion_0: true,
-            suggestionId: '1',
-            suggestionUpdate: {
-              bold: true,
+            diff: true,
+            diffOperation: {
+              type: 'update',
+              properties: {},
+              newProperties: { bold: true },
             },
           },
         ],
@@ -1015,16 +997,14 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           },
           {
             text: ' & ',
-            suggestion: true,
-            suggestion_0: true,
-            suggestionId: '1',
+            diff: true,
+            diffOperation: { type: 'insert' },
           },
           {
             text: 'co',
             bold: true,
-            suggestion: true,
-            suggestion_0: true,
-            suggestionId: '1',
+            diff: true,
+            diffOperation: { type: 'insert' },
           },
         ],
       },
@@ -1039,10 +1019,8 @@ const fixtures: Record<string, ComputeDiffFixture> = {
             bold: true,
           },
         ],
-        suggestion: true,
-        suggestion_0: true,
-        suggestionId: '1',
-        suggestionDeletion: true,
+        diff: true,
+        diffOperation: { type: 'delete' },
       },
     ],
   },
@@ -1088,11 +1066,11 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             text: ' & ',
             bold: true,
-            suggestion: true,
-            suggestion_0: true,
-            suggestionId: '1',
-            suggestionUpdate: {
-              bold: true,
+            diff: true,
+            diffOperation: {
+              type: 'update',
+              properties: {},
+              newProperties: { bold: true },
             },
           },
           {
@@ -1139,20 +1117,18 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         children: [
           {
             text: 'PingCode',
-            suggestion: true,
-            suggestion_0: true,
-            suggestionId: '1',
-            suggestionUpdate: {
-              bold: undefined,
+            diff: true,
+            diffOperation: {
+              type: 'update',
+              properties: { bold: true },
+              newProperties: { bold: undefined },
             },
           },
           {
             text: ' & Worktile',
             bold: true,
-            suggestion: true,
-            suggestion_0: true,
-            suggestionId: '1',
-            suggestionDeletion: true,
+            diff: true,
+            diffOperation: { type: 'delete' },
           },
         ],
       },
@@ -1265,22 +1241,12 @@ const fixtures: Record<string, ComputeDiffFixture> = {
   },
 };
 
-const createInlineVoidPlugin = createPluginFactory({
-  key: ELEMENT_INLINE_VOID,
-  isElement: true,
-  isInline: true,
-  isVoid: true,
-});
-
 describe('computeDiff', () => {
   Object.entries(fixtures).forEach(
     ([name, { it: itFn = it, input1, input2, expected }]) => {
       itFn(name, () => {
-        const editor = createPlateEditor({
-          plugins: [createInlineVoidPlugin()],
-        });
-
-        const output = diffToSuggestions(editor, input1, input2, {
+        const output = computeDiff(input1, input2, {
+          isInline: (node) => node.type === ELEMENT_INLINE_VOID,
           ignoreProps: ['id'],
         });
 

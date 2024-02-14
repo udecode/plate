@@ -1,12 +1,12 @@
 {
-  "name": "@udecode/plate-suggestion",
+  "name": "@udecode/plate-diff",
   "version": "30.4.3",
-  "description": "Plate plugin for suggestions",
+  "description": "Compute a diff of two Slate documents",
   "homepage": "https://platejs.org",
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
-    "directory": "packages/suggestion"
+    "directory": "packages/diff"
   },
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
@@ -39,7 +39,6 @@
   },
   "dependencies": {
     "@udecode/plate-common": "30.1.2",
-    "@udecode/plate-diff": "30.4.3",
     "lodash": "^4.17.21"
   },
   "peerDependencies": {

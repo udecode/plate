@@ -1,6 +1,11 @@
 import React from 'react';
 import { cn, withProps } from '@udecode/cn';
-import { createBoldPlugin, MARK_BOLD } from '@udecode/plate-basic-marks';
+import {
+  createBoldPlugin,
+  createItalicPlugin,
+  MARK_BOLD,
+  MARK_ITALIC,
+} from '@udecode/plate-basic-marks';
 import {
   createPlateEditor,
   createPluginFactory,
@@ -15,11 +20,11 @@ import {
   PlateProps,
   Value,
 } from '@udecode/plate-common';
+import { computeDiff, DiffOperation, DiffUpdate } from '@udecode/plate-diff';
 import {
   createParagraphPlugin,
   ELEMENT_PARAGRAPH,
 } from '@udecode/plate-paragraph';
-import { diffToSuggestions } from '@udecode/plate-suggestion';
 import { useSelected } from 'slate-react';
 
 import { Button } from '../plate-ui/button';
@@ -33,6 +38,55 @@ const createInlineVoidPlugin = createPluginFactory({
   isInline: true,
   isVoid: true,
 });
+
+const diffOperationColors: Record<DiffOperation['type'], string> = {
+  insert: 'bg-green-200',
+  delete: 'bg-red-200',
+  update: 'bg-blue-200',
+};
+
+const describeUpdate = ({ properties, newProperties }: DiffUpdate) => {
+  const addedProps: string[] = [];
+  const removedProps: string[] = [];
+  const updatedProps: string[] = [];
+
+  Object.keys(newProperties).forEach((key) => {
+    const oldValue = properties[key];
+    const newValue = newProperties[key];
+
+    if (oldValue === undefined) {
+      addedProps.push(key);
+      return;
+    }
+
+    if (newValue === undefined) {
+      removedProps.push(key);
+      return;
+    }
+
+    updatedProps.push(key);
+  });
+
+  const descriptionParts = [];
+
+  if (addedProps.length > 0) {
+    descriptionParts.push(`Added ${addedProps.join(', ')}`);
+  }
+
+  if (removedProps.length > 0) {
+    descriptionParts.push(`Removed ${removedProps.join(', ')}`);
+  }
+
+  if (updatedProps.length > 0) {
+    updatedProps.forEach((key) => {
+      descriptionParts.push(
+        `Updated ${key} from ${properties[key]} to ${newProperties[key]}`
+      );
+    });
+  }
+
+  return descriptionParts.join('\n');
+};
 
 const InlineVoidElement = ({ children, ...props }: PlateElementProps) => {
   const selected = useSelected();
@@ -52,29 +106,35 @@ const InlineVoidElement = ({ children, ...props }: PlateElementProps) => {
   );
 };
 
-const KEY_DIFF = 'diff';
-const MARK_SUGGESTION = 'suggestion';
+const MARK_DIFF = 'diff';
 
 const createDiffPlugin = createPluginFactory({
-  key: KEY_DIFF,
-  plugins: [
-    {
-      key: MARK_SUGGESTION,
-      isLeaf: true,
-    },
-  ],
+  key: MARK_DIFF,
+  isLeaf: true,
   inject: {
     aboveComponent:
       () =>
       ({ element, children, editor }) => {
-        if (!element.suggestion) return children;
+        if (!element.diff) return children;
+        const diffOperation = element.diffOperation as DiffOperation;
+
+        const label = {
+          insert: 'insertion',
+          delete: 'deletion',
+          update: 'update',
+        }[diffOperation.type];
+
         const Component = isInline(editor, element) ? 'span' : 'div';
+
         return (
           <Component
-            className={
-              element.suggestionDeletion ? 'bg-red-200' : 'bg-green-200'
+            className={diffOperationColors[diffOperation.type]}
+            aria-label={label}
+            title={
+              diffOperation.type === 'update'
+                ? describeUpdate(diffOperation)
+                : undefined
             }
-            aria-label={element.suggestionDeletion ? 'deletion' : 'insertion'}
           >
             {children}
           </Component>
@@ -83,16 +143,23 @@ const createDiffPlugin = createPluginFactory({
   },
 });
 
-function SuggestionLeaf({ children, ...props }: PlateLeafProps) {
-  const isDeletion = props.leaf.suggestionDeletion;
-  const isUpdate = !isDeletion && !!props.leaf.suggestionUpdate;
-  const Component = isDeletion ? 'del' : 'ins';
+function DiffLeaf({ children, ...props }: PlateLeafProps) {
+  const diffOperation = props.leaf.diffOperation as DiffOperation;
+
+  const Component = {
+    insert: 'ins',
+    delete: 'del',
+    update: 'span',
+  }[diffOperation.type] as React.ElementType;
 
   return (
     <PlateLeaf {...props} asChild>
       <Component
-        className={
-          isDeletion ? 'bg-red-200' : isUpdate ? 'bg-blue-200' : 'bg-green-200'
+        className={diffOperationColors[diffOperation.type]}
+        title={
+          diffOperation.type === 'update'
+            ? describeUpdate(diffOperation)
+            : undefined
         }
       >
         {children}
@@ -106,6 +173,7 @@ const plugins = createPlugins(
     createParagraphPlugin(),
     createInlineVoidPlugin(),
     createBoldPlugin(),
+    createItalicPlugin(),
     createDiffPlugin(),
   ],
   {
@@ -113,7 +181,8 @@ const plugins = createPlugins(
       [ELEMENT_PARAGRAPH]: ParagraphElement,
       [ELEMENT_INLINE_VOID]: InlineVoidElement,
       [MARK_BOLD]: withProps(PlateLeaf, { as: 'strong' }),
-      [MARK_SUGGESTION]: SuggestionLeaf,
+      [MARK_ITALIC]: withProps(PlateLeaf, { as: 'em' }),
+      [MARK_DIFF]: DiffLeaf,
     },
   }
 );
@@ -155,9 +224,11 @@ interface DiffProps {
 }
 
 function Diff({ previous, current }: DiffProps) {
-  const diffValue: Value = React.useMemo(() => {
+  const diffValue = React.useMemo(() => {
     const editor = createPlateEditor({ plugins });
-    return diffToSuggestions(editor, previous, current);
+    return computeDiff(previous, current, {
+      isInline: editor.isInline,
+    }) as Value;
   }, [previous, current]);
 
   return (

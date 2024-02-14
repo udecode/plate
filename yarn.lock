@@ -6402,6 +6402,22 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@udecode/plate-diff@workspace:packages/diff":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-diff@workspace:packages/diff"
+  dependencies:
+    "@udecode/plate-common": "npm:30.1.2"
+    lodash: "npm:^4.17.21"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.94.0"
+    slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
+    slate-react: ">=0.99.0"
+  languageName: unknown
+  linkType: soft
+
 "@udecode/plate-dnd@workspace:^, @udecode/plate-dnd@workspace:packages/dnd":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-dnd@workspace:packages/dnd"
