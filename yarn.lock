@@ -6369,7 +6369,7 @@ __metadata:
     is-hotkey: "npm:^0.2.0"
     jotai: "npm:^2.6.0"
     jotai-optics: "npm:0.3.1"
-    jotai-x: "npm:^1.2.1"
+    jotai-x: "npm:^1.2.2"
     lodash: "npm:^4.17.21"
     nanoid: "npm:^3.3.6"
     optics-ts: "npm:2.4.1"
@@ -6841,7 +6841,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-html@npm:30.1.2, @udecode/plate-serializer-html@workspace:^, @udecode/plate-serializer-html@workspace:packages/serializer-html":
+"@udecode/plate-serializer-html@npm:30.4.4, @udecode/plate-serializer-html@workspace:^, @udecode/plate-serializer-html@workspace:packages/serializer-html":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-html@workspace:packages/serializer-html"
   dependencies:
@@ -7081,7 +7081,7 @@ __metadata:
     "@udecode/plate-select": "npm:30.1.2"
     "@udecode/plate-serializer-csv": "npm:30.1.2"
     "@udecode/plate-serializer-docx": "npm:30.1.2"
-    "@udecode/plate-serializer-html": "npm:30.1.2"
+    "@udecode/plate-serializer-html": "npm:30.4.4"
     "@udecode/plate-serializer-md": "npm:30.2.1"
     "@udecode/plate-suggestion": "npm:30.4.3"
     "@udecode/plate-tabbable": "npm:30.1.2"
@@ -13772,9 +13772,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jotai-x@npm:^1.2.1":
-  version: 1.2.1
-  resolution: "jotai-x@npm:1.2.1"
+"jotai-x@npm:^1.2.2":
+  version: 1.2.2
+  resolution: "jotai-x@npm:1.2.2"
   peerDependencies:
     "@types/react": ">=17.0.0"
     jotai: ">=2.0.0"
@@ -13784,7 +13784,7 @@ __metadata:
       optional: true
     react:
       optional: true
-  checksum: 7906e626b332ef7c1d42d4d7fdf54a19f5c195a944c1ea7cee8101d668298860d34885a35fa6a82998b8b78d96171679e58fdec7d28df0c5e3930bca82ad2d73
+  checksum: 96cbffc9e19eb2c005de45c02f3fa3a4bc03d3de264d8a74578002de55eb68446880cc2fd03d7024eaf00ce3371df536d2a9ca66a5082fd80d4ff57f0eeee257
   languageName: node
   linkType: hard
 
