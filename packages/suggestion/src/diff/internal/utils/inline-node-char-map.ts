@@ -6,23 +6,23 @@ import {
 } from '@udecode/plate-common';
 
 export class InlineNodeCharMap {
-  private nextChar: string = 'A';
-  private charToNode: Map<string, TDescendant> = new Map();
-  private unavailableChars: string;
+  private _nextChar: string = 'A';
+  private _charToNode: Map<string, TDescendant> = new Map();
+  private _unavailableChars: string;
 
   constructor({
     unavailableChars = '',
   }: {
     unavailableChars?: string;
   } = {}) {
-    this.unavailableChars = unavailableChars;
+    this._unavailableChars = unavailableChars;
   }
 
   // Replace non-text nodes with a text node containing a unique char
   public nodeToText(node: TDescendant): TText {
     if (isText(node)) return node;
     const c = this.getUnusedChar();
-    this.charToNode.set(c, node);
+    this._charToNode.set(c, node);
     return { text: c };
   }
 
@@ -30,7 +30,7 @@ export class InlineNodeCharMap {
   public textToNode(initialTextNode: TText): TDescendant[] {
     let outputNodes: TDescendant[] = [initialTextNode];
 
-    for (const [c, originalNode] of this.charToNode) {
+    for (const [c, originalNode] of this._charToNode) {
       outputNodes = this.replaceCharWithNode(outputNodes, c, originalNode);
     }
 
@@ -39,14 +39,14 @@ export class InlineNodeCharMap {
 
   private getUnusedChar() {
     while (true) {
-      this.nextChar = String.fromCodePoint(this.nextChar.codePointAt(0)! + 1);
+      this._nextChar = String.fromCodePoint(this._nextChar.codePointAt(0)! + 1);
 
-      if (!this.unavailableChars.includes(this.nextChar)) {
+      if (!this._unavailableChars.includes(this._nextChar)) {
         break;
       }
     }
 
-    return this.nextChar;
+    return this._nextChar;
   }
 
   private replaceCharWithNode(

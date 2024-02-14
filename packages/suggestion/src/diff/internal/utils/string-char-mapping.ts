@@ -1,37 +1,45 @@
+import { TDescendant } from '@udecode/plate-common';
+
 export class StringCharMapping {
-  private _to_char: { [s: string]: string } = {};
-  private _next_char: string = 'A';
-  public _to_string: { [s: string]: string } = {}; // yes, this is publicly accessed (TODO: fix)
+  private _nextChar: string = 'A';
+  private _charToNode: Map<string, TDescendant> = new Map();
+  private _keyToChar: Map<string, string> = new Map();
 
-  private find_next_char(): void {
-    while (true) {
-      this._next_char = String.fromCodePoint(
-        this._next_char.codePointAt(0)! + 1
-      );
-      if (this._to_string[this._next_char] == null) {
-        // found it!
-        break;
-      }
-    }
+  public nodesToString(nodes: TDescendant[]): string {
+    return nodes.map(this.nodeToChar.bind(this)).join('');
   }
 
-  public to_string(strings: string[]): string {
-    let t = '';
-    for (const s of strings) {
-      const a = this._to_char[s];
-      if (a == null) {
-        t += this._next_char;
-        this._to_char[s] = this._next_char;
-        this._to_string[this._next_char] = s;
-        this.find_next_char();
-      } else {
-        t += a;
-      }
-    }
-    return t;
+  public nodeToChar(node: TDescendant): string {
+    const key = this.getKeyForNode(node);
+
+    const existingChar = this._keyToChar.get(key);
+    if (existingChar) return existingChar;
+
+    const c = this.getNextChar();
+
+    this._keyToChar.set(key, c);
+    this._charToNode.set(c, node);
+
+    return c;
   }
 
-  public to_array(x: string): string[] {
-    return Array.from(x).map((s) => this.to_string([s]));
+  public stringToNodes(s: string): TDescendant[] {
+    return s.split('').map(this.charToNode.bind(this));
+  }
+
+  public charToNode(c: string): TDescendant {
+    const node = this._charToNode.get(c);
+    if (!node) throw new Error(`No node found for char ${c}`);
+    return node;
+  }
+
+  private getKeyForNode(node: TDescendant): string {
+    return JSON.stringify(node);
+  }
+
+  private getNextChar(): string {
+    const c = this._nextChar;
+    this._nextChar = String.fromCodePoint(this._nextChar.codePointAt(0)! + 1);
+    return c;
   }
 }

@@ -12,7 +12,7 @@ interface ComputeDiffFixture {
   it?: typeof it;
   input1: Value;
   input2: Value;
-  output: Value;
+  expected: Value;
 }
 
 const fixtures: Record<string, ComputeDiffFixture> = {
@@ -38,7 +38,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         ],
       },
     ],
-    output: [
+    expected: [
       {
         type: 'paragraph',
         children: [
@@ -91,7 +91,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         ],
       },
     ],
-    output: [
+    expected: [
       {
         type: 'paragraph',
         children: [
@@ -143,7 +143,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         ],
       },
     ],
-    output: [
+    expected: [
       {
         type: 'paragraph',
         children: [
@@ -231,7 +231,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         key: '4',
       },
     ],
-    output: [
+    expected: [
       {
         type: 'paragraph',
         children: [{ text: 'This is the first paragraph.' }],
@@ -330,7 +330,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         key: '4',
       },
     ],
-    output: [
+    expected: [
       {
         type: 'paragraph',
         children: [{ text: 'This is the first paragraph.' }],
@@ -412,7 +412,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         ],
       },
     ],
-    output: [
+    expected: [
       {
         type: 'paragraph',
         children: [
@@ -463,7 +463,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         ],
       },
     ],
-    output: [
+    expected: [
       {
         type: 'paragraph',
         children: [
@@ -496,7 +496,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         children: [{ text: 'Worktile' }],
       },
     ],
-    output: [
+    expected: [
       {
         type: 'paragraph',
         children: [{ text: 'PingCode' }],
@@ -528,7 +528,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         children: [{ text: 'PingCode' }],
       },
     ],
-    output: [
+    expected: [
       {
         type: 'paragraph',
         children: [{ text: 'PingCode' }],
@@ -566,7 +566,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         someProp: 'World',
       },
     ],
-    output: [
+    expected: [
       {
         type: 'paragraph',
         children: [{ text: 'PingCode' }],
@@ -607,7 +607,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         children: [{ text: 'Worktile' }],
       },
     ],
-    output: [
+    expected: [
       {
         type: 'paragraph',
         children: [{ text: 'PingCode' }],
@@ -648,7 +648,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         someProp: 'World',
       },
     ],
-    output: [
+    expected: [
       {
         type: 'paragraph',
         children: [{ text: 'PingCode' }],
@@ -694,7 +694,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         ],
       },
     ],
-    output: [
+    expected: [
       {
         type: 'container',
         children: [
@@ -727,7 +727,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         children: [{ text: 'PingCode' }],
       },
     ],
-    output: [
+    expected: [
       {
         type: 'paragraph',
         children: [
@@ -757,7 +757,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         children: [{ text: 'PingCode & Whatever' }],
       },
     ],
-    output: [
+    expected: [
       {
         type: 'paragraph',
         children: [
@@ -800,7 +800,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         children: [{ text: 'This is an !' }],
       },
     ],
-    output: [
+    expected: [
       {
         type: 'paragraph',
         children: [
@@ -839,7 +839,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         ],
       },
     ],
-    output: [
+    expected: [
       {
         type: 'paragraph',
         children: [
@@ -886,7 +886,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         ],
       },
     ],
-    output: [
+    expected: [
       {
         type: 'paragraph',
         children: [
@@ -940,7 +940,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         ],
       },
     ],
-    output: [
+    expected: [
       {
         type: 'paragraph',
         children: [
@@ -1005,7 +1005,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         ],
       },
     ],
-    output: [
+    expected: [
       {
         type: 'paragraph',
         children: [
@@ -1077,7 +1077,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         ],
       },
     ],
-    output: [
+    expected: [
       {
         type: 'paragraph',
         children: [
@@ -1133,7 +1133,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         ],
       },
     ],
-    output: [
+    expected: [
       {
         type: 'paragraph',
         children: [
@@ -1158,6 +1158,111 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       },
     ],
   },
+
+  changeIdBlock: {
+    input1: [
+      {
+        type: 'paragraph',
+        id: '1',
+        children: [{ text: 'PingCode' }],
+      },
+      {
+        type: 'paragraph',
+        id: '2',
+        children: [{ text: 'Worktile' }],
+      },
+    ],
+    input2: [
+      {
+        type: 'paragraph',
+        id: '1',
+        children: [{ text: 'PingCode' }],
+      },
+      {
+        type: 'paragraph',
+        id: '3',
+        children: [{ text: 'Worktile' }],
+      },
+    ],
+    expected: [
+      {
+        type: 'paragraph',
+        id: '1',
+        children: [{ text: 'PingCode' }],
+      },
+      {
+        type: 'paragraph',
+        id: '3',
+        children: [{ text: 'Worktile' }],
+      },
+    ],
+  },
+
+  changeIdText: {
+    input1: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'PingCode', id: '1' },
+          { text: ' & ', id: '2' },
+          { text: 'Worktile', id: '3' },
+        ],
+      },
+    ],
+    input2: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'PingCode', id: '1' },
+          { text: ' & ', id: '4' },
+          { text: 'Worktile', id: '3' },
+        ],
+      },
+    ],
+    expected: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'PingCode', id: '1' },
+          { text: ' & ', id: '4' },
+          { text: 'Worktile', id: '3' },
+        ],
+      },
+    ],
+  },
+
+  changeIdInline: {
+    input1: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'PingCode', id: '1' },
+          { type: ELEMENT_INLINE_VOID, id: '2', children: [{ text: '' }] },
+          { text: 'Worktile', id: '3' },
+        ],
+      },
+    ],
+    input2: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'PingCode', id: '1' },
+          { type: ELEMENT_INLINE_VOID, id: '4', children: [{ text: '' }] },
+          { text: 'Worktile', id: '3' },
+        ],
+      },
+    ],
+    expected: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'PingCode', id: '1' },
+          { type: ELEMENT_INLINE_VOID, id: '4', children: [{ text: '' }] },
+          { text: 'Worktile', id: '3' },
+        ],
+      },
+    ],
+  },
 };
 
 const createInlineVoidPlugin = createPluginFactory({
@@ -1169,12 +1274,17 @@ const createInlineVoidPlugin = createPluginFactory({
 
 describe('computeDiff', () => {
   Object.entries(fixtures).forEach(
-    ([name, { it: itFn = it, input1, input2, output }]) => {
+    ([name, { it: itFn = it, input1, input2, expected }]) => {
       itFn(name, () => {
         const editor = createPlateEditor({
           plugins: [createInlineVoidPlugin()],
         });
-        expect(diffToSuggestions(editor, input1, input2)).toStrictEqual(output);
+
+        const output = diffToSuggestions(editor, input1, input2, {
+          ignoreProps: ['id'],
+        });
+
+        expect(output).toEqual(expected);
       });
     }
   );

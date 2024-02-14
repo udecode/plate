@@ -1,11 +1,12 @@
 import { isText, TDescendant } from '@udecode/plate-common';
+import isEqual from 'lodash/isEqual.js';
 
 import { ComputeDiffOptions } from '../../computeDiff';
 import { transformDiffNodes } from '../transforms/transformDiffNodes';
 import { transformDiffTexts } from '../transforms/transformDiffTexts';
+import { copyWithout } from '../utils/copy-without';
 import { diffNodes, NodeRelatedItem } from '../utils/diff-nodes';
 import { StringCharMapping } from '../utils/string-char-mapping';
-import { stringToNodes } from '../utils/string-to-nodes';
 
 export interface TransformDiffDescendantsOptions extends ComputeDiffOptions {
   stringCharMapping: StringCharMapping;
@@ -20,7 +21,7 @@ export function transformDiffDescendants(
   }[],
   { stringCharMapping, ...options }: TransformDiffDescendantsOptions
 ): TDescendant[] {
-  const { isInline, getInsertProps, getRemoveProps } = options;
+  const { isInline, ignoreProps, getInsertProps, getRemoveProps } = options;
 
   // Current index in the diff array
   let i = 0;
@@ -42,6 +43,17 @@ export function transformDiffDescendants(
       }))
     );
 
+  const areNodeListsEquivalent = (
+    nodes0: TDescendant[],
+    nodes1: TDescendant[]
+  ): boolean => {
+    const excludeIgnoreProps = (node: TDescendant) =>
+      copyWithout(node, ignoreProps || []);
+    const nodesWithoutIgnore0 = nodes0.map(excludeIgnoreProps);
+    const nodesWithoutIgnore1 = nodes1.map(excludeIgnoreProps);
+    return isEqual(nodesWithoutIgnore0, nodesWithoutIgnore1);
+  };
+
   const isInlineList = (nodes: TDescendant[]) =>
     nodes.every((node) => isText(node) || isInline(node));
 
@@ -51,7 +63,7 @@ export function transformDiffDescendants(
     const val = chunk[1];
 
     // Convert the string value to document nodes based on the stringCharMapping
-    const nodes = stringToNodes(val, stringCharMapping);
+    const nodes = stringCharMapping.stringToNodes(val);
 
     // If operation code is 0, it means the chunk is unchanged
     if (op === 0) {
@@ -68,7 +80,18 @@ export function transformDiffDescendants(
         // Value of the next chunk (to be inserted)
         const nextVal = diff[i + 1][1];
         // Convert next value to nodes
-        const nextNodes = stringToNodes(nextVal, stringCharMapping);
+        const nextNodes = stringCharMapping.stringToNodes(nextVal);
+
+        /**
+         * If the node lists are identical when ignored props are excluded,
+         * just return nextNodes.
+         */
+        if (areNodeListsEquivalent(nodes, nextNodes)) {
+          children.push(...nextNodes);
+          // Consume two diff chunks (delete and insert)
+          i += 2;
+          continue;
+        }
 
         // If both current and next chunks are text nodes, use transformTextNodes
         if (isInlineList(nodes) && isInlineList(nextNodes)) {
