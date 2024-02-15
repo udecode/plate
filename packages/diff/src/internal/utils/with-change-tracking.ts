@@ -264,6 +264,7 @@ const flattenPropsChanges = (editor: ChangeTrackingEditor) => {
   const propChangeRangeRefs = editor.propsChanges.map(
     ({ rangeRef }) => rangeRef
   );
+
   const insertedTextRangeRefs = editor.insertedTexts.map(
     ({ rangeRef }) => rangeRef
   );

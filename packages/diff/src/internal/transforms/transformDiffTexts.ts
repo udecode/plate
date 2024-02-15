@@ -176,7 +176,14 @@ function splitTextNodes(node: TText, split: TText[]): TOperation[] {
   for (let i = 0; i < split.length - 1; i++) {
     const part = split[i];
     const nextPart = split[i + 1];
-    const newProps = getProperties(nextPart, properties);
+
+    const newProps = getProperties(nextPart);
+
+    Object.keys(properties).forEach((key) => {
+      if (!newProps.hasOwnProperty(key)) {
+        newProps[key] = undefined;
+      }
+    });
 
     operations.push({
       type: 'split_node',
