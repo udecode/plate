@@ -18,7 +18,13 @@ export const getSuggestionCurrentUserKey = <V extends Value>(
 export const getSuggestionProps = <V extends Value>(
   editor: PlateEditor<V>,
   id: string,
-  { suggestionDeletion }: { suggestionDeletion?: boolean } = {}
+  {
+    suggestionDeletion,
+    suggestionUpdate,
+  }: {
+    suggestionDeletion?: boolean;
+    suggestionUpdate?: any;
+  } = {}
 ) => {
   const res = {
     [MARK_SUGGESTION]: true,
@@ -28,6 +34,10 @@ export const getSuggestionProps = <V extends Value>(
 
   if (suggestionDeletion) {
     res.suggestionDeletion = true;
+  }
+
+  if (suggestionUpdate) {
+    res.suggestionUpdate = suggestionUpdate;
   }
 
   return res;

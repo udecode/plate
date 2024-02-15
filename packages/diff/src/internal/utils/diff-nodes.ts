@@ -1,3 +1,8 @@
+/**
+ * This Apache-2.0 licensed file has been modified by Udecode and other
+ * contributors. See /packages/diff/LICENSE for more information.
+ */
+
 import { isElement, isText, TDescendant } from '@udecode/plate-common';
 import isEqual from 'lodash/isEqual.js';
 

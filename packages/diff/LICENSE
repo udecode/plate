@@ -1,6 +1,6 @@
 # License
 
-Changes introduced by "@udecode/plate-diff" are licensed under the following MIT License:
+Changes introduced by "@udecode/plate-diff" are dual-licensed under the same Apache License 2.0 as `slate-diff`, in addition to the following MIT License:
 
 > The MIT License (MIT)
 > 
@@ -26,8 +26,6 @@ Changes introduced by "@udecode/plate-diff" are licensed under the following MIT
 > LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 > THE SOFTWARE.
-
-Please use the Git version history to identify changes introduced by "@udecode/plate-diff".
 
 ## slate-diff
 

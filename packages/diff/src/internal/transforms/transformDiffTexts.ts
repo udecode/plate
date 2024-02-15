@@ -1,45 +1,74 @@
-import { TOperation, TText } from '@udecode/plate-common';
-import { Path } from 'slate';
+/**
+ * This Apache-2.0 licensed file has been modified by Udecode and other
+ * contributors. See /packages/diff/LICENSE for more information.
+ */
 
+import { isText, TDescendant, TOperation, TText } from '@udecode/plate-common';
+import { createEditor, Path, withoutNormalizing } from 'slate';
+
+import { ComputeDiffOptions } from '../../computeDiff';
 import { dmp } from '../utils/dmp';
 import { getProperties } from '../utils/get-properties';
+import { InlineNodeCharMap } from '../utils/inline-node-char-map';
+import { withChangeTracking } from '../utils/with-change-tracking';
 
 // Main function to transform an array of text nodes into another array of text nodes
 export function transformDiffTexts(
-  nodes: TText[],
-  nextNodes: TText[],
-  path: number[]
-): TOperation[] {
+  nodes: TDescendant[],
+  nextNodes: TDescendant[],
+  options: ComputeDiffOptions
+): TDescendant[] {
   // Validate input - both arrays must have at least one node
   if (nodes.length === 0) throw new Error('must have at least one nodes');
   if (nextNodes.length === 0)
     throw new Error('must have at least one nextNodes');
 
-  const operations: TOperation[] = [];
+  const inlineNodeCharMap = new InlineNodeCharMap({
+    // Do not use any char that is present in the text
+    unavailableChars: nodes
+      .concat(nextNodes)
+      .filter(isText)
+      .map((n) => n.text)
+      .join(''),
+  });
 
-  // Start with the first node in the array, assuming all nodes are to be merged into one
-  let node = nodes[0];
+  // Map inlines nodes to unique text nodes
+  const texts = nodes.map((n) => inlineNodeCharMap.nodeToText(n));
+  const nextTexts = nextNodes.map((n) => inlineNodeCharMap.nodeToText(n));
 
-  if (nodes.length > 1) {
-    // If there are multiple nodes, merge them into one, adding merge operations
-    for (let i = 1; i < nodes.length; i++) {
-      operations.push({
-        type: 'merge_node',
-        path: Path.next(path),
-        position: 0, // Required by type; not actually used here
-        properties: {}, // Required by type; not actually used here
-      });
-      // Update the node's text with the merged text (for splitTextNodes)
-      node = { ...node, text: node.text + nodes[i].text };
+  const nodesEditor = withChangeTracking(createEditor(), options);
+  nodesEditor.children = [{ children: texts }];
+
+  withoutNormalizing(nodesEditor, () => {
+    // Start with the first node in the array, assuming all nodes are to be merged into one
+    let node = texts[0];
+
+    if (texts.length > 1) {
+      // If there are multiple nodes, merge them into one, adding merge operations
+      for (let i = 1; i < texts.length; i++) {
+        nodesEditor.apply({
+          type: 'merge_node',
+          path: [0, 1],
+          position: 0, // Required by type; not actually used here
+          properties: {}, // Required by type; not actually used here
+        });
+        // Update the node's text with the merged text (for splitTextNodes)
+        node = { ...node, text: node.text + texts[i].text };
+      }
     }
-  }
 
-  // After merging, apply split operations based on the target state (`nextNodes`)
-  for (const op of splitTextNodes(node, nextNodes, path)) {
-    operations.push(op);
-  }
+    // After merging, apply split operations based on the target state (`nextTexts`)
+    for (const op of splitTextNodes(node, nextTexts)) {
+      nodesEditor.apply(op);
+    }
 
-  return operations;
+    nodesEditor.commitChangesToDiffs();
+  });
+
+  const diffTexts: TText[] = (nodesEditor.children[0] as any).children;
+
+  // Restore the original inline nodes
+  return diffTexts.flatMap((t) => inlineNodeCharMap.textToNode(t));
 }
 
 // Function to compute the text operations needed to transform string `a` into string `b`
@@ -86,7 +115,6 @@ function slateTextDiff(a: string, b: string): Op[] {
     // Move to the next diff chunk
     i += 1;
   }
-  // console.info("slateTextDiff", { a, b, diff, operations });
 
   return operations;
 }
@@ -100,18 +128,14 @@ via a combination of remove_text/insert_text as above and split_node
 operations.
 */
 // Function to split a single text node into multiple nodes based on the desired target state
-function splitTextNodes(
-  node: TText,
-  split: TText[],
-  path: number[] // the path to node.
-): TOperation[] {
+function splitTextNodes(node: TText, split: TText[]): TOperation[] {
   if (split.length === 0) {
     // If there are no target nodes, simply remove the original node
     return [
       {
         type: 'remove_node',
         node,
-        path,
+        path: [0, 0],
       },
     ];
   }
@@ -131,7 +155,7 @@ function splitTextNodes(
     // we can then worry about splitting up the resulting source node.
     for (const op of slateTextDiff(nodeText, splitText)) {
       // TODO: maybe path has to be changed if there are multiple OPS?
-      operations.push({ path, ...op });
+      operations.push({ path: [0, 0], ...op });
     }
   }
 
@@ -140,7 +164,7 @@ function splitTextNodes(
   if (getKeysLength(newProperties) > 0) {
     operations.push({
       type: 'set_node',
-      path,
+      path: [0, 0],
       properties: getProperties(node),
       newProperties,
     });
@@ -148,11 +172,18 @@ function splitTextNodes(
 
   let properties = getProperties(split[0]);
   // For each segment in the target state, split the node and adjust properties as needed
-  let splitPath = path;
+  let splitPath = [0, 0];
   for (let i = 0; i < split.length - 1; i++) {
     const part = split[i];
     const nextPart = split[i + 1];
-    const newProps = getProperties(nextPart, properties);
+
+    const newProps = getProperties(nextPart);
+
+    Object.keys(properties).forEach((key) => {
+      if (!newProps.hasOwnProperty(key)) {
+        newProps[key] = undefined;
+      }
+    });
 
     operations.push({
       type: 'split_node',
