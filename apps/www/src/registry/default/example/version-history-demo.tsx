@@ -20,7 +20,7 @@ import {
   PlateProps,
   Value,
 } from '@udecode/plate-common';
-import { computeDiff, DiffOperation, DiffUpdate } from '@udecode/plate-diff';
+import { computeDiff, DiffOperation, DiffUpdate, withGetFragmentExcludeDiff } from '@udecode/plate-diff';
 import {
   createParagraphPlugin,
   ELEMENT_PARAGRAPH,
@@ -131,6 +131,7 @@ const MARK_DIFF = 'diff';
 const createDiffPlugin = createPluginFactory({
   key: MARK_DIFF,
   isLeaf: true,
+  withOverrides: withGetFragmentExcludeDiff,
   inject: {
     aboveComponent:
       () =>
