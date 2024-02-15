@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 30.4.5
+
+### Patch Changes
+
+- [#2948](https://github.com/udecode/plate/pull/2948) by [@zbeyens](https://github.com/zbeyens) – Fix SSR imports in `jotai-x`
+
 ## 30.1.2
 
 ### Patch Changes

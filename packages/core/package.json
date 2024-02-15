@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-core",
-  "version": "30.1.2",
+  "version": "30.4.5",
   "description": "The core architecture of Plate – a plugin system for slate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -47,7 +47,7 @@
     "is-hotkey": "^0.2.0",
     "jotai": "^2.6.0",
     "jotai-optics": "0.3.1",
-    "jotai-x": "^1.2.1",
+    "jotai-x": "^1.2.2",
     "lodash": "^4.17.21",
     "nanoid": "^3.3.6",
     "optics-ts": "2.4.1",

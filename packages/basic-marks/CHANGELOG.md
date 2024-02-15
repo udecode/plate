@@ -1,5 +1,7 @@
 # @udecode/plate-basic-marks
 
+## 30.4.5
+
 ## 30.1.2
 
 ## 30.0.0
