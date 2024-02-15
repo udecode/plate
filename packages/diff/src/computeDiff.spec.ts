@@ -188,9 +188,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
     input1: [
       {
         type: 'paragraph',
-        children: [
-          { text: 'One two three', bold: true },
-        ],
+        children: [{ text: 'One two three', bold: true }],
       },
     ],
     input2: [
@@ -1180,9 +1178,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
     input1: [
       {
         type: 'paragraph',
-        children: [
-          { text: 'A B C' }
-        ],
+        children: [{ text: 'A B C' }],
       },
     ],
     input2: [
