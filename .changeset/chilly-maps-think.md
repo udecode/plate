@@ -1,4 +1,5 @@
 ---
+"@udecode/plate-diff": minor
 "@udecode/plate-suggestion": minor
 ---
 
