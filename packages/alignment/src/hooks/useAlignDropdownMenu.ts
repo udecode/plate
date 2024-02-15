@@ -18,13 +18,15 @@ export const useAlignDropdownMenuState = () => {
 
       if (entry) {
         const nodeValue = entry[0][KEY_ALIGN] as string;
-        if (nodeValue === 'right') return 'right';
+        if (nodeValue === 'left') return 'left';
         if (nodeValue === 'center') return 'center';
+        if (nodeValue === 'right') return 'right';
+        if (nodeValue === 'end') return 'end';
         if (nodeValue === 'justify') return 'justify';
       }
     }
 
-    return 'left';
+    return 'start';
   }, []);
 
   return {

@@ -29,7 +29,7 @@ it('should remove align prop', () => {
     plugins: [createAlignPlugin()],
   });
 
-  setAlign(editor, { value: 'left' });
+  setAlign(editor, { value: 'start' });
 
   expect(editor.children).toEqual(output.children);
 });
