@@ -30,6 +30,14 @@ import { useSelected } from 'slate-react';
 import { Button } from '../plate-ui/button';
 import { ParagraphElement } from '../plate-ui/paragraph-element';
 
+const ELEMENT_INLINE = 'inline';
+
+const createInlinePlugin = createPluginFactory({
+  key: ELEMENT_INLINE,
+  isElement: true,
+  isInline: true,
+});
+
 const ELEMENT_INLINE_VOID = 'inlineVoid';
 
 const createInlineVoidPlugin = createPluginFactory({
@@ -86,6 +94,18 @@ const describeUpdate = ({ properties, newProperties }: DiffUpdate) => {
   }
 
   return descriptionParts.join('\n');
+};
+
+const InlineElement = ({ children, ...props }: PlateElementProps) => {
+  return (
+    <PlateElement
+      {...props}
+      className="rounded-sm bg-slate-200/50 p-1"
+      as="span"
+    >
+      {children}
+    </PlateElement>
+  );
 };
 
 const InlineVoidElement = ({ children, ...props }: PlateElementProps) => {
@@ -171,6 +191,7 @@ function DiffLeaf({ children, ...props }: PlateLeafProps) {
 const plugins = createPlugins(
   [
     createParagraphPlugin(),
+    createInlinePlugin(),
     createInlineVoidPlugin(),
     createBoldPlugin(),
     createItalicPlugin(),
@@ -179,6 +200,7 @@ const plugins = createPlugins(
   {
     components: {
       [ELEMENT_PARAGRAPH]: ParagraphElement,
+      [ELEMENT_INLINE]: InlineElement,
       [ELEMENT_INLINE_VOID]: InlineVoidElement,
       [MARK_BOLD]: withProps(PlateLeaf, { as: 'strong' }),
       [MARK_ITALIC]: withProps(PlateLeaf, { as: 'em' }),
@@ -206,6 +228,14 @@ const initialValue: Value = [
       { text: 'This is an ' },
       { type: ELEMENT_INLINE_VOID, children: [{ text: '' }] },
       { text: '. Try removing it.' },
+    ],
+  },
+  {
+    type: ELEMENT_PARAGRAPH,
+    children: [
+      { text: 'This is an ' },
+      { type: ELEMENT_INLINE, children: [{ text: 'editable inline' }] },
+      { text: '. Try editing it.' },
     ],
   },
 ];
