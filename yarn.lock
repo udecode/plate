@@ -37,8 +37,8 @@ __metadata:
   linkType: hard
 
 "@antfu/ni@npm:^0.21.4":
-  version: 0.21.4
-  resolution: "@antfu/ni@npm:0.21.4"
+  version: 0.21.12
+  resolution: "@antfu/ni@npm:0.21.12"
   bin:
     na: bin/na.mjs
     nci: bin/nci.mjs
@@ -47,7 +47,7 @@ __metadata:
     nr: bin/nr.mjs
     nu: bin/nu.mjs
     nun: bin/nun.mjs
-  checksum: 9dfbf7eb67362e2d725690c892f77a29acf4478c0cccd4841f9a805784353964d807faf63c727a8a8263a9f23ee5ea8f64ee0e550471fe6f5912c2b6083217d7
+  checksum: 729e03cdde75087bd1e959357fa69caf5c8ecf80087f19ac07ecceeb0def3eabbe87a8bd88a78444bea321cce8e385a1c90dca4b5146c351e32c2a516c2d9ea2
   languageName: node
   linkType: hard
 
@@ -6159,7 +6159,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-alignment@npm:30.4.5, @udecode/plate-alignment@workspace:^, @udecode/plate-alignment@workspace:packages/alignment":
+"@udecode/plate-alignment@npm:30.5.1, @udecode/plate-alignment@workspace:^, @udecode/plate-alignment@workspace:packages/alignment":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-alignment@workspace:packages/alignment"
   dependencies:
@@ -6402,7 +6402,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-diff@npm:30.4.5, @udecode/plate-diff@workspace:packages/diff":
+"@udecode/plate-diff@npm:30.5.0, @udecode/plate-diff@workspace:packages/diff":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-diff@workspace:packages/diff"
   dependencies:
@@ -6900,12 +6900,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-suggestion@npm:30.4.5, @udecode/plate-suggestion@workspace:^, @udecode/plate-suggestion@workspace:packages/suggestion":
+"@udecode/plate-suggestion@npm:30.5.0, @udecode/plate-suggestion@workspace:^, @udecode/plate-suggestion@workspace:packages/suggestion":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-suggestion@workspace:packages/suggestion"
   dependencies:
     "@udecode/plate-common": "npm:30.4.5"
-    "@udecode/plate-diff": "npm:30.4.5"
+    "@udecode/plate-diff": "npm:30.5.0"
     lodash: "npm:^4.17.21"
   peerDependencies:
     react: ">=16.8.0"
@@ -7066,7 +7066,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate@workspace:packages/plate"
   dependencies:
-    "@udecode/plate-alignment": "npm:30.4.5"
+    "@udecode/plate-alignment": "npm:30.5.1"
     "@udecode/plate-autoformat": "npm:30.4.5"
     "@udecode/plate-basic-elements": "npm:30.4.5"
     "@udecode/plate-basic-marks": "npm:30.4.5"
@@ -7100,7 +7100,7 @@ __metadata:
     "@udecode/plate-serializer-docx": "npm:30.4.5"
     "@udecode/plate-serializer-html": "npm:30.4.5"
     "@udecode/plate-serializer-md": "npm:30.4.5"
-    "@udecode/plate-suggestion": "npm:30.4.5"
+    "@udecode/plate-suggestion": "npm:30.5.0"
     "@udecode/plate-tabbable": "npm:30.4.5"
     "@udecode/plate-table": "npm:30.4.5"
     "@udecode/plate-toggle": "npm:30.4.5"
