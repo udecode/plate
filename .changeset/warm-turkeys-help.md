@@ -1,0 +1,53 @@
+---
+"@udecode/plate-alignment": patch
+"@udecode/plate-autoformat": patch
+"@udecode/plate-basic-elements": patch
+"@udecode/plate-basic-marks": patch
+"@udecode/plate-block-quote": patch
+"@udecode/plate-break": patch
+"@udecode/plate-caption": patch
+"@udecode/plate-cloud": patch
+"@udecode/plate-code-block": patch
+"@udecode/plate-combobox": patch
+"@udecode/plate-comments": patch
+"@udecode/plate-cursor": patch
+"@udecode/plate-diff": patch
+"@udecode/plate-dnd": patch
+"@udecode/plate-emoji": patch
+"@udecode/plate-excalidraw": patch
+"@udecode/plate-find-replace": patch
+"@udecode/plate-floating": patch
+"@udecode/plate-font": patch
+"@udecode/plate-heading": patch
+"@udecode/plate-highlight": patch
+"@udecode/plate-horizontal-rule": patch
+"@udecode/plate-indent": patch
+"@udecode/plate-indent-list": patch
+"@udecode/plate-juice": patch
+"@udecode/plate-kbd": patch
+"@udecode/plate-line-height": patch
+"@udecode/plate-link": patch
+"@udecode/plate-list": patch
+"@udecode/plate-media": patch
+"@udecode/plate-mention": patch
+"@udecode/plate-node-id": patch
+"@udecode/plate-normalizers": patch
+"@udecode/plate-paragraph": patch
+"@udecode/plate-reset-node": patch
+"@udecode/plate-resizable": patch
+"@udecode/plate-select": patch
+"@udecode/plate-selection": patch
+"@udecode/plate-serializer-csv": patch
+"@udecode/plate-serializer-docx": patch
+"@udecode/plate-serializer-html": patch
+"@udecode/plate-serializer-md": patch
+"@udecode/plate-suggestion": patch
+"@udecode/plate-tabbable": patch
+"@udecode/plate-table": patch
+"@udecode/plate-test-utils": patch
+"@udecode/plate-toggle": patch
+"@udecode/plate-trailing-block": patch
+"@udecode/plate-yjs": patch
+---
+
+Move `@udecode/plate-common` to peerDeps to fix a bug when multiple instances were installed
