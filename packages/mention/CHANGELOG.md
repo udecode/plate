@@ -1,5 +1,7 @@
 # @udecode/plate-mention
 
+## 30.5.2
+
 ## 30.4.5
 
 ## 30.1.2
