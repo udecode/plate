@@ -10,7 +10,8 @@
     {
       "matchPaths": ["!^@udecode/"],
       "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
-      "automerge": false
+      "automerge": false,
+      "schedule": "every weekend"
     }
   ]
 }
