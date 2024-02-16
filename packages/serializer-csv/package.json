@@ -43,7 +43,8 @@
     "papaparse": "^5.4.1"
   },
   "devDependencies": {
-    "@types/papaparse": "^5.3.7"
+    "@types/papaparse": "^5.3.7",
+    "@udecode/plate-common": "workspace:^"
   },
   "peerDependencies": {
     "@udecode/plate-common": ">=30.4.5 < 31",
