@@ -51,6 +51,9 @@
     "remark-parse": "^9.0.0",
     "unified": "^9.2.2"
   },
+  "devDependencies": {
+    "@udecode/plate-common": "workspace:^"
+  },
   "peerDependencies": {
     "@udecode/plate-common": ">=30.4.5 < 31",
     "react": ">=16.8.0",

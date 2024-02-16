@@ -47,6 +47,9 @@
     "@udecode/plate-table": "30.4.5",
     "validator": "^13.9.0"
   },
+  "devDependencies": {
+    "@udecode/plate-common": "workspace:^"
+  },
   "peerDependencies": {
     "@udecode/plate-common": ">=30.4.5 < 31",
     "react": ">=16.8.0",

@@ -43,6 +43,9 @@
     "delay": "5.0.0",
     "p-defer": "^3.0.0"
   },
+  "devDependencies": {
+    "@udecode/plate-common": "workspace:^"
+  },
   "peerDependencies": {
     "@udecode/plate-common": ">=30.4.5 < 31",
     "react": ">=16.8.0",

@@ -43,6 +43,9 @@
     "@udecode/plate-list": "30.4.5",
     "clsx": "^1.2.1"
   },
+  "devDependencies": {
+    "@udecode/plate-common": "workspace:^"
+  },
   "peerDependencies": {
     "@udecode/plate-common": ">=30.4.5 < 31",
     "react": ">=16.8.0",

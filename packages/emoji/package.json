@@ -42,6 +42,9 @@
     "@emoji-mart/data": "^1.1.2",
     "@udecode/plate-combobox": "30.4.5"
   },
+  "devDependencies": {
+    "@udecode/plate-common": "workspace:^"
+  },
   "peerDependencies": {
     "@udecode/plate-common": ">=30.4.5 < 31",
     "react": ">=16.8.0",

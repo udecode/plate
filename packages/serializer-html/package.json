@@ -41,6 +41,9 @@
   "dependencies": {
     "html-entities": "^2.4.0"
   },
+  "devDependencies": {
+    "@types/papaparse": "^5.3.7"
+  },
   "peerDependencies": {
     "@udecode/plate-common": ">=30.4.5 < 31",
     "react": ">=16.8.0",
@@ -49,9 +52,6 @@
     "slate-history": ">=0.93.0",
     "slate-hyperscript": ">=0.66.0",
     "slate-react": ">=0.99.0"
-  },
-  "devDependencies": {
-    "@types/papaparse": "^5.3.7"
   },
   "keywords": [
     "html",
