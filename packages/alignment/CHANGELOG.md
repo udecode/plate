@@ -1,5 +1,11 @@
 # @udecode/plate-alignment
 
+## 30.5.1
+
+### Patch Changes
+
+- [#2953](https://github.com/udecode/plate/pull/2953) by [@shaungrady](https://github.com/shaungrady) – [alignment] Support 'start' and 'end' values, default to 'start'
+
 ## 30.4.5
 
 ## 30.1.2
