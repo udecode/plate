@@ -1,5 +1,7 @@
 # @udecode/plate-suggestion
 
+## 30.5.2
+
 ## 30.5.0
 
 ### Minor Changes

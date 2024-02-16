@@ -1,5 +1,11 @@
 # @udecode/plate-horizontal-rule
 
+## 30.5.2
+
+### Patch Changes
+
+- [#2961](https://github.com/udecode/plate/pull/2961) by [@zbeyens](https://github.com/zbeyens) – Move `@udecode/plate-common` to peerDeps to fix a bug when multiple instances were installed
+
 ## 30.4.5
 
 ## 30.1.2
