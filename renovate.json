@@ -3,10 +3,16 @@
   "extends": ["config:recommended"],
   "packageRules": [
     {
-      "matchPackagePatterns": ["^@udecode/", "^slate"],
+      "matchPackagePatterns": ["^@udecode/"],
       "matchUpdateTypes": ["major", "minor", "patch", "pin", "digest"],
       "automerge": true,
       "groupName": "Internal packages updates"
+    },
+    {
+      "matchPackagePatterns": ["^slate"],
+      "matchUpdateTypes": ["major", "minor", "patch", "pin", "digest"],
+      "automerge": true,
+      "groupName": "Slate packages updates"
     },
     {
       "matchPaths": ["!^@udecode/"],
