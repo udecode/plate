@@ -3,26 +3,26 @@
   "extends": ["config:recommended", ":disableDependencyDashboard"],
   "packageRules": [
     {
-      "matchPackagePatterns": ["^@udecode/"],
+      "matchPackagePrefixes": ["@udecode/"],
       "matchUpdateTypes": ["major", "minor", "patch", "pin", "digest"],
       "automerge": true,
       "groupName": "Internal packages updates"
     },
     {
-      "matchPackagePatterns": ["^slate"],
+      "matchPackagePrefixes": ["slate"],
       "matchUpdateTypes": ["major", "minor", "patch", "pin", "digest"],
       "automerge": true,
       "groupName": "Slate packages updates"
     },
     {
-      "matchPackagePatterns": ["^(?!(@udecode/|slate)).*"],
+      "excludePackagePrefixes": ["@udecode/", "slate"],
       "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
       "automerge": true,
       "schedule": "every weekend",
       "groupName": "External updates"
     },
     {
-      "matchPackagePatterns": ["^(?!(@udecode/|slate)).*"],
+      "excludePackagePrefixes": ["@udecode/", "slate"],
       "matchUpdateTypes": ["major"],
       "automerge": true,
       "schedule": "every weekend"
