@@ -5,13 +5,22 @@
     {
       "matchPackagePatterns": ["^@udecode/", "^slate"],
       "matchUpdateTypes": ["major", "minor", "patch", "pin", "digest"],
-      "automerge": true
+      "automerge": true,
+      "groupName": "Internal packages updates"
     },
     {
       "matchPaths": ["!^@udecode/"],
       "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "automerge": true,
+      "schedule": "every weekend",
+      "groupName": "External updates"
+    },
+    {
+      "matchPaths": ["!^@udecode/"],
+      "matchUpdateTypes": ["major"],
       "automerge": false,
-      "schedule": "every weekend"
+      "schedule": "every weekend",
+      "groupName": "External major updates"
     }
   ]
 }
