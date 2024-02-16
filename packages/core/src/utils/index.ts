@@ -7,6 +7,7 @@ export * from './createPlateEditor';
 export * from './createPlateFallbackEditor';
 export * from './createPluginFactory';
 export * from './createPlugins';
+export * from './detectMultiplePlateVersions';
 export * from './flattenDeepPlugins';
 export * from './getInjectedPlugins';
 export * from './getKeyByType';

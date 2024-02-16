@@ -6,7 +6,10 @@ import { JotaiStore } from 'jotai-x';
 import { createAtomStore } from '../../libs/jotai';
 import { PlateEditor } from '../../types/PlateEditor';
 import { PlateStoreState } from '../../types/PlateStore';
-import { createPlateFallbackEditor } from '../../utils';
+import {
+  createPlateFallbackEditor,
+  detectMultiplePlateVersions,
+} from '../../utils';
 import {
   usePlateControllerEditorStore,
   usePlateControllerExists,
@@ -93,6 +96,8 @@ export const usePlateEditorStore = (
   id?: PlateId,
   { debugHookName = 'usePlateEditorStore' }: UsePlateEditorStoreOptions = {}
 ): JotaiStore => {
+  detectMultiplePlateVersions();
+
   // Try to fetch the store from a Plate provider
   const localStore = usePlateStore(id).store({ warnIfNoStore: false }) ?? null;
 

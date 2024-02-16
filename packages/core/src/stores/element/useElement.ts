@@ -1,5 +1,6 @@
 import { TElement } from '@udecode/slate';
 
+import { detectMultiplePlateVersions } from '../../utils';
 import { SCOPE_ELEMENT, useElementStore } from './useElementStore';
 
 /**
@@ -9,6 +10,8 @@ import { SCOPE_ELEMENT, useElementStore } from './useElementStore';
 export const useElement = <T extends TElement = TElement>(
   pluginKey = SCOPE_ELEMENT
 ): T => {
+  detectMultiplePlateVersions();
+
   const value = useElementStore(pluginKey).get.element();
 
   if (!value) {
