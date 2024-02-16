@@ -1,1 +1,1 @@
-export type Alignment = 'left' | 'center' | 'right' | 'justify';
+export type Alignment = 'start' | 'left' | 'center' | 'right' | 'end' | 'justify';
