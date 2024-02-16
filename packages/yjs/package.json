@@ -41,10 +41,13 @@
   "dependencies": {
     "@hocuspocus/provider": "^2.2.1",
     "@slate-yjs/core": "^1.0.1",
-    "@udecode/plate-common": "30.4.5",
     "yjs": "^13.5.42"
   },
+  "devDependencies": {
+    "@udecode/plate-common": "workspace:^"
+  },
   "peerDependencies": {
+    "@udecode/plate-common": ">=30.4.5 < 31",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.94.0",

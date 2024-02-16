@@ -41,11 +41,14 @@
   "dependencies": {
     "@udecode/plate-block-quote": "30.4.5",
     "@udecode/plate-code-block": "30.4.5",
-    "@udecode/plate-common": "30.4.5",
     "@udecode/plate-heading": "30.4.5",
     "@udecode/plate-paragraph": "30.4.5"
   },
+  "devDependencies": {
+    "@udecode/plate-common": "workspace:^"
+  },
   "peerDependencies": {
+    "@udecode/plate-common": ">=30.4.5 < 31",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.94.0",
