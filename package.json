@@ -135,7 +135,7 @@
     "react-test-renderer": "18.2.0",
     "rimraf": "^5.0.1",
     "slate": "0.94.1",
-    "slate-history": "0.93.0",
+    "slate-history": "0.100.0",
     "slate-hyperscript": "0.77.0",
     "slate-react": "0.99.0",
     "slate-test-utils": "1.3.2",
