@@ -39,10 +39,10 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@excalidraw/excalidraw": "0.12.0",
-    "@udecode/plate-common": "30.4.5"
+    "@excalidraw/excalidraw": "0.12.0"
   },
   "peerDependencies": {
+    "@udecode/plate-common": ">=30.4.5",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.94.0",

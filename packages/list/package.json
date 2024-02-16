@@ -39,11 +39,11 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-common": "30.4.5",
     "@udecode/plate-reset-node": "30.4.5",
     "lodash": "^4.17.21"
   },
   "peerDependencies": {
+    "@udecode/plate-common": ">=30.4.5",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.94.0",

@@ -39,7 +39,6 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-common": "30.4.5",
     "@udecode/plate-heading": "30.4.5",
     "@udecode/plate-indent": "30.4.5",
     "@udecode/plate-indent-list": "30.4.5",
@@ -49,6 +48,7 @@
     "validator": "^13.9.0"
   },
   "peerDependencies": {
+    "@udecode/plate-common": ">=30.4.5",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.94.0",

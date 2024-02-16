@@ -40,11 +40,11 @@
   },
   "dependencies": {
     "@portive/client": "10.0.3",
-    "@udecode/plate-common": "30.4.5",
     "delay": "5.0.0",
     "p-defer": "^3.0.0"
   },
   "peerDependencies": {
+    "@udecode/plate-common": ">=30.4.5",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.94.0",

@@ -39,10 +39,10 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-common": "30.4.5",
     "js-video-url-parser": "^0.5.1"
   },
   "peerDependencies": {
+    "@udecode/plate-common": ">=30.4.5",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.94.0",

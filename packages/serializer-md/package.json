@@ -42,7 +42,6 @@
     "@udecode/plate-basic-marks": "30.4.5",
     "@udecode/plate-block-quote": "30.4.5",
     "@udecode/plate-code-block": "30.4.5",
-    "@udecode/plate-common": "30.4.5",
     "@udecode/plate-heading": "30.4.5",
     "@udecode/plate-horizontal-rule": "30.4.5",
     "@udecode/plate-link": "30.4.5",
@@ -53,6 +52,7 @@
     "unified": "^9.2.2"
   },
   "peerDependencies": {
+    "@udecode/plate-common": ">=30.4.5",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.94.0",
