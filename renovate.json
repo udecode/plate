@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
+  "extends": ["config:recommended", ":disableDependencyDashboard"],
   "packageRules": [
     {
       "matchPackagePatterns": ["^@udecode/"],
@@ -15,14 +15,14 @@
       "groupName": "Slate packages updates"
     },
     {
-      "matchPackagePatterns": ["^(?!@udecode/|slate)"],
+      "matchPackagePatterns": ["^(?!(@udecode/|slate)).*"],
       "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
       "automerge": true,
       "schedule": "every weekend",
       "groupName": "External updates"
     },
     {
-      "matchPackagePatterns": ["^(?!@udecode/|slate)"],
+      "matchPackagePatterns": ["^(?!(@udecode/|slate)).*"],
       "matchUpdateTypes": ["major"],
       "automerge": true,
       "schedule": "every weekend"
