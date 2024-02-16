@@ -80,10 +80,10 @@
     "react-dom": "^18.2.0",
     "react-lite-youtube-embed": "^2.4.0",
     "react-tweet": "^3.2.0",
-    "slate": "0.101.5",
+    "slate": "0.102.0",
     "slate-history": "0.100.0",
     "slate-hyperscript": "0.100.0",
-    "slate-react": "0.101.6",
+    "slate-react": "0.102.0",
     "tailwind-merge": "2.2.1",
     "tailwindcss-animate": "1.0.7"
   },
