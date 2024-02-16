@@ -15,14 +15,14 @@
       "groupName": "Slate packages updates"
     },
     {
-      "matchPackagePatterns": ["!^@udecode/", "!^slate"],
+      "matchPackagePatterns": [".*"],
       "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
       "automerge": true,
       "schedule": "every weekend",
       "groupName": "External updates"
     },
     {
-      "matchPackagePatterns": ["!^@udecode/", "!^slate"],
+      "matchPackagePatterns": [".*"],
       "matchUpdateTypes": ["major"],
       "automerge": false,
       "schedule": "every weekend",
