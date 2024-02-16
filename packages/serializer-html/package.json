@@ -42,7 +42,7 @@
     "html-entities": "^2.4.0"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=30.4.5",
+    "@udecode/plate-common": ">=30.4.5 < 31",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.94.0",
