@@ -41,7 +41,7 @@
   "dependencies": {
     "@udecode/plate-indent": "30.5.3",
     "@udecode/plate-list": "30.5.3",
-    "clsx": "^1.2.1"
+    "clsx": "^2.0.0"
   },
   "devDependencies": {
     "@udecode/plate-common": "workspace:^"

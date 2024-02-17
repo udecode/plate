@@ -43,7 +43,7 @@
     "@udecode/slate-react": "29.0.1",
     "@udecode/slate-utils": "25.0.0",
     "@udecode/utils": "24.3.0",
-    "clsx": "^1.2.1",
+    "clsx": "^2.0.0",
     "is-hotkey": "^0.2.0",
     "jotai": "^2.6.0",
     "jotai-optics": "0.3.1",

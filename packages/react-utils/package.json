@@ -40,7 +40,7 @@
   "dependencies": {
     "@radix-ui/react-slot": "^1.0.2",
     "@udecode/utils": "24.3.0",
-    "clsx": "^1.2.1"
+    "clsx": "^2.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
