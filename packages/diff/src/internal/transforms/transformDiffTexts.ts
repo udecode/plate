@@ -58,7 +58,7 @@ export function transformDiffTexts(
     }
 
     // After merging, apply split operations based on the target state (`nextTexts`)
-    for (const op of splitTextNodes(node, nextTexts)) {
+    for (const op of splitTextNodes(node, nextTexts, options)) {
       nodesEditor.apply(op);
     }
 
@@ -72,7 +72,11 @@ export function transformDiffTexts(
 }
 
 // Function to compute the text operations needed to transform string `a` into string `b`
-function slateTextDiff(a: string, b: string): Op[] {
+function slateTextDiff(
+  a: string,
+  b: string,
+  { lineBreakChar }: ComputeDiffOptions
+): Op[] {
   // Compute the diff between two strings
   const diff = dmp.diff_main(a, b);
   dmp.diff_cleanupSemantic(diff);
@@ -98,13 +102,27 @@ function slateTextDiff(a: string, b: string): Op[] {
       }
       case -1: {
         // For deletions, add a remove_text operation
-        operations.push({ type: 'remove_text', offset, text });
+        operations.push({
+          type: 'remove_text',
+          offset,
+          text:
+            lineBreakChar === undefined
+              ? text
+              : text.replaceAll('\n', lineBreakChar),
+        });
 
         break;
       }
       case 1: {
         // For insertions, add an insert_text operation
-        operations.push({ type: 'insert_text', offset, text });
+        operations.push({
+          type: 'insert_text',
+          offset,
+          text:
+            lineBreakChar === undefined
+              ? text
+              : text.replaceAll('\n', lineBreakChar + '\n'),
+        });
         // Move the offset forward by the length of the inserted text
         offset += text.length;
 
@@ -128,7 +146,11 @@ via a combination of remove_text/insert_text as above and split_node
 operations.
 */
 // Function to split a single text node into multiple nodes based on the desired target state
-function splitTextNodes(node: TText, split: TText[]): TOperation[] {
+function splitTextNodes(
+  node: TText,
+  split: TText[],
+  options: ComputeDiffOptions
+): TOperation[] {
   if (split.length === 0) {
     // If there are no target nodes, simply remove the original node
     return [
@@ -153,7 +175,7 @@ function splitTextNodes(node: TText, split: TText[]): TOperation[] {
     // Use diff-match-pach to transform the text in the source node to equal
     // the text in the sequence of target nodes.  Once we do this transform,
     // we can then worry about splitting up the resulting source node.
-    for (const op of slateTextDiff(nodeText, splitText)) {
+    for (const op of slateTextDiff(nodeText, splitText, options)) {
       // TODO: maybe path has to be changed if there are multiple OPS?
       operations.push({ path: [0, 0], ...op });
     }

@@ -13,6 +13,7 @@ import { DiffProps } from './types';
 export interface ComputeDiffOptions {
   isInline: PlateEditor['isInline'];
   ignoreProps?: string[];
+  lineBreakChar?: string;
   getInsertProps: (node: TDescendant) => any;
   getDeleteProps: (node: TDescendant) => any;
   getUpdateProps: (
@@ -31,6 +32,7 @@ export const computeDiff = (
     getInsertProps = defaultGetInsertProps,
     getDeleteProps = defaultGetDeleteProps,
     getUpdateProps = defaultGetUpdateProps,
+    ...options
   }: Partial<ComputeDiffOptions> = {}
 ): TDescendant[] => {
   const stringCharMapping = new StringCharMapping();
@@ -56,6 +58,7 @@ export const computeDiff = (
       return getUpdateProps(node, properties, newProperties);
     },
     stringCharMapping,
+    ...options,
   });
 };
 
