@@ -1,7 +1,12 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended", ":disableDependencyDashboard"],
+  "enabled": false,
   "packageRules": [
+    {
+      "matchPackagePatterns": ["*"],
+      "enabled": false
+    },
     {
       "matchPackagePrefixes": ["@udecode/"],
       "matchUpdateTypes": ["major", "minor", "patch", "pin", "digest"],
@@ -16,6 +21,7 @@
     },
     {
       "excludePackagePrefixes": ["@udecode/", "slate"],
+      "matchPackagePatterns": ["*"],
       "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
       "automerge": true,
       "schedule": "every weekend",
@@ -23,9 +29,14 @@
     },
     {
       "excludePackagePrefixes": ["@udecode/", "slate"],
+      "matchPackagePatterns": ["*"],
       "matchUpdateTypes": ["major"],
-      "automerge": true,
+      "automerge": false,
       "schedule": "every weekend"
+    },
+    {
+      "matchPackagePrefixes": ["@excalidraw"],
+      "enabled": false
     }
   ]
 }
