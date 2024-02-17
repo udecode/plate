@@ -107,7 +107,7 @@
     "@udecode/utils": "workspace:^",
     "@vercel/analytics": "^1.0.1",
     "@vercel/og": "^0.5.8",
-    "change-case": "^4.1.2",
+    "change-case": "^5.0.0",
     "class-variance-authority": "^0.7.0",
     "cmdk": "^0.2.0",
     "contentlayer": "0.3.4",
