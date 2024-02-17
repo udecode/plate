@@ -64,6 +64,7 @@
     "@udecode/plate-common": "workspace:^",
     "@udecode/plate-core": "workspace:^",
     "@udecode/plate-cursor": "workspace:^",
+    "@udecode/plate-diff": "workspace:^",
     "@udecode/plate-dnd": "workspace:^",
     "@udecode/plate-emoji": "workspace:^",
     "@udecode/plate-excalidraw": "workspace:^",
