@@ -39,7 +39,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@viselect/vanilla": "3.2.5",
+    "@viselect/vanilla": "3.5.0",
     "copy-to-clipboard": "^3.3.3"
   },
   "devDependencies": {
