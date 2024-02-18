@@ -10,7 +10,6 @@ import { unusedCharGenerator } from './unused-char-generator';
 
 export class StringCharMapping {
   private _charGenerator = unusedCharGenerator();
-  private _charToNode: Map<string, TDescendant> = new Map();
   private _mappedNodes: [TDescendant, string][] = [];
 
   public nodesToString(nodes: TDescendant[]): string {
@@ -27,7 +26,6 @@ export class StringCharMapping {
 
     const c = this._charGenerator.next().value;
     this._mappedNodes.push([node, c]);
-    this._charToNode.set(c, node);
     return c;
   }
 
@@ -36,8 +34,8 @@ export class StringCharMapping {
   }
 
   public charToNode(c: string): TDescendant {
-    const node = this._charToNode.get(c);
-    if (!node) throw new Error(`No node found for char ${c}`);
-    return node;
+    const entry = this._mappedNodes.find(([_node, c2]) => c2 === c);
+    if (!entry) throw new Error(`No node found for char ${c}`);
+    return entry[0];
   }
 }
