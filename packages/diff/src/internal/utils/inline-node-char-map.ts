@@ -6,22 +6,17 @@ import {
 } from '@udecode/plate-common';
 
 export class InlineNodeCharMap {
-  private _nextChar: string = 'A';
+  private _charGenerator: Generator<string>;
   private _charToNode: Map<string, TDescendant> = new Map();
-  private _unavailableChars: string;
 
-  constructor({
-    unavailableChars = '',
-  }: {
-    unavailableChars?: string;
-  } = {}) {
-    this._unavailableChars = unavailableChars;
+  constructor({ charGenerator }: { charGenerator: Generator<string> }) {
+    this._charGenerator = charGenerator;
   }
 
   // Replace non-text nodes with a text node containing a unique char
   public nodeToText(node: TDescendant): TText {
     if (isText(node)) return node;
-    const c = this.getUnusedChar();
+    const c = this._charGenerator.next().value;
     this._charToNode.set(c, node);
     return { text: c };
   }
@@ -35,18 +30,6 @@ export class InlineNodeCharMap {
     }
 
     return outputNodes;
-  }
-
-  private getUnusedChar() {
-    while (true) {
-      this._nextChar = String.fromCodePoint(this._nextChar.codePointAt(0)! + 1);
-
-      if (!this._unavailableChars.includes(this._nextChar)) {
-        break;
-      }
-    }
-
-    return this._nextChar;
   }
 
   private replaceCharWithNode(

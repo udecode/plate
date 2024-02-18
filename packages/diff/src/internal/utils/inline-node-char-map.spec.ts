@@ -4,11 +4,15 @@ describe('InlineNodeCharMap', () => {
   let map: InlineNodeCharMap;
 
   beforeEach(() => {
-    map = new InlineNodeCharMap({ unavailableChars: 'ABCDEFG' });
+    const charGenerator: Generator<string> = (function* () {
+      yield* 'HI';
+    })();
+
+    map = new InlineNodeCharMap({ charGenerator });
   });
 
   describe('nodeToText', () => {
-    it('should replace inline nodes with unused chars', () => {
+    it('should replace inline nodes with generated chars', () => {
       const inline1 = { type: 'inline1', children: [{ text: '' }] };
       const inline2 = { type: 'inline2', children: [{ text: '' }] };
       const text1 = map.nodeToText(inline1);

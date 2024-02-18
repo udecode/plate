@@ -1393,7 +1393,11 @@ const fixtures: Record<string, ComputeDiffFixture> = {
     input2: [
       {
         type: 'paragraph',
-        children: [{ text: 'Ping\nCode' }],
+        children: [
+          { text: 'Ping\nCo' },
+          { text: 'd', bold: true },
+          { text: 'e' },
+        ],
       },
     ],
     expected: [
@@ -1402,7 +1406,18 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         children: [
           { text: 'Ping' },
           { text: '¶\n', diff: true, diffOperation: { type: 'insert' } },
-          { text: 'Code' },
+          { text: 'Co' },
+          {
+            text: 'd',
+            bold: true,
+            diff: true,
+            diffOperation: {
+              type: 'update',
+              properties: { bold: undefined },
+              newProperties: { bold: true },
+            },
+          },
+          { text: 'e', bold: undefined },
         ],
       },
     ],

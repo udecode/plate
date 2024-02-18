@@ -10,6 +10,7 @@ import { ComputeDiffOptions } from '../../computeDiff';
 import { dmp } from '../utils/dmp';
 import { getProperties } from '../utils/get-properties';
 import { InlineNodeCharMap } from '../utils/inline-node-char-map';
+import { unusedCharGenerator } from '../utils/unused-char-generator';
 import { withChangeTracking } from '../utils/with-change-tracking';
 
 // Main function to transform an array of text nodes into another array of text nodes
@@ -23,13 +24,32 @@ export function transformDiffTexts(
   if (nextNodes.length === 0)
     throw new Error('must have at least one nextNodes');
 
-  const inlineNodeCharMap = new InlineNodeCharMap({
+  const { lineBreakChar } = options;
+  const hasLineBreakChar = lineBreakChar !== undefined;
+
+  const charGenerator = unusedCharGenerator({
     // Do not use any char that is present in the text
-    unavailableChars: nodes
+    skipChars: nodes
       .concat(nextNodes)
       .filter(isText)
       .map((n) => n.text)
       .join(''),
+  });
+
+  /**
+   * Chars to represent inserted and deleted line breaks in the diff. These
+   * must have a length of 1 to keep the offsets consistent. `lineBreakChar`
+   * itself may have any length.
+   */
+  const insertedLineBreakProxyChar = hasLineBreakChar
+    ? charGenerator.next().value
+    : undefined;
+  const deletedLineBreakProxyChar = hasLineBreakChar
+    ? charGenerator.next().value
+    : undefined;
+
+  const inlineNodeCharMap = new InlineNodeCharMap({
+    charGenerator,
   });
 
   // Map inlines nodes to unique text nodes
@@ -58,24 +78,42 @@ export function transformDiffTexts(
     }
 
     // After merging, apply split operations based on the target state (`nextTexts`)
-    for (const op of splitTextNodes(node, nextTexts, options)) {
+    for (const op of splitTextNodes(node, nextTexts, {
+      insertedLineBreakChar: insertedLineBreakProxyChar,
+      deletedLineBreakChar: deletedLineBreakProxyChar,
+    })) {
       nodesEditor.apply(op);
     }
 
     nodesEditor.commitChangesToDiffs();
   });
 
-  const diffTexts: TText[] = (nodesEditor.children[0] as any).children;
+  let diffTexts: TText[] = (nodesEditor.children[0] as any).children;
+
+  // Replace line break proxy chars with the actual line break char
+  if (hasLineBreakChar) {
+    diffTexts = diffTexts.map((n) => ({
+      ...n,
+      text: n.text
+        .replaceAll(insertedLineBreakProxyChar, lineBreakChar + '\n')
+        .replaceAll(deletedLineBreakProxyChar, lineBreakChar),
+    }));
+  }
 
   // Restore the original inline nodes
   return diffTexts.flatMap((t) => inlineNodeCharMap.textToNode(t));
+}
+
+interface LineBreakCharsOptions {
+  insertedLineBreakChar?: string;
+  deletedLineBreakChar?: string;
 }
 
 // Function to compute the text operations needed to transform string `a` into string `b`
 function slateTextDiff(
   a: string,
   b: string,
-  { lineBreakChar }: ComputeDiffOptions
+  { insertedLineBreakChar, deletedLineBreakChar }: LineBreakCharsOptions
 ): Op[] {
   // Compute the diff between two strings
   const diff = dmp.diff_main(a, b);
@@ -106,9 +144,9 @@ function slateTextDiff(
           type: 'remove_text',
           offset,
           text:
-            lineBreakChar === undefined
+            deletedLineBreakChar === undefined
               ? text
-              : text.replaceAll('\n', lineBreakChar),
+              : text.replaceAll('\n', deletedLineBreakChar),
         });
 
         break;
@@ -119,9 +157,9 @@ function slateTextDiff(
           type: 'insert_text',
           offset,
           text:
-            lineBreakChar === undefined
+            insertedLineBreakChar === undefined
               ? text
-              : text.replaceAll('\n', lineBreakChar + '\n'),
+              : text.replaceAll('\n', insertedLineBreakChar),
         });
         // Move the offset forward by the length of the inserted text
         offset += text.length;
@@ -149,7 +187,7 @@ operations.
 function splitTextNodes(
   node: TText,
   split: TText[],
-  options: ComputeDiffOptions
+  options: LineBreakCharsOptions
 ): TOperation[] {
   if (split.length === 0) {
     // If there are no target nodes, simply remove the original node
