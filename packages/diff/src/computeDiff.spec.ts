@@ -11,6 +11,7 @@ const ELEMENT_INLINE_VOID = 'inline-void';
 
 interface ComputeDiffFixture {
   it?: typeof it;
+  lineBreakChar?: string;
   input1: Value;
   input2: Value;
   expected: Value;
@@ -1330,15 +1331,133 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       },
     ],
   },
+
+  insertWithoutLineBreakChar: {
+    input1: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'PingCode' }],
+      },
+    ],
+    input2: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'Ping\nCode' }],
+      },
+    ],
+    expected: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'Ping' },
+          { text: '\n', diff: true, diffOperation: { type: 'insert' } },
+          { text: 'Code' },
+        ],
+      },
+    ],
+  },
+
+  removeWithoutLineBreakChar: {
+    input1: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'Ping\nCode' }],
+      },
+    ],
+    input2: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'PingCode' }],
+      },
+    ],
+    expected: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'Ping' },
+          { text: '\n', diff: true, diffOperation: { type: 'delete' } },
+          { text: 'Code' },
+        ],
+      },
+    ],
+  },
+
+  insertWithLineBreakChar: {
+    lineBreakChar: '¶',
+    input1: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'PingCode' }],
+      },
+    ],
+    input2: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'Ping\nCo' },
+          { text: 'd', bold: true },
+          { text: 'e' },
+        ],
+      },
+    ],
+    expected: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'Ping' },
+          { text: '¶\n', diff: true, diffOperation: { type: 'insert' } },
+          { text: 'Co' },
+          {
+            text: 'd',
+            bold: true,
+            diff: true,
+            diffOperation: {
+              type: 'update',
+              properties: { bold: undefined },
+              newProperties: { bold: true },
+            },
+          },
+          { text: 'e', bold: undefined },
+        ],
+      },
+    ],
+  },
+
+  removeWithLineBreakChar: {
+    lineBreakChar: '¶',
+    input1: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'Ping\nCode' }],
+      },
+    ],
+    input2: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'PingCode' }],
+      },
+    ],
+    expected: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'Ping' },
+          { text: '¶', diff: true, diffOperation: { type: 'delete' } },
+          { text: 'Code' },
+        ],
+      },
+    ],
+  },
 };
 
 describe('computeDiff', () => {
   Object.entries(fixtures).forEach(
-    ([name, { it: itFn = it, input1, input2, expected }]) => {
+    ([name, { it: itFn = it, input1, input2, expected, lineBreakChar }]) => {
       itFn(name, () => {
         const output = computeDiff(input1, input2, {
           isInline: (node) => node.type === ELEMENT_INLINE_VOID,
           ignoreProps: ['id'],
+          lineBreakChar,
         });
 
         expect(output).toEqual(expected);

@@ -1,4 +1,5 @@
 import React from 'react';
+import { createSoftBreakPlugin } from '@/../../../packages/break/dist';
 import { cn, withProps } from '@udecode/cn';
 import {
   createBoldPlugin,
@@ -20,7 +21,12 @@ import {
   PlateProps,
   Value,
 } from '@udecode/plate-common';
-import { computeDiff, DiffOperation, DiffUpdate, withGetFragmentExcludeDiff } from '@udecode/plate-diff';
+import {
+  computeDiff,
+  DiffOperation,
+  DiffUpdate,
+  withGetFragmentExcludeDiff,
+} from '@udecode/plate-diff';
 import {
   createParagraphPlugin,
   ELEMENT_PARAGRAPH,
@@ -197,6 +203,7 @@ const plugins = createPlugins(
     createBoldPlugin(),
     createItalicPlugin(),
     createDiffPlugin(),
+    createSoftBreakPlugin(),
   ],
   {
     components: {
@@ -259,6 +266,7 @@ function Diff({ previous, current }: DiffProps) {
     const editor = createPlateEditor({ plugins });
     return computeDiff(previous, current, {
       isInline: editor.isInline,
+      lineBreakChar: '¶',
     }) as Value;
   }, [previous, current]);
 
