@@ -1,5 +1,11 @@
 # @udecode/plate
 
+## 30.5.4
+
+### Patch Changes
+
+- [#2980](https://github.com/udecode/plate/pull/2980) by [@12joan](https://github.com/12joan) – Add missing `@udecode/plate-diff` export
+
 ## 30.5.3
 
 ## 30.5.2
