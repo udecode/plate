@@ -288,8 +288,8 @@ export async function promptForMinimalConfig(
 
   // Write to file.
   logger.info('');
-  const spinner = ora(`Writing components.json...`).start();
-  const targetPath = path.resolve(cwd, 'components.json');
+  const spinner = ora(`Writing plate-components.json...`).start();
+  const targetPath = path.resolve(cwd, 'plate-components.json');
   await fs.writeFile(targetPath, JSON.stringify(config, null, 2), 'utf8');
   spinner.succeed();
 

@@ -6428,7 +6428,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-diff@npm:30.5.3, @udecode/plate-diff@workspace:^, @udecode/plate-diff@workspace:packages/diff":
+"@udecode/plate-diff@npm:30.6.0, @udecode/plate-diff@workspace:^, @udecode/plate-diff@workspace:packages/diff":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-diff@workspace:packages/diff"
   dependencies:
@@ -6956,12 +6956,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-suggestion@npm:30.5.3, @udecode/plate-suggestion@workspace:^, @udecode/plate-suggestion@workspace:packages/suggestion":
+"@udecode/plate-suggestion@npm:30.6.0, @udecode/plate-suggestion@workspace:^, @udecode/plate-suggestion@workspace:packages/suggestion":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-suggestion@workspace:packages/suggestion"
   dependencies:
     "@udecode/plate-common": "workspace:^"
-    "@udecode/plate-diff": "npm:30.5.3"
+    "@udecode/plate-diff": "npm:30.6.0"
     lodash: "npm:^4.17.21"
   peerDependencies:
     "@udecode/plate-common": ">=30.4.5 < 31"
@@ -7138,7 +7138,7 @@ __metadata:
     "@udecode/plate-combobox": "npm:30.5.3"
     "@udecode/plate-comments": "npm:30.5.3"
     "@udecode/plate-common": "npm:30.4.5"
-    "@udecode/plate-diff": "npm:30.5.3"
+    "@udecode/plate-diff": "npm:30.6.0"
     "@udecode/plate-find-replace": "npm:30.5.3"
     "@udecode/plate-floating": "npm:30.5.3"
     "@udecode/plate-font": "npm:30.5.3"
@@ -7163,7 +7163,7 @@ __metadata:
     "@udecode/plate-serializer-docx": "npm:30.5.3"
     "@udecode/plate-serializer-html": "npm:30.5.3"
     "@udecode/plate-serializer-md": "npm:30.5.3"
-    "@udecode/plate-suggestion": "npm:30.5.3"
+    "@udecode/plate-suggestion": "npm:30.6.0"
     "@udecode/plate-tabbable": "npm:30.5.3"
     "@udecode/plate-table": "npm:30.5.3"
     "@udecode/plate-toggle": "npm:30.5.3"
