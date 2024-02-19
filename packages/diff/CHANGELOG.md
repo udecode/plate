@@ -1,5 +1,11 @@
 # @udecode/plate-diff
 
+## 30.6.1
+
+### Patch Changes
+
+- [#2984](https://github.com/udecode/plate/pull/2984) by [@12joan](https://github.com/12joan) – Fix: Node equivalency checking is incorrectly dependent on the key order of the node object
+
 ## 30.6.0
 
 ### Minor Changes
