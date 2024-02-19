@@ -1,5 +1,11 @@
 # @udecode/plate-ui
 
+## 30.6.2
+
+### Patch Changes
+
+- [`a350e4364`](https://github.com/udecode/plate/commit/a350e436441389471bd5ff633221db71dd6c7241) by [@zbeyens](https://github.com/zbeyens) – `npx @udecode/plate-ui@latest init` should now create `plate-components.json` instead of `components.json`
+
 ## 30.3.3
 
 ### Patch Changes
