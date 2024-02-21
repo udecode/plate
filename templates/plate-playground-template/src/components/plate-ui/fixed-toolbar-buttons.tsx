@@ -28,6 +28,7 @@ import { TableDropdownMenu } from '@/components/plate-ui/table-dropdown-menu';
 import { InsertDropdownMenu } from './insert-dropdown-menu';
 import { MarkToolbarButton } from './mark-toolbar-button';
 import { ModeDropdownMenu } from './mode-dropdown-menu';
+import { ToggleCodeBlockButton } from './toggle-code-block-button';
 import { ToolbarGroup } from './toolbar';
 import { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';
 
@@ -72,6 +73,7 @@ export function FixedToolbarButtons() {
               <MarkToolbarButton tooltip="Code (⌘+E)" nodeType={MARK_CODE}>
                 <Icons.code />
               </MarkToolbarButton>
+              <ToggleCodeBlockButton />
             </ToolbarGroup>
 
             <ToolbarGroup>
