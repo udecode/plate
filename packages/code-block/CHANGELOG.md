@@ -1,5 +1,11 @@
 # @udecode/plate-code-block
 
+## 30.7.0
+
+### Minor Changes
+
+- [#2989](https://github.com/udecode/plate/pull/2989) by [@vodkaslime](https://github.com/vodkaslime) – feat: `useToggleCodeBlockButton`
+
 ## 30.5.3
 
 ### Patch Changes

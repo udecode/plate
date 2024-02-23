@@ -1,5 +1,11 @@
 # @udecode/plate-emoji
 
+## 30.7.0
+
+### Patch Changes
+
+- [#2991](https://github.com/udecode/plate/pull/2991) by [@SamuelAlev](https://github.com/SamuelAlev) – fix: add assertion as JSON on emoji mart data so it can be read in ESM
+
 ## 30.5.3
 
 ### Patch Changes
