@@ -5,3 +5,4 @@
 export * from './useCodeBlockCombobox';
 export * from './useCodeBlockElement';
 export * from './useCodeSyntaxLeaf';
+export * from './useToggleCodeBlockButton';
