@@ -47,8 +47,10 @@ import { createAutoformatPlugin } from '@udecode/plate-autoformat';
 const plugins = [
   // ...otherPlugins,
   createAutoformatPlugin({
-    rules: autoformatRules,
-    enableUndoOnDelete: true,
+    options : {
+      rules: autoformatRules,
+      enableUndoOnDelete: true,
+    },
   }),
 ];
 ```
