@@ -3,15 +3,15 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import { Value } from '@udecode/plate-common';
+import { isText, Value } from '@udecode/plate-common';
 
-import { computeDiff } from './computeDiff';
+import { computeDiff, ComputeDiffOptions } from './computeDiff';
 
 const ELEMENT_INLINE_VOID = 'inline-void';
 
-interface ComputeDiffFixture {
+interface ComputeDiffFixture
+  extends Pick<ComputeDiffOptions, 'lineBreakChar' | 'shouldDiffDescendants'> {
   it?: typeof it;
-  lineBreakChar?: string;
   input1: Value;
   input2: Value;
   expected: Value;
@@ -1448,16 +1448,113 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       },
     ],
   },
+
+  shouldNotDiffDescendants: {
+    shouldDiffDescendants: ([firstNode]) =>
+      !firstNode ||
+      !isText(firstNode) ||
+      !firstNode.text.startsWith('NO_DIFF_INLINE'),
+    input1: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'NO_DIFF_INLINE FirstA' }],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: 'NO_DIFF_INLINE SecondA' }],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: 'NO_DIFF_INLINE ThirdA' }],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: 'Same' }],
+      },
+    ],
+    input2: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'NO_DIFF_INLINE FirstB' }],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: 'NO_DIFF_INLINE SecondB' }],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: 'NO_DIFF_INLINE ThirdB' }],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: 'Same' }],
+      },
+    ],
+    expected: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'NO_DIFF_INLINE FirstA' }],
+        diff: true,
+        diffOperation: {
+          type: 'delete',
+        },
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: 'NO_DIFF_INLINE SecondA' }],
+        diff: true,
+        diffOperation: {
+          type: 'delete',
+        },
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: 'NO_DIFF_INLINE ThirdA' }],
+        diff: true,
+        diffOperation: {
+          type: 'delete',
+        },
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: 'NO_DIFF_INLINE FirstB' }],
+        diff: true,
+        diffOperation: {
+          type: 'insert',
+        },
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: 'NO_DIFF_INLINE SecondB' }],
+        diff: true,
+        diffOperation: {
+          type: 'insert',
+        },
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: 'NO_DIFF_INLINE ThirdB' }],
+        diff: true,
+        diffOperation: {
+          type: 'insert',
+        },
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: 'Same' }],
+      },
+    ],
+  },
 };
 
 describe('computeDiff', () => {
   Object.entries(fixtures).forEach(
-    ([name, { it: itFn = it, input1, input2, expected, lineBreakChar }]) => {
+    ([name, { it: itFn = it, input1, input2, expected, ...options }]) => {
       itFn(name, () => {
         const output = computeDiff(input1, input2, {
           isInline: (node) => node.type === ELEMENT_INLINE_VOID,
           ignoreProps: ['id'],
-          lineBreakChar,
+          ...options,
         });
 
         expect(output).toEqual(expected);

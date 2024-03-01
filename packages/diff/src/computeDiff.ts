@@ -14,6 +14,10 @@ export interface ComputeDiffOptions {
   isInline: PlateEditor['isInline'];
   ignoreProps?: string[];
   lineBreakChar?: string;
+  shouldDiffDescendants?: (
+    nodes: TDescendant[],
+    nextNodes: TDescendant[]
+  ) => boolean;
   getInsertProps: (node: TDescendant) => any;
   getDeleteProps: (node: TDescendant) => any;
   getUpdateProps: (

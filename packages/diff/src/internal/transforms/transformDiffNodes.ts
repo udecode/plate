@@ -28,12 +28,18 @@ type Handler = (
  * algorithm on the children.
  */
 const childrenOnlyStrategy: Handler = (node, nextNode, options) => {
+  const { shouldDiffDescendants = () => true } = options;
+
   if (
     node['children'] != null &&
     nextNode['children'] != null &&
     isEqual(
       copyWithout(node, ['children']),
       copyWithout(nextNode, ['children'])
+    ) &&
+    shouldDiffDescendants(
+      node['children'] as TDescendant[],
+      nextNode['children'] as TDescendant[]
     )
   ) {
     const children = computeDiff(
@@ -83,36 +89,14 @@ const propsOnlyStrategy: Handler = (node, nextNode, { getUpdateProps }) => {
   ];
 };
 
-// No other strategy applies, so remove and insert the node.
-const fallbackStrategy: Handler = (
-  node,
-  nextNode,
-  { getInsertProps, getDeleteProps }
-) => {
-  return [
-    {
-      ...node,
-      ...getDeleteProps(node),
-    },
-    {
-      ...nextNode,
-      ...getInsertProps(nextNode),
-    },
-  ];
-};
-
-const strategies: Handler[] = [
-  childrenOnlyStrategy,
-  propsOnlyStrategy,
-  fallbackStrategy,
-];
+const strategies: Handler[] = [childrenOnlyStrategy, propsOnlyStrategy];
 
 // Replace node at path by nextNode using the first strategy that works.
 export function transformDiffNodes(
   node: TDescendant,
   nextNode: TDescendant,
   options: ComputeDiffOptions
-): TDescendant[] {
+): TDescendant[] | false {
   // Try each strategy in turn
   for (const strategy of strategies) {
     // Attempt to generate operations with the current strategy and return the operations if the strategy succeeds
@@ -121,6 +105,7 @@ export function transformDiffNodes(
       return ops;
     }
   }
-  // If no strategy succeeds, throw an error (should never happen because of the fallback strategy)
-  throw new Error('transformDiffNodes: No strategy succeeded');
+
+  // If no strategy succeeds, tell the caller that the nodes are not comparable
+  return false;
 }

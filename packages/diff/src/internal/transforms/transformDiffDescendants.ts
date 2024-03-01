@@ -32,21 +32,32 @@ export function transformDiffDescendants(
   let i = 0;
   const children: TDescendant[] = [];
 
-  const insertNodes = (...nodes: TDescendant[]) =>
-    children.push(
-      ...nodes.map((node) => ({
-        ...node,
-        ...getInsertProps(node),
-      }))
-    );
+  let insertBuffer: TDescendant[] = [];
+  let deleteBuffer: TDescendant[] = [];
 
-  const removeNodes = (...nodes: TDescendant[]) =>
-    children.push(
-      ...nodes.map((node) => ({
-        ...node,
-        ...getDeleteProps(node),
-      }))
-    );
+  const flushBuffers = () => {
+    // Return all deletions followed by all insertions
+    children.push(...deleteBuffer, ...insertBuffer);
+    insertBuffer = [];
+    deleteBuffer = [];
+  };
+
+  const insertNode = (node: TDescendant) =>
+    insertBuffer.push({
+      ...node,
+      ...getInsertProps(node),
+    });
+
+  const deleteNode = (node: TDescendant) =>
+    deleteBuffer.push({
+      ...node,
+      ...getDeleteProps(node),
+    });
+
+  const passThroughNodes = (...nodes: TDescendant[]) => {
+    flushBuffers();
+    children.push(...nodes);
+  };
 
   const areNodeListsEquivalent = (
     nodes0: TDescendant[],
@@ -72,7 +83,7 @@ export function transformDiffDescendants(
 
     // If operation code is 0, it means the chunk is unchanged
     if (op === 0) {
-      children.push(...nodes);
+      passThroughNodes(...nodes);
       // Move to the next diff chunk
       i += 1;
       continue;
@@ -92,7 +103,7 @@ export function transformDiffDescendants(
          * just return nextNodes.
          */
         if (areNodeListsEquivalent(nodes, nextNodes)) {
-          children.push(...nextNodes);
+          passThroughNodes(...nextNodes);
           // Consume two diff chunks (delete and insert)
           i += 2;
           continue;
@@ -100,7 +111,7 @@ export function transformDiffDescendants(
 
         // If both current and next chunks are text nodes, use transformTextNodes
         if (isInlineList(nodes) && isInlineList(nextNodes)) {
-          children.push(...transformDiffTexts(nodes, nextNodes, options));
+          passThroughNodes(...transformDiffTexts(nodes, nextNodes, options));
           // Consume two diff chunks (delete and insert)
           i += 2;
           continue;
@@ -110,15 +121,24 @@ export function transformDiffDescendants(
         const diffResult = diffNodes(nodes, nextNodes);
         diffResult.forEach((item: NodeRelatedItem) => {
           if (item.delete) {
-            removeNodes(item.originNode);
+            deleteNode(item.originNode);
           }
           if (item.insert) {
-            insertNodes(item.originNode);
+            insertNode(item.originNode);
           }
           if (item.relatedNode) {
-            children.push(
-              ...transformDiffNodes(item.originNode, item.relatedNode, options)
+            const diffNodesResult = transformDiffNodes(
+              item.originNode,
+              item.relatedNode,
+              options
             );
+
+            if (diffNodesResult) {
+              passThroughNodes(...diffNodesResult);
+            } else {
+              deleteNode(item.originNode);
+              insertNode(item.relatedNode);
+            }
           }
         });
         i += 2; // this consumed two entries from the diff array.
@@ -126,7 +146,7 @@ export function transformDiffDescendants(
       } else {
         // Plain delete of some nodes (with no insert immediately after)
         for (const node of nodes) {
-          removeNodes(node);
+          deleteNode(node);
         }
         i += 1; // consumes only one entry from diff array.
         continue;
@@ -135,7 +155,7 @@ export function transformDiffDescendants(
     if (op === 1) {
       // insert new nodes.
       for (const node of nodes) {
-        insertNodes(node);
+        insertNode(node);
       }
       i += 1;
       continue;
@@ -144,6 +164,8 @@ export function transformDiffDescendants(
       'transformDiffDescendants: Missing continue statement or unhandled operation'
     );
   }
+
+  flushBuffers();
 
   return children;
 }
