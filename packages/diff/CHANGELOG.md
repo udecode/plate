@@ -1,5 +1,28 @@
 # @udecode/plate-diff
 
+## 30.8.0
+
+### Minor Changes
+
+- [#3009](https://github.com/udecode/plate/pull/3009) by [@12joan](https://github.com/12joan) –
+  - Add `shouldDiffDescendants` option to `computeDiff` to control whether a pair of descendant lists should be diffed. If false, the parent node will be deleted and re-inserted. Defaults to `() => true`.
+    - Example use case: To prevent `computeDiff` from diffing the text of unrelated paragraphs, use a text similarity checking algorithm to determine whether the paragraphs are sufficiently similar, and return false if not.
+  - When multiple consecutive nodes have been deleted and inserted, `computeDiff` now groups all consecutive deletions together and does the same with all consecutive insertions.
+    - Example of a diff prior to this change:
+      ```diff
+      - Old paragraph 1
+      + New paragraph 1
+      - Old paragraph 2
+      + New paragraph 2
+      ```
+    - Example of a diff after this change:
+      ```diff
+      - Old paragraph 1
+      - Old paragraph 2
+      + New paragraph 1
+      + New paragraph 2
+      ```
+
 ## 30.6.1
 
 ### Patch Changes
