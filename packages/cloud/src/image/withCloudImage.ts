@@ -1,4 +1,4 @@
-import { resizeIn } from '@portive/client';
+import * as portiveClient from '@portive/client';
 import { insertNode, Value, WithPlatePlugin } from '@udecode/plate-common';
 import Defer from 'p-defer';
 
@@ -51,7 +51,7 @@ export const withCloudImage = <
 
   editor.cloud.imageFileHandlers = {
     onStart(e) {
-      const { width, height } = resizeIn(
+      const { width, height } = portiveClient.resizeIn(
         { width: e.width, height: e.height },
         { width: maxInitialWidth, height: maxInitialHeight }
       );
