@@ -1,5 +1,11 @@
 # @udecode/plate-cloud
 
+## 30.7.1
+
+### Patch Changes
+
+- [#3003](https://github.com/udecode/plate/pull/3003) by [@Lenghak](https://github.com/Lenghak) – fix: #3002
+
 ## 30.5.3
 
 ### Patch Changes
