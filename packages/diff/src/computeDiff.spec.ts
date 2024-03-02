@@ -3,14 +3,14 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import { isText, Value } from '@udecode/plate-common';
+import { getNodeString, TElement, Value } from '@udecode/plate-common';
 
 import { computeDiff, ComputeDiffOptions } from './computeDiff';
 
 const ELEMENT_INLINE_VOID = 'inline-void';
 
 interface ComputeDiffFixture
-  extends Pick<ComputeDiffOptions, 'lineBreakChar' | 'shouldDiffDescendants'> {
+  extends Pick<ComputeDiffOptions, 'lineBreakChar' | 'elementsAreRelated'> {
   it?: typeof it;
   input1: Value;
   input2: Value;
@@ -1449,11 +1449,9 @@ const fixtures: Record<string, ComputeDiffFixture> = {
     ],
   },
 
-  shouldNotDiffDescendants: {
-    shouldDiffDescendants: ([firstNode]) =>
-      !firstNode ||
-      !isText(firstNode) ||
-      !firstNode.text.startsWith('NO_DIFF_INLINE'),
+  unrelatedTexts: {
+    elementsAreRelated: (element) =>
+      !getNodeString(element).startsWith('NO_DIFF_INLINE'),
     input1: [
       {
         type: 'paragraph',
@@ -1542,6 +1540,69 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         type: 'paragraph',
         children: [{ text: 'Same' }],
+      },
+    ],
+  },
+
+  customRelatedFunction: {
+    elementsAreRelated: (element, nextElement) => {
+      const getId = (e: TElement) => getNodeString(e).split('/')[0];
+      return getId(element) === getId(nextElement);
+    },
+    input1: [
+      {
+        type: 'paragraph',
+        children: [{ text: '1/First paragraph' }],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: '2/Second paragraph' }],
+      },
+    ],
+    input2: [
+      {
+        type: 'paragraph',
+        children: [{ text: '3/Added paragraph 1' }],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: '1/First paragraph modified' }],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: '4/Added paragraph 2' }],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: '2/Second paragraph modified' }],
+      },
+    ],
+    expected: [
+      {
+        type: 'paragraph',
+        children: [{ text: '3/Added paragraph 1' }],
+        diff: true,
+        diffOperation: { type: 'insert' },
+      },
+      {
+        type: 'paragraph',
+        children: [
+          { text: '1/First paragraph' },
+          { text: ' modified', diff: true, diffOperation: { type: 'insert' } },
+        ],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: '4/Added paragraph 2' }],
+        diff: true,
+        diffOperation: { type: 'insert' },
+      },
+      {
+        type: 'paragraph',
+        children: [
+          { text: '2/Second paragraph' },
+          { text: ' modified', diff: true, diffOperation: { type: 'insert' } },
+        ],
       },
     ],
   },

@@ -28,18 +28,12 @@ type Handler = (
  * algorithm on the children.
  */
 const childrenOnlyStrategy: Handler = (node, nextNode, options) => {
-  const { shouldDiffDescendants = () => true } = options;
-
   if (
     node['children'] != null &&
     nextNode['children'] != null &&
     isEqual(
       copyWithout(node, ['children']),
       copyWithout(nextNode, ['children'])
-    ) &&
-    shouldDiffDescendants(
-      node['children'] as TDescendant[],
-      nextNode['children'] as TDescendant[]
     )
   ) {
     const children = computeDiff(
