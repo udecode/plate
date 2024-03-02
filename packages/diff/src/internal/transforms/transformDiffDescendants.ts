@@ -118,7 +118,7 @@ export function transformDiffDescendants(
         }
 
         // If not all nodes are text nodes, use diffNodes to generate operations
-        const diffResult = diffNodes(nodes, nextNodes);
+        const diffResult = diffNodes(nodes, nextNodes, options);
         diffResult.forEach((item: NodeRelatedItem) => {
           if (item.delete) {
             deleteNode(item.originNode);

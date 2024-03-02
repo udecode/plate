@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import { PlateEditor, TDescendant } from '@udecode/plate-common';
+import { PlateEditor, TDescendant, TElement } from '@udecode/plate-common';
 
 import { transformDiffDescendants } from './internal/transforms/transformDiffDescendants';
 import { dmp } from './internal/utils/dmp';
@@ -14,10 +14,10 @@ export interface ComputeDiffOptions {
   isInline: PlateEditor['isInline'];
   ignoreProps?: string[];
   lineBreakChar?: string;
-  shouldDiffDescendants?: (
-    nodes: TDescendant[],
-    nextNodes: TDescendant[]
-  ) => boolean;
+  elementsAreRelated?: (
+    element: TElement,
+    nextElement: TElement
+  ) => boolean | null;
   getInsertProps: (node: TDescendant) => any;
   getDeleteProps: (node: TDescendant) => any;
   getUpdateProps: (

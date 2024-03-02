@@ -6,11 +6,13 @@
 import { isElement, isText, TDescendant } from '@udecode/plate-common';
 import isEqual from 'lodash/isEqual.js';
 
+import { ComputeDiffOptions } from '../../computeDiff';
 import { copyWithout } from './copy-without';
 
 export function diffNodes(
   originNodes: TDescendant[],
-  targetNodes: TDescendant[]
+  targetNodes: TDescendant[],
+  { elementsAreRelated }: ComputeDiffOptions
 ) {
   const result: NodeRelatedItem[] = [];
   let relatedNode: TDescendant | undefined;
@@ -20,6 +22,11 @@ export function diffNodes(
     let childrenUpdated = false;
     let nodeUpdated = false;
     relatedNode = leftTargetNodes.find((targetNode: TDescendant) => {
+      if (isElement(originNode) && isElement(targetNode)) {
+        const relatedResult =
+          elementsAreRelated?.(originNode, targetNode) ?? null;
+        if (relatedResult !== null) return relatedResult;
+      }
       if (isEqualNode(originNode, targetNode)) {
         childrenUpdated = true;
       }
