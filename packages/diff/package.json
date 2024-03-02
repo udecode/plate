@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-diff",
-  "version": "30.8.0",
+  "version": "30.9.0",
   "description": "Compute a diff of two Slate documents",
   "homepage": "https://platejs.org",
   "repository": {
