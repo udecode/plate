@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-suggestion",
-  "version": "30.8.0",
+  "version": "30.9.0",
   "description": "Plate plugin for suggestions",
   "homepage": "https://platejs.org",
   "repository": {
@@ -38,7 +38,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-diff": "30.8.0",
+    "@udecode/plate-diff": "30.9.0",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
