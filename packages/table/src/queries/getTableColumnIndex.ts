@@ -14,12 +14,12 @@ export const getTableColumnIndex = <V extends Value>(
   cellNode: TElement
 ) => {
   const path = findNodePath(editor, cellNode);
-  if (!path) return 0;
+  if (!path) return -1;
 
   const [trNode] = getParentNode(editor, path) ?? [];
-  if (!trNode) return 0;
+  if (!trNode) return -1;
 
-  let colIndex = 0;
+  let colIndex = -1;
 
   trNode.children.some((item, index) => {
     if (item === cellNode) {
