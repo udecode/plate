@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 30.9.1
+
+### Patch Changes
+
+- [#3013](https://github.com/udecode/plate/pull/3013) by [@adrwz](https://github.com/adrwz) – Set "not found" value to -1 instead of 0 for colIndex
+
 ## 30.5.3
 
 ### Patch Changes

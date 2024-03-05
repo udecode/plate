@@ -1,5 +1,7 @@
 # @udecode/plate-serializer-csv
 
+## 30.9.1
+
 ## 30.5.3
 
 ### Patch Changes
