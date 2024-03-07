@@ -38,6 +38,7 @@ export default function PlateEditor() {
           <div
             ref={containerRef}
             className={cn(
+              'relative',
               // Block selection
               '[&_.slate-start-area-left]:!w-[64px] [&_.slate-start-area-right]:!w-[64px] [&_.slate-start-area-top]:!h-4'
             )}
