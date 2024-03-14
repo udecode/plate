@@ -12,6 +12,7 @@ import { Path } from 'slate';
 
 import { ELEMENT_TH } from './createTablePlugin';
 import { getTableGridAbove } from './queries/index';
+import { TTableCellElement } from './types';
 
 export const withSetFragmentDataTable = <
   V extends Value = Value,
@@ -76,7 +77,7 @@ export const withSetFragmentDataTable = <
 
     withoutNormalizing(editor, () => {
       tableRows.forEach((row, rowIndex) => {
-        const rowCells = row.children as TElement[];
+        const rowCells = row.children as TTableCellElement[];
         const rowPath = tablePath.concat(y + rowIndex);
 
         const cellStrings: string[] = [];
@@ -85,7 +86,7 @@ export const withSetFragmentDataTable = <
             ? document.createElement('th')
             : document.createElement('tr');
 
-        rowCells.forEach((_, cellIndex) => {
+        rowCells.forEach((cell, cellIndex) => {
           // need to clean data before every iteration
           data.clearData();
 
@@ -104,6 +105,14 @@ export const withSetFragmentDataTable = <
           cellStrings.push(data.getData('text/plain'));
 
           const cellElement = document.createElement('td');
+
+          if (cell.colSpan !== undefined) {
+            cellElement.colSpan = cell.colSpan;
+          }
+          if (cell.rowSpan !== undefined) {
+            cellElement.rowSpan = cell.rowSpan;
+          }
+          
           cellElement.innerHTML = data.getData('text/html');
           rowElement.append(cellElement);
         });
