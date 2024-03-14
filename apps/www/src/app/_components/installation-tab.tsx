@@ -245,6 +245,7 @@ export default function InstallationTab() {
     hasEditor,
     isManual,
     plateImports,
+    someComponents,
   ]);
 
   const pluginsCode: string[] = [];

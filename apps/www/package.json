@@ -7,7 +7,7 @@
     "prebuild": "yarn build:contentlayer",
     "build": "yarn prebuild && yarn build:registry && next build",
     "build:contentlayer": "contentlayer build",
-    "build:registry": "TS_NODE_PROJECT=./scripts/tsconfig.scripts.json ts-node --esm ./scripts/build-registry.ts",
+    "build:registry": "tsx --tsconfig ./scripts/tsconfig.scripts.json ./scripts/build-registry.ts",
     "dev": "concurrently \"contentlayer dev\" \"NODE_OPTIONS=--max-old-space-size=16192 next dev\"",
     "dev:quick": "NODE_OPTIONS=--max-old-space-size=16192 next dev",
     "start": "next start",
@@ -169,6 +169,7 @@
     "tailwindcss": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
     "ts-node": "^10.9.2",
+    "tsx": "^4.7.1",
     "typescript": "5.1.6",
     "vaul": "^0.6.0"
   },
