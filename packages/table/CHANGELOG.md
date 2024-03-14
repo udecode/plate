@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 30.9.2
+
+### Patch Changes
+
+- [#3026](https://github.com/udecode/plate/pull/3026) by [@KorovinQuantori](https://github.com/KorovinQuantori) – Copy rowSpan and colSpan properties of cell when set fragment data
+
 ## 30.9.1
 
 ### Patch Changes

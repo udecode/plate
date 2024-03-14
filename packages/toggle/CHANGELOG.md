@@ -1,5 +1,11 @@
 # @udecode/plate-toggle
 
+## 30.9.2
+
+### Patch Changes
+
+- [#3023](https://github.com/udecode/plate/pull/3023) by [@Liboul](https://github.com/Liboul) – `injectToggle`: Make hidden elements overflow hidden to account for inner elements with a vertical margin
+
 ## 30.5.3
 
 ### Patch Changes

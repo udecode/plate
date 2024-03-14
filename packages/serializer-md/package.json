@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-serializer-md",
-  "version": "30.7.0",
+  "version": "30.9.2",
   "description": "Markdown serializer plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -44,7 +44,7 @@
     "@udecode/plate-code-block": "30.7.0",
     "@udecode/plate-heading": "30.5.3",
     "@udecode/plate-horizontal-rule": "30.5.3",
-    "@udecode/plate-link": "30.5.3",
+    "@udecode/plate-link": "30.9.2",
     "@udecode/plate-list": "30.5.3",
     "@udecode/plate-media": "30.5.3",
     "@udecode/plate-paragraph": "30.5.3",
