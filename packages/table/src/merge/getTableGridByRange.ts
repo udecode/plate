@@ -74,11 +74,10 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
   const startCellPath = at.anchor.path;
   const tablePath = startCellPath.slice(0, -2);
 
-  const tableEntry = findNode<TTableElement>(editor, {
+  const [ realTable ] = findNode<TTableElement>(editor, {
     at: tablePath,
     match: { type: getPluginType(editor, ELEMENT_TABLE) },
-  });
-  const realTable = tableEntry[0];
+  })!;
 
   const _plainStartRowIndex = plainStartCellPath.at(-2)!;
   const _plainEndRowIndex = plainEndCellPath.at(-2)!;
