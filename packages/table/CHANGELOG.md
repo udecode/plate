@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 30.9.3
+
+### Patch Changes
+
+- [#3029](https://github.com/udecode/plate/pull/3029) by [@KorovinQuantori](https://github.com/KorovinQuantori) – Ensure that table selection is always a valid sub-table
+
 ## 30.9.2
 
 ### Patch Changes
