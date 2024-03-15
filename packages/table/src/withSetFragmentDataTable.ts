@@ -112,7 +112,7 @@ export const withSetFragmentDataTable = <
           if (cell.rowSpan !== undefined) {
             cellElement.rowSpan = cell.rowSpan;
           }
-          
+
           cellElement.innerHTML = data.getData('text/html');
           rowElement.append(cellElement);
         });

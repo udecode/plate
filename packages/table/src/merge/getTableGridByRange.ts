@@ -83,7 +83,7 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
   const { col: _startColIndex, row: _startRowIndex } = getCellIndicesWithSpans(
     getCellIndices(cellIndices!, startCell) ||
       computeCellIndices(editor, realTable, startCell)!,
-      startCell
+    startCell
   );
 
   const { row: _endRowIndex, col: _endColIndex } = getCellIndicesWithSpans(
@@ -117,9 +117,11 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
       break;
     }
 
-    const indicies = getCellIndices(cellIndices!, cell) ||
-      computeCellIndices(editor, realTable, cell)!
-    const { col: cellColWithSpan, row: cellRowWithSpan } = getCellIndicesWithSpans(indicies, cell);
+    const indicies =
+      getCellIndices(cellIndices!, cell) ||
+      computeCellIndices(editor, realTable, cell)!;
+    const { col: cellColWithSpan, row: cellRowWithSpan } =
+      getCellIndicesWithSpans(indicies, cell);
     const { row: cellRow, col: cellCol } = indicies;
 
     // check if cell is still in range
@@ -127,7 +129,12 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
     const hasOverflowBottom = cellRowWithSpan > endRowIndex;
     const hasOverflowLeft = cellCol < startColIndex;
     const hasOverflowRight = cellColWithSpan > endColIndex;
-    if (hasOverflowTop || hasOverflowBottom || hasOverflowLeft || hasOverflowRight) {
+    if (
+      hasOverflowTop ||
+      hasOverflowBottom ||
+      hasOverflowLeft ||
+      hasOverflowRight
+    ) {
       // reset the cycle if has overflow
       cellsSet = new WeakSet();
       startRowIndex = Math.min(startRowIndex, cellRow);
