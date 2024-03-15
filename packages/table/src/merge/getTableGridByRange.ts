@@ -23,7 +23,6 @@ import {
 } from '../types';
 import { getCellTypes } from '../utils';
 import { getEmptyTableNode } from '../utils/getEmptyTableNode';
-import { getColSpan, getRowSpan } from '../queries';
 
 type FormatType = 'table' | 'cell' | 'all';
 
@@ -101,7 +100,7 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
   const relativeRowIndex = endRowIndex - startRowIndex;
   const relativeColIndex = endColIndex - startColIndex;
 
-  const table: TTableElement = getEmptyTableNode(editor, {
+  let table: TTableElement = getEmptyTableNode(editor, {
     rowCount: relativeRowIndex + 1,
     colCount: relativeColIndex + 1,
     newCellChildren: [],
@@ -118,23 +117,32 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
       break;
     }
 
-    const rowSpan = getRowSpan(cell);
-    const colSpan = getColSpan(cell);
-    const { row: cellRow, col: cellCol } = getCellIndices(cellIndices!, cell)!;
+    const indicies = getCellIndices(cellIndices!, cell) ||
+      computeCellIndices(editor, realTable, cell)!
+    const { col: cellColWithSpan, row: cellRowWithSpan } = getCellIndicesWithSpans(indicies, cell);
+    const { row: cellRow, col: cellCol } = indicies;
 
     // check if cell is still in range
     const hasOverflowTop = cellRow < startRowIndex;
-    const hasOverflowBottom = cellRow + rowSpan - 1 > endRowIndex;
+    const hasOverflowBottom = cellRowWithSpan > endRowIndex;
     const hasOverflowLeft = cellCol < startColIndex;
-    const hasOverflowRight = cellCol + colSpan - 1 > endColIndex;
+    const hasOverflowRight = cellColWithSpan > endColIndex;
     if (hasOverflowTop || hasOverflowBottom || hasOverflowLeft || hasOverflowRight) {
+      // reset the cycle if has overflow
       cellsSet = new WeakSet();
       startRowIndex = Math.min(startRowIndex, cellRow);
-      endRowIndex = Math.max(endRowIndex, cellRow + rowSpan - 1);
+      endRowIndex = Math.max(endRowIndex, cellRowWithSpan);
       startColIndex = Math.min(startColIndex, cellCol);
-      endColIndex = Math.max(endColIndex, cellCol + colSpan - 1);
+      endColIndex = Math.max(endColIndex, cellColWithSpan);
       rowIndex = startRowIndex;
       colIndex = startColIndex;
+      const relativeRowIndex = endRowIndex - startRowIndex;
+      const relativeColIndex = endColIndex - startColIndex;
+      table = getEmptyTableNode(editor, {
+        rowCount: relativeRowIndex + 1,
+        colCount: relativeColIndex + 1,
+        newCellChildren: [],
+      });
       continue;
     }
 
