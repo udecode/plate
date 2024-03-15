@@ -23,6 +23,7 @@ import {
 } from '../types';
 import { getCellTypes } from '../utils';
 import { getEmptyTableNode } from '../utils/getEmptyTableNode';
+import { getColSpan, getRowSpan } from '../queries';
 
 type FormatType = 'table' | 'cell' | 'all';
 
@@ -69,9 +70,7 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
   })!;
 
   const startCell = startCellEntry[0];
-  const plainStartCellPath = startCellEntry[1];
   const endCell = endCellEntry[0];
-  const plainEndCellPath = endCellEntry[1];
 
   const startCellPath = at.anchor.path;
   const tablePath = startCellPath.slice(0, -2);
@@ -82,27 +81,22 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
   })!;
   const realTable = tableEntry[0];
 
-  const _plainStartRowIndex = plainStartCellPath.at(-2)!;
-  const _plainEndRowIndex = plainEndCellPath.at(-2)!;
-  const _plainStartColIndex = plainStartCellPath.at(-1)!;
-  const _plainEndColIndex = plainEndCellPath.at(-1)!;
-
-  const { col: _spanStartColIndex, row: _spanStartRowIndex } = getCellIndicesWithSpans(
+  const { col: _startColIndex, row: _startRowIndex } = getCellIndicesWithSpans(
     getCellIndices(cellIndices!, startCell) ||
       computeCellIndices(editor, realTable, startCell)!,
       startCell
   );
 
-  const { row: _spanEndRowIndex, col: _spanEndColIndex } = getCellIndicesWithSpans(
+  const { row: _endRowIndex, col: _endColIndex } = getCellIndicesWithSpans(
     getCellIndices(cellIndices!, endCell) ||
       computeCellIndices(editor, realTable, endCell)!,
     endCell
   );
 
-  const startRowIndex = Math.min(_spanStartRowIndex, _plainStartRowIndex, _spanEndRowIndex, _plainEndRowIndex);
-  const endRowIndex = Math.max(_spanStartRowIndex, _plainStartRowIndex, _spanEndRowIndex, _plainEndRowIndex);
-  const startColIndex = Math.min(_spanStartColIndex, _plainStartColIndex, _spanEndColIndex, _plainEndColIndex);
-  const endColIndex = Math.max(_spanStartColIndex, _plainStartColIndex, _spanEndColIndex, _plainEndColIndex);
+  let startRowIndex = Math.min(_startRowIndex, _endRowIndex);
+  let endRowIndex = Math.max(_startRowIndex, _endRowIndex);
+  let startColIndex = Math.min(_startColIndex, _endColIndex);
+  let endColIndex = Math.max(_startColIndex, _endColIndex);
 
   const relativeRowIndex = endRowIndex - startRowIndex;
   const relativeColIndex = endColIndex - startColIndex;
@@ -114,7 +108,7 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
   });
 
   const cellEntries: TElementEntry[] = [];
-  const cellsSet = new WeakSet();
+  let cellsSet = new WeakSet();
 
   let rowIndex = startRowIndex;
   let colIndex = startColIndex;
@@ -122,6 +116,26 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
     const cell = findCellByIndexes(editor, realTable, rowIndex, colIndex);
     if (!cell) {
       break;
+    }
+
+    const rowSpan = getRowSpan(cell);
+    const colSpan = getColSpan(cell);
+    const { row: cellRow, col: cellCol } = getCellIndices(cellIndices!, cell)!;
+
+    // check if cell is still in range
+    const hasOverflowTop = cellRow < startRowIndex;
+    const hasOverflowBottom = cellRow + rowSpan - 1 > endRowIndex;
+    const hasOverflowLeft = cellCol < startColIndex;
+    const hasOverflowRight = cellCol + colSpan - 1 > endColIndex;
+    if (hasOverflowTop || hasOverflowBottom || hasOverflowLeft || hasOverflowRight) {
+      cellsSet = new WeakSet();
+      startRowIndex = Math.min(startRowIndex, cellRow);
+      endRowIndex = Math.max(endRowIndex, cellRow + rowSpan - 1);
+      startColIndex = Math.min(startColIndex, cellCol);
+      endColIndex = Math.max(endColIndex, cellCol + colSpan - 1);
+      rowIndex = startRowIndex;
+      colIndex = startColIndex;
+      continue;
     }
 
     if (!cellsSet.has(cell)) {
