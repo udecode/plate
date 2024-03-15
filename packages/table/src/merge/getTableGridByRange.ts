@@ -48,6 +48,7 @@ interface GetTableGridByRangeOptions<T extends FormatType> {
 
 /**
  * Get sub table between 2 cell paths.
+ * Ensure that the selection is always a valid table grid.
  */
 export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
   editor: PlateEditor<V>,
@@ -58,41 +59,48 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
     ELEMENT_TABLE
   );
 
-  const startCellEntry = findNode(editor, {
-    at: (at as any).anchor.path,
+  const startCellEntry = findNode<TTableCellElement>(editor, {
+    at: at.anchor.path,
     match: { type: getCellTypes(editor) },
-  })!; // TODO: improve typing
-  const endCellEntry = findNode(editor, {
-    at: (at as any).focus.path,
+  });
+  const endCellEntry = findNode<TTableCellElement>(editor, {
+    at: at.focus.path,
     match: { type: getCellTypes(editor) },
-  })!;
+  });
 
-  const startCell = startCellEntry[0] as TTableCellElement;
-  const endCell = endCellEntry[0] as TTableCellElement;
+  const [ startCell, plainStartCellPath ] = startCellEntry;
+  const [ endCell, plainEndCellPath ] = endCellEntry;
 
-  const startCellPath = (at as any).anchor.path;
+  const startCellPath = at.anchor.path;
   const tablePath = startCellPath.slice(0, -2);
 
-  const tableEntry = findNode(editor, {
+  const tableEntry = findNode<TTableElement>(editor, {
     at: tablePath,
     match: { type: getPluginType(editor, ELEMENT_TABLE) },
-  })!; // TODO: improve typing
-  const realTable = tableEntry[0] as TTableElement;
+  });
+  const realTable = tableEntry[0];
 
-  const { col: _startColIndex, row: _startRowIndex } =
+  const _plainStartRowIndex = plainStartCellPath.at(-2)!;
+  const _plainEndRowIndex = plainEndCellPath.at(-2)!;
+  const _plainStartColIndex = plainStartCellPath.at(-1)!;
+  const _plainEndColIndex = plainEndCellPath.at(-1)!;
+
+  const { col: _spanStartColIndex, row: _spanStartRowIndex } = getCellIndicesWithSpans(
     getCellIndices(cellIndices!, startCell) ||
-    computeCellIndices(editor, realTable, startCell)!;
+      computeCellIndices(editor, realTable, startCell)!,
+      startCell
+  );
 
-  const { row: _endRowIndex, col: _endColIndex } = getCellIndicesWithSpans(
+  const { row: _spanEndRowIndex, col: _spanEndColIndex } = getCellIndicesWithSpans(
     getCellIndices(cellIndices!, endCell) ||
       computeCellIndices(editor, realTable, endCell)!,
     endCell
   );
 
-  const startRowIndex = Math.min(_startRowIndex, _endRowIndex);
-  const endRowIndex = Math.max(_startRowIndex, _endRowIndex);
-  const startColIndex = Math.min(_startColIndex, _endColIndex);
-  const endColIndex = Math.max(_startColIndex, _endColIndex);
+  const startRowIndex = Math.min(_spanStartRowIndex, _plainStartRowIndex, _spanEndRowIndex, _plainEndRowIndex);
+  const endRowIndex = Math.max(_spanStartRowIndex, _plainStartRowIndex, _spanEndRowIndex, _plainEndRowIndex);
+  const startColIndex = Math.min(_spanStartColIndex, _plainStartColIndex, _spanEndColIndex, _plainEndColIndex);
+  const endColIndex = Math.max(_spanStartColIndex, _plainStartColIndex, _spanEndColIndex, _plainEndColIndex);
 
   const relativeRowIndex = endRowIndex - startRowIndex;
   const relativeColIndex = endColIndex - startColIndex;
