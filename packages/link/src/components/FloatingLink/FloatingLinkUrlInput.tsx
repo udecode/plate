@@ -15,6 +15,7 @@ export const useFloatingLinkUrlInputState = () => {
     if (ref.current && updated) {
       setTimeout(() => {
         ref.current?.focus();
+        ref.current!.value = floatingLinkSelectors.url();
       }, 0);
     }
   }, [updated]);

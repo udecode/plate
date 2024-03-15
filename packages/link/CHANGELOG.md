@@ -1,5 +1,11 @@
 # @udecode/plate-link
 
+## 30.9.2
+
+### Patch Changes
+
+- [#3022](https://github.com/udecode/plate/pull/3022) by [@Zum-Gluck](https://github.com/Zum-Gluck) – Fixes #2526
+
 ## 30.5.3
 
 ### Patch Changes

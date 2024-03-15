@@ -17,4 +17,5 @@ const hiddenStyle: React.CSSProperties = {
   visibility: 'hidden',
   height: 0,
   margin: 0,
+  overflow: 'hidden',
 };
