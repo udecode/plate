@@ -5,7 +5,8 @@ A comprehensive playground template for building rich-text editors with [Plate](
 ## Usage
 
 ```bash
-pnpm create next-app -e https://github.com/udecode/plate-playground-template
+pnpm install
+pnpm dev
 ```
 
 ## Features

@@ -44,6 +44,7 @@ import { KEY_DESERIALIZE_DOCX } from '@udecode/plate-serializer-docx';
 import { KEY_DESERIALIZE_MD } from '@udecode/plate-serializer-md';
 import { KEY_TABBABLE } from '@udecode/plate-tabbable';
 import { ELEMENT_TABLE } from '@udecode/plate-table';
+import { ELEMENT_TOGGLE } from '@udecode/plate-toggle';
 import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
 
 export const descriptions: Record<string, string> = {
@@ -54,6 +55,7 @@ export const descriptions: Record<string, string> = {
   [ELEMENT_HR]: 'Insert horizontal lines.',
   [ELEMENT_IMAGE]: 'Embed images into your document.',
   [ELEMENT_LINK]: 'Insert and manage hyperlinks.',
+  [ELEMENT_TOGGLE]: 'Add toggles to your document.',
   heading: 'Organize your document with up to 6 headings.',
   list: 'Organize nestable items in a bulleted or numbered list.',
   [ELEMENT_MEDIA_EMBED]:

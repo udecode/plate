@@ -18,7 +18,7 @@ export function EmojiPickerSearchAndClear({
     <>
       <span
         className={cn(
-          'absolute left-2 top-1/2 z-10 flex h-5 w-5 -translate-y-1/2'
+          'absolute left-2 top-1/2 z-10 flex size-5 -translate-y-1/2'
         )}
       >
         <Icons.search />
@@ -29,11 +29,11 @@ export function EmojiPickerSearchAndClear({
           aria-label="Clear"
           type="button"
           className={cn(
-            'absolute right-0 top-1/2 flex h-8 w-8 -translate-y-1/2 cursor-pointer border-none bg-transparent'
+            'absolute right-0 top-1/2 flex size-8 -translate-y-1/2 cursor-pointer border-none bg-transparent'
           )}
           onClick={clearSearch}
         >
-          <Icons.clear className="h-full w-full" />
+          <Icons.clear className="size-full" />
         </button>
       )}
     </>

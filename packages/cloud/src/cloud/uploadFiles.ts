@@ -1,9 +1,12 @@
-import { ClientFile, uploadFile as uploadFileToPortive } from '@portive/client';
+import * as portiveClient from '@portive/client';
 import { nanoid, Value } from '@udecode/plate-common';
 
 import { FileEvent, PlateCloudEditor, ProgressEvent } from './types';
 
-const createFileEvent = (id: string, clientFile: ClientFile): FileEvent => {
+const createFileEvent = (
+  id: string,
+  clientFile: portiveClient.ClientFile
+): FileEvent => {
   if (clientFile.type === 'image') {
     return {
       id,
@@ -28,7 +31,7 @@ export const uploadFile = <V extends Value = Value>(
 ) => {
   const id = `#${nanoid()}`;
   const { client } = editor.cloud;
-  uploadFileToPortive({
+  portiveClient.uploadFile({
     client,
     file,
     onBeforeFetch(e) {

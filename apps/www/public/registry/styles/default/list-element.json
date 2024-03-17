@@ -7,7 +7,7 @@
   "files": [
     {
       "name": "list-element.tsx",
-      "content": "import React from 'react';\nimport { withRef, withVariants } from '@udecode/cn';\nimport { PlateElement } from '@udecode/plate-common';\nimport { cva } from 'class-variance-authority';\n\nconst listVariants = cva('m-0 ps-6', {\n  variants: {\n    variant: {\n      ul: 'list-disc [&_ul]:list-[circle] [&_ul_ul]:list-[square]',\n      ol: 'list-decimal',\n    },\n  },\n});\n\nconst ListElementVariants = withVariants(PlateElement, listVariants, [\n  'variant',\n]);\n\nexport const ListElement = withRef<typeof ListElementVariants>(\n  ({ className, children, variant = 'ul', ...props }, ref) => {\n    const Component = variant!;\n\n    return (\n      <ListElementVariants ref={ref} asChild {...props}>\n        <Component>{children}</Component>\n      </ListElementVariants>\n    );\n  }\n);\n"
+      "content": "import React from 'react';\nimport { withRef, withVariants } from '@udecode/cn';\nimport { PlateElement } from '@udecode/plate-common';\nimport { cva } from 'class-variance-authority';\n\nconst listVariants = cva('m-0 ps-6', {\n  variants: {\n    variant: {\n      ul: 'list-disc [&_ul]:list-[circle] [&_ul_ul]:list-[square]',\n      ol: 'list-decimal',\n    },\n  },\n});\n\nconst ListElementVariants = withVariants(PlateElement, listVariants, [\n  'variant',\n]);\n\nexport const ListElement = withRef<typeof ListElementVariants>(\n  ({ children, variant = 'ul', ...props }, ref) => {\n    const Component = variant!;\n\n    return (\n      <ListElementVariants ref={ref} asChild variant={variant} {...props}>\n        <Component>{children}</Component>\n      </ListElementVariants>\n    );\n  }\n);\n"
     }
   ],
   "type": "components:plate-ui"

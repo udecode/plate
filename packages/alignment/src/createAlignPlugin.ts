@@ -16,9 +16,9 @@ export const createAlignPlugin = createPluginFactory({
     inject: {
       props: {
         nodeKey: KEY_ALIGN,
-        defaultNodeValue: 'left',
+        defaultNodeValue: 'start',
         styleKey: 'textAlign',
-        validNodeValues: ['left', 'center', 'right', 'justify'],
+        validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
         validTypes: [getPluginType(editor, ELEMENT_DEFAULT)],
       },
     },

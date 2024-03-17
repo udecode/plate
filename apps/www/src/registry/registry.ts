@@ -522,6 +522,20 @@ const ui: Registry = [
     files: ['plate-ui/todo-list-element.tsx'],
   },
   {
+    name: 'toggle-element',
+    type: 'components:plate-ui',
+    dependencies: ['@udecode/plate-toggle'],
+    registryDependencies: [],
+    files: ['plate-ui/toggle-element.tsx'],
+  },
+  {
+    name: 'toggle-toolbar-button',
+    type: 'components:plate-ui',
+    dependencies: ['@udecode/plate-toggle'],
+    registryDependencies: ['toolbar'],
+    files: ['plate-ui/toggle-toolbar-button.tsx'],
+  },
+  {
     name: 'toolbar',
     type: 'components:plate-ui',
     dependencies: ['@radix-ui/react-toolbar'],
@@ -680,6 +694,12 @@ const example: Registry = [
     type: 'components:example',
     registryDependencies: [],
     files: ['example/multiple-editors-demo.tsx'],
+  },
+  {
+    name: 'version-history-demo',
+    type: 'components:example',
+    registryDependencies: [],
+    files: ['example/version-history-demo.tsx'],
   },
   {
     name: 'playground-demo',

@@ -80,7 +80,7 @@ export interface DraggableProps
 const dragHandle = (
   <Tooltip>
     <TooltipTrigger>
-      <Icons.dragHandle className="h-4 w-4 text-muted-foreground" />
+      <Icons.dragHandle className="size-4 text-muted-foreground" />
     </TooltipTrigger>
     <TooltipContent>Drag to move</TooltipContent>
   </Tooltip>
@@ -125,7 +125,7 @@ export const Draggable = withRef<'div', DraggableProps>(
                 classNames.blockToolbar
               )}
             >
-              <div ref={handleRef} className="h-4 w-4">
+              <div ref={handleRef} className="size-4">
                 {isHovered && dragHandle}
               </div>
             </div>

@@ -49,6 +49,7 @@ import {
   ELEMENT_TH,
   ELEMENT_TR,
 } from '@udecode/plate-table';
+import { ELEMENT_TOGGLE } from '@udecode/plate-toggle';
 
 import { BlockquoteElement } from '@/registry/default/plate-ui/blockquote-element';
 import { CodeBlockElement } from '@/registry/default/plate-ui/code-block-element';
@@ -77,6 +78,7 @@ import {
 import { TableElement } from '@/registry/default/plate-ui/table-element';
 import { TableRowElement } from '@/registry/default/plate-ui/table-row-element';
 import { TodoListElement } from '@/registry/default/plate-ui/todo-list-element';
+import { ToggleElement } from '@/registry/default/plate-ui/toggle-element';
 import { withDraggables } from '@/registry/default/plate-ui/with-draggables';
 
 export const createPlateUI = (
@@ -111,6 +113,7 @@ export const createPlateUI = (
     [ELEMENT_TD]: TableCellElement,
     [ELEMENT_TH]: TableCellHeaderElement,
     [ELEMENT_TODO_LI]: TodoListElement,
+    [ELEMENT_TOGGLE]: ToggleElement,
     [ELEMENT_TR]: TableRowElement,
     [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
     [MARK_BOLD]: withProps(PlateLeaf, { as: 'strong' }),

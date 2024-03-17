@@ -397,4 +397,29 @@ describe('deserializeMdIndentList', () => {
 
     expect(deserializeMd(editor, input)).toEqual(output);
   });
+
+  it('should deserialize an empty list item', () => {
+    const input = '* Line 1\n*';
+
+    const output = [
+      {
+        type: 'p',
+        listStyleType: 'disc',
+        indent: 1,
+        children: [
+          {
+            text: 'Line 1',
+          },
+        ],
+      },
+      {
+        type: 'p',
+        listStyleType: 'disc',
+        indent: 1,
+        children: [],
+      },
+    ];
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
 });

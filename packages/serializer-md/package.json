@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-serializer-md",
-  "version": "30.0.0",
+  "version": "30.9.2",
   "description": "Markdown serializer plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -39,20 +39,23 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-basic-marks": "30.0.0",
-    "@udecode/plate-block-quote": "30.0.0",
-    "@udecode/plate-code-block": "30.0.0",
-    "@udecode/plate-common": "30.0.0",
-    "@udecode/plate-heading": "30.0.0",
-    "@udecode/plate-horizontal-rule": "30.0.0",
-    "@udecode/plate-link": "30.0.0",
-    "@udecode/plate-list": "30.0.0",
-    "@udecode/plate-media": "30.0.0",
-    "@udecode/plate-paragraph": "30.0.0",
+    "@udecode/plate-basic-marks": "30.5.3",
+    "@udecode/plate-block-quote": "30.5.3",
+    "@udecode/plate-code-block": "30.7.0",
+    "@udecode/plate-heading": "30.5.3",
+    "@udecode/plate-horizontal-rule": "30.5.3",
+    "@udecode/plate-link": "30.9.2",
+    "@udecode/plate-list": "30.5.3",
+    "@udecode/plate-media": "30.5.3",
+    "@udecode/plate-paragraph": "30.5.3",
     "remark-parse": "^9.0.0",
     "unified": "^9.2.2"
   },
+  "devDependencies": {
+    "@udecode/plate-common": "workspace:^"
+  },
   "peerDependencies": {
+    "@udecode/plate-common": ">=30.4.5 < 31",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.94.0",

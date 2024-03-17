@@ -29,7 +29,7 @@ export function CommentMoreDropdown() {
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className={cn('h-6 p-1 text-muted-foreground')}>
-          <Icons.more className="h-4 w-4" />
+          <Icons.more className="size-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>

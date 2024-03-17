@@ -19,7 +19,7 @@ export const ColorInput = withRef<'input'>(
 
         <input
           ref={useComposedRef(ref, inputRef)}
-          className={cn('h-0 w-0 overflow-hidden border-0 p-0', className)}
+          className={cn('size-0 overflow-hidden border-0 p-0', className)}
           type="color"
           value={value}
           {...props}

@@ -23,9 +23,9 @@ export const buttonVariants = cva(
         default: 'h-10 px-4 py-2',
         xs: 'h-8 rounded-md px-3',
         sm: 'h-9 rounded-md px-3',
-        sms: 'h-9 w-9 rounded-md px-0',
+        sms: 'size-9 rounded-md px-0',
         lg: 'h-11 rounded-md px-8',
-        icon: 'h-10 w-10',
+        icon: 'size-10',
         none: '',
       },
       isMenu: {

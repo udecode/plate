@@ -228,6 +228,11 @@ export const docsConfig: DocsConfig = {
           href: '/docs/table',
           label: 'Element',
         },
+        {
+          title: 'Toggle',
+          href: '/docs/toggle',
+          label: 'Element',
+        },
       ],
     },
     {
@@ -252,6 +257,10 @@ export const docsConfig: DocsConfig = {
         {
           title: 'Preview Markdown',
           href: '/docs/examples/preview-markdown',
+        },
+        {
+          title: 'Version History',
+          href: '/docs/examples/version-history',
         },
       ],
     },
@@ -773,6 +782,8 @@ export const docsConfig: DocsConfig = {
         customizerComponents.tableElement,
         customizerComponents.tableRowElement,
         customizerComponents.todoListElement,
+        customizerComponents.toggleElement,
+        customizerComponents.toggleToolbarButton,
         customizerComponents.toolbar,
         customizerComponents.tooltip,
         customizerComponents.turnIntoDropdownMenu,

@@ -37,5 +37,7 @@
     ".next/types/**/*.ts",
     ".contentlayer/generated"
   ],
-  "exclude": ["node_modules", "./scripts/build-registry.ts"]
+  "exclude": ["node_modules",
+    "./scripts/build-registry.ts"
+  ]
 }

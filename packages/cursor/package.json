@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-cursor",
-  "version": "30.0.0",
+  "version": "30.5.3",
   "description": "Cursor for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -38,10 +38,11 @@
     "test:watch": "yarn p:test:watch",
     "typecheck": "yarn p:typecheck"
   },
-  "dependencies": {
-    "@udecode/plate-common": "30.0.0"
+  "devDependencies": {
+    "@udecode/plate-common": "workspace:^"
   },
   "peerDependencies": {
+    "@udecode/plate-common": ">=30.4.5 < 31",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.94.0",

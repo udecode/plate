@@ -53,7 +53,7 @@ export function Foo() {
       filename: 'test.ts',
       raw: `import * as React from "react"
 export function Foo() {
-	return <div className={cn("bg-background hover:bg-muted", true && "text-primary-foreground sm:focus:text-accent-foreground")}>foo</div>
+	return <div className={cn('bg-background hover:bg-muted', true && 'text-primary-foreground sm:focus:text-accent-foreground')}>foo</div>
 }
     `,
       config: {

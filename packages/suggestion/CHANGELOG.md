@@ -1,5 +1,55 @@
 # @udecode/plate-suggestion
 
+## 30.9.0
+
+## 30.8.0
+
+## 30.6.1
+
+## 30.6.0
+
+## 30.5.3
+
+### Patch Changes
+
+- [`4cbed7159`](https://github.com/udecode/plate/commit/4cbed7159d51f7427051686e45bcf2a8899aeede) by [@zbeyens](https://github.com/zbeyens) – Move `@udecode/plate-common` to peerDeps to fix a bug when multiple instances were installed
+
+## 30.5.2
+
+## 30.5.0
+
+### Minor Changes
+
+- [#2945](https://github.com/udecode/plate/pull/2945) by [@12joan](https://github.com/12joan) – Refactor `slateDiff` into `@udecode/plate-diff` and add `diffToSuggestions` instead
+
+## 30.4.5
+
+## 30.4.3
+
+### Patch Changes
+
+- [#2935](https://github.com/udecode/plate/pull/2935) by [@zbeyens](https://github.com/zbeyens) – fix lodash import
+
+## 30.4.2
+
+### Patch Changes
+
+- [#2933](https://github.com/udecode/plate/pull/2933) by [@zbeyens](https://github.com/zbeyens) – fix slateTextDiff
+
+## 30.4.1
+
+### Patch Changes
+
+- [#2930](https://github.com/udecode/plate/pull/2930) by [@zbeyens](https://github.com/zbeyens) – fork diff-match-patch to fix ESM import
+
+## 30.4.0
+
+### Minor Changes
+
+- [#2900](https://github.com/udecode/plate/pull/2900) by [@zbeyens](https://github.com/zbeyens) – slate-diff
+
+## 30.1.2
+
 ## 30.0.0
 
 ## 29.1.0

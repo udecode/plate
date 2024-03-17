@@ -1,4 +1,4 @@
-import { Client, createClient } from '@portive/client';
+import * as portiveClient from '@portive/client';
 import { PlateEditor, Value, WithPlatePlugin } from '@udecode/plate-common';
 
 import { createUploadStore } from '../upload/createUploadStore';
@@ -20,9 +20,9 @@ export const withCloud = <
   const { apiKey, authToken, apiOrigin, uploadStoreInitialValue } =
     plugin.options;
 
-  let client: Client;
+  let client: portiveClient.Client;
   try {
-    client = createClient({ apiKey, authToken, apiOrigin });
+    client = portiveClient.createClient({ apiKey, authToken, apiOrigin });
   } catch (error) {
     console.error(error);
   }

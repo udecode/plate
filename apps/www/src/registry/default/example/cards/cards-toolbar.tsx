@@ -28,6 +28,7 @@ import { ModeDropdownMenu } from '@/registry/default/plate-ui/mode-dropdown-menu
 import { MoreDropdownMenu } from '@/registry/default/plate-ui/more-dropdown-menu';
 import { OutdentToolbarButton } from '@/registry/default/plate-ui/outdent-toolbar-button';
 import { TableDropdownMenu } from '@/registry/default/plate-ui/table-dropdown-menu';
+import { ToggleToolbarButton } from '@/registry/default/plate-ui/toggle-toolbar-button';
 import { ToolbarGroup } from '@/registry/default/plate-ui/toolbar';
 import { TurnIntoDropdownMenu } from '@/registry/default/plate-ui/turn-into-dropdown-menu';
 
@@ -97,6 +98,8 @@ export function CardsToolbar() {
 
           <ToolbarGroup>
             <LinkToolbarButton />
+
+            <ToggleToolbarButton />
 
             <MediaToolbarButton nodeType={ELEMENT_IMAGE} />
 

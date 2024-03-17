@@ -61,7 +61,7 @@ export const add = new Command()
         logger.warn(
           `Configuration is missing. Please run ${chalk.green(
             `init`
-          )} to create a components.json file.`
+          )} to create a plate-components.json file.`
         );
         process.exit(1);
       }
@@ -176,14 +176,30 @@ export const add = new Command()
           await fs.writeFile(filePath, content);
         }
 
+        const packageManager = await getPackageManager(cwd);
+
         // Install dependencies.
         if (item.dependencies?.length) {
-          const packageManager = await getPackageManager(cwd);
           await execa(
             packageManager,
             [
               packageManager === 'npm' ? 'install' : 'add',
               ...item.dependencies,
+            ],
+            {
+              cwd,
+            }
+          );
+        }
+
+        // Install devDependencies.
+        if (item.devDependencies?.length) {
+          await execa(
+            packageManager,
+            [
+              packageManager === 'npm' ? 'install' : 'add',
+              '-D',
+              ...item.devDependencies,
             ],
             {
               cwd,

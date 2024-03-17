@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-emoji",
-  "version": "30.0.0",
+  "version": "30.7.0",
   "description": "Emoji plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -40,10 +40,13 @@
   },
   "dependencies": {
     "@emoji-mart/data": "^1.1.2",
-    "@udecode/plate-combobox": "30.0.0",
-    "@udecode/plate-common": "30.0.0"
+    "@udecode/plate-combobox": "30.5.3"
+  },
+  "devDependencies": {
+    "@udecode/plate-common": "workspace:^"
   },
   "peerDependencies": {
+    "@udecode/plate-common": ">=30.4.5 < 31",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.94.0",

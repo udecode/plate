@@ -46,6 +46,7 @@ import { KEY_DESERIALIZE_DOCX } from '@udecode/plate-serializer-docx';
 import { KEY_DESERIALIZE_MD } from '@udecode/plate-serializer-md';
 import { KEY_TABBABLE } from '@udecode/plate-tabbable';
 import { ELEMENT_TABLE } from '@udecode/plate-table';
+import { ELEMENT_TOGGLE } from '@udecode/plate-toggle';
 import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
 
 import { CustomizerBadge, customizerBadges } from '@/config/customizer-badges';
@@ -252,6 +253,23 @@ export const customizerItems: Record<string, SettingPlugin> = {
         label: 'LinkFloatingToolbar',
         usage: 'LinkFloatingToolbar',
         route: customizerComponents.linkFloatingToolbar.href,
+      },
+    ],
+  },
+  [ELEMENT_TOGGLE]: {
+    id: ELEMENT_TOGGLE,
+    npmPackage: '@udecode/plate-toggle',
+    pluginFactory: 'createTogglePlugin',
+    label: 'Toggle',
+    badges: [customizerBadges.element],
+    route: customizerPlugins.toggle.route,
+    components: [
+      {
+        id: 'toggle-element',
+        label: 'ToggleElement',
+        pluginKey: 'ELEMENT_TOGGLE',
+        usage: 'ToggleElement',
+        route: customizerComponents.toggleElement.href,
       },
     ],
   },
