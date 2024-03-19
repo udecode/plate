@@ -41,7 +41,7 @@ export const useTableMergeState = () => {
     []
   );
 
-  if (!selectedTable) return { canMerge: false, canUnmerge: false };
+  if (!selectedCellEntries) return { canMerge: false, canUnmerge: false };
 
   const canMerge =
     !readOnly &&
