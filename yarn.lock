@@ -6206,12 +6206,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-basic-elements@npm:30.5.3, @udecode/plate-basic-elements@workspace:^, @udecode/plate-basic-elements@workspace:packages/basic-elements":
+"@udecode/plate-basic-elements@npm:30.7.0, @udecode/plate-basic-elements@workspace:^, @udecode/plate-basic-elements@workspace:packages/basic-elements":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-basic-elements@workspace:packages/basic-elements"
   dependencies:
     "@udecode/plate-block-quote": "npm:30.5.3"
-    "@udecode/plate-code-block": "npm:30.5.3"
+    "@udecode/plate-code-block": "npm:30.7.0"
     "@udecode/plate-common": "workspace:^"
     "@udecode/plate-heading": "npm:30.5.3"
     "@udecode/plate-paragraph": "npm:30.5.3"
@@ -6310,7 +6310,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-code-block@npm:30.5.3, @udecode/plate-code-block@workspace:^, @udecode/plate-code-block@workspace:packages/code-block":
+"@udecode/plate-code-block@npm:30.7.0, @udecode/plate-code-block@workspace:^, @udecode/plate-code-block@workspace:packages/code-block":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-code-block@workspace:packages/code-block"
   dependencies:
@@ -6428,7 +6428,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-diff@npm:30.6.0, @udecode/plate-diff@workspace:^, @udecode/plate-diff@workspace:packages/diff":
+"@udecode/plate-diff@npm:30.9.0, @udecode/plate-diff@workspace:^, @udecode/plate-diff@workspace:packages/diff":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-diff@workspace:packages/diff"
   dependencies:
@@ -6869,13 +6869,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-csv@npm:30.5.3, @udecode/plate-serializer-csv@workspace:^, @udecode/plate-serializer-csv@workspace:packages/serializer-csv":
+"@udecode/plate-serializer-csv@npm:30.9.1, @udecode/plate-serializer-csv@workspace:^, @udecode/plate-serializer-csv@workspace:packages/serializer-csv":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-csv@workspace:packages/serializer-csv"
   dependencies:
     "@types/papaparse": "npm:^5.3.7"
     "@udecode/plate-common": "workspace:^"
-    "@udecode/plate-table": "npm:30.5.3"
+    "@udecode/plate-table": "npm:30.9.1"
     papaparse: "npm:^5.4.1"
   peerDependencies:
     "@udecode/plate-common": ">=30.4.5 < 31"
@@ -6888,7 +6888,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-docx@npm:30.5.3, @udecode/plate-serializer-docx@workspace:^, @udecode/plate-serializer-docx@workspace:packages/serializer-docx":
+"@udecode/plate-serializer-docx@npm:30.9.1, @udecode/plate-serializer-docx@workspace:^, @udecode/plate-serializer-docx@workspace:packages/serializer-docx":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-docx@workspace:packages/serializer-docx"
   dependencies:
@@ -6898,7 +6898,7 @@ __metadata:
     "@udecode/plate-indent-list": "npm:30.5.3"
     "@udecode/plate-media": "npm:30.5.3"
     "@udecode/plate-paragraph": "npm:30.5.3"
-    "@udecode/plate-table": "npm:30.5.3"
+    "@udecode/plate-table": "npm:30.9.1"
     validator: "npm:^13.9.0"
   peerDependencies:
     "@udecode/plate-common": ">=30.4.5 < 31"
@@ -6929,13 +6929,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-md@npm:30.5.3, @udecode/plate-serializer-md@workspace:^, @udecode/plate-serializer-md@workspace:packages/serializer-md":
+"@udecode/plate-serializer-md@npm:30.7.0, @udecode/plate-serializer-md@workspace:^, @udecode/plate-serializer-md@workspace:packages/serializer-md":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-md@workspace:packages/serializer-md"
   dependencies:
     "@udecode/plate-basic-marks": "npm:30.5.3"
     "@udecode/plate-block-quote": "npm:30.5.3"
-    "@udecode/plate-code-block": "npm:30.5.3"
+    "@udecode/plate-code-block": "npm:30.7.0"
     "@udecode/plate-common": "workspace:^"
     "@udecode/plate-heading": "npm:30.5.3"
     "@udecode/plate-horizontal-rule": "npm:30.5.3"
@@ -6956,12 +6956,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-suggestion@npm:30.6.0, @udecode/plate-suggestion@workspace:^, @udecode/plate-suggestion@workspace:packages/suggestion":
+"@udecode/plate-suggestion@npm:30.9.0, @udecode/plate-suggestion@workspace:^, @udecode/plate-suggestion@workspace:packages/suggestion":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-suggestion@workspace:packages/suggestion"
   dependencies:
     "@udecode/plate-common": "workspace:^"
-    "@udecode/plate-diff": "npm:30.6.0"
+    "@udecode/plate-diff": "npm:30.9.0"
     lodash: "npm:^4.17.21"
   peerDependencies:
     "@udecode/plate-common": ">=30.4.5 < 31"
@@ -6991,7 +6991,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-table@npm:30.5.3, @udecode/plate-table@workspace:^, @udecode/plate-table@workspace:packages/table":
+"@udecode/plate-table@npm:30.9.1, @udecode/plate-table@workspace:^, @udecode/plate-table@workspace:packages/table":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-table@workspace:packages/table"
   dependencies:
@@ -7130,15 +7130,15 @@ __metadata:
   dependencies:
     "@udecode/plate-alignment": "npm:30.5.3"
     "@udecode/plate-autoformat": "npm:30.5.3"
-    "@udecode/plate-basic-elements": "npm:30.5.3"
+    "@udecode/plate-basic-elements": "npm:30.7.0"
     "@udecode/plate-basic-marks": "npm:30.5.3"
     "@udecode/plate-block-quote": "npm:30.5.3"
     "@udecode/plate-break": "npm:30.5.3"
-    "@udecode/plate-code-block": "npm:30.5.3"
+    "@udecode/plate-code-block": "npm:30.7.0"
     "@udecode/plate-combobox": "npm:30.5.3"
     "@udecode/plate-comments": "npm:30.5.3"
     "@udecode/plate-common": "npm:30.4.5"
-    "@udecode/plate-diff": "npm:30.6.0"
+    "@udecode/plate-diff": "npm:30.9.0"
     "@udecode/plate-find-replace": "npm:30.5.3"
     "@udecode/plate-floating": "npm:30.5.3"
     "@udecode/plate-font": "npm:30.5.3"
@@ -7159,13 +7159,13 @@ __metadata:
     "@udecode/plate-reset-node": "npm:30.5.3"
     "@udecode/plate-resizable": "npm:30.5.3"
     "@udecode/plate-select": "npm:30.5.3"
-    "@udecode/plate-serializer-csv": "npm:30.5.3"
-    "@udecode/plate-serializer-docx": "npm:30.5.3"
+    "@udecode/plate-serializer-csv": "npm:30.9.1"
+    "@udecode/plate-serializer-docx": "npm:30.9.1"
     "@udecode/plate-serializer-html": "npm:30.5.3"
-    "@udecode/plate-serializer-md": "npm:30.5.3"
-    "@udecode/plate-suggestion": "npm:30.6.0"
+    "@udecode/plate-serializer-md": "npm:30.7.0"
+    "@udecode/plate-suggestion": "npm:30.9.0"
     "@udecode/plate-tabbable": "npm:30.5.3"
-    "@udecode/plate-table": "npm:30.5.3"
+    "@udecode/plate-table": "npm:30.9.1"
     "@udecode/plate-toggle": "npm:30.5.3"
     "@udecode/plate-trailing-block": "npm:30.5.3"
   peerDependencies:
