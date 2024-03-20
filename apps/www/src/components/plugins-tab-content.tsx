@@ -112,9 +112,9 @@ export function PluginsTabContentLazy() {
           }}
         >
           {showComponents ? (
-            <Eye className="h-4 w-4" />
+            <Eye className="size-4" />
           ) : (
-            <EyeOff className="h-4 w-4" />
+            <EyeOff className="size-4" />
           )}
         </Button>
       </div>
@@ -167,13 +167,13 @@ export function PluginsTabContent() {
               }}
             >
               Done
-              <ArrowUpRight className="ml-2 h-4 w-4" />
+              <ArrowUpRight className="ml-2 size-4" />
             </Button>
           </div>
         </div>
         {loadingSettings ? (
           <div className="mt-4 flex h-[30px] items-center justify-center">
-            <Icons.spinner className="h-5 w-5 animate-spin" />
+            <Icons.spinner className="size-5 animate-spin" />
           </div>
         ) : (
           <PluginsTabContentLazy />

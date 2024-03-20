@@ -44,9 +44,9 @@ export function CopyCodeButton() {
           className="md:hidden"
         >
           {hasCopied ? (
-            <CheckIcon className="mr-2 h-4 w-4" />
+            <CheckIcon className="mr-2 size-4" />
           ) : (
-            <CopyIcon className="mr-2 h-4 w-4" />
+            <CopyIcon className="mr-2 size-4" />
           )}
           Copy
         </Button>
@@ -83,9 +83,9 @@ export function CopyCodeButton() {
                 className="absolute right-4 top-4 bg-muted text-muted-foreground hover:bg-muted hover:text-muted-foreground"
               >
                 {hasCopied ? (
-                  <CheckIcon className="mr-2 h-4 w-4" />
+                  <CheckIcon className="mr-2 size-4" />
                 ) : (
-                  <CopyIcon className="mr-2 h-4 w-4" />
+                  <CopyIcon className="mr-2 size-4" />
                 )}
                 Copy
               </Button>

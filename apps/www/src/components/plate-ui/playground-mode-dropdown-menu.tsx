@@ -27,19 +27,19 @@ export function PlaygroundModeDropdownMenu(props: DropdownMenuProps) {
   const item = {
     editing: (
       <>
-        <Icons.editing className="mr-2 h-5 w-5" />
+        <Icons.editing className="mr-2 size-5" />
         <span className="hidden lg:inline">Editing</span>
       </>
     ),
     suggesting: (
       <>
-        <Icons.suggesting className="mr-2 h-5 w-5" />
+        <Icons.suggesting className="mr-2 size-5" />
         <span className="hidden lg:inline">Suggesting</span>
       </>
     ),
     viewing: (
       <>
-        <Icons.viewing className="mr-2 h-5 w-5" />
+        <Icons.viewing className="mr-2 size-5" />
         <span className="hidden lg:inline">Viewing</span>
       </>
     ),

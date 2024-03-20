@@ -178,9 +178,7 @@ export interface DOMHandlers<
   onPointerCancel?: DOMHandler<P, V, E, React.PointerEvent>;
   onPointerCancelCapture?: DOMHandler<P, V, E, React.PointerEvent>;
   onPointerEnter?: DOMHandler<P, V, E, React.PointerEvent>;
-  onPointerEnterCapture?: DOMHandler<P, V, E, React.PointerEvent>;
   onPointerLeave?: DOMHandler<P, V, E, React.PointerEvent>;
-  onPointerLeaveCapture?: DOMHandler<P, V, E, React.PointerEvent>;
   onPointerOver?: DOMHandler<P, V, E, React.PointerEvent>;
   onPointerOverCapture?: DOMHandler<P, V, E, React.PointerEvent>;
   onPointerOut?: DOMHandler<P, V, E, React.PointerEvent>;

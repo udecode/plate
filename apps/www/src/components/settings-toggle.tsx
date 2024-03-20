@@ -24,7 +24,7 @@ export function SettingsToggle() {
           pressed={showSettings}
           onPressedChange={(pressed) => settingsStore.set.showSettings(pressed)}
         >
-          <Icons.plugin className="h-6 w-6" />
+          <Icons.plugin className="size-6" />
         </Toggle>
       </TooltipTrigger>
 

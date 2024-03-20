@@ -103,7 +103,7 @@ export function ComponentPreview({
             fallback={
               // eslint-disable-next-line tailwindcss/no-custom-classname
               <div className="preview flex min-h-[350px] w-full items-center justify-center p-0 text-sm text-muted-foreground">
-                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                <Icons.spinner className="mr-2 size-4 animate-spin" />
                 Loading...
               </div>
             }
@@ -111,7 +111,7 @@ export function ComponentPreview({
             <div
               // eslint-disable-next-line tailwindcss/no-custom-classname
               className={cn(
-                'preview relative flex h-full min-h-[350px] w-full flex-col p-0',
+                'preview relative flex size-full min-h-[350px] flex-col p-0',
                 padding === 'md' && 'p-4',
                 {
                   'items-center': align === 'center',
@@ -120,7 +120,7 @@ export function ComponentPreview({
                 }
               )}
             >
-              <div className="h-full w-full grow">{Preview}</div>
+              <div className="size-full grow">{Preview}</div>
             </div>
           </React.Suspense>
         </TabsContent>

@@ -46,7 +46,7 @@ export function APIItem({
               onClick={(e) => e.stopPropagation()}
             >
               <div className="absolute -left-5 top-2 pr-1 leading-none">
-                <Icons.pragma className="h-4 w-4 text-muted-foreground" />
+                <Icons.pragma className="size-4 text-muted-foreground" />
               </div>
             </a>
             <span className="font-mono font-semibold leading-none group-hover:underline">

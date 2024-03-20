@@ -22,9 +22,9 @@ export function CommentResolveButton() {
       )}
     >
       {comment.isResolved ? (
-        <Icons.refresh className="h-4 w-4" />
+        <Icons.refresh className="size-4" />
       ) : (
-        <Icons.check className="h-4 w-4" />
+        <Icons.check className="size-4" />
       )}
     </CommentResolveButtonPrimitive>
   );

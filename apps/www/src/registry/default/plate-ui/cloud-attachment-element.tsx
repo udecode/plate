@@ -47,7 +47,7 @@ export function CloudAttachmentElement({
         </StatusBar>
       </div>
       <div
-        className="ml-4 h-8 w-8 shrink-0 duration-200"
+        className="ml-4 size-8 shrink-0 duration-200"
         contentEditable={false}
       >
         {upload.status === 'success' && (

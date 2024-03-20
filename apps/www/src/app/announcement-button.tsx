@@ -19,7 +19,7 @@ export function AnnouncementButton() {
     >
       🎉 <Separator className="mx-2 h-4" orientation="vertical" /> Introducing
       the interactive builder.
-      <ArrowRightIcon className="ml-1 h-4 w-4" />
+      <ArrowRightIcon className="ml-1 size-4" />
     </Button>
   );
 }

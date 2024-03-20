@@ -39,10 +39,10 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "html-entities": "^2.4.0"
+    "html-entities": "^2.5.2"
   },
   "devDependencies": {
-    "@types/papaparse": "^5.3.7",
+    "@types/papaparse": "^5.3.14",
     "@udecode/plate-common": "workspace:^"
   },
   "peerDependencies": {
