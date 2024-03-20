@@ -1,5 +1,6 @@
-import '@testing-library/jest-dom/extend-expect';
+import '@testing-library/jest-dom';
 import 'slate-test-utils/dist/cjs/mocks';
+
 import { TextEncoder } from 'node:util';
 
 global.TextEncoder = TextEncoder;
