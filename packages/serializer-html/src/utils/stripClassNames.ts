@@ -4,7 +4,7 @@ const classAttrRegExp = / class="([^"]*)"/g;
  */
 export const stripClassNames = (
   html: string,
-  { preserveClassNames = ['slate-'] }: { preserveClassNames?: string[] },
+  { preserveClassNames = ['slate-'] }: { preserveClassNames?: string[] }
 ) => {
   if (preserveClassNames.length === 0) {
     return html.replaceAll(classAttrRegExp, '');
@@ -14,7 +14,9 @@ export const stripClassNames = (
     preserveClassNames.map((cn) => `^${cn}`).join('|')
   );
 
-  return html.replaceAll(classAttrRegExp, (match: string, className: string) => {
+  return html.replaceAll(
+    classAttrRegExp,
+    (match: string, className: string) => {
       const classesToKeep = className
         .split(/\s+/)
         .filter((cn) => preserveRegExp.test(cn));

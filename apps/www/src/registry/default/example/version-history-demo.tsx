@@ -33,8 +33,8 @@ import {
 } from '@udecode/plate-paragraph';
 import { useSelected } from 'slate-react';
 
-import { Button } from '../plate-ui/button';
-import { ParagraphElement } from '../plate-ui/paragraph-element';
+import { Button } from '@/registry/default/plate-ui/button';
+import { ParagraphElement } from '@/registry/default/plate-ui/paragraph-element';
 
 const ELEMENT_INLINE = 'inline';
 
@@ -177,7 +177,7 @@ function DiffLeaf({ children, ...props }: PlateLeafProps) {
     insert: 'ins',
     delete: 'del',
     update: 'span',
-  }[diffOperation.type] as React.ElementType;
+  }[diffOperation.type] as any;
 
   return (
     <PlateLeaf {...props} asChild>

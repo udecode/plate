@@ -54,7 +54,7 @@ export const useEditableProps = (
     };
 
     if (isDefined(readOnly)) {
-      _props.readOnly = readOnly;
+      _props.readOnly = readOnly!;
     }
 
     DOM_HANDLERS.forEach((handlerKey) => {

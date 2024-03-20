@@ -74,9 +74,9 @@ export default function CustomizerDrawer() {
             <SheetPrimitive.Close asChild onClick={() => setOpen(false)}>
               <Button
                 variant="ghost"
-                className="absolute left-4 top-4 h-8 w-8 p-0 px-1.5"
+                className="absolute left-4 top-4 size-8 p-0 px-1.5"
               >
-                <ChevronsRight className="h-5 w-5" />
+                <ChevronsRight className="size-5" />
                 <span className="sr-only">Close</span>
               </Button>
             </SheetPrimitive.Close>

@@ -45,7 +45,7 @@ export function PlaygroundMoreDropdownMenu(props: DropdownMenuProps) {
             focusEditor(editor);
           }}
         >
-          <Icons.highlight className="mr-2 h-5 w-5" />
+          <Icons.highlight className="mr-2 size-5" />
           Highlight
         </DropdownMenuItem>
 
@@ -58,7 +58,7 @@ export function PlaygroundMoreDropdownMenu(props: DropdownMenuProps) {
             focusEditor(editor);
           }}
         >
-          <Icons.kbd className="mr-2 h-5 w-5" />
+          <Icons.kbd className="mr-2 size-5" />
           Keyboard input
         </DropdownMenuItem>
 
@@ -71,7 +71,7 @@ export function PlaygroundMoreDropdownMenu(props: DropdownMenuProps) {
             focusEditor(editor);
           }}
         >
-          <Icons.superscript className="mr-2 h-5 w-5" />
+          <Icons.superscript className="mr-2 size-5" />
           Superscript
           {/* (⌘+,) */}
         </DropdownMenuItem>
@@ -84,7 +84,7 @@ export function PlaygroundMoreDropdownMenu(props: DropdownMenuProps) {
             focusEditor(editor);
           }}
         >
-          <Icons.subscript className="mr-2 h-5 w-5" />
+          <Icons.subscript className="mr-2 size-5" />
           Subscript
           {/* (⌘+.) */}
         </DropdownMenuItem>

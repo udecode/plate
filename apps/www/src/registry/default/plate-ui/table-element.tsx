@@ -133,7 +133,7 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
         isMenu
         onClick={() => mergeTableCells(editor)}
       >
-        <Icons.combine className="mr-2 h-4 w-4" />
+        <Icons.combine className="mr-2 size-4" />
         Merge
       </Button>
     );
@@ -145,7 +145,7 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
         isMenu
         onClick={() => unmergeTableCells(editor)}
       >
-        <Icons.ungroup className="mr-2 h-4 w-4" />
+        <Icons.ungroup className="mr-2 size-4" />
         Unmerge
       </Button>
     );
@@ -155,7 +155,7 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" isMenu>
-              <Icons.borderAll className="mr-2 h-4 w-4" />
+              <Icons.borderAll className="mr-2 size-4" />
               Borders
             </Button>
           </DropdownMenuTrigger>
@@ -166,7 +166,7 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
         </DropdownMenu>
 
         <Button contentEditable={false} variant="ghost" isMenu {...buttonProps}>
-          <Icons.delete className="mr-2 h-4 w-4" />
+          <Icons.delete className="mr-2 size-4" />
           Delete
         </Button>
       </>

@@ -45,7 +45,7 @@
     "@udecode/plate-media": "30.5.3",
     "@udecode/plate-paragraph": "30.5.3",
     "@udecode/plate-table": "30.9.4",
-    "validator": "^13.9.0"
+    "validator": "^13.11.0"
   },
   "devDependencies": {
     "@udecode/plate-common": "workspace:^"

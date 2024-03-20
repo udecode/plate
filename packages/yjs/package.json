@@ -39,9 +39,9 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@hocuspocus/provider": "^2.2.1",
-    "@slate-yjs/core": "^1.0.1",
-    "yjs": "^13.5.42"
+    "@hocuspocus/provider": "^2.11.3",
+    "@slate-yjs/core": "^1.0.2",
+    "yjs": "^13.6.14"
   },
   "devDependencies": {
     "@udecode/plate-common": "workspace:^"

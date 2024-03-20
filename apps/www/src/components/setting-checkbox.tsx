@@ -89,7 +89,7 @@ export function SettingCheckbox({
                       className="cursor-pointer leading-none"
                     >
                       {dependencies.length}
-                      <Icons.dependency className="ml-1 h-2.5 w-2.5 text-muted-foreground" />
+                      <Icons.dependency className="ml-1 size-2.5 text-muted-foreground" />
                     </Badge>
                   </PopoverTrigger>
 
@@ -120,7 +120,7 @@ export function SettingCheckbox({
                       className="cursor-pointer leading-none"
                     >
                       {conflicts.length}
-                      <Icons.conflict className="ml-1 h-2.5 w-2.5 text-muted-foreground" />
+                      <Icons.conflict className="ml-1 size-2.5 text-muted-foreground" />
                     </Badge>
                   </PopoverTrigger>
 
@@ -153,12 +153,9 @@ export function SettingCheckbox({
             <Link
               href={route}
               target="_blank"
-              className={cn(
-                buttonVariants({ variant: 'ghost' }),
-                'h-9 w-9 p-0'
-              )}
+              className={cn(buttonVariants({ variant: 'ghost' }), 'size-9 p-0')}
             >
-              <Icons.arrowRight className="h-4 w-4 text-muted-foreground" />
+              <Icons.arrowRight className="size-4 text-muted-foreground" />
             </Link>
           </div>
         )}
@@ -210,10 +207,10 @@ export function SettingCheckbox({
                       target="_blank"
                       className={cn(
                         buttonVariants({ variant: 'ghost' }),
-                        'h-9 w-9 p-0'
+                        'size-9 p-0'
                       )}
                     >
-                      <Icons.arrowRight className="h-4 w-4 text-muted-foreground" />
+                      <Icons.arrowRight className="size-4 text-muted-foreground" />
                     </Link>
                   </div>
                 )}

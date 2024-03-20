@@ -39,7 +39,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "react-textarea-autosize": "^8.5.2"
+    "react-textarea-autosize": "^8.5.3"
   },
   "devDependencies": {
     "@udecode/plate-common": "workspace:^"

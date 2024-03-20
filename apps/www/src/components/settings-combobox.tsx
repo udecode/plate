@@ -98,7 +98,7 @@ export function SettingsCombobox() {
             >
               {(customizerPlugins as any)[valueId]?.label ??
                 'Select a value...'}
-              <Icons.chevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              <Icons.chevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
             </Button>
           )}
         </PopoverTrigger>
@@ -139,7 +139,7 @@ export function SettingsCombobox() {
                       >
                         <Check
                           className={cn(
-                            'mr-2 h-4 w-4',
+                            'mr-2 size-4',
                             valueId === item.id ? 'opacity-100' : 'opacity-0'
                           )}
                         />
@@ -162,7 +162,7 @@ export function SettingsCombobox() {
           })}
           href={route}
         >
-          <Icons.externalLink className="h-4 w-4 text-muted-foreground" />
+          <Icons.externalLink className="size-4 text-muted-foreground" />
         </Link>
       )}
     </>

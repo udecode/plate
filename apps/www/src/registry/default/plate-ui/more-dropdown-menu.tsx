@@ -39,7 +39,7 @@ export function MoreDropdownMenu(props: DropdownMenuProps) {
             focusEditor(editor);
           }}
         >
-          <Icons.superscript className="mr-2 h-5 w-5" />
+          <Icons.superscript className="mr-2 size-5" />
           Superscript
           {/* (⌘+,) */}
         </DropdownMenuItem>
@@ -52,7 +52,7 @@ export function MoreDropdownMenu(props: DropdownMenuProps) {
             focusEditor(editor);
           }}
         >
-          <Icons.subscript className="mr-2 h-5 w-5" />
+          <Icons.subscript className="mr-2 size-5" />
           Subscript
           {/* (⌘+.) */}
         </DropdownMenuItem>

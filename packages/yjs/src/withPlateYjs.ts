@@ -87,7 +87,7 @@ export const withPlateYjs = <
         autoConnect: false,
         ...yjsOptions,
       }),
-      provider.awareness,
+      provider.awareness!,
       cursorOptions
     )
   ) as EE;

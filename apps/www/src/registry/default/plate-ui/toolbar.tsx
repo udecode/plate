@@ -27,13 +27,13 @@ export const ToolbarLink = withCn(
 
 export const ToolbarSeparator = withCn(
   ToolbarPrimitive.Separator,
-  'my-1 w-[1px] shrink-0 bg-border'
+  'my-1 w-px shrink-0 bg-border'
 );
 
 const toolbarButtonVariants = cva(
   cn(
     'inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
-    '[&_svg:not([data-icon])]:h-5 [&_svg:not([data-icon])]:w-5'
+    '[&_svg:not([data-icon])]:size-5'
   ),
   {
     variants: {
@@ -96,7 +96,7 @@ const ToolbarButton = withTooltip(
               <>
                 <div className="flex flex-1">{children}</div>
                 <div>
-                  <Icons.arrowDown className="ml-0.5 h-4 w-4" data-icon />
+                  <Icons.arrowDown className="ml-0.5 size-4" data-icon />
                 </div>
               </>
             ) : (
