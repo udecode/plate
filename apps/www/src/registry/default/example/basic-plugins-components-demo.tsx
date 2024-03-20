@@ -66,7 +66,7 @@ export const basicEditorValue = [
     type: 'blockquote',
     children: [
       {
-        text: 'Create blockquotes to emphasize important information or highlight quotes from external sources.',
+        text: 'Create blockquotes1 to emphasize important information or highlight quotes from external sources.',
       },
     ],
     id: '3',

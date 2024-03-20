@@ -64,6 +64,7 @@ import { createHighlightPlugin } from '@udecode/plate-highlight';
 import { createHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { createIndentPlugin } from '@udecode/plate-indent';
 import { createIndentListPlugin } from '@udecode/plate-indent-list';
+import { createIndentTodoPlugin } from '@udecode/plate-indent-todo';
 import { createJuicePlugin } from '@udecode/plate-juice';
 import { createKbdPlugin } from '@udecode/plate-kbd';
 import { createLineHeightPlugin } from '@udecode/plate-line-height';
@@ -159,6 +160,7 @@ export const usePlaygroundPlugins = ({
           }),
           createTodoListPlugin({ enabled: !!enabled.action_item }),
           createTogglePlugin({ enabled: !!enabled.toggle }),
+          createIndentTodoPlugin(),
           createExcalidrawPlugin({ enabled: !!enabled.excalidraw }),
 
           // Marks

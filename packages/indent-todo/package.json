@@ -1,0 +1,66 @@
+{
+  "name": "@udecode/plate-indent-todo",
+  "version": "30.9.2",
+  "description": "Todo plugin for Plate",
+  "license": "MIT",
+  "homepage": "https://platejs.org",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/toggle"
+  },
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
+  "sideEffects": false,
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "module": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "yarn p:build",
+    "build:watch": "yarn p:build:watch",
+    "brl": "yarn p:brl",
+    "clean": "yarn p:clean",
+    "lint": "yarn p:lint",
+    "lint:fix": "yarn p:lint:fix",
+    "test": "yarn p:test",
+    "test:watch": "yarn p:test:watch",
+    "typecheck": "yarn p:typecheck"
+  },
+  "dependencies": {
+    "@udecode/plate-indent": "30.5.3",
+    "@udecode/plate-node-id": "30.5.3",
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "@udecode/plate-common": "workspace:^"
+  },
+  "peerDependencies": {
+    "@udecode/plate-common": ">=30.4.5 < 31",
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0",
+    "slate": ">=0.94.0",
+    "slate-history": ">=0.93.0",
+    "slate-hyperscript": ">=0.66.0",
+    "slate-react": ">=0.99.0"
+  },
+  "keywords": [
+    "plate",
+    "plugin",
+    "slate"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

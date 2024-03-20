@@ -32,6 +32,7 @@ import {
 } from '@udecode/plate-heading';
 import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
 import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
+import { ELEMENT_INDENT_TODO } from '@udecode/plate-indent-todo';
 import { MARK_KBD } from '@udecode/plate-kbd';
 import { ELEMENT_LINK } from '@udecode/plate-link';
 import {
@@ -62,6 +63,7 @@ import { HeadingElement } from '@/registry/default/plate-ui/heading-element';
 import { HighlightLeaf } from '@/registry/default/plate-ui/highlight-leaf';
 import { HrElement } from '@/registry/default/plate-ui/hr-element';
 import { ImageElement } from '@/registry/default/plate-ui/image-element';
+import { IndentTodoElement } from '@/registry/default/plate-ui/indent-todo-element';
 import { KbdLeaf } from '@/registry/default/plate-ui/kbd-leaf';
 import { LinkElement } from '@/registry/default/plate-ui/link-element';
 import { ListElement } from '@/registry/default/plate-ui/list-element';
@@ -114,6 +116,7 @@ export const createPlateUI = (
     [ELEMENT_TH]: TableCellHeaderElement,
     [ELEMENT_TODO_LI]: TodoListElement,
     [ELEMENT_TOGGLE]: ToggleElement,
+    [ELEMENT_INDENT_TODO]: IndentTodoElement,
     [ELEMENT_TR]: TableRowElement,
     [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
     [MARK_BOLD]: withProps(PlateLeaf, { as: 'strong' }),

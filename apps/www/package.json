@@ -76,6 +76,7 @@
     "@udecode/plate-horizontal-rule": "workspace:^",
     "@udecode/plate-indent": "workspace:^",
     "@udecode/plate-indent-list": "workspace:^",
+    "@udecode/plate-indent-todo": "workspace:^",
     "@udecode/plate-juice": "workspace:^",
     "@udecode/plate-kbd": "workspace:^",
     "@udecode/plate-line-height": "workspace:^",
