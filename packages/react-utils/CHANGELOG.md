@@ -1,5 +1,7 @@
 # @udecode/react-utils
 
+## 31.0.0
+
 ## 29.0.1
 
 ### Patch Changes

@@ -1,5 +1,7 @@
 # @udecode/plate-diff
 
+## 31.0.0
+
 ## 30.9.0
 
 ### Minor Changes

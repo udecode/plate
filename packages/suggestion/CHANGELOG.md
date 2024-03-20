@@ -1,5 +1,7 @@
 # @udecode/plate-suggestion
 
+## 31.0.0
+
 ## 30.9.0
 
 ## 30.8.0
