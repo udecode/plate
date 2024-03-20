@@ -1,6 +1,6 @@
 {
   "name": "@udecode/react-utils",
-  "version": "29.0.1",
+  "version": "31.0.0",
   "description": "Udecode React utils",
   "license": "MIT",
   "repository": {
@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.0.2",
-    "@udecode/utils": "24.3.0",
+    "@udecode/utils": "31.0.0",
     "clsx": "^1.2.1"
   },
   "peerDependencies": {

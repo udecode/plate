@@ -1,5 +1,15 @@
 # @udecode/plate-emoji
 
+## 31.0.0
+
+### Minor Changes
+
+- [#3040](https://github.com/udecode/plate/pull/3040) by [@zbeyens](https://github.com/zbeyens) – Updated minor dependencies
+
+### Patch Changes
+
+- [#3040](https://github.com/udecode/plate/pull/3040) by [@zbeyens](https://github.com/zbeyens) – Fixes #3031
+
 ## 30.7.0
 
 ### Patch Changes

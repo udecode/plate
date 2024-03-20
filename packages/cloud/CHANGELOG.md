@@ -1,5 +1,7 @@
 # @udecode/plate-cloud
 
+## 31.0.0
+
 ## 30.7.1
 
 ### Patch Changes
