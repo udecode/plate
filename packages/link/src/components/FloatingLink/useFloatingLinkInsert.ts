@@ -110,6 +110,16 @@ export const useFloatingLinkInsert = ({
 
   useFloatingLinkEscape();
 
+  const updated = floatingLinkSelectors.updated();
+  const updatedValue = React.useCallback(
+    (el: HTMLInputElement) => {
+      if (el && updated) {
+        el.value = floatingLinkSelectors.text();
+      }
+    },
+    [updated]
+  );
+
   return {
     ref: useComposedRef<HTMLDivElement>(floating.refs.setFloating, ref),
     props: {
@@ -122,6 +132,7 @@ export const useFloatingLinkInsert = ({
     textInputProps: {
       onChange,
       defaultValue: floatingLinkSelectors.text(),
+      ref: updatedValue,
     },
   };
 };
