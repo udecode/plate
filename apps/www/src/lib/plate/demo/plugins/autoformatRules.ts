@@ -9,6 +9,7 @@ import {
 } from '@udecode/plate-autoformat';
 
 import { autoformatBlocks } from './autoformatBlocks';
+import { autoformatIndentTodo } from './autoformatIndentTodo';
 import { autoformatMarks } from './autoformatMarks';
 
 export const autoformatRules: AutoformatRule[] = [
@@ -20,4 +21,5 @@ export const autoformatRules: AutoformatRule[] = [
   ...autoformatLegalHtml,
   ...autoformatArrow,
   ...autoformatMath,
+  ...autoformatIndentTodo,
 ];

@@ -8,21 +8,20 @@ import {
   Value,
 } from '@udecode/plate-common';
 
-import { someToggle } from '../queries/someToggle';
-import { openNextToggles } from '../transforms';
+import { someIndentTodo } from '../queries/someIndentTodo';
 import { ELEMENT_INDENT_TODO } from '../types';
 
-export const useToggleToolbarButtonState = () => {
-  const pressed = useEditorSelector((editor) => someToggle(editor), []);
+export const useIndentTodoToolbarButtonState = () => {
+  const pressed = useEditorSelector((editor) => someIndentTodo(editor), []);
 
   return {
     pressed,
   };
 };
 
-export const useToggleToolbarButton = ({
+export const useIndentTodoToolbarButton = ({
   pressed,
-}: ReturnType<typeof useToggleToolbarButtonState>) => {
+}: ReturnType<typeof useIndentTodoToolbarButtonState>) => {
   const editor = useEditorRef<Value, PlateEditor<Value>>();
 
   return {
@@ -32,8 +31,10 @@ export const useToggleToolbarButton = ({
         e.preventDefault();
       },
       onClick: () => {
-        openNextToggles(editor);
-        toggleNodeType(editor, { activeType: ELEMENT_INDENT_TODO });
+        // openNextToggles(editor);
+        toggleNodeType(editor, {
+          activeType: ELEMENT_INDENT_TODO,
+        });
         collapseSelection(editor);
         focusEditor(editor);
       },

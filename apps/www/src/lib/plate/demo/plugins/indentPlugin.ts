@@ -8,6 +8,7 @@ import {
   ELEMENT_H5,
   ELEMENT_H6,
 } from '@udecode/plate-heading';
+import { ELEMENT_INDENT_TODO } from '@udecode/plate-indent-todo';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { ELEMENT_TOGGLE } from '@udecode/plate-toggle';
 
@@ -25,6 +26,7 @@ export const indentPlugin = {
         ELEMENT_BLOCKQUOTE,
         ELEMENT_CODE_BLOCK,
         ELEMENT_TOGGLE,
+        ELEMENT_INDENT_TODO,
       ],
     },
   },

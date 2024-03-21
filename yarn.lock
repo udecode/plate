@@ -6785,8 +6785,6 @@ __metadata:
   dependencies:
     "@udecode/plate-common": "workspace:^"
     "@udecode/plate-indent": "npm:30.5.3"
-    "@udecode/plate-node-id": "npm:30.5.3"
-    lodash: "npm:^4.17.21"
   peerDependencies:
     "@udecode/plate-common": ">=30.4.5 < 31"
     react: ">=16.8.0"

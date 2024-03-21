@@ -2,7 +2,7 @@ import { PlateEditor, someNode, Value } from '@udecode/plate-common';
 
 import { ELEMENT_INDENT_TODO } from '../types';
 
-export const someToggle = <V extends Value>(editor: PlateEditor<V>) => {
+export const someIndentTodo = <V extends Value>(editor: PlateEditor<V>) => {
   return (
     !!editor.selection &&
     someNode(editor, {

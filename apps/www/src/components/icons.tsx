@@ -253,7 +253,23 @@ const yarn = (props: LucideProps) => (
     />
   </svg>
 );
-
+const todo = (props: LucideProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    {...props}
+  >
+    <path d="m9 11 3 3L22 4" />
+    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+  </svg>
+);
 export const Icons = {
   add: Plus,
   alignCenter: AlignCenter,
@@ -302,6 +318,7 @@ export const Icons = {
   excalidraw: PenTool,
   externalLink: ExternalLink,
   gitHub,
+  todo: todo,
   h1: Heading1,
   h2: Heading2,
   h3: Heading3,

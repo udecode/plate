@@ -7,7 +7,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
-    "directory": "packages/toggle"
+    "directory": "packages/indent-todo"
   },
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
@@ -39,9 +39,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-indent": "30.5.3",
-    "@udecode/plate-node-id": "30.5.3",
-    "lodash": "^4.17.21"
+    "@udecode/plate-indent": "30.5.3"
   },
   "devDependencies": {
     "@udecode/plate-common": "workspace:^"

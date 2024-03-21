@@ -1,12 +1,19 @@
-import { createPluginFactory } from '@udecode/plate-common';
+import {
+  createPluginFactory,
+  onKeyDownToggleElement,
+} from '@udecode/plate-common';
 
 import { ELEMENT_INDENT_TODO } from './types';
+import { withIndentTodo } from './withToggle';
 
 export const createIndentTodoPlugin = createPluginFactory({
   key: ELEMENT_INDENT_TODO,
   isElement: true,
-  // inject: { aboveComponent: injectToggle },
-  // useHooks: useHooksToggle,
-  // renderAboveEditable: ToggleControllerProvider,
-  // withOverrides: withToggle,
+  withOverrides: withIndentTodo,
+  handlers: {
+    onKeyDown: onKeyDownToggleElement,
+  },
+  options: {
+    hotkey: 'mod+shift+.',
+  },
 });

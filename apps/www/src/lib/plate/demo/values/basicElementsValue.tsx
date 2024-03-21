@@ -7,12 +7,14 @@ jsx;
 export const basicElementsValue: any = (
   <fragment>
     <hh1>🌳 Blocks</hh1>
-    <htodo>todo test</htodo>
+    <htodo indent={1} id="12alc">
+      todo
+    </htodo>
     <hp>
       Easily create headings of various levels, from H1 to H6, to structure your
       content and make it more organized.
     </hp>
-    <hblockquote>
+    <hblockquote indent={1}>
       Create blockquotes to emphasize important information or highlight quotes
       from external sources.
     </hblockquote>
