@@ -7,6 +7,11 @@ jsx;
 export const indentListValue: any = (
   <fragment>
     <hh2>Indent List</hh2>
+    <hp>Create indented todo</hp>
+    <htodo indent={0}>intent todo</htodo>
+    <htodo indent={1}>intent todo</htodo>
+    <htodo indent={2}>intent todo</htodo>
+
     <hp>
       Create indented lists with multiple levels of indentation and customize
       the list style type for each level.
