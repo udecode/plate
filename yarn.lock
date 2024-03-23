@@ -12219,9 +12219,9 @@ __metadata:
   linkType: hard
 
 "get-func-name@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "get-func-name@npm:2.0.0"
-  checksum: 10c0/ed8791f7ba92cfd747259dff7ec8b6cc42734cebd031fb58c99a6e71d24d3532d84b46ad7806cafad6ad21784dd04ae1808a002d2b21001425e21f5f394c34e7
+  version: 2.0.2
+  resolution: "get-func-name@npm:2.0.2"
+  checksum: 10c0/89830fd07623fa73429a711b9daecdb304386d237c71268007f788f113505ef1d4cc2d0b9680e072c5082490aec9df5d7758bf5ac6f1c37062855e8e3dc0b9df
   languageName: node
   linkType: hard
 
