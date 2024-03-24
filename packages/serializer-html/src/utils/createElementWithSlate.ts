@@ -21,7 +21,9 @@ export const createElementWithSlate = (
     ...props
   } = plateProps || {};
 
-  const plateContent = React.createElement(PlateContent, children);
+  const plateContent = React.createElement(PlateContent, {
+    renderEditable: () => children,
+  });
 
   const plate = React.createElement(
     Plate,
