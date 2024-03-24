@@ -1,6 +1,6 @@
 ---
-"@udecode/plate-indent-list": patch
-"@udecode/plate-indent": patch
+"@udecode/plate-indent-list": minor
+"@udecode/plate-indent": minor
 ---
 
 Feature: todo lists
