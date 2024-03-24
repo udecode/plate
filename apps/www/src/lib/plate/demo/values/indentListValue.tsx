@@ -7,6 +7,9 @@ jsx;
 export const indentListValue: any = (
   <fragment>
     <hh2>Indent List</hh2>
+    <hp indent={1} listStyleType="todo" checked={true}>
+      Decimal 112
+    </hp>
     <hp>
       Create indented lists with multiple levels of indentation and customize
       the list style type for each level.
@@ -23,6 +26,7 @@ export const indentListValue: any = (
     <hp indent={3} listStyleType="decimal" listStart={2}>
       Decimal 112
     </hp>
+
     {/* <hp indent={3} listStyleType="lower-latin"> */}
     {/*  7K-T */}
     {/* </hp> */}
