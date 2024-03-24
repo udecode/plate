@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   findNodePath,
+  getPluginOptions,
   InjectComponentProps,
   InjectComponentReturnType,
   setNodes,
@@ -8,6 +9,7 @@ import {
 import { clsx } from 'clsx';
 
 import {
+  IndentListPlugin,
   KEY_LIST_CHECKED,
   KEY_LIST_START,
   KEY_LIST_STYLE_TYPE,
@@ -70,23 +72,38 @@ export const injectIndentListComponent = (
       margin: 0,
     };
     return function Ol({ children, editor }) {
+      const { markerComponent } = getPluginOptions<IndentListPlugin>(
+        editor,
+        KEY_LIST_STYLE_TYPE
+      );
+
       return (
         <div className={className} style={style}>
-          <input
-            contentEditable={false}
-            data-slate-void
-            type="checkbox"
-            style={{
-              marginRight: 5,
-              marginLeft: -17,
-              paddingTop: -10,
-            }}
-            checked={checked}
-            onChange={(v) => {
-              const path = findNodePath(editor, element);
-              setNodes(editor, { checked: v.target.checked }, { at: path });
-            }}
-          />
+          {markerComponent ? (
+            markerComponent({
+              checked: checked,
+              onChange: (v: boolean) => {
+                const path = findNodePath(editor, element);
+                setNodes(editor, { checked: v }, { at: path });
+              },
+            })
+          ) : (
+            <input
+              contentEditable={false}
+              data-slate-void
+              type="checkbox"
+              style={{
+                marginRight: 5,
+                marginLeft: -17,
+                paddingTop: -10,
+              }}
+              checked={checked}
+              onChange={(v) => {
+                const path = findNodePath(editor, element);
+                setNodes(editor, { checked: v.target.checked }, { at: path });
+              }}
+            />
+          )}
           <span>{children}</span>
         </div>
       );

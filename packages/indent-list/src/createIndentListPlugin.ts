@@ -28,6 +28,13 @@ export interface IndentListPlugin {
    * Map html element to list style type.
    */
   getListStyleType?: (element: HTMLElement) => ListStyleType;
+
+  markerComponent?: React.FC<IMarkerComponentProps>;
+}
+
+export interface IMarkerComponentProps {
+  onChange: (checked: boolean) => void;
+  checked: boolean;
 }
 
 export const createIndentListPlugin = createPluginFactory<IndentListPlugin>({
