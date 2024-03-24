@@ -39,7 +39,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@excalidraw/excalidraw": "0.12.0"
+    "@excalidraw/excalidraw": "0.16.0"
   },
   "devDependencies": {
     "@udecode/plate-common": "workspace:^"
