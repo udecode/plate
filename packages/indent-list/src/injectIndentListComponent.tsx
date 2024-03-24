@@ -63,7 +63,6 @@ export const injectIndentListComponent = (
   }
 
   if (isTodo) {
-    console.log(1, 'fj');
     const className = clsx('slate-list-todo');
     const checked = element[KEY_LIST_CHECKED] as boolean;
     const style: React.CSSProperties = {
