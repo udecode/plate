@@ -68,6 +68,7 @@ export const injectIndentListComponent = (
     const className = clsx('slate-list-todo');
     const checked = element[KEY_LIST_CHECKED] as boolean;
     const style: React.CSSProperties = {
+      position: 'relative',
       padding: 0,
       margin: 0,
     };
@@ -78,7 +79,7 @@ export const injectIndentListComponent = (
       );
 
       return (
-        <div className={className} style={style}>
+        <div className={`${className}`} style={style}>
           {markerComponent ? (
             markerComponent({
               checked: checked,

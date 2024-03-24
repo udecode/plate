@@ -6,7 +6,7 @@ export const TodoMarker = (props: IMarkerComponentProps) => {
   const { onChange, checked } = props;
   return (
     <Checkbox
-      style={{ marginLeft: -24, marginRight: 8 }}
+      style={{ left: -24, top: 4, position: 'absolute' }}
       onCheckedChange={onChange}
       checked={checked}
     />
