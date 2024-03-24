@@ -15,6 +15,7 @@ import { KEY_INDENT } from '@udecode/plate-indent';
 
 import {
   IndentListPlugin,
+  KEY_LIST_CHECKED,
   KEY_LIST_STYLE_TYPE,
 } from '../createIndentListPlugin';
 import { areEqListStyleType } from '../queries/areEqListStyleType';
@@ -76,7 +77,7 @@ export const toggleIndentList = <V extends Value>(
           if (indent > 1) {
             setElements(editor, { [KEY_INDENT]: indent - 1 }, { at: path });
           } else {
-            unsetNodes(editor, KEY_INDENT, { at: path });
+            unsetNodes(editor, [KEY_INDENT, KEY_LIST_CHECKED], { at: path });
           }
           // setIndentListNode(editor, {
           //   listStyleType,

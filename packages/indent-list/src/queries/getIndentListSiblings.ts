@@ -6,7 +6,10 @@ import {
   Value,
 } from '@udecode/plate-common';
 
-import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
+import {
+  KEY_LIST_CHECKED,
+  KEY_LIST_STYLE_TYPE,
+} from '../createIndentListPlugin';
 import { getNextIndentList } from './getNextIndentList';
 import { getPreviousIndentList } from './getPreviousIndentList';
 import { GetSiblingIndentListOptions } from './getSiblingIndentList';
@@ -37,7 +40,13 @@ export const getIndentListSiblings = <
 
   const [node] = entry;
 
-  if (!(node as any)[KEY_LIST_STYLE_TYPE]) return siblings;
+  // if (!(node as any)[KEY_LIST_STYLE_TYPE]) return siblings;
+  if (
+    !(node as any)[KEY_LIST_STYLE_TYPE] &&
+    // @ts-ignore
+    !node.hasOwnProperty(KEY_LIST_CHECKED)
+  )
+    return siblings;
 
   let iterEntry = entry;
 

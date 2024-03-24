@@ -18,11 +18,13 @@ import { withIndentList } from './withIndentList';
 export const KEY_LIST_STYLE_TYPE = 'listStyleType';
 export const KEY_LIST_START = 'listStart';
 export const KEY_LIST_RESTART = 'listRestart';
+export const KEY_LIST_CHECKED = 'checked';
+export const KEY_TODO_STYLE_TYPE = 'todo';
 
 export interface IndentListPlugin {
   getSiblingIndentListOptions?: GetSiblingIndentListOptions<TElement>;
 
-  /**
+  /**x
    * Map html element to list style type.
    */
   getListStyleType?: (element: HTMLElement) => ListStyleType;

@@ -66,6 +66,7 @@ import {
   Settings,
   Settings2,
   Smile,
+  Square,
   Strikethrough,
   Subscript,
   SunMedium,
@@ -255,6 +256,7 @@ const yarn = (props: LucideProps) => (
 );
 
 export const Icons = {
+  todo: Square,
   add: Plus,
   alignCenter: AlignCenter,
   alignJustify: AlignJustify,
