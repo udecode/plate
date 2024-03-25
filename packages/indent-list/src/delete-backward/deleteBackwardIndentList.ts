@@ -4,6 +4,7 @@ import {
   getNodeString,
   getPointBefore,
   getPreviousNode,
+  isCollapsed,
   isDefined,
   isElement,
   PlateEditor,
@@ -35,6 +36,10 @@ const deleteWhenEmpty = <V extends Value>(
   editor: PlateEditor<V>,
   unit: TextUnitAdjustment
 ) => {
+  const { selection } = editor;
+
+  if (unit !== 'character' || !isCollapsed(selection)) return;
+
   const pointBefore = getPointBefore(
     editor,
     editor.selection as Slate.Location,
@@ -42,6 +47,7 @@ const deleteWhenEmpty = <V extends Value>(
       unit,
     }
   );
+  if (!pointBefore) return;
   const aboveEntry = getAboveNode(editor, {
     match: (n) => isElement(n) && n.type === ELEMENT_DEFAULT,
   });
