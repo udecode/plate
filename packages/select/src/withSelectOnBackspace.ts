@@ -15,6 +15,7 @@ import {
 import Slate from 'slate';
 
 import { SelectOnBackspacePlugin } from './createSelectOnBackspacePlugin';
+import { deleteWhenEmpty } from './transforms';
 
 /**
  * Set a list of element types to select on backspace
@@ -58,7 +59,8 @@ export const withSelectOnBackspace = <
           // don't delete image, set selection there
           select(editor, pointBefore);
         } else {
-          deleteBackward(unit);
+          // 1. don't delete the indent list element when just a bullets numbering or checkbox should be turn to default paragraph
+          if (!deleteWhenEmpty(editor, pointBefore)) deleteBackward(unit);
         }
       } else {
         deleteBackward(unit);

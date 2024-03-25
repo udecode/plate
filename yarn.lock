@@ -6906,6 +6906,7 @@ __metadata:
   resolution: "@udecode/plate-select@workspace:packages/select"
   dependencies:
     "@udecode/plate-common": "workspace:^"
+    "@udecode/plate-indent": "npm:31.0.0"
   peerDependencies:
     "@udecode/plate-common": ">=31.0.0"
     react: ">=16.8.0"
