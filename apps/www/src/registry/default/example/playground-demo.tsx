@@ -118,6 +118,7 @@ import { CursorOverlay } from '@/registry/default/plate-ui/cursor-overlay';
 import { Editor } from '@/registry/default/plate-ui/editor';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
 import { FloatingToolbar } from '@/registry/default/plate-ui/floating-toolbar';
+import { TodoMarker } from '@/registry/default/plate-ui/indent-todo-marker-component';
 import { MentionCombobox } from '@/registry/default/plate-ui/mention-combobox';
 
 export const usePlaygroundPlugins = ({
@@ -232,6 +233,9 @@ export const usePlaygroundPlugins = ({
               },
             },
             enabled: id === 'indentlist' || !!enabled.listStyleType,
+            options: {
+              markerComponent: TodoMarker,
+            },
           }),
           createLineHeightPlugin({
             ...lineHeightPlugin,

@@ -13,6 +13,7 @@ import {
   IndentListPlugin,
   KEY_LIST_STYLE_TYPE,
 } from './createIndentListPlugin';
+import { deleteBackwardIndentList } from './delete-backward/deleteBackwardIndentList';
 import { normalizeIndentList } from './normalizeIndentList';
 import { normalizeIndentListStart } from './normalizers/normalizeIndentListStart';
 import { getNextIndentList } from './queries/getNextIndentList';
@@ -31,6 +32,8 @@ export const withIndentList = <
   const { getSiblingIndentListOptions } = options;
 
   editor.normalizeNode = normalizeIndentList<Value>(editor, options);
+
+  editor.deleteBackward = deleteBackwardIndentList(editor);
 
   editor.apply = (operation) => {
     const { path } = operation as any;

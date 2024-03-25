@@ -1,5 +1,10 @@
 import { AutoformatRule } from '@udecode/plate-autoformat';
-import { ListStyleType, toggleIndentList } from '@udecode/plate-indent-list';
+import {
+  KEY_TODO_STYLE_TYPE,
+  ListStyleType,
+  toggleIndentList,
+} from '@udecode/plate-indent-list';
+import { setNodes } from '@udecode/slate';
 
 export const autoformatIndentLists: AutoformatRule[] = [
   {
@@ -20,5 +25,33 @@ export const autoformatIndentLists: AutoformatRule[] = [
       toggleIndentList(editor, {
         listStyleType: ListStyleType.Decimal,
       }),
+  },
+  {
+    mode: 'block',
+    type: 'list',
+    match: ['[] '],
+    format: (editor) => {
+      toggleIndentList(editor, {
+        listStyleType: KEY_TODO_STYLE_TYPE,
+      });
+      setNodes(editor, {
+        listStyleType: KEY_TODO_STYLE_TYPE,
+        checked: false,
+      });
+    },
+  },
+  {
+    mode: 'block',
+    type: 'list',
+    match: ['[x] '],
+    format: (editor) => {
+      toggleIndentList(editor, {
+        listStyleType: KEY_TODO_STYLE_TYPE,
+      });
+      setNodes(editor, {
+        listStyleType: KEY_TODO_STYLE_TYPE,
+        checked: true,
+      });
+    },
   },
 ];
