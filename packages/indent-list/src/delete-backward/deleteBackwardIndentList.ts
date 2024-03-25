@@ -1,15 +1,22 @@
 import {
+  ELEMENT_DEFAULT,
   getAboveNode,
   getNodeString,
-  isCollapsed,
+  getPointBefore,
+  getPreviousNode,
   isDefined,
+  isElement,
   PlateEditor,
+  removeNodes,
+  select,
+  TElement,
+  unsetNodes,
   Value,
 } from '@udecode/plate-common';
-import { TextUnit } from 'slate';
+import { outdent } from '@udecode/plate-indent';
+import Slate, { TextUnit, TextUnitAdjustment } from 'slate';
 
-import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
-import { outdentList } from '../transforms';
+import { isIndentElement } from '../queries';
 
 export const deleteBackwardIndentList = <V extends Value>(
   editor: PlateEditor<V>
@@ -17,20 +24,46 @@ export const deleteBackwardIndentList = <V extends Value>(
   const { deleteBackward } = editor;
 
   return function (unit: TextUnit) {
-    deleteBackwardHelper(editor);
-    deleteBackward(unit);
+    // don't delete the indent list element when just a bullets numbering or checkbox should be turn to default paragraph
+    if (!deleteWhenEmpty(editor, unit)) {
+      return deleteBackward(unit);
+    }
   };
 };
 
-function deleteBackwardHelper<V extends Value>(editor: PlateEditor<V>) {
-  if (isCollapsed(editor.selection)) {
-    const str = getNodeString(editor);
-    if (str) return;
-    const entry = getAboveNode(editor);
-    if (!entry) return;
-    const node = entry[0];
-    if (isDefined(node[KEY_LIST_STYLE_TYPE])) {
-      outdentList(editor);
+const deleteWhenEmpty = <V extends Value>(
+  editor: PlateEditor<V>,
+  unit: TextUnitAdjustment
+) => {
+  const pointBefore = getPointBefore(
+    editor,
+    editor.selection as Slate.Location,
+    {
+      unit,
     }
+  );
+  const aboveEntry = getAboveNode(editor, {
+    match: (n) => isElement(n) && n.type === ELEMENT_DEFAULT,
+  });
+
+  const prevEntry = getPreviousNode(editor, {
+    match: (n) => n.type === ELEMENT_DEFAULT || n.type === 'blockquote',
+  });
+
+  if (!prevEntry || !aboveEntry) return;
+
+  const [prevCell] = prevEntry;
+  const [aboveCell] = aboveEntry;
+
+  if (!getNodeString(prevCell) && !isDefined(aboveCell.listStyleType)) {
+    removeNodes(editor);
+    select(editor, pointBefore!);
+    return true;
   }
-}
+
+  if (!getNodeString(aboveCell) && isIndentElement(aboveCell as TElement)) {
+    outdent(editor);
+    unsetNodes(editor, ['listStyleType', 'checked']);
+    return true;
+  }
+};
