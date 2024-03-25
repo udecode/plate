@@ -1,5 +1,11 @@
 # @udecode/plate-indent-list
 
+## 31.1.0
+
+### Minor Changes
+
+- [#3058](https://github.com/udecode/plate/pull/3058) by [@felixfeng33](https://github.com/felixfeng33) – Feature: todo lists
+
 ## 31.0.0
 
 ## 30.5.3

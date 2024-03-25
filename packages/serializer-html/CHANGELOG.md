@@ -1,5 +1,11 @@
 # @udecode/plate-serializer-html
 
+## 31.1.0
+
+### Patch Changes
+
+- [#2837](https://github.com/udecode/plate/pull/2837) by [@dimaanj](https://github.com/dimaanj) – Fixes "The `useSlateStatic` hook must be used inside the <Slate> component's context." error in `serializeHtml`
+
 ## 31.0.0
 
 ### Minor Changes
