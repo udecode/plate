@@ -1,5 +1,11 @@
 # @udecode/plate-indent-list
 
+## 31.1.2
+
+### Patch Changes
+
+- [#3067](https://github.com/udecode/plate/pull/3067) by [@felixfeng33](https://github.com/felixfeng33) – remove data-slate-void
+
 ## 31.1.1
 
 ### Patch Changes
