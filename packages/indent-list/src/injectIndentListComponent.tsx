@@ -80,7 +80,7 @@ export const injectIndentListComponent = (
 
       return (
         <div className={`${className}`} style={style}>
-          <div contentEditable={false} data-slate-void>
+          <div contentEditable={false}>
             {markerComponent ? (
               markerComponent({
                 checked: checked,
