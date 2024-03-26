@@ -80,31 +80,27 @@ export const injectIndentListComponent = (
 
       return (
         <div className={`${className}`} style={style}>
-          {markerComponent ? (
-            markerComponent({
-              checked: checked,
-              onChange: (v: boolean) => {
-                const path = findNodePath(editor, element);
-                setNodes(editor, { checked: v }, { at: path });
-              },
-            })
-          ) : (
-            <input
-              contentEditable={false}
-              data-slate-void
-              type="checkbox"
-              style={{
-                marginRight: 5,
-                marginLeft: -17,
-                paddingTop: -10,
-              }}
-              checked={checked}
-              onChange={(v) => {
-                const path = findNodePath(editor, element);
-                setNodes(editor, { checked: v.target.checked }, { at: path });
-              }}
-            />
-          )}
+          <div contentEditable={false} data-slate-void>
+            {markerComponent ? (
+              markerComponent({
+                checked: checked,
+                onChange: (v: boolean) => {
+                  const path = findNodePath(editor, element);
+                  setNodes(editor, { checked: v }, { at: path });
+                },
+              })
+            ) : (
+              <input
+                type="checkbox"
+                style={{ position: 'absolute', left: -19, top: 6 }}
+                checked={checked}
+                onChange={(v) => {
+                  const path = findNodePath(editor, element);
+                  setNodes(editor, { checked: v.target.checked }, { at: path });
+                }}
+              />
+            )}
+          </div>
           <span>{children}</span>
         </div>
       );
