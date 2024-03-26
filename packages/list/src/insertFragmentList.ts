@@ -199,6 +199,14 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
       mode: 'lowest',
     });
 
+    // Check again if liEntry is undefined after the deletion above.
+    // This prevents unexpected behavior when pasting while a list is highlighted
+    if (!liEntry) {
+      return insertFragment(
+        isListRoot(editor, fragment[0]) ? [{ text: '' }, ...fragment] : fragment
+      );
+    }
+
     const licEntry = findNode<TElement>(editor, {
       match: { type: listItemContentType },
       mode: 'lowest',
