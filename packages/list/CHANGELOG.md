@@ -1,5 +1,12 @@
 # @udecode/plate-list
 
+## 31.1.3
+
+### Patch Changes
+
+- [#3070](https://github.com/udecode/plate/pull/3070) by [@zbeyens](https://github.com/zbeyens) – Fixes #3069
+  Fixes #2397
+
 ## 31.0.0
 
 ## 30.5.3
