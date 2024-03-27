@@ -12,7 +12,11 @@ import {
 import { injectIndentListComponent } from './injectIndentListComponent';
 import { onKeyDownIndentList } from './onKeyDownIndentList';
 import { GetSiblingIndentListOptions } from './queries/getSiblingIndentList';
-import { ListStyleType } from './types';
+import {
+  IMarkerCheckedStyle,
+  IMarkerComponentProps,
+  ListStyleType,
+} from './types';
 import { withIndentList } from './withIndentList';
 
 export const KEY_LIST_STYLE_TYPE = 'listStyleType';
@@ -30,11 +34,7 @@ export interface IndentListPlugin {
   getListStyleType?: (element: HTMLElement) => ListStyleType;
 
   markerComponent?: React.FC<IMarkerComponentProps>;
-}
-
-export interface IMarkerComponentProps {
-  onChange: (checked: boolean) => void;
-  checked: boolean;
+  markerCheckedStyle?: React.FC<IMarkerCheckedStyle>;
 }
 
 export const createIndentListPlugin = createPluginFactory<IndentListPlugin>({

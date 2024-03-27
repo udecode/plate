@@ -68,3 +68,15 @@ export enum ListStyleType {
   // Inherits this property from its parent element. Read about inherit
   Inherit = 'inherit',
 }
+
+export interface IMarkerCheckedStyle {
+  className?: string;
+  style?: React.CSSProperties;
+  checked: boolean;
+  children: any;
+}
+
+export interface IMarkerComponentProps {
+  onChange: (checked: boolean) => void;
+  checked: boolean;
+}

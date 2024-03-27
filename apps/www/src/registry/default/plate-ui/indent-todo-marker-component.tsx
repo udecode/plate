@@ -1,4 +1,8 @@
-import { IMarkerComponentProps } from '@udecode/plate-indent-list';
+import { cn } from '@udecode/cn';
+import {
+  IMarkerCheckedStyle,
+  IMarkerComponentProps,
+} from '@udecode/plate-indent-list';
 
 import { Checkbox } from './checkbox';
 
@@ -10,5 +14,14 @@ export const TodoMarker = (props: IMarkerComponentProps) => {
       onCheckedChange={onChange}
       checked={checked}
     />
+  );
+};
+
+export const CheckedMarker = (props: IMarkerCheckedStyle) => {
+  const { checked, children } = props;
+  return (
+    <span className={cn(checked && 'text-muted-foreground line-through')}>
+      {children}
+    </span>
   );
 };

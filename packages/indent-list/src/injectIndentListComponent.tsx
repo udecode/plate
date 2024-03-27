@@ -73,10 +73,8 @@ export const injectIndentListComponent = (
       margin: 0,
     };
     return function Ol({ children, editor }) {
-      const { markerComponent } = getPluginOptions<IndentListPlugin>(
-        editor,
-        KEY_LIST_STYLE_TYPE
-      );
+      const { markerComponent, markerCheckedStyle } =
+        getPluginOptions<IndentListPlugin>(editor, KEY_LIST_STYLE_TYPE);
 
       return (
         <div className={`${className}`} style={style}>
@@ -101,7 +99,15 @@ export const injectIndentListComponent = (
               />
             )}
           </div>
-          <span>{children}</span>
+
+          {markerCheckedStyle ? (
+            markerCheckedStyle({
+              checked: checked,
+              children: children,
+            })
+          ) : (
+            <span>{children}</span>
+          )}
         </div>
       );
     };
