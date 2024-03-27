@@ -70,8 +70,6 @@ export enum ListStyleType {
 }
 
 export interface IMarkerCheckedStyle {
-  className?: string;
-  style?: React.CSSProperties;
   checked: boolean;
   children: any;
 }
