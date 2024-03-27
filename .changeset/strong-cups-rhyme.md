@@ -1,5 +1,5 @@
 ---
-"@udecode/plate-indent-list": major
+"@udecode/plate-indent-list": minor
 ---
 
 Add listStyleTypes option to custom indent list
