@@ -12,11 +12,7 @@ import {
 import { injectIndentListComponent } from './injectIndentListComponent';
 import { onKeyDownIndentList } from './onKeyDownIndentList';
 import { GetSiblingIndentListOptions } from './queries/getSiblingIndentList';
-import {
-  ILiComponentProps,
-  IMarkerComponentProps,
-  ListStyleType,
-} from './types';
+import { LiComponentProps, ListStyleType, MarkerComponentProps } from './types';
 import { withIndentList } from './withIndentList';
 
 export const KEY_LIST_STYLE_TYPE = 'listStyleType';
@@ -37,8 +33,8 @@ export interface IndentListPlugin {
     string,
     {
       type: string;
-      markerComponent?: React.FC<IMarkerComponentProps>;
-      liComponent?: React.FC<ILiComponentProps>;
+      markerComponent?: React.FC<MarkerComponentProps>;
+      liComponent?: React.FC<LiComponentProps>;
       isNumbered?: boolean;
     }
   >;

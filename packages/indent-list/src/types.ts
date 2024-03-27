@@ -71,12 +71,12 @@ export enum ListStyleType {
   Inherit = 'inherit',
 }
 
-export interface ILiComponentProps {
+export interface LiComponentProps {
   element: TElement;
   children: any;
 }
 
-export interface IMarkerComponentProps {
+export interface MarkerComponentProps {
   onChange?: (checked: boolean) => void;
   element: TElement;
   editor: PlateEditor<Value>;
