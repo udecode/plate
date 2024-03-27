@@ -1,3 +1,5 @@
+import { PlateEditor, TElement, Value } from '@udecode/plate-common';
+
 export enum ListStyleType {
   // The marker is traditional Armenian numbering
   Armenian = 'armenian',
@@ -69,12 +71,13 @@ export enum ListStyleType {
   Inherit = 'inherit',
 }
 
-export interface IMarkerCheckedStyle {
-  checked: boolean;
+export interface ILiComponentProps {
+  element: TElement;
   children: any;
 }
 
 export interface IMarkerComponentProps {
-  onChange: (checked: boolean) => void;
-  checked: boolean;
+  onChange?: (checked: boolean) => void;
+  element: TElement;
+  editor: PlateEditor<Value>;
 }
