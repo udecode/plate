@@ -6672,13 +6672,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-indent-list@npm:31.1.0, @udecode/plate-indent-list@workspace:^, @udecode/plate-indent-list@workspace:packages/indent-list":
+"@udecode/plate-indent-list@npm:31.1.3, @udecode/plate-indent-list@workspace:^, @udecode/plate-indent-list@workspace:packages/indent-list":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-indent-list@workspace:packages/indent-list"
   dependencies:
     "@udecode/plate-common": "workspace:^"
     "@udecode/plate-indent": "npm:31.1.0"
-    "@udecode/plate-list": "npm:31.0.0"
+    "@udecode/plate-list": "npm:31.1.3"
     clsx: "npm:^1.2.1"
   peerDependencies:
     "@udecode/plate-common": ">=31.0.0"
@@ -6774,7 +6774,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-list@npm:31.0.0, @udecode/plate-list@workspace:^, @udecode/plate-list@workspace:packages/list":
+"@udecode/plate-list@npm:31.1.3, @udecode/plate-list@workspace:^, @udecode/plate-list@workspace:packages/list":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-list@workspace:packages/list"
   dependencies:
@@ -6961,14 +6961,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-docx@npm:31.1.0, @udecode/plate-serializer-docx@workspace:^, @udecode/plate-serializer-docx@workspace:packages/serializer-docx":
+"@udecode/plate-serializer-docx@npm:31.1.3, @udecode/plate-serializer-docx@workspace:^, @udecode/plate-serializer-docx@workspace:packages/serializer-docx":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-docx@workspace:packages/serializer-docx"
   dependencies:
     "@udecode/plate-common": "workspace:^"
     "@udecode/plate-heading": "npm:31.0.0"
     "@udecode/plate-indent": "npm:31.1.0"
-    "@udecode/plate-indent-list": "npm:31.1.0"
+    "@udecode/plate-indent-list": "npm:31.1.3"
     "@udecode/plate-media": "npm:31.0.0"
     "@udecode/plate-paragraph": "npm:31.0.0"
     "@udecode/plate-table": "npm:31.0.0"
@@ -7002,7 +7002,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-md@npm:31.0.0, @udecode/plate-serializer-md@workspace:^, @udecode/plate-serializer-md@workspace:packages/serializer-md":
+"@udecode/plate-serializer-md@npm:31.1.3, @udecode/plate-serializer-md@workspace:^, @udecode/plate-serializer-md@workspace:packages/serializer-md":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-md@workspace:packages/serializer-md"
   dependencies:
@@ -7013,7 +7013,7 @@ __metadata:
     "@udecode/plate-heading": "npm:31.0.0"
     "@udecode/plate-horizontal-rule": "npm:31.0.0"
     "@udecode/plate-link": "npm:31.0.0"
-    "@udecode/plate-list": "npm:31.0.0"
+    "@udecode/plate-list": "npm:31.1.3"
     "@udecode/plate-media": "npm:31.0.0"
     "@udecode/plate-paragraph": "npm:31.0.0"
     remark-parse: "npm:^9.0.0"
@@ -7219,11 +7219,11 @@ __metadata:
     "@udecode/plate-highlight": "npm:31.0.0"
     "@udecode/plate-horizontal-rule": "npm:31.0.0"
     "@udecode/plate-indent": "npm:31.1.0"
-    "@udecode/plate-indent-list": "npm:31.1.0"
+    "@udecode/plate-indent-list": "npm:31.1.3"
     "@udecode/plate-kbd": "npm:31.0.0"
     "@udecode/plate-line-height": "npm:31.0.0"
     "@udecode/plate-link": "npm:31.0.0"
-    "@udecode/plate-list": "npm:31.0.0"
+    "@udecode/plate-list": "npm:31.1.3"
     "@udecode/plate-media": "npm:31.0.0"
     "@udecode/plate-mention": "npm:31.0.0"
     "@udecode/plate-node-id": "npm:31.0.0"
@@ -7233,9 +7233,9 @@ __metadata:
     "@udecode/plate-resizable": "npm:31.0.0"
     "@udecode/plate-select": "npm:31.0.0"
     "@udecode/plate-serializer-csv": "npm:31.0.0"
-    "@udecode/plate-serializer-docx": "npm:31.1.0"
+    "@udecode/plate-serializer-docx": "npm:31.1.3"
     "@udecode/plate-serializer-html": "npm:31.1.0"
-    "@udecode/plate-serializer-md": "npm:31.0.0"
+    "@udecode/plate-serializer-md": "npm:31.1.3"
     "@udecode/plate-suggestion": "npm:31.0.0"
     "@udecode/plate-tabbable": "npm:31.0.0"
     "@udecode/plate-table": "npm:31.0.0"
