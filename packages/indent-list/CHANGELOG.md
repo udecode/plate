@@ -1,5 +1,19 @@
 # @udecode/plate-indent-list
 
+## 31.1.3
+
+## 31.1.2
+
+### Patch Changes
+
+- [#3067](https://github.com/udecode/plate/pull/3067) by [@felixfeng33](https://github.com/felixfeng33) – remove data-slate-void
+
+## 31.1.1
+
+### Patch Changes
+
+- [#3066](https://github.com/udecode/plate/pull/3066) by [@felixfeng33](https://github.com/felixfeng33) – fix pressing Arrow Up the cursor abnormal
+
 ## 31.1.0
 
 ### Minor Changes
