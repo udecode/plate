@@ -1,5 +1,11 @@
 # @udecode/plate-indent-list
 
+## 31.2.0
+
+### Minor Changes
+
+- [#3073](https://github.com/udecode/plate/pull/3073) by [@felixfeng33](https://github.com/felixfeng33) – Add listStyleTypes option to custom indent list
+
 ## 31.1.3
 
 ## 31.1.2
