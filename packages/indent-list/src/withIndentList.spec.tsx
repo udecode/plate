@@ -30,7 +30,10 @@ describe('normalizeIndentList', () => {
           <hp indent={1} listStyleType="decimal">
             1
           </hp>
-          <hp indent={1} listStyleType="decimal" listStart={2}>
+          <hp>
+            <cursor />
+          </hp>
+          <hp indent={1} listStyleType="decimal">
             1
           </hp>
         </editor>
