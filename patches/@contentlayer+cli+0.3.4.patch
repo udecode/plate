@@ -1,0 +1,13 @@
+diff --git a/node_modules/@contentlayer/cli/dist/commands/BuildCommand.js b/node_modules/@contentlayer/cli/dist/commands/BuildCommand.js
+index 17ef190..fb190fd 100644
+--- a/node_modules/@contentlayer/cli/dist/commands/BuildCommand.js
++++ b/node_modules/@contentlayer/cli/dist/commands/BuildCommand.js
+@@ -4,7 +4,7 @@ import { BaseCommand } from './_BaseCommand.js';
+ export class BuildCommand extends BaseCommand {
+     constructor() {
+         super(...arguments);
+-        this.executeSafe = () => pipe(this.clearCacheIfNeeded(), T.chain(() => core.getConfig({ configPath: this.configPath })), T.tap((config) => (config.source.options.disableImportAliasWarning ? T.unit : T.fork(core.validateTsconfig))), T.chain((config) => core.generateDotpkg({ config, verbose: this.verbose })), T.tap(core.logGenerateInfo), OT.withSpan('@contentlayer/cli/commands/BuildCommand:executeSafe'));
++        this.executeSafe = () => pipe(this.clearCacheIfNeeded(), T.chain(() => core.getConfig({ configPath: this.configPath })), T.tap((config) => (config.source.options.disableImportAliasWarning ? T.unit : T.fork(core.validateTsconfig))), T.chain((config) => core.generateDotpkg({ config, verbose: this.verbose })), T.tap(core.logGenerateInfo), T.map(() => 0), OT.withSpan('@contentlayer/cli/commands/BuildCommand:executeSafe'));
+     }
+ }
+ BuildCommand.paths = [['build']];
