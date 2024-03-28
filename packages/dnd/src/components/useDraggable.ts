@@ -1,8 +1,10 @@
 import React from 'react';
 import { TEditor, TElement } from '@udecode/plate-common';
-import { ConnectDragSource, DropTargetMonitor } from 'react-dnd';
+import { DropTargetMonitor } from 'react-dnd';
 
 import { DragItemNode, DropLineDirection, useDndBlock } from '..';
+
+import type { ReactElement, RefObject } from 'react';
 
 export type DraggableState = {
   dropLine: DropLineDirection;
@@ -10,7 +12,9 @@ export type DraggableState = {
   setIsHovered: (isHovered: boolean) => void;
   isDragging: boolean;
   nodeRef: React.RefObject<HTMLDivElement>;
-  dragRef: ConnectDragSource;
+  dragRef: (
+    elementOrNode: RefObject<any> | ReactElement | Element | null
+  ) => void;
 };
 
 export const useDraggableState = (props: {
