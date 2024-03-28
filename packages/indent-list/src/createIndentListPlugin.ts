@@ -4,6 +4,7 @@ import {
   getPluginType,
   isHtmlBlockElement,
   KEY_DESERIALIZE_HTML,
+  PlateRenderElementProps,
   postCleanHtml,
   TElement,
   traverseHtmlElements,
@@ -12,7 +13,7 @@ import {
 import { injectIndentListComponent } from './injectIndentListComponent';
 import { onKeyDownIndentList } from './onKeyDownIndentList';
 import { GetSiblingIndentListOptions } from './queries/getSiblingIndentList';
-import { LiComponentProps, ListStyleType, MarkerComponentProps } from './types';
+import { ListStyleType } from './types';
 import { withIndentList } from './withIndentList';
 
 export const KEY_LIST_STYLE_TYPE = 'listStyleType';
@@ -20,6 +21,9 @@ export const KEY_LIST_START = 'listStart';
 export const KEY_LIST_RESTART = 'listRestart';
 export const KEY_LIST_CHECKED = 'checked';
 export const KEY_TODO_STYLE_TYPE = 'todo';
+
+export type MarkerFC = React.FC<Omit<PlateRenderElementProps, 'children'>>;
+export type LiFC = React.FC<PlateRenderElementProps>;
 
 export interface IndentListPlugin {
   getSiblingIndentListOptions?: GetSiblingIndentListOptions<TElement>;
@@ -33,9 +37,9 @@ export interface IndentListPlugin {
     string,
     {
       type: string;
-      markerComponent?: React.FC<MarkerComponentProps>;
-      liComponent?: React.FC<LiComponentProps>;
-      isNumbered?: boolean;
+      markerComponent?: MarkerFC;
+      liComponent?: LiFC;
+      isOrdered?: boolean;
     }
   >;
 }

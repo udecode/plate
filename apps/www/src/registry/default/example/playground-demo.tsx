@@ -123,7 +123,7 @@ import {
   FireMarker,
 } from '@/registry/default/plate-ui/indent-fire-marker-component';
 import {
-  IndentTodoLiComponent,
+  TodoLi,
   TodoMarker,
 } from '@/registry/default/plate-ui/indent-todo-marker-component';
 import { MentionCombobox } from '@/registry/default/plate-ui/mention-combobox';
@@ -242,18 +242,10 @@ export const usePlaygroundPlugins = ({
             enabled: id === 'indentlist' || !!enabled.listStyleType,
             options: {
               listStyleTypes: {
-                ['upper-roman']: {
-                  type: 'upper-roman',
-                  isNumbered: true,
-                },
-                ['decimal']: {
-                  type: 'decimal',
-                  isNumbered: true,
-                },
                 todo: {
                   type: 'todo',
                   markerComponent: TodoMarker,
-                  liComponent: IndentTodoLiComponent,
+                  liComponent: TodoLi,
                 },
                 fire: {
                   type: 'fire',
