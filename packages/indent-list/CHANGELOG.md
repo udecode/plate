@@ -1,5 +1,11 @@
 # @udecode/plate-indent-list
 
+## 31.2.2
+
+### Patch Changes
+
+- [#3077](https://github.com/udecode/plate/pull/3077) by [@felixfeng33](https://github.com/felixfeng33) – Fix ordered list regression.
+
 ## 31.2.0
 
 ### Minor Changes
