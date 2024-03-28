@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate",
-  "version": "31.2.2",
+  "version": "31.3.0",
   "description": "Plate – a plugin system for slate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -76,7 +76,7 @@
     "@udecode/plate-serializer-csv": "31.0.0",
     "@udecode/plate-serializer-docx": "31.2.2",
     "@udecode/plate-serializer-html": "31.1.0",
-    "@udecode/plate-serializer-md": "31.1.3",
+    "@udecode/plate-serializer-md": "31.3.0",
     "@udecode/plate-suggestion": "31.0.0",
     "@udecode/plate-tabbable": "31.0.0",
     "@udecode/plate-table": "31.0.0",
