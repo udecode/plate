@@ -106,7 +106,7 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
     newCellChildren: [],
   });
 
-  const cellEntries: TElementEntry[] = [];
+  let cellEntries: TElementEntry[] = [];
   let cellsSet = new WeakSet();
 
   let rowIndex = startRowIndex;
@@ -137,6 +137,7 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
     ) {
       // reset the cycle if has overflow
       cellsSet = new WeakSet();
+      cellEntries = [];
       startRowIndex = Math.min(startRowIndex, cellRow);
       endRowIndex = Math.max(endRowIndex, cellRowWithSpan);
       startColIndex = Math.min(startColIndex, cellCol);
