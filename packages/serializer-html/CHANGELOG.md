@@ -1,5 +1,43 @@
 # @udecode/plate-serializer-html
 
+## 31.1.0
+
+### Patch Changes
+
+- [#2837](https://github.com/udecode/plate/pull/2837) by [@dimaanj](https://github.com/dimaanj) – Fixes "The `useSlateStatic` hook must be used inside the <Slate> component's context." error in `serializeHtml`
+
+## 31.0.0
+
+### Minor Changes
+
+- [#3040](https://github.com/udecode/plate/pull/3040) by [@zbeyens](https://github.com/zbeyens) – Updated minor dependencies
+
+## 30.5.3
+
+### Patch Changes
+
+- [`4cbed7159`](https://github.com/udecode/plate/commit/4cbed7159d51f7427051686e45bcf2a8899aeede) by [@zbeyens](https://github.com/zbeyens) – Move `@udecode/plate-common` to peerDeps to fix a bug when multiple instances were installed
+
+## 30.4.5
+
+## 30.4.4
+
+### Patch Changes
+
+- [#2943](https://github.com/udecode/plate/pull/2943) by [@shaungrady](https://github.com/shaungrady) –
+  - Fix handling of empty `preserveClassNames` array
+    - Previously, would output `<div class="                 ">`
+    - Now, it outputs `<div>`
+  - Reduce time complexity of `stripClassNames` function
+
+## 30.1.2
+
+## 30.0.0
+
+## 29.1.0
+
+## 29.0.1
+
 ## 29.0.0
 
 ## 28.0.0

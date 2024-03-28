@@ -16,7 +16,7 @@ export const formatHTML = (html: string) => {
       const tag = new RegExp(`<\\/?([^\\s/>]+)`).exec(x)?.[1];
       const p = new RegExp('<--TEMPPRE(\\d+)/-->').exec(x);
 
-      if (p) pre[p[1]].indent = indent;
+      if (p) pre[Number(p[1])].indent = indent;
 
       if (
         [

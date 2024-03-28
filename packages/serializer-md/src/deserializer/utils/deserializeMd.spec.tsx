@@ -303,3 +303,123 @@ describe('deserializeMd', () => {
     expect(deserializeMd(editor, input)).toEqual(output);
   });
 });
+
+describe('deserializeMdIndentList', () => {
+  const editor = createPlateEditor({
+    plugins: [
+      createDeserializeMdPlugin({ options: { indentList: true } }) as any,
+    ],
+  });
+
+  it('should deserialize unordered lists', () => {
+    const input = '- List item 1\n- List item 2';
+
+    const output = [
+      {
+        type: 'p',
+        listStyleType: 'disc',
+        indent: 1,
+        children: [
+          {
+            text: 'List item 1',
+          },
+        ],
+      },
+      {
+        type: 'p',
+        listStyleType: 'disc',
+        indent: 1,
+        children: [
+          {
+            text: 'List item 2',
+          },
+        ],
+      },
+    ];
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
+
+  it('should deserialize ordered lists', () => {
+    const input = '1. List item 1\n2. List item 2';
+
+    const output = [
+      {
+        type: 'p',
+        listStyleType: 'decimal',
+        indent: 1,
+        children: [
+          {
+            text: 'List item 1',
+          },
+        ],
+      },
+      {
+        type: 'p',
+        listStyleType: 'decimal',
+        indent: 1,
+        children: [
+          {
+            text: 'List item 2',
+          },
+        ],
+      },
+    ];
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
+
+  it('should deserialize mixed nested lists', () => {
+    const input = '- List item 1\n  1. List item 1.1';
+
+    const output = [
+      {
+        type: 'p',
+        listStyleType: 'disc',
+        indent: 1,
+        children: [
+          {
+            text: 'List item 1',
+          },
+        ],
+      },
+      {
+        type: 'p',
+        listStyleType: 'disc',
+        indent: 2,
+        children: [
+          {
+            text: 'List item 1.1',
+          },
+        ],
+      },
+    ];
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
+
+  it('should deserialize an empty list item', () => {
+    const input = '* Line 1\n*';
+
+    const output = [
+      {
+        type: 'p',
+        listStyleType: 'disc',
+        indent: 1,
+        children: [
+          {
+            text: 'Line 1',
+          },
+        ],
+      },
+      {
+        type: 'p',
+        listStyleType: 'disc',
+        indent: 1,
+        children: [],
+      },
+    ];
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
+});

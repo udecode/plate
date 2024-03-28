@@ -9,7 +9,6 @@
     "cssVariables": true
   },
   "aliases": {
-    "components": "@/components",
-    "utils": "@udecode/cn"
+    "components": "@/components"
   }
 }

@@ -45,7 +45,7 @@ export function PlaygroundMoreDropdownMenu(props: DropdownMenuProps) {
             focusEditor(editor);
           }}
         >
-          <Icons.highlight className="mr-2 h-5 w-5" />
+          <Icons.highlight className="mr-2 size-5" />
           Highlight
         </DropdownMenuItem>
 
@@ -58,23 +58,10 @@ export function PlaygroundMoreDropdownMenu(props: DropdownMenuProps) {
             focusEditor(editor);
           }}
         >
-          <Icons.kbd className="mr-2 h-5 w-5" />
+          <Icons.kbd className="mr-2 size-5" />
           Keyboard input
         </DropdownMenuItem>
 
-        <DropdownMenuItem
-          onSelect={() => {
-            toggleMark(editor, {
-              key: MARK_SUBSCRIPT,
-              clear: MARK_SUPERSCRIPT,
-            });
-            focusEditor(editor);
-          }}
-        >
-          <Icons.superscript className="mr-2 h-5 w-5" />
-          Superscript
-          {/* (⌘+,) */}
-        </DropdownMenuItem>
         <DropdownMenuItem
           onSelect={() => {
             toggleMark(editor, {
@@ -84,7 +71,20 @@ export function PlaygroundMoreDropdownMenu(props: DropdownMenuProps) {
             focusEditor(editor);
           }}
         >
-          <Icons.subscript className="mr-2 h-5 w-5" />
+          <Icons.superscript className="mr-2 size-5" />
+          Superscript
+          {/* (⌘+,) */}
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onSelect={() => {
+            toggleMark(editor, {
+              key: MARK_SUBSCRIPT,
+              clear: MARK_SUPERSCRIPT,
+            });
+            focusEditor(editor);
+          }}
+        >
+          <Icons.subscript className="mr-2 size-5" />
           Subscript
           {/* (⌘+.) */}
         </DropdownMenuItem>

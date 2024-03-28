@@ -33,7 +33,7 @@ export function Cursor({
           <div
             key={i}
             className={cn(
-              'pointer-events-none absolute z-10 opacity-[0.3]',
+              'pointer-events-none absolute z-10 opacity-30',
               classNames?.selectionRect
             )}
             style={{

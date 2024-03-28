@@ -12,6 +12,7 @@ import * as z from 'zod';
 
 import {
   DEFAULT_COMPONENTS,
+  DEFAULT_PLATE_UI,
   DEFAULT_TAILWIND_CONFIG,
   DEFAULT_TAILWIND_CSS,
   getConfig,
@@ -19,6 +20,7 @@ import {
   resolveConfigPaths,
 } from '../utils/get-config';
 import { getPackageManager } from '../utils/get-package-manager';
+import { getProjectConfig, preFlight } from '../utils/get-project-info';
 import { handleError } from '../utils/handle-error';
 import { logger } from '../utils/logger';
 import {
@@ -32,6 +34,7 @@ import { applyPrefixesCss } from '../utils/transformers/transform-tw-prefix';
 import type { Config } from '../utils/get-config';
 
 const PROJECT_DEPENDENCIES = [
+  '@udecode/cn',
   'tailwindcss-animate',
   'class-variance-authority',
   'tailwind-merge',
@@ -40,12 +43,14 @@ const PROJECT_DEPENDENCIES = [
 const initOptionsSchema = z.object({
   cwd: z.string(),
   yes: z.boolean(),
+  defaults: z.boolean(),
 });
 
 export const init = new Command()
   .name('init')
   .description('initialize your project and install dependencies')
   .option('-y, --yes', 'skip confirmation prompt.', false)
+  .option('-d, --defaults,', 'use default configuration.', false)
   .option(
     '-c, --cwd <cwd>',
     'the working directory. defaults to the current directory.',
@@ -62,15 +67,28 @@ export const init = new Command()
         process.exit(1);
       }
 
-      // Read config.
-      const existingConfig = await getConfig(cwd);
-      const config = await promptForConfig(cwd, existingConfig, options.yes);
+      preFlight(cwd);
 
-      await runInit(cwd, config);
+      const projectConfig = await getProjectConfig(cwd);
+      if (projectConfig) {
+        const config = await promptForMinimalConfig(
+          cwd,
+          projectConfig,
+          opts.defaults
+        );
+        await runInit(cwd, config);
+      } else {
+        // Read config.
+        const existingConfig = await getConfig(cwd);
+        const config = await promptForConfig(cwd, existingConfig, options.yes);
+        await runInit(cwd, config);
+      }
 
       logger.info('');
       logger.info(
-        `${chalk.green('Success!')} Project initialization completed.`
+        `${chalk.green(
+          'Success!'
+        )} Project initialization completed. You may now add components.`
       );
       logger.info('');
     } catch (error) {
@@ -146,6 +164,12 @@ export async function promptForConfig(
       initial: defaultConfig?.aliases['components'] ?? DEFAULT_COMPONENTS,
     },
     {
+      type: 'text',
+      name: 'plate-ui',
+      message: `Configure the import alias for ${highlight('plate-ui')}:`,
+      initial: defaultConfig?.aliases['plate-ui'] ?? DEFAULT_PLATE_UI,
+    },
+    {
       type: 'toggle',
       name: 'rsc',
       message: `Are you using ${highlight('React Server Components')}?`,
@@ -169,6 +193,7 @@ export async function promptForConfig(
     tsx: true,
     aliases: {
       components: options.components,
+      'plate-ui': options['plate-ui'],
     },
   });
 
@@ -177,7 +202,7 @@ export async function promptForConfig(
       type: 'confirm',
       name: 'proceed',
       message: `Write configuration to ${highlight(
-        'components.json'
+        'plate-components.json'
       )}. Proceed?`,
       initial: true,
     });
@@ -189,8 +214,82 @@ export async function promptForConfig(
 
   // Write to file.
   logger.info('');
-  const spinner = ora(`Writing components.json...`).start();
-  const targetPath = path.resolve(cwd, 'components.json');
+  const spinner = ora(`Writing plate-components.json...`).start();
+  const targetPath = path.resolve(cwd, 'plate-components.json');
+  await fs.writeFile(targetPath, JSON.stringify(config, null, 2), 'utf8');
+  spinner.succeed();
+
+  return await resolveConfigPaths(cwd, config);
+}
+
+export async function promptForMinimalConfig(
+  cwd: string,
+  defaultConfig: Config,
+  defaults = false
+) {
+  const highlight = (text: string) => chalk.cyan(text);
+  let style = defaultConfig.style;
+  let baseColor = defaultConfig.tailwind.baseColor;
+  let cssVariables = defaultConfig.tailwind.cssVariables;
+
+  if (!defaults) {
+    const styles = await getRegistryStyles();
+    const baseColors = await getRegistryBaseColors();
+
+    const options = await prompts([
+      {
+        type: 'select',
+        name: 'style',
+        message: `Which ${highlight('style')} would you like to use?`,
+        choices: styles.map((style) => ({
+          title: style.label,
+          value: style.name,
+        })),
+      },
+      {
+        type: 'select',
+        name: 'tailwindBaseColor',
+        message: `Which color would you like to use as ${highlight(
+          'base color'
+        )}?`,
+        choices: baseColors.map((color) => ({
+          title: color.label,
+          value: color.name,
+        })),
+      },
+      {
+        type: 'toggle',
+        name: 'tailwindCssVariables',
+        message: `Would you like to use ${highlight(
+          'CSS variables'
+        )} for colors?`,
+        initial: defaultConfig?.tailwind.cssVariables,
+        active: 'yes',
+        inactive: 'no',
+      },
+    ]);
+
+    style = options.style;
+    baseColor = options.tailwindBaseColor;
+    cssVariables = options.tailwindCssVariables;
+  }
+
+  const config = rawConfigSchema.parse({
+    $schema: defaultConfig?.$schema,
+    style,
+    tailwind: {
+      ...defaultConfig?.tailwind,
+      baseColor,
+      cssVariables,
+    },
+    rsc: defaultConfig?.rsc,
+    aliases: defaultConfig?.aliases,
+  });
+
+  // Write to file.
+  logger.info('');
+  const spinner = ora(`Writing plate-components.json...`).start();
+  const targetPath = path.resolve(cwd, 'plate-components.json');
   await fs.writeFile(targetPath, JSON.stringify(config, null, 2), 'utf8');
   spinner.succeed();
 

@@ -2,11 +2,14 @@
 import * as React from 'react';
 import { ReactNode } from 'react';
 import { cn } from '@udecode/cn';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { Prism, SyntaxHighlighterProps } from 'react-syntax-highlighter';
 import { vscDarkPlus as theme } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 import { CopyButton, CopyNpmCommandButton } from '@/components/copy-button';
 import * as Typography from '@/components/typography';
+
+const SyntaxHighlighter =
+  Prism as typeof React.Component<SyntaxHighlighterProps>;
 
 export function InstallationCode({
   code,
@@ -39,7 +42,7 @@ export function InstallationCode({
               __npmCommand__: code,
               __pnpmCommand__: code.replaceAll('npm install', 'pnpm add'),
               __yarnCommand__: code.replaceAll('npm install', 'yarn add'),
-              __bunCommand__: code.replaceAll('npm install', 'yarn add'),
+              __bunCommand__: code.replaceAll('npm install', 'bun add'),
             }}
             className={cn('absolute right-4 top-4')}
           />

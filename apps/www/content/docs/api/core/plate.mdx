@@ -87,6 +87,13 @@ Controlled callback called when the editor state changes.
 Plate plugins. See [Plugin](/docs/plugin) guide.
 
 </APIItem>
+<APIItem name="primary" type="boolean" optional>
+
+Controls whether the editor is considered active by default when used with a PlateController. See [Accessing the Editor](/docs/accessing-editor#from-a-sibling-or-ancestor-of-plate).
+
+- **Default:** **`true`**
+
+</APIItem>
 <APIItem name="value" type="Value" optional>
 
 Alias to **`initialValue`**. Stored in the store on each change (**`Editable.onChange`**). To update **`value`** with history support, use **[Slate transforms](https://docs.slatejs.org/concepts/04-transforms)**. To reset **`value`**, use `resetEditor`.

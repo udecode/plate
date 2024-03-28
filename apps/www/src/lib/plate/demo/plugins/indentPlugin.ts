@@ -9,6 +9,7 @@ import {
   ELEMENT_H6,
 } from '@udecode/plate-heading';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
+import { ELEMENT_TOGGLE } from '@udecode/plate-toggle';
 
 export const indentPlugin = {
   inject: {
@@ -23,6 +24,7 @@ export const indentPlugin = {
         ELEMENT_H6,
         ELEMENT_BLOCKQUOTE,
         ELEMENT_CODE_BLOCK,
+        ELEMENT_TOGGLE,
       ],
     },
   },

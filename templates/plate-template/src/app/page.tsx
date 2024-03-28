@@ -14,7 +14,7 @@ export default function IndexPage() {
         <p className="max-w-[700px] text-lg text-muted-foreground">
           Plugin system & primitive component library.{' '}
           <br className="hidden sm:inline" />
-          CLI for styled components. Customizable. Open Source. And Next.js 13
+          CLI for styled components. Customizable. Open Source. And Next.js 14
           Ready.
         </p>
       </div>

@@ -641,17 +641,24 @@ export const Index: Record<string, any> = {
       files: ['registry/default/plate-ui/todo-list-element.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/todo-list-element')),
     },
-    'toggle': {
-      name: 'toggle',
+    'toggle-element': {
+      name: 'toggle-element',
       type: 'components:plate-ui',
       registryDependencies: [],
-      files: ['registry/default/plate-ui/toggle.tsx'],
-      component: React.lazy(() => import('@/registry/default/plate-ui/toggle')),
+      files: ['registry/default/plate-ui/toggle-element.tsx'],
+      component: React.lazy(() => import('@/registry/default/plate-ui/toggle-element')),
+    },
+    'toggle-toolbar-button': {
+      name: 'toggle-toolbar-button',
+      type: 'components:plate-ui',
+      registryDependencies: ["toolbar"],
+      files: ['registry/default/plate-ui/toggle-toolbar-button.tsx'],
+      component: React.lazy(() => import('@/registry/default/plate-ui/toggle-toolbar-button')),
     },
     'toolbar': {
       name: 'toolbar',
       type: 'components:plate-ui',
-      registryDependencies: ["tooltip","toggle","separator"],
+      registryDependencies: ["tooltip","separator"],
       files: ['registry/default/plate-ui/toolbar.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/toolbar')),
     },
@@ -822,6 +829,13 @@ export const Index: Record<string, any> = {
       registryDependencies: [],
       files: ['registry/default/example/multiple-editors-demo.tsx'],
       component: React.lazy(() => import('@/registry/default/example/multiple-editors-demo')),
+    },
+    'version-history-demo': {
+      name: 'version-history-demo',
+      type: 'components:example',
+      registryDependencies: [],
+      files: ['registry/default/example/version-history-demo.tsx'],
+      component: React.lazy(() => import('@/registry/default/example/version-history-demo')),
     },
     'playground-demo': {
       name: 'playground-demo',

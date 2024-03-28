@@ -1,5 +1,55 @@
 # @udecode/plate-core
 
+## 31.0.0
+
+### Minor Changes
+
+- [#3040](https://github.com/udecode/plate/pull/3040) by [@zbeyens](https://github.com/zbeyens) – Updated minor dependencies
+
+## 30.4.5
+
+### Patch Changes
+
+- [#2948](https://github.com/udecode/plate/pull/2948) by [@zbeyens](https://github.com/zbeyens) – Fix SSR imports in `jotai-x`
+
+## 30.1.2
+
+### Patch Changes
+
+- [#2881](https://github.com/udecode/plate/pull/2881) by [@johnrazeur](https://github.com/johnrazeur) – fix plate store id when plate use the editor prop.
+
+## 30.0.0
+
+### Minor Changes
+
+- [#2867](https://github.com/udecode/plate/pull/2867) by [@12joan](https://github.com/12joan) – Export `atom` from `jotai`
+
+- [#2859](https://github.com/udecode/plate/pull/2859) by [@12joan](https://github.com/12joan) –
+  - Introduce `PlateController` as a way of accessing the active editor from an ancestor or sibling of `Plate` (see [Accessing the Editor](https://platejs.org/docs/accessing-editor#from-a-sibling-or-ancestor-of-plate)).
+  - Add `primary` prop to `Plate` (default true)
+  - Add `isFallback` to `editor` instance (default false)
+  - The following hooks now throw a runtime error when used outside of either a `Plate` or `PlateController`, and accept a `debugHookName` option to customize this error message:
+    - `useIncrementVersion`
+    - `useRedecorate`
+    - `useReplaceEditor`
+    - `useEditorMounted` (new)
+    - `useEditorReadOnly`
+    - `useEditorRef`
+    - `useEdtiorSelection`
+    - `useEditorSelector`
+    - `useEditorState`
+    - `useEditorVersion`
+    - `useSelectionVersion`
+  - Change the default `id` of a `Plate` editor from `'plate'` to a random value generated with `nanoid/non-secure`
+
+## 29.1.0
+
+### Patch Changes
+
+- [#2854](https://github.com/udecode/plate/pull/2854) by [@MarcosPereira1](https://github.com/MarcosPereira1) – Ensure that beforeinput event is handled as a React.SyntheticEvent rather than a native DOM event
+
+## 29.0.1
+
 ## 29.0.0
 
 ## 28.0.0

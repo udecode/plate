@@ -3,7 +3,7 @@
 exports[`transform import 1`] = `
 "import * as React from \\"react\\"
 import { Foo } from \\"bar\\"
-    import { Button } from \\"@/components/ui/button\\"
+    import { Button } from \\"@/components/plate-ui/button\\"
     import { Label} from \\"ui/label\\"
     import { Box } from \\"@/components/box\\"
 
@@ -14,7 +14,7 @@ import { Foo } from \\"bar\\"
 exports[`transform import 2`] = `
 "import * as React from \\"react\\"
 import { Foo } from \\"bar\\"
-    import { Button } from \\"~/src/components/ui/button\\"
+    import { Button } from \\"~/src/components/plate-ui/button\\"
     import { Label} from \\"ui/label\\"
     import { Box } from \\"~/src/components/box\\"
 
@@ -25,10 +25,54 @@ import { Foo } from \\"bar\\"
 exports[`transform import 3`] = `
 "import * as React from \\"react\\"
 import { Foo } from \\"bar\\"
-    import { Button } from \\"~/src/components/ui/button\\"
+    import { Button } from \\"~/src/components/plate-ui/button\\"
     import { Label} from \\"ui/label\\"
     import { Box } from \\"~/src/components/box\\"
 
     import { cn } from \\"@udecode/cn\\"
+    "
+`;
+
+exports[`transform import 4`] = `
+"import * as React from \\"react\\"
+import { Foo } from \\"bar\\"
+    import { Button } from \\"~/src/components/button\\"
+    import { Label} from \\"ui/label\\"
+    import { Box } from \\"@/registry/default/box\\"
+    import { cn } from \\"@/lib/utils\\"
+    import { bar } from \\"@/lib/utils/bar\\"
+    "
+`;
+
+exports[`transform import 5`] = `
+"import * as React from \\"react\\"
+import { Foo } from \\"bar\\"
+    import { Button } from \\"~/src/plate-ui/button\\"
+    import { Label} from \\"ui/label\\"
+    import { Box } from \\"@/registry/default/box\\"
+    import { cn } from \\"@/lib/utils\\"
+    import { bar } from \\"@/lib/utils/bar\\"
+    "
+`;
+
+exports[`transform import 6`] = `
+"import * as React from \\"react\\"
+import { Foo } from \\"bar\\"
+    import { Button } from \\"~/src/components/button\\"
+    import { Label} from \\"ui/label\\"
+    import { Box } from \\"@/registry/default/box\\"
+    import { cn } from \\"@/lib/utils\\"
+    import { bar } from \\"@/lib/utils/bar\\"
+    "
+`;
+
+exports[`transform import 7`] = `
+"import * as React from \\"react\\"
+import { Foo } from \\"bar\\"
+    import { Button } from \\"~/src/ui/button\\"
+    import { Label} from \\"ui/label\\"
+    import { Box } from \\"@/registry/default/box\\"
+    import { cn } from \\"@/lib/utils\\"
+    import { bar } from \\"@/lib/utils/bar\\"
     "
 `;

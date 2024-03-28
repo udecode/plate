@@ -24,29 +24,29 @@ export function PlaygroundModeDropdownMenu(props: DropdownMenuProps) {
   const readOnly = useEditorReadOnly();
   const openState = useOpenState();
 
-  let value = 'editing';
-  if (readOnly) value = 'viewing';
-
   const item = {
     editing: (
       <>
-        <Icons.editing className="mr-2 h-5 w-5" />
+        <Icons.editing className="mr-2 size-5" />
         <span className="hidden lg:inline">Editing</span>
       </>
     ),
     suggesting: (
       <>
-        <Icons.suggesting className="mr-2 h-5 w-5" />
+        <Icons.suggesting className="mr-2 size-5" />
         <span className="hidden lg:inline">Suggesting</span>
       </>
     ),
     viewing: (
       <>
-        <Icons.viewing className="mr-2 h-5 w-5" />
+        <Icons.viewing className="mr-2 size-5" />
         <span className="hidden lg:inline">Viewing</span>
       </>
     ),
   };
+
+  let value: keyof typeof item = 'editing';
+  if (readOnly) value = 'viewing';
 
   return (
     <DropdownMenu modal={false} {...openState} {...props}>

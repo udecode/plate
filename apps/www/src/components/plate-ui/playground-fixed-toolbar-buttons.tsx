@@ -21,6 +21,7 @@ import { ColorDropdownMenu } from '@/registry/default/plate-ui/color-dropdown-me
 import { CommentToolbarButton } from '@/registry/default/plate-ui/comment-toolbar-button';
 import { EmojiDropdownMenu } from '@/registry/default/plate-ui/emoji-dropdown-menu';
 import { IndentListToolbarButton } from '@/registry/default/plate-ui/indent-list-toolbar-button';
+import { IndentTodoToolbarButton } from '@/registry/default/plate-ui/indent-todo-toolbar-button';
 import { IndentToolbarButton } from '@/registry/default/plate-ui/indent-toolbar-button';
 import { LineHeightDropdownMenu } from '@/registry/default/plate-ui/line-height-dropdown-menu';
 import { LinkToolbarButton } from '@/registry/default/plate-ui/link-toolbar-button';
@@ -29,6 +30,7 @@ import { MarkToolbarButton } from '@/registry/default/plate-ui/mark-toolbar-butt
 import { MediaToolbarButton } from '@/registry/default/plate-ui/media-toolbar-button';
 import { OutdentToolbarButton } from '@/registry/default/plate-ui/outdent-toolbar-button';
 import { TableDropdownMenu } from '@/registry/default/plate-ui/table-dropdown-menu';
+import { ToggleToolbarButton } from '@/registry/default/plate-ui/toggle-toolbar-button';
 import { ToolbarGroup } from '@/registry/default/plate-ui/toolbar';
 
 import { PlaygroundInsertDropdownMenu } from './playground-insert-dropdown-menu';
@@ -114,6 +116,7 @@ export function PlaygroundFixedToolbarButtons({ id }: { id?: ValueId }) {
                 <>
                   <IndentListToolbarButton nodeType={ListStyleType.Disc} />
                   <IndentListToolbarButton nodeType={ListStyleType.Decimal} />
+                  <IndentTodoToolbarButton />
                 </>
               )}
 
@@ -136,6 +139,8 @@ export function PlaygroundFixedToolbarButtons({ id }: { id?: ValueId }) {
 
             <ToolbarGroup>
               {isEnabled('link', id) && <LinkToolbarButton />}
+
+              {isEnabled('toggle', id) && <ToggleToolbarButton />}
 
               {isEnabled('media', id) && (
                 <MediaToolbarButton nodeType={ELEMENT_IMAGE} />

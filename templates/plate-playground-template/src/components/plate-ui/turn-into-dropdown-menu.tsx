@@ -9,7 +9,8 @@ import {
   isCollapsed,
   TElement,
   toggleNodeType,
-  useEditorState,
+  useEditorRef,
+  useEditorSelector,
 } from '@udecode/plate-common';
 import { ELEMENT_H1, ELEMENT_H2, ELEMENT_H3 } from '@udecode/plate-heading';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
@@ -75,20 +76,25 @@ const items = [
 const defaultItem = items.find((item) => item.value === ELEMENT_PARAGRAPH)!;
 
 export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
-  const editor = useEditorState();
-  const openState = useOpenState();
+  const value: string = useEditorSelector((editor) => {
+    if (isCollapsed(editor.selection)) {
+      const entry = findNode<TElement>(editor, {
+        match: (n) => isBlock(editor, n),
+      });
 
-  let value: string = ELEMENT_PARAGRAPH;
-  if (isCollapsed(editor?.selection)) {
-    const entry = findNode<TElement>(editor!, {
-      match: (n) => isBlock(editor, n),
-    });
-    if (entry) {
-      value =
-        items.find((item) => item.value === entry[0].type)?.value ??
-        ELEMENT_PARAGRAPH;
+      if (entry) {
+        return (
+          items.find((item) => item.value === entry[0].type)?.value ??
+          ELEMENT_PARAGRAPH
+        );
+      }
     }
-  }
+
+    return ELEMENT_PARAGRAPH;
+  }, []);
+
+  const editor = useEditorRef();
+  const openState = useOpenState();
 
   const selectedItem =
     items.find((item) => item.value === value) ?? defaultItem;
@@ -103,7 +109,7 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
           isDropdown
           className="lg:min-w-[130px]"
         >
-          <SelectedItemIcon className="h-5 w-5 lg:hidden" />
+          <SelectedItemIcon className="size-5 lg:hidden" />
           <span className="max-lg:hidden">{selectedItemLabel}</span>
         </ToolbarButton>
       </DropdownMenuTrigger>
@@ -138,7 +144,7 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
               value={itemValue}
               className="min-w-[180px]"
             >
-              <Icon className="mr-2 h-5 w-5" />
+              <Icon className="mr-2 size-5" />
               {label}
             </DropdownMenuRadioItem>
           ))}

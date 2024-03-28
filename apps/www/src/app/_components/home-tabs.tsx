@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { cn } from '@udecode/cn';
 import { Settings2 } from 'lucide-react';
-import { useQueryState } from 'next-usequerystate';
+import { parseAsBoolean, useQueryState } from 'nuqs';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { settingsStore } from '@/components/context/settings-store';
@@ -16,17 +16,20 @@ const InstallationTab = dynamic(() => import('./installation-tab'));
 export default function HomeTabs() {
   const active = settingsStore.use.showSettings();
   const homeTab = settingsStore.use.homeTab();
-  const [builder, setBuilder] = useQueryState('builder');
+  const [builder, setBuilder] = useQueryState(
+    'builder',
+    parseAsBoolean.withDefault(false)
+  );
 
   useEffect(() => {
-    if (builder === 'true') {
+    if (builder) {
       settingsStore.set.showSettings(true);
     }
   }, [builder]);
 
   useEffect(() => {
     if (active) {
-      void setBuilder('true');
+      void setBuilder(true);
     } else {
       void setBuilder(null);
     }
@@ -60,7 +63,7 @@ export default function HomeTabs() {
             }
           }}
         >
-          <Settings2 className="mr-2 h-4 w-4" /> Customize
+          <Settings2 className="mr-2 size-4" /> Customize
         </Button>
 
         <TabsContent value="playground" className="pt-2">

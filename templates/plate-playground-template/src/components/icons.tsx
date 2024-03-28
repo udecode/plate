@@ -12,6 +12,7 @@ import {
   ChevronRight,
   ChevronsUpDown,
   Code2,
+  Combine,
   Edit2,
   ExternalLink,
   Eye,
@@ -57,6 +58,7 @@ import {
   Trash,
   Twitter,
   Underline,
+  Ungroup,
   WrapText,
   X,
 } from 'lucide-react';
@@ -180,6 +182,8 @@ export const Icons = {
   codeblock: FileCode,
   color: Baseline,
   column: RectangleVertical,
+  combine: Combine,
+  ungroup: Ungroup,
   comment: MessageSquare,
   commentAdd: MessageSquarePlus,
   delete: Trash,
@@ -244,12 +248,12 @@ export const Icons = {
 export const iconVariants = cva('', {
   variants: {
     variant: {
-      toolbar: 'h-5 w-5',
-      menuItem: 'mr-2 h-5 w-5',
+      toolbar: 'size-5',
+      menuItem: 'mr-2 size-5',
     },
     size: {
-      sm: 'mr-2 h-4 w-4',
-      md: 'mr-2 h-6 w-6',
+      sm: 'mr-2 size-4',
+      md: 'mr-2 size-6',
     },
   },
   defaultVariants: {},

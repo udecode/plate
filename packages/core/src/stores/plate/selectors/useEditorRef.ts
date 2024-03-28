@@ -1,7 +1,11 @@
 import { Value } from '@udecode/slate';
 
 import { PlateEditor } from '../../../types/PlateEditor';
-import { PlateId, usePlateSelectors } from '../createPlateStore';
+import {
+  PlateId,
+  UsePlateEditorStoreOptions,
+  usePlateSelectors,
+} from '../createPlateStore';
 
 /**
  * Get editor ref which is never updated.
@@ -10,5 +14,10 @@ export const useEditorRef = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
 >(
-  id?: PlateId
-): E => usePlateSelectors(id).editor() as any;
+  id?: PlateId,
+  options: UsePlateEditorStoreOptions = {}
+): E =>
+  usePlateSelectors(id, {
+    debugHookName: 'useEditorRef',
+    ...options,
+  }).editor() as any;

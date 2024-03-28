@@ -1,0 +1,173 @@
+---
+title: PlateController
+description: API reference for PlateController component.
+---
+
+**`PlateController`** is an optional provider component that facilitates accessing specific [Plate Stores](/docs/api/core/store) from outside their respective **`Plate`** components.
+
+## PlateController Store
+
+### State
+
+The PlateController Store contains the information required to fetch a Plate Store based on its **`id`**, and to determine which **`id`** is currently active.
+
+<APIAttributes>
+<APIItem name="activeId" type="PlateId | null">
+
+The **`id`** of the most recently focused Plate editor.
+
+- **Default:** `null`
+
+</APIItem>
+<APIItem name="primaryEditorIds" type="PlateId[]">
+
+The **`id`**'s of all primary Plate editors. By default, an editor is considered primary unless **`primary={false}`** was passed to its **`Plate`** component.
+
+- **Default:** `[]`
+
+</APIItem>
+<APIItem name="editorStores" type="Record<PlateId, JotaiStore | null>">
+
+A map from the **`id`** of each mounted Plate editor to the **`JotaiStore`** corresponding to that editor's Plate Store.
+
+- **Default:** `{}`
+
+</APIItem>
+</APIAttributes>
+
+## Usage Patterns
+
+### Specific Editor by ID
+
+**`PlateController`** can be used to access the store of a specific editor using its **`id`**. Note that if a matching editor cannot be found, an immutable fallback editor will be returned instead.
+
+```tsx
+const App = withHoc(PlateController, () => {
+  const mainEditor = useEditorRef('main');
+  
+  useEffect(() => {
+    if (!mainEditor.isFallback) {
+      console.log('Editor mounted', mainEditor);
+    }
+  }, [mainEditor]);
+  
+  return (
+    <>
+      <Plate id="main">
+        <PlateContent />
+      </Plate>
+    
+      <Plate id="secondary">
+        <PlateContent />
+      </Plate>
+    </>
+  );
+});
+```
+
+### Active Editor
+
+If hooks like **`useEditorRef`** are used inside a **`PlateController`** without an explicit **`id`**, they will resolve to the currently active editor.
+
+The active editor is determined as follows:
+
+1. If some editor has been focused, return the last such editor.
+2. If some editor is primary, return the first-mounted such editor.
+3. Otherwise, return an immutable fallback editor.
+
+```tsx
+const App = withHoc(PlateController, () => {
+  const activeEditorId = usePlateId();
+  const isFallback = !useEditorMounted();
+  
+  const message = isFallback
+    ? 'Please focus an editor'
+    : `Active editor: ${activeEditorId}`;
+  
+  return (
+    <main>
+      <p>{message}</p>
+      
+      <Plate id="main" primary={false}>
+        <PlateContent />
+      </Plate>
+    
+      <Plate id="secondary" primary={false}>
+        <PlateContent />
+      </Plate>
+    </main>
+  );
+});
+```
+
+## Dealing with Fallback Editors
+
+When a hook called inside a **`PlateController`** fails to locate a matching Plate Store, it will use Plate Store's default values. The default value for **`editor`** is **`createPlateFallbackEditor()`**. A fallback editor works like an empty Plate editor with no plugins, except it throws a runtime error if it receives a Slate operation (i.e. it is immutable and must not be used in transforms).
+
+The rationale behind this is to ensure that code that queries the editor (such as determining whether toolbar buttons are active) fails silently with a sensible default value, while code that transforms the editor (such as pressing a toolbar button) fails loudly with an error.
+
+There are two ways to determine if you're working with a fallback editor or a real editor:
+
+- **`useEditorMounted`** returns **`false`** if no mounted editor could be resolved
+- **`editor.isFallback`** is **`true`** for fallback editors
+
+When using hooks like **`useEditorRef`** inside a **`PlateController`**, you should code defensively to ensure that fallback editors are handled appropriately should they arise. For example, you can disable toolbar buttons if **`useEditorMounted`** returns **`false`**, or ignore events if **`editor.isFallback`** is **`true`**.
+
+```tsx
+const App = withHoc(PlateController, () => {
+  const activeEditor = useEditorRef();
+  
+  const toggleBold = () => {
+    if (activeEditor.isFallback) return;
+    toggleMark(activeEditor, { key: MARK_BOLD });
+  };
+  
+  return (
+    <main>
+      <button type="button" onClick={toggleBold}>
+        Bold
+      </button>
+      
+      <Plate id="main" primary={false}>
+        <PlateContent />
+      </Plate>
+    
+      <Plate id="secondary" primary={false}>
+        <PlateContent />
+      </Plate>
+    </main>
+  );
+});
+```
+
+```tsx
+const App = withHoc(PlateController, () => {
+  const activeEditor = useEditorRef();
+  const isFallback = !useEditorMounted();
+  
+  const toggleBold = () => {
+    toggleMark(activeEditor, { key: MARK_BOLD });
+  };
+  
+  return (
+    <main>
+      <button
+        type="button"
+        onClick={toggleBold}
+        disabled={isFallback}
+      >
+        Bold
+      </button>
+      
+      <Plate id="main" primary={false}>
+        <PlateContent />
+      </Plate>
+    
+      <Plate id="secondary" primary={false}>
+        <PlateContent />
+      </Plate>
+    </main>
+  );
+});
+```
+

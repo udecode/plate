@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-cloud",
-  "version": "29.0.0",
+  "version": "31.0.0",
   "description": "Plate plugin to add cloud based image and attachment uploads",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -40,11 +40,14 @@
   },
   "dependencies": {
     "@portive/client": "10.0.3",
-    "@udecode/plate-common": "29.0.0",
     "delay": "5.0.0",
     "p-defer": "^3.0.0"
   },
+  "devDependencies": {
+    "@udecode/plate-common": "workspace:^"
+  },
   "peerDependencies": {
+    "@udecode/plate-common": ">=31.0.0",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.94.0",

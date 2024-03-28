@@ -1,4 +1,6 @@
-import emojiMartData from '@emoji-mart/data';
+import emojiMartData from '@emoji-mart/data' with { type: 'json' };
+
+
 
 import {
   Emoji,

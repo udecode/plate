@@ -1,5 +1,67 @@
 # @udecode/plate-table
 
+## 31.0.0
+
+## 30.9.4
+
+### Patch Changes
+
+- [#3037](https://github.com/udecode/plate/pull/3037) by [@KorovinQuantori](https://github.com/KorovinQuantori) – Hotfix: reset cell entries list when table is overflown
+
+- [#3034](https://github.com/udecode/plate/pull/3034) by [@KorovinQuantori](https://github.com/KorovinQuantori) – canMerge = true only if user selected more than one cell
+
+## 30.9.3
+
+### Patch Changes
+
+- [#3029](https://github.com/udecode/plate/pull/3029) by [@KorovinQuantori](https://github.com/KorovinQuantori) – Ensure that table selection is always a valid sub-table
+
+## 30.9.2
+
+### Patch Changes
+
+- [#3026](https://github.com/udecode/plate/pull/3026) by [@KorovinQuantori](https://github.com/KorovinQuantori) – Copy rowSpan and colSpan properties of cell when set fragment data
+
+## 30.9.1
+
+### Patch Changes
+
+- [#3013](https://github.com/udecode/plate/pull/3013) by [@adrwz](https://github.com/adrwz) – Set "not found" value to -1 instead of 0 for colIndex
+
+## 30.5.3
+
+### Patch Changes
+
+- [`4cbed7159`](https://github.com/udecode/plate/commit/4cbed7159d51f7427051686e45bcf2a8899aeede) by [@zbeyens](https://github.com/zbeyens) – Move `@udecode/plate-common` to peerDeps to fix a bug when multiple instances were installed
+
+## 30.4.5
+
+## 30.1.2
+
+## 30.0.1
+
+### Patch Changes
+
+- [#2873](https://github.com/udecode/plate/pull/2873) by [@zbeyens](https://github.com/zbeyens) – Fix: merging empty cells should result into a single empty paragraph
+
+## 30.0.0
+
+### Major Changes
+
+- [#2867](https://github.com/udecode/plate/pull/2867) by [@12joan](https://github.com/12joan) – Fix: in v28, `TableProvider` was incorrectly shared by all tables in the editor. `TableProvider` must now be rendered as part of `TableElement`.
+
+### Patch Changes
+
+- [#2867](https://github.com/udecode/plate/pull/2867) by [@12joan](https://github.com/12joan) – Fix: Row and column size overrides not being applied correctly
+
+## 29.1.0
+
+### Patch Changes
+
+- [#2860](https://github.com/udecode/plate/pull/2860) by [@johnrazeur](https://github.com/johnrazeur) – Remove unused code from withDeleteTable
+
+## 29.0.1
+
 ## 29.0.0
 
 ## 28.1.2

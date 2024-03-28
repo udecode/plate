@@ -5,15 +5,11 @@ import { DropdownMenuItemProps } from '@radix-ui/react-dropdown-menu';
 import { cn } from '@udecode/cn';
 
 import { Icons } from '@/components/icons';
-import { buttonVariants } from '@/components/plate-ui/button';
-import { DropdownMenuItem } from '@/components/plate-ui/dropdown-menu';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/plate-ui/tooltip';
 
+import { buttonVariants } from './button';
 import { TColor } from './color-dropdown-menu';
+import { DropdownMenuItem } from './dropdown-menu';
+import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
 
 type ColorDropdownMenuItemProps = {
   value: string;
@@ -39,7 +35,7 @@ export function ColorDropdownMenuItem({
           variant: 'outline',
           isMenu: true,
         }),
-        'h-6 w-6 border border-solid border-muted p-0',
+        'size-6 border border-solid border-muted p-0',
         !isBrightColor && 'border-transparent text-white',
         className
       )}

@@ -29,7 +29,7 @@ module.exports = {
   },
   settings: {
     tailwindcss: {
-      callees: ['cn'],
+      callees: ['cn', 'cva', 'withCn'],
       config: 'tailwind.config.js',
     },
     next: {

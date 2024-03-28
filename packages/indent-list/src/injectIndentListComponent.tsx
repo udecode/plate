@@ -1,12 +1,16 @@
 import React from 'react';
 import {
+  getPluginOptions,
   InjectComponentProps,
   InjectComponentReturnType,
 } from '@udecode/plate-common';
 import { clsx } from 'clsx';
 
-import { KEY_LIST_START, KEY_LIST_STYLE_TYPE } from './createIndentListPlugin';
-import { ListStyleType } from './types';
+import {
+  IndentListPlugin,
+  KEY_LIST_START,
+  KEY_LIST_STYLE_TYPE,
+} from './createIndentListPlugin';
 
 export const injectIndentListComponent = (
   props: InjectComponentProps
@@ -22,31 +26,38 @@ export const injectIndentListComponent = (
       padding: 0,
       margin: 0,
       listStyleType,
+      position: 'relative',
     };
 
-    if (
-      [ListStyleType.Disc, ListStyleType.Circle, ListStyleType.Square].includes(
-        listStyleType as ListStyleType
-      )
-    ) {
-      className = clsx(className, 'slate-list-bullet');
+    return function Ul({ editor, children }) {
+      const { listStyleTypes = {} } = getPluginOptions<IndentListPlugin>(
+        editor,
+        KEY_LIST_STYLE_TYPE
+      );
 
-      return function Ul({ children }) {
-        return (
-          <ul style={style} className={className}>
-            <li>{children}</li>
-          </ul>
-        );
-      };
-    }
+      const targetList = listStyleTypes[listStyleType] ?? {};
+      const isNumbered = targetList ? targetList.isNumbered : false;
 
-    className = clsx(className, 'slate-list-number');
+      className = isNumbered
+        ? clsx(className, 'slate-list-number')
+        : clsx(className, 'slate-list-bullet');
 
-    return function Ol({ children }) {
+      const {
+        markerComponent = null,
+        // eslint-disable-next-line @typescript-eslint/no-shadow
+        liComponent = ({ children }: any) => <li>{children}</li>,
+      } = targetList;
+
+      const Wrap = isNumbered ? 'ol' : 'ul';
+
       return (
-        <ol style={style} className={className} start={listStart}>
-          <li>{children}</li>
-        </ol>
+        <Wrap style={style} className={className} start={listStart}>
+          {markerComponent && markerComponent({ editor, element })}
+          {liComponent({
+            children,
+            element,
+          })}
+        </Wrap>
       );
     };
   }

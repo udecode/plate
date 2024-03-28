@@ -1,11 +1,14 @@
 'use client';
 
+import { KEY_SINGLE_LINE } from '@udecode/plate-break';
 import { createZustandStore } from '@udecode/plate-common';
+import { KEY_NORMALIZE_TYPES } from '@udecode/plate-normalizers';
+import { KEY_SELECT_ON_BACKSPACE } from '@udecode/plate-select';
 import { toast } from 'sonner';
 
 import { customizerItems, SettingPlugin } from '@/config/customizer-items';
 import { customizerList } from '@/config/customizer-list';
-import { customizerPlugins } from '@/config/customizer-plugins';
+import { customizerPlugins, ValueId } from '@/config/customizer-plugins';
 
 export const categoryIds = customizerList.map((item) => item.id);
 
@@ -28,8 +31,9 @@ const defaultCheckedPlugins = customizerList.reduce(
 export const getDefaultCheckedPlugins = () => {
   return {
     ...defaultCheckedPlugins,
-    normalizeTypes: false,
-    singleLine: false,
+    [KEY_NORMALIZE_TYPES]: false,
+    [KEY_SINGLE_LINE]: false,
+    [KEY_SELECT_ON_BACKSPACE]: false,
     list: false,
   } as Record<string, boolean>;
 };
@@ -40,7 +44,19 @@ export const getDefaultCheckedComponents = () => {
   } as Record<string, boolean>;
 };
 
-export const settingsStore = createZustandStore('settings')({
+export type SettingsStoreValue = {
+  showSettings: boolean;
+  loadingSettings: boolean;
+  showComponents: boolean;
+  homeTab: string;
+  customizerTab: string;
+  valueId: ValueId;
+  checkedPluginsNext: Record<string, boolean>;
+  checkedPlugins: Record<string, boolean>;
+  checkedComponents: Record<string, boolean>;
+};
+
+const initialState: SettingsStoreValue = {
   showSettings: false,
   loadingSettings: true,
   showComponents: true,
@@ -48,13 +64,15 @@ export const settingsStore = createZustandStore('settings')({
   // homeTab: 'installation',
   customizerTab: 'plugins',
 
-  valueId: customizerPlugins.playground.id,
+  valueId: customizerPlugins.playground.id as ValueId,
 
   checkedPluginsNext: getDefaultCheckedPlugins(),
 
   checkedPlugins: getDefaultCheckedPlugins(),
   checkedComponents: getDefaultCheckedComponents(),
-})
+};
+
+export const settingsStore = createZustandStore('settings')(initialState)
   .extendActions((set) => ({
     resetPlugins: ({
       exclude,

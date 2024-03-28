@@ -26,6 +26,7 @@ module.exports = {
     '.next',
     '.out',
     '**/__registry__',
+    '**/diff-match-patch-ts'
   ],
   env: {
     browser: true,
@@ -48,10 +49,6 @@ module.exports = {
       typescript: {},
     },
     react: { version: 'detect' },
-    tailwindcss: {
-      callees: ['cn', 'cva'],
-      config: 'tailwind.config.cjs',
-    },
     next: {
       rootDir: ['apps/www'],
     },

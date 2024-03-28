@@ -12,7 +12,7 @@ import { styles } from '../registry/styles';
 // NOTE: shadcn fork
 export function rehypeComponent() {
   return async (tree: UnistTree) => {
-    visit(tree, (node: UnistNode) => {
+    visit(tree as any, (node: UnistNode) => {
       if (node.name === 'ComponentSource' || node.name === 'ComponentPreview') {
         const name = getNodeAttributeByName(node, 'name')?.value as string;
 

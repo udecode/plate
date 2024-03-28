@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-dnd",
-  "version": "29.0.0",
+  "version": "31.0.0",
   "description": "Drag and drop feature for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -39,11 +39,14 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-common": "29.0.0",
     "lodash": "^4.17.21",
     "raf": "^3.4.1"
   },
+  "devDependencies": {
+    "@udecode/plate-common": "workspace:^"
+  },
   "peerDependencies": {
+    "@udecode/plate-common": ">=31.0.0",
     "react": ">=16.8.0",
     "react-dnd": ">=14.0.0",
     "react-dnd-html5-backend": ">=14.0.0",

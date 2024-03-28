@@ -1,10 +1,10 @@
 ---
-title: Toggle
-description: Enable or disable a specific feature or functionality with a toggle switch.
+title: Toggle Element
+description: Add toggles to your document.
 component: true
-links:
-  doc: https://ui.shadcn.com/docs/components/toggle
-  api: https://www.radix-ui.com/docs/primitives/components/toggle#api-reference
+docs:
+  - route: /docs/toggle
+    title: Toggle
 ---
 
 ## Installation
@@ -18,7 +18,7 @@ links:
 <TabsContent value="cli">
 
 ```bash
-npx @udecode/plate-ui@latest add toggle
+npx @udecode/plate-ui@latest add toggle-element
 ```
 
 </TabsContent>
@@ -29,11 +29,10 @@ npx @udecode/plate-ui@latest add toggle
 
 <Step>
 
-Install the `@radix-ui/react-toggle` component from radix-ui:
+Install the following dependencies:
 
-```bash
-npm install @radix-ui/react-toggle
-```
+- [Toggle](/docs/toggle)
+- [Toolbar](/docs/components/toolbar)
 
 </Step>
 
@@ -43,7 +42,7 @@ Copy and paste the following code into your project.
 
 </Step>
 
-<ComponentSource name="toggle" />
+<ComponentSource name="toggle-element" />
 
 <Step>
 
@@ -56,3 +55,9 @@ Update the import paths to match your project setup.
 </TabsContent>
 
 </Tabs>
+
+## Examples
+
+<ComponentPreview name="playground-demo" id="toggle" />
+
+<ComponentSource src="../../templates/plate-playground-template/src/lib/plate/plate-plugins.ts" />

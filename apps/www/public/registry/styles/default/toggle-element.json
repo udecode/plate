@@ -1,0 +1,14 @@
+{
+  "name": "toggle-element",
+  "dependencies": [
+    "@udecode/plate-toggle"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "name": "toggle-element.tsx",
+      "content": "import { withRef } from '@udecode/cn';\nimport { PlateElement, useElement } from '@udecode/plate-common';\nimport { useToggleButton, useToggleButtonState } from '@udecode/plate-toggle';\n\nimport { Icons } from '@/components/icons';\n\nexport const ToggleElement = withRef<typeof PlateElement>(\n  ({ children, ...props }, ref) => {\n    const element = useElement();\n    const state = useToggleButtonState(element.id as string);\n    const { open, buttonProps } = useToggleButton(state);\n\n    return (\n      <PlateElement ref={ref} asChild {...props}>\n        <div className=\"relative pl-6\">\n          <span\n            contentEditable={false}\n            className=\"absolute -left-0.5 -top-0.5 flex cursor-pointer select-none items-center justify-center rounded-sm p-px transition-colors hover:bg-slate-200\"\n            {...buttonProps}\n          >\n            {open ? <Icons.chevronDown /> : <Icons.chevronRight />}\n          </span>\n          {children}\n        </div>\n      </PlateElement>\n    );\n  }\n);\n"
+    }
+  ],
+  "type": "components:plate-ui"
+}

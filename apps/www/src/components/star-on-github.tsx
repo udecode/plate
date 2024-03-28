@@ -36,10 +36,10 @@ export function StarOnGithub({ count }: { count: number }) {
             )
           )}
         />
-        <Icons.gitHub className="h-4 w-4" />
+        <Icons.gitHub className="size-4" />
         Star on GitHub
         <div className="hidden items-center gap-1 text-sm text-muted-foreground md:flex">
-          <StarIcon className="h-4 w-4 transition-all duration-300 group-hover:text-[#e3b341]" />
+          <StarIcon className="size-4 transition-all duration-300 group-hover:text-[#e3b341]" />
 
           {count > 0 && (
             <CountingNumbers

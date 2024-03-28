@@ -4,7 +4,7 @@ import { cn } from '@udecode/cn';
 import { Check } from 'lucide-react';
 
 import { customizerItems, SettingPlugin } from '@/config/customizer-items';
-import { customizerPlugins } from '@/config/customizer-plugins';
+import { customizerPlugins, ValueId } from '@/config/customizer-plugins';
 import { useFixHydration } from '@/hooks/use-fix-hydration';
 import { Button, buttonVariants } from '@/registry/default/plate-ui/button';
 import {
@@ -65,6 +65,7 @@ const categories = [
       customizerPlugins.tabbable,
       customizerPlugins.table,
       customizerPlugins.todoli,
+      customizerPlugins.toggle,
       customizerPlugins.trailingblock,
     ],
   },
@@ -76,7 +77,7 @@ export function SettingsCombobox() {
 
   const loaded = useFixHydration();
 
-  const route = customizerPlugins[valueId]?.route;
+  const route: string | undefined = (customizerPlugins as any)[valueId]?.route;
 
   return (
     <>
@@ -95,8 +96,9 @@ export function SettingsCombobox() {
                 }, 0);
               }}
             >
-              {customizerPlugins[valueId]?.label ?? 'Select a value...'}
-              <Icons.chevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              {(customizerPlugins as any)[valueId]?.label ??
+                'Select a value...'}
+              <Icons.chevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
             </Button>
           )}
         </PopoverTrigger>
@@ -114,10 +116,10 @@ export function SettingsCombobox() {
                         key={item.id}
                         value={item.id}
                         onSelect={(newId) => {
-                          settingsStore.set.valueId(newId);
+                          settingsStore.set.valueId(newId as ValueId);
 
-                          const valuePlugins =
-                            customizerPlugins[newId]?.plugins ?? [];
+                          const valuePlugins: string[] =
+                            (customizerPlugins as any)[newId]?.plugins ?? [];
 
                           valuePlugins.forEach((pluginKey) => {
                             const deps = (
@@ -137,7 +139,7 @@ export function SettingsCombobox() {
                       >
                         <Check
                           className={cn(
-                            'mr-2 h-4 w-4',
+                            'mr-2 size-4',
                             valueId === item.id ? 'opacity-100' : 'opacity-0'
                           )}
                         />
@@ -160,7 +162,7 @@ export function SettingsCombobox() {
           })}
           href={route}
         >
-          <Icons.externalLink className="h-4 w-4 text-muted-foreground" />
+          <Icons.externalLink className="size-4 text-muted-foreground" />
         </Link>
       )}
     </>

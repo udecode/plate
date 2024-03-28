@@ -1,12 +1,12 @@
 import React from 'react';
-import { createAtomStore, TElement } from '@udecode/plate-common';
+import { atom, createAtomStore, TElement } from '@udecode/plate-common';
 
 export type TableStoreSizeOverrides = Map<number, number>;
 
 export const { tableStore, useTableStore, TableProvider } = createAtomStore(
   {
-    colSizeOverrides: new Map() as TableStoreSizeOverrides,
-    rowSizeOverrides: new Map() as TableStoreSizeOverrides,
+    colSizeOverrides: atom(new Map() as TableStoreSizeOverrides),
+    rowSizeOverrides: atom(new Map() as TableStoreSizeOverrides),
     marginLeftOverride: null as number | null,
     hoveredColIndex: null as number | null,
     selectedCells: null as TElement[] | null,
@@ -37,15 +37,14 @@ const useOverrideSizeFactory = (
     [setOverrides]
   );
 
-// jotai supports setting with functions, but createAtomStore doesn't know that
 export const useOverrideColSize = () => {
   const setColSizeOverrides = useTableStore().set.colSizeOverrides();
-  return useOverrideSizeFactory(setColSizeOverrides as unknown as any);
+  return useOverrideSizeFactory(setColSizeOverrides);
 };
 
 export const useOverrideRowSize = () => {
   const setRowSizeOverrides = useTableStore().set.rowSizeOverrides();
-  return useOverrideSizeFactory(setRowSizeOverrides as unknown as any);
+  return useOverrideSizeFactory(setRowSizeOverrides);
 };
 
 export const useOverrideMarginLeft = () =>

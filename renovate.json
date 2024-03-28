@@ -1,27 +1,42 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
-  "dependencyDashboardApproval": true,
+  "extends": ["config:recommended", ":disableDependencyDashboard"],
+  "enabled": false,
   "packageRules": [
     {
-      "matchPaths": ["templates/"],
-      "matchPackagePatterns": ["^@udecode/"],
+      "matchPackagePatterns": ["*"],
+      "enabled": false
+    },
+    {
+      "matchPackagePrefixes": ["@udecode/"],
+      "matchUpdateTypes": ["major", "minor", "patch", "pin", "digest"],
+      "automerge": true,
+      "groupName": "Internal packages updates"
+    },
+    {
+      "matchPackagePrefixes": ["slate"],
+      "matchUpdateTypes": ["major", "minor", "patch", "pin", "digest"],
+      "automerge": true,
+      "groupName": "Slate packages updates"
+    },
+    {
+      "excludePackagePrefixes": ["@udecode/", "slate"],
+      "matchPackagePatterns": ["*"],
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "automerge": true,
+      "schedule": "every weekend",
+      "groupName": "External updates"
+    },
+    {
+      "excludePackagePrefixes": ["@udecode/", "slate"],
+      "matchPackagePatterns": ["*"],
       "matchUpdateTypes": ["major"],
-      "dependencyDashboardApproval": false
+      "automerge": false,
+      "schedule": "every weekend"
     },
     {
-      "matchPaths": ["templates/"],
-      "matchPackagePatterns": ["^@udecode/"],
-      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
-      "automerge": true,
-      "dependencyDashboardApproval": false
-    },
-    {
-      "matchPaths": ["templates/"],
-      "matchPackagePatterns": ["^slate"],
-      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
-      "automerge": true,
-      "dependencyDashboardApproval": false
+      "matchPackagePrefixes": ["@excalidraw"],
+      "enabled": false
     }
   ]
 }

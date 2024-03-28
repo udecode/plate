@@ -2,7 +2,7 @@
 
 const nextConfig = async (phase, { defaultConfig }) => {
   /**
-   * @type {import('next').NextConfig}
+   * @type {import("next").NextConfig}
    */
   const config = {
     // Enable React strict mode.
@@ -12,11 +12,24 @@ const nextConfig = async (phase, { defaultConfig }) => {
     // Configure domains to allow for optimized image loading.
     // https://nextjs.org/docs/basic-features/image-optimization#domains
     images: {
-      domains: [
-        'cdn.discordapp.com',
-        'lh3.googleusercontent.com',
-        'avatars.githubusercontent.com',
-      ],
+      remotePatterns: [
+        {
+          protocol: "https",
+          hostname: "cdn.discordapp.com"
+        },
+        {
+          protocol: "https",
+          hostname: "lh3.googleusercontent.com"
+        },
+        {
+          protocol: "https",
+          hostname: "avatars.githubusercontent.com"
+        },
+        {
+          protocol: "https",
+          hostname: "images.unsplash.com"
+        }
+      ]
     },
 
     // typescript: {
@@ -33,8 +46,8 @@ const nextConfig = async (phase, { defaultConfig }) => {
       esmExternals: false,
       // Specify external packages that should be excluded from server-side rendering.
       // https://beta.nextjs.org/docs/api-reference/next-config#servercomponentsexternalpackages
-      serverComponentsExternalPackages: ['@prisma/client'],
-    },
+      serverComponentsExternalPackages: ["@prisma/client"]
+    }
 
     // redirects() {
     //   return [
@@ -71,22 +84,22 @@ const nextConfig = async (phase, { defaultConfig }) => {
     //   ];
     // },
   };
-  if (phase === 'phase-development-server') {
-    const fs = await import('node:fs');
-    const glob = await import('glob').then((mod) => mod.default);
+  if (phase === "phase-development-server") {
+    const fs = await import("node:fs");
+    const glob = await import("glob").then((mod) => mod.default);
 
     const packageNames = new glob.GlobSync(
-      '../../packages/**/package.json'
+      "../../packages/**/package.json"
     ).found
       .map((file) => {
         try {
-          const packageJson = JSON.parse(fs.readFileSync(file, 'utf8'));
+          const packageJson = JSON.parse(fs.readFileSync(file, "utf8"));
           return packageJson.name;
         } catch (error) {
           return null;
         }
       })
-      .filter((pkg) => pkg?.startsWith('@udecode'));
+      .filter((pkg) => pkg?.startsWith("@udecode"));
 
     config.transpilePackages = packageNames;
   }

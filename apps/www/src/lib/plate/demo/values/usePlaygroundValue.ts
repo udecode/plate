@@ -32,6 +32,7 @@ import { mentionValue } from './mentionValue';
 import { softBreakValue } from './softBreakValue';
 import { tabbableValue } from './tabbableValue';
 import { tableMergeValue, tableValue } from './tableValue';
+import { toggleValue } from './toggleValue';
 
 export const usePlaygroundValue = (id?: ValueId) => {
   let valueId = settingsStore.use.valueId();
@@ -53,11 +54,7 @@ export const usePlaygroundValue = (id?: ValueId) => {
     }
 
     if (valueId !== customizerPlugins.playground.id) {
-      const newValue = customizerPlugins[valueId]?.value ?? [];
-
-      if (newValue.length === 0) {
-        return mapNodeId(value);
-      }
+      const newValue = (customizerPlugins as any)[valueId]?.value ?? value;
       return mapNodeId(newValue);
     }
 
@@ -79,6 +76,7 @@ export const usePlaygroundValue = (id?: ValueId) => {
     if (enabled.list) value.push(...listValue);
     if (enabled.img || enabled.media_embed) value.push(...mediaValue);
     if (enabled.table) value.push(...tableValue);
+    if (enabled.toggle) value.push(...toggleValue);
 
     // Functionalities
     if (enabled.autoformat) value.push(...autoformatValue);
@@ -129,6 +127,7 @@ export const usePlaygroundValue = (id?: ValueId) => {
     enabled.softBreak,
     enabled.tabbable,
     enabled.table,
+    enabled.toggle,
     enabled.trailingBlock,
     valueId,
   ]);

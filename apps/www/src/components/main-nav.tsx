@@ -17,7 +17,7 @@ export function MainNav() {
   return (
     <div className="mr-4 hidden md:flex">
       <Link href="/" className="mr-6 flex items-center space-x-2">
-        <Logo className="h-6 w-6" />
+        <Logo className="size-6" />
         <span className="hidden items-center font-bold sm:inline-flex">
           {siteConfig.name}
           <div className="flex w-8 items-center">

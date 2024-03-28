@@ -1,7 +1,8 @@
 import React from 'react';
 import { normalizeEditor, Value } from '@udecode/slate';
+import { nanoid } from 'nanoid/non-secure';
 
-import { PLATE_SCOPE, PlateStoreProvider } from '../stores';
+import { PlateStoreProvider } from '../stores';
 import {
   PlateEditor,
   PlatePlugin,
@@ -15,7 +16,10 @@ export interface PlateProps<
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
 > extends Partial<
-    Pick<PlateStoreState<V, E>, 'id' | 'editor' | 'value' | 'readOnly'>
+    Pick<
+      PlateStoreState<V, E>,
+      'id' | 'editor' | 'value' | 'readOnly' | 'primary'
+    >
   > {
   children: React.ReactNode;
   decorate?: TEditableProps['decorate'];
@@ -78,7 +82,7 @@ function PlateInner<
   E extends PlateEditor<V> = PlateEditor<V>,
 >({
   normalizeInitialValue: shouldNormalizeInitialValue,
-  id = PLATE_SCOPE,
+  id: idProp,
   editor: editorProp,
   initialValue,
   value: valueProp,
@@ -91,8 +95,11 @@ function PlateInner<
   renderElement,
   renderLeaf,
   readOnly,
+  primary,
   maxLength,
 }: PlateProps<V, E>) {
+  const [id] = React.useState(() => editorProp?.id ?? idProp ?? nanoid());
+
   const editor: E = React.useMemo(
     () =>
       editorProp ??
@@ -141,6 +148,7 @@ function PlateInner<
       plugins={editor.plugins as any}
       rawPlugins={pluginsProp}
       readOnly={readOnly}
+      primary={primary}
       value={value}
       decorate={decorate}
       onChange={onChange as PlateStoreState['onChange']}

@@ -1,4 +1,4 @@
-import { Client, ClientOptions } from '@portive/client';
+import * as portiveClient from '@portive/client';
 import { PlateEditor, Value } from '@udecode/plate-common';
 
 import { Upload } from '../upload';
@@ -7,7 +7,7 @@ import { createUploadStore } from '../upload/createUploadStore';
 /**
  * Specifies just the `options` part of the CloudPlugin
  */
-export type CloudPlugin = ClientOptions & {
+export type CloudPlugin = portiveClient.ClientOptions & {
   uploadStoreInitialValue?: Record<string, Upload>;
 };
 
@@ -18,7 +18,7 @@ export type FinishUploadsOptions = { maxTimeoutInMs?: number };
 
 export type CloudEditorProps<V extends Value = Value> = {
   cloud: {
-    client: Client;
+    client: portiveClient.Client;
     uploadFiles: (msg: any) => void;
     uploadStore: ReturnType<typeof createUploadStore>;
     genericFileHandlers?: {

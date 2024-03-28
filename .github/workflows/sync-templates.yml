@@ -15,9 +15,9 @@ jobs:
     name: build
     runs-on: ubuntu-latest
     strategy:
-      node-version: [18.18.x]
       fail-fast: false
       matrix:
+        node-version: [18.18.x]
         template:
           - plate-template
           - plate-playground-template
@@ -45,7 +45,7 @@ jobs:
         run: |
           echo "pnpm_cache_dir=$(pnpm store path)" >> $GITHUB_OUTPUT
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         name: Setup pnpm cache
         with:
           path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
@@ -54,7 +54,7 @@ jobs:
             ${{ runner.os }}-pnpm-store-
 
       - name: 📥 Install dependencies
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
 
       - name: 🏗 Run build
         run: pnpm build

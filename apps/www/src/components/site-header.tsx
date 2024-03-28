@@ -55,7 +55,7 @@ export async function SiteHeader() {
                   'w-9 px-0'
                 )}
               >
-                <Icons.gitHub className="h-4 w-4" />
+                <Icons.gitHub className="size-4" />
                 <span className="sr-only">GitHub</span>
               </div>
             </Link>
@@ -72,7 +72,7 @@ export async function SiteHeader() {
                   'w-9 px-0'
                 )}
               >
-                <Icons.discord className="h-4 w-4 fill-current" />
+                <Icons.discord className="size-4 fill-current" />
                 <span className="sr-only">Discord</span>
               </div>
             </Link>

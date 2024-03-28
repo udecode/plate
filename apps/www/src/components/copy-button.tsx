@@ -49,7 +49,7 @@ export function CopyButton({
       size="icon"
       variant="ghost"
       className={cn(
-        'relative z-10 h-6 w-6 text-slate-50 hover:bg-slate-700 hover:text-slate-50',
+        'relative z-10 size-6 text-slate-50 hover:bg-slate-700 hover:text-slate-50',
         className
       )}
       onClick={() => {
@@ -70,9 +70,9 @@ export function CopyButton({
     >
       <span className="sr-only">Copy</span>
       {hasCopied ? (
-        <Icons.check className="h-3 w-3" />
+        <Icons.check className="size-3" />
       ) : (
-        <Icons.copy className="h-3 w-3" />
+        <Icons.copy className="size-3" />
       )}
     </Button>
   );
@@ -109,25 +109,25 @@ export function CopyWithClassNames({
           size="icon"
           variant="ghost"
           className={cn(
-            'relative z-10 h-6 w-6 text-slate-50 hover:bg-slate-700 hover:text-slate-50',
+            'relative z-10 size-6 text-slate-50 hover:bg-slate-700 hover:text-slate-50',
             className
           )}
         >
           {hasCopied ? (
-            <Icons.check className="h-3 w-3" />
+            <Icons.check className="size-3" />
           ) : (
-            <Icons.copy className="h-3 w-3" />
+            <Icons.copy className="size-3" />
           )}
           <span className="sr-only">Copy</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => copyToClipboard(value)}>
-          <Icons.react className="mr-2 h-4 w-4" />
+          <Icons.react className="mr-2 size-4" />
           <span>Component</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => copyToClipboard(classNames)}>
-          <Icons.tailwind className="mr-2 h-4 w-4" />
+          <Icons.tailwind className="mr-2 size-4" />
           <span>Classname</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -172,14 +172,14 @@ export function CopyNpmCommandButton({
           size="icon"
           variant="ghost"
           className={cn(
-            'relative z-10 h-6 w-6 text-slate-50 hover:bg-slate-700 hover:text-slate-50',
+            'relative z-10 size-6 text-slate-50 hover:bg-slate-700 hover:text-slate-50',
             className
           )}
         >
           {hasCopied ? (
-            <Icons.check className="h-3 w-3" />
+            <Icons.check className="size-3" />
           ) : (
-            <Icons.copy className="h-3 w-3" />
+            <Icons.copy className="size-3" />
           )}
           <span className="sr-only">Copy</span>
         </Button>

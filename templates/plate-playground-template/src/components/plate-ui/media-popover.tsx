@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import {
-  isCollapsed,
-  useEditorState,
+  isSelectionExpanded,
+  useEditorSelector,
   useElement,
   useRemoveNodeButton,
 } from '@udecode/plate-common';
@@ -27,9 +27,12 @@ export interface MediaPopoverProps {
 export function MediaPopover({ pluginKey, children }: MediaPopoverProps) {
   const readOnly = useReadOnly();
   const selected = useSelected();
-  const editor = useEditorState();
 
-  const isOpen = !readOnly && selected && isCollapsed(editor.selection);
+  const selectionCollapsed = useEditorSelector(
+    (editor) => !isSelectionExpanded(editor),
+    []
+  );
+  const isOpen = !readOnly && selected && selectionCollapsed;
   const isEditing = useFloatingMediaSelectors().isEditing();
 
   useEffect(() => {
@@ -56,7 +59,7 @@ export function MediaPopover({ pluginKey, children }: MediaPopoverProps) {
           <div className="flex w-[330px] flex-col">
             <div className="flex items-center">
               <div className="flex items-center pl-3 text-muted-foreground">
-                <Icons.link className="h-4 w-4" />
+                <Icons.link className="size-4" />
               </div>
 
               <FloatingMediaPrimitive.UrlInput
@@ -79,7 +82,7 @@ export function MediaPopover({ pluginKey, children }: MediaPopoverProps) {
             <Separator orientation="vertical" className="my-1" />
 
             <Button variant="ghost" size="sms" {...buttonProps}>
-              <Icons.delete className="h-4 w-4" />
+              <Icons.delete className="size-4" />
             </Button>
           </div>
         )}

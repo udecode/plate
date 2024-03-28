@@ -32,7 +32,7 @@ export function MobileNav() {
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
+            className="size-5"
           >
             <path
               d="M3 5H11"
@@ -66,7 +66,7 @@ export function MobileNav() {
           className="flex items-center"
           onOpenChange={setOpen}
         >
-          <Logo className="mr-2 h-4 w-4" />
+          <Logo className="mr-2 size-4" />
           <span className="font-bold">{siteConfig.name}</span>
         </MobileLink>
         <ScrollArea className="my-4 h-[calc(100vh-8rem)] pb-10 pl-6">
@@ -80,6 +80,11 @@ export function MobileNav() {
                     onOpenChange={setOpen}
                   >
                     {item.title}
+                    {item.label && (
+                      <span className="ml-2 rounded-md bg-[#adfa1d] px-1.5 py-0.5 text-xs leading-none text-[#000000] no-underline group-hover:no-underline">
+                        {item.label}
+                      </span>
+                    )}
                   </MobileLink>
                 )
               );
@@ -100,6 +105,11 @@ export function MobileNav() {
                             className="text-muted-foreground"
                           >
                             {_item.title}
+                            {item.label && (
+                              <span className="ml-2 rounded-md bg-[#adfa1d] px-1.5 py-0.5 text-xs leading-none text-[#000000] no-underline group-hover:no-underline">
+                                {item.label}
+                              </span>
+                            )}
                           </MobileLink>
                         ) : (
                           _item.title

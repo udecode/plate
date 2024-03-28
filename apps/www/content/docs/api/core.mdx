@@ -316,7 +316,7 @@ The value of the element as a TElement.
 Get the Slate editor reference without re-rendering.
 
 - Does not re-render on editor change.
-- Should be used inside `Plate`.
+- Must be used inside `Plate` or `PlateController` (see [Accessing the Editor](/docs/accessing-editor/)).
 - Note the reference does not change when the editor changes.
 
 <APIParameters>
@@ -336,7 +336,7 @@ Subscribe to a specific property of the editor.
 
 - Calls the selector function on editor change.
 - Re-renders when the result of the selector changes.
-- Should be used inside `Plate`.
+- Must be used inside `Plate` or `PlateController` (see [Accessing the Editor](/docs/accessing-editor/)).
 
 <APIParameters>
   <APIItem name="selector" type="(editor: PlateEditor<V>, prev?: T) => T">
@@ -370,7 +370,7 @@ Get the Slate editor reference with re-rendering.
 
 - Re-renders on editor change.
 - Supports nested editors.
-- Should be used inside `Plate`.
+- Must be used inside `Plate` or `PlateController` (see [Accessing the Editor](/docs/accessing-editor/)).
 - Note the reference does not change when the editor changes.
 - If performance is a concern, `useEditorSelector` should be used instead.
 
@@ -397,6 +397,21 @@ Get the editor's `readOnly` state.
 <APIReturns>
 
 The `readOnly` state of the editor.
+
+</APIReturns>
+
+### useEditorMounted
+
+Get the editor's `isMounted` state.
+
+<APIParameters>
+  <APIItem name="id" type="PlateId" optional>
+    The ID of the plate editor.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+
+The `isMounted` state of the editor.
 
 </APIReturns>
 

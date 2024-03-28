@@ -48,6 +48,7 @@ interface GetTableGridByRangeOptions<T extends FormatType> {
 
 /**
  * Get sub table between 2 cell paths.
+ * Ensure that the selection is always a valid table grid.
  */
 export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
   editor: PlateEditor<V>,
@@ -58,30 +59,32 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
     ELEMENT_TABLE
   );
 
-  const startCellEntry = findNode(editor, {
-    at: (at as any).anchor.path,
+  const startCellEntry = findNode<TTableCellElement>(editor, {
+    at: at.anchor.path,
     match: { type: getCellTypes(editor) },
-  })!; // TODO: improve typing
-  const endCellEntry = findNode(editor, {
-    at: (at as any).focus.path,
+  })!;
+  const endCellEntry = findNode<TTableCellElement>(editor, {
+    at: at.focus.path,
     match: { type: getCellTypes(editor) },
   })!;
 
-  const startCell = startCellEntry[0] as TTableCellElement;
-  const endCell = endCellEntry[0] as TTableCellElement;
+  const startCell = startCellEntry[0];
+  const endCell = endCellEntry[0];
 
-  const startCellPath = (at as any).anchor.path;
+  const startCellPath = at.anchor.path;
   const tablePath = startCellPath.slice(0, -2);
 
-  const tableEntry = findNode(editor, {
+  const tableEntry = findNode<TTableElement>(editor, {
     at: tablePath,
     match: { type: getPluginType(editor, ELEMENT_TABLE) },
-  })!; // TODO: improve typing
-  const realTable = tableEntry[0] as TTableElement;
+  })!;
+  const realTable = tableEntry[0];
 
-  const { col: _startColIndex, row: _startRowIndex } =
+  const { col: _startColIndex, row: _startRowIndex } = getCellIndicesWithSpans(
     getCellIndices(cellIndices!, startCell) ||
-    computeCellIndices(editor, realTable, startCell)!;
+      computeCellIndices(editor, realTable, startCell)!,
+    startCell
+  );
 
   const { row: _endRowIndex, col: _endColIndex } = getCellIndicesWithSpans(
     getCellIndices(cellIndices!, endCell) ||
@@ -89,22 +92,22 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
     endCell
   );
 
-  const startRowIndex = Math.min(_startRowIndex, _endRowIndex);
-  const endRowIndex = Math.max(_startRowIndex, _endRowIndex);
-  const startColIndex = Math.min(_startColIndex, _endColIndex);
-  const endColIndex = Math.max(_startColIndex, _endColIndex);
+  let startRowIndex = Math.min(_startRowIndex, _endRowIndex);
+  let endRowIndex = Math.max(_startRowIndex, _endRowIndex);
+  let startColIndex = Math.min(_startColIndex, _endColIndex);
+  let endColIndex = Math.max(_startColIndex, _endColIndex);
 
   const relativeRowIndex = endRowIndex - startRowIndex;
   const relativeColIndex = endColIndex - startColIndex;
 
-  const table: TTableElement = getEmptyTableNode(editor, {
+  let table: TTableElement = getEmptyTableNode(editor, {
     rowCount: relativeRowIndex + 1,
     colCount: relativeColIndex + 1,
     newCellChildren: [],
   });
 
-  const cellEntries: TElementEntry[] = [];
-  const cellsSet = new WeakSet();
+  let cellEntries: TElementEntry[] = [];
+  let cellsSet = new WeakSet();
 
   let rowIndex = startRowIndex;
   let colIndex = startColIndex;
@@ -112,6 +115,43 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
     const cell = findCellByIndexes(editor, realTable, rowIndex, colIndex);
     if (!cell) {
       break;
+    }
+
+    const indicies =
+      getCellIndices(cellIndices!, cell) ||
+      computeCellIndices(editor, realTable, cell)!;
+    const { col: cellColWithSpan, row: cellRowWithSpan } =
+      getCellIndicesWithSpans(indicies, cell);
+    const { row: cellRow, col: cellCol } = indicies;
+
+    // check if cell is still in range
+    const hasOverflowTop = cellRow < startRowIndex;
+    const hasOverflowBottom = cellRowWithSpan > endRowIndex;
+    const hasOverflowLeft = cellCol < startColIndex;
+    const hasOverflowRight = cellColWithSpan > endColIndex;
+    if (
+      hasOverflowTop ||
+      hasOverflowBottom ||
+      hasOverflowLeft ||
+      hasOverflowRight
+    ) {
+      // reset the cycle if has overflow
+      cellsSet = new WeakSet();
+      cellEntries = [];
+      startRowIndex = Math.min(startRowIndex, cellRow);
+      endRowIndex = Math.max(endRowIndex, cellRowWithSpan);
+      startColIndex = Math.min(startColIndex, cellCol);
+      endColIndex = Math.max(endColIndex, cellColWithSpan);
+      rowIndex = startRowIndex;
+      colIndex = startColIndex;
+      const newRelativeRowIndex = endRowIndex - startRowIndex;
+      const newRelativeColIndex = endColIndex - startColIndex;
+      table = getEmptyTableNode(editor, {
+        rowCount: newRelativeRowIndex + 1,
+        colCount: newRelativeColIndex + 1,
+        newCellChildren: [],
+      });
+      continue;
     }
 
     if (!cellsSet.has(cell)) {
