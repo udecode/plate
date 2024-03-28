@@ -1,14 +1,11 @@
 import { cn } from '@udecode/cn';
-import {
-  LiComponentProps,
-  MarkerComponentProps,
-} from '@udecode/plate-indent-list';
+import { LiFC, MarkerFC } from '@udecode/plate-indent-list';
 import { setNodes } from '@udecode/slate';
 import { findNodePath } from '@udecode/slate-react';
 
 import { Checkbox } from './checkbox';
 
-export const TodoMarker = (props: MarkerComponentProps) => {
+export const TodoMarker: MarkerFC = (props) => {
   const { editor, element } = props;
 
   const onChange = (v: boolean) => {
@@ -27,8 +24,9 @@ export const TodoMarker = (props: MarkerComponentProps) => {
   );
 };
 
-export const IndentTodoLiComponent = (props: LiComponentProps) => {
+export const TodoLi: LiFC = (props) => {
   const { element, children } = props;
+
   return (
     <span
       className={cn(
