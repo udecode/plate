@@ -4,6 +4,7 @@ import {
   getPluginType,
   isHtmlBlockElement,
   KEY_DESERIALIZE_HTML,
+  PlateRenderElementProps,
   postCleanHtml,
   TElement,
   traverseHtmlElements,
@@ -18,14 +19,29 @@ import { withIndentList } from './withIndentList';
 export const KEY_LIST_STYLE_TYPE = 'listStyleType';
 export const KEY_LIST_START = 'listStart';
 export const KEY_LIST_RESTART = 'listRestart';
+export const KEY_LIST_CHECKED = 'checked';
+export const KEY_TODO_STYLE_TYPE = 'todo';
+
+export type MarkerFC = React.FC<Omit<PlateRenderElementProps, 'children'>>;
+export type LiFC = React.FC<PlateRenderElementProps>;
 
 export interface IndentListPlugin {
   getSiblingIndentListOptions?: GetSiblingIndentListOptions<TElement>;
 
-  /**
+  /**x
    * Map html element to list style type.
    */
   getListStyleType?: (element: HTMLElement) => ListStyleType;
+
+  listStyleTypes?: Record<
+    string,
+    {
+      type: string;
+      markerComponent?: MarkerFC;
+      liComponent?: LiFC;
+      isOrdered?: boolean;
+    }
+  >;
 }
 
 export const createIndentListPlugin = createPluginFactory<IndentListPlugin>({

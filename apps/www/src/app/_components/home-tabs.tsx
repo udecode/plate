@@ -63,7 +63,7 @@ export default function HomeTabs() {
             }
           }}
         >
-          <Settings2 className="mr-2 h-4 w-4" /> Customize
+          <Settings2 className="mr-2 size-4" /> Customize
         </Button>
 
         <TabsContent value="playground" className="pt-2">

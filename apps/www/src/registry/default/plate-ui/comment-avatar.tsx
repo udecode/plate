@@ -14,7 +14,7 @@ export function CommentAvatar({ userId }: { userId: string | null }) {
   if (!user) return null;
 
   return (
-    <Avatar className="h-5 w-5">
+    <Avatar className="size-5">
       <AvatarImage src={user.avatarUrl} alt={user.name} />
       <AvatarFallback>{user.name?.[0]}</AvatarFallback>
     </Avatar>

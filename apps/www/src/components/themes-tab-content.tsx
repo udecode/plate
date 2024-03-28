@@ -53,7 +53,7 @@ export function ThemesTabContent() {
             <Label className="text-xs">Style</Label>
             <Popover>
               <PopoverTrigger>
-                <InfoCircledIcon className="ml-1 h-3 w-3" />
+                <InfoCircledIcon className="ml-1 size-3" />
                 <span className="sr-only">About styles</span>
               </PopoverTrigger>
               <PopoverContent
@@ -128,18 +128,18 @@ export function ThemesTabContent() {
                   )}
                   style={
                     {
-                      '--theme-primary': `hsl(${theme?.activeColor[
-                        mode === 'dark' ? 'dark' : 'light'
-                      ]})`,
+                      '--theme-primary': `hsl(${
+                        theme?.activeColor[mode === 'dark' ? 'dark' : 'light']
+                      })`,
                     } as React.CSSProperties
                   }
                 >
                   <span
                     className={cn(
-                      'mr-1 flex h-5 w-5 shrink-0 -translate-x-1 items-center justify-center rounded-full bg-[--theme-primary]'
+                      'mr-1 flex size-5 shrink-0 -translate-x-1 items-center justify-center rounded-full bg-[--theme-primary]'
                     )}
                   >
-                    {isActive && <CheckIcon className="h-4 w-4 text-white" />}
+                    {isActive && <CheckIcon className="size-4 text-white" />}
                   </span>
                   {theme.label}
                 </Button>

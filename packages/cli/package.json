@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ui",
-  "version": "30.6.2",
+  "version": "31.0.0",
   "description": "Add Plate components to your apps.",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -42,29 +42,29 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@antfu/ni": "^0.21.4",
+    "@antfu/ni": "^0.21.12",
     "chalk": "5.3.0",
     "commander": "^10.0.1",
-    "cosmiconfig": "^8.2.0",
-    "diff": "^5.1.0",
-    "execa": "^7.1.1",
+    "cosmiconfig": "^8.3.6",
+    "diff": "^5.2.0",
+    "execa": "^7.2.0",
     "fast-glob": "^3.3.2",
-    "fs-extra": "^11.1.1",
+    "fs-extra": "^11.2.0",
     "https-proxy-agent": "^6.2.1",
     "lodash.template": "^4.5.0",
-    "node-fetch": "^3.3.1",
+    "node-fetch": "^3.3.2",
     "ora": "^6.3.1",
     "prompts": "^2.4.2",
     "ts-morph": "^18.0.0",
     "tsconfig-paths": "^4.2.0",
-    "zod": "^3.21.4"
+    "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@types/diff": "^5.0.3",
-    "@types/fs-extra": "^11.0.1",
-    "@types/prompts": "^2.4.4",
-    "tsup": "^6.6.3",
-    "type-fest": "^3.12.0",
+    "@types/diff": "^5.0.9",
+    "@types/fs-extra": "^11.0.4",
+    "@types/prompts": "^2.4.9",
+    "tsup": "^8.0.2",
+    "type-fest": "^4.13.1",
     "vitest": "^0.32.4"
   },
   "keywords": [

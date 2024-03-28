@@ -1,5 +1,13 @@
 # @udecode/plate-dnd
 
+## 31.2.1
+
+### Patch Changes
+
+- [#3078](https://github.com/udecode/plate/pull/3078) by [@zbeyens](https://github.com/zbeyens) – Fix `handleRef` type
+
+## 31.0.0
+
 ## 30.5.3
 
 ### Patch Changes

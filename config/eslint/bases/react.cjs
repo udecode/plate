@@ -32,8 +32,6 @@ module.exports = {
       extends: [
         // @see https://github.com/yannickcr/eslint-plugin-react
         'plugin:react/recommended',
-        // @see https://github.com/jsx-eslint/eslint-plugin-jsx-a11y
-        'plugin:jsx-a11y/recommended',
       ],
       rules: {
         'jsx-a11y/anchor-has-content': 'off',

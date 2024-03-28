@@ -1,5 +1,11 @@
 # @udecode/utils
 
+## 31.0.0
+
+### Minor Changes
+
+- [#3040](https://github.com/udecode/plate/pull/3040) by [@zbeyens](https://github.com/zbeyens) – Updated minor dependencies
+
 ## 24.3.0
 
 ### Minor Changes

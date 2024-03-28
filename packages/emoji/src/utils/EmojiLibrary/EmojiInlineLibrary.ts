@@ -1,4 +1,6 @@
-import emojiMartData from '@emoji-mart/data' assert { type: 'json' };
+import emojiMartData from '@emoji-mart/data' with { type: 'json' };
+
+
 
 import {
   Emoji,

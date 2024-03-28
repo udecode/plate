@@ -1,70 +1,67 @@
 export enum ListStyleType {
-  // The marker is traditional Armenian numbering
-  Armenian = 'armenian',
-
-  // The marker is a circle
-  Circle = 'circle',
-
-  // The marker is plain ideographic numbers
-  CjkIdeographic = 'cjk-ideographic',
-
-  // The marker is a number. This is default for <ol>
   Decimal = 'decimal',
-
-  // The marker is a number with leading zeros (01, 02, 03, etc.)
   DecimalLeadingZero = 'decimal-leading-zero',
-
-  // The marker is a filled circle. This is default for <ul>
-  Disc = 'disc',
-
-  // The marker is traditional Georgian numbering
+  ArabicIndic = 'arabic-indic',
+  Armenian = 'armenian',
+  UpperArmenian = 'upper-armenian',
+  LowerArmenian = 'lower-armenian',
+  Bengali = 'bengali',
+  Cambodian = 'cambodian',
+  Khmer = 'khmer',
+  CjkDecimal = 'cjk-decimal',
+  Devanagari = 'devanagari',
   Georgian = 'georgian',
-
-  // The marker is traditional Hebrew numbering
+  Gujarati = 'gujarati',
+  Gurmukhi = 'gurmukhi',
   Hebrew = 'hebrew',
-
-  // The marker is traditional Hiragana numbering
-  Hiragana = 'hiragana',
-
-  // The marker is traditional Hiragana iroha numbering
-  HiraganaIroha = 'hiragana-iroha',
-
-  // The marker is traditional Katakana numbering
-  Katakana = 'katakana',
-
-  // The marker is traditional Katakana iroha numbering
-  KatakanaIroha = 'katakana-iroha',
-
-  // The marker is lower-alpha (a, b, c, d, e, etc.)
-  LowerAlpha = 'lower-alpha',
-
-  // The marker is lower-greek
-  LowerGreek = 'lower-greek',
-
-  // The marker is lower-latin (a, b, c, d, e, etc.)
-  LowerLatin = 'lower-latin',
-
-  // The marker is lower-roman (i, ii, iii, iv, v, etc.)
+  Kannada = 'kannada',
+  Lao = 'lao',
+  Malayalam = 'malayalam',
+  Mongolian = 'mongolian',
+  Myanmar = 'myanmar',
+  Oriya = 'oriya',
+  Persian = 'persian',
   LowerRoman = 'lower-roman',
-
-  // No marker is shown
-  None = 'none',
-
-  // The marker is a square
-  Square = 'square',
-
-  // The marker is upper-alpha (A, B, C, D, E, etc.)
-  UpperAlpha = 'upper-alpha',
-
-  // The marker is upper-latin (A, B, C, D, E, etc.)
-  UpperLatin = 'upper-latin',
-
-  // The marker is upper-roman (I, II, III, IV, V, etc.)
   UpperRoman = 'upper-roman',
-
-  // Sets this property to its default value. Read about initial
+  Tamil = 'tamil',
+  Telugu = 'telugu',
+  Thai = 'thai',
+  Tibetan = 'tibetan',
+  LowerAlpha = 'lower-alpha',
+  LowerLatin = 'lower-latin',
+  UpperAlpha = 'upper-alpha',
+  UpperLatin = 'upper-latin',
+  LowerGreek = 'lower-greek',
+  Hiragana = 'hiragana',
+  HiraganaIroha = 'hiragana-iroha',
+  Katakana = 'katakana',
+  KatakanaIroha = 'katakana-iroha',
+  CjkEarthlyBranch = 'cjk-earthly-branch',
+  CjkHeavenlyStem = 'cjk-heavenly-stem',
+  JapaneseInformal = 'japanese-informal',
+  JapaneseFormal = 'japanese-formal',
+  KoreanHangulFormal = 'korean-hangul-formal',
+  KoreanHanjaInformal = 'korean-hanja-informal',
+  KoreanHanjaFormal = 'korean-hanja-formal',
+  SimpChineseInformal = 'simp-chinese-informal',
+  SimpChineseFormal = 'simp-chinese-formal',
+  TradChineseInformal = 'trad-chinese-informal',
+  TradChineseFormal = 'trad-chinese-formal',
+  EthiopicNumeric = 'ethiopic-numeric',
+  DisclosureOpen = 'disclosure-open',
+  DisclosureClosed = 'disclosure-closed',
+  None = 'none',
+  Circle = 'circle',
+  Disc = 'disc',
+  Square = 'square',
   Initial = 'initial',
-
-  // Inherits this property from its parent element. Read about inherit
   Inherit = 'inherit',
 }
+
+export const ULIST_STYLE_TYPES = [
+  ListStyleType.Disc,
+  ListStyleType.Circle,
+  ListStyleType.Square,
+  ListStyleType.DisclosureOpen,
+  ListStyleType.DisclosureClosed,
+] as const;

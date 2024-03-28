@@ -1,5 +1,17 @@
 # @udecode/plate-md-serializer
 
+## 31.3.0
+
+### Minor Changes
+
+- [#3076](https://github.com/udecode/plate/pull/3076) by [@dimaanj](https://github.com/dimaanj) – Add `serializeMd`
+
+## 31.1.3
+
+## 31.0.0
+
+## 30.9.4
+
 ## 30.9.2
 
 ## 30.7.0

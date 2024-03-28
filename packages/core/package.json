@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-core",
-  "version": "30.4.5",
+  "version": "31.0.0",
   "description": "The core architecture of Plate – a plugin system for slate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -39,22 +39,22 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/slate": "25.0.0",
-    "@udecode/slate-react": "29.0.1",
-    "@udecode/slate-utils": "25.0.0",
-    "@udecode/utils": "24.3.0",
+    "@udecode/slate": "31.0.0",
+    "@udecode/slate-react": "31.0.0",
+    "@udecode/slate-utils": "31.0.0",
+    "@udecode/utils": "31.0.0",
     "clsx": "^1.2.1",
     "is-hotkey": "^0.2.0",
-    "jotai": "^2.6.0",
-    "jotai-optics": "0.3.1",
+    "jotai": "^2.7.1",
+    "jotai-optics": "0.3.2",
     "jotai-x": "^1.2.2",
     "lodash": "^4.17.21",
-    "nanoid": "^3.3.6",
+    "nanoid": "^3.3.7",
     "optics-ts": "2.4.1",
-    "react-hotkeys-hook": "^4.4.1",
-    "use-deep-compare": "^1.1.0",
-    "zustand": "^4.4.7",
-    "zustand-x": "^3.0.1"
+    "react-hotkeys-hook": "^4.5.0",
+    "use-deep-compare": "^1.2.1",
+    "zustand": "^4.5.2",
+    "zustand-x": "^3.0.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

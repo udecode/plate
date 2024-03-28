@@ -1,5 +1,15 @@
 # @udecode/plate-table
 
+## 31.0.0
+
+## 30.9.4
+
+### Patch Changes
+
+- [#3037](https://github.com/udecode/plate/pull/3037) by [@KorovinQuantori](https://github.com/KorovinQuantori) – Hotfix: reset cell entries list when table is overflown
+
+- [#3034](https://github.com/udecode/plate/pull/3034) by [@KorovinQuantori](https://github.com/KorovinQuantori) – canMerge = true only if user selected more than one cell
+
 ## 30.9.3
 
 ### Patch Changes

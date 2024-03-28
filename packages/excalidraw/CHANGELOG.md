@@ -1,5 +1,13 @@
 # @udecode/plate-excalidraw
 
+## 31.1.0
+
+### Minor Changes
+
+- [#3047](https://github.com/udecode/plate/pull/3047) by [@arsenstorm](https://github.com/arsenstorm) – Fix: CVE-2023-26140
+
+## 31.0.0
+
 ## 30.5.3
 
 ### Patch Changes

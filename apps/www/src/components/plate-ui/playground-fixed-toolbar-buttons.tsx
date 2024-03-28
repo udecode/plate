@@ -21,6 +21,7 @@ import { ColorDropdownMenu } from '@/registry/default/plate-ui/color-dropdown-me
 import { CommentToolbarButton } from '@/registry/default/plate-ui/comment-toolbar-button';
 import { EmojiDropdownMenu } from '@/registry/default/plate-ui/emoji-dropdown-menu';
 import { IndentListToolbarButton } from '@/registry/default/plate-ui/indent-list-toolbar-button';
+import { IndentTodoToolbarButton } from '@/registry/default/plate-ui/indent-todo-toolbar-button';
 import { IndentToolbarButton } from '@/registry/default/plate-ui/indent-toolbar-button';
 import { LineHeightDropdownMenu } from '@/registry/default/plate-ui/line-height-dropdown-menu';
 import { LinkToolbarButton } from '@/registry/default/plate-ui/link-toolbar-button';
@@ -115,6 +116,7 @@ export function PlaygroundFixedToolbarButtons({ id }: { id?: ValueId }) {
                 <>
                   <IndentListToolbarButton nodeType={ListStyleType.Disc} />
                   <IndentListToolbarButton nodeType={ListStyleType.Decimal} />
+                  <IndentTodoToolbarButton />
                 </>
               )}
 

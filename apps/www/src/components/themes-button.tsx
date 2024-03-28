@@ -52,26 +52,28 @@ export function ThemesButton() {
                         })
                       }
                       className={cn(
-                        'flex h-9 w-9 items-center justify-center rounded-full border-2 text-xs',
+                        'flex size-9 items-center justify-center rounded-full border-2 text-xs',
                         isActive
                           ? 'border-[--theme-primary]'
                           : 'border-transparent'
                       )}
                       style={
                         {
-                          '--theme-primary': `hsl(${theme?.activeColor[
-                            mode === 'dark' ? 'dark' : 'light'
-                          ]})`,
+                          '--theme-primary': `hsl(${
+                            theme?.activeColor[
+                              mode === 'dark' ? 'dark' : 'light'
+                            ]
+                          })`,
                         } as React.CSSProperties
                       }
                     >
                       <span
                         className={cn(
-                          'flex h-6 w-6 items-center justify-center rounded-full bg-[--theme-primary]'
+                          'flex size-6 items-center justify-center rounded-full bg-[--theme-primary]'
                         )}
                       >
                         {isActive && (
-                          <CheckIcon className="h-4 w-4 text-white" />
+                          <CheckIcon className="size-4 text-white" />
                         )}
                       </span>
                       <span className="sr-only">{theme.label}</span>
@@ -89,11 +91,11 @@ export function ThemesButton() {
           </>
         ) : (
           <div className="mr-1 flex items-center space-x-3">
-            <Skeleton className="h-6 w-6 rounded-full" />
-            <Skeleton className="h-6 w-6 rounded-full" />
-            <Skeleton className="h-6 w-6 rounded-full" />
-            <Skeleton className="h-6 w-6 rounded-full" />
-            <Skeleton className="h-6 w-6 rounded-full" />
+            <Skeleton className="size-6 rounded-full" />
+            <Skeleton className="size-6 rounded-full" />
+            <Skeleton className="size-6 rounded-full" />
+            <Skeleton className="size-6 rounded-full" />
+            <Skeleton className="size-6 rounded-full" />
           </div>
         )}
       </div>
@@ -105,7 +107,7 @@ export function ThemesButton() {
           settingsStore.set.showSettings(true);
         }}
       >
-        <Paintbrush className="mr-2 h-4 w-4" />
+        <Paintbrush className="mr-2 size-4" />
         Themes
       </Button>
     </div>

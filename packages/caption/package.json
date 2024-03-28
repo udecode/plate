@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-caption",
-  "version": "30.5.3",
+  "version": "31.0.0",
   "description": "Primitive components for caption.",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -39,13 +39,13 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "react-textarea-autosize": "^8.5.2"
+    "react-textarea-autosize": "^8.5.3"
   },
   "devDependencies": {
     "@udecode/plate-common": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=30.4.5 < 31",
+    "@udecode/plate-common": ">=31.0.0",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.94.0",

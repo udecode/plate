@@ -85,7 +85,7 @@ export function CloudImageElement({
             alt=""
           />
         )}
-        <div className="absolute inset-x-2 top-[50%] -mt-2">
+        <div className="absolute inset-x-2 top-1/2 -mt-2">
           <StatusBar upload={upload} />
         </div>
         {selected && focused && (

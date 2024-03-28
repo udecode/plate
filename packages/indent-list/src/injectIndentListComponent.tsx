@@ -1,17 +1,22 @@
 import React from 'react';
 import {
+  getPluginOptions,
   InjectComponentProps,
   InjectComponentReturnType,
 } from '@udecode/plate-common';
 import { clsx } from 'clsx';
 
-import { KEY_LIST_START, KEY_LIST_STYLE_TYPE } from './createIndentListPlugin';
-import { ListStyleType } from './types';
+import {
+  IndentListPlugin,
+  KEY_LIST_START,
+  KEY_LIST_STYLE_TYPE,
+} from './createIndentListPlugin';
+import { ULIST_STYLE_TYPES } from './types';
 
 export const injectIndentListComponent = (
-  props: InjectComponentProps
+  injectProps: InjectComponentProps
 ): InjectComponentReturnType => {
-  const { element } = props;
+  const { element } = injectProps;
 
   const listStyleType = element[KEY_LIST_STYLE_TYPE] as string;
   const listStart = element[KEY_LIST_START] as number;
@@ -22,31 +27,47 @@ export const injectIndentListComponent = (
       padding: 0,
       margin: 0,
       listStyleType,
+      position: 'relative',
     };
 
-    if (
-      [ListStyleType.Disc, ListStyleType.Circle, ListStyleType.Square].includes(
-        listStyleType as ListStyleType
-      )
-    ) {
-      className = clsx(className, 'slate-list-bullet');
+    return function Component({ children, ...props }) {
+      const { editor } = props;
 
-      return function Ul({ children }) {
-        return (
-          <ul style={style} className={className}>
-            <li>{children}</li>
-          </ul>
-        );
-      };
-    }
+      const { listStyleTypes = {} } = getPluginOptions<IndentListPlugin>(
+        editor,
+        KEY_LIST_STYLE_TYPE
+      );
 
-    className = clsx(className, 'slate-list-number');
+      let listOptions = listStyleTypes[listStyleType];
 
-    return function Ol({ children }) {
+      let isOrdered = true;
+
+      if (listOptions) {
+        isOrdered = !!listOptions.isOrdered;
+      } else {
+        if (ULIST_STYLE_TYPES.includes(listStyleType as any)) {
+          isOrdered = false;
+        }
+        listOptions = {} as any;
+      }
+
+      className = isOrdered
+        ? clsx(className, 'slate-ol')
+        : clsx(className, 'slate-ul');
+
+      const List = isOrdered ? 'ol' : 'ul';
+
+      const {
+        markerComponent: Marker = () => null,
+        liComponent: Li = (liProps) => <li>{liProps.children}</li>,
+      } = listOptions;
+
       return (
-        <ol style={style} className={className} start={listStart}>
-          <li>{children}</li>
-        </ol>
+        <List style={style} className={className} start={listStart}>
+          <Marker {...props} />
+
+          <Li {...props}>{children}</Li>
+        </List>
       );
     };
   }

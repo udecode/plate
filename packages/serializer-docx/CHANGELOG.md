@@ -1,5 +1,25 @@
 # @udecode/plate-docx-serializer
 
+## 31.2.2
+
+## 31.2.0
+
+## 31.1.3
+
+## 31.1.2
+
+## 31.1.1
+
+## 31.1.0
+
+## 31.0.0
+
+### Minor Changes
+
+- [#3040](https://github.com/udecode/plate/pull/3040) by [@zbeyens](https://github.com/zbeyens) – Updated minor dependencies
+
+## 30.9.4
+
 ## 30.9.3
 
 ## 30.9.2
