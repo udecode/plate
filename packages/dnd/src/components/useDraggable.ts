@@ -4,8 +4,6 @@ import { DropTargetMonitor } from 'react-dnd';
 
 import { DragItemNode, DropLineDirection, useDndBlock } from '..';
 
-import type { ReactElement, RefObject } from 'react';
-
 export type DraggableState = {
   dropLine: DropLineDirection;
   isHovered: boolean;
@@ -13,7 +11,7 @@ export type DraggableState = {
   isDragging: boolean;
   nodeRef: React.RefObject<HTMLDivElement>;
   dragRef: (
-    elementOrNode: RefObject<any> | ReactElement | Element | null
+    elementOrNode: React.RefObject<any> | React.ReactElement | Element | null
   ) => void;
 };
 
