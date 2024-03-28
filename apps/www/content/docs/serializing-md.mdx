@@ -38,7 +38,17 @@ const plugins = [
 
 ### Slate -> Markdown
 
-Use [remark-slate](https://github.com/hanford/remark-slate#slate-object-to-markdown).
+Currently supported plugins: paragraph, link, list, heading, italic, bold and code.
+
+```tsx
+import { serializeMd } from '@udecode/plate-serializer-md';
+
+const plugins = [
+  // ...supportedPlugins,
+];
+
+serializeMd(editor, { nodes });
+```
 
 ## API
 
