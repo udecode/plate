@@ -246,6 +246,10 @@ export const usePlaygroundPlugins = ({
                   type: 'upper-roman',
                   isNumbered: true,
                 },
+                ['decimal']: {
+                  type: 'decimal',
+                  isNumbered: true,
+                },
                 todo: {
                   type: 'todo',
                   markerComponent: TodoMarker,
