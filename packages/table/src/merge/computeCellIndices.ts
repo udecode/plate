@@ -8,6 +8,7 @@ import {
   TTableElement,
   TTableRowElement,
 } from '../types';
+import { getColSpan } from '../queries';
 
 export function computeCellIndices<V extends Value>(
   editor: PlateEditor<V>,
@@ -32,7 +33,7 @@ export function computeCellIndices<V extends Value>(
         rowIndex = r;
         break;
       }
-      cIndex += cell.colSpan || 1; // consider 0 and undefined as 1
+      cIndex += getColSpan(cell);
     }
   }
 
@@ -52,7 +53,7 @@ export function computeCellIndices<V extends Value>(
           _rowSpan > 1 &&
           rowIndex - _rowIndex < _rowSpan
         ) {
-          colIndex += prevCell.colSpan || 1;
+          colIndex += getColSpan(prevCell);
         }
       }
     });

@@ -1,3 +1,4 @@
+import { getColSpan } from '../queries';
 import { getRowSpan } from '../queries/getRowSpan';
 import { TTableCellElement, TTableElement, TTableRowElement } from '../types';
 
@@ -20,7 +21,7 @@ export const isTableRectangular = (table?: TTableElement) => {
         if (!arr[rI + i]) {
           arr[rI + i] = 0;
         }
-        arr[rI + i] += cellElem?.colSpan || 1;
+        arr[rI + i] += getColSpan(cellElem);
       });
     });
   });
