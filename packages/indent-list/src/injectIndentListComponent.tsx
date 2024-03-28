@@ -11,11 +11,12 @@ import {
   KEY_LIST_START,
   KEY_LIST_STYLE_TYPE,
 } from './createIndentListPlugin';
+import { ULIST_STYLE_TYPES } from './types';
 
 export const injectIndentListComponent = (
-  props: InjectComponentProps
+  injectProps: InjectComponentProps
 ): InjectComponentReturnType => {
-  const { element } = props;
+  const { element } = injectProps;
 
   const listStyleType = element[KEY_LIST_STYLE_TYPE] as string;
   const listStart = element[KEY_LIST_START] as number;
@@ -29,35 +30,44 @@ export const injectIndentListComponent = (
       position: 'relative',
     };
 
-    return function Ul({ editor, children }) {
+    return function Component({ children, ...props }) {
+      const { editor } = props;
+
       const { listStyleTypes = {} } = getPluginOptions<IndentListPlugin>(
         editor,
         KEY_LIST_STYLE_TYPE
       );
 
-      const targetList = listStyleTypes[listStyleType] ?? {};
-      const isNumbered = targetList ? targetList.isNumbered : false;
+      let listOptions = listStyleTypes[listStyleType];
 
-      className = isNumbered
-        ? clsx(className, 'slate-list-number')
-        : clsx(className, 'slate-list-bullet');
+      let isOrdered = true;
+
+      if (listOptions) {
+        isOrdered = !!listOptions.isOrdered;
+      } else {
+        if (ULIST_STYLE_TYPES.includes(listStyleType as any)) {
+          isOrdered = false;
+        }
+        listOptions = {} as any;
+      }
+
+      className = isOrdered
+        ? clsx(className, 'slate-ol')
+        : clsx(className, 'slate-ul');
+
+      const List = isOrdered ? 'ol' : 'ul';
 
       const {
-        markerComponent = null,
-        // eslint-disable-next-line @typescript-eslint/no-shadow
-        liComponent = ({ children }: any) => <li>{children}</li>,
-      } = targetList;
-
-      const Wrap = isNumbered ? 'ol' : 'ul';
+        markerComponent: Marker = () => null,
+        liComponent: Li = (liProps) => <li>{liProps.children}</li>,
+      } = listOptions;
 
       return (
-        <Wrap style={style} className={className} start={listStart}>
-          {markerComponent && markerComponent({ editor, element })}
-          {liComponent({
-            children,
-            element,
-          })}
-        </Wrap>
+        <List style={style} className={className} start={listStart}>
+          <Marker {...props} />
+
+          <Li {...props}>{children}</Li>
+        </List>
       );
     };
   }
