@@ -11,7 +11,7 @@ import {
 import { Path } from 'slate';
 
 import { ELEMENT_TH } from './createTablePlugin';
-import { getTableGridAbove } from './queries/index';
+import { getColSpan, getRowSpan, getTableGridAbove } from './queries/index';
 import { TTableCellElement } from './types';
 
 export const withSetFragmentDataTable = <
@@ -106,12 +106,10 @@ export const withSetFragmentDataTable = <
 
           const cellElement = document.createElement('td');
 
-          if (cell.colSpan !== undefined) {
-            cellElement.colSpan = cell.colSpan;
-          }
-          if (cell.rowSpan !== undefined) {
-            cellElement.rowSpan = cell.rowSpan;
-          }
+          const colSpan = getColSpan(cell);
+          cellElement.colSpan = colSpan;
+          const rowSpan = getRowSpan(cell);
+          cellElement.rowSpan = rowSpan;
 
           cellElement.innerHTML = data.getData('text/html');
           rowElement.append(cellElement);
