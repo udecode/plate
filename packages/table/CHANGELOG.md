@@ -1,5 +1,13 @@
 # @udecode/plate-table
 
+## 31.3.1
+
+### Patch Changes
+
+- [#3037](https://github.com/udecode/plate/pull/3037) by [@KorovinQuantori](https://github.com/KorovinQuantori) – Hotfix: reset cell entries list when table is overflown
+
+- [#3083](https://github.com/udecode/plate/pull/3083) by [@KorovinQuantori](https://github.com/KorovinQuantori) – Use getRowSpan\getColSpan instead of pointing at `rowspan` and `colspan` fields directly
+
 ## 31.0.0
 
 ## 30.9.4
