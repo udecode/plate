@@ -38,7 +38,7 @@ export const injectIndentListComponent = (
         KEY_LIST_STYLE_TYPE
       );
 
-      const listOptions = listStyleTypes[listStyleType];
+      let listOptions = listStyleTypes[listStyleType];
 
       let isOrdered = true;
 
@@ -48,6 +48,7 @@ export const injectIndentListComponent = (
         if (ULIST_STYLE_TYPES.includes(listStyleType as any)) {
           isOrdered = false;
         }
+        listOptions = {} as any;
       }
 
       className = isOrdered
