@@ -1,5 +1,11 @@
 # @udecode/slate-utils
 
+## 31.3.2
+
+### Patch Changes
+
+- [#3086](https://github.com/udecode/plate/pull/3086) by [@felixfeng33](https://github.com/felixfeng33) – `toggleMark` use `editor.removeMark`
+
 ## 31.0.0
 
 ## 25.0.0
