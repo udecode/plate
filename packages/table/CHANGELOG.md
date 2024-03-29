@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 31.3.2
+
+### Patch Changes
+
+- [#3086](https://github.com/udecode/plate/pull/3086) by [@felixfeng33](https://github.com/felixfeng33) – fix add/removeMark behavior When selection is aboving table.
+
 ## 31.3.1
 
 ### Patch Changes

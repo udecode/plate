@@ -1,5 +1,7 @@
 # @udecode/plate-core
 
+## 31.3.2
+
 ## 31.0.0
 
 ### Minor Changes
