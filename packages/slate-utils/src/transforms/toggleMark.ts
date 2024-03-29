@@ -25,7 +25,7 @@ export const toggleMark = <V extends Value = Value>(
     const isActive = isMarkActive(editor, key);
 
     if (isActive) {
-      removeMark(editor, { key });
+      editor.removeMark(key);
       return;
     }
 
