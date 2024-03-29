@@ -1,5 +1,4 @@
 ---
-"@udecode/slate-utils": patch
 "@udecode/plate-table": patch
 ---
 
