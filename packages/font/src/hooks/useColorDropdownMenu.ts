@@ -53,6 +53,7 @@ export const useColorDropdownMenuState = ({
         focusEditor(editor);
 
         setMarks(editor, { [nodeType]: value });
+        editor.addMark(nodeType, value);
       }
     },
     [editor, nodeType]
