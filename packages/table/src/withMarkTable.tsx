@@ -4,6 +4,7 @@ import {
   isText,
   PlateEditor,
   setNodes,
+  TElement,
   unsetNodes,
   Value,
 } from '@udecode/plate-common';
@@ -27,9 +28,8 @@ export const withMarkTable = <
     if (matchesCell.length === 0) return addMark(key, value);
 
     matchesCell.forEach(([cell, cellPath]) => {
-      setNodes(
+      setNodes<TElement>(
         editor,
-        //@ts-ignore
         {
           [key]: value,
         },
@@ -85,7 +85,7 @@ export const withMarkTable = <
         keys.splice(keys.indexOf('text'), 1);
 
         keys.forEach((k) => {
-          totalMarks[k] = true;
+          totalMarks[k] = item[k];
         });
       });
     });
