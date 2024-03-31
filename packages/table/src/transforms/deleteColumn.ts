@@ -1,5 +1,4 @@
 import {
-  createPathRef,
   getAboveNode,
   getPluginOptions,
   getPluginType,
@@ -9,11 +8,9 @@ import {
   setNodes,
   someNode,
   TElement,
-  TNodeEntry,
   Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import { PathRef } from 'slate';
 
 import {
   ELEMENT_TABLE,
@@ -22,9 +19,8 @@ import {
   ELEMENT_TR,
 } from '../createTablePlugin';
 import { deleteTableMergeColumn } from '../merge/deleteColumn';
-import { getTableGridAbove } from '../queries';
-import { TablePlugin, TTableCellElement, TTableElement } from '../types';
-import { getCellRowIndexByPath } from '../utils/getCellRowIndexByPath';
+import { TablePlugin, TTableElement } from '../types';
+import { deleteColumnWhenExpanded } from './deleteColumnWhenExpanded';
 
 export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
   const { enableMerging } = getPluginOptions<TablePlugin, V>(
@@ -49,38 +45,8 @@ export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
 
   if (!tableEntry) return;
 
-  if (isExpanded(editor.selection)) {
-    const rowCount = tableEntry[0].children.length;
-
-    const cells = getTableGridAbove(editor, {
-      format: 'cell',
-    }) as TNodeEntry<TTableCellElement>[];
-
-    let lastCellRowIndex = -1;
-    let selectionRowCount = 0;
-
-    const pathRefs: PathRef[] = [];
-
-    cells.forEach(([cell, cellPath], index) => {
-      const currentCellRowIndex = getCellRowIndexByPath(cellPath);
-
-      // not on the same line
-      if (currentCellRowIndex !== lastCellRowIndex) {
-        selectionRowCount += 1;
-      }
-
-      pathRefs.push(createPathRef(editor, cellPath));
-      lastCellRowIndex = currentCellRowIndex;
-    });
-
-    if (rowCount === selectionRowCount) {
-      pathRefs.forEach((pathRef) => {
-        removeNodes(editor, { at: pathRef.unref()! });
-      });
-    }
-
-    return;
-  }
+  if (isExpanded(editor.selection))
+    return deleteColumnWhenExpanded(editor, tableEntry);
 
   const tdEntry = getAboveNode(editor, {
     match: {

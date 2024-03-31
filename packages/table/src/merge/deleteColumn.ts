@@ -2,6 +2,7 @@ import {
   getAboveNode,
   getPluginOptions,
   getPluginType,
+  isExpanded,
   PlateEditor,
   removeNodes,
   setNodes,
@@ -13,6 +14,7 @@ import { Path } from 'slate';
 
 import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
 import { getColSpan } from '../queries/getColSpan';
+import { deleteColumnWhenExpanded } from '../transforms/deleteColumnWhenExpanded';
 import { TablePlugin, TTableCellElement, TTableElement } from '../types';
 import { getCellTypes } from '../utils';
 import { findCellByIndexes } from './findCellByIndexes';
@@ -36,6 +38,10 @@ export const deleteTableMergeColumn = <V extends Value>(
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     });
     if (!tableEntry) return;
+
+    if (isExpanded(editor.selection))
+      return deleteColumnWhenExpanded(editor, tableEntry);
+
     const table = tableEntry[0] as TTableElement;
 
     const selectedCellEntry = getAboveNode(editor, {
