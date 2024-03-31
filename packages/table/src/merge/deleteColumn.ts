@@ -14,9 +14,9 @@ import { Path } from 'slate';
 
 import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
 import { getColSpan } from '../queries/getColSpan';
-import { deleteColumnWhenExpanded } from '../transforms/deleteColumnWhenExpanded';
 import { TablePlugin, TTableCellElement, TTableElement } from '../types';
 import { getCellTypes } from '../utils';
+import { deleteColumnWhenExpanded } from './deleteColumnWhenExpanded';
 import { findCellByIndexes } from './findCellByIndexes';
 import { getCellIndices } from './getCellIndices';
 import { getCellPath } from './getCellPath';
