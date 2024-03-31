@@ -19,8 +19,8 @@ import {
   ELEMENT_TR,
 } from '../createTablePlugin';
 import { deleteTableMergeColumn } from '../merge/deleteColumn';
+import { deleteColumnWhenExpanded } from '../merge/deleteColumnWhenExpanded';
 import { TablePlugin, TTableElement } from '../types';
-import { deleteColumnWhenExpanded } from './deleteColumnWhenExpanded';
 
 export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
   const { enableMerging } = getPluginOptions<TablePlugin, V>(
