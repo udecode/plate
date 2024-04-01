@@ -22,7 +22,7 @@ export const deleteColumnWhenExpanded = <V extends Value>(
   }) as TNodeEntry<TTableCellElement>[];
 
   let lastCellRowIndex = -1;
-  let selectionRowCount = 0;
+  let acrossRow = 0;
 
   const pathRefs: PathRef[] = [];
 
@@ -31,14 +31,14 @@ export const deleteColumnWhenExpanded = <V extends Value>(
 
     // not on the same line
     if (currentCellRowIndex !== lastCellRowIndex) {
-      selectionRowCount += cell.rowSpan ?? 1;
+      acrossRow += cell.rowSpan ?? 1;
     }
 
     pathRefs.push(createPathRef(editor, cellPath));
     lastCellRowIndex = currentCellRowIndex;
   });
 
-  if (rowCount === selectionRowCount) {
+  if (rowCount === acrossRow) {
     pathRefs.forEach((pathRef) => {
       removeNodes(editor, { at: pathRef.unref()! });
     });
