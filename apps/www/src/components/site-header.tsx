@@ -13,29 +13,29 @@ import { MobileNav } from './mobile-nav';
 import { StarOnGithub } from './star-on-github';
 
 export async function SiteHeader() {
-  const { stargazers_count: count } = await fetch(
-    'https://api.github.com/repos/udecode/plate',
-    {
-      ...(process.env.GITHUB_OAUTH_TOKEN && {
-        headers: {
-          Authorization: `Bearer ${process.env.GITHUB_OAUTH_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-      }),
-      next: {
-        revalidate: 3600,
-      },
-    }
-  )
-    .then((res) => res.json())
-    .catch(() => ({ stargazers_count: 0 }));
+  // const { stargazers_count: count } = await fetch(
+  //   'https://api.github.com/repos/udecode/plate',
+  //   {
+  //     ...(process.env.GITHUB_OAUTH_TOKEN && {
+  //       headers: {
+  //         Authorization: `Bearer ${process.env.GITHUB_OAUTH_TOKEN}`,
+  //         'Content-Type': 'application/json',
+  //       },
+  //     }),
+  //     next: {
+  //       revalidate: 3600,
+  //     },
+  //   }
+  // )
+  //   .then((res) => res.json())
+  //   .catch(() => ({ stargazers_count: 0 }));
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 max-w-screen-2xl items-center justify-between">
         <MainNav />
         <MobileNav />
-        <StarOnGithub count={count} />
+        <StarOnGithub count={0} />
         <div className="flex items-center justify-between space-x-2 md:justify-end">
           <div className="w-full flex-1 md:w-auto md:flex-none">
             <CommandMenu />
