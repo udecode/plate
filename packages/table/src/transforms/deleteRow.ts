@@ -2,6 +2,7 @@ import {
   getAboveNode,
   getPluginOptions,
   getPluginType,
+  isExpanded,
   PlateEditor,
   removeNodes,
   someNode,
@@ -10,6 +11,7 @@ import {
 
 import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
 import { deleteTableMergeRow } from '../merge/deleteRow';
+import { deleteRowWhenExpanded } from '../merge/deleteRowWhenExpanded';
 import { TablePlugin, TTableElement } from '../types';
 
 export const deleteRow = <V extends Value>(editor: PlateEditor<V>) => {
@@ -29,6 +31,11 @@ export const deleteRow = <V extends Value>(editor: PlateEditor<V>) => {
     const currentTableItem = getAboveNode<TTableElement>(editor, {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     });
+    if (!currentTableItem) return;
+
+    if (isExpanded(editor.selection))
+      return deleteRowWhenExpanded(editor, currentTableItem);
+
     const currentRowItem = getAboveNode(editor, {
       match: { type: getPluginType(editor, ELEMENT_TR) },
     });

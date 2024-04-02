@@ -4,6 +4,7 @@ import {
   getPluginOptions,
   getPluginType,
   insertElements,
+  isExpanded,
   PlateEditor,
   removeNodes,
   setNodes,
@@ -21,6 +22,7 @@ import {
   TTableRowElement,
 } from '../types';
 import { getCellTypes } from '../utils';
+import { deleteRowWhenExpanded } from './deleteRowWhenExpanded';
 import { findCellByIndexes } from './findCellByIndexes';
 import { getCellIndices } from './getCellIndices';
 
@@ -41,6 +43,10 @@ export const deleteTableMergeRow = <V extends Value>(
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     });
     if (!currentTableItem) return;
+
+    if (isExpanded(editor.selection))
+      return deleteRowWhenExpanded(editor, currentTableItem);
+
     const table = currentTableItem[0] as TTableElement;
 
     const selectedCellEntry = getAboveNode(editor, {
