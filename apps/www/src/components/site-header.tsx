@@ -35,7 +35,7 @@ export async function SiteHeader() {
       <div className="container flex h-14 max-w-screen-2xl items-center justify-between">
         <MainNav />
         <MobileNav />
-        <StarOnGithub count={0} />
+        <StarOnGithub count={count} />
         <div className="flex items-center justify-between space-x-2 md:justify-end">
           <div className="w-full flex-1 md:w-auto md:flex-none">
             <CommandMenu />

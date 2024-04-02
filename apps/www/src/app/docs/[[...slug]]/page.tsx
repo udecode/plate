@@ -11,10 +11,13 @@ import { docToPackage } from '@/config/doc-to-package';
 import { siteConfig } from '@/config/site';
 import { absoluteUrl } from '@/lib/absoluteUrl';
 import { formatBytes, getPackageData } from '@/lib/bundlephobia';
+import { getTableOfContents } from '@/lib/toc';
 import { PackageInfoType } from '@/hooks/use-package-info';
 import { badgeVariants } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Mdx } from '@/components/mdx-components';
 import { DocsPager } from '@/components/pager';
+import { DashboardTableOfContents } from '@/components/toc';
 
 import type { Metadata } from 'next';
 
@@ -24,7 +27,7 @@ interface DocPageProps {
   };
 }
 
-async function getDocFromParams({ params }: DocPageProps) {
+function getDocFromParams({ params }: DocPageProps) {
   const slug = params.slug?.join('/') || '';
   const doc = allDocs.find((_doc) => _doc.slugAsParams === slug);
 
@@ -38,7 +41,7 @@ async function getDocFromParams({ params }: DocPageProps) {
 export async function generateMetadata({
   params,
 }: DocPageProps): Promise<Metadata> {
-  const doc = await getDocFromParams({ params });
+  const doc = getDocFromParams({ params });
 
   if (!doc) {
     return {};
@@ -84,7 +87,7 @@ export default async function DocPage({ params }: DocPageProps) {
 
   const isUI = name === 'components';
 
-  const doc = await getDocFromParams({ params });
+  const doc = getDocFromParams({ params });
 
   const packageInfo: PackageInfoType = {
     gzip: '',
@@ -93,6 +96,7 @@ export default async function DocPage({ params }: DocPageProps) {
     source: '',
   };
   const pkg = docToPackage(name);
+
   if (pkg) {
     const { gzip: gzipNumber } = await getPackageData(pkg.name);
     const gzip =
@@ -119,7 +123,7 @@ export default async function DocPage({ params }: DocPageProps) {
   // } else {
   // }
 
-  // const toc = await getTableOfContents(doc.body.raw);
+  const toc = await getTableOfContents(doc.body.raw);
 
   return (
     <main className="relative py-6 lg:gap-10 lg:py-8 xl:grid xl:grid-cols-[1fr_300px]">
@@ -188,17 +192,17 @@ export default async function DocPage({ params }: DocPageProps) {
         <DocsPager doc={doc} />
       </div>
 
-      {/*{doc.toc && (*/}
-      {/*  <div className="hidden text-sm xl:block">*/}
-      {/*    <div className="sticky top-16 -mt-10 pt-4">*/}
-      {/*      <ScrollArea className="h-full pb-10">*/}
-      {/*        <div className="sticky top-16 -mt-10 h-[calc(100vh-3.5rem)] py-12">*/}
-      {/*          <DashboardTableOfContents toc={toc} />*/}
-      {/*        </div>*/}
-      {/*      </ScrollArea>*/}
-      {/*    </div>*/}
-      {/*  </div>*/}
-      {/*)}*/}
+      {doc.toc && (
+        <div className="hidden text-sm xl:block">
+          <div className="sticky top-16 -mt-10 pt-4">
+            <ScrollArea className="h-full pb-10">
+              <div className="sticky top-16 -mt-10 h-[calc(100vh-3.5rem)] py-12">
+                <DashboardTableOfContents toc={toc} />
+              </div>
+            </ScrollArea>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
