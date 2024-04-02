@@ -7,7 +7,7 @@ import {
 } from '@udecode/plate-common';
 import { PathRef } from 'slate';
 
-import { getTableGridAbove } from '../queries';
+import { getRowSpan, getTableGridAbove } from '../queries';
 import { TTableCellElement } from '../types';
 import { getCellRowIndexByPath } from '../utils/getCellRowIndexByPath';
 import { getTableMergedColumnCount } from './getTableMergedColumnCount';
@@ -44,7 +44,7 @@ export const deleteRowWhenExpanded = <V extends Value>(
         return;
       }
 
-      const { rowSpan } = cell;
+      const rowSpan = getRowSpan(cell);
 
       rowSpanCarry = rowSpan && rowSpan > 1 ? rowSpan - 1 : 0;
       acrossRow += rowSpan ?? 1;
