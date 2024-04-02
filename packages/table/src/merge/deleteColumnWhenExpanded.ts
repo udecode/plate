@@ -23,6 +23,7 @@ export const deleteColumnWhenExpanded = <V extends Value>(
   }) as TNodeEntry<TTableCellElement>[];
 
   const selectionWidth = getSelectionWidth(cells);
+  console.log('🚀 ~ selectionWidth:', selectionWidth);
 
   let lastCellRowIndex = -1;
   let acrossRow = 0;

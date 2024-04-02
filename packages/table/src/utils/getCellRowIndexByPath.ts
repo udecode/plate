@@ -1,5 +1,10 @@
 import { Path } from 'slate';
 
 export const getCellRowIndexByPath = (cellPath: Path): number => {
-  return cellPath.at(-2) ?? -1;
+  const index = cellPath.at(-2);
+
+  if (index === undefined)
+    throw new Error(`can not get rowIndex of path ${cellPath}`);
+
+  return index;
 };

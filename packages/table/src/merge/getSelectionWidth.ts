@@ -1,9 +1,11 @@
-import { TNodeEntry } from '@udecode/plate-common';
+import { Path } from 'slate';
 
 import { TTableCellElement } from '../types';
 import { getCellRowIndexByPath } from '../utils/getCellRowIndexByPath';
 
-export const getSelectionWidth = (cells: TNodeEntry<TTableCellElement>[]) => {
+export const getSelectionWidth = <T extends [TTableCellElement, Path]>(
+  cells: T[]
+) => {
   // default = firstRowIndex
 
   let max = 0;
@@ -13,9 +15,12 @@ export const getSelectionWidth = (cells: TNodeEntry<TTableCellElement>[]) => {
     const currentCellRowIndex = getCellRowIndexByPath(cellPath);
     //  on the same line
     if (currentCellRowIndex === lastCellRowIndex) {
-      total += cell.colSpan ?? 1;
+      const colSpan = cell.colSpan ?? cell.attributes?.colspan;
+      const colSpanNumbered = colSpan ? Number(colSpan) : 1;
+      total += colSpanNumbered;
     } else {
       max = Math.max(total, max);
+      // easy to error
       total = 0;
     }
     lastCellRowIndex = currentCellRowIndex;

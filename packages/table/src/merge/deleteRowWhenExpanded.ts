@@ -9,6 +9,7 @@ import { PathRef } from 'slate';
 
 import { getTableGridAbove } from '../queries';
 import { TTableCellElement } from '../types';
+import { getCellRowIndexByPath } from '../utils/getCellRowIndexByPath';
 import { getTableMergedColumnCount } from './getTableMergedColumnCount';
 
 export const deleteRowWhenExpanded = <V extends Value>(
@@ -21,7 +22,7 @@ export const deleteRowWhenExpanded = <V extends Value>(
     format: 'cell',
   }) as TNodeEntry<TTableCellElement>[];
 
-  const firsRowIndex = cells[0][1].at(-2) ?? null;
+  const firsRowIndex = getCellRowIndexByPath(cells[0][1]);
 
   if (firsRowIndex === null) return;
 
@@ -35,7 +36,7 @@ export const deleteRowWhenExpanded = <V extends Value>(
       acrossColumn += cell.colSpan ?? 1;
     }
 
-    const currentRowIndex = cellPath.at(-2)!;
+    const currentRowIndex = getCellRowIndexByPath(cellPath);
 
     if (lastRowIndex !== currentRowIndex) {
       if (rowSpanCarry !== 0) {
