@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 31.3.3
+
+### Patch Changes
+
+- [#3090](https://github.com/udecode/plate/pull/3090) by [@felixfeng33](https://github.com/felixfeng33) – fix can not remove table column when selection is expanded
+
 ## 31.3.2
 
 ### Patch Changes
