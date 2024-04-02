@@ -7,15 +7,14 @@ import { allDocs } from 'contentlayer/generated';
 import { ChevronRight, ExternalLinkIcon } from 'lucide-react';
 import Balancer from 'react-wrap-balancer';
 
+import { docToPackage } from '@/config/doc-to-package';
 import { siteConfig } from '@/config/site';
 import { absoluteUrl } from '@/lib/absoluteUrl';
-import { getTableOfContents } from '@/lib/toc';
+import { formatBytes, getPackageData } from '@/lib/bundlephobia';
 import { PackageInfoType } from '@/hooks/use-package-info';
 import { badgeVariants } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Mdx } from '@/components/mdx-components';
 import { DocsPager } from '@/components/pager';
-import { DashboardTableOfContents } from '@/components/toc';
 
 import type { Metadata } from 'next';
 
@@ -93,22 +92,22 @@ export default async function DocPage({ params }: DocPageProps) {
     npm: '',
     source: '',
   };
-  // const pkg = docToPackage(name);
-  // if (pkg) {
-  //   const { gzip: gzipNumber } = await getPackageData(pkg.name);
-  //   const gzip =
-  //     typeof gzipNumber === 'number' ? formatBytes(gzipNumber) : null;
-  //
-  //   packageInfo.name = pkg.name;
-  //   if (gzip) {
-  //     packageInfo.gzip = gzip;
-  //   }
-  //   packageInfo.source =
-  //     'https://github.com/udecode/plate/tree/main/packages/' +
-  //     pkg.sourcePath +
-  //     '/src';
-  //   packageInfo.npm = 'https://www.npmjs.com/package/@udecode/' + pkg.name;
-  // }
+  const pkg = docToPackage(name);
+  if (pkg) {
+    const { gzip: gzipNumber } = await getPackageData(pkg.name);
+    const gzip =
+      typeof gzipNumber === 'number' ? formatBytes(gzipNumber) : null;
+
+    packageInfo.name = pkg.name;
+    if (gzip) {
+      packageInfo.gzip = gzip;
+    }
+    packageInfo.source =
+      'https://github.com/udecode/plate/tree/main/packages/' +
+      pkg.sourcePath +
+      '/src';
+    packageInfo.npm = 'https://www.npmjs.com/package/@udecode/' + pkg.name;
+  }
 
   if (!doc) {
     notFound();
@@ -118,8 +117,9 @@ export default async function DocPage({ params }: DocPageProps) {
   // if (params.slug?.[0] === 'api') {
   //   toc = getAPITableOfContents(doc.body.raw);
   // } else {
-  const toc = await getTableOfContents(doc.body.raw);
   // }
+
+  // const toc = await getTableOfContents(doc.body.raw);
 
   return (
     <main className="relative py-6 lg:gap-10 lg:py-8 xl:grid xl:grid-cols-[1fr_300px]">
@@ -188,17 +188,17 @@ export default async function DocPage({ params }: DocPageProps) {
         <DocsPager doc={doc} />
       </div>
 
-      {doc.toc && (
-        <div className="hidden text-sm xl:block">
-          <div className="sticky top-16 -mt-10 pt-4">
-            <ScrollArea className="h-full pb-10">
-              <div className="sticky top-16 -mt-10 h-[calc(100vh-3.5rem)] py-12">
-                <DashboardTableOfContents toc={toc} />
-              </div>
-            </ScrollArea>
-          </div>
-        </div>
-      )}
+      {/*{doc.toc && (*/}
+      {/*  <div className="hidden text-sm xl:block">*/}
+      {/*    <div className="sticky top-16 -mt-10 pt-4">*/}
+      {/*      <ScrollArea className="h-full pb-10">*/}
+      {/*        <div className="sticky top-16 -mt-10 h-[calc(100vh-3.5rem)] py-12">*/}
+      {/*          <DashboardTableOfContents toc={toc} />*/}
+      {/*        </div>*/}
+      {/*      </ScrollArea>*/}
+      {/*    </div>*/}
+      {/*  </div>*/}
+      {/*)}*/}
     </main>
   );
 }
