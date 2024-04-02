@@ -7,10 +7,8 @@ import { allDocs } from 'contentlayer/generated';
 import { ChevronRight, ExternalLinkIcon } from 'lucide-react';
 import Balancer from 'react-wrap-balancer';
 
-import { docToPackage } from '@/config/doc-to-package';
 import { siteConfig } from '@/config/site';
 import { absoluteUrl } from '@/lib/absoluteUrl';
-import { formatBytes, getPackageData } from '@/lib/bundlephobia';
 import { getTableOfContents } from '@/lib/toc';
 import { PackageInfoType } from '@/hooks/use-package-info';
 import { badgeVariants } from '@/components/ui/badge';
@@ -95,22 +93,22 @@ export default async function DocPage({ params }: DocPageProps) {
     npm: '',
     source: '',
   };
-  const pkg = docToPackage(name);
-  if (pkg) {
-    const { gzip: gzipNumber } = await getPackageData(pkg.name);
-    const gzip =
-      typeof gzipNumber === 'number' ? formatBytes(gzipNumber) : null;
-
-    packageInfo.name = pkg.name;
-    if (gzip) {
-      packageInfo.gzip = gzip;
-    }
-    packageInfo.source =
-      'https://github.com/udecode/plate/tree/main/packages/' +
-      pkg.sourcePath +
-      '/src';
-    packageInfo.npm = 'https://www.npmjs.com/package/@udecode/' + pkg.name;
-  }
+  // const pkg = docToPackage(name);
+  // if (pkg) {
+  //   const { gzip: gzipNumber } = await getPackageData(pkg.name);
+  //   const gzip =
+  //     typeof gzipNumber === 'number' ? formatBytes(gzipNumber) : null;
+  //
+  //   packageInfo.name = pkg.name;
+  //   if (gzip) {
+  //     packageInfo.gzip = gzip;
+  //   }
+  //   packageInfo.source =
+  //     'https://github.com/udecode/plate/tree/main/packages/' +
+  //     pkg.sourcePath +
+  //     '/src';
+  //   packageInfo.npm = 'https://www.npmjs.com/package/@udecode/' + pkg.name;
+  // }
 
   if (!doc) {
     notFound();
