@@ -1,6 +1,6 @@
 import {
   EElement,
-  findNode,
+  getBlockAbove,
   getNodeString,
   getPluginType,
   PlateEditor,
@@ -30,21 +30,25 @@ export const insertFragmentCodeBlock = <V extends Value>(
   }
 
   return (fragment: TDescendant[]) => {
-    const inCodeLine = findNode(editor, { match: { type: codeLineType } });
-    if (!inCodeLine) {
-      return insertFragment(fragment);
+    const aboveBlockNode = getBlockAbove(editor)?.at(0) as TElement;
+
+    if (
+      aboveBlockNode &&
+      [codeBlockType, codeLineType].includes(aboveBlockNode?.type)
+    ) {
+      return insertFragment(
+        fragment.flatMap((node) => {
+          const element = node as TElement;
+
+          return (
+            element.type === codeBlockType
+              ? extractCodeLinesFromCodeBlock(element)
+              : convertNodeToCodeLine(element)
+          ) as EElement<V>;
+        })
+      );
     }
 
-    return insertFragment(
-      fragment.flatMap((node) => {
-        const element = node as TElement;
-
-        return (
-          element.type === codeBlockType
-            ? extractCodeLinesFromCodeBlock(element)
-            : convertNodeToCodeLine(element)
-        ) as EElement<V>;
-      })
-    );
+    return insertFragment(fragment);
   };
 };
