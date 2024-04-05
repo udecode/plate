@@ -1,5 +1,7 @@
 # @udecode/plate-md-serializer
 
+## 31.3.4
+
 ## 31.3.0
 
 ### Minor Changes
