@@ -21,7 +21,10 @@ import {
   useEventEditorSelectors,
   usePlateSelectors,
 } from '@udecode/plate-common';
-import { createVirtualRef } from '@udecode/plate-floating';
+import {
+  createVirtualRef,
+  getBoundingClientRect,
+} from '@udecode/plate-floating';
 
 export const ComboboxItem = withRef<'div', ComboboxContentItemProps>(
   ({ combobox, index, item, onRenderItem, className, ...rest }, ref) => {
@@ -59,11 +62,13 @@ export function ComboboxContent(props: ComboboxContentProps) {
   const state = useComboboxContentState({ items, combobox });
   const { menuProps, targetRange } = useComboboxContent(state);
 
+  const virtualRef = createVirtualRef(editor, targetRange ?? undefined, {
+    fallbackRect: getBoundingClientRect(editor, editor.selection!),
+  });
+
   return (
     <Popover.Root open>
-      <Popover.PopoverAnchor
-        virtualRef={createVirtualRef(editor, targetRange ?? undefined)}
-      />
+      <Popover.PopoverAnchor virtualRef={virtualRef} />
 
       <Popover.Portal container={portalElement}>
         <Popover.Content

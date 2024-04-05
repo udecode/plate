@@ -1,8 +1,9 @@
 import {
+  EText,
   getNode,
-  insertText,
+  getNodeString,
   PlateEditor,
-  unwrapNodes,
+  replaceNode,
   Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
@@ -20,10 +21,10 @@ export const removeMentionInput = <V extends Value>(
 
     const { trigger } = node;
 
-    insertText(editor, trigger, {
-      at: { path: [...path, 0], offset: 0 },
-    });
-    unwrapNodes(editor, {
+    const text = getNodeString(node);
+
+    replaceNode(editor, {
       at: path,
+      nodes: { text: `${trigger}${text}` } as EText<V>,
     });
   });

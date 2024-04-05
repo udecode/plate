@@ -1,4 +1,9 @@
-import { isHotkey, PlateEditor, Value } from '@udecode/plate-common';
+import {
+  isHotkey,
+  moveSelection,
+  PlateEditor,
+  Value,
+} from '@udecode/plate-common';
 
 import { findMentionInput } from '../queries/index';
 import { removeMentionInput } from '../transforms/index';
@@ -17,6 +22,7 @@ export const mentionOnKeyDownHandler: <V extends Value>(
       if (currentMentionInput) {
         event.preventDefault();
         removeMentionInput(editor, currentMentionInput[1]);
+        moveSelection(editor, { unit: 'word' });
         return true;
       }
       return false;
