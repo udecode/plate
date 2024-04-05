@@ -30,11 +30,11 @@ export const insertFragmentCodeBlock = <V extends Value>(
   }
 
   return (fragment: TDescendant[]) => {
-    const aboveBlockNode = getBlockAbove(editor)?.at(0) as TElement;
+    const [blockAbove] = getBlockAbove<TElement>(editor) ?? [];
 
     if (
-      aboveBlockNode &&
-      [codeBlockType, codeLineType].includes(aboveBlockNode?.type)
+      blockAbove &&
+      [codeBlockType, codeLineType].includes(blockAbove?.type)
     ) {
       return insertFragment(
         fragment.flatMap((node) => {
