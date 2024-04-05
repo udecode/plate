@@ -1,5 +1,11 @@
 # @udecode/plate-code-block
 
+## 31.3.4
+
+### Patch Changes
+
+- [#3101](https://github.com/udecode/plate/pull/3101) by [@natamox](https://github.com/natamox) – fix: Pasting Slate fragments doesn't work when the selection includes a code block
+
 ## 31.0.0
 
 ### Minor Changes
