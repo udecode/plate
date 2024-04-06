@@ -1,5 +1,11 @@
 # @udecode/plate-mention
 
+## 31.3.5
+
+### Patch Changes
+
+- [#3107](https://github.com/udecode/plate/pull/3107) by [@natamox](https://github.com/natamox) – Fixed issue where undoing empty mentions or non-existent users caused system crashes.
+
 ## 31.0.0
 
 ## 30.5.3
