@@ -5,6 +5,7 @@ import {
   getPlugin,
   getPointBefore,
   getRange,
+  moveSelection,
   PlateEditor,
   setSelection,
   TNode,
@@ -81,7 +82,8 @@ export const withMention = <
   editor.deleteBackward = (unit) => {
     const currentMentionInput = findMentionInput(editor);
     if (currentMentionInput && getNodeString(currentMentionInput[0]) === '') {
-      return removeMentionInput(editor, currentMentionInput[1]);
+      removeMentionInput(editor, currentMentionInput[1]);
+      return moveSelection(editor, { unit: 'word' });
     }
 
     deleteBackward(unit);
@@ -151,6 +153,7 @@ export const withMention = <
 
       if (previousMentionInputPath && !currentMentionInputPath) {
         removeMentionInput(editor, previousMentionInputPath);
+        moveSelection(editor, { unit: 'word' });
       }
 
       if (currentMentionInputPath) {
