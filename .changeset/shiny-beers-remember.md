@@ -1,5 +1,4 @@
 ---
-"www": patch
 "@udecode/plate-mention": patch
 ---
 
