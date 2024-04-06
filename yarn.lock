@@ -6279,12 +6279,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-basic-elements@npm:31.0.0, @udecode/plate-basic-elements@workspace:^, @udecode/plate-basic-elements@workspace:packages/basic-elements":
+"@udecode/plate-basic-elements@npm:31.3.4, @udecode/plate-basic-elements@workspace:^, @udecode/plate-basic-elements@workspace:packages/basic-elements":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-basic-elements@workspace:packages/basic-elements"
   dependencies:
     "@udecode/plate-block-quote": "npm:31.0.0"
-    "@udecode/plate-code-block": "npm:31.0.0"
+    "@udecode/plate-code-block": "npm:31.3.4"
     "@udecode/plate-common": "workspace:^"
     "@udecode/plate-heading": "npm:31.0.0"
     "@udecode/plate-paragraph": "npm:31.0.0"
@@ -6383,7 +6383,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-code-block@npm:31.0.0, @udecode/plate-code-block@workspace:^, @udecode/plate-code-block@workspace:packages/code-block":
+"@udecode/plate-code-block@npm:31.3.4, @udecode/plate-code-block@workspace:^, @udecode/plate-code-block@workspace:packages/code-block":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-code-block@workspace:packages/code-block"
   dependencies:
@@ -7002,13 +7002,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-md@npm:31.3.0, @udecode/plate-serializer-md@workspace:^, @udecode/plate-serializer-md@workspace:packages/serializer-md":
+"@udecode/plate-serializer-md@npm:31.3.4, @udecode/plate-serializer-md@workspace:^, @udecode/plate-serializer-md@workspace:packages/serializer-md":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-md@workspace:packages/serializer-md"
   dependencies:
     "@udecode/plate-basic-marks": "npm:31.0.0"
     "@udecode/plate-block-quote": "npm:31.0.0"
-    "@udecode/plate-code-block": "npm:31.0.0"
+    "@udecode/plate-code-block": "npm:31.3.4"
     "@udecode/plate-common": "workspace:^"
     "@udecode/plate-heading": "npm:31.0.0"
     "@udecode/plate-horizontal-rule": "npm:31.0.0"
@@ -7203,11 +7203,11 @@ __metadata:
   dependencies:
     "@udecode/plate-alignment": "npm:31.0.0"
     "@udecode/plate-autoformat": "npm:31.0.0"
-    "@udecode/plate-basic-elements": "npm:31.0.0"
+    "@udecode/plate-basic-elements": "npm:31.3.4"
     "@udecode/plate-basic-marks": "npm:31.0.0"
     "@udecode/plate-block-quote": "npm:31.0.0"
     "@udecode/plate-break": "npm:31.0.0"
-    "@udecode/plate-code-block": "npm:31.0.0"
+    "@udecode/plate-code-block": "npm:31.3.4"
     "@udecode/plate-combobox": "npm:31.0.0"
     "@udecode/plate-comments": "npm:31.0.0"
     "@udecode/plate-common": "npm:31.3.2"
@@ -7235,7 +7235,7 @@ __metadata:
     "@udecode/plate-serializer-csv": "npm:31.3.3"
     "@udecode/plate-serializer-docx": "npm:31.3.3"
     "@udecode/plate-serializer-html": "npm:31.1.0"
-    "@udecode/plate-serializer-md": "npm:31.3.0"
+    "@udecode/plate-serializer-md": "npm:31.3.4"
     "@udecode/plate-suggestion": "npm:31.0.0"
     "@udecode/plate-tabbable": "npm:31.0.0"
     "@udecode/plate-table": "npm:31.3.3"
