@@ -6809,7 +6809,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-mention@npm:31.0.0, @udecode/plate-mention@workspace:^, @udecode/plate-mention@workspace:packages/mention":
+"@udecode/plate-mention@npm:31.3.5, @udecode/plate-mention@workspace:^, @udecode/plate-mention@workspace:packages/mention":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-mention@workspace:packages/mention"
   dependencies:
@@ -7225,7 +7225,7 @@ __metadata:
     "@udecode/plate-link": "npm:31.0.0"
     "@udecode/plate-list": "npm:31.1.3"
     "@udecode/plate-media": "npm:31.0.0"
-    "@udecode/plate-mention": "npm:31.0.0"
+    "@udecode/plate-mention": "npm:31.3.5"
     "@udecode/plate-node-id": "npm:31.0.0"
     "@udecode/plate-normalizers": "npm:31.0.0"
     "@udecode/plate-paragraph": "npm:31.0.0"
@@ -17089,6 +17089,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"next-axiom@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "next-axiom@npm:1.1.1"
+  dependencies:
+    remeda: "npm:^1.29.0"
+    whatwg-fetch: "npm:^3.6.2"
+  peerDependencies:
+    next: ">=13.4"
+    react: ">=18.0.0"
+  checksum: 10c0/5c3da6477f9761db55b65a76deff5974e08571f4ce84a9f3f252ba3b85632ecf68202e84c7aed89a2e988dd846d3ccd2f7557b657e895de7a9ed51748a38399e
+  languageName: node
+  linkType: hard
+
 "next-contentlayer@npm:0.3.4":
   version: 0.3.4
   resolution: "next-contentlayer@npm:0.3.4"
@@ -19559,6 +19572,13 @@ __metadata:
     remark-stringify: "npm:^10.0.0"
     unified: "npm:^10.0.0"
   checksum: 10c0/d4dbef29abdb62b01ae632d787bf0038af819df3e4308e037754ece8cb9c4d8ea52e8629174a47b5c46a7448cd22feba5dfea09b3ffdaa8c745b4c9bdd01b41d
+  languageName: node
+  linkType: hard
+
+"remeda@npm:^1.29.0":
+  version: 1.58.0
+  resolution: "remeda@npm:1.58.0"
+  checksum: 10c0/45ab4168466e6d694e277f146ab8548fe7f293cc70480c18b5bae93533b068cb89a8368aa0a3a8fc4321d62b018ed6e08d643dd520709da5b616882c8ff998db
   languageName: node
   linkType: hard
 
@@ -23034,6 +23054,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"whatwg-fetch@npm:^3.6.2":
+  version: 3.6.20
+  resolution: "whatwg-fetch@npm:3.6.20"
+  checksum: 10c0/fa972dd14091321d38f36a4d062298df58c2248393ef9e8b154493c347c62e2756e25be29c16277396046d6eaa4b11bd174f34e6403fff6aaca9fb30fa1ff46d
+  languageName: node
+  linkType: hard
+
 "whatwg-mimetype@npm:^3.0.0":
   version: 3.0.0
   resolution: "whatwg-mimetype@npm:3.0.0"
@@ -23433,6 +23460,7 @@ __metadata:
     lucide-react: "npm:^0.288.0"
     mdast-util-toc: "npm:^6.1.1"
     next: "npm:14.1.4"
+    next-axiom: "npm:^1.1.1"
     next-contentlayer: "npm:0.3.4"
     next-themes: "npm:^0.2.1"
     nuqs: "npm:^1.17.1"

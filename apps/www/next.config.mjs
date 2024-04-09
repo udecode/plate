@@ -1,3 +1,4 @@
+import { withAxiom } from 'next-axiom';
 // import { createContentlayerPlugin } from 'next-contentlayer';
 
 const nextConfig = async (phase, { defaultConfig }) => {
@@ -107,4 +108,4 @@ const nextConfig = async (phase, { defaultConfig }) => {
   return config;
 };
 
-export default nextConfig;
+export default withAxiom(nextConfig);

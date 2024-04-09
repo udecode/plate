@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { cn } from '@udecode/cn';
 import { allDocs } from 'contentlayer/generated';
 import { ChevronRight, ExternalLinkIcon } from 'lucide-react';
+import { Logger } from 'next-axiom';
 import Balancer from 'react-wrap-balancer';
 
 import { docToPackage } from '@/config/doc-to-package';
@@ -73,24 +74,30 @@ function getDocFromParams({ params }: DocPageProps) {
 export async function generateStaticParams(): Promise<
   DocPageProps['params'][]
 > {
-  console.log(1);
+  const log = new Logger();
+
+  log.debug('debug', { message: 1 });
   const docs = allDocs.map((doc) => ({
     slug: doc.slugAsParams.split('/'),
   }));
-  console.log(2);
+  log.debug('debug', { message: 2 });
+
+  await log.flush();
 
   return docs;
 }
 
 export default async function DocPage({ params }: DocPageProps) {
+  const log = new Logger();
+
   const name = params.slug?.[0];
 
   const isUI = name === 'components';
 
-  console.log(3);
+  log.debug('debug', { message: 3 });
 
   const doc = getDocFromParams({ params });
-  console.log(4);
+  log.debug('debug', { message: 4 });
 
   const packageInfo: PackageInfoType = {
     gzip: '',
@@ -98,14 +105,14 @@ export default async function DocPage({ params }: DocPageProps) {
     npm: '',
     source: '',
   };
-  console.log(5);
+  log.debug('debug', { message: 5 });
   const pkg = docToPackage(name);
-  console.log(6);
+  log.debug('debug', { message: 6 });
 
   if (pkg) {
-    console.log(7);
+    log.debug('debug', { message: 7 });
     const { gzip: gzipNumber } = await getPackageData(pkg.name);
-    console.log(8);
+    log.debug('debug', { message: 8 });
     const gzip =
       typeof gzipNumber === 'number' ? formatBytes(gzipNumber) : null;
 
@@ -120,11 +127,11 @@ export default async function DocPage({ params }: DocPageProps) {
     packageInfo.npm = 'https://www.npmjs.com/package/@udecode/' + pkg.name;
   }
 
-  console.log(9);
+  log.debug('debug', { message: 9 });
   if (!doc) {
     notFound();
   }
-  console.log(10);
+  log.debug('debug', { message: 10 });
 
   // let toc: TableOfContents;
   // if (params.slug?.[0] === 'api') {
@@ -132,9 +139,11 @@ export default async function DocPage({ params }: DocPageProps) {
   // } else {
   // }
 
-  console.log(11);
+  log.debug('debug', { message: 11 });
   const toc = await getTableOfContents(doc.body.raw);
-  console.log(12);
+  log.debug('debug', { message: 12 });
+
+  await log.flush();
 
   return (
     <main className="relative py-6 lg:gap-10 lg:py-8 xl:grid xl:grid-cols-[1fr_300px]">

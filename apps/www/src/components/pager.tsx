@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { cn } from '@udecode/cn';
 import { Doc } from 'contentlayer/generated';
+import { Logger } from 'next-axiom';
 
 import { NavItem, NavItemWithChildren } from '@/types/nav';
 import { docsConfig } from '@/config/docs';
@@ -12,10 +13,12 @@ interface DocsPagerProps {
   doc: Doc;
 }
 
-export function DocsPager({ doc }: DocsPagerProps) {
-  console.log('a');
+export async function DocsPager({ doc }: DocsPagerProps) {
+  const log = new Logger();
+
   const pager = getPagerForDoc(doc);
-  console.log('b');
+
+  await log.flush();
 
   if (!pager) {
     return null;

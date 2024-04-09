@@ -3,6 +3,7 @@ import '@/styles/globals.css';
 import React from 'react';
 import { Metadata, Viewport } from 'next';
 import { cn } from '@udecode/cn';
+import { AxiomWebVitals } from 'next-axiom';
 
 import { siteConfig } from '@/config/site';
 import { fontSans } from '@/lib/fonts';
@@ -105,6 +106,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         </Providers>
         <TailwindIndicator />
         <Analytics />
+        <AxiomWebVitals />
 
         <Toaster />
       </Body>
