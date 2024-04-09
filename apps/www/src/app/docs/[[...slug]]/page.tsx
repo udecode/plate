@@ -8,8 +8,6 @@ import { ChevronRight, ExternalLinkIcon } from 'lucide-react';
 import Balancer from 'react-wrap-balancer';
 
 import { docToPackage } from '@/config/doc-to-package';
-import { siteConfig } from '@/config/site';
-import { absoluteUrl } from '@/lib/absoluteUrl';
 import { formatBytes, getPackageData } from '@/lib/bundlephobia';
 import { getTableOfContents } from '@/lib/toc';
 import { PackageInfoType } from '@/hooks/use-package-info';
@@ -18,8 +16,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Mdx } from '@/components/mdx-components';
 import { DocsPager } from '@/components/pager';
 import { DashboardTableOfContents } from '@/components/toc';
-
-import type { Metadata } from 'next';
 
 interface DocPageProps {
   params: {
@@ -38,41 +34,41 @@ function getDocFromParams({ params }: DocPageProps) {
   return doc;
 }
 
-export async function generateMetadata({
-  params,
-}: DocPageProps): Promise<Metadata> {
-  const doc = getDocFromParams({ params });
-
-  if (!doc) {
-    return {};
-  }
-
-  return {
-    title: doc.title,
-    description: doc.description,
-    openGraph: {
-      title: doc.title,
-      description: doc.description,
-      type: 'article',
-      url: absoluteUrl(doc.slug),
-      images: [
-        {
-          url: siteConfig.ogImage,
-          width: 1200,
-          height: 630,
-          alt: siteConfig.name,
-        },
-      ],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: doc.title,
-      description: doc.description,
-      images: [siteConfig.ogImage],
-      creator: '@shadcn',
-    },
-  };
-}
+// export async function generateMetadata({
+//   params,
+// }: DocPageProps): Promise<Metadata> {
+//   const doc = getDocFromParams({ params });
+//
+//   if (!doc) {
+//     return {};
+//   }
+//
+//   return {
+//     title: doc.title,
+//     description: doc.description,
+//     openGraph: {
+//       title: doc.title,
+//       description: doc.description,
+//       type: 'article',
+//       url: absoluteUrl(doc.slug),
+//       images: [
+//         {
+//           url: siteConfig.ogImage,
+//           width: 1200,
+//           height: 630,
+//           alt: siteConfig.name,
+//         },
+//       ],
+//     },
+//     twitter: {
+//       card: 'summary_large_image',
+//       title: doc.title,
+//       description: doc.description,
+//       images: [siteConfig.ogImage],
+//       creator: '@shadcn',
+//     },
+//   };
+// }
 
 export async function generateStaticParams(): Promise<
   DocPageProps['params'][]
