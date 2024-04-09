@@ -73,9 +73,13 @@ function getDocFromParams({ params }: DocPageProps) {
 export async function generateStaticParams(): Promise<
   DocPageProps['params'][]
 > {
-  return allDocs.map((doc) => ({
+  console.log(1);
+  const docs = allDocs.map((doc) => ({
     slug: doc.slugAsParams.split('/'),
   }));
+  console.log(2);
+
+  return docs;
 }
 
 export default async function DocPage({ params }: DocPageProps) {
@@ -83,7 +87,10 @@ export default async function DocPage({ params }: DocPageProps) {
 
   const isUI = name === 'components';
 
+  console.log(3);
+
   const doc = getDocFromParams({ params });
+  console.log(4);
 
   const packageInfo: PackageInfoType = {
     gzip: '',
@@ -91,10 +98,14 @@ export default async function DocPage({ params }: DocPageProps) {
     npm: '',
     source: '',
   };
+  console.log(5);
   const pkg = docToPackage(name);
+  console.log(6);
 
   if (pkg) {
+    console.log(7);
     const { gzip: gzipNumber } = await getPackageData(pkg.name);
+    console.log(8);
     const gzip =
       typeof gzipNumber === 'number' ? formatBytes(gzipNumber) : null;
 
@@ -109,9 +120,11 @@ export default async function DocPage({ params }: DocPageProps) {
     packageInfo.npm = 'https://www.npmjs.com/package/@udecode/' + pkg.name;
   }
 
+  console.log(9);
   if (!doc) {
     notFound();
   }
+  console.log(10);
 
   // let toc: TableOfContents;
   // if (params.slug?.[0] === 'api') {
@@ -119,7 +132,9 @@ export default async function DocPage({ params }: DocPageProps) {
   // } else {
   // }
 
+  console.log(11);
   const toc = await getTableOfContents(doc.body.raw);
+  console.log(12);
 
   return (
     <main className="relative py-6 lg:gap-10 lg:py-8 xl:grid xl:grid-cols-[1fr_300px]">

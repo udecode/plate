@@ -13,7 +13,9 @@ interface DocsPagerProps {
 }
 
 export function DocsPager({ doc }: DocsPagerProps) {
+  console.log('a');
   const pager = getPagerForDoc(doc);
+  console.log('b');
 
   if (!pager) {
     return null;
