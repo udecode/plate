@@ -5,11 +5,9 @@ import { notFound } from 'next/navigation';
 import { cn } from '@udecode/cn';
 import { allDocs } from 'contentlayer/generated';
 import { ChevronRight, ExternalLinkIcon } from 'lucide-react';
-import { Logger } from 'next-axiom';
 import Balancer from 'react-wrap-balancer';
 
-import { docToPackage } from '@/config/doc-to-package';
-import { formatBytes, getPackageData } from '@/lib/bundlephobia';
+// import { formatBytes, getPackageData } from '@/lib/bundlephobia';
 import { getTableOfContents } from '@/lib/toc';
 import { PackageInfoType } from '@/hooks/use-package-info';
 import { badgeVariants } from '@/components/ui/badge';
@@ -74,30 +72,23 @@ function getDocFromParams({ params }: DocPageProps) {
 export async function generateStaticParams(): Promise<
   DocPageProps['params'][]
 > {
-  const log = new Logger();
-
-  log.debug('debug', { message: 1 });
   const docs = allDocs.map((doc) => ({
     slug: doc.slugAsParams.split('/'),
   }));
-  log.debug('debug', { message: 2 });
-
-  await log.flush();
 
   return docs;
 }
 
-export default async function DocPage({ params }: DocPageProps) {
-  const log = new Logger();
+export const maxDuration = 1;
 
+export const runtime = 'edge';
+
+export default async function DocPage({ params }: DocPageProps) {
   const name = params.slug?.[0];
 
   const isUI = name === 'components';
 
-  log.debug('debug', { message: 3 });
-
   const doc = getDocFromParams({ params });
-  log.debug('debug', { message: 4 });
 
   const packageInfo: PackageInfoType = {
     gzip: '',
@@ -105,33 +96,27 @@ export default async function DocPage({ params }: DocPageProps) {
     npm: '',
     source: '',
   };
-  log.debug('debug', { message: 5 });
-  const pkg = docToPackage(name);
-  log.debug('debug', { message: 6 });
+  // const pkg = docToPackage(name);
 
-  if (pkg) {
-    log.debug('debug', { message: 7 });
-    const { gzip: gzipNumber } = await getPackageData(pkg.name);
-    log.debug('debug', { message: 8 });
-    const gzip =
-      typeof gzipNumber === 'number' ? formatBytes(gzipNumber) : null;
+  // if (pkg) {
+  //   const { gzip: gzipNumber } = await getPackageData(pkg.name);
+  //   const gzip =
+  //     typeof gzipNumber === 'number' ? formatBytes(gzipNumber) : null;
+  //
+  //   packageInfo.name = pkg.name;
+  //   if (gzip) {
+  //     packageInfo.gzip = gzip;
+  //   }
+  //   packageInfo.source =
+  //     'https://github.com/udecode/plate/tree/main/packages/' +
+  //     pkg.sourcePath +
+  //     '/src';
+  //   packageInfo.npm = 'https://www.npmjs.com/package/@udecode/' + pkg.name;
+  // }
 
-    packageInfo.name = pkg.name;
-    if (gzip) {
-      packageInfo.gzip = gzip;
-    }
-    packageInfo.source =
-      'https://github.com/udecode/plate/tree/main/packages/' +
-      pkg.sourcePath +
-      '/src';
-    packageInfo.npm = 'https://www.npmjs.com/package/@udecode/' + pkg.name;
-  }
-
-  log.debug('debug', { message: 9 });
   if (!doc) {
     notFound();
   }
-  log.debug('debug', { message: 10 });
 
   // let toc: TableOfContents;
   // if (params.slug?.[0] === 'api') {
@@ -139,11 +124,7 @@ export default async function DocPage({ params }: DocPageProps) {
   // } else {
   // }
 
-  log.debug('debug', { message: 11 });
   const toc = await getTableOfContents(doc.body.raw);
-  log.debug('debug', { message: 12 });
-
-  await log.flush();
 
   return (
     <main className="relative py-6 lg:gap-10 lg:py-8 xl:grid xl:grid-cols-[1fr_300px]">

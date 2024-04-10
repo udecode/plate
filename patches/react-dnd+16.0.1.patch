@@ -1,0 +1,25 @@
+diff --git a/node_modules/react-dnd/dist/core/DndProvider.js b/node_modules/react-dnd/dist/core/DndProvider.js
+index 749c9fe..e8fffb6 100644
+--- a/node_modules/react-dnd/dist/core/DndProvider.js
++++ b/node_modules/react-dnd/dist/core/DndProvider.js
+@@ -88,7 +88,7 @@ function createSingletonDndContext(backend, context = getGlobalContext(), option
+     return ctx[INSTANCE_SYM];
+ }
+ function getGlobalContext() {
+-    return typeof global !== 'undefined' ? global : window;
++    return typeof global !== 'undefined' ? global : typeof window !== 'undefined' ? window : undefined;
+ }
+ 
+ //# sourceMappingURL=DndProvider.js.map
+\ No newline at end of file
+diff --git a/node_modules/react-dnd/src/core/DndProvider.tsx b/node_modules/react-dnd/src/core/DndProvider.tsx
+index 3b60cd8..de3e0de 100644
+--- a/node_modules/react-dnd/src/core/DndProvider.tsx
++++ b/node_modules/react-dnd/src/core/DndProvider.tsx
+@@ -89,5 +89,5 @@ function createSingletonDndContext<BackendContext, BackendOptions>(
+ 
+ declare const global: any
+ function getGlobalContext() {
+-	return typeof global !== 'undefined' ? global : (window as any)
++	return typeof global !== 'undefined' ? global : typeof window !== 'undefined' ? (window as any) : undefined;
+ }
