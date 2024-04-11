@@ -79,9 +79,7 @@ export async function generateStaticParams(): Promise<
   return docs;
 }
 
-export const maxDuration = 1;
-
-export const runtime = 'edge';
+export const maxDuration = 3;
 
 export default async function DocPage({ params }: DocPageProps) {
   const name = params.slug?.[0];
