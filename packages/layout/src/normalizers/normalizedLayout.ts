@@ -1,6 +1,11 @@
-import { PlateEditor } from '@udecode/plate-core';
-import { isElement, TNode, TNodeEntry, Value } from '@udecode/slate';
-import { getLastChildPath } from '@udecode/slate-utils';
+import {
+  getLastChildPath,
+  isElement,
+  PlateEditor,
+  TNode,
+  TNodeEntry,
+  Value,
+} from '@udecode/plate-common';
 
 import { ELEMENT_LAYOUT } from '../createLayoutPlugin';
 import { TLayoutBlockElement } from '../layout-store';
