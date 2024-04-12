@@ -5969,6 +5969,23 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@udecode/plate-layout@workspace:packages/layout":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-layout@workspace:packages/layout"
+  dependencies:
+    "@udecode/plate-common": "workspace:^"
+    juice: "npm:^8.1.0"
+  peerDependencies:
+    "@udecode/plate-common": ">=31.3.2"
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.94.0"
+    slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
+    slate-react: ">=0.99.0"
+  languageName: unknown
+  linkType: soft
+
 "@udecode/plate-line-height@npm:31.0.0, @udecode/plate-line-height@workspace:^, @udecode/plate-line-height@workspace:packages/line-height":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-line-height@workspace:packages/line-height"

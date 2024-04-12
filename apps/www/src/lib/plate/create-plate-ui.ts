@@ -33,6 +33,7 @@ import {
 import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
 import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
 import { MARK_KBD } from '@udecode/plate-kbd';
+import { ELEMENT_LAYOUT, ELEMENT_LAYOUT_CHILD } from '@udecode/plate-layout';
 import { ELEMENT_LINK } from '@udecode/plate-link';
 import {
   ELEMENT_LI,
@@ -63,6 +64,8 @@ import { HighlightLeaf } from '@/registry/default/plate-ui/highlight-leaf';
 import { HrElement } from '@/registry/default/plate-ui/hr-element';
 import { ImageElement } from '@/registry/default/plate-ui/image-element';
 import { KbdLeaf } from '@/registry/default/plate-ui/kbd-leaf';
+import { LayoutChildElement } from '@/registry/default/plate-ui/layout-child-element';
+import { LayoutElement } from '@/registry/default/plate-ui/layout-element';
 import { LinkElement } from '@/registry/default/plate-ui/link-element';
 import { ListElement } from '@/registry/default/plate-ui/list-element';
 import { MediaEmbedElement } from '@/registry/default/plate-ui/media-embed-element';
@@ -116,6 +119,8 @@ export const createPlateUI = (
     [ELEMENT_TOGGLE]: ToggleElement,
     [ELEMENT_TR]: TableRowElement,
     [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
+    [ELEMENT_LAYOUT]: LayoutElement,
+    [ELEMENT_LAYOUT_CHILD]: LayoutChildElement,
     [MARK_BOLD]: withProps(PlateLeaf, { as: 'strong' }),
     [MARK_CODE]: CodeLeaf,
     [MARK_HIGHLIGHT]: HighlightLeaf,
