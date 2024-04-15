@@ -21,10 +21,7 @@
   ],
   "exports": {
     ".": {
-      "types": [
-        "./dist/index.d.ts",
-        "./dist/server.d.ts"
-      ],
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "module": "./dist/index.mjs",
       "require": "./dist/index.js"
