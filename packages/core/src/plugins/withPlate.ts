@@ -1,9 +1,10 @@
 import { TEditor, Value } from '@udecode/slate';
 
-import { PlateProps } from '../components/index';
 import { resetEditor } from '../transforms/index';
 import { PlateEditor } from '../types/PlateEditor';
 import { setPlatePlugins } from '../utils/setPlatePlugins';
+
+import type { PlateProps } from '../client';
 
 const shouldHaveBeenOverridden = (fnName: string) => () => {
   console.warn(

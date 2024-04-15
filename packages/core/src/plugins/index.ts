@@ -4,7 +4,6 @@
 
 export * from './createDeserializeAstPlugin';
 export * from './createEditorProtocolPlugin';
-export * from './createEventEditorPlugin';
 export * from './createHistoryPlugin';
 export * from './createInlineVoidPlugin';
 export * from './createInsertDataPlugin';
@@ -14,4 +13,5 @@ export * from './createPrevSelectionPlugin';
 export * from './createReactPlugin';
 export * from './withPlate';
 export * from './withTReact';
+export * from './event-editor/index';
 export * from './html-deserializer/index';

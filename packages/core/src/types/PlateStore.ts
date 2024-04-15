@@ -1,7 +1,6 @@
 import React from 'react';
 import { Value } from '@udecode/slate';
 
-import { PlateId } from '../stores';
 import { Nullable } from './misc/Nullable';
 import { PlateEditor } from './PlateEditor';
 import {
@@ -10,6 +9,8 @@ import {
   WithPlatePlugin,
 } from './plugin/PlatePlugin';
 import { TEditableProps } from './slate-react/TEditableProps';
+
+import type { PlateId } from '../client';
 
 export type PlateChangeKey =
   | 'versionEditor'

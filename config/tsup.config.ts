@@ -1,7 +1,7 @@
 /* eslint-disable unicorn/prefer-module,@typescript-eslint/no-shadow */
 import fs from 'node:fs';
 import path from 'node:path';
-import { defineConfig } from 'tsup';
+import { defineConfig, Options } from 'tsup';
 
 const silent = false;
 
@@ -11,15 +11,16 @@ const INPUT_FILE = fs.existsSync(INPUT_FILE_PATH)
   ? INPUT_FILE_PATH
   : path.join(PACKAGE_ROOT_PATH, 'src/index.tsx');
 
+const SERVER_INPUT_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/server.ts');
+
 export default defineConfig((opts) => {
-  return {
+  const options: Options = {
     ...opts,
-    entry: [INPUT_FILE],
     format: ['cjs', 'esm'],
     dts: true,
     sourcemap: true,
     clean: true,
-
+    splitting: false,
     ...(silent
       ? {
           silent: true,
@@ -34,4 +35,11 @@ export default defineConfig((opts) => {
         }
       : {}),
   };
+
+  return [
+    {
+      ...options,
+      entry: [INPUT_FILE, SERVER_INPUT_FILE_PATH],
+    },
+  ];
 });

@@ -3,6 +3,7 @@ import '@/styles/globals.css';
 import React from 'react';
 import { Metadata, Viewport } from 'next';
 import { cn } from '@udecode/cn';
+import { createPlateEditor } from '@udecode/plate-core/server';
 import { AxiomWebVitals } from 'next-axiom';
 
 import { siteConfig } from '@/config/site';
@@ -83,6 +84,8 @@ interface RootLayoutProps {
 }
 
 export default function RootLayout({ children }: RootLayoutProps) {
+  console.log(createPlateEditor());
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head />

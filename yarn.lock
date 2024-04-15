@@ -5696,7 +5696,7 @@ __metadata:
     is-hotkey: "npm:^0.2.0"
     jotai: "npm:^2.7.1"
     jotai-optics: "npm:0.3.2"
-    jotai-x: "npm:^1.2.2"
+    jotai-x: "npm:^1.2.3"
     lodash: "npm:^4.17.21"
     nanoid: "npm:^3.3.7"
     optics-ts: "npm:2.4.1"
@@ -12898,9 +12898,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jotai-x@npm:^1.2.2":
-  version: 1.2.2
-  resolution: "jotai-x@npm:1.2.2"
+"jotai-x@npm:^1.2.3":
+  version: 1.2.3
+  resolution: "jotai-x@npm:1.2.3"
   peerDependencies:
     "@types/react": ">=17.0.0"
     jotai: ">=2.0.0"
@@ -12910,7 +12910,7 @@ __metadata:
       optional: true
     react:
       optional: true
-  checksum: 10c0/96cbffc9e19eb2c005de45c02f3fa3a4bc03d3de264d8a74578002de55eb68446880cc2fd03d7024eaf00ce3371df536d2a9ca66a5082fd80d4ff57f0eeee257
+  checksum: 10c0/953ece5cbde0048aa690b14d8092510fe602f038e765da193cda29dce0c8df4ea52387dcce1c293994f0b57c148564dcac13e24ac8f950d8eae8b9c4ec830ebd
   languageName: node
   linkType: hard
 

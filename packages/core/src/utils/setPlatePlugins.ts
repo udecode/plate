@@ -1,7 +1,6 @@
 import { Value } from '@udecode/slate';
 import { isDefined } from '@udecode/utils';
 
-import { PlateProps } from '../components/index';
 import {
   createDeserializeAstPlugin,
   createDeserializeHtmlPlugin,
@@ -28,6 +27,8 @@ import { PlateEditor } from '../types/PlateEditor';
 import { PlatePlugin } from '../types/plugin/PlatePlugin';
 import { flattenDeepPlugins } from './flattenDeepPlugins';
 import { overridePluginsByKey } from './overridePluginsByKey';
+
+import type { PlateProps } from '../client';
 
 /**
  * Flatten deep plugins then set editor.plugins and editor.pluginsByKey

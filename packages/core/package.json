@@ -21,10 +21,19 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": [
+        "./dist/index.d.ts",
+        "./dist/server.d.ts"
+      ],
       "import": "./dist/index.mjs",
       "module": "./dist/index.mjs",
       "require": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.mjs",
+      "module": "./dist/server.mjs",
+      "require": "./dist/server.js"
     }
   },
   "scripts": {
@@ -47,7 +56,7 @@
     "is-hotkey": "^0.2.0",
     "jotai": "^2.7.1",
     "jotai-optics": "0.3.2",
-    "jotai-x": "^1.2.2",
+    "jotai-x": "^1.2.3",
     "lodash": "^4.17.21",
     "nanoid": "^3.3.7",
     "optics-ts": "2.4.1",
