@@ -11,10 +11,13 @@ const INPUT_FILE = fs.existsSync(INPUT_FILE_PATH)
   ? INPUT_FILE_PATH
   : path.join(PACKAGE_ROOT_PATH, 'src/index.tsx');
 
+const SERVER_INPUT_FILE = path.join(PACKAGE_ROOT_PATH, 'src/server.ts');
+
 export default defineConfig((opts) => {
   return {
     ...opts,
-    entry: [INPUT_FILE],
+    entry: [INPUT_FILE, SERVER_INPUT_FILE],
+    splitting: false,
     format: ['cjs', 'esm'],
     dts: true,
     sourcemap: true,

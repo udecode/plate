@@ -25,6 +25,12 @@
       "import": "./dist/index.mjs",
       "module": "./dist/index.mjs",
       "require": "./dist/index.js"
+    },
+    "./server": {
+      "require": "./dist/server.js",
+      "import": "./dist/server.mjs",
+      "module": "./dist/server.mjs",
+      "types": "./dist/server.d.ts"
     }
   },
   "scripts": {
