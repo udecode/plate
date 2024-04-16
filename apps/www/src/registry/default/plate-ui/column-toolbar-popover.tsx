@@ -1,6 +1,6 @@
 import React from 'react';
+import { useColumnState, useDebouncePopoverOpen } from '@udecode/plate-column';
 import { useRemoveNodeButton } from '@udecode/plate-common';
-import { useDebouncePopoverOpen, useLayoutState } from '@udecode/plate-layout';
 import { useReadOnly } from 'slate-react';
 
 import { Icons, iconVariants } from '@/components/icons';
@@ -23,7 +23,7 @@ export function LayoutToolbarPopover({
     setLeftSideDoubleColumn,
     setRightSideDoubleColumn,
     setThreeColumn,
-  } = useLayoutState();
+  } = useColumnState();
 
   const { props: buttonProps } = useRemoveNodeButton({ element });
 

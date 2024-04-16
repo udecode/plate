@@ -7,8 +7,8 @@ import {
   Value,
 } from '@udecode/plate-common';
 
-import { ELEMENT_LAYOUT_CHILD } from './createLayoutPlugin';
-import { normalizeLayout } from './normalizers/normalizedLayout';
+import { ELEMENT_COLUMN } from './createColumnPlugin';
+import { normalizeColumn } from './normalizers/normalizedColumn';
 
 export const withLayout = <
   V extends Value = Value,
@@ -18,12 +18,12 @@ export const withLayout = <
 ) => {
   const { deleteBackward } = editor;
 
-  editor.normalizeNode = normalizeLayout(editor);
+  editor.normalizeNode = normalizeColumn(editor);
 
   editor.deleteBackward = (unit) => {
     if (isCollapsed(editor.selection)) {
       const entry = getAboveNode(editor, {
-        match: (n) => isElement(n) && n.type === ELEMENT_LAYOUT_CHILD,
+        match: (n) => isElement(n) && n.type === ELEMENT_COLUMN,
       });
 
       if (entry) {

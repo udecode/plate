@@ -1,33 +1,21 @@
 import {
   findNodePath,
   setNodes,
-  TElement,
   useEditorRef,
   useElement,
 } from '@udecode/plate-common';
 
-import { ELEMENT_LAYOUT, ELEMENT_LAYOUT_CHILD } from './createLayoutPlugin';
+import { ELEMENT_COLUMN, ELEMENT_COLUMN_GROUP } from './createColumnPlugin';
+import { TColumnElement, TColumnGroupElement } from './types';
 
-export interface TLayoutChildElement extends TElement {
-  id?: string;
-  type: 'layout_child';
-  width: string;
-}
-
-export interface TLayoutBlockElement extends TElement {
-  id?: string;
-  type: 'layout';
-  layout?: '1-1' | '1-1-1' | '3-1' | '1-3' | '1-2-1';
-  children: TLayoutChildElement[];
-}
-
-export const useLayoutState = () => {
+export const useColumnState = () => {
   const editor = useEditorRef();
 
-  const layoutElement = useElement<TLayoutBlockElement>(ELEMENT_LAYOUT);
-  const element = useElement<TLayoutChildElement>(ELEMENT_LAYOUT_CHILD);
+  const ColumnGroupElement =
+    useElement<TColumnGroupElement>(ELEMENT_COLUMN_GROUP);
+  const element = useElement<TColumnElement>(ELEMENT_COLUMN);
 
-  const layoutPath = findNodePath(editor, layoutElement);
+  const layoutPath = findNodePath(editor, ColumnGroupElement);
 
   const setDoubleColumn = () => {
     setNodes(editor, { layout: '1-1' }, { at: layoutPath });
@@ -51,7 +39,7 @@ export const useLayoutState = () => {
 
   return {
     element,
-    layoutElement,
+    ColumnGroupElement,
     setDoubleColumn,
     setDoubleSideDoubleColumn,
     setLeftSideDoubleColumn,

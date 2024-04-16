@@ -14,6 +14,7 @@ import {
   ELEMENT_CODE_LINE,
   ELEMENT_CODE_SYNTAX,
 } from '@udecode/plate-code-block';
+import { ELEMENT_COLUMN, ELEMENT_COLUMN_GROUP } from '@udecode/plate-column';
 import { MARK_COMMENT } from '@udecode/plate-comments';
 import {
   PlateElement,
@@ -33,7 +34,6 @@ import {
 import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
 import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
 import { MARK_KBD } from '@udecode/plate-kbd';
-import { ELEMENT_LAYOUT, ELEMENT_LAYOUT_CHILD } from '@udecode/plate-layout';
 import { ELEMENT_LINK } from '@udecode/plate-link';
 import {
   ELEMENT_LI,
@@ -57,6 +57,8 @@ import { CodeBlockElement } from '@/registry/default/plate-ui/code-block-element
 import { CodeLeaf } from '@/registry/default/plate-ui/code-leaf';
 import { CodeLineElement } from '@/registry/default/plate-ui/code-line-element';
 import { CodeSyntaxLeaf } from '@/registry/default/plate-ui/code-syntax-leaf';
+import { ColumnElement } from '@/registry/default/plate-ui/column-element';
+import { ColumnGroupElement } from '@/registry/default/plate-ui/column-group-element';
 import { CommentLeaf } from '@/registry/default/plate-ui/comment-leaf';
 import { ExcalidrawElement } from '@/registry/default/plate-ui/excalidraw-element';
 import { HeadingElement } from '@/registry/default/plate-ui/heading-element';
@@ -64,8 +66,6 @@ import { HighlightLeaf } from '@/registry/default/plate-ui/highlight-leaf';
 import { HrElement } from '@/registry/default/plate-ui/hr-element';
 import { ImageElement } from '@/registry/default/plate-ui/image-element';
 import { KbdLeaf } from '@/registry/default/plate-ui/kbd-leaf';
-import { LayoutChildElement } from '@/registry/default/plate-ui/layout-child-element';
-import { LayoutElement } from '@/registry/default/plate-ui/layout-element';
 import { LinkElement } from '@/registry/default/plate-ui/link-element';
 import { ListElement } from '@/registry/default/plate-ui/list-element';
 import { MediaEmbedElement } from '@/registry/default/plate-ui/media-embed-element';
@@ -119,8 +119,8 @@ export const createPlateUI = (
     [ELEMENT_TOGGLE]: ToggleElement,
     [ELEMENT_TR]: TableRowElement,
     [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
-    [ELEMENT_LAYOUT]: LayoutElement,
-    [ELEMENT_LAYOUT_CHILD]: LayoutChildElement,
+    [ELEMENT_COLUMN_GROUP]: ColumnGroupElement,
+    [ELEMENT_COLUMN]: ColumnElement,
     [MARK_BOLD]: withProps(PlateLeaf, { as: 'strong' }),
     [MARK_CODE]: CodeLeaf,
     [MARK_HIGHLIGHT]: HighlightLeaf,

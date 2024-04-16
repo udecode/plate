@@ -1,5 +1,5 @@
-export * from './createLayoutPlugin';
+export * from './createColumnPlugin';
 export * from './transforms';
 export * from './normalizers';
-export * from './layout-store';
+export * from './column-store';
 export * from './hooks';

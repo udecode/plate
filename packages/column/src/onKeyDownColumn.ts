@@ -7,7 +7,7 @@ import {
   Value,
 } from '@udecode/plate-common';
 
-export const onKeyDownLayout =
+export const onKeyDownColumn =
   <V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>(
     editor: E
   ): KeyboardHandlerReturnType =>

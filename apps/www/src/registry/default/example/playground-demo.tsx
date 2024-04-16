@@ -48,6 +48,7 @@ import {
   createCodeBlockPlugin,
   ELEMENT_CODE_BLOCK,
 } from '@udecode/plate-code-block';
+import { createColumnPlugin } from '@udecode/plate-column';
 import { createComboboxPlugin } from '@udecode/plate-combobox';
 import { createCommentsPlugin } from '@udecode/plate-comments';
 import {
@@ -79,7 +80,6 @@ import { createIndentPlugin } from '@udecode/plate-indent';
 import { createIndentListPlugin } from '@udecode/plate-indent-list';
 import { createJuicePlugin } from '@udecode/plate-juice';
 import { createKbdPlugin } from '@udecode/plate-kbd';
-import { createLayoutPlugin } from '@udecode/plate-layout';
 import { createLineHeightPlugin } from '@udecode/plate-line-height';
 import { createLinkPlugin } from '@udecode/plate-link';
 import { createListPlugin, createTodoListPlugin } from '@udecode/plate-list';
@@ -325,7 +325,7 @@ export const usePlaygroundPlugins = ({
           createDeserializeDocxPlugin({ enabled: !!enabled.deserializeDocx }),
           createDeserializeMdPlugin({ enabled: !!enabled.deserializeMd }),
           createJuicePlugin({ enabled: !!enabled.juice }),
-          createLayoutPlugin(),
+          createColumnPlugin(),
         ],
         {
           components,

@@ -7,6 +7,7 @@ import {
   ELEMENT_CODE_BLOCK,
   insertEmptyCodeBlock,
 } from '@udecode/plate-code-block';
+import { ELEMENT_COLUMN_GROUP, insertColumnGroup } from '@udecode/plate-column';
 import {
   focusEditor,
   insertEmptyElement,
@@ -26,7 +27,6 @@ import {
   KEY_LIST_STYLE_TYPE,
   toggleIndentList,
 } from '@udecode/plate-indent-list';
-import { ELEMENT_LAYOUT, insertLayout } from '@udecode/plate-layout';
 import { ELEMENT_LINK, triggerFloatingLink } from '@udecode/plate-link';
 import { toggleList } from '@udecode/plate-list';
 import {
@@ -127,7 +127,7 @@ const items = [
         icon: Icons.hr,
       },
       {
-        value: ELEMENT_LAYOUT,
+        value: ELEMENT_COLUMN_GROUP,
         label: 'Columns',
         description: 'Columns',
         icon: Icons.LayoutIcon,
@@ -204,8 +204,8 @@ export function PlaygroundInsertDropdownMenu(props: DropdownMenuProps) {
                   className="min-w-[180px]"
                   onSelect={async () => {
                     switch (type) {
-                      case ELEMENT_LAYOUT: {
-                        insertLayout(editor);
+                      case ELEMENT_COLUMN_GROUP: {
+                        insertColumnGroup(editor);
                         break;
                       }
 

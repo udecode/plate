@@ -6,21 +6,21 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 
-import { ELEMENT_LAYOUT, ELEMENT_LAYOUT_CHILD } from '../createLayoutPlugin';
-import { TLayoutBlockElement } from '../layout-store';
+import { ELEMENT_COLUMN, ELEMENT_COLUMN_GROUP } from '../createColumnPlugin';
+import { TColumnGroupElement } from '../types';
 
-export const insertLayout = <V extends Value>(editor: PlateEditor<V>) => {
+export const insertColumnGroup = <V extends Value>(editor: PlateEditor<V>) => {
   withoutNormalizing(editor, () => {
-    insertNodes<TLayoutBlockElement>(editor, {
-      type: ELEMENT_LAYOUT,
+    insertNodes<TColumnGroupElement>(editor, {
+      type: ELEMENT_COLUMN_GROUP,
       children: [
         {
-          type: ELEMENT_LAYOUT_CHILD,
+          type: ELEMENT_COLUMN,
           width: '50%',
           children: [{ type: ELEMENT_DEFAULT, children: [{ text: '' }] }],
         },
         {
-          type: ELEMENT_LAYOUT_CHILD,
+          type: ELEMENT_COLUMN,
           width: '50%',
           children: [{ type: ELEMENT_DEFAULT, children: [{ text: '' }] }],
         },

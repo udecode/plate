@@ -7,19 +7,19 @@ import {
   Value,
 } from '@udecode/plate-common';
 
-import { ELEMENT_LAYOUT_CHILD } from '../createLayoutPlugin';
-import { TLayoutChildElement } from '../layout-store';
+import { ELEMENT_COLUMN } from '../createColumnPlugin';
+import { TColumnElement } from '../types';
 
-export const insertEmptyLayoutChild = <V extends Value>(
+export const insertEmptyColumn = <V extends Value>(
   editor: PlateEditor<V>,
   options?: InsertNodesOptions<V> & { width?: string }
 ) => {
   const width = options?.width || '33%';
 
-  insertNodes<TLayoutChildElement>(
+  insertNodes<TColumnElement>(
     editor,
     {
-      type: ELEMENT_LAYOUT_CHILD,
+      type: ELEMENT_COLUMN,
       children: [{ type: ELEMENT_DEFAULT, children: [{ text: '' }] }],
       width,
     },
