@@ -10,13 +10,13 @@ import {
 import { ELEMENT_COLUMN } from './createColumnPlugin';
 import { normalizeColumn } from './normalizers/normalizedColumn';
 
-export const withLayout = <
+export const withColumn = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E
 ) => {
-  const { deleteBackward } = editor;
+  const { deleteBackward, isEmpty } = editor;
 
   editor.normalizeNode = normalizeColumn(editor);
 
@@ -35,6 +35,16 @@ export const withLayout = <
       }
     }
     deleteBackward(unit);
+  };
+
+  editor.isEmpty = (element) => {
+    // TODO: types
+    // @ts-ignore
+    if (element && element.type && element.type === ELEMENT_COLUMN) {
+      // @ts-ignore
+      return element.children.length === 1 && isEmpty(element.children[0]);
+    }
+    return isEmpty(element);
   };
 
   return editor;
