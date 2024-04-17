@@ -1,7 +1,7 @@
 {
   "name": "@udecode/plate-layout",
   "version": "31.0.0",
-  "description": "layout plugin for Plate",
+  "description": "Layout plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
   "repository": {
