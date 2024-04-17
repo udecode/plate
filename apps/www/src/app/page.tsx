@@ -42,7 +42,7 @@ export default function IndexPage() {
           </PageHeaderDescription>
           <section className="flex w-full items-center space-x-4 py-4 md:pb-10">
             <Link href="/docs" className={cn(buttonVariants())}>
-              Get Started1
+              Get Started
             </Link>
             <Link
               target="_blank"

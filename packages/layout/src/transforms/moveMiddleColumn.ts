@@ -27,9 +27,7 @@ export const moveMiddleColumn = <V extends Value, N extends TNode>(
     const DESCENDANT_PATH = [1];
 
     const middleChildNode = Node.get(node, DESCENDANT_PATH);
-    //TODO:types
-    // @ts-ignore
-    const isEmpty = editor.isEmpty(middleChildNode);
+    const isEmpty = editor.isEmpty(middleChildNode as any);
 
     const middleChildPathRef = editor.pathRef(path.concat(DESCENDANT_PATH));
 

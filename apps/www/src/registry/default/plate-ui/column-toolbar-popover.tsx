@@ -42,42 +42,21 @@ export function LayoutToolbarPopover({
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <div className="box-content flex h-9 items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sms"
-            // tooltip="doubleColumn"
-            onClick={setDoubleColumn}
-          >
+          <Button variant="ghost" size="sms" onClick={setDoubleColumn}>
             <Icons.doubleColumn />
           </Button>
-          <Button
-            variant="ghost"
-            size="sms"
-            // tooltip="threeColumn"
-            onClick={setThreeColumn}
-          >
+          <Button variant="ghost" size="sms" onClick={setThreeColumn}>
             <Icons.threeColumn />
           </Button>
-          <Button
-            variant="ghost"
-            size="sms"
-            // tooltip="rightSideDoubleColumn"
-            onClick={setRightSideDoubleColumn}
-          >
+          <Button variant="ghost" size="sms" onClick={setRightSideDoubleColumn}>
             <Icons.rightSideDoubleColumn />
           </Button>
-          <Button
-            variant="ghost"
-            size="sms"
-            // tooltip="plugins.layout.leftSideDoubleColumn"
-            onClick={setLeftSideDoubleColumn}
-          >
+          <Button variant="ghost" size="sms" onClick={setLeftSideDoubleColumn}>
             <Icons.leftSideDoubleColumn />
           </Button>
           <Button
             variant="ghost"
             size="sms"
-            // tooltip="plugins.layout.doubleSideDoubleColumn"
             onClick={setDoubleSideDoubleColumn}
           >
             <Icons.doubleSideDoubleColumn />

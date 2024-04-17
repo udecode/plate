@@ -7,7 +7,7 @@ import {
   Value,
 } from '@udecode/plate-common';
 
-import { ELEMENT_COLUMN } from './createLayoutPlugin';
+import { ELEMENT_COLUMN } from './createColumnPlugin';
 import { normalizeColumn } from './normalizers/normalizedColumn';
 
 export const withColumn = <
@@ -37,11 +37,8 @@ export const withColumn = <
     deleteBackward(unit);
   };
 
-  editor.isEmpty = (element) => {
-    // TODO: types
-    // @ts-ignore
+  editor.isEmpty = (element: any) => {
     if (element && element.type && element.type === ELEMENT_COLUMN) {
-      // @ts-ignore
       return element.children.length === 1 && isEmpty(element.children[0]);
     }
     return isEmpty(element);

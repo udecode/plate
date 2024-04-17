@@ -6,7 +6,7 @@ import { withColumn } from './withColumn';
 export const ELEMENT_COLUMN_GROUP = 'column_group';
 export const ELEMENT_COLUMN = 'column';
 
-export const createLayoutPlugin = createPluginFactory<HotkeyPlugin>({
+export const createColumnPlugin = createPluginFactory<HotkeyPlugin>({
   key: ELEMENT_COLUMN_GROUP,
   isElement: true,
   options: {},

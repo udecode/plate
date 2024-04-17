@@ -5,7 +5,7 @@ import {
   useElement,
 } from '@udecode/plate-common';
 
-import { ELEMENT_COLUMN, ELEMENT_COLUMN_GROUP } from './createLayoutPlugin';
+import { ELEMENT_COLUMN, ELEMENT_COLUMN_GROUP } from './createColumnPlugin';
 import { TColumnElement, TColumnGroupElement } from './types';
 
 export const useColumnState = () => {

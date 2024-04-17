@@ -8,7 +8,7 @@ import {
   Value,
 } from '@udecode/plate-common';
 
-import { ELEMENT_COLUMN_GROUP } from '../createLayoutPlugin';
+import { ELEMENT_COLUMN_GROUP } from '../createColumnPlugin';
 import { moveMiddleColumn } from '../transforms';
 import { insertEmptyColumn } from '../transforms/insertEmptyColumn';
 import { setColumnWidth } from '../transforms/setColumnWidth';
