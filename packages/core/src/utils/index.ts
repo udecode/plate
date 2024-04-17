@@ -43,4 +43,5 @@ export * from './pluginRenderLeaf';
 export * from './setDefaultPlugin';
 export * from './setPlatePlugins';
 export * from './withHOC';
+export * from './__tests__/index';
 export * from './misc/index';
