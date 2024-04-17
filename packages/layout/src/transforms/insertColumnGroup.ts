@@ -6,7 +6,7 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 
-import { ELEMENT_COLUMN, ELEMENT_COLUMN_GROUP } from '../createColumnPlugin';
+import { ELEMENT_COLUMN, ELEMENT_COLUMN_GROUP } from '../createLayoutPlugin';
 import { TColumnGroupElement } from '../types';
 
 export const insertColumnGroup = <V extends Value>(editor: PlateEditor<V>) => {

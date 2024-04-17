@@ -1,4 +1,4 @@
-export * from './createColumnPlugin';
+export * from './createLayoutPlugin';
 export * from './transforms';
 export * from './normalizers';
 export * from './column-store';

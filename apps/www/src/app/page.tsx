@@ -23,7 +23,6 @@ const HomeTabs = dynamic(() => import('./_components/home-tabs'));
 const CustomizerDrawer = dynamic(
   () => import('@/components/customizer-drawer')
 );
-
 export default function IndexPage() {
   return (
     <div className="container relative">
@@ -43,7 +42,7 @@ export default function IndexPage() {
           </PageHeaderDescription>
           <section className="flex w-full items-center space-x-4 py-4 md:pb-10">
             <Link href="/docs" className={cn(buttonVariants())}>
-              Get Started
+              Get Started1
             </Link>
             <Link
               target="_blank"

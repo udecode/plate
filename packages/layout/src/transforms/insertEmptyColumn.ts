@@ -7,7 +7,7 @@ import {
   Value,
 } from '@udecode/plate-common';
 
-import { ELEMENT_COLUMN } from '../createColumnPlugin';
+import { ELEMENT_COLUMN } from '../createLayoutPlugin';
 import { TColumnElement } from '../types';
 
 export const insertEmptyColumn = <V extends Value>(

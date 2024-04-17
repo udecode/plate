@@ -5629,22 +5629,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-column@workspace:packages/column":
-  version: 0.0.0-use.local
-  resolution: "@udecode/plate-column@workspace:packages/column"
-  dependencies:
-    "@udecode/plate-common": "workspace:^"
-  peerDependencies:
-    "@udecode/plate-common": ">=31.3.2"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate: ">=0.94.0"
-    slate-history: ">=0.93.0"
-    slate-hyperscript: ">=0.66.0"
-    slate-react: ">=0.99.0"
-  languageName: unknown
-  linkType: soft
-
 "@udecode/plate-combobox@npm:31.0.0, @udecode/plate-combobox@workspace:^, @udecode/plate-combobox@workspace:packages/combobox":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-combobox@workspace:packages/combobox"
@@ -5972,6 +5956,22 @@ __metadata:
 "@udecode/plate-kbd@npm:31.0.0, @udecode/plate-kbd@workspace:^, @udecode/plate-kbd@workspace:packages/kbd":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-kbd@workspace:packages/kbd"
+  dependencies:
+    "@udecode/plate-common": "workspace:^"
+  peerDependencies:
+    "@udecode/plate-common": ">=31.3.2"
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.94.0"
+    slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
+    slate-react: ">=0.99.0"
+  languageName: unknown
+  linkType: soft
+
+"@udecode/plate-layout@workspace:^, @udecode/plate-layout@workspace:packages/layout":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-layout@workspace:packages/layout"
   dependencies:
     "@udecode/plate-common": "workspace:^"
   peerDependencies:
@@ -21336,6 +21336,7 @@ __metadata:
     "@udecode/plate-indent-list": "workspace:^"
     "@udecode/plate-juice": "workspace:^"
     "@udecode/plate-kbd": "workspace:^"
+    "@udecode/plate-layout": "workspace:^"
     "@udecode/plate-line-height": "workspace:^"
     "@udecode/plate-link": "workspace:^"
     "@udecode/plate-list": "workspace:^"

@@ -8,7 +8,7 @@ import {
   Value,
 } from '@udecode/plate-common';
 
-import { ELEMENT_COLUMN } from '../createColumnPlugin';
+import { ELEMENT_COLUMN } from '../createLayoutPlugin';
 import { TColumnElement, TColumnGroupElement } from '../types';
 
 export const setColumnWidth = <V extends Value, N extends TNode>(

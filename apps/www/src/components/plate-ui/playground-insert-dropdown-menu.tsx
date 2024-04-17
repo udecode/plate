@@ -7,7 +7,6 @@ import {
   ELEMENT_CODE_BLOCK,
   insertEmptyCodeBlock,
 } from '@udecode/plate-code-block';
-import { ELEMENT_COLUMN_GROUP, insertColumnGroup } from '@udecode/plate-column';
 import {
   focusEditor,
   insertEmptyElement,
@@ -27,6 +26,7 @@ import {
   KEY_LIST_STYLE_TYPE,
   toggleIndentList,
 } from '@udecode/plate-indent-list';
+import { ELEMENT_COLUMN_GROUP, insertColumnGroup } from '@udecode/plate-layout';
 import { ELEMENT_LINK, triggerFloatingLink } from '@udecode/plate-link';
 import { toggleList } from '@udecode/plate-list';
 import {

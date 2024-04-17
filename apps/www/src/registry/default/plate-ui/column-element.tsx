@@ -1,7 +1,7 @@
 import React from 'react';
 import { cn, withRef } from '@udecode/cn';
-import { TColumnElement } from '@udecode/plate-column';
 import { PlateElement, useElement, withHOC } from '@udecode/plate-common';
+import { TColumnElement } from '@udecode/plate-layout';
 import { ResizableProvider } from '@udecode/plate-resizable';
 import { useReadOnly } from 'slate-react';
 

@@ -14,7 +14,6 @@ import {
   ELEMENT_CODE_LINE,
   ELEMENT_CODE_SYNTAX,
 } from '@udecode/plate-code-block';
-import { ELEMENT_COLUMN, ELEMENT_COLUMN_GROUP } from '@udecode/plate-column';
 import { MARK_COMMENT } from '@udecode/plate-comments';
 import {
   PlateElement,
@@ -34,6 +33,7 @@ import {
 import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
 import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
 import { MARK_KBD } from '@udecode/plate-kbd';
+import { ELEMENT_COLUMN, ELEMENT_COLUMN_GROUP } from '@udecode/plate-layout';
 import { ELEMENT_LINK } from '@udecode/plate-link';
 import {
   ELEMENT_LI,
