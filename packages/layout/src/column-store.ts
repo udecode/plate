@@ -19,23 +19,23 @@ export const useColumnState = () => {
   const columnPath = findNodePath(editor, columnGroupElement);
 
   const setDoubleColumn = () => {
-    setNodes(editor, { layout: '1-1' }, { at: columnPath });
+    setNodes(editor, { layout: [50, 50] }, { at: columnPath });
   };
 
   const setThreeColumn = () => {
-    setNodes(editor, { layout: '1-1-1' }, { at: columnPath });
+    setNodes(editor, { layout: [33, 33, 33] }, { at: columnPath });
   };
 
   const setRightSideDoubleColumn = () => {
-    setNodes(editor, { layout: '3-1' }, { at: columnPath });
+    setNodes(editor, { layout: [70, 30] }, { at: columnPath });
   };
 
   const setLeftSideDoubleColumn = () => {
-    setNodes(editor, { layout: '1-3' }, { at: columnPath });
+    setNodes(editor, { layout: [30, 70] }, { at: columnPath });
   };
 
   const setDoubleSideDoubleColumn = () => {
-    setNodes(editor, { layout: '1-2-1' }, { at: columnPath });
+    setNodes(editor, { layout: [25, 50, 25] }, { at: columnPath });
   };
 
   return {

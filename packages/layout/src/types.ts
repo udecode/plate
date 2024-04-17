@@ -9,6 +9,6 @@ export interface TColumnElement extends TElement {
 export interface TColumnGroupElement extends TElement {
   id?: string;
   type: 'column_group';
-  layout?: '1-1' | '1-1-1' | '3-1' | '1-3' | '1-2-1';
+  layout?: number[];
   children: TColumnElement[];
 }

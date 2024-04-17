@@ -1,4 +1,5 @@
 import {
+  createPathRef,
   getLastChildPath,
   isElement,
   PlateEditor,
@@ -34,39 +35,32 @@ const normalizeColumnHelper = <V extends Value, N extends TColumnGroupElement>(
   editor: PlateEditor<V>,
   entry: TNodeEntry<N>
 ) => {
-  const [node, _] = entry;
+  const [node, path] = entry;
 
   const prevChildrenCnt = node.children.length;
   const currentLayout = node.layout;
+  if (!currentLayout) return;
 
-  // 两栏 => 三栏
-  if (prevChildrenCnt === 2) {
+  const currentChildrenCnt = currentLayout.length;
+
+  const groupPathRef = createPathRef(editor, path);
+
+  if (prevChildrenCnt === 2 && currentChildrenCnt === 3) {
     const lastChildPath = getLastChildPath(entry);
-    setColumnWidth(editor, entry, currentLayout);
 
-    if (currentLayout === '1-1-1') {
-      insertEmptyColumn(editor, {
-        at: lastChildPath,
-        width: '33%',
-      });
-    }
+    insertEmptyColumn(editor, {
+      at: lastChildPath,
+    });
 
-    if (currentLayout === '1-2-1') {
-      insertEmptyColumn(editor, {
-        at: lastChildPath,
-        width: '60%',
-      });
-    }
-  } else if (prevChildrenCnt === 3) {
-    setColumnWidth(editor, entry, currentLayout);
+    setColumnWidth(editor, groupPathRef, currentLayout);
+  }
 
-    // 三栏 => 两栏
-    if (currentLayout === '1-1' || currentLayout === '3-1') {
-      moveMiddleColumn(editor, entry, { direction: 'left' });
-    }
+  if (prevChildrenCnt === 3 && currentChildrenCnt === 2) {
+    moveMiddleColumn(editor, entry, { direction: 'left' });
+    setColumnWidth(editor, groupPathRef, currentLayout);
+  }
 
-    if (currentLayout === '1-3') {
-      moveMiddleColumn(editor, entry, { direction: 'left' });
-    }
+  if (prevChildrenCnt === currentChildrenCnt) {
+    setColumnWidth(editor, groupPathRef, currentLayout);
   }
 };
