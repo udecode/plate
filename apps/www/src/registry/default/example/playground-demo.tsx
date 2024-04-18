@@ -325,7 +325,7 @@ export const usePlaygroundPlugins = ({
           createDeserializeDocxPlugin({ enabled: !!enabled.deserializeDocx }),
           createDeserializeMdPlugin({ enabled: !!enabled.deserializeMd }),
           createJuicePlugin({ enabled: !!enabled.juice }),
-          createColumnPlugin(),
+          createColumnPlugin({ enabled: !!enabled.column }),
         ],
         {
           components,
