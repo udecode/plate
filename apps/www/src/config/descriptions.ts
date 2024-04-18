@@ -56,6 +56,7 @@ export const descriptions: Record<string, string> = {
   [ELEMENT_IMAGE]: 'Embed images into your document.',
   [ELEMENT_LINK]: 'Insert and manage hyperlinks.',
   [ELEMENT_TOGGLE]: 'Add toggles to your document.',
+  column: 'Add column plugins',
   heading: 'Organize your document with up to 6 headings.',
   list: 'Organize nestable items in a bulleted or numbered list.',
   [ELEMENT_MEDIA_EMBED]:

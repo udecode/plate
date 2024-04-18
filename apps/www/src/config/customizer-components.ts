@@ -244,6 +244,14 @@ export const customizerComponents = {
     title: 'Toggle',
     href: '/docs/components/toggle',
   },
+  columnGroupElement: {
+    title: 'ColumnGroup',
+    href: '/docs/components/column-group',
+  },
+  columnElement: {
+    title: 'Column',
+    href: '/docs/components/column',
+  },
   toggleToolbarButton: {
     title: 'Toggle Toolbar Button',
     href: '/docs/components/toggle-toolbar-button',

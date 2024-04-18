@@ -64,6 +64,7 @@ export const customizerList = [
       customizerItems[ELEMENT_IMAGE],
       customizerItems[ELEMENT_LINK],
       customizerItems[ELEMENT_TOGGLE],
+      customizerItems.column,
       customizerItems.heading,
       customizerItems.list,
       customizerItems[ELEMENT_MEDIA_EMBED],
@@ -204,6 +205,7 @@ export const orderedPluginKeys = [
 
 export const allPlugins = customizerList.flatMap((group) => group.children);
 
+console.log(allPlugins, 'ff');
 export const allComponents = uniqBy(
   allPlugins.flatMap((plugin) => plugin.components ?? []),
   'id'

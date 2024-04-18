@@ -9,11 +9,11 @@ import { Button } from './button';
 import { Popover, PopoverAnchor, PopoverContent } from './popover';
 import { Separator } from './separator';
 
-export interface LayoutToolbarPopoverProps {}
+export interface ColumnToolbarPopoverProps {}
 
-export function LayoutToolbarPopover({
+export function ColumnToolbarPopover({
   children,
-}: React.PropsWithChildren<LayoutToolbarPopoverProps>) {
+}: React.PropsWithChildren<ColumnToolbarPopoverProps>) {
   const readOnly = useReadOnly();
 
   const {
