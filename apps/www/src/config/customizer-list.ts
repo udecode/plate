@@ -205,7 +205,6 @@ export const orderedPluginKeys = [
 
 export const allPlugins = customizerList.flatMap((group) => group.children);
 
-console.log(allPlugins, 'ff');
 export const allComponents = uniqBy(
   allPlugins.flatMap((plugin) => plugin.components ?? []),
   'id'
