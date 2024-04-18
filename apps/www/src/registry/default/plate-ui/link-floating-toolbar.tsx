@@ -71,32 +71,35 @@ export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
   if (hidden) return null;
 
   const input = (
-    <div className="flex w-[330px] flex-col">
-      <form>
-        <div className="flex items-center">
-          <div className="flex items-center pl-3 text-muted-foreground">
-            <Icons.link className="size-4" />
-          </div>
-  
-          <FloatingLinkUrlInput
-            className={inputVariants({ variant: 'ghost', h: 'sm' })}
-            placeholder="Paste link"
-          />
+    <div
+      className="flex w-[330px] flex-col"
+      onKeyDownCapture={(e) => {
+        if (e.key === "Enter" || e.keyCode === 13) {
+          e.preventDefault();
+        }
+      }}
+    >
+      <div className="flex items-center">
+        <div className="flex items-center pl-3 text-muted-foreground">
+          <Icons.link className="size-4" />
         </div>
-  
-        <Separator />
-  
-        <div className="flex items-center">
-          <div className="flex items-center pl-3 text-muted-foreground">
-            <Icons.text className="size-4" />
-          </div>
-          <input
-            className={inputVariants({ variant: 'ghost', h: 'sm' })}
-            placeholder="Text to display"
-            {...textInputProps}
-          />
+
+        <FloatingLinkUrlInput
+          className={inputVariants({ variant: "ghost", h: "sm" })}
+          placeholder="Paste link"
+        />
+      </div>
+      <Separator />
+      <div className="flex items-center">
+        <div className="flex items-center pl-3 text-muted-foreground">
+          <Icons.text className="size-4" />
         </div>
-      </form>
+        <input
+          className={inputVariants({ variant: "ghost", h: "sm" })}
+          placeholder="Text to display"
+          {...textInputProps}
+        />
+      </div>
     </div>
   );
 
