@@ -72,29 +72,31 @@ export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
 
   const input = (
     <div className="flex w-[330px] flex-col">
-      <div className="flex items-center">
-        <div className="flex items-center pl-3 text-muted-foreground">
-          <Icons.link className="size-4" />
+      <form>
+        <div className="flex items-center">
+          <div className="flex items-center pl-3 text-muted-foreground">
+            <Icons.link className="size-4" />
+          </div>
+  
+          <FloatingLinkUrlInput
+            className={inputVariants({ variant: 'ghost', h: 'sm' })}
+            placeholder="Paste link"
+          />
         </div>
-
-        <FloatingLinkUrlInput
-          className={inputVariants({ variant: 'ghost', h: 'sm' })}
-          placeholder="Paste link"
-        />
-      </div>
-
-      <Separator />
-
-      <div className="flex items-center">
-        <div className="flex items-center pl-3 text-muted-foreground">
-          <Icons.text className="size-4" />
+  
+        <Separator />
+  
+        <div className="flex items-center">
+          <div className="flex items-center pl-3 text-muted-foreground">
+            <Icons.text className="size-4" />
+          </div>
+          <input
+            className={inputVariants({ variant: 'ghost', h: 'sm' })}
+            placeholder="Text to display"
+            {...textInputProps}
+          />
         </div>
-        <input
-          className={inputVariants({ variant: 'ghost', h: 'sm' })}
-          placeholder="Text to display"
-          {...textInputProps}
-        />
-      </div>
+      </form>
     </div>
   );
 
