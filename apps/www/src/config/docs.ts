@@ -121,6 +121,11 @@ export const docsConfig: DocsConfig = {
           label: 'Leaf',
         },
         {
+          title: 'Column',
+          href: '/docs/column',
+          label: 'Element',
+        },
+        {
           title: 'Drag & Drop',
           href: '/docs/dnd',
         },

@@ -1,0 +1,126 @@
+---
+title: Column
+description: Add Column to your document1.
+docs:
+  - route: /docs/components/toggle-toolbar-button
+    title: Toggle Button
+---
+
+<ComponentPreview name="playground-demo" id="column" />
+
+<PackageInfo>
+
+## Features
+
+- Add Column to your document1.
+  - the border will hidden When readOnly is true.
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-layout
+```
+
+## Usage
+
+```tsx
+// ...
+import { createColumnPlugin } from '@udecode/plate-layout';
+
+const plugins = [
+  // ...otherPlugins,
+  createColumnPlugin(),
+];
+```
+
+## API
+
+### createColumnPlugin
+
+### insertColumnGroup1
+
+Insert an columnGroup with two empty column.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+</APIParameters>
+
+### insertEmptyColumn
+
+Insert an Column. You can set the with by options.width default is "33%"
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance1.
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions<V> & { width?: string }">
+    An array of element ids.
+  </APIItem>
+  <APIItem name="force" type="boolean" optional>
+    Set to true if you want to expand all toggles regardless of their current
+    state. Set to false if you want to collapse all toggles regardless of their
+    current state.
+  </APIItem>
+</APIParameters>
+
+## API Components
+
+### useToggleToolbarButtonState
+
+<APIReturns>
+  <APIItem name="pressed" type="boolean">
+    A boolean indicating whether the button is pressed or not.
+  </APIItem>
+</APIReturns>
+
+### useToggleToolbarButton
+
+A behavior hook for the toggle toolbar button.
+
+<APIState>
+  <APIItem name="pressed" type="boolean">
+    A boolean indicating whether the button is pressed or not.
+  </APIItem>
+</APIState>
+
+<APIReturns>
+  <APIItem name="props" type="object">
+    <APISubList>
+      <APISubListItem parent="props" name="pressed" type="boolean">
+        A boolean indicating whether the button is pressed or not.
+      </APISubListItem>
+      <APISubListItem parent="props" name="onClick" type="function">
+        A callback function to handle the click event of the button. It toggles
+        the toggle of the specified node type in the editor and focuses the
+        editor.
+      </APISubListItem>
+      <APISubListItem parent="props" name="onMouseDown" type="function">
+        A callback function to handle the mouse down event of the button. It
+        just prevents default so that focus is not lost when clicking on the
+        button.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+
+### useToggleButtonState
+
+<APIParameters>
+  <APIItem name="toggleId" type="string">
+    The id of the toggle element.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="toggleId" type="string">
+    The id of the toggle element.
+  </APIItem>
+  <APIItem name="open" type="boolean">
+    A boolean indicating whether the toggle is open (expanded) or not
+    (collapsed).
+  </APIItem>
+</APIReturns>
+
