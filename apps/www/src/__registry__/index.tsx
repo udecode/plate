@@ -67,6 +67,20 @@ export const Index: Record<string, any> = {
       files: ['registry/default/plate-ui/code-block-combobox.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/code-block-combobox')),
     },
+    'column-element': {
+      name: 'column-element',
+      type: 'components:plate-ui',
+      registryDependencies: ["command","resizable"],
+      files: ['registry/default/plate-ui/column-element.tsx','registry/default/plate-ui/column-group-element.tsx'],
+      component: React.lazy(() => import('@/registry/default/plate-ui/column-element')),
+    },
+    'column-group-element': {
+      name: 'column-group-element',
+      type: 'components:plate-ui',
+      registryDependencies: ["command","resizable"],
+      files: ['registry/default/plate-ui/column-group-element.tsx'],
+      component: React.lazy(() => import('@/registry/default/plate-ui/column-group-element')),
+    },
     'color-dropdown-menu': {
       name: 'color-dropdown-menu',
       type: 'components:plate-ui',
