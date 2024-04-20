@@ -1,6 +1,11 @@
 import React from 'react';
-import { useRemoveNodeButton } from '@udecode/plate-common';
-import { useColumnState, useDebouncePopoverOpen } from '@udecode/plate-layout';
+import { useElement, useRemoveNodeButton } from '@udecode/plate-common';
+import {
+  ELEMENT_COLUMN,
+  TColumnElement,
+  useColumnState,
+  useDebouncePopoverOpen,
+} from '@udecode/plate-layout';
 import { useReadOnly } from 'slate-react';
 
 import { Icons, iconVariants } from '@/components/icons';
@@ -17,13 +22,14 @@ export function ColumnToolbarPopover({
   const readOnly = useReadOnly();
 
   const {
-    element,
     setDoubleColumn,
     setDoubleSideDoubleColumn,
     setLeftSideDoubleColumn,
     setRightSideDoubleColumn,
     setThreeColumn,
   } = useColumnState();
+
+  const element = useElement<TColumnElement>(ELEMENT_COLUMN);
 
   const { props: buttonProps } = useRemoveNodeButton({ element });
 

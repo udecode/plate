@@ -333,6 +333,27 @@ export const Index: Record<string, any> = {
       files: ['registry/default/plate-ui/comment-toolbar-button.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/comment-toolbar-button')),
     },
+    'column-group-element': {
+      name: 'column-group-element',
+      type: 'components:plate-ui',
+      registryDependencies: [],
+      files: ['registry/default/plate-ui/column-group-element.tsx'],
+      component: React.lazy(() => import('@/registry/default/plate-ui/column-group-element')),
+    },
+    'column-element': {
+      name: 'column-element',
+      type: 'components:plate-ui',
+      registryDependencies: [],
+      files: ['registry/default/plate-ui/column-element.tsx'],
+      component: React.lazy(() => import('@/registry/default/plate-ui/column-element')),
+    },
+    'column-toolbar-popover': {
+      name: 'column-toolbar-popover',
+      type: 'components:plate-ui',
+      registryDependencies: [],
+      files: ['registry/default/plate-ui/column-toolbar-popover.tsx'],
+      component: React.lazy(() => import('@/registry/default/plate-ui/column-toolbar-popover')),
+    },
     'cursor-overlay': {
       name: 'cursor-overlay',
       type: 'components:plate-ui',
