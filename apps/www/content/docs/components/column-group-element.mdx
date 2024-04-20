@@ -1,10 +1,12 @@
 ---
-title: Toggle Element
-description: Add Toggles to your document.
+title: Column Group Element
+description: Add Column Group component to your document.
 component: true
 docs:
-  - route: /docs/toggle
-    title: Toggle
+  - route: /docs/column
+    title: Column
+  - route: /docs/components/column-element
+    title: Column Element
 ---
 
 ## Installation
@@ -18,7 +20,7 @@ docs:
 <TabsContent value="cli">
 
 ```bash
-npx @udecode/plate-ui@latest add toggle-element
+npx @udecode/plate-ui@latest add column-group-element
 ```
 
 </TabsContent>
@@ -31,8 +33,10 @@ npx @udecode/plate-ui@latest add toggle-element
 
 Install the following dependencies:
 
-- [Toggle](/docs/toggle)
-- [Toolbar](/docs/components/toolbar)
+- [Layout](/docs/column)
+- [Button](/docs/components/button)
+- [Popover](/docs/components/popover)
+- [Separator](/docs/components/separator)
 
 </Step>
 
@@ -42,7 +46,7 @@ Copy and paste the following code into your project.
 
 </Step>
 
-<ComponentSource name="toggle-element" />
+<ComponentSource name="column-group-element" />
 
 <Step>
 
@@ -58,6 +62,6 @@ Update the import paths to match your project setup.
 
 ## Examples
 
-<ComponentPreview name="playground-demo" id="toggle" />
+<ComponentPreview name="playground-demo" id="column" />
 
 <ComponentSource src="../../templates/plate-playground-template/src/lib/plate/plate-plugins.ts" />
