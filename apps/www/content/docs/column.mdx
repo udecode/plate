@@ -12,14 +12,16 @@ docs:
 
 ## Features
 
-- Add Column to your document1.
-  - the border will hidden When readOnly is true.
+- Add Column to your document.
+- the border will hidden when `readOnly` is true
+
 </PackageInfo>
 
 ## Installation
 
 ```bash
 npm install @udecode/plate-layout
+
 ```
 
 ## Usage
@@ -38,7 +40,9 @@ const plugins = [
 
 ### createColumnPlugin
 
-### insertColumnGroup1
+Add Column Plugin to your document.
+
+### insertColumnGroup
 
 Insert an columnGroup with two empty column.
 
@@ -50,77 +54,78 @@ Insert an columnGroup with two empty column.
 
 ### insertEmptyColumn
 
-Insert an Column. You can set the with by options.width default is "33%"
+Insert an empty column. You can set the with by options.width default is "33%"
 
 <APIParameters>
   <APIItem name="editor" type="TEditor">
-    The editor instance1.
+    The editor instance.
   </APIItem>
   <APIItem name="options" type="InsertNodesOptions<V> & { width?: string }">
-    An array of element ids.
+    InsertNodesOptions and with to set the insert behavior.
   </APIItem>
-  <APIItem name="force" type="boolean" optional>
-    Set to true if you want to expand all toggles regardless of their current
-    state. Set to false if you want to collapse all toggles regardless of their
-    current state.
+</APIParameters>
+
+### moveMiddleColumn
+
+Move the middle column to the left of right by options.direction. if the middle node is empty return false and remove it.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="nodeEntry" type="TNodeEntry<N>">
+    The node entry of `column` element
+  </APIItem>
+  <APIItem name="options" type="{ direction: 'left' | 'right' }">
+    Control the middle column move to
+  </APIItem>
+</APIParameters>
+
+### setColumnWidth
+
+Set the width of `ColumnGroup`'s children.In general you don't need to use this function,Since we will call this function automatically when the property of `layout` changed.
+If you want to set the `layout` use setNodes.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="groupPathRef" type="PathRef">
+    the path ref of `ColumnGoup`
+  </APIItem>
+  <APIItem name="layout" type="number">
+    The element property of `layout`
   </APIItem>
 </APIParameters>
 
 ## API Components
 
-### useToggleToolbarButtonState
+### useColumnState
 
 <APIReturns>
-  <APIItem name="pressed" type="boolean">
-    A boolean indicating whether the button is pressed or not.
+  <APIItem name="setDoubleColumn" type="function">
+    Call this function make the `ColumnGroup`'s children, column bisects the
+    parent element space.This nature is set the `layout` property of
+    `ColumnGroup` to `[50,50]`
+  </APIItem>
+  <APIItem name="setThreeColumn" type="function">
+    Set the `layout` property of `ColumnGroup` to `[33, 33, 33]`
+  </APIItem>
+  <APIItem name="setRightSideDoubleColumn" type="function">
+    Set the `layout` property of `ColumnGroup` to `[70,30]`
+  </APIItem>
+  <APIItem name="setLeftSideDoubleColumn" type="function">
+    Set the `layout` property of `ColumnGroup` to `[30,70]`
+  </APIItem>
+  <APIItem name="setDoubleSideDoubleColumn" type="function">
+    Set the `layout` property of `ColumnGroup` to `[25, 50, 25]`
   </APIItem>
 </APIReturns>
 
-### useToggleToolbarButton
-
-A behavior hook for the toggle toolbar button.
-
-<APIState>
-  <APIItem name="pressed" type="boolean">
-    A boolean indicating whether the button is pressed or not.
-  </APIItem>
-</APIState>
+### useDebouncePopoverOpen
 
 <APIReturns>
-  <APIItem name="props" type="object">
-    <APISubList>
-      <APISubListItem parent="props" name="pressed" type="boolean">
-        A boolean indicating whether the button is pressed or not.
-      </APISubListItem>
-      <APISubListItem parent="props" name="onClick" type="function">
-        A callback function to handle the click event of the button. It toggles
-        the toggle of the specified node type in the editor and focuses the
-        editor.
-      </APISubListItem>
-      <APISubListItem parent="props" name="onMouseDown" type="function">
-        A callback function to handle the mouse down event of the button. It
-        just prevents default so that focus is not lost when clicking on the
-        button.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
+
+<APIItem type="boolean">Control the `popover` is open or not</APIItem>
+
 </APIReturns>
-
-### useToggleButtonState
-
-<APIParameters>
-  <APIItem name="toggleId" type="string">
-    The id of the toggle element.
-  </APIItem>
-</APIParameters>
-
-<APIReturns>
-  <APIItem name="toggleId" type="string">
-    The id of the toggle element.
-  </APIItem>
-  <APIItem name="open" type="boolean">
-    A boolean indicating whether the toggle is open (expanded) or not
-    (collapsed).
-  </APIItem>
-</APIReturns>
-

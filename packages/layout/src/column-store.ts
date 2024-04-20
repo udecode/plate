@@ -5,16 +5,14 @@ import {
   useElement,
 } from '@udecode/plate-common';
 
-import { ELEMENT_COLUMN, ELEMENT_COLUMN_GROUP } from './createColumnPlugin';
-import { TColumnElement, TColumnGroupElement } from './types';
+import { ELEMENT_COLUMN_GROUP } from './createColumnPlugin';
+import { TColumnGroupElement } from './types';
 
 export const useColumnState = () => {
   const editor = useEditorRef();
 
   const columnGroupElement =
     useElement<TColumnGroupElement>(ELEMENT_COLUMN_GROUP);
-
-  const element = useElement<TColumnElement>(ELEMENT_COLUMN);
 
   const columnPath = findNodePath(editor, columnGroupElement);
 
@@ -39,8 +37,6 @@ export const useColumnState = () => {
   };
 
   return {
-    element,
-    columnGroupElement,
     setDoubleColumn,
     setDoubleSideDoubleColumn,
     setLeftSideDoubleColumn,
