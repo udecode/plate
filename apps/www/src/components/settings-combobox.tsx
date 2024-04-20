@@ -40,6 +40,7 @@ const categories = [
       customizerPlugins.blockselection,
       customizerPlugins.comment,
       customizerPlugins.cursoroverlay,
+      customizerPlugins.column,
       customizerPlugins.deserializecsv,
       customizerPlugins.deserializedocx,
       customizerPlugins.deserializehtml,

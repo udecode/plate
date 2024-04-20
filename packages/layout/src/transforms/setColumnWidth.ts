@@ -4,7 +4,6 @@ import {
   isElement,
   PlateEditor,
   setNodes,
-  TNode,
   Value,
 } from '@udecode/plate-common';
 import { PathRef } from 'slate';
@@ -12,7 +11,7 @@ import { PathRef } from 'slate';
 import { ELEMENT_COLUMN } from '../createColumnPlugin';
 import { TColumnElement, TColumnGroupElement } from '../types';
 
-export const setColumnWidth = <V extends Value, N extends TNode>(
+export const setColumnWidth = <V extends Value>(
   editor: PlateEditor<V>,
   groupPathRef: PathRef,
   layout: Required<TColumnGroupElement>['layout']

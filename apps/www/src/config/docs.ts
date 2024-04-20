@@ -740,6 +740,8 @@ export const docsConfig: DocsConfig = {
         customizerComponents.commentToolbarButton,
         customizerComponents.commentsPopover,
         customizerComponents.cursorOverlay,
+        customizerComponents.columnGroupElement,
+        customizerComponents.columnElement,
         customizerComponents.dialog,
         customizerComponents.draggable,
         customizerComponents.dropdownMenu,
