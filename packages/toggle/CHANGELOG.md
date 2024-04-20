@@ -1,5 +1,11 @@
 # @udecode/plate-toggle
 
+## 31.4.0
+
+### Patch Changes
+
+- [#3118](https://github.com/udecode/plate/pull/3118) by [@felixfeng33](https://github.com/felixfeng33) – Missing exports
+
 ## 31.1.0
 
 ## 31.0.0
