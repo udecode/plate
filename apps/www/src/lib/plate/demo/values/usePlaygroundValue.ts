@@ -9,6 +9,7 @@ import { alignValue } from './alignValue';
 import { autoformatValue } from './autoformatValue';
 import { basicElementsValue } from './basicElementsValue';
 import { basicMarksValue } from './basicMarksValue';
+import { columnValue } from './columnValue';
 import { commentsValue } from './commentsValue';
 import { cursorOverlayValue } from './cursorOverlayValue';
 import { deserializeCsvValue } from './deserializeCsvValue';
@@ -76,6 +77,7 @@ export const usePlaygroundValue = (id?: ValueId) => {
     if (enabled.list) value.push(...listValue);
     if (enabled.img || enabled.media_embed) value.push(...mediaValue);
     if (enabled.table) value.push(...tableValue);
+    if (enabled.column) value.push(...columnValue);
     if (enabled.toggle) value.push(...toggleValue);
 
     // Functionalities
@@ -129,6 +131,7 @@ export const usePlaygroundValue = (id?: ValueId) => {
     enabled.table,
     enabled.toggle,
     enabled.trailingBlock,
+    enabled.column,
     valueId,
   ]);
 };

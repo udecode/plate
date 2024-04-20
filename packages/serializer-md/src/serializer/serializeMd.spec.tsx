@@ -30,7 +30,7 @@ import {
 } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { editorValueMock } from './data';
+import { editorValueMock } from './__tests__/data';
 import { serializeMd } from './serializeMd';
 
 jsx;

@@ -51,6 +51,7 @@ import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
 import { KEY_INDENT } from '@udecode/plate-indent';
 import { KEY_LIST_STYLE_TYPE } from '@udecode/plate-indent-list';
 import { MARK_KBD } from '@udecode/plate-kbd';
+import { ELEMENT_COLUMN_GROUP } from '@udecode/plate-layout';
 import { KEY_LINE_HEIGHT } from '@udecode/plate-line-height';
 import { ELEMENT_LINK } from '@udecode/plate-link';
 import { ELEMENT_TODO_LI } from '@udecode/plate-list';
@@ -67,6 +68,8 @@ import { KEY_TABBABLE } from '@udecode/plate-tabbable';
 import { ELEMENT_TABLE } from '@udecode/plate-table';
 import { ELEMENT_TOGGLE } from '@udecode/plate-toggle';
 import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
+
+import { columnValue } from '@/lib/plate/demo/values/columnValue';
 
 export type ValueId = keyof typeof customizerPlugins | 'tableMerge';
 
@@ -339,6 +342,13 @@ export const customizerPlugins = {
     value: toggleValue,
     route: '/docs/toggle',
     plugins: [ELEMENT_TOGGLE],
+  },
+  column: {
+    id: 'column',
+    label: 'Column',
+    value: columnValue,
+    route: '/docs/column',
+    plugins: [ELEMENT_COLUMN_GROUP],
   },
   trailingblock: {
     id: 'trailingblock',

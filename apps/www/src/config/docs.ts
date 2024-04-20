@@ -121,6 +121,11 @@ export const docsConfig: DocsConfig = {
           label: 'Leaf',
         },
         {
+          title: 'Column',
+          href: '/docs/column',
+          label: 'Element',
+        },
+        {
           title: 'Drag & Drop',
           href: '/docs/dnd',
         },
@@ -735,6 +740,8 @@ export const docsConfig: DocsConfig = {
         customizerComponents.commentToolbarButton,
         customizerComponents.commentsPopover,
         customizerComponents.cursorOverlay,
+        customizerComponents.columnGroupElement,
+        customizerComponents.columnElement,
         customizerComponents.dialog,
         customizerComponents.draggable,
         customizerComponents.dropdownMenu,

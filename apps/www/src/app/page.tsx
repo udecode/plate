@@ -23,7 +23,6 @@ const HomeTabs = dynamic(() => import('./_components/home-tabs'));
 const CustomizerDrawer = dynamic(
   () => import('@/components/customizer-drawer')
 );
-
 export default function IndexPage() {
   return (
     <div className="container relative">

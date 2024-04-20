@@ -140,7 +140,7 @@ export default async function DocPage({ params }: DocPageProps) {
             </p>
           )}
         </div>
-        {doc.links ? (
+        {doc.links || doc.docs ? (
           <div className="flex flex-wrap items-center gap-1 pt-4">
             {doc.links?.doc && (
               <Link
