@@ -25,7 +25,7 @@ export const withMarkTable = <
 
     const matchesCell = getTableGridAbove(editor, { format: 'cell' });
 
-    if (matchesCell.length === 0) return addMark(key, value);
+    if (matchesCell.length <= 1) return addMark(key, value);
 
     matchesCell.forEach(([cell, cellPath]) => {
       setNodes<TElement>(
