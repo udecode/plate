@@ -23,6 +23,7 @@ import { trailingBlockPlugin } from '@/plate/demo/plugins/trailingBlockPlugin';
 import { MENTIONABLES } from '@/plate/demo/values/mentionables';
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
 import { cn } from '@udecode/cn';
+import { createMarkAffinityPlugin } from '@udecode/plate-affinity-marks';
 import { createAlignPlugin } from '@udecode/plate-alignment';
 import { createAutoformatPlugin } from '@udecode/plate-autoformat';
 import {
@@ -191,6 +192,17 @@ export const usePlaygroundPlugins = ({
           createItalicPlugin({ enabled: !!enabled.italic }),
           createUnderlinePlugin({ enabled: !!enabled.underline }),
           createStrikethroughPlugin({ enabled: !!enabled.strikethrough }),
+          createMarkAffinityPlugin({
+            options: {
+              pressRightArrowAtBoundary: (
+                editor,
+                currentEndLeafEntry,
+                nextLeafEntry
+              ) => {
+                console.log(editor, 'fj');
+              },
+            },
+          }),
           createCodePlugin({ enabled: !!enabled.code }),
           createSubscriptPlugin({ enabled: !!enabled.subscript }),
           createSuperscriptPlugin({ enabled: !!enabled.superscript }),

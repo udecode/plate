@@ -50,6 +50,7 @@
     "@radix-ui/react-toolbar": "^1.0.4",
     "@radix-ui/react-tooltip": "^1.0.7",
     "@udecode/cn": "workspace:^",
+    "@udecode/plate-affinity-marks": "workspace:^",
     "@udecode/plate-alignment": "workspace:^",
     "@udecode/plate-autoformat": "workspace:^",
     "@udecode/plate-basic-elements": "workspace:^",
