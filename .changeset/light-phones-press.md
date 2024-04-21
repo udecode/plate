@@ -2,4 +2,4 @@
 "@udecode/plate-table": patch
 ---
 
-Fix add table mark
+Fix: adding marks in a cell is applying to the whole cell
