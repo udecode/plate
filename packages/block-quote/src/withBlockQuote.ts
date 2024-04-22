@@ -2,7 +2,7 @@ import { PlateEditor, TElement, Value } from '@udecode/plate-common';
 
 import { ELEMENT_BLOCKQUOTE } from './createBlockquotePlugin';
 
-export const withBlockQuote = <
+export const withBlockquote = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
 >(

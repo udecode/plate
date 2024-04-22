@@ -4,7 +4,7 @@ import {
   onKeyDownToggleElement,
 } from '@udecode/plate-common';
 
-import { withBlockQuote } from './withBlockQuote';
+import { withBlockquote } from './withBlockquote';
 
 export const ELEMENT_BLOCKQUOTE = 'blockquote';
 
@@ -15,7 +15,7 @@ export const ELEMENT_BLOCKQUOTE = 'blockquote';
 export const createBlockquotePlugin = createPluginFactory<HotkeyPlugin>({
   key: ELEMENT_BLOCKQUOTE,
   isElement: true,
-  withOverrides: withBlockQuote,
+  withOverrides: withBlockquote,
   deserializeHtml: {
     rules: [
       {
