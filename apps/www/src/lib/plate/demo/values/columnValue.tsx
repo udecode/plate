@@ -9,8 +9,12 @@ export const columnValue: any = (
     <hh2>🌻 Column</hh2>
     <hp>Create column and the border will hidden when viewing</hp>
     <hcolumngroup layout={[50, 50]}>
-      <hcolumn>left</hcolumn>
-      <hcolumn>right</hcolumn>
+      <hcolumn>
+        <hp>left</hp>
+      </hcolumn>
+      <hcolumn>
+        <hp>right</hp>
+      </hcolumn>
     </hcolumngroup>
   </fragment>
 );

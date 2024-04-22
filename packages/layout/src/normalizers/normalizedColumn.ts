@@ -21,13 +21,12 @@ export const normalizeColumn = <V extends Value, N extends TNode>(
 
   return function (entry: TNodeEntry<N>) {
     if (isElement(entry[0]) && entry[0].type === ELEMENT_COLUMN_GROUP) {
-      normalizeColumnHelper(
+      return normalizeColumnHelper(
         editor,
         entry as unknown as TNodeEntry<TColumnGroupElement>
       );
     }
-
-    normalizeNode(entry);
+    return normalizeNode(entry);
   };
 };
 
