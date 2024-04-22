@@ -5,3 +5,5 @@
 export * from './normalizeFirstIndentListStart';
 export * from './normalizeIndentListNotIndented';
 export * from './normalizeIndentListStart';
+export * from './deleteBackwardIndentList';
+export * from './shouldMergeNodesRemovePrevNodeIndentList';
