@@ -1,5 +1,11 @@
 # @udecode/plate-layout
 
+## 31.4.2
+
+### Patch Changes
+
+- [#3142](https://github.com/udecode/plate/pull/3142) by [@felixfeng33](https://github.com/felixfeng33) – fix: `normalizeNode`
+
 ## 31.4.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 31.4.1
+
+### Patch Changes
+
+- [#3138](https://github.com/udecode/plate/pull/3138) by [@felixfeng33](https://github.com/felixfeng33) – Fix: adding marks in a cell is applying to the whole cell
+
 ## 31.4.0
 
 ### Patch Changes
