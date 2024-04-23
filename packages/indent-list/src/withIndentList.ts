@@ -13,8 +13,11 @@ import {
   IndentListPlugin,
   KEY_LIST_STYLE_TYPE,
 } from './createIndentListPlugin';
-import { deleteBackwardIndentList } from './delete-backward/deleteBackwardIndentList';
 import { normalizeIndentList } from './normalizeIndentList';
+import {
+  deleteBackwardIndentList,
+  shouldMergeNodesRemovePrevNodeIndentList,
+} from './normalizers';
 import { normalizeIndentListStart } from './normalizers/normalizeIndentListStart';
 import { getNextIndentList } from './queries/getNextIndentList';
 import { getPreviousIndentList } from './queries/getPreviousIndentList';
@@ -34,6 +37,14 @@ export const withIndentList = <
   editor.normalizeNode = normalizeIndentList<Value>(editor, options);
 
   editor.deleteBackward = deleteBackwardIndentList(editor);
+
+  /**
+   * To prevent users without upgraded Slate version from experiencing anomalies.
+   */
+  if (!!editor.shouldMergeNodesRemovePrevNode) {
+    editor.shouldMergeNodesRemovePrevNode =
+      shouldMergeNodesRemovePrevNodeIndentList(editor);
+  }
 
   editor.apply = (operation) => {
     const { path } = operation as any;
