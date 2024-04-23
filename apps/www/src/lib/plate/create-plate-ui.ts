@@ -33,6 +33,7 @@ import {
 import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
 import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
 import { MARK_KBD } from '@udecode/plate-kbd';
+import { ELEMENT_COLUMN, ELEMENT_COLUMN_GROUP } from '@udecode/plate-layout';
 import { ELEMENT_LINK } from '@udecode/plate-link';
 import {
   ELEMENT_LI,
@@ -56,6 +57,8 @@ import { CodeBlockElement } from '@/registry/default/plate-ui/code-block-element
 import { CodeLeaf } from '@/registry/default/plate-ui/code-leaf';
 import { CodeLineElement } from '@/registry/default/plate-ui/code-line-element';
 import { CodeSyntaxLeaf } from '@/registry/default/plate-ui/code-syntax-leaf';
+import { ColumnElement } from '@/registry/default/plate-ui/column-element';
+import { ColumnGroupElement } from '@/registry/default/plate-ui/column-group-element';
 import { CommentLeaf } from '@/registry/default/plate-ui/comment-leaf';
 import { ExcalidrawElement } from '@/registry/default/plate-ui/excalidraw-element';
 import { HeadingElement } from '@/registry/default/plate-ui/heading-element';
@@ -116,6 +119,8 @@ export const createPlateUI = (
     [ELEMENT_TOGGLE]: ToggleElement,
     [ELEMENT_TR]: TableRowElement,
     [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
+    [ELEMENT_COLUMN_GROUP]: ColumnGroupElement,
+    [ELEMENT_COLUMN]: ColumnElement,
     [MARK_BOLD]: withProps(PlateLeaf, { as: 'strong' }),
     [MARK_CODE]: CodeLeaf,
     [MARK_HIGHLIGHT]: HighlightLeaf,

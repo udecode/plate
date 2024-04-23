@@ -6,7 +6,7 @@ jsx;
 
 export const toggleValue: any = (
   <fragment>
-    <hh2>Toggle</hh2>
+    <hh2>🦚 Toggle</hh2>
     <hp>Create toggles with multiple levels of indentation</hp>
     <htoggle id="dlks89">Level 1 toggle</htoggle>
     <hp indent={1}>Inside level 1 toggle</hp>

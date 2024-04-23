@@ -1502,13 +1502,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@excalidraw/excalidraw@npm:0.16.1":
-  version: 0.16.1
-  resolution: "@excalidraw/excalidraw@npm:0.16.1"
+"@excalidraw/excalidraw@npm:0.16.4":
+  version: 0.16.4
+  resolution: "@excalidraw/excalidraw@npm:0.16.4"
   peerDependencies:
     react: ^17.0.2 || ^18.2.0
     react-dom: ^17.0.2 || ^18.2.0
-  checksum: 10c0/f38b67c94b0e2d94a159832d3724e31fd08f270bbd5f8606ba754337c6ba2e9906b2ba38b98afdd37e94921771646461497106e9db37e143ef39ad9f3ca6c6b4
+  checksum: 10c0/a6ce3797b3a0a10e521422ef076757d75ed71a0510d8389d7dab6a8aef4c560e06fdaa415ed3892faa8c221e915a9165f3f05649c98975e855365cf607341c50
   languageName: node
   linkType: hard
 
@@ -5789,7 +5789,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate-excalidraw@workspace:packages/excalidraw"
   dependencies:
-    "@excalidraw/excalidraw": "npm:0.16.1"
+    "@excalidraw/excalidraw": "npm:0.16.4"
     "@udecode/plate-common": "workspace:^"
   peerDependencies:
     "@udecode/plate-common": ">=31.3.2"
@@ -5956,6 +5956,22 @@ __metadata:
 "@udecode/plate-kbd@npm:31.0.0, @udecode/plate-kbd@workspace:^, @udecode/plate-kbd@workspace:packages/kbd":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-kbd@workspace:packages/kbd"
+  dependencies:
+    "@udecode/plate-common": "workspace:^"
+  peerDependencies:
+    "@udecode/plate-common": ">=31.3.2"
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.94.0"
+    slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
+    slate-react: ">=0.99.0"
+  languageName: unknown
+  linkType: soft
+
+"@udecode/plate-layout@workspace:^, @udecode/plate-layout@workspace:packages/layout":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-layout@workspace:packages/layout"
   dependencies:
     "@udecode/plate-common": "workspace:^"
   peerDependencies:
@@ -21320,6 +21336,7 @@ __metadata:
     "@udecode/plate-indent-list": "workspace:^"
     "@udecode/plate-juice": "workspace:^"
     "@udecode/plate-kbd": "workspace:^"
+    "@udecode/plate-layout": "workspace:^"
     "@udecode/plate-line-height": "workspace:^"
     "@udecode/plate-link": "workspace:^"
     "@udecode/plate-list": "workspace:^"

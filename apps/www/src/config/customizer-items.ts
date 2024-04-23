@@ -273,6 +273,30 @@ export const customizerItems: Record<string, SettingPlugin> = {
       },
     ],
   },
+  column: {
+    id: 'column',
+    npmPackage: '@udecode/plate-layout',
+    pluginFactory: 'createColumnPlugin',
+    label: 'Column',
+    badges: [customizerBadges.element],
+    route: customizerPlugins.column.route,
+    components: [
+      {
+        id: 'column-group-element',
+        label: 'ColumnGroupElement',
+        pluginKey: 'ELEMENT_COLUMN_GROUP',
+        usage: 'ColumnGroupElement',
+        route: customizerComponents.columnGroupElement.href,
+      },
+      {
+        id: 'column-element',
+        label: 'ColumnElement',
+        pluginKey: 'ELEMENT_COLUMN',
+        usage: 'ColumnElement',
+        route: customizerComponents.columnElement.href,
+      },
+    ],
+  },
   heading: {
     id: 'heading',
     npmPackage: '@udecode/plate-heading',

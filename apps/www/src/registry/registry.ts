@@ -34,6 +34,13 @@ const ui: Registry = [
     ],
   },
   {
+    name: 'column-element',
+    type: 'components:plate-ui',
+    dependencies: ['@udecode/plate-layout'],
+    registryDependencies: ['command', 'resizable'],
+    files: ['plate-ui/column-element.tsx', 'plate-ui/column-group-element.tsx'],
+  },
+  {
     name: 'color-dropdown-menu',
     type: 'components:plate-ui',
     dependencies: [],

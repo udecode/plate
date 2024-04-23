@@ -64,6 +64,7 @@ export const customizerList = [
       customizerItems[ELEMENT_IMAGE],
       customizerItems[ELEMENT_LINK],
       customizerItems[ELEMENT_TOGGLE],
+      customizerItems.column,
       customizerItems.heading,
       customizerItems.list,
       customizerItems[ELEMENT_MEDIA_EMBED],

@@ -9,6 +9,7 @@ const plateOverrides = {
   collaboration: 'plate-yjs',
   combobox: 'plate-combobox',
   comments: 'plate-comments',
+  column: 'plate-column',
   dnd: 'plate-dnd',
   emoji: 'plate-emoji',
   excalidraw: 'plate-excalidraw',

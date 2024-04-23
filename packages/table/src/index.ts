@@ -10,6 +10,7 @@ export * from './withDeleteTable';
 export * from './withGetFragmentTable';
 export * from './withInsertFragmentTable';
 export * from './withInsertTextTable';
+export * from './withMarkTable';
 export * from './withNormalizeTable';
 export * from './withSelectionTable';
 export * from './withSetFragmentDataTable';
