@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs';
-import { GlobSync } from 'glob';
+import { globSync } from 'glob';
 import { defineConfig, Expression } from 'turbowatch';
 
-const foundPackageJson = new GlobSync('packages/*/package.json').found;
+const foundPackageJson = globSync('packages/*/package.json');
 
 type PathToPackageNameMap = Map<string, string>;
 
