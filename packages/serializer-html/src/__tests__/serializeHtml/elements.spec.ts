@@ -248,7 +248,7 @@ it('serialize align style to html', () => {
       ],
     })
   ).toBe(
-    '<div class="slate-p slate-align-center" style="text-align:center">I am centered text!</div>'
+    '<div class="slate-p slate-align-center" style="text-align: center;">I am centered text!</div>'
   );
 });
 
@@ -275,7 +275,7 @@ it('serialize align className to html', () => {
       ],
     })
   ).toBe(
-    '<div class="slate-p slate-align-center" style="text-align:center">I am centered text!</div>'
+    '<div class="slate-p slate-align-center" style="text-align: center;">I am centered text!</div>'
   );
 });
 

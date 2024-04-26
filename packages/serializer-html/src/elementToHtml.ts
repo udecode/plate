@@ -8,9 +8,9 @@ import {
   Value,
 } from '@udecode/plate-common';
 import { decode } from 'html-entities';
-import { renderToStaticMarkup } from 'react-dom/server';
 
 import { createElementWithSlate } from './utils/createElementWithSlate';
+import { renderToStaticMarkup } from './utils/renderToStaticMarkupClient';
 import { stripClassNames } from './utils/stripClassNames';
 
 export const elementToHtml = <V extends Value>(

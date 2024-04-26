@@ -3,6 +3,7 @@ import {
   createTodoListPlugin,
   ELEMENT_LI,
   ELEMENT_LIC,
+  ELEMENT_TODO_LI,
   ELEMENT_UL,
 } from '@udecode/plate-list';
 import { createPlateUIEditor } from 'www/src/lib/plate/create-plate-ui-editor';
@@ -30,7 +31,7 @@ it('serialize elements using useSlateStatic', () => {
   const render = serializeHtml(editor, {
     nodes: [
       {
-        type: 'action_item',
+        type: ELEMENT_TODO_LI,
         checked: true,
         children: [{ text: 'Slide to the right.' }],
       },
@@ -51,5 +52,5 @@ it('serialize elements using useSlateStatic', () => {
     ],
   });
 
-  expect(render).toContain('input type="checkbox"');
+  expect(render).toContain('type="button" role="checkbox"');
 });
