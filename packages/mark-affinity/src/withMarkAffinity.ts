@@ -54,11 +54,13 @@ export const withMarkAffinity = (editor: PlateEditor) => {
       editor.selection &&
       !isSelectionExpanded(editor)
     ) {
+      /**
+       * check the validMarks exclude the marks which have padding like `MARK_CODE`
+       */
       const { validMarks } = getPluginOptions<MarkAffinityPlugin>(
         editor,
         KEY_MARK_AFFINITY
       );
-
       const _marks = getMarks(editor);
       const marks = _marks ? Object.keys(_marks) : [];
 
