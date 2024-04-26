@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import ReactClient from 'react-dom/client';
+import ReactDOMClient from 'react-dom/client';
+import ReactDOMServer from 'react-dom/server';
 
 import { createElementWithSlate } from './createElementWithSlate';
 
@@ -11,7 +12,7 @@ const REACT_API_UPDATE_VERSION = 18;
  */
 const renderToStaticNew = (elem: ReturnType<typeof createElementWithSlate>) => {
   const div = document.createElement('div');
-  const root = ReactClient.createRoot(div);
+  const root = ReactDOMClient.createRoot(div);
   ReactDOM.flushSync(() => {
     root.render(elem);
   });
@@ -25,11 +26,14 @@ const renderToStaticOld = (elem: ReturnType<typeof createElementWithSlate>) => {
   return div.innerHTML;
 };
 
-const createRenderToStaticMarkup = () => {
+const createRenderToStaticMarkupClient = () => {
   const reactMajorVersion = +React.version.slice(0, 2);
   return reactMajorVersion >= REACT_API_UPDATE_VERSION
     ? renderToStaticNew
     : renderToStaticOld;
 };
 
-export const renderToStaticMarkup = createRenderToStaticMarkup();
+export const renderToStaticMarkup =
+  typeof window === 'undefined'
+    ? ReactDOMServer.renderToStaticMarkup
+    : createRenderToStaticMarkupClient();
