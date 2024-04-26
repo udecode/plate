@@ -10,7 +10,7 @@ import {
 } from '@udecode/plate-common';
 import { NodeEntry, Path } from 'slate';
 
-import { MarkBoundary } from './types';
+import { MarkBoundary } from '../types';
 
 export const getMarkBoundary = (editor: PlateEditor): MarkBoundary | null => {
   const { selection } = editor;

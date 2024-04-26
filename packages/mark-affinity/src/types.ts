@@ -2,11 +2,7 @@ import { TText } from '@udecode/plate-common';
 import { NodeEntry } from 'slate';
 
 export interface MarkAffinityPlugin {
-  pressRightArrowAtBoundary?: (
-    editor: any,
-    currentEndLeafEntry?: NodeEntry<TText>,
-    nextLeafEntry?: NodeEntry<TText>
-  ) => void;
+  validMarks?: string[];
 }
 
 export type MarkBoundary =

@@ -3,7 +3,7 @@
  */
 
 export * from './createMarkAffinityPlugin';
-export * from './getMarkBoundary';
-export * from './getMarkBoundaryAffinity';
-export * from './setMarkBoundaryAffinity';
 export * from './types';
+export * from './withMarkAffinity';
+export * from './queries/index';
+export * from './transforms/index';

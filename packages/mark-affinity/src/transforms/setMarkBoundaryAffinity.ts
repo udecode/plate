@@ -1,7 +1,7 @@
 import { getEndPoint, getNodeProps, PlateEditor } from '@udecode/plate-common';
 import { Point } from 'slate';
 
-import { MarkBoundary } from './types';
+import { MarkBoundary } from '../types';
 
 export const setMarkBoundaryAffinity = (
   editor: PlateEditor,
