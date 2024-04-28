@@ -9,6 +9,10 @@ import { PluginOptions, WithPlatePlugin } from './PlatePlugin';
  */
 export type HandlerReturnType = boolean | void;
 
+export type KeyboardEventHandler = (
+  event: React.KeyboardEvent
+) => HandlerReturnType;
+
 export type DOMHandlerReturnType<EV = {}> = (event: EV) => HandlerReturnType;
 
 export type DOMHandler<

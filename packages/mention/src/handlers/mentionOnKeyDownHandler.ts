@@ -1,17 +1,20 @@
 import {
   isHotkey,
+  KeyboardEventHandler,
   moveSelection,
+  moveSelectionByOffset,
+  MoveSelectionByOffsetOptions,
   PlateEditor,
   Value,
 } from '@udecode/plate-common';
 
 import { findMentionInput } from '../queries/index';
 import { removeMentionInput } from '../transforms/index';
-import { KeyboardEventHandler } from './KeyboardEventHandler';
-import {
-  moveSelectionByOffset,
-  MoveSelectionByOffsetOptions,
-} from './moveSelectionByOffset';
+
+// import {
+//   moveSelectionByOffset,
+//   MoveSelectionByOffsetOptions,
+// } from './moveSelectionByOffset';
 
 export const mentionOnKeyDownHandler: <V extends Value>(
   options?: MoveSelectionByOffsetOptions<V>

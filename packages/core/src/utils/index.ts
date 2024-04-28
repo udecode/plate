@@ -24,6 +24,7 @@ export * from './mapInjectPropsToPlugin';
 export * from './mergeDeepPlugins';
 export * from './mergeDeepToNodes';
 export * from './mockPlugin';
+export * from './moveSelectionByOffset';
 export * from './normalizeDescendantsToDocumentFragment';
 export * from './normalizeInitialValue';
 export * from './overridePluginsByKey';

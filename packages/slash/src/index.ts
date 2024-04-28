@@ -3,8 +3,9 @@
  */
 
 export * from './createSlashPlugin';
+export * from './getSlashOnSelectItem';
 export * from './types';
+export * from './withSlash';
 export * from './handlers/index';
 export * from './queries/index';
 export * from './transforms/index';
-export * from './getSlashOnSelectItem';

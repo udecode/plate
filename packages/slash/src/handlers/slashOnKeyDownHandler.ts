@@ -1,17 +1,15 @@
 import {
   isHotkey,
+  KeyboardEventHandler,
   moveSelection,
+  moveSelectionByOffset,
+  MoveSelectionByOffsetOptions,
   PlateEditor,
   Value,
 } from '@udecode/plate-common';
 
 import { findSlashInput } from '../queries/index';
 import { removeSlashInput } from '../transforms/index';
-import { KeyboardEventHandler } from './KeyboardEventHandler';
-import {
-  moveSelectionByOffset,
-  MoveSelectionByOffsetOptions,
-} from './moveSelectionByOffset';
 
 export const slashOnKeyDownHandler: <V extends Value>(
   options?: MoveSelectionByOffsetOptions<V>
