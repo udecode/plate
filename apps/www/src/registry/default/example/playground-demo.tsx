@@ -102,6 +102,7 @@ import {
 import { createBlockSelectionPlugin } from '@udecode/plate-selection';
 import { createDeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
 import { createDeserializeMdPlugin } from '@udecode/plate-serializer-md';
+import { createSlashPlugin } from '@udecode/plate-slash';
 import { createTabbablePlugin } from '@udecode/plate-tabbable';
 import { createTablePlugin } from '@udecode/plate-table';
 import { createTogglePlugin, ELEMENT_TOGGLE } from '@udecode/plate-toggle';
@@ -111,6 +112,10 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import { ValueId } from '@/config/customizer-plugins';
 import { captionPlugin } from '@/lib/plate/demo/plugins/captionPlugin';
+import {
+  SLASH_ENABLED,
+  SLASH_TRIGGER,
+} from '@/lib/plate/demo/values/slashRules';
 import { settingsStore } from '@/components/context/settings-store';
 import { PlaygroundFixedToolbarButtons } from '@/components/plate-ui/playground-fixed-toolbar-buttons';
 import { PlaygroundFloatingToolbarButtons } from '@/components/plate-ui/playground-floating-toolbar-buttons';
@@ -128,6 +133,7 @@ import {
   TodoMarker,
 } from '@/registry/default/plate-ui/indent-todo-marker-component';
 import { MentionCombobox } from '@/registry/default/plate-ui/mention-combobox';
+import { SlashCombobox } from '@/registry/default/plate-ui/slash-combobox';
 
 export const usePlaygroundPlugins = ({
   id,
@@ -174,6 +180,11 @@ export const usePlaygroundPlugins = ({
             enabled: !!enabled.mention,
             options: {
               triggerPreviousCharPattern: /^$|^[\s"']$/,
+            },
+          }),
+          createSlashPlugin({
+            options: {
+              rules: SLASH_TRIGGER,
             },
           }),
           createTablePlugin({
@@ -430,6 +441,8 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
                 {isEnabled('mention', id, enabled['mention-combobox']) && (
                   <MentionCombobox items={MENTIONABLES} />
                 )}
+
+                <SlashCombobox items={SLASH_ENABLED} />
 
                 {isEnabled('cursoroverlay', id) && (
                   <CursorOverlay containerRef={containerRef} />
