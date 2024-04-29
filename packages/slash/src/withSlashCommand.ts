@@ -24,7 +24,7 @@ import {
 import { removeSlashInput } from './transforms';
 import { SlashPlugin, TSlashInputElement } from './types';
 
-export const withSlash = <
+export const withSlashCommand = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
 >(

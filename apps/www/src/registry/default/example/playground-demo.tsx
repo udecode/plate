@@ -102,7 +102,7 @@ import {
 import { createBlockSelectionPlugin } from '@udecode/plate-selection';
 import { createDeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
 import { createDeserializeMdPlugin } from '@udecode/plate-serializer-md';
-import { createSlashPlugin } from '@udecode/plate-slash';
+import { createSlashPlugin } from '@udecode/plate-slash-command';
 import { createTabbablePlugin } from '@udecode/plate-tabbable';
 import { createTablePlugin } from '@udecode/plate-table';
 import { createTogglePlugin, ELEMENT_TOGGLE } from '@udecode/plate-toggle';

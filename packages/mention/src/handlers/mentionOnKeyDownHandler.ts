@@ -11,11 +11,6 @@ import {
 import { findMentionInput } from '../queries/index';
 import { removeMentionInput } from '../transforms/index';
 
-// import {
-//   moveSelectionByOffset,
-//   MoveSelectionByOffsetOptions,
-// } from './moveSelectionByOffset';
-
 export const mentionOnKeyDownHandler: <V extends Value>(
   options?: MoveSelectionByOffsetOptions<V>
 ) => (editor: PlateEditor<V>) => KeyboardEventHandler =

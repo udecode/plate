@@ -1,13 +1,13 @@
 {
-  "name": "@udecode/plate-slash",
+  "name": "@udecode/plate-slash-command",
   "version": "31.3.5",
-  "description": "Mention plugin for Plate",
+  "description": "Slash commands plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
-    "directory": "packages/mention"
+    "directory": "packages/slash-command"
   },
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"

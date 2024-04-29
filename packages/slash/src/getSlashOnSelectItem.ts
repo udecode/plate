@@ -19,7 +19,7 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 
-import { ELEMENT_SLASH } from './createSlashPlugin';
+import { ELEMENT_SLASH_COMMAND } from './createSlashPlugin';
 import { isNodeSlashInput } from './queries/isNodeSlashInput';
 import { SlashPlugin, TSlashElement } from './types';
 
@@ -36,7 +36,7 @@ export interface CreateSlashNodeMeta {
 
 export const getSlashOnSelectItem =
   <TData extends Data = NoData>({
-    key = ELEMENT_SLASH,
+    key = ELEMENT_SLASH_COMMAND,
   }: PlatePluginKey = {}): ComboboxOnSelectItem<TData> =>
   (editor: any, item: any) => {
     const targetRange = comboboxSelectors.targetRange();

@@ -2,6 +2,7 @@ import { TComboboxItem } from '@udecode/plate-combobox';
 import { PlateEditor, toggleNodeType } from '@udecode/plate-core';
 import { ELEMENT_H1, ELEMENT_H2, ELEMENT_H3 } from '@udecode/plate-heading';
 import { ListStyleType, toggleIndentList } from '@udecode/plate-indent-list';
+import { SlashRule } from '@udecode/plate-slash-command';
 import { focusEditor } from '@udecode/slate-react';
 
 export const SLASH_ENABLED: TComboboxItem[] = [
@@ -18,7 +19,7 @@ export const SLASH_ENABLED: TComboboxItem[] = [
   },
 ];
 
-export const SLASH_TRIGGER = [
+export const SLASH_TRIGGER: SlashRule[] = [
   {
     key: ELEMENT_H1,
     onTrigger(editor: PlateEditor) {

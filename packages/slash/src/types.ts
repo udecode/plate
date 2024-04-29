@@ -11,7 +11,7 @@ export interface TSlashInputElement extends TElement {
   trigger: string;
 }
 
-interface TSlashRule {
+export interface SlashRule {
   key: string;
   onTrigger: (editor: any, key: string) => void;
 }
@@ -24,5 +24,5 @@ export interface SlashPlugin<TData extends Data = NoData> {
   triggerPreviousCharPattern?: RegExp;
   inputCreation?: { key: string; value: string };
   query?: (editor: PlateEditor) => boolean;
-  rules?: TSlashRule[];
+  rules?: SlashRule[];
 }

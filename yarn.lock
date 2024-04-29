@@ -6274,9 +6274,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-slash@workspace:^, @udecode/plate-slash@workspace:packages/slash":
+"@udecode/plate-slash-command@workspace:^, @udecode/plate-slash-command@workspace:packages/slash":
   version: 0.0.0-use.local
-  resolution: "@udecode/plate-slash@workspace:packages/slash"
+  resolution: "@udecode/plate-slash-command@workspace:packages/slash"
   dependencies:
     "@udecode/plate-combobox": "npm:31.0.0"
     "@udecode/plate-common": "workspace:^"
@@ -21381,7 +21381,7 @@ __metadata:
     "@udecode/plate-serializer-docx": "workspace:^"
     "@udecode/plate-serializer-html": "workspace:^"
     "@udecode/plate-serializer-md": "workspace:^"
-    "@udecode/plate-slash": "workspace:^"
+    "@udecode/plate-slash-command": "workspace:^"
     "@udecode/plate-suggestion": "workspace:^"
     "@udecode/plate-tabbable": "workspace:^"
     "@udecode/plate-table": "workspace:^"

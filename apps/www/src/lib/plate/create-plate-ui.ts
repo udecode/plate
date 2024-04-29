@@ -44,7 +44,7 @@ import {
 import { ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from '@udecode/plate-media';
 import { ELEMENT_MENTION, ELEMENT_MENTION_INPUT } from '@udecode/plate-mention';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
-import { ELEMENT_SLASH_INPUT } from '@udecode/plate-slash';
+import { ELEMENT_SLASH_INPUT } from '@udecode/plate-slash-command';
 import {
   ELEMENT_TABLE,
   ELEMENT_TD,
