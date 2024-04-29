@@ -64,11 +64,8 @@ export const getSlashOnSelectItem =
       );
 
       if (rules) {
-        const onTrigger = rules.find(
-          (rule) => rule.matchText === item.text
-        )?.onTrigger;
-
-        onTrigger && onTrigger(editor);
+        const target = rules.find((rule) => rule.key === item.key);
+        target && target.onTrigger(editor, target.key);
       }
 
       // move the selection after the element

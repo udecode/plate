@@ -12,8 +12,8 @@ export interface TSlashInputElement extends TElement {
 }
 
 interface TSlashRule {
-  matchText: string;
-  onTrigger: (editor: any) => void;
+  key: string;
+  onTrigger: (editor: any, key: string) => void;
 }
 
 export interface SlashPlugin<TData extends Data = NoData> {

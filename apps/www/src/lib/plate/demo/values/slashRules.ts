@@ -5,43 +5,43 @@ import { ListStyleType, toggleIndentList } from '@udecode/plate-indent-list';
 import { focusEditor } from '@udecode/slate-react';
 
 export const SLASH_ENABLED: TComboboxItem[] = [
-  { key: '0', text: 'Heading 1' },
-  { key: '1', text: 'Heading 2' },
-  { key: '2', text: 'Heading 3' },
+  { key: ELEMENT_H1, text: 'Heading 1' },
+  { key: ELEMENT_H2, text: 'Heading 2' },
+  { key: ELEMENT_H3, text: 'Heading 3' },
   {
-    key: '3',
+    key: ListStyleType.Disc,
     text: 'Bulleted list',
   },
   {
-    key: '4',
+    key: ListStyleType.Decimal,
     text: 'Numbered list',
   },
 ];
 
 export const SLASH_TRIGGER = [
   {
-    matchText: 'Heading 1',
+    key: ELEMENT_H1,
     onTrigger(editor: PlateEditor) {
       toggleNodeType(editor, { activeType: ELEMENT_H1 });
       focusEditor(editor);
     },
   },
   {
-    matchText: 'Heading 2',
+    key: ELEMENT_H2,
     onTrigger(editor: PlateEditor) {
       toggleNodeType(editor, { activeType: ELEMENT_H2 });
       focusEditor(editor);
     },
   },
   {
-    matchText: 'Heading 3',
+    key: ELEMENT_H3,
     onTrigger(editor: PlateEditor) {
       toggleNodeType(editor, { activeType: ELEMENT_H3 });
       focusEditor(editor);
     },
   },
   {
-    matchText: 'Bulleted list',
+    key: ListStyleType.Disc,
     onTrigger(editor: PlateEditor) {
       toggleIndentList(editor, {
         listStyleType: ListStyleType.Disc,
@@ -50,7 +50,7 @@ export const SLASH_TRIGGER = [
     },
   },
   {
-    matchText: 'Numbered list',
+    key: ListStyleType.Decimal,
     onTrigger(editor: PlateEditor) {
       toggleIndentList(editor, {
         listStyleType: ListStyleType.Decimal,
