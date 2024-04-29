@@ -6274,9 +6274,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-slash-command@workspace:^, @udecode/plate-slash-command@workspace:packages/slash":
+"@udecode/plate-slash-command@workspace:^, @udecode/plate-slash-command@workspace:packages/slash-command":
   version: 0.0.0-use.local
-  resolution: "@udecode/plate-slash-command@workspace:packages/slash"
+  resolution: "@udecode/plate-slash-command@workspace:packages/slash-command"
   dependencies:
     "@udecode/plate-combobox": "npm:31.0.0"
     "@udecode/plate-common": "workspace:^"
