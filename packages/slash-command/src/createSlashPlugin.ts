@@ -5,14 +5,14 @@ import { isSelectionInSlashInput } from './queries/index';
 import { SlashPlugin } from './types';
 import { withSlashCommand } from './withSlashCommand';
 
-export const ELEMENT_SLASH_COMMAND = 'slash_command';
+export const KEY_SLASH_COMMAND = 'slash_command';
 export const ELEMENT_SLASH_INPUT = 'slash_input';
 /**
  * Enables support for autocompleting /slash_command.
  */
 
 export const createSlashPlugin = createPluginFactory<SlashPlugin>({
-  key: ELEMENT_SLASH_COMMAND,
+  key: KEY_SLASH_COMMAND,
   handlers: {
     onKeyDown: slashOnKeyDownHandler({ query: isSelectionInSlashInput }),
     onBlur: (editor) => () => {

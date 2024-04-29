@@ -2,15 +2,15 @@ import React from 'react';
 import { ComboboxProps } from '@udecode/plate-combobox';
 import { getPluginOptions, useEditorRef } from '@udecode/plate-common';
 import {
-  ELEMENT_SLASH_COMMAND,
   getSlashOnSelectItem,
+  KEY_SLASH_COMMAND,
   SlashPlugin,
 } from '@udecode/plate-slash-command';
 
 import { Combobox } from './combobox';
 
 export function SlashCombobox({
-  pluginKey = ELEMENT_SLASH_COMMAND,
+  pluginKey = KEY_SLASH_COMMAND,
   id = pluginKey,
   ...props
 }: Partial<ComboboxProps> & {
