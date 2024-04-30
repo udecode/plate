@@ -13,7 +13,7 @@ export interface TSlashInputElement extends TElement {
 
 export interface SlashRule {
   key: string;
-  text: string;
+  text: React.ReactNode;
   onTrigger: (editor: PlateEditor, key: string) => void;
 }
 
