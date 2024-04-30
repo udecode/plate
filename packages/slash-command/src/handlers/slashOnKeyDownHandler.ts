@@ -8,18 +8,18 @@ import {
   Value,
 } from '@udecode/plate-common';
 
-import { findMentionInput } from '../queries/index';
-import { removeMentionInput } from '../transforms/index';
+import { findSlashInput } from '../queries/index';
+import { removeSlashInput } from '../transforms/index';
 
-export const mentionOnKeyDownHandler: <V extends Value>(
+export const slashOnKeyDownHandler: <V extends Value>(
   options?: MoveSelectionByOffsetOptions<V>
 ) => (editor: PlateEditor<V>) => KeyboardEventHandler =
   (options) => (editor) => (event) => {
     if (isHotkey('escape', event)) {
-      const currentMentionInput = findMentionInput(editor)!;
-      if (currentMentionInput) {
+      const currentSlashInput = findSlashInput(editor)!;
+      if (currentSlashInput) {
         event.preventDefault();
-        removeMentionInput(editor, currentMentionInput[1]);
+        removeSlashInput(editor, currentSlashInput[1]);
         moveSelection(editor, { unit: 'word' });
         return true;
       }

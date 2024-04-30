@@ -95,6 +95,7 @@
     "@udecode/plate-serializer-docx": "workspace:^",
     "@udecode/plate-serializer-html": "workspace:^",
     "@udecode/plate-serializer-md": "workspace:^",
+    "@udecode/plate-slash-command": "workspace:^",
     "@udecode/plate-suggestion": "workspace:^",
     "@udecode/plate-tabbable": "workspace:^",
     "@udecode/plate-table": "workspace:^",

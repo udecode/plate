@@ -44,6 +44,7 @@ import {
 import { ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from '@udecode/plate-media';
 import { ELEMENT_MENTION, ELEMENT_MENTION_INPUT } from '@udecode/plate-mention';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
+import { ELEMENT_SLASH_INPUT } from '@udecode/plate-slash-command';
 import {
   ELEMENT_TABLE,
   ELEMENT_TD,
@@ -74,6 +75,7 @@ import { MentionInputElement } from '@/registry/default/plate-ui/mention-input-e
 import { ParagraphElement } from '@/registry/default/plate-ui/paragraph-element';
 import { withPlaceholders } from '@/registry/default/plate-ui/placeholder';
 import { SearchHighlightLeaf } from '@/registry/default/plate-ui/search-highlight-leaf';
+import { SlashInputElement } from '@/registry/default/plate-ui/slash-input-element';
 import {
   TableCellElement,
   TableCellHeaderElement,
@@ -109,6 +111,7 @@ export const createPlateUI = (
     [ELEMENT_MEDIA_EMBED]: MediaEmbedElement,
     [ELEMENT_MENTION]: MentionElement,
     [ELEMENT_MENTION_INPUT]: MentionInputElement,
+    [ELEMENT_SLASH_INPUT]: SlashInputElement,
     [ELEMENT_UL]: withProps(ListElement, { variant: 'ul' }),
     [ELEMENT_OL]: withProps(ListElement, { variant: 'ol' }),
     [ELEMENT_PARAGRAPH]: ParagraphElement,
