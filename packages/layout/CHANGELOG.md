@@ -1,5 +1,7 @@
 # @udecode/plate-layout
 
+## 32.0.0
+
 ## 31.4.2
 
 ### Patch Changes

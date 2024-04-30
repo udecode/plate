@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 32.0.0
+
+### Patch Changes
+
+- [#3155](https://github.com/udecode/plate/pull/3155) by [@felixfeng33](https://github.com/felixfeng33) – Export `KeyboardEventHandler` type
+
 ## 31.3.2
 
 ## 31.0.0

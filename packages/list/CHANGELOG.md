@@ -1,5 +1,7 @@
 # @udecode/plate-list
 
+## 32.0.0
+
 ## 31.1.3
 
 ### Patch Changes
