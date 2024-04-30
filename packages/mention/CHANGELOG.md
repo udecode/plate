@@ -1,5 +1,11 @@
 # @udecode/plate-mention
 
+## 32.0.0
+
+### Minor Changes
+
+- [#3155](https://github.com/udecode/plate/pull/3155) by [@felixfeng33](https://github.com/felixfeng33) – Move `moveSelectionByOffset` from `@udecode/plate-mention` to `@udecode/plate-utils`
+
 ## 31.3.5
 
 ### Patch Changes
