@@ -4,6 +4,7 @@
 
 export * from './createElementWithSlate';
 export * from './newLinesToHtmlBr';
+export * from './renderToStaticMarkupClient';
 export * from './stripClassNames';
 export * from './stripSlateDataAttributes';
 export * from './trimWhitespace';

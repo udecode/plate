@@ -3,6 +3,7 @@
  */
 
 export * from './deleteBackwardIndentList';
+export * from './insertBreakIndentList';
 export * from './normalizeFirstIndentListStart';
 export * from './normalizeIndentListNotIndented';
 export * from './normalizeIndentListStart';
