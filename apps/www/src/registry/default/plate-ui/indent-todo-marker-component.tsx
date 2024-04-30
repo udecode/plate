@@ -18,7 +18,14 @@ export const TodoMarker: MarkerFC = (props) => {
       <Checkbox
         style={{ left: -24, top: 4, position: 'absolute' }}
         checked={element.checked as boolean}
-        onCheckedChange={onChange}
+        onMouseDown={(e: any) => {
+          /**
+           * click the checkbox should not losing the focus.
+           */
+          e.preventDefault();
+          const checked = e.target.getAttribute('aria-checked') !== 'true';
+          onChange(checked);
+        }}
       />
     </div>
   );
