@@ -112,10 +112,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import { ValueId } from '@/config/customizer-plugins';
 import { captionPlugin } from '@/lib/plate/demo/plugins/captionPlugin';
-import {
-  SLASH_ENABLED,
-  SLASH_TRIGGER,
-} from '@/lib/plate/demo/values/slashRules';
+import { SLASH_RULES } from '@/lib/plate/demo/values/slashRules';
 import { settingsStore } from '@/components/context/settings-store';
 import { PlaygroundFixedToolbarButtons } from '@/components/plate-ui/playground-fixed-toolbar-buttons';
 import { PlaygroundFloatingToolbarButtons } from '@/components/plate-ui/playground-floating-toolbar-buttons';
@@ -184,7 +181,7 @@ export const usePlaygroundPlugins = ({
           }),
           createSlashPlugin({
             options: {
-              rules: SLASH_TRIGGER,
+              rules: SLASH_RULES,
             },
           }),
           createTablePlugin({
@@ -442,7 +439,7 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
                   <MentionCombobox items={MENTIONABLES} />
                 )}
 
-                <SlashCombobox items={SLASH_ENABLED} />
+                <SlashCombobox items={SLASH_RULES} />
 
                 {isEnabled('cursoroverlay', id) && (
                   <CursorOverlay containerRef={containerRef} />
