@@ -1,4 +1,5 @@
-import { PlatePlugin } from '@udecode/plate-common';
+import type { PlatePlugin } from '@udecode/plate-common';
+
 import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { createTEditor } from '@udecode/slate';
@@ -68,44 +69,44 @@ describe('withPlate', () => {
   describe('when it has recursive then', () => {
     it('should deep merge', () => {
       const pluginInput: PlatePlugin = {
-        key: 'a',
-        type: 'a',
         inject: {
           props: {
             nodeKey: 'a',
           },
         },
+        key: 'a',
         then: (editor, { type }) => ({
-          type: `${type}b`,
           inject: {
             props: {
               nodeKey: `${type}b`,
             },
           },
           then: (e, { type: _type }) => ({
-            type: `${_type}c`,
             inject: {
               props: {
                 nodeKey: `${_type}c`,
               },
             },
+            type: `${_type}c`,
           }),
+          type: `${type}b`,
         }),
+        type: 'a',
       };
 
       const plugins = [pluginInput];
 
       const editor = withPlate(createTEditor(), { id: '1', plugins });
 
-      const { type, inject } = getPlugin(editor, 'a');
+      const { inject, type } = getPlugin(editor, 'a');
 
-      expect({ type, inject }).toEqual({
-        type: 'abc',
+      expect({ inject, type }).toEqual({
         inject: {
           props: {
             nodeKey: 'abc',
           },
         },
+        type: 'abc',
       });
     });
   });
@@ -189,7 +190,6 @@ describe('withPlate', () => {
         plugins: [
           {
             key: 'a',
-            type: 'a',
             plugins: [
               {
                 key: 'aa',
@@ -197,13 +197,10 @@ describe('withPlate', () => {
               },
             ],
             then: () => ({
-              type: 'athen',
               plugins: [
                 {
                   key: 'bb',
-                  type: 'bb',
                   then: () => ({
-                    type: 'athen2',
                     plugins: [
                       {
                         key: 'aa',
@@ -214,10 +211,14 @@ describe('withPlate', () => {
                         type: 'cc',
                       },
                     ],
+                    type: 'athen2',
                   }),
+                  type: 'bb',
                 },
               ],
+              type: 'athen',
             }),
+            type: 'a',
           },
         ],
       });
@@ -249,35 +250,6 @@ describe('withPlate', () => {
         plugins: [
           {
             key: 'a',
-            type: 'a',
-            plugins: [
-              {
-                key: 'aa',
-                type: 'aa',
-              },
-            ],
-            then: () => ({
-              type: 'athen',
-              plugins: [
-                {
-                  key: 'bb',
-                  type: 'bb',
-                  then: () => ({
-                    type: 'athen2',
-                    plugins: [
-                      {
-                        key: 'aa',
-                        type: 'ab',
-                      },
-                      {
-                        key: 'cc',
-                        type: 'cc',
-                      },
-                    ],
-                  }),
-                },
-              ],
-            }),
             overrideByKey: {
               a: {
                 type: 'a1',
@@ -289,6 +261,35 @@ describe('withPlate', () => {
                 type: 'cc1',
               },
             },
+            plugins: [
+              {
+                key: 'aa',
+                type: 'aa',
+              },
+            ],
+            then: () => ({
+              plugins: [
+                {
+                  key: 'bb',
+                  then: () => ({
+                    plugins: [
+                      {
+                        key: 'aa',
+                        type: 'ab',
+                      },
+                      {
+                        key: 'cc',
+                        type: 'cc',
+                      },
+                    ],
+                    type: 'athen2',
+                  }),
+                  type: 'bb',
+                },
+              ],
+              type: 'athen',
+            }),
+            type: 'a',
           },
         ],
       });

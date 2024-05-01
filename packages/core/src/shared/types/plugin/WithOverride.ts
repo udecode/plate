@@ -1,12 +1,9 @@
-import { Value } from '@udecode/slate';
+import type { Value } from '@udecode/slate';
 
-import { PlateEditor } from '../PlateEditor';
-import { PluginOptions, WithPlatePlugin } from './PlatePlugin';
+import type { PlateEditor } from '../PlateEditor';
+import type { PluginOptions, WithPlatePlugin } from './PlatePlugin';
 
-/**
- * Plate plugin overriding the `editor` methods.
- * Naming convention is `with*`.
- */
+/** Plate plugin overriding the `editor` methods. Naming convention is `with*`. */
 export type WithOverride<
   P = PluginOptions,
   V extends Value = Value,

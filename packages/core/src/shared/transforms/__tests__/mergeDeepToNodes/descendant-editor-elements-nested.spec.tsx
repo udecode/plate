@@ -22,9 +22,9 @@ const props = { a: 1 };
 
 const output = (
   <editor>
-    <element type={ELEMENT_LI} a={1}>
+    <element a={1} type={ELEMENT_LI}>
       <htext a={1}>test</htext>
-      <element type={ELEMENT_PARAGRAPH} a={1}>
+      <element a={1} type={ELEMENT_PARAGRAPH}>
         <htext a={1}>test</htext>
       </element>
       <htext a={1}>test</htext>
@@ -35,10 +35,10 @@ const output = (
 it('should set props to all descendants', () => {
   mergeDeepToNodes({
     node,
-    source: props,
     query: {
       filter: ([n]) => isDescendant(n),
     },
+    source: props,
   });
   expect(node.children).toEqual(output.children);
 });

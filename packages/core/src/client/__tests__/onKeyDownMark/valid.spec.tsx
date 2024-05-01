@@ -1,12 +1,13 @@
 /** @jsx jsx */
 
-import { createBoldPlugin, MARK_BOLD } from '@udecode/plate-basic-marks';
+import { MARK_BOLD, createBoldPlugin } from '@udecode/plate-basic-marks';
 import { createPlateEditor } from '@udecode/plate-common';
 import * as isHotkey from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { onKeyDownToggleMark } from '@udecode/plate-utils';
 
-import { ToggleMarkPlugin } from '../../../shared/types';
+import type { ToggleMarkPlugin } from '../../../shared/types';
+
 import { getPlugin } from '../../../shared/utils/getPlugin';
 
 jsx;
@@ -29,8 +30,8 @@ const output = (
       t<htext bold>est</htext>
     </hp>
     <selection>
-      <anchor path={[0, 1]} offset={0} />
-      <focus path={[0, 1]} offset={3} />
+      <anchor offset={0} path={[0, 1]} />
+      <focus offset={3} path={[0, 1]} />
     </selection>
   </editor>
 ) as any;

@@ -1,14 +1,15 @@
 import {
-  EDescendant,
+  type EDescendant,
+  type TDescendant,
+  type TEditor,
+  type Value,
   isElement,
   isText,
-  TDescendant,
-  TEditor,
-  Value,
 } from '@udecode/slate';
 
+import type { PlateEditor } from '../types/PlateEditor';
+
 import { ELEMENT_DEFAULT } from '../constants';
-import { PlateEditor } from '../types/PlateEditor';
 import { getPluginType } from './getPluginType';
 
 const isInlineNode =
@@ -17,8 +18,8 @@ const isInlineNode =
     isText(node) || (isElement(node) && editor.isInline(node));
 
 const makeBlockLazy = (type: string) => (): TDescendant => ({
-  type,
   children: [],
+  type,
 });
 
 const hasDifferentChildNodes = <N extends TDescendant>(
@@ -27,15 +28,18 @@ const hasDifferentChildNodes = <N extends TDescendant>(
 ): boolean => {
   return descendants.some((descendant, index, arr) => {
     const prevDescendant = arr[index - 1];
+
     if (index !== 0) {
       return isInline(descendant) !== isInline(prevDescendant);
     }
+
     return false;
   });
 };
 
 /**
- * Handles 3rd constraint: "Block nodes can only contain other blocks, or inline and text nodes."
+ * Handles 3rd constraint: "Block nodes can only contain other blocks, or inline
+ * and text nodes."
  */
 const normalizeDifferentNodeTypes = <N extends TDescendant>(
   descendants: N[],
@@ -48,11 +52,13 @@ const normalizeDifferentNodeTypes = <N extends TDescendant>(
     (memo, node) => {
       if (hasDifferentNodes && isInline(node)) {
         let block = memo.precedingBlock;
+
         if (!block) {
           block = makeDefaultBlock();
           memo.precedingBlock = block;
           memo.fragment.push(block);
         }
+
         (block.children as N[]).push(node);
       } else {
         memo.fragment.push(node);
@@ -71,7 +77,8 @@ const normalizeDifferentNodeTypes = <N extends TDescendant>(
 };
 
 /**
- * Handles 1st constraint: "All Element nodes must contain at least one Text descendant."
+ * Handles 1st constraint: "All Element nodes must contain at least one Text
+ * descendant."
  */
 const normalizeEmptyChildren = <N extends TDescendant>(
   descendants: N[]
@@ -79,6 +86,7 @@ const normalizeEmptyChildren = <N extends TDescendant>(
   if (descendants.length === 0) {
     return [{ text: '' } as N];
   }
+
   return descendants;
 };
 
@@ -101,15 +109,14 @@ const normalize = <N extends TDescendant>(
         children: normalize(node.children as N[], isInline, makeDefaultBlock),
       };
     }
+
     return node;
   });
 
   return descendants;
 };
 
-/**
- * Normalize the descendants to a valid document fragment.
- */
+/** Normalize the descendants to a valid document fragment. */
 export const normalizeDescendantsToDocumentFragment = <V extends Value>(
   editor: PlateEditor<V>,
   { descendants }: { descendants: EDescendant<V>[] }

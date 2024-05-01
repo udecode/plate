@@ -1,12 +1,13 @@
 import React from 'react';
+
 import { render } from '@testing-library/react';
 
 import { createPlateEditor } from './createPlateEditor';
 import { pipeRenderLeaf } from './pipeRenderLeaf';
 
 const attributes = {
-  'data-testid': 'Leaf',
   'data-slate-leaf': true,
+  'data-testid': 'Leaf',
 } as any;
 
 const text = { text: 'test' };

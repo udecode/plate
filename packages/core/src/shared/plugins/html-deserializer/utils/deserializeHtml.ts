@@ -1,29 +1,27 @@
-import { EDescendant, Value } from '@udecode/slate';
+import type { EDescendant, Value } from '@udecode/slate';
 
-import { PlateEditor } from '../../../types';
+import type { PlateEditor } from '../../../types';
+
 import { normalizeDescendantsToDocumentFragment } from '../../../utils/normalizeDescendantsToDocumentFragment';
 import { collapseWhiteSpace } from './collapse-white-space';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 import { htmlStringToDOMNode } from './htmlStringToDOMNode';
 
-/**
- * Deserialize HTML element to a valid document fragment.
- */
+/** Deserialize HTML element to a valid document fragment. */
 export const deserializeHtml = <V extends Value>(
   editor: PlateEditor<V>,
   {
-    element,
     collapseWhiteSpace: shouldCollapseWhiteSpace = true,
+    element,
   }: {
-    element: HTMLElement | string;
     collapseWhiteSpace?: boolean;
+    element: HTMLElement | string;
   }
 ): EDescendant<V>[] => {
   // for serializer
   if (typeof element === 'string') {
     element = htmlStringToDOMNode(element);
   }
-
   if (shouldCollapseWhiteSpace) {
     element = collapseWhiteSpace(element);
   }

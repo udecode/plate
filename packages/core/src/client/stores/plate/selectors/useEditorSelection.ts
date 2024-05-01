@@ -1,12 +1,10 @@
 import {
-  PlateId,
-  UsePlateEditorStoreOptions,
+  type PlateId,
+  type UsePlateEditorStoreOptions,
   usePlateSelectors,
 } from '../createPlateStore';
 
-/**
- * Get the editor selection (deeply memoized).
- */
+/** Get the editor selection (deeply memoized). */
 export const useEditorSelection = (
   id?: PlateId,
   options: UsePlateEditorStoreOptions = {}

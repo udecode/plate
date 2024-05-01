@@ -1,59 +1,56 @@
-import { createTEditor, normalizeEditor, TEditor, Value } from '@udecode/slate';
-
 import {
+  type TEditor,
+  type Value,
+  createTEditor,
+  normalizeEditor,
+} from '@udecode/slate';
+
+import type {
   OverrideByKey,
   PlatePlugin,
   PlatePluginComponent,
 } from '../../shared/types';
-import { PlateEditor } from '../../shared/types/PlateEditor';
+import type { PlateEditor } from '../../shared/types/PlateEditor';
+
 import { createPlugins } from '../../shared/utils/createPlugins';
-import { withPlate, WithPlateOptions } from '../plugins/withPlate';
+import { type WithPlateOptions, withPlate } from '../plugins/withPlate';
 
 export interface CreatePlateEditorOptions<
   V extends Value = Value,
   E extends TEditor<V> = TEditor<V>,
 > extends Omit<WithPlateOptions<V, E & PlateEditor<V>>, 'plugins'> {
-  /**
-   * Initial editor (without `withPlate`).
-   */
-  editor?: E;
-
-  /**
-   * Editor plugins.
-   */
-  plugins?: PlatePlugin[];
-
-  /**
-   * Inject components into plugins.
-   */
+  /** Inject components into plugins. */
   components?: Record<string, PlatePluginComponent>;
 
-  /**
-   * Override plugins by key.
-   */
+  /** Initial editor (without `withPlate`). */
+  editor?: E;
+
+  /** Normalize editor. */
+  normalizeInitialValue?: boolean;
+
+  /** Override plugins by key. */
   overrideByKey?: OverrideByKey;
 
-  /**
-   * Normalize editor.
-   */
-  normalizeInitialValue?: boolean;
+  /** Editor plugins. */
+  plugins?: PlatePlugin[];
 }
 
 /**
  * Create a plate editor with:
+ *
  * - `createTEditor` or custom `editor`
  * - `withPlate`
- * - custom `components`
+ * - Custom `components`
  */
 export const createPlateEditor = <
   V extends Value = Value,
   E extends TEditor<V> = TEditor<V>,
 >({
-  editor = createTEditor() as E,
-  plugins = [],
   components,
-  overrideByKey,
+  editor = createTEditor() as E,
   normalizeInitialValue: shouldNormalizeInitialValue,
+  overrideByKey,
+  plugins = [],
   ...withPlateOptions
 }: CreatePlateEditorOptions<V, E> = {}): E & PlateEditor<V> => {
   plugins = createPlugins(plugins, {

@@ -1,13 +1,14 @@
-import { Value } from '@udecode/slate';
+import type { Value } from '@udecode/slate';
 
-import { PlateEditor } from '../types/PlateEditor';
+import type { PlateEditor } from '../types/PlateEditor';
+
 import { createPluginFactory } from '../utils/createPluginFactory';
 
 export const KEY_INLINE_VOID = 'inline-void';
 
 /**
- * Merge and register all the inline types and void types from the plugins and options,
- * using `editor.isInline`, `editor.markableVoid` and `editor.isVoid`
+ * Merge and register all the inline types and void types from the plugins and
+ * options, using `editor.isInline`, `editor.markableVoid` and `editor.isVoid`
  */
 export const withInlineVoid = <
   V extends Value = Value,
@@ -50,9 +51,7 @@ export const withInlineVoid = <
   return editor;
 };
 
-/**
- * @see {@link withInlineVoid}
- */
+/** @see {@link withInlineVoid} */
 export const createInlineVoidPlugin = createPluginFactory({
   key: KEY_INLINE_VOID,
   withOverrides: withInlineVoid,

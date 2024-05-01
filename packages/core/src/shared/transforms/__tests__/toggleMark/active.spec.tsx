@@ -13,8 +13,8 @@ const input = (
       <htext bold>t</htext>
     </hp>
     <selection>
-      <anchor path={[0, 1]} offset={0} />
-      <focus path={[0, 1]} offset={1} />
+      <anchor offset={0} path={[0, 1]} />
+      <focus offset={1} path={[0, 1]} />
     </selection>
   </editor>
 ) as any;

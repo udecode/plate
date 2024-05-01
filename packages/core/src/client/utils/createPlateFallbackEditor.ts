@@ -1,9 +1,10 @@
-import { TEditor, Value } from '@udecode/slate';
+import type { TEditor, Value } from '@udecode/slate';
 
-import { PlateEditor } from '../../shared';
+import type { PlateEditor } from '../../shared';
+
 import {
+  type CreatePlateEditorOptions,
   createPlateEditor,
-  CreatePlateEditorOptions,
 } from './createPlateEditor';
 
 export const createPlateFallbackEditor = <

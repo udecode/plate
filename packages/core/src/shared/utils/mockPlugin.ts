@@ -1,8 +1,8 @@
-import { Value } from '@udecode/slate';
+import type { Value } from '@udecode/slate';
 
-import { NoInfer } from '../types/misc/NoInfer';
-import { PlateEditor } from '../types/PlateEditor';
-import {
+import type { PlateEditor } from '../types/PlateEditor';
+import type { NoInfer } from '../types/misc/NoInfer';
+import type {
   PlatePlugin,
   PluginOptions,
   WithPlatePlugin,
@@ -16,10 +16,10 @@ export const mockPlugin = <
   plugin?: Partial<PlatePlugin<NoInfer<P>>>
 ): WithPlatePlugin<NoInfer<P>, V, E> =>
   ({
-    key: '',
-    type: '',
     editor: {} as any,
     inject: {} as any,
+    key: '',
     options: {} as any,
+    type: '',
     ...plugin,
   }) as any;

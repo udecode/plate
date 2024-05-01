@@ -1,11 +1,7 @@
 import React from 'react';
-import { normalizeEditor, Value } from '@udecode/slate';
-import { nanoid } from 'nanoid/non-secure';
 
-import { normalizeInitialValue } from '../../shared';
-import { PlateStoreProvider } from '../stores';
-import { createPlateEditor } from '../utils';
-import { PlateEffects } from './PlateEffects';
+import { type Value, normalizeEditor } from '@udecode/slate';
+import { nanoid } from 'nanoid/non-secure';
 
 import type {
   PlateEditor,
@@ -14,21 +10,26 @@ import type {
   TEditableProps,
 } from '../../shared/types';
 
+import { normalizeInitialValue } from '../../shared';
+import { PlateStoreProvider } from '../stores';
+import { createPlateEditor } from '../utils';
+import { PlateEffects } from './PlateEffects';
+
 export interface PlateProps<
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
 > extends Partial<
     Pick<
       PlateStoreState<V, E>,
-      'id' | 'editor' | 'value' | 'readOnly' | 'primary'
+      'editor' | 'id' | 'primary' | 'readOnly' | 'value'
     >
   > {
   children: React.ReactNode;
   decorate?: TEditableProps['decorate'];
 
   /**
-   * If `true`, disable all the core plugins.
-   * If an object, disable the core plugin properties that are `true` in the object.
+   * If `true`, disable all the core plugins. If an object, disable the core
+   * plugin properties that are `true` in the object.
    */
   disableCorePlugins?:
     | {
@@ -36,42 +37,39 @@ export interface PlateProps<
         deserializeHtml?: boolean;
         editorProtocol?: boolean;
         eventEditor?: boolean;
+        history?: boolean;
         inlineVoid?: boolean;
         insertData?: boolean;
-        history?: boolean;
+        length?: boolean;
         nodeFactory?: boolean;
         react?: boolean;
         selection?: boolean;
-        length?: boolean;
       }
     | boolean;
 
-  /**
-   * Access the editor object using a React ref.
-   */
+  /** Access the editor object using a React ref. */
   editorRef?: React.ForwardedRef<E>;
 
   /**
    * Initial value of the editor.
+   *
    * @default editor.childrenFactory()
    */
   initialValue?: PlateStoreState<V>['value'];
 
-  /**
-   * Specifies the maximum number of characters allowed in the editor.
-   */
+  /** Specifies the maximum number of characters allowed in the editor. */
   maxLength?: number;
 
   /**
-   * When `true`, it will normalize the initial value passed to the `editor` once it gets created.
-   * This is useful when adding normalization rules on already existing content.
+   * When `true`, it will normalize the initial value passed to the `editor`
+   * once it gets created. This is useful when adding normalization rules on
+   * already existing content.
+   *
    * @default false
    */
   normalizeInitialValue?: boolean;
 
-  /**
-   * Controlled callback called when the editor state changes.
-   */
+  /** Controlled callback called when the editor state changes. */
   onChange?: (value: V) => void;
 
   plugins?: PlatePlugin[];
@@ -83,22 +81,22 @@ function PlateInner<
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
 >({
-  normalizeInitialValue: shouldNormalizeInitialValue,
-  id: idProp,
-  editor: editorProp,
-  initialValue,
-  value: valueProp,
   children,
-  plugins: pluginsProp,
-  disableCorePlugins,
-  onChange,
-  editorRef,
   decorate,
+  disableCorePlugins,
+  editor: editorProp,
+  editorRef,
+  id: idProp,
+  initialValue,
+  maxLength,
+  normalizeInitialValue: shouldNormalizeInitialValue,
+  onChange,
+  plugins: pluginsProp,
+  primary,
+  readOnly,
   renderElement,
   renderLeaf,
-  readOnly,
-  primary,
-  maxLength,
+  value: valueProp,
 }: PlateProps<V, E>) {
   const [id] = React.useState(() => editorProp?.id ?? idProp ?? nanoid());
 
@@ -106,10 +104,10 @@ function PlateInner<
     () =>
       editorProp ??
       createPlateEditor({
-        id,
-        plugins: pluginsProp as any,
         disableCorePlugins,
+        id,
         maxLength,
+        plugins: pluginsProp as any,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
@@ -127,6 +125,7 @@ function PlateInner<
       }
 
       const normalizedValue = normalizeInitialValue(editor, currValue);
+
       if (normalizedValue) {
         currValue = normalizedValue;
       }
@@ -145,23 +144,23 @@ function PlateInner<
 
   return (
     <PlateStoreProvider
-      id={id}
+      decorate={decorate}
       editor={editor as any}
+      editorRef={editorRef as PlateStoreState['editorRef']}
+      id={id}
+      onChange={onChange as PlateStoreState['onChange']}
       plugins={editor.plugins as any}
+      primary={primary}
       rawPlugins={pluginsProp}
       readOnly={readOnly}
-      primary={primary}
-      value={value}
-      decorate={decorate}
-      onChange={onChange as PlateStoreState['onChange']}
-      editorRef={editorRef as PlateStoreState['editorRef']}
       renderElement={renderElement}
       renderLeaf={renderLeaf}
       scope={id}
+      value={value}
     >
       <PlateEffects
-        id={id}
         disableCorePlugins={disableCorePlugins}
+        id={id}
         plugins={pluginsProp}
       >
         {children}

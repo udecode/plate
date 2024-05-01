@@ -18,7 +18,7 @@ describe('when element has class and attribute, and plugin has deserialize type,
 
   const output = (
     <editor>
-      <element type="poll" id="456">
+      <element id="456" type="poll">
         <htext />
       </element>
     </editor>
@@ -30,14 +30,12 @@ describe('when element has class and attribute, and plugin has deserialize type,
         createPlateEditor({
           plugins: [
             {
-              key: 'a',
-              type: 'poll',
               deserializeHtml: {
-                isElement: true,
                 getNode: (el) => ({
-                  type: 'poll',
                   id: el.dataset.id,
+                  type: 'poll',
                 }),
+                isElement: true,
                 rules: [
                   {
                     validClassName: 'poll',
@@ -45,6 +43,8 @@ describe('when element has class and attribute, and plugin has deserialize type,
                 ],
                 withoutChildren: true,
               },
+              key: 'a',
+              type: 'poll',
             },
           ],
         }),
@@ -164,8 +164,8 @@ describe('when plugin has deserialize.attributeNames', () => {
   const output = (
     <editor>
       <himg
-        url="https://i.imgur.com/removed.png"
         attributes={{ alt: 'removed' }}
+        url="https://i.imgur.com/removed.png"
       >
         <htext />
       </himg>
@@ -186,9 +186,9 @@ describe('when plugin has deserialize.getNode', () => {
       createLinkPlugin({
         deserializeHtml: {
           getNode: (el) => ({
+            opener: el.getAttribute('target') === '_blank',
             type: 'a',
             url: el.getAttribute('href'),
-            opener: el.getAttribute('target') === '_blank',
           }),
         },
       }),

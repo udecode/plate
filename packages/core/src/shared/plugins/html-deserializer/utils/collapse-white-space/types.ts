@@ -1,13 +1,14 @@
 export type WhiteSpaceRule = 'normal' | 'pre' | 'pre-line';
 
-export type TrimStartRule = 'collapse' | 'all';
+export type TrimStartRule = 'all' | 'collapse';
+
 export type TrimEndRule = 'collapse' | 'single-newline';
 
 export type CollapseWhiteSpaceState = {
-  inlineFormattingContext: null | {
+  inlineFormattingContext: {
     atStart: boolean;
     lastHasTrailingWhiteSpace: boolean;
-  };
+  } | null;
 
   whiteSpaceRule: WhiteSpaceRule;
 };

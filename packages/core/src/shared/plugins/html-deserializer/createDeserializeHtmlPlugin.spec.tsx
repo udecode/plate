@@ -2,9 +2,9 @@
 
 import { createBoldPlugin } from '@udecode/plate-basic-marks';
 import {
+  type PlateEditor,
+  type PlatePlugin,
   createPlateEditor,
-  PlateEditor,
-  PlatePlugin,
 } from '@udecode/plate-common';
 import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createLinkPlugin } from '@udecode/plate-link';

@@ -1,6 +1,7 @@
 import { getEditorString, withoutNormalizing } from '@udecode/slate';
 
-import { WithOverride } from '../types/index';
+import type { WithOverride } from '../types/index';
+
 import { createPluginFactory } from '../utils/createPluginFactory';
 
 export type LengthPlugin = {
@@ -24,9 +25,9 @@ export const withLength: WithOverride<LengthPlugin> = (editor, { options }) => {
           const overflowLength = length - options.maxLength;
 
           editor.delete({
-            unit: 'character',
             distance: overflowLength,
             reverse: true,
+            unit: 'character',
           });
         }
       }

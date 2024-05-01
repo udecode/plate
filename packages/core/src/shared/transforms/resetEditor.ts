@@ -1,6 +1,7 @@
-import { Value } from '@udecode/slate';
+import type { Value } from '@udecode/slate';
 
-import { PlateEditor } from '../types/index';
+import type { PlateEditor } from '../types/index';
+
 import { resetEditorChildren } from './resetEditorChildren';
 
 export const resetEditor = <V extends Value>(editor: PlateEditor<V>) => {

@@ -2,7 +2,7 @@ const {
   getDefaultIgnorePatterns,
 } = require('./config/eslint/helpers/getDefaultIgnorePatterns.cjs');
 
-/** @type {import("eslint").Linter.Config} */
+/** @type {import('eslint').Linter.Config} */
 module.exports = {
   env: {
     browser: true,
@@ -37,6 +37,12 @@ module.exports = {
   ],
   overrides: [
     {
+      files: ['*.ts', '*.tsx', '*.mts'],
+      parserOptions: {
+        project: true,
+      },
+    },
+    {
       extends: ['plugin:@dword-design/import-alias/recommended'],
       files: ['apps/www/src/**/*'],
       rules: {
@@ -59,7 +65,6 @@ module.exports = {
       },
     },
     {
-      extends: ['./config/eslint/bases/prettier.cjs'],
       files: ['**/*.spec.*'],
       rules: {
         'import/no-relative-packages': 'off',
@@ -90,21 +95,22 @@ module.exports = {
       },
     },
   ],
+  parser: '@typescript-eslint/parser',
   root: true,
   rules: {},
   settings: {
-    'import/parsers': {
-      '@typescript-eslint/parser': ['.ts', '.tsx'],
-    },
-    'import/resolver': {
-      node: {
-        moduleDirectory: ['node_modules'],
-        typescript: {
-          alwaysTryTypes: true,
-        },
-      },
-      typescript: {},
-    },
+    // 'import/parsers': {
+    //   '@typescript-eslint/parser': ['.ts', '.tsx'],
+    // },
+    // 'import/resolver': {
+    //   node: {
+    //     moduleDirectory: ['node_modules'],
+    //     typescript: {
+    //       alwaysTryTypes: true,
+    //     },
+    //   },
+    //   typescript: {},
+    // },
     next: {
       rootDir: ['apps/www'],
     },

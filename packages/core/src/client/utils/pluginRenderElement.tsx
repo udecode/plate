@@ -1,24 +1,27 @@
 import React from 'react';
-import { Value } from '@udecode/slate';
+
+import type { Value } from '@udecode/slate';
+
 import { DefaultElement } from 'slate-react';
 
-import { PlateEditor } from '../../shared/types/PlateEditor';
-import { PlatePlugin } from '../../shared/types/plugin/PlatePlugin';
-import { RenderElement } from '../../shared/types/RenderElement';
+import type { PlateEditor } from '../../shared/types/PlateEditor';
+import type { RenderElement } from '../../shared/types/RenderElement';
+import type { PlatePlugin } from '../../shared/types/plugin/PlatePlugin';
+
 import { getRenderNodeProps } from '../../shared/utils/getRenderNodeProps';
 import { ElementProvider } from '../stores/element/useElementStore';
 
 /**
- * Get a `Editable.renderElement` handler for `options.type`.
- * If the type is equals to the slate element type, render `options.component`.
- * Else, return `undefined` so the pipeline can check the next plugin.
+ * Get a `Editable.renderElement` handler for `options.type`. If the type is
+ * equals to the slate element type, render `options.component`. Else, return
+ * `undefined` so the pipeline can check the next plugin.
  */
 export const pluginRenderElement = <V extends Value>(
   editor: PlateEditor<V>,
-  { key, type, component: _component, props }: PlatePlugin<{}, V>
+  { component: _component, key, props, type }: PlatePlugin<{}, V>
 ): RenderElement =>
   function render(nodeProps) {
-    const { element, children: _children } = nodeProps;
+    const { children: _children, element } = nodeProps;
 
     if (element.type === type) {
       const Element = _component ?? DefaultElement;

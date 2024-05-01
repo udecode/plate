@@ -1,6 +1,7 @@
-import { TElement } from '@udecode/slate';
+import type { TElement } from '@udecode/slate';
 
-import { Nullable } from '../../../shared/types';
+import type { Nullable } from '../../../shared/types';
+
 import { createAtomStore } from '../../libs/jotai';
 
 export const SCOPE_ELEMENT = 'element';
@@ -11,7 +12,7 @@ const initialState: Nullable<ElementStoreState> = {
   element: null,
 };
 
-export const { useElementStore, ElementProvider } = createAtomStore(
+export const { ElementProvider, useElementStore } = createAtomStore(
   initialState as ElementStoreState,
   { name: 'element' } as const
 );

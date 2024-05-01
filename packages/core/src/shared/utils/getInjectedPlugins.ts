@@ -1,7 +1,7 @@
-import { Value } from '@udecode/slate';
+import type { Value } from '@udecode/slate';
 
-import { PlateEditor } from '../types/PlateEditor';
-import {
+import type { PlateEditor } from '../types/PlateEditor';
+import type {
   PlatePlugin,
   PluginOptions,
   WithPlatePlugin,
@@ -14,8 +14,8 @@ export type InjectedPlugin<
 > = Partial<PlatePlugin<P, V, E>>;
 
 /**
- * Get all plugins having a defined `inject.pluginsByKey[plugin.key]`.
- * It includes `plugin` itself.
+ * Get all plugins having a defined `inject.pluginsByKey[plugin.key]`. It
+ * includes `plugin` itself.
  */
 export const getInjectedPlugins = <
   P = PluginOptions,

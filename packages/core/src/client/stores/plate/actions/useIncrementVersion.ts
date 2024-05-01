@@ -1,10 +1,11 @@
 import React from 'react';
 
-import { PlateChangeKey } from '../../../../shared';
+import type { PlateChangeKey } from '../../../../shared';
+
 import {
-  PlateId,
+  type PlateId,
+  type UsePlateEditorStoreOptions,
   usePlateActions,
-  UsePlateEditorStoreOptions,
 } from '../createPlateStore';
 
 export const useIncrementVersion = (

@@ -1,16 +1,17 @@
 import React from 'react';
-import { Value } from '@udecode/slate';
+
+import type { Value } from '@udecode/slate';
+
 import { DefaultElement } from 'slate-react';
 
-import { PlateEditor } from '../../shared/types/PlateEditor';
-import { RenderElement } from '../../shared/types/RenderElement';
-import { TEditableProps } from '../../shared/types/slate-react/TEditableProps';
+import type { PlateEditor } from '../../shared/types/PlateEditor';
+import type { RenderElement } from '../../shared/types/RenderElement';
+import type { TEditableProps } from '../../shared/types/slate-react/TEditableProps';
+
 import { pipeInjectProps } from '../../shared/utils/pipeInjectProps';
 import { pluginRenderElement } from './pluginRenderElement';
 
-/**
- * @see {@link RenderElement}
- */
+/** @see {@link RenderElement} */
 export const pipeRenderElement = <V extends Value>(
   editor: PlateEditor<V>,
   renderElementProp?: TEditableProps['renderElement']
@@ -30,11 +31,11 @@ export const pipeRenderElement = <V extends Value>(
 
     renderElements.some((renderElement) => {
       element = renderElement(props as any);
+
       return !!element;
     });
 
     if (element) return element;
-
     if (renderElementProp) {
       return renderElementProp(props);
     }

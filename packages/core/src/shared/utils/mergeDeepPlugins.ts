@@ -1,15 +1,14 @@
-import { Value } from '@udecode/slate';
+import type { Value } from '@udecode/slate';
+
 import defaultsDeep from 'lodash/defaultsDeep.js';
 import keyBy from 'lodash/keyBy.js';
 import merge from 'lodash/merge.js';
 import values from 'lodash/values.js';
 
-import { PlateEditor } from '../types/PlateEditor';
-import { WithPlatePlugin } from '../types/plugin/PlatePlugin';
+import type { PlateEditor } from '../types/PlateEditor';
+import type { WithPlatePlugin } from '../types/plugin/PlatePlugin';
 
-/**
- * Recursively merge nested plugins into the root plugins
- */
+/** Recursively merge nested plugins into the root plugins */
 export const mergeDeepPlugins = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
@@ -21,6 +20,7 @@ export const mergeDeepPlugins = <
   const plugin = { ..._plugin };
 
   const { then } = plugin;
+
   if (then) {
     delete plugin.then;
 

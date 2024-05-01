@@ -8,11 +8,13 @@
  *
  * ```js
  * JSON.stringify(
- *   Array.from(document.querySelectorAll('article table td:first-child')).map((td) => {
- *     const body = document.createElement('body');
- *     body.innerHTML = td.textContent;
- *     return body.firstChild?.tagName;
- *   }).filter((tagName) => tagName)
+ *   Array.from(document.querySelectorAll('article table td:first-child'))
+ *     .map((td) => {
+ *       const body = document.createElement('body');
+ *       body.innerHTML = td.textContent;
+ *       return body.firstChild?.tagName;
+ *     })
+ *     .filter((tagName) => tagName)
  * );
  * ```
  *

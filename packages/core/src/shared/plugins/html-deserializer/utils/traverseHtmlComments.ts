@@ -3,9 +3,7 @@ import { traverseHtmlNode } from './traverseHtmlNode';
 
 type Callback = (node: Comment) => boolean;
 
-/**
- * Traverse HTML comments.
- */
+/** Traverse HTML comments. */
 export const traverseHtmlComments = (
   rootNode: Node,
   callback: Callback

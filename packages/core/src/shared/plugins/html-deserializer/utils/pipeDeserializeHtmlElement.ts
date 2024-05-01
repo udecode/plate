@@ -1,15 +1,16 @@
-import { Value } from '@udecode/slate';
-import { AnyObject } from '@udecode/utils';
+import type { Value } from '@udecode/slate';
+import type { AnyObject } from '@udecode/utils';
 
-import { DeserializeHtml, PlateEditor } from '../../../types';
-import { Nullable } from '../../../types/misc/Nullable';
+import type { DeserializeHtml, PlateEditor } from '../../../types';
+import type { Nullable } from '../../../types/misc/Nullable';
+
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
 
 export const pipeDeserializeHtmlElement = <V extends Value>(
   editor: PlateEditor<V>,
   element: HTMLElement
 ) => {
-  let result: (Nullable<DeserializeHtml> & { node: AnyObject }) | undefined;
+  let result: ({ node: AnyObject } & Nullable<DeserializeHtml>) | undefined;
 
   [...editor.plugins].reverse().some((plugin) => {
     result = pluginDeserializeHtml(editor, plugin, { element });

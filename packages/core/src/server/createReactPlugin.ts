@@ -1,6 +1,7 @@
-import { Value } from '@udecode/slate';
+import type { Value } from '@udecode/slate';
 
-import { PlateEditor } from '../shared/types';
+import type { PlateEditor } from '../shared/types';
+
 import { createPluginFactory } from '../shared/utils/createPluginFactory';
 
 const noop = (returnValue?: any) => (() => returnValue) as any;
@@ -24,9 +25,7 @@ export const withReact = <
   return editor;
 };
 
-/**
- * @see {@link withReact} with noop methods for server-side support.
- */
+/** @see {@link withReact} with noop methods for server-side support. */
 export const createReactPlugin = createPluginFactory({
   key: 'react',
   withOverrides: withReact,

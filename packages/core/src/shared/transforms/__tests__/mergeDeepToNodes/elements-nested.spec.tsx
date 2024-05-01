@@ -19,9 +19,9 @@ const node = (
 const props = { a: 1 };
 
 const output = (
-  <element type={ELEMENT_LI} a={1}>
+  <element a={1} type={ELEMENT_LI}>
     test
-    <element type={ELEMENT_PARAGRAPH} a={1}>
+    <element a={1} type={ELEMENT_PARAGRAPH}>
       test
     </element>
     test
@@ -31,10 +31,10 @@ const output = (
 it('should set props to all elements', () => {
   mergeDeepToNodes({
     node,
-    source: props,
     query: {
       filter: ([n]) => isElement(n),
     },
+    source: props,
   });
   expect(node).toEqual(output);
 });

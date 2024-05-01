@@ -1,6 +1,7 @@
-import { Value } from '@udecode/slate';
+import type { Value } from '@udecode/slate';
 
-import { PlateEditor } from '../types/PlateEditor';
+import type { PlateEditor } from '../types/PlateEditor';
+
 import { createPluginFactory } from '../utils/createPluginFactory';
 import { getInjectedPlugins } from '../utils/getInjectedPlugins';
 import { pipeInsertDataQuery } from '../utils/pipeInsertDataQuery';
@@ -19,15 +20,17 @@ export const withInsertData = <
   editor.insertData = (dataTransfer) => {
     const inserted = [...editor.plugins].reverse().some((plugin) => {
       const insertDataOptions = plugin.editor.insertData;
+
       if (!insertDataOptions) return false;
 
       const injectedPlugins = getInjectedPlugins<{}, V>(editor, plugin);
       const { format, getFragment } = insertDataOptions;
+
       if (!format) return false;
 
       let data = dataTransfer.getData(format);
-      if (!data) return;
 
+      if (!data) return;
       if (
         !pipeInsertDataQuery<{}, V>(injectedPlugins, {
           data,
@@ -46,23 +49,26 @@ export const withInsertData = <
         data,
         dataTransfer,
       });
+
       if (!fragment?.length) return false;
 
       fragment = pipeTransformFragment(injectedPlugins, {
-        fragment,
         data,
         dataTransfer,
+        fragment,
       });
+
       if (fragment.length === 0) return false;
 
       pipeInsertFragment(editor, injectedPlugins, {
-        fragment,
         data,
         dataTransfer,
+        fragment,
       });
 
       return true;
     });
+
     if (inserted) return;
 
     insertData(dataTransfer);

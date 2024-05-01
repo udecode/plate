@@ -1,9 +1,10 @@
 /* eslint-disable react/display-name */
 import React from 'react';
-import { Range, Selection } from 'slate';
+
+import { Range, type Selection } from 'slate';
 import { useSlate } from 'slate-react';
 
-import { PlateId, useIncrementVersion } from '../stores';
+import { type PlateId, useIncrementVersion } from '../stores';
 
 export const EditorStateEffect = React.memo(({ id }: { id?: PlateId }) => {
   const editorState = useSlate();
@@ -25,6 +26,7 @@ export const EditorStateEffect = React.memo(({ id }: { id?: PlateId }) => {
     if (!sameSelection) {
       updateVersionSelection();
     }
+
     prevSelectionRef.current = editorState.selection;
   }, [editorState.selection, sameSelection, updateVersionSelection]);
 
@@ -34,5 +36,6 @@ export const EditorStateEffect = React.memo(({ id }: { id?: PlateId }) => {
 const isSelectionEqual = (a: Selection, b: Selection) => {
   if (!a && !b) return true;
   if (!a || !b) return false;
+
   return Range.equals(a, b);
 };

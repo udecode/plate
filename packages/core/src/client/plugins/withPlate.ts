@@ -1,10 +1,10 @@
-import { TEditor, Value } from '@udecode/slate';
+import type { TEditor, Value } from '@udecode/slate';
+
+import type { PlateEditor } from '../../shared/types/PlateEditor';
+import type { PlateProps } from '../components';
 
 import { resetEditor } from '../../shared/transforms';
-import { PlateEditor } from '../../shared/types/PlateEditor';
 import { setPlatePlugins } from '../utils/setPlatePlugins';
-
-import type { PlateProps } from '../components';
 
 const shouldHaveBeenOverridden = (fnName: string) => () => {
   console.warn(
@@ -17,16 +17,17 @@ export interface WithPlateOptions<
   E extends PlateEditor<V> = PlateEditor<V>,
 > extends Pick<
     PlateProps<V, E>,
-    'disableCorePlugins' | 'plugins' | 'maxLength'
+    'disableCorePlugins' | 'maxLength' | 'plugins'
   > {
   id?: any;
 }
 
 /**
- * Apply `withInlineVoid` and all plate plugins `withOverrides`.
- * Overrides:
+ * Apply `withInlineVoid` and all plate plugins `withOverrides`. Overrides:
+ *
  * - `id`: id of the editor.
- * - `key`: random key for the <Slate> component so each time the editor is created, the component resets.
+ * - `key`: random key for the <Slate> component so each time the editor is
+ *   created, the component resets.
  * - `options`: Plate options
  */
 export const withPlate = <
@@ -35,10 +36,10 @@ export const withPlate = <
 >(
   e: E,
   {
-    id,
-    plugins = [],
     disableCorePlugins,
+    id,
     maxLength,
+    plugins = [],
   }: WithPlateOptions<V, E & PlateEditor<V>> = {}
 ): E & PlateEditor<V> => {
   let editor = e as any as E & PlateEditor<V>;
@@ -55,6 +56,7 @@ export const withPlate = <
   editor.plate = {
     get set() {
       shouldHaveBeenOverridden('plate.set');
+
       return null as any;
     },
   };
@@ -64,9 +66,9 @@ export const withPlate = <
   }
 
   setPlatePlugins<V>(editor, {
-    plugins: plugins as any,
-    maxLength,
     disableCorePlugins,
+    maxLength,
+    plugins: plugins as any,
   });
 
   // withOverrides

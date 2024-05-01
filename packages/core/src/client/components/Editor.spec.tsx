@@ -1,10 +1,12 @@
 import React from 'react';
+
 import { render } from '@testing-library/react';
 import { isBlock, setNodes } from '@udecode/slate';
 import isEqual from 'lodash/isEqual.js';
 import memoize from 'lodash/memoize.js';
 
-import { PlatePlugin } from '../../../common/types';
+import type { PlatePlugin } from '../../../common/types';
+
 import { createPlateEditor } from '../utils';
 import { Plate } from './Plate';
 import { PlateContent } from './PlateContent';
@@ -74,6 +76,7 @@ describe('Plate', () => {
               fn(e, n);
               normalizeNode(n);
             };
+
             return e;
           },
         },
@@ -84,8 +87,8 @@ describe('Plate', () => {
       render(
         <Plate
           editor={editor}
-          plugins={plugins}
           initialValue={[{ children: [{ text: '' }] } as any]}
+          plugins={plugins}
         >
           <PlateContent />
         </Plate>
@@ -153,10 +156,7 @@ describe('Plate', () => {
     it('should work', () => {
       const plugins: PlatePlugin[] = [
         {
-          key: 'a',
-          isElement: true,
-          isVoid: true,
-          component: ({ children, attributes }) => (
+          component: ({ attributes, children }) => (
             <div {...attributes}>
               <Plate id="test">
                 <PlateContent id="test" />
@@ -164,6 +164,9 @@ describe('Plate', () => {
               {children}
             </div>
           ),
+          isElement: true,
+          isVoid: true,
+          key: 'a',
         },
       ];
 
@@ -175,7 +178,7 @@ describe('Plate', () => {
         render(
           <Plate
             editor={editor}
-            initialValue={[{ type: 'a', children: [{ text: '' }] }] as any}
+            initialValue={[{ children: [{ text: '' }], type: 'a' }] as any}
           >
             <PlateContent />
           </Plate>

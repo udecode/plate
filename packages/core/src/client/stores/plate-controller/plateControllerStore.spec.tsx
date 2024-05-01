@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { renderHook } from '@testing-library/react-hooks';
 
 import {
@@ -19,13 +20,13 @@ describe('plateControllerStore', () => {
       const MATCHING_STORE = '2' as any;
 
       const wrapper = createWrapper({
+        activeId: '1',
         editorStores: {
           '1': '1' as any,
           '2': MATCHING_STORE,
           '3': '3' as any,
           '4': null,
         },
-        activeId: '1',
         primaryEditorIds: ['3'],
       });
 
@@ -66,13 +67,13 @@ describe('plateControllerStore', () => {
           const ACTIVE_STORE = '2' as any;
 
           const wrapper = createWrapper({
+            activeId: '2',
             editorStores: {
               '1': '1' as any,
               '2': ACTIVE_STORE,
               '3': '3' as any,
               '4': null,
             },
-            activeId: '2',
             primaryEditorIds: ['3'],
           });
 
@@ -89,13 +90,13 @@ describe('plateControllerStore', () => {
           const PRIMARY_STORE = '3' as any;
 
           const wrapper = createWrapper({
+            activeId: '5',
             editorStores: {
               '1': '1' as any,
               '2': '2' as any,
               '3': PRIMARY_STORE,
               '4': null,
             },
-            activeId: '5',
             primaryEditorIds: ['3'],
           });
 
@@ -112,13 +113,13 @@ describe('plateControllerStore', () => {
           const PRIMARY_STORE = '3' as any;
 
           const wrapper = createWrapper({
+            activeId: '4',
             editorStores: {
               '1': '1' as any,
               '2': '2' as any,
               '3': PRIMARY_STORE,
               '4': null,
             },
-            activeId: '4',
             primaryEditorIds: ['3'],
           });
 
@@ -137,13 +138,13 @@ describe('plateControllerStore', () => {
           const EXPECTED_STORE = '3' as any;
 
           const wrapper = createWrapper({
+            activeId: null,
             editorStores: {
               '1': '1' as any,
               '2': null,
               '3': EXPECTED_STORE,
               '4': '4' as any,
             },
-            activeId: null,
             primaryEditorIds: ['2', '5', '3', '4'],
           });
 
@@ -158,13 +159,13 @@ describe('plateControllerStore', () => {
 
         describe('when all primary editor ids map to null', () => {
           const wrapper = createWrapper({
+            activeId: null,
             editorStores: {
               '1': '1' as any,
               '2': null,
               '3': null,
               '4': '4' as any,
             },
-            activeId: null,
             primaryEditorIds: ['2', '5', '3'],
           });
 
@@ -179,13 +180,13 @@ describe('plateControllerStore', () => {
 
         describe('when there are no primary editor ids', () => {
           const wrapper = createWrapper({
+            activeId: null,
             editorStores: {
               '1': '1' as any,
               '2': null,
               '3': null,
               '4': '4' as any,
             },
-            activeId: null,
             primaryEditorIds: [],
           });
 

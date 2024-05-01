@@ -1,5 +1,6 @@
+import type { CollapseWhiteSpaceState } from './types';
+
 import { collapseWhiteSpaceNode } from './collapseWhiteSpaceNode';
-import { CollapseWhiteSpaceState } from './types';
 
 export const collapseWhiteSpaceChildren = (
   node: Node,

@@ -1,4 +1,4 @@
-import { CollapseWhiteSpaceState } from './types';
+import type { CollapseWhiteSpaceState } from './types';
 
 export const upsertInlineFormattingContext = (
   state: CollapseWhiteSpaceState

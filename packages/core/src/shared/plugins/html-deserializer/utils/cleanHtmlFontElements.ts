@@ -2,7 +2,8 @@ import { replaceTagName } from './replaceTagName';
 import { traverseHtmlElements } from './traverseHtmlElements';
 
 /**
- * Replace FONT elements with SPAN elements if there is textContent (remove otherwise).
+ * Replace FONT elements with SPAN elements if there is textContent (remove
+ * otherwise).
  */
 export const cleanHtmlFontElements = (rootNode: Node): void => {
   traverseHtmlElements(rootNode, (element) => {

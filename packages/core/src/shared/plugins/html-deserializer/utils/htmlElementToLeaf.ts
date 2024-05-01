@@ -1,20 +1,21 @@
 import {
-  EDescendant,
+  type EDescendant,
+  type TDescendant,
+  type Value,
   isElement,
   isText,
-  TDescendant,
-  Value,
 } from '@udecode/slate';
 import { jsx } from 'slate-hyperscript';
 
-import { PlateEditor } from '../../../types';
+import type { PlateEditor } from '../../../types';
+
 import { mergeDeepToNodes } from '../../../utils';
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
 import { pipeDeserializeHtmlLeaf } from './pipeDeserializeHtmlLeaf';
 
 /**
- * Deserialize HTML to TDescendant[] with marks on Text.
- * Build the leaf from the leaf deserializers of each plugin.
+ * Deserialize HTML to TDescendant[] with marks on Text. Build the leaf from the
+ * leaf deserializers of each plugin.
  */
 export const htmlElementToLeaf = <V extends Value>(
   editor: PlateEditor<V>,
@@ -25,17 +26,17 @@ export const htmlElementToLeaf = <V extends Value>(
   return deserializeHtmlNodeChildren(editor, element).reduce(
     (arr: TDescendant[], child) => {
       if (!child) return arr;
-
       if (isElement(child)) {
         if (Object.keys(node).length > 0) {
           mergeDeepToNodes({
             node: child,
-            source: node,
             query: {
               filter: ([n]) => isText(n),
             },
+            source: node,
           });
         }
+
         arr.push(child);
       } else {
         const attributes = { ...node };

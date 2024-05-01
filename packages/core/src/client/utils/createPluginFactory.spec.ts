@@ -1,5 +1,5 @@
 import { createBasicElementsPlugin } from '@udecode/plate-basic-elements';
-import { createLinkPlugin, ELEMENT_LINK } from '@udecode/plate-link';
+import { ELEMENT_LINK, createLinkPlugin } from '@udecode/plate-link';
 
 import { createPluginFactory } from '../../../common/utils/createPluginFactory';
 import { getPlugin } from '../../../common/utils/getPlugin';
@@ -18,23 +18,23 @@ describe('createPluginFactory', () => {
 
   describe('when overriding', () => {
     it('should be', () => {
-      const { key, type, inject } = createPlugin({
-        type: 'b',
+      const { inject, key, type } = createPlugin({
         inject: {
           props: {
             nodeKey: 'b',
           },
         },
+        type: 'b',
       });
 
-      expect({ key, type, inject }).toEqual({
-        key: 'a',
-        type: 'b',
+      expect({ inject, key, type }).toEqual({
         inject: {
           props: {
             nodeKey: 'b',
           },
         },
+        key: 'a',
+        type: 'b',
       });
     });
   });
@@ -92,7 +92,6 @@ describe('createPluginFactory', () => {
         plugins: [
           createPluginFactory({
             key: 'a',
-            type: 'a',
             plugins: [
               {
                 key: 'aa',
@@ -100,13 +99,10 @@ describe('createPluginFactory', () => {
               },
             ],
             then: () => ({
-              type: 'athen',
               plugins: [
                 {
                   key: 'bb',
-                  type: 'bb',
                   then: () => ({
-                    type: 'athen2',
                     plugins: [
                       {
                         key: 'aa',
@@ -117,10 +113,14 @@ describe('createPluginFactory', () => {
                         type: 'cc',
                       },
                     ],
+                    type: 'athen2',
                   }),
+                  type: 'bb',
                 },
               ],
+              type: 'athen',
             }),
+            type: 'a',
           })(
             {
               type: 'a1',

@@ -1,12 +1,11 @@
-import React from 'react';
+import type React from 'react';
+
 import { IS_APPLE } from '@udecode/utils';
 import { isKeyHotkey } from 'is-hotkey';
 
 export { isHotkey } from 'is-hotkey';
 
-/**
- * Hotkey mappings for each platform.
- */
+/** Hotkey mappings for each platform. */
 const HOTKEYS = {
   bold: 'mod+b',
   compose: ['down', 'left', 'right', 'up', 'backspace', 'enter'],
@@ -22,8 +21,8 @@ const HOTKEYS = {
   moveWordForward: 'ctrl+right',
   splitBlock: 'enter',
   tab: 'tab',
-  untab: 'shift+tab',
   undo: 'mod+z',
+  untab: 'shift+tab',
 };
 
 const APPLE_HOTKEYS = {
@@ -49,9 +48,7 @@ const WINDOWS_HOTKEYS = {
   redo: ['ctrl+y', 'ctrl+shift+z'],
 };
 
-/**
- * Create a platform-aware hotkey checker.
- */
+/** Create a platform-aware hotkey checker. */
 
 export const createHotkey = (key: string) => {
   const generic = (HOTKEYS as any)[key];
@@ -62,9 +59,10 @@ export const createHotkey = (key: string) => {
   const isWindows = windows && isKeyHotkey(windows);
 
   return (event: React.KeyboardEvent) => {
-    if (isGeneric && isGeneric(event)) return true;
-    if (IS_APPLE && isApple && isApple(event)) return true;
-    if (!IS_APPLE && isWindows && isWindows(event)) return true;
+    if (isGeneric?.(event)) return true;
+    if (IS_APPLE && isApple?.(event)) return true;
+    if (!IS_APPLE && isWindows?.(event)) return true;
+
     return false;
   };
 };
@@ -72,8 +70,6 @@ export const createHotkey = (key: string) => {
 export const sharedHotkeys = {
   isBold: createHotkey('bold'),
   isCompose: createHotkey('compose'),
-  isMoveBackward: createHotkey('moveBackward'),
-  isMoveForward: createHotkey('moveForward'),
   isDeleteBackward: createHotkey('deleteBackward'),
   isDeleteForward: createHotkey('deleteForward'),
   isDeleteLineBackward: createHotkey('deleteLineBackward'),
@@ -85,6 +81,8 @@ export const sharedHotkeys = {
   isExtendLineBackward: createHotkey('extendLineBackward'),
   isExtendLineForward: createHotkey('extendLineForward'),
   isItalic: createHotkey('italic'),
+  isMoveBackward: createHotkey('moveBackward'),
+  isMoveForward: createHotkey('moveForward'),
   isMoveLineBackward: createHotkey('moveLineBackward'),
   isMoveLineForward: createHotkey('moveLineForward'),
   isMoveWordBackward: createHotkey('moveWordBackward'),

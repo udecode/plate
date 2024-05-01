@@ -16,10 +16,10 @@ const output = (<htext>test</htext>) as any;
 it('should do nothing', () => {
   mergeDeepToNodes({
     node,
-    source: props,
     query: {
       filter: ([n]) => isElement(n),
     },
+    source: props,
   });
   expect(node).toEqual(output);
 });

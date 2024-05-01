@@ -42,8 +42,8 @@ describe('when collapseWhitespace is false', () => {
 
   it('should have the break line', () => {
     const convertedDocumentFragment = deserializeHtml(createPlateEditor(), {
-      element,
       collapseWhiteSpace: false,
+      element,
     });
 
     expect(convertedDocumentFragment).toEqual(expectedOutput);

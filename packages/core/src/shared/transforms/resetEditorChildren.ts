@@ -1,14 +1,13 @@
-import { EElement, Value } from '@udecode/slate';
+import type { EElement, Value } from '@udecode/slate';
+
 import {
+  type ReplaceNodeChildrenOptions,
   replaceNodeChildren,
-  ReplaceNodeChildrenOptions,
 } from '@udecode/slate-utils';
 
-import { PlateEditor } from '../types/index';
+import type { PlateEditor } from '../types/index';
 
-/**
- * Replace editor children by default block.
- */
+/** Replace editor children by default block. */
 export const resetEditorChildren = <V extends Value>(
   editor: PlateEditor<V>,
   options?: Omit<ReplaceNodeChildrenOptions<EElement<V>, V>, 'at' | 'nodes'>

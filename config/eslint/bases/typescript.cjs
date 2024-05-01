@@ -7,13 +7,113 @@ const path = require('node:path');
 
 /** @type {import("eslint").Linter.Config} */
 module.exports = {
-  // Parser to use
-  parser: '@typescript-eslint/parser',
-  // Parser options
-  parserOptions: {
-    parser: '@typescript-eslint/parser',
-    // project: path.join(__dirname, '../../../tsconfig.json'),
-  },
+  extends: ['eslint:recommended', 'plugin:import/recommended'],
+  overrides: [
+    {
+      extends: [
+        // 'eslint:recommended',
+        // 'plugin:import/recommended',
+        'plugin:import/typescript',
+        'plugin:@typescript-eslint/recommended',
+        'plugin:@typescript-eslint/recommended-type-checked',
+        'plugin:@typescript-eslint/stylistic-type-checked',
+      ],
+      files: ['*.ts', '*.tsx', '*.mts'],
+      rules: {
+        // Override recommended-type-checked
+
+        '@typescript-eslint/ban-ts-comment': [
+          'error',
+          {
+            minimumDescriptionLength: 10,
+            'ts-check': false,
+            'ts-expect-error': 'allow-with-description',
+            'ts-ignore': true,
+            'ts-nocheck': true,
+          },
+        ],
+        '@typescript-eslint/ban-tslint-comment': ['error'],
+        '@typescript-eslint/ban-types': 'off',
+        '@typescript-eslint/consistent-generic-constructors': 'error',
+        '@typescript-eslint/consistent-indexed-object-style': 'error',
+        '@typescript-eslint/consistent-type-definitions': 'off',
+        // for now we can use both type and interface
+        '@typescript-eslint/consistent-type-exports': 'warn',
+        '@typescript-eslint/consistent-type-imports': [
+          'warn',
+          { fixStyle: 'inline-type-imports' },
+        ],
+        '@typescript-eslint/method-signature-style': ['error', 'property'],
+        '@typescript-eslint/no-empty-function': 'off',
+        '@typescript-eslint/no-empty-interface': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-import-type-side-effects': 'error',
+        '@typescript-eslint/no-misused-promises': [
+          2,
+          { checksVoidReturn: false },
+        ],
+        // Override stylistic-type-checked
+
+        '@typescript-eslint/no-non-null-assertion': 'off',
+        '@typescript-eslint/no-redundant-type-constituents': 'off',
+        '@typescript-eslint/no-unnecessary-type-assertion': 'off',
+        '@typescript-eslint/no-unsafe-argument': 'off',
+        '@typescript-eslint/no-unsafe-assignment': 'off',
+        '@typescript-eslint/no-unsafe-call': 'off',
+        '@typescript-eslint/no-unsafe-member-access': 'off',
+        '@typescript-eslint/no-unsafe-return': 'off',
+        // Override strict-type-checked
+
+        '@typescript-eslint/no-unused-vars': [
+          'warn',
+          {
+            argsIgnorePattern: '^_',
+            ignoreRestSiblings: true,
+          },
+        ],
+        '@typescript-eslint/non-nullable-type-assertion-style': 'off',
+        '@typescript-eslint/prefer-nullish-coalescing': 'off',
+        '@typescript-eslint/require-await': 'warn',
+        '@typescript-eslint/restrict-template-expressions': 'off',
+      },
+    },
+    {
+      files: ['packages/cli/**'],
+      rules: {
+        '@typescript-eslint/no-shadow': 'off',
+      },
+    },
+    {
+      files: ['*.mjs'],
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+      rules: {
+        '@typescript-eslint/consistent-type-exports': 'off',
+        '@typescript-eslint/consistent-type-imports': 'off',
+        '@typescript-eslint/explicit-module-boundary-types': 'off',
+        '@typescript-eslint/naming-convention': 'off',
+      },
+    },
+    {
+      // commonjs or assumed
+      files: ['*.js', '*.cjs'],
+      parser: 'espree',
+      parserOptions: {
+        ecmaVersion: 2020,
+      },
+      rules: {
+        '@typescript-eslint/ban-ts-comment': 'off',
+        '@typescript-eslint/consistent-type-exports': 'off',
+        '@typescript-eslint/consistent-type-imports': 'off',
+        '@typescript-eslint/explicit-module-boundary-types': 'off',
+        '@typescript-eslint/naming-convention': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-var-requires': 'off',
+      },
+    },
+  ],
   plugins: ['unused-imports'],
   rules: {
     'import/default': ['error'],
@@ -57,85 +157,6 @@ module.exports = {
     // No unused variables
     'unused-imports/no-unused-vars': 'off',
   },
-  // Overrides for specific files
-  overrides: [
-    {
-      files: ['*.ts', '*.tsx', '*.mts'],
-      extends: [
-        // 'eslint:recommended',
-        // 'plugin:import/recommended',
-        'plugin:import/typescript',
-        'plugin:@typescript-eslint/recommended',
-        'plugin:@typescript-eslint/recommended-type-checked',
-        'plugin:@typescript-eslint/stylistic-type-checked',
-      ],
-      rules: {
-        // TS rules
-        '@typescript-eslint/ban-ts-comment': 'off',
-        '@typescript-eslint/ban-ts-ignore': 'off',
-        '@typescript-eslint/ban-types': 'off',
-        '@typescript-eslint/camelcase': 'off',
-        '@typescript-eslint/consistent-type-exports': 'off',
-        '@typescript-eslint/consistent-type-imports': 'off',
-        // not yet working with prettier + eslint (duplicate)
-        // '@typescript-eslint/consistent-type-imports': [
-        //   'warn',
-        //   {
-        //     prefer: 'type-imports',
-        //     fixStyle: 'inline-type-imports',
-        //   },
-        // ],
-        '@typescript-eslint/explicit-function-return-type': 'off',
-        '@typescript-eslint/explicit-module-boundary-types': 'off',
-        '@typescript-eslint/interface-name-prefix': 'off',
-        '@typescript-eslint/naming-convention': 'off',
-        '@typescript-eslint/no-empty-function': 'off',
-        '@typescript-eslint/no-empty-interface': 'off',
-        '@typescript-eslint/no-explicit-any': 'off',
-        '@typescript-eslint/no-namespace': 'off',
-        '@typescript-eslint/no-non-null-assertion': 'off',
-        '@typescript-eslint/no-shadow': ['error'],
-        '@typescript-eslint/no-unused-vars': 'off',
-        '@typescript-eslint/no-use-before-define': 'off',
-        '@typescript-eslint/no-useless-constructor': 'off',
-        '@typescript-eslint/no-var-requires': 'off',
-      },
-    },
-    {
-      files: ['packages/cli/**'],
-      rules: {
-        '@typescript-eslint/no-shadow': 'off',
-      },
-    },
-    {
-      files: ['*.mjs'],
-      parserOptions: {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
-      },
-      rules: {
-        '@typescript-eslint/explicit-module-boundary-types': 'off',
-        '@typescript-eslint/consistent-type-exports': 'off',
-        '@typescript-eslint/consistent-type-imports': 'off',
-      },
-    },
-    {
-      // commonjs or assumed
-      files: ['*.js', '*.cjs'],
-      parser: 'espree',
-      parserOptions: {
-        ecmaVersion: 2020,
-      },
-      rules: {
-        '@typescript-eslint/ban-ts-comment': 'off',
-        '@typescript-eslint/no-explicit-any': 'off',
-        '@typescript-eslint/no-var-requires': 'off',
-        '@typescript-eslint/explicit-module-boundary-types': 'off',
-        '@typescript-eslint/consistent-type-exports': 'off',
-        '@typescript-eslint/consistent-type-imports': 'off',
-      },
-    },
-  ],
   settings: {
     'import/resolver': {
       typescript: {},

@@ -1,18 +1,17 @@
 import React from 'react';
-import { Value } from '@udecode/slate';
-import { SlateProps } from '@udecode/slate-react';
+
+import type { Value } from '@udecode/slate';
+import type { SlateProps } from '@udecode/slate-react';
 
 import { pipeOnChange } from '../../shared/utils/pipeOnChange';
 import {
-  PlateId,
+  type PlateId,
   useEditorRef,
   usePlateActions,
   usePlateSelectors,
 } from '../stores';
 
-/**
- * Get Slate props stored in a global store.
- */
+/** Get Slate props stored in a global store. */
 export const useSlateProps = <V extends Value>({
   id,
 }: {
@@ -38,11 +37,11 @@ export const useSlateProps = <V extends Value>({
 
   return React.useMemo(() => {
     return {
-      key: editor.key,
       editor,
+      initialValue: value,
+      key: editor.key,
       onChange,
       value,
-      initialValue: value,
     };
   }, [editor, onChange, value]);
 };

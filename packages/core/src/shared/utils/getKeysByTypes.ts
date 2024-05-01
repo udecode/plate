@@ -1,11 +1,10 @@
-import { Value } from '@udecode/slate';
+import type { Value } from '@udecode/slate';
+
 import castArray from 'lodash/castArray.js';
 
-import { PlateEditor } from '../types/PlateEditor';
+import type { PlateEditor } from '../types/PlateEditor';
 
-/**
- * Get plugin keys by types
- */
+/** Get plugin keys by types */
 export const getKeysByTypes = <V extends Value>(
   editor: PlateEditor<V>,
   type: string | string[]

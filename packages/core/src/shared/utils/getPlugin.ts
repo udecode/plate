@@ -1,13 +1,15 @@
-import { Value } from '@udecode/slate';
+import type { Value } from '@udecode/slate';
 
-import { PlateEditor } from '../types/PlateEditor';
-import { PluginOptions, WithPlatePlugin } from '../types/plugin/PlatePlugin';
-import { PluginKey } from '../types/plugin/PlatePluginKey';
+import type { PlateEditor } from '../types/PlateEditor';
+import type {
+  PluginOptions,
+  WithPlatePlugin,
+} from '../types/plugin/PlatePlugin';
+import type { PluginKey } from '../types/plugin/PlatePluginKey';
+
 import { getPluginsByKey } from './getPluginsByKey';
 
-/**
- * Get plugin options by plugin key.
- */
+/** Get plugin options by plugin key. */
 export const getPlugin = <
   P = PluginOptions,
   V extends Value = Value,

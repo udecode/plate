@@ -1,15 +1,17 @@
-import { TEditor, Value } from '@udecode/slate';
+import type { TEditor, Value } from '@udecode/slate';
+import type { RenderEditorReturnTuple } from 'slate-test-utils/dist/esm/buildTestHarness';
+
 import { buildTestHarness } from 'slate-test-utils';
-import { RenderEditorReturnTuple } from 'slate-test-utils/dist/esm/buildTestHarness';
 
 import { PlateTest } from '../components/PlateTest';
 import {
+  type CreatePlateEditorOptions,
   createPlateEditor,
-  CreatePlateEditorOptions,
 } from '../utils/createPlateEditor';
 
 /**
  * `buildTestHarness` where:
+ *
  * - `Component`: `PlateTest`
  * - `editor`: `createPlateEditor`
  */

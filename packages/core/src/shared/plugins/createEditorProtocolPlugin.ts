@@ -1,16 +1,17 @@
 import {
-  EAncestor,
+  type EAncestor,
+  type GetAboveNodeOptions,
+  type TEditor,
+  type Value,
   getAboveNode,
-  GetAboveNodeOptions,
   getMarks,
   isExpanded,
   isStartPoint,
   removeEditorMark,
-  TEditor,
-  Value,
 } from '@udecode/slate';
 
-import { PlateEditor } from '../types/index';
+import type { PlateEditor } from '../types/index';
+
 import { createPluginFactory } from '../utils/createPluginFactory';
 
 const getBlockAbove = <N extends EAncestor<V>, V extends Value = Value>(
@@ -27,9 +28,11 @@ const isSelectionAtBlockStart = <V extends Value>(
   options?: GetAboveNodeOptions<V>
 ) => {
   const { selection } = editor;
+
   if (!selection) return false;
 
   const path = getBlockAbove(editor, options)?.[1];
+
   if (!path) return false;
 
   return (
@@ -41,6 +44,7 @@ const isSelectionAtBlockStart = <V extends Value>(
 
 const removeSelectionMark = <V extends Value = Value>(editor: TEditor<V>) => {
   const marks = getMarks(editor);
+
   if (!marks) return;
 
   // remove all marks

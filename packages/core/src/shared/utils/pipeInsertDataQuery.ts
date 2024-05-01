@@ -1,13 +1,11 @@
-import { Value } from '@udecode/slate';
+import type { Value } from '@udecode/slate';
 
-import { PlateEditor } from '../types/PlateEditor';
-import { PluginOptions } from '../types/plugin/PlatePlugin';
-import { PlatePluginInsertDataOptions } from '../types/plugin/PlatePluginInsertData';
-import { InjectedPlugin } from './getInjectedPlugins';
+import type { PlateEditor } from '../types/PlateEditor';
+import type { PluginOptions } from '../types/plugin/PlatePlugin';
+import type { PlatePluginInsertDataOptions } from '../types/plugin/PlatePluginInsertData';
+import type { InjectedPlugin } from './getInjectedPlugins';
 
-/**
- * Is the plugin disabled by another plugin.
- */
+/** Is the plugin disabled by another plugin. */
 export const pipeInsertDataQuery = <
   P = PluginOptions,
   V extends Value = Value,

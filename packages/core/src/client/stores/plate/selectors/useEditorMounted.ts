@@ -1,6 +1,6 @@
 import {
-  PlateId,
-  UsePlateEditorStoreOptions,
+  type PlateId,
+  type UsePlateEditorStoreOptions,
   usePlateSelectors,
 } from '../createPlateStore';
 

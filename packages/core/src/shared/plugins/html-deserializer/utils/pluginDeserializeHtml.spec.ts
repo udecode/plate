@@ -12,16 +12,16 @@ describe('when element is p and validNodeName is P', () => {
       pluginDeserializeHtml(
         createPlateEditor(),
         mockPlugin({
-          type: ELEMENT_PARAGRAPH,
           deserializeHtml: {
-            isElement: true,
             getNode: node,
+            isElement: true,
             rules: [
               {
                 validNodeName: 'P',
               },
             ],
           },
+          type: ELEMENT_PARAGRAPH,
         }),
         { element: document.createElement('p') }
       )?.node
@@ -38,16 +38,16 @@ describe('when element is p, validAttribute', () => {
       pluginDeserializeHtml(
         createPlateEditor(),
         mockPlugin({
-          type: ELEMENT_PARAGRAPH,
           deserializeHtml: {
-            isElement: true,
             getNode: node,
+            isElement: true,
             rules: [
               {
                 validAttribute: { title: '' },
               },
             ],
           },
+          type: ELEMENT_PARAGRAPH,
         }),
         { element }
       )?.node
@@ -61,16 +61,16 @@ describe('when element is p, validAttribute', () => {
       pluginDeserializeHtml(
         createPlateEditor(),
         mockPlugin({
-          type: ELEMENT_PARAGRAPH,
           deserializeHtml: {
-            isElement: true,
             getNode: node,
+            isElement: true,
             rules: [
               {
                 validAttribute: { title: '' },
               },
             ],
           },
+          type: ELEMENT_PARAGRAPH,
         }),
         { element }
       )?.node
@@ -87,10 +87,9 @@ describe('when element is p with color and rule style is different', () => {
       pluginDeserializeHtml(
         createPlateEditor(),
         mockPlugin({
-          type: ELEMENT_PARAGRAPH,
           deserializeHtml: {
-            isElement: true,
             getNode: node,
+            isElement: true,
             rules: [
               {
                 validStyle: {
@@ -99,6 +98,7 @@ describe('when element is p with color and rule style is different', () => {
               },
             ],
           },
+          type: ELEMENT_PARAGRAPH,
         }),
         { element }
       )?.node
@@ -115,10 +115,9 @@ describe('when element is p with same style color than rule', () => {
       pluginDeserializeHtml(
         createPlateEditor(),
         mockPlugin({
-          type: ELEMENT_PARAGRAPH,
           deserializeHtml: {
-            isElement: true,
             getNode: node,
+            isElement: true,
             rules: [
               {
                 validStyle: {
@@ -127,6 +126,7 @@ describe('when element is p with same style color than rule', () => {
               },
             ],
           },
+          type: ELEMENT_PARAGRAPH,
         }),
         { element }
       )?.node
@@ -143,10 +143,9 @@ describe('when element has style color and rule style color is *', () => {
       pluginDeserializeHtml(
         createPlateEditor(),
         mockPlugin({
-          type: ELEMENT_PARAGRAPH,
           deserializeHtml: {
-            isElement: true,
             getNode: node,
+            isElement: true,
             rules: [
               {
                 validStyle: {
@@ -155,6 +154,7 @@ describe('when element has style color and rule style color is *', () => {
               },
             ],
           },
+          type: ELEMENT_PARAGRAPH,
         }),
         { element }
       )?.node
@@ -171,8 +171,6 @@ describe('when element is strong and validNodeName is strong', () => {
       pluginDeserializeHtml(
         createPlateEditor(),
         mockPlugin({
-          isLeaf: true,
-          type: MARK_BOLD,
           deserializeHtml: {
             rules: [
               {
@@ -180,8 +178,10 @@ describe('when element is strong and validNodeName is strong', () => {
               },
             ],
           },
+          isLeaf: true,
+          type: MARK_BOLD,
         }),
-        { element: el, deserializeLeaf: true }
+        { deserializeLeaf: true, element: el }
       )?.node
     ).toEqual({ [MARK_BOLD]: true });
   });

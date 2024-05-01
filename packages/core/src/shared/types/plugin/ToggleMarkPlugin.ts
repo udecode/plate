@@ -1,8 +1,6 @@
-import { HotkeyPlugin } from './HotkeyPlugin';
+import type { HotkeyPlugin } from './HotkeyPlugin';
 
 export interface ToggleMarkPlugin extends HotkeyPlugin {
-  /**
-   * Node properties to delete.
-   */
+  /** Node properties to delete. */
   clear?: string | string[];
 }

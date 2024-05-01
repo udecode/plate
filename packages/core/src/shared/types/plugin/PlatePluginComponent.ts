@@ -1,6 +1,4 @@
-import React from 'react';
+import type React from 'react';
 
-/**
- * The plate plugin component.
- */
+/** The plate plugin component. */
 export type PlatePluginComponent<T = any> = React.FC<T>;

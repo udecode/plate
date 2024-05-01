@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { render } from '@testing-library/react';
 
 import { withHOC } from './withHOC';
@@ -10,7 +11,7 @@ describe('withHOC', () => {
 
   const HOC = React.forwardRef<
     DummyRef,
-    DummyProps & { children: React.ReactNode }
+    { children: React.ReactNode } & DummyProps
   >(({ children, ...props }, ref) => (
     <div>
       {JSON.stringify(props)}

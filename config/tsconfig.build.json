@@ -11,7 +11,6 @@
     "../**/node_modules",
     "../dist",
     "../**/dist",
-    "../**/__tests__/**",
     "../**/*.stories.*",
     "../**/*.spec*",
     "../**/*fixture*",

@@ -1,9 +1,7 @@
 import { isHtmlComment } from './isHtmlComment';
 import { traverseHtmlComments } from './traverseHtmlComments';
 
-/**
- * Removes HTML nodes between HTML comments.
- */
+/** Removes HTML nodes between HTML comments. */
 export const removeHtmlNodesBetweenComments = (
   rootNode: Node,
   start: string,

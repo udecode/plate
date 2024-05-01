@@ -2,6 +2,7 @@ import { traverseHtmlElements } from './traverseHtmlElements';
 
 /**
  * Find the first HTML element that matches the given selector.
+ *
  * @param rootNode
  * @param predicate
  */
@@ -14,8 +15,10 @@ export const findHtmlElement = (
   traverseHtmlElements(rootNode, (node) => {
     if (predicate(node as HTMLElement)) {
       res = node;
+
       return false;
     }
+
     return true;
   });
 

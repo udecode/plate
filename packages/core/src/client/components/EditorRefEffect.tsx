@@ -1,8 +1,9 @@
 import React from 'react';
 
-import { WithPlatePlugin } from '../../shared/types/plugin/PlatePlugin';
+import type { WithPlatePlugin } from '../../shared/types/plugin/PlatePlugin';
+
 import {
-  PlateId,
+  type PlateId,
   useEditorRef,
   usePlateActions,
   usePlateSelectors,
@@ -45,11 +46,12 @@ export function EditorRefEffect({ id }: { id?: PlateId }) {
   React.useEffect(() => {
     if (typeof editorRef === 'function') {
       editorRef(editorState);
+
       return () => editorRef(null);
     }
-
     if (editorRef) {
       editorRef.current = editorState;
+
       return () => {
         editorRef.current = null;
       };
@@ -59,7 +61,7 @@ export function EditorRefEffect({ id }: { id?: PlateId }) {
   return (
     <>
       {plugins.map((plugin) => (
-        <EditorRefPluginEffect key={plugin.key} id={id} plugin={plugin} />
+        <EditorRefPluginEffect id={id} key={plugin.key} plugin={plugin} />
       ))}
     </>
   );

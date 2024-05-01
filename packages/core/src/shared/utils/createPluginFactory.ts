@@ -1,19 +1,22 @@
-import { Value } from '@udecode/slate';
+import type { Value } from '@udecode/slate';
+
+import type { OverrideByKey } from '../types/OverrideByKey';
+import type { PlateEditor } from '../types/PlateEditor';
+import type { NoInfer } from '../types/misc/NoInfer';
+import type { PlatePlugin, PluginOptions } from '../types/plugin/PlatePlugin';
 
 import { overridePluginsByKey } from './overridePluginsByKey';
 
-import type { NoInfer } from '../types/misc/NoInfer';
-import type { OverrideByKey } from '../types/OverrideByKey';
-import type { PlateEditor } from '../types/PlateEditor';
-import type { PlatePlugin, PluginOptions } from '../types/plugin/PlatePlugin';
-
 /**
  * Create plugin factory with a default plugin.
- * - first param is the default plugin.
- * - the only required property of the default plugin is `key`.
- * - returns a plugin factory:
- *   - first param `override` can be used to (deeply) override the default plugin.
- *   - second param `overrideByKey` can be used to (deeply) override by key a nested plugin (in plugin.plugins).
+ *
+ * - First param is the default plugin.
+ * - The only required property of the default plugin is `key`.
+ * - Returns a plugin factory:
+ *
+ *   - First param `override` can be used to (deeply) override the default plugin.
+ *   - Second param `overrideByKey` can be used to (deeply) override by key a nested
+ *       plugin (in plugin.plugins).
  */
 export const createPluginFactory =
   <

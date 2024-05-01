@@ -1,39 +1,41 @@
 import React from 'react';
+
+import type { TElement } from '@udecode/slate';
+
 import { act, render } from '@testing-library/react';
-import { TElement } from '@udecode/slate';
 
 import { useElement } from './useElement';
 import { ElementProvider } from './useElementStore';
 
 describe('ElementProvider', () => {
   interface TNameElement extends TElement {
-    type: 'name';
     name: string;
+    type: 'name';
   }
 
   interface TAgeElement extends TElement {
-    type: 'age';
     age: number;
+    type: 'age';
   }
 
   const makeNameElement = (name: string): TNameElement => ({
-    type: 'name',
-    name,
     children: [],
+    name,
+    type: 'name',
   });
 
   const makeAgeElement = (age: number): TAgeElement => ({
-    type: 'age',
     age,
     children: [],
+    type: 'age',
   });
 
   const NameElementProvider = ({
-    name,
     children,
+    name,
   }: {
-    name: string;
     children: React.ReactNode;
+    name: string;
   }) => {
     const element = React.useMemo(() => makeNameElement(name), [name]);
 
@@ -61,21 +63,21 @@ describe('ElementProvider', () => {
   };
 
   const UpdatingAgeElementProvider = ({
-    initialAge,
-    increment,
     buttonLabel,
     children,
+    increment,
+    initialAge,
   }: {
-    initialAge: number;
-    increment: number;
     buttonLabel: string;
     children: React.ReactNode;
+    increment: number;
+    initialAge: number;
   }) => {
     const [age, setAge] = React.useState(initialAge);
 
     return (
       <AgeElementProvider age={age}>
-        <button type="button" onClick={() => setAge(age + increment)}>
+        <button onClick={() => setAge(age + increment)} type="button">
           {buttonLabel}
         </button>
         {children}
@@ -89,27 +91,31 @@ describe('ElementProvider', () => {
 
   const NameElementConsumer = ({ label = '' }: ConsumerProps) => {
     const element = useElement<TNameElement>('name');
+
     return <div>{label + element.name}</div>;
   };
 
   const AgeElementConsumer = ({ label = '' }: ConsumerProps) => {
     const element = useElement<TAgeElement>('age');
+
     return <div>{label + element.age}</div>;
   };
 
   const TypeConsumer = ({
-    type,
     label = '',
-  }: ConsumerProps & { type?: 'name' | 'age' }) => {
+    type,
+  }: { type?: 'age' | 'name' } & ConsumerProps) => {
     const element = useElement(type);
+
     return <div>{label + element.type}</div>;
   };
 
   const JsonConsumer = ({
-    type,
     label = '',
-  }: ConsumerProps & { type?: 'name' | 'age' }) => {
+    type,
+  }: { type?: 'age' | 'name' } & ConsumerProps) => {
     const element = useElement(type);
+
     return <div>{label + JSON.stringify(element)}</div>;
   };
 
@@ -137,7 +143,7 @@ describe('ElementProvider', () => {
     const { getByText } = render(
       <NameElementProvider name="John">
         <NameElementProvider name="Jane">
-          <TypeConsumer type="age" label="Type: " />
+          <TypeConsumer label="Type: " type="age" />
         </NameElementProvider>
       </NameElementProvider>
     );
@@ -148,15 +154,15 @@ describe('ElementProvider', () => {
   it('propagates updated elements to consumers', () => {
     const { getByText } = render(
       <UpdatingAgeElementProvider
-        initialAge={20}
-        increment={10}
         buttonLabel="updateAge1"
+        increment={10}
+        initialAge={20}
       >
         <AgeElementConsumer label="Age 1: " />
         <UpdatingAgeElementProvider
-          initialAge={140}
-          increment={10}
           buttonLabel="updateAge2"
+          increment={10}
+          initialAge={140}
         >
           <AgeElementConsumer label="Age 2: " />
         </UpdatingAgeElementProvider>

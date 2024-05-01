@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { PlateEditor, toggleNodeType } from '@udecode/plate-core';
+import { type PlateEditor, toggleNodeType } from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 
 jsx;

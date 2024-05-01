@@ -1,12 +1,13 @@
-import { Value } from '@udecode/slate';
+import type { Value } from '@udecode/slate';
 
-import { PlateEditor } from '../PlateEditor';
-import { HandlerReturnType } from './DOMHandlers';
-import { PluginOptions, WithPlatePlugin } from './PlatePlugin';
+import type { PlateEditor } from '../PlateEditor';
+import type { HandlerReturnType } from './DOMHandlers';
+import type { PluginOptions, WithPlatePlugin } from './PlatePlugin';
 
 /**
- * Function called whenever a change occurs in the editor.
- * Return `false` to prevent calling the next plugin handler.
+ * Function called whenever a change occurs in the editor. Return `false` to
+ * prevent calling the next plugin handler.
+ *
  * @see {@link SlatePropsOnChange}
  */
 export type OnChange<

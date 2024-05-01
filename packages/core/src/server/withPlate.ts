@@ -1,10 +1,10 @@
-import { TEditor, Value } from '@udecode/slate';
-
-import { resetEditor } from '../shared/transforms';
-import { PlateEditor } from '../shared/types/PlateEditor';
-import { setPlatePlugins } from './setPlatePlugins';
+import type { TEditor, Value } from '@udecode/slate';
 
 import type { WithPlateOptions } from '../client';
+import type { PlateEditor } from '../shared/types/PlateEditor';
+
+import { resetEditor } from '../shared/transforms';
+import { setPlatePlugins } from './setPlatePlugins';
 
 const shouldHaveBeenOverridden = (fnName: string) => () => {
   console.warn(
@@ -12,19 +12,17 @@ const shouldHaveBeenOverridden = (fnName: string) => () => {
   );
 };
 
-/**
- * `withPlate` with server-side support.
- */
+/** `withPlate` with server-side support. */
 export const withPlate = <
   V extends Value = Value,
   E extends TEditor<V> = TEditor<V>,
 >(
   e: E,
   {
-    id,
-    plugins = [],
     disableCorePlugins,
+    id,
     maxLength,
+    plugins = [],
   }: WithPlateOptions<V, E & PlateEditor<V>> = {}
 ): E & PlateEditor<V> => {
   let editor = e as any as E & PlateEditor<V>;
@@ -41,6 +39,7 @@ export const withPlate = <
   editor.plate = {
     get set() {
       shouldHaveBeenOverridden('plate.set');
+
       return null as any;
     },
   };
@@ -50,9 +49,9 @@ export const withPlate = <
   }
 
   setPlatePlugins<V>(editor, {
-    plugins: plugins as any,
-    maxLength,
     disableCorePlugins,
+    maxLength,
+    plugins: plugins as any,
   });
 
   // withOverrides

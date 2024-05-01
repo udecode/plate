@@ -1,6 +1,6 @@
-import { Value } from '@udecode/slate';
+import type { Value } from '@udecode/slate';
 
-import { PlateEditor } from '../types/PlateEditor';
+import type { PlateEditor } from '../types/PlateEditor';
 
 export const pipeOnChange = <V extends Value>(editor: PlateEditor<V>) => {
   const onChanges = editor.plugins.flatMap(
@@ -12,6 +12,7 @@ export const pipeOnChange = <V extends Value>(editor: PlateEditor<V>) => {
       if (!handler) {
         return false;
       }
+
       // The custom event handler may return a boolean to specify whether the event
       // shall be treated as being handled or not.
       const shouldTreatEventAsHandled = handler(nodes);

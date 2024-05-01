@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { focusAtom } from 'jotai-optics';
 import { useFocused } from 'slate-react';
 

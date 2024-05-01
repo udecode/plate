@@ -1,12 +1,13 @@
-import { EDescendant, Value } from '@udecode/slate';
+import type { EDescendant, Value } from '@udecode/slate';
 
-import { PlateEditor } from '../../../types/PlateEditor';
-import { DeserializeHtmlChildren } from '../types';
+import type { PlateEditor } from '../../../types/PlateEditor';
+import type { DeserializeHtmlChildren } from '../types';
+
 import { deserializeHtmlNode } from './deserializeHtmlNode';
 
 export const deserializeHtmlNodeChildren = <V extends Value>(
   editor: PlateEditor<V>,
-  node: HTMLElement | ChildNode
+  node: ChildNode | HTMLElement
 ) =>
   Array.from(node.childNodes).flatMap(
     deserializeHtmlNode(editor)

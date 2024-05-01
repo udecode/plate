@@ -5,7 +5,8 @@ import { parseHtmlDocument } from './utils/parseHtmlDocument';
 export const KEY_DESERIALIZE_HTML = 'deserializeHtml';
 
 /**
- * Enables support for deserializing inserted content from HTML format to Slate format.
+ * Enables support for deserializing inserted content from HTML format to Slate
+ * format.
  */
 export const createDeserializeHtmlPlugin = createPluginFactory({
   key: KEY_DESERIALIZE_HTML,

@@ -16,10 +16,10 @@ const output = (<htext a={1}>test</htext>) as any;
 it('should set props to the text node', () => {
   mergeDeepToNodes({
     node,
-    source: props,
     query: {
       filter: ([n]) => isDescendant(n),
     },
+    source: props,
   });
   expect(node).toEqual(output);
 });

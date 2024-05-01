@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { act, render, renderHook } from '@testing-library/react';
 import { useFocused } from 'slate-react';
 
@@ -27,17 +28,17 @@ const DebugPlateController = () => {
 };
 
 const UnmountablePlate = ({
-  initialMounted = true,
   children,
+  initialMounted = true,
 }: {
-  initialMounted?: boolean;
   children: React.ReactNode;
+  initialMounted?: boolean;
 }) => {
   const [mounted, setMounted] = React.useState(initialMounted);
 
   return (
     <div>
-      <button type="button" onClick={() => setMounted(!mounted)}>
+      <button onClick={() => setMounted(!mounted)} type="button">
         {mounted ? 'unmountPlate' : 'mountPlate'}
       </button>
       {mounted && children}
@@ -53,17 +54,17 @@ jest.mock('slate-react', () => ({
 }));
 
 const ControlledFocusedContext = ({
-  initialFocused = false,
   children,
+  initialFocused = false,
 }: {
-  initialFocused?: boolean;
   children: React.ReactNode;
+  initialFocused?: boolean;
 }) => {
   const [focused, setFocused] = React.useState(initialFocused);
 
   return (
     <FocusedContext.Provider value={focused}>
-      <button type="button" onClick={() => setFocused(!focused)}>
+      <button onClick={() => setFocused(!focused)} type="button">
         {focused ? 'unfocus' : 'focus'}
       </button>
       {children}

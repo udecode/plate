@@ -1,7 +1,8 @@
-import { Value } from '@udecode/slate';
-import { AnyObject } from '@udecode/utils';
+import type { Value } from '@udecode/slate';
+import type { AnyObject } from '@udecode/utils';
 
-import { PlateEditor } from '../../../types/PlateEditor';
+import type { PlateEditor } from '../../../types/PlateEditor';
+
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
 
 export const pipeDeserializeHtmlLeaf = <V extends Value>(
@@ -12,9 +13,10 @@ export const pipeDeserializeHtmlLeaf = <V extends Value>(
 
   [...editor.plugins].reverse().forEach((plugin) => {
     const deserialized = pluginDeserializeHtml(editor, plugin, {
-      element,
       deserializeLeaf: true,
+      element,
     });
+
     if (!deserialized) return;
 
     node = { ...node, ...deserialized.node };

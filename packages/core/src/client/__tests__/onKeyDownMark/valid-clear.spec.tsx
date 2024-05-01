@@ -1,15 +1,15 @@
 /** @jsx jsx */
 
 import {
-  createBoldPlugin,
   MARK_BOLD,
   MARK_ITALIC,
+  createBoldPlugin,
 } from '@udecode/plate-basic-marks';
 import {
+  type ToggleMarkPlugin,
   createPlateEditor,
   getPlugin,
   onKeyDownToggleMark,
-  ToggleMarkPlugin,
 } from '@udecode/plate-common';
 import * as isHotkey from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
@@ -22,8 +22,8 @@ const input = (
       t<htext italic>est</htext>
     </hp>
     <selection>
-      <anchor path={[0, 1]} offset={0} />
-      <focus path={[0, 1]} offset={3} />
+      <anchor offset={0} path={[0, 1]} />
+      <focus offset={3} path={[0, 1]} />
     </selection>
   </editor>
 ) as any;
@@ -36,8 +36,8 @@ const output = (
       t<htext bold>est</htext>
     </hp>
     <selection>
-      <anchor path={[0, 1]} offset={0} />
-      <focus path={[0, 1]} offset={3} />
+      <anchor offset={0} path={[0, 1]} />
+      <focus offset={3} path={[0, 1]} />
     </selection>
   </editor>
 ) as any;
@@ -46,7 +46,7 @@ const editor = createPlateEditor({
   editor: input,
   plugins: [
     createBoldPlugin({
-      options: { hotkey: 'ctrl+b', clear: MARK_ITALIC },
+      options: { clear: MARK_ITALIC, hotkey: 'ctrl+b' },
     }),
   ],
 });

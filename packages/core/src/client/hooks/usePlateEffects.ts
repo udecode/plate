@@ -1,23 +1,26 @@
 import React from 'react';
-import { Value } from '@udecode/slate';
+
+import type { Value } from '@udecode/slate';
+
 import { isDefined } from '@udecode/utils';
 
-import { PlateEditor } from '../../shared';
-import { PlateProps } from '../components';
+import type { PlateEditor } from '../../shared';
+import type { PlateProps } from '../components';
+
 import { useEditorRef, usePlateStates } from '../stores';
 import { setPlatePlugins } from '../utils';
 
 export type UsePlateEffectsProps<
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
-> = Pick<PlateProps<V, E>, 'id' | 'disableCorePlugins' | 'plugins'>;
+> = Pick<PlateProps<V, E>, 'disableCorePlugins' | 'id' | 'plugins'>;
 
 export const usePlateEffects = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
 >({
-  id,
   disableCorePlugins,
+  id,
   plugins: pluginsProp,
 }: UsePlateEffectsProps<V, E>) => {
   const editor = useEditorRef<V, E>(id);
@@ -31,8 +34,8 @@ export const usePlateEffects = <
       setRawPlugins(rawPlugins);
 
       setPlatePlugins<V, E>(editor, {
-        plugins: pluginsProp,
         disableCorePlugins,
+        plugins: pluginsProp,
       });
       setPlugins(editor.plugins as any);
     }

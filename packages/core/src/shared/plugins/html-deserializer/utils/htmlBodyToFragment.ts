@@ -1,14 +1,14 @@
-import { EDescendant, Value } from '@udecode/slate';
+import type { EDescendant, Value } from '@udecode/slate';
+
 import { jsx } from 'slate-hyperscript';
 
-import { PlateEditor } from '../../../types/PlateEditor';
+import type { PlateEditor } from '../../../types/PlateEditor';
+
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
 
 jsx;
 
-/**
- * Deserialize HTML body element to Fragment.
- */
+/** Deserialize HTML body element to Fragment. */
 export const htmlBodyToFragment = <V extends Value>(
   editor: PlateEditor<V>,
   element: HTMLElement

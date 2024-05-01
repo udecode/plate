@@ -1,9 +1,13 @@
-import React from 'react';
-import { Value } from '@udecode/slate';
+import type React from 'react';
 
-import { PlateEditor } from '../types/PlateEditor';
-import { DOMHandlers, HandlerReturnType } from '../types/plugin/DOMHandlers';
-import { TEditableProps } from '../types/slate-react/TEditableProps';
+import type { Value } from '@udecode/slate';
+
+import type { PlateEditor } from '../types/PlateEditor';
+import type {
+  DOMHandlers,
+  HandlerReturnType,
+} from '../types/plugin/DOMHandlers';
+import type { TEditableProps } from '../types/slate-react/TEditableProps';
 
 export const convertDomEventToSyntheticEvent = (
   domEvent: Event
@@ -12,18 +16,15 @@ export const convertDomEventToSyntheticEvent = (
 
   return {
     ...domEvent,
-    nativeEvent: domEvent,
-    currentTarget: domEvent.currentTarget!,
-    target: domEvent.target!,
     bubbles: domEvent.bubbles,
     cancelable: domEvent.cancelable,
+    currentTarget: domEvent.currentTarget!,
     defaultPrevented: domEvent.defaultPrevented,
     eventPhase: domEvent.eventPhase,
-    isTrusted: domEvent.isTrusted,
-    timeStamp: domEvent.timeStamp,
-    type: domEvent.type,
     isDefaultPrevented: () => domEvent.defaultPrevented,
     isPropagationStopped: () => propagationStopped,
+    isTrusted: domEvent.isTrusted,
+    nativeEvent: domEvent,
     persist: () => {
       throw new Error(
         'persist is not implemented for synthetic events created using convertDomEventToSyntheticEvent'
@@ -34,21 +35,23 @@ export const convertDomEventToSyntheticEvent = (
       propagationStopped = true;
       domEvent.stopPropagation();
     },
+    target: domEvent.target!,
+    timeStamp: domEvent.timeStamp,
+    type: domEvent.type,
   };
 };
 
-/**
- * Check if an event is overrided by a handler.
- */
+/** Check if an event is overrided by a handler. */
 export const isEventHandled = <
   EventType extends React.SyntheticEvent<unknown, unknown>,
 >(
   event: EventType,
-  handler?: (event: EventType) => void | boolean
+  handler?: (event: EventType) => boolean | void
 ) => {
   if (!handler) {
     return false;
   }
+
   // The custom event handler may return a boolean to specify whether the event
   // shall be treated as being handled or not.
   const shouldTreatEventAsHandled = handler(event);
@@ -62,10 +65,13 @@ export const isEventHandled = <
 
 /**
  * Generic pipe for handlers.
+ *
  * - Get all the plugins handlers by `handlerKey`.
- * - If there is no plugin handler or editable prop handler for this key, return `undefined`.
+ * - If there is no plugin handler or editable prop handler for this key, return
+ *   `undefined`.
  * - Return a handler calling all the plugins handlers then the prop handler.
- * - Any handler returning true will stop the next handlers to be called, including slate internal handler.
+ * - Any handler returning true will stop the next handlers to be called,
+ *   including slate internal handler.
  */
 export const pipeHandler = <V extends Value, K extends keyof DOMHandlers<V>>(
   editor: PlateEditor<V>,
@@ -94,6 +100,7 @@ export const pipeHandler = <V extends Value, K extends keyof DOMHandlers<V>>(
     const eventIsHandled = pluginsHandlers.some((handler) =>
       isEventHandled(handledEvent, handler)
     );
+
     if (eventIsHandled) return true;
 
     return isEventHandled(handledEvent, propsHandler);

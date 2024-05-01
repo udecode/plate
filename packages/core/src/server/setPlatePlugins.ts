@@ -1,7 +1,20 @@
-import { Value } from '@udecode/slate';
+import type { Value } from '@udecode/slate';
+
 import { isDefined } from '@udecode/utils';
 
+import type { PlateProps } from '../client';
+import type { PlateEditor, PlatePlugin } from '../shared/types';
+
 import {
+  KEY_DESERIALIZE_AST,
+  KEY_DESERIALIZE_HTML,
+  KEY_EDITOR_PROTOCOL,
+  KEY_EVENT_EDITOR,
+  KEY_INLINE_VOID,
+  KEY_INSERT_DATA,
+  KEY_LENGTH,
+  KEY_NODE_FACTORY,
+  KEY_PREV_SELECTION,
   createDeserializeAstPlugin,
   createDeserializeHtmlPlugin,
   createEditorProtocolPlugin,
@@ -12,22 +25,10 @@ import {
   createLengthPlugin,
   createNodeFactoryPlugin,
   createPrevSelectionPlugin,
-  KEY_DESERIALIZE_AST,
-  KEY_DESERIALIZE_HTML,
-  KEY_EDITOR_PROTOCOL,
-  KEY_EVENT_EDITOR,
-  KEY_INLINE_VOID,
-  KEY_INSERT_DATA,
-  KEY_LENGTH,
-  KEY_NODE_FACTORY,
-  KEY_PREV_SELECTION,
 } from '../shared/plugins';
-import { PlateEditor, PlatePlugin } from '../shared/types';
 import { flattenDeepPlugins } from '../shared/utils/flattenDeepPlugins';
 import { overridePluginsByKey } from '../shared/utils/overridePluginsByKey';
 import { createReactPlugin } from './createReactPlugin';
-
-import type { PlateProps } from '../client';
 
 export const setPlatePlugins = <
   V extends Value = Value,
@@ -36,9 +37,9 @@ export const setPlatePlugins = <
   editor: E,
   {
     disableCorePlugins,
-    plugins: _plugins = [],
     maxLength,
-  }: Pick<PlateProps<V, E>, 'plugins' | 'disableCorePlugins' | 'maxLength'>
+    plugins: _plugins = [],
+  }: Pick<PlateProps<V, E>, 'disableCorePlugins' | 'maxLength' | 'plugins'>
 ) => {
   let plugins: PlatePlugin<{}, V, PlateEditor<V>>[] = [];
 

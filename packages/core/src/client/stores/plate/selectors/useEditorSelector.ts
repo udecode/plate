@@ -1,19 +1,22 @@
 import React from 'react';
-import { Value } from '@udecode/slate';
+
+import type { Value } from '@udecode/slate';
+
 import { selectAtom } from 'jotai/utils';
 
-import { PlateEditor } from '../../../../shared';
+import type { PlateEditor } from '../../../../shared';
+
 import {
-  PlateId,
+  type PlateId,
+  type UsePlateEditorStoreOptions,
   plateStore,
-  UsePlateEditorStoreOptions,
   usePlateSelectors,
 } from '../createPlateStore';
 
 export interface UseEditorSelectorOptions<T>
   extends UsePlateEditorStoreOptions {
-  id?: PlateId;
   equalityFn?: (a: T, b: T) => boolean;
+  id?: PlateId;
 }
 
 export const useEditorSelector = <
@@ -24,8 +27,8 @@ export const useEditorSelector = <
   selector: (editor: E, prev?: T) => T,
   deps: React.DependencyList,
   {
-    id,
     equalityFn = (a: T, b: T) => a === b,
+    id,
     ...storeOptions
   }: UseEditorSelectorOptions<T> = {}
 ): T => {

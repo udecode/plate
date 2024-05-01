@@ -1,9 +1,10 @@
 import React from 'react';
-import { Value } from '@udecode/slate';
 
-import { usePlateEffects, UsePlateEffectsProps } from '../hooks';
+import type { Value } from '@udecode/slate';
 
 import type { PlateEditor } from '../../shared';
+
+import { type UsePlateEffectsProps, usePlateEffects } from '../hooks';
 
 export interface PlateEffectsProps<
   V extends Value = Value,

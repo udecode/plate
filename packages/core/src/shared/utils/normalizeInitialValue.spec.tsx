@@ -1,8 +1,10 @@
 import React from 'react';
+
 import { renderHook } from '@testing-library/react-hooks';
 
+import type { PlatePlugin } from '../types/index';
+
 import { Plate, usePlateSelectors } from '../client';
-import { PlatePlugin } from '../types/index';
 
 describe('normalizeInitialValue', () => {
   describe('defined', () => {
@@ -12,6 +14,7 @@ describe('normalizeInitialValue', () => {
           key: 'a',
           normalizeInitialValue: (initialValue: any) => {
             initialValue[0].count += 1;
+
             return initialValue;
           },
         },
@@ -19,6 +22,7 @@ describe('normalizeInitialValue', () => {
           key: 'b',
           normalizeInitialValue: (initialValue: any) => {
             initialValue[0].count += 1;
+
             return initialValue;
           },
         },
@@ -26,8 +30,8 @@ describe('normalizeInitialValue', () => {
 
       const wrapper = ({ children }: any) => (
         <Plate
+          initialValue={[{ children: [{ text: '' }], count: 0, type: 'p' }]}
           plugins={plugins}
-          initialValue={[{ type: 'p', count: 0, children: [{ text: '' }] }]}
         >
           {children}
         </Plate>
@@ -38,7 +42,7 @@ describe('normalizeInitialValue', () => {
       });
 
       expect(result.current).toEqual([
-        { type: 'p', count: 2, children: [{ text: '' }] },
+        { children: [{ text: '' }], count: 2, type: 'p' },
       ]);
     });
   });

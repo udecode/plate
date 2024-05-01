@@ -1,10 +1,10 @@
-import { Range } from 'slate';
+import type { Range } from 'slate';
 
-import { PlateEditor } from '../types/PlateEditor';
-import { TEditableProps } from '../types/slate-react/TEditableProps';
+import type { PlateEditor } from '../types/PlateEditor';
+import type { TEditableProps } from '../types/slate-react/TEditableProps';
 
 /**
- * @see {@link Decorate}.
+ * @see {@link Decorate} .
  * Optimization: return undefined if empty list so Editable uses a memo.
  */
 export const pipeDecorate = (
@@ -14,6 +14,7 @@ export const pipeDecorate = (
   const decorates = editor.plugins.flatMap(
     (plugin) => plugin.decorate?.(editor, plugin) ?? []
   );
+
   if (decorateProp) {
     decorates.push(decorateProp);
   }

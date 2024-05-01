@@ -1,4 +1,4 @@
-import { WhiteSpaceRule } from './types';
+import type { WhiteSpaceRule } from './types';
 
 export const inferWhiteSpaceRule = (
   element: HTMLElement
@@ -23,7 +23,6 @@ export const inferWhiteSpaceRule = (
   if (element.tagName === 'PRE') {
     return 'pre';
   }
-
   if (whiteSpaceProperty === 'initial') {
     return 'normal';
   }

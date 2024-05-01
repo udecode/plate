@@ -1,8 +1,8 @@
 import React from 'react';
 
-type RefComponent<P, R> = React.FC<P> & {
+type RefComponent<P, R> = {
   ref?: React.Ref<R>;
-};
+} & React.FC<P>;
 
 /* eslint-disable react/display-name */
 export const withHOC = <ComponentProps, HOCProps, ComponentRef, HOCRef>(

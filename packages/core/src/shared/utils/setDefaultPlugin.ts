@@ -1,7 +1,7 @@
-import { Value } from '@udecode/slate';
+import type { Value } from '@udecode/slate';
 
-import { PlateEditor } from '../types/PlateEditor';
-import {
+import type { PlateEditor } from '../types/PlateEditor';
+import type {
   PlatePlugin,
   PluginOptions,
   WithPlatePlugin,

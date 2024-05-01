@@ -1,7 +1,9 @@
 import React from 'react';
+
 import { render } from '@testing-library/react';
 
-import { PlatePlugin } from '../../../common/types';
+import type { PlatePlugin } from '../../../common/types';
+
 import { Plate, PlateContent } from '../components';
 
 describe('useEditableProps', () => {
@@ -11,11 +13,12 @@ describe('useEditableProps', () => {
 
       const plugins: PlatePlugin[] = [
         {
-          key: 'a',
           decorate: () => () => {
             decorate();
+
             return [];
           },
+          key: 'a',
         },
       ];
 

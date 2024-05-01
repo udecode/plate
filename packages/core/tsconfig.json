@@ -4,5 +4,6 @@
     "declarationDir": "./dist",
     "outDir": "./dist"
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": []
 }

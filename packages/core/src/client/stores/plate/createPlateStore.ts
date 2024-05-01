@@ -1,8 +1,12 @@
 import React from 'react';
-import { Value } from '@udecode/slate';
+
+import type { Value } from '@udecode/slate';
+import type { JotaiStore } from 'jotai-x';
+
 import { atom, createStore } from 'jotai';
 
-import { PlateEditor, PlateStoreState } from '../../../shared/types';
+import type { PlateEditor, PlateStoreState } from '../../../shared/types';
+
 import { createAtomStore } from '../../libs';
 import { createPlateFallbackEditor } from '../../utils';
 import {
@@ -10,16 +14,16 @@ import {
   usePlateControllerExists,
 } from '../plate-controller';
 
-import type { JotaiStore } from 'jotai-x';
-
 /**
- * A unique id used as a provider scope.
- * Use it if you have multiple `Plate` in the same React tree.
+ * A unique id used as a provider scope. Use it if you have multiple `Plate` in
+ * the same React tree.
+ *
  * @default PLATE_SCOPE
  */
 export type PlateId = string;
 
 export const PLATE_SCOPE = 'plate';
+
 export const GLOBAL_PLATE_SCOPE = Symbol('global-plate');
 
 export const createPlateStore = <
@@ -28,44 +32,43 @@ export const createPlateStore = <
 >({
   decorate = null,
   editor = createPlateFallbackEditor<V, E>(),
+  editorRef = null,
   id,
   isMounted = false,
-  versionDecorate = 1,
-  versionEditor = 1,
-  versionSelection = 1,
   onChange = null,
-  editorRef = null,
   plugins = [],
+  primary = true,
   rawPlugins = [],
   readOnly = null,
-  primary = true,
   renderElement = null,
   renderLeaf = null,
   value = null as any,
+  versionDecorate = 1,
+  versionEditor = 1,
+  versionSelection = 1,
   ...state
 }: Partial<PlateStoreState<V, E>> = {}) =>
   createAtomStore(
     {
       decorate,
       editor,
+      editorRef,
       id,
       isMounted,
-      versionDecorate,
-      versionEditor,
-      versionSelection,
       onChange,
-      editorRef,
       plugins,
+      primary,
       rawPlugins,
       readOnly,
-      primary,
       renderElement,
       renderLeaf,
       value,
+      versionDecorate,
+      versionEditor,
+      versionSelection,
       ...state,
     } as PlateStoreState<V, E>,
     {
-      name: 'plate',
       extend: (atoms) => ({
         trackedEditor: atom((get) => ({
           editor: get(atoms.editor),
@@ -76,13 +79,14 @@ export const createPlateStore = <
           version: get(atoms.versionSelection),
         })),
       }),
+      name: 'plate',
     }
   );
 
 export const {
+  PlateProvider: PlateStoreProvider,
   plateStore,
   usePlateStore,
-  PlateProvider: PlateStoreProvider,
 } = createPlateStore();
 
 export interface UsePlateEditorStoreOptions {
@@ -170,8 +174,6 @@ export const usePlateStates = (
   return usePlateStore({ store }).use;
 };
 
-/**
- * Get the closest `Plate` id.
- */
+/** Get the closest `Plate` id. */
 export const usePlateId = (): PlateId =>
   usePlateSelectors(undefined, { debugHookName: 'usePlateId' }).id();

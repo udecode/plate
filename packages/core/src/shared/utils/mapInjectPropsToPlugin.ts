@@ -1,17 +1,16 @@
-import { Value } from '@udecode/slate';
+import type { Value } from '@udecode/slate';
 
-import { PlateEditor } from '../types/PlateEditor';
-import {
+import type { PlateEditor } from '../types/PlateEditor';
+import type {
   PlatePlugin,
   PluginOptions,
   WithPlatePlugin,
 } from '../types/plugin/PlatePlugin';
-import { PluginKey } from '../types/plugin/PlatePluginKey';
+import type { PluginKey } from '../types/plugin/PlatePluginKey';
+
 import { getKeysByTypes } from './getKeysByTypes';
 
-/**
- * Map plugin inject props to injected plugin
- */
+/** Map plugin inject props to injected plugin */
 export const mapInjectPropsToPlugin = <
   P = PluginOptions,
   V extends Value = Value,
@@ -22,6 +21,7 @@ export const mapInjectPropsToPlugin = <
   injectedPlugin: Partial<PlatePlugin>
 ) => {
   const validTypes = plugin.inject.props?.validTypes;
+
   if (!validTypes) return;
 
   const keys = getKeysByTypes(editor, validTypes);

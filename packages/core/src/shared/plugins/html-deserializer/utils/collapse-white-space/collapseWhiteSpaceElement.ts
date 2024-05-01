@@ -1,8 +1,9 @@
+import type { CollapseWhiteSpaceState } from './types';
+
 import { isHtmlInlineElement } from '../isHtmlInlineElement';
 import { collapseWhiteSpaceChildren } from './collapseWhiteSpaceChildren';
 import { inferWhiteSpaceRule } from './inferWhiteSpaceRule';
 import { endInlineFormattingContext } from './stateTransforms';
-import { CollapseWhiteSpaceState } from './types';
 
 export const collapseWhiteSpaceElement = (
   element: HTMLElement,

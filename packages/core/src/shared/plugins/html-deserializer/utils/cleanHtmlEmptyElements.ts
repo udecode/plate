@@ -20,13 +20,11 @@ const removeIfEmpty = (element: Element): void => {
   }
 };
 
-/**
- * Remove empty elements from rootNode.
- * Allowed empty elements: BR, IMG.
- */
+/** Remove empty elements from rootNode. Allowed empty elements: BR, IMG. */
 export const cleanHtmlEmptyElements = (rootNode: Node): void => {
   traverseHtmlElements(rootNode, (element) => {
     removeIfEmpty(element);
+
     return true;
   });
 };

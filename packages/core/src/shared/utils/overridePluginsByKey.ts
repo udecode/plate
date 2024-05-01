@@ -1,14 +1,15 @@
-import { Value } from '@udecode/slate';
+import type { Value } from '@udecode/slate';
+
 import defaultsDeep from 'lodash/defaultsDeep.js';
 
-import type { NoInfer } from '../types/misc/NoInfer';
 import type { OverrideByKey } from '../types/OverrideByKey';
 import type { PlateEditor } from '../types/PlateEditor';
+import type { NoInfer } from '../types/misc/NoInfer';
 import type { PlatePlugin, PluginOptions } from '../types/plugin/PlatePlugin';
 
 /**
- * Recursive deep merge of each plugin from `overrideByKey`
- * into plugin with same key (plugin > plugin.plugins).
+ * Recursive deep merge of each plugin from `overrideByKey` into plugin with
+ * same key (plugin > plugin.plugins).
  */
 export const overridePluginsByKey = <
   P = PluginOptions,
@@ -35,11 +36,11 @@ export const overridePluginsByKey = <
         if (!plugin.plugins) plugin.plugins = [];
 
         const found = plugin.plugins.find((p) => p.key === pOverrides.key);
+
         if (!found) plugin.plugins.push(pOverrides);
       });
     }
   }
-
   if (plugin.plugins) {
     // override plugin.plugins
     plugin.plugins = plugin.plugins.map((p) =>
@@ -60,6 +61,7 @@ export const overridePluginsByKey = <
       // override plugin.then
       plugin.then = (editor, p) => {
         const pluginThen = { key: plugin.key, ...then(editor, p) };
+
         return defaultsDeep(
           overridePluginsByKey(pluginThen as any, overrideByKey),
           pluginThen

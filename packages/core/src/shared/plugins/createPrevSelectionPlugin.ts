@@ -1,11 +1,10 @@
-import { TRange } from '@udecode/slate';
+import type { TRange } from '@udecode/slate';
 
 import { createPluginFactory } from '../utils/createPluginFactory';
 
 export const KEY_PREV_SELECTION = 'prevSelection';
 
 export const createPrevSelectionPlugin = createPluginFactory({
-  key: KEY_PREV_SELECTION,
   handlers: {
     onKeyDown: (editor) => (e) => {
       // React 16.x needs this event to be persistented due to it's event pooling implementation.
@@ -14,6 +13,7 @@ export const createPrevSelectionPlugin = createPluginFactory({
       editor.currentKeyboardEvent = e;
     },
   },
+  key: KEY_PREV_SELECTION,
   withOverrides: (editor) => {
     const { apply } = editor;
 

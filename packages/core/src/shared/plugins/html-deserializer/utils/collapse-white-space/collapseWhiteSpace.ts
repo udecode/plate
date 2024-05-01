@@ -1,5 +1,6 @@
+import type { CollapseWhiteSpaceState } from './types';
+
 import { collapseWhiteSpaceElement } from './collapseWhiteSpaceElement';
-import { CollapseWhiteSpaceState } from './types';
 
 // Entrypoint
 export const collapseWhiteSpace = (element: HTMLElement) => {

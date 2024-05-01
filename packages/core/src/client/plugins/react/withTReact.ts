@@ -1,8 +1,9 @@
-import { Value } from '@udecode/slate';
+import type { Value } from '@udecode/slate';
+
 import { focusEditorEdge, isEditorFocused } from '@udecode/slate-react';
 import { withReact } from 'slate-react';
 
-import { PlateEditor } from '../../../shared/types';
+import type { PlateEditor } from '../../../shared/types';
 
 export const withTReact = <
   V extends Value = Value,

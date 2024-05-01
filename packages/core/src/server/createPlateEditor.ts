@@ -1,26 +1,32 @@
-import { createTEditor, normalizeEditor, TEditor, Value } from '@udecode/slate';
+import {
+  type TEditor,
+  type Value,
+  createTEditor,
+  normalizeEditor,
+} from '@udecode/slate';
 
-import { PlateEditor } from '../shared/types/PlateEditor';
+import type { CreatePlateEditorOptions } from '../client/utils/createPlateEditor';
+import type { PlateEditor } from '../shared/types/PlateEditor';
+
 import { createPlugins } from '../shared/utils/createPlugins';
 import { withPlate } from './withPlate';
 
-import type { CreatePlateEditorOptions } from '../client/utils/createPlateEditor';
-
 /**
  * Create a plate editor with:
+ *
  * - `createTEditor` or custom `editor`
  * - `withPlate`
- * - custom `components`
+ * - Custom `components`
  */
 export const createPlateEditor = <
   V extends Value = Value,
   E extends TEditor<V> = TEditor<V>,
 >({
-  editor = createTEditor() as E,
-  plugins = [],
   components,
-  overrideByKey,
+  editor = createTEditor() as E,
   normalizeInitialValue: shouldNormalizeInitialValue,
+  overrideByKey,
+  plugins = [],
   ...withPlateOptions
 }: CreatePlateEditorOptions<V, E> = {}): E & PlateEditor<V> => {
   plugins = createPlugins(plugins, {

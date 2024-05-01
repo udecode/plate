@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { renderHook } from '@testing-library/react-hooks';
 import {
   createPlateEditor,
@@ -64,7 +65,7 @@ describe('Plate', () => {
   describe('usePlateSelectors().value()', () => {
     describe('when initialValue is defined', () => {
       it('should be initialValue', async () => {
-        const initialValue = [{ type: 'p', children: [{ text: 'test' }] }];
+        const initialValue = [{ children: [{ text: 'test' }], type: 'p' }];
 
         const wrapper = ({ children }: any) => (
           <Plate initialValue={initialValue}>{children}</Plate>
@@ -78,7 +79,7 @@ describe('Plate', () => {
     });
     describe('when value is defined', () => {
       it('should be value', async () => {
-        const value = [{ type: 'p', children: [{ text: 'value' }] }];
+        const value = [{ children: [{ text: 'value' }], type: 'p' }];
 
         const wrapper = ({ children }: any) => (
           <Plate value={value}>{children}</Plate>
@@ -93,7 +94,7 @@ describe('Plate', () => {
     describe('when editor with children is defined', () => {
       it('should be editor.children', async () => {
         const editor = createPlateEditor();
-        editor.children = [{ type: 'p', children: [{ text: 'value' }] }];
+        editor.children = [{ children: [{ text: 'value' }], type: 'p' }];
 
         const wrapper = ({ children }: any) => (
           <Plate editor={editor}>{children}</Plate>
@@ -129,11 +130,11 @@ describe('Plate', () => {
         const wrapper = ({ children, plugins }: any) => (
           <Plate plugins={plugins}>{children}</Plate>
         );
-        const { result, rerender } = renderHook(
+        const { rerender, result } = renderHook(
           () => usePlateSelectors().plugins(),
           {
-            wrapper,
             initialProps: { plugins: _plugins },
+            wrapper,
           }
         );
 
@@ -153,7 +154,7 @@ describe('Plate', () => {
         <Plate editor={editor}>{children}</Plate>
       );
 
-      const { result, rerender } = renderHook(
+      const { rerender, result } = renderHook(
         () => usePlateSelectors().plugins(),
         {
           wrapper,
@@ -177,11 +178,11 @@ describe('Plate', () => {
           {children}
         </Plate>
       );
-      const { result, rerender } = renderHook(
+      const { rerender, result } = renderHook(
         ({ id }) => usePlateSelectors(id).plugins(),
         {
-          wrapper,
           initialProps: { id: '1' },
+          wrapper,
         }
       );
 
@@ -298,10 +299,10 @@ describe('Plate', () => {
 
             const wrapper = ({ children }: any) => (
               <PlateController
+                activeId="test"
                 editorStores={{
                   test: EXPECTED_STORE,
                 }}
-                activeId="test"
               >
                 {children}
               </PlateController>
@@ -315,10 +316,10 @@ describe('Plate', () => {
           it('returns the fallback store', () => {
             const wrapper = ({ children }: any) => (
               <PlateController
+                activeId="test"
                 editorStores={{
                   test: null,
                 }}
-                activeId="test"
               >
                 {children}
               </PlateController>

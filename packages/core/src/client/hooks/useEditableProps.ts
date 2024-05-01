@@ -1,10 +1,12 @@
 import React from 'react';
+
 import { isDefined } from '@udecode/utils';
 import omit from 'lodash/omit.js';
 import { useDeepCompareMemo } from 'use-deep-compare';
 
+import type { TEditableProps } from '../../shared/types/slate-react/TEditableProps';
+
 import { DOM_HANDLERS } from '../../shared/types/misc/dom-attributes';
-import { TEditableProps } from '../../shared/types/slate-react/TEditableProps';
 import { pipeDecorate } from '../../shared/utils/pipeDecorate';
 import { pipeHandler } from '../../shared/utils/pipeHandler';
 import { useEditorRef, usePlateSelectors } from '../stores';

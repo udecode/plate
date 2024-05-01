@@ -1,11 +1,9 @@
-import { Value } from '@udecode/slate';
+import type { Value } from '@udecode/slate';
 
-import { PlateEditor } from '../types/PlateEditor';
-import { PlatePlugin, PluginOptions } from '../types/plugin/PlatePlugin';
+import type { PlateEditor } from '../types/PlateEditor';
+import type { PlatePlugin, PluginOptions } from '../types/plugin/PlatePlugin';
 
-/**
- * Get `editor.plugins`
- */
+/** Get `editor.plugins` */
 export const getPlugins = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,

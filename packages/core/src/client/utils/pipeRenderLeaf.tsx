@@ -1,17 +1,17 @@
 import React from 'react';
-import { Value } from '@udecode/slate';
+
+import type { Value } from '@udecode/slate';
+
+import type { PlateEditor } from '../../shared/types/PlateEditor';
+import type { PlateRenderLeafProps } from '../../shared/types/PlateRenderLeafProps';
+import type { RenderLeaf } from '../../shared/types/RenderLeaf';
+import type { TEditableProps } from '../../shared/types/slate-react/TEditableProps';
 
 import { DefaultLeaf } from '../../shared';
-import { PlateEditor } from '../../shared/types/PlateEditor';
-import { PlateRenderLeafProps } from '../../shared/types/PlateRenderLeafProps';
-import { RenderLeaf } from '../../shared/types/RenderLeaf';
-import { TEditableProps } from '../../shared/types/slate-react/TEditableProps';
 import { pipeInjectProps } from '../../shared/utils/pipeInjectProps';
 import { pluginRenderLeaf } from './pluginRenderLeaf';
 
-/**
- * @see {@link RenderLeaf}
- */
+/** @see {@link RenderLeaf} */
 export const pipeRenderLeaf = <V extends Value>(
   editor: PlateEditor<V>,
   renderLeafProp?: TEditableProps['renderLeaf']
@@ -29,6 +29,7 @@ export const pipeRenderLeaf = <V extends Value>(
 
     renderLeafs.forEach((renderLeaf) => {
       const newChildren = renderLeaf(props as any);
+
       if (newChildren !== undefined) {
         props.children = newChildren;
       }

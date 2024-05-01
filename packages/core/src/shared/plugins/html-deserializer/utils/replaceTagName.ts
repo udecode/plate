@@ -1,6 +1,6 @@
 /**
- * Replace `element` tag name by `tagName`.
- * Attributes, innerHTML and parent relationship is kept.
+ * Replace `element` tag name by `tagName`. Attributes, innerHTML and parent
+ * relationship is kept.
  */
 export const replaceTagName = (element: Element, tagName: string): Element => {
   const newElement = document.createElement(tagName);

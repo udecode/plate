@@ -1,8 +1,9 @@
 /** @jsx jsx */
 
-import { PlateEditor } from '@udecode/plate-common';
+import type { PlateEditor } from '@udecode/plate-common';
+import type { TNode } from '@udecode/slate';
+
 import { jsx } from '@udecode/plate-test-utils';
-import { TNode } from '@udecode/slate';
 
 import { mergeDeepToNodes } from '../../utils/index';
 

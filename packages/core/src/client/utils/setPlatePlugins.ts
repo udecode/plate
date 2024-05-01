@@ -1,7 +1,21 @@
-import { Value } from '@udecode/slate';
+import type { Value } from '@udecode/slate';
+
 import { isDefined } from '@udecode/utils';
 
+import type { PlateEditor } from '../../shared/types/PlateEditor';
+import type { PlatePlugin } from '../../shared/types/plugin/PlatePlugin';
+import type { PlateProps } from '../components';
+
 import {
+  KEY_DESERIALIZE_AST,
+  KEY_DESERIALIZE_HTML,
+  KEY_EDITOR_PROTOCOL,
+  KEY_EVENT_EDITOR,
+  KEY_INLINE_VOID,
+  KEY_INSERT_DATA,
+  KEY_LENGTH,
+  KEY_NODE_FACTORY,
+  KEY_PREV_SELECTION,
   createDeserializeAstPlugin,
   createDeserializeHtmlPlugin,
   createEditorProtocolPlugin,
@@ -12,26 +26,12 @@ import {
   createLengthPlugin,
   createNodeFactoryPlugin,
   createPrevSelectionPlugin,
-  KEY_DESERIALIZE_AST,
-  KEY_DESERIALIZE_HTML,
-  KEY_EDITOR_PROTOCOL,
-  KEY_EVENT_EDITOR,
-  KEY_INLINE_VOID,
-  KEY_INSERT_DATA,
-  KEY_LENGTH,
-  KEY_NODE_FACTORY,
-  KEY_PREV_SELECTION,
 } from '../../shared/plugins';
-import { PlateEditor } from '../../shared/types/PlateEditor';
-import { PlatePlugin } from '../../shared/types/plugin/PlatePlugin';
 import { flattenDeepPlugins } from '../../shared/utils/flattenDeepPlugins';
 import { overridePluginsByKey } from '../../shared/utils/overridePluginsByKey';
-import { PlateProps } from '../components';
 import { createReactPlugin } from '../plugins';
 
-/**
- * Flatten deep plugins then set editor.plugins and editor.pluginsByKey
- */
+/** Flatten deep plugins then set editor.plugins and editor.pluginsByKey */
 export const setPlatePlugins = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
@@ -39,9 +39,9 @@ export const setPlatePlugins = <
   editor: E,
   {
     disableCorePlugins,
-    plugins: _plugins = [],
     maxLength,
-  }: Pick<PlateProps<V, E>, 'plugins' | 'disableCorePlugins' | 'maxLength'>
+    plugins: _plugins = [],
+  }: Pick<PlateProps<V, E>, 'disableCorePlugins' | 'maxLength' | 'plugins'>
 ) => {
   let plugins: PlatePlugin<{}, V, PlateEditor<V>>[] = [];
 

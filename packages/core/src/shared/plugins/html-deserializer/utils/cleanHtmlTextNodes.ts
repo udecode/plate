@@ -31,6 +31,7 @@ export const cleanHtmlTextNodes = (rootNode: Node): void => {
       if (!(hasSpace || hasNonWhitespace) && !hasLineFeed) {
         if (textNode.data === NO_BREAK_SPACE) {
           textNode.data = SPACE;
+
           return true;
         }
 
@@ -38,7 +39,6 @@ export const cleanHtmlTextNodes = (rootNode: Node): void => {
 
         return true;
       }
-
       if (
         textNode.previousSibling &&
         textNode.previousSibling.nodeName === 'BR' &&

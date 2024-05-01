@@ -1,15 +1,14 @@
-import { Value } from '@udecode/slate';
+import type { Value } from '@udecode/slate';
 
-import { PlateEditor } from '../../../../shared/types';
+import type { PlateEditor } from '../../../../shared/types';
+
 import {
-  PlateId,
-  UsePlateEditorStoreOptions,
+  type PlateId,
+  type UsePlateEditorStoreOptions,
   usePlateSelectors,
 } from '../createPlateStore';
 
-/**
- * Get editor ref which is never updated.
- */
+/** Get editor ref which is never updated. */
 export const useEditorRef = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,

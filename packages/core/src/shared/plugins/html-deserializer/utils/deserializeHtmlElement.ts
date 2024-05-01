@@ -1,12 +1,11 @@
-import { EDescendant, Value } from '@udecode/slate';
+import type { EDescendant, Value } from '@udecode/slate';
 
-import { PlateEditor } from '../../../types/PlateEditor';
-import { DeserializeHtmlNodeReturnType } from '../types';
+import type { PlateEditor } from '../../../types/PlateEditor';
+import type { DeserializeHtmlNodeReturnType } from '../types';
+
 import { deserializeHtmlNode } from './deserializeHtmlNode';
 
-/**
- * Deserialize HTML element to fragment.
- */
+/** Deserialize HTML element to fragment. */
 export const deserializeHtmlElement = <V extends Value>(
   editor: PlateEditor<V>,
   element: HTMLElement

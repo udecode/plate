@@ -1,7 +1,9 @@
 import React from 'react';
+
 import { Editable } from 'slate-react';
 
-import { TEditableProps } from '../../shared/types/slate-react/TEditableProps';
+import type { TEditableProps } from '../../shared/types/slate-react/TEditableProps';
+
 import { useEditableProps } from '../hooks';
 import { useEditorRef } from '../stores';
 import { EditorMethodsEffect } from './EditorMethodsEffect';
@@ -10,24 +12,22 @@ import { EditorStateEffect } from './EditorStateEffect';
 import { PlateControllerEffect } from './PlateControllerEffect';
 import { PlateSlate } from './PlateSlate';
 
-export type PlateContentProps = TEditableProps & {
-  /**
-   * Renders the editable content.
-   */
+export type PlateContentProps = {
+  /** Renders the editable content. */
   renderEditable?: (editable: React.ReactElement) => React.ReactNode;
-};
+} & TEditableProps;
 
 /**
  * Editable with plugins.
  *
- * - decorate prop
+ * - Decorate prop
  * - DOM handler props
- * - readOnly prop
- * - renderAfterEditable
- * - renderBeforeEditable
- * - renderElement prop
- * - renderLeaf prop
- * - useHooks
+ * - ReadOnly prop
+ * - RenderAfterEditable
+ * - RenderBeforeEditable
+ * - RenderElement prop
+ * - RenderLeaf prop
+ * - UseHooks
  */
 const PlateContent = React.forwardRef(
   ({ renderEditable, ...props }: PlateContentProps, ref) => {
@@ -50,8 +50,8 @@ const PlateContent = React.forwardRef(
 
     editor.plugins.forEach((plugin) => {
       const {
-        renderBeforeEditable: RenderBeforeEditable,
         renderAfterEditable: RenderAfterEditable,
+        renderBeforeEditable: RenderBeforeEditable,
       } = plugin;
 
       if (RenderAfterEditable) {
@@ -62,7 +62,6 @@ const PlateContent = React.forwardRef(
           </>
         );
       }
-
       if (RenderBeforeEditable) {
         beforeEditable = (
           <>

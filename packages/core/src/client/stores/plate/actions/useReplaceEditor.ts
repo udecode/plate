@@ -2,16 +2,13 @@ import React from 'react';
 
 import { createPlateEditor } from '../../../utils';
 import {
-  PlateId,
+  type PlateId,
+  type UsePlateEditorStoreOptions,
   usePlateActions,
-  UsePlateEditorStoreOptions,
 } from '../createPlateStore';
 import { useEditorRef } from '../selectors';
 
-/**
- * Replace plate editor with the same id and plugins.
- * Remounts `PlateContent`.
- */
+/** Replace plate editor with the same id and plugins. Remounts `PlateContent`. */
 export const useReplaceEditor = (
   id?: PlateId,
   options: UsePlateEditorStoreOptions = {}
@@ -28,10 +25,10 @@ export const useReplaceEditor = (
 
   return React.useCallback(() => {
     const newEditor = createPlateEditor({
-      id: editor.id,
-      plugins: editor.plugins,
       // disable core plugins as it's already included
       disableCorePlugins: true,
+      id: editor.id,
+      plugins: editor.plugins,
     });
 
     setEditor(newEditor);

@@ -1,9 +1,10 @@
-import React from 'react';
-import { Value } from '@udecode/slate';
+import type React from 'react';
 
-import { PlateEditor } from '../PlateEditor';
-import { DOMHandler, DOMHandlerReturnType } from './DOMHandlers';
-import { PluginOptions } from './PlatePlugin';
+import type { Value } from '@udecode/slate';
+
+import type { PlateEditor } from '../PlateEditor';
+import type { DOMHandler, DOMHandlerReturnType } from './DOMHandlers';
+import type { PluginOptions } from './PlatePlugin';
 
 export type KeyboardHandler<
   P = PluginOptions,

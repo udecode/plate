@@ -12,8 +12,8 @@ const input = (
       <htext bold>test</htext>
     </hp>
     <selection>
-      <anchor path={[0, 0]} offset={0} />
-      <focus path={[0, 0]} offset={4} />
+      <anchor offset={0} path={[0, 0]} />
+      <focus offset={4} path={[0, 0]} />
     </selection>
   </editor>
 ) as any;
@@ -28,6 +28,6 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  toggleMark(input, { key: MARK_ITALIC, clear: MARK_BOLD });
+  toggleMark(input, { clear: MARK_BOLD, key: MARK_ITALIC });
   expect(input.children).toEqual(output.children);
 });

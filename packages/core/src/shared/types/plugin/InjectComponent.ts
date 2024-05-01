@@ -1,7 +1,8 @@
-import React from 'react';
-import { Value } from '@udecode/slate';
+import type React from 'react';
 
-import { PlateRenderElementProps } from '../PlateRenderElementProps';
+import type { Value } from '@udecode/slate';
+
+import type { PlateRenderElementProps } from '../PlateRenderElementProps';
 
 export interface InjectComponentProps<V extends Value = Value>
   extends PlateRenderElementProps<V> {

@@ -14,10 +14,16 @@ module.exports = {
   },
   overrides: [
     {
+      // @see https://github.com/jest-community/eslint-plugin-jest
+      extends: [
+        'plugin:jest/recommended',
+        'plugin:jest-formatting/recommended',
+        'plugin:testing-library/react',
+        'plugin:jest-dom/recommended',
+      ],
       // Perf: To ensure best performance enable eslint-plugin-jest for test files only.
       files: jestPatterns.files,
-      // @see https://github.com/jest-community/eslint-plugin-jest
-      extends: ['plugin:jest/recommended'],
+      plugins: ['jest', 'jest-formatting', 'testing-library', 'jest-dom'],
       rules: {
         '@typescript-eslint/ban-ts-comment': 'off',
         '@typescript-eslint/no-empty-function': 'off',

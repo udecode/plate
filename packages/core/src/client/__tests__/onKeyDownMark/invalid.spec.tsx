@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
-import { createBoldPlugin, MARK_BOLD } from '@udecode/plate-basic-marks';
+import { MARK_BOLD, createBoldPlugin } from '@udecode/plate-basic-marks';
 import {
+  type ToggleMarkPlugin,
   createPlateEditor,
   getPlugin,
-  ToggleMarkPlugin,
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { onKeyDownToggleMark } from '@udecode/plate-utils';

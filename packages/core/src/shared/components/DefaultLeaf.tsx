@@ -1,15 +1,16 @@
 import React from 'react';
-import { Value } from '@udecode/slate';
 
-import { PlateRenderLeafProps } from '../types/PlateRenderLeafProps';
+import type { Value } from '@udecode/slate';
+
+import type { PlateRenderLeafProps } from '../types/PlateRenderLeafProps';
 
 export function DefaultLeaf<V extends Value>({
   attributes,
   children,
-  text,
-  leaf,
   editor,
+  leaf,
   nodeProps,
+  text,
   ...props
 }: PlateRenderLeafProps<V>) {
   return (

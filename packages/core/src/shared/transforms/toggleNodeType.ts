@@ -1,29 +1,32 @@
 import {
-  GetNodeEntriesOptions,
+  type GetNodeEntriesOptions,
+  type Value,
   setElements,
   someNode,
-  Value,
 } from '@udecode/slate';
 
+import type { PlateEditor } from '../types/PlateEditor';
+
 import { ELEMENT_DEFAULT } from '../constants/ELEMENT_DEFAULT';
-import { PlateEditor } from '../types/PlateEditor';
 import { getPluginType } from '../utils/getPluginType';
 
 export interface ToggleNodeTypeOptions {
   /**
-   * If there is no node type above the selection, set the selected node type to activeType.
+   * If there is no node type above the selection, set the selected node type to
+   * activeType.
    */
   activeType?: string;
 
   /**
-   * If there is a node type above the selection, set the selected node type to inactiveType.
+   * If there is a node type above the selection, set the selected node type to
+   * inactiveType.
    */
   inactiveType?: string;
 }
 
 /**
- * Toggle the type of the selected node.
- * Don't do anything if activeType === inactiveType.
+ * Toggle the type of the selected node. Don't do anything if activeType ===
+ * inactiveType.
  */
 export const toggleNodeType = <V extends Value>(
   editor: PlateEditor<V>,

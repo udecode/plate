@@ -1,24 +1,24 @@
-import { Value } from '@udecode/slate';
-import { AnyObject, isDefined } from '@udecode/utils';
+import type { Value } from '@udecode/slate';
+
+import { type AnyObject, isDefined } from '@udecode/utils';
 import castArray from 'lodash/castArray.js';
 
-import { Nullable } from '../../../types';
-import { PlateEditor } from '../../../types/PlateEditor';
-import { DeserializeHtml } from '../../../types/plugin/DeserializeHtml';
-import { WithPlatePlugin } from '../../../types/plugin/PlatePlugin';
+import type { Nullable } from '../../../types';
+import type { PlateEditor } from '../../../types/PlateEditor';
+import type { DeserializeHtml } from '../../../types/plugin/DeserializeHtml';
+import type { WithPlatePlugin } from '../../../types/plugin/PlatePlugin';
+
 import { getInjectedPlugins } from '../../../utils/getInjectedPlugins';
 
-/**
- * Get a deserializer by type, node names, class names and styles.
- */
+/** Get a deserializer by type, node names, class names and styles. */
 export const pluginDeserializeHtml = <V extends Value>(
   editor: PlateEditor<V>,
   plugin: WithPlatePlugin<{}, V>,
   {
-    element: el,
     deserializeLeaf,
-  }: { element: HTMLElement; deserializeLeaf?: boolean }
-): (Nullable<DeserializeHtml> & { node: AnyObject }) | undefined => {
+    element: el,
+  }: { deserializeLeaf?: boolean; element: HTMLElement }
+): ({ node: AnyObject } & Nullable<DeserializeHtml>) | undefined => {
   const {
     deserializeHtml,
     isElement: isElementRoot,
@@ -30,9 +30,9 @@ export const pluginDeserializeHtml = <V extends Value>(
 
   const {
     attributeNames,
-    query,
-    isLeaf: isLeafRule,
     isElement: isElementRule,
+    isLeaf: isLeafRule,
+    query,
     rules,
   } = deserializeHtml;
   let { getNode } = deserializeHtml;
@@ -43,14 +43,12 @@ export const pluginDeserializeHtml = <V extends Value>(
   if (!deserializeLeaf && !isElement) {
     return;
   }
-
   if (deserializeLeaf && !isLeaf) {
     return;
   }
-
   if (rules) {
     const isValid = rules.some(
-      ({ validNodeName = '*', validStyle, validClassName, validAttribute }) => {
+      ({ validAttribute, validClassName, validNodeName = '*', validStyle }) => {
         if (validNodeName) {
           const validNodeNames = castArray<string>(validNodeName);
 
@@ -62,11 +60,9 @@ export const pluginDeserializeHtml = <V extends Value>(
           )
             return false;
         }
-
         // Ignore if the rule className is not in el class list.
         if (validClassName && !el.classList.contains(validClassName))
           return false;
-
         if (validStyle) {
           for (const [key, value] of Object.entries(validStyle)) {
             const values = castArray<string>(value);
@@ -74,7 +70,6 @@ export const pluginDeserializeHtml = <V extends Value>(
             // Ignore if el style value is not included in rule style values (except *)
             if (!values.includes((el.style as any)[key]) && value !== '*')
               return;
-
             // Ignore if el style value is falsy (for value *)
             if (value === '*' && !(el.style as any)[key]) return;
 
@@ -89,7 +84,6 @@ export const pluginDeserializeHtml = <V extends Value>(
             }
           }
         }
-
         if (validAttribute) {
           if (typeof validAttribute === 'string') {
             if (!el.getAttributeNames().includes(validAttribute)) return false;
@@ -115,11 +109,9 @@ export const pluginDeserializeHtml = <V extends Value>(
 
     if (!isValid) return;
   }
-
   if (query && !query(el)) {
     return;
   }
-
   if (!getNode) {
     if (isElement) {
       getNode = () => ({ type });
@@ -131,12 +123,14 @@ export const pluginDeserializeHtml = <V extends Value>(
   }
 
   let node = getNode(el, {}) ?? {};
+
   if (Object.keys(node).length === 0) return;
 
   const injectedPlugins = getInjectedPlugins<{}, V>(editor, plugin);
 
   injectedPlugins.forEach((injectedPlugin) => {
     const res = injectedPlugin.deserializeHtml?.getNode?.(el, node);
+
     if (res) {
       node = {
         ...node,
