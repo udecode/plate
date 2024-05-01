@@ -18,6 +18,10 @@ export const MentionInputElement = withRef<
     <PlateElement
       ref={ref}
       asChild
+      /**
+       * TODO: Check why data-slate-value is present on mention input elements
+       * and mention and slash elements.
+       */
       data-slate-value={element.value}
       className={cn(
         'inline-block rounded-md bg-muted px-1.5 py-0.5 align-baseline text-sm',

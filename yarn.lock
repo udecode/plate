@@ -51,6 +51,39 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ariakit/core@npm:0.4.6":
+  version: 0.4.6
+  resolution: "@ariakit/core@npm:0.4.6"
+  checksum: 10c0/ca95be5acfd55ad99fa2eaddfdcf2dd178622ac64634bec80709dc4c722f8f15ac6d321831c72ab034001fe00964f7a2531e519916f29cf885d8cf3ffdbb6776
+  languageName: node
+  linkType: hard
+
+"@ariakit/react-core@npm:0.4.6":
+  version: 0.4.6
+  resolution: "@ariakit/react-core@npm:0.4.6"
+  dependencies:
+    "@ariakit/core": "npm:0.4.6"
+    "@floating-ui/dom": "npm:^1.0.0"
+    use-sync-external-store: "npm:^1.2.0"
+  peerDependencies:
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+  checksum: 10c0/cd24d020a380a5de48607119c7f46a1b64bc8780d7b4a18f09207b2a3c13957cfc1c5dc0256ad8dd0924714b074e30f4af5702d25b438885516d9c900cc8ce91
+  languageName: node
+  linkType: hard
+
+"@ariakit/react@npm:0.4.6":
+  version: 0.4.6
+  resolution: "@ariakit/react@npm:0.4.6"
+  dependencies:
+    "@ariakit/react-core": "npm:0.4.6"
+  peerDependencies:
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+  checksum: 10c0/647d540c81d116de690e80544152471be59ced91ca1a31e81dbafea162397e3ce16844401eac708c06e8ad834ca6779eb373fc4634e28d6ecdb7e0f2fce4a061
+  languageName: node
+  linkType: hard
+
 "@babel/code-frame@npm:^7.0.0, @babel/code-frame@npm:^7.10.4, @babel/code-frame@npm:^7.12.13, @babel/code-frame@npm:^7.21.4, @babel/code-frame@npm:^7.23.5, @babel/code-frame@npm:^7.24.1, @babel/code-frame@npm:^7.24.2":
   version: 7.24.2
   resolution: "@babel/code-frame@npm:7.24.2"
@@ -1532,6 +1565,16 @@ __metadata:
   dependencies:
     "@floating-ui/utils": "npm:^0.2.1"
   checksum: 10c0/667a68036f7dd5ed19442c7792a6002ca02d1799221c4396691bbe0b6008b48f6ccad581225e81fa266bb91232f6c66838a5f825f554217e1ec886178b93381b
+  languageName: node
+  linkType: hard
+
+"@floating-ui/dom@npm:^1.0.0":
+  version: 1.6.4
+  resolution: "@floating-ui/dom@npm:1.6.4"
+  dependencies:
+    "@floating-ui/core": "npm:^1.0.0"
+    "@floating-ui/utils": "npm:^0.2.0"
+  checksum: 10c0/cee0b9e6efc1c6d978ec580c770078fdf416016fb03f3dd99630f7f32d0422722e608471fbc7578be86c783ad1c1e448c5fa5b9fdec889dfbf4b695f208730fd
   languageName: node
   linkType: hard
 
@@ -21300,6 +21343,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "www@workspace:apps/www"
   dependencies:
+    "@ariakit/react": "npm:0.4.6"
     "@faker-js/faker": "npm:^8.4.1"
     "@radix-ui/colors": "npm:1.0.1"
     "@radix-ui/react-accessible-icon": "npm:^1.0.3"

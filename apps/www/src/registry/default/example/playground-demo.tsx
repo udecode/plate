@@ -130,7 +130,6 @@ import {
   TodoMarker,
 } from '@/registry/default/plate-ui/indent-todo-marker-component';
 import { MentionCombobox } from '@/registry/default/plate-ui/mention-combobox';
-import { SlashCombobox } from '@/registry/default/plate-ui/slash-combobox';
 
 export const usePlaygroundPlugins = ({
   id,
@@ -439,7 +438,7 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
                   <MentionCombobox items={MENTIONABLES} />
                 )}
 
-                <SlashCombobox items={SLASH_RULES} />
+                {/*<SlashCombobox items={SLASH_RULES} />*/}
 
                 {isEnabled('cursoroverlay', id) && (
                   <CursorOverlay containerRef={containerRef} />

@@ -14,14 +14,14 @@ export const ELEMENT_SLASH_INPUT = 'slash_input';
 export const createSlashPlugin = createPluginFactory<SlashPlugin>({
   key: KEY_SLASH_COMMAND,
   handlers: {
-    onKeyDown: slashOnKeyDownHandler({ query: isSelectionInSlashInput }),
-    onBlur: (editor) => () => {
-      // remove slash_input nodes from editor on blur
-      removeNodes(editor, {
-        match: (n) => n.type === ELEMENT_SLASH_INPUT,
-        at: [],
-      });
-    },
+    // onKeyDown: slashOnKeyDownHandler({ query: isSelectionInSlashInput }),
+    // onBlur: (editor) => () => {
+    //   // remove slash_input nodes from editor on blur
+    //   removeNodes(editor, {
+    //     match: (n) => n.type === ELEMENT_SLASH_INPUT,
+    //     at: [],
+    //   });
+    // },
   },
   withOverrides: withSlashCommand,
   options: {
@@ -34,6 +34,7 @@ export const createSlashPlugin = createPluginFactory<SlashPlugin>({
       key: ELEMENT_SLASH_INPUT,
       isElement: true,
       isInline: true,
+      isVoid: true,
     },
   ],
   then: (editor, { key }) => ({

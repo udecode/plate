@@ -27,6 +27,10 @@ export const MentionElement = withRef<
         element.children[0].underline === true && 'underline',
         className
       )}
+      /**
+       * TODO: Check why data-slate-value is present on mention input elements
+       * and mention and slash elements.
+       */
       data-slate-value={element.value}
       contentEditable={false}
       onClick={getHandler(onClick, element)}
