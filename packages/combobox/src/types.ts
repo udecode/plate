@@ -1,4 +1,4 @@
-import {PlateEditor, TElement} from "@udecode/plate-common";
+import { PlateEditor, TElement } from '@udecode/plate-common';
 
 export interface TriggerComboboxPlugin {
   combobox?: {
@@ -22,3 +22,10 @@ export type CancelComboboxInputCause =
   | 'arrowRight'
   | 'deselect'
   | 'blur';
+
+export type BaseComboboxItem = {
+  value: string;
+  label: string;
+  aliases?: string[];
+  onSelect?: () => void;
+};

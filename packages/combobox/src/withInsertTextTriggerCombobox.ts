@@ -7,7 +7,8 @@ import {
   Value,
   WithPlatePlugin,
 } from '@udecode/plate-common';
-import {TriggerComboboxPlugin} from './types';
+
+import { TriggerComboboxPlugin } from './types';
 
 export const withInsertTextTriggerCombobox = <
   V extends Value = Value,
