@@ -2,7 +2,7 @@ import {
   isHotkey,
   KeyboardEventHandler,
   PlateEditor,
-} from '@udecode/plate-core';
+} from '@udecode/plate-core/server';
 import { moveSelection, Value } from '@udecode/slate';
 import { Range } from 'slate';
 

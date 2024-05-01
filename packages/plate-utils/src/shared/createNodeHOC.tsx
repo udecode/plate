@@ -1,6 +1,7 @@
 import React from 'react';
-import { PlateRenderElementProps } from '@udecode/plate-core';
 import { Value } from '@udecode/slate';
+
+import type { PlateRenderElementProps } from '@udecode/plate-core';
 
 export const createNodeHOC =
   <V extends Value, T>(HOC: React.FC<T>) =>

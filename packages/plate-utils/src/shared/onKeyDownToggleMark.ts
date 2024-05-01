@@ -4,7 +4,7 @@ import {
   PlateEditor,
   ToggleMarkPlugin,
   WithPlatePlugin,
-} from '@udecode/plate-core';
+} from '@udecode/plate-core/server';
 import { Value } from '@udecode/slate';
 import { toggleMark } from '@udecode/slate-utils';
 

@@ -7,7 +7,7 @@ import {
   PlateEditor,
   toggleNodeType,
   WithPlatePlugin,
-} from '@udecode/plate-core';
+} from '@udecode/plate-core/server';
 import { Value } from '@udecode/slate';
 import castArray from 'lodash/castArray.js';
 

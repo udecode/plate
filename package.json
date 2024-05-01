@@ -49,7 +49,7 @@
     "g:typecheck:apps": "turbo --filter=www typecheck --no-daemon",
     "install:playwright": "yarn playwright install --with-deps",
     "nuke:node_modules": "rimraf '**/node_modules'",
-    "p:brl": "cd $INIT_CWD && barrelsby -d $INIT_CWD/src -D -l all -q -e '.*__tests__.*|(.*(fixture|template|spec|internal|server).*)|server.ts' && barrelsby -d $INIT_CWD/src/server -D -l all -q",
+    "p:brl": "cd $INIT_CWD && barrelsby -d $INIT_CWD/src -D -l all -q -e '.*__tests__.*|(.*(fixture|template|spec|internal|server).*)|server.ts' && [ -d \"$INIT_CWD/src/server\" ] &&barrelsby -d $INIT_CWD/src/server -l all -q",
     "p:brl:below": "cd $INIT_CWD && barrelsby -d $INIT_CWD/src -D -l below -q -e '.*__tests__.*|(.*(fixture|template|spec|internal).*)|server.ts'",
     "p:build": "cd $INIT_CWD && yarn p:tsup",
     "p:build:watch": "cd $INIT_CWD && yarn p:tsup --watch",
