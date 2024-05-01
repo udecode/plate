@@ -4,6 +4,7 @@ import {
   ComboboxItem,
   ComboboxPopover,
   ComboboxProvider,
+  Portal,
 } from '@ariakit/react';
 import { cn } from '@udecode/cn';
 import {
@@ -100,28 +101,31 @@ export const InlineCombobox = <TItem extends BaseComboboxItemWithEditor>({
           />
         </span>
 
-        <ComboboxPopover className="z-[500] max-h-[288px] w-[300px] overflow-y-auto rounded-md bg-popover shadow-md">
-          {filteredItems.map((item) => (
-            <ComboboxItem
-              key={item.value}
-              className={cn(
-                comboboxItemClassName,
-                comboboxItemInteractiveClassName
-              )}
-              onClick={() => {
-                removeInput(true);
-                item.onSelect?.(editor);
-                onSelectItem?.(item);
-              }}
-            >
-              {renderItem(item)}
-            </ComboboxItem>
-          ))}
+        {/* Portal prevents CSS from leaking into popover */}
+        <Portal>
+          <ComboboxPopover className="z-[500] max-h-[288px] w-[300px] overflow-y-auto rounded-md bg-popover shadow-md">
+            {filteredItems.map((item) => (
+              <ComboboxItem
+                key={item.value}
+                className={cn(
+                  comboboxItemClassName,
+                  comboboxItemInteractiveClassName
+                )}
+                onClick={() => {
+                  removeInput(true);
+                  item.onSelect?.(editor);
+                  onSelectItem?.(item);
+                }}
+              >
+                {renderItem(item)}
+              </ComboboxItem>
+            ))}
 
-          {filteredItems.length === 0 && renderEmpty && (
-            <div className={comboboxItemClassName}>{renderEmpty}</div>
-          )}
-        </ComboboxPopover>
+            {filteredItems.length === 0 && renderEmpty && (
+              <div className={comboboxItemClassName}>{renderEmpty}</div>
+            )}
+          </ComboboxPopover>
+        </Portal>
       </ComboboxProvider>
     </span>
   );
