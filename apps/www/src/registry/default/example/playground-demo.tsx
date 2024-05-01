@@ -112,7 +112,6 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import { ValueId } from '@/config/customizer-plugins';
 import { captionPlugin } from '@/lib/plate/demo/plugins/captionPlugin';
-import { SLASH_RULES } from '@/lib/plate/demo/values/slashRules';
 import { settingsStore } from '@/components/context/settings-store';
 import { PlaygroundFixedToolbarButtons } from '@/components/plate-ui/playground-fixed-toolbar-buttons';
 import { PlaygroundFloatingToolbarButtons } from '@/components/plate-ui/playground-floating-toolbar-buttons';
@@ -178,11 +177,7 @@ export const usePlaygroundPlugins = ({
               triggerPreviousCharPattern: /^$|^[\s"']$/,
             },
           }),
-          createSlashPlugin({
-            options: {
-              rules: SLASH_RULES,
-            },
-          }),
+          createSlashPlugin(),
           createTablePlugin({
             enabled: !!enabled.table,
             options: {

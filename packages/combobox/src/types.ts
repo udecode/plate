@@ -23,9 +23,11 @@ export type CancelComboboxInputCause =
   | 'deselect'
   | 'blur';
 
-export type BaseComboboxItem = {
+export type BaseComboboxItem<OnSelectArgs extends any[] = []> = {
   value: string;
   label: string;
   aliases?: string[];
-  onSelect?: () => void;
+  onSelect?: (...args: OnSelectArgs) => void;
 };
+
+export type BaseComboboxItemWithEditor = BaseComboboxItem<[PlateEditor]>;

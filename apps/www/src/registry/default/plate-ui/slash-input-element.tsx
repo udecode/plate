@@ -1,73 +1,70 @@
-import React, { ReactNode } from 'react';
+import React, { ComponentType, SVGProps } from 'react';
 import { withRef } from '@udecode/cn';
-import { BaseComboboxItem } from '@udecode/plate-combobox';
-import { insertText, PlateElement } from '@udecode/plate-common';
-import {
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_H3,
-  ELEMENT_H4,
-  ELEMENT_H5,
-  ELEMENT_H6,
-} from '@udecode/plate-heading';
+import { BaseComboboxItemWithEditor } from '@udecode/plate-combobox';
+import { PlateElement, toggleNodeType } from '@udecode/plate-common';
+import { ELEMENT_H1, ELEMENT_H2, ELEMENT_H3 } from '@udecode/plate-heading';
+import { ListStyleType, toggleIndentList } from '@udecode/plate-indent-list';
+
+import { Icons } from '@/components/icons';
 
 import { InlineCombobox } from './inline-combobox';
 
-type SlashCommandRule = BaseComboboxItem & {
-  icon: ReactNode;
+export type SlashCommandRule = BaseComboboxItemWithEditor & {
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
 };
 
 const rules: SlashCommandRule[] = [
   {
-    value: 'apple',
-    label: 'Apple',
-    icon: '🍎',
-  },
-  {
-    value: 'banana',
-    label: 'Banana',
-    icon: '🍌',
-  },
-  {
-    value: 'cherry',
-    label: 'Cherry',
-    icon: '🍒',
-  },
-  {
     value: ELEMENT_H1,
     label: 'Heading 1',
-    icon: 'H1',
+    icon: Icons.h1,
+    onSelect: (editor) => {
+      toggleNodeType(editor, { activeType: ELEMENT_H1 });
+    },
   },
   {
     value: ELEMENT_H2,
     label: 'Heading 2',
-    icon: 'H2',
+    icon: Icons.h2,
+    onSelect: (editor) => {
+      toggleNodeType(editor, { activeType: ELEMENT_H2 });
+    },
   },
   {
     value: ELEMENT_H3,
     label: 'Heading 3',
-    icon: 'H3',
+    icon: Icons.h3,
+    onSelect: (editor) => {
+      toggleNodeType(editor, { activeType: ELEMENT_H3 });
+    },
   },
   {
-    value: ELEMENT_H4,
-    label: 'Heading 4',
-    icon: 'H4',
+    value: ListStyleType.Disc,
+    label: 'Bulleted list',
+    icon: Icons.ul,
+    aliases: ['ul', 'ordered list'],
+    onSelect: (editor) => {
+      toggleIndentList(editor, {
+        listStyleType: ListStyleType.Disc,
+      });
+    },
   },
   {
-    value: ELEMENT_H5,
-    label: 'Heading 5',
-    icon: 'H5',
-  },
-  {
-    value: ELEMENT_H6,
-    label: 'Heading 6',
-    icon: 'H6',
+    value: ListStyleType.Decimal,
+    label: 'Numbered list',
+    icon: Icons.ol,
+    aliases: ['ol', 'unordered list'],
+    onSelect: (editor) => {
+      toggleIndentList(editor, {
+        listStyleType: ListStyleType.Decimal,
+      });
+    },
   },
 ];
 
 export const SlashInputElement = withRef<typeof PlateElement>(
   ({ className, ...props }, ref) => {
-    const { children, element, editor } = props;
+    const { children, element } = props;
 
     return (
       <PlateElement
@@ -79,16 +76,13 @@ export const SlashInputElement = withRef<typeof PlateElement>(
         <InlineCombobox
           trigger="/"
           items={rules}
-          renderItem={({ icon, label }) => (
+          renderItem={({ icon: Icon, label }) => (
             <>
-              <span className="mr-2">{icon}</span>
+              <Icon className="mr-2 size-4" aria-hidden />
               {label}
             </>
           )}
           renderEmpty="No matching commands found"
-          onSelectItem={({ label }) => {
-            insertText(editor, 'Selected ' + label);
-          }}
         />
 
         {children}

@@ -7,7 +7,7 @@ import {
 } from '@ariakit/react';
 import { cn } from '@udecode/cn';
 import {
-  BaseComboboxItem,
+  BaseComboboxItemWithEditor,
   matchWords,
   useComboboxInput,
   useHTMLInputCursorState,
@@ -20,11 +20,11 @@ const comboboxItemInteractiveClassName =
   'cursor-pointer transition-colors hover:bg-accent hover:text-accent-foreground data-[active-item=true]:bg-accent data-[active-item=true]:text-accent-foreground';
 
 const defaultMatchItem = (
-  { label, aliases = [] }: BaseComboboxItem,
+  { label, aliases = [] }: BaseComboboxItemWithEditor,
   query: string
 ) => [label, ...aliases].some((alias) => matchWords(alias, query));
 
-interface InlineComboboxProps<TItem extends BaseComboboxItem> {
+interface InlineComboboxProps<TItem extends BaseComboboxItemWithEditor> {
   trigger: string;
   items: TItem[];
   matchItem?: (item: TItem, query: string) => boolean;
@@ -33,7 +33,7 @@ interface InlineComboboxProps<TItem extends BaseComboboxItem> {
   onSelectItem?: (item: TItem) => void;
 }
 
-export const InlineCombobox = <TItem extends BaseComboboxItem>({
+export const InlineCombobox = <TItem extends BaseComboboxItemWithEditor>({
   trigger,
   items,
   matchItem = defaultMatchItem,
@@ -110,7 +110,7 @@ export const InlineCombobox = <TItem extends BaseComboboxItem>({
               )}
               onClick={() => {
                 removeInput(true);
-                item.onSelect?.();
+                item.onSelect?.(editor);
                 onSelectItem?.(item);
               }}
             >
