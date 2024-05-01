@@ -42,7 +42,7 @@ const rules: SlashCommandRule[] = [
     value: ListStyleType.Disc,
     label: 'Bulleted list',
     icon: Icons.ul,
-    aliases: ['ul', 'ordered list'],
+    aliases: ['ul', 'unordered list'],
     onSelect: (editor) => {
       toggleIndentList(editor, {
         listStyleType: ListStyleType.Disc,
@@ -53,7 +53,7 @@ const rules: SlashCommandRule[] = [
     value: ListStyleType.Decimal,
     label: 'Numbered list',
     icon: Icons.ol,
-    aliases: ['ol', 'unordered list'],
+    aliases: ['ol', 'ordered list'],
     onSelect: (editor) => {
       toggleIndentList(editor, {
         listStyleType: ListStyleType.Decimal,
