@@ -3,5 +3,6 @@
  */
 
 export * from './types';
+export * from './withInsertTextTriggerCombobox';
 export * from './hooks/index';
 export * from './legacy-combobox-delete-me/index';

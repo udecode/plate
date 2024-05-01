@@ -1,34 +1,14 @@
-import { createPluginFactory, removeNodes } from '@udecode/plate-common';
+import { withInsertTextTriggerCombobox } from '@udecode/plate-combobox';
+import { createPluginFactory } from '@udecode/plate-common';
 
-import { slashOnKeyDownHandler } from './handlers/slashOnKeyDownHandler';
-import { isSelectionInSlashInput } from './queries/index';
 import { SlashPlugin } from './types';
-import { withSlashCommand } from './withSlashCommand';
 
 export const KEY_SLASH_COMMAND = 'slash_command';
 export const ELEMENT_SLASH_INPUT = 'slash_input';
-/**
- * Enables support for autocompleting /slash_command.
- */
 
 export const createSlashPlugin = createPluginFactory<SlashPlugin>({
   key: KEY_SLASH_COMMAND,
-  handlers: {
-    // onKeyDown: slashOnKeyDownHandler({ query: isSelectionInSlashInput }),
-    // onBlur: (editor) => () => {
-    //   // remove slash_input nodes from editor on blur
-    //   removeNodes(editor, {
-    //     match: (n) => n.type === ELEMENT_SLASH_INPUT,
-    //     at: [],
-    //   });
-    // },
-  },
-  withOverrides: withSlashCommand,
-  options: {
-    trigger: '/',
-    triggerPreviousCharPattern: /^\s?$/,
-    createSlashNode: (item) => ({ value: item.text }),
-  },
+  withOverrides: withInsertTextTriggerCombobox,
   plugins: [
     {
       key: ELEMENT_SLASH_INPUT,
@@ -37,9 +17,14 @@ export const createSlashPlugin = createPluginFactory<SlashPlugin>({
       isVoid: true,
     },
   ],
-  then: (editor, { key }) => ({
-    options: {
-      id: key,
+  options: {
+    combobox: {
+      trigger: '/',
+      triggerPreviousCharPattern: /^\s?$/,
+      createInputNode: () => ({
+        type: ELEMENT_SLASH_INPUT,
+        children: [{ text: '' }],
+      }),
     },
-  }),
+  },
 });
