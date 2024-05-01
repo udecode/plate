@@ -1,8 +1,5 @@
 {
-  "extends": "../../config/tsconfig.build.json",
-  "compilerOptions": {
-    "declarationDir": "./dist",
-    "outDir": "./dist"
-  },
-  "include": ["src", "typings"]
+  "extends": "../../config/tsconfig.base.json",
+  "include": ["src"],
+  "exclude": []
 }
