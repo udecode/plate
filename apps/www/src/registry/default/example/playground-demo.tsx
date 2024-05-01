@@ -438,8 +438,6 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
                   <MentionCombobox items={MENTIONABLES} />
                 )}
 
-                {/*<SlashCombobox items={SLASH_RULES} />*/}
-
                 {isEnabled('cursoroverlay', id) && (
                   <CursorOverlay containerRef={containerRef} />
                 )}
