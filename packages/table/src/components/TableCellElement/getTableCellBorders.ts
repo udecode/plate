@@ -1,4 +1,8 @@
-import { BorderDirection, BorderStyle, TTableCellElement } from '../../types';
+import {
+  BorderDirection,
+  BorderStyle,
+  TTableCellElement,
+} from '../../../common/types';
 
 export interface BorderStylesDefault {
   bottom: Required<BorderStyle>;

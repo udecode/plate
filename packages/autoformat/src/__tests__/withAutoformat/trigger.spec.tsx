@@ -8,12 +8,12 @@ import {
 import { createPlateEditor, getPlugin } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
+import { AutoformatPlugin } from '../../../common/types';
 import {
   createAutoformatPlugin,
   KEY_AUTOFORMAT,
 } from '../../createAutoformatPlugin';
 import { onKeyDownAutoformat } from '../../onKeyDownAutoformat';
-import { AutoformatPlugin } from '../../types';
 
 jsx;
 

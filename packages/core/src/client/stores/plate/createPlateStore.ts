@@ -2,9 +2,9 @@ import React from 'react';
 import { Value } from '@udecode/slate';
 import { atom, createStore } from 'jotai';
 
-import { PlateEditor, PlateStoreState } from '../../../types';
-import { createPlateFallbackEditor } from '../../../utils';
+import { PlateEditor, PlateStoreState } from '../../../shared/types';
 import { createAtomStore } from '../../libs';
+import { createPlateFallbackEditor } from '../../utils';
 import {
   usePlateControllerEditorStore,
   usePlateControllerExists,

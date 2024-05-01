@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 
-import { createPlateEditor } from '../../utils/createPlateEditor';
+import { createPlateEditor } from './createPlateEditor';
 import { pipeRenderLeaf } from './pipeRenderLeaf';
 
 const attributes = {

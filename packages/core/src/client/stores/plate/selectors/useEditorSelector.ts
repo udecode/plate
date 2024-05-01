@@ -2,7 +2,7 @@ import React from 'react';
 import { Value } from '@udecode/slate';
 import { selectAtom } from 'jotai/utils';
 
-import { PlateEditor } from '../../../../types';
+import { PlateEditor } from '../../../../shared';
 import {
   PlateId,
   plateStore,

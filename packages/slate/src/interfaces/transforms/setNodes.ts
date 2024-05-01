@@ -1,7 +1,7 @@
 import { Modify } from '@udecode/utils';
 import { Transforms } from 'slate';
 
-import { NodeMatchOption } from '../../types/NodeMatchOption';
+import { NodeMatchOption } from '../../../common/types/NodeMatchOption';
 import { TEditor, Value } from '../editor/TEditor';
 import { ENode, TNodeProps } from '../node/TNode';
 

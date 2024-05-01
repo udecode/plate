@@ -1,8 +1,8 @@
 import {
   createPluginFactory,
-  onKeyDownToggleElement,
+  // onKeyDownToggleElement,
   PlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { KEYS_HEADING } from './constants';
 import { HeadingPlugin, HeadingsPlugin } from './types';
@@ -37,7 +37,7 @@ export const createHeadingPlugin = createPluginFactory<HeadingsPlugin>({
           ],
         },
         handlers: {
-          onKeyDown: onKeyDownToggleElement,
+          // onKeyDown: onKeyDownToggleElement,
         },
         options: {},
       };

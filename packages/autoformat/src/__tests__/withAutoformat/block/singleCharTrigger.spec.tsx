@@ -10,7 +10,7 @@ import { ELEMENT_LINK } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 
-import { AutoformatPlugin } from '../../../types';
+import { AutoformatPlugin } from '../../../common/types';
 import { withAutoformat } from '../../../withAutoformat';
 
 jsx;

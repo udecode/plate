@@ -1,4 +1,4 @@
-import { useEventEditorSelectors } from '../../../../plugins/event-editor/eventEditorStore';
+import { useEventEditorSelectors } from '../../../../shared/plugins/event-editor/eventEditorStore';
 import { PLATE_SCOPE, PlateId, usePlateSelectors } from '../../plate';
 
 /**

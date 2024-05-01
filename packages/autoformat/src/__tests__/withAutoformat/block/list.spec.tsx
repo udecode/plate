@@ -5,7 +5,7 @@ import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 import { autoformatPlugin } from 'www/src/lib/plate/demo/plugins/autoformatPlugin';
 
-import { AutoformatBlockRule } from '../../../types';
+import { AutoformatBlockRule } from '../../../common/types';
 import { withAutoformat } from '../../../withAutoformat';
 
 jsx;

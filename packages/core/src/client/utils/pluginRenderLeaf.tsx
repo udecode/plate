@@ -1,11 +1,11 @@
 import React from 'react';
 import { Value } from '@udecode/slate';
 
-import { DefaultLeaf } from '../../components/DefaultLeaf';
-import { PlateEditor } from '../../types/PlateEditor';
-import { PlatePlugin } from '../../types/plugin/PlatePlugin';
-import { RenderLeaf } from '../../types/RenderLeaf';
-import { getRenderNodeProps } from '../../utils/getRenderNodeProps';
+import { DefaultLeaf } from '../../shared/components/DefaultLeaf';
+import { PlateEditor } from '../../shared/types/PlateEditor';
+import { PlatePlugin } from '../../shared/types/plugin/PlatePlugin';
+import { RenderLeaf } from '../../shared/types/RenderLeaf';
+import { getRenderNodeProps } from '../../shared/utils/getRenderNodeProps';
 
 /**
  * Get a `Editable.renderLeaf` handler for `options.type`.

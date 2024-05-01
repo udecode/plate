@@ -5,9 +5,9 @@ import {
   Value,
 } from '@udecode/plate-common';
 
+import { BorderDirection } from '../../../common/types';
 import { isTableBorderHidden } from '../../queries/index';
 import { setBorderSize } from '../../transforms/index';
-import { BorderDirection } from '../../types';
 
 export const getOnSelectTableBorderFactory =
   <V extends Value>(editor: PlateEditor<V>, selectedCells: TElement[] | null) =>

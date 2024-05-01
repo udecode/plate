@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { PlateChangeKey } from '../../../../types';
+import { PlateChangeKey } from '../../../../shared';
 import {
   PlateId,
   usePlateActions,

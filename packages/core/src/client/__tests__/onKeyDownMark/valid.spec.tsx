@@ -2,12 +2,12 @@
 
 import { createBoldPlugin, MARK_BOLD } from '@udecode/plate-basic-marks';
 import { createPlateEditor } from '@udecode/plate-common';
+import * as isHotkey from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 import { onKeyDownToggleMark } from '@udecode/plate-utils';
-import * as isHotkey from 'packages/core/index';
 
-import { ToggleMarkPlugin } from '../../../types';
-import { getPlugin } from '../../../utils/getPlugin';
+import { ToggleMarkPlugin } from '../../../shared/types';
+import { getPlugin } from '../../../shared/utils/getPlugin';
 
 jsx;
 

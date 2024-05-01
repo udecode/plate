@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { createPlateEditor } from '../../../../utils';
+import { createPlateEditor } from '../../../utils';
 import {
   PlateId,
   usePlateActions,

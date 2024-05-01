@@ -1,6 +1,6 @@
 import { createAtomStore, getNodeString, Value } from '@udecode/plate-common';
 
-import { CommentUser, TComment } from '../../types';
+import { CommentUser, TComment } from '../../../common/types';
 import {
   useCommentById,
   useCommentsSelectors,

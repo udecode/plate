@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { WithPlatePlugin } from '../../types/plugin/PlatePlugin';
+import { WithPlatePlugin } from '../../shared/types/plugin/PlatePlugin';
 import {
   PlateId,
   useEditorRef,

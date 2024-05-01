@@ -2,10 +2,10 @@ import React from 'react';
 import { Value } from '@udecode/slate';
 import { DefaultElement } from 'slate-react';
 
-import { PlateEditor } from '../../types/PlateEditor';
-import { RenderElement } from '../../types/RenderElement';
-import { TEditableProps } from '../../types/slate-react/TEditableProps';
-import { pipeInjectProps } from '../../utils/pipeInjectProps';
+import { PlateEditor } from '../../shared/types/PlateEditor';
+import { RenderElement } from '../../shared/types/RenderElement';
+import { TEditableProps } from '../../shared/types/slate-react/TEditableProps';
+import { pipeInjectProps } from '../../shared/utils/pipeInjectProps';
 import { pluginRenderElement } from './pluginRenderElement';
 
 /**

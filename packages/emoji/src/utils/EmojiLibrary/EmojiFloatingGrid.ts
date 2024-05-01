@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { EmojiCategoryList } from '../../types';
+import { EmojiCategoryList } from '../../../common/types';
 import { AGridSection, Grid, IGrid } from '../Grid/index';
 
 export type EmojiFloatingGridType = IGrid<

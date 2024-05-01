@@ -1,6 +1,6 @@
 import { Value } from '@udecode/slate';
 
-import { PlateEditor } from '../../../../types';
+import { PlateEditor } from '../../../../shared/types';
 import {
   PlateId,
   UsePlateEditorStoreOptions,

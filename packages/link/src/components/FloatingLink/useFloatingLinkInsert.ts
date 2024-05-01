@@ -14,8 +14,8 @@ import {
 } from '@udecode/plate-floating';
 import { useFocused } from 'slate-react';
 
+import { triggerFloatingLinkInsert } from '../../../common/utils/triggerFloatingLinkInsert';
 import { ELEMENT_LINK, LinkPlugin } from '../../createLinkPlugin';
-import { triggerFloatingLinkInsert } from '../../utils/triggerFloatingLinkInsert';
 import {
   floatingLinkActions,
   floatingLinkSelectors,

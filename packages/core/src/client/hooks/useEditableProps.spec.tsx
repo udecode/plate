@@ -1,8 +1,8 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 
-import { Plate, PlateContent } from '../../components';
-import { PlatePlugin } from '../../types';
+import { PlatePlugin } from '../../../common/types';
+import { Plate, PlateContent } from '../components';
 
 describe('useEditableProps', () => {
   describe('default', () => {

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { EmojiCategory, EmojiCategoryList } from '../../types';
+import { EmojiCategory, EmojiCategoryList } from '../../../common/types';
 import { Emoji } from '../EmojiLibrary/index';
 
 export type MapEmojiCategoryList = Map<EmojiCategoryList, boolean>;

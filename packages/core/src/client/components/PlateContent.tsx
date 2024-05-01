@@ -1,7 +1,7 @@
 import React from 'react';
 import { Editable } from 'slate-react';
 
-import { TEditableProps } from '../../types/slate-react/TEditableProps';
+import { TEditableProps } from '../../shared/types/slate-react/TEditableProps';
 import { useEditableProps } from '../hooks';
 import { useEditorRef } from '../stores';
 import { EditorMethodsEffect } from './EditorMethodsEffect';

@@ -1,4 +1,4 @@
-import { TComment } from '../../types';
+import { TComment } from '../../../common/types';
 import { useCommentsSelectors } from './CommentsProvider';
 
 export const useCommentsResolved = () => {

@@ -3,8 +3,8 @@ import '@/styles/globals.css';
 import React from 'react';
 import { Metadata, Viewport } from 'next';
 import { cn } from '@udecode/cn';
-import { createPlateEditor } from '@udecode/plate-core/server';
-import { AxiomWebVitals } from 'next-axiom';
+import { createPlateEditor } from '@udecode/plate-common/server';
+import { createHeadingPlugin } from '@udecode/plate-heading';
 
 import { siteConfig } from '@/config/site';
 import { fontSans } from '@/lib/fonts';
@@ -84,7 +84,20 @@ interface RootLayoutProps {
 }
 
 export default function RootLayout({ children }: RootLayoutProps) {
-  console.log(createPlateEditor());
+  const editor = createPlateEditor({
+    plugins: [createHeadingPlugin()],
+  });
+  editor.children = [
+    {
+      type: 'p',
+      children: [
+        {
+          text: '## Hello, World!',
+        },
+      ],
+    },
+  ];
+  // serializeMd(editor, { nodes: editor.children });
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -109,7 +122,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
         </Providers>
         <TailwindIndicator />
         <Analytics />
-        <AxiomWebVitals />
 
         <Toaster />
       </Body>

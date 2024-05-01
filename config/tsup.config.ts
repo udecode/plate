@@ -39,7 +39,9 @@ export default defineConfig((opts) => {
   return [
     {
       ...options,
-      entry: [INPUT_FILE, SERVER_INPUT_FILE_PATH],
+      entry: fs.existsSync(SERVER_INPUT_FILE_PATH)
+        ? [INPUT_FILE, SERVER_INPUT_FILE_PATH]
+        : [INPUT_FILE],
     },
   ];
 });

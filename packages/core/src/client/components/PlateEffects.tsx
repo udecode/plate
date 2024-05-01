@@ -1,8 +1,9 @@
 import React from 'react';
 import { Value } from '@udecode/slate';
 
-import { PlateEditor } from '../../types';
 import { usePlateEffects, UsePlateEffectsProps } from '../hooks';
+
+import type { PlateEditor } from '../../shared';
 
 export interface PlateEffectsProps<
   V extends Value = Value,

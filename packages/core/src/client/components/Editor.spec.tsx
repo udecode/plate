@@ -4,8 +4,8 @@ import { isBlock, setNodes } from '@udecode/slate';
 import isEqual from 'lodash/isEqual.js';
 import memoize from 'lodash/memoize.js';
 
-import { PlatePlugin } from '../../types';
-import { createPlateEditor } from '../../utils';
+import { PlatePlugin } from '../../../common/types';
+import { createPlateEditor } from '../utils';
 import { Plate } from './Plate';
 import { PlateContent } from './PlateContent';
 

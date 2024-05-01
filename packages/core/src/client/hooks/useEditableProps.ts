@@ -3,10 +3,10 @@ import { isDefined } from '@udecode/utils';
 import omit from 'lodash/omit.js';
 import { useDeepCompareMemo } from 'use-deep-compare';
 
-import { DOM_HANDLERS } from '../../types/misc/dom-attributes';
-import { TEditableProps } from '../../types/slate-react/TEditableProps';
-import { pipeDecorate } from '../../utils/pipeDecorate';
-import { pipeHandler } from '../../utils/pipeHandler';
+import { DOM_HANDLERS } from '../../shared/types/misc/dom-attributes';
+import { TEditableProps } from '../../shared/types/slate-react/TEditableProps';
+import { pipeDecorate } from '../../shared/utils/pipeDecorate';
+import { pipeHandler } from '../../shared/utils/pipeHandler';
 import { useEditorRef, usePlateSelectors } from '../stores';
 import { pipeRenderElement } from '../utils/pipeRenderElement';
 import { pipeRenderLeaf } from '../utils/pipeRenderLeaf';

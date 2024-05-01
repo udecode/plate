@@ -6,7 +6,7 @@ import {
   WithPartial,
 } from '@udecode/plate-common';
 
-import { CommentUser, TComment } from '../../types';
+import { CommentUser, TComment } from '../../../common/types';
 
 export interface CommentsStoreState {
   /**

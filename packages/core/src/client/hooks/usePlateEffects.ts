@@ -2,10 +2,10 @@ import React from 'react';
 import { Value } from '@udecode/slate';
 import { isDefined } from '@udecode/utils';
 
-import { PlateEditor } from '../../types';
-import { setPlatePlugins } from '../../utils';
+import { PlateEditor } from '../../shared';
 import { PlateProps } from '../components';
 import { useEditorRef, usePlateStates } from '../stores';
+import { setPlatePlugins } from '../utils';
 
 export type UsePlateEffectsProps<
   V extends Value = Value,

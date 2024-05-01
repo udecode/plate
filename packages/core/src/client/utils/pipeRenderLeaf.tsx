@@ -1,12 +1,12 @@
 import React from 'react';
 import { Value } from '@udecode/slate';
 
-import { DefaultLeaf } from '../../components/DefaultLeaf';
-import { PlateEditor } from '../../types/PlateEditor';
-import { PlateRenderLeafProps } from '../../types/PlateRenderLeafProps';
-import { RenderLeaf } from '../../types/RenderLeaf';
-import { TEditableProps } from '../../types/slate-react/TEditableProps';
-import { pipeInjectProps } from '../../utils/pipeInjectProps';
+import { DefaultLeaf } from '../../shared';
+import { PlateEditor } from '../../shared/types/PlateEditor';
+import { PlateRenderLeafProps } from '../../shared/types/PlateRenderLeafProps';
+import { RenderLeaf } from '../../shared/types/RenderLeaf';
+import { TEditableProps } from '../../shared/types/slate-react/TEditableProps';
+import { pipeInjectProps } from '../../shared/utils/pipeInjectProps';
 import { pluginRenderLeaf } from './pluginRenderLeaf';
 
 /**

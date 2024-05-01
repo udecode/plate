@@ -7,8 +7,8 @@ import {
   useEditorRef,
 } from '@udecode/plate-common';
 
+import { getCommentKey } from '../../../common/utils/index';
 import { MARK_COMMENT } from '../../constants';
-import { getCommentKey } from '../../utils/index';
 import { useCommentsActions } from './CommentsProvider';
 
 export const useAddCommentMark = () => {

@@ -1,4 +1,4 @@
-import { EmojiCategoryList, EmojiSettingsType } from '../../types';
+import { EmojiCategoryList, EmojiSettingsType } from '../../../common/types';
 import { GridElements } from '../Grid/index';
 import {
   EmojiFloatingGrid,

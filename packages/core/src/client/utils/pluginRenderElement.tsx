@@ -2,10 +2,10 @@ import React from 'react';
 import { Value } from '@udecode/slate';
 import { DefaultElement } from 'slate-react';
 
-import { PlateEditor } from '../../types/PlateEditor';
-import { PlatePlugin } from '../../types/plugin/PlatePlugin';
-import { RenderElement } from '../../types/RenderElement';
-import { getRenderNodeProps } from '../../utils/getRenderNodeProps';
+import { PlateEditor } from '../../shared/types/PlateEditor';
+import { PlatePlugin } from '../../shared/types/plugin/PlatePlugin';
+import { RenderElement } from '../../shared/types/RenderElement';
+import { getRenderNodeProps } from '../../shared/utils/getRenderNodeProps';
 import { ElementProvider } from '../stores/element/useElementStore';
 
 /**

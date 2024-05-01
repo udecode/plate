@@ -5,7 +5,7 @@ import {
   EmojiCategory,
   EmojiCategoryList,
   EmojiSettingsType,
-} from '../../types';
+} from '../../../common/types';
 import { EmojiFloatingGridType } from './EmojiFloatingGrid';
 import { EmojiFloatingGridBuilder } from './EmojiFloatingGridBuilder';
 import {

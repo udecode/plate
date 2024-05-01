@@ -2,8 +2,9 @@ import React from 'react';
 import { normalizeEditor, Value } from '@udecode/slate';
 import { nanoid } from 'nanoid/non-secure';
 
-import { createPlateEditor, normalizeInitialValue } from '../../utils';
+import { normalizeInitialValue } from '../../shared';
 import { PlateStoreProvider } from '../stores';
+import { createPlateEditor } from '../utils';
 import { PlateEffects } from './PlateEffects';
 
 import type {
@@ -11,7 +12,7 @@ import type {
   PlatePlugin,
   PlateStoreState,
   TEditableProps,
-} from '../../types';
+} from '../../shared/types';
 
 export interface PlateProps<
   V extends Value = Value,

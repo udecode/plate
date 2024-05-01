@@ -2,7 +2,7 @@ import React from 'react';
 import { act, render } from '@testing-library/react';
 import { TElement } from '@udecode/slate';
 
-import { useElement } from './element/useElement';
+import { useElement } from './useElement';
 import { ElementProvider } from './useElementStore';
 
 describe('ElementProvider', () => {

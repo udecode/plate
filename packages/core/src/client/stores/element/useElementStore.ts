@@ -1,6 +1,6 @@
 import { TElement } from '@udecode/slate';
 
-import { Nullable } from '../../../types';
+import { Nullable } from '../../../shared/types';
 import { createAtomStore } from '../../libs/jotai';
 
 export const SCOPE_ELEMENT = 'element';
