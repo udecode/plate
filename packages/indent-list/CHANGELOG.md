@@ -1,5 +1,11 @@
 # @udecode/plate-indent-list
 
+## 32.0.1
+
+### Patch Changes
+
+- [#3164](https://github.com/udecode/plate/pull/3164) by [@felixfeng33](https://github.com/felixfeng33) – Fix: clicking the checkbox removing the focus
+
 ## 32.0.0
 
 ## 31.4.3

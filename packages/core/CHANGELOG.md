@@ -1,5 +1,7 @@
 # @udecode/plate-core
 
+## 32.0.1
+
 ## 32.0.0
 
 ### Patch Changes
