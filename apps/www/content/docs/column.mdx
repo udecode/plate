@@ -1,0 +1,157 @@
+---
+title: Column
+description: Add Columns to your document.
+docs:
+  - route: /docs/components/column-element
+    title: Column Element
+  - route: /docs/components/column-group-element
+    title: Column Group Element
+---
+
+<ComponentPreview name="playground-demo" id="column" />
+
+<PackageInfo>
+
+## Features
+
+- Add columns to your document.
+- Choose from a variety of column layouts using `column-group-element` toolbar.
+- [ ] Resizable columns
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-layout
+```
+
+## Usage
+
+```tsx
+// ...
+import { createColumnPlugin } from '@udecode/plate-layout';
+
+const plugins = [
+  // ...otherPlugins,
+  createColumnPlugin(),
+];
+```
+
+## API
+
+### createColumnPlugin
+
+Add Column Plugin to your document.
+
+### TColumnGroupElement
+
+<APIAttributes>
+Extends `TElement`.
+
+<APIItem name="layout" type="number[]" optional>
+  Set the width of it’s children `Column`
+</APIItem>
+</APIAttributes>
+
+
+
+### TColumnElement
+
+<APIAttributes>
+Extends `TElement`.
+
+<APIItem name="width" type="string" optional>
+  The `Column`'s width end with `%`
+</APIItem>
+</APIAttributes>
+
+
+
+### insertColumnGroup
+
+Insert an columnGroup with two empty column.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+</APIParameters>
+
+### insertEmptyColumn
+
+Insert an empty column. You can set the with by options.width default is "33%"
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions<V> & { width?: string }">
+    InsertNodesOptions and with to set the insert behavior.
+  </APIItem>
+</APIParameters>
+
+### moveMiddleColumn
+
+Move the middle column to the left of right by options.direction. if the middle node is empty return false and remove it.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="nodeEntry" type="TNodeEntry<N>">
+    The node entry of `column` element
+  </APIItem>
+  <APIItem name="options" type="{ direction: 'left' | 'right' }">
+    Control the middle column move to
+  </APIItem>
+</APIParameters>
+
+### setColumnWidth
+
+Set the width of `ColumnGroup`'s children.In general you don't need to use this function,Since we will call this function automatically when the property of `layout` changed.
+If you want to set the `layout` use setNodes.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="groupPathRef" type="PathRef">
+    the path ref of `ColumnGoup`
+  </APIItem>
+  <APIItem name="layout" type="number">
+    The element property of `layout`
+  </APIItem>
+</APIParameters>
+
+## API Components
+
+### useColumnState
+
+<APIReturns>
+  <APIItem name="setDoubleColumn" type="function">
+    Call this function make the `ColumnGroup`'s children, column bisects the
+    parent element space.This nature is set the `layout` property of
+    `ColumnGroup` to `[50,50]`
+  </APIItem>
+  <APIItem name="setThreeColumn" type="function">
+    Set the `layout` property of `ColumnGroup` to `[33, 33, 33]`
+  </APIItem>
+  <APIItem name="setRightSideDoubleColumn" type="function">
+    Set the `layout` property of `ColumnGroup` to `[70,30]`
+  </APIItem>
+  <APIItem name="setLeftSideDoubleColumn" type="function">
+    Set the `layout` property of `ColumnGroup` to `[30,70]`
+  </APIItem>
+  <APIItem name="setDoubleSideDoubleColumn" type="function">
+    Set the `layout` property of `ColumnGroup` to `[25, 50, 25]`
+  </APIItem>
+</APIReturns>
+
+### useDebouncePopoverOpen
+
+<APIReturns>
+
+<APIItem type="boolean">Control the `popover` is open or not</APIItem>
+
+</APIReturns>

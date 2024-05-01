@@ -17,20 +17,17 @@ export const deleteBackwardIndentList = <V extends Value>(
   const { deleteBackward } = editor;
 
   return function (unit: TextUnit) {
-    deleteBackwardHelper(editor);
-    deleteBackward(unit);
+    const nodeEntry = getAboveNode(editor);
+    if (!nodeEntry) return deleteBackward(unit);
+
+    const listNode = nodeEntry[0];
+    if (isCollapsed(editor.selection) && getNodeString(listNode))
+      return deleteBackward(unit);
+
+    if (isDefined(listNode[KEY_LIST_STYLE_TYPE])) {
+      return outdentList(editor);
+    }
+
+    return deleteBackward(unit);
   };
 };
-
-function deleteBackwardHelper<V extends Value>(editor: PlateEditor<V>) {
-  if (isCollapsed(editor.selection)) {
-    const str = getNodeString(editor);
-    if (str) return;
-    const entry = getAboveNode(editor);
-    if (!entry) return;
-    const node = entry[0];
-    if (isDefined(node[KEY_LIST_STYLE_TYPE])) {
-      outdentList(editor);
-    }
-  }
-}

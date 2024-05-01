@@ -1,5 +1,13 @@
 # @udecode/plate-excalidraw
 
+## 32.0.0
+
+## 31.4.0
+
+### Patch Changes
+
+- [#3136](https://github.com/udecode/plate/pull/3136) by [@dependabot](https://github.com/apps/dependabot) – Updates @excalidraw/excalidraw from 0.16.1 to 0.16.4
+
 ## 31.1.0
 
 ### Minor Changes

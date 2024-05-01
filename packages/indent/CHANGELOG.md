@@ -1,5 +1,7 @@
 # @udecode/plate-indent
 
+## 32.0.0
+
 ## 31.1.0
 
 ### Minor Changes

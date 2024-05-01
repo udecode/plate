@@ -1,24 +1,23 @@
 import { cn } from '@udecode/cn';
-import { LiFC, MarkerFC } from '@udecode/plate-indent-list';
-import { setNodes } from '@udecode/slate';
-import { findNodePath } from '@udecode/slate-react';
+import {
+  LiFC,
+  MarkerFC,
+  useIndentTodoListElement,
+  useIndentTodoListElementState,
+} from '@udecode/plate-indent-list';
+import { TElement } from '@udecode/slate';
 
 import { Checkbox } from './checkbox';
 
-export const TodoMarker: MarkerFC = (props) => {
-  const { editor, element } = props;
-
-  const onChange = (v: boolean) => {
-    const path = findNodePath(editor, element);
-    setNodes(editor, { checked: v }, { at: path });
-  };
+export const TodoMarker: MarkerFC = ({ element }: { element: TElement }) => {
+  const state = useIndentTodoListElementState({ element });
+  const { checkboxProps } = useIndentTodoListElement(state);
 
   return (
     <div contentEditable={false}>
       <Checkbox
         style={{ left: -24, top: 4, position: 'absolute' }}
-        checked={element.checked as boolean}
-        onCheckedChange={onChange}
+        {...checkboxProps}
       />
     </div>
   );

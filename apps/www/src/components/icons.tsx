@@ -255,7 +255,129 @@ const yarn = (props: LucideProps) => (
   </svg>
 );
 
+export const DoubleColumnOutlined = (props: LucideProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
+    fill="none"
+    {...props}
+  >
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M8.5 3H13V13H8.5V3ZM7.5 2H8.5H13C13.5523 2 14 2.44772 14 3V13C14 13.5523 13.5523 14 13 14H8.5H7.5H3C2.44772 14 2 13.5523 2 13V3C2 2.44772 2.44772 2 3 2H7.5ZM7.5 13H3L3 3H7.5V13Z"
+      fill="#595E6F"
+    />
+  </svg>
+);
+
+export const ThreeColumnOutlined = (props: LucideProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
+    fill="none"
+    {...props}
+  >
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M9.25 3H6.75V13H9.25V3ZM9.25 2H6.75H5.75H3C2.44772 2 2 2.44772 2 3V13C2 13.5523 2.44772 14 3 14H5.75H6.75H9.25H10.25H13C13.5523 14 14 13.5523 14 13V3C14 2.44772 13.5523 2 13 2H10.25H9.25ZM10.25 3V13H13V3H10.25ZM3 13H5.75V3H3L3 13Z"
+      fill="#4C5161"
+    />
+  </svg>
+);
+
+export const RightSideDoubleColumnOutlined = (props: LucideProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
+    fill="none"
+    {...props}
+  >
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M11.25 3H13V13H11.25V3ZM10.25 2H11.25H13C13.5523 2 14 2.44772 14 3V13C14 13.5523 13.5523 14 13 14H11.25H10.25H3C2.44772 14 2 13.5523 2 13V3C2 2.44772 2.44772 2 3 2H10.25ZM10.25 13H3L3 3H10.25V13Z"
+      fill="#595E6F"
+    />
+  </svg>
+);
+
+export const LeftSideDoubleColumnOutlined = (props: LucideProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
+    fill="none"
+    {...props}
+  >
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M5.75 3H13V13H5.75V3ZM4.75 2H5.75H13C13.5523 2 14 2.44772 14 3V13C14 13.5523 13.5523 14 13 14H5.75H4.75H3C2.44772 14 2 13.5523 2 13V3C2 2.44772 2.44772 2 3 2H4.75ZM4.75 13H3L3 3H4.75V13Z"
+      fill="#595E6F"
+    />
+  </svg>
+);
+
+export const DoubleSideDoubleColumnOutlined = (props: LucideProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
+    fill="none"
+    {...props}
+  >
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M10.25 3H5.75V13H10.25V3ZM10.25 2H5.75H4.75H3C2.44772 2 2 2.44772 2 3V13C2 13.5523 2.44772 14 3 14H4.75H5.75H10.25H11.25H13C13.5523 14 14 13.5523 14 13V3C14 2.44772 13.5523 2 13 2H11.25H10.25ZM11.25 3V13H13V3H11.25ZM3 13H4.75V3H3L3 13Z"
+      fill="#595E6F"
+    />
+  </svg>
+);
+
+const LayoutIcon = (props: LucideProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
+    fill="currentColor"
+    stroke="currentColor"
+    strokeWidth={0.1}
+    {...props}
+  >
+    <path
+      d="M3 2C2.44772 2 2 2.44772 2 3V7C2 7.55228 2.44772 8 3 8H13C13.5523 8 14 7.55228 14 7V3C14 2.44772 13.5523 2 13 2H3ZM13 3V7H3L3 3H13Z"
+      fill="#595E6F"
+    />
+    <path
+      d="M2 10C2 9.72386 2.22386 9.5 2.5 9.5H13.5C13.7761 9.5 14 9.72386 14 10C14 10.2761 13.7761 10.5 13.5 10.5H2.5C2.22386 10.5 2 10.2761 2 10Z"
+      fill="#595E6F"
+    />
+    <path
+      d="M2.5 12C2.22386 12 2 12.2239 2 12.5C2 12.7761 2.22386 13 2.5 13H8.5C8.77614 13 9 12.7761 9 12.5C9 12.2239 8.77614 12 8.5 12H2.5Z"
+      fill="#595E6F"
+    />
+  </svg>
+);
+
 export const Icons = {
+  doubleColumn: DoubleColumnOutlined,
+  threeColumn: ThreeColumnOutlined,
+  rightSideDoubleColumn: RightSideDoubleColumnOutlined,
+  leftSideDoubleColumn: LeftSideDoubleColumnOutlined,
+  doubleSideDoubleColumn: DoubleSideDoubleColumnOutlined,
+  LayoutIcon,
   todo: Square,
   add: Plus,
   alignCenter: AlignCenter,

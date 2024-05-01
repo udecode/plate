@@ -1,5 +1,17 @@
 # @udecode/plate-serializer-html
 
+## 32.0.0
+
+### Patch Changes
+
+- [#3155](https://github.com/udecode/plate/pull/3155) by [@felixfeng33](https://github.com/felixfeng33) – Missing export
+
+## 31.4.4
+
+### Patch Changes
+
+- [#3149](https://github.com/udecode/plate/pull/3149) by [@dimaanj](https://github.com/dimaanj) – `serialzieHtml`: remove `renderToStaticMarkup` from client code
+
 ## 31.1.0
 
 ### Patch Changes

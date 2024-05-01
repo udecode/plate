@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-utils",
-  "version": "31.3.2",
+  "version": "32.0.0",
   "description": "Plate utils",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -39,7 +39,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-core": "31.3.2",
+    "@udecode/plate-core": "32.0.0",
     "@udecode/react-utils": "31.0.0",
     "@udecode/slate": "31.0.0",
     "@udecode/slate-react": "31.0.0",

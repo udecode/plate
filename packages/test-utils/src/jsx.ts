@@ -1,8 +1,12 @@
 /* eslint-disable prettier/prettier */
 // @ts-ignore
-import { createHyperscript, createText as createTestText } from "slate-hyperscript";
-import { HyperscriptShorthands } from "slate-hyperscript/dist/hyperscript";
-import { createText } from "./hyperscript/creators";
+import {
+  createHyperscript,
+  createText as createTestText,
+} from 'slate-hyperscript';
+import { HyperscriptShorthands } from 'slate-hyperscript/dist/hyperscript';
+
+import { createText } from './hyperscript/creators';
 
 declare global {
   namespace JSX {
@@ -62,6 +66,8 @@ const ELEMENT_TODO_LI = 'action_item';
 const ELEMENT_TOGGLE = 'toggle';
 const ELEMENT_TR = 'tr';
 const ELEMENT_UL = 'ul';
+const ELEMENT_COLUMN_GROUP = 'column_group';
+const ELEMENT_COLUMN = 'column';
 
 const elements: HyperscriptShorthands = {
   ha: { type: ELEMENT_LINK },
@@ -92,6 +98,8 @@ const elements: HyperscriptShorthands = {
   htoggle: { type: ELEMENT_TOGGLE },
   htr: { type: ELEMENT_TR },
   hul: { type: ELEMENT_UL },
+  hcolumngroup: { type: ELEMENT_COLUMN_GROUP },
+  hcolumn: { type: ELEMENT_COLUMN },
 };
 
 export const jsx = createHyperscript({

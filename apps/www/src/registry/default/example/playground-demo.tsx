@@ -79,6 +79,7 @@ import { createIndentPlugin } from '@udecode/plate-indent';
 import { createIndentListPlugin } from '@udecode/plate-indent-list';
 import { createJuicePlugin } from '@udecode/plate-juice';
 import { createKbdPlugin } from '@udecode/plate-kbd';
+import { createColumnPlugin } from '@udecode/plate-layout';
 import { createLineHeightPlugin } from '@udecode/plate-line-height';
 import { createLinkPlugin } from '@udecode/plate-link';
 import { createListPlugin, createTodoListPlugin } from '@udecode/plate-list';
@@ -101,6 +102,7 @@ import {
 import { createBlockSelectionPlugin } from '@udecode/plate-selection';
 import { createDeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
 import { createDeserializeMdPlugin } from '@udecode/plate-serializer-md';
+import { createSlashPlugin } from '@udecode/plate-slash-command';
 import { createTabbablePlugin } from '@udecode/plate-tabbable';
 import { createTablePlugin } from '@udecode/plate-table';
 import { createTogglePlugin, ELEMENT_TOGGLE } from '@udecode/plate-toggle';
@@ -110,6 +112,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import { ValueId } from '@/config/customizer-plugins';
 import { captionPlugin } from '@/lib/plate/demo/plugins/captionPlugin';
+import { SLASH_RULES } from '@/lib/plate/demo/values/slashRules';
 import { settingsStore } from '@/components/context/settings-store';
 import { PlaygroundFixedToolbarButtons } from '@/components/plate-ui/playground-fixed-toolbar-buttons';
 import { PlaygroundFloatingToolbarButtons } from '@/components/plate-ui/playground-floating-toolbar-buttons';
@@ -127,6 +130,7 @@ import {
   TodoMarker,
 } from '@/registry/default/plate-ui/indent-todo-marker-component';
 import { MentionCombobox } from '@/registry/default/plate-ui/mention-combobox';
+import { SlashCombobox } from '@/registry/default/plate-ui/slash-combobox';
 
 export const usePlaygroundPlugins = ({
   id,
@@ -173,6 +177,11 @@ export const usePlaygroundPlugins = ({
             enabled: !!enabled.mention,
             options: {
               triggerPreviousCharPattern: /^$|^[\s"']$/,
+            },
+          }),
+          createSlashPlugin({
+            options: {
+              rules: SLASH_RULES,
             },
           }),
           createTablePlugin({
@@ -324,6 +333,7 @@ export const usePlaygroundPlugins = ({
           createDeserializeDocxPlugin({ enabled: !!enabled.deserializeDocx }),
           createDeserializeMdPlugin({ enabled: !!enabled.deserializeMd }),
           createJuicePlugin({ enabled: !!enabled.juice }),
+          createColumnPlugin({ enabled: !!enabled.column }),
         ],
         {
           components,
@@ -428,6 +438,8 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
                 {isEnabled('mention', id, enabled['mention-combobox']) && (
                   <MentionCombobox items={MENTIONABLES} />
                 )}
+
+                <SlashCombobox items={SLASH_RULES} />
 
                 {isEnabled('cursoroverlay', id) && (
                   <CursorOverlay containerRef={containerRef} />

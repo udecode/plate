@@ -40,6 +40,21 @@
     "type": "components:plate-ui"
   },
   {
+    "name": "column-element",
+    "dependencies": [
+      "@udecode/plate-layout"
+    ],
+    "registryDependencies": [
+      "command",
+      "resizable"
+    ],
+    "files": [
+      "plate-ui/column-element.tsx",
+      "plate-ui/column-group-element.tsx"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
     "name": "color-dropdown-menu",
     "dependencies": [],
     "registryDependencies": [

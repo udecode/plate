@@ -33,6 +33,7 @@ import {
 import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
 import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
 import { MARK_KBD } from '@udecode/plate-kbd';
+import { ELEMENT_COLUMN, ELEMENT_COLUMN_GROUP } from '@udecode/plate-layout';
 import { ELEMENT_LINK } from '@udecode/plate-link';
 import {
   ELEMENT_LI,
@@ -43,6 +44,7 @@ import {
 import { ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from '@udecode/plate-media';
 import { ELEMENT_MENTION, ELEMENT_MENTION_INPUT } from '@udecode/plate-mention';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
+import { ELEMENT_SLASH_INPUT } from '@udecode/plate-slash-command';
 import {
   ELEMENT_TABLE,
   ELEMENT_TD,
@@ -56,6 +58,8 @@ import { CodeBlockElement } from '@/registry/default/plate-ui/code-block-element
 import { CodeLeaf } from '@/registry/default/plate-ui/code-leaf';
 import { CodeLineElement } from '@/registry/default/plate-ui/code-line-element';
 import { CodeSyntaxLeaf } from '@/registry/default/plate-ui/code-syntax-leaf';
+import { ColumnElement } from '@/registry/default/plate-ui/column-element';
+import { ColumnGroupElement } from '@/registry/default/plate-ui/column-group-element';
 import { CommentLeaf } from '@/registry/default/plate-ui/comment-leaf';
 import { ExcalidrawElement } from '@/registry/default/plate-ui/excalidraw-element';
 import { HeadingElement } from '@/registry/default/plate-ui/heading-element';
@@ -71,6 +75,7 @@ import { MentionInputElement } from '@/registry/default/plate-ui/mention-input-e
 import { ParagraphElement } from '@/registry/default/plate-ui/paragraph-element';
 import { withPlaceholders } from '@/registry/default/plate-ui/placeholder';
 import { SearchHighlightLeaf } from '@/registry/default/plate-ui/search-highlight-leaf';
+import { SlashInputElement } from '@/registry/default/plate-ui/slash-input-element';
 import {
   TableCellElement,
   TableCellHeaderElement,
@@ -106,6 +111,7 @@ export const createPlateUI = (
     [ELEMENT_MEDIA_EMBED]: MediaEmbedElement,
     [ELEMENT_MENTION]: MentionElement,
     [ELEMENT_MENTION_INPUT]: MentionInputElement,
+    [ELEMENT_SLASH_INPUT]: SlashInputElement,
     [ELEMENT_UL]: withProps(ListElement, { variant: 'ul' }),
     [ELEMENT_OL]: withProps(ListElement, { variant: 'ol' }),
     [ELEMENT_PARAGRAPH]: ParagraphElement,
@@ -116,6 +122,8 @@ export const createPlateUI = (
     [ELEMENT_TOGGLE]: ToggleElement,
     [ELEMENT_TR]: TableRowElement,
     [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
+    [ELEMENT_COLUMN_GROUP]: ColumnGroupElement,
+    [ELEMENT_COLUMN]: ColumnElement,
     [MARK_BOLD]: withProps(PlateLeaf, { as: 'strong' }),
     [MARK_CODE]: CodeLeaf,
     [MARK_HIGHLIGHT]: HighlightLeaf,

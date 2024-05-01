@@ -22,7 +22,8 @@
       "persistent": true
     },
     "brl": {
-      "outputs": []
+      "outputs": [],
+      "cache": false
     },
     "clean": {
       "cache": false,

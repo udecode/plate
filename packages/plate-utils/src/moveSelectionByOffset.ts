@@ -1,18 +1,15 @@
 import {
   isHotkey,
-  moveSelection,
+  KeyboardEventHandler,
   PlateEditor,
-  Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-core';
+import { moveSelection, Value } from '@udecode/slate';
 import { Range } from 'slate';
-
-import { KeyboardEventHandler } from './KeyboardEventHandler';
 
 export interface MoveSelectionByOffsetOptions<V extends Value = Value> {
   query?: (editor: PlateEditor<V>) => boolean;
 }
 
-// TODO: move to core
 export const moveSelectionByOffset: <V extends Value>(
   editor: PlateEditor<V>,
   options?: MoveSelectionByOffsetOptions<V>
