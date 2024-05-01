@@ -4,7 +4,13 @@ const {
 
 /** @type {import("eslint").Linter.Config} */
 module.exports = {
-  root: true,
+  env: {
+    browser: true,
+    es6: true,
+    jest: true,
+    node: true,
+    webextensions: false,
+  },
   extends: [
     'turbo',
 
@@ -18,6 +24,7 @@ module.exports = {
     './config/eslint/bases/next.cjs',
 
     './config/eslint/bases/unicorn.cjs',
+    './config/eslint/bases/perfectionist.cjs',
 
     './config/eslint/bases/prettier.cjs',
   ],
@@ -26,15 +33,65 @@ module.exports = {
     '.next',
     '.out',
     '**/__registry__',
-    '**/diff-match-patch-ts'
+    '**/diff-match-patch-ts',
   ],
-  env: {
-    browser: true,
-    es6: true,
-    jest: true,
-    node: true,
-    webextensions: false,
-  },
+  overrides: [
+    {
+      extends: ['plugin:@dword-design/import-alias/recommended'],
+      files: ['apps/www/src/**/*'],
+      rules: {
+        '@dword-design/import-alias/prefer-alias': [
+          'warn',
+          {
+            alias: {
+              '@/__registry__': './apps/www/src/__registry__',
+              '@/app': './apps/www/src/app',
+              '@/components': './apps/www/src/components',
+              '@/hooks': './apps/www/src/hooks',
+              '@/lib': './apps/www/src/lib',
+              '@/plate': './apps/www/src/lib/plate',
+              '@/registry': './apps/www/src/registry',
+              '@/styles': './apps/www/src/styles',
+            },
+          },
+        ],
+        'import/no-relative-packages': 'off',
+      },
+    },
+    {
+      extends: ['./config/eslint/bases/prettier.cjs'],
+      files: ['**/*.spec.*'],
+      rules: {
+        'import/no-relative-packages': 'off',
+        'import/no-unresolved': 'off',
+        'react/jsx-key': 'off',
+      },
+    },
+    {
+      env: {
+        jest: true,
+      },
+      files: ['**/*.test.*', '**/*.spec.*', '**/*.fixture.*'],
+      rules: {
+        '@typescript-eslint/no-unused-vars': 'off',
+        'no-restricted-imports': [
+          'error',
+          {
+            paths: [],
+          },
+        ],
+        'react-hooks/rules-of-hooks': 'off',
+      },
+    },
+    {
+      files: '**/*.mdx',
+      rules: {
+        'prettier/prettier': 'off',
+      },
+    },
+  ],
+  root: true,
+  rules: {},
   settings: {
     'import/parsers': {
       '@typescript-eslint/parser': ['.ts', '.tsx'],
@@ -48,65 +105,9 @@ module.exports = {
       },
       typescript: {},
     },
-    react: { version: 'detect' },
     next: {
       rootDir: ['apps/www'],
     },
+    react: { version: 'detect' },
   },
-  rules: {},
-  overrides: [
-    {
-      files: ['apps/www/src/**/*'],
-      extends: ['plugin:@dword-design/import-alias/recommended'],
-      rules: {
-        'import/no-relative-packages': 'off',
-        '@dword-design/import-alias/prefer-alias': [
-          'warn',
-          {
-            alias: {
-              '@/app': './apps/www/src/app',
-              '@/plate': './apps/www/src/lib/plate',
-              '@/components': './apps/www/src/components',
-              '@/hooks': './apps/www/src/hooks',
-              '@/__registry__': './apps/www/src/__registry__',
-              '@/registry': './apps/www/src/registry',
-              '@/styles': './apps/www/src/styles',
-              '@/lib': './apps/www/src/lib',
-            },
-          },
-        ],
-      },
-    },
-    {
-      files: ['**/*.spec.*'],
-      extends: ['./config/eslint/bases/prettier.cjs'],
-      rules: {
-        'react/jsx-key': 'off',
-        'import/no-relative-packages': 'off',
-        'import/no-unresolved': 'off',
-      },
-    },
-    {
-      files: ['**/*.test.*', '**/*.spec.*', '**/*.fixture.*'],
-      env: {
-        jest: true,
-      },
-      rules: {
-        '@typescript-eslint/no-unused-vars': 'off',
-        'react-hooks/rules-of-hooks': 'off',
-        'no-restricted-imports': [
-          'error',
-          {
-            paths: [],
-          },
-        ],
-      },
-    },
-    {
-      files: '**/*.mdx',
-      rules: {
-        'prettier/prettier': 'off',
-      },
-    },
-  ],
 };
