@@ -57,7 +57,7 @@ export const useComboboxInput = ({
       removeNodes(editor, { at: path });
 
       if (shouldFocusEditor) {
-        setTimeout(() => focusEditor(editor));
+        focusEditor(editor);
       }
     },
     [editor, element]
