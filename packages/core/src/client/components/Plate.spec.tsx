@@ -26,6 +26,7 @@ describe('Plate', () => {
         expect(result.current).toBe(editor);
       });
     });
+
     describe('when editor is not defined', () => {
       it('should be default', async () => {
         const wrapper = ({ children }: any) => (
@@ -41,6 +42,7 @@ describe('Plate', () => {
         expect(result.current.id).toBe('test2');
       });
     });
+
     describe('when id is defined', () => {
       it('should be id', async () => {
         const wrapper = ({ children }: any) => (
@@ -77,6 +79,7 @@ describe('Plate', () => {
         expect(result.current).toBe(initialValue);
       });
     });
+
     describe('when value is defined', () => {
       it('should be value', async () => {
         const value = [{ children: [{ text: 'value' }], type: 'p' }];
@@ -91,6 +94,7 @@ describe('Plate', () => {
         expect(result.current).toBe(value);
       });
     });
+
     describe('when editor with children is defined', () => {
       it('should be editor.children', async () => {
         const editor = createPlateEditor();
@@ -106,6 +110,7 @@ describe('Plate', () => {
         expect(result.current).toBe(editor.children);
       });
     });
+
     describe('when editor without children is defined', () => {
       it('should be default', async () => {
         const editor = createPlateEditor();
@@ -334,7 +339,7 @@ describe('Plate', () => {
       describe('when PlateController does not exist', () => {
         it('throws an error', () => {
           const wrapper = ({ children }: any) => <>{children}</>;
-          expect(() => getStore(wrapper)).toThrowError();
+          expect(() => getStore(wrapper)).toThrow();
         });
       });
     });

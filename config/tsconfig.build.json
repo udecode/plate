@@ -1,19 +1,9 @@
 {
-  "extends": "../tsconfig.json",
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "declaration": true,
     "declarationMap": true,
     "emitDeclarationOnly": true,
     "noEmit": false
-  },
-  "exclude": [
-    "../node_modules",
-    "../**/node_modules",
-    "../dist",
-    "../**/dist",
-    "../**/*.stories.*",
-    "../**/*.spec*",
-    "../**/*fixture*",
-    "../**/*template*"
-  ]
+  }
 }

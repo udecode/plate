@@ -5,6 +5,10 @@ import { collapseWhiteSpaceChildren } from './collapseWhiteSpaceChildren';
 import { inferWhiteSpaceRule } from './inferWhiteSpaceRule';
 import { endInlineFormattingContext } from './stateTransforms';
 
+/**
+ * Note: We do not want to start an inline formatting context until we encounter
+ * a text node.
+ */
 export const collapseWhiteSpaceElement = (
   element: HTMLElement,
   state: CollapseWhiteSpaceState
@@ -16,12 +20,6 @@ export const collapseWhiteSpaceElement = (
   if (inferredWhiteSpaceRule) {
     state.whiteSpaceRule = inferredWhiteSpaceRule;
   }
-
-  /**
-   * Note: We do not want to start an inline formatting context until we
-   * encounter a text node.
-   */
-
   // End any existing inline formatting context
   if (!isInlineElement) {
     endInlineFormattingContext(state);

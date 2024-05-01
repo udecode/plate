@@ -3,10 +3,8 @@
  * @see https://github.com/belgattitude/nextjs-monorepo-example/tree/main/packages/eslint-config-bases
  */
 
-const reactPatterns = {
-  files: ['*.{jsx,tsx}'],
-};
 
+const { filePatterns } = require('../constants/file-patterns.cjs');
 module.exports = {
   env: {
     browser: true,
@@ -26,7 +24,7 @@ module.exports = {
         // @see https://github.com/jsx-eslint/eslint-plugin-jsx-a11y
         'plugin:jsx-a11y/recommended',
       ],
-      files: reactPatterns.files,
+      files: filePatterns.react,
       rules: {
         // https://github.com/typescript-eslint/typescript-eslint/blob/main/packages/eslint-plugin/docs/rules/naming-convention.md
         '@typescript-eslint/naming-convention': [
@@ -100,6 +98,12 @@ module.exports = {
         'react-hooks/rules-of-hooks': 'error',
       },
     },
+    {
+      files: filePatterns.test,
+      rules: {
+        'react/no-unknown-property': 'off',
+      }
+    }
   ],
   rules: {
     'react-hooks/exhaustive-deps': 'warn', // Checks effect dependencies

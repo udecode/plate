@@ -1,8 +1,7 @@
 import { createBasicElementsPlugin } from '@udecode/plate-basic-elements';
 import { ELEMENT_LINK, createLinkPlugin } from '@udecode/plate-link';
 
-import { createPluginFactory } from '../../../common/utils/createPluginFactory';
-import { getPlugin } from '../../../common/utils/getPlugin';
+import { createPluginFactory, getPlugin } from '../../shared';
 import { createPlateEditor } from './createPlateEditor';
 
 describe('createPluginFactory', () => {

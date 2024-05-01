@@ -33,3 +33,4 @@ module.exports = {
     './node_modules/prettier-plugin-jsdoc/dist/index.js',
   ],
 };
+

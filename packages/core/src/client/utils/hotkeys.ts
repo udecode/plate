@@ -4,11 +4,6 @@ import { type TReactEditor, isComposing } from '@udecode/slate-react';
 
 import { createHotkey, sharedHotkeys } from '../../shared/utils/shared-hotkeys';
 
-
-
-
-
-
 const createComposing =
   (key: string) =>
   (

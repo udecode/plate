@@ -2,23 +2,28 @@
   "name": "@udecode/plate-core",
   "version": "32.0.0",
   "description": "The core architecture of Plate – a plugin system for slate",
-  "license": "MIT",
+  "keywords": [
+    "contentEditable",
+    "editor",
+    "framework",
+    "html",
+    "plate",
+    "plugin",
+    "rich text",
+    "slate",
+    "wysiwyg"
+  ],
   "homepage": "https://platejs.org",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
     "directory": "packages/core"
   },
-  "bugs": {
-    "url": "https://github.com/udecode/plate/issues"
-  },
+  "license": "MIT",
   "sideEffects": false,
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist/**/*"
-  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -33,10 +38,16 @@
       "require": "./dist/server.js"
     }
   },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
   "scripts": {
+    "brl": "yarn p:brl",
     "build": "yarn p:build",
     "build:watch": "yarn p:build:watch",
-    "brl": "yarn p:brl",
     "clean": "yarn p:clean",
     "lint": "yarn p:lint",
     "lint:fix": "yarn p:lint:fix",
@@ -70,17 +81,6 @@
     "slate-hyperscript": ">=0.66.0",
     "slate-react": ">=0.99.0"
   },
-  "keywords": [
-    "contentEditable",
-    "editor",
-    "framework",
-    "html",
-    "plate",
-    "plugin",
-    "rich text",
-    "slate",
-    "wysiwyg"
-  ],
   "publishConfig": {
     "access": "public"
   }

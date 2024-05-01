@@ -1,4 +1,5 @@
 const path = require('node:path');
+const { filePatterns } = require('../constants/file-patterns.cjs');
 
 /**
  * Custom config base for projects using typescript / javascript.
@@ -18,7 +19,7 @@ module.exports = {
         'plugin:@typescript-eslint/recommended-type-checked',
         'plugin:@typescript-eslint/stylistic-type-checked',
       ],
-      files: ['*.ts', '*.tsx', '*.mts'],
+      files: filePatterns.ts,
       rules: {
         // Override recommended-type-checked
 
@@ -98,7 +99,7 @@ module.exports = {
     },
     {
       // commonjs or assumed
-      files: ['*.js', '*.cjs'],
+      files: filePatterns.js,
       parser: 'espree',
       parserOptions: {
         ecmaVersion: 2020,
@@ -113,6 +114,12 @@ module.exports = {
         '@typescript-eslint/no-var-requires': 'off',
       },
     },
+    {
+      files: filePatterns.test,
+      rules: {
+        '@typescript-eslint/require-await': 'off',
+      }
+    }
   ],
   plugins: ['unused-imports'],
   rules: {
@@ -130,6 +137,7 @@ module.exports = {
     'import/no-named-as-default': ['warn'],
     'import/no-named-as-default-member': 'off',
     'linebreak-style': ['error', 'unix'],
+    'no-empty': ['error', { allowEmptyCatch: true }],
     'no-case-declarations': 'off',
     // will use 'import/no-duplicates'.
     'no-duplicate-imports': 'off',

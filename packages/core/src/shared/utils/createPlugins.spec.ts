@@ -3,7 +3,7 @@ import { createNodeIdPlugin } from '@udecode/plate-node-id';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { createTEditor } from '@udecode/slate';
 
-import { withPlate } from '../client';
+import { withPlate } from '../../client';
 import { createPlugins } from './createPlugins';
 import { getPlugin } from './getPlugin';
 

@@ -11,10 +11,17 @@ import {
   getPlugin,
   onKeyDownToggleMark,
 } from '@udecode/plate-common';
-import * as isHotkey from '@udecode/plate-core';
+import * as isHotkey from '@udecode/plate-core/server';
 import { jsx } from '@udecode/plate-test-utils';
 
 jsx;
+
+jest.mock('@udecode/plate-core/server', () => {
+  return {
+    __esModule: true,
+    ...jest.requireActual('@udecode/plate-core/server'),
+  };
+});
 
 const input = (
   <editor>

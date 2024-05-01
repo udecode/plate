@@ -4,7 +4,7 @@ import { renderHook } from '@testing-library/react-hooks';
 
 import type { PlatePlugin } from '../types/index';
 
-import { Plate, usePlateSelectors } from '../client';
+import { Plate, usePlateSelectors } from '../../client';
 
 describe('normalizeInitialValue', () => {
   describe('defined', () => {

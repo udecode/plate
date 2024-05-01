@@ -5,7 +5,7 @@ import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 import { isDescendant } from '@udecode/slate';
 
-import { mergeDeepToNodes } from '../../utils/index';
+import { mergeDeepToNodes } from '../../../utils';
 
 jsx;
 

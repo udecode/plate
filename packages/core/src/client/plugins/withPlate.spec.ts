@@ -4,15 +4,17 @@ import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { createTEditor } from '@udecode/slate';
 
-import { getPlugin } from '../../../common/utils';
-import { KEY_DESERIALIZE_AST } from '../../plugins/createDeserializeAstPlugin';
-import { KEY_EDITOR_PROTOCOL } from '../../plugins/createEditorProtocolPlugin';
-import { KEY_INLINE_VOID } from '../../plugins/createInlineVoidPlugin';
-import { KEY_INSERT_DATA } from '../../plugins/createInsertDataPlugin';
-import { KEY_NODE_FACTORY } from '../../plugins/createNodeFactoryPlugin';
-import { KEY_PREV_SELECTION } from '../../plugins/createPrevSelectionPlugin';
-import { KEY_EVENT_EDITOR } from '../../plugins/event-editor/createEventEditorPlugin';
-import { KEY_DESERIALIZE_HTML } from '../../plugins/html-deserializer/createDeserializeHtmlPlugin';
+import {
+  KEY_DESERIALIZE_AST,
+  KEY_DESERIALIZE_HTML,
+  KEY_EDITOR_PROTOCOL,
+  KEY_EVENT_EDITOR,
+  KEY_INLINE_VOID,
+  KEY_INSERT_DATA,
+  KEY_NODE_FACTORY,
+  KEY_PREV_SELECTION,
+  getPlugin,
+} from '../../shared';
 import { withPlate } from './withPlate';
 
 const coreKeys = [

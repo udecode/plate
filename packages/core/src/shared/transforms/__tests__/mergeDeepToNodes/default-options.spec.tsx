@@ -5,7 +5,7 @@ import type { TNode } from '@udecode/slate';
 
 import { jsx } from '@udecode/plate-test-utils';
 
-import { mergeDeepToNodes } from '../../utils/index';
+import { mergeDeepToNodes } from '../../../utils';
 
 jsx;
 

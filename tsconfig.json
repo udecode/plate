@@ -19,7 +19,8 @@
     "sourceMap": true,
     "strict": true,
     "target": "es2017",
-    "outDir": "dist"
+    "outDir": "dist",
+    "rootDir": "."
   },
   "exclude": ["node_modules", "**/node_modules", "dist", "**/dist"]
 }

@@ -3,10 +3,7 @@
  * @see https://github.com/belgattitude/nextjs-monorepo-example/tree/main/packages/eslint-config-bases
  */
 
-const jestPatterns = {
-  files: ['**/?(*.)+(test).{js,jsx,ts,tsx}'],
-};
-
+const { filePatterns } = require('../constants/file-patterns.cjs');
 module.exports = {
   env: {
     es6: true,
@@ -22,7 +19,7 @@ module.exports = {
         'plugin:jest-dom/recommended',
       ],
       // Perf: To ensure best performance enable eslint-plugin-jest for test files only.
-      files: jestPatterns.files,
+      files: filePatterns.test,
       plugins: ['jest', 'jest-formatting', 'testing-library', 'jest-dom'],
       rules: {
         '@typescript-eslint/ban-ts-comment': 'off',
@@ -46,7 +43,7 @@ module.exports = {
         'jest/no-test-return-statement': 'error',
         'jest/prefer-hooks-in-order': 'error',
         'jest/prefer-hooks-on-top': 'error',
-        'jest/prefer-strict-equal': 'error',
+        'jest/prefer-strict-equal': 'off',
         'jest/prefer-to-have-length': 'error',
         'jest/valid-title': 'off',
       },

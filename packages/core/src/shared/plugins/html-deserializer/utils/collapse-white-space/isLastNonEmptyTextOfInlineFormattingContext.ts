@@ -5,6 +5,7 @@ export const isLastNonEmptyTextOfInlineFormattingContext = (
 ): boolean => {
   let currentNode: Node | null = initialText;
 
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     if (currentNode.nextSibling) {
       currentNode = currentNode.nextSibling;

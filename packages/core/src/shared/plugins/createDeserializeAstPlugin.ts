@@ -16,7 +16,9 @@ export const createDeserializeAstPlugin = createPluginFactory({
 
         try {
           parsed = JSON.parse(decoded);
-        } catch (error) {}
+        } catch (error) {
+          /* empty */
+        }
 
         return parsed;
       },

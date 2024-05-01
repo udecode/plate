@@ -14,7 +14,6 @@ module.exports = {
   extends: [
     'turbo',
 
-    './config/eslint/bases/javascript.cjs',
     './config/eslint/bases/typescript.cjs',
     './config/eslint/bases/regexp.cjs',
     './config/eslint/bases/jest.cjs',
