@@ -9,7 +9,7 @@ import {
   TElement,
   TText,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import {
   ELEMENT_H1,
   ELEMENT_H2,

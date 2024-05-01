@@ -2,7 +2,7 @@ import {
   createPluginFactory,
   HotkeyPlugin,
   onKeyDownToggleElement,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 export const ELEMENT_PARAGRAPH = 'p';
 

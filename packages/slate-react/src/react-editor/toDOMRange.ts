@@ -1,4 +1,4 @@
-import { Value } from '@udecode/slate/dist';
+import { Value } from '@udecode/slate';
 import { Range } from 'slate';
 import { ReactEditor } from 'slate-react';
 

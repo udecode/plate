@@ -6,13 +6,13 @@ import {
   useEditorRef,
 } from '@udecode/plate-common';
 
-import { TablePlugin, TTableElement } from '../../../common/types';
 import { ELEMENT_TABLE } from '../../createTablePlugin';
 import {
   getTableColumnCount,
   getTableOverriddenColSizes,
 } from '../../queries/index';
 import { useTableStore } from '../../stores/tableStore';
+import { TablePlugin, TTableElement } from '../../types';
 
 /**
  * Returns colSizes with overrides applied.

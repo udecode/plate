@@ -1,4 +1,4 @@
-import { TDescendant, Value } from '@udecode/plate-common';
+import { TDescendant, Value } from '@udecode/plate-common/server';
 
 import { remarkTextTypes } from './remarkTextTypes';
 import { remarkTransformElement } from './remarkTransformElement';

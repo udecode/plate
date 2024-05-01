@@ -1,4 +1,4 @@
-import { TElement, Value } from '@udecode/plate-common';
+import { TElement, Value } from '@udecode/plate-common/server';
 
 import { MdastNode, RemarkPluginOptions } from './types';
 

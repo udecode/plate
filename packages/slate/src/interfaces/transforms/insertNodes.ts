@@ -1,9 +1,9 @@
 import { Modify } from '@udecode/utils';
 import { Path, removeNodes, Transforms, withoutNormalizing } from 'slate';
 
-import { QueryNodeOptions } from '../../../common/types';
-import { NodeMatchOption } from '../../../common/types/NodeMatchOption';
-import { queryNode } from '../../../common/utils';
+import { QueryNodeOptions } from '../../types';
+import { NodeMatchOption } from '../../types/NodeMatchOption';
+import { queryNode } from '../../utils';
 import { getAboveNode, getEndPoint, isInline } from '../editor';
 import { TEditor, Value } from '../editor/TEditor';
 import { EElementOrText } from '../element/TElement';

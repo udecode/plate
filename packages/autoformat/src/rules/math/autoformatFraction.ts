@@ -1,4 +1,4 @@
-import { AutoformatRule } from '../../../common/types';
+import { AutoformatRule } from '../../types';
 
 export const autoformatFraction: AutoformatRule[] = [
   {

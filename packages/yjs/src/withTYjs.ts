@@ -1,8 +1,16 @@
 import { withYjs, YjsEditor } from '@slate-yjs/core';
-// eslint-disable-next-line import/no-unresolved
-import { WithYjsOptions } from '@slate-yjs/core/dist/plugins/withYjs';
 import { TEditor, TOperation, Value } from '@udecode/plate-common';
 import * as Y from 'yjs';
+
+export type WithYjsOptions = {
+  autoConnect?: boolean;
+
+  // Origin used when applying local slate operations to yjs
+  localOrigin?: unknown;
+
+  // Origin used when storing positions
+  positionStorageOrigin?: unknown;
+};
 
 export type YjsEditorProps = Pick<
   YjsEditor,

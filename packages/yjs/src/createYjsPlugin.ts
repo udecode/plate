@@ -1,7 +1,5 @@
 import { HocuspocusProviderConfiguration } from '@hocuspocus/provider';
 import { WithCursorsOptions } from '@slate-yjs/core';
-// eslint-disable-next-line import/no-unresolved
-import { WithYjsOptions } from '@slate-yjs/core/dist/plugins/withYjs';
 import {
   createPluginFactory,
   PlateEditor,
@@ -11,6 +9,7 @@ import {
 
 import { RenderAboveEditableYjs } from './RenderAboveEditableYjs';
 import { PlateYjsEditorProps, withPlateYjs } from './withPlateYjs';
+import { WithYjsOptions } from './withTYjs';
 
 export type YjsPlugin<TCursorData extends UnknownObject = UnknownObject> = {
   /**

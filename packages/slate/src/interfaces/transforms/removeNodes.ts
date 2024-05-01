@@ -1,7 +1,7 @@
 import { Modify } from '@udecode/utils';
 import { Transforms } from 'slate';
 
-import { NodeMatchOption } from '../../../common/types/NodeMatchOption';
+import { NodeMatchOption } from '../../types/NodeMatchOption';
 import { TEditor, Value } from '../editor/TEditor';
 
 export type RemoveNodesOptions<V extends Value = Value> = Modify<

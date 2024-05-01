@@ -1,10 +1,7 @@
 import { Modify } from '@udecode/utils';
 import { Transforms } from 'slate';
 
-import {
-  ENodeMatchOptions,
-  getQueryOptions,
-} from '../../../common/utils/match';
+import { ENodeMatchOptions, getQueryOptions } from '../../utils/match';
 import { TEditor, Value } from '../editor/TEditor';
 
 export type UnwrapNodesOptions<V extends Value = Value> = Modify<

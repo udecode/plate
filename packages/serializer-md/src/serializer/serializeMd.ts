@@ -1,4 +1,8 @@
-import { getPluginType, PlateEditor, Value } from '@udecode/plate-common';
+import {
+  getPluginType,
+  PlateEditor,
+  Value,
+} from '@udecode/plate-common/server';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 
 import { serialize } from './serialize';

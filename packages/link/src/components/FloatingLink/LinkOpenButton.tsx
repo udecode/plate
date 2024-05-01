@@ -7,9 +7,9 @@ import {
   useEditorSelection,
 } from '@udecode/plate-common';
 
-import { TLinkElement } from '../../../common/types';
-import { getLinkAttributes } from '../../../common/utils/index';
 import { ELEMENT_LINK } from '../../createLinkPlugin';
+import { TLinkElement } from '../../types';
+import { getLinkAttributes } from '../../utils/index';
 
 export const useLinkOpenButtonState = () => {
   const editor = useEditorRef();

@@ -6,12 +6,6 @@ import {
 } from '@udecode/plate-common';
 import { useReadOnly } from 'slate-react';
 
-import {
-  TablePlugin,
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '../../../common/types';
 import { ELEMENT_TABLE, ELEMENT_TR } from '../../createTablePlugin';
 import { computeCellIndices } from '../../merge/computeCellIndices';
 import { getCellIndices } from '../../merge/getCellIndices';
@@ -19,6 +13,12 @@ import { getColSpan } from '../../queries/getColSpan';
 import { getRowSpan } from '../../queries/getRowSpan';
 import { getTableColumnIndex, getTableRowIndex } from '../../queries/index';
 import { useTableStore } from '../../stores/tableStore';
+import {
+  TablePlugin,
+  TTableCellElement,
+  TTableElement,
+  TTableRowElement,
+} from '../../types';
 import {
   BorderStylesDefault,
   getTableCellBorders,

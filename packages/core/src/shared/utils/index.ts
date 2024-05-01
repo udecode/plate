@@ -34,5 +34,6 @@ export * from './pipeTransformData';
 export * from './pipeTransformFragment';
 export * from './pluginInjectProps';
 export * from './setDefaultPlugin';
+export * from './shared-hotkeys';
 export * from './withHOC';
 export * from './misc/index';

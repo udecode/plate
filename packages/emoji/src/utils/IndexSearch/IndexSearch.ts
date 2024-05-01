@@ -1,7 +1,7 @@
 import { TComboboxItem } from '@udecode/plate-combobox';
 
-import { EmojiItemData } from '../../../common/types';
 import { EMOJI_MAX_SEARCH_RESULT } from '../../constants';
+import { EmojiItemData } from '../../types';
 import { Emoji, IEmojiLibrary } from '../EmojiLibrary/index';
 
 type IndexSearchReturnData = TComboboxItem<EmojiItemData>;

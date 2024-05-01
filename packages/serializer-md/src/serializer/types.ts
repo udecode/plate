@@ -1,5 +1,9 @@
 import { MARK_BOLD, MARK_ITALIC } from '@udecode/plate-basic-marks';
-import { getPluginType, PlateEditor, Value } from '@udecode/plate-common';
+import {
+  getPluginType,
+  PlateEditor,
+  Value,
+} from '@udecode/plate-common/server';
 import {
   ELEMENT_H1,
   ELEMENT_H2,

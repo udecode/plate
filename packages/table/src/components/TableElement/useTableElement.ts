@@ -6,10 +6,10 @@ import {
   useElement,
 } from '@udecode/plate-common';
 
-import { TablePlugin, TTableElement } from '../../../common/types';
 import { ELEMENT_TABLE } from '../../createTablePlugin';
 import { computeAllCellIndices } from '../../merge/computeCellIndices';
 import { useTableStore } from '../../stores/tableStore';
+import { TablePlugin, TTableElement } from '../../types';
 import { useSelectedCells } from './useSelectedCells';
 import { useTableColSizes } from './useTableColSizes';
 

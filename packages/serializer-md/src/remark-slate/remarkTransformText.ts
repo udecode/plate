@@ -1,4 +1,4 @@
-import { TText, Value } from '@udecode/plate-common';
+import { TText, Value } from '@udecode/plate-common/server';
 
 import { remarkDefaultTextRules } from './remarkDefaultTextRules';
 import { MdastNode, RemarkPluginOptions } from './types';

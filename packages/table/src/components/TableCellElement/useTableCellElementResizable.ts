@@ -11,7 +11,6 @@ import {
   resizeLengthClampStatic,
 } from '@udecode/plate-resizable';
 
-import { TablePlugin, TTableElement } from '../../../common/types';
 import { ELEMENT_TABLE } from '../../createTablePlugin';
 import {
   useOverrideColSize,
@@ -24,6 +23,7 @@ import {
   setTableMarginLeft,
   setTableRowSize,
 } from '../../transforms/index';
+import { TablePlugin, TTableElement } from '../../types';
 import { useTableColSizes } from '../TableElement/useTableColSizes';
 import { roundCellSizeToStep } from './roundCellSizeToStep';
 import { TableCellElementState } from './useTableCellElementState';

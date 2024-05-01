@@ -1,14 +1,14 @@
 import React from 'react';
 import { useEditorRef } from '@udecode/plate-common';
 
+import { i18n } from '../../constants';
+import { getEmojiOnInsert } from '../../handlers/getEmojiOnInsert';
 import {
   EmojiCategoryList,
   EmojiIconList,
   EmojiSettingsType,
   i18nProps,
-} from '../../../common/types';
-import { i18n } from '../../constants';
-import { getEmojiOnInsert } from '../../handlers/getEmojiOnInsert';
+} from '../../types';
 import { Emoji, IEmojiFloatingLibrary } from '../EmojiLibrary/index';
 import {
   observeCategories,
