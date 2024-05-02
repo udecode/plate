@@ -3,7 +3,7 @@
  */
 
 export * from './types';
-export * from './withInsertTextTriggerCombobox';
+export * from './withTriggerCombobox';
 export * from './hooks/index';
 export * from './legacy-combobox-delete-me/index';
 export * from './utils/index';

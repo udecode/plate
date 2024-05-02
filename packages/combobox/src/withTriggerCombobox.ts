@@ -10,7 +10,7 @@ import {
 
 import { TriggerComboboxPlugin } from './types';
 
-export const withInsertTextTriggerCombobox = <
+export const withTriggerCombobox = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
 >(
