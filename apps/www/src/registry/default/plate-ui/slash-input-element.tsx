@@ -1,17 +1,29 @@
 import React, { ComponentType, SVGProps } from 'react';
 import { withRef } from '@udecode/cn';
-import { BaseComboboxItemWithEditor } from '@udecode/plate-combobox';
-import { PlateElement, toggleNodeType } from '@udecode/plate-common';
+import {
+  PlateEditor,
+  PlateElement,
+  toggleNodeType,
+} from '@udecode/plate-common';
 import { ELEMENT_H1, ELEMENT_H2, ELEMENT_H3 } from '@udecode/plate-heading';
 import { ListStyleType, toggleIndentList } from '@udecode/plate-indent-list';
 
 import { Icons } from '@/components/icons';
 
-import { InlineCombobox } from './inline-combobox';
+import {
+  InlineCombobox,
+  InlineComboboxContent,
+  InlineComboboxEmpty,
+  InlineComboboxInput,
+  InlineComboboxItem,
+} from './inline-combobox';
 
-type SlashCommandRule = BaseComboboxItemWithEditor & {
+interface SlashCommandRule {
+  value: string;
+  keywords?: string[];
   icon: ComponentType<SVGProps<SVGSVGElement>>;
-};
+  onSelect: (editor: PlateEditor) => void;
+}
 
 const rules: SlashCommandRule[] = [
   {
@@ -59,7 +71,7 @@ const rules: SlashCommandRule[] = [
 
 export const SlashInputElement = withRef<typeof PlateElement>(
   ({ className, ...props }, ref) => {
-    const { children, element } = props;
+    const { children, element, editor } = props;
 
     return (
       <PlateElement
@@ -68,17 +80,27 @@ export const SlashInputElement = withRef<typeof PlateElement>(
         data-slate-value={element.value}
         {...props}
       >
-        <InlineCombobox
-          trigger="/"
-          items={rules}
-          renderItem={({ icon: Icon, value }) => (
-            <>
-              <Icon className="mr-2 size-4" aria-hidden />
-              {value}
-            </>
-          )}
-          renderEmpty="No matching commands found"
-        />
+        <InlineCombobox trigger="/">
+          <InlineComboboxInput />
+
+          <InlineComboboxContent>
+            <InlineComboboxEmpty>
+              No matching commands found
+            </InlineComboboxEmpty>
+
+            {rules.map(({ value, keywords, icon: Icon, onSelect }) => (
+              <InlineComboboxItem
+                key={value}
+                value={value}
+                keywords={keywords}
+                onClick={() => onSelect?.(editor)}
+              >
+                <Icon className="mr-2 size-4" aria-hidden />
+                {value}
+              </InlineComboboxItem>
+            ))}
+          </InlineComboboxContent>
+        </InlineCombobox>
 
         {children}
       </PlateElement>
