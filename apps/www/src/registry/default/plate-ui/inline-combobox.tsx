@@ -32,13 +32,13 @@ const comboboxItemVariants = cva(
 
 const defaultMatchItem = (
   { label, keywords = [] }: BaseComboboxItemWithEditor,
-  query: string
-) => [label, ...keywords].some((keyword) => matchWords(keyword, query));
+  search: string
+) => [label, ...keywords].some((keyword) => matchWords(keyword, search));
 
 interface InlineComboboxProps<TItem extends BaseComboboxItemWithEditor> {
   trigger: string;
   items: TItem[];
-  matchItem?: (item: TItem, query: string) => boolean;
+  matchItem?: (item: TItem, search: string) => boolean;
   renderItem?: (item: TItem) => ReactNode;
   renderEmpty?: ReactNode;
   onSelectItem?: (item: TItem) => void;
