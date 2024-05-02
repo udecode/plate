@@ -6,7 +6,6 @@ import {
   ComboboxProvider,
   Portal,
 } from '@ariakit/react';
-import { cn } from '@udecode/cn';
 import {
   BaseComboboxItemWithEditor,
   matchWords,
@@ -14,11 +13,22 @@ import {
   useHTMLInputCursorState,
 } from '@udecode/plate-combobox';
 import { insertText, moveSelection, useEditorRef } from '@udecode/plate-common';
+import { cva } from 'class-variance-authority';
 
-const comboboxItemClassName =
-  'relative flex h-9 select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none';
-const comboboxItemInteractiveClassName =
-  'cursor-pointer transition-colors hover:bg-accent hover:text-accent-foreground data-[active-item=true]:bg-accent data-[active-item=true]:text-accent-foreground';
+const comboboxItemVariants = cva(
+  'relative flex h-9 select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none',
+  {
+    variants: {
+      interactive: {
+        true: 'cursor-pointer transition-colors hover:bg-accent hover:text-accent-foreground data-[active-item=true]:bg-accent data-[active-item=true]:text-accent-foreground',
+        false: '',
+      },
+    },
+    defaultVariants: {
+      interactive: true,
+    },
+  }
+);
 
 const defaultMatchItem = (
   { label, aliases = [] }: BaseComboboxItemWithEditor,
@@ -107,10 +117,7 @@ export const InlineCombobox = <TItem extends BaseComboboxItemWithEditor>({
             {filteredItems.map((item) => (
               <ComboboxItem
                 key={item.value}
-                className={cn(
-                  comboboxItemClassName,
-                  comboboxItemInteractiveClassName
-                )}
+                className={comboboxItemVariants()}
                 onClick={() => {
                   removeInput(true);
                   item.onSelect?.(editor);
@@ -122,7 +129,9 @@ export const InlineCombobox = <TItem extends BaseComboboxItemWithEditor>({
             ))}
 
             {filteredItems.length === 0 && renderEmpty && (
-              <div className={comboboxItemClassName}>{renderEmpty}</div>
+              <div className={comboboxItemVariants({ interactive: false })}>
+                {renderEmpty}
+              </div>
             )}
           </ComboboxPopover>
         </Portal>
