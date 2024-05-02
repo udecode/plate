@@ -93,7 +93,7 @@ export const SlashInputElement = withRef<typeof PlateElement>(
                 key={value}
                 value={value}
                 keywords={keywords}
-                onClick={() => onSelect?.(editor)}
+                onClick={() => onSelect(editor)}
               >
                 <Icon className="mr-2 size-4" aria-hidden />
                 {value}
