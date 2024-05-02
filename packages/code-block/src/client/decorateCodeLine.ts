@@ -10,13 +10,13 @@ import {
 } from '@udecode/plate-common/server';
 import Prism from 'prismjs';
 
-import type { CodeBlockPlugin, TCodeBlockElement } from './types';
+import type { CodeBlockPlugin, TCodeBlockElement } from '../shared/types';
 
 import {
   ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,
   ELEMENT_CODE_SYNTAX,
-} from './constants';
+} from '../shared/constants';
 
 import 'prismjs/components/prism-antlr4.js';
 import 'prismjs/components/prism-bash.js';

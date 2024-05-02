@@ -1,7 +1,7 @@
 import {
+  type PlateEditor,
+  type Value,
   getPluginType,
-  PlateEditor,
-  Value,
 } from '@udecode/plate-common/server';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 
@@ -26,9 +26,7 @@ export const serializeMd = <V extends Value>(
   {
     nodes,
   }: {
-    /**
-     * Slate nodes to convert to HTML.
-     */
+    /** Slate nodes to convert to HTML. */
     nodes: Value;
   }
 ) => {

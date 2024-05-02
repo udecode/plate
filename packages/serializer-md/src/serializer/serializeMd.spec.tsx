@@ -1,32 +1,32 @@
 /** @jsx jsx */
 
 import {
-  createBoldPlugin,
-  createItalicPlugin,
   MARK_BOLD,
   MARK_ITALIC,
+  createBoldPlugin,
+  createItalicPlugin,
 } from '@udecode/plate-basic-marks';
 import { createPlateEditor } from '@udecode/plate-common';
 import {
-  createHeadingPlugin,
   ELEMENT_H1,
   ELEMENT_H2,
   ELEMENT_H3,
   ELEMENT_H4,
   ELEMENT_H5,
   ELEMENT_H6,
+  createHeadingPlugin,
 } from '@udecode/plate-heading';
-import { createLinkPlugin, ELEMENT_LINK } from '@udecode/plate-link';
+import { ELEMENT_LINK, createLinkPlugin } from '@udecode/plate-link';
 import {
-  createListPlugin,
   ELEMENT_LI,
   ELEMENT_LIC,
   ELEMENT_OL,
   ELEMENT_UL,
+  createListPlugin,
 } from '@udecode/plate-list';
 import {
-  createParagraphPlugin,
   ELEMENT_PARAGRAPH,
+  createParagraphPlugin,
 } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -90,17 +90,17 @@ describe('deserializeMd', () => {
       }),
       createListPlugin({
         overrideByKey: {
-          [ELEMENT_UL]: {
-            type: 'unordered-list',
-          },
-          [ELEMENT_OL]: {
-            type: 'ordered-list',
-          },
           [ELEMENT_LI]: {
             type: 'list-item',
           },
           [ELEMENT_LIC]: {
             type: 'list-item-child',
+          },
+          [ELEMENT_OL]: {
+            type: 'ordered-list',
+          },
+          [ELEMENT_UL]: {
+            type: 'unordered-list',
           },
         },
       }),

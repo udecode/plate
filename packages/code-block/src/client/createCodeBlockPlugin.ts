@@ -14,9 +14,9 @@ import {
   ELEMENT_CODE_LINE,
   ELEMENT_CODE_SYNTAX,
 } from '../shared/constants';
-import { decorateCodeLine } from '../shared/decorateCodeLine';
 import { deserializeHtmlCodeBlock } from '../shared/deserializeHtmlCodeBlockPre';
 import { withCodeBlock } from '../shared/withCodeBlock';
+import { decorateCodeLine } from './decorateCodeLine';
 import { onKeyDownCodeBlock } from './onKeyDownCodeBlock';
 
 /** Enables support for pre-formatted code blocks. */

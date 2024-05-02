@@ -1,23 +1,23 @@
 import { MARK_BOLD, MARK_CODE, MARK_ITALIC } from '@udecode/plate-basic-marks';
 import {
+  type PlateEditor,
+  type Value,
   getPluginType,
-  PlateEditor,
-  Value,
 } from '@udecode/plate-common/server';
 
-import { BlockType, LeafType, NodeTypes } from './types';
+import type { BlockType, LeafType, NodeTypes } from './types';
 
 interface Options {
   nodeTypes: NodeTypes;
-  listDepth?: number;
   ignoreParagraphNewline?: boolean;
+  listDepth?: number;
 }
 
 const isLeafNode = (node: BlockType | LeafType): node is LeafType => {
   return typeof (node as LeafType).text === 'string';
 };
 
-const VOID_ELEMENTS: Array<keyof NodeTypes> = ['thematic_break', 'image'];
+const VOID_ELEMENTS: (keyof NodeTypes)[] = ['thematic_break', 'image'];
 
 const BREAK_TAG = '<br/>';
 
@@ -27,9 +27,9 @@ export function serialize<V extends Value>(
   opts: Options
 ) {
   const {
-    nodeTypes: userNodeTypes,
     ignoreParagraphNewline = false,
     listDepth = 0,
+    nodeTypes: userNodeTypes,
   } = opts;
 
   const text = (chunk as LeafType).text || '';
@@ -92,13 +92,6 @@ export function serialize<V extends Value>(
             },
           },
           {
-            nodeTypes,
-            // WOAH.
-            // what we're doing here is pretty tricky, it relates to the block below where
-            // we check for ignoreParagraphNewline and set type to paragraph.
-            // We want to strip out empty paragraphs sometimes, but other times we don't.
-            // If we're the descendant of a list, we know we don't want a bunch
-            // of whitespace. If we're parallel to a link we also don't want
             // to respect neighboring paragraphs
             ignoreParagraphNewline:
               (ignoreParagraphNewline ||
@@ -107,19 +100,25 @@ export function serialize<V extends Value>(
                 childrenHasLink) &&
               // if we have c.break, never ignore empty paragraph new line
               !(c as BlockType).break,
-
+            // WOAH.
+            // what we're doing here is pretty tricky, it relates to the block below where
+            // we check for ignoreParagraphNewline and set type to paragraph.
+            // We want to strip out empty paragraphs sometimes, but other times we don't.
+            // If we're the descendant of a list, we know we don't want a bunch
+            // of whitespace. If we're parallel to a link we also don't want
             // track depth of nested lists so we can add proper spacing
             listDepth: (LIST_TYPES as string[]).includes(
               (c as BlockType).type || ''
             )
               ? listDepth + 1
               : listDepth,
+
+            nodeTypes,
           }
         );
       })
       .join('');
   }
-
   // This is pretty fragile code, check the long comment where we iterate over children
   if (
     !ignoreParagraphNewline &&
@@ -129,10 +128,8 @@ export function serialize<V extends Value>(
     type = nodeTypes.paragraph;
     children = BREAK_TAG;
   }
-
   if (children === '' && !VOID_ELEMENTS.some((k) => nodeTypes[k] === type))
     return;
-
   // Never allow decorating break tags with rich text formatting,
   // this can malform generated markdown
   // Also ensure we're only ever applying text formatting to leaf node
@@ -158,15 +155,12 @@ export function serialize<V extends Value>(
       if (markedChunk[boldMark]) {
         children = retainWhitespaceAndFormat(children, '**');
       }
-
       if (markedChunk[italicMark]) {
         children = retainWhitespaceAndFormat(children, '_');
       }
-
       if (chunk.strikeThrough) {
         children = retainWhitespaceAndFormat(children, '~~');
       }
-
       if (markedChunk[codeMark]) {
         children = retainWhitespaceAndFormat(children, '`');
       }
@@ -192,20 +186,17 @@ export function serialize<V extends Value>(
     case nodeTypes.heading[6]: {
       return `###### ${children}\n`;
     }
-
     case nodeTypes.block_quote: {
       // For some reason, marked is parsing blockquotes w/ one new line
       // as contiued blockquotes, so adding two new lines ensures that doesn't
       // happen
       return `> ${children}\n\n`;
     }
-
     case nodeTypes.code_block: {
       return `\`\`\`${
         (chunk as BlockType).language || ''
       }\n${children}\n\`\`\`\n`;
     }
-
     case nodeTypes.link: {
       return `[${children}](${(chunk as BlockType).url || ''})`;
     }
@@ -216,17 +207,17 @@ export function serialize<V extends Value>(
 
       return `![${caption}](${(chunk as BlockType).url || ''})`;
     }
-
     case nodeTypes.ul_list:
     case nodeTypes.ol_list: {
       const newLineAfter = listDepth === 0 ? '\n' : '';
+
       return `${children}${newLineAfter}`;
     }
-
     case nodeTypes.listItem: {
       const isOL = chunk && chunk.parent?.type === nodeTypes.ol_list;
 
       let spacer = '';
+
       for (let k = 0; listDepth > k; k++) {
         // https://github.com/remarkjs/remark-react/issues/65
         spacer += isOL ? '   ' : '  ';
@@ -246,11 +237,9 @@ export function serialize<V extends Value>(
 
       return `${emptyBefore}${spacer}${isOL ? '1.' : '-'} ${children}`;
     }
-
     case nodeTypes.paragraph: {
       return `\n${children}\n`;
     }
-
     case nodeTypes.thematic_break: {
       return '\n---\n';
     }

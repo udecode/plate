@@ -1,8 +1,8 @@
 import { MARK_BOLD, MARK_ITALIC } from '@udecode/plate-basic-marks';
 import {
+  type PlateEditor,
+  type Value,
   getPluginType,
-  PlateEditor,
-  Value,
 } from '@udecode/plate-common/server';
 import {
   ELEMENT_H1,
@@ -17,7 +17,7 @@ import { ELEMENT_LI, ELEMENT_OL, ELEMENT_UL } from '@udecode/plate-list';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 
 export type NodeTypes = {
-  paragraph: string;
+  emphasis_mark: string;
   heading: {
     1: string;
     2: string;
@@ -27,53 +27,49 @@ export type NodeTypes = {
     6: string;
   };
   link: string;
-  ul_list: string;
-  ol_list: string;
   listItem: string;
-  emphasis_mark: string;
+  ol_list: string;
+  paragraph: string;
   strong_mark: string;
+  ul_list: string;
 } & Partial<{
   block_quote: string;
-  inline_code_mark: string;
-  thematic_break: string;
-  image: string;
   code_block: string;
   delete_mark: string;
+  image: string;
+  inline_code_mark: string;
+  thematic_break: string;
 }>;
 
 export interface LeafType {
   text: string;
-  strikeThrough?: boolean;
   parent?: {
-    type: string;
     index?: number;
     length?: number;
+    type: string;
   };
+  strikeThrough?: boolean;
 }
 
 export interface BlockType {
+  children: (BlockType | LeafType)[];
   type: string;
+  break?: boolean;
+  caption?: (BlockType | LeafType)[];
+  language?: string;
   parent?: {
-    type: string;
     index?: number;
     length?: number;
+    type: string;
   };
   url?: string;
-  caption?: Array<BlockType | LeafType>;
-  language?: string;
-  break?: boolean;
-  children: Array<BlockType | LeafType>;
 }
 
 export const getRemarkNodeTypesMap = <V extends Value>(
   editor: PlateEditor<V>
 ): NodeTypes => {
   return {
-    paragraph: getPluginType(editor, ELEMENT_PARAGRAPH),
-    link: getPluginType(editor, ELEMENT_LINK),
-    ul_list: getPluginType(editor, ELEMENT_UL),
-    ol_list: getPluginType(editor, ELEMENT_OL),
-    listItem: getPluginType(editor, ELEMENT_LI),
+    emphasis_mark: getPluginType(editor, MARK_ITALIC),
     heading: {
       1: getPluginType(editor, ELEMENT_H1),
       2: getPluginType(editor, ELEMENT_H2),
@@ -82,8 +78,12 @@ export const getRemarkNodeTypesMap = <V extends Value>(
       5: getPluginType(editor, ELEMENT_H5),
       6: getPluginType(editor, ELEMENT_H6),
     },
-    emphasis_mark: getPluginType(editor, MARK_ITALIC),
+    link: getPluginType(editor, ELEMENT_LINK),
+    listItem: getPluginType(editor, ELEMENT_LI),
+    ol_list: getPluginType(editor, ELEMENT_OL),
+    paragraph: getPluginType(editor, ELEMENT_PARAGRAPH),
     strong_mark: getPluginType(editor, MARK_BOLD),
+    ul_list: getPluginType(editor, ELEMENT_UL),
     // block_quote: QUOTE_PLUGIN_KEY,
     // thematic_break: SEPARATOR_KEY,
     // inline_code_mark: INLINE_CODE_KEY,

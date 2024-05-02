@@ -1,24 +1,25 @@
 import {
+  type PlateEditor,
+  type Value,
   getPluginOptions,
-  PlateEditor,
-  Value,
 } from '@udecode/plate-common/server';
 import markdown from 'remark-parse';
 import unified from 'unified';
 
-import { remarkPlugin, RemarkPluginOptions } from '../../remark-slate/index';
-import { KEY_DESERIALIZE_MD } from '../createDeserializeMdPlugin';
-import { DeserializeMdPlugin } from '../types';
+import type { DeserializeMdPlugin } from '../types';
 
-/**
- * Deserialize content from Markdown format to Slate format.
- * `editor` needs
- */
+import {
+  type RemarkPluginOptions,
+  remarkPlugin,
+} from '../../remark-slate/index';
+import { KEY_DESERIALIZE_MD } from '../createDeserializeMdPlugin';
+
+/** Deserialize content from Markdown format to Slate format. `editor` needs */
 export const deserializeMd = <V extends Value>(
   editor: PlateEditor<V>,
   data: string
 ) => {
-  const { elementRules, textRules, indentList } = getPluginOptions<
+  const { elementRules, indentList, textRules } = getPluginOptions<
     DeserializeMdPlugin,
     V
   >(editor, KEY_DESERIALIZE_MD);
@@ -28,8 +29,8 @@ export const deserializeMd = <V extends Value>(
     .use(remarkPlugin, {
       editor,
       elementRules,
-      textRules,
       indentList,
+      textRules,
     } as unknown as RemarkPluginOptions<V>)
     .processSync(data);
 
