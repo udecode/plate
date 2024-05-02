@@ -15,32 +15,28 @@ export type SlashCommandRule = BaseComboboxItemWithEditor & {
 
 const rules: SlashCommandRule[] = [
   {
-    value: ELEMENT_H1,
-    label: 'Heading 1',
+    value: 'Heading 1',
     icon: Icons.h1,
     onSelect: (editor) => {
       toggleNodeType(editor, { activeType: ELEMENT_H1 });
     },
   },
   {
-    value: ELEMENT_H2,
-    label: 'Heading 2',
+    value: 'Heading 2',
     icon: Icons.h2,
     onSelect: (editor) => {
       toggleNodeType(editor, { activeType: ELEMENT_H2 });
     },
   },
   {
-    value: ELEMENT_H3,
-    label: 'Heading 3',
+    value: 'Heading 3',
     icon: Icons.h3,
     onSelect: (editor) => {
       toggleNodeType(editor, { activeType: ELEMENT_H3 });
     },
   },
   {
-    value: ListStyleType.Disc,
-    label: 'Bulleted list',
+    value: 'Bulleted list',
     icon: Icons.ul,
     keywords: ['ul', 'unordered list'],
     onSelect: (editor) => {
@@ -50,8 +46,7 @@ const rules: SlashCommandRule[] = [
     },
   },
   {
-    value: ListStyleType.Decimal,
-    label: 'Numbered list',
+    value: 'Numbered list',
     icon: Icons.ol,
     keywords: ['ol', 'ordered list'],
     onSelect: (editor) => {
@@ -76,10 +71,10 @@ export const SlashInputElement = withRef<typeof PlateElement>(
         <InlineCombobox
           trigger="/"
           items={rules}
-          renderItem={({ icon: Icon, label }) => (
+          renderItem={({ icon: Icon, value }) => (
             <>
               <Icon className="mr-2 size-4" aria-hidden />
-              {label}
+              {value}
             </>
           )}
           renderEmpty="No matching commands found"

@@ -31,9 +31,9 @@ const comboboxItemVariants = cva(
 );
 
 const defaultMatchItem = (
-  { label, keywords = [] }: BaseComboboxItemWithEditor,
+  { value, keywords = [] }: BaseComboboxItemWithEditor,
   search: string
-) => [label, ...keywords].some((keyword) => matchWords(keyword, search));
+) => [value, ...keywords].some((keyword) => matchWords(keyword, search));
 
 interface InlineComboboxProps<TItem extends BaseComboboxItemWithEditor> {
   trigger: string;
@@ -48,7 +48,7 @@ export const InlineCombobox = <TItem extends BaseComboboxItemWithEditor>({
   trigger,
   items,
   matchItem = defaultMatchItem,
-  renderItem = ({ label }) => label,
+  renderItem = ({ value }) => value,
   renderEmpty,
   onSelectItem,
 }: InlineComboboxProps<TItem>) => {

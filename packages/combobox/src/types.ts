@@ -25,7 +25,6 @@ export type CancelComboboxInputCause =
 
 export type BaseComboboxItem<OnSelectArgs extends any[] = []> = {
   value: string;
-  label: string;
   keywords?: string[];
   onSelect?: (...args: OnSelectArgs) => void;
 };
