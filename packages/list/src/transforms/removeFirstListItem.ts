@@ -1,4 +1,4 @@
-import { PlateEditor, TElementEntry, Value } from '@udecode/plate-common';
+import { PlateEditor, TElementEntry, Value } from '@udecode/plate-common/server';
 
 import { isListNested } from '../queries/isListNested';
 import { moveListItemUp } from './moveListItemUp';

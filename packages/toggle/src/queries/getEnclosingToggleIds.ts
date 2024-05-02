@@ -1,4 +1,4 @@
-import { getPluginOptions, PlateEditor, Value } from '@udecode/plate-common';
+import { getPluginOptions, PlateEditor, Value } from '@udecode/plate-common/server';
 
 import { ELEMENT_TOGGLE, TogglePlugin } from '../types';
 

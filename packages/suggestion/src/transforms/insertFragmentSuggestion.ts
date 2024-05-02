@@ -5,7 +5,7 @@ import {
   TDescendant,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from '../constants';
 import { findSuggestionId } from '../queries/findSuggestionId';

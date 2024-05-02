@@ -1,5 +1,5 @@
 import * as portiveClient from '@portive/client';
-import { insertNode, Value, WithPlatePlugin } from '@udecode/plate-common';
+import { insertNode, Value, WithPlatePlugin } from '@udecode/plate-common/server';
 import Defer from 'p-defer';
 
 import { PlateCloudEditor } from '../cloud';

@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import { isText, TDescendant, TOperation, TText } from '@udecode/plate-common';
+import { isText, TDescendant, TOperation, TText } from '@udecode/plate-common/server';
 import { createEditor, Path, withoutNormalizing } from 'slate';
 
 import { ComputeDiffOptions } from '../../computeDiff';

@@ -6,7 +6,7 @@ import {
   select,
   TEditor,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import castArray from 'lodash/castArray.js';
 import { Point, Range } from 'slate';
 

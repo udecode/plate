@@ -1,13 +1,14 @@
 import {
+  type FindNodeOptions,
+  type PlateEditor,
+  type Value,
   findNode,
-  FindNodeOptions,
   getPluginType,
-  PlateEditor,
-  Value,
 } from '@udecode/plate-common';
 
+import type { TMentionInputElement } from '../types';
+
 import { ELEMENT_MENTION_INPUT } from '../createMentionPlugin';
-import { TMentionInputElement } from '../types';
 
 export const findMentionInput = <V extends Value>(
   editor: PlateEditor<V>,

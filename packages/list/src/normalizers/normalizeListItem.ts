@@ -15,7 +15,7 @@ import {
   TElementEntry,
   TNodeEntry,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Path, PathRef } from 'slate';
 
 import { ELEMENT_LIC, ELEMENT_OL, ELEMENT_UL } from '../createListPlugin';

@@ -1,4 +1,4 @@
-import { createPluginFactory, ErrorHandler } from '@udecode/plate-common';
+import { createPluginFactory, ErrorHandler } from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
 import { withNormalizeTypes } from './withNormalizeTypes';

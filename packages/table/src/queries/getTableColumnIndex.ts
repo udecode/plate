@@ -1,22 +1,21 @@
+import { type TReactEditor, findNodePath } from '@udecode/plate-common';
 import {
-  findNodePath,
+  type TElement,
+  type Value,
   getParentNode,
-  TElement,
-  TReactEditor,
-  Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
-/**
- * Get table column index of a cell node.
- */
+/** Get table column index of a cell node. */
 export const getTableColumnIndex = <V extends Value>(
   editor: TReactEditor<V>,
   cellNode: TElement
 ) => {
   const path = findNodePath(editor, cellNode);
+
   if (!path) return -1;
 
   const [trNode] = getParentNode(editor, path) ?? [];
+
   if (!trNode) return -1;
 
   let colIndex = -1;
@@ -24,8 +23,10 @@ export const getTableColumnIndex = <V extends Value>(
   trNode.children.some((item, index) => {
     if (item === cellNode) {
       colIndex = index;
+
       return true;
     }
+
     return false;
   });
 

@@ -1,9 +1,5 @@
-import {
-  getPluginType,
-  someNode,
-  useEditorRef,
-  useEditorSelector,
-} from '@udecode/plate-common';
+import { useEditorRef, useEditorSelector } from '@udecode/plate-common';
+import { getPluginType, someNode } from '@udecode/plate-common/server';
 
 import { ELEMENT_UL, toggleList } from '../index';
 
@@ -16,8 +12,8 @@ export const useListToolbarButtonState = ({ nodeType = ELEMENT_UL } = {}) => {
   );
 
   return {
-    pressed,
     nodeType,
+    pressed,
   };
 };
 
@@ -28,13 +24,13 @@ export const useListToolbarButton = (
 
   return {
     props: {
-      pressed: state.pressed,
-      onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-      },
       onClick: () => {
         toggleList(editor, { type: state.nodeType });
       },
+      onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+      },
+      pressed: state.pressed,
     },
   };
 };

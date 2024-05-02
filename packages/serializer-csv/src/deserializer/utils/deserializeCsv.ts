@@ -7,7 +7,7 @@ import {
   TElement,
   TNode,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import {
   ELEMENT_TABLE,
   ELEMENT_TD,

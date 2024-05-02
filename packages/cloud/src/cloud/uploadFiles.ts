@@ -1,5 +1,5 @@
 import * as portiveClient from '@portive/client';
-import { nanoid, Value } from '@udecode/plate-common';
+import { nanoid, Value } from '@udecode/plate-common/server';
 
 import { FileEvent, PlateCloudEditor, ProgressEvent } from './types';
 

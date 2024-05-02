@@ -9,7 +9,7 @@ import {
   removeNodes,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import { ELEMENT_TABLE, ELEMENT_TH } from '../createTablePlugin';

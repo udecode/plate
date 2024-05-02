@@ -1,40 +1,39 @@
 import React from 'react';
-import {
-  findNodePath,
+
+import type {
   PlateRenderElementProps,
   TEditor,
-} from '@udecode/plate-common';
-import { Path } from 'slate';
+} from '@udecode/plate-common/server';
+import type { Path } from 'slate';
+
+import { findNodePath } from '@udecode/plate-common';
 import { useReadOnly } from 'slate-react';
 
 export interface WithDraggableOptions<T = any> {
+  /** Enables dnd in read-only. */
+  allowReadOnly?: boolean;
+
+  draggableProps?: T;
+
+  /** Filter out elements that can't be dragged. */
+  filter?: (editor: TEditor, path: Path) => boolean;
   /**
-   * Document level where dnd is enabled. 0 = root blocks, 1 = first level of children, etc.
-   * Set to null to allow all levels.
+   * Document level where dnd is enabled. 0 = root blocks, 1 = first level of
+   * children, etc. Set to null to allow all levels.
+   *
    * @default 0
    */
-  level?: number | null;
-
-  /**
-   * Filter out elements that can't be dragged.
-   */
-  filter?: (editor: TEditor, path: Path) => boolean;
-
-  /**
-   * Enables dnd in read-only.
-   */
-  allowReadOnly?: boolean;
-  draggableProps?: T;
+  level?: null | number;
 }
 
 export const useWithDraggable = <T = any>({
-  editor,
-  level = 0,
-  filter,
-  element,
   allowReadOnly = false,
   draggableProps,
-}: WithDraggableOptions<T> & PlateRenderElementProps) => {
+  editor,
+  element,
+  filter,
+  level = 0,
+}: PlateRenderElementProps & WithDraggableOptions<T>) => {
   const readOnly = useReadOnly();
   const path = React.useMemo(
     () => findNodePath(editor, element),
@@ -45,7 +44,7 @@ export const useWithDraggable = <T = any>({
     () =>
       path &&
       ((Number.isInteger(level) && level !== path.length - 1) ||
-        (filter && filter(editor, path))),
+        filter?.(editor, path)),
     [path, level, filter, editor]
   );
 

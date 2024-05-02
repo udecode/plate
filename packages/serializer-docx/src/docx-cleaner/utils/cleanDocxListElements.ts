@@ -1,4 +1,4 @@
-import { traverseHtmlElements } from '@udecode/plate-common';
+import { traverseHtmlElements } from '@udecode/plate-common/server';
 
 /**
  * Clean elements style mso-list to mso-list:Ignore

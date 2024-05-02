@@ -1,6 +1,9 @@
-import { PlateEditor, useEditorRef, Value } from '@udecode/plate-common';
+import type { PlateEditor, Value } from '@udecode/plate-common/server';
 
-import { SuggestionEditorProps } from '../types';
+import { useEditorRef } from '@udecode/plate-common';
+
+import type { SuggestionEditorProps } from '../types';
+
 import { useSuggestionActions } from './SuggestionProvider';
 
 export const useSetIsSuggesting = () => {

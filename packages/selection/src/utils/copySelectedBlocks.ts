@@ -6,7 +6,7 @@ import {
   select,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import copyToClipboard from 'copy-to-clipboard';
 
 import {

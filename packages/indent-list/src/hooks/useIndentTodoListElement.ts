@@ -1,9 +1,5 @@
-import {
-  findNodePath,
-  setNodes,
-  TElement,
-  useEditorRef,
-} from '@udecode/plate-common';
+import { findNodePath, useEditorRef } from '@udecode/plate-common';
+import { type TElement, setNodes } from '@udecode/plate-common/server';
 import { useReadOnly } from 'slate-react';
 
 export const useIndentTodoListElementState = ({
@@ -17,28 +13,31 @@ export const useIndentTodoListElementState = ({
 
   return {
     checked,
-    readOnly,
-    element,
     editor,
+    element,
+    readOnly,
   };
 };
 
 export const useIndentTodoListElement = (
   state: ReturnType<typeof useIndentTodoListElementState>
 ) => {
-  const { checked, readOnly, element, editor } = state;
+  const { checked, editor, element, readOnly } = state;
 
   return {
     checkboxProps: {
       checked: !!checked,
-      onMouseDown: (e: any) => {
-        e.preventDefault();
-      },
       onCheckedChange: (value: boolean) => {
         if (readOnly) return;
+
         const path = findNodePath(editor, element);
+
         if (!path) return;
+
         setNodes(editor, { checked: value }, { at: path });
+      },
+      onMouseDown: (e: any) => {
+        e.preventDefault();
       },
     },
   };

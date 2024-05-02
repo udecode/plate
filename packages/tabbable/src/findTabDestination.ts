@@ -3,7 +3,7 @@ import {
   getPointAfter,
   PlateEditor,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
 import { TabbableEntry, TabDestination } from './types';

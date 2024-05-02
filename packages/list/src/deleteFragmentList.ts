@@ -10,7 +10,7 @@ import {
   removeNodes,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Range } from 'slate';
 
 import { ELEMENT_LI } from './createListPlugin';

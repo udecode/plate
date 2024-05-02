@@ -1,4 +1,4 @@
-import { UnknownObject } from '@udecode/plate-common';
+import { UnknownObject } from '@udecode/plate-common/server';
 
 import { CursorOverlayProps } from '../components';
 import { FROZEN_EMPTY_ARRAY } from '../hooks';

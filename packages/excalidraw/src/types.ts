@@ -1,7 +1,7 @@
 import { ImportedDataState } from '@excalidraw/excalidraw/types/data/types';
 import { ExcalidrawElement } from '@excalidraw/excalidraw/types/element/types';
 import { ExcalidrawProps } from '@excalidraw/excalidraw/types/types';
-import { TElement } from '@udecode/plate-common';
+import { TElement } from '@udecode/plate-common/server';
 
 export interface TExcalidrawElement extends TElement {
   data?: {

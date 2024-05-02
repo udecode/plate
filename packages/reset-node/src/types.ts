@@ -1,4 +1,4 @@
-import { HotkeyPlugin, PlateEditor, Value } from '@udecode/plate-common';
+import { HotkeyPlugin, PlateEditor, Value } from '@udecode/plate-common/server';
 
 export interface ResetNodePluginRule<
   V extends Value = Value,

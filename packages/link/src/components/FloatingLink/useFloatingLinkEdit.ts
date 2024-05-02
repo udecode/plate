@@ -1,4 +1,11 @@
 import React from 'react';
+
+import {
+  useEditorReadOnly,
+  useEditorRef,
+  useEditorVersion,
+  useHotkeys,
+} from '@udecode/plate-common';
 import {
   getAboveNode,
   getEndPoint,
@@ -6,18 +13,14 @@ import {
   getPluginType,
   getStartPoint,
   someNode,
-  useEditorReadOnly,
-  useEditorRef,
-  useEditorVersion,
-  useHotkeys,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import {
   getDefaultBoundingClientRect,
   getRangeBoundingClientRect,
 } from '@udecode/plate-floating';
 
-import { ELEMENT_LINK, LinkPlugin } from '../../createLinkPlugin';
-import { LinkFloatingToolbarState, unwrapLink } from '../../index';
+import { ELEMENT_LINK, type LinkPlugin } from '../../createLinkPlugin';
+import { type LinkFloatingToolbarState, unwrapLink } from '../../index';
 import { triggerFloatingLinkEdit } from '../../utils/triggerFloatingLinkEdit';
 import {
   floatingLinkActions,
@@ -49,6 +52,7 @@ export const useFloatingLinkEditState = ({
 
     if (entry) {
       const [, path] = entry;
+
       return getRangeBoundingClientRect(editor, {
         anchor: getStartPoint(editor, path),
         focus: getEndPoint(editor, path),
@@ -62,29 +66,29 @@ export const useFloatingLinkEditState = ({
 
   const floating = useVirtualFloatingLink({
     editorId: editor.id,
-    open: isOpen,
     getBoundingClientRect,
+    open: isOpen,
     ...floatingOptions,
   });
 
   return {
     editor,
-    triggerFloatingLinkHotkeys,
-    isOpen,
     floating,
-    versionEditor: version,
     isEditing,
+    isOpen,
     readOnly,
+    triggerFloatingLinkHotkeys,
+    versionEditor: version,
   };
 };
 
 export const useFloatingLinkEdit = ({
   editor,
-  triggerFloatingLinkHotkeys,
-  versionEditor,
   floating,
   isOpen,
   readOnly,
+  triggerFloatingLinkHotkeys,
+  versionEditor,
 }: ReturnType<typeof useFloatingLinkEditState>) => {
   React.useEffect(() => {
     if (
@@ -95,9 +99,9 @@ export const useFloatingLinkEdit = ({
     ) {
       floatingLinkActions.show('edit', editor.id);
       floating.update();
+
       return;
     }
-
     if (floatingLinkSelectors.mode() === 'edit') {
       floatingLinkActions.hide();
     }
@@ -125,24 +129,24 @@ export const useFloatingLinkEdit = ({
   useFloatingLinkEscape();
 
   return {
-    ref: floating.refs.setFloating,
+    editButtonProps: {
+      onClick: () => {
+        triggerFloatingLinkEdit(editor);
+      },
+    },
     props: {
       style: {
         ...floating.style,
         zIndex: 1,
       },
     },
-    editButtonProps: {
-      onClick: () => {
-        triggerFloatingLinkEdit(editor);
-      },
-    },
+    ref: floating.refs.setFloating,
     unlinkButtonProps: {
-      onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-      },
       onClick: () => {
         unwrapLink(editor);
+      },
+      onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
       },
     },
   };

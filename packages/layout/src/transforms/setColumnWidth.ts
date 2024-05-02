@@ -5,7 +5,7 @@ import {
   PlateEditor,
   setNodes,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { PathRef } from 'slate';
 
 import { ELEMENT_COLUMN } from '../createColumnPlugin';

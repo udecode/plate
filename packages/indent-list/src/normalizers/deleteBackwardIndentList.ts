@@ -5,7 +5,7 @@ import {
   isDefined,
   PlateEditor,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { TextUnit } from 'slate';
 
 import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';

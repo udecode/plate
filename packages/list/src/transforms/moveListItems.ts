@@ -7,7 +7,7 @@ import {
   PlateEditor,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Path, PathRef } from 'slate';
 
 import { ELEMENT_LIC } from '../createListPlugin';

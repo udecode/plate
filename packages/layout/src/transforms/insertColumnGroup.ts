@@ -4,7 +4,7 @@ import {
   PlateEditor,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { ELEMENT_COLUMN, ELEMENT_COLUMN_GROUP } from '../createColumnPlugin';
 import { TColumnGroupElement } from '../types';

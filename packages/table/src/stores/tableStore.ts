@@ -1,14 +1,17 @@
 import React from 'react';
-import { atom, createAtomStore, TElement } from '@udecode/plate-common';
+
+import type { TElement } from '@udecode/plate-common/server';
+
+import { atom, createAtomStore } from '@udecode/plate-common';
 
 export type TableStoreSizeOverrides = Map<number, number>;
 
-export const { tableStore, useTableStore, TableProvider } = createAtomStore(
+export const { TableProvider, tableStore, useTableStore } = createAtomStore(
   {
     colSizeOverrides: atom(new Map() as TableStoreSizeOverrides),
+    hoveredColIndex: null as null | number,
+    marginLeftOverride: null as null | number,
     rowSizeOverrides: atom(new Map() as TableStoreSizeOverrides),
-    marginLeftOverride: null as number | null,
-    hoveredColIndex: null as number | null,
     selectedCells: null as TElement[] | null,
     selectedTable: null as TElement[] | null,
   },
@@ -21,7 +24,7 @@ const useOverrideSizeFactory = (
   ) => void
 ) =>
   React.useCallback(
-    (index: number, size: number | null) => {
+    (index: number, size: null | number) => {
       setOverrides((overrides) => {
         const newOverrides = new Map(overrides);
 
@@ -39,11 +42,13 @@ const useOverrideSizeFactory = (
 
 export const useOverrideColSize = () => {
   const setColSizeOverrides = useTableStore().set.colSizeOverrides();
+
   return useOverrideSizeFactory(setColSizeOverrides);
 };
 
 export const useOverrideRowSize = () => {
   const setRowSizeOverrides = useTableStore().set.rowSizeOverrides();
+
   return useOverrideSizeFactory(setRowSizeOverrides);
 };
 

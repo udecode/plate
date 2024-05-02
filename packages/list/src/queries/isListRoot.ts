@@ -3,7 +3,7 @@ import {
   PlateEditor,
   TDescendant,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { getListTypes } from './getListTypes';
 

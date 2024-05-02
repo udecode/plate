@@ -1,4 +1,4 @@
-import { PlateEditor, Value, WithPlatePlugin } from '@udecode/plate-common';
+import { PlateEditor, Value, WithPlatePlugin } from '@udecode/plate-common/server';
 
 import { insertBreakTodoList } from './insertBreakTodoList';
 import { TodoListPlugin } from './types';

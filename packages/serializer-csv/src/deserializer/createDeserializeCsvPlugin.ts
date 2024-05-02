@@ -1,4 +1,4 @@
-import { createPluginFactory } from '@udecode/plate-common';
+import { createPluginFactory } from '@udecode/plate-common/server';
 
 import { DeserializeCsvPlugin } from './types';
 import { deserializeCsv } from './utils/index';

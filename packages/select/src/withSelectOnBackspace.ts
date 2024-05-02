@@ -11,7 +11,7 @@ import {
   select,
   Value,
   WithPlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import Slate from 'slate';
 
 import { SelectOnBackspacePlugin } from './createSelectOnBackspacePlugin';

@@ -18,7 +18,7 @@ import {
   Value,
   withoutNormalizing,
   WithPlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { withRemoveEmptyNodes } from '@udecode/plate-normalizers';
 import { Path, Point, Range } from 'slate';
 

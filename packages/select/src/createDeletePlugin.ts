@@ -2,7 +2,7 @@ import {
   createPluginFactory,
   ELEMENT_DEFAULT,
   QueryNodeOptions,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { withDelete } from './withDelete';
 

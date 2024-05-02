@@ -11,7 +11,7 @@ import {
   splitNodes,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Path, Range } from 'slate';
 
 import { ELEMENT_TODO_LI } from '../todo-list/index';

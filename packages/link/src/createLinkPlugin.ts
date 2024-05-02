@@ -2,7 +2,7 @@ import {
   createPluginFactory,
   isUrl,
   RangeBeforeOptions,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { TLinkElement } from './types';
 import { getLinkAttributes, validateUrl } from './utils/index';

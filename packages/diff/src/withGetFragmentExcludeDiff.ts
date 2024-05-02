@@ -1,4 +1,4 @@
-import { TEditor } from '@udecode/plate-common';
+import { TEditor } from '@udecode/plate-common/server';
 import cloneDeep from 'lodash/cloneDeep.js';
 import { BaseEditor, Descendant } from 'slate';
 

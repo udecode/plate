@@ -5,7 +5,7 @@ import {
   TElement,
   TElementEntry,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Range } from 'slate';
 
 import { ELEMENT_TABLE } from '../createTablePlugin';

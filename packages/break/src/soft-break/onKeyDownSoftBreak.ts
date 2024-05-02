@@ -6,7 +6,7 @@ import {
   queryNode,
   Value,
   WithPlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { SoftBreakPlugin } from './types';
 

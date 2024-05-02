@@ -4,7 +4,7 @@ import {
   PlateEditor,
   TText,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { TLinkElement } from '../types';
 import { createLinkNode, CreateLinkNodeOptions } from '../utils/index';

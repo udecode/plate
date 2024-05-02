@@ -10,7 +10,7 @@ import {
   unsetNodes,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { KEY_INDENT } from '@udecode/plate-indent';
 
 import {

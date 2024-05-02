@@ -4,7 +4,7 @@ import {
   removeNodes,
   TNodeEntry,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { PathRef } from 'slate';
 
 import { getRowSpan, getTableGridAbove } from '../queries';

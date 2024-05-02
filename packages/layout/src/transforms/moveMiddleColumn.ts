@@ -6,7 +6,7 @@ import {
   TNodeEntry,
   unwrapNodes,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Node } from 'slate';
 
 import { TColumnElement } from '../types';

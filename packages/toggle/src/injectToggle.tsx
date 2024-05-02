@@ -1,5 +1,5 @@
 import React from 'react';
-import { InjectComponentReturnType } from '@udecode/plate-common';
+import { InjectComponentReturnType } from '@udecode/plate-common/server';
 
 import { useIsVisible } from './toggle-controller-store';
 

@@ -1,6 +1,6 @@
 import { createBlockquotePlugin } from '@udecode/plate-block-quote';
 import { createCodeBlockPlugin } from '@udecode/plate-code-block';
-import { createPluginFactory } from '@udecode/plate-common';
+import { createPluginFactory } from '@udecode/plate-common/server';
 import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 

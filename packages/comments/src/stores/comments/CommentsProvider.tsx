@@ -1,60 +1,52 @@
+import { createAtomStore } from '@udecode/plate-common';
 import {
-  createAtomStore,
+  type Value,
+  type WithPartial,
   getNodeString,
   nanoid,
-  Value,
-  WithPartial,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
-import { CommentUser, TComment } from '../../types';
+import type { CommentUser, TComment } from '../../types';
 
 export interface CommentsStoreState {
-  /**
-   * Id of the current user.
-   */
-  myUserId: string | null;
+  /** Id of the active comment. If null, no comment is active. */
+  activeCommentId: null | string;
 
-  /**
-   * Users data.
-   */
-  users: Record<string, CommentUser>;
+  addingCommentId: null | string;
 
-  /**
-   * Comments data.
-   */
+  /** Comments data. */
   comments: Record<string, TComment>;
-
-  /**
-   * Id of the active comment. If null, no comment is active.
-   */
-  activeCommentId: string | null;
-
-  addingCommentId: string | null;
-
-  newValue: Value;
 
   focusTextarea: boolean;
 
+  /** Id of the current user. */
+  myUserId: null | string;
+
+  newValue: Value;
+
   onCommentAdd: ((value: WithPartial<TComment, 'userId'>) => void) | null;
-  onCommentUpdate:
-    | ((value: Pick<TComment, 'id'> & Partial<Omit<TComment, 'id'>>) => void)
-    | null;
+
   onCommentDelete: ((id: string) => void) | null;
+  onCommentUpdate:
+    | ((value: Partial<Omit<TComment, 'id'>> & Pick<TComment, 'id'>) => void)
+    | null;
+  /** Users data. */
+  users: Record<string, CommentUser>;
 }
 
-export const { commentsStore, useCommentsStore, CommentsProvider } =
+export const { CommentsProvider, commentsStore, useCommentsStore } =
   createAtomStore(
     {
-      myUserId: null,
-      users: {},
-      comments: {},
       activeCommentId: null,
       addingCommentId: null,
-      newValue: [{ type: 'p', children: [{ text: '' }] }],
+      comments: {},
       focusTextarea: false,
+      myUserId: null,
+      newValue: [{ children: [{ text: '' }], type: 'p' }],
       onCommentAdd: null,
-      onCommentUpdate: null,
       onCommentDelete: null,
+      onCommentUpdate: null,
+      users: {},
     } as CommentsStoreState,
     {
       name: 'comments',
@@ -62,18 +54,22 @@ export const { commentsStore, useCommentsStore, CommentsProvider } =
   );
 
 export const useCommentsStates = () => useCommentsStore().use;
+
 export const useCommentsSelectors = () => useCommentsStore().get;
+
 export const useCommentsActions = () => useCommentsStore().set;
 
-export const useCommentById = (id?: string | null): TComment | null => {
+export const useCommentById = (id?: null | string): TComment | null => {
   const comments = useCommentsSelectors().comments();
+
   if (!id) return null;
 
   return comments[id];
 };
 
-export const useUserById = (id: string | null): CommentUser | null => {
+export const useUserById = (id: null | string): CommentUser | null => {
   const users = useCommentsSelectors().users();
+
   if (!id) return null;
 
   return users[id];
@@ -82,6 +78,7 @@ export const useUserById = (id: string | null): CommentUser | null => {
 export const useMyUser = (): CommentUser | null => {
   const users = useCommentsSelectors().users();
   const myUserId = useCommentsSelectors().myUserId();
+
   if (!myUserId) return null;
 
   return users[myUserId];
@@ -97,11 +94,11 @@ export const useResetNewCommentValue = () => {
   const setNewValue = useCommentsActions().newValue();
 
   return () => {
-    setNewValue([{ type: 'p', children: [{ text: '' }] }]);
+    setNewValue([{ children: [{ text: '' }], type: 'p' }]);
   };
 };
 
-export const useUpdateComment = (id?: string | null) => {
+export const useUpdateComment = (id?: null | string) => {
   const comment = useCommentById(id);
 
   const [comments, setComments] = useCommentsStates().comments();
@@ -137,13 +134,13 @@ export const useAddComment = () => {
   const [comments, setComments] = useCommentsStates().comments();
   const myUserId = useCommentsSelectors().myUserId();
 
-  return (value: WithPartial<TComment, 'id' | 'userId' | 'createdAt'>) => {
+  return (value: WithPartial<TComment, 'createdAt' | 'id' | 'userId'>) => {
     const id = value.id ?? nanoid();
 
     const newComment: WithPartial<TComment, 'userId'> = {
+      createdAt: Date.now(),
       id,
       userId: myUserId ?? undefined,
-      createdAt: Date.now(),
       ...value,
     };
 
@@ -161,7 +158,7 @@ export const useAddComment = () => {
 export const useRemoveComment = () => {
   const [comments, setComments] = useCommentsStates().comments();
 
-  return (id: string | null) => {
+  return (id: null | string) => {
     if (!id) return;
 
     delete comments[id];

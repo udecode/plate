@@ -1,15 +1,15 @@
 import React from 'react';
-import {
-  UnknownObject,
-  useEditorRef,
-  useIsomorphicLayoutEffect,
-} from '@udecode/plate-common';
-import { Range } from 'slate';
 
-import { CursorOverlayProps } from '../components/CursorOverlay';
+import type { UnknownObject } from '@udecode/plate-common/server';
+import type { Range } from 'slate';
+
+import { useEditorRef, useIsomorphicLayoutEffect } from '@udecode/plate-common';
+
+import type { CursorOverlayProps } from '../components/CursorOverlay';
+import type { CursorState, SelectionRect } from '../types';
+
 import { getCursorOverlayState } from '../queries/getCursorOverlayState';
 import { getSelectionRects } from '../queries/getSelectionRects';
-import { CursorState, SelectionRect } from '../types';
 import { useRefreshOnResize } from './useRefreshOnResize';
 
 export const FROZEN_EMPTY_ARRAY = Object.freeze(
@@ -39,6 +39,7 @@ export const useCursorOverlayPositions = <TCursorData extends UnknownObject>({
 
     let xOffset = 0;
     let yOffset = 0;
+
     if (containerRef) {
       const contentRect = containerRef.current!.getBoundingClientRect();
       xOffset = contentRect.x;
@@ -60,6 +61,7 @@ export const useCursorOverlayPositions = <TCursorData extends UnknownObject>({
       }
 
       const cached = selectionRectCache.current.get(range);
+
       if (cached) {
         return cached;
       }
@@ -94,17 +96,17 @@ export const useCursorOverlayPositions = <TCursorData extends UnknownObject>({
   const cursors = React.useMemo(
     () =>
       getCursorOverlayState({
-        selectionRects,
         cursors: cursorStates,
+        selectionRects,
       }),
     [cursorStates, selectionRects]
   );
 
   const { refresh } = useRefreshOnResize({
     containerRef,
-    selectionRectCache,
     refreshOnResize,
+    selectionRectCache,
   });
 
-  return { refresh, cursors };
+  return { cursors, refresh };
 };

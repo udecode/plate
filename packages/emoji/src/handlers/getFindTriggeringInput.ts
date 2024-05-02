@@ -5,7 +5,7 @@ import {
   isCollapsed,
   PlateEditor,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { BasePoint } from 'slate';
 
 import { FindTriggeringInputProps } from '../types';

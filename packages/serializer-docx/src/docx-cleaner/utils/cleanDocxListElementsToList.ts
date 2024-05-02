@@ -1,4 +1,4 @@
-import { traverseHtmlElements } from '@udecode/plate-common';
+import { traverseHtmlElements } from '@udecode/plate-common/server';
 
 import { docxListToList } from './docxListToList';
 import { isDocxList } from './isDocxList';

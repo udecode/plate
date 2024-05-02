@@ -1,13 +1,13 @@
+import { focusEditor } from '@udecode/plate-common';
 import {
-  focusEditor,
+  type PlateEditor,
+  type Value,
   getPluginOptions,
   isUrl,
-  PlateEditor,
   setNodes,
-  Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
-import { ELEMENT_MEDIA, MediaPlugin, TMediaElement } from '../types';
+import { ELEMENT_MEDIA, type MediaPlugin, type TMediaElement } from '../types';
 import {
   floatingMediaActions,
   floatingMediaSelectors,
@@ -27,6 +27,7 @@ export const submitFloatingMedia = <V extends Value>(
 
   if (url === element.url) {
     floatingMediaActions.reset();
+
     return true;
   }
 
@@ -35,8 +36,8 @@ export const submitFloatingMedia = <V extends Value>(
     V
   >(editor, pluginKey);
   const isValid = _isUrl(url);
-  if (!isValid) return;
 
+  if (!isValid) return;
   if (transformUrl) {
     url = transformUrl(url);
   }

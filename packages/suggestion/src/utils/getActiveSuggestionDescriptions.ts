@@ -1,4 +1,4 @@
-import { PlateEditor, Value } from '@udecode/plate-common';
+import { PlateEditor, Value } from '@udecode/plate-common/server';
 
 import { findSuggestionNode } from '../queries/index';
 import { getSuggestionKey, getSuggestionUserIds } from './getSuggestionKeys';

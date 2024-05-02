@@ -6,7 +6,7 @@ import {
   TNode,
   TNodeEntry,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { ELEMENT_COLUMN_GROUP } from '../createColumnPlugin';
 import { moveMiddleColumn } from '../transforms';

@@ -1,14 +1,16 @@
 import {
-  getNodeEntries,
-  isText,
+  type TReactEditor,
   toDOMNode,
   toDOMRange,
-  TReactEditor,
-  Value,
 } from '@udecode/plate-common';
+import {
+  type Value,
+  getNodeEntries,
+  isText,
+} from '@udecode/plate-common/server';
 import { Path, Range } from 'slate';
 
-import { SelectionRect } from '../types';
+import type { SelectionRect } from '../types';
 
 export const getSelectionRects = <V extends Value>(
   editor: TReactEditor<V>,
@@ -24,6 +26,7 @@ export const getSelectionRects = <V extends Value>(
 ): SelectionRect[] => {
   const [start, end] = Range.edges(range);
   const domRange = toDOMRange(editor, range);
+
   if (!domRange) {
     return [];
   }
@@ -38,7 +41,7 @@ export const getSelectionRects = <V extends Value>(
     const domNode = toDOMNode(editor, textNode);
 
     // Fix: failed to execute 'selectNode' on 'Range': the given Node has no parent
-    if (!domNode || !domNode.parentElement) {
+    if (!domNode?.parentElement) {
       return [];
     }
 
@@ -46,6 +49,7 @@ export const getSelectionRects = <V extends Value>(
     const isEndNode = Path.equals(textPath, end.path);
 
     let clientRects: DOMRectList | null = null;
+
     if (isStartNode || isEndNode) {
       const nodeRange = document.createRange();
 
@@ -65,15 +69,16 @@ export const getSelectionRects = <V extends Value>(
 
     for (let i = 0; i < clientRects.length; i++) {
       const clientRect = clientRects.item(i);
+
       if (!clientRect) {
         continue;
       }
 
       selectionRects.push({
-        width: clientRect.width,
         height: clientRect.height,
-        top: clientRect.top - yOffset,
         left: clientRect.left - xOffset,
+        top: clientRect.top - yOffset,
+        width: clientRect.width,
       });
     }
   }

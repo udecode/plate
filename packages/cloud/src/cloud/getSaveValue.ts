@@ -1,4 +1,4 @@
-import { Value } from '@udecode/plate-common';
+import { Value } from '@udecode/plate-common/server';
 
 import { Upload } from '../upload/types';
 

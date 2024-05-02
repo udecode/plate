@@ -1,29 +1,30 @@
+import { Hotkeys } from '@udecode/plate-common';
 import {
+  type KeyboardHandlerReturnType,
+  type PlateEditor,
+  type Value,
+  type WithPlatePlugin,
   getPluginType,
-  Hotkeys,
   isCollapsed,
   isHotkey,
-  KeyboardHandlerReturnType,
-  PlateEditor,
   select,
   someNode,
   unhangRange,
-  Value,
-  WithPlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import castArray from 'lodash/castArray.js';
 import { Range } from 'slate';
 
+import type { ListPlugin } from './types';
+
 import { ELEMENT_LI } from './createListPlugin';
 import { moveListItems, toggleList } from './transforms/index';
-import { ListPlugin } from './types';
 
 export const onKeyDownList =
   <V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>(
     editor: E,
     {
+      options: { enableResetOnShiftTab, hotkey },
       type,
-      options: { hotkey, enableResetOnShiftTab },
     }: WithPlatePlugin<ListPlugin, V, E>
   ): KeyboardHandlerReturnType =>
   (e) => {
@@ -46,6 +47,7 @@ export const onKeyDownList =
         // This is a workaround for a Slate bug
         // See: https://github.com/ianstormtaylor/slate/pull/5039
         const unHungRange = unhangRange(editor, { anchor, focus });
+
         if (unHungRange) {
           workRange = unHungRange;
           select(editor, unHungRange);
@@ -61,13 +63,13 @@ export const onKeyDownList =
         e.preventDefault();
         moveListItems(editor, {
           at: workRange,
-          increase: isTab,
           enableResetOnShiftTab,
+          increase: isTab,
         });
+
         return true;
       }
     }
-
     if (!hotkey) return;
 
     const hotkeys = castArray(hotkey);

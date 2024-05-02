@@ -4,7 +4,7 @@ import {
   PlateEditor,
   UnknownObject,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import * as Y from 'yjs';
 
 import { KEY_YJS, YjsPlugin } from './createYjsPlugin';

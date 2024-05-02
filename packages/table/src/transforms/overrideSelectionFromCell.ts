@@ -5,7 +5,7 @@ import {
   PlateEditor,
   TRange,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { keyShiftEdges } from '../constants';
 import { getCellTypes } from '../utils/index';

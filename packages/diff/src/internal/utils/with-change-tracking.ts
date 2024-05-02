@@ -1,4 +1,4 @@
-import { addRangeMarks, TText } from '@udecode/plate-common';
+import { addRangeMarks, TText } from '@udecode/plate-common/server';
 import isEqual from 'lodash/isEqual.js';
 import uniqWith from 'lodash/uniqWith.js';
 import {

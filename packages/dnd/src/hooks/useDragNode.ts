@@ -1,4 +1,4 @@
-import { TEditor, Value } from '@udecode/plate-common';
+import { TEditor, Value } from '@udecode/plate-common/server';
 import { DragSourceHookSpec, useDrag } from 'react-dnd';
 
 import { dndStore } from '../dndStore';

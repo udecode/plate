@@ -1,4 +1,4 @@
-import { PlateEditor, Value } from '@udecode/plate-common';
+import { PlateEditor, Value } from '@udecode/plate-common/server';
 
 import { someToggleClosed } from '../toggle-controller-store';
 import { getEnclosingToggleIds } from './getEnclosingToggleIds';

@@ -1,4 +1,4 @@
-import { createPluginFactory } from '@udecode/plate-common';
+import { createPluginFactory } from '@udecode/plate-common/server';
 
 import { MARK_COMMENT } from './constants';
 import { CommentsPlugin } from './types';

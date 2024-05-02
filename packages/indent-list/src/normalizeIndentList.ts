@@ -4,7 +4,7 @@ import {
   TElement,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { IndentListPlugin } from './createIndentListPlugin';
 import { normalizeIndentListNotIndented } from './normalizers/normalizeIndentListNotIndented';

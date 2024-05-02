@@ -1,6 +1,7 @@
 import { useEditorRef } from '@udecode/plate-common';
 
-import { TLinkElement } from '../types';
+import type { TLinkElement } from '../types';
+
 import { getLinkAttributes } from '../utils/index';
 
 export const useLink = ({ element }: { element: TLinkElement }) => {

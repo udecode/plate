@@ -3,7 +3,7 @@ import {
   getNodeEntry,
   PlateEditor,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
 import { TTableCellElement } from '../types';

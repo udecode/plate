@@ -26,34 +26,33 @@ export const useCommentNewSubmitButtonState = () => {
   const submitButtonText = isReplyComment ? 'Reply' : 'Comment';
 
   return {
-    editingCommentText,
-    resetNewCommentValue,
-    addComment,
-    isReplyComment,
-    submitButtonText,
-    onCommentAdd,
     activeCommentId,
+    addComment,
     comment,
+    editingCommentText,
+    isReplyComment,
     newValue,
+    onCommentAdd,
+    resetNewCommentValue,
+    submitButtonText,
   };
 };
 
 export const useCommentNewSubmitButton = ({
-  editingCommentText,
-  resetNewCommentValue,
-  addComment,
-  isReplyComment,
-  submitButtonText,
-  onCommentAdd,
   activeCommentId,
+  addComment,
   comment,
+  editingCommentText,
+  isReplyComment,
   newValue,
+  onCommentAdd,
+  resetNewCommentValue,
+  submitButtonText,
 }: ReturnType<typeof useCommentNewSubmitButtonState>) => {
   return {
     props: {
-      type: 'submit',
-      disabled: !editingCommentText?.trim().length,
       children: submitButtonText,
+      disabled: !editingCommentText?.trim().length,
       onClick: () => {
         const newComment = addComment(
           isReplyComment
@@ -72,11 +71,12 @@ export const useCommentNewSubmitButton = ({
 
         resetNewCommentValue();
       },
+      type: 'submit',
     },
   };
 };
 
 export const CommentNewSubmitButton = createPrimitiveComponent('button')({
-  stateHook: useCommentNewSubmitButtonState,
   propsHook: useCommentNewSubmitButton,
+  stateHook: useCommentNewSubmitButtonState,
 });

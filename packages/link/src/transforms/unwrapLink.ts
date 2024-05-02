@@ -8,7 +8,7 @@ import {
   UnwrapNodesOptions,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { ELEMENT_LINK } from '../createLinkPlugin';
 

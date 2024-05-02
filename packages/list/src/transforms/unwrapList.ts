@@ -10,7 +10,7 @@ import {
   unwrapNodes,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
 import {

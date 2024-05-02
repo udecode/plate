@@ -1,23 +1,18 @@
 import React from 'react';
-import {
-  createPlateEditor,
-  Plate,
-  PlateContent,
-  PlateProps,
-} from '@udecode/plate-common';
 
-/**
- * Create a React element wrapped in a Plate provider.
- */
+import { Plate, PlateContent, type PlateProps } from '@udecode/plate-common';
+import { createPlateEditor } from '@udecode/plate-common/server';
+
+/** Create a React element wrapped in a Plate provider. */
 export const createElementWithSlate = (
   plateProps?: Partial<PlateProps>,
-  dndWrapper?: string | React.FC | React.ComponentClass
+  dndWrapper?: React.ComponentClass | React.FC | string
 ) => {
   const {
-    editor = createPlateEditor(),
-    value = [],
-    onChange = () => {},
     children,
+    editor = createPlateEditor(),
+    onChange = () => {},
+    value = [],
     ...props
   } = plateProps || {};
 

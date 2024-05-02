@@ -6,7 +6,7 @@ import {
   PlatePluginKey,
   withoutMergingHistory,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { KEY_EMOJI } from '../constants';
 import { EmojiItemData, EmojiPlugin } from '../types';

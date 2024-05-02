@@ -4,7 +4,7 @@ import {
   getPointBefore,
   PlateEditor,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Location, Point } from 'slate';
 
 import { KEY_SUGGESTION_ID } from '../constants';

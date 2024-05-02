@@ -1,5 +1,5 @@
 import { CursorEditor, withCursors, WithCursorsOptions } from '@slate-yjs/core';
-import { TEditor, Value } from '@udecode/plate-common';
+import { TEditor, Value } from '@udecode/plate-common/server';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { Awareness } from 'y-protocols/awareness';
 

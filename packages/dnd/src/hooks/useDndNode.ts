@@ -1,11 +1,15 @@
 import React from 'react';
-import { TEditor, useEditorRef } from '@udecode/plate-common';
-import { DropTargetMonitor } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 
-import { DragItemNode, DropLineDirection } from '../types';
-import { useDragNode, UseDragNodeOptions } from './useDragNode';
-import { useDropNode, UseDropNodeOptions } from './useDropNode';
+import type { TEditor } from '@udecode/plate-common/server';
+import type { DropTargetMonitor } from 'react-dnd';
+
+import { useEditorRef } from '@udecode/plate-common';
+
+import type { DragItemNode, DropLineDirection } from '../types';
+
+import { type UseDragNodeOptions, useDragNode } from './useDragNode';
+import { type UseDropNodeOptions, useDropNode } from './useDropNode';
 
 export interface UseDndNodeOptions
   extends Pick<UseDropNodeOptions, 'id' | 'nodeRef'>,
@@ -15,38 +19,34 @@ export interface UseDndNodeOptions
   onDropHandler?: (
     editor: TEditor,
     props: {
-      monitor: DropTargetMonitor<DragItemNode, unknown>;
       dragItem: DragItemNode;
-      nodeRef: any;
       id: string;
+      monitor: DropTargetMonitor<DragItemNode, unknown>;
+      nodeRef: any;
     }
   ) => boolean;
   preview?: {
-    /**
-     * Whether to disable the preview.
-     */
+    /** Whether to disable the preview. */
     disable?: boolean;
 
-    /**
-     * The reference to the preview element.
-     */
+    /** The reference to the preview element. */
     ref?: any;
   };
 }
 
 /**
- * {@link useDragNode} and {@link useDropNode} hooks to drag and drop a node from the editor.
- * A default preview is used to show the node being dragged, which can be customized or removed.
- * Returns the drag ref and drop line direction.
+ * {@link useDragNode} and {@link useDropNode} hooks to drag and drop a node from
+ * the editor. A default preview is used to show the node being dragged, which
+ * can be customized or removed. Returns the drag ref and drop line direction.
  */
 export const useDndNode = ({
-  id,
-  type,
-  nodeRef,
-  preview: previewOptions = {},
   drag: dragOptions,
   drop: dropOptions,
+  id,
+  nodeRef,
   onDropHandler,
+  preview: previewOptions = {},
+  type,
 }: UseDndNodeOptions) => {
   const editor = useEditorRef();
 
@@ -59,9 +59,9 @@ export const useDndNode = ({
   });
   const [{ isOver }, drop] = useDropNode(editor, {
     accept: type,
+    dropLine,
     id,
     nodeRef,
-    dropLine,
     onChangeDropLine: setDropLine,
     onDropHandler,
     ...dropOptions,
@@ -76,15 +76,14 @@ export const useDndNode = ({
   } else {
     preview(drop(nodeRef));
   }
-
   if (!isOver && dropLine) {
     setDropLine('');
   }
 
   return {
+    dragRef,
+    dropLine,
     isDragging,
     isOver,
-    dropLine,
-    dragRef,
   };
 };

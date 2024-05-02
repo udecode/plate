@@ -2,7 +2,7 @@ import {
   createPluginFactory,
   ELEMENT_DEFAULT,
   getPluginType,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { IndentPlugin } from './types';
 

@@ -1,18 +1,15 @@
-import { PlateEditor, Value } from '@udecode/plate-common';
+import type { PlateEditor, Value } from '@udecode/plate-common';
 
 export interface TComboboxItemBase {
-  /**
-   * Unique key.
-   */
+  /** Unique key. */
   key: string;
 
-  /**
-   * Item text.
-   */
+  /** Item text. */
   text: any;
 
   /**
    * Whether the item is disabled.
+   *
    * @default false
    */
   disabled?: boolean;
@@ -20,9 +17,7 @@ export interface TComboboxItemBase {
 
 export interface TComboboxItemWithData<TData extends Data>
   extends TComboboxItemBase {
-  /**
-   * Data available to `onRenderItem`.
-   */
+  /** Data available to `onRenderItem`. */
   data: TData;
 }
 

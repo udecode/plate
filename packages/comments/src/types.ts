@@ -1,4 +1,4 @@
-import { TText, Value } from '@udecode/plate-common';
+import { TText, Value } from '@udecode/plate-common/server';
 
 export interface CommentUser {
   id: string;

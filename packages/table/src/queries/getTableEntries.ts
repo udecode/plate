@@ -4,7 +4,7 @@ import {
   getPluginType,
   PlateEditor,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Location } from 'slate';
 
 import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';

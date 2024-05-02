@@ -14,7 +14,7 @@ import {
   TElement,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Point } from 'slate';
 
 import { ELEMENT_TABLE } from './createTablePlugin';

@@ -1,43 +1,42 @@
 import { createPluginFactory, removeNodes } from '@udecode/plate-common';
 
+import type { MentionPlugin } from './types';
+
 import { mentionOnKeyDownHandler } from './handlers/mentionOnKeyDownHandler';
 import { isSelectionInMentionInput } from './queries/index';
-import { MentionPlugin } from './types';
 import { withMention } from './withMention';
 
 export const ELEMENT_MENTION = 'mention';
+
 export const ELEMENT_MENTION_INPUT = 'mention_input';
 
-/**
- * Enables support for autocompleting @mentions.
- */
+/** Enables support for autocompleting @mentions. */
 export const createMentionPlugin = createPluginFactory<MentionPlugin>({
-  key: ELEMENT_MENTION,
-  isElement: true,
-  isInline: true,
-  isVoid: true,
-  isMarkableVoid: true,
   handlers: {
-    onKeyDown: mentionOnKeyDownHandler({ query: isSelectionInMentionInput }),
     onBlur: (editor) => () => {
       // remove mention_input nodes from editor on blur
       removeNodes(editor, {
-        match: (n) => n.type === ELEMENT_MENTION_INPUT,
         at: [],
+        match: (n) => n.type === ELEMENT_MENTION_INPUT,
       });
     },
+    onKeyDown: mentionOnKeyDownHandler({ query: isSelectionInMentionInput }),
   },
-  withOverrides: withMention,
+  isElement: true,
+  isInline: true,
+  isMarkableVoid: true,
+  isVoid: true,
+  key: ELEMENT_MENTION,
   options: {
+    createMentionNode: (item) => ({ value: item.text }),
     trigger: '@',
     triggerPreviousCharPattern: /^\s?$/,
-    createMentionNode: (item) => ({ value: item.text }),
   },
   plugins: [
     {
-      key: ELEMENT_MENTION_INPUT,
       isElement: true,
       isInline: true,
+      key: ELEMENT_MENTION_INPUT,
     },
   ],
   then: (editor, { key }) => ({
@@ -45,4 +44,5 @@ export const createMentionPlugin = createPluginFactory<MentionPlugin>({
       id: key,
     },
   }),
+  withOverrides: withMention,
 });

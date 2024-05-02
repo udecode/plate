@@ -1,4 +1,4 @@
-import { TEditor, TNodeEntry, unsetNodes, Value } from '@udecode/plate-common';
+import { TEditor, TNodeEntry, unsetNodes, Value } from '@udecode/plate-common/server';
 
 import {
   KEY_LIST_CHECKED,

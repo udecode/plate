@@ -8,7 +8,7 @@ import {
   select,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Location } from 'slate';
 
 import { getTableGridAbove } from '../queries/getTableGridAbove';

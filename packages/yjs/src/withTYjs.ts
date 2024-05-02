@@ -1,5 +1,5 @@
 import { withYjs, YjsEditor } from '@slate-yjs/core';
-import { TEditor, TOperation, Value } from '@udecode/plate-common';
+import { TEditor, TOperation, Value } from '@udecode/plate-common/server';
 import * as Y from 'yjs';
 
 export type WithYjsOptions = {

@@ -1,10 +1,11 @@
 import React from 'react';
+
 import { useEditorRef } from '@udecode/plate-common';
 
 import {
+  type TCommentText,
   getCommentKeyId,
   isCommentKey,
-  TCommentText,
   unsetCommentNodesById,
   useCommentsActions,
   useCommentsSelectors,
@@ -31,7 +32,6 @@ export const useCommentLeafState = ({ leaf }: { leaf: TCommentText }) => {
       const id = getCommentKeyId(key);
 
       if (comments[id]?.isResolved) return;
-
       if (id === activeCommentId) {
         _isActive = true;
         setIsActive(true);
@@ -67,8 +67,8 @@ export const useCommentLeafState = ({ leaf }: { leaf: TCommentText }) => {
 };
 
 export const useCommentLeaf = ({
-  setActiveCommentId,
   lastCommentId,
+  setActiveCommentId,
 }: ReturnType<typeof useCommentLeafState>) => {
   return {
     props: {

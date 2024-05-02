@@ -1,36 +1,35 @@
 import {
+  type ComboboxOnSelectItem,
+  type Data,
+  type NoData,
+  type TComboboxItem,
   comboboxActions,
-  ComboboxOnSelectItem,
   comboboxSelectors,
-  Data,
-  NoData,
-  TComboboxItem,
 } from '@udecode/plate-combobox';
 import {
+  type PlatePluginKey,
+  type TNodeProps,
   getBlockAbove,
   getPlugin,
   insertNodes,
   insertText,
   isEndPoint,
   moveSelection,
-  PlatePluginKey,
   removeNodes,
   select,
-  TNodeProps,
   withoutMergingHistory,
   withoutNormalizing,
 } from '@udecode/plate-common';
 
+import type { MentionPlugin, TMentionElement } from './types';
+
 import { ELEMENT_MENTION } from './createMentionPlugin';
 import { isNodeMentionInput } from './queries/isNodeMentionInput';
-import { MentionPlugin, TMentionElement } from './types';
 
-export interface CreateMentionNode<TData extends Data> {
-  (
-    item: TComboboxItem<TData>,
-    meta: CreateMentionNodeMeta
-  ): TNodeProps<TMentionElement>;
-}
+export type CreateMentionNode<TData extends Data> = (
+  item: TComboboxItem<TData>,
+  meta: CreateMentionNodeMeta
+) => TNodeProps<TMentionElement>;
 
 export interface CreateMentionNodeMeta {
   search: string;
@@ -42,11 +41,12 @@ export const getMentionOnSelectItem =
   }: PlatePluginKey = {}): ComboboxOnSelectItem<TData> =>
   (editor, item) => {
     const targetRange = comboboxSelectors.targetRange();
+
     if (!targetRange) return;
 
     const {
+      options: { createMentionNode, insertSpaceAfterMention },
       type,
-      options: { insertSpaceAfterMention, createMentionNode },
     } = getPlugin<MentionPlugin>(editor as any, key);
 
     const pathAbove = getBlockAbove(editor)?.[1];
@@ -72,8 +72,8 @@ export const getMentionOnSelectItem =
       );
 
       insertNodes<TMentionElement>(editor, {
-        type,
         children: [{ text: '' }],
+        type,
         ...props,
       } as TMentionElement);
 

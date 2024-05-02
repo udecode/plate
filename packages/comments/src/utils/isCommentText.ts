@@ -1,4 +1,4 @@
-import { TNode } from '@udecode/plate-common';
+import { TNode } from '@udecode/plate-common/server';
 
 import { MARK_COMMENT } from '../constants';
 import { TCommentText } from '../types';

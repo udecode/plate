@@ -1,4 +1,4 @@
-import { Value } from '@udecode/plate-common';
+import { Value } from '@udecode/plate-common/server';
 import delay from 'delay';
 
 import { getInProgressUploads } from './getInProgressUploads';

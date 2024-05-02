@@ -1,4 +1,4 @@
-import { isBlock, TEditor, Value } from '@udecode/plate-common';
+import { isBlock, TEditor, Value } from '@udecode/plate-common/server';
 
 import { blockSelectionActions } from '../blockSelectionStore';
 

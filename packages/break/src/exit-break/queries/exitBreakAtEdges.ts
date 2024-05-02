@@ -4,7 +4,7 @@ import {
   isSelectionAtBlockStart,
   TEditor,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 /**
  * Check if the selection is at the edge of its parent block.

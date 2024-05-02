@@ -14,7 +14,7 @@ import {
   UnwrapNodesOptions,
   Value,
   WrapNodesOptions,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { ELEMENT_LINK } from '../createLinkPlugin';
 import { TLinkElement } from '../types';

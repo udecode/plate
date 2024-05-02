@@ -7,7 +7,7 @@ import {
   removeNodes,
   someNode,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
 import { deleteTableMergeRow } from '../merge/deleteRow';

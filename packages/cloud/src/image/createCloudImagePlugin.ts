@@ -1,4 +1,4 @@
-import { createPluginFactory, Value } from '@udecode/plate-common';
+import { createPluginFactory, Value } from '@udecode/plate-common/server';
 
 import { CloudImagePlugin, PlateCloudImageEditor } from './types';
 import { withCloudImage } from './withCloudImage';

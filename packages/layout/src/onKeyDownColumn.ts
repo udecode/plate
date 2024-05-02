@@ -5,7 +5,7 @@ import {
   PlateEditor,
   select,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 export const onKeyDownColumn =
   <V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>(

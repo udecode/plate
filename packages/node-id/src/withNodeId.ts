@@ -10,7 +10,7 @@ import {
   TNodeEntry,
   Value,
   WithPlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import castArray from 'lodash/castArray.js';
 import cloneDeep from 'lodash/cloneDeep.js';
 

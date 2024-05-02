@@ -9,11 +9,11 @@ export const useMediaToolbarButton = ({
 
   return {
     props: {
-      onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-      },
       onClick: async () => {
         await insertMedia(editor, { type: nodeType });
+      },
+      onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
       },
     },
   };

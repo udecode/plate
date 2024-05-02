@@ -1,4 +1,4 @@
-import { Hotkeys, KeyboardHandlerReturnType } from '@udecode/plate-common';
+import { Hotkeys, KeyboardHandlerReturnType } from '@udecode/plate-common/server';
 
 export const onKeyDownSingleLine = (): KeyboardHandlerReturnType => (event) => {
   if (event.defaultPrevented) return;

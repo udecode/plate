@@ -4,7 +4,7 @@ import {
   isBlock,
   TEditor,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 /**
  * Get blocks with an id

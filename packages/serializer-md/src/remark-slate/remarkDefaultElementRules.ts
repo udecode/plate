@@ -2,13 +2,13 @@ import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
 import {
   ELEMENT_CODE_BLOCK,
   ELEMENT_CODE_LINE,
-} from '@udecode/plate-code-block';
+} from '@udecode/plate-code-block/server';
 import {
+  type TDescendant,
+  type TElement,
+  type TText,
+  type Value,
   getPluginType,
-  TDescendant,
-  TElement,
-  TText,
-  Value,
 } from '@udecode/plate-common/server';
 import {
   ELEMENT_H1,
@@ -29,11 +29,32 @@ import {
 import { ELEMENT_IMAGE } from '@udecode/plate-media';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 
+import type { MdastNode, RemarkElementRules } from './types';
+
 import { remarkTransformElementChildren } from './remarkTransformElementChildren';
-import { MdastNode, RemarkElementRules } from './types';
 
 // FIXME: underline, subscript superscript not yet supported by remark-slate
 export const remarkDefaultElementRules: RemarkElementRules<Value> = {
+  blockquote: {
+    transform: (node, options) => {
+      return {
+        children: node.children!.flatMap((paragraph) =>
+          remarkTransformElementChildren(paragraph, options)
+        ),
+        type: getPluginType(options.editor, ELEMENT_BLOCKQUOTE),
+      };
+    },
+  },
+  code: {
+    transform: (node, options) => ({
+      children: (node.value || '').split('\n').map((line) => ({
+        children: [{ text: line } as TText],
+        type: getPluginType(options.editor, ELEMENT_CODE_LINE),
+      })),
+      lang: node.lang ?? undefined,
+      type: getPluginType(options.editor, ELEMENT_CODE_BLOCK),
+    }),
+  },
   heading: {
     transform: (node, options) => {
       const headingType = {
@@ -46,10 +67,25 @@ export const remarkDefaultElementRules: RemarkElementRules<Value> = {
       }[node.depth ?? 1];
 
       return {
-        type: getPluginType(options.editor, headingType),
         children: remarkTransformElementChildren(node, options),
+        type: getPluginType(options.editor, headingType),
       };
     },
+  },
+  image: {
+    transform: (node, options) => ({
+      caption: [{ text: node.alt } as TText],
+      children: [{ text: '' } as TText],
+      type: getPluginType(options.editor, ELEMENT_IMAGE),
+      url: node.url,
+    }),
+  },
+  link: {
+    transform: (node, options) => ({
+      children: remarkTransformElementChildren(node, options),
+      type: getPluginType(options.editor, ELEMENT_LINK),
+      url: node.url,
+    }),
   },
   list: {
     transform: (node, options) => {
@@ -65,13 +101,13 @@ export const remarkDefaultElementRules: RemarkElementRules<Value> = {
             const [paragraph, ...subLists] = listItem.children!;
 
             listItems.push({
-              type: getPluginType(options.editor, ELEMENT_PARAGRAPH),
-              listStyleType,
-              indent,
               children: remarkTransformElementChildren(
                 paragraph || '',
                 options
               ),
+              indent,
+              listStyleType,
+              type: getPluginType(options.editor, ELEMENT_PARAGRAPH),
             });
 
             subLists.forEach((subList) => {
@@ -85,18 +121,17 @@ export const remarkDefaultElementRules: RemarkElementRules<Value> = {
         return parseListItems(node);
       } else {
         return {
+          children: remarkTransformElementChildren(node, options),
           type: getPluginType(
             options.editor,
             node.ordered ? ELEMENT_OL : ELEMENT_UL
           ),
-          children: remarkTransformElementChildren(node, options),
         };
       }
     },
   },
   listItem: {
     transform: (node, options) => ({
-      type: getPluginType(options.editor, ELEMENT_LI),
       children: remarkTransformElementChildren(node, options).map(
         (child) =>
           ({
@@ -107,6 +142,7 @@ export const remarkDefaultElementRules: RemarkElementRules<Value> = {
                 : child.type,
           }) as TDescendant
       ),
+      type: getPluginType(options.editor, ELEMENT_LI),
     }),
   },
   paragraph: {
@@ -124,8 +160,8 @@ export const remarkDefaultElementRules: RemarkElementRules<Value> = {
       const flushInlineNodes = () => {
         if (inlineNodes.length > 0) {
           elements.push({
-            type: paragraphType,
             children: inlineNodes,
+            type: paragraphType,
           });
 
           inlineNodes = [];
@@ -148,45 +184,10 @@ export const remarkDefaultElementRules: RemarkElementRules<Value> = {
       return elements;
     },
   },
-  link: {
-    transform: (node, options) => ({
-      type: getPluginType(options.editor, ELEMENT_LINK),
-      url: node.url,
-      children: remarkTransformElementChildren(node, options),
-    }),
-  },
-  image: {
-    transform: (node, options) => ({
-      type: getPluginType(options.editor, ELEMENT_IMAGE),
-      children: [{ text: '' } as TText],
-      url: node.url,
-      caption: [{ text: node.alt } as TText],
-    }),
-  },
-  blockquote: {
-    transform: (node, options) => {
-      return {
-        type: getPluginType(options.editor, ELEMENT_BLOCKQUOTE),
-        children: node.children!.flatMap((paragraph) =>
-          remarkTransformElementChildren(paragraph, options)
-        ),
-      };
-    },
-  },
-  code: {
-    transform: (node, options) => ({
-      type: getPluginType(options.editor, ELEMENT_CODE_BLOCK),
-      lang: node.lang ?? undefined,
-      children: (node.value || '').split('\n').map((line) => ({
-        type: getPluginType(options.editor, ELEMENT_CODE_LINE),
-        children: [{ text: line } as TText],
-      })),
-    }),
-  },
   thematicBreak: {
     transform: (node, options) => ({
-      type: getPluginType(options.editor, ELEMENT_HR),
       children: [{ text: '' } as TText],
+      type: getPluginType(options.editor, ELEMENT_HR),
     }),
   },
 };

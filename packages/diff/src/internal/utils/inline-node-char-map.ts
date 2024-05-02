@@ -3,7 +3,7 @@ import {
   isText,
   TDescendant,
   TText,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 export class InlineNodeCharMap {
   private _charGenerator: Generator<string>;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { UnknownObject } from '@udecode/plate-common';
+import { UnknownObject } from '@udecode/plate-common/server';
 import { Range } from 'slate';
 
 export type SelectionRect = {

@@ -3,7 +3,7 @@ import {
   unsetNodes,
   Value,
   WithPlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { MARK_COMMENT } from './constants';
 import { removeCommentMark } from './transforms/removeCommentMark';

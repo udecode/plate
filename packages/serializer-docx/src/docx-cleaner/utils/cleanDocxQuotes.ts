@@ -1,4 +1,4 @@
-import { replaceTagName, traverseHtmlElements } from '@udecode/plate-common';
+import { replaceTagName, traverseHtmlElements } from '@udecode/plate-common/server';
 
 /**
  * Replace p.MsoQuote elements with blockquote.

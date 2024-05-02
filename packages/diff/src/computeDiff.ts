@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import { PlateEditor, TDescendant, TElement } from '@udecode/plate-common';
+import { PlateEditor, TDescendant, TElement } from '@udecode/plate-common/server';
 
 import { transformDiffDescendants } from './internal/transforms/transformDiffDescendants';
 import { dmp } from './internal/utils/dmp';

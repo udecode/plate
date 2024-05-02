@@ -1,5 +1,14 @@
+/** @type {import('eslint').Linter.Config} */
 module.exports = {
   extends: ['plugin:perfectionist/recommended-natural'],
+  overrides: [
+    {
+      files: ['index.ts*'],
+      rules: {
+        'perfectionist/sort-exports': 'off',
+      },
+    },
+  ],
   plugins: ['perfectionist'],
   rules: {
     'adjacent-overload-signatures': 'off',

@@ -4,7 +4,7 @@ import {
   unsetNodes,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from '../constants';
 import { TSuggestionText } from '../types';

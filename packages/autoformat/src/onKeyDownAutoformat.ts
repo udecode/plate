@@ -9,7 +9,7 @@ import {
   PlateEditor,
   Value,
   WithPlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Range } from 'slate';
 
 import { AutoformatPlugin, AutoformatRule, AutoformatTextRule } from './types';

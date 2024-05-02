@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import { TDescendant } from '@udecode/plate-common';
+import { TDescendant } from '@udecode/plate-common/server';
 import isEqual from 'lodash/isEqual.js';
 
 import { unusedCharGenerator } from './unused-char-generator';

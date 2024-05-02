@@ -6,7 +6,7 @@ import {
   isSelectionAtBlockStart,
   moveNodes,
   PlateEditor,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { isInClosedToggle } from '../queries';
 

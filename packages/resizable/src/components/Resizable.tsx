@@ -1,34 +1,29 @@
 import React from 'react';
-import {
-  findNodePath,
-  select,
-  setNodes,
-  useEditorRef,
-  useElement,
-} from '@udecode/plate-common';
 
-import { ResizeEvent, ResizeLength } from '../types';
+import { findNodePath, useEditorRef, useElement } from '@udecode/plate-common';
+import { select, setNodes } from '@udecode/plate-common/server';
+
+import type { ResizeEvent, ResizeLength } from '../types';
+import type { TResizableElement } from './TResizableElement';
+
 import { resizeLengthClamp } from '../utils';
 import { ResizeHandleProvider } from './ResizeHandle';
-import { TResizableElement } from './TResizableElement';
 import { useResizableStore } from './useResizableStore';
 
 export interface ResizableOptions {
-  /**
-   * Node alignment.
-   */
-  align?: 'left' | 'center' | 'right';
+  /** Node alignment. */
+  align?: 'center' | 'left' | 'right';
 
-  readOnly?: boolean;
+  maxWidth?: ResizeLength;
 
   minWidth?: ResizeLength;
-  maxWidth?: ResizeLength;
+  readOnly?: boolean;
 }
 
 export const useResizableState = ({
   align = 'center',
-  minWidth = 92,
   maxWidth = '100%',
+  minWidth = 92,
 }: ResizableOptions = {}) => {
   const element = useElement<TResizableElement>();
   const editor = useEditorRef();
@@ -40,8 +35,8 @@ export const useResizableState = ({
   const setNodeWidth = React.useCallback(
     (w: number) => {
       const path = findNodePath(editor, element!);
-      if (!path) return;
 
+      if (!path) return;
       if (w === nodeWidth) {
         // Focus the node if not resized
         select(editor, path);
@@ -58,8 +53,8 @@ export const useResizableState = ({
 
   return {
     align,
-    minWidth,
     maxWidth,
+    minWidth,
     setNodeWidth,
     setWidth,
     width,
@@ -68,8 +63,8 @@ export const useResizableState = ({
 
 export const useResizable = ({
   align,
-  minWidth,
   maxWidth,
+  minWidth,
   setNodeWidth,
   setWidth,
   width,
@@ -77,23 +72,9 @@ export const useResizable = ({
   const wrapperRef = React.useRef<HTMLDivElement>(null);
 
   return {
-    wrapperRef,
-    wrapperProps: {
-      style: {
-        position: 'relative',
-      } as React.CSSProperties,
-    },
-    props: {
-      style: {
-        width,
-        minWidth,
-        maxWidth,
-        position: 'relative',
-      } as React.CSSProperties,
-    },
     context: {
       onResize: React.useCallback(
-        ({ initialSize, delta, finished, direction }: ResizeEvent) => {
+        ({ delta, direction, finished, initialSize }: ResizeEvent) => {
           const wrapperStaticWidth = wrapperRef.current!.offsetWidth;
           const deltaFactor =
             (align === 'center' ? 2 : 1) * (direction === 'left' ? -1 : 1);
@@ -102,8 +83,8 @@ export const useResizable = ({
             initialSize + delta * deltaFactor,
             wrapperStaticWidth,
             {
-              min: minWidth,
               max: maxWidth,
+              min: minWidth,
             }
           );
 
@@ -116,17 +97,31 @@ export const useResizable = ({
         [align, maxWidth, minWidth, setNodeWidth, setWidth]
       ),
     },
+    props: {
+      style: {
+        maxWidth,
+        minWidth,
+        position: 'relative',
+        width,
+      } as React.CSSProperties,
+    },
+    wrapperProps: {
+      style: {
+        position: 'relative',
+      } as React.CSSProperties,
+    },
+    wrapperRef,
   };
 };
 
 const Resizable = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & {
+  {
     options: ResizableOptions;
-  }
+  } & React.HTMLAttributes<HTMLDivElement>
 >(({ children, options, ...rest }, ref) => {
   const state = useResizableState(options);
-  const { wrapperRef, wrapperProps, props, context } = useResizable(state);
+  const { context, props, wrapperProps, wrapperRef } = useResizable(state);
 
   return (
     <div ref={wrapperRef} {...wrapperProps}>

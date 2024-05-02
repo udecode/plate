@@ -7,7 +7,7 @@ import {
   TNodeMatch,
   unsetNodes,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { KEY_LINE_HEIGHT } from '../createLineHeightPlugin';
 

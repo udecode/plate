@@ -17,7 +17,7 @@ import {
   unhangCharacterRange,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Point, Range } from 'slate';
 
 import { MARK_SUGGESTION } from '../constants';

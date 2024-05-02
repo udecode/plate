@@ -8,7 +8,7 @@ import {
   TDescendant,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { ELEMENT_TABLE, ELEMENT_TH, ELEMENT_TR } from '../createTablePlugin';
 import { getTableGridAbove } from '../queries';

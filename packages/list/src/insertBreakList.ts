@@ -5,7 +5,7 @@ import {
   mockPlugin,
   PlateEditor,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import {
   onKeyDownResetNode,
   ResetNodePlugin,

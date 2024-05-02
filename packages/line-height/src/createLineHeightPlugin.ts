@@ -3,7 +3,7 @@ import {
   ELEMENT_DEFAULT,
   getPluginType,
   mapInjectPropsToPlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 export const KEY_LINE_HEIGHT = 'lineHeight';
 

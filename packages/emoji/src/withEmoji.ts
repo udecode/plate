@@ -4,7 +4,7 @@ import {
   PlateEditor,
   Value,
   WithPlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { getEmojiOnSelectItem, getFindTriggeringInput } from './handlers/index';
 import { EmojiPlugin } from './types';

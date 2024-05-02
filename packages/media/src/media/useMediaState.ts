@@ -1,14 +1,16 @@
 import React from 'react';
+
 import { useElement } from '@udecode/plate-common';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
 
+import type { TMediaElement } from './types';
+
 import { VIDEO_PROVIDERS } from '../media-embed';
-import { TMediaElement } from './types';
 
 export type EmbedUrlData = {
-  url?: string;
-  provider?: string;
   id?: string;
+  provider?: string;
+  url?: string;
 };
 
 export type EmbedUrlParser = (url: string) => EmbedUrlData | undefined;
@@ -23,13 +25,14 @@ export const useMediaState = ({
   const selected = useSelected();
   const readOnly = useReadOnly();
 
-  const { url, align } = element;
+  const { align, url } = element;
 
   const embed = React.useMemo(() => {
     if (!urlParsers) return;
 
     for (const parser of urlParsers) {
       const data = parser(url);
+
       if (data) {
         return data;
       }
@@ -39,14 +42,15 @@ export const useMediaState = ({
   const isTweet = embed?.provider === 'twitter';
   const isVideo = !!embed?.provider && VIDEO_PROVIDERS.includes(embed.provider);
   const isYoutube = embed?.provider === 'youtube';
+
   return {
     align,
-    focused,
-    selected,
-    readOnly,
     embed,
+    focused,
     isTweet,
     isVideo,
     isYoutube,
+    readOnly,
+    selected,
   };
 };

@@ -3,7 +3,7 @@ import {
   getPluginOptions,
   InjectComponentProps,
   InjectComponentReturnType,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { clsx } from 'clsx';
 
 import {

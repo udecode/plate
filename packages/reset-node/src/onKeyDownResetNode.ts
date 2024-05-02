@@ -7,7 +7,7 @@ import {
   someNode,
   Value,
   WithPlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { ResetNodePlugin } from './types';
 

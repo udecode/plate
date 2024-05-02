@@ -1,24 +1,25 @@
+import type { Point } from 'slate';
+
 import {
+  type TEditor,
+  type Value,
   escapeRegExp,
   getEditorString,
   getPointBefore,
   getRange,
-  TEditor,
-  Value,
 } from '@udecode/plate-common';
-import { Point } from 'slate';
 
 /**
- * Get text and range from trigger to cursor.
- * Starts with trigger and ends with non-whitespace character.
+ * Get text and range from trigger to cursor. Starts with trigger and ends with
+ * non-whitespace character.
  */
 export const getTextFromTrigger = <V extends Value>(
   editor: TEditor<V>,
   {
     at,
-    trigger,
     searchPattern = `\\S+`,
-  }: { at: Point; trigger: string; searchPattern?: string }
+    trigger,
+  }: { at: Point; searchPattern?: string; trigger: string }
 ) => {
   const escapedTrigger = escapeRegExp(trigger);
   const triggerRegex = new RegExp(`(?:^|\\s)${escapedTrigger}`);
@@ -37,6 +38,7 @@ export const getTextFromTrigger = <V extends Value>(
 
     if (!charText.match(searchPattern)) {
       start = end;
+
       break;
     }
   }

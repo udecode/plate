@@ -3,7 +3,7 @@ import {
   PlateEditor,
   sanitizeUrl,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { ELEMENT_LINK, LinkPlugin } from '../createLinkPlugin';
 import { TLinkElement } from '../types';

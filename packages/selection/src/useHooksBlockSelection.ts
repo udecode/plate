@@ -1,22 +1,23 @@
 import React from 'react';
+
+import { focusEditor, isEditorReadOnly } from '@udecode/plate-common';
 import {
+  type PlateEditor,
+  type Value,
+  type WithPlatePlugin,
   findNode,
-  focusEditor,
   getEndPoint,
-  isEditorReadOnly,
   isHotkey,
-  PlateEditor,
   removeNodes,
-  Value,
-  WithPlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
+
+import type { BlockSelectionPlugin } from './createBlockSelectionPlugin';
 
 import {
   blockSelectionActions,
   blockSelectionSelectors,
   useBlockSelectionSelectors,
 } from './blockSelectionStore';
-import { BlockSelectionPlugin } from './createBlockSelectionPlugin';
 import { copySelectedBlocks } from './utils/copySelectedBlocks';
 import { selectInsertedBlocks } from './utils/index';
 import { pasteSelectedBlocks } from './utils/pasteSelectedBlocks';
@@ -35,6 +36,7 @@ export const useHooksBlockSelection = <
   // TODO: test
   React.useEffect(() => {
     const el = document.querySelector('#slate-shadow-input');
+
     if (el) {
       el.remove();
     }
@@ -57,11 +59,9 @@ export const useHooksBlockSelection = <
 
         // selecting commands
         if (!blockSelectionSelectors.isSelecting()) return;
-
         if (isHotkey('escape')(e)) {
           blockSelectionActions.unselect();
         }
-
         if (isHotkey('mod+z')(e)) {
           editor.undo();
           selectInsertedBlocks(editor);
@@ -70,10 +70,8 @@ export const useHooksBlockSelection = <
           editor.redo();
           selectInsertedBlocks(editor);
         }
-
         // selecting some commands
         if (!blockSelectionSelectors.isSelectingSome()) return;
-
         if (isHotkey('enter')(e)) {
           // get the first block in the selection
           const entry = findNode(editor, {
@@ -88,7 +86,6 @@ export const useHooksBlockSelection = <
             e.preventDefault();
           }
         }
-
         if (isHotkey(['backspace', 'delete'])(e) && !isReadonly) {
           removeNodes(editor, {
             at: [],

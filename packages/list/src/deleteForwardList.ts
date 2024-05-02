@@ -15,7 +15,7 @@ import {
   TElementEntry,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Path, TextUnit } from 'slate';
 
 import { ELEMENT_LI, ELEMENT_LIC } from './createListPlugin';

@@ -4,7 +4,7 @@ import {
   TDescendant,
   TElement,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { ELEMENT_TH } from '../createTablePlugin';
 import { TTableRowElement } from '../types';

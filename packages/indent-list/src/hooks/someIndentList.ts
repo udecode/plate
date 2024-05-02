@@ -1,4 +1,4 @@
-import { PlateEditor, someNode, Value } from '@udecode/plate-common';
+import { PlateEditor, someNode, Value } from '@udecode/plate-common/server';
 
 import { KEY_LIST_CHECKED, KEY_LIST_STYLE_TYPE, ListStyleType } from '../index';
 

@@ -1,12 +1,14 @@
 import {
-  collapseSelection,
   focusEditor,
-  PlateEditor,
-  toggleNodeType,
   useEditorRef,
   useEditorSelector,
-  Value,
 } from '@udecode/plate-common';
+import {
+  type PlateEditor,
+  type Value,
+  collapseSelection,
+  toggleNodeType,
+} from '@udecode/plate-common/server';
 
 import { someToggle } from '../queries/someToggle';
 import { openNextToggles } from '../transforms';
@@ -27,16 +29,16 @@ export const useToggleToolbarButton = ({
 
   return {
     props: {
-      pressed,
-      onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-      },
       onClick: () => {
         openNextToggles(editor);
         toggleNodeType(editor, { activeType: ELEMENT_TOGGLE });
         collapseSelection(editor);
         focusEditor(editor);
       },
+      onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+      },
+      pressed,
     },
   };
 };

@@ -1,4 +1,4 @@
-import { createZustandStore, TPath } from '@udecode/plate-common';
+import { createZustandStore, TPath } from '@udecode/plate-common/server';
 
 export const captionGlobalStore = createZustandStore('caption')({
   /**

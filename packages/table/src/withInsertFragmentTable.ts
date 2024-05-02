@@ -11,7 +11,7 @@ import {
   Value,
   withoutNormalizing,
   WithPlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import cloneDeep from 'lodash/cloneDeep.js';
 import { Path } from 'slate';
 

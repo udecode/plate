@@ -24,9 +24,9 @@ export const useFloatingLinkEscape = () => {
       ) {
         floatingLinkActions.show('edit', editor.id);
         focusEditor(editor, editor.selection!);
+
         return;
       }
-
       if (floatingLinkSelectors.mode() === 'insert') {
         focusEditor(editor, editor.selection!);
       }
@@ -34,9 +34,9 @@ export const useFloatingLinkEscape = () => {
       floatingLinkActions.hide();
     },
     {
-      enabled: open,
-      enableOnFormTags: ['INPUT'],
       enableOnContentEditable: true,
+      enableOnFormTags: ['INPUT'],
+      enabled: open,
     },
     []
   );

@@ -1,4 +1,4 @@
-import { createPluginFactory, Value } from '@udecode/plate-common';
+import { createPluginFactory, Value } from '@udecode/plate-common/server';
 
 import { onDropCloud, onPasteCloud } from './handlers';
 import { CloudPlugin, PlateCloudEditor } from './types';

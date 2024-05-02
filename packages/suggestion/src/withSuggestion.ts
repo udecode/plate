@@ -8,7 +8,7 @@ import {
   unsetNodes,
   Value,
   WithPlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from './constants';
 import { deleteFragmentSuggestion } from './transforms/deleteFragmentSuggestion';

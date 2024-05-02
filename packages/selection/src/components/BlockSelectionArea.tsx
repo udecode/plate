@@ -1,11 +1,12 @@
 import React from 'react';
+
 import { deselectEditor, useEditorRef } from '@udecode/plate-common';
 
 import { blockSelectionActions } from '../blockSelectionStore';
 import {
   SelectionArea,
-  SelectionAreaProps,
-  SelectionEvent,
+  type SelectionAreaProps,
+  type SelectionEvent,
 } from './SelectionArea';
 
 export interface BlockSelectionAreaProps extends Partial<SelectionAreaProps> {}
@@ -32,12 +33,10 @@ export const useBlockSelectionArea = (
 
   return {
     className: 'slate-SelectionArea',
-    style: {
-      position: 'relative',
-      width: '100%',
-    },
-    onStart,
     onMove,
+    onStart,
+    // Query selectors for elements which can be selected.
+    selectables: '.slate-selectable',
     // Class for the selection-area itself (the element).
     selectionAreaClass: 'slate-selection-area',
     // Class for the selection-area container.
@@ -46,10 +45,12 @@ export const useBlockSelectionArea = (
     // container="body"
     // document object - if you want to use it within an embed document (or iframe).
     // document={window.document}
-    // Query selectors for elements which can be selected.
-    selectables: '.slate-selectable',
     // Query selectors for elements from where a selection can be started from.
     startAreas: '.slate-start-area',
+    style: {
+      position: 'relative',
+      width: '100%',
+    },
     // Query selectors for elements which will be used as boundaries for the selection.
     // boundaries={['html']}
     // Behaviour related options.

@@ -1,19 +1,21 @@
 import { comboboxActions } from '@udecode/plate-combobox';
 import {
+  type PlateEditor,
+  type TNode,
+  type TText,
+  type Value,
+  type WithPlatePlugin,
   getEditorString,
   getNodeString,
   getPlugin,
   getPointBefore,
   getRange,
   moveSelection,
-  PlateEditor,
   setSelection,
-  TNode,
-  TText,
-  Value,
-  WithPlatePlugin,
 } from '@udecode/plate-common';
 import { Range } from 'slate';
+
+import type { MentionPlugin, TMentionInputElement } from './types';
 
 import { ELEMENT_MENTION_INPUT } from './createMentionPlugin';
 import {
@@ -22,7 +24,6 @@ import {
   isSelectionInMentionInput,
 } from './queries/index';
 import { removeMentionInput } from './transforms/removeMentionInput';
-import { MentionPlugin, TMentionInputElement } from './types';
 
 export const withMention = <
   V extends Value = Value,
@@ -30,19 +31,19 @@ export const withMention = <
 >(
   editor: E,
   {
-    options: { id, trigger, triggerPreviousCharPattern, query, inputCreation },
+    options: { id, inputCreation, query, trigger, triggerPreviousCharPattern },
   }: WithPlatePlugin<MentionPlugin, V, E>
 ) => {
   const { type } = getPlugin<{}, V>(editor, ELEMENT_MENTION_INPUT);
 
   const {
     apply,
-    insertBreak,
-    insertText,
     deleteBackward,
+    insertBreak,
     insertFragment,
-    insertTextData,
     insertNode,
+    insertText,
+    insertTextData,
   } = editor;
 
   const stripNewLineAndTrim: (text: string) => string = (text) => {
@@ -54,6 +55,7 @@ export const withMention = <
 
   editor.insertFragment = (fragment) => {
     const inMentionInput = findMentionInput(editor) !== undefined;
+
     if (!inMentionInput) {
       return insertFragment(fragment);
     }
@@ -65,11 +67,13 @@ export const withMention = <
 
   editor.insertTextData = (data) => {
     const inMentionInput = findMentionInput(editor) !== undefined;
+
     if (!inMentionInput) {
       return insertTextData(data);
     }
 
     const text = data.getData('text/plain');
+
     if (!text) {
       return false;
     }
@@ -81,8 +85,10 @@ export const withMention = <
 
   editor.deleteBackward = (unit) => {
     const currentMentionInput = findMentionInput(editor);
+
     if (currentMentionInput && getNodeString(currentMentionInput[0]) === '') {
       removeMentionInput(editor, currentMentionInput[1]);
+
       return moveSelection(editor, { unit: 'word' });
     }
 
@@ -121,13 +127,15 @@ export const withMention = <
 
     if (matchesPreviousCharPattern && text === trigger) {
       const data: TMentionInputElement = {
-        type,
         children: [{ text: '' }],
         trigger,
+        type,
       };
+
       if (inputCreation) {
         data[inputCreation.key] = inputCreation.value;
       }
+
       return insertNode(data);
     }
 
@@ -139,6 +147,7 @@ export const withMention = <
 
     if (operation.type === 'insert_text' || operation.type === 'remove_text') {
       const currentMentionInput = findMentionInput(editor);
+
       if (currentMentionInput) {
         comboboxActions.text(getNodeString(currentMentionInput[0]));
       }
@@ -155,7 +164,6 @@ export const withMention = <
         removeMentionInput(editor, previousMentionInputPath);
         moveSelection(editor, { unit: 'word' });
       }
-
       if (currentMentionInputPath) {
         comboboxActions.targetRange(editor.selection);
       }
@@ -179,14 +187,14 @@ export const withMention = <
         // an insert_node with the mention input, i.e. nothing indicating that it
         // was an undo.
         setSelection(editor, {
-          anchor: { path: operation.path.concat([0]), offset: text.length },
-          focus: { path: operation.path.concat([0]), offset: text.length },
+          anchor: { offset: text.length, path: operation.path.concat([0]) },
+          focus: { offset: text.length, path: operation.path.concat([0]) },
         });
 
         comboboxActions.open({
           activeId: id!,
-          text,
           targetRange: editor.selection,
+          text,
         });
       }
     } else if (

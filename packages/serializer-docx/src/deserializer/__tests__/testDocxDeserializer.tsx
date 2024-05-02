@@ -7,7 +7,7 @@ import {
   createPlateEditor,
   OverrideByKey,
   PlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { ELEMENT_H1, ELEMENT_H2, ELEMENT_H3 } from '@udecode/plate-heading';
 import { createHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { createIndentPlugin } from '@udecode/plate-indent';

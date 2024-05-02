@@ -1,7 +1,7 @@
 import {
   createPluginFactory,
   KEY_DESERIALIZE_HTML,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import juice from 'juice';
 
 export const KEY_JUICE = 'juice';

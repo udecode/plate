@@ -1,5 +1,5 @@
 import { withYHistory, WithYHistoryOptions, YjsEditor } from '@slate-yjs/core';
-import { TEditor, Value } from '@udecode/plate-common';
+import { TEditor, Value } from '@udecode/plate-common/server';
 import * as Y from 'yjs';
 
 import { YjsEditorProps } from './withTYjs';

@@ -9,7 +9,7 @@ import {
   setNodes,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
 import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';

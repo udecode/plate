@@ -9,7 +9,7 @@ import {
   TNodeProps,
   Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { SuggestionEditorProps, TSuggestionText } from '../types';
 import { getSuggestionProps } from './getSuggestionProps';

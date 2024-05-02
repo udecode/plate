@@ -4,7 +4,7 @@ import {
   TDescendant,
   TElement,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { ELEMENT_TABLE } from './createTablePlugin';
 import { getTableGridAbove } from './queries/getTableGridAbove';

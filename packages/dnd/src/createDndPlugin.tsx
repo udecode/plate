@@ -1,5 +1,5 @@
 import React from 'react';
-import { createPluginFactory } from '@udecode/plate-common';
+import { createPluginFactory } from '@udecode/plate-common/server';
 
 import { DndScroller, ScrollerProps } from './components/Scroller';
 import { dndStore } from './dndStore';

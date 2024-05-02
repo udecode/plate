@@ -3,7 +3,7 @@ import {
   FindNodeOptions,
   PlateEditor,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { MARK_SUGGESTION } from '../constants';
 import { TSuggestionText } from '../types';

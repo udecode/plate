@@ -1,4 +1,4 @@
-import { PlateEditor, TNodeEntry, Value } from '@udecode/plate-common';
+import { PlateEditor, TNodeEntry, Value } from '@udecode/plate-common/server';
 import last from 'lodash/last.js';
 
 import { buildToggleIndex } from '../toggle-controller-store';

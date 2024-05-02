@@ -7,7 +7,7 @@ import {
   removeNodes,
   Value,
   WithPlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { DeletePlugin } from './createDeletePlugin';
 

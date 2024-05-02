@@ -1,4 +1,4 @@
-import { createPluginFactory, HotkeyPlugin } from '@udecode/plate-common';
+import { createPluginFactory, HotkeyPlugin } from '@udecode/plate-common/server';
 
 import { onKeyDownColumn } from './onKeyDownColumn';
 import { withColumn } from './withColumn';

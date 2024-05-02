@@ -1,34 +1,33 @@
 import {
+  type ComboboxOnSelectItem,
+  type Data,
+  type NoData,
+  type TComboboxItem,
   comboboxActions,
-  ComboboxOnSelectItem,
   comboboxSelectors,
-  Data,
-  NoData,
-  TComboboxItem,
 } from '@udecode/plate-combobox';
 import {
+  type PlatePluginKey,
+  type TNodeProps,
   getBlockAbove,
   getPlugin,
   insertText,
   isEndPoint,
   moveSelection,
-  PlatePluginKey,
   removeNodes,
-  TNodeProps,
   withoutMergingHistory,
   withoutNormalizing,
 } from '@udecode/plate-common';
 
+import type { SlashPlugin, TSlashElement } from './types';
+
 import { KEY_SLASH_COMMAND } from './createSlashPlugin';
 import { isNodeSlashInput } from './queries/isNodeSlashInput';
-import { SlashPlugin, TSlashElement } from './types';
 
-export interface CreateSlashNode<TData extends Data> {
-  (
-    item: TComboboxItem<TData>,
-    meta: CreateSlashNodeMeta
-  ): TNodeProps<TSlashElement>;
-}
+export type CreateSlashNode<TData extends Data> = (
+  item: TComboboxItem<TData>,
+  meta: CreateSlashNodeMeta
+) => TNodeProps<TSlashElement>;
 
 export interface CreateSlashNodeMeta {
   search: string;
@@ -40,10 +39,11 @@ export const getSlashOnSelectItem =
   }: PlatePluginKey = {}): ComboboxOnSelectItem<TData> =>
   (editor: any, item: any) => {
     const targetRange = comboboxSelectors.targetRange();
+
     if (!targetRange) return;
 
     const {
-      options: { rules, insertSpaceAfterSlash },
+      options: { insertSpaceAfterSlash, rules },
     } = getPlugin<SlashPlugin>(editor, key);
 
     const pathAbove = getBlockAbove(editor)?.[1];

@@ -1,36 +1,35 @@
 import React from 'react';
+
+import { useEditorRef, useElement } from '@udecode/plate-common';
 import {
   collapseSelection,
   getPluginOptions,
-  useEditorRef,
-  useElement,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
+
+import type { TTableElement, TablePlugin } from '../../types';
 
 import { ELEMENT_TABLE } from '../../createTablePlugin';
 import { computeAllCellIndices } from '../../merge/computeCellIndices';
 import { useTableStore } from '../../stores/tableStore';
-import { TablePlugin, TTableElement } from '../../types';
 import { useSelectedCells } from './useSelectedCells';
 import { useTableColSizes } from './useTableColSizes';
 
 export interface TableElementState {
   colSizes: number[];
   isSelectingCell: boolean;
-  minColumnWidth: number;
   marginLeft: number;
+  minColumnWidth: number;
 }
 
 export const useTableElementState = ({
   transformColSizes,
 }: {
-  /**
-   * Transform node column sizes
-   */
+  /** Transform node column sizes */
   transformColSizes?: (colSizes: number[]) => number[];
 } = {}): TableElementState => {
   const editor = useEditorRef();
 
-  const { minColumnWidth, disableMarginLeft, enableMerging } =
+  const { disableMarginLeft, enableMerging, minColumnWidth } =
     getPluginOptions<TablePlugin>(editor, ELEMENT_TABLE);
 
   const element = useElement<TTableElement>();
@@ -52,7 +51,6 @@ export const useTableElementState = ({
   if (transformColSizes) {
     colSizes = transformColSizes(colSizes);
   }
-
   // add a last col to fill the remaining space
   if (!colSizes.includes(0)) {
     colSizes.push('100%' as any);
@@ -61,8 +59,8 @@ export const useTableElementState = ({
   return {
     colSizes,
     isSelectingCell: !!selectedCells,
-    minColumnWidth: minColumnWidth!,
     marginLeft,
+    minColumnWidth: minColumnWidth!,
   };
 };
 
@@ -73,6 +71,10 @@ export const useTableElement = () => {
   useSelectedCells();
 
   return {
+    colGroupProps: {
+      contentEditable: false,
+      style: { width: '100%' },
+    },
     props: {
       onMouseDown: () => {
         // until cell dnd is supported, we collapse the selection on mouse down
@@ -80,10 +82,6 @@ export const useTableElement = () => {
           collapseSelection(editor);
         }
       },
-    },
-    colGroupProps: {
-      contentEditable: false,
-      style: { width: '100%' },
     },
   };
 };

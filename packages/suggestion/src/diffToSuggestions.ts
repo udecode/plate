@@ -1,4 +1,4 @@
-import { nanoid, PlateEditor, TDescendant, Value } from '@udecode/plate-common';
+import { nanoid, PlateEditor, TDescendant, Value } from '@udecode/plate-common/server';
 import { computeDiff, ComputeDiffOptions } from '@udecode/plate-diff';
 
 import { getSuggestionProps } from './transforms';

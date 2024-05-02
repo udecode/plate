@@ -1,4 +1,4 @@
-import { findNode, PlateEditor, Value } from '@udecode/plate-common';
+import { findNode, PlateEditor, Value } from '@udecode/plate-common/server';
 
 import { TCommentText } from '../types';
 import { getCommentKey } from '../utils/getCommentKey';

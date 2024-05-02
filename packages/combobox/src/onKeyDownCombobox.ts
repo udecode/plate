@@ -1,9 +1,9 @@
 import {
   Hotkeys,
+  type KeyboardHandlerReturnType,
+  type PlateEditor,
+  type Value,
   isHotkey,
-  KeyboardHandlerReturnType,
-  PlateEditor,
-  Value,
 } from '@udecode/plate-common';
 
 import {
@@ -15,23 +15,25 @@ import { getNextWrappingIndex } from './utils/getNextWrappingIndex';
 
 /**
  * If the combobox is open, handle:
- * - down (next item)
- * - up (previous item)
- * - escape (reset combobox)
- * - tab, enter (select item)
+ *
+ * - Down (next item)
+ * - Up (previous item)
+ * - Escape (reset combobox)
+ * - Tab, enter (select item)
  */
 export const onKeyDownCombobox =
   <V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>(
     editor: E
   ): KeyboardHandlerReturnType =>
   (event) => {
-    const { highlightedIndex, filteredItems, activeId } =
+    const { activeId, filteredItems, highlightedIndex } =
       comboboxSelectors.state();
     const isOpen = comboboxSelectors.isOpen();
 
     if (!isOpen) return;
 
     const store = getComboboxStoreById(activeId);
+
     if (!store) return;
 
     const onSelectItem = store.get.onSelectItem();
@@ -47,6 +49,7 @@ export const onKeyDownCombobox =
         true
       );
       comboboxActions.highlightedIndex(newIndex);
+
       return;
     }
     if (isHotkey('up', event)) {
@@ -60,17 +63,19 @@ export const onKeyDownCombobox =
         true
       );
       comboboxActions.highlightedIndex(newIndex);
+
       return;
     }
     if (isHotkey('escape', event)) {
       event.preventDefault();
       comboboxActions.reset();
+
       return;
     }
-
     if (Hotkeys.isTab(editor, event) || isHotkey('enter', event)) {
       event.preventDefault();
       event.stopPropagation();
+
       if (filteredItems[highlightedIndex]) {
         onSelectItem?.(editor, filteredItems[highlightedIndex]);
       }

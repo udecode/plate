@@ -1,5 +1,5 @@
 import React from 'react';
-import { AnyObject, PlateRenderElementProps } from '@udecode/plate-common';
+import { AnyObject, PlateRenderElementProps } from '@udecode/plate-common/server';
 
 import { useWithDraggable, WithDraggableOptions } from './useWithDraggable';
 

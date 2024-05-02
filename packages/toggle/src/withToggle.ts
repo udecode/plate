@@ -5,7 +5,7 @@ import {
   PlateEditor,
   toggleNodeType,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { indent, TIndentElement } from '@udecode/plate-indent';
 
 import { getLastEntryEnclosedInToggle, isInClosedToggle } from './queries';

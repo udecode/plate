@@ -1,4 +1,4 @@
-import { createPluginFactory, QueryNodeOptions } from '@udecode/plate-common';
+import { createPluginFactory, QueryNodeOptions } from '@udecode/plate-common/server';
 
 import { withSelectOnBackspace } from './withSelectOnBackspace';
 

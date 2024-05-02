@@ -1,9 +1,7 @@
 import React from 'react';
-import {
-  someNode,
-  useEditorRef,
-  useEditorVersion,
-} from '@udecode/plate-common';
+
+import { useEditorRef, useEditorVersion } from '@udecode/plate-common';
+import { someNode } from '@udecode/plate-common/server';
 
 import { MARK_COMMENT } from '../constants';
 import {
@@ -33,7 +31,6 @@ export const useFloatingCommentsState = () => {
     ) {
       setActive(true);
     }
-
     if (!someNode(editor, { match: (n) => n[MARK_COMMENT] })) {
       setActiveCommentId(null);
       setActive(false);
@@ -52,7 +49,7 @@ export const useFloatingCommentsState = () => {
   }, [activeCommentId, resetNewCommentValue]);
 
   return {
-    loaded,
     activeCommentId,
+    loaded,
   };
 };

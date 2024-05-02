@@ -1,19 +1,21 @@
 import { comboboxActions } from '@udecode/plate-combobox';
 import {
+  type PlateEditor,
+  type TNode,
+  type TText,
+  type Value,
+  type WithPlatePlugin,
   getEditorString,
   getNodeString,
   getPlugin,
   getPointBefore,
   getRange,
   moveSelection,
-  PlateEditor,
   setSelection,
-  TNode,
-  TText,
-  Value,
-  WithPlatePlugin,
 } from '@udecode/plate-common';
 import { Range } from 'slate';
+
+import type { SlashPlugin, TSlashInputElement } from './types';
 
 import { ELEMENT_SLASH_INPUT } from './createSlashPlugin';
 import {
@@ -22,7 +24,6 @@ import {
   isSelectionInSlashInput,
 } from './queries/index';
 import { removeSlashInput } from './transforms';
-import { SlashPlugin, TSlashInputElement } from './types';
 
 export const withSlashCommand = <
   V extends Value = Value,
@@ -30,19 +31,19 @@ export const withSlashCommand = <
 >(
   editor: E,
   {
-    options: { id, trigger, triggerPreviousCharPattern, query, inputCreation },
+    options: { id, inputCreation, query, trigger, triggerPreviousCharPattern },
   }: WithPlatePlugin<SlashPlugin, V, E>
 ) => {
   const { type } = getPlugin<{}, V>(editor, ELEMENT_SLASH_INPUT);
 
   const {
     apply,
-    insertBreak,
-    insertText,
     deleteBackward,
+    insertBreak,
     insertFragment,
-    insertTextData,
     insertNode,
+    insertText,
+    insertTextData,
   } = editor;
 
   const stripNewLineAndTrim: (text: string) => string = (text) => {
@@ -54,6 +55,7 @@ export const withSlashCommand = <
 
   editor.insertFragment = (fragment) => {
     const inSlashInput = findSlashInput(editor) !== undefined;
+
     if (!inSlashInput) {
       return insertFragment(fragment);
     }
@@ -65,11 +67,13 @@ export const withSlashCommand = <
 
   editor.insertTextData = (data) => {
     const inSlashInput = findSlashInput(editor) !== undefined;
+
     if (!inSlashInput) {
       return insertTextData(data);
     }
 
     const text = data.getData('text/plain');
+
     if (!text) {
       return false;
     }
@@ -81,8 +85,10 @@ export const withSlashCommand = <
 
   editor.deleteBackward = (unit) => {
     const currentSlashInput = findSlashInput(editor);
+
     if (currentSlashInput && getNodeString(currentSlashInput[0]) === '') {
       removeSlashInput(editor, currentSlashInput[1]);
+
       return moveSelection(editor, { unit: 'word' });
     }
 
@@ -121,13 +127,15 @@ export const withSlashCommand = <
 
     if (matchesPreviousCharPattern && text === trigger) {
       const data: TSlashInputElement = {
-        type,
         children: [{ text: '' }],
         trigger,
+        type,
       };
+
       if (inputCreation) {
         data[inputCreation.key] = inputCreation.value;
       }
+
       return insertNode(data);
     }
 
@@ -139,6 +147,7 @@ export const withSlashCommand = <
 
     if (operation.type === 'insert_text' || operation.type === 'remove_text') {
       const currentSlashInput = findSlashInput(editor);
+
       if (currentSlashInput) {
         comboboxActions.text(getNodeString(currentSlashInput[0]));
       }
@@ -159,7 +168,6 @@ export const withSlashCommand = <
         removeSlashInput(editor, previousSlashInputPath);
         moveSelection(editor, { unit: 'word' });
       }
-
       if (currentSlashInputPath) {
         comboboxActions.targetRange(editor.selection);
       }
@@ -183,14 +191,14 @@ export const withSlashCommand = <
         // an insert_node with the slash input, i.e. nothing indicating that it
         // was an undo.
         setSelection(editor, {
-          anchor: { path: operation.path.concat([0]), offset: text.length },
-          focus: { path: operation.path.concat([0]), offset: text.length },
+          anchor: { offset: text.length, path: operation.path.concat([0]) },
+          focus: { offset: text.length, path: operation.path.concat([0]) },
         });
 
         comboboxActions.open({
           activeId: id!,
-          text,
           targetRange: editor.selection,
+          text,
         });
       }
     } else if (
@@ -200,6 +208,7 @@ export const withSlashCommand = <
       if ((operation.node as TSlashInputElement).trigger !== trigger) {
         return;
       }
+
       comboboxActions.reset();
     }
   };

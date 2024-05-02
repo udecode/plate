@@ -1,34 +1,33 @@
-import { HocuspocusProviderConfiguration } from '@hocuspocus/provider';
-import { WithCursorsOptions } from '@slate-yjs/core';
+import type { HocuspocusProviderConfiguration } from '@hocuspocus/provider';
+import type { WithCursorsOptions } from '@slate-yjs/core';
+
 import {
+  type PlateEditor,
+  type UnknownObject,
+  type Value,
   createPluginFactory,
-  PlateEditor,
-  UnknownObject,
-  Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
+
+import type { WithYjsOptions } from './withTYjs';
 
 import { RenderAboveEditableYjs } from './RenderAboveEditableYjs';
-import { PlateYjsEditorProps, withPlateYjs } from './withPlateYjs';
-import { WithYjsOptions } from './withTYjs';
+import { type PlateYjsEditorProps, withPlateYjs } from './withPlateYjs';
 
 export type YjsPlugin<TCursorData extends UnknownObject = UnknownObject> = {
-  /**
-   * withCursors options
-   */
+  /** WithCursors options */
   cursorOptions?: WithCursorsOptions<TCursorData>;
+
+  disableCursors?: boolean;
 
   /**
    * HocuspocusProvider configuration
+   *
    * @required
    */
   hocuspocusProviderOptions?: HocuspocusProviderConfiguration;
 
-  /**
-   * withYjs options
-   */
+  /** WithYjs options */
   yjsOptions?: WithYjsOptions;
-
-  disableCursors?: boolean;
 };
 
 export const KEY_YJS = 'yjs';
@@ -39,6 +38,6 @@ export const createYjsPlugin = createPluginFactory<
   PlateEditor & PlateYjsEditorProps
 >({
   key: KEY_YJS,
-  withOverrides: withPlateYjs,
   renderAboveEditable: RenderAboveEditableYjs,
+  withOverrides: withPlateYjs,
 });

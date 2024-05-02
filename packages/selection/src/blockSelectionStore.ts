@@ -1,4 +1,4 @@
-import { createZustandStore } from '@udecode/plate-common';
+import { createZustandStore } from '@udecode/plate-common/server';
 
 import { ChangedElements } from './components/SelectionArea';
 import { extractSelectableIds } from './utils/extractSelectableIds';

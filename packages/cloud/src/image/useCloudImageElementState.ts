@@ -1,8 +1,10 @@
 import React from 'react';
-import { findNodePath, setNodes, useEditorRef } from '@udecode/plate-common';
+
+import { findNodePath, useEditorRef } from '@udecode/plate-common';
+import { setNodes } from '@udecode/plate-common/server';
 import { useFocused, useSelected } from 'slate-react';
 
-import { generateSrcAndSrcSet, TCloudImageElement, useUpload } from '..';
+import { type TCloudImageElement, generateSrcAndSrcSet, useUpload } from '..';
 
 export const useCloudImageElementState = ({
   element,
@@ -16,8 +18,8 @@ export const useCloudImageElementState = ({
 
   React.useEffect(() => {
     /**
-     * We only want to update the actual URL of the element if the URL is not
-     * a blob URL and if it's different from the current URL.
+     * We only want to update the actual URL of the element if the URL is not a
+     * blob URL and if it's different from the current URL.
      *
      * NOTE:
      *
@@ -42,31 +44,31 @@ export const useCloudImageElementState = ({
     }
   }, [editor, element, url]);
 
-  const [size, setSize] = React.useState<{ width: number; height: number }>({
-    width: element.width,
+  const [size, setSize] = React.useState<{ height: number; width: number }>({
     height: element.height,
+    width: element.width,
   });
 
   React.useEffect(() => {
-    setSize({ width: element.width, height: element.height });
+    setSize({ height: element.height, width: element.width });
   }, [element.width, element.height]);
 
   const selected = useSelected();
   const focused = useFocused();
 
   const { src, srcSet } = generateSrcAndSrcSet({
-    url: upload.status === 'not-found' ? undefined : upload.url,
-    size: [element.width, element.height],
     maxSize: [element.maxWidth, element.maxHeight],
+    size: [element.width, element.height],
+    url: upload.status === 'not-found' ? undefined : upload.url,
   });
 
   return {
     focused,
     selected,
+    setSize,
+    size,
     src,
     srcSet,
-    size,
     upload,
-    setSize,
   };
 };

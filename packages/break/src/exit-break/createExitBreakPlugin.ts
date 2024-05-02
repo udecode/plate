@@ -1,4 +1,4 @@
-import { createPluginFactory } from '@udecode/plate-common';
+import { createPluginFactory } from '@udecode/plate-common/server';
 
 import { onKeyDownExitBreak } from './onKeyDownExitBreak';
 import { ExitBreakPlugin } from './types';

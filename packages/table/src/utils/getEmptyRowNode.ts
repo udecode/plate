@@ -1,4 +1,4 @@
-import { getPluginType, PlateEditor, Value } from '@udecode/plate-common';
+import { getPluginType, PlateEditor, Value } from '@udecode/plate-common/server';
 
 import { ELEMENT_TR } from '../createTablePlugin';
 import { getEmptyCellNode, GetEmptyCellNodeOptions } from './getEmptyCellNode';

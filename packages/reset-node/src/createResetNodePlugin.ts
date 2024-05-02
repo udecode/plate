@@ -10,7 +10,7 @@ import {
   TElement,
   unsetNodes,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Point } from 'slate';
 
 import { onKeyDownResetNode } from './onKeyDownResetNode';

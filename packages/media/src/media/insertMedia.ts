@@ -3,7 +3,7 @@ import {
   InsertNodesOptions,
   PlateEditor,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import {
   ELEMENT_IMAGE,
