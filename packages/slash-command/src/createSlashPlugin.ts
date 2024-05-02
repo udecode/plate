@@ -1,12 +1,13 @@
-import { withInsertTextTriggerCombobox } from '@udecode/plate-combobox';
+import {
+  TriggerComboboxPlugin,
+  withInsertTextTriggerCombobox,
+} from '@udecode/plate-combobox';
 import { createPluginFactory } from '@udecode/plate-common';
-
-import { SlashPlugin } from './types';
 
 export const KEY_SLASH_COMMAND = 'slash_command';
 export const ELEMENT_SLASH_INPUT = 'slash_input';
 
-export const createSlashPlugin = createPluginFactory<SlashPlugin>({
+export const createSlashPlugin = createPluginFactory<TriggerComboboxPlugin>({
   key: KEY_SLASH_COMMAND,
   withOverrides: withInsertTextTriggerCombobox,
   plugins: [
