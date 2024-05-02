@@ -9,7 +9,7 @@ import { Icons } from '@/components/icons';
 
 import { InlineCombobox } from './inline-combobox';
 
-export type SlashCommandRule = BaseComboboxItemWithEditor & {
+type SlashCommandRule = BaseComboboxItemWithEditor & {
   icon: ComponentType<SVGProps<SVGSVGElement>>;
 };
 
