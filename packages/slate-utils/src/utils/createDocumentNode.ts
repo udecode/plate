@@ -1,4 +1,4 @@
-import { TDescendant } from '@udecode/slate';
+import type { TDescendant } from '@udecode/slate';
 
 export const createDocumentNode = (
   type = 'p',
@@ -8,8 +8,8 @@ export const createDocumentNode = (
   {
     children: [
       {
-        type,
         children: [{ text }],
+        type,
       },
       ...remaining,
     ],

@@ -1,5 +1,7 @@
 export const ELEMENT_CODE_BLOCK = 'code_block';
+
 export const ELEMENT_CODE_LINE = 'code_line';
+
 export const ELEMENT_CODE_SYNTAX = 'code_syntax';
 
 // `
@@ -77,10 +79,10 @@ export const CODE_BLOCK_LANGUAGES: Record<string, string> = {
   antlr4: 'ANTLR4',
   bash: 'Bash',
   c: 'C',
+  cmake: 'CMake',
+  coffeescript: 'CoffeeScript',
   csharp: 'C#',
   css: 'CSS',
-  coffeescript: 'CoffeeScript',
-  cmake: 'CMake',
   dart: 'Dart',
   django: 'Django',
   docker: 'Docker',
@@ -101,8 +103,8 @@ export const CODE_BLOCK_LANGUAGES: Record<string, string> = {
   lua: 'Lua',
   makefile: 'Makefile',
   markdown: 'Markdown',
-  matlab: 'MATLAB',
   markup: 'Markup',
+  matlab: 'MATLAB',
   objectivec: 'Objective-C',
   perl: 'Perl',
   php: 'PHP',
@@ -113,17 +115,17 @@ export const CODE_BLOCK_LANGUAGES: Record<string, string> = {
   r: 'R',
   ruby: 'Ruby',
   sass: 'Sass (Sass)',
-  scss: 'Sass (Scss)',
-  // FIXME: Error with current scala grammar
   // scala: 'Scala',
   scheme: 'Scheme',
-  sql: 'SQL',
+  // FIXME: Error with current scala grammar
+  scss: 'Sass (Scss)',
   shell: 'Shell',
-  swift: 'Swift',
+  sql: 'SQL',
   svg: 'SVG',
+  swift: 'Swift',
   tsx: 'TSX',
   typescript: 'TypeScript',
   wasm: 'WebAssembly',
-  yaml: 'YAML',
   xml: 'XML',
+  yaml: 'YAML',
 };

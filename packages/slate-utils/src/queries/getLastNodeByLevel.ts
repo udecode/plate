@@ -1,18 +1,18 @@
 import {
-  ChildOf,
-  EElementOrText,
+  type ChildOf,
+  type EElementOrText,
+  type TEditor,
+  type TNode,
+  type TNodeEntry,
+  type Value,
   getLastNode,
   isAncestor,
-  TEditor,
-  TNode,
-  TNodeEntry,
-  Value,
 } from '@udecode/slate';
 
 const getLastChild = <N extends ChildOf<R>, R extends TNode>(
   node: R,
   level: number
-): R | N => {
+): N | R => {
   if (!(level + 1) || !isAncestor(node)) return node;
 
   const { children } = node;
@@ -22,9 +22,7 @@ const getLastChild = <N extends ChildOf<R>, R extends TNode>(
   return getLastChild(lastNode, level - 1) as N;
 };
 
-/**
- * Get the last node at a given level.
- */
+/** Get the last node at a given level. */
 export const getLastNodeByLevel = <
   N extends EElementOrText<V>,
   V extends Value = Value,

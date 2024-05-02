@@ -1,5 +1,5 @@
 import { useEditorRef } from '@udecode/plate-core';
-import { removeNodes, TElement } from '@udecode/slate';
+import { type TElement, removeNodes } from '@udecode/slate';
 import { findNodePath } from '@udecode/slate-react';
 
 export const useRemoveNodeButton = ({ element }: { element: TElement }) => {
@@ -7,13 +7,13 @@ export const useRemoveNodeButton = ({ element }: { element: TElement }) => {
 
   return {
     props: {
-      onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-      },
       onClick: () => {
         const path = findNodePath(editor, element);
 
         removeNodes(editor, { at: path });
+      },
+      onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
       },
     },
   };

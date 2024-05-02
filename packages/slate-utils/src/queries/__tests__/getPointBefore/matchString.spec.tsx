@@ -1,6 +1,7 @@
 /** @jsx jsx */
 
-import { PlateEditor } from '@udecode/plate-core';
+import type { PlateEditor } from '@udecode/plate-core';
+
 import { jsx } from '@udecode/plate-test-utils';
 
 import { getPointBeforeLocation } from '../../getPointBeforeLocation';
@@ -48,8 +49,8 @@ describe('when skipInvalid is true', () => {
 
       expect(
         getPointBeforeLocation(input, input.selection as any, {
-          skipInvalid: true,
           matchString: '**',
+          skipInvalid: true,
         })
       ).toEqual(output);
     });

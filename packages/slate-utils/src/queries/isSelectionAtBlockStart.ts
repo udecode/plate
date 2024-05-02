@@ -1,9 +1,9 @@
 import {
-  GetAboveNodeOptions,
+  type GetAboveNodeOptions,
+  type TEditor,
+  type Value,
   isExpanded,
   isStartPoint,
-  TEditor,
-  Value,
 } from '@udecode/slate';
 
 import { getBlockAbove } from './getBlockAbove';
@@ -18,9 +18,11 @@ export const isSelectionAtBlockStart = <V extends Value>(
   options?: GetAboveNodeOptions<V>
 ) => {
   const { selection } = editor;
+
   if (!selection) return false;
 
   const path = getBlockAbove(editor, options)?.[1];
+
   if (!path) return false;
 
   return (

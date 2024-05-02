@@ -1,6 +1,7 @@
 /** @jsx jsx */
 
-import { PlateEditor } from '@udecode/plate-common';
+import type { PlateEditor } from '@udecode/plate-common';
+
 import { jsx } from '@udecode/plate-test-utils';
 
 import { selectEditor } from './selectEditor';
@@ -9,6 +10,7 @@ jsx;
 
 describe('selectEditor', () => {
   describe('when edge is end', () => {});
+
   it('should set the cursor at the end', () => {
     const input = (
       <editor>
@@ -42,6 +44,7 @@ describe('selectEditor', () => {
   });
 
   describe('when edge is start', () => {});
+
   it('should set the cursor at the start', () => {
     const input = (
       <editor>
@@ -75,6 +78,7 @@ describe('selectEditor', () => {
   });
 
   describe('when at is defined', () => {});
+
   it('should set the cursor at', () => {
     const input = (
       <editor>
@@ -102,8 +106,8 @@ describe('selectEditor', () => {
 
     selectEditor(input, {
       at: {
-        anchor: { path: [0, 0], offset: 1 },
-        focus: { path: [0, 0], offset: 1 },
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
       },
     });
 

@@ -1,6 +1,7 @@
 /** @jsx jsx */
 
-import { PlateEditor } from '@udecode/plate-common';
+import type { PlateEditor } from '@udecode/plate-common';
+
 import { jsx } from '@udecode/plate-test-utils';
 
 import { isCodeBlockEmpty } from './isCodeBlockEmpty';

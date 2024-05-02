@@ -1,12 +1,12 @@
 import {
+  type TEditor,
+  type TElementEntry,
+  type Value,
   getEditorString,
   getRange,
   getStartPoint,
   insertText,
   isExpanded,
-  TEditor,
-  TElementEntry,
-  Value,
 } from '@udecode/plate-common/server';
 
 export interface IndentCodeLineOptions {
@@ -17,9 +17,10 @@ export interface IndentCodeLineOptions {
 
 /**
  * Indent if:
- * - the selection is expanded OR
- * - there are no non-whitespace characters left of the cursor
- * Indentation = 2 spaces.
+ *
+ * - The selection is expanded OR
+ * - There are no non-whitespace characters left of the cursor Indentation = 2
+ *   spaces.
  */
 export const indentCodeLine = <V extends Value>(
   editor: TEditor<V>,
@@ -36,6 +37,7 @@ export const indentCodeLine = <V extends Value>(
 
     if (/\S/.test(text)) {
       insertText(editor, indent, { at: editor.selection! });
+
       return;
     }
   }

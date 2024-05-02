@@ -3,8 +3,8 @@ import React from 'react';
 type PossibleRef<T> = React.Ref<T> | undefined;
 
 /**
- * Set a given ref to a given value
- * This utility takes care of different types of refs: callback refs and React.RefObject(s)
+ * Set a given ref to a given value This utility takes care of different types
+ * of refs: callback refs and React.RefObject(s)
  */
 const setRef = <T>(ref: PossibleRef<T>, value: T) => {
   if (typeof ref === 'function') {
@@ -15,8 +15,8 @@ const setRef = <T>(ref: PossibleRef<T>, value: T) => {
 };
 
 /**
- * A utility to compose multiple refs together
- * Accepts callback refs and React.RefObject(s)
+ * A utility to compose multiple refs together Accepts callback refs and
+ * React.RefObject(s)
  */
 export const composeRefs =
   <T>(...refs: PossibleRef<T>[]) =>
@@ -24,8 +24,8 @@ export const composeRefs =
     refs.forEach((ref) => setRef(ref, node));
 
 /**
- * A custom hook that composes multiple refs
- * Accepts callback refs and React.RefObject(s)
+ * A custom hook that composes multiple refs Accepts callback refs and
+ * React.RefObject(s)
  */
 export const useComposedRef = <T>(...refs: PossibleRef<T>[]) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps

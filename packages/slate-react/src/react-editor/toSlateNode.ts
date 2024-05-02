@@ -1,12 +1,11 @@
-import { TNode, Value } from '@udecode/slate';
+import type { TNode, Value } from '@udecode/slate';
+import type { DOMNode } from 'slate-react/dist/utils/dom';
+
 import { ReactEditor } from 'slate-react';
-import { DOMNode } from 'slate-react/dist/utils/dom';
 
-import { TReactEditor } from '../types/TReactEditor';
+import type { TReactEditor } from '../types/TReactEditor';
 
-/**
- * {@link ReactEditor.toSlateNode}
- */
+/** {@link ReactEditor.toSlateNode} */
 export const toSlateNode = <V extends Value>(
   editor: TReactEditor<V>,
   domNode: DOMNode

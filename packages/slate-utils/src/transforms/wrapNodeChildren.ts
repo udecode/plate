@@ -1,22 +1,24 @@
+import type { Modify } from '@udecode/utils';
+import type { Path } from 'slate';
+
 import {
-  EElement,
+  type EElement,
+  type TEditor,
+  type TElement,
+  type Value,
+  type WrapNodesOptions,
   getNode,
-  TEditor,
-  TElement,
-  Value,
   withoutNormalizing,
   wrapNodes,
-  WrapNodesOptions,
 } from '@udecode/slate';
-import { Modify } from '@udecode/utils';
-import { Path } from 'slate';
 
 import { moveChildren } from './moveChildren';
 
 /**
  * Wrap node children into a single element:
- * - wraps the first child node into the element
- * - move the other child nodes next to the element children.
+ *
+ * - Wraps the first child node into the element
+ * - Move the other child nodes next to the element children.
  */
 export const wrapNodeChildren = <
   N extends EElement<V>,
@@ -28,6 +30,7 @@ export const wrapNodeChildren = <
 ) => {
   const path = options?.at;
   const node = getNode<TElement>(editor, path);
+
   if (!node?.children) return;
 
   withoutNormalizing(editor, () => {
@@ -42,8 +45,8 @@ export const wrapNodeChildren = <
 
     moveChildren(editor, {
       at: path,
-      to: firstChildPath.concat([1]),
       fromStartIndex: 1,
+      to: firstChildPath.concat([1]),
     });
   });
 };

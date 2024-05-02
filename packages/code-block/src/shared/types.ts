@@ -1,4 +1,4 @@
-import {
+import type {
   HotkeyPlugin,
   InsertNodesOptions,
   TElement,
@@ -6,9 +6,9 @@ import {
 } from '@udecode/plate-common/server';
 
 export interface CodeBlockPlugin extends HotkeyPlugin {
+  deserializers?: string[];
   syntax?: boolean;
   syntaxPopularFirst?: boolean;
-  deserializers?: string[];
 }
 
 export interface TCodeBlockElement extends TElement {

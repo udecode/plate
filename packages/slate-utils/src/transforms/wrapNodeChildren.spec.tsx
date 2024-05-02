@@ -6,64 +6,64 @@ describe('wrapNodeChildren', () => {
   it('should wrap the children into a p', () => {
     const initialValue = [
       {
-        type: 'table',
         children: [
           {
-            type: 'tr',
             children: [
               {
-                type: 'td',
                 children: [
                   {
                     text: 'a',
                   },
                   {
-                    text: 'b',
                     bold: true,
+                    text: 'b',
                   },
                   {
-                    text: 'c',
                     italic: true,
+                    text: 'c',
                   },
                 ] as any,
+                type: 'td',
               },
             ],
+            type: 'tr',
           },
         ],
+        type: 'table',
       },
     ];
 
     const expectedValue = [
       {
-        type: 'table',
         children: [
           {
-            type: 'tr',
             children: [
               {
-                type: 'td',
                 children: [
                   {
-                    type: 'p',
                     children: [
                       {
                         text: 'a',
                       },
                       {
-                        text: 'b',
                         bold: true,
+                        text: 'b',
                       },
                       {
-                        text: 'c',
                         italic: true,
+                        text: 'c',
                       },
                     ],
+                    type: 'p',
                   },
                 ],
+                type: 'td',
               },
             ],
+            type: 'tr',
           },
         ],
+        type: 'table',
       },
     ];
 
@@ -73,8 +73,8 @@ describe('wrapNodeChildren', () => {
     wrapNodeChildren(
       editor,
       {
-        type: 'p',
         children: [],
+        type: 'p',
       },
       {
         at: [0, 0, 0],

@@ -1,19 +1,16 @@
 import {
+  type TEditor,
+  type Value,
   deleteText,
   getEditorString,
   getPointAfter,
   getRange,
   getStartPoint,
-  TEditor,
-  Value,
 } from '@udecode/plate-common/server';
 
-import { OutdentCodeLineOptions } from './outdentCodeLine';
+import type { OutdentCodeLineOptions } from './outdentCodeLine';
 
-/**
- * If there is a whitespace character at the start of the code line,
- * delete it.
- */
+/** If there is a whitespace character at the start of the code line, delete it. */
 export const deleteStartSpace = <V extends Value>(
   editor: TEditor<V>,
   { codeLine }: OutdentCodeLineOptions
@@ -27,6 +24,7 @@ export const deleteStartSpace = <V extends Value>(
 
   if (/\s/.test(spaceText)) {
     deleteText(editor, { at: spaceRange });
+
     return true;
   }
 

@@ -1,12 +1,13 @@
+import type { Point } from 'slate';
+
 import {
+  type TEditor,
+  type Value,
   getEditorString,
   getPointBefore,
   getRange,
-  TEditor,
-  Value,
 } from '@udecode/slate';
 import { escapeRegExp } from '@udecode/utils';
-import { Point } from 'slate';
 
 /**
  * Is the word at the point after a trigger (punctuation character)
@@ -39,7 +40,7 @@ export const isWordAfterTrigger = <V extends Value>(
   const match = beforeText ? beforeText.match(beforeRegex) : null;
 
   return {
-    range: beforeRange,
     match,
+    range: beforeRange,
   };
 };

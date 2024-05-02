@@ -1,6 +1,7 @@
 /** @jsx jsx */
 
-import { PlateEditor } from '@udecode/plate-common';
+import type { PlateEditor } from '@udecode/plate-common';
+
 import { jsx } from '@udecode/plate-test-utils';
 
 import { getPointBeforeLocation } from '../../../getPointBeforeLocation';
@@ -21,10 +22,10 @@ const output = { offset: 4, path: [0, 0] };
 it('should be', () => {
   expect(
     getPointBeforeLocation(input, input.selection as any, {
-      unit: 'word',
       afterMatch: true,
       matchString: 'test',
       skipInvalid: true,
+      unit: 'word',
     })
   ).toEqual(output);
 });

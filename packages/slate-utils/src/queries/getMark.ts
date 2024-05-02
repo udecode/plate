@@ -1,8 +1,6 @@
-import { getMarks, TEditor, Value } from '@udecode/slate';
+import { type TEditor, type Value, getMarks } from '@udecode/slate';
 
-/**
- * Get selection mark value by key.
- */
+/** Get selection mark value by key. */
 export const getMark = <V extends Value>(editor: TEditor<V>, key: string) => {
   if (!editor) return;
 

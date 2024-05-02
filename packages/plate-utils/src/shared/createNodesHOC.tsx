@@ -1,21 +1,18 @@
-import { AnyObject } from '@udecode/utils';
+import type { AnyObject } from '@udecode/utils';
+
 import castArray from 'lodash/castArray.js';
 import merge from 'lodash/merge.js';
 
 import { createNodeHOC } from './createNodeHOC';
 
-export type CreateHOCOptions<T> = Partial<T> &
-  AnyObject & {
-    /**
-     * Set HOC by key.
-     */
-    key?: string;
+export type CreateHOCOptions<T> = {
+  /** Set HOC by key. */
+  key?: string;
 
-    /**
-     * Set HOC by key.
-     */
-    keys?: string[];
-  };
+  /** Set HOC by key. */
+  keys?: string[];
+} & AnyObject &
+  Partial<T>;
 
 const createHOC = <T,>(withHOC: any) => {
   return (
@@ -45,16 +42,12 @@ const createHOC = <T,>(withHOC: any) => {
   };
 };
 
-/**
- * Create components HOC by plugin key.
- */
+/** Create components HOC by plugin key. */
 export const createNodesHOC = <T,>(HOC: React.FC<T>) => {
   return createHOC<T>(createNodeHOC(HOC));
 };
 
-/**
- * Create components HOC by plugin key with a custom HOC.
- */
+/** Create components HOC by plugin key with a custom HOC. */
 export const createNodesWithHOC = <T,>(
   withHOC: (component: any, props: T) => any
 ) => {

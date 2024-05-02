@@ -1,6 +1,7 @@
 /* eslint-disable react/display-name */
 
 import React from 'react';
+
 import { isDefined } from '@udecode/utils';
 import { clsx } from 'clsx';
 
@@ -8,30 +9,29 @@ import { createSlotComponent } from './createSlotComponent';
 import { useComposedRef } from './useComposedRef';
 
 /**
- * Primitive component factory. It uses hooks for managing
- * state and props, and forwards references to child components.
- * Component props:
- * - `asChild`: If true, the component will be rendered as a `Slot` {@link https://www.radix-ui.com/docs/primitives/utilities/slot}.
+ * Primitive component factory. It uses hooks for managing state and props, and
+ * forwards references to child components. Component props:
+ *
+ * - `asChild`: If true, the component will be rendered as a `Slot`
+ *   {@link https://www.radix-ui.com/docs/primitives/utilities/slot}.
  * - `options`: Options passed to the state hook.
  * - `state`: Provide your state instead of using the state hook.
  * - `className`: Class name to be merged to the component.
  * - `style`: Style object to be merged to the component.
  * - `setProps`: Function to set props from the props hook.
- * - `...props`: Props to be passed to the component.
- * Props hook return value:
+ * - `...props`: Props to be passed to the component. Props hook return value:
  * - `ref`: Reference to be forwarded to the component.
  * - `props`: Props to be passed to the component.
  * - `hidden`: If true, the component will not be rendered.
  *
+ * @example
+ *   const MyButton = createPrimitiveComponent(Button)({
+ *     stateHook: useButtonState,
+ *     propsHook: useButton,
+ *   });
+ *
  * @param {React.ElementType} element The base component or native HTML element.
  * @returns {function} A primitive component.
- *
- * @example
- *
- * const MyButton = createPrimitiveComponent(Button)({
- *   stateHook: useButtonState,
- *   propsHook: useButton
- * });
  */
 export const createPrimitiveComponent = <
   T extends React.ElementType,
@@ -45,8 +45,8 @@ export const createPrimitiveComponent = <
     propsHook,
     stateHook,
   }: {
-    stateHook?: SH;
     propsHook?: PH;
+    stateHook?: SH;
   } = {}) => {
     return React.forwardRef<
       any,
@@ -54,19 +54,19 @@ export const createPrimitiveComponent = <
         as?: React.ElementType;
         asChild?: boolean;
         className?: string;
-        style?: React.CSSProperties;
         options?: Parameters<SH>[0];
-        state?: Parameters<PH>[0];
         setProps?: (hookProps: NonNullable<ReturnType<PH>['props']>) => P;
+        state?: Parameters<PH>[0];
+        style?: React.CSSProperties;
       } & P
     >(
       (
         {
           asChild,
-          options,
-          state: stateProp,
           className: classNameProp,
           getClassName,
+          options,
+          state: stateProp,
           ...props
         },
         ref
@@ -77,12 +77,12 @@ export const createPrimitiveComponent = <
             ? stateHook(options as any)
             : undefined;
         const {
-          ref: hookRef,
-          props: hookProps,
           hidden,
+          props: hookProps,
+          ref: hookRef,
         } = propsHook
           ? propsHook(state)
-          : { props: {}, hidden: false, ref: null };
+          : { hidden: false, props: {}, ref: null };
 
         const _ref = useComposedRef(ref, hookRef);
         const className =
@@ -98,8 +98,8 @@ export const createPrimitiveComponent = <
 
         return (
           <Comp
-            ref={_ref}
             asChild={asChild}
+            ref={_ref}
             {...hookProps}
             className={className}
             style={style}

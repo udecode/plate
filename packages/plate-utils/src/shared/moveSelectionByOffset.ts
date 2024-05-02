@@ -1,9 +1,9 @@
 import {
+  type KeyboardEventHandler,
+  type PlateEditor,
   isHotkey,
-  KeyboardEventHandler,
-  PlateEditor,
 } from '@udecode/plate-core/server';
-import { moveSelection, Value } from '@udecode/slate';
+import { type Value, moveSelection } from '@udecode/slate';
 import { Range } from 'slate';
 
 export interface MoveSelectionByOffsetOptions<V extends Value = Value> {
@@ -21,16 +21,16 @@ export const moveSelectionByOffset: <V extends Value>(
     if (!selection || Range.isExpanded(selection) || !query(editor)) {
       return false;
     }
-
     if (isHotkey('left', event)) {
       event.preventDefault();
-      moveSelection(editor, { unit: 'offset', reverse: true });
+      moveSelection(editor, { reverse: true, unit: 'offset' });
+
       return true;
     }
-
     if (isHotkey('right', event)) {
       event.preventDefault();
       moveSelection(editor, { unit: 'offset' });
+
       return true;
     }
   };

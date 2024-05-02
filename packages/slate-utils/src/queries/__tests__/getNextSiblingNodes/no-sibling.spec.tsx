@@ -1,10 +1,11 @@
 /** @jsx jsx */
 
-import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
+import type { TDescendant } from '@udecode/slate';
+import type { Range } from 'slate';
+
+import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
 import { createLinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
-import { TDescendant } from '@udecode/slate';
-import { Range } from 'slate';
 
 import { getBlockAbove } from '../../getBlockAbove';
 import { getNextSiblingNodes } from '../../getNextSiblingNodes';

@@ -1,28 +1,27 @@
 import {
+  type TEditor,
+  type Value,
   getPointAfter,
   getPointBefore,
   getVoidNode,
-  TEditor,
-  Value,
 } from '@udecode/slate';
-import { Path, Point } from 'slate';
+import { Path, type Point } from 'slate';
 
 import { getBlockAbove } from './getBlockAbove';
 
 /**
- * If the start point is inside an inline void, get the point before or after it.
+ * If the start point is inside an inline void, get the point before or after
+ * it.
  */
 export const getPointNextToVoid = <V extends Value>(
   editor: TEditor<V>,
   {
-    at,
     after,
+    at,
   }: {
-    at: Point;
-    /**
-     * Get the point after (instead of before) the void node.
-     */
+    /** Get the point after (instead of before) the void node. */
     after?: boolean;
+    at: Point;
   }
 ) => {
   const startVoid = getVoidNode(editor, { at, mode: 'highest' });

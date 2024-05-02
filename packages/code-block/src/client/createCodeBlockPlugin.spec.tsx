@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
+import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -36,7 +36,6 @@ describe('code block deserialization', () => {
           createParagraphPlugin(),
           createCodeBlockPlugin(),
           {
-            key: 'a',
             editor: {
               insertData: {
                 format: 'text/plain',
@@ -45,6 +44,7 @@ describe('code block deserialization', () => {
                 },
               },
             },
+            key: 'a',
           },
         ],
       });

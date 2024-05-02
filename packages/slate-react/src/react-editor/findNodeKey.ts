@@ -1,11 +1,10 @@
-import { TNode, Value } from '@udecode/slate';
+import type { TNode, Value } from '@udecode/slate';
+
 import { ReactEditor } from 'slate-react';
 
-import { TReactEditor } from '../types/TReactEditor';
+import type { TReactEditor } from '../types/TReactEditor';
 
-/**
- * Find a key for a Slate node.
- */
+/** Find a key for a Slate node. */
 export const findNodeKey = <V extends Value>(
   editor: TReactEditor<V>,
   node: TNode

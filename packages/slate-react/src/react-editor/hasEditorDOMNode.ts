@@ -1,12 +1,11 @@
-import { Value } from '@udecode/slate';
+import type { Value } from '@udecode/slate';
+import type { DOMNode } from 'slate-react/dist/utils/dom';
+
 import { ReactEditor } from 'slate-react';
-import { DOMNode } from 'slate-react/dist/utils/dom';
 
-import { TReactEditor } from '../types/TReactEditor';
+import type { TReactEditor } from '../types/TReactEditor';
 
-/**
- * Check if a DOM node is within the editor.
- */
+/** Check if a DOM node is within the editor. */
 export const hasEditorDOMNode = <V extends Value>(
   editor: TReactEditor<V>,
   target: DOMNode,

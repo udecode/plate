@@ -1,12 +1,16 @@
-import { getMarks, removeEditorMark, TEditor, Value } from '@udecode/slate';
+import {
+  type TEditor,
+  type Value,
+  getMarks,
+  removeEditorMark,
+} from '@udecode/slate';
 
-/**
- * Remove selection marks.
- */
+/** Remove selection marks. */
 export const removeSelectionMark = <V extends Value = Value>(
   editor: TEditor<V>
 ) => {
   const marks = getMarks(editor);
+
   if (!marks) return;
 
   // remove all marks

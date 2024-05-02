@@ -1,36 +1,34 @@
 import React from 'react';
-import { Text, TextProps, useComposedRef } from '@udecode/react-utils';
-import { EText, TText, Value } from '@udecode/slate';
-import { clsx } from 'clsx';
 
 import type { PlateRenderLeafProps } from '@udecode/plate-core/server';
+import type { EText, TText, Value } from '@udecode/slate';
+
+import { Text, type TextProps, useComposedRef } from '@udecode/react-utils';
+import { clsx } from 'clsx';
 
 export type PlateLeafProps<
   V extends Value = Value,
   N extends TText = EText<V>,
-> = PlateRenderLeafProps<V, N> &
-  TextProps & {
-    /**
-     * Get HTML attributes from Slate leaf. Alternative to `PlatePlugin.props`.
-     */
-    leafToAttributes?: (leaf: N) => any;
-  };
+> = {
+  /** Get HTML attributes from Slate leaf. Alternative to `PlatePlugin.props`. */
+  leafToAttributes?: (leaf: N) => any;
+} & PlateRenderLeafProps<V, N> &
+  TextProps;
 
 export const usePlateLeaf = <T extends TText = TText>(
   props: PlateLeafProps<Value, T>
 ) => {
   const {
-    editor,
     attributes,
-    nodeProps,
-    text,
+    editor,
     leaf,
     leafToAttributes,
+    nodeProps,
+    text,
     ...rootProps
   } = props;
 
   return {
-    ref: useComposedRef(props.ref, (attributes as any).ref),
     props: {
       ...attributes,
       ...rootProps,
@@ -38,15 +36,14 @@ export const usePlateLeaf = <T extends TText = TText>(
       ...leafToAttributes?.(leaf as T),
       className: clsx(props.className, nodeProps?.className),
     },
+    ref: useComposedRef(props.ref, (attributes as any).ref),
   };
 };
 
-/**
- * Headless leaf component.
- */
+/** Headless leaf component. */
 const PlateLeaf = React.forwardRef<HTMLSpanElement, PlateLeafProps>(
   (props: PlateLeafProps, ref) => {
-    const { ref: rootRef, props: rootProps } = usePlateLeaf({ ...props, ref });
+    const { props: rootProps, ref: rootRef } = usePlateLeaf({ ...props, ref });
 
     return <Text {...rootProps} ref={rootRef} />;
   }
