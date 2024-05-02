@@ -1,15 +1,15 @@
-export interface MatchWordsOptions {
+export interface FilterWordsOptions {
   prefixMode?: 'none' | 'all-words' | 'last-word';
   wordQuantifier?: 'match-all' | 'match-any';
 }
 
-export const matchWords = (
+export const filterWords = (
   haystack: string,
   needle: string,
   {
     prefixMode = 'last-word',
     wordQuantifier = 'match-all',
-  }: MatchWordsOptions = {}
+  }: FilterWordsOptions = {}
 ): boolean => {
   const haystackWords = haystack.trim().split(/\s+/);
   const needleWords = needle.trim().split(/\s+/);

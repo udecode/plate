@@ -8,7 +8,7 @@ import {
 } from '@ariakit/react';
 import {
   BaseComboboxItemWithEditor,
-  matchWords,
+  filterWords,
   useComboboxInput,
   useHTMLInputCursorState,
 } from '@udecode/plate-combobox';
@@ -30,15 +30,15 @@ const comboboxItemVariants = cva(
   }
 );
 
-const defaultMatchItem = (
+const defaultFilter = (
   { value, keywords = [] }: BaseComboboxItemWithEditor,
   search: string
-) => [value, ...keywords].some((keyword) => matchWords(keyword, search));
+) => [value, ...keywords].some((keyword) => filterWords(keyword, search));
 
 interface InlineComboboxProps<TItem extends BaseComboboxItemWithEditor> {
   trigger: string;
   items: TItem[];
-  matchItem?: (item: TItem, search: string) => boolean;
+  filter?: (item: TItem, search: string) => boolean;
   renderItem?: (item: TItem) => ReactNode;
   renderEmpty?: ReactNode;
   onSelectItem?: (item: TItem) => void;
@@ -47,7 +47,7 @@ interface InlineComboboxProps<TItem extends BaseComboboxItemWithEditor> {
 export const InlineCombobox = <TItem extends BaseComboboxItemWithEditor>({
   trigger,
   items,
-  matchItem = defaultMatchItem,
+  filter = defaultFilter,
   renderItem = ({ value }) => value,
   renderEmpty,
   onSelectItem,
@@ -58,8 +58,8 @@ export const InlineCombobox = <TItem extends BaseComboboxItemWithEditor>({
   const cursorState = useHTMLInputCursorState(inputRef);
 
   const filteredItems = useMemo(
-    () => items.filter((item) => matchItem(item, value)),
-    [items, matchItem, value]
+    () => items.filter((item) => filter(item, value)),
+    [items, filter, value]
   );
 
   const { removeInput, props: inputProps } = useComboboxInput({
