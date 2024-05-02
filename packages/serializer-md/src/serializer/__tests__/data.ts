@@ -2,10 +2,18 @@ export const editorValueMock = [
   {
     children: [
       {
+        text: 'to be skipped',
+      },
+    ],
+    type: 'metadata',
+  },
+  {
+    children: [
+      {
         text: 'Rich Text Editor',
       },
     ],
-    type: 'uui-richTextEditor-header-1',
+    type: 'h1',
   },
   {
     children: [
@@ -13,7 +21,23 @@ export const editorValueMock = [
         text: 'Introduction',
       },
     ],
-    type: 'uui-richTextEditor-header-3',
+    type: 'h3',
+  },
+  {
+    children: [
+      {
+        text: 'H5 is a paragraph',
+      },
+    ],
+    type: 'h5',
+  },
+  {
+    children: [
+      {
+        text: 'H6 is skipped',
+      },
+    ],
+    type: 'h6',
   },
   {
     children: [
@@ -26,14 +50,14 @@ export const editorValueMock = [
             text: 'slate.js',
           },
         ],
-        type: 'link',
+        type: 'a',
         url: 'https://www.slatejs.org/',
       },
       {
         text: " library. Slate.JS is a framework to build editors, and it's highly configurable with plugins. Here we picked and tuned dozen of plugins, build several plugins ourselves, added common styles and UX on top of it. One can pick from our default set of plugins, or even introduce new, app-specific plugins, on top.",
       },
     ],
-    type: 'paragraph',
+    type: 'p',
   },
   {
     children: [
@@ -41,7 +65,7 @@ export const editorValueMock = [
         text: 'Unlikely to most Rich-Text editors, Slate uses JSON data model instead of HTML, which allows it to embed any entities, like arbitrary React components. For example, this checkbox, is a custom react component:\nAn item\nWe include HTML to Slate JSON converter, which is also used to convert pasted HTML.',
       },
     ],
-    type: 'paragraph',
+    type: 'p',
   },
   {
     children: [
@@ -49,7 +73,7 @@ export const editorValueMock = [
         text: 'Out of the box components',
       },
     ],
-    type: 'uui-richTextEditor-header-2',
+    type: 'h2',
   },
   {
     children: [
@@ -57,7 +81,7 @@ export const editorValueMock = [
         text: 'Basic layout',
       },
     ],
-    type: 'uui-richTextEditor-header-3',
+    type: 'h3',
   },
   {
     children: [
@@ -65,21 +89,35 @@ export const editorValueMock = [
         text: 'We support inline text styles: ',
       },
       {
+        bold: true,
         text: 'bold',
-        'uui-richTextEditor-bold': true,
       },
       {
         text: ', ',
       },
       {
+        italic: true,
         text: 'italic',
-        'uui-richTextEditor-italic': true,
       },
       {
-        text: ', underlined, text colors: red, yellow, and green.',
+        text: ', ',
+      },
+      {
+        strikethrough: true,
+        text: 'strikethrough',
+      },
+      {
+        text: ', ',
+      },
+      {
+        text: 'underline',
+        underline: true,
+      },
+      {
+        text: ', text colors: red, yellow, and green.',
       },
     ],
-    type: 'paragraph',
+    type: 'p',
   },
   {
     children: [
@@ -87,7 +125,7 @@ export const editorValueMock = [
         text: 'Numbered lists:',
       },
     ],
-    type: 'paragraph',
+    type: 'p',
   },
   {
     children: [
@@ -99,10 +137,10 @@ export const editorValueMock = [
                 text: "In edit mode, we detect  '1.' and start list automatically",
               },
             ],
-            type: 'list-item-child',
+            type: 'lic',
           },
         ],
-        type: 'list-item',
+        type: 'li',
       },
       {
         children: [
@@ -112,13 +150,13 @@ export const editorValueMock = [
                 text: "You can use 'tab' / 'shift/tab' to indent the list",
               },
             ],
-            type: 'list-item-child',
+            type: 'lic',
           },
         ],
-        type: 'list-item',
+        type: 'li',
       },
     ],
-    type: 'ordered-list',
+    type: 'ol',
   },
   {
     children: [
@@ -126,7 +164,7 @@ export const editorValueMock = [
         text: 'Bullet lists:',
       },
     ],
-    type: 'paragraph',
+    type: 'p',
   },
   {
     children: [
@@ -138,10 +176,10 @@ export const editorValueMock = [
                 text: "Type '- ' to start the list",
               },
             ],
-            type: 'list-item-child',
+            type: 'lic',
           },
         ],
-        type: 'list-item',
+        type: 'li',
       },
       {
         children: [
@@ -151,7 +189,7 @@ export const editorValueMock = [
                 text: "You can create multi-level lists with 'tab' / 'shift+tab'. Example:",
               },
             ],
-            type: 'list-item-child',
+            type: 'lic',
           },
           {
             children: [
@@ -163,7 +201,7 @@ export const editorValueMock = [
                         text: 'Level 2',
                       },
                     ],
-                    type: 'list-item-child',
+                    type: 'lic',
                   },
                   {
                     children: [
@@ -175,25 +213,25 @@ export const editorValueMock = [
                                 text: 'Level 3',
                               },
                             ],
-                            type: 'list-item-child',
+                            type: 'lic',
                           },
                         ],
-                        type: 'list-item',
+                        type: 'li',
                       },
                     ],
-                    type: 'unordered-list',
+                    type: 'ul',
                   },
                 ],
-                type: 'list-item',
+                type: 'li',
               },
             ],
-            type: 'unordered-list',
+            type: 'ul',
           },
         ],
-        type: 'list-item',
+        type: 'li',
       },
     ],
-    type: 'unordered-list',
+    type: 'ul',
   },
   {
     children: [
@@ -201,6 +239,103 @@ export const editorValueMock = [
         text: "There's also support 3 levels of headers, hyperlinks, superscript, and more.",
       },
     ],
-    type: 'paragraph',
+    type: 'p',
+  },
+  // {
+  //   children: [
+  //     {
+  //       text: '',
+  //     },
+  //   ],
+  //   type: 'img',
+  //   url: 'https://platejs.org/og.png',
+  // },
+  {
+    children: [
+      {
+        text: 'Indent list 1',
+      },
+    ],
+    indent: 1,
+    listStyleType: 'disc',
+    type: 'p',
+  },
+  {
+    children: [
+      {
+        text: 'Indent list 1.1',
+      },
+    ],
+    indent: 2,
+    listStyleType: 'disc',
+    type: 'p',
+  },
+  {
+    children: [
+      {
+        text: 'Indent list 1.1.1',
+      },
+    ],
+    indent: 3,
+    listStyleType: 'disc',
+    type: 'p',
+  },
+  {
+    children: [
+      {
+        text: 'Indent list 1.2',
+      },
+    ],
+    indent: 2,
+    listStyleType: 'disc',
+    type: 'p',
+  },
+  {
+    children: [
+      {
+        text: 'Indent ol 1',
+      },
+    ],
+    indent: 1,
+    listStyleType: 'decimal',
+    type: 'p',
+  },
+  {
+    children: [
+      {
+        text: 'Indent ol 1.1',
+      },
+    ],
+    indent: 2,
+    listStyleType: 'decimal',
+    type: 'p',
+  },
+  {
+    children: [
+      {
+        text: 'Indent ol 2',
+      },
+    ],
+    indent: 1,
+    listStart: 2,
+    listStyleType: 'decimal',
+    type: 'p',
+  },
+  {
+    children: [
+      {
+        text: 'Custom node ',
+      },
+      {
+        children: [{ text: '' }],
+        type: 'mention',
+        value: 'mention',
+      },
+      {
+        color: 'blue',
+        text: 'mark',
+      },
+    ],
+    type: 'p',
   },
 ];

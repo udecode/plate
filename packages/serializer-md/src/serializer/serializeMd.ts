@@ -1,42 +1,36 @@
-import {
-  type PlateEditor,
-  type Value,
-  getPluginType,
-} from '@udecode/plate-common/server';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
+import type { PlateEditor } from '@udecode/plate-common/server';
 
-import { serialize } from './serialize';
-import { getRemarkNodeTypesMap } from './types';
+import merge from 'lodash/merge.js';
 
-const isEditorValueEmpty = <V extends Value>(
-  editor: PlateEditor<V>,
-  value: Value
+import type {
+  SerializeMdNodeOptions,
+  SerializeMdOptions,
+} from './serializeMdNode';
+
+import { serializeMdNodes } from './serializeMdNodes';
+
+/** Serialize the editor value to Markdown. */
+export const serializeMd = (
+  editor: PlateEditor,
+  options?: Parameters<typeof serializeMdNodes>['1']
 ) => {
-  return (
-    !value ||
-    value.length === 0 ||
-    (value.length === 1 &&
-      value[0].type === getPluginType(editor, ELEMENT_PARAGRAPH) &&
-      value[0].children[0].text === '')
+  const plugins = editor.plugins.filter((p) => p.isElement || p.isLeaf);
+
+  const nodes = plugins.reduce(
+    (acc, plugin) => {
+      (acc as any)[plugin.key] = {
+        isLeaf: plugin.isLeaf,
+        isVoid: plugin.isVoid,
+        type: plugin.type,
+      } as SerializeMdNodeOptions;
+
+      return acc;
+    },
+    {} as SerializeMdOptions['nodes']
   );
-};
 
-export const serializeMd = <V extends Value>(
-  editor: PlateEditor<V>,
-  {
-    nodes,
-  }: {
-    /** Slate nodes to convert to HTML. */
-    nodes: Value;
-  }
-) => {
-  if (isEditorValueEmpty(editor, nodes)) {
-    return '';
-  }
-
-  return nodes
-    ?.map((v) =>
-      serialize(editor, v, { nodeTypes: getRemarkNodeTypesMap(editor) })
-    )
-    .join('');
+  return serializeMdNodes(editor.children, {
+    ...options,
+    nodes: merge(nodes, options?.nodes),
+  });
 };
