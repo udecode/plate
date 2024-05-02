@@ -19,13 +19,11 @@ export const createSlashPlugin = createPluginFactory<TriggerComboboxPlugin>({
     },
   ],
   options: {
-    combobox: {
-      trigger: '/',
-      triggerPreviousCharPattern: /^\s?$/,
-      createInputNode: () => ({
-        type: ELEMENT_SLASH_INPUT,
-        children: [{ text: '' }],
-      }),
-    },
+    trigger: '/',
+    triggerPreviousCharPattern: /^\s?$/,
+    createComboboxInput: () => ({
+      type: ELEMENT_SLASH_INPUT,
+      children: [{ text: '' }],
+    }),
   },
 });

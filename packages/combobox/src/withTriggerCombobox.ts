@@ -18,12 +18,10 @@ export const withTriggerCombobox = <
   {
     type,
     options: {
-      combobox: {
-        trigger,
-        triggerPreviousCharPattern,
-        query,
-        createInputNode,
-      } = {},
+      trigger,
+      triggerPreviousCharPattern,
+      triggerQuery,
+      createComboboxInput,
     },
   }: WithPlatePlugin<TriggerComboboxPlugin, V, E>
 ) => {
@@ -33,7 +31,7 @@ export const withTriggerCombobox = <
     if (
       !editor.selection ||
       text !== trigger ||
-      (query && !query(editor as PlateEditor))
+      (triggerQuery && !triggerQuery(editor as PlateEditor))
     ) {
       return insertText(text);
     }
@@ -52,8 +50,8 @@ export const withTriggerCombobox = <
       triggerPreviousCharPattern?.test(previousChar);
 
     if (matchesPreviousCharPattern && text === trigger) {
-      const inputNode: TElement = createInputNode
-        ? createInputNode()
+      const inputNode: TElement = createComboboxInput
+        ? createComboboxInput()
         : { type, children: [{ text: '' }] };
 
       return editor.insertNode(inputNode);
