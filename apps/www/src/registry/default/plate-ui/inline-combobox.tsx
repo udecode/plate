@@ -257,7 +257,7 @@ const InlineComboboxItem = ({
 
   return (
     <ComboboxItem
-      className={comboboxItemVariants()}
+      className={cn(comboboxItemVariants(), className)}
       onClick={(event) => {
         removeInput(true);
         onClick?.(event);
