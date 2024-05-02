@@ -1,5 +1,11 @@
 # @udecode/slate
 
+## 32.0.1
+
+### Patch Changes
+
+- [#3164](https://github.com/udecode/plate/pull/3164) by [@felixfeng33](https://github.com/felixfeng33) – Add writeHistory
+
 ## 31.0.0
 
 ## 25.0.0
