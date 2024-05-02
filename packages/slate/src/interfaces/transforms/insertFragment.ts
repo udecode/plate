@@ -1,12 +1,11 @@
+import type { TextInsertFragmentOptions } from 'slate/dist/interfaces/transforms/text';
+
 import { Transforms } from 'slate';
-import { TextInsertFragmentOptions } from 'slate/dist/interfaces/transforms/text';
 
-import { TEditor, Value } from '../editor/TEditor';
-import { EElementOrText } from '../element/TElement';
+import type { TEditor, Value } from '../editor/TEditor';
+import type { EElementOrText } from '../element/TElement';
 
-/**
- * Insert a fragment at a specific location in the editor.
- */
+/** Insert a fragment at a specific location in the editor. */
 export const insertFragment = <
   N extends EElementOrText<V>,
   V extends Value = Value,

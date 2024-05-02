@@ -1,11 +1,9 @@
-import { Node, Path } from 'slate';
+import { Node, type Path } from 'slate';
 
-import { NodeOf, TNode } from './TNode';
-import { TNodeEntry } from './TNodeEntry';
+import type { NodeOf, TNode } from './TNode';
+import type { TNodeEntry } from './TNodeEntry';
 
-/**
- * Get the last node entry in a root node from a path.
- */
+/** Get the last node entry in a root node from a path. */
 export const getNodeLastNode = <N extends NodeOf<R>, R extends TNode = TNode>(
   root: R,
   path: Path

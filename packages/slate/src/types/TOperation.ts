@@ -1,85 +1,85 @@
-import { TDescendant } from '../interfaces/node/TDescendant';
-import { TPath, TRange } from './interfaces';
+import type { TDescendant } from '../interfaces/node/TDescendant';
+import type { TPath, TRange } from './interfaces';
 
 export type TInsertNodeOperation<N extends TDescendant = TDescendant> = {
-  type: 'insert_node';
-  path: TPath;
-  node: N;
   [key: string]: unknown;
+  node: N;
+  path: TPath;
+  type: 'insert_node';
 };
 
 export type TInsertTextOperation = {
-  type: 'insert_text';
-  path: TPath;
-  offset: number;
-  text: string;
   [key: string]: unknown;
+  offset: number;
+  path: TPath;
+  text: string;
+  type: 'insert_text';
 };
 
 export type TMergeNodeOperation = {
-  type: 'merge_node';
+  [key: string]: unknown;
   path: TPath;
   position: number;
   properties: object;
-  [key: string]: unknown;
+  type: 'merge_node';
 };
 
 export type TMoveNodeOperation = {
-  type: 'move_node';
-  path: TPath;
-  newPath: TPath;
   [key: string]: unknown;
+  newPath: TPath;
+  path: TPath;
+  type: 'move_node';
 };
 
 export type TRemoveNodeOperation<N extends TDescendant = TDescendant> = {
-  type: 'remove_node';
-  path: TPath;
-  node: N;
   [key: string]: unknown;
+  node: N;
+  path: TPath;
+  type: 'remove_node';
 };
 
 export type TRemoveTextOperation = {
-  type: 'remove_text';
-  path: TPath;
-  offset: number;
-  text: string;
   [key: string]: unknown;
+  offset: number;
+  path: TPath;
+  text: string;
+  type: 'remove_text';
 };
 
 export type TSetNodeOperation = {
-  type: 'set_node';
+  [key: string]: unknown;
+  newProperties: object;
   path: TPath;
   properties: object;
-  newProperties: object;
-  [key: string]: unknown;
+  type: 'set_node';
 };
 
 export type TSetSelectionOperation =
   | {
-      type: 'set_selection';
-      properties: null;
-      newProperties: TRange;
       [key: string]: unknown;
-    }
-  | {
-      type: 'set_selection';
-      properties: Partial<TRange>;
       newProperties: Partial<TRange>;
-      [key: string]: unknown;
+      properties: Partial<TRange>;
+      type: 'set_selection';
     }
   | {
-      type: 'set_selection';
-      properties: TRange;
-      newProperties: null;
       [key: string]: unknown;
+      newProperties: TRange;
+      properties: null;
+      type: 'set_selection';
+    }
+  | {
+      [key: string]: unknown;
+      newProperties: null;
+      properties: TRange;
+      type: 'set_selection';
     };
 
 export type TSplitNodeOperation = {
-  type: 'split_node';
+  [key: string]: unknown;
   path: TPath;
   position: number;
   properties: object;
-  [key: string]: unknown;
+  type: 'split_node';
 };
 
 export type TNodeOperation<N extends TDescendant = TDescendant> =
@@ -91,6 +91,7 @@ export type TNodeOperation<N extends TDescendant = TDescendant> =
   | TSplitNodeOperation;
 
 export type TSelectionOperation = TSetSelectionOperation;
+
 export type TTextOperation = TInsertTextOperation | TRemoveTextOperation;
 
 /**

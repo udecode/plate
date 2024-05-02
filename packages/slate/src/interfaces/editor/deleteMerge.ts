@@ -1,6 +1,8 @@
-import { Editor, Location, Path, Point, Range } from 'slate';
+import { Editor, type Location, Path, Point, Range } from 'slate';
 
-import { TNodeEntry } from '../node/TNodeEntry';
+import type { TNodeEntry } from '../node/TNodeEntry';
+import type { TEditor, Value } from './TEditor';
+
 import { mergeNodes } from '../transforms/mergeNodes';
 import { removeNodes } from '../transforms/removeNodes';
 import { select } from '../transforms/select';
@@ -16,7 +18,6 @@ import { getStartPoint } from './getStartPoint';
 import { getVoidNode } from './getVoidNode';
 import { isBlock } from './isBlock';
 import { isVoid } from './isVoid';
-import { TEditor, Value } from './TEditor';
 import { withoutNormalizing } from './withoutNormalizing';
 
 export const deleteMerge = <V extends Value>(
@@ -24,18 +25,18 @@ export const deleteMerge = <V extends Value>(
   options: {
     at?: Location;
     distance?: number;
-    unit?: 'character' | 'word' | 'line' | 'block';
-    reverse?: boolean;
     hanging?: boolean;
-    voids?: boolean;
+    reverse?: boolean;
     test?: any;
+    unit?: 'block' | 'character' | 'line' | 'word';
+    voids?: boolean;
   } = {}
 ): void => {
   withoutNormalizing(editor as any, () => {
     const {
+      distance = 1,
       reverse = false,
       unit = 'character',
-      distance = 1,
       voids = false,
     } = options;
     let { at = editor.selection, hanging = false } = options;
@@ -43,11 +44,9 @@ export const deleteMerge = <V extends Value>(
     if (!at) {
       return;
     }
-
     if (Range.isRange(at) && Range.isCollapsed(at)) {
       at = at.anchor;
     }
-
     if (Point.isPoint(at)) {
       const furthestVoid = getVoidNode(editor as any, { at, mode: 'highest' });
 
@@ -55,7 +54,7 @@ export const deleteMerge = <V extends Value>(
         const [, voidPath] = furthestVoid;
         at = voidPath;
       } else {
-        const opts = { unit, distance };
+        const opts = { distance, unit };
         const target = reverse
           ? getPointBefore(editor as any, at, opts) ||
             getStartPoint(editor as any, [])
@@ -65,29 +64,27 @@ export const deleteMerge = <V extends Value>(
         hanging = true;
       }
     }
-
     if (Path.isPath(at)) {
       removeNodes(editor, { at, voids });
+
       return;
     }
-
     if (Range.isCollapsed(at)) {
       return;
     }
-
     if (!hanging) {
       at = Editor.unhangRange(editor as any, at, { voids });
     }
 
     let [start, end] = Range.edges(at);
     const startBlock = getAboveNode(editor, {
-      match: (n) => isBlock(editor as any, n),
       at: start,
+      match: (n) => isBlock(editor as any, n),
       voids,
     });
     const endBlock = getAboveNode(editor, {
-      match: (n) => isBlock(editor as any, n),
       at: end,
+      match: (n) => isBlock(editor as any, n),
       voids,
     });
     const isAcrossBlocks =
@@ -108,7 +105,6 @@ export const deleteMerge = <V extends Value>(
         start = before;
       }
     }
-
     if (endVoid) {
       const after = getPointAfter(editor as any, end);
 
@@ -123,13 +119,13 @@ export const deleteMerge = <V extends Value>(
     let lastPath: Path | undefined;
 
     const _nodes = getNodeEntries(editor as any, { at, voids });
+
     for (const entry of _nodes) {
       const [node, path] = entry;
 
       if (lastPath && Path.compare(path, lastPath) === 0) {
         continue;
       }
-
       if (
         (!voids && isVoid(editor as any, node)) ||
         (!Path.isCommon(path, start.path) && !Path.isCommon(path, end.path))
@@ -151,7 +147,7 @@ export const deleteMerge = <V extends Value>(
       const { path } = point;
       const { offset } = start;
       const text = node.text.slice(offset);
-      editor.apply({ type: 'remove_text', path, offset, text });
+      editor.apply({ offset, path, text, type: 'remove_text' });
     }
 
     for (const pathRef of pathRefs) {
@@ -165,9 +161,8 @@ export const deleteMerge = <V extends Value>(
       const { path } = point;
       const offset = isSingleText ? start.offset : 0;
       const text = node.text.slice(offset, end.offset);
-      editor.apply({ type: 'remove_text', path, offset, text });
+      editor.apply({ offset, path, text, type: 'remove_text' });
     }
-
     if (!isSingleText && isAcrossBlocks && endRef.current && startRef.current) {
       // DIFF: allow custom mergeNodes
       mergeNodes(editor as any, {

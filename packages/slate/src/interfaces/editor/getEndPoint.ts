@@ -1,10 +1,8 @@
-import { Editor, Location } from 'slate';
+import { Editor, type Location } from 'slate';
 
-import { TEditor, Value } from './TEditor';
+import type { TEditor, Value } from './TEditor';
 
-/**
- * Get the end point of a location.
- */
+/** Get the end point of a location. */
 export const getEndPoint = <V extends Value>(
   editor: TEditor<V>,
   at: Location

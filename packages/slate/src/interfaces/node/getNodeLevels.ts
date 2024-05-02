@@ -1,7 +1,7 @@
-import { Node, NodeLevelsOptions, Path } from 'slate';
+import { Node, type NodeLevelsOptions, type Path } from 'slate';
 
-import { NodeOf, TNode } from './TNode';
-import { TNodeEntry } from './TNodeEntry';
+import type { NodeOf, TNode } from './TNode';
+import type { TNodeEntry } from './TNodeEntry';
 
 /**
  * Return a generator of the in a branch of the tree, from a specific path.
