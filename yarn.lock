@@ -6266,7 +6266,6 @@ __metadata:
   dependencies:
     "@types/papaparse": "npm:^5.3.14"
     "@udecode/plate-common": "workspace:^"
-    "@udecode/plate-table": "npm:32.0.0"
     papaparse: "npm:^5.4.1"
   peerDependencies:
     "@udecode/plate-common": ">=32.0.1"
@@ -6284,12 +6283,6 @@ __metadata:
   resolution: "@udecode/plate-serializer-docx@workspace:packages/serializer-docx"
   dependencies:
     "@udecode/plate-common": "workspace:^"
-    "@udecode/plate-heading": "npm:32.0.0"
-    "@udecode/plate-indent": "npm:32.0.0"
-    "@udecode/plate-indent-list": "npm:32.0.1"
-    "@udecode/plate-media": "npm:32.0.0"
-    "@udecode/plate-paragraph": "npm:32.0.0"
-    "@udecode/plate-table": "npm:32.0.0"
     validator: "npm:^13.11.0"
   peerDependencies:
     "@udecode/plate-common": ">=32.0.1"

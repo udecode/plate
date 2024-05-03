@@ -1,21 +1,9 @@
 import {
-  createPluginFactory,
-  DeserializeHtml,
+  type DeserializeHtml,
   KEY_DESERIALIZE_HTML,
-  PlatePlugin,
+  type PlatePlugin,
+  createPluginFactory,
 } from '@udecode/plate-common/server';
-import {
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_H3,
-  ELEMENT_H4,
-  ELEMENT_H5,
-  ELEMENT_H6,
-} from '@udecode/plate-heading';
-import { KEY_INDENT, KEY_TEXT_INDENT } from '@udecode/plate-indent';
-import { KEY_LIST_STYLE_TYPE, ListStyleType } from '@udecode/plate-indent-list';
-import { ELEMENT_IMAGE } from '@udecode/plate-media';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 
 import { cleanDocx } from '../docx-cleaner/cleanDocx';
 import {
@@ -36,38 +24,31 @@ const getListNode =
     const node: any = { type };
 
     if (isDocxList(element)) {
-      node[KEY_INDENT] = getDocxListIndent(element);
+      node.indent = getDocxListIndent(element);
 
       const text = element.textContent ?? '';
 
-      node[KEY_LIST_STYLE_TYPE] =
-        getTextListStyleType(text) ?? ListStyleType.Disc;
+      node.listStyleType = getTextListStyleType(text) ?? 'disc';
 
       element.innerHTML = getDocxListContentHtml(element);
     } else {
       const indent = getDocxIndent(element);
+
       if (indent) {
-        node[KEY_INDENT] = indent;
+        node.indent = indent;
       }
 
       const textIndent = getDocxTextIndent(element);
+
       if (textIndent) {
-        node[KEY_TEXT_INDENT] = textIndent;
+        node.textIndent = textIndent;
       }
     }
 
     return node;
   };
 
-const KEYS = [
-  ELEMENT_PARAGRAPH,
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_H3,
-  ELEMENT_H4,
-  ELEMENT_H5,
-  ELEMENT_H6,
-];
+const KEYS = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
 
 const overrideByKey: Record<string, Partial<PlatePlugin>> = {};
 
@@ -82,7 +63,6 @@ KEYS.forEach((key) => {
 });
 
 export const createDeserializeDocxPlugin = createPluginFactory({
-  key: KEY_DESERIALIZE_DOCX,
   inject: {
     pluginsByKey: {
       [KEY_DESERIALIZE_HTML]: {
@@ -98,9 +78,10 @@ export const createDeserializeDocxPlugin = createPluginFactory({
       },
     },
   },
+  key: KEY_DESERIALIZE_DOCX,
   overrideByKey: {
     ...overrideByKey,
-    [ELEMENT_IMAGE]: {
+    img: {
       editor: {
         insertData: {
           query: ({ dataTransfer }) => {
