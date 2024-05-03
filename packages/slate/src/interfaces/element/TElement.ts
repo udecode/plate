@@ -37,12 +37,14 @@ export type EElementOrText<V extends Value> = EElement<V> | EText<V>;
 export type ElementOf<N extends TNode> = TEditor extends N
   ? TElement
   : TElement extends N
-  ? TElement
-  : N extends TEditor
-  ? Extract<N['children'][number], TElement> | ElementOf<N['children'][number]>
-  : N extends TElement
-  ?
-      | N
-      | Extract<N['children'][number], TElement>
-      | ElementOf<N['children'][number]>
-  : never;
+    ? TElement
+    : N extends TEditor
+      ?
+          | Extract<N['children'][number], TElement>
+          | ElementOf<N['children'][number]>
+      : N extends TElement
+        ?
+            | N
+            | Extract<N['children'][number], TElement>
+            | ElementOf<N['children'][number]>
+        : never;

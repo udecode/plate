@@ -24,14 +24,14 @@ export type EText<V extends Value> = TextOf<TEditor<V>>;
 export type TextOf<N extends TNode> = TEditor extends N
   ? TText
   : TElement extends N
-  ? TText
-  : N extends TEditor
-  ? TextOf<N['children'][number]>
-  : N extends TElement
-  ? Extract<N['children'][number], TText> | TextOf<N['children'][number]>
-  : N extends TText
-  ? N
-  : never;
+    ? TText
+    : N extends TEditor
+      ? TextOf<N['children'][number]>
+      : N extends TElement
+        ? Extract<N['children'][number], TText> | TextOf<N['children'][number]>
+        : N extends TText
+          ? N
+          : never;
 
 /**
  * A utility type to get all the mark types from a root node type.
@@ -42,6 +42,5 @@ export type MarksOf<N extends TNode> = Simplify<
 
 export type EMarks<V extends Value> = MarksOf<TEditor<V>>;
 
-export type MarkKeysOf<N extends TNode> = {} extends MarksOf<N>
-  ? unknown
-  : keyof MarksOf<N>;
+export type MarkKeysOf<N extends TNode> =
+  {} extends MarksOf<N> ? unknown : keyof MarksOf<N>;

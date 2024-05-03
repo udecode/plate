@@ -1,10 +1,10 @@
 import { PlateEditor, TElement } from '@udecode/plate-common';
 
 export interface TriggerComboboxPlugin {
-  trigger?: string;
+  trigger?: string | string[] | RegExp;
   triggerPreviousCharPattern?: RegExp;
   triggerQuery?: (editor: PlateEditor) => boolean;
-  createComboboxInput?: () => TElement;
+  createComboboxInput?: (trigger: string) => TElement;
 }
 
 export type ComboboxInputCursorState = {

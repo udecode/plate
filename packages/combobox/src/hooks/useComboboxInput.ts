@@ -1,7 +1,14 @@
-import { HTMLAttributes, RefObject, useCallback, useEffect } from 'react';
+import {
+  HTMLAttributes,
+  RefObject,
+  useCallback,
+  useEffect,
+  useRef,
+} from 'react';
 import {
   findNodePath,
   focusEditor,
+  Hotkeys,
   isHotkey,
   removeNodes,
   useEditorRef,
@@ -20,6 +27,7 @@ export interface UseComboboxInputOptions {
   cancelInputOnArrowLeftRight?: boolean;
   cancelInputOnDeselect?: boolean;
   cancelInputOnBlur?: boolean;
+  forwardUndoRedoToEditor?: boolean;
   onCancelInput?: (cause: CancelComboboxInputCause) => void;
 }
 
@@ -41,6 +49,7 @@ export const useComboboxInput = ({
   cancelInputOnArrowLeftRight = true,
   cancelInputOnDeselect = true,
   cancelInputOnBlur = true,
+  forwardUndoRedoToEditor = true,
   onCancelInput,
 }: UseComboboxInputOptions): UseComboboxInputResult => {
   const editor = useEditorRef();
@@ -81,10 +90,20 @@ export const useComboboxInput = ({
     }
   }, [autoFocus, ref]);
 
+  /**
+   * Storing the previous selection lets us determine whether the input has
+   * been actively deselected. When undoing or redoing causes a combobox input
+   * to be inserted, selected can be temporarily false. Removing the input at
+   * this point is incorrect and crashes the editor.
+   */
+  const previousSelected = useRef(selected);
+
   useEffect(() => {
-    if (!selected && cancelInputOnDeselect) {
+    if (previousSelected.current && !selected && cancelInputOnDeselect) {
       cancelInput('deselect');
     }
+
+    previousSelected.current = selected;
   }, [selected, cancelInputOnDeselect, cancelInput]);
 
   return {
@@ -118,6 +137,15 @@ export const useComboboxInput = ({
           isHotkey('arrowright', event)
         ) {
           cancelInput('arrowRight', true);
+        }
+
+        const isUndo = Hotkeys.isUndo(event) && editor.history.undos.length > 0;
+        const isRedo = Hotkeys.isRedo(event) && editor.history.redos.length > 0;
+
+        if (forwardUndoRedoToEditor && (isUndo || isRedo)) {
+          event.preventDefault();
+          editor[isUndo ? 'undo' : 'redo']();
+          focusEditor(editor);
         }
       },
       onBlur: () => {

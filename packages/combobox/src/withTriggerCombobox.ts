@@ -27,10 +27,22 @@ export const withTriggerCombobox = <
 ) => {
   const { insertText } = editor;
 
+  const matchesTrigger = (text: string) => {
+    if (trigger instanceof RegExp) {
+      return trigger.test(text);
+    }
+
+    if (Array.isArray(trigger)) {
+      return trigger.includes(text);
+    }
+
+    return text === trigger;
+  };
+
   editor.insertText = (text) => {
     if (
       !editor.selection ||
-      text !== trigger ||
+      !matchesTrigger(text) ||
       (triggerQuery && !triggerQuery(editor as PlateEditor))
     ) {
       return insertText(text);
@@ -49,9 +61,9 @@ export const withTriggerCombobox = <
     const matchesPreviousCharPattern =
       triggerPreviousCharPattern?.test(previousChar);
 
-    if (matchesPreviousCharPattern && text === trigger) {
+    if (matchesPreviousCharPattern) {
       const inputNode: TElement = createComboboxInput
-        ? createComboboxInput()
+        ? createComboboxInput(text)
         : { type, children: [{ text: '' }] };
 
       return editor.insertNode(inputNode);

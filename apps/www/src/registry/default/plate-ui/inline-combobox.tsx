@@ -42,6 +42,7 @@ type FilterFn = (
 
 interface InlineComboboxContextValue {
   trigger: string;
+  showTrigger: boolean;
   filter: FilterFn | false;
   value: string;
   inputRef: RefObject<HTMLInputElement>;
@@ -60,24 +61,35 @@ const defaultFilter: FilterFn = ({ value, keywords = [] }, search) =>
   [value, ...keywords].some((keyword) => filterWords(keyword, search));
 
 interface InlineComboboxProps {
+  value?: string;
+  setValue?: (value: string) => void;
   trigger: string;
+  showTrigger?: boolean;
   filter?: FilterFn | false;
   children: ReactNode;
 }
 
 const InlineCombobox = ({
+  value: valueProp,
+  setValue: setValueProp,
   trigger,
+  showTrigger = true,
   filter = defaultFilter,
   children,
 }: InlineComboboxProps) => {
   const editor = useEditorRef();
-  const [value, setValue] = useState('');
   const inputRef = React.useRef<HTMLInputElement>(null);
   const cursorState = useHTMLInputCursorState(inputRef);
+
+  const [valueState, setValueState] = useState('');
+  const hasValueProp = valueProp !== undefined;
+  const value = hasValueProp ? valueProp : valueState;
+  const setValue = hasValueProp ? setValueProp ?? (() => {}) : setValueState;
 
   const { removeInput, props: inputProps } = useComboboxInput({
     ref: inputRef,
     cursorState,
+    cancelInputOnBlur: false,
     onCancelInput: (cause) => {
       if (cause !== 'backspace') {
         insertText(editor, trigger + value);
@@ -103,6 +115,7 @@ const InlineCombobox = ({
   const contextValue: InlineComboboxContextValue = useMemo(
     () => ({
       trigger,
+      showTrigger,
       filter,
       value,
       inputRef,
@@ -114,6 +127,7 @@ const InlineCombobox = ({
     }),
     [
       trigger,
+      showTrigger,
       filter,
       value,
       inputRef,
@@ -141,12 +155,13 @@ const InlineCombobox = ({
 const InlineComboboxInput = forwardRef<
   HTMLInputElement,
   HTMLAttributes<HTMLInputElement>
->((props, propRef) => {
+>(({ className, ...props }, propRef) => {
   const {
     inputRef: contextRef,
     inputProps,
     value,
     trigger,
+    showTrigger,
   } = useContext(InlineComboboxContext);
 
   const ref = useComposedRef(propRef, contextRef);
@@ -160,21 +175,24 @@ const InlineComboboxInput = forwardRef<
 
   return (
     <>
-      {trigger}
+      {showTrigger && trigger}
 
-      <span className="relative">
+      <span className="relative min-h-[1lh]">
         <span
           aria-hidden="true"
           className="invisible overflow-hidden text-nowrap"
         >
-          {value}
+          {value || '\u200B'}
         </span>
 
         <Combobox
           ref={ref}
           autoSelect
           value={value}
-          className="absolute left-0 top-0 size-full bg-transparent outline-none"
+          className={cn(
+            'absolute left-0 top-0 size-full bg-transparent outline-none',
+            className
+          )}
           {...inputProps}
           {...props}
         />

@@ -20,7 +20,6 @@ import { selectOnBackspacePlugin } from '@/plate/demo/plugins/selectOnBackspaceP
 import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
 import { trailingBlockPlugin } from '@/plate/demo/plugins/trailingBlockPlugin';
-import { MENTIONABLES } from '@/plate/demo/values/mentionables';
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
 import { cn } from '@udecode/cn';
 import { createAlignPlugin } from '@udecode/plate-alignment';
@@ -128,7 +127,6 @@ import {
   TodoLi,
   TodoMarker,
 } from '@/registry/default/plate-ui/indent-todo-marker-component';
-import { MentionCombobox } from '@/registry/default/plate-ui/mention-combobox';
 
 export const usePlaygroundPlugins = ({
   id,
@@ -427,10 +425,6 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
                       <PlaygroundFloatingToolbarButtons id={id} />
                     )}
                   </FloatingToolbar>
-                )}
-
-                {isEnabled('mention', id, enabled['mention-combobox']) && (
-                  <MentionCombobox items={MENTIONABLES} />
                 )}
 
                 {isEnabled('cursoroverlay', id) && (

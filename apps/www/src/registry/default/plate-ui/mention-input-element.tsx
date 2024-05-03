@@ -1,33 +1,64 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { cn, withRef } from '@udecode/cn';
-import { getHandler, PlateElement } from '@udecode/plate-common';
-import { useFocused, useSelected } from 'slate-react';
+import { PlateElement } from '@udecode/plate-common';
+import { getMentionOnSelectItem } from '@udecode/plate-mention';
 
-export const MentionInputElement = withRef<
-  typeof PlateElement,
-  {
-    onClick?: (mentionNode: any) => void;
+import { MENTIONABLES } from '@/lib/plate/demo/values/mentionables';
+
+import {
+  InlineCombobox,
+  InlineComboboxContent,
+  InlineComboboxEmpty,
+  InlineComboboxInput,
+  InlineComboboxItem,
+} from './inline-combobox';
+
+const onSelectItem = getMentionOnSelectItem();
+
+export const MentionInputElement = withRef<typeof PlateElement>(
+  ({ className, ...props }, ref) => {
+    const { children, element, editor } = props;
+    const [search, setSearch] = useState('');
+
+    return (
+      <PlateElement
+        as="span"
+        ref={ref}
+        data-slate-value={element.value}
+        {...props}
+      >
+        <InlineCombobox
+          value={search}
+          setValue={setSearch}
+          trigger="@"
+          showTrigger={false}
+        >
+          <span
+            className={cn(
+              'inline-block rounded-md bg-muted px-1.5 py-0.5 align-baseline text-sm ring-ring focus-within:ring-2',
+              className
+            )}
+          >
+            <InlineComboboxInput />
+          </span>
+
+          <InlineComboboxContent className="my-1.5">
+            <InlineComboboxEmpty>No results found</InlineComboboxEmpty>
+
+            {MENTIONABLES.map((item) => (
+              <InlineComboboxItem
+                key={item.key}
+                value={item.text}
+                onClick={() => onSelectItem(editor, item, search)}
+              >
+                {item.text}
+              </InlineComboboxItem>
+            ))}
+          </InlineComboboxContent>
+        </InlineCombobox>
+
+        {children}
+      </PlateElement>
+    );
   }
->(({ className, onClick, ...props }, ref) => {
-  const { children, element } = props;
-
-  const selected = useSelected();
-  const focused = useFocused();
-
-  return (
-    <PlateElement
-      ref={ref}
-      asChild
-      data-slate-value={element.value}
-      className={cn(
-        'inline-block rounded-md bg-muted px-1.5 py-0.5 align-baseline text-sm',
-        selected && focused && 'ring-2 ring-ring',
-        className
-      )}
-      onClick={getHandler(onClick, element)}
-      {...props}
-    >
-      <span>{children}</span>
-    </PlateElement>
-  );
-});
+);

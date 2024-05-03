@@ -23,8 +23,8 @@ export type EDescendant<V extends Value> = DescendantOf<TEditor<V>>;
 export type DescendantOf<N extends TNode> = N extends TEditor
   ? ElementOf<N> | TextOf<N>
   : N extends TElement
-  ? ElementOf<N['children'][number]> | TextOf<N>
-  : never;
+    ? ElementOf<N['children'][number]> | TextOf<N>
+    : never;
 
 /**
  * A utility type to get the child node types from a root node type.
@@ -35,8 +35,8 @@ export type ChildOf<
 > = N extends TEditor
   ? N['children'][I]
   : N extends TElement
-  ? N['children'][I]
-  : never;
+    ? N['children'][I]
+    : never;
 
 export const isDescendant: (value: any) => value is TDescendant = ((
   node: any

@@ -1,22 +1,24 @@
-import { Data, NoData } from '@udecode/plate-combobox';
-import { PlateEditor, TElement } from '@udecode/plate-common';
+import { TriggerComboboxPlugin } from '@udecode/plate-combobox';
+import { TElement, TNodeProps } from '@udecode/plate-common';
 
-import { CreateMentionNode } from './getMentionOnSelectItem';
-
-export interface TMentionElement extends TElement {
-  value: string;
+export interface TMentionItemBase {
+  text: string;
 }
 
 export interface TMentionInputElement extends TElement {
   trigger: string;
 }
 
-export interface MentionPlugin<TData extends Data = NoData> {
-  createMentionNode?: CreateMentionNode<TData>;
-  id?: string;
+export interface TMentionElement extends TElement {
+  value: string;
+}
+
+export interface MentionPlugin<
+  TItem extends TMentionItemBase = TMentionItemBase,
+> extends TriggerComboboxPlugin {
+  createMentionNode?: (
+    item: TItem,
+    search: string
+  ) => TNodeProps<TMentionElement>;
   insertSpaceAfterMention?: boolean;
-  trigger?: string;
-  triggerPreviousCharPattern?: RegExp;
-  inputCreation?: { key: string; value: string };
-  query?: (editor: PlateEditor) => boolean;
 }

@@ -22,8 +22,8 @@ export type NodeOf<N extends TNode> = N | ElementOf<N> | TextOf<N>;
 export type TNodeProps<N extends TNode> = N extends TEditor
   ? Omit<N, 'children'>
   : N extends TElement
-  ? Omit<N, 'children'>
-  : Omit<N, 'text'>;
+    ? Omit<N, 'children'>
+    : Omit<N, 'text'>;
 
 /**
  * A helper type for narrowing matched nodes with a predicate.
