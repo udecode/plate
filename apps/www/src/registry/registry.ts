@@ -416,13 +416,6 @@ const ui: Registry = [
     files: ['plate-ui/media-toolbar-button.tsx'],
   },
   {
-    name: 'mention-combobox',
-    type: 'components:plate-ui',
-    dependencies: ['@udecode/plate-mention', '@udecode/plate-combobox'],
-    registryDependencies: ['combobox'],
-    files: ['plate-ui/mention-combobox.tsx'],
-  },
-  {
     name: 'mention-element',
     type: 'components:plate-ui',
     dependencies: ['@udecode/plate-mention'],
