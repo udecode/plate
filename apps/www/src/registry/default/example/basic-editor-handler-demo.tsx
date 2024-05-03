@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { editableProps } from '@/plate/demo/editableProps';
-import { Plate, Value } from '@udecode/plate-common';
+
+import { Plate, type Value } from '@udecode/plate-common';
 
 import {
   Accordion,
@@ -8,16 +8,17 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { editableProps } from '@/plate/demo/editableProps';
 import { Editor } from '@/registry/default/plate-ui/editor';
 
 const initialValue = [
   {
-    type: 'p',
     children: [
       {
         text: 'This is editable plain text with react and history plugins, just like a textarea!',
       },
     ],
+    type: 'p',
   },
 ];
 
@@ -34,7 +35,7 @@ export default function BasicEditorHandlerDemo() {
     >
       <Editor {...editableProps} />
 
-      <Accordion type="single" collapsible>
+      <Accordion collapsible type="single">
         <AccordionItem value="manual-installation">
           <AccordionTrigger>Debug Value</AccordionTrigger>
           <AccordionContent>{JSON.stringify(debugValue)}</AccordionContent>

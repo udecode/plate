@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+
 import { cn } from '@udecode/cn';
 import {
   CODE_BLOCK_LANGUAGES,
@@ -21,14 +22,14 @@ import {
 } from './command';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
 
-const languages: { value: string; label: string }[] = [
-  { value: 'text', label: 'Plain Text' },
+const languages: { label: string; value: string }[] = [
+  { label: 'Plain Text', value: 'text' },
   ...Object.entries({
     ...CODE_BLOCK_LANGUAGES_POPULAR,
     ...CODE_BLOCK_LANGUAGES,
   }).map(([key, val]) => ({
-    value: key,
     label: val as string,
+    value: key,
   })),
 ];
 
@@ -41,14 +42,14 @@ export function CodeBlockCombobox() {
   if (state.readOnly) return null;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover onOpenChange={setOpen} open={open}>
       <PopoverTrigger asChild>
         <Button
-          variant="ghost"
-          role="combobox"
           aria-expanded={open}
           className="h-5 justify-between px-1 text-xs"
+          role="combobox"
           size="xs"
+          variant="ghost"
         >
           {state.value
             ? languages.find((language) => language.value === state.value)
@@ -65,13 +66,13 @@ export function CodeBlockCombobox() {
           <CommandList>
             {languages.map((language) => (
               <CommandItem
-                key={language.value}
-                value={language.value}
                 className="cursor-pointer"
+                key={language.value}
                 onSelect={(_value) => {
                   commandItemProps.onSelect(_value);
                   setOpen(false);
                 }}
+                value={language.value}
               >
                 <Icons.check
                   className={cn(

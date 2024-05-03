@@ -1,7 +1,7 @@
 export const styles = [
   {
-    name: 'default',
     label: 'Default',
+    name: 'default',
   },
 ] as const;
 

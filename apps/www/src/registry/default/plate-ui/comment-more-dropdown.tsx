@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+
 import { cn } from '@udecode/cn';
 import {
   useCommentDeleteButton,
@@ -28,7 +29,7 @@ export function CommentMoreDropdown() {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className={cn('h-6 p-1 text-muted-foreground')}>
+        <Button className={cn('h-6 p-1 text-muted-foreground')} variant="ghost">
           <Icons.more className="size-4" />
         </Button>
       </DropdownMenuTrigger>

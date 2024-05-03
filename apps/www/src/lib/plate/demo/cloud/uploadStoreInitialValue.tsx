@@ -5,53 +5,53 @@ const IMAGE_URL =
 
 export const uploadStoreInitialValue: any = {
   '#a': {
-    status: 'progress',
-    url: GENERIC_URL,
     sentBytes: 0,
+    status: 'progress',
     totalBytes: 1024,
+    url: GENERIC_URL,
   },
   '#b': {
-    status: 'progress',
-    url: GENERIC_URL,
     sentBytes: 512,
+    status: 'progress',
     totalBytes: 1024,
+    url: GENERIC_URL,
   },
   '#c': {
-    status: 'progress',
-    url: GENERIC_URL,
     sentBytes: 1024,
+    status: 'progress',
     totalBytes: 1024,
+    url: GENERIC_URL,
   },
   '#d': {
     status: 'success',
     url: 'https://gist.githubusercontent.com/prabansal/115387/raw/0e5911c791c03f2ffb9708d98cac70dd2c1bf0ba/HelloWorld.txt',
   },
   '#e': {
+    message: 'Upload limit reached',
     status: 'error',
     url: GENERIC_URL,
-    message: 'Upload limit reached',
-  },
-  '#image-none': {
-    status: 'progress',
-    url: IMAGE_URL,
-    sentBytes: 0,
-    totalBytes: 1024,
-  },
-  '#image-half': {
-    status: 'progress',
-    url: IMAGE_URL,
-    sentBytes: 512,
-    totalBytes: 1024,
-  },
-  '#image-full': {
-    status: 'progress',
-    url: IMAGE_URL,
-    sentBytes: 1024,
-    totalBytes: 1024,
   },
   '#image-error': {
+    message: 'failed to upload',
     status: 'error',
     url: IMAGE_URL,
-    message: 'failed to upload',
+  },
+  '#image-full': {
+    sentBytes: 1024,
+    status: 'progress',
+    totalBytes: 1024,
+    url: IMAGE_URL,
+  },
+  '#image-half': {
+    sentBytes: 512,
+    status: 'progress',
+    totalBytes: 1024,
+    url: IMAGE_URL,
+  },
+  '#image-none': {
+    sentBytes: 0,
+    status: 'progress',
+    totalBytes: 1024,
+    url: IMAGE_URL,
   },
 };

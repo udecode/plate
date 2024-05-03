@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useEffect } from 'react';
+
 import * as Popover from '@radix-ui/react-popover';
 import { cn, withRef } from '@udecode/cn';
 import {
+  type ComboboxContentItemProps,
+  type ComboboxContentProps,
+  type ComboboxProps,
   comboboxActions,
-  ComboboxContentItemProps,
-  ComboboxContentProps,
-  ComboboxProps,
   useActiveComboboxStore,
   useComboboxContent,
   useComboboxContentState,
@@ -27,17 +28,17 @@ import {
 } from '@udecode/plate-floating';
 
 export const ComboboxItem = withRef<'div', ComboboxContentItemProps>(
-  ({ combobox, index, item, onRenderItem, className, ...rest }, ref) => {
-    const { props } = useComboboxItem({ item, index, combobox, onRenderItem });
+  ({ className, combobox, index, item, onRenderItem, ...rest }, ref) => {
+    const { props } = useComboboxItem({ combobox, index, item, onRenderItem });
 
     return (
       <div
-        ref={ref}
         className={cn(
           'relative flex h-9 cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors',
           'hover:bg-accent hover:text-accent-foreground data-[highlighted=true]:bg-accent data-[highlighted=true]:text-accent-foreground',
           className
         )}
+        ref={ref}
         {...props}
         {...rest}
       />
@@ -47,11 +48,11 @@ export const ComboboxItem = withRef<'div', ComboboxContentItemProps>(
 
 export function ComboboxContent(props: ComboboxContentProps) {
   const {
+    combobox,
     component: Component,
     items,
-    portalElement,
-    combobox,
     onRenderItem,
+    portalElement,
   } = props;
 
   const editor = useEditorRef();
@@ -59,7 +60,7 @@ export function ComboboxContent(props: ComboboxContentProps) {
   const filteredItems = useComboboxSelectors.filteredItems();
   const activeComboboxStore = useActiveComboboxStore()!;
 
-  const state = useComboboxContentState({ items, combobox });
+  const state = useComboboxContentState({ combobox, items });
   const { menuProps, targetRange } = useComboboxContent(state);
 
   const virtualRef = createVirtualRef(editor, targetRange ?? undefined, {
@@ -73,22 +74,22 @@ export function ComboboxContent(props: ComboboxContentProps) {
       <Popover.Portal container={portalElement}>
         <Popover.Content
           {...menuProps}
-          sideOffset={5}
-          side="bottom"
           align="start"
           className={cn(
             'z-[500] m-0 max-h-[288px] w-[300px] overflow-scroll rounded-md bg-popover p-0 shadow-md'
           )}
           onOpenAutoFocus={(event) => event.preventDefault()}
+          side="bottom"
+          sideOffset={5}
         >
           {Component ? Component({ store: activeComboboxStore }) : null}
 
           {filteredItems.map((item, index) => (
             <ComboboxItem
-              key={item.key}
-              item={item}
               combobox={combobox}
               index={index}
+              item={item}
+              key={item.key}
               onRenderItem={onRenderItem}
             />
           ))}
@@ -99,15 +100,15 @@ export function ComboboxContent(props: ComboboxContentProps) {
 }
 
 export function Combobox({
-  id,
-  trigger,
-  searchPattern,
-  onSelectItem,
   controlled,
-  maxSuggestions,
-  filter,
-  sort,
   disabled: _disabled,
+  filter,
+  id,
+  maxSuggestions,
+  onSelectItem,
+  searchPattern,
+  sort,
+  trigger,
   ...props
 }: ComboboxProps) {
   const storeItems = useComboboxSelectors.items();
@@ -125,14 +126,14 @@ export function Combobox({
 
   useEffect(() => {
     comboboxActions.setComboboxById({
-      id,
-      trigger,
-      searchPattern,
       controlled,
-      onSelectItem,
-      maxSuggestions,
       filter,
+      id,
+      maxSuggestions,
+      onSelectItem,
+      searchPattern,
       sort,
+      trigger,
     });
   }, [
     id,

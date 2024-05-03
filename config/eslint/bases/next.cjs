@@ -45,6 +45,7 @@ module.exports = {
       'error',
       'never',
       {
+        css: 'always',
         js: 'ignorePackages',
         json: 'always',
         jsx: 'never',
@@ -61,7 +62,7 @@ module.exports = {
     'import/no-unresolved': [
       'error',
       {
-        ignore: ['^@/'],
+        ignore: ['^@/', 'contentlayer/generated'],
       },
     ],
     'import/prefer-default-export': 'off',

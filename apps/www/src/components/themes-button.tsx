@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+
 import { CheckIcon } from '@radix-ui/react-icons';
 import { cn } from '@udecode/cn';
 import { Paintbrush } from 'lucide-react';
@@ -44,19 +45,18 @@ export function ThemesButton() {
                 <Tooltip key={theme.name}>
                   <TooltipTrigger asChild>
                     <button
-                      type="button"
-                      onClick={() =>
-                        setConfig({
-                          ...config,
-                          theme: theme.name,
-                        })
-                      }
                       className={cn(
                         'flex size-9 items-center justify-center rounded-full border-2 text-xs',
                         isActive
                           ? 'border-[--theme-primary]'
                           : 'border-transparent'
                       )}
+                      onClick={() =>
+                        setConfig({
+                          ...config,
+                          theme: theme.name,
+                        })
+                      }
                       style={
                         {
                           '--theme-primary': `hsl(${
@@ -66,6 +66,7 @@ export function ThemesButton() {
                           })`,
                         } as React.CSSProperties
                       }
+                      type="button"
                     >
                       <span
                         className={cn(
@@ -101,11 +102,11 @@ export function ThemesButton() {
       </div>
 
       <Button
-        variant="outline"
         onClick={() => {
           settingsStore.set.customizerTab('themes');
           settingsStore.set.showSettings(true);
         }}
+        variant="outline"
       >
         <Paintbrush className="mr-2 size-4" />
         Themes

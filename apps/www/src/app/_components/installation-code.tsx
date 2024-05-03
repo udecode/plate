@@ -1,8 +1,9 @@
 // Pre is deeply coupled to Contentlayer, so we need a wrapper to make it work
 import * as React from 'react';
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
+import { Prism, type SyntaxHighlighterProps } from 'react-syntax-highlighter';
+
 import { cn } from '@udecode/cn';
-import { Prism, SyntaxHighlighterProps } from 'react-syntax-highlighter';
 import { vscDarkPlus as theme } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 import { CopyButton, CopyNpmCommandButton } from '@/components/copy-button';
@@ -12,13 +13,13 @@ const SyntaxHighlighter =
   Prism as typeof React.Component<SyntaxHighlighterProps>;
 
 export function InstallationCode({
-  code,
-  children,
   bash,
+  children,
+  code,
 }: {
-  code: string;
-  children?: ReactNode;
   bash?: boolean;
+  children?: ReactNode;
+  code: string;
 }) {
   const npmCommand = code.startsWith('npm install');
 
@@ -28,26 +29,26 @@ export function InstallationCode({
 
       <div className="relative">
         <SyntaxHighlighter
-          language={bash ? 'bash' : 'typescript'}
-          style={theme}
           className="rounded-lg border !py-4"
+          language={bash ? 'bash' : 'typescript'}
           showLineNumbers={false}
+          style={theme}
         >
           {code}
         </SyntaxHighlighter>
 
         {npmCommand ? (
           <CopyNpmCommandButton
+            className={cn('absolute right-4 top-4')}
             commands={{
+              __bunCommand__: code.replaceAll('npm install', 'bun add'),
               __npmCommand__: code,
               __pnpmCommand__: code.replaceAll('npm install', 'pnpm add'),
               __yarnCommand__: code.replaceAll('npm install', 'yarn add'),
-              __bunCommand__: code.replaceAll('npm install', 'bun add'),
             }}
-            className={cn('absolute right-4 top-4')}
           />
         ) : (
-          <CopyButton value={code} className={cn('absolute right-4 top-4')} />
+          <CopyButton className={cn('absolute right-4 top-4')} value={code} />
         )}
       </div>
     </div>

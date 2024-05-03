@@ -1,11 +1,12 @@
+import type { TElement } from '@udecode/slate';
+
 import { cn } from '@udecode/cn';
 import {
-  LiFC,
-  MarkerFC,
+  type LiFC,
+  type MarkerFC,
   useIndentTodoListElement,
   useIndentTodoListElementState,
 } from '@udecode/plate-indent-list';
-import { TElement } from '@udecode/slate';
 
 import { Checkbox } from './checkbox';
 
@@ -16,7 +17,7 @@ export const TodoMarker: MarkerFC = ({ element }: { element: TElement }) => {
   return (
     <div contentEditable={false}>
       <Checkbox
-        style={{ left: -24, top: 4, position: 'absolute' }}
+        style={{ left: -24, position: 'absolute', top: 4 }}
         {...checkboxProps}
       />
     </div>
@@ -24,7 +25,7 @@ export const TodoMarker: MarkerFC = ({ element }: { element: TElement }) => {
 };
 
 export const TodoLi: LiFC = (props) => {
-  const { element, children } = props;
+  const { children, element } = props;
 
   return (
     <span

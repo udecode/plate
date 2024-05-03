@@ -1,10 +1,12 @@
 import React from 'react';
-import { ComboboxProps } from '@udecode/plate-combobox';
+
+import type { ComboboxProps } from '@udecode/plate-combobox';
+
 import { getPluginOptions, useEditorRef } from '@udecode/plate-common';
 import {
-  getSlashOnSelectItem,
   KEY_SLASH_COMMAND,
-  SlashPlugin,
+  type SlashPlugin,
+  getSlashOnSelectItem,
 } from '@udecode/plate-slash-command';
 
 import { Combobox } from './combobox';
@@ -13,9 +15,9 @@ export function SlashCombobox({
   pluginKey = KEY_SLASH_COMMAND,
   id = pluginKey,
   ...props
-}: Partial<ComboboxProps> & {
+}: {
   pluginKey?: string;
-}) {
+} & Partial<ComboboxProps>) {
   const editor = useEditorRef();
 
   const { trigger } = getPluginOptions<SlashPlugin>(editor, pluginKey);
@@ -23,12 +25,12 @@ export function SlashCombobox({
   return (
     <div onMouseDown={(e) => e.preventDefault()}>
       <Combobox
-        id={id}
-        trigger={trigger!}
         controlled
+        id={id}
         onSelectItem={getSlashOnSelectItem({
           key: pluginKey,
         })}
+        trigger={trigger!}
         {...props}
       />
     </div>

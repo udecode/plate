@@ -10,24 +10,24 @@ export const toggleVariants = cva(
     '[&_svg:not([data-icon])]:size-5'
   ),
   {
+    defaultVariants: {
+      size: 'default',
+      variant: 'default',
+    },
     variants: {
+      size: {
+        circle: 'p-3',
+        default: 'h-10 px-3',
+        lg: 'h-11 px-5',
+        sm: 'h-9 px-2.5',
+      },
       variant: {
         default:
           'bg-transparent hover:bg-muted hover:text-muted-foreground data-[state=on]:bg-accent data-[state=on]:text-accent-foreground',
+        floating: 'rounded-full bg-primary text-primary-foreground',
         outline:
           'border border-input bg-transparent hover:bg-accent hover:text-accent-foreground',
-        floating: 'rounded-full bg-primary text-primary-foreground',
       },
-      size: {
-        default: 'h-10 px-3',
-        sm: 'h-9 px-2.5',
-        lg: 'h-11 px-5',
-        circle: 'p-3',
-      },
-    },
-    defaultVariants: {
-      variant: 'default',
-      size: 'default',
     },
   }
 );

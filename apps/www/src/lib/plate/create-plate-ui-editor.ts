@@ -1,16 +1,14 @@
 import {
+  type CreatePlateEditorOptions,
+  type PlateEditor,
+  type TEditor,
+  type Value,
   createPlateEditor,
-  CreatePlateEditorOptions,
-  PlateEditor,
-  TEditor,
-  Value,
 } from '@udecode/plate-common';
 
 import { createPlateUI } from './create-plate-ui';
 
-/**
- * Create a plate editor with default UI.
- */
+/** Create a plate editor with default UI. */
 export const createPlateUIEditor = <
   V extends Value = Value,
   E extends TEditor<V> = TEditor<V>,

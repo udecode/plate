@@ -12,7 +12,7 @@ export const indentListValue: any = (
       Create indented lists with multiple levels of indentation and customize
       the list style type for each level.
     </hp>
-    <hp indent={1} listStyleType="todo" checked={true}>
+    <hp checked={true} indent={1} listStyleType="todo">
       Todo 1
     </hp>
 
@@ -22,7 +22,7 @@ export const indentListValue: any = (
     <hp indent={2} listStyleType="fire">
       Icon 2
     </hp>
-    <hp indent={3} listStyleType="todo" checked={false}>
+    <hp checked={false} indent={3} listStyleType="todo">
       Todo 2
     </hp>
     <hp indent={1} listStyleType="upper-roman">
@@ -31,10 +31,10 @@ export const indentListValue: any = (
     <hp indent={2} listStyleType="decimal">
       Decimal 11
     </hp>
-    <hp indent={3} listStyleType="decimal" listStart={2}>
+    <hp indent={3} listStart={2} listStyleType="decimal">
       Decimal 111
     </hp>
-    <hp indent={3} listStyleType="decimal" listStart={2}>
+    <hp indent={3} listStart={2} listStyleType="decimal">
       Decimal 112
     </hp>
 
@@ -44,10 +44,10 @@ export const indentListValue: any = (
     {/* <hp indent={3} listStyleType="lower-latin"> */}
     {/*  7K-TM */}
     {/* </hp> */}
-    <hp indent={2} listStyleType="decimal" listStart={2}>
+    <hp indent={2} listStart={2} listStyleType="decimal">
       Decimal 12
     </hp>
-    <hp indent={2} listStyleType="decimal" listStart={3}>
+    <hp indent={2} listStart={3} listStyleType="decimal">
       Decimal 13
     </hp>
     {/* <hp indent={2} listStyleType="decimal"> */}
@@ -59,13 +59,13 @@ export const indentListValue: any = (
     {/* <hp indent={2} listStyleType="decimal"> */}
     {/*  Soyuz MS */}
     {/* </hp> */}
-    <hp indent={1} listStyleType="upper-roman" listStart={2}>
+    <hp indent={1} listStart={2} listStyleType="upper-roman">
       Roman 2
     </hp>
     <hp indent={2} listStyleType="decimal">
       Decimal 11
     </hp>
-    <hp indent={2} listStyleType="decimal" listStart={2}>
+    <hp indent={2} listStart={2} listStyleType="decimal">
       Decimal 12
     </hp>
     {/* <hp indent={2} listStyleType="decimal"> */}
@@ -77,10 +77,10 @@ export const indentListValue: any = (
     {/* <hp indent={2} listStyleType="decimal"> */}
     {/*  Endeavour */}
     {/* </hp> */}
-    <hp indent={1} listStyleType="upper-roman" listStart={3}>
+    <hp indent={1} listStart={3} listStyleType="upper-roman">
       Roman 3
     </hp>
-    <hp indent={1} listStyleType="upper-roman" listStart={4}>
+    <hp indent={1} listStart={4} listStyleType="upper-roman">
       Roman 4
     </hp>
   </fragment>

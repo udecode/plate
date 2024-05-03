@@ -1,4 +1,5 @@
-import { TElement, TText } from '@udecode/plate-common';
+import type { TElement, TText } from '@udecode/plate-common';
+
 import { ELEMENT_LI, ELEMENT_LIC, ELEMENT_UL } from '@udecode/plate-list';
 
 export const createList = (
@@ -9,27 +10,29 @@ export const createList = (
     const texts = item.split(splitSeparator);
     const marks: TText[] = texts.map((text, index) => {
       const res: any = { text };
+
       if (index % 2 === 1) {
         res.code = true;
       }
+
       return res;
     });
 
     return {
-      type: ELEMENT_LI,
       children: [
         {
-          type: ELEMENT_LIC,
           children: marks,
+          type: ELEMENT_LIC,
         },
       ],
+      type: ELEMENT_LI,
     };
   });
 
   return [
     {
-      type: ELEMENT_UL,
       children,
+      type: ELEMENT_UL,
     },
   ];
 };

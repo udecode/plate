@@ -1,11 +1,11 @@
-// @ts-nocheck
-
 'use client';
 
 import * as React from 'react';
+
+import type { TableOfContents } from '@/lib/toc';
+
 import { cn } from '@udecode/cn';
 
-import { TableOfContents } from '@/lib/toc';
 import { useMounted } from '@/hooks/use-mounted';
 
 interface TocProps {
@@ -37,7 +37,7 @@ export function DashboardTableOfContents({ toc }: TocProps) {
   return (
     <div className="space-y-2">
       <p className="font-medium">On This Page</p>
-      <Tree tree={toc} activeItem={activeHeading} />
+      <Tree activeItem={activeHeading} tree={toc} />
     </div>
   );
 }
@@ -70,6 +70,7 @@ function useActiveItem(itemIds: string[]) {
       itemIds?.forEach((id) => {
         // eslint-disable-next-line unicorn/prefer-query-selector
         const element = document.getElementById(id);
+
         if (element) {
           observer.unobserve(element);
         }
@@ -82,29 +83,29 @@ function useActiveItem(itemIds: string[]) {
 
 interface TreeProps {
   tree: TableOfContents;
-  level?: number;
   activeItem?: string;
+  level?: number;
 }
 
-function Tree({ tree, level = 1, activeItem }: TreeProps) {
+function Tree({ activeItem, level = 1, tree }: TreeProps) {
   return tree?.items?.length && level < 3 ? (
     <ul className={cn('m-0 list-none', { 'pl-4': level !== 1 })}>
       {tree.items.map((item, index) => {
         return (
-          <li key={index} className={cn('mt-0 pt-2')}>
+          <li className={cn('mt-0 pt-2')} key={index}>
             <a
-              href={item.url}
               className={cn(
                 'inline-block no-underline transition-colors hover:text-foreground',
                 item.url === `#${activeItem}`
                   ? 'font-medium text-foreground'
                   : 'text-muted-foreground'
               )}
+              href={item.url}
             >
               {item.title}
             </a>
             {item.items?.length ? (
-              <Tree tree={item} level={level + 1} activeItem={activeItem} />
+              <Tree activeItem={activeItem} level={level + 1} tree={item} />
             ) : null}
           </li>
         );

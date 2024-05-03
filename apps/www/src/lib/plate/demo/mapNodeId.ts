@@ -16,6 +16,7 @@ export const mapNodeId = (nodes: any, id = 0) => {
     if (node.id) return node;
 
     id++;
+
     return { ...node, id: id.toString() };
   });
 };

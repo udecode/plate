@@ -1,8 +1,8 @@
 /**
  * Opinionated config base for projects using react.
+ *
  * @see https://github.com/belgattitude/nextjs-monorepo-example/tree/main/packages/eslint-config-bases
  */
-
 
 const { filePatterns } = require('../constants/file-patterns.cjs');
 module.exports = {
@@ -85,7 +85,9 @@ module.exports = {
 
         'react/no-unknown-property': [
           'error',
-          { ignore: ['css', 'cmdk-input-wrapper', 'tw'] },
+          {
+            ignore: ['css', 'cmdk-input-wrapper', 'tw', 'vaul-drawer-wrapper'],
+          },
         ],
         // https://github.com/jsx-eslint/eslint-plugin-react/blob/master/docs/rules/no-unknown-property.md
         'react/no-unused-prop-types': 'off',
@@ -99,11 +101,11 @@ module.exports = {
       },
     },
     {
-      files: filePatterns.test,
+      files: [...filePatterns.test, '**/demo/**'],
       rules: {
         'react/no-unknown-property': 'off',
-      }
-    }
+      },
+    },
   ],
   rules: {
     'react-hooks/exhaustive-deps': 'warn', // Checks effect dependencies

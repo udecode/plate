@@ -1,5 +1,7 @@
 import React from 'react';
-import { isEnabled } from '@/plate/demo/is-enabled';
+
+import type { ValueId } from '@/config/customizer-plugins';
+
 import {
   MARK_BOLD,
   MARK_CODE,
@@ -13,9 +15,9 @@ import { KEY_LIST_STYLE_TYPE, ListStyleType } from '@udecode/plate-indent-list';
 import { ELEMENT_OL, ELEMENT_UL } from '@udecode/plate-list';
 import { ELEMENT_IMAGE } from '@udecode/plate-media';
 
-import { ValueId } from '@/config/customizer-plugins';
 import { settingsStore } from '@/components/context/settings-store';
 import { Icons, iconVariants } from '@/components/icons';
+import { isEnabled } from '@/plate/demo/is-enabled';
 import { AlignDropdownMenu } from '@/registry/default/plate-ui/align-dropdown-menu';
 import { ColorDropdownMenu } from '@/registry/default/plate-ui/color-dropdown-menu';
 import { CommentToolbarButton } from '@/registry/default/plate-ui/comment-toolbar-button';
@@ -61,15 +63,15 @@ export function PlaygroundFixedToolbarButtons({ id }: { id?: ValueId }) {
             </ToolbarGroup>
 
             <ToolbarGroup>
-              <MarkToolbarButton tooltip="Bold (⌘+B)" nodeType={MARK_BOLD}>
+              <MarkToolbarButton nodeType={MARK_BOLD} tooltip="Bold (⌘+B)">
                 <Icons.bold />
               </MarkToolbarButton>
-              <MarkToolbarButton tooltip="Italic (⌘+I)" nodeType={MARK_ITALIC}>
+              <MarkToolbarButton nodeType={MARK_ITALIC} tooltip="Italic (⌘+I)">
                 <Icons.italic />
               </MarkToolbarButton>
               <MarkToolbarButton
-                tooltip="Underline (⌘+U)"
                 nodeType={MARK_UNDERLINE}
+                tooltip="Underline (⌘+U)"
               >
                 <Icons.underline />
               </MarkToolbarButton>
@@ -77,12 +79,12 @@ export function PlaygroundFixedToolbarButtons({ id }: { id?: ValueId }) {
               {isEnabled('basicnodes', id) && (
                 <>
                   <MarkToolbarButton
-                    tooltip="Strikethrough (⌘+⇧+M)"
                     nodeType={MARK_STRIKETHROUGH}
+                    tooltip="Strikethrough (⌘+⇧+M)"
                   >
                     <Icons.strikethrough />
                   </MarkToolbarButton>
-                  <MarkToolbarButton tooltip="Code (⌘+E)" nodeType={MARK_CODE}>
+                  <MarkToolbarButton nodeType={MARK_CODE} tooltip="Code (⌘+E)">
                     <Icons.code />
                   </MarkToolbarButton>
                 </>

@@ -1,14 +1,16 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
+
 import { useHydrateAtoms } from 'jotai/utils';
 
 export const HydrateAtoms = ({
-  initialValues,
   children,
+  initialValues,
 }: {
-  initialValues: any;
   children: ReactNode;
+  initialValues: any;
 }) => {
   // initialising on state with prop on render here
   useHydrateAtoms(initialValues);
+
   return <>{children}</>;
 };

@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { cn, withRef } from '@udecode/cn';
 import {
   PlateElement,
@@ -7,7 +8,7 @@ import {
 } from '@udecode/plate-common';
 import {
   ELEMENT_COLUMN,
-  TColumnElement,
+  type TColumnElement,
   useColumnState,
   useDebouncePopoverOpen,
 } from '@udecode/plate-layout';
@@ -20,9 +21,9 @@ import { Popover, PopoverAnchor, PopoverContent } from './popover';
 import { Separator } from './separator';
 
 export const ColumnGroupElement = withRef<typeof PlateElement>(
-  ({ className, children, ...props }, ref) => {
+  ({ children, className, ...props }, ref) => {
     return (
-      <PlateElement ref={ref} className={cn(className, 'my-2')} {...props}>
+      <PlateElement className={cn(className, 'my-2')} ref={ref} {...props}>
         <ColumnFloatingToolbar>
           <div className={cn('flex size-full gap-4 rounded')}>{children}</div>
         </ColumnFloatingToolbar>
@@ -51,38 +52,38 @@ export function ColumnFloatingToolbar({ children }: React.PropsWithChildren) {
   if (readOnly) return <>{children}</>;
 
   return (
-    <Popover open={isOpen} modal={false}>
+    <Popover modal={false} open={isOpen}>
       <PopoverAnchor>{children}</PopoverAnchor>
       <PopoverContent
         align="center"
-        side="top"
-        sideOffset={10}
         className="w-auto p-1"
         onOpenAutoFocus={(e) => e.preventDefault()}
+        side="top"
+        sideOffset={10}
       >
         <div className="box-content flex h-9 items-center gap-1 [&_svg]:size-4 [&_svg]:text-muted-foreground">
-          <Button variant="ghost" size="sms" onClick={setDoubleColumn}>
+          <Button onClick={setDoubleColumn} size="sms" variant="ghost">
             <Icons.doubleColumn />
           </Button>
-          <Button variant="ghost" size="sms" onClick={setThreeColumn}>
+          <Button onClick={setThreeColumn} size="sms" variant="ghost">
             <Icons.threeColumn />
           </Button>
-          <Button variant="ghost" size="sms" onClick={setRightSideDoubleColumn}>
+          <Button onClick={setRightSideDoubleColumn} size="sms" variant="ghost">
             <Icons.rightSideDoubleColumn />
           </Button>
-          <Button variant="ghost" size="sms" onClick={setLeftSideDoubleColumn}>
+          <Button onClick={setLeftSideDoubleColumn} size="sms" variant="ghost">
             <Icons.leftSideDoubleColumn />
           </Button>
           <Button
-            variant="ghost"
-            size="sms"
             onClick={setDoubleSideDoubleColumn}
+            size="sms"
+            variant="ghost"
           >
             <Icons.doubleSideDoubleColumn />
           </Button>
 
-          <Separator orientation="vertical" className="my-1" />
-          <Button variant="ghost" size="sms" {...buttonProps}>
+          <Separator className="my-1" orientation="vertical" />
+          <Button size="sms" variant="ghost" {...buttonProps}>
             <Icons.delete />
           </Button>
         </div>

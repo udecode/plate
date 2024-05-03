@@ -1,17 +1,18 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { editableProps } from '@/plate/demo/editableProps';
-import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
-import { createHugeDocumentValue } from '@/plate/demo/values/createHugeDocumentValue';
-import { Plate, TElement, Value } from '@udecode/plate-common';
+
+import { Plate, type TElement, type Value } from '@udecode/plate-common';
 import { createEditor } from 'slate';
 import {
   Editable,
-  ReactEditor,
-  RenderElementProps,
+  type ReactEditor,
+  type RenderElementProps,
   Slate,
   withReact,
 } from 'slate-react';
 
+import { editableProps } from '@/plate/demo/editableProps';
+import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
+import { createHugeDocumentValue } from '@/plate/demo/values/createHugeDocumentValue';
 import { Editor } from '@/registry/default/plate-ui/editor';
 
 const initialValue = createHugeDocumentValue();

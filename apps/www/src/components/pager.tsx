@@ -1,8 +1,9 @@
-import Link from 'next/link';
-import { cn } from '@udecode/cn';
-import { Doc } from 'contentlayer/generated';
+import type { NavItem, NavItemWithChildren } from '@/types/nav';
+import type { Doc } from 'contentlayer/generated';
 
-import { NavItem, NavItemWithChildren } from '@/types/nav';
+import { cn } from '@udecode/cn';
+import Link from 'next/link';
+
 import { docsConfig } from '@/config/docs';
 import { buttonVariants } from '@/registry/default/plate-ui/button';
 
@@ -12,7 +13,7 @@ interface DocsPagerProps {
   doc: Doc;
 }
 
-export async function DocsPager({ doc }: DocsPagerProps) {
+export function DocsPager({ doc }: DocsPagerProps) {
   const pager = getPagerForDoc(doc);
 
   if (!pager) {
@@ -23,8 +24,8 @@ export async function DocsPager({ doc }: DocsPagerProps) {
     <div className="flex flex-row items-center justify-between">
       {pager?.prev?.href && (
         <Link
-          href={pager.prev.href}
           className={cn(buttonVariants({ variant: 'outline' }))}
+          href={pager.prev.href}
         >
           <Icons.chevronLeft className="mr-2 size-4" />
           {pager.prev.title}
@@ -32,8 +33,8 @@ export async function DocsPager({ doc }: DocsPagerProps) {
       )}
       {pager?.next?.href && (
         <Link
-          href={pager.next.href}
           className={buttonVariants({ variant: 'outline' })}
+          href={pager.next.href}
         >
           {pager.next.title}
           <Icons.chevronRight className="ml-2 size-4" />
@@ -53,9 +54,10 @@ export function getPagerForDoc(doc: Doc) {
     activeIndex === flattenedLinks.length - 1
       ? null
       : flattenedLinks[activeIndex + 1];
+
   return {
-    prev,
     next,
+    prev,
   };
 }
 

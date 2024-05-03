@@ -1,4 +1,5 @@
 import React from 'react';
+
 import Link from 'next/link';
 
 import { usePackageInfo } from '@/hooks/use-package-info';
@@ -21,9 +22,9 @@ export function PackageInfo({ children }: { children: React.ReactNode }) {
         {packageInfo?.source && (
           <div>
             <Link
+              className="flex gap-2 font-medium underline underline-offset-4"
               href={packageInfo.source}
               target="_blank"
-              className="flex gap-2 font-medium underline underline-offset-4"
             >
               View source
             </Link>
@@ -32,9 +33,9 @@ export function PackageInfo({ children }: { children: React.ReactNode }) {
         {packageInfo?.npm && (
           <div>
             <Link
+              className="flex gap-2 font-medium underline underline-offset-4"
               href={packageInfo.npm}
               target="_blank"
-              className="flex gap-2 font-medium underline underline-offset-4"
             >
               View on npm
             </Link>
@@ -42,9 +43,9 @@ export function PackageInfo({ children }: { children: React.ReactNode }) {
         )}
         <div>
           <Link
+            className="flex gap-2 font-medium underline underline-offset-4"
             href="https://github.com/udecode/plate/issues/new/choose"
             target="_blank"
-            className="flex gap-2 font-medium underline underline-offset-4"
           >
             Report an issue
           </Link>

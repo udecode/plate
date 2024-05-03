@@ -1,5 +1,7 @@
 import React from 'react';
-import { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
+
+import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
+
 import {
   useLineHeightDropdownMenu,
   useLineHeightDropdownMenuState,
@@ -26,9 +28,9 @@ export function LineHeightDropdownMenu({ ...props }: DropdownMenuProps) {
     <DropdownMenu modal={false} {...openState} {...props}>
       <DropdownMenuTrigger asChild>
         <ToolbarButton
+          isDropdown
           pressed={openState.open}
           tooltip="Line height"
-          isDropdown
         >
           <Icons.lineHeight />
         </ToolbarButton>
@@ -41,9 +43,9 @@ export function LineHeightDropdownMenu({ ...props }: DropdownMenuProps) {
         >
           {state.values.map((_value) => (
             <DropdownMenuRadioItem
+              className="min-w-[180px]"
               key={_value}
               value={_value}
-              className="min-w-[180px]"
             >
               {_value}
             </DropdownMenuRadioItem>

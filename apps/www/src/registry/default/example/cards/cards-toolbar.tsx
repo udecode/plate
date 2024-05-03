@@ -48,26 +48,26 @@ export function CardsToolbar() {
           </ToolbarGroup>
 
           <ToolbarGroup>
-            <MarkToolbarButton tooltip="Bold (⌘+B)" nodeType={MARK_BOLD}>
+            <MarkToolbarButton nodeType={MARK_BOLD} tooltip="Bold (⌘+B)">
               <Icons.bold />
             </MarkToolbarButton>
-            <MarkToolbarButton tooltip="Italic (⌘+I)" nodeType={MARK_ITALIC}>
+            <MarkToolbarButton nodeType={MARK_ITALIC} tooltip="Italic (⌘+I)">
               <Icons.italic />
             </MarkToolbarButton>
             <MarkToolbarButton
-              tooltip="Underline (⌘+U)"
               nodeType={MARK_UNDERLINE}
+              tooltip="Underline (⌘+U)"
             >
               <Icons.underline />
             </MarkToolbarButton>
 
             <MarkToolbarButton
-              tooltip="Strikethrough (⌘+⇧+M)"
               nodeType={MARK_STRIKETHROUGH}
+              tooltip="Strikethrough (⌘+⇧+M)"
             >
               <Icons.strikethrough />
             </MarkToolbarButton>
-            <MarkToolbarButton tooltip="Code (⌘+E)" nodeType={MARK_CODE}>
+            <MarkToolbarButton nodeType={MARK_CODE} tooltip="Code (⌘+E)">
               <Icons.code />
             </MarkToolbarButton>
           </ToolbarGroup>

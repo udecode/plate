@@ -1,7 +1,7 @@
-import '@/styles/globals.css';
-
 import React from 'react';
-import { Metadata, Viewport } from 'next';
+
+import type { Metadata, Viewport } from 'next';
+
 import { cn } from '@udecode/cn';
 import { createCodeBlockPlugin } from '@udecode/plate-code-block';
 import { createPlateEditor } from '@udecode/plate-common/server';
@@ -10,23 +10,32 @@ import { createListPlugin } from '@udecode/plate-list';
 import { createImagePlugin } from '@udecode/plate-media';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 
-import { siteConfig } from '@/config/site';
-import { fontSans } from '@/lib/fonts';
-import { Toaster } from '@/components/ui/sonner';
 import { Analytics } from '@/components/analytics';
 import { Body } from '@/components/body';
 import { Providers } from '@/components/context/providers';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
 import { TailwindIndicator } from '@/components/tailwind-indicator';
+import { Toaster } from '@/components/ui/sonner';
+import { siteConfig } from '@/config/site';
+import { fontSans } from '@/lib/fonts';
+
+import '@/styles/globals.css';
 
 export const metadata: Metadata = {
-  title: {
-    default: siteConfig.name,
-    template: `%s - ${siteConfig.name}`,
-  },
-  metadataBase: new URL(siteConfig.url),
+  authors: [
+    {
+      name: siteConfig.author,
+      url: siteConfig.links.github,
+    },
+  ],
+  creator: siteConfig.author,
   description: siteConfig.description,
+  icons: {
+    apple: '/apple-touch-icon.png',
+    icon: '/favicon.ico',
+    shortcut: '/favicon-16x16.png',
+  },
   keywords: [
     'Plate',
     'Slate',
@@ -38,48 +47,41 @@ export const metadata: Metadata = {
     'React',
     'Next.js',
   ],
-  authors: [
-    {
-      name: siteConfig.author,
-      url: siteConfig.links.github,
-    },
-  ],
-  creator: siteConfig.author,
+  manifest: `${siteConfig.url}/site.webmanifest`,
+  metadataBase: new URL(siteConfig.url),
   openGraph: {
-    type: 'website',
-    locale: 'en_US',
-    url: siteConfig.url,
-    title: siteConfig.name,
     description: siteConfig.description,
-    siteName: siteConfig.name,
     images: [
       {
+        alt: siteConfig.name,
+        height: 630,
         url: siteConfig.ogImage,
         width: 1200,
-        height: 630,
-        alt: siteConfig.name,
       },
     ],
+    locale: 'en_US',
+    siteName: siteConfig.name,
+    title: siteConfig.name,
+    type: 'website',
+    url: siteConfig.url,
+  },
+  title: {
+    default: siteConfig.name,
+    template: `%s - ${siteConfig.name}`,
   },
   twitter: {
     card: 'summary_large_image',
-    title: siteConfig.name,
+    creator: '@zbeyens',
     description: siteConfig.description,
     images: [siteConfig.ogImage],
-    creator: '@zbeyens',
+    title: siteConfig.name,
   },
-  icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon-16x16.png',
-    apple: '/apple-touch-icon.png',
-  },
-  manifest: `${siteConfig.url}/site.webmanifest`,
 };
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' },
+    { color: 'white', media: '(prefers-color-scheme: light)' },
+    { color: 'black', media: '(prefers-color-scheme: dark)' },
   ],
 };
 
@@ -108,12 +110,12 @@ export default function RootLayout({ children }: RootLayoutProps) {
   });
   editor.children = [
     {
-      type: 'p',
       children: [
         {
           text: '## Hello, World!',
         },
       ],
+      type: 'p',
     },
   ];
   // serializeMd(editor, { nodes: editor.children });
@@ -122,12 +124,12 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <html lang="en" suppressHydrationWarning>
       <head />
       <Body
-        defaultTheme="slate"
         className={cn(
           'min-h-screen bg-background font-sans antialiased',
           '[&_.slate-selected]:!bg-primary/20 [&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10',
           fontSans.variable
         )}
+        defaultTheme="slate"
         suppressHydrationWarning
       >
         <Providers>
