@@ -28,7 +28,7 @@ module.exports = {
   settings: {
     tailwindcss: {
       callees: ['cn', 'cva', 'withCn', 'className'],
-      // cssFiles: [],
+      cssFiles: [],
     },
   },
   // overrides: [

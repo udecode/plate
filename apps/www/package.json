@@ -1,7 +1,7 @@
 {
-  "private": true,
   "name": "www",
   "version": "0.0.1",
+  "private": true,
   "description": "A simple NextJS app with Plate",
   "scripts": {
     "prebuild": "yarn build:contentlayer",
@@ -10,11 +10,28 @@
     "build:registry": "tsx --tsconfig ./scripts/tsconfig.scripts.json ./scripts/build-registry.ts",
     "dev": "concurrently \"contentlayer dev\" \"NODE_OPTIONS=--max-old-space-size=16192 next dev\"",
     "dev:quick": "NODE_OPTIONS=--max-old-space-size=16192 next dev",
-    "start": "next start",
     "lint": "npx eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint:debug": "TIMING=1 DEBUG=eslint:cli-engine yarn lint:fix",
     "lint:fix": "yarn lint --fix",
     "preview": "next build && next start",
+    "start": "next start",
     "typecheck": "yarn prebuild && tsc --noEmit"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "resolutions": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "dependencies": {
     "@faker-js/faker": "^8.4.1",
@@ -142,10 +159,6 @@
     "unist-builder": "4.0.0",
     "unist-util-visit": "^5.0.0"
   },
-  "resolutions": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
-  },
   "devDependencies": {
     "@types/lodash.template": "^4.5.3",
     "@types/react-color": "^3.0.12",
@@ -169,17 +182,5 @@
     "tsx": "^4.7.1",
     "typescript": "5.4.2",
     "vaul": "^0.9.0"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
   }
 }
