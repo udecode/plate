@@ -543,13 +543,6 @@ export const Index: Record<string, any> = {
       files: ['registry/default/plate-ui/media-toolbar-button.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/media-toolbar-button')),
     },
-    'mention-combobox': {
-      name: 'mention-combobox',
-      type: 'components:plate-ui',
-      registryDependencies: ["combobox"],
-      files: ['registry/default/plate-ui/mention-combobox.tsx'],
-      component: React.lazy(() => import('@/registry/default/plate-ui/mention-combobox')),
-    },
     'mention-element': {
       name: 'mention-element',
       type: 'components:plate-ui',

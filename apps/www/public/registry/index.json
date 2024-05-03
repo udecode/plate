@@ -637,20 +637,6 @@
     "type": "components:plate-ui"
   },
   {
-    "name": "mention-combobox",
-    "dependencies": [
-      "@udecode/plate-mention",
-      "@udecode/plate-combobox"
-    ],
-    "registryDependencies": [
-      "combobox"
-    ],
-    "files": [
-      "plate-ui/mention-combobox.tsx"
-    ],
-    "type": "components:plate-ui"
-  },
-  {
     "name": "mention-element",
     "dependencies": [
       "@udecode/plate-mention"
