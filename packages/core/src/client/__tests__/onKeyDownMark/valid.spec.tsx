@@ -12,13 +12,6 @@ import { getPlugin } from '../../../shared/utils/getPlugin';
 
 jsx;
 
-jest.mock('@udecode/plate-core/server', () => {
-  return {
-    __esModule: true,
-    ...jest.requireActual('@udecode/plate-core/server'),
-  };
-});
-
 const input = (
   <editor>
     <hp>

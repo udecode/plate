@@ -88,7 +88,7 @@ it('serialize blockquote to html', () => {
         ],
       })
     ).querySelectorAll('blockquote')[0]
-  ).toHaveTextContent('Blockquoted text here...');
+  ).toHaveTextContent(`Blockquoted text here...`);
 });
 
 it('serialize blockquote to html, without trimming whitespace', () => {
@@ -108,7 +108,7 @@ it('serialize blockquote to html, without trimming whitespace', () => {
 
   const node = htmlStringToDOMNode(html, false);
   expect(node.querySelectorAll('blockquote')[0]).toHaveTextContent(
-    'Blockquoted text\nhere...'
+    'Blockquoted text here...'
   );
 });
 

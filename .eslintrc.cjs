@@ -1,6 +1,7 @@
 const {
   getDefaultIgnorePatterns,
 } = require('./config/eslint/helpers/getDefaultIgnorePatterns.cjs');
+const { filePatterns } = require('./config/eslint/constants/file-patterns.cjs');
 
 /** @type {import('eslint').Linter.Config} */
 module.exports = {
@@ -64,7 +65,7 @@ module.exports = {
       },
     },
     {
-      files: ['**/*.spec.*'],
+      files: filePatterns.test,
       rules: {
         'import/no-relative-packages': 'off',
         'import/no-unresolved': 'off',
@@ -75,7 +76,7 @@ module.exports = {
       env: {
         jest: true,
       },
-      files: ['**/*.test.*', '**/*.spec.*', '**/*.fixture.*'],
+      files: filePatterns.test,
       rules: {
         '@typescript-eslint/no-unused-vars': 'off',
         'no-restricted-imports': [

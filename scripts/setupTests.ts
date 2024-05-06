@@ -1,7 +1,7 @@
+import { TextEncoder } from 'node:util';
+
 import '@testing-library/jest-dom';
 import 'slate-test-utils/dist/cjs/mocks';
-
-import { TextEncoder } from 'node:util';
 
 global.TextEncoder = TextEncoder;
 
@@ -14,6 +14,10 @@ jest.mock('nanoid', () => ({
 
 jest.mock('@udecode/plate-core', () => ({
   __esModule: true,
-  // @ts-ignore
   ...jest.requireActual('@udecode/plate-core'),
+}));
+
+jest.mock('@udecode/plate-core/server', () => ({
+  __esModule: true,
+  ...jest.requireActual('@udecode/plate-core/server'),
 }));
