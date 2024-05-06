@@ -1,10 +1,27 @@
+# 33.0.0
+
+## @udecode/plate-serializer-md@33.0.0
+
+### Major Changes
+
+- [#3125](https://github.com/udecode/plate/pull/3125) by [@zbeyens](https://github.com/zbeyens) –
+  - `serializeMd`: remove `nodes` option. `editor.children` is now serialized.
+
+# 32.0.0
+
+None (CI release issue)
+
+# 31.0.0
+
+None (CI release issue)
+
 # 30.0.0
 
 ## @udecode/plate-table@30.0.0
 
 ### Major Changes
 
--   [#2867](https://github.com/udecode/plate/pull/2867) by [@12joan](https://github.com/12joan) – Fix: in v28, `TableProvider` was incorrectly shared by all tables in the editor. `TableProvider` must now be rendered as part of `TableElement`.
+- [#2867](https://github.com/udecode/plate/pull/2867) by [@12joan](https://github.com/12joan) – Fix: in v28, `TableProvider` was incorrectly shared by all tables in the editor. `TableProvider` must now be rendered as part of `TableElement`.
 
 # 29.0.0
 
@@ -12,10 +29,10 @@
 
 ### Major Changes
 
--   [#2829](https://github.com/udecode/plate/pull/2829) by [@zbeyens](https://github.com/zbeyens) –
-    -   Moved `withProps` to `@udecode/cn`
-    -   Moved `PortalBody`, `Text`, `Box`, `createPrimitiveComponent`, `createSlotComponent`, `withProviders` to `@udecode/react-utils`
-    -   Removed `getRootProps` (unused)
+- [#2829](https://github.com/udecode/plate/pull/2829) by [@zbeyens](https://github.com/zbeyens) –
+  - Moved `withProps` to `@udecode/cn`
+  - Moved `PortalBody`, `Text`, `Box`, `createPrimitiveComponent`, `createSlotComponent`, `withProviders` to `@udecode/react-utils`
+  - Removed `getRootProps` (unused)
 
 # 28.0.0
 
@@ -23,9 +40,9 @@
 
 ### Major Changes
 
--   [`822f6f56b`](https://github.com/udecode/plate/commit/822f6f56be526a6e26f904b9e767c0bc09f1e28b) by [@12joan](https://github.com/12joan) –
-    -   Remove `{ fn: ... }` workaround for jotai stores that contain functions
-    -   Breaking change: `usePlateSelectors`, `usePlateActions` and `usePlateStates` no longer accept generic type arguments. If custom types are required, cast the resulting values at the point of use, or use hooks like `useEditorRef` that still provide generics.
+- [`822f6f56b`](https://github.com/udecode/plate/commit/822f6f56be526a6e26f904b9e767c0bc09f1e28b) by [@12joan](https://github.com/12joan) –
+  - Remove `{ fn: ... }` workaround for jotai stores that contain functions
+  - Breaking change: `usePlateSelectors`, `usePlateActions` and `usePlateStates` no longer accept generic type arguments. If custom types are required, cast the resulting values at the point of use, or use hooks like `useEditorRef` that still provide generics.
 
 # 27.0.0
 
@@ -853,7 +870,7 @@ Those Slate functions should be replaced by the new typed ones:
     P = PluginOptions,
     V extends Value = Value,
     E extends PlateEditor<V> = PlateEditor<V>,
-    EE extends E = E
+    EE extends E = E,
   > = (editor: E, plugin: WithPlatePlugin<P, V, E>) => EE;
   ```
 
@@ -1073,61 +1090,53 @@ getEmptyTableNode(editor, { rowCount: 2, colCount: 2 });
 
   ```tsx
   type DeserializeHtml = {
-    /**
-     * List of HTML attribute names to store their values in `node.attributes`.
-     */
+    /** List of HTML attribute names to store their values in `node.attributes`. */
     attributeNames?: string[];
 
     /**
-     * Deserialize an element.
-     * Use this instead of plugin.isElement if you don't want the plugin to renderElement.
+     * Deserialize an element. Use this instead of plugin.isElement if you don't
+     * want the plugin to renderElement.
+     *
      * @default plugin.isElement
      */
     isElement?: boolean;
 
     /**
-     * Deserialize a leaf.
-     * Use this instead of plugin.isLeaf if you don't want the plugin to renderLeaf.
+     * Deserialize a leaf. Use this instead of plugin.isLeaf if you don't want the
+     * plugin to renderLeaf.
+     *
      * @default plugin.isLeaf
      */
     isLeaf?: boolean;
 
-    /**
-     * Deserialize html element to slate node.
-     */
+    /** Deserialize html element to slate node. */
     getNode?: (element: HTMLElement) => AnyObject | undefined;
 
     query?: (element: HTMLElement) => boolean;
 
     /**
      * Deserialize an element:
-     * - if this option (string) is in the element attribute names.
-     * - if this option (object) values match the element attributes.
+     *
+     * - If this option (string) is in the element attribute names.
+     * - If this option (object) values match the element attributes.
      */
     validAttribute?: string | { [key: string]: string | string[] };
 
-    /**
-     * Valid element `className`.
-     */
+    /** Valid element `className`. */
     validClassName?: string;
 
-    /**
-     * Valid element `nodeName`.
-     * Set '*' to allow any node name.
-     */
+    /** Valid element `nodeName`. Set '*' to allow any node name. */
     validNodeName?: string | string[];
 
     /**
-     * Valid element style values.
-     * Can be a list of string (only one match is needed).
+     * Valid element style values. Can be a list of string (only one match is
+     * needed).
      */
     validStyle?: Partial<
       Record<keyof CSSStyleDeclaration, string | string[] | undefined>
     >;
 
-    /**
-     * Whether or not to include deserialized children on this node
-     */
+    /** Whether or not to include deserialized children on this node */
     withoutChildren?: boolean;
   };
   ```
@@ -1478,22 +1487,17 @@ The mention plugin is now using the combobox.
 
 ```ts
 export interface ComboboxItemData {
-  /**
-   * Unique key.
-   */
+  /** Unique key. */
   key: string;
-  /**
-   * Item text.
-   */
+  /** Item text. */
   text: any;
   /**
    * Whether the item is disabled.
+   *
    * @default false
    */
   disabled?: boolean;
-  /**
-   * Data available to `onRenderItem`.
-   */
+  /** Data available to `onRenderItem`. */
   data?: unknown;
 }
 ```
