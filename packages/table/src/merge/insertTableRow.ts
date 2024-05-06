@@ -128,7 +128,7 @@ export const insertTableMergeRow = <V extends Value>(
     if (!cur) return;
 
     const curCell = cur as TTableCellElement;
-    const { row: curRowIndex, col: curColIndex } =
+    const { col: curColIndex, row: curRowIndex } =
       getCellIndices(cellIndices!, curCell) ||
       computeCellIndices(editor, tableNode, curCell)!;
 

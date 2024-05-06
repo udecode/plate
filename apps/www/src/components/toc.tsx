@@ -23,7 +23,7 @@ export function DashboardTableOfContents({ toc }: TocProps) {
             ])
             .flat()
             .filter(Boolean)
-            .map((id) => id?.split('#')[1])
+            .map((id) => id?.split('#')[1] ?? '')
         : [],
     [toc]
   );
@@ -37,13 +37,13 @@ export function DashboardTableOfContents({ toc }: TocProps) {
   return (
     <div className="space-y-2">
       <p className="font-medium">On This Page</p>
-      <Tree activeItem={activeHeading} tree={toc} />
+      <Tree activeItem={activeHeading!} tree={toc} />
     </div>
   );
 }
 
 function useActiveItem(itemIds: string[]) {
-  const [activeId, setActiveId] = React.useState(null);
+  const [activeId, setActiveId] = React.useState<null | string>(null);
 
   React.useEffect(() => {
     const observer = new IntersectionObserver(

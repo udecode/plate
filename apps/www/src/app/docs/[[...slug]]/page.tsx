@@ -71,7 +71,7 @@ function getDocFromParams({ params }: DocPageProps) {
 //   };
 // }
 
-export function generateStaticParams(): Promise<DocPageProps['params'][]> {
+export function generateStaticParams(): DocPageProps['params'][] {
   const docs = allDocs.map((doc) => ({
     slug: doc.slugAsParams.split('/'),
   }));

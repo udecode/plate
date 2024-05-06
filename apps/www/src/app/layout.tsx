@@ -3,12 +3,6 @@ import React from 'react';
 import type { Metadata, Viewport } from 'next';
 
 import { cn } from '@udecode/cn';
-import { createCodeBlockPlugin } from '@udecode/plate-code-block';
-import { createPlateEditor } from '@udecode/plate-common/server';
-import { createHeadingPlugin } from '@udecode/plate-heading';
-import { createListPlugin } from '@udecode/plate-list';
-import { createImagePlugin } from '@udecode/plate-media';
-import { createParagraphPlugin } from '@udecode/plate-paragraph';
 
 import { Analytics } from '@/components/analytics';
 import { Body } from '@/components/body';
@@ -90,36 +84,6 @@ interface RootLayoutProps {
 }
 
 export default function RootLayout({ children }: RootLayoutProps) {
-  const editor = createPlateEditor({
-    plugins: [
-      createHeadingPlugin(),
-      createCodeBlockPlugin(),
-      createParagraphPlugin(),
-      createListPlugin(),
-      createImagePlugin(),
-
-      // "@udecode/plate-basic-marks": "32.0.0",
-      // "@udecode/plate-block-quote": "32.0.0",
-      // "@udecode/plate-code-block": "32.0.0",
-      // "@udecode/plate-heading": "32.0.0",
-      // "@udecode/plate-horizontal-rule": "32.0.0",
-      // "@udecode/plate-link": "32.0.0",
-      // "@udecode/plate-list": "32.0.0",
-      // "@udecode/plate-media": "32.0.0",
-    ],
-  });
-  editor.children = [
-    {
-      children: [
-        {
-          text: '## Hello, World!',
-        },
-      ],
-      type: 'p',
-    },
-  ];
-  // serializeMd(editor, { nodes: editor.children });
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head />

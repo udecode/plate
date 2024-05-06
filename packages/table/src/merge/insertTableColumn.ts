@@ -117,10 +117,9 @@ export const insertTableMergeColumn = <V extends Value>(
   });
   const affectedCells = Array.from(affectedCellsSet) as TTableCellElement[];
 
-  
   affectedCells.forEach((cur) => {
     const curCell = cur as TTableCellElement;
-    const { row: curRowIndex, col: curColIndex } =
+    const { col: curColIndex, row: curRowIndex } =
       getCellIndices(cellIndices!, curCell) ||
       computeCellIndices(editor, tableNode, curCell)!;
     const curRowSpan = getRowSpan(curCell);

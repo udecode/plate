@@ -12,7 +12,7 @@ export function withRef<
 >(
   renderFunction: React.ForwardRefRenderFunction<
     React.ElementRef<T>,
-    E & React.ComponentPropsWithoutRef<T>
+    E & Omit<React.ComponentPropsWithoutRef<T>, keyof E>
   >
 ) {
   return React.forwardRef(renderFunction);

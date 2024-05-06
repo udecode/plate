@@ -4,8 +4,8 @@ import { visit } from 'unist-util-visit';
 
 const textTypes = new Set(['text', 'emphasis', 'strong', 'inlineCode']);
 
-function flattenNode(node) {
-  const p = [];
+function flattenNode(node: any) {
+  const p: string[] = [];
   visit(node, (_node) => {
     if (!textTypes.has(_node.type)) return;
 
@@ -25,7 +25,7 @@ interface Items {
   items?: Item[];
 }
 
-function getItems(node, current): Items {
+function getItems(node: any, current: any): Items {
   if (!node) {
     return {};
   }
@@ -43,7 +43,7 @@ function getItems(node, current): Items {
     return current;
   }
   if (node.type === 'list') {
-    current.items = node.children.map((i) => getItems(i, {}));
+    current.items = node.children.map((i: any) => getItems(i, {}));
 
     return current;
   }
@@ -60,7 +60,7 @@ function getItems(node, current): Items {
   return {};
 }
 
-const getToc = () => (node, file) => {
+const getToc = () => (node: any, file: any) => {
   const table = toc(node);
   const items = getItems(table.map, {});
 
@@ -93,7 +93,7 @@ export const getAPITableOfContents = (content: string): TableOfContents => {
       name: m[1],
     }));
 
-    result.items.push({
+    result.items!.push({
       items: names.map((n) => ({ title: n.name, url: `#${n.name}` })),
       title: category,
       url: `#${category}`,
