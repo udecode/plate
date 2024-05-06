@@ -27,6 +27,7 @@ import { createEmptyCell } from './createEmptyCell';
 import { findCellByIndexes } from './findCellByIndexes';
 import { getCellIndices } from './getCellIndices';
 import { getCellPath } from './getCellPath';
+import { computeCellIndices } from './computeCellIndices';
 
 export const insertTableMergeRow = <V extends Value>(
   editor: PlateEditor<V>,
@@ -82,7 +83,7 @@ export const insertTableMergeRow = <V extends Value>(
   const [cellNode, cellPath] = cellEntry;
   const cellElement = cellNode as TTableCellElement;
   const cellRowSpan = getRowSpan(cellElement);
-  const { row: cellRowIndex } = getCellIndices(cellIndices!, cellElement)!;
+  const { row: cellRowIndex } = getCellIndices(cellIndices!, cellElement) || computeCellIndices(editor, tableNode, cellElement)!;
 
   const rowPath = cellPath.at(-2)!;
   const tablePath = cellPath.slice(0, -2)!;
@@ -123,7 +124,7 @@ export const insertTableMergeRow = <V extends Value>(
     const { row: curRowIndex, col: curColIndex } = getCellIndices(
       cellIndices!,
       curCell
-    )!;
+    ) || computeCellIndices(editor, tableNode, curCell)!;
 
     const curRowSpan = getRowSpan(curCell);
     const curColSpan = getColSpan(curCell);
