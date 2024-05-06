@@ -1,22 +1,22 @@
-import { PlateEditor, TElement } from '@udecode/plate-common';
+import type { PlateEditor, TElement } from '@udecode/plate-common';
 
 export interface TriggerComboboxPlugin {
-  trigger?: string | string[] | RegExp;
+  createComboboxInput?: (trigger: string) => TElement;
+  trigger?: RegExp | string | string[];
   triggerPreviousCharPattern?: RegExp;
   triggerQuery?: (editor: PlateEditor) => boolean;
-  createComboboxInput?: (trigger: string) => TElement;
 }
 
 export type ComboboxInputCursorState = {
-  atStart: boolean;
   atEnd: boolean;
+  atStart: boolean;
 };
 
 export type CancelComboboxInputCause =
-  | 'manual'
-  | 'escape'
-  | 'backspace'
   | 'arrowLeft'
   | 'arrowRight'
+  | 'backspace'
+  | 'blur'
   | 'deselect'
-  | 'blur';
+  | 'escape'
+  | 'manual';

@@ -1,17 +1,18 @@
 import {
+  type PlateEditor,
+  type PlatePluginKey,
+  type Value,
   getBlockAbove,
   getPlugin,
   insertNodes,
   insertText,
   isEndPoint,
   moveSelection,
-  PlateEditor,
-  PlatePluginKey,
-  Value,
 } from '@udecode/plate-common';
 
+import type { MentionPlugin, TMentionElement, TMentionItemBase } from './types';
+
 import { ELEMENT_MENTION } from './createMentionPlugin';
-import { MentionPlugin, TMentionElement, TMentionItemBase } from './types';
 
 export type MentionOnSelectItem<
   TItem extends TMentionItemBase = TMentionItemBase,
@@ -27,15 +28,15 @@ export const getMentionOnSelectItem =
   }: PlatePluginKey = {}): MentionOnSelectItem<TItem> =>
   (editor, item, search = '') => {
     const {
+      options: { createMentionNode, insertSpaceAfterMention },
       type,
-      options: { insertSpaceAfterMention, createMentionNode },
     } = getPlugin<MentionPlugin>(editor as any, key);
 
     const props = createMentionNode!(item, search);
 
     insertNodes<TMentionElement>(editor, {
-      type,
       children: [{ text: '' }],
+      type,
       ...props,
     } as TMentionElement);
 

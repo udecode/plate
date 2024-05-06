@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import {
-  TriggerComboboxPlugin,
+  type TriggerComboboxPlugin,
   withTriggerCombobox,
 } from '@udecode/plate-combobox';
 import { createPlateEditor, createPluginFactory } from '@udecode/plate-common';
@@ -10,15 +10,15 @@ import { jsx } from '@udecode/plate-test-utils';
 
 const createExampleComboboxPlugin = createPluginFactory<TriggerComboboxPlugin>({
   key: 'exampleCombobox',
-  withOverrides: withTriggerCombobox,
   plugins: [
     {
-      key: 'mention_input',
       isElement: true,
       isInline: true,
       isVoid: true,
+      key: 'mention_input',
     },
   ],
+  withOverrides: withTriggerCombobox,
 });
 
 const plugins = [
@@ -27,26 +27,26 @@ const plugins = [
   createExampleComboboxPlugin({
     key: 'exampleCombobox1',
     options: {
+      createComboboxInput: (trigger) => ({
+        children: [{ text: '' }],
+        trigger,
+        type: 'mention_input',
+      }),
       trigger: ['@', '#'],
       triggerPreviousCharPattern: /^$|^[\s"']$/,
-      createComboboxInput: (trigger) => ({
-        type: 'mention_input',
-        trigger,
-        children: [{ text: '' }],
-      }),
     },
   }),
 
   createExampleComboboxPlugin({
     key: 'exampleCombobox2',
     options: {
+      createComboboxInput: () => ({
+        children: [{ text: '' }],
+        trigger: ':',
+        type: 'mention_input',
+      }),
       trigger: ':',
       triggerPreviousCharPattern: /^\s?$/,
-      createComboboxInput: () => ({
-        type: 'mention_input',
-        trigger: ':',
-        children: [{ text: '' }],
-      }),
     },
   }),
 ];

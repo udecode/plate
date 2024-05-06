@@ -1,5 +1,5 @@
 export interface FilterWordsOptions {
-  prefixMode?: 'none' | 'all-words' | 'last-word';
+  prefixMode?: 'all-words' | 'last-word' | 'none';
   wordQuantifier?: 'match-all' | 'match-any';
 }
 
@@ -38,8 +38,8 @@ export const filterWords = (
 
       return (
         haystackWord.localeCompare(needleWord, undefined, {
-          usage: 'search',
           sensitivity: 'base',
+          usage: 'search',
         }) === 0
       );
     });

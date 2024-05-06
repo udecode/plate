@@ -1,14 +1,14 @@
 import {
+  type PlateEditor,
+  type TElement,
+  type Value,
+  type WithPlatePlugin,
   getEditorString,
   getPointBefore,
   getRange,
-  PlateEditor,
-  TElement,
-  Value,
-  WithPlatePlugin,
 } from '@udecode/plate-common';
 
-import { TriggerComboboxPlugin } from './types';
+import type { TriggerComboboxPlugin } from './types';
 
 export const withTriggerCombobox = <
   V extends Value = Value,
@@ -16,13 +16,13 @@ export const withTriggerCombobox = <
 >(
   editor: E,
   {
-    type,
     options: {
+      createComboboxInput,
       trigger,
       triggerPreviousCharPattern,
       triggerQuery,
-      createComboboxInput,
     },
+    type,
   }: WithPlatePlugin<TriggerComboboxPlugin, V, E>
 ) => {
   const { insertText } = editor;
@@ -31,7 +31,6 @@ export const withTriggerCombobox = <
     if (trigger instanceof RegExp) {
       return trigger.test(text);
     }
-
     if (Array.isArray(trigger)) {
       return trigger.includes(text);
     }
@@ -64,7 +63,7 @@ export const withTriggerCombobox = <
     if (matchesPreviousCharPattern) {
       const inputNode: TElement = createComboboxInput
         ? createComboboxInput(text)
-        : { type, children: [{ text: '' }] };
+        : { children: [{ text: '' }], type };
 
       return editor.insertNode(inputNode);
     }

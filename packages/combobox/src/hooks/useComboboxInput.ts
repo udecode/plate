@@ -1,14 +1,15 @@
 import {
-  HTMLAttributes,
-  RefObject,
+  type HTMLAttributes,
+  type RefObject,
   useCallback,
   useEffect,
   useRef,
 } from 'react';
+
 import {
+  Hotkeys,
   findNodePath,
   focusEditor,
-  Hotkeys,
   isHotkey,
   removeNodes,
   useEditorRef,
@@ -16,41 +17,44 @@ import {
 } from '@udecode/plate-common';
 import { useSelected } from 'slate-react';
 
-import { CancelComboboxInputCause, ComboboxInputCursorState } from '../types';
+import type {
+  CancelComboboxInputCause,
+  ComboboxInputCursorState,
+} from '../types';
 
 export interface UseComboboxInputOptions {
   ref: RefObject<HTMLElement>;
-  cursorState?: ComboboxInputCursorState;
   autoFocus?: boolean;
-  cancelInputOnEscape?: boolean;
-  cancelInputOnBackspace?: boolean;
   cancelInputOnArrowLeftRight?: boolean;
-  cancelInputOnDeselect?: boolean;
+  cancelInputOnBackspace?: boolean;
   cancelInputOnBlur?: boolean;
+  cancelInputOnDeselect?: boolean;
+  cancelInputOnEscape?: boolean;
+  cursorState?: ComboboxInputCursorState;
   forwardUndoRedoToEditor?: boolean;
   onCancelInput?: (cause: CancelComboboxInputCause) => void;
 }
 
 export interface UseComboboxInputResult {
-  removeInput: (focusEditor?: boolean) => void;
   cancelInput: (
     cause?: CancelComboboxInputCause,
     focusEditor?: boolean
   ) => void;
-  props: Required<Pick<HTMLAttributes<HTMLElement>, 'onKeyDown' | 'onBlur'>>;
+  props: Required<Pick<HTMLAttributes<HTMLElement>, 'onBlur' | 'onKeyDown'>>;
+  removeInput: (focusEditor?: boolean) => void;
 }
 
 export const useComboboxInput = ({
-  ref,
-  cursorState,
   autoFocus = true,
-  cancelInputOnEscape = true,
-  cancelInputOnBackspace = true,
   cancelInputOnArrowLeftRight = true,
-  cancelInputOnDeselect = true,
+  cancelInputOnBackspace = true,
   cancelInputOnBlur = true,
+  cancelInputOnDeselect = true,
+  cancelInputOnEscape = true,
+  cursorState,
   forwardUndoRedoToEditor = true,
   onCancelInput,
+  ref,
 }: UseComboboxInputOptions): UseComboboxInputResult => {
   const editor = useEditorRef();
   const element = useElement();
@@ -62,7 +66,9 @@ export const useComboboxInput = ({
   const removeInput = useCallback(
     (shouldFocusEditor = false) => {
       const path = findNodePath(editor, element);
+
       if (!path) return;
+
       removeNodes(editor, { at: path });
 
       if (shouldFocusEditor) {
@@ -81,8 +87,8 @@ export const useComboboxInput = ({
   );
 
   /**
-   * Using autoFocus on the input element causes an error:
-   * Cannot resolve a Slate node from DOM node: [object HTMLSpanElement]
+   * Using autoFocus on the input element causes an error: Cannot resolve a
+   * Slate node from DOM node: [object HTMLSpanElement]
    */
   useEffect(() => {
     if (autoFocus) {
@@ -91,10 +97,10 @@ export const useComboboxInput = ({
   }, [autoFocus, ref]);
 
   /**
-   * Storing the previous selection lets us determine whether the input has
-   * been actively deselected. When undoing or redoing causes a combobox input
-   * to be inserted, selected can be temporarily false. Removing the input at
-   * this point is incorrect and crashes the editor.
+   * Storing the previous selection lets us determine whether the input has been
+   * actively deselected. When undoing or redoing causes a combobox input to be
+   * inserted, selected can be temporarily false. Removing the input at this
+   * point is incorrect and crashes the editor.
    */
   const previousSelected = useRef(selected);
 
@@ -107,14 +113,17 @@ export const useComboboxInput = ({
   }, [selected, cancelInputOnDeselect, cancelInput]);
 
   return {
-    removeInput,
     cancelInput,
     props: {
+      onBlur: () => {
+        if (cancelInputOnBlur) {
+          cancelInput('blur');
+        }
+      },
       onKeyDown: (event) => {
         if (cancelInputOnEscape && isHotkey('escape', event)) {
           cancelInput('escape', true);
         }
-
         if (
           cancelInputOnBackspace &&
           cursorAtStart &&
@@ -122,7 +131,6 @@ export const useComboboxInput = ({
         ) {
           cancelInput('backspace', true);
         }
-
         if (
           cancelInputOnArrowLeftRight &&
           cursorAtStart &&
@@ -130,7 +138,6 @@ export const useComboboxInput = ({
         ) {
           cancelInput('arrowLeft', true);
         }
-
         if (
           cancelInputOnArrowLeftRight &&
           cursorAtEnd &&
@@ -148,11 +155,7 @@ export const useComboboxInput = ({
           focusEditor(editor);
         }
       },
-      onBlur: () => {
-        if (cancelInputOnBlur) {
-          cancelInput('blur');
-        }
-      },
     },
+    removeInput,
   };
 };

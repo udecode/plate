@@ -1,7 +1,8 @@
-import React, { ComponentType, SVGProps } from 'react';
+import React, { type ComponentType, type SVGProps } from 'react';
+
 import { withRef } from '@udecode/cn';
 import {
-  PlateEditor,
+  type PlateEditor,
   PlateElement,
   toggleNodeType,
 } from '@udecode/plate-common';
@@ -19,36 +20,35 @@ import {
 } from './inline-combobox';
 
 interface SlashCommandRule {
-  value: string;
-  keywords?: string[];
   icon: ComponentType<SVGProps<SVGSVGElement>>;
   onSelect: (editor: PlateEditor) => void;
+  value: string;
+  keywords?: string[];
 }
 
 const rules: SlashCommandRule[] = [
   {
-    value: 'Heading 1',
     icon: Icons.h1,
     onSelect: (editor) => {
       toggleNodeType(editor, { activeType: ELEMENT_H1 });
     },
+    value: 'Heading 1',
   },
   {
-    value: 'Heading 2',
     icon: Icons.h2,
     onSelect: (editor) => {
       toggleNodeType(editor, { activeType: ELEMENT_H2 });
     },
+    value: 'Heading 2',
   },
   {
-    value: 'Heading 3',
     icon: Icons.h3,
     onSelect: (editor) => {
       toggleNodeType(editor, { activeType: ELEMENT_H3 });
     },
+    value: 'Heading 3',
   },
   {
-    value: 'Bulleted list',
     icon: Icons.ul,
     keywords: ['ul', 'unordered list'],
     onSelect: (editor) => {
@@ -56,9 +56,9 @@ const rules: SlashCommandRule[] = [
         listStyleType: ListStyleType.Disc,
       });
     },
+    value: 'Bulleted list',
   },
   {
-    value: 'Numbered list',
     icon: Icons.ol,
     keywords: ['ol', 'ordered list'],
     onSelect: (editor) => {
@@ -66,18 +66,19 @@ const rules: SlashCommandRule[] = [
         listStyleType: ListStyleType.Decimal,
       });
     },
+    value: 'Numbered list',
   },
 ];
 
 export const SlashInputElement = withRef<typeof PlateElement>(
   ({ className, ...props }, ref) => {
-    const { children, element, editor } = props;
+    const { children, editor, element } = props;
 
     return (
       <PlateElement
         as="span"
-        ref={ref}
         data-slate-value={element.value}
+        ref={ref}
         {...props}
       >
         <InlineCombobox trigger="/">
@@ -88,14 +89,14 @@ export const SlashInputElement = withRef<typeof PlateElement>(
               No matching commands found
             </InlineComboboxEmpty>
 
-            {rules.map(({ value, keywords, icon: Icon, onSelect }) => (
+            {rules.map(({ icon: Icon, keywords, onSelect, value }) => (
               <InlineComboboxItem
                 key={value}
-                value={value}
                 keywords={keywords}
                 onClick={() => onSelect(editor)}
+                value={value}
               >
-                <Icon className="mr-2 size-4" aria-hidden />
+                <Icon aria-hidden className="mr-2 size-4" />
                 {value}
               </InlineComboboxItem>
             ))}

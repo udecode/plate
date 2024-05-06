@@ -1,4 +1,4 @@
-import { filterWords, FilterWordsOptions } from './filterWords';
+import { type FilterWordsOptions, filterWords } from './filterWords';
 
 describe('filterWords', () => {
   describe('with default options', () => {
