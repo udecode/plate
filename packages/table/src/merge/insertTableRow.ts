@@ -23,11 +23,11 @@ import {
   TTableRowElement,
 } from '../types';
 import { getCellTypes } from '../utils';
+import { computeCellIndices } from './computeCellIndices';
 import { createEmptyCell } from './createEmptyCell';
 import { findCellByIndexes } from './findCellByIndexes';
 import { getCellIndices } from './getCellIndices';
 import { getCellPath } from './getCellPath';
-import { computeCellIndices } from './computeCellIndices';
 
 export const insertTableMergeRow = <V extends Value>(
   editor: PlateEditor<V>,
@@ -83,7 +83,9 @@ export const insertTableMergeRow = <V extends Value>(
   const [cellNode, cellPath] = cellEntry;
   const cellElement = cellNode as TTableCellElement;
   const cellRowSpan = getRowSpan(cellElement);
-  const { row: cellRowIndex } = getCellIndices(cellIndices!, cellElement) || computeCellIndices(editor, tableNode, cellElement)!;
+  const { row: cellRowIndex } =
+    getCellIndices(cellIndices!, cellElement) ||
+    computeCellIndices(editor, tableNode, cellElement)!;
 
   const rowPath = cellPath.at(-2)!;
   const tablePath = cellPath.slice(0, -2)!;
@@ -121,10 +123,9 @@ export const insertTableMergeRow = <V extends Value>(
     if (!cur) return;
 
     const curCell = cur as TTableCellElement;
-    const { row: curRowIndex, col: curColIndex } = getCellIndices(
-      cellIndices!,
-      curCell
-    ) || computeCellIndices(editor, tableNode, curCell)!;
+    const { row: curRowIndex, col: curColIndex } =
+      getCellIndices(cellIndices!, curCell) ||
+      computeCellIndices(editor, tableNode, curCell)!;
 
     const curRowSpan = getRowSpan(curCell);
     const curColSpan = getColSpan(curCell);
