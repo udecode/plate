@@ -12,7 +12,7 @@ import { getTableGridAbove } from '../queries';
 import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';
 import { useTableStore } from '../stores';
-import { TTableCellElement, TablePlugin } from '../types';
+import { TablePlugin, TTableCellElement } from '../types';
 import { isTableRectangular } from './isTableRectangular';
 
 export const useTableMergeState = () => {

@@ -1,6 +1,7 @@
 import { getPluginOptions, PlateEditor, Value } from '@udecode/plate-common';
 
 import { ELEMENT_TABLE } from '../createTablePlugin';
+import { getColSpan } from '../queries';
 import { getRowSpan } from '../queries/getRowSpan';
 import {
   TablePlugin,
@@ -8,7 +9,6 @@ import {
   TTableElement,
   TTableRowElement,
 } from '../types';
-import { getColSpan } from '../queries';
 
 export function computeCellIndices<V extends Value>(
   editor: PlateEditor<V>,
