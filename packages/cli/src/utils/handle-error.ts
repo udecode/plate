@@ -11,7 +11,6 @@ export function handleError(error: unknown) {
     logger.error(error);
     process.exit(1);
   }
-
   if (error instanceof Error) {
     logger.error(error.message);
     process.exit(1);

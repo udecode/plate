@@ -1,11 +1,10 @@
 import { Editor } from 'slate';
 
-import { isElement } from '../element';
-import { TEditor, Value } from './TEditor';
+import type { TEditor, Value } from './TEditor';
 
-/**
- * Check if a value is an inline `Element` object.
- */
+import { isElement } from '../element';
+
+/** Check if a value is an inline `Element` object. */
 export const isInline = <V extends Value>(
   editor: TEditor<V>,
   value: any

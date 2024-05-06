@@ -1,6 +1,11 @@
-import { PlateEditor, Value, WithPlatePlugin } from '@udecode/plate-common';
+import type {
+  PlateEditor,
+  Value,
+  WithPlatePlugin,
+} from '@udecode/plate-common/server';
 
-import { TablePlugin } from './types';
+import type { TablePlugin } from './types';
+
 import { withDeleteTable } from './withDeleteTable';
 import { withGetFragmentTable } from './withGetFragmentTable';
 import { withInsertFragmentTable } from './withInsertFragmentTable';

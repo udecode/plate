@@ -1,6 +1,8 @@
-import React from 'react';
-import { TReactEditor, Value } from '@udecode/plate-common';
-import { Location } from 'slate';
+import type React from 'react';
+
+import type { TReactEditor } from '@udecode/plate-common';
+import type { Value } from '@udecode/plate-common/server';
+import type { Location } from 'slate';
 
 import { getBoundingClientRect } from './getBoundingClientRect';
 

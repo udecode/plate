@@ -1,24 +1,27 @@
 import React from 'react';
+
 import {
   focusEditor,
+  useEditorRef,
+  useEditorSelector,
+} from '@udecode/plate-common';
+import {
   getMark,
   removeMark,
   select,
   setMarks,
-  useEditorRef,
-  useEditorSelector,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 export const useColorDropdownMenuState = ({
-  nodeType,
   closeOnSelect = true,
   colors,
   customColors,
+  nodeType,
 }: {
-  nodeType: string;
-  colors: { name: string; value: string; isBrightColor: boolean }[];
-  customColors: { name: string; value: string; isBrightColor: boolean }[];
   closeOnSelect?: boolean;
+  colors: { isBrightColor: boolean; name: string; value: string }[];
+  customColors: { isBrightColor: boolean; name: string; value: string }[];
+  nodeType: string;
 }) => {
   const editor = useEditorRef();
 
@@ -86,29 +89,29 @@ export const useColorDropdownMenuState = ({
   }, [color, selectionDefined]);
 
   return {
-    open,
-    onToggle,
-    selectedColor,
-    color,
-    updateColorAndClose,
-    updateColor,
     clearColor,
+    color,
     colors,
     customColors,
+    onToggle,
+    open,
+    selectedColor,
+    updateColor,
+    updateColorAndClose,
   };
 };
 
 export const useColorDropdownMenu = ({
-  open,
   onToggle,
+  open,
 }: ReturnType<typeof useColorDropdownMenuState>) => {
   return {
-    menuProps: {
-      open,
-      onOpenChange: onToggle,
-    },
     buttonProps: {
       pressed: open,
+    },
+    menuProps: {
+      onOpenChange: onToggle,
+      open,
     },
   };
 };

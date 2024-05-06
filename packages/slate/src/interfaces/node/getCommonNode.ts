@@ -1,11 +1,9 @@
-import { Node, Path } from 'slate';
+import { Node, type Path } from 'slate';
 
-import { NodeOf, TNode } from './TNode';
-import { TNodeEntry } from './TNodeEntry';
+import type { NodeOf, TNode } from './TNode';
+import type { TNodeEntry } from './TNodeEntry';
 
-/**
- * Get an entry for the common ancesetor node of two paths.
- */
+/** Get an entry for the common ancesetor node of two paths. */
 export const getCommonNode = <N extends NodeOf<R>, R extends TNode = TNode>(
   root: R,
   path: Path,

@@ -1,9 +1,10 @@
 import * as React from 'react';
-import { cn } from '@udecode/cn';
 
-import { NpmCommands } from '@/types/unist';
-import { Event } from '@/lib/events';
-import { Style } from '@/registry/styles';
+import type { Event } from '@/lib/events';
+import type { Style } from '@/registry/styles';
+import type { NpmCommands } from '@/types/unist';
+
+import { cn } from '@udecode/cn';
 
 import { CopyButton, CopyNpmCommandButton } from './copy-button';
 import { StyleWrapper } from './style-wrapper';
@@ -138,12 +139,12 @@ export const Blockquote = ({
 );
 
 export const Image = ({
-  className,
   alt,
+  className,
   ...props
 }: React.ImgHTMLAttributes<HTMLImageElement>) => (
   // eslint-disable-next-line @next/next/no-img-element
-  <img className={cn('rounded-md', className)} alt={alt} {...props} />
+  <img alt={alt} className={cn('rounded-md', className)} {...props} />
 );
 
 export const HR = ({ ...props }: React.HTMLAttributes<HTMLHRElement>) => (
@@ -193,24 +194,25 @@ export const TD = ({
 );
 
 export const Pre = ({
-  className,
-  __rawString__,
-  __npmCommand__,
-  __yarnCommand__,
-  __pnpmCommand__,
   __bunCommand__,
-  __withMeta__,
-  __src__,
   __event__,
+  __npmCommand__,
+  __pnpmCommand__,
+  __rawString__,
+  __src__,
   __style__,
+  __withMeta__,
+  __yarnCommand__,
+  className,
   ...props
-}: React.HTMLAttributes<HTMLPreElement> & {
-  __style__?: Style['name'];
-  __rawString__?: string;
-  __withMeta__?: boolean;
-  __src__?: string;
+}: {
   __event__?: Event['name'];
-} & NpmCommands) => {
+  __rawString__?: string;
+  __src__?: string;
+  __style__?: Style['name'];
+  __withMeta__?: boolean;
+} & NpmCommands &
+  React.HTMLAttributes<HTMLPreElement>) => {
   return (
     <StyleWrapper styleName={__style__}>
       <pre
@@ -222,10 +224,10 @@ export const Pre = ({
       />
       {__rawString__ && !__npmCommand__ && (
         <CopyButton
-          value={__rawString__}
-          src={__src__}
-          event={__event__}
           className={cn('absolute right-4 top-4', __withMeta__ && 'top-16')}
+          event={__event__}
+          src={__src__}
+          value={__rawString__}
         />
       )}
       {__npmCommand__ &&
@@ -233,13 +235,13 @@ export const Pre = ({
         __pnpmCommand__ &&
         __bunCommand__ && (
           <CopyNpmCommandButton
+            className={cn('absolute right-4 top-4', __withMeta__ && 'top-16')}
             commands={{
+              __bunCommand__,
               __npmCommand__,
               __pnpmCommand__,
               __yarnCommand__,
-              __bunCommand__,
             }}
-            className={cn('absolute right-4 top-4', __withMeta__ && 'top-16')}
           />
         )}
     </StyleWrapper>

@@ -1,4 +1,4 @@
-export type DataTransferDataType = 'text/plain' | 'text/html' | string;
+export type DataTransferDataType = 'text/html' | 'text/plain' | string;
 
 export type DataTransferDataMap = Map<DataTransferDataType, unknown>;
 

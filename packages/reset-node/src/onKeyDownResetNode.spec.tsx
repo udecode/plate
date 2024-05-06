@@ -13,7 +13,7 @@ import {
   isSelectionAtBlockStart,
   mockPlugin,
 } from '@udecode/plate-common';
-import * as isHotkey from '@udecode/plate-core';
+import * as isHotkey from '@udecode/plate-core/server';
 import { ELEMENT_LI, unwrapList } from '@udecode/plate-list';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
@@ -35,8 +35,8 @@ describe('onKeyDownResetNode', () => {
 
   describe('when inside a blockquote', () => {
     const blockquoteRule = {
-      types: [ELEMENT_BLOCKQUOTE],
       defaultType: ELEMENT_PARAGRAPH,
+      types: [ELEMENT_BLOCKQUOTE],
     };
 
     const plugin = mockPlugin({
@@ -115,9 +115,9 @@ describe('onKeyDownResetNode', () => {
 
   describe('when inside a code block', () => {
     const codeBlockRule = {
-      types: [ELEMENT_CODE_BLOCK],
       defaultType: ELEMENT_PARAGRAPH,
       onReset: unwrapCodeBlock as any,
+      types: [ELEMENT_CODE_BLOCK],
     };
 
     const plugin = mockPlugin({
@@ -290,9 +290,9 @@ describe('onKeyDownResetNode', () => {
 
   describe('when inside a list', () => {
     const listRule = {
-      types: [ELEMENT_LI],
       defaultType: ELEMENT_PARAGRAPH,
       onReset: unwrapList as any,
+      types: [ELEMENT_LI],
     };
 
     const plugin = mockPlugin({

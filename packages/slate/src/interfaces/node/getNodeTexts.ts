@@ -1,13 +1,12 @@
-import { Modify } from '@udecode/utils';
-import { Node, NodeTextsOptions } from 'slate';
+import type { Modify } from '@udecode/utils';
 
-import { TextOf } from '../text/TText';
-import { NodeOf, TNode } from './TNode';
-import { TNodeEntry } from './TNodeEntry';
+import { Node, type NodeTextsOptions } from 'slate';
 
-/**
- * Return a generator of all leaf text nodes in a root node.
- */
+import type { TextOf } from '../text/TText';
+import type { NodeOf, TNode } from './TNode';
+import type { TNodeEntry } from './TNodeEntry';
+
+/** Return a generator of all leaf text nodes in a root node. */
 export const getNodeTexts = <N extends TextOf<R>, R extends TNode = TNode>(
   root: R,
   options?: Modify<

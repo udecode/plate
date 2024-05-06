@@ -263,3 +263,37 @@ After creating your package, install and build it:
 yarn install
 yarn build
 ```
+
+### How to: Server bundle
+
+The main bundle is client-side and is not tested in server environments. In general, a server bundle is necessary when the package has usages depending on `slate-react` or React. In that case, here is how to create a server bundle:
+
+- Move all files with server support to `/src/shared`
+- Move all files without server support to `/src/client`
+- Create a new entry file in `/src/server.ts`, export with the following:
+
+```ts
+export * from './shared/index';
+export * from './server/index'; // If needed
+```
+
+- (Optional) If needed, create server-side versions in `/src/server/`. For example, `withReact` in `/src/server/withReact` is a server-side version of `/src/client/withReact`
+- Run `yarn brl` to synchronize the exports
+- Update `package.json > exports`
+
+```json
+"exports": {
+  ".": {
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.mjs",
+    "module": "./dist/index.mjs",
+    "require": "./dist/index.js"
+  },
+  "./server": {
+    "types": "./dist/server.d.ts",
+    "import": "./dist/server.mjs",
+    "module": "./dist/server.mjs",
+    "require": "./dist/server.js"
+  }
+},
+```

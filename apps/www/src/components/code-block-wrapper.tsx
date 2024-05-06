@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+
 import { cn } from '@udecode/cn';
 
 import { Button } from '@/registry/default/plate-ui/button';
@@ -17,20 +18,20 @@ interface CodeBlockProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export function CodeBlockWrapper({
-  expandButtonTitle = 'View Code',
-  className,
   children,
+  className,
+  expandButtonTitle = 'View Code',
   open = false,
   ...props
 }: CodeBlockProps) {
   const [isOpened, setIsOpened] = React.useState(open);
 
   return (
-    <Collapsible open={isOpened} onOpenChange={setIsOpened}>
+    <Collapsible onOpenChange={setIsOpened} open={isOpened}>
       <div className={cn('relative overflow-hidden', className)} {...props}>
         <CollapsibleContent
-          forceMount
           className={cn('overflow-hidden', !isOpened && 'max-h-32')}
+          forceMount
         >
           <div
             className={cn(
@@ -48,7 +49,7 @@ export function CodeBlockWrapper({
           )}
         >
           <CollapsibleTrigger asChild>
-            <Button variant="secondary" className="h-8 text-xs">
+            <Button className="h-8 text-xs" variant="secondary">
               {isOpened ? 'Collapse' : expandButtonTitle}
             </Button>
           </CollapsibleTrigger>

@@ -9,7 +9,9 @@ export function* unusedCharGenerator({
 
   for (let code = 'A'.codePointAt(0)!; ; code++) {
     const c = String.fromCodePoint(code);
+
     if (skipSet.has(c)) continue;
+
     yield c;
   }
 }

@@ -1,6 +1,6 @@
-import { SetStateAction } from 'react';
+import type { SetStateAction } from 'react';
 
-import { buildToggleIndex } from './toggle-controller-store';
+import type { buildToggleIndex } from './toggle-controller-store';
 
 export interface TogglePlugin {
   // Options would go here

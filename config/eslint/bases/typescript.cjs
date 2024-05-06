@@ -1,4 +1,5 @@
 const path = require('node:path');
+const { filePatterns } = require('../constants/file-patterns.cjs');
 
 /**
  * Custom config base for projects using typescript / javascript.
@@ -7,56 +8,76 @@ const path = require('node:path');
 
 /** @type {import("eslint").Linter.Config} */
 module.exports = {
-  // Parser to use
-  parser: '@typescript-eslint/parser',
-  // Parser options
-  parserOptions: {
-    parser: '@typescript-eslint/parser',
-    // project: path.join(__dirname, '../../../tsconfig.json'),
-  },
-  // List of plugins to extend
-  extends: [
-    // 'eslint:recommended',
-    // 'plugin:import/recommended',
-    'plugin:import/typescript',
-    'plugin:@typescript-eslint/recommended',
-  ],
-  // List of plugins to use
-  plugins: ['unused-imports'],
-  // List of rules to use
-  rules: {
-    // TS rules
-    '@typescript-eslint/ban-ts-comment': 'off',
-    '@typescript-eslint/ban-ts-ignore': 'off',
-    '@typescript-eslint/ban-types': 'off',
-    '@typescript-eslint/camelcase': 'off',
-    '@typescript-eslint/consistent-type-exports': 'off',
-    '@typescript-eslint/consistent-type-imports': 'off',
-    // not yet working with prettier + eslint (duplicate)
-    // '@typescript-eslint/consistent-type-imports': [
-    //   'warn',
-    //   {
-    //     prefer: 'type-imports',
-    //     fixStyle: 'inline-type-imports',
-    //   },
-    // ],
-    '@typescript-eslint/explicit-function-return-type': 'off',
-    '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/interface-name-prefix': 'off',
-    '@typescript-eslint/naming-convention': 'off',
-    '@typescript-eslint/no-empty-function': 'off',
-    '@typescript-eslint/no-empty-interface': 'off',
-    '@typescript-eslint/no-explicit-any': 'off',
-    '@typescript-eslint/no-namespace': 'off',
-    '@typescript-eslint/no-non-null-assertion': 'off',
-    '@typescript-eslint/no-shadow': ['error'],
-    '@typescript-eslint/no-unused-vars': 'off',
-    '@typescript-eslint/no-use-before-define': 'off',
-    '@typescript-eslint/no-useless-constructor': 'off',
-    '@typescript-eslint/no-var-requires': 'off',
-  },
-  // Overrides for specific files
+  extends: ['eslint:recommended', 'plugin:import/recommended'],
   overrides: [
+    {
+      extends: [
+        // 'eslint:recommended',
+        // 'plugin:import/recommended',
+        'plugin:import/typescript',
+        'plugin:@typescript-eslint/recommended',
+        'plugin:@typescript-eslint/recommended-type-checked',
+        'plugin:@typescript-eslint/stylistic-type-checked',
+      ],
+      files: filePatterns.ts,
+      rules: {
+        // Override recommended-type-checked
+
+        '@typescript-eslint/ban-ts-comment': [
+          'error',
+          {
+            minimumDescriptionLength: 10,
+            'ts-check': false,
+            'ts-expect-error': 'allow-with-description',
+            'ts-ignore': true,
+            'ts-nocheck': true,
+          },
+        ],
+        '@typescript-eslint/ban-tslint-comment': ['error'],
+        '@typescript-eslint/ban-types': 'off',
+        '@typescript-eslint/consistent-generic-constructors': 'error',
+        '@typescript-eslint/consistent-indexed-object-style': 'error',
+        '@typescript-eslint/consistent-type-definitions': 'off',
+        // for now we can use both type and interface
+        '@typescript-eslint/consistent-type-exports': 'warn',
+        '@typescript-eslint/consistent-type-imports': [
+          'warn',
+          { fixStyle: 'inline-type-imports' },
+        ],
+        '@typescript-eslint/method-signature-style': ['error', 'property'],
+        '@typescript-eslint/no-empty-function': 'off',
+        '@typescript-eslint/no-empty-interface': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-import-type-side-effects': 'error',
+        '@typescript-eslint/no-misused-promises': [
+          2,
+          { checksVoidReturn: false },
+        ],
+        // Override stylistic-type-checked
+
+        '@typescript-eslint/no-non-null-assertion': 'off',
+        '@typescript-eslint/no-redundant-type-constituents': 'off',
+        '@typescript-eslint/no-unnecessary-type-assertion': 'off',
+        '@typescript-eslint/no-unsafe-argument': 'off',
+        '@typescript-eslint/no-unsafe-assignment': 'off',
+        '@typescript-eslint/no-unsafe-call': 'off',
+        '@typescript-eslint/no-unsafe-member-access': 'off',
+        '@typescript-eslint/no-unsafe-return': 'off',
+        // Override strict-type-checked
+
+        '@typescript-eslint/no-unused-vars': [
+          'warn',
+          {
+            argsIgnorePattern: '^_',
+            ignoreRestSiblings: true,
+          },
+        ],
+        '@typescript-eslint/non-nullable-type-assertion-style': 'off',
+        '@typescript-eslint/prefer-nullish-coalescing': 'off',
+        '@typescript-eslint/require-await': 'warn',
+        '@typescript-eslint/restrict-template-expressions': 'off',
+      },
+    },
     {
       files: ['packages/cli/**'],
       rules: {
@@ -70,28 +91,80 @@ module.exports = {
         sourceType: 'module',
       },
       rules: {
-        '@typescript-eslint/explicit-module-boundary-types': 'off',
         '@typescript-eslint/consistent-type-exports': 'off',
         '@typescript-eslint/consistent-type-imports': 'off',
+        '@typescript-eslint/explicit-module-boundary-types': 'off',
+        '@typescript-eslint/naming-convention': 'off',
       },
     },
     {
       // commonjs or assumed
-      files: ['*.js', '*.cjs'],
+      files: filePatterns.js,
       parser: 'espree',
       parserOptions: {
         ecmaVersion: 2020,
       },
       rules: {
         '@typescript-eslint/ban-ts-comment': 'off',
-        '@typescript-eslint/no-explicit-any': 'off',
-        '@typescript-eslint/no-var-requires': 'off',
-        '@typescript-eslint/explicit-module-boundary-types': 'off',
         '@typescript-eslint/consistent-type-exports': 'off',
         '@typescript-eslint/consistent-type-imports': 'off',
+        '@typescript-eslint/explicit-module-boundary-types': 'off',
+        '@typescript-eslint/naming-convention': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-var-requires': 'off',
       },
     },
+    {
+      files: filePatterns.test,
+      rules: {
+        '@typescript-eslint/require-await': 'off',
+      }
+    }
   ],
+  plugins: ['unused-imports'],
+  rules: {
+    'import/default': ['error'],
+    // Slow: https://github.com/import-js/eslint-plugin-import/blob/main/docs/rules/namespace.md
+    'import/namespace': 'off', // ['error'] If you want the extra check (typechecks will spot most issues already)
+    // https://github.com/import-js/eslint-plugin-import/blob/main/docs/rules/no-duplicates.md
+    'import/no-duplicates': [
+      'error',
+      {
+        // can't autofix yet
+        // 'prefer-inline': true
+      },
+    ],
+    'import/no-named-as-default': ['warn'],
+    'import/no-named-as-default-member': 'off',
+    'linebreak-style': ['error', 'unix'],
+    'no-empty': ['error', { allowEmptyCatch: true }],
+    'no-case-declarations': 'off',
+    // will use 'import/no-duplicates'.
+    'no-duplicate-imports': 'off',
+    'no-empty-function': 'off',
+    'no-prototype-builtins': 'off',
+    /** Remove unused imports */
+    'no-unused-vars': 'off', // or "@typescript-eslint/no-unused-vars": "off",
+    'spaced-comment': [
+      'error',
+      'always',
+      {
+        block: {
+          balanced: true,
+          exceptions: ['*'],
+          markers: ['!'],
+        },
+        line: {
+          exceptions: ['-', '+'],
+          markers: ['/'],
+        },
+      },
+    ],
+    // No unused imports
+    'unused-imports/no-unused-imports': 'error',
+    // No unused variables
+    'unused-imports/no-unused-vars': 'off',
+  },
   settings: {
     'import/resolver': {
       typescript: {},

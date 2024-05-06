@@ -1,6 +1,6 @@
 import { Editor } from 'slate';
 
-import { TEditor, Value } from './TEditor';
+import type { TEditor, Value } from './TEditor';
 
 /**
  * Add a custom property to the leaf text nodes in the current selection.

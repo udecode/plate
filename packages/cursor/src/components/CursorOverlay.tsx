@@ -1,17 +1,17 @@
 import React from 'react';
-import {
-  ClassNames,
-  UnknownObject,
-  usePlateSelectors,
-} from '@udecode/plate-common';
 
-import { useCursorOverlayPositions } from '../hooks/useCursorOverlayPositions';
-import {
+import type { ClassNames, UnknownObject } from '@udecode/plate-common/server';
+
+import { usePlateSelectors } from '@udecode/plate-common';
+
+import type {
   CursorData,
   CursorOverlayState,
   CursorState,
   SelectionRect,
 } from '../types';
+
+import { useCursorOverlayPositions } from '../hooks/useCursorOverlayPositions';
 
 export interface CursorProps<TCursorData extends UnknownObject = UnknownObject>
   extends CursorOverlayState<TCursorData>,
@@ -19,32 +19,27 @@ export interface CursorProps<TCursorData extends UnknownObject = UnknownObject>
       caret: string;
       selectionRect: string;
     }> {
-  /**
-   * Whether to disable the caret.
-   */
+  /** Whether to disable the caret. */
   disableCaret?: boolean;
 
-  /**
-   * Whether to disable the selection rects.
-   */
+  /** Whether to disable the selection rects. */
   disableSelection?: boolean;
 
   /**
-   * Custom caret component.
-   * For example, you could display a label next to the caret.
+   * Custom caret component. For example, you could display a label next to the
+   * caret.
+   *
    * @default styled div
    */
   onRenderCaret?: React.FC<
-    Pick<CursorProps<TCursorData>, 'data' | 'caretPosition'>
+    Pick<CursorProps<TCursorData>, 'caretPosition' | 'data'>
   >;
 
-  /**
-   * Overrides `Caret` component
-   */
+  /** Overrides `Caret` component */
   onRenderSelectionRect?: React.FC<
-    Pick<CursorProps<TCursorData>, 'data'> & {
+    {
       selectionRect: SelectionRect;
-    }
+    } & Pick<CursorProps<TCursorData>, 'data'>
   >;
 }
 
@@ -52,42 +47,39 @@ export interface CursorOverlayProps<
   TCursorData extends UnknownObject = UnknownObject,
 > extends Pick<
     CursorProps<CursorData>,
+    | 'classNames'
     | 'disableCaret'
     | 'disableSelection'
     | 'onRenderCaret'
     | 'onRenderSelectionRect'
-    | 'classNames'
   > {
   /**
-   * Cursor states to use for calculating the overlay positions, by key.
-   */
-  cursors?: Record<string, CursorState<TCursorData>>;
-
-  /**
-   * Container the overlay will be rendered in.
-   * If set, all returned overlay positions will be relative to this container.
+   * Container the overlay will be rendered in. If set, all returned overlay
+   * positions will be relative to this container.
    */
   containerRef?: React.RefObject<HTMLElement>;
 
+  /** Cursor states to use for calculating the overlay positions, by key. */
+  cursors?: Record<string, CursorState<TCursorData>>;
+
+  /** Overrides `Cursor` component. */
+  onRenderCursor?: React.FC<CursorProps>;
+
   /**
    * Whether to refresh the cursor overlay positions on container resize.
+   *
    * @default true
    */
   refreshOnResize?: boolean;
-
-  /**
-   * Overrides `Cursor` component.
-   */
-  onRenderCursor?: React.FC<CursorProps>;
 }
 
 export function CursorOverlayContent<
   TCursorData extends UnknownObject = UnknownObject,
 >({
   classNames,
+  onRenderCaret,
   onRenderCursor: CursorComponent,
   onRenderSelectionRect,
-  onRenderCaret,
   ...props
 }: CursorOverlayProps<TCursorData>) {
   const { disableCaret, disableSelection } = props;
@@ -96,10 +88,10 @@ export function CursorOverlayContent<
 
   const cursorProps = {
     classNames,
-    onRenderSelectionRect,
-    onRenderCaret,
     disableCaret,
     disableSelection,
+    onRenderCaret,
+    onRenderSelectionRect,
   };
 
   if (!CursorComponent) return null;

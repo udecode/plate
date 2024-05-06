@@ -1,5 +1,7 @@
 # @udecode/plate-excalidraw
 
+## 33.0.0
+
 ## 32.0.0
 
 ## 31.4.0

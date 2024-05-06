@@ -1,10 +1,8 @@
-import { Editor, EditorAfterOptions, Location } from 'slate';
+import { Editor, type EditorAfterOptions, type Location } from 'slate';
 
-import { TEditor, Value } from './TEditor';
+import type { TEditor, Value } from './TEditor';
 
-/**
- * Get the point after a location.
- */
+/** Get the point after a location. */
 export const getPointAfter = <V extends Value>(
   editor: TEditor<V>,
   at: Location,

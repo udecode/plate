@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { useEditorRef } from '@udecode/plate-common';
 import { useReadOnly, useSelected } from 'slate-react';
 
@@ -6,9 +7,8 @@ import { getTableGridAbove } from '../../queries/index';
 import { useTableStore } from '../../stores/tableStore';
 
 /**
- * Many grid cells above and diff -> set
- * No many grid cells above and diff -> unset
- * No selection -> unset
+ * Many grid cells above and diff -> set No many grid cells above and diff ->
+ * unset No selection -> unset
  */
 export const useSelectedCells = () => {
   const readOnly = useReadOnly();
@@ -30,6 +30,7 @@ export const useSelectedCells = () => {
 
     const tableEntries = getTableGridAbove(editor, { format: 'table' });
     const cellEntries = getTableGridAbove(editor, { format: 'cell' });
+
     if (cellEntries?.length > 1) {
       const cells = cellEntries.map((entry) => entry[0]);
       const tables = tableEntries.map((entry) => entry[0]);

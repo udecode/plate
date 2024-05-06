@@ -1,18 +1,19 @@
 import {
+  type PlateEditor,
+  type TElement,
+  type Value,
   getEndPoint,
   getPluginType,
   getStartPoint,
-  PlateEditor,
   select,
-  TElement,
-  Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Path } from 'slate';
+
+import type { TTableCellElement } from './types';
 
 import { ELEMENT_TH } from './createTablePlugin';
 import { getColSpan, getRowSpan, getTableGridAbove } from './queries/index';
-import { TTableCellElement } from './types';
 
 export const withSetFragmentDataTable = <
   V extends Value = Value,
@@ -24,7 +25,7 @@ export const withSetFragmentDataTable = <
 
   editor.setFragmentData = (
     data: DataTransfer,
-    originEvent?: 'drag' | 'copy' | 'cut' | undefined
+    originEvent?: 'copy' | 'cut' | 'drag' | undefined
   ) => {
     const tableEntry = getTableGridAbove(editor, {
       format: 'table',
@@ -37,6 +38,7 @@ export const withSetFragmentDataTable = <
 
     if (!tableEntry || !initialSelection) {
       setFragmentData(data, originEvent);
+
       return;
     }
 
@@ -63,7 +65,8 @@ export const withSetFragmentDataTable = <
     const tableElement = document.createElement('table');
 
     /**
-     * Cover single cell copy | cut operation. In this case, copy cell content instead of table structure.
+     * Cover single cell copy | cut operation. In this case, copy cell content
+     * instead of table structure.
      */
     if (
       tableEntry &&
@@ -72,6 +75,7 @@ export const withSetFragmentDataTable = <
       (originEvent === 'copy' || originEvent === 'cut')
     ) {
       setFragmentData(data);
+
       return;
     }
 

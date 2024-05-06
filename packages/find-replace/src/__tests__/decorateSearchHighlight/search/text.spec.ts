@@ -1,8 +1,8 @@
 import { createPlateEditor, getPlugin } from '@udecode/plate-common';
 
 import {
-  createFindReplacePlugin,
   MARK_SEARCH_HIGHLIGHT,
+  createFindReplacePlugin,
 } from '../../../createFindReplacePlugin';
 
 it('should be', () => {
@@ -21,6 +21,7 @@ it('should be', () => {
   expect(plugin.decorate?.(editor, plugin)([{ text: 'test' }, [0, 0]])).toEqual(
     [
       {
+        [MARK_SEARCH_HIGHLIGHT]: true,
         anchor: {
           offset: 0,
           path: [0, 0],
@@ -30,7 +31,6 @@ it('should be', () => {
           path: [0, 0],
         },
         search: 'test',
-        [MARK_SEARCH_HIGHLIGHT]: true,
       },
     ]
   );
@@ -52,6 +52,7 @@ it('should be', () => {
   expect(plugin.decorate?.(editor, plugin)([{ text: 'test' }, [0, 0]])).toEqual(
     [
       {
+        [MARK_SEARCH_HIGHLIGHT]: true,
         anchor: {
           offset: 0,
           path: [0, 0],
@@ -61,7 +62,6 @@ it('should be', () => {
           path: [0, 0],
         },
         search: 'Test',
-        [MARK_SEARCH_HIGHLIGHT]: true,
       },
     ]
   );

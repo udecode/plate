@@ -1,37 +1,38 @@
-import { createPlateUI } from '@/plate/create-plate-ui';
 import {
-  createPlugins,
-  createTablePlugin,
   Plate,
   PlateContent,
+  createPlugins,
+  createTablePlugin,
 } from '@udecode/plate';
+
+import { createPlateUI } from '@/plate/create-plate-ui';
 
 import { useVariant } from './useVariant';
 
 export function TableApp() {
   const {
-    initialTableWidth,
     colSizes,
-    readOnly = false,
     disableMarginLeft = false,
+    initialTableWidth,
+    readOnly = false,
   } = useVariant({
     auto: {
-      initialTableWidth: undefined,
       colSizes: undefined,
-    },
-    fixed: {
-      initialTableWidth: 500,
-      colSizes: [350, 150],
-    },
-    readOnly: {
-      initialTableWidth: 500,
-      colSizes: [350, 150],
-      readOnly: true,
+      initialTableWidth: undefined,
     },
     disableMarginLeft: {
-      initialTableWidth: 500,
       colSizes: [350, 150],
       disableMarginLeft: true,
+      initialTableWidth: 500,
+    },
+    fixed: {
+      colSizes: [350, 150],
+      initialTableWidth: 500,
+    },
+    readOnly: {
+      colSizes: [350, 150],
+      initialTableWidth: 500,
+      readOnly: true,
     },
   });
 
@@ -39,8 +40,8 @@ export function TableApp() {
     [
       createTablePlugin({
         options: {
-          initialTableWidth,
           disableMarginLeft,
+          initialTableWidth,
         },
       }),
     ],
@@ -51,41 +52,41 @@ export function TableApp() {
 
   const initialValue = [
     {
-      type: 'table',
-      colSizes,
       children: [
         {
-          type: 'tr',
           children: [
             {
-              type: 'th',
               children: [{ text: 'Row 1, Cell 1' }],
+              type: 'th',
             },
             {
-              type: 'th',
               children: [{ text: 'Row 1, Cell 2' }],
+              type: 'th',
             },
           ],
+          type: 'tr',
         },
         {
-          type: 'tr',
           children: [
             {
-              type: 'td',
               children: [{ text: 'Row 2, Cell 1' }],
+              type: 'td',
             },
             {
-              type: 'td',
               children: [{ text: 'Row 2, Cell 2' }],
+              type: 'td',
             },
           ],
+          type: 'tr',
         },
       ],
+      colSizes,
+      type: 'table',
     },
   ];
 
   return (
-    <Plate plugins={plugins} initialValue={initialValue}>
+    <Plate initialValue={initialValue} plugins={plugins}>
       <PlateContent readOnly={readOnly} />
     </Plate>
   );

@@ -1,9 +1,9 @@
-import path from 'node:path';
 import {
   defineDocumentType,
   defineNestedType,
   makeSource,
 } from 'contentlayer/source-files';
+import path from 'node:path';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypePrettyCode from 'rehype-pretty-code';
 import rehypeSlug from 'rehype-slug';
@@ -18,29 +18,28 @@ import { rehypeNpmCommand } from './src/lib/rehype-npm-command';
 /** @type {import('contentlayer/source-files').ComputedFields} */
 const computedFields = {
   slug: {
-    type: 'string',
     resolve: (doc) => `/${doc._raw.flattenedPath}`,
+    type: 'string',
   },
   slugAsParams: {
-    type: 'string',
     resolve: (doc) => doc._raw.flattenedPath.split('/').slice(1).join('/'),
+    type: 'string',
   },
 };
 
 const LinksProperties = defineNestedType(() => ({
-  name: 'LinksProperties',
   fields: {
-    doc: {
-      type: 'string',
-    },
     api: {
       type: 'string',
     },
+    doc: {
+      type: 'string',
+    },
   },
+  name: 'LinksProperties',
 }));
 
 const DocProperties = defineNestedType(() => ({
-  name: 'DocProperties',
   fields: {
     route: {
       type: 'string',
@@ -49,57 +48,57 @@ const DocProperties = defineNestedType(() => ({
       type: 'string',
     },
   },
+  name: 'DocProperties',
 }));
 
 export const Doc = defineDocumentType(() => ({
-  name: 'Doc',
-  filePathPattern: `docs/**/*.mdx`,
+  computedFields,
   contentType: 'mdx',
   fields: {
-    title: {
-      type: 'string',
-      required: true,
+    component: {
+      default: false,
+      required: false,
+      type: 'boolean',
     },
     description: {
-      type: 'string',
       required: true,
-    },
-    published: {
-      type: 'boolean',
-      default: true,
-    },
-    links: {
-      type: 'nested',
-      of: LinksProperties,
+      type: 'string',
     },
     docs: {
-      type: 'list',
       of: DocProperties,
+      type: 'list',
     },
     featured: {
-      type: 'boolean',
       default: false,
       required: false,
+      type: 'boolean',
     },
-    component: {
+    links: {
+      of: LinksProperties,
+      type: 'nested',
+    },
+    published: {
+      default: true,
       type: 'boolean',
-      default: false,
-      required: false,
+    },
+    title: {
+      required: true,
+      type: 'string',
     },
     toc: {
-      type: 'boolean',
       default: true,
       required: false,
+      type: 'boolean',
     },
   },
-  computedFields,
+  filePathPattern: `docs/**/*.mdx`,
+  name: 'Doc',
 }));
 
 export default makeSource({
   contentDirPath: './content',
   documentTypes: [Doc],
   mdx: {
-    remarkPlugins: [remarkGfm, codeImport],
     rehypePlugins: [
       rehypeSlug,
       rehypeComponent,
@@ -107,14 +106,15 @@ export default makeSource({
         visit(tree, (node) => {
           if (node?.type === 'element' && node?.tagName === 'pre') {
             const [codeEl] = node.children;
+
             if (codeEl.tagName !== 'code') {
               return;
             }
-
             if (codeEl.data?.meta) {
               // Extract event from meta and pass it down the tree.
               const regex = /event="([^"]*)"/;
               const match = codeEl.data?.meta.match(regex);
+
               if (match) {
                 node.__event__ = match ? match[1] : null;
                 codeEl.data.meta = codeEl.data.meta.replace(regex, '');
@@ -134,7 +134,14 @@ export default makeSource({
             const theme = await loadTheme(
               path.join(process.cwd(), '/src/lib/themes/dark.json')
             );
+
             return await getHighlighter({ theme });
+          },
+          onVisitHighlightedLine(node) {
+            node.properties.className.push('line--highlighted');
+          },
+          onVisitHighlightedWord(node) {
+            node.properties.className = ['word--highlighted'];
           },
           onVisitLine(node) {
             // Prevent lines from collapsing in `display: grid` mode, and allow empty
@@ -142,12 +149,6 @@ export default makeSource({
             if (node.children.length === 0) {
               node.children = [{ type: 'text', value: ' ' }];
             }
-          },
-          onVisitHighlightedLine(node) {
-            node.properties.className.push('line--highlighted');
-          },
-          onVisitHighlightedWord(node) {
-            node.properties.className = ['word--highlighted'];
           },
         },
       ],
@@ -159,6 +160,7 @@ export default makeSource({
             }
 
             const preElement = node.children.at(-1);
+
             if (preElement.tagName !== 'pre') {
               return;
             }
@@ -170,11 +172,9 @@ export default makeSource({
             if (node.__src__) {
               preElement.properties.__src__ = node.__src__;
             }
-
             if (node.__event__) {
               preElement.properties.__event__ = node.__event__;
             }
-
             if (node.__style__) {
               preElement.properties['__style__'] = node.__style__;
             }
@@ -186,11 +186,12 @@ export default makeSource({
         rehypeAutolinkHeadings,
         {
           properties: {
-            className: ['subheading-anchor'],
             ariaLabel: 'Link to section',
+            className: ['subheading-anchor'],
           },
         },
       ],
     ],
+    remarkPlugins: [remarkGfm, codeImport],
   },
 });

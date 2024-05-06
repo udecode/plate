@@ -1,22 +1,31 @@
-import { withYjs, YjsEditor } from '@slate-yjs/core';
-// eslint-disable-next-line import/no-unresolved
-import { WithYjsOptions } from '@slate-yjs/core/dist/plugins/withYjs';
-import { TEditor, TOperation, Value } from '@udecode/plate-common';
-import * as Y from 'yjs';
+import type { TEditor, TOperation, Value } from '@udecode/plate-common/server';
+import type * as Y from 'yjs';
 
-export type YjsEditorProps = Pick<
+import { type YjsEditor, withYjs } from '@slate-yjs/core';
+
+export type WithYjsOptions = {
+  autoConnect?: boolean;
+
+  // Origin used when applying local slate operations to yjs
+  localOrigin?: unknown;
+
+  // Origin used when storing positions
+  positionStorageOrigin?: unknown;
+};
+
+export type YjsEditorProps = {
+  storeLocalChange: (op: TOperation) => void;
+} & Pick<
   YjsEditor,
-  | 'sharedRoot'
-  | 'localOrigin'
-  | 'positionStorageOrigin'
   | 'applyRemoteEvents'
-  | 'flushLocalChanges'
-  | 'isLocalOrigin'
   | 'connect'
   | 'disconnect'
-> & {
-  storeLocalChange: (op: TOperation) => void;
-};
+  | 'flushLocalChanges'
+  | 'isLocalOrigin'
+  | 'localOrigin'
+  | 'positionStorageOrigin'
+  | 'sharedRoot'
+>;
 
 export const withTYjs = <
   V extends Value,

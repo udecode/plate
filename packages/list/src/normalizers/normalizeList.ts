@@ -1,5 +1,9 @@
 import {
   ELEMENT_DEFAULT,
+  type PlateEditor,
+  type TElement,
+  type TNodeEntry,
+  type Value,
   getChildren,
   getNode,
   getParentNode,
@@ -7,26 +11,21 @@ import {
   getPreviousPath,
   isElement,
   match,
-  PlateEditor,
   removeNodes,
   setElements,
-  TElement,
-  TNodeEntry,
-  Value,
   wrapNodes,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Path } from 'slate';
+
+import type { ListPlugin } from '../types';
 
 import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 import { getListTypes, isListRoot } from '../queries/index';
 import { moveListItemsToList } from '../transforms/index';
-import { ListPlugin } from '../types';
 import { normalizeListItem } from './normalizeListItem';
 import { normalizeNestedList } from './normalizeNestedList';
 
-/**
- * Normalize list node to force the ul>li>p+ul structure.
- */
+/** Normalize list node to force the ul>li>p+ul structure. */
 export const normalizeList = <V extends Value>(
   editor: PlateEditor<V>,
   { validLiChildrenTypes }: ListPlugin
@@ -40,7 +39,6 @@ export const normalizeList = <V extends Value>(
     if (!isElement(node)) {
       return normalizeNode([node, path]);
     }
-
     if (isListRoot(editor, node)) {
       const nonLiChild = getChildren([node, path]).find(
         ([child]) => child.type !== liType
@@ -49,12 +47,11 @@ export const normalizeList = <V extends Value>(
       if (nonLiChild) {
         return wrapNodes<TElement>(
           editor,
-          { type: liType, children: [] },
+          { children: [], type: liType },
           { at: nonLiChild[1] }
         );
       }
     }
-
     // remove empty list
     if (match(node, [], { type: getListTypes(editor) })) {
       if (
@@ -70,9 +67,9 @@ export const normalizeList = <V extends Value>(
       // Has a list afterwards with the same type
       if (nextNode?.type === node.type) {
         moveListItemsToList(editor, {
+          deleteFromList: true,
           fromList: [nextNode, nextPath],
           toList: [node, path],
-          deleteFromList: true,
         });
       }
 
@@ -86,12 +83,10 @@ export const normalizeList = <V extends Value>(
         // early return since this node will no longer exists
         return;
       }
-
       if (normalizeNestedList(editor, { nestedListItem: [node, path] })) {
         return;
       }
     }
-
     if (
       node.type === getPluginType(editor, ELEMENT_LI) &&
       normalizeListItem(editor, {
@@ -101,7 +96,6 @@ export const normalizeList = <V extends Value>(
     ) {
       return;
     }
-
     // LIC should have LI parent. If not, set LIC to DEFAULT type.
     if (
       node.type === licType &&
@@ -109,6 +103,7 @@ export const normalizeList = <V extends Value>(
       getParentNode(editor, path)?.[0].type !== liType
     ) {
       setElements(editor, { type: defaultType }, { at: path });
+
       return;
     }
 

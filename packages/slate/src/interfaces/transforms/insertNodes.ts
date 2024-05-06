@@ -1,35 +1,35 @@
-import { Modify } from '@udecode/utils';
-import { Path, removeNodes, Transforms, withoutNormalizing } from 'slate';
+import type { Modify } from '@udecode/utils';
 
-import { QueryNodeOptions } from '../../types';
-import { NodeMatchOption } from '../../types/NodeMatchOption';
+import { Path, Transforms, removeNodes, withoutNormalizing } from 'slate';
+
+import type { QueryNodeOptions } from '../../types';
+import type { NodeMatchOption } from '../../types/NodeMatchOption';
+import type { TEditor, Value } from '../editor/TEditor';
+import type { EElementOrText } from '../element/TElement';
+
 import { queryNode } from '../../utils';
 import { getAboveNode, getEndPoint, isInline } from '../editor';
-import { TEditor, Value } from '../editor/TEditor';
-import { EElementOrText } from '../element/TElement';
-import { getNodeString, TDescendant } from '../node';
+import { type TDescendant, getNodeString } from '../node';
 
-export type InsertNodesOptions<V extends Value = Value> = Modify<
-  NonNullable<Parameters<typeof Transforms.insertNodes>[2]>,
-  NodeMatchOption<V>
-> & {
+export type InsertNodesOptions<V extends Value = Value> = {
   /**
-   * Remove the currect block if empty before inserting. Only applies to
-   * paragraphs by default, but can be customized by passing a
-   * QueryNodeOptions object.
-   */
-  removeEmpty?: boolean | QueryNodeOptions;
-
-  /**
-   * Insert the nodes after the currect block. Does not apply if the
-   * removeEmpty option caused the current block to be removed.
+   * Insert the nodes after the currect block. Does not apply if the removeEmpty
+   * option caused the current block to be removed.
    */
   nextBlock?: boolean;
-};
 
-/**
- * Insert nodes at a specific location in the Editor.
- */
+  /**
+   * Remove the currect block if empty before inserting. Only applies to
+   * paragraphs by default, but can be customized by passing a QueryNodeOptions
+   * object.
+   */
+  removeEmpty?: QueryNodeOptions | boolean;
+} & Modify<
+  NonNullable<Parameters<typeof Transforms.insertNodes>[2]>,
+  NodeMatchOption<V>
+>;
+
+/** Insert nodes at a specific location in the Editor. */
 export const insertNodes = <
   N extends EElementOrText<V>,
   V extends Value = Value,
@@ -54,8 +54,11 @@ export const insertNodes = <
 
         queryNodeOptions.filter = ([node, path]) => {
           if (getNodeString(node)) return false;
+
           const children = node.children as TDescendant[];
+
           if (children.some((n) => isInline(editor, n))) return false;
+
           return !filter || filter([node, path]);
         };
 
@@ -65,7 +68,6 @@ export const insertNodes = <
         }
       }
     }
-
     if (nextBlock) {
       const { at = editor.selection } = options;
 

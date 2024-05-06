@@ -7,8 +7,9 @@ export const formatHTML = (html: string) => {
   const pre: Record<string, string>[] = [];
 
   html = html
-    .replace(new RegExp('<pre>((.|[\\n\\r])+)?</pre>'), (x) => {
+    .replace(new RegExp('<pre>(?:.|[\\n\\r])*</pre>'), (x) => {
       pre.push({ indent: '', tag: x });
+
       return '<--TEMPPRE' + i++ + '/-->';
     })
     .replaceAll(new RegExp('<[^<>]+>[^<]?', 'g'), (x) => {
@@ -17,7 +18,6 @@ export const formatHTML = (html: string) => {
       const p = new RegExp('<--TEMPPRE(\\d+)/-->').exec(x);
 
       if (p) pre[Number(p[1])].indent = indent;
-
       if (
         [
           'area',
@@ -63,6 +63,7 @@ export const formatHTML = (html: string) => {
               x.slice(-1, x.length - 1 + x.length);
         !p && (indent += tab);
       }
+
       return ret;
     });
 
@@ -79,9 +80,8 @@ export const formatHTML = (html: string) => {
     );
   }
 
-  return html.charAt(0) ===
-    `
-`
+  return html.startsWith(`
+`)
     ? html.slice(1, 1 + html.length - 1)
     : html;
 };

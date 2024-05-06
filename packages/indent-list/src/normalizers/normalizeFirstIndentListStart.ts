@@ -1,15 +1,16 @@
 import {
+  type TEditor,
+  type TNodeEntry,
+  type Value,
   isDefined,
-  TEditor,
-  TNodeEntry,
   unsetNodes,
-  Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { KEY_LIST_START } from '../createIndentListPlugin';
 
 /**
- * If there is no previous list item and node list start is defined, unset list start (1).
+ * If there is no previous list item and node list start is defined, unset list
+ * start (1).
  */
 export const normalizeFirstIndentListStart = <V extends Value>(
   editor: TEditor<V>,
@@ -17,6 +18,7 @@ export const normalizeFirstIndentListStart = <V extends Value>(
 ) => {
   if (isDefined(node[KEY_LIST_START])) {
     unsetNodes(editor, KEY_LIST_START, { at: path });
+
     return true;
   }
 };

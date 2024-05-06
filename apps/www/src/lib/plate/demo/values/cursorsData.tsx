@@ -1,15 +1,15 @@
 export const cursorsData = {
   one: {
-    key: 'one',
     data: { style: { backgroundColor: 'red' } },
+    key: 'one',
     selection: {
       anchor: {
-        path: [2, 0],
         offset: 45,
+        path: [2, 0],
       },
       focus: {
-        path: [2, 0],
         offset: 51,
+        path: [2, 0],
       },
     },
   },

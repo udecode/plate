@@ -1,6 +1,7 @@
 import * as React from 'react';
-import LinkPrimitive from 'next/link';
+
 import { cn } from '@udecode/cn';
+import LinkPrimitive from 'next/link';
 
 export function Link({
   className,

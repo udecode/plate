@@ -1,4 +1,4 @@
-import { createPluginFactory } from '@udecode/plate-common';
+import { createPluginFactory } from '@udecode/plate-common/server';
 
 import { createBoldPlugin } from './createBoldPlugin';
 import { createCodePlugin } from './createCodePlugin';
@@ -10,6 +10,7 @@ import { createUnderlinePlugin } from './createUnderlinePlugin';
 
 /**
  * Enables support for basic marks:
+ *
  * - Bold
  * - Code
  * - Italic

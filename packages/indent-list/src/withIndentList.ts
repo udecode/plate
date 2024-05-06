@@ -1,16 +1,17 @@
-import {
-  createPathRef,
-  getNode,
-  PlateEditor,
-  TElement,
-  Value,
-  WithPlatePlugin,
-} from '@udecode/plate-common';
-import { KEY_INDENT } from '@udecode/plate-indent';
-import { PathRef } from 'slate';
+import type { PathRef } from 'slate';
 
 import {
-  IndentListPlugin,
+  type PlateEditor,
+  type TElement,
+  type Value,
+  type WithPlatePlugin,
+  createPathRef,
+  getNode,
+} from '@udecode/plate-common/server';
+import { KEY_INDENT } from '@udecode/plate-indent';
+
+import {
+  type IndentListPlugin,
   KEY_LIST_STYLE_TYPE,
 } from './createIndentListPlugin';
 import { normalizeIndentList } from './normalizeIndentList';
@@ -42,9 +43,10 @@ export const withIndentList = <
   editor.insertBreak = insertBreakIndentList(editor);
 
   /**
-   * To prevent users without upgraded Slate version from experiencing anomalies.
+   * To prevent users without upgraded Slate version from experiencing
+   * anomalies.
    */
-  if (!!editor.shouldMergeNodesRemovePrevNode) {
+  if (editor.shouldMergeNodesRemovePrevNode) {
     editor.shouldMergeNodesRemovePrevNode =
       shouldMergeNodesRemovePrevNodeIndentList(editor);
   }
@@ -57,7 +59,6 @@ export const withIndentList = <
     if (operation.type === 'set_node') {
       nodeBefore = getNode<TElement>(editor, path);
     }
-
     // If there is a previous indent list, the inserted indent list style type should be the same.
     // Only for lower-roman and upper-roman as it overlaps with lower-alpha and upper-alpha.
     if (operation.type === 'insert_node') {
@@ -71,8 +72,8 @@ export const withIndentList = <
           editor,
           [operation.node as TElement, path],
           {
-            eqIndent: false,
             breakOnEqIndentNeqListStyleType: false,
+            eqIndent: false,
             ...getSiblingIndentListOptions,
           }
         );
@@ -97,6 +98,7 @@ export const withIndentList = <
 
     // FIXME: delete first list
     let nextIndentListPathRef: PathRef | null = null;
+
     if (
       operation.type === 'merge_node' &&
       (operation.properties as any)[KEY_LIST_STYLE_TYPE]
@@ -109,6 +111,7 @@ export const withIndentList = <
           [node, path],
           getSiblingIndentListOptions
         );
+
         if (nextNodeEntryBefore) {
           nextIndentListPathRef = createPathRef(editor, nextNodeEntryBefore[1]);
         }
@@ -122,6 +125,7 @@ export const withIndentList = <
 
       if ((properties as any)[KEY_LIST_STYLE_TYPE]) {
         const node = getNode<TElement>(editor, path);
+
         if (!node) return;
 
         // const prevNodeEntry = getPreviousIndentList(
@@ -151,8 +155,10 @@ export const withIndentList = <
 
         if (nextIndentListPathRef) {
           const nextPath = nextIndentListPathRef.unref();
+
           if (nextPath) {
             const nextNode = getNode<TElement>(editor, nextPath);
+
             if (nextNode) {
               normalizeIndentListStart<TElement>(
                 editor,
@@ -164,7 +170,6 @@ export const withIndentList = <
         }
       }
     }
-
     if (nodeBefore && operation.type === 'set_node') {
       const prevListStyleType = (operation.properties as any)[
         KEY_LIST_STYLE_TYPE
@@ -176,6 +181,7 @@ export const withIndentList = <
       // Remove list style type
       if (prevListStyleType && !listStyleType) {
         const node = getNode(editor, path);
+
         if (!node) return;
 
         const nextNodeEntry = getNextIndentList<TElement>(
@@ -183,6 +189,7 @@ export const withIndentList = <
           [nodeBefore, path],
           getSiblingIndentListOptions
         );
+
         if (!nextNodeEntry) return;
 
         normalizeIndentListStart<TElement>(
@@ -191,17 +198,18 @@ export const withIndentList = <
           getSiblingIndentListOptions
         );
       }
-
       // Update list style type
       if (
         (prevListStyleType || listStyleType) &&
         prevListStyleType !== listStyleType
       ) {
         const node = getNode<TElement>(editor, path);
+
         if (!node) return;
 
         /**
          * Case:
+         *
          * - 1-<o>-1 <- toggle ol
          * - <1>-1-2 <- normalize
          * - 1-2-3
@@ -221,6 +229,7 @@ export const withIndentList = <
 
         /**
          * Case:
+         *
          * - 1-<2>-3 <- toggle ul
          * - 1-o-<3> <- normalize
          * - 1-o-1
@@ -230,6 +239,7 @@ export const withIndentList = <
           [nodeBefore, path],
           getSiblingIndentListOptions
         );
+
         if (nextNodeEntry) {
           normalizeIndentListStart<TElement>(
             editor,
@@ -237,11 +247,13 @@ export const withIndentList = <
             getSiblingIndentListOptions
           );
         }
+
         nextNodeEntry = getNextIndentList<TElement>(
           editor,
           [node, path],
           getSiblingIndentListOptions
         );
+
         if (nextNodeEntry) {
           normalizeIndentListStart<TElement>(
             editor,
@@ -257,10 +269,12 @@ export const withIndentList = <
       // Update indent
       if (prevIndent !== indent) {
         const node = getNode<TElement>(editor, path);
+
         if (!node) return;
 
         /**
          * Case:
+         *
          * - 1-<o>-1 <- indent
          * - <1>-1o-1 <- normalize node before
          * - 1-1o-2
@@ -269,12 +283,13 @@ export const withIndentList = <
           editor,
           [nodeBefore, path],
           {
-            eqIndent: false,
-            breakOnLowerIndent: false,
             breakOnEqIndentNeqListStyleType: false,
+            breakOnLowerIndent: false,
+            eqIndent: false,
             ...getSiblingIndentListOptions,
           }
         );
+
         if (prevNodeEntry) {
           normalizeIndentListStart<TElement>(
             editor,
@@ -285,16 +300,18 @@ export const withIndentList = <
 
         /**
          * Case:
+         *
          * - 11-<1>-11 <- indent
          * - <11>-11-12 <- normalize prev node after
          * - 11-12-13
          */
         prevNodeEntry = getPreviousIndentList<TElement>(editor, [node, path], {
-          eqIndent: false,
-          breakOnLowerIndent: false,
           breakOnEqIndentNeqListStyleType: false,
+          breakOnLowerIndent: false,
+          eqIndent: false,
           ...getSiblingIndentListOptions,
         });
+
         if (prevNodeEntry) {
           normalizeIndentListStart<TElement>(
             editor,
@@ -305,6 +322,7 @@ export const withIndentList = <
 
         /**
          * Case:
+         *
          * - 11-<12>-13 <- outdent
          * - 11-2-<13> <- normalize next node before
          * - 11-2-11
@@ -313,11 +331,12 @@ export const withIndentList = <
           editor,
           [nodeBefore, path],
           {
-            eqIndent: false,
-            breakOnLowerIndent: false,
             breakOnEqIndentNeqListStyleType: false,
+            breakOnLowerIndent: false,
+            eqIndent: false,
           }
         );
+
         if (nextNodeEntry) {
           normalizeIndentListStart<TElement>(
             editor,
@@ -328,15 +347,17 @@ export const withIndentList = <
 
         /**
          * Case:
+         *
          * - 1-<1o>-2 <- outdent
          * - 1-o-<2> <- normalize next node after
          * - 1-o-1
          */
         nextNodeEntry = getNextIndentList<TElement>(editor, [node, path], {
-          eqIndent: false,
-          breakOnLowerIndent: false,
           breakOnEqIndentNeqListStyleType: false,
+          breakOnLowerIndent: false,
+          eqIndent: false,
         });
+
         if (nextNodeEntry) {
           normalizeIndentListStart<TElement>(
             editor,

@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { createPrimitiveComponent } from '@udecode/plate-common';
 
 import {
@@ -15,6 +16,7 @@ export const useCommentEditTextareaState = () => {
   React.useEffect(() => {
     setTimeout(() => {
       const textarea = textareaRef.current;
+
       if (textarea) {
         textarea.focus();
       }
@@ -22,8 +24,8 @@ export const useCommentEditTextareaState = () => {
   }, [textareaRef]);
 
   return {
-    textareaRef,
     setEditingValue,
+    textareaRef,
     value,
   };
 };
@@ -35,20 +37,20 @@ export const useCommentEditTextarea = ({
 }: ReturnType<typeof useCommentEditTextareaState>) => {
   return {
     props: {
-      placeholder: 'Add a comment...',
-      rows: 1,
-      ref: textareaRef,
-      value: value ?? undefined,
       onChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         setEditingValue([
-          { type: 'p', children: [{ text: event.target.value }] },
+          { children: [{ text: event.target.value }], type: 'p' },
         ]);
       },
+      placeholder: 'Add a comment...',
+      ref: textareaRef,
+      rows: 1,
+      value: value ?? undefined,
     },
   };
 };
 
 export const CommentEditTextarea = createPrimitiveComponent('textarea')({
-  stateHook: useCommentEditTextareaState,
   propsHook: useCommentEditTextarea,
+  stateHook: useCommentEditTextareaState,
 });

@@ -1,12 +1,13 @@
-import { Value } from '@udecode/slate';
+import type { Value } from '@udecode/slate';
+
 import { createDocumentNode } from '@udecode/slate-utils';
 
 const output: Value = [
   {
     children: [
       {
-        type: 'p',
         children: [{ text: '' }],
+        type: 'p',
       },
     ],
   } as any,

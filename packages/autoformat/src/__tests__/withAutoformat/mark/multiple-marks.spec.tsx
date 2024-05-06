@@ -75,10 +75,10 @@ describe('when inserting ***___', () => {
         options: {
           rules: [
             {
-              type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
-              match: { start: '___***', end: '***__' },
-              trigger: '_',
+              match: { end: '***__', start: '___***' },
               mode: 'mark',
+              trigger: '_',
+              type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
             },
           ],
         },

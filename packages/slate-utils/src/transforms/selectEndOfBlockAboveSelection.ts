@@ -1,11 +1,10 @@
-import { getEndPoint, select, TEditor, Value } from '@udecode/slate';
-import { Path } from 'slate';
+import type { Path } from 'slate';
+
+import { type TEditor, type Value, getEndPoint, select } from '@udecode/slate';
 
 import { getBlockAbove } from '../queries';
 
-/**
- * Select the end point of the block above the selection.
- */
+/** Select the end point of the block above the selection. */
 export const selectEndOfBlockAboveSelection = <V extends Value>(
   editor: TEditor<V>
 ) => {

@@ -1,5 +1,11 @@
-import { isDefined, PlateEditor, TElement, Value } from '@udecode/plate-common';
-import { NodeEntry } from 'slate';
+import type { NodeEntry } from 'slate';
+
+import {
+  type PlateEditor,
+  type TElement,
+  type Value,
+  isDefined,
+} from '@udecode/plate-common/server';
 
 import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
 

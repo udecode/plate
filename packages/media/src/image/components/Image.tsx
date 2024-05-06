@@ -1,14 +1,14 @@
 import { createPrimitiveComponent, useElement } from '@udecode/plate-common';
 
-import { TMediaElement } from '../../media/index';
+import type { TMediaElement } from '../../media/index';
 
 export const useImage = () => {
   const { url } = useElement<TMediaElement>();
 
   return {
     props: {
-      src: url,
       draggable: true,
+      src: url,
     },
   };
 };

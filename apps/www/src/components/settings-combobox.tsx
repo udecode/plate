@@ -1,10 +1,11 @@
 import React from 'react';
-import Link from 'next/link';
+
 import { cn } from '@udecode/cn';
 import { Check } from 'lucide-react';
+import Link from 'next/link';
 
-import { customizerItems, SettingPlugin } from '@/config/customizer-items';
-import { customizerPlugins, ValueId } from '@/config/customizer-plugins';
+import { type SettingPlugin, customizerItems } from '@/config/customizer-items';
+import { type ValueId, customizerPlugins } from '@/config/customizer-plugins';
 import { useFixHydration } from '@/hooks/use-fix-hydration';
 import { Button, buttonVariants } from '@/registry/default/plate-ui/button';
 import {
@@ -26,13 +27,11 @@ import { Icons } from './icons';
 
 const categories = [
   {
-    value: 'root',
-    label: '',
     items: [customizerPlugins.playground],
+    label: '',
+    value: 'root',
   },
   {
-    value: 'plugins',
-    label: 'Plugins',
     items: [
       customizerPlugins.align,
       customizerPlugins.autoformat,
@@ -69,6 +68,8 @@ const categories = [
       customizerPlugins.toggle,
       customizerPlugins.trailingblock,
     ],
+    label: 'Plugins',
+    value: 'plugins',
   },
 ];
 
@@ -82,12 +83,10 @@ export function SettingsCombobox() {
 
   return (
     <>
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover onOpenChange={setOpen} open={open}>
         <PopoverTrigger asChild>
           {loaded && (
             <Button
-              variant="outline"
-              role="combobox"
               aria-expanded={open}
               className="min-w-fit justify-between md:w-[220px]"
               onClick={() => {
@@ -96,6 +95,8 @@ export function SettingsCombobox() {
                   setOpen(!open);
                 }, 0);
               }}
+              role="combobox"
+              variant="outline"
             >
               {(customizerPlugins as any)[valueId]?.label ??
                 'Select a value...'}
@@ -103,19 +104,18 @@ export function SettingsCombobox() {
             </Button>
           )}
         </PopoverTrigger>
-        <PopoverContent className="z-[99999999] w-[220px] p-0" align="start">
+        <PopoverContent align="start" className="z-[99999999] w-[220px] p-0">
           <Command defaultValue={valueId}>
             <CommandInput placeholder="Search example..." />
             <CommandEmpty>No value found.</CommandEmpty>
 
             <CommandList>
               {categories.map((category) => (
-                <CommandGroup key={category.value} heading={category.label}>
+                <CommandGroup heading={category.label} key={category.value}>
                   {category.items.map((item) => {
                     return (
                       <CommandItem
                         key={item.id}
-                        value={item.id}
                         onSelect={(newId) => {
                           settingsStore.set.valueId(newId as ValueId);
 
@@ -137,6 +137,7 @@ export function SettingsCombobox() {
 
                           setOpen(false);
                         }}
+                        value={item.id}
                       >
                         <Check
                           className={cn(

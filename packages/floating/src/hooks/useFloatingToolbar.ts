@@ -1,24 +1,24 @@
 import React from 'react';
+
+import { useEditorSelector, usePlateSelectors } from '@udecode/plate-common';
 import {
   getSelectionText,
   isSelectionExpanded,
   mergeProps,
-  useEditorSelector,
   useEventEditorSelectors,
-  usePlateSelectors,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { useFocused } from 'slate-react';
 
 import {
+  type UseVirtualFloatingOptions,
   getSelectionBoundingClientRect,
   useVirtualFloating,
-  UseVirtualFloatingOptions,
 } from '..';
 
 export type FloatingToolbarState = {
   floatingOptions?: UseVirtualFloatingOptions;
-  ignoreReadOnly?: boolean;
   hideToolbar?: boolean;
+  ignoreReadOnly?: boolean;
 };
 
 export const useFloatingToolbarState = ({
@@ -41,8 +41,8 @@ export const useFloatingToolbarState = ({
     mergeProps(
       {
         getBoundingClientRect: getSelectionBoundingClientRect,
-        open,
         onOpenChange: setOpen,
+        open,
       },
       floatingOptions
     )
@@ -50,33 +50,33 @@ export const useFloatingToolbarState = ({
 
   return {
     editorId,
-    open,
-    setOpen,
-    waitForCollapsedSelection,
-    setWaitForCollapsedSelection,
-    selectionExpanded,
-    selectionText,
+    floating,
     focused,
     focusedEditorId,
-    ignoreReadOnly,
     hideToolbar,
-    floating,
+    ignoreReadOnly,
+    open,
+    selectionExpanded,
+    selectionText,
+    setOpen,
+    setWaitForCollapsedSelection,
+    waitForCollapsedSelection,
   };
 };
 
 export const useFloatingToolbar = ({
   editorId,
-  selectionExpanded,
-  selectionText,
-  waitForCollapsedSelection,
-  setWaitForCollapsedSelection,
-  open,
-  setOpen,
+  floating,
   focused,
   focusedEditorId,
-  floating,
-  ignoreReadOnly,
   hideToolbar,
+  ignoreReadOnly,
+  open,
+  selectionExpanded,
+  selectionText,
+  setOpen,
+  setWaitForCollapsedSelection,
+  waitForCollapsedSelection,
 }: ReturnType<typeof useFloatingToolbarState>) => {
   // On refocus, the editor keeps the previous selection,
   // so we need to wait it's collapsed at the new position before displaying the floating toolbar.
@@ -84,7 +84,6 @@ export const useFloatingToolbar = ({
     if (!focused || ignoreReadOnly) {
       setWaitForCollapsedSelection(true);
     }
-
     if (!selectionExpanded) {
       setWaitForCollapsedSelection(false);
     }
@@ -131,10 +130,10 @@ export const useFloatingToolbar = ({
   }, [selectionTextLength, update]);
 
   return {
-    ref: floating.refs.setFloating,
+    hidden: !open,
     props: {
       style: floating.style,
     },
-    hidden: !open,
+    ref: floating.refs.setFloating,
   };
 };

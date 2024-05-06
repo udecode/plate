@@ -1,4 +1,4 @@
-import { ValueId } from '@/config/customizer-plugins';
+import type { ValueId } from '@/config/customizer-plugins';
 
 export const isEnabled = (
   id: ValueId,

@@ -1,18 +1,19 @@
 'use client';
 
 import * as React from 'react';
-import { Index } from '@/__registry__';
+
 import { cn } from '@udecode/cn';
 
+import { Index } from '@/__registry__';
 import { useConfig } from '@/hooks/use-config';
 
 import { Icons } from './icons';
 
 interface ThemeComponentProps extends React.HTMLAttributes<HTMLDivElement> {
   name: string;
+  align?: 'center' | 'end' | 'start';
   extractClassname?: boolean;
   extractedClassNames?: string;
-  align?: 'center' | 'start' | 'end';
 }
 
 export function ThemeComponent({ name, ...props }: ThemeComponentProps) {

@@ -1,10 +1,8 @@
-import { Editor, Location } from 'slate';
+import { Editor, type Location } from 'slate';
 
-import { TEditor, Value } from './TEditor';
+import type { TEditor, Value } from './TEditor';
 
-/**
- * Get a range of a location.
- */
+/** Get a range of a location. */
 export const getRange = <V extends Value>(
   editor: TEditor<V>,
   at: Location,

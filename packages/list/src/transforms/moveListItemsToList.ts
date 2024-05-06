@@ -1,64 +1,58 @@
 import {
+  type MoveChildrenOptions,
+  type PlateEditor,
+  type TElementEntry,
+  type Value,
   deleteText,
   findDescendant,
   getLastChildPath,
   moveChildren,
-  MoveChildrenOptions,
-  PlateEditor,
-  TElementEntry,
-  Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
 import { getListTypes } from '../queries/getListTypes';
 
 export interface MergeListItemIntoListOptions<V extends Value = Value> {
   /**
-   * List items of the sublist of this node will be moved.
-   */
-  fromListItem?: TElementEntry;
-
-  /**
-   * List items of the list will be moved.
-   */
-  fromList?: TElementEntry;
-
-  /**
-   * List items will be moved in this list.
-   */
-  toList?: TElementEntry;
-
-  fromStartIndex?: MoveChildrenOptions<V>['fromStartIndex'];
-
-  /**
-   * List position where to move the list items.
-   */
-  toListIndex?: number | null;
-
-  to?: Path;
-
-  /**
    * Delete `fromListItem` sublist if true.
+   *
    * @default true
    */
   deleteFromList?: boolean;
+
+  /** List items of the list will be moved. */
+  fromList?: TElementEntry;
+
+  /** List items of the sublist of this node will be moved. */
+  fromListItem?: TElementEntry;
+
+  fromStartIndex?: MoveChildrenOptions<V>['fromStartIndex'];
+
+  to?: Path;
+
+  /** List items will be moved in this list. */
+  toList?: TElementEntry;
+
+  /** List position where to move the list items. */
+  toListIndex?: null | number;
 }
 
 /**
- * Move the list items of the sublist of `fromListItem` to `toList` (if `fromListItem` is defined).
- * Move the list items of `fromList` to `toList` (if `fromList` is defined).
+ * Move the list items of the sublist of `fromListItem` to `toList` (if
+ * `fromListItem` is defined). Move the list items of `fromList` to `toList` (if
+ * `fromList` is defined).
  */
 export const moveListItemsToList = <V extends Value>(
   editor: PlateEditor<V>,
   {
+    deleteFromList = true,
     fromList,
     fromListItem,
     fromStartIndex,
     to: _to,
     toList,
     toListIndex = null,
-    deleteFromList = true,
   }: MergeListItemIntoListOptions<V>
 ) => {
   let fromListPath: Path | undefined;
@@ -72,6 +66,7 @@ export const moveListItemsToList = <V extends Value>(
           type: getListTypes(editor),
         },
       });
+
       if (!fromListItemSublist) return;
 
       fromListPath = fromListItemSublist?.[1];
@@ -97,8 +92,8 @@ export const moveListItemsToList = <V extends Value>(
 
     moved = moveChildren(editor, {
       at: fromListPath,
-      to,
       fromStartIndex,
+      to,
     });
 
     // Remove the empty list

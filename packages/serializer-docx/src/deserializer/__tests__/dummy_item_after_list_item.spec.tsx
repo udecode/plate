@@ -9,10 +9,9 @@ const name = 'dummy_item_after_list_item';
 
 describe(getDocxTestName(name), () => {
   testDocxDeserializer({
-    filename: name,
     expected: (
       <editor>
-        <hp indent={1} listStyleType="decimal" lineHeight="115%">
+        <hp indent={1} lineHeight="115%" listStyleType="decimal">
           One
         </hp>
         <hp indent={1} lineHeight="115%">
@@ -21,5 +20,6 @@ describe(getDocxTestName(name), () => {
         </hp>
       </editor>
     ),
+    filename: name,
   });
 });

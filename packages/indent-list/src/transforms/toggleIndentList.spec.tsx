@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
+import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
 import { createIndentPlugin } from '@udecode/plate-indent';
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -144,17 +144,17 @@ describe('toggleIndentList', () => {
           <hp indent={2} listStyleType="decimal">
             21
           </hp>
-          <hp indent={2} listStyleType="decimal" listStart={2}>
+          <hp indent={2} listStart={2} listStyleType="decimal">
             22
             <cursor />
           </hp>
           <hp indent={3} listStyleType="decimal">
             31
           </hp>
-          <hp indent={2} listStyleType="decimal" listStart={3}>
+          <hp indent={2} listStart={3} listStyleType="decimal">
             23
           </hp>
-          <hp indent={2} listStyleType="decimal" listStart={4}>
+          <hp indent={2} listStart={4} listStyleType="decimal">
             21
           </hp>
           <hp indent={1} listStyleType="disc">

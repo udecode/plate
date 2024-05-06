@@ -1,14 +1,12 @@
-import { createPluginFactory } from '@udecode/plate-common';
+import { createPluginFactory } from '@udecode/plate-common/server';
 
-import { DeserializeCsvPlugin } from './types';
+import type { DeserializeCsvPlugin } from './types';
+
 import { deserializeCsv } from './utils/index';
 
 export const KEY_DESERIALIZE_CSV = 'deserializeCsv';
 
-/**
- * Enables support for deserializing content
- * from CSV format to Slate format.
- */
+/** Enables support for deserializing content from CSV format to Slate format. */
 export const createDeserializeCsvPlugin =
   createPluginFactory<DeserializeCsvPlugin>({
     key: KEY_DESERIALIZE_CSV,

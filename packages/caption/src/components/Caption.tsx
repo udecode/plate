@@ -1,4 +1,5 @@
-import React from 'react';
+import type React from 'react';
+
 import { createPrimitiveComponent } from '@udecode/plate-common';
 import { useReadOnly, useSelected } from 'slate-react';
 
@@ -22,8 +23,8 @@ export const useCaptionState = (options: CaptionOptions = {}) => {
 
   return {
     captionString,
-    selected,
     readOnly,
+    selected,
   };
 };
 
@@ -37,6 +38,6 @@ export const useCaption = (state: ReturnType<typeof useCaptionState>) => {
 export const Caption = createPrimitiveComponent<'figcaption', CaptionProps>(
   'figcaption'
 )({
-  stateHook: useCaptionState,
   propsHook: useCaption,
+  stateHook: useCaptionState,
 });

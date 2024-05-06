@@ -1,15 +1,13 @@
 import {
-  GetAboveNodeOptions,
+  type GetAboveNodeOptions,
+  type TEditor,
+  type Value,
   isEndPoint,
-  TEditor,
-  Value,
 } from '@udecode/slate';
 
 import { getBlockAbove } from './getBlockAbove';
 
-/**
- * Is the selection focus at the end of its parent block.
- */
+/** Is the selection focus at the end of its parent block. */
 export const isSelectionAtBlockEnd = <V extends Value>(
   editor: TEditor<V>,
   options?: GetAboveNodeOptions<V>

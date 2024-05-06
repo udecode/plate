@@ -9,7 +9,6 @@ const name = 'custom-style-reference';
 
 describe(getDocxTestName(name), () => {
   testDocxDeserializer({
-    filename: name,
     expected: (
       <editor>
         <hp>This is some text.</hp>
@@ -26,5 +25,6 @@ describe(getDocxTestName(name), () => {
         <hp>Here is a styled paragraph that inherits from Block Text.</hp>
       </editor>
     ),
+    filename: name,
   });
 });

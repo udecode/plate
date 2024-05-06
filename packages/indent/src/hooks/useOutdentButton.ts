@@ -7,11 +7,11 @@ export const useOutdentButton = () => {
 
   return {
     props: {
-      onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-      },
       onClick: () => {
         outdent(editor);
+      },
+      onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
       },
     },
   };

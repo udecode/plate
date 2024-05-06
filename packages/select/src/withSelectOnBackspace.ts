@@ -1,24 +1,23 @@
+import type Slate from 'slate';
+
 import {
+  type PlateEditor,
+  type Value,
+  type WithPlatePlugin,
   getNode,
   getNodeEntries,
   getNodeString,
   getPoint,
   getPointBefore,
   isCollapsed,
-  PlateEditor,
   queryNode,
   removeNodes,
   select,
-  Value,
-  WithPlatePlugin,
-} from '@udecode/plate-common';
-import Slate from 'slate';
+} from '@udecode/plate-common/server';
 
-import { SelectOnBackspacePlugin } from './createSelectOnBackspacePlugin';
+import type { SelectOnBackspacePlugin } from './createSelectOnBackspacePlugin';
 
-/**
- * Set a list of element types to select on backspace
- */
+/** Set a list of element types to select on backspace */
 export const withSelectOnBackspace = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
@@ -30,8 +29,9 @@ export const withSelectOnBackspace = <
 ) => {
   const { deleteBackward } = editor;
 
-  editor.deleteBackward = (unit: 'character' | 'word' | 'line' | 'block') => {
+  editor.deleteBackward = (unit: 'block' | 'character' | 'line' | 'word') => {
     const { selection } = editor;
+
     if (unit === 'character' && isCollapsed(selection)) {
       const pointBefore = getPointBefore(editor, selection as Slate.Location, {
         unit,
@@ -39,13 +39,14 @@ export const withSelectOnBackspace = <
 
       if (pointBefore) {
         const [prevCell] = getNodeEntries(editor, {
-          match: (node) => queryNode([node, pointBefore.path], query),
           at: pointBefore,
+          match: (node) => queryNode([node, pointBefore.path], query),
         });
 
         if (!!prevCell && pointBefore) {
           const point = getPoint(editor, selection as Slate.Location);
           const selectedNode = getNode(editor, point.path);
+
           if (
             removeNodeIfEmpty &&
             selectedNode &&

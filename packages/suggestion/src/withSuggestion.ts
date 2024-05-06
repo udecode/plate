@@ -1,25 +1,26 @@
 import {
+  type PlateEditor,
+  type Value,
+  type WithPlatePlugin,
   getNode,
   getPointAfter,
   getPointBefore,
-  PlateEditor,
   removeNodes,
   setNodes,
   unsetNodes,
-  Value,
-  WithPlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
+
+import type {
+  SuggestionEditorProps,
+  SuggestionPlugin,
+  TSuggestionText,
+} from './types';
 
 import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from './constants';
 import { deleteFragmentSuggestion } from './transforms/deleteFragmentSuggestion';
 import { deleteSuggestion } from './transforms/deleteSuggestion';
 import { insertFragmentSuggestion } from './transforms/insertFragmentSuggestion';
 import { insertTextSuggestion } from './transforms/insertTextSuggestion';
-import {
-  SuggestionEditorProps,
-  SuggestionPlugin,
-  TSuggestionText,
-} from './types';
 import { getSuggestionId, getSuggestionKeys } from './utils/index';
 
 export const withSuggestion = <
@@ -28,19 +29,18 @@ export const withSuggestion = <
   EE extends E & SuggestionEditorProps = E & SuggestionEditorProps,
 >(
   e: E,
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  plugin: WithPlatePlugin<SuggestionPlugin, V, E>
+  _plugin: WithPlatePlugin<SuggestionPlugin, V, E>
 ) => {
   const editor = e as unknown as EE;
 
   const {
-    normalizeNode,
-    insertText,
-    insertFragment,
-    insertBreak,
     deleteBackward,
     deleteForward,
     deleteFragment,
+    insertBreak,
+    insertFragment,
+    insertText,
+    normalizeNode,
   } = editor;
 
   editor.isSuggesting = false;
@@ -49,6 +49,7 @@ export const withSuggestion = <
     if (editor.isSuggesting) {
       // TODO: split node
       insertTextSuggestion(editor, '\n');
+
       return;
     }
 
@@ -58,6 +59,7 @@ export const withSuggestion = <
   editor.insertText = (text) => {
     if (editor.isSuggesting) {
       insertTextSuggestion(editor, text);
+
       return;
     }
 
@@ -67,6 +69,7 @@ export const withSuggestion = <
   editor.insertFragment = (fragment) => {
     if (editor.isSuggesting) {
       insertFragmentSuggestion(editor, fragment, { insertFragment });
+
       return;
     }
 
@@ -76,6 +79,7 @@ export const withSuggestion = <
   editor.deleteFragment = (direction) => {
     if (editor.isSuggesting) {
       deleteFragmentSuggestion(editor, { reverse: true });
+
       return;
     }
 
@@ -88,6 +92,7 @@ export const withSuggestion = <
       const pointTarget = getPointBefore(editor, selection, {
         unit,
       });
+
       if (!pointTarget) return;
 
       deleteSuggestion(
@@ -109,6 +114,7 @@ export const withSuggestion = <
       const selection = editor.selection!;
 
       const pointTarget = getPointAfter(editor, selection, { unit });
+
       if (!pointTarget) return;
 
       deleteSuggestion(editor, {
@@ -127,9 +133,11 @@ export const withSuggestion = <
 
     if (node[MARK_SUGGESTION]) {
       const pointBefore = getPointBefore(editor, path);
+
       // Merge with previous suggestion
       if (pointBefore) {
         const nodeBefore = getNode(editor, pointBefore.path);
+
         if (
           (nodeBefore as any)?.[MARK_SUGGESTION] &&
           (nodeBefore as any)[KEY_SUGGESTION_ID] !== node[KEY_SUGGESTION_ID]
@@ -139,19 +147,19 @@ export const withSuggestion = <
             { [KEY_SUGGESTION_ID]: (nodeBefore as any)[KEY_SUGGESTION_ID] },
             { at: path }
           );
+
           return;
         }
       }
-
       // Unset suggestion when there is no suggestion id
       if (!getSuggestionId(node)) {
         const keys = getSuggestionKeys(node);
         unsetNodes(editor, [MARK_SUGGESTION, 'suggestionDeletion', ...keys], {
           at: path,
         });
+
         return;
       }
-
       // Unset suggestion when there is no suggestion user id
       if (getSuggestionKeys(node).length === 0) {
         if (node.suggestionDeletion) {
@@ -163,6 +171,7 @@ export const withSuggestion = <
           // Remove additions
           removeNodes(editor, { at: path });
         }
+
         return;
       }
     }

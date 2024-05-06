@@ -1,19 +1,17 @@
 import {
+  type PlateEditor,
+  type Value,
+  type WithPlatePlugin,
   getAboveNode,
   isBlockAboveEmpty,
   isSelectionExpanded,
-  PlateEditor,
   queryNode,
   removeNodes,
-  Value,
-  WithPlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
-import { DeletePlugin } from './createDeletePlugin';
+import type { DeletePlugin } from './createDeletePlugin';
 
-/**
- * Set a list of element types to select on backspace
- */
+/** Set a list of element types to select on backspace */
 export const withDelete = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
@@ -24,7 +22,9 @@ export const withDelete = <
   const { deleteForward } = editor;
   editor.deleteForward = (unit) => {
     if (!editor.selection) return;
+
     const isValidNode = !query || queryNode(getAboveNode(editor), query);
+
     if (
       !isSelectionExpanded(editor) &&
       isBlockAboveEmpty(editor) &&
@@ -37,5 +37,6 @@ export const withDelete = <
       deleteForward(unit);
     }
   };
+
   return editor;
 };

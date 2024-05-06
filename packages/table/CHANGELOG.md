@@ -1,5 +1,13 @@
 # @udecode/plate-table
 
+## 33.0.0
+
+## 32.0.2
+
+### Patch Changes
+
+- [#3172](https://github.com/udecode/plate/pull/3172) by [@KorovinQuantori](https://github.com/KorovinQuantori) – Add computeCellIndices fallback for table insert functions
+
 ## 32.0.0
 
 ## 31.4.1

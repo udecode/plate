@@ -7,7 +7,7 @@ import {
   copyBlockMarksToSpanChild,
   postCleanHtml,
   preCleanHtml,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import {
   cleanDocxBrComments,

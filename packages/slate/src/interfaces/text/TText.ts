@@ -1,26 +1,26 @@
-import { Simplify, UnionToIntersection, UnknownObject } from '@udecode/utils';
+import type {
+  Simplify,
+  UnionToIntersection,
+  UnknownObject,
+} from '@udecode/utils';
 
-import { TEditor, Value } from '../editor/TEditor';
-import { TElement } from '../element/TElement';
-import { TNode, TNodeProps } from '../node/TNode';
+import type { TEditor, Value } from '../editor/TEditor';
+import type { TElement } from '../element/TElement';
+import type { TNode, TNodeProps } from '../node/TNode';
 
 /**
  * `Text` objects represent the nodes that contain the actual text content of a
  * Slate document along with any formatting properties. They are always leaf
  * nodes in the document tree as they cannot contain any children.
  */
-export type TText = UnknownObject & {
+export type TText = {
   text: string;
-};
+} & UnknownObject;
 
-/**
- * Text node of an editor.
- */
+/** Text node of an editor. */
 export type EText<V extends Value> = TextOf<TEditor<V>>;
 
-/**
- * A utility type to get all the text node types from a root node type.
- */
+/** A utility type to get all the text node types from a root node type. */
 export type TextOf<N extends TNode> = TEditor extends N
   ? TText
   : TElement extends N
@@ -33,9 +33,7 @@ export type TextOf<N extends TNode> = TEditor extends N
           ? N
           : never;
 
-/**
- * A utility type to get all the mark types from a root node type.
- */
+/** A utility type to get all the mark types from a root node type. */
 export type MarksOf<N extends TNode> = Simplify<
   UnionToIntersection<TNodeProps<TextOf<N>>>
 >;

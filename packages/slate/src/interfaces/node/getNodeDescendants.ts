@@ -1,13 +1,12 @@
-import { Modify } from '@udecode/utils';
-import { Node, NodeDescendantsOptions } from 'slate';
+import type { Modify } from '@udecode/utils';
 
-import { DescendantOf } from './TDescendant';
-import { TNode } from './TNode';
-import { TDescendantEntry, TNodeEntry } from './TNodeEntry';
+import { Node, type NodeDescendantsOptions } from 'slate';
 
-/**
- * Return a generator of all the descendant node entries inside a root node.
- */
+import type { DescendantOf } from './TDescendant';
+import type { TNode } from './TNode';
+import type { TDescendantEntry, TNodeEntry } from './TNodeEntry';
+
+/** Return a generator of all the descendant node entries inside a root node. */
 export const getNodeDescendants = <
   N extends DescendantOf<R>,
   R extends TNode = TNode,

@@ -1,14 +1,16 @@
 /* eslint-disable unicorn/no-process-exit */
 
-import { existsSync, promises as fs } from 'fs';
-import path from 'path';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { execa } from 'execa';
+import { existsSync, promises as fs } from 'fs';
 import template from 'lodash.template';
 import ora from 'ora';
+import path from 'path';
 import prompts from 'prompts';
 import * as z from 'zod';
+
+import type { Config } from '../utils/get-config';
 
 import {
   DEFAULT_COMPONENTS,
@@ -31,8 +33,6 @@ import {
 import * as templates from '../utils/templates';
 import { applyPrefixesCss } from '../utils/transformers/transform-tw-prefix';
 
-import type { Config } from '../utils/get-config';
-
 const PROJECT_DEPENDENCIES = [
   '@udecode/cn',
   'tailwindcss-animate',
@@ -42,8 +42,8 @@ const PROJECT_DEPENDENCIES = [
 
 const initOptionsSchema = z.object({
   cwd: z.string(),
-  yes: z.boolean(),
   defaults: z.boolean(),
+  yes: z.boolean(),
 });
 
 export const init = new Command()
@@ -67,9 +67,10 @@ export const init = new Command()
         process.exit(1);
       }
 
-      preFlight(cwd);
+      await preFlight(cwd);
 
       const projectConfig = await getProjectConfig(cwd);
+
       if (projectConfig) {
         const config = await promptForMinimalConfig(
           cwd,
@@ -108,103 +109,103 @@ export async function promptForConfig(
 
   const options = await prompts([
     {
-      type: 'select',
-      name: 'style',
-      message: `Which ${highlight('style')} would you like to use?`,
       choices: styles.map((style) => ({
         title: style.label,
         value: style.name,
       })),
+      message: `Which ${highlight('style')} would you like to use?`,
+      name: 'style',
+      type: 'select',
     },
     {
-      type: 'select',
-      name: 'tailwindBaseColor',
-      message: `Which color would you like to use as ${highlight(
-        'base color'
-      )}?`,
       choices: baseColors.map((color) => ({
         title: color.label,
         value: color.name,
       })),
+      message: `Which color would you like to use as ${highlight(
+        'base color'
+      )}?`,
+      name: 'tailwindBaseColor',
+      type: 'select',
     },
     {
-      type: 'text',
-      name: 'tailwindCss',
-      message: `Where is your ${highlight('global CSS')} file?`,
       initial: defaultConfig?.tailwind.css ?? DEFAULT_TAILWIND_CSS,
+      message: `Where is your ${highlight('global CSS')} file?`,
+      name: 'tailwindCss',
+      type: 'text',
     },
     {
-      type: 'toggle',
-      name: 'tailwindCssVariables',
+      active: 'yes',
+      inactive: 'no',
+      initial: defaultConfig?.tailwind.cssVariables ?? true,
       message: `Would you like to use ${highlight(
         'CSS variables'
       )} for colors?`,
-      initial: defaultConfig?.tailwind.cssVariables ?? true,
-      active: 'yes',
-      inactive: 'no',
+      name: 'tailwindCssVariables',
+      type: 'toggle',
     },
     {
-      type: 'text',
-      name: 'tailwindPrefix',
+      initial: '',
       message: `Are you using a custom ${highlight(
         'tailwind prefix eg. tw-'
       )}? (Leave blank if not)`,
-      initial: '',
+      name: 'tailwindPrefix',
+      type: 'text',
     },
     {
-      type: 'text',
-      name: 'tailwindConfig',
-      message: `Where is your ${highlight('tailwind.config.js')} located?`,
       initial: defaultConfig?.tailwind.config ?? DEFAULT_TAILWIND_CONFIG,
+      message: `Where is your ${highlight('tailwind.config.js')} located?`,
+      name: 'tailwindConfig',
+      type: 'text',
     },
     {
-      type: 'text',
-      name: 'components',
+      initial: defaultConfig?.aliases.components ?? DEFAULT_COMPONENTS,
       message: `Configure the import alias for ${highlight('components')}:`,
-      initial: defaultConfig?.aliases['components'] ?? DEFAULT_COMPONENTS,
-    },
-    {
+      name: 'components',
       type: 'text',
-      name: 'plate-ui',
-      message: `Configure the import alias for ${highlight('plate-ui')}:`,
-      initial: defaultConfig?.aliases['plate-ui'] ?? DEFAULT_PLATE_UI,
     },
     {
-      type: 'toggle',
-      name: 'rsc',
-      message: `Are you using ${highlight('React Server Components')}?`,
-      initial: defaultConfig?.rsc ?? true,
+      initial: defaultConfig?.aliases['plate-ui'] ?? DEFAULT_PLATE_UI,
+      message: `Configure the import alias for ${highlight('plate-ui')}:`,
+      name: 'plate-ui',
+      type: 'text',
+    },
+    {
       active: 'yes',
       inactive: 'no',
+      initial: defaultConfig?.rsc ?? true,
+      message: `Are you using ${highlight('React Server Components')}?`,
+      name: 'rsc',
+      type: 'toggle',
     },
   ]);
 
   const config = rawConfigSchema.parse({
     $schema: 'https://platejs.org/schema.json',
-    style: options.style,
-    tailwind: {
-      config: options.tailwindConfig,
-      css: options.tailwindCss,
-      baseColor: options.tailwindBaseColor,
-      cssVariables: options.tailwindCssVariables,
-      prefix: options.tailwindPrefix,
-    },
-    rsc: options.rsc,
-    tsx: true,
     aliases: {
       components: options.components,
       'plate-ui': options['plate-ui'],
     },
+    rsc: options.rsc,
+    style: options.style,
+    tailwind: {
+      baseColor: options.tailwindBaseColor,
+      config: options.tailwindConfig,
+      css: options.tailwindCss,
+      cssVariables: options.tailwindCssVariables,
+      prefix: options.tailwindPrefix,
+    },
+    tsx: true,
   });
 
   if (!skip) {
     const { proceed } = await prompts({
-      type: 'confirm',
-      name: 'proceed',
+      initial: true,
       message: `Write configuration to ${highlight(
         'plate-components.json'
       )}. Proceed?`,
-      initial: true,
+      name: 'proceed',
+      type: 'confirm',
     });
 
     if (!proceed) {
@@ -238,34 +239,34 @@ export async function promptForMinimalConfig(
 
     const options = await prompts([
       {
-        type: 'select',
-        name: 'style',
-        message: `Which ${highlight('style')} would you like to use?`,
         choices: styles.map((style) => ({
           title: style.label,
           value: style.name,
         })),
+        message: `Which ${highlight('style')} would you like to use?`,
+        name: 'style',
+        type: 'select',
       },
       {
-        type: 'select',
-        name: 'tailwindBaseColor',
-        message: `Which color would you like to use as ${highlight(
-          'base color'
-        )}?`,
         choices: baseColors.map((color) => ({
           title: color.label,
           value: color.name,
         })),
+        message: `Which color would you like to use as ${highlight(
+          'base color'
+        )}?`,
+        name: 'tailwindBaseColor',
+        type: 'select',
       },
       {
-        type: 'toggle',
-        name: 'tailwindCssVariables',
+        active: 'yes',
+        inactive: 'no',
+        initial: defaultConfig?.tailwind.cssVariables,
         message: `Would you like to use ${highlight(
           'CSS variables'
         )} for colors?`,
-        initial: defaultConfig?.tailwind.cssVariables,
-        active: 'yes',
-        inactive: 'no',
+        name: 'tailwindCssVariables',
+        type: 'toggle',
       },
     ]);
 
@@ -276,14 +277,14 @@ export async function promptForMinimalConfig(
 
   const config = rawConfigSchema.parse({
     $schema: defaultConfig?.$schema,
+    aliases: defaultConfig?.aliases,
+    rsc: defaultConfig?.rsc,
     style,
     tailwind: {
       ...defaultConfig?.tailwind,
       baseColor,
       cssVariables,
     },
-    rsc: defaultConfig?.rsc,
-    aliases: defaultConfig?.aliases,
   });
 
   // Write to file.
@@ -336,6 +337,7 @@ export async function runInit(cwd: string, config: Config) {
 
   // Write css file.
   const baseColor = await getRegistryBaseColor(config.tailwind.baseColor);
+
   if (baseColor) {
     await fs.writeFile(
       config.resolvedPaths.tailwindCss,

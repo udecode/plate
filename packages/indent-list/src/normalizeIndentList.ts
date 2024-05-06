@@ -1,12 +1,13 @@
 import {
-  ENodeEntry,
-  TEditor,
-  TElement,
-  Value,
+  type ENodeEntry,
+  type TEditor,
+  type TElement,
+  type Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
-import { IndentListPlugin } from './createIndentListPlugin';
+import type { IndentListPlugin } from './createIndentListPlugin';
+
 import { normalizeIndentListNotIndented } from './normalizers/normalizeIndentListNotIndented';
 import { normalizeIndentListStart } from './normalizers/normalizeIndentListStart';
 
@@ -28,6 +29,7 @@ export const normalizeIndentList = <V extends Value>(
       )
         return true;
     });
+
     if (normalized) return;
 
     return normalizeNode([node, path]);

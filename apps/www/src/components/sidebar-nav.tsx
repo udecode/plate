@@ -1,20 +1,21 @@
 'use client';
 
 import React from 'react';
+
+import type { SidebarNavItem } from '@/types/nav';
+
+import { cn } from '@udecode/cn';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { cn } from '@udecode/cn';
-
-import { SidebarNavItem } from '@/types/nav';
 
 export interface DocsSidebarNavProps {
-  items: SidebarNavItem[];
   componentItems: SidebarNavItem[];
+  items: SidebarNavItem[];
 }
 
 export function DocsSidebarNav({
-  items: coreItems,
   componentItems,
+  items: coreItems,
 }: DocsSidebarNavProps) {
   const pathname = usePathname();
   const isUI = pathname?.includes('/docs/components');
@@ -23,7 +24,7 @@ export function DocsSidebarNav({
   return items.length > 0 ? (
     <div className="w-full">
       {items.map((item, index) => (
-        <div key={index} className={cn('pb-4')}>
+        <div className={cn('pb-4')} key={index}>
           <h4 className="mb-1 rounded-md px-2 py-1 text-sm font-semibold">
             {item.title}
           </h4>
@@ -38,7 +39,7 @@ export function DocsSidebarNav({
 
 interface DocsSidebarNavItemsProps {
   items: SidebarNavItem[];
-  pathname: string | null;
+  pathname: null | string;
 }
 
 export function DocsSidebarNavItems({
@@ -51,7 +52,6 @@ export function DocsSidebarNavItems({
         item.href && !item.disabled ? (
           <React.Fragment key={index}>
             <Link
-              href={item.href}
               className={cn(
                 'group flex w-full items-center rounded-md border border-transparent px-2 py-1 hover:underline',
                 item.disabled && 'cursor-not-allowed opacity-60',
@@ -59,8 +59,9 @@ export function DocsSidebarNavItems({
                   ? 'font-medium text-foreground'
                   : 'text-muted-foreground'
               )}
-              target={item.external ? '_blank' : ''}
+              href={item.href}
               rel={item.external ? 'noreferrer' : ''}
+              target={item.external ? '_blank' : ''}
             >
               <span className="whitespace-nowrap">{item.title}</span>
               {item.label && (
@@ -71,8 +72,6 @@ export function DocsSidebarNavItems({
             </Link>
             {item.items?.map((subItem, subIndex) => (
               <Link
-                key={subIndex}
-                href={subItem.href!}
                 className={cn(
                   'group flex w-full items-center rounded-md border border-transparent px-6 py-1 hover:underline',
                   subItem.disabled && 'cursor-not-allowed opacity-60',
@@ -80,8 +79,10 @@ export function DocsSidebarNavItems({
                     ? 'font-medium text-foreground'
                     : 'text-muted-foreground'
                 )}
-                target={subItem.external ? '_blank' : ''}
+                href={subItem.href!}
+                key={subIndex}
                 rel={subItem.external ? 'noreferrer' : ''}
+                target={subItem.external ? '_blank' : ''}
               >
                 <span className="whitespace-nowrap">{subItem.title}</span>
                 {subItem.label && (
@@ -94,11 +95,11 @@ export function DocsSidebarNavItems({
           </React.Fragment>
         ) : (
           <span
-            key={index}
             className={cn(
               'flex w-full cursor-not-allowed items-center rounded-md p-2 text-muted-foreground hover:underline',
               item.disabled && 'cursor-not-allowed opacity-60'
             )}
+            key={index}
           >
             <span className="whitespace-nowrap">{item.title}</span>
             {item.label && (

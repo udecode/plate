@@ -1,21 +1,16 @@
 import {
+  type ToggleMarkPlugin,
   createPluginFactory,
   onKeyDownToggleMark,
-  ToggleMarkPlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 export const MARK_HIGHLIGHT = 'highlight';
 
 /**
- * Enables support for highlights, useful when reviewing
- * content or highlighting it for future reference.
+ * Enables support for highlights, useful when reviewing content or highlighting
+ * it for future reference.
  */
 export const createHighlightPlugin = createPluginFactory<ToggleMarkPlugin>({
-  key: MARK_HIGHLIGHT,
-  isLeaf: true,
-  handlers: {
-    onKeyDown: onKeyDownToggleMark,
-  },
   deserializeHtml: {
     rules: [
       {
@@ -23,6 +18,11 @@ export const createHighlightPlugin = createPluginFactory<ToggleMarkPlugin>({
       },
     ],
   },
+  handlers: {
+    onKeyDown: onKeyDownToggleMark,
+  },
+  isLeaf: true,
+  key: MARK_HIGHLIGHT,
   options: {
     hotkey: 'mod+shift+h',
   },

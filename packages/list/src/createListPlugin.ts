@@ -1,32 +1,28 @@
 import {
-  createPluginFactory,
   KEY_DESERIALIZE_HTML,
-  PlatePlugin,
+  type PlatePlugin,
+  createPluginFactory,
   someNode,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
+
+import type { ListPlugin } from './types';
 
 import { onKeyDownList } from './onKeyDownList';
-import { ListPlugin } from './types';
 import { withList } from './withList';
 
 export const ELEMENT_UL = 'ul';
+
 export const ELEMENT_OL = 'ol';
+
 export const ELEMENT_LI = 'li';
+
 export const ELEMENT_LIC = 'lic';
 
-/**
- * Enables support for bulleted, numbered and to-do lists.
- */
+/** Enables support for bulleted, numbered and to-do lists. */
 export const createListPlugin = createPluginFactory({
   key: 'list',
   plugins: [
     {
-      key: ELEMENT_UL,
-      isElement: true,
-      handlers: {
-        onKeyDown: onKeyDownList,
-      },
-      withOverrides: withList,
       deserializeHtml: {
         rules: [
           {
@@ -34,19 +30,25 @@ export const createListPlugin = createPluginFactory({
           },
         ],
       },
-    } as PlatePlugin<ListPlugin>,
-    {
-      key: ELEMENT_OL,
-      isElement: true,
       handlers: {
         onKeyDown: onKeyDownList,
       },
-      deserializeHtml: { rules: [{ validNodeName: 'OL' }] },
+      isElement: true,
+      key: ELEMENT_UL,
+      withOverrides: withList,
     } as PlatePlugin<ListPlugin>,
     {
-      key: ELEMENT_LI,
+      deserializeHtml: { rules: [{ validNodeName: 'OL' }] },
+      handlers: {
+        onKeyDown: onKeyDownList,
+      },
       isElement: true,
+      key: ELEMENT_OL,
+    } as PlatePlugin<ListPlugin>,
+    {
       deserializeHtml: { rules: [{ validNodeName: 'LI' }] },
+      isElement: true,
+      key: ELEMENT_LI,
       then: (editor, { type }) => ({
         inject: {
           pluginsByKey: {
@@ -64,8 +66,8 @@ export const createListPlugin = createPluginFactory({
       }),
     },
     {
-      key: ELEMENT_LIC,
       isElement: true,
+      key: ELEMENT_LIC,
     },
   ],
 });

@@ -9,9 +9,9 @@ export const useColorInput = () => {
   };
 
   return {
-    inputRef: ref,
     childProps: {
       onClick,
     },
+    inputRef: ref,
   };
 };

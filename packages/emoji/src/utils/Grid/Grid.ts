@@ -1,4 +1,4 @@
-import {
+import type {
   GridElements,
   IGrid,
   IGridSection,
@@ -7,9 +7,9 @@ import {
 } from './Grid.types';
 
 export class Grid<R, T extends SectionId = SectionId> implements IGrid<R, T> {
+  protected grid = new Map<T, IGridSection<R, T>>();
   protected rowsCount = 1;
   protected sectionsIds: T[] = [];
-  protected grid = new Map<T, IGridSection<R, T>>();
 
   public addSection(
     sectionId: T,
@@ -20,23 +20,20 @@ export class Grid<R, T extends SectionId = SectionId> implements IGrid<R, T> {
     this.rowsCount += section.rowsNum;
     this.grid.set(sectionId, section);
     this.sectionsIds.push(sectionId);
-    return this;
-  }
 
-  public get size() {
-    return this.grid.size;
+    return this;
   }
 
   public indexOf(sectionId: T) {
     return this.sectionsIds.indexOf(sectionId);
   }
 
-  public sections() {
-    return Array.from(this.grid.values());
-  }
-
   public section(sectionId: T) {
     return this.grid.get(sectionId)!;
+  }
+
+  public sections() {
+    return Array.from(this.grid.values());
   }
 
   public updateSection(sectionId: T, elements: SectionElements) {
@@ -46,5 +43,9 @@ export class Grid<R, T extends SectionId = SectionId> implements IGrid<R, T> {
     }
 
     return this;
+  }
+
+  public get size() {
+    return this.grid.size;
   }
 }

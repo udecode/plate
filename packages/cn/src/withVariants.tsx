@@ -1,16 +1,20 @@
 import React from 'react';
-import { cva, VariantProps } from 'class-variance-authority';
+
+import type { VariantProps, cva } from 'class-variance-authority';
 
 import { cn } from './cn';
 
 /**
  * Set default `className` with `cn` and `variants`.
+ *
  * @param Component - The component to which props will be added.
- * @param variants - Variants from `cva`. `Component` props will be extended with `variants` props.
- * @param onlyVariantsProps - Props to exclude from `Component`. Set the props that are only used for variants.
+ * @param variants - Variants from `cva`. `Component` props will be extended
+ *   with `variants` props.
+ * @param onlyVariantsProps - Props to exclude from `Component`. Set the props
+ *   that are only used for variants.
  */
 export function withVariants<
-  T extends keyof HTMLElementTagNameMap | React.ComponentType<any>,
+  T extends React.ComponentType<any> | keyof HTMLElementTagNameMap,
   V extends ReturnType<typeof cva>,
 >(Component: T, variants: V, onlyVariantsProps?: (keyof VariantProps<V>)[]) {
   const ComponentWithClassName = Component as React.FC<{ className: string }>;
@@ -32,8 +36,8 @@ export function withVariants<
 
     return (
       <ComponentWithClassName
-        ref={ref}
         className={cn(variants(props), className)}
+        ref={ref}
         {...(rest as any)}
       />
     );

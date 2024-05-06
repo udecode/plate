@@ -1,6 +1,6 @@
-import { EText, TText, Value } from '@udecode/slate';
-import { Modify } from '@udecode/utils';
-import { RenderLeafProps } from 'slate-react';
+import type { EText, TText, Value } from '@udecode/slate';
+import type { Modify } from '@udecode/utils';
+import type { RenderLeafProps } from 'slate-react';
 
 export type TRenderLeafProps<
   V extends Value = Value,

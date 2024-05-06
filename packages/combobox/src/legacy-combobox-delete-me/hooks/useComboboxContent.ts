@@ -1,33 +1,37 @@
 import React from 'react';
 
+import type { ComboboxProps } from '../types/ComboboxProps';
+
 import {
+  type ComboboxControls,
+  type Data,
+  type NoData,
   comboboxActions,
-  ComboboxControls,
-  Data,
-  NoData,
   useActiveComboboxStore,
   useComboboxSelectors,
 } from '..';
-import { ComboboxProps } from '../types/ComboboxProps';
 
-export type ComboboxContentProps<TData extends Data = NoData> = Omit<
+export type ComboboxContentProps<TData extends Data = NoData> = {
+  combobox: ComboboxControls;
+} & Omit<
   ComboboxProps<TData>,
-  | 'id'
-  | 'trigger'
-  | 'searchPattern'
-  | 'onSelectItem'
   | 'controlled'
-  | 'maxSuggestions'
   | 'filter'
+  | 'id'
+  | 'maxSuggestions'
+  | 'onSelectItem'
+  | 'searchPattern'
   | 'sort'
-> & { combobox: ComboboxControls };
+  | 'trigger'
+>;
 
-export type ComboboxContentRootProps<TData extends Data = NoData> =
-  ComboboxContentProps<TData> & { combobox: ComboboxControls };
+export type ComboboxContentRootProps<TData extends Data = NoData> = {
+  combobox: ComboboxControls;
+} & ComboboxContentProps<TData>;
 
 export const useComboboxContentState = <TData extends Data = NoData>({
-  items,
   combobox,
+  items,
 }: ComboboxContentRootProps<TData>) => {
   const targetRange = useComboboxSelectors.targetRange();
   const activeComboboxStore = useActiveComboboxStore()!;

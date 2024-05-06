@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { mockPlugin } from '@udecode/plate-common';
-import * as isHotkey from '@udecode/plate-core';
+import * as isHotkey from '@udecode/plate-core/server';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { onKeyDownExitBreak } from '../../onKeyDownExitBreak';
@@ -34,7 +34,7 @@ it('should be', () => {
   onKeyDownExitBreak(
     input,
     mockPlugin({
-      options: { hotkey: 'enter', level: 0, query: { start: true, end: true } },
+      options: { hotkey: 'enter', level: 0, query: { end: true, start: true } },
     })
   )(event);
   expect(input.children).toEqual(output.children);

@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { createPrimitiveComponent } from '@udecode/plate-common';
 
 import {
@@ -34,11 +35,11 @@ export const useFloatingLinkUrlInput = (
     }, []);
 
   return {
-    ref: state.ref,
     props: {
-      onChange,
       defaultValue: floatingLinkSelectors.url(),
+      onChange,
     },
+    ref: state.ref,
   };
 };
 

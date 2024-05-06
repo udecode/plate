@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
 import {
+  type PlateEditor,
+  type TElement,
   createPlateEditor,
-  PlateEditor,
-  TElement,
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -59,8 +59,8 @@ describe('getTopTableCell', () => {
   it('should return undefined if the current cell is in the first row', () => {
     const editor = createEditorInstance(input);
     editor.selection = {
-      anchor: { path: [0, 0, 0], offset: 0 },
-      focus: { path: [0, 0, 0], offset: 0 },
+      anchor: { offset: 0, path: [0, 0, 0] },
+      focus: { offset: 0, path: [0, 0, 0] },
     };
     const cellAbove = getTopTableCell(editor, {
       at: editor.selection.anchor.path,

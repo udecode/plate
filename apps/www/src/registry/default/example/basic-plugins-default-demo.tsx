@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { editableProps } from '@/plate/demo/editableProps';
+
 import {
   createBoldPlugin,
   createCodePlugin,
@@ -9,7 +9,7 @@ import {
 } from '@udecode/plate-basic-marks';
 import { createBlockquotePlugin } from '@udecode/plate-block-quote';
 import { createCodeBlockPlugin } from '@udecode/plate-code-block';
-import { Plate, PlatePlugin, Value } from '@udecode/plate-common';
+import { Plate, type PlatePlugin, type Value } from '@udecode/plate-common';
 import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 
@@ -19,6 +19,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { editableProps } from '@/plate/demo/editableProps';
 import { Editor } from '@/registry/default/plate-ui/editor';
 
 import { basicEditorValue } from './basic-plugins-components-demo';
@@ -42,15 +43,15 @@ export default function BasicPluginsDefaultDemo() {
   return (
     <Plate
       initialValue={basicEditorValue}
-      plugins={plugins}
       onChange={(newValue) => {
         setDebugValue(newValue);
         // save newValue...
       }}
+      plugins={plugins}
     >
       <Editor {...editableProps} />
 
-      <Accordion type="single" collapsible>
+      <Accordion collapsible type="single">
         <AccordionItem value="manual-installation">
           <AccordionTrigger>Debug Value</AccordionTrigger>
           <AccordionContent>{JSON.stringify(debugValue)}</AccordionContent>

@@ -1,120 +1,129 @@
 import {
+  type RangeBeforeOptions,
   createPluginFactory,
   isUrl,
-  RangeBeforeOptions,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
-import { TLinkElement } from './types';
+import type { TLinkElement } from './types';
+
 import { getLinkAttributes, validateUrl } from './utils/index';
 import { withLink } from './withLink';
 
 export const ELEMENT_LINK = 'a';
 
 export interface LinkPlugin {
-  forceSubmit?: boolean;
-
-  /**
-   * Allow custom config for rangeBeforeOptions.
-   * @example default
-   * {
-   *   matchString: ' ',
-   *   skipInvalid: true,
-   *   afterMatch: true,
-   * }
-   */
-  rangeBeforeOptions?: RangeBeforeOptions;
-
-  /**
-   * Hotkeys to trigger floating link.
-   * @default 'meta+k, ctrl+k'
-   */
-  triggerFloatingLinkHotkeys?: string | string[];
-
   /**
    * List of allowed URL schemes.
+   *
    * @default ['http', 'https', 'mailto', 'tel']
    */
   allowedSchemes?: string[];
 
   /**
    * Skips sanitation of links.
+   *
    * @default false
    */
   dangerouslySkipSanitization?: boolean;
 
   /**
    * Default HTML attributes for link elements.
-   * @default {}
+   *
+   * @default { }
    */
   defaultLinkAttributes?: React.AnchorHTMLAttributes<HTMLAnchorElement>;
 
+  forceSubmit?: boolean;
+
   /**
-   * Keeps selected text on pasting links by default.
-   * @default true
+   * On keyboard shortcut or toolbar mousedown, get the link url by calling this
+   * promise. The default behavior is to use the browser's native `prompt`.
    */
-  keepSelectedTextOnPaste?: boolean;
+  getLinkUrl?: (prevUrl: null | string) => Promise<null | string>;
+
+  /**
+   * Callback to optionally get the href for a url
+   *
+   * @returns Href: an optional link to be used that is different from the text
+   *   content (example https://google.com for google.com)
+   */
+  getUrlHref?: (url: string) => string | undefined;
 
   /**
    * Callback to validate an url.
+   *
    * @default isUrl
    */
   isUrl?: (text: string) => boolean;
 
   /**
-   * Callback to optionally get the href for a url
-   * @returns href: an optional link to be used that is different from the text content (example https://google.com for google.com)
+   * Keeps selected text on pasting links by default.
+   *
+   * @default true
    */
-  getUrlHref?: (url: string) => string | undefined;
+  keepSelectedTextOnPaste?: boolean;
 
   /**
-   * On keyboard shortcut or toolbar mousedown, get the link url by calling this promise. The
-   * default behavior is to use the browser's native `prompt`.
+   * Allow custom config for rangeBeforeOptions.
+   *
+   * @example
+   *   default
+   *   {
+   *   matchString: ' ',
+   *   skipInvalid: true,
+   *   afterMatch: true,
+   *   }
    */
-  getLinkUrl?: (prevUrl: string | null) => Promise<string | null>;
+  rangeBeforeOptions?: RangeBeforeOptions;
+
+  /**
+   * Hotkeys to trigger floating link.
+   *
+   * @default 'meta+k, ctrl+k'
+   */
+  triggerFloatingLinkHotkeys?: string | string[];
 }
 
-/**
- * Enables support for hyperlinks.
- */
+/** Enables support for hyperlinks. */
 export const createLinkPlugin = createPluginFactory<LinkPlugin>({
-  key: ELEMENT_LINK,
   isElement: true,
   isInline: true,
-  withOverrides: withLink,
+  key: ELEMENT_LINK,
   options: {
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],
     dangerouslySkipSanitization: false,
     defaultLinkAttributes: {},
     isUrl,
+    keepSelectedTextOnPaste: true,
     rangeBeforeOptions: {
+      afterMatch: true,
       matchString: ' ',
       skipInvalid: true,
-      afterMatch: true,
     },
     triggerFloatingLinkHotkeys: 'meta+k, ctrl+k',
-    keepSelectedTextOnPaste: true,
   },
   then: (editor, { type }) => ({
-    props: ({ element }) => ({
-      nodeProps: getLinkAttributes(editor, element as TLinkElement),
-    }),
     deserializeHtml: {
-      rules: [
-        {
-          validNodeName: 'A',
-        },
-      ],
       getNode: (el) => {
         const url = el.getAttribute('href');
 
         if (url && validateUrl(editor, url)) {
           return {
+            target: el.getAttribute('target') || '_blank',
             type,
             url,
-            target: el.getAttribute('target') || '_blank',
           };
         }
       },
+      rules: [
+        {
+          validNodeName: 'A',
+        },
+      ],
     },
+    props: ({ element }) => ({
+      nodeProps: getLinkAttributes(editor, element as TLinkElement),
+    }),
   }),
+  withOverrides: withLink,
 });

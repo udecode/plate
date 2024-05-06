@@ -35,10 +35,10 @@ describe('when ignoreTrim is true', () => {
         options: {
           rules: [
             {
+              ignoreTrim: true,
+              match: '*',
               mode: 'mark',
               type: MARK_ITALIC,
-              match: '*',
-              ignoreTrim: true,
             },
           ],
         },

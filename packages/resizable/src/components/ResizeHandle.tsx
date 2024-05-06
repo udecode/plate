@@ -1,11 +1,14 @@
 import React from 'react';
+
+import type { Nullable } from '@udecode/plate-common/server';
+
 import {
   createAtomStore,
   createPrimitiveComponent,
-  Nullable,
 } from '@udecode/plate-common';
 
-import { ResizeDirection, ResizeEvent } from '../types';
+import type { ResizeDirection, ResizeEvent } from '../types';
+
 import { isTouchEvent } from '../utils';
 
 export type ResizeHandleStoreState = {
@@ -24,21 +27,21 @@ export const { ResizeHandleProvider, useResizeHandleStore } = createAtomStore(
 export type ResizeHandleOptions = {
   direction?: ResizeDirection;
   initialSize?: number;
-  onResize?: (event: ResizeEvent) => void;
-  onMouseDown?: React.MouseEventHandler;
-  onTouchStart?: React.TouchEventHandler;
   onHover?: () => void;
   onHoverEnd?: () => void;
+  onMouseDown?: React.MouseEventHandler;
+  onResize?: (event: ResizeEvent) => void;
+  onTouchStart?: React.TouchEventHandler;
 };
 
 export const useResizeHandleState = ({
   direction = 'left',
   initialSize: _initialSize,
-  onResize: onResizeProp,
-  onMouseDown,
-  onTouchStart,
   onHover,
   onHoverEnd,
+  onMouseDown,
+  onResize: onResizeProp,
+  onTouchStart,
 }: ResizeHandleOptions) => {
   const onResizeStore = useResizeHandleStore().get.onResize();
   const onResize = onResizeProp ?? onResizeStore;
@@ -64,10 +67,10 @@ export const useResizeHandleState = ({
       const currentPosition = isHorizontal ? clientX : clientY;
       const delta = currentPosition - initialPosition;
       onResize({
-        initialSize,
         delta,
-        finished,
         direction,
+        finished,
+        initialSize,
       });
     };
 
@@ -102,32 +105,32 @@ export const useResizeHandleState = ({
   ]);
 
   return {
-    isResizing,
-    setIsResizing,
-    initialPosition,
-    setInitialPosition,
-    initialSize,
-    setInitialSize,
-    isHorizontal,
     direction,
-    onResize,
-    onMouseDown,
-    onTouchStart,
+    initialPosition,
+    initialSize,
+    isHorizontal,
+    isResizing,
     onHover,
     onHoverEnd,
+    onMouseDown,
+    onResize,
+    onTouchStart,
+    setInitialPosition,
+    setInitialSize,
+    setIsResizing,
   };
 };
 
 export const useResizeHandle = ({
-  setInitialPosition,
-  setInitialSize,
-  setIsResizing,
-  onMouseDown,
-  onTouchStart,
   isHorizontal,
   isResizing,
   onHover,
   onHoverEnd,
+  onMouseDown,
+  onTouchStart,
+  setInitialPosition,
+  setInitialSize,
+  setIsResizing,
 }: ReturnType<typeof useResizeHandleState>) => {
   const handleMouseDown: React.MouseEventHandler = (event) => {
     const { clientX, clientY } = event;
@@ -166,11 +169,11 @@ export const useResizeHandle = ({
   return {
     props: {
       onMouseDown: handleMouseDown,
-      onTouchStart: handleTouchStart,
-      onMouseOver: handleMouseOver,
       onMouseOut: handleMouseOut,
-      onTouchMove: handleMouseOver,
+      onMouseOver: handleMouseOver,
       onTouchEnd: handleMouseOut,
+      onTouchMove: handleMouseOver,
+      onTouchStart: handleTouchStart,
     },
   };
 };

@@ -1,25 +1,23 @@
 import {
+  type PlateEditor,
+  type UnwrapNodesOptions,
+  type Value,
   getAboveNode,
   getPluginType,
   isElement,
-  PlateEditor,
   splitNodes,
   unwrapNodes,
-  UnwrapNodesOptions,
-  Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { ELEMENT_LINK } from '../createLinkPlugin';
 
-/**
- * Unwrap link node.
- */
+/** Unwrap link node. */
 export const unwrapLink = <V extends Value>(
   editor: PlateEditor<V>,
-  options?: UnwrapNodesOptions & {
+  options?: {
     split?: boolean;
-  }
+  } & UnwrapNodesOptions
 ) => {
   return withoutNormalizing(editor, () => {
     if (options?.split) {
@@ -38,8 +36,10 @@ export const unwrapLink = <V extends Value>(
         unwrapLink(editor, {
           at: editor.selection?.anchor,
         });
+
         return true;
       }
+
       const linkAboveFocus = getAboveNode(editor, {
         at: editor.selection?.focus,
         match: { type: getPluginType(editor, ELEMENT_LINK) },
@@ -55,6 +55,7 @@ export const unwrapLink = <V extends Value>(
         unwrapLink(editor, {
           at: editor.selection?.focus,
         });
+
         return true;
       }
     }

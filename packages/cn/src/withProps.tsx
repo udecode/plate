@@ -4,10 +4,11 @@ import { cn } from './cn';
 
 /**
  * Set default props with `React.forwardRef`.
+ *
  * - Use `withCn` if only setting `className`
  */
 export function withProps<
-  T extends keyof HTMLElementTagNameMap | React.ComponentType<any>,
+  T extends React.ComponentType<any> | keyof HTMLElementTagNameMap,
 >(Component: T, defaultProps: Partial<React.ComponentPropsWithoutRef<T>>) {
   const ComponentWithClassName = Component as React.FC<{ className: string }>;
 

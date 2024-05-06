@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
+
+import { Plate } from '@udecode/plate-common';
+import { createPlugins } from '@udecode/plate-core';
+
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { iframeValue } from '@/plate/demo/values/iframeValue';
-import { Plate } from '@udecode/plate-common';
-import { createPlugins } from '@udecode/plate-core';
-import { createPortal } from 'react-dom';
-
 import { Editor } from '@/registry/default/plate-ui/editor';
 
 import {
-  createEditableVoidPlugin,
   EditableVoidElement,
+  createEditableVoidPlugin,
 } from './editable-voids-demo';
 
 const plugins = createPlugins(
@@ -28,10 +29,7 @@ const plugins = createPlugins(
 
 export function IFrame({ children, ...props }: any) {
   const [contentRef, setContentRef] = useState<any>(null);
-  const mountNode =
-    contentRef &&
-    contentRef.contentWindow &&
-    contentRef.contentWindow.document.body;
+  const mountNode = contentRef?.contentWindow?.document.body;
 
   return (
     // eslint-disable-next-line jsx-a11y/iframe-has-title
@@ -44,7 +42,7 @@ export function IFrame({ children, ...props }: any) {
 export default function IframeDemo() {
   return (
     <IFrame className="p-10">
-      <Plate plugins={plugins} initialValue={iframeValue}>
+      <Plate initialValue={iframeValue} plugins={plugins}>
         <Editor {...editableProps} />
       </Plate>
     </IFrame>

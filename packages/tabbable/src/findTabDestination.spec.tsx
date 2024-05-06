@@ -1,18 +1,19 @@
 /** @jsx jsx */
 
 import {
+  type PlateEditor,
+  type TNode,
   createPlateEditor,
   getNode,
-  PlateEditor,
-  TNode,
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
+import type { TabbableEntry } from './types';
+
 import {
+  type FindTabDestinationOptions,
   findTabDestination,
-  FindTabDestinationOptions,
 } from './findTabDestination';
-import { TabbableEntry } from './types';
 
 jsx;
 
@@ -52,16 +53,16 @@ describe('findTabDestination', () => {
   const voidDOMNode3 = document.createElement('div') as HTMLElement;
 
   const tabbableEntries = [
-    { slateNode: voidSlateNode1, domNode: voidDOMNode1, path: voidPath1 },
-    { slateNode: voidSlateNode2, domNode: voidDOMNode2a, path: voidPath2 },
-    { slateNode: voidSlateNode2, domNode: voidDOMNode2b, path: voidPath2 },
-    { slateNode: voidSlateNode3, domNode: voidDOMNode3, path: voidPath3 },
+    { domNode: voidDOMNode1, path: voidPath1, slateNode: voidSlateNode1 },
+    { domNode: voidDOMNode2a, path: voidPath2, slateNode: voidSlateNode2 },
+    { domNode: voidDOMNode2b, path: voidPath2, slateNode: voidSlateNode2 },
+    { domNode: voidDOMNode3, path: voidPath3, slateNode: voidSlateNode3 },
   ] as TabbableEntry[];
 
   const defaultOptions = {
-    tabbableEntries,
     activeTabbableEntry: tabbableEntries[1],
     direction: 'forward',
+    tabbableEntries,
   } as FindTabDestinationOptions;
 
   describe('when first of multiple tabbables with the same path is active', () => {
@@ -78,8 +79,8 @@ describe('findTabDestination', () => {
         });
 
         expect(tabDestination).toEqual({
-          type: 'dom-node',
           domNode: voidDOMNode2b,
+          type: 'dom-node',
         });
       });
     });
@@ -95,8 +96,8 @@ describe('findTabDestination', () => {
         });
 
         expect(tabDestination).toEqual({
-          type: 'path',
           path: voidPath2.concat(0),
+          type: 'path',
         });
       });
     });
@@ -116,8 +117,8 @@ describe('findTabDestination', () => {
         });
 
         expect(tabDestination).toEqual({
-          type: 'path',
           path: [5, 0],
+          type: 'path',
         });
       });
     });
@@ -133,8 +134,8 @@ describe('findTabDestination', () => {
         });
 
         expect(tabDestination).toEqual({
-          type: 'dom-node',
           domNode: voidDOMNode2a,
+          type: 'dom-node',
         });
       });
     });
@@ -147,8 +148,8 @@ describe('findTabDestination', () => {
       const editorWithSelection = {
         ...editor,
         selection: {
-          anchor: { path: [2, 0], offset: 0 },
-          focus: { path: [2, 0], offset: 0 },
+          anchor: { offset: 0, path: [2, 0] },
+          focus: { offset: 0, path: [2, 0] },
         },
       } as PlateEditor;
 
@@ -163,8 +164,8 @@ describe('findTabDestination', () => {
           });
 
           expect(tabDestination).toEqual({
-            type: 'dom-node',
             domNode: voidDOMNode2a,
+            type: 'dom-node',
           });
         });
       });
@@ -180,8 +181,8 @@ describe('findTabDestination', () => {
           });
 
           expect(tabDestination).toEqual({
-            type: 'dom-node',
             domNode: voidDOMNode1,
+            type: 'dom-node',
           });
         });
       });
@@ -191,8 +192,8 @@ describe('findTabDestination', () => {
       const editorWithSelection = {
         ...editor,
         selection: {
-          anchor: { path: [0, 0], offset: 0 },
-          focus: { path: [0, 0], offset: 0 },
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 0, path: [0, 0] },
         },
       } as PlateEditor;
 
@@ -215,8 +216,8 @@ describe('findTabDestination', () => {
       const editorWithSelection = {
         ...editor,
         selection: {
-          anchor: { path: [6, 0], offset: 0 },
-          focus: { path: [6, 0], offset: 0 },
+          anchor: { offset: 0, path: [6, 0] },
+          focus: { offset: 0, path: [6, 0] },
         },
       } as PlateEditor;
 

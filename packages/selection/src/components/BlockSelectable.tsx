@@ -1,29 +1,29 @@
 import React from 'react';
+
+import { findNodePath, useEditorRef } from '@udecode/plate-common';
 import {
-  findNodePath,
+  type TElement,
   getPluginOptions,
   isInline,
   queryNode,
-  TElement,
-  useEditorRef,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { useBlockSelectionSelectors } from '../blockSelectionStore';
 import {
-  BlockSelectionPlugin,
+  type BlockSelectionPlugin,
   KEY_BLOCK_SELECTION,
 } from '../createBlockSelectionPlugin';
 
 export interface BlockSelectableOptions {
   element: TElement;
-  selectedColor?: string;
   active?: boolean;
+  selectedColor?: string;
 }
 
 export const useBlockSelectableState = ({
+  active,
   element,
   selectedColor,
-  active,
 }: BlockSelectableOptions) => {
   const editor = useEditorRef();
 
@@ -72,20 +72,20 @@ export const useBlockSelectable = ({
       className: isSelected
         ? 'slate-selected slate-selectable'
         : 'slate-selectable',
+      key: id,
       style: isSelected
         ? {
             backgroundColor: selectedColor,
           }
         : undefined,
-      key: id,
       ...data,
     },
   };
 };
 
 export function BlockSelectable({
-  options,
   children,
+  options,
   ...props
 }: { options: BlockSelectableOptions } & React.HTMLAttributes<HTMLDivElement>) {
   const state = useBlockSelectableState(options);

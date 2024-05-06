@@ -1,14 +1,14 @@
 {
-  "name": "separator",
   "dependencies": [
     "@radix-ui/react-separator"
   ],
-  "registryDependencies": [],
   "files": [
     {
-      "name": "separator.tsx",
-      "content": "'use client';\n\nimport * as SeparatorPrimitive from '@radix-ui/react-separator';\nimport { withProps, withVariants } from '@udecode/cn';\nimport { cva } from 'class-variance-authority';\n\nconst separatorVariants = cva('shrink-0 bg-border', {\n  variants: {\n    orientation: {\n      horizontal: 'h-px w-full',\n      vertical: 'h-full w-px',\n    },\n  },\n  defaultVariants: {\n    orientation: 'horizontal',\n  },\n});\n\nexport const Separator = withVariants(\n  withProps(SeparatorPrimitive.Root, {\n    orientation: 'horizontal',\n    decorative: true,\n  }),\n  separatorVariants\n);\n"
+      "content": "'use client';\n\nimport * as SeparatorPrimitive from '@radix-ui/react-separator';\nimport { withProps, withVariants } from '@udecode/cn';\nimport { cva } from 'class-variance-authority';\n\nconst separatorVariants = cva('shrink-0 bg-border', {\n  defaultVariants: {\n    orientation: 'horizontal',\n  },\n  variants: {\n    orientation: {\n      horizontal: 'h-px w-full',\n      vertical: 'h-full w-px',\n    },\n  },\n});\n\nexport const Separator = withVariants(\n  withProps(SeparatorPrimitive.Root, {\n    decorative: true,\n    orientation: 'horizontal',\n  }),\n  separatorVariants\n);\n",
+      "name": "separator.tsx"
     }
   ],
+  "name": "separator",
+  "registryDependencies": [],
   "type": "components:plate-ui"
 }

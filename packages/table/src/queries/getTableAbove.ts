@@ -1,10 +1,10 @@
 import {
-  GetAboveNodeOptions,
+  type GetAboveNodeOptions,
+  type PlateEditor,
+  type Value,
   getBlockAbove,
   getPluginType,
-  PlateEditor,
-  Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { ELEMENT_TABLE } from '../createTablePlugin';
 

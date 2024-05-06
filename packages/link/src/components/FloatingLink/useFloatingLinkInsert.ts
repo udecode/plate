@@ -1,20 +1,21 @@
 import React from 'react';
+
 import {
   focusEditor,
-  getPluginOptions,
   useComposedRef,
   useEditorReadOnly,
   useEditorRef,
   useHotkeys,
   useOnClickOutside,
 } from '@udecode/plate-common';
+import { getPluginOptions } from '@udecode/plate-common/server';
 import {
+  type UseVirtualFloatingOptions,
   getSelectionBoundingClientRect,
-  UseVirtualFloatingOptions,
 } from '@udecode/plate-floating';
 import { useFocused } from 'slate-react';
 
-import { ELEMENT_LINK, LinkPlugin } from '../../createLinkPlugin';
+import { ELEMENT_LINK, type LinkPlugin } from '../../createLinkPlugin';
 import { triggerFloatingLinkInsert } from '../../utils/triggerFloatingLinkInsert';
 import {
   floatingLinkActions,
@@ -43,29 +44,29 @@ export const useFloatingLinkInsertState = ({
 
   const floating = useVirtualFloatingLink({
     editorId: editor.id,
-    open: isOpen && mode === 'insert',
     getBoundingClientRect: getSelectionBoundingClientRect,
+    open: isOpen && mode === 'insert',
     whileElementsMounted: () => {},
     ...floatingOptions,
   });
 
   return {
     editor,
-    triggerFloatingLinkHotkeys,
     floating,
     focused,
     isOpen,
     readOnly,
+    triggerFloatingLinkHotkeys,
   };
 };
 
 export const useFloatingLinkInsert = ({
   editor,
-  triggerFloatingLinkHotkeys,
   floating,
   focused,
   isOpen,
   readOnly,
+  triggerFloatingLinkHotkeys,
 }: ReturnType<typeof useFloatingLinkInsertState>) => {
   const onChange: React.ChangeEventHandler<HTMLInputElement> =
     React.useCallback((e) => {
@@ -121,17 +122,17 @@ export const useFloatingLinkInsert = ({
   );
 
   return {
-    ref: useComposedRef<HTMLDivElement>(floating.refs.setFloating, ref),
+    hidden: readOnly,
     props: {
       style: {
         ...floating.style,
         zIndex: 1,
       },
     },
-    hidden: readOnly,
+    ref: useComposedRef<HTMLDivElement>(floating.refs.setFloating, ref),
     textInputProps: {
-      onChange,
       defaultValue: floatingLinkSelectors.text(),
+      onChange,
       ref: updatedValue,
     },
   };

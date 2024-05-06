@@ -6,9 +6,9 @@ export const mergeClientRects = (clientRects: DOMRect[]): DOMRect => {
   }
 
   return makeClientRect({
-    top: Math.min(...clientRects.map((rect) => rect.top)),
     bottom: Math.max(...clientRects.map((rect) => rect.bottom)),
     left: Math.min(...clientRects.map((rect) => rect.left)),
     right: Math.max(...clientRects.map((rect) => rect.right)),
+    top: Math.min(...clientRects.map((rect) => rect.top)),
   });
 };

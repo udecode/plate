@@ -1,8 +1,11 @@
-import { getRange, TEditor, TNodeEntry, Value } from '@udecode/plate-common';
+import {
+  type TEditor,
+  type TNodeEntry,
+  type Value,
+  getRange,
+} from '@udecode/plate-common/server';
 
-/**
- * Get node entries range.
- */
+/** Get node entries range. */
 export const getNodesRange = <V extends Value>(
   editor: TEditor<V>,
   nodeEntries: TNodeEntry[]

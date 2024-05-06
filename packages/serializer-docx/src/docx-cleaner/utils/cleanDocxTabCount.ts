@@ -1,8 +1,6 @@
 import { generateTabs } from './generateSpaces';
 
-/**
- * Replace element with tabs if its style starts with 'mso-tab-count'.
- */
+/** Replace element with tabs if its style starts with 'mso-tab-count'. */
 export const cleanDocxTabCount = (element: Element): void => {
   const styleAttribute = element.getAttribute('style') || '';
 

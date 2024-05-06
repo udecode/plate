@@ -3,15 +3,16 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import { isText, TDescendant } from '@udecode/plate-common';
+import { type TDescendant, isText } from '@udecode/plate-common/server';
 import isEqual from 'lodash/isEqual.js';
 
-import { ComputeDiffOptions } from '../../computeDiff';
+import type { ComputeDiffOptions } from '../../computeDiff';
+import type { StringCharMapping } from '../utils/string-char-mapping';
+
 import { transformDiffNodes } from '../transforms/transformDiffNodes';
 import { transformDiffTexts } from '../transforms/transformDiffTexts';
 import { copyWithout } from '../utils/copy-without';
-import { diffNodes, NodeRelatedItem } from '../utils/diff-nodes';
-import { StringCharMapping } from '../utils/string-char-mapping';
+import { type NodeRelatedItem, diffNodes } from '../utils/diff-nodes';
 
 export interface TransformDiffDescendantsOptions extends ComputeDiffOptions {
   stringCharMapping: StringCharMapping;
@@ -26,7 +27,7 @@ export function transformDiffDescendants(
   }[],
   { stringCharMapping, ...options }: TransformDiffDescendantsOptions
 ): TDescendant[] {
-  const { isInline, ignoreProps, getInsertProps, getDeleteProps } = options;
+  const { getDeleteProps, getInsertProps, ignoreProps, isInline } = options;
 
   // Current index in the diff array
   let i = 0;
@@ -67,6 +68,7 @@ export function transformDiffDescendants(
       copyWithout(node, ignoreProps || []);
     const nodesWithoutIgnore0 = nodes0.map(excludeIgnoreProps);
     const nodesWithoutIgnore1 = nodes1.map(excludeIgnoreProps);
+
     return isEqual(nodesWithoutIgnore0, nodesWithoutIgnore1);
   };
 
@@ -86,9 +88,9 @@ export function transformDiffDescendants(
       passThroughNodes(...nodes);
       // Move to the next diff chunk
       i += 1;
+
       continue;
     }
-
     // Handle deletion (-1)
     if (op === -1) {
       // Check if the next chunk is an insertion (1), indicating a replace operation
@@ -99,21 +101,22 @@ export function transformDiffDescendants(
         const nextNodes = stringCharMapping.stringToNodes(nextVal);
 
         /**
-         * If the node lists are identical when ignored props are excluded,
-         * just return nextNodes.
+         * If the node lists are identical when ignored props are excluded, just
+         * return nextNodes.
          */
         if (areNodeListsEquivalent(nodes, nextNodes)) {
           passThroughNodes(...nextNodes);
           // Consume two diff chunks (delete and insert)
           i += 2;
+
           continue;
         }
-
         // If both current and next chunks are text nodes, use transformTextNodes
         if (isInlineList(nodes) && isInlineList(nextNodes)) {
           passThroughNodes(...transformDiffTexts(nodes, nextNodes, options));
           // Consume two diff chunks (delete and insert)
           i += 2;
+
           continue;
         }
 
@@ -142,13 +145,16 @@ export function transformDiffDescendants(
           }
         });
         i += 2; // this consumed two entries from the diff array.
+
         continue;
       } else {
         // Plain delete of some nodes (with no insert immediately after)
         for (const node of nodes) {
           deleteNode(node);
         }
+
         i += 1; // consumes only one entry from diff array.
+
         continue;
       }
     }
@@ -157,9 +163,12 @@ export function transformDiffDescendants(
       for (const node of nodes) {
         insertNode(node);
       }
+
       i += 1;
+
       continue;
     }
+
     throw new Error(
       'transformDiffDescendants: Missing continue statement or unhandled operation'
     );

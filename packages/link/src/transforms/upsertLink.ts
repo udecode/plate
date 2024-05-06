@@ -1,58 +1,55 @@
 import {
+  type InsertNodesOptions,
+  type PlateEditor,
+  type UnwrapNodesOptions,
+  type Value,
+  type WrapNodesOptions,
   findNode,
   getAboveNode,
   getEditorString,
   getNodeLeaf,
   getNodeProps,
   getPluginType,
-  InsertNodesOptions,
   isDefined,
   isExpanded,
-  PlateEditor,
   removeNodes,
   setNodes,
-  UnwrapNodesOptions,
-  Value,
-  WrapNodesOptions,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
+
+import type { TLinkElement } from '../types';
 
 import { ELEMENT_LINK } from '../createLinkPlugin';
-import { TLinkElement } from '../types';
-import { CreateLinkNodeOptions, validateUrl } from '../utils/index';
+import { type CreateLinkNodeOptions, validateUrl } from '../utils/index';
 import { insertLink } from './insertLink';
 import { unwrapLink } from './unwrapLink';
 import { upsertLinkText } from './upsertLinkText';
 import { wrapLink } from './wrapLink';
 
-export type UpsertLinkOptions<V extends Value = Value> =
-  CreateLinkNodeOptions & {
-    /**
-     * If true, insert text when selection is in url.
-     */
-    insertTextInLink?: boolean;
-    insertNodesOptions?: InsertNodesOptions<V>;
-    unwrapNodesOptions?: UnwrapNodesOptions<V>;
-    wrapNodesOptions?: WrapNodesOptions<V>;
-    skipValidation?: boolean;
-  };
+export type UpsertLinkOptions<V extends Value = Value> = {
+  insertNodesOptions?: InsertNodesOptions<V>;
+  /** If true, insert text when selection is in url. */
+  insertTextInLink?: boolean;
+  skipValidation?: boolean;
+  unwrapNodesOptions?: UnwrapNodesOptions<V>;
+  wrapNodesOptions?: WrapNodesOptions<V>;
+} & CreateLinkNodeOptions;
 
 /**
  * If selection in a link or is not url:
- * - insert text with url, exit
- * If selection is expanded or `update` in a link:
- * - remove link node, get link text
- * Then:
- * - insert link node
+ *
+ * - Insert text with url, exit If selection is expanded or `update` in a link:
+ * - Remove link node, get link text Then:
+ * - Insert link node
  */
 export const upsertLink = <V extends Value>(
   editor: PlateEditor<V>,
   {
-    url,
-    text,
-    target,
-    insertTextInLink,
     insertNodesOptions,
+    insertTextInLink,
     skipValidation = false,
+    target,
+    text,
+    url,
   }: UpsertLinkOptions<V>
 ) => {
   const at = editor.selection;
@@ -68,28 +65,26 @@ export const upsertLink = <V extends Value>(
   if (insertTextInLink && linkAbove) {
     // we don't want to insert marks in links
     editor.insertText(url);
+
     return true;
   }
-
   if (!skipValidation && !validateUrl(editor, url)) return;
-
   if (isDefined(text) && text.length === 0) {
     text = url;
   }
-
   // edit the link url and/or target
   if (linkAbove) {
     if (url !== linkAbove[0]?.url || target !== linkAbove[0]?.target) {
       setNodes<TLinkElement>(
         editor,
-        { url, target },
+        { target, url },
         {
           at: linkAbove[1],
         }
       );
     }
 
-    upsertLinkText(editor, { url, text, target });
+    upsertLinkText(editor, { target, text, url });
 
     return true;
   }
@@ -111,7 +106,6 @@ export const upsertLink = <V extends Value>(
       shouldReplaceText = true;
     }
   }
-
   if (isExpanded(at)) {
     // anchor and focus in link
     if (linkAbove) {
@@ -125,15 +119,14 @@ export const upsertLink = <V extends Value>(
     }
 
     wrapLink(editor, {
-      url,
       target,
+      url,
     });
 
-    upsertLinkText(editor, { url, target, text });
+    upsertLinkText(editor, { target, text, url });
 
     return true;
   }
-
   if (shouldReplaceText) {
     removeNodes(editor, {
       at: linkPath,
@@ -143,6 +136,7 @@ export const upsertLink = <V extends Value>(
   const props = getNodeProps(linkNode ?? ({} as any));
 
   const path = editor.selection?.focus.path;
+
   if (!path) return;
 
   // link text should have the focused leaf marks
@@ -157,16 +151,17 @@ export const upsertLink = <V extends Value>(
     editor,
     {
       ...props,
-      url,
-      target,
       children: [
         {
           ...leaf,
           text,
         },
       ],
+      target,
+      url,
     },
     insertNodesOptions
   );
+
   return true;
 };

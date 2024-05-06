@@ -1,26 +1,22 @@
-import { DropTargetMonitor, XYCoord } from 'react-dnd';
+import type { DropTargetMonitor, XYCoord } from 'react-dnd';
 
-import { DragItemNode, DropDirection } from '../types';
+import type { DragItemNode, DropDirection } from '../types';
 
 export interface GetHoverDirectionOptions {
   dragItem: DragItemNode;
 
+  /** Hovering node id. */
+  id: string;
+
   monitor: DropTargetMonitor;
 
-  /**
-   * The node ref of the node being dragged.
-   */
+  /** The node ref of the node being dragged. */
   nodeRef: any;
-
-  /**
-   * Hovering node id.
-   */
-  id: string;
 }
 
 /**
- * If dragging a node A over another node B:
- * get the direction of node A relative to node B.
+ * If dragging a node A over another node B: get the direction of node A
+ * relative to node B.
  */
 export const getHoverDirection = ({
   dragItem,
@@ -43,6 +39,7 @@ export const getHoverDirection = ({
 
   // Determine mouse position
   const clientOffset = monitor.getClientOffset();
+
   if (!clientOffset) return;
 
   // Get pixels to the top
@@ -57,7 +54,6 @@ export const getHoverDirection = ({
   if (hoverClientY < hoverMiddleY) {
     return 'top';
   }
-
   // Dragging upwards
   // if (dragId > hoverId && hoverClientY > hoverMiddleY) {
   if (hoverClientY >= hoverMiddleY) {

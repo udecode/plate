@@ -1,16 +1,13 @@
 import {
+  type TEditor,
+  type TElement,
+  type Value,
   someNode,
-  TEditor,
-  TElement,
   unwrapNodes,
-  Value,
   wrapNodes,
 } from '@udecode/slate';
 
-/**
- * Unwrap if the node type is in selection.
- * Wrap otherwise.
- */
+/** Unwrap if the node type is in selection. Wrap otherwise. */
 export const toggleWrapNodes = <V extends Value>(
   editor: TEditor<V>,
   type: string
@@ -19,8 +16,8 @@ export const toggleWrapNodes = <V extends Value>(
     unwrapNodes(editor, { match: { type } });
   } else {
     wrapNodes<TElement>(editor, {
-      type,
       children: [],
+      type,
     });
   }
 };

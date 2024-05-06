@@ -1,4 +1,7 @@
-import { createPluginFactory, QueryNodeOptions } from '@udecode/plate-common';
+import {
+  type QueryNodeOptions,
+  createPluginFactory,
+} from '@udecode/plate-common/server';
 
 import { withSelectOnBackspace } from './withSelectOnBackspace';
 
@@ -9,14 +12,12 @@ export type SelectOnBackspacePlugin = {
 
 export const KEY_SELECT_ON_BACKSPACE = 'selectOnBackspace';
 
-/**
- * @see {@link withSelectOnBackspace}
- */
+/** @see {@link withSelectOnBackspace} */
 export const createSelectOnBackspacePlugin =
   createPluginFactory<SelectOnBackspacePlugin>({
     key: KEY_SELECT_ON_BACKSPACE,
-    withOverrides: withSelectOnBackspace,
     options: {
       removeNodeIfEmpty: false,
     },
+    withOverrides: withSelectOnBackspace,
   });

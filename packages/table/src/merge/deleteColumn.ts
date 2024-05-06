@@ -1,20 +1,22 @@
+import type { Path } from 'slate';
+
 import {
+  type PlateEditor,
+  type Value,
   getAboveNode,
   getPluginOptions,
   getPluginType,
   isExpanded,
-  PlateEditor,
   removeNodes,
   setNodes,
   someNode,
-  Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
-import { Path } from 'slate';
+} from '@udecode/plate-common/server';
+
+import type { TTableCellElement, TTableElement, TablePlugin } from '../types';
 
 import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
 import { getColSpan } from '../queries/getColSpan';
-import { TablePlugin, TTableCellElement, TTableElement } from '../types';
 import { getCellTypes } from '../utils';
 import { deleteColumnWhenExpanded } from './deleteColumnWhenExpanded';
 import { findCellByIndexes } from './findCellByIndexes';
@@ -37,8 +39,8 @@ export const deleteTableMergeColumn = <V extends Value>(
     const tableEntry = getAboveNode<TTableElement>(editor, {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     });
-    if (!tableEntry) return;
 
+    if (!tableEntry) return;
     if (isExpanded(editor.selection))
       return deleteColumnWhenExpanded(editor, tableEntry);
 
@@ -49,7 +51,9 @@ export const deleteTableMergeColumn = <V extends Value>(
         type: getCellTypes(editor),
       },
     });
+
     if (!selectedCellEntry) return;
+
     const selectedCell = selectedCellEntry[0] as TTableCellElement;
 
     const { col: deletingColIndex } = getCellIndices(
@@ -68,6 +72,7 @@ export const deleteTableMergeColumn = <V extends Value>(
         (cI) => {
           const colIndex = deletingColIndex + cI;
           const found = findCellByIndexes(editor, table, rI, colIndex);
+
           if (found) {
             affectedCellsSet.add(found);
           }
@@ -94,14 +99,13 @@ export const deleteTableMergeColumn = <V extends Value>(
         ) {
           acc.squizeColSpanCells.push(currentCell);
         }
+
         return acc;
       },
       { squizeColSpanCells: [] }
     );
 
-    /**
-     * Change colSpans
-     */
+    /** Change colSpans */
     squizeColSpanCells.forEach((cur) => {
       const curCell = cur as TTableCellElement;
 
@@ -135,9 +139,7 @@ export const deleteTableMergeColumn = <V extends Value>(
       match: { type: getPluginType(editor, ELEMENT_TR) },
     });
 
-    /**
-     * Remove cells
-     */
+    /** Remove cells */
     if (
       selectedCell &&
       trEntry &&
@@ -148,13 +150,14 @@ export const deleteTableMergeColumn = <V extends Value>(
       const [tableNode, tablePath] = tableEntry;
 
       // calc paths to delete
-      const paths: Array<Path[]> = [];
+      const paths: Path[][] = [];
       affectedCells.forEach((cur) => {
         const curCell = cur as TTableCellElement;
         const { col: curColIndex, row: curRowIndex } = getCellIndices(
           cellIndices!,
           curCell
         )!;
+
         if (
           !squizeColSpanCells.includes(curCell) &&
           curColIndex >= deletingColIndex &&
@@ -170,6 +173,7 @@ export const deleteTableMergeColumn = <V extends Value>(
           if (!paths[curRowIndex]) {
             paths[curRowIndex] = [];
           }
+
           paths[curRowIndex].push(cellPath);
         }
       });
@@ -185,6 +189,7 @@ export const deleteTableMergeColumn = <V extends Value>(
         });
 
         const { colSizes } = tableNode;
+
         if (colSizes) {
           const newColSizes = [...colSizes];
           newColSizes.splice(deletingColIndex, 1);

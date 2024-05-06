@@ -1,6 +1,6 @@
-import { PlateEditor, Value } from '@udecode/plate-common';
+import type { PlateEditor, Value } from '@udecode/plate-common/server';
 
-import { moveListItems, MoveListItemsOptions } from './moveListItems';
+import { type MoveListItemsOptions, moveListItems } from './moveListItems';
 
 export type UnindentListItemsOptions = Omit<MoveListItemsOptions, 'increase'>;
 

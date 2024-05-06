@@ -1,9 +1,10 @@
+import type { Range } from 'slate';
+
 import { createPlateEditor } from '@udecode/plate-common';
-import { Range } from 'slate';
 
 import {
-  createFindReplacePlugin,
   MARK_SEARCH_HIGHLIGHT,
+  createFindReplacePlugin,
 } from '../../../createFindReplacePlugin';
 import { decorateFindReplace } from '../../../decorateFindReplace';
 

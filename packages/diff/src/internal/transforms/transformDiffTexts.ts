@@ -3,10 +3,16 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import { isText, TDescendant, TOperation, TText } from '@udecode/plate-common';
-import { createEditor, Path, withoutNormalizing } from 'slate';
+import {
+  type TDescendant,
+  type TOperation,
+  type TText,
+  isText,
+} from '@udecode/plate-common/server';
+import { Path, createEditor, withoutNormalizing } from 'slate';
 
-import { ComputeDiffOptions } from '../../computeDiff';
+import type { ComputeDiffOptions } from '../../computeDiff';
+
 import { dmp } from '../utils/dmp';
 import { getProperties } from '../utils/get-properties';
 import { InlineNodeCharMap } from '../utils/inline-node-char-map';
@@ -37,9 +43,9 @@ export function transformDiffTexts(
   });
 
   /**
-   * Chars to represent inserted and deleted line breaks in the diff. These
-   * must have a length of 1 to keep the offsets consistent. `lineBreakChar`
-   * itself may have any length.
+   * Chars to represent inserted and deleted line breaks in the diff. These must
+   * have a length of 1 to keep the offsets consistent. `lineBreakChar` itself
+   * may have any length.
    */
   const insertedLineBreakProxyChar = hasLineBreakChar
     ? charGenerator.next().value
@@ -67,10 +73,10 @@ export function transformDiffTexts(
       // If there are multiple nodes, merge them into one, adding merge operations
       for (let i = 1; i < texts.length; i++) {
         nodesEditor.apply({
-          type: 'merge_node',
           path: [0, 1],
           position: 0, // Required by type; not actually used here
           properties: {}, // Required by type; not actually used here
+          type: 'merge_node',
         });
         // Update the node's text with the merged text (for splitTextNodes)
         node = { ...node, text: node.text + texts[i].text };
@@ -79,8 +85,8 @@ export function transformDiffTexts(
 
     // After merging, apply split operations based on the target state (`nextTexts`)
     for (const op of splitTextNodes(node, nextTexts, {
-      insertedLineBreakChar: insertedLineBreakProxyChar,
       deletedLineBreakChar: deletedLineBreakProxyChar,
+      insertedLineBreakChar: insertedLineBreakProxyChar,
     })) {
       nodesEditor.apply(op);
     }
@@ -105,15 +111,15 @@ export function transformDiffTexts(
 }
 
 interface LineBreakCharsOptions {
-  insertedLineBreakChar?: string;
   deletedLineBreakChar?: string;
+  insertedLineBreakChar?: string;
 }
 
 // Function to compute the text operations needed to transform string `a` into string `b`
 function slateTextDiff(
   a: string,
   b: string,
-  { insertedLineBreakChar, deletedLineBreakChar }: LineBreakCharsOptions
+  { deletedLineBreakChar, insertedLineBreakChar }: LineBreakCharsOptions
 ): Op[] {
   // Compute the diff between two strings
   const diff = dmp.diff_main(a, b);
@@ -131,7 +137,7 @@ function slateTextDiff(
     const op = chunk[0]; // Operation code: -1 = delete, 0 = leave unchanged, 1 = insert
     const text = chunk[1]; // The text associated with this diff chunk
 
-    switch (op) {
+    switch (op as any) {
       case 0: {
         // For unchanged text, just move the offset forward
         offset += text.length;
@@ -141,12 +147,12 @@ function slateTextDiff(
       case -1: {
         // For deletions, add a remove_text operation
         operations.push({
-          type: 'remove_text',
           offset,
           text:
             deletedLineBreakChar === undefined
               ? text
               : text.replaceAll('\n', deletedLineBreakChar),
+          type: 'remove_text',
         });
 
         break;
@@ -154,12 +160,12 @@ function slateTextDiff(
       case 1: {
         // For insertions, add an insert_text operation
         operations.push({
-          type: 'insert_text',
           offset,
           text:
             insertedLineBreakChar === undefined
               ? text
               : text.replaceAll('\n', insertedLineBreakChar),
+          type: 'insert_text',
         });
         // Move the offset forward by the length of the inserted text
         offset += text.length;
@@ -168,6 +174,7 @@ function slateTextDiff(
       }
       // No default
     }
+
     // Move to the next diff chunk
     i += 1;
   }
@@ -193,18 +200,20 @@ function splitTextNodes(
     // If there are no target nodes, simply remove the original node
     return [
       {
-        type: 'remove_node',
         node,
         path: [0, 0],
+        type: 'remove_node',
       },
     ];
   }
 
   // Start with the concatenated text of the target state
   let splitText = '';
+
   for (const { text } of split) {
     splitText += text;
   }
+
   const nodeText = node.text;
   const operations: TOperation[] = [];
 
@@ -221,18 +230,20 @@ function splitTextNodes(
 
   // Adjust properties of the initial node to match the first target node, if necessary
   const newProperties = getProperties(split[0], node);
+
   if (getKeysLength(newProperties) > 0) {
     operations.push({
-      type: 'set_node',
+      newProperties,
       path: [0, 0],
       properties: getProperties(node),
-      newProperties,
+      type: 'set_node',
     });
   }
 
   let properties = getProperties(split[0]);
   // For each segment in the target state, split the node and adjust properties as needed
   let splitPath = [0, 0];
+
   for (let i = 0; i < split.length - 1; i++) {
     const part = split[i];
     const nextPart = split[i + 1];
@@ -246,15 +257,16 @@ function splitTextNodes(
     });
 
     operations.push({
-      type: 'split_node',
       path: splitPath,
       position: part.text.length,
       properties: newProps,
+      type: 'split_node',
     });
 
     splitPath = Path.next(splitPath);
     properties = getProperties(nextPart);
   }
+
   return operations;
 }
 
@@ -270,15 +282,16 @@ Also setting to undefined / false-ish for a *text* node property
 is equivalent to not having it regarding everything else.
 */
 
-function getKeysLength(obj: object | undefined | null): number {
+function getKeysLength(obj: null | object | undefined): number {
   if (obj == null) {
     return 0;
   }
+
   return Object.keys(obj).length;
 }
 
 interface Op {
-  type: 'insert_text' | 'remove_text';
   offset: number;
   text: string;
+  type: 'insert_text' | 'remove_text';
 }

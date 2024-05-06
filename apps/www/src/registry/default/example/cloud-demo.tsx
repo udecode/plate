@@ -1,19 +1,20 @@
 import React from 'react';
+
+import {
+  ELEMENT_CLOUD_ATTACHMENT,
+  ELEMENT_CLOUD_IMAGE,
+  createCloudAttachmentPlugin,
+  createCloudImagePlugin,
+  createCloudPlugin,
+} from '@udecode/plate-cloud';
+import { Plate } from '@udecode/plate-common';
+import { createPlugins } from '@udecode/plate-core';
+
 import { uploadStoreInitialValue } from '@/plate/demo/cloud/uploadStoreInitialValue';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { cloudValue } from '@/plate/demo/values/cloudValue';
-import {
-  createCloudAttachmentPlugin,
-  createCloudImagePlugin,
-  createCloudPlugin,
-  ELEMENT_CLOUD_ATTACHMENT,
-  ELEMENT_CLOUD_IMAGE,
-} from '@udecode/plate-cloud';
-import { Plate } from '@udecode/plate-common';
-import { createPlugins } from '@udecode/plate-core';
-
 import { CloudAttachmentElement } from '@/registry/default/plate-ui/cloud-attachment-element';
 import { CloudImageElement } from '@/registry/default/plate-ui/cloud-image-element';
 import { CloudToolbarButtons } from '@/registry/default/plate-ui/cloud-toolbar-buttons';
@@ -39,10 +40,10 @@ const plugins = createPlugins(
     createCloudAttachmentPlugin(),
     createCloudImagePlugin({
       options: {
-        maxInitialWidth: 320,
         maxInitialHeight: 320,
-        minResizeWidth: 100,
+        maxInitialWidth: 320,
         maxResizeWidth: 720,
+        minResizeWidth: 100,
       },
     }),
   ],
@@ -57,7 +58,7 @@ const plugins = createPlugins(
 
 export default function CloudDemo() {
   return (
-    <Plate plugins={plugins} initialValue={cloudValue}>
+    <Plate initialValue={cloudValue} plugins={plugins}>
       <FixedToolbar>
         <CloudToolbarButtons />
       </FixedToolbar>

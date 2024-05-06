@@ -1,20 +1,22 @@
-import '@/styles/mdx.css';
+import Balancer from 'react-wrap-balancer';
 
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import type { PackageInfoType } from '@/hooks/use-package-info';
+
 import { cn } from '@udecode/cn';
 import { allDocs } from 'contentlayer/generated';
 import { ChevronRight, ExternalLinkIcon } from 'lucide-react';
-import Balancer from 'react-wrap-balancer';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
 
-// import { formatBytes, getPackageData } from '@/lib/bundlephobia';
-import { getTableOfContents } from '@/lib/toc';
-import { PackageInfoType } from '@/hooks/use-package-info';
-import { badgeVariants } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Mdx } from '@/components/mdx-components';
 import { DocsPager } from '@/components/pager';
 import { DashboardTableOfContents } from '@/components/toc';
+import { badgeVariants } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+// import { formatBytes, getPackageData } from '@/lib/bundlephobia';
+import { getTableOfContents } from '@/lib/toc';
+
+import '@/styles/mdx.css';
 
 interface DocPageProps {
   params: {
@@ -69,9 +71,7 @@ function getDocFromParams({ params }: DocPageProps) {
 //   };
 // }
 
-export async function generateStaticParams(): Promise<
-  DocPageProps['params'][]
-> {
+export function generateStaticParams(): DocPageProps['params'][] {
   const docs = allDocs.map((doc) => ({
     slug: doc.slugAsParams.split('/'),
   }));
@@ -144,10 +144,10 @@ export default async function DocPage({ params }: DocPageProps) {
           <div className="flex flex-wrap items-center gap-1 pt-4">
             {doc.links?.doc && (
               <Link
-                href={doc.links.doc}
-                target="_blank"
-                rel="noreferrer"
                 className={cn(badgeVariants({ variant: 'secondary' }), 'gap-1')}
+                href={doc.links.doc}
+                rel="noreferrer"
+                target="_blank"
               >
                 Docs
                 <ExternalLinkIcon className="size-3" />
@@ -155,10 +155,10 @@ export default async function DocPage({ params }: DocPageProps) {
             )}
             {doc.links?.api && (
               <Link
-                href={doc.links.api}
-                target="_blank"
-                rel="noreferrer"
                 className={cn(badgeVariants({ variant: 'secondary' }), 'gap-1')}
+                href={doc.links.api}
+                rel="noreferrer"
+                target="_blank"
               >
                 API Reference
                 <ExternalLinkIcon className="size-3" />
@@ -166,8 +166,6 @@ export default async function DocPage({ params }: DocPageProps) {
             )}
             {doc.docs?.map((item) => (
               <Link
-                key={item.route}
-                href={item.route as any}
                 className={cn(
                   badgeVariants({
                     variant: item.route?.includes('components')
@@ -175,6 +173,8 @@ export default async function DocPage({ params }: DocPageProps) {
                       : 'secondary',
                   })
                 )}
+                href={item.route as any}
+                key={item.route}
               >
                 {item.title}
               </Link>

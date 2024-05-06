@@ -2,10 +2,7 @@
  * Opinionated config base for projects using react-testing-library
  * @see https://github.com/belgattitude/nextjs-monorepo-example/tree/main/packages/eslint-config-bases
  */
-
-const rtlPatterns = {
-  files: ['**/?(*.)+(test).{js,jsx,ts,tsx}'],
-};
+const { filePatterns } = require('../constants/file-patterns.cjs');
 
 module.exports = {
   env: {
@@ -16,8 +13,13 @@ module.exports = {
   overrides: [
     {
       // For performance enable react-testing-library only on test files
-      files: rtlPatterns.files,
+      files: filePatterns.test,
       extends: ['plugin:testing-library/react'],
+      rules: {
+        'testing-library/no-node-access': 'off',
+        'testing-library/prefer-screen-queries': 'off',
+        'testing-library/prefer-presence-queries': 'off',
+      }
     },
     {
       files: ['**/test-utils.tsx'],

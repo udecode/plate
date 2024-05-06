@@ -1,21 +1,21 @@
 import {
-  Descendant,
-  Editor,
+  type Descendant,
+  type Editor,
   Element,
-  createEditor as makeEditor,
   Node,
   Range,
   Text,
+  createEditor as makeEditor,
 } from 'slate';
 
 import {
-  addAnchorToken,
-  addFocusToken,
   AnchorToken,
   FocusToken,
+  Token,
+  addAnchorToken,
+  addFocusToken,
   getAnchorOffset,
   getFocusOffset,
-  Token,
 } from './tokens';
 
 /**
@@ -23,7 +23,7 @@ import {
  * passed into a hyperscript creator function.
  */
 
-const STRINGS: WeakSet<Text> = new WeakSet();
+const STRINGS = new WeakSet<Text>();
 
 const resolveDescendants = (children: any[]): Descendant[] => {
   const nodes: Node[] = [];
@@ -40,7 +40,6 @@ const resolveDescendants = (children: any[]): Descendant[] => {
       STRINGS.add(text);
       child = text;
     }
-
     if (Text.isText(child)) {
       const c = child; // HACK: fix typescript complaining
 
@@ -63,7 +62,6 @@ const resolveDescendants = (children: any[]): Descendant[] => {
         addChild('');
         n = nodes.at(-1) as Text;
       }
-
       if (child instanceof AnchorToken) {
         addAnchorToken(n, child);
       } else if (child instanceof FocusToken) {
@@ -81,66 +79,53 @@ const resolveDescendants = (children: any[]): Descendant[] => {
   return nodes;
 };
 
-/**
- * Create an anchor token.
- */
+/** Create an anchor token. */
 export const createAnchor = (
   tagName: string,
-  attributes: { [key: string]: any }
+  attributes: Record<string, any>
 ): AnchorToken => new AnchorToken(attributes);
 
-/**
- * Create an anchor and a focus token.
- */
+/** Create an anchor and a focus token. */
 export const createCursor = (
   tagName: string,
-  attributes: { [key: string]: any }
+  attributes: Record<string, any>
 ): Token[] => [new AnchorToken(attributes), new FocusToken(attributes)];
 
-/**
- * Create an `Element` object.
- */
+/** Create an `Element` object. */
 export const createElement = (
   tagName: string,
-  attributes: { [key: string]: any },
+  attributes: Record<string, any>,
   children: any[]
 ): Element => ({ ...attributes, children: resolveDescendants(children) });
 
-/**
- * Create a focus token.
- */
+/** Create a focus token. */
 export const createFocus = (
   tagName: string,
-  attributes: { [key: string]: any }
+  attributes: Record<string, any>
 ): FocusToken => new FocusToken(attributes);
 
-/**
- * Create a fragment.
- */
+/** Create a fragment. */
 export const createFragment = (
   tagName: string,
-  attributes: { [key: string]: any },
+  attributes: Record<string, any>,
   children: any[]
 ): Descendant[] => resolveDescendants(children);
 
-/**
- * Create a `Selection` object.
- */
+/** Create a `Selection` object. */
 export const createSelection = (
   tagName: string,
-  attributes: { [key: string]: any },
+  attributes: Record<string, any>,
   children: any[]
 ): Range => {
   const anchor: AnchorToken = children.find((c) => c instanceof AnchorToken);
   const focus: FocusToken = children.find((c) => c instanceof FocusToken);
 
-  if (!anchor || !anchor.offset || !anchor.path) {
+  if (!anchor?.offset || !anchor.path) {
     throw new Error(
       `The <selection> hyperscript tag must have an <anchor> tag as a child with \`path\` and \`offset\` attributes defined.`
     );
   }
-
-  if (!focus || !focus.offset || !focus.path) {
+  if (!focus?.offset || !focus.path) {
     throw new Error(
       `The <selection> hyperscript tag must have a <focus> tag as a child with \`path\` and \`offset\` attributes defined.`
     );
@@ -159,12 +144,10 @@ export const createSelection = (
   };
 };
 
-/**
- * Create a `Text` object.
- */
+/** Create a `Text` object. */
 export const createText = (
   tagName: string,
-  attributes: { [key: string]: any },
+  attributes: Record<string, any>,
   children: any[]
 ): Text => {
   const nodes = resolveDescendants(children);
@@ -180,7 +163,6 @@ export const createText = (
   if (node == null) {
     node = { text: '' };
   }
-
   if (!Text.isText(node)) {
     throw new Error(`
     The <text> hyperscript tag can only contain text content as children.`);
@@ -191,15 +173,14 @@ export const createText = (
   STRINGS.delete(node);
 
   Object.assign(node, attributes);
+
   return node;
 };
 
-/**
- * Create a top-level `Editor` object.
- */
+/** Create a top-level `Editor` object. */
 export const createEditor = (
   tagName: string,
-  attributes: { [key: string]: any },
+  attributes: Record<string, any>,
   children: any[]
 ): Editor => {
   const otherChildren: any[] = [];
@@ -227,12 +208,11 @@ export const createEditor = (
 
     if (anchor != null) {
       const [offset] = anchor;
-      selection.anchor = { path, offset };
+      selection.anchor = { offset, path };
     }
-
     if (focus != null) {
       const [offset] = focus;
-      selection.focus = { path, offset };
+      selection.focus = { offset, path };
     }
   }
 
@@ -241,13 +221,11 @@ export const createEditor = (
       `Slate hyperscript ranges must have both \`<anchor />\` and \`<focus />\` defined if one is defined, but you only defined \`<anchor />\`. For collapsed selections, use \`<cursor />\` instead.`
     );
   }
-
   if (!selection.anchor && selection.focus) {
     throw new Error(
       `Slate hyperscript ranges must have both \`<anchor />\` and \`<focus />\` defined if one is defined, but you only defined \`<focus />\`. For collapsed selections, use \`<cursor />\` instead.`
     );
   }
-
   if (selectionChild != null) {
     editor.selection = selectionChild;
   } else if (Range.isRange(selection)) {

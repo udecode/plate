@@ -1,6 +1,6 @@
 /* eslint-disable turbo/no-undeclared-env-vars */
-import Link from 'next/link';
 import { cn } from '@udecode/cn';
+import Link from 'next/link';
 
 import { siteConfig } from '@/config/site';
 import ModeToggle from '@/registry/default/example/mode-toggle';
@@ -44,8 +44,8 @@ export async function SiteHeader() {
             <Link
               className="inline md:hidden"
               href={siteConfig.links.github}
-              target="_blank"
               rel="noreferrer"
+              target="_blank"
             >
               <div
                 className={cn(
@@ -61,8 +61,8 @@ export async function SiteHeader() {
             </Link>
             <Link
               href={siteConfig.links.discord}
-              target="_blank"
               rel="noreferrer"
+              target="_blank"
             >
               <div
                 className={cn(

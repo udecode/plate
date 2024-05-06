@@ -1,9 +1,13 @@
-import { getEndPoint, getPreviousNode, TEditor, Value } from '@udecode/slate';
-import { Path } from 'slate';
+import type { Path } from 'slate';
 
-/**
- * Get the end point of the previous node.
- */
+import {
+  type TEditor,
+  type Value,
+  getEndPoint,
+  getPreviousNode,
+} from '@udecode/slate';
+
+/** Get the end point of the previous node. */
 export const getPreviousNodeEndPoint = <V extends Value = Value>(
   editor: TEditor<V>,
   at: Path
@@ -11,6 +15,7 @@ export const getPreviousNodeEndPoint = <V extends Value = Value>(
   const prevEntry = getPreviousNode(editor, {
     at,
   });
+
   if (!prevEntry) return;
 
   return getEndPoint(editor, prevEntry[1]);

@@ -19,6 +19,7 @@ export type Event = z.infer<typeof eventSchema>;
 
 export function trackEvent(input: Event): void {
   const event = eventSchema.parse(input);
+
   if (event) {
     va.track(event.name, event.properties);
   }

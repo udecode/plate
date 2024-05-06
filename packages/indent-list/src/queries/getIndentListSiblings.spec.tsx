@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
 import {
+  type PlateEditor,
+  type TDescendant,
+  type TElement,
   getBlockAbove,
-  PlateEditor,
-  TDescendant,
-  TElement,
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 

@@ -1,17 +1,16 @@
-import { Modify } from '@udecode/utils';
+import type { Modify } from '@udecode/utils';
+
 import { Transforms } from 'slate';
 
-import { NodeMatchOption } from '../../types/NodeMatchOption';
-import { TEditor, Value } from '../editor/TEditor';
+import type { NodeMatchOption } from '../../types/NodeMatchOption';
+import type { TEditor, Value } from '../editor/TEditor';
 
 export type SplitNodesOptions<V extends Value = Value> = Modify<
   NonNullable<Parameters<typeof Transforms.splitNodes>[1]>,
   NodeMatchOption<V>
 >;
 
-/**
- * Split the nodes at a specific location.
- */
+/** Split the nodes at a specific location. */
 export const splitNodes = <V extends Value>(
   editor: TEditor<V>,
   options?: SplitNodesOptions<V>

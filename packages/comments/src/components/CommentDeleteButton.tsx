@@ -18,11 +18,11 @@ export const useCommentDeleteButtonState = () => {
 
   return {
     activeCommentId,
-    onCommentDelete,
-    id,
-    setActiveCommentId,
-    removeComment,
     editor,
+    id,
+    onCommentDelete,
+    removeComment,
+    setActiveCommentId,
   };
 };
 
@@ -51,6 +51,6 @@ export const useCommentDeleteButton = ({
 };
 
 export const CommentDeleteButton = createPrimitiveComponent('button')({
-  stateHook: useCommentDeleteButtonState,
   propsHook: useCommentDeleteButton,
+  stateHook: useCommentDeleteButtonState,
 });

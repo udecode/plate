@@ -1,4 +1,5 @@
 import React from 'react';
+
 import throttle from 'lodash/throttle.js';
 import raf from 'raf';
 
@@ -11,40 +12,40 @@ const getCoords = (e: any) => {
 };
 
 export interface ScrollAreaProps {
-  placement: 'top' | 'bottom';
+  placement: 'bottom' | 'top';
+  containerRef?: React.RefObject<any>;
   enabled?: boolean;
   height?: number;
-  zIndex?: number;
   minStrength?: number;
-  strengthMultiplier?: number;
-  containerRef?: React.RefObject<any>;
   scrollAreaProps?: React.HTMLAttributes<HTMLDivElement>;
+  strengthMultiplier?: number;
+  zIndex?: number;
 }
 
 export function ScrollArea({
-  placement,
+  containerRef,
   enabled = true,
   height = 100,
-  zIndex = 10_000,
   minStrength = 0.15,
-  strengthMultiplier = 25,
-  containerRef,
+  placement,
   scrollAreaProps,
+  strengthMultiplier = 25,
+  zIndex = 10_000,
 }: ScrollAreaProps) {
   const ref = React.useRef<HTMLDivElement>();
 
   const scaleYRef = React.useRef(0);
-  const frameRef = React.useRef<number | null>(null);
+  const frameRef = React.useRef<null | number>(null);
 
   const direction = placement === 'top' ? -1 : 1;
 
   // Drag a fixed, invisible box of custom height at the top, and bottom
   // of the window. Make sure to show it only when dragging something.
   const style: React.CSSProperties = {
-    position: 'fixed',
     height,
-    width: '100%',
     opacity: 0,
+    position: 'fixed',
+    width: '100%',
     zIndex,
     ...scrollAreaProps?.style,
   };
@@ -71,6 +72,7 @@ export function ScrollArea({
       // stop scrolling if there's nothing to do
       if (strengthMultiplier === 0 || scaleY === 0) {
         stopScrolling();
+
         return;
       }
 
@@ -93,9 +95,10 @@ export function ScrollArea({
   const updateScrolling = throttle(
     (e) => {
       const container = ref.current;
+
       if (!container) return;
 
-      const { top: y, height: h } = container.getBoundingClientRect();
+      const { height: h, top: y } = container.getBoundingClientRect();
       const coords = getCoords(e);
 
       const strength = Math.max(Math.max(coords.y - y, 0) / h, minStrength);
@@ -127,14 +130,14 @@ export function ScrollArea({
   // Hide the element if not enabled, so it doesn't interfere with clicking things under it.
   return (
     <div
-      ref={ref as any}
-      style={style}
-      onDragOver={handleEvent}
-      onDragLeave={stopScrolling}
       onDragEnd={stopScrolling}
-      // touchmove events don't seem to work across siblings, so we unfortunately
+      onDragLeave={stopScrolling}
+      onDragOver={handleEvent}
       // would have to attach the listeners to the body
       onTouchMove={handleEvent}
+      ref={ref as any}
+      // touchmove events don't seem to work across siblings, so we unfortunately
+      style={style}
       {...scrollAreaProps}
     />
   );

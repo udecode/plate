@@ -1,16 +1,18 @@
 import {
+  type PlateEditor,
+  type TElement,
+  type Value,
   getAboveNode,
   getPluginOptions,
   getPluginType,
   isExpanded,
-  PlateEditor,
   removeNodes,
   setNodes,
   someNode,
-  TElement,
-  Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
+
+import type { TTableElement, TablePlugin } from '../types';
 
 import {
   ELEMENT_TABLE,
@@ -20,17 +22,16 @@ import {
 } from '../createTablePlugin';
 import { deleteTableMergeColumn } from '../merge/deleteColumn';
 import { deleteColumnWhenExpanded } from '../merge/deleteColumnWhenExpanded';
-import { TablePlugin, TTableElement } from '../types';
 
 export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
   const { enableMerging } = getPluginOptions<TablePlugin, V>(
     editor,
     ELEMENT_TABLE
   );
+
   if (enableMerging) {
     return deleteTableMergeColumn(editor);
   }
-
   if (
     !someNode(editor, {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
@@ -44,7 +45,6 @@ export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
   });
 
   if (!tableEntry) return;
-
   if (isExpanded(editor.selection))
     return deleteColumnWhenExpanded(editor, tableEntry);
 

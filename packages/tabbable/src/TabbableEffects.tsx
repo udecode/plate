@@ -1,19 +1,21 @@
 import React from 'react';
+
 import {
   findNodePath,
   focusEditor,
-  getPluginOptions,
   toDOMNode,
   toSlateNode,
   useEditorReadOnly,
   useEditorRef,
 } from '@udecode/plate-common';
+import { getPluginOptions } from '@udecode/plate-common/server';
 import { Path } from 'slate';
 import { tabbable } from 'tabbable';
 
+import type { TabbableEntry, TabbablePlugin } from './types';
+
 import { KEY_TABBABLE } from './constants';
 import { findTabDestination } from './findTabDestination';
-import { TabbableEntry, TabbablePlugin } from './types';
 
 export function TabbableEffects() {
   const editor = useEditorRef();
@@ -22,10 +24,11 @@ export function TabbableEffects() {
   React.useEffect(() => {
     if (readOnly) return;
 
-    const { query, globalEventListener, insertTabbableEntries, isTabbable } =
+    const { globalEventListener, insertTabbableEntries, isTabbable, query } =
       getPluginOptions<TabbablePlugin>(editor, KEY_TABBABLE);
 
     const editorDOMNode = toDOMNode(editor, editor);
+
     if (!editorDOMNode) return;
 
     const handler = (event: KeyboardEvent) => {
@@ -73,11 +76,13 @@ export function TabbableEffects() {
       const defaultTabbableEntries = tabbableDOMNodes
         .map((domNode) => {
           const slateNode = toSlateNode(editor, domNode);
+
           if (!slateNode) return;
+
           return {
             domNode,
-            slateNode,
             path: findNodePath(editor, slateNode),
+            slateNode,
           } as TabbableEntry;
         })
         .filter(
@@ -94,8 +99,8 @@ export function TabbableEffects() {
       ].sort((a, b) => Path.compare(a.path, b.path));
 
       /**
-       * TODO: Refactor everything ABOVE this line into a util function and
-       * test separately
+       * TODO: Refactor everything ABOVE this line into a util function and test
+       * separately
        */
 
       // Check if any tabbable entry is the active element
@@ -107,9 +112,9 @@ export function TabbableEffects() {
 
       // Find the next Slate node or DOM node to focus
       const tabDestination = findTabDestination(editor, {
-        tabbableEntries,
         activeTabbableEntry,
         direction: event.shiftKey ? 'backward' : 'forward',
+        tabbableEntries,
       });
 
       if (tabDestination) {
@@ -118,14 +123,15 @@ export function TabbableEffects() {
         switch (tabDestination.type) {
           case 'path': {
             focusEditor(editor, {
-              anchor: { path: tabDestination.path, offset: 0 },
-              focus: { path: tabDestination.path, offset: 0 },
+              anchor: { offset: 0, path: tabDestination.path },
+              focus: { offset: 0, path: tabDestination.path },
             });
+
             break;
           }
-
           case 'dom-node': {
             tabDestination.domNode.focus();
+
             break;
           }
         }
@@ -158,6 +164,7 @@ export function TabbableEffects() {
       : editorDOMNode;
 
     eventListenerNode.addEventListener('keydown', handler, true);
+
     return () =>
       eventListenerNode.removeEventListener('keydown', handler, true);
   }, [readOnly, editor]);

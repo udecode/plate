@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
 import {
+  type PlateEditor,
   createPlateEditor,
   insertNodes,
   mergeNodes,
-  PlateEditor,
   splitNodes,
 } from '@udecode/plate-common';
 import { ELEMENT_LI, ELEMENT_UL } from '@udecode/plate-list';
@@ -17,6 +17,7 @@ jsx;
 
 const getIdFactory = () => {
   let id = 1;
+
   return () => id++;
 };
 
@@ -46,8 +47,8 @@ describe('when inserting nodes', () => {
         plugins: [
           createNodeIdPlugin({
             options: {
-              idCreator: getIdFactory(),
               allow: [ELEMENT_PARAGRAPH],
+              idCreator: getIdFactory(),
               reuseId: true,
             },
           }),
@@ -96,8 +97,8 @@ describe('when inserting nodes', () => {
         plugins: [
           createNodeIdPlugin({
             options: {
-              idCreator: getIdFactory(),
               exclude: [ELEMENT_PARAGRAPH],
+              idCreator: getIdFactory(),
               reuseId: true,
             },
           }),
@@ -146,10 +147,10 @@ describe('when inserting nodes', () => {
         plugins: [
           createNodeIdPlugin({
             options: {
-              idCreator: getIdFactory(),
-              reuseId: true,
               allow: [ELEMENT_UL, ELEMENT_LI, ELEMENT_PARAGRAPH],
               exclude: [ELEMENT_PARAGRAPH],
+              idCreator: getIdFactory(),
+              reuseId: true,
             },
           }),
         ],
@@ -245,7 +246,7 @@ describe('when inserting nodes', () => {
         editor: input,
         plugins: [
           createNodeIdPlugin({
-            options: { idCreator: getIdFactory(), filterText: false },
+            options: { filterText: false, idCreator: getIdFactory() },
           }),
         ],
       });
@@ -583,8 +584,8 @@ describe('when splitting nodes', () => {
         plugins: [
           createNodeIdPlugin({
             options: {
-              idCreator: getIdFactory(),
               allow: [ELEMENT_PARAGRAPH],
+              idCreator: getIdFactory(),
             },
           }),
         ],
@@ -626,8 +627,8 @@ describe('when splitting nodes', () => {
         plugins: [
           createNodeIdPlugin({
             options: {
-              idCreator: getIdFactory(),
               filterText: false,
+              idCreator: getIdFactory(),
               reuseId: true,
             },
           }),
@@ -670,8 +671,8 @@ describe('when merging nodes', () => {
         plugins: [
           createNodeIdPlugin({
             options: {
-              idCreator: getIdFactory(),
               filterText: false,
+              idCreator: getIdFactory(),
               reuseId: true,
             },
           }),
@@ -749,8 +750,8 @@ describe('when merging nodes', () => {
         plugins: [
           createNodeIdPlugin({
             options: {
-              idCreator: getIdFactory(),
               filter: ([, path]) => path.length === 2,
+              idCreator: getIdFactory(),
             },
           }),
         ],

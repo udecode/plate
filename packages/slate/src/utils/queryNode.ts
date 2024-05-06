@@ -1,16 +1,14 @@
-import { TNode, TNodeEntry } from '../interfaces';
-import { QueryNodeOptions } from '../types/QueryNodeOptions';
+import type { TNode, TNodeEntry } from '../interfaces';
+import type { QueryNodeOptions } from '../types/QueryNodeOptions';
 
 function castArray<T>(value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value];
 }
 
-/**
- * Query the node entry.
- */
+/** Query the node entry. */
 export const queryNode = <N extends TNode>(
   entry?: TNodeEntry<N>,
-  { filter, allow, exclude, level, maxLevel }: QueryNodeOptions = {}
+  { allow, exclude, filter, level, maxLevel }: QueryNodeOptions = {}
 ) => {
   if (!entry) return false;
 
@@ -23,15 +21,12 @@ export const queryNode = <N extends TNode>(
       return false;
     }
   }
-
   if (maxLevel && path.length > maxLevel) {
     return false;
   }
-
   if (filter && !filter(entry)) {
     return false;
   }
-
   if (allow) {
     const allows = castArray(allow);
 
@@ -39,7 +34,6 @@ export const queryNode = <N extends TNode>(
       return false;
     }
   }
-
   if (exclude) {
     const excludes = castArray(exclude);
 

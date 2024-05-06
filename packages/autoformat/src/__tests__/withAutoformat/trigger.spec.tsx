@@ -8,12 +8,13 @@ import {
 import { createPlateEditor, getPlugin } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
+import type { AutoformatPlugin } from '../../../common/types';
+
 import {
-  createAutoformatPlugin,
   KEY_AUTOFORMAT,
+  createAutoformatPlugin,
 } from '../../createAutoformatPlugin';
 import { onKeyDownAutoformat } from '../../onKeyDownAutoformat';
-import { AutoformatPlugin } from '../../types';
 
 jsx;
 
@@ -45,11 +46,11 @@ describe('when trigger is defined', () => {
           options: {
             rules: [
               {
-                mode: 'mark',
-                type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
-                match: { start: '_***', end: '***' },
-                trigger: '_',
                 ignoreTrim: true,
+                match: { end: '***', start: '_***' },
+                mode: 'mark',
+                trigger: '_',
+                type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
               },
             ],
           },
@@ -91,9 +92,9 @@ describe('when undo is enabled', () => {
             enableUndoOnDelete: true,
             rules: [
               {
-                mode: 'text',
-                match: '1/4',
                 format: '¼',
+                match: '1/4',
+                mode: 'text',
               },
             ],
           },
@@ -142,9 +143,9 @@ describe('when undo is disabled', () => {
           options: {
             rules: [
               {
-                mode: 'text',
-                match: '1/4',
                 format: '¼',
+                match: '1/4',
+                mode: 'text',
               },
             ],
           },

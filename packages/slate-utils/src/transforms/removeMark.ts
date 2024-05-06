@@ -1,40 +1,35 @@
 import {
+  type SetNodesOptions,
+  type TEditor,
+  type Value,
   getMarks,
   isText,
-  SetNodesOptions,
-  TEditor,
   unsetNodes,
-  Value,
 } from '@udecode/slate';
 import castArray from 'lodash/castArray.js';
 import { Range } from 'slate';
 
 export interface RemoveMarkOptions<V extends Value = Value>
   extends Omit<SetNodesOptions<V>, 'match' | 'split'> {
-  /**
-   * Mark or the array of marks that will be removed
-   */
+  /** Mark or the array of marks that will be removed */
   key: string | string[];
 
+  /** Range where the mark(s) will be removed */
+  at?: Range;
+
   /**
-   * When location is not a Range,
-   * setting this to false can prevent the onChange event of the editor to fire
+   * When location is not a Range, setting this to false can prevent the
+   * onChange event of the editor to fire
+   *
    * @default true
    */
   shouldChange?: boolean;
-
-  /**
-   * Range where the mark(s) will be removed
-   */
-  at?: Range;
 }
 
-/**
- * Remove mark and trigger `onChange` if collapsed selection.
- */
+/** Remove mark and trigger `onChange` if collapsed selection. */
 export const removeMark = <V extends Value>(
   editor: TEditor<V>,
-  { key, at, shouldChange = true, ...rest }: RemoveMarkOptions<V>
+  { at, key, shouldChange = true, ...rest }: RemoveMarkOptions<V>
 ) => {
   const selection = at ?? editor.selection;
   key = castArray(key);

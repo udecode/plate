@@ -1,6 +1,10 @@
 /** @jsx jsx */
 
-import { createPlateEditor, getNode, PlateEditor } from '@udecode/plate-common';
+import {
+  type PlateEditor,
+  createPlateEditor,
+  getNode,
+} from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { createListPlugin } from '../createListPlugin';

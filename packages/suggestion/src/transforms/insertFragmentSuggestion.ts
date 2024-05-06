@@ -1,11 +1,11 @@
 import {
+  type PlateEditor,
+  type TDescendant,
+  type Value,
   applyDeepToNodes,
   nanoid,
-  PlateEditor,
-  TDescendant,
-  Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from '../constants';
 import { findSuggestionId } from '../queries/findSuggestionId';
@@ -29,8 +29,6 @@ export const insertFragmentSuggestion = <V extends Value>(
 
     fragment.forEach((node) => {
       applyDeepToNodes({
-        node,
-        source: {},
         apply: (n) => {
           if (!n[MARK_SUGGESTION]) {
             // Add suggestion mark
@@ -52,6 +50,8 @@ export const insertFragmentSuggestion = <V extends Value>(
           // set current user key
           n[getSuggestionCurrentUserKey(editor)] = true;
         },
+        node,
+        source: {},
       });
     });
 

@@ -1,53 +1,50 @@
 /* eslint-disable no-constant-condition */
+import type { Location, Point } from 'slate';
+
 import {
+  type TEditor,
+  type Value,
   getEditorString,
   getPoint,
   getPointBefore,
-  TEditor,
-  Value,
 } from '@udecode/slate';
 import castArray from 'lodash/castArray.js';
 import map from 'lodash/map.js';
-import { Location, Point } from 'slate';
 
 import { isRangeAcrossBlocks } from './isRangeAcrossBlocks';
 
 export interface BeforeOptions {
   distance?: number | undefined;
-  unit?: 'character' | 'word' | 'line' | 'block' | 'offset' | undefined;
+  unit?: 'block' | 'character' | 'line' | 'offset' | 'word' | undefined;
 }
 
 export interface PointBeforeOptions extends BeforeOptions {
   /**
-   * Lookup before the location for `matchString`.
-   */
-  matchString?: string | string[];
-
-  /**
-   * Lookup before the location until this predicate is true
-   */
-  match?: (value: {
-    beforeString: string;
-    beforePoint: Point;
-    at: Location;
-  }) => boolean;
-
-  /**
-   * If true, get the point after the matching point.
-   * If false, get the matching point.
+   * If true, get the point after the matching point. If false, get the matching
+   * point.
    */
   afterMatch?: boolean;
 
+  /** Lookup before the location until this predicate is true */
+  match?: (value: {
+    at: Location;
+    beforePoint: Point;
+    beforeString: string;
+  }) => boolean;
+
+  /** Lookup before the location for `matchString`. */
+  matchString?: string | string[];
+
   /**
-   * If true, lookup until the start of the editor value.
-   * If false, lookup until the first invalid character.
+   * If true, lookup until the start of the editor value. If false, lookup until
+   * the first invalid character.
    */
   skipInvalid?: boolean;
 }
 
 /**
- * {@link getPointBefore} with additional options.
- * TODO: support for sequence of any characters.
+ * {@link getPointBefore} with additional options. TODO: support for sequence of
+ * any characters.
  */
 export const getPointBeforeLocation = <V extends Value>(
   editor: TEditor<V>,
@@ -80,7 +77,6 @@ export const getPointBeforeLocation = <V extends Value>(
 
       // not found
       if (!beforePoint) return;
-
       // stop looking outside of current block
       if (
         isRangeAcrossBlocks(editor, {
@@ -109,20 +105,24 @@ export const getPointBeforeLocation = <V extends Value>(
 
         beforeStringToMatch = map(stack.slice(0, -1), 'text').join('');
       }
-
       if (
         matchString === beforeStringToMatch ||
-        options.match?.({ beforeString: beforeStringToMatch, beforePoint, at })
+        options.match?.({ at, beforePoint, beforeString: beforeStringToMatch })
       ) {
         if (options.afterMatch) {
           if (stackLength && unitOffset) {
             point = stack.at(-1)?.point;
+
             return !!point;
           }
+
           point = previousBeforePoint;
+
           return true;
         }
+
         point = beforePoint;
+
         return true;
       }
 

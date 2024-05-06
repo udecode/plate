@@ -1,14 +1,15 @@
 import React from 'react';
+
+import { Plate } from '@udecode/plate-common';
+
 import { editableProps } from '@/plate/demo/editableProps';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { createMultiEditorsValue } from '@/plate/demo/values/createMultiEditorsValue';
-import { Plate } from '@udecode/plate-common';
-
 import { Editor } from '@/registry/default/plate-ui/editor';
 
 const initialValues = createMultiEditorsValue();
 
-function WithPlate({ initialValue, id }: any) {
+function WithPlate({ id, initialValue }: any) {
   return (
     <Plate id={id} initialValue={initialValue} plugins={basicNodesPlugins}>
       <Editor {...editableProps} />
@@ -46,9 +47,9 @@ export default function HundredsEditorsDemo() {
     <div className="flex flex-col">
       {initialValues.map((initialValue, idx) => {
         return (
-          <div key={idx} className="p-10">
+          <div className="p-10" key={idx}>
             <h3 className="mb-2 font-semibold">#{idx + 1}</h3>
-            <WithPlate initialValue={initialValue} id={idx + 1} />
+            <WithPlate id={idx + 1} initialValue={initialValue} />
             {/* <WithoutPlate initialValue={initialValue} id={idx} /> */}
           </div>
         );

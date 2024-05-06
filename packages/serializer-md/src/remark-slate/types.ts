@@ -1,41 +1,45 @@
-import { PlateEditor, TElement, Value } from '@udecode/plate-common';
+import type {
+  PlateEditor,
+  TElement,
+  Value,
+} from '@udecode/plate-common/server';
 
 export type MdastElementType =
-  | 'paragraph'
-  | 'heading'
-  | 'list'
-  | 'listItem'
-  | 'link'
-  | 'image'
   | 'blockquote'
   | 'code'
+  | 'heading'
+  | 'image'
+  | 'link'
+  | 'list'
+  | 'listItem'
+  | 'paragraph'
   | 'thematicBreak';
 
 export type MdastTextType =
-  | 'emphasis'
-  | 'strong'
   | 'delete'
-  | 'inlineCode'
+  | 'emphasis'
   | 'html'
+  | 'inlineCode'
+  | 'strong'
   | 'text';
 
 export type MdastNodeType = MdastElementType | MdastTextType;
 
 export interface MdastNode {
-  type?: MdastNodeType;
-  ordered?: boolean;
-  value?: string;
-  text?: string;
-  children?: Array<MdastNode>;
-  depth?: 1 | 2 | 3 | 4 | 5 | 6;
-  url?: string;
   alt?: string;
+  checked?: any;
+  children?: MdastNode[];
+  depth?: 1 | 2 | 3 | 4 | 5 | 6;
+  indent?: any;
   lang?: string;
+  ordered?: boolean;
   // mdast metadata
   position?: any;
   spread?: any;
-  checked?: any;
-  indent?: any;
+  text?: string;
+  type?: MdastNodeType;
+  url?: string;
+  value?: string;
 }
 
 export type RemarkElementRule<V extends Value> = {
@@ -61,6 +65,6 @@ export type RemarkTextRules<V extends Value> = {
 export type RemarkPluginOptions<V extends Value> = {
   editor: PlateEditor<V>;
   elementRules: RemarkElementRules<V>;
-  textRules: RemarkTextRules<V>;
   indentList?: boolean;
+  textRules: RemarkTextRules<V>;
 };

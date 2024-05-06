@@ -1,5 +1,4 @@
 // local import, not from npm
-import { createPlateUI } from '@/plate/create-plate-ui';
 import {
   createBoldPlugin,
   createCodePlugin,
@@ -9,10 +8,11 @@ import {
 } from '@udecode/plate-basic-marks';
 import { createBlockquotePlugin } from '@udecode/plate-block-quote';
 import { createCodeBlockPlugin } from '@udecode/plate-code-block';
-import { createPlugins, Plate } from '@udecode/plate-common';
+import { Plate, createPlugins } from '@udecode/plate-common';
 import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 
+import { createPlateUI } from '@/plate/create-plate-ui';
 import { Editor } from '@/registry/default/plate-ui/editor';
 
 const plugins = createPlugins(
@@ -38,112 +38,111 @@ const plugins = createPlugins(
 export default function BasicPluginsComponentsDemo() {
   return (
     <Plate initialValue={basicEditorValue} plugins={plugins}>
-      <Editor spellCheck={false} autoFocus={false} placeholder="Type..." />
+      <Editor autoFocus={false} placeholder="Type..." spellCheck={false} />
     </Plate>
   );
 }
 
 export const basicEditorValue = [
   {
-    type: 'h1',
     children: [
       {
         text: '🌳 Blocks',
       },
     ],
     id: '1',
+    type: 'h1',
   },
   {
-    type: 'p',
     children: [
       {
         text: 'Easily create headings of various levels, from H1 to H6, to structure your content and make it more organized.',
       },
     ],
     id: '2',
+    type: 'p',
   },
   {
-    type: 'blockquote',
     children: [
       {
         text: 'Create blockquotes to emphasize important information or highlight quotes from external sources.',
       },
     ],
     id: '3',
+    type: 'blockquote',
   },
   {
-    type: 'code_block',
-    lang: 'javascript',
     children: [
       {
-        type: 'code_line',
         children: [
           {
             text: '// Use code blocks to showcase code snippets',
           },
         ],
+        type: 'code_line',
       },
       {
-        type: 'code_line',
         children: [
           {
             text: 'function greet() {',
           },
         ],
+        type: 'code_line',
       },
       {
-        type: 'code_line',
         children: [
           {
             text: "  console.info('Hello World!');",
           },
         ],
+        type: 'code_line',
       },
       {
-        type: 'code_line',
         children: [
           {
             text: '}',
           },
         ],
+        type: 'code_line',
       },
     ],
     id: '4',
+    lang: 'javascript',
+    type: 'code_block',
   },
   {
-    type: 'h1',
     children: [
       {
         text: '🌱 Marks',
       },
     ],
     id: '1',
+    type: 'h1',
   },
   {
-    type: 'p',
     children: [
       {
         text: 'Add style and emphasis to your text using the mark plugins, which offers a variety of formatting options.',
       },
     ],
     id: '2',
+    type: 'p',
   },
   {
-    type: 'p',
     children: [
       {
         text: 'Make text ',
       },
       {
-        text: 'bold',
         bold: true,
+        text: 'bold',
       },
       {
         text: ', ',
       },
       {
-        text: 'italic',
         italic: true,
+        text: 'italic',
       },
       {
         text: ', ',
@@ -156,9 +155,9 @@ export const basicEditorValue = [
         text: ', or apply a ',
       },
       {
-        text: 'combination',
         bold: true,
         italic: true,
+        text: 'combination',
         underline: true,
       },
       {
@@ -166,60 +165,61 @@ export const basicEditorValue = [
       },
     ],
     id: '3',
+    type: 'p',
   },
   {
-    type: 'p',
     children: [
       {
         text: 'Add ',
       },
       {
-        text: 'strikethrough',
         strikethrough: true,
+        text: 'strikethrough',
       },
       {
         text: ' to indicate deleted or outdated content.',
       },
     ],
     id: '4',
+    type: 'p',
   },
   {
-    type: 'p',
     children: [
       {
         text: 'Write code snippets with inline ',
       },
       {
-        text: 'code',
         code: true,
+        text: 'code',
       },
       {
         text: ' formatting for easy readability.',
       },
     ],
     id: '5',
+    type: 'p',
   },
   {
-    type: 'p',
     children: [
       {
         text: 'Press ',
       },
       {
-        text: '⌘+B',
         kbd: true,
+        text: '⌘+B',
       },
       {
         text: ' to apply bold mark or ',
       },
       {
-        text: '⌘+I',
         kbd: true,
+        text: '⌘+I',
       },
       {
         text: ' for italic mark.',
       },
     ],
     id: '6',
+    type: 'p',
   },
 ];

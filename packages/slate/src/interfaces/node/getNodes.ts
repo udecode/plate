@@ -1,8 +1,9 @@
-import { Modify } from '@udecode/utils';
-import { Node, NodeNodesOptions } from 'slate';
+import type { Modify } from '@udecode/utils';
 
-import { NodeOf, TNode } from './TNode';
-import { TNodeEntry } from './TNodeEntry';
+import { Node, type NodeNodesOptions } from 'slate';
+
+import type { NodeOf, TNode } from './TNode';
+import type { TNodeEntry } from './TNodeEntry';
 
 /**
  * Return a generator of all the node entries of a root node. Each entry is

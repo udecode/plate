@@ -1,4 +1,6 @@
+/* eslint-disable tailwindcss/no-custom-classname */
 import * as React from 'react';
+
 import { CheckIcon, CopyIcon } from '@radix-ui/react-icons';
 import template from 'lodash.template';
 
@@ -12,7 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/registry/default/plate-ui/dialog';
-import { Theme, themes } from '@/registry/themes';
+import { type Theme, themes } from '@/registry/themes';
 
 import { copyToClipboardWithMeta } from './copy-button';
 
@@ -31,17 +33,17 @@ export function CopyCodeButton() {
     <>
       {activeTheme && (
         <Button
+          className="md:hidden"
           onClick={() => {
             copyToClipboardWithMeta(getThemeCode(activeTheme, config.radius), {
               name: 'copy_theme_code',
               properties: {
-                theme: activeTheme.name,
                 radius: config.radius,
+                theme: activeTheme.name,
               },
             });
             setHasCopied(true);
           }}
-          className="md:hidden"
         >
           {hasCopied ? (
             <CheckIcon className="mr-2 size-4" />
@@ -66,21 +68,21 @@ export function CopyCodeButton() {
             <CustomizerCode />
             {activeTheme && (
               <Button
-                size="sm"
+                className="absolute right-4 top-4 bg-muted text-muted-foreground hover:bg-muted hover:text-muted-foreground"
                 onClick={() => {
                   copyToClipboardWithMeta(
                     getThemeCode(activeTheme, config.radius),
                     {
                       name: 'copy_theme_code',
                       properties: {
-                        theme: activeTheme.name,
                         radius: config.radius,
+                        theme: activeTheme.name,
                       },
                     }
                   );
                   setHasCopied(true);
                 }}
-                className="absolute right-4 top-4 bg-muted text-muted-foreground hover:bg-muted hover:text-muted-foreground"
+                size="sm"
               >
                 {hasCopied ? (
                   <CheckIcon className="mr-2 size-4" />
@@ -103,6 +105,7 @@ function CustomizerCode() {
 
   return (
     <div className="relative space-y-4">
+      {/* eslint-disable-next-line react/no-unknown-property */}
       <div data-rehype-pretty-code-fragment="">
         <pre className="max-h-[450px] overflow-x-auto rounded-lg border bg-slate-950 py-4 dark:bg-slate-900">
           <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm">
@@ -110,11 +113,11 @@ function CustomizerCode() {
             <span className="line text-white">&nbsp;&nbsp;:root &#123;</span>
             <span className="line text-white">
               &nbsp;&nbsp;&nbsp;&nbsp;--background:{' '}
-              {activeTheme?.cssVars.light['background']};
+              {activeTheme?.cssVars.light.background};
             </span>
             <span className="line text-white">
               &nbsp;&nbsp;&nbsp;&nbsp;--foreground:{' '}
-              {activeTheme?.cssVars.light['foreground']};
+              {activeTheme?.cssVars.light.foreground};
             </span>
             {[
               'card',
@@ -148,15 +151,14 @@ function CustomizerCode() {
             ))}
             <span className="line text-white">
               &nbsp;&nbsp;&nbsp;&nbsp;--border:{' '}
-              {activeTheme?.cssVars.light['border']};
+              {activeTheme?.cssVars.light.border};
             </span>
             <span className="line text-white">
               &nbsp;&nbsp;&nbsp;&nbsp;--input:{' '}
-              {activeTheme?.cssVars.light['input']};
+              {activeTheme?.cssVars.light.input};
             </span>
             <span className="line text-white">
-              &nbsp;&nbsp;&nbsp;&nbsp;--ring:{' '}
-              {activeTheme?.cssVars.light['ring']};
+              &nbsp;&nbsp;&nbsp;&nbsp;--ring: {activeTheme?.cssVars.light.ring};
             </span>
             <span className="line text-white">
               &nbsp;&nbsp;&nbsp;&nbsp;--radius: {config.radius}rem;
@@ -166,11 +168,11 @@ function CustomizerCode() {
             <span className="line text-white">&nbsp;&nbsp;.dark &#123;</span>
             <span className="line text-white">
               &nbsp;&nbsp;&nbsp;&nbsp;--background:{' '}
-              {activeTheme?.cssVars.dark['background']};
+              {activeTheme?.cssVars.dark.background};
             </span>
             <span className="line text-white">
               &nbsp;&nbsp;&nbsp;&nbsp;--foreground:{' '}
-              {activeTheme?.cssVars.dark['foreground']};
+              {activeTheme?.cssVars.dark.foreground};
             </span>
             {[
               'card',
@@ -204,15 +206,14 @@ function CustomizerCode() {
             ))}
             <span className="line text-white">
               &nbsp;&nbsp;&nbsp;&nbsp;--border:{' '}
-              {activeTheme?.cssVars.dark['border']};
+              {activeTheme?.cssVars.dark.border};
             </span>
             <span className="line text-white">
-              &nbsp;&nbsp;&nbsp;&nbsp;--input:{' '}
-              {activeTheme?.cssVars.dark['input']};
+              &nbsp;&nbsp;&nbsp;&nbsp;--input: {activeTheme?.cssVars.dark.input}
+              ;
             </span>
             <span className="line text-white">
-              &nbsp;&nbsp;&nbsp;&nbsp;--ring:{' '}
-              {activeTheme?.cssVars.dark['ring']};
+              &nbsp;&nbsp;&nbsp;&nbsp;--ring: {activeTheme?.cssVars.dark.ring};
             </span>
             <span className="line text-white">&nbsp;&nbsp;&#125;</span>
             <span className="line text-white">&#125;</span>

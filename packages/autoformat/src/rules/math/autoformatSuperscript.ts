@@ -1,72 +1,72 @@
-import { AutoformatRule } from '../../types';
+import type { AutoformatRule } from '../../types';
 
 export const autoformatSuperscriptNumbers: AutoformatRule[] = [
   {
-    mode: 'text',
-    match: '^0',
     format: '⁰',
+    match: '^0',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: '^1',
     format: '¹',
+    match: '^1',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: '^2',
     format: '²',
+    match: '^2',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: '^3',
     format: '³',
+    match: '^3',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: '^4',
     format: '⁴',
+    match: '^4',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: '^5',
     format: '⁵',
+    match: '^5',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: '^6',
     format: '⁶',
+    match: '^6',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: '^7',
     format: '⁷',
+    match: '^7',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: '^8',
     format: '⁸',
+    match: '^8',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: '^9',
     format: '⁹',
+    match: '^9',
+    mode: 'text',
   },
 ];
 
 export const autoformatSuperscriptSymbols: AutoformatRule[] = [
   {
-    mode: 'text',
-    match: '^o',
     format: '°',
+    match: '^o',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: '^+',
     format: '⁺',
+    match: '^+',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: '^-',
     format: '⁻',
+    match: '^-',
+    mode: 'text',
   },
 ];

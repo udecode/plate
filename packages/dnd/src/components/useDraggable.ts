@@ -1,18 +1,19 @@
 import React from 'react';
-import { TEditor, TElement } from '@udecode/plate-common';
-import { DropTargetMonitor } from 'react-dnd';
 
-import { DragItemNode, DropLineDirection, useDndBlock } from '..';
+import type { TEditor, TElement } from '@udecode/plate-common/server';
+import type { DropTargetMonitor } from 'react-dnd';
+
+import { type DragItemNode, type DropLineDirection, useDndBlock } from '..';
 
 export type DraggableState = {
-  dropLine: DropLineDirection;
-  isHovered: boolean;
-  setIsHovered: (isHovered: boolean) => void;
-  isDragging: boolean;
-  nodeRef: React.RefObject<HTMLDivElement>;
   dragRef: (
-    elementOrNode: React.RefObject<any> | React.ReactElement | Element | null
+    elementOrNode: Element | React.ReactElement | React.RefObject<any> | null
   ) => void;
+  dropLine: DropLineDirection;
+  isDragging: boolean;
+  isHovered: boolean;
+  nodeRef: React.RefObject<HTMLDivElement>;
+  setIsHovered: (isHovered: boolean) => void;
 };
 
 export const useDraggableState = (props: {
@@ -20,10 +21,10 @@ export const useDraggableState = (props: {
   onDropHandler?: (
     editor: TEditor,
     props: {
-      monitor: DropTargetMonitor<DragItemNode, unknown>;
       dragItem: DragItemNode;
-      nodeRef: any;
       id: string;
+      monitor: DropTargetMonitor<DragItemNode, unknown>;
+      nodeRef: any;
     }
   ) => boolean;
 }): DraggableState => {
@@ -31,35 +32,35 @@ export const useDraggableState = (props: {
 
   const nodeRef = React.useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = React.useState(false);
-  const { dropLine, isDragging, dragRef } = useDndBlock({
+  const { dragRef, dropLine, isDragging } = useDndBlock({
     id: element.id as string,
     nodeRef,
     onDropHandler,
   });
 
   return {
-    dropLine,
-    isHovered,
-    setIsHovered,
-    isDragging,
-    nodeRef,
     dragRef,
+    dropLine,
+    isDragging,
+    isHovered,
+    nodeRef,
+    setIsHovered,
   };
 };
 
 export const useDraggable = (state: DraggableState) => {
   return {
-    previewRef: state.nodeRef,
-    handleRef: state.dragRef,
+    droplineProps: {
+      contentEditable: false,
+    },
     groupProps: {
       onPointerEnter: () => state.setIsHovered(true),
       onPointerLeave: () => state.setIsHovered(false),
     },
-    droplineProps: {
-      contentEditable: false,
-    },
     gutterLeftProps: {
       contentEditable: false,
     },
+    handleRef: state.dragRef,
+    previewRef: state.nodeRef,
   };
 };

@@ -1,4 +1,4 @@
-import { PlateEditor, Value } from '@udecode/plate-common';
+import type { PlateEditor, Value } from '@udecode/plate-common/server';
 
 import {
   blockSelectionActions,

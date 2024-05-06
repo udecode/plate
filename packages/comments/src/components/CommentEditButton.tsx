@@ -11,16 +11,16 @@ export const useCommentEditButtonState = () => {
   const editingValue = useCommentActions().editingValue();
 
   return {
-    setIsMenuOpen,
     comment,
     editingValue,
+    setIsMenuOpen,
   };
 };
 
 export const useCommentEditButton = ({
-  setIsMenuOpen,
   comment,
   editingValue,
+  setIsMenuOpen,
 }: ReturnType<typeof useCommentEditButtonState>) => {
   return {
     props: {
@@ -33,6 +33,6 @@ export const useCommentEditButton = ({
 };
 
 export const CommentEditButton = createPrimitiveComponent('button')({
-  stateHook: useCommentEditButtonState,
   propsHook: useCommentEditButton,
+  stateHook: useCommentEditButtonState,
 });

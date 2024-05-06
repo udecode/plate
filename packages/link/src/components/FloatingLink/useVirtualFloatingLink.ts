@@ -1,6 +1,6 @@
 import {
+  type UseVirtualFloatingOptions,
   useVirtualFloating,
-  UseVirtualFloatingOptions,
 } from '@udecode/plate-floating';
 
 import { floatingLinkActions } from './floatingLinkStore';

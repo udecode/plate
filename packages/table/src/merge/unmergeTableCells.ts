@@ -1,20 +1,25 @@
 import {
+  type PlateEditor,
+  type TDescendant,
+  type Value,
   findNode,
   getPluginOptions,
   getPluginType,
   insertElements,
-  PlateEditor,
   removeNodes,
-  TDescendant,
-  Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
+
+import type {
+  TTableCellElement,
+  TTableRowElement,
+  TablePlugin,
+} from '../types';
 
 import { ELEMENT_TABLE, ELEMENT_TH, ELEMENT_TR } from '../createTablePlugin';
 import { getTableGridAbove } from '../queries';
 import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';
-import { TablePlugin, TTableCellElement, TTableRowElement } from '../types';
 import { getEmptyCellNode } from '../utils';
 import { getCellIndices } from './getCellIndices';
 
@@ -51,6 +56,7 @@ export const unmergeTableCells = <V extends Value = Value>(
 
     // Generate an array of column paths from the colspan
     const colPaths: number[] = [];
+
     for (let i = 0; i < colSpan; i++) {
       colPaths.push(colPath + i);
     }
@@ -76,17 +82,21 @@ export const unmergeTableCells = <V extends Value = Value>(
       }
 
       const rowEl = rowEntry[0] as TTableRowElement;
+
       for (const item of rowEl.children) {
         const { col: c } = getCellIndices(
           cellIndices!,
           item as TTableCellElement
         )!;
+
         if (c === col - 1) {
           newColPath = rowEl.children.indexOf(item) + 1;
+
           break;
         }
         if (col + getColSpan(cellElem as TTableCellElement) === c - 1) {
           newColPath = rowEl.children.indexOf(item);
+
           break;
         }
       }
@@ -126,8 +136,8 @@ export const unmergeTableCells = <V extends Value = Value>(
         insertElements(
           editor,
           {
-            type: getPluginType(editor, ELEMENT_TR),
             children: newRowChildren,
+            type: getPluginType(editor, ELEMENT_TR),
           },
           { at: _rowPath }
         );

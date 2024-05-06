@@ -1,62 +1,79 @@
 import {
-  createPluginFactory,
   ELEMENT_DEFAULT,
+  KEY_DESERIALIZE_HTML,
+  type PlateRenderElementProps,
+  type TElement,
+  createPluginFactory,
   getPluginType,
   isHtmlBlockElement,
-  KEY_DESERIALIZE_HTML,
-  PlateRenderElementProps,
   postCleanHtml,
-  TElement,
   traverseHtmlElements,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
+
+import type { GetSiblingIndentListOptions } from './queries/getSiblingIndentList';
+import type { ListStyleType } from './types';
 
 import { injectIndentListComponent } from './injectIndentListComponent';
 import { onKeyDownIndentList } from './onKeyDownIndentList';
-import { GetSiblingIndentListOptions } from './queries/getSiblingIndentList';
-import { ListStyleType } from './types';
 import { withIndentList } from './withIndentList';
 
 export const KEY_LIST_STYLE_TYPE = 'listStyleType';
+
 export const KEY_LIST_START = 'listStart';
+
 export const KEY_LIST_RESTART = 'listRestart';
+
 export const KEY_LIST_CHECKED = 'checked';
+
 export const KEY_TODO_STYLE_TYPE = 'todo';
 
 export type MarkerFC = React.FC<Omit<PlateRenderElementProps, 'children'>>;
+
 export type LiFC = React.FC<PlateRenderElementProps>;
 
 export interface IndentListPlugin {
-  getSiblingIndentListOptions?: GetSiblingIndentListOptions<TElement>;
-
-  /**x
-   * Map html element to list style type.
-   */
+  /** X Map html element to list style type. */
   getListStyleType?: (element: HTMLElement) => ListStyleType;
+
+  getSiblingIndentListOptions?: GetSiblingIndentListOptions<TElement>;
 
   listStyleTypes?: Record<
     string,
     {
-      type: string;
-      markerComponent?: MarkerFC;
-      liComponent?: LiFC;
       isOrdered?: boolean;
+      liComponent?: LiFC;
+      markerComponent?: MarkerFC;
+      type: string;
     }
   >;
 }
 
 export const createIndentListPlugin = createPluginFactory<IndentListPlugin>({
-  key: KEY_LIST_STYLE_TYPE,
-  inject: {
-    belowComponent: injectIndentListComponent,
-  },
-  withOverrides: withIndentList,
   handlers: {
     onKeyDown: onKeyDownIndentList,
   },
+  inject: {
+    belowComponent: injectIndentListComponent,
+  },
+  key: KEY_LIST_STYLE_TYPE,
   options: {
     getListStyleType: (element) => element.style.listStyleType as ListStyleType,
   },
   then: (editor, { options }) => ({
+    deserializeHtml: {
+      getNode: (element) => ({
+        // gdoc uses aria-level attribute
+        indent: Number(element.getAttribute('aria-level')),
+        listStyleType: options.getListStyleType?.(element),
+        type: getPluginType(editor, ELEMENT_DEFAULT),
+      }),
+      isElement: true,
+      rules: [
+        {
+          validNodeName: 'LI',
+        },
+      ],
+    },
     inject: {
       pluginsByKey: {
         [KEY_DESERIALIZE_HTML]: {
@@ -100,19 +117,6 @@ export const createIndentListPlugin = createPluginFactory<IndentListPlugin>({
         },
       },
     },
-    deserializeHtml: {
-      isElement: true,
-      getNode: (element) => ({
-        type: getPluginType(editor, ELEMENT_DEFAULT),
-        listStyleType: options.getListStyleType?.(element),
-        // gdoc uses aria-level attribute
-        indent: Number(element.getAttribute('aria-level')),
-      }),
-      rules: [
-        {
-          validNodeName: 'LI',
-        },
-      ],
-    },
   }),
+  withOverrides: withIndentList,
 });

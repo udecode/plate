@@ -1,24 +1,24 @@
 import {
-  createPluginFactory,
   ELEMENT_DEFAULT,
+  createPluginFactory,
   getPluginType,
   mapInjectPropsToPlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 export const KEY_LINE_HEIGHT = 'lineHeight';
 
 /**
- * Enables support for text alignment, useful to align your content
- * to left, right and center it.
+ * Enables support for text alignment, useful to align your content to left,
+ * right and center it.
  */
 export const createLineHeightPlugin = createPluginFactory({
-  key: KEY_LINE_HEIGHT,
   inject: {
     props: {
-      nodeKey: KEY_LINE_HEIGHT,
       defaultNodeValue: 1.5,
+      nodeKey: KEY_LINE_HEIGHT,
     },
   },
+  key: KEY_LINE_HEIGHT,
   then: (editor) => ({
     inject: {
       props: {
