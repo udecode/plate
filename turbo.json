@@ -46,7 +46,6 @@
       "outputs": []
     },
     "typecheck": {
-      "dependsOn": ["build"],
       "outputs": [],
       "cache": true
     },

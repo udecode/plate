@@ -39,8 +39,6 @@ type SerializeMdNodeOptions = {
   /** The type of the node. */
   type: string;
 };
-
-
 /** @default Options for each node type. */
 {
   /** @default Options for each node type. */
