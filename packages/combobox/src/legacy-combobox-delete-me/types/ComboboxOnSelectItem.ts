@@ -1,4 +1,4 @@
-import type { PlateEditor, Value } from '@udecode/plate-common';
+import type { PlateEditor, Value } from '@udecode/plate-common/server';
 
 export interface TComboboxItemBase {
   /** Unique key. */

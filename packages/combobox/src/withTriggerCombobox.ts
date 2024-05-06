@@ -6,7 +6,7 @@ import {
   getEditorString,
   getPointBefore,
   getRange,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import type { TriggerComboboxPlugin } from './types';
 

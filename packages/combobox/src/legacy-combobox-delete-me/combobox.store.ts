@@ -4,7 +4,7 @@ import {
   type ZustandStateActions,
   type ZustandStoreApi,
   createZustandStore,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import type { ComboboxOnSelectItem, NoData, TComboboxItem } from './types';
 

@@ -7,14 +7,12 @@ import {
 } from 'react';
 
 import {
-  Hotkeys,
   findNodePath,
   focusEditor,
-  isHotkey,
-  removeNodes,
   useEditorRef,
   useElement,
 } from '@udecode/plate-common';
+import { Hotkeys, isHotkey, removeNodes } from '@udecode/plate-common/server';
 import { useSelected } from 'slate-react';
 
 import type {

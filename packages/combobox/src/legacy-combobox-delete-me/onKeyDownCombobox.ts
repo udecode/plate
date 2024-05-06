@@ -1,10 +1,10 @@
+import { Hotkeys } from '@udecode/plate-common';
 import {
-  Hotkeys,
   type KeyboardHandlerReturnType,
   type PlateEditor,
   type Value,
   isHotkey,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import {
   comboboxActions,

@@ -1,4 +1,4 @@
-import { createPluginFactory } from '@udecode/plate-common';
+import { createPluginFactory } from '@udecode/plate-common/server';
 
 import { onChangeCombobox } from './onChangeCombobox';
 import { onKeyDownCombobox } from './onKeyDownCombobox';

@@ -2,7 +2,7 @@ import {
   type PlateEditor,
   type Value,
   isCollapsed,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Range } from 'slate';
 
 import { comboboxActions, comboboxSelectors } from './combobox.store';

@@ -7,7 +7,7 @@ import {
   getEditorString,
   getPointBefore,
   getRange,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 /**
  * Get text and range from trigger to cursor. Starts with trigger and ends with

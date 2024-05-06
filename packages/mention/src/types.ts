@@ -1,5 +1,5 @@
 import type { TriggerComboboxPlugin } from '@udecode/plate-combobox';
-import type { TElement, TNodeProps } from '@udecode/plate-common';
+import type { TElement, TNodeProps } from '@udecode/plate-common/server';
 
 export interface TMentionItemBase {
   text: string;

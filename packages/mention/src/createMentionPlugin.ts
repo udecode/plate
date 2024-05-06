@@ -1,5 +1,5 @@
 import { withTriggerCombobox } from '@udecode/plate-combobox';
-import { createPluginFactory } from '@udecode/plate-common';
+import { createPluginFactory } from '@udecode/plate-common/server';
 
 import type { MentionPlugin } from './types';
 
