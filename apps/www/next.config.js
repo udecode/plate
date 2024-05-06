@@ -2,33 +2,36 @@ const { withAxiomNextConfig } = require('next-axiom');
 // import { createContentlayerPlugin } from 'next-contentlayer';
 
 const nextConfig = async (phase, { defaultConfig }) => {
-  /**
-   * @type {import("next").NextConfig}
-   */
+  /** @type {import('next').NextConfig} */
   const config = {
     // Enable React strict mode.
-    // https://nextjs.org/docs/api-reference/next.config.js/react-strict-mod
-    reactStrictMode: true,
+    // Enable experimental features.
+    experimental: {
+      esmExternals: false,
+      // Specify external packages that should be excluded from server-side rendering.
+      // https://beta.nextjs.org/docs/api-reference/next-config#servercomponentsexternalpackages
+      serverComponentsExternalPackages: ['@prisma/client'],
+    },
 
     // Configure domains to allow for optimized image loading.
     // https://nextjs.org/docs/basic-features/image-optimization#domains
     images: {
       remotePatterns: [
         {
-          protocol: 'https',
           hostname: 'cdn.discordapp.com',
+          protocol: 'https',
         },
         {
-          protocol: 'https',
           hostname: 'lh3.googleusercontent.com',
+          protocol: 'https',
         },
         {
-          protocol: 'https',
           hostname: 'avatars.githubusercontent.com',
+          protocol: 'https',
         },
         {
-          protocol: 'https',
           hostname: 'images.unsplash.com',
+          protocol: 'https',
         },
       ],
     },
@@ -40,15 +43,10 @@ const nextConfig = async (phase, { defaultConfig }) => {
     //   ignoreDuringBuilds: true,
     // },
 
-    staticPageGenerationTimeout: 1200,
+    // https://nextjs.org/docs/api-reference/next.config.js/react-strict-mod
+    reactStrictMode: true,
 
-    // Enable experimental features.
-    experimental: {
-      esmExternals: false,
-      // Specify external packages that should be excluded from server-side rendering.
-      // https://beta.nextjs.org/docs/api-reference/next-config#servercomponentsexternalpackages
-      serverComponentsExternalPackages: ['@prisma/client'],
-    },
+    staticPageGenerationTimeout: 1200,
 
     // redirects() {
     //   return [
@@ -85,6 +83,7 @@ const nextConfig = async (phase, { defaultConfig }) => {
     //   ];
     // },
   };
+
   if (phase === 'phase-development-server') {
     const fs = await import('node:fs');
     const glob = await import('glob').then((mod) => mod.default);
@@ -95,6 +94,7 @@ const nextConfig = async (phase, { defaultConfig }) => {
       .map((file) => {
         try {
           const packageJson = JSON.parse(fs.readFileSync(file, 'utf8'));
+
           return packageJson.name;
         } catch (error) {
           return null;

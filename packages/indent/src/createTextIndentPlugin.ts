@@ -1,10 +1,10 @@
 import {
-  createPluginFactory,
   ELEMENT_DEFAULT,
+  createPluginFactory,
   getPluginType,
 } from '@udecode/plate-common/server';
 
-import { IndentPlugin } from './types';
+import type { IndentPlugin } from './types';
 
 export const KEY_TEXT_INDENT = 'textIndent';
 
@@ -19,10 +19,10 @@ export const createTextIndentPlugin = createPluginFactory<IndentPlugin>({
       props: {
         nodeKey: KEY_TEXT_INDENT,
         styleKey: 'textIndent',
-        validTypes: [getPluginType(editor, ELEMENT_DEFAULT)],
         transformNodeValue({ nodeValue }) {
           return nodeValue * offset! + unit!;
         },
+        validTypes: [getPluginType(editor, ELEMENT_DEFAULT)],
       },
     },
   }),

@@ -1,36 +1,36 @@
+import type { Range } from 'slate';
+
 import {
+  type PlateEditor,
+  type Value,
+  type WithPlatePlugin,
   getAboveNode,
   getNodeString,
   getPluginTypes,
   isCollapsed,
   isHotkey,
-  PlateEditor,
-  Value,
-  WithPlatePlugin,
 } from '@udecode/plate-common/server';
-import { Range } from 'slate';
+
+import type { CaptionPlugin } from './createCaptionPlugin';
 
 import { captionGlobalStore } from './captionGlobalStore';
-import { CaptionPlugin } from './createCaptionPlugin';
 
-/**
- * TODO: tests
- * https://github.com/udecode/editor-protocol/issues/79
- */
+/** TODO: tests https://github.com/udecode/editor-protocol/issues/79 */
 
 /**
  * Selection table:
+ *
  * - If anchor is in table, focus in a block before: set focus to start of table
  * - If anchor is in table, focus in a block after: set focus to end of table
  * - If focus is in table, anchor in a block before: set focus to end of table
- * - If focus is in table, anchor in a block after: set focus to the point before start of table
+ * - If focus is in table, anchor in a block after: set focus to the point before
+ *   start of table
  */
 export const withCaption = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
-  // eslint-disable-next-line unused-imports/no-unused-vars
   { options }: WithPlatePlugin<CaptionPlugin, V, E>
 ) => {
   const { apply } = editor;

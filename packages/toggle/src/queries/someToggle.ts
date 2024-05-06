@@ -1,4 +1,8 @@
-import { PlateEditor, someNode, Value } from '@udecode/plate-common/server';
+import {
+  type PlateEditor,
+  type Value,
+  someNode,
+} from '@udecode/plate-common/server';
 
 import { ELEMENT_TOGGLE } from '../types';
 

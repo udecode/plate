@@ -1,16 +1,18 @@
+import type { Point, Range } from 'slate';
+
 import {
+  type TEditor,
+  type Value,
   collapseSelection,
   deleteText,
   getEditorString,
   removeMark,
   select,
-  TEditor,
-  Value,
 } from '@udecode/plate-common/server';
 import castArray from 'lodash/castArray.js';
-import { Point, Range } from 'slate';
 
-import { AutoformatMarkRule } from '../types';
+import type { AutoformatMarkRule } from '../types';
+
 import { getMatchPoints } from '../utils/getMatchPoints';
 import { getMatchRange } from '../utils/getMatchRange';
 
@@ -20,7 +22,7 @@ export interface AutoformatMarkOptions extends AutoformatMarkRule {
 
 export const autoformatMark = <V extends Value>(
   editor: TEditor<V>,
-  { type, text, trigger, match: _match, ignoreTrim }: AutoformatMarkOptions
+  { ignoreTrim, match: _match, text, trigger, type }: AutoformatMarkOptions
 ) => {
   if (!type) return false;
 
@@ -28,14 +30,15 @@ export const autoformatMark = <V extends Value>(
   const matches = castArray(_match);
 
   for (const match of matches) {
-    const { start, end, triggers } = getMatchRange({
+    const { end, start, triggers } = getMatchRange({
       match,
       trigger,
     });
 
     if (!triggers.includes(text)) continue;
 
-    const matched = getMatchPoints(editor, { start, end });
+    const matched = getMatchPoints(editor, { end, start });
+
     if (!matched) continue;
 
     const { afterStartMatchPoint, beforeEndMatchPoint, beforeStartMatchPoint } =
@@ -48,9 +51,9 @@ export const autoformatMark = <V extends Value>(
 
     if (!ignoreTrim) {
       const matchText = getEditorString(editor, matchRange);
+
       if (matchText.trim() !== matchText) continue;
     }
-
     // delete end match
     if (end) {
       deleteText(editor, {

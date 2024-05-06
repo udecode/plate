@@ -1,12 +1,12 @@
 import {
+  type PlateEditor,
+  type Value,
   getBlockAbove,
   isNode,
   moveNodes,
-  PlateEditor,
   toggleNodeType,
-  Value,
 } from '@udecode/plate-common/server';
-import { indent, TIndentElement } from '@udecode/plate-indent';
+import { type TIndentElement, indent } from '@udecode/plate-indent';
 
 import { getLastEntryEnclosedInToggle, isInClosedToggle } from './queries';
 import { isToggleOpen } from './toggle-controller-store';
@@ -22,11 +22,12 @@ export const withToggle = <
 >(
   editor: E
 ) => {
-  const { insertBreak, isSelectable, deleteBackward, deleteForward } = editor;
+  const { deleteBackward, deleteForward, insertBreak, isSelectable } = editor;
 
   editor.isSelectable = (element) => {
     if (isNode(element) && isInClosedToggle<V, E>(editor, element.id as string))
       return false;
+
     return isSelectable(element);
   };
 
@@ -35,12 +36,14 @@ export const withToggle = <
       moveCurrentBlockAfterPreviousSelectable(editor as PlateEditor) === false
     )
       return;
+
     deleteBackward(unit);
   };
 
   editor.deleteForward = (unit) => {
     if (moveNextSelectableAfterCurrentBlock(editor as PlateEditor) === false)
       return;
+
     deleteForward(unit);
   };
 
@@ -54,6 +57,7 @@ export const withToggle = <
     //     - Focus on that paragraph
     // Note: We are relying on the default behaviour of `insertBreak` which inserts a toggle right after the current toggle with the same indent
     const currentBlockEntry = getBlockAbove<TIndentElement>(editor);
+
     if (!currentBlockEntry || currentBlockEntry[0].type !== ELEMENT_TOGGLE) {
       return insertBreak();
     }

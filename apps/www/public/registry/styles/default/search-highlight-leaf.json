@@ -1,14 +1,14 @@
 {
-  "name": "search-highlight-leaf",
   "dependencies": [
     "@udecode/plate-find-replace"
   ],
-  "registryDependencies": [],
   "files": [
     {
-      "name": "search-highlight-leaf.tsx",
-      "content": "import { withCn } from '@udecode/cn';\nimport { PlateLeaf } from '@udecode/plate-common';\n\nexport const SearchHighlightLeaf = withCn(PlateLeaf, 'bg-yellow-100');\n"
+      "content": "import { withCn } from '@udecode/cn';\nimport { PlateLeaf } from '@udecode/plate-common';\n\nexport const SearchHighlightLeaf = withCn(PlateLeaf, 'bg-yellow-100');\n",
+      "name": "search-highlight-leaf.tsx"
     }
   ],
+  "name": "search-highlight-leaf",
+  "registryDependencies": [],
   "type": "components:plate-ui"
 }

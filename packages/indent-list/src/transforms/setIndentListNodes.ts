@@ -1,8 +1,8 @@
 import {
-  TEditor,
-  TNodeEntry,
+  type TEditor,
+  type TNodeEntry,
+  type Value,
   unsetNodes,
-  Value,
   withoutNormalizing,
 } from '@udecode/plate-common/server';
 import { KEY_INDENT } from '@udecode/plate-indent';
@@ -15,8 +15,8 @@ import { ListStyleType } from '../types';
 import { setIndentListNode, setIndentTodoNode } from './setIndentListNode';
 
 /**
- * Set indent list to the given entries.
- * Add indent if listStyleType was not defined.
+ * Set indent list to the given entries. Add indent if listStyleType was not
+ * defined.
  */
 export const setIndentListNodes = <V extends Value>(
   editor: TEditor<V>,
@@ -40,18 +40,19 @@ export const setIndentListNodes = <V extends Value>(
       if (listStyleType === 'todo') {
         unsetNodes(editor as any, KEY_LIST_STYLE_TYPE, { at: path });
         setIndentTodoNode(editor, {
-          listStyleType,
-          indent,
           at: path,
+          indent,
+          listStyleType,
         });
+
         return;
       }
 
       unsetNodes(editor as any, KEY_LIST_CHECKED, { at: path });
       setIndentListNode(editor, {
-        listStyleType,
-        indent,
         at: path,
+        indent,
+        listStyleType,
       });
     });
   });

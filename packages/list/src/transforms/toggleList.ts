@@ -1,5 +1,8 @@
 import {
   ELEMENT_DEFAULT,
+  type PlateEditor,
+  type TElement,
+  type Value,
   findNode,
   getBlockAbove,
   getCommonNode,
@@ -9,23 +12,21 @@ import {
   isCollapsed,
   isElement,
   isRangeAcrossBlocks,
-  PlateEditor,
   setElements,
-  TElement,
-  Value,
   withoutNormalizing,
   wrapNodes,
 } from '@udecode/plate-common/server';
 import { Range } from 'slate';
 
+import type { ListPlugin } from '../types';
+
 import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 import { getListItemEntry, getListTypes } from '../queries/index';
-import { ListPlugin } from '../types';
 import { unwrapList } from './unwrapList';
 
 export const toggleList = <V extends Value>(
   editor: PlateEditor<V>,
-  { type, pluginKey = type }: { type: string; pluginKey?: string }
+  { type, pluginKey = type }: { pluginKey?: string; type: string }
 ) =>
   withoutNormalizing(editor, () => {
     if (!editor.selection) {
@@ -43,6 +44,7 @@ export const toggleList = <V extends Value>(
 
       if (res) {
         const { list } = res;
+
         if (list[0].type === type) {
           unwrapList(editor);
         } else {
@@ -58,7 +60,7 @@ export const toggleList = <V extends Value>(
           );
         }
       } else {
-        const list = { type, children: [] };
+        const list = { children: [], type };
         wrapNodes<TElement>(editor, list);
 
         const _nodes = getNodeEntries(editor, {
@@ -69,6 +71,7 @@ export const toggleList = <V extends Value>(
         const blockAbove = getBlockAbove(editor, {
           match: { type: validLiChildrenTypes },
         });
+
         if (!blockAbove) {
           setElements(editor, {
             type: getPluginType(editor, ELEMENT_LIC),
@@ -76,8 +79,8 @@ export const toggleList = <V extends Value>(
         }
 
         const listItem = {
-          type: getPluginType(editor, ELEMENT_LI),
           children: [],
+          type: getPluginType(editor, ELEMENT_LI),
         };
 
         for (const [, path] of nodes) {
@@ -161,14 +164,14 @@ export const toggleList = <V extends Value>(
             }
 
             const listItem = {
-              type: getPluginType(editor, ELEMENT_LI),
               children: [],
+              type: getPluginType(editor, ELEMENT_LI),
             };
             wrapNodes<TElement>(editor, listItem, {
               at: n[1],
             });
 
-            const list = { type, children: [] };
+            const list = { children: [], type };
             wrapNodes<TElement>(editor, list, { at: n[1] });
           }
         });

@@ -1,12 +1,12 @@
 import {
+  type PlateEditor,
+  type TElement,
+  type TElementEntry,
+  type Value,
   getNodeEntry,
   getParentNode,
   match,
   moveNodes,
-  PlateEditor,
-  TElement,
-  TElementEntry,
-  Value,
 } from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
@@ -24,11 +24,13 @@ export const normalizeNestedList = <V extends Value>(
   const parentNode = getParentNode(editor, path);
   const hasParentList =
     parentNode && match(parentNode[0], [], { type: getListTypes(editor) });
+
   if (!hasParentList) {
     return false;
   }
 
   let previousListItemPath: Path;
+
   try {
     previousListItemPath = Path.previous(path);
   } catch (error) {

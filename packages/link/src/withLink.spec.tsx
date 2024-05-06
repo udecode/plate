@@ -8,9 +8,7 @@ import { createLinkPlugin } from './createLinkPlugin';
 jsx;
 
 /**
- * TODO: test
- * react:
- * https://github.com/udecode/editor-protocol/issues/44
+ * TODO: test react: https://github.com/udecode/editor-protocol/issues/44
  * https://github.com/udecode/editor-protocol/issues/45
  * https://github.com/udecode/editor-protocol/issues/49
  * https://github.com/udecode/editor-protocol/issues/51
@@ -19,15 +17,12 @@ jsx;
  * https://github.com/udecode/editor-protocol/issues/57
  * https://github.com/udecode/editor-protocol/issues/61
  *
- * submitFloatingLink:
- * https://github.com/udecode/editor-protocol/issues/48
+ * SubmitFloatingLink: https://github.com/udecode/editor-protocol/issues/48
  *
- * selection:
- * https://github.com/udecode/editor-protocol/issues/52
+ * Selection: https://github.com/udecode/editor-protocol/issues/52
  * https://github.com/udecode/editor-protocol/issues/53
  *
- * unwrapLink
- * https://github.com/udecode/editor-protocol/issues/56
+ * UnwrapLink https://github.com/udecode/editor-protocol/issues/56
  */
 
 const url = 'http://google.com';
@@ -344,6 +339,7 @@ describe('withLink', () => {
           expect(input.children).toEqual(output.children);
         });
       });
+
       // https://github.com/udecode/editor-protocol/issues/42
       describe('when after url at start of block', () => {
         const input = (

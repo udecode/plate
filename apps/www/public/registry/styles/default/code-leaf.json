@@ -1,14 +1,14 @@
 {
-  "name": "code-leaf",
   "dependencies": [
     "@udecode/plate-basic-marks"
   ],
-  "registryDependencies": [],
   "files": [
     {
-      "name": "code-leaf.tsx",
-      "content": "'use client';\n\nimport React from 'react';\nimport { cn, withRef } from '@udecode/cn';\nimport { PlateLeaf } from '@udecode/plate-common';\n\nexport const CodeLeaf = withRef<typeof PlateLeaf>(\n  ({ className, children, ...props }, ref) => {\n    return (\n      <PlateLeaf\n        ref={ref}\n        asChild\n        className={cn(\n          'whitespace-pre-wrap rounded-md bg-muted px-[0.3em] py-[0.2em] font-mono text-sm',\n          className\n        )}\n        {...props}\n      >\n        <code>{children}</code>\n      </PlateLeaf>\n    );\n  }\n);\n"
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { PlateLeaf } from '@udecode/plate-common';\n\nexport const CodeLeaf = withRef<typeof PlateLeaf>(\n  ({ children, className, ...props }, ref) => {\n    return (\n      <PlateLeaf\n        asChild\n        className={cn(\n          'whitespace-pre-wrap rounded-md bg-muted px-[0.3em] py-[0.2em] font-mono text-sm',\n          className\n        )}\n        ref={ref}\n        {...props}\n      >\n        <code>{children}</code>\n      </PlateLeaf>\n    );\n  }\n);\n",
+      "name": "code-leaf.tsx"
     }
   ],
+  "name": "code-leaf",
+  "registryDependencies": [],
   "type": "components:plate-ui"
 }

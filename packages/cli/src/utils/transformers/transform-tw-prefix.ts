@@ -1,11 +1,13 @@
 import { SyntaxKind } from 'ts-morph';
 
-import { Transformer } from '../transformers';
+import type { Transformer } from '../transformers';
+
 import { splitClassName } from './transform-css-vars';
 
 export const transformTwPrefixes: Transformer = async ({
-  sourceFile,
   config,
+  sourceFile,
+  // eslint-disable-next-line @typescript-eslint/require-await
 }) => {
   if (!config.tailwind?.prefix) {
     return sourceFile;
@@ -19,6 +21,7 @@ export const transformTwPrefixes: Transformer = async ({
       // cva(base, ...)
       if (node.getArguments()[0]?.isKind(SyntaxKind.StringLiteral)) {
         const defaultClassNames = node.getArguments()[0];
+
         if (defaultClassNames) {
           defaultClassNames.replaceWithText(
             `'${applyPrefix(
@@ -28,7 +31,6 @@ export const transformTwPrefixes: Transformer = async ({
           );
         }
       }
-
       // cva(..., { variants: { ... } })
       if (node.getArguments()[1]?.isKind(SyntaxKind.ObjectLiteralExpression)) {
         node
@@ -43,6 +45,7 @@ export const transformTwPrefixes: Transformer = async ({
                 const classNames = node.getInitializerIfKind(
                   SyntaxKind.StringLiteral
                 );
+
                 if (classNames) {
                   classNames?.replaceWithText(
                     `'${applyPrefix(
@@ -62,6 +65,7 @@ export const transformTwPrefixes: Transformer = async ({
       // className='...'
       if (node.getInitializer()?.isKind(SyntaxKind.StringLiteral)) {
         const value = node.getInitializer();
+
         if (value) {
           value.replaceWithText(
             `'${applyPrefix(
@@ -71,7 +75,6 @@ export const transformTwPrefixes: Transformer = async ({
           );
         }
       }
-
       // className={...}
       if (node.getInitializer()?.isKind(SyntaxKind.JsxExpression)) {
         // Check if it's a call to cn().
@@ -79,6 +82,7 @@ export const transformTwPrefixes: Transformer = async ({
           .getInitializer()
           ?.getDescendantsOfKind(SyntaxKind.CallExpression)
           .find((node) => node.getExpression().getText() === 'cn');
+
         if (callExpression) {
           // Loop through the arguments.
           callExpression.getArguments().forEach((node) => {
@@ -97,7 +101,6 @@ export const transformTwPrefixes: Transformer = async ({
                   );
                 });
             }
-
             if (node.isKind(SyntaxKind.StringLiteral)) {
               node.replaceWithText(
                 `'${applyPrefix(
@@ -110,7 +113,6 @@ export const transformTwPrefixes: Transformer = async ({
         }
       }
     }
-
     // classNames={...}
     if (
       node.getName() === 'classNames' &&
@@ -123,6 +125,7 @@ export const transformTwPrefixes: Transformer = async ({
             const callExpression = node.getInitializerIfKind(
               SyntaxKind.CallExpression
             );
+
             if (callExpression) {
               // Loop through the arguments.
               callExpression.getArguments().forEach((arg) => {
@@ -138,7 +141,6 @@ export const transformTwPrefixes: Transformer = async ({
                       );
                     });
                 }
-
                 if (arg.isKind(SyntaxKind.StringLiteral)) {
                   arg.replaceWithText(
                     `'${applyPrefix(
@@ -150,12 +152,12 @@ export const transformTwPrefixes: Transformer = async ({
               });
             }
           }
-
           if (
             node.getInitializer()?.isKind(SyntaxKind.StringLiteral) &&
             node.getName() !== 'variant'
           ) {
             const classNames = node.getInitializer();
+
             if (classNames) {
               classNames.replaceWithText(
                 `'${applyPrefix(
@@ -172,11 +174,13 @@ export const transformTwPrefixes: Transformer = async ({
   return sourceFile;
 };
 
-export function applyPrefix(input: string, prefix: string = '') {
+export function applyPrefix(input: string, prefix = '') {
   const classNames = input.split(' ');
   const prefixed: string[] = [];
+
   for (const className of classNames) {
     const [variant, value, modifier] = splitClassName(className);
+
     if (variant) {
       modifier
         ? prefixed.push(`${variant}:${prefix}${value}/${modifier}`)
@@ -187,11 +191,13 @@ export function applyPrefix(input: string, prefix: string = '') {
         : prefixed.push(`${prefix}${value}`);
     }
   }
+
   return prefixed.join(' ');
 }
 
 export function applyPrefixesCss(css: string, prefix: string) {
   const lines = css.split('\n');
+
   for (const line of lines) {
     if (line.includes('@apply')) {
       const originalTWCls = line.replace('@apply', '').trim();
@@ -199,5 +205,6 @@ export function applyPrefixesCss(css: string, prefix: string) {
       css = css.replace(originalTWCls, prefixedTwCls);
     }
   }
+
   return css;
 }

@@ -1,4 +1,5 @@
 import {
+  type TElement,
   createPluginFactory,
   getEndPoint,
   getNode,
@@ -7,31 +8,33 @@ import {
   isCollapsed,
   resetEditorChildren,
   setNodes,
-  TElement,
   unsetNodes,
   withoutNormalizing,
 } from '@udecode/plate-common/server';
 import { Point } from 'slate';
 
+import type { ResetNodePlugin } from './types';
+
 import { onKeyDownResetNode } from './onKeyDownResetNode';
-import { ResetNodePlugin } from './types';
 
 export const KEY_RESET_NODE = 'resetNode';
 
-/**
- * Enables support for resetting block type from rules.
- */
+/** Enables support for resetting block type from rules. */
 export const createResetNodePlugin = createPluginFactory<ResetNodePlugin>({
-  key: KEY_RESET_NODE,
   handlers: {
     onKeyDown: onKeyDownResetNode,
   },
+  key: KEY_RESET_NODE,
+  options: {
+    rules: [],
+  },
   withOverrides: (editor, { options }) => {
-    const { deleteFragment, deleteBackward } = editor;
+    const { deleteBackward, deleteFragment } = editor;
 
     if (!options.disableEditorReset) {
       const deleteFragmentPlugin = () => {
         const { selection } = editor;
+
         if (!selection) return;
 
         const start = getStartPoint(editor, []);
@@ -46,6 +49,7 @@ export const createResetNodePlugin = createPluginFactory<ResetNodePlugin>({
           resetEditorChildren(editor, {
             insertOptions: { select: true },
           });
+
           return true;
         }
       };
@@ -56,10 +60,10 @@ export const createResetNodePlugin = createPluginFactory<ResetNodePlugin>({
         deleteFragment(direction);
       };
     }
-
     if (!options.disableFirstBlockReset) {
       editor.deleteBackward = (unit) => {
         const { selection } = editor;
+
         if (selection && isCollapsed(selection)) {
           const start = getStartPoint(editor, []);
 
@@ -73,6 +77,7 @@ export const createResetNodePlugin = createPluginFactory<ResetNodePlugin>({
               unsetNodes(editor, Object.keys(getNodeProps(node)), { at: [0] });
               setNodes(editor, props, { at: [0] });
             });
+
             return;
           }
         }
@@ -82,8 +87,5 @@ export const createResetNodePlugin = createPluginFactory<ResetNodePlugin>({
     }
 
     return editor;
-  },
-  options: {
-    rules: [],
   },
 });

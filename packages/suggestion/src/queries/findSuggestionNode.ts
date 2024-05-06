@@ -1,12 +1,13 @@
 import {
+  type FindNodeOptions,
+  type PlateEditor,
+  type Value,
   findNode,
-  FindNodeOptions,
-  PlateEditor,
-  Value,
 } from '@udecode/plate-common/server';
 
+import type { TSuggestionText } from '../types';
+
 import { MARK_SUGGESTION } from '../constants';
-import { TSuggestionText } from '../types';
 
 export const findSuggestionNode = <V extends Value>(
   editor: PlateEditor<V>,

@@ -30,7 +30,7 @@
       "outputs": []
     },
     "lint": {
-      "cache": false,
+      "cache": true,
       "dependsOn": [],
       "outputs": []
     },

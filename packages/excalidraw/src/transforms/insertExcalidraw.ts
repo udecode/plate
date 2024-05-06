@@ -1,27 +1,29 @@
 import {
+  type InsertNodesOptions,
+  type PlateEditor,
+  type PlatePluginKey,
+  type TNodeProps,
+  type Value,
   getParentNode,
   insertNodes,
-  InsertNodesOptions,
-  PlateEditor,
-  PlatePluginKey,
-  TNodeProps,
-  Value,
 } from '@udecode/plate-common/server';
 
+import type { TExcalidrawElement } from '../types';
+
 import { ELEMENT_EXCALIDRAW } from '../createExcalidrawPlugin';
-import { TExcalidrawElement } from '../types';
 
 export const insertExcalidraw = <V extends Value>(
   editor: PlateEditor<V>,
   {
     key = ELEMENT_EXCALIDRAW,
     ...props
-  }: TNodeProps<TExcalidrawElement> & PlatePluginKey = {},
+  }: PlatePluginKey & TNodeProps<TExcalidrawElement> = {},
   options: InsertNodesOptions<V> = {}
 ): void => {
   if (!editor.selection) return;
 
   const selectionParentEntry = getParentNode(editor, editor.selection);
+
   if (!selectionParentEntry) return;
 
   const [, path] = selectionParentEntry;
@@ -29,8 +31,8 @@ export const insertExcalidraw = <V extends Value>(
   insertNodes<TExcalidrawElement>(
     editor,
     {
-      type: key,
       children: [{ text: '' }],
+      type: key,
       ...props,
     },
     { at: path, nextBlock: true, ...(options as any) }

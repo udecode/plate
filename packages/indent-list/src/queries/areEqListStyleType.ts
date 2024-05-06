@@ -1,4 +1,4 @@
-import { TEditor, TNodeEntry, Value } from '@udecode/plate-common/server';
+import type { TEditor, TNodeEntry, Value } from '@udecode/plate-common/server';
 
 import {
   KEY_LIST_CHECKED,
@@ -24,16 +24,18 @@ export const areEqListStyleType = <V extends Value>(
     if (listStyleType === KEY_TODO_STYLE_TYPE) {
       if (!block.hasOwnProperty(KEY_LIST_CHECKED)) {
         eqListStyleType = false;
+
         break;
       }
+
       continue;
     }
-
     if (
       !block[KEY_LIST_STYLE_TYPE] ||
       block[KEY_LIST_STYLE_TYPE] !== listStyleType
     ) {
       eqListStyleType = false;
+
       break;
     }
   }

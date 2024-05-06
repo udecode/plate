@@ -1,4 +1,8 @@
-import { PlateEditor, TElement, Value } from '@udecode/plate-common/server';
+import type {
+  PlateEditor,
+  TElement,
+  Value,
+} from '@udecode/plate-common/server';
 
 import { ELEMENT_BLOCKQUOTE } from './createBlockquotePlugin';
 
@@ -10,7 +14,7 @@ export const withBlockquote = <
 ) => {
   const { shouldMergeNodesRemovePrevNode } = editor;
 
-  if (!!shouldMergeNodesRemovePrevNode) {
+  if (shouldMergeNodesRemovePrevNode) {
     editor.shouldMergeNodesRemovePrevNode = (prevNodeEntry, curNodeEntry) => {
       const prevNode = prevNodeEntry[0] as TElement;
 

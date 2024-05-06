@@ -1,27 +1,24 @@
 import {
-  GetAboveNodeOptions,
+  type GetAboveNodeOptions,
+  type PlateEditor,
+  type TElement,
+  type TElementEntry,
+  type Value,
   getEdgeBlocksAbove,
-  PlateEditor,
-  TElement,
-  TElementEntry,
-  Value,
 } from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
 import { getCellTypes } from '../utils/getCellType';
 import { getEmptyTableNode } from '../utils/getEmptyTableNode';
 import {
+  type GetTableGridByRangeOptions,
   getTableGridByRange,
-  GetTableGridByRangeOptions,
 } from './getTableGridByRange';
 
 export type GetTableGridAboveOptions<V extends Value = Value> =
   GetAboveNodeOptions<V> & Pick<GetTableGridByRangeOptions, 'format'>;
 
-/**
- * Get sub table above anchor and focus.
- * Format: tables or cells.
- */
+/** Get sub table above anchor and focus. Format: tables or cells. */
 export const getTableGridAbove = <V extends Value = Value>(
   editor: PlateEditor<V>,
   { format = 'table', ...options }: GetTableGridAboveOptions<V> = {}
@@ -32,6 +29,7 @@ export const getTableGridAbove = <V extends Value = Value>(
     },
     ...options,
   });
+
   if (edges) {
     const [start, end] = edges;
 
@@ -39,21 +37,21 @@ export const getTableGridAbove = <V extends Value = Value>(
       return getTableGridByRange(editor, {
         at: {
           anchor: {
-            path: start[1],
             offset: 0,
+            path: start[1],
           },
           focus: {
-            path: end[1],
             offset: 0,
+            path: end[1],
           },
         },
         format,
       });
     }
-
     if (format === 'table') {
       const table = getEmptyTableNode(editor, { rowCount: 1 });
       table.children[0].children = [start[0]];
+
       return [[table, start[1].slice(0, -2)]];
     }
 

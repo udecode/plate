@@ -1,35 +1,24 @@
 import {
+  type TDescendant,
+  type TText,
   getNodeProps,
   isText,
-  TDescendant,
-  TText,
 } from '@udecode/plate-common/server';
 
 export class InlineNodeCharMap {
   private _charGenerator: Generator<string>;
-  private _charToNode: Map<string, TDescendant> = new Map();
+  private _charToNode = new Map<string, TDescendant>();
 
   constructor({ charGenerator }: { charGenerator: Generator<string> }) {
     this._charGenerator = charGenerator;
   }
 
-  // Replace non-text nodes with a text node containing a unique char
-  public nodeToText(node: TDescendant): TText {
-    if (isText(node)) return node;
-    const c = this._charGenerator.next().value;
-    this._charToNode.set(c, node);
-    return { text: c };
-  }
+  private insertBetweenPairs<T>(arr: T[], between: T): T[] {
+    return arr.flatMap((x, i) => {
+      if (i === arr.length - 1) return x;
 
-  // Replace chars in text node with original nodes
-  public textToNode(initialTextNode: TText): TDescendant[] {
-    let outputNodes: TDescendant[] = [initialTextNode];
-
-    for (const [c, originalNode] of this._charToNode) {
-      outputNodes = this.replaceCharWithNode(outputNodes, c, originalNode);
-    }
-
-    return outputNodes;
+      return [x, between];
+    });
   }
 
   private replaceCharWithNode(
@@ -58,17 +47,9 @@ export class InlineNodeCharMap {
       }));
 
       /**
-       * [
-       *   { text: 'Hello ' },
-       *   { text: ' world ' },
-       *   { text: '' }
-       * ] -> [
-       *   { text: 'Hello ' },
-       *   replacementWithProps,
-       *   { text: ' world ' },
-       *   replacementWithProps,
-       *   { text: '' },
-       * ]
+       * [ { text: 'Hello ' }, { text: ' world ' }, { text: '' } ] -> [ { text:
+       * 'Hello ' }, replacementWithProps, { text: ' world ' },
+       * replacementWithProps, { text: '' }, ]
        */
       const nodeList = this.insertBetweenPairs(
         nodesForTexts,
@@ -80,10 +61,24 @@ export class InlineNodeCharMap {
     });
   }
 
-  private insertBetweenPairs<T>(arr: T[], between: T): T[] {
-    return arr.flatMap((x, i) => {
-      if (i === arr.length - 1) return x;
-      return [x, between];
-    });
+  // Replace non-text nodes with a text node containing a unique char
+  public nodeToText(node: TDescendant): TText {
+    if (isText(node)) return node;
+
+    const c = this._charGenerator.next().value;
+    this._charToNode.set(c, node);
+
+    return { text: c };
+  }
+
+  // Replace chars in text node with original nodes
+  public textToNode(initialTextNode: TText): TDescendant[] {
+    let outputNodes: TDescendant[] = [initialTextNode];
+
+    for (const [c, originalNode] of this._charToNode) {
+      outputNodes = this.replaceCharWithNode(outputNodes, c, originalNode);
+    }
+
+    return outputNodes;
   }
 }

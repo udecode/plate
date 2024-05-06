@@ -49,7 +49,7 @@ const deleteSelection = <V extends Value>(editor: PlateEditor<V>) => {
 
   const pathRefs: PathRef[] = [];
 
-  cells.forEach(([cell, cellPath], index) => {
+  cells.forEach(([_cell, cellPath]) => {
     pathRefs.push(createPathRef(editor, cellPath));
   });
 

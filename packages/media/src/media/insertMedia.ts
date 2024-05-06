@@ -1,8 +1,8 @@
 import {
+  type InsertNodesOptions,
+  type PlateEditor,
+  type Value,
   getPluginType,
-  InsertNodesOptions,
-  PlateEditor,
-  Value,
 } from '@udecode/plate-common/server';
 
 import {
@@ -15,7 +15,8 @@ import {
 export interface InsertMediaOptions<V extends Value>
   extends InsertNodesOptions<V> {
   /**
-   * Default onClick is getting the image url by calling this promise before inserting the image.
+   * Default onClick is getting the image url by calling this promise before
+   * inserting the image.
    */
   getUrl?: () => Promise<string>;
 
@@ -37,8 +38,8 @@ export const insertMedia = async <V extends Value>(
           type === ELEMENT_IMAGE ? ELEMENT_IMAGE : ELEMENT_MEDIA_EMBED
         }`
       );
-  if (!url) return;
 
+  if (!url) return;
   if (type === getPluginType(editor, ELEMENT_IMAGE)) {
     insertImage(editor, url, options);
   } else {

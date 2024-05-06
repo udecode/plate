@@ -1,15 +1,16 @@
 import {
+  type KeyboardHandlerReturnType,
+  type PlateEditor,
+  type Value,
+  type WithPlatePlugin,
   getBlockAbove,
   isHotkey,
-  KeyboardHandlerReturnType,
-  PlateEditor,
   queryNode,
-  Value,
-  WithPlatePlugin,
 } from '@udecode/plate-common/server';
 
+import type { ExitBreakPlugin } from './types';
+
 import { exitBreak } from './transforms/exitBreak';
-import { ExitBreakPlugin } from './types';
 
 export const onKeyDownExitBreak =
   <V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>(
@@ -20,6 +21,7 @@ export const onKeyDownExitBreak =
     if (event.defaultPrevented) return;
 
     const entry = getBlockAbove(editor);
+
     if (!entry) return;
 
     rules.forEach(({ hotkey, ...rule }) => {

@@ -1,16 +1,17 @@
 /** @jsx jsx */
 
 import {
+  type PlateEditor,
+  type PlatePlugin,
   createPlateEditor,
-  PlateEditor,
-  PlatePlugin,
 } from '@udecode/plate-common';
 import { createLinkPlugin } from '@udecode/plate-link';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createListPlugin, ELEMENT_UL } from './createListPlugin';
-import { ListPlugin } from './types';
+import type { ListPlugin } from './types';
+
+import { ELEMENT_UL, createListPlugin } from './createListPlugin';
 
 jsx;
 

@@ -1,13 +1,14 @@
 import React from 'react';
+
 import {
+  type InjectComponentProps,
+  type InjectComponentReturnType,
   getPluginOptions,
-  InjectComponentProps,
-  InjectComponentReturnType,
 } from '@udecode/plate-common/server';
 import { clsx } from 'clsx';
 
 import {
-  IndentListPlugin,
+  type IndentListPlugin,
   KEY_LIST_START,
   KEY_LIST_STYLE_TYPE,
 } from './createIndentListPlugin';
@@ -24,9 +25,9 @@ export const injectIndentListComponent = (
   if (listStyleType) {
     let className = clsx(`slate-${KEY_LIST_STYLE_TYPE}-${listStyleType}`);
     const style: React.CSSProperties = {
-      padding: 0,
-      margin: 0,
       listStyleType,
+      margin: 0,
+      padding: 0,
       position: 'relative',
     };
 
@@ -48,6 +49,7 @@ export const injectIndentListComponent = (
         if (ULIST_STYLE_TYPES.includes(listStyleType as any)) {
           isOrdered = false;
         }
+
         listOptions = {} as any;
       }
 
@@ -58,12 +60,12 @@ export const injectIndentListComponent = (
       const List = isOrdered ? 'ol' : 'ul';
 
       const {
-        markerComponent: Marker = () => null,
         liComponent: Li = (liProps) => <li>{liProps.children}</li>,
+        markerComponent: Marker = () => null,
       } = listOptions;
 
       return (
-        <List style={style} className={className} start={listStart}>
+        <List className={className} start={listStart} style={style}>
           <Marker {...props} />
 
           <Li {...props}>{children}</Li>

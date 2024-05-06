@@ -2,16 +2,12 @@ import { traverseHtmlElements } from '@udecode/plate-common/server';
 
 import { isDocxFootnote } from './isDocxFootnote';
 
-/**
- * Gets "4" from "[4]", "A" from "[A]", etc.
- */
+/** Gets "4" from "[4]", "A" from "[A]", etc. */
 const extractFootnoteNumber = (footnote: Element): string => {
   return (footnote.textContent || '').trim().replaceAll(/[[\]]/g, '');
 };
 
-/**
- * Replace docx footnotes with sup element.
- */
+/** Replace docx footnotes with sup element. */
 export const cleanDocxFootnotes = (rootNode: Node): void => {
   traverseHtmlElements(rootNode, (element) => {
     if (isDocxFootnote(element)) {

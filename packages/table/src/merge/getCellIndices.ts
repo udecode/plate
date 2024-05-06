@@ -1,4 +1,4 @@
-import { TableStoreCellAttributes, TTableCellElement } from '../types';
+import type { TTableCellElement, TableStoreCellAttributes } from '../types';
 
 export const getCellIndices = (
   cellIndices: TableStoreCellAttributes,

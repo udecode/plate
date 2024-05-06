@@ -1,28 +1,30 @@
+import type { Path } from 'slate';
+
 import {
+  type PlateEditor,
+  type TElement,
+  type Value,
+  type WithPlatePlugin,
   getEndPoint,
   getPluginType,
   getStartPoint,
   getTEditor,
   hasNode,
-  PlateEditor,
   replaceNodeChildren,
   select,
-  TElement,
-  Value,
   withoutNormalizing,
-  WithPlatePlugin,
 } from '@udecode/plate-common/server';
 import cloneDeep from 'lodash/cloneDeep.js';
-import { Path } from 'slate';
+
+import type { TablePlugin } from './types';
 
 import { ELEMENT_TABLE } from './createTablePlugin';
 import { getTableAbove } from './queries/getTableAbove';
 import { getTableGridAbove } from './queries/getTableGridAbove';
-import { TablePlugin } from './types';
 
 /**
- * If inserting a table,
- * If block above anchor is a table,
+ * If inserting a table, If block above anchor is a table,
+ *
  * - Replace each cell above by the inserted table until out of bounds.
  * - Select the inserted cells.
  */
@@ -69,11 +71,11 @@ export const withInsertFragmentTable = <
             anchor: getStartPoint(editor, cellEntries[0][1]),
             focus: getEndPoint(editor, cellEntries.at(-1)![1]),
           });
+
           return;
         }
       }
     }
-
     if (insertedTable) {
       const tableEntry = getTableAbove(editor, {
         at: editor.selection?.anchor,
@@ -115,6 +117,7 @@ export const withInsertFragmentTable = <
                   }
                 }
               }
+
               initRow = false;
 
               const insertedCells = row.children as TElement[];
@@ -135,6 +138,7 @@ export const withInsertFragmentTable = <
                     }
                   }
                 }
+
                 initCell = false;
 
                 replaceNodeChildren(editor, {
@@ -159,6 +163,7 @@ export const withInsertFragmentTable = <
       } else if (fragment.length === 1 && fragment[0].type === ELEMENT_TABLE) {
         // needed to insert as node, otherwise it will be inserted as text
         editor.insertNode(fragment[0]);
+
         return;
       }
     }

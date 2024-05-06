@@ -1,10 +1,10 @@
 import {
-  createListPlugin,
-  createTodoListPlugin,
   ELEMENT_LI,
   ELEMENT_LIC,
   ELEMENT_TODO_LI,
   ELEMENT_UL,
+  createListPlugin,
+  createTodoListPlugin,
 } from '@udecode/plate-list';
 import { createPlateUIEditor } from 'www/src/lib/plate/create-plate-ui-editor';
 
@@ -15,14 +15,14 @@ it('serialize elements using useSlateStatic', () => {
     createTodoListPlugin(),
     createListPlugin({
       overrideByKey: {
-        [ELEMENT_UL]: {
-          type: 'unordered-list',
-        },
         [ELEMENT_LI]: {
           type: 'list-item',
         },
         [ELEMENT_LIC]: {
           type: 'list-item-child',
+        },
+        [ELEMENT_UL]: {
+          type: 'unordered-list',
         },
       },
     }),
@@ -31,23 +31,23 @@ it('serialize elements using useSlateStatic', () => {
   const render = serializeHtml(editor, {
     nodes: [
       {
-        type: ELEMENT_TODO_LI,
         checked: true,
         children: [{ text: 'Slide to the right.' }],
+        type: ELEMENT_TODO_LI,
       },
       {
-        type: 'unordered-list',
         children: [
           {
-            type: 'list-item',
             children: [
               {
-                type: 'list-item-child',
                 children: [{ text: 'Level 3' }],
+                type: 'list-item-child',
               },
             ],
+            type: 'list-item',
           },
         ],
+        type: 'unordered-list',
       },
     ],
   });

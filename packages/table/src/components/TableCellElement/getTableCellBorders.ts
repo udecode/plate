@@ -1,4 +1,8 @@
-import { BorderDirection, BorderStyle, TTableCellElement } from '../../types';
+import type {
+  BorderDirection,
+  BorderStyle,
+  TTableCellElement,
+} from '../../types';
 
 export interface BorderStylesDefault {
   bottom: Required<BorderStyle>;
@@ -10,13 +14,13 @@ export interface BorderStylesDefault {
 export const getTableCellBorders = (
   element: TTableCellElement,
   {
-    isFirstCell,
-    isFirstRow,
     defaultBorder = {
+      color: 'rgb(209 213 219)',
       size: 1,
       style: 'solid',
-      color: 'rgb(209 213 219)',
     },
+    isFirstCell,
+    isFirstRow,
   }: {
     defaultBorder?: Required<BorderStyle>;
     isFirstCell?: boolean;
@@ -27,16 +31,16 @@ export const getTableCellBorders = (
     const border = element.borders?.[dir];
 
     return {
+      color: border?.color ?? defaultBorder.color,
       size: border?.size ?? defaultBorder.size,
       style: border?.style ?? defaultBorder.style,
-      color: border?.color ?? defaultBorder.color,
     };
   };
 
   return {
     bottom: getBorder('bottom'),
-    right: getBorder('right'),
     left: isFirstCell ? getBorder('left') : undefined,
+    right: getBorder('right'),
     top: isFirstRow ? getBorder('top') : undefined,
   };
 };

@@ -9,7 +9,6 @@ const name = 'align';
 
 describe(getDocxTestName(name), () => {
   testDocxDeserializer({
-    filename: name,
     expected: (
       <editor>
         <hh1 align="center">Aligned Headers</hh1>
@@ -20,5 +19,6 @@ describe(getDocxTestName(name), () => {
         </hp>
       </editor>
     ),
+    filename: name,
   });
 });

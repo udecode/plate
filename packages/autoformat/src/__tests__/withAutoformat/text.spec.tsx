@@ -273,9 +273,9 @@ describe('when using quotes', () => {
         options: {
           rules: [
             {
-              mode: 'text',
-              match: '"',
               format: ['“', '”'],
+              match: '"',
+              mode: 'text',
             },
           ],
         },

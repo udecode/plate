@@ -6,8 +6,8 @@ import { detect } from '@antfu/ni';
  */
 export async function getPackageManager(
   targetDir: string
-): Promise<'yarn' | 'pnpm' | 'bun' | 'npm'> {
-  const packageManager = await detect({ programmatic: true, cwd: targetDir });
+): Promise<'bun' | 'npm' | 'pnpm' | 'yarn'> {
+  const packageManager = await detect({ cwd: targetDir, programmatic: true });
 
   if (packageManager === 'yarn@berry') return 'yarn';
   if (packageManager === 'pnpm@6') return 'pnpm';

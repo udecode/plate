@@ -1,27 +1,19 @@
 // eslint-disable-next-line max-classes-per-file
-import { Node, Path, Text } from 'slate';
+import type { Node, Path, Text } from 'slate';
 
-/**
- * A weak map to hold anchor tokens.
- */
+/** A weak map to hold anchor tokens. */
 
-const ANCHOR: WeakMap<Node, [number, AnchorToken]> = new WeakMap();
+const ANCHOR = new WeakMap<Node, [number, AnchorToken]>();
 
-/**
- * A weak map to hold focus tokens.
- */
+/** A weak map to hold focus tokens. */
 
-const FOCUS: WeakMap<Node, [number, FocusToken]> = new WeakMap();
+const FOCUS = new WeakMap<Node, [number, FocusToken]>();
 
-/**
- * All tokens inherit from a single constructor for `instanceof` checking.
- */
+/** All tokens inherit from a single constructor for `instanceof` checking. */
 
 export class Token {}
 
-/**
- * Anchor tokens represent the selection's anchor point.
- */
+/** Anchor tokens represent the selection's anchor point. */
 
 export class AnchorToken extends Token {
   offset?: number;
@@ -40,9 +32,7 @@ export class AnchorToken extends Token {
   }
 }
 
-/**
- * Focus tokens represent the selection's focus point.
- */
+/** Focus tokens represent the selection's focus point. */
 
 export class FocusToken extends Token {
   offset?: number;
@@ -61,18 +51,14 @@ export class FocusToken extends Token {
   }
 }
 
-/**
- * Add an anchor token to the end of a text node.
- */
+/** Add an anchor token to the end of a text node. */
 
 export const addAnchorToken = (text: Text, token: AnchorToken) => {
   const offset = text.text.length;
   ANCHOR.set(text, [offset, token]);
 };
 
-/**
- * Get the offset if a text node has an associated anchor token.
- */
+/** Get the offset if a text node has an associated anchor token. */
 
 export const getAnchorOffset = (
   text: Text
@@ -80,18 +66,14 @@ export const getAnchorOffset = (
   return ANCHOR.get(text);
 };
 
-/**
- * Add a focus token to the end of a text node.
- */
+/** Add a focus token to the end of a text node. */
 
 export const addFocusToken = (text: Text, token: FocusToken) => {
   const offset = text.text.length;
   FOCUS.set(text, [offset, token]);
 };
 
-/**
- * Get the offset if a text node has an associated focus token.
- */
+/** Get the offset if a text node has an associated focus token. */
 
 export const getFocusOffset = (
   text: Text

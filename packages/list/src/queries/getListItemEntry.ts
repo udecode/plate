@@ -1,20 +1,21 @@
 import {
+  type PlateEditor,
+  type TElement,
+  type TElementEntry,
+  type Value,
   getAboveNode,
   getNode,
   getParentNode,
   getPluginType,
   isCollapsed,
-  PlateEditor,
-  TElement,
-  TElementEntry,
-  Value,
 } from '@udecode/plate-common/server';
-import { Location, Path, Range } from 'slate';
+import { type Location, type Path, Range } from 'slate';
 
 import { ELEMENT_LI } from '../createListPlugin';
 
 /**
- * Returns the nearest li and ul / ol wrapping node entries for a given path (default = selection)
+ * Returns the nearest li and ul / ol wrapping node entries for a given path
+ * (default = selection)
  */
 export const getListItemEntry = <V extends Value>(
   editor: PlateEditor<V>,
@@ -31,9 +32,9 @@ export const getListItemEntry = <V extends Value>(
   } else {
     _at = at as Path;
   }
-
   if (_at) {
     const node = getNode<TElement>(editor, _at);
+
     if (node) {
       const listItem = getAboveNode<TElement>(editor, {
         at: _at,

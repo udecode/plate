@@ -9,8 +9,8 @@ it('serialize link to html with attributes', () => {
   const plugins = [
     createLinkPlugin({
       props: {
-        target: '_blank',
         rel: 'noopener nofollow',
+        target: '_blank',
       },
     }),
   ];
@@ -24,10 +24,10 @@ it('serialize link to html with attributes', () => {
         nodes: [
           { text: 'Some paragraph of text with ' },
           {
-            type: 'a',
-            url: 'https://theuselessweb.com/',
             attributes: { rel: 'noopener nofollow' },
             children: [{ text: 'link' }],
+            type: 'a',
+            url: 'https://theuselessweb.com/',
           },
           { text: ' part.' },
         ],
@@ -42,10 +42,10 @@ it('serialize image with alt to html', () => {
   const plugins = [createImagePlugin()];
 
   const element = {
-    type: 'img',
-    url: 'https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg',
     attributes: { alt: 'Never gonna give you up' },
     children: [],
+    type: 'img',
+    url: 'https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg',
   };
 
   expect(

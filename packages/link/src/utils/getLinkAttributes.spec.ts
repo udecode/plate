@@ -1,12 +1,13 @@
 import { createPlateEditor } from '@udecode/plate-common';
 
-import { createLinkPlugin, LinkPlugin } from '../createLinkPlugin';
-import { TLinkElement } from '../types';
+import type { TLinkElement } from '../types';
+
+import { type LinkPlugin, createLinkPlugin } from '../createLinkPlugin';
 import { getLinkAttributes } from './getLinkAttributes';
 
 const baseLink = {
-  type: 'a',
   children: [{ text: 'Link text' }],
+  type: 'a',
 };
 
 const defaultOptions: LinkPlugin = {
@@ -33,15 +34,15 @@ describe('getLinkAttributes', () => {
   describe('when url is valid', () => {
     const link: TLinkElement = {
       ...baseLink,
-      url: 'https://example.com/',
       target: '_self',
+      url: 'https://example.com/',
     };
 
     it('should include href, target and default attributes', () => {
       expect(getLinkAttributes(editor, link)).toEqual({
         href: 'https://example.com/',
-        target: '_self',
         rel: 'noopener noreferrer',
+        target: '_self',
       });
     });
   });
@@ -49,16 +50,16 @@ describe('getLinkAttributes', () => {
   describe('when url is invalid', () => {
     const link: TLinkElement = {
       ...baseLink,
+      target: '_self',
       // eslint-disable-next-line no-script-url
       url: 'javascript://example.com/',
-      target: '_self',
     };
 
     it('href should be undefined', () => {
       expect(getLinkAttributes(editor, link)).toEqual({
         href: undefined,
-        target: '_self',
         rel: 'noopener noreferrer',
+        target: '_self',
       });
     });
   });
@@ -70,15 +71,15 @@ describe('getLinkAttributes', () => {
 
     const link: TLinkElement = {
       ...baseLink,
-      url: 'pageKey',
       target: '_self',
+      url: 'pageKey',
     };
 
     it('href should be defined', () => {
       expect(getLinkAttributes(editorWithSkipSanitization, link)).toEqual({
         href: 'pageKey',
-        target: '_self',
         rel: 'noopener noreferrer',
+        target: '_self',
       });
     });
   });

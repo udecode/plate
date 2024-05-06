@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { useCombobox } from 'downshift';
 
 import { useComboboxSelectors } from '../combobox.store';
@@ -12,15 +13,15 @@ export const useComboboxControls = () => {
 
   const {
     closeMenu,
-    getMenuProps,
     getComboboxProps,
     getInputProps,
     getItemProps,
+    getMenuProps,
   } = useCombobox({
-    isOpen,
-    highlightedIndex,
-    items: filteredItems,
     circularNavigation: true,
+    highlightedIndex,
+    isOpen,
+    items: filteredItems,
   });
   getMenuProps({}, { suppressRefError: true });
   getComboboxProps({}, { suppressRefError: true });
@@ -29,8 +30,8 @@ export const useComboboxControls = () => {
   return React.useMemo(
     () => ({
       closeMenu,
-      getMenuProps,
       getItemProps,
+      getMenuProps,
     }),
     [closeMenu, getItemProps, getMenuProps]
   );

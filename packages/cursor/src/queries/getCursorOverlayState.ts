@@ -1,21 +1,23 @@
-import { UnknownObject } from '@udecode/plate-common/server';
+import type { UnknownObject } from '@udecode/plate-common/server';
 
-import { CursorOverlayProps } from '../components';
+import type { CursorOverlayProps } from '../components';
+import type { CursorOverlayState, SelectionRect } from '../types';
+
 import { FROZEN_EMPTY_ARRAY } from '../hooks';
-import { CursorOverlayState, SelectionRect } from '../types';
 import { getCaretPosition } from './getCaretPosition';
 
-/**
- * Get cursor overlay state from selection rects.
- */
+/** Get cursor overlay state from selection rects. */
 export const getCursorOverlayState = <
   TCursorData extends UnknownObject = UnknownObject,
 >({
   cursors: cursorStates,
   selectionRects,
-}: Pick<CursorOverlayProps<TCursorData>, 'cursors'> & {
+}: {
   selectionRects: Record<string, SelectionRect[]>;
-}): CursorOverlayState<TCursorData>[] => {
+} & Pick<
+  CursorOverlayProps<TCursorData>,
+  'cursors'
+>): CursorOverlayState<TCursorData>[] => {
   if (!cursorStates) return [];
 
   return Object.entries(cursorStates).map(([key, cursorState]) => {
@@ -26,8 +28,8 @@ export const getCursorOverlayState = <
 
     return {
       ...cursorState,
-      selection,
       caretPosition,
+      selection,
       selectionRects: rects,
     };
   });

@@ -1,11 +1,11 @@
 import {
+  type PlateEditor,
+  type TElement,
+  type TElementEntry,
+  type Value,
   getNodeEntry,
   match,
   moveNodes,
-  PlateEditor,
-  TElement,
-  TElementEntry,
-  Value,
   withoutNormalizing,
   wrapNodes,
 } from '@udecode/plate-common/server';
@@ -56,7 +56,7 @@ export const moveListItemDown = <V extends Value>(
         // Create new sublist
         wrapNodes<TElement>(
           editor,
-          { type: listNode.type, children: [] },
+          { children: [], type: listNode.type },
           { at: listItemPath }
         );
       }

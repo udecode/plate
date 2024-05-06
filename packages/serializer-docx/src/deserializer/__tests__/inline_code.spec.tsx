@@ -9,7 +9,6 @@ const name = 'inline_code';
 
 describe(getDocxTestName(name), () => {
   testDocxDeserializer({
-    filename: name,
     expected: (
       <editor>
         <hp>
@@ -22,5 +21,6 @@ describe(getDocxTestName(name), () => {
         </hp>
       </editor>
     ),
+    filename: name,
   });
 });

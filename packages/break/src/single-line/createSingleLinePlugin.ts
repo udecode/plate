@@ -5,13 +5,11 @@ import { withSingleLine } from './withSingleLine';
 
 export const KEY_SINGLE_LINE = 'singleLine';
 
-/**
- * Forces editor to only have one line.
- */
+/** Forces editor to only have one line. */
 export const createSingleLinePlugin = createPluginFactory({
-  key: KEY_SINGLE_LINE,
   handlers: {
     onKeyDown: onKeyDownSingleLine,
   },
+  key: KEY_SINGLE_LINE,
   withOverrides: withSingleLine,
 });

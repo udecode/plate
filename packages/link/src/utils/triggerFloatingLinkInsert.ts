@@ -1,10 +1,10 @@
 import {
+  type PlateEditor,
+  type Value,
   getEditorString,
   getPluginType,
   isRangeAcrossBlocks,
-  PlateEditor,
   someNode,
-  Value,
 } from '@udecode/plate-common/server';
 
 import {
@@ -17,10 +17,11 @@ import { ELEMENT_LINK } from '../createLinkPlugin';
  * Trigger floating link.
  *
  * Do not trigger when:
- * - selection is across blocks
- * - selection has more than one leaf node
- * - lowest selection is not text
- * - selection has a link node
+ *
+ * - Selection is across blocks
+ * - Selection has more than one leaf node
+ * - Lowest selection is not text
+ * - Selection has a link node
  */
 export const triggerFloatingLinkInsert = <V extends Value>(
   editor: PlateEditor<V>,
@@ -31,14 +32,13 @@ export const triggerFloatingLinkInsert = <V extends Value>(
   } = {}
 ) => {
   if (floatingLinkSelectors.mode()) return;
-
   if (!focused) return;
-
   if (isRangeAcrossBlocks(editor, { at: editor.selection })) return;
 
   const hasLink = someNode(editor, {
     match: { type: getPluginType(editor, ELEMENT_LINK) },
   });
+
   if (hasLink) return;
 
   floatingLinkActions.text(getEditorString(editor, editor.selection));

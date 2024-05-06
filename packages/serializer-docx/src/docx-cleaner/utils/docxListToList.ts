@@ -19,9 +19,9 @@ export const docxListToList = (element: Element): Result => {
   while (nextSibling) {
     if (isDocxBookmark(nextSibling)) {
       nextSibling = nextSibling.nextElementSibling;
+
       continue;
     }
-
     if (!isDocxList(nextSibling)) {
       break;
     }
@@ -32,7 +32,6 @@ export const docxListToList = (element: Element): Result => {
       // Lower level found. Current list is done.
       break;
     }
-
     if (nextListLevel > listLevel) {
       const nestedList = docxListToList(nextSibling);
 
@@ -41,6 +40,7 @@ export const docxListToList = (element: Element): Result => {
       }
 
       nextSibling = nestedList.nextSibling;
+
       continue;
     }
 

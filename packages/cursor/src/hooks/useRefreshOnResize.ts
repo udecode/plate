@@ -1,12 +1,14 @@
 import React from 'react';
-import { Range } from 'slate';
 
-import { CursorOverlayProps } from '../components';
-import { SelectionRect } from '../types';
+import type { Range } from 'slate';
+
+import type { CursorOverlayProps } from '../components';
+import type { SelectionRect } from '../types';
+
 import { useRequestReRender } from './useRequestReRender';
 
 export interface useRefreshOnResizeOptions
-  extends Pick<CursorOverlayProps, 'refreshOnResize' | 'containerRef'> {
+  extends Pick<CursorOverlayProps, 'containerRef' | 'refreshOnResize'> {
   selectionRectCache: React.MutableRefObject<WeakMap<Range, SelectionRect[]>>;
 }
 
@@ -34,6 +36,7 @@ export const useRefreshOnResize = ({
 
     const resizeObserver = new ResizeObserver(() => refresh());
     resizeObserver.observe(containerRef.current);
+
     return () => resizeObserver.disconnect();
   }, [containerRef, refresh, refreshOnResize]);
 

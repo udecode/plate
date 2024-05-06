@@ -1,13 +1,14 @@
 import {
-  PlateEditor,
+  type PlateEditor,
+  type Value,
+  type WithPlatePlugin,
   unsetNodes,
-  Value,
-  WithPlatePlugin,
 } from '@udecode/plate-common/server';
+
+import type { CommentsPlugin } from './types';
 
 import { MARK_COMMENT } from './constants';
 import { removeCommentMark } from './transforms/removeCommentMark';
-import { CommentsPlugin } from './types';
 import { getCommentCount } from './utils/getCommentCount';
 
 export const withComments = <
@@ -15,10 +16,9 @@ export const withComments = <
   E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  plugin: WithPlatePlugin<CommentsPlugin, V, E>
+  _plugin: WithPlatePlugin<CommentsPlugin, V, E>
 ) => {
-  const { normalizeNode, insertBreak } = editor;
+  const { insertBreak, normalizeNode } = editor;
 
   editor.insertBreak = () => {
     removeCommentMark(editor);
@@ -32,6 +32,7 @@ export const withComments = <
     // Unset MARK_COMMENT prop when there is no comments
     if (node[MARK_COMMENT] && getCommentCount(node as any) < 1) {
       unsetNodes(editor, MARK_COMMENT, { at: path });
+
       return;
     }
 

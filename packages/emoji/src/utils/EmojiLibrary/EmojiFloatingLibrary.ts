@@ -1,29 +1,30 @@
 import emojiMartData from '@emoji-mart/data' with { type: 'json' };
 
-import { defaultCategories } from '../../constants';
-import {
-  EmojiCategory,
-  EmojiCategoryList,
-  EmojiSettingsType,
-} from '../../types';
-import { EmojiFloatingGridType } from './EmojiFloatingGrid';
-import { EmojiFloatingGridBuilder } from './EmojiFloatingGridBuilder';
-import {
+import type { EmojiFloatingGridType } from './EmojiFloatingGrid';
+import type {
   IEmojiFloatingLibrary,
   IFrequentEmojiStorage,
 } from './EmojiFloatingLibrary.types';
+import type { EmojiLibrary } from './EmojiLibrary.types';
+
+import { defaultCategories } from '../../constants';
+import {
+  EmojiCategory,
+  type EmojiCategoryList,
+  type EmojiSettingsType,
+} from '../../types';
+import { EmojiFloatingGridBuilder } from './EmojiFloatingGridBuilder';
 import { EmojiInlineLibrary } from './EmojiInlineLibrary';
-import { EmojiLibrary } from './EmojiLibrary.types';
 
 export class EmojiFloatingLibrary
   extends EmojiInlineLibrary
   implements IEmojiFloatingLibrary
 {
-  private static instance?: EmojiFloatingLibrary;
-
   private categories: EmojiCategoryList[] = defaultCategories;
+
   private emojis: Partial<Record<EmojiCategoryList, string[]>> = {};
   private grid: EmojiFloatingGridType;
+  private static instance?: EmojiFloatingLibrary;
 
   private constructor(
     protected settings: EmojiSettingsType,
@@ -66,20 +67,21 @@ export class EmojiFloatingLibrary
     }
   }
 
-  public updateFrequentCategory(emojiId: string) {
-    this.localStorage.update(emojiId);
-    this.grid.updateSection(
-      EmojiCategory.Frequent,
-      this.localStorage.getList()
-    );
-  }
-
   public getGrid() {
     return this.grid;
   }
 
   public indexOf(focusedCategory: EmojiCategoryList) {
     const index = this.grid.indexOf(focusedCategory);
+
     return index < 1 ? 0 : index;
+  }
+
+  public updateFrequentCategory(emojiId: string) {
+    this.localStorage.update(emojiId);
+    this.grid.updateSection(
+      EmojiCategory.Frequent,
+      this.localStorage.getList()
+    );
   }
 }

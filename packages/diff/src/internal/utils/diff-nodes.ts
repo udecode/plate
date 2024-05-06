@@ -3,10 +3,15 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import { isElement, isText, TDescendant } from '@udecode/plate-common/server';
+import {
+  type TDescendant,
+  isElement,
+  isText,
+} from '@udecode/plate-common/server';
 import isEqual from 'lodash/isEqual.js';
 
-import { ComputeDiffOptions } from '../../computeDiff';
+import type { ComputeDiffOptions } from '../../computeDiff';
+
 import { copyWithout } from './copy-without';
 
 export function diffNodes(
@@ -25,6 +30,7 @@ export function diffNodes(
       if (isElement(originNode) && isElement(targetNode)) {
         const relatedResult =
           elementsAreRelated?.(originNode, targetNode) ?? null;
+
         if (relatedResult !== null) return relatedResult;
       }
       if (isEqualNode(originNode, targetNode)) {
@@ -33,8 +39,10 @@ export function diffNodes(
       if (isEqualNodeChildren(originNode, targetNode)) {
         nodeUpdated = true;
       }
+
       return nodeUpdated || childrenUpdated;
     });
+
     if (relatedNode) {
       const insertNodes = leftTargetNodes.splice(
         0,
@@ -42,36 +50,38 @@ export function diffNodes(
       );
       insertNodes.forEach((insertNode) => {
         result.push({
-          originNode: insertNode,
           insert: true,
+          originNode: insertNode,
         });
       });
       leftTargetNodes.splice(0, 1);
     }
+
     result.push({
+      childrenUpdated,
+      delete: !relatedNode,
+      nodeUpdated,
       originNode,
       relatedNode,
-      childrenUpdated,
-      nodeUpdated,
-      delete: !relatedNode,
     });
   });
   leftTargetNodes.forEach((insertNode) => {
     result.push({
-      originNode: insertNode,
       insert: true,
+      originNode: insertNode,
     });
   });
+
   return result;
 }
 
 export type NodeRelatedItem = {
+  childrenUpdated?: boolean;
+  delete?: boolean;
+  insert?: boolean;
+  nodeUpdated?: boolean;
   originNode: TDescendant;
   relatedNode?: TDescendant;
-  childrenUpdated?: boolean;
-  nodeUpdated?: boolean;
-  insert?: boolean;
-  delete?: boolean;
 };
 
 export function isEqualNode(value: TDescendant, other: TDescendant) {

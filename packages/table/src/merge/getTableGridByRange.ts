@@ -115,6 +115,7 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
   let rowIndex = startRowIndex;
   let colIndex = startColIndex;
 
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const cell = findCellByIndexes(editor, realTable, rowIndex, colIndex);
 

@@ -1,4 +1,6 @@
 import {
+  type PlateEditor,
+  type Value,
   deleteText,
   getAboveNode,
   getMarks,
@@ -6,26 +8,22 @@ import {
   insertElements,
   isBlockTextEmptyAfterSelection,
   isStartPoint,
-  PlateEditor,
   select,
   splitNodes,
-  Value,
   withoutNormalizing,
 } from '@udecode/plate-common/server';
 import { Path, Range } from 'slate';
 
-import { ELEMENT_TODO_LI } from '../todo-list/index';
-import { TodoListPlugin } from '../types';
+import type { TodoListPlugin } from '../types';
 
-/**
- * Insert todo list item if selection in li>p.
- * TODO: test
- */
+import { ELEMENT_TODO_LI } from '../todo-list/index';
+
+/** Insert todo list item if selection in li>p. TODO: test */
 export const insertTodoListItem = <V extends Value>(
   editor: PlateEditor<V>,
   {
-    inheritCheckStateOnLineStartBreak = false,
     inheritCheckStateOnLineEndBreak = false,
+    inheritCheckStateOnLineStartBreak = false,
   }: TodoListPlugin
 ): boolean => {
   const todoType = getPluginType(editor, ELEMENT_TODO_LI);
@@ -35,7 +33,9 @@ export const insertTodoListItem = <V extends Value>(
   }
 
   const todoEntry = getAboveNode(editor, { match: { type: todoType } });
+
   if (!todoEntry) return false;
+
   const [todo, paragraphPath] = todoEntry;
 
   let success = false;
@@ -54,16 +54,14 @@ export const insertTodoListItem = <V extends Value>(
 
     const nextParagraphPath = Path.next(paragraphPath);
 
-    /**
-     * If start, insert a list item before
-     */
+    /** If start, insert a list item before */
     if (isStart) {
       insertElements(
         editor,
         {
-          type: todoType,
           checked: inheritCheckStateOnLineStartBreak ? todo.checked : false,
           children: [{ text: '' }],
+          type: todoType,
         },
         { at: paragraphPath }
       );
@@ -72,21 +70,16 @@ export const insertTodoListItem = <V extends Value>(
 
       return;
     }
-
-    /**
-     * If not end, split the nodes
-     */
+    /** If not end, split the nodes */
     if (isEnd) {
-      /**
-       * If end, insert a list item after and select it
-       */
+      /** If end, insert a list item after and select it */
       const marks = getMarks(editor) || {};
       insertElements(
         editor,
         {
-          type: todoType,
           checked: inheritCheckStateOnLineEndBreak ? todo.checked : false,
           children: [{ text: '', ...marks }],
+          type: todoType,
         },
         { at: nextParagraphPath }
       );

@@ -1,4 +1,4 @@
-import { getNodeEntries, PlateEditor } from '@udecode/plate-common/server';
+import { type PlateEditor, getNodeEntries } from '@udecode/plate-common/server';
 
 import { toggleIds } from '../toggle-controller-store';
 

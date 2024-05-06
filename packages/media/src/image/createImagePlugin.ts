@@ -1,29 +1,28 @@
 import { createPluginFactory } from '@udecode/plate-common/server';
 
-import { ImagePlugin } from './types';
+import type { ImagePlugin } from './types';
+
 import { withImage } from './withImage';
 
 export const ELEMENT_IMAGE = 'img';
 
-/**
- * Enables support for images.
- */
+/** Enables support for images. */
 export const createImagePlugin = createPluginFactory<ImagePlugin>({
-  key: ELEMENT_IMAGE,
   isElement: true,
   isVoid: true,
-  withOverrides: withImage,
+  key: ELEMENT_IMAGE,
   then: (editor, { type }) => ({
     deserializeHtml: {
+      getNode: (el) => ({
+        type,
+        url: el.getAttribute('src'),
+      }),
       rules: [
         {
           validNodeName: 'IMG',
         },
       ],
-      getNode: (el) => ({
-        type,
-        url: el.getAttribute('src'),
-      }),
     },
   }),
+  withOverrides: withImage,
 });

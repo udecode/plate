@@ -2,13 +2,14 @@ import { getVShapes } from './getVShapes';
 
 const normalizeSpid = (spid: string): string => {
   const id = spid.split('_')[2];
+
   return id;
 };
 
 export const getVShapeSpid = (
   document: Document,
   element: Element
-): string | null => {
+): null | string => {
   if (element.tagName === 'IMG') {
     const vShapeId = element.getAttribute('v:shapes');
     const vShapes = getVShapes(document);
@@ -22,18 +23,14 @@ export const getVShapeSpid = (
     if (vShapeSpid) {
       return normalizeSpid(vShapeSpid);
     }
-
     if (
-      element.parentElement &&
-      element.parentElement.parentElement &&
-      element.parentElement.parentElement.innerHTML.includes('msEquation')
+      element.parentElement?.parentElement?.innerHTML.includes('msEquation')
     ) {
       return null;
     }
 
     return normalizeSpid(vShapeId);
   }
-
   if (!element.parentElement) {
     return null;
   }

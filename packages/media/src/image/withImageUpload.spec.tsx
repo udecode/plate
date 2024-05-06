@@ -28,12 +28,12 @@ describe('withImageUpload', () => {
       });
 
       const data = {
-        getData: () => '',
         files: [
           new File(['test'], 'test.png', {
             type: 'image/png',
           }),
         ],
+        getData: () => '',
       };
       editor.insertData(data as any);
 
@@ -91,8 +91,8 @@ describe('withImageUpload', () => {
       });
 
       const data = {
-        getData: () => '',
         files: [new File(['test'], 'not-an-image')],
+        getData: () => '',
       };
       editor.insertData(data as any);
 

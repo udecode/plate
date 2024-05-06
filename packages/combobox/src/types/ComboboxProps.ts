@@ -1,6 +1,6 @@
-import React from 'react';
+import type React from 'react';
 
-import {
+import type {
   ComboboxItemProps,
   ComboboxState,
   ComboboxStateById,
@@ -11,19 +11,19 @@ import {
 export interface ComboboxProps<TData = NoData>
   extends Partial<Pick<ComboboxState<TData>, 'items'>>,
     ComboboxStateById<TData> {
-  /**
-   * Render this component when the combobox is open (useful to inject hooks).
-   */
+  /** Render this component when the combobox is open (useful to inject hooks). */
   component?: React.FC<{ store: ComboboxStoreById }>;
 
   /**
    * Whether to hide the combobox.
+   *
    * @default !items.length
    */
   disabled?: boolean;
 
   /**
    * Render combobox item.
+   *
    * @default text
    */
   onRenderItem?: React.FC<ComboboxItemProps<any>>;

@@ -7,7 +7,7 @@ export const useIndentTodoToolBarButtonState = ({
   nodeType = ListStyleType.Disc,
 }: { nodeType?: string } = {}) => {
   const pressed = useEditorSelector(
-    (editor) => someIndentTodo(editor, nodeType),
+    (editor) => someIndentTodo(editor),
     [nodeType]
   );
 

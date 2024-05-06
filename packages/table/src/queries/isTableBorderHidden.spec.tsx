@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
+import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { createTablePlugin } from '../createTablePlugin';
@@ -27,9 +27,9 @@ describe('isTableBorderHidden', () => {
           </htd>
           <htd
             borders={{
+              bottom: { size: 0 },
               left: { size: 0 },
               right: { size: 1 },
-              bottom: { size: 0 },
             }}
           >
             <hp>12</hp>
@@ -65,8 +65,8 @@ describe('isTableBorderHidden', () => {
   it('should return false if left border is not hidden', () => {
     const editor = createEditorInstance(input);
     editor.selection = {
-      anchor: { path: [0, 0, 0], offset: 0 },
-      focus: { path: [0, 0, 0], offset: 0 },
+      anchor: { offset: 0, path: [0, 0, 0] },
+      focus: { offset: 0, path: [0, 0, 0] },
     };
     const hidden = isTableBorderHidden(editor, 'left');
     expect(hidden).toBe(false);
@@ -75,8 +75,8 @@ describe('isTableBorderHidden', () => {
   it('should return false if top border is not hidden', () => {
     const editor = createEditorInstance(input);
     editor.selection = {
-      anchor: { path: [0, 1, 0], offset: 0 },
-      focus: { path: [0, 1, 0], offset: 0 },
+      anchor: { offset: 0, path: [0, 1, 0] },
+      focus: { offset: 0, path: [0, 1, 0] },
     };
     const hidden = isTableBorderHidden(editor, 'top');
     expect(hidden).toBe(false);

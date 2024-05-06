@@ -1,12 +1,13 @@
 import {
+  type FindNodeOptions,
+  type PlateEditor,
+  type Value,
   findNode,
-  FindNodeOptions,
-  PlateEditor,
-  Value,
 } from '@udecode/plate-common/server';
 
+import type { TCommentText } from '../types';
+
 import { MARK_COMMENT } from '../constants';
-import { TCommentText } from '../types';
 
 export const findCommentNode = <V extends Value>(
   editor: PlateEditor<V>,

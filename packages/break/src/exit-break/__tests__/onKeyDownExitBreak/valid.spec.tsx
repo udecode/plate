@@ -36,7 +36,7 @@ it('should be', () => {
     input,
     mockPlugin({
       options: {
-        rules: [{ hotkey: 'mod+enter', level: 0, before: false }],
+        rules: [{ before: false, hotkey: 'mod+enter', level: 0 }],
       },
     })
   )(event);

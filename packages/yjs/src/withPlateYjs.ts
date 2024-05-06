@@ -1,14 +1,14 @@
 import { HocuspocusProvider } from '@hocuspocus/provider';
 import {
+  type PlateEditor,
+  type UnknownObject,
+  type Value,
   getPluginOptions,
-  PlateEditor,
-  UnknownObject,
-  Value,
 } from '@udecode/plate-common/server';
 import * as Y from 'yjs';
 
-import { KEY_YJS, YjsPlugin } from './createYjsPlugin';
-import { CursorEditorProps, withTCursors } from './withTCursors';
+import { KEY_YJS, type YjsPlugin } from './createYjsPlugin';
+import { type CursorEditorProps, withTCursors } from './withTCursors';
 import { withTYHistory } from './withTYHistory';
 import { withTYjs } from './withTYjs';
 import { yjsActions } from './yjsStore';
@@ -31,9 +31,9 @@ export const withPlateYjs = <
 
   const {
     cursorOptions,
+    disableCursors,
     hocuspocusProviderOptions,
     yjsOptions,
-    disableCursors,
   } = getPluginOptions<YjsPlugin<TCursorData>, V, E>(editor, KEY_YJS);
 
   if (!hocuspocusProviderOptions) {
@@ -41,9 +41,9 @@ export const withPlateYjs = <
   }
 
   /**
-   * Create a new websocket-provider instance.
-   * As long as this provider, or the connected ydoc, is not destroyed,
-   * the changes will be synced to other clients via the connected server.
+   * Create a new websocket-provider instance. As long as this provider, or the
+   * connected ydoc, is not destroyed, the changes will be synced to other
+   * clients via the connected server.
    */
   const provider = new HocuspocusProvider({
     ...hocuspocusProviderOptions,
@@ -52,14 +52,14 @@ export const withPlateYjs = <
       yjsActions.isConnected(true);
       hocuspocusProviderOptions.onConnect?.();
     },
-    onSynced(data) {
-      yjsActions.isSynced(true);
-      hocuspocusProviderOptions.onSynced?.(data);
-    },
     onDisconnect(data) {
       yjsActions.isConnected(false);
       yjsActions.isSynced(false);
       hocuspocusProviderOptions.onDisconnect?.(data);
+    },
+    onSynced(data) {
+      yjsActions.isSynced(true);
+      hocuspocusProviderOptions.onSynced?.(data);
     },
   });
 

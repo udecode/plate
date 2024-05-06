@@ -1,25 +1,30 @@
-import { CursorEditor, withCursors, WithCursorsOptions } from '@slate-yjs/core';
-import { TEditor, Value } from '@udecode/plate-common/server';
+import type { TEditor, Value } from '@udecode/plate-common/server';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { Awareness } from 'y-protocols/awareness';
+import type { Awareness } from 'y-protocols/awareness';
 
-import { YjsEditorProps } from './withTYjs';
+import {
+  type CursorEditor,
+  type WithCursorsOptions,
+  withCursors,
+} from '@slate-yjs/core';
 
-export type CursorEditorProps = YjsEditorProps &
-  Pick<
-    CursorEditor,
-    | 'awareness'
-    | 'cursorDataField'
-    | 'selectionStateField'
-    | 'sendCursorPosition'
-    | 'sendCursorData'
-  >;
+import type { YjsEditorProps } from './withTYjs';
+
+export type CursorEditorProps = Pick<
+  CursorEditor,
+  | 'awareness'
+  | 'cursorDataField'
+  | 'selectionStateField'
+  | 'sendCursorData'
+  | 'sendCursorPosition'
+> &
+  YjsEditorProps;
 
 export const withTCursors = <
   TCursorData extends Record<string, unknown>,
   V extends Value,
   E extends TEditor<V> & YjsEditorProps,
-  EE extends E & CursorEditorProps = E & CursorEditorProps,
+  EE extends CursorEditorProps & E = CursorEditorProps & E,
 >(
   editor: E,
   awareness: Awareness,

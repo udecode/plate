@@ -1,8 +1,10 @@
 export {
-  // core
-  inline,
-  limitShift,
-  offset,
+  FloatingDelayGroup,
+  FloatingFocusManager,
+  FloatingNode,
+  FloatingOverlay,
+  FloatingPortal,
+  FloatingTree,
   // dom
   arrow,
   autoPlacement,
@@ -12,10 +14,14 @@ export {
   flip,
   getOverflowAncestors,
   hide,
-  shift,
-  size,
+  // core
+  inline,
+  limitShift,
+  offset,
   // react
   safePolygon,
+  shift,
+  size,
   useClick,
   useDelayGroup,
   useDelayGroupContext,
@@ -32,12 +38,6 @@ export {
   useListNavigation,
   useRole,
   useTypeahead,
-  FloatingNode,
-  FloatingPortal,
-  FloatingFocusManager,
-  FloatingDelayGroup,
-  FloatingOverlay,
-  FloatingTree,
 } from '@floating-ui/react';
 
 export type {
@@ -57,11 +57,11 @@ export type {
   ElementRects,
   Elements,
   ExtendedRefs,
+  FloatingContext,
   FloatingElement,
   FloatingEvents,
   FloatingNodeType,
   FloatingTreeType,
-  FloatingContext,
   Length,
   Middleware,
   MiddlewareData,

@@ -1,4 +1,4 @@
-import { TText, UnknownObject } from '@udecode/plate-common/server';
+import type { TText, UnknownObject } from '@udecode/plate-common/server';
 
 export interface SuggestionUser extends UnknownObject {
   id: string;
@@ -7,12 +7,10 @@ export interface SuggestionUser extends UnknownObject {
 }
 
 export interface TSuggestion extends UnknownObject {
-  id: string;
-
-  /**
-   * @default Date.now()
-   */
+  /** @default Date.now() */
   createdAt: number;
+
+  id: string;
 
   isAccepted?: boolean;
 
@@ -21,17 +19,17 @@ export interface TSuggestion extends UnknownObject {
 
 export interface TSuggestionText extends TText {
   suggestion?: boolean;
-  suggestionId?: string;
-
   suggestionDeletion?: boolean;
+
+  suggestionId?: string;
 }
 
 export interface SuggestionPlugin {
-  hotkey?: string;
   currentUserId?: string;
+  hotkey?: string;
 }
 
 export interface SuggestionEditorProps {
+  activeSuggestionId?: null | string;
   isSuggesting?: boolean;
-  activeSuggestionId?: string | null;
 }

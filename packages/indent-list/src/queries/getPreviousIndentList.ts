@@ -1,21 +1,19 @@
 import {
-  EElement,
-  EElementEntry,
+  type EElement,
+  type EElementEntry,
+  type TEditor,
+  type TNodeEntry,
+  type Value,
   getNode,
   getPreviousPath,
-  TEditor,
-  TNodeEntry,
-  Value,
 } from '@udecode/plate-common/server';
 
 import {
+  type GetSiblingIndentListOptions,
   getSiblingIndentList,
-  GetSiblingIndentListOptions,
 } from './getSiblingIndentList';
 
-/**
- * Get the previous indent list node.
- */
+/** Get the previous indent list node. */
 export const getPreviousIndentList = <
   N extends EElement<V>,
   V extends Value = Value,
@@ -27,9 +25,11 @@ export const getPreviousIndentList = <
   return getSiblingIndentList(editor, entry, {
     getPreviousEntry: ([, currPath]) => {
       const prevPath = getPreviousPath(currPath);
+
       if (!prevPath) return;
 
       const prevNode = getNode<N>(editor, prevPath);
+
       if (!prevNode) return;
 
       return [prevNode, prevPath];

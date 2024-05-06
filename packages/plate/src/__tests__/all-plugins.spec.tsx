@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { render } from '@testing-library/react';
 import { createAlignPlugin } from '@udecode/plate-alignment';
 import { createAutoformatPlugin } from '@udecode/plate-autoformat';
@@ -9,7 +10,7 @@ import {
   createExitBreakPlugin,
   createSoftBreakPlugin,
 } from '@udecode/plate-break';
-import { createPlugins, Plate, PlateContent } from '@udecode/plate-common';
+import { Plate, PlateContent, createPlugins } from '@udecode/plate-common';
 import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createHighlightPlugin } from '@udecode/plate-highlight';
 import { createLinkPlugin } from '@udecode/plate-link';

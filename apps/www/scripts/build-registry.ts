@@ -1,8 +1,9 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 
+import template from 'lodash.template';
 import fs from 'node:fs';
 import path from 'node:path';
-import template from 'lodash.template';
 import { rimraf } from 'rimraf';
 
 import { colorMapping, colors } from '../src/registry/colors';
@@ -71,7 +72,6 @@ for (const style of styles) {
 
     if (item.files.length > 1) {
       // If 'items' is defined
-      // @ts-ignore
       for (const [subIndex, subItem] of item.files.entries()) {
         if (subIndex === 0) continue;
 
@@ -79,6 +79,7 @@ for (const style of styles) {
 
         const subName = file.slice(0, Math.max(0, file.indexOf('.')));
         const ext = file.slice(Math.max(file.indexOf('.'), -1));
+
         if (['.ts', '.tsx'].includes(ext)) {
           index += `
     '${subName}': {
@@ -110,9 +111,11 @@ const writeFile: typeof fs.writeFileSync = (filePath, ...args) => {
   const dirPath = path.dirname(filePath as string);
 
   rimraf.sync(filePath as string);
+
   if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath, { recursive: true });
   }
+
   fs.writeFileSync(filePath, ...args);
 };
 
@@ -136,8 +139,8 @@ for (const style of styles) {
       );
 
       return {
-        name: path.basename(file),
         content,
+        name: path.basename(file),
       };
     });
 
@@ -173,33 +176,35 @@ writeFile(path.join(REGISTRY_PATH, 'index.json'), registryJson, 'utf8');
 const colorsTargetPath = path.join(REGISTRY_PATH, 'colors');
 
 const colorsData: Record<string, any> = {};
+
 for (const [color, value] of Object.entries(colors)) {
   if (typeof value === 'string') {
     colorsData[color] = value;
+
     continue;
   }
-
   if (Array.isArray(value)) {
     colorsData[color] = value.map((item) => ({
       ...item,
-      rgbChannel: item.rgb.replace(/^rgb\((\d+),(\d+),(\d+)\)$/, '$1 $2 $3'),
       hslChannel: item.hsl.replace(
         /^hsl\(([\d.]+),([\d.]+%),([\d.]+%)\)$/,
         '$1 $2 $3'
       ),
+      rgbChannel: item.rgb.replace(/^rgb\((\d+),(\d+),(\d+)\)$/, '$1 $2 $3'),
     }));
+
     continue;
   }
-
   if (typeof value === 'object') {
     colorsData[color] = {
       ...value,
-      rgbChannel: value.rgb.replace(/^rgb\((\d+),(\d+),(\d+)\)$/, '$1 $2 $3'),
       hslChannel: value.hsl.replace(
         /^hsl\(([\d.]+),([\d.]+%),([\d.]+%)\)$/,
         '$1 $2 $3'
       ),
+      rgbChannel: value.rgb.replace(/^rgb\((\d+),(\d+),(\d+)\)$/, '$1 $2 $3'),
     };
+
     continue;
   }
 }
@@ -297,19 +302,21 @@ export const BASE_STYLES_WITH_VARIABLES = `@tailwind base;
 
 for (const baseColor of ['slate', 'gray', 'zinc', 'neutral', 'stone']) {
   const base: Record<string, any> = {
-    inlineColors: {},
     cssVars: {},
+    inlineColors: {},
   };
+
   for (const [mode, values] of Object.entries(colorMapping)) {
-    base['inlineColors'][mode] = {};
-    base['cssVars'][mode] = {};
+    base.inlineColors[mode] = {};
+    base.cssVars[mode] = {};
+
     for (const [key, value] of Object.entries(values)) {
       if (typeof value === 'string') {
         const resolvedColor = (value as any).replaceAll(
           '{{base}}-',
           `${baseColor}-`
         );
-        base['inlineColors'][mode][key] = resolvedColor;
+        base.inlineColors[mode][key] = resolvedColor;
 
         const [resolvedBase, scale] = resolvedColor.split('-');
         const color = scale
@@ -317,17 +324,18 @@ for (const baseColor of ['slate', 'gray', 'zinc', 'neutral', 'stone']) {
               (item) => item.scale === Number.parseInt(scale)
             )
           : colorsData[resolvedBase];
+
         if (color) {
-          base['cssVars'][mode][key] = color.hslChannel;
+          base.cssVars[mode][key] = color.hslChannel;
         }
       }
     }
   }
 
   // Build css vars.
-  base['inlineColorsTemplate'] = template(BASE_STYLES)({});
-  base['cssVarsTemplate'] = template(BASE_STYLES_WITH_VARIABLES)({
-    colors: base['cssVars'],
+  base.inlineColorsTemplate = template(BASE_STYLES)({});
+  base.cssVarsTemplate = template(BASE_STYLES_WITH_VARIABLES)({
+    colors: base.cssVars,
   });
 
   writeFile(
@@ -406,6 +414,7 @@ export const THEME_STYLES_WITH_VARIABLES = `
   }`;
 
 const themeCSS = [];
+
 for (const theme of themes) {
   themeCSS.push(
     template(THEME_STYLES_WITH_VARIABLES)({
@@ -421,19 +430,21 @@ writeFile(path.join(REGISTRY_PATH, `themes.css`), themeCSS.join('\n'), 'utf8');
 // Build registry/themes/[theme].json
 // ----------------------------------------------------------------------------
 rimraf.sync(path.join(REGISTRY_PATH, 'themes'));
+
 for (const baseColor of ['slate', 'gray', 'zinc', 'neutral', 'stone']) {
   const payload = {
-    name: baseColor,
-    label: baseColor.charAt(0).toUpperCase() + baseColor.slice(1),
     cssVars: {},
+    label: baseColor.charAt(0).toUpperCase() + baseColor.slice(1),
+    name: baseColor,
   };
 
   for (const [mode, values] of Object.entries(colorMapping)) {
-    payload['cssVars'][mode] = {};
+    payload.cssVars[mode] = {};
+
     for (const [key, value] of Object.entries(values)) {
       if (typeof value === 'string') {
         const resolvedColor = value.replaceAll('{{base}}-', `${baseColor}-`);
-        payload['cssVars'][mode][key] = resolvedColor;
+        payload.cssVars[mode][key] = resolvedColor;
 
         const [resolvedBase, scale] = resolvedColor.split('-');
         const color = scale
@@ -441,8 +452,9 @@ for (const baseColor of ['slate', 'gray', 'zinc', 'neutral', 'stone']) {
               (item) => item.scale === Number.parseInt(scale)
             )
           : colorsData[resolvedBase];
+
         if (color) {
-          payload['cssVars'][mode][key] = color.hslChannel;
+          payload.cssVars[mode][key] = color.hslChannel;
         }
       }
     }

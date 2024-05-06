@@ -1,21 +1,20 @@
+import type { Path, Point, Range } from 'slate';
+
 import {
+  type PlateEditor,
+  type TElement,
+  type TElementEntry,
+  type Value,
   getAboveNode,
   getPluginType,
-  PlateEditor,
-  TElement,
-  TElementEntry,
-  Value,
 } from '@udecode/plate-common/server';
-import { Path, Point, Range } from 'slate';
 
 import { ELEMENT_OL, ELEMENT_UL } from '../createListPlugin';
 
-/**
- * Searches upward for the root list element
- */
+/** Searches upward for the root list element */
 export const getListRoot = <V extends Value>(
   editor: PlateEditor<V>,
-  at: Path | Range | Point | null = editor.selection
+  at: Path | Point | Range | null = editor.selection
 ): TElementEntry | undefined => {
   if (!at) return;
 

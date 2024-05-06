@@ -10,6 +10,7 @@ import { createUnderlinePlugin } from './createUnderlinePlugin';
 
 /**
  * Enables support for basic marks:
+ *
  * - Bold
  * - Code
  * - Italic

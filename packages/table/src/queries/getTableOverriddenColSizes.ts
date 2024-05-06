@@ -1,5 +1,6 @@
-import { TableStoreSizeOverrides } from '../stores/index';
-import { TTableElement } from '../types';
+import type { TableStoreSizeOverrides } from '../stores/index';
+import type { TTableElement } from '../types';
+
 import { getTableColumnCount } from './index';
 
 /**

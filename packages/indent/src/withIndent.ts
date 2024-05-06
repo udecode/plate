@@ -1,12 +1,12 @@
 import {
-  PlateEditor,
+  type PlateEditor,
+  type Value,
+  type WithPlatePlugin,
   setElements,
   unsetNodes,
-  Value,
-  WithPlatePlugin,
 } from '@udecode/plate-common/server';
 
-import { IndentPlugin, TIndentElement } from './types';
+import type { IndentPlugin, TIndentElement } from './types';
 
 /**
  * - `node.indent` can not exceed `indentMax`
@@ -32,10 +32,12 @@ export const withIndent = <
       if (validTypes!.includes(type)) {
         if (indentMax && element.indent && element.indent > indentMax) {
           setElements(editor, { indent: indentMax }, { at: path });
+
           return;
         }
       } else if (element.indent) {
         unsetNodes(editor, 'indent', { at: path });
+
         return;
       }
     }

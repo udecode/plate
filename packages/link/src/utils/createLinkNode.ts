@@ -1,30 +1,31 @@
 import {
+  type PlateEditor,
+  type TText,
+  type Value,
   getPluginType,
-  PlateEditor,
-  TText,
-  Value,
 } from '@udecode/plate-common/server';
 
+import type { TLinkElement } from '../types';
+
 import { ELEMENT_LINK } from '../createLinkPlugin';
-import { TLinkElement } from '../types';
 
 export interface CreateLinkNodeOptions {
   url: string;
-  text?: string;
-  target?: string;
   children?: TText[];
+  target?: string;
+  text?: string;
 }
 
 export const createLinkNode = <V extends Value>(
   editor: PlateEditor<V>,
-  { url, text = '', target, children }: CreateLinkNodeOptions
+  { children, target, text = '', url }: CreateLinkNodeOptions
 ): TLinkElement => {
   const type = getPluginType(editor, ELEMENT_LINK);
 
   return {
+    children: children ?? [{ text }],
+    target,
     type,
     url,
-    target,
-    children: children ?? [{ text }],
   };
 };

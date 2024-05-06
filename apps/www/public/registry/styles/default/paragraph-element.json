@@ -1,14 +1,14 @@
 {
-  "name": "paragraph-element",
   "dependencies": [
     "@udecode/plate-paragraph"
   ],
-  "registryDependencies": [],
   "files": [
     {
-      "name": "paragraph-element.tsx",
-      "content": "import { withCn } from '@udecode/cn';\nimport { PlateElement } from '@udecode/plate-common';\n\nexport const ParagraphElement = withCn(PlateElement, 'm-0 px-0 py-1');\n"
+      "content": "import { withCn } from '@udecode/cn';\nimport { PlateElement } from '@udecode/plate-common';\n\nexport const ParagraphElement = withCn(PlateElement, 'm-0 px-0 py-1');\n",
+      "name": "paragraph-element.tsx"
     }
   ],
+  "name": "paragraph-element",
+  "registryDependencies": [],
   "type": "components:plate-ui"
 }

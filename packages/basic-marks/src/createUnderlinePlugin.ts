@@ -1,25 +1,17 @@
 import {
+  type ToggleMarkPlugin,
   createPluginFactory,
   onKeyDownToggleMark,
   someHtmlElement,
-  ToggleMarkPlugin,
 } from '@udecode/plate-common/server';
 
 export const MARK_UNDERLINE = 'underline';
 
-/**
- * Enables support for underline formatting.
- */
+/** Enables support for underline formatting. */
 export const createUnderlinePlugin = createPluginFactory<ToggleMarkPlugin>({
-  key: MARK_UNDERLINE,
-  isLeaf: true,
-  handlers: {
-    onKeyDown: onKeyDownToggleMark,
-  },
-  options: {
-    hotkey: 'mod+u',
-  },
   deserializeHtml: {
+    query: (el) =>
+      !someHtmlElement(el, (node) => node.style.textDecoration === 'none'),
     rules: [
       {
         validNodeName: ['U'],
@@ -30,7 +22,13 @@ export const createUnderlinePlugin = createPluginFactory<ToggleMarkPlugin>({
         },
       },
     ],
-    query: (el) =>
-      !someHtmlElement(el, (node) => node.style.textDecoration === 'none'),
+  },
+  handlers: {
+    onKeyDown: onKeyDownToggleMark,
+  },
+  isLeaf: true,
+  key: MARK_UNDERLINE,
+  options: {
+    hotkey: 'mod+u',
   },
 });

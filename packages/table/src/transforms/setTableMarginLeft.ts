@@ -1,13 +1,14 @@
 import {
+  type GetAboveNodeOptions,
+  type TEditor,
+  type Value,
   findNode,
-  GetAboveNodeOptions,
   setNodes,
-  TEditor,
-  Value,
 } from '@udecode/plate-common/server';
 
+import type { TTableElement } from '../types';
+
 import { ELEMENT_TABLE } from '../createTablePlugin';
-import { TTableElement } from '../types';
 
 export const setTableMarginLeft = <V extends Value>(
   editor: TEditor<V>,
@@ -18,6 +19,7 @@ export const setTableMarginLeft = <V extends Value>(
     match: { type: ELEMENT_TABLE },
     ...options,
   });
+
   if (!table) return;
 
   const [, tablePath] = table;

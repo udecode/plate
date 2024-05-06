@@ -1,6 +1,7 @@
-import { withYjs, YjsEditor } from '@slate-yjs/core';
-import { TEditor, TOperation, Value } from '@udecode/plate-common/server';
-import * as Y from 'yjs';
+import type { TEditor, TOperation, Value } from '@udecode/plate-common/server';
+import type * as Y from 'yjs';
+
+import { type YjsEditor, withYjs } from '@slate-yjs/core';
 
 export type WithYjsOptions = {
   autoConnect?: boolean;
@@ -12,19 +13,19 @@ export type WithYjsOptions = {
   positionStorageOrigin?: unknown;
 };
 
-export type YjsEditorProps = Pick<
+export type YjsEditorProps = {
+  storeLocalChange: (op: TOperation) => void;
+} & Pick<
   YjsEditor,
-  | 'sharedRoot'
-  | 'localOrigin'
-  | 'positionStorageOrigin'
   | 'applyRemoteEvents'
-  | 'flushLocalChanges'
-  | 'isLocalOrigin'
   | 'connect'
   | 'disconnect'
-> & {
-  storeLocalChange: (op: TOperation) => void;
-};
+  | 'flushLocalChanges'
+  | 'isLocalOrigin'
+  | 'localOrigin'
+  | 'positionStorageOrigin'
+  | 'sharedRoot'
+>;
 
 export const withTYjs = <
   V extends Value,

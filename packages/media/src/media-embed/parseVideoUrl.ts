@@ -1,7 +1,7 @@
 import { isUrl } from '@udecode/plate-common/server';
 import videoParser from 'js-video-url-parser';
 
-import { EmbedUrlData } from '../media';
+import type { EmbedUrlData } from '../media';
 
 const YOUTUBE_PREFIX = 'https://www.youtube.com/embed/';
 const VIMEO_PREFIX = 'https://player.vimeo.com/video/';
@@ -21,15 +21,16 @@ export const parseVideoUrl = (url: string): EmbedUrlData | undefined => {
   if (!isUrl(url)) return;
 
   const videoData = videoParser.parse(url);
+
   if (videoData?.provider && videoData.id) {
     const { id, provider } = videoData;
 
     const providerUrls: Record<string, string> = {
-      youtube: `${YOUTUBE_PREFIX}${id}`,
-      vimeo: `${VIMEO_PREFIX}${id}`,
-      dailymotion: `${DAILYMOTION_PREFIX}${id}`,
-      youku: `${YOUKU_PREFIX}${id}`,
       coub: `${COUB_PREFIX}${id}`,
+      dailymotion: `${DAILYMOTION_PREFIX}${id}`,
+      vimeo: `${VIMEO_PREFIX}${id}`,
+      youku: `${YOUKU_PREFIX}${id}`,
+      youtube: `${YOUTUBE_PREFIX}${id}`,
     };
 
     return {

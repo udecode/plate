@@ -1,45 +1,46 @@
-import { PlateEditor, Value } from '@udecode/plate-common/server';
+import type { PlateEditor, Value } from '@udecode/plate-common/server';
 
 import { findSuggestionNode } from '../queries/index';
 import { getSuggestionKey, getSuggestionUserIds } from './getSuggestionKeys';
 import { getSuggestionNodeEntries } from './getSuggestionNodeEntries';
 
 export type TSuggestionCommonDescription = {
-  userId: string;
   suggestionId: string;
+  userId: string;
 };
 
 // TODO: Move to ../types
-export type TSuggestionInsertionDescription = TSuggestionCommonDescription & {
+export type TSuggestionInsertionDescription = {
+  insertedText: string;
   type: 'insertion';
-  insertedText: string;
-};
+} & TSuggestionCommonDescription;
 
-export type TSuggestionDeletionDescription = TSuggestionCommonDescription & {
+export type TSuggestionDeletionDescription = {
+  deletedText: string;
   type: 'deletion';
-  deletedText: string;
-};
+} & TSuggestionCommonDescription;
 
-export type TSuggestionReplacementDescription = TSuggestionCommonDescription & {
-  type: 'replacement';
-  insertedText: string;
+export type TSuggestionReplacementDescription = {
   deletedText: string;
-};
+  insertedText: string;
+  type: 'replacement';
+} & TSuggestionCommonDescription;
 
 export type TSuggestionDescription =
-  | TSuggestionInsertionDescription
   | TSuggestionDeletionDescription
+  | TSuggestionInsertionDescription
   | TSuggestionReplacementDescription;
 
 /**
- * Get the suggestion descriptions of the selected node.
- * A node can have multiple suggestions (multiple users).
- * Each description maps to a user suggestion.
+ * Get the suggestion descriptions of the selected node. A node can have
+ * multiple suggestions (multiple users). Each description maps to a user
+ * suggestion.
  */
 export const getActiveSuggestionDescriptions = <V extends Value = Value>(
   editor: PlateEditor<V>
 ): TSuggestionDescription[] => {
   const aboveEntry = findSuggestionNode(editor);
+
   if (!aboveEntry) return [];
 
   const aboveNode = aboveEntry[0];
@@ -60,28 +61,27 @@ export const getActiveSuggestionDescriptions = <V extends Value = Value>(
 
     if (insertions.length > 0 && deletions.length > 0) {
       return {
+        deletedText,
+        insertedText,
+        suggestionId,
         type: 'replacement',
         userId,
-        suggestionId,
-        insertedText,
-        deletedText,
       };
     }
-
     if (deletions.length > 0) {
       return {
+        deletedText,
+        suggestionId,
         type: 'deletion',
         userId,
-        suggestionId,
-        deletedText,
       };
     }
 
     return {
+      insertedText,
+      suggestionId,
       type: 'insertion',
       userId,
-      suggestionId,
-      insertedText,
     };
   });
 };

@@ -1,8 +1,8 @@
 import { createZustandStore } from '@udecode/plate-common/server';
 
 export const floatingMediaStore = createZustandStore('floatingMedia')({
-  url: '',
   isEditing: false,
+  url: '',
 }).extendActions((set) => ({
   reset: () => {
     set.url('');
@@ -11,5 +11,7 @@ export const floatingMediaStore = createZustandStore('floatingMedia')({
 }));
 
 export const floatingMediaActions = floatingMediaStore.set;
+
 export const floatingMediaSelectors = floatingMediaStore.get;
+
 export const useFloatingMediaSelectors = () => floatingMediaStore.use;

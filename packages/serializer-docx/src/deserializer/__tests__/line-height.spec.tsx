@@ -9,7 +9,6 @@ const name = 'line-height';
 
 describe(getDocxTestName(name), () => {
   testDocxDeserializer({
-    filename: name,
     expected: (
       <editor>
         <hh1 lineHeight="200%">Line-height 2.0</hh1>
@@ -17,5 +16,6 @@ describe(getDocxTestName(name), () => {
         <hp lineHeight="150%">Line-height 1.5</hp>
       </editor>
     ),
+    filename: name,
   });
 });

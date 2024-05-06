@@ -9,7 +9,6 @@ const name = 'block_quotes';
 
 describe(getDocxTestName(name), () => {
   testDocxDeserializer({
-    filename: name,
     expected: (
       <editor>
         <hh2>Some block quotes, in different ways</hh2>
@@ -43,5 +42,6 @@ describe(getDocxTestName(name), () => {
         <hp>And back to the normal {` `}style.</hp>
       </editor>
     ),
+    filename: name,
   });
 });

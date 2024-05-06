@@ -1,14 +1,15 @@
 import {
+  type PlateEditor,
+  type Value,
   insertNodes,
   isSelectionExpanded,
   nanoid,
-  PlateEditor,
-  Value,
   withoutNormalizing,
 } from '@udecode/plate-common/server';
 
+import type { TSuggestionText } from '../types';
+
 import { findSuggestionId } from '../queries/findSuggestionId';
-import { TSuggestionText } from '../types';
 import { deleteFragmentSuggestion } from './deleteFragmentSuggestion';
 import { getSuggestionProps } from './getSuggestionProps';
 

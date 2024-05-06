@@ -1,16 +1,14 @@
-import { TElement } from '@udecode/plate-common/server';
+import type { TElement } from '@udecode/plate-common/server';
 
 export interface TMediaElement extends TElement {
   url: string;
-  align?: 'left' | 'center' | 'right';
+  align?: 'center' | 'left' | 'right';
 }
 
 export interface MediaPlugin {
   isUrl?: (text: string) => boolean;
 
-  /**
-   * Transforms the url.
-   */
+  /** Transforms the url. */
   transformUrl?: (url: string) => string;
 }
 

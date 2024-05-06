@@ -1,6 +1,11 @@
-import { setElements, TEditor, Value } from '@udecode/plate-common/server';
+import type { Path } from 'slate';
+
+import {
+  type TEditor,
+  type Value,
+  setElements,
+} from '@udecode/plate-common/server';
 import { KEY_INDENT } from '@udecode/plate-indent';
-import { Path } from 'slate';
 
 import {
   KEY_LIST_CHECKED,
@@ -12,20 +17,20 @@ import { ListStyleType } from '../types';
 export const setIndentListNode = <V extends Value>(
   editor: TEditor<V>,
   {
-    listStyleType = ListStyleType.Disc,
-    indent = 0,
     at,
+    indent = 0,
+    listStyleType = ListStyleType.Disc,
   }: {
-    listStyleType?: string;
-    indent?: number;
     at: Path;
+    indent?: number;
+    listStyleType?: string;
   }
 ) => {
   const newIndent = indent || indent + 1;
 
   setElements(
     editor,
-    { [KEY_LIST_STYLE_TYPE]: listStyleType, [KEY_INDENT]: newIndent },
+    { [KEY_INDENT]: newIndent, [KEY_LIST_STYLE_TYPE]: listStyleType },
     { at }
   );
 };
@@ -33,13 +38,13 @@ export const setIndentListNode = <V extends Value>(
 export const setIndentTodoNode = <V extends Value>(
   editor: TEditor<V>,
   {
-    listStyleType = KEY_TODO_STYLE_TYPE,
-    indent = 0,
     at,
+    indent = 0,
+    listStyleType = KEY_TODO_STYLE_TYPE,
   }: {
-    listStyleType?: string;
-    indent?: number;
     at: Path;
+    indent?: number;
+    listStyleType?: string;
   }
 ) => {
   const newIndent = indent || indent + 1;
@@ -47,9 +52,9 @@ export const setIndentTodoNode = <V extends Value>(
   setElements(
     editor,
     {
-      [KEY_LIST_STYLE_TYPE]: listStyleType,
-      [KEY_LIST_CHECKED]: false,
       [KEY_INDENT]: newIndent,
+      [KEY_LIST_CHECKED]: false,
+      [KEY_LIST_STYLE_TYPE]: listStyleType,
     },
     { at }
   );

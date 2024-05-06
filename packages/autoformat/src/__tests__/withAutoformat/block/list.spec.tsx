@@ -5,7 +5,8 @@ import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 import { autoformatPlugin } from 'www/src/lib/plate/demo/plugins/autoformatPlugin';
 
-import { AutoformatBlockRule } from '../../../common/types';
+import type { AutoformatBlockRule } from '../../../common/types';
+
 import { withAutoformat } from '../../../withAutoformat';
 
 jsx;
@@ -158,7 +159,9 @@ describe('when +space', () => {
     const autoformatPluginRulesWitoutTogglePreformat =
       autoformatPlugin.options!.rules!.map((rule) => {
         const { preFormat, ...rest } = rule as AutoformatBlockRule;
+
         if (rule.match === '+ ') return rest;
+
         return rule;
       });
 

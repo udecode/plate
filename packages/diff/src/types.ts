@@ -7,12 +7,12 @@ export interface DiffDeletion {
 }
 
 export interface DiffUpdate {
-  type: 'update';
-  properties: Record<string, any>;
   newProperties: Record<string, any>;
+  properties: Record<string, any>;
+  type: 'update';
 }
 
-export type DiffOperation = DiffInsertion | DiffDeletion | DiffUpdate;
+export type DiffOperation = DiffDeletion | DiffInsertion | DiffUpdate;
 
 export interface DiffProps {
   diff: true;

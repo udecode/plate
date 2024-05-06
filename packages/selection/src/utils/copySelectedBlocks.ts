@@ -1,10 +1,10 @@
 import {
+  type PlateEditor,
+  type Value,
   deselect,
   getEndPoint,
   getStartPoint,
-  PlateEditor,
   select,
-  Value,
   withoutNormalizing,
 } from '@udecode/plate-common/server';
 import copyToClipboard from 'copy-to-clipboard';
@@ -23,6 +23,7 @@ export const copySelectedBlocks = <V extends Value>(editor: PlateEditor<V>) => {
   copyToClipboard(' ', {
     onCopy: (dataTransfer) => {
       const data = dataTransfer as DataTransfer;
+
       if (!data) return;
 
       let textPlain = '';

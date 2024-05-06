@@ -41,7 +41,7 @@ it('should be', () => {
           {
             hotkey: 'enter',
             level: 0,
-            query: { start: true, end: true },
+            query: { end: true, start: true },
           },
         ],
       },

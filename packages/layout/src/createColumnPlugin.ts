@@ -1,22 +1,26 @@
-import { createPluginFactory, HotkeyPlugin } from '@udecode/plate-common/server';
+import {
+  type HotkeyPlugin,
+  createPluginFactory,
+} from '@udecode/plate-common/server';
 
 import { onKeyDownColumn } from './onKeyDownColumn';
 import { withColumn } from './withColumn';
 
 export const ELEMENT_COLUMN_GROUP = 'column_group';
+
 export const ELEMENT_COLUMN = 'column';
 
 export const createColumnPlugin = createPluginFactory<HotkeyPlugin>({
-  key: ELEMENT_COLUMN_GROUP,
-  isElement: true,
-  options: {},
   handlers: {
     onKeyDown: onKeyDownColumn,
   },
+  isElement: true,
+  key: ELEMENT_COLUMN_GROUP,
+  options: {},
   plugins: [
     {
-      key: ELEMENT_COLUMN,
       isElement: true,
+      key: ELEMENT_COLUMN,
       withOverrides: withColumn,
     },
   ],

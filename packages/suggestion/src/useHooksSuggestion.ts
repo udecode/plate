@@ -19,8 +19,7 @@ export const useHooksSuggestion = <
   E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  plugin: WithPlatePlugin<SuggestionPlugin>
+  _plugin: WithPlatePlugin<SuggestionPlugin>
 ) => {
   const version = useEditorVersion();
   const setActiveSuggestionId = useSetActiveSuggestionId();

@@ -1,4 +1,7 @@
 import {
+  type PlateEditor,
+  type TElement,
+  type Value,
   getBlockAbove,
   getParentNode,
   getPluginOptions,
@@ -6,20 +9,19 @@ import {
   getTEditor,
   isElement,
   isText,
-  PlateEditor,
   setNodes,
-  TElement,
   unwrapNodes,
-  Value,
   wrapNodeChildren,
 } from '@udecode/plate-common/server';
 
+import type { TTableElement, TablePlugin } from './types';
+
 import { ELEMENT_TABLE, ELEMENT_TR } from './createTablePlugin';
-import { TablePlugin, TTableElement } from './types';
 import { getCellTypes } from './utils/index';
 
 /**
  * Normalize table:
+ *
  * - Wrap cell children in a paragraph if they are texts.
  */
 export const withNormalizeTable = <
@@ -49,14 +51,15 @@ export const withNormalizeTable = <
           unwrapNodes(editor, {
             at: path,
           });
+
           return;
         }
-
         if (initialTableWidth) {
           const tableNode = node as TTableElement;
           const colCount = (
             tableNode.children[0]?.children as TElement[] | undefined
           )?.length;
+
           if (colCount) {
             const colSizes: number[] = [];
 
@@ -69,15 +72,14 @@ export const withNormalizeTable = <
                 colSizes.push(colSize || initialTableWidth / colCount);
               });
             }
-
             if (colSizes.length > 0) {
               setNodes<TTableElement>(editor, { colSizes }, { at: path });
+
               return;
             }
           }
         }
       }
-
       if (node.type === getPluginType(editor, ELEMENT_TR)) {
         const parentEntry = getParentNode(editor, path);
 
@@ -85,10 +87,10 @@ export const withNormalizeTable = <
           unwrapNodes(editor, {
             at: path,
           });
+
           return;
         }
       }
-
       if (getCellTypes(editor).includes(node.type)) {
         const { children } = node;
 
@@ -98,9 +100,9 @@ export const withNormalizeTable = <
           unwrapNodes(editor, {
             at: path,
           });
+
           return;
         }
-
         if (isText(children[0])) {
           wrapNodeChildren<TElement>(editor, editor.blockFactory({}, path), {
             at: path,

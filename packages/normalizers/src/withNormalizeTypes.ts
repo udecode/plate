@@ -1,29 +1,29 @@
 import {
+  type PlateEditor,
+  type TElement,
+  type Value,
+  type WithPlatePlugin,
   getNode,
   insertElements,
   isElement,
-  PlateEditor,
   setElements,
-  TElement,
-  Value,
-  WithPlatePlugin,
 } from '@udecode/plate-common/server';
 
-import { NormalizeTypesPlugin } from './createNormalizeTypesPlugin';
+import type { NormalizeTypesPlugin } from './createNormalizeTypesPlugin';
 
 export const withNormalizeTypes = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
-  { options: { rules, onError } }: WithPlatePlugin<NormalizeTypesPlugin, V, E>
+  { options: { onError, rules } }: WithPlatePlugin<NormalizeTypesPlugin, V, E>
 ) => {
   const { normalizeNode } = editor;
 
   editor.normalizeNode = ([currentNode, currentPath]) => {
     if (currentPath.length === 0) {
       const endCurrentNormalizationPass = rules!.some(
-        ({ strictType, type, path }) => {
+        ({ path, strictType, type }) => {
           const node = getNode<TElement>(editor, path);
 
           if (node) {
@@ -35,6 +35,7 @@ export const withNormalizeTypes = <
                   at: path,
                 }
               );
+
               return true;
             }
           } else {
@@ -42,11 +43,12 @@ export const withNormalizeTypes = <
               insertElements(
                 editor,
                 {
-                  type: strictType ?? type!,
                   children: [{ text: '' }],
+                  type: strictType ?? type!,
                 },
                 { at: path }
               );
+
               return true;
             } catch (error) {
               onError?.(error);

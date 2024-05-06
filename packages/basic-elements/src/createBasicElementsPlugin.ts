@@ -6,6 +6,7 @@ import { createParagraphPlugin } from '@udecode/plate-paragraph';
 
 /**
  * Enables support for basic elements:
+ *
  * - Block quote
  * - Code block
  * - Heading

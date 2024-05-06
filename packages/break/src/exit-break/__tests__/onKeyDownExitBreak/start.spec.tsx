@@ -39,7 +39,7 @@ it('should be', () => {
     mockPlugin({
       options: {
         rules: [
-          { hotkey: 'enter', level: 0, query: { start: true, end: true } },
+          { hotkey: 'enter', level: 0, query: { end: true, start: true } },
         ],
       },
     })

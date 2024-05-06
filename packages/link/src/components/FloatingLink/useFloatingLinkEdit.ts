@@ -85,8 +85,6 @@ export const useFloatingLinkEditState = ({
 export const useFloatingLinkEdit = ({
   editor,
   floating,
-  isOpen,
-  readOnly,
   triggerFloatingLinkHotkeys,
   versionEditor,
 }: ReturnType<typeof useFloatingLinkEditState>) => {

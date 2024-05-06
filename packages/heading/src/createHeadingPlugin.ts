@@ -1,16 +1,14 @@
 import {
-  createPluginFactory,
   // onKeyDownToggleElement,
-  PlatePlugin,
+  type PlatePlugin,
+  createPluginFactory,
 } from '@udecode/plate-common/server';
 
-import { KEYS_HEADING } from './constants';
-import { HeadingPlugin, HeadingsPlugin } from './types';
+import type { HeadingPlugin, HeadingsPlugin } from './types';
 
-/**
- * Enables support for headings with configurable levels
- * (from 1 to 6).
- */
+import { KEYS_HEADING } from './constants';
+
+/** Enables support for headings with configurable levels (from 1 to 6). */
 export const createHeadingPlugin = createPluginFactory<HeadingsPlugin>({
   key: 'heading',
   options: {
@@ -27,8 +25,6 @@ export const createHeadingPlugin = createPluginFactory<HeadingsPlugin>({
       const key = KEYS_HEADING[level - 1];
 
       const plugin: PlatePlugin<HeadingPlugin> = {
-        key,
-        isElement: true,
         deserializeHtml: {
           rules: [
             {
@@ -39,6 +35,8 @@ export const createHeadingPlugin = createPluginFactory<HeadingsPlugin>({
         handlers: {
           // onKeyDown: onKeyDownToggleElement,
         },
+        isElement: true,
+        key,
         options: {},
       };
 

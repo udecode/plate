@@ -1,17 +1,16 @@
 import {
+  type InsertNodesOptions,
+  type PlateEditor,
+  type TText,
+  type Value,
   insertNodes,
-  InsertNodesOptions,
-  PlateEditor,
-  TText,
-  Value,
 } from '@udecode/plate-common/server';
 
-import { TLinkElement } from '../types';
-import { createLinkNode, CreateLinkNodeOptions } from '../utils/index';
+import type { TLinkElement } from '../types';
 
-/**
- * Insert a link node.
- */
+import { type CreateLinkNodeOptions, createLinkNode } from '../utils/index';
+
+/** Insert a link node. */
 export const insertLink = <V extends Value>(
   editor: PlateEditor<V>,
   createLinkNodeOptions: CreateLinkNodeOptions,

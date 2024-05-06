@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
 import {
+  type PlateEditor,
+  type TElement,
   createPlateEditor,
-  PlateEditor,
-  TElement,
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -538,8 +538,8 @@ describe('withInsertFragmentTable', () => {
         plugins: [
           createTablePlugin({
             options: {
-              newCellChildren: [{ text: '' }],
               disableExpandOnInsert: true,
+              newCellChildren: [{ text: '' }],
             },
           }),
         ],

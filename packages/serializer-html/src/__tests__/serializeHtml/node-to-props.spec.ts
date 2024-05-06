@@ -14,8 +14,8 @@ const plugins = [
   }),
   createImagePlugin({
     props: ({ element }) => ({
-      width: (element as any).url.split('/').pop(),
       alt: (element as any).attributes?.alt,
+      width: (element as any).url.split('/').pop(),
     }),
   }),
 ];
@@ -30,16 +30,16 @@ it('serialize link to html with attributes', () => {
       nodes: [
         { text: 'An external ' },
         {
+          children: [{ text: 'link' }],
           type: 'a',
           url: 'https://theuselessweb.com/',
-          children: [{ text: 'link' }],
         },
         { text: ' and an internal ' },
         {
+          children: [{ text: 'link' }],
+          target: '_self',
           type: 'a',
           url: 'https://slatejs.org/',
-          target: '_self',
-          children: [{ text: 'link' }],
         },
         { text: '.' },
       ],
@@ -55,10 +55,10 @@ it('serialize image with alt to html', () => {
       serializeHtml(editor, {
         nodes: [
           {
-            type: 'img',
-            url: 'https://via.placeholder.com/300',
             attributes: { alt: 'Placeholder' },
             children: [],
+            type: 'img',
+            url: 'https://via.placeholder.com/300',
           },
         ],
       })

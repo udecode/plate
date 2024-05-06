@@ -1,12 +1,12 @@
 import {
+  type PlateEditor,
+  type SetNodesOptions,
+  type TNodeMatch,
+  type Value,
   getPluginInjectProps,
   isBlock,
-  PlateEditor,
   setElements,
-  SetNodesOptions,
-  TNodeMatch,
   unsetNodes,
-  Value,
 } from '@udecode/plate-common/server';
 
 import { KEY_LINE_HEIGHT } from '../createLineHeightPlugin';
@@ -14,11 +14,11 @@ import { KEY_LINE_HEIGHT } from '../createLineHeightPlugin';
 export const setLineHeight = <V extends Value>(
   editor: PlateEditor<V>,
   {
-    value,
     setNodesOptions,
-  }: { value: number; setNodesOptions?: SetNodesOptions<V> }
+    value,
+  }: { setNodesOptions?: SetNodesOptions<V>; value: number }
 ): void => {
-  const { validTypes, defaultNodeValue, nodeKey } = getPluginInjectProps(
+  const { defaultNodeValue, nodeKey, validTypes } = getPluginInjectProps(
     editor,
     KEY_LINE_HEIGHT
   );

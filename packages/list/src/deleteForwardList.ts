@@ -1,4 +1,8 @@
 import {
+  type PlateEditor,
+  type TElement,
+  type TElementEntry,
+  type Value,
   getBlockAbove,
   getChildren,
   getEditorString,
@@ -9,14 +13,10 @@ import {
   getPluginType,
   getPointAfter,
   isSelectionAtBlockEnd,
-  PlateEditor,
   removeNodes,
-  TElement,
-  TElementEntry,
-  Value,
   withoutNormalizing,
 } from '@udecode/plate-common/server';
-import { Path, TextUnit } from 'slate';
+import { Path, type TextUnit } from 'slate';
 
 import { ELEMENT_LI, ELEMENT_LIC } from './createListPlugin';
 import {
@@ -26,8 +26,8 @@ import {
   isAcrossListItems,
 } from './queries/index';
 import {
-  moveListItemsToList,
   moveListItemUp,
+  moveListItemsToList,
   removeFirstListItem,
   removeListItem,
 } from './transforms/index';
@@ -59,7 +59,6 @@ const selectionIsNotInAListHandler = <V extends Value>(
 
         return true;
       }
-
       if (hasListChild(editor, listItem[0])) {
         // the next block has children, so we have to move the first item up
         const sublistRes = getListItemEntry(editor, {
@@ -78,7 +77,7 @@ const selectionIsInAListHandler = <V extends Value>(
   editor: PlateEditor<V>,
   res: { list: TElementEntry; listItem: TElementEntry },
   defaultDelete: (unit: TextUnit) => void,
-  unit: 'character' | 'word' | 'line' | 'block'
+  unit: 'block' | 'character' | 'line' | 'word'
 ): boolean => {
   const { listItem } = res;
 
@@ -87,7 +86,6 @@ const selectionIsInAListHandler = <V extends Value>(
     const liType = getPluginType(editor, ELEMENT_LI);
     const _nodes = getNodeEntries(editor, {
       at: listItem[1],
-      mode: 'lowest',
       match: (node, path) => {
         if (path.length === 0) {
           return false;
@@ -99,6 +97,7 @@ const selectionIsInAListHandler = <V extends Value>(
 
         return isNodeLi && isSiblingOfNodeLi;
       },
+      mode: 'lowest',
     });
     const liWithSiblings = Array.from(_nodes, (entry) => entry[1])[0];
 
@@ -117,9 +116,9 @@ const selectionIsInAListHandler = <V extends Value>(
           const listRoot = getListRoot(editor, listItem[1]);
 
           moveListItemsToList(editor, {
+            deleteFromList: true,
             fromList: nextSiblingListRes.list,
             toList: listRoot,
-            deleteFromList: true,
           });
 
           return true;
@@ -133,6 +132,7 @@ const selectionIsInAListHandler = <V extends Value>(
       editor,
       Path.next(liWithSiblings)
     );
+
     if (!siblingListItem) return false;
 
     const siblingList = getParentNode<TElement>(editor, siblingListItem[1]);
@@ -149,6 +149,7 @@ const selectionIsInAListHandler = <V extends Value>(
     }
 
     const pointAfterListItem = getPointAfter(editor, editor.selection!.focus);
+
     if (
       !pointAfterListItem ||
       !isAcrossListItems({
@@ -166,8 +167,8 @@ const selectionIsInAListHandler = <V extends Value>(
     const licType = getPluginType(editor, ELEMENT_LIC);
     const _licNodes = getNodeEntries<TElement>(editor, {
       at: pointAfterListItem.path,
-      mode: 'lowest',
       match: (node) => node.type === licType,
+      mode: 'lowest',
     });
     const nextSelectableLic = [..._licNodes][0];
 
@@ -195,6 +196,7 @@ const selectionIsInAListHandler = <V extends Value>(
     editor,
     Path.next([...listItem[1], 0])
   );
+
   if (!nestedList) return false;
 
   const nestedListItem = getChildren<TElement>(nestedList)[0];
@@ -207,7 +209,6 @@ const selectionIsInAListHandler = <V extends Value>(
   ) {
     return true;
   }
-
   if (
     removeListItem(editor, {
       list: nestedList,
@@ -230,7 +231,6 @@ export const deleteForwardList = <V extends Value>(
   if (!editor?.selection) {
     return skipDefaultDelete;
   }
-
   if (!isSelectionAtBlockEnd(editor)) {
     return skipDefaultDelete;
   }
@@ -240,6 +240,7 @@ export const deleteForwardList = <V extends Value>(
 
     if (!res) {
       skipDefaultDelete = selectionIsNotInAListHandler(editor);
+
       return;
     }
 

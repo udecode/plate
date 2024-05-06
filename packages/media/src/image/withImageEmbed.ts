@@ -1,19 +1,21 @@
-import { PlateEditor, Value, WithPlatePlugin } from '@udecode/plate-common/server';
+import type {
+  PlateEditor,
+  Value,
+  WithPlatePlugin,
+} from '@udecode/plate-common/server';
+
+import type { ImagePlugin } from './types';
 
 import { insertImage } from './transforms/insertImage';
-import { ImagePlugin } from './types';
 import { isImageUrl } from './utils/isImageUrl';
 
-/**
- * If inserted text is image url, insert image instead.
- */
+/** If inserted text is image url, insert image instead. */
 export const withImageEmbed = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  plugin: WithPlatePlugin<ImagePlugin, V, E>
+  _plugin: WithPlatePlugin<ImagePlugin, V, E>
 ) => {
   const { insertData } = editor;
 
@@ -22,6 +24,7 @@ export const withImageEmbed = <
 
     if (isImageUrl(text)) {
       insertImage(editor, text);
+
       return;
     }
 

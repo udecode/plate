@@ -1,4 +1,4 @@
-import { PlateEditor, Value } from '@udecode/plate-common/server';
+import type { PlateEditor, Value } from '@udecode/plate-common/server';
 
 import { getListItemEntry } from '../index';
 

@@ -1,12 +1,12 @@
 import {
-  EElement,
-  EElementEntry,
-  EElementOrText,
+  type EElement,
+  type EElementEntry,
+  type EElementOrText,
+  type TEditor,
+  type TNode,
+  type TNodeEntry,
+  type Value,
   isDefined,
-  TEditor,
-  TNode,
-  TNodeEntry,
-  Value,
 } from '@udecode/plate-common/server';
 import { KEY_INDENT } from '@udecode/plate-indent';
 
@@ -16,28 +16,24 @@ export interface GetSiblingIndentListOptions<
   N extends EElement<V>,
   V extends Value = Value,
 > {
-  getPreviousEntry?: (
-    entry: TNodeEntry<EElementOrText<V>>
-  ) => TNodeEntry<N> | undefined;
+  breakOnEqIndentNeqListStyleType?: boolean;
+  breakOnLowerIndent?: boolean;
+  breakQuery?: (siblingNode: TNode) => boolean | undefined;
+  /** Query to break lookup */
+  eqIndent?: boolean;
   getNextEntry?: (
     entry: TNodeEntry<EElementOrText<V>>
   ) => TNodeEntry<N> | undefined;
-  /**
-   * Query to validate lookup. If false, check the next sibling.
-   */
+  getPreviousEntry?: (
+    entry: TNodeEntry<EElementOrText<V>>
+  ) => TNodeEntry<N> | undefined;
+  /** Query to validate lookup. If false, check the next sibling. */
   query?: (siblingNode: TNode) => boolean | undefined;
-  /**
-   * Query to break lookup
-   */
-  eqIndent?: boolean;
-  breakQuery?: (siblingNode: TNode) => boolean | undefined;
-  breakOnLowerIndent?: boolean;
-  breakOnEqIndentNeqListStyleType?: boolean;
 }
 
 /**
- * Get the next sibling indent list node.
- * Default query: the sibling node should have the same listStyleType.
+ * Get the next sibling indent list node. Default query: the sibling node should
+ * have the same listStyleType.
  */
 export const getSiblingIndentList = <
   N extends EElement<V>,
@@ -46,13 +42,13 @@ export const getSiblingIndentList = <
   editor: TEditor<V>,
   [node, path]: EElementEntry<V>,
   {
-    getPreviousEntry,
-    getNextEntry,
-    query,
-    eqIndent = true,
-    breakQuery,
-    breakOnLowerIndent = true,
     breakOnEqIndentNeqListStyleType = true,
+    breakOnLowerIndent = true,
+    breakQuery,
+    eqIndent = true,
+    getNextEntry,
+    getPreviousEntry,
+    query,
   }: GetSiblingIndentListOptions<N, V>
 ): TNodeEntry<N> | undefined => {
   if (!getPreviousEntry && !getNextEntry) return;
@@ -61,6 +57,7 @@ export const getSiblingIndentList = <
 
   let nextEntry = getSiblingEntry([node, path]);
 
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     if (!nextEntry) return;
 
@@ -70,9 +67,7 @@ export const getSiblingIndentList = <
     const nextIndent = (nextNode as any)[KEY_INDENT] as number;
 
     if (!isDefined(nextIndent)) return;
-
-    if (breakQuery && breakQuery(nextNode)) return;
-
+    if (breakQuery?.(nextNode)) return;
     if (breakOnLowerIndent && nextIndent < indent) return;
     if (
       breakOnEqIndentNeqListStyleType &&
@@ -83,8 +78,10 @@ export const getSiblingIndentList = <
       return;
 
     let valid = !query || query(nextNode as TNode);
+
     if (valid) {
       valid = !eqIndent || nextIndent === indent;
+
       if (valid) return [nextNode, nextPath];
     }
 

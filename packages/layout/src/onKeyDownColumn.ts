@@ -1,10 +1,10 @@
 import {
+  type KeyboardHandlerReturnType,
+  type PlateEditor,
+  type Value,
   getParentNode,
   isHotkey,
-  KeyboardHandlerReturnType,
-  PlateEditor,
   select,
-  Value,
 } from '@udecode/plate-common/server';
 
 export const onKeyDownColumn =
@@ -18,7 +18,9 @@ export const onKeyDownColumn =
 
     if (isHotkey('mod+a', e) && at) {
       const selectionParent = getParentNode(editor, at);
+
       if (!selectionParent) return;
+
       const [, parentPath] = selectionParent;
       parentPath.pop();
 

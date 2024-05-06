@@ -4,9 +4,9 @@ import { createAlignPlugin } from '@udecode/plate-alignment';
 import { createBasicElementsPlugin } from '@udecode/plate-basic-elements';
 import { createBasicMarksPlugin } from '@udecode/plate-basic-marks';
 import {
+  type OverrideByKey,
+  type PlatePlugin,
   createPlateEditor,
-  OverrideByKey,
-  PlatePlugin,
 } from '@udecode/plate-common/server';
 import { ELEMENT_H1, ELEMENT_H2, ELEMENT_H3 } from '@udecode/plate-heading';
 import { createHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
@@ -34,6 +34,8 @@ export const createClipboardData = (html: string, rtf?: string): DataTransfer =>
 export const getDocxTestName = (name: string) => `when pasting docx ${name}`;
 
 export const testDocxDeserializer = ({
+  expected,
+  filename,
   input = (
     <editor>
       <hp>
@@ -41,20 +43,19 @@ export const testDocxDeserializer = ({
       </hp>
     </editor>
   ),
-  expected,
-  plugins = [],
-  filename,
   overrideByKey,
+  plugins = [],
 }: {
-  input?: any;
   expected: any;
-  plugins?: PlatePlugin[];
   filename: string;
+  input?: any;
   overrideByKey?: OverrideByKey;
+  plugins?: PlatePlugin[];
 }) => {
   it('should deserialize', () => {
     const actual = createPlateEditor({
       editor: input,
+      overrideByKey,
       plugins: [
         ...plugins,
         createImagePlugin(),
@@ -81,7 +82,6 @@ export const testDocxDeserializer = ({
         createDeserializeDocxPlugin(),
         createJuicePlugin(),
       ],
-      overrideByKey,
     });
 
     actual.insertData(

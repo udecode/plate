@@ -1,16 +1,18 @@
+import type { Range } from 'slate';
+
 import {
+  type PlateEditor,
+  type TElement,
+  type TElementEntry,
+  type Value,
   getNode,
   getPluginOptions,
-  PlateEditor,
-  TElement,
-  TElementEntry,
-  Value,
 } from '@udecode/plate-common/server';
-import { Range } from 'slate';
+
+import type { TTableElement, TablePlugin } from '../types';
 
 import { ELEMENT_TABLE } from '../createTablePlugin';
 import { getTableMergeGridByRange } from '../merge/getTableGridByRange';
-import { TablePlugin, TTableElement } from '../types';
 import { getEmptyTableNode } from '../utils/getEmptyTableNode';
 
 export interface GetTableGridByRangeOptions {
@@ -18,15 +20,14 @@ export interface GetTableGridByRangeOptions {
 
   /**
    * Format of the output:
-   * - table element
-   * - array of cells
+   *
+   * - Table element
+   * - Array of cells
    */
-  format?: 'table' | 'cell';
+  format?: 'cell' | 'table';
 }
 
-/**
- * Get sub table between 2 cell paths.
- */
+/** Get sub table between 2 cell paths. */
 export const getTableGridByRange = <V extends Value>(
   editor: PlateEditor<V>,
   { at, format = 'table' }: GetTableGridByRangeOptions
@@ -35,6 +36,7 @@ export const getTableGridByRange = <V extends Value>(
     editor,
     ELEMENT_TABLE
   );
+
   if (enableMerging) {
     return getTableMergeGridByRange(editor, { at, format });
   }
@@ -58,9 +60,9 @@ export const getTableGridByRange = <V extends Value>(
   const relativeColIndex = endColIndex - startColIndex;
 
   const table: TTableElement = getEmptyTableNode(editor, {
-    rowCount: relativeRowIndex + 1,
     colCount: relativeColIndex + 1,
     newCellChildren: [],
+    rowCount: relativeRowIndex + 1,
   });
 
   let rowIndex = startRowIndex;
@@ -68,10 +70,12 @@ export const getTableGridByRange = <V extends Value>(
 
   const cellEntries: TElementEntry[] = [];
 
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const cellPath = tablePath.concat([rowIndex, colIndex]);
 
     const cell = getNode<TElement>(editor, cellPath);
+
     if (!cell) break;
 
     const rows = table.children[rowIndex - startRowIndex]

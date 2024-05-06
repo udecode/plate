@@ -1,17 +1,18 @@
 import {
+  type PlateEditor,
+  type Value,
+  type WithPlatePlugin,
   getInjectedPlugins,
   pipeInsertDataQuery,
-  PlateEditor,
-  Value,
-  WithPlatePlugin,
 } from '@udecode/plate-common/server';
 
+import type { ImagePlugin } from './types';
+
 import { insertImage } from './transforms/insertImage';
-import { ImagePlugin } from './types';
 
 /**
- * Allows for pasting images from clipboard.
- * Not yet: dragging and dropping images, selecting them through a file system dialog.
+ * Allows for pasting images from clipboard. Not yet: dragging and dropping
+ * images, selecting them through a file system dialog.
  */
 export const withImageUpload = <
   V extends Value = Value,
@@ -31,6 +32,7 @@ export const withImageUpload = <
 
     if (!text && files && files.length > 0) {
       const injectedPlugins = getInjectedPlugins<{}, V, E>(editor, plugin);
+
       if (
         !pipeInsertDataQuery<{}, V, E>(injectedPlugins, {
           data: text,
@@ -49,6 +51,7 @@ export const withImageUpload = <
             if (!reader.result) {
               return;
             }
+
             const uploadedUrl = uploadImage
               ? await uploadImage(reader.result)
               : reader.result;

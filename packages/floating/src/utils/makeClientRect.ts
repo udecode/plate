@@ -1,26 +1,26 @@
 export const makeClientRect = ({
-  top,
   bottom,
   left,
   right,
+  top,
 }: {
-  top: number;
   bottom: number;
   left: number;
   right: number;
+  top: number;
 }): DOMRect => {
   const width = right - left;
   const height = bottom - top;
 
   const props: Omit<DOMRect, 'toJSON'> = {
-    x: left,
-    y: top,
-    top,
     bottom,
+    height,
     left,
     right,
+    top,
     width,
-    height,
+    x: left,
+    y: top,
   };
 
   return {

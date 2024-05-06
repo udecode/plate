@@ -1,13 +1,15 @@
+import type { Point, Range } from 'slate';
+
 import {
+  type PlateEditor,
+  type Value,
   deleteText,
   insertText,
-  PlateEditor,
-  Value,
 } from '@udecode/plate-common/server';
 import castArray from 'lodash/castArray.js';
-import { Point, Range } from 'slate';
 
-import { AutoformatTextRule } from '../types';
+import type { AutoformatTextRule } from '../types';
+
 import { getMatchPoints } from '../utils/getMatchPoints';
 import { getMatchRange } from '../utils/getMatchRange';
 
@@ -18,26 +20,27 @@ export interface AutoformatTextOptions<V extends Value = Value>
 
 export const autoformatText = <V extends Value>(
   editor: PlateEditor<V>,
-  { text, match: _match, trigger, format }: AutoformatTextOptions<V>
+  { format, match: _match, text, trigger }: AutoformatTextOptions<V>
 ) => {
   const selection = editor.selection as Range;
   const matches = castArray(_match);
 
   // dup
   for (const match of matches) {
-    const { start, end, triggers } = getMatchRange({
+    const { end, start, triggers } = getMatchRange({
       match: Array.isArray(format)
         ? match
         : {
-            start: '',
             end: match,
+            start: '',
           },
       trigger,
     });
 
     if (!triggers.includes(text)) continue;
 
-    const matched = getMatchPoints(editor, { start, end });
+    const matched = getMatchPoints(editor, { end, start });
+
     if (!matched) continue;
 
     const { afterStartMatchPoint, beforeEndMatchPoint, beforeStartMatchPoint } =
@@ -51,7 +54,6 @@ export const autoformatText = <V extends Value>(
         },
       });
     }
-
     if (typeof format === 'function') {
       format(editor, matched);
     } else {

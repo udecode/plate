@@ -1,19 +1,17 @@
 import {
+  type ToggleMarkPlugin,
   createPluginFactory,
   onKeyDownToggleMark,
   someHtmlElement,
-  ToggleMarkPlugin,
 } from '@udecode/plate-common/server';
 
 export const MARK_BOLD = 'bold';
 
-/**
- * Enables support for bold formatting
- */
+/** Enables support for bold formatting */
 export const createBoldPlugin = createPluginFactory<ToggleMarkPlugin>({
-  key: MARK_BOLD,
-  isLeaf: true,
   deserializeHtml: {
+    query: (el) =>
+      !someHtmlElement(el, (node) => node.style.fontWeight === 'normal'),
     rules: [
       { validNodeName: ['STRONG', 'B'] },
       {
@@ -22,13 +20,13 @@ export const createBoldPlugin = createPluginFactory<ToggleMarkPlugin>({
         },
       },
     ],
-    query: (el) =>
-      !someHtmlElement(el, (node) => node.style.fontWeight === 'normal'),
   },
-
   handlers: {
     onKeyDown: onKeyDownToggleMark,
   },
+  isLeaf: true,
+
+  key: MARK_BOLD,
   options: {
     hotkey: 'mod+b',
   },

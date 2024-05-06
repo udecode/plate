@@ -1,7 +1,9 @@
 import React from 'react';
 
 import type { IconProps } from '@radix-ui/react-icons/dist/types';
-import type {
+
+import { cva } from 'class-variance-authority';
+import {
   AlignCenter,
   AlignJustify,
   AlignLeft,
@@ -43,7 +45,7 @@ import type {
   List,
   ListOrdered,
   Loader2,
-  LucideIcon,
+  type LucideIcon,
   type LucideProps,
   MessageSquare,
   MessageSquarePlus,
@@ -81,8 +83,6 @@ import type {
   WrapText,
   X,
 } from 'lucide-react';
-
-import { cva } from 'class-variance-authority';
 
 export type Icon = LucideIcon;
 

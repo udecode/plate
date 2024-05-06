@@ -1,4 +1,10 @@
-import { PlateEditor, Value, WithPlatePlugin } from '@udecode/plate-common/server';
+import type {
+  PlateEditor,
+  Value,
+  WithPlatePlugin,
+} from '@udecode/plate-common/server';
+
+import type { ListPlugin } from './types';
 
 import { deleteBackwardList } from './deleteBackwardList';
 import { deleteForwardList } from './deleteForwardList';
@@ -6,7 +12,6 @@ import { deleteFragmentList } from './deleteFragmentList';
 import { insertBreakList } from './insertBreakList';
 import { insertFragmentList } from './insertFragmentList';
 import { normalizeList } from './normalizers/index';
-import { ListPlugin } from './types';
 
 export const withList = <
   V extends Value = Value,
@@ -15,7 +20,7 @@ export const withList = <
   editor: E,
   { options: { validLiChildrenTypes } }: WithPlatePlugin<ListPlugin, V, E>
 ) => {
-  const { insertBreak, deleteBackward, deleteForward, deleteFragment } = editor;
+  const { deleteBackward, deleteForward, deleteFragment, insertBreak } = editor;
 
   editor.insertBreak = () => {
     if (insertBreakList(editor)) return;

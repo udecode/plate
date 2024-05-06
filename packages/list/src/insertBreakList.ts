@@ -1,15 +1,15 @@
 import {
   ELEMENT_DEFAULT,
+  type PlateEditor,
+  type Value,
   getPluginType,
   isBlockAboveEmpty,
   mockPlugin,
-  PlateEditor,
-  Value,
 } from '@udecode/plate-common/server';
 import {
-  onKeyDownResetNode,
-  ResetNodePlugin,
+  type ResetNodePlugin,
   SIMULATE_BACKSPACE,
+  onKeyDownResetNode,
 } from '@udecode/plate-reset-node';
 
 import { ELEMENT_LI } from './createListPlugin';
@@ -45,22 +45,21 @@ export const insertBreakList = <V extends Value>(editor: PlateEditor<V>) => {
       options: {
         rules: [
           {
-            types: [getPluginType(editor, ELEMENT_LI)],
             defaultType: getPluginType(editor, ELEMENT_DEFAULT),
-            predicate: () => !moved && isBlockAboveEmpty(editor),
             onReset: (_editor) => unwrapList(_editor),
+            predicate: () => !moved && isBlockAboveEmpty(editor),
+            types: [getPluginType(editor, ELEMENT_LI)],
           },
         ],
       },
     })
   )(SIMULATE_BACKSPACE as any);
-  if (didReset) return true;
 
-  /**
-   * If selection is in li > p, insert li.
-   */
+  if (didReset) return true;
+  /** If selection is in li > p, insert li. */
   if (!moved) {
     const inserted = insertListItem(editor);
+
     if (inserted) return true;
   }
 };

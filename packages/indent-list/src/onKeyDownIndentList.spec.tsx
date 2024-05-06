@@ -6,9 +6,9 @@ import { createIndentPlugin } from '@udecode/plate-indent';
 import { jsx } from '@udecode/plate-test-utils';
 
 import {
-  createIndentListPlugin,
-  IndentListPlugin,
+  type IndentListPlugin,
   KEY_LIST_STYLE_TYPE,
+  createIndentListPlugin,
 } from './createIndentListPlugin';
 import { onKeyDownIndentList } from './onKeyDownIndentList';
 

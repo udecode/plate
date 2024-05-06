@@ -1,6 +1,4 @@
 export interface FindReplacePlugin {
-  /**
-   * Searching text to highlight
-   */
+  /** Searching text to highlight */
   search?: string;
 }

@@ -1,8 +1,8 @@
 import {
+  type PlateEditor,
+  type Value,
   collapseSelection,
   getEdgePoints,
-  PlateEditor,
-  Value,
   withoutNormalizing,
 } from '@udecode/plate-common/server';
 

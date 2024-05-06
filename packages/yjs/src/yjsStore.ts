@@ -6,6 +6,9 @@ export const yjsStore = createZustandStore('yjs')({
 });
 
 export const yjsActions = yjsStore.set;
+
 export const yjsSelectors = yjsStore.get;
+
 export const useYjsSelectors = yjsStore.use;
+
 export const useYjsStore = yjsStore.useStore;

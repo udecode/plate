@@ -17,7 +17,6 @@ const name = 'headers';
 
 describe(getDocxTestName(name), () => {
   testDocxDeserializer({
-    filename: name,
     expected: (
       <editor>
         <hh1>
@@ -73,10 +72,10 @@ describe(getDocxTestName(name), () => {
         </hp>
         <hh5>
           <htext
-            italic
             color="rgb(79, 129, 189)"
             fontFamily="'Calibri',sans-serif"
             fontSize="12.0pt"
+            italic
           >
             Fifth level
           </htext>
@@ -113,6 +112,7 @@ describe(getDocxTestName(name), () => {
         </hp>
       </editor>
     ),
+    filename: name,
     plugins: [
       createFontBackgroundColorPlugin(),
       createFontColorPlugin(),

@@ -1,14 +1,19 @@
-import { getPluginOptions, PlateEditor, Value } from '@udecode/plate-common/server';
-
-import { ELEMENT_TABLE } from '../createTablePlugin';
-import { getRowSpan } from '../queries/getRowSpan';
 import {
-  TablePlugin,
+  type PlateEditor,
+  type Value,
+  getPluginOptions,
+} from '@udecode/plate-common/server';
+
+import type {
   TTableCellElement,
   TTableElement,
   TTableRowElement,
+  TablePlugin,
 } from '../types';
+
+import { ELEMENT_TABLE } from '../createTablePlugin';
 import { getColSpan } from '../queries';
+import { getRowSpan } from '../queries/getRowSpan';
 
 export function computeCellIndices<V extends Value>(
   editor: PlateEditor<V>,
@@ -26,13 +31,17 @@ export function computeCellIndices<V extends Value>(
     const row = tableNodes[r] as TTableRowElement;
 
     let cIndex = 0;
-    for (let c = 0; c < row.children.length; c++) {
-      const cell = row.children[c] as TTableCellElement;
+
+    for (const item of row.children) {
+      const cell = item as TTableCellElement;
+
       if (cellEl === cell) {
         colIndex = cIndex;
         rowIndex = r;
+
         break;
       }
+
       cIndex += getColSpan(cell);
     }
   }
@@ -43,8 +52,10 @@ export function computeCellIndices<V extends Value>(
       const prevCell = pC as TTableCellElement;
       const prevIndices = options?._cellIndices?.get(prevCell);
       const _rowSpan = getRowSpan(prevCell);
+
       if (prevIndices) {
         const { col: prevColIndex } = prevIndices;
+
         if (
           // colIndex affects
           prevColIndex <= colIndex &&
@@ -63,7 +74,7 @@ export function computeCellIndices<V extends Value>(
     return null;
   }
 
-  const indices = { row: rowIndex, col: colIndex };
+  const indices = { col: colIndex, row: rowIndex };
   options?._cellIndices?.set(cellEl, indices);
 
   return indices;
@@ -76,14 +87,15 @@ export const computeAllCellIndices = <V extends Value>(
   const options = getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
 
   // Iterate through the table rows
-  for (let r = 0; r < tableNode.children.length; r++) {
-    const row = tableNode.children[r] as TTableRowElement;
+  for (const tableChild of tableNode.children) {
+    const row = tableChild as TTableRowElement;
 
     // Iterate through the row cells
-    for (let c = 0; c < row.children.length; c++) {
-      const cell = row.children[c] as TTableCellElement;
+    for (const rowChild of row.children) {
+      const cell = rowChild as TTableCellElement;
 
       const indices = computeCellIndices(editor, tableNode, cell);
+
       if (indices) {
         options._cellIndices?.set(cell, indices);
       }

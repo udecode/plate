@@ -6,9 +6,7 @@ export interface RemoveEmptyNodesPlugin {
   types?: string | string[];
 }
 
-/**
- * @see {@link withRemoveEmptyNodes}
- */
+/** @see {@link withRemoveEmptyNodes} */
 export const createRemoveEmptyNodesPlugin =
   createPluginFactory<RemoveEmptyNodesPlugin>({
     key: 'removeEmptyNodes',

@@ -1,18 +1,19 @@
 import {
+  type PlateEditor,
+  type TNode,
+  type TNodeEntry,
+  type Value,
   createPathRef,
   getLastChildPath,
   isElement,
-  PlateEditor,
-  TNode,
-  TNodeEntry,
-  Value,
 } from '@udecode/plate-common/server';
+
+import type { TColumnGroupElement } from '../types';
 
 import { ELEMENT_COLUMN_GROUP } from '../createColumnPlugin';
 import { moveMiddleColumn } from '../transforms';
 import { insertEmptyColumn } from '../transforms/insertEmptyColumn';
 import { setColumnWidth } from '../transforms/setColumnWidth';
-import { TColumnGroupElement } from '../types';
 
 export const normalizeColumn = <V extends Value, N extends TNode>(
   editor: PlateEditor<V>
@@ -26,6 +27,7 @@ export const normalizeColumn = <V extends Value, N extends TNode>(
         entry as unknown as TNodeEntry<TColumnGroupElement>
       );
     }
+
     return normalizeNode(entry);
   };
 };
@@ -38,6 +40,7 @@ const normalizeColumnHelper = <V extends Value, N extends TColumnGroupElement>(
 
   const prevChildrenCnt = node.children.length;
   const currentLayout = node.layout;
+
   if (!currentLayout) return;
 
   const currentChildrenCnt = currentLayout.length;
@@ -53,12 +56,10 @@ const normalizeColumnHelper = <V extends Value, N extends TColumnGroupElement>(
 
     setColumnWidth(editor, groupPathRef, currentLayout);
   }
-
   if (prevChildrenCnt === 3 && currentChildrenCnt === 2) {
     moveMiddleColumn(editor, entry, { direction: 'left' });
     setColumnWidth(editor, groupPathRef, currentLayout);
   }
-
   if (prevChildrenCnt === currentChildrenCnt) {
     setColumnWidth(editor, groupPathRef, currentLayout);
   }

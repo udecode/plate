@@ -1,13 +1,15 @@
 import {
-  EElement,
-  EElementEntry,
+  type EElement,
+  type EElementEntry,
+  type TEditor,
+  type TNodeEntry,
+  type Value,
   getNode,
   setElements,
-  TEditor,
-  TNodeEntry,
-  Value,
   withoutNormalizing,
 } from '@udecode/plate-common/server';
+
+import type { GetSiblingIndentListOptions } from '../queries/getSiblingIndentList';
 
 import {
   KEY_LIST_RESTART,
@@ -16,7 +18,6 @@ import {
 } from '../createIndentListPlugin';
 import { getNextIndentList } from '../queries/getNextIndentList';
 import { getPreviousIndentList } from '../queries/getPreviousIndentList';
-import { GetSiblingIndentListOptions } from '../queries/getSiblingIndentList';
 import { normalizeFirstIndentListStart } from './normalizeFirstIndentListStart';
 
 export const normalizeNextIndentListStart = <V extends Value>(
@@ -34,6 +35,7 @@ export const normalizeNextIndentListStart = <V extends Value>(
 
   if (currListStart !== listStart) {
     setElements(editor, { [KEY_LIST_START]: listStart }, { at: path });
+
     return true;
   }
 

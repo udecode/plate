@@ -1,42 +1,44 @@
 import React from 'react';
+
 import VanillaSelectionArea, {
-  SelectionEvents,
-  SelectionOptions,
+  type SelectionEvents,
+  type SelectionOptions,
 } from '@viselect/vanilla';
 
 export interface SelectionAreaProps
   extends Omit<Partial<SelectionOptions>, 'boundaries'>,
     React.HTMLAttributes<HTMLDivElement> {
   className?: string;
-  onBeforeStart?: SelectionEvents['beforestart'];
-  onStart?: SelectionEvents['start'];
-  onMove?: SelectionEvents['move'];
-  onStop?: SelectionEvents['stop'];
-
   /**
    * The boundaries of the selection area.
+   *
    * @boundaries ref of the selection area element.
    */
   getBoundaries?: (
     boundaries: SelectionOptions['boundaries']
   ) => SelectionOptions['boundaries'];
+  onBeforeStart?: SelectionEvents['beforestart'];
+  onMove?: SelectionEvents['move'];
+  onStart?: SelectionEvents['start'];
+
+  onStop?: SelectionEvents['stop'];
 }
 
 export function SelectionArea({
-  onBeforeStart,
-  onStart,
-  onMove,
-  onStop,
+  behaviour,
   children,
-  selectionAreaClass,
-  selectionContainerClass,
   container,
   document,
-  selectables,
-  startAreas,
-  behaviour,
   features,
   getBoundaries = (boundaries) => boundaries,
+  onBeforeStart,
+  onMove,
+  onStart,
+  onStop,
+  selectables,
+  selectionAreaClass,
+  selectionContainerClass,
+  startAreas,
   ...props
 }: SelectionAreaProps) {
   const ref = React.createRef<HTMLDivElement>();
@@ -44,14 +46,14 @@ export function SelectionArea({
   /* eslint-disable react-hooks/exhaustive-deps */
   React.useEffect(() => {
     const opt = {
-      selectionAreaClass,
-      selectionContainerClass,
+      behaviour,
       container,
       document,
-      selectables,
-      startAreas,
-      behaviour,
       features,
+      selectables,
+      selectionAreaClass,
+      selectionContainerClass,
+      startAreas,
     };
 
     const areaBoundaries = ref.current as HTMLElement;

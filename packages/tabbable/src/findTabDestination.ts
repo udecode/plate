@@ -1,22 +1,22 @@
 import {
+  type PlateEditor,
+  type Value,
   getPoint,
   getPointAfter,
-  PlateEditor,
-  Value,
 } from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
-import { TabbableEntry, TabDestination } from './types';
+import type { TabDestination, TabbableEntry } from './types';
 
 export interface FindTabDestinationOptions {
-  tabbableEntries: TabbableEntry[];
   activeTabbableEntry: TabbableEntry | null;
-  direction: 'forward' | 'backward';
+  direction: 'backward' | 'forward';
+  tabbableEntries: TabbableEntry[];
 }
 
 export const findTabDestination = <V extends Value = Value>(
   editor: PlateEditor<V>,
-  { tabbableEntries, activeTabbableEntry, direction }: FindTabDestinationOptions
+  { activeTabbableEntry, direction, tabbableEntries }: FindTabDestinationOptions
 ): TabDestination | null => {
   // Case 1: A tabbable entry was active before tab was pressed
   if (activeTabbableEntry) {
@@ -32,15 +32,16 @@ export const findTabDestination = <V extends Value = Value>(
      * tabbable entry, focus it.
      *
      * Examples of when this is true:
-     * - We're inside a void node and there is an additional tabbable inside
-     *   the same void node.
-     * - We're inside a popover containing multiple tabbable elements all
-     *   anchored to the same slate node, and there is an additional tabbable
-     *   inside the same popover.
+     *
+     * - We're inside a void node and there is an additional tabbable inside the
+     *   same void node.
+     * - We're inside a popover containing multiple tabbable elements all anchored
+     *   to the same slate node, and there is an additional tabbable inside the
+     *   same popover.
      *
      * Examples of when this is false:
-     * - We're inside a void node and the next tabbable is outside the void
-     *   node.
+     *
+     * - We're inside a void node and the next tabbable is outside the void node.
      * - We're in the last tabbable element of a popover.
      * - There is no next tabbable element.
      */
@@ -49,30 +50,30 @@ export const findTabDestination = <V extends Value = Value>(
       Path.equals(activeTabbableEntry.path, nextTabbableEntry.path)
     ) {
       return {
-        type: 'dom-node',
         domNode: nextTabbableEntry.domNode,
+        type: 'dom-node',
       };
     }
-
     /**
-     * Otherwise, return the focus to the editor. If we're moving forward,
-     * focus the first point after the active tabbable's path. If we're moving
-     * backward, focus the point of the active tabbable's path.
-     * TODO: Let a tabbable entry specify custom before and after points.
+     * Otherwise, return the focus to the editor. If we're moving forward, focus
+     * the first point after the active tabbable's path. If we're moving
+     * backward, focus the point of the active tabbable's path. TODO: Let a
+     * tabbable entry specify custom before and after points.
      */
-
     if (direction === 'forward') {
       const pointAfter = getPointAfter(editor, activeTabbableEntry.path);
+
       if (!pointAfter) return null;
+
       return {
-        type: 'path',
         path: pointAfter.path,
+        type: 'path',
       };
     }
 
     return {
-      type: 'path',
       path: getPoint(editor, activeTabbableEntry.path).path,
+      type: 'path',
     };
   }
 
@@ -93,8 +94,8 @@ export const findTabDestination = <V extends Value = Value>(
   // If it exists, focus it
   if (nextTabbableEntry) {
     return {
-      type: 'dom-node',
       domNode: nextTabbableEntry.domNode,
+      type: 'dom-node',
     };
   }
 

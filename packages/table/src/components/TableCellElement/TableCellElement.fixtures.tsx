@@ -1,6 +1,7 @@
 /** @jsx jsx */
 
-import { PlateEditor } from '@udecode/plate-common/server';
+import type { PlateEditor } from '@udecode/plate-common/server';
+
 import { jsx } from '@udecode/plate-test-utils';
 
 jsx;
@@ -22,22 +23,22 @@ export const a = (
 
 export const tableInput = Object.freeze([
   {
-    type: 'table',
     children: [
       {
-        type: 'tr',
         children: [
-          { type: 'td', children: [{ text: 'A1' }] },
-          { type: 'td', children: [{ text: 'B1' }] },
+          { children: [{ text: 'A1' }], type: 'td' },
+          { children: [{ text: 'B1' }], type: 'td' },
         ],
+        type: 'tr',
       },
       {
-        type: 'tr',
         children: [
-          { type: 'td', children: [{ text: 'A2' }] },
-          { type: 'td', children: [{ text: 'B2' }] },
+          { children: [{ text: 'A2' }], type: 'td' },
+          { children: [{ text: 'B2' }], type: 'td' },
         ],
+        type: 'tr',
       },
     ],
+    type: 'table',
   },
 ]) as any;

@@ -1,14 +1,15 @@
 /* eslint-disable prettier/prettier */
-// @ts-ignore
+import type { HyperscriptShorthands } from 'slate-hyperscript/dist/hyperscript';
+
 import {
   createHyperscript,
   createText as createTestText,
 } from 'slate-hyperscript';
-import { HyperscriptShorthands } from 'slate-hyperscript/dist/hyperscript';
 
 import { createText } from './hyperscript/creators';
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
     interface IntrinsicElements {
       [key: string]: any;
@@ -19,20 +20,20 @@ declare global {
       element: any;
       focus: any;
       fragment: any;
-      selection: any;
+      hli: any;
+      hol: any;
+      hp: any;
       htext: {
         [key: string]: any;
         // These optional params will show up in the autocomplete!
         bold?: boolean;
-        underline?: boolean;
-        italic?: boolean;
-        code?: boolean;
         children?: any;
+        code?: boolean;
+        italic?: boolean;
+        underline?: boolean;
       };
-      hp: any;
       hul: any;
-      hol: any;
-      hli: any;
+      selection: any;
     }
   }
 }
@@ -74,6 +75,8 @@ const elements: HyperscriptShorthands = {
   hblockquote: { type: ELEMENT_BLOCKQUOTE },
   hcodeblock: { type: ELEMENT_CODE_BLOCK },
   hcodeline: { type: ELEMENT_CODE_LINE },
+  hcolumn: { type: ELEMENT_COLUMN },
+  hcolumngroup: { type: ELEMENT_COLUMN_GROUP },
   hdefault: { type: ELEMENT_PARAGRAPH },
   hexcalidraw: { type: ELEMENT_EXCALIDRAW },
   hh1: { type: ELEMENT_H1 },
@@ -82,12 +85,12 @@ const elements: HyperscriptShorthands = {
   hh4: { type: ELEMENT_H4 },
   hh5: { type: ELEMENT_H5 },
   hh6: { type: ELEMENT_H6 },
-  himg: { type: ELEMENT_IMAGE, children: voidChildren },
+  himg: { children: voidChildren, type: ELEMENT_IMAGE },
   hli: { type: ELEMENT_LI },
   hlic: { type: ELEMENT_LIC },
-  hmediaembed: { type: ELEMENT_MEDIA_EMBED, children: voidChildren },
-  hmention: { type: ELEMENT_MENTION, children: voidChildren },
-  hmentioninput: { type: ELEMENT_MENTION_INPUT, children: voidChildren },
+  hmediaembed: { children: voidChildren, type: ELEMENT_MEDIA_EMBED },
+  hmention: { children: voidChildren, type: ELEMENT_MENTION },
+  hmentioninput: { children: voidChildren, type: ELEMENT_MENTION_INPUT },
   hnli: { type: ELEMENT_NLI },
   hol: { type: ELEMENT_OL },
   hp: { type: ELEMENT_PARAGRAPH },
@@ -98,20 +101,18 @@ const elements: HyperscriptShorthands = {
   htoggle: { type: ELEMENT_TOGGLE },
   htr: { type: ELEMENT_TR },
   hul: { type: ELEMENT_UL },
-  hcolumngroup: { type: ELEMENT_COLUMN_GROUP },
-  hcolumn: { type: ELEMENT_COLUMN },
 };
 
 export const jsx = createHyperscript({
-  elements,
   creators: {
     htext: createTestText,
   },
+  elements,
 });
 
 export const hjsx = createHyperscript({
-  elements,
   creators: {
     htext: createText,
   },
+  elements,
 });

@@ -1,46 +1,38 @@
+import type { Location } from 'slate';
+
 import {
+  type PlateEditor,
+  type Value,
   getBlockAbove,
   getEndPoint,
   getStartPoint,
   hasNode,
   moveSelection,
-  PlateEditor,
   select,
-  Value,
   withoutNormalizing,
 } from '@udecode/plate-common/server';
-import { Location } from 'slate';
 
 import { getTableGridAbove } from '../queries/getTableGridAbove';
 import { getCellTypes } from '../utils/getCellType';
 
-/**
- * Move selection by cell unit.
- */
+/** Move selection by cell unit. */
 export const moveSelectionFromCell = <V extends Value = Value>(
   editor: PlateEditor<V>,
   {
     at,
-    reverse,
     edge,
     fromOneCell,
+    reverse,
   }: {
     at?: Location;
 
-    /**
-     * false: move selection to cell below
-     * true: move selection to cell above
-     */
-    reverse?: boolean;
-    /**
-     * Expand cell selection to an edge.
-     */
-    edge?: 'top' | 'left' | 'right' | 'bottom';
-
-    /**
-     * Move selection from one selected cell
-     */
+    /** Expand cell selection to an edge. */
+    edge?: 'bottom' | 'left' | 'right' | 'top';
+    /** Move selection from one selected cell */
     fromOneCell?: boolean;
+
+    /** False: move selection to cell below true: move selection to cell above */
+    reverse?: boolean;
   } = {}
 ) => {
   if (edge) {
@@ -85,8 +77,10 @@ export const moveSelectionFromCell = <V extends Value = Value>(
           focus: getStartPoint(editor, focusPath),
         });
       }
+
       return true;
     }
+
     return;
   }
 

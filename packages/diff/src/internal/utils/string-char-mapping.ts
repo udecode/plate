@@ -3,7 +3,8 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import { TDescendant } from '@udecode/plate-common/server';
+import type { TDescendant } from '@udecode/plate-common/server';
+
 import isEqual from 'lodash/isEqual.js';
 
 import { unusedCharGenerator } from './unused-char-generator';
@@ -12,8 +13,12 @@ export class StringCharMapping {
   private _charGenerator = unusedCharGenerator();
   private _mappedNodes: [TDescendant, string][] = [];
 
-  public nodesToString(nodes: TDescendant[]): string {
-    return nodes.map(this.nodeToChar.bind(this)).join('');
+  public charToNode(c: string): TDescendant {
+    const entry = this._mappedNodes.find(([_node, c2]) => c2 === c);
+
+    if (!entry) throw new Error(`No node found for char ${c}`);
+
+    return entry[0];
   }
 
   public nodeToChar(node: TDescendant): string {
@@ -26,16 +31,15 @@ export class StringCharMapping {
 
     const c = this._charGenerator.next().value;
     this._mappedNodes.push([node, c]);
+
     return c;
+  }
+
+  public nodesToString(nodes: TDescendant[]): string {
+    return nodes.map(this.nodeToChar.bind(this)).join('');
   }
 
   public stringToNodes(s: string): TDescendant[] {
     return s.split('').map(this.charToNode.bind(this));
-  }
-
-  public charToNode(c: string): TDescendant {
-    const entry = this._mappedNodes.find(([_node, c2]) => c2 === c);
-    if (!entry) throw new Error(`No node found for char ${c}`);
-    return entry[0];
   }
 }

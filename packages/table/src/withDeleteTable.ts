@@ -1,4 +1,7 @@
 import {
+  type PlateEditor,
+  type TElement,
+  type Value,
   getBlockAbove,
   getEndPoint,
   getPluginType,
@@ -8,11 +11,8 @@ import {
   isCollapsed,
   isRangeInSameBlock,
   moveSelection,
-  PlateEditor,
   replaceNodeChildren,
   select,
-  TElement,
-  Value,
   withoutNormalizing,
 } from '@udecode/plate-common/server';
 import { Point } from 'slate';
@@ -23,17 +23,18 @@ import { getCellTypes } from './utils/getCellType';
 
 /**
  * Return true if:
- * - at start/end of a cell.
- * - next to a table cell. Move selection to the table cell.
+ *
+ * - At start/end of a cell.
+ * - Next to a table cell. Move selection to the table cell.
  */
 export const preventDeleteTableCell = <V extends Value = Value>(
   editor: PlateEditor<V>,
   {
-    unit,
     reverse,
+    unit,
   }: {
-    unit?: 'character' | 'word' | 'line' | 'block';
     reverse?: boolean;
+    unit?: 'block' | 'character' | 'line' | 'word';
   }
 ) => {
   const { selection } = editor;
@@ -60,20 +61,20 @@ export const preventDeleteTableCell = <V extends Value = Value>(
       const nextPoint = getNextPoint(editor, selection!, { unit });
 
       const nextCellEntry = getBlockAbove(editor, {
-        match: { type: getCellTypes(editor) },
         at: nextPoint,
+        match: { type: getCellTypes(editor) },
       });
+
       if (nextCellEntry) {
         moveSelection(editor, { reverse: !reverse });
+
         return true;
       }
     }
   }
 };
 
-/**
- * Prevent cell deletion.
- */
+/** Prevent cell deletion. */
 export const withDeleteTable = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
@@ -89,7 +90,7 @@ export const withDeleteTable = <
   };
 
   editor.deleteForward = (unit) => {
-    if (preventDeleteTableCell(editor, { unit, reverse: true })) return;
+    if (preventDeleteTableCell(editor, { reverse: true, unit })) return;
 
     return deleteForward(unit);
   };
@@ -101,6 +102,7 @@ export const withDeleteTable = <
       })
     ) {
       const cellEntries = getTableGridAbove(editor, { format: 'cell' });
+
       if (cellEntries.length > 1) {
         withoutNormalizing(editor, () => {
           cellEntries.forEach(([, cellPath]) => {

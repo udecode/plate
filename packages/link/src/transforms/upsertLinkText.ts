@@ -1,20 +1,21 @@
 import {
+  type PlateEditor,
+  type TText,
+  type Value,
   getAboveNode,
   getEditorString,
   getPluginType,
-  PlateEditor,
   replaceNodeChildren,
-  TText,
-  Value,
 } from '@udecode/plate-common/server';
 
+import type { TLinkElement } from '../types';
+import type { UpsertLinkOptions } from './upsertLink';
+
 import { ELEMENT_LINK } from '../createLinkPlugin';
-import { TLinkElement } from '../types';
-import { UpsertLinkOptions } from './upsertLink';
 
 /**
- * If the text is different than the link above text, replace link children by a new text.
- * The new text has the same marks than the first text replaced.
+ * If the text is different than the link above text, replace link children by a
+ * new text. The new text has the same marks than the first text replaced.
  */
 export const upsertLinkText = <V extends Value>(
   editor: PlateEditor<V>,
@@ -33,10 +34,10 @@ export const upsertLinkText = <V extends Value>(
       // remove link children
       replaceNodeChildren<TText>(editor, {
         at: newLinkPath,
-        nodes: { ...firstText, text },
         insertOptions: {
           select: true,
         },
+        nodes: { ...firstText, text },
       });
     }
   }

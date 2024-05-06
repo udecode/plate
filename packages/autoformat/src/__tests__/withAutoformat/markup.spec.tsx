@@ -40,10 +40,10 @@ describe('when match is an array', () => {
           options: {
             rules: [
               {
+                ignoreTrim: true,
+                match: ['_***', '***_'],
                 mode: 'mark',
                 type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
-                match: ['_***', '***_'],
-                ignoreTrim: true,
               },
             ],
           },
@@ -85,10 +85,10 @@ describe('when match is a string', () => {
           options: {
             rules: [
               {
+                ignoreTrim: true,
+                match: '_***',
                 mode: 'mark',
                 type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
-                match: '_***',
-                ignoreTrim: true,
               },
             ],
           },

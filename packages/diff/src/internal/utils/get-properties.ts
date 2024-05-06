@@ -4,7 +4,7 @@
  */
 
 /* eslint-disable no-restricted-syntax */
-import { TText } from '@udecode/plate-common/server';
+import type { TText } from '@udecode/plate-common/server';
 
 // Get object that will set the properties of before
 // to equal the properties of node, in terms of the
@@ -12,6 +12,7 @@ import { TText } from '@udecode/plate-common/server';
 // just gives all the non-text propers of goal.
 export function getProperties(goal: TText, before?: TText): any {
   const props: any = {};
+
   for (const x in goal) {
     if (x !== 'text') {
       if (before == null) {
@@ -31,6 +32,7 @@ export function getProperties(goal: TText, before?: TText): any {
       }
     }
   }
+
   if (before != null) {
     // also be sure to explicitly remove props not in goal
     // WARNING: this might change in slatejs; I saw a discussion about this.
@@ -40,5 +42,6 @@ export function getProperties(goal: TText, before?: TText): any {
       }
     }
   }
+
   return props;
 }

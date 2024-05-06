@@ -34,7 +34,7 @@ it('should be', () => {
   onKeyDownExitBreak(
     input,
     mockPlugin({
-      options: { hotkey: 'enter', level: 0, query: { start: true, end: true } },
+      options: { hotkey: 'enter', level: 0, query: { end: true, start: true } },
     })
   )(event);
   expect(input.children).toEqual(output.children);

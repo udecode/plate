@@ -35,10 +35,10 @@ describe('when #space', () => {
         options: {
           rules: [
             {
-              mode: 'block',
-              type: ELEMENT_H1,
               match: '# ',
+              mode: 'block',
               preFormat: preFormat,
+              type: ELEMENT_H1,
             },
           ],
         },

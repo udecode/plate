@@ -27,6 +27,7 @@ export const getTextFromTrigger = <V extends Value>(
   let start: Point | undefined = at;
   let end: Point | undefined;
 
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     end = start;
 

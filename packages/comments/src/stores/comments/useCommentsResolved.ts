@@ -1,4 +1,5 @@
-import { TComment } from '../../types';
+import type { TComment } from '../../types';
+
 import { useCommentsSelectors } from './CommentsProvider';
 
 export const useCommentsResolved = () => {
@@ -8,6 +9,7 @@ export const useCommentsResolved = () => {
 
   Object.keys(comments).forEach((key) => {
     const comment = comments[key];
+
     if (comment?.isResolved) {
       res.push(comment);
     }

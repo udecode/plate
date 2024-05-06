@@ -9,7 +9,6 @@ const name = 'alternate_document_path';
 
 describe(getDocxTestName(name), () => {
   testDocxDeserializer({
-    filename: name,
     expected: (
       <editor>
         <hh1 lineHeight="107%">Test</hh1>
@@ -37,5 +36,6 @@ describe(getDocxTestName(name), () => {
         </hp>
       </editor>
     ),
+    filename: name,
   });
 });
