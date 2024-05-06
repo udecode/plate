@@ -1,5 +1,12 @@
 # @udecode/react-utils
 
+## 33.0.0
+
+### Patch Changes
+
+- [#3125](https://github.com/udecode/plate/pull/3125) by [@zbeyens](https://github.com/zbeyens) –
+  - Fix `withRef`: Component props should be excluded from extended props.
+
 ## 31.0.0
 
 ## 29.0.1
