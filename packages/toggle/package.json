@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-toggle",
-  "version": "32.0.0",
+  "version": "33.0.0",
   "description": "Toggle plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -39,15 +39,15 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-indent": "32.0.0",
-    "@udecode/plate-node-id": "32.0.0",
+    "@udecode/plate-indent": "33.0.0",
+    "@udecode/plate-node-id": "33.0.0",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@udecode/plate-common": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=32.0.1",
+    "@udecode/plate-common": ">=33.0.0",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.94.0",

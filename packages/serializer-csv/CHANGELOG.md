@@ -1,5 +1,12 @@
 # @udecode/plate-serializer-csv
 
+## 33.0.0
+
+### Patch Changes
+
+- [#3125](https://github.com/udecode/plate/pull/3125) by [@zbeyens](https://github.com/zbeyens) –
+  - Remove `@udecode/plate-table` dependency.
+
 ## 32.0.2
 
 ## 32.0.0
