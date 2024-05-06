@@ -1,10 +1,14 @@
 import * as portiveClient from '@portive/client';
-import { insertNode, Value, WithPlatePlugin } from '@udecode/plate-common';
+import {
+  type Value,
+  type WithPlatePlugin,
+  insertNode,
+} from '@udecode/plate-common/server';
 import Defer from 'p-defer';
 
-import { PlateCloudEditor } from '../cloud';
-import { UploadError, UploadSuccess } from '../upload';
-import {
+import type { PlateCloudEditor } from '../cloud';
+import type { UploadError, UploadSuccess } from '../upload';
+import type {
   CloudImagePlugin,
   PlateCloudImageEditor,
   TCloudImageElement,
@@ -23,74 +27,74 @@ export const withCloudImage = <
   plugin: WithPlatePlugin<CloudImagePlugin, V, E>
 ) => {
   const editor = $editor as E & PlateCloudEditor<V>;
-  const { maxInitialWidth, maxInitialHeight, minResizeWidth, maxResizeWidth } =
+  const { maxInitialHeight, maxInitialWidth, maxResizeWidth, minResizeWidth } =
     {
-      maxInitialWidth: DEFAULT_MAX_INITIAL_WIDTH,
       maxInitialHeight: DEFAULT_MAX_INITIAL_HEIGHT,
-      minResizeWidth: DEFAULT_MIN_RESIZE_WIDTH,
+      maxInitialWidth: DEFAULT_MAX_INITIAL_WIDTH,
       maxResizeWidth: DEFAULT_MAX_RESIZE_WIDTH,
+      minResizeWidth: DEFAULT_MIN_RESIZE_WIDTH,
       ...plugin.options,
     };
 
   editor.cloudImage = {
-    maxInitialWidth,
     maxInitialHeight,
-    minResizeWidth,
+    maxInitialWidth,
     maxResizeWidth,
+    minResizeWidth,
   };
 
   /**
-   * We create a deferredFinish which is an object with a `promise` and a way
-   * to `resolve` or `reject` the Promise outside of the Promise. We use
-   * `p-defer` library to do this. The `finish` Promise gets added to the
-   * `origin` object so we can await `origin.finish` during the save process
-   * to wait for all the files to finish uploading.
+   * We create a deferredFinish which is an object with a `promise` and a way to
+   * `resolve` or `reject` the Promise outside of the Promise. We use `p-defer`
+   * library to do this. The `finish` Promise gets added to the `origin` object
+   * so we can await `origin.finish` during the save process to wait for all the
+   * files to finish uploading.
    */
-  const deferredFinish = Defer<UploadSuccess | UploadError>();
+  const deferredFinish = Defer<UploadError | UploadSuccess>();
   const finishPromise = deferredFinish.promise;
 
   editor.cloud.imageFileHandlers = {
-    onStart(e) {
-      const { width, height } = portiveClient.resizeIn(
-        { width: e.width, height: e.height },
-        { width: maxInitialWidth, height: maxInitialHeight }
-      );
-      const node: TCloudImageElement = {
-        type: 'cloud_image',
-        url: e.id,
-        bytes: e.file.size,
-        width,
-        height,
-        maxWidth: e.width,
-        maxHeight: e.height,
-        children: [{ text: '' }],
-      };
-      insertNode<Value>(editor, node);
-      editor.cloud.uploadStore.set.upload(e.id, {
-        status: 'progress',
-        url: e.url,
-        sentBytes: 0,
-        totalBytes: e.file.size,
-        finishPromise,
-      });
-    },
-    onProgress(e) {
-      editor.cloud.uploadStore.set.upload(e.id, {
-        status: 'progress',
-        url: e.url,
-        sentBytes: e.sentBytes,
-        totalBytes: e.totalBytes,
-        finishPromise,
-      });
-    },
     onError(e) {
       const upload: UploadError = {
+        message: e.message,
         status: 'error',
         url: e.url,
-        message: e.message,
       };
       editor.cloud.uploadStore.set.upload(e.id, upload);
       deferredFinish.resolve(upload);
+    },
+    onProgress(e) {
+      editor.cloud.uploadStore.set.upload(e.id, {
+        finishPromise,
+        sentBytes: e.sentBytes,
+        status: 'progress',
+        totalBytes: e.totalBytes,
+        url: e.url,
+      });
+    },
+    onStart(e) {
+      const { height, width } = portiveClient.resizeIn(
+        { height: e.height, width: e.width },
+        { height: maxInitialHeight, width: maxInitialWidth }
+      );
+      const node: TCloudImageElement = {
+        bytes: e.file.size,
+        children: [{ text: '' }],
+        height,
+        maxHeight: e.height,
+        maxWidth: e.width,
+        type: 'cloud_image',
+        url: e.id,
+        width,
+      };
+      insertNode<Value>(editor, node);
+      editor.cloud.uploadStore.set.upload(e.id, {
+        finishPromise,
+        sentBytes: 0,
+        status: 'progress',
+        totalBytes: e.file.size,
+        url: e.url,
+      });
     },
     onSuccess(e) {
       const upload: UploadSuccess = {

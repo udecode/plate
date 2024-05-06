@@ -1,22 +1,23 @@
 /** @jsx jsx */
 
+import type { Range } from 'slate';
+
 import {
+  type ComboboxState,
   comboboxActions,
   comboboxSelectors,
-  ComboboxState,
 } from '@udecode/plate-combobox';
 import {
+  type PlateEditor,
+  type Value,
   moveSelection,
-  PlateEditor,
   select,
-  Value,
 } from '@udecode/plate-common';
 import {
+  type DataTransferDataMap,
   createDataTransfer,
-  DataTransferDataMap,
   jsx,
 } from '@udecode/plate-test-utils';
-import { Range } from 'slate';
 
 import { createEditorWithMentions } from './__tests__/createEditorWithMentions';
 import { getMentionOnSelectItem } from './getMentionOnSelectItem';
@@ -235,8 +236,8 @@ describe('withMention', () => {
       );
 
       select(editor, {
-        path: [0, 2],
         offset: 0,
+        path: [0, 2],
       });
 
       expect(editor.children).toEqual([<hp>@</hp>]);
@@ -255,8 +256,8 @@ describe('withMention', () => {
       );
 
       select(editor, {
-        path: [0, 2],
         offset: 0,
+        path: [0, 2],
       });
 
       expect(editor.children).toEqual([<hp>@hello</hp>]);
@@ -275,13 +276,13 @@ describe('withMention', () => {
       );
 
       select(editor, {
-        path: [0, 2],
         offset: 0,
+        path: [0, 2],
       });
 
       expect(editor.selection).toEqual<Range>({
-        anchor: { path: [0, 0], offset: 6 },
-        focus: { path: [0, 0], offset: 6 },
+        anchor: { offset: 6, path: [0, 0] },
+        focus: { offset: 6, path: [0, 0] },
       });
     });
 
@@ -301,8 +302,8 @@ describe('withMention', () => {
       expect(editor.children).toEqual([<hp>@</hp>]);
 
       expect(editor.selection).toEqual<Range>({
-        anchor: { path: [0, 0], offset: 1 },
-        focus: { path: [0, 0], offset: 1 },
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
       });
     });
 
@@ -332,8 +333,8 @@ describe('withMention', () => {
       ]);
 
       expect(editor.selection).toEqual<Range>({
-        anchor: { path: [0, 1, 0], offset: 1 },
-        focus: { path: [0, 1, 0], offset: 1 },
+        anchor: { offset: 1, path: [0, 1, 0] },
+        focus: { offset: 1, path: [0, 1, 0] },
       });
     });
   });
@@ -495,8 +496,8 @@ describe('withMention', () => {
       );
 
       select(editor, {
-        path: [0, 2],
         offset: 0,
+        path: [0, 2],
       });
 
       expect(comboboxSelectors.state()).toMatchObject<Partial<ComboboxState>>({
@@ -561,15 +562,15 @@ describe('withMention', () => {
     };
 
     const basePasteTestSuite = ({
-      simple,
-      whitespace,
       newLine,
       newLineAndWhitespace,
+      simple,
+      whitespace,
     }: {
-      simple: PasteTestCase;
-      whitespace: PasteTestCase;
       newLine: PasteTestCase;
       newLineAndWhitespace: PasteTestCase;
+      simple: PasteTestCase;
+      whitespace: PasteTestCase;
     }): void => {
       it('should paste the clipboard contents into mention as text', () =>
         testPasteBasic(simple.data, simple.expected));
@@ -589,14 +590,6 @@ describe('withMention', () => {
 
     describe('html', () => {
       basePasteTestSuite({
-        simple: {
-          data: new Map([['text/html', '<html><body>hello</body></html>']]),
-          expected: 'hello',
-        },
-        whitespace: {
-          data: new Map([['text/html', '<html><body> hello </body></html>']]),
-          expected: 'hello',
-        },
         newLine: {
           data: new Map([
             ['text/html', '<html><body>hello<br>world</body></html>'],
@@ -609,19 +602,19 @@ describe('withMention', () => {
           ]),
           expected: 'helloworld',
         },
+        simple: {
+          data: new Map([['text/html', '<html><body>hello</body></html>']]),
+          expected: 'hello',
+        },
+        whitespace: {
+          data: new Map([['text/html', '<html><body> hello </body></html>']]),
+          expected: 'hello',
+        },
       });
     });
 
     describe('plain text', () => {
       basePasteTestSuite({
-        simple: {
-          data: new Map([['text/plain', 'hello']]),
-          expected: 'hello',
-        },
-        whitespace: {
-          data: new Map([['text/plain', ' hello ']]),
-          expected: 'hello',
-        },
         newLine: {
           data: new Map([['text/plain', 'hello\r\nworld\n!\r!']]),
           expected: 'helloworld!!',
@@ -629,6 +622,14 @@ describe('withMention', () => {
         newLineAndWhitespace: {
           data: new Map([['text/plain', ' hello \r\n world \n ! \r ! ']]),
           expected: 'helloworld!!',
+        },
+        simple: {
+          data: new Map([['text/plain', 'hello']]),
+          expected: 'hello',
+        },
+        whitespace: {
+          data: new Map([['text/plain', ' hello ']]),
+          expected: 'hello',
         },
       });
     });

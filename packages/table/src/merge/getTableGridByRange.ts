@@ -1,34 +1,36 @@
+import type { Range } from 'slate';
+
+import { findNodePath } from '@udecode/plate-common';
 import {
+  type PlateEditor,
+  type TElement,
+  type TElementEntry,
+  type Value,
   findNode,
-  findNodePath,
   getPluginOptions,
   getPluginType,
-  PlateEditor,
-  TElement,
-  TElementEntry,
-  Value,
-} from '@udecode/plate-common';
-import { Range } from 'slate';
+} from '@udecode/plate-common/server';
+
+import type {
+  TTableCellElement,
+  TTableElement,
+  TTableRowElement,
+  TablePlugin,
+} from '../types';
 
 import { ELEMENT_TABLE } from '../createTablePlugin';
 import { computeCellIndices } from '../merge/computeCellIndices';
 import { findCellByIndexes } from '../merge/findCellByIndexes';
 import { getCellIndices } from '../merge/getCellIndices';
 import { getCellIndicesWithSpans } from '../merge/getCellIndicesWithSpans';
-import {
-  TablePlugin,
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '../types';
 import { getCellTypes } from '../utils';
 import { getEmptyTableNode } from '../utils/getEmptyTableNode';
 
-type FormatType = 'table' | 'cell' | 'all';
+type FormatType = 'all' | 'cell' | 'table';
 
 interface TableGridEntries {
-  tableEntries: TElementEntry[];
   cellEntries: TElementEntry[];
+  tableEntries: TElementEntry[];
 }
 
 type GetTableGridReturnType<T> = T extends 'all'
@@ -40,15 +42,16 @@ interface GetTableGridByRangeOptions<T extends FormatType> {
 
   /**
    * Format of the output:
-   * - table element
-   * - array of cells
+   *
+   * - Table element
+   * - Array of cells
    */
   format?: T;
 }
 
 /**
- * Get sub table between 2 cell paths.
- * Ensure that the selection is always a valid table grid.
+ * Get sub table between 2 cell paths. Ensure that the selection is always a
+ * valid table grid.
  */
 export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
   editor: PlateEditor<V>,
@@ -86,7 +89,7 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
     startCell
   );
 
-  const { row: _endRowIndex, col: _endColIndex } = getCellIndicesWithSpans(
+  const { col: _endColIndex, row: _endRowIndex } = getCellIndicesWithSpans(
     getCellIndices(cellIndices!, endCell) ||
       computeCellIndices(editor, realTable, endCell)!,
     endCell
@@ -101,9 +104,9 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
   const relativeColIndex = endColIndex - startColIndex;
 
   let table: TTableElement = getEmptyTableNode(editor, {
-    rowCount: relativeRowIndex + 1,
     colCount: relativeColIndex + 1,
     newCellChildren: [],
+    rowCount: relativeRowIndex + 1,
   });
 
   let cellEntries: TElementEntry[] = [];
@@ -111,8 +114,11 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
 
   let rowIndex = startRowIndex;
   let colIndex = startColIndex;
+
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const cell = findCellByIndexes(editor, realTable, rowIndex, colIndex);
+
     if (!cell) {
       break;
     }
@@ -122,13 +128,14 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
       computeCellIndices(editor, realTable, cell)!;
     const { col: cellColWithSpan, row: cellRowWithSpan } =
       getCellIndicesWithSpans(indicies, cell);
-    const { row: cellRow, col: cellCol } = indicies;
+    const { col: cellCol, row: cellRow } = indicies;
 
     // check if cell is still in range
     const hasOverflowTop = cellRow < startRowIndex;
     const hasOverflowBottom = cellRowWithSpan > endRowIndex;
     const hasOverflowLeft = cellCol < startColIndex;
     const hasOverflowRight = cellColWithSpan > endColIndex;
+
     if (
       hasOverflowTop ||
       hasOverflowBottom ||
@@ -147,13 +154,13 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
       const newRelativeRowIndex = endRowIndex - startRowIndex;
       const newRelativeColIndex = endColIndex - startColIndex;
       table = getEmptyTableNode(editor, {
-        rowCount: newRelativeRowIndex + 1,
         colCount: newRelativeColIndex + 1,
         newCellChildren: [],
+        rowCount: newRelativeRowIndex + 1,
       });
+
       continue;
     }
-
     if (!cellsSet.has(cell)) {
       cellsSet.add(cell);
 
@@ -164,7 +171,6 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
       const cellPath = findNodePath(editor, cell)!;
       cellEntries.push([cell, cellPath]);
     }
-
     if (colIndex + 1 <= endColIndex) {
       colIndex = colIndex + 1;
     } else if (rowIndex + 1 <= endRowIndex) {
@@ -187,6 +193,7 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
 
     const filteredChildren = rowElement.children?.filter((cellEl) => {
       const cellElement = cellEl as TTableCellElement;
+
       return !!cellElement?.children.length;
     });
 
@@ -198,7 +205,7 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
   }
 
   return {
-    tableEntries: [[table, tablePath]],
     cellEntries,
+    tableEntries: [[table, tablePath]],
   } as GetTableGridReturnType<T>;
 };

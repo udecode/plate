@@ -1,7 +1,10 @@
-import React from 'react';
-import { findEventRange, select, Value } from '@udecode/plate-common';
+import type React from 'react';
 
-import { PlateCloudEditor } from './types';
+import { findEventRange } from '@udecode/plate-common';
+import { type Value, select } from '@udecode/plate-common/server';
+
+import type { PlateCloudEditor } from './types';
+
 import { uploadFiles } from './uploadFiles';
 
 export const onDropCloud = <V extends Value = Value>(
@@ -9,10 +12,10 @@ export const onDropCloud = <V extends Value = Value>(
   e: React.DragEvent
 ): boolean => {
   const { files } = e.dataTransfer;
+
   if (files.length === 0) return false;
-  /**
-   * Without this, the dropped file replaces the page
-   */
+
+  /** Without this, the dropped file replaces the page */
   e.preventDefault();
   e.stopPropagation();
   /**
@@ -21,6 +24,7 @@ export const onDropCloud = <V extends Value = Value>(
    * location.
    */
   const at = findEventRange(editor, e);
+
   if (!at) return false;
 
   select(editor, at);
@@ -34,6 +38,7 @@ export const onPasteCloud = <V extends Value = Value>(
   e: React.ClipboardEvent
 ): boolean => {
   const { files } = e.clipboardData;
+
   if (files.length === 0) return false;
 
   e.preventDefault();

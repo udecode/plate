@@ -1,15 +1,15 @@
 import React from 'react';
+
+import { findNodePath, useEditorRef, useElement } from '@udecode/plate-common';
+import { getPluginOptions } from '@udecode/plate-common/server';
 import {
-  findNodePath,
-  getPluginOptions,
-  useEditorRef,
-  useElement,
-} from '@udecode/plate-common';
-import {
-  ResizeEvent,
-  ResizeHandle,
+  type ResizeEvent,
+  type ResizeHandle,
   resizeLengthClampStatic,
 } from '@udecode/plate-resizable';
+
+import type { TTableElement, TablePlugin } from '../../types';
+import type { TableCellElementState } from './useTableCellElementState';
 
 import { ELEMENT_TABLE } from '../../createTablePlugin';
 import {
@@ -23,34 +23,25 @@ import {
   setTableMarginLeft,
   setTableRowSize,
 } from '../../transforms/index';
-import { TablePlugin, TTableElement } from '../../types';
 import { useTableColSizes } from '../TableElement/useTableColSizes';
 import { roundCellSizeToStep } from './roundCellSizeToStep';
-import { TableCellElementState } from './useTableCellElementState';
 
-export type TableCellElementResizableOptions = Pick<
-  TableCellElementState,
-  'colIndex' | 'rowIndex' | 'colSpan'
-> & {
-  /**
-   * Resize by step instead of by pixel.
-   */
+export type TableCellElementResizableOptions = {
+  /** Resize by step instead of by pixel. */
   step?: number;
 
-  /**
-   * Overrides for X and Y axes.
-   */
+  /** Overrides for X and Y axes. */
   stepX?: number;
   stepY?: number;
-};
+} & Pick<TableCellElementState, 'colIndex' | 'colSpan' | 'rowIndex'>;
 
 export const useTableCellElementResizableState = ({
   colIndex,
+  colSpan,
   rowIndex,
   step,
   stepX = step,
   stepY = step,
-  colSpan,
 }: TableCellElementResizableOptions) => {
   const editor = useEditorRef();
   const { disableMarginLeft } = getPluginOptions<TablePlugin>(
@@ -59,27 +50,27 @@ export const useTableCellElementResizableState = ({
   );
 
   return {
-    disableMarginLeft,
     colIndex,
+    colSpan,
+    disableMarginLeft,
     rowIndex,
     stepX,
     stepY,
-    colSpan,
   };
 };
 
 export const useTableCellElementResizable = ({
-  disableMarginLeft,
   colIndex,
+  colSpan,
+  disableMarginLeft,
   rowIndex,
   stepX,
   stepY,
-  colSpan,
 }: ReturnType<typeof useTableCellElementResizableState>): {
-  rightProps: React.ComponentPropsWithoutRef<typeof ResizeHandle>;
   bottomProps: React.ComponentPropsWithoutRef<typeof ResizeHandle>;
-  leftProps: React.ComponentPropsWithoutRef<typeof ResizeHandle>;
   hiddenLeft: boolean;
+  leftProps: React.ComponentPropsWithoutRef<typeof ResizeHandle>;
+  rightProps: React.ComponentPropsWithoutRef<typeof ResizeHandle>;
 } => {
   const editor = useEditorRef();
   const element = useElement();
@@ -90,6 +81,7 @@ export const useTableCellElementResizable = ({
   );
 
   let initialWidth: number | undefined;
+
   if (colSpan > 1) {
     initialWidth = tableElement.colSizes?.[colIndex];
   }
@@ -126,7 +118,7 @@ export const useTableCellElementResizable = ({
     (rowIndex: number, height: number) => {
       setTableRowSize(
         editor,
-        { rowIndex, height },
+        { height, rowIndex },
         { at: findNodePath(editor, element)! }
       );
 
@@ -151,7 +143,7 @@ export const useTableCellElementResizable = ({
   );
 
   const handleResizeRight = React.useCallback(
-    ({ initialSize: currentInitial, delta, finished }: ResizeEvent) => {
+    ({ delta, finished, initialSize: currentInitial }: ResizeEvent) => {
       const nextInitial = colSizesWithoutOverrides[colIndex + 1];
 
       const complement = (width: number) =>
@@ -159,8 +151,8 @@ export const useTableCellElementResizable = ({
 
       const currentNew = roundCellSizeToStep(
         resizeLengthClampStatic(currentInitial + delta, {
-          min: minColumnWidth,
           max: nextInitial ? complement(minColumnWidth) : undefined,
+          min: minColumnWidth,
         }),
         stepX
       );
@@ -169,6 +161,7 @@ export const useTableCellElementResizable = ({
 
       const fn = finished ? setColSize : overrideColSize;
       fn(colIndex, currentNew);
+
       if (nextNew) fn(colIndex + 1, nextNew);
     },
     [
@@ -205,8 +198,8 @@ export const useTableCellElementResizable = ({
 
       const newMargin = roundCellSizeToStep(
         resizeLengthClampStatic(marginLeft + event.delta, {
-          min: 0,
           max: complement(minColumnWidth),
+          min: 0,
         }),
         stepX
       );
@@ -251,14 +244,6 @@ export const useTableCellElementResizable = ({
   const hasLeftHandle = colIndex === 0 && !disableMarginLeft;
 
   return {
-    rightProps: {
-      options: {
-        direction: 'right',
-        initialSize: initialWidth,
-        onResize: handleResizeRight,
-        ...getHandleHoverProps(colIndex),
-      },
-    },
     bottomProps: {
       options: {
         direction: 'bottom',
@@ -271,6 +256,14 @@ export const useTableCellElementResizable = ({
         direction: 'left',
         onResize: handleResizeLeft,
         ...getHandleHoverProps(-1),
+      },
+    },
+    rightProps: {
+      options: {
+        direction: 'right',
+        initialSize: initialWidth,
+        onResize: handleResizeRight,
+        ...getHandleHoverProps(colIndex),
       },
     },
   };

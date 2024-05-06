@@ -1,4 +1,4 @@
-import { TText, Value } from '@udecode/plate-common';
+import type { TText, Value } from '@udecode/plate-common/server';
 
 export interface CommentUser {
   id: string;
@@ -7,32 +7,22 @@ export interface CommentUser {
 }
 
 export interface TComment {
-  id: string;
-
-  /**
-   * Slate value of the document.
-   */
-  value: Value;
-
-  /**
-   * @default Date.now()
-   */
+  /** @default Date.now() */
   createdAt: number;
 
-  /**
-   * Author id.
-   */
+  id: string;
+
+  /** Author id. */
   userId: string;
 
-  /**
-   * Parent comment id it replies to.
-   */
-  parentId?: string;
+  /** Slate value of the document. */
+  value: Value;
 
-  /**
-   * Whether the comment is resolved.
-   */
+  /** Whether the comment is resolved. */
   isResolved?: boolean;
+
+  /** Parent comment id it replies to. */
+  parentId?: string;
 }
 
 export interface TCommentText extends TText {

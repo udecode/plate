@@ -1,7 +1,7 @@
 import { Editor } from 'slate';
 
-import { EElementOrText } from '../element/TElement';
-import { TEditor, Value } from './TEditor';
+import type { EElementOrText } from '../element/TElement';
+import type { TEditor, Value } from './TEditor';
 
 /**
  * Insert a node at the current selection.

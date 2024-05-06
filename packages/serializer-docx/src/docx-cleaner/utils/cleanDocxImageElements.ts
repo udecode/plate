@@ -1,12 +1,13 @@
-import { hexToBase64, traverseHtmlElements } from '@udecode/plate-common';
+import {
+  hexToBase64,
+  traverseHtmlElements,
+} from '@udecode/plate-common/server';
 import validator from 'validator';
 
 import { getRtfImagesMap } from './getRtfImagesMap';
 import { getVShapeSpid } from './getVShapeSpid';
 
-/**
- * Clean docx image elements.
- */
+/** Clean docx image elements. */
 export const cleanDocxImageElements = (
   document: Document,
   rtf: string,
@@ -20,11 +21,10 @@ export const cleanDocxImageElements = (
     if (!['IMG', 'V:IMAGEDATA'].includes(element.tagName)) {
       return true;
     }
-
     if (element.tagName === 'IMG') {
       const src = element.getAttribute('src');
 
-      if (!src || !src.startsWith('file://')) {
+      if (!src?.startsWith('file://')) {
         return true;
       }
 
@@ -35,6 +35,7 @@ export const cleanDocxImageElements = (
         validator.isURL(alt, { require_protocol: true })
       ) {
         element.setAttribute('src', alt);
+
         return true;
       }
     }
@@ -52,6 +53,7 @@ export const cleanDocxImageElements = (
       // We fould some kind of vshape (perhaps a drawing) that we don't know
       // how to recover from RTF. So we just skip it.
       element.remove();
+
       return true;
     }
 
@@ -61,7 +63,7 @@ export const cleanDocxImageElements = (
 
     if (element.tagName === 'IMG') {
       element.setAttribute('src', dataUri);
-    } else if (element.parentNode && element.parentNode.parentNode) {
+    } else if (element.parentNode?.parentNode) {
       const imageElement = document.createElement('img');
       imageElement.setAttribute('src', dataUri);
       element.parentNode.parentNode.replaceChild(
@@ -69,6 +71,7 @@ export const cleanDocxImageElements = (
         element.parentNode
       );
     }
+
     return true;
   });
 };

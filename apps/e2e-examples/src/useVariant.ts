@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 
-export const useVariant = <T>(variants: { [key: string]: T }) => {
+export const useVariant = <T>(variants: Record<string, T>) => {
   const { variant } = useParams<{ variant: string }>();
   const activeVariant = variants[variant!];
 

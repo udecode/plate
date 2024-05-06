@@ -15,6 +15,7 @@ export const useMutationObserver = (
     if (ref.current) {
       const observer = new MutationObserver(callback);
       observer.observe(ref.current, options);
+
       return () => observer.disconnect();
     }
   }, [ref, callback, options]);

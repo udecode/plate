@@ -1,15 +1,17 @@
 /* eslint-disable turbo/no-undeclared-env-vars,no-console */
 
-import path from 'path';
+import type * as z from 'zod';
+
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import fetch from 'node-fetch';
-import * as z from 'zod';
+import path from 'path';
 
-import { Config } from '../get-config';
+import type { Config } from '../get-config';
+
 import {
   registryBaseColorSchema,
   registryIndexSchema,
-  registryItemWithContentSchema,
+  type registryItemWithContentSchema,
   registryWithContentSchema,
   stylesSchema,
 } from './schema';
@@ -39,27 +41,28 @@ export async function getRegistryStyles() {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/require-await
 export async function getRegistryBaseColors() {
   return [
     {
-      name: 'slate',
       label: 'Slate',
+      name: 'slate',
     },
     {
-      name: 'gray',
       label: 'Gray',
+      name: 'gray',
     },
     {
-      name: 'zinc',
       label: 'Zinc',
+      name: 'zinc',
     },
     {
-      name: 'neutral',
       label: 'Neutral',
+      name: 'neutral',
     },
     {
-      name: 'stone',
       label: 'Stone',
+      name: 'stone',
     },
   ];
 }
@@ -115,6 +118,7 @@ export async function fetchTree(
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/require-await
 export async function getItemTargetPath(
   config: Config,
   item: Pick<z.infer<typeof registryItemWithContentSchema>, 'type'>,
@@ -128,8 +132,8 @@ export async function getItemTargetPath(
     return config.resolvedPaths['plate-ui'];
   }
 
-  if (item.type === 'components:plate-ui' && config?.aliases['ui']) {
-    return config.resolvedPaths['ui'];
+  if (item.type === 'components:plate-ui' && config?.aliases.ui) {
+    return config.resolvedPaths.ui;
   }
 
   const [parent, type] = item.type.split(':');

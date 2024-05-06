@@ -1,20 +1,21 @@
-import {
-  focusEditor,
+import type {
   PlateEditor,
   TElement,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
+
+import { focusEditor } from '@udecode/plate-common';
+
+import type { BorderDirection } from '../../types';
 
 import { isTableBorderHidden } from '../../queries/index';
 import { setBorderSize } from '../../transforms/index';
-import { BorderDirection } from '../../types';
 
 export const getOnSelectTableBorderFactory =
   <V extends Value>(editor: PlateEditor<V>, selectedCells: TElement[] | null) =>
-  (border: BorderDirection | 'outer' | 'none') =>
+  (border: 'none' | 'outer' | BorderDirection) =>
   () => {
     if (selectedCells) return;
-
     if (border === 'none') {
       setBorderSize(editor, 0, { border: 'all' });
     } else if (border === 'outer') {

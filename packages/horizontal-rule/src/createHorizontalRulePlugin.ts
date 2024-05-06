@@ -1,11 +1,8 @@
-import { createPluginFactory } from '@udecode/plate-common';
+import { createPluginFactory } from '@udecode/plate-common/server';
 
 export const ELEMENT_HR = 'hr';
 
 export const createHorizontalRulePlugin = createPluginFactory({
-  key: ELEMENT_HR,
-  isElement: true,
-  isVoid: true,
   deserializeHtml: {
     rules: [
       {
@@ -13,4 +10,7 @@ export const createHorizontalRulePlugin = createPluginFactory({
       },
     ],
   },
+  isElement: true,
+  isVoid: true,
+  key: ELEMENT_HR,
 });

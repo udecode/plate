@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
 import {
+  type PlateEditor,
+  type TDescendant,
   createPlateEditor,
-  PlateEditor,
-  TDescendant,
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -575,8 +575,8 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
           <selection>
-            <anchor path={[0, 0, 0, 0]} offset={0} />
-            <focus path={[0, 1, 0, 0]} offset={3} />
+            <anchor offset={0} path={[0, 0, 0, 0]} />
+            <focus offset={3} path={[0, 1, 0, 0]} />
           </selection>
         </editor>
       ) as any as PlateEditor;
@@ -621,8 +621,8 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
           <selection>
-            <anchor path={[0, 0, 0, 0]} offset={0} />
-            <focus path={[0, 1, 0, 0]} offset={3} />
+            <anchor offset={0} path={[0, 0, 0, 0]} />
+            <focus offset={3} path={[0, 1, 0, 0]} />
           </selection>
         </editor>
       ) as any as PlateEditor;
@@ -678,8 +678,8 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
           <selection>
-            <anchor path={[0, 0, 0, 0]} offset={3} />
-            <focus path={[0, 1, 0, 0]} offset={5} />
+            <anchor offset={3} path={[0, 0, 0, 0]} />
+            <focus offset={5} path={[0, 1, 0, 0]} />
           </selection>
         </editor>
       ) as any as PlateEditor;

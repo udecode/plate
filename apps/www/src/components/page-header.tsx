@@ -1,9 +1,10 @@
-import { cn } from '@udecode/cn';
 import Balance from 'react-wrap-balancer';
 
+import { cn } from '@udecode/cn';
+
 function PageHeader({
-  className,
   children,
+  className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
@@ -49,4 +50,4 @@ function PageHeaderDescription({
   );
 }
 
-export { PageHeader, PageHeaderHeading, PageHeaderDescription };
+export { PageHeader, PageHeaderDescription, PageHeaderHeading };

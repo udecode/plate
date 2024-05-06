@@ -1,13 +1,10 @@
 import React from 'react';
-import {
-  findNodePath,
-  isDefined,
-  setNodes,
-  useEditorRef,
-} from '@udecode/plate-common';
+
+import { findNodePath, useEditorRef } from '@udecode/plate-common';
+import { isDefined, setNodes } from '@udecode/plate-common/server';
 import { useFocused, useSelected } from 'slate-react';
 
-import { TCloudAttachmentElement, useUpload } from '..';
+import { type TCloudAttachmentElement, useUpload } from '..';
 
 export const useCloudAttachmentElementState = ({
   element,
@@ -22,8 +19,8 @@ export const useCloudAttachmentElementState = ({
 
   React.useEffect(() => {
     /**
-     * We only want to update the actual URL of the element if the URL is not
-     * a blob URL and if it's different from the current URL.
+     * We only want to update the actual URL of the element if the URL is not a
+     * blob URL and if it's different from the current URL.
      *
      * NOTE:
      *

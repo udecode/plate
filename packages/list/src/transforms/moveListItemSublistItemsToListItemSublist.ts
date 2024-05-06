@@ -1,47 +1,41 @@
 import {
+  type PlateEditor,
+  type TElement,
+  type TElementEntry,
+  type Value,
   deleteText,
   findDescendant,
   getLastChildPath,
   getParentNode,
   insertElements,
   moveChildren,
-  PlateEditor,
-  TElement,
-  TElementEntry,
-  Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
 import { getListTypes } from '../queries/getListTypes';
 
 export interface MoveListItemSublistItemsToListItemSublistOptions {
-  /**
-   * The list item to merge.
-   */
+  /** The list item to merge. */
   fromListItem: TElementEntry;
 
-  /**
-   * The list item where to merge.
-   */
+  /** The list item where to merge. */
   toListItem: TElementEntry;
 
-  /**
-   * Move to the start of the list instead of the end.
-   */
+  /** Move to the start of the list instead of the end. */
   start?: boolean;
 }
 
 /**
- * Move fromListItem sublist list items to the end of `toListItem` sublist.
- * If there is no `toListItem` sublist, insert one.
+ * Move fromListItem sublist list items to the end of `toListItem` sublist. If
+ * there is no `toListItem` sublist, insert one.
  */
 export const moveListItemSublistItemsToListItemSublist = <V extends Value>(
   editor: PlateEditor<V>,
   {
     fromListItem,
-    toListItem,
     start,
+    toListItem,
   }: MoveListItemSublistItemsToListItemSublistOptions
 ) => {
   const [, fromListItemPath] = fromListItem;
@@ -55,6 +49,7 @@ export const moveListItemSublistItemsToListItemSublist = <V extends Value>(
         type: getListTypes(editor),
       },
     });
+
     if (!fromListItemSublist) return;
 
     const [, fromListItemSublistPath] = fromListItemSublist;
@@ -70,7 +65,9 @@ export const moveListItemSublistItemsToListItemSublist = <V extends Value>(
 
     if (!toListItemSublist) {
       const fromList = getParentNode(editor, fromListItemPath);
+
       if (!fromList) return;
+
       const [fromListNode] = fromList;
 
       const fromListType = fromListNode.type;
@@ -79,7 +76,7 @@ export const moveListItemSublistItemsToListItemSublist = <V extends Value>(
 
       insertElements(
         editor,
-        { type: fromListType as string, children: [] },
+        { children: [], type: fromListType as string },
         { at: toListItemSublistPath }
       );
 

@@ -1,15 +1,16 @@
+import type { Path } from 'slate';
+
 import {
-  EText,
+  type EText,
+  type PlateEditor,
+  type Value,
   getNode,
   getNodeString,
-  PlateEditor,
   replaceNode,
-  Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import { Path } from 'slate';
 
-import { TSlashInputElement } from '../types';
+import type { TSlashInputElement } from '../types';
 
 export const removeSlashInput = <V extends Value>(
   editor: PlateEditor<V>,
@@ -17,6 +18,7 @@ export const removeSlashInput = <V extends Value>(
 ) =>
   withoutNormalizing(editor, () => {
     const node = getNode<TSlashInputElement>(editor, path);
+
     if (!node) return;
 
     const { trigger } = node;

@@ -1,8 +1,9 @@
-import { replaceTagName, traverseHtmlElements } from '@udecode/plate-common';
+import {
+  replaceTagName,
+  traverseHtmlElements,
+} from '@udecode/plate-common/server';
 
-/**
- * Replace p.MsoQuote elements with blockquote.
- */
+/** Replace p.MsoQuote elements with blockquote. */
 export const cleanDocxQuotes = (rootNode: Node): void => {
   traverseHtmlElements(rootNode, (element) => {
     if (

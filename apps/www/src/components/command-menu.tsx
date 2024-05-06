@@ -1,14 +1,16 @@
 'use client';
 
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
-import { DialogProps } from '@radix-ui/react-alert-dialog';
+
+import type { NavItemWithChildren, SidebarNavItem } from '@/types/nav';
+import type { DialogProps } from '@radix-ui/react-alert-dialog';
+
 import { cn } from '@udecode/cn';
 import { Circle, File, Laptop, Moon, SunMedium } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 
-import { NavItemWithChildren, SidebarNavItem } from '@/types/nav';
 import { docsConfig } from '@/config/docs';
 import { Button } from '@/registry/default/plate-ui/button';
 import {
@@ -21,9 +23,9 @@ import {
 } from '@/registry/default/plate-ui/command';
 
 export function CommandItems({
+  children,
   item,
   runCommand,
-  children,
 }: {
   children?: ReactNode;
   item: NavItemWithChildren;
@@ -81,15 +83,15 @@ export function CommandMenuGroup({
       {group.items?.map((navItem) => {
         return (
           <CommandItems
-            key={navItem.title}
             item={navItem}
+            key={navItem.title}
             runCommand={runCommand}
           >
             {navItem?.items?.map((item) => {
               return (
                 <CommandItems
-                  key={item.title}
                   item={item}
+                  key={item.title}
                   runCommand={runCommand}
                 />
               );
@@ -124,6 +126,7 @@ export function CommandMenu({ ...props }: DialogProps) {
     };
 
     document.addEventListener('keydown', down);
+
     return () => document.removeEventListener('keydown', down);
   }, []);
 
@@ -135,11 +138,11 @@ export function CommandMenu({ ...props }: DialogProps) {
   return (
     <>
       <Button
-        variant="outline"
         className={cn(
           'relative flex h-8 w-full items-center justify-start rounded-[0.5rem] bg-background text-sm font-normal text-muted-foreground shadow-none sm:pr-12 md:w-40 lg:w-64'
         )}
         onClick={() => setOpen(true)}
+        variant="outline"
         {...props}
       >
         <span className="hidden lg:inline-flex">Search documentation...</span>
@@ -148,7 +151,7 @@ export function CommandMenu({ ...props }: DialogProps) {
           <span className="text-xs">⌘</span>K
         </kbd>
       </Button>
-      <CommandDialog open={open} onOpenChange={setOpen}>
+      <CommandDialog onOpenChange={setOpen} open={open}>
         <CommandInput placeholder="Type a command or search..." />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>

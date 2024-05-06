@@ -1,7 +1,8 @@
-import { Editor, Point } from 'slate';
-import { EditorPointRefOptions } from 'slate/dist/interfaces/editor';
+import type { EditorPointRefOptions } from 'slate/dist/interfaces/editor';
 
-import { TEditor, Value } from './TEditor';
+import { Editor, type Point } from 'slate';
+
+import type { TEditor, Value } from './TEditor';
 
 /**
  * Create a mutable ref for a `Point` object, which will stay in sync as new

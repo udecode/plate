@@ -1,11 +1,10 @@
+import type { TextDeleteOptions } from 'slate/dist/interfaces/transforms/text';
+
 import { Transforms } from 'slate';
-import { TextDeleteOptions } from 'slate/dist/interfaces/transforms/text';
 
-import { TEditor, Value } from '../editor/TEditor';
+import type { TEditor, Value } from '../editor/TEditor';
 
-/**
- * Delete content in the editor.
- */
+/** Delete content in the editor. */
 export const deleteText = <V extends Value>(
   editor: TEditor<V>,
   options?: TextDeleteOptions

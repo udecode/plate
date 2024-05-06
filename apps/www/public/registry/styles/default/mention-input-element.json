@@ -1,14 +1,14 @@
 {
-  "name": "mention-input-element",
   "dependencies": [
     "@udecode/plate-mention"
   ],
-  "registryDependencies": [],
   "files": [
     {
-      "name": "mention-input-element.tsx",
-      "content": "import React from 'react';\nimport { cn, withRef } from '@udecode/cn';\nimport { getHandler, PlateElement } from '@udecode/plate-common';\nimport { useFocused, useSelected } from 'slate-react';\n\nexport const MentionInputElement = withRef<\n  typeof PlateElement,\n  {\n    onClick?: (mentionNode: any) => void;\n  }\n>(({ className, onClick, ...props }, ref) => {\n  const { children, element } = props;\n\n  const selected = useSelected();\n  const focused = useFocused();\n\n  return (\n    <PlateElement\n      ref={ref}\n      asChild\n      data-slate-value={element.value}\n      className={cn(\n        'inline-block rounded-md bg-muted px-1.5 py-0.5 align-baseline text-sm',\n        selected && focused && 'ring-2 ring-ring',\n        className\n      )}\n      onClick={getHandler(onClick, element)}\n      {...props}\n    >\n      <span>{children}</span>\n    </PlateElement>\n  );\n});\n"
+      "content": "import React from 'react';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { PlateElement, getHandler } from '@udecode/plate-common';\nimport { useFocused, useSelected } from 'slate-react';\n\nexport const MentionInputElement = withRef<\n  typeof PlateElement,\n  {\n    onClick?: (mentionNode: any) => void;\n  }\n>(({ className, onClick, ...props }, ref) => {\n  const { children, element } = props;\n\n  const selected = useSelected();\n  const focused = useFocused();\n\n  return (\n    <PlateElement\n      asChild\n      className={cn(\n        'inline-block rounded-md bg-muted px-1.5 py-0.5 align-baseline text-sm',\n        selected && focused && 'ring-2 ring-ring',\n        className\n      )}\n      data-slate-value={element.value}\n      onClick={getHandler(onClick, element)}\n      ref={ref}\n      {...props}\n    >\n      <span>{children}</span>\n    </PlateElement>\n  );\n});\n",
+      "name": "mention-input-element.tsx"
     }
   ],
+  "name": "mention-input-element",
+  "registryDependencies": [],
   "type": "components:plate-ui"
 }

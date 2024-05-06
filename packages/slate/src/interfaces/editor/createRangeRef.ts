@@ -1,7 +1,8 @@
-import { Editor, Range } from 'slate';
-import { EditorRangeRefOptions } from 'slate/dist/interfaces/editor';
+import type { EditorRangeRefOptions } from 'slate/dist/interfaces/editor';
 
-import { TEditor, Value } from './TEditor';
+import { Editor, type Range } from 'slate';
+
+import type { TEditor, Value } from './TEditor';
 
 /**
  * Create a mutable ref for a `Range` object, which will stay in sync as new

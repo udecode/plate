@@ -1,4 +1,5 @@
 import React from 'react';
+
 import {
   createPrimitiveComponent,
   toDOMNode,
@@ -13,7 +14,7 @@ export const useCommentsPositionerState = () => {
   const editor = useEditorRef();
   let activeCommentId = useCommentsSelectors().activeCommentId();
 
-  const [position, setPosition] = React.useState<{ top: number; left: number }>(
+  const [position, setPosition] = React.useState<{ left: number; top: number }>(
     {
       left: 0,
       top: 0,
@@ -30,9 +31,11 @@ export const useCommentsPositionerState = () => {
     if (!node) return;
 
     const domNode = toDOMNode(editor, node);
+
     if (!domNode) return;
 
     const newPosition = getCommentPosition(editor, node);
+
     if (!newPosition) return;
 
     setPosition(newPosition);
@@ -59,6 +62,6 @@ export const useCommentsPositioner = ({
 };
 
 export const CommentsPositioner = createPrimitiveComponent('div')({
-  stateHook: useCommentsPositionerState,
   propsHook: useCommentsPositioner,
+  stateHook: useCommentsPositionerState,
 });

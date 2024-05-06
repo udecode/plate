@@ -1,10 +1,12 @@
 import React from 'react';
-import { ComboboxProps } from '@udecode/plate-combobox';
+
+import type { ComboboxProps } from '@udecode/plate-combobox';
+
 import { getPluginOptions, useEditorRef } from '@udecode/plate-common';
 import {
   ELEMENT_MENTION,
+  type MentionPlugin,
   getMentionOnSelectItem,
-  MentionPlugin,
 } from '@udecode/plate-mention';
 
 import { Combobox } from './combobox';
@@ -13,9 +15,9 @@ export function MentionCombobox({
   pluginKey = ELEMENT_MENTION,
   id = pluginKey,
   ...props
-}: Partial<ComboboxProps> & {
+}: {
   pluginKey?: string;
-}) {
+} & Partial<ComboboxProps>) {
   const editor = useEditorRef();
 
   const { trigger } = getPluginOptions<MentionPlugin>(editor, pluginKey);
@@ -23,12 +25,12 @@ export function MentionCombobox({
   return (
     <div onMouseDown={(e) => e.preventDefault()}>
       <Combobox
-        id={id}
-        trigger={trigger!}
         controlled
+        id={id}
         onSelectItem={getMentionOnSelectItem({
           key: pluginKey,
         })}
+        trigger={trigger!}
         {...props}
       />
     </div>

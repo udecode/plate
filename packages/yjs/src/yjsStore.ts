@@ -1,4 +1,4 @@
-import { createZustandStore } from '@udecode/plate-common';
+import { createZustandStore } from '@udecode/plate-common/server';
 
 export const yjsStore = createZustandStore('yjs')({
   isConnected: false,
@@ -6,6 +6,9 @@ export const yjsStore = createZustandStore('yjs')({
 });
 
 export const yjsActions = yjsStore.set;
+
 export const yjsSelectors = yjsStore.get;
+
 export const useYjsSelectors = yjsStore.use;
+
 export const useYjsStore = yjsStore.useStore;

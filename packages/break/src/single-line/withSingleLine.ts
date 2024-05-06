@@ -1,4 +1,8 @@
-import { PlateEditor, removeNodes, Value } from '@udecode/plate-common';
+import {
+  type PlateEditor,
+  type Value,
+  removeNodes,
+} from '@udecode/plate-common/server';
 
 export const withSingleLine = <
   V extends Value = Value,
@@ -14,10 +18,11 @@ export const withSingleLine = <
     if (entry[1].length === 0 && editor.children.length > 1) {
       removeNodes(editor, {
         at: [],
-        mode: 'highest',
         match: (node, path) => path.length === 1 && path[0] > 0,
+        mode: 'highest',
       });
     }
+
     normalizeNode(entry);
   };
 

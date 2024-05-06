@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
+import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
 import { createIndentPlugin } from '@udecode/plate-indent';
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -16,10 +16,10 @@ describe('normalizeIndentList', () => {
           <hp indent={1} listStyleType="decimal">
             1
           </hp>
-          <hp indent={1} listStyleType="decimal" listStart={2}>
+          <hp indent={1} listStart={2} listStyleType="decimal">
             <cursor />
           </hp>
-          <hp indent={1} listStyleType="decimal" listStart={3}>
+          <hp indent={1} listStart={3} listStyleType="decimal">
             1
           </hp>
         </editor>
@@ -41,8 +41,8 @@ describe('normalizeIndentList', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [createIndentListPlugin(), createIndentPlugin()],
         normalizeInitialValue: true,
+        plugins: [createIndentListPlugin(), createIndentPlugin()],
       });
 
       editor.deleteBackward('character');

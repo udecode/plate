@@ -4,6 +4,7 @@ export const getDocxListIndent = (element: Element): number => {
 
   if (matches && matches.length > 0) {
     const [, level] = matches;
+
     return Number.parseInt(level, 10);
   }
 

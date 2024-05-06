@@ -1,18 +1,16 @@
 import {
-  ENode,
+  type ENode,
+  type GetNodeEntriesOptions,
+  type TEditor,
+  type TNodeEntry,
+  type Value,
   getNodeEntries,
-  GetNodeEntriesOptions,
-  TEditor,
-  TNodeEntry,
-  Value,
 } from '../interfaces';
 import { getQueryOptions } from '../utils';
 
 export type FindNodeOptions<V extends Value = Value> = GetNodeEntriesOptions<V>;
 
-/**
- * Find node matching the condition.
- */
+/** Find node matching the condition. */
 export const findNode = <N extends ENode<V>, V extends Value = Value>(
   editor: TEditor<V>,
   options: FindNodeOptions<V> = {}

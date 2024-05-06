@@ -1,18 +1,18 @@
 /* eslint-disable react-hooks/rules-of-hooks */
+import { useEditorRef, useEditorSelector } from '@udecode/plate-common';
 import {
   getPluginOptions,
   isSelectionExpanded,
-  useEditorRef,
-  useEditorSelector,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { useReadOnly, useSelected } from 'slate-react';
+
+import type { TTableCellElement, TablePlugin } from '../types';
 
 import { ELEMENT_TABLE } from '../createTablePlugin';
 import { getTableGridAbove } from '../queries';
 import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';
 import { useTableStore } from '../stores';
-import { TablePlugin, TTableCellElement } from '../types';
 import { isTableRectangular } from './isTableRectangular';
 
 export const useTableMergeState = () => {

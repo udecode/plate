@@ -1,9 +1,10 @@
-import { ENode, TEditor, Value } from '../interfaces';
-import { findNode, FindNodeOptions } from './findNode';
+import type { ENode, TEditor, Value } from '../interfaces';
+
+import { type FindNodeOptions, findNode } from './findNode';
 
 /**
- * Iterate through all of the nodes in the editor and break early for the first truthy match. Otherwise
- * returns false.
+ * Iterate through all of the nodes in the editor and break early for the first
+ * truthy match. Otherwise returns false.
  */
 export const someNode = <N extends ENode<V>, V extends Value = Value>(
   editor: TEditor<V>,

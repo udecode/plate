@@ -1,5 +1,5 @@
 export const routes = {
-  home: '/',
   alignment: '/docs/alignment',
+  home: '/',
   list: '/docs/list',
 };

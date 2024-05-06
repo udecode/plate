@@ -1,37 +1,3 @@
-import { KEY_DRAG_OVER_CURSOR } from '@/plate/demo/plugins/dragOverCursorPlugin';
-import { alignValue } from '@/plate/demo/values/alignValue';
-import { autoformatValue } from '@/plate/demo/values/autoformatValue';
-import { basicElementsValue } from '@/plate/demo/values/basicElementsValue';
-import { basicMarksValue } from '@/plate/demo/values/basicMarksValue';
-import { commentsValue } from '@/plate/demo/values/commentsValue';
-import { cursorOverlayValue } from '@/plate/demo/values/cursorOverlayValue';
-import { deserializeCsvValue } from '@/plate/demo/values/deserializeCsvValue';
-import { deserializeDocxValue } from '@/plate/demo/values/deserializeDocxValue';
-import { deserializeHtmlValue } from '@/plate/demo/values/deserializeHtmlValue';
-import { deserializeMdValue } from '@/plate/demo/values/deserializeMdValue';
-import { emojiValue } from '@/plate/demo/values/emojiValue';
-import { excalidrawValue } from '@/plate/demo/values/excalidrawValue';
-import {
-  exitBreakValue,
-  trailingBlockValue,
-} from '@/plate/demo/values/exitBreakValue';
-import { fontValue } from '@/plate/demo/values/fontValue';
-import { highlightValue } from '@/plate/demo/values/highlightValue';
-import { horizontalRuleValue } from '@/plate/demo/values/horizontalRuleValue';
-import { indentListValue } from '@/plate/demo/values/indentListValue';
-import { indentValue } from '@/plate/demo/values/indentValue';
-import { kbdValue } from '@/plate/demo/values/kbdValue';
-import { lineHeightValue } from '@/plate/demo/values/lineHeightValue';
-import { linkValue } from '@/plate/demo/values/linkValue';
-import { listValue, todoListValue } from '@/plate/demo/values/listValue';
-import { mediaValue } from '@/plate/demo/values/mediaValue';
-import { mentionValue } from '@/plate/demo/values/mentionValue';
-import { placeholderValue } from '@/plate/demo/values/placeholderValue';
-import { singleLineValue } from '@/plate/demo/values/singleLineValue';
-import { softBreakValue } from '@/plate/demo/values/softBreakValue';
-import { tabbableValue } from '@/plate/demo/values/tabbableValue';
-import { tableValue } from '@/plate/demo/values/tableValue';
-import { toggleValue } from '@/plate/demo/values/toggleValue';
 import { KEY_ALIGN } from '@udecode/plate-alignment';
 import { KEY_AUTOFORMAT } from '@udecode/plate-autoformat';
 import {
@@ -70,224 +36,265 @@ import { ELEMENT_TOGGLE } from '@udecode/plate-toggle';
 import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
 
 import { columnValue } from '@/lib/plate/demo/values/columnValue';
+import { KEY_DRAG_OVER_CURSOR } from '@/plate/demo/plugins/dragOverCursorPlugin';
+import { alignValue } from '@/plate/demo/values/alignValue';
+import { autoformatValue } from '@/plate/demo/values/autoformatValue';
+import { basicElementsValue } from '@/plate/demo/values/basicElementsValue';
+import { basicMarksValue } from '@/plate/demo/values/basicMarksValue';
+import { commentsValue } from '@/plate/demo/values/commentsValue';
+import { cursorOverlayValue } from '@/plate/demo/values/cursorOverlayValue';
+import { deserializeCsvValue } from '@/plate/demo/values/deserializeCsvValue';
+import { deserializeDocxValue } from '@/plate/demo/values/deserializeDocxValue';
+import { deserializeHtmlValue } from '@/plate/demo/values/deserializeHtmlValue';
+import { deserializeMdValue } from '@/plate/demo/values/deserializeMdValue';
+import { emojiValue } from '@/plate/demo/values/emojiValue';
+import { excalidrawValue } from '@/plate/demo/values/excalidrawValue';
+import {
+  exitBreakValue,
+  trailingBlockValue,
+} from '@/plate/demo/values/exitBreakValue';
+import { fontValue } from '@/plate/demo/values/fontValue';
+import { highlightValue } from '@/plate/demo/values/highlightValue';
+import { horizontalRuleValue } from '@/plate/demo/values/horizontalRuleValue';
+import { indentListValue } from '@/plate/demo/values/indentListValue';
+import { indentValue } from '@/plate/demo/values/indentValue';
+import { kbdValue } from '@/plate/demo/values/kbdValue';
+import { lineHeightValue } from '@/plate/demo/values/lineHeightValue';
+import { linkValue } from '@/plate/demo/values/linkValue';
+import { listValue, todoListValue } from '@/plate/demo/values/listValue';
+import { mediaValue } from '@/plate/demo/values/mediaValue';
+import { mentionValue } from '@/plate/demo/values/mentionValue';
+import { placeholderValue } from '@/plate/demo/values/placeholderValue';
+import { singleLineValue } from '@/plate/demo/values/singleLineValue';
+import { softBreakValue } from '@/plate/demo/values/softBreakValue';
+import { tabbableValue } from '@/plate/demo/values/tabbableValue';
+import { tableValue } from '@/plate/demo/values/tableValue';
+import { toggleValue } from '@/plate/demo/values/toggleValue';
 
-export type ValueId = keyof typeof customizerPlugins | 'tableMerge';
+export type ValueId = 'tableMerge' | keyof typeof customizerPlugins;
 
 // cmdk needs lowercase
 export const customizerPlugins = {
   align: {
     id: 'align',
     label: 'Align',
-    value: alignValue,
-    route: '/docs/alignment',
     plugins: [KEY_ALIGN],
+    route: '/docs/alignment',
+    value: alignValue,
   },
   autoformat: {
     id: 'autoformat',
     label: 'Autoformat',
-    value: autoformatValue,
-    route: '/docs/autoformat',
     plugins: [KEY_AUTOFORMAT],
-  },
-  basicnodes: {
-    id: 'basicnodes',
-    label: 'Basic Nodes',
-    value: [...basicElementsValue, ...basicMarksValue],
-    route: '/docs/basic-elements',
-    plugins: [],
+    route: '/docs/autoformat',
+    value: autoformatValue,
   },
   basicmarks: {
     id: 'basicmarks',
     label: 'Basic Marks',
-    value: [...basicElementsValue, ...basicMarksValue],
-    route: '/docs/basic-marks',
     plugins: [],
+    route: '/docs/basic-marks',
+    value: [...basicElementsValue, ...basicMarksValue],
+  },
+  basicnodes: {
+    id: 'basicnodes',
+    label: 'Basic Nodes',
+    plugins: [],
+    route: '/docs/basic-elements',
+    value: [...basicElementsValue, ...basicMarksValue],
   },
   blockselection: {
     id: 'blockselection',
     label: 'Block Selection',
-    value: mediaValue,
-    route: '/docs/block-selection',
     plugins: [
       KEY_NODE_ID,
       KEY_BLOCK_SELECTION,
       ELEMENT_IMAGE,
       ELEMENT_MEDIA_EMBED,
     ],
+    route: '/docs/block-selection',
+    value: mediaValue,
   },
   caption: {
     id: 'caption',
     label: 'Caption',
-    value: mediaValue,
-    route: '/docs/caption',
     plugins: [KEY_CAPTION],
+    route: '/docs/caption',
+    value: mediaValue,
+  },
+  column: {
+    id: 'column',
+    label: 'Column',
+    plugins: [ELEMENT_COLUMN_GROUP],
+    route: '/docs/column',
+    value: columnValue,
   },
   combobox: {
     id: 'combobox',
     label: 'Combobox',
-    route: '/docs/combobox',
     plugins: [KEY_COMBOBOX],
+    route: '/docs/combobox',
   },
   comment: {
     id: 'comment',
     label: 'Comment',
-    value: commentsValue,
-    route: '/docs/comments',
     plugins: [MARK_COMMENT],
+    route: '/docs/comments',
+    value: commentsValue,
   },
   cursoroverlay: {
     id: 'cursoroverlay',
     label: 'Cursor Overlay',
-    value: cursorOverlayValue,
-    route: '/docs/cursor-overlay',
     plugins: [KEY_DRAG_OVER_CURSOR],
+    route: '/docs/cursor-overlay',
+    value: cursorOverlayValue,
   },
   deserializecsv: {
     id: 'deserializecsv',
     label: 'Deserialize CSV',
-    value: deserializeCsvValue,
-    route: '/docs/serializing-csv',
     plugins: [KEY_DESERIALIZE_CSV],
+    route: '/docs/serializing-csv',
+    value: deserializeCsvValue,
   },
   deserializedocx: {
     id: 'deserializedocx',
     label: 'Deserialize DOCX',
-    value: deserializeDocxValue,
-    route: '/docs/serializing-docx',
     plugins: [KEY_DESERIALIZE_DOCX],
+    route: '/docs/serializing-docx',
+    value: deserializeDocxValue,
   },
   deserializehtml: {
     id: 'deserializehtml',
     label: 'Deserialize HTML',
-    value: deserializeHtmlValue,
-    route: '/docs/serializing-html',
     plugins: [],
+    route: '/docs/serializing-html',
+    value: deserializeHtmlValue,
   },
   deserializemd: {
     id: 'deserializemd',
     label: 'Deserialize Markdown',
-    value: deserializeMdValue,
-    route: '/docs/serializing-md',
     plugins: [KEY_DESERIALIZE_MD],
+    route: '/docs/serializing-md',
+    value: deserializeMdValue,
   },
   dnd: {
     id: 'dnd',
     label: 'Drag & Drop',
-    value: [],
-    route: '/docs/components/draggable',
     plugins: [KEY_DND],
+    route: '/docs/components/draggable',
+    value: [],
   },
   emoji: {
     id: 'emoji',
     label: 'Emoji',
-    value: emojiValue,
-    route: '/docs/emoji',
     plugins: [KEY_EMOJI],
+    route: '/docs/emoji',
+    value: emojiValue,
   },
   excalidraw: {
     id: 'excalidraw',
     label: 'Excalidraw',
-    value: excalidrawValue,
-    route: '/docs/excalidraw',
     plugins: [ELEMENT_EXCALIDRAW],
+    route: '/docs/excalidraw',
+    value: excalidrawValue,
   },
   exitbreak: {
     id: 'exitbreak',
     label: 'Exit Break',
-    value: exitBreakValue,
-    route: '/docs/exit-break',
     plugins: [KEY_EXIT_BREAK],
+    route: '/docs/exit-break',
+    value: exitBreakValue,
   },
   font: {
     id: 'font',
     label: 'Font',
-    value: fontValue,
-    route: '/docs/font',
     plugins: [MARK_FONT_SIZE, MARK_BG_COLOR],
+    route: '/docs/font',
+    value: fontValue,
   },
   forcedlayout: {
     id: 'forcedlayout',
     label: 'Forced Layout',
-    value: [],
-    route: '/docs/forced-layout',
     plugins: [KEY_NORMALIZE_TYPES, KEY_TRAILING_BLOCK],
+    route: '/docs/forced-layout',
+    value: [],
   },
   highlight: {
     id: 'highlight',
     label: 'Highlight',
-    value: highlightValue,
-    route: '/docs/highlight',
     plugins: [MARK_HIGHLIGHT],
+    route: '/docs/highlight',
+    value: highlightValue,
   },
   hr: {
     id: 'hr',
     label: 'Horizontal Rule',
-    value: horizontalRuleValue,
-    route: '/docs/horizontal-rule',
     plugins: [ELEMENT_HR],
+    route: '/docs/horizontal-rule',
+    value: horizontalRuleValue,
   },
   indent: {
     id: 'indent',
     label: 'Indent',
-    value: indentValue,
-    route: '/docs/indent',
     plugins: [KEY_INDENT],
-  },
-  kbd: {
-    id: 'kbd',
-    label: 'Keyboard Input',
-    value: kbdValue,
-    route: '/docs/components/kbd-leaf',
-    plugins: [MARK_KBD],
-  },
-  lineheight: {
-    id: 'lineheight',
-    label: 'Line Height',
-    value: lineHeightValue,
-    route: '/docs/line-height',
-    plugins: [KEY_LINE_HEIGHT],
-  },
-  link: {
-    id: 'link',
-    label: 'Link',
-    value: linkValue,
-    route: '/docs/link',
-    plugins: [ELEMENT_LINK],
-  },
-  list: {
-    id: 'list',
-    label: 'List',
-    value: listValue,
-    route: '/docs/list',
-    plugins: ['list'],
+    route: '/docs/indent',
+    value: indentValue,
   },
   indentlist: {
     id: 'indentlist',
     label: 'Indent List',
-    value: indentListValue,
-    route: '/docs/indent-list',
     plugins: [KEY_LIST_STYLE_TYPE],
+    route: '/docs/indent-list',
+    value: indentListValue,
+  },
+  kbd: {
+    id: 'kbd',
+    label: 'Keyboard Input',
+    plugins: [MARK_KBD],
+    route: '/docs/components/kbd-leaf',
+    value: kbdValue,
+  },
+  lineheight: {
+    id: 'lineheight',
+    label: 'Line Height',
+    plugins: [KEY_LINE_HEIGHT],
+    route: '/docs/line-height',
+    value: lineHeightValue,
+  },
+  link: {
+    id: 'link',
+    label: 'Link',
+    plugins: [ELEMENT_LINK],
+    route: '/docs/link',
+    value: linkValue,
+  },
+  list: {
+    id: 'list',
+    label: 'List',
+    plugins: ['list'],
+    route: '/docs/list',
+    value: listValue,
   },
   media: {
     id: 'media',
     label: 'Media',
-    value: mediaValue,
-    route: '/docs/media',
     plugins: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED],
+    route: '/docs/media',
+    value: mediaValue,
   },
   mention: {
     id: 'mention',
     label: 'Mention',
-    value: mentionValue,
-    route: '/docs/mention',
     plugins: [ELEMENT_MENTION],
+    route: '/docs/mention',
+    value: mentionValue,
   },
   placeholder: {
     id: 'placeholder',
     label: 'Placeholder',
-    value: placeholderValue,
-    route: '/docs/components/placeholder',
     plugins: [],
+    route: '/docs/components/placeholder',
+    value: placeholderValue,
   },
   playground: {
     id: 'playground',
@@ -297,64 +304,57 @@ export const customizerPlugins = {
   resetnode: {
     id: 'resetnode',
     label: 'Reset Node',
-    value: [],
-    route: '/docs/reset-node',
     plugins: [KEY_RESET_NODE],
+    route: '/docs/reset-node',
+    value: [],
   },
   singleline: {
     id: 'singleline',
     label: 'Single Line',
-    value: singleLineValue,
-    route: '/docs/single-line',
     plugins: [KEY_SINGLE_LINE],
+    route: '/docs/single-line',
+    value: singleLineValue,
   },
   softbreak: {
     id: 'softbreak',
     label: 'Soft Break',
-    value: softBreakValue,
-    route: '/docs/soft-break',
     plugins: [KEY_SOFT_BREAK],
+    route: '/docs/soft-break',
+    value: softBreakValue,
   },
   tabbable: {
     id: 'tabbable',
     label: 'Tabbable',
-    value: tabbableValue,
-    route: '/docs/tabbable',
     plugins: [KEY_TABBABLE],
+    route: '/docs/tabbable',
+    value: tabbableValue,
   },
   table: {
     id: 'table',
     label: 'Table',
-    value: tableValue,
-    route: '/docs/table',
     plugins: [ELEMENT_TABLE],
+    route: '/docs/table',
+    value: tableValue,
   },
   todoli: {
     id: 'todoli',
     label: 'Todo List',
-    value: todoListValue,
-    route: '/docs/list',
     plugins: [ELEMENT_TODO_LI],
+    route: '/docs/list',
+    value: todoListValue,
   },
   toggle: {
     id: 'toggle',
     label: 'Toggle',
-    value: toggleValue,
-    route: '/docs/toggle',
     plugins: [ELEMENT_TOGGLE],
-  },
-  column: {
-    id: 'column',
-    label: 'Column',
-    value: columnValue,
-    route: '/docs/column',
-    plugins: [ELEMENT_COLUMN_GROUP],
+    route: '/docs/toggle',
+    value: toggleValue,
   },
   trailingblock: {
     id: 'trailingblock',
     label: 'Trailing Block',
-    value: trailingBlockValue,
-    route: '/docs/trailing-block',
     plugins: [KEY_TRAILING_BLOCK],
+    route: '/docs/trailing-block',
+    value: trailingBlockValue,
   },
 };

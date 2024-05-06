@@ -1,13 +1,14 @@
 import { comboboxActions } from '@udecode/plate-combobox';
 import {
+  type PlateEditor,
+  type Value,
+  type WithPlatePlugin,
   isCollapsed,
-  PlateEditor,
-  Value,
-  WithPlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
+
+import type { EmojiPlugin } from './types';
 
 import { getEmojiOnSelectItem, getFindTriggeringInput } from './handlers/index';
-import { EmojiPlugin } from './types';
 import { EmojiInlineIndexSearch } from './utils/index';
 
 export const withEmoji = <
@@ -16,7 +17,7 @@ export const withEmoji = <
 >(
   editor: E,
   {
-    options: { id, emojiTriggeringController },
+    options: { emojiTriggeringController, id },
   }: WithPlatePlugin<EmojiPlugin, V, E>
 ) => {
   const emojiInlineIndexSearch = EmojiInlineIndexSearch.getInstance();
@@ -26,7 +27,7 @@ export const withEmoji = <
     emojiTriggeringController!
   );
 
-  const { apply, insertText, deleteBackward, deleteForward } = editor;
+  const { apply, deleteBackward, deleteForward, insertText } = editor;
 
   editor.insertText = (char) => {
     const { selection } = editor;
@@ -42,11 +43,13 @@ export const withEmoji = <
 
   editor.deleteBackward = (unit) => {
     findTheTriggeringInput({ action: 'delete' });
+
     return deleteBackward(unit);
   };
 
   editor.deleteForward = (unit) => {
     findTheTriggeringInput();
+
     return deleteForward(unit);
   };
 
@@ -63,9 +66,9 @@ export const withEmoji = <
       case 'set_selection': {
         emojiTriggeringController.reset();
         comboboxActions.reset();
+
         break;
       }
-
       case 'insert_text': {
         if (
           emojiTriggeringController.hasEnclosingTriggeringMark() &&
@@ -73,9 +76,9 @@ export const withEmoji = <
         ) {
           const item = emojiInlineIndexSearch.getEmoji();
           item && getEmojiOnSelectItem()(editor, item);
+
           break;
         }
-
         if (
           !emojiTriggeringController.hasEnclosingTriggeringMark() &&
           emojiTriggeringController.isTriggering &&
@@ -86,17 +89,18 @@ export const withEmoji = <
           );
           comboboxActions.open({
             activeId: id!,
-            text: '',
             targetRange: editor.selection,
+            text: '',
           });
+
           break;
         }
 
         emojiTriggeringController.reset();
         comboboxActions.reset();
+
         break;
       }
-
       case 'remove_text': {
         if (
           emojiTriggeringController.isTriggering &&
@@ -107,14 +111,16 @@ export const withEmoji = <
           );
           comboboxActions.open({
             activeId: id!,
-            text: '',
             targetRange: editor.selection,
+            text: '',
           });
+
           break;
         }
 
         emojiTriggeringController.reset();
         comboboxActions.reset();
+
         break;
       }
     }

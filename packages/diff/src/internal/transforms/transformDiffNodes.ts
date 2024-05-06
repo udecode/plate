@@ -4,17 +4,17 @@
  */
 
 /* eslint-disable no-restricted-syntax */
-import { TDescendant } from '@udecode/plate-common';
+import type { TDescendant } from '@udecode/plate-common/server';
+
 import isEqual from 'lodash/isEqual.js';
 
-import { computeDiff, ComputeDiffOptions } from '../../computeDiff';
+import { type ComputeDiffOptions, computeDiff } from '../../computeDiff';
 import { copyWithout } from '../utils/copy-without';
 
 /**
- * We try each of the Handler functions listed below until one of them
- * matches. When one does, that is used to compute the operations. At
- * least one will, since the last one is a fallback that works for any
- * input.
+ * We try each of the Handler functions listed below until one of them matches.
+ * When one does, that is used to compute the operations. At least one will,
+ * since the last one is a fallback that works for any input.
  */
 
 type Handler = (
@@ -24,23 +24,24 @@ type Handler = (
 ) => TDescendant[] | false;
 
 /**
- * Only the children have changed. Recursively call the top-level diff
- * algorithm on the children.
+ * Only the children have changed. Recursively call the top-level diff algorithm
+ * on the children.
  */
 const childrenOnlyStrategy: Handler = (node, nextNode, options) => {
   if (
-    node['children'] != null &&
-    nextNode['children'] != null &&
+    node.children != null &&
+    nextNode.children != null &&
     isEqual(
       copyWithout(node, ['children']),
       copyWithout(nextNode, ['children'])
     )
   ) {
     const children = computeDiff(
-      node['children'] as TDescendant[],
-      nextNode['children'] as TDescendant[],
+      node.children as TDescendant[],
+      nextNode.children as TDescendant[],
       options
     );
+
     return [
       {
         ...node,
@@ -48,6 +49,7 @@ const childrenOnlyStrategy: Handler = (node, nextNode, options) => {
       },
     ];
   }
+
   return false;
 };
 
@@ -61,6 +63,7 @@ const propsOnlyStrategy: Handler = (node, nextNode, { getUpdateProps }) => {
     if (!isEqual(node[key], nextNode[key])) {
       // 'children' and 'text' cannot be updated with set_node
       if (key === 'children' || key === 'text') return false;
+
       properties[key] = node[key];
       newProperties[key] = nextNode[key];
     }
@@ -71,6 +74,7 @@ const propsOnlyStrategy: Handler = (node, nextNode, { getUpdateProps }) => {
     if (node[key] === undefined) {
       // 'children' and 'text' cannot be updated with set_node
       if (key === 'children' || key === 'text') return false;
+
       newProperties[key] = nextNode[key];
     }
   }
@@ -95,6 +99,7 @@ export function transformDiffNodes(
   for (const strategy of strategies) {
     // Attempt to generate operations with the current strategy and return the operations if the strategy succeeds
     const ops = strategy(node, nextNode, options);
+
     if (ops) {
       return ops;
     }

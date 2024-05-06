@@ -1,11 +1,9 @@
-import { Editor, Location } from 'slate';
+import { Editor, type Location } from 'slate';
 
-import { EElementOrText } from '../element/TElement';
-import { TEditor, Value } from './TEditor';
+import type { EElementOrText } from '../element/TElement';
+import type { TEditor, Value } from './TEditor';
 
-/**
- * Get the fragment at a location.
- */
+/** Get the fragment at a location. */
 export const getFragment = <V extends Value>(
   editor: TEditor<V>,
   at: Location

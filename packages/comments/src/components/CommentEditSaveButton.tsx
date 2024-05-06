@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { createPrimitiveComponent } from '@udecode/plate-common';
 
 import {
@@ -20,25 +21,26 @@ export const useCommentEditSaveButtonState = () => {
   const value = useCommentText();
 
   return {
-    value,
     editingValue,
-    setEditingValue,
     id,
     onCommentUpdate,
+    setEditingValue,
     updateComment,
+    value,
   };
 };
 
 export const useCommentEditSaveButton = ({
   editingValue,
-  setEditingValue,
   id,
   onCommentUpdate,
+  setEditingValue,
   updateComment,
   value,
 }: ReturnType<typeof useCommentEditSaveButtonState>) => {
   return {
     props: {
+      disabled: value?.trim().length === 0,
       onClick: React.useCallback(() => {
         if (!editingValue) return;
 
@@ -50,12 +52,11 @@ export const useCommentEditSaveButton = ({
 
         onCommentUpdate?.({ id, value: editingValue });
       }, [editingValue, id, onCommentUpdate, setEditingValue, updateComment]),
-      disabled: value?.trim().length === 0,
     },
   };
 };
 
 export const CommentEditSaveButton = createPrimitiveComponent('button')({
-  stateHook: useCommentEditSaveButtonState,
   propsHook: useCommentEditSaveButton,
+  stateHook: useCommentEditSaveButtonState,
 });

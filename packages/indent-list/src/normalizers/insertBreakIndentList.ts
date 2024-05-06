@@ -1,12 +1,12 @@
 import {
   ELEMENT_DEFAULT,
+  type PlateEditor,
+  type TElement,
+  type Value,
   getAboveNode,
   insertNodes,
   isDefined,
-  PlateEditor,
-  TElement,
-  Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import {
   KEY_LIST_STYLE_TYPE,
@@ -23,7 +23,7 @@ export const insertBreakIndentList = <V extends Value>(
 
     if (!nodeEntry) return insertBreak();
 
-    const [node, _] = nodeEntry;
+    const [node] = nodeEntry;
 
     if (
       !isDefined(node[KEY_LIST_STYLE_TYPE]) ||
@@ -32,11 +32,11 @@ export const insertBreakIndentList = <V extends Value>(
       return insertBreak();
 
     insertNodes<TElement>(editor, {
-      type: ELEMENT_DEFAULT,
       [KEY_LIST_STYLE_TYPE]: KEY_TODO_STYLE_TYPE,
-      children: [{ text: '' }],
       checked: false,
+      children: [{ text: '' }],
       indent: node.indent,
+      type: ELEMENT_DEFAULT,
     });
   };
 };

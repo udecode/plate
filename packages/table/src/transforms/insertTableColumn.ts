@@ -1,54 +1,49 @@
 import {
+  type PlateEditor,
+  type TElement,
+  type Value,
   findNode,
   getBlockAbove,
   getPluginOptions,
   getPluginType,
   insertElements,
-  PlateEditor,
   setNodes,
-  TElement,
-  Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Path } from 'slate';
+
+import type { TTableElement, TablePlugin } from '../types';
 
 import { ELEMENT_TABLE, ELEMENT_TH } from '../createTablePlugin';
 import { insertTableMergeColumn } from '../merge/insertTableColumn';
-import { TablePlugin, TTableElement } from '../types';
 import { getEmptyCellNode } from '../utils/getEmptyCellNode';
 import { getCellTypes } from '../utils/index';
 
 export const insertTableColumn = <V extends Value>(
   editor: PlateEditor<V>,
   options: {
-    header?: boolean;
-
-    /**
-     * Path of the cell to insert the column from.
-     */
-    fromCell?: Path;
-
-    /**
-     * Exact path of the cell to insert the column at.
-     * Will overrule `fromCell`.
-     */
+    /** Exact path of the cell to insert the column at. Will overrule `fromCell`. */
     at?: Path;
 
-    /**
-     * Disable selection after insertion.
-     */
+    /** Disable selection after insertion. */
     disableSelect?: boolean;
+
+    /** Path of the cell to insert the column from. */
+    fromCell?: Path;
+
+    header?: boolean;
   } = {}
 ) => {
   const { enableMerging } = getPluginOptions<TablePlugin, V>(
     editor,
     ELEMENT_TABLE
   );
+
   if (enableMerging) {
     return insertTableMergeColumn(editor, options);
   }
 
-  const { disableSelect, fromCell, at, header } = options;
+  const { at, disableSelect, fromCell, header } = options;
 
   const cellEntry = fromCell
     ? findNode(editor, {
@@ -58,14 +53,16 @@ export const insertTableColumn = <V extends Value>(
     : getBlockAbove(editor, {
         match: { type: getCellTypes(editor) },
       });
+
   if (!cellEntry) return;
 
   const [, cellPath] = cellEntry;
 
   const tableEntry = getBlockAbove<TTableElement>(editor, {
-    match: { type: getPluginType(editor, ELEMENT_TABLE) },
     at: cellPath,
+    match: { type: getPluginType(editor, ELEMENT_TABLE) },
   });
+
   if (!tableEntry) return;
 
   const [tableNode, tablePath] = tableEntry;
@@ -80,15 +77,17 @@ export const insertTableColumn = <V extends Value>(
     nextCellPath = Path.next(cellPath);
     nextColIndex = cellPath.at(-1)! + 1;
   }
+
   const currentRowIndex = cellPath.at(-2);
 
-  const { newCellChildren, initialTableWidth, minColumnWidth } =
+  const { initialTableWidth, minColumnWidth, newCellChildren } =
     getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
 
   withoutNormalizing(editor, () => {
     // for each row, insert a new cell
     tableNode.children.forEach((row, rowIndex) => {
       const insertCellPath = [...nextCellPath];
+
       if (Path.isPath(at)) {
         insertCellPath[at.length - 2] = rowIndex;
       } else {

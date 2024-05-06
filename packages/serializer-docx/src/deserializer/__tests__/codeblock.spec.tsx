@@ -9,7 +9,6 @@ const name = 'codeblock';
 
 describe(getDocxTestName(name), () => {
   testDocxDeserializer({
-    filename: name,
     expected: (
       <editor>
         <hp>This is some code:</hp>
@@ -39,5 +38,6 @@ describe(getDocxTestName(name), () => {
         <hp>from the beginning of the docx reader.</hp>
       </editor>
     ),
+    filename: name,
   });
 });

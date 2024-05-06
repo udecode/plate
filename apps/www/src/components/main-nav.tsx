@@ -1,9 +1,10 @@
 'use client';
 
 import * as React from 'react';
+
+import { cn } from '@udecode/cn';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { cn } from '@udecode/cn';
 
 import { siteConfig } from '@/config/site';
 
@@ -16,7 +17,7 @@ export function MainNav() {
 
   return (
     <div className="mr-4 hidden md:flex">
-      <Link href="/" className="mr-6 flex items-center space-x-2">
+      <Link className="mr-6 flex items-center space-x-2" href="/">
         <Logo className="size-6" />
         <span className="hidden items-center font-bold sm:inline-flex">
           {siteConfig.name}
@@ -27,22 +28,22 @@ export function MainNav() {
       </Link>
       <nav className="flex items-center gap-6 text-sm">
         <Link
-          href="/docs"
           className={cn(
             'transition-colors hover:text-foreground/80',
             pathname === '/docs' ? 'text-foreground' : 'text-foreground/60'
           )}
+          href="/docs"
         >
           Docs
         </Link>
         <Link
-          href="/docs/components"
           className={cn(
             'transition-colors hover:text-foreground/80',
             pathname?.startsWith('/docs/components')
               ? 'text-foreground'
               : 'text-foreground/60'
           )}
+          href="/docs/components"
         >
           Components
         </Link>

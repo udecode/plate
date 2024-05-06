@@ -1,67 +1,67 @@
-import { AutoformatRule } from '../../types';
+import type { AutoformatRule } from '../../types';
 
 export const autoformatSubscriptNumbers: AutoformatRule[] = [
   {
-    mode: 'text',
-    match: '~0',
     format: '₀',
+    match: '~0',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: '~1',
     format: '₁',
+    match: '~1',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: '~2',
     format: '₂',
+    match: '~2',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: '~3',
     format: '₃',
+    match: '~3',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: '~4',
     format: '₄',
+    match: '~4',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: '~5',
     format: '₅',
+    match: '~5',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: '~6',
     format: '₆',
+    match: '~6',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: '~7',
     format: '₇',
+    match: '~7',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: '~8',
     format: '₈',
+    match: '~8',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: '~9',
     format: '₉',
+    match: '~9',
+    mode: 'text',
   },
 ];
 
 export const autoformatSubscriptSymbols: AutoformatRule[] = [
   {
-    mode: 'text',
-    match: '~+',
     format: '₊',
+    match: '~+',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: '~-',
     format: '₋',
+    match: '~-',
+    mode: 'text',
   },
 ];

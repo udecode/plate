@@ -1,8 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { cn } from '@udecode/cn';
 import { StarIcon } from 'lucide-react';
+import Link from 'next/link';
 
 import { siteConfig } from '@/config/site';
 import { buttonVariants } from '@/registry/default/plate-ui/button';
@@ -21,8 +21,8 @@ export function StarOnGithub({ count }: { count: number }) {
           'hover:ring-2 hover:ring-primary hover:ring-offset-2',
           'transition-all duration-300 ease-out'
         )}
-        target="_blank"
         href={siteConfig.links.github}
+        target="_blank"
       >
         <span
           className={cn(
@@ -43,9 +43,9 @@ export function StarOnGithub({ count }: { count: number }) {
 
           {count > 0 && (
             <CountingNumbers
-              value={count}
               className="font-medium text-background dark:text-foreground"
               noAnimation
+              value={count}
             />
           )}
         </div>

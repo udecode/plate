@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect } from 'react';
-import dynamic from 'next/dynamic';
+
 import { cn } from '@udecode/cn';
 import { Settings2 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { parseAsBoolean, useQueryState } from 'nuqs';
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { settingsStore } from '@/components/context/settings-store';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PlaygroundDemo from '@/registry/default/example/playground-demo';
 import { Button } from '@/registry/default/plate-ui/button';
 
@@ -38,10 +39,10 @@ export default function HomeTabs() {
   return (
     <div>
       <Tabs
-        value={homeTab}
         onValueChange={(value) => {
           settingsStore.set.homeTab(value);
         }}
+        value={homeTab}
       >
         <TabsList>
           <TabsTrigger value="playground">Playground</TabsTrigger>
@@ -49,7 +50,6 @@ export default function HomeTabs() {
         </TabsList>
 
         <Button
-          variant="outline"
           className={cn(
             'ml-2 translate-y-[3px]',
             active && 'border-2 border-primary'
@@ -62,16 +62,17 @@ export default function HomeTabs() {
               settingsStore.set.showSettings(true);
             }
           }}
+          variant="outline"
         >
           <Settings2 className="mr-2 size-4" /> Customize
         </Button>
 
-        <TabsContent value="playground" className="pt-2">
+        <TabsContent className="pt-2" value="playground">
           <div className="max-w-[1336px] rounded-lg border bg-background shadow">
             <PlaygroundDemo />
           </div>
         </TabsContent>
-        <TabsContent value="installation" className="pt-2">
+        <TabsContent className="pt-2" value="installation">
           <div className="max-w-[1136px] p-4">
             <InstallationTab />
           </div>

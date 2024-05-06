@@ -1,14 +1,14 @@
-import { Node, NodeAncestorsOptions, Path } from 'slate';
+import { Node, type NodeAncestorsOptions, type Path } from 'slate';
 
-import { AncestorOf } from './TAncestor';
-import { TNode } from './TNode';
-import { TNodeEntry } from './TNodeEntry';
+import type { AncestorOf } from './TAncestor';
+import type { TNode } from './TNode';
+import type { TNodeEntry } from './TNodeEntry';
 
 /**
  * Return a generator of all the ancestor nodes above a specific path.
  *
- * By default the order is bottom-up, from lowest to highest ancestor in
- * the tree, but you can pass the `reverse: true` option to go top-down.
+ * By default the order is bottom-up, from lowest to highest ancestor in the
+ * tree, but you can pass the `reverse: true` option to go top-down.
  */
 export const getNodeAncestors = <
   N extends AncestorOf<R>,

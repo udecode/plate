@@ -1,14 +1,12 @@
-import { HotkeyPlugin } from '@udecode/plate-common';
+import type { HotkeyPlugin } from '@udecode/plate-common/server';
 
 export interface ListPlugin extends HotkeyPlugin {
-  /**
-   * Valid children types for list items, in addition to p and ul types.
-   */
-  validLiChildrenTypes?: string[];
   enableResetOnShiftTab?: boolean;
+  /** Valid children types for list items, in addition to p and ul types. */
+  validLiChildrenTypes?: string[];
 }
 
 export interface TodoListPlugin extends HotkeyPlugin {
-  inheritCheckStateOnLineStartBreak?: boolean;
   inheritCheckStateOnLineEndBreak?: boolean;
+  inheritCheckStateOnLineStartBreak?: boolean;
 }

@@ -1,5 +1,7 @@
 import React from 'react';
-import { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
+
+import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
+
 import {
   focusEditor,
   someNode,
@@ -7,10 +9,10 @@ import {
   useEditorSelector,
 } from '@udecode/plate-common';
 import {
+  ELEMENT_TABLE,
   deleteColumn,
   deleteRow,
   deleteTable,
-  ELEMENT_TABLE,
   insertTable,
   insertTableColumn,
   insertTableRow,
@@ -42,7 +44,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
   return (
     <DropdownMenu modal={false} {...openState} {...props}>
       <DropdownMenuTrigger asChild>
-        <ToolbarButton pressed={openState.open} tooltip="Table" isDropdown>
+        <ToolbarButton isDropdown pressed={openState.open} tooltip="Table">
           <Icons.table />
         </ToolbarButton>
       </DropdownMenuTrigger>
@@ -59,7 +61,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
           <DropdownMenuSubContent>
             <DropdownMenuItem
               className="min-w-[180px]"
-              onSelect={async () => {
+              onSelect={() => {
                 insertTable(editor);
                 focusEditor(editor);
               }}
@@ -70,7 +72,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
             <DropdownMenuItem
               className="min-w-[180px]"
               disabled={!tableSelected}
-              onSelect={async () => {
+              onSelect={() => {
                 deleteTable(editor);
                 focusEditor(editor);
               }}
@@ -90,7 +92,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
             <DropdownMenuItem
               className="min-w-[180px]"
               disabled={!tableSelected}
-              onSelect={async () => {
+              onSelect={() => {
                 insertTableColumn(editor);
                 focusEditor(editor);
               }}
@@ -101,7 +103,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
             <DropdownMenuItem
               className="min-w-[180px]"
               disabled={!tableSelected}
-              onSelect={async () => {
+              onSelect={() => {
                 deleteColumn(editor);
                 focusEditor(editor);
               }}
@@ -121,7 +123,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
             <DropdownMenuItem
               className="min-w-[180px]"
               disabled={!tableSelected}
-              onSelect={async () => {
+              onSelect={() => {
                 insertTableRow(editor);
                 focusEditor(editor);
               }}
@@ -132,7 +134,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
             <DropdownMenuItem
               className="min-w-[180px]"
               disabled={!tableSelected}
-              onSelect={async () => {
+              onSelect={() => {
                 deleteRow(editor);
                 focusEditor(editor);
               }}

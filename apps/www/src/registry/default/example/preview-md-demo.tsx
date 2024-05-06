@@ -1,23 +1,24 @@
 /* eslint-disable prettier/prettier */
+import React from 'react';
+
+import { cn } from '@udecode/cn';
+import {
+  Plate,
+  type TRenderLeafProps,
+  type TText,
+  type Value,
+  createPluginFactory, isText
+} from "@udecode/plate-common";
 import { createPlugins } from "@udecode/plate-core";
 import Prism from 'prismjs';
-import 'prismjs/components/prism-markdown';
 
-import React from 'react';
 import { editableProps } from '@/plate/demo/editableProps';
 import { plateUI } from '@/plate/demo/plateUI';
 import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
 import { previewMdValue } from '@/plate/demo/values/previewMdValue';
-import {
-  createPluginFactory,
-  isText,
-  Plate,
-  TRenderLeafProps,
-  TText, Value
-} from "@udecode/plate-common";
-
-import { cn } from '@udecode/cn';
 import { Editor } from '@/registry/default/plate-ui/editor';
+
+import 'prismjs/components/prism-markdown';
 
 /**
  * Decorate texts with markdown preview.
@@ -38,21 +39,25 @@ const decoratePreview =
       if (typeof token.content === 'string') {
         return token.content.length;
       }
+
       return token.content.reduce((l: any, t: any) => l + getLength(t), 0);
     };
 
     const tokens = Prism.tokenize(node.text, Prism.languages.markdown);
     let start = 0;
+
     for (const token of tokens) {
       const length = getLength(token);
       const end = start + length;
+
       if (typeof token !== 'string') {
         ranges.push({
+          anchor: { offset: start, path },
+          focus: { offset: end, path },
           [token.type]: true,
-          anchor: { path, offset: start },
-          focus: { path, offset: end },
         });
       }
+
       start = end;
     }
 
@@ -60,8 +65,8 @@ const decoratePreview =
   };
 
 const createPreviewPlugin = createPluginFactory({
-  key: 'preview-md',
   decorate: decoratePreview,
+  key: 'preview-md',
 });
 
 const plugins = createPlugins([...basicNodesPlugins, createPreviewPlugin()], {
@@ -70,21 +75,21 @@ const plugins = createPlugins([...basicNodesPlugins, createPreviewPlugin()], {
 
 function PreviewLeaf({
   attributes,
-  leaf,
   children,
+  leaf,
 }: TRenderLeafProps<
   Value,
-  TText & {
-    title?: boolean;
-    list?: boolean;
-    italic?: boolean;
-    hr?: boolean;
-    code?: boolean;
-    bold?: boolean;
+  {
     blockquote?: boolean;
-  }
+    bold?: boolean;
+    code?: boolean;
+    hr?: boolean;
+    italic?: boolean;
+    list?: boolean;
+    title?: boolean;
+  } & TText
 >) {
-  const { title, list, italic, hr, code, bold, blockquote } = leaf;
+  const { blockquote, bold, code, hr, italic, list, title } = leaf;
 
   return (
     <span
@@ -113,7 +118,7 @@ const _editableProps = {
 export default function PreviewMdDemo() {
   return (
     <div className="p-10">
-      <Plate plugins={plugins} initialValue={previewMdValue}>
+      <Plate initialValue={previewMdValue} plugins={plugins}>
         <Editor {..._editableProps} />
       </Plate>
     </div>

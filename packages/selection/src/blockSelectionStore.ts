@@ -1,13 +1,17 @@
-import { createZustandStore } from '@udecode/plate-common';
+import { createZustandStore } from '@udecode/plate-common/server';
 
-import { ChangedElements } from './components/SelectionArea';
+import type { ChangedElements } from './components/SelectionArea';
+
 import { extractSelectableIds } from './utils/extractSelectableIds';
 
 export const blockSelectionStore = createZustandStore('selection')({
-  selectedIds: new Set(),
   isSelecting: false,
+  selectedIds: new Set(),
 })
   .extendActions((set, get) => ({
+    resetSelectedIds: () => {
+      set.selectedIds(new Set());
+    },
     setSelectedIds: ({ added, removed }: ChangedElements) => {
       const prev = get.selectedIds();
 
@@ -18,19 +22,18 @@ export const blockSelectionStore = createZustandStore('selection')({
       set.selectedIds(next);
       set.isSelecting(true);
     },
-    resetSelectedIds: () => {
-      set.selectedIds(new Set());
-    },
     unselect: () => {
       set.selectedIds(new Set());
       set.isSelecting(false);
     },
   }))
   .extendSelectors((set, get) => ({
-    isSelectingSome: () => get.selectedIds().size > 0,
     isSelected: (id?: string) => id && get.selectedIds().has(id),
+    isSelectingSome: () => get.selectedIds().size > 0,
   }));
 
 export const useBlockSelectionSelectors = () => blockSelectionStore.use;
+
 export const blockSelectionSelectors = blockSelectionStore.get;
+
 export const blockSelectionActions = blockSelectionStore.set;

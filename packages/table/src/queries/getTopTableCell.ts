@@ -1,12 +1,13 @@
 import {
+  type PlateEditor,
+  type Value,
   findNode,
   getNodeEntry,
-  PlateEditor,
-  Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
-import { TTableCellElement } from '../types';
+import type { TTableCellElement } from '../types';
+
 import { getCellTypes } from '../utils/index';
 
 // Get cell to the top of the current cell

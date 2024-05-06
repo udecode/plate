@@ -1,24 +1,27 @@
 import {
   focusEditor,
-  getBlockAbove,
-  getPluginInjectProps,
-  isCollapsed,
-  TElement,
   useEditorRef,
   useEditorSelector,
 } from '@udecode/plate-common';
+import {
+  type TElement,
+  getBlockAbove,
+  getPluginInjectProps,
+  isCollapsed,
+} from '@udecode/plate-common/server';
 
 import { KEY_LINE_HEIGHT, setLineHeight } from '../index';
 
 export const useLineHeightDropdownMenuState = () => {
   const editor = useEditorRef();
-  const { validNodeValues: values = [], defaultNodeValue } =
+  const { defaultNodeValue, validNodeValues: values = [] } =
     getPluginInjectProps(editor, KEY_LINE_HEIGHT);
 
   // eslint-disable-next-line @typescript-eslint/no-shadow
   const value: string | undefined = useEditorSelector((editor) => {
     if (isCollapsed(editor.selection)) {
       const entry = getBlockAbove<TElement>(editor);
+
       if (entry) {
         return (
           values.find((item) => item === entry[0][KEY_LINE_HEIGHT]) ??
@@ -41,13 +44,13 @@ export const useLineHeightDropdownMenu = ({
 
   return {
     radioGroupProps: {
-      value,
       onValueChange: (newValue: string) => {
         setLineHeight(editor, {
           value: Number(newValue),
         });
         focusEditor(editor);
       },
+      value,
     },
   };
 };

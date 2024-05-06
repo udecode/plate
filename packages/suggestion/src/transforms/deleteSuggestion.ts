@@ -1,4 +1,7 @@
 import {
+  type PlateEditor,
+  type TElement,
+  type Value,
   createPointRef,
   deleteText,
   findNode,
@@ -11,14 +14,11 @@ import {
   isStartPoint,
   moveSelection,
   nanoid,
-  PlateEditor,
   removeNodes,
-  TElement,
   unhangCharacterRange,
-  Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
-import { Point, Range } from 'slate';
+} from '@udecode/plate-common/server';
+import { Point, type Range } from 'slate';
 
 import { MARK_SUGGESTION } from '../constants';
 import { findSuggestionId } from '../queries/findSuggestionId';
@@ -47,13 +47,16 @@ export const deleteSuggestion = <V extends Value>(
     const toRef = createPointRef(editor, to);
 
     let pointCurrent: Point | undefined;
+
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       pointCurrent = editor.selection?.anchor;
+
       if (!pointCurrent) break;
 
       const pointTarget = toRef.current;
-      if (!pointTarget) break;
 
+      if (!pointTarget) break;
       // don't delete across blocks
       if (
         !isRangeAcrossBlocks(editor, {
@@ -73,6 +76,7 @@ export const deleteSuggestion = <V extends Value>(
                 focus: pointTarget,
               }
         );
+
         if (str.length === 0) break;
       }
 
@@ -81,6 +85,7 @@ export const deleteSuggestion = <V extends Value>(
       const pointNext = getPoint(editor, pointCurrent, {
         unit: 'character',
       });
+
       if (!pointNext) break;
 
       let range = reverse
@@ -112,9 +117,9 @@ export const deleteSuggestion = <V extends Value>(
         removeNodes(editor, {
           at: entryBlock[1],
         });
+
         continue;
       }
-
       // move selection if still the same
       if (Point.equals(pointCurrent, editor.selection!.anchor)) {
         moveSelection(editor, {
@@ -122,7 +127,6 @@ export const deleteSuggestion = <V extends Value>(
           unit: 'character',
         });
       }
-
       // skip if the range is across blocks
       if (
         isRangeAcrossBlocks(editor, {
@@ -138,8 +142,10 @@ export const deleteSuggestion = <V extends Value>(
         match: (n) =>
           !n.suggestionDeletion && n[getSuggestionCurrentUserKey(editor)],
       });
+
       if (entryText) {
         deleteText(editor, { at: range, unit: 'character' });
+
         continue;
       }
 

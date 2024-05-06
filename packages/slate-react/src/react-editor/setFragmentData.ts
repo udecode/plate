@@ -1,11 +1,10 @@
-import { Value } from '@udecode/slate';
+import type { Value } from '@udecode/slate';
+
 import { ReactEditor } from 'slate-react';
 
-import { TReactEditor } from '../types/TReactEditor';
+import type { TReactEditor } from '../types/TReactEditor';
 
-/**
- * Sets data from the currently selected fragment on a `DataTransfer`.
- */
+/** Sets data from the currently selected fragment on a `DataTransfer`. */
 export const setFragmentData = <V extends Value>(
   editor: TReactEditor<V>,
   data: DataTransfer

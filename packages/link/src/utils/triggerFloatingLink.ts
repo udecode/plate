@@ -1,4 +1,4 @@
-import { PlateEditor, Value } from '@udecode/plate-common';
+import type { PlateEditor, Value } from '@udecode/plate-common/server';
 
 import { floatingLinkSelectors } from '../components/index';
 import { triggerFloatingLinkEdit } from './triggerFloatingLinkEdit';
@@ -14,6 +14,7 @@ export const triggerFloatingLink = <V extends Value>(
 ) => {
   if (floatingLinkSelectors.mode() === 'edit') {
     triggerFloatingLinkEdit(editor);
+
     return;
   }
 

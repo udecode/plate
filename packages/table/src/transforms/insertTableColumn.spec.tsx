@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-key */
 /** @jsx jsx */
 
-import { createPlateEditor, TEditor } from '@udecode/plate-common';
+import { type TEditor, createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { createTablePlugin } from '../createTablePlugin';
@@ -10,15 +10,15 @@ import { insertTableColumn } from './insertTableColumn';
 jsx;
 
 type MakeTableWithColsOptions = {
-  rowCols: string[][];
-  cursorPath?: [number, number];
   colSizes?: number[];
+  cursorPath?: [number, number];
+  rowCols: string[][];
 };
 
 const makeTableWithCols = ({
-  rowCols,
-  cursorPath,
   colSizes,
+  cursorPath,
+  rowCols,
 }: MakeTableWithColsOptions) =>
   (
     <editor>
@@ -53,19 +53,19 @@ describe('insertTableColumn', () => {
 
     it('should insert at last column', () => {
       const input = makeTableWithCols({
+        cursorPath: [1, 1],
         rowCols: [
           ['11', '12'],
           ['21', '22'],
         ],
-        cursorPath: [1, 1],
       });
 
       const output = makeTableWithCols({
+        cursorPath: [1, 2],
         rowCols: [
           ['11', '12', ''],
           ['21', '22', ''],
         ],
-        cursorPath: [1, 2],
       });
 
       const editor = createPlateEditor({
@@ -88,11 +88,11 @@ describe('insertTableColumn', () => {
       });
 
       const output = makeTableWithCols({
+        cursorPath: [1, 1],
         rowCols: [
           ['11', '', '12'],
           ['21', '', '22'],
         ],
-        cursorPath: [1, 1],
       });
 
       const editor = createPlateEditor({
@@ -108,19 +108,19 @@ describe('insertTableColumn', () => {
 
     it('should insert using at', () => {
       const input = makeTableWithCols({
+        cursorPath: [1, 0],
         rowCols: [
           ['11', '12'],
           ['21', '22'],
         ],
-        cursorPath: [1, 0],
       });
 
       const output = makeTableWithCols({
+        cursorPath: [1, 0],
         rowCols: [
           ['', '11', '12'],
           ['', '21', '22'],
         ],
-        cursorPath: [1, 0],
       });
 
       const editor = createPlateEditor({
@@ -140,9 +140,9 @@ describe('insertTableColumn', () => {
       plugins: [
         createTablePlugin({
           options: {
-            newCellChildren: [{ text: '' }],
             initialTableWidth: 100,
             minColumnWidth: 10,
+            newCellChildren: [{ text: '' }],
           },
         }),
       ],
@@ -152,21 +152,21 @@ describe('insertTableColumn', () => {
       describe('when inserting at last column', () => {
         it('should add the last column width to colSizes', () => {
           const input = makeTableWithCols({
+            colSizes: [20, 30],
+            cursorPath: [1, 1],
             rowCols: [
               ['11', '12'],
               ['21', '22'],
             ],
-            cursorPath: [1, 1],
-            colSizes: [20, 30],
           });
 
           const output = makeTableWithCols({
+            colSizes: [20, 30, 30],
+            cursorPath: [1, 2],
             rowCols: [
               ['11', '12', ''],
               ['21', '22', ''],
             ],
-            cursorPath: [1, 2],
-            colSizes: [20, 30, 30],
           });
 
           const editor = createPlateEditor({
@@ -183,21 +183,21 @@ describe('insertTableColumn', () => {
       describe('when inserting at first column', () => {
         it('should add the second column width to colSizes', () => {
           const input = makeTableWithCols({
+            colSizes: [20, 30],
+            cursorPath: [0, 0],
             rowCols: [
               ['11', '12'],
               ['21', '22'],
             ],
-            cursorPath: [0, 0],
-            colSizes: [20, 30],
           });
 
           const output = makeTableWithCols({
+            colSizes: [20, 30, 30],
+            cursorPath: [1, 1],
             rowCols: [
               ['11', '', '12'],
               ['21', '', '22'],
             ],
-            cursorPath: [1, 1],
-            colSizes: [20, 30, 30],
           });
 
           const editor = createPlateEditor({
@@ -212,21 +212,21 @@ describe('insertTableColumn', () => {
 
         it('should add the first column width to colSizes using at', () => {
           const input = makeTableWithCols({
+            colSizes: [20, 30],
+            cursorPath: [0, 0],
             rowCols: [
               ['11', '12'],
               ['21', '22'],
             ],
-            cursorPath: [0, 0],
-            colSizes: [20, 30],
           });
 
           const output = makeTableWithCols({
+            colSizes: [20, 20, 30],
+            cursorPath: [1, 0],
             rowCols: [
               ['', '11', '12'],
               ['', '21', '22'],
             ],
-            cursorPath: [1, 0],
-            colSizes: [20, 20, 30],
           });
 
           const editor = createPlateEditor({
@@ -246,21 +246,21 @@ describe('insertTableColumn', () => {
     describe('when new total width is greater than initialTableWidth', () => {
       it('should shrink all columns by the same factor to fit initialTableWidth', () => {
         const input = makeTableWithCols({
+          colSizes: [20, 30, 40],
+          cursorPath: [0, 0],
           rowCols: [
             ['11', '12', '13'],
             ['21', '22', '23'],
           ],
-          cursorPath: [0, 0],
-          colSizes: [20, 30, 40],
         });
 
         const output = makeTableWithCols({
+          colSizes: [20, 30, 30, 40].map((w) => Math.floor((w * 100) / 120)),
+          cursorPath: [1, 1],
           rowCols: [
             ['11', '', '12', '13'],
             ['21', '', '22', '23'],
           ],
-          cursorPath: [1, 1],
-          colSizes: [20, 30, 30, 40].map((w) => Math.floor((w * 100) / 120)),
         });
 
         const editor = createPlateEditor({
@@ -275,21 +275,21 @@ describe('insertTableColumn', () => {
 
       it('should not shrink columns below minColumnsWidth', () => {
         const input = makeTableWithCols({
+          colSizes: Array.from<number>({ length: 10 }).fill(10), // total width is 100
+          cursorPath: [0, 0],
           rowCols: [
             Array.from<string>({ length: 10 }).fill(''),
             Array.from<string>({ length: 10 }).fill(''),
           ],
-          cursorPath: [0, 0],
-          colSizes: Array.from<number>({ length: 10 }).fill(10), // total width is 100
         });
 
         const output = makeTableWithCols({
+          colSizes: Array.from<number>({ length: 11 }).fill(10), // cannot shrink below 10
+          cursorPath: [1, 1],
           rowCols: [
             Array.from<string>({ length: 11 }).fill(''),
             Array.from<string>({ length: 11 }).fill(''),
           ],
-          cursorPath: [1, 1],
-          colSizes: Array.from<number>({ length: 11 }).fill(10), // cannot shrink below 10
         });
 
         const editor = createPlateEditor({

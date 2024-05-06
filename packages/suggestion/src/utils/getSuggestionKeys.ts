@@ -1,4 +1,4 @@
-import { isDefined, TNode } from '@udecode/plate-common';
+import { type TNode, isDefined } from '@udecode/plate-common/server';
 
 import { MARK_SUGGESTION } from '../constants';
 
@@ -17,7 +17,7 @@ export const getSuggestionKeys = (node: TNode) => {
   return keys;
 };
 
-export const getSuggestionUserIdByKey = (key?: string | null) =>
+export const getSuggestionUserIdByKey = (key?: null | string) =>
   isDefined(key) ? key.split(`${MARK_SUGGESTION}_`)[1] : null;
 
 export const getSuggestionUserIds = (node: TNode) => {

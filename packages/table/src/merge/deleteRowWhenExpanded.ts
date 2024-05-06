@@ -1,14 +1,16 @@
+import type { PathRef } from 'slate';
+
 import {
+  type PlateEditor,
+  type TNodeEntry,
+  type Value,
   createPathRef,
-  PlateEditor,
   removeNodes,
-  TNodeEntry,
-  Value,
-} from '@udecode/plate-common';
-import { PathRef } from 'slate';
+} from '@udecode/plate-common/server';
+
+import type { TTableCellElement } from '../types';
 
 import { getRowSpan, getTableGridAbove } from '../queries';
-import { TTableCellElement } from '../types';
 import { getCellRowIndexByPath } from '../utils/getCellRowIndexByPath';
 import { getTableMergedColumnCount } from './getTableMergedColumnCount';
 
@@ -31,7 +33,7 @@ export const deleteRowWhenExpanded = <V extends Value>(
   let rowSpanCarry = 0;
   let acrossRow = 0;
 
-  cells.forEach(([cell, cellPath], index) => {
+  cells.forEach(([cell, cellPath]) => {
     if (cellPath.at(-2) === firsRowIndex) {
       acrossColumn += cell.colSpan ?? 1;
     }
@@ -41,6 +43,7 @@ export const deleteRowWhenExpanded = <V extends Value>(
     if (lastRowIndex !== currentRowIndex) {
       if (rowSpanCarry !== 0) {
         rowSpanCarry--;
+
         return;
       }
 
@@ -55,6 +58,7 @@ export const deleteRowWhenExpanded = <V extends Value>(
 
   if (acrossColumn === columnCount) {
     const pathRefs: PathRef[] = [];
+
     for (let i = firsRowIndex; i < firsRowIndex + acrossRow; i++) {
       const removedPath = tablePath.concat(i);
       pathRefs.push(createPathRef(editor, removedPath));

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { ReactNode, useState } from 'react';
+import React, { type ReactNode, useState } from 'react';
+
 import { cn } from '@udecode/cn';
 
 import { Separator } from '@/registry/default/plate-ui/separator';
@@ -15,34 +16,34 @@ import {
 import { Card } from './ui/card';
 
 type Item = {
-  name: string;
-  default?: string | boolean;
-  type: string;
-  description?: string;
-  value?: string;
-  required?: boolean;
-  optional?: boolean;
   children: ReactNode;
+  default?: boolean | string;
+  description?: string;
+  name: string;
+  optional?: boolean;
+  required?: boolean;
+  type: string;
+  value?: string;
 };
 
 export function APIItem({
   children,
   name,
-  type,
-  value,
   optional,
   required,
+  type,
+  value,
 }: Item) {
   return (
-    <AccordionItem value={value ?? name} className="select-text">
+    <AccordionItem className="select-text" value={value ?? name}>
       <AccordionTrigger className="group hover:no-underline">
-        <li id={name} className="scroll-mt-[56px]">
+        <li className="scroll-mt-[56px]" id={name}>
           <h4 className="relative py-2 text-start font-semibold leading-none tracking-tight">
             <a
-              href={`#${name}`}
               className={cn(
                 'opacity-0 hover:opacity-100 group-hover:opacity-100'
               )}
+              href={`#${name}`}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="absolute -left-5 top-2 pr-1 leading-none">
@@ -118,15 +119,15 @@ export function APIParameters({ children, ...props }: APIListProps) {
 }
 
 type APIListProps = {
-  type?: string;
-  collapsed?: boolean;
   children: ReactNode;
+  collapsed?: boolean;
+  type?: string;
 };
 
 export function APIList({
-  type = 'parameters',
-  collapsed = false,
   children,
+  collapsed = false,
+  type = 'parameters',
 }: APIListProps) {
   const childCount = React.Children.count(children);
   const hasItems = React.Children.toArray(children).some(
@@ -176,15 +177,15 @@ export function APIList({
 
             {hasItems ? (
               <Accordion
+                className="w-full"
+                onValueChange={setValues}
                 type="multiple"
                 value={values}
-                onValueChange={setValues}
-                className="w-full"
               >
                 {React.Children.map(children, (child, i) => {
                   return React.cloneElement(child as any, {
-                    value: i.toString(),
                     className: 'pt-4',
+                    value: i.toString(),
                   });
                 })}
               </Accordion>
@@ -203,19 +204,19 @@ export function APIList({
 }
 
 export function APISubListItem({
-  parent,
-  name,
-  type,
-  optional,
-  required,
   children,
+  name,
+  optional,
+  parent,
+  required,
+  type,
 }: {
-  parent: string;
-  name: string;
-  type: string;
-  required?: boolean;
-  optional?: boolean;
   children: ReactNode;
+  name: string;
+  optional?: boolean;
+  parent: string;
+  required?: boolean;
+  type: string;
 }) {
   return (
     <div className="border-t border-t-border p-3">
@@ -249,8 +250,8 @@ export function APISubListItem({
 }
 
 export function APISubList({
-  open,
   children,
+  open,
 }: {
   children: ReactNode;
   open?: boolean;
@@ -260,14 +261,14 @@ export function APISubList({
   return (
     <Card className="my-2">
       <Accordion
-        type="single"
-        collapsible
         className="w-full"
+        collapsible
         defaultValue={open ? '1' : ''}
         onValueChange={setValue}
+        type="single"
       >
-        <AccordionItem value="1" className="border-none">
-          <AccordionTrigger iconVariant="plus" className="group px-3">
+        <AccordionItem className="border-none" value="1">
+          <AccordionTrigger className="group px-3" iconVariant="plus">
             {value ? 'Hide' : 'Show'} child attributes
           </AccordionTrigger>
           <AccordionContent>{children}</AccordionContent>

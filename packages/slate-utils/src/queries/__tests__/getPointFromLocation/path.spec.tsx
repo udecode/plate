@@ -1,6 +1,7 @@
 /** @jsx jsx */
 
-import { PlateEditor } from '@udecode/plate-common';
+import type { PlateEditor } from '@udecode/plate-common';
+
 import { jsx } from '@udecode/plate-test-utils';
 
 import { getPointFromLocation } from '../../getPointFromLocation';
@@ -17,8 +18,8 @@ const input = (
 ) as any as PlateEditor;
 
 const output = {
-  path: [0, 0],
   offset: 0,
+  path: [0, 0],
 };
 
 it('should be', () => {

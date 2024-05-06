@@ -1,46 +1,47 @@
 'use client';
 
 import React, {
-  Dispatch,
-  SetStateAction,
+  type Dispatch,
+  type SetStateAction,
   useCallback,
   useRef,
   useState,
 } from 'react';
-import { resizeInWidth } from '@portive/client';
-import {
+
+import type {
   PlateCloudEditor,
   PlateCloudImageEditor,
   TCloudImageElement,
 } from '@udecode/plate-cloud';
+
+import { resizeInWidth } from '@portive/client';
 import { findNodePath, setNodes, useEditorRef } from '@udecode/plate-common';
 
-type ImageSize = { width: number; height: number };
+type ImageSize = { height: number; width: number };
 
 type SetImageSize = Dispatch<SetStateAction<ImageSize>>;
 
-/**
- * The resize label that shows the width/height of the image
- */
-function ResizeLabel({ size }: { size: { width: number; height: number } }) {
+/** The resize label that shows the width/height of the image */
+function ResizeLabel({ size }: { size: { height: number; width: number } }) {
   const isBelow = size.width < 100 || size.height < 100;
   const bottom = isBelow ? -24 : 4;
+
   return (
     <div
       style={{
-        position: 'absolute',
-        bottom,
-        left: 4,
-        font: '10px/20px sans-serif',
-        color: 'white',
         background: '#404040',
+        borderRadius: 3,
+        bottom,
+        boxShadow: '0px 0px 2px 1px rgba(255, 255, 255, 0.5)',
+        color: 'white',
+        font: '10px/20px sans-serif',
+        left: 4,
         minWidth: 50,
         padding: '0 7px',
-        borderRadius: 3,
+        position: 'absolute',
         textAlign: 'center',
-        boxShadow: '0px 0px 2px 1px rgba(255, 255, 255, 0.5)',
-        zIndex: 100,
         transition: 'bottom 250ms',
+        zIndex: 100,
       }}
     >
       {size.width} &times; {size.height}
@@ -48,20 +49,16 @@ function ResizeLabel({ size }: { size: { width: number; height: number } }) {
   );
 }
 
-/**
- * The little divets on the resize handle bar.
- */
+/** The little divets on the resize handle bar. */
 const barStyle = {
+  background: 'rgba(255,255,255,0.75)',
+  height: 16,
   position: 'absolute',
   top: 8,
   width: 1,
-  height: 16,
-  background: 'rgba(255,255,255,0.75)',
 } as const;
 
-/**
- * The handle used to drag resize an image
- */
+/** The handle used to drag resize an image */
 function ResizeHandles({
   onMouseDown,
 }: {
@@ -73,26 +70,26 @@ function ResizeHandles({
       <div
         onMouseDown={onMouseDown}
         style={{
-          position: 'absolute',
+          background: 'rgba(127,127,127,0.01)',
+          bottom: 0,
           cursor: 'ew-resize',
-          width: 16,
+          position: 'absolute',
           right: -8,
           top: 0,
-          bottom: 0,
-          background: 'rgba(127,127,127,0.01)',
+          width: 16,
         }}
       >
         {/* Visible Handle */}
         <div
           style={{
-            position: 'absolute',
-            width: 16,
-            height: 32,
             background: 'DodgerBlue',
             borderRadius: 4,
+            height: 32,
             left: 0,
-            top: '50%',
             marginTop: -16,
+            position: 'absolute',
+            top: '50%',
+            width: 16,
           }}
         >
           <div style={{ ...barStyle, left: 3.5 }} />
@@ -106,19 +103,19 @@ function ResizeHandles({
 
 export function ResizeControls({
   element,
-  size,
   setSize,
+  size,
 }: {
   element: TCloudImageElement;
-  size: ImageSize;
   setSize: SetImageSize;
+  size: ImageSize;
 }) {
   const editor = useEditorRef() as PlateCloudEditor & PlateCloudImageEditor;
   const [isResizing, setIsResizing] = useState(false);
 
-  const { minResizeWidth, maxResizeWidth } = editor.cloudImage;
+  const { maxResizeWidth, minResizeWidth } = editor.cloudImage;
 
-  const currentSizeRef = useRef<{ width: number; height: number }>();
+  const currentSizeRef = useRef<{ height: number; width: number }>();
 
   const onMouseDown = useCallback(
     (mouseDownEvent: React.MouseEvent) => {
@@ -127,6 +124,7 @@ export function ResizeControls({
       const startWidth = size.width;
       const minWidth = minResizeWidth;
       const maxWidth = Math.min(element.maxWidth, maxResizeWidth);
+
       /**
        * Handle resize dragging through an event handler on mouseMove on the
        * document.
@@ -134,18 +132,14 @@ export function ResizeControls({
       function onDocumentMouseMove(mouseMoveEvent: MouseEvent) {
         mouseMoveEvent.preventDefault();
         mouseMoveEvent.stopPropagation();
-        /**
-         * Calculate the proposed width based on drag position
-         */
+        /** Calculate the proposed width based on drag position */
         const proposedWidth = startWidth + mouseMoveEvent.clientX - startX;
 
-        /**
-         * Constrain the proposed with between min, max and original width
-         */
+        /** Constrain the proposed with between min, max and original width */
         const nextWidth = Math.min(maxWidth, Math.max(minWidth, proposedWidth));
 
         const currentSize = resizeInWidth(
-          { width: element.maxWidth, height: element.maxHeight },
+          { height: element.maxHeight, width: element.maxWidth },
           nextWidth
         );
 
@@ -155,9 +149,7 @@ export function ResizeControls({
 
       const originalCursor = document.body.style.cursor;
 
-      /**
-       * When the user releases the mouse, remove all the event handlers
-       */
+      /** When the user releases the mouse, remove all the event handlers */
       function onDocumentMouseUp() {
         setIsResizing(false);
         document.removeEventListener('mousemove', onDocumentMouseMove);
@@ -171,17 +163,15 @@ export function ResizeControls({
         setNodes<TCloudImageElement>(editor, currentSizeRef.current, { at });
       }
 
-      /**
-       * Attach document event listeners
-       */
+      /** Attach document event listeners */
       document.addEventListener('mousemove', onDocumentMouseMove);
       document.addEventListener('mouseup', onDocumentMouseUp);
 
       /**
        * While dragging, we want the cursor to be `ew-resize` (left-right arrow)
-       * even if the cursor happens to not be exactly on the handle at the moment
-       * due to a delay in the cursor moving to a location and the image resizing
-       * to it.
+       * even if the cursor happens to not be exactly on the handle at the
+       * moment due to a delay in the cursor moving to a location and the image
+       * resizing to it.
        *
        * Also, image has max width/height and the cursor can fall outside of it.
        */

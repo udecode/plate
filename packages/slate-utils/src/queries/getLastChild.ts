@@ -1,9 +1,12 @@
-import { ChildOf, isText, TNode, TNodeEntry } from '@udecode/slate';
+import {
+  type ChildOf,
+  type TNode,
+  type TNodeEntry,
+  isText,
+} from '@udecode/slate';
 import { Path } from 'slate';
 
-/**
- * Get the last child of a node or null if no children.
- */
+/** Get the last child of a node or null if no children. */
 export const getLastChild = <N extends ChildOf<R>, R extends TNode>(
   nodeEntry: TNodeEntry<R>
 ): TNodeEntry<N> | null => {
@@ -17,9 +20,7 @@ export const getLastChild = <N extends ChildOf<R>, R extends TNode>(
   return [children.at(-1) as N, path.concat([children.length - 1])];
 };
 
-/**
- * Get last child path. If there is no child, last index is 0.
- */
+/** Get last child path. If there is no child, last index is 0. */
 export const getLastChildPath = <N extends TNode>(
   nodeEntry: TNodeEntry<N>
 ): Path => {
@@ -30,9 +31,7 @@ export const getLastChildPath = <N extends TNode>(
   return lastChild[1];
 };
 
-/**
- * Is the child path the last one of the parent.
- */
+/** Is the child path the last one of the parent. */
 export const isLastChild = <N extends TNode>(
   parentEntry: TNodeEntry<N>,
   childPath: Path

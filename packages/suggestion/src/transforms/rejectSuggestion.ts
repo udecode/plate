@@ -1,14 +1,15 @@
 import {
-  PlateEditor,
+  type PlateEditor,
+  type Value,
   removeNodes,
   unsetNodes,
-  Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
+
+import type { TSuggestionText } from '../types';
 
 import { KEY_SUGGESTION_ID } from '../constants';
-import { TSuggestionText } from '../types';
-import { getSuggestionKey, TSuggestionDescription } from '../utils/index';
+import { type TSuggestionDescription, getSuggestionKey } from '../utils/index';
 
 export const rejectSuggestion = <V extends Value = Value>(
   editor: PlateEditor<V>,

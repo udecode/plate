@@ -1,13 +1,14 @@
 import {
+  type PlateEditor,
+  type TDescendant,
+  type TElement,
+  type Value,
   getPluginType,
-  PlateEditor,
-  TDescendant,
-  TElement,
-  Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
+
+import type { TTableRowElement } from '../types';
 
 import { ELEMENT_TH } from '../createTablePlugin';
-import { TTableRowElement } from '../types';
 import { getEmptyCellNode } from '../utils';
 
 export const createEmptyCell = <V extends Value>(

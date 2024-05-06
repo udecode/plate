@@ -1,9 +1,10 @@
 'use client';
 
 import * as React from 'react';
-import { Index } from '@/__registry__';
+
 import { cn } from '@udecode/cn';
 
+import { Index } from '@/__registry__';
 import { useConfig } from '@/hooks/use-config';
 import { styles } from '@/registry/styles';
 
@@ -14,19 +15,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 interface ComponentPreviewProps extends React.HTMLAttributes<HTMLDivElement> {
   name: string;
+  align?: 'center' | 'end' | 'start';
   extractClassname?: boolean;
   extractedClassNames?: string;
-  align?: 'center' | 'start' | 'end';
   padding?: 'md';
 }
 
 export function ComponentPreview({
-  name,
+  align = 'start',
   children,
   className,
   extractClassname,
   extractedClassNames,
-  align = 'start',
+  name,
   padding,
   ...props
 }: ComponentPreviewProps) {
@@ -59,6 +60,7 @@ export function ComponentPreview({
       const [, Button] = React.Children.toArray(
         Code.props.children
       ) as React.ReactElement[];
+
       return Button?.props?.value || Button?.props?.__rawString__ || null;
     }
   }, [Code]);
@@ -68,31 +70,31 @@ export function ComponentPreview({
       className={cn('relative my-4 flex flex-col space-y-2', className)}
       {...props}
     >
-      <Tabs defaultValue="preview" className="relative mr-auto w-full">
+      <Tabs className="relative mr-auto w-full" defaultValue="preview">
         <div className="flex items-center justify-between pb-3">
           <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
             <TabsTrigger
-              value="preview"
               className="relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+              value="preview"
             >
               Preview
             </TabsTrigger>
             <TabsTrigger
-              value="code"
               className="relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+              value="code"
             >
               Code
             </TabsTrigger>
           </TabsList>
         </div>
-        <TabsContent value="preview" className="relative rounded-md border">
+        <TabsContent className="relative rounded-md border" value="preview">
           {styles.length > 1 && (
             <div className="flex items-center justify-between p-4">
               <StyleSwitcher />
               {extractedClassNames ? (
                 <CopyWithClassNames
-                  value={codeString}
                   classNames={extractedClassNames}
+                  value={codeString}
                 />
               ) : (
                 codeString && <CopyButton value={codeString} />
@@ -115,8 +117,8 @@ export function ComponentPreview({
                 padding === 'md' && 'p-4',
                 {
                   'items-center': align === 'center',
-                  'items-start': align === 'start',
                   'items-end': align === 'end',
+                  'items-start': align === 'start',
                 }
               )}
             >

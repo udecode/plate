@@ -1,11 +1,12 @@
 import React from 'react';
-import { InjectComponentReturnType } from '@udecode/plate-common';
+
+import type { InjectComponentReturnType } from '@udecode/plate-common/server';
 
 import { useIsVisible } from './toggle-controller-store';
 
 export const injectToggle = (): InjectComponentReturnType => WithToggle;
 
-const WithToggle: InjectComponentReturnType = ({ element, children }) => {
+const WithToggle: InjectComponentReturnType = ({ children, element }) => {
   const isVisible = useIsVisible(element.id as string);
 
   if (isVisible) return children;
@@ -14,8 +15,8 @@ const WithToggle: InjectComponentReturnType = ({ element, children }) => {
 };
 
 const hiddenStyle: React.CSSProperties = {
-  visibility: 'hidden',
   height: 0,
   margin: 0,
   overflow: 'hidden',
+  visibility: 'hidden',
 };

@@ -2,23 +2,25 @@
   "name": "@udecode/plate-serializer-md",
   "version": "32.0.0",
   "description": "Markdown serializer plugin for Plate",
-  "license": "MIT",
+  "keywords": [
+    "markdown",
+    "md",
+    "plate",
+    "plugin",
+    "serializer",
+    "slate"
+  ],
   "homepage": "https://platejs.org",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
     "directory": "packages/serializer-md"
   },
-  "bugs": {
-    "url": "https://github.com/udecode/plate/issues"
-  },
+  "license": "MIT",
   "sideEffects": false,
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist/**/*"
-  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -27,10 +29,16 @@
       "require": "./dist/index.js"
     }
   },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
   "scripts": {
+    "brl": "yarn p:brl",
     "build": "yarn p:build",
     "build:watch": "yarn p:build:watch",
-    "brl": "yarn p:brl",
     "clean": "yarn p:clean",
     "lint": "yarn p:lint",
     "lint:fix": "yarn p:lint:fix",
@@ -39,15 +47,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-basic-marks": "32.0.0",
-    "@udecode/plate-block-quote": "32.0.0",
-    "@udecode/plate-code-block": "32.0.0",
-    "@udecode/plate-heading": "32.0.0",
-    "@udecode/plate-horizontal-rule": "32.0.0",
-    "@udecode/plate-link": "32.0.0",
-    "@udecode/plate-list": "32.0.0",
-    "@udecode/plate-media": "32.0.0",
-    "@udecode/plate-paragraph": "32.0.0",
+    "lodash": "^4.17.21",
     "remark-parse": "^9.0.0",
     "unified": "^9.2.2"
   },
@@ -63,14 +63,6 @@
     "slate-hyperscript": ">=0.66.0",
     "slate-react": ">=0.99.0"
   },
-  "keywords": [
-    "markdown",
-    "md",
-    "plate",
-    "plugin",
-    "serializer",
-    "slate"
-  ],
   "publishConfig": {
     "access": "public"
   }

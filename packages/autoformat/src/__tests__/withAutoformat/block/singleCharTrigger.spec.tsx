@@ -10,7 +10,8 @@ import { ELEMENT_LINK } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 
-import { AutoformatPlugin } from '../../../types';
+import type { AutoformatPlugin } from '../../../common/types';
+
 import { withAutoformat } from '../../../withAutoformat';
 
 jsx;
@@ -39,10 +40,6 @@ it('autoformats a block with a single character trigger', () => {
       options: {
         rules: [
           {
-            mode: 'block',
-            type: ELEMENT_LINK,
-            match: ')',
-            triggerAtBlockStart: false,
             format: (editor) => {
               const linkInputRange = editor.selection!.focus.path;
               const linkInputText = getEditorString(editor, linkInputRange);
@@ -50,10 +47,14 @@ it('autoformats a block with a single character trigger', () => {
               insertText(editor, text, { at: linkInputRange });
               wrapNodes(
                 editor,
-                { type: ELEMENT_LINK, url, children: [] },
+                { children: [], type: ELEMENT_LINK, url },
                 { at: linkInputRange }
               );
             },
+            match: ')',
+            mode: 'block',
+            triggerAtBlockStart: false,
+            type: ELEMENT_LINK,
           },
         ],
       },

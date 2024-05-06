@@ -1,29 +1,30 @@
+import type { SourceFile } from 'ts-morph';
+import type * as z from 'zod';
+
 import { promises as fs } from 'fs';
 import { tmpdir } from 'os';
 import path from 'path';
 import { Project, QuoteKind, ScriptKind } from 'ts-morph';
-import * as z from 'zod';
 
-import { Config } from '../get-config';
-import { registryBaseColorSchema } from '../registry/schema';
+import type { Config } from '../get-config';
+import type { registryBaseColorSchema } from '../registry/schema';
+
 import { transformCssVars } from './transform-css-vars';
 import { transformImport } from './transform-import';
 import { transformRsc } from './transform-rsc';
 import { transformTwPrefixes } from './transform-tw-prefix';
 
-import type { SourceFile } from 'ts-morph';
-
 export type TransformOpts = {
+  baseColor?: z.infer<typeof registryBaseColorSchema>;
+  config: Config;
   filename: string;
   raw: string;
-  config: Config;
-  baseColor?: z.infer<typeof registryBaseColorSchema>;
 };
 
 export type Transformer = (
-  opts: TransformOpts & {
+  opts: {
     sourceFile: SourceFile;
-  }
+  } & TransformOpts
 ) => Promise<SourceFile>;
 
 const transformers: Transformer[] = [
@@ -52,7 +53,7 @@ export async function transform(opts: TransformOpts) {
   });
 
   for (const transformer of transformers) {
-    transformer({ sourceFile, ...opts });
+    void transformer({ sourceFile, ...opts });
   }
 
   return sourceFile.getFullText();

@@ -1,13 +1,14 @@
 import {
+  type FindNodeOptions,
+  type PlateEditor,
+  type Value,
   findNode,
-  FindNodeOptions,
   getPluginType,
-  PlateEditor,
-  Value,
 } from '@udecode/plate-common';
 
+import type { TSlashInputElement } from '../types';
+
 import { ELEMENT_SLASH_INPUT } from '../createSlashPlugin';
-import { TSlashInputElement } from '../types';
 
 export const findSlashInput = <V extends Value>(
   editor: PlateEditor<V>,

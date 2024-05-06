@@ -1,12 +1,11 @@
-import { Value } from '@udecode/slate/dist';
-import { Range } from 'slate';
+import type { Value } from '@udecode/slate';
+import type { Range } from 'slate';
+
 import { ReactEditor } from 'slate-react';
 
-import { TReactEditor } from '../types/TReactEditor';
+import type { TReactEditor } from '../types/TReactEditor';
 
-/**
- * {@link ReactEditor.toDOMRange}
- */
+/** {@link ReactEditor.toDOMRange} */
 export const toDOMRange = <V extends Value>(
   editor: TReactEditor<V>,
   range: Range

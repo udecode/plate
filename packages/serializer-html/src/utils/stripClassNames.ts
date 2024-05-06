@@ -1,6 +1,8 @@
 const classAttrRegExp = / class="([^"]*)"/g;
+
 /**
- * Remove all class names that do not start with one of preserveClassNames (`slate-` by default)
+ * Remove all class names that do not start with one of preserveClassNames
+ * (`slate-` by default)
  */
 export const stripClassNames = (
   html: string,

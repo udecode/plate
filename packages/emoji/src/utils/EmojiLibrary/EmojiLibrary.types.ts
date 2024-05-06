@@ -1,29 +1,17 @@
 /**
- * Emoji:
- *    type Emoji = {
- *      id: string;
- *      name: string;
- *      keywords: string[];
- *      skins: [
- *        {
- *          unified: '1f389';
- *          native: '🎉';
- *          shortcodes: ':tada:';
- *        }
- *      ];
- *      version: 1;
- *    };
+ * Emoji: type Emoji = { id: string; name: string; keywords: string[]; skins: [
+ * { unified: '1f389'; native: '🎉'; shortcodes: ':tada:'; } ]; version: 1; };
  */
 
 type Skin = {
-  unified: string;
   native: string;
+  unified: string;
 };
 
 export type Emoji = {
   id: string;
-  name: string;
   keywords: string[];
+  name: string;
   skins: Skin[];
   version: number;
 };
@@ -38,7 +26,7 @@ export type EmojiLibrary = {
 };
 
 export interface IEmojiLibrary {
-  keys: string[];
   getEmoji: (key: string) => Emoji;
   getEmojiId: (key: string) => string;
+  keys: string[];
 }

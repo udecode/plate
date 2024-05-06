@@ -24,23 +24,23 @@ const canUsePassiveEvents = (): boolean => {
 
 export const DEFAULT_IGNORE_CLASS = 'ignore-onclickoutside';
 
-export interface UseOnClickOutsideCallback<T extends Event = Event> {
-  (event: T): void;
-}
+export type UseOnClickOutsideCallback<T extends Event = Event> = (
+  event: T
+) => void;
+
 type El = HTMLElement;
 type Refs = React.RefObject<El>[];
+
 export interface UseOnClickOutsideOptions {
-  refs?: Refs;
+  detectIFrame?: boolean;
   disabled?: boolean;
   eventTypes?: string[];
   excludeScrollbar?: boolean;
   ignoreClass?: string | string[];
-  detectIFrame?: boolean;
+  refs?: Refs;
 }
 
-export interface UseOnClickOutsideReturn {
-  (element: El | null): void;
-}
+export type UseOnClickOutsideReturn = (element: El | null) => void;
 
 const checkClass = (el: HTMLElement, cl: string): boolean =>
   el.classList?.contains(cl);
@@ -72,12 +72,12 @@ const getEventOptions = (type: string): { passive: boolean } | boolean =>
 export const useOnClickOutside = (
   callback: UseOnClickOutsideCallback,
   {
-    refs: refsOpt,
+    detectIFrame = true,
     disabled,
     eventTypes = ['mousedown', 'touchstart'],
     excludeScrollbar,
     ignoreClass = DEFAULT_IGNORE_CLASS,
-    detectIFrame = true,
+    refs: refsOpt,
   }: UseOnClickOutsideOptions = {}
 ): UseOnClickOutsideReturn => {
   const [refsState, setRefsState] = React.useState<Refs>([]);
@@ -98,6 +98,7 @@ export const useOnClickOutside = (
         (refsOpt || refsState).forEach(
           ({ current }) => current && els.push(current)
         );
+
         return els;
       };
 
@@ -125,8 +126,11 @@ export const useOnClickOutside = (
 
       const removeEventListener = () => {
         eventTypes.forEach((type) =>
-          // @ts-ignore
-          document.removeEventListener(type, handler, getEventOptions(type))
+          document.removeEventListener(
+            type,
+            handler,
+            getEventOptions(type) as any
+          )
         );
 
         if (detectIFrame) window.removeEventListener('blur', blurHandler);
@@ -134,6 +138,7 @@ export const useOnClickOutside = (
 
       if (disabled) {
         removeEventListener();
+
         return;
       }
 

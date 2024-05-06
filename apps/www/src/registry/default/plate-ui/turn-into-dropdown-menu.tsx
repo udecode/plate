@@ -1,13 +1,15 @@
 import React from 'react';
-import { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
+
+import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
+
 import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
 import {
+  type TElement,
   collapseSelection,
   findNode,
   focusEditor,
   isBlock,
   isCollapsed,
-  TElement,
   toggleNodeType,
   useEditorRef,
   useEditorSelector,
@@ -30,34 +32,34 @@ import { ToolbarButton } from './toolbar';
 
 const items = [
   {
-    value: ELEMENT_PARAGRAPH,
-    label: 'Paragraph',
     description: 'Paragraph',
     icon: Icons.paragraph,
+    label: 'Paragraph',
+    value: ELEMENT_PARAGRAPH,
   },
   {
-    value: ELEMENT_H1,
-    label: 'Heading 1',
     description: 'Heading 1',
     icon: Icons.h1,
+    label: 'Heading 1',
+    value: ELEMENT_H1,
   },
   {
-    value: ELEMENT_H2,
-    label: 'Heading 2',
     description: 'Heading 2',
     icon: Icons.h2,
+    label: 'Heading 2',
+    value: ELEMENT_H2,
   },
   {
-    value: ELEMENT_H3,
-    label: 'Heading 3',
     description: 'Heading 3',
     icon: Icons.h3,
+    label: 'Heading 3',
+    value: ELEMENT_H3,
   },
   {
-    value: ELEMENT_BLOCKQUOTE,
-    label: 'Quote',
     description: 'Quote (⌘+⇧+.)',
     icon: Icons.blockquote,
+    label: 'Quote',
+    value: ELEMENT_BLOCKQUOTE,
   },
   // {
   //   value: 'ul',
@@ -104,10 +106,10 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
     <DropdownMenu modal={false} {...openState} {...props}>
       <DropdownMenuTrigger asChild>
         <ToolbarButton
+          className="lg:min-w-[130px]"
+          isDropdown
           pressed={openState.open}
           tooltip="Turn into"
-          isDropdown
-          className="lg:min-w-[130px]"
         >
           <SelectedItemIcon className="size-5 lg:hidden" />
           <span className="max-lg:hidden">{selectedItemLabel}</span>
@@ -119,7 +121,6 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
 
         <DropdownMenuRadioGroup
           className="flex flex-col gap-0.5"
-          value={value}
           onValueChange={(type) => {
             // if (type === 'ul' || type === 'ol') {
             //   if (settingsStore.get.checkedId(KEY_LIST_STYLE_TYPE)) {
@@ -137,12 +138,13 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
             collapseSelection(editor);
             focusEditor(editor);
           }}
+          value={value}
         >
-          {items.map(({ value: itemValue, label, icon: Icon }) => (
+          {items.map(({ icon: Icon, label, value: itemValue }) => (
             <DropdownMenuRadioItem
+              className="min-w-[180px]"
               key={itemValue}
               value={itemValue}
-              className="min-w-[180px]"
             >
               <Icon className="mr-2 size-5" />
               {label}

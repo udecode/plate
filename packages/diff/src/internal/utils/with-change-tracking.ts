@@ -1,51 +1,51 @@
-import { addRangeMarks, TText } from '@udecode/plate-common';
+import { type TText, addRangeMarks } from '@udecode/plate-common/server';
 import isEqual from 'lodash/isEqual.js';
 import uniqWith from 'lodash/uniqWith.js';
 import {
-  BaseEditor,
+  type BaseEditor,
   Editor,
-  InsertTextOperation,
-  MergeNodeOperation,
+  type InsertTextOperation,
+  type MergeNodeOperation,
   Node,
-  Operation,
+  type Operation,
   Path,
   Point,
-  PointRef,
+  type PointRef,
   Range,
-  RangeRef,
-  RemoveTextOperation,
-  SetNodeOperation,
-  SplitNodeOperation,
+  type RangeRef,
+  type RemoveTextOperation,
+  type SetNodeOperation,
+  type SplitNodeOperation,
 } from 'slate';
 
-import { ComputeDiffOptions } from '../../computeDiff';
+import type { ComputeDiffOptions } from '../../computeDiff';
 
 export interface ChangeTrackingEditor {
-  propsChanges: {
-    rangeRef: RangeRef;
-    properties: Record<string, any>;
-    newProperties: Record<string, any>;
-  }[];
+  commitChangesToDiffs: () => void;
 
   insertedTexts: {
-    rangeRef: RangeRef;
     node: TText;
+    rangeRef: RangeRef;
   }[];
 
-  removedTexts: {
-    pointRef: PointRef;
-    node: TText;
+  propsChanges: {
+    newProperties: Record<string, any>;
+    properties: Record<string, any>;
+    rangeRef: RangeRef;
   }[];
 
   recordingOperations: boolean;
-  commitChangesToDiffs: () => void;
+  removedTexts: {
+    node: TText;
+    pointRef: PointRef;
+  }[];
 }
 
 export const withChangeTracking = <E extends BaseEditor>(
   editor: E,
   options: ComputeDiffOptions
-): E & ChangeTrackingEditor => {
-  const e = editor as E & ChangeTrackingEditor;
+): ChangeTrackingEditor & E => {
+  const e = editor as ChangeTrackingEditor & E;
 
   e.propsChanges = [];
   e.insertedTexts = [];
@@ -61,7 +61,7 @@ export const withChangeTracking = <E extends BaseEditor>(
 };
 
 const applyWithChangeTracking = <E extends BaseEditor>(
-  editor: E & ChangeTrackingEditor,
+  editor: ChangeTrackingEditor & E,
   apply: E['apply'],
   op: Operation
 ) => {
@@ -73,26 +73,27 @@ const applyWithChangeTracking = <E extends BaseEditor>(
     switch (op.type) {
       case 'insert_text': {
         applyInsertText(editor, apply, op);
+
         break;
       }
-
       case 'remove_text': {
         applyRemoveText(editor, apply, op);
+
         break;
       }
-
       case 'merge_node': {
         applyMergeNode(editor, apply, op);
+
         break;
       }
-
       case 'split_node': {
         applySplitNode(editor, apply, op);
+
         break;
       }
-
       case 'set_node': {
         applySetNode(editor, apply, op);
+
         break;
       }
 
@@ -104,7 +105,7 @@ const applyWithChangeTracking = <E extends BaseEditor>(
 };
 
 const applyInsertText = <E extends BaseEditor>(
-  editor: E & ChangeTrackingEditor,
+  editor: ChangeTrackingEditor & E,
   apply: E['apply'],
   op: InsertTextOperation
 ) => {
@@ -112,22 +113,22 @@ const applyInsertText = <E extends BaseEditor>(
 
   apply(op);
 
-  const startPoint = { path: op.path, offset: op.offset };
-  const endPoint = { path: op.path, offset: op.offset + op.text.length };
+  const startPoint = { offset: op.offset, path: op.path };
+  const endPoint = { offset: op.offset + op.text.length, path: op.path };
   const range = { anchor: startPoint, focus: endPoint };
   const rangeRef = Editor.rangeRef(editor, range);
 
   editor.insertedTexts.push({
-    rangeRef,
     node: {
       ...node,
       text: op.text,
     },
+    rangeRef,
   });
 };
 
 const applyRemoveText = <E extends BaseEditor>(
-  editor: E & ChangeTrackingEditor,
+  editor: ChangeTrackingEditor & E,
   apply: E['apply'],
   op: RemoveTextOperation
 ) => {
@@ -135,22 +136,22 @@ const applyRemoveText = <E extends BaseEditor>(
 
   apply(op);
 
-  const point = { path: op.path, offset: op.offset };
+  const point = { offset: op.offset, path: op.path };
   const pointRef = Editor.pointRef(editor, point, {
     affinity: 'backward',
   });
 
   editor.removedTexts.push({
-    pointRef,
     node: {
       ...node,
       text: op.text,
     },
+    pointRef,
   });
 };
 
 const applyMergeNode = <E extends BaseEditor>(
-  editor: E & ChangeTrackingEditor,
+  editor: ChangeTrackingEditor & E,
   apply: E['apply'],
   op: MergeNodeOperation
 ) => {
@@ -163,20 +164,20 @@ const applyMergeNode = <E extends BaseEditor>(
 
   apply(op);
 
-  const startPoint = { path: prevNodePath, offset: prevNode.text.length };
+  const startPoint = { offset: prevNode.text.length, path: prevNodePath };
   const endPoint = Editor.end(editor, prevNodePath);
   const range = { anchor: startPoint, focus: endPoint };
   const rangeRef = Editor.rangeRef(editor, range);
 
   editor.propsChanges.push({
-    rangeRef,
-    properties,
     newProperties,
+    properties,
+    rangeRef,
   });
 };
 
 const applySplitNode = <E extends BaseEditor>(
-  editor: E & ChangeTrackingEditor,
+  editor: ChangeTrackingEditor & E,
   apply: E['apply'],
   op: SplitNodeOperation
 ) => {
@@ -191,14 +192,14 @@ const applySplitNode = <E extends BaseEditor>(
   const rangeRef = Editor.rangeRef(editor, newNodeRange);
 
   editor.propsChanges.push({
-    rangeRef,
-    properties,
     newProperties,
+    properties,
+    rangeRef,
   });
 };
 
 const applySetNode = <E extends BaseEditor>(
-  editor: E & ChangeTrackingEditor,
+  editor: ChangeTrackingEditor & E,
   apply: E['apply'],
   op: SetNodeOperation
 ) => {
@@ -208,21 +209,21 @@ const applySetNode = <E extends BaseEditor>(
   const rangeRef = Editor.rangeRef(editor, range);
 
   editor.propsChanges.push({
-    rangeRef,
-    properties: op.properties,
     newProperties: op.newProperties,
+    properties: op.properties,
+    rangeRef,
   });
 };
 
 const commitChangesToDiffs = <E extends BaseEditor>(
-  editor: E & ChangeTrackingEditor,
-  { getInsertProps, getDeleteProps, getUpdateProps }: ComputeDiffOptions
+  editor: ChangeTrackingEditor & E,
+  { getDeleteProps, getInsertProps, getUpdateProps }: ComputeDiffOptions
 ) => {
   withoutRecordingOperations(editor, () => {
     // Reverse the array to prevent path changes
     const flatUpdates = flattenPropsChanges(editor).reverse();
 
-    flatUpdates.forEach(({ range, properties, newProperties }) => {
+    flatUpdates.forEach(({ newProperties, properties, range }) => {
       const node = Node.get(editor, range.anchor.path) as TText;
 
       addRangeMarks(
@@ -232,7 +233,7 @@ const commitChangesToDiffs = <E extends BaseEditor>(
       );
     });
 
-    editor.removedTexts.forEach(({ pointRef, node }) => {
+    editor.removedTexts.forEach(({ node, pointRef }) => {
       const point = pointRef.current;
 
       if (point) {
@@ -248,7 +249,7 @@ const commitChangesToDiffs = <E extends BaseEditor>(
       pointRef.unref();
     });
 
-    editor.insertedTexts.forEach(({ rangeRef, node }) => {
+    editor.insertedTexts.forEach(({ node, rangeRef }) => {
       const range = rangeRef.current;
 
       if (range) {
@@ -278,7 +279,9 @@ const flattenPropsChanges = (editor: ChangeTrackingEditor) => {
     ...insertedTextRangeRefs,
   ].flatMap((rangeRef) => {
     const range = rangeRef.current;
+
     if (!range) return [];
+
     return [range.anchor, range.focus];
   });
 
@@ -286,6 +289,7 @@ const flattenPropsChanges = (editor: ChangeTrackingEditor) => {
     unsortedRangePoints.sort(Point.compare),
     Point.equals
   );
+
   if (rangePoints.length < 2) return [];
 
   /**
@@ -306,9 +310,13 @@ const flattenPropsChanges = (editor: ChangeTrackingEditor) => {
     ) =>
       changes.filter(({ rangeRef }) => {
         const range = rangeRef.current;
+
         if (!range) return false;
+
         const intersection = Range.intersection(range, flatRange);
+
         if (!intersection) return false;
+
         return Range.isExpanded(intersection);
       });
 
@@ -316,6 +324,7 @@ const flattenPropsChanges = (editor: ChangeTrackingEditor) => {
     if (getIntersectingChanges(editor.insertedTexts).length > 0) return null;
 
     const intersectingUpdates = getIntersectingChanges(editor.propsChanges);
+
     if (intersectingUpdates.length === 0) return null;
 
     // Get the props of the range before and after the updates
@@ -347,9 +356,9 @@ const flattenPropsChanges = (editor: ChangeTrackingEditor) => {
     }
 
     return {
-      range: flatRange,
-      properties,
       newProperties,
+      properties,
+      range: flatRange,
     };
   });
 

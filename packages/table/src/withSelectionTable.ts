@@ -1,13 +1,13 @@
 import {
+  type PlateEditor,
+  type Value,
   getBlockAbove,
   getEndPoint,
   getPluginType,
   getPointBefore,
   getStartPoint,
   isRangeAcrossBlocks,
-  PlateEditor,
-  Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Range } from 'slate';
 
 import { ELEMENT_TABLE } from './createTablePlugin';
@@ -17,10 +17,12 @@ import { overrideSelectionFromCell } from './transforms/overrideSelectionFromCel
 
 /**
  * Selection table:
+ *
  * - If anchor is in table, focus in a block before: set focus to start of table
  * - If anchor is in table, focus in a block after: set focus to end of table
  * - If focus is in table, anchor in a block before: set focus to end of table
- * - If focus is in table, anchor in a block after: set focus to the point before start of table
+ * - If focus is in table, anchor in a block after: set focus to the point before
+ *   start of table
  */
 export const withSelectionTable = <
   V extends Value = Value,
@@ -58,6 +60,7 @@ export const withSelectionTable = <
             op.newProperties.focus = getStartPoint(editor, anchorPath);
           } else {
             const pointBefore = getPointBefore(editor, anchorPath);
+
             // if the table is the first block
             if (pointBefore) {
               op.newProperties.focus = getEndPoint(editor, anchorPath);

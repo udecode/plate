@@ -1,10 +1,10 @@
-import { Editor, Location, Point } from 'slate';
+import { Editor, type Location, type Point } from 'slate';
 
-import { TEditor, Value } from './TEditor';
+import type { TEditor, Value } from './TEditor';
 
 /**
- * Check if a point is the start point of a location.
- * If point is null, return false.
+ * Check if a point is the start point of a location. If point is null, return
+ * false.
  */
 export const isStartPoint = <V extends Value>(
   editor: TEditor<V>,

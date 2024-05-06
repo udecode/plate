@@ -1,27 +1,28 @@
-import { createPluginFactory } from '@udecode/plate-common';
+import { createPluginFactory } from '@udecode/plate-common/server';
+
+import type { EmojiPlugin } from './types';
 
 import { EMOJI_TRIGGER, KEY_EMOJI } from './constants';
-import { EmojiPlugin } from './types';
 import { EmojiTriggeringController } from './utils/index';
 import { withEmoji } from './withEmoji';
 
 export const createEmojiPlugin = createPluginFactory<EmojiPlugin>({
   key: KEY_EMOJI,
-  withOverrides: withEmoji,
   options: {
-    trigger: EMOJI_TRIGGER,
     createEmoji: (item) => item.data.emoji,
     emojiTriggeringController: new EmojiTriggeringController(),
+    trigger: EMOJI_TRIGGER,
   },
   then: (
     _,
-    { key, options: { trigger, createEmoji, emojiTriggeringController } }
+    { key, options: { createEmoji, emojiTriggeringController, trigger } }
   ) => ({
     options: {
-      id: key,
-      trigger,
       createEmoji,
       emojiTriggeringController,
+      id: key,
+      trigger,
     },
   }),
+  withOverrides: withEmoji,
 });

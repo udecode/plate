@@ -1,12 +1,17 @@
 'use client';
 
 import React from 'react';
+
 import { cn } from '@udecode/cn';
 import {
-  TCloudAttachmentElement,
+  type TCloudAttachmentElement,
   useCloudAttachmentElementState,
 } from '@udecode/plate-cloud';
-import { PlateElement, PlateElementProps, Value } from '@udecode/plate-common';
+import {
+  PlateElement,
+  type PlateElementProps,
+  type Value,
+} from '@udecode/plate-common';
 
 import { Icons } from '@/components/icons';
 
@@ -36,7 +41,7 @@ export function CloudAttachmentElement({
       {...props}
     >
       <div className="shrink-0 text-muted-foreground" contentEditable={false}>
-        <Icons.attachment width={24} height={24} />
+        <Icons.attachment height={24} width={24} />
       </div>
       <div className="grow" contentEditable={false}>
         <div className="text-base">{element.filename}</div>
@@ -51,11 +56,11 @@ export function CloudAttachmentElement({
         contentEditable={false}
       >
         {upload.status === 'success' && (
-          <a href={element.url} target="_blank" rel="noreferrer">
+          <a href={element.url} rel="noreferrer" target="_blank">
             <Icons.downloadCloud
               className="cursor-pointer text-muted-foreground hover:text-foreground"
-              width={24}
               height={24}
+              width={24}
             />
           </a>
         )}

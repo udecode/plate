@@ -1,14 +1,15 @@
 import {
+  type PlateEditor,
+  type Value,
   findNode,
   getEditorString,
   getPluginType,
-  PlateEditor,
-  Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
+
+import type { TLinkElement } from '../types';
 
 import { floatingLinkActions } from '../components/FloatingLink/floatingLinkStore';
 import { ELEMENT_LINK } from '../createLinkPlugin';
-import { TLinkElement } from '../types';
 
 export const triggerFloatingLinkEdit = <V extends Value>(
   editor: PlateEditor<V>
@@ -16,6 +17,7 @@ export const triggerFloatingLinkEdit = <V extends Value>(
   const entry = findNode<TLinkElement>(editor, {
     match: { type: getPluginType(editor, ELEMENT_LINK) },
   });
+
   if (!entry) return;
 
   const [link, path] = entry;

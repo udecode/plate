@@ -1,7 +1,7 @@
 import {
-  Emoji,
+  type Emoji,
   EmojiInlineLibrary,
-  IEmojiLibrary,
+  type IEmojiLibrary,
 } from '../EmojiLibrary/index';
 import { AIndexSearch } from './IndexSearch';
 
@@ -26,14 +26,14 @@ export class EmojiInlineIndexSearch extends AIndexSearch {
     const { id, name, skins } = emoji;
 
     return {
-      key: id,
-      text: name,
       data: {
-        id,
         emoji: skins[0].native,
+        id,
         name,
         text: name,
       },
+      key: id,
+      text: name,
     };
   }
 }

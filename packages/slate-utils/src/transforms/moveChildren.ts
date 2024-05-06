@@ -1,44 +1,35 @@
 import {
-  ENodeEntry,
+  type ENodeEntry,
+  type TEditor,
+  type TElement,
+  type Value,
   getNode,
   isBlock,
   moveNodes,
-  TEditor,
-  TElement,
-  Value,
 } from '@udecode/slate';
 import { Path } from 'slate';
 
 export interface MoveChildrenOptions<V extends Value = Value> {
-  /**
-   * Parent node of the children to move.
-   */
+  /** Parent node of the children to move. */
   at: ENodeEntry<V> | Path;
 
-  /**
-   * Path where to move the children.
-   */
+  /** Path where to move the children. */
   to: Path;
 
   /**
-   * Start index of the children to move.
-   * Example: 1 means children[0] will not be moved.
+   * Start index of the children to move. Example: 1 means children[0] will not
+   * be moved.
    */
   fromStartIndex?: number;
 
-  /**
-   * Condition for the child to be moved
-   */
-  match?(entry: ENodeEntry<V>): boolean;
+  /** Condition for the child to be moved */
+  match?: (entry: ENodeEntry<V>) => boolean;
 }
 
-/**
- * Move the children of a node to a path.
- * Returns the number of children moved.
- */
+/** Move the children of a node to a path. Returns the number of children moved. */
 export const moveChildren = <V extends Value>(
   editor: TEditor<V>,
-  { at, to, match, fromStartIndex = 0 }: MoveChildrenOptions<V>
+  { at, fromStartIndex = 0, match, to }: MoveChildrenOptions<V>
 ) => {
   let moved = 0;
   const parentPath = Path.isPath(at) ? at : at[1];

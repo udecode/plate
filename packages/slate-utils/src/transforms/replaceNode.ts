@@ -1,20 +1,20 @@
 import {
-  EElementOrText,
+  type EElementOrText,
+  type TEditor,
+  type Value,
   insertNodes,
   removeNodes,
-  TEditor,
-  Value,
   withoutNormalizing,
 } from '@udecode/slate';
 
-import { ReplaceNodeChildrenOptions } from './replaceNodeChildren';
+import type { ReplaceNodeChildrenOptions } from './replaceNodeChildren';
 
 export const replaceNode = <
   N extends EElementOrText<V>,
   V extends Value = Value,
 >(
   editor: TEditor<V>,
-  { at, nodes, insertOptions, removeOptions }: ReplaceNodeChildrenOptions<N, V>
+  { at, insertOptions, nodes }: ReplaceNodeChildrenOptions<N, V>
 ) => {
   withoutNormalizing(editor, () => {
     removeNodes(editor, { ...insertOptions, at });

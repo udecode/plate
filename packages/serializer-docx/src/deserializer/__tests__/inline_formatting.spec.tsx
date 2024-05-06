@@ -9,7 +9,6 @@ const name = 'inline_formatting';
 
 describe(getDocxTestName(name), () => {
   testDocxDeserializer({
-    filename: name,
     expected: (
       <editor>
         <hp>
@@ -32,7 +31,7 @@ describe(getDocxTestName(name), () => {
         </hp>
         <hp>
           Some people use <htext underline>single underlines for </htext>
-          <htext underline italic>
+          <htext italic underline>
             emphasis
           </htext>
           .
@@ -56,5 +55,6 @@ describe(getDocxTestName(name), () => {
         </hp>
       </editor>
     ),
+    filename: name,
   });
 });

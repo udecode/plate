@@ -1,6 +1,10 @@
 import {
-  deleteMerge,
   ELEMENT_DEFAULT,
+  type PlateEditor,
+  type TElement,
+  type TNodeEntry,
+  type Value,
+  deleteMerge,
   getNodeEntries,
   getNodeEntry,
   getPluginType,
@@ -8,19 +12,15 @@ import {
   isFirstChild,
   isSelectionAtBlockStart,
   mockPlugin,
-  PlateEditor,
   removeNodes,
-  TElement,
-  TNodeEntry,
-  Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import {
-  onKeyDownResetNode,
-  ResetNodePlugin,
+  type ResetNodePlugin,
   SIMULATE_BACKSPACE,
+  onKeyDownResetNode,
 } from '@udecode/plate-reset-node';
-import { Path, TextUnit } from 'slate';
+import { Path, type TextUnit } from 'slate';
 
 import { ELEMENT_LI, ELEMENT_LIC } from './createListPlugin';
 import { isAcrossListItems } from './queries';
@@ -48,11 +48,12 @@ export const deleteBackwardList = <V extends Value>(
     ) {
       withoutNormalizing(editor, () => {
         moved = removeFirstListItem(editor, { list, listItem });
+
         if (moved) return true;
 
         moved = removeListItem(editor, { list, listItem });
-        if (moved) return true;
 
+        if (moved) return true;
         if (isFirstChild(listItem[1]) && !isListNested(editor, list[1])) {
           onKeyDownResetNode(
             editor as any,
@@ -60,17 +61,18 @@ export const deleteBackwardList = <V extends Value>(
               options: {
                 rules: [
                   {
-                    types: [getPluginType(editor, ELEMENT_LI)],
                     defaultType: getPluginType(editor, ELEMENT_DEFAULT),
                     hotkey: 'backspace',
-                    predicate: () => isSelectionAtBlockStart(editor),
                     onReset: (e) => unwrapList(e),
+                    predicate: () => isSelectionAtBlockStart(editor),
+                    types: [getPluginType(editor, ELEMENT_LI)],
                   },
                 ],
               },
             })
           )(SIMULATE_BACKSPACE);
           moved = true;
+
           return;
         }
 
@@ -97,16 +99,16 @@ export const deleteBackwardList = <V extends Value>(
           const licType = getPluginType(editor, ELEMENT_LIC);
           const _licNodes = getNodeEntries<TElement>(editor, {
             at: listItem[1],
-            mode: 'lowest',
             match: (node) => node.type === licType,
+            mode: 'lowest',
           });
           currentLic = [..._licNodes][0];
           hasMultipleChildren = currentLic[0].children.length > 1;
         }
 
         deleteMerge(editor, {
-          unit,
           reverse: true,
+          unit,
         });
         moved = true;
 

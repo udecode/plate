@@ -1,4 +1,7 @@
 import {
+  type PlateEditor,
+  type TElement,
+  type Value,
   collapseSelection,
   deleteText,
   getAboveNode,
@@ -9,22 +12,16 @@ import {
   isBlockTextEmptyAfterSelection,
   isStartPoint,
   moveNodes,
-  PlateEditor,
   select,
   splitNodes,
-  TElement,
-  Value,
   withoutNormalizing,
   wrapNodes,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Path, Range } from 'slate';
 
 import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 
-/**
- * Insert list item if selection in li>p.
- * TODO: test
- */
+/** Insert list item if selection in li>p. TODO: test */
 export const insertListItem = <V extends Value>(
   editor: PlateEditor<V>
 ): boolean => {
@@ -36,11 +33,15 @@ export const insertListItem = <V extends Value>(
   }
 
   const licEntry = getAboveNode(editor, { match: { type: licType } });
+
   if (!licEntry) return false;
+
   const [, paragraphPath] = licEntry;
 
   const listItemEntry = getParentNode(editor, paragraphPath);
+
   if (!listItemEntry) return false;
+
   const [listItemNode, listItemPath] = listItemEntry;
 
   if (listItemNode.type !== liType) return false;
@@ -62,15 +63,13 @@ export const insertListItem = <V extends Value>(
     const nextParagraphPath = Path.next(paragraphPath);
     const nextListItemPath = Path.next(listItemPath);
 
-    /**
-     * If start, insert a list item before
-     */
+    /** If start, insert a list item before */
     if (isStart) {
       insertElements(
         editor,
         {
+          children: [{ children: [{ text: '' }], type: licType }],
           type: liType,
-          children: [{ type: licType, children: [{ text: '' }] }],
         },
         { at: listItemPath }
       );
@@ -79,20 +78,18 @@ export const insertListItem = <V extends Value>(
 
       return;
     }
-
     /**
-     * If not end, split nodes, wrap a list item on the new paragraph and move it to the next list item
+     * If not end, split nodes, wrap a list item on the new paragraph and move
+     * it to the next list item
      */
     if (isEnd) {
-      /**
-       * If end, insert a list item after and select it
-       */
+      /** If end, insert a list item after and select it */
       const marks = getMarks(editor) || {};
       insertElements(
         editor,
         {
+          children: [{ children: [{ text: '', ...marks }], type: licType }],
           type: liType,
-          children: [{ type: licType, children: [{ text: '', ...marks }] }],
         },
         { at: nextListItemPath }
       );
@@ -103,8 +100,8 @@ export const insertListItem = <V extends Value>(
         wrapNodes<TElement>(
           editor,
           {
-            type: liType,
             children: [],
+            type: liType,
           },
           { at: nextParagraphPath }
         );
@@ -118,10 +115,7 @@ export const insertListItem = <V extends Value>(
         });
       });
     }
-
-    /**
-     * If there is a list in the list item, move it to the next list item
-     */
+    /** If there is a list in the list item, move it to the next list item */
     if (listItemNode.children.length > 1) {
       moveNodes(editor, {
         at: nextParagraphPath,

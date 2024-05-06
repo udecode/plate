@@ -1,11 +1,9 @@
-import { Node, Path } from 'slate';
+import { Node, type Path } from 'slate';
 
-import { AncestorOf } from './TAncestor';
-import { TNode } from './TNode';
+import type { AncestorOf } from './TAncestor';
+import type { TNode } from './TNode';
 
-/**
- * Get the parent of a node at a specific path.
- */
+/** Get the parent of a node at a specific path. */
 export const getNodeParent = <N extends AncestorOf<R>, R extends TNode = TNode>(
   root: R,
   path: Path

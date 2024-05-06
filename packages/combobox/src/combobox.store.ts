@@ -1,56 +1,47 @@
-import {
-  createZustandStore,
-  ZustandStateActions,
-  ZustandStoreApi,
-} from '@udecode/plate-common';
-import { Range } from 'slate';
+import type { Range } from 'slate';
 
-import { ComboboxOnSelectItem, NoData, TComboboxItem } from './types';
+import {
+  type ZustandStateActions,
+  type ZustandStoreApi,
+  createZustandStore,
+} from '@udecode/plate-common';
+
+import type { ComboboxOnSelectItem, NoData, TComboboxItem } from './types';
 
 export type ComboboxStateById<TData = NoData> = {
-  /**
-   * Combobox id.
-   */
-  id: string;
+  /** Is opening/closing the combobox controlled by the client. */
+  controlled?: boolean;
 
   /**
    * Items filter function by text.
+   *
    * @default (value) => value.text.toLowerCase().startsWith(search.toLowerCase())
    */
   filter?: (search: string) => (item: TComboboxItem<TData>) => boolean;
 
-  /**
-   * Sort filtered items before applying maxSuggestions.
-   */
-  sort?: (
-    search: string
-  ) => (a: TComboboxItem<TData>, b: TComboboxItem<TData>) => number;
+  /** Combobox id. */
+  id: string;
 
   /**
    * Max number of items.
+   *
    * @default items.length
    */
   maxSuggestions?: number;
 
-  /**
-   * Trigger that activates the combobox.
-   */
-  trigger: string;
-
-  /**
-   * Regular expression for search, for example to allow whitespace
-   */
-  searchPattern?: string;
-
-  /**
-   * Called when an item is selected.
-   */
+  /** Called when an item is selected. */
   onSelectItem: ComboboxOnSelectItem<TData> | null;
 
-  /**
-   * Is opening/closing the combobox controlled by the client.
-   */
-  controlled?: boolean;
+  /** Regular expression for search, for example to allow whitespace */
+  searchPattern?: string;
+
+  /** Sort filtered items before applying maxSuggestions. */
+  sort?: (
+    search: string
+  ) => (a: TComboboxItem<TData>, b: TComboboxItem<TData>) => number;
+
+  /** Trigger that activates the combobox. */
+  trigger: string;
 };
 
 export type ComboboxStoreById<TData = NoData> = ZustandStoreApi<
@@ -60,41 +51,29 @@ export type ComboboxStoreById<TData = NoData> = ZustandStoreApi<
 >;
 
 export type ComboboxState<TData = NoData> = {
-  /**
-   * Active id (combobox id which is opened).
-   */
-  activeId: string | null;
+  /** Active id (combobox id which is opened). */
+  activeId: null | string;
 
   /**
-   * Object whose keys are combobox ids and values are config stores
-   * (e.g. one for tag, one for mention,...).
+   * Object whose keys are combobox ids and values are config stores (e.g. one
+   * for tag, one for mention,...).
    */
   byId: Record<string, ComboboxStoreById>;
 
-  /**
-   * Unfiltered items.
-   */
-  items: TComboboxItem<TData>[];
-
-  /**
-   * Filtered items
-   */
+  /** Filtered items */
   filteredItems: TComboboxItem<TData>[];
 
-  /**
-   * Highlighted index.
-   */
+  /** Highlighted index. */
   highlightedIndex: number;
 
-  /**
-   * Range from the trigger to the cursor.
-   */
+  /** Unfiltered items. */
+  items: TComboboxItem<TData>[];
+
+  /** Range from the trigger to the cursor. */
   targetRange: Range | null;
 
-  /**
-   * Text after the trigger.
-   */
-  text: string | null;
+  /** Text after the trigger. */
+  text: null | string;
 };
 
 const createComboboxStore = (state: ComboboxStateById) =>
@@ -103,22 +82,13 @@ const createComboboxStore = (state: ComboboxStateById) =>
 export const comboboxStore = createZustandStore('combobox')<ComboboxState>({
   activeId: null,
   byId: {},
+  filteredItems: [],
   highlightedIndex: 0,
   items: [],
-  filteredItems: [],
   targetRange: null,
   text: null,
 })
   .extendActions((set, get) => ({
-    setComboboxById: <TData = NoData>(state: ComboboxStateById<TData>) => {
-      if (get.byId()[state.id]) return;
-
-      set.state((draft) => {
-        draft.byId[state.id] = createComboboxStore(
-          state as unknown as ComboboxStateById
-        );
-      });
-    },
     open: (state: Pick<ComboboxState, 'activeId' | 'targetRange' | 'text'>) => {
       set.mergeState(state);
     },
@@ -132,16 +102,27 @@ export const comboboxStore = createZustandStore('combobox')<ComboboxState>({
         draft.targetRange = null;
       });
     },
+    setComboboxById: <TData = NoData>(state: ComboboxStateById<TData>) => {
+      if (get.byId()[state.id]) return;
+
+      set.state((draft) => {
+        draft.byId[state.id] = createComboboxStore(
+          state as unknown as ComboboxStateById
+        );
+      });
+    },
   }))
   .extendSelectors((state) => ({
     isOpen: () => !!state.activeId,
   }));
 
 export const useComboboxSelectors = comboboxStore.use;
+
 export const comboboxSelectors = comboboxStore.get;
+
 export const comboboxActions = comboboxStore.set;
 
-export const getComboboxStoreById = (id: string | null) =>
+export const getComboboxStoreById = (id: null | string) =>
   id ? comboboxSelectors.byId()[id] : null;
 
 export const useActiveComboboxStore = () => {

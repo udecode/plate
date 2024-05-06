@@ -9,12 +9,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <ThemeProvider
       attribute="class"
       defaultTheme="light"
-      enableSystem
       disableTransitionOnChange
+      enableSystem
     >
       <TooltipProvider
-        disableHoverableContent
         delayDuration={500}
+        disableHoverableContent
         skipDelayDuration={0}
       >
         {children}

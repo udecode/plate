@@ -1,26 +1,27 @@
 import {
+  type PlateEditor,
+  type Value,
   findNode,
   getBlockAbove,
   getParentNode,
   getPluginOptions,
   getPluginType,
   insertElements,
-  PlateEditor,
   setNodes,
-  Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Path } from 'slate';
+
+import type {
+  TTableCellElement,
+  TTableElement,
+  TTableRowElement,
+  TablePlugin,
+} from '../types';
 
 import { ELEMENT_TABLE } from '../createTablePlugin';
 import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';
-import {
-  TablePlugin,
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '../types';
 import { getCellTypes } from '../utils';
 import { computeCellIndices } from './computeCellIndices';
 import { createEmptyCell } from './createEmptyCell';
@@ -31,28 +32,20 @@ import { getCellPath } from './getCellPath';
 export const insertTableMergeColumn = <V extends Value>(
   editor: PlateEditor<V>,
   {
-    disableSelect,
-    fromCell,
     at,
+    fromCell,
     header,
   }: {
-    header?: boolean;
-
-    /**
-     * Path of the cell to insert the column from.
-     */
-    fromCell?: Path;
-
-    /**
-     * Exact path of the cell to insert the column at.
-     * Will overrule `fromCell`.
-     */
+    /** Exact path of the cell to insert the column at. Will overrule `fromCell`. */
     at?: Path;
 
-    /**
-     * Disable selection after insertion.
-     */
+    /** Disable selection after insertion. */
     disableSelect?: boolean;
+
+    /** Path of the cell to insert the column from. */
+    fromCell?: Path;
+
+    header?: boolean;
   } = {}
 ) => {
   const { _cellIndices: cellIndices } = getPluginOptions<TablePlugin, V>(
@@ -68,18 +61,20 @@ export const insertTableMergeColumn = <V extends Value>(
     : getBlockAbove(editor, {
         match: { type: getCellTypes(editor) },
       });
+
   if (!cellEntry) return;
 
   const [, cellPath] = cellEntry;
   const cell = cellEntry[0] as TTableCellElement;
 
   const tableEntry = getBlockAbove<TTableElement>(editor, {
-    match: { type: getPluginType(editor, ELEMENT_TABLE) },
     at: cellPath,
+    match: { type: getPluginType(editor, ELEMENT_TABLE) },
   });
+
   if (!tableEntry) return;
 
-  const { newCellChildren, initialTableWidth, minColumnWidth } =
+  const { initialTableWidth, minColumnWidth, newCellChildren } =
     getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
   const [tableNode, tablePath] = tableEntry;
 
@@ -90,6 +85,7 @@ export const insertTableMergeColumn = <V extends Value>(
 
   let nextColIndex: number;
   let checkingColIndex: number;
+
   if (Path.isPath(at)) {
     nextColIndex = cellColIndex;
     checkingColIndex = cellColIndex - 1;
@@ -105,6 +101,7 @@ export const insertTableMergeColumn = <V extends Value>(
   // const lastRow = nextColIndex === colCount;
 
   let placementCorrection = 1;
+
   if (firstCol) {
     checkingColIndex = 0;
     placementCorrection = 0;
@@ -113,6 +110,7 @@ export const insertTableMergeColumn = <V extends Value>(
   const affectedCellsSet = new Set();
   Array.from({ length: rowNumber }, (_, i) => i).forEach((rI) => {
     const found = findCellByIndexes(editor, tableNode, rI, checkingColIndex);
+
     if (found) {
       affectedCellsSet.add(found);
     }
@@ -121,7 +119,7 @@ export const insertTableMergeColumn = <V extends Value>(
 
   affectedCells.forEach((cur) => {
     const curCell = cur as TTableCellElement;
-    const { row: curRowIndex, col: curColIndex } =
+    const { col: curColIndex, row: curRowIndex } =
       getCellIndices(cellIndices!, curCell) ||
       computeCellIndices(editor, tableNode, curCell)!;
     const curRowSpan = getRowSpan(curCell);
@@ -135,6 +133,7 @@ export const insertTableMergeColumn = <V extends Value>(
     );
 
     const endCurI = curColIndex + curColSpan - 1;
+
     if (endCurI >= nextColIndex && !firstCol) {
       // make wider
       setNodes<TTableCellElement>(
@@ -152,8 +151,8 @@ export const insertTableMergeColumn = <V extends Value>(
       const rowElement = row[0] as TTableRowElement;
       const emptyCell = {
         ...createEmptyCell(editor, rowElement, newCellChildren, header),
-        rowSpan: curRowSpan,
         colSpan: 1,
+        rowSpan: curRowSpan,
       };
       insertElements(editor, emptyCell, {
         at: placementPath,

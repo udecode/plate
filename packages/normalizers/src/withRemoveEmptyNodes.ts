@@ -1,18 +1,16 @@
 import {
+  type PlateEditor,
+  type Value,
+  type WithPlatePlugin,
   getNodeString,
   isElement,
-  PlateEditor,
   removeNodes,
-  Value,
-  WithPlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import castArray from 'lodash/castArray.js';
 
-import { RemoveEmptyNodesPlugin } from './createRemoveEmptyNodesPlugin';
+import type { RemoveEmptyNodesPlugin } from './createRemoveEmptyNodesPlugin';
 
-/**
- * Remove nodes with empty text.
- */
+/** Remove nodes with empty text. */
 export const withRemoveEmptyNodes = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
@@ -32,6 +30,7 @@ export const withRemoveEmptyNodes = <
       getNodeString(node) === ''
     ) {
       removeNodes(editor, { at: path });
+
       return;
     }
 

@@ -1,25 +1,15 @@
 import {
+  type ToggleMarkPlugin,
   createPluginFactory,
   onKeyDownToggleMark,
-  ToggleMarkPlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 export const MARK_SUBSCRIPT = 'subscript';
+
 const MARK_SUPERSCRIPT = 'superscript';
 
-/**
- * Enables support for subscript formatting.
- */
+/** Enables support for subscript formatting. */
 export const createSubscriptPlugin = createPluginFactory<ToggleMarkPlugin>({
-  key: MARK_SUBSCRIPT,
-  isLeaf: true,
-  handlers: {
-    onKeyDown: onKeyDownToggleMark,
-  },
-  options: {
-    hotkey: 'mod+,',
-    clear: MARK_SUPERSCRIPT,
-  },
   deserializeHtml: {
     rules: [
       { validNodeName: ['SUB'] },
@@ -29,5 +19,14 @@ export const createSubscriptPlugin = createPluginFactory<ToggleMarkPlugin>({
         },
       },
     ],
+  },
+  handlers: {
+    onKeyDown: onKeyDownToggleMark,
+  },
+  isLeaf: true,
+  key: MARK_SUBSCRIPT,
+  options: {
+    clear: MARK_SUPERSCRIPT,
+    hotkey: 'mod+,',
   },
 });

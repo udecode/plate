@@ -1,16 +1,17 @@
 import {
+  type PlateEditor,
+  type TNodeEntry,
+  type Value,
   createPathRef,
   getAboveNode,
-  PlateEditor,
   removeNodes,
-  TNodeEntry,
-  Value,
-} from '@udecode/plate-common';
-import { Node, PathRef, Range } from 'slate';
+} from '@udecode/plate-common/server';
+import { Node, type PathRef, Range } from 'slate';
+
+import type { TTableCellElement } from '../types';
 
 import { ELEMENT_TR } from '../createTablePlugin';
 import { getTableGridAbove } from '../queries';
-import { TTableCellElement } from '../types';
 
 export const deleteColumnWhenExpanded = <V extends Value>(
   editor: PlateEditor<V>,
@@ -34,7 +35,6 @@ export const deleteColumnWhenExpanded = <V extends Value>(
   });
 
   if (!firstSelectionRow || !lastSelectionRow) return;
-
   if (
     firstRow.id === firstSelectionRow[0].id &&
     lastSelectionRow[0].id === lastRow.id
@@ -49,7 +49,7 @@ const deleteSelection = <V extends Value>(editor: PlateEditor<V>) => {
 
   const pathRefs: PathRef[] = [];
 
-  cells.forEach(([cell, cellPath], index) => {
+  cells.forEach(([_cell, cellPath]) => {
     pathRefs.push(createPathRef(editor, cellPath));
   });
 

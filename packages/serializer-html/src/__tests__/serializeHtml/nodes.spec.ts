@@ -2,7 +2,7 @@ import {
   createBoldPlugin,
   createItalicPlugin,
 } from '@udecode/plate-basic-marks';
-import { htmlStringToDOMNode, Value } from '@udecode/plate-common';
+import { type Value, htmlStringToDOMNode } from '@udecode/plate-common';
 import { createListPlugin } from '@udecode/plate-list';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { createPlateUIEditor } from 'www/src/lib/plate/create-plate-ui-editor';
@@ -22,67 +22,67 @@ it('serialize complex example list with paragraphs to html', () => {
     serializeHtml(editor, {
       nodes: [
         {
-          type: 'p',
           children: [
             {
               text: 'Some paragraph that contains, ',
             },
             {
-              text: 'italicized text',
               italic: true,
+              text: 'italicized text',
             },
             {
               text: ' and ',
             },
             {
-              text: 'bolded text',
               bold: true,
+              text: 'bolded text',
             },
             {
               text: ' is first.',
             },
           ],
+          type: 'p',
         },
         {
-          type: 'ul',
           children: [
             {
-              type: 'li',
               children: [
                 {
-                  type: 'p',
                   children: [
                     {
                       text: 'Item one in list',
                     },
                   ],
+                  type: 'p',
                 },
               ],
+              type: 'li',
             },
             {
-              type: 'li',
               children: [
                 {
-                  type: 'p',
                   children: [
                     {
                       text: 'Item two in list',
                     },
                   ],
+                  type: 'p',
                 },
               ],
+              type: 'li',
             },
           ],
+          type: 'ul',
         },
       ],
     })
   );
-  expect(render.querySelectorAll('div').length).toEqual(3);
+  expect(render.querySelectorAll('div')).toHaveLength(3);
   expect(render.querySelectorAll('div')[0].outerHTML).toBe(
     '<div class="slate-p">Some paragraph that contains, <em class="slate-italic">italicized text</em> and <strong class="slate-bold">bolded text</strong> is first.</div>'
   );
-  expect(render.querySelectorAll('ul').length).toEqual(1);
-  expect(render.querySelectorAll('li').length).toEqual(2);
+  expect(render.querySelectorAll('ul')).toHaveLength(1);
+  expect(render.querySelectorAll('li')).toHaveLength(2);
   expect(render.querySelectorAll('ul')[0].innerHTML).toBe(
     '<li class="slate-li"><div class="slate-p">Item one in list</div></li><li class="slate-li"><div class="slate-p">Item two in list</div></li>'
   );
@@ -102,26 +102,26 @@ it('serialize complex example with no type on top level node to html', () => {
       {
         children: [
           {
-            type: 'p',
             children: [
               {
                 text: 'Some paragraph that contains, ',
               },
               {
-                text: 'italicized text',
                 italic: true,
+                text: 'italicized text',
               },
               {
                 text: ' and ',
               },
               {
-                text: 'bolded text',
                 bold: true,
+                text: 'bolded text',
               },
               {
                 text: ' is first.',
               },
             ],
+            type: 'p',
           },
         ],
       },
@@ -146,31 +146,31 @@ it('serialize complex example with multiple no types on top level node to html',
       {
         children: [
           {
-            type: 'p',
             children: [
               {
                 text: 'Some paragraph that contains, ',
               },
               {
-                text: 'italicized text',
                 italic: true,
+                text: 'italicized text',
               },
               {
                 text: ' and ',
               },
               {
-                text: 'bolded text',
                 bold: true,
+                text: 'bolded text',
               },
               {
                 text: ' is first.',
               },
             ],
+            type: 'p',
           },
         ],
       },
       {
-        children: [{ text: 'FOO', bold: true }],
+        children: [{ bold: true, text: 'FOO' }],
       },
     ] as Value,
   });
@@ -188,12 +188,12 @@ it('serialize string with %', () => {
       {
         children: [
           {
-            type: 'p',
             children: [
               {
                 text: 'None encoded string 100%',
               },
             ],
+            type: 'p',
           },
         ],
       },

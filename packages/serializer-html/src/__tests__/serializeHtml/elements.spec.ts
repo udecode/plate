@@ -6,15 +6,15 @@ import { createLinkPlugin } from '@udecode/plate-link';
 import { createListPlugin } from '@udecode/plate-list';
 import { createImagePlugin } from '@udecode/plate-media';
 import {
-  createParagraphPlugin,
   ELEMENT_PARAGRAPH,
+  createParagraphPlugin,
 } from '@udecode/plate-paragraph';
 import {
-  createTablePlugin,
   ELEMENT_TABLE,
   ELEMENT_TD,
   ELEMENT_TH,
   ELEMENT_TR,
+  createTablePlugin,
 } from '@udecode/plate-table';
 import { createPlateUIEditor } from 'www/src/lib/plate/create-plate-ui-editor';
 import { TableCellElement } from 'www/src/registry/default/plate-ui/table-cell-element';
@@ -32,16 +32,16 @@ it('serialize list to html', () => {
     serializeHtml(editor, {
       nodes: [
         {
-          type: 'ul',
           children: [
-            { type: 'li', children: [{ text: 'Item one' }] },
-            { type: 'li', children: [{ text: 'Item two' }] },
+            { children: [{ text: 'Item one' }], type: 'li' },
+            { children: [{ text: 'Item two' }], type: 'li' },
           ],
+          type: 'ul',
         },
       ],
     })
   ).querySelectorAll('ul')[0];
-  expect(render.children.length).toEqual(2);
+  expect(render.children).toHaveLength(2);
   expect(render.children[0].outerHTML).toEqual(
     '<li class="slate-li">Item one</li>'
   );
@@ -60,9 +60,9 @@ it('serialize link to html', () => {
       nodes: [
         { text: 'Some paragraph of text with ' },
         {
+          children: [{ text: 'link' }],
           type: 'a',
           url: 'https://theuselessweb.com/',
-          children: [{ text: 'link' }],
         },
         { text: ' part.' },
       ],
@@ -82,13 +82,13 @@ it('serialize blockquote to html', () => {
       serializeHtml(editor, {
         nodes: [
           {
-            type: 'blockquote',
             children: [{ text: 'Blockquoted text\n here...' }],
+            type: 'blockquote',
           },
         ],
       })
-    ).querySelectorAll('blockquote')[0].textContent
-  ).toEqual('Blockquoted text here...');
+    ).querySelectorAll('blockquote')[0]
+  ).toHaveTextContent(`Blockquoted text here...`);
 });
 
 it('serialize blockquote to html, without trimming whitespace', () => {
@@ -99,16 +99,16 @@ it('serialize blockquote to html, without trimming whitespace', () => {
   const html = serializeHtml(editor, {
     nodes: [
       {
-        type: 'blockquote',
         children: [{ text: 'Blockquoted text\nhere...' }],
+        type: 'blockquote',
       },
     ],
     stripWhitespace: false,
   });
 
   const node = htmlStringToDOMNode(html, false);
-  expect(node.querySelectorAll('blockquote')[0].textContent).toEqual(
-    'Blockquoted text\nhere...'
+  expect(node.querySelectorAll('blockquote')[0]).toHaveTextContent(
+    'Blockquoted text here...'
   );
 });
 
@@ -121,23 +121,23 @@ it('serialize headings to html', () => {
     serializeHtml(editor, {
       nodes: [
         {
-          type: 'h1',
           children: [{ text: 'Heading 1' }],
+          type: 'h1',
         },
         {
-          type: 'h2',
           children: [{ text: 'Heading 2' }],
+          type: 'h2',
         },
         {
-          type: 'h3',
           children: [{ text: 'Heading 3' }],
+          type: 'h3',
         },
       ],
     })
   );
-  expect(render.querySelectorAll('h1')[0].textContent).toEqual('Heading 1');
-  expect(render.querySelectorAll('h2')[0].textContent).toEqual('Heading 2');
-  expect(render.querySelectorAll('h3')[0].textContent).toEqual('Heading 3');
+  expect(render.querySelectorAll('h1')[0]).toHaveTextContent('Heading 1');
+  expect(render.querySelectorAll('h2')[0]).toHaveTextContent('Heading 2');
+  expect(render.querySelectorAll('h3')[0]).toHaveTextContent('Heading 3');
 });
 
 it('serialize paragraph to html', () => {
@@ -149,8 +149,8 @@ it('serialize paragraph to html', () => {
     serializeHtml(editor, {
       nodes: [
         {
-          type: 'p',
           children: [{ text: 'Some random paragraph here...' }],
+          type: 'p',
         },
       ],
     })
@@ -169,9 +169,9 @@ it('serialize image to html', () => {
       serializeHtml(editor, {
         nodes: [
           {
+            children: [],
             type: 'img',
             url: 'https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg',
-            children: [],
           },
         ],
       })
@@ -181,39 +181,39 @@ it('serialize image to html', () => {
 
 it('serialize table to html', () => {
   const editor = createPlateUIEditor({
-    plugins: [createTablePlugin()],
     components: {
       [ELEMENT_TABLE]: TableElement,
-      [ELEMENT_TR]: TableRowElement,
       [ELEMENT_TD]: TableCellElement,
       [ELEMENT_TH]: TableCellElement,
+      [ELEMENT_TR]: TableRowElement,
     },
+    plugins: [createTablePlugin()],
   });
 
   const render = htmlStringToDOMNode(
     serializeHtml(editor, {
       nodes: [
         {
-          type: 'table',
           children: [
             {
-              type: 'tr',
               children: [
-                { type: 'td', children: [{ text: 'Foo' }] },
-                { type: 'td', children: [{ text: 'Bar' }] },
+                { children: [{ text: 'Foo' }], type: 'td' },
+                { children: [{ text: 'Bar' }], type: 'td' },
               ],
+              type: 'tr',
             },
             {
-              type: 'tr',
               children: [
                 {
-                  type: 'td',
                   attributes: { colspan: '2' },
                   children: [{ text: 'Span' }],
+                  type: 'td',
                 },
               ],
+              type: 'tr',
             },
           ],
+          type: 'table',
         },
       ],
     })
@@ -241,9 +241,9 @@ it('serialize align style to html', () => {
     serializeHtml(editor, {
       nodes: [
         {
-          type: ELEMENT_PARAGRAPH,
           align: 'center',
           children: [{ text: 'I am centered text!' }],
+          type: ELEMENT_PARAGRAPH,
         },
       ],
     })
@@ -268,9 +268,9 @@ it('serialize align className to html', () => {
     serializeHtml(editor, {
       nodes: [
         {
-          type: ELEMENT_PARAGRAPH,
           align: 'center',
           children: [{ text: 'I am centered text!' }],
+          type: ELEMENT_PARAGRAPH,
         },
       ],
     })
@@ -284,13 +284,13 @@ it('serialize image and paragraph to html', () => {
   const render = serializeHtml(createPlateUIEditor({ plugins }), {
     nodes: [
       {
-        type: ELEMENT_PARAGRAPH,
         children: [{ text: 'I am centered text!' }],
+        type: ELEMENT_PARAGRAPH,
       },
       {
+        children: [],
         type: 'img',
         url: 'https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg',
-        children: [],
       },
     ],
   });

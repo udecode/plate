@@ -1,12 +1,14 @@
-export type ResizeDirection = 'top' | 'right' | 'bottom' | 'left';
+export type ResizeDirection = 'bottom' | 'left' | 'right' | 'top';
 
 export type ResizeLengthStatic = number;
+
 export type ResizeLengthRelative = string;
-export type ResizeLength = ResizeLengthStatic | ResizeLengthRelative;
+
+export type ResizeLength = ResizeLengthRelative | ResizeLengthStatic;
 
 export type ResizeEvent = {
-  initialSize: ResizeLengthStatic;
   delta: ResizeLengthStatic;
-  finished: boolean;
   direction: ResizeDirection;
+  finished: boolean;
+  initialSize: ResizeLengthStatic;
 };

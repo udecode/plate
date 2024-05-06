@@ -1,18 +1,19 @@
 import {
+  type PlateEditor,
+  type TRange,
+  type Value,
   isHotkey,
   isRangeAcrossBlocks,
   isRangeInSameBlock,
-  PlateEditor,
-  TRange,
-  Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { keyShiftEdges } from '../constants';
 import { getCellTypes } from '../utils/index';
 import { moveSelectionFromCell } from './index';
 
 /**
- * Override the new selection if the previous selection and the new one are in different cells.
+ * Override the new selection if the previous selection and the new one are in
+ * different cells.
  */
 export const overrideSelectionFromCell = <V extends Value = Value>(
   editor: PlateEditor<V>,
@@ -25,7 +26,9 @@ export const overrideSelectionFromCell = <V extends Value = Value>(
     !['up', 'down', 'shift+up', 'shift+right', 'shift+down', 'shift+left'].some(
       (key) => {
         const valid = isHotkey(key, editor.currentKeyboardEvent!);
+
         if (valid) hotkey = key;
+
         return valid;
       }
     ) ||
@@ -41,7 +44,6 @@ export const overrideSelectionFromCell = <V extends Value = Value>(
   ) {
     return;
   }
-
   if (!hotkey) return;
 
   const edge = (keyShiftEdges as any)[hotkey];
@@ -58,14 +60,14 @@ export const overrideSelectionFromCell = <V extends Value = Value>(
   }
 
   const prevSelection = editor.selection;
-  const reverse = ['up', 'shift+up'].includes(hotkey);
+  const reverse = ['shift+up', 'up'].includes(hotkey);
 
   setTimeout(() => {
     moveSelectionFromCell(editor, {
       at: prevSelection,
-      reverse,
       edge,
       fromOneCell: true,
+      reverse,
     });
   }, 0);
 };

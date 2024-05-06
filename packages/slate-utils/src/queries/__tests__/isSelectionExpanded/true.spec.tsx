@@ -10,8 +10,8 @@ const input = (
   <editor>
     <element>test</element>
     <selection>
-      <anchor path={[0, 0]} offset={0} />
-      <focus path={[0, 0]} offset={1} />
+      <anchor offset={0} path={[0, 0]} />
+      <focus offset={1} path={[0, 0]} />
     </selection>
   </editor>
 ) as any;

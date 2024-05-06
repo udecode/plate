@@ -1,13 +1,12 @@
+import { focusEditor, insertData } from '@udecode/plate-common';
 import {
+  type PlateEditor,
+  type Value,
   deselect,
-  focusEditor,
   getStartPoint,
-  insertData,
   insertNodes,
   isElementEmpty,
-  PlateEditor,
-  Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
 import { getSelectedBlocks } from '../queries/getSelectedBlocks';

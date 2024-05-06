@@ -1,14 +1,17 @@
 /** @jsx jsx */
 
-import { createPlateEditor, HandlerReturnType } from '@udecode/plate-common';
+import {
+  type HandlerReturnType,
+  createPlateEditor,
+} from '@udecode/plate-common';
 import { getMentionOnSelectItem } from '@udecode/plate-mention';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
 import {
+  type ComboboxState,
   comboboxActions,
   comboboxSelectors,
-  ComboboxState,
 } from './combobox.store';
 import { createComboboxPlugin } from './createComboboxPlugin';
 import { onChangeCombobox } from './onChangeCombobox';
@@ -30,22 +33,22 @@ describe('onChangeCombobox', () => {
   };
 
   const createCombobox = ({
+    controlled = false,
     trigger = '@',
     id = trigger,
     searchPattern = '\\S+',
-    controlled = false,
   }: {
-    trigger?: string;
+    controlled?: boolean;
     id?: string;
     searchPattern?: string;
-    controlled?: boolean;
+    trigger?: string;
   } = {}) =>
     comboboxActions.setComboboxById({
-      id,
-      trigger,
-      searchPattern,
-      onSelectItem: getMentionOnSelectItem({ key: id }),
       controlled,
+      id,
+      onSelectItem: getMentionOnSelectItem({ key: id }),
+      searchPattern,
+      trigger,
     });
 
   beforeEach(() => {
@@ -64,8 +67,8 @@ describe('onChangeCombobox', () => {
     );
 
     expect(comboboxSelectors.state()).toMatchObject<Partial<ComboboxState>>({
-      text: 'hello',
       activeId: expect.anything(),
+      text: 'hello',
     });
   });
 
@@ -87,12 +90,12 @@ describe('onChangeCombobox', () => {
   it('should not alter the state of a controlled combobox', () => {
     const id = 'controlled';
 
-    createCombobox({ id, controlled: true });
+    createCombobox({ controlled: true, id });
 
     comboboxActions.open({
       activeId: id,
-      text: '',
       targetRange: null,
+      text: '',
     });
 
     onChange(
@@ -107,8 +110,8 @@ describe('onChangeCombobox', () => {
   });
 
   it('should handle a mix of controlled and uncontrolled comboboxes', () => {
-    createCombobox({ trigger: '@', controlled: true });
-    createCombobox({ trigger: '#', controlled: false });
+    createCombobox({ controlled: true, trigger: '@' });
+    createCombobox({ controlled: false, trigger: '#' });
 
     onChange(
       <hp>
@@ -118,8 +121,8 @@ describe('onChangeCombobox', () => {
     );
 
     expect(comboboxSelectors.state()).toMatchObject<Partial<ComboboxState>>({
-      text: 'hello',
       activeId: expect.anything(),
+      text: 'hello',
     });
   });
 });

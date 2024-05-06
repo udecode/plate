@@ -7,6 +7,7 @@ export const useActiveCommentNode = () => {
   const editor = useEditorRef();
 
   const id = useCommentsSelectors().activeCommentId();
+
   if (!id) return null;
 
   return findCommentNodeById(editor, id);

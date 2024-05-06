@@ -29,19 +29,19 @@ const nodesFixtureWithList = [
   {
     children: [
       {
-        type: 'li',
+        children: [{ children: [{ text: 'hi' }], id: '211', type: 'p' }],
         id: '21',
-        children: [{ type: 'p', id: '211', children: [{ text: 'hi' }] }],
+        type: 'li',
       },
       {
-        type: 'li',
+        children: [{ children: [{ text: 'hi' }], id: '221', type: 'p' }],
         id: '22',
-        children: [{ type: 'p', id: '221', children: [{ text: 'hi' }] }],
+        type: 'li',
       },
       {
-        type: 'li',
+        children: [{ children: [{ text: 'hi' }], id: '231', type: 'p' }],
         id: '23',
-        children: [{ type: 'p', id: '231', children: [{ text: 'hi' }] }],
+        type: 'li',
       },
     ],
     id: '2',

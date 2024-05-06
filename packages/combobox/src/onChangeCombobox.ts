@@ -1,4 +1,8 @@
-import { isCollapsed, PlateEditor, Value } from '@udecode/plate-common';
+import {
+  type PlateEditor,
+  type Value,
+  isCollapsed,
+} from '@udecode/plate-common';
 import { Range } from 'slate';
 
 import { comboboxActions, comboboxSelectors } from './combobox.store';
@@ -6,11 +10,12 @@ import { getTextFromTrigger } from './utils/getTextFromTrigger';
 
 /**
  * For each combobox state (byId):
- * - if the selection is collapsed
- * - if the cursor follows the trigger
- * - if there is text without whitespaces after the trigger
- * - open the combobox: set id, search, targetRange in the store
- * Close the combobox if needed
+ *
+ * - If the selection is collapsed
+ * - If the cursor follows the trigger
+ * - If there is text without whitespaces after the trigger
+ * - Open the combobox: set id, search, targetRange in the store Close the
+ *   combobox if needed
  */
 export const onChangeCombobox =
   <V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>(
@@ -30,6 +35,7 @@ export const onChangeCombobox =
         // do not close controlled comboboxes
         if (activeId === id) {
           shouldClose = false;
+
           break;
         } else {
           // do not open controlled comboboxes
@@ -38,6 +44,7 @@ export const onChangeCombobox =
       }
 
       const { selection } = editor;
+
       if (!selection || !isCollapsed(selection)) {
         continue;
       }
@@ -47,9 +54,10 @@ export const onChangeCombobox =
 
       const isCursorAfterTrigger = getTextFromTrigger(editor, {
         at: Range.start(selection),
-        trigger,
         searchPattern,
+        trigger,
       });
+
       if (!isCursorAfterTrigger) {
         continue;
       }
@@ -58,11 +66,12 @@ export const onChangeCombobox =
 
       comboboxActions.open({
         activeId: id,
-        text: textAfterTrigger,
         targetRange: range,
+        text: textAfterTrigger,
       });
 
       shouldClose = false;
+
       break;
     }
 

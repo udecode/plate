@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { cn } from '@udecode/cn';
 
 import { AspectRatio } from './ui/aspect-ratio';
@@ -8,7 +9,7 @@ export function ComponentCard({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <AspectRatio ratio={1 / 1} asChild>
+    <AspectRatio asChild ratio={1 / 1}>
       <div
         className={cn(
           'flex items-center justify-center rounded-md border p-8',

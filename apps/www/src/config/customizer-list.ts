@@ -1,4 +1,3 @@
-import { KEY_DRAG_OVER_CURSOR } from '@/plate/demo/plugins/dragOverCursorPlugin';
 import { KEY_ALIGN } from '@udecode/plate-alignment';
 import { KEY_AUTOFORMAT } from '@udecode/plate-autoformat';
 import {
@@ -51,11 +50,10 @@ import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
 import { uniqBy } from 'lodash';
 
 import { customizerItems } from '@/config/customizer-items';
+import { KEY_DRAG_OVER_CURSOR } from '@/plate/demo/plugins/dragOverCursorPlugin';
 
 export const customizerList = [
   {
-    id: 'blocks',
-    label: 'Nodes',
     children: [
       customizerItems[ELEMENT_BLOCKQUOTE],
       customizerItems[ELEMENT_CODE_BLOCK],
@@ -73,10 +71,10 @@ export const customizerList = [
       customizerItems[ELEMENT_TABLE],
       customizerItems[ELEMENT_TODO_LI],
     ],
+    id: 'blocks',
+    label: 'Nodes',
   },
   {
-    id: 'marks',
-    label: 'Marks',
     children: [
       customizerItems[MARK_BOLD],
       customizerItems[MARK_CODE],
@@ -92,20 +90,20 @@ export const customizerList = [
       customizerItems[MARK_SUPERSCRIPT],
       customizerItems[MARK_UNDERLINE],
     ],
+    id: 'marks',
+    label: 'Marks',
   },
   {
-    id: 'style',
-    label: 'Block Style',
     children: [
       customizerItems[KEY_ALIGN],
       customizerItems[KEY_INDENT],
       customizerItems[KEY_LIST_STYLE_TYPE],
       customizerItems[KEY_LINE_HEIGHT],
     ],
+    id: 'style',
+    label: 'Block Style',
   },
   {
-    id: 'functionality',
-    label: 'Functionality',
     children: [
       customizerItems.components,
       customizerItems[KEY_AUTOFORMAT],
@@ -126,16 +124,18 @@ export const customizerList = [
       customizerItems[KEY_TABBABLE],
       customizerItems[KEY_TRAILING_BLOCK],
     ],
+    id: 'functionality',
+    label: 'Functionality',
   },
   {
-    id: 'Deserialization',
-    label: 'Deserialization',
     children: [
       customizerItems[KEY_DESERIALIZE_CSV],
       customizerItems[KEY_DESERIALIZE_DOCX],
       customizerItems[KEY_DESERIALIZE_MD],
       customizerItems[KEY_JUICE],
     ],
+    id: 'Deserialization',
+    label: 'Deserialization',
   },
 ];
 

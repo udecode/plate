@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { type ReactNode } from 'react';
 
 import { Badge } from './ui/badge';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from './ui/hover-card';
@@ -8,16 +8,16 @@ export function BadgeList({ children }: { children: ReactNode }) {
 }
 
 export function BadgePopover({
-  name,
   children,
+  name,
 }: {
-  name: string;
   children: ReactNode;
+  name: string;
 }) {
   return (
     <HoverCard>
       <HoverCardTrigger className="flex items-center gap-2">
-        <Badge variant="secondary" className="cursor-pointer font-mono">
+        <Badge className="cursor-pointer font-mono" variant="secondary">
           {name}
         </Badge>
       </HoverCardTrigger>

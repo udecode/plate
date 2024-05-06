@@ -1,3 +1,3 @@
-import { TMediaElement } from '../media/index';
+import type { TMediaElement } from '../media/index';
 
 export interface TMediaEmbedElement extends TMediaElement {}

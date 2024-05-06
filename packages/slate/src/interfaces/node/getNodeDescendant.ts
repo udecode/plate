@@ -1,11 +1,9 @@
-import { Node, Path } from 'slate';
+import { Node, type Path } from 'slate';
 
-import { DescendantOf } from './TDescendant';
-import { TNode } from './TNode';
+import type { DescendantOf } from './TDescendant';
+import type { TNode } from './TNode';
 
-/**
- * Get the node at a specific path, asserting that it's a descendant node.
- */
+/** Get the node at a specific path, asserting that it's a descendant node. */
 export const getNodeDescendant = <
   N extends DescendantOf<R>,
   R extends TNode = TNode,

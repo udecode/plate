@@ -1,12 +1,12 @@
-import React from 'react';
+import type React from 'react';
+
+import { type PlateProps, pluginRenderElement } from '@udecode/plate-common';
 import {
+  type PlateEditor,
+  type PlateRenderElementProps,
+  type Value,
   pipeInjectProps,
-  PlateEditor,
-  PlateProps,
-  PlateRenderElementProps,
-  pluginRenderElement,
-  Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { decode } from 'html-entities';
 
 import { createElementWithSlate } from './utils/createElementWithSlate';
@@ -16,15 +16,15 @@ import { stripClassNames } from './utils/stripClassNames';
 export const elementToHtml = <V extends Value>(
   editor: PlateEditor<V>,
   {
-    props,
+    dndWrapper,
     plateProps,
     preserveClassNames,
-    dndWrapper,
+    props,
   }: {
-    props: PlateRenderElementProps<V>;
+    dndWrapper?: React.ComponentClass | React.FC | string;
     plateProps?: Partial<PlateProps>;
     preserveClassNames?: string[];
-    dndWrapper?: string | React.FC | React.ComponentClass;
+    props: PlateRenderElementProps<V>;
   }
 ) => {
   let html = `<div>${props.children}</div>`;

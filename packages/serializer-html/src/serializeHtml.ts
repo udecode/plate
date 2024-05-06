@@ -1,12 +1,14 @@
-import React from 'react';
+import type React from 'react';
+
+import type { PlateProps } from '@udecode/plate-common';
+
 import {
-  EDescendant,
-  EElement,
+  type EDescendant,
+  type EElement,
+  type PlateEditor,
+  type Value,
   isText,
-  PlateEditor,
-  PlateProps,
-  Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { encode } from 'html-entities';
 
 import { elementToHtml } from './elementToHtml';
@@ -15,56 +17,46 @@ import { newLinesToHtmlBr } from './utils/newLinesToHtmlBr';
 import { stripSlateDataAttributes } from './utils/stripSlateDataAttributes';
 import { trimWhitespace } from './utils/trimWhitespace';
 
-/**
- * Convert Slate Nodes into HTML string.
- */
+/** Convert Slate Nodes into HTML string. */
 export const serializeHtml = <V extends Value>(
   editor: PlateEditor<V>,
   {
-    nodes,
-    plateProps,
-    stripDataAttributes = true,
-    preserveClassNames,
-    stripWhitespace = true,
     convertNewLinesToHtmlBr = false,
     dndWrapper,
+    nodes,
+    plateProps,
+    preserveClassNames,
+    stripDataAttributes = true,
+    stripWhitespace = true,
   }: {
     /**
-     * Slate nodes to convert to HTML.
-     */
-    nodes: EDescendant<V>[];
-
-    /**
-     * Enable stripping data attributes
-     */
-    stripDataAttributes?: boolean;
-
-    /**
-     * List of className prefixes to preserve from being stripped out
-     */
-    preserveClassNames?: string[];
-
-    /**
-     * Slate props to provide if the rendering depends on plate/slate hooks
-     */
-    plateProps?: Partial<PlateProps>;
-
-    /**
-     * Whether stripping whitespaces from serialized HTML
-     * @default true
-     */
-    stripWhitespace?: boolean;
-
-    /**
      * Optionally convert new line chars (\n) to HTML <br /> tags
+     *
      * @default false
      */
     convertNewLinesToHtmlBr?: boolean;
 
+    /** Drag and drop component */
+    dndWrapper?: React.ComponentClass | React.FC | string;
+
+    /** Slate nodes to convert to HTML. */
+    nodes: EDescendant<V>[];
+
+    /** Slate props to provide if the rendering depends on plate/slate hooks */
+    plateProps?: Partial<PlateProps>;
+
+    /** List of className prefixes to preserve from being stripped out */
+    preserveClassNames?: string[];
+
+    /** Enable stripping data attributes */
+    stripDataAttributes?: boolean;
+
     /**
-     *  Drag and drop component
+     * Whether stripping whitespaces from serialized HTML
+     *
+     * @default true
      */
-    dndWrapper?: string | React.FC | React.ComponentClass;
+    stripWhitespace?: boolean;
   }
 ): string => {
   let result = nodes
@@ -73,35 +65,35 @@ export const serializeHtml = <V extends Value>(
         const children = encode(node.text);
 
         return leafToHtml(editor, {
+          plateProps,
+          preserveClassNames,
           props: {
-            leaf: node as any,
-            text: node as any,
+            attributes: { 'data-slate-leaf': true },
             children: convertNewLinesToHtmlBr
               ? newLinesToHtmlBr(children)
               : children,
-            attributes: { 'data-slate-leaf': true },
             editor,
+            leaf: node as any,
+            text: node as any,
           },
-          plateProps,
-          preserveClassNames,
         });
       }
 
       return elementToHtml<V>(editor, {
+        dndWrapper,
+        plateProps,
+        preserveClassNames,
         props: {
-          element: node as EElement<V>,
+          attributes: { 'data-slate-node': 'element', ref: null },
           children: serializeHtml(editor, {
+            convertNewLinesToHtmlBr,
             nodes: node.children as EDescendant<V>[],
             preserveClassNames,
             stripWhitespace,
-            convertNewLinesToHtmlBr,
           }),
-          attributes: { 'data-slate-node': 'element', ref: null },
           editor,
+          element: node as EElement<V>,
         },
-        plateProps,
-        preserveClassNames,
-        dndWrapper,
       });
     })
     .join('');
@@ -109,7 +101,6 @@ export const serializeHtml = <V extends Value>(
   if (stripWhitespace) {
     result = trimWhitespace(result);
   }
-
   if (stripDataAttributes) {
     result = stripSlateDataAttributes(result);
   }

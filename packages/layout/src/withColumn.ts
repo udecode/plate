@@ -1,11 +1,11 @@
 import {
+  type PlateEditor,
+  type Value,
   getAboveNode,
   isCollapsed,
   isElement,
   isStartPoint,
-  PlateEditor,
-  Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { ELEMENT_COLUMN } from './createColumnPlugin';
 import { normalizeColumn } from './normalizers/normalizedColumn';
@@ -30,17 +30,21 @@ export const withColumn = <
         const [node, path] = entry;
 
         if (node.children.length > 1) return deleteBackward(unit);
+
         const isStart = isStartPoint(editor, editor.selection?.anchor, path);
+
         if (isStart) return;
       }
     }
+
     deleteBackward(unit);
   };
 
   editor.isEmpty = (element: any) => {
-    if (element && element.type && element.type === ELEMENT_COLUMN) {
+    if (element?.type && element.type === ELEMENT_COLUMN) {
       return element.children.length === 1 && isEmpty(element.children[0]);
     }
+
     return isEmpty(element);
   };
 

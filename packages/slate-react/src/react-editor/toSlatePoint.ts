@@ -1,12 +1,11 @@
-import { Value } from '@udecode/slate';
+import type { Value } from '@udecode/slate';
+import type { DOMPoint } from 'slate-react/dist/utils/dom';
+
 import { ReactEditor } from 'slate-react';
-import { DOMPoint } from 'slate-react/dist/utils/dom';
 
-import { TReactEditor } from '../types/TReactEditor';
+import type { TReactEditor } from '../types/TReactEditor';
 
-/**
- * {@link ReactEditor.toSlatePoint}
- */
+/** {@link ReactEditor.toSlatePoint} */
 export const toSlatePoint = <V extends Value>(
   editor: TReactEditor<V>,
   domPoint: DOMPoint,

@@ -1,10 +1,11 @@
 import React from 'react';
+
 import { createBoldPlugin } from '@udecode/plate';
 import { MARK_BOLD } from '@udecode/plate-basic-marks';
 import {
+  type PlatePlugin,
   createPlateEditor,
   htmlStringToDOMNode,
-  PlatePlugin,
 } from '@udecode/plate-core';
 import { createImagePlugin } from '@udecode/plate-media';
 import { createPlateUIEditor } from 'www/src/lib/plate/create-plate-ui-editor';
@@ -24,9 +25,9 @@ it('custom serialize image to html', () => {
       serializeHtml(createPlateUIEditor({ plugins }), {
         nodes: [
           {
+            children: [],
             type: 'img',
             url: 'https://i.kym-cdn.com/photos/images/original/001/358/546/3fa.jpg',
-            children: [],
           },
         ],
       })
@@ -42,7 +43,7 @@ it('custom serialize bold to html', () => {
       createPlateUIEditor({
         plugins: [
           createBoldPlugin({
-            serializeHtml: ({ leaf, children }) =>
+            serializeHtml: ({ children, leaf }) =>
               leaf[MARK_BOLD] && !!leaf.text
                 ? React.createElement('b', {}, children)
                 : children,
@@ -52,7 +53,7 @@ it('custom serialize bold to html', () => {
       {
         nodes: [
           { text: 'Some paragraph of text with ' },
-          { text: 'bold', bold: true },
+          { bold: true, text: 'bold' },
           { text: ' part.' },
         ],
       }
@@ -70,14 +71,14 @@ describe('multiple custom leaf serializers', () => {
 
   it('serialization with the similar renderLeaf/serialize.left options of the same nodes should give the same result', () => {
     const pluginsWithoutSerializers: PlatePlugin[] = [
-      { key: 'bold', isLeaf: true, component: Bold as any }, // always bold
+      { component: Bold as any, isLeaf: true, key: 'bold' }, // always bold
     ];
 
     const pluginsWithSerializers: PlatePlugin[] = [
       {
-        key: 'bold',
-        isLeaf: true,
         component: Bold as any,
+        isLeaf: true,
+        key: 'bold',
         serializeHtml: Bold,
       },
     ];
@@ -87,7 +88,7 @@ describe('multiple custom leaf serializers', () => {
         plugins: pluginsWithoutSerializers,
       }),
       {
-        nodes: [{ text: 'any text', bold: true }],
+        nodes: [{ bold: true, text: 'any text' }],
       }
     );
 

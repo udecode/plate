@@ -1,11 +1,10 @@
+import type { TextInsertTextOptions } from 'slate/dist/interfaces/transforms/text';
+
 import { Transforms } from 'slate';
-import { TextInsertTextOptions } from 'slate/dist/interfaces/transforms/text';
 
-import { TEditor, Value } from '../editor/TEditor';
+import type { TEditor, Value } from '../editor/TEditor';
 
-/**
- * Insert a string of text in the Editor.
- */
+/** Insert a string of text in the Editor. */
 export const insertText = <V extends Value>(
   editor: TEditor<V>,
   text: string,

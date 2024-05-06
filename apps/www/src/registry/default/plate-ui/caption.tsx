@@ -6,15 +6,15 @@ import {
 import { cva } from 'class-variance-authority';
 
 const captionVariants = cva('max-w-full', {
-  variants: {
-    align: {
-      left: 'mr-auto',
-      center: 'mx-auto',
-      right: 'ml-auto',
-    },
-  },
   defaultVariants: {
     align: 'center',
+  },
+  variants: {
+    align: {
+      center: 'mx-auto',
+      left: 'mr-auto',
+      right: 'ml-auto',
+    },
   },
 });
 

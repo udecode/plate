@@ -2,11 +2,17 @@
 
 import * as React from 'react';
 import { useMemo, useState } from 'react';
+
 import { KEY_DND } from '@udecode/plate-dnd';
 import { uniqBy } from 'lodash';
 
-import { allPlugins, orderedPluginKeys } from '@/config/customizer-list';
-import { useMounted } from '@/hooks/use-mounted';
+import {
+  type SettingsStoreValue,
+  settingsStore,
+} from '@/components/context/settings-store';
+import { Link } from '@/components/link';
+import * as Typography from '@/components/typography';
+import { H2, Step, Steps } from '@/components/typography';
 import {
   Accordion,
   AccordionContent,
@@ -15,20 +21,15 @@ import {
 } from '@/components/ui/accordion';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import {
-  settingsStore,
-  SettingsStoreValue,
-} from '@/components/context/settings-store';
-import { Link } from '@/components/link';
-import * as Typography from '@/components/typography';
-import { H2, Step, Steps } from '@/components/typography';
+import { allPlugins, orderedPluginKeys } from '@/config/customizer-list';
+import { useMounted } from '@/hooks/use-mounted';
 
 import { InstallationCode } from './installation-code';
 
 function getEditorCodeGeneratorResult({
-  checkedPlugins,
   checkedComponents,
-}: Pick<SettingsStoreValue, 'checkedPlugins' | 'checkedComponents'>) {
+  checkedPlugins,
+}: Pick<SettingsStoreValue, 'checkedComponents' | 'checkedPlugins'>) {
   const plugins = allPlugins.filter((plugin) => {
     return checkedPlugins[plugin.id];
   });
@@ -51,9 +52,9 @@ function getEditorCodeGeneratorResult({
   });
 
   return {
-    plugins: orderedPlugins,
     components,
     componentsById,
+    plugins: orderedPlugins,
   };
 }
 
@@ -64,8 +65,8 @@ export default function InstallationTab() {
   const [isManual, setIsManual] = useState(false);
 
   // Assign initial values to plugins and components using useMemo
-  const { plugins, components } = useMemo(
-    () => getEditorCodeGeneratorResult({ checkedPlugins, checkedComponents }),
+  const { components, plugins } = useMemo(
+    () => getEditorCodeGeneratorResult({ checkedComponents, checkedPlugins }),
     [checkedComponents, checkedPlugins]
   );
   const somePlugins = useMemo(() => plugins.length > 0, [plugins]);
@@ -86,6 +87,7 @@ export default function InstallationTab() {
         if (_plateImports) {
           _plateImports.forEach((importItem) => acc.add(importItem));
         }
+
         return acc;
       },
       new Set<string>()
@@ -103,6 +105,7 @@ export default function InstallationTab() {
         if (_cnImports) {
           _cnImports.forEach((importItem) => acc.add(importItem));
         }
+
         return acc;
       },
       new Set<string>()
@@ -113,25 +116,27 @@ export default function InstallationTab() {
 
   const installCommands = useMemo(() => {
     return {
-      plugins: `npm install ${Array.from(
-        plugins.reduce((uniquePackages, { npmPackage }) => {
-          if (npmPackage) {
-            uniquePackages.add(npmPackage);
-          }
-          return uniquePackages;
-        }, new Set<string>())
-      ).join(' ')}`,
       components: `npx @udecode/plate-ui@latest add ${Array.from(
         components.reduce(
-          (uniqueFilenames, { id, registry, filename, noImport }) => {
+          (uniqueFilenames, { filename, id, noImport, registry }) => {
             if (noImport) return uniqueFilenames;
 
             uniqueFilenames.add(registry ?? filename ?? id);
+
             return uniqueFilenames;
           },
           new Set<string>()
         )
       ).join(' ')}${isManual && ' tooltip'}`,
+      plugins: `npm install ${Array.from(
+        plugins.reduce((uniquePackages, { npmPackage }) => {
+          if (npmPackage) {
+            uniquePackages.add(npmPackage);
+          }
+
+          return uniquePackages;
+        }, new Set<string>())
+      ).join(' ')}`,
     };
   }, [plugins, components, isManual]);
 
@@ -146,6 +151,7 @@ export default function InstallationTab() {
         if (!acc[importKey]) {
           acc[importKey] = new Set();
         }
+
         acc[importKey].add(importValue);
 
         return acc;
@@ -160,11 +166,9 @@ export default function InstallationTab() {
     // Add pluginFactory and pluginKey from plugins
     plugins.forEach((plugin) => {
       if (!plugin.npmPackage) return;
-
       if (!grouped[plugin.npmPackage]) {
         grouped[plugin.npmPackage] = new Set();
       }
-
       if (plugin.pluginFactory) {
         grouped[plugin.npmPackage].add(plugin.pluginFactory);
       }
@@ -200,6 +204,7 @@ export default function InstallationTab() {
         }
       }
     }
+
     return res;
   }, [plugins]);
 
@@ -236,6 +241,7 @@ export default function InstallationTab() {
         `import { TooltipProvider } from '@/components/plate-ui/tooltip';`
       );
     }
+
     return imports.join('\n');
   }, [
     cnImports,
@@ -251,7 +257,7 @@ export default function InstallationTab() {
   const pluginsCode: string[] = [];
 
   plugins.forEach(
-    ({ pluginFactory, pluginOptions, components: pluginComponents }) => {
+    ({ components: pluginComponents, pluginFactory, pluginOptions }) => {
       if (!pluginFactory) return;
 
       let componentOptions = '';
@@ -266,11 +272,13 @@ export default function InstallationTab() {
       });
 
       let options = '';
+
       if (pluginOptions) {
         options = pluginOptions.map((option) => `${option}`).join('\n      ');
       }
 
       let allOptions: string[] = [];
+
       if (componentOptions || pluginOptions) {
         allOptions = [`{`, `      ${options}${componentOptions}`, `    }`];
       }
@@ -323,11 +331,7 @@ export default function InstallationTab() {
   let indentLevel = 0;
   const jsxCode: string[] = [];
 
-  const addLine = (
-    line: string,
-    opensBlock: boolean = false,
-    closesBlock: boolean = false
-  ) => {
+  const addLine = (line: string, opensBlock = false, closesBlock = false) => {
     if (closesBlock && indentLevel > 0) {
       indentLevel--;
     }
@@ -343,11 +347,9 @@ export default function InstallationTab() {
   if (isManual) {
     addLine(`<TooltipProvider>`, true);
   }
-
   if (hasDnd) {
     addLine(`<DndProvider backend={HTML5Backend}>`, true);
   }
-
   if (hasCommentsPopover) {
     addLine(`<CommentsProvider users={{}} myUserId="1">`, true);
   }
@@ -357,11 +359,9 @@ export default function InstallationTab() {
   if (hasFixedToolbar) {
     addLine(`<FixedToolbar>`, true);
   }
-
   if (hasFixedToolbarButtons) {
     addLine(`<FixedToolbarButtons />`);
   }
-
   if (hasFixedToolbar) {
     addLine(`</FixedToolbar>`, false, true);
     addLine(``);
@@ -373,19 +373,15 @@ export default function InstallationTab() {
     addLine(``);
     addLine(`<FloatingToolbar>`, true);
   }
-
   if (hasFloatingToolbarButtons) {
     addLine(`<FloatingToolbarButtons />`);
   }
-
   if (hasFloatingToolbar) {
     addLine(`</FloatingToolbar>`, false, true);
   }
-
   if (hasMentionCombobox) {
     addLine(`<MentionCombobox items={[]} />`);
   }
-
   if (hasCommentsPopover) {
     addLine(`<CommentsPopover />`);
   }
@@ -395,11 +391,9 @@ export default function InstallationTab() {
   if (hasCommentsPopover) {
     addLine(`</CommentsProvider>`, false, true);
   }
-
   if (hasDnd) {
     addLine(`</DndProvider>`, false, true);
   }
-
   if (isManual) {
     addLine(`</TooltipProvider>`, false, true);
   }
@@ -443,17 +437,17 @@ export default function InstallationTab() {
       <Steps>
         <Step>Install Plate</Step>
         <RadioGroup
-          value={isManual ? 'manual' : 'template'}
           onValueChange={(value) => {
             setIsManual(value === 'manual');
           }}
+          value={isManual ? 'manual' : 'template'}
         >
           <div className="mt-4 flex items-center space-x-2">
-            <RadioGroupItem value="template" id="r2" />
+            <RadioGroupItem id="r2" value="template" />
             <Label htmlFor="r2">Start from Template</Label>
           </div>
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="manual" id="r1" />
+            <RadioGroupItem id="r1" value="manual" />
             <Label htmlFor="r1">Manual installation</Label>
           </div>
         </RadioGroup>
@@ -493,7 +487,7 @@ export default function InstallationTab() {
         {somePlugins && (
           <>
             <Step>Install Plugins</Step>
-            <InstallationCode code={installCommands.plugins} bash>
+            <InstallationCode bash code={installCommands.plugins}>
               Install your selected plugins:
             </InstallationCode>
           </>
@@ -501,7 +495,7 @@ export default function InstallationTab() {
         {someComponents && (
           <>
             <Step>Add Components</Step>
-            <InstallationCode code={installCommands.components} bash>
+            <InstallationCode bash code={installCommands.components}>
               <Link href="/docs/components/installation" target="_blank">
                 Install the dependencies for the components
               </Link>{' '}
@@ -525,12 +519,12 @@ export default function InstallationTab() {
         <InstallationCode code={plateCode} />
 
         <Accordion
-          type="single"
           collapsible
           defaultValue=""
+          type="single"
           // onValueChange={setValue}
         >
-          <AccordionItem value="1" className="">
+          <AccordionItem className="" value="1">
             <AccordionTrigger className="justify-start gap-1">
               Full code
             </AccordionTrigger>

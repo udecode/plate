@@ -1,14 +1,15 @@
 import React from 'react';
+
 import {
   createPrimitiveComponent,
-  findNode,
-  getPluginType,
   useEditorRef,
   useEditorSelection,
 } from '@udecode/plate-common';
+import { findNode, getPluginType } from '@udecode/plate-common/server';
+
+import type { TLinkElement } from '../../types';
 
 import { ELEMENT_LINK } from '../../createLinkPlugin';
-import { TLinkElement } from '../../types';
 import { getLinkAttributes } from '../../utils/index';
 
 export const useLinkOpenButtonState = () => {
@@ -49,16 +50,16 @@ export const useLinkOpenButton = ({ element }: { element?: TLinkElement }) => {
   return {
     props: {
       ...linkAttributes,
-      target: '_blank',
       'aria-label': 'Open link in a new tab',
       onMouseOver: (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
         e.stopPropagation();
       },
+      target: '_blank',
     },
   };
 };
 
 export const LinkOpenButton = createPrimitiveComponent('a')({
-  stateHook: useLinkOpenButtonState,
   propsHook: useLinkOpenButton,
+  stateHook: useLinkOpenButtonState,
 });

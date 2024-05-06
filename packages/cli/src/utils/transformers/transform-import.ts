@@ -1,6 +1,7 @@
-import { Transformer } from '.';
+import type { Transformer } from '.';
 
-export const transformImport: Transformer = async ({ sourceFile, config }) => {
+// eslint-disable-next-line @typescript-eslint/require-await
+export const transformImport: Transformer = async ({ config, sourceFile }) => {
   const importDeclarations = sourceFile.getImportDeclarations();
 
   for (const importDeclaration of importDeclarations) {

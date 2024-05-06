@@ -1,24 +1,22 @@
 import {
+  type PlateEditor,
+  type TDescendant,
+  type TNode,
+  type TNodeEntry,
+  type Value,
+  type WithPlatePlugin,
   applyDeepToNodes,
   defaultsDeepToNodes,
   isDefined,
-  PlateEditor,
   queryNode,
   someNode,
-  TDescendant,
-  TNode,
-  TNodeEntry,
-  Value,
-  WithPlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import castArray from 'lodash/castArray.js';
 import cloneDeep from 'lodash/cloneDeep.js';
 
-import { NodeIdPlugin } from './createNodeIdPlugin';
+import type { NodeIdPlugin } from './createNodeIdPlugin';
 
-/**
- * Enables support for inserting nodes with an id key.
- */
+/** Enables support for inserting nodes with an id key. */
 export const withNodeId = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
@@ -26,14 +24,14 @@ export const withNodeId = <
   editor: E,
   {
     options: {
-      idKey = '',
-      idCreator,
-      filterText,
-      filter,
-      reuseId,
       allow,
-      exclude,
       disableInsertOverrides,
+      exclude,
+      filter,
+      filterText,
+      idCreator,
+      idKey = '',
+      reuseId,
     },
   }: WithPlatePlugin<NodeIdPlugin, V, E>
 ) => {
@@ -50,7 +48,7 @@ export const withNodeId = <
   const removeIdFromNodeIfDuplicate = <N extends TDescendant>(node: N) => {
     if (
       !reuseId ||
-      someNode(editor, { match: { [idKey]: node[idKey] }, at: [] })
+      someNode(editor, { at: [], match: { [idKey]: node[idKey] } })
     ) {
       delete node[idKey];
     }
@@ -61,16 +59,16 @@ export const withNodeId = <
       const id = node._id;
       delete node._id;
 
-      if (!someNode(editor, { match: { [idKey]: id }, at: [] })) {
+      if (!someNode(editor, { at: [], match: { [idKey]: id } })) {
         node[idKey] = id;
       }
     }
   };
 
   const query = {
-    filter: filterNode,
     allow,
     exclude,
+    filter: filterNode,
   };
 
   editor.insertNodes = (_nodes, options) => {
@@ -81,6 +79,7 @@ export const withNodeId = <
         if (!disableInsertOverrides && node[idKey]) {
           node._id = node[idKey];
         }
+
         return node;
       }),
       options
@@ -102,25 +101,25 @@ export const withNodeId = <
 
       // Delete ids from node that are already being used
       applyDeepToNodes({
+        apply: removeIdFromNodeIfDuplicate,
         node,
         query,
         source: {},
-        apply: removeIdFromNodeIfDuplicate,
       });
 
       defaultsDeepToNodes({
         node,
         path: operation.path,
-        source: idPropsCreator,
         query,
+        source: idPropsCreator,
       });
 
       if (!disableInsertOverrides) {
         applyDeepToNodes({
+          apply: overrideIdIfSet,
           node,
           query,
           source: {},
-          apply: overrideIdIfSet,
         });
       }
 
@@ -129,7 +128,6 @@ export const withNodeId = <
         node,
       });
     }
-
     if (operation.type === 'split_node') {
       const node = operation.properties as TNode;
 
@@ -139,15 +137,16 @@ export const withNodeId = <
       if (queryNode([node, operation.path], query)) {
         /**
          * Create a new id if:
-         * - the id in the new node is already being used in the editor or,
-         * - the node has no id
+         *
+         * - The id in the new node is already being used in the editor or,
+         * - The node has no id
          */
         if (
           !reuseId ||
           id === undefined ||
           someNode(editor, {
-            match: { [idKey]: id },
             at: [],
+            match: { [idKey]: id },
           })
         ) {
           id = idCreator!();
@@ -161,7 +160,6 @@ export const withNodeId = <
           },
         });
       }
-
       // if the node is allowed, we don't want to use the same id
       if (id) {
         delete (operation.properties as any)[idKey];

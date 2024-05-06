@@ -1,10 +1,13 @@
-import { ChildOf, isAncestor, TNode, TNodeEntry } from '@udecode/slate';
-import { Path } from 'slate';
+import type { Path } from 'slate';
 
-/**
- * Get children node entries of a node entry.
- * TODO: try Node.children
- */
+import {
+  type ChildOf,
+  type TNode,
+  type TNodeEntry,
+  isAncestor,
+} from '@udecode/slate';
+
+/** Get children node entries of a node entry. TODO: try Node.children */
 export const getChildren = <N extends ChildOf<R>, R extends TNode = TNode>(
   nodeEntry: TNodeEntry<R>
 ): TNodeEntry<N>[] => {
@@ -15,6 +18,7 @@ export const getChildren = <N extends ChildOf<R>, R extends TNode = TNode>(
 
     return children.map((child, index) => {
       const childPath: Path = path.concat([index]);
+
       return [child as N, childPath];
     });
   }

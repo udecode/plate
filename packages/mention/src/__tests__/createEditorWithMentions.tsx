@@ -1,6 +1,10 @@
 /** @jsx jsx */
 
-import { createPlateEditor, PlateEditor, Value } from '@udecode/plate-common';
+import {
+  type PlateEditor,
+  type Value,
+  createPlateEditor,
+} from '@udecode/plate-common';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -21,7 +25,7 @@ export const createEditorWithMentions = <V extends Value>(
   state: React.ReactElement,
   {
     multipleMentionPlugins,
-    pluginOptions: { trigger, key, triggerPreviousCharPattern } = {},
+    pluginOptions: { key, trigger, triggerPreviousCharPattern } = {},
   }: CreateEditorOptions = {}
 ): PlateEditor<V> => {
   const plugins = [
@@ -31,6 +35,7 @@ export const createEditorWithMentions = <V extends Value>(
       options: { trigger, triggerPreviousCharPattern },
     }),
   ];
+
   if (multipleMentionPlugins) {
     plugins.push(
       createMentionPlugin({ key: 'mention2', options: { trigger: '#' } })

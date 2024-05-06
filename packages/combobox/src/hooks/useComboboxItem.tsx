@@ -1,20 +1,21 @@
 import { useEditorRef } from '@udecode/plate-common';
 
+import type { ComboboxContentProps } from './useComboboxContent';
+
 import {
-  ComboboxControls,
+  type ComboboxControls,
+  type Data,
+  type NoData,
+  type TComboboxItem,
   comboboxSelectors,
-  Data,
   getComboboxStoreById,
-  NoData,
-  TComboboxItem,
   useComboboxSelectors,
 } from '..';
-import { ComboboxContentProps } from './useComboboxContent';
 
 export type ComboboxContentItemProps<TData extends Data = NoData> = {
+  combobox: ComboboxControls;
   index: number;
   item: TComboboxItem<TData>;
-  combobox: ComboboxControls;
 } & Pick<ComboboxContentProps<TData>, 'onRenderItem'>;
 
 export interface ComboboxItemProps<TData extends Data = NoData> {
@@ -23,17 +24,17 @@ export interface ComboboxItemProps<TData extends Data = NoData> {
 }
 
 export const useComboboxItem = <TData extends Data = NoData>({
+  combobox,
   index,
   item,
   onRenderItem,
-  combobox,
 }: ComboboxContentItemProps<TData>) => {
   const editor = useEditorRef();
   const text = useComboboxSelectors.text() ?? '';
   const highlightedIndex = useComboboxSelectors.highlightedIndex();
 
   const Item = onRenderItem
-    ? onRenderItem({ search: text, item: item as TComboboxItem<TData> })
+    ? onRenderItem({ item: item as TComboboxItem<TData>, search: text })
     : item.text;
 
   const highlighted = index === highlightedIndex;
@@ -42,9 +43,10 @@ export const useComboboxItem = <TData extends Data = NoData>({
     props: {
       'data-highlighted': highlighted,
       ...combobox.getItemProps({
-        item,
         index,
+        item,
       }),
+      children: Item,
       onMouseDown: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         e.preventDefault();
 
@@ -53,7 +55,6 @@ export const useComboboxItem = <TData extends Data = NoData>({
         )?.get.onSelectItem();
         onSelectItem?.(editor, item);
       },
-      children: Item,
     },
   };
 };

@@ -17,7 +17,6 @@ const name = 'font';
 
 describe(getDocxTestName(name), () => {
   testDocxDeserializer({
-    filename: name,
     expected: (
       <editor>
         <hh1>
@@ -30,56 +29,57 @@ describe(getDocxTestName(name), () => {
           </htext>
         </hh1>
         <hp>
-          <htext fontSize="12.0pt" fontFamily="'Cambria',serif">
+          <htext fontFamily="'Cambria',serif" fontSize="12.0pt">
             Normal with{' '}
           </htext>
           <htext
-            fontSize="12.0pt"
-            fontFamily="'Cambria',serif"
             backgroundColor="yellow"
+            fontFamily="'Cambria',serif"
+            fontSize="12.0pt"
           >
             background{' '}
           </htext>
           <htext
-            fontSize="12.0pt"
-            fontFamily="'Cambria',serif"
             backgroundColor="yellow"
             color="red"
+            fontFamily="'Cambria',serif"
+            fontSize="12.0pt"
           >
             color
           </htext>
-          <htext fontSize="12.0pt" fontFamily="'Cambria',serif">
+          <htext fontFamily="'Cambria',serif" fontSize="12.0pt">
             .
           </htext>
         </hp>
         <hp>
-          <htext fontSize="18pt" fontFamily="'Cambria',serif">
+          <htext fontFamily="'Cambria',serif" fontSize="18pt">
             Normal + 18 pt and{' '}
           </htext>
-          <htext fontSize="10pt" fontFamily="'Times New Roman', serif">
+          <htext fontFamily="'Times New Roman', serif" fontSize="10pt">
             10 pt
           </htext>
-          <htext fontSize="18pt" fontFamily="'Cambria',serif">
+          <htext fontFamily="'Cambria',serif" fontSize="18pt">
             .
           </htext>
         </hp>
         <hp>
-          <htext fontSize="12.0pt" fontFamily="'Cambria',serif">
+          <htext fontFamily="'Cambria',serif" fontSize="12.0pt">
             Compact
           </htext>
         </hp>
         <hp>
           <htext
-            fontSize="12.0pt"
-            fontFamily="'Cambria', serif"
-            fontWeight="bold"
             bold
+            fontFamily="'Cambria', serif"
+            fontSize="12.0pt"
+            fontWeight="bold"
           >
             Definition Term
           </htext>
         </hp>
       </editor>
     ),
+    filename: name,
     plugins: [
       createFontBackgroundColorPlugin(),
       createFontFamilyPlugin(),

@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import * as isHotkey from '@udecode/plate-core';
+import * as isHotkey from '@udecode/plate-core/server';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { createEditorWithMentions } from '../__tests__/createEditorWithMentions';

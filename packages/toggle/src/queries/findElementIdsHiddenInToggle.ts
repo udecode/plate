@@ -1,4 +1,4 @@
-import { TIndentElement } from '@udecode/plate-indent';
+import type { TIndentElement } from '@udecode/plate-indent';
 
 import { buildToggleIndex } from '../toggle-controller-store';
 
@@ -7,9 +7,11 @@ export const findElementIdsHiddenInToggle = (
   elements: TIndentElement[]
 ): string[] => {
   const toggleIndex = buildToggleIndex(elements);
+
   return elements
     .filter((element) => {
       const enclosingToggleIds = toggleIndex.get(element.id as string) || [];
+
       return enclosingToggleIds.some(
         (toggleId) => !openToggleIds.has(toggleId)
       );

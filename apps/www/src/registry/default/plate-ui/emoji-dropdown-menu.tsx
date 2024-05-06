@@ -1,6 +1,7 @@
 import React from 'react';
+
 import {
-  EmojiDropdownMenuOptions,
+  type EmojiDropdownMenuOptions,
   useEmojiDropdownMenuState,
 } from '@udecode/plate-emoji';
 
@@ -19,13 +20,13 @@ export function EmojiDropdownMenu({
   options,
   ...props
 }: EmojiDropdownMenuProps) {
-  const { isOpen, setIsOpen, emojiPickerState } =
+  const { emojiPickerState, isOpen, setIsOpen } =
     useEmojiDropdownMenuState(options);
 
   return (
     <EmojiToolbarDropdown
       control={
-        <ToolbarButton pressed={isOpen} isDropdown tooltip="Emoji" {...props}>
+        <ToolbarButton isDropdown pressed={isOpen} tooltip="Emoji" {...props}>
           <Icons.emoji />
         </ToolbarButton>
       }
@@ -34,12 +35,12 @@ export function EmojiDropdownMenu({
     >
       <EmojiPicker
         {...emojiPickerState}
-        isOpen={isOpen}
-        setIsOpen={setIsOpen}
         icons={{
           categories: emojiCategoryIcons,
           search: emojiSearchIcons,
         }}
+        isOpen={isOpen}
+        setIsOpen={setIsOpen}
         settings={options?.settings}
       />
     </EmojiToolbarDropdown>

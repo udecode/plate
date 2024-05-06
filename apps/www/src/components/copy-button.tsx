@@ -1,11 +1,13 @@
 'use client';
 
 import * as React from 'react';
-import { DropdownMenuTriggerProps } from '@radix-ui/react-dropdown-menu';
+
+import type { NpmCommands } from '@/types/unist';
+import type { DropdownMenuTriggerProps } from '@radix-ui/react-dropdown-menu';
+
 import { cn } from '@udecode/cn';
 
-import { NpmCommands } from '@/types/unist';
-import { Event, trackEvent } from '@/lib/events';
+import { type Event, trackEvent } from '@/lib/events';
 import { Button } from '@/registry/default/plate-ui/button';
 import {
   DropdownMenu,
@@ -18,22 +20,23 @@ import { Icons } from './icons';
 
 interface CopyButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
   value: string;
-  src?: string;
   event?: Event['name'];
+  src?: string;
 }
 
-export async function copyToClipboardWithMeta(value: string, event?: Event) {
-  navigator.clipboard.writeText(value);
+export function copyToClipboardWithMeta(value: string, event?: Event) {
+  void navigator.clipboard.writeText(value);
+
   if (event) {
     trackEvent(event);
   }
 }
 
 export function CopyButton({
-  value,
   className,
-  src,
   event,
+  src,
+  value,
   ...props
 }: CopyButtonProps) {
   const [hasCopied, setHasCopied] = React.useState(false);
@@ -46,14 +49,12 @@ export function CopyButton({
 
   return (
     <Button
-      size="icon"
-      variant="ghost"
       className={cn(
         'relative z-10 size-6 text-slate-50 hover:bg-slate-700 hover:text-slate-50',
         className
       )}
       onClick={() => {
-        copyToClipboardWithMeta(
+        void copyToClipboardWithMeta(
           value,
           event
             ? {
@@ -66,6 +67,8 @@ export function CopyButton({
         );
         setHasCopied(true);
       }}
+      size="icon"
+      variant="ghost"
       {...props}
     >
       <span className="sr-only">Copy</span>
@@ -79,15 +82,15 @@ export function CopyButton({
 }
 
 interface CopyWithClassNamesProps extends DropdownMenuTriggerProps {
-  value: string;
   classNames: string;
+  value: string;
   className?: string;
 }
 
 export function CopyWithClassNames({
-  value,
-  classNames,
   className,
+  classNames,
+  value,
 }: CopyWithClassNamesProps) {
   const [hasCopied, setHasCopied] = React.useState(false);
 
@@ -106,12 +109,12 @@ export function CopyWithClassNames({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          size="icon"
-          variant="ghost"
           className={cn(
             'relative z-10 size-6 text-slate-50 hover:bg-slate-700 hover:text-slate-50',
             className
           )}
+          size="icon"
+          variant="ghost"
         >
           {hasCopied ? (
             <Icons.check className="size-3" />
@@ -140,8 +143,8 @@ interface CopyNpmCommandButtonProps extends DropdownMenuTriggerProps {
 }
 
 export function CopyNpmCommandButton({
-  commands,
   className,
+  commands,
 }: CopyNpmCommandButtonProps) {
   const [hasCopied, setHasCopied] = React.useState(false);
 
@@ -152,7 +155,7 @@ export function CopyNpmCommandButton({
   }, [hasCopied]);
 
   const copyCommand = React.useCallback(
-    (value: string, pm: 'npm' | 'pnpm' | 'yarn' | 'bun') => {
+    (value: string, pm: 'bun' | 'npm' | 'pnpm' | 'yarn') => {
       void copyToClipboardWithMeta(value, {
         name: 'copy_npm_command',
         properties: {
@@ -169,12 +172,12 @@ export function CopyNpmCommandButton({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          size="icon"
-          variant="ghost"
           className={cn(
             'relative z-10 size-6 text-slate-50 hover:bg-slate-700 hover:text-slate-50',
             className
           )}
+          size="icon"
+          variant="ghost"
         >
           {hasCopied ? (
             <Icons.check className="size-3" />

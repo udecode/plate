@@ -1,4 +1,5 @@
-import { TTableElement } from '../types';
+import type { TTableElement } from '../types';
+
 import { getTableOverriddenColSizes } from './getTableOverriddenColSizes';
 
 const makeTableElement = (
@@ -8,8 +9,8 @@ const makeTableElement = (
   ({
     children: [
       {
-        type: 'tr',
         children: Array.from({ length: columnCount }).fill({}),
+        type: 'tr',
       },
     ],
     colSizes,
@@ -19,7 +20,7 @@ describe('getTableOverriddenColSizes', () => {
   describe('when colSizes is not defined', () => {
     it('should return all zeros', () => {
       const tableElement = makeTableElement(3);
-      const overrides: Map<number, number> = new Map();
+      const overrides = new Map<number, number>();
       expect(getTableOverriddenColSizes(tableElement, overrides)).toEqual([
         0, 0, 0,
       ]);
@@ -27,7 +28,7 @@ describe('getTableOverriddenColSizes', () => {
 
     it('should apply overrides', () => {
       const tableElement = makeTableElement(3);
-      const overrides: Map<number, number> = new Map([
+      const overrides = new Map<number, number>([
         [0, 100],
         [2, 200],
       ]);
@@ -40,7 +41,7 @@ describe('getTableOverriddenColSizes', () => {
   describe('when colSizes is defined', () => {
     it('should return colSizes', () => {
       const tableElement = makeTableElement(3, [100, 200, 300]);
-      const overrides: Map<number, number> = new Map();
+      const overrides = new Map<number, number>();
       expect(getTableOverriddenColSizes(tableElement, overrides)).toEqual([
         100, 200, 300,
       ]);
@@ -48,7 +49,7 @@ describe('getTableOverriddenColSizes', () => {
 
     it('should apply overrides', () => {
       const tableElement = makeTableElement(3, [100, 200, 300]);
-      const overrides: Map<number, number> = new Map([
+      const overrides = new Map<number, number>([
         [0, 1000],
         [2, 2000],
       ]);

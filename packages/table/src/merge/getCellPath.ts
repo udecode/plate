@@ -1,17 +1,18 @@
 import {
+  type PlateEditor,
+  type TNodeEntry,
+  type Value,
   getPluginOptions,
-  PlateEditor,
-  TNodeEntry,
-  Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
-import { ELEMENT_TABLE } from '../createTablePlugin';
-import {
-  TablePlugin,
+import type {
   TTableCellElement,
   TTableElement,
   TTableRowElement,
+  TablePlugin,
 } from '../types';
+
+import { ELEMENT_TABLE } from '../createTablePlugin';
 import { getCellIndices } from './getCellIndices';
 
 export const getCellPath = <V extends Value>(
@@ -30,7 +31,9 @@ export const getCellPath = <V extends Value>(
   const foundColIndex = rowElem.children.findIndex((c) => {
     const cE = c as TTableCellElement;
     const { col: colIndex } = getCellIndices(cellIndices!, cE)!;
+
     return colIndex === curColIndex;
   });
+
   return tablePath.concat([curRowIndex, foundColIndex]);
 };

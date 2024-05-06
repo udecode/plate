@@ -1,14 +1,20 @@
 const {
   getDefaultIgnorePatterns,
 } = require('./config/eslint/helpers/getDefaultIgnorePatterns.cjs');
+const { filePatterns } = require('./config/eslint/constants/file-patterns.cjs');
 
-/** @type {import("eslint").Linter.Config} */
+/** @type {import('eslint').Linter.Config} */
 module.exports = {
-  root: true,
+  env: {
+    browser: true,
+    es6: true,
+    jest: true,
+    node: true,
+    webextensions: false,
+  },
   extends: [
     'turbo',
 
-    './config/eslint/bases/javascript.cjs',
     './config/eslint/bases/typescript.cjs',
     './config/eslint/bases/regexp.cjs',
     './config/eslint/bases/jest.cjs',
@@ -18,6 +24,7 @@ module.exports = {
     './config/eslint/bases/next.cjs',
 
     './config/eslint/bases/unicorn.cjs',
+    './config/eslint/bases/perfectionist.cjs',
 
     './config/eslint/bases/prettier.cjs',
   ],
@@ -26,80 +33,59 @@ module.exports = {
     '.next',
     '.out',
     '**/__registry__',
-    '**/diff-match-patch-ts'
+    '**/diff-match-patch-ts',
   ],
-  env: {
-    browser: true,
-    es6: true,
-    jest: true,
-    node: true,
-    webextensions: false,
-  },
-  settings: {
-    'import/parsers': {
-      '@typescript-eslint/parser': ['.ts', '.tsx'],
-    },
-    'import/resolver': {
-      node: {
-        moduleDirectory: ['node_modules'],
-        typescript: {
-          alwaysTryTypes: true,
-        },
-      },
-      typescript: {},
-    },
-    react: { version: 'detect' },
-    next: {
-      rootDir: ['apps/www'],
-    },
-  },
-  rules: {},
   overrides: [
     {
-      files: ['apps/www/src/**/*'],
+      files: ['*.ts', '*.tsx', '*.mts'],
+      parserOptions: {
+        project: true,
+      },
+    },
+    {
       extends: ['plugin:@dword-design/import-alias/recommended'],
+      files: ['apps/www/src/**/*'],
       rules: {
-        'import/no-relative-packages': 'off',
         '@dword-design/import-alias/prefer-alias': [
           'warn',
           {
             alias: {
+              '@/__registry__': './apps/www/src/__registry__',
               '@/app': './apps/www/src/app',
-              '@/plate': './apps/www/src/lib/plate',
               '@/components': './apps/www/src/components',
               '@/hooks': './apps/www/src/hooks',
-              '@/__registry__': './apps/www/src/__registry__',
+              '@/lib': './apps/www/src/lib',
+              '@/plate': './apps/www/src/lib/plate',
               '@/registry': './apps/www/src/registry',
               '@/styles': './apps/www/src/styles',
-              '@/lib': './apps/www/src/lib',
             },
           },
         ],
+        'import/no-relative-packages': 'off',
       },
     },
     {
-      files: ['**/*.spec.*'],
-      extends: ['./config/eslint/bases/prettier.cjs'],
+      files: filePatterns.test,
       rules: {
-        'react/jsx-key': 'off',
         'import/no-relative-packages': 'off',
         'import/no-unresolved': 'off',
+        'react/jsx-key': 'off',
       },
     },
     {
-      files: ['**/*.test.*', '**/*.spec.*', '**/*.fixture.*'],
       env: {
         jest: true,
       },
+      files: filePatterns.test,
       rules: {
         '@typescript-eslint/no-unused-vars': 'off',
-        'react-hooks/rules-of-hooks': 'off',
         'no-restricted-imports': [
           'error',
           {
             paths: [],
           },
         ],
+        'react-hooks/rules-of-hooks': 'off',
       },
     },
     {
@@ -109,4 +95,25 @@ module.exports = {
       },
     },
   ],
+  parser: '@typescript-eslint/parser',
+  root: true,
+  rules: {},
+  settings: {
+    // 'import/parsers': {
+    //   '@typescript-eslint/parser': ['.ts', '.tsx'],
+    // },
+    // 'import/resolver': {
+    //   node: {
+    //     moduleDirectory: ['node_modules'],
+    //     typescript: {
+    //       alwaysTryTypes: true,
+    //     },
+    //   },
+    //   typescript: {},
+    // },
+    next: {
+      rootDir: ['apps/www'],
+    },
+    react: { version: 'detect' },
+  },
 };

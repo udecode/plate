@@ -1,11 +1,10 @@
 import { Editor } from 'slate';
 
-import { isElement } from '../element';
-import { TEditor, Value } from './TEditor';
+import type { TEditor, Value } from './TEditor';
 
-/**
- * Check if a value is a void `Element` object.
- */
+import { isElement } from '../element';
+
+/** Check if a value is a void `Element` object. */
 export const isVoid = <V extends Value>(
   editor: TEditor<V>,
   value: any

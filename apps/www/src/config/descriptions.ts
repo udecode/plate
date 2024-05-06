@@ -1,4 +1,3 @@
-import { KEY_DRAG_OVER_CURSOR } from '@/plate/demo/plugins/dragOverCursorPlugin';
 import { KEY_ALIGN } from '@udecode/plate-alignment';
 import { KEY_AUTOFORMAT } from '@udecode/plate-autoformat';
 import {
@@ -47,18 +46,14 @@ import { ELEMENT_TABLE } from '@udecode/plate-table';
 import { ELEMENT_TOGGLE } from '@udecode/plate-toggle';
 import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
 
+import { KEY_DRAG_OVER_CURSOR } from '@/plate/demo/plugins/dragOverCursorPlugin';
+
 export const descriptions: Record<string, string> = {
   [ELEMENT_BLOCKQUOTE]: 'Highlight important text or citations.',
-  caption: 'Add captions to your blocks.',
-  code_block: 'Encapsulate blocks of code.',
   [ELEMENT_EXCALIDRAW]: 'Create drawings and diagrams as block nodes.',
   [ELEMENT_HR]: 'Insert horizontal lines.',
   [ELEMENT_IMAGE]: 'Embed images into your document.',
   [ELEMENT_LINK]: 'Insert and manage hyperlinks.',
-  [ELEMENT_TOGGLE]: 'Add toggles to your document.',
-  column: 'Add column plugins',
-  heading: 'Organize your document with up to 6 headings.',
-  list: 'Organize nestable items in a bulleted or numbered list.',
   [ELEMENT_MEDIA_EMBED]:
     'Embed medias like videos or tweets into your document.',
   [ELEMENT_MENTION]: 'Enable autocompletion for user mentions.',
@@ -67,11 +62,42 @@ export const descriptions: Record<string, string> = {
   [ELEMENT_TABLE]:
     'Organize and display data in a structured and resizable tabular format.',
   [ELEMENT_TODO_LI]: 'Manage tasks within your document.',
+  [ELEMENT_TOGGLE]: 'Add toggles to your document.',
+  [KEY_ALIGN]: 'Align your content to different positions.',
+  [KEY_AUTOFORMAT]: 'Apply formatting automatically using shortcodes.',
+  [KEY_BLOCK_SELECTION]: 'Select and manipulate entire text blocks.',
+  [KEY_COMBOBOX]: 'Select options from a predefined list.',
+  [KEY_DELETE]:
+    'Remove the current block if empty when pressing delete forward',
+  [KEY_DESERIALIZE_CSV]: 'Copy paste from CSV to Slate.',
+  [KEY_DESERIALIZE_DOCX]: 'Copy paste from DOCX to Slate.',
+  [KEY_DESERIALIZE_MD]: 'Copy paste from MD to Slate.',
+  [KEY_DND]: 'Move blocks within the editor.',
+  [KEY_DRAG_OVER_CURSOR]: 'Customize the cursor when dragging.',
+  [KEY_EMOJI]: 'Enhance your text with emojis.',
+  [KEY_EXIT_BREAK]: 'Exit a large block using a shortcut.',
+  [KEY_INDENT]: 'Customize text indentation.',
+  [KEY_JUICE]:
+    'Inline CSS properties into the `style` attribute when pasting HTML.',
+  [KEY_LINE_HEIGHT]: 'Adjust the height between lines of text.',
+  [KEY_LIST_STYLE_TYPE]:
+    'Turn any block into a list item. Alternative to List.',
+  [KEY_NODE_ID]: 'Assign unique identifiers to nodes within your document.',
+  [KEY_NORMALIZE_TYPES]: 'Enforce block types using rules.',
+  [KEY_RESET_NODE]: 'Reset the block type using rules.',
+  [KEY_SELECT_ON_BACKSPACE]:
+    'Select the preceding block instead of deleting when pressing backspace.',
+  [KEY_SINGLE_LINE]: 'Restrict the editor to a single block.',
+  [KEY_SOFT_BREAK]:
+    'Insert line breaks within a block of text without starting a new block.',
+  [KEY_TABBABLE]: 'Maintain a consistent tab order for tabbable elements.',
+  [KEY_TRAILING_BLOCK]:
+    'Automatically add a new paragraph after the final block.',
+  [MARK_BG_COLOR]: 'Add color to text backgrounds.',
   [MARK_BOLD]: 'Make your text stand out.',
   [MARK_CODE]: 'Embed code into your text.',
-  [MARK_COMMENT]: 'Add comments to text as marks.',
-  [MARK_BG_COLOR]: 'Add color to text backgrounds.',
   [MARK_COLOR]: 'Highlight text with a specific color.',
+  [MARK_COMMENT]: 'Add comments to text as marks.',
   [MARK_FONT_SIZE]: 'Adjust the size of the text.',
   [MARK_HIGHLIGHT]: 'Mark and reference text for review.',
   [MARK_ITALIC]: 'Emphasize your text.',
@@ -80,35 +106,10 @@ export const descriptions: Record<string, string> = {
   [MARK_SUBSCRIPT]: 'Lower portions of your text.',
   [MARK_SUPERSCRIPT]: 'Elevate portions of your text.',
   [MARK_UNDERLINE]: 'Emphasize specific words or phrases in your text.',
-  [KEY_ALIGN]: 'Align your content to different positions.',
-  [KEY_LINE_HEIGHT]: 'Adjust the height between lines of text.',
-  [KEY_INDENT]: 'Customize text indentation.',
-  [KEY_LIST_STYLE_TYPE]:
-    'Turn any block into a list item. Alternative to List.',
-  [KEY_AUTOFORMAT]: 'Apply formatting automatically using shortcodes.',
-  [KEY_BLOCK_SELECTION]: 'Select and manipulate entire text blocks.',
-  [KEY_COMBOBOX]: 'Select options from a predefined list.',
-  [KEY_DND]: 'Move blocks within the editor.',
-  [KEY_DRAG_OVER_CURSOR]: 'Customize the cursor when dragging.',
-  [KEY_EMOJI]: 'Enhance your text with emojis.',
-  [KEY_EXIT_BREAK]: 'Exit a large block using a shortcut.',
-  [KEY_NODE_ID]: 'Assign unique identifiers to nodes within your document.',
-  [KEY_NORMALIZE_TYPES]: 'Enforce block types using rules.',
-  [KEY_RESET_NODE]: 'Reset the block type using rules.',
-  [KEY_SELECT_ON_BACKSPACE]:
-    'Select the preceding block instead of deleting when pressing backspace.',
-  [KEY_DELETE]:
-    'Remove the current block if empty when pressing delete forward',
-  [KEY_SINGLE_LINE]: 'Restrict the editor to a single block.',
-  [KEY_SOFT_BREAK]:
-    'Insert line breaks within a block of text without starting a new block.',
-  [KEY_TABBABLE]: 'Maintain a consistent tab order for tabbable elements.',
-  [KEY_TRAILING_BLOCK]:
-    'Automatically add a new paragraph after the final block.',
-  [KEY_DESERIALIZE_CSV]: 'Copy paste from CSV to Slate.',
-  [KEY_DESERIALIZE_DOCX]: 'Copy paste from DOCX to Slate.',
-  [KEY_DESERIALIZE_MD]: 'Copy paste from MD to Slate.',
-  [KEY_JUICE]:
-    'Inline CSS properties into the `style` attribute when pasting HTML.',
+  caption: 'Add captions to your blocks.',
+  code_block: 'Encapsulate blocks of code.',
+  column: 'Add column plugins',
   components: 'Components.',
+  heading: 'Organize your document with up to 6 headings.',
+  list: 'Organize nestable items in a bulleted or numbered list.',
 };

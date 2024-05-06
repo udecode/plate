@@ -1,13 +1,13 @@
-import { existsSync } from 'fs';
-import path from 'path';
 import fg from 'fast-glob';
+import { existsSync } from 'fs';
 import fs, { pathExists } from 'fs-extra';
+import path from 'path';
 import { loadConfig } from 'tsconfig-paths';
 
 import {
-  Config,
+  type Config,
+  type RawConfig,
   getConfig,
-  RawConfig,
   resolveConfigPaths,
 } from '../utils/get-config';
 
@@ -37,24 +37,24 @@ const PROJECT_SHARED_IGNORE = [
  */
 export async function getProjectInfo() {
   const info = {
-    tsconfig: null,
-    srcDir: false,
     appDir: false,
-    srcComponentsUiDir: false,
     componentsUiDir: false,
+    srcComponentsUiDir: false,
+    srcDir: false,
+    tsconfig: null,
   };
 
   try {
     const tsconfig = await getTsConfig();
 
     return {
-      tsconfig,
-      srcDir: existsSync(path.resolve('./src')),
       appDir:
         existsSync(path.resolve('./app')) ||
         existsSync(path.resolve('./src/app')),
-      srcComponentsUiDir: existsSync(path.resolve('./src/components/plate-ui')),
       componentsUiDir: existsSync(path.resolve('./components/plate-ui')),
+      srcComponentsUiDir: existsSync(path.resolve('./src/components/plate-ui')),
+      srcDir: existsSync(path.resolve('./src')),
+      tsconfig,
     };
   } catch (error) {
     return info;
@@ -75,9 +75,11 @@ export async function getTsConfig() {
     return null;
   }
 }
+
 export async function getProjectConfig(cwd: string): Promise<Config | null> {
   // Check for existing component config.
   const existingConfig = await getConfig(cwd);
+
   if (existingConfig) {
     return existingConfig;
   }
@@ -94,17 +96,17 @@ export async function getProjectConfig(cwd: string): Promise<Config | null> {
 
   const config: RawConfig = {
     $schema: 'https://ui.shadcn.com/schema.json',
+    aliases: {
+      components: `${tsConfigAliasPrefix}/components`,
+    },
     rsc: ['next-app', 'next-app-src'].includes(projectType),
     style: 'new-york',
     tailwind: {
-      config: isTsx ? 'tailwind.config.ts' : 'tailwind.config.js',
       baseColor: 'zinc',
+      config: isTsx ? 'tailwind.config.ts' : 'tailwind.config.js',
       css: tailwindCssFile,
       cssVariables: true,
       prefix: '',
-    },
-    aliases: {
-      components: `${tsConfigAliasPrefix}/components`,
     },
   };
 
@@ -119,6 +121,7 @@ export async function getProjectType(cwd: string): Promise<ProjectType | null> {
   });
 
   const isNextProject = files.find((file) => file.startsWith('next.config.'));
+
   if (!isNextProject) {
     return null;
   }
@@ -148,6 +151,7 @@ export async function getTailwindCssFile(cwd: string) {
 
   for (const file of files) {
     const contents = await fs.readFile(path.resolve(cwd, file), 'utf8');
+
     // Assume that if the file contains `@tailwind base` it's the main css file.
     if (contents.includes('@tailwind base')) {
       return file;
@@ -157,8 +161,9 @@ export async function getTailwindCssFile(cwd: string) {
   return null;
 }
 
+// eslint-disable-next-line @typescript-eslint/require-await
 export async function getTsConfigAliasPrefix(cwd: string) {
-  const tsConfig = await loadConfig(cwd);
+  const tsConfig = loadConfig(cwd);
 
   if (tsConfig?.resultType === 'failed' || !tsConfig?.paths) {
     return null;

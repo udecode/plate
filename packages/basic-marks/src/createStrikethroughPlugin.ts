@@ -1,25 +1,17 @@
 import {
+  type ToggleMarkPlugin,
   createPluginFactory,
   onKeyDownToggleMark,
   someHtmlElement,
-  ToggleMarkPlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 export const MARK_STRIKETHROUGH = 'strikethrough';
 
-/**
- * Enables support for strikethrough formatting.
- */
+/** Enables support for strikethrough formatting. */
 export const createStrikethroughPlugin = createPluginFactory<ToggleMarkPlugin>({
-  key: MARK_STRIKETHROUGH,
-  isLeaf: true,
-  handlers: {
-    onKeyDown: onKeyDownToggleMark,
-  },
-  options: {
-    hotkey: 'mod+shift+x',
-  },
   deserializeHtml: {
+    query: (el) =>
+      !someHtmlElement(el, (node) => node.style.textDecoration === 'none'),
     rules: [
       { validNodeName: ['S', 'DEL', 'STRIKE'] },
       {
@@ -28,7 +20,13 @@ export const createStrikethroughPlugin = createPluginFactory<ToggleMarkPlugin>({
         },
       },
     ],
-    query: (el) =>
-      !someHtmlElement(el, (node) => node.style.textDecoration === 'none'),
+  },
+  handlers: {
+    onKeyDown: onKeyDownToggleMark,
+  },
+  isLeaf: true,
+  key: MARK_STRIKETHROUGH,
+  options: {
+    hotkey: 'mod+shift+x',
   },
 });

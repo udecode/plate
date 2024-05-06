@@ -1,14 +1,16 @@
-import { ComboboxOnSelectItem } from '@udecode/plate-combobox';
+import type { ComboboxOnSelectItem } from '@udecode/plate-combobox';
+
+import { focusEditor } from '@udecode/plate-common';
 import {
-  focusEditor,
+  type PlatePluginKey,
   getPlugin,
   insertText,
-  PlatePluginKey,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
+
+import type { EmojiItemData, EmojiPlugin } from '../types';
 
 import { KEY_EMOJI } from '../constants';
-import { EmojiItemData, EmojiPlugin } from '../types';
 
 export const getEmojiOnInsert =
   <TData extends EmojiItemData = EmojiItemData>({

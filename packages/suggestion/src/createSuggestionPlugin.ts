@@ -1,13 +1,14 @@
-import { createPluginFactory } from '@udecode/plate-common';
+import { createPluginFactory } from '@udecode/plate-common/server';
+
+import type { SuggestionPlugin } from './types';
 
 import { MARK_SUGGESTION } from './constants';
-import { SuggestionPlugin } from './types';
 import { useHooksSuggestion } from './useHooksSuggestion';
 import { withSuggestion } from './withSuggestion';
 
 export const createSuggestionPlugin = createPluginFactory<SuggestionPlugin>({
-  key: MARK_SUGGESTION,
   isLeaf: true,
+  key: MARK_SUGGESTION,
   useHooks: useHooksSuggestion,
   withOverrides: withSuggestion,
 });

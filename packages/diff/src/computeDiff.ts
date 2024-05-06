@@ -3,39 +3,44 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import { PlateEditor, TDescendant, TElement } from '@udecode/plate-common';
+import type {
+  PlateEditor,
+  TDescendant,
+  TElement,
+} from '@udecode/plate-common/server';
+
+import type { DiffProps } from './types';
 
 import { transformDiffDescendants } from './internal/transforms/transformDiffDescendants';
 import { dmp } from './internal/utils/dmp';
 import { StringCharMapping } from './internal/utils/string-char-mapping';
-import { DiffProps } from './types';
 
 export interface ComputeDiffOptions {
-  isInline: PlateEditor['isInline'];
-  ignoreProps?: string[];
-  lineBreakChar?: string;
-  elementsAreRelated?: (
-    element: TElement,
-    nextElement: TElement
-  ) => boolean | null;
-  getInsertProps: (node: TDescendant) => any;
   getDeleteProps: (node: TDescendant) => any;
+  getInsertProps: (node: TDescendant) => any;
   getUpdateProps: (
     node: TDescendant,
     properties: any,
     newProperties: any
   ) => any;
+  isInline: PlateEditor['isInline'];
+  elementsAreRelated?: (
+    element: TElement,
+    nextElement: TElement
+  ) => boolean | null;
+  ignoreProps?: string[];
+  lineBreakChar?: string;
 }
 
 export const computeDiff = (
   doc0: TDescendant[],
   doc1: TDescendant[],
   {
-    isInline = () => false,
-    ignoreProps,
-    getInsertProps = defaultGetInsertProps,
     getDeleteProps = defaultGetDeleteProps,
+    getInsertProps = defaultGetInsertProps,
     getUpdateProps = defaultGetUpdateProps,
+    ignoreProps,
+    isInline = () => false,
     ...options
   }: Partial<ComputeDiffOptions> = {}
 ): TDescendant[] => {
@@ -47,10 +52,8 @@ export const computeDiff = (
   const diff = dmp.diff_main(m0, m1);
 
   return transformDiffDescendants(diff, {
-    isInline,
-    ignoreProps,
-    getInsertProps,
     getDeleteProps,
+    getInsertProps,
     getUpdateProps: (node, properties, newProperties) => {
       // Ignore the update if only ignored props have changed
       if (
@@ -61,6 +64,8 @@ export const computeDiff = (
 
       return getUpdateProps(node, properties, newProperties);
     },
+    ignoreProps,
+    isInline,
     stringCharMapping,
     ...options,
   });
@@ -87,8 +92,8 @@ export const defaultGetUpdateProps = (
 ): DiffProps => ({
   diff: true,
   diffOperation: {
-    type: 'update',
-    properties,
     newProperties,
+    properties,
+    type: 'update',
   },
 });

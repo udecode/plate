@@ -1,28 +1,28 @@
+import * as React from 'react';
+
+import { cn } from '@udecode/cn';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 
-import { ThemesButton } from '@/components/themes-button';
-
-import { AnnouncementButton } from './announcement-button';
-
-import '../../public/registry/themes.css';
-
-import * as React from 'react';
-import { cn } from '@udecode/cn';
-
-import { siteConfig } from '@/config/site';
 import { Icons } from '@/components/icons';
 import {
   PageHeader,
   PageHeaderDescription,
   PageHeaderHeading,
 } from '@/components/page-header';
+import { ThemesButton } from '@/components/themes-button';
+import { siteConfig } from '@/config/site';
 import { buttonVariants } from '@/registry/default/plate-ui/button';
+
+import { AnnouncementButton } from './announcement-button';
+
+import '../../public/registry/themes.css';
 
 const HomeTabs = dynamic(() => import('./_components/home-tabs'));
 const CustomizerDrawer = dynamic(
   () => import('@/components/customizer-drawer')
 );
+
 export default function IndexPage() {
   return (
     <div className="container relative">
@@ -41,14 +41,14 @@ export default function IndexPage() {
             CLI for styled components. Customizable. Open Source.
           </PageHeaderDescription>
           <section className="flex w-full items-center space-x-4 py-4 md:pb-10">
-            <Link href="/docs" className={cn(buttonVariants())}>
+            <Link className={cn(buttonVariants())} href="/docs">
               Get Started
             </Link>
             <Link
-              target="_blank"
-              rel="noreferrer"
-              href={siteConfig.links.github}
               className={cn(buttonVariants({ variant: 'outline' }))}
+              href={siteConfig.links.github}
+              rel="noreferrer"
+              target="_blank"
             >
               <Icons.gitHub className="mr-2 size-4" />
               GitHub

@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+
 import { useInView } from 'framer-motion';
 
 export const useCounting = ({
@@ -12,12 +13,12 @@ export const useCounting = ({
   reverse,
   start,
 }: {
-  start: number;
+  duration: number;
   end: number;
   interval: number;
-  duration: number;
-  reverse: boolean;
   isInView: boolean;
+  reverse: boolean;
+  start: number;
 }) => {
   const [number, setNumber] = useState(start);
   const increment =
@@ -25,6 +26,7 @@ export const useCounting = ({
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
+
     if (isInView) {
       timer = setInterval(() => {
         setNumber((prevNumber) => {
@@ -35,6 +37,7 @@ export const useCounting = ({
 
           if (isCompleted) {
             clearInterval(timer);
+
             return end;
           }
 
@@ -53,21 +56,21 @@ export const useCounting = ({
 export interface CountingNumbersProps {
   value: number;
   className?: string;
+  duration?: number;
+  interval?: number;
+  noAnimation?: boolean;
   reverse?: boolean;
   start?: number;
-  interval?: number;
-  duration?: number;
-  noAnimation?: boolean;
 }
 
 export function CountingNumbers({
-  value,
   className,
+  duration = 800,
+  interval = 10,
+  noAnimation,
   reverse = false,
   start = reverse ? 1000 : 0,
-  interval = 10,
-  duration = 800,
-  noAnimation,
+  value,
 }: CountingNumbersProps) {
   const ref = useRef(null);
 
@@ -76,12 +79,12 @@ export function CountingNumbers({
   if (!noAnimation) {
     const isInView = useInView(ref);
     number = useCounting({
-      start,
+      duration,
       end: value,
       interval,
-      duration,
-      reverse,
       isInView,
+      reverse,
+      start,
     });
   }
 

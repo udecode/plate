@@ -1,15 +1,13 @@
 import { generateSpaces } from './generateSpaces';
 
-/**
- * Replace the element with spaces if its style includes 'mso-spacerun: yes'.
- */
+/** Replace the element with spaces if its style includes 'mso-spacerun: yes'. */
 export const cleanDocxSpacerun = (element: Element): void => {
   const styleAttribute = element.getAttribute('style');
 
   if (
     !(
       styleAttribute &&
-      ['mso-spacerun:yes', 'mso-spacerun: yes'].includes(styleAttribute)
+      ['mso-spacerun: yes', 'mso-spacerun:yes'].includes(styleAttribute)
     )
   ) {
     return;

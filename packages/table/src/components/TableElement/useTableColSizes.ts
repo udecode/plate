@@ -1,10 +1,9 @@
 import React from 'react';
-import {
-  findNodePath,
-  getPluginOptions,
-  unsetNodes,
-  useEditorRef,
-} from '@udecode/plate-common';
+
+import { findNodePath, useEditorRef } from '@udecode/plate-common';
+import { getPluginOptions, unsetNodes } from '@udecode/plate-common/server';
+
+import type { TTableElement, TablePlugin } from '../../types';
 
 import { ELEMENT_TABLE } from '../../createTablePlugin';
 import {
@@ -12,11 +11,10 @@ import {
   getTableOverriddenColSizes,
 } from '../../queries/index';
 import { useTableStore } from '../../stores/tableStore';
-import { TablePlugin, TTableElement } from '../../types';
 
 /**
- * Returns colSizes with overrides applied.
- * Unset node.colSizes if `colCount` updates to 1.
+ * Returns colSizes with overrides applied. Unset node.colSizes if `colCount`
+ * updates to 1.
  */
 export const useTableColSizes = (
   tableNode: TTableElement,

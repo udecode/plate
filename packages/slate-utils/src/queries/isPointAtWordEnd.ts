@@ -1,18 +1,17 @@
+import type { Point } from 'slate';
+
 import {
+  type TEditor,
+  type Value,
   getEditorString,
   getPointAfter,
   getRange,
-  TEditor,
-  Value,
 } from '@udecode/slate';
-import { Point } from 'slate';
 
 // Starts with whitespace char or nothing
-const AFTER_MATCH_REGEX = /^(\s|$)/;
+const AFTER_MATCH_REGEX = /^(?:\s|$)/;
 
-/**
- * Is a point at the end of a word
- */
+/** Is a point at the end of a word */
 export const isPointAtWordEnd = <V extends Value>(
   editor: TEditor<V>,
   { at }: { at: Point }

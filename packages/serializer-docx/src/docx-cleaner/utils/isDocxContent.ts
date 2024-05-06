@@ -1,10 +1,10 @@
-import { traverseHtmlElements } from '@udecode/plate-common';
+import { traverseHtmlElements } from '@udecode/plate-common/server';
 
 /**
- * Check if the element contains docx content.
- * True if one element has:
- * - style including 'mso-'
- * - className including 'Mso'
+ * Check if the element contains docx content. True if one element has:
+ *
+ * - Style including 'mso-'
+ * - ClassName including 'Mso'
  */
 export const isDocxContent = (body: HTMLElement): boolean => {
   let result = false;

@@ -1,46 +1,63 @@
 import { emojiTriggeringControllerOptions } from '../index';
 
 export type EmojiTriggeringControllerOptions = {
-  trigger: string;
   limitTriggeringChars: number;
+  trigger: string;
 };
 
 export interface IEmojiTriggeringController {
-  isTriggering: boolean;
+  getText: () => string;
+  getTextSize: () => number;
+  hasEnclosingTriggeringMark: () => boolean;
   hasTriggeringMark: boolean;
+  isTriggering: boolean;
+  reset: () => this;
   setIsTriggering: (isTriggering: boolean) => this;
   setText: (text: string) => this;
-  getText: () => string;
-  hasEnclosingTriggeringMark: () => boolean;
-  getTextSize: () => number;
-  reset: () => this;
 }
 
 export class EmojiTriggeringController implements IEmojiTriggeringController {
-  private _isTriggering = false;
   private _hasTriggeringMark = false;
-  protected text = '';
+  private _isTriggering = false;
   protected pos: any;
+  protected text = '';
 
   constructor(
     protected options: EmojiTriggeringControllerOptions = emojiTriggeringControllerOptions
   ) {}
 
-  get isTriggering(): boolean {
-    return this._isTriggering;
+  private endsWithEnclosingMark(text: string) {
+    return new RegExp(`${this.options.trigger}$`).test(text);
   }
 
-  setIsTriggering(isTriggering: boolean) {
-    this._isTriggering = isTriggering;
-    return this;
+  private startsWithTriggeringMark(text: string) {
+    return new RegExp(`^${this.options.trigger}`).test(text);
   }
 
-  get hasTriggeringMark(): boolean {
-    return this._hasTriggeringMark;
+  getText() {
+    return this.text.replaceAll(/^:|:$/g, '');
+  }
+
+  getTextSize() {
+    return this.text.length;
   }
 
   hasEnclosingTriggeringMark(): boolean {
     return this.endsWithEnclosingMark(this.text);
+  }
+
+  reset() {
+    this.text = '';
+    this.setIsTriggering(false);
+    this._hasTriggeringMark = false;
+
+    return this;
+  }
+
+  setIsTriggering(isTriggering: boolean) {
+    this._isTriggering = isTriggering;
+
+    return this;
   }
 
   setText(text: string) {
@@ -55,26 +72,11 @@ export class EmojiTriggeringController implements IEmojiTriggeringController {
     return this;
   }
 
-  private startsWithTriggeringMark(text: string) {
-    return new RegExp(`^${this.options.trigger}`).test(text);
+  get hasTriggeringMark(): boolean {
+    return this._hasTriggeringMark;
   }
 
-  private endsWithEnclosingMark(text: string) {
-    return new RegExp(`${this.options.trigger}$`).test(text);
-  }
-
-  getText() {
-    return this.text.replaceAll(/(^:)|(:$)/g, '');
-  }
-
-  getTextSize() {
-    return this.text.length;
-  }
-
-  reset() {
-    this.text = '';
-    this.setIsTriggering(false);
-    this._hasTriggeringMark = false;
-    return this;
+  get isTriggering(): boolean {
+    return this._isTriggering;
   }
 }

@@ -1,4 +1,4 @@
-import { ResizeLength, ResizeLengthRelative } from '../types';
+import type { ResizeLength, ResizeLengthRelative } from '../types';
 
 export const resizeLengthToRelative = (
   length: ResizeLength,

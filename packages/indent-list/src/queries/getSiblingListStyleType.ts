@@ -1,18 +1,22 @@
-import {
+import type {
   EElement,
   PlateEditor,
   TElement,
   TNodeEntry,
   Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
+
+import type { ListStyleType } from '../types';
 
 import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
-import { ListStyleType } from '../types';
-import { getIndentListSiblings, GetIndentListSiblingsOptions } from './index';
+import {
+  type GetIndentListSiblingsOptions,
+  getIndentListSiblings,
+} from './index';
 
 /**
- * Get the first sibling list style type at the given indent.
- * If none, return the entry list style type.
+ * Get the first sibling list style type at the given indent. If none, return
+ * the entry list style type.
  */
 export const getSiblingListStyleType = <V extends Value = Value>(
   editor: PlateEditor<V>,
@@ -31,9 +35,9 @@ export const getSiblingListStyleType = <V extends Value = Value>(
   ];
 
   const siblings = getIndentListSiblings(editor, siblingEntry as any, {
-    eqIndent: true,
-    current: false,
     breakOnEqIndentNeqListStyleType: false,
+    current: false,
+    eqIndent: true,
     ...options,
   });
 

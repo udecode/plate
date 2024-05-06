@@ -1,11 +1,13 @@
 import React from 'react';
-import { useIsomorphicLayoutEffect } from '@udecode/plate-common';
 import ReactTextareaAutosize, {
-  TextareaAutosizeProps,
+  type TextareaAutosizeProps,
 } from 'react-textarea-autosize';
+
+import { useIsomorphicLayoutEffect } from '@udecode/plate-common';
 
 /**
  * `<textarea />` component for React which grows with content.
+ *
  * @see https://github.com/Andarist/react-textarea-autosize
  * @see https://github.com/Andarist/react-textarea-autosize/issues/337
  */

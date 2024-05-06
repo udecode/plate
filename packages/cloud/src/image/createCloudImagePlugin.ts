@@ -1,6 +1,7 @@
-import { createPluginFactory, Value } from '@udecode/plate-common';
+import { type Value, createPluginFactory } from '@udecode/plate-common/server';
 
-import { CloudImagePlugin, PlateCloudImageEditor } from './types';
+import type { CloudImagePlugin, PlateCloudImageEditor } from './types';
+
 import { withCloudImage } from './withCloudImage';
 
 export const ELEMENT_CLOUD_IMAGE = 'cloud_image';
@@ -10,8 +11,8 @@ export const createCloudImagePlugin = createPluginFactory<
   Value,
   PlateCloudImageEditor
 >({
-  key: ELEMENT_CLOUD_IMAGE,
   isElement: true,
   isVoid: true,
+  key: ELEMENT_CLOUD_IMAGE,
   withOverrides: withCloudImage,
 });

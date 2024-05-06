@@ -8,7 +8,7 @@ export default function EditorDisabled() {
   return (
     <div className="mt-[72px] p-10">
       <Plate>
-        <Editor placeholder="Type your message here." disabled />
+        <Editor disabled placeholder="Type your message here." />
       </Plate>
     </div>
   );

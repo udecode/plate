@@ -10,12 +10,16 @@ export function copyWithout(obj: any, w: string | string[]): any {
   if (typeof w === 'string') {
     w = [w];
   }
+
   const r: any = {};
+
   for (const key in obj) {
     const y = obj[key];
+
     if (!Array.from(w).includes(key)) {
       r[key] = y;
     }
   }
+
   return r;
 }

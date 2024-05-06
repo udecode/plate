@@ -1,16 +1,12 @@
-/**
- * Merge props by composing handlers.
- */
+/** Merge props by composing handlers. */
 export const mergeProps = <T>(
   props?: T,
   overrideProps?: T,
   {
     handlerKeys,
-    handlerQuery = (key) => key.indexOf('on') === 0,
+    handlerQuery = (key) => key.startsWith('on'),
   }: {
-    /**
-     * The keys of the handlers to merge.
-     */
+    /** The keys of the handlers to merge. */
     handlerKeys?: string[];
     /**
      * A function that returns true if it's a handler to merge.
@@ -20,7 +16,7 @@ export const mergeProps = <T>(
     handlerQuery?: ((key: string) => boolean) | null;
   } = {}
 ): T => {
-  const map = new Map<string, Array<(...args: unknown[]) => void>>();
+  const map = new Map<string, ((...args: unknown[]) => void)[]>();
 
   const acc: any = {};
 

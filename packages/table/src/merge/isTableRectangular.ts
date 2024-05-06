@@ -1,11 +1,17 @@
+import type {
+  TTableCellElement,
+  TTableElement,
+  TTableRowElement,
+} from '../types';
+
 import { getColSpan } from '../queries';
 import { getRowSpan } from '../queries/getRowSpan';
-import { TTableCellElement, TTableElement, TTableRowElement } from '../types';
 
 const allEqual = (arr: number[]) => arr.every((val) => val === arr[0]);
 
 /**
- * Checks if the given table is rectangular, meaning all rows have the same effective number of cells, considering colspan and rowspan.
+ * Checks if the given table is rectangular, meaning all rows have the same
+ * effective number of cells, considering colspan and rowspan.
  */
 export const isTableRectangular = (table?: TTableElement) => {
   const arr: number[] = [];
@@ -21,6 +27,7 @@ export const isTableRectangular = (table?: TTableElement) => {
         if (!arr[rI + i]) {
           arr[rI + i] = 0;
         }
+
         arr[rI + i] += getColSpan(cellElem);
       });
     });

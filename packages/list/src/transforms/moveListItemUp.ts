@@ -1,16 +1,16 @@
 import {
+  type PlateEditor,
+  type TElement,
+  type TElementEntry,
+  type Value,
   getAboveNode,
   getNode,
   getPluginType,
   insertElements,
   isLastChild,
   moveNodes,
-  PlateEditor,
-  TElement,
-  TElementEntry,
-  Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
 import { ELEMENT_LI } from '../createListPlugin';
@@ -23,9 +23,7 @@ export interface MoveListItemUpOptions {
   listItem: TElementEntry;
 }
 
-/**
- * Move a list item up.
- */
+/** Move a list item up. */
 export const moveListItemUp = <V extends Value>(
   editor: PlateEditor<V>,
   { list, listItem }: MoveListItemUpOptions
@@ -38,8 +36,10 @@ export const moveListItemUp = <V extends Value>(
       at: listPath,
       match: { type: getPluginType(editor, ELEMENT_LI) },
     });
+
     if (!liParent) {
       let toListPath;
+
       try {
         toListPath = Path.next(listPath);
       } catch (error) {
@@ -54,15 +54,15 @@ export const moveListItemUp = <V extends Value>(
         insertElements(
           editor,
           {
-            type: listNode.type,
             children: [],
+            type: listNode.type,
           },
           { at: toListPath }
         );
       }
-
       if (condA) {
         const toListNode = getNode<TElement>(editor, toListPath);
+
         if (!toListNode) return;
 
         // Move li sub-lis to the new list
@@ -71,18 +71,18 @@ export const moveListItemUp = <V extends Value>(
           toList: [toListNode, toListPath],
         });
       }
-
       // If there is siblings li, move them to the new list
       if (condB) {
         const toListNode = getNode<TElement>(editor, toListPath);
+
         if (!toListNode) return;
 
         // Move next lis to the new list
         moveListItemsToList(editor, {
+          deleteFromList: false,
           fromList: list,
           fromStartIndex: liPath.at(-1)! + 1,
           toList: [toListNode, toListPath],
-          deleteFromList: false,
         });
       }
 
@@ -91,6 +91,7 @@ export const moveListItemUp = <V extends Value>(
 
       return true;
     }
+
     const [, liParentPath] = liParent;
 
     const toListPath = liPath.concat([1]);
@@ -102,22 +103,23 @@ export const moveListItemUp = <V extends Value>(
         insertElements(
           editor,
           {
-            type: listNode.type,
             children: [],
+            type: listNode.type,
           },
           { at: toListPath }
         );
       }
 
       const toListNode = getNode<TElement>(editor, toListPath);
+
       if (!toListNode) return;
 
       // Move next siblings to li sublist.
       moveListItemsToList(editor, {
-        fromListItem: liParent,
-        toList: [toListNode, toListPath],
-        fromStartIndex: liPath.at(-1)! + 1,
         deleteFromList: false,
+        fromListItem: liParent,
+        fromStartIndex: liPath.at(-1)! + 1,
+        toList: [toListNode, toListPath],
       });
     }
 

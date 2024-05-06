@@ -1,7 +1,12 @@
-import { PlateEditor, Value, WithPlatePlugin } from '@udecode/plate-common';
+import type {
+  PlateEditor,
+  Value,
+  WithPlatePlugin,
+} from '@udecode/plate-common/server';
+
+import type { TodoListPlugin } from './types';
 
 import { insertBreakTodoList } from './insertBreakTodoList';
-import { TodoListPlugin } from './types';
 
 export const withTodoList = <
   V extends Value = Value,
@@ -14,6 +19,7 @@ export const withTodoList = <
 
   editor.insertBreak = () => {
     if (insertBreakTodoList(editor, options)) return;
+
     insertBreak();
   };
 

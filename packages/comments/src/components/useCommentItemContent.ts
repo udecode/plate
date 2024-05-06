@@ -1,9 +1,9 @@
 import {
   useComment,
   useCommentSelectors,
-  useCommentsSelectors,
   useCommentText,
   useCommentUser,
+  useCommentsSelectors,
 } from '..';
 
 export const useCommentItemContentState = () => {
@@ -18,11 +18,11 @@ export const useCommentItemContentState = () => {
 
   return {
     comment,
-    isReplyComment,
     commentText,
-    user,
-    myUserId,
     editingValue,
     isMyComment,
+    isReplyComment,
+    myUserId,
+    user,
   };
 };
