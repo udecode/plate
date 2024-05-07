@@ -1,5 +1,5 @@
 import {
-  // onKeyDownToggleElement,
+  onKeyDownToggleElement,
   type PlatePlugin,
   createPluginFactory,
 } from '@udecode/plate-common/server';
@@ -33,7 +33,7 @@ export const createHeadingPlugin = createPluginFactory<HeadingsPlugin>({
           ],
         },
         handlers: {
-          // onKeyDown: onKeyDownToggleElement,
+          onKeyDown: onKeyDownToggleElement,
         },
         isElement: true,
         key,
