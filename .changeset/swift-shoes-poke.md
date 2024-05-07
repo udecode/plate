@@ -2,4 +2,4 @@
 "@udecode/plate-heading": patch
 ---
 
-Restore hotkeys for heading
+Fix regression: heading hotkeys
