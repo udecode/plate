@@ -24,15 +24,14 @@ jobs:
           git config user.email '<>'
           PUSH_BRANCH=main
           PUSH_FORCE=''
+          git fetch $DOWNSTREAM main
+          git checkout $DOWNSTREAM/main -- yarn.lock  # Checkout yarn.lock from downstream before merging
           git pull --no-rebase --no-edit $DOWNSTREAM main || {
             # Got merge conflicts, so fall back to upstream branch
             git merge --abort
             PUSH_BRANCH=upstream
             PUSH_FORCE=--force
           }
-          git checkout --theirs yarn.lock  # Discard local changes to yarn.lock
-          git add .
-          git commit -m "Automatic commit: Discard local changes to yarn.lock"
           git push $DOWNSTREAM HEAD:$PUSH_BRANCH $PUSH_FORCE
         env:
           DOWNSTREAM: https://${{secrets.DOWNSTREAM_REPO_GITHUB_CREDENTIALS}}@github.com/plate-pro/plate-pro.git
