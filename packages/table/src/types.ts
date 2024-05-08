@@ -3,7 +3,7 @@ import type {
   TDescendant,
   TElement,
   Value,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import type { Path } from 'slate';
 
 export interface TablePlugin<V extends Value = Value> {
