@@ -5,7 +5,7 @@
 ### Major Changes
 
 - [#3125](https://github.com/udecode/plate/pull/3125) by [@zbeyens](https://github.com/zbeyens) –
-  - `serializeMd`: remove `nodes` option. `editor.children` is now serialized.
+  - `serializeMd`: remove `nodes` option. `editor.children` is now serialized
 
 # 32.0.0
 
