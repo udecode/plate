@@ -30,6 +30,9 @@ jobs:
             PUSH_BRANCH=upstream
             PUSH_FORCE=--force
           }
+          git checkout --theirs yarn.lock  # Discard local changes to yarn.lock
+          git add .
+          git commit -m "Automatic commit: Discard local changes to yarn.lock"
           git push $DOWNSTREAM HEAD:$PUSH_BRANCH $PUSH_FORCE
         env:
           DOWNSTREAM: https://${{secrets.DOWNSTREAM_REPO_GITHUB_CREDENTIALS}}@github.com/plate-pro/plate-pro.git
