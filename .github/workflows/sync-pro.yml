@@ -32,11 +32,11 @@ jobs:
           }
           git push $DOWNSTREAM HEAD:$PUSH_BRANCH $PUSH_FORCE
         env:
-          DOWNSTREAM: https://${{secrets.DOWNSTREAM_REPO_GITHUB_CREDENTIALS}}@github.com/udecode/plate-pro.git
+          DOWNSTREAM: https://${{secrets.DOWNSTREAM_REPO_GITHUB_CREDENTIALS}}@github.com/plate-pro/plate-pro.git
 
   # Open a PR if a branch called 'upstream' recieves commits on downstream
   upstream_pr:
-    if: ${{ github.repository == 'udecode/plate-pro' && contains('refs/heads/upstream',github.ref)}}
+    if: ${{ github.repository == 'plate-pro/plate-pro' && contains('refs/heads/upstream',github.ref)}}
     name: Upstream PR
     runs-on: ubuntu-latest
     steps:
