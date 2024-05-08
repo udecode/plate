@@ -4,7 +4,7 @@
  */
 
 /* eslint-disable no-restricted-syntax */
-import type { TText } from '@udecode/plate-common/server';
+import type { TText } from '@udecode/plate-common';
 
 // Get object that will set the properties of before
 // to equal the properties of node, in terms of the

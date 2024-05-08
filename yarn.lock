@@ -6260,12 +6260,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-csv@npm:32.0.0, @udecode/plate-serializer-csv@workspace:^, @udecode/plate-serializer-csv@workspace:packages/serializer-csv":
+"@udecode/plate-serializer-csv@npm:32.0.2, @udecode/plate-serializer-csv@workspace:^, @udecode/plate-serializer-csv@workspace:packages/serializer-csv":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-csv@workspace:packages/serializer-csv"
   dependencies:
     "@types/papaparse": "npm:^5.3.14"
     "@udecode/plate-common": "workspace:^"
+    "@udecode/plate-table": "npm:32.0.2"
     papaparse: "npm:^5.4.1"
   peerDependencies:
     "@udecode/plate-common": ">=32.0.1"
@@ -6278,11 +6279,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-docx@npm:32.0.1, @udecode/plate-serializer-docx@workspace:^, @udecode/plate-serializer-docx@workspace:packages/serializer-docx":
+"@udecode/plate-serializer-docx@npm:32.0.2, @udecode/plate-serializer-docx@workspace:^, @udecode/plate-serializer-docx@workspace:packages/serializer-docx":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-docx@workspace:packages/serializer-docx"
   dependencies:
     "@udecode/plate-common": "workspace:^"
+    "@udecode/plate-heading": "npm:32.0.0"
+    "@udecode/plate-indent": "npm:32.0.0"
+    "@udecode/plate-indent-list": "npm:32.0.1"
+    "@udecode/plate-media": "npm:32.0.0"
+    "@udecode/plate-paragraph": "npm:32.0.0"
+    "@udecode/plate-table": "npm:32.0.2"
     validator: "npm:^13.11.0"
   peerDependencies:
     "@udecode/plate-common": ">=32.0.1"
@@ -6384,7 +6391,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-table@npm:32.0.0, @udecode/plate-table@workspace:^, @udecode/plate-table@workspace:packages/table":
+"@udecode/plate-table@npm:32.0.2, @udecode/plate-table@workspace:^, @udecode/plate-table@workspace:packages/table":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-table@workspace:packages/table"
   dependencies:
@@ -6552,13 +6559,13 @@ __metadata:
     "@udecode/plate-reset-node": "npm:32.0.0"
     "@udecode/plate-resizable": "npm:32.0.0"
     "@udecode/plate-select": "npm:32.0.0"
-    "@udecode/plate-serializer-csv": "npm:32.0.0"
-    "@udecode/plate-serializer-docx": "npm:32.0.1"
+    "@udecode/plate-serializer-csv": "npm:32.0.2"
+    "@udecode/plate-serializer-docx": "npm:32.0.2"
     "@udecode/plate-serializer-html": "npm:32.0.0"
     "@udecode/plate-serializer-md": "npm:32.0.0"
     "@udecode/plate-suggestion": "npm:32.0.0"
     "@udecode/plate-tabbable": "npm:32.0.0"
-    "@udecode/plate-table": "npm:32.0.0"
+    "@udecode/plate-table": "npm:32.0.2"
     "@udecode/plate-toggle": "npm:32.0.0"
     "@udecode/plate-trailing-block": "npm:32.0.0"
   peerDependencies:
@@ -18803,17 +18810,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"slate@npm:0.102.0":
-  version: 0.102.0
-  resolution: "slate@npm:0.102.0"
-  dependencies:
-    immer: "npm:^10.0.3"
-    is-plain-object: "npm:^5.0.0"
-    tiny-warning: "npm:^1.0.3"
-  checksum: 10c0/cce8271c36228c16b2512ce48b1aac6a00b33aa24771ee925d6eed4c20d19b82a45125f70be161f3d51fc887b7a8f560885a1c438d71abf0acd13a3d42a87a03
-  languageName: node
-  linkType: hard
-
 "slate@npm:0.103.0":
   version: 0.103.0
   resolution: "slate@npm:0.103.0"
@@ -21692,7 +21688,7 @@ __metadata:
     rimraf: "npm:^5.0.5"
     sass: "npm:^1.72.0"
     shiki: "npm:^0.12.1"
-    slate: "npm:0.102.0"
+    slate: "npm:0.103.0"
     slate-history: "npm:0.100.0"
     slate-hyperscript: "npm:0.100.0"
     slate-react: "npm:0.102.0"
