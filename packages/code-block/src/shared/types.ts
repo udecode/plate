@@ -3,7 +3,7 @@ import type {
   InsertNodesOptions,
   TElement,
   Value,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 export interface CodeBlockPlugin extends HotkeyPlugin {
   deserializers?: string[];
