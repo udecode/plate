@@ -4,6 +4,8 @@ import { withHistory } from 'slate-history';
 
 import { createPluginFactory } from '../utils/createPluginFactory';
 
+export const KEY_HISTORY = 'history';
+
 export const withTHistory = <
   V extends Value = Value,
   E extends TEditor<V> = TEditor<V>,
@@ -14,6 +16,6 @@ export const withTHistory = <
 
 /** @see {@link withHistory} */
 export const createHistoryPlugin = createPluginFactory({
-  key: 'history',
+  key: KEY_HISTORY,
   withOverrides: withTHistory,
 });
