@@ -6,11 +6,11 @@ export interface RemoveEmptyNodesPlugin {
   types?: string | string[];
 }
 
-export const REMOVE_EMPTY_NODES_KEY = 'removeEmptyNodes'
+export const KEY_REMOVE_EMPTY_NODES = 'removeEmptyNodes'
 
 /** @see {@link withRemoveEmptyNodes} */
 export const createRemoveEmptyNodesPlugin =
   createPluginFactory<RemoveEmptyNodesPlugin>({
-    key: REMOVE_EMPTY_NODES_KEY,
+    key: KEY_REMOVE_EMPTY_NODES,
     withOverrides: withRemoveEmptyNodes,
   });
