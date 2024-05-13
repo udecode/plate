@@ -10,7 +10,7 @@ import type { ListPlugin } from './types';
 import { onKeyDownList } from './onKeyDownList';
 import { withList } from './withList';
 
-export const LIST_PLUGIN_KEY = 'list';
+export const LIST_KEY = 'list';
 
 export const ELEMENT_UL = 'ul';
 
@@ -22,7 +22,7 @@ export const ELEMENT_LIC = 'lic';
 
 /** Enables support for bulleted, numbered and to-do lists. */
 export const createListPlugin = createPluginFactory({
-  key: LIST_PLUGIN_KEY,
+  key: LIST_KEY,
   plugins: [
     {
       deserializeHtml: {

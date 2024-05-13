@@ -4,7 +4,7 @@ import { createPluginFactory } from '@udecode/plate-common/server';
 import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 
-export const BASIC_ELEMENTS_PLUGIN_KEY = 'basicElements';
+export const BASIC_ELEMENTS_KEY = 'basicElements';
 
 /**
  * Enables support for basic elements:
@@ -15,7 +15,7 @@ export const BASIC_ELEMENTS_PLUGIN_KEY = 'basicElements';
  * - Paragraph
  */
 export const createBasicElementsPlugin = createPluginFactory({
-  key: BASIC_ELEMENTS_PLUGIN_KEY,
+  key: BASIC_ELEMENTS_KEY,
   plugins: [
     createBlockquotePlugin(),
     createCodeBlockPlugin(),
