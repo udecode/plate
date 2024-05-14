@@ -1,4 +1,4 @@
-import type { ApplyDeepToNodesOptions } from '@udecode/plate-core/server';
+import type { ApplyDeepToNodesOptions } from '@udecode/plate-core';
 import type { TNode } from '@udecode/slate';
 
 import { applyDeepToNodes } from '@udecode/plate-core/server';
