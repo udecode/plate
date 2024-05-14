@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { PlateRenderLeafProps } from '@udecode/plate-core/server';
+import type { PlateRenderLeafProps } from '@udecode/plate-core';
 import type { EText, TText, Value } from '@udecode/slate';
 
 import { Text, type TextProps, useComposedRef } from '@udecode/react-utils';
