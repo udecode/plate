@@ -1,5 +1,11 @@
 # @udecode/plate-link
 
+## 33.0.5
+
+### Patch Changes
+
+- [#3204](https://github.com/udecode/plate/pull/3204) by [@jijiseong](https://github.com/jijiseong) – Fix zIndex of floating link
+
 ## 33.0.3
 
 ## 33.0.2
