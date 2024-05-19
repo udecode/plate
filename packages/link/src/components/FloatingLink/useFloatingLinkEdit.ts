@@ -135,7 +135,7 @@ export const useFloatingLinkEdit = ({
     props: {
       style: {
         ...floating.style,
-        zIndex: 1,
+        zIndex: 30,
       },
     },
     ref: floating.refs.setFloating,
