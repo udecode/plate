@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate",
-  "version": "33.0.5",
+  "version": "33.0.6",
   "description": "Plate – a plugin system for slate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -42,7 +42,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-alignment": "33.0.0",
+    "@udecode/plate-alignment": "33.0.6",
     "@udecode/plate-autoformat": "33.0.0",
     "@udecode/plate-basic-elements": "33.0.3",
     "@udecode/plate-basic-marks": "33.0.3",
