@@ -1,5 +1,3 @@
-import type { Location } from 'slate';
-
 import {
   focusEditor,
   getNodeEntries,
@@ -15,7 +13,6 @@ export const useAlignDropdownMenuState = () => {
   const value: Alignment = useEditorSelector((editor) => {
     let commonAlignment: string | undefined;
     const codeBlockEntries = getNodeEntries(editor, {
-      at: editor.selection as Location,
       match: (n) => isBlock(editor, n),
     });
     const nodes = Array.from(codeBlockEntries);
