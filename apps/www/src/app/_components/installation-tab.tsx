@@ -127,7 +127,7 @@ export default function InstallationTab() {
           },
           new Set<string>()
         )
-      ).join(' ')}${isManual && ' tooltip'}`,
+      ).join(' ')}${isManual ? ' tooltip' : ''}`,
       plugins: `npm install ${Array.from(
         plugins.reduce((uniquePackages, { npmPackage }) => {
           if (npmPackage) {

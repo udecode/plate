@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate",
-  "version": "33.0.4",
+  "version": "33.0.6",
   "description": "Plate – a plugin system for slate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -42,7 +42,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-alignment": "33.0.0",
+    "@udecode/plate-alignment": "33.0.6",
     "@udecode/plate-autoformat": "33.0.0",
     "@udecode/plate-basic-elements": "33.0.3",
     "@udecode/plate-basic-marks": "33.0.3",
@@ -63,7 +63,7 @@
     "@udecode/plate-indent-list": "33.0.3",
     "@udecode/plate-kbd": "33.0.0",
     "@udecode/plate-line-height": "33.0.0",
-    "@udecode/plate-link": "33.0.3",
+    "@udecode/plate-link": "33.0.5",
     "@udecode/plate-list": "33.0.3",
     "@udecode/plate-media": "33.0.2",
     "@udecode/plate-mention": "33.0.0",
