@@ -5548,7 +5548,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-alignment@npm:33.0.0, @udecode/plate-alignment@workspace:^, @udecode/plate-alignment@workspace:packages/alignment":
+"@udecode/plate-alignment@npm:33.0.6, @udecode/plate-alignment@workspace:^, @udecode/plate-alignment@workspace:packages/alignment":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-alignment@workspace:packages/alignment"
   dependencies:
@@ -6528,7 +6528,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate@workspace:packages/plate"
   dependencies:
-    "@udecode/plate-alignment": "npm:33.0.0"
+    "@udecode/plate-alignment": "npm:33.0.6"
     "@udecode/plate-autoformat": "npm:33.0.0"
     "@udecode/plate-basic-elements": "npm:33.0.3"
     "@udecode/plate-basic-marks": "npm:33.0.3"
