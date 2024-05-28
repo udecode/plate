@@ -19,5 +19,9 @@ export function PlateEffects<
 >({ children, ...props }: PlateEffectsProps<V, E>) {
   usePlateEffects<V, E>(props);
 
-  return <>{children}</>;
+  return (
+    <div data-id={props.id} id="plate-editor">
+      {children}
+    </div>
+  );
 }

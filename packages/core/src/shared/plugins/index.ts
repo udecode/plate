@@ -10,5 +10,6 @@ export * from './createInsertDataPlugin';
 export * from './createLengthPlugin';
 export * from './createNodeFactoryPlugin';
 export * from './createPrevSelectionPlugin';
+export * from './createQueryCacheToState';
 export * from './event-editor/index';
 export * from './html-deserializer/index';

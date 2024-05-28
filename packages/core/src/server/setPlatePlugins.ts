@@ -15,6 +15,7 @@ import {
   KEY_LENGTH,
   KEY_NODE_FACTORY,
   KEY_PREV_SELECTION,
+  KEY_QUERY_CACHE_TO_STATE,
   createDeserializeAstPlugin,
   createDeserializeHtmlPlugin,
   createEditorProtocolPlugin,
@@ -25,6 +26,7 @@ import {
   createLengthPlugin,
   createNodeFactoryPlugin,
   createPrevSelectionPlugin,
+  createQueryCachToStatePlugin,
 } from '../shared/plugins';
 import { flattenDeepPlugins } from '../shared/utils/flattenDeepPlugins';
 import { overridePluginsByKey } from '../shared/utils/overridePluginsByKey';
@@ -110,6 +112,12 @@ export const setPlatePlugins = <
       plugins.push(
         (editor?.pluginsByKey?.[KEY_EDITOR_PROTOCOL] as any) ??
           createEditorProtocolPlugin()
+      );
+    }
+    if (typeof dcp !== 'object' || !dcp?.queryCachToState) {
+      plugins.push(
+        (editor?.pluginsByKey?.[KEY_QUERY_CACHE_TO_STATE] as any) ??
+          createQueryCachToStatePlugin()
       );
     }
   }

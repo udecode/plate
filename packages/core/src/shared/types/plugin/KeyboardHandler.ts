@@ -14,3 +14,5 @@ export type KeyboardHandler<
 
 export type KeyboardHandlerReturnType =
   DOMHandlerReturnType<React.KeyboardEvent>;
+
+export type MouseHandlerReturnType = DOMHandlerReturnType<React.MouseEvent>;
