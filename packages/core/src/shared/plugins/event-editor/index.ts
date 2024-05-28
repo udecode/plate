@@ -5,3 +5,5 @@ export * from './createEventEditorPlugin';
 export * from './eventEditorStore';
 
 export * from './getEventPlateId';
+
+export * from './useFocusEditorEvents';
