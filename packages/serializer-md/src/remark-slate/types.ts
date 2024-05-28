@@ -8,6 +8,7 @@ export type MdastElementType =
   | 'blockquote'
   | 'code'
   | 'heading'
+  | 'html'
   | 'image'
   | 'link'
   | 'list'

@@ -49,6 +49,15 @@ export const remarkDefaultElementRules: RemarkElementRules<Value> = {
       };
     },
   },
+  html: {
+    transform: (node, options) => {
+      return {
+        // eslint-disable-next-line regexp/no-unused-capturing-group
+        children: [{ text: node.value?.replace(/(<br>)|(<br\/>)/g, '') || '' }],
+        type: getPluginType(options.editor, 'p'),
+      };
+    },
+  },
   image: {
     transform: (node, options) => ({
       caption: [{ text: node.alt } as TText],
