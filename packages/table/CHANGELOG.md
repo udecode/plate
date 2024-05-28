@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 33.0.7
+
+### Patch Changes
+
+- [#3222](https://github.com/udecode/plate/pull/3222) by [@dimaanj](https://github.com/dimaanj) – fix serializeHtml when overwriteByKey used
+
 ## 33.0.2
 
 ### Patch Changes
