@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import type { Value } from '@udecode/plate-common';
+import type { Value } from '@udecode/slate';
 
 import type { PlateEditor } from '../../types';
 
