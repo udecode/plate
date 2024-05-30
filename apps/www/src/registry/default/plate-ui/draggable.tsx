@@ -18,7 +18,7 @@ import {
 
 import { Icons } from '@/components/icons';
 
-import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
+import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from './tooltip';
 
 export interface DraggableProps
   extends PlateElementProps,
@@ -70,10 +70,12 @@ export interface DraggableProps
 
 const dragHandle = (
   <Tooltip>
-    <TooltipTrigger>
+    <TooltipTrigger type="button">
       <Icons.dragHandle className="size-4 text-muted-foreground" />
     </TooltipTrigger>
-    <TooltipContent>Drag to move</TooltipContent>
+    <TooltipPortal>
+      <TooltipContent>Drag to move</TooltipContent>
+    </TooltipPortal>
   </Tooltip>
 );
 
