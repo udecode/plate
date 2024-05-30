@@ -294,7 +294,7 @@ describe('deserializeMd', () => {
       <fragment>
         <hp>
           <htext>Line 1</htext>
-          <htext>{'<br>'}</htext>
+          <htext>{'\n'}</htext>
           <htext>Line 2</htext>
         </hp>
       </fragment>
