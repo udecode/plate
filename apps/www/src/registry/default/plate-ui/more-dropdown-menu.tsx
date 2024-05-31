@@ -35,8 +35,8 @@ export function MoreDropdownMenu(props: DropdownMenuProps) {
         <DropdownMenuItem
           onSelect={() => {
             toggleMark(editor, {
-              clear: MARK_SUPERSCRIPT,
-              key: MARK_SUBSCRIPT,
+              key: MARK_SUPERSCRIPT,
+               clear: [MARK_SUPERSCRIPT, MARK_SUBSCRIPT],
             });
             focusEditor(editor);
           }}
@@ -49,7 +49,7 @@ export function MoreDropdownMenu(props: DropdownMenuProps) {
           onSelect={() => {
             toggleMark(editor, {
               clear: MARK_SUBSCRIPT,
-              key: MARK_SUPERSCRIPT,
+              clear: [MARK_SUPERSCRIPT, MARK_SUBSCRIPT],
             });
             focusEditor(editor);
           }}
