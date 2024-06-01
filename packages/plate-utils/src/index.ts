@@ -14,4 +14,5 @@ export * from './selectEditor';
 export * from './useMarkToolbarButton';
 export * from './usePlaceholder';
 export * from './useRemoveNodeButton';
+export * from './useFormInputProps';
 export * from './types/index';

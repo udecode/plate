@@ -16,6 +16,7 @@ import {
   useFloatingLinkInsert,
   useFloatingLinkInsertState,
 } from '@udecode/plate-link';
+import { useFormInputProps } from '@udecode/plate-utils';
 
 import { Icons } from '@/components/icons';
 
@@ -37,9 +38,15 @@ const floatingOptions: UseVirtualFloatingOptions = {
 
 export interface LinkFloatingToolbarProps {
   state?: LinkFloatingToolbarState;
+  preventDefaultOnEnterKeydown?: boolean;
+  onKeyDownCaptureCallback?: (e: React.KeyboardEvent<HTMLDivElement>) => void;
 }
 
-export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
+export function LinkFloatingToolbar({
+  state,
+  preventDefaultOnEnterKeydown,
+  onKeyDownCaptureCallback,
+}: LinkFloatingToolbarProps) {
   const insertState = useFloatingLinkInsertState({
     ...state,
     floatingOptions: {
@@ -67,26 +74,24 @@ export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
     editButtonProps,
     unlinkButtonProps,
   } = useFloatingLinkEdit(editState);
+  const inputProps = useFormInputProps({
+    preventDefaultOnEnterKeydown,
+    onKeyDownCaptureCallback,
+  });
 
   if (hidden) return null;
 
   const input = (
-    <div
-      className="flex w-[330px] flex-col"
-      onKeyDownCapture={(e) => {
-        if (e.key === "Enter" || e.keyCode === 13) {
-          e.preventDefault();
-        }
-      }}
-    >
+    <div className="flex w-[330px] flex-col">
       <div className="flex items-center">
         <div className="flex items-center pl-3 text-muted-foreground">
           <Icons.link className="size-4" />
         </div>
 
         <FloatingLinkUrlInput
-          className={inputVariants({ variant: "ghost", h: "sm" })}
+          className={inputVariants({ variant: 'ghost', h: 'sm' })}
           placeholder="Paste link"
+          {...inputProps}
         />
       </div>
       <Separator />
@@ -95,7 +100,7 @@ export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
           <Icons.text className="size-4" />
         </div>
         <input
-          className={inputVariants({ variant: "ghost", h: "sm" })}
+          className={inputVariants({ variant: 'ghost', h: 'sm' })}
           placeholder="Text to display"
           {...textInputProps}
         />
