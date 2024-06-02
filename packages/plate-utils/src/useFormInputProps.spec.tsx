@@ -19,19 +19,6 @@ describe('useFormInputProps', () => {
     expect(output.props.onKeyDownCapture instanceof Function).toBe(true);
   });
 
-  it('will call the user provided onKeyDownCaptureCallback and pass it the original event when the returned event handler is executes', () => {
-    const userCallback = jest.fn();
-    const output = useFormInputProps({
-      preventDefaultOnEnterKeydown: true,
-      onKeyDownCaptureCallback: userCallback,
-    });
-    const fakeEvent = {} as any;
-    // call the event handler
-    output.props?.onKeyDownCapture?.(fakeEvent);
-    expect(userCallback).toHaveBeenCalledTimes(1);
-    expect(userCallback).toHaveBeenCalledWith(fakeEvent);
-  });
-
   it('will call event.preventDefault if the key is enter, and only if the key is enter', () => {
     // Define mock for preventdefault
     const preventDefaultMock = jest.fn();

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { cn } from '@udecode/cn';
+import { useFormInputProps } from '@udecode/plate-common';
 import {
   flip,
   offset,
@@ -16,7 +17,6 @@ import {
   useFloatingLinkInsert,
   useFloatingLinkInsertState,
 } from '@udecode/plate-link';
-import { useFormInputProps } from '@udecode/plate-utils';
 
 import { Icons } from '@/components/icons';
 
@@ -38,15 +38,9 @@ const floatingOptions: UseVirtualFloatingOptions = {
 
 export interface LinkFloatingToolbarProps {
   state?: LinkFloatingToolbarState;
-  preventDefaultOnEnterKeydown?: boolean;
-  onKeyDownCaptureCallback?: (e: React.KeyboardEvent<HTMLDivElement>) => void;
 }
 
-export function LinkFloatingToolbar({
-  state,
-  preventDefaultOnEnterKeydown,
-  onKeyDownCaptureCallback,
-}: LinkFloatingToolbarProps) {
+export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
   const insertState = useFloatingLinkInsertState({
     ...state,
     floatingOptions: {
@@ -75,8 +69,7 @@ export function LinkFloatingToolbar({
     unlinkButtonProps,
   } = useFloatingLinkEdit(editState);
   const inputProps = useFormInputProps({
-    preventDefaultOnEnterKeydown,
-    onKeyDownCaptureCallback,
+    preventDefaultOnEnterKeydown: true,
   });
 
   if (hidden) return null;

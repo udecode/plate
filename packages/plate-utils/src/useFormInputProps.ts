@@ -4,13 +4,6 @@ interface InputProps {
    * the user presses enter?
    */
   preventDefaultOnEnterKeydown?: boolean;
-  /**
-   * A user provided callback which will be called after event.preventDefault
-   *
-   * @param e The original event
-   * @returns nothing
-   */
-  onKeyDownCaptureCallback?: (e: React.KeyboardEvent<HTMLDivElement>) => void;
 }
 
 /**
@@ -26,7 +19,7 @@ export const useFormInputProps = (options?: InputProps) => {
   if (!options) return { props: {} };
 
   // Destructure our options so we can use them
-  const { preventDefaultOnEnterKeydown, onKeyDownCaptureCallback } = options;
+  const { preventDefaultOnEnterKeydown } = options;
 
   /**
    * Handle the keydown capture event and prevent the default behaviour when the
@@ -41,27 +34,22 @@ export const useFormInputProps = (options?: InputProps) => {
    * allowing the user to continue filling in the other fields
    *
    * @param e The original event which was provided by the VDOM
-   * @param userProvidedCallback A user provided callback which will allow them to
    * implement their own behaviour on this event
    */
   const handleEnterKeydownCapture = (
-    e: React.KeyboardEvent<HTMLDivElement>,
-    userProvidedCallback?: (e: React.KeyboardEvent<HTMLDivElement>) => void
+    e: React.KeyboardEvent<HTMLDivElement>
   ) => {
     // Prevent the form from submitting
     if (e.key === 'Enter' || e.keyCode === 13) {
       e.preventDefault();
     }
-
-    // Call the user provided callback, if it exists and provide them with the
-    // original event object
-    userProvidedCallback?.(e);
   };
+
   return {
     props: {
       onKeyDownCapture: preventDefaultOnEnterKeydown
         ? (e: React.KeyboardEvent<HTMLDivElement>) =>
-            handleEnterKeydownCapture(e, onKeyDownCaptureCallback)
+            handleEnterKeydownCapture(e)
         : undefined,
     },
   };
