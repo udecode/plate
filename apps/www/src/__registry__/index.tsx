@@ -368,13 +368,6 @@ export const Index: Record<string, any> = {
       files: ['registry/default/plate-ui/dropdown-menu.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/dropdown-menu')),
     },
-    'emoji-combobox': {
-      name: 'emoji-combobox',
-      type: 'components:plate-ui',
-      registryDependencies: [],
-      files: ['registry/default/plate-ui/emoji-combobox.tsx'],
-      component: React.lazy(() => import('@/registry/default/plate-ui/emoji-combobox')),
-    },
     'excalidraw-element': {
       name: 'excalidraw-element',
       type: 'components:plate-ui',

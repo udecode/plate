@@ -105,7 +105,6 @@ import { autoformatIndentLists } from '@/plate/demo/plugins/autoformatIndentList
 import { autoformatLists } from '@/plate/demo/plugins/autoformatLists';
 import { autoformatRules } from '@/plate/demo/plugins/autoformatRules';
 import { dragOverCursorPlugin } from '@/plate/demo/plugins/dragOverCursorPlugin';
-import { emojiPlugin } from '@/plate/demo/plugins/emojiPlugin';
 import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
 import { forcedLayoutPlugin } from '@/plate/demo/plugins/forcedLayoutPlugin';
 import { lineHeightPlugin } from '@/plate/demo/plugins/lineHeightPlugin';
@@ -282,7 +281,7 @@ export const usePlaygroundPlugins = ({
             enabled: !!enabled.dnd,
             options: { enableScroller: true },
           }),
-          createEmojiPlugin({ ...emojiPlugin, enabled: !!enabled.emoji }),
+          createEmojiPlugin({ enabled: !!enabled.emoji }),
           createExitBreakPlugin({
             ...exitBreakPlugin,
             enabled: !!enabled.exitBreak,

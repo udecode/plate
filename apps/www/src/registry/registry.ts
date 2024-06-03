@@ -223,13 +223,6 @@ const ui: Registry = [
   },
 
   {
-    dependencies: ['@udecode/plate-combobox'],
-    files: ['plate-ui/emoji-combobox.tsx'],
-    name: 'emoji-combobox',
-    registryDependencies: [],
-    type: 'components:plate-ui',
-  },
-  {
     dependencies: ['@udecode/plate-excalidraw'],
     files: ['plate-ui/excalidraw-element.tsx'],
     name: 'excalidraw-element',

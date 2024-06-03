@@ -69,7 +69,6 @@ export const docsConfig: DocsConfig = {
         customizerComponents.dialog,
         customizerComponents.draggable,
         customizerComponents.dropdownMenu,
-        customizerComponents.emojiCombobox,
         customizerComponents.emojiDropdownMenu,
         customizerComponents.emojiToolbarDropdown,
         customizerComponents.excalidrawElement,

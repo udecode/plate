@@ -312,17 +312,6 @@
     "type": "components:plate-ui"
   },
   {
-    "name": "emoji-combobox",
-    "dependencies": [
-      "@udecode/plate-combobox"
-    ],
-    "registryDependencies": [],
-    "files": [
-      "plate-ui/emoji-combobox.tsx"
-    ],
-    "type": "components:plate-ui"
-  },
-  {
     "name": "excalidraw-element",
     "dependencies": [
       "@udecode/plate-excalidraw"

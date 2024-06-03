@@ -76,10 +76,6 @@ export const customizerComponents = {
     href: '/docs/components/editor',
     title: 'Editor',
   },
-  emojiCombobox: {
-    href: '/docs/components/emoji-combobox',
-    title: 'Emoji Combobox',
-  },
   emojiDropdownMenu: {
     href: '/docs/components/emoji-dropdown-menu',
     title: 'Emoji Dropdown Menu',

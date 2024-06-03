@@ -1,5 +1,6 @@
 export interface FilterWordsOptions {
   prefixMode?: 'all-words' | 'last-word' | 'none';
+  wordBoundary?: RegExp;
   wordQuantifier?: 'match-all' | 'match-any';
 }
 
@@ -8,11 +9,12 @@ export const filterWords = (
   needle: string,
   {
     prefixMode = 'last-word',
+    wordBoundary = /\s+/,
     wordQuantifier = 'match-all',
   }: FilterWordsOptions = {}
 ): boolean => {
-  const haystackWords = haystack.trim().split(/\s+/);
-  const needleWords = needle.trim().split(/\s+/);
+  const haystackWords = haystack.trim().split(wordBoundary);
+  const needleWords = needle.trim().split(wordBoundary);
 
   const quantifier = wordQuantifier === 'match-all' ? 'every' : 'some';
 

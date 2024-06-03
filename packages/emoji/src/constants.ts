@@ -1,7 +1,4 @@
-import type {
-  EmojiTriggeringControllerOptions,
-  FrequentEmojis,
-} from './utils/index';
+import type { FrequentEmojis } from './utils/index';
 
 import {
   EmojiCategory,
@@ -10,17 +7,7 @@ import {
   type i18nProps,
 } from './types';
 
-export const KEY_EMOJI = 'emoji';
-
-export const EMOJI_TRIGGER = ':';
-
 export const EMOJI_MAX_SEARCH_RESULT = 60;
-
-export const emojiTriggeringControllerOptions: EmojiTriggeringControllerOptions =
-  {
-    limitTriggeringChars: 2,
-    trigger: EMOJI_TRIGGER,
-  };
 
 export const defaultCategories: EmojiCategoryList[] = [
   EmojiCategory.People,

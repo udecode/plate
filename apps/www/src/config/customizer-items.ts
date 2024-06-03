@@ -500,13 +500,13 @@ export const customizerItems: Record<string, SettingPlugin> = {
   [KEY_EMOJI]: {
     badges: [customizerBadges.handler],
     components: [
-      {
-        id: 'emoji-combobox',
-        label: 'EmojiCombobox',
-        pluginOptions: [`renderAfterEditable: EmojiCombobox,`],
-        route: customizerComponents.emojiCombobox.href,
-        usage: 'EmojiCombobox',
-      },
+      // {
+      //   id: 'emoji-combobox',
+      //   label: 'EmojiCombobox',
+      //   pluginOptions: [`renderAfterEditable: EmojiCombobox,`],
+      //   route: customizerComponents.emojiCombobox.href,
+      //   usage: 'EmojiCombobox',
+      // },
     ],
     dependencies: [KEY_COMBOBOX],
     id: KEY_EMOJI,

@@ -5,11 +5,10 @@ import React, {
   createContext,
   forwardRef,
   startTransition,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
-  useReducer,
-  useRef,
   useState,
 } from 'react';
 
@@ -20,6 +19,8 @@ import {
   ComboboxPopover,
   ComboboxProvider,
   Portal,
+  useComboboxContext,
+  useComboboxStore,
 } from '@ariakit/react';
 import { cn } from '@udecode/cn';
 import {
@@ -42,7 +43,6 @@ type FilterFn = (
 ) => boolean;
 
 interface InlineComboboxContextValue {
-  dispatchVisible: (action: 'decrement' | 'increment') => void;
   filter: FilterFn | false;
   inputProps: UseComboboxInputResult['props'];
   inputRef: RefObject<HTMLInputElement>;
@@ -50,21 +50,20 @@ interface InlineComboboxContextValue {
   setHasEmpty: (hasEmpty: boolean) => void;
   showTrigger: boolean;
   trigger: string;
-  value: string;
-  visibleCount: number;
 }
 
 const InlineComboboxContext = createContext<InlineComboboxContextValue>(
   null as any
 );
 
-const defaultFilter: FilterFn = ({ keywords = [], value }, search) =>
+export const defaultFilter: FilterFn = ({ keywords = [], value }, search) =>
   [value, ...keywords].some((keyword) => filterWords(keyword, search));
 
 interface InlineComboboxProps {
   children: ReactNode;
   trigger: string;
   filter?: FilterFn | false;
+  hideWhenNoValue?: boolean;
   setValue?: (value: string) => void;
   showTrigger?: boolean;
   value?: string;
@@ -73,6 +72,7 @@ interface InlineComboboxProps {
 const InlineCombobox = ({
   children,
   filter = defaultFilter,
+  hideWhenNoValue = false,
   setValue: setValueProp,
   showTrigger = true,
   trigger,
@@ -85,7 +85,17 @@ const InlineCombobox = ({
   const [valueState, setValueState] = useState('');
   const hasValueProp = valueProp !== undefined;
   const value = hasValueProp ? valueProp : valueState;
-  const setValue = hasValueProp ? setValueProp ?? (() => {}) : setValueState;
+
+  const setValue = useCallback(
+    (newValue: string) => {
+      setValueProp?.(newValue);
+
+      if (!hasValueProp) {
+        setValueState(newValue);
+      }
+    },
+    [setValueProp, hasValueProp]
+  );
 
   const { props: inputProps, removeInput } = useComboboxInput({
     cancelInputOnBlur: false,
@@ -104,17 +114,10 @@ const InlineCombobox = ({
     ref: inputRef,
   });
 
-  const [visibleCount, dispatchVisible] = useReducer(
-    (state: number, action: 'decrement' | 'increment') =>
-      state + (action === 'increment' ? 1 : -1),
-    0
-  );
-
   const [hasEmpty, setHasEmpty] = useState(false);
 
   const contextValue: InlineComboboxContextValue = useMemo(
     () => ({
-      dispatchVisible,
       filter,
       inputProps,
       inputRef,
@@ -122,27 +125,46 @@ const InlineCombobox = ({
       setHasEmpty,
       showTrigger,
       trigger,
-      value,
-      visibleCount,
     }),
     [
       trigger,
       showTrigger,
       filter,
-      value,
       inputRef,
       inputProps,
       removeInput,
-      visibleCount,
       setHasEmpty,
     ]
   );
 
+  const store = useComboboxStore({
+    // open: ,
+    setValue: (newValue) => startTransition(() => setValue(newValue)),
+  });
+
+  const items = store.useState('items');
+
+  useEffect;
+
+  /**
+   * If there is no active ID and the list of items changes, select the first
+   * item.
+   */
+  useEffect(() => {
+    if (!store.getState().activeId) {
+      store.setActiveId(store.first());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, store]);
+
   return (
     <span contentEditable={false}>
       <ComboboxProvider
-        open={visibleCount > 0 || hasEmpty}
-        setValue={(newValue) => startTransition(() => setValue(newValue))}
+        open={
+          (items.length > 0 || hasEmpty) &&
+          (!hideWhenNoValue || value.length > 0)
+        }
+        store={store}
       >
         <InlineComboboxContext.Provider value={contextValue}>
           {children}
@@ -161,8 +183,10 @@ const InlineComboboxInput = forwardRef<
     inputRef: contextRef,
     showTrigger,
     trigger,
-    value,
   } = useContext(InlineComboboxContext);
+
+  const store = useComboboxContext()!;
+  const value = store.useState('value');
 
   const ref = useComposedRef(propRef, contextRef);
 
@@ -249,27 +273,17 @@ const InlineComboboxItem = ({
 }: InlineComboboxItemProps) => {
   const { value } = props;
 
-  const {
-    dispatchVisible,
-    filter,
-    removeInput,
-    value: search,
-  } = useContext(InlineComboboxContext);
+  const { filter, removeInput } = useContext(InlineComboboxContext);
+
+  const store = useComboboxContext()!;
+
+  // Optimization: Do not subscribe to value if filter is false
+  const search = filter && store.useState('value');
 
   const visible = useMemo(
-    () => !filter || filter({ keywords, value }, search),
+    () => !filter || filter({ keywords, value }, search as string),
     [filter, value, keywords, search]
   );
-
-  const previousVisibleRef = useRef(false);
-
-  useEffect(() => {
-    if (visible !== previousVisibleRef.current) {
-      dispatchVisible(visible ? 'increment' : 'decrement');
-    }
-
-    previousVisibleRef.current = visible;
-  }, [dispatchVisible, visible]);
 
   if (!visible) return null;
 
@@ -289,7 +303,9 @@ const InlineComboboxEmpty = ({
   children,
   className,
 }: HTMLAttributes<HTMLDivElement>) => {
-  const { setHasEmpty, visibleCount } = useContext(InlineComboboxContext);
+  const { setHasEmpty } = useContext(InlineComboboxContext);
+  const store = useComboboxContext()!;
+  const items = store.useState('items');
 
   useEffect(() => {
     setHasEmpty(true);
@@ -299,7 +315,7 @@ const InlineComboboxEmpty = ({
     };
   }, [setHasEmpty]);
 
-  if (visibleCount > 0) return null;
+  if (items.length > 0) return null;
 
   return (
     <div
