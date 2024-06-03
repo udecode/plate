@@ -17,7 +17,6 @@ import {
 } from '@udecode/plate-break';
 import { KEY_CAPTION } from '@udecode/plate-caption';
 import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
-import { KEY_COMBOBOX } from '@udecode/plate-combobox';
 import { MARK_COMMENT } from '@udecode/plate-comments';
 import { KEY_DND } from '@udecode/plate-dnd';
 import { KEY_EMOJI } from '@udecode/plate-emoji';
@@ -109,7 +108,6 @@ export const customizerList = [
       customizerItems[KEY_AUTOFORMAT],
       customizerItems[KEY_BLOCK_SELECTION],
       customizerItems[KEY_CAPTION],
-      customizerItems[KEY_COMBOBOX],
       customizerItems[KEY_DND],
       customizerItems[KEY_DRAG_OVER_CURSOR],
       customizerItems[KEY_EMOJI],
@@ -178,7 +176,6 @@ export const orderedPluginKeys = [
   // Functionality
   KEY_AUTOFORMAT,
   KEY_BLOCK_SELECTION,
-  KEY_COMBOBOX,
   KEY_DND,
   KEY_EMOJI,
   KEY_EXIT_BREAK,

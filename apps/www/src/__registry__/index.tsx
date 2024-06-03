@@ -319,13 +319,6 @@ export const Index: Record<string, any> = {
       files: ['registry/default/plate-ui/code-syntax-leaf.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/code-syntax-leaf')),
     },
-    'combobox': {
-      name: 'combobox',
-      type: 'components:plate-ui',
-      registryDependencies: [],
-      files: ['registry/default/plate-ui/combobox.tsx'],
-      component: React.lazy(() => import('@/registry/default/plate-ui/combobox')),
-    },
     'command': {
       name: 'command',
       type: 'components:plate-ui',

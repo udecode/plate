@@ -30,6 +30,10 @@ import {
   useHTMLInputCursorState,
 } from '@udecode/plate-combobox';
 import {
+  TElement,
+  createPointRef,
+  findNodePath,
+  getStartPoint,
   insertText,
   moveSelection,
   useComposedRef,
@@ -60,6 +64,7 @@ export const defaultFilter: FilterFn = ({ keywords = [], value }, search) =>
   [value, ...keywords].some((keyword) => filterWords(keyword, search));
 
 interface InlineComboboxProps {
+  element: TElement;
   children: ReactNode;
   trigger: string;
   filter?: FilterFn | false;
@@ -70,6 +75,7 @@ interface InlineComboboxProps {
 }
 
 const InlineCombobox = ({
+  element,
   children,
   filter = defaultFilter,
   hideWhenNoValue = false,
@@ -81,6 +87,13 @@ const InlineCombobox = ({
   const editor = useEditorRef();
   const inputRef = React.useRef<HTMLInputElement>(null);
   const cursorState = useHTMLInputCursorState(inputRef);
+
+  const [pointRef] = useState(() => createPointRef(editor, getStartPoint(editor, findNodePath(editor, element)!)));
+
+  // Unref pointRef on unmount
+  useEffect(() => () => {
+    pointRef.unref();
+  }, [pointRef]);
 
   const [valueState, setValueState] = useState('');
   const hasValueProp = valueProp !== undefined;
@@ -102,7 +115,7 @@ const InlineCombobox = ({
     cursorState,
     onCancelInput: (cause) => {
       if (cause !== 'backspace') {
-        insertText(editor, trigger + value);
+        insertText(editor, trigger + value, { at: pointRef.current ?? undefined });
       }
       if (cause === 'arrowLeft' || cause === 'arrowRight') {
         moveSelection(editor, {

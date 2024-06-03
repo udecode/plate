@@ -32,7 +32,6 @@ import {
   ELEMENT_CODE_BLOCK,
   createCodeBlockPlugin,
 } from '@udecode/plate-code-block';
-import { createComboboxPlugin } from '@udecode/plate-combobox';
 import { createCommentsPlugin } from '@udecode/plate-comments';
 import {
   Plate,
@@ -276,7 +275,6 @@ export const usePlaygroundPlugins = ({
               },
             },
           }),
-          createComboboxPlugin({ enabled: !!enabled.combobox }),
           createDndPlugin({
             enabled: !!enabled.dnd,
             options: { enableScroller: true },

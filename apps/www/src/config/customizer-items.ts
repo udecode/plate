@@ -17,7 +17,6 @@ import {
 } from '@udecode/plate-break';
 import { KEY_CAPTION } from '@udecode/plate-caption';
 import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
-import { KEY_COMBOBOX } from '@udecode/plate-combobox';
 import { MARK_COMMENT } from '@udecode/plate-comments';
 import { KEY_DND } from '@udecode/plate-dnd';
 import { KEY_EMOJI } from '@udecode/plate-emoji';
@@ -260,7 +259,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: 'MentionCombobox',
       },
     ],
-    dependencies: [KEY_COMBOBOX],
     id: ELEMENT_MENTION,
     label: 'Mention',
     npmPackage: '@udecode/plate-mention',
@@ -425,14 +423,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
     ],
     route: customizerPlugins.media.route,
   },
-  [KEY_COMBOBOX]: {
-    badges: [customizerBadges.handler, customizerBadges.ui],
-    id: KEY_COMBOBOX,
-    label: 'Combobox',
-    npmPackage: '@udecode/plate-combobox',
-    pluginFactory: 'createComboboxPlugin',
-    route: customizerPlugins.combobox.route,
-  },
   [KEY_DELETE]: {
     badges: [customizerBadges.handler],
     id: KEY_DELETE,
@@ -508,7 +498,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
       //   usage: 'EmojiCombobox',
       // },
     ],
-    dependencies: [KEY_COMBOBOX],
     id: KEY_EMOJI,
     label: 'Emoji',
     npmPackage: '@udecode/plate-emoji',

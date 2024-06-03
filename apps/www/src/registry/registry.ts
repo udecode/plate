@@ -169,17 +169,6 @@ const ui: Registry = [
     type: 'components:plate-ui',
   },
   {
-    dependencies: [
-      '@radix-ui/react-popover',
-      '@udecode/plate-combobox',
-      '@udecode/plate-floating',
-    ],
-    files: ['plate-ui/combobox.tsx'],
-    name: 'combobox',
-    registryDependencies: [],
-    type: 'components:plate-ui',
-  },
-  {
     dependencies: ['cmdk'],
     files: ['plate-ui/command.tsx'],
     name: 'command',

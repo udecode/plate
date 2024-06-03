@@ -29,6 +29,7 @@ export const MentionInputElement = withRef<typeof PlateElement>(
         {...props}
       >
         <InlineCombobox
+          element={element}
           setValue={setSearch}
           showTrigger={false}
           trigger="@"

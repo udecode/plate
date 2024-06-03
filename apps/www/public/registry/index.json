@@ -235,19 +235,6 @@
     "type": "components:plate-ui"
   },
   {
-    "name": "combobox",
-    "dependencies": [
-      "@radix-ui/react-popover",
-      "@udecode/plate-combobox",
-      "@udecode/plate-floating"
-    ],
-    "registryDependencies": [],
-    "files": [
-      "plate-ui/combobox.tsx"
-    ],
-    "type": "components:plate-ui"
-  },
-  {
     "name": "command",
     "dependencies": [
       "cmdk"
