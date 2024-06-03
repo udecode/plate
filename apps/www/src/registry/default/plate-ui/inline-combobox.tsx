@@ -12,6 +12,8 @@ import React, {
   useState,
 } from 'react';
 
+import type { PointRef } from 'slate';
+
 import {
   Combobox,
   ComboboxItem,
@@ -30,10 +32,10 @@ import {
   useHTMLInputCursorState,
 } from '@udecode/plate-combobox';
 import {
-  TElement,
+  type TElement,
   createPointRef,
   findNodePath,
-  getStartPoint,
+  getPointBefore,
   insertText,
   moveSelection,
   useComposedRef,
@@ -64,8 +66,8 @@ export const defaultFilter: FilterFn = ({ keywords = [], value }, search) =>
   [value, ...keywords].some((keyword) => filterWords(keyword, search));
 
 interface InlineComboboxProps {
-  element: TElement;
   children: ReactNode;
+  element: TElement;
   trigger: string;
   filter?: FilterFn | false;
   hideWhenNoValue?: boolean;
@@ -75,8 +77,8 @@ interface InlineComboboxProps {
 }
 
 const InlineCombobox = ({
-  element,
   children,
+  element,
   filter = defaultFilter,
   hideWhenNoValue = false,
   setValue: setValueProp,
@@ -87,13 +89,6 @@ const InlineCombobox = ({
   const editor = useEditorRef();
   const inputRef = React.useRef<HTMLInputElement>(null);
   const cursorState = useHTMLInputCursorState(inputRef);
-
-  const [pointRef] = useState(() => createPointRef(editor, getStartPoint(editor, findNodePath(editor, element)!)));
-
-  // Unref pointRef on unmount
-  useEffect(() => () => {
-    pointRef.unref();
-  }, [pointRef]);
 
   const [valueState, setValueState] = useState('');
   const hasValueProp = valueProp !== undefined;
@@ -110,12 +105,37 @@ const InlineCombobox = ({
     [setValueProp, hasValueProp]
   );
 
+  /**
+   * Track the point just before the input element so we know where to
+   * insertText if the combobox closes due to a selection change.
+   */
+  const [insertPoint, setInsertPoint] = useState<PointRef | null>(null);
+
+  useEffect(() => {
+    const path = findNodePath(editor, element);
+
+    if (!path) return;
+
+    const point = getPointBefore(editor, path);
+
+    if (!point) return;
+
+    const pointRef = createPointRef(editor, point);
+    setInsertPoint(pointRef);
+
+    return () => {
+      pointRef.unref();
+    };
+  }, [editor, element]);
+
   const { props: inputProps, removeInput } = useComboboxInput({
     cancelInputOnBlur: false,
     cursorState,
     onCancelInput: (cause) => {
       if (cause !== 'backspace') {
-        insertText(editor, trigger + value, { at: pointRef.current ?? undefined });
+        insertText(editor, trigger + value, {
+          at: insertPoint?.current ?? undefined,
+        });
       }
       if (cause === 'arrowLeft' || cause === 'arrowRight') {
         moveSelection(editor, {

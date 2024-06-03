@@ -81,7 +81,7 @@ export const SlashInputElement = withRef<typeof PlateElement>(
         ref={ref}
         {...props}
       >
-        <InlineCombobox trigger="/" element={element}>
+        <InlineCombobox element={element} trigger="/">
           <InlineComboboxInput />
 
           <InlineComboboxContent>
