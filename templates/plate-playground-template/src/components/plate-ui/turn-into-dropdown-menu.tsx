@@ -3,11 +3,10 @@ import { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
 import {
   collapseSelection,
-  findNode,
   focusEditor,
+  getNodeEntries,
   isBlock,
-  isCollapsed,
-  TElement,
+  isDefined,
   toggleNodeType,
   useEditorRef,
   useEditorSelector,
@@ -77,20 +76,22 @@ const defaultItem = items.find((item) => item.value === ELEMENT_PARAGRAPH)!;
 
 export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
   const value: string = useEditorSelector((editor) => {
-    if (isCollapsed(editor.selection)) {
-      const entry = findNode<TElement>(editor, {
-        match: (n) => isBlock(editor, n),
-      });
+    let commonSelection: string | undefined;
+    const codeBlockEntries = getNodeEntries(editor, {
+      match: (n) => isBlock(editor, n),
+    });
+    const nodes = Array.from(codeBlockEntries);
+    nodes.forEach(([node]) => {
+      const type: string = (node?.type as string) || ELEMENT_PARAGRAPH;
 
-      if (entry) {
-        return (
-          items.find((item) => item.value === entry[0].type)?.value ??
-          ELEMENT_PARAGRAPH
-        );
+      if (!isDefined(commonSelection)) {
+        commonSelection = type;
+      } else if (commonSelection !== type) {
+        commonSelection = undefined;
       }
-    }
+    });
 
-    return ELEMENT_PARAGRAPH;
+    return commonSelection ?? ELEMENT_PARAGRAPH;
   }, []);
 
   const editor = useEditorRef();
