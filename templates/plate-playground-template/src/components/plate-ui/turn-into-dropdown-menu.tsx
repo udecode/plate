@@ -75,28 +75,24 @@ const defaultItem = items.find((item) => item.value === ELEMENT_PARAGRAPH)!;
 
 export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
   const value: string = useEditorSelector((editor) => {
-    let commonSelection: string | undefined;
-    let uniqueTypeFound = false;
+    let firstNodeType: string = ELEMENT_PARAGRAPH;
+    let allNodesMatchFirstNode = false;
     const codeBlockEntries = getNodeEntries(editor, {
       match: (n) => isBlock(editor, n),
+      mode: 'highest',
     });
-
     const nodes = Array.from(codeBlockEntries);
-    nodes.forEach(([node]) => {
-      const type: string = (node?.type as string) || ELEMENT_PARAGRAPH;
 
-      if (uniqueTypeFound) {
-        if (commonSelection !== type) {
-          commonSelection = undefined;
-          uniqueTypeFound = false;
-        }
-      } else {
-        commonSelection = type;
-        uniqueTypeFound = true;
-      }
-    });
+    if (nodes.length > 0) {
+      firstNodeType = nodes[0][0].type as string;
+      allNodesMatchFirstNode = nodes.every(([node]) => {
+        const type: string = (node?.type as string) || ELEMENT_PARAGRAPH;
 
-    return commonSelection ?? ELEMENT_PARAGRAPH;
+        return type === firstNodeType;
+      });
+    }
+
+    return allNodesMatchFirstNode ? firstNodeType : ELEMENT_PARAGRAPH;
   }, []);
 
   const editor = useEditorRef();
