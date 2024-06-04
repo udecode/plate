@@ -8,7 +8,6 @@ import {
   focusEditor,
   getNodeEntries,
   isBlock,
-  isDefined,
   toggleNodeType,
   useEditorRef,
   useEditorSelector,
@@ -109,17 +108,23 @@ const defaultItem = items.find((item) => item.value === ELEMENT_PARAGRAPH)!;
 export function PlaygroundTurnIntoDropdownMenu(props: DropdownMenuProps) {
   const value: string = useEditorSelector((editor) => {
     let commonSelection: string | undefined;
+    let uniqueTypeFound = false;
     const codeBlockEntries = getNodeEntries(editor, {
       match: (n) => isBlock(editor, n),
     });
+
     const nodes = Array.from(codeBlockEntries);
     nodes.forEach(([node]) => {
       const type: string = (node?.type as string) || ELEMENT_PARAGRAPH;
 
-      if (!isDefined(commonSelection)) {
+      if (uniqueTypeFound) {
+        if (commonSelection !== type) {
+          commonSelection = undefined;
+          uniqueTypeFound = false;
+        }
+      } else {
         commonSelection = type;
-      } else if (commonSelection !== type) {
-        commonSelection = undefined;
+        uniqueTypeFound = true;
       }
     });
 
