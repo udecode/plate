@@ -256,6 +256,13 @@ export const Index: Record<string, any> = {
       files: ['registry/default/plate-ui/emoji-picker-search-bar.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/emoji-picker-search-bar')),
     },
+    'emoji-input-element': {
+      name: 'emoji-input-element',
+      type: 'components:plate-ui',
+      registryDependencies: ["inline-combobox"],
+      files: ['registry/default/plate-ui/emoji-input-element.tsx'],
+      component: React.lazy(() => import('@/registry/default/plate-ui/emoji-input-element')),
+    },
     'align-dropdown-menu': {
       name: 'align-dropdown-menu',
       type: 'components:plate-ui',
@@ -438,6 +445,13 @@ export const Index: Record<string, any> = {
       files: ['registry/default/plate-ui/indent-toolbar-button.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/indent-toolbar-button')),
     },
+    'inline-combobox': {
+      name: 'inline-combobox',
+      type: 'components:plate-ui',
+      registryDependencies: [],
+      files: ['registry/default/plate-ui/inline-combobox.tsx'],
+      component: React.lazy(() => import('@/registry/default/plate-ui/inline-combobox')),
+    },
     'input': {
       name: 'input',
       type: 'components:plate-ui',
@@ -536,10 +550,17 @@ export const Index: Record<string, any> = {
       files: ['registry/default/plate-ui/mention-element.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/mention-element')),
     },
+    'mention-element': {
+      name: 'mention-element',
+      type: 'components:plate-ui',
+      registryDependencies: [],
+      files: ['registry/default/plate-ui/mention-element.tsx'],
+      component: React.lazy(() => import('@/registry/default/plate-ui/mention-element')),
+    },
     'mention-input-element': {
       name: 'mention-input-element',
       type: 'components:plate-ui',
-      registryDependencies: [],
+      registryDependencies: ["inline-combobox"],
       files: ['registry/default/plate-ui/mention-input-element.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/mention-input-element')),
     },
@@ -598,6 +619,13 @@ export const Index: Record<string, any> = {
       registryDependencies: [],
       files: ['registry/default/plate-ui/separator.tsx'],
       component: React.lazy(() => import('@/registry/default/plate-ui/separator')),
+    },
+    'slash-input-element': {
+      name: 'slash-input-element',
+      type: 'components:plate-ui',
+      registryDependencies: ["inline-combobox"],
+      files: ['registry/default/plate-ui/slash-input-element.tsx'],
+      component: React.lazy(() => import('@/registry/default/plate-ui/slash-input-element')),
     },
     'table-cell-element': {
       name: 'table-cell-element',

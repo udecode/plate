@@ -252,12 +252,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         route: customizerComponents.mentionInputElement.href,
         usage: 'MentionInputElement',
       },
-      {
-        id: 'mention-combobox',
-        label: 'MentionCombobox',
-        route: customizerComponents.mentionCombobox.href,
-        usage: 'MentionCombobox',
-      },
     ],
     id: ELEMENT_MENTION,
     label: 'Mention',
@@ -490,13 +484,12 @@ export const customizerItems: Record<string, SettingPlugin> = {
   [KEY_EMOJI]: {
     badges: [customizerBadges.handler],
     components: [
-      // {
-      //   id: 'emoji-combobox',
-      //   label: 'EmojiCombobox',
-      //   pluginOptions: [`renderAfterEditable: EmojiCombobox,`],
-      //   route: customizerComponents.emojiCombobox.href,
-      //   usage: 'EmojiCombobox',
-      // },
+      {
+        id: 'emoji-input-element',
+        label: 'EmojiInputElement',
+        route: customizerComponents.emojiInputElement.href,
+        usage: 'EmojiInputElement',
+      },
     ],
     id: KEY_EMOJI,
     label: 'Emoji',

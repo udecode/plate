@@ -1,10 +1,10 @@
 ---
-title: Combobox
-description: Combine a text input field with a dropdown menu for enhanced user interaction.
+title: Emoji Input Element
+description: Search for an emoji using an inline combobox.
 component: true
 docs:
-  - route: /docs/combobox
-    title: Combobox
+  - route: /docs/emoji
+    title: Emoji
 ---
 
 ## Installation
@@ -18,7 +18,7 @@ docs:
 <TabsContent value="cli">
 
 ```bash
-npx @udecode/plate-ui@latest add combobox
+npx @udecode/plate-ui@latest add emoji-input-element
 ```
 
 </TabsContent>
@@ -31,10 +31,7 @@ npx @udecode/plate-ui@latest add combobox
 
 Install the following dependencies:
 
-```bash
-npm install @radix-ui/react-popover @udecode/plate-floating
-```
-
+- [Emoji](/docs/emoji)
 - [Combobox](/docs/combobox)
 
 </Step>
@@ -45,7 +42,7 @@ Copy and paste the following code into your project.
 
 </Step>
 
-<ComponentSource name="combobox" />
+<ComponentSource name="emoji-input-element" />
 
 <Step>
 
@@ -61,7 +58,6 @@ Update the import paths to match your project setup.
 
 ## Examples
 
-<ComponentPreview name="playground-demo" id="mention" />
+<ComponentPreview name="playground-demo" id="emoji" />
 
-<ComponentSource name="emoji-combobox" />
-<ComponentSource name="mention-combobox" />
+<ComponentSource src="../../templates/plate-playground-template/src/lib/plate/plate-plugins.ts" />

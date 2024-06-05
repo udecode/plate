@@ -1,249 +1,94 @@
 ---
 title: Combobox
-description: Select options from a list of predefined values.
-docs:
-  - route: /docs/components/combobox
-    title: Combobox
-  - route: /docs/components/emoji-combobox
-    title: Emoji Combobox
-  - route: /docs/components/mention-combobox
-    title: Mention Combobox
+description: Utilities for adding comboboxes to your editor.
 ---
 
-<PackageInfo>
+## TriggerComboboxPlugin
 
-## Features
+The TriggerComboboxPlugin mixin configures your plugin to insert a combobox input element when the user types a specified trigger character is typed.
 
-- Displays a combobox for selecting options from a set list.
-- Suitable for creating mentions, tags, or slash commands.
-- Works in conjunction with the [Mention plugin](/docs/mention).
+For example, the [Mention](/docs/mention) plugin uses TriggerComboboxPlugin to insert an `ELEMENT_MENTION_INPUT` whenever the user types `@`.
 
-**Activation Conditions:**
+### Usage
 
-- Collapsed text selection.
-- Cursor placement immediately after the trigger character.
-- Text without spaces follows the trigger character.
+<Steps>
 
-**On Activation:**
-
-- Sets `id`, `text`, and `targetRange` in the combobox store.
-
-</PackageInfo>
-
-## Installation
-
-```bash
-npm install @udecode/plate-combobox
-```
-
-## Usage
-
-```tsx
-import { createComboboxPlugin } from '@udecode/plate-combobox';
-import { createMentionPlugin } from '@udecode/plate-mention';
-
-const plugins = [
-  // ...otherPlugins,
-  createComboboxPlugin(),
-  createMentionPlugin(),
-];
-```
-
-Then render the combobox component inside `Plate`. You can use the [Combobox component](/docs/components/combobox) or create your own.
-
-## Keyboard Interactions
-
-<KeyTable>
-  <KeyTableItem hotkey="ArrowDown">
-    Highlights the next item in the list.
-  </KeyTableItem>
-  <KeyTableItem hotkey="ArrowUp">
-    Highlights the previous item in the list.
-  </KeyTableItem>
-  <KeyTableItem hotkey="Esc">Closes the combobox.</KeyTableItem>
-  <KeyTableItem hotkey="Tab">
-    Selects the currently highlighted item.
-  </KeyTableItem>
-  <KeyTableItem hotkey="Enter">
-    Selects the currently highlighted item.
-  </KeyTableItem>
-</KeyTable>
-
-## API
-
-### createComboboxPlugin
-
-### ComboboxProps
-
-Here are some key aspects of the **`Combobox`**:
-
-- Multiple Instances: You can render the **`Combobox`** multiple times, each with its unique configuration provided by a different **`ComboboxStateById`**.
-- Singleton Behavior: Only one **`Combobox`** can be opened at a time. The state of the active **`Combobox`** is stored in the **`comboboxStore`**.
-- Extends **`ComboboxState`**, **`ComboboxStateById`**:
-
-<APIParameters>
-<APIItem name="items" type="TComboboxItem[]">
-The items for the combobox. An alternative to setting the items is to use
-`comboboxActions.items(items)`.
-</APIItem>
-<APIItem name="component" type="React.FC<{ store: ComboboxStoreById }>">
-A component that is rendered when the combobox is open. Useful for injecting
-hooks.
-</APIItem>
-<APIItem name="onRenderItem" type="React.FC<ComboboxItemProps>">
-A function to render the combobox item.
-
-- **Default:** item text
-
-<APISubList>
-<APISubListItem parent="ComboboxItemProps" name="item" type="TComboboxItem">
-
-The combobox item.
-
-</APISubListItem>
-<APISubListItem parent="ComboboxItemProps" name="search" type="string">
-
-The search text.
-
-</APISubListItem>
-</APISubList>
-
-</APIItem>
-<APIItem name="portalElement" type="HTMLElement" optional>
-
-The element to which the combobox is rendered.
-
-- **Default:** `document.body`
-
-</APIItem>
-
-</APIParameters>
-
-### ComboboxState
-
-Represents a combobox's state. The state resides in `comboboxStore`, which uses the [zustood store](https://github.com/udecode/zustood).
-
-<APIParameters>
-<APIItem name="activeId" type="string">
-Opened combobox ID.
-</APIItem>
-<APIItem name="byId" type="Record<string, ComboboxStoreById>">
-A collection of combobox configuration stores, each identified by a unique combobox ID (e.g., one for tags, one for mentions).
-
-- `ComboboxStateById`:
-
-<APISubList>
-
-<APISubListItem parent="byId" name="id" type="string">
-Combobox ID.
-</APISubListItem>
-<APISubListItem parent="byId" name="filter" type="function" optional>
-An optional function to filter items by text.
-
-- **Default:** A function that checks if the item's text begins with the search text. It compares lowercase strings.
+<Step>
+Extend your plugin options type with TriggerComboboxPlugin.
 
 ```ts
-(search: string) => (item: TComboboxItem<TData>) => boolean;
+interface MyPlugin extends TriggerComboboxPlugin {}
+const createMyPlugin = createPluginFactory<MyPlugin>({
+  // ...
+});
+
+// Or simply:
+const createMyPlugin = createPluginFactory<TriggerComboboxPlugin>({
+  // ...
+});
 ```
+</Step>
 
-</APISubListItem>
-
-<APISubListItem parent="byId" name="sort" type="function" optional>
-An optional function that sorts filtered items before applying `maxSuggestions`.
+<Step>
+Add the withTriggerCombobox override and specify default values for the required options. (See below for the full list of options).
 
 ```ts
-(search: string) => (a: TComboboxItem<TData>, b: TComboboxItem<TData>) =>
-  number;
+const createMyPlugin = createPluginFactory<MyPlugin>({
+  // ...
+  withOverrides: withTriggerCombobox,
+  options: {
+    createComboboxInput: (trigger) => ({
+      children: [{ text: '' }],
+      trigger,
+      type: ELEMENT_MY_INPUT,
+    }),
+    trigger: '@',
+    triggerPreviousCharPattern: /^\s?$/,
+  },
+});
 ```
+</Step>
 
-</APISubListItem>
-<APISubListItem parent="byId" name="maxSuggestions" type="number" optional>
-The maximum number of suggestions to be shown.
-
-- **Default:** The length of the **`items`** array.
-
-</APISubListItem>
-
-<APISubListItem parent="byId" name="trigger" type="string">
-The trigger character to activate the combobox.
-</APISubListItem>
-<APISubListItem parent="byId" name="searchPattern" type="string" optional>
-An optional regular expression for searching, for example, to allow whitespaces.
-</APISubListItem>
-<APISubListItem parent="byId" name="onSelectItem" type="function" optional>
-An optional callback function invoked when an item is selected.
+<Step>
+Define your input element as an inline void element. It's often useful to do this inside a nested plugin.
 
 ```ts
-(editor: PlateEditor, item: TComboboxItem) => any;
+const createMyPlugin = createPluginFactory<MyPlugin>({
+  // ...
+  plugins: [
+    {
+      isElement: true,
+      isInline: true,
+      isVoid: true,
+      key: ELEMENT_MY_INPUT,
+    },
+  ],
+});
 ```
 
-</APISubListItem>
-<APISubListItem parent="byId" name="controlled" type="boolean" optional>
-Indicates if the opening/closing of the combobox is controlled by the client.
-</APISubListItem>
-</APISubList>
+The input element component can be built using [Inline Combobox](/docs/components/inline-combobox). 
+</Step>
 
-</APIItem>
-<APIItem name="items" type="TComboboxItem[]">
-The list of unfiltered items.
-</APIItem>
-<APIItem name="filteredItems" type="TComboboxItem[]">
-The list of filtered items.
-</APIItem>
-<APIItem name="highlightedIndex" type="number">
-The index of the currently highlighted item.
-</APIItem>
-<APIItem name="targetRange" type="Range | null">
-The range from the trigger to the cursor.
-</APIItem>
-<APIItem name="text" type="string | null">
-The text that appears after the trigger.
+</Steps>
+
+### Options
+
+<APIOptions>
+
+<APIItem name="createComboboxInput" type="(trigger: string) => TElement">
+  A function to create the input node.
 </APIItem>
 
-</APIParameters>
-
-### TComboboxItem
-
-The data structure representing a single item in a combobox.
-
-<APIParameters>
-<APIItem name="key" type="string">
-A unique key for the item.
+<APIItem name="trigger" type="string">
+  The character that triggers the combobox.
 </APIItem>
-<APIItem name="text" type="any">
-The text of the item.
+
+<APIItem name="triggerPreviousCharPattern" type="RegExp">
+  Only trigger the combobox if the char before the trigger character matches a regular expression. For example, `/^\s?$/` matches beginning of the line or a space.
 </APIItem>
-<APIItem name="disabled" type="boolean" optional>
-Indicates whether the item is disabled.
 
-- **Default:** `false`
-
+<APIItem name="triggerQuery" type="(editor: PlateEditor) => boolean" optional>
+  A query function to enable the behavior.
 </APIItem>
-<APIItem name="data" type="any" optional>
-Data available to `onRenderItem`.
-</APIItem>
-</APIParameters>
 
-## API Components
-
-### useComboboxContent
-
-A behavior hook for the `ComboboxContent` component.
-
-<APIState>
-  <APIItem name="items" type="TComboboxItem<TData>[] | undefined">
-    The items for the combobox.
-  </APIItem>
-  <APIItem name="combobox" type="function">
-    The combobox store.
-  </APIItem>
-</APIState>
-
-<APIReturns>
-  <APIItem name="menuProps" type="any">
-    The menu props for the combobox content.
-  </APIItem>
-  <APIItem name="targetRange" type="BaseRange">
-    The target range of the combobox.
-  </APIItem>
-</APIReturns>
+</APIOptions>

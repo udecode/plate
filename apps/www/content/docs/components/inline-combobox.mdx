@@ -1,12 +1,10 @@
 ---
-title: Emoji Combobox
-description: Enter and select emojis using a combination of text input and a dropdown menu.
+title: Inline Combobox
+description: Enhance inline nodes with accessible comboboxes.
 component: true
 docs:
   - route: /docs/combobox
     title: Combobox
-  - route: /docs/emoji
-    title: Emoji
 ---
 
 ## Installation
@@ -20,7 +18,7 @@ docs:
 <TabsContent value="cli">
 
 ```bash
-npx @udecode/plate-ui@latest add emoji-combobox
+npx @udecode/plate-ui@latest add inline-combobox
 ```
 
 </TabsContent>
@@ -39,11 +37,21 @@ Install the following dependencies:
 
 <Step>
 
+Install the Combobox component from Ariakit:
+
+```bash
+npm install @ariakit/react
+```
+
+</Step>
+
+<Step>
+
 Copy and paste the following code into your project.
 
 </Step>
 
-<ComponentSource name="emoji-combobox" />
+<ComponentSource name="inline-combobox" />
 
 <Step>
 
@@ -57,8 +65,8 @@ Update the import paths to match your project setup.
 
 </Tabs>
 
-## Examples
+## Usage
 
-<ComponentPreview name="playground-demo" id="emoji" />
+See [Mention Input](/docs/components/mention-input-element) for an example of how to use Inline Combobox.
 
-<ComponentSource src="../../templates/plate-playground-template/src/lib/plate/plate-plugins.ts" />
+<ComponentSource name="mention-input-element" />
