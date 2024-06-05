@@ -8,6 +8,8 @@ import { createSubscriptPlugin } from './createSubscriptPlugin';
 import { createSuperscriptPlugin } from './createSuperscriptPlugin';
 import { createUnderlinePlugin } from './createUnderlinePlugin';
 
+export const KEY_BASIC_MARKS = 'basicMarks';
+
 /**
  * Enables support for basic marks:
  *
@@ -20,7 +22,7 @@ import { createUnderlinePlugin } from './createUnderlinePlugin';
  * - Underline
  */
 export const createBasicMarksPlugin = createPluginFactory({
-  key: 'basicMarks',
+  key: KEY_BASIC_MARKS,
   plugins: [
     createBoldPlugin(),
     createCodePlugin(),

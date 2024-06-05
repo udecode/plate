@@ -1,4 +1,4 @@
-import type { TText, UnknownObject } from '@udecode/plate-common/server';
+import type { TText, UnknownObject } from '@udecode/plate-common';
 
 export interface SuggestionUser extends UnknownObject {
   id: string;

@@ -89,7 +89,7 @@ module.exports = {
       },
     },
     {
-      files: '**/*.mdx',
+      files: ['index.ts', '**/*.mdx'],
       rules: {
         'prettier/prettier': 'off',
       },

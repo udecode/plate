@@ -1,4 +1,8 @@
-import { createPluginFactory } from '@udecode/plate-common/server';
+import {
+  type DeserializeHtml,
+  createPluginFactory,
+  getPluginType,
+} from '@udecode/plate-common/server';
 
 import type { TablePlugin, TableStoreCellAttributes } from './types';
 
@@ -13,6 +17,24 @@ export const ELEMENT_TH = 'th';
 export const ELEMENT_TR = 'tr';
 
 export const ELEMENT_TD = 'td';
+
+const createGetNodeFunc = (type: string) => {
+  const getNode: DeserializeHtml['getNode'] = (element) => {
+    const background =
+      element.style.background || element.style.backgroundColor;
+
+    if (background) {
+      return {
+        background,
+        type,
+      };
+    }
+
+    return { type };
+  };
+
+  return getNode;
+};
 
 /** Enables support for tables. */
 export const createTablePlugin = createPluginFactory<TablePlugin>({
@@ -50,23 +72,6 @@ export const createTablePlugin = createPluginFactory<TablePlugin>({
       key: ELEMENT_TR,
     },
     {
-      deserializeHtml: {
-        attributeNames: ['rowspan', 'colspan'],
-        getNode: (element) => {
-          const background =
-            element.style.background || element.style.backgroundColor;
-
-          if (background) {
-            return {
-              background,
-              type: 'td',
-            };
-          }
-
-          return { type: 'td' };
-        },
-        rules: [{ validNodeName: 'TD' }],
-      },
       isElement: true,
       key: ELEMENT_TD,
       props: ({ element }) => ({
@@ -75,31 +80,28 @@ export const createTablePlugin = createPluginFactory<TablePlugin>({
           rowSpan: (element?.attributes as any)?.rowspan,
         },
       }),
+      then: (editor) => ({
+        deserializeHtml: {
+          attributeNames: ['rowspan', 'colspan'],
+          getNode: createGetNodeFunc(getPluginType(editor, ELEMENT_TD)),
+          rules: [{ validNodeName: 'TD' }],
+        },
+      }),
     },
     {
-      deserializeHtml: {
-        attributeNames: ['rowspan', 'colspan'],
-        getNode: (element) => {
-          const background =
-            element.style.background || element.style.backgroundColor;
-
-          if (background) {
-            return {
-              background,
-              type: 'th',
-            };
-          }
-
-          return { type: 'th' };
-        },
-        rules: [{ validNodeName: 'TH' }],
-      },
       isElement: true,
       key: ELEMENT_TH,
       props: ({ element }) => ({
         nodeProps: {
           colSpan: (element?.attributes as any)?.colspan,
           rowSpan: (element?.attributes as any)?.rowspan,
+        },
+      }),
+      then: (editor) => ({
+        deserializeHtml: {
+          attributeNames: ['rowspan', 'colspan'],
+          getNode: createGetNodeFunc(getPluginType(editor, ELEMENT_TH)),
+          rules: [{ validNodeName: 'TH' }],
         },
       }),
     },

@@ -1,31 +1,42 @@
 import {
   focusEditor,
+  getNodeEntries,
+  isBlock,
   useEditorRef,
   useEditorSelector,
 } from '@udecode/plate-common';
-import { findNode, isCollapsed, isDefined } from '@udecode/plate-common/server';
+import { isDefined } from '@udecode/plate-common/server';
 
 import { type Alignment, KEY_ALIGN, setAlign } from '../index';
 
 export const useAlignDropdownMenuState = () => {
   const value: Alignment = useEditorSelector((editor) => {
-    if (isCollapsed(editor.selection)) {
-      const entry = findNode(editor, {
-        match: (n) => isDefined(n[KEY_ALIGN]),
-      });
+    let commonAlignment: string | undefined;
+    const codeBlockEntries = getNodeEntries(editor, {
+      match: (n) => isBlock(editor, n),
+    });
+    const nodes = Array.from(codeBlockEntries);
+    nodes.forEach(([node, path]) => {
+      const align: string = (node[KEY_ALIGN] as string) || 'left';
 
-      if (entry) {
-        const nodeValue = entry[0][KEY_ALIGN] as string;
-
-        if (nodeValue === 'left') return 'left';
-        if (nodeValue === 'center') return 'center';
-        if (nodeValue === 'right') return 'right';
-        if (nodeValue === 'end') return 'end';
-        if (nodeValue === 'justify') return 'justify';
+      if (!isDefined(commonAlignment)) {
+        commonAlignment = align;
+      } else if (commonAlignment !== align) {
+        commonAlignment = undefined;
       }
+    });
+
+    if (isDefined(commonAlignment)) {
+      const nodeValue = commonAlignment;
+
+      if (nodeValue === 'left') return 'left';
+      if (nodeValue === 'center') return 'center';
+      if (nodeValue === 'right') return 'right';
+      if (nodeValue === 'end') return 'end';
+      if (nodeValue === 'justify') return 'justify';
     }
 
-    return 'start';
+    return 'left';
   }, []);
 
   return {

@@ -1,4 +1,4 @@
-import type { PlateEditor } from '@udecode/plate-core/server';
+import type { PlateEditor } from '@udecode/plate-core';
 import type { Value } from '@udecode/slate';
 
 import { getPluginType } from '@udecode/plate-core/server';

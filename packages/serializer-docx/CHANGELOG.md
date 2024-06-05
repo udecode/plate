@@ -1,5 +1,13 @@
 # @udecode/plate-docx-serializer
 
+## 33.0.7
+
+## 33.0.3
+
+## 33.0.2
+
+## 33.0.1
+
 ## 33.0.0
 
 ### Patch Changes

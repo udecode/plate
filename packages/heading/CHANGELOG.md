@@ -1,5 +1,17 @@
 # @udecode/plate-heading
 
+## 33.0.3
+
+### Patch Changes
+
+- [#3194](https://github.com/udecode/plate/pull/3194) by [@KorovinQuantori](https://github.com/KorovinQuantori) – Export plugin keys for easier access plugin options by key
+
+## 33.0.1
+
+### Patch Changes
+
+- [#3183](https://github.com/udecode/plate/pull/3183) by [@KorovinQuantori](https://github.com/KorovinQuantori) – Fix regression: heading hotkeys
+
 ## 33.0.0
 
 ## 32.0.0

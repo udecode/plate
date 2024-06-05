@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { PlateRenderElementProps } from '@udecode/plate-core/server';
+import type { PlateRenderElementProps } from '@udecode/plate-core';
 import type { EElement, TElement, Value } from '@udecode/slate';
 
 import { Box, type BoxProps, useComposedRef } from '@udecode/react-utils';

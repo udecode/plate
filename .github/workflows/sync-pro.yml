@@ -10,6 +10,9 @@ jobs:
     if: ${{ github.repository == 'udecode/plate' && contains('refs/heads/main',github.ref)}}
     name: Sync Pro
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -32,11 +35,11 @@ jobs:
           }
           git push $DOWNSTREAM HEAD:$PUSH_BRANCH $PUSH_FORCE
         env:
-          DOWNSTREAM: https://${{secrets.DOWNSTREAM_REPO_GITHUB_CREDENTIALS}}@github.com/udecode/plate-pro.git
+          DOWNSTREAM: https://${{secrets.DOWNSTREAM_REPO_GITHUB_CREDENTIALS}}@github.com/plate-pro/plate-pro.git
 
-  # Open a PR if a branch called 'upstream' recieves commits on downstream
+  # Open a PR if a branch called 'upstream' receives commits on downstream
   upstream_pr:
-    if: ${{ github.repository == 'udecode/plate-pro' && contains('refs/heads/upstream',github.ref)}}
+    if: ${{ github.repository == 'plate-pro/plate-pro' && contains('refs/heads/upstream',github.ref)}}
     name: Upstream PR
     runs-on: ubuntu-latest
     steps:
@@ -44,6 +47,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Create PR
-        run: gh pr create --title 'Sync upstream' --body ''
+        run: |
+          PR_EXIST=$(gh pr list | grep 'Sync upstream')
+          if [ -z "$PR_EXIST" ]; then
+            gh pr create --title 'Sync upstream' --body 'This PR synchronizes changes from the upstream branch.'
+          else
+            echo "Pull request already exists."
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

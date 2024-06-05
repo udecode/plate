@@ -126,7 +126,7 @@ export const useFloatingLinkInsert = ({
     props: {
       style: {
         ...floating.style,
-        zIndex: 1,
+        zIndex: 50,
       },
     },
     ref: useComposedRef<HTMLDivElement>(floating.refs.setFloating, ref),
