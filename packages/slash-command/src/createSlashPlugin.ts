@@ -5,6 +5,7 @@ import {
 import { createPluginFactory } from '@udecode/plate-common/server';
 
 export const KEY_SLASH_COMMAND = 'slash_command';
+
 export const ELEMENT_SLASH_INPUT = 'slash_input';
 
 export const createSlashPlugin = createPluginFactory<TriggerComboboxPlugin>({
