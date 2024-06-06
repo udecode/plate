@@ -8,3 +8,4 @@ export * from './createFontFamilyPlugin';
 export * from './createFontSizePlugin';
 export * from './createFontWeightPlugin';
 export * from './hooks/index';
+export * from './transforms/index';

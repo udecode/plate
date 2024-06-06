@@ -17,3 +17,9 @@ export const getSelectedBlocks = <V extends Value>(editor: TEditor<V>) => {
     }),
   ];
 };
+
+export const isBlockSelected = (node: TElement) => {
+  const selectedIds = blockSelectionSelectors.selectedIds();
+
+  return node.id && selectedIds.has(node.id);
+};

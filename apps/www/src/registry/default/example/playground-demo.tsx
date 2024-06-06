@@ -203,7 +203,10 @@ export const usePlaygroundPlugins = ({
           createKbdPlugin({ enabled: !!enabled.kbd }),
 
           // Block Style
-          createAlignPlugin({ ...alignPlugin, enabled: !!enabled.align }),
+          createAlignPlugin({
+            ...alignPlugin,
+            enabled: !!enabled.align,
+          }),
           createIndentPlugin({
             enabled: !!enabled.indent,
             inject: {
@@ -269,6 +272,7 @@ export const usePlaygroundPlugins = ({
           createBlockSelectionPlugin({
             enabled: id === 'blockselection' || !!enabled.blockSelection,
             options: {
+              disableContextMenu: true,
               sizes: {
                 bottom: 0,
                 top: 0,

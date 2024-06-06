@@ -7,6 +7,8 @@ import {
   type WithPlatePlugin,
   findNode,
   getEndPoint,
+  getNextNode,
+  getPreviousNode,
   isHotkey,
   removeNodes,
 } from '@udecode/plate-common/server';
@@ -18,6 +20,7 @@ import {
   blockSelectionSelectors,
   useBlockSelectionSelectors,
 } from './blockSelectionStore';
+import { useBlockContextMenuSelectors } from './context-menu';
 import { copySelectedBlocks } from './utils/copySelectedBlocks';
 import { selectInsertedBlocks } from './utils/index';
 import { pasteSelectedBlocks } from './utils/pasteSelectedBlocks';
@@ -32,6 +35,7 @@ export const useHooksBlockSelection = <
   const { onKeyDownSelecting } = options;
   const isSelecting = useBlockSelectionSelectors().isSelecting();
   const selectedIds = useBlockSelectionSelectors().selectedIds();
+  const isOpen = useBlockContextMenuSelectors().isOpen(editor.id);
 
   // TODO: test
   React.useEffect(() => {
@@ -48,7 +52,7 @@ export const useHooksBlockSelection = <
       input.setAttribute('id', 'slate-shadow-input');
       // no scrolling on focus
       input.style.position = 'fixed';
-      input.style.zIndex = '10000';
+      input.style.zIndex = '999';
       // hide
       input.style.top = '-300px';
       input.style.left = '-300px';
@@ -75,8 +79,11 @@ export const useHooksBlockSelection = <
         if (isHotkey('enter')(e)) {
           // get the first block in the selection
           const entry = findNode(editor, {
+            at: [],
             match: (n) => blockSelectionSelectors.selectedIds().has(n.id),
           });
+
+          console.log(entry);
 
           if (entry) {
             const [, path] = entry;
@@ -91,6 +98,32 @@ export const useHooksBlockSelection = <
             at: [],
             match: (n) => blockSelectionSelectors.selectedIds().has(n.id),
           });
+        }
+        // TODO: skip toggle child
+        if (isHotkey('up')(e)) {
+          const firstId = [...blockSelectionSelectors.selectedIds()][0];
+          const node = findNode(editor, {
+            at: [],
+            match: (n) => n.id === firstId,
+          });
+          const prev = getPreviousNode(editor, {
+            at: node?.[1],
+          });
+
+          const prevId = prev?.[0].id;
+          blockSelectionActions.addSelectedRow(prevId);
+        }
+        if (isHotkey('down')(e)) {
+          const lastId = [...blockSelectionSelectors.selectedIds()].pop();
+          const node = findNode(editor, {
+            at: [],
+            match: (n) => n.id === lastId,
+          });
+          const next = getNextNode(editor, {
+            at: node?.[1],
+          });
+          const nextId = next?.[0].id;
+          blockSelectionActions.addSelectedRow(nextId);
         }
       });
 
@@ -113,6 +146,8 @@ export const useHooksBlockSelection = <
               at: [],
               match: (n) => blockSelectionSelectors.selectedIds().has(n.id),
             });
+
+            focusEditor(editor);
           }
         }
       });
@@ -126,5 +161,5 @@ export const useHooksBlockSelection = <
       document.body.append(input);
       input.focus();
     }
-  }, [editor, isSelecting, onKeyDownSelecting, selectedIds]);
+  }, [editor, isSelecting, onKeyDownSelecting, selectedIds, isOpen]);
 };

@@ -3,6 +3,7 @@
  */
 
 export * from './BlockSelectable';
+export * from './BlockSelection';
 export * from './BlockSelectionArea';
 export * from './BlockStartArea';
 export * from './SelectionArea';
