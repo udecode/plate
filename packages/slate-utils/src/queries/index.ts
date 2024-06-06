@@ -3,6 +3,7 @@
  */
 
 export * from './findDescendant';
+export * from './getAncestorNode';
 export * from './getBlockAbove';
 export * from './getChildren';
 export * from './getEdgeBlocksAbove';
@@ -11,6 +12,7 @@ export * from './getLastNodeByLevel';
 export * from './getMark';
 export * from './getNextNodeStartPoint';
 export * from './getNextSiblingNodes';
+export * from './getNodesRange';
 export * from './getOperations';
 export * from './getPointBeforeLocation';
 export * from './getPointFromLocation';
@@ -35,6 +37,7 @@ export * from './isRangeInSameBlock';
 export * from './isRangeInSingleText';
 export * from './isSelectionAtBlockEnd';
 export * from './isSelectionAtBlockStart';
+export * from './isSelectionCoverBlock';
 export * from './isSelectionExpanded';
 export * from './isTextByPath';
 export * from './isWordAfterTrigger';

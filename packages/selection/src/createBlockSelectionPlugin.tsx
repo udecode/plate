@@ -5,11 +5,12 @@ import {
   createPluginFactory,
 } from '@udecode/plate-common/server';
 
+import { BlockSelectionArea, BlockStartArea } from './components';
 import { BlockSelectable } from './components/BlockSelectable';
-import { BlockSelectionArea } from './components/BlockSelectionArea';
-import { BlockStartArea } from './components/BlockStartArea';
-import { onChangeBlockSelection } from './onChangeBlockSelection';
+import { onKeyDownSelection } from './onKeyDownSelection';
 import { useHooksBlockSelection } from './useHooksBlockSelection';
+import { onCloseBlockSelection } from './utils';
+import { withSelection } from './withSelection';
 
 export const KEY_BLOCK_SELECTION = 'blockSelection';
 
@@ -27,7 +28,12 @@ export interface BlockSelectionPlugin {
 export const createBlockSelectionPlugin =
   createPluginFactory<BlockSelectionPlugin>({
     handlers: {
-      onChange: onChangeBlockSelection,
+      onChange: onCloseBlockSelection,
+      // onFocus: onCloseBlockSelection,
+      onKeyDown: onKeyDownSelection,
+      onMouseDown: () => (e) => {
+        if (e.button === 2) e.preventDefault();
+      },
     },
     inject: {
       aboveComponent:
@@ -85,4 +91,5 @@ export const createBlockSelectionPlugin =
       ),
     }),
     useHooks: useHooksBlockSelection,
+    withOverrides: withSelection,
   });

@@ -8,6 +8,7 @@ import {
   ELEMENT_H5,
   ELEMENT_H6,
 } from '@udecode/plate-heading';
+import { ELEMENT_IMAGE } from '@udecode/plate-media';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 
 export const alignPlugin: Partial<PlatePlugin> = {
@@ -20,6 +21,7 @@ export const alignPlugin: Partial<PlatePlugin> = {
         ELEMENT_H3,
         ELEMENT_H4,
         ELEMENT_H5,
+        ELEMENT_IMAGE,
         ELEMENT_H6,
       ],
     },

@@ -1,7 +1,9 @@
 import type React from 'react';
 
-import { createPrimitiveComponent } from '@udecode/plate-common';
+import { createPrimitiveComponent, useElement } from '@udecode/plate-common';
 import { useReadOnly, useSelected } from 'slate-react';
+
+import type { TCaptionElement } from '../TCaptionElement';
 
 import { useCaptionString } from '../hooks/useCaptionString';
 
@@ -16,13 +18,18 @@ export interface CaptionProps
 
 export const useCaptionState = (options: CaptionOptions = {}) => {
   const captionString = useCaptionString();
+  const { showCaption } = useElement<TCaptionElement>();
 
   const selected = useSelected();
   const _readOnly = useReadOnly();
   const readOnly = options.readOnly || _readOnly;
 
+  const hidden =
+    !showCaption || (captionString.length === 0 && (readOnly || !selected));
+
   return {
     captionString,
+    hidden,
     readOnly,
     selected,
   };
@@ -30,8 +37,7 @@ export const useCaptionState = (options: CaptionOptions = {}) => {
 
 export const useCaption = (state: ReturnType<typeof useCaptionState>) => {
   return {
-    hidden:
-      state.captionString.length === 0 && (state.readOnly || !state.selected),
+    hidden: state.hidden,
   };
 };
 

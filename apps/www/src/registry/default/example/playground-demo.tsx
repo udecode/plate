@@ -203,7 +203,10 @@ export const usePlaygroundPlugins = ({
           createKbdPlugin({ enabled: !!enabled.kbd }),
 
           // Block Style
-          createAlignPlugin({ ...alignPlugin, enabled: !!enabled.align }),
+          createAlignPlugin({
+            ...alignPlugin,
+            enabled: !!enabled.align,
+          }),
           createIndentPlugin({
             enabled: !!enabled.indent,
             inject: {

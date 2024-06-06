@@ -36,7 +36,9 @@ export const toggleNodeType = <V extends Value>(
   const { activeType, inactiveType = getPluginType(editor, ELEMENT_DEFAULT) } =
     options;
 
-  if (!activeType || !editor.selection) return;
+  const at = editorNodesOptions?.at ?? editor.selection;
+
+  if (!activeType || !at) return;
 
   const isActive = someNode(editor, {
     ...editorNodesOptions,
@@ -47,7 +49,11 @@ export const toggleNodeType = <V extends Value>(
 
   if (isActive && activeType === inactiveType) return;
 
-  setElements(editor, {
-    type: isActive ? inactiveType : activeType,
-  });
+  setElements(
+    editor,
+    {
+      type: isActive ? inactiveType : activeType,
+    },
+    { at: at as any }
+  );
 };

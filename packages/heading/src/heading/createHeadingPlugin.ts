@@ -1,7 +1,7 @@
 import {
-  onKeyDownToggleElement,
   type PlatePlugin,
   createPluginFactory,
+  onKeyDownToggleElement,
 } from '@udecode/plate-common/server';
 
 import type { HeadingPlugin, HeadingsPlugin } from './types';

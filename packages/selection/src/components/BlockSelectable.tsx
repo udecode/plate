@@ -1,18 +1,25 @@
-import React from 'react';
+import React, { useRef } from 'react';
 
 import { findNodePath, useEditorRef } from '@udecode/plate-common';
 import {
   type TElement,
+  getAboveNode,
   getPluginOptions,
   isInline,
+  isVoid,
   queryNode,
 } from '@udecode/plate-common/server';
+import { Path } from 'slate';
 
-import { useBlockSelectionSelectors } from '../blockSelectionStore';
+import {
+  blockSelectionActions,
+  useBlockSelectionSelectors,
+} from '../blockSelectionStore';
 import {
   type BlockSelectionPlugin,
   KEY_BLOCK_SELECTION,
 } from '../createBlockSelectionPlugin';
+import { isBlockSelected } from '../queries';
 
 export interface BlockSelectableOptions {
   element: TElement;
@@ -26,6 +33,7 @@ export const useBlockSelectableState = ({
   selectedColor,
 }: BlockSelectableOptions) => {
   const editor = useEditorRef();
+  const ref = useRef<HTMLDivElement | null>(null);
 
   const path = React.useMemo(
     () => findNodePath(editor, element),
@@ -51,14 +59,19 @@ export const useBlockSelectableState = ({
 
   return {
     active: active ?? true,
+    editor,
     element,
+    path,
+    ref,
     selectedColor,
   };
 };
 
 export const useBlockSelectable = ({
+  editor,
   element,
-  selectedColor,
+  path,
+  ref,
 }: ReturnType<typeof useBlockSelectableState>) => {
   const id = element?.id as string | undefined;
   const isSelected = useBlockSelectionSelectors().isSelected(id);
@@ -73,11 +86,40 @@ export const useBlockSelectable = ({
         ? 'slate-selected slate-selectable'
         : 'slate-selectable',
       key: id,
-      style: isSelected
-        ? {
-            backgroundColor: selectedColor,
+      onContextMenu: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        if (!editor) return;
+        if (editor.selection?.focus) {
+          const nodeEntry = getAboveNode(editor);
+
+          if (nodeEntry && Path.isCommon(path, nodeEntry[1])) {
+            const isSelected = isBlockSelected(nodeEntry[0] as TElement);
+            const isOpenAlways =
+              (event.target as HTMLElement).dataset?.openContextMenu === 'true';
+
+            /**
+             * When "block selected or is void or has openContextMenu props",
+             * right click can always open the context menu.
+             */
+            if (!isSelected && !isVoid(editor, nodeEntry[0]) && !isOpenAlways)
+              return event.stopPropagation();
           }
-        : undefined,
+        }
+
+        const aboveHtmlNode = ref.current;
+
+        if (id && aboveHtmlNode) {
+          blockSelectionActions.addSelectedRow(id, {
+            aboveHtmlNode,
+            clear: !event?.shiftKey,
+          });
+        }
+      },
+      ref,
+      // style: isSelected
+      //   ? {
+      //       backgroundColor: selectedColor,
+      //     }
+      //   : undefined,
       ...data,
     },
   };

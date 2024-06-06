@@ -2,6 +2,7 @@ import { createZustandStore } from '@udecode/plate-common/server';
 
 import type { ChangedElements } from './components/SelectionArea';
 
+import { getAllSelectableDomNode, getSelectedDomNode } from './utils';
 import { extractSelectableIds } from './utils/extractSelectableIds';
 
 export const blockSelectionStore = createZustandStore('selection')({
@@ -25,6 +26,38 @@ export const blockSelectionStore = createZustandStore('selection')({
     unselect: () => {
       set.selectedIds(new Set());
       set.isSelecting(false);
+    },
+  }))
+  .extendActions((set) => ({
+    addSelectedRow: (
+      id: string,
+      options: { aboveHtmlNode?: HTMLDivElement; clear?: boolean } = {}
+    ) => {
+      const { aboveHtmlNode, clear = true } = options;
+
+      const element = aboveHtmlNode ?? getSelectedDomNode(id);
+
+      if (!element) return;
+
+      const selectedIds = blockSelectionSelectors.selectedIds();
+
+      if (!selectedIds.has(id) && clear) {
+        set.resetSelectedIds();
+      }
+
+      set.setSelectedIds({
+        added: [element],
+        removed: [],
+      });
+    },
+    selectedAll: () => {
+      const all = getAllSelectableDomNode();
+      set.resetSelectedIds();
+
+      set.setSelectedIds({
+        added: Array.from(all),
+        removed: [],
+      });
     },
   }))
   .extendSelectors((set, get) => ({
