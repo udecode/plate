@@ -81,7 +81,7 @@ export function MediaPopover({ children, pluginKey }: MediaPopoverProps) {
               Edit link
             </FloatingMediaPrimitive.EditButton>
 
-            <CaptionButton variant="ghost">Show caption</CaptionButton>
+            <CaptionButton variant="ghost">Caption</CaptionButton>
 
             <Separator className="my-1" orientation="vertical" />
 
