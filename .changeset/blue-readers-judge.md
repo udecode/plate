@@ -1,5 +1,5 @@
 ---
-"@udecode/plate-caption": major
+'@udecode/plate-caption': major
 ---
 
-The show of the caption needs to be controlled through `showCaption`.
+- Breaking change: the empty caption textarea is no longer showed on image focus. You can use the caption store to show the caption textarea.
