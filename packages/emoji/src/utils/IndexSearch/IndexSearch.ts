@@ -1,21 +1,16 @@
-import type { TComboboxItem } from '@udecode/plate-combobox';
+import type { Emoji } from '@emoji-mart/data';
 
-import type { EmojiItemData } from '../../types';
-import type { Emoji, IEmojiLibrary } from '../EmojiLibrary/index';
+import type { IEmojiLibrary } from '../EmojiLibrary/index';
 
 import { EMOJI_MAX_SEARCH_RESULT } from '../../constants';
 
-type IndexSearchReturnData = TComboboxItem<EmojiItemData>;
-
-interface IIndexSearch<R> {
-  get: () => R[];
+interface IIndexSearch {
+  get: () => Emoji[];
   hasFound: () => boolean;
   search: (input: string) => void;
 }
 
-export abstract class AIndexSearch<RData = IndexSearchReturnData>
-  implements IIndexSearch<RData>
-{
+export abstract class AIndexSearch implements IIndexSearch {
   protected input: string | undefined;
   protected maxResult = EMOJI_MAX_SEARCH_RESULT;
   protected result: string[] = [];
@@ -58,7 +53,7 @@ export abstract class AIndexSearch<RData = IndexSearchReturnData>
 
     for (const key of this.result) {
       const emoji = this.library?.getEmoji(key);
-      emojis.push(this.transform(emoji!));
+      emojis.push(emoji);
 
       if (emojis.length >= this.maxResult) break;
     }
@@ -66,7 +61,7 @@ export abstract class AIndexSearch<RData = IndexSearchReturnData>
     return emojis;
   }
 
-  getEmoji(): RData | undefined {
+  getEmoji(): Emoji | undefined {
     return this.get()[0];
   }
 
@@ -92,6 +87,4 @@ export abstract class AIndexSearch<RData = IndexSearchReturnData>
 
     return this;
   }
-
-  protected abstract transform(emoji: Emoji): RData;
 }

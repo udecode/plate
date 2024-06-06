@@ -1,6 +1,10 @@
-import type { TComboboxItem } from '@udecode/plate-combobox';
+import type { TMentionItemBase } from '@udecode/plate-mention';
 
-export const MENTIONABLES: TComboboxItem[] = [
+export interface MyMentionItem extends TMentionItemBase {
+  key: string;
+}
+
+export const MENTIONABLES: MyMentionItem[] = [
   { key: '0', text: 'Aayla Secura' },
   { key: '1', text: 'Adi Gallia' },
   {

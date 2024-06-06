@@ -12,11 +12,11 @@ import type { Emoji, IEmojiFloatingLibrary } from '../EmojiLibrary/index';
 import type { AIndexSearch } from '../IndexSearch/index';
 
 import { i18n } from '../../constants';
-import { getEmojiOnInsert } from '../../handlers/getEmojiOnInsert';
 import {
   type SetFocusedAndVisibleSectionsType,
   observeCategories,
 } from '../EmojiObserver';
+import { insertEmoji } from '../insertEmoji';
 import {
   EmojiPickerState,
   type MapEmojiCategoryList,
@@ -30,7 +30,7 @@ export type MutableRefs = React.MutableRefObject<{
 export type UseEmojiPickerProps = {
   closeOnSelect: boolean;
   emojiLibrary: IEmojiFloatingLibrary;
-  indexSearch: AIndexSearch<Emoji>;
+  indexSearch: AIndexSearch;
 };
 
 export type UseEmojiPickerType<
@@ -153,18 +153,7 @@ export const useEmojiPicker = ({
 
   const onSelectEmoji = React.useCallback(
     (emoji: Emoji) => {
-      const selectItem = getEmojiOnInsert();
-      selectItem(editor, {
-        data: {
-          emoji: emoji.skins[0].native,
-          id: emoji.id,
-          name: emoji.name,
-          text: emoji.name,
-        },
-        key: emoji.id,
-        text: emoji.name,
-      });
-
+      insertEmoji(editor, emoji);
       updateFrequentEmojis(emoji.id);
     },
     [editor, updateFrequentEmojis]

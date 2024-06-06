@@ -34,6 +34,7 @@
     "react-dom": "^18.2.0"
   },
   "dependencies": {
+    "@ariakit/react": "0.4.6",
     "@faker-js/faker": "^8.4.1",
     "@radix-ui/colors": "1.0.1",
     "@radix-ui/react-accessible-icon": "^1.0.3",

@@ -61,6 +61,7 @@ import { CodeSyntaxLeaf } from '@/registry/default/plate-ui/code-syntax-leaf';
 import { ColumnElement } from '@/registry/default/plate-ui/column-element';
 import { ColumnGroupElement } from '@/registry/default/plate-ui/column-group-element';
 import { CommentLeaf } from '@/registry/default/plate-ui/comment-leaf';
+import { EmojiInputElement } from '@/registry/default/plate-ui/emoji-input-element';
 import { ExcalidrawElement } from '@/registry/default/plate-ui/excalidraw-element';
 import { HeadingElement } from '@/registry/default/plate-ui/heading-element';
 import { HighlightLeaf } from '@/registry/default/plate-ui/highlight-leaf';
@@ -86,6 +87,8 @@ import { TodoListElement } from '@/registry/default/plate-ui/todo-list-element';
 import { ToggleElement } from '@/registry/default/plate-ui/toggle-element';
 import { withDraggables } from '@/registry/default/plate-ui/with-draggables';
 
+import { ELEMENT_EMOJI_INPUT } from '../../../../../packages/emoji/dist';
+
 export const createPlateUI = (
   overrideByKey?: Partial<Record<string, PlatePluginComponent>>,
   {
@@ -100,6 +103,7 @@ export const createPlateUI = (
     [ELEMENT_CODE_SYNTAX]: CodeSyntaxLeaf,
     [ELEMENT_COLUMN]: ColumnElement,
     [ELEMENT_COLUMN_GROUP]: ColumnGroupElement,
+    [ELEMENT_EMOJI_INPUT]: EmojiInputElement,
     [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
     [ELEMENT_H1]: withProps(HeadingElement, { variant: 'h1' }),
     [ELEMENT_H2]: withProps(HeadingElement, { variant: 'h2' }),

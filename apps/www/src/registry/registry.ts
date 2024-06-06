@@ -106,6 +106,13 @@ const ui: Registry = [
     type: 'components:plate-ui',
   },
   {
+    dependencies: ['@udecode/plate-emoji'],
+    files: ['plate-ui/emoji-input-element.tsx'],
+    name: 'emoji-input-element',
+    registryDependencies: ['inline-combobox'],
+    type: 'components:plate-ui',
+  },
+  {
     dependencies: ['@udecode/plate-alignment'],
     files: ['plate-ui/align-dropdown-menu.tsx'],
     name: 'align-dropdown-menu',
@@ -169,17 +176,6 @@ const ui: Registry = [
     type: 'components:plate-ui',
   },
   {
-    dependencies: [
-      '@radix-ui/react-popover',
-      '@udecode/plate-combobox',
-      '@udecode/plate-floating',
-    ],
-    files: ['plate-ui/combobox.tsx'],
-    name: 'combobox',
-    registryDependencies: [],
-    type: 'components:plate-ui',
-  },
-  {
     dependencies: ['cmdk'],
     files: ['plate-ui/command.tsx'],
     name: 'command',
@@ -222,13 +218,6 @@ const ui: Registry = [
     type: 'components:plate-ui',
   },
 
-  {
-    dependencies: ['@udecode/plate-combobox'],
-    files: ['plate-ui/emoji-combobox.tsx'],
-    name: 'emoji-combobox',
-    registryDependencies: [],
-    type: 'components:plate-ui',
-  },
   {
     dependencies: ['@udecode/plate-excalidraw'],
     files: ['plate-ui/excalidraw-element.tsx'],
@@ -314,6 +303,13 @@ const ui: Registry = [
     files: ['plate-ui/indent-toolbar-button.tsx'],
     name: 'indent-toolbar-button',
     registryDependencies: ['toolbar'],
+    type: 'components:plate-ui',
+  },
+  {
+    dependencies: ['@ariakit/react', '@udecode/plate-combobox'],
+    files: ['plate-ui/inline-combobox.tsx'],
+    name: 'inline-combobox',
+    registryDependencies: [],
     type: 'components:plate-ui',
   },
   {
@@ -416,10 +412,10 @@ const ui: Registry = [
     type: 'components:plate-ui',
   },
   {
-    dependencies: ['@udecode/plate-mention', '@udecode/plate-combobox'],
-    files: ['plate-ui/mention-combobox.tsx'],
-    name: 'mention-combobox',
-    registryDependencies: ['combobox'],
+    dependencies: ['@udecode/plate-mention'],
+    files: ['plate-ui/mention-element.tsx'],
+    name: 'mention-element',
+    registryDependencies: [],
     type: 'components:plate-ui',
   },
   {
@@ -433,7 +429,7 @@ const ui: Registry = [
     dependencies: ['@udecode/plate-mention'],
     files: ['plate-ui/mention-input-element.tsx'],
     name: 'mention-input-element',
-    registryDependencies: [],
+    registryDependencies: ['inline-combobox'],
     type: 'components:plate-ui',
   },
   {
@@ -490,6 +486,13 @@ const ui: Registry = [
     files: ['plate-ui/separator.tsx'],
     name: 'separator',
     registryDependencies: [],
+    type: 'components:plate-ui',
+  },
+  {
+    dependencies: ['@udecode/plate-heading', '@udecode/plate-indent-list'],
+    files: ['plate-ui/slash-input-element.tsx'],
+    name: 'slash-input-element',
+    registryDependencies: ['inline-combobox'],
     type: 'components:plate-ui',
   },
   {
