@@ -89,10 +89,8 @@ export const useBlockSelectable = ({
       onContextMenu: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         if (!editor) return;
 
-        const { disableContextMenu } = getPluginOptions<BlockSelectionPlugin>(
-          editor,
-          KEY_BLOCK_SELECTION
-        );
+        const { disableContextMenu = true } =
+          getPluginOptions<BlockSelectionPlugin>(editor, KEY_BLOCK_SELECTION);
 
         if (disableContextMenu) return;
         if (editor.selection?.focus) {
