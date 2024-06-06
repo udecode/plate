@@ -1,4 +1,5 @@
 import type { PlateEditor, Value } from '@udecode/plate-common/server';
+import type { Location } from 'slate';
 
 import { type SetIndentOptions, setIndent } from '@udecode/plate-indent';
 
@@ -10,6 +11,7 @@ import { ListStyleType } from '../types';
 
 export interface IndentListOptions<V extends Value = Value>
   extends SetIndentOptions<V> {
+  at?: Location;
   listStyleType?: ListStyleType | string;
 }
 

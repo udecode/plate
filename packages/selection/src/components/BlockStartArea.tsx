@@ -12,6 +12,10 @@ export const useBlockStartArea = ({
   return {
     props: {
       className: `slate-start-area slate-start-area-${placement}`,
+      onContextMenu: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        e.stopPropagation();
+        e.preventDefault();
+      },
       style: {
         bottom: ['bottom'].includes(placement) ? 0 : undefined,
         cursor: 'text',

@@ -7,6 +7,8 @@ import {
   getNodeEntries,
   getParentNode,
   isHotkey,
+  isSelectionAtBlockEnd,
+  isSelectionAtBlockStart,
   select,
   withoutNormalizing,
 } from '@udecode/plate-common/server';
@@ -63,6 +65,9 @@ export const onKeyDownCodeBlock =
 
       const { codeBlock } = res;
       const [, codeBlockPath] = codeBlock;
+
+      if (isSelectionAtBlockEnd(editor) && isSelectionAtBlockStart(editor))
+        return;
 
       // select the whole code block
       select(editor, codeBlockPath);

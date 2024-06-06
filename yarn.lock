@@ -4952,6 +4952,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/katex@npm:0.16.7":
+  version: 0.16.7
+  resolution: "@types/katex@npm:0.16.7"
+  checksum: 10c0/68dcb9f68a90513ec78ca0196a142e15c2a2c270b1520d752bafd47a99207115085a64087b50140359017d7e9c870b3c68e7e4d36668c9e348a9ef0c48919b5a
+  languageName: node
+  linkType: hard
+
 "@types/liftoff@npm:^4.0.0":
   version: 4.0.3
   resolution: "@types/liftoff@npm:4.0.3"
@@ -5692,6 +5699,22 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@udecode/plate-callout@workspace:packages/callout":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-callout@workspace:packages/callout"
+  dependencies:
+    "@udecode/plate-common": "workspace:^"
+  peerDependencies:
+    "@udecode/plate-common": ">=31.3.2"
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.94.0"
+    slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
+    slate-react: ">=0.99.0"
+  languageName: unknown
+  linkType: soft
+
 "@udecode/plate-caption@workspace:^, @udecode/plate-caption@workspace:packages/caption":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-caption@workspace:packages/caption"
@@ -6142,6 +6165,24 @@ __metadata:
     "@udecode/plate-common": "workspace:^"
     "@udecode/plate-reset-node": "npm:33.0.0"
     lodash: "npm:^4.17.21"
+  peerDependencies:
+    "@udecode/plate-common": ">=33.0.4"
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.94.0"
+    slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
+    slate-react: ">=0.99.0"
+  languageName: unknown
+  linkType: soft
+
+"@udecode/plate-math@workspace:packages/math":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-math@workspace:packages/math"
+  dependencies:
+    "@types/katex": "npm:0.16.7"
+    "@udecode/plate-common": "workspace:^"
+    katex: "npm:0.16.10"
   peerDependencies:
     "@udecode/plate-common": ">=33.0.4"
     react: ">=16.8.0"
@@ -8185,6 +8226,13 @@ __metadata:
   version: 6.2.1
   resolution: "commander@npm:6.2.1"
   checksum: 10c0/85748abd9d18c8bc88febed58b98f66b7c591d9b5017cad459565761d7b29ca13b7783ea2ee5ce84bf235897333706c4ce29adf1ce15c8252780e7000e2ce9ea
+  languageName: node
+  linkType: hard
+
+"commander@npm:^8.3.0":
+  version: 8.3.0
+  resolution: "commander@npm:8.3.0"
+  checksum: 10c0/8b043bb8322ea1c39664a1598a95e0495bfe4ca2fad0d84a92d7d1d8d213e2a155b441d2470c8e08de7c4a28cf2bc6e169211c49e1b21d9f7edc6ae4d9356060
   languageName: node
   linkType: hard
 
@@ -13466,6 +13514,17 @@ __metadata:
   bin:
     juice: bin/juice
   checksum: 10c0/c67d328d5865ad32e938708bf38608bd0c856d9c9e226e43f293b049a3ae37340323c6e746288166a108e5ee7c0d00c2480d769c455094d9a7f0205534e44246
+  languageName: node
+  linkType: hard
+
+"katex@npm:0.16.10":
+  version: 0.16.10
+  resolution: "katex@npm:0.16.10"
+  dependencies:
+    commander: "npm:^8.3.0"
+  bin:
+    katex: cli.js
+  checksum: 10c0/b465213157e5245bbb31ff6563c33ae81807c06d6f2246325b3a2397497e8929a34eebbb262f5e0991ec00fbc0cc85f388246e6dfc38ec86c28d3e481cb70afa
   languageName: node
   linkType: hard
 

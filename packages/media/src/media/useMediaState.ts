@@ -6,6 +6,7 @@ import { useFocused, useReadOnly, useSelected } from 'slate-react';
 import type { TMediaElement } from './types';
 
 import { VIDEO_PROVIDERS } from '../media-embed';
+import { ELEMENT_VIDEO } from '../video';
 
 export type EmbedUrlData = {
   id?: string;
@@ -25,10 +26,10 @@ export const useMediaState = ({
   const selected = useSelected();
   const readOnly = useReadOnly();
 
-  const { align, url } = element;
+  const { align = 'left', id, isUpload, name, type, url } = element;
 
   const embed = React.useMemo(() => {
-    if (!urlParsers) return;
+    if (!urlParsers || type !== ELEMENT_VIDEO) return;
 
     for (const parser of urlParsers) {
       const data = parser(url);
@@ -37,6 +38,7 @@ export const useMediaState = ({
         return data;
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [urlParsers, url]);
 
   const isTweet = embed?.provider === 'twitter';
@@ -47,10 +49,14 @@ export const useMediaState = ({
     align,
     embed,
     focused,
+    id,
     isTweet,
+    isUpload,
     isVideo,
     isYoutube,
+    name,
     readOnly,
     selected,
+    url,
   };
 };
