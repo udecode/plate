@@ -1,5 +1,32 @@
 # @udecode/plate-combobox
 
+## 34.0.0
+
+### Major Changes
+
+- [#3168](https://github.com/udecode/plate/pull/3168) by [@12joan](https://github.com/12joan) –
+  - Major rework. The combobox package is no longer a plugin. Instead, it is now a collection of utilities that can be used by other plugins and components.
+  - Added the following exports:
+    - `withTriggerCombobox`: Insert a combobox input when a trigger character is typed
+    - `TriggerComboboxPlugin`: Plugin options type for `withTriggerCombobox`
+    - `useComboboxInput`: Manages the behavior of an inline combobox input element
+    - `useHTMLInputCursorState`: Tracks whether the cursor is at the start or end of a HTML `<input type="text">` element
+    - `ComboboxInputCursorState`: Return type for `useHTMLInputCursorState`
+    - `CancelComboboxInputCause`: A unison type of possible reasons why a combobox input may be cancelled (used by `useComboboxInput`)
+  - Removed the following exports:
+    - `comboboxStore`
+    - `createComboboxPlugin`
+    - `useComboboxContent`
+    - `useComboboxControls`
+    - `useComboboxItem`
+    - `onChangeCombobox`
+    - `onKeyDownCombobox`
+    - `ComboboxOnSelectItem`
+    - `ComboboxProps`
+    - `getNextNonDisabledIndex`
+    - `getNextWrappingIndex`
+    - `getTextFromTrigger`
+
 ## 33.0.0
 
 ## 32.0.0

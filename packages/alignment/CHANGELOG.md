@@ -1,5 +1,7 @@
 # @udecode/plate-alignment
 
+## 34.0.0
+
 ## 33.0.6
 
 ### Patch Changes

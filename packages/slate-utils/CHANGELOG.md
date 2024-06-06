@@ -1,5 +1,11 @@
 # @udecode/slate-utils
 
+## 34.0.0
+
+### Minor Changes
+
+- [#3241](https://github.com/udecode/plate/pull/3241) by [@felixfeng33](https://github.com/felixfeng33) – Add new queries `getAncestorNode` and `getNodesRange`
+
 ## 32.0.1
 
 ## 31.3.2

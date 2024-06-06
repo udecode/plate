@@ -1,5 +1,11 @@
 # @udecode/plate-indent-list
 
+## 34.0.0
+
+### Patch Changes
+
+- [#3241](https://github.com/udecode/plate/pull/3241) by [@felixfeng33](https://github.com/felixfeng33) – Add `toggleIndentListByPath`, add `indentList` options
+
 ## 33.0.3
 
 ## 33.0.2

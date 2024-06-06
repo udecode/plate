@@ -1,5 +1,11 @@
 # @udecode/plate-dnd
 
+## 34.0.0
+
+### Minor Changes
+
+- [#3241](https://github.com/udecode/plate/pull/3241) by [@felixfeng33](https://github.com/felixfeng33) – Add selection after dragging ends.
+
 ## 33.0.0
 
 ## 32.0.0

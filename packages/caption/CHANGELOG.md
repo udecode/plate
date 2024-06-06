@@ -1,5 +1,12 @@
 # @udecode/plate-caption
 
+## 34.0.0
+
+### Major Changes
+
+- [#3241](https://github.com/udecode/plate/pull/3241) by [@felixfeng33](https://github.com/felixfeng33) –
+  - Breaking change: the empty caption textarea is no longer showed on image focus. You can use the caption store to show the caption textarea.
+
 ## 33.0.2
 
 ### Patch Changes
