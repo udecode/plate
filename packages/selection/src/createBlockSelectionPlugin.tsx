@@ -15,6 +15,7 @@ import { withSelection } from './withSelection';
 export const KEY_BLOCK_SELECTION = 'blockSelection';
 
 export interface BlockSelectionPlugin {
+  disableContextMenu?: boolean;
   onKeyDownSelecting?: (e: KeyboardEvent) => void;
   query?: QueryNodeOptions;
   sizes?: {
