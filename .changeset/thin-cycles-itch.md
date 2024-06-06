@@ -1,5 +1,5 @@
 ---
-"@udecode/plate-indent-list": patch
+'@udecode/plate-indent-list': patch
 ---
 
-add `toggleIndentListByPath` ,`indentList` add at option
+Add `toggleIndentListByPath`, add `indentList` options

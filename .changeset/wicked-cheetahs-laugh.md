@@ -1,5 +1,5 @@
 ---
-"@udecode/plate-utils": minor
+'@udecode/plate-utils': minor
 ---
 
-add `addSelectedRow` which depend on blockSelection plugin
+Add `addSelectedRow` which depends on `blockSelection` plugin

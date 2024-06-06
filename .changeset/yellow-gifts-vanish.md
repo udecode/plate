@@ -1,5 +1,5 @@
 ---
-"@udecode/plate-core": patch
+'@udecode/plate-core': patch
 ---
 
-Fix the issue where the `toggleNodeType` function does not work when passing `at`.
+Fix: `toggleNodeType` not working using `at`.

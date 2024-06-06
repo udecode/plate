@@ -1,5 +1,5 @@
 ---
-"@udecode/plate-dnd": minor
+'@udecode/plate-dnd': minor
 ---
 
-add selection after dragging ends.
+Add selection after dragging ends.

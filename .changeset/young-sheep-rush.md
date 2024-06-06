@@ -1,5 +1,5 @@
 ---
-"@udecode/plate-code-block": patch
+'@udecode/plate-code-block': patch
 ---
 
-fix selection all
+Fix select all

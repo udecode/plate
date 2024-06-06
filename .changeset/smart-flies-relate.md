@@ -1,5 +1,5 @@
 ---
-"@udecode/plate-callout": minor
+'@udecode/plate-callout': minor
 ---
 
-add new plugin `callout`.
+Add new plugin `callout`

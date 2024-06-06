@@ -1,5 +1,5 @@
 ---
-"@udecode/plate-heading": minor
+'@udecode/plate-heading': minor
 ---
 
-add `Toc Plugin` and `Toc Sidebar`
+Add ToC plugin and sidebar

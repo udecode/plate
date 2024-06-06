@@ -1,5 +1,5 @@
 ---
-"@udecode/plate-link": patch
+'@udecode/plate-link': patch
 ---
 
-fix link button make floating toolbar close.
+Fix link button closing the floating toolbar.

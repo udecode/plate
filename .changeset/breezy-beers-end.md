@@ -1,5 +1,5 @@
 ---
-"@udecode/plate-floating": patch
+'@udecode/plate-floating': patch
 ---
 
-Only pop up `floating-toolbar` after the selection is complete.
+Fix: only pop up `floating-toolbar` after the selection is complete.

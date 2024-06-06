@@ -1,5 +1,5 @@
 ---
-"@udecode/plate-math": minor
+'@udecode/plate-math': minor
 ---
 
-new plugins `equation` and `inlineEquation`.
+Add `equation` and `inlineEquation` plugins.

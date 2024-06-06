@@ -1,5 +1,5 @@
 ---
-"@udecode/plate-media": minor
+'@udecode/plate-media': minor
 ---
 
-add plugins `mediaPlaceholder`, `video`,`audio` and `file`.
+Add plugins: `mediaPlaceholder`, `video`,`audio` and `file`

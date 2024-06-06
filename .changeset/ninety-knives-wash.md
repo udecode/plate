@@ -1,5 +1,5 @@
 ---
-"@udecode/slate-utils": minor
+'@udecode/slate-utils': minor
 ---
 
-add new queryies utils `getAncestorNode` and `getNodesRange`
+Add new queries `getAncestorNode` and `getNodesRange`

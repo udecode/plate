@@ -1,5 +1,5 @@
 ---
-"@udecode/plate-font": minor
+'@udecode/plate-font': minor
 ---
 
-add new transformas `setBlockBackgroundColor`.
+Add new transforms `setBlockBackgroundColor`.

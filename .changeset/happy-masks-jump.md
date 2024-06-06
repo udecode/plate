@@ -1,5 +1,5 @@
 ---
-"@udecode/plate-layout": minor
+'@udecode/plate-layout': minor
 ---
 
-add `toggleColumns` and fix select all.
+Add `toggleColumns` and fix select all.
