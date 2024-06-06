@@ -3,5 +3,6 @@
  */
 
 export * from './Caption';
+export * from './CaptionButton';
 export * from './CaptionTextarea';
 export * from './TextareaAutosize';
