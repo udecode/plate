@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
-import { mapNodeId } from '@/plate/demo/mapNodeId';
-import { Value } from '@udecode/plate-common';
 
-import { customizerPlugins, ValueId } from '@/config/customizer-plugins';
+import type { Value } from '@udecode/plate-common';
+
 import { settingsStore } from '@/components/context/settings-store';
+import { type ValueId, customizerPlugins } from '@/config/customizer-plugins';
+import { mapNodeId } from '@/plate/demo/mapNodeId';
 
 import { alignValue } from './alignValue';
 import { autoformatValue } from './autoformatValue';
@@ -37,9 +38,11 @@ import { toggleValue } from './toggleValue';
 
 export const usePlaygroundValue = (id?: ValueId) => {
   let valueId = settingsStore.use.valueId();
+
   if (id) {
     valueId = id;
   }
+
   const enabled = settingsStore.use.checkedPlugins();
 
   return useMemo(() => {
@@ -53,21 +56,18 @@ export const usePlaygroundValue = (id?: ValueId) => {
     if (valueId === 'tableMerge') {
       return mapNodeId(tableMergeValue);
     }
-
     if (valueId !== customizerPlugins.playground.id) {
       const newValue = (customizerPlugins as any)[valueId]?.value ?? value;
+
       return mapNodeId(newValue);
     }
-
     // Marks
     if (enabled.color || enabled.backgroundColor) value.push(...fontValue);
     if (enabled.highlight) value.push(...highlightValue);
     if (enabled.kbd) value.push(...kbdValue);
-
     // Inline nodes
     if (enabled.mention) value.push(...mentionValue);
     if (enabled.emoji) value.push(...emojiValue);
-
     // Nodes
     if (enabled.align) value.push(...alignValue);
     if (enabled.lineHeight) value.push(...lineHeightValue);
@@ -79,23 +79,21 @@ export const usePlaygroundValue = (id?: ValueId) => {
     if (enabled.table) value.push(...tableValue);
     if (enabled.column) value.push(...columnValue);
     if (enabled.toggle) value.push(...toggleValue);
-
     // Functionalities
     if (enabled.autoformat) value.push(...autoformatValue);
     if (enabled.softBreak) value.push(...softBreakValue);
     if (enabled.exitBreak) value.push(...exitBreakValue);
     if (enabled.dragOverCursor) value.push(...cursorOverlayValue);
     if (enabled.tabbable) value.push(...tabbableValue);
-
     // Collaboration
     if (enabled.comment) value.push(...commentsValue);
 
     // Deserialization
     value.push(...deserializeHtmlValue);
+
     if (enabled.deserializeMd) value.push(...deserializeMdValue);
     if (enabled.deserializeDocx) value.push(...deserializeDocxValue);
     if (enabled.deserializeCsv) value.push(...deserializeCsvValue);
-
     // Exceptions
     if (enabled.trailingBlock) value.push(...trailingBlockValue);
     if (enabled.excalidraw) value.push(...excalidrawValue);

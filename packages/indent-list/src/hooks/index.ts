@@ -5,4 +5,5 @@
 export * from './someIndentList';
 export * from './someIndentTodo';
 export * from './useIndentListToolbarButton';
+export * from './useIndentTodoListElement';
 export * from './useIndentTodoToolbarButton';

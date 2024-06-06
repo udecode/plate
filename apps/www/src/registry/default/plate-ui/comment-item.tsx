@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+
 import {
   CommentProvider,
   useCommentById,
@@ -20,11 +21,11 @@ type PlateCommentProps = {
 function CommentItemContent() {
   const {
     comment,
+    commentText,
+    editingValue,
     isMyComment,
     isReplyComment,
     user,
-    editingValue,
-    commentText,
   } = useCommentItemContentState();
 
   return (
@@ -60,10 +61,11 @@ function CommentItemContent() {
 
 export function CommentItem({ commentId }: PlateCommentProps) {
   const comment = useCommentById(commentId);
+
   if (!comment) return null;
 
   return (
-    <CommentProvider key={commentId} id={commentId}>
+    <CommentProvider id={commentId} key={commentId}>
       <CommentItemContent />
     </CommentProvider>
   );

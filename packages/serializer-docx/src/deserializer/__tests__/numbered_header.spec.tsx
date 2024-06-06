@@ -11,7 +11,6 @@ const name = 'numbered_header';
 
 describe(getDocxTestName(name), () => {
   testDocxDeserializer({
-    filename: name,
     expected: (
       <editor>
         <hh1 indent={1} listStyleType="decimal">
@@ -19,6 +18,7 @@ describe(getDocxTestName(name), () => {
         </hh1>
       </editor>
     ),
+    filename: name,
     plugins: [createIndentListPlugin()],
   });
 });

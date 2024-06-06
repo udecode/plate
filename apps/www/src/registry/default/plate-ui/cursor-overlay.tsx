@@ -1,11 +1,12 @@
 import React from 'react';
+
 import { cn } from '@udecode/cn';
 import { createZustandStore } from '@udecode/plate-common';
 import {
-  CursorData,
+  type CursorData,
   CursorOverlay as CursorOverlayPrimitive,
-  CursorOverlayProps,
-  CursorProps,
+  type CursorOverlayProps,
+  type CursorProps,
 } from '@udecode/plate-cursor';
 
 export const cursorStore = createZustandStore('cursor')({
@@ -13,12 +14,12 @@ export const cursorStore = createZustandStore('cursor')({
 });
 
 export function Cursor({
-  data,
-  selectionRects,
   caretPosition,
+  classNames,
+  data,
   disableCaret,
   disableSelection,
-  classNames,
+  selectionRects,
 }: CursorProps<CursorData>) {
   if (!data) {
     return null;
@@ -31,11 +32,11 @@ export function Cursor({
       {!disableSelection &&
         selectionRects.map((position, i) => (
           <div
-            key={i}
             className={cn(
               'pointer-events-none absolute z-10 opacity-30',
               classNames?.selectionRect
             )}
+            key={i}
             style={{
               ...selectionStyle,
               ...position,

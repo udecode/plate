@@ -3,10 +3,10 @@ import { mergeClientRects } from './mergeClientRects';
 
 describe('mergeClientRects', () => {
   const rect1 = makeClientRect({
-    top: 10,
-    left: 10,
     bottom: 90,
+    left: 10,
     right: 90,
+    top: 10,
   });
 
   describe('when given a single rect', () => {
@@ -22,10 +22,10 @@ describe('mergeClientRects', () => {
 
   describe('when the second rect is above and to the left of the first', () => {
     const rect2 = makeClientRect({
-      top: 0,
-      left: 0,
       bottom: 5,
+      left: 0,
       right: 5,
+      top: 0,
     });
 
     it('extends the top and left', () => {
@@ -40,10 +40,10 @@ describe('mergeClientRects', () => {
 
   describe('when the second rect overlaps the top-left corner of the first', () => {
     const rect2 = makeClientRect({
-      top: 0,
-      left: 0,
       bottom: 20,
+      left: 0,
       right: 20,
+      top: 0,
     });
 
     it('extends the top and left', () => {
@@ -58,10 +58,10 @@ describe('mergeClientRects', () => {
 
   describe('when the second rect is below and to the right of the first', () => {
     const rect2 = makeClientRect({
-      top: 100,
-      left: 100,
       bottom: 105,
+      left: 100,
       right: 105,
+      top: 100,
     });
 
     it('extends the bottom and right', () => {
@@ -76,10 +76,10 @@ describe('mergeClientRects', () => {
 
   describe('when the second rect overlaps the bottom-right corner of the first', () => {
     const rect2 = makeClientRect({
-      top: 80,
-      left: 80,
       bottom: 100,
+      left: 80,
       right: 100,
+      top: 80,
     });
 
     it('extends the bottom and right', () => {
@@ -94,10 +94,10 @@ describe('mergeClientRects', () => {
 
   describe('when the second rect is contained within the first', () => {
     const rect2 = makeClientRect({
-      top: 20,
-      left: 20,
       bottom: 80,
+      left: 20,
       right: 80,
+      top: 20,
     });
 
     it('returns the first rect', () => {
@@ -112,10 +112,10 @@ describe('mergeClientRects', () => {
 
   describe('when the second rect encloses the first', () => {
     const rect2 = makeClientRect({
-      top: 0,
-      left: 0,
       bottom: 100,
+      left: 0,
       right: 100,
+      top: 0,
     });
 
     it('returns the second rect', () => {

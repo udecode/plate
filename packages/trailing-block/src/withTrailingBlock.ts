@@ -1,19 +1,20 @@
 import {
   ELEMENT_DEFAULT,
+  type PlateEditor,
+  type Value,
+  type WithPlatePlugin,
   getLastNodeByLevel,
   getPluginType,
   insertElements,
-  PlateEditor,
   queryNode,
-  Value,
-  WithPlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
-import { TrailingBlockPlugin } from './createTrailingBlockPlugin';
+import type { TrailingBlockPlugin } from './createTrailingBlockPlugin';
 
 /**
- * Add a trailing block when the last node type is not `type` and when the editor has .
+ * Add a trailing block when the last node type is not `type` and when the
+ * editor has .
  */
 export const withTrailingBlock = <
   V extends Value = Value,
@@ -21,7 +22,7 @@ export const withTrailingBlock = <
 >(
   editor: E,
   {
-    options: { type = getPluginType(editor, ELEMENT_DEFAULT), level, ...query },
+    options: { level, type = getPluginType(editor, ELEMENT_DEFAULT), ...query },
   }: WithPlatePlugin<TrailingBlockPlugin, V, E>
 ) => {
   const { normalizeNode } = editor;
@@ -38,7 +39,8 @@ export const withTrailingBlock = <
       ) {
         const at = lastChild ? Path.next(lastChild[1]) : [0];
 
-        insertElements(editor, editor.blockFactory({}, at), { at });
+        insertElements(editor, editor.blockFactory({ type }, at), { at });
+
         return;
       }
     }

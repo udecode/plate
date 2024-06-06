@@ -1,13 +1,13 @@
 import {
+  type PlateEditor,
+  type TElement,
+  type Value,
   getNodeEntries,
   isCollapsed,
   isText,
-  PlateEditor,
   setNodes,
-  TElement,
   unsetNodes,
-  Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { getTableGridAbove } from './queries';
 
@@ -17,17 +17,18 @@ export const withMarkTable = <
 >(
   editor: E
 ) => {
-  const { addMark, removeMark, getMarks } = editor;
+  const { addMark, getMarks, removeMark } = editor;
 
   editor.addMark = (key: string, value: any) => {
     const { selection } = editor;
+
     if (!selection || isCollapsed(selection)) return addMark(key, value);
 
     const matchesCell = getTableGridAbove(editor, { format: 'cell' });
 
     if (matchesCell.length <= 1) return addMark(key, value);
 
-    matchesCell.forEach(([cell, cellPath]) => {
+    matchesCell.forEach(([_cell, cellPath]) => {
       setNodes<TElement>(
         editor,
         {
@@ -45,13 +46,14 @@ export const withMarkTable = <
 
   editor.removeMark = (key: string) => {
     const { selection } = editor;
+
     if (!selection || isCollapsed(selection)) return removeMark(key);
 
     const matchesCell = getTableGridAbove(editor, { format: 'cell' });
 
     if (matchesCell.length === 0) return removeMark(key);
 
-    matchesCell.forEach(([cell, cellPath]) => {
+    matchesCell.forEach(([_cell, cellPath]) => {
       unsetNodes(editor, key, {
         at: cellPath,
         match: (n) => isText(n),
@@ -72,7 +74,7 @@ export const withMarkTable = <
 
     const totalMarks: Record<string, any> = {};
 
-    matchesCell.forEach(([cell, cellPath]) => {
+    matchesCell.forEach(([_cell, cellPath]) => {
       const textNodeEntry = getNodeEntries(editor, {
         at: cellPath,
         match: (n) => isText(n),
@@ -80,6 +82,7 @@ export const withMarkTable = <
 
       Array.from(textNodeEntry, (item) => item[0]).forEach((item) => {
         const keys = Object.keys(item);
+
         if (keys.length === 1) return;
 
         keys.splice(keys.indexOf('text'), 1);

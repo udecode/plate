@@ -1,9 +1,9 @@
 import {
+  type TEditor,
+  type TElement,
+  type Value,
   getNodeEntries,
-  TEditor,
-  TElement,
-  Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { blockSelectionSelectors } from '../blockSelectionStore';
 
@@ -16,4 +16,10 @@ export const getSelectedBlocks = <V extends Value>(editor: TEditor<V>) => {
       match: (n) => selectedIds.has((n as TElement).id),
     }),
   ];
+};
+
+export const isBlockSelected = (node: TElement) => {
+  const selectedIds = blockSelectionSelectors.selectedIds();
+
+  return node.id && selectedIds.has(node.id);
 };

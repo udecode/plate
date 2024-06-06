@@ -1,10 +1,12 @@
 'use client';
 
 import React from 'react';
+
 import { cn, withRef } from '@udecode/cn';
 
+import type { TColor } from './color-dropdown-menu';
+
 import { buttonVariants } from './button';
-import { TColor } from './color-dropdown-menu';
 import { ColorDropdownMenuItems } from './color-dropdown-menu-items';
 import { ColorsCustom } from './colors-custom';
 import { DropdownMenuItem } from './dropdown-menu';
@@ -13,31 +15,31 @@ import { Separator } from './separator';
 export const ColorPickerContent = withRef<
   'div',
   {
+    clearColor: () => void;
     color?: string;
     colors: TColor[];
     customColors: TColor[];
     updateColor: (color: string) => void;
     updateCustomColor: (color: string) => void;
-    clearColor: () => void;
   }
 >(
   (
     {
+      className,
+      clearColor,
       color,
       colors,
       customColors,
       updateColor,
       updateCustomColor,
-      clearColor,
-      className,
       ...props
     },
     ref
   ) => {
     return (
       <div
-        ref={ref}
         className={cn('flex flex-col gap-4 p-4', className)}
+        ref={ref}
         {...props}
       >
         <ColorsCustom
@@ -58,8 +60,8 @@ export const ColorPickerContent = withRef<
         {color && (
           <DropdownMenuItem
             className={buttonVariants({
-              variant: 'outline',
               isMenu: true,
+              variant: 'outline',
             })}
             onClick={clearColor}
           >

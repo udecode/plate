@@ -1,27 +1,26 @@
+import { type PlateProps, pluginRenderLeaf } from '@udecode/plate-common';
 import {
+  type PlateEditor,
+  type PlateRenderLeafProps,
+  type Value,
   pipeInjectProps,
-  PlateEditor,
-  PlateProps,
-  PlateRenderLeafProps,
-  pluginRenderLeaf,
-  Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { decode } from 'html-entities';
-import { renderToStaticMarkup } from 'react-dom/server';
 
 import { createElementWithSlate } from './utils/createElementWithSlate';
+import { renderToStaticMarkup } from './utils/renderToStaticMarkupClient';
 import { stripClassNames } from './utils/stripClassNames';
 
 export const leafToHtml = <V extends Value>(
   editor: PlateEditor<V>,
   {
-    props,
     plateProps,
     preserveClassNames,
+    props,
   }: {
-    props: PlateRenderLeafProps<V>;
     plateProps?: Partial<PlateProps>;
     preserveClassNames?: string[];
+    props: PlateRenderLeafProps<V>;
   }
 ) => {
   const { children } = props;

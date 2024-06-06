@@ -1,5 +1,21 @@
 # @udecode/plate-list
 
+## 33.0.3
+
+### Patch Changes
+
+- [#3194](https://github.com/udecode/plate/pull/3194) by [@KorovinQuantori](https://github.com/KorovinQuantori) – Export plugin keys for easier access plugin options by key
+
+## 33.0.2
+
+### Patch Changes
+
+- [#3187](https://github.com/udecode/plate/pull/3187) by [@zbeyens](https://github.com/zbeyens) – Fix types
+
+## 33.0.0
+
+## 32.0.0
+
 ## 31.1.3
 
 ### Patch Changes

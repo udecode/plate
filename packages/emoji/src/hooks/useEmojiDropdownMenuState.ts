@@ -4,19 +4,19 @@ import {
   EmojiFloatingIndexSearch,
   EmojiFloatingLibrary,
   EmojiSettings,
-  EmojiSettingsType,
+  type EmojiSettingsType,
   FrequentEmojiStorage,
   useEmojiPicker,
 } from '../index';
 
 export type EmojiDropdownMenuOptions = {
-  settings?: EmojiSettingsType;
   closeOnSelect?: boolean;
+  settings?: EmojiSettingsType;
 };
 
 export function useEmojiDropdownMenuState({
-  settings = EmojiSettings,
   closeOnSelect = true,
+  settings = EmojiSettings,
 }: EmojiDropdownMenuOptions = {}) {
   const [emojiLibrary, indexSearch] = useStableMemo(() => {
     const frequentEmojiStorage = new FrequentEmojiStorage({
@@ -42,8 +42,8 @@ export function useEmojiDropdownMenuState({
   });
 
   return {
+    emojiPickerState,
     isOpen,
     setIsOpen,
-    emojiPickerState,
   };
 }

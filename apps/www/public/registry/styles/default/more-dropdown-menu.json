@@ -1,17 +1,17 @@
 {
-  "name": "more-dropdown-menu",
   "dependencies": [
     "@udecode/plate-basic-marks"
   ],
+  "files": [
+    {
+      "content": "import React from 'react';\n\nimport type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';\n\nimport { MARK_SUBSCRIPT, MARK_SUPERSCRIPT } from '@udecode/plate-basic-marks';\nimport { focusEditor, toggleMark, useEditorRef } from '@udecode/plate-common';\n\nimport { Icons } from '@/components/icons';\n\nimport {\n  DropdownMenu,\n  DropdownMenuContent,\n  DropdownMenuItem,\n  DropdownMenuTrigger,\n  useOpenState,\n} from './dropdown-menu';\nimport { ToolbarButton } from './toolbar';\n\nexport function MoreDropdownMenu(props: DropdownMenuProps) {\n  const editor = useEditorRef();\n  const openState = useOpenState();\n\n  return (\n    <DropdownMenu modal={false} {...openState} {...props}>\n      <DropdownMenuTrigger asChild>\n        <ToolbarButton pressed={openState.open} tooltip=\"Insert\">\n          <Icons.more />\n        </ToolbarButton>\n      </DropdownMenuTrigger>\n\n      <DropdownMenuContent\n        align=\"start\"\n        className=\"flex max-h-[500px] min-w-[180px] flex-col gap-0.5 overflow-y-auto\"\n      >\n        <DropdownMenuItem\n          onSelect={() => {\n            toggleMark(editor, {\n              clear: MARK_SUPERSCRIPT,\n              key: MARK_SUBSCRIPT,\n            });\n            focusEditor(editor);\n          }}\n        >\n          <Icons.superscript className=\"mr-2 size-5\" />\n          Superscript\n          {/* (⌘+,) */}\n        </DropdownMenuItem>\n        <DropdownMenuItem\n          onSelect={() => {\n            toggleMark(editor, {\n              clear: MARK_SUBSCRIPT,\n              key: MARK_SUPERSCRIPT,\n            });\n            focusEditor(editor);\n          }}\n        >\n          <Icons.subscript className=\"mr-2 size-5\" />\n          Subscript\n          {/* (⌘+.) */}\n        </DropdownMenuItem>\n      </DropdownMenuContent>\n    </DropdownMenu>\n  );\n}\n",
+      "name": "more-dropdown-menu.tsx"
+    }
+  ],
+  "name": "more-dropdown-menu",
   "registryDependencies": [
     "dropdown-menu",
     "toolbar"
-  ],
-  "files": [
-    {
-      "name": "more-dropdown-menu.tsx",
-      "content": "import React from 'react';\nimport { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';\nimport { MARK_SUBSCRIPT, MARK_SUPERSCRIPT } from '@udecode/plate-basic-marks';\nimport { focusEditor, toggleMark, useEditorRef } from '@udecode/plate-common';\n\nimport { Icons } from '@/components/icons';\n\nimport {\n  DropdownMenu,\n  DropdownMenuContent,\n  DropdownMenuItem,\n  DropdownMenuTrigger,\n  useOpenState,\n} from './dropdown-menu';\nimport { ToolbarButton } from './toolbar';\n\nexport function MoreDropdownMenu(props: DropdownMenuProps) {\n  const editor = useEditorRef();\n  const openState = useOpenState();\n\n  return (\n    <DropdownMenu modal={false} {...openState} {...props}>\n      <DropdownMenuTrigger asChild>\n        <ToolbarButton pressed={openState.open} tooltip=\"Insert\">\n          <Icons.more />\n        </ToolbarButton>\n      </DropdownMenuTrigger>\n\n      <DropdownMenuContent\n        align=\"start\"\n        className=\"flex max-h-[500px] min-w-[180px] flex-col gap-0.5 overflow-y-auto\"\n      >\n        <DropdownMenuItem\n          onSelect={() => {\n            toggleMark(editor, {\n              key: MARK_SUBSCRIPT,\n              clear: MARK_SUPERSCRIPT,\n            });\n            focusEditor(editor);\n          }}\n        >\n          <Icons.superscript className=\"mr-2 size-5\" />\n          Superscript\n          {/* (⌘+,) */}\n        </DropdownMenuItem>\n        <DropdownMenuItem\n          onSelect={() => {\n            toggleMark(editor, {\n              key: MARK_SUPERSCRIPT,\n              clear: MARK_SUBSCRIPT,\n            });\n            focusEditor(editor);\n          }}\n        >\n          <Icons.subscript className=\"mr-2 size-5\" />\n          Subscript\n          {/* (⌘+.) */}\n        </DropdownMenuItem>\n      </DropdownMenuContent>\n    </DropdownMenu>\n  );\n}\n"
-    }
   ],
   "type": "components:plate-ui"
 }

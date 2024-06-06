@@ -1,14 +1,17 @@
 import React from 'react';
-import {
+
+import type {
   PlateEditor,
-  useEditorVersion,
   Value,
   WithPlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
+
+import { useEditorVersion } from '@udecode/plate-common';
+
+import type { SuggestionPlugin } from './types';
 
 import { findSuggestionNode } from './queries/index';
 import { useSetActiveSuggestionId } from './store/useSetActiveSuggestionId';
-import { SuggestionPlugin } from './types';
 import { getSuggestionId } from './utils/getSuggestionId';
 
 export const useHooksSuggestion = <
@@ -16,16 +19,15 @@ export const useHooksSuggestion = <
   E extends PlateEditor<V> = PlateEditor<V>,
 >(
   editor: E,
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  plugin: WithPlatePlugin<SuggestionPlugin>
+  _plugin: WithPlatePlugin<SuggestionPlugin>
 ) => {
   const version = useEditorVersion();
   const setActiveSuggestionId = useSetActiveSuggestionId();
 
   /**
    * Set the active suggestion to the selected suggestion (or the first such
-   * suggestion if there are multiple). If there is no selected suggestion,
-   * set the active suggestion to null.
+   * suggestion if there are multiple). If there is no selected suggestion, set
+   * the active suggestion to null.
    */
   React.useEffect(() => {
     if (!editor.selection) return;
@@ -35,11 +37,13 @@ export const useHooksSuggestion = <
     };
 
     const suggestionEntry = findSuggestionNode(editor);
+
     if (!suggestionEntry) return resetActiveSuggestion();
 
     const [suggestionNode] = suggestionEntry;
 
     const id = getSuggestionId(suggestionNode);
+
     if (!id) return resetActiveSuggestion();
 
     setActiveSuggestionId(id);

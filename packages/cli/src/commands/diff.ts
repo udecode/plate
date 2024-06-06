@@ -1,11 +1,15 @@
-import { existsSync, promises as fs } from 'fs';
-import path from 'path';
+import type { Change } from 'diff';
+
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { diffLines } from 'diff';
+import { existsSync, promises as fs } from 'fs';
+import path from 'path';
 import * as z from 'zod';
 
-import { Config, getConfig } from '../utils/get-config';
+import type { registryIndexSchema } from '../utils/registry/schema';
+
+import { type Config, getConfig } from '../utils/get-config';
 import { handleError } from '../utils/handle-error';
 import { logger } from '../utils/logger';
 import {
@@ -14,16 +18,13 @@ import {
   getRegistryBaseColor,
   getRegistryIndex,
 } from '../utils/registry';
-import { registryIndexSchema } from '../utils/registry/schema';
 import { transform } from '../utils/transformers';
-
-import type { Change } from 'diff';
 
 const updateOptionsSchema = z.object({
   component: z.string().optional(),
-  yes: z.boolean(),
   cwd: z.string(),
   path: z.string().optional(),
+  yes: z.boolean(),
 });
 
 export const diff = new Command()
@@ -51,6 +52,7 @@ export const diff = new Command()
       }
 
       const config = await getConfig(cwd);
+
       if (!config) {
         logger.warn(
           `Configuration is missing. Please run ${chalk.green(
@@ -69,6 +71,7 @@ export const diff = new Command()
         const projectComponents = registryIndex.filter((item) => {
           for (const file of item.files) {
             const filePath = path.resolve(targetDir, file);
+
             if (existsSync(filePath)) {
               return true;
             }
@@ -79,12 +82,14 @@ export const diff = new Command()
 
         // Check for updates.
         const componentsWithUpdates = [];
+
         for (const component of projectComponents) {
           const changes = await diffComponent(component, config);
+
           if (changes.length > 0) {
             componentsWithUpdates.push({
-              name: component.name,
               changes,
+              name: component.name,
             });
           }
         }
@@ -95,12 +100,15 @@ export const diff = new Command()
         }
 
         logger.info('The following components have updates available:');
+
         for (const component of componentsWithUpdates) {
           logger.info(`- ${component.name}`);
+
           for (const change of component.changes) {
             logger.info(`  - ${change.filePath}`);
           }
         }
+
         logger.break();
         logger.info(
           `Run ${chalk.green(`diff <component>`)} to see the changes.`
@@ -163,13 +171,14 @@ async function diffComponent(
       const fileContent = await fs.readFile(filePath, 'utf8');
 
       const registryContent = await transform({
+        baseColor,
+        config,
         filename: file.name,
         raw: file.content,
-        config,
-        baseColor,
       });
 
       const patch = diffLines(registryContent, fileContent);
+
       if (patch.length > 1) {
         changes.push({
           file: file.name,
@@ -183,6 +192,7 @@ async function diffComponent(
   return changes;
 }
 
+// eslint-disable-next-line @typescript-eslint/require-await
 async function printDiff(diff: Change[]) {
   diff.forEach((part) => {
     if (part) {

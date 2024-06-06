@@ -1,9 +1,5 @@
-import {
-  getPluginType,
-  someNode,
-  useEditorRef,
-  useEditorSelector,
-} from '@udecode/plate-common';
+import { useEditorRef, useEditorSelector } from '@udecode/plate-common';
+import { getPluginType, someNode } from '@udecode/plate-common/server';
 
 import { ELEMENT_LINK, triggerFloatingLink } from '../index';
 
@@ -29,10 +25,13 @@ export const useLinkToolbarButton = (
 
   return {
     props: {
-      pressed: state.pressed,
       onClick: () => {
         triggerFloatingLink(editor, { focused: true });
       },
+      onMouseDown: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        e.preventDefault();
+      },
+      pressed: state.pressed,
     },
   };
 };

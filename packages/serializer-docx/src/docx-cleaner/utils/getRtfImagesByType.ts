@@ -1,4 +1,5 @@
-import { RtfImage } from '../types';
+import type { RtfImage } from '../types';
+
 import { getRtfImageHex } from './getRtfImageHex';
 import { getRtfImageMimeType } from './getRtfImageMimeType';
 import { getRtfImageSpid } from './getRtfImageSpid';

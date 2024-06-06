@@ -1,5 +1,27 @@
 # @udecode/plate-table
 
+## 33.0.7
+
+### Patch Changes
+
+- [#3222](https://github.com/udecode/plate/pull/3222) by [@dimaanj](https://github.com/dimaanj) – fix serializeHtml when overwriteByKey used
+
+## 33.0.2
+
+### Patch Changes
+
+- [#3187](https://github.com/udecode/plate/pull/3187) by [@zbeyens](https://github.com/zbeyens) – Fix types
+
+## 33.0.0
+
+## 32.0.2
+
+### Patch Changes
+
+- [#3172](https://github.com/udecode/plate/pull/3172) by [@KorovinQuantori](https://github.com/KorovinQuantori) – Add computeCellIndices fallback for table insert functions
+
+## 32.0.0
+
 ## 31.4.1
 
 ### Patch Changes

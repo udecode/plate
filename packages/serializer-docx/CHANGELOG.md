@@ -1,5 +1,28 @@
 # @udecode/plate-docx-serializer
 
+## 33.0.7
+
+## 33.0.3
+
+## 33.0.2
+
+## 33.0.1
+
+## 33.0.0
+
+### Patch Changes
+
+- [#3125](https://github.com/udecode/plate/pull/3125) by [@zbeyens](https://github.com/zbeyens) –
+  - Remove plugin dependencies.
+
+## 32.0.2
+
+## 32.0.1
+
+## 32.0.0
+
+## 31.4.3
+
 ## 31.4.1
 
 ## 31.4.0

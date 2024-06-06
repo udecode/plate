@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { createPrimitiveComponent } from '@udecode/plate-common';
 
 import {
@@ -23,8 +24,8 @@ export const useFloatingLinkNewTabInputState = () => {
   }, [updated]);
 
   return {
-    ref,
     checked,
+    ref,
     setChecked,
   };
 };
@@ -44,12 +45,12 @@ export const useFloatingLinkNewTabInput = ({
     );
 
   return {
-    ref,
     props: {
-      onChange,
       checked,
+      onChange,
       type: 'checkbox',
     },
+    ref,
   };
 };
 

@@ -1,7 +1,10 @@
-import { PlateEditor, toDOMNode, Value } from '@udecode/plate-common';
+import type { PlateEditor, Value } from '@udecode/plate-common/server';
+
+import { toDOMNode } from '@udecode/plate-common';
 import clamp from 'lodash/clamp.js';
 
-import { TCommentText } from '../types';
+import type { TCommentText } from '../types';
+
 import { getElementAbsolutePosition } from '../utils/getElementAbsolutePosition';
 
 export const getCommentPosition = <V extends Value>(
@@ -9,14 +12,16 @@ export const getCommentPosition = <V extends Value>(
   node: TCommentText
 ) => {
   const DOMNode = toDOMNode(editor, node);
+
   if (!DOMNode) return;
 
   const DOMNodePosition = getElementAbsolutePosition(DOMNode);
 
   const editorDOMNode = toDOMNode(editor, editor);
+
   if (!editorDOMNode) return;
 
-  const { x: editorX, width: editorWidth } =
+  const { width: editorWidth, x: editorX } =
     editorDOMNode.getBoundingClientRect();
 
   const sidebarWidth = 418;

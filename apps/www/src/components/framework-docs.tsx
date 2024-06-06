@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+
 import { allDocs } from 'contentlayer/generated';
 
 import { Mdx } from './mdx-components';

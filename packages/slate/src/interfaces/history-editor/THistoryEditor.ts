@@ -1,6 +1,9 @@
-import { HistoryEditor } from 'slate-history';
+import type { HistoryEditor } from 'slate-history';
 
-import { TEditor, Value } from '../editor/TEditor';
+import type { TEditor, Value } from '../editor/TEditor';
 
-export type THistoryEditor<V extends Value = Value> = TEditor<V> &
-  Pick<HistoryEditor, 'history' | 'undo' | 'redo'>;
+export type THistoryEditor<V extends Value = Value> = Pick<
+  HistoryEditor,
+  'history' | 'redo' | 'undo' | 'writeHistory'
+> &
+  TEditor<V>;

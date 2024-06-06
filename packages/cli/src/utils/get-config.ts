@@ -1,5 +1,5 @@
-import path from 'path';
 import { cosmiconfig } from 'cosmiconfig';
+import path from 'path';
 import { loadConfig } from 'tsconfig-paths';
 import * as z from 'zod';
 
@@ -8,17 +8,23 @@ import { resolveImport } from './resolve-import';
 /**
  * This module is primarily concerned with loading and validating a project's
  * configuration. It makes use of `cosmiconfig` to find and load a configuration
- * file, in this case, it's looking for a `plate-components.json` or `components.json` file in the root
- * directory of your project. The schema for this config file is defined with
- * the `zod` library. In case there's no configuration file available, it
- * provides a set of default paths and configuration options.
+ * file, in this case, it's looking for a `plate-components.json` or
+ * `components.json` file in the root directory of your project. The schema for
+ * this config file is defined with the `zod` library. In case there's no
+ * configuration file available, it provides a set of default paths and
+ * configuration options.
  */
 
 export const DEFAULT_STYLE = 'default';
+
 export const DEFAULT_PLATE_UI = '@/components/plate-ui';
+
 export const DEFAULT_COMPONENTS = '@/components';
+
 export const DEFAULT_TAILWIND_CSS = 'src/styles/globals.css';
+
 export const DEFAULT_TAILWIND_CONFIG = 'tailwind.config.js';
+
 export const DEFAULT_TAILWIND_BASE_COLOR = 'slate';
 
 // TODO: Figure out if we want to support all cosmiconfig formats.
@@ -31,19 +37,19 @@ const explorerComponents = cosmiconfig('components', {
 
 export const rawConfigSchema = z.object({
   $schema: z.string().optional(),
-  style: z.string(),
-  rsc: z.coerce.boolean().default(false),
-  tailwind: z.object({
-    config: z.string(),
-    css: z.string(),
-    baseColor: z.string(),
-    cssVariables: z.boolean().default(true),
-    prefix: z.string().default('').optional(),
-  }),
   aliases: z.object({
     components: z.string(),
-    ui: z.string().optional(),
     'plate-ui': z.string().optional(),
+    ui: z.string().optional(),
+  }),
+  rsc: z.coerce.boolean().default(false),
+  style: z.string(),
+  tailwind: z.object({
+    baseColor: z.string(),
+    config: z.string(),
+    css: z.string(),
+    cssVariables: z.boolean().default(true),
+    prefix: z.string().default('').optional(),
   }),
 });
 
@@ -51,11 +57,11 @@ export type RawConfig = z.infer<typeof rawConfigSchema>;
 
 export const configSchema = rawConfigSchema.extend({
   resolvedPaths: z.object({
+    components: z.string(),
+    'plate-ui': z.string(),
     tailwindConfig: z.string(),
     tailwindCss: z.string(),
-    components: z.string(),
     ui: z.string(),
-    'plate-ui': z.string(),
   }),
 });
 
@@ -73,7 +79,7 @@ export async function getConfig(cwd: string) {
 
 export async function resolveConfigPaths(cwd: string, config: RawConfig) {
   // Read tsconfig.json.
-  const tsConfig = await loadConfig(cwd);
+  const tsConfig = loadConfig(cwd);
 
   if (tsConfig.resultType === 'failed') {
     throw new Error(
@@ -81,20 +87,20 @@ export async function resolveConfigPaths(cwd: string, config: RawConfig) {
     );
   }
 
-  const ui = config.aliases['ui']
-    ? await resolveImport(config.aliases['ui'], tsConfig)
-    : await resolveImport(config.aliases['components'], tsConfig);
+  const ui = config.aliases.ui
+    ? await resolveImport(config.aliases.ui, tsConfig)
+    : await resolveImport(config.aliases.components, tsConfig);
 
   return configSchema.parse({
     ...config,
     resolvedPaths: {
-      tailwindConfig: path.resolve(cwd, config.tailwind.config),
-      tailwindCss: path.resolve(cwd, config.tailwind.css),
-      components: await resolveImport(config.aliases['components'], tsConfig),
-      ui: ui,
+      components: await resolveImport(config.aliases.components, tsConfig),
       'plate-ui': config.aliases['plate-ui']
         ? await resolveImport(config.aliases['plate-ui'], tsConfig)
         : ui,
+      tailwindConfig: path.resolve(cwd, config.tailwind.config),
+      tailwindCss: path.resolve(cwd, config.tailwind.css),
+      ui: ui,
     },
   });
 }

@@ -1,25 +1,26 @@
 import {
+  type PlateEditor,
+  type SetNodesOptions,
+  type TNodeProps,
+  type Value,
   addRangeMarks,
   getNodeEntries,
   isInline,
   nanoid,
-  PlateEditor,
   setNodes,
-  SetNodesOptions,
-  TNodeProps,
-  Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
-import { SuggestionEditorProps, TSuggestionText } from '../types';
+import type { SuggestionEditorProps, TSuggestionText } from '../types';
+
 import { getSuggestionProps } from './getSuggestionProps';
 
 export const setSuggestionNodes = <V extends Value = Value>(
   editor: PlateEditor<V> & SuggestionEditorProps,
-  options?: SetNodesOptions & {
+  options?: {
     suggestionDeletion?: boolean;
     suggestionId?: string;
-  }
+  } & SetNodesOptions
 ) => {
   const { at = editor.selection, suggestionId = nanoid() } = options ?? {};
 

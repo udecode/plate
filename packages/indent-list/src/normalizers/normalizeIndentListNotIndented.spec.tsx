@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
+import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
 import { createIndentPlugin } from '@udecode/plate-indent';
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -13,7 +13,7 @@ describe('normalizeIndentList', () => {
     it('should remove listStyleType and listStart props', async () => {
       const input = (
         <editor>
-          <hp listStyleType="disc" listStart={1}>
+          <hp listStart={1} listStyleType="disc">
             1
           </hp>
         </editor>
@@ -27,8 +27,8 @@ describe('normalizeIndentList', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [createIndentListPlugin(), createIndentPlugin()],
         normalizeInitialValue: true,
+        plugins: [createIndentListPlugin(), createIndentPlugin()],
       });
 
       expect(editor.children).toEqual(output.children);

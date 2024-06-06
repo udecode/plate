@@ -1,15 +1,17 @@
+import type { PathRef } from 'slate';
+
 import {
+  type PlateEditor,
+  type Value,
   getChildren,
   getNodeEntry,
   isElement,
-  PlateEditor,
   setNodes,
-  Value,
-} from '@udecode/plate-common';
-import { PathRef } from 'slate';
+} from '@udecode/plate-common/server';
+
+import type { TColumnElement, TColumnGroupElement } from '../types';
 
 import { ELEMENT_COLUMN } from '../createColumnPlugin';
-import { TColumnElement, TColumnGroupElement } from '../types';
 
 export const setColumnWidth = <V extends Value>(
   editor: PlateEditor<V>,
@@ -28,7 +30,9 @@ export const setColumnWidth = <V extends Value>(
 
   childPaths.forEach((item, index) => {
     const width = layout[index] + '%';
+
     if (!width) return;
+
     setNodes<TColumnElement>(
       editor,
       { width: width },

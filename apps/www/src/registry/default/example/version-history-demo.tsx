@@ -1,35 +1,36 @@
 import React from 'react';
+
 import { createSoftBreakPlugin } from '@/../../../packages/break/dist';
 import { cn, withProps } from '@udecode/cn';
 import {
-  createBoldPlugin,
-  createItalicPlugin,
   MARK_BOLD,
   MARK_ITALIC,
+  createBoldPlugin,
+  createItalicPlugin,
 } from '@udecode/plate-basic-marks';
 import {
+  Plate,
+  PlateContent,
+  PlateElement,
+  type PlateElementProps,
+  PlateLeaf,
+  type PlateLeafProps,
+  type PlateProps,
+  type Value,
   createPlateEditor,
   createPluginFactory,
   createPlugins,
   isInline,
-  Plate,
-  PlateContent,
-  PlateElement,
-  PlateElementProps,
-  PlateLeaf,
-  PlateLeafProps,
-  PlateProps,
-  Value,
 } from '@udecode/plate-common';
 import {
+  type DiffOperation,
+  type DiffUpdate,
   computeDiff,
-  DiffOperation,
-  DiffUpdate,
   withGetFragmentExcludeDiff,
 } from '@udecode/plate-diff';
 import {
-  createParagraphPlugin,
   ELEMENT_PARAGRAPH,
+  createParagraphPlugin,
 } from '@udecode/plate-paragraph';
 import { useSelected } from 'slate-react';
 
@@ -39,27 +40,27 @@ import { ParagraphElement } from '@/registry/default/plate-ui/paragraph-element'
 const ELEMENT_INLINE = 'inline';
 
 const createInlinePlugin = createPluginFactory({
-  key: ELEMENT_INLINE,
   isElement: true,
   isInline: true,
+  key: ELEMENT_INLINE,
 });
 
 const ELEMENT_INLINE_VOID = 'inlineVoid';
 
 const createInlineVoidPlugin = createPluginFactory({
-  key: ELEMENT_INLINE_VOID,
   isElement: true,
   isInline: true,
   isVoid: true,
+  key: ELEMENT_INLINE_VOID,
 });
 
 const diffOperationColors: Record<DiffOperation['type'], string> = {
-  insert: 'bg-green-200',
   delete: 'bg-red-200',
+  insert: 'bg-green-200',
   update: 'bg-blue-200',
 };
 
-const describeUpdate = ({ properties, newProperties }: DiffUpdate) => {
+const describeUpdate = ({ newProperties, properties }: DiffUpdate) => {
   const addedProps: string[] = [];
   const removedProps: string[] = [];
   const updatedProps: string[] = [];
@@ -70,11 +71,12 @@ const describeUpdate = ({ properties, newProperties }: DiffUpdate) => {
 
     if (oldValue === undefined) {
       addedProps.push(key);
+
       return;
     }
-
     if (newValue === undefined) {
       removedProps.push(key);
+
       return;
     }
 
@@ -86,11 +88,9 @@ const describeUpdate = ({ properties, newProperties }: DiffUpdate) => {
   if (addedProps.length > 0) {
     descriptionParts.push(`Added ${addedProps.join(', ')}`);
   }
-
   if (removedProps.length > 0) {
     descriptionParts.push(`Removed ${removedProps.join(', ')}`);
   }
-
   if (updatedProps.length > 0) {
     updatedProps.forEach((key) => {
       descriptionParts.push(
@@ -106,8 +106,8 @@ const InlineElement = ({ children, ...props }: PlateElementProps) => {
   return (
     <PlateElement
       {...props}
-      className="rounded-sm bg-slate-200/50 p-1"
       as="span"
+      className="rounded-sm bg-slate-200/50 p-1"
     >
       {children}
     </PlateElement>
@@ -116,14 +116,15 @@ const InlineElement = ({ children, ...props }: PlateElementProps) => {
 
 const InlineVoidElement = ({ children, ...props }: PlateElementProps) => {
   const selected = useSelected();
+
   return (
     <PlateElement {...props} as="span">
       <span
-        contentEditable={false}
         className={cn(
           'rounded-sm bg-slate-200/50 p-1',
           selected && 'bg-blue-500 text-white'
         )}
+        contentEditable={false}
       >
         Inline void
       </span>
@@ -135,19 +136,17 @@ const InlineVoidElement = ({ children, ...props }: PlateElementProps) => {
 const MARK_DIFF = 'diff';
 
 const createDiffPlugin = createPluginFactory({
-  key: MARK_DIFF,
-  isLeaf: true,
-  withOverrides: withGetFragmentExcludeDiff,
   inject: {
     aboveComponent:
       () =>
-      ({ element, children, editor }) => {
+      ({ children, editor, element }) => {
         if (!element.diff) return children;
+
         const diffOperation = element.diffOperation as DiffOperation;
 
         const label = {
-          insert: 'insertion',
           delete: 'deletion',
+          insert: 'insertion',
           update: 'update',
         }[diffOperation.type];
 
@@ -155,8 +154,8 @@ const createDiffPlugin = createPluginFactory({
 
         return (
           <Component
-            className={diffOperationColors[diffOperation.type]}
             aria-label={label}
+            className={diffOperationColors[diffOperation.type]}
             title={
               diffOperation.type === 'update'
                 ? describeUpdate(diffOperation)
@@ -168,14 +167,17 @@ const createDiffPlugin = createPluginFactory({
         );
       },
   },
+  isLeaf: true,
+  key: MARK_DIFF,
+  withOverrides: withGetFragmentExcludeDiff,
 });
 
 function DiffLeaf({ children, ...props }: PlateLeafProps) {
   const diffOperation = props.leaf.diffOperation as DiffOperation;
 
   const Component = {
-    insert: 'ins',
     delete: 'del',
+    insert: 'ins',
     update: 'span',
   }[diffOperation.type] as any;
 
@@ -207,44 +209,44 @@ const plugins = createPlugins(
   ],
   {
     components: {
-      [ELEMENT_PARAGRAPH]: ParagraphElement,
       [ELEMENT_INLINE]: InlineElement,
       [ELEMENT_INLINE_VOID]: InlineVoidElement,
+      [ELEMENT_PARAGRAPH]: ParagraphElement,
       [MARK_BOLD]: withProps(PlateLeaf, { as: 'strong' }),
-      [MARK_ITALIC]: withProps(PlateLeaf, { as: 'em' }),
       [MARK_DIFF]: DiffLeaf,
+      [MARK_ITALIC]: withProps(PlateLeaf, { as: 'em' }),
     },
   }
 );
 
 const initialValue: Value = [
   {
-    type: ELEMENT_PARAGRAPH,
     children: [{ text: 'This is a version history demo.' }],
+    type: ELEMENT_PARAGRAPH,
   },
   {
-    type: ELEMENT_PARAGRAPH,
     children: [
       { text: 'Try editing the ' },
-      { text: 'text and see what', bold: true },
+      { bold: true, text: 'text and see what' },
       { text: ' happens.' },
     ],
+    type: ELEMENT_PARAGRAPH,
   },
   {
-    type: ELEMENT_PARAGRAPH,
     children: [
       { text: 'This is an ' },
-      { type: ELEMENT_INLINE_VOID, children: [{ text: '' }] },
+      { children: [{ text: '' }], type: ELEMENT_INLINE_VOID },
       { text: '. Try removing it.' },
     ],
+    type: ELEMENT_PARAGRAPH,
   },
   {
-    type: ELEMENT_PARAGRAPH,
     children: [
       { text: 'This is an ' },
-      { type: ELEMENT_INLINE, children: [{ text: 'editable inline' }] },
+      { children: [{ text: 'editable inline' }], type: ELEMENT_INLINE },
       { text: '. Try editing it.' },
     ],
+    type: ELEMENT_PARAGRAPH,
   },
 ];
 
@@ -257,13 +259,14 @@ function VersionHistoryPlate(props: Omit<PlateProps, 'children' | 'plugins'>) {
 }
 
 interface DiffProps {
-  previous: Value;
   current: Value;
+  previous: Value;
 }
 
-function Diff({ previous, current }: DiffProps) {
+function Diff({ current, previous }: DiffProps) {
   const diffValue = React.useMemo(() => {
     const editor = createPlateEditor({ plugins });
+
     return computeDiff(previous, current, {
       isInline: editor.isInline,
       lineBreakChar: '¶',
@@ -274,8 +277,8 @@ function Diff({ previous, current }: DiffProps) {
     <>
       <VersionHistoryPlate
         key={JSON.stringify(diffValue)}
-        value={diffValue}
         readOnly
+        value={diffValue}
       />
 
       <pre>{JSON.stringify(diffValue, null, 2)}</pre>
@@ -322,15 +325,15 @@ export default function VersionHistoryDemo() {
         <div>
           <h2>Revision {selectedRevisionIndex + 1}</h2>
           <VersionHistoryPlate
-            key={selectedRevisionIndex}
             initialValue={selectedRevisionValue}
+            key={selectedRevisionIndex}
             readOnly
           />
         </div>
 
         <div>
           <h2>Diff</h2>
-          <Diff previous={selectedRevisionValue} current={value} />
+          <Diff current={value} previous={selectedRevisionValue} />
         </div>
       </div>
     </div>

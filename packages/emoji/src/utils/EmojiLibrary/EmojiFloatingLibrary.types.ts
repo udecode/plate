@@ -1,20 +1,20 @@
-import { EmojiCategoryList } from '../../types';
-import { EmojiFloatingGridType } from './EmojiFloatingGrid';
-import { IEmojiLibrary } from './EmojiLibrary.types';
+import type { EmojiCategoryList } from '../../types';
+import type { EmojiFloatingGridType } from './EmojiFloatingGrid';
+import type { IEmojiLibrary } from './EmojiLibrary.types';
 
 export type FrequentEmojis = Record<string, number>;
 
 export type FrequentEmojiStorageProps = {
-  prefix?: string;
   key?: string;
   limit?: number;
+  prefix?: string;
 };
 
 export interface IFrequentEmojiStorage {
-  update: (emojiId: string) => any;
-  get(): FrequentEmojis;
+  get: () => FrequentEmojis;
   getList: () => string[];
   set: (value: any) => void;
+  update: (emojiId: string) => any;
 }
 
 export interface IEmojiFloatingLibrary extends IEmojiLibrary {

@@ -1,22 +1,26 @@
 import React from 'react';
+
+import { focusEditor, isEditorReadOnly } from '@udecode/plate-common';
 import {
+  type PlateEditor,
+  type Value,
+  type WithPlatePlugin,
   findNode,
-  focusEditor,
   getEndPoint,
-  isEditorReadOnly,
+  getNextNode,
+  getPreviousNode,
   isHotkey,
-  PlateEditor,
   removeNodes,
-  Value,
-  WithPlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
+
+import type { BlockSelectionPlugin } from './createBlockSelectionPlugin';
 
 import {
   blockSelectionActions,
   blockSelectionSelectors,
   useBlockSelectionSelectors,
 } from './blockSelectionStore';
-import { BlockSelectionPlugin } from './createBlockSelectionPlugin';
+import { useBlockContextMenuSelectors } from './context-menu';
 import { copySelectedBlocks } from './utils/copySelectedBlocks';
 import { selectInsertedBlocks } from './utils/index';
 import { pasteSelectedBlocks } from './utils/pasteSelectedBlocks';
@@ -31,10 +35,12 @@ export const useHooksBlockSelection = <
   const { onKeyDownSelecting } = options;
   const isSelecting = useBlockSelectionSelectors().isSelecting();
   const selectedIds = useBlockSelectionSelectors().selectedIds();
+  const isOpen = useBlockContextMenuSelectors().isOpen(editor.id);
 
   // TODO: test
   React.useEffect(() => {
     const el = document.querySelector('#slate-shadow-input');
+
     if (el) {
       el.remove();
     }
@@ -46,7 +52,7 @@ export const useHooksBlockSelection = <
       input.setAttribute('id', 'slate-shadow-input');
       // no scrolling on focus
       input.style.position = 'fixed';
-      input.style.zIndex = '10000';
+      input.style.zIndex = '999';
       // hide
       input.style.top = '-300px';
       input.style.left = '-300px';
@@ -57,11 +63,9 @@ export const useHooksBlockSelection = <
 
         // selecting commands
         if (!blockSelectionSelectors.isSelecting()) return;
-
         if (isHotkey('escape')(e)) {
           blockSelectionActions.unselect();
         }
-
         if (isHotkey('mod+z')(e)) {
           editor.undo();
           selectInsertedBlocks(editor);
@@ -70,15 +74,16 @@ export const useHooksBlockSelection = <
           editor.redo();
           selectInsertedBlocks(editor);
         }
-
         // selecting some commands
         if (!blockSelectionSelectors.isSelectingSome()) return;
-
         if (isHotkey('enter')(e)) {
           // get the first block in the selection
           const entry = findNode(editor, {
+            at: [],
             match: (n) => blockSelectionSelectors.selectedIds().has(n.id),
           });
+
+          console.log(entry);
 
           if (entry) {
             const [, path] = entry;
@@ -88,12 +93,37 @@ export const useHooksBlockSelection = <
             e.preventDefault();
           }
         }
-
         if (isHotkey(['backspace', 'delete'])(e) && !isReadonly) {
           removeNodes(editor, {
             at: [],
             match: (n) => blockSelectionSelectors.selectedIds().has(n.id),
           });
+        }
+        // TODO: skip toggle child
+        if (isHotkey('up')(e)) {
+          const firstId = [...blockSelectionSelectors.selectedIds()][0];
+          const node = findNode(editor, {
+            at: [],
+            match: (n) => n.id === firstId,
+          });
+          const prev = getPreviousNode(editor, {
+            at: node?.[1],
+          });
+
+          const prevId = prev?.[0].id;
+          blockSelectionActions.addSelectedRow(prevId);
+        }
+        if (isHotkey('down')(e)) {
+          const lastId = [...blockSelectionSelectors.selectedIds()].pop();
+          const node = findNode(editor, {
+            at: [],
+            match: (n) => n.id === lastId,
+          });
+          const next = getNextNode(editor, {
+            at: node?.[1],
+          });
+          const nextId = next?.[0].id;
+          blockSelectionActions.addSelectedRow(nextId);
         }
       });
 
@@ -116,6 +146,8 @@ export const useHooksBlockSelection = <
               at: [],
               match: (n) => blockSelectionSelectors.selectedIds().has(n.id),
             });
+
+            focusEditor(editor);
           }
         }
       });
@@ -129,5 +161,5 @@ export const useHooksBlockSelection = <
       document.body.append(input);
       input.focus();
     }
-  }, [editor, isSelecting, onKeyDownSelecting, selectedIds]);
+  }, [editor, isSelecting, onKeyDownSelecting, selectedIds, isOpen]);
 };

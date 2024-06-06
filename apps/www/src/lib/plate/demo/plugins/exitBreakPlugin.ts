@@ -1,5 +1,6 @@
-import { ExitBreakPlugin } from '@udecode/plate-break';
-import { PlatePlugin } from '@udecode/plate-common';
+import type { ExitBreakPlugin } from '@udecode/plate-break';
+import type { PlatePlugin } from '@udecode/plate-common';
+
 import { KEYS_HEADING } from '@udecode/plate-heading';
 
 export const exitBreakPlugin: Partial<PlatePlugin<ExitBreakPlugin>> = {
@@ -9,18 +10,18 @@ export const exitBreakPlugin: Partial<PlatePlugin<ExitBreakPlugin>> = {
         hotkey: 'mod+enter',
       },
       {
-        hotkey: 'mod+shift+enter',
         before: true,
+        hotkey: 'mod+shift+enter',
       },
       {
         hotkey: 'enter',
+        level: 1,
         query: {
-          start: true,
-          end: true,
           allow: KEYS_HEADING,
+          end: true,
+          start: true,
         },
         relative: true,
-        level: 1,
       },
     ],
   },

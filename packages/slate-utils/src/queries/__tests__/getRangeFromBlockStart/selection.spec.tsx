@@ -1,6 +1,7 @@
 /** @jsx jsx */
 
-import { PlateEditor } from '@udecode/plate-common';
+import type { PlateEditor } from '@udecode/plate-common';
+
 import { jsx } from '@udecode/plate-test-utils';
 
 import { getRangeFromBlockStart } from '../../getRangeFromBlockStart';
@@ -18,8 +19,8 @@ const input = (
 ) as any as PlateEditor;
 
 const output: ReturnType<typeof getRangeFromBlockStart> = {
-  anchor: { path: [0, 0], offset: 0 },
-  focus: { path: [0, 0], offset: 2 },
+  anchor: { offset: 0, path: [0, 0] },
+  focus: { offset: 2, path: [0, 0] },
 };
 
 it('should be', () => {

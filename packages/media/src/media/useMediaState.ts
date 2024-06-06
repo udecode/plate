@@ -1,14 +1,17 @@
 import React from 'react';
+
 import { useElement } from '@udecode/plate-common';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
 
+import type { TMediaElement } from './types';
+
 import { VIDEO_PROVIDERS } from '../media-embed';
-import { TMediaElement } from './types';
+import { ELEMENT_VIDEO } from '../video';
 
 export type EmbedUrlData = {
-  url?: string;
-  provider?: string;
   id?: string;
+  provider?: string;
+  url?: string;
 };
 
 export type EmbedUrlParser = (url: string) => EmbedUrlData | undefined;
@@ -23,30 +26,37 @@ export const useMediaState = ({
   const selected = useSelected();
   const readOnly = useReadOnly();
 
-  const { url, align } = element;
+  const { align = 'left', id, isUpload, name, type, url } = element;
 
   const embed = React.useMemo(() => {
-    if (!urlParsers) return;
+    if (!urlParsers || type !== ELEMENT_VIDEO) return;
 
     for (const parser of urlParsers) {
       const data = parser(url);
+
       if (data) {
         return data;
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [urlParsers, url]);
 
   const isTweet = embed?.provider === 'twitter';
   const isVideo = !!embed?.provider && VIDEO_PROVIDERS.includes(embed.provider);
   const isYoutube = embed?.provider === 'youtube';
+
   return {
     align,
-    focused,
-    selected,
-    readOnly,
     embed,
+    focused,
+    id,
     isTweet,
+    isUpload,
     isVideo,
     isYoutube,
+    name,
+    readOnly,
+    selected,
+    url,
   };
 };

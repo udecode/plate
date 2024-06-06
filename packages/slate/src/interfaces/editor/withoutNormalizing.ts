@@ -1,10 +1,11 @@
 import { Editor } from 'slate';
 
-import { TEditor, Value } from './TEditor';
+import type { TEditor, Value } from './TEditor';
 
 /**
  * Call a function, deferring normalization until after it completes
- * @return true if normalized.
+ *
+ * @returns True if normalized.
  */
 export const withoutNormalizing = <V extends Value>(
   editor: TEditor<V>,

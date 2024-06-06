@@ -1,23 +1,26 @@
 import { useMemo } from 'react';
+
 import {
   atom,
   createAtomStore,
-  getPluginOptions,
-  PlateEditor,
   plateStore,
   usePlateStore,
-  Value,
 } from '@udecode/plate-common';
-import { KEY_INDENT, TIndentElement } from '@udecode/plate-indent';
+import {
+  type PlateEditor,
+  type Value,
+  getPluginOptions,
+} from '@udecode/plate-common/server';
+import { KEY_INDENT, type TIndentElement } from '@udecode/plate-indent';
 
-import { ELEMENT_TOGGLE, TogglePlugin } from './types';
+import { ELEMENT_TOGGLE, type TogglePlugin } from './types';
 
 // Duplicate constant instead of importing from "plate-indent-list" to avoid a dependency.
 const KEY_LIST_STYLE_TYPE = 'listStyleType';
 
 export const {
-  toggleControllerStore,
   ToggleControllerProvider,
+  toggleControllerStore,
   useToggleControllerStore,
 } = createAtomStore(
   {
@@ -36,6 +39,7 @@ export const useIsVisible = (elementId: string) => {
       atom((get) => {
         const toggleIndex = get(toggleIndexAtom);
         const enclosedInToggleIds = toggleIndex.get(elementId) || [];
+
         return enclosedInToggleIds.every((enclosedId) =>
           openIds.has(enclosedId)
         );
@@ -47,9 +51,11 @@ export const useIsVisible = (elementId: string) => {
 };
 
 const editorAtom = plateStore.atom.trackedEditor;
+
 export const toggleIndexAtom = atom((get) =>
   buildToggleIndex(get(editorAtom).editor.children as TIndentElement[])
 );
+
 export const useToggleIndex = () => usePlateStore().get.atom(toggleIndexAtom);
 
 export const someToggleClosed = <
@@ -61,6 +67,7 @@ export const someToggleClosed = <
 ): boolean => {
   const options = getPluginOptions<TogglePlugin, V, E>(editor, ELEMENT_TOGGLE);
   const openIds = options.openIds!;
+
   return toggleIds.some((id) => !openIds.has(id));
 };
 
@@ -73,6 +80,7 @@ export const isToggleOpen = <
 ): boolean => {
   const options = getPluginOptions<TogglePlugin, V, E>(editor, ELEMENT_TOGGLE);
   const openIds = options.openIds!;
+
   return openIds.has(toggleId);
 };
 
@@ -97,18 +105,20 @@ const _toggleIds = (
   ids.forEach((id) => {
     const isCurrentlyOpen = openIds.has(id);
     const newIsOpen = force === null ? !isCurrentlyOpen : force;
+
     if (newIsOpen) {
       newOpenIds.add(id);
     } else {
       newOpenIds.delete(id);
     }
   });
+
   return newOpenIds;
 };
 
 // Returns, for each child, the enclosing toggle ids
 export const buildToggleIndex = (elements: Value): Map<string, string[]> => {
-  const result: Map<string, string[]> = new Map();
+  const result = new Map<string, string[]>();
   let currentEnclosingToggles: [string, number][] = []; // [toggleId, indent][]
   elements.forEach((element) => {
     const elementIndent = (element[KEY_INDENT] as number) || 0;
@@ -126,6 +136,7 @@ export const buildToggleIndex = (elements: Value): Map<string, string[]> => {
       element.id as string,
       enclosingToggles.map(([toggleId]) => toggleId)
     );
+
     if (element.type === ELEMENT_TOGGLE) {
       currentEnclosingToggles.push([element.id as string, elementIndent]);
     }

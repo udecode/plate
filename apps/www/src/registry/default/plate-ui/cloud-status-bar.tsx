@@ -1,12 +1,14 @@
 'use client';
 
-import React, { HTMLAttributes, useEffect, useRef, useState } from 'react';
+import React, { type HTMLAttributes, useEffect, useRef, useState } from 'react';
+
+import type { Upload, UploadProgress } from '@udecode/plate-cloud';
+
 import { cn } from '@udecode/cn';
-import { Upload, UploadProgress } from '@udecode/plate-cloud';
 
 export function ProgressBar({
-  upload,
   className,
+  upload,
   ...props
 }: {
   upload: UploadProgress;
@@ -25,10 +27,10 @@ export function ProgressBar({
    * This is for a few reasons:
    *
    * 1. We want the zero point to start with the progress bar being a circle
-   * 2. If we want rounded edges, if the width is shorter than the height,
-   *    we get an oval instead of a circle
-   * 3. The halfway point looks visually wrong because of the circle progress
-   *    bar when it is technically at the halfway point.
+   * 2. If we want rounded edges, if the width is shorter than the height, we get
+   *    an oval instead of a circle
+   * 3. The halfway point looks visually wrong because of the circle progress bar
+   *    when it is technically at the halfway point.
    */
   const progressWidth =
     width == null
@@ -37,8 +39,8 @@ export function ProgressBar({
 
   return (
     <div
-      ref={ref}
       className={cn('h-4 rounded-lg bg-gray-100 shadow-md', className)}
+      ref={ref}
       {...props}
     >
       <div
@@ -67,10 +69,11 @@ export function FailBar({
 }
 
 export function StatusBar(props: {
-  upload: Upload;
   children?: React.ReactNode;
+  upload: Upload;
 }) {
-  const { upload, children } = props;
+  const { children, upload } = props;
+
   switch (upload.status) {
     case 'progress': {
       return <ProgressBar upload={upload} />;

@@ -1,10 +1,10 @@
 import {
+  type AutoformatRule,
   autoformatArrow,
   autoformatLegal,
   autoformatLegalHtml,
   autoformatMath,
   autoformatPunctuation,
-  AutoformatRule,
   autoformatSmartQuotes,
 } from '@udecode/plate-autoformat';
 

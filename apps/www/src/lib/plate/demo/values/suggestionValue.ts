@@ -1,71 +1,71 @@
-import { Value } from '@udecode/plate-common';
-import { SuggestionUser, TSuggestion } from '@udecode/plate-suggestion';
+import type { Value } from '@udecode/plate-common';
+import type { SuggestionUser, TSuggestion } from '@udecode/plate-suggestion';
 
 export const usersData: Record<string, SuggestionUser> = {
   1: {
-    id: '1',
-    name: 'Alice',
     avatarUrl: 'https://avatars.githubusercontent.com/u/1863771?v=4',
     hue: Math.floor(Math.random() * 360),
+    id: '1',
     isOwner: true,
+    name: 'Alice',
   },
   2: {
+    hue: Math.floor(Math.random() * 360),
     id: '2',
     name: 'Bob',
-    hue: Math.floor(Math.random() * 360),
   },
 };
 
 export const suggestionsData: Record<string, TSuggestion> = {
   1: {
-    id: '1',
     createdAt: 1_663_453_625_129,
+    id: '1',
   },
   2: {
-    id: '2',
     createdAt: 1_663_453_729_191,
+    id: '2',
   },
   3: {
-    id: '3',
     createdAt: 1_663_453_740_180,
+    id: '3',
   },
 };
 
 export const suggestionValue: Value = [
   {
-    type: 'p',
     children: [
       { text: 'Hello' },
       {
-        text: ' World',
         suggestion: true,
-        suggestionId: 1,
         suggestion_1: true,
+        suggestionId: 1,
+        text: ' World',
       },
       { text: '.' },
     ],
+    type: 'p',
   },
   {
-    type: 'p',
     children: [
       {
-        text: 'Lorem',
         suggestion: true,
-        suggestionId: 2,
         suggestion_1: true,
+        suggestionId: 2,
+        text: 'Lorem',
       },
       { text: 'amet' },
       {
-        text: 'paragraph',
         suggestion: true,
-        suggestionId: 3,
-        suggestionDeletion: true,
         suggestion_2: true,
+        suggestionDeletion: true,
+        suggestionId: 3,
+        text: 'paragraph',
       },
       {
         text: ' consectetur, adipisicing elit. Nobis consequuntur modi odit incidunt unde animi molestias necessitatibus nisi ab optio dolorum, libero placeat aut, facere tempore accusamus veniam voluptatem aspernatur.',
       },
     ],
+    type: 'p',
   },
-  { type: 'p', children: [{ text: '' }] },
+  { children: [{ text: '' }], type: 'p' },
 ];

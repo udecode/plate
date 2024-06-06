@@ -1,15 +1,17 @@
 'use client';
 
 import React from 'react';
-import { PlateCloudEditor } from '@udecode/plate-cloud';
-import { useEditorRef, Value } from '@udecode/plate-common';
+
+import type { PlateCloudEditor } from '@udecode/plate-cloud';
+
+import { type Value, useEditorRef } from '@udecode/plate-common';
 
 const buttonStyle: React.CSSProperties = {
-  marginRight: 4,
   background: '#f0f0f0',
   border: 'none',
-  padding: 8,
   cursor: 'pointer',
+  marginRight: 4,
+  padding: 8,
 };
 
 export function CloudToolbarButtons() {
@@ -25,10 +27,10 @@ export function CloudToolbarButtons() {
 
   return (
     <>
-      <button type="button" style={buttonStyle} onClick={getSaveValue}>
+      <button onClick={getSaveValue} style={buttonStyle} type="button">
         Get Save Value
       </button>
-      <button type="button" style={buttonStyle} onClick={finishUploads}>
+      <button onClick={finishUploads} style={buttonStyle} type="button">
         Await Finish Uploads
       </button>
       <span>

@@ -1,8 +1,8 @@
 import {
+  type InsertNodesOptions,
+  type TEditor,
+  type Value,
   getQueryOptions,
-  InsertNodesOptions,
-  TEditor,
-  Value,
 } from '@udecode/slate';
 
 import { insertElements } from './insertElements';
@@ -15,8 +15,8 @@ export const insertEmptyElement = <V extends Value>(
   insertElements(
     editor,
     {
-      type,
       children: [{ text: '' }],
+      type,
     },
     getQueryOptions(editor, options)
   );

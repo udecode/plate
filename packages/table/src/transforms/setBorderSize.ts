@@ -1,17 +1,19 @@
+import type { Path } from 'slate';
+
 import {
+  type PlateEditor,
+  type SetNodesOptions,
+  type Value,
   findNode,
   isElement,
-  PlateEditor,
   setNodes,
-  SetNodesOptions,
-  Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
-import { Path } from 'slate';
+} from '@udecode/plate-common/server';
+
+import type { BorderDirection, BorderStyle, TTableCellElement } from '../types';
 
 import { getLeftTableCell } from '../queries/getLeftTableCell';
 import { getTopTableCell } from '../queries/getTopTableCell';
-import { BorderDirection, BorderStyle, TTableCellElement } from '../types';
 import { getCellTypes } from '../utils/index';
 
 export const setBorderSize = <V extends Value>(
@@ -29,6 +31,7 @@ export const setBorderSize = <V extends Value>(
     at,
     match: { type: getCellTypes(editor) },
   });
+
   if (!cellEntry) return;
 
   const [cellNode, cellPath] = cellEntry;
@@ -62,11 +65,14 @@ export const setBorderSize = <V extends Value>(
           ...setNodesOptions,
         }
       );
+
       return;
     }
 
     const cellAboveEntry = getTopTableCell(editor, { at: cellPath });
+
     if (!cellAboveEntry) return;
+
     const [cellAboveNode, cellAbovePath] = cellAboveEntry;
 
     const newBorders: TTableCellElement['borders'] = {
@@ -99,7 +105,6 @@ export const setBorderSize = <V extends Value>(
       }
     );
   }
-
   if (border === 'left') {
     const isFirstCell = cellIndex === 0;
 
@@ -117,10 +122,12 @@ export const setBorderSize = <V extends Value>(
           ...setNodesOptions,
         }
       );
+
       return;
     }
 
     const prevCellEntry = getLeftTableCell(editor, { at: cellPath });
+
     if (!prevCellEntry) return;
 
     const [prevCellNode, prevCellPath] = prevCellEntry;
@@ -155,7 +162,6 @@ export const setBorderSize = <V extends Value>(
       }
     );
   }
-
   if (border === 'all') {
     withoutNormalizing(editor, () => {
       setBorderSize(editor, size, { at, border: 'top' });

@@ -1,104 +1,110 @@
-import { createPluginFactory } from '@udecode/plate-common';
+import {
+  type DeserializeHtml,
+  createPluginFactory,
+  getPluginType,
+} from '@udecode/plate-common/server';
+
+import type { TablePlugin, TableStoreCellAttributes } from './types';
 
 import { onKeyDownTable } from './onKeyDownTable';
 import { insertTableColumn, insertTableRow } from './transforms/index';
-import { TablePlugin, TableStoreCellAttributes } from './types';
 import { withTable } from './withTable';
 
 export const ELEMENT_TABLE = 'table';
+
 export const ELEMENT_TH = 'th';
+
 export const ELEMENT_TR = 'tr';
+
 export const ELEMENT_TD = 'td';
 
-/**
- * Enables support for tables.
- */
+const createGetNodeFunc = (type: string) => {
+  const getNode: DeserializeHtml['getNode'] = (element) => {
+    const background =
+      element.style.background || element.style.backgroundColor;
+
+    if (background) {
+      return {
+        background,
+        type,
+      };
+    }
+
+    return { type };
+  };
+
+  return getNode;
+};
+
+/** Enables support for tables. */
 export const createTablePlugin = createPluginFactory<TablePlugin>({
-  key: ELEMENT_TABLE,
-  isElement: true,
-  handlers: {
-    onKeyDown: onKeyDownTable,
-  },
   deserializeHtml: {
     rules: [{ validNodeName: 'TABLE' }],
   },
+  handlers: {
+    onKeyDown: onKeyDownTable,
+  },
+  isElement: true,
+  key: ELEMENT_TABLE,
   options: {
+    _cellIndices: new WeakMap() as TableStoreCellAttributes,
+    enableMerging: false,
     insertColumn: (e, { fromCell }) => {
       insertTableColumn(e, {
-        fromCell,
         disableSelect: true,
+        fromCell,
       });
     },
     insertRow: (e, { fromRow }) => {
       insertTableRow(e, {
-        fromRow,
         disableSelect: true,
+        fromRow,
       });
     },
     minColumnWidth: 48,
-    enableMerging: false,
-    _cellIndices: new WeakMap() as TableStoreCellAttributes,
   },
-  withOverrides: withTable,
   plugins: [
     {
-      key: ELEMENT_TR,
-      isElement: true,
       deserializeHtml: {
         rules: [{ validNodeName: 'TR' }],
       },
+      isElement: true,
+      key: ELEMENT_TR,
     },
     {
-      key: ELEMENT_TD,
       isElement: true,
-      deserializeHtml: {
-        attributeNames: ['rowspan', 'colspan'],
-        rules: [{ validNodeName: 'TD' }],
-        getNode: (element) => {
-          const background =
-            element.style.background || element.style.backgroundColor;
-          if (background) {
-            return {
-              type: 'td',
-              background,
-            };
-          }
-
-          return { type: 'td' };
-        },
-      },
+      key: ELEMENT_TD,
       props: ({ element }) => ({
         nodeProps: {
           colSpan: (element?.attributes as any)?.colspan,
           rowSpan: (element?.attributes as any)?.rowspan,
         },
       }),
+      then: (editor) => ({
+        deserializeHtml: {
+          attributeNames: ['rowspan', 'colspan'],
+          getNode: createGetNodeFunc(getPluginType(editor, ELEMENT_TD)),
+          rules: [{ validNodeName: 'TD' }],
+        },
+      }),
     },
     {
-      key: ELEMENT_TH,
       isElement: true,
-      deserializeHtml: {
-        attributeNames: ['rowspan', 'colspan'],
-        rules: [{ validNodeName: 'TH' }],
-        getNode: (element) => {
-          const background =
-            element.style.background || element.style.backgroundColor;
-          if (background) {
-            return {
-              type: 'th',
-              background,
-            };
-          }
-
-          return { type: 'th' };
-        },
-      },
+      key: ELEMENT_TH,
       props: ({ element }) => ({
         nodeProps: {
           colSpan: (element?.attributes as any)?.colspan,
           rowSpan: (element?.attributes as any)?.rowspan,
+        },
+      }),
+      then: (editor) => ({
+        deserializeHtml: {
+          attributeNames: ['rowspan', 'colspan'],
+          getNode: createGetNodeFunc(getPluginType(editor, ELEMENT_TH)),
+          rules: [{ validNodeName: 'TH' }],
         },
       }),
     },
   ],
+  withOverrides: withTable,
 });

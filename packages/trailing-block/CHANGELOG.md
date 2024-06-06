@@ -1,5 +1,15 @@
 # @udecode/plate-trailing-block
 
+## 33.0.7
+
+### Patch Changes
+
+- [#3226](https://github.com/udecode/plate/pull/3226) by [@mareksuscak](https://github.com/mareksuscak) – Fixed custom trailing block types
+
+## 33.0.0
+
+## 32.0.0
+
 ## 31.0.0
 
 ## 30.5.3

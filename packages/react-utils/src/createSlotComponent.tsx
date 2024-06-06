@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { Slot } from '@radix-ui/react-slot';
 
 export const createSlotComponent = <
@@ -10,10 +11,10 @@ export const createSlotComponent = <
   // eslint-disable-next-line react/display-name
   React.forwardRef<
     any,
-    P & {
+    {
       as?: React.ElementType;
       asChild?: boolean;
-    }
+    } & P
   >(({ as, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : (as as T) || element;
 

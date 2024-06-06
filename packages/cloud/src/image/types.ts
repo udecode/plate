@@ -1,29 +1,29 @@
-import { PlateEditor, TElement, Value } from '@udecode/plate-common';
+import type { PlateEditor, TElement, Value } from '@udecode/plate-common';
 
 export type CloudImagePlugin = {
-  maxInitialWidth?: number;
   maxInitialHeight?: number;
-  minResizeWidth?: number;
+  maxInitialWidth?: number;
   maxResizeWidth?: number;
+  minResizeWidth?: number;
 };
 
 export type CloudImageEditorProps = {
   cloudImage: {
-    maxInitialWidth: number;
     maxInitialHeight: number;
-    minResizeWidth: number;
+    maxInitialWidth: number;
     maxResizeWidth: number;
+    minResizeWidth: number;
   };
 };
 
-export type PlateCloudImageEditor<V extends Value = Value> = PlateEditor<V> &
-  CloudImageEditorProps;
+export type PlateCloudImageEditor<V extends Value = Value> =
+  CloudImageEditorProps & PlateEditor<V>;
 
 export interface TCloudImageElement extends TElement {
-  url: string;
   bytes: number;
-  width: number;
   height: number;
-  maxWidth: number;
   maxHeight: number;
+  maxWidth: number;
+  url: string;
+  width: number;
 }

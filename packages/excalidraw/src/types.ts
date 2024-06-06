@@ -1,7 +1,7 @@
-import { ImportedDataState } from '@excalidraw/excalidraw/types/data/types';
-import { ExcalidrawElement } from '@excalidraw/excalidraw/types/element/types';
-import { ExcalidrawProps } from '@excalidraw/excalidraw/types/types';
-import { TElement } from '@udecode/plate-common';
+import type { ImportedDataState } from '@excalidraw/excalidraw/types/data/types';
+import type { ExcalidrawElement } from '@excalidraw/excalidraw/types/element/types';
+import type { ExcalidrawProps } from '@excalidraw/excalidraw/types/types';
+import type { TElement } from '@udecode/plate-common';
 
 export interface TExcalidrawElement extends TElement {
   data?: {
@@ -12,10 +12,10 @@ export interface TExcalidrawElement extends TElement {
 
 export interface ExcalidrawDataState
   extends Omit<ImportedDataState, 'elements'> {
-  elements?: readonly Partial<ExcalidrawElement>[] | null;
+  elements?: null | readonly Partial<ExcalidrawElement>[];
 }
 
 // ExcalidrawProps with improved types
 export interface TExcalidrawProps extends Omit<ExcalidrawProps, 'initialData'> {
-  initialData: ExcalidrawDataState | null | Promise<ExcalidrawDataState | null>;
+  initialData: ExcalidrawDataState | Promise<ExcalidrawDataState | null> | null;
 }

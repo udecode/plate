@@ -1,9 +1,8 @@
 import React from 'react';
 
 /**
- * Wrap a component into multiple providers.
- * If there are any props that you want a provider to receive,
- * you can simply pass an array.
+ * Wrap a component into multiple providers. If there are any props that you
+ * want a provider to receive, you can simply pass an array.
  */
 export const withProviders =
   (...providers: any[]) =>
@@ -12,8 +11,10 @@ export const withProviders =
     providers.reduceRight(
       (acc, prov) => {
         let Provider = prov;
+
         if (Array.isArray(prov)) {
           [Provider] = prov;
+
           return <Provider {...prov[1]}>{acc}</Provider>;
         }
 

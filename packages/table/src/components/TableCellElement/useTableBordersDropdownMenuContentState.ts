@@ -33,15 +33,15 @@ export const useTableBordersDropdownMenuContentState = () => {
     !hasBottomBorder && !hasTopBorder && !hasLeftBorder && !hasRightBorder;
 
   return {
-    hasBottomBorder,
-    hasTopBorder,
-    hasLeftBorder,
-    hasRightBorder,
-    hasNoBorders,
-    hasOuterBorders,
     getOnSelectTableBorder: getOnSelectTableBorderFactory(
       editor,
       selectedCells
     ),
+    hasBottomBorder,
+    hasLeftBorder,
+    hasNoBorders,
+    hasOuterBorders,
+    hasRightBorder,
+    hasTopBorder,
   };
 };

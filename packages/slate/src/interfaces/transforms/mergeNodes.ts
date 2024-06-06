@@ -1,7 +1,17 @@
-import { Modify } from '@udecode/utils';
-import { Editor, Element, Path, Range, Text, Transforms } from 'slate';
+import type { Modify } from '@udecode/utils';
 
-import { NodeMatchOption } from '../../types/NodeMatchOption';
+import {
+  Editor,
+  type Element,
+  Path,
+  Range,
+  type Text,
+  type Transforms,
+} from 'slate';
+
+import type { NodeMatchOption } from '../../types/NodeMatchOption';
+import type { TEditor, Value } from '../editor/TEditor';
+
 import { createPathRef } from '../editor/createPathRef';
 import { createPointRef } from '../editor/createPointRef';
 import { getAboveNode } from '../editor/getAboveNode';
@@ -10,7 +20,6 @@ import { getParentNode } from '../editor/getParentNode';
 import { getPreviousNode } from '../editor/getPreviousNode';
 import { isBlock } from '../editor/isBlock';
 import { isElementEmpty } from '../editor/isElementEmpty';
-import { TEditor, Value } from '../editor/TEditor';
 import { withoutNormalizing } from '../editor/withoutNormalizing';
 import { isElement } from '../element/isElement';
 import { hasSingleChild } from '../node/hasSingleChild';
@@ -20,45 +29,44 @@ import { moveNodes } from './moveNodes';
 import { removeNodes } from './removeNodes';
 import { select } from './select';
 
-export type MergeNodesOptions<V extends Value = Value> = Modify<
-  NonNullable<Parameters<typeof Transforms.mergeNodes>[1]>,
-  NodeMatchOption<V>
-> & {
+export type MergeNodesOptions<V extends Value = Value> = {
   /**
-   * Default: if the node isn't already the next sibling of the previous node, move
-   * it so that it is before merging.
+   * Default: if the node isn't already the next sibling of the previous node,
+   * move it so that it is before merging.
    */
   mergeNode?: (editor: TEditor<V>, options: { at: Path; to: Path }) => void;
 
   /**
-   * Default: if there was going to be an empty ancestor of the node that was merged,
-   * we remove it from the tree.
+   * Default: if there was going to be an empty ancestor of the node that was
+   * merged, we remove it from the tree.
    */
   removeEmptyAncestor?: (editor: TEditor<V>, options: { at: Path }) => void;
-};
+} & Modify<
+  NonNullable<Parameters<typeof Transforms.mergeNodes>[1]>,
+  NodeMatchOption<V>
+>;
 
 /**
- * Merge a node at a location with the previous node of the same depth,
- * removing any empty containing nodes after the merge if necessary.
+ * Merge a node at a location with the previous node of the same depth, removing
+ * any empty containing nodes after the merge if necessary.
  */
 export const mergeNodes = <V extends Value>(
   editor: TEditor<V>,
   options: MergeNodesOptions<V> = {}
 ): void => {
   withoutNormalizing(editor as any, () => {
-    let { match, at = editor.selection } = options;
+    let { at = editor.selection, match } = options;
     const {
-      mergeNode,
-      removeEmptyAncestor,
       hanging = false,
-      voids = false,
+      mergeNode,
       mode = 'lowest',
+      removeEmptyAncestor,
+      voids = false,
     } = options;
 
     if (!at) {
       return;
     }
-
     if (match == null) {
       if (Path.isPath(at)) {
         const [parent] = getParentNode(editor, at)!;
@@ -67,11 +75,9 @@ export const mergeNodes = <V extends Value>(
         match = (n) => isBlock(editor as any, n);
       }
     }
-
     if (!hanging && Range.isRange(at)) {
       at = Editor.unhangRange(editor as any, at);
     }
-
     if (Range.isRange(at)) {
       if (Range.isCollapsed(at)) {
         at = at.anchor;
@@ -87,9 +93,9 @@ export const mergeNodes = <V extends Value>(
       }
     }
 
-    const _nodes = getNodeEntries(editor as any, { at, match, voids, mode });
+    const _nodes = getNodeEntries(editor as any, { at, match, mode, voids });
     const [current] = Array.from(_nodes);
-    const prev = getPreviousNode(editor as any, { at, match, voids, mode });
+    const prev = getPreviousNode(editor as any, { at, match, mode, voids });
 
     if (!current || !prev) {
       return;
@@ -116,8 +122,8 @@ export const mergeNodes = <V extends Value>(
     // result, in which case we'll want to remove it after merging.
     const emptyAncestor = getAboveNode(editor as any, {
       at: path,
-      mode: 'highest',
       match: (n) => levels.has(n) && isElement(n) && hasSingleChild(n),
+      mode: 'highest',
     });
 
     const emptyRef =
@@ -142,7 +148,6 @@ export const mergeNodes = <V extends Value>(
         )} ${JSON.stringify(prevNode)}`
       );
     }
-
     // If the node isn't already the next sibling of the previous node, move
     // it so that it is before merging.
     if (
@@ -151,7 +156,6 @@ export const mergeNodes = <V extends Value>(
     ) {
       moveNodes(editor, { at: path, to: newPath, voids });
     }
-
     // If there was going to be an empty ancestor of the node that was merged,
     // we remove it from the tree.
     if (emptyRef) {
@@ -164,7 +168,6 @@ export const mergeNodes = <V extends Value>(
       }
       // DIFF: end
     }
-
     // If the target node that we're merging with is empty, remove it instead
     // of merging the two. This is a common rich text editor behavior to
     // prevent losing formatting when deleting entire nodes when you have a
@@ -180,13 +183,12 @@ export const mergeNodes = <V extends Value>(
       removeNodes(editor, { at: prevPath, voids });
     } else {
       editor.apply({
-        type: 'merge_node',
         path: newPath,
         position,
         properties,
+        type: 'merge_node',
       });
     }
-
     if (emptyRef) {
       emptyRef.unref();
     }

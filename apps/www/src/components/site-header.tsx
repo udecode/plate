@@ -1,6 +1,6 @@
 /* eslint-disable turbo/no-undeclared-env-vars */
-import Link from 'next/link';
 import { cn } from '@udecode/cn';
+import Link from 'next/link';
 
 import { siteConfig } from '@/config/site';
 import ModeToggle from '@/registry/default/example/mode-toggle';
@@ -31,7 +31,7 @@ export async function SiteHeader() {
     .catch(() => ({ stargazers_count: 0 }));
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-[60] w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 max-w-screen-2xl items-center justify-between">
         <MainNav />
         <MobileNav />
@@ -44,8 +44,8 @@ export async function SiteHeader() {
             <Link
               className="inline md:hidden"
               href={siteConfig.links.github}
-              target="_blank"
               rel="noreferrer"
+              target="_blank"
             >
               <div
                 className={cn(
@@ -61,8 +61,8 @@ export async function SiteHeader() {
             </Link>
             <Link
               href={siteConfig.links.discord}
-              target="_blank"
               rel="noreferrer"
+              target="_blank"
             >
               <div
                 className={cn(

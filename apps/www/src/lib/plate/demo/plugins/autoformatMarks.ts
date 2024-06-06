@@ -1,4 +1,5 @@
-import { AutoformatRule } from '@udecode/plate-autoformat';
+import type { AutoformatRule } from '@udecode/plate-autoformat';
+
 import {
   MARK_BOLD,
   MARK_CODE,
@@ -12,73 +13,73 @@ import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
 
 export const autoformatMarks: AutoformatRule[] = [
   {
+    match: '***',
     mode: 'mark',
     type: [MARK_BOLD, MARK_ITALIC],
-    match: '***',
   },
   {
+    match: '__*',
     mode: 'mark',
     type: [MARK_UNDERLINE, MARK_ITALIC],
-    match: '__*',
   },
   {
+    match: '__**',
     mode: 'mark',
     type: [MARK_UNDERLINE, MARK_BOLD],
-    match: '__**',
   },
   {
+    match: '___***',
     mode: 'mark',
     type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
-    match: '___***',
   },
   {
+    match: '**',
     mode: 'mark',
     type: MARK_BOLD,
-    match: '**',
   },
   {
+    match: '__',
     mode: 'mark',
     type: MARK_UNDERLINE,
-    match: '__',
   },
   {
-    mode: 'mark',
-    type: MARK_ITALIC,
     match: '*',
-  },
-  {
     mode: 'mark',
     type: MARK_ITALIC,
-    match: '_',
   },
   {
+    match: '_',
+    mode: 'mark',
+    type: MARK_ITALIC,
+  },
+  {
+    match: '~~',
     mode: 'mark',
     type: MARK_STRIKETHROUGH,
-    match: '~~',
   },
   {
+    match: '^',
     mode: 'mark',
     type: MARK_SUPERSCRIPT,
-    match: '^',
   },
   {
+    match: '~',
     mode: 'mark',
     type: MARK_SUBSCRIPT,
-    match: '~',
   },
   {
-    mode: 'mark',
-    type: MARK_HIGHLIGHT,
     match: '==',
-  },
-  {
     mode: 'mark',
     type: MARK_HIGHLIGHT,
-    match: '≡',
   },
   {
+    match: '≡',
+    mode: 'mark',
+    type: MARK_HIGHLIGHT,
+  },
+  {
+    match: '`',
     mode: 'mark',
     type: MARK_CODE,
-    match: '`',
   },
 ];

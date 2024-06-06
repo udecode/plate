@@ -1,4 +1,7 @@
 import {
+  type PlateEditor,
+  type Value,
+  type WithPlatePlugin,
   collapseSelection,
   getAboveNode,
   getEditorString,
@@ -12,27 +15,23 @@ import {
   isEndPoint,
   isStartPoint,
   mockPlugin,
-  PlateEditor,
   select,
   someNode,
-  Value,
   withoutNormalizing,
-  WithPlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { withRemoveEmptyNodes } from '@udecode/plate-normalizers';
-import { Path, Point, Range } from 'slate';
+import { Path, type Point, type Range } from 'slate';
 
-import { ELEMENT_LINK, LinkPlugin } from './createLinkPlugin';
+import { ELEMENT_LINK, type LinkPlugin } from './createLinkPlugin';
 import { upsertLink } from './transforms/index';
 
 /**
- * Insert space after a url to wrap a link.
- * Lookup from the block start to the cursor to check if there is an url.
- * If not found, lookup before the cursor for a space character to check the url.
+ * Insert space after a url to wrap a link. Lookup from the block start to the
+ * cursor to check if there is an url. If not found, lookup before the cursor
+ * for a space character to check the url.
  *
- * On insert data:
- * Paste a string inside a link element will edit its children text but not its url.
- *
+ * On insert data: Paste a string inside a link element will edit its children
+ * text but not its url.
  */
 
 export const withLink = <
@@ -41,11 +40,11 @@ export const withLink = <
 >(
   editor: E,
   {
+    options: { getUrlHref, isUrl, keepSelectedTextOnPaste, rangeBeforeOptions },
     type,
-    options: { isUrl, getUrlHref, rangeBeforeOptions, keepSelectedTextOnPaste },
   }: WithPlatePlugin<LinkPlugin, V, E>
 ) => {
-  const { insertData, insertText, apply, normalizeNode, insertBreak } = editor;
+  const { apply, insertBreak, insertData, insertText, normalizeNode } = editor;
 
   const wrapLink = () => {
     withoutNormalizing(editor, () => {
@@ -62,7 +61,6 @@ export const withLink = <
       if (!beforeWordRange) {
         beforeWordRange = getRangeFromBlockStart(editor);
       }
-
       // if no word found before the cursor, exit
       if (!beforeWordRange) return;
 
@@ -95,6 +93,7 @@ export const withLink = <
 
   editor.insertBreak = () => {
     if (!isCollapsed(editor.selection)) return insertBreak();
+
     wrapLink();
     insertBreak();
   };
@@ -114,10 +113,11 @@ export const withLink = <
     if (text) {
       const value = textHref || text;
       const inserted = upsertLink(editor, {
+        insertTextInLink: true,
         text: keepSelectedTextOnPaste ? undefined : value,
         url: value,
-        insertTextInLink: true,
       });
+
       if (inserted) return;
     }
 
@@ -129,7 +129,7 @@ export const withLink = <
     if (operation.type === 'set_selection') {
       const range = operation.newProperties as Range | null;
 
-      if (range && range.focus && range.anchor && isCollapsed(range)) {
+      if (range?.focus && range.anchor && isCollapsed(range)) {
         const entry = getAboveNode(editor, {
           at: range,
           match: { type: getPluginType(editor, ELEMENT_LINK) },
@@ -143,11 +143,9 @@ export const withLink = <
           if (isStartPoint(editor, range.focus, path)) {
             newPoint = getPreviousNodeEndPoint(editor, path);
           }
-
           if (isEndPoint(editor, range.focus, path)) {
             newPoint = getNextNodeStartPoint(editor, path);
           }
-
           if (newPoint) {
             operation.newProperties = {
               anchor: newPoint,

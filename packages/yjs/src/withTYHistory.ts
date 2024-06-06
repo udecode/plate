@@ -1,15 +1,28 @@
-import { withYHistory } from '@slate-yjs/core';
+import type { TEditor, Value } from '@udecode/plate-common/server';
+import type * as Y from 'yjs';
+
 import {
-  WithYHistoryOptions,
+  type WithYHistoryOptions,
+  type YjsEditor,
+  withYHistory,
+} from '@slate-yjs/core';
+
+import type { YjsEditorProps } from './withTYjs';
+
+export type YHistoryEditor = {
+  redo: () => void;
+
+  undo: () => void;
+
+  undoManager: Y.UndoManager;
+  withoutSavingOrigin: unknown;
+} & YjsEditor;
+
+export type YHistoryEditorProps = Pick<
   YHistoryEditor,
-  // eslint-disable-next-line import/no-unresolved
-} from '@slate-yjs/core/dist/plugins/withYHistory';
-import { TEditor, Value } from '@udecode/plate-common';
-
-import { YjsEditorProps } from './withTYjs';
-
-export type YHistoryEditorProps = YjsEditorProps &
-  Pick<YHistoryEditor, 'undoManager' | 'withoutSavingOrigin' | 'undo' | 'redo'>;
+  'redo' | 'undo' | 'undoManager' | 'withoutSavingOrigin'
+> &
+  YjsEditorProps;
 
 export const withTYHistory = <
   V extends Value,

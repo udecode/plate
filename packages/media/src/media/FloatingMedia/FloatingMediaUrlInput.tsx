@@ -1,4 +1,5 @@
 import React from 'react';
+
 import {
   createPrimitiveComponent,
   focusEditor,
@@ -7,7 +8,8 @@ import {
   useHotkeys,
 } from '@udecode/plate-common';
 
-import { TMediaElement } from '../types';
+import type { TMediaElement } from '../types';
+
 import {
   floatingMediaActions,
   floatingMediaSelectors,
@@ -44,8 +46,8 @@ export const useFloatingMediaUrlInputState = ({
       }
     },
     {
-      enableOnFormTags: ['INPUT'],
       enableOnContentEditable: true,
+      enableOnFormTags: ['INPUT'],
     },
     []
   );
@@ -65,14 +67,14 @@ export const useFloatingMediaUrlInput = ({
 
   return {
     props: {
-      onChange,
       autoFocus: true,
       defaultValue,
+      onChange,
     },
   };
 };
 
 export const FloatingMediaUrlInput = createPrimitiveComponent('input')({
-  stateHook: useFloatingMediaUrlInputState,
   propsHook: useFloatingMediaUrlInput,
+  stateHook: useFloatingMediaUrlInputState,
 });

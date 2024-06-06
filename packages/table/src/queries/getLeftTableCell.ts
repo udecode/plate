@@ -1,12 +1,13 @@
 import {
+  type PlateEditor,
+  type Value,
   findNode,
   getNodeEntry,
-  PlateEditor,
-  Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
-import { TTableCellElement } from '../types';
+import type { TTableCellElement } from '../types';
+
 import { getCellTypes } from '../utils/index';
 
 // Get cell to the left of the current cell
@@ -27,6 +28,7 @@ export const getLeftTableCell = <V extends Value>(
   }
 
   const cellIndex = cellPath.at(-1);
+
   if (!cellIndex) return;
 
   const prevCellPath = Path.previous(cellPath);

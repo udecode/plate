@@ -7,11 +7,11 @@ export const useIndentButton = () => {
 
   return {
     props: {
-      onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-      },
       onClick: () => {
         indent(editor);
+      },
+      onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
       },
     },
   };

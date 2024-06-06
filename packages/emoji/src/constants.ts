@@ -1,23 +1,13 @@
+import type { FrequentEmojis } from './utils/index';
+
 import {
   EmojiCategory,
-  EmojiCategoryList,
-  EmojiSettingsType,
-  i18nProps,
+  type EmojiCategoryList,
+  type EmojiSettingsType,
+  type i18nProps,
 } from './types';
-import {
-  EmojiTriggeringControllerOptions,
-  FrequentEmojis,
-} from './utils/index';
 
-export const KEY_EMOJI = 'emoji';
-export const EMOJI_TRIGGER = ':';
 export const EMOJI_MAX_SEARCH_RESULT = 60;
-
-export const emojiTriggeringControllerOptions: EmojiTriggeringControllerOptions =
-  {
-    trigger: EMOJI_TRIGGER,
-    limitTriggeringChars: 2,
-  };
 
 export const defaultCategories: EmojiCategoryList[] = [
   EmojiCategory.People,
@@ -34,43 +24,37 @@ export const EmojiSettings: EmojiSettingsType = {
   buttonSize: {
     value: 36,
   },
+  categories: {
+    value: undefined,
+  },
   perLine: {
     value: 8,
   },
   showFrequent: {
-    value: true,
     limit: 16,
-  },
-  categories: {
-    value: undefined,
+    value: true,
   },
 };
 
 export const DEFAULT_FREQUENTLY_USED_EMOJI: FrequentEmojis = {
   '+1': 1,
-  grinning: 1,
-  kissing_heart: 1,
-  heart_eyes: 1,
-  pray: 1,
-  laughing: 1,
   clap: 1,
-  joy: 1,
-  scream: 1,
-  rocket: 1,
-  see_no_evil: 1,
-  hugging_face: 1,
+  grinning: 1,
   heart: 1,
+  heart_eyes: 1,
+  hugging_face: 1,
+  joy: 1,
+  kissing_heart: 1,
+  laughing: 1,
+  pray: 1,
+  rocket: 1,
+  scream: 1,
+  see_no_evil: 1,
 };
 
 export const NUM_OF_CATEGORIES = Object.values(EmojiCategory).length;
 
 export const i18n: i18nProps = {
-  search: 'Search all emoji',
-  clear: 'Clear',
-  searchNoResultsTitle: 'Oh no!',
-  searchNoResultsSubtitle: 'That emoji couldn’t be found',
-  pick: 'Pick an emoji...',
-  searchResult: 'Search Results',
   categories: {
     activity: 'Activity',
     custom: 'Custom',
@@ -83,13 +67,19 @@ export const i18n: i18nProps = {
     places: 'Travel & Places',
     symbols: 'Symbols',
   },
+  clear: 'Clear',
+  pick: 'Pick an emoji...',
+  search: 'Search all emoji',
+  searchNoResultsSubtitle: 'That emoji couldn’t be found',
+  searchNoResultsTitle: 'Oh no!',
+  searchResult: 'Search Results',
   skins: {
-    choose: 'Choose default skin tone',
     '1': 'Default',
     '2': 'Light',
     '3': 'Medium-Light',
     '4': 'Medium',
     '5': 'Medium-Dark',
     '6': 'Dark',
+    choose: 'Choose default skin tone',
   },
 };

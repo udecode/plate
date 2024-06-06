@@ -1,31 +1,32 @@
 import {
   ELEMENT_DEFAULT,
+  type PlateEditor,
+  type Value,
   getPath,
   getPluginType,
   insertElements,
-  PlateEditor,
-  Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
+import type { ExitBreakRule } from '../types';
+
 import { exitBreakAtEdges } from '../queries/exitBreakAtEdges';
-import { ExitBreakRule } from '../types';
 
 export const exitBreak = <V extends Value>(
   editor: PlateEditor<V>,
   {
-    level = 0,
-    relative = false,
-    defaultType = getPluginType(editor, ELEMENT_DEFAULT),
-    query = {},
     before,
+    defaultType = getPluginType(editor, ELEMENT_DEFAULT),
+    level = 0,
+    query = {},
+    relative = false,
   }: Omit<ExitBreakRule, 'hotkey'>
 ) => {
   if (!editor.selection) return;
 
-  const { queryEdge, isEdge, isStart } = exitBreakAtEdges(editor, query);
-  if (isStart) before = true;
+  const { isEdge, isStart, queryEdge } = exitBreakAtEdges(editor, query);
 
+  if (isStart) before = true;
   if (queryEdge && !isEdge) return;
 
   const selectionPath = getPath(editor, editor.selection);
@@ -38,7 +39,7 @@ export const exitBreak = <V extends Value>(
 
   insertElements(
     editor,
-    { type: defaultType, children: [{ text: '' }] },
+    { children: [{ text: '' }], type: defaultType },
     {
       at: insertPath,
       select: !isStart,

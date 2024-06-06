@@ -1,6 +1,6 @@
 import { Editor } from 'slate';
 
-import { TEditor, Value } from './TEditor';
+import type { TEditor, Value } from './TEditor';
 
 /**
  * Remove a custom property from all of the leaf text nodes in the current

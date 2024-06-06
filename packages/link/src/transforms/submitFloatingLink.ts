@@ -1,23 +1,21 @@
+import { focusEditor } from '@udecode/plate-common';
 import {
-  focusEditor,
+  type PlateEditor,
+  type Value,
   getPluginOptions,
-  PlateEditor,
-  Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import {
   floatingLinkActions,
   floatingLinkSelectors,
 } from '../components/FloatingLink/floatingLinkStore';
-import { ELEMENT_LINK, LinkPlugin } from '../createLinkPlugin';
+import { ELEMENT_LINK, type LinkPlugin } from '../createLinkPlugin';
 import { validateUrl } from '../utils/index';
 import { upsertLink } from './index';
 
 /**
- * Insert link if url is valid.
- * Text is url if empty.
- * Close floating link.
- * Focus editor.
+ * Insert link if url is valid. Text is url if empty. Close floating link. Focus
+ * editor.
  */
 export const submitFloatingLink = <V extends Value>(editor: PlateEditor<V>) => {
   if (!editor.selection) return;
@@ -25,6 +23,7 @@ export const submitFloatingLink = <V extends Value>(editor: PlateEditor<V>) => {
   const { forceSubmit } = getPluginOptions<LinkPlugin, V>(editor, ELEMENT_LINK);
 
   const url = floatingLinkSelectors.url();
+
   if (!forceSubmit && !validateUrl(editor, url)) return;
 
   const text = floatingLinkSelectors.text();
@@ -33,10 +32,10 @@ export const submitFloatingLink = <V extends Value>(editor: PlateEditor<V>) => {
   floatingLinkActions.hide();
 
   upsertLink(editor, {
-    url,
-    text,
-    target,
     skipValidation: true,
+    target,
+    text,
+    url,
   });
 
   setTimeout(() => {

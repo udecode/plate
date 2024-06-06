@@ -1,5 +1,23 @@
 # @udecode/plate-utils
 
+## 33.0.4
+
+### Patch Changes
+
+- [#3199](https://github.com/udecode/plate/pull/3199) by [@zbeyens](https://github.com/zbeyens) – Fix `PlateElementProps` type
+
+## 33.0.3
+
+## 33.0.0
+
+## 32.0.1
+
+## 32.0.0
+
+### Minor Changes
+
+- [#3155](https://github.com/udecode/plate/pull/3155) by [@felixfeng33](https://github.com/felixfeng33) – Move `moveSelectionByOffset` from `@udecode/plate-mention` to `@udecode/plate-utils`
+
 ## 31.3.2
 
 ## 31.0.0

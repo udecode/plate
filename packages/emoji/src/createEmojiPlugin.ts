@@ -1,27 +1,30 @@
-import { createPluginFactory } from '@udecode/plate-common';
+import { withTriggerCombobox } from '@udecode/plate-combobox';
+import { createPluginFactory } from '@udecode/plate-common/server';
 
-import { EMOJI_TRIGGER, KEY_EMOJI } from './constants';
-import { EmojiPlugin } from './types';
-import { EmojiTriggeringController } from './utils/index';
-import { withEmoji } from './withEmoji';
+import type { EmojiPlugin } from './types';
+
+export const KEY_EMOJI = 'emoji';
+
+export const ELEMENT_EMOJI_INPUT = 'emoji_input';
 
 export const createEmojiPlugin = createPluginFactory<EmojiPlugin>({
   key: KEY_EMOJI,
-  withOverrides: withEmoji,
   options: {
-    trigger: EMOJI_TRIGGER,
-    createEmoji: (item) => item.data.emoji,
-    emojiTriggeringController: new EmojiTriggeringController(),
+    createComboboxInput: () => ({
+      children: [{ text: '' }],
+      type: ELEMENT_EMOJI_INPUT,
+    }),
+    createEmojiNode: ({ skins }) => ({ text: skins[0].native }),
+    trigger: ':',
+    triggerPreviousCharPattern: /^\s?$/,
   },
-  then: (
-    _,
-    { key, options: { trigger, createEmoji, emojiTriggeringController } }
-  ) => ({
-    options: {
-      id: key,
-      trigger,
-      createEmoji,
-      emojiTriggeringController,
+  plugins: [
+    {
+      isElement: true,
+      isInline: true,
+      isVoid: true,
+      key: ELEMENT_EMOJI_INPUT,
     },
-  }),
+  ],
+  withOverrides: withTriggerCombobox,
 });

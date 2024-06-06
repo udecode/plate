@@ -1,12 +1,12 @@
 import {
+  type PlateEditor,
+  type TElement,
+  type TElementEntry,
+  type Value,
   getNode,
   match,
   moveChildren,
-  PlateEditor,
-  TElement,
-  TElementEntry,
-  Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
 import { getListTypes } from '../queries/getListTypes';
@@ -35,7 +35,7 @@ export const moveListSiblingsAfterCursor = <V extends Value>(
 
   return moveChildren(editor, {
     at: listEntry as any,
-    to,
     fromStartIndex: offset + 1,
+    to,
   });
 };

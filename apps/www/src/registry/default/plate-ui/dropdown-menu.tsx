@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { useCallback, useState } from 'react';
+
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import {
   cn,
@@ -16,10 +17,15 @@ import { cva } from 'class-variance-authority';
 import { Icons } from '@/components/icons';
 
 export const DropdownMenu = DropdownMenuPrimitive.Root;
+
 export const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
+
 export const DropdownMenuGroup = DropdownMenuPrimitive.Group;
+
 export const DropdownMenuPortal = DropdownMenuPrimitive.Portal;
+
 export const DropdownMenuSub = DropdownMenuPrimitive.Sub;
+
 export const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
 
 export const DropdownMenuSubTrigger = withRef<
@@ -27,15 +33,15 @@ export const DropdownMenuSubTrigger = withRef<
   {
     inset?: boolean;
   }
->(({ className, inset, children, ...props }, ref) => (
+>(({ children, className, inset, ...props }, ref) => (
   <DropdownMenuPrimitive.SubTrigger
-    ref={ref}
     className={cn(
       'flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent',
       'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       inset && 'pl-8',
       className
     )}
+    ref={ref}
     {...props}
   >
     {children}
@@ -49,10 +55,10 @@ export const DropdownMenuSubContent = withCn(
 );
 
 const DropdownMenuContentVariants = withProps(DropdownMenuPrimitive.Content, {
-  sideOffset: 4,
   className: cn(
     'z-50 min-w-32 overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2'
   ),
+  sideOffset: 4,
 });
 
 export const DropdownMenuContent = withRef<
@@ -85,14 +91,14 @@ export const DropdownMenuItem = withVariants(
 
 export const DropdownMenuCheckboxItem = withRef<
   typeof DropdownMenuPrimitive.CheckboxItem
->(({ className, children, ...props }, ref) => (
+>(({ children, className, ...props }, ref) => (
   <DropdownMenuPrimitive.CheckboxItem
-    ref={ref}
     className={cn(
       'relative flex select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       'cursor-pointer',
       className
     )}
+    ref={ref}
     {...props}
   >
     <span className="absolute left-2 flex size-3.5 items-center justify-center">
@@ -109,14 +115,14 @@ export const DropdownMenuRadioItem = withRef<
   {
     hideIcon?: boolean;
   }
->(({ className, children, hideIcon, ...props }, ref) => (
+>(({ children, className, hideIcon, ...props }, ref) => (
   <DropdownMenuPrimitive.RadioItem
-    ref={ref}
     className={cn(
       'relative flex select-none items-center rounded-sm pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       'h-9 cursor-pointer px-2 data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground',
       className
     )}
+    ref={ref}
     {...props}
   >
     {!hideIcon && (
@@ -168,7 +174,7 @@ export const useOpenState = () => {
   );
 
   return {
-    open,
     onOpenChange,
+    open,
   };
 };

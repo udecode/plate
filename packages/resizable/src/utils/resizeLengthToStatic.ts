@@ -1,4 +1,4 @@
-import { ResizeLength, ResizeLengthStatic } from '../types';
+import type { ResizeLength, ResizeLengthStatic } from '../types';
 
 export const resizeLengthToStatic = (
   length: ResizeLength,

@@ -1,17 +1,17 @@
 /* eslint-disable @dword-design/import-alias/prefer-alias */
+import type { UnistNode, UnistTree } from '@/types/unist';
+
 import fs from 'node:fs';
 import path from 'node:path';
 import { u } from 'unist-builder';
 import { visit } from 'unist-util-visit';
-
-import { UnistNode, UnistTree } from '@/types/unist';
 
 import { Index } from '../__registry__';
 import { styles } from '../registry/styles';
 
 // NOTE: shadcn fork
 export function rehypeComponent() {
-  return async (tree: UnistTree) => {
+  return (tree: UnistTree) => {
     visit(tree as any, (node: UnistNode) => {
       if (node.name === 'ComponentSource' || node.name === 'ComponentPreview') {
         const name = getNodeAttributeByName(node, 'name')?.value as string;
@@ -46,11 +46,6 @@ export function rehypeComponent() {
                 // Add code as children so that rehype can take over at build time.
                 node.children?.push(
                   u('element', {
-                    tagName: 'pre',
-                    properties: {
-                      __src__: src,
-                      __style__: style.name,
-                    },
                     attributes: [
                       {
                         name: 'styleName',
@@ -60,18 +55,23 @@ export function rehypeComponent() {
                     ],
                     children: [
                       u('element', {
-                        tagName: 'code',
-                        properties: {
-                          className: ['language-tsx'],
-                        },
                         children: [
                           {
                             type: 'text',
                             value: source,
                           },
                         ],
+                        properties: {
+                          className: ['language-tsx'],
+                        },
+                        tagName: 'code',
                       }),
                     ],
+                    properties: {
+                      __src__: src,
+                      __style__: style.name,
+                    },
+                    tagName: 'pre',
                   })
                 );
               }
@@ -79,7 +79,6 @@ export function rehypeComponent() {
               console.error(error);
             }
           }
-
           if (node.name === 'ComponentPreview') {
             try {
               for (const style of styles) {
@@ -109,24 +108,24 @@ export function rehypeComponent() {
                 // Add code as children so that rehype can take over at build time.
                 node.children?.push(
                   u('element', {
-                    tagName: 'pre',
-                    properties: {
-                      __src__: src,
-                    },
                     children: [
                       u('element', {
-                        tagName: 'code',
-                        properties: {
-                          className: ['language-tsx'],
-                        },
                         children: [
                           {
                             type: 'text',
                             value: source,
                           },
                         ],
+                        properties: {
+                          className: ['language-tsx'],
+                        },
+                        tagName: 'code',
                       }),
                     ],
+                    properties: {
+                      __src__: src,
+                    },
+                    tagName: 'pre',
                   })
                 );
               }
@@ -137,6 +136,7 @@ export function rehypeComponent() {
         }
 
         const source = getComponentSourceFileContent(node);
+
         if (source) {
           const { value: src } = getNodeAttributeByName(node, 'src') || {};
 
@@ -144,24 +144,24 @@ export function rehypeComponent() {
             // Replace the Example component with a pre element.
             node.children?.push(
               u('element', {
-                tagName: 'pre',
-                properties: {
-                  __src__: src,
-                },
                 children: [
                   u('element', {
-                    tagName: 'code',
-                    properties: {
-                      className: ['language-tsx'],
-                    },
                     children: [
                       {
                         type: 'text',
                         value: source,
                       },
                     ],
+                    properties: {
+                      className: ['language-tsx'],
+                    },
+                    tagName: 'code',
                   }),
                 ],
+                properties: {
+                  __src__: src,
+                },
+                tagName: 'pre',
               })
             );
 
@@ -169,6 +169,7 @@ export function rehypeComponent() {
               node,
               'extractClassname'
             );
+
             if (
               extractClassname &&
               extractClassname.value !== undefined &&
@@ -190,49 +191,48 @@ export function rehypeComponent() {
               // Add a pre element with the className only.
               node.children?.push(
                 u('element', {
-                  tagName: 'pre',
-                  properties: {},
                   children: [
                     u('element', {
-                      tagName: 'code',
-                      properties: {
-                        className: ['language-tsx'],
-                      },
                       children: [
                         {
                           type: 'text',
                           value: className,
                         },
                       ],
+                      properties: {
+                        className: ['language-tsx'],
+                      },
+                      tagName: 'code',
                     }),
                   ],
+                  properties: {},
+                  tagName: 'pre',
                 })
               );
             }
           }
-
           if (node.name === 'ComponentSource') {
             // Replace the Source component with a pre element.
             node.children?.push(
               u('element', {
-                tagName: 'pre',
-                properties: {
-                  __src__: src,
-                },
                 children: [
                   u('element', {
-                    tagName: 'code',
-                    properties: {
-                      className: ['language-tsx'],
-                    },
                     children: [
                       {
                         type: 'text',
                         value: source,
                       },
                     ],
+                    properties: {
+                      className: ['language-tsx'],
+                    },
+                    tagName: 'code',
                   }),
                 ],
+                properties: {
+                  __src__: src,
+                },
+                tagName: 'pre',
               })
             );
           }

@@ -1,37 +1,41 @@
-import React from 'react';
+import type React from 'react';
+
 import {
+  type KeyboardHandlerReturnType,
+  type PlateEditor,
+  type Value,
+  type WithPlatePlugin,
   deleteBackward,
   getEditorString,
   getPointBefore,
   insertText,
   isHotkey,
-  KeyboardHandlerReturnType,
-  PlateEditor,
-  Value,
-  WithPlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Range } from 'slate';
 
-import { AutoformatPlugin, AutoformatRule, AutoformatTextRule } from './types';
+import type {
+  AutoformatPlugin,
+  AutoformatRule,
+  AutoformatTextRule,
+} from './types';
 
 export const onKeyDownAutoformat =
   <V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>(
     editor: PlateEditor<V>,
     {
-      options: { rules, enableUndoOnDelete },
+      options: { enableUndoOnDelete, rules },
     }: WithPlatePlugin<AutoformatPlugin, V, E>
   ): KeyboardHandlerReturnType =>
   (e: React.KeyboardEvent) => {
     if (e.defaultPrevented) return false;
-
     // Abort quicky if hotKey was not pressed.
     if (!isHotkey('backspace', { byKey: true }, e)) return false;
-
     if (!rules) return false;
     if (!enableUndoOnDelete) return false;
 
     // Abort if selection is not collapsed i.e. we're not deleting single character.
     const { selection } = editor;
+
     if (!selection || !Range.isCollapsed(selection)) return;
 
     // Get start and end point of selection.
@@ -45,27 +49,32 @@ export const onKeyDownAutoformat =
     // Text|
     //    ^
     const before = getPointBefore(editor, end, {
-      unit: 'character',
       distance: 1,
+      unit: 'character',
     });
+
     if (!start) return false;
     if (!before) return false;
 
     // Abort if there doesn't exist a valid character to replace.
     const charRange = { anchor: before, focus: start };
+
     if (!charRange) return false;
 
     // Text|
     //    ^
     // Between ^ and | is t
     const char = getEditorString(editor, charRange);
+
     if (!char) return false;
 
     const matchers: AutoformatRule[] = [...rules].filter((rule) => {
       const textRule = rule as AutoformatTextRule;
+
       if (textRule) {
         return textRule.mode === 'text' && textRule.format === char;
       }
+
       return false;
     });
 
@@ -84,9 +93,11 @@ export const onKeyDownAutoformat =
       insertText(editor, rule.match);
     } else {
       const matchArray = rule.match as string[];
+
       if (matchArray && matchArray.length > 0) {
         insertText(editor, matchArray[0]);
       }
     }
+
     return true;
   };

@@ -12,14 +12,13 @@ export const useFloatingLinkEnter = () => {
     '*',
     (e) => {
       if (e.key !== 'Enter') return;
-
       if (submitFloatingLink(editor)) {
         e.preventDefault();
       }
     },
     {
-      enabled: open,
       enableOnFormTags: ['INPUT'],
+      enabled: open,
     },
     []
   );

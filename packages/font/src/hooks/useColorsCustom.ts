@@ -1,4 +1,5 @@
 import React from 'react';
+
 import debounce from 'lodash/debounce.js';
 
 export const useColorsCustomState = ({
@@ -34,9 +35,9 @@ export const useColorsCustomState = ({
         ? [
             ...customColors,
             {
+              isBrightColor: false,
               name: '',
               value: customColor,
-              isBrightColor: false,
             },
           ]
         : customColors,
@@ -44,17 +45,17 @@ export const useColorsCustomState = ({
   );
 
   return {
-    value,
-    setValue,
     computedColors,
+    setValue,
     updateCustomColor,
+    value,
   };
 };
 
 export const useColorsCustom = ({
+  setValue,
   updateCustomColor,
   value,
-  setValue,
 }: ReturnType<typeof useColorsCustomState>) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const updateCustomColorDebounced = React.useCallback(
@@ -64,11 +65,11 @@ export const useColorsCustom = ({
 
   return {
     inputProps: {
-      value,
       onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
         setValue(e.target.value);
         updateCustomColorDebounced(e.target.value);
       },
+      value,
     },
     menuItemProps: {
       onSelect: (e: Event) => {

@@ -1,4 +1,8 @@
+import type { Range } from 'slate';
+
 import {
+  type PlateEditor,
+  type Value,
   createPathRef,
   deleteMerge,
   getAboveNode,
@@ -6,12 +10,9 @@ import {
   getParentNode,
   getPluginType,
   getStartPoint,
-  PlateEditor,
   removeNodes,
-  Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
-import { Range } from 'slate';
+} from '@udecode/plate-common/server';
 
 import { ELEMENT_LI } from './createListPlugin';
 import { getHighestEmptyList } from './queries/getHighestEmptyList';
@@ -20,6 +21,7 @@ import { isAcrossListItems } from './queries/isAcrossListItems';
 
 const getLiStart = <V extends Value>(editor: PlateEditor<V>) => {
   const start = getStartPoint(editor, editor.selection as Range);
+
   return getAboveNode(editor, {
     at: start,
     match: { type: getPluginType(editor, ELEMENT_LI) },
@@ -34,8 +36,8 @@ export const deleteFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
     if (!isAcrossListItems(editor)) return;
 
     /**
-     * Check if the end li can be deleted (if it has no sublist).
-     * Store the path ref to delete it after deleteMerge.
+     * Check if the end li can be deleted (if it has no sublist). Store the path
+     * ref to delete it after deleteMerge.
      */
     const end = getEndPoint(editor, editor.selection as Range);
     const liEnd = getAboveNode(editor, {
@@ -50,12 +52,11 @@ export const deleteFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
     // use deleteFragment when selection wrapped around list
     if (!getLiStart(editor) || !liEnd) {
       deleted = false;
+
       return;
     }
 
-    /**
-     * Delete fragment and move end block children to start block
-     */
+    /** Delete fragment and move end block children to start block */
     deleteMerge(editor);
 
     const liStart = getLiStart(editor);
@@ -66,8 +67,8 @@ export const deleteFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
       const listStart = liStart && getParentNode(editor, liStart[1]);
 
       const deletePath = getHighestEmptyList(editor, {
-        liPath: liEndPath,
         diffListPath: listStart?.[1],
+        liPath: liEndPath,
       });
 
       if (deletePath) {

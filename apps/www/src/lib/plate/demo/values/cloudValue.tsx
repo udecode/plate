@@ -35,101 +35,101 @@ export const cloudValue: any = (
     <hh3>Cloud Images</hh3>
     <hp>Samples of cloud images in various upload states.</hp>
     <element
+      bytes={654_196}
+      height={120}
+      maxHeight={1440}
+      maxWidth={1920}
       type="cloud_image"
       url="https://files.portive.com/f/demo/6hndj3bdag7eqbpb2794s--1920x1440.jpg"
-      bytes={654_196}
       width={160}
-      height={120}
-      maxWidth={1920}
-      maxHeight={1440}
     >
       <htext />
     </element>
     <element
+      bytes={654_196}
+      height={120}
+      maxHeight={1440}
+      maxWidth={1920}
       type="cloud_image"
       url="#image-none"
-      bytes={654_196}
       width={160}
-      height={120}
-      maxWidth={1920}
-      maxHeight={1440}
     >
       <htext />
     </element>
     <element
+      bytes={654_196}
+      height={120}
+      maxHeight={1440}
+      maxWidth={1920}
       type="cloud_image"
       url="#image-half"
-      bytes={654_196}
       width={160}
-      height={120}
-      maxWidth={1920}
-      maxHeight={1440}
     >
       <htext />
     </element>
     <element
+      bytes={654_196}
+      height={120}
+      maxHeight={1440}
+      maxWidth={1920}
       type="cloud_image"
       url="#image-full"
-      bytes={654_196}
       width={160}
-      height={120}
-      maxWidth={1920}
-      maxHeight={1440}
     >
       <htext />
     </element>
     <element
+      bytes={654_196}
+      height={120}
+      maxHeight={1440}
+      maxWidth={1920}
       type="cloud_image"
       url="#image-error"
-      bytes={654_196}
       width={160}
-      height={120}
-      maxWidth={1920}
-      maxHeight={1440}
     >
       <htext />
     </element>
     <element
+      bytes={654_196}
+      height={120}
+      maxHeight={1440}
+      maxWidth={1920}
       type="cloud_image"
       url="#image-state-not-found"
-      bytes={654_196}
       width={160}
-      height={120}
-      maxWidth={1920}
-      maxHeight={1440}
     >
       <htext />
     </element>
     <hh3>Cloud Attachments</hh3>
     <hp>Samples of cloud attachments in various upload states.</hp>
     <element
+      bytes={8}
+      filename="hello.txt"
       type="cloud_attachment"
       url="https://gist.githubusercontent.com/prabansal/115387/raw/0e5911c791c03f2ffb9708d98cac70dd2c1bf0ba/HelloWorld.txt"
-      filename="hello.txt"
-      bytes={8}
     >
       <htext />
     </element>
-    <element type="cloud_attachment" url="#a" filename="hello.txt" bytes={1024}>
+    <element bytes={1024} filename="hello.txt" type="cloud_attachment" url="#a">
       <htext />
     </element>
-    <element type="cloud_attachment" url="#b" filename="hello.txt" bytes={1024}>
+    <element bytes={1024} filename="hello.txt" type="cloud_attachment" url="#b">
       <htext />
     </element>
-    <element type="cloud_attachment" url="#c" filename="hello.txt" bytes={1024}>
+    <element bytes={1024} filename="hello.txt" type="cloud_attachment" url="#c">
       <htext />
     </element>
-    <element type="cloud_attachment" url="#d" filename="hello.txt" bytes={1024}>
+    <element bytes={1024} filename="hello.txt" type="cloud_attachment" url="#d">
       <htext />
     </element>
-    <element type="cloud_attachment" url="#e" filename="hello.txt" bytes={1024}>
+    <element bytes={1024} filename="hello.txt" type="cloud_attachment" url="#e">
       <htext />
     </element>
     <element
+      bytes={1024}
+      filename="hello.txt"
       type="cloud_attachment"
       url="#state-not-found"
-      filename="hello.txt"
-      bytes={1024}
     >
       <htext />
     </element>

@@ -1,25 +1,17 @@
 import {
+  type ToggleMarkPlugin,
   createPluginFactory,
   onKeyDownToggleMark,
   someHtmlElement,
-  ToggleMarkPlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 export const MARK_ITALIC = 'italic';
 
-/**
- * Enables support for italic formatting.
- */
+/** Enables support for italic formatting. */
 export const createItalicPlugin = createPluginFactory<ToggleMarkPlugin>({
-  key: MARK_ITALIC,
-  isLeaf: true,
-  handlers: {
-    onKeyDown: onKeyDownToggleMark,
-  },
-  options: {
-    hotkey: 'mod+i',
-  },
   deserializeHtml: {
+    query: (el) =>
+      !someHtmlElement(el, (node) => node.style.fontStyle === 'normal'),
     rules: [
       { validNodeName: ['EM', 'I'] },
       {
@@ -28,7 +20,13 @@ export const createItalicPlugin = createPluginFactory<ToggleMarkPlugin>({
         },
       },
     ],
-    query: (el) =>
-      !someHtmlElement(el, (node) => node.style.fontStyle === 'normal'),
+  },
+  handlers: {
+    onKeyDown: onKeyDownToggleMark,
+  },
+  isLeaf: true,
+  key: MARK_ITALIC,
+  options: {
+    hotkey: 'mod+i',
   },
 });

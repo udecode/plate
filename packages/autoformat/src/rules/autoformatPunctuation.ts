@@ -1,24 +1,24 @@
-import { AutoformatRule } from '../types';
+import type { AutoformatRule } from '../types';
 
 export const autoformatPunctuation: AutoformatRule[] = [
   {
-    mode: 'text',
-    match: '--',
     format: '\u2014',
+    match: '--',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: '...',
     format: '…',
+    match: '...',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: '>>',
     format: '»',
+    match: '>>',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: '<<',
     format: '«',
+    match: '<<',
+    mode: 'text',
   },
 ];

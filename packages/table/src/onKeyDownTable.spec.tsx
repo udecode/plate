@@ -1,17 +1,16 @@
 /** @jsx jsx */
 
-import { PlateEditor } from '@udecode/plate-common';
+import type { PlateEditor } from '@udecode/plate-common';
+
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createPlateTestEditor } from '../../core/src/utils/__tests__/createPlateTestEditor';
+import { createPlateTestEditor } from '../../core/src/client/__tests__/createPlateTestEditor';
 import { createTablePlugin } from './createTablePlugin';
 
 jsx;
 
 /**
- * TODO: test
- * e2e?
- * https://github.com/udecode/editor-protocol/issues/71
+ * TODO: test e2e? https://github.com/udecode/editor-protocol/issues/71
  * https://github.com/udecode/editor-protocol/issues/26
  * https://github.com/udecode/editor-protocol/issues/27
  * https://github.com/udecode/editor-protocol/issues/28

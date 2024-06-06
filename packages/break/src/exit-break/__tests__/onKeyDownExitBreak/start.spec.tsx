@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { mockPlugin } from '@udecode/plate-common';
-import * as isHotkey from '@udecode/plate-core';
+import * as isHotkey from '@udecode/plate-core/server';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { onKeyDownExitBreak } from '../../onKeyDownExitBreak';
@@ -39,7 +39,7 @@ it('should be', () => {
     mockPlugin({
       options: {
         rules: [
-          { hotkey: 'enter', level: 0, query: { start: true, end: true } },
+          { hotkey: 'enter', level: 0, query: { end: true, start: true } },
         ],
       },
     })

@@ -1,30 +1,31 @@
 export type CustomizerBadge = {
   label: string;
 };
+
 export const customizerBadges = {
   element: {
-    label: 'Element',
     description: '',
-  },
-  inline: {
-    label: 'Inline',
-  },
-  void: {
-    label: 'Void',
-  },
-  leaf: {
-    label: 'Leaf',
-  },
-  style: {
-    label: 'Style',
-  },
-  normalizer: {
-    label: 'Normalizer',
+    label: 'Element',
   },
   handler: {
     label: 'Handler',
   },
+  inline: {
+    label: 'Inline',
+  },
+  leaf: {
+    label: 'Leaf',
+  },
+  normalizer: {
+    label: 'Normalizer',
+  },
+  style: {
+    label: 'Style',
+  },
   ui: {
     label: 'UI',
+  },
+  void: {
+    label: 'Void',
   },
 };

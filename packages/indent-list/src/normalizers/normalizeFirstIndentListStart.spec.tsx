@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
+import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
 import { createIndentPlugin } from '@udecode/plate-indent';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
@@ -12,7 +12,7 @@ jsx;
 const input = (
   <editor>
     <hp>1</hp>
-    <hp indent={1} listStyleType="disc" listStart={1}>
+    <hp indent={1} listStart={1} listStyleType="disc">
       2
     </hp>
   </editor>
@@ -30,12 +30,12 @@ const output = (
 it('should be', async () => {
   const editor = createPlateEditor({
     editor: input,
+    normalizeInitialValue: true,
     plugins: [
       createParagraphPlugin(),
       createIndentPlugin(),
       createIndentListPlugin(),
     ],
-    normalizeInitialValue: true,
   });
 
   expect(editor.children).toEqual(output.children);

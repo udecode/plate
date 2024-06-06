@@ -1,27 +1,11 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { createPlateUI } from '@/plate/create-plate-ui';
-import { CommentsProvider } from '@/plate/demo/comments/CommentsProvider';
-import { editableProps } from '@/plate/demo/editableProps';
-import { isEnabled } from '@/plate/demo/is-enabled';
-import { alignPlugin } from '@/plate/demo/plugins/alignPlugin';
-import { autoformatIndentLists } from '@/plate/demo/plugins/autoformatIndentLists';
-import { autoformatLists } from '@/plate/demo/plugins/autoformatLists';
-import { autoformatRules } from '@/plate/demo/plugins/autoformatRules';
-import { dragOverCursorPlugin } from '@/plate/demo/plugins/dragOverCursorPlugin';
-import { emojiPlugin } from '@/plate/demo/plugins/emojiPlugin';
-import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
-import { forcedLayoutPlugin } from '@/plate/demo/plugins/forcedLayoutPlugin';
-import { lineHeightPlugin } from '@/plate/demo/plugins/lineHeightPlugin';
-import { linkPlugin } from '@/plate/demo/plugins/linkPlugin';
-import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin';
-import { selectOnBackspacePlugin } from '@/plate/demo/plugins/selectOnBackspacePlugin';
-import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
-import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
-import { trailingBlockPlugin } from '@/plate/demo/plugins/trailingBlockPlugin';
-import { MENTIONABLES } from '@/plate/demo/values/mentionables';
-import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+
+import type { ValueId } from '@/config/customizer-plugins';
+
 import { cn } from '@udecode/cn';
 import { createAlignPlugin } from '@udecode/plate-alignment';
 import { createAutoformatPlugin } from '@udecode/plate-autoformat';
@@ -35,8 +19,8 @@ import {
   createUnderlinePlugin,
 } from '@udecode/plate-basic-marks';
 import {
-  createBlockquotePlugin,
   ELEMENT_BLOCKQUOTE,
+  createBlockquotePlugin,
 } from '@udecode/plate-block-quote';
 import {
   createExitBreakPlugin,
@@ -45,16 +29,15 @@ import {
 } from '@udecode/plate-break';
 import { createCaptionPlugin } from '@udecode/plate-caption';
 import {
-  createCodeBlockPlugin,
   ELEMENT_CODE_BLOCK,
+  createCodeBlockPlugin,
 } from '@udecode/plate-code-block';
-import { createComboboxPlugin } from '@udecode/plate-combobox';
 import { createCommentsPlugin } from '@udecode/plate-comments';
 import {
-  createPlugins,
   Plate,
-  PlatePluginComponent,
-  Value,
+  type PlatePluginComponent,
+  type Value,
+  createPlugins,
 } from '@udecode/plate-common';
 import { createDndPlugin } from '@udecode/plate-dnd';
 import { createEmojiPlugin } from '@udecode/plate-emoji';
@@ -65,13 +48,13 @@ import {
   createFontSizePlugin,
 } from '@udecode/plate-font';
 import {
-  createHeadingPlugin,
   ELEMENT_H1,
   ELEMENT_H2,
   ELEMENT_H3,
   ELEMENT_H4,
   ELEMENT_H5,
   ELEMENT_H6,
+  createHeadingPlugin,
 } from '@udecode/plate-heading';
 import { createHighlightPlugin } from '@udecode/plate-highlight';
 import { createHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
@@ -91,8 +74,8 @@ import { createMentionPlugin } from '@udecode/plate-mention';
 import { createNodeIdPlugin } from '@udecode/plate-node-id';
 import { createNormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import {
-  createParagraphPlugin,
   ELEMENT_PARAGRAPH,
+  createParagraphPlugin,
 } from '@udecode/plate-paragraph';
 import { createResetNodePlugin } from '@udecode/plate-reset-node';
 import {
@@ -102,18 +85,35 @@ import {
 import { createBlockSelectionPlugin } from '@udecode/plate-selection';
 import { createDeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
 import { createDeserializeMdPlugin } from '@udecode/plate-serializer-md';
+import { createSlashPlugin } from '@udecode/plate-slash-command';
 import { createTabbablePlugin } from '@udecode/plate-tabbable';
 import { createTablePlugin } from '@udecode/plate-table';
-import { createTogglePlugin, ELEMENT_TOGGLE } from '@udecode/plate-toggle';
+import { ELEMENT_TOGGLE, createTogglePlugin } from '@udecode/plate-toggle';
 import { createTrailingBlockPlugin } from '@udecode/plate-trailing-block';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
 
-import { ValueId } from '@/config/customizer-plugins';
-import { captionPlugin } from '@/lib/plate/demo/plugins/captionPlugin';
 import { settingsStore } from '@/components/context/settings-store';
 import { PlaygroundFixedToolbarButtons } from '@/components/plate-ui/playground-fixed-toolbar-buttons';
 import { PlaygroundFloatingToolbarButtons } from '@/components/plate-ui/playground-floating-toolbar-buttons';
+import { captionPlugin } from '@/lib/plate/demo/plugins/captionPlugin';
+import { createPlateUI } from '@/plate/create-plate-ui';
+import { CommentsProvider } from '@/plate/demo/comments/CommentsProvider';
+import { editableProps } from '@/plate/demo/editableProps';
+import { isEnabled } from '@/plate/demo/is-enabled';
+import { alignPlugin } from '@/plate/demo/plugins/alignPlugin';
+import { autoformatIndentLists } from '@/plate/demo/plugins/autoformatIndentLists';
+import { autoformatLists } from '@/plate/demo/plugins/autoformatLists';
+import { autoformatRules } from '@/plate/demo/plugins/autoformatRules';
+import { dragOverCursorPlugin } from '@/plate/demo/plugins/dragOverCursorPlugin';
+import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
+import { forcedLayoutPlugin } from '@/plate/demo/plugins/forcedLayoutPlugin';
+import { lineHeightPlugin } from '@/plate/demo/plugins/lineHeightPlugin';
+import { linkPlugin } from '@/plate/demo/plugins/linkPlugin';
+import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin';
+import { selectOnBackspacePlugin } from '@/plate/demo/plugins/selectOnBackspacePlugin';
+import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
+import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
+import { trailingBlockPlugin } from '@/plate/demo/plugins/trailingBlockPlugin';
+import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
 import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
 import { CursorOverlay } from '@/registry/default/plate-ui/cursor-overlay';
 import { Editor } from '@/registry/default/plate-ui/editor';
@@ -127,29 +127,28 @@ import {
   TodoLi,
   TodoMarker,
 } from '@/registry/default/plate-ui/indent-todo-marker-component';
-import { MentionCombobox } from '@/registry/default/plate-ui/mention-combobox';
 
 export const usePlaygroundPlugins = ({
-  id,
   components = createPlateUI(),
+  id,
 }: {
-  id?: ValueId;
   components?: Record<string, PlatePluginComponent>;
+  id?: ValueId;
 } = {}) => {
   const enabled = settingsStore.use.checkedPlugins();
 
   const autoformatOptions = {
-    rules: [...autoformatRules],
     enableUndoOnDelete: true,
+    rules: [...autoformatRules],
   };
 
   if (id === 'indentlist') {
     autoformatOptions.rules.push(...autoformatIndentLists);
   } else if (id === 'list') {
     autoformatOptions.rules.push(...autoformatLists);
-  } else if (!!enabled.listStyleType) {
+  } else if (enabled.listStyleType) {
     autoformatOptions.rules.push(...autoformatIndentLists);
-  } else if (!!enabled.list) {
+  } else if (enabled.list) {
     autoformatOptions.rules.push(...autoformatLists);
   }
 
@@ -176,6 +175,7 @@ export const usePlaygroundPlugins = ({
               triggerPreviousCharPattern: /^$|^[\s"']$/,
             },
           }),
+          createSlashPlugin(),
           createTablePlugin({
             enabled: !!enabled.table,
             options: {
@@ -203,8 +203,12 @@ export const usePlaygroundPlugins = ({
           createKbdPlugin({ enabled: !!enabled.kbd }),
 
           // Block Style
-          createAlignPlugin({ ...alignPlugin, enabled: !!enabled.align }),
+          createAlignPlugin({
+            ...alignPlugin,
+            enabled: !!enabled.align,
+          }),
           createIndentPlugin({
+            enabled: !!enabled.indent,
             inject: {
               props: {
                 validTypes: [
@@ -221,9 +225,9 @@ export const usePlaygroundPlugins = ({
                 ],
               },
             },
-            enabled: !!enabled.indent,
           }),
           createIndentListPlugin({
+            enabled: id === 'indentlist' || !!enabled.listStyleType,
             inject: {
               props: {
                 validTypes: [
@@ -240,18 +244,17 @@ export const usePlaygroundPlugins = ({
                 ],
               },
             },
-            enabled: id === 'indentlist' || !!enabled.listStyleType,
             options: {
               listStyleTypes: {
-                todo: {
-                  type: 'todo',
-                  markerComponent: TodoMarker,
-                  liComponent: TodoLi,
-                },
                 fire: {
-                  type: 'fire',
-                  markerComponent: FireMarker,
                   liComponent: FireLiComponent,
+                  markerComponent: FireMarker,
+                  type: 'fire',
+                },
+                todo: {
+                  liComponent: TodoLi,
+                  markerComponent: TodoMarker,
+                  type: 'todo',
                 },
               },
             },
@@ -267,20 +270,20 @@ export const usePlaygroundPlugins = ({
             options: autoformatOptions,
           }),
           createBlockSelectionPlugin({
+            enabled: id === 'blockselection' || !!enabled.blockSelection,
             options: {
+              disableContextMenu: true,
               sizes: {
-                top: 0,
                 bottom: 0,
+                top: 0,
               },
             },
-            enabled: id === 'blockselection' || !!enabled.blockSelection,
           }),
-          createComboboxPlugin({ enabled: !!enabled.combobox }),
           createDndPlugin({
-            options: { enableScroller: true },
             enabled: !!enabled.dnd,
+            options: { enableScroller: true },
           }),
-          createEmojiPlugin({ ...emojiPlugin, enabled: !!enabled.emoji }),
+          createEmojiPlugin({ enabled: !!enabled.emoji }),
           createExitBreakPlugin({
             ...exitBreakPlugin,
             enabled: !!enabled.exitBreak,
@@ -346,12 +349,14 @@ export const useInitialValueVersion = (initialValue: Value) => {
 
   useEffect(() => {
     if (enabled === prevEnabled.current) return;
+
     prevEnabled.current = enabled;
     setVersion((v) => v + 1);
   }, [enabled]);
 
   useEffect(() => {
     if (initialValue === prevInitialValueRef.current) return;
+
     prevInitialValueRef.current = initialValue;
     setVersion((v) => v + 1);
   }, [initialValue]);
@@ -366,24 +371,24 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
   const key = useInitialValueVersion(initialValue);
 
   const plugins = usePlaygroundPlugins({
-    id,
     components: createPlateUI(
       {},
       {
-        placeholder: isEnabled('placeholder', id),
         draggable: isEnabled('dnd', id),
+        placeholder: isEnabled('placeholder', id),
       }
     ),
+    id,
   });
 
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="relative">
         <Plate
-          key={key}
           initialValue={initialValue}
-          plugins={plugins}
+          key={key}
           normalizeInitialValue
+          plugins={plugins}
         >
           <CommentsProvider>
             {enabled['fixed-toolbar'] && (
@@ -396,7 +401,6 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
 
             <div className="flex w-full">
               <div
-                ref={containerRef}
                 className={cn(
                   'relative flex w-full overflow-x-auto',
                   '[&_.slate-start-area-top]:!h-4',
@@ -404,19 +408,20 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
                   !id &&
                     'md:[&_.slate-start-area-left]:!w-[64px] md:[&_.slate-start-area-right]:!w-[64px]'
                 )}
+                ref={containerRef}
               >
                 <Editor
                   {...editableProps}
-                  placeholder=""
-                  variant="ghost"
-                  size="md"
-                  focusRing={false}
                   className={cn(
                     editableProps.className,
                     'px-8',
                     !id && 'min-h-[920px] pb-[20vh] pt-4 md:px-[96px]',
                     id && 'pb-8 pt-2'
                   )}
+                  focusRing={false}
+                  placeholder=""
+                  size="md"
+                  variant="ghost"
                 />
 
                 {enabled['floating-toolbar'] && (
@@ -425,10 +430,6 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
                       <PlaygroundFloatingToolbarButtons id={id} />
                     )}
                   </FloatingToolbar>
-                )}
-
-                {isEnabled('mention', id, enabled['mention-combobox']) && (
-                  <MentionCombobox items={MENTIONABLES} />
                 )}
 
                 {isEnabled('cursoroverlay', id) && (

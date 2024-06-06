@@ -1,31 +1,39 @@
-import React from 'react';
+import React, { useRef } from 'react';
+
+import { findNodePath, useEditorRef } from '@udecode/plate-common';
 import {
-  findNodePath,
+  type TElement,
+  getAboveNode,
   getPluginOptions,
   isInline,
+  isVoid,
   queryNode,
-  TElement,
-  useEditorRef,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
+import { Path } from 'slate';
 
-import { useBlockSelectionSelectors } from '../blockSelectionStore';
 import {
-  BlockSelectionPlugin,
+  blockSelectionActions,
+  useBlockSelectionSelectors,
+} from '../blockSelectionStore';
+import {
+  type BlockSelectionPlugin,
   KEY_BLOCK_SELECTION,
 } from '../createBlockSelectionPlugin';
+import { isBlockSelected } from '../queries';
 
 export interface BlockSelectableOptions {
   element: TElement;
-  selectedColor?: string;
   active?: boolean;
+  selectedColor?: string;
 }
 
 export const useBlockSelectableState = ({
+  active,
   element,
   selectedColor,
-  active,
 }: BlockSelectableOptions) => {
   const editor = useEditorRef();
+  const ref = useRef<HTMLDivElement | null>(null);
 
   const path = React.useMemo(
     () => findNodePath(editor, element),
@@ -51,14 +59,19 @@ export const useBlockSelectableState = ({
 
   return {
     active: active ?? true,
+    editor,
     element,
+    path,
+    ref,
     selectedColor,
   };
 };
 
 export const useBlockSelectable = ({
+  editor,
   element,
-  selectedColor,
+  path,
+  ref,
 }: ReturnType<typeof useBlockSelectableState>) => {
   const id = element?.id as string | undefined;
   const isSelected = useBlockSelectionSelectors().isSelected(id);
@@ -72,20 +85,54 @@ export const useBlockSelectable = ({
       className: isSelected
         ? 'slate-selected slate-selectable'
         : 'slate-selectable',
-      style: isSelected
-        ? {
-            backgroundColor: selectedColor,
-          }
-        : undefined,
       key: id,
+      onContextMenu: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        if (!editor) return;
+
+        const { disableContextMenu = true } =
+          getPluginOptions<BlockSelectionPlugin>(editor, KEY_BLOCK_SELECTION);
+
+        if (disableContextMenu) return;
+        if (editor.selection?.focus) {
+          const nodeEntry = getAboveNode(editor);
+
+          if (nodeEntry && Path.isCommon(path, nodeEntry[1])) {
+            const isSelected = isBlockSelected(nodeEntry[0] as TElement);
+            const isOpenAlways =
+              (event.target as HTMLElement).dataset?.openContextMenu === 'true';
+
+            /**
+             * When "block selected or is void or has openContextMenu props",
+             * right click can always open the context menu.
+             */
+            if (!isSelected && !isVoid(editor, nodeEntry[0]) && !isOpenAlways)
+              return event.stopPropagation();
+          }
+        }
+
+        const aboveHtmlNode = ref.current;
+
+        if (id && aboveHtmlNode) {
+          blockSelectionActions.addSelectedRow(id, {
+            aboveHtmlNode,
+            clear: !event?.shiftKey,
+          });
+        }
+      },
+      ref,
+      // style: isSelected
+      //   ? {
+      //       backgroundColor: selectedColor,
+      //     }
+      //   : undefined,
       ...data,
     },
   };
 };
 
 export function BlockSelectable({
-  options,
   children,
+  options,
   ...props
 }: { options: BlockSelectableOptions } & React.HTMLAttributes<HTMLDivElement>) {
   const state = useBlockSelectableState(options);

@@ -1,10 +1,11 @@
-import { Modify } from '@udecode/utils';
-import { Editor, EditorNextOptions } from 'slate';
+import type { Modify } from '@udecode/utils';
 
-import { TDescendant } from '../node';
-import { ENode, TNodeMatch } from '../node/TNode';
-import { TNodeEntry } from '../node/TNodeEntry';
-import { TEditor, Value } from './TEditor';
+import { Editor, type EditorNextOptions } from 'slate';
+
+import type { TDescendant } from '../node';
+import type { ENode, TNodeMatch } from '../node/TNode';
+import type { TNodeEntry } from '../node/TNodeEntry';
+import type { TEditor, Value } from './TEditor';
 
 export type GetNextNodeOptions<V extends Value = Value> = Modify<
   NonNullable<EditorNextOptions<TDescendant>>,
@@ -13,9 +14,7 @@ export type GetNextNodeOptions<V extends Value = Value> = Modify<
   }
 >;
 
-/**
- * Get the matching node in the branch of the document after a location.
- */
+/** Get the matching node in the branch of the document after a location. */
 export const getNextNode = <N extends ENode<V>, V extends Value = Value>(
   editor: TEditor<V>,
   options?: GetNextNodeOptions<V>

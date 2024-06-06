@@ -1,5 +1,6 @@
 import React from 'react';
-import { TElement } from '@udecode/plate-common';
+
+import type { TElement } from '@udecode/plate-common';
 
 import { useTableStore } from '../../stores/tableStore';
 

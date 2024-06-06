@@ -1,11 +1,10 @@
+import { deselectEditor, useEditorRef } from '@udecode/plate-common';
 import {
-  deselectEditor,
   isExpanded,
   isText,
   nanoid,
   setNodes,
-  useEditorRef,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
 import { MARK_COMMENT } from '../../constants';
 import { getCommentKey } from '../../utils/index';
@@ -17,6 +16,7 @@ export const useAddCommentMark = () => {
 
   return () => {
     const { selection } = editor;
+
     if (!isExpanded(selection)) return;
 
     const id = nanoid();

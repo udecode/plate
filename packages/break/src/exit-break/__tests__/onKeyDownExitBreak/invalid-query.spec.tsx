@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { mockPlugin } from '@udecode/plate-common';
-import * as isHotkey from '@udecode/plate-core';
+import * as isHotkey from '@udecode/plate-core/server';
 import { ELEMENT_H1 } from '@udecode/plate-heading';
 import { jsx } from '@udecode/plate-test-utils';
 

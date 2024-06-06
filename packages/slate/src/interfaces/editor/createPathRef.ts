@@ -1,7 +1,8 @@
-import { Editor, Path } from 'slate';
-import { EditorPathRefOptions } from 'slate/dist/interfaces/editor';
+import type { EditorPathRefOptions } from 'slate/dist/interfaces/editor';
 
-import { TEditor, Value } from './TEditor';
+import { Editor, type Path } from 'slate';
+
+import type { TEditor, Value } from './TEditor';
 
 /**
  * Create a mutable ref for a `Path` object, which will stay in sync as new

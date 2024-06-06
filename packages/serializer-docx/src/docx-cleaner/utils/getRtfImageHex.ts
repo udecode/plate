@@ -1,6 +1,6 @@
-import { SPACE } from '@udecode/plate-common';
+import { SPACE } from '@udecode/plate-common/server';
 
-export const getRtfImageHex = (imageData: string): string | null => {
+export const getRtfImageHex = (imageData: string): null | string => {
   const [, bliptagData = ''] = imageData.split('bliptag');
   const bracketSplit = bliptagData.split('}');
 

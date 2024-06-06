@@ -1,10 +1,11 @@
-import { EmojiCategoryList, EmojiSettingsType } from '../../types';
-import { GridElements } from '../Grid/index';
+import type { EmojiCategoryList, EmojiSettingsType } from '../../types';
+import type { GridElements } from '../Grid/index';
+import type { IFrequentEmojiStorage } from './EmojiFloatingLibrary.types';
+
 import {
   EmojiFloatingGrid,
   EmojiGridSectionWithRoot,
 } from './EmojiFloatingGrid';
-import { IFrequentEmojiStorage } from './EmojiFloatingLibrary.types';
 
 export class EmojiFloatingGridBuilder {
   protected grid = new EmojiFloatingGrid();

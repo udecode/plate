@@ -10,9 +10,9 @@ export const useFloatingCommentsContentState = () => {
   const ref = React.useRef(null);
 
   return {
-    ref,
     activeCommentId,
-    myUserId,
     hasNoComment: !activeComment,
+    myUserId,
+    ref,
   };
 };

@@ -1,4 +1,5 @@
-import { TCommentText } from '../types';
+import type { TCommentText } from '../types';
+
 import { isCommentKey } from './isCommentKey';
 
 export const getCommentKeys = (node: TCommentText) => {

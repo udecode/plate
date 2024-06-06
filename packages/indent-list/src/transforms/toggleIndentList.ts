@@ -1,33 +1,32 @@
 import {
+  type PlateEditor,
+  type TElement,
+  type Value,
   getBlockAbove,
   getNodeEntries,
   getPluginOptions,
   isCollapsed,
   isExpanded,
-  PlateEditor,
   setElements,
-  TElement,
   unsetNodes,
-  Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { KEY_INDENT } from '@udecode/plate-indent';
 
+import type { IndentListOptions } from './indentList';
+
 import {
-  IndentListPlugin,
+  type IndentListPlugin,
   KEY_LIST_CHECKED,
   KEY_LIST_STYLE_TYPE,
 } from '../createIndentListPlugin';
 import { areEqListStyleType } from '../queries/areEqListStyleType';
-import { IndentListOptions } from './indentList';
 import { setIndentListNodes } from './setIndentListNodes';
 import { setIndentListSiblingNodes } from './setIndentListSiblingNodes';
 import { toggleIndentListSet } from './toggleIndentListSet';
 import { toggleIndentListUnset } from './toggleIndentListUnset';
 
-/**
- * Toggle indent list.
- */
+/** Toggle indent list. */
 export const toggleIndentList = <V extends Value>(
   editor: PlateEditor<V>,
   options: IndentListOptions<V>
@@ -41,23 +40,22 @@ export const toggleIndentList = <V extends Value>(
 
   if (isCollapsed(editor.selection)) {
     const entry = getBlockAbove<TElement>(editor);
-    if (!entry) return;
 
+    if (!entry) return;
     if (toggleIndentListSet(editor, entry, { listStyleType })) {
       return;
     }
-
     if (toggleIndentListUnset(editor, entry, { listStyleType })) {
       return;
     }
 
     setIndentListSiblingNodes(editor, entry, {
-      listStyleType,
       getSiblingIndentListOptions,
+      listStyleType,
     });
+
     return;
   }
-
   if (isExpanded(editor.selection)) {
     const _entries = getNodeEntries<TElement>(editor, { block: true });
     const entries = [..._entries];
@@ -74,6 +72,7 @@ export const toggleIndentList = <V extends Value>(
           const indent = node[KEY_INDENT] as number;
 
           unsetNodes(editor, KEY_LIST_STYLE_TYPE, { at: path });
+
           if (indent > 1) {
             setElements(editor, { [KEY_INDENT]: indent - 1 }, { at: path });
           } else {
@@ -86,6 +85,7 @@ export const toggleIndentList = <V extends Value>(
           // });
         });
       });
+
       return;
     }
 

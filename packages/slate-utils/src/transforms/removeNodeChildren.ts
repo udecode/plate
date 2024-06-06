@@ -1,16 +1,15 @@
+import type { Path } from 'slate';
+
 import {
+  type RemoveNodesOptions,
+  type TEditor,
+  type Value,
   getNodeChildren,
   removeNodes,
-  RemoveNodesOptions,
-  TEditor,
-  Value,
   withoutNormalizing,
 } from '@udecode/slate';
-import { Path } from 'slate';
 
-/**
- * Remove node children.
- */
+/** Remove node children. */
 export const removeNodeChildren = <V extends Value = Value>(
   editor: TEditor<V>,
   path: Path,

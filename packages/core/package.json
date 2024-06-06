@@ -1,36 +1,53 @@
 {
   "name": "@udecode/plate-core",
-  "version": "31.3.2",
+  "version": "33.0.3",
   "description": "The core architecture of Plate – a plugin system for slate",
-  "license": "MIT",
+  "keywords": [
+    "contentEditable",
+    "editor",
+    "framework",
+    "html",
+    "plate",
+    "plugin",
+    "rich text",
+    "slate",
+    "wysiwyg"
+  ],
   "homepage": "https://platejs.org",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
     "directory": "packages/core"
   },
-  "bugs": {
-    "url": "https://github.com/udecode/plate/issues"
-  },
+  "license": "MIT",
   "sideEffects": false,
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist/**/*"
-  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "module": "./dist/index.mjs",
       "require": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.mjs",
+      "module": "./dist/server.mjs",
+      "require": "./dist/server.js"
     }
   },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
   "scripts": {
+    "brl": "yarn p:brl",
     "build": "yarn p:build",
     "build:watch": "yarn p:build:watch",
-    "brl": "yarn p:brl",
     "clean": "yarn p:clean",
     "lint": "yarn p:lint",
     "lint:fix": "yarn p:lint:fix",
@@ -39,15 +56,15 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/slate": "31.0.0",
-    "@udecode/slate-react": "31.0.0",
-    "@udecode/slate-utils": "31.3.2",
+    "@udecode/slate": "32.0.1",
+    "@udecode/slate-react": "33.0.0",
+    "@udecode/slate-utils": "32.0.1",
     "@udecode/utils": "31.0.0",
     "clsx": "^1.2.1",
     "is-hotkey": "^0.2.0",
     "jotai": "^2.7.1",
     "jotai-optics": "0.3.2",
-    "jotai-x": "^1.2.2",
+    "jotai-x": "^1.2.3",
     "lodash": "^4.17.21",
     "nanoid": "^3.3.7",
     "optics-ts": "2.4.1",
@@ -64,17 +81,6 @@
     "slate-hyperscript": ">=0.66.0",
     "slate-react": ">=0.99.0"
   },
-  "keywords": [
-    "contentEditable",
-    "editor",
-    "framework",
-    "html",
-    "plate",
-    "plugin",
-    "rich text",
-    "slate",
-    "wysiwyg"
-  ],
   "publishConfig": {
     "access": "public"
   }

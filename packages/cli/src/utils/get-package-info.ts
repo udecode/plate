@@ -1,7 +1,8 @@
-import path from 'path';
-import fs from 'fs-extra';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { type PackageJson } from 'type-fest';
+import type { PackageJson } from 'type-fest';
+
+import fs from 'fs-extra';
+import path from 'path';
 
 /**
  * This is a simple utility that reads and returns the contents of your

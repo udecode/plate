@@ -1,28 +1,30 @@
 import {
+  type PlateEditor,
+  type Value,
   findNode,
   getBlockAbove,
   getParentNode,
   getPluginOptions,
   getPluginType,
   insertElements,
-  PlateEditor,
   setNodes,
-  Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Path } from 'slate';
+
+import type {
+  TTableCellElement,
+  TTableElement,
+  TTableRowElement,
+  TablePlugin,
+} from '../types';
 
 import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
 import { getTableColumnCount } from '../queries';
 import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';
-import {
-  TablePlugin,
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '../types';
 import { getCellTypes } from '../utils';
+import { computeCellIndices } from './computeCellIndices';
 import { createEmptyCell } from './createEmptyCell';
 import { findCellByIndexes } from './findCellByIndexes';
 import { getCellIndices } from './getCellIndices';
@@ -31,19 +33,15 @@ import { getCellPath } from './getCellPath';
 export const insertTableMergeRow = <V extends Value>(
   editor: PlateEditor<V>,
   {
-    header,
-    fromRow,
     at,
-    disableSelect,
+    fromRow,
+    header,
   }: {
-    header?: boolean;
-    fromRow?: Path;
-    /**
-     * Exact path of the row to insert the column at.
-     * Will overrule `fromRow`.
-     */
+    /** Exact path of the row to insert the column at. Will overrule `fromRow`. */
     at?: Path;
     disableSelect?: boolean;
+    fromRow?: Path;
+    header?: boolean;
   } = {}
 ) => {
   const { _cellIndices: cellIndices } = getPluginOptions<TablePlugin, V>(
@@ -59,15 +57,18 @@ export const insertTableMergeRow = <V extends Value>(
     : getBlockAbove(editor, {
         match: { type: getPluginType(editor, ELEMENT_TR) },
       });
+
   if (!trEntry) return;
 
   const [, trPath] = trEntry;
 
   const tableEntry = getBlockAbove<TTableElement>(editor, {
-    match: { type: getPluginType(editor, ELEMENT_TABLE) },
     at: trPath,
+    match: { type: getPluginType(editor, ELEMENT_TABLE) },
   });
+
   if (!tableEntry) return;
+
   const tableNode = tableEntry[0] as TTableElement;
 
   const { newCellChildren } = getPluginOptions<TablePlugin, V>(
@@ -78,11 +79,15 @@ export const insertTableMergeRow = <V extends Value>(
     at: fromRow,
     match: { type: getCellTypes(editor) },
   });
+
   if (!cellEntry) return;
+
   const [cellNode, cellPath] = cellEntry;
   const cellElement = cellNode as TTableCellElement;
   const cellRowSpan = getRowSpan(cellElement);
-  const { row: cellRowIndex } = getCellIndices(cellIndices!, cellElement)!;
+  const { row: cellRowIndex } =
+    getCellIndices(cellIndices!, cellElement) ||
+    computeCellIndices(editor, tableNode, cellElement)!;
 
   const rowPath = cellPath.at(-2)!;
   const tablePath = cellPath.slice(0, -2)!;
@@ -90,6 +95,7 @@ export const insertTableMergeRow = <V extends Value>(
   let nextRowIndex: number;
   let checkingRowIndex: number;
   let nextRowPath: number[];
+
   if (Path.isPath(at)) {
     nextRowIndex = at.at(-1)!;
     checkingRowIndex = cellRowIndex - 1;
@@ -101,6 +107,7 @@ export const insertTableMergeRow = <V extends Value>(
   }
 
   const firstRow = nextRowIndex === 0;
+
   if (firstRow) {
     checkingRowIndex = 0;
   }
@@ -109,6 +116,7 @@ export const insertTableMergeRow = <V extends Value>(
   const affectedCellsSet = new Set();
   Array.from({ length: colCount }, (_, i) => i).forEach((cI) => {
     const found = findCellByIndexes(editor, tableNode, checkingRowIndex, cI);
+
     if (found) {
       affectedCellsSet.add(found);
     }
@@ -120,10 +128,9 @@ export const insertTableMergeRow = <V extends Value>(
     if (!cur) return;
 
     const curCell = cur as TTableCellElement;
-    const { row: curRowIndex, col: curColIndex } = getCellIndices(
-      cellIndices!,
-      curCell
-    )!;
+    const { col: curColIndex, row: curRowIndex } =
+      getCellIndices(cellIndices!, curCell) ||
+      computeCellIndices(editor, tableNode, curCell)!;
 
     const curRowSpan = getRowSpan(curCell);
     const curColSpan = getColSpan(curCell);
@@ -135,6 +142,7 @@ export const insertTableMergeRow = <V extends Value>(
     );
 
     const endCurI = curRowIndex + curRowSpan - 1;
+
     if (endCurI >= nextRowIndex && !firstRow) {
       // make higher
       setNodes<TTableCellElement>(
@@ -165,8 +173,8 @@ export const insertTableMergeRow = <V extends Value>(
     insertElements(
       editor,
       {
-        type: getPluginType(editor, ELEMENT_TR),
         children: newRowChildren,
+        type: getPluginType(editor, ELEMENT_TR),
       },
       {
         at: nextRowPath,

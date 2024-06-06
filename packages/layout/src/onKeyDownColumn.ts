@@ -1,11 +1,16 @@
 import {
-  getParentNode,
+  type KeyboardHandlerReturnType,
+  type PlateEditor,
+  type Value,
+  getAboveNode,
+  getAncestorNode,
   isHotkey,
-  KeyboardHandlerReturnType,
-  PlateEditor,
+  isSelectionCoverBlock,
   select,
-  Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
+import { Path } from 'slate';
+
+import { ELEMENT_COLUMN_GROUP } from './createColumnPlugin';
 
 export const onKeyDownColumn =
   <V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>(
@@ -17,12 +22,26 @@ export const onKeyDownColumn =
     const at = editor.selection;
 
     if (isHotkey('mod+a', e) && at) {
-      const selectionParent = getParentNode(editor, at);
-      if (!selectionParent) return;
-      const [, parentPath] = selectionParent;
-      parentPath.pop();
+      const aboveNode = getAboveNode(editor);
+      const ancestorNode = getAncestorNode(editor);
 
-      select(editor, parentPath);
+      if (!ancestorNode) return;
+      if (!aboveNode) return;
+
+      const [node] = ancestorNode;
+
+      if (node.type !== ELEMENT_COLUMN_GROUP) return;
+
+      const [, abovePath] = aboveNode;
+
+      let targetPath = Path.parent(abovePath);
+
+      if (isSelectionCoverBlock(editor)) {
+        targetPath = Path.parent(targetPath);
+      }
+      if (targetPath.length === 0) return;
+
+      select(editor, targetPath);
 
       e.preventDefault();
       e.stopPropagation();

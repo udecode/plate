@@ -1,13 +1,15 @@
-import { SyntaxKind } from 'ts-morph';
-import * as z from 'zod';
+import type * as z from 'zod';
 
-import { registryBaseColorSchema } from '../registry/schema';
-import { Transformer } from '../transformers';
+import { SyntaxKind } from 'ts-morph';
+
+import type { registryBaseColorSchema } from '../registry/schema';
+import type { Transformer } from '../transformers';
 
 export const transformCssVars: Transformer = async ({
-  sourceFile,
-  config,
   baseColor,
+  config,
+  sourceFile,
+  // eslint-disable-next-line @typescript-eslint/require-await
 }) => {
   // No transform if using css variables.
   if (config.tailwind?.cssVariables || !baseColor?.inlineColors) {
@@ -32,6 +34,7 @@ export const transformCssVars: Transformer = async ({
   // }
   sourceFile.getDescendantsOfKind(SyntaxKind.StringLiteral).forEach((node) => {
     const value = node.getText();
+
     if (value) {
       const valueWithColorMapping = applyColorMapping(
         value.replace(/'/g, '').replace(/"/g, ''),
@@ -103,12 +106,12 @@ export const transformCssVars: Transformer = async ({
 
 // Splits a className into variant-name-alpha.
 // eg. hover:bg-primary-100 -> [hover, bg-primary, 100]
-export function splitClassName(className: string): (string | null)[] {
+export function splitClassName(className: string): (null | string)[] {
   if (!className.includes('/') && !className.includes(':')) {
     return [null, className, null];
   }
 
-  const parts: (string | null)[] = [];
+  const parts: (null | string)[] = [];
   // First we split to find the alpha.
   const [rest, alpha] = className.split('/');
 
@@ -147,17 +150,21 @@ export function applyColorMapping(
   const classNames = input.split(' ');
   const lightMode = new Set<string>();
   const darkMode = new Set<string>();
+
   for (const className of classNames) {
     const [variant, value, modifier] = splitClassName(className);
     const prefix = PREFIXES.find((pre) => value?.startsWith(pre));
+
     if (!prefix) {
       if (!lightMode.has(className)) {
         lightMode.add(className);
       }
+
       continue;
     }
 
     const needle = value?.replace(prefix, '');
+
     if (needle && needle in mapping.light) {
       lightMode.add(
         [variant, `${prefix}${mapping.light[needle]}`]
@@ -170,9 +177,9 @@ export function applyColorMapping(
           .filter(Boolean)
           .join(':') + (modifier ? `/${modifier}` : '')
       );
+
       continue;
     }
-
     if (!lightMode.has(className)) {
       lightMode.add(className);
     }

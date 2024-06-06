@@ -1,4 +1,9 @@
-import { PlateEditor, TNodeEntry, Value } from '@udecode/plate-common';
+import type {
+  PlateEditor,
+  TNodeEntry,
+  Value,
+} from '@udecode/plate-common/server';
+
 import last from 'lodash/last.js';
 
 import { buildToggleIndex } from '../toggle-controller-store';
@@ -16,5 +21,6 @@ export const getLastEntryEnclosedInToggle = <
     .filter(([node]) => {
       return (toggleIndex.get(node.id) || []).includes(toggleId);
     });
+
   return last(entriesInToggle);
 };

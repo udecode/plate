@@ -8,11 +8,38 @@ Since Plate UI is not a component library, a changelog is maintained here.
 
 Use the [CLI](https://platejs.org/docs/components/cli) to install the latest version of the components.
 
+## June 2024 #11
+
+### June 6 #11.1
+
+- replace `combobox` with `inline-combobox`
+- remove `mention-combobox`, `emoji-combobox` and `slash-combobox`
+- add `emoji-input-element`
+- update `mention-input-element` and `slash-input-element` to use the new combobox
+- feat `draggable`: add the data-key attribute to facilitate adding selection after the drag-and-drop operation is completed
+- breaking change:  add `CaptionProvider` on `image-element` and `media-embed-element`. Open the caption by using `CaptionButton` or `useCaptionStore().set.showCaption()`
+
+## May 2024 #10
+
+### May 30 #10.2
+
+- fix `draggable`: add portal to fix clipping, button type to stop form submission
+- fix `editor`: increase x padding to improve drag handle visibility
+
+### May 24 #10.1
+
+- fix `site-header`: change zIndex to 60
+- fix `fixed-toolbar`: change zIndex to 60
+
 ## April 2024 #9
+
+### April 30 #9.3
+
+- fix `indent-todo-marker-component`: clicking the checkbox removing the focus
 
 ### April 17 #9.2
 
-- Add `column-element`, `column-group-element`
+- add `column-element`, `column-group-element`
 
 ### April 6 #9.1
 

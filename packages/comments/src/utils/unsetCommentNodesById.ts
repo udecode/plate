@@ -1,6 +1,11 @@
-import { PlateEditor, unsetNodes, Value } from '@udecode/plate-common';
+import {
+  type PlateEditor,
+  type Value,
+  unsetNodes,
+} from '@udecode/plate-common/server';
 
-import { TCommentText } from '../types';
+import type { TCommentText } from '../types';
+
 import { getCommentKey } from './getCommentKey';
 import { isCommentNodeById } from './isCommentNodeById';
 

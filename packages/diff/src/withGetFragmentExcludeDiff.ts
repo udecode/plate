@@ -1,6 +1,7 @@
-import { TEditor } from '@udecode/plate-common';
+import type { TEditor } from '@udecode/plate-common/server';
+import type { BaseEditor, Descendant } from 'slate';
+
 import cloneDeep from 'lodash/cloneDeep.js';
-import { BaseEditor, Descendant } from 'slate';
 
 // Uses BaseEditor to be compatible with non-Plate editors
 export const withGetFragmentExcludeDiff = <E extends BaseEditor | TEditor>(
@@ -18,6 +19,7 @@ export const withGetFragmentExcludeDiff = <E extends BaseEditor | TEditor>(
     };
 
     fragment.forEach(removeDiff);
+
     return fragment;
   };
 

@@ -1,5 +1,7 @@
 import React from 'react';
-import { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
+
+import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
+
 import {
   focusEditor,
   useEditorReadOnly,
@@ -46,16 +48,17 @@ export function PlaygroundModeDropdownMenu(props: DropdownMenuProps) {
   };
 
   let value: keyof typeof item = 'editing';
+
   if (readOnly) value = 'viewing';
 
   return (
     <DropdownMenu modal={false} {...openState} {...props}>
       <DropdownMenuTrigger asChild>
         <ToolbarButton
+          className="min-w-[auto] lg:min-w-[130px]"
+          isDropdown
           pressed={openState.open}
           tooltip="Editing mode"
-          isDropdown
-          className="min-w-[auto] lg:min-w-[130px]"
         >
           {item[value]}
         </ToolbarButton>
@@ -64,28 +67,28 @@ export function PlaygroundModeDropdownMenu(props: DropdownMenuProps) {
       <DropdownMenuContent align="start" className="min-w-[180px]">
         <DropdownMenuRadioGroup
           className="flex flex-col gap-0.5"
-          value={value}
           onValueChange={(newValue) => {
             if (newValue !== 'viewing') {
               setReadOnly(false);
             }
-
             if (newValue === 'viewing') {
               setReadOnly(true);
+
               return;
             }
-
             if (newValue === 'editing') {
               focusEditor(editor);
+
               return;
             }
           }}
+          value={value}
         >
           <DropdownMenuRadioItem value="editing">
             {item.editing}
           </DropdownMenuRadioItem>
 
-          <DropdownMenuRadioItem value="suggesting" disabled>
+          <DropdownMenuRadioItem disabled value="suggesting">
             {item.suggesting}
             <span className="ml-2 rounded-md bg-muted px-1.5 py-0.5 text-xs leading-none text-muted-foreground no-underline group-hover:no-underline">
               Soon

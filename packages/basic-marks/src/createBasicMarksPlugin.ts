@@ -1,4 +1,4 @@
-import { createPluginFactory } from '@udecode/plate-common';
+import { createPluginFactory } from '@udecode/plate-common/server';
 
 import { createBoldPlugin } from './createBoldPlugin';
 import { createCodePlugin } from './createCodePlugin';
@@ -8,8 +8,11 @@ import { createSubscriptPlugin } from './createSubscriptPlugin';
 import { createSuperscriptPlugin } from './createSuperscriptPlugin';
 import { createUnderlinePlugin } from './createUnderlinePlugin';
 
+export const KEY_BASIC_MARKS = 'basicMarks';
+
 /**
  * Enables support for basic marks:
+ *
  * - Bold
  * - Code
  * - Italic
@@ -19,7 +22,7 @@ import { createUnderlinePlugin } from './createUnderlinePlugin';
  * - Underline
  */
 export const createBasicMarksPlugin = createPluginFactory({
-  key: 'basicMarks',
+  key: KEY_BASIC_MARKS,
   plugins: [
     createBoldPlugin(),
     createCodePlugin(),

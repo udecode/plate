@@ -1,8 +1,9 @@
 import React from 'react';
-import Link from 'next/link';
-import { cn } from '@udecode/cn';
 
-import { customizerItems, SettingPlugin } from '@/config/customizer-items';
+import { cn } from '@udecode/cn';
+import Link from 'next/link';
+
+import { type SettingPlugin, customizerItems } from '@/config/customizer-items';
 import { descriptions } from '@/config/descriptions';
 import { buttonVariants } from '@/registry/default/plate-ui/button';
 import { Checkbox } from '@/registry/default/plate-ui/checkbox';
@@ -25,13 +26,13 @@ import { Badge } from './ui/badge';
 import { Label } from './ui/label';
 
 export function SettingCheckbox({
+  badges,
+  components,
+  conflicts,
+  dependencies,
   id,
   label,
   route,
-  badges,
-  conflicts,
-  dependencies,
-  components,
 }: SettingPlugin) {
   const description = descriptions[id];
 
@@ -53,13 +54,13 @@ export function SettingCheckbox({
               <TooltipTrigger asChild>
                 <div className="flex items-center">
                   <Checkbox
-                    id={id}
                     checked={checked}
+                    id={id}
                     onCheckedChange={(_checked: boolean) => {
                       settingsStore.set.setCheckedIdNext(id, _checked);
                     }}
                   />
-                  <Label htmlFor={id} className="flex p-2">
+                  <Label className="flex p-2" htmlFor={id}>
                     {label}
                   </Label>
                 </div>
@@ -73,9 +74,9 @@ export function SettingCheckbox({
             <div className="flex flex-wrap gap-1">
               {badges?.map((badge) => (
                 <Badge
+                  className="leading-none"
                   key={badge.label}
                   variant="secondary"
-                  className="leading-none"
                 >
                   {badge.label}
                 </Badge>
@@ -85,8 +86,8 @@ export function SettingCheckbox({
                 <Popover>
                   <PopoverTrigger asChild>
                     <Badge
-                      variant="secondary"
                       className="cursor-pointer leading-none"
+                      variant="secondary"
                     >
                       {dependencies.length}
                       <Icons.dependency className="ml-1 size-2.5 text-muted-foreground" />
@@ -99,9 +100,9 @@ export function SettingCheckbox({
                       <div>
                         {dependencies.map((dependency) => (
                           <Badge
+                            className="inline leading-none"
                             key={dependency}
                             variant="secondary"
-                            className="inline leading-none"
                           >
                             {customizerItems[dependency].label}
                           </Badge>
@@ -116,8 +117,8 @@ export function SettingCheckbox({
                 <Popover>
                   <PopoverTrigger asChild>
                     <Badge
-                      variant="secondary"
                       className="cursor-pointer leading-none"
+                      variant="secondary"
                     >
                       {conflicts.length}
                       <Icons.conflict className="ml-1 size-2.5 text-muted-foreground" />
@@ -132,9 +133,9 @@ export function SettingCheckbox({
                       <div>
                         {conflicts.map((conflict) => (
                           <Badge
+                            className="inline leading-none"
                             key={conflict}
                             variant="secondary"
-                            className="inline leading-none"
                           >
                             {customizerItems[conflict].label}
                           </Badge>
@@ -151,9 +152,9 @@ export function SettingCheckbox({
         {!!route && (
           <div>
             <Link
+              className={cn(buttonVariants({ variant: 'ghost' }), 'size-9 p-0')}
               href={route}
               target="_blank"
-              className={cn(buttonVariants({ variant: 'ghost' }), 'size-9 p-0')}
             >
               <Icons.arrowRight className="size-4 text-muted-foreground" />
             </Link>
@@ -174,19 +175,19 @@ export function SettingCheckbox({
 
             return (
               <div
-                key={componentId}
                 className="flex items-center justify-between"
+                key={componentId}
               >
                 <div className="flex items-center">
                   <TreeIcon
+                    className="mx-1"
                     isFirst={isFirst}
                     isLast={isLast}
-                    className="mx-1"
                   />
 
                   <Checkbox
-                    id={componentHtmlId}
                     checked={checkedComponents[componentId]}
+                    id={componentHtmlId}
                     onCheckedChange={(value) => {
                       settingsStore.set.setCheckedComponentId(
                         componentId,
@@ -195,7 +196,7 @@ export function SettingCheckbox({
                     }}
                   />
 
-                  <Label htmlFor={componentHtmlId} className="flex p-2">
+                  <Label className="flex p-2" htmlFor={componentHtmlId}>
                     <Code>{componentLabel}</Code>
                   </Label>
                 </div>
@@ -203,12 +204,12 @@ export function SettingCheckbox({
                 {!!componentRoute && (
                   <div>
                     <Link
-                      href={componentRoute}
-                      target="_blank"
                       className={cn(
                         buttonVariants({ variant: 'ghost' }),
                         'size-9 p-0'
                       )}
+                      href={componentRoute}
+                      target="_blank"
                     >
                       <Icons.arrowRight className="size-4 text-muted-foreground" />
                     </Link>

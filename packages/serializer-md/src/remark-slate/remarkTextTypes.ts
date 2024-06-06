@@ -1,4 +1,4 @@
-import { MdastNodeType } from './types';
+import type { MdastNodeType } from './types';
 
 export const remarkTextTypes: MdastNodeType[] = [
   'emphasis',

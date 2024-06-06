@@ -8,32 +8,32 @@ export const fontValue: any = (
   <fragment>
     <hp>
       Add{' '}
-      <htext color="white" backgroundColor="#df4538">
+      <htext backgroundColor="#df4538" color="white">
         m
       </htext>
-      <htext color="white" backgroundColor="#e2533a">
+      <htext backgroundColor="#e2533a" color="white">
         u
       </htext>
-      <htext color="white" backgroundColor="#e6603d">
+      <htext backgroundColor="#e6603d" color="white">
         l
       </htext>
-      <htext color="white" backgroundColor="#e96f40">
+      <htext backgroundColor="#e96f40" color="white">
         t
       </htext>
-      <htext color="white" backgroundColor="#ec7d43">
+      <htext backgroundColor="#ec7d43" color="white">
         i
       </htext>
-      <htext color="white" backgroundColor="#ef8a45">
+      <htext backgroundColor="#ef8a45" color="white">
         p
       </htext>
-      <htext color="white" backgroundColor="#f29948">
+      <htext backgroundColor="#f29948" color="white">
         l
       </htext>
-      <htext color="white" backgroundColor="#f5a74b">
+      <htext backgroundColor="#f5a74b" color="white">
         e
       </htext>{' '}
       <htext color="rgb(252, 109, 38)">font</htext> and{' '}
-      <htext color="white" backgroundColor="rgb(252, 109, 38)">
+      <htext backgroundColor="rgb(252, 109, 38)" color="white">
         background
       </htext>{' '}
       colors to create vibrant and eye-catching text.

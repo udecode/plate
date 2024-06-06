@@ -1,9 +1,9 @@
-import { existsSync, promises as fs } from 'fs';
-import path from 'path';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { execa } from 'execa';
+import { existsSync, promises as fs } from 'fs';
 import ora from 'ora';
+import path from 'path';
 import prompts from 'prompts';
 import * as z from 'zod';
 
@@ -21,12 +21,12 @@ import {
 import { transform } from '../utils/transformers';
 
 const addOptionsSchema = z.object({
-  components: z.array(z.string()).optional(),
-  yes: z.boolean(),
-  overwrite: z.boolean(),
-  cwd: z.string(),
   all: z.boolean(),
+  components: z.array(z.string()).optional(),
+  cwd: z.string(),
+  overwrite: z.boolean(),
   path: z.string().optional(),
+  yes: z.boolean(),
 });
 
 export const add = new Command()
@@ -57,6 +57,7 @@ export const add = new Command()
       }
 
       const config = await getConfig(cwd);
+
       if (!config) {
         logger.warn(
           `Configuration is missing. Please run ${chalk.green(
@@ -71,24 +72,24 @@ export const add = new Command()
       let selectedComponents = options.all
         ? registryIndex.map((entry) => entry.name)
         : options.components;
+
       if (!options.components?.length && !options.all) {
         const { components } = await prompts({
-          type: 'multiselect',
-          name: 'components',
-          message: 'Which components would you like to add?',
-          hint: 'Space to select. A to toggle all. Enter to submit.',
-          instructions: false,
           choices: registryIndex.map((entry) => ({
-            title: entry.name,
-            value: entry.name,
             selected: options.all
               ? true
               : options.components?.includes(entry.name),
+            title: entry.name,
+            value: entry.name,
           })),
+          hint: 'Space to select. A to toggle all. Enter to submit.',
+          instructions: false,
+          message: 'Which components would you like to add?',
+          name: 'components',
+          type: 'multiselect',
         });
         selectedComponents = components;
       }
-
       if (!selectedComponents?.length) {
         logger.warn('No components selected. Exiting.');
         process.exit(0);
@@ -102,13 +103,12 @@ export const add = new Command()
         logger.warn('Selected components not found. Exiting.');
         process.exit(0);
       }
-
       if (!options.yes) {
         const { proceed } = await prompts({
-          type: 'confirm',
-          name: 'proceed',
-          message: `Ready to install components and dependencies. Proceed?`,
           initial: true,
+          message: `Ready to install components and dependencies. Proceed?`,
+          name: 'proceed',
+          type: 'confirm',
         });
 
         if (!proceed) {
@@ -117,6 +117,7 @@ export const add = new Command()
       }
 
       const spinner = ora(`Installing components...`).start();
+
       for (const item of payload) {
         spinner.text = `Installing ${item.name}...`;
         const targetDir = await getItemTargetPath(
@@ -128,7 +129,6 @@ export const add = new Command()
         if (!targetDir) {
           continue;
         }
-
         if (!existsSync(targetDir)) {
           await fs.mkdir(targetDir, { recursive: true });
         }
@@ -141,10 +141,10 @@ export const add = new Command()
           if (selectedComponents.includes(item.name)) {
             spinner.stop();
             const { overwrite } = await prompts({
-              type: 'confirm',
-              name: 'overwrite',
-              message: `Component ${item.name} already exists. Would you like to overwrite?`,
               initial: false,
+              message: `Component ${item.name} already exists. Would you like to overwrite?`,
+              name: 'overwrite',
+              type: 'confirm',
             });
 
             if (!overwrite) {
@@ -153,6 +153,7 @@ export const add = new Command()
                   '--overwrite'
                 )} flag.`
               );
+
               continue;
             }
 
@@ -167,10 +168,10 @@ export const add = new Command()
 
           // Run transformers.
           const content = await transform({
+            baseColor,
+            config,
             filename: file.name,
             raw: file.content,
-            config,
-            baseColor,
           });
 
           await fs.writeFile(filePath, content);
@@ -191,7 +192,6 @@ export const add = new Command()
             }
           );
         }
-
         // Install devDependencies.
         if (item.devDependencies?.length) {
           await execa(
@@ -207,6 +207,7 @@ export const add = new Command()
           );
         }
       }
+
       spinner.succeed(`Done.`);
     } catch (error) {
       handleError(error);

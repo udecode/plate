@@ -1,15 +1,17 @@
 import React from 'react';
-import { ClientRectObject } from '@floating-ui/core';
+
+import type { ClientRectObject } from '@floating-ui/core';
+
 import { useIsomorphicLayoutEffect } from '@udecode/plate-common';
 
 import { createVirtualElement } from '../createVirtualElement';
 import {
+  type ReferenceType,
+  type UseFloatingProps,
+  type UseFloatingReturn,
+  type VirtualElement,
   autoUpdate,
-  ReferenceType,
   useFloating,
-  UseFloatingProps,
-  UseFloatingReturn,
-  VirtualElement,
 } from '../libs/floating-ui';
 import { getSelectionBoundingClientRect } from '../utils/index';
 
@@ -21,21 +23,25 @@ export interface UseVirtualFloatingOptions extends Partial<UseFloatingProps> {
 export interface UseVirtualFloatingReturn<
   RT extends ReferenceType = ReferenceType,
 > extends UseFloatingReturn<RT> {
-  virtualElementRef: React.MutableRefObject<VirtualElement>;
   style: React.CSSProperties;
+  virtualElementRef: React.MutableRefObject<VirtualElement>;
 }
 
 /**
- * `useFloating` with a controlled virtual element. Used to follow cursor position.
+ * `useFloating` with a controlled virtual element. Used to follow cursor
+ * position.
  *
  * Default options:
+ *
  * - `whileElementsMounted: autoUpdate`
  *
  * Additional options:
+ *
  * - `getBoundingClientRect` to get the bounding client rect.
  * - `hidden` to hide the floating element
  *
  * Additional returns:
+ *
  * - `style` to apply to the floating element
  * - `virtualElementRef`
  *
@@ -55,7 +61,7 @@ export const useVirtualFloating = <RT extends ReferenceType = ReferenceType>({
     ...floatingOptions,
   });
 
-  const { refs, middlewareData, strategy, x, y, update } = floatingResult;
+  const { middlewareData, refs, strategy, update, x, y } = floatingResult;
 
   useIsomorphicLayoutEffect(() => {
     virtualElementRef.current.getBoundingClientRect = getBoundingClientRect;
@@ -75,13 +81,13 @@ export const useVirtualFloating = <RT extends ReferenceType = ReferenceType>({
 
   return {
     ...floatingResult,
-    virtualElementRef,
     style: {
+      display: floatingOptions.open === false ? 'none' : undefined,
+      left: x ?? 0,
       position: strategy,
       top: y ?? 0,
-      left: x ?? 0,
-      display: floatingOptions.open === false ? 'none' : undefined,
       visibility: visible ? undefined : 'hidden',
     },
+    virtualElementRef,
   };
 };

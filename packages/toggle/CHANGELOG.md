@@ -1,5 +1,11 @@
 # @udecode/plate-toggle
 
+## 33.0.2
+
+## 33.0.0
+
+## 32.0.0
+
 ## 31.4.0
 
 ### Patch Changes

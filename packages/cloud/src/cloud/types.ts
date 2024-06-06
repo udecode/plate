@@ -1,40 +1,38 @@
-import * as portiveClient from '@portive/client';
-import { PlateEditor, Value } from '@udecode/plate-common';
+import type * as portiveClient from '@portive/client';
+import type { PlateEditor, Value } from '@udecode/plate-common/server';
 
-import { Upload } from '../upload';
-import { createUploadStore } from '../upload/createUploadStore';
+import type { Upload } from '../upload';
+import type { createUploadStore } from '../upload/createUploadStore';
 
-/**
- * Specifies just the `options` part of the CloudPlugin
- */
-export type CloudPlugin = portiveClient.ClientOptions & {
+/** Specifies just the `options` part of the CloudPlugin */
+export type CloudPlugin = {
   uploadStoreInitialValue?: Record<string, Upload>;
-};
+} & portiveClient.ClientOptions;
 
-export type PlateCloudEditor<V extends Value = Value> = PlateEditor<V> &
-  CloudEditorProps<V>;
+export type PlateCloudEditor<V extends Value = Value> = CloudEditorProps<V> &
+  PlateEditor<V>;
 
 export type FinishUploadsOptions = { maxTimeoutInMs?: number };
 
 export type CloudEditorProps<V extends Value = Value> = {
   cloud: {
     client: portiveClient.Client;
-    uploadFiles: (msg: any) => void;
-    uploadStore: ReturnType<typeof createUploadStore>;
+    finishUploads: (options?: FinishUploadsOptions) => Promise<void>;
     genericFileHandlers?: {
-      onStart?: (e: FileEvent) => void;
+      onError?: (e: ErrorEvent & FileEvent) => void;
       onProgress?: (e: FileEvent & ProgressEvent) => void;
-      onError?: (e: FileEvent & ErrorEvent) => void;
+      onStart?: (e: FileEvent) => void;
       onSuccess?: (e: FileEvent & SuccessEvent) => void;
     };
+    getSaveValue: () => V;
     imageFileHandlers?: {
-      onStart?: (e: ImageFileEvent) => void;
+      onError?: (e: ErrorEvent & ImageFileEvent) => void;
       onProgress?: (e: ImageFileEvent & ProgressEvent) => void;
-      onError?: (e: ImageFileEvent & ErrorEvent) => void;
+      onStart?: (e: ImageFileEvent) => void;
       onSuccess?: (e: ImageFileEvent & SuccessEvent) => void;
     };
-    getSaveValue: () => V;
-    finishUploads: (options?: FinishUploadsOptions) => Promise<void>;
+    uploadFiles: (msg: any) => void;
+    uploadStore: ReturnType<typeof createUploadStore>;
     // save: (options: { maxTimeoutInMs?: number }) => Promise<V>;
   };
 };
@@ -44,50 +42,38 @@ export type CloudEditorProps<V extends Value = Value> = {
  * ImageFileEvent.
  */
 export type FileEventBase = {
-  id: string;
   file: File;
+  id: string;
   url: string;
 };
 
-/**
- * FileEvent for files that are not images
- */
+/** FileEvent for files that are not images */
 export type GenericFileEvent = {
   type: 'generic';
 } & FileEventBase;
 
-/**
- * FileEvent for files that are images
- */
+/** FileEvent for files that are images */
 export type ImageFileEvent = {
+  height: number;
   type: 'image';
   width: number;
-  height: number;
 } & FileEventBase;
 
-/**
- * FileEvent for any type of file (generic or image)
- */
+/** FileEvent for any type of file (generic or image) */
 export type FileEvent = GenericFileEvent | ImageFileEvent;
 
-/**
- * Indicates upload in progress
- */
+/** Indicates upload in progress */
 export type ProgressEvent = {
   sentBytes: number;
   totalBytes: number;
 };
 
-/**
- * Indicates an error during upload
- */
+/** Indicates an error during upload */
 export type ErrorEvent = {
   message: string;
 };
 
-/**
- * Indicates a successful upload
- */
+/** Indicates a successful upload */
 export type SuccessEvent = {
   url: string;
 };

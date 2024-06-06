@@ -1,12 +1,14 @@
 import {
-  EElement,
-  EElementEntry,
-  TEditor,
+  type EElement,
+  type EElementEntry,
+  type TEditor,
+  type Value,
   unsetNodes,
-  Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { KEY_INDENT } from '@udecode/plate-indent';
+
+import type { GetSiblingIndentListOptions } from '../queries/getSiblingIndentList';
 
 import {
   KEY_LIST_CHECKED,
@@ -14,13 +16,10 @@ import {
   KEY_TODO_STYLE_TYPE,
 } from '../createIndentListPlugin';
 import { getIndentListSiblings } from '../queries/getIndentListSiblings';
-import { GetSiblingIndentListOptions } from '../queries/getSiblingIndentList';
 import { ListStyleType } from '../types';
 import { setIndentListNode, setIndentTodoNode } from './setIndentListNode';
 
-/**
- * Set indent list to entry + siblings.
- */
+/** Set indent list to entry + siblings. */
 export const setIndentListSiblingNodes = <
   N extends EElement<V>,
   V extends Value = Value,
@@ -28,11 +27,11 @@ export const setIndentListSiblingNodes = <
   editor: TEditor<V>,
   entry: EElementEntry<V>,
   {
-    listStyleType = ListStyleType.Disc,
     getSiblingIndentListOptions,
+    listStyleType = ListStyleType.Disc,
   }: {
-    listStyleType?: string;
     getSiblingIndentListOptions?: GetSiblingIndentListOptions<N, V>;
+    listStyleType?: string;
   }
 ) => {
   withoutNormalizing(editor, () => {
@@ -46,16 +45,16 @@ export const setIndentListSiblingNodes = <
       if (listStyleType === KEY_TODO_STYLE_TYPE) {
         unsetNodes(editor as any, KEY_LIST_STYLE_TYPE, { at: path });
         setIndentTodoNode(editor, {
-          listStyleType,
-          indent: node[KEY_INDENT] as number,
           at: path,
+          indent: node[KEY_INDENT] as number,
+          listStyleType,
         });
       } else {
         unsetNodes(editor as any, KEY_LIST_CHECKED, { at: path });
         setIndentListNode(editor, {
-          listStyleType,
-          indent: node[KEY_INDENT] as number,
           at: path,
+          indent: node[KEY_INDENT] as number,
+          listStyleType,
         });
       }
     });

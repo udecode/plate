@@ -1,6 +1,6 @@
 import {
-  createParagraphPlugin,
   ELEMENT_PARAGRAPH,
+  createParagraphPlugin,
 } from '@udecode/plate-paragraph';
 import { createPlateUIEditor } from 'www/src/lib/plate/create-plate-ui-editor';
 
@@ -20,8 +20,8 @@ describe('when there is no deserializer', () => {
         {
           nodes: [
             {
-              type: ELEMENT_PARAGRAPH,
               children: [{ text: 'I am centered text!' }],
+              type: ELEMENT_PARAGRAPH,
             },
           ],
         }

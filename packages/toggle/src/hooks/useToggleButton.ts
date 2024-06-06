@@ -7,9 +7,10 @@ import {
 
 export const useToggleButtonState = (toggleId: string) => {
   const [openIds] = useToggleControllerStore().use.openIds();
+
   return {
-    toggleId,
     open: openIds.has(toggleId),
+    toggleId,
   };
 };
 
@@ -17,15 +18,16 @@ export const useToggleButton = (
   state: ReturnType<typeof useToggleButtonState>
 ) => {
   const editor = useEditorRef();
+
   return {
     ...state,
     buttonProps: {
-      onMouseDown: (e: React.MouseEvent) => {
-        e.preventDefault();
-      },
       onClick: (e: React.MouseEvent) => {
         e.preventDefault();
         toggleIds(editor, [state.toggleId]);
+      },
+      onMouseDown: (e: React.MouseEvent) => {
+        e.preventDefault();
       },
     },
   };

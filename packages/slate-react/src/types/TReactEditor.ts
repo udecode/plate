@@ -1,16 +1,16 @@
-import { TEditor, Value } from '@udecode/slate';
-import { ReactEditor } from 'slate-react';
+import type { TEditor, Value } from '@udecode/slate';
+import type { ReactEditor } from 'slate-react';
 
-export type TReactEditor<V extends Value = Value> = TEditor<V> &
-  Pick<
-    ReactEditor,
-    | 'insertData'
-    | 'insertFragmentData'
-    | 'insertTextData'
-    | 'setFragmentData'
-    | 'hasRange'
-    | 'hasTarget'
-    | 'hasEditableTarget'
-    | 'hasSelectableTarget'
-    | 'isTargetInsideNonReadonlyVoid'
-  >;
+export type TReactEditor<V extends Value = Value> = Pick<
+  ReactEditor,
+  | 'hasEditableTarget'
+  | 'hasRange'
+  | 'hasSelectableTarget'
+  | 'hasTarget'
+  | 'insertData'
+  | 'insertFragmentData'
+  | 'insertTextData'
+  | 'isTargetInsideNonReadonlyVoid'
+  | 'setFragmentData'
+> &
+  TEditor<V>;

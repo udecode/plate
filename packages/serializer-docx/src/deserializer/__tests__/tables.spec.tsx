@@ -11,7 +11,6 @@ const name = 'tables';
 
 describe(getDocxTestName(name), () => {
   testDocxDeserializer({
-    filename: name,
     expected: (
       <editor>
         <hh2>
@@ -159,6 +158,7 @@ describe(getDocxTestName(name), () => {
         </hp>
       </editor>
     ),
+    filename: name,
     plugins: [createIndentListPlugin()],
   });
 });

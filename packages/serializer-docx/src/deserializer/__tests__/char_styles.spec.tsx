@@ -9,12 +9,11 @@ const name = 'char_styles';
 
 describe(getDocxTestName(name), () => {
   testDocxDeserializer({
-    filename: name,
     expected: (
       <editor>
         <hp>
           <htext italic>This is all in an </htext>
-          <htext italic bold>
+          <htext bold italic>
             italic style
           </htext>
           <htext italic>.</htext>
@@ -49,5 +48,6 @@ describe(getDocxTestName(name), () => {
         </hp>
       </editor>
     ),
+    filename: name,
   });
 });

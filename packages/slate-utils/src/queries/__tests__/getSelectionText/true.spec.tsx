@@ -1,6 +1,7 @@
 /** @jsx jsx */
 
-import { PlateEditor } from '@udecode/plate-core';
+import type { PlateEditor } from '@udecode/plate-core';
+
 import { jsx } from '@udecode/plate-test-utils';
 
 import { getSelectionText } from '../../getSelectionText';

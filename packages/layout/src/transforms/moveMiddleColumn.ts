@@ -1,18 +1,19 @@
 import {
+  type PlateEditor,
+  type TNode,
+  type TNodeEntry,
+  type Value,
   moveNodes,
-  PlateEditor,
   removeNodes,
-  TNode,
-  TNodeEntry,
   unwrapNodes,
-  Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Node } from 'slate';
 
-import { TColumnElement } from '../types';
+import type { TColumnElement } from '../types';
 
 /**
- * @description move the middle column to the left of right by options.direction. if the middle node is empty return false and remove it.
+ * Move the middle column to the left of right by options.direction. if the
+ * middle node is empty return false and remove it.
  */
 export const moveMiddleColumn = <V extends Value, N extends TNode>(
   editor: PlateEditor<V>,
@@ -33,6 +34,7 @@ export const moveMiddleColumn = <V extends Value, N extends TNode>(
 
     if (isEmpty) {
       removeNodes(editor, { at: middleChildPathRef.current! });
+
       return false;
     }
 

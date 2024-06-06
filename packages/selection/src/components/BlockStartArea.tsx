@@ -1,8 +1,8 @@
 import { createPrimitiveComponent } from '@udecode/plate-common';
 
 export interface BlockStartAreaState {
-  placement?: 'top' | 'bottom' | 'left' | 'right';
-  size?: string | number;
+  placement?: 'bottom' | 'left' | 'right' | 'top';
+  size?: number | string;
 }
 
 export const useBlockStartArea = ({
@@ -12,17 +12,21 @@ export const useBlockStartArea = ({
   return {
     props: {
       className: `slate-start-area slate-start-area-${placement}`,
+      onContextMenu: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        e.stopPropagation();
+        e.preventDefault();
+      },
       style: {
-        position: 'absolute',
-        top: ['top', 'left', 'right'].includes(placement) ? 0 : undefined,
-        left: ['top', 'left', 'bottom'].includes(placement) ? 0 : undefined,
         bottom: ['bottom'].includes(placement) ? 0 : undefined,
-        right: ['right'].includes(placement) ? 0 : undefined,
-        width: ['left', 'right'].includes(placement) ? size : '100%',
-        height: ['top', 'bottom'].includes(placement) ? size : '100%',
-        zIndex: 1,
-        userSelect: 'none',
         cursor: 'text',
+        height: ['bottom', 'top'].includes(placement) ? size : '100%',
+        left: ['bottom', 'left', 'top'].includes(placement) ? 0 : undefined,
+        position: 'absolute',
+        right: ['right'].includes(placement) ? 0 : undefined,
+        top: ['left', 'right', 'top'].includes(placement) ? 0 : undefined,
+        userSelect: 'none',
+        width: ['left', 'right'].includes(placement) ? size : '100%',
+        zIndex: 1,
       },
     },
   };

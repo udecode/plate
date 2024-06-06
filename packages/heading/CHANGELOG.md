@@ -1,5 +1,52 @@
 # @udecode/plate-heading
 
+## 33.0.3
+
+### Patch Changes
+
+- [#3194](https://github.com/udecode/plate/pull/3194) by [@KorovinQuantori](https://github.com/KorovinQuantori) – Export plugin keys for easier access plugin options by key
+
+## 33.0.1
+
+### Patch Changes
+
+- [#3183](https://github.com/udecode/plate/pull/3183) by [@KorovinQuantori](https://github.com/KorovinQuantori) – Fix regression: heading hotkeys
+
+## 33.0.0
+
+## 32.0.0
+
+### Minor Changes
+
+- [#3162](https://github.com/udecode/plate/pull/3162) by [@emilienbidet](https://github.com/emilienbidet) – ### Changes
+
+  - Modified `createHeadingPlugin` function to allow granular selection of heading levels.
+  - Added support for retaining the old behavior of generating plugins for all heading levels up to a maximum level.
+  - Type the heading levels props
+
+  ### Details
+
+  - The `createHeadingPlugin` function has been updated to accept an array of specific heading levels to enable, allowing for granular selection of heading levels. This provides more flexibility in choosing which heading levels to support within the editor.
+  - The function now supports retaining the old behavior of generating plugins for all heading levels up to a maximum level if desired. This ensures backward compatibility with existing implementations that rely on the previous behavior.
+
+  ### How to Use
+
+  - To use the granular selection feature, pass an array of heading levels to the `createHeadingPlugin` function when initializing it. For example:
+
+  ```ts
+  const headingPlugin = createHeadingPlugin({
+    levels: [1, 2, 3], // Enable heading levels 1, 2, and 3
+  });
+  ```
+
+  And the previous behaviour is still working:
+
+  ```ts
+  const headingPlugin = createHeadingPlugin({
+    levels: 6, // Enable heading levels 1, 2, 3, 4, 5 and 6
+  });
+  ```
+
 ## 31.0.0
 
 ## 30.5.3

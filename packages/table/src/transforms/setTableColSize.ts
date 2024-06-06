@@ -1,14 +1,15 @@
 import {
+  type GetAboveNodeOptions,
+  type TEditor,
+  type Value,
   findNode,
-  GetAboveNodeOptions,
   setNodes,
-  TEditor,
-  Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
+
+import type { TTableElement } from '../types';
 
 import { ELEMENT_TABLE } from '../createTablePlugin';
 import { getTableColumnCount } from '../queries/getTableColumnCount';
-import { TTableElement } from '../types';
 
 export const setTableColSize = <V extends Value>(
   editor: TEditor<V>,
@@ -19,6 +20,7 @@ export const setTableColSize = <V extends Value>(
     match: { type: ELEMENT_TABLE },
     ...options,
   });
+
   if (!table) return;
 
   const [tableNode, tablePath] = table;

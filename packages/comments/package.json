@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-comments",
-  "version": "31.0.0",
+  "version": "33.0.2",
   "description": "Plate plugin for comments",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -45,7 +45,7 @@
     "@udecode/plate-common": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=31.3.2",
+    "@udecode/plate-common": ">=33.0.4",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.94.0",

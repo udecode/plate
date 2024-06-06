@@ -1,6 +1,6 @@
-import { TComboboxItem } from '@udecode/plate-combobox';
-
-import { IEmojiTriggeringController } from './utils/index';
+import type { Emoji } from '@emoji-mart/data';
+import type { TriggerComboboxPlugin } from '@udecode/plate-combobox';
+import type { EElementOrText } from '@udecode/plate-common';
 
 type ReverseMap<T> = T[keyof T];
 
@@ -15,29 +15,16 @@ export type EmojiSettingsType = {
     value: number;
   };
   showFrequent: {
-    value: boolean;
-    limit?: number;
     key?: string;
+    limit?: number;
     prefix?: string;
+    value: boolean;
   };
 };
 
-export type EmojiItemData = {
-  id: string;
-  emoji: string;
-  name: string;
-  text: string;
-};
-
-export interface CreateEmoji<TData extends EmojiItemData = EmojiItemData> {
-  (data: TComboboxItem<TData>): string;
-}
-
-export interface EmojiPlugin<TData extends EmojiItemData = EmojiItemData> {
-  trigger?: string;
-  createEmoji?: CreateEmoji<TData>;
-  emojiTriggeringController?: IEmojiTriggeringController;
-  id?: string;
+export interface EmojiPlugin<TEmoji extends Emoji = Emoji>
+  extends TriggerComboboxPlugin {
+  createEmojiNode?: (emoji: TEmoji) => EElementOrText<any>;
 }
 
 export const EmojiCategory = {
@@ -56,25 +43,20 @@ export const EmojiCategory = {
 export type EmojiCategoryList = ReverseMap<typeof EmojiCategory>;
 
 export type i18nProps = {
-  search: string;
-  searchResult: string;
-  clear: string;
-  searchNoResultsTitle: string;
-  searchNoResultsSubtitle: string;
-  pick: string;
   categories: Record<EmojiCategoryList, string>;
-  skins: Record<'choose' | '1' | '2' | '3' | '4' | '5' | '6', string>;
+  clear: string;
+  pick: string;
+  search: string;
+  searchNoResultsSubtitle: string;
+  searchNoResultsTitle: string;
+  searchResult: string;
+  skins: Record<'1' | '2' | '3' | '4' | '5' | '6' | 'choose', string>;
 };
 
 export type EmojiIconList<T = string> = {
   categories: Record<EmojiCategoryList, { outline: T; solid: T }>;
   search: {
-    loupe: T;
     delete: T;
+    loupe: T;
   };
-};
-
-export type FindTriggeringInputProps = {
-  char?: string;
-  action?: 'insert' | 'delete';
 };

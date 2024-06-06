@@ -1,25 +1,25 @@
 import {
+  type PlateEditor,
+  type TAncestor,
+  type TAncestorEntry,
+  type TDescendant,
+  type TDescendantEntry,
+  type TElement,
+  type TElementEntry,
+  type TText,
+  type Value,
+  type WithPlatePlugin,
   findNode,
   getCommonNode,
   getNode,
-  getNodes,
   getNodeString,
   getNodeTexts,
+  getNodes,
   getPlugin,
   insertElements,
   isElement,
-  PlateEditor,
   removeNodes,
-  TAncestor,
-  TAncestorEntry,
-  TDescendant,
-  TDescendantEntry,
-  TElement,
-  TElementEntry,
-  TText,
-  Value,
-  WithPlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
 import { ELEMENT_LI } from './createListPlugin';
@@ -42,6 +42,7 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
     { type }: WithPlatePlugin
   ): TAncestorEntry => {
     let ancestor: Path = Path.parent(entry[1]);
+
     while (getNode<TElement>(root, ancestor)!.type !== type) {
       ancestor = Path.parent(ancestor);
     }
@@ -52,6 +53,7 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
   const findListItemsWithContent = (first: TDescendant): TDescendant[] => {
     let prev = null;
     let node = first;
+
     while (
       isListRoot(editor, node) ||
       (node.type === listItemType &&
@@ -65,9 +67,11 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
   };
 
   /**
-   * Removes the "empty" leading lis. Empty in this context means lis only with other lis as children.
+   * Removes the "empty" leading lis. Empty in this context means lis only with
+   * other lis as children.
    *
-   * @returns If argument is not a list root, returns it, otherwise returns ul[] or li[].
+   * @returns If argument is not a list root, returns it, otherwise returns ul[]
+   *   or li[].
    */
   const trimList = (listRoot: TDescendant): TElement[] => {
     if (!isListRoot(editor, listRoot)) {
@@ -92,6 +96,7 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
     )
       ? (commonAncestorEntry[0] as any).children
       : [commonAncestorEntry[0]];
+
     return [...findListItemsWithContent(first), ...rest];
   };
 
@@ -99,13 +104,14 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
     return node.type === listItemType
       ? (node as TElement)
       : ({
-          type: listItemType,
           children: [node],
+          type: listItemType,
         } as TElement);
   };
 
   /**
-   * Checks if the fragment only consists of a single LIC in which case it is considered the user's intention was to copy a text, not a list
+   * Checks if the fragment only consists of a single LIC in which case it is
+   * considered the user's intention was to copy a text, not a list
    */
   const isSingleLic = (fragment: TDescendant[]) => {
     const isFragmentOnlyListRoot =
@@ -132,6 +138,7 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
       .map(wrapNodeIntoListItem);
     let textNode: TText;
     let listItemNodes: TElement[];
+
     if (isListRoot(editor, fragment[0])) {
       if (isSingleLic(fragment)) {
         textNode = first as any;
@@ -148,6 +155,7 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
         removeNodes(editor, {
           at: licPath,
         });
+
         if (newSublists?.length) {
           if (currentSublists?.length) {
             // TODO: any better way to compile the path where the LIs of the newly inserted element will be inserted?
@@ -175,7 +183,7 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
       listItemNodes = rest as TElement[];
     }
 
-    return { textNode, listItemNodes };
+    return { listItemNodes, textNode };
   };
 
   return (fragment: TDescendant[]) => {
@@ -183,6 +191,7 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
       match: { type: listItemType },
       mode: 'lowest',
     });
+
     // not inserting into a list item, delegate to other plugins
     if (!liEntry) {
       return insertFragment(
@@ -211,13 +220,14 @@ export const insertFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
       match: { type: listItemContentType },
       mode: 'lowest',
     });
+
     if (!licEntry) {
       return insertFragment(
         isListRoot(editor, fragment[0]) ? [{ text: '' }, ...fragment] : fragment
       );
     }
 
-    const { textNode, listItemNodes } = getTextAndListItemNodes(
+    const { listItemNodes, textNode } = getTextAndListItemNodes(
       fragment,
       liEntry!,
       licEntry

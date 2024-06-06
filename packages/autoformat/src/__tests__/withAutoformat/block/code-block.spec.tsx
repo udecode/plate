@@ -1,20 +1,21 @@
 /** @jsx jsx */
 
-import { AutoformatPlugin } from '@udecode/plate-autoformat';
+import type { AutoformatPlugin } from '@udecode/plate-autoformat';
+import type { Range } from 'slate';
+
 import {
   ELEMENT_CODE_BLOCK,
   insertEmptyCodeBlock,
 } from '@udecode/plate-code-block';
 import {
   ELEMENT_DEFAULT,
+  type PlateEditor,
   getEditorString,
   getPluginType,
   getRangeFromBlockStart,
   mockPlugin,
-  PlateEditor,
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
-import { Range } from 'slate';
 import { withReact } from 'slate-react';
 import { autoformatPlugin } from 'www/src/lib/plate/demo/plugins/autoformatPlugin';
 import { preFormat } from 'www/src/lib/plate/demo/plugins/autoformatUtils';
@@ -80,11 +81,6 @@ describe('when ``` at block start, but customising with query we get the most re
         options: {
           rules: [
             {
-              mode: 'block',
-              type: ELEMENT_CODE_BLOCK,
-              match: '```',
-              triggerAtBlockStart: false,
-              preFormat: preFormat as any,
               format: (editor) => {
                 insertEmptyCodeBlock(editor, {
                   defaultType: getPluginType(
@@ -94,6 +90,9 @@ describe('when ``` at block start, but customising with query we get the most re
                   insertNodesOptions: { select: true },
                 });
               },
+              match: '```',
+              mode: 'block',
+              preFormat: preFormat as any,
               query: (editor, rule): boolean => {
                 if (!editor.selection) {
                   return false;
@@ -105,6 +104,8 @@ describe('when ``` at block start, but customising with query we get the most re
 
                 return rule.match === currentNodeText;
               },
+              triggerAtBlockStart: false,
+              type: ELEMENT_CODE_BLOCK,
             },
           ],
         },

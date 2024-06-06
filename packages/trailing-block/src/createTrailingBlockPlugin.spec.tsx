@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { createPlateEditor, ELEMENT_DEFAULT } from '@udecode/plate-common';
+import { ELEMENT_DEFAULT, createPlateEditor } from '@udecode/plate-common';
 import { ELEMENT_H1 } from '@udecode/plate-heading';
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -32,8 +32,8 @@ describe('when last node is invalid', () => {
       plugins: [
         createTrailingBlockPlugin({
           options: {
-            type: ELEMENT_DEFAULT,
             level: 0,
+            type: ELEMENT_DEFAULT,
           },
         }),
       ],
@@ -73,8 +73,8 @@ describe('when level = 1', () => {
       plugins: [
         createTrailingBlockPlugin({
           options: {
-            type: ELEMENT_DEFAULT,
             level: 1,
+            type: ELEMENT_DEFAULT,
           },
         }),
       ],
@@ -107,9 +107,9 @@ describe('when using query', () => {
       plugins: [
         createTrailingBlockPlugin({
           options: {
-            type: ELEMENT_DEFAULT,
-            level: 0,
             exclude: [ELEMENT_H1],
+            level: 0,
+            type: ELEMENT_DEFAULT,
           },
         }),
       ],

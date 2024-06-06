@@ -1,9 +1,10 @@
-import { TDescendant, Value } from '@udecode/plate-common';
+import type { TDescendant, Value } from '@udecode/plate-common/server';
+
+import type { MdastNode, RemarkPluginOptions } from './types';
 
 import { remarkTextTypes } from './remarkTextTypes';
 import { remarkTransformElement } from './remarkTransformElement';
 import { remarkTransformText } from './remarkTransformText';
-import { MdastNode, RemarkPluginOptions } from './types';
 
 export const remarkTransformNode = <V extends Value>(
   node: MdastNode,

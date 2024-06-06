@@ -1,26 +1,27 @@
+import { findNodePath } from '@udecode/plate-common';
 import {
-  findNodePath,
+  type PlateEditor,
+  type Value,
   getAboveNode,
   getPluginOptions,
   getPluginType,
   insertElements,
   isExpanded,
-  PlateEditor,
   removeNodes,
   setNodes,
   someNode,
-  Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
+
+import type {
+  TTableCellElement,
+  TTableElement,
+  TTableRowElement,
+  TablePlugin,
+} from '../types';
 
 import { ELEMENT_TABLE } from '../createTablePlugin';
 import { getTableColumnCount } from '../queries';
 import { getRowSpan } from '../queries/getRowSpan';
-import {
-  TablePlugin,
-  TTableCellElement,
-  TTableElement,
-  TTableRowElement,
-} from '../types';
 import { getCellTypes } from '../utils';
 import { deleteRowWhenExpanded } from './deleteRowWhenExpanded';
 import { findCellByIndexes } from './findCellByIndexes';
@@ -42,8 +43,8 @@ export const deleteTableMergeRow = <V extends Value>(
     const currentTableItem = getAboveNode<TTableElement>(editor, {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     });
-    if (!currentTableItem) return;
 
+    if (!currentTableItem) return;
     if (isExpanded(editor.selection))
       return deleteRowWhenExpanded(editor, currentTableItem);
 
@@ -52,6 +53,7 @@ export const deleteTableMergeRow = <V extends Value>(
     const selectedCellEntry = getAboveNode(editor, {
       match: { type: getCellTypes(editor) },
     });
+
     if (!selectedCellEntry) return;
 
     const selectedCell = selectedCellEntry[0] as TTableCellElement;
@@ -77,8 +79,8 @@ export const deleteTableMergeRow = <V extends Value>(
     const affectedCells = Array.from(affectedCellsSet) as TTableCellElement[];
 
     const { moveToNextRowCells, squizeRowSpanCells } = affectedCells.reduce<{
-      squizeRowSpanCells: TTableCellElement[];
       moveToNextRowCells: TTableCellElement[];
+      squizeRowSpanCells: TTableCellElement[];
     }>(
       (acc, cur) => {
         if (!cur) return acc;
@@ -100,7 +102,7 @@ export const deleteTableMergeRow = <V extends Value>(
 
         return acc;
       },
-      { squizeRowSpanCells: [], moveToNextRowCells: [] }
+      { moveToNextRowCells: [], squizeRowSpanCells: [] }
     );
 
     const nextRowIndex = deletingRowIndex + rowsDeleteNumber;
@@ -121,6 +123,7 @@ export const deleteTableMergeRow = <V extends Value>(
         const startingCellIndex = nextRow.children.findIndex((curC) => {
           const cell = curC as TTableCellElement;
           const { col: curColIndex } = getCellIndices(cellIndices!, cell)!;
+
           return curColIndex >= curRowCellColIndex;
         });
 
@@ -134,6 +137,7 @@ export const deleteTableMergeRow = <V extends Value>(
 
         // consider already inserted cell by adding index each time to the col path
         let incrementBy = index;
+
         if (startingColIndex < curRowCellColIndex) {
           // place current cell after starting cell, if placing cell col index is grather than col index of starting cell
           incrementBy += 1;

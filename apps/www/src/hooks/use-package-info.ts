@@ -1,17 +1,17 @@
 import { atom, useAtom } from 'jotai';
 
 export type PackageInfoType = {
-  name: string;
   gzip: string;
-  source: string;
+  name: string;
   npm: string;
+  source: string;
 };
 
 export const packageInfoAtom = atom<PackageInfoType>({
-  name: '',
   gzip: '',
-  source: '',
+  name: '',
   npm: '',
+  source: '',
 });
 
 export function usePackageInfo() {

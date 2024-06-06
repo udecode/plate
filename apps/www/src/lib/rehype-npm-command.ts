@@ -1,6 +1,6 @@
-import { visit } from 'unist-util-visit';
+import type { UnistNode, UnistTree } from '@/types/unist';
 
-import { UnistNode, UnistTree } from '@/types/unist';
+import { visit } from 'unist-util-visit';
 
 export function rehypeNpmCommand() {
   return (tree: UnistTree) => {
@@ -8,7 +8,6 @@ export function rehypeNpmCommand() {
       if (node.type !== 'element' || node?.tagName !== 'pre') {
         return;
       }
-
       // npm install.
       if (node.properties?.__rawString__?.startsWith('npm install')) {
         const npmCommand = node.properties?.__rawString__;
@@ -21,12 +20,11 @@ export function rehypeNpmCommand() {
           'npm install',
           'pnpm add'
         );
-        node.properties['__bunCommand__'] = npmCommand.replace(
+        node.properties.__bunCommand__ = npmCommand.replace(
           'npm install',
           'bun add'
         );
       }
-
       // npx create.
       if (node.properties?.__rawString__?.startsWith('npx create-')) {
         const npmCommand = node.properties?.__rawString__;
@@ -39,12 +37,11 @@ export function rehypeNpmCommand() {
           'npx create-',
           'pnpm create '
         );
-        node.properties['__bunCommand__'] = npmCommand.replace(
+        node.properties.__bunCommand__ = npmCommand.replace(
           'npx',
           'bunx --bun'
         );
       }
-
       // npx.
       if (
         node.properties?.__rawString__?.startsWith('npx') &&
@@ -54,7 +51,7 @@ export function rehypeNpmCommand() {
         node.properties.__npmCommand__ = npmCommand;
         node.properties.__yarnCommand__ = npmCommand;
         node.properties.__pnpmCommand__ = npmCommand.replace('npx', 'pnpm dlx');
-        node.properties['__bunCommand__'] = npmCommand.replace(
+        node.properties.__bunCommand__ = npmCommand.replace(
           'npx',
           'bunx --bun'
         );

@@ -1,24 +1,25 @@
 {
   "name": "@udecode/plate-serializer-docx",
-  "version": "31.4.1",
+  "version": "33.0.7",
   "description": "Docx serializer plugin for Plate",
-  "license": "MIT",
+  "keywords": [
+    "docx",
+    "plate",
+    "plugin",
+    "serializer",
+    "slate"
+  ],
   "homepage": "https://platejs.org",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
     "directory": "packages/serializer-docx"
   },
-  "bugs": {
-    "url": "https://github.com/udecode/plate/issues"
-  },
+  "license": "MIT",
   "sideEffects": false,
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist/**/*"
-  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -27,10 +28,16 @@
       "require": "./dist/index.js"
     }
   },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
   "scripts": {
+    "brl": "yarn p:brl",
     "build": "yarn p:build",
     "build:watch": "yarn p:build:watch",
-    "brl": "yarn p:brl",
     "clean": "yarn p:clean",
     "lint": "yarn p:lint",
     "lint:fix": "yarn p:lint:fix",
@@ -39,19 +46,19 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-heading": "31.0.0",
-    "@udecode/plate-indent": "31.1.0",
-    "@udecode/plate-indent-list": "31.4.0",
-    "@udecode/plate-media": "31.0.0",
-    "@udecode/plate-paragraph": "31.0.0",
-    "@udecode/plate-table": "31.4.1",
+    "@udecode/plate-heading": "33.0.3",
+    "@udecode/plate-indent": "33.0.2",
+    "@udecode/plate-indent-list": "33.0.3",
+    "@udecode/plate-media": "33.0.2",
+    "@udecode/plate-paragraph": "33.0.0",
+    "@udecode/plate-table": "33.0.7",
     "validator": "^13.11.0"
   },
   "devDependencies": {
     "@udecode/plate-common": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=31.3.2",
+    "@udecode/plate-common": ">=33.0.4",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.94.0",
@@ -59,13 +66,6 @@
     "slate-hyperscript": ">=0.66.0",
     "slate-react": ">=0.99.0"
   },
-  "keywords": [
-    "docx",
-    "plate",
-    "plugin",
-    "serializer",
-    "slate"
-  ],
   "publishConfig": {
     "access": "public"
   }

@@ -1,8 +1,8 @@
 'use client';
 
+import { cn } from '@udecode/cn';
 /* eslint-disable tailwindcss/no-custom-classname */
 import { usePathname } from 'next/navigation';
-import { cn } from '@udecode/cn';
 
 import { useConfig } from '@/hooks/use-config';
 import { useMounted } from '@/hooks/use-mounted';
@@ -12,9 +12,9 @@ interface ThemeBodyProps extends React.ComponentProps<'body'> {
 }
 
 export function Body({
-  defaultTheme,
   children,
   className,
+  defaultTheme,
   ...props
 }: ThemeBodyProps) {
   const [config] = useConfig();

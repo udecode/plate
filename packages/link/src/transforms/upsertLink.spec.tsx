@@ -3,7 +3,7 @@
 import { createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createLinkPlugin, LinkPlugin } from '../createLinkPlugin';
+import { type LinkPlugin, createLinkPlugin } from '../createLinkPlugin';
 import { upsertLink } from './upsertLink';
 
 jsx;
@@ -71,7 +71,7 @@ describe('upsertLink', () => {
 
       it('should insert link with text', () => {
         const editor = createEditor(input);
-        upsertLink(editor, { url, text: 'another' });
+        upsertLink(editor, { text: 'another', url });
 
         expect(input.children).toEqual(output.children);
       });
@@ -101,7 +101,7 @@ describe('upsertLink', () => {
 
       it('should insert text', () => {
         const editor = createEditor(input);
-        upsertLink(editor, { url, insertTextInLink: true });
+        upsertLink(editor, { insertTextInLink: true, url });
 
         expect(input.children).toEqual(output.children);
       });
@@ -131,7 +131,7 @@ describe('upsertLink', () => {
 
       it('should do nothing', () => {
         const editor = createEditor(input);
-        upsertLink(editor, { url, text: 'insert link' });
+        upsertLink(editor, { text: 'insert link', url });
 
         expect(input.children).toEqual(output.children);
       });
@@ -198,7 +198,7 @@ describe('upsertLink', () => {
 
       it('should insert text', () => {
         const editor = createEditor(input);
-        upsertLink(editor, { url, text: 'edit link' });
+        upsertLink(editor, { text: 'edit link', url });
 
         expect(input.children).toEqual(output.children);
       });
@@ -227,7 +227,7 @@ describe('upsertLink', () => {
 
       it('should insert text', () => {
         const editor = createEditor(input);
-        upsertLink(editor, { url, insertTextInLink: true });
+        upsertLink(editor, { insertTextInLink: true, url });
 
         expect(input.children).toEqual(output.children);
       });
@@ -257,7 +257,7 @@ describe('upsertLink', () => {
 
       it('should set text to url', () => {
         const editor = createEditor(input);
-        upsertLink(editor, { url, text: '' });
+        upsertLink(editor, { text: '', url });
 
         expect(input.children).toEqual(output.children);
       });
@@ -287,7 +287,7 @@ describe('upsertLink', () => {
 
       it('should insert link', () => {
         const editor = createEditor(input);
-        upsertLink(editor, { url, text: 'insert link' });
+        upsertLink(editor, { text: 'insert link', url });
 
         expect(input.children).toEqual(output.children);
       });
@@ -315,7 +315,7 @@ describe('upsertLink', () => {
 
       it('should insert link', () => {
         const editor = createEditor(input);
-        upsertLink(editor, { url, text: 'another' });
+        upsertLink(editor, { text: 'another', url });
 
         expect(input.children).toEqual(output.children);
       });
@@ -435,8 +435,8 @@ describe('upsertLink', () => {
     it('should do nothing', () => {
       const editor = createEditor(input);
       upsertLink(editor, {
-        url: 'invalid',
         skipValidation: false,
+        url: 'invalid',
       });
 
       expect(input.children).toEqual(output.children);
@@ -464,8 +464,8 @@ describe('upsertLink', () => {
     it('should insert', () => {
       const editor = createEditor(input);
       upsertLink(editor, {
-        url: 'invalid',
         skipValidation: true,
+        url: 'invalid',
       });
 
       expect(input.children).toEqual(output.children);

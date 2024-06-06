@@ -1,11 +1,11 @@
 import { useEditorRef } from '@udecode/plate-common';
 
-import { PlateCloudEditor } from '../cloud/types';
-import { Upload } from './types';
+import type { PlateCloudEditor } from '../cloud/types';
+import type { Upload } from './types';
 
 /**
- * Takes an `element` (which it only needs for its `id`) and returns the
- * Upload object from it.
+ * Takes an `element` (which it only needs for its `id`) and returns the Upload
+ * object from it.
  */
 export const useUpload = (id: string): Upload => {
   const editor = useEditorRef() as PlateCloudEditor;
@@ -30,5 +30,6 @@ export const useUpload = (id: string): Upload => {
       url: id,
     };
   }
+
   return upload;
 };

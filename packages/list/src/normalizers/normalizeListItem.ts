@@ -1,4 +1,10 @@
 import {
+  type PlateEditor,
+  type TDescendant,
+  type TElement,
+  type TElementEntry,
+  type TNodeEntry,
+  type Value,
   createPathRef,
   getChildren,
   getParentNode,
@@ -7,26 +13,22 @@ import {
   isBlock,
   match,
   moveNodes,
-  PlateEditor,
   removeNodes,
   setElements,
-  TDescendant,
-  TElement,
-  TElementEntry,
-  TNodeEntry,
-  Value,
-} from '@udecode/plate-common';
-import { Path, PathRef } from 'slate';
+} from '@udecode/plate-common/server';
+import { Path, type PathRef } from 'slate';
+
+import type { ListPlugin } from '../types';
 
 import { ELEMENT_LIC, ELEMENT_OL, ELEMENT_UL } from '../createListPlugin';
 import { getListTypes } from '../queries/index';
 import { moveListItemUp } from '../transforms/index';
-import { ListPlugin } from '../types';
 
 /**
  * Recursively get all the:
- * - block children
- * - inline children except those at excludeDepth
+ *
+ * - Block children
+ * - Inline children except those at excludeDepth
  */
 export const getDeepInlineChildren = <V extends Value>(
   editor: PlateEditor<V>,
@@ -54,8 +56,8 @@ export const getDeepInlineChildren = <V extends Value>(
 };
 
 /**
- * If the list item has no child: insert an empty list item container.
- * Else: move the children that are not valid to the list item container.
+ * If the list item has no child: insert an empty list item container. Else:
+ * move the children that are not valid to the list item container.
  */
 export const normalizeListItem = <V extends Value>(
   editor: PlateEditor<V>,
@@ -89,9 +91,9 @@ export const normalizeListItem = <V extends Value>(
     insertEmptyElement(editor, getPluginType(editor, ELEMENT_LIC), {
       at: liPath.concat([0]),
     });
+
     return true;
   }
-
   // If first li child is a block but not lic, set it to lic
   if (
     isBlock(editor, firstLiChildNode) &&
@@ -119,7 +121,6 @@ export const normalizeListItem = <V extends Value>(
 
       return true;
     }
-
     // Allow block elements listed as valid li children types to be a first child instead of LIC
     if (validLiChildrenTypes.includes(firstLiChildNode.type)) {
       return true;
@@ -183,7 +184,6 @@ export const normalizeListItem = <V extends Value>(
       changed = true;
     }
   }
-
   if (changed) return true;
 
   // Ensure that any text nodes under the list are inside the list item container

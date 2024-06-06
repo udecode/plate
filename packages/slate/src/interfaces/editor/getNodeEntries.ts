@@ -1,11 +1,13 @@
-import { Modify } from '@udecode/utils';
-import { Editor, EditorNodesOptions } from 'slate';
+import type { Modify } from '@udecode/utils';
 
-import { ENodeMatchOptions, getQueryOptions } from '../../utils/match';
-import { ENode, TNode } from '../node/TNode';
-import { TNodeEntry } from '../node/TNodeEntry';
-import { TEditor, Value } from './TEditor';
-import { unhangRange, UnhangRangeOptions } from './unhangRange';
+import { Editor, type EditorNodesOptions } from 'slate';
+
+import type { ENode, TNode } from '../node/TNode';
+import type { TNodeEntry } from '../node/TNodeEntry';
+import type { TEditor, Value } from './TEditor';
+
+import { type ENodeMatchOptions, getQueryOptions } from '../../utils/match';
+import { type UnhangRangeOptions, unhangRange } from './unhangRange';
 
 export type GetNodeEntriesOptions<V extends Value = Value> = Modify<
   NonNullable<EditorNodesOptions<TNode>>,
@@ -13,9 +15,7 @@ export type GetNodeEntriesOptions<V extends Value = Value> = Modify<
 > &
   UnhangRangeOptions;
 
-/**
- * Iterate through all of the nodes in the Editor.
- */
+/** Iterate through all of the nodes in the Editor. */
 export const getNodeEntries = <N extends ENode<V>, V extends Value = Value>(
   editor: TEditor<V>,
   options?: GetNodeEntriesOptions<V>

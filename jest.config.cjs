@@ -3,9 +3,9 @@ const appRoot = require('app-root-path');
 
 const packageJson = require(`${process.cwd()}/package.json`);
 const packageName = packageJson.name ?? 'plate';
-const {
-  compilerOptions: baseTsConfig,
-} = require(`${appRoot}/config/tsconfig.test.json`);
+const { compilerOptions: baseTsConfig } = require(
+  `${appRoot}/config/tsconfig.test.json`
+);
 
 // Take the paths from tsconfig automatically from base tsconfig.json
 // @link https://kulshekhar.github.io/ts-jest/docs/paths-mapping
@@ -28,9 +28,8 @@ Object.keys(aliases).forEach((key) => {
 });
 
 /** @type {import('ts-jest').JestConfigWithTsJest} */
-//@ts-check
+// @ts-check
 module.exports = {
-  displayName: packageName,
   collectCoverageFrom: [
     'packages/**/src/**/*.{ts,tsx}',
     '!**/*.styles.ts*',
@@ -41,6 +40,7 @@ module.exports = {
     '!**/*stories*',
     '!**/*.development.*',
   ],
+  displayName: packageName,
   moduleDirectories: ['node_modules'],
   moduleFileExtensions: ['js', 'json', 'ts', 'tsx'],
   moduleNameMapper: {
@@ -50,13 +50,13 @@ module.exports = {
     ...modules,
   },
   preset: 'ts-jest',
+  setupFilesAfterEnv: ['<rootDir>/scripts/setupTests.ts'],
   testEnvironment: 'jsdom',
-  testRegex: '(test|spec).tsx?$',
   testPathIgnorePatterns: ['/playwright/'],
+  testRegex: '(test|spec).tsx?$',
   transform: {
     '^.+\\.(t|j)sx?$': '@swc/jest',
   },
-  setupFilesAfterEnv: ['<rootDir>/scripts/setupTests.ts'],
   transformIgnorePatterns: [
     '/node_modules/(?!(react-dnd|dnd-core|@react-dnd|react-dnd-html5-backend|react-tweet)/)',
   ],

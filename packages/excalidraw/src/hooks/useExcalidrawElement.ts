@@ -1,10 +1,11 @@
 import React from 'react';
-import {
+
+import type {
   ExcalidrawImperativeAPI,
   LibraryItems,
 } from '@excalidraw/excalidraw/types/types';
 
-import { TExcalidrawElement, TExcalidrawProps } from '..';
+import type { TExcalidrawElement, TExcalidrawProps } from '..';
 
 export const useExcalidrawElement = ({
   element,
@@ -12,12 +13,12 @@ export const useExcalidrawElement = ({
   scrollToContent = true,
 }: {
   element: TExcalidrawElement;
-  scrollToContent?: boolean;
   libraryItems?: LibraryItems;
+  scrollToContent?: boolean;
 }) => {
   const [Excalidraw, setExcalidraw] = React.useState<any>(null);
   React.useEffect(() => {
-    import('@excalidraw/excalidraw').then((comp) =>
+    void import('@excalidraw/excalidraw').then((comp) =>
       setExcalidraw(comp.Excalidraw)
     );
   });
@@ -27,14 +28,14 @@ export const useExcalidrawElement = ({
   // const editor = useEditorRef();
 
   const excalidrawProps: TExcalidrawProps = {
+    autoFocus: false,
     excalidrawRef: _excalidrawRef,
     initialData: {
-      elements: element.data?.elements,
       appState: element.data?.state,
-      scrollToContent,
+      elements: element.data?.elements,
       libraryItems,
+      scrollToContent,
     },
-    autoFocus: false,
     // onChange: (elements: readonly ExcalidrawElementType[], state: AppState) => {
     // const path = findNodePath(editor, element);
 

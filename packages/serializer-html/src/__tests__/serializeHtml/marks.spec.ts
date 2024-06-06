@@ -18,7 +18,7 @@ it('serialize bold to html', () => {
     serializeHtml(editor, {
       nodes: [
         { text: 'Some paragraph of text with ' },
-        { text: 'bold', bold: true },
+        { bold: true, text: 'bold' },
         { text: ' part.' },
       ],
     })
@@ -32,7 +32,7 @@ it('serialize italic to html', () => {
     serializeHtml(editor, {
       nodes: [
         { text: 'Some paragraph of text with ' },
-        { text: 'italic', italic: true },
+        { italic: true, text: 'italic' },
         { text: ' part.' },
       ],
     })
@@ -47,12 +47,12 @@ it('serialize highlight to html', () => {
       serializeHtml(editor, {
         nodes: [
           { text: 'Some paragraph of text with ' },
-          { text: 'highlighted', highlight: true },
+          { highlight: true, text: 'highlighted' },
           { text: ' part.' },
         ],
       })
-    ).querySelectorAll('mark')[0].textContent
-  ).toEqual('highlighted');
+    ).querySelectorAll('mark')[0]
+  ).toHaveTextContent('highlighted');
 });
 
 it('serialize strikethrough to html', () => {
@@ -61,12 +61,12 @@ it('serialize strikethrough to html', () => {
       serializeHtml(editor, {
         nodes: [
           { text: 'Some paragraph of text with ' },
-          { text: 'strikethrough', strikethrough: true },
+          { strikethrough: true, text: 'strikethrough' },
           { text: ' part.' },
         ],
       })
-    ).querySelectorAll('.slate-strikethrough')[0].textContent
-  ).toEqual('strikethrough');
+    ).querySelectorAll('.slate-strikethrough')[0]
+  ).toHaveTextContent('strikethrough');
 });
 
 it('serialize code to html', () => {
@@ -75,12 +75,12 @@ it('serialize code to html', () => {
       serializeHtml(editor, {
         nodes: [
           { text: 'Some paragraph of text with ' },
-          { text: 'some code', code: true },
+          { code: true, text: 'some code' },
           { text: ' part.' },
         ],
       })
-    ).querySelectorAll('code')[0].textContent
-  ).toEqual('some code');
+    ).querySelectorAll('code')[0]
+  ).toHaveTextContent('some code');
 });
 
 it('serialize kbd to html', () => {
@@ -89,12 +89,12 @@ it('serialize kbd to html', () => {
       serializeHtml(editor, {
         nodes: [
           { text: 'Some paragraph of text with ' },
-          { text: 'keyboard shortcut', kbd: true },
+          { kbd: true, text: 'keyboard shortcut' },
           { text: ' part.' },
         ],
       })
-    ).querySelectorAll('kbd')[0].textContent
-  ).toEqual('keyboard shortcut');
+    ).querySelectorAll('kbd')[0]
+  ).toHaveTextContent('keyboard shortcut');
 });
 
 it('serialize subscript to html', () => {
@@ -102,7 +102,7 @@ it('serialize subscript to html', () => {
     serializeHtml(editor, {
       nodes: [
         { text: 'Some paragraph of text with ' },
-        { text: 'subscripted', subscript: true },
+        { subscript: true, text: 'subscripted' },
         { text: ' part.' },
       ],
     })
@@ -116,7 +116,7 @@ it('serialize superscript to html', () => {
     serializeHtml(editor, {
       nodes: [
         { text: 'Some paragraph of text with ' },
-        { text: 'superscripted', superscript: true },
+        { superscript: true, text: 'superscripted' },
         { text: ' part.' },
       ],
     })
@@ -144,7 +144,7 @@ it('serialize bold and italic together to html', () => {
     serializeHtml(editor, {
       nodes: [
         { text: 'Some paragraph of text with ' },
-        { text: 'bold', bold: true, italic: true },
+        { bold: true, italic: true, text: 'bold' },
         { text: ' part.' },
       ],
     })
@@ -158,7 +158,7 @@ it('serialize bold and superscript together to html', () => {
     serializeHtml(editor, {
       nodes: [
         { text: 'Some paragraph of text with ' },
-        { text: 'bold', bold: true, superscript: true },
+        { bold: true, superscript: true, text: 'bold' },
         { text: ' part.' },
       ],
     })
@@ -172,7 +172,7 @@ it('serialize bold italic and underline together to html', () => {
     serializeHtml(editor, {
       nodes: [
         { text: 'Some paragraph of text with ' },
-        { text: 'bold', bold: true, italic: true, underline: true },
+        { bold: true, italic: true, text: 'bold', underline: true },
         { text: ' part.' },
       ],
     })

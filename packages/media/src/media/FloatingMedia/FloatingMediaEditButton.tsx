@@ -1,7 +1,9 @@
 import React from 'react';
+
 import { createPrimitiveComponent, useElement } from '@udecode/plate-common';
 
-import { TMediaElement } from '../types';
+import type { TMediaElement } from '../types';
+
 import { floatingMediaActions } from './floatingMediaStore';
 
 export const useFloatingMediaEditButton = () => {

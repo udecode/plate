@@ -1,18 +1,17 @@
-// @ts-nocheck
-// TODO: I'll fix this later.
-
 import { toc } from 'mdast-util-toc';
 import { remark } from 'remark';
 import { visit } from 'unist-util-visit';
 
 const textTypes = new Set(['text', 'emphasis', 'strong', 'inlineCode']);
 
-function flattenNode(node) {
-  const p = [];
+function flattenNode(node: any) {
+  const p: string[] = [];
   visit(node, (_node) => {
     if (!textTypes.has(_node.type)) return;
+
     p.push(_node.value);
   });
+
   return p.join(``);
 }
 
@@ -26,18 +25,16 @@ interface Items {
   items?: Item[];
 }
 
-function getItems(node, current): Items {
+function getItems(node: any, current: any): Items {
   if (!node) {
     return {};
   }
-
   if (node.type === 'paragraph') {
     visit(node, (item) => {
       if (item.type === 'link') {
         current.url = item.url;
         current.title = flattenNode(node);
       }
-
       if (item.type === 'text') {
         current.title = flattenNode(node);
       }
@@ -45,9 +42,8 @@ function getItems(node, current): Items {
 
     return current;
   }
-
   if (node.type === 'list') {
-    current.items = node.children.map((i) => getItems(i, {}));
+    current.items = node.children.map((i: any) => getItems(i, {}));
 
     return current;
   }
@@ -64,7 +60,7 @@ function getItems(node, current): Items {
   return {};
 }
 
-const getToc = () => (node, file) => {
+const getToc = () => (node: any, file: any) => {
   const table = toc(node);
   const items = getItems(table.map, {});
 
@@ -72,8 +68,8 @@ const getToc = () => (node, file) => {
 };
 
 export type TableOfContents = {
-  items?: Item[];
   isAPI?: boolean;
+  items?: Item[];
 };
 
 export async function getTableOfContents(
@@ -85,9 +81,9 @@ export async function getTableOfContents(
 }
 
 export const getAPITableOfContents = (content: string): TableOfContents => {
-  const categories = content.split(/name="([^"]*)"/g).filter((_, i) => i > 0); // we ignore the first element because it's the part of the string before the first category
+  const categories = content.split(/name="([^"]*)"/).filter((_, i) => i > 0); // we ignore the first element because it's the part of the string before the first category
 
-  const result: TableOfContents = { items: [], isAPI: true };
+  const result: TableOfContents = { isAPI: true, items: [] };
 
   for (let i = 0; i < categories.length; i += 2) {
     const category = categories[i];
@@ -97,10 +93,10 @@ export const getAPITableOfContents = (content: string): TableOfContents => {
       name: m[1],
     }));
 
-    result.items.push({
+    result.items!.push({
+      items: names.map((n) => ({ title: n.name, url: `#${n.name}` })),
       title: category,
       url: `#${category}`,
-      items: names.map((n) => ({ title: n.name, url: `#${n.name}` })),
     });
   }
 

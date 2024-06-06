@@ -1,8 +1,9 @@
-import { EAncestorEntry, EElementOrText, Value } from '@udecode/slate';
-import { Path } from 'slate';
+import type { EAncestorEntry, EElementOrText, Value } from '@udecode/slate';
+import type { Path } from 'slate';
 
 /**
  * Get the next sibling nodes after a path.
+ *
  * @param ancestorEntry Ancestor of the sibling nodes
  * @param path Path of the reference node
  */

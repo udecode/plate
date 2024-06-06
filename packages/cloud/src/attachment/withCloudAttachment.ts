@@ -1,14 +1,14 @@
 import {
-  EElementOrText,
+  type EElementOrText,
+  type Value,
+  type WithPlatePlugin,
   insertNode,
-  Value,
-  WithPlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import Defer from 'p-defer';
 
-import { PlateCloudEditor } from '../cloud/types';
-import { UploadError, UploadSuccess } from '../upload';
-import { CloudAttachmentPlugin, TCloudAttachmentElement } from './types';
+import type { PlateCloudEditor } from '../cloud/types';
+import type { UploadError, UploadSuccess } from '../upload';
+import type { CloudAttachmentPlugin, TCloudAttachmentElement } from './types';
 
 type CloudAttachmentValue = TCloudAttachmentElement[];
 
@@ -19,54 +19,53 @@ export const withCloudAttachment = <
   E extends PlateCloudEditor<V> = PlateCloudEditor<V>,
 >(
   editor: E,
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  plugin: WithPlatePlugin<CloudAttachmentPlugin, V, E>
+  _plugin: WithPlatePlugin<CloudAttachmentPlugin, V, E>
 ) => {
   /**
-   * We create a deferredFinish which is an object with a `promise` and a way
-   * to `resolve` or `reject` the Promise outside of the Promise. We use
-   * `p-defer` library to do this. The `finish` Promise gets added to the
-   * `origin` object so we can await `origin.finish` during the save process
-   * to wait for all the files to finish uploading.
+   * We create a deferredFinish which is an object with a `promise` and a way to
+   * `resolve` or `reject` the Promise outside of the Promise. We use `p-defer`
+   * library to do this. The `finish` Promise gets added to the `origin` object
+   * so we can await `origin.finish` during the save process to wait for all the
+   * files to finish uploading.
    */
-  const deferredFinish = Defer<UploadSuccess | UploadError>();
+  const deferredFinish = Defer<UploadError | UploadSuccess>();
   const finishPromise = deferredFinish.promise;
 
   editor.cloud.genericFileHandlers = {
-    onStart(e) {
-      const node: EElementOrText<CloudAttachmentValue> = {
-        type: 'cloud_attachment',
-        url: e.id,
-        filename: e.file.name,
-        bytes: e.file.size,
-        children: [{ text: '' }],
-      };
-      insertNode<Value>(editor, node);
-      editor.cloud.uploadStore.set.upload(e.id, {
-        status: 'progress',
-        url: e.url,
-        sentBytes: 0,
-        totalBytes: e.file.size,
-        finishPromise,
-      });
-    },
-    onProgress(e) {
-      editor.cloud.uploadStore.set.upload(e.id, {
-        status: 'progress',
-        url: e.url,
-        sentBytes: e.sentBytes,
-        totalBytes: e.totalBytes,
-        finishPromise,
-      });
-    },
     onError(e) {
       const upload: UploadError = {
+        message: e.message,
         status: 'error',
         url: e.url,
-        message: e.message,
       };
       editor.cloud.uploadStore.set.upload(e.id, upload);
       deferredFinish.resolve(upload);
+    },
+    onProgress(e) {
+      editor.cloud.uploadStore.set.upload(e.id, {
+        finishPromise,
+        sentBytes: e.sentBytes,
+        status: 'progress',
+        totalBytes: e.totalBytes,
+        url: e.url,
+      });
+    },
+    onStart(e) {
+      const node: EElementOrText<CloudAttachmentValue> = {
+        bytes: e.file.size,
+        children: [{ text: '' }],
+        filename: e.file.name,
+        type: 'cloud_attachment',
+        url: e.id,
+      };
+      insertNode<Value>(editor, node);
+      editor.cloud.uploadStore.set.upload(e.id, {
+        finishPromise,
+        sentBytes: 0,
+        status: 'progress',
+        totalBytes: e.file.size,
+        url: e.url,
+      });
     },
     onSuccess(e) {
       const upload: UploadSuccess = {

@@ -11,7 +11,6 @@ const name = 'legal-in';
 
 describe(getDocxTestName(name), () => {
   testDocxDeserializer({
-    filename: name,
     expected: (
       <editor>
         <hp align="center">
@@ -23,7 +22,7 @@ describe(getDocxTestName(name), () => {
         <hp align="center">
           <htext bold>Name</htext>
         </hp>
-        <hp align="justify" textIndent={1} lineHeight="normal">
+        <hp align="justify" lineHeight="normal" textIndent={1}>
           A
         </hp>
         <hp align="justify">
@@ -48,10 +47,10 @@ describe(getDocxTestName(name), () => {
         <hp align="justify" indent={1}>
           B
         </hp>
-        <hp align="center" textIndent={1} lineHeight="normal">
+        <hp align="center" lineHeight="normal" textIndent={1}>
           (<htext italic>signature page follows</htext>)
         </hp>
-        <hp align="justify" textIndent={1} lineHeight="normal">
+        <hp align="justify" lineHeight="normal" textIndent={1}>
           C
         </hp>
         <hp indent={7}>
@@ -65,6 +64,7 @@ describe(getDocxTestName(name), () => {
         <hp indent={7}>__________________________________</hp>
       </editor>
     ),
+    filename: name,
     plugins: [createIndentListPlugin()],
   });
 });

@@ -1,13 +1,14 @@
+import { useHotkeys } from '@udecode/plate-common';
 import {
+  type PlateEditor,
+  type Value,
+  type WithPlatePlugin,
   isExpanded,
-  PlateEditor,
-  useHotkeys,
-  Value,
-  WithPlatePlugin,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
+
+import type { CommentsPlugin } from './types';
 
 import { useAddCommentMark, useCommentsActions } from './stores';
-import { CommentsPlugin } from './types';
 
 export const useHooksComments = <
   V extends Value = Value,

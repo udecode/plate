@@ -2,6 +2,7 @@
 
 // eslint-disable-next-line import/no-unresolved
 import React, { useEffect, useMemo, useState } from 'react';
+
 import { ArrowUpRight, Eye, EyeOff } from 'lucide-react';
 
 import { customizerList } from '@/config/customizer-list';
@@ -65,8 +66,8 @@ export function PluginsTabContentLazy() {
 
       <div className="flex items-center">
         <Checkbox
-          id="check-plugins"
           checked={somePluginChecked}
+          id="check-plugins"
           onCheckedChange={(_checked: boolean) => {
             if (somePluginChecked) {
               settingsStore.set.checkedPluginsNext({} as any);
@@ -75,17 +76,17 @@ export function PluginsTabContentLazy() {
             }
           }}
         />
-        <Label htmlFor="check-plugins" className="flex p-2">
+        <Label className="flex p-2" htmlFor="check-plugins">
           Plugins
         </Label>
       </div>
 
       <div className="flex items-center">
-        <TreeIcon isFirst isLast className="mx-1" />
+        <TreeIcon className="mx-1" isFirst isLast />
 
         <Checkbox
-          id="check-components"
           checked={someComponentChecked}
+          id="check-components"
           onCheckedChange={(_checked: boolean) => {
             if (someComponentChecked) {
               settingsStore.set.checkedComponents({} as any);
@@ -96,20 +97,21 @@ export function PluginsTabContentLazy() {
           }}
         />
 
-        <Label htmlFor="check-components" className="flex p-2">
+        <Label className="flex p-2" htmlFor="check-components">
           Components
         </Label>
 
         <Button
-          size="xs"
-          variant="ghost"
           className="px-2"
           onClick={() => {
             if (showComponents) {
               settingsStore.set.checkedComponents({} as any);
             }
+
             settingsStore.set.showComponents(!showComponents);
           }}
+          size="xs"
+          variant="ghost"
         >
           {showComponents ? (
             <Eye className="size-4" />
@@ -119,7 +121,7 @@ export function PluginsTabContentLazy() {
         </Button>
       </div>
 
-      <Accordion type="multiple" defaultValue={categoryIds} className="-mx-6">
+      <Accordion className="-mx-6" defaultValue={categoryIds} type="multiple">
         {customizerList.map((item) => (
           <AccordionItem key={item.id} value={item.id}>
             <AccordionTrigger className="py-4 pl-6 pr-[34px]">

@@ -1,6 +1,7 @@
-import { PlatePlugin } from '@udecode/plate-common';
+import type { PlatePlugin } from '@udecode/plate-common';
+import type { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
+
 import { ELEMENT_H1 } from '@udecode/plate-heading';
-import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 
 export const forcedLayoutPlugin: Partial<PlatePlugin<NormalizeTypesPlugin>> = {
   options: {

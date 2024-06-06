@@ -1,82 +1,82 @@
-import { TComment } from '@udecode/plate-comments';
-import { Value } from '@udecode/plate-common';
+import type { TComment } from '@udecode/plate-comments';
+import type { Value } from '@udecode/plate-common';
 
 export const usersData = {
   1: {
+    avatarUrl: 'https://avatars.githubusercontent.com/u/19695832?s=96&v=4',
     id: '1',
     name: 'zbeyens',
-    avatarUrl: 'https://avatars.githubusercontent.com/u/19695832?s=96&v=4',
   },
   2: {
+    avatarUrl: 'https://avatars.githubusercontent.com/u/4272090?v=4',
     id: '2',
     name: '12joan',
-    avatarUrl: 'https://avatars.githubusercontent.com/u/4272090?v=4',
   },
 };
 
 export const commentsData: Record<string, TComment> = {
   1: {
+    createdAt: 1_663_453_625_129,
     id: '1',
     userId: '1',
-    value: [{ type: 'p', children: [{ text: 'This is a comment.' }] }],
-    createdAt: 1_663_453_625_129,
+    value: [{ children: [{ text: 'This is a comment.' }], type: 'p' }],
   },
   2: {
+    createdAt: 1_663_453_729_191,
     id: '2',
     userId: '1',
     value: [
-      { type: 'p', children: [{ text: 'Can you review this one @12joan?' }] },
+      { children: [{ text: 'Can you review this one @12joan?' }], type: 'p' },
     ],
-    createdAt: 1_663_453_729_191,
   },
   3: {
-    id: '3',
-    userId: '1',
-    value: [{ type: 'p', children: [{ text: 'This is a resolved comment.' }] }],
-    isResolved: true,
     createdAt: 1_663_453_740_180,
+    id: '3',
+    isResolved: true,
+    userId: '1',
+    value: [{ children: [{ text: 'This is a resolved comment.' }], type: 'p' }],
   },
   4: {
-    id: '4',
-    userId: '2',
-    value: [{ type: 'p', children: [{ text: 'LGTM.' }] }],
-    parentId: '2',
     createdAt: 1_663_453_740_181,
+    id: '4',
+    parentId: '2',
+    userId: '2',
+    value: [{ children: [{ text: 'LGTM.' }], type: 'p' }],
   },
   5: {
-    id: '4',
-    userId: '1',
-    value: [{ type: 'p', children: [{ text: 'Thanks!' }] }],
-    parentId: '2',
     createdAt: 1_663_453_740_182,
+    id: '4',
+    parentId: '2',
+    userId: '1',
+    value: [{ children: [{ text: 'Thanks!' }], type: 'p' }],
   },
 };
 
 export const commentsValue: Value = [
   {
-    type: 'h2',
     children: [{ text: '💬 Comments' }],
+    type: 'h2',
   },
   {
-    type: 'p',
     children: [
       {
         text: 'Add ',
       },
       {
-        text: 'comments to your content',
         comment: true,
         comment_1: true,
+        text: 'comments to your content',
       },
       { text: ' to provide additional context, insights, or ' },
       {
-        text: 'collaborate',
         comment: true,
         comment_2: true,
+        text: 'collaborate',
       },
       {
         text: '  with others',
       },
     ],
+    type: 'p',
   },
 ];

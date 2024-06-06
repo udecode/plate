@@ -143,12 +143,12 @@ describe('deserializeMd', () => {
       <fragment>
         <hp>No </hp>
         <himg
-          url="https://example.com/example.png"
           caption={
             <fragment>
               <htext>inline</htext>
             </fragment>
           }
+          url="https://example.com/example.png"
         >
           <htext />
         </himg>
@@ -316,24 +316,24 @@ describe('deserializeMdIndentList', () => {
 
     const output = [
       {
-        type: 'p',
-        listStyleType: 'disc',
-        indent: 1,
         children: [
           {
             text: 'List item 1',
           },
         ],
+        indent: 1,
+        listStyleType: 'disc',
+        type: 'p',
       },
       {
-        type: 'p',
-        listStyleType: 'disc',
-        indent: 1,
         children: [
           {
             text: 'List item 2',
           },
         ],
+        indent: 1,
+        listStyleType: 'disc',
+        type: 'p',
       },
     ];
 
@@ -345,24 +345,24 @@ describe('deserializeMdIndentList', () => {
 
     const output = [
       {
-        type: 'p',
-        listStyleType: 'decimal',
-        indent: 1,
         children: [
           {
             text: 'List item 1',
           },
         ],
+        indent: 1,
+        listStyleType: 'decimal',
+        type: 'p',
       },
       {
-        type: 'p',
-        listStyleType: 'decimal',
-        indent: 1,
         children: [
           {
             text: 'List item 2',
           },
         ],
+        indent: 1,
+        listStyleType: 'decimal',
+        type: 'p',
       },
     ];
 
@@ -374,24 +374,24 @@ describe('deserializeMdIndentList', () => {
 
     const output = [
       {
-        type: 'p',
-        listStyleType: 'disc',
-        indent: 1,
         children: [
           {
             text: 'List item 1',
           },
         ],
+        indent: 1,
+        listStyleType: 'disc',
+        type: 'p',
       },
       {
-        type: 'p',
-        listStyleType: 'disc',
-        indent: 2,
         children: [
           {
             text: 'List item 1.1',
           },
         ],
+        indent: 2,
+        listStyleType: 'disc',
+        type: 'p',
       },
     ];
 
@@ -403,20 +403,20 @@ describe('deserializeMdIndentList', () => {
 
     const output = [
       {
-        type: 'p',
-        listStyleType: 'disc',
-        indent: 1,
         children: [
           {
             text: 'Line 1',
           },
         ],
+        indent: 1,
+        listStyleType: 'disc',
+        type: 'p',
       },
       {
-        type: 'p',
-        listStyleType: 'disc',
-        indent: 1,
         children: [],
+        indent: 1,
+        listStyleType: 'disc',
+        type: 'p',
       },
     ];
 

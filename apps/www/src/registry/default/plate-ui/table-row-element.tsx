@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { cn, withRef } from '@udecode/cn';
 import { PlateElement } from '@udecode/plate-common';
 
@@ -7,12 +8,12 @@ export const TableRowElement = withRef<
   {
     hideBorder?: boolean;
   }
->(({ hideBorder, children, ...props }, ref) => {
+>(({ children, hideBorder, ...props }, ref) => {
   return (
     <PlateElement
       asChild
-      ref={ref}
       className={cn('h-full', hideBorder && 'border-none')}
+      ref={ref}
       {...props}
     >
       <tr>{children}</tr>

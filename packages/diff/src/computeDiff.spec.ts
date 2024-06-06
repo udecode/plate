@@ -3,1543 +3,461 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import { getNodeString, TElement, Value } from '@udecode/plate-common';
+import {
+  type TElement,
+  type Value,
+  getNodeString,
+} from '@udecode/plate-common';
 
-import { computeDiff, ComputeDiffOptions } from './computeDiff';
+import { type ComputeDiffOptions, computeDiff } from './computeDiff';
 
 const ELEMENT_INLINE_VOID = 'inline-void';
 
 interface ComputeDiffFixture
-  extends Pick<ComputeDiffOptions, 'lineBreakChar' | 'elementsAreRelated'> {
-  it?: typeof it;
+  extends Pick<ComputeDiffOptions, 'elementsAreRelated' | 'lineBreakChar'> {
+  expected: Value;
   input1: Value;
   input2: Value;
-  expected: Value;
+  it?: typeof it;
 }
 
 const fixtures: Record<string, ComputeDiffFixture> = {
   addMark: {
+    expected: [
+      {
+        children: [
+          { text: 'PingCode ' },
+          {
+            bold: true,
+            diff: true,
+            diffOperation: {
+              newProperties: { bold: true },
+              properties: {},
+              type: 'update',
+            },
+            text: 'Wiki',
+          },
+          {
+            // TODO
+            bold: undefined,
+            text: ' & Worktile',
+          },
+        ],
+        type: 'paragraph',
+      },
+    ],
     input1: [
       {
-        type: 'paragraph',
         children: [{ text: 'PingCode Wiki & Worktile' }],
+        type: 'paragraph',
       },
     ],
     input2: [
       {
-        type: 'paragraph',
         children: [
           { text: 'PingCode ' },
           {
-            text: 'Wiki',
             bold: true,
+            text: 'Wiki',
           },
           {
             text: ' & Worktile',
           },
         ],
-      },
-    ],
-    expected: [
-      {
         type: 'paragraph',
-        children: [
-          { text: 'PingCode ' },
-          {
-            text: 'Wiki',
-            bold: true,
-            diff: true,
-            diffOperation: {
-              type: 'update',
-              properties: {},
-              newProperties: { bold: true },
-            },
-          },
-          {
-            text: ' & Worktile',
-            // TODO
-            bold: undefined,
-          },
-        ],
       },
     ],
   },
 
   addMarkFirst: {
-    input1: [
+    expected: [
       {
-        type: 'paragraph',
         children: [
-          { text: 'PingCode' },
           {
+            bold: true,
+            diff: true,
+            diffOperation: {
+              newProperties: { bold: true },
+              properties: {},
+              type: 'update',
+            },
+            text: 'PingCode',
+          },
+          {
+            italic: true,
             text: ' Wiki & Worktile',
-            italic: true,
           },
         ],
+        type: 'paragraph',
       },
     ],
-    input2: [
+    input1: [
       {
-        type: 'paragraph',
         children: [
+          { text: 'PingCode' },
           {
-            text: 'PingCode',
-            bold: true,
-          },
-          {
+            italic: true,
             text: ' Wiki & Worktile',
-            italic: true,
           },
         ],
+        type: 'paragraph',
       },
     ],
-    expected: [
+    input2: [
       {
-        type: 'paragraph',
         children: [
           {
-            text: 'PingCode',
             bold: true,
-            diff: true,
-            diffOperation: {
-              type: 'update',
-              properties: {},
-              newProperties: { bold: true },
-            },
+            text: 'PingCode',
           },
           {
+            italic: true,
             text: ' Wiki & Worktile',
-            italic: true,
           },
         ],
-      },
-    ],
-  },
-
-  addTwoMark: {
-    input1: [
-      {
         type: 'paragraph',
-        children: [{ text: 'These words are bold!' }],
-      },
-    ],
-    input2: [
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'These ' },
-          {
-            text: 'words',
-            bold: true,
-          },
-          {
-            text: ' are ',
-          },
-          {
-            text: 'bold',
-            bold: true,
-          },
-          {
-            text: '!',
-          },
-        ],
-      },
-    ],
-    expected: [
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'These ' },
-          {
-            text: 'words',
-            bold: true,
-            diff: true,
-            diffOperation: {
-              type: 'update',
-              properties: {},
-              newProperties: { bold: true },
-            },
-          },
-          {
-            text: ' are ',
-            // TODO
-            bold: undefined,
-          },
-          {
-            text: 'bold',
-            bold: true,
-            diff: true,
-            diffOperation: {
-              type: 'update',
-              properties: {},
-              newProperties: { bold: true },
-            },
-          },
-          {
-            text: '!',
-            // TODO
-            bold: undefined,
-          },
-        ],
-      },
-    ],
-  },
-
-  addMarkToMarkedText: {
-    input1: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'One two three', bold: true }],
-      },
-    ],
-    input2: [
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'One ', bold: true },
-          { text: 'two', bold: true, italic: true },
-          { text: ' three', bold: true },
-        ],
-      },
-    ],
-    expected: [
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'One ', bold: true },
-          {
-            text: 'two',
-            bold: true,
-            italic: true,
-            diff: true,
-            diffOperation: {
-              type: 'update',
-              properties: {},
-              newProperties: { italic: true },
-            },
-          },
-          { text: ' three', bold: true },
-        ],
-      },
-    ],
-  },
-
-  insertUpdateParagraph: {
-    input1: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'This is the first paragraph.' }],
-        key: '1',
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'This is the third paragraph.' }],
-        key: '3',
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'This is the fourth paragraph.' }],
-        key: '4',
-      },
-    ],
-    input2: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'This is the first paragraph.' }],
-        key: '1',
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'This is the second paragraph.' }],
-        key: '2',
-      },
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'This is the third paragraph' },
-          {
-            text: ', and insert some text',
-          },
-          {
-            text: '.',
-          },
-        ],
-        key: '3',
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'This is the fourth paragraph.' }],
-        key: '4',
-      },
-    ],
-    expected: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'This is the first paragraph.' }],
-        key: '1',
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'This is the second paragraph.' }],
-        key: '2',
-        diff: true,
-        diffOperation: {
-          type: 'insert',
-        },
-      },
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'This is the third paragraph' },
-          {
-            text: ', and insert some text',
-            diff: true,
-            diffOperation: {
-              type: 'insert',
-            },
-          },
-          {
-            text: '.',
-          },
-        ],
-        key: '3',
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'This is the fourth paragraph.' }],
-        key: '4',
-      },
-    ],
-  },
-
-  insertUpdateTwoParagraphs: {
-    input1: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'This is the first paragraph.' }],
-        key: '1',
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'This is the third paragraph.' }],
-        key: '3',
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'This is the fourth paragraph.' }],
-        key: '4',
-      },
-    ],
-    input2: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'This is the first paragraph.' }],
-        key: '1',
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'This is the second paragraph.' }],
-        key: '2',
-      },
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'This is the third paragraph' },
-          {
-            text: ', and insert some text',
-          },
-          {
-            text: '.',
-          },
-        ],
-        key: '3',
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'This is the fifth paragraph.' }],
-        key: '5',
-      },
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'This is the fourth paragraph' },
-          {
-            text: ', and insert some text',
-          },
-          {
-            text: '.',
-          },
-        ],
-        key: '4',
-      },
-    ],
-    expected: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'This is the first paragraph.' }],
-        key: '1',
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'This is the second paragraph.' }],
-        key: '2',
-        diff: true,
-        diffOperation: { type: 'insert' },
-      },
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'This is the third paragraph' },
-          {
-            text: ', and insert some text',
-            diff: true,
-            diffOperation: { type: 'insert' },
-          },
-          {
-            text: '.',
-          },
-        ],
-        key: '3',
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'This is the fifth paragraph.' }],
-        key: '5',
-        diff: true,
-        diffOperation: { type: 'insert' },
-      },
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'This is the fourth paragraph' },
-          {
-            text: ', and insert some text',
-            diff: true,
-            diffOperation: { type: 'insert' },
-          },
-          {
-            text: '.',
-          },
-        ],
-        key: '4',
-      },
-    ],
-  },
-
-  insertTextAddMark: {
-    input1: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'PingCode' }],
-      },
-    ],
-    input2: [
-      {
-        type: 'paragraph',
-        children: [
-          {
-            text: 'PingCode',
-            bold: true,
-          },
-          {
-            text: ' & ',
-          },
-          {
-            text: 'Worktile',
-            bold: true,
-          },
-        ],
-      },
-    ],
-    expected: [
-      {
-        type: 'paragraph',
-        children: [
-          {
-            text: 'PingCode',
-            bold: true,
-            diff: true,
-            diffOperation: {
-              type: 'update',
-              properties: {},
-              newProperties: { bold: true },
-            },
-          },
-          {
-            text: ' & ',
-            // TODO:
-            bold: undefined,
-            diff: true,
-            diffOperation: { type: 'insert' },
-          },
-          {
-            text: 'Worktile',
-            bold: true,
-            diff: true,
-            diffOperation: { type: 'insert' },
-          },
-        ],
-      },
-    ],
-  },
-
-  insertText: {
-    input1: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'PingCode' }],
-      },
-    ],
-    input2: [
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'PingCode' },
-          {
-            text: ' & Worktile',
-          },
-        ],
-      },
-    ],
-    expected: [
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'PingCode' },
-          {
-            text: ' & Worktile',
-            diff: true,
-            diffOperation: { type: 'insert' },
-          },
-        ],
-      },
-    ],
-  },
-
-  addNode: {
-    input1: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'PingCode' }],
-      },
-    ],
-    input2: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'PingCode' }],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'Worktile' }],
-      },
-    ],
-    expected: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'PingCode' }],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'Worktile' }],
-        diff: true,
-        diffOperation: { type: 'insert' },
-      },
-    ],
-  },
-
-  removeNode: {
-    input1: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'PingCode' }],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'Worktile' }],
-      },
-    ],
-    input2: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'PingCode' }],
-      },
-    ],
-    expected: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'PingCode' }],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'Worktile' }],
-        diff: true,
-        diffOperation: { type: 'delete' },
-      },
-    ],
-  },
-
-  setNodeAdd: {
-    input1: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'PingCode' }],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'Worktile' }],
-      },
-    ],
-    input2: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'PingCode' }],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'Worktile' }],
-        someProp: 'World',
-      },
-    ],
-    expected: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'PingCode' }],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'Worktile' }],
-        someProp: 'World',
-        diff: true,
-        diffOperation: {
-          type: 'update',
-          properties: {},
-          newProperties: { someProp: 'World' },
-        },
-      },
-    ],
-  },
-
-  setNodeRemove: {
-    input1: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'PingCode' }],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'Worktile' }],
-        someProp: 'Hello',
-      },
-    ],
-    input2: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'PingCode' }],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'Worktile' }],
-      },
-    ],
-    expected: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'PingCode' }],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'Worktile' }],
-        diff: true,
-        diffOperation: {
-          type: 'update',
-          properties: { someProp: 'Hello' },
-          newProperties: { someProp: undefined },
-        },
-      },
-    ],
-  },
-
-  setNodeChange: {
-    input1: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'PingCode' }],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'Worktile' }],
-        someProp: 'Hello',
-      },
-    ],
-    input2: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'PingCode' }],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'Worktile' }],
-        someProp: 'World',
-      },
-    ],
-    expected: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'PingCode' }],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'Worktile' }],
-        someProp: 'World',
-        diff: true,
-        diffOperation: {
-          type: 'update',
-          properties: { someProp: 'Hello' },
-          newProperties: { someProp: 'World' },
-        },
-      },
-    ],
-  },
-
-  addNodeChildren: {
-    input1: [
-      {
-        type: 'container',
-        children: [
-          {
-            type: 'paragraph',
-            children: [{ text: 'PingCode' }],
-          },
-        ],
-      },
-    ],
-    input2: [
-      {
-        type: 'container',
-        children: [
-          {
-            type: 'paragraph',
-            children: [{ text: 'PingCode' }],
-          },
-          {
-            type: 'paragraph',
-            children: [{ text: 'Worktile' }],
-          },
-        ],
-      },
-    ],
-    expected: [
-      {
-        type: 'container',
-        children: [
-          {
-            type: 'paragraph',
-            children: [{ text: 'PingCode' }],
-          },
-          {
-            type: 'paragraph',
-            children: [{ text: 'Worktile' }],
-            diff: true,
-            diffOperation: { type: 'insert' },
-          },
-        ],
-      },
-    ],
-  },
-
-  removeText: {
-    input1: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'PingCode & Worktile' }],
-      },
-    ],
-    input2: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'PingCode' }],
-      },
-    ],
-    expected: [
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'PingCode' },
-          {
-            text: ' & Worktile',
-            diff: true,
-            diffOperation: { type: 'delete' },
-          },
-        ],
-      },
-    ],
-  },
-
-  replaceText: {
-    input1: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'PingCode & Worktile' }],
-      },
-    ],
-    input2: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'PingCode & Whatever' }],
-      },
-    ],
-    expected: [
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'PingCode & W' },
-          {
-            text: 'orktile',
-            diff: true,
-            diffOperation: { type: 'delete' },
-          },
-          {
-            text: 'hatever',
-            diff: true,
-            diffOperation: { type: 'insert' },
-          },
-        ],
-      },
-    ],
-  },
-
-  removeInlineVoid: {
-    input1: [
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'This is an ' },
-          {
-            type: ELEMENT_INLINE_VOID,
-            children: [{ text: '' }],
-          },
-          { text: '!' },
-        ],
-      },
-    ],
-    input2: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'This is an !' }],
-      },
-    ],
-    expected: [
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'This is an ' },
-          {
-            type: ELEMENT_INLINE_VOID,
-            children: [{ text: '' }],
-            diff: true,
-            diffOperation: { type: 'delete' },
-          },
-          { text: '!' },
-        ],
-      },
-    ],
-  },
-
-  insertInlineVoid: {
-    input1: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'This is an !' }],
-      },
-    ],
-    input2: [
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'This is an ' },
-          {
-            type: ELEMENT_INLINE_VOID,
-            children: [{ text: '' }],
-          },
-          { text: '!' },
-        ],
-      },
-    ],
-    expected: [
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'This is an ' },
-          {
-            type: ELEMENT_INLINE_VOID,
-            children: [{ text: '' }],
-            diff: true,
-            diffOperation: { type: 'insert' },
-          },
-          { text: '!' },
-        ],
-      },
-    ],
-  },
-
-  updateInlineVoid: {
-    input1: [
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'This is an ' },
-          {
-            type: ELEMENT_INLINE_VOID,
-            someProp: 'Hello',
-            children: [{ text: '' }],
-          },
-          { text: '!' },
-        ],
-      },
-    ],
-    input2: [
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'This is an ' },
-          {
-            type: ELEMENT_INLINE_VOID,
-            someProp: 'World',
-            children: [{ text: '' }],
-          },
-          { text: '!' },
-        ],
-      },
-    ],
-    expected: [
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'This is an ' },
-          {
-            type: ELEMENT_INLINE_VOID,
-            someProp: 'Hello',
-            children: [{ text: '' }],
-            diff: true,
-            diffOperation: { type: 'delete' },
-          },
-          {
-            type: ELEMENT_INLINE_VOID,
-            someProp: 'World',
-            children: [{ text: '' }],
-            diff: true,
-            diffOperation: { type: 'insert' },
-          },
-          { text: '!' },
-        ],
-      },
-    ],
-  },
-
-  mergeText: {
-    input1: [
-      {
-        type: 'paragraph',
-        children: [
-          {
-            text: 'PingCode',
-            bold: true,
-          },
-          {
-            text: ' & ',
-          },
-        ],
-      },
-    ],
-    input2: [
-      {
-        type: 'paragraph',
-        children: [
-          {
-            text: 'PingCode & ',
-            bold: true,
-          },
-        ],
-      },
-    ],
-    expected: [
-      {
-        type: 'paragraph',
-        children: [
-          {
-            text: 'PingCode',
-            bold: true,
-          },
-          {
-            text: ' & ',
-            bold: true,
-            diff: true,
-            diffOperation: {
-              type: 'update',
-              properties: {},
-              newProperties: { bold: true },
-            },
-          },
-        ],
-      },
-    ],
-  },
-
-  mergeNode: {
-    input1: [
-      {
-        type: 'paragraph',
-        children: [
-          {
-            text: 'PingCode',
-            bold: true,
-          },
-        ],
-      },
-      {
-        type: 'paragraph',
-        children: [
-          {
-            text: ' & ',
-          },
-          {
-            text: 'co',
-            bold: true,
-          },
-        ],
-      },
-    ],
-    input2: [
-      {
-        type: 'paragraph',
-        children: [
-          {
-            text: 'PingCode',
-            bold: true,
-          },
-          {
-            text: ' & ',
-          },
-          {
-            text: 'co',
-            bold: true,
-          },
-        ],
-      },
-    ],
-    expected: [
-      {
-        type: 'paragraph',
-        children: [
-          {
-            text: 'PingCode',
-            bold: true,
-          },
-          {
-            text: ' & ',
-            diff: true,
-            diffOperation: { type: 'insert' },
-          },
-          {
-            text: 'co',
-            bold: true,
-            diff: true,
-            diffOperation: { type: 'insert' },
-          },
-        ],
-      },
-      {
-        type: 'paragraph',
-        children: [
-          {
-            text: ' & ',
-          },
-          {
-            text: 'co',
-            bold: true,
-          },
-        ],
-        diff: true,
-        diffOperation: { type: 'delete' },
-      },
-    ],
-  },
-
-  mergeTwoText: {
-    input1: [
-      {
-        type: 'paragraph',
-        children: [
-          {
-            text: 'PingCode',
-            bold: true,
-          },
-          {
-            text: ' & ',
-          },
-          {
-            text: 'Worktile',
-            bold: true,
-          },
-        ],
-      },
-    ],
-    input2: [
-      {
-        type: 'paragraph',
-        children: [
-          {
-            text: 'PingCode & Worktile',
-            bold: true,
-          },
-        ],
-      },
-    ],
-    expected: [
-      {
-        type: 'paragraph',
-        children: [
-          {
-            text: 'PingCode',
-            bold: true,
-          },
-          {
-            text: ' & ',
-            bold: true,
-            diff: true,
-            diffOperation: {
-              type: 'update',
-              properties: {},
-              newProperties: { bold: true },
-            },
-          },
-          {
-            text: 'Worktile',
-            bold: true,
-          },
-        ],
-      },
-    ],
-  },
-
-  mergeRemoveText: {
-    input1: [
-      {
-        type: 'paragraph',
-        children: [
-          {
-            text: 'PingCode',
-            bold: true,
-          },
-          {
-            text: ' & ',
-          },
-          {
-            text: 'Worktile',
-            bold: true,
-          },
-        ],
-      },
-    ],
-    input2: [
-      {
-        type: 'paragraph',
-        children: [
-          {
-            text: 'PingCode',
-          },
-        ],
-      },
-    ],
-    expected: [
-      {
-        type: 'paragraph',
-        children: [
-          {
-            text: 'PingCode',
-            diff: true,
-            diffOperation: {
-              type: 'update',
-              properties: { bold: true },
-              newProperties: { bold: undefined },
-            },
-          },
-          {
-            text: ' & Worktile',
-            bold: true,
-            diff: true,
-            diffOperation: { type: 'delete' },
-          },
-        ],
       },
     ],
   },
 
   addMarkRemoveText: {
+    expected: [
+      {
+        children: [
+          {
+            bold: true,
+            diff: true,
+            diffOperation: {
+              newProperties: { bold: true },
+              properties: {},
+              type: 'update',
+            },
+            text: 'A ',
+          },
+          {
+            diff: true,
+            diffOperation: { type: 'delete' },
+            text: 'B',
+          },
+          {
+            bold: true,
+            diff: true,
+            diffOperation: {
+              newProperties: { bold: true },
+              properties: {},
+              type: 'update',
+            },
+            text: ' C',
+          },
+        ],
+        type: 'paragraph',
+      },
+    ],
     input1: [
       {
-        type: 'paragraph',
         children: [{ text: 'A B C' }],
+        type: 'paragraph',
       },
     ],
     input2: [
       {
-        type: 'paragraph',
         children: [
           {
-            text: 'A  C',
             bold: true,
+            text: 'A  C',
           },
         ],
+        type: 'paragraph',
       },
     ],
+  },
+
+  addMarkToMarkedText: {
     expected: [
       {
+        children: [
+          { bold: true, text: 'One ' },
+          {
+            bold: true,
+            diff: true,
+            diffOperation: {
+              newProperties: { italic: true },
+              properties: {},
+              type: 'update',
+            },
+            italic: true,
+            text: 'two',
+          },
+          { bold: true, text: ' three' },
+        ],
         type: 'paragraph',
+      },
+    ],
+    input1: [
+      {
+        children: [{ bold: true, text: 'One two three' }],
+        type: 'paragraph',
+      },
+    ],
+    input2: [
+      {
+        children: [
+          { bold: true, text: 'One ' },
+          { bold: true, italic: true, text: 'two' },
+          { bold: true, text: ' three' },
+        ],
+        type: 'paragraph',
+      },
+    ],
+  },
+
+  addNode: {
+    expected: [
+      {
+        children: [{ text: 'PingCode' }],
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'Worktile' }],
+        diff: true,
+        diffOperation: { type: 'insert' },
+        type: 'paragraph',
+      },
+    ],
+    input1: [
+      {
+        children: [{ text: 'PingCode' }],
+        type: 'paragraph',
+      },
+    ],
+    input2: [
+      {
+        children: [{ text: 'PingCode' }],
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'Worktile' }],
+        type: 'paragraph',
+      },
+    ],
+  },
+
+  addNodeChildren: {
+    expected: [
+      {
         children: [
           {
-            text: 'A ',
-            bold: true,
-            diff: true,
-            diffOperation: {
-              type: 'update',
-              properties: {},
-              newProperties: { bold: true },
-            },
+            children: [{ text: 'PingCode' }],
+            type: 'paragraph',
           },
           {
-            text: 'B',
+            children: [{ text: 'Worktile' }],
             diff: true,
-            diffOperation: { type: 'delete' },
-          },
-          {
-            text: ' C',
-            bold: true,
-            diff: true,
-            diffOperation: {
-              type: 'update',
-              properties: {},
-              newProperties: { bold: true },
-            },
+            diffOperation: { type: 'insert' },
+            type: 'paragraph',
           },
         ],
+        type: 'container',
+      },
+    ],
+    input1: [
+      {
+        children: [
+          {
+            children: [{ text: 'PingCode' }],
+            type: 'paragraph',
+          },
+        ],
+        type: 'container',
+      },
+    ],
+    input2: [
+      {
+        children: [
+          {
+            children: [{ text: 'PingCode' }],
+            type: 'paragraph',
+          },
+          {
+            children: [{ text: 'Worktile' }],
+            type: 'paragraph',
+          },
+        ],
+        type: 'container',
+      },
+    ],
+  },
+
+  addTwoMark: {
+    expected: [
+      {
+        children: [
+          { text: 'These ' },
+          {
+            bold: true,
+            diff: true,
+            diffOperation: {
+              newProperties: { bold: true },
+              properties: {},
+              type: 'update',
+            },
+            text: 'words',
+          },
+          {
+            // TODO
+            bold: undefined,
+            text: ' are ',
+          },
+          {
+            bold: true,
+            diff: true,
+            diffOperation: {
+              newProperties: { bold: true },
+              properties: {},
+              type: 'update',
+            },
+            text: 'bold',
+          },
+          {
+            // TODO
+            bold: undefined,
+            text: '!',
+          },
+        ],
+        type: 'paragraph',
+      },
+    ],
+    input1: [
+      {
+        children: [{ text: 'These words are bold!' }],
+        type: 'paragraph',
+      },
+    ],
+    input2: [
+      {
+        children: [
+          { text: 'These ' },
+          {
+            bold: true,
+            text: 'words',
+          },
+          {
+            text: ' are ',
+          },
+          {
+            bold: true,
+            text: 'bold',
+          },
+          {
+            text: '!',
+          },
+        ],
+        type: 'paragraph',
       },
     ],
   },
 
   changeIdBlock: {
-    input1: [
+    expected: [
       {
-        type: 'paragraph',
-        id: '1',
         children: [{ text: 'PingCode' }],
+        id: '1',
+        type: 'paragraph',
       },
       {
+        children: [{ text: 'Worktile' }],
+        id: '3',
         type: 'paragraph',
+      },
+    ],
+    input1: [
+      {
+        children: [{ text: 'PingCode' }],
+        id: '1',
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'Worktile' }],
         id: '2',
-        children: [{ text: 'Worktile' }],
+        type: 'paragraph',
       },
     ],
     input2: [
       {
-        type: 'paragraph',
-        id: '1',
         children: [{ text: 'PingCode' }],
-      },
-      {
-        type: 'paragraph',
-        id: '3',
-        children: [{ text: 'Worktile' }],
-      },
-    ],
-    expected: [
-      {
-        type: 'paragraph',
         id: '1',
-        children: [{ text: 'PingCode' }],
+        type: 'paragraph',
       },
       {
-        type: 'paragraph',
-        id: '3',
         children: [{ text: 'Worktile' }],
-      },
-    ],
-  },
-
-  changeIdText: {
-    input1: [
-      {
+        id: '3',
         type: 'paragraph',
-        children: [
-          { text: 'PingCode', id: '1' },
-          { text: ' & ', id: '2' },
-          { text: 'Worktile', id: '3' },
-        ],
-      },
-    ],
-    input2: [
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'PingCode', id: '1' },
-          { text: ' & ', id: '4' },
-          { text: 'Worktile', id: '3' },
-        ],
-      },
-    ],
-    expected: [
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'PingCode', id: '1' },
-          { text: ' & ', id: '4' },
-          { text: 'Worktile', id: '3' },
-        ],
       },
     ],
   },
 
   changeIdInline: {
+    expected: [
+      {
+        children: [
+          { id: '1', text: 'PingCode' },
+          { children: [{ text: '' }], id: '4', type: ELEMENT_INLINE_VOID },
+          { id: '3', text: 'Worktile' },
+        ],
+        type: 'paragraph',
+      },
+    ],
     input1: [
       {
-        type: 'paragraph',
         children: [
-          { text: 'PingCode', id: '1' },
-          { type: ELEMENT_INLINE_VOID, id: '2', children: [{ text: '' }] },
-          { text: 'Worktile', id: '3' },
+          { id: '1', text: 'PingCode' },
+          { children: [{ text: '' }], id: '2', type: ELEMENT_INLINE_VOID },
+          { id: '3', text: 'Worktile' },
         ],
+        type: 'paragraph',
       },
     ],
     input2: [
       {
-        type: 'paragraph',
         children: [
-          { text: 'PingCode', id: '1' },
-          { type: ELEMENT_INLINE_VOID, id: '4', children: [{ text: '' }] },
-          { text: 'Worktile', id: '3' },
+          { id: '1', text: 'PingCode' },
+          { children: [{ text: '' }], id: '4', type: ELEMENT_INLINE_VOID },
+          { id: '3', text: 'Worktile' },
         ],
-      },
-    ],
-    expected: [
-      {
         type: 'paragraph',
-        children: [
-          { text: 'PingCode', id: '1' },
-          { type: ELEMENT_INLINE_VOID, id: '4', children: [{ text: '' }] },
-          { text: 'Worktile', id: '3' },
-        ],
       },
     ],
   },
 
-  insertWithoutLineBreakChar: {
+  changeIdText: {
+    expected: [
+      {
+        children: [
+          { id: '1', text: 'PingCode' },
+          { id: '4', text: ' & ' },
+          { id: '3', text: 'Worktile' },
+        ],
+        type: 'paragraph',
+      },
+    ],
     input1: [
       {
+        children: [
+          { id: '1', text: 'PingCode' },
+          { id: '2', text: ' & ' },
+          { id: '3', text: 'Worktile' },
+        ],
         type: 'paragraph',
-        children: [{ text: 'PingCode' }],
       },
     ],
     input2: [
       {
-        type: 'paragraph',
-        children: [{ text: 'Ping\nCode' }],
-      },
-    ],
-    expected: [
-      {
-        type: 'paragraph',
         children: [
-          { text: 'Ping' },
-          { text: '\n', diff: true, diffOperation: { type: 'insert' } },
-          { text: 'Code' },
+          { id: '1', text: 'PingCode' },
+          { id: '4', text: ' & ' },
+          { id: '3', text: 'Worktile' },
         ],
-      },
-    ],
-  },
-
-  removeWithoutLineBreakChar: {
-    input1: [
-      {
         type: 'paragraph',
-        children: [{ text: 'Ping\nCode' }],
-      },
-    ],
-    input2: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'PingCode' }],
-      },
-    ],
-    expected: [
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'Ping' },
-          { text: '\n', diff: true, diffOperation: { type: 'delete' } },
-          { text: 'Code' },
-        ],
-      },
-    ],
-  },
-
-  insertWithLineBreakChar: {
-    lineBreakChar: '¶',
-    input1: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'PingCode' }],
-      },
-    ],
-    input2: [
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'Ping\nCo' },
-          { text: 'd', bold: true },
-          { text: 'e' },
-        ],
-      },
-    ],
-    expected: [
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'Ping' },
-          { text: '¶\n', diff: true, diffOperation: { type: 'insert' } },
-          { text: 'Co' },
-          {
-            text: 'd',
-            bold: true,
-            diff: true,
-            diffOperation: {
-              type: 'update',
-              properties: { bold: undefined },
-              newProperties: { bold: true },
-            },
-          },
-          { text: 'e', bold: undefined },
-        ],
-      },
-    ],
-  },
-
-  removeWithLineBreakChar: {
-    lineBreakChar: '¶',
-    input1: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'Ping\nCode' }],
-      },
-    ],
-    input2: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'PingCode' }],
-      },
-    ],
-    expected: [
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'Ping' },
-          { text: '¶', diff: true, diffOperation: { type: 'delete' } },
-          { text: 'Code' },
-        ],
-      },
-    ],
-  },
-
-  unrelatedTexts: {
-    elementsAreRelated: (element) =>
-      !getNodeString(element).startsWith('NO_DIFF_INLINE'),
-    input1: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'NO_DIFF_INLINE FirstA' }],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'NO_DIFF_INLINE SecondA' }],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'NO_DIFF_INLINE ThirdA' }],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'Same' }],
-      },
-    ],
-    input2: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'NO_DIFF_INLINE FirstB' }],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'NO_DIFF_INLINE SecondB' }],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'NO_DIFF_INLINE ThirdB' }],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'Same' }],
-      },
-    ],
-    expected: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'NO_DIFF_INLINE FirstA' }],
-        diff: true,
-        diffOperation: {
-          type: 'delete',
-        },
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'NO_DIFF_INLINE SecondA' }],
-        diff: true,
-        diffOperation: {
-          type: 'delete',
-        },
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'NO_DIFF_INLINE ThirdA' }],
-        diff: true,
-        diffOperation: {
-          type: 'delete',
-        },
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'NO_DIFF_INLINE FirstB' }],
-        diff: true,
-        diffOperation: {
-          type: 'insert',
-        },
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'NO_DIFF_INLINE SecondB' }],
-        diff: true,
-        diffOperation: {
-          type: 'insert',
-        },
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'NO_DIFF_INLINE ThirdB' }],
-        diff: true,
-        diffOperation: {
-          type: 'insert',
-        },
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'Same' }],
       },
     ],
   },
@@ -1547,62 +465,1149 @@ const fixtures: Record<string, ComputeDiffFixture> = {
   customRelatedFunction: {
     elementsAreRelated: (element, nextElement) => {
       const getId = (e: TElement) => getNodeString(e).split('/')[0];
+
       return getId(element) === getId(nextElement);
     },
-    input1: [
+    expected: [
       {
+        children: [{ text: '3/Added paragraph 1' }],
+        diff: true,
+        diffOperation: { type: 'insert' },
         type: 'paragraph',
-        children: [{ text: '1/First paragraph' }],
       },
       {
+        children: [
+          { text: '1/First paragraph' },
+          { diff: true, diffOperation: { type: 'insert' }, text: ' modified' },
+        ],
         type: 'paragraph',
+      },
+      {
+        children: [{ text: '4/Added paragraph 2' }],
+        diff: true,
+        diffOperation: { type: 'insert' },
+        type: 'paragraph',
+      },
+      {
+        children: [
+          { text: '2/Second paragraph' },
+          { diff: true, diffOperation: { type: 'insert' }, text: ' modified' },
+        ],
+        type: 'paragraph',
+      },
+    ],
+    input1: [
+      {
+        children: [{ text: '1/First paragraph' }],
+        type: 'paragraph',
+      },
+      {
         children: [{ text: '2/Second paragraph' }],
+        type: 'paragraph',
       },
     ],
     input2: [
       {
-        type: 'paragraph',
         children: [{ text: '3/Added paragraph 1' }],
+        type: 'paragraph',
       },
       {
-        type: 'paragraph',
         children: [{ text: '1/First paragraph modified' }],
+        type: 'paragraph',
       },
       {
-        type: 'paragraph',
         children: [{ text: '4/Added paragraph 2' }],
+        type: 'paragraph',
       },
       {
-        type: 'paragraph',
         children: [{ text: '2/Second paragraph modified' }],
+        type: 'paragraph',
       },
     ],
+  },
+
+  insertInlineVoid: {
     expected: [
       {
+        children: [
+          { text: 'This is an ' },
+          {
+            children: [{ text: '' }],
+            diff: true,
+            diffOperation: { type: 'insert' },
+            type: ELEMENT_INLINE_VOID,
+          },
+          { text: '!' },
+        ],
         type: 'paragraph',
-        children: [{ text: '3/Added paragraph 1' }],
+      },
+    ],
+    input1: [
+      {
+        children: [{ text: 'This is an !' }],
+        type: 'paragraph',
+      },
+    ],
+    input2: [
+      {
+        children: [
+          { text: 'This is an ' },
+          {
+            children: [{ text: '' }],
+            type: ELEMENT_INLINE_VOID,
+          },
+          { text: '!' },
+        ],
+        type: 'paragraph',
+      },
+    ],
+  },
+
+  insertText: {
+    expected: [
+      {
+        children: [
+          { text: 'PingCode' },
+          {
+            diff: true,
+            diffOperation: { type: 'insert' },
+            text: ' & Worktile',
+          },
+        ],
+        type: 'paragraph',
+      },
+    ],
+    input1: [
+      {
+        children: [{ text: 'PingCode' }],
+        type: 'paragraph',
+      },
+    ],
+    input2: [
+      {
+        children: [
+          { text: 'PingCode' },
+          {
+            text: ' & Worktile',
+          },
+        ],
+        type: 'paragraph',
+      },
+    ],
+  },
+
+  insertTextAddMark: {
+    expected: [
+      {
+        children: [
+          {
+            bold: true,
+            diff: true,
+            diffOperation: {
+              newProperties: { bold: true },
+              properties: {},
+              type: 'update',
+            },
+            text: 'PingCode',
+          },
+          {
+            // TODO:
+            bold: undefined,
+            diff: true,
+            diffOperation: { type: 'insert' },
+            text: ' & ',
+          },
+          {
+            bold: true,
+            diff: true,
+            diffOperation: { type: 'insert' },
+            text: 'Worktile',
+          },
+        ],
+        type: 'paragraph',
+      },
+    ],
+    input1: [
+      {
+        children: [{ text: 'PingCode' }],
+        type: 'paragraph',
+      },
+    ],
+    input2: [
+      {
+        children: [
+          {
+            bold: true,
+            text: 'PingCode',
+          },
+          {
+            text: ' & ',
+          },
+          {
+            bold: true,
+            text: 'Worktile',
+          },
+        ],
+        type: 'paragraph',
+      },
+    ],
+  },
+
+  insertUpdateParagraph: {
+    expected: [
+      {
+        children: [{ text: 'This is the first paragraph.' }],
+        key: '1',
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'This is the second paragraph.' }],
+        diff: true,
+        diffOperation: {
+          type: 'insert',
+        },
+        key: '2',
+        type: 'paragraph',
+      },
+      {
+        children: [
+          { text: 'This is the third paragraph' },
+          {
+            diff: true,
+            diffOperation: {
+              type: 'insert',
+            },
+            text: ', and insert some text',
+          },
+          {
+            text: '.',
+          },
+        ],
+        key: '3',
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'This is the fourth paragraph.' }],
+        key: '4',
+        type: 'paragraph',
+      },
+    ],
+    input1: [
+      {
+        children: [{ text: 'This is the first paragraph.' }],
+        key: '1',
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'This is the third paragraph.' }],
+        key: '3',
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'This is the fourth paragraph.' }],
+        key: '4',
+        type: 'paragraph',
+      },
+    ],
+    input2: [
+      {
+        children: [{ text: 'This is the first paragraph.' }],
+        key: '1',
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'This is the second paragraph.' }],
+        key: '2',
+        type: 'paragraph',
+      },
+      {
+        children: [
+          { text: 'This is the third paragraph' },
+          {
+            text: ', and insert some text',
+          },
+          {
+            text: '.',
+          },
+        ],
+        key: '3',
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'This is the fourth paragraph.' }],
+        key: '4',
+        type: 'paragraph',
+      },
+    ],
+  },
+
+  insertUpdateTwoParagraphs: {
+    expected: [
+      {
+        children: [{ text: 'This is the first paragraph.' }],
+        key: '1',
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'This is the second paragraph.' }],
         diff: true,
         diffOperation: { type: 'insert' },
+        key: '2',
+        type: 'paragraph',
       },
       {
-        type: 'paragraph',
         children: [
-          { text: '1/First paragraph' },
-          { text: ' modified', diff: true, diffOperation: { type: 'insert' } },
+          { text: 'This is the third paragraph' },
+          {
+            diff: true,
+            diffOperation: { type: 'insert' },
+            text: ', and insert some text',
+          },
+          {
+            text: '.',
+          },
         ],
+        key: '3',
+        type: 'paragraph',
       },
       {
-        type: 'paragraph',
-        children: [{ text: '4/Added paragraph 2' }],
+        children: [{ text: 'This is the fifth paragraph.' }],
         diff: true,
         diffOperation: { type: 'insert' },
+        key: '5',
+        type: 'paragraph',
       },
       {
-        type: 'paragraph',
         children: [
-          { text: '2/Second paragraph' },
-          { text: ' modified', diff: true, diffOperation: { type: 'insert' } },
+          { text: 'This is the fourth paragraph' },
+          {
+            diff: true,
+            diffOperation: { type: 'insert' },
+            text: ', and insert some text',
+          },
+          {
+            text: '.',
+          },
         ],
+        key: '4',
+        type: 'paragraph',
+      },
+    ],
+    input1: [
+      {
+        children: [{ text: 'This is the first paragraph.' }],
+        key: '1',
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'This is the third paragraph.' }],
+        key: '3',
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'This is the fourth paragraph.' }],
+        key: '4',
+        type: 'paragraph',
+      },
+    ],
+    input2: [
+      {
+        children: [{ text: 'This is the first paragraph.' }],
+        key: '1',
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'This is the second paragraph.' }],
+        key: '2',
+        type: 'paragraph',
+      },
+      {
+        children: [
+          { text: 'This is the third paragraph' },
+          {
+            text: ', and insert some text',
+          },
+          {
+            text: '.',
+          },
+        ],
+        key: '3',
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'This is the fifth paragraph.' }],
+        key: '5',
+        type: 'paragraph',
+      },
+      {
+        children: [
+          { text: 'This is the fourth paragraph' },
+          {
+            text: ', and insert some text',
+          },
+          {
+            text: '.',
+          },
+        ],
+        key: '4',
+        type: 'paragraph',
+      },
+    ],
+  },
+
+  insertWithLineBreakChar: {
+    expected: [
+      {
+        children: [
+          { text: 'Ping' },
+          { diff: true, diffOperation: { type: 'insert' }, text: '¶\n' },
+          { text: 'Co' },
+          {
+            bold: true,
+            diff: true,
+            diffOperation: {
+              newProperties: { bold: true },
+              properties: { bold: undefined },
+              type: 'update',
+            },
+            text: 'd',
+          },
+          { bold: undefined, text: 'e' },
+        ],
+        type: 'paragraph',
+      },
+    ],
+    input1: [
+      {
+        children: [{ text: 'PingCode' }],
+        type: 'paragraph',
+      },
+    ],
+    input2: [
+      {
+        children: [
+          { text: 'Ping\nCo' },
+          { bold: true, text: 'd' },
+          { text: 'e' },
+        ],
+        type: 'paragraph',
+      },
+    ],
+    lineBreakChar: '¶',
+  },
+
+  insertWithoutLineBreakChar: {
+    expected: [
+      {
+        children: [
+          { text: 'Ping' },
+          { diff: true, diffOperation: { type: 'insert' }, text: '\n' },
+          { text: 'Code' },
+        ],
+        type: 'paragraph',
+      },
+    ],
+    input1: [
+      {
+        children: [{ text: 'PingCode' }],
+        type: 'paragraph',
+      },
+    ],
+    input2: [
+      {
+        children: [{ text: 'Ping\nCode' }],
+        type: 'paragraph',
+      },
+    ],
+  },
+
+  mergeNode: {
+    expected: [
+      {
+        children: [
+          {
+            bold: true,
+            text: 'PingCode',
+          },
+          {
+            diff: true,
+            diffOperation: { type: 'insert' },
+            text: ' & ',
+          },
+          {
+            bold: true,
+            diff: true,
+            diffOperation: { type: 'insert' },
+            text: 'co',
+          },
+        ],
+        type: 'paragraph',
+      },
+      {
+        children: [
+          {
+            text: ' & ',
+          },
+          {
+            bold: true,
+            text: 'co',
+          },
+        ],
+        diff: true,
+        diffOperation: { type: 'delete' },
+        type: 'paragraph',
+      },
+    ],
+    input1: [
+      {
+        children: [
+          {
+            bold: true,
+            text: 'PingCode',
+          },
+        ],
+        type: 'paragraph',
+      },
+      {
+        children: [
+          {
+            text: ' & ',
+          },
+          {
+            bold: true,
+            text: 'co',
+          },
+        ],
+        type: 'paragraph',
+      },
+    ],
+    input2: [
+      {
+        children: [
+          {
+            bold: true,
+            text: 'PingCode',
+          },
+          {
+            text: ' & ',
+          },
+          {
+            bold: true,
+            text: 'co',
+          },
+        ],
+        type: 'paragraph',
+      },
+    ],
+  },
+
+  mergeRemoveText: {
+    expected: [
+      {
+        children: [
+          {
+            diff: true,
+            diffOperation: {
+              newProperties: { bold: undefined },
+              properties: { bold: true },
+              type: 'update',
+            },
+            text: 'PingCode',
+          },
+          {
+            bold: true,
+            diff: true,
+            diffOperation: { type: 'delete' },
+            text: ' & Worktile',
+          },
+        ],
+        type: 'paragraph',
+      },
+    ],
+    input1: [
+      {
+        children: [
+          {
+            bold: true,
+            text: 'PingCode',
+          },
+          {
+            text: ' & ',
+          },
+          {
+            bold: true,
+            text: 'Worktile',
+          },
+        ],
+        type: 'paragraph',
+      },
+    ],
+    input2: [
+      {
+        children: [
+          {
+            text: 'PingCode',
+          },
+        ],
+        type: 'paragraph',
+      },
+    ],
+  },
+
+  mergeText: {
+    expected: [
+      {
+        children: [
+          {
+            bold: true,
+            text: 'PingCode',
+          },
+          {
+            bold: true,
+            diff: true,
+            diffOperation: {
+              newProperties: { bold: true },
+              properties: {},
+              type: 'update',
+            },
+            text: ' & ',
+          },
+        ],
+        type: 'paragraph',
+      },
+    ],
+    input1: [
+      {
+        children: [
+          {
+            bold: true,
+            text: 'PingCode',
+          },
+          {
+            text: ' & ',
+          },
+        ],
+        type: 'paragraph',
+      },
+    ],
+    input2: [
+      {
+        children: [
+          {
+            bold: true,
+            text: 'PingCode & ',
+          },
+        ],
+        type: 'paragraph',
+      },
+    ],
+  },
+
+  mergeTwoText: {
+    expected: [
+      {
+        children: [
+          {
+            bold: true,
+            text: 'PingCode',
+          },
+          {
+            bold: true,
+            diff: true,
+            diffOperation: {
+              newProperties: { bold: true },
+              properties: {},
+              type: 'update',
+            },
+            text: ' & ',
+          },
+          {
+            bold: true,
+            text: 'Worktile',
+          },
+        ],
+        type: 'paragraph',
+      },
+    ],
+    input1: [
+      {
+        children: [
+          {
+            bold: true,
+            text: 'PingCode',
+          },
+          {
+            text: ' & ',
+          },
+          {
+            bold: true,
+            text: 'Worktile',
+          },
+        ],
+        type: 'paragraph',
+      },
+    ],
+    input2: [
+      {
+        children: [
+          {
+            bold: true,
+            text: 'PingCode & Worktile',
+          },
+        ],
+        type: 'paragraph',
+      },
+    ],
+  },
+
+  removeInlineVoid: {
+    expected: [
+      {
+        children: [
+          { text: 'This is an ' },
+          {
+            children: [{ text: '' }],
+            diff: true,
+            diffOperation: { type: 'delete' },
+            type: ELEMENT_INLINE_VOID,
+          },
+          { text: '!' },
+        ],
+        type: 'paragraph',
+      },
+    ],
+    input1: [
+      {
+        children: [
+          { text: 'This is an ' },
+          {
+            children: [{ text: '' }],
+            type: ELEMENT_INLINE_VOID,
+          },
+          { text: '!' },
+        ],
+        type: 'paragraph',
+      },
+    ],
+    input2: [
+      {
+        children: [{ text: 'This is an !' }],
+        type: 'paragraph',
+      },
+    ],
+  },
+
+  removeNode: {
+    expected: [
+      {
+        children: [{ text: 'PingCode' }],
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'Worktile' }],
+        diff: true,
+        diffOperation: { type: 'delete' },
+        type: 'paragraph',
+      },
+    ],
+    input1: [
+      {
+        children: [{ text: 'PingCode' }],
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'Worktile' }],
+        type: 'paragraph',
+      },
+    ],
+    input2: [
+      {
+        children: [{ text: 'PingCode' }],
+        type: 'paragraph',
+      },
+    ],
+  },
+
+  removeText: {
+    expected: [
+      {
+        children: [
+          { text: 'PingCode' },
+          {
+            diff: true,
+            diffOperation: { type: 'delete' },
+            text: ' & Worktile',
+          },
+        ],
+        type: 'paragraph',
+      },
+    ],
+    input1: [
+      {
+        children: [{ text: 'PingCode & Worktile' }],
+        type: 'paragraph',
+      },
+    ],
+    input2: [
+      {
+        children: [{ text: 'PingCode' }],
+        type: 'paragraph',
+      },
+    ],
+  },
+
+  removeWithLineBreakChar: {
+    expected: [
+      {
+        children: [
+          { text: 'Ping' },
+          { diff: true, diffOperation: { type: 'delete' }, text: '¶' },
+          { text: 'Code' },
+        ],
+        type: 'paragraph',
+      },
+    ],
+    input1: [
+      {
+        children: [{ text: 'Ping\nCode' }],
+        type: 'paragraph',
+      },
+    ],
+    input2: [
+      {
+        children: [{ text: 'PingCode' }],
+        type: 'paragraph',
+      },
+    ],
+    lineBreakChar: '¶',
+  },
+
+  removeWithoutLineBreakChar: {
+    expected: [
+      {
+        children: [
+          { text: 'Ping' },
+          { diff: true, diffOperation: { type: 'delete' }, text: '\n' },
+          { text: 'Code' },
+        ],
+        type: 'paragraph',
+      },
+    ],
+    input1: [
+      {
+        children: [{ text: 'Ping\nCode' }],
+        type: 'paragraph',
+      },
+    ],
+    input2: [
+      {
+        children: [{ text: 'PingCode' }],
+        type: 'paragraph',
+      },
+    ],
+  },
+
+  replaceText: {
+    expected: [
+      {
+        children: [
+          { text: 'PingCode & W' },
+          {
+            diff: true,
+            diffOperation: { type: 'delete' },
+            text: 'orktile',
+          },
+          {
+            diff: true,
+            diffOperation: { type: 'insert' },
+            text: 'hatever',
+          },
+        ],
+        type: 'paragraph',
+      },
+    ],
+    input1: [
+      {
+        children: [{ text: 'PingCode & Worktile' }],
+        type: 'paragraph',
+      },
+    ],
+    input2: [
+      {
+        children: [{ text: 'PingCode & Whatever' }],
+        type: 'paragraph',
+      },
+    ],
+  },
+
+  setNodeAdd: {
+    expected: [
+      {
+        children: [{ text: 'PingCode' }],
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'Worktile' }],
+        diff: true,
+        diffOperation: {
+          newProperties: { someProp: 'World' },
+          properties: {},
+          type: 'update',
+        },
+        someProp: 'World',
+        type: 'paragraph',
+      },
+    ],
+    input1: [
+      {
+        children: [{ text: 'PingCode' }],
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'Worktile' }],
+        type: 'paragraph',
+      },
+    ],
+    input2: [
+      {
+        children: [{ text: 'PingCode' }],
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'Worktile' }],
+        someProp: 'World',
+        type: 'paragraph',
+      },
+    ],
+  },
+
+  setNodeChange: {
+    expected: [
+      {
+        children: [{ text: 'PingCode' }],
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'Worktile' }],
+        diff: true,
+        diffOperation: {
+          newProperties: { someProp: 'World' },
+          properties: { someProp: 'Hello' },
+          type: 'update',
+        },
+        someProp: 'World',
+        type: 'paragraph',
+      },
+    ],
+    input1: [
+      {
+        children: [{ text: 'PingCode' }],
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'Worktile' }],
+        someProp: 'Hello',
+        type: 'paragraph',
+      },
+    ],
+    input2: [
+      {
+        children: [{ text: 'PingCode' }],
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'Worktile' }],
+        someProp: 'World',
+        type: 'paragraph',
+      },
+    ],
+  },
+
+  setNodeRemove: {
+    expected: [
+      {
+        children: [{ text: 'PingCode' }],
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'Worktile' }],
+        diff: true,
+        diffOperation: {
+          newProperties: { someProp: undefined },
+          properties: { someProp: 'Hello' },
+          type: 'update',
+        },
+        type: 'paragraph',
+      },
+    ],
+    input1: [
+      {
+        children: [{ text: 'PingCode' }],
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'Worktile' }],
+        someProp: 'Hello',
+        type: 'paragraph',
+      },
+    ],
+    input2: [
+      {
+        children: [{ text: 'PingCode' }],
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'Worktile' }],
+        type: 'paragraph',
+      },
+    ],
+  },
+
+  unrelatedTexts: {
+    elementsAreRelated: (element) =>
+      !getNodeString(element).startsWith('NO_DIFF_INLINE'),
+    expected: [
+      {
+        children: [{ text: 'NO_DIFF_INLINE FirstA' }],
+        diff: true,
+        diffOperation: {
+          type: 'delete',
+        },
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'NO_DIFF_INLINE SecondA' }],
+        diff: true,
+        diffOperation: {
+          type: 'delete',
+        },
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'NO_DIFF_INLINE ThirdA' }],
+        diff: true,
+        diffOperation: {
+          type: 'delete',
+        },
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'NO_DIFF_INLINE FirstB' }],
+        diff: true,
+        diffOperation: {
+          type: 'insert',
+        },
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'NO_DIFF_INLINE SecondB' }],
+        diff: true,
+        diffOperation: {
+          type: 'insert',
+        },
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'NO_DIFF_INLINE ThirdB' }],
+        diff: true,
+        diffOperation: {
+          type: 'insert',
+        },
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'Same' }],
+        type: 'paragraph',
+      },
+    ],
+    input1: [
+      {
+        children: [{ text: 'NO_DIFF_INLINE FirstA' }],
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'NO_DIFF_INLINE SecondA' }],
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'NO_DIFF_INLINE ThirdA' }],
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'Same' }],
+        type: 'paragraph',
+      },
+    ],
+    input2: [
+      {
+        children: [{ text: 'NO_DIFF_INLINE FirstB' }],
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'NO_DIFF_INLINE SecondB' }],
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'NO_DIFF_INLINE ThirdB' }],
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'Same' }],
+        type: 'paragraph',
+      },
+    ],
+  },
+
+  updateInlineVoid: {
+    expected: [
+      {
+        children: [
+          { text: 'This is an ' },
+          {
+            children: [{ text: '' }],
+            diff: true,
+            diffOperation: { type: 'delete' },
+            someProp: 'Hello',
+            type: ELEMENT_INLINE_VOID,
+          },
+          {
+            children: [{ text: '' }],
+            diff: true,
+            diffOperation: { type: 'insert' },
+            someProp: 'World',
+            type: ELEMENT_INLINE_VOID,
+          },
+          { text: '!' },
+        ],
+        type: 'paragraph',
+      },
+    ],
+    input1: [
+      {
+        children: [
+          { text: 'This is an ' },
+          {
+            children: [{ text: '' }],
+            someProp: 'Hello',
+            type: ELEMENT_INLINE_VOID,
+          },
+          { text: '!' },
+        ],
+        type: 'paragraph',
+      },
+    ],
+    input2: [
+      {
+        children: [
+          { text: 'This is an ' },
+          {
+            children: [{ text: '' }],
+            someProp: 'World',
+            type: ELEMENT_INLINE_VOID,
+          },
+          { text: '!' },
+        ],
+        type: 'paragraph',
       },
     ],
   },
@@ -1610,11 +1615,11 @@ const fixtures: Record<string, ComputeDiffFixture> = {
 
 describe('computeDiff', () => {
   Object.entries(fixtures).forEach(
-    ([name, { it: itFn = it, input1, input2, expected, ...options }]) => {
+    ([name, { expected, input1, input2, it: itFn = it, ...options }]) => {
       itFn(name, () => {
         const output = computeDiff(input1, input2, {
-          isInline: (node) => node.type === ELEMENT_INLINE_VOID,
           ignoreProps: ['id'],
+          isInline: (node) => node.type === ELEMENT_INLINE_VOID,
           ...options,
         });
 

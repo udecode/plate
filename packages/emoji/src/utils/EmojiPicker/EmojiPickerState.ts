@@ -1,37 +1,38 @@
 import React from 'react';
 
-import { EmojiCategory, EmojiCategoryList } from '../../types';
-import { Emoji } from '../EmojiLibrary/index';
+import type { Emoji } from '../EmojiLibrary/index';
+
+import { EmojiCategory, type EmojiCategoryList } from '../../types';
 
 export type MapEmojiCategoryList = Map<EmojiCategoryList, boolean>;
 
 export type EmojiPickerStateProps = {
-  isOpen: boolean;
-  searchValue: string;
-  hasFound: boolean;
-  isSearching: boolean;
-  searchResult: Emoji[];
-  visibleCategories: MapEmojiCategoryList;
   emoji?: Emoji;
   focusedCategory?: EmojiCategoryList;
   frequentEmoji?: string;
+  hasFound: boolean;
+  isOpen: boolean;
+  isSearching: boolean;
+  searchResult: Emoji[];
+  searchValue: string;
+  visibleCategories: MapEmojiCategoryList;
 };
 
 export type EmojiPickerStateDispatch = {
-  type: string;
   payload?: Partial<EmojiPickerStateProps>;
+  type: string;
 };
 
 const initialState: EmojiPickerStateProps = {
-  isOpen: false,
-  searchValue: '',
   emoji: undefined,
+  focusedCategory: undefined,
+  frequentEmoji: undefined,
   hasFound: false,
+  isOpen: false,
   isSearching: false,
   searchResult: [],
-  focusedCategory: undefined,
+  searchValue: '',
   visibleCategories: new Map(),
-  frequentEmoji: undefined,
 };
 
 export const EmojiPickerState = (): [
@@ -41,33 +42,33 @@ export const EmojiPickerState = (): [
   const [cache, dispatch] = React.useReducer<
     React.Reducer<EmojiPickerStateProps, EmojiPickerStateDispatch>
   >((state, action) => {
-    const { type, payload } = action;
+    const { payload, type } = action;
 
     switch (type) {
       case 'CLEAR_SEARCH': {
         return {
           ...state,
-          searchValue: '',
-          isSearching: false,
-          hasFound: false,
           focusedCategory: EmojiCategory.Frequent,
+          hasFound: false,
+          isSearching: false,
+          searchValue: '',
         };
       }
       case 'UPDATE_SEARCH_RESULT': {
         return {
           ...state,
           ...payload,
-          isSearching: true,
           focusedCategory: undefined,
+          isSearching: true,
         };
       }
       case 'SET_FOCUSED_CATEGORY': {
         return {
           ...state,
           ...payload,
-          searchValue: '',
-          isSearching: false,
           hasFound: false,
+          isSearching: false,
+          searchValue: '',
         };
       }
       case 'SET_OPEN': {

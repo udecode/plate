@@ -1,28 +1,28 @@
-import { AutoformatRule } from '../../types';
+import type { AutoformatRule } from '../../types';
 
 export const autoformatDivision: AutoformatRule[] = [
   {
-    mode: 'text',
-    match: '//',
     format: '÷',
+    match: '//',
+    mode: 'text',
   },
 ];
 
 export const autoformatOperation: AutoformatRule[] = [
   {
-    mode: 'text',
-    match: '+-',
     format: '±',
+    match: '+-',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: '%%',
     format: '‰',
+    match: '%%',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: ['%%%', '‰%'],
     format: '‱',
+    match: ['%%%', '‰%'],
+    mode: 'text',
   },
   ...autoformatDivision,
 ];

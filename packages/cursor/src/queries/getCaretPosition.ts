@@ -1,10 +1,8 @@
 import { Range } from 'slate';
 
-import { CaretPosition, SelectionRect } from '../types';
+import type { CaretPosition, SelectionRect } from '../types';
 
-/**
- * Get the caret position of a range from selectionRects.
- */
+/** Get the caret position of a range from selectionRects. */
 export const getCaretPosition = (
   selectionRects: SelectionRect[],
   range: Range
@@ -19,7 +17,7 @@ export const getCaretPosition = (
 
   return {
     height: anchorRect.height,
-    top: anchorRect.top,
     left: anchorRect.left + (isBackward || isCollapsed ? 0 : anchorRect.width),
+    top: anchorRect.top,
   };
 };

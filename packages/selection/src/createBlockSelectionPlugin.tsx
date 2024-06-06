@@ -1,84 +1,96 @@
 import React from 'react';
-import { createPluginFactory, QueryNodeOptions } from '@udecode/plate-common';
 
+import {
+  type QueryNodeOptions,
+  createPluginFactory,
+} from '@udecode/plate-common/server';
+
+import { BlockSelectionArea, BlockStartArea } from './components';
 import { BlockSelectable } from './components/BlockSelectable';
-import { BlockSelectionArea } from './components/BlockSelectionArea';
-import { BlockStartArea } from './components/BlockStartArea';
-import { onChangeBlockSelection } from './onChangeBlockSelection';
+import { onKeyDownSelection } from './onKeyDownSelection';
 import { useHooksBlockSelection } from './useHooksBlockSelection';
+import { onCloseBlockSelection } from './utils';
+import { withSelection } from './withSelection';
 
 export const KEY_BLOCK_SELECTION = 'blockSelection';
 
 export interface BlockSelectionPlugin {
-  query?: QueryNodeOptions;
+  disableContextMenu?: boolean;
   onKeyDownSelecting?: (e: KeyboardEvent) => void;
+  query?: QueryNodeOptions;
   sizes?: {
-    left?: number;
-    top?: number;
     bottom?: number;
+    left?: number;
     right?: number;
+    top?: number;
   };
 }
 
 export const createBlockSelectionPlugin =
   createPluginFactory<BlockSelectionPlugin>({
+    handlers: {
+      onChange: onCloseBlockSelection,
+      // onFocus: onCloseBlockSelection,
+      onKeyDown: onKeyDownSelection,
+      onMouseDown: () => (e) => {
+        if (e.button === 2) e.preventDefault();
+      },
+    },
+    inject: {
+      aboveComponent:
+        () =>
+        ({ children, element }) =>
+          BlockSelectable({
+            children,
+            options: {
+              element,
+              selectedColor: 'rgb(219 234 254)',
+            },
+          }),
+    },
     key: KEY_BLOCK_SELECTION,
     options: {
       query: {
         maxLevel: 1,
       },
       sizes: {
-        left: 4,
-        top: 4,
-        right: 4,
         bottom: 4,
+        left: 4,
+        right: 4,
+        top: 4,
       },
     },
-    inject: {
-      aboveComponent:
-        () =>
-        ({ element, children }) =>
-          BlockSelectable({
-            options: {
-              element,
-              selectedColor: 'rgb(219 234 254)',
-            },
-            children,
-          }),
-    },
-    handlers: {
-      onChange: onChangeBlockSelection,
-    },
-    useHooks: useHooksBlockSelection,
     then: (editor, { options }) => ({
       renderAboveEditable: ({ children }) => (
         <BlockSelectionArea>
           <BlockStartArea
             state={{
-              size: options.sizes?.left,
               placement: 'left',
+              size: options.sizes?.left,
             }}
           />
           <BlockStartArea
             state={{
-              size: options.sizes?.top,
               placement: 'top',
+              size: options.sizes?.top,
             }}
           />
           <BlockStartArea
             state={{
-              size: options.sizes?.right,
               placement: 'right',
+              size: options.sizes?.right,
             }}
           />
           <BlockStartArea
             state={{
-              size: options.sizes?.bottom,
               placement: 'bottom',
+              size: options.sizes?.bottom,
             }}
           />
           {children}
         </BlockSelectionArea>
       ),
     }),
+    useHooks: useHooksBlockSelection,
+    withOverrides: withSelection,
   });

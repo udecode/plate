@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
 import {
+  type HotkeyPlugin,
+  type PlateEditor,
   createPlateEditor,
   getPlugin,
-  HotkeyPlugin,
-  PlateEditor,
 } from '@udecode/plate-common';
 import { createListPlugin } from '@udecode/plate-list';
 import { jsx } from '@udecode/plate-test-utils';
@@ -12,6 +12,7 @@ import { jsx } from '@udecode/plate-test-utils';
 import { onKeyDownList } from './onKeyDownList';
 
 jsx;
+
 /*
 input:
 1. E1
@@ -247,8 +248,8 @@ it('should un-indent multiple list items (start/end)', () => {
   ) as any;
 
   const event = new KeyboardEvent('keydown', {
-    shiftKey: true,
     key: 'Tab',
+    shiftKey: true,
   }) as any;
   const editor = createPlateEditor({
     editor: input,
@@ -320,8 +321,8 @@ it('should un-indent multiple list items (start/out)', () => {
   ) as any;
 
   const event = new KeyboardEvent('keydown', {
-    shiftKey: true,
     key: 'Tab',
+    shiftKey: true,
   }) as any;
   const editor = createPlateEditor({
     editor: input,

@@ -1,12 +1,9 @@
-import {
-  findNodePath,
-  setNodes,
-  useEditorRef,
-  useElement,
-} from '@udecode/plate-common';
+import { findNodePath, useEditorRef, useElement } from '@udecode/plate-common';
+import { setNodes } from '@udecode/plate-common/server';
+
+import type { TColumnGroupElement } from './types';
 
 import { ELEMENT_COLUMN_GROUP } from './createColumnPlugin';
-import { TColumnGroupElement } from './types';
 
 export const useColumnState = () => {
   const editor = useEditorRef();

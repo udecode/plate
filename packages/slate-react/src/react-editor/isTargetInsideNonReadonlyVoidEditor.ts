@@ -1,11 +1,10 @@
-import { Value } from '@udecode/slate';
+import type { Value } from '@udecode/slate';
+
 import { ReactEditor } from 'slate-react';
 
-import { TReactEditor } from '../types/TReactEditor';
+import type { TReactEditor } from '../types/TReactEditor';
 
-/**
- * Check if the target is inside void and in an non-readonly editor.
- */
+/** Check if the target is inside void and in an non-readonly editor. */
 export const isTargetInsideNonReadonlyVoid = <V extends Value>(
   editor: TReactEditor<V>,
   target: EventTarget | null

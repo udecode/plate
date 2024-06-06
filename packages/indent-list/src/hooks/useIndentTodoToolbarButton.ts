@@ -7,12 +7,13 @@ export const useIndentTodoToolBarButtonState = ({
   nodeType = ListStyleType.Disc,
 }: { nodeType?: string } = {}) => {
   const pressed = useEditorSelector(
-    (editor) => someIndentTodo(editor, nodeType),
+    (editor) => someIndentTodo(editor),
     [nodeType]
   );
+
   return {
-    pressed,
     nodeType,
+    pressed,
   };
 };
 
@@ -21,17 +22,18 @@ export const useIndentTodoToolBarButton = ({
   pressed,
 }: ReturnType<typeof useIndentTodoToolBarButtonState>) => {
   const editor = useEditorRef();
+
   return {
     props: {
-      pressed,
-      onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-      },
       onClick: () => {
         toggleIndentList(editor, {
           listStyleType: nodeType,
         });
       },
+      onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+      },
+      pressed,
     },
   };
 };

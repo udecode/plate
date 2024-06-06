@@ -4,8 +4,6 @@ description: Enable autocompletion for user mentions.
 docs:
   - route: /docs/components/combobox
     title: Combobox
-  - route: /docs/components/mention-combobox
-    title: Mention Combobox
   - route: /docs/components/mention-element
     title: Mention Element
   - route: /docs/components/mention-input-element
@@ -26,18 +24,16 @@ docs:
 ## Installation
 
 ```bash
-npm install @udecode/plate-mention @udecode/plate-combobox
+npm install @udecode/plate-mention
 ```
 
 ## Usage
 
 ```tsx
-import { createComboboxPlugin } from '@udecode/plate-combobox';
 import { createMentionPlugin } from '@udecode/plate-mention';
 
 const plugins = [
   // ...otherPlugins,
-  createComboboxPlugin(),
   createMentionPlugin(),
 ];
 ```
@@ -46,51 +42,21 @@ const plugins = [
 
 ### createMentionPlugin
 
+Extends [TriggerComboboxPlugin](/docs/combobox#options)
+
 <APIOptions>
-
 <APIItem name="createMentionNode" type="(item: TComboboxItem<TData>, meta: CreateMentionNodeMeta) => TNodeProps<TMentionElement>" optional>
-
-A function to create the mention node.
-
+  A function to create the mention node.
 </APIItem>
-<APIItem name="id" type="string" optional>
-  A unique ID for the mention plugin.
-</APIItem>
+
 <APIItem name="insertSpaceAfterMention" type="boolean" optional>
   Whether to insert a space after the mention.
 </APIItem>
-<APIItem name="trigger" type="string" optional>
-  The character that triggers the mention (for example, '@' in the case of a
-  user mention).
-</APIItem>
-<APIItem name="triggerPreviousCharPattern" type="RegExp" optional>
-  The pattern that matches the char before the trigger character
-  (default to `/^\s?$/` that matches beginning of line or space)
-</APIItem>
-
-<APIItem name="inputCreation" type="{ key: string; value: string }" optional>
-
-An object containing the key-value pair for creating an input.
-
-<APISubList>
-  <APISubListItem parent="inputCreation" name="key" type="string">
-    The key for the input.
-  </APISubListItem>
-  <APISubListItem parent="inputCreation" name="value" type="string">
-    The value for the input.
-  </APISubListItem>
-</APISubList>
-
-</APIItem>
-<APIItem name="query" type="(editor: PlateEditor) => boolean" optional>
-  A query function to enable the behavior.
-</APIItem>
-
 </APIOptions>
 
 ### getMentionOnSelectItem
 
-Gets the `ComboboxOnSelectItem` handler for selecting an item in the mention combobox.
+Gets the handler for selecting an item in the mention combobox.
 
 <APIParameters>
 <APIItem name="options" type="PlatePluginKey" optional>
@@ -106,114 +72,7 @@ The plugin key of the mention plugin.
 </APIParameters>
 
 <APIReturns>
-  <APIItem type="ComboboxOnSelectItem">
-    The `ComboboxOnSelectItem` handler for selecting an item in the mention
-    combobox.
+  <APIItem type="MentionOnSelectItem">
+    The handler for selecting an item in the mention combobox.
   </APIItem>
 </APIReturns>
-
-### findMentionInput
-
-Finds the mention input node in the editor.
-
-<APIParameters>
-<APIItem name="editor" type="PlateEditor">
-The editor instance.
-</APIItem>
-<APIItem
-  name="options"
-  type="Omit<FindNodeOptions, 'match'>"
-  optional
->
-
-Additional options for finding the mention input node.
-
-</APIItem>
-</APIParameters>
-
-<APIReturns>
-  <APIItem type="TNodeEntry<TMentionInput> | undefined">
-    The mention input node entry if found, otherwise `undefined`.
-  </APIItem>
-</APIReturns>
-
-### isNodeMentionInput
-
-Checks if a node is a mention input node in the editor.
-
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="node" type="TNode">
-    The node to check.
-  </APIItem>
-</APIParameters>
-
-<APIReturns>
-  <APIItem type="node is TMentionInput">
-    `true` if the node is a mention input node, otherwise `false`.
-  </APIItem>
-</APIReturns>
-
-### isSelectionInMentionInput
-
-Checks if the current selection in the editor is within a mention input.
-
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-</APIParameters>
-
-<APIReturns>
-  <APIItem type="boolean">
-    `true` if the selection is within a mention input, otherwise `false`.
-  </APIItem>
-</APIReturns>
-
-### mentionOnKeyDownHandler
-
-Handles keydown events for mention-related functionality, such as removing mention inputs and moving the selection by offset.
-
-<APIParameters>
-  <APIItem name="options" type="MoveSelectionByOffsetOptions" optional>
-    Options for moving the selection by offset.
-    <APISubList>
-      <APISubListItem parent="options" name="query" type="function" optional>
-        A query function to enable the behavior.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIParameters>
-
-### moveSelectionByOffset
-
-Moves the selection by offset based on the keyboard arrow keys.
-
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="options" type="MoveSelectionByOffsetOptions" optional>
-    Options for moving the selection by offset. This is an optional parameter.
-    <APISubList>
-      <APISubListItem parent="options" name="query" type="function" optional>
-        A query function to enable the behavior.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIParameters>
-
-### removeMentionInput
-
-Removes the mention input node at the specified path.
-
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="path" type="Path">
-    The path of the mention input node to remove.
-  </APIItem>
-</APIParameters>

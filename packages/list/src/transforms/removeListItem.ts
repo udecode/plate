@@ -1,4 +1,8 @@
 import {
+  type PlateEditor,
+  type TElement,
+  type TElementEntry,
+  type Value,
   createPathRef,
   deleteMerge,
   getNodeEntry,
@@ -6,19 +10,15 @@ import {
   getPreviousPath,
   insertElements,
   isExpanded,
-  PlateEditor,
   removeNodes,
-  TElement,
-  TElementEntry,
-  Value,
   withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
 import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
 import { hasListChild } from '../queries/hasListChild';
-import { moveListItemsToList } from './moveListItemsToList';
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
+import { moveListItemsToList } from './moveListItemsToList';
 
 export interface RemoveListItemOptions {
   list: TElementEntry;
@@ -26,9 +26,7 @@ export interface RemoveListItemOptions {
   reverse?: boolean;
 }
 
-/**
- * Remove list item and move its sublist to list if any.
- */
+/** Remove list item and move its sublist to list if any. */
 export const removeListItem = <V extends Value>(
   editor: PlateEditor<V>,
   { list, listItem, reverse = true }: RemoveListItemOptions
@@ -46,16 +44,18 @@ export const removeListItem = <V extends Value>(
 
   withoutNormalizing(editor, () => {
     /**
-     * If there is a previous li, we need to move sub-lis to the previous li.
-     * As we need to delete first, we will:
-     * 1. insert a temporary li: tempLi
-     * 2. move sub-lis to tempLi
-     * 3. delete
-     * 4. move sub-lis from tempLi to the previous li.
-     * 5. remove tempLi
+     * If there is a previous li, we need to move sub-lis to the previous li. As
+     * we need to delete first, we will:
+     *
+     * 1. Insert a temporary li: tempLi
+     * 2. Move sub-lis to tempLi
+     * 3. Delete
+     * 4. Move sub-lis from tempLi to the previous li.
+     * 5. Remove tempLi
      */
     if (previousLiPath) {
       const previousLi = getNodeEntry<TElement>(editor, previousLiPath);
+
       if (!previousLi) return;
 
       // 1
@@ -63,19 +63,21 @@ export const removeListItem = <V extends Value>(
       insertElements(
         editor,
         {
-          type: getPluginType(editor, ELEMENT_LI),
           children: [
             {
-              type: getPluginType(editor, ELEMENT_LIC),
               children: [{ text: '' }],
+              type: getPluginType(editor, ELEMENT_LIC),
             },
           ],
+          type: getPluginType(editor, ELEMENT_LI),
         },
         { at: tempLiPath }
       );
 
       const tempLi = getNodeEntry<TElement>(editor, tempLiPath);
+
       if (!tempLi) return;
+
       const tempLiPathRef = createPathRef(editor, tempLi[1]);
 
       // 2
@@ -101,6 +103,7 @@ export const removeListItem = <V extends Value>(
       removeNodes(editor, { at: tempLiPath });
 
       success = true;
+
       return;
     }
 

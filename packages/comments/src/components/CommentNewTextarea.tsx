@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { createPrimitiveComponent } from '@udecode/plate-common';
 
 import {
@@ -29,33 +30,33 @@ export const useCommentNewTextareaState = () => {
   const placeholder = `${activeComment ? 'Reply...' : 'Add a comment...'}`;
 
   return {
-    textareaRef,
     placeholder,
-    value,
     setNewValue,
+    textareaRef,
+    value,
   };
 };
 
 export const useCommentNewTextarea = ({
-  textareaRef,
   placeholder,
-  value,
   setNewValue,
+  textareaRef,
+  value,
 }: ReturnType<typeof useCommentNewTextareaState>) => {
   return {
     props: {
-      placeholder,
-      rows: 1,
-      ref: textareaRef,
-      value: value ?? undefined,
       onChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setNewValue([{ type: 'p', children: [{ text: event.target.value }] }]);
+        setNewValue([{ children: [{ text: event.target.value }], type: 'p' }]);
       },
+      placeholder,
+      ref: textareaRef,
+      rows: 1,
+      value: value ?? undefined,
     },
   };
 };
 
 export const CommentNewTextarea = createPrimitiveComponent('textarea')({
-  stateHook: useCommentNewTextareaState,
   propsHook: useCommentNewTextarea,
+  stateHook: useCommentNewTextareaState,
 });

@@ -1,20 +1,20 @@
 import {
-  EElement,
+  type EElement,
+  type QueryNodeOptions,
+  type TEditor,
+  type TElement,
+  type TNodeEntry,
+  type Value,
   findNode,
   getNodeEntries,
   getPreviousNode,
   isBlock,
   queryNode,
-  QueryNodeOptions,
-  TEditor,
-  TElement,
-  TNodeEntry,
-  Value,
 } from '@udecode/slate';
 
 /**
- * Find the block before a block by id.
- * If not found, find the first block by id and return [null, its previous path]
+ * Find the block before a block by id. If not found, find the first block by id
+ * and return [null, its previous path]
  */
 export const getPreviousBlockById = <
   N extends EElement<V>,
@@ -27,42 +27,46 @@ export const getPreviousBlockById = <
   const entry = findNode(editor, {
     match: { id },
   });
+
   if (entry) {
     const prevEntry = getPreviousNode<TElement>(editor, { at: entry[1] });
-    if (prevEntry && prevEntry[0].id && isBlock(editor, prevEntry[0])) {
+
+    if (prevEntry?.[0].id && isBlock(editor, prevEntry[0])) {
       return prevEntry as TNodeEntry<N>;
     }
   }
+
   let found = false;
   const _nodes = getNodeEntries<N>(editor, {
-    mode: 'highest',
-    reverse: true,
+    at: [],
     match: (n) => {
       // filter nodes that are not blocks and without id.
       if (!isBlock(editor, n) || !n.id) return false;
-
       // find the block then take the previous one.
       if (n.id === id) {
         found = true;
+
         return false;
       }
 
       return found && n.id !== id && queryNode([n, []], query);
     },
-    at: [],
+    mode: 'highest',
+    reverse: true,
   });
   const nodeEntries = Array.from(_nodes);
+
   if (nodeEntries.length > 0) {
     return nodeEntries[0];
   }
   if (!found) return;
 
   const _entries = getNodeEntries<TElement>(editor, {
-    mode: 'highest',
+    at: [],
     match: (n) => {
       return isBlock(editor, n) && !!n.id && queryNode([n, []], query);
     },
-    at: [],
+    mode: 'highest',
   });
   const firstNodeEntry = Array.from(_entries);
 

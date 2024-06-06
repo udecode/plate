@@ -1,43 +1,43 @@
-import { AutoformatRule } from '../types';
+import type { AutoformatRule } from '../types';
 
 export const autoformatLegal: AutoformatRule[] = [
   {
-    mode: 'text',
-    match: ['(tm)', '(TM)'],
     format: '™',
+    match: ['(tm)', '(TM)'],
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: ['(r)', '(R)'],
     format: '®',
+    match: ['(r)', '(R)'],
+    mode: 'text',
   },
 
   {
-    mode: 'text',
-    match: ['(c)', '(C)'],
     format: '©',
+    match: ['(c)', '(C)'],
+    mode: 'text',
   },
 ];
 
 export const autoformatLegalHtml: AutoformatRule[] = [
   {
-    mode: 'text',
-    match: '&trade;',
     format: '™',
+    match: '&trade;',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: '&reg;',
     format: '®',
+    match: '&reg;',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: '&copy;',
     format: '©',
+    match: '&copy;',
+    mode: 'text',
   },
   {
-    mode: 'text',
-    match: '&sect;',
     format: '§',
+    match: '&sect;',
+    mode: 'text',
   },
 ];

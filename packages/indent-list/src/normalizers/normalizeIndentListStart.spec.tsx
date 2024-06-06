@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { createPlateEditor, PlateEditor } from '@udecode/plate-common';
+import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
 import { createIndentPlugin } from '@udecode/plate-indent';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
@@ -53,19 +53,19 @@ describe('normalizeIndentListStart', () => {
         <hp indent={1} listStyleType="decimal">
           11
         </hp>
-        <hp indent={1} listStyleType="decimal" listStart={2}>
+        <hp indent={1} listStart={2} listStyleType="decimal">
           12
         </hp>
         <hp indent={2} listStyleType="lower-alpha">
           2a
         </hp>
-        <hp indent={2} listStyleType="lower-alpha" listStart={2}>
+        <hp indent={2} listStart={2} listStyleType="lower-alpha">
           2b
         </hp>
         <hp indent={1} listStyleType="disc">
           11
         </hp>
-        <hp indent={1} listStyleType="disc" listStart={2}>
+        <hp indent={1} listStart={2} listStyleType="disc">
           12
         </hp>
         <hp indent={2} listStyleType="disc">
@@ -75,10 +75,10 @@ describe('normalizeIndentListStart', () => {
           31
         </hp>
         <hp indent={3}>31</hp>
-        <hp indent={1} listStyleType="disc" listStart={3}>
+        <hp indent={1} listStart={3} listStyleType="disc">
           13
         </hp>
-        <hp indent={1} listStyleType="disc" listStart={4}>
+        <hp indent={1} listStart={4} listStyleType="disc">
           14
         </hp>
       </editor>
@@ -87,12 +87,12 @@ describe('normalizeIndentListStart', () => {
     it('should be', async () => {
       const editor = createPlateEditor({
         editor: input,
+        normalizeInitialValue: true,
         plugins: [
           createParagraphPlugin(),
           createIndentPlugin(),
           createIndentListPlugin(),
         ],
-        normalizeInitialValue: true,
       });
 
       expect(editor.children).toEqual(output.children);
@@ -130,17 +130,17 @@ describe('normalizeIndentListStart', () => {
           <hp indent={1} listStyleType="decimal">
             11
           </hp>
-          <hp indent={1} listStyleType="decimal" listStart={2}>
+          <hp indent={1} listStart={2} listStyleType="decimal">
             12
           </hp>
         </element>
         <element type="page">
-          <hp indent={1} listStyleType="decimal" listStart={3}>
+          <hp indent={1} listStart={3} listStyleType="decimal">
             13
           </hp>
         </element>
         <element type="page">
-          <hp indent={1} listStyleType="decimal" listStart={4}>
+          <hp indent={1} listStart={4} listStyleType="decimal">
             14
           </hp>
         </element>
@@ -150,12 +150,12 @@ describe('normalizeIndentListStart', () => {
     it('should be', async () => {
       const editor = createPlateEditor({
         editor: input,
+        normalizeInitialValue: true,
         plugins: [
           createParagraphPlugin(),
           createIndentPlugin(),
           createIndentListPlugin(indentListPluginPage),
         ],
-        normalizeInitialValue: true,
       }) as any;
 
       expect(editor.children).toEqual(output.children);
@@ -174,7 +174,7 @@ describe('normalizeIndentListStart', () => {
           </hp>
         </element>
         <element type="page">
-          <hp indent={1} listStyleType="decimal" listStart={2} listRestart={1}>
+          <hp indent={1} listRestart={1} listStart={2} listStyleType="decimal">
             2
           </hp>
         </element>
@@ -187,12 +187,12 @@ describe('normalizeIndentListStart', () => {
           <hp indent={1} listStyleType="decimal">
             1
           </hp>
-          <hp indent={1} listStyleType="decimal" listStart={2}>
+          <hp indent={1} listStart={2} listStyleType="decimal">
             2
           </hp>
         </element>
         <element type="page">
-          <hp indent={1} listStyleType="decimal" listStart={1} listRestart={1}>
+          <hp indent={1} listRestart={1} listStart={1} listStyleType="decimal">
             2
           </hp>
         </element>
@@ -202,12 +202,12 @@ describe('normalizeIndentListStart', () => {
     it('should be', async () => {
       const editor = createPlateEditor({
         editor: input,
+        normalizeInitialValue: true,
         plugins: [
           createParagraphPlugin(),
           createIndentPlugin(),
           createIndentListPlugin(indentListPluginPage),
         ],
-        normalizeInitialValue: true,
       }) as any;
 
       expect(editor.children).toEqual(output.children);

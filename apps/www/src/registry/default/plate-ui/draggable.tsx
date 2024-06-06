@@ -1,90 +1,111 @@
 'use client';
 
 import React from 'react';
+
+import type { DropTargetMonitor } from 'react-dnd';
+
 import { cn, withRef } from '@udecode/cn';
-import { ClassNames, PlateElementProps, TEditor } from '@udecode/plate-common';
 import {
-  DragItemNode,
+  type ClassNames,
+  type PlateElementProps,
+  type TEditor,
+  type TElement,
+  useEditorRef,
+  useElement,
+} from '@udecode/plate-common';
+import {
+  type DragItemNode,
   useDraggable,
   useDraggableState,
 } from '@udecode/plate-dnd';
-import { DropTargetMonitor } from 'react-dnd';
+import { blockSelectionActions } from '@udecode/plate-selection';
 
 import { Icons } from '@/components/icons';
 
-import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipPortal,
+  TooltipTrigger,
+} from './tooltip';
 
 export interface DraggableProps
   extends PlateElementProps,
     ClassNames<{
-      /**
-       * Block and gutter.
-       */
-      blockAndGutter: string;
-
-      /**
-       * Block.
-       */
+      /** Block. */
       block: string;
 
-      /**
-       * Gutter at the left side of the editor.
-       * It has the height of the block
-       */
-      gutterLeft: string;
+      /** Block and gutter. */
+      blockAndGutter: string;
+
+      /** Block toolbar in the gutter. */
+      blockToolbar: string;
 
       /**
-       * Block toolbar wrapper in the gutter left.
-       * It has the height of a line of the block.
+       * Block toolbar wrapper in the gutter left. It has the height of a line
+       * of the block.
        */
       blockToolbarWrapper: string;
 
-      /**
-       * Block toolbar in the gutter.
-       */
-      blockToolbar: string;
-
       blockWrapper: string;
 
-      /**
-       * Button to dnd the block, in the block toolbar.
-       */
+      /** Button to dnd the block, in the block toolbar. */
       dragHandle: string;
 
-      /**
-       * Icon of the drag button, in the drag icon.
-       */
+      /** Icon of the drag button, in the drag icon. */
       dragIcon: string;
 
-      /**
-       * Show a dropline above or below the block when dragging a block.
-       */
+      /** Show a dropline above or below the block when dragging a block. */
       dropLine: string;
+
+      /** Gutter at the left side of the editor. It has the height of the block */
+      gutterLeft: string;
     }> {
   /**
-   * Intercepts the drop handling.
-   * If `false` is returned, the default drop behavior is called after.
-   * If `true` is returned, the default behavior is not called.
+   * Intercepts the drop handling. If `false` is returned, the default drop
+   * behavior is called after. If `true` is returned, the default behavior is
+   * not called.
    */
   onDropHandler?: (
     editor: TEditor,
     props: {
-      monitor: DropTargetMonitor<DragItemNode, unknown>;
       dragItem: DragItemNode;
-      nodeRef: any;
       id: string;
+      monitor: DropTargetMonitor<DragItemNode, unknown>;
+      nodeRef: any;
     }
   ) => boolean;
 }
 
-const dragHandle = (
-  <Tooltip>
-    <TooltipTrigger>
-      <Icons.dragHandle className="size-4 text-muted-foreground" />
-    </TooltipTrigger>
-    <TooltipContent>Drag to move</TooltipContent>
-  </Tooltip>
-);
+const DragHandle = () => {
+  const editor = useEditorRef();
+  const element = useElement<TElement>();
+
+  return (
+    <Tooltip>
+      <TooltipTrigger type="button">
+        <Icons.dragHandle
+          className="size-4 text-muted-foreground"
+          onClick={(event) => {
+            event.stopPropagation();
+            event.preventDefault();
+
+            // if (element.id) {
+            //   blockSelectionActions.addSelectedRow(element.id as string);
+            //   blockContextMenuActions.show(editor.id, event as any);
+            // }
+          }}
+          onMouseDown={() => {
+            blockSelectionActions.resetSelectedIds();
+          }}
+        />
+      </TooltipTrigger>
+      <TooltipPortal>
+        <TooltipContent>Drag to move</TooltipContent>
+      </TooltipPortal>
+    </Tooltip>
+  );
+};
 
 export const Draggable = withRef<'div', DraggableProps>(
   ({ className, classNames = {}, onDropHandler, ...props }, ref) => {
@@ -93,27 +114,27 @@ export const Draggable = withRef<'div', DraggableProps>(
     const state = useDraggableState({ element, onDropHandler });
     const { dropLine, isDragging, isHovered } = state;
     const {
-      groupProps,
       droplineProps,
+      groupProps,
       gutterLeftProps,
-      previewRef,
       handleRef,
+      previewRef,
     } = useDraggable(state);
 
     return (
       <div
-        ref={ref}
         className={cn(
           'relative',
           isDragging && 'opacity-50',
           'group',
           className
         )}
+        ref={ref}
         {...groupProps}
       >
         <div
           className={cn(
-            'pointer-events-none absolute top-0 flex h-full -translate-x-full cursor-text opacity-0 group-hover:opacity-100',
+            'pointer-events-none absolute -top-px z-50 flex h-full -translate-x-full cursor-text opacity-0 group-hover:opacity-100',
             classNames.gutterLeft
           )}
           {...gutterLeftProps}
@@ -125,8 +146,12 @@ export const Draggable = withRef<'div', DraggableProps>(
                 classNames.blockToolbar
               )}
             >
-              <div ref={handleRef} className="size-4">
-                {isHovered && dragHandle}
+              <div
+                className="size-4"
+                data-key={element.id as string}
+                ref={handleRef}
+              >
+                {isHovered && <DragHandle />}
               </div>
             </div>
           </div>

@@ -1,10 +1,12 @@
 import React from 'react';
-import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
+
+import type * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
+
 import { PopoverAnchor } from '@radix-ui/react-popover';
 import { cn, withRef } from '@udecode/cn';
 import {
-  isSelectionExpanded,
   PlateElement,
+  isSelectionExpanded,
   useEditorRef,
   useEditorSelector,
   useElement,
@@ -12,9 +14,9 @@ import {
   withHOC,
 } from '@udecode/plate-common';
 import {
-  mergeTableCells,
+  type TTableElement,
   TableProvider,
-  TTableElement,
+  mergeTableCells,
   unmergeTableCells,
   useTableBordersDropdownMenuContentState,
   useTableElement,
@@ -41,20 +43,20 @@ export const TableBordersDropdownMenuContent = withRef<
 >((props, ref) => {
   const {
     getOnSelectTableBorder,
-    hasOuterBorders,
     hasBottomBorder,
     hasLeftBorder,
     hasNoBorders,
+    hasOuterBorders,
     hasRightBorder,
     hasTopBorder,
   } = useTableBordersDropdownMenuContentState();
 
   return (
     <DropdownMenuContent
-      ref={ref}
-      className={cn('min-w-[220px]')}
-      side="right"
       align="start"
+      className={cn('min-w-[220px]')}
+      ref={ref}
+      side="right"
       sideOffset={0}
       {...props}
     >
@@ -129,9 +131,9 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
     const mergeContent = canMerge && (
       <Button
         contentEditable={false}
-        variant="ghost"
         isMenu
         onClick={() => mergeTableCells(editor)}
+        variant="ghost"
       >
         <Icons.combine className="mr-2 size-4" />
         Merge
@@ -141,9 +143,9 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
     const unmergeButton = canUnmerge && (
       <Button
         contentEditable={false}
-        variant="ghost"
         isMenu
         onClick={() => unmergeTableCells(editor)}
+        variant="ghost"
       >
         <Icons.ungroup className="mr-2 size-4" />
         Unmerge
@@ -154,7 +156,7 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
       <>
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" isMenu>
+            <Button isMenu variant="ghost">
               <Icons.borderAll className="mr-2 size-4" />
               Borders
             </Button>
@@ -165,7 +167,7 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
           </DropdownMenuPortal>
         </DropdownMenu>
 
-        <Button contentEditable={false} variant="ghost" isMenu {...buttonProps}>
+        <Button contentEditable={false} isMenu variant="ghost" {...buttonProps}>
           <Icons.delete className="mr-2 size-4" />
           Delete
         </Button>
@@ -173,16 +175,16 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
     );
 
     return (
-      <Popover open={open} modal={false}>
+      <Popover modal={false} open={open}>
         <PopoverAnchor asChild>{children}</PopoverAnchor>
         {(canMerge || canUnmerge || collapsed) && (
           <PopoverContent
-            ref={ref}
             className={cn(
               popoverVariants(),
               'flex w-[220px] flex-col gap-1 p-1'
             )}
             onOpenAutoFocus={(e) => e.preventDefault()}
+            ref={ref}
             {...props}
           >
             {unmergeButton}
@@ -197,22 +199,22 @@ export const TableFloatingToolbar = withRef<typeof PopoverContent>(
 
 export const TableElement = withHOC(
   TableProvider,
-  withRef<typeof PlateElement>(({ className, children, ...props }, ref) => {
-    const { colSizes, isSelectingCell, minColumnWidth, marginLeft } =
+  withRef<typeof PlateElement>(({ children, className, ...props }, ref) => {
+    const { colSizes, isSelectingCell, marginLeft, minColumnWidth } =
       useTableElementState();
-    const { props: tableProps, colGroupProps } = useTableElement();
+    const { colGroupProps, props: tableProps } = useTableElement();
 
     return (
       <TableFloatingToolbar>
         <div style={{ paddingLeft: marginLeft }}>
           <PlateElement
-            ref={ref}
             asChild
             className={cn(
               'my-4 ml-px mr-0 table h-px w-full table-fixed border-collapse',
               isSelectingCell && '[&_*::selection]:bg-none',
               className
             )}
+            ref={ref}
             {...tableProps}
             {...props}
           >

@@ -1,24 +1,25 @@
 {
   "name": "@udecode/plate-serializer-csv",
-  "version": "31.4.1",
+  "version": "33.0.7",
   "description": "CSV serializer plugin for Plate",
-  "license": "MIT",
+  "keywords": [
+    "csv",
+    "plate",
+    "plugin",
+    "serializer",
+    "slate"
+  ],
   "homepage": "https://platejs.org",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
     "directory": "packages/serializer-csv"
   },
-  "bugs": {
-    "url": "https://github.com/udecode/plate/issues"
-  },
+  "license": "MIT",
   "sideEffects": false,
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist/**/*"
-  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -27,10 +28,16 @@
       "require": "./dist/index.js"
     }
   },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
   "scripts": {
+    "brl": "yarn p:brl",
     "build": "yarn p:build",
     "build:watch": "yarn p:build:watch",
-    "brl": "yarn p:brl",
     "clean": "yarn p:clean",
     "lint": "yarn p:lint",
     "lint:fix": "yarn p:lint:fix",
@@ -39,7 +46,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-table": "31.4.1",
+    "@udecode/plate-table": "33.0.7",
     "papaparse": "^5.4.1"
   },
   "devDependencies": {
@@ -47,7 +54,7 @@
     "@udecode/plate-common": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=31.3.2",
+    "@udecode/plate-common": ">=33.0.4",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.94.0",
@@ -55,13 +62,6 @@
     "slate-hyperscript": ">=0.66.0",
     "slate-react": ">=0.99.0"
   },
-  "keywords": [
-    "csv",
-    "plate",
-    "plugin",
-    "serializer",
-    "slate"
-  ],
   "publishConfig": {
     "access": "public"
   }
