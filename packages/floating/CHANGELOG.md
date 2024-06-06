@@ -1,5 +1,11 @@
 # @udecode/plate-floating
 
+## 34.0.0
+
+### Patch Changes
+
+- [#3241](https://github.com/udecode/plate/pull/3241) by [@felixfeng33](https://github.com/felixfeng33) – Fix: only pop up `floating-toolbar` after the selection is complete.
+
 ## 33.0.0
 
 ## 32.0.0

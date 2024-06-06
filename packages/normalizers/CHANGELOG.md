@@ -1,5 +1,7 @@
 # @udecode/plate-normalizers
 
+## 34.0.0
+
 ## 33.0.3
 
 ### Patch Changes

@@ -1,5 +1,7 @@
 # @udecode/plate-common
 
+## 34.0.0
+
 ## 33.0.4
 
 ### Patch Changes

@@ -1,5 +1,7 @@
 # @udecode/plate-reset-node
 
+## 34.0.0
+
 ## 33.0.0
 
 ## 32.0.0

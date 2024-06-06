@@ -1,5 +1,11 @@
 # @udecode/plate-selection
 
+## 34.0.0
+
+### Minor Changes
+
+- [#3241](https://github.com/udecode/plate/pull/3241) by [@felixfeng33](https://github.com/felixfeng33) – Add logic for the `block-context-menu` and improved the user experience for `block-selection`, such as interactions related to keyboard shortcuts, bug fixes.
+
 ## 33.0.0
 
 ## 32.0.0
