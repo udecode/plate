@@ -132,6 +132,13 @@ export function PlaygroundTurnIntoDropdownMenu(props: DropdownMenuProps) {
     items.find((item) => item.value === value) ?? defaultItem;
   const { icon: SelectedItemIcon, label: selectedItemLabel } = selectedItem;
 
+  const onCloseAutoFocus = React.useCallback((e: Event) => {
+    focusEditor(editor);
+
+    return e.preventDefault();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <DropdownMenu modal={false} {...openState} {...props}>
       <DropdownMenuTrigger asChild>
@@ -146,7 +153,11 @@ export function PlaygroundTurnIntoDropdownMenu(props: DropdownMenuProps) {
         </ToolbarButton>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="start" className="min-w-0">
+      <DropdownMenuContent
+        align="start"
+        className="min-w-0"
+        onCloseAutoFocus={onCloseAutoFocus}
+      >
         <DropdownMenuLabel>Turn into</DropdownMenuLabel>
 
         <DropdownMenuRadioGroup

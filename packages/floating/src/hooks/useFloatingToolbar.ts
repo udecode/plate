@@ -116,12 +116,7 @@ export const useFloatingToolbar = ({
   }, [selectionText, selectionExpanded, setMouseupped]);
 
   React.useEffect(() => {
-    if (
-      !selectionExpanded ||
-      !selectionText ||
-      // (!(editorId === focusedEditorId || ignoreReadOnly) && hideToolbar)
-      !(editorId === focusedEditorId)
-    ) {
+    if (!selectionExpanded || !selectionText) {
       setOpen(false);
       setMouseupped(false);
     } else if (
