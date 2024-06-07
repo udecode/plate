@@ -1,6 +1,6 @@
 name: "Bug Report"
 description: Create a new ticket for a bug.
-title: "[BUG] - <title>"
+title: ""
 labels: ["bug"]
 body:
   - type: textarea
@@ -17,8 +17,6 @@ body:
       label: "Reproduction URL"
       description: Please enter your GitHub or Sandbox URL to provide a reproduction of the issue
       placeholder: ex. https://github.com/USERNAME/REPO-NAME
-    validations:
-      required: true
   - type: textarea
     id: reprod
     attributes:
