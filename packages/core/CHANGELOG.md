@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 34.0.1
+
+### Patch Changes
+
+- [#3220](https://github.com/udecode/plate/pull/3220) by [@dimaanj](https://github.com/dimaanj) – [event-editor] expose focus event callbacks
+
 ## 34.0.0
 
 ### Patch Changes
