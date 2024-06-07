@@ -2,4 +2,4 @@
 "@udecode/plate-floating": patch
 ---
 
-fix: cann't open dropdown menu
+fix: can't open dropdown menu
