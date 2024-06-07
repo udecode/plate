@@ -1,5 +1,11 @@
 # @udecode/plate-mention
 
+## 34.0.1
+
+### Patch Changes
+
+- [#3251](https://github.com/udecode/plate/pull/3251) by [@felixfeng33](https://github.com/felixfeng33) – fix: import types form `@udecode/common` instead of `@udecode/common/server`
+
 ## 34.0.0
 
 ### Major Changes
