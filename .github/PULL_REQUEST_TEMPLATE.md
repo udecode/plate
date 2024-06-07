@@ -1,16 +1,2 @@
-**Description**
-
-See changesets.
-
-<!-- A clear and concise description of what this pull request solves. -->
-<!-- If your change is non-trivial, please include a description of how the
-new logic works, and why you decided to solve it the way you did. -->
-
- 
-<!-- **Example** -->
-
-
-
-<!-- (optional) A sandbox, GIF or video showing the old and new behaviors after this
-pullrequest is merged. Or a code sample showing the usage of a new API. -->
-
+- [ ] added [changesets](https://github.com/changesets/changesets/blob/main/docs/adding-a-changeset.md) <!-- Required if `packages/` has been changed -->
+- [ ] updated [components changelog](https://github.com/udecode/plate/blob/main/apps/www/content/docs/components/changelog.mdx) <!-- Required if `apps/www/src/registry` has been changed -->
