@@ -5,6 +5,5 @@ export const remarkTextTypes: MdastNodeType[] = [
   'strong',
   'delete',
   'inlineCode',
-  'html',
   'text',
 ];
