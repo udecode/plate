@@ -5,7 +5,11 @@ import { useFocused, useReadOnly, useSelected } from 'slate-react';
 
 import type { TMediaElement } from './types';
 
-import { VIDEO_PROVIDERS } from '../media-embed';
+import { 
+  VIDEO_PROVIDERS,
+  ELEMENT_VIDEO,
+	ELEMENT_MEDIA_EMBED, 
+} from '../media-embed';
 
 export type EmbedUrlData = {
   id?: string;
@@ -25,10 +29,10 @@ export const useMediaState = ({
   const selected = useSelected();
   const readOnly = useReadOnly();
 
-  const { align = 'left', id, isUpload, name, url } = element;
+  const { align = 'left', id, isUpload, name, type, url } = element;
 
   const embed = React.useMemo(() => {
-    if (!urlParsers) return;
+    if (!urlParsers || (type !== ELEMENT_VIDEO && type !== ELEMENT_MEDIA_EMBED)) return;
 
     for (const parser of urlParsers) {
       const data = parser(url);
