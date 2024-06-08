@@ -1,5 +1,17 @@
 # @udecode/plate-floating
 
+## 34.0.1
+
+### Patch Changes
+
+- [#3251](https://github.com/udecode/plate/pull/3251) by [@felixfeng33](https://github.com/felixfeng33) – fix: can't open dropdown menu
+
+## 34.0.0
+
+### Patch Changes
+
+- [#3241](https://github.com/udecode/plate/pull/3241) by [@felixfeng33](https://github.com/felixfeng33) – Fix: only pop up `floating-toolbar` after the selection is complete.
+
 ## 33.0.0
 
 ## 32.0.0

@@ -51,6 +51,39 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ariakit/core@npm:0.4.6":
+  version: 0.4.6
+  resolution: "@ariakit/core@npm:0.4.6"
+  checksum: 10c0/ca95be5acfd55ad99fa2eaddfdcf2dd178622ac64634bec80709dc4c722f8f15ac6d321831c72ab034001fe00964f7a2531e519916f29cf885d8cf3ffdbb6776
+  languageName: node
+  linkType: hard
+
+"@ariakit/react-core@npm:0.4.6":
+  version: 0.4.6
+  resolution: "@ariakit/react-core@npm:0.4.6"
+  dependencies:
+    "@ariakit/core": "npm:0.4.6"
+    "@floating-ui/dom": "npm:^1.0.0"
+    use-sync-external-store: "npm:^1.2.0"
+  peerDependencies:
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+  checksum: 10c0/cd24d020a380a5de48607119c7f46a1b64bc8780d7b4a18f09207b2a3c13957cfc1c5dc0256ad8dd0924714b074e30f4af5702d25b438885516d9c900cc8ce91
+  languageName: node
+  linkType: hard
+
+"@ariakit/react@npm:0.4.6":
+  version: 0.4.6
+  resolution: "@ariakit/react@npm:0.4.6"
+  dependencies:
+    "@ariakit/react-core": "npm:0.4.6"
+  peerDependencies:
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+  checksum: 10c0/647d540c81d116de690e80544152471be59ced91ca1a31e81dbafea162397e3ce16844401eac708c06e8ad834ca6779eb373fc4634e28d6ecdb7e0f2fce4a061
+  languageName: node
+  linkType: hard
+
 "@babel/code-frame@npm:^7.0.0, @babel/code-frame@npm:^7.10.4, @babel/code-frame@npm:^7.12.13, @babel/code-frame@npm:^7.21.4, @babel/code-frame@npm:^7.23.5, @babel/code-frame@npm:^7.24.1, @babel/code-frame@npm:^7.24.2":
   version: 7.24.2
   resolution: "@babel/code-frame@npm:7.24.2"
@@ -1532,6 +1565,16 @@ __metadata:
   dependencies:
     "@floating-ui/utils": "npm:^0.2.1"
   checksum: 10c0/667a68036f7dd5ed19442c7792a6002ca02d1799221c4396691bbe0b6008b48f6ccad581225e81fa266bb91232f6c66838a5f825f554217e1ec886178b93381b
+  languageName: node
+  linkType: hard
+
+"@floating-ui/dom@npm:^1.0.0":
+  version: 1.6.4
+  resolution: "@floating-ui/dom@npm:1.6.4"
+  dependencies:
+    "@floating-ui/core": "npm:^1.0.0"
+    "@floating-ui/utils": "npm:^0.2.0"
+  checksum: 10c0/cee0b9e6efc1c6d978ec580c770078fdf416016fb03f3dd99630f7f32d0422722e608471fbc7578be86c783ad1c1e448c5fa5b9fdec889dfbf4b695f208730fd
   languageName: node
   linkType: hard
 
@@ -4909,6 +4952,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/katex@npm:0.16.7":
+  version: 0.16.7
+  resolution: "@types/katex@npm:0.16.7"
+  checksum: 10c0/68dcb9f68a90513ec78ca0196a142e15c2a2c270b1520d752bafd47a99207115085a64087b50140359017d7e9c870b3c68e7e4d36668c9e348a9ef0c48919b5a
+  languageName: node
+  linkType: hard
+
 "@types/liftoff@npm:^4.0.0":
   version: 4.0.3
   resolution: "@types/liftoff@npm:4.0.3"
@@ -5649,6 +5699,22 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@udecode/plate-callout@workspace:packages/callout":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-callout@workspace:packages/callout"
+  dependencies:
+    "@udecode/plate-common": "workspace:^"
+  peerDependencies:
+    "@udecode/plate-common": ">=31.3.2"
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.94.0"
+    slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
+    slate-react: ">=0.99.0"
+  languageName: unknown
+  linkType: soft
+
 "@udecode/plate-caption@workspace:^, @udecode/plate-caption@workspace:packages/caption":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-caption@workspace:packages/caption"
@@ -6099,6 +6165,24 @@ __metadata:
     "@udecode/plate-common": "workspace:^"
     "@udecode/plate-reset-node": "npm:33.0.0"
     lodash: "npm:^4.17.21"
+  peerDependencies:
+    "@udecode/plate-common": ">=33.0.4"
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.94.0"
+    slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
+    slate-react: ">=0.99.0"
+  languageName: unknown
+  linkType: soft
+
+"@udecode/plate-math@workspace:packages/math":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-math@workspace:packages/math"
+  dependencies:
+    "@types/katex": "npm:0.16.7"
+    "@udecode/plate-common": "workspace:^"
+    katex: "npm:0.16.10"
   peerDependencies:
     "@udecode/plate-common": ">=33.0.4"
     react: ">=16.8.0"
@@ -8142,6 +8226,13 @@ __metadata:
   version: 6.2.1
   resolution: "commander@npm:6.2.1"
   checksum: 10c0/85748abd9d18c8bc88febed58b98f66b7c591d9b5017cad459565761d7b29ca13b7783ea2ee5ce84bf235897333706c4ce29adf1ce15c8252780e7000e2ce9ea
+  languageName: node
+  linkType: hard
+
+"commander@npm:^8.3.0":
+  version: 8.3.0
+  resolution: "commander@npm:8.3.0"
+  checksum: 10c0/8b043bb8322ea1c39664a1598a95e0495bfe4ca2fad0d84a92d7d1d8d213e2a155b441d2470c8e08de7c4a28cf2bc6e169211c49e1b21d9f7edc6ae4d9356060
   languageName: node
   linkType: hard
 
@@ -13423,6 +13514,17 @@ __metadata:
   bin:
     juice: bin/juice
   checksum: 10c0/c67d328d5865ad32e938708bf38608bd0c856d9c9e226e43f293b049a3ae37340323c6e746288166a108e5ee7c0d00c2480d769c455094d9a7f0205534e44246
+  languageName: node
+  linkType: hard
+
+"katex@npm:0.16.10":
+  version: 0.16.10
+  resolution: "katex@npm:0.16.10"
+  dependencies:
+    commander: "npm:^8.3.0"
+  bin:
+    katex: cli.js
+  checksum: 10c0/b465213157e5245bbb31ff6563c33ae81807c06d6f2246325b3a2397497e8929a34eebbb262f5e0991ec00fbc0cc85f388246e6dfc38ec86c28d3e481cb70afa
   languageName: node
   linkType: hard
 
@@ -21557,6 +21659,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "www@workspace:apps/www"
   dependencies:
+    "@ariakit/react": "npm:0.4.6"
     "@faker-js/faker": "npm:^8.4.1"
     "@radix-ui/colors": "npm:1.0.1"
     "@radix-ui/react-accessible-icon": "npm:^1.0.3"

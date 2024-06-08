@@ -6,6 +6,7 @@ export * from './TCaptionElement';
 export * from './captionGlobalStore';
 export * from './createCaptionPlugin';
 export * from './onKeyDownCaption';
+export * from './useResizableStore';
 export * from './withCaption';
 export * from './components/index';
 export * from './hooks/index';

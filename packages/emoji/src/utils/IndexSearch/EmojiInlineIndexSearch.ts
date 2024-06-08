@@ -1,8 +1,4 @@
-import {
-  type Emoji,
-  EmojiInlineLibrary,
-  type IEmojiLibrary,
-} from '../EmojiLibrary/index';
+import { EmojiInlineLibrary, type IEmojiLibrary } from '../EmojiLibrary/index';
 import { AIndexSearch } from './IndexSearch';
 
 export class EmojiInlineIndexSearch extends AIndexSearch {
@@ -20,20 +16,5 @@ export class EmojiInlineIndexSearch extends AIndexSearch {
     }
 
     return EmojiInlineIndexSearch.instance;
-  }
-
-  protected transform(emoji: Emoji) {
-    const { id, name, skins } = emoji;
-
-    return {
-      data: {
-        emoji: skins[0].native,
-        id,
-        name,
-        text: name,
-      },
-      key: id,
-      text: name,
-    };
   }
 }

@@ -1,6 +1,6 @@
-import type { TComboboxItem } from '@udecode/plate-combobox';
-
-import type { IEmojiTriggeringController } from './utils/index';
+import type { Emoji } from '@emoji-mart/data';
+import type { TriggerComboboxPlugin } from '@udecode/plate-combobox';
+import type { EElementOrText } from '@udecode/plate-common';
 
 type ReverseMap<T> = T[keyof T];
 
@@ -22,22 +22,9 @@ export type EmojiSettingsType = {
   };
 };
 
-export type EmojiItemData = {
-  emoji: string;
-  id: string;
-  name: string;
-  text: string;
-};
-
-export type CreateEmoji<TData extends EmojiItemData = EmojiItemData> = (
-  data: TComboboxItem<TData>
-) => string;
-
-export interface EmojiPlugin<TData extends EmojiItemData = EmojiItemData> {
-  createEmoji?: CreateEmoji<TData>;
-  emojiTriggeringController?: IEmojiTriggeringController;
-  id?: string;
-  trigger?: string;
+export interface EmojiPlugin<TEmoji extends Emoji = Emoji>
+  extends TriggerComboboxPlugin {
+  createEmojiNode?: (emoji: TEmoji) => EElementOrText<any>;
 }
 
 export const EmojiCategory = {
@@ -72,9 +59,4 @@ export type EmojiIconList<T = string> = {
     delete: T;
     loupe: T;
   };
-};
-
-export type FindTriggeringInputProps = {
-  action?: 'delete' | 'insert';
-  char?: string;
 };

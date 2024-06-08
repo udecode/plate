@@ -15,7 +15,6 @@ import {
   KEY_SINGLE_LINE,
   KEY_SOFT_BREAK,
 } from '@udecode/plate-break';
-import { KEY_COMBOBOX } from '@udecode/plate-combobox';
 import { MARK_COMMENT } from '@udecode/plate-comments';
 import { KEY_DND } from '@udecode/plate-dnd';
 import { KEY_EMOJI } from '@udecode/plate-emoji';
@@ -66,7 +65,6 @@ export const descriptions: Record<string, string> = {
   [KEY_ALIGN]: 'Align your content to different positions.',
   [KEY_AUTOFORMAT]: 'Apply formatting automatically using shortcodes.',
   [KEY_BLOCK_SELECTION]: 'Select and manipulate entire text blocks.',
-  [KEY_COMBOBOX]: 'Select options from a predefined list.',
   [KEY_DELETE]:
     'Remove the current block if empty when pressing delete forward',
   [KEY_DESERIALIZE_CSV]: 'Copy paste from CSV to Slate.',

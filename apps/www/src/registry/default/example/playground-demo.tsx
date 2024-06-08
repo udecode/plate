@@ -32,7 +32,6 @@ import {
   ELEMENT_CODE_BLOCK,
   createCodeBlockPlugin,
 } from '@udecode/plate-code-block';
-import { createComboboxPlugin } from '@udecode/plate-combobox';
 import { createCommentsPlugin } from '@udecode/plate-comments';
 import {
   Plate,
@@ -96,7 +95,6 @@ import { settingsStore } from '@/components/context/settings-store';
 import { PlaygroundFixedToolbarButtons } from '@/components/plate-ui/playground-fixed-toolbar-buttons';
 import { PlaygroundFloatingToolbarButtons } from '@/components/plate-ui/playground-floating-toolbar-buttons';
 import { captionPlugin } from '@/lib/plate/demo/plugins/captionPlugin';
-import { SLASH_RULES } from '@/lib/plate/demo/values/slashRules';
 import { createPlateUI } from '@/plate/create-plate-ui';
 import { CommentsProvider } from '@/plate/demo/comments/CommentsProvider';
 import { editableProps } from '@/plate/demo/editableProps';
@@ -106,7 +104,6 @@ import { autoformatIndentLists } from '@/plate/demo/plugins/autoformatIndentList
 import { autoformatLists } from '@/plate/demo/plugins/autoformatLists';
 import { autoformatRules } from '@/plate/demo/plugins/autoformatRules';
 import { dragOverCursorPlugin } from '@/plate/demo/plugins/dragOverCursorPlugin';
-import { emojiPlugin } from '@/plate/demo/plugins/emojiPlugin';
 import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
 import { forcedLayoutPlugin } from '@/plate/demo/plugins/forcedLayoutPlugin';
 import { lineHeightPlugin } from '@/plate/demo/plugins/lineHeightPlugin';
@@ -116,7 +113,6 @@ import { selectOnBackspacePlugin } from '@/plate/demo/plugins/selectOnBackspaceP
 import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
 import { trailingBlockPlugin } from '@/plate/demo/plugins/trailingBlockPlugin';
-import { MENTIONABLES } from '@/plate/demo/values/mentionables';
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
 import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
 import { CursorOverlay } from '@/registry/default/plate-ui/cursor-overlay';
@@ -131,8 +127,6 @@ import {
   TodoLi,
   TodoMarker,
 } from '@/registry/default/plate-ui/indent-todo-marker-component';
-import { MentionCombobox } from '@/registry/default/plate-ui/mention-combobox';
-import { SlashCombobox } from '@/registry/default/plate-ui/slash-combobox';
 
 export const usePlaygroundPlugins = ({
   components = createPlateUI(),
@@ -181,11 +175,7 @@ export const usePlaygroundPlugins = ({
               triggerPreviousCharPattern: /^$|^[\s"']$/,
             },
           }),
-          createSlashPlugin({
-            options: {
-              rules: SLASH_RULES,
-            },
-          }),
+          createSlashPlugin(),
           createTablePlugin({
             enabled: !!enabled.table,
             options: {
@@ -213,7 +203,10 @@ export const usePlaygroundPlugins = ({
           createKbdPlugin({ enabled: !!enabled.kbd }),
 
           // Block Style
-          createAlignPlugin({ ...alignPlugin, enabled: !!enabled.align }),
+          createAlignPlugin({
+            ...alignPlugin,
+            enabled: !!enabled.align,
+          }),
           createIndentPlugin({
             enabled: !!enabled.indent,
             inject: {
@@ -279,18 +272,18 @@ export const usePlaygroundPlugins = ({
           createBlockSelectionPlugin({
             enabled: id === 'blockselection' || !!enabled.blockSelection,
             options: {
+              disableContextMenu: true,
               sizes: {
                 bottom: 0,
                 top: 0,
               },
             },
           }),
-          createComboboxPlugin({ enabled: !!enabled.combobox }),
           createDndPlugin({
             enabled: !!enabled.dnd,
             options: { enableScroller: true },
           }),
-          createEmojiPlugin({ ...emojiPlugin, enabled: !!enabled.emoji }),
+          createEmojiPlugin({ enabled: !!enabled.emoji }),
           createExitBreakPlugin({
             ...exitBreakPlugin,
             enabled: !!enabled.exitBreak,
@@ -438,12 +431,6 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
                     )}
                   </FloatingToolbar>
                 )}
-
-                {isEnabled('mention', id, enabled['mention-combobox']) && (
-                  <MentionCombobox items={MENTIONABLES} />
-                )}
-
-                <SlashCombobox items={SLASH_RULES} />
 
                 {isEnabled('cursoroverlay', id) && (
                   <CursorOverlay containerRef={containerRef} />

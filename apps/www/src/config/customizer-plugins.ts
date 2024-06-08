@@ -6,7 +6,6 @@ import {
   KEY_SOFT_BREAK,
 } from '@udecode/plate-break';
 import { KEY_CAPTION } from '@udecode/plate-caption';
-import { KEY_COMBOBOX } from '@udecode/plate-combobox';
 import { MARK_COMMENT } from '@udecode/plate-comments';
 import { KEY_DND } from '@udecode/plate-dnd';
 import { KEY_EMOJI } from '@udecode/plate-emoji';
@@ -128,12 +127,6 @@ export const customizerPlugins = {
     plugins: [ELEMENT_COLUMN_GROUP],
     route: '/docs/column',
     value: columnValue,
-  },
-  combobox: {
-    id: 'combobox',
-    label: 'Combobox',
-    plugins: [KEY_COMBOBOX],
-    route: '/docs/combobox',
   },
   comment: {
     id: 'comment',

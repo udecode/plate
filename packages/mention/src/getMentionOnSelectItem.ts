@@ -1,89 +1,56 @@
 import {
-  type ComboboxOnSelectItem,
-  type Data,
-  type NoData,
-  type TComboboxItem,
-  comboboxActions,
-  comboboxSelectors,
-} from '@udecode/plate-combobox';
-import {
+  type PlateEditor,
   type PlatePluginKey,
-  type TNodeProps,
+  type Value,
   getBlockAbove,
   getPlugin,
   insertNodes,
   insertText,
   isEndPoint,
   moveSelection,
-  removeNodes,
-  select,
-  withoutMergingHistory,
-  withoutNormalizing,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/server';
 
-import type { MentionPlugin, TMentionElement } from './types';
+import type { MentionPlugin, TMentionElement, TMentionItemBase } from './types';
 
 import { ELEMENT_MENTION } from './createMentionPlugin';
-import { isNodeMentionInput } from './queries/isNodeMentionInput';
 
-export type CreateMentionNode<TData extends Data> = (
-  item: TComboboxItem<TData>,
-  meta: CreateMentionNodeMeta
-) => TNodeProps<TMentionElement>;
-
-export interface CreateMentionNodeMeta {
-  search: string;
-}
+export type MentionOnSelectItem<
+  TItem extends TMentionItemBase = TMentionItemBase,
+> = <V extends Value>(
+  editor: PlateEditor<V>,
+  item: TItem,
+  search?: string
+) => void;
 
 export const getMentionOnSelectItem =
-  <TData extends Data = NoData>({
+  <TItem extends TMentionItemBase = TMentionItemBase>({
     key = ELEMENT_MENTION,
-  }: PlatePluginKey = {}): ComboboxOnSelectItem<TData> =>
-  (editor, item) => {
-    const targetRange = comboboxSelectors.targetRange();
-
-    if (!targetRange) return;
-
+  }: PlatePluginKey = {}): MentionOnSelectItem<TItem> =>
+  (editor, item, search = '') => {
     const {
       options: { createMentionNode, insertSpaceAfterMention },
       type,
     } = getPlugin<MentionPlugin>(editor as any, key);
 
+    const props = createMentionNode!(item, search);
+
+    insertNodes<TMentionElement>(editor, {
+      children: [{ text: '' }],
+      type,
+      ...props,
+    } as TMentionElement);
+
+    // move the selection after the element
+    moveSelection(editor, { unit: 'offset' });
+
     const pathAbove = getBlockAbove(editor)?.[1];
-    const isBlockEnd = () =>
+
+    const isBlockEnd =
       editor.selection &&
       pathAbove &&
       isEndPoint(editor, editor.selection.anchor, pathAbove);
 
-    withoutNormalizing(editor, () => {
-      // Selectors are sensitive to operations, it's better to create everything
-      // before the editor state is changed. For example, asking for text after
-      // removeNodes below will return null.
-      const props = createMentionNode!(item, {
-        search: comboboxSelectors.text() ?? '',
-      });
-
-      select(editor, targetRange);
-
-      withoutMergingHistory(editor, () =>
-        removeNodes(editor, {
-          match: (node) => isNodeMentionInput(editor, node),
-        })
-      );
-
-      insertNodes<TMentionElement>(editor, {
-        children: [{ text: '' }],
-        type,
-        ...props,
-      } as TMentionElement);
-
-      // move the selection after the element
-      moveSelection(editor, { unit: 'offset' });
-
-      if (isBlockEnd() && insertSpaceAfterMention) {
-        insertText(editor, ' ');
-      }
-    });
-
-    return comboboxActions.reset();
+    if (isBlockEnd && insertSpaceAfterMention) {
+      insertText(editor, ' ');
+    }
   };

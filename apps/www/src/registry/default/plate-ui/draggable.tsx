@@ -2,23 +2,32 @@
 
 import React from 'react';
 
-import type {
-  ClassNames,
-  PlateElementProps,
-  TEditor,
-} from '@udecode/plate-common';
 import type { DropTargetMonitor } from 'react-dnd';
 
 import { cn, withRef } from '@udecode/cn';
+import {
+  type ClassNames,
+  type PlateElementProps,
+  type TEditor,
+  type TElement,
+  useEditorRef,
+  useElement,
+} from '@udecode/plate-common';
 import {
   type DragItemNode,
   useDraggable,
   useDraggableState,
 } from '@udecode/plate-dnd';
+import { blockSelectionActions } from '@udecode/plate-selection';
 
 import { Icons } from '@/components/icons';
 
-import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from './tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipPortal,
+  TooltipTrigger,
+} from './tooltip';
 
 export interface DraggableProps
   extends PlateElementProps,
@@ -68,16 +77,35 @@ export interface DraggableProps
   ) => boolean;
 }
 
-const dragHandle = (
-  <Tooltip>
-    <TooltipTrigger type="button">
-      <Icons.dragHandle className="size-4 text-muted-foreground" />
-    </TooltipTrigger>
-    <TooltipPortal>
-      <TooltipContent>Drag to move</TooltipContent>
-    </TooltipPortal>
-  </Tooltip>
-);
+const DragHandle = () => {
+  const editor = useEditorRef();
+  const element = useElement<TElement>();
+
+  return (
+    <Tooltip>
+      <TooltipTrigger type="button">
+        <Icons.dragHandle
+          className="size-4 text-muted-foreground"
+          onClick={(event) => {
+            event.stopPropagation();
+            event.preventDefault();
+
+            // if (element.id) {
+            //   blockSelectionActions.addSelectedRow(element.id as string);
+            //   blockContextMenuActions.show(editor.id, event as any);
+            // }
+          }}
+          onMouseDown={() => {
+            blockSelectionActions.resetSelectedIds();
+          }}
+        />
+      </TooltipTrigger>
+      <TooltipPortal>
+        <TooltipContent>Drag to move</TooltipContent>
+      </TooltipPortal>
+    </Tooltip>
+  );
+};
 
 export const Draggable = withRef<'div', DraggableProps>(
   ({ className, classNames = {}, onDropHandler, ...props }, ref) => {
@@ -106,7 +134,7 @@ export const Draggable = withRef<'div', DraggableProps>(
       >
         <div
           className={cn(
-            'pointer-events-none absolute top-0 flex h-full -translate-x-full cursor-text opacity-0 group-hover:opacity-100',
+            'pointer-events-none absolute -top-px z-50 flex h-full -translate-x-full cursor-text opacity-0 group-hover:opacity-100',
             classNames.gutterLeft
           )}
           {...gutterLeftProps}
@@ -118,8 +146,12 @@ export const Draggable = withRef<'div', DraggableProps>(
                 classNames.blockToolbar
               )}
             >
-              <div className="size-4" ref={handleRef}>
-                {isHovered && dragHandle}
+              <div
+                className="size-4"
+                data-key={element.id as string}
+                ref={handleRef}
+              >
+                {isHovered && <DragHandle />}
               </div>
             </div>
           </div>

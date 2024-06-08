@@ -1,5 +1,7 @@
 # @udecode/plate-suggestion
 
+## 34.0.0
+
 ## 33.0.2
 
 ### Patch Changes

@@ -1,10 +1,7 @@
-import { createPluginFactory, removeNodes } from '@udecode/plate-common';
+import { withTriggerCombobox } from '@udecode/plate-combobox';
+import { createPluginFactory } from '@udecode/plate-common/server';
 
 import type { MentionPlugin } from './types';
-
-import { mentionOnKeyDownHandler } from './handlers/mentionOnKeyDownHandler';
-import { isSelectionInMentionInput } from './queries/index';
-import { withMention } from './withMention';
 
 export const ELEMENT_MENTION = 'mention';
 
@@ -12,22 +9,17 @@ export const ELEMENT_MENTION_INPUT = 'mention_input';
 
 /** Enables support for autocompleting @mentions. */
 export const createMentionPlugin = createPluginFactory<MentionPlugin>({
-  handlers: {
-    onBlur: (editor) => () => {
-      // remove mention_input nodes from editor on blur
-      removeNodes(editor, {
-        at: [],
-        match: (n) => n.type === ELEMENT_MENTION_INPUT,
-      });
-    },
-    onKeyDown: mentionOnKeyDownHandler({ query: isSelectionInMentionInput }),
-  },
   isElement: true,
   isInline: true,
   isMarkableVoid: true,
   isVoid: true,
   key: ELEMENT_MENTION,
   options: {
+    createComboboxInput: (trigger) => ({
+      children: [{ text: '' }],
+      trigger,
+      type: ELEMENT_MENTION_INPUT,
+    }),
     createMentionNode: (item) => ({ value: item.text }),
     trigger: '@',
     triggerPreviousCharPattern: /^\s?$/,
@@ -36,13 +28,9 @@ export const createMentionPlugin = createPluginFactory<MentionPlugin>({
     {
       isElement: true,
       isInline: true,
+      isVoid: true,
       key: ELEMENT_MENTION_INPUT,
     },
   ],
-  then: (editor, { key }) => ({
-    options: {
-      id: key,
-    },
-  }),
-  withOverrides: withMention,
+  withOverrides: withTriggerCombobox,
 });

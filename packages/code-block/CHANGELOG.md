@@ -1,5 +1,11 @@
 # @udecode/plate-code-block
 
+## 34.0.0
+
+### Patch Changes
+
+- [#3241](https://github.com/udecode/plate/pull/3241) by [@felixfeng33](https://github.com/felixfeng33) – Fix select all
+
 ## 33.0.2
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @udecode/plate-link
 
+## 34.0.1
+
+## 34.0.0
+
+### Patch Changes
+
+- [#3241](https://github.com/udecode/plate/pull/3241) by [@felixfeng33](https://github.com/felixfeng33) – Fix link button closing the floating toolbar.
+
 ## 33.0.5
 
 ### Patch Changes

@@ -76,13 +76,14 @@ export const customizerComponents = {
     href: '/docs/components/editor',
     title: 'Editor',
   },
-  emojiCombobox: {
-    href: '/docs/components/emoji-combobox',
-    title: 'Emoji Combobox',
-  },
   emojiDropdownMenu: {
     href: '/docs/components/emoji-dropdown-menu',
     title: 'Emoji Dropdown Menu',
+  },
+  emojiInputElement: {
+    href: '/docs/components/emoji-input-element',
+    label: 'Element',
+    title: 'Emoji Input',
   },
   emojiToolbarDropdown: {
     href: '/docs/components/emoji-toolbar-dropdown',
@@ -137,6 +138,10 @@ export const customizerComponents = {
     href: '/docs/components/indent-toolbar-button',
     title: 'Indent Toolbar Button',
   },
+  inlineCombobox: {
+    href: '/docs/components/inline-combobox',
+    title: 'Inline Combobox',
+  },
   input: { href: '/docs/components/input', title: 'Input' },
   insertDropdownMenu: {
     href: '/docs/components/insert-dropdown-menu',
@@ -185,10 +190,6 @@ export const customizerComponents = {
   mediaToolbarButton: {
     href: '/docs/components/media-toolbar-button',
     title: 'Media Toolbar Button',
-  },
-  mentionCombobox: {
-    href: '/docs/components/mention-combobox',
-    title: 'Mention Combobox',
   },
   mentionElement: {
     href: '/docs/components/mention-element',

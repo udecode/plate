@@ -134,6 +134,19 @@
   },
   {
     "dependencies": [
+      "@udecode/plate-emoji"
+    ],
+    "files": [
+      "plate-ui/emoji-input-element.tsx"
+    ],
+    "name": "emoji-input-element",
+    "registryDependencies": [
+      "inline-combobox"
+    ],
+    "type": "components:plate-ui"
+  },
+  {
+    "dependencies": [
       "@udecode/plate-alignment"
     ],
     "files": [
@@ -236,19 +249,6 @@
   },
   {
     "dependencies": [
-      "@radix-ui/react-popover",
-      "@udecode/plate-combobox",
-      "@udecode/plate-floating"
-    ],
-    "files": [
-      "plate-ui/combobox.tsx"
-    ],
-    "name": "combobox",
-    "registryDependencies": [],
-    "type": "components:plate-ui"
-  },
-  {
-    "dependencies": [
       "cmdk"
     ],
     "files": [
@@ -308,17 +308,6 @@
       "plate-ui/dropdown-menu.tsx"
     ],
     "name": "dropdown-menu",
-    "registryDependencies": [],
-    "type": "components:plate-ui"
-  },
-  {
-    "dependencies": [
-      "@udecode/plate-combobox"
-    ],
-    "files": [
-      "plate-ui/emoji-combobox.tsx"
-    ],
-    "name": "emoji-combobox",
     "registryDependencies": [],
     "type": "components:plate-ui"
   },
@@ -461,6 +450,18 @@
     "registryDependencies": [
       "toolbar"
     ],
+    "type": "components:plate-ui"
+  },
+  {
+    "dependencies": [
+      "@ariakit/react",
+      "@udecode/plate-combobox"
+    ],
+    "files": [
+      "plate-ui/inline-combobox.tsx"
+    ],
+    "name": "inline-combobox",
+    "registryDependencies": [],
     "type": "components:plate-ui"
   },
   {
@@ -638,16 +639,13 @@
   },
   {
     "dependencies": [
-      "@udecode/plate-mention",
-      "@udecode/plate-combobox"
+      "@udecode/plate-mention"
     ],
     "files": [
-      "plate-ui/mention-combobox.tsx"
+      "plate-ui/mention-element.tsx"
     ],
-    "name": "mention-combobox",
-    "registryDependencies": [
-      "combobox"
-    ],
+    "name": "mention-element",
+    "registryDependencies": [],
     "type": "components:plate-ui"
   },
   {
@@ -669,7 +667,9 @@
       "plate-ui/mention-input-element.tsx"
     ],
     "name": "mention-input-element",
-    "registryDependencies": [],
+    "registryDependencies": [
+      "inline-combobox"
+    ],
     "type": "components:plate-ui"
   },
   {
@@ -766,6 +766,20 @@
     ],
     "name": "separator",
     "registryDependencies": [],
+    "type": "components:plate-ui"
+  },
+  {
+    "dependencies": [
+      "@udecode/plate-heading",
+      "@udecode/plate-indent-list"
+    ],
+    "files": [
+      "plate-ui/slash-input-element.tsx"
+    ],
+    "name": "slash-input-element",
+    "registryDependencies": [
+      "inline-combobox"
+    ],
     "type": "components:plate-ui"
   },
   {
