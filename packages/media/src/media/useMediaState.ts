@@ -4,12 +4,8 @@ import { useElement } from '@udecode/plate-common';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
 
 import type { TMediaElement } from './types';
-
-import { 
-  VIDEO_PROVIDERS,
-  ELEMENT_VIDEO,
-	ELEMENT_MEDIA_EMBED, 
-} from '../media-embed';
+import { ELEMENT_VIDEO } from '../video';
+import { VIDEO_PROVIDERS, ELEMENT_MEDIA_EMBED} from '../media-embed';
 
 export type EmbedUrlData = {
   id?: string;
