@@ -4,9 +4,8 @@ import { useElement } from '@udecode/plate-common';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
 
 import type { TMediaElement } from './types';
-
-import { VIDEO_PROVIDERS } from '../media-embed';
 import { ELEMENT_VIDEO } from '../video';
+import { VIDEO_PROVIDERS, ELEMENT_MEDIA_EMBED} from '../media-embed';
 
 export type EmbedUrlData = {
   id?: string;
@@ -29,7 +28,7 @@ export const useMediaState = ({
   const { align = 'left', id, isUpload, name, type, url } = element;
 
   const embed = React.useMemo(() => {
-    if (!urlParsers || type !== ELEMENT_VIDEO) return;
+    if (!urlParsers || (type !== ELEMENT_VIDEO && type !== ELEMENT_MEDIA_EMBED)) return;
 
     for (const parser of urlParsers) {
       const data = parser(url);
