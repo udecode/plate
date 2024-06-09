@@ -3,6 +3,6 @@
  */
 
 export * from './checkIn';
+export * from './getHeadingList';
 export * from './heightToTop';
 export * from './isHeading';
-export * from './getHeadingList';
