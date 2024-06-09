@@ -1,5 +1,13 @@
 # @udecode/plate-ui
 
+## 34.0.2
+
+### Patch Changes
+
+- [#3239](https://github.com/udecode/plate/pull/3239) by [@kumarajay0412](https://github.com/kumarajay0412) – refactor node type determination logic in turn-into-dropdown component
+
+- [#3239](https://github.com/udecode/plate/pull/3239) by [@kumarajay0412](https://github.com/kumarajay0412) – refactor type determination logic in turn-into-dropdown component
+
 ## 31.0.0
 
 ### Minor Changes

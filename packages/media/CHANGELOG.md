@@ -1,5 +1,11 @@
 # @udecode/plate-media
 
+## 34.0.2
+
+### Patch Changes
+
+- [#3253](https://github.com/udecode/plate/pull/3253) by [@hakimLyon](https://github.com/hakimLyon) – Fix: useMediaState
+
 ## 34.0.0
 
 ### Minor Changes

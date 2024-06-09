@@ -1,5 +1,11 @@
 # @udecode/plate-utils
 
+## 34.0.2
+
+### Patch Changes
+
+- [#3133](https://github.com/udecode/plate/pull/3133) by [@PaulSinghDev](https://github.com/PaulSinghDev) – `useFormInputProps`: Generic form input props inside an editor
+
 ## 34.0.1
 
 ## 34.0.0
