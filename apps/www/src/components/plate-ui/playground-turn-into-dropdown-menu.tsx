@@ -4,12 +4,10 @@ import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
 import {
-  type TElement,
   collapseSelection,
-  findNode,
   focusEditor,
+  getNodeEntries,
   isBlock,
-  isSelectionExpanded,
   toggleNodeType,
   useEditorRef,
   useEditorSelector,
@@ -109,20 +107,24 @@ const defaultItem = items.find((item) => item.value === ELEMENT_PARAGRAPH)!;
 
 export function PlaygroundTurnIntoDropdownMenu(props: DropdownMenuProps) {
   const value: string = useEditorSelector((editor) => {
-    if (!isSelectionExpanded(editor)) {
-      const entry = findNode<TElement>(editor!, {
-        match: (n) => isBlock(editor, n),
-      });
+    let initialNodeType: string = ELEMENT_PARAGRAPH;
+    let allNodesMatchInitialNodeType = false;
+    const codeBlockEntries = getNodeEntries(editor, {
+      match: (n) => isBlock(editor, n),
+      mode: 'highest',
+    });
+    const nodes = Array.from(codeBlockEntries);
 
-      if (entry) {
-        return (
-          items.find((item) => item.value === entry[0].type)?.value ??
-          ELEMENT_PARAGRAPH
-        );
-      }
+    if (nodes.length > 0) {
+      initialNodeType = nodes[0][0].type as string;
+      allNodesMatchInitialNodeType = nodes.every(([node]) => {
+        const type: string = (node?.type as string) || ELEMENT_PARAGRAPH;
+
+        return type === initialNodeType;
+      });
     }
 
-    return ELEMENT_PARAGRAPH;
+    return allNodesMatchInitialNodeType ? initialNodeType : ELEMENT_PARAGRAPH;
   }, []);
 
   const editor = useEditorRef();
