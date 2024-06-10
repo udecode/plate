@@ -17,7 +17,7 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 - add `emoji-input-element`
 - update `mention-input-element` and `slash-input-element` to use the new combobox
 - feat `draggable`: add the data-key attribute to facilitate adding selection after the drag-and-drop operation is completed
-- breaking change:  add `CaptionProvider` on `image-element` and `media-embed-element`. Open the caption by using `CaptionButton` or `useCaptionStore().set.showCaption()`
+- breaking change: Open the caption by using `CaptionButton` or pass the media element's ID through `captionActions.showCaptionId`"
 
 ## May 2024 #10
 
@@ -53,8 +53,8 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ### February 5 #8.1
 
-- fix `mention-element`:  Mention input removed when clicking mention combobox scrollbar
-([#2919](https://github.com/udecode/plate/issues/2919))
+- fix `mention-element`: Mention input removed when clicking mention combobox scrollbar
+  ([#2919](https://github.com/udecode/plate/issues/2919))
 
 ## January 2024 #7
 
@@ -71,7 +71,7 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 ### January 9 #7.3
 
 - `toolbar`
-  - `Toolbar`: replace `items-stretch` with `items-center` 
+  - `Toolbar`: replace `items-stretch` with `items-center`
   - use `toolbarButtonVariants` instead of `toggleVariants`
   - fix `value` prop type bug
   - uses now `withTooltip`, so replace `[data-state=on]` with `aria-checked` to avoid conflicts
@@ -84,9 +84,11 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ```tsx
 // Before
-export const TableElement = withRef<typeof PlateElement>(({ className, children, ...props }, ref) => {
-  // ...
-});
+export const TableElement = withRef<typeof PlateElement>(
+  ({ className, children, ...props }, ref) => {
+    // ...
+  }
+);
 
 // After
 export const TableElement = withHOC(
@@ -108,9 +110,10 @@ export const TableElement = withHOC(
 - remove `clsx` from dependency: `class-variance-utility` already exports it as `cx`
 - new dependency: `@udecode/cn`
 - remove `@/lib/utils.ts` in favor of `cn` from `@udecode/cn`. Replace all imports from `@/lib/utils` with `@udecode/cn`
-- import `withProps` from `@udecode/cn` instead of `@udecode/plate-common`
+- import `withProps` from `@udecode/cn` instead of `@udecode/plate-common
+  `
 - all components using `forwardRef` are now using `withRef`. `withProps`, `withCn` and `withVariants` are also used to reduce boilerplate.
-- add `withCn` to ESLint `settings.tailwindcss.callees` and `classAttributes` in your IDE settings 
+- add `withCn` to ESLint `settings.tailwindcss.callees` and `classAttributes` in your IDE settings
 
 ```tsx
 // before
@@ -137,7 +140,6 @@ export const Avatar = withCn(
   'relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full'
 );
 ```
-
 
 ### December 25 #6.2
 
@@ -178,7 +180,7 @@ export const Avatar = withCn(
 ### 18 Sept #4.4
 
 - `editor`: New component 🎉 See [Editor](https://platejs.org/docs/components/editor)
-- `fixed-toolbar-buttons`, `floating-toolbar-buttons`, `mode-dropdown-menu`: 
+- `fixed-toolbar-buttons`, `floating-toolbar-buttons`, `mode-dropdown-menu`:
   - plate 24: rename `usePlateReadOnly` to `useEditorReadOnly`
 - `code-block-element`: changes in `code-block-element.css`
 
