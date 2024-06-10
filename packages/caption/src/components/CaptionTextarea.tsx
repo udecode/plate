@@ -21,7 +21,7 @@ import { useReadOnly } from 'slate-react';
 
 import type { TCaptionElement } from '../TCaptionElement';
 
-import { captionGlobalStore } from '../captionGlobalStore';
+import { captionActions, captionGlobalStore } from '../captionGlobalStore';
 import { TextareaAutosize } from './TextareaAutosize';
 
 /** Focus textareaRef when focusCaptionPath is set to the image path. */
@@ -128,8 +128,17 @@ export const useCaptionTextarea = ({
     }
   };
 
+  const onBlur: TextareaAutosizeProps['onBlur'] = (e) => {
+    const currentValue = e.target.value;
+
+    if (currentValue.length === 0) {
+      captionActions.showCaptionId(null);
+    }
+  };
+
   return {
     props: {
+      onBlur,
       onChange,
       onKeyDown,
       readOnly,

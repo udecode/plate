@@ -8,7 +8,7 @@ import {
   ELEMENT_H5,
   ELEMENT_H6,
 } from '@udecode/plate-heading';
-import { ELEMENT_IMAGE } from '@udecode/plate-media';
+import { ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from '@udecode/plate-media';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 
 export const alignPlugin: Partial<PlatePlugin> = {
@@ -16,6 +16,7 @@ export const alignPlugin: Partial<PlatePlugin> = {
     props: {
       validTypes: [
         ELEMENT_PARAGRAPH,
+        ELEMENT_MEDIA_EMBED,
         ELEMENT_H1,
         ELEMENT_H2,
         ELEMENT_H3,
