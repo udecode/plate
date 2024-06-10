@@ -3,6 +3,7 @@
 import React from 'react';
 
 import { cn } from '@udecode/cn';
+import { useFormInputProps } from '@udecode/plate-common';
 import {
   type UseVirtualFloatingOptions,
   flip,
@@ -68,11 +69,14 @@ export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
     ref: editRef,
     unlinkButtonProps,
   } = useFloatingLinkEdit(editState);
+  const inputProps = useFormInputProps({
+    preventDefaultOnEnterKeydown: true,
+  });
 
   if (hidden) return null;
 
   const input = (
-    <div className="flex w-[330px] flex-col">
+    <div className="flex w-[330px] flex-col" {...inputProps}>
       <div className="flex items-center">
         <div className="flex items-center pl-3 text-muted-foreground">
           <Icons.link className="size-4" />
@@ -83,9 +87,7 @@ export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
           placeholder="Paste link"
         />
       </div>
-
       <Separator />
-
       <div className="flex items-center">
         <div className="flex items-center pl-3 text-muted-foreground">
           <Icons.text className="size-4" />
