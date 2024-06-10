@@ -1,5 +1,11 @@
 # @udecode/plate-caption
 
+## 34.0.3
+
+### Patch Changes
+
+- [#3257](https://github.com/udecode/plate/pull/3257) by [@felixfeng33](https://github.com/felixfeng33) – fix caption when editor is blur
+
 ## 34.0.0
 
 ### Major Changes
