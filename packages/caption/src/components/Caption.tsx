@@ -1,10 +1,10 @@
 import type React from 'react';
 
-import { createPrimitiveComponent } from '@udecode/plate-common';
+import { createPrimitiveComponent, useElement } from '@udecode/plate-common';
 import { useReadOnly, useSelected } from 'slate-react';
 
+import { useCaptionSelectors } from '../captionGlobalStore';
 import { useCaptionString } from '../hooks/useCaptionString';
-import { useCaptionStore } from '../useResizableStore';
 
 export interface CaptionOptions {
   readOnly?: boolean;
@@ -16,15 +16,15 @@ export interface CaptionProps
 }
 
 export const useCaptionState = (options: CaptionOptions = {}) => {
+  const element = useElement();
   const captionString = useCaptionString();
-  const showCaption = useCaptionStore().get.showCaption();
+  const showCaption = useCaptionSelectors().isShow(element.id as string);
 
   const selected = useSelected();
   const _readOnly = useReadOnly();
   const readOnly = options.readOnly || _readOnly;
 
-  const hidden =
-    !showCaption || (captionString.length === 0 && (readOnly || !selected));
+  const hidden = !showCaption && captionString.length === 0;
 
   return {
     captionString,
