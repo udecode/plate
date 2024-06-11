@@ -11,7 +11,7 @@ export const getAncestorNode = <V extends Value = Value>(
 
   const at = path ? path[0] : selection?.focus?.path[0];
 
-  if (!at) return;
+  if (typeof at !== 'number') return;
 
   return getNodeEntry(editor, [at]);
 };
