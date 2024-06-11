@@ -5,4 +5,4 @@ export const addSelectedRow = <V extends Value>(
   editor: PlateEditor<V>,
   id: string,
   options: { aboveHtmlNode?: HTMLDivElement; clear?: boolean } = {}
-) => (editor as any).addSelectedRow(id, options);
+) => editor.addSelectedRow && (editor as any).addSelectedRow(id, options);
