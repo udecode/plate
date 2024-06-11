@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-core",
-  "version": "34.0.1",
+  "version": "34.0.4",
   "description": "The core architecture of Plate – a plugin system for slate",
   "keywords": [
     "contentEditable",
@@ -58,7 +58,7 @@
   "dependencies": {
     "@udecode/slate": "32.0.1",
     "@udecode/slate-react": "33.0.0",
-    "@udecode/slate-utils": "34.0.0",
+    "@udecode/slate-utils": "34.0.4",
     "@udecode/utils": "31.0.0",
     "clsx": "^1.2.1",
     "is-hotkey": "^0.2.0",

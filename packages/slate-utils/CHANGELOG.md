@@ -1,5 +1,11 @@
 # @udecode/slate-utils
 
+## 34.0.4
+
+### Patch Changes
+
+- [#3262](https://github.com/udecode/plate/pull/3262) by [@felixfeng33](https://github.com/felixfeng33) – fix getAncestorNode cann't get the first node.
+
 ## 34.0.0
 
 ### Minor Changes
