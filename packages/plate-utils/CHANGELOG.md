@@ -1,5 +1,11 @@
 # @udecode/plate-utils
 
+## 34.0.5
+
+### Patch Changes
+
+- [`1b6917cb95947779d161db2302078280245c91b3`](https://github.com/udecode/plate/commit/1b6917cb95947779d161db2302078280245c91b3) by [@felixfeng33](https://github.com/felixfeng33) – Check if the user has installed selection plugin for `addSelectedRow`.
+
 ## 34.0.4
 
 ## 34.0.2
