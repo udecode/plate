@@ -1,6 +1,10 @@
 import React from 'react';
 
-import { useEditorSelector } from '@udecode/plate-common';
+import {
+  toDOMNode,
+  useEditorRef,
+  useEditorSelector,
+} from '@udecode/plate-common';
 import {
   getSelectionText,
   isSelectionExpanded,
@@ -34,11 +38,12 @@ export const useFloatingToolbarState = ({
   const selectionText = useEditorSelector(getSelectionText, []);
 
   const focused = useFocused();
+  const editor = useEditorRef();
 
   const [open, setOpen] = React.useState(false);
   const [waitForCollapsedSelection, setWaitForCollapsedSelection] =
     React.useState(false);
-  const [mouseupped, setMouseupped] = React.useState(false);
+  const [mousedown, setMousedown] = React.useState(false);
 
   const floating = useVirtualFloating(
     mergeProps(
@@ -52,17 +57,18 @@ export const useFloatingToolbarState = ({
   );
 
   return {
+    editor,
     editorId,
     floating,
     focused,
     focusedEditorId,
     hideToolbar,
     ignoreReadOnly,
-    mouseupped,
+    mousedown,
     open,
     selectionExpanded,
     selectionText,
-    setMouseupped,
+    setMousedown,
     setOpen,
     setWaitForCollapsedSelection,
     waitForCollapsedSelection,
@@ -70,16 +76,17 @@ export const useFloatingToolbarState = ({
 };
 
 export const useFloatingToolbar = ({
+  editor,
   editorId,
   floating,
   focusedEditorId,
   hideToolbar,
   ignoreReadOnly,
-  mouseupped,
+  mousedown,
   open,
   selectionExpanded,
   selectionText,
-  setMouseupped,
+  setMousedown,
   setOpen,
   setWaitForCollapsedSelection,
   waitForCollapsedSelection,
@@ -102,27 +109,30 @@ export const useFloatingToolbar = ({
   ]);
 
   React.useEffect(() => {
-    const mouseup = () => setMouseupped(true);
+    const container = toDOMNode(editor, editor);
+    const mouseup = () => setMousedown(false);
+    const mousedown = () => setMousedown(true);
 
-    if (selectionText && selectionExpanded) {
-      document.addEventListener('mouseup', mouseup);
-    } else {
-      document.removeEventListener('mouseup', mouseup);
-    }
+    if (!container) return;
+
+    container.addEventListener('mouseup', mouseup);
+
+    document.addEventListener('mousedown', mousedown);
 
     return () => {
-      document.removeEventListener('mouseup', mouseup);
+      container.removeEventListener('mouseup', mouseup);
+      container.removeEventListener('mousedown', mousedown);
     };
-  }, [selectionText, selectionExpanded, setMouseupped]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   React.useEffect(() => {
-    if (!selectionExpanded || !selectionText) {
+    if (!selectionExpanded || !selectionText || (mousedown && !open)) {
       setOpen(false);
-      setMouseupped(false);
     } else if (
       selectionText &&
       selectionExpanded &&
-      mouseupped &&
       !waitForCollapsedSelection
     ) {
       setOpen(true);
@@ -135,9 +145,9 @@ export const useFloatingToolbar = ({
     ignoreReadOnly,
     selectionExpanded,
     selectionText,
-    mouseupped,
-    setMouseupped,
+    mousedown,
     waitForCollapsedSelection,
+    open,
   ]);
 
   const { update } = floating;
