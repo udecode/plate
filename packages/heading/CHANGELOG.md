@@ -1,5 +1,11 @@
 # @udecode/plate-heading
 
+## 34.0.7
+
+### Patch Changes
+
+- [#3273](https://github.com/udecode/plate/pull/3273) by [@natamox](https://github.com/natamox) – Fix closure issue,incorrect height calculation and expose behavior parameters
+
 ## 34.0.0
 
 ### Minor Changes
