@@ -81,7 +81,8 @@ export const useTocSideBar = ({
   const onConentClick = React.useCallback(
     (
       e: React.MouseEvent<HTMLElement, globalThis.MouseEvent>,
-      item: HeadingList
+      item: HeadingList,
+      behavior?: ScrollBehavior
     ) => {
       e.preventDefault();
       const { id, path } = item;
@@ -93,7 +94,7 @@ export const useTocSideBar = ({
 
       if (!el) return;
 
-      onContentScroll(el, id);
+      onContentScroll({ behavior, el, id });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []

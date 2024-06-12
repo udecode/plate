@@ -18,9 +18,13 @@ export const useContentController = ({
   const editor = useEditorRef();
   const [editorContentRef, setEditorContentRef] = React.useState(containerRef);
 
+  const isScrollRef = React.useRef(false);
+
   const isScroll =
     (editorContentRef.current?.scrollHeight || 0) >
     (editorContentRef.current?.clientHeight || 0);
+
+  isScrollRef.current = isScroll;
 
   const scrollContainer = React.useMemo(() => {
     if (typeof window !== 'object') return;
@@ -41,18 +45,26 @@ export const useContentController = ({
 
   const [activeContentId, setActiveContentId] = React.useState(activeId);
 
-  const onContentScroll = (el: HTMLElement, id: string) => {
+  const onContentScroll = ({
+    behavior = 'instant',
+    el,
+    id,
+  }: {
+    behavior?: ScrollBehavior;
+    el: HTMLElement;
+    id: string;
+  }) => {
     setActiveContentId(id);
 
-    if (isScroll) {
+    if (isScrollRef.current) {
       editorContentRef.current?.scrollTo({
-        behavior: 'instant',
+        behavior,
         top: heightToTop(el, editorContentRef) - topOffset,
       });
     } else {
       const top = heightToTop(el) - topOffset;
       // Note: if behavior === smooth,scrolling the toc then click the title immediately will scroll to the wrong position.It should be a chrome bug.
-      window.scrollTo({ behavior: 'instant', top });
+      window.scrollTo({ behavior, top });
     }
 
     addSelectedRow(editor, id);
