@@ -8,7 +8,7 @@ import {
   useEditorSelector,
 } from '@udecode/plate-common';
 
-import type { HeadingList } from '../types';
+import type { Heading } from '../types';
 
 import { getHeadingList, heightToTop } from '../../utils';
 
@@ -39,16 +39,16 @@ export const useTocElementState = ({
   }, [editor]);
 
   const onContentScroll = React.useCallback(
-    (el: HTMLElement, id: string) => {
+    (el: HTMLElement, id: string, behavior: ScrollBehavior = 'instant') => {
       if (!containerRef.current) return;
       if (isScroll) {
         containerRef.current?.scrollTo({
-          behavior: 'instant',
+          behavior,
           top: heightToTop(el, containerRef as any) - topOffset,
         });
       } else {
         const top = heightToTop(el) - topOffset;
-        window.scrollTo({ behavior: 'instant', top });
+        window.scrollTo({ behavior, top });
       }
 
       setTimeout(() => {
@@ -70,7 +70,8 @@ export const useTocElement = ({
     props: {
       onClick: (
         e: React.MouseEvent<HTMLElement, globalThis.MouseEvent>,
-        item: HeadingList
+        item: Heading,
+        behavior: ScrollBehavior
       ) => {
         e.preventDefault();
         const { id, path } = item;
@@ -82,7 +83,7 @@ export const useTocElement = ({
 
         if (!el) return;
 
-        onContentScroll(el, id);
+        onContentScroll(el, id, behavior);
       },
     },
   };

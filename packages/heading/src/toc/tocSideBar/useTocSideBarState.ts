@@ -7,7 +7,7 @@ import {
   useEditorSelector,
 } from '@udecode/plate-common';
 
-import type { HeadingList, TocSideBarProps } from '../types';
+import type { Heading, TocSideBarProps } from '../types';
 
 import { useContentController, useTocController } from '.';
 import { checkIn, getHeadingList } from '../../utils';
@@ -78,10 +78,11 @@ export const useTocSideBar = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mouseInToc]);
 
-  const onConentClick = React.useCallback(
+  const onContentClick = React.useCallback(
     (
       e: React.MouseEvent<HTMLElement, globalThis.MouseEvent>,
-      item: HeadingList
+      item: Heading,
+      behavior?: ScrollBehavior
     ) => {
       e.preventDefault();
       const { id, path } = item;
@@ -93,7 +94,7 @@ export const useTocSideBar = ({
 
       if (!el) return;
 
-      onContentScroll(el, id);
+      onContentScroll({ behavior, el, id });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
@@ -114,6 +115,6 @@ export const useTocSideBar = ({
       },
       ref: tocRef,
     },
-    onConentClick,
+    onContentClick,
   };
 };

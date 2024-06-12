@@ -1,18 +1,18 @@
 import type React from 'react';
 
 export const heightToTop = (
-  ele: Element | HTMLElement,
+  ele: HTMLElement,
   editorContentRef?: React.RefObject<HTMLDivElement>
 ) => {
-  // ele为指定跳转到该位置的DOM节点
   const root = editorContentRef ? editorContentRef.current : document.body;
-  let height = 0;
 
-  do {
-    height += (ele as HTMLElement).offsetTop;
-    // eslint-disable-next-line no-param-reassign
-    ele = (ele as HTMLElement).offsetParent as unknown as Element;
-  } while (ele !== root);
+  if (!root || !ele) return 0;
 
-  return height;
+  const containerRect = root.getBoundingClientRect();
+  const elementRect = ele.getBoundingClientRect();
+
+  const scrollY = root.scrollTop;
+  const absoluteElementTop = elementRect.top + scrollY - containerRect.top;
+
+  return absoluteElementTop;
 };
