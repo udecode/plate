@@ -1,5 +1,11 @@
 # @udecode/plate-floating
 
+## 34.0.6
+
+### Patch Changes
+
+- [#3270](https://github.com/udecode/plate/pull/3270) by [@felixfeng33](https://github.com/felixfeng33) – fix: floating toolbar is hidden when user select text by keyboard.
+
 ## 34.0.1
 
 ### Patch Changes
