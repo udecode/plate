@@ -8,7 +8,7 @@ import {
   useEditorSelector,
 } from '@udecode/plate-common';
 
-import type { HeadingList } from '../types';
+import type { Heading } from '../types';
 
 import { getHeadingList, heightToTop } from '../../utils';
 
@@ -70,7 +70,7 @@ export const useTocElement = ({
     props: {
       onClick: (
         e: React.MouseEvent<HTMLElement, globalThis.MouseEvent>,
-        item: HeadingList,
+        item: Heading,
         behavior: ScrollBehavior
       ) => {
         e.preventDefault();

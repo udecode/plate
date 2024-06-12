@@ -5,7 +5,7 @@ import {
   getNodeString,
 } from '@udecode/plate-common';
 
-import type { HeadingList } from '../toc';
+import type { Heading } from '../toc';
 
 import {
   ELEMENT_H1,
@@ -27,7 +27,7 @@ const headingDepth: Record<string, number> = {
 };
 
 export const getHeadingList = (editor: PlateEditor) => {
-  const headingList: HeadingList[] = [];
+  const headingList: Heading[] = [];
 
   const values = getNodeEntries(editor, {
     at: [],
