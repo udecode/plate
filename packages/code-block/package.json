@@ -49,11 +49,9 @@
     "test:watch": "yarn p:test:watch",
     "typecheck": "yarn p:typecheck"
   },
-  "dependencies": {
-    "prismjs": "^1.29.0"
-  },
   "devDependencies": {
-    "@udecode/plate-common": "workspace:^"
+    "@udecode/plate-common": "workspace:^",
+    "prismjs": "^1.29.0"
   },
   "peerDependencies": {
     "@udecode/plate-common": ">=34.0.5",

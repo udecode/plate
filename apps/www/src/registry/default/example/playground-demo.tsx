@@ -114,6 +114,7 @@ import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
 import { trailingBlockPlugin } from '@/plate/demo/plugins/trailingBlockPlugin';
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
+import { Prism } from '@/registry/default/plate-ui/code-block-combobox';
 import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
 import { CursorOverlay } from '@/registry/default/plate-ui/cursor-overlay';
 import { Editor } from '@/registry/default/plate-ui/editor';
@@ -160,7 +161,12 @@ export const usePlaygroundPlugins = ({
           createParagraphPlugin({ enabled: !!enabled.p }),
           createHeadingPlugin({ enabled: !!enabled.heading }),
           createBlockquotePlugin({ enabled: !!enabled.blockquote }),
-          createCodeBlockPlugin({ enabled: !!enabled.code_block }),
+          createCodeBlockPlugin({
+            enabled: !!enabled.code_block,
+            options: {
+              prism: Prism,
+            },
+          }),
           createHorizontalRulePlugin({ enabled: !!enabled.hr }),
           createLinkPlugin({ ...linkPlugin, enabled: !!enabled.a }),
           createListPlugin({
