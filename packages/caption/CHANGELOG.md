@@ -1,5 +1,11 @@
 # @udecode/plate-caption
 
+## 34.0.8
+
+### Patch Changes
+
+- [#3287](https://github.com/udecode/plate/pull/3287) by [@TyMick](https://github.com/TyMick) – Update caption UI when element `caption` property changes
+
 ## 34.0.3
 
 ### Patch Changes

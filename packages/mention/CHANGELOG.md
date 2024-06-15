@@ -1,5 +1,7 @@
 # @udecode/plate-mention
 
+## 34.0.8
+
 ## 34.0.1
 
 ### Patch Changes

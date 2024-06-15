@@ -1,5 +1,11 @@
 # @udecode/plate-combobox
 
+## 34.0.8
+
+### Patch Changes
+
+- [#3285](https://github.com/udecode/plate/pull/3285) by [@12joan](https://github.com/12joan) – Fix compatibility of `useHTMLInputCursorState` with Chrome and WebKit
+
 ## 34.0.0
 
 ### Major Changes
