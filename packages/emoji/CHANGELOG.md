@@ -1,5 +1,7 @@
 # @udecode/plate-emoji
 
+## 34.0.8
+
 ## 34.0.0
 
 ### Major Changes

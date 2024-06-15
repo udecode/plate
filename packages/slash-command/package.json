@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-slash-command",
-  "version": "34.0.0",
+  "version": "34.0.8",
   "description": "Slash commands plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -39,7 +39,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-combobox": "34.0.0"
+    "@udecode/plate-combobox": "34.0.8"
   },
   "devDependencies": {
     "@udecode/plate-common": "workspace:^"
