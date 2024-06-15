@@ -10,6 +10,10 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ## June 2024 #11
 
+### Pending #11.2
+
+- fix `caption`: update UI when element `caption` property changes
+
 ### June 6 #11.1
 
 - replace `combobox` with `inline-combobox`
@@ -111,6 +115,7 @@ export const TableElement = withHOC(
 - new dependency: `@udecode/cn`
 - remove `@/lib/utils.ts` in favor of `cn` from `@udecode/cn`. Replace all imports from `@/lib/utils` with `@udecode/cn`
 - import `withProps` from `@udecode/cn` instead of `@udecode/plate-common
+
   `
 - all components using `forwardRef` are now using `withRef`. `withProps`, `withCn` and `withVariants` are also used to reduce boilerplate.
 - add `withCn` to ESLint `settings.tailwindcss.callees` and `classAttributes` in your IDE settings

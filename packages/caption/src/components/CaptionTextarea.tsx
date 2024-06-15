@@ -47,14 +47,27 @@ export const useCaptionTextareaFocus = (
 
 export const useCaptionTextareaState = () => {
   const element = useElement<TCaptionElement>();
+  const editor = useEditorRef();
 
   const {
     caption: nodeCaption = [{ children: [{ text: '' }] }] as [TElement],
   } = element;
 
-  const [captionValue, setCaptionValue] = React.useState<
-    TextareaAutosizeProps['value']
-  >(getNodeString(nodeCaption[0]));
+  const captionValue: TextareaAutosizeProps['value'] = getNodeString(
+    nodeCaption[0]
+  );
+
+  function setCaptionValue(newValue: TextareaAutosizeProps['value']) {
+    const path = findNodePath(editor, element);
+
+    if (!path) return;
+
+    setNodes<TCaptionElement>(
+      editor,
+      { caption: [{ text: newValue }] },
+      { at: path }
+    );
+  }
 
   const readOnly = useReadOnly();
 
@@ -84,21 +97,9 @@ export const useCaptionTextarea = ({
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const newValue = e.target.value;
 
-      // local state
       setCaptionValue(newValue);
-
-      const path = findNodePath(editor, element);
-
-      if (!path) return;
-
-      // saved state
-      setNodes<TCaptionElement>(
-        editor,
-        { caption: [{ text: newValue }] },
-        { at: path }
-      );
     },
-    [editor, element, setCaptionValue]
+    [setCaptionValue]
   );
 
   const onKeyDown: TextareaAutosizeProps['onKeyDown'] = (e) => {
