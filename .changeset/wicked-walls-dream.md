@@ -2,4 +2,4 @@
 "@udecode/plate-media": minor
 ---
 
-Feat: image preivew
+Add image preview
