@@ -8,7 +8,10 @@ import {
 
 import type { TPlaceholderElement } from '../types';
 
+import { ELEMENT_AUDIO } from '../../audio';
+import { ELEMENT_FILE } from '../../file';
 import { ELEMENT_IMAGE } from '../../image';
+import { ELEMENT_VIDEO } from '../../video';
 import { ELEMENT_PLACEHOLDER } from '../createPlaceholderPlugin';
 
 export const insertPlaceHolder = <V extends Value>(
@@ -33,3 +36,18 @@ export const insertImagePlaceholder = <V extends Value>(
   editor: PlateEditor<V>,
   options?: InsertNodesOptions<V>
 ) => insertPlaceHolder(editor, ELEMENT_IMAGE, options);
+
+export const insertVideoPlaceholder = <V extends Value>(
+  editor: PlateEditor<V>,
+  options?: InsertNodesOptions<V>
+) => insertPlaceHolder(editor, ELEMENT_VIDEO, options);
+
+export const insertAudioPlaceholer = <V extends Value>(
+  editor: PlateEditor<V>,
+  options?: InsertNodesOptions<V>
+) => insertPlaceHolder(editor, ELEMENT_AUDIO, options);
+
+export const insertFilePlaceholer = <V extends Value>(
+  editor: PlateEditor<V>,
+  options?: InsertNodesOptions<V>
+) => insertPlaceHolder(editor, ELEMENT_FILE, options);

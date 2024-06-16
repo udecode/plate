@@ -7,6 +7,10 @@ import {
 
 import { BlockSelectionArea, BlockStartArea } from './components';
 import { BlockSelectable } from './components/BlockSelectable';
+import {
+  blockContextMenuActions,
+  blockContextMenuSelectors,
+} from './context-menu';
 import { onKeyDownSelection } from './onKeyDownSelection';
 import { useHooksBlockSelection } from './useHooksBlockSelection';
 import { onCloseBlockSelection } from './utils';
@@ -30,9 +34,12 @@ export const createBlockSelectionPlugin =
   createPluginFactory<BlockSelectionPlugin>({
     handlers: {
       onChange: onCloseBlockSelection,
-      // onFocus: onCloseBlockSelection,
       onKeyDown: onKeyDownSelection,
-      onMouseDown: () => (e) => {
+      onMouseDown: (editor) => (e) => {
+        if (e.button === 0 && blockContextMenuSelectors.isOpen(editor.id)) {
+          e.preventDefault();
+          blockContextMenuActions.hide();
+        }
         if (e.button === 2) e.preventDefault();
       },
     },

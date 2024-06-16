@@ -1,9 +1,5 @@
 import { createZustandStore } from '@udecode/plate-common/server';
 
-/**
- * The show action has depend on blockSelection store a lot. should I move this
- * action into blockSelection store?
- */
 export const blockContextMenuStore = createZustandStore('contextMenu')({
   action: { group: null, value: null } as {
     group: null | string;
