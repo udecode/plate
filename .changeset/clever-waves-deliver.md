@@ -2,4 +2,4 @@
 "@udecode/plate-selection": patch
 ---
 
-Fixes cann't close menu in production.
+Fix: can't close menu in production build
