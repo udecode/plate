@@ -4,4 +4,4 @@
 
 export * from './InlineEquationButton';
 export * from './InlineEquationInput';
-export * from './useInlineEquationToolbarButton'
+export * from './useInlineEquationToolbarButton';
