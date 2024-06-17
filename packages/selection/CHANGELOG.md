@@ -1,5 +1,11 @@
 # @udecode/plate-selection
 
+## 34.1.0
+
+### Patch Changes
+
+- [#3289](https://github.com/udecode/plate/pull/3289) by [@felixfeng33](https://github.com/felixfeng33) – Fix: can't close menu in production build
+
 ## 34.0.0
 
 ### Minor Changes

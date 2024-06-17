@@ -1,5 +1,11 @@
 # @udecode/plate-caption
 
+## 34.1.0
+
+### Minor Changes
+
+- [#3289](https://github.com/udecode/plate/pull/3289) by [@felixfeng33](https://github.com/felixfeng33) – Add `showCaption` utils
+
 ## 34.0.8
 
 ### Patch Changes
