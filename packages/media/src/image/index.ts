@@ -3,10 +3,12 @@
  */
 
 export * from './createImagePlugin';
+export * from './image-preview-store';
 export * from './types';
 export * from './withImage';
 export * from './withImageEmbed';
 export * from './withImageUpload';
 export * from './components/index';
+export * from './hooks/index';
 export * from './transforms/index';
 export * from './utils/index';

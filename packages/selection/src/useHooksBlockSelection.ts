@@ -83,8 +83,6 @@ export const useHooksBlockSelection = <
             match: (n) => blockSelectionSelectors.selectedIds().has(n.id),
           });
 
-          console.log(entry);
-
           if (entry) {
             const [, path] = entry;
 

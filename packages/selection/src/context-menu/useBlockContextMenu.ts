@@ -1,6 +1,6 @@
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 
-import { getNodeTexts, setNodes, useEditorRef } from '@udecode/plate-common';
+import { useEditorRef } from '@udecode/plate-common';
 
 import { useBlockSelectionSelectors } from '../blockSelectionStore';
 import { getSelectedBlocks } from '../queries';
@@ -21,24 +21,6 @@ export const useBlockContextMenuState = () => {
   const setAction = blockContextMenuActions.action;
   const selectedBlocks = getSelectedBlocks(editor);
 
-  const setMarkSelection = useCallback(
-    (mark: string, value: string) => {
-      selectedBlocks.forEach(([node, nodePath]) => {
-        const _textEntry = getNodeTexts(node);
-        const textEntry = Array.from(_textEntry);
-        textEntry.forEach(([_, textpath]) => {
-          setNodes(
-            editor,
-            { [mark]: value },
-            { at: [...nodePath, ...textpath] }
-          );
-        });
-      });
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [action]
-  );
-
   return {
     action,
     editor,
@@ -46,7 +28,6 @@ export const useBlockContextMenuState = () => {
     selectedBlocks,
     selectedIds,
     setAction,
-    setMarkSelection,
   };
 };
 

@@ -46,7 +46,7 @@ export const useEquationInput = ({
           addSelectedRow(editor, element.id as string);
         }
       },
-      onMouseEnter: (e: React.MouseEvent<HTMLTextAreaElement, MouseEvent>) => {
+      onMouseEnter: () => {
         inputRef.current?.focus();
       },
       ref: inputRef,

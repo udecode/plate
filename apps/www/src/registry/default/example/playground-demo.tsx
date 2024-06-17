@@ -128,6 +128,8 @@ import {
   TodoMarker,
 } from '@/registry/default/plate-ui/indent-todo-marker-component';
 
+import { ImagePreview } from '../plate-ui/image-preview';
+
 export const usePlaygroundPlugins = ({
   components = createPlateUI(),
   id,
@@ -166,7 +168,10 @@ export const usePlaygroundPlugins = ({
           createListPlugin({
             enabled: id === 'list' || !!enabled.list,
           }),
-          createImagePlugin({ enabled: !!enabled.img }),
+          createImagePlugin({
+            enabled: !!enabled.img,
+            renderAfterEditable: ImagePreview,
+          }),
           createMediaEmbedPlugin({ enabled: !!enabled.media_embed }),
           createCaptionPlugin({ ...captionPlugin, enabled: !!enabled.caption }),
           createMentionPlugin({
