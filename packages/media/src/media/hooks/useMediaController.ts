@@ -13,7 +13,7 @@ export const useMediaController = ({
   setAlignOpen,
 }: ReturnType<typeof useMediaControllerState>) => {
   return {
-    MeidaControllerDropDownMenuProps: {
+    MediaControllerDropDownMenuProps: {
       setAlignOpen: setAlignOpen,
     },
   };
