@@ -57,7 +57,14 @@ export const commentsData: TComments[] = [
         isUpdated: false,
         updatedAt: 1_663_453_729_191,
         userId: '2',
-        value: [{ children: [{ text: 'Joe: This is a comment.' }], type: 'p' }],
+        value: [{
+          children: [
+            { text: 'Joe: A commen' },
+            { italic: true, text: 't' },
+            { text: 'able effort' },
+          ],
+          type: 'p',
+        }],
       },
     ],
     updatedAt: 1_663_453_729_191,
