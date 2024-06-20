@@ -4,29 +4,33 @@ import React from 'react';
 
 import { cn } from '@udecode/cn';
 import {
-  CommentResolveButton as CommentResolveButtonPrimitive,
-  useComment,
+  type TReply,
+  useActiveComments,
+  useCommentResolveButton,
 } from '@udecode/plate-comments';
 
 import { Icons } from '@/components/icons';
 
 import { buttonVariants } from './button';
 
-export function CommentResolveButton() {
-  const comment = useComment()!;
+export function CommentResolveButton({ reply }: { reply: TReply }) {
+  const props = useCommentResolveButton(reply);
+  const comments = useActiveComments()!;
 
   return (
-    <CommentResolveButtonPrimitive
+    <button
+      type="button"
+      {...props}
       className={cn(
         buttonVariants({ variant: 'ghost' }),
         'h-6 p-1 text-muted-foreground'
       )}
     >
-      {comment.isResolved ? (
+      {comments.isResolved ? (
         <Icons.refresh className="size-4" />
       ) : (
         <Icons.check className="size-4" />
       )}
-    </CommentResolveButtonPrimitive>
+    </button>
   );
 }

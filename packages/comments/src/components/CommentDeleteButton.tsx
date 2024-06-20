@@ -1,50 +1,40 @@
-import { createPrimitiveComponent, useEditorRef } from '@udecode/plate-common';
+import { createPrimitiveComponent } from '@udecode/plate-common';
 
-import { useCommentSelectors } from '../stores/comment/CommentProvider';
+import type { TReply } from '../types';
+
 import {
-  useCommentsActions,
+  useActiveComments,
   useCommentsSelectors,
-  useRemoveComment,
 } from '../stores/comments/CommentsProvider';
-import { unsetCommentNodesById } from '../utils/index';
 
-export const useCommentDeleteButtonState = () => {
-  const activeCommentId = useCommentsSelectors().activeCommentId();
+export const useCommentDeleteButtonState = (reply: TReply) => {
+  const activeComments = useActiveComments();
+  const myUserId = useCommentsSelectors().myUserId();
   const onCommentDelete = useCommentsSelectors().onCommentDelete();
-  const id = useCommentSelectors().id();
-  const setActiveCommentId = useCommentsActions().activeCommentId();
-  const removeComment = useRemoveComment();
-  const editor = useEditorRef();
 
   return {
-    activeCommentId,
-    editor,
-    id,
+    activeComments,
+    myUserId,
     onCommentDelete,
-    removeComment,
-    setActiveCommentId,
+    reply,
   };
 };
 
 export const useCommentDeleteButton = ({
-  activeCommentId,
-  editor,
-  id,
+  activeComments,
+  myUserId,
   onCommentDelete,
-  removeComment,
-  setActiveCommentId,
+  reply,
 }: ReturnType<typeof useCommentDeleteButtonState>) => {
   return {
     props: {
       onClick: () => {
-        if (activeCommentId === id) {
-          unsetCommentNodesById(editor, { id });
-          setActiveCommentId(null);
-        } else {
-          removeComment(id);
-        }
+        if (!activeComments || !myUserId) return;
 
-        onCommentDelete?.(id);
+        onCommentDelete?.(reply, activeComments, myUserId);
+
+        // TODO: remove mark if remove all the comment
+        // unsetCommentNodesById(editor, { id });
       },
     },
   };

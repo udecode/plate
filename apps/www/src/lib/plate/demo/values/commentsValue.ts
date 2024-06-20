@@ -1,4 +1,4 @@
-import type { TComment } from '@udecode/plate-comments';
+import type { TComments } from '@udecode/plate-comments';
 import type { Value } from '@udecode/plate-common';
 
 export const usersData = {
@@ -14,43 +14,55 @@ export const usersData = {
   },
 };
 
-export const commentsData: Record<string, TComment> = {
-  1: {
-    createdAt: 1_663_453_625_129,
-    id: '1',
-    userId: '1',
-    value: [{ children: [{ text: 'This is a comment.' }], type: 'p' }],
-  },
-  2: {
+export const commentsData: TComments[] = [
+  {
     createdAt: 1_663_453_729_191,
-    id: '2',
-    userId: '1',
-    value: [
-      { children: [{ text: 'Can you review this one @12joan?' }], type: 'p' },
+    id: 'comments_1',
+    isResolved: false,
+    replies: [
+      {
+        commentsId: 'comments_1',
+        createdAt: 1_663_453_729_191,
+        id: 'reply_1',
+        isUpdated: false,
+        updatedAt: 1_663_453_729_191,
+        userId: '1',
+        value: [
+          { children: [{ text: 'zbeyens: This is a comment.' }], type: 'p' },
+        ],
+      },
+      {
+        commentsId: 'comments_1',
+        createdAt: 1_663_453_729_191,
+        id: 'reply_2',
+        isUpdated: false,
+        updatedAt: 1_663_453_729_191,
+        userId: '1',
+        value: [
+          { children: [{ text: 'zbeyens: This is a comment.' }], type: 'p' },
+        ],
+      },
     ],
+    updatedAt: 1_663_453_729_191,
   },
-  3: {
-    createdAt: 1_663_453_740_180,
-    id: '3',
-    isResolved: true,
-    userId: '1',
-    value: [{ children: [{ text: 'This is a resolved comment.' }], type: 'p' }],
+  {
+    createdAt: 1_663_453_729_191,
+    id: 'comments_2',
+    isResolved: false,
+    replies: [
+      {
+        commentsId: 'comments_2',
+        createdAt: 1_663_453_729_191,
+        id: 'reply_3',
+        isUpdated: false,
+        updatedAt: 1_663_453_729_191,
+        userId: '2',
+        value: [{ children: [{ text: 'Joe: This is a comment.' }], type: 'p' }],
+      },
+    ],
+    updatedAt: 1_663_453_729_191,
   },
-  4: {
-    createdAt: 1_663_453_740_181,
-    id: '4',
-    parentId: '2',
-    userId: '2',
-    value: [{ children: [{ text: 'LGTM.' }], type: 'p' }],
-  },
-  5: {
-    createdAt: 1_663_453_740_182,
-    id: '4',
-    parentId: '2',
-    userId: '1',
-    value: [{ children: [{ text: 'Thanks!' }], type: 'p' }],
-  },
-};
+];
 
 export const commentsValue: Value = [
   {
@@ -64,13 +76,13 @@ export const commentsValue: Value = [
       },
       {
         comment: true,
-        comment_1: true,
+        comment_comments_1: true,
         text: 'comments to your content',
       },
       { text: ' to provide additional context, insights, or ' },
       {
         comment: true,
-        comment_2: true,
+        comment_comments_2: true,
         text: 'collaborate',
       },
       {

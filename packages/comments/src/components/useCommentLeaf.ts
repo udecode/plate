@@ -10,13 +10,14 @@ import {
   useCommentsActions,
   useCommentsSelectors,
 } from '..';
+import { getCommentsById } from '../utils/getRepliesByCommentsId';
 
 export const useCommentLeafState = ({ leaf }: { leaf: TCommentText }) => {
   const editor = useEditorRef();
   const [commentIds, setCommentIds] = React.useState<string[]>([]);
   const activeCommentId = useCommentsSelectors().activeCommentId();
   const setActiveCommentId = useCommentsActions().activeCommentId();
-  const comments = useCommentsSelectors().comments();
+  const commentsList = useCommentsSelectors().commentsList();
   const [commentCount, setCommentCount] = React.useState(1);
   const [isActive, setIsActive] = React.useState(false);
 
@@ -31,7 +32,7 @@ export const useCommentLeafState = ({ leaf }: { leaf: TCommentText }) => {
 
       const id = getCommentKeyId(key);
 
-      if (comments[id]?.isResolved) return;
+      if (getCommentsById(commentsList, id)?.isResolved) return;
       if (id === activeCommentId) {
         _isActive = true;
         setIsActive(true);
@@ -46,7 +47,9 @@ export const useCommentLeafState = ({ leaf }: { leaf: TCommentText }) => {
 
       // Remove comment nodes for unsubmitted comments
       ids.forEach((id) => {
-        if (!comments[id]) {
+        console.log(getCommentsById(commentsList, id));
+
+        if (!getCommentsById(commentsList, id)) {
           unsetCommentNodesById(editor, { id });
         }
       });
@@ -54,7 +57,7 @@ export const useCommentLeafState = ({ leaf }: { leaf: TCommentText }) => {
 
     setCommentCount(count);
     setCommentIds(ids);
-  }, [editor, activeCommentId, comments, isActive, leaf]);
+  }, [editor, activeCommentId, commentsList, isActive, leaf]);
 
   const lastCommentId = commentIds.at(-1)!;
 

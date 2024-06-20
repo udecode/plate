@@ -1,32 +1,34 @@
 import { createPrimitiveComponent } from '@udecode/plate-common';
 
-import {
-  useComment,
-  useCommentActions,
-} from '../stores/comment/CommentProvider';
+import type { TReply } from '../types';
 
-export const useCommentEditButtonState = () => {
-  const setIsMenuOpen = useCommentActions().isMenuOpen();
-  const comment = useComment()!;
-  const editingValue = useCommentActions().editingValue();
+import { useCommentsActions } from '../stores';
+
+export const useCommentEditButtonState = (reply: TReply) => {
+  const setOpenMenuReplyId = useCommentsActions().openMenuReplyId();
+  const setNewEditingValue = useCommentsActions().editingValue();
+  const setEditingReply = useCommentsActions().editingReplyId();
 
   return {
-    comment,
-    editingValue,
-    setIsMenuOpen,
+    reply,
+    setEditingReply,
+    setNewEditingValue,
+    setOpenMenuReplyId,
   };
 };
 
 export const useCommentEditButton = ({
-  comment,
-  editingValue,
-  setIsMenuOpen,
+  reply,
+  setEditingReply,
+  setNewEditingValue,
+  setOpenMenuReplyId,
 }: ReturnType<typeof useCommentEditButtonState>) => {
   return {
     props: {
       onClick: () => {
-        setIsMenuOpen(false);
-        editingValue(comment.value);
+        setOpenMenuReplyId(reply.id);
+        setEditingReply(reply.id);
+        setNewEditingValue(reply.value);
       },
     },
   };

@@ -1,35 +1,35 @@
 import { createPrimitiveComponent } from '@udecode/plate-common';
 
-import { useComment } from '../stores/comment/CommentProvider';
+import type { TReply } from '../types';
+
 import {
   useCommentsActions,
   useCommentsSelectors,
-  useUpdateComment,
 } from '../stores/comments/CommentsProvider';
+import { getCommentsById } from '../utils/getRepliesByCommentsId';
 
-export const useCommentResolveButton = () => {
-  const onCommentUpdate = useCommentsSelectors().onCommentUpdate();
+export const useCommentResolveButton = (replay: TReply) => {
   const activeCommentId = useCommentsSelectors().activeCommentId();
+  const commentsList = useCommentsSelectors().commentsList();
   const setActiveCommentId = useCommentsActions().activeCommentId();
-  const updateComment = useUpdateComment(activeCommentId);
 
-  const comment = useComment()!;
+  const active = getCommentsById(commentsList, replay.commentsId);
 
   return {
     props: {
       onClick: () => {
-        const isResolved = !comment.isResolved;
+        const isResolved = active?.isResolved;
 
-        const value = {
-          isResolved,
-        };
+        // const value = {
+        //   isResolved,
+        // };
 
-        updateComment(value);
+        // updateComment(value);
 
-        onCommentUpdate?.({
-          id: activeCommentId!,
-          ...value,
-        });
+        // onCommentUpdate?.({
+        //   id: activeCommentId!,
+        //   ...value,
+        // });
 
         if (isResolved) {
           setActiveCommentId(null);

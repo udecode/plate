@@ -1,27 +1,27 @@
-import {
-  useComment,
-  useCommentSelectors,
-  useCommentText,
-  useCommentUser,
-  useCommentsSelectors,
-} from '..';
+import { useMemo } from 'react';
 
-export const useCommentItemContentState = () => {
-  const comment = useComment()!;
-  const isReplyComment = !!comment.parentId;
-  const commentText = useCommentText();
-  const user = useCommentUser();
+import { getNodeString } from '@udecode/plate-common';
+
+import { type TReply, useCommentsSelectors, useIsEditingReply } from '..';
+
+export const useCommentItemContentState = (reply: TReply) => {
+  const users = useCommentsSelectors().users();
+
+  const commentText = useMemo(
+    () => reply.value && getNodeString(reply.value[0]),
+    [reply.value]
+  );
+  const user = users[reply.userId];
+
   const myUserId = useCommentsSelectors().myUserId();
-  const editingValue = useCommentSelectors().editingValue();
+  const isEditing = useIsEditingReply(reply.id);
 
-  const isMyComment = myUserId === comment.userId;
+  const isMyComment = myUserId === reply.userId;
 
   return {
-    comment,
     commentText,
-    editingValue,
+    isEditing,
     isMyComment,
-    isReplyComment,
     myUserId,
     user,
   };

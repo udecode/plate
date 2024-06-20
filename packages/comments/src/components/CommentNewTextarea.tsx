@@ -3,18 +3,14 @@ import React from 'react';
 import { createPrimitiveComponent } from '@udecode/plate-common';
 
 import {
-  useCommentById,
   useCommentsActions,
+  useCommentsNewReply,
   useCommentsSelectors,
-  useNewCommentText,
 } from '../stores/comments/CommentsProvider';
 
 export const useCommentNewTextareaState = () => {
   const setNewValue = useCommentsActions().newValue();
-  const activeComment = useCommentById(
-    useCommentsSelectors().activeCommentId()
-  );
-  const value = useNewCommentText();
+  const [replyContent] = useCommentsNewReply();
   const focusTextarea = useCommentsSelectors().focusTextarea();
   const setFocusTextarea = useCommentsActions().focusTextarea();
 
@@ -27,21 +23,21 @@ export const useCommentNewTextareaState = () => {
     }
   }, [focusTextarea, setFocusTextarea, textareaRef]);
 
-  const placeholder = `${activeComment ? 'Reply...' : 'Add a comment...'}`;
+  const placeholder = `Add a comment...`;
 
   return {
     placeholder,
+    replyContent,
     setNewValue,
     textareaRef,
-    value,
   };
 };
 
 export const useCommentNewTextarea = ({
   placeholder,
+  replyContent,
   setNewValue,
   textareaRef,
-  value,
 }: ReturnType<typeof useCommentNewTextareaState>) => {
   return {
     props: {
@@ -51,7 +47,7 @@ export const useCommentNewTextarea = ({
       placeholder,
       ref: textareaRef,
       rows: 1,
-      value: value ?? undefined,
+      value: replyContent ?? undefined,
     },
   };
 };

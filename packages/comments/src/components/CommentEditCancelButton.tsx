@@ -1,14 +1,14 @@
 import { createPrimitiveComponent } from '@udecode/plate-common';
 
-import { useCommentActions } from '../stores/comment/CommentProvider';
+import { useCommentsActions } from '../stores';
 
 export const useCommentEditCancelButton = () => {
-  const setEditingValue = useCommentActions().editingValue();
+  const setEditingReply = useCommentsActions().editingReplyId();
 
   return {
     props: {
       onClick: () => {
-        setEditingValue(null);
+        setEditingReply(null);
       },
     },
   };

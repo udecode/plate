@@ -33,3 +33,26 @@ export interface TCommentText extends TText {
 export interface CommentsPlugin {
   hotkey?: string | string[];
 }
+
+export type ReplyContent = [string, Value];
+
+export interface TComments {
+  createdAt: number;
+  id: string;
+  isResolved: boolean;
+  replies: TReply[];
+  updatedAt: number;
+  documentContent?: string;
+  documentContentRich?: Value;
+}
+
+export interface TReply {
+  commentsId: string;
+  createdAt: number;
+  id: string;
+  isUpdated: boolean;
+  updatedAt: number;
+  userId: string;
+  value: Value;
+  emoji?: string;
+}

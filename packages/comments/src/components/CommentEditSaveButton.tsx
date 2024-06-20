@@ -2,56 +2,69 @@ import React from 'react';
 
 import { createPrimitiveComponent } from '@udecode/plate-common';
 
+import type { TReply } from '../types';
+
 import {
-  useCommentActions,
-  useCommentSelectors,
-  useCommentText,
-} from '../stores/comment/CommentProvider';
-import {
+  useActiveComments,
+  useCommentsActions,
+  useCommentsEditingReply,
   useCommentsSelectors,
-  useUpdateComment,
 } from '../stores/comments/CommentsProvider';
 
-export const useCommentEditSaveButtonState = () => {
+export const useCommentEditSaveButtonState = (reply: TReply) => {
   const onCommentUpdate = useCommentsSelectors().onCommentUpdate();
-  const editingValue = useCommentSelectors().editingValue();
-  const setEditingValue = useCommentActions().editingValue();
-  const id = useCommentSelectors().id();
-  const updateComment = useUpdateComment(id);
-  const value = useCommentText();
+
+  const activeComments = useActiveComments();
+  const myUserId = useCommentsSelectors().myUserId();
+
+  const replyContent = useCommentsEditingReply();
+  const setEditingValue = useCommentsActions().editingValue();
+
+  const setEditingReply = useCommentsActions().editingReplyId();
 
   return {
-    editingValue,
-    id,
+    activeComments,
+    myUserId,
     onCommentUpdate,
+    reply,
+    replyContent,
+    setEditingReply,
     setEditingValue,
-    updateComment,
-    value,
   };
 };
 
 export const useCommentEditSaveButton = ({
-  editingValue,
-  id,
+  activeComments,
+  myUserId,
   onCommentUpdate,
+  reply,
+  replyContent,
+  setEditingReply,
   setEditingValue,
-  updateComment,
-  value,
 }: ReturnType<typeof useCommentEditSaveButtonState>) => {
   return {
     props: {
-      disabled: value?.trim().length === 0,
+      disabled: false,
       onClick: React.useCallback(() => {
-        if (!editingValue) return;
+        if (!activeComments || !myUserId) return;
 
-        updateComment({
-          value: editingValue,
-        });
+        // updateComment({
+        //   value: editingValue,
+        // });
 
+        setEditingReply(null);
         setEditingValue(null);
 
-        onCommentUpdate?.({ id, value: editingValue });
-      }, [editingValue, id, onCommentUpdate, setEditingValue, updateComment]),
+        onCommentUpdate?.(reply, activeComments, replyContent, myUserId);
+      }, [
+        activeComments,
+        myUserId,
+        setEditingReply,
+        setEditingValue,
+        onCommentUpdate,
+        reply,
+        replyContent,
+      ]),
     },
   };
 };

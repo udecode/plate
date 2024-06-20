@@ -2,20 +2,21 @@
 
 import React from 'react';
 
-import {
-  SCOPE_ACTIVE_COMMENT,
-  useCommentReplies,
-} from '@udecode/plate-comments';
+import { useCommentReplies } from '@udecode/plate-comments';
 
 import { CommentItem } from './comment-item';
 
-export function CommentReplyItems() {
-  const commentReplies = useCommentReplies(SCOPE_ACTIVE_COMMENT);
+interface CommentReplyItems {
+  commentId: string;
+}
+
+export function CommentReplyItems({ commentId }: CommentReplyItems) {
+  const commentReplies = useCommentReplies(commentId);
 
   return (
     <>
-      {Object.keys(commentReplies).map((id) => (
-        <CommentItem commentId={id} key={id} />
+      {commentReplies.map((item) => (
+        <CommentItem key={item.id} reply={item}></CommentItem>
       ))}
     </>
   );
