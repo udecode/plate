@@ -1,10 +1,6 @@
 import React from 'react';
 
-import {
-  toDOMNode,
-  useEditorRef,
-  useEditorSelector,
-} from '@udecode/plate-common';
+import { useEditorRef, useEditorSelector } from '@udecode/plate-common';
 import {
   getSelectionText,
   isSelectionExpanded,
@@ -109,19 +105,16 @@ export const useFloatingToolbar = ({
   ]);
 
   React.useEffect(() => {
-    const container = toDOMNode(editor, editor);
     const mouseup = () => setMousedown(false);
     const mousedown = () => setMousedown(true);
 
-    if (!container) return;
-
-    container.addEventListener('mouseup', mouseup);
+    document.addEventListener('mouseup', mouseup);
 
     document.addEventListener('mousedown', mousedown);
 
     return () => {
-      container.removeEventListener('mouseup', mouseup);
-      container.removeEventListener('mousedown', mousedown);
+      document.removeEventListener('mouseup', mouseup);
+      document.removeEventListener('mousedown', mousedown);
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
