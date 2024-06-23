@@ -10,9 +10,13 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ## June 2024 #11
 
+### June 23 #11.3
+
+- breaking change: move list of supported prismjs languages to `code-block-combobox`
+
 ### June 13 #11.2
 
-- move list of supported prismjs languages to `code-block-combobox`
+- fix `caption`: update UI when element `caption` property changes
 
 ### June 6 #11.1
 
@@ -22,6 +26,7 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 - update `mention-input-element` and `slash-input-element` to use the new combobox
 - feat `draggable`: add the data-key attribute to facilitate adding selection after the drag-and-drop operation is completed
 - breaking change: Open the caption by using `CaptionButton` or pass the media element's ID through `captionActions.showCaptionId`"
+- add `portalElement` prop to `floating-toolbar`
 
 ## May 2024 #10
 
@@ -115,6 +120,7 @@ export const TableElement = withHOC(
 - new dependency: `@udecode/cn`
 - remove `@/lib/utils.ts` in favor of `cn` from `@udecode/cn`. Replace all imports from `@/lib/utils` with `@udecode/cn`
 - import `withProps` from `@udecode/cn` instead of `@udecode/plate-common
+
   `
 - all components using `forwardRef` are now using `withRef`. `withProps`, `withCn` and `withVariants` are also used to reduce boilerplate.
 - add `withCn` to ESLint `settings.tailwindcss.callees` and `classAttributes` in your IDE settings

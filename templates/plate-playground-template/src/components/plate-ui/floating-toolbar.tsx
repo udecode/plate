@@ -16,9 +16,10 @@ import { Toolbar } from './toolbar';
 export const FloatingToolbar = withRef<
   typeof Toolbar,
   {
+    portalElement?: Element
     state?: FloatingToolbarState;
   }
->(({ state, children, ...props }, componentRef) => {
+>(({ state, portalElement, children, ...props }, componentRef) => {
   const floatingToolbarState = useFloatingToolbarState({
     ...state,
     floatingOptions: {
@@ -50,7 +51,7 @@ export const FloatingToolbar = withRef<
   if (hidden) return null;
 
   return (
-    <PortalBody>
+    <PortalBody element={portalElement}>
       <Toolbar
         ref={ref}
         className={cn(

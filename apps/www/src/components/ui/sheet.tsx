@@ -11,7 +11,7 @@ const Sheet = SheetPrimitive.Root;
 
 const SheetTrigger = SheetPrimitive.Trigger;
 
-const portalVariants = cva('fixed z-50 flex', {
+const portalVariants = cva('fixed z-[100] flex', {
   defaultVariants: { modal: true, position: 'right' },
   variants: {
     modal: {

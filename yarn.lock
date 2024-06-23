@@ -5768,7 +5768,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-combobox@npm:34.0.0, @udecode/plate-combobox@workspace:^, @udecode/plate-combobox@workspace:packages/combobox":
+"@udecode/plate-combobox@npm:34.0.8, @udecode/plate-combobox@workspace:^, @udecode/plate-combobox@workspace:packages/combobox":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-combobox@workspace:packages/combobox"
   dependencies:
@@ -5911,7 +5911,7 @@ __metadata:
   resolution: "@udecode/plate-emoji@workspace:packages/emoji"
   dependencies:
     "@emoji-mart/data": "npm:^1.1.2"
-    "@udecode/plate-combobox": "npm:34.0.0"
+    "@udecode/plate-combobox": "npm:34.0.8"
     "@udecode/plate-common": "workspace:^"
   peerDependencies:
     "@udecode/plate-common": ">=34.0.5"
@@ -6194,7 +6194,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-media@npm:34.0.2, @udecode/plate-media@workspace:^, @udecode/plate-media@workspace:packages/media":
+"@udecode/plate-media@npm:34.1.0, @udecode/plate-media@workspace:^, @udecode/plate-media@workspace:packages/media":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-media@workspace:packages/media"
   dependencies:
@@ -6211,11 +6211,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-mention@npm:34.0.1, @udecode/plate-mention@workspace:^, @udecode/plate-mention@workspace:packages/mention":
+"@udecode/plate-mention@npm:34.0.8, @udecode/plate-mention@workspace:^, @udecode/plate-mention@workspace:packages/mention":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-mention@workspace:packages/mention"
   dependencies:
-    "@udecode/plate-combobox": "npm:34.0.0"
+    "@udecode/plate-combobox": "npm:34.0.8"
     "@udecode/plate-common": "workspace:^"
   peerDependencies:
     "@udecode/plate-common": ">=34.0.5"
@@ -6363,7 +6363,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-docx@npm:34.0.7, @udecode/plate-serializer-docx@workspace:^, @udecode/plate-serializer-docx@workspace:packages/serializer-docx":
+"@udecode/plate-serializer-docx@npm:34.1.0, @udecode/plate-serializer-docx@workspace:^, @udecode/plate-serializer-docx@workspace:packages/serializer-docx":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-docx@workspace:packages/serializer-docx"
   dependencies:
@@ -6371,7 +6371,7 @@ __metadata:
     "@udecode/plate-heading": "npm:34.0.7"
     "@udecode/plate-indent": "npm:34.0.0"
     "@udecode/plate-indent-list": "npm:34.0.0"
-    "@udecode/plate-media": "npm:34.0.2"
+    "@udecode/plate-media": "npm:34.1.0"
     "@udecode/plate-paragraph": "npm:34.0.0"
     "@udecode/plate-table": "npm:34.0.0"
     validator: "npm:^13.11.0"
@@ -6427,7 +6427,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate-slash-command@workspace:packages/slash-command"
   dependencies:
-    "@udecode/plate-combobox": "npm:34.0.0"
+    "@udecode/plate-combobox": "npm:34.0.8"
     "@udecode/plate-common": "workspace:^"
   peerDependencies:
     "@udecode/plate-common": ">=34.0.5"
@@ -6619,7 +6619,7 @@ __metadata:
     "@udecode/plate-block-quote": "npm:34.0.0"
     "@udecode/plate-break": "npm:34.0.0"
     "@udecode/plate-code-block": "npm:34.0.0"
-    "@udecode/plate-combobox": "npm:34.0.0"
+    "@udecode/plate-combobox": "npm:34.0.8"
     "@udecode/plate-comments": "npm:34.0.0"
     "@udecode/plate-common": "npm:34.0.5"
     "@udecode/plate-diff": "npm:34.0.0"
@@ -6635,8 +6635,8 @@ __metadata:
     "@udecode/plate-line-height": "npm:34.0.0"
     "@udecode/plate-link": "npm:34.0.6"
     "@udecode/plate-list": "npm:34.0.0"
-    "@udecode/plate-media": "npm:34.0.2"
-    "@udecode/plate-mention": "npm:34.0.1"
+    "@udecode/plate-media": "npm:34.1.0"
+    "@udecode/plate-mention": "npm:34.0.8"
     "@udecode/plate-node-id": "npm:34.0.0"
     "@udecode/plate-normalizers": "npm:34.0.0"
     "@udecode/plate-paragraph": "npm:34.0.0"
@@ -6644,7 +6644,7 @@ __metadata:
     "@udecode/plate-resizable": "npm:34.0.0"
     "@udecode/plate-select": "npm:34.0.0"
     "@udecode/plate-serializer-csv": "npm:34.0.0"
-    "@udecode/plate-serializer-docx": "npm:34.0.7"
+    "@udecode/plate-serializer-docx": "npm:34.1.0"
     "@udecode/plate-serializer-html": "npm:34.0.0"
     "@udecode/plate-serializer-md": "npm:34.0.0"
     "@udecode/plate-suggestion": "npm:34.0.0"

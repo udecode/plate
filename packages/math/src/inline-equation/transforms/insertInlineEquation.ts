@@ -11,13 +11,14 @@ import { ELEMENT_INLINE_EQUATION } from '../createInlineEquationPlugin';
 
 export const insertInlineEquation = <V extends Value>(
   editor: PlateEditor<V>,
+  texExpression?: string,
   options?: InsertNodesOptions<V>
 ) => {
   insertNodes<TInlineEquationElement>(
     editor,
     {
       children: [{ text: '' }],
-      texExpression: '',
+      texExpression: texExpression ?? '',
       type: ELEMENT_INLINE_EQUATION,
     },
     options as any

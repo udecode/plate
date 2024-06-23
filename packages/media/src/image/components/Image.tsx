@@ -1,14 +1,24 @@
-import { createPrimitiveComponent, useElement } from '@udecode/plate-common';
+import {
+  createPrimitiveComponent,
+  useEditorRef,
+  useElement,
+} from '@udecode/plate-common';
 
-import type { TMediaElement } from '../../media/index';
+import type { TMediaElement } from '../../media';
+
+import { openImagePreView } from '../utils';
 
 export const useImage = () => {
-  const { url } = useElement<TMediaElement>();
+  const element = useElement<TMediaElement>();
+  const editor = useEditorRef();
 
   return {
     props: {
       draggable: true,
-      src: url,
+      onDoubleClickCapture: () => {
+        openImagePreView(editor, element);
+      },
+      src: element.url,
     },
   };
 };
