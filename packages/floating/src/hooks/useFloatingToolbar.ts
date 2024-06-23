@@ -1,10 +1,6 @@
 import React from 'react';
 
-import {
-  toDOMNode,
-  useEditorRef,
-  useEditorSelector,
-} from '@udecode/plate-common';
+import { useEditorSelector } from '@udecode/plate-common';
 import {
   getSelectionText,
   isSelectionExpanded,
@@ -38,7 +34,6 @@ export const useFloatingToolbarState = ({
   const selectionText = useEditorSelector(getSelectionText, []);
 
   const focused = useFocused();
-  const editor = useEditorRef();
 
   const [open, setOpen] = React.useState(false);
   const [waitForCollapsedSelection, setWaitForCollapsedSelection] =
@@ -57,7 +52,6 @@ export const useFloatingToolbarState = ({
   );
 
   return {
-    editor,
     editorId,
     floating,
     focused,
@@ -76,7 +70,6 @@ export const useFloatingToolbarState = ({
 };
 
 export const useFloatingToolbar = ({
-  editor,
   editorId,
   floating,
   focusedEditorId,
@@ -109,19 +102,16 @@ export const useFloatingToolbar = ({
   ]);
 
   React.useEffect(() => {
-    const container = toDOMNode(editor, editor);
     const mouseup = () => setMousedown(false);
     const mousedown = () => setMousedown(true);
 
-    if (!container) return;
-
-    container.addEventListener('mouseup', mouseup);
+    document.addEventListener('mouseup', mouseup);
 
     document.addEventListener('mousedown', mousedown);
 
     return () => {
-      container.removeEventListener('mouseup', mouseup);
-      container.removeEventListener('mousedown', mousedown);
+      document.removeEventListener('mouseup', mouseup);
+      document.removeEventListener('mousedown', mousedown);
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
