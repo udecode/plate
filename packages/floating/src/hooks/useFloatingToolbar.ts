@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useEditorRef, useEditorSelector } from '@udecode/plate-common';
+import { useEditorSelector } from '@udecode/plate-common';
 import {
   getSelectionText,
   isSelectionExpanded,
@@ -34,7 +34,6 @@ export const useFloatingToolbarState = ({
   const selectionText = useEditorSelector(getSelectionText, []);
 
   const focused = useFocused();
-  const editor = useEditorRef();
 
   const [open, setOpen] = React.useState(false);
   const [waitForCollapsedSelection, setWaitForCollapsedSelection] =
@@ -53,7 +52,6 @@ export const useFloatingToolbarState = ({
   );
 
   return {
-    editor,
     editorId,
     floating,
     focused,
@@ -72,7 +70,6 @@ export const useFloatingToolbarState = ({
 };
 
 export const useFloatingToolbar = ({
-  editor,
   editorId,
   floating,
   focusedEditorId,
