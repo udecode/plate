@@ -5957,7 +5957,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-floating@npm:34.0.6, @udecode/plate-floating@workspace:^, @udecode/plate-floating@workspace:packages/floating":
+"@udecode/plate-floating@npm:34.1.1, @udecode/plate-floating@workspace:^, @udecode/plate-floating@workspace:packages/floating":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-floating@workspace:packages/floating"
   dependencies:
@@ -6140,12 +6140,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-link@npm:34.0.6, @udecode/plate-link@workspace:^, @udecode/plate-link@workspace:packages/link":
+"@udecode/plate-link@npm:34.1.1, @udecode/plate-link@workspace:^, @udecode/plate-link@workspace:packages/link":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-link@workspace:packages/link"
   dependencies:
     "@udecode/plate-common": "workspace:^"
-    "@udecode/plate-floating": "npm:34.0.6"
+    "@udecode/plate-floating": "npm:34.1.1"
     "@udecode/plate-normalizers": "npm:34.0.0"
   peerDependencies:
     "@udecode/plate-common": ">=34.0.5"
@@ -6624,7 +6624,7 @@ __metadata:
     "@udecode/plate-common": "npm:34.0.5"
     "@udecode/plate-diff": "npm:34.0.0"
     "@udecode/plate-find-replace": "npm:34.0.0"
-    "@udecode/plate-floating": "npm:34.0.6"
+    "@udecode/plate-floating": "npm:34.1.1"
     "@udecode/plate-font": "npm:34.0.0"
     "@udecode/plate-heading": "npm:34.0.7"
     "@udecode/plate-highlight": "npm:34.0.0"
@@ -6633,7 +6633,7 @@ __metadata:
     "@udecode/plate-indent-list": "npm:34.0.0"
     "@udecode/plate-kbd": "npm:34.0.0"
     "@udecode/plate-line-height": "npm:34.0.0"
-    "@udecode/plate-link": "npm:34.0.6"
+    "@udecode/plate-link": "npm:34.1.1"
     "@udecode/plate-list": "npm:34.0.0"
     "@udecode/plate-media": "npm:34.1.0"
     "@udecode/plate-mention": "npm:34.0.8"
