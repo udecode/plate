@@ -21773,6 +21773,7 @@ __metadata:
     nuqs: "npm:^1.17.1"
     postcss: "npm:^8.4.38"
     prism-react-renderer: "npm:^1.3.5"
+    prismjs: "npm:^1.29.0"
     react: "npm:^18.2.0"
     react-dnd: "npm:16.0.1"
     react-dnd-html5-backend: "npm:^16.0.1"
