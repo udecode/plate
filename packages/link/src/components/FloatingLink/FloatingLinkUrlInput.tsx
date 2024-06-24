@@ -7,6 +7,7 @@ import {
   floatingLinkSelectors,
   useFloatingLinkSelectors,
 } from './floatingLinkStore';
+import { isEncoded } from '../../utils';
 
 export const useFloatingLinkUrlInputState = () => {
   const updated = useFloatingLinkSelectors().updated();
@@ -16,7 +17,9 @@ export const useFloatingLinkUrlInputState = () => {
     if (ref.current && updated) {
       setTimeout(() => {
         ref.current?.focus();
-        ref.current!.value = floatingLinkSelectors.url();
+        ref.current!.value = floatingLinkSelectors.url()
+          ? decodeURI(floatingLinkSelectors.url())
+          : '';
       }, 0);
     }
   }, [updated]);
@@ -31,7 +34,13 @@ export const useFloatingLinkUrlInput = (
 ) => {
   const onChange: React.ChangeEventHandler<HTMLInputElement> =
     React.useCallback((e) => {
-      floatingLinkActions.url(e.target.value);
+      const value = e.target.value;
+
+      if (isEncoded(value)) {
+        floatingLinkActions.url(value);
+      } else {
+        floatingLinkActions.url(encodeURI(value));
+      }
     }, []);
 
   return {
