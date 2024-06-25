@@ -7,15 +7,6 @@ import {
 
 import { ELEMENT_LINK, type LinkPlugin } from '../createLinkPlugin';
 
-/**
- * Check the uri is encoded
- *
- * @param uri String
- */
-export const isEncoded = (uri: string): boolean => {
-  return uri !== decodeURIComponent(uri);
-};
-
 export const validateUrl = <V extends Value>(
   editor: PlateEditor<V>,
   url: string

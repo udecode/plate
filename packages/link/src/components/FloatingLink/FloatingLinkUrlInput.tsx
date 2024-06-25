@@ -2,12 +2,12 @@ import React from 'react';
 
 import { createPrimitiveComponent } from '@udecode/plate-common';
 
+import { isEncoded } from '../../utils/encodeUrlIfNeeded';
 import {
   floatingLinkActions,
   floatingLinkSelectors,
   useFloatingLinkSelectors,
 } from './floatingLinkStore';
-import { isEncoded } from '../../utils';
 
 export const useFloatingLinkUrlInputState = () => {
   const updated = useFloatingLinkSelectors().updated();
