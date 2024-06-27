@@ -8,6 +8,7 @@ import type { TablePlugin, TableStoreCellAttributes } from './types';
 
 import { onKeyDownTable } from './onKeyDownTable';
 import { insertTableColumn, insertTableRow } from './transforms/index';
+import { getEmptyCellNode } from './utils';
 import { withTable } from './withTable';
 
 export const ELEMENT_TABLE = 'table';
@@ -61,6 +62,7 @@ export const createTablePlugin = createPluginFactory<TablePlugin>({
         fromRow,
       });
     },
+
     minColumnWidth: 48,
   },
   plugins: [
@@ -106,5 +108,10 @@ export const createTablePlugin = createPluginFactory<TablePlugin>({
       }),
     },
   ],
+  then: (editor) => ({
+    options: {
+      cellFactory: (options: any) => getEmptyCellNode(editor, options),
+    },
+  }),
   withOverrides: withTable,
 });

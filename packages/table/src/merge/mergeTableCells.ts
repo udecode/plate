@@ -18,7 +18,6 @@ import { ELEMENT_TABLE, ELEMENT_TH } from '../createTablePlugin';
 import { getTableGridAbove } from '../queries';
 import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';
-import { getEmptyCellNode } from '../utils';
 import { computeCellIndices } from './computeCellIndices';
 import { getCellIndices } from './getCellIndices';
 
@@ -27,7 +26,7 @@ export const mergeTableCells = <V extends Value = Value>(
   editor: PlateEditor<V>
 ) => {
   withoutNormalizing(editor, () => {
-    const { _cellIndices } = getPluginOptions<TablePlugin, V>(
+    const { _cellIndices, cellFactory } = getPluginOptions<TablePlugin, V>(
       editor,
       ELEMENT_TABLE
     );
@@ -71,7 +70,7 @@ export const mergeTableCells = <V extends Value = Value>(
     });
 
     // This will store the content of all cells we are merging
-    const contents = [];
+    const cellChildren = [];
 
     for (const cellEntry of cellEntries) {
       const [el] = cellEntry;
@@ -80,7 +79,7 @@ export const mergeTableCells = <V extends Value = Value>(
         el.children.length !== 1 ||
         !isElementEmpty(editor, el.children[0] as any)
       ) {
-        contents.push(...cloneDeep(el.children));
+        cellChildren.push(...cloneDeep(el.children));
       }
     }
 
@@ -109,9 +108,9 @@ export const mergeTableCells = <V extends Value = Value>(
     // Create a new cell to replace the merged cells, with
     // calculated colSpan and rowSpan attributes and combined content
     const mergedCell = {
-      ...getEmptyCellNode(editor, {
+      ...cellFactory!({
+        children: cellChildren,
         header: cellEntries[0][0].type === getPluginType(editor, ELEMENT_TH),
-        newCellChildren: contents,
       }),
       colSpan,
       rowSpan,

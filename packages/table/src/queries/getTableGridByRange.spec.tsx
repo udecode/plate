@@ -7,6 +7,7 @@ import {
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
+import { createTablePlugin } from '../createTablePlugin';
 import { getTableGridAbove } from './getTableGridAbove';
 
 jsx;
@@ -37,6 +38,7 @@ describe('getTableGridByRange', () => {
 
       const editor = createPlateEditor({
         editor: input,
+        plugins: [createTablePlugin()],
       });
 
       const table = getTableGridAbove(editor)[0][0];
@@ -81,6 +83,7 @@ describe('getTableGridByRange', () => {
 
       const editor = createPlateEditor({
         editor: input,
+        plugins: [createTablePlugin()],
       });
 
       const table = getTableGridAbove(editor)[0][0];
@@ -123,6 +126,7 @@ describe('getTableGridByRange', () => {
 
       const editor = createPlateEditor({
         editor: input,
+        plugins: [createTablePlugin()],
       });
 
       const table = getTableGridAbove(editor)[0][0];
@@ -168,6 +172,7 @@ describe('getTableGridByRange', () => {
 
       const editor = createPlateEditor({
         editor: input,
+        plugins: [createTablePlugin()],
       });
 
       const table = getTableGridAbove(editor)[0][0];
@@ -214,6 +219,7 @@ describe('getTableGridByRange', () => {
 
       const editor = createPlateEditor({
         editor: input,
+        plugins: [createTablePlugin()],
       });
 
       const table = getTableGridAbove(editor)[0][0];
@@ -260,6 +266,7 @@ describe('getTableGridByRange', () => {
 
       const editor = createPlateEditor({
         editor: input,
+        plugins: [createTablePlugin()],
       });
 
       const table = getTableGridAbove(editor)[0][0];
@@ -306,6 +313,7 @@ describe('getTableGridByRange', () => {
 
       const editor = createPlateEditor({
         editor: input,
+        plugins: [createTablePlugin()],
       });
 
       const table = getTableGridAbove(editor)[0][0];
@@ -352,6 +360,7 @@ describe('getTableGridByRange', () => {
 
       const editor = createPlateEditor({
         editor: input,
+        plugins: [createTablePlugin()],
       });
 
       const table = getTableGridAbove(editor)[0][0];

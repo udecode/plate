@@ -1,28 +1,31 @@
 import {
   type PlateEditor,
   type Value,
+  getPluginOptions,
   getPluginType,
 } from '@udecode/plate-common/server';
 
-import { ELEMENT_TR } from '../createTablePlugin';
-import {
-  type GetEmptyCellNodeOptions,
-  getEmptyCellNode,
-} from './getEmptyCellNode';
+import type { CellFactoryOptions, TablePlugin } from '../types';
 
-export interface GetEmptyRowNodeOptions
-  extends Omit<GetEmptyCellNodeOptions, '_cellIndices'> {
+import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
+
+export interface GetEmptyRowNodeOptions extends CellFactoryOptions {
   colCount?: number;
 }
 
 export const getEmptyRowNode = <V extends Value>(
   editor: PlateEditor<V>,
-  { colCount = 1, ...options }: GetEmptyRowNodeOptions = {}
+  { colCount = 1, ...cellOptions }: GetEmptyRowNodeOptions = {}
 ) => {
+  const { cellFactory } = getPluginOptions<TablePlugin, V>(
+    editor,
+    ELEMENT_TABLE
+  );
+
   return {
     children: Array.from({ length: colCount })
       .fill(colCount)
-      .map(() => getEmptyCellNode(editor, options)),
+      .map(() => cellFactory!(cellOptions)),
     type: getPluginType(editor, ELEMENT_TR),
   };
 };

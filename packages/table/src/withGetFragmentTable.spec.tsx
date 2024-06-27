@@ -3,6 +3,7 @@
 import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
+import { createTablePlugin } from './createTablePlugin';
 import { getTableGridAbove } from './queries/getTableGridAbove';
 import { withGetFragmentTable } from './withGetFragmentTable';
 
@@ -35,6 +36,7 @@ describe('withGetFragmentTable', () => {
 
       let editor = createPlateEditor({
         editor: input,
+        plugins: [createTablePlugin()],
       });
 
       editor = withGetFragmentTable(editor);
@@ -73,6 +75,7 @@ describe('withGetFragmentTable', () => {
 
       let editor = createPlateEditor({
         editor: input,
+        plugins: [createTablePlugin()],
       });
 
       editor = withGetFragmentTable(editor);

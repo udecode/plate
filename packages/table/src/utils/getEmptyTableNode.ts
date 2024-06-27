@@ -18,16 +18,11 @@ export interface GetEmptyTableNodeOptions extends GetEmptyRowNodeOptions {
 
 export const getEmptyTableNode = <V extends Value>(
   editor: PlateEditor<V>,
-  {
-    colCount,
-    header,
-    newCellChildren,
-    rowCount = 0,
-  }: GetEmptyTableNodeOptions = {}
+  { colCount, rowCount = 0, ...cellOptions }: GetEmptyTableNodeOptions = {}
 ): TTableElement => {
   const rows = Array.from({ length: rowCount })
     .fill(rowCount)
-    .map(() => getEmptyRowNode(editor, { colCount, header, newCellChildren }));
+    .map(() => getEmptyRowNode(editor, { colCount, ...cellOptions }));
 
   return {
     children: rows,

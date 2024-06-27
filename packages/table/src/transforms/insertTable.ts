@@ -4,7 +4,6 @@ import {
   type PlateEditor,
   type Value,
   getBlockAbove,
-  getPluginOptions,
   getPluginType,
   getStartPoint,
   insertNodes,
@@ -12,7 +11,7 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common/server';
 
-import type { TTableElement, TablePlugin } from '../types';
+import type { TTableElement } from '../types';
 
 import { ELEMENT_TABLE } from '../createTablePlugin';
 import {
@@ -23,16 +22,9 @@ import {
 /** Insert table if selection not in table. Select start of table. */
 export const insertTable = <V extends Value>(
   editor: PlateEditor<V>,
-  {
-    colCount = 2,
-    header,
-    newCellChildren,
-    rowCount = 2,
-  }: GetEmptyTableNodeOptions = {},
+  { colCount = 2, header, rowCount = 2 }: GetEmptyTableNodeOptions = {},
   options: InsertNodesOptions<V> = {}
 ) => {
-  const pluginOptions = getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
-
   withoutNormalizing(editor, () => {
     if (
       !someNode(editor, {
@@ -44,7 +36,6 @@ export const insertTable = <V extends Value>(
         getEmptyTableNode(editor, {
           colCount,
           header,
-          newCellChildren: newCellChildren || pluginOptions?.newCellChildren,
           rowCount,
         }),
         {

@@ -24,7 +24,6 @@ import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';
 import { getCellTypes } from '../utils';
 import { computeCellIndices } from './computeCellIndices';
-import { createEmptyCell } from './createEmptyCell';
 import { findCellByIndexes } from './findCellByIndexes';
 import { getCellIndices } from './getCellIndices';
 import { getCellPath } from './getCellPath';
@@ -74,8 +73,10 @@ export const insertTableMergeColumn = <V extends Value>(
 
   if (!tableEntry) return;
 
-  const { initialTableWidth, minColumnWidth, newCellChildren } =
-    getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
+  const { cellFactory, initialTableWidth, minColumnWidth } = getPluginOptions<
+    TablePlugin,
+    V
+  >(editor, ELEMENT_TABLE);
   const [tableNode, tablePath] = tableEntry;
 
   const { col: cellColIndex } =
@@ -150,7 +151,7 @@ export const insertTableMergeColumn = <V extends Value>(
       const row = getParentNode(editor, currentCellPath)!;
       const rowElement = row[0] as TTableRowElement;
       const emptyCell = {
-        ...createEmptyCell(editor, rowElement, newCellChildren, header),
+        ...cellFactory!({ header, row: rowElement }),
         colSpan: 1,
         rowSpan: curRowSpan,
       };
