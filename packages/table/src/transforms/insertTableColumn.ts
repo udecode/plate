@@ -16,7 +16,6 @@ import type { TTableElement, TablePlugin } from '../types';
 
 import { ELEMENT_TABLE, ELEMENT_TH } from '../createTablePlugin';
 import { insertTableMergeColumn } from '../merge/insertTableColumn';
-import { getEmptyCellNode } from '../utils/getEmptyCellNode';
 import { getCellTypes } from '../utils/index';
 
 export const insertTableColumn = <V extends Value>(
@@ -80,8 +79,10 @@ export const insertTableColumn = <V extends Value>(
 
   const currentRowIndex = cellPath.at(-2);
 
-  const { initialTableWidth, minColumnWidth, newCellChildren } =
-    getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
+  const { cellFactory, initialTableWidth, minColumnWidth } = getPluginOptions<
+    TablePlugin,
+    V
+  >(editor, ELEMENT_TABLE);
 
   withoutNormalizing(editor, () => {
     // for each row, insert a new cell
@@ -103,9 +104,8 @@ export const insertTableColumn = <V extends Value>(
 
       insertElements(
         editor,
-        getEmptyCellNode(editor, {
+        cellFactory!({
           header: isHeaderRow,
-          newCellChildren,
         }),
         {
           at: insertCellPath,

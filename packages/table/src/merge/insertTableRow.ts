@@ -25,7 +25,6 @@ import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';
 import { getCellTypes } from '../utils';
 import { computeCellIndices } from './computeCellIndices';
-import { createEmptyCell } from './createEmptyCell';
 import { findCellByIndexes } from './findCellByIndexes';
 import { getCellIndices } from './getCellIndices';
 import { getCellPath } from './getCellPath';
@@ -44,10 +43,10 @@ export const insertTableMergeRow = <V extends Value>(
     header?: boolean;
   } = {}
 ) => {
-  const { _cellIndices: cellIndices } = getPluginOptions<TablePlugin, V>(
-    editor,
-    ELEMENT_TABLE
-  );
+  const { _cellIndices: cellIndices, cellFactory } = getPluginOptions<
+    TablePlugin,
+    V
+  >(editor, ELEMENT_TABLE);
 
   const trEntry = fromRow
     ? findNode(editor, {
@@ -71,10 +70,6 @@ export const insertTableMergeRow = <V extends Value>(
 
   const tableNode = tableEntry[0] as TTableElement;
 
-  const { newCellChildren } = getPluginOptions<TablePlugin, V>(
-    editor,
-    ELEMENT_TABLE
-  );
   const cellEntry = findNode(editor, {
     at: fromRow,
     match: { type: getCellTypes(editor) },
@@ -154,12 +149,7 @@ export const insertTableMergeRow = <V extends Value>(
       // add new
       const row = getParentNode(editor, currentCellPath)!;
       const rowElement = row[0] as TTableRowElement;
-      const emptyCell = createEmptyCell(
-        editor,
-        rowElement,
-        newCellChildren,
-        header
-      ) as TTableCellElement;
+      const emptyCell = cellFactory!({ header, row: rowElement });
 
       newRowChildren.push({
         ...emptyCell,

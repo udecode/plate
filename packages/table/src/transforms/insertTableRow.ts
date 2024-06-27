@@ -16,7 +16,7 @@ import type { TablePlugin } from '../types';
 
 import { ELEMENT_TABLE, ELEMENT_TH, ELEMENT_TR } from '../createTablePlugin';
 import { insertTableMergeRow } from '../merge/insertTableRow';
-import { getCellTypes, getEmptyCellNode } from '../utils/index';
+import { getCellTypes } from '../utils/index';
 
 export const insertTableRow = <V extends Value>(
   editor: PlateEditor<V>,
@@ -28,7 +28,7 @@ export const insertTableRow = <V extends Value>(
     header?: boolean;
   } = {}
 ) => {
-  const { enableMerging } = getPluginOptions<TablePlugin, V>(
+  const { cellFactory, enableMerging } = getPluginOptions<TablePlugin, V>(
     editor,
     ELEMENT_TABLE
   );
@@ -59,11 +59,6 @@ export const insertTableRow = <V extends Value>(
 
   if (!tableEntry) return;
 
-  const { newCellChildren } = getPluginOptions<TablePlugin, V>(
-    editor,
-    ELEMENT_TABLE
-  );
-
   const getEmptyRowNode = () => ({
     children: (trNode.children as TElement[]).map((_, i) => {
       const hasSingleRow = tableEntry[0].children.length === 1;
@@ -73,9 +68,8 @@ export const insertTableRow = <V extends Value>(
           (n) => n.children[i].type === getPluginType(editor, ELEMENT_TH)
         );
 
-      return getEmptyCellNode(editor, {
+      return cellFactory!({
         header: header ?? isHeaderColumn,
-        ...newCellChildren,
       });
     }),
     type: getPluginType(editor, ELEMENT_TR),

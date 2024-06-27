@@ -20,17 +20,16 @@ import { ELEMENT_TABLE, ELEMENT_TH, ELEMENT_TR } from '../createTablePlugin';
 import { getTableGridAbove } from '../queries';
 import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';
-import { getEmptyCellNode } from '../utils';
 import { getCellIndices } from './getCellIndices';
 
 export const unmergeTableCells = <V extends Value = Value>(
   editor: PlateEditor<V>
 ) => {
   withoutNormalizing(editor, () => {
-    const { _cellIndices: cellIndices } = getPluginOptions<TablePlugin, V>(
-      editor,
-      ELEMENT_TABLE
-    );
+    const { _cellIndices: cellIndices, cellFactory } = getPluginOptions<
+      TablePlugin,
+      V
+    >(editor, ELEMENT_TABLE);
 
     const cellEntries = getTableGridAbove(editor, { format: 'cell' });
     const [[cellElem, path]] = cellEntries;
@@ -38,9 +37,9 @@ export const unmergeTableCells = <V extends Value = Value>(
     // creating new object per iteration is essential here
     const createEmptyCell = (children?: TDescendant[]) => {
       return {
-        ...getEmptyCellNode(editor, {
+        ...cellFactory!({
+          children,
           header: cellElem.type === getPluginType(editor, ELEMENT_TH),
-          newCellChildren: children,
         }),
         colSpan: 1,
         rowSpan: 1,

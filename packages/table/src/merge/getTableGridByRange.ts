@@ -104,8 +104,8 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
   const relativeColIndex = endColIndex - startColIndex;
 
   let table: TTableElement = getEmptyTableNode(editor, {
+    children: [],
     colCount: relativeColIndex + 1,
-    newCellChildren: [],
     rowCount: relativeRowIndex + 1,
   });
 
@@ -154,8 +154,8 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
       const newRelativeRowIndex = endRowIndex - startRowIndex;
       const newRelativeColIndex = endColIndex - startColIndex;
       table = getEmptyTableNode(editor, {
+        children: [],
         colCount: newRelativeColIndex + 1,
-        newCellChildren: [],
         rowCount: newRelativeRowIndex + 1,
       });
 

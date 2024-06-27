@@ -3,7 +3,6 @@
  */
 
 export * from './computeCellIndices';
-export * from './createEmptyCell';
 export * from './deleteColumn';
 export * from './deleteColumnWhenExpanded';
 export * from './deleteRow';

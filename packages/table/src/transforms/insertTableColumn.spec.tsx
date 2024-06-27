@@ -44,11 +44,7 @@ const makeTableWithCols = ({
 describe('insertTableColumn', () => {
   describe('without initialTableWidth', () => {
     const editorOptions = {
-      plugins: [
-        createTablePlugin({
-          options: { newCellChildren: [{ text: '' }] },
-        }),
-      ],
+      plugins: [createTablePlugin()],
     };
 
     it('should insert at last column', () => {
@@ -142,7 +138,6 @@ describe('insertTableColumn', () => {
           options: {
             initialTableWidth: 100,
             minColumnWidth: 10,
-            newCellChildren: [{ text: '' }],
           },
         }),
       ],

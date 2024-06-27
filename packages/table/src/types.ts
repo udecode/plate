@@ -1,10 +1,12 @@
-import type {
-  PlateEditor,
-  TDescendant,
-  TElement,
-  Value,
-} from '@udecode/plate-common';
+import type { PlateEditor, TElement, Value } from '@udecode/plate-common';
+import type { TDescendant } from '@udecode/plate-common/server';
 import type { Path } from 'slate';
+
+export type CellFactoryOptions = {
+  children?: TDescendant[];
+  header?: boolean;
+  row?: TTableRowElement;
+};
 
 export interface TablePlugin<V extends Value = Value> {
   /**
@@ -12,6 +14,9 @@ export interface TablePlugin<V extends Value = Value> {
    * is true.
    */
   _cellIndices?: TableStoreCellAttributes;
+
+  /** Cell node factory used each time a cell is created. */
+  cellFactory?: (options?: CellFactoryOptions) => TTableCellElement;
 
   /** Disable expanding the table when inserting cells. */
   disableExpandOnInsert?: boolean;
@@ -61,9 +66,6 @@ export interface TablePlugin<V extends Value = Value> {
    * @default 48
    */
   minColumnWidth?: number;
-
-  /** @default empty paragraph */
-  newCellChildren?: TDescendant[];
 }
 
 export type TableStoreCellAttributes = WeakMap<
