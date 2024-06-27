@@ -1,5 +1,13 @@
 # @udecode/plate-table
 
+## 35.1.0
+
+### Minor Changes
+
+- [#3313](https://github.com/udecode/plate/pull/3313) by [@zbeyens](https://github.com/zbeyens) –
+  - Add `cellFactory` option to `TablePlugin`, called each time a cell is created. Default is `getEmptyCellNode`
+  - Remove `newCellChildren` option from `TablePlugin`, use `cellFactory` instead
+
 ## 34.0.0
 
 ## 33.0.7
