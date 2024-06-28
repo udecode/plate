@@ -3,7 +3,9 @@
  */
 
 export * from './createLinkNode';
+export * from './encodeUrlIfNeeded';
 export * from './getLinkAttributes';
+export * from './safeDecodeUrl';
 export * from './triggerFloatingLink';
 export * from './triggerFloatingLinkEdit';
 export * from './triggerFloatingLinkInsert';
