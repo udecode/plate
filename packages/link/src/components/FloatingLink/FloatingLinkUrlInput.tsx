@@ -2,7 +2,7 @@ import React from 'react';
 
 import { createPrimitiveComponent } from '@udecode/plate-common';
 
-import { isEncoded } from '../../utils/encodeUrlIfNeeded';
+import { encodeUrlIfNeeded } from '../../utils/encodeUrlIfNeeded';
 import {
   floatingLinkActions,
   floatingLinkSelectors,
@@ -34,13 +34,8 @@ export const useFloatingLinkUrlInput = (
 ) => {
   const onChange: React.ChangeEventHandler<HTMLInputElement> =
     React.useCallback((e) => {
-      const value = e.target.value;
-
-      if (isEncoded(value)) {
-        floatingLinkActions.url(value);
-      } else {
-        floatingLinkActions.url(encodeURI(value));
-      }
+      const value = encodeUrlIfNeeded(e.target.value);
+      floatingLinkActions.url(value);
     }, []);
 
   return {

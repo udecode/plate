@@ -1,8 +1,10 @@
 /**
- * Check the uri is encoded
+ * return encoded url
  *
- * @param uri String
+ * @param value String
  */
-export const isEncoded = (uri: string): boolean => {
-  return uri !== decodeURIComponent(uri);
+export const encodeUrlIfNeeded = (value: string) => {
+  const isEncoedUrl = value !== decodeURIComponent(value);
+
+  return isEncoedUrl ? value : encodeURI(value);
 };
