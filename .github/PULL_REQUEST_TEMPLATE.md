@@ -17,5 +17,6 @@ you changed. See `apps/www/content/docs/components/changelog.mdx`.
 - [ ] `yarn test` passes
 - [ ] `yarn typecheck` passes
 - [ ] Ran `yarn lint:fix`
+- [ ] Ran `yarn brl` (if adding, removing or deleting source files)
 - [ ] Added a changeset (if required)
 - [ ] Updated the component changelog (if required)
