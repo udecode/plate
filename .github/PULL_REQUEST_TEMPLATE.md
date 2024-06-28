@@ -5,7 +5,7 @@ merged as soon as possible.
 
 Adding a changeset using `yarn changeset` is required if you've modified a
 source file in `packages`. Please be brief and descriptive. For breaking
-changes, use a major changset. For new features, use a minor changeset. For
+changes, use a major changeset. For new features, use a minor changeset. For
 bug fixes, use a patch changeset.
 
 Changes to component files inside `apps/www/src/registry` don't require a
