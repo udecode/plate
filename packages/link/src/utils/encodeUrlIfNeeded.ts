@@ -1,10 +1,19 @@
 /**
- * return encoded url
+ * If a URL has not already been encoded and contains characters that require
+ * encoding, encode the URL.
  *
- * @param value String
+ * @param url URL to encode
  */
-export const encodeUrlIfNeeded = (value: string) => {
-  const isEncoedUrl = value !== decodeURIComponent(value);
+export const encodeUrlIfNeeded = (url: string) => {
+  try {
+    const isEncoded = url !== decodeURIComponent(url);
 
-  return isEncoedUrl ? value : encodeURI(value);
+    return isEncoded ? url : encodeURI(url);
+  } catch (error) {
+    if (error instanceof URIError) {
+      return url;
+    }
+
+    throw error;
+  }
 };
