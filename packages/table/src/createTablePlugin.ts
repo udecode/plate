@@ -111,6 +111,7 @@ export const createTablePlugin = createPluginFactory<TablePlugin>({
   then: (editor) => ({
     options: {
       cellFactory: (options: any) => getEmptyCellNode(editor, options),
+      getCellChildren: (cell: any) => cell.children,
     },
   }),
   withOverrides: withTable,

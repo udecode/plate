@@ -5,7 +5,6 @@ import { jsx } from '@udecode/plate-test-utils';
 
 import { createTablePlugin } from './createTablePlugin';
 import { getTableGridAbove } from './queries/getTableGridAbove';
-import { withGetFragmentTable } from './withGetFragmentTable';
 
 jsx;
 
@@ -34,12 +33,10 @@ describe('withGetFragmentTable', () => {
         </editor>
       ) as any as PlateEditor;
 
-      let editor = createPlateEditor({
+      const editor = createPlateEditor({
         editor: input,
         plugins: [createTablePlugin()],
       });
-
-      editor = withGetFragmentTable(editor);
 
       const fragment = editor.getFragment();
 
@@ -73,12 +70,10 @@ describe('withGetFragmentTable', () => {
         </editor>
       ) as any as PlateEditor;
 
-      let editor = createPlateEditor({
+      const editor = createPlateEditor({
         editor: input,
         plugins: [createTablePlugin()],
       });
-
-      editor = withGetFragmentTable(editor);
 
       const fragment = editor.getFragment();
 

@@ -3,8 +3,11 @@ import {
   type TDescendant,
   type TElement,
   type Value,
+  type WithPlatePlugin,
   getPluginType,
 } from '@udecode/plate-common/server';
+
+import type { TTableRowElement, TablePlugin } from './types';
 
 import { ELEMENT_TABLE } from './createTablePlugin';
 import { getTableGridAbove } from './queries/getTableGridAbove';
@@ -14,9 +17,11 @@ export const withGetFragmentTable = <
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
 >(
-  editor: E
+  editor: E,
+  { options }: WithPlatePlugin<TablePlugin<V>, V, E>
 ) => {
   const { getFragment } = editor;
+  const { getCellChildren } = options;
 
   editor.getFragment = (): any[] => {
     const fragment = getFragment();
@@ -25,7 +30,7 @@ export const withGetFragmentTable = <
 
     fragment.forEach((node) => {
       if (node.type === getPluginType(editor, ELEMENT_TABLE)) {
-        const rows = node.children as TElement[];
+        const rows = node.children as TTableRowElement[];
 
         const rowCount = rows.length;
 
@@ -35,7 +40,9 @@ export const withGetFragmentTable = <
         const hasOneCell = rowCount <= 1 && colCount <= 1;
 
         if (hasOneCell) {
-          newFragment.push(...(rows[0].children[0].children as TElement[]));
+          const cell = rows[0];
+          const cellChildren = getCellChildren!(cell);
+          newFragment.push(...(cellChildren[0].children as TElement[]));
 
           return;
         } else {
