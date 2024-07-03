@@ -1,5 +1,7 @@
 import {
   type PlateEditor,
+  type TDescendant,
+  type TNodeEntry,
   type Value,
   collapseSelection,
   getBlockAbove,
@@ -26,28 +28,30 @@ export const mergeTableCells = <V extends Value = Value>(
   editor: PlateEditor<V>
 ) => {
   withoutNormalizing(editor, () => {
-    const { _cellIndices, cellFactory } = getPluginOptions<TablePlugin, V>(
-      editor,
-      ELEMENT_TABLE
-    );
+    const { _cellIndices, cellFactory, getCellChildren } = getPluginOptions<
+      TablePlugin,
+      V
+    >(editor, ELEMENT_TABLE);
     const tableEntry = getBlockAbove(editor, {
       at: editor.selection?.anchor.path,
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     })!;
 
-    const cellEntries = getTableGridAbove(editor, { format: 'cell' });
+    const cellEntries = getTableGridAbove(editor, {
+      format: 'cell',
+    }) as TNodeEntry<TTableCellElement>[];
 
     // calculate the colSpan which is the number of horizontal cells that a cell should span.
     let colSpan = 0;
 
     for (const entry of cellEntries) {
-      const [data, path] = entry;
+      const [cell, path] = entry;
 
       const rowIndex = path.at(-2)!;
 
       // count only those cells that are in the first selected row.
       if (rowIndex === cellEntries[0][1].at(-2)!) {
-        const cellColSpan = getColSpan(data as TTableCellElement);
+        const cellColSpan = getColSpan(cell as TTableCellElement);
         colSpan += cellColSpan;
       }
     }
@@ -58,8 +62,8 @@ export const mergeTableCells = <V extends Value = Value>(
       _cellIndices!,
       cellEntries[0][0] as TTableCellElement
     )!;
-    cellEntries.forEach((cE) => {
-      const cell = cE[0] as TTableCellElement;
+    cellEntries.forEach((entry) => {
+      const cell = entry[0] as TTableCellElement;
       const { col: curCol } =
         _cellIndices?.get(cell) ||
         computeCellIndices(editor, tableEntry[0] as TTableElement, cell)!;
@@ -70,16 +74,18 @@ export const mergeTableCells = <V extends Value = Value>(
     });
 
     // This will store the content of all cells we are merging
-    const cellChildren = [];
+    const mergingCellChildren: TDescendant[] = [];
 
     for (const cellEntry of cellEntries) {
       const [el] = cellEntry;
 
+      const cellChildren = getCellChildren!(el);
+
       if (
-        el.children.length !== 1 ||
-        !isElementEmpty(editor, el.children[0] as any)
+        cellChildren.length !== 1 ||
+        !isElementEmpty(editor, cellChildren[0] as any)
       ) {
-        cellChildren.push(...cloneDeep(el.children));
+        mergingCellChildren.push(...cloneDeep(cellChildren));
       }
     }
 
@@ -109,7 +115,7 @@ export const mergeTableCells = <V extends Value = Value>(
     // calculated colSpan and rowSpan attributes and combined content
     const mergedCell = {
       ...cellFactory!({
-        children: cellChildren,
+        children: mergingCellChildren,
         header: cellEntries[0][0].type === getPluginType(editor, ELEMENT_TH),
       }),
       colSpan,

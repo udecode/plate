@@ -57,10 +57,10 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
   editor: PlateEditor<V>,
   { at, format }: GetTableGridByRangeOptions<T>
 ): GetTableGridReturnType<T> => {
-  const { _cellIndices: cellIndices } = getPluginOptions<TablePlugin, V>(
-    editor,
-    ELEMENT_TABLE
-  );
+  const { _cellIndices: cellIndices, getCellChildren } = getPluginOptions<
+    TablePlugin,
+    V
+  >(editor, ELEMENT_TABLE);
 
   const startCellEntry = findNode<TTableCellElement>(editor, {
     at: at.anchor.path,
@@ -194,7 +194,7 @@ export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
     const filteredChildren = rowElement.children?.filter((cellEl) => {
       const cellElement = cellEl as TTableCellElement;
 
-      return !!cellElement?.children.length;
+      return getCellChildren!(cellElement).length > 0;
     });
 
     rowElement.children = filteredChildren;

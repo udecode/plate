@@ -38,6 +38,9 @@ export interface TablePlugin<V extends Value = Value> {
    */
   enableUnsetSingleColSize?: boolean;
 
+  /** @default cell.children */
+  getCellChildren?: <T = TDescendant>(cell: TTableCellElement) => T[];
+
   /**
    * If defined, a normalizer will set each undefined table `colSizes` to this
    * value divided by the number of columns. Merged cells not supported.
