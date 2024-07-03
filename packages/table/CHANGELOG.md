@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 35.2.0
+
+### Minor Changes
+
+- [`a115f969d2032af53ea88c6add7d1dfa7cf3610f`](https://github.com/udecode/plate/commit/a115f969d2032af53ea88c6add7d1dfa7cf3610f) – Add `getCellChildren` option to `TablePlugin`
+
 ## 35.1.0
 
 ### Minor Changes
