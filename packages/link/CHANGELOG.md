@@ -1,5 +1,11 @@
 # @udecode/plate-link
 
+## 35.2.0
+
+### Patch Changes
+
+- [#3317](https://github.com/udecode/plate/pull/3317) by [@12joan](https://github.com/12joan) – Handle unencoded URLs in floating URL input
+
 ## 34.1.1
 
 ## 34.0.6
