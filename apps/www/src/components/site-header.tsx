@@ -13,22 +13,24 @@ import { MobileNav } from './mobile-nav';
 import { StarOnGithub } from './star-on-github';
 
 export async function SiteHeader() {
-  const { stargazers_count: count } = await fetch(
-    'https://api.github.com/repos/udecode/plate',
-    {
-      ...(process.env.GITHUB_OAUTH_TOKEN && {
-        headers: {
-          Authorization: `Bearer ${process.env.GITHUB_OAUTH_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-      }),
-      next: {
-        revalidate: 3600,
-      },
-    }
-  )
-    .then((res) => res.json())
-    .catch(() => ({ stargazers_count: 0 }));
+  // const { stargazers_count: count } = await fetch(
+  //   'https://api.github.com/repos/udecode/plate',
+  //   {
+  //     ...(process.env.GITHUB_OAUTH_TOKEN && {
+  //       headers: {
+  //         Authorization: `Bearer ${process.env.GITHUB_OAUTH_TOKEN}`,
+  //         'Content-Type': 'application/json',
+  //       },
+  //     }),
+  //     next: {
+  //       revalidate: 3600,
+  //     },
+  //   }
+  // )
+  //   .then((res) => res.json())
+  //   .catch(() => ({ stargazers_count: 0 }));
+
+  const count = 0;
 
   return (
     <header className="sticky top-0 z-[60] w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

@@ -2,6 +2,8 @@ import React from 'react';
 
 import { createPrimitiveComponent } from '@udecode/plate-common';
 
+import { encodeUrlIfNeeded } from '../../utils/encodeUrlIfNeeded';
+import { safeDecodeUrl } from '../../utils/safeDecodeUrl';
 import {
   floatingLinkActions,
   floatingLinkSelectors,
@@ -16,7 +18,9 @@ export const useFloatingLinkUrlInputState = () => {
     if (ref.current && updated) {
       setTimeout(() => {
         ref.current?.focus();
-        ref.current!.value = floatingLinkSelectors.url();
+        ref.current!.value = floatingLinkSelectors.url()
+          ? safeDecodeUrl(floatingLinkSelectors.url())
+          : '';
       }, 0);
     }
   }, [updated]);
@@ -31,7 +35,8 @@ export const useFloatingLinkUrlInput = (
 ) => {
   const onChange: React.ChangeEventHandler<HTMLInputElement> =
     React.useCallback((e) => {
-      floatingLinkActions.url(e.target.value);
+      const url = encodeUrlIfNeeded(e.target.value);
+      floatingLinkActions.url(url);
     }, []);
 
   return {

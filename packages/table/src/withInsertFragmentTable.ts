@@ -16,7 +16,12 @@ import {
 } from '@udecode/plate-common/server';
 import cloneDeep from 'lodash/cloneDeep.js';
 
-import type { TablePlugin } from './types';
+import type {
+  TTableCellElement,
+  TTableElement,
+  TTableRowElement,
+  TablePlugin,
+} from './types';
 
 import { ELEMENT_TABLE } from './createTablePlugin';
 import { getTableAbove } from './queries/getTableAbove';
@@ -36,14 +41,15 @@ export const withInsertFragmentTable = <
   { options }: WithPlatePlugin<TablePlugin<V>, V, E>
 ) => {
   const { insertFragment } = editor;
-  const { disableExpandOnInsert, insertColumn, insertRow } = options;
+  const { disableExpandOnInsert, getCellChildren, insertColumn, insertRow } =
+    options;
 
   const myEditor = getTEditor(editor);
 
   myEditor.insertFragment = (fragment) => {
     const insertedTable = fragment.find(
       (n) => (n as TElement).type === getPluginType(editor, ELEMENT_TABLE)
-    );
+    ) as TTableElement | undefined;
 
     if (!insertedTable) {
       const tableEntry = getTableAbove(editor, {
@@ -97,8 +103,7 @@ export const withInsertFragmentTable = <
             let lastCellPath: Path | null = null;
 
             let initRow = true;
-            const insertedRows = (insertedTable as TElement)
-              .children as TElement[];
+            const insertedRows = insertedTable.children as TTableRowElement[];
             insertedRows.forEach((row) => {
               cellPath[cellPath.length - 1] = startColIndex;
 
@@ -120,7 +125,7 @@ export const withInsertFragmentTable = <
 
               initRow = false;
 
-              const insertedCells = row.children as TElement[];
+              const insertedCells = row.children as TTableCellElement[];
               let initCell = true;
 
               insertedCells.forEach((cell) => {
@@ -141,9 +146,13 @@ export const withInsertFragmentTable = <
 
                 initCell = false;
 
+                const cellChildren = getCellChildren!(
+                  cell
+                ) as TTableCellElement[];
+
                 replaceNodeChildren(editor, {
                   at: cellPath,
-                  nodes: cloneDeep(cell.children as any),
+                  nodes: cloneDeep(cellChildren as any),
                 });
 
                 lastCellPath = [...cellPath];

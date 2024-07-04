@@ -26,10 +26,11 @@ export const unmergeTableCells = <V extends Value = Value>(
   editor: PlateEditor<V>
 ) => {
   withoutNormalizing(editor, () => {
-    const { _cellIndices: cellIndices, cellFactory } = getPluginOptions<
-      TablePlugin,
-      V
-    >(editor, ELEMENT_TABLE);
+    const {
+      _cellIndices: cellIndices,
+      cellFactory,
+      getCellChildren,
+    } = getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
 
     const cellEntries = getTableGridAbove(editor, { format: 'cell' });
     const [[cellElem, path]] = cellEntries;
@@ -107,7 +108,7 @@ export const unmergeTableCells = <V extends Value = Value>(
     for (let i = 0; i < rowSpan; i++) {
       const currentRowPath = rowPath + i;
       const pathForNextRows = getColPathForRow(currentRowPath);
-      const newRowChildren = [];
+      const newRowChildren: TTableRowElement[] = [];
       const _rowPath = [...tablePath, currentRowPath];
       const rowEntry = findNode(editor, {
         at: _rowPath,
@@ -115,9 +116,11 @@ export const unmergeTableCells = <V extends Value = Value>(
       });
 
       for (let j = 0; j < colPaths.length; j++) {
+        const cellChildren = getCellChildren!(cellElem);
+
         const cellToInsert =
           i === 0 && j === 0
-            ? createEmptyCell(cellElem.children)
+            ? createEmptyCell(cellChildren)
             : createEmptyCell();
 
         // if row exists, insert into it, otherwise insert row

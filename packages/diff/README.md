@@ -2,4 +2,4 @@
 
 ## License
 
-[MIT](../../LICENSE)
+[See LICENSE](./LICENSE)
