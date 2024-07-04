@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import { DiffMatchPatch } from '../diff-match-patch-ts';
+import { DiffMatchPatch } from 'diff-match-patch-ts';
 
 export const dmp = new DiffMatchPatch();
 

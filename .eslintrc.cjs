@@ -33,7 +33,6 @@ module.exports = {
     '.next',
     '.out',
     '**/__registry__',
-    '**/diff-match-patch-ts',
   ],
   overrides: [
     {
