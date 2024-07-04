@@ -1,9 +1,15 @@
 import React from 'react';
 
+import { getPluginOptions, useEditorRef } from '@udecode/plate-common';
 import VanillaSelectionArea, {
   type SelectionEvents,
   type SelectionOptions,
 } from '@viselect/vanilla';
+
+import {
+  type BlockSelectionPlugin,
+  KEY_BLOCK_SELECTION,
+} from '../createBlockSelectionPlugin';
 
 export interface SelectionAreaProps
   extends Omit<Partial<SelectionOptions>, 'boundaries'>,
@@ -41,7 +47,22 @@ export function SelectionArea({
   startAreas,
   ...props
 }: SelectionAreaProps) {
-  const ref = React.createRef<HTMLDivElement>();
+  const editor = useEditorRef();
+  const ref = React.useRef<HTMLDivElement | null>(null);
+  const areaBoundariesRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    const { scrollContainerSelector } = getPluginOptions<BlockSelectionPlugin>(
+      editor,
+      KEY_BLOCK_SELECTION
+    );
+
+    if (scrollContainerSelector) {
+      areaBoundariesRef.current = window.document.querySelector(
+        scrollContainerSelector
+      );
+    }
+  }, [editor]);
 
   /* eslint-disable react-hooks/exhaustive-deps */
   React.useEffect(() => {
@@ -56,7 +77,8 @@ export function SelectionArea({
       startAreas,
     };
 
-    const areaBoundaries = ref.current as HTMLElement;
+    const areaBoundaries =
+      (areaBoundariesRef.current as HTMLElement) ?? ref.current;
 
     const selection = new VanillaSelectionArea({
       boundaries: getBoundaries(areaBoundaries),
