@@ -62,7 +62,8 @@ export function SelectionArea({
         scrollContainerSelector
       );
     }
-  }, [editor]);
+    /* eslint-disable react-hooks/exhaustive-deps */
+  }, []);
 
   /* eslint-disable react-hooks/exhaustive-deps */
   React.useEffect(() => {
