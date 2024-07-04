@@ -1,5 +1,11 @@
 # @udecode/plate-diff
 
+## 35.3.1
+
+### Patch Changes
+
+- [#3330](https://github.com/udecode/plate/pull/3330) by [@yf-yang](https://github.com/yf-yang) – add diff-match-patch-ts as a dependency
+
 ## 34.0.0
 
 ## 33.0.2
