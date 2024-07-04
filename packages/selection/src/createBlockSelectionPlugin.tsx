@@ -22,6 +22,7 @@ export interface BlockSelectionPlugin {
   disableContextMenu?: boolean;
   onKeyDownSelecting?: (e: KeyboardEvent) => void;
   query?: QueryNodeOptions;
+  scrollContainerSelector?: string;
   sizes?: {
     bottom?: number;
     left?: number;
