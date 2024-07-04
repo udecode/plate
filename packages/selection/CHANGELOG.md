@@ -1,5 +1,11 @@
 # @udecode/plate-selection
 
+## 35.3.0
+
+### Minor Changes
+
+- [#3329](https://github.com/udecode/plate/pull/3329) by [@felixfeng33](https://github.com/felixfeng33) – Custom scrolling element option
+
 ## 34.1.0
 
 ### Patch Changes

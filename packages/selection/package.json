@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-selection",
-  "version": "34.1.0",
+  "version": "35.3.0",
   "description": "Plate plugin to add a visual way of selecting blocks",
   "license": "MIT",
   "homepage": "https://platejs.org",
