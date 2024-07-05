@@ -1,5 +1,11 @@
 # @udecode/plate-utils
 
+## 35.3.2
+
+### Patch Changes
+
+- [#3333](https://github.com/udecode/plate/pull/3333) by [@yf-yang](https://github.com/yf-yang) – fix: omit plate properties from createNodeHOC props
+
 ## 34.0.5
 
 ### Patch Changes
