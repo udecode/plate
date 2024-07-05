@@ -8,7 +8,7 @@ export const createNodeHOC =
   (Component: any, props: Omit<T, keyof PlateRenderElementProps<V>>) =>
     function hoc(childrenProps: PlateRenderElementProps<V>) {
       return (
-        <HOC {...childrenProps} {...props}>
+        <HOC {...({ ...childrenProps, ...props } as T)}>
           <Component {...childrenProps} />
         </HOC>
       );
