@@ -38,8 +38,8 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "lodash": "^4.17.21",
-    "diff-match-patch-ts": "^0.6.0"
+    "diff-match-patch-ts": "^0.6.0",
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@udecode/plate-common": "workspace:^"
