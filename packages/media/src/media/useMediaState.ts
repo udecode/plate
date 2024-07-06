@@ -4,8 +4,9 @@ import { useElement } from '@udecode/plate-common';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
 
 import type { TMediaElement } from './types';
+
+import { ELEMENT_MEDIA_EMBED, VIDEO_PROVIDERS } from '../media-embed';
 import { ELEMENT_VIDEO } from '../video';
-import { VIDEO_PROVIDERS, ELEMENT_MEDIA_EMBED} from '../media-embed';
 
 export type EmbedUrlData = {
   id?: string;
@@ -14,6 +15,30 @@ export type EmbedUrlData = {
 };
 
 export type EmbedUrlParser = (url: string) => EmbedUrlData | undefined;
+
+export const parseMediaUrl = (
+  url: string,
+  {
+    urlParsers,
+  }: {
+    urlParsers: EmbedUrlParser[];
+  }
+): EmbedUrlData | undefined => {
+  // Harden against XSS
+  try {
+    if (new URL(url).protocol === 'javascript:') {
+      return undefined;
+    }
+  } catch {}
+
+  for (const parser of urlParsers) {
+    const data = parser(url);
+
+    if (data) {
+      return data;
+    }
+  }
+};
 
 export const useMediaState = ({
   urlParsers,
@@ -28,15 +53,10 @@ export const useMediaState = ({
   const { align = 'left', id, isUpload, name, type, url } = element;
 
   const embed = React.useMemo(() => {
-    if (!urlParsers || (type !== ELEMENT_VIDEO && type !== ELEMENT_MEDIA_EMBED)) return;
+    if (!urlParsers || (type !== ELEMENT_VIDEO && type !== ELEMENT_MEDIA_EMBED))
+      return;
 
-    for (const parser of urlParsers) {
-      const data = parser(url);
-
-      if (data) {
-        return data;
-      }
-    }
+    return parseMediaUrl(url, { urlParsers });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [urlParsers, url]);
 
@@ -56,6 +76,6 @@ export const useMediaState = ({
     name,
     readOnly,
     selected,
-    url,
+    unsafeUrl: url,
   };
 };
