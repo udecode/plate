@@ -1,5 +1,7 @@
 # @udecode/plate-slash-command
 
+## 36.0.0
+
 ## 34.0.8
 
 ## 34.0.0

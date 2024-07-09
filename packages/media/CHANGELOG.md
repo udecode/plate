@@ -1,5 +1,7 @@
 # @udecode/plate-media
 
+## 36.0.0
+
 ## 34.1.0
 
 ### Minor Changes
@@ -126,7 +128,7 @@
   - Caption is now a separate plugin. Install `@udecode/plate-caption` and add it to your plugins:
 
   ```ts
-  import { ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from "@udecode/plate-media";
+  import { ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from '@udecode/plate-media';
 
   createCaptionPlugin({
     options: { pluginKeys: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED] },
@@ -364,14 +366,12 @@
   interface MediaPlugin {
     isUrl?: (text: string) => boolean;
 
-    /**
-     * Transforms the url.
-     */
+    /** Transforms the url. */
     transformUrl?: (url: string) => string;
 
     /**
-     * List of rules. The first rule that matches the url will be used,
-     * i.e. its component will be used to render the media. Used by `MediaEmbed`.
+     * List of rules. The first rule that matches the url will be used, i.e. its
+     * component will be used to render the media. Used by `MediaEmbed`.
      */
     rules?: MediaPluginRule[];
   }

@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-mention",
-  "version": "34.0.8",
+  "version": "36.0.0",
   "description": "Mention plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -39,13 +39,13 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-combobox": "34.0.8"
+    "@udecode/plate-combobox": "36.0.0"
   },
   "devDependencies": {
     "@udecode/plate-common": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=35.3.2",
+    "@udecode/plate-common": ">=36.0.0",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.94.0",
