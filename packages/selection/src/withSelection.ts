@@ -1,6 +1,6 @@
 import type { PlateEditor, Value } from '@udecode/plate-common/server';
 
-import { blockSelectionActions } from './blockSelectionStore';
+import { blockSelectionStore } from './blockSelectionStore';
 
 export const withSelection = <
   V extends Value = Value,
@@ -8,7 +8,7 @@ export const withSelection = <
 >(
   editor: E
 ) => {
-  (editor as any).addSelectedRow = blockSelectionActions.addSelectedRow;
+  (editor as any).blockSelectionStore = blockSelectionStore;
 
   return editor;
 };
