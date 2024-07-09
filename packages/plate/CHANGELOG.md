@@ -1,5 +1,7 @@
 # @udecode/plate
 
+## 36.0.0
+
 ## 35.3.2
 
 ## 35.3.1
@@ -434,9 +436,9 @@
   - due to esm issues, dnd plugin is not part of plate package anymore. To use it, install `@udecode/plate-ui-dnd`
   ```ts
   // before
-  import { createDndPlugin } from "@udecode/plate";
+  import { createDndPlugin } from '@udecode/plate';
   // after
-  import { createDndPlugin } from "@udecode/plate-ui-dnd";
+  import { createDndPlugin } from '@udecode/plate-ui-dnd';
   ```
   - upgrade peerDeps:
   ```json

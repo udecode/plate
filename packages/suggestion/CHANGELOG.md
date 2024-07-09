@@ -1,5 +1,7 @@
 # @udecode/plate-suggestion
 
+## 36.0.0
+
 ## 35.3.1
 
 ## 34.0.0

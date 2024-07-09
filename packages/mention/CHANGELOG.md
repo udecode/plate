@@ -1,5 +1,7 @@
 # @udecode/plate-mention
 
+## 36.0.0
+
 ## 34.0.8
 
 ## 34.0.1
@@ -503,22 +505,17 @@
   - removed `MentionNodeData` in favor of `TComboboxItem`
   ```ts
   export interface TComboboxItem {
-    /**
-     * Unique key.
-     */
+    /** Unique key. */
     key: string;
-    /**
-     * Item text.
-     */
+    /** Item text. */
     text: any;
     /**
      * Whether the item is disabled.
+     *
      * @default false
      */
     disabled?: boolean;
-    /**
-     * Data available to `onRenderItem`.
-     */
+    /** Data available to `onRenderItem`. */
     data?: unknown;
   }
   ```
