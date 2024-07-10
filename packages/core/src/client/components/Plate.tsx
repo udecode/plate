@@ -95,6 +95,8 @@ function PlateInner<
   maxLength,
   normalizeInitialValue: shouldNormalizeInitialValue,
   onChange,
+  onSelectionChange,
+  onValueChange,
   plugins: pluginsProp,
   primary,
   readOnly,
@@ -153,6 +155,10 @@ function PlateInner<
       editorRef={editorRef as PlateStoreState['editorRef']}
       id={id}
       onChange={onChange as PlateStoreState['onChange']}
+      onSelectionChange={
+        onSelectionChange as PlateStoreState['onSelectionChange']
+      }
+      onValueChange={onValueChange as PlateStoreState['onValueChange']}
       plugins={editor.plugins as any}
       primary={primary}
       rawPlugins={pluginsProp}
