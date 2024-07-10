@@ -24,9 +24,6 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         name: Install pnpm
-        with:
-          version: 8.6.1
-          run_install: false
 
       - name: Use Node.js 18
         uses: actions/setup-node@v3
