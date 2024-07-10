@@ -12,7 +12,7 @@ import { Path } from 'slate';
 export const triggerComboboxNextBlock = <V extends Value>(
   editor: PlateEditor<V>,
   triggerText: string,
-  at?: any
+  at?: Path
 ) => {
   const emptyBlock = {
     children: [{ text: '' }],
@@ -20,7 +20,7 @@ export const triggerComboboxNextBlock = <V extends Value>(
     type: ELEMENT_DEFAULT,
   };
 
-  let _at;
+  let _at: Path | undefined;
 
   if (at) {
     const slicedPath = at.slice(0, 1);
