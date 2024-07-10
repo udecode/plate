@@ -21,7 +21,14 @@ export interface PlateProps<
 > extends Partial<
     Pick<
       PlateStoreState<V, E>,
-      'editor' | 'id' | 'primary' | 'readOnly' | 'value'
+      | 'editor'
+      | 'id'
+      | 'onChange'
+      | 'onSelectionChange'
+      | 'onValueChange'
+      | 'primary'
+      | 'readOnly'
+      | 'value'
     >
   > {
   children: React.ReactNode;
@@ -69,9 +76,6 @@ export interface PlateProps<
    */
   normalizeInitialValue?: boolean;
 
-  /** Controlled callback called when the editor state changes. */
-  onChange?: (value: V) => void;
-
   plugins?: PlatePlugin[];
   renderElement?: TEditableProps['renderElement'];
   renderLeaf?: TEditableProps['renderLeaf'];
@@ -110,7 +114,7 @@ function PlateInner<
         plugins: pluginsProp as any,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [editorProp]
   );
 
   const value = React.useMemo(
