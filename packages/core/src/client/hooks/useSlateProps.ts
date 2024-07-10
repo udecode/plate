@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { TSelection, Value } from '@udecode/slate';
+import type { Value } from '@udecode/slate';
 import type { SlateProps } from '@udecode/slate-react';
 
 import { pipeOnChange } from '../../shared/utils/pipeOnChange';
