@@ -3,3 +3,4 @@
  */
 
 export * from './filterWords';
+export * from './triggerComboboxNextBlock';
