@@ -33,7 +33,7 @@ for folder in $GLOB; do
   git clone --quiet --depth 1 $REPO $CLONE_DIR > /dev/null
   cd $CLONE_DIR
   
-  git config user.email "zbeyens@udecode.io"
+  git config user.email "zbeyens@udecode.dev"
   git config user.name "zbeyens"
   
   find . | grep -v ".git" | grep -v "^\.*$" | xargs rm -rf # delete all files (to handle deletions in monorepo)
