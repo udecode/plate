@@ -1,5 +1,11 @@
 # @udecode/slate-react
 
+## 36.0.3
+
+### Patch Changes
+
+- [#3346](https://github.com/udecode/plate/pull/3346) by [@yf-yang](https://github.com/yf-yang) – feat: expose onValueChange and onSelectionChange from Slate component, following https://github.com/ianstormtaylor/slate/pull/5526
+
 ## 33.0.0
 
 ## 32.0.1

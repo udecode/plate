@@ -1,5 +1,7 @@
 # @udecode/plate-utils
 
+## 36.0.3
+
 ## 36.0.0
 
 ### Minor Changes
