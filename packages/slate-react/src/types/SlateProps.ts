@@ -7,6 +7,8 @@ import type { ReactEditor } from 'slate-react';
 export interface SlateProps extends UnknownObject {
   children: React.ReactNode;
   editor: ReactEditor;
-  onChange: (value: SlateProps['value']) => void;
-  value: TDescendant[];
+  initialValue: TDescendant[];
+  onChange?: (value: TDescendant[]) => void;
+  onSelectionChange?: (selection: Selection) => void;
+  onValueChange?: (value: TDescendant[]) => void;
 }

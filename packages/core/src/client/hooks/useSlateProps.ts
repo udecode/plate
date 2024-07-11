@@ -21,6 +21,8 @@ export const useSlateProps = <V extends Value>({
   const value = usePlateSelectors(id).value();
   const setValue = usePlateActions(id).value();
   const onChangeProp = usePlateSelectors(id).onChange();
+  const onValueChangeProp = usePlateSelectors(id).onValueChange();
+  const onSelectionChangeProp = usePlateSelectors(id).onSelectionChange();
 
   const onChange = React.useCallback(
     (newValue: V) => {
@@ -35,13 +37,25 @@ export const useSlateProps = <V extends Value>({
     [editor, setValue, onChangeProp]
   );
 
+  const onValueChange = React.useMemo(
+    () => onValueChangeProp,
+    [onValueChangeProp]
+  );
+
+  const onSelectionChange = React.useMemo(
+    () => onSelectionChangeProp,
+    [onSelectionChangeProp]
+  );
+
   return React.useMemo(() => {
     return {
       editor,
       initialValue: value,
       key: editor.key,
       onChange,
+      onSelectionChange,
+      onValueChange,
       value,
     };
-  }, [editor, onChange, value]);
+  }, [editor, onChange, onSelectionChange, onValueChange, value]);
 };

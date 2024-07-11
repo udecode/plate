@@ -1,6 +1,6 @@
 import type React from 'react';
 
-import type { Value } from '@udecode/slate';
+import type { TSelection, Value } from '@udecode/slate';
 
 import type { PlateId } from '../../client';
 import type { PlateEditor } from './PlateEditor';
@@ -59,6 +59,12 @@ export type PlateStoreState<
 
   /** Controlled callback called when the editor state changes. */
   onChange: (value: V) => void;
+
+  /** Controlled callback called when the editor.selection changes. */
+  onSelectionChange: (selection: TSelection) => void;
+
+  /** Controlled callback called when the editor.children changes. */
+  onValueChange: (value: V) => void;
 
   /**
    * Whether the editor is primary. If no editor is active, then PlateController
