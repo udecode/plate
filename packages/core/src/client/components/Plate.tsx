@@ -116,7 +116,7 @@ function PlateInner<
         plugins: pluginsProp as any,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [editorProp]
+    []
   );
 
   const value = React.useMemo(
