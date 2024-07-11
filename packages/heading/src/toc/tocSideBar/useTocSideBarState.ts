@@ -2,6 +2,7 @@ import React from 'react';
 
 import {
   getNode,
+  getPluginOptions,
   toDOMNode,
   useEditorRef,
   useEditorSelector,
@@ -10,7 +11,8 @@ import {
 import type { Heading, TocSideBarProps } from '../types';
 
 import { useContentController, useTocController } from '.';
-import { checkIn, getHeadingList } from '../../utils';
+import { checkIn } from '../../utils';
+import { ELEMENT_TOC, type TocPlugin } from '../createTocPlugin';
 
 export const useTocSideBarState = ({
   containerRef,
@@ -22,7 +24,12 @@ export const useTocSideBarState = ({
   topOffset = 0,
 }: TocSideBarProps) => {
   const editor = useEditorRef();
-  const headingList = useEditorSelector(getHeadingList, []);
+  const queryHeading = getPluginOptions<TocPlugin>(
+    editor,
+    ELEMENT_TOC
+  ).queryHeading;
+
+  const headingList = useEditorSelector(queryHeading, []);
 
   const tocRef = React.useRef<HTMLElement>(null);
 

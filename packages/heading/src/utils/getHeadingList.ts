@@ -1,6 +1,7 @@
 import {
   type PlateEditor,
   type TElement,
+  type Value,
   getNodeEntries,
   getNodeString,
 } from '@udecode/plate-common';
@@ -17,7 +18,7 @@ import {
 } from '../heading';
 import { isHeading } from './isHeading';
 
-const headingDepth: Record<string, number> = {
+export const headingDepth: Record<string, number> = {
   [ELEMENT_H1]: 1,
   [ELEMENT_H2]: 2,
   [ELEMENT_H3]: 3,
@@ -26,7 +27,9 @@ const headingDepth: Record<string, number> = {
   [ELEMENT_H6]: 6,
 };
 
-export const getHeadingList = (editor: PlateEditor) => {
+export const getHeadingList = <V extends Value = Value>(
+  editor: PlateEditor<V>
+) => {
   const headingList: Heading[] = [];
 
   const values = getNodeEntries(editor, {
