@@ -1,5 +1,11 @@
 # @udecode/plate-heading
 
+## 36.0.4
+
+### Patch Changes
+
+- [#3350](https://github.com/udecode/plate/pull/3350) by [@natamox](https://github.com/natamox) – Expose toc plugin queryHeading fuction, this allows to customize the heading I need
+
 ## 36.0.0
 
 ## 34.0.7
