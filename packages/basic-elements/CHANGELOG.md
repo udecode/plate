@@ -1,5 +1,7 @@
 # @udecode/plate-basic-elements
 
+## 36.0.4
+
 ## 36.0.0
 
 ## 35.0.0
