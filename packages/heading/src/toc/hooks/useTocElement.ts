@@ -3,7 +3,6 @@ import React, { useEffect } from 'react';
 import {
   addSelectedRow,
   getNode,
-  getPluginOptions,
   toDOMNode,
   useEditorRef,
   useEditorSelector,
@@ -12,7 +11,7 @@ import {
 import type { Heading } from '../types';
 
 import { heightToTop } from '../../utils';
-import { ELEMENT_TOC, type TocPlugin } from '../createTocPlugin';
+import { getHeadingList } from '../../utils/getHeadingList';
 
 export type useTocElementStateProps = {
   isScroll: boolean;
@@ -25,12 +24,7 @@ export const useTocElementState = ({
 }: useTocElementStateProps) => {
   const editor = useEditorRef();
 
-  const queryHeading = getPluginOptions<TocPlugin>(
-    editor,
-    ELEMENT_TOC
-  ).queryHeading;
-
-  const headingList = useEditorSelector(queryHeading, []);
+  const headingList = useEditorSelector(getHeadingList, []);
 
   const containerRef = React.useRef<HTMLElement | null>(null);
 

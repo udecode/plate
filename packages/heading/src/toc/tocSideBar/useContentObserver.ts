@@ -2,13 +2,12 @@ import React from 'react';
 
 import {
   getNode,
-  getPluginOptions,
   toDOMNode,
   useEditorRef,
   useEditorSelector,
 } from '@udecode/plate-common';
 
-import { ELEMENT_TOC, type TocPlugin } from '../createTocPlugin';
+import { getHeadingList } from '../../utils/getHeadingList';
 
 interface UseContentObserver {
   editorContentRef: React.RefObject<HTMLElement>;
@@ -31,12 +30,7 @@ export const useContentObserver = ({
 
   const root = isScroll ? editorContentRef.current : undefined;
   const editor = useEditorRef();
-  const queryHeading = getPluginOptions<TocPlugin>(
-    editor,
-    ELEMENT_TOC
-  ).queryHeading;
-
-  const headingList = useEditorSelector(queryHeading, []);
+  const headingList = useEditorSelector(getHeadingList, []);
 
   const [activeId, setActiveId] = React.useState('');
 

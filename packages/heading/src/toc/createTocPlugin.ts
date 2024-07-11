@@ -6,19 +6,14 @@ import {
 
 import type { Heading } from './types';
 
-import { getHeadingList } from '../utils';
-
 export const ELEMENT_TOC = 'toc';
 
-export interface TocPlugin<V extends Value = Value> {
-  queryHeading: (editor: PlateEditor<V>) => Heading[];
+export interface TocPlugin {
+  queryHeading?: <V extends Value = Value>(editor: PlateEditor<V>) => Heading[];
 }
 
 export const createTocPlugin = createPluginFactory<TocPlugin>({
   isElement: true,
   isVoid: true,
   key: ELEMENT_TOC,
-  options: {
-    queryHeading: getHeadingList,
-  },
 });
