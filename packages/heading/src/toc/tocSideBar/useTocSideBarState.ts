@@ -10,7 +10,8 @@ import {
 import type { Heading, TocSideBarProps } from '../types';
 
 import { useContentController, useTocController } from '.';
-import { checkIn, getHeadingList } from '../../utils';
+import { checkIn } from '../../utils';
+import { getHeadingList } from '../../utils/getHeadingList';
 
 export const useTocSideBarState = ({
   containerRef,

@@ -10,7 +10,8 @@ import {
 
 import type { Heading } from '../types';
 
-import { getHeadingList, heightToTop } from '../../utils';
+import { heightToTop } from '../../utils';
+import { getHeadingList } from '../../utils/getHeadingList';
 
 export type useTocElementStateProps = {
   isScroll: boolean;
@@ -21,8 +22,9 @@ export const useTocElementState = ({
   isScroll,
   topOffset,
 }: useTocElementStateProps) => {
-  const headingList = useEditorSelector(getHeadingList, []);
   const editor = useEditorRef();
+
+  const headingList = useEditorSelector(getHeadingList, []);
 
   const containerRef = React.useRef<HTMLElement | null>(null);
 

@@ -1,11 +1,11 @@
 import {
   type PlateEditor,
   type TElement,
+  type Value,
   getNodeEntries,
   getNodeString,
+  getPluginOptions,
 } from '@udecode/plate-common';
-
-import type { Heading } from '../toc';
 
 import {
   ELEMENT_H1,
@@ -15,9 +15,10 @@ import {
   ELEMENT_H5,
   ELEMENT_H6,
 } from '../heading';
+import { ELEMENT_TOC, type Heading, type TocPlugin } from '../toc';
 import { isHeading } from './isHeading';
 
-const headingDepth: Record<string, number> = {
+export const headingDepth: Record<string, number> = {
   [ELEMENT_H1]: 1,
   [ELEMENT_H2]: 2,
   [ELEMENT_H3]: 3,
@@ -26,7 +27,15 @@ const headingDepth: Record<string, number> = {
   [ELEMENT_H6]: 6,
 };
 
-export const getHeadingList = (editor: PlateEditor) => {
+export const getHeadingList = <V extends Value = Value>(
+  editor: PlateEditor<V>
+) => {
+  const options = getPluginOptions<TocPlugin, V>(editor, ELEMENT_TOC);
+
+  if (options.queryHeading) {
+    return options.queryHeading<V>(editor);
+  }
+
   const headingList: Heading[] = [];
 
   const values = getNodeEntries(editor, {
