@@ -155,8 +155,11 @@ export const Table = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLTableElement>) => (
-  <div className="my-6 w-full overflow-y-auto">
-    <table className={cn('w-full', className)} {...props} />
+  <div className="my-6 w-full overflow-y-auto rounded-lg">
+    <table
+      className={cn('w-full overflow-hidden rounded-lg', className)}
+      {...props}
+    />
   </div>
 );
 
@@ -260,7 +263,6 @@ export const Step = ({ className, ...props }: React.ComponentProps<'h3'>) => (
 
 export const Steps = ({ ...props }) => (
   <div
-    // eslint-disable-next-line tailwindcss/no-custom-classname
     className="[&>h3]:step steps mb-12 ml-4 border-l pl-8 [counter-reset:step]"
     {...props}
   />

@@ -9,6 +9,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/editor.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/editor')),
     },
     'cloud': {
@@ -16,6 +18,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/cloud.tsx','registry/default/plate-ui/cloud-attachment-element.tsx','registry/default/plate-ui/cloud-image-element.tsx','registry/default/plate-ui/cloud-resize-controls.tsx','registry/default/plate-ui/cloud-status-bar.tsx','registry/default/plate-ui/cloud-toolbar-buttons.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/cloud')),
     },
     'cloud-attachment-element': {
@@ -58,6 +62,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["command"],
       files: ['registry/default/plate-ui/code-block-element.tsx','registry/default/plate-ui/code-block-element.css','registry/default/plate-ui/code-block-combobox.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/code-block-element')),
     },
     'code-block-combobox': {
@@ -72,6 +78,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["command","resizable"],
       files: ['registry/default/plate-ui/column-element.tsx','registry/default/plate-ui/column-group-element.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/column-element')),
     },
     'column-group-element': {
@@ -86,6 +94,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["dropdown-menu","toolbar","separator","button","tooltip"],
       files: ['registry/default/plate-ui/color-dropdown-menu.tsx','registry/default/plate-ui/color-constants.ts','registry/default/plate-ui/color-dropdown-menu-items.tsx','registry/default/plate-ui/color-input.tsx','registry/default/plate-ui/color-picker.tsx','registry/default/plate-ui/colors-custom.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/color-dropdown-menu')),
     },
     'color-constants': {
@@ -128,6 +138,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["popover","avatar"],
       files: ['registry/default/plate-ui/comments-popover.tsx','registry/default/plate-ui/comment-avatar.tsx','registry/default/plate-ui/comment-create-form.tsx','registry/default/plate-ui/comment-item.tsx','registry/default/plate-ui/comment-more-dropdown.tsx','registry/default/plate-ui/comment-reply-items.tsx','registry/default/plate-ui/comment-resolve-button.tsx','registry/default/plate-ui/comment-value.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/comments-popover')),
     },
     'comment-avatar': {
@@ -184,6 +196,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["tooltip"],
       files: ['registry/default/plate-ui/draggable.tsx','registry/default/plate-ui/with-draggables.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/draggable')),
     },
     'with-draggables': {
@@ -198,6 +212,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["toolbar"],
       files: ['registry/default/plate-ui/emoji-dropdown-menu.tsx','registry/default/plate-ui/emoji-toolbar-dropdown.tsx','registry/default/plate-ui/emoji-icons.tsx','registry/default/plate-ui/emoji-picker.tsx','registry/default/plate-ui/emoji-picker-content.tsx','registry/default/plate-ui/emoji-picker-navigation.tsx','registry/default/plate-ui/emoji-picker-preview.tsx','registry/default/plate-ui/emoji-picker-search-and-clear.tsx','registry/default/plate-ui/emoji-picker-search-bar.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/emoji-dropdown-menu')),
     },
     'emoji-toolbar-dropdown': {
@@ -261,6 +277,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["inline-combobox"],
       files: ['registry/default/plate-ui/emoji-input-element.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/emoji-input-element')),
     },
     'align-dropdown-menu': {
@@ -268,6 +286,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["dropdown-menu","toolbar"],
       files: ['registry/default/plate-ui/align-dropdown-menu.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/align-dropdown-menu')),
     },
     'avatar': {
@@ -275,6 +295,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/avatar.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/avatar')),
     },
     'blockquote-element': {
@@ -282,6 +304,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/blockquote-element.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/blockquote-element')),
     },
     'button': {
@@ -289,6 +313,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/button.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/button')),
     },
     'caption': {
@@ -296,6 +322,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/caption.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/caption')),
     },
     'checkbox': {
@@ -303,6 +331,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/checkbox.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/checkbox')),
     },
     'code-leaf': {
@@ -310,6 +340,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/code-leaf.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/code-leaf')),
     },
     'code-line-element': {
@@ -317,6 +349,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/code-line-element.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/code-line-element')),
     },
     'code-syntax-leaf': {
@@ -324,6 +358,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/code-syntax-leaf.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/code-syntax-leaf')),
     },
     'command': {
@@ -331,6 +367,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["dialog"],
       files: ['registry/default/plate-ui/command.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/command')),
     },
     'comment-leaf': {
@@ -338,6 +376,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/comment-leaf.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/comment-leaf')),
     },
     'comment-toolbar-button': {
@@ -345,6 +385,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/comment-toolbar-button.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/comment-toolbar-button')),
     },
     'cursor-overlay': {
@@ -352,6 +394,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/cursor-overlay.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/cursor-overlay')),
     },
     'dialog': {
@@ -359,6 +403,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/dialog.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/dialog')),
     },
     'dropdown-menu': {
@@ -366,6 +412,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/dropdown-menu.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/dropdown-menu')),
     },
     'excalidraw-element': {
@@ -373,6 +421,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/excalidraw-element.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/excalidraw-element')),
     },
     'fixed-toolbar': {
@@ -380,6 +430,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["toolbar"],
       files: ['registry/default/plate-ui/fixed-toolbar.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/fixed-toolbar')),
     },
     'fixed-toolbar-buttons': {
@@ -387,6 +439,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["toolbar","insert-dropdown-menu","mark-toolbar-button","mode-dropdown-menu","turn-into-dropdown-menu"],
       files: ['registry/default/plate-ui/fixed-toolbar-buttons.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/fixed-toolbar-buttons')),
     },
     'floating-toolbar': {
@@ -394,6 +448,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["toolbar"],
       files: ['registry/default/plate-ui/floating-toolbar.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/floating-toolbar')),
     },
     'floating-toolbar-buttons': {
@@ -401,6 +457,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["mark-toolbar-button","more-dropdown-menu","turn-into-dropdown-menu"],
       files: ['registry/default/plate-ui/floating-toolbar-buttons.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/floating-toolbar-buttons')),
     },
     'heading-element': {
@@ -408,6 +466,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/heading-element.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/heading-element')),
     },
     'highlight-leaf': {
@@ -415,6 +475,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/highlight-leaf.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/highlight-leaf')),
     },
     'hr-element': {
@@ -422,6 +484,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/hr-element.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/hr-element')),
     },
     'image-element': {
@@ -429,6 +493,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["media-popover","caption","resizable"],
       files: ['registry/default/plate-ui/image-element.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/image-element')),
     },
     'indent-list-toolbar-button': {
@@ -436,6 +502,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["toolbar"],
       files: ['registry/default/plate-ui/indent-list-toolbar-button.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/indent-list-toolbar-button')),
     },
     'indent-toolbar-button': {
@@ -443,6 +511,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["toolbar"],
       files: ['registry/default/plate-ui/indent-toolbar-button.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/indent-toolbar-button')),
     },
     'inline-combobox': {
@@ -450,6 +520,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/inline-combobox.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/inline-combobox')),
     },
     'input': {
@@ -457,6 +529,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/input.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/input')),
     },
     'insert-dropdown-menu': {
@@ -464,6 +538,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["dropdown-menu","toolbar"],
       files: ['registry/default/plate-ui/insert-dropdown-menu.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/insert-dropdown-menu')),
     },
     'kbd-leaf': {
@@ -471,6 +547,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/kbd-leaf.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/kbd-leaf')),
     },
     'line-height-dropdown-menu': {
@@ -478,6 +556,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["toolbar","dropdown-menu"],
       files: ['registry/default/plate-ui/line-height-dropdown-menu.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/line-height-dropdown-menu')),
     },
     'link-element': {
@@ -485,6 +565,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/link-element.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/link-element')),
     },
     'link-floating-toolbar': {
@@ -492,6 +574,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["button","input","popover","separator"],
       files: ['registry/default/plate-ui/link-floating-toolbar.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/link-floating-toolbar')),
     },
     'link-toolbar-button': {
@@ -499,6 +583,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["toolbar"],
       files: ['registry/default/plate-ui/link-toolbar-button.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/link-toolbar-button')),
     },
     'list-element': {
@@ -506,6 +592,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/list-element.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/list-element')),
     },
     'list-toolbar-button': {
@@ -513,6 +601,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["toolbar"],
       files: ['registry/default/plate-ui/list-toolbar-button.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/list-toolbar-button')),
     },
     'mark-toolbar-button': {
@@ -520,6 +610,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["toolbar"],
       files: ['registry/default/plate-ui/mark-toolbar-button.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/mark-toolbar-button')),
     },
     'media-embed-element': {
@@ -527,6 +619,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["media-popover","caption","resizable"],
       files: ['registry/default/plate-ui/media-embed-element.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/media-embed-element')),
     },
     'media-popover': {
@@ -534,6 +628,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["button","input","popover","separator"],
       files: ['registry/default/plate-ui/media-popover.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/media-popover')),
     },
     'media-toolbar-button': {
@@ -541,6 +637,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["toolbar"],
       files: ['registry/default/plate-ui/media-toolbar-button.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/media-toolbar-button')),
     },
     'mention-element': {
@@ -548,13 +646,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/mention-element.tsx'],
-      component: React.lazy(() => import('@/registry/default/plate-ui/mention-element')),
-    },
-    'mention-element': {
-      name: 'mention-element',
-      type: 'components:plate-ui',
-      registryDependencies: [],
-      files: ['registry/default/plate-ui/mention-element.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/mention-element')),
     },
     'mention-input-element': {
@@ -562,6 +655,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["inline-combobox"],
       files: ['registry/default/plate-ui/mention-input-element.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/mention-input-element')),
     },
     'mode-dropdown-menu': {
@@ -569,6 +664,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["dropdown-menu","toolbar"],
       files: ['registry/default/plate-ui/mode-dropdown-menu.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/mode-dropdown-menu')),
     },
     'more-dropdown-menu': {
@@ -576,6 +673,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["dropdown-menu","toolbar"],
       files: ['registry/default/plate-ui/more-dropdown-menu.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/more-dropdown-menu')),
     },
     'outdent-toolbar-button': {
@@ -583,6 +682,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["toolbar"],
       files: ['registry/default/plate-ui/outdent-toolbar-button.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/outdent-toolbar-button')),
     },
     'paragraph-element': {
@@ -590,6 +691,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/paragraph-element.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/paragraph-element')),
     },
     'placeholder': {
@@ -597,6 +700,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["paragraph-element"],
       files: ['registry/default/plate-ui/placeholder.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/placeholder')),
     },
     'popover': {
@@ -604,6 +709,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/popover.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/popover')),
     },
     'search-highlight-leaf': {
@@ -611,6 +718,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/search-highlight-leaf.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/search-highlight-leaf')),
     },
     'separator': {
@@ -618,6 +727,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/separator.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/separator')),
     },
     'slash-input-element': {
@@ -625,6 +736,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["inline-combobox"],
       files: ['registry/default/plate-ui/slash-input-element.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/slash-input-element')),
     },
     'table-cell-element': {
@@ -632,6 +745,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["resizable"],
       files: ['registry/default/plate-ui/table-cell-element.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/table-cell-element')),
     },
     'table-dropdown-menu': {
@@ -639,6 +754,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["dropdown-menu","toolbar"],
       files: ['registry/default/plate-ui/table-dropdown-menu.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/table-dropdown-menu')),
     },
     'table-element': {
@@ -646,6 +763,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["dropdown-menu"],
       files: ['registry/default/plate-ui/table-element.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/table-element')),
     },
     'table-row-element': {
@@ -653,6 +772,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/table-row-element.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/table-row-element')),
     },
     'todo-list-element': {
@@ -660,6 +781,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["checkbox"],
       files: ['registry/default/plate-ui/todo-list-element.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/todo-list-element')),
     },
     'toggle-element': {
@@ -667,6 +790,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/toggle-element.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/toggle-element')),
     },
     'toggle-toolbar-button': {
@@ -674,6 +799,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["toolbar"],
       files: ['registry/default/plate-ui/toggle-toolbar-button.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/toggle-toolbar-button')),
     },
     'toolbar': {
@@ -681,6 +808,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["tooltip","separator"],
       files: ['registry/default/plate-ui/toolbar.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/toolbar')),
     },
     'tooltip': {
@@ -688,6 +817,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/tooltip.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/tooltip')),
     },
     'turn-into-dropdown-menu': {
@@ -695,6 +826,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: ["dropdown-menu","toolbar"],
       files: ['registry/default/plate-ui/turn-into-dropdown-menu.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/turn-into-dropdown-menu')),
     },
     'resizable': {
@@ -702,6 +835,8 @@ export const Index: Record<string, any> = {
       type: 'components:plate-ui',
       registryDependencies: [],
       files: ['registry/default/plate-ui/resizable.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/resizable')),
     },
     'editor-default': {
@@ -709,6 +844,8 @@ export const Index: Record<string, any> = {
       type: 'components:example',
       registryDependencies: [],
       files: ['registry/default/example/editor-default.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/example/editor-default')),
     },
     'editor-disabled': {
@@ -716,6 +853,8 @@ export const Index: Record<string, any> = {
       type: 'components:example',
       registryDependencies: [],
       files: ['registry/default/example/editor-disabled.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/example/editor-disabled')),
     },
     'editor-ghost': {
@@ -723,6 +862,8 @@ export const Index: Record<string, any> = {
       type: 'components:example',
       registryDependencies: [],
       files: ['registry/default/example/editor-ghost.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/example/editor-ghost')),
     },
     'editor-label': {
@@ -730,6 +871,8 @@ export const Index: Record<string, any> = {
       type: 'components:example',
       registryDependencies: [],
       files: ['registry/default/example/editor-label.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/example/editor-label')),
     },
     'editor-text': {
@@ -737,6 +880,8 @@ export const Index: Record<string, any> = {
       type: 'components:example',
       registryDependencies: [],
       files: ['registry/default/example/editor-text.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/example/editor-text')),
     },
     'editor-button': {
@@ -744,6 +889,8 @@ export const Index: Record<string, any> = {
       type: 'components:example',
       registryDependencies: [],
       files: ['registry/default/example/editor-button.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/example/editor-button')),
     },
     'editor-form': {
@@ -751,6 +898,8 @@ export const Index: Record<string, any> = {
       type: 'components:example',
       registryDependencies: [],
       files: ['registry/default/example/editor-form.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/example/editor-form')),
     },
     'basic-editor-default-demo': {
@@ -758,6 +907,8 @@ export const Index: Record<string, any> = {
       type: 'components:example',
       registryDependencies: [],
       files: ['registry/default/example/basic-editor-default-demo.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/example/basic-editor-default-demo')),
     },
     'basic-editor-styling-demo': {
@@ -765,6 +916,8 @@ export const Index: Record<string, any> = {
       type: 'components:example',
       registryDependencies: [],
       files: ['registry/default/example/basic-editor-styling-demo.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/example/basic-editor-styling-demo')),
     },
     'basic-editor-handler-demo': {
@@ -772,6 +925,8 @@ export const Index: Record<string, any> = {
       type: 'components:example',
       registryDependencies: [],
       files: ['registry/default/example/basic-editor-handler-demo.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/example/basic-editor-handler-demo')),
     },
     'basic-editor-value-demo': {
@@ -779,6 +934,8 @@ export const Index: Record<string, any> = {
       type: 'components:example',
       registryDependencies: [],
       files: ['registry/default/example/basic-editor-value-demo.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/example/basic-editor-value-demo')),
     },
     'basic-plugins-components-demo': {
@@ -786,6 +943,8 @@ export const Index: Record<string, any> = {
       type: 'components:example',
       registryDependencies: [],
       files: ['registry/default/example/basic-plugins-components-demo.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/example/basic-plugins-components-demo')),
     },
     'basic-plugins-default-demo': {
@@ -793,6 +952,8 @@ export const Index: Record<string, any> = {
       type: 'components:example',
       registryDependencies: [],
       files: ['registry/default/example/basic-plugins-default-demo.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/example/basic-plugins-default-demo')),
     },
     'cloud-demo': {
@@ -800,6 +961,8 @@ export const Index: Record<string, any> = {
       type: 'components:example',
       registryDependencies: [],
       files: ['registry/default/example/cloud-demo.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/example/cloud-demo')),
     },
     'editable-voids-demo': {
@@ -807,6 +970,8 @@ export const Index: Record<string, any> = {
       type: 'components:example',
       registryDependencies: [],
       files: ['registry/default/example/editable-voids-demo.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/example/editable-voids-demo')),
     },
     'find-replace-demo': {
@@ -814,6 +979,8 @@ export const Index: Record<string, any> = {
       type: 'components:example',
       registryDependencies: [],
       files: ['registry/default/example/find-replace-demo.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/example/find-replace-demo')),
     },
     'hundreds-blocks-demo': {
@@ -821,6 +988,8 @@ export const Index: Record<string, any> = {
       type: 'components:example',
       registryDependencies: [],
       files: ['registry/default/example/hundreds-blocks-demo.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/example/hundreds-blocks-demo')),
     },
     'hundreds-editors-demo': {
@@ -828,6 +997,8 @@ export const Index: Record<string, any> = {
       type: 'components:example',
       registryDependencies: [],
       files: ['registry/default/example/hundreds-editors-demo.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/example/hundreds-editors-demo')),
     },
     'iframe-demo': {
@@ -835,6 +1006,8 @@ export const Index: Record<string, any> = {
       type: 'components:example',
       registryDependencies: [],
       files: ['registry/default/example/iframe-demo.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/example/iframe-demo')),
     },
     'mode-toggle': {
@@ -842,6 +1015,8 @@ export const Index: Record<string, any> = {
       type: 'components:example',
       registryDependencies: [],
       files: ['registry/default/example/mode-toggle.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/example/mode-toggle')),
     },
     'multiple-editors-demo': {
@@ -849,6 +1024,8 @@ export const Index: Record<string, any> = {
       type: 'components:example',
       registryDependencies: [],
       files: ['registry/default/example/multiple-editors-demo.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/example/multiple-editors-demo')),
     },
     'version-history-demo': {
@@ -856,6 +1033,8 @@ export const Index: Record<string, any> = {
       type: 'components:example',
       registryDependencies: [],
       files: ['registry/default/example/version-history-demo.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/example/version-history-demo')),
     },
     'playground-demo': {
@@ -863,6 +1042,8 @@ export const Index: Record<string, any> = {
       type: 'components:example',
       registryDependencies: [],
       files: ['registry/default/example/playground-demo.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/example/playground-demo')),
     },
     'preview-md-demo': {
@@ -870,6 +1051,8 @@ export const Index: Record<string, any> = {
       type: 'components:example',
       registryDependencies: [],
       files: ['registry/default/example/preview-md-demo.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/example/preview-md-demo')),
     },
     'globals': {
@@ -877,6 +1060,8 @@ export const Index: Record<string, any> = {
       type: 'components:component',
       registryDependencies: [],
       files: ['styles/globals.css'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/styles/globals.css')),
     },
     'plate-types': {
@@ -884,6 +1069,8 @@ export const Index: Record<string, any> = {
       type: 'components:component',
       registryDependencies: [],
       files: ['types/plate-types.ts'],
+      category: "undefined",
+      subcategory: "undefined",
       component: React.lazy(() => import('@/types/plate-types.ts')),
     },
   },

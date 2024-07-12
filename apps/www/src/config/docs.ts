@@ -2,7 +2,7 @@ import type { MainNavItem, SidebarNavItem } from '@/types/nav';
 
 import { customizerComponents } from '@/config/customizer-components';
 
-interface DocsConfig {
+export interface DocsConfig {
   componentsNav: SidebarNavItem[];
   mainNav: MainNavItem[];
   sidebarNav: SidebarNavItem[];

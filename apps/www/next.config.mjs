@@ -1,5 +1,4 @@
-const { withAxiomNextConfig } = require('next-axiom');
-// import { createContentlayerPlugin } from 'next-contentlayer';
+import { globSync } from 'glob';
 
 const nextConfig = async (phase, { defaultConfig }) => {
   /** @type {import('next').NextConfig} */
@@ -86,11 +85,8 @@ const nextConfig = async (phase, { defaultConfig }) => {
 
   if (phase === 'phase-development-server') {
     const fs = await import('node:fs');
-    const glob = await import('glob').then((mod) => mod.default);
 
-    const packageNames = new glob.GlobSync(
-      '../../packages/**/package.json'
-    ).found
+    const packageNames = new globSync('../../packages/**/package.json')
       .map((file) => {
         try {
           const packageJson = JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -108,4 +104,4 @@ const nextConfig = async (phase, { defaultConfig }) => {
   return config;
 };
 
-module.exports = withAxiomNextConfig(nextConfig);
+export default nextConfig;
