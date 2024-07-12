@@ -211,7 +211,6 @@ export function Mdx({ code, packageInfo }: MdxProps) {
   });
 
   return (
-    // eslint-disable-next-line tailwindcss/no-custom-classname
     <div className="typography">
       <Provider>
         <HydrateAtoms initialValues={[[packageInfoAtom, packageInfo]]}>

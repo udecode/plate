@@ -45,9 +45,9 @@ export function PlaygroundFixedToolbarButtons({ id }: { id?: ValueId }) {
   const indentList = settingsStore.use.checkedId(KEY_LIST_STYLE_TYPE);
 
   return (
-    <div className="w-full overflow-hidden">
+    <div className="w-full">
       <div
-        className="flex flex-wrap"
+        className="flex"
         style={{
           // Conceal the first separator on each line using overflow
           transform: 'translateX(calc(-1px))',

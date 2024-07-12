@@ -119,7 +119,6 @@ export function ComponentPreview({
           )}
           <React.Suspense
             fallback={
-              // eslint-disable-next-line tailwindcss/no-custom-classname
               <div className="preview flex min-h-[350px] w-full items-center justify-center p-0 text-sm text-muted-foreground">
                 <Icons.spinner className="mr-2 size-4 animate-spin" />
                 Loading...
@@ -127,7 +126,6 @@ export function ComponentPreview({
             }
           >
             <div
-              // eslint-disable-next-line tailwindcss/no-custom-classname
               className={cn(
                 'preview relative flex size-full min-h-[350px] flex-col p-0',
                 padding === 'md' && 'p-4',

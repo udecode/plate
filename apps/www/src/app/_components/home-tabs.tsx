@@ -7,6 +7,7 @@ import { Settings2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { parseAsBoolean, useQueryState } from 'nuqs';
 
+import { BlockPreview } from '@/components/block-preview';
 import { settingsStore } from '@/components/context/settings-store';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PlaygroundDemo from '@/registry/default/example/playground-demo';
@@ -68,10 +69,11 @@ export default function HomeTabs() {
         </Button>
 
         <TabsContent className="pt-2" value="playground">
-          <div className="max-w-[1336px] rounded-lg border bg-background shadow">
+          <BlockPreview className="max-w-[1336px]">
             <PlaygroundDemo />
-          </div>
+          </BlockPreview>
         </TabsContent>
+
         <TabsContent className="pt-2" value="installation">
           <div className="max-w-[1136px] p-4">
             <InstallationTab />

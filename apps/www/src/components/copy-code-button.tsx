@@ -1,4 +1,3 @@
-/* eslint-disable tailwindcss/no-custom-classname */
 import * as React from 'react';
 
 import { CheckIcon, CopyIcon } from '@radix-ui/react-icons';

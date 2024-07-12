@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/require-await */
 'use server';
 
 import type { Style } from '@/registry/styles';
@@ -26,7 +27,7 @@ const project = new Project({
 export async function getAllBlockIds(
   style: Style['name'] = DEFAULT_BLOCKS_STYLE
 ) {
-  const blocks = await _getAllBlocks(style);
+  const blocks = _getAllBlocks(style);
 
   return blocks.map((block) => block.name);
 }
@@ -79,7 +80,7 @@ export async function getBlock(
   });
 }
 
-async function _getAllBlocks(style: Style['name'] = DEFAULT_BLOCKS_STYLE) {
+function _getAllBlocks(style: Style['name'] = DEFAULT_BLOCKS_STYLE) {
   const index = z.record(registryEntrySchema).parse(Index[style]);
 
   return Object.values(index).filter(

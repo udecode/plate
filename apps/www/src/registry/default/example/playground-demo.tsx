@@ -120,6 +120,7 @@ import { CursorOverlay } from '@/registry/default/plate-ui/cursor-overlay';
 import { Editor } from '@/registry/default/plate-ui/editor';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
 import { FloatingToolbar } from '@/registry/default/plate-ui/floating-toolbar';
+import { ImagePreview } from '@/registry/default/plate-ui/image-preview';
 import {
   FireLiComponent,
   FireMarker,
@@ -128,8 +129,6 @@ import {
   TodoLi,
   TodoMarker,
 } from '@/registry/default/plate-ui/indent-todo-marker-component';
-
-import { ImagePreview } from '../plate-ui/image-preview';
 
 export const usePlaygroundPlugins = ({
   components = createPlateUI(),
@@ -403,21 +402,27 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
         >
           <CommentsProvider>
             {enabled['fixed-toolbar'] && (
-              <FixedToolbar>
+              <FixedToolbar className="no-scrollbar">
                 {enabled['fixed-toolbar-buttons'] && (
                   <PlaygroundFixedToolbarButtons id={id} />
                 )}
               </FixedToolbar>
             )}
 
-            <div className="flex w-full">
+            <div
+              className="flex w-full"
+              id="editor-playground"
+              style={
+                {
+                  '--editor-px': 'max(5%,24px)',
+                } as any
+              }
+            >
               <div
                 className={cn(
                   'relative flex w-full overflow-x-auto',
                   '[&_.slate-start-area-top]:!h-4',
-                  '[&_.slate-start-area-left]:!w-3 [&_.slate-start-area-right]:!w-3',
-                  !id &&
-                    'md:[&_.slate-start-area-left]:!w-[64px] md:[&_.slate-start-area-right]:!w-[64px]'
+                  '[&_.slate-start-area-left]:!w-[var(--editor-px)] [&_.slate-start-area-right]:!w-[var(--editor-px)]'
                 )}
                 ref={containerRef}
               >
@@ -425,8 +430,8 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
                   {...editableProps}
                   className={cn(
                     editableProps.className,
-                    'px-8',
-                    !id && 'min-h-[920px] pb-[20vh] pt-4 md:px-[96px]',
+                    'max-h-[800px] overflow-x-hidden px-[var(--editor-px)]',
+                    !id && 'pb-[20vh] pt-4',
                     id && 'pb-8 pt-2'
                   )}
                   focusRing={false}

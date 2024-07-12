@@ -12,7 +12,7 @@ import { MainNav } from './main-nav';
 import { MobileNav } from './mobile-nav';
 import { StarOnGithub } from './star-on-github';
 
-export async function SiteHeader() {
+export function SiteHeader() {
   // const { stargazers_count: count } = await fetch(
   //   'https://api.github.com/repos/udecode/plate',
   //   {
