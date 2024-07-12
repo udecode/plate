@@ -1,5 +1,11 @@
 # @udecode/plate-heading
 
+## 36.0.5
+
+### Patch Changes
+
+- [#3352](https://github.com/udecode/plate/pull/3352) by [@felixfeng33](https://github.com/felixfeng33) – Prevent circular references caused by brl incorrectly exporting getHeadingList.
+
 ## 36.0.4
 
 ### Patch Changes
