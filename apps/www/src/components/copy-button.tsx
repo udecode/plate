@@ -1,10 +1,12 @@
 'use client';
 
+import type { ComponentProps } from 'react';
 import * as React from 'react';
 
 import type { NpmCommands } from '@/types/unist';
 import type { DropdownMenuTriggerProps } from '@radix-ui/react-dropdown-menu';
 
+import { CheckIcon, ClipboardIcon } from '@radix-ui/react-icons';
 import { cn } from '@udecode/cn';
 
 import { type Event, trackEvent } from '@/lib/events';
@@ -18,7 +20,7 @@ import {
 
 import { Icons } from './icons';
 
-interface CopyButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
+interface CopyButtonProps extends ComponentProps<typeof Button> {
   value: string;
   event?: Event['name'];
   src?: string;
@@ -37,6 +39,7 @@ export function CopyButton({
   event,
   src,
   value,
+  variant = 'ghost',
   ...props
 }: CopyButtonProps) {
   const [hasCopied, setHasCopied] = React.useState(false);
@@ -50,7 +53,7 @@ export function CopyButton({
   return (
     <Button
       className={cn(
-        'relative z-10 size-6 text-slate-50 hover:bg-slate-700 hover:text-slate-50',
+        'relative z-10 size-6 text-slate-50 hover:bg-slate-700 hover:text-slate-50 [&_svg]:size-3',
         className
       )}
       onClick={() => {
@@ -68,15 +71,11 @@ export function CopyButton({
         setHasCopied(true);
       }}
       size="icon"
-      variant="ghost"
+      variant={variant}
       {...props}
     >
       <span className="sr-only">Copy</span>
-      {hasCopied ? (
-        <Icons.check className="size-3" />
-      ) : (
-        <Icons.copy className="size-3" />
-      )}
+      {hasCopied ? <CheckIcon /> : <ClipboardIcon />}
     </Button>
   );
 }
@@ -119,7 +118,7 @@ export function CopyWithClassNames({
           {hasCopied ? (
             <Icons.check className="size-3" />
           ) : (
-            <Icons.copy className="size-3" />
+            <ClipboardIcon className="size-3" />
           )}
           <span className="sr-only">Copy</span>
         </Button>
@@ -182,7 +181,7 @@ export function CopyNpmCommandButton({
           {hasCopied ? (
             <Icons.check className="size-3" />
           ) : (
-            <Icons.copy className="size-3" />
+            <ClipboardIcon className="size-3" />
           )}
           <span className="sr-only">Copy</span>
         </Button>

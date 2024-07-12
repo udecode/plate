@@ -3,7 +3,7 @@ import Balancer from 'react-wrap-balancer';
 import type { PackageInfoType } from '@/hooks/use-package-info';
 
 import { cn } from '@udecode/cn';
-import { allDocs } from 'contentlayer/generated';
+import { allDocs } from 'contentlayer2/generated';
 import { ChevronRight, ExternalLinkIcon } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -127,15 +127,15 @@ export default async function DocPage({ params }: DocPageProps) {
       <div className="mx-auto w-full min-w-0">
         <div className="mb-4 flex items-center space-x-1 text-sm text-muted-foreground">
           <div className="truncate">{isUI ? 'Components' : 'Docs'}</div>
-          <ChevronRight className="size-4" />
-          <div className="font-medium text-foreground">{doc.title}</div>
+          <ChevronRight className="size-3.5" />
+          <div className="text-foreground">{doc.title}</div>
         </div>
         <div className="space-y-2">
-          <h1 className={cn('scroll-m-20 text-4xl font-bold tracking-tight')}>
+          <h1 className={cn('scroll-m-20 text-xl font-bold tracking-tight')}>
             {doc.title}
           </h1>
           {doc.description && (
-            <p className="text-lg text-muted-foreground">
+            <p className="text-base text-muted-foreground">
               <Balancer>{doc.description}</Balancer>
             </p>
           )}

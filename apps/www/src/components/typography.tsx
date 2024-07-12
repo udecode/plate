@@ -155,8 +155,11 @@ export const Table = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLTableElement>) => (
-  <div className="my-6 w-full overflow-y-auto">
-    <table className={cn('w-full', className)} {...props} />
+  <div className="my-6 w-full overflow-y-auto rounded-lg">
+    <table
+      className={cn('w-full overflow-hidden rounded-lg', className)}
+      {...props}
+    />
   </div>
 );
 

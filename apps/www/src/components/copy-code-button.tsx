@@ -2,6 +2,7 @@
 import * as React from 'react';
 
 import { CheckIcon, CopyIcon } from '@radix-ui/react-icons';
+import { cn } from '@udecode/cn';
 import template from 'lodash.template';
 
 import { useConfig } from '@/hooks/use-config';
@@ -18,7 +19,10 @@ import { type Theme, themes } from '@/registry/themes';
 
 import { copyToClipboardWithMeta } from './copy-button';
 
-export function CopyCodeButton() {
+export function CopyCodeButton({
+  className,
+  ...props
+}: React.ComponentProps<typeof Button>) {
   const [config] = useConfig();
   const activeTheme = themes.find((theme) => theme.name === config.theme);
   const [hasCopied, setHasCopied] = React.useState(false);
@@ -33,7 +37,7 @@ export function CopyCodeButton() {
     <>
       {activeTheme && (
         <Button
-          className="md:hidden"
+          className={cn('md:hidden', className)}
           onClick={() => {
             copyToClipboardWithMeta(getThemeCode(activeTheme, config.radius), {
               name: 'copy_theme_code',
@@ -44,18 +48,21 @@ export function CopyCodeButton() {
             });
             setHasCopied(true);
           }}
+          {...props}
         >
           {hasCopied ? (
             <CheckIcon className="mr-2 size-4" />
           ) : (
             <CopyIcon className="mr-2 size-4" />
           )}
-          Copy
+          Copy code
         </Button>
       )}
       <Dialog>
         <DialogTrigger asChild>
-          <Button className="hidden md:flex">Copy code</Button>
+          <Button className={cn('hidden md:flex', className)} {...props}>
+            Copy code
+          </Button>
         </DialogTrigger>
         <DialogContent className="max-w-2xl outline-none">
           <DialogHeader>

@@ -12,6 +12,7 @@ import { registrySchema } from '../src/registry/schema';
 import { styles } from '../src/registry/styles';
 import { themes } from '../src/registry/themes';
 
+// TODO diff
 // Until https://github.com/TypeStrong/ts-node/issues/1997 is fixed.
 
 const REGISTRY_PATH = path.join(process.cwd(), 'public/registry');
@@ -61,7 +62,9 @@ for (const style of styles) {
       ${
         item.items
           ? `items: [${item.items.map((i) => `'${i}'`)}],`
-          : `files: [${resolveFiles.map((file) => `'${file}'`)}],`
+          : `files: [${resolveFiles.map((file) => `'${file}'`)}],
+      category: "${item.category}",
+      subcategory: "${item.subcategory}",`
       }${
         item.items
           ? ''

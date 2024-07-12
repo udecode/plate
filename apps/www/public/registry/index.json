@@ -653,17 +653,6 @@
       "@udecode/plate-mention"
     ],
     "files": [
-      "plate-ui/mention-element.tsx"
-    ],
-    "name": "mention-element",
-    "registryDependencies": [],
-    "type": "components:plate-ui"
-  },
-  {
-    "dependencies": [
-      "@udecode/plate-mention"
-    ],
-    "files": [
       "plate-ui/mention-input-element.tsx"
     ],
     "name": "mention-input-element",
