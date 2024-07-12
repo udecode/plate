@@ -62,7 +62,7 @@ module.exports = {
     'import/no-unresolved': [
       'error',
       {
-        ignore: ['^@/', 'contentlayer2/generated'],
+        ignore: ['^@/', 'contentlayer/generated'],
       },
     ],
     'import/prefer-default-export': 'off',

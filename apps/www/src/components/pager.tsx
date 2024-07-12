@@ -1,5 +1,5 @@
 import type { NavItem, NavItemWithChildren } from '@/types/nav';
-import type { Doc } from 'contentlayer2/generated';
+import type { Doc } from 'contentlayer/generated';
 
 import { cn } from '@udecode/cn';
 import Link from 'next/link';

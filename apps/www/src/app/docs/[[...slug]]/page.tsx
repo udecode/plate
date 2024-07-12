@@ -3,7 +3,7 @@ import Balancer from 'react-wrap-balancer';
 import type { PackageInfoType } from '@/hooks/use-package-info';
 
 import { cn } from '@udecode/cn';
-import { allDocs } from 'contentlayer2/generated';
+import { allDocs } from 'contentlayer/generated';
 import { ChevronRight, ExternalLinkIcon } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
