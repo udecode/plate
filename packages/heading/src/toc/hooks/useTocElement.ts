@@ -11,7 +11,7 @@ import {
 import type { Heading } from '../types';
 
 import { heightToTop } from '../../utils';
-import { getHeadingList } from '../../utils/getHeadingList';
+import { getHeadingList } from '../../utils/internal/getHeadingList';
 
 export type useTocElementStateProps = {
   isScroll: boolean;

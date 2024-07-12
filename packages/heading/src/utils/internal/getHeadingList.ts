@@ -14,9 +14,9 @@ import {
   ELEMENT_H4,
   ELEMENT_H5,
   ELEMENT_H6,
-} from '../heading';
-import { ELEMENT_TOC, type Heading, type TocPlugin } from '../toc';
-import { isHeading } from './isHeading';
+} from '../../heading';
+import { ELEMENT_TOC, type Heading, type TocPlugin } from '../../toc';
+import { isHeading } from '../isHeading';
 
 export const headingDepth: Record<string, number> = {
   [ELEMENT_H1]: 1,
