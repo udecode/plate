@@ -11,8 +11,6 @@ import {
   serializeMdNode,
 } from './serializeMdNode';
 
-const trimNewlines = (str?: string) => str?.replace(/^\s+|\s+$/g, '') ?? '';
-
 /** Convert Slate nodes to Markdown. */
 export const serializeMdNodes = (
   nodes: TDescendant[],
@@ -51,15 +49,14 @@ export const serializeMdNodes = (
     return '';
   }
 
-  return trimNewlines(
-    nodes
-      ?.map((v) =>
-        serializeMdNode(v, {
-          ...options,
-          customNodes: options.customNodes as any,
-          nodes: optionsNodes,
-        })
-      )
-      .join('')
-  );
+  return nodes
+    ?.map((v) =>
+      serializeMdNode(v, {
+        ...options,
+        customNodes: options.customNodes as any,
+        nodes: optionsNodes,
+      })
+    )
+    .join('')
+    .trim();
 };
