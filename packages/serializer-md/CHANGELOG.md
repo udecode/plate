@@ -1,5 +1,11 @@
 # @udecode/plate-md-serializer
 
+## 36.0.7
+
+### Patch Changes
+
+- [#3359](https://github.com/udecode/plate/pull/3359) by [@12joan](https://github.com/12joan) – Replace potentially inefficient RegExp with String.trim()
+
 ## 36.0.0
 
 ## 34.0.0
