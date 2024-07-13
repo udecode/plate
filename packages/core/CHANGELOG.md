@@ -1,5 +1,13 @@
 # @udecode/plate-core
 
+## 36.0.6
+
+## 36.0.3
+
+### Patch Changes
+
+- [#3346](https://github.com/udecode/plate/pull/3346) by [@yf-yang](https://github.com/yf-yang) – feat: expose onValueChange and onSelectionChange from Slate component, following https://github.com/ianstormtaylor/slate/pull/5526
+
 ## 34.0.4
 
 ## 34.0.1
@@ -624,16 +632,19 @@
     V extends Value = Value,
     E extends PlateEditor<V> = PlateEditor<V>,
   > extends PlateProviderEffectsProps<V, E>,
-      Partial<Pick<PlateStoreState<V, E>, "id" | "editor">> {
+      Partial<Pick<PlateStoreState<V, E>, 'id' | 'editor'>> {
     /**
      * Initial value of the editor.
-     * @default [{ children: [{ text: '' }]}]
+     *
+     * @default [{ children: [{ text: '' }] }]
      */
-    initialValue?: PlateStoreState<V>["value"];
+    initialValue?: PlateStoreState<V>['value'];
 
     /**
-     * When `true`, it will normalize the initial value passed to the `editor` once it gets created.
-     * This is useful when adding normalization rules on already existing content.
+     * When `true`, it will normalize the initial value passed to the `editor`
+     * once it gets created. This is useful when adding normalization rules on
+     * already existing content.
+     *
      * @default false
      */
     normalizeInitialValue?: boolean;
@@ -650,30 +661,24 @@
   export interface PlateEditableExtendedProps {
     id?: PlateId;
 
-    /**
-     * The children rendered inside `Slate`, after `Editable`.
-     */
+    /** The children rendered inside `Slate`, after `Editable`. */
     children?: ReactNode;
 
-    /**
-     * Ref to the `Editable` component.
-     */
+    /** Ref to the `Editable` component. */
     editableRef?: Ref<HTMLDivElement>;
 
     /**
-     * The first children rendered inside `Slate`, before `Editable`.
-     * Slate DOM is not yet resolvable on first render, for that case use `children` instead.
+     * The first children rendered inside `Slate`, before `Editable`. Slate DOM is
+     * not yet resolvable on first render, for that case use `children` instead.
      */
     firstChildren?: ReactNode;
 
-    /**
-     * Custom `Editable` node.
-     */
+    /** Custom `Editable` node. */
     renderEditable?: (editable: ReactNode) => ReactNode;
   }
 
   export interface PlateEditableProps<V extends Value = Value>
-    extends Omit<TEditableProps<V>, "id">,
+    extends Omit<TEditableProps<V>, 'id'>,
       PlateEditableExtendedProps {}
   ```
 
@@ -978,7 +983,7 @@ Those Slate functions should be replaced by the new typed ones:
   // before
   export type WithOverride<T = {}, P = {}> = (
     editor: PlateEditor<T>,
-    plugin: WithPlatePlugin<T, P>,
+    plugin: WithPlatePlugin<T, P>
   ) => PlateEditor<T>;
 
   // after - where E is the Editor type (input), and EE is the Extended Editor type (output)
@@ -1380,7 +1385,7 @@ Removing node props types in favor of element types (same props + extends `TElem
   // option 1: use the plugin factory
   let plugins = [
     createParagraphPlugin({
-      type: "paragraph",
+      type: 'paragraph',
     }),
   ];
 
@@ -1388,7 +1393,7 @@ Removing node props types in favor of element types (same props + extends `TElem
   plugins = createPlugins(plugins, {
     overrideByKey: {
       [ELEMENT_PARAGRAPH]: {
-        type: "paragraph",
+        type: 'paragraph',
       },
     },
   });
@@ -1410,7 +1415,7 @@ Removing node props types in favor of element types (same props + extends `TElem
   // After
   export type X<T = {}, P = {}> = (
     editor: PlateEditor<T>,
-    plugin: WithPlatePlugin<T, P>,
+    plugin: WithPlatePlugin<T, P>
   ) => Y;
   ```
 
@@ -1436,61 +1441,53 @@ Removing node props types in favor of element types (same props + extends `TElem
 
   ```tsx
   type DeserializeHtml = {
-    /**
-     * List of HTML attribute names to store their values in `node.attributes`.
-     */
+    /** List of HTML attribute names to store their values in `node.attributes`. */
     attributeNames?: string[];
 
     /**
-     * Deserialize an element.
-     * Use this instead of plugin.isElement if you don't want the plugin to renderElement.
+     * Deserialize an element. Use this instead of plugin.isElement if you don't
+     * want the plugin to renderElement.
+     *
      * @default plugin.isElement
      */
     isElement?: boolean;
 
     /**
-     * Deserialize a leaf.
-     * Use this instead of plugin.isLeaf if you don't want the plugin to renderLeaf.
+     * Deserialize a leaf. Use this instead of plugin.isLeaf if you don't want the
+     * plugin to renderLeaf.
+     *
      * @default plugin.isLeaf
      */
     isLeaf?: boolean;
 
-    /**
-     * Deserialize html element to slate node.
-     */
+    /** Deserialize html element to slate node. */
     getNode?: (element: HTMLElement) => AnyObject | undefined;
 
     query?: (element: HTMLElement) => boolean;
 
     /**
      * Deserialize an element:
-     * - if this option (string) is in the element attribute names.
-     * - if this option (object) values match the element attributes.
+     *
+     * - If this option (string) is in the element attribute names.
+     * - If this option (object) values match the element attributes.
      */
     validAttribute?: string | { [key: string]: string | string[] };
 
-    /**
-     * Valid element `className`.
-     */
+    /** Valid element `className`. */
     validClassName?: string;
 
-    /**
-     * Valid element `nodeName`.
-     * Set '*' to allow any node name.
-     */
+    /** Valid element `nodeName`. Set '*' to allow any node name. */
     validNodeName?: string | string[];
 
     /**
-     * Valid element style values.
-     * Can be a list of string (only one match is needed).
+     * Valid element style values. Can be a list of string (only one match is
+     * needed).
      */
     validStyle?: Partial<
       Record<keyof CSSStyleDeclaration, string | string[] | undefined>
     >;
 
-    /**
-     * Whether or not to include deserialized children on this node
-     */
+    /** Whether or not to include deserialized children on this node */
     withoutChildren?: boolean;
   };
   ```
@@ -1611,49 +1608,44 @@ Removing node props types in favor of element types (same props + extends `TElem
     editor?: Nullable<{
       insertData?: {
         /**
-         * Format to get data. Example data types are text/plain and text/uri-list.
+         * Format to get data. Example data types are text/plain and
+         * text/uri-list.
          */
         format?: string;
 
-        /**
-         * Query to skip this plugin.
-         */
+        /** Query to skip this plugin. */
         query?: (options: PlatePluginInsertDataOptions) => boolean;
 
-        /**
-         * Deserialize data to fragment
-         */
+        /** Deserialize data to fragment */
         getFragment?: (
-          options: PlatePluginInsertDataOptions,
+          options: PlatePluginInsertDataOptions
         ) => TDescendant[] | undefined;
 
         // injected
 
         /**
-         * Function called on `editor.insertData` just before `editor.insertFragment`.
-         * Default: if the block above the selection is empty and the first fragment node type is not inline,
-         * set the selected node type to the first fragment node type.
-         * @return if true, the next handlers will be skipped.
+         * Function called on `editor.insertData` just before
+         * `editor.insertFragment`. Default: if the block above the selection is
+         * empty and the first fragment node type is not inline, set the selected
+         * node type to the first fragment node type.
+         *
+         * @returns If true, the next handlers will be skipped.
          */
         preInsert?: (
           fragment: TDescendant[],
-          options: PlatePluginInsertDataOptions,
+          options: PlatePluginInsertDataOptions
         ) => HandlerReturnType;
 
-        /**
-         * Transform the inserted data.
-         */
+        /** Transform the inserted data. */
         transformData?: (
           data: string,
-          options: { dataTransfer: DataTransfer },
+          options: { dataTransfer: DataTransfer }
         ) => string;
 
-        /**
-         * Transform the fragment to insert.
-         */
+        /** Transform the fragment to insert. */
         transformFragment?: (
           fragment: TDescendant[],
-          options: PlatePluginInsertDataOptions,
+          options: PlatePluginInsertDataOptions
         ) => TDescendant[];
       };
     }>;
@@ -1666,11 +1658,11 @@ Removing node props types in favor of element types (same props + extends `TElem
   interface PlatePlugin {
     inject?: {
       /**
-       * Any plugin can use this field to inject code into a stack.
-       * For example, if multiple plugins have defined
-       * `inject.editor.insertData.transformData` for `key=KEY_DESERIALIZE_HTML`,
-       * `insertData` plugin will call all of these `transformData` for `KEY_DESERIALIZE_HTML` plugin.
-       * Differs from `overrideByKey` as this is not overriding any plugin.
+       * Any plugin can use this field to inject code into a stack. For example,
+       * if multiple plugins have defined `inject.editor.insertData.transformData`
+       * for `key=KEY_DESERIALIZE_HTML`, `insertData` plugin will call all of
+       * these `transformData` for `KEY_DESERIALIZE_HTML` plugin. Differs from
+       * `overrideByKey` as this is not overriding any plugin.
        */
       pluginsByKey?: Record<PluginKey, Partial<PlatePlugin<T>>>;
     };
@@ -1693,13 +1685,13 @@ Removing node props types in favor of element types (same props + extends `TElem
   ```ts
   interface PlatePlugin {
     /**
-     * Recursive plugin merging.
-     * Can be used to derive plugin fields from `editor`, `plugin`.
-     * The returned value will be deeply merged to the plugin.
+     * Recursive plugin merging. Can be used to derive plugin fields from
+     * `editor`, `plugin`. The returned value will be deeply merged to the
+     * plugin.
      */
     then?: (
       editor: PlateEditor<T>,
-      plugin: WithPlatePlugin<T, P>,
+      plugin: WithPlatePlugin<T, P>
     ) => Partial<PlatePlugin<T, P>>;
   }
   ```
@@ -1852,7 +1844,7 @@ Removing node props types in favor of element types (same props + extends `TElem
 
   ```ts
   type InjectComponent = <T = AnyObject>(
-    props: PlateRenderElementProps & T,
+    props: PlateRenderElementProps & T
   ) => RenderFunction<PlateRenderElementProps> | undefined;
   ```
 

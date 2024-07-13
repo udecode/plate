@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-layout",
-  "version": "34.0.0",
+  "version": "36.0.0",
   "description": "Layout plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -42,7 +42,7 @@
     "@udecode/plate-common": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=34.0.5",
+    "@udecode/plate-common": ">=36.0.6",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.94.0",

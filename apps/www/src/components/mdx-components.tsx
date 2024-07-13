@@ -6,7 +6,7 @@ import type { ReactNode } from 'react';
 import { cn } from '@udecode/cn';
 import { Provider } from 'jotai';
 import Image from 'next/image';
-import { useMDXComponent } from 'next-contentlayer/hooks';
+import { useMDXComponent } from 'next-contentlayer2/hooks';
 
 import { useConfig } from '@/hooks/use-config';
 import { packageInfoAtom } from '@/hooks/use-package-info';
@@ -211,7 +211,6 @@ export function Mdx({ code, packageInfo }: MdxProps) {
   });
 
   return (
-    // eslint-disable-next-line tailwindcss/no-custom-classname
     <div className="typography">
       <Provider>
         <HydrateAtoms initialValues={[[packageInfoAtom, packageInfo]]}>

@@ -139,7 +139,7 @@ export function CommandMenu({ ...props }: DialogProps) {
     <>
       <Button
         className={cn(
-          'relative flex h-8 w-full items-center justify-start rounded-[0.5rem] bg-background text-sm font-normal text-muted-foreground shadow-none sm:pr-12 md:w-40 lg:w-64'
+          'relative flex h-8 w-full items-center justify-start rounded-[0.5rem] bg-muted/50 text-sm font-normal text-muted-foreground shadow-none sm:pr-12 md:w-40 lg:w-64'
         )}
         onClick={() => setOpen(true)}
         variant="outline"
@@ -153,8 +153,8 @@ export function CommandMenu({ ...props }: DialogProps) {
       </Button>
       <CommandDialog onOpenChange={setOpen} open={open}>
         <CommandInput placeholder="Type a command or search..." />
+        <CommandEmpty>No results found.</CommandEmpty>
         <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup heading="Links">
             {docsConfig.mainNav
               .filter((navitem) => !navitem.external)

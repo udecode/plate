@@ -7,7 +7,7 @@ import {
   useEditorSelector,
 } from '@udecode/plate-common';
 
-import { getHeadingList } from '../../utils';
+import { getHeadingList } from '../../utils/internal/getHeadingList';
 
 interface UseContentObserver {
   editorContentRef: React.RefObject<HTMLElement>;

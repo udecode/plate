@@ -1,5 +1,7 @@
 # @udecode/plate-table
 
+## 36.0.0
+
 ## 35.2.0
 
 ### Minor Changes

@@ -1,5 +1,7 @@
 # @udecode/plate-layout
 
+## 36.0.0
+
 ## 34.0.0
 
 ### Minor Changes

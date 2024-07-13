@@ -1,5 +1,11 @@
 # @udecode/slate
 
+## 36.0.6
+
+### Patch Changes
+
+- [#3354](https://github.com/udecode/plate/pull/3354) by [@yf-yang](https://github.com/yf-yang) – feat: add option parameter to normalizeNode following slate#5295
+
 ## 32.0.1
 
 ### Patch Changes

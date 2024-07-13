@@ -1,5 +1,13 @@
 # @udecode/plate-indent-list
 
+## 36.0.1
+
+### Patch Changes
+
+- [#3341](https://github.com/udecode/plate/pull/3341) by [@felixfeng33](https://github.com/felixfeng33) – Fix(#3340): When working on an indent list todo item with a text child, pressing enter while the cursor is located inside the text creates an additional empty todo list item inside list and after that creates an item with the splitted text
+
+## 36.0.0
+
 ## 34.0.0
 
 ### Patch Changes

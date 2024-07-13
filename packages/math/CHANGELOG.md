@@ -1,5 +1,7 @@
 # @udecode/plate-math
 
+## 36.0.0
+
 ## 34.1.0
 
 ### Minor Changes

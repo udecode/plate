@@ -1,5 +1,11 @@
 # @udecode/plate-selection
 
+## 36.0.0
+
+### Patch Changes
+
+- [#3339](https://github.com/udecode/plate/pull/3339) by [@felixfeng33](https://github.com/felixfeng33) – Replace `addSelectedRow` with `blockSelectionStore` to add to the editor.
+
 ## 35.3.0
 
 ### Minor Changes

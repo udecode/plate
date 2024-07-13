@@ -1,7 +1,6 @@
 'use client';
 
 import { cn } from '@udecode/cn';
-/* eslint-disable tailwindcss/no-custom-classname */
 import { usePathname } from 'next/navigation';
 
 import { useConfig } from '@/hooks/use-config';

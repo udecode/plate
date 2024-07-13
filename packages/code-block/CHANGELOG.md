@@ -1,5 +1,7 @@
 # @udecode/plate-code-block
 
+## 36.0.0
+
 ## 35.0.0
 
 ### Major Changes
@@ -10,11 +12,11 @@
 
   ```ts
   // Import Prism with your supported languages
-  import Prism from "prismjs";
+  import Prism from 'prismjs';
 
-  import "prismjs/components/prism-antlr4.js";
-  import "prismjs/components/prism-bash.js";
-  import "prismjs/components/prism-c.js";
+  import 'prismjs/components/prism-antlr4.js';
+  import 'prismjs/components/prism-bash.js';
+  import 'prismjs/components/prism-c.js';
   // ...
 
   const plugins = createPlugins([

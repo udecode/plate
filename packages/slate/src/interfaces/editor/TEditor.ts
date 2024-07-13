@@ -30,7 +30,10 @@ export type TEditor<V extends Value = Value> = Modify<
     isVoid: <N extends TElement>(element: N) => boolean;
     markableVoid: <N extends TElement>(element: N) => boolean;
     marks: Record<string, any> | null;
-    normalizeNode: <N extends TNode>(entry: TNodeEntry<N>) => void;
+    normalizeNode: <N extends TNode>(
+      entry: TNodeEntry<N>,
+      options?: { operation?: TOperation }
+    ) => void;
     operations: TOperation[];
   }
 > &
@@ -56,7 +59,10 @@ export const getTEditor = <V extends Value, E extends TEditor<V> = TEditor<V>>(
       // Schema-specific node behaviors.
       isInline: (element: EElement<V>) => boolean;
       isVoid: (element: EElement<V>) => boolean;
-      normalizeNode: (entry: TNodeEntry<ENode<V>>) => void;
+      normalizeNode: (
+        entry: TNodeEntry<ENode<V>>,
+        options?: { operation?: TOperation }
+      ) => void;
       operations: TOperation<EElementOrText<V>>[];
     }
   >;

@@ -1,5 +1,21 @@
 # @udecode/plate-utils
 
+## 36.0.6
+
+## 36.0.3
+
+## 36.0.0
+
+### Minor Changes
+
+- [#3339](https://github.com/udecode/plate/pull/3339) by [@felixfeng33](https://github.com/felixfeng33) – Add `blockSelectedIds`,`hasBlockSelected`,`isBlockSelected` utils.
+
+## 35.3.2
+
+### Patch Changes
+
+- [#3333](https://github.com/udecode/plate/pull/3333) by [@yf-yang](https://github.com/yf-yang) – fix: omit plate properties from createNodeHOC props
+
 ## 34.0.5
 
 ### Patch Changes

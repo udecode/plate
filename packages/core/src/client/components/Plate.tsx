@@ -21,7 +21,14 @@ export interface PlateProps<
 > extends Partial<
     Pick<
       PlateStoreState<V, E>,
-      'editor' | 'id' | 'primary' | 'readOnly' | 'value'
+      | 'editor'
+      | 'id'
+      | 'onChange'
+      | 'onSelectionChange'
+      | 'onValueChange'
+      | 'primary'
+      | 'readOnly'
+      | 'value'
     >
   > {
   children: React.ReactNode;
@@ -69,9 +76,6 @@ export interface PlateProps<
    */
   normalizeInitialValue?: boolean;
 
-  /** Controlled callback called when the editor state changes. */
-  onChange?: (value: V) => void;
-
   plugins?: PlatePlugin[];
   renderElement?: TEditableProps['renderElement'];
   renderLeaf?: TEditableProps['renderLeaf'];
@@ -91,6 +95,8 @@ function PlateInner<
   maxLength,
   normalizeInitialValue: shouldNormalizeInitialValue,
   onChange,
+  onSelectionChange,
+  onValueChange,
   plugins: pluginsProp,
   primary,
   readOnly,
@@ -149,6 +155,10 @@ function PlateInner<
       editorRef={editorRef as PlateStoreState['editorRef']}
       id={id}
       onChange={onChange as PlateStoreState['onChange']}
+      onSelectionChange={
+        onSelectionChange as PlateStoreState['onSelectionChange']
+      }
+      onValueChange={onValueChange as PlateStoreState['onValueChange']}
       plugins={editor.plugins as any}
       primary={primary}
       rawPlugins={pluginsProp}

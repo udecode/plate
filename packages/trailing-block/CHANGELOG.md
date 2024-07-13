@@ -1,5 +1,7 @@
 # @udecode/plate-trailing-block
 
+## 36.0.0
+
 ## 34.0.0
 
 ## 33.0.7
