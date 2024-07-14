@@ -1,6 +1,6 @@
 import type { Range } from 'slate';
 
-import { focusEditor } from '@udecode/plate-common';
+import { focusEditor, getNodesRange } from '@udecode/plate-common';
 import {
   type PlateEditor,
   type Value,
@@ -8,7 +8,6 @@ import {
 } from '@udecode/plate-common/server';
 
 import { getBlocksWithId } from '../queries/getBlocksWithId';
-import { getNodesRange } from '../queries/getNodesRange';
 import { selectBlockById } from './selectBlockById';
 
 /**

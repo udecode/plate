@@ -3,3 +3,4 @@
  */
 
 export * from './getSelectedBlocks';
+export * from "./isNodeBlockSelected";
