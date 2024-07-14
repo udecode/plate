@@ -46,7 +46,7 @@ export function ThemesTabContent() {
           </div>
         </div>
 
-        <CopyCodeButton />
+        <CopyCodeButton className="[&_svg]:hidden" size="sm" variant="ghost" />
       </div>
       <div className="flex flex-1 flex-col space-y-4 md:space-y-6">
         <div className="space-y-1.5">

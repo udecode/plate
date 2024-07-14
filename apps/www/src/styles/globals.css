@@ -53,6 +53,9 @@
   * {
     @apply border-border;
   }
+  /*html {*/
+  /*  @apply scroll-smooth;*/
+  /*}*/
   body {
     @apply bg-background text-foreground;
     font-feature-settings:
@@ -64,6 +67,15 @@
 }
 
 @layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
   .step {
     counter-increment: step;
   }
@@ -72,6 +84,15 @@
     @apply absolute inline-flex h-9 w-9 items-center justify-center rounded-full border-4 border-background bg-muted text-center -indent-px font-mono text-base font-medium;
     @apply ml-[-50px] mt-[-4px];
     content: counter(step);
+  }
+
+  .chunk-container {
+    @apply shadow-none;
+  }
+
+  .chunk-container::after {
+    content: '';
+    @apply absolute -inset-4 shadow-xl rounded-xl border;
   }
 }
 

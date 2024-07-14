@@ -17,16 +17,16 @@ export function MainNav() {
 
   return (
     <div className="mr-4 hidden md:flex">
-      <Link className="mr-6 flex items-center space-x-2" href="/">
+      <Link className="mr-4 flex items-center space-x-2 lg:mr-6" href="/">
         <Logo className="size-6" />
-        <span className="hidden items-center font-bold sm:inline-flex">
+        <span className="hidden items-center font-bold lg:inline-flex">
           {siteConfig.name}
           <div className="flex w-8 items-center">
             {isUI && <Badge className="ml-1">UI</Badge>}
           </div>
         </span>
       </Link>
-      <nav className="flex items-center gap-6 text-sm">
+      <nav className="flex items-center gap-4 text-sm lg:gap-6">
         <Link
           className={cn(
             'transition-colors hover:text-foreground/80',

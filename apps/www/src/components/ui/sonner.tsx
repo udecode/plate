@@ -10,7 +10,6 @@ export const Toaster = ({ ...props }: React.ComponentProps<typeof Sonner>) => {
 
   return (
     <Sonner
-      // eslint-disable-next-line tailwindcss/no-custom-classname
       className="toaster group"
       theme={theme as ToasterProps['theme']}
       toastOptions={{

@@ -2,6 +2,7 @@
 
 import React from 'react';
 
+import type { DocsConfig } from '@/config/docs';
 import type { SidebarNavItem } from '@/types/nav';
 
 import { cn } from '@udecode/cn';
@@ -9,17 +10,16 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 export interface DocsSidebarNavProps {
-  componentItems: SidebarNavItem[];
-  items: SidebarNavItem[];
+  config: DocsConfig;
 }
 
-export function DocsSidebarNav({
-  componentItems,
-  items: coreItems,
-}: DocsSidebarNavProps) {
+export function DocsSidebarNav({ config }: DocsSidebarNavProps) {
+  const { componentsNav: componentItems, sidebarNav: coreItems } = config;
+
   const pathname = usePathname();
-  const isUI = pathname?.includes('/docs/components');
-  const items = isUI ? componentItems : coreItems;
+  const items = pathname?.includes('/docs/components')
+    ? componentItems
+    : coreItems;
 
   return items.length > 0 ? (
     <div className="w-full">

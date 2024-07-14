@@ -23,11 +23,26 @@ module.exports = {
   rules: {
     // Tailwind css classnames order
     'tailwindcss/classnames-order': 'warn',
-    'tailwindcss/no-custom-classname': 'error',
+    'tailwindcss/no-custom-classname': [
+      'error',
+      {
+        whitelist: [
+          'no-scrollbar',
+          'chunk-mode',
+          'preview',
+          'toaster',
+          'typography',
+          'step',
+          'steps',
+          'line',
+        ],
+      },
+    ],
   },
   settings: {
     tailwindcss: {
       callees: ['cn', 'cva', 'withCn', 'className'],
+
       cssFiles: [],
     },
   },

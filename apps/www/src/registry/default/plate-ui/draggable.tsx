@@ -2,17 +2,14 @@
 
 import React from 'react';
 
+import type {
+  ClassNames,
+  PlateElementProps,
+  TEditor,
+} from '@udecode/plate-common';
 import type { DropTargetMonitor } from 'react-dnd';
 
 import { cn, withRef } from '@udecode/cn';
-import {
-  type ClassNames,
-  type PlateElementProps,
-  type TEditor,
-  type TElement,
-  useEditorRef,
-  useElement,
-} from '@udecode/plate-common';
 import {
   type DragItemNode,
   useDraggable,
@@ -78,9 +75,6 @@ export interface DraggableProps
 }
 
 const DragHandle = () => {
-  const editor = useEditorRef();
-  const element = useElement<TElement>();
-
   return (
     <Tooltip>
       <TooltipTrigger type="button">

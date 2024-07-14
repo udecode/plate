@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-utils",
-  "version": "36.0.3",
+  "version": "36.0.6",
   "description": "Plate utils",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -45,11 +45,11 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-core": "36.0.3",
+    "@udecode/plate-core": "36.0.6",
     "@udecode/react-utils": "33.0.0",
-    "@udecode/slate": "32.0.1",
-    "@udecode/slate-react": "36.0.3",
-    "@udecode/slate-utils": "34.0.4",
+    "@udecode/slate": "36.0.6",
+    "@udecode/slate-react": "36.0.6",
+    "@udecode/slate-utils": "36.0.6",
     "@udecode/utils": "31.0.0",
     "clsx": "^1.2.1",
     "lodash": "^4.17.21"

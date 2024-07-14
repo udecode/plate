@@ -1,6 +1,5 @@
 import * as React from 'react';
 
-import { cn } from '@udecode/cn';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 
@@ -12,7 +11,7 @@ import {
 } from '@/components/page-header';
 import { ThemesButton } from '@/components/themes-button';
 import { siteConfig } from '@/config/site';
-import { buttonVariants } from '@/registry/default/plate-ui/button';
+import { Button } from '@/registry/default/plate-ui/button';
 
 import { AnnouncementButton } from './announcement-button';
 
@@ -41,18 +40,19 @@ export default function IndexPage() {
             CLI for styled components. Customizable. Open Source.
           </PageHeaderDescription>
           <section className="flex w-full items-center space-x-4 py-4 md:pb-10">
-            <Link className={cn(buttonVariants())} href="/docs">
-              Get Started
-            </Link>
-            <Link
-              className={cn(buttonVariants({ variant: 'outline' }))}
-              href={siteConfig.links.github}
-              rel="noreferrer"
-              target="_blank"
-            >
-              <Icons.gitHub className="mr-2 size-4" />
-              GitHub
-            </Link>
+            <Button asChild size="sm">
+              <Link href="/docs">Get Started</Link>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link
+                href={siteConfig.links.github}
+                rel="noreferrer"
+                target="_blank"
+              >
+                <Icons.gitHub className="mr-2 size-4" />
+                GitHub
+              </Link>
+            </Button>
           </section>
         </PageHeader>
       </div>

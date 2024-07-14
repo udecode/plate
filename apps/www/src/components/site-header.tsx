@@ -12,7 +12,7 @@ import { MainNav } from './main-nav';
 import { MobileNav } from './mobile-nav';
 import { StarOnGithub } from './star-on-github';
 
-export async function SiteHeader() {
+export function SiteHeader() {
   // const { stargazers_count: count } = await fetch(
   //   'https://api.github.com/repos/udecode/plate',
   //   {
@@ -33,7 +33,7 @@ export async function SiteHeader() {
   const count = 0;
 
   return (
-    <header className="sticky top-0 z-[60] w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 max-w-screen-2xl items-center justify-between">
         <MainNav />
         <MobileNav />
@@ -54,7 +54,7 @@ export async function SiteHeader() {
                   buttonVariants({
                     variant: 'ghost',
                   }),
-                  'w-9 px-0'
+                  'size-8 px-0'
                 )}
               >
                 <Icons.gitHub className="size-4" />
@@ -71,7 +71,7 @@ export async function SiteHeader() {
                   buttonVariants({
                     variant: 'ghost',
                   }),
-                  'w-9 px-0'
+                  'size-8 px-0'
                 )}
               >
                 <Icons.discord className="size-4 fill-current" />
