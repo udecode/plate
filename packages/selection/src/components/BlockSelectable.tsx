@@ -19,7 +19,7 @@ import {
   type BlockSelectionPlugin,
   KEY_BLOCK_SELECTION,
 } from '../createBlockSelectionPlugin';
-import { isBlockSelected } from '../queries';
+import { isNodeBlockSelected } from '../queries';
 
 export interface BlockSelectableOptions {
   element: TElement;
@@ -97,7 +97,7 @@ export const useBlockSelectable = ({
           const nodeEntry = getAboveNode(editor);
 
           if (nodeEntry && Path.isCommon(path, nodeEntry[1])) {
-            const isSelected = isBlockSelected(nodeEntry[0] as TElement);
+            const isSelected = isNodeBlockSelected(nodeEntry[0] as TElement);
             const isOpenAlways =
               (event.target as HTMLElement).dataset?.openContextMenu === 'true';
 
