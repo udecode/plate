@@ -21,11 +21,7 @@ export function Cursor({
   disableSelection,
   selectionRects,
 }: CursorProps<CursorData>) {
-  if (!data) {
-    return null;
-  }
-
-  const { style, selectionStyle = style } = data;
+  const { style, selectionStyle = style } = data ?? {};
 
   return (
     <>
