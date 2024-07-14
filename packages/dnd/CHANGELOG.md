@@ -1,5 +1,11 @@
 # @udecode/plate-dnd
 
+## 36.0.8
+
+### Patch Changes
+
+- [#3366](https://github.com/udecode/plate/pull/3366) by [@zbeyens](https://github.com/zbeyens) – Remove `getNodesRange`, import it from `@udecode/plate-common` instead
+
 ## 36.0.0
 
 ## 34.0.0
