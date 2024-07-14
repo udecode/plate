@@ -1,5 +1,11 @@
 # @udecode/plate-selection
 
+## 36.0.8
+
+### Patch Changes
+
+- [#3366](https://github.com/udecode/plate/pull/3366) by [@zbeyens](https://github.com/zbeyens) – Rename `isBlockSelected` to `isNodeBlockSelected`
+
 ## 36.0.0
 
 ### Patch Changes
