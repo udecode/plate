@@ -1,5 +1,9 @@
 # @udecode/plate-cursor
 
+### Patch Changes
+
+- [#3363](https://github.com/udecode/plate/pull/3363) by [@yf-yang](https://github.com/yf-yang) – Show selection rect/caret if data is undefined.
+
 ## 36.0.0
 
 ## 34.0.0
