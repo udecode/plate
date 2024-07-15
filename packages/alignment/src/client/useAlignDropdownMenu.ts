@@ -17,7 +17,7 @@ export const useAlignDropdownMenuState = () => {
     });
     const nodes = Array.from(codeBlockEntries);
     nodes.forEach(([node, path]) => {
-      const align: string = (node[KEY_ALIGN] as string) || 'left';
+      const align: string = (node[KEY_ALIGN] as string) || 'start';
 
       if (!isDefined(commonAlignment)) {
         commonAlignment = align;
@@ -36,7 +36,7 @@ export const useAlignDropdownMenuState = () => {
       if (nodeValue === 'justify') return 'justify';
     }
 
-    return 'left';
+    return 'start';
   }, []);
 
   return {
