@@ -1,5 +1,11 @@
 # @udecode/plate-alignment
 
+## 36.0.11
+
+### Patch Changes
+
+- [#3373](https://github.com/udecode/plate/pull/3373) by [@kumarajay0412](https://github.com/kumarajay0412) – Fix `align: start` regression
+
 ## 36.0.0
 
 ## 34.0.0
