@@ -1,5 +1,13 @@
 # @udecode/plate-media
 
+## 36.0.10
+
+### Patch Changes
+
+- [`1bc0971774fbfb770780c9bdb94746a6f0f196a0`](https://github.com/udecode/plate/commit/1bc0971774fbfb770780c9bdb94746a6f0f196a0) by [@12joan](https://github.com/12joan) –
+  - Require the `url` property returned from URL parsers passed to `useMediaState` to be a valid URL and have protocol `https:` or `http:`, if present.
+  - In the return value of `useMediaState`, rename `url` to `unsafeUrl` to indicate that it has not been sanitised.
+
 ## 36.0.0
 
 ## 34.1.0
