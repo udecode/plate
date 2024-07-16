@@ -15,11 +15,13 @@ import { getHeadingList } from '../../utils/internal/getHeadingList';
 
 export type useTocElementStateProps = {
   isScroll: boolean;
+  scrollContainerSelector?: string;
   topOffset: number;
 };
 
 export const useTocElementState = ({
   isScroll,
+  scrollContainerSelector,
   topOffset,
 }: useTocElementStateProps) => {
   const editor = useEditorRef();
@@ -29,16 +31,19 @@ export const useTocElementState = ({
   const containerRef = React.useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    const container = toDOMNode(editor, editor);
+    const container = scrollContainerSelector
+      ? document.querySelector(scrollContainerSelector)
+      : toDOMNode(editor, editor)!;
 
     if (!container) return;
 
-    containerRef.current = container;
+    containerRef.current = container as HTMLElement;
 
     return () => {
       containerRef.current = null;
     };
-  }, [editor]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onContentScroll = React.useCallback(
     (el: HTMLElement, id: string, behavior: ScrollBehavior = 'instant') => {

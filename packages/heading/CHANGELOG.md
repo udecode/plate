@@ -1,5 +1,11 @@
 # @udecode/plate-heading
 
+## 36.0.9
+
+### Patch Changes
+
+- [#3369](https://github.com/udecode/plate/pull/3369) by [@felixfeng33](https://github.com/felixfeng33) – Fix:When there is a fixed container, scrolling is not work.
+
 ## 36.0.5
 
 ### Patch Changes
