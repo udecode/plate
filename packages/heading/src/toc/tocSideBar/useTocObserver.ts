@@ -10,7 +10,6 @@ interface UseTocObserver {
 export const useTocObserver = ({
   activeId,
   isObserve,
-  showHeader,
   tocRef,
 }: UseTocObserver) => {
   const root = tocRef.current;
@@ -18,45 +17,48 @@ export const useTocObserver = ({
   const [visible, setVisible] = React.useState<boolean>(true);
   const [offset, setOffset] = React.useState<number>(0);
 
-  React.useEffect(() => {
-    const callback = (entries: IntersectionObserverEntry[]) => {
+  const updateOffset = React.useCallback(
+    (entries: IntersectionObserverEntry[]) => {
       if (!isObserve) return;
 
-      const entry = entries[0];
-      const isBelow =
-        entry.boundingClientRect.bottom > entry.rootBounds!.bottom!;
+      const [entry] = entries;
+      const { boundingClientRect, intersectionRatio, rootBounds } = entry;
 
-      const isAbove = entry.boundingClientRect.top < entry.rootBounds!.top!;
+      if (!rootBounds) return;
 
-      const isVisible = entry.intersectionRatio === 1;
+      const halfHeight = (root?.getBoundingClientRect().height || 0) / 2;
+      const isAbove = boundingClientRect.top < rootBounds.top;
+      const isBelow = boundingClientRect.bottom > rootBounds.bottom;
+      const isVisible = intersectionRatio === 1;
 
-      if (isVisible) {
-        setVisible(true);
-      } else {
-        setVisible(false);
+      setVisible(isVisible);
 
-        if (isAbove) {
-          setOffset(entry.boundingClientRect.top - entry.rootBounds!.top!);
-        }
-        if (isBelow) {
-          setOffset(
-            entry.boundingClientRect.bottom - entry.rootBounds!.bottom!
-          );
-        }
+      if (!isVisible) {
+        const offset = isAbove
+          ? boundingClientRect.top - rootBounds!.top! - halfHeight
+          : isBelow
+            ? boundingClientRect.bottom - rootBounds!.bottom! + halfHeight
+            : 0;
+
+        setOffset(offset);
       }
-    };
-    const observer = new IntersectionObserver(callback, {
+    },
+    [isObserve, root]
+  );
+
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(updateOffset, {
       root: root,
     });
 
-    const element = document.querySelectorAll('#toc_item_active')[0];
+    const element = root?.querySelectorAll('#toc_item_active')[0];
 
     if (element) observer.observe(element);
 
     return () => {
       observer.disconnect();
     };
-  }, [activeId, root, isObserve, showHeader]);
+  }, [root, activeId, updateOffset]);
 
   return { offset, visible };
 };
