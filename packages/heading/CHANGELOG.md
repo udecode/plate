@@ -1,5 +1,11 @@
 # @udecode/plate-heading
 
+## 36.0.12
+
+### Patch Changes
+
+- [#3377](https://github.com/udecode/plate/pull/3377) by [@natamox](https://github.com/natamox) – Make the heading item in the middle when there is a scroll bar
+
 ## 36.0.9
 
 ### Patch Changes
