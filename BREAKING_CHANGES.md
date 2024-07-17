@@ -1,3 +1,11 @@
+# 34.0.0
+
+## @udecode/plate-selection@34.0.0
+- Breaking Change: The `selectedColor` option for `BlockSelectable` has been deprecated. Please use `useBlockSelected` to customize the style of each node component.
+
+- [#3241](https://github.com/udecode/plate/pull/3241) by [@felixfeng33](https://github.com/felixfeng33) – Add logic for the `block-context-menu` and improved the user experience for `block-selection`, such as interactions related to keyboard shortcuts, bug fixes.
+- Starting from this version, a single Cmd+A will no longer select the entire document but will select the entire block instead. Double Cmd+A will use the blockSelection plugin to select all blocks. To disable this behavior, pass handlers: { onKeyDown: null }.
+
 # 33.0.0
 
 ## @udecode/plate-serializer-md@33.0.0

@@ -24,13 +24,11 @@ import { isNodeBlockSelected } from '../queries';
 export interface BlockSelectableOptions {
   element: TElement;
   active?: boolean;
-  selectedColor?: string;
 }
 
 export const useBlockSelectableState = ({
   active,
   element,
-  selectedColor,
 }: BlockSelectableOptions) => {
   const editor = useEditorRef();
   const ref = useRef<HTMLDivElement | null>(null);
@@ -63,7 +61,6 @@ export const useBlockSelectableState = ({
     element,
     path,
     ref,
-    selectedColor,
   };
 };
 
