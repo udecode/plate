@@ -1,5 +1,11 @@
 # @udecode/plate-selection
 
+## 36.1.0
+
+### Minor Changes
+
+- [`6cced55ed14d02832ceb62e347d399479b358867`](https://github.com/udecode/plate/commit/6cced55ed14d02832ceb62e347d399479b358867) by [@felixfeng33](https://github.com/felixfeng33) – Remove the no longer used option `selectedColor`.
+
 ## 36.0.8
 
 ### Patch Changes
