@@ -2,9 +2,12 @@ import { useEffect } from 'react';
 
 import type { Value } from '@udecode/slate';
 
-import type { PlateEditor } from '../../types';
+import type { PlateEditor } from '../../../shared/types';
 
-import { BLUR_EDITOR_EVENT, FOCUS_EDITOR_EVENT } from './constants';
+import {
+  BLUR_EDITOR_EVENT,
+  FOCUS_EDITOR_EVENT,
+} from '../../../shared/plugins/event-editor/constants';
 
 export const useFocusEditorEvents = ({
   editorRef,
