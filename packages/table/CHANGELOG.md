@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 36.2.0
+
+### Patch Changes
+
+- [#3383](https://github.com/udecode/plate/pull/3383) by [@EvanSmith93](https://github.com/EvanSmith93) – Fix table header property and apply header to only the top row of new tables
+
 ## 36.0.0
 
 ## 35.2.0

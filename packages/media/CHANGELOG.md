@@ -1,5 +1,11 @@
 # @udecode/plate-media
 
+## 36.2.0
+
+### Minor Changes
+
+- [#3384](https://github.com/udecode/plate/pull/3384) by [@12joan](https://github.com/12joan) – Remove default `align` from `useMediaState`, allowing components to choose their own default `align`
+
 ## 36.0.10
 
 ### Patch Changes
