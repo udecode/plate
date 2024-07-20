@@ -15,11 +15,12 @@ export const getEmptyCellNode = <V extends Value>(
   { children, header, row }: CellFactoryOptions = {}
 ) => {
   header =
-    header ?? row
+    header ??
+    (row
       ? (row as TElement).children.every(
           (c) => c.type === getPluginType(editor, ELEMENT_TH)
         )
-      : false;
+      : false);
 
   return {
     children: children ?? [editor.blockFactory()],

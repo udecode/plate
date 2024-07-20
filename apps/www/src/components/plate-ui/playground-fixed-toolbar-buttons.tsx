@@ -148,7 +148,9 @@ export function PlaygroundFixedToolbarButtons({ id }: { id?: ValueId }) {
                 <MediaToolbarButton nodeType={ELEMENT_IMAGE} />
               )}
 
-              {isEnabled('table', id) && <TableDropdownMenu />}
+              {(isEnabled('table', id) || isEnabled('tableMerge', id)) && (
+                <TableDropdownMenu />
+              )}
 
               {isEnabled('emoji', id) && <EmojiDropdownMenu />}
 
