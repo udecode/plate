@@ -66,7 +66,7 @@ export const useMediaState = ({
   const selected = useSelected();
   const readOnly = useReadOnly();
 
-  const { align = 'left', id, isUpload, name, type, url } = element;
+  const { align, id, isUpload, name, type, url } = element;
 
   const embed = React.useMemo(() => {
     if (!urlParsers || (type !== ELEMENT_VIDEO && type !== ELEMENT_MEDIA_EMBED))

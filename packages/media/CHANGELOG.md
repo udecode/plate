@@ -26,7 +26,9 @@
 
 ### Minor Changes
 
-- [#3241](https://github.com/udecode/plate/pull/3241) by [@felixfeng33](https://github.com/felixfeng33) – Add plugins: `mediaPlaceholder`, `video`,`audio` and `file`
+- [#3241](https://github.com/udecode/plate/pull/3241) by [@felixfeng33](https://github.com/felixfeng33) –
+  - Add plugins: `mediaPlaceholder`, `video`,`audio` and `file`
+  - Set the default align to 'left' in `useMediaState`
 
 ## 33.0.2
 
