@@ -1,5 +1,11 @@
 # @udecode/plate-media
 
+## 36.2.0
+
+### Minor Changes
+
+- [#3384](https://github.com/udecode/plate/pull/3384) by [@12joan](https://github.com/12joan) – Remove default `align` from `useMediaState`, allowing components to choose their own default `align`
+
 ## 36.0.10
 
 ### Patch Changes
@@ -26,7 +32,9 @@
 
 ### Minor Changes
 
-- [#3241](https://github.com/udecode/plate/pull/3241) by [@felixfeng33](https://github.com/felixfeng33) – Add plugins: `mediaPlaceholder`, `video`,`audio` and `file`
+- [#3241](https://github.com/udecode/plate/pull/3241) by [@felixfeng33](https://github.com/felixfeng33) –
+  - Add plugins: `mediaPlaceholder`, `video`,`audio` and `file`
+  - Set the default align to 'left' in `useMediaState`
 
 ## 33.0.2
 

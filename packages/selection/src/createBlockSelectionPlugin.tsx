@@ -52,7 +52,6 @@ export const createBlockSelectionPlugin =
             children,
             options: {
               element,
-              selectedColor: 'rgb(219 234 254)',
             },
           }),
     },

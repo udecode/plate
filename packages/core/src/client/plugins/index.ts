@@ -3,4 +3,5 @@
  */
 
 export * from './withPlate';
+export * from './event-editor/index';
 export * from './react/index';

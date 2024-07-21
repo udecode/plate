@@ -258,6 +258,9 @@ The editor instance.
 <APIItem name="options" type="GetEmptyRowNodeOptions" optional>
 Extends `GetEmptyCellNodeOptions`.
 <APISubList>
+<APISubListItem parent="options" name="header" type="boolean" optional>
+Specify `true` if the row is a header row.
+</APISubListItem>
 <APISubListItem parent="options" name="colCount" type="number" optional>
 The number of columns in the row.
 
@@ -286,7 +289,7 @@ The editor instance.
 <APIItem name="options" type="GetEmptyTableNodeOptions" optional>
 Extends `GetEmptyRowNodeOptions`.
 <APISubList>
-<APISubListItem parent="options" name="header" type="boolean | undefined" optional>
+<APISubListItem parent="options" name="header" type="boolean" optional>
 Specify `true` if the table has a header row.
 </APISubListItem>
 <APISubListItem parent="options" name="rowCount" type="number" optional>
@@ -628,7 +631,7 @@ The number of columns in the table.
 
 </APISubListItem>
 <APISubListItem parent="getEmptyTableNodeOptions" name="header" type="boolean" optional>
-If true, the first row of the table will be treated as a header row.
+If `true`, the first row of the table will be treated as a header row.
 </APISubListItem>
 </APISubList>
 
