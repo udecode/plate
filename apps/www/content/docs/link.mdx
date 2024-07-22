@@ -106,6 +106,9 @@ Callback function to validate a URL.
 <APIItem name="getUrlHref" type="(url: string) => string | undefined" optional>
 Callback function to optionally get the href for a URL. It returns an optional link that is different from the text content. For example, returns `https://google.com` for `google.com`.
 </APIItem>
+<APIItem name="transformInput" type="(url: string | null) => string | undefined" optional>
+Callback function to optionally transform the submitted URL provided by the user to the URL input before validation.
+</APIItem>
 <APIItem name="getLinkUrl" type="(prevUrl: string | null) => Promise<string | null>" optional>
 On keyboard shortcut or toolbar mousedown, this function is called to get the link URL. The default behavior is to use the browser's native `prompt`.
 </APIItem>

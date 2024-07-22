@@ -77,6 +77,17 @@ export interface LinkPlugin {
   rangeBeforeOptions?: RangeBeforeOptions;
 
   /**
+   * Transform the content of the URL input before validating it. Useful for
+   * adding a protocol to a URL. E.g. `google.com` -> `https://google.com`
+   *
+   * Similar to `getUrlHref` but is used on URL inputs. Whereas that is used on
+   * any entered text.
+   *
+   * @returns The transformed URL.
+   */
+  transformInput?: (url: string) => string | undefined;
+
+  /**
    * Hotkeys to trigger floating link.
    *
    * @default 'meta+k, ctrl+k'
