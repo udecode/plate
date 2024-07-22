@@ -20,9 +20,13 @@ import { upsertLink } from './index';
 export const submitFloatingLink = <V extends Value>(editor: PlateEditor<V>) => {
   if (!editor.selection) return;
 
-  const { forceSubmit } = getPluginOptions<LinkPlugin, V>(editor, ELEMENT_LINK);
+  const { forceSubmit, transformInput } = getPluginOptions<LinkPlugin, V>(
+    editor,
+    ELEMENT_LINK
+  );
 
-  const url = floatingLinkSelectors.url();
+  const inputUrl = floatingLinkSelectors.url();
+  const url = transformInput ? transformInput(inputUrl) ?? '' : inputUrl;
 
   if (!forceSubmit && !validateUrl(editor, url)) return;
 
