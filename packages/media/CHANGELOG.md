@@ -1,5 +1,11 @@
 # @udecode/plate-media
 
+## 36.2.2
+
+### Patch Changes
+
+- [#3380](https://github.com/udecode/plate/pull/3380) by [@Tassil0](https://github.com/Tassil0) – feat: `parseTwitterUrl` accept x.com
+
 ## 36.2.0
 
 ### Minor Changes

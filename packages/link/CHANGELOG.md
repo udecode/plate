@@ -1,5 +1,12 @@
 # @udecode/plate-link
 
+## 36.3.0
+
+### Minor Changes
+
+- [#3389](https://github.com/udecode/plate/pull/3389) by [@georeith](https://github.com/georeith) – feat:`LinkPlugin` new option `transformInput: (url: string) => string | undefined;` that optionally transform's the
+  submitted URL provided by the user to the URL input before validation.
+
 ## 36.0.0
 
 ## 35.2.0
