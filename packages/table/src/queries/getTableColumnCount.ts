@@ -1,7 +1,7 @@
 import type { TElement } from '@udecode/plate-common';
 
 export const getTableColumnCount = (tableNode: TElement) => {
-  if ((tableNode.children as TElement[])?.[0]) {
+  if ((tableNode.children as TElement[])?.[0]?.children) {
     return (tableNode.children as TElement[])[0].children
       .map(
         (element) =>
