@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 36.3.1
+
+### Patch Changes
+
+- [#3368](https://github.com/udecode/plate/pull/3368) by [@beeant0512](https://github.com/beeant0512) – fix table column count when first row has merged columns
+
 ## 36.2.0
 
 ### Patch Changes
