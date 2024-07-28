@@ -118,7 +118,12 @@ export const useFloatingToolbar = ({
   }, []);
 
   React.useEffect(() => {
-    if (!selectionExpanded || !selectionText || (mousedown && !open)) {
+    if (
+      !selectionExpanded ||
+      !selectionText ||
+      (mousedown && !open) ||
+      hideToolbar
+    ) {
       setOpen(false);
     } else if (
       selectionText &&
