@@ -1,5 +1,11 @@
 # @udecode/plate-floating
 
+## 36.3.2
+
+### Patch Changes
+
+- [#3400](https://github.com/udecode/plate/pull/3400) by [@felixfeng33](https://github.com/felixfeng33) – Add the missing property `hideToolbar`.
+
 ## 36.0.0
 
 ## 34.1.1
