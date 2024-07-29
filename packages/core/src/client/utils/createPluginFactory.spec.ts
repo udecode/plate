@@ -1,15 +1,15 @@
 import { createBasicElementsPlugin } from '@udecode/plate-basic-elements';
 import { ELEMENT_LINK, createLinkPlugin } from '@udecode/plate-link';
 
-import { createPluginFactory, getPlugin } from '../../shared';
+import { createPlugin, getPlugin } from '../../shared';
 import { createPlateEditor } from './createPlateEditor';
 
-describe('createPluginFactory', () => {
-  const createPlugin = createPluginFactory({ key: 'a', type: 'a' });
+describe('createPlugin', () => {
+  const basePlugin = createPlugin({ key: 'a', type: 'a' });
 
   describe('when no overrides', () => {
     it('should be', () => {
-      const { key, type } = createPlugin();
+      const { key, type } = basePlugin;
 
       expect({ key, type }).toEqual({ key: 'a', type: 'a' });
     });
@@ -17,7 +17,7 @@ describe('createPluginFactory', () => {
 
   describe('when overriding', () => {
     it('should be', () => {
-      const { inject, key, type } = createPlugin({
+      const plugin = basePlugin.extend({
         inject: {
           props: {
             nodeKey: 'b',
@@ -26,7 +26,7 @@ describe('createPluginFactory', () => {
         type: 'b',
       });
 
-      expect({ inject, key, type }).toEqual({
+      expect({ inject: plugin.inject, key: plugin.key, type: plugin.type }).toEqual({
         inject: {
           props: {
             nodeKey: 'b',
@@ -40,19 +40,15 @@ describe('createPluginFactory', () => {
 
   describe('when overriding plugins', () => {
     it('should be', () => {
-      const plugin = createBasicElementsPlugin(
-        {},
-        {
-          heading: {
-            key: 'h',
-            options: {
-              levels: 5,
-            },
-          },
-        }
-      );
+      const plugin = createBasicElementsPlugin().extendPlugin('heading', {
+        key: 'h',
+        options: {
+          levels: 5,
+        },
+      });
 
-      const { key, options } = plugin.plugins![2];
+      const headingPlugin = plugin.plugins!.find(p => p.key === 'h');
+      const { key, options } = headingPlugin!;
 
       expect({ key, options }).toEqual({
         key: 'h',
@@ -63,11 +59,11 @@ describe('createPluginFactory', () => {
     });
   });
 
-  describe('when default plugin has then and we override a function at the root', () => {
+  describe('when default plugin has extend and we override a function at the root', () => {
     it('should be', () => {
       const editor = createPlateEditor({
         plugins: [
-          createLinkPlugin({
+          createLinkPlugin().extend({
             deserializeHtml: {
               getNode: () => ({ test: true }),
               withoutChildren: true,
@@ -85,11 +81,11 @@ describe('createPluginFactory', () => {
     });
   });
 
-  describe('when both plugin and overrides have then and plugins', () => {
+  describe('when both plugin and overrides have extend and plugins', () => {
     it('should be', () => {
       const editor = createPlateEditor({
         plugins: [
-          createPluginFactory({
+          createPlugin({
             key: 'a',
             plugins: [
               {
@@ -97,42 +93,34 @@ describe('createPluginFactory', () => {
                 type: 'aa',
               },
             ],
-            then: () => ({
-              plugins: [
-                {
-                  key: 'bb',
-                  then: () => ({
-                    plugins: [
-                      {
-                        key: 'aa',
-                        type: 'ab',
-                      },
-                      {
-                        key: 'cc',
-                        type: 'cc',
-                      },
-                    ],
-                    type: 'athen2',
-                  }),
-                  type: 'bb',
-                },
-              ],
-              type: 'athen',
-            }),
             type: 'a',
-          })(
-            {
-              type: 'a1',
-            },
-            {
-              aa: {
-                type: 'aa1',
+          }).extend((editor, p) => ({
+            plugins: [
+              {
+                key: 'bb',
+                type: 'bb',
               },
-              cc: {
-                type: 'cc1',
+            ],
+            type: 'athen',
+          })).extend((editor, p) => ({
+            plugins: [
+              {
+                key: 'aa',
+                type: 'ab',
               },
-            }
-          ),
+              {
+                key: 'cc',
+                type: 'cc',
+              },
+            ],
+            type: 'athen2',
+          })).extend({
+            type: 'a1',
+          }).extendPlugin('aa', {
+            type: 'aa1',
+          }).extendPlugin('cc', {
+            type: 'cc1',
+          }),
         ],
       });
 
@@ -149,7 +137,7 @@ describe('createPluginFactory', () => {
       }).toEqual({ type: 'aa1' });
       expect({
         type: bb.type,
-      }).toEqual({ type: 'athen2' });
+      }).toEqual({ type: 'bb' });
       expect({
         type: cc.type,
       }).toEqual({ type: 'cc1' });

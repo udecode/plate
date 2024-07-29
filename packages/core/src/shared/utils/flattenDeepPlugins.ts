@@ -1,41 +1,35 @@
-import type { Value } from '@udecode/slate';
-
-import defaultsDeep from 'lodash/defaultsDeep.js';
+import merge from 'lodash/merge.js';
 
 import type { PlateEditor } from '../types/PlateEditor';
 import type { PlatePlugin } from '../types/plugin/PlatePlugin';
 
 import { mergeDeepPlugins } from './mergeDeepPlugins';
-import { setDefaultPlugin } from './setDefaultPlugin';
 
 /** Recursively merge plugin.plugins into editor.plugins and editor.pluginsByKey */
-export const flattenDeepPlugins = <V extends Value>(
-  editor: PlateEditor<V>,
-  plugins?: PlatePlugin<{}, V>[]
+export const flattenDeepPlugins = (
+  editor: PlateEditor,
+  plugins?: PlatePlugin[]
 ) => {
   if (!plugins) return;
 
   plugins.forEach((plugin) => {
-    let p = setDefaultPlugin(plugin);
+    plugin = mergeDeepPlugins(editor, plugin);
 
-    p = mergeDeepPlugins<V>(editor, p);
-
-    if (p.enabled === false) return;
-    if (editor.pluginsByKey[p.key]) {
-      const index = editor.plugins.indexOf(editor.pluginsByKey[p.key]);
-
-      const mergedPlugin = defaultsDeep(p, editor.pluginsByKey[p.key]);
+    if (plugin.enabled === false) return;
+    if (editor.pluginsByKey[plugin.key]) {
+      const index = editor.plugins.indexOf(editor.pluginsByKey[plugin.key]);
+      const mergedPlugin = merge({}, editor.pluginsByKey[plugin.key], plugin);
 
       if (index >= 0) {
         editor.plugins[index] = mergedPlugin;
       }
 
-      editor.pluginsByKey[p.key] = mergedPlugin;
+      editor.pluginsByKey[plugin.key] = mergedPlugin;
     } else {
-      editor.plugins.push(p);
-      editor.pluginsByKey[p.key] = p;
+      editor.plugins.push(plugin);
+      editor.pluginsByKey[plugin.key] = plugin;
     }
 
-    flattenDeepPlugins(editor, p.plugins!);
+    flattenDeepPlugins(editor, plugin.plugins!);
   });
 };

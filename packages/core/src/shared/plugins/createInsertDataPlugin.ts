@@ -23,7 +23,7 @@ export const withInsertData = <
 
       if (!insertDataOptions) return false;
 
-      const injectedPlugins = getInjectedPlugins<{}, V>(editor, plugin);
+      const injectedPlugins = getInjectedPlugins(editor, plugin);
       const { format, getFragment } = insertDataOptions;
 
       if (!format) return false;
@@ -32,7 +32,7 @@ export const withInsertData = <
 
       if (!data) return;
       if (
-        !pipeInsertDataQuery<{}, V>(injectedPlugins, {
+        !pipeInsertDataQuery(injectedPlugins, {
           data,
           dataTransfer,
         })

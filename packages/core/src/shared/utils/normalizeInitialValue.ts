@@ -17,7 +17,7 @@ export const normalizeInitialValue = <V extends Value>(
 
     if (_normalizedValue) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      normalizedValue = _normalizedValue;
+      normalizedValue = _normalizedValue as V;
     }
   });
 

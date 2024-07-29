@@ -1,23 +1,13 @@
 import React from 'react';
 
-import type { Value } from '@udecode/slate';
-
-import type { PlateEditor } from '../../shared';
-
 import { type UsePlateEffectsProps, usePlateEffects } from '../hooks';
 
-export interface PlateEffectsProps<
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
-> extends UsePlateEffectsProps<V, E> {
+export interface PlateEffectsProps extends UsePlateEffectsProps {
   children: React.ReactNode;
 }
 
-export function PlateEffects<
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->({ children, ...props }: PlateEffectsProps<V, E>) {
-  usePlateEffects<V, E>(props);
+export function PlateEffects({ children, ...props }: PlateEffectsProps) {
+  usePlateEffects(props);
 
   return <>{children}</>;
 }

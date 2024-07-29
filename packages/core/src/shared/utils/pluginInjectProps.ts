@@ -1,30 +1,25 @@
 import type React from 'react';
 
-import {
-  type EElement,
-  type EText,
-  type Value,
-  isElement,
-} from '@udecode/slate';
+import { type TElement, type TText, isElement } from '@udecode/slate';
 import { type AnyObject, isDefined } from '@udecode/utils';
 import { clsx } from 'clsx';
 
 import type { TransformOptions } from '../types';
 import type { PlateEditor } from '../types/PlateEditor';
-import type { WithPlatePlugin } from '../types/plugin/PlatePlugin';
+import type { PlatePlugin } from '../types/plugin/PlatePlugin';
 
-export interface GetInjectPropsOptions<V extends Value = Value> {
+export interface GetInjectPropsOptions {
   /** Existing className. */
   className?: string;
 
   /** Style value or className key. */
-  element?: EElement<V>;
+  element?: TElement;
 
   /** Existing style. */
   style?: React.CSSProperties;
 
   /** Style value or className key. */
-  text?: EText<V>;
+  text?: TText;
 }
 
 export interface GetInjectPropsReturnType extends AnyObject {
@@ -39,10 +34,10 @@ export interface GetInjectPropsReturnType extends AnyObject {
  * `className` with it. If `styleKey` is defined, override `style` with
  * `[styleKey]: value`.
  */
-export const pluginInjectProps = <V extends Value>(
-  editor: PlateEditor<V>,
-  { inject: { props }, key }: WithPlatePlugin<{}, V>,
-  nodeProps: GetInjectPropsOptions<V>
+export const pluginInjectProps = (
+  editor: PlateEditor,
+  { inject: { props }, key }: PlatePlugin,
+  nodeProps: GetInjectPropsOptions
 ): GetInjectPropsReturnType | undefined => {
   const { className, element, style, text } = nodeProps;
 
@@ -89,7 +84,7 @@ export const pluginInjectProps = <V extends Value>(
     return;
   }
 
-  const transformOptions: TransformOptions<V> = { ...nodeProps, nodeValue };
+  const transformOptions: TransformOptions = { ...nodeProps, nodeValue };
   const value = transformNodeValue?.(transformOptions) ?? nodeValue;
   transformOptions.value = value;
 

@@ -1,9 +1,5 @@
-import type { Value } from '@udecode/slate';
-
-import type { OverrideByKey } from '../types/OverrideByKey';
-import type { PlateEditor } from '../types/PlateEditor';
 import type { NoInfer } from '../types/misc/NoInfer';
-import type { PlatePlugin, PluginOptions } from '../types/plugin/PlatePlugin';
+import type { PlatePlugin } from '../types/plugin/PlatePlugin';
 
 import { overridePluginsByKey } from './overridePluginsByKey';
 
@@ -19,20 +15,18 @@ import { overridePluginsByKey } from './overridePluginsByKey';
  *       plugin (in plugin.plugins).
  */
 export const createPluginFactory =
-  <
-    P = PluginOptions,
-    V extends Value = Value,
-    E extends PlateEditor<V> = PlateEditor<V>,
-  >(
-    defaultPlugin: PlatePlugin<NoInfer<P>, V, E>
+  <O = {}, T = {}, Q = {}, S = {}>(
+    defaultPlugin: PlatePlugin<NoInfer<O>, NoInfer<T>, NoInfer<Q>, NoInfer<S>>
   ) =>
-  <OP = P, OV extends Value = V, OE extends PlateEditor<OV> = PlateEditor<OV>>(
-    override?: Partial<PlatePlugin<NoInfer<OP>, OV, OE>>,
-    overrideByKey: OverrideByKey<OV, OE> = {}
-  ): PlatePlugin<NoInfer<OP>, OV, OE> => {
+  <OO = O, OT = T, OQ = Q, OS = S>(
+    override?: Partial<
+      PlatePlugin<NoInfer<OO>, NoInfer<OT>, NoInfer<OQ>, NoInfer<OS>>
+    >,
+    overrideByKey: Record<string, Partial<PlatePlugin<any, any, any, any>>> = {}
+  ): PlatePlugin<NoInfer<OO>, NoInfer<OT>, NoInfer<OQ>, NoInfer<OS>> => {
     overrideByKey[defaultPlugin.key] = override as any;
 
-    return overridePluginsByKey<OP, OV, OE>(
+    return overridePluginsByKey<OO, OT, OQ, OS>(
       { ...defaultPlugin } as any,
       overrideByKey
     );

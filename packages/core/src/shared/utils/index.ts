@@ -3,19 +3,17 @@
  */
 
 export * from './applyDeepToNodes';
+export * from './createPlugin';
 export * from './createPluginFactory';
 export * from './createPlugins';
 export * from './flattenDeepPlugins';
 export * from './getInjectedPlugins';
-export * from './getKeyByType';
 export * from './getKeysByTypes';
 export * from './getPlugin';
 export * from './getPluginInjectProps';
 export * from './getPluginOptions';
 export * from './getPluginType';
 export * from './getPluginTypes';
-export * from './getPlugins';
-export * from './getPluginsByKey';
 export * from './getRenderNodeProps';
 export * from './mapInjectPropsToPlugin';
 export * from './mergeDeepPlugins';
@@ -33,7 +31,7 @@ export * from './pipeOnChange';
 export * from './pipeTransformData';
 export * from './pipeTransformFragment';
 export * from './pluginInjectProps';
-export * from './setDefaultPlugin';
+export * from './processPluginExtend';
 export * from './shared-hotkeys';
 export * from './withHOC';
 export * from './misc/index';

@@ -1,10 +1,9 @@
-import type { Value } from '@udecode/slate';
 import type { AnyObject } from '@udecode/utils';
 
 import { clsx } from 'clsx';
 
 import type { PlateRenderNodeProps } from '../types/PlateRenderNodeProps';
-import type { WithPlatePlugin } from '../types/plugin/PlatePlugin';
+import type { PlatePlugin } from '../types/plugin/PlatePlugin';
 
 import { getSlateClass } from './misc/getSlateClass';
 
@@ -12,15 +11,15 @@ import { getSlateClass } from './misc/getSlateClass';
  * Override node props with plugin props. `props.element.attributes` are passed
  * as `nodeProps`. Extend the class name with the node type.
  */
-export const getRenderNodeProps = <V extends Value>({
+export const getRenderNodeProps = ({
   attributes,
   nodeProps,
   props,
   type,
 }: {
   attributes?: AnyObject;
-  nodeProps: PlateRenderNodeProps<V>;
-} & Pick<WithPlatePlugin<V>, 'props' | 'type'>): PlateRenderNodeProps<V> => {
+  nodeProps: PlateRenderNodeProps;
+} & Pick<PlatePlugin, 'props' | 'type'>): PlateRenderNodeProps => {
   let newProps: AnyObject = {};
 
   if (props) {

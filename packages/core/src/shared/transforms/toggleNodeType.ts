@@ -6,8 +6,10 @@ import {
 } from '@udecode/slate';
 
 import type { PlateEditor } from '../types/PlateEditor';
+import type { MyEditor } from './temp';
 
 import { ELEMENT_DEFAULT } from '../constants/ELEMENT_DEFAULT';
+import { normalizeInitialValue } from '../utils';
 import { getPluginType } from '../utils/getPluginType';
 
 export interface ToggleNodeTypeOptions {
@@ -23,6 +25,12 @@ export interface ToggleNodeTypeOptions {
    */
   inactiveType?: string;
 }
+
+const ed: MyEditor = {} as any;
+const a = ed.plugins;
+getPluginType(ed, 'a');
+
+normalizeInitialValue(ed, ed.children);
 
 /**
  * Toggle the type of the selected node. Don't do anything if activeType ===

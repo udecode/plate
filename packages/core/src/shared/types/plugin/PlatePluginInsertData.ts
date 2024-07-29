@@ -1,4 +1,4 @@
-import type { EElementOrText, Value } from '@udecode/slate';
+import type { TDescendant } from '@udecode/slate';
 
 import type { HandlerReturnType } from './DOMHandlers';
 
@@ -7,14 +7,14 @@ export type PlatePluginInsertDataOptions = {
   dataTransfer: DataTransfer;
 };
 
-export type PlatePluginInsertData<V extends Value = Value> = {
+export type PlatePluginInsertData = {
   /** Format to get data. Example data types are text/plain and text/uri-list. */
   format?: string;
 
   /** Deserialize data to fragment */
   getFragment?: (
     options: PlatePluginInsertDataOptions
-  ) => EElementOrText<V>[] | undefined;
+  ) => TDescendant[] | undefined;
 
   /**
    * Function called on `editor.insertData` just before `editor.insertFragment`.
@@ -25,7 +25,7 @@ export type PlatePluginInsertData<V extends Value = Value> = {
    * @returns If true, the next handlers will be skipped.
    */
   preInsert?: (
-    fragment: EElementOrText<V>[],
+    fragment: TDescendant[],
     options: PlatePluginInsertDataOptions
   ) => HandlerReturnType;
 
@@ -42,7 +42,7 @@ export type PlatePluginInsertData<V extends Value = Value> = {
 
   /** Transform the fragment to insert. */
   transformFragment?: (
-    fragment: EElementOrText<V>[],
+    fragment: TDescendant[],
     options: PlatePluginInsertDataOptions
-  ) => EElementOrText<V>[];
+  ) => TDescendant[];
 };

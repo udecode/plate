@@ -12,7 +12,7 @@ import type { TReactEditor } from '@udecode/slate-react';
 import type { Path } from 'slate';
 
 import type { PlateEditorMethods } from './PlateEditorMethods';
-import type { WithPlatePlugin } from './plugin/PlatePlugin';
+import type { PlatePlugin } from './plugin/PlatePlugin';
 import type { PluginKey } from './plugin/PlatePluginKey';
 
 export type PlateEditor<V extends Value = Value> = {
@@ -39,12 +39,12 @@ export type PlateEditor<V extends Value = Value> = {
 
   key: any;
 
-  plugins: WithPlatePlugin<{}, V>[];
+  plugins: PlatePlugin[];
 
-  pluginsByKey: Record<PluginKey, WithPlatePlugin<{}, V>>;
+  pluginsByKey: Record<PluginKey, PlatePlugin>;
 
   prevSelection: TRange | null;
-} & PlateEditorMethods<V> &
+} & PlateEditorMethods &
   TEditor<V> &
   THistoryEditor<V> &
   TReactEditor<V>;

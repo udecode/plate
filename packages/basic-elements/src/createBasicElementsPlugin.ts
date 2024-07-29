@@ -1,6 +1,6 @@
 import { createBlockquotePlugin } from '@udecode/plate-block-quote';
 import { createCodeBlockPlugin } from '@udecode/plate-code-block';
-import { createPluginFactory } from '@udecode/plate-common/server';
+import { createPlugin } from '@udecode/plate-common';
 import { createHeadingPlugin } from '@udecode/plate-heading';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 
@@ -14,7 +14,7 @@ export const KEY_BASIC_ELEMENTS = 'basicElements';
  * - Heading
  * - Paragraph
  */
-export const createBasicElementsPlugin = createPluginFactory({
+export const createBasicElementsPlugin = createPlugin({
   key: KEY_BASIC_ELEMENTS,
   plugins: [
     createBlockquotePlugin(),

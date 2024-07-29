@@ -1,5 +1,3 @@
-import type { EDescendant, Value } from '@udecode/slate';
-
 import type { PlateEditor } from '../../../types/PlateEditor';
 import type { DeserializeHtmlNodeReturnType } from '../types';
 
@@ -12,10 +10,8 @@ import { isHtmlElement } from './isHtmlElement';
 
 /** Deserialize HTML element or child node. */
 export const deserializeHtmlNode =
-  <V extends Value>(editor: PlateEditor<V>) =>
-  (
-    node: ChildNode | HTMLElement
-  ): DeserializeHtmlNodeReturnType<EDescendant<V>> => {
+  (editor: PlateEditor) =>
+  (node: ChildNode | HTMLElement): DeserializeHtmlNodeReturnType => {
     const textNode = htmlTextNodeToString(node);
 
     if (textNode) return textNode;

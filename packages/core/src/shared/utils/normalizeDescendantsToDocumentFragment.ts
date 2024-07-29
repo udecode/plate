@@ -1,8 +1,6 @@
 import {
-  type EDescendant,
   type TDescendant,
   type TEditor,
-  type Value,
   isElement,
   isText,
 } from '@udecode/slate';
@@ -13,8 +11,7 @@ import { ELEMENT_DEFAULT } from '../constants';
 import { getPluginType } from './getPluginType';
 
 const isInlineNode =
-  <V extends Value>(editor: Pick<TEditor<V>, 'isInline'>) =>
-  (node: EDescendant<V>) =>
+  (editor: Pick<TEditor, 'isInline'>) => (node: TDescendant) =>
     isText(node) || (isElement(node) && editor.isInline(node));
 
 const makeBlockLazy = (type: string) => (): TDescendant => ({
@@ -22,9 +19,9 @@ const makeBlockLazy = (type: string) => (): TDescendant => ({
   type,
 });
 
-const hasDifferentChildNodes = <N extends TDescendant>(
-  descendants: N[],
-  isInline: (node: N) => boolean
+const hasDifferentChildNodes = (
+  descendants: TDescendant[],
+  isInline: (node: TDescendant) => boolean
 ): boolean => {
   return descendants.some((descendant, index, arr) => {
     const prevDescendant = arr[index - 1];
@@ -41,11 +38,11 @@ const hasDifferentChildNodes = <N extends TDescendant>(
  * Handles 3rd constraint: "Block nodes can only contain other blocks, or inline
  * and text nodes."
  */
-const normalizeDifferentNodeTypes = <N extends TDescendant>(
-  descendants: N[],
-  isInline: (node: N) => boolean,
-  makeDefaultBlock: () => N
-): N[] => {
+const normalizeDifferentNodeTypes = (
+  descendants: TDescendant[],
+  isInline: (node: TDescendant) => boolean,
+  makeDefaultBlock: () => TDescendant
+): TDescendant[] => {
   const hasDifferentNodes = hasDifferentChildNodes(descendants, isInline);
 
   const { fragment } = descendants.reduce(
@@ -59,7 +56,7 @@ const normalizeDifferentNodeTypes = <N extends TDescendant>(
           memo.fragment.push(block);
         }
 
-        (block.children as N[]).push(node);
+        (block.children as TDescendant[]).push(node);
       } else {
         memo.fragment.push(node);
         memo.precedingBlock = null;
@@ -68,8 +65,8 @@ const normalizeDifferentNodeTypes = <N extends TDescendant>(
       return memo;
     },
     {
-      fragment: [] as N[],
-      precedingBlock: null as N | null,
+      fragment: [] as TDescendant[],
+      precedingBlock: null as TDescendant | null,
     }
   );
 
@@ -80,21 +77,19 @@ const normalizeDifferentNodeTypes = <N extends TDescendant>(
  * Handles 1st constraint: "All Element nodes must contain at least one Text
  * descendant."
  */
-const normalizeEmptyChildren = <N extends TDescendant>(
-  descendants: N[]
-): N[] => {
+const normalizeEmptyChildren = (descendants: TDescendant[]): TDescendant[] => {
   if (descendants.length === 0) {
-    return [{ text: '' } as N];
+    return [{ text: '' } as TDescendant];
   }
 
   return descendants;
 };
 
-const normalize = <N extends TDescendant>(
-  descendants: N[],
-  isInline: (node: N) => boolean,
-  makeDefaultBlock: () => N
-): N[] => {
+const normalize = (
+  descendants: TDescendant[],
+  isInline: (node: TDescendant) => boolean,
+  makeDefaultBlock: () => TDescendant
+): TDescendant[] => {
   descendants = normalizeEmptyChildren(descendants);
   descendants = normalizeDifferentNodeTypes(
     descendants,
@@ -106,7 +101,11 @@ const normalize = <N extends TDescendant>(
     if (isElement(node)) {
       return {
         ...node,
-        children: normalize(node.children as N[], isInline, makeDefaultBlock),
+        children: normalize(
+          node.children as TDescendant[],
+          isInline,
+          makeDefaultBlock
+        ),
       };
     }
 
@@ -117,11 +116,11 @@ const normalize = <N extends TDescendant>(
 };
 
 /** Normalize the descendants to a valid document fragment. */
-export const normalizeDescendantsToDocumentFragment = <V extends Value>(
-  editor: PlateEditor<V>,
-  { descendants }: { descendants: EDescendant<V>[] }
-): EDescendant<V>[] => {
-  const isInline = isInlineNode<V>(editor);
+export const normalizeDescendantsToDocumentFragment = (
+  editor: PlateEditor,
+  { descendants }: { descendants: TDescendant[] }
+): TDescendant[] => {
+  const isInline = isInlineNode(editor);
   const defaultType = getPluginType(editor, ELEMENT_DEFAULT);
   const makeDefaultBlock = makeBlockLazy(defaultType);
 

@@ -1,7 +1,5 @@
 import React from 'react';
 
-import type { Value } from '@udecode/slate';
-
 import type { PlateEditor } from '../../shared/types/PlateEditor';
 import type { RenderLeaf } from '../../shared/types/RenderLeaf';
 import type { PlatePlugin } from '../../shared/types/plugin/PlatePlugin';
@@ -13,9 +11,9 @@ import { getRenderNodeProps } from '../../shared/utils/getRenderNodeProps';
  * Get a `Editable.renderLeaf` handler for `options.type`. If the type is equals
  * to the slate leaf type, render `options.component`. Else, return `children`.
  */
-export const pluginRenderLeaf = <V extends Value>(
-  editor: PlateEditor<V>,
-  { component, key, props, type = key }: PlatePlugin<{}, V>
+export const pluginRenderLeaf = (
+  editor: PlateEditor,
+  { component, key, props, type = key }: PlatePlugin
 ): RenderLeaf =>
   function render(nodeProps) {
     const { children, leaf } = nodeProps;

@@ -1,9 +1,5 @@
-import type { Value } from '@udecode/slate';
-
 import { isDefined } from '@udecode/utils';
 
-import type { PlateEditor } from '../../shared/types/PlateEditor';
-import type { PlatePlugin } from '../../shared/types/plugin/PlatePlugin';
 import type { PlateProps } from '../components';
 
 import {
@@ -16,6 +12,8 @@ import {
   KEY_LENGTH,
   KEY_NODE_FACTORY,
   KEY_PREV_SELECTION,
+  type PlateEditor,
+  type PlatePlugin,
   createDeserializeAstPlugin,
   createDeserializeHtmlPlugin,
   createEditorProtocolPlugin,
@@ -26,24 +24,17 @@ import {
   createLengthPlugin,
   createNodeFactoryPlugin,
   createPrevSelectionPlugin,
-} from '../../shared/plugins';
-import { flattenDeepPlugins } from '../../shared/utils/flattenDeepPlugins';
-import { overridePluginsByKey } from '../../shared/utils/overridePluginsByKey';
+} from '../../shared';
 import { createReactPlugin } from '../plugins';
 
-/** Flatten deep plugins then set editor.plugins and editor.pluginsByKey */
-export const setPlatePlugins = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E,
+export const getCorePlugins = (
+  editor: PlateEditor,
   {
     disableCorePlugins,
     maxLength,
-    plugins: _plugins = [],
-  }: Pick<PlateProps<V, E>, 'disableCorePlugins' | 'maxLength' | 'plugins'>
+  }: Pick<PlateProps, 'disableCorePlugins' | 'maxLength'> = {}
 ) => {
-  let plugins: PlatePlugin<{}, V, PlateEditor<V>>[] = [];
+  const plugins: PlatePlugin[] = [];
 
   if (disableCorePlugins !== true) {
     const dcp = disableCorePlugins;
@@ -116,25 +107,5 @@ export const setPlatePlugins = <
     }
   }
 
-  plugins = [...plugins, ..._plugins] as any;
-
-  editor.plugins = [];
-  editor.pluginsByKey = {};
-
-  flattenDeepPlugins(editor, plugins);
-
-  // override all the plugins one by one, so plugin.overrideByKey effects can be overridden by the next plugin
-  editor.plugins.forEach((plugin) => {
-    if (plugin.overrideByKey) {
-      const newPlugins = editor.plugins.map((p) => {
-        return overridePluginsByKey<V>(p as any, plugin.overrideByKey as any);
-      });
-
-      editor.plugins = [];
-      editor.pluginsByKey = {};
-
-      // flatten again the overrides
-      flattenDeepPlugins<V>(editor, newPlugins as any);
-    }
-  });
+  return plugins;
 };

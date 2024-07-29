@@ -1,6 +1,5 @@
 import type React from 'react';
 
-import type { Value } from '@udecode/slate';
 import type { AnyObject } from '@udecode/utils';
 
 import type {
@@ -8,13 +7,12 @@ import type {
   GetInjectPropsReturnType,
 } from '../../utils/pluginInjectProps';
 
-export interface TransformOptions<V extends Value = Value>
-  extends GetInjectPropsOptions<V> {
+export interface TransformOptions extends GetInjectPropsOptions {
   nodeValue?: any;
   value?: any;
 }
 
-export interface InjectProps<V extends Value> {
+export interface InjectProps {
   inject?: {
     /** Properties used by Plate to inject props into any node `component`. */
     props?: {
@@ -35,8 +33,8 @@ export interface InjectProps<V extends Value> {
 
       /** Whether to inject the props. If true, overrides all other checks. */
       query?: (
-        options: NonNullable<NonNullable<InjectProps<V>['inject']>['props']>,
-        nodeProps: GetInjectPropsOptions<V>
+        options: NonNullable<NonNullable<InjectProps['inject']>['props']>,
+        nodeProps: GetInjectPropsOptions
       ) => boolean;
 
       /**
@@ -51,18 +49,18 @@ export interface InjectProps<V extends Value> {
        *
        * @default clsx(className, classNames[value])
        */
-      transformClassName?: (options: TransformOptions<V>) => any;
+      transformClassName?: (options: TransformOptions) => any;
 
       /**
        * Transform the node value for the style or className.
        *
        * @default nodeValue
        */
-      transformNodeValue?: (options: TransformOptions<V>) => any;
+      transformNodeValue?: (options: TransformOptions) => any;
 
       /** Transform the injected props. */
       transformProps?: (
-        options: TransformOptions<V>,
+        options: TransformOptions,
         props: GetInjectPropsReturnType
       ) => AnyObject | undefined;
 
@@ -71,7 +69,7 @@ export interface InjectProps<V extends Value> {
        *
        * @default { ...style, [styleKey]: value }
        */
-      transformStyle?: (options: TransformOptions<V>) => React.CSSProperties;
+      transformStyle?: (options: TransformOptions) => React.CSSProperties;
 
       /** List of supported node values. */
       validNodeValues?: any[];

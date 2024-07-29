@@ -1,5 +1,3 @@
-import type { Value } from '@udecode/slate';
-
 import { isDefined } from '@udecode/utils';
 
 import type { PlateProps } from '../client';
@@ -30,18 +28,15 @@ import { flattenDeepPlugins } from '../shared/utils/flattenDeepPlugins';
 import { overridePluginsByKey } from '../shared/utils/overridePluginsByKey';
 import { createReactPlugin } from './createReactPlugin';
 
-export const setPlatePlugins = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E,
+export const setPlatePlugins = (
+  editor: PlateEditor,
   {
     disableCorePlugins,
     maxLength,
     plugins: _plugins = [],
-  }: Pick<PlateProps<V, E>, 'disableCorePlugins' | 'maxLength' | 'plugins'>
+  }: Pick<PlateProps, 'disableCorePlugins' | 'maxLength' | 'plugins'>
 ) => {
-  let plugins: PlatePlugin<{}, V, PlateEditor<V>>[] = [];
+  let plugins: PlatePlugin[] = [];
 
   if (disableCorePlugins !== true) {
     const dcp = disableCorePlugins;
@@ -125,14 +120,14 @@ export const setPlatePlugins = <
   editor.plugins.forEach((plugin) => {
     if (plugin.overrideByKey) {
       const newPlugins = editor.plugins.map((p) => {
-        return overridePluginsByKey<V>(p as any, plugin.overrideByKey as any);
+        return overridePluginsByKey(p as any, plugin.overrideByKey as any);
       });
 
       editor.plugins = [];
       editor.pluginsByKey = {};
 
       // flatten again the overrides
-      flattenDeepPlugins<V>(editor, newPlugins as any);
+      flattenDeepPlugins(editor, newPlugins as any);
     }
   });
 };

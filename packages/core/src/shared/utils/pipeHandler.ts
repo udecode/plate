@@ -1,7 +1,5 @@
 import type React from 'react';
 
-import type { Value } from '@udecode/slate';
-
 import type { PlateEditor } from '../types/PlateEditor';
 import type {
   DOMHandlers,
@@ -73,8 +71,8 @@ export const isEventHandled = <
  * - Any handler returning true will stop the next handlers to be called,
  *   including slate internal handler.
  */
-export const pipeHandler = <V extends Value, K extends keyof DOMHandlers<V>>(
-  editor: PlateEditor<V>,
+export const pipeHandler = <K extends keyof DOMHandlers>(
+  editor: PlateEditor,
   {
     editableProps,
     handlerKey,

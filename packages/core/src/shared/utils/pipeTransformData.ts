@@ -1,12 +1,9 @@
-import type { Value } from '@udecode/slate';
-
-import type { PluginOptions } from '../types/plugin/PlatePlugin';
 import type { PlatePluginInsertDataOptions } from '../types/plugin/PlatePluginInsertData';
 import type { InjectedPlugin } from './getInjectedPlugins';
 
 /** Pipe editor.insertData.transformData */
-export const pipeTransformData = <V extends Value>(
-  plugins: InjectedPlugin<PluginOptions, V>[],
+export const pipeTransformData = (
+  plugins: InjectedPlugin[],
   { data, dataTransfer }: PlatePluginInsertDataOptions
 ) => {
   plugins.forEach((p) => {

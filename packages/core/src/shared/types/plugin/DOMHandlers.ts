@@ -1,9 +1,7 @@
 import type React from 'react';
 
-import type { Value } from '@udecode/slate';
-
 import type { PlateEditor } from '../PlateEditor';
-import type { PluginOptions, WithPlatePlugin } from './PlatePlugin';
+import type { PlatePlugin } from './PlatePlugin';
 
 /** If true, the next handlers will be skipped. */
 export type HandlerReturnType = boolean | void;
@@ -14,200 +12,194 @@ export type KeyboardEventHandler = (
 
 export type DOMHandlerReturnType<EV = {}> = (event: EV) => HandlerReturnType;
 
-export type DOMHandler<
-  P = PluginOptions,
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
-  EV = {},
-> = (editor: E, plugin: WithPlatePlugin<P, V, E>) => DOMHandlerReturnType<EV>;
+export type DOMHandler<O = {}, T = {}, Q = {}, S = {}, EV = {}> = (
+  editor: PlateEditor,
+  plugin: PlatePlugin<O, T, Q, S>
+) => DOMHandlerReturnType<EV>;
 
-export interface DOMHandlers<
-  P = PluginOptions,
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
-> {
+export interface DOMHandlers<O = {}, T = {}, Q = {}, S = {}> {
   // Media Events
-  onAbort?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onAbortCapture?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onAnimationEnd?: DOMHandler<P, V, E, React.AnimationEvent>;
-  onAnimationEndCapture?: DOMHandler<P, V, E, React.AnimationEvent>;
-  onAnimationIteration?: DOMHandler<P, V, E, React.AnimationEvent>;
-  onAnimationIterationCapture?: DOMHandler<P, V, E, React.AnimationEvent>;
+  onAbort?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onAbortCapture?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onAnimationEnd?: DOMHandler<O, T, Q, S, React.AnimationEvent>;
+  onAnimationEndCapture?: DOMHandler<O, T, Q, S, React.AnimationEvent>;
+  onAnimationIteration?: DOMHandler<O, T, Q, S, React.AnimationEvent>;
+  onAnimationIterationCapture?: DOMHandler<O, T, Q, S, React.AnimationEvent>;
 
   // Animation Events
-  onAnimationStart?: DOMHandler<P, V, E, React.AnimationEvent>;
-  onAnimationStartCapture?: DOMHandler<P, V, E, React.AnimationEvent>;
+  onAnimationStart?: DOMHandler<O, T, Q, S, React.AnimationEvent>;
+  onAnimationStartCapture?: DOMHandler<O, T, Q, S, React.AnimationEvent>;
   // React.MouseEvents
-  onAuxClick?: DOMHandler<P, V, E, React.MouseEvent>;
-  onAuxClickCapture?: DOMHandler<P, V, E, React.MouseEvent>;
-  onBeforeInput?: DOMHandler<P, V, E, React.FormEvent>;
-  onBeforeInputCapture?: DOMHandler<P, V, E, React.FormEvent>;
+  onAuxClick?: DOMHandler<O, T, Q, S, React.MouseEvent>;
+  onAuxClickCapture?: DOMHandler<O, T, Q, S, React.MouseEvent>;
+  onBeforeInput?: DOMHandler<O, T, Q, S, React.FormEvent>;
+  onBeforeInputCapture?: DOMHandler<O, T, Q, S, React.FormEvent>;
 
-  onBlur?: DOMHandler<P, V, E, React.FocusEvent>;
-  onBlurCapture?: DOMHandler<P, V, E, React.FocusEvent>;
-  onCanPlay?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onCanPlayCapture?: DOMHandler<P, V, E, React.SyntheticEvent>;
+  onBlur?: DOMHandler<O, T, Q, S, React.FocusEvent>;
+  onBlurCapture?: DOMHandler<O, T, Q, S, React.FocusEvent>;
+  onCanPlay?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onCanPlayCapture?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
 
-  onCanPlayThrough?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onCanPlayThroughCapture?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onClick?: DOMHandler<P, V, E, React.MouseEvent>;
-  onClickCapture?: DOMHandler<P, V, E, React.MouseEvent>;
+  onCanPlayThrough?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onCanPlayThroughCapture?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onClick?: DOMHandler<O, T, Q, S, React.MouseEvent>;
+  onClickCapture?: DOMHandler<O, T, Q, S, React.MouseEvent>;
   // Composition Events
-  onCompositionEnd?: DOMHandler<P, V, E, React.CompositionEvent>;
-  onCompositionEndCapture?: DOMHandler<P, V, E, React.CompositionEvent>;
-  onCompositionStart?: DOMHandler<P, V, E, React.CompositionEvent>;
-  onCompositionStartCapture?: DOMHandler<P, V, E, React.CompositionEvent>;
-  onCompositionUpdate?: DOMHandler<P, V, E, React.CompositionEvent>;
-  onCompositionUpdateCapture?: DOMHandler<P, V, E, React.CompositionEvent>;
-  onContextMenu?: DOMHandler<P, V, E, React.MouseEvent>;
+  onCompositionEnd?: DOMHandler<O, T, Q, S, React.CompositionEvent>;
+  onCompositionEndCapture?: DOMHandler<O, T, Q, S, React.CompositionEvent>;
+  onCompositionStart?: DOMHandler<O, T, Q, S, React.CompositionEvent>;
+  onCompositionStartCapture?: DOMHandler<O, T, Q, S, React.CompositionEvent>;
+  onCompositionUpdate?: DOMHandler<O, T, Q, S, React.CompositionEvent>;
+  onCompositionUpdateCapture?: DOMHandler<O, T, Q, S, React.CompositionEvent>;
+  onContextMenu?: DOMHandler<O, T, Q, S, React.MouseEvent>;
 
-  onContextMenuCapture?: DOMHandler<P, V, E, React.MouseEvent>;
+  onContextMenuCapture?: DOMHandler<O, T, Q, S, React.MouseEvent>;
   // Clipboard Events
-  onCopy?: DOMHandler<P, V, E, React.ClipboardEvent>;
+  onCopy?: DOMHandler<O, T, Q, S, React.ClipboardEvent>;
 
-  onCopyCapture?: DOMHandler<P, V, E, React.ClipboardEvent>;
-  onCut?: DOMHandler<P, V, E, React.ClipboardEvent>;
-  onCutCapture?: DOMHandler<P, V, E, React.ClipboardEvent>;
+  onCopyCapture?: DOMHandler<O, T, Q, S, React.ClipboardEvent>;
+  onCut?: DOMHandler<O, T, Q, S, React.ClipboardEvent>;
+  onCutCapture?: DOMHandler<O, T, Q, S, React.ClipboardEvent>;
   // Form Events
-  onDOMBeforeInput?: DOMHandler<P, V, E, Event>;
-  onDoubleClick?: DOMHandler<P, V, E, React.MouseEvent>;
-  onDoubleClickCapture?: DOMHandler<P, V, E, React.MouseEvent>;
+  onDOMBeforeInput?: DOMHandler<O, T, Q, S, Event>;
+  onDoubleClick?: DOMHandler<O, T, Q, S, React.MouseEvent>;
+  onDoubleClickCapture?: DOMHandler<O, T, Q, S, React.MouseEvent>;
 
-  onDrag?: DOMHandler<P, V, E, React.DragEvent>;
-  onDragCapture?: DOMHandler<P, V, E, React.DragEvent>;
-  onDragEnd?: DOMHandler<P, V, E, React.DragEvent>;
-  onDragEndCapture?: DOMHandler<P, V, E, React.DragEvent>;
-  onDragEnter?: DOMHandler<P, V, E, React.DragEvent>;
-  onDragEnterCapture?: DOMHandler<P, V, E, React.DragEvent>;
-  onDragExit?: DOMHandler<P, V, E, React.DragEvent>;
-  onDragExitCapture?: DOMHandler<P, V, E, React.DragEvent>;
-  onDragLeave?: DOMHandler<P, V, E, React.DragEvent>;
-  onDragLeaveCapture?: DOMHandler<P, V, E, React.DragEvent>;
-  onDragOver?: DOMHandler<P, V, E, React.DragEvent>;
-  onDragOverCapture?: DOMHandler<P, V, E, React.DragEvent>;
-  onDragStart?: DOMHandler<P, V, E, React.DragEvent>;
-  onDragStartCapture?: DOMHandler<P, V, E, React.DragEvent>;
-  onDrop?: DOMHandler<P, V, E, React.DragEvent>;
-  onDropCapture?: DOMHandler<P, V, E, React.DragEvent>;
-  onDurationChange?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onDurationChangeCapture?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onEmptied?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onEmptiedCapture?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onEncrypted?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onEncryptedCapture?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onEnded?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onEndedCapture?: DOMHandler<P, V, E, React.SyntheticEvent>;
+  onDrag?: DOMHandler<O, T, Q, S, React.DragEvent>;
+  onDragCapture?: DOMHandler<O, T, Q, S, React.DragEvent>;
+  onDragEnd?: DOMHandler<O, T, Q, S, React.DragEvent>;
+  onDragEndCapture?: DOMHandler<O, T, Q, S, React.DragEvent>;
+  onDragEnter?: DOMHandler<O, T, Q, S, React.DragEvent>;
+  onDragEnterCapture?: DOMHandler<O, T, Q, S, React.DragEvent>;
+  onDragExit?: DOMHandler<O, T, Q, S, React.DragEvent>;
+  onDragExitCapture?: DOMHandler<O, T, Q, S, React.DragEvent>;
+  onDragLeave?: DOMHandler<O, T, Q, S, React.DragEvent>;
+  onDragLeaveCapture?: DOMHandler<O, T, Q, S, React.DragEvent>;
+  onDragOver?: DOMHandler<O, T, Q, S, React.DragEvent>;
+  onDragOverCapture?: DOMHandler<O, T, Q, S, React.DragEvent>;
+  onDragStart?: DOMHandler<O, T, Q, S, React.DragEvent>;
+  onDragStartCapture?: DOMHandler<O, T, Q, S, React.DragEvent>;
+  onDrop?: DOMHandler<O, T, Q, S, React.DragEvent>;
+  onDropCapture?: DOMHandler<O, T, Q, S, React.DragEvent>;
+  onDurationChange?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onDurationChangeCapture?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onEmptied?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onEmptiedCapture?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onEncrypted?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onEncryptedCapture?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onEnded?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onEndedCapture?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
   // Focus Events
-  onFocus?: DOMHandler<P, V, E, React.FocusEvent>;
-  onFocusCapture?: DOMHandler<P, V, E, React.FocusEvent>;
-  onGotPointerCapture?: DOMHandler<P, V, E, React.PointerEvent>;
-  onGotPointerCaptureCapture?: DOMHandler<P, V, E, React.PointerEvent>;
-  onInput?: DOMHandler<P, V, E, React.FormEvent>;
-  onInputCapture?: DOMHandler<P, V, E, React.FormEvent>;
-  onInvalid?: DOMHandler<P, V, E, React.FormEvent>;
-  onInvalidCapture?: DOMHandler<P, V, E, React.FormEvent>;
+  onFocus?: DOMHandler<O, T, Q, S, React.FocusEvent>;
+  onFocusCapture?: DOMHandler<O, T, Q, S, React.FocusEvent>;
+  onGotPointerCapture?: DOMHandler<O, T, Q, S, React.PointerEvent>;
+  onGotPointerCaptureCapture?: DOMHandler<O, T, Q, S, React.PointerEvent>;
+  onInput?: DOMHandler<O, T, Q, S, React.FormEvent>;
+  onInputCapture?: DOMHandler<O, T, Q, S, React.FormEvent>;
+  onInvalid?: DOMHandler<O, T, Q, S, React.FormEvent>;
+  onInvalidCapture?: DOMHandler<O, T, Q, S, React.FormEvent>;
   // Keyboard Events
-  onKeyDown?: DOMHandler<P, V, E, React.KeyboardEvent>;
-  onKeyDownCapture?: DOMHandler<P, V, E, React.KeyboardEvent>;
-  onKeyPress?: DOMHandler<P, V, E, React.KeyboardEvent>;
-  onKeyPressCapture?: DOMHandler<P, V, E, React.KeyboardEvent>;
-  onKeyUp?: DOMHandler<P, V, E, React.KeyboardEvent>;
-  onKeyUpCapture?: DOMHandler<P, V, E, React.KeyboardEvent>;
+  onKeyDown?: DOMHandler<O, T, Q, S, React.KeyboardEvent>;
+  onKeyDownCapture?: DOMHandler<O, T, Q, S, React.KeyboardEvent>;
+  onKeyPress?: DOMHandler<O, T, Q, S, React.KeyboardEvent>;
+  onKeyPressCapture?: DOMHandler<O, T, Q, S, React.KeyboardEvent>;
+  onKeyUp?: DOMHandler<O, T, Q, S, React.KeyboardEvent>;
+  onKeyUpCapture?: DOMHandler<O, T, Q, S, React.KeyboardEvent>;
   // Image Events
-  onLoad?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onLoadCapture?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onLoadStart?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onLoadStartCapture?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onLoadedData?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onLoadedDataCapture?: DOMHandler<P, V, E, React.SyntheticEvent>;
+  onLoad?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onLoadCapture?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onLoadStart?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onLoadStartCapture?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onLoadedData?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onLoadedDataCapture?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
 
-  onLoadedMetadata?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onLoadedMetadataCapture?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onLostPointerCapture?: DOMHandler<P, V, E, React.PointerEvent>;
-  onLostPointerCaptureCapture?: DOMHandler<P, V, E, React.PointerEvent>;
-  onMouseDown?: DOMHandler<P, V, E, React.MouseEvent>;
-  onMouseDownCapture?: DOMHandler<P, V, E, React.MouseEvent>;
-  onMouseEnter?: DOMHandler<P, V, E, React.MouseEvent>;
-  onMouseLeave?: DOMHandler<P, V, E, React.MouseEvent>;
-  onMouseMove?: DOMHandler<P, V, E, React.MouseEvent>;
-  onMouseMoveCapture?: DOMHandler<P, V, E, React.MouseEvent>;
-  onMouseOut?: DOMHandler<P, V, E, React.MouseEvent>;
-  onMouseOutCapture?: DOMHandler<P, V, E, React.MouseEvent>;
-  onMouseOver?: DOMHandler<P, V, E, React.MouseEvent>;
-  onMouseOverCapture?: DOMHandler<P, V, E, React.MouseEvent>;
-  onMouseUp?: DOMHandler<P, V, E, React.MouseEvent>;
-  onMouseUpCapture?: DOMHandler<P, V, E, React.MouseEvent>;
-  onPaste?: DOMHandler<P, V, E, React.ClipboardEvent>;
-  onPasteCapture?: DOMHandler<P, V, E, React.ClipboardEvent>;
-  onPause?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onPauseCapture?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onPlay?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onPlayCapture?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onPlaying?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onPlayingCapture?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onPointerCancel?: DOMHandler<P, V, E, React.PointerEvent>;
-  onPointerCancelCapture?: DOMHandler<P, V, E, React.PointerEvent>;
+  onLoadedMetadata?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onLoadedMetadataCapture?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onLostPointerCapture?: DOMHandler<O, T, Q, S, React.PointerEvent>;
+  onLostPointerCaptureCapture?: DOMHandler<O, T, Q, S, React.PointerEvent>;
+  onMouseDown?: DOMHandler<O, T, Q, S, React.MouseEvent>;
+  onMouseDownCapture?: DOMHandler<O, T, Q, S, React.MouseEvent>;
+  onMouseEnter?: DOMHandler<O, T, Q, S, React.MouseEvent>;
+  onMouseLeave?: DOMHandler<O, T, Q, S, React.MouseEvent>;
+  onMouseMove?: DOMHandler<O, T, Q, S, React.MouseEvent>;
+  onMouseMoveCapture?: DOMHandler<O, T, Q, S, React.MouseEvent>;
+  onMouseOut?: DOMHandler<O, T, Q, S, React.MouseEvent>;
+  onMouseOutCapture?: DOMHandler<O, T, Q, S, React.MouseEvent>;
+  onMouseOver?: DOMHandler<O, T, Q, S, React.MouseEvent>;
+  onMouseOverCapture?: DOMHandler<O, T, Q, S, React.MouseEvent>;
+  onMouseUp?: DOMHandler<O, T, Q, S, React.MouseEvent>;
+  onMouseUpCapture?: DOMHandler<O, T, Q, S, React.MouseEvent>;
+  onPaste?: DOMHandler<O, T, Q, S, React.ClipboardEvent>;
+  onPasteCapture?: DOMHandler<O, T, Q, S, React.ClipboardEvent>;
+  onPause?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onPauseCapture?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onPlay?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onPlayCapture?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onPlaying?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onPlayingCapture?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onPointerCancel?: DOMHandler<O, T, Q, S, React.PointerEvent>;
+  onPointerCancelCapture?: DOMHandler<O, T, Q, S, React.PointerEvent>;
   // Pointer Events
-  onPointerDown?: DOMHandler<P, V, E, React.PointerEvent>;
-  onPointerDownCapture?: DOMHandler<P, V, E, React.PointerEvent>;
-  onPointerEnter?: DOMHandler<P, V, E, React.PointerEvent>;
-  onPointerLeave?: DOMHandler<P, V, E, React.PointerEvent>;
-  onPointerMove?: DOMHandler<P, V, E, React.PointerEvent>;
-  onPointerMoveCapture?: DOMHandler<P, V, E, React.PointerEvent>;
-  onPointerOut?: DOMHandler<P, V, E, React.PointerEvent>;
-  onPointerOutCapture?: DOMHandler<P, V, E, React.PointerEvent>;
-  onPointerOver?: DOMHandler<P, V, E, React.PointerEvent>;
-  onPointerOverCapture?: DOMHandler<P, V, E, React.PointerEvent>;
+  onPointerDown?: DOMHandler<O, T, Q, S, React.PointerEvent>;
+  onPointerDownCapture?: DOMHandler<O, T, Q, S, React.PointerEvent>;
+  onPointerEnter?: DOMHandler<O, T, Q, S, React.PointerEvent>;
+  onPointerLeave?: DOMHandler<O, T, Q, S, React.PointerEvent>;
+  onPointerMove?: DOMHandler<O, T, Q, S, React.PointerEvent>;
+  onPointerMoveCapture?: DOMHandler<O, T, Q, S, React.PointerEvent>;
+  onPointerOut?: DOMHandler<O, T, Q, S, React.PointerEvent>;
+  onPointerOutCapture?: DOMHandler<O, T, Q, S, React.PointerEvent>;
+  onPointerOver?: DOMHandler<O, T, Q, S, React.PointerEvent>;
+  onPointerOverCapture?: DOMHandler<O, T, Q, S, React.PointerEvent>;
 
-  onPointerUp?: DOMHandler<P, V, E, React.PointerEvent>;
-  onPointerUpCapture?: DOMHandler<P, V, E, React.PointerEvent>;
+  onPointerUp?: DOMHandler<O, T, Q, S, React.PointerEvent>;
+  onPointerUpCapture?: DOMHandler<O, T, Q, S, React.PointerEvent>;
 
-  onProgress?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onProgressCapture?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onRateChange?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onRateChangeCapture?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onReset?: DOMHandler<P, V, E, React.FormEvent>;
-  onResetCapture?: DOMHandler<P, V, E, React.FormEvent>;
+  onProgress?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onProgressCapture?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onRateChange?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onRateChangeCapture?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onReset?: DOMHandler<O, T, Q, S, React.FormEvent>;
+  onResetCapture?: DOMHandler<O, T, Q, S, React.FormEvent>;
   // UI Events
-  onScroll?: DOMHandler<P, V, E, React.UIEvent>;
-  onScrollCapture?: DOMHandler<P, V, E, React.UIEvent>;
+  onScroll?: DOMHandler<O, T, Q, S, React.UIEvent>;
+  onScrollCapture?: DOMHandler<O, T, Q, S, React.UIEvent>;
 
-  onSeeked?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onSeekedCapture?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onSeeking?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onSeekingCapture?: DOMHandler<P, V, E, React.SyntheticEvent>;
+  onSeeked?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onSeekedCapture?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onSeeking?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onSeekingCapture?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
   // Selection Events
-  onSelect?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onSelectCapture?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onStalled?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onStalledCapture?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onSubmit?: DOMHandler<P, V, E, React.FormEvent>;
-  onSubmitCapture?: DOMHandler<P, V, E, React.FormEvent>;
-  onSuspend?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onSuspendCapture?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onTimeUpdate?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onTimeUpdateCapture?: DOMHandler<P, V, E, React.SyntheticEvent>;
+  onSelect?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onSelectCapture?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onStalled?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onStalledCapture?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onSubmit?: DOMHandler<O, T, Q, S, React.FormEvent>;
+  onSubmitCapture?: DOMHandler<O, T, Q, S, React.FormEvent>;
+  onSuspend?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onSuspendCapture?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onTimeUpdate?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onTimeUpdateCapture?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
   // Touch Events
-  onTouchCancel?: DOMHandler<P, V, E, React.TouchEvent>;
-  onTouchCancelCapture?: DOMHandler<P, V, E, React.TouchEvent>;
-  onTouchEnd?: DOMHandler<P, V, E, React.TouchEvent>;
-  onTouchEndCapture?: DOMHandler<P, V, E, React.TouchEvent>;
+  onTouchCancel?: DOMHandler<O, T, Q, S, React.TouchEvent>;
+  onTouchCancelCapture?: DOMHandler<O, T, Q, S, React.TouchEvent>;
+  onTouchEnd?: DOMHandler<O, T, Q, S, React.TouchEvent>;
+  onTouchEndCapture?: DOMHandler<O, T, Q, S, React.TouchEvent>;
 
-  onTouchMove?: DOMHandler<P, V, E, React.TouchEvent>;
-  onTouchMoveCapture?: DOMHandler<P, V, E, React.TouchEvent>;
+  onTouchMove?: DOMHandler<O, T, Q, S, React.TouchEvent>;
+  onTouchMoveCapture?: DOMHandler<O, T, Q, S, React.TouchEvent>;
 
-  onTouchStart?: DOMHandler<P, V, E, React.TouchEvent>;
-  onTouchStartCapture?: DOMHandler<P, V, E, React.TouchEvent>;
+  onTouchStart?: DOMHandler<O, T, Q, S, React.TouchEvent>;
+  onTouchStartCapture?: DOMHandler<O, T, Q, S, React.TouchEvent>;
 
   // Transition Events
-  onTransitionEnd?: DOMHandler<P, V, E, React.TransitionEvent>;
-  onTransitionEndCapture?: DOMHandler<P, V, E, React.TransitionEvent>;
-  onVolumeChange?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onVolumeChangeCapture?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onWaiting?: DOMHandler<P, V, E, React.SyntheticEvent>;
-  onWaitingCapture?: DOMHandler<P, V, E, React.SyntheticEvent>;
+  onTransitionEnd?: DOMHandler<O, T, Q, S, React.TransitionEvent>;
+  onTransitionEndCapture?: DOMHandler<O, T, Q, S, React.TransitionEvent>;
+  onVolumeChange?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onVolumeChangeCapture?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onWaiting?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
+  onWaitingCapture?: DOMHandler<O, T, Q, S, React.SyntheticEvent>;
 
   // Wheel Events
-  onWheel?: DOMHandler<P, V, E, React.WheelEvent>;
-  onWheelCapture?: DOMHandler<P, V, E, React.WheelEvent>;
+  onWheel?: DOMHandler<O, T, Q, S, React.WheelEvent>;
+  onWheelCapture?: DOMHandler<O, T, Q, S, React.WheelEvent>;
 }

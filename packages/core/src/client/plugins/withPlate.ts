@@ -4,7 +4,7 @@ import type { PlateEditor } from '../../shared/types/PlateEditor';
 import type { PlateProps } from '../components';
 
 import { resetEditor } from '../../shared/transforms';
-import { setPlatePlugins } from '../utils/setPlatePlugins';
+import { setEditorPlugins } from '../utils/setEditorPlugins';
 
 const shouldHaveBeenOverridden = (fnName: string) => () => {
   console.warn(
@@ -65,10 +65,10 @@ export const withPlate = <
     editor.key = Math.random();
   }
 
-  setPlatePlugins<V>(editor, {
+  setEditorPlugins(editor, {
     disableCorePlugins,
     maxLength,
-    plugins: plugins as any,
+    plugins,
   });
 
   // withOverrides

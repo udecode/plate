@@ -1,4 +1,4 @@
-import type { EDescendant, TDescendant, Value } from '@udecode/slate';
+import type { TDescendant } from '@udecode/slate';
 
 import { jsx } from 'slate-hyperscript';
 
@@ -8,8 +8,8 @@ import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
 import { pipeDeserializeHtmlElement } from './pipeDeserializeHtmlElement';
 
 /** Deserialize HTML to Element. */
-export const htmlElementToElement = <V extends Value>(
-  editor: PlateEditor<V>,
+export const htmlElementToElement = (
+  editor: PlateEditor,
   element: HTMLElement
 ) => {
   const deserialized = pipeDeserializeHtmlElement(editor, element);
@@ -25,6 +25,6 @@ export const htmlElementToElement = <V extends Value>(
       descendants = [{ text: '' }];
     }
 
-    return jsx('element', node, descendants) as EDescendant<V>;
+    return jsx('element', node, descendants) as TDescendant;
   }
 };

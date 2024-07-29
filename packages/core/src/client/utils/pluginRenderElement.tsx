@@ -1,7 +1,5 @@
 import React from 'react';
 
-import type { Value } from '@udecode/slate';
-
 import { DefaultElement } from 'slate-react';
 
 import type { PlateEditor } from '../../shared/types/PlateEditor';
@@ -16,9 +14,9 @@ import { ElementProvider } from '../stores/element/useElementStore';
  * equals to the slate element type, render `options.component`. Else, return
  * `undefined` so the pipeline can check the next plugin.
  */
-export const pluginRenderElement = <V extends Value>(
-  editor: PlateEditor<V>,
-  { component: _component, key, props, type }: PlatePlugin<{}, V>
+export const pluginRenderElement = (
+  editor: PlateEditor,
+  { component: _component, key, props, type }: PlatePlugin
 ): RenderElement =>
   function render(nodeProps) {
     const { children: _children, element } = nodeProps;

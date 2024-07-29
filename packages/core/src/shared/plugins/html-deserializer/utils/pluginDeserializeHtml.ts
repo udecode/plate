@@ -1,19 +1,17 @@
-import type { Value } from '@udecode/slate';
-
 import { type AnyObject, isDefined } from '@udecode/utils';
 import castArray from 'lodash/castArray.js';
 
 import type { Nullable } from '../../../types';
 import type { PlateEditor } from '../../../types/PlateEditor';
 import type { DeserializeHtml } from '../../../types/plugin/DeserializeHtml';
-import type { WithPlatePlugin } from '../../../types/plugin/PlatePlugin';
+import type { PlatePlugin } from '../../../types/plugin/PlatePlugin';
 
 import { getInjectedPlugins } from '../../../utils/getInjectedPlugins';
 
 /** Get a deserializer by type, node names, class names and styles. */
-export const pluginDeserializeHtml = <V extends Value>(
-  editor: PlateEditor<V>,
-  plugin: WithPlatePlugin<{}, V>,
+export const pluginDeserializeHtml = (
+  editor: PlateEditor,
+  plugin: PlatePlugin,
   {
     deserializeLeaf,
     element: el,
@@ -126,7 +124,7 @@ export const pluginDeserializeHtml = <V extends Value>(
 
   if (Object.keys(node).length === 0) return;
 
-  const injectedPlugins = getInjectedPlugins<{}, V>(editor, plugin);
+  const injectedPlugins = getInjectedPlugins(editor, plugin);
 
   injectedPlugins.forEach((injectedPlugin) => {
     const res = injectedPlugin.deserializeHtml?.getNode?.(el, node);

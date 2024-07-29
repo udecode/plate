@@ -1,4 +1,4 @@
-import type { EDescendant, Value } from '@udecode/slate';
+import type { TDescendant } from '@udecode/slate';
 
 import { jsx } from 'slate-hyperscript';
 
@@ -9,15 +9,15 @@ import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
 jsx;
 
 /** Deserialize HTML body element to Fragment. */
-export const htmlBodyToFragment = <V extends Value>(
-  editor: PlateEditor<V>,
+export const htmlBodyToFragment = (
+  editor: PlateEditor,
   element: HTMLElement
-): EDescendant<V>[] | undefined => {
+): TDescendant[] | undefined => {
   if (element.nodeName === 'BODY') {
     return jsx(
       'fragment',
       {},
       deserializeHtmlNodeChildren(editor, element)
-    ) as EDescendant<V>[];
+    ) as TDescendant[];
   }
 };

@@ -1,15 +1,11 @@
 import type { TDescendant } from '@udecode/slate';
 
-export type DeserializeHtmlChildren<N extends TDescendant> =
-  | ChildNode
-  | N
-  | null
-  | string;
+export type DeserializeHtmlChildren = ChildNode | TDescendant | null | string;
 
 /** De */
-export type DeserializeHtmlNodeReturnType<N extends TDescendant> =
-  | DeserializeHtmlChildren<N>[]
-  | N
-  | N[]
+export type DeserializeHtmlNodeReturnType =
+  | DeserializeHtmlChildren[]
+  | TDescendant
+  | TDescendant[]
   | null
   | string;

@@ -48,7 +48,7 @@ export const withPlate = <
     editor.key = Math.random();
   }
 
-  setPlatePlugins<V>(editor, {
+  setPlatePlugins(editor as any, {
     disableCorePlugins,
     maxLength,
     plugins: plugins as any,
@@ -57,7 +57,7 @@ export const withPlate = <
   // withOverrides
   editor.plugins.forEach((plugin) => {
     if (plugin.withOverrides) {
-      editor = plugin.withOverrides(editor, plugin) as any;
+      editor = plugin.withOverrides(editor as any, plugin) as any;
     }
   });
 

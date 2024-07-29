@@ -1,12 +1,11 @@
-import type { Value } from '@udecode/slate';
 import type { AnyObject } from '@udecode/utils';
 
 import type { PlateRenderElementProps } from '../PlateRenderElementProps';
 import type { PlateRenderLeafProps } from '../PlateRenderLeafProps';
 
 /** Props object or function returning props object. */
-export type PlatePluginProps<V extends Value = Value> =
+export type PlatePluginProps =
   | ((
-      props: PlateRenderElementProps<V> & PlateRenderLeafProps<V>
+      props: PlateRenderElementProps & PlateRenderLeafProps
     ) => AnyObject | undefined)
   | AnyObject;

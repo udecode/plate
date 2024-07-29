@@ -1,19 +1,15 @@
-import type { EElementOrText, Value } from '@udecode/slate';
+import type { TDescendant } from '@udecode/slate';
 
-import type { PlateEditor } from '../types/PlateEditor';
 import type { PlatePluginInsertDataOptions } from '../types/plugin/PlatePluginInsertData';
 import type { InjectedPlugin } from './getInjectedPlugins';
 
 /** Pipe editor.insertData.transformFragment */
-export const pipeTransformFragment = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  plugins: InjectedPlugin<{}, V, E>[],
+export const pipeTransformFragment = (
+  plugins: InjectedPlugin[],
   {
     fragment,
     ...options
-  }: { fragment: EElementOrText<V>[] } & PlatePluginInsertDataOptions
+  }: { fragment: TDescendant[] } & PlatePluginInsertDataOptions
 ) => {
   plugins.forEach((p) => {
     const transformFragment = p.editor?.insertData?.transformFragment;

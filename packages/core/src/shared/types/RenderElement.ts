@@ -1,5 +1,3 @@
-import type { Value } from '@udecode/slate';
-
 import type { PlateRenderElementProps } from './PlateRenderElementProps';
 
 /**
@@ -7,6 +5,6 @@ import type { PlateRenderElementProps } from './PlateRenderElementProps';
  * the next RenderElement function is called. If the function renders a JSX
  * element then that JSX element is rendered.
  */
-export type RenderElement = <V extends Value>(
-  props: PlateRenderElementProps<V>
+export type RenderElement = (
+  props: PlateRenderElementProps
 ) => React.ReactElement | undefined;

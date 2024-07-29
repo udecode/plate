@@ -1,47 +1,43 @@
-import type { Value } from '@udecode/slate';
-
 import defaultsDeep from 'lodash/defaultsDeep.js';
 import keyBy from 'lodash/keyBy.js';
 import merge from 'lodash/merge.js';
 import values from 'lodash/values.js';
 
 import type { PlateEditor } from '../types/PlateEditor';
-import type { WithPlatePlugin } from '../types/plugin/PlatePlugin';
+import type { PlatePlugin } from '../types/plugin/PlatePlugin';
+
+import { callOrReturn } from './misc/callOrReturn';
 
 /** Recursively merge nested plugins into the root plugins */
-export const mergeDeepPlugins = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
-  P extends WithPlatePlugin<{}, V, E> = WithPlatePlugin<{}, V, E>,
->(
-  editor: E,
+export const mergeDeepPlugins = <P extends PlatePlugin = PlatePlugin>(
+  editor: PlateEditor,
   _plugin: P
 ): P => {
-  const plugin = { ..._plugin };
+  const plugin = { ..._plugin } as any;
 
-  const { then } = plugin;
+  const { __extend } = plugin;
 
-  if (then) {
-    delete plugin.then;
+  if (__extend) {
+    delete plugin.__extend;
 
     const { plugins: pluginPlugins } = plugin;
 
-    const pluginThen = mergeDeepPlugins<V, E, P>(
+    const extendedPlugin = mergeDeepPlugins(
       editor,
-      defaultsDeep(then(editor, plugin), plugin)
+      defaultsDeep(callOrReturn(__extend, editor, plugin), plugin)
     );
 
     // merge plugins by key
-    if (pluginPlugins && pluginThen.plugins) {
+    if (pluginPlugins && extendedPlugin.plugins) {
       const merged = merge(
         keyBy(pluginPlugins, 'key'),
-        keyBy(pluginThen.plugins, 'key')
+        keyBy(extendedPlugin.plugins, 'key')
       );
 
-      pluginThen.plugins = values(merged);
+      extendedPlugin.plugins = values(merged);
     }
 
-    return pluginThen;
+    return extendedPlugin;
   }
 
   return plugin;

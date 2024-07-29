@@ -5,11 +5,7 @@ import type { TSelection, Value } from '@udecode/slate';
 import type { PlateId } from '../../client';
 import type { PlateEditor } from './PlateEditor';
 import type { Nullable } from './misc/Nullable';
-import type {
-  PlatePlugin,
-  PluginOptions,
-  WithPlatePlugin,
-} from './plugin/PlatePlugin';
+import type { PlatePlugin, PlatePlugin } from './plugin/PlatePlugin';
 import type { TEditableProps } from './slate-react/TEditableProps';
 
 export type PlateChangeKey =
@@ -37,10 +33,10 @@ export type PlateStoreState<
   id: PlateId;
 
   /** Flattened plugins. */
-  plugins: WithPlatePlugin<PluginOptions, V, E>[];
+  plugins: PlatePlugin[];
 
   /** Plugins prop passed to `Plate`. */
-  rawPlugins: PlatePlugin<PluginOptions, V, E>[];
+  rawPlugins: PlatePlugin[];
 
   /**
    * Value of the editor.

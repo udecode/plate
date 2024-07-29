@@ -1,11 +1,8 @@
-import type { EElement, TElement, Value } from '@udecode/slate';
+import type { TElement } from '@udecode/slate';
 import type { RenderElementProps } from 'slate-react';
 
-export type TRenderElementProps<
-  V extends Value = Value,
-  N extends TElement = EElement<V>,
-> = {
-  element: N;
+export type TRenderElementProps = {
+  element: TElement;
 } & Omit<RenderElementProps, 'element'>;
 
 export type RenderElementFn = (

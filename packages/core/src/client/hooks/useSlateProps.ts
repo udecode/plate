@@ -12,7 +12,7 @@ import {
 } from '../stores';
 
 /** Get Slate props stored in a global store. */
-export const useSlateProps = <V extends Value>({
+export const useSlateProps = ({
   id,
 }: {
   id?: PlateId;
@@ -25,7 +25,7 @@ export const useSlateProps = <V extends Value>({
   const onSelectionChangeProp = usePlateSelectors(id).onSelectionChange();
 
   const onChange = React.useCallback(
-    (newValue: V) => {
+    (newValue: Value) => {
       const eventIsHandled = pipeOnChange(editor)(newValue);
 
       if (!eventIsHandled) {

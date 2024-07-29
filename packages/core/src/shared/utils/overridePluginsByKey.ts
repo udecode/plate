@@ -1,29 +1,23 @@
-import type { Value } from '@udecode/slate';
-
 import defaultsDeep from 'lodash/defaultsDeep.js';
 
-import type { OverrideByKey } from '../types/OverrideByKey';
-import type { PlateEditor } from '../types/PlateEditor';
 import type { NoInfer } from '../types/misc/NoInfer';
-import type { PlatePlugin, PluginOptions } from '../types/plugin/PlatePlugin';
+import type { PlatePlugin } from '../types/plugin/PlatePlugin';
+
+import { callOrReturn } from './misc/callOrReturn';
 
 /**
  * Recursive deep merge of each plugin from `overrideByKey` into plugin with
  * same key (plugin > plugin.plugins).
  */
-export const overridePluginsByKey = <
-  P = PluginOptions,
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  plugin: PlatePlugin<NoInfer<P>, V, E>,
-  overrideByKey: OverrideByKey<V, E> = {},
+export const overridePluginsByKey = <O = {}, T = {}, Q = {}, S = {}>(
+  plugin: PlatePlugin<NoInfer<O>, NoInfer<T>, NoInfer<Q>, NoInfer<S>>,
+  overrideByKey: Record<string, Partial<PlatePlugin<any, any, any, any>>> = {},
   nested = false
-): PlatePlugin<NoInfer<P>, V, E> => {
+): PlatePlugin<NoInfer<O>, NoInfer<T>, NoInfer<Q>, NoInfer<S>> => {
   if (overrideByKey[plugin.key]) {
     const {
+      __extend: pluginOverridesExtend,
       plugins: pluginOverridesPlugins,
-      then: pluginOverridesThen,
       ...pluginOverrides
     } = overrideByKey[plugin.key];
 
@@ -44,34 +38,37 @@ export const overridePluginsByKey = <
   if (plugin.plugins) {
     // override plugin.plugins
     plugin.plugins = plugin.plugins.map((p) =>
-      overridePluginsByKey<{}, V, E>(p, overrideByKey, true)
+      overridePluginsByKey(p, overrideByKey, true)
     );
   }
 
-  const { then } = plugin;
+  const { __extend } = plugin;
 
-  if (then) {
-    if (plugin._thenReplaced === undefined) {
-      plugin._thenReplaced = 0;
+  if (__extend) {
+    if (plugin.__extendCount === undefined) {
+      plugin.__extendCount = 0;
     }
-    // Limit the number of times that `then` can be replaced.
+    // Limit the number of times that `__extend` can be replaced.
     // otherwise we will accidentally create a stack overflow.
     // There is probably a better solution for this.
-    if ((plugin._thenReplaced as number) < 3) {
-      // override plugin.then
-      plugin.then = (editor, p) => {
-        const pluginThen = { key: plugin.key, ...then(editor, p) };
+    if ((plugin.__extendCount as number) < 10) {
+      // override plugin.__extend
+      plugin.__extend = (editor, p) => {
+        const pluginExtend = {
+          key: plugin.key,
+          ...callOrReturn(__extend, editor, p),
+        };
 
         return defaultsDeep(
-          overridePluginsByKey(pluginThen as any, overrideByKey),
-          pluginThen
+          overridePluginsByKey(pluginExtend as any, overrideByKey),
+          pluginExtend
         );
       };
-      (plugin._thenReplaced as number)++;
+      (plugin.__extendCount as number)++;
     }
-  } else if (overrideByKey[plugin.key]?.then) {
-    // TODO: recursvie
-    plugin.then = overrideByKey[plugin.key].then as any;
+  } else if (overrideByKey[plugin.key]?.__extend) {
+    // TODO: recursive
+    plugin.__extend = overrideByKey[plugin.key].__extend as any;
   }
 
   return plugin;

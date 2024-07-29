@@ -1,17 +1,10 @@
-import type { Value } from '@udecode/slate';
-
 import type { PlateEditor } from '../shared/types';
 
 import { createPluginFactory } from '../shared/utils/createPluginFactory';
 
 const noop = (returnValue?: any) => (() => returnValue) as any;
 
-export const withReact = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E
-) => {
+export const withReact = (editor: PlateEditor) => {
   editor.hasEditableTarget = noop(false);
   editor.hasRange = noop(false);
   editor.hasSelectableTarget = noop(false);

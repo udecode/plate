@@ -1,39 +1,27 @@
-import type { Value } from '@udecode/slate';
-
 import type { PlateEditor } from '../types/PlateEditor';
-import type {
-  PlatePlugin,
-  PluginOptions,
-  WithPlatePlugin,
-} from '../types/plugin/PlatePlugin';
+import type { PlatePlugin, PlatePlugin } from '../types/plugin/PlatePlugin';
 
-export type InjectedPlugin<
-  P = PluginOptions,
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
-> = Partial<PlatePlugin<P, V, E>>;
+export type InjectedPlugin<O = {}, T = {}, Q = {}, S = {}> = Partial<
+  PlatePlugin<O, T, Q, S>
+>;
 
 /**
  * Get all plugins having a defined `inject.pluginsByKey[plugin.key]`. It
  * includes `plugin` itself.
  */
-export const getInjectedPlugins = <
-  P = PluginOptions,
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: PlateEditor<V>,
-  plugin: WithPlatePlugin<P, V, E>
-): InjectedPlugin<P, V, E>[] => {
-  const injectedPlugins: InjectedPlugin<P, V, E>[] = [];
+export const getInjectedPlugins = <O, T, Q, S>(
+  editor: PlateEditor,
+  plugin: PlatePlugin<O, T, Q, S>
+): InjectedPlugin<O, T, Q, S>[] => {
+  const injectedPlugins: InjectedPlugin<O, T, Q, S>[] = [];
 
   [...editor.plugins].reverse().forEach((p) => {
     const injectedPlugin = p.inject.pluginsByKey?.[
       plugin.key
-    ] as InjectedPlugin<P, V, E>;
+    ] as InjectedPlugin<O, T, Q, S>;
 
     if (injectedPlugin) injectedPlugins.push(injectedPlugin);
   });
 
-  return [plugin as InjectedPlugin<P, V, E>, ...injectedPlugins];
+  return [plugin as InjectedPlugin<O, T, Q, S>, ...injectedPlugins];
 };
