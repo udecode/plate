@@ -1,4 +1,4 @@
-import type { TEditor, Value } from '@udecode/plate-common/server';
+import type { PlateEditor } from '@udecode/plate-common/server';
 import type * as Y from 'yjs';
 
 import {
@@ -24,11 +24,10 @@ export type YHistoryEditorProps = Pick<
 > &
   YjsEditorProps;
 
-export const withTYHistory = <
-  V extends Value,
-  E extends TEditor<V> & YjsEditorProps,
-  EE extends E & YHistoryEditorProps = E & YHistoryEditorProps,
->(
-  editor: E,
+export const withTYHistory = (
+  editor: PlateEditor,
   options?: WithYHistoryOptions
-) => withYHistory(editor as any, options) as any as EE;
+) =>
+  withYHistory(editor as any, options) as PlateEditor &
+    YHistoryEditorProps &
+    YjsEditorProps;

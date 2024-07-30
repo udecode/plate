@@ -1,6 +1,6 @@
 import type { Emoji } from '@emoji-mart/data';
-import type { TriggerComboboxPlugin } from '@udecode/plate-combobox';
-import type { EElementOrText } from '@udecode/plate-common';
+import type { TriggerComboboxPluginOptions } from '@udecode/plate-combobox';
+import type { TDescendant } from '@udecode/plate-common';
 
 type ReverseMap<T> = T[keyof T];
 
@@ -22,9 +22,9 @@ export type EmojiSettingsType = {
   };
 };
 
-export interface EmojiPlugin<TEmoji extends Emoji = Emoji>
-  extends TriggerComboboxPlugin {
-  createEmojiNode?: (emoji: TEmoji) => EElementOrText<any>;
+export interface EmojiPluginOptions<TEmoji extends Emoji = Emoji>
+  extends TriggerComboboxPluginOptions {
+  createEmojiNode?: (emoji: TEmoji) => TDescendant;
 }
 
 export const EmojiCategory = {

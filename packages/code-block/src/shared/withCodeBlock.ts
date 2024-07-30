@@ -1,16 +1,11 @@
-import type { PlateEditor, Value } from '@udecode/plate-common/server';
+import type { WithOverride } from '@udecode/plate-common/server';
 
 import { insertFragmentCodeBlock } from './insertFragmentCodeBlock';
 import { normalizeCodeBlock } from './normalizers/normalizeCodeBlock';
 import { getCodeLineEntry, getIndentDepth } from './queries';
 import { indentCodeLine } from './transforms';
 
-export const withCodeBlock = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E
-) => {
+export const withCodeBlock: WithOverride = (editor) => {
   const { insertBreak } = editor;
 
   const insertBreakCodeBlock = () => {

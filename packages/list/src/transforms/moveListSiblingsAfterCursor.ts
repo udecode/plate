@@ -2,7 +2,6 @@ import {
   type PlateEditor,
   type TElement,
   type TElementEntry,
-  type Value,
   getNode,
   match,
   moveChildren,
@@ -11,8 +10,8 @@ import { Path } from 'slate';
 
 import { getListTypes } from '../queries/getListTypes';
 
-export const moveListSiblingsAfterCursor = <V extends Value>(
-  editor: PlateEditor<V>,
+export const moveListSiblingsAfterCursor = (
+  editor: PlateEditor,
   {
     at,
     to,

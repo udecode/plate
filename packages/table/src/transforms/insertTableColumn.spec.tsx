@@ -4,7 +4,7 @@
 import { type TEditor, createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createTablePlugin } from '../createTablePlugin';
+import { createTablePlugin } from '../TablePlugin';
 import { insertTableColumn } from './insertTableColumn';
 
 jsx;

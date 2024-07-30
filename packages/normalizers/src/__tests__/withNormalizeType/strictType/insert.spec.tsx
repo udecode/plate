@@ -4,7 +4,7 @@ import { createPlateEditor } from '@udecode/plate-common';
 import { ELEMENT_H2 } from '@udecode/plate-heading';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createNormalizeTypesPlugin } from '../../../createNormalizeTypesPlugin';
+import { createNormalizeTypesPlugin } from '../../../NormalizeTypesPlugin';
 
 jsx;
 

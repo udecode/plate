@@ -1,15 +1,14 @@
 import {
   type PlateEditor,
-  type Value,
   getAboveNode,
   getPluginType,
   removeNodes,
   someNode,
 } from '@udecode/plate-common/server';
 
-import { ELEMENT_TABLE } from '../createTablePlugin';
+import { ELEMENT_TABLE } from '../TablePlugin';
 
-export const deleteTable = <V extends Value>(editor: PlateEditor<V>) => {
+export const deleteTable = (editor: PlateEditor) => {
   if (
     someNode(editor, {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },

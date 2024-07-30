@@ -62,4 +62,4 @@ export type MyValue = MyRootBlock[];
 
 /** Editor types */
 
-export type MyEditor = { isDragging?: boolean } & PlateEditor<MyValue>;
+export type MyEditor = { isDragging?: boolean; req: {} } & PlateEditor<MyValue>;

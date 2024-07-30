@@ -1,22 +1,17 @@
+import type { KeyboardHandler } from '@udecode/plate-common';
+
 import {
-  type KeyboardHandlerReturnType,
-  type PlateEditor,
-  type Value,
-  type WithPlatePlugin,
   getBlockAbove,
   isHotkey,
   queryNode,
 } from '@udecode/plate-common/server';
 
-import type { ExitBreakPlugin } from './types';
+import type { ExitBreakPluginOptions } from './types';
 
 import { exitBreak } from './transforms/exitBreak';
 
-export const onKeyDownExitBreak =
-  <V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>(
-    editor: E,
-    { options: { rules = [] } }: WithPlatePlugin<ExitBreakPlugin, V, E>
-  ): KeyboardHandlerReturnType =>
+export const onKeyDownExitBreak: KeyboardHandler<ExitBreakPluginOptions> =
+  (editor, { options: { rules = [] } }) =>
   (event) => {
     if (event.defaultPrevented) return;
 

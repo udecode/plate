@@ -1,8 +1,7 @@
 import type { PlateEditor } from '@udecode/plate-core';
-import type { Value } from '@udecode/slate';
 
-export const addSelectedRow = <V extends Value>(
-  editor: PlateEditor<V>,
+export const addSelectedRow = (
+  editor: PlateEditor,
   id: string,
   options: { aboveHtmlNode?: HTMLDivElement; clear?: boolean } = {}
 ) => {

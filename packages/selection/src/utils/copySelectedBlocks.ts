@@ -1,6 +1,5 @@
 import {
   type PlateEditor,
-  type Value,
   deselect,
   getEndPoint,
   getStartPoint,
@@ -15,7 +14,7 @@ import {
 } from '../blockSelectionStore';
 import { getSelectedBlocks } from '../queries/getSelectedBlocks';
 
-export const copySelectedBlocks = <V extends Value>(editor: PlateEditor<V>) => {
+export const copySelectedBlocks = (editor: PlateEditor) => {
   const selectedIds = blockSelectionSelectors.selectedIds();
   const selectedEntries = getSelectedBlocks(editor);
   const selectedFragment = selectedEntries.map(([node]) => node);

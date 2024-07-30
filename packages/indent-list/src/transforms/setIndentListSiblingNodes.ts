@@ -14,7 +14,7 @@ import {
   KEY_LIST_CHECKED,
   KEY_LIST_STYLE_TYPE,
   KEY_TODO_STYLE_TYPE,
-} from '../createIndentListPlugin';
+} from '../IndentListPlugin';
 import { getIndentListSiblings } from '../queries/getIndentListSiblings';
 import { ListStyleType } from '../types';
 import { setIndentListNode, setIndentTodoNode } from './setIndentListNode';

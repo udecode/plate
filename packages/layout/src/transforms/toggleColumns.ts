@@ -7,7 +7,7 @@ import {
   replaceNode,
 } from '@udecode/plate-common';
 
-import { ELEMENT_COLUMN, ELEMENT_COLUMN_GROUP } from '../createColumnPlugin';
+import { ELEMENT_COLUMN, ELEMENT_COLUMN_GROUP } from '../ColumnPlugin';
 
 export const toggleColumns = <V extends Value>(
   editor: PlateEditor<V>,

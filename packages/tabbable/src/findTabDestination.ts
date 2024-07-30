@@ -1,6 +1,5 @@
 import {
   type PlateEditor,
-  type Value,
   getPoint,
   getPointAfter,
 } from '@udecode/plate-common/server';
@@ -14,8 +13,8 @@ export interface FindTabDestinationOptions {
   tabbableEntries: TabbableEntry[];
 }
 
-export const findTabDestination = <V extends Value = Value>(
-  editor: PlateEditor<V>,
+export const findTabDestination = (
+  editor: PlateEditor,
   { activeTabbableEntry, direction, tabbableEntries }: FindTabDestinationOptions
 ): TabDestination | null => {
   // Case 1: A tabbable entry was active before tab was pressed

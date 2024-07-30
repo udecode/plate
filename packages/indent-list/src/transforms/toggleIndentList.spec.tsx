@@ -5,7 +5,7 @@ import { createIndentPlugin } from '@udecode/plate-indent';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { indentListPluginPage } from '../__tests__/indentListPluginPage';
-import { createIndentListPlugin } from '../createIndentListPlugin';
+import { createIndentListPlugin } from '../IndentListPlugin';
 import { toggleIndentList } from './toggleIndentList';
 
 jsx;

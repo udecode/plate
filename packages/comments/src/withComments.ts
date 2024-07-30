@@ -1,22 +1,14 @@
-import {
-  type PlateEditor,
-  type Value,
-  type WithPlatePlugin,
-  unsetNodes,
-} from '@udecode/plate-common/server';
+import { type WithOverride, unsetNodes } from '@udecode/plate-common/server';
 
-import type { CommentsPlugin } from './types';
+import type { CommentsPluginOptions } from './types';
 
 import { MARK_COMMENT } from './constants';
 import { removeCommentMark } from './transforms/removeCommentMark';
 import { getCommentCount } from './utils/getCommentCount';
 
-export const withComments = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E,
-  _plugin: WithPlatePlugin<CommentsPlugin, V, E>
+export const withComments: WithOverride<CommentsPluginOptions> = (
+  editor,
+  _plugin
 ) => {
   const { insertBreak, normalizeNode } = editor;
 

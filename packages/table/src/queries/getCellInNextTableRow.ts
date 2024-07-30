@@ -2,13 +2,12 @@ import {
   type TEditor,
   type TElement,
   type TNodeEntry,
-  type Value,
   getNodeEntry,
 } from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
-export const getCellInNextTableRow = <V extends Value>(
-  editor: TEditor<V>,
+export const getCellInNextTableRow = (
+  editor: TEditor,
   currentRowPath: Path
 ): TNodeEntry | undefined => {
   const nextRow = getNodeEntry<TElement>(editor, Path.next(currentRowPath));

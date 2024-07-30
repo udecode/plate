@@ -9,7 +9,7 @@ import {
   unsetNodes,
 } from '@udecode/plate-common/server';
 
-import { KEY_LINE_HEIGHT } from '../createLineHeightPlugin';
+import { KEY_LINE_HEIGHT } from '../LineHeightPlugin';
 
 export const setLineHeight = <V extends Value>(
   editor: PlateEditor<V>,

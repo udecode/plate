@@ -3,15 +3,14 @@ import type { Path } from 'slate';
 import {
   type TEditor,
   type TNodeEntry,
-  type Value,
   getNodeEntry,
   getPreviousPath,
 } from '@udecode/plate-common/server';
 
 import { getCellInPreviousTableRow } from './getCellInPreviousTableRow';
 
-export const getPreviousTableCell = <V extends Value>(
-  editor: TEditor<V>,
+export const getPreviousTableCell = (
+  editor: TEditor,
   currentCell: TNodeEntry,
   currentPath: Path,
   currentRow: TNodeEntry

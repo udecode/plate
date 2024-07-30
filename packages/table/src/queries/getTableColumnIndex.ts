@@ -1,13 +1,9 @@
 import { type TReactEditor, findNodePath } from '@udecode/plate-common';
-import {
-  type TElement,
-  type Value,
-  getParentNode,
-} from '@udecode/plate-common/server';
+import { type TElement, getParentNode } from '@udecode/plate-common/server';
 
 /** Get table column index of a cell node. */
-export const getTableColumnIndex = <V extends Value>(
-  editor: TReactEditor<V>,
+export const getTableColumnIndex = (
+  editor: TReactEditor,
   cellNode: TElement
 ) => {
   const path = findNodePath(editor, cellNode);

@@ -9,16 +9,16 @@ import { createLinkPlugin } from '@udecode/plate-link';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
-import type { ListPlugin } from './types';
+import type { ListPluginOptions } from './types';
 
-import { ELEMENT_UL, createListPlugin } from './createListPlugin';
+import { ELEMENT_UL, createListPlugin } from './ListPlugin';
 
 jsx;
 
 const testInsertText = (
   input: any,
   expected: any,
-  listPluginOptions?: Partial<PlatePlugin<ListPlugin>>
+  listPluginOptions?: Partial<PlatePlugin<ListPluginOptions>>
 ) => {
   const editor = createPlateEditor({
     editor: input,

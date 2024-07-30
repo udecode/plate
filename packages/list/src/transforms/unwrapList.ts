@@ -3,7 +3,6 @@ import type { Path } from 'slate';
 import {
   ELEMENT_DEFAULT,
   type PlateEditor,
-  type Value,
   getAboveNode,
   getBlockAbove,
   getCommonNode,
@@ -14,18 +13,10 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common/server';
 
-import {
-  ELEMENT_LI,
-  ELEMENT_LIC,
-  ELEMENT_OL,
-  ELEMENT_UL,
-} from '../createListPlugin';
+import { ELEMENT_LI, ELEMENT_LIC, ELEMENT_OL, ELEMENT_UL } from '../ListPlugin';
 import { getListTypes } from '../queries/index';
 
-export const unwrapList = <V extends Value>(
-  editor: PlateEditor<V>,
-  { at }: { at?: Path } = {}
-) => {
+export const unwrapList = (editor: PlateEditor, { at }: { at?: Path } = {}) => {
   const ancestorListTypeCheck = () => {
     if (getAboveNode(editor, { match: { at, type: getListTypes(editor) } })) {
       return true;

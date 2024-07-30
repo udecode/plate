@@ -8,10 +8,10 @@ import type {
   TTableCellElement,
   TTableElement,
   TTableRowElement,
-  TablePlugin,
+  TablePluginOptions,
 } from '../../types';
 
-import { ELEMENT_TABLE, ELEMENT_TR } from '../../createTablePlugin';
+import { ELEMENT_TABLE, ELEMENT_TR } from '../../TablePlugin';
 import { computeCellIndices } from '../../merge/computeCellIndices';
 import { getCellIndices } from '../../merge/getCellIndices';
 import { getColSpan } from '../../queries/getColSpan';
@@ -59,7 +59,7 @@ export const useTableCellElementState = ({
   const rowElement = useElement<TTableRowElement>(ELEMENT_TR);
   const rowSizeOverrides = useTableStore().get.rowSizeOverrides();
 
-  const { _cellIndices, enableMerging } = getPluginOptions<TablePlugin>(
+  const { _cellIndices, enableMerging } = getPluginOptions<TablePluginOptions>(
     editor as any,
     ELEMENT_TABLE
   );

@@ -4,13 +4,12 @@ import {
   type TEditor,
   type TElement,
   type TNodeEntry,
-  type Value,
   getNodeEntry,
   getPreviousPath,
 } from '@udecode/plate-common/server';
 
-export const getCellInPreviousTableRow = <V extends Value>(
-  editor: TEditor<V>,
+export const getCellInPreviousTableRow = (
+  editor: TEditor,
   currentRowPath: Path
 ): TNodeEntry | undefined => {
   const prevPath = getPreviousPath(currentRowPath);

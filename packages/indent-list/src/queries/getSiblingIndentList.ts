@@ -10,7 +10,7 @@ import {
 } from '@udecode/plate-common/server';
 import { KEY_INDENT } from '@udecode/plate-indent';
 
-import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
+import { KEY_LIST_STYLE_TYPE } from '../IndentListPlugin';
 
 export interface GetSiblingIndentListOptions<
   N extends EElement<V>,

@@ -1,9 +1,5 @@
-import { Hotkeys } from '@udecode/plate-common';
+import { Hotkeys, type KeyboardHandler } from '@udecode/plate-common';
 import {
-  type KeyboardHandlerReturnType,
-  type PlateEditor,
-  type Value,
-  type WithPlatePlugin,
   getPluginType,
   isCollapsed,
   isHotkey,
@@ -14,19 +10,13 @@ import {
 import castArray from 'lodash/castArray.js';
 import { Range } from 'slate';
 
-import type { ListPlugin } from './types';
+import type { ListPluginOptions } from './types';
 
-import { ELEMENT_LI } from './createListPlugin';
+import { ELEMENT_LI } from './ListPlugin';
 import { moveListItems, toggleList } from './transforms/index';
 
-export const onKeyDownList =
-  <V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>(
-    editor: E,
-    {
-      options: { enableResetOnShiftTab, hotkey },
-      type,
-    }: WithPlatePlugin<ListPlugin, V, E>
-  ): KeyboardHandlerReturnType =>
+export const onKeyDownList: KeyboardHandler<ListPluginOptions> =
+  (editor, { options: { enableResetOnShiftTab, hotkey }, type }) =>
   (e) => {
     if (e.defaultPrevented) return;
 

@@ -1,22 +1,16 @@
-import type { Value } from '@udecode/slate';
+import type { KeyboardHandler } from '@udecode/plate-common';
 
 import {
   ELEMENT_DEFAULT,
-  type HotkeyPlugin,
-  type KeyboardHandlerReturnType,
-  type PlateEditor,
-  type WithPlatePlugin,
+  type HotkeyPluginOptions,
   getPluginType,
   isHotkey,
   toggleNodeType,
 } from '@udecode/plate-core/server';
 import castArray from 'lodash/castArray.js';
 
-export const onKeyDownToggleElement =
-  <V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>(
-    editor: E,
-    { options: { hotkey }, type }: WithPlatePlugin<HotkeyPlugin, V, E>
-  ): KeyboardHandlerReturnType =>
+export const onKeyDownToggleElement: KeyboardHandler<HotkeyPluginOptions> =
+  (editor, { options: { hotkey }, type }) =>
   (e) => {
     if (e.defaultPrevented) return;
 

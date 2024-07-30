@@ -1,12 +1,8 @@
-import {
-  type PlateEditor,
-  type Value,
-  someNode,
-} from '@udecode/plate-common/server';
+import { type PlateEditor, someNode } from '@udecode/plate-common/server';
 
 import { ELEMENT_TOGGLE } from '../types';
 
-export const someToggle = <V extends Value>(editor: PlateEditor<V>) => {
+export const someToggle = (editor: PlateEditor) => {
   return (
     !!editor.selection &&
     someNode(editor, {

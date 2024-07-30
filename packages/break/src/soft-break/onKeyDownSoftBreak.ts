@@ -1,20 +1,15 @@
+import type { KeyboardHandler } from '@udecode/plate-common';
+
 import {
-  type KeyboardHandlerReturnType,
-  type PlateEditor,
-  type Value,
-  type WithPlatePlugin,
   getBlockAbove,
   isHotkey,
   queryNode,
 } from '@udecode/plate-common/server';
 
-import type { SoftBreakPlugin } from './types';
+import type { SoftBreakPluginOptions } from './types';
 
-export const onKeyDownSoftBreak =
-  <V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>(
-    editor: E,
-    { options: { rules = [] } }: WithPlatePlugin<SoftBreakPlugin, V, E>
-  ): KeyboardHandlerReturnType =>
+export const onKeyDownSoftBreak: KeyboardHandler<SoftBreakPluginOptions> =
+  (editor, { options: { rules = [] } }) =>
   (event) => {
     if (event.defaultPrevented) return;
 

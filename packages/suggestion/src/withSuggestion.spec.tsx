@@ -8,7 +8,7 @@ import {
 import { jsx } from '@udecode/plate-test-utils';
 
 import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from './constants';
-import { createSuggestionPlugin } from './createSuggestionPlugin';
+import { createSuggestionPlugin } from './SuggestionPlugin';
 
 jsx;
 

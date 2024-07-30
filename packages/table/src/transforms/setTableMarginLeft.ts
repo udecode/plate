@@ -8,7 +8,7 @@ import {
 
 import type { TTableElement } from '../types';
 
-import { ELEMENT_TABLE } from '../createTablePlugin';
+import { ELEMENT_TABLE } from '../TablePlugin';
 
 export const setTableMarginLeft = <V extends Value>(
   editor: TEditor<V>,

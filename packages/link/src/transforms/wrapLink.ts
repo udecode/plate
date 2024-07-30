@@ -8,7 +8,7 @@ import {
 
 import type { TLinkElement } from '../types';
 
-import { ELEMENT_LINK } from '../createLinkPlugin';
+import { ELEMENT_LINK } from '../LinkPlugin';
 
 export interface WrapLinkOptions<V extends Value = Value>
   extends WrapNodesOptions<V> {

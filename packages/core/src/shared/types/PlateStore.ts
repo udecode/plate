@@ -5,7 +5,7 @@ import type { TSelection, Value } from '@udecode/slate';
 import type { PlateId } from '../../client';
 import type { PlateEditor } from './PlateEditor';
 import type { Nullable } from './misc/Nullable';
-import type { PlatePlugin, PlatePlugin } from './plugin/PlatePlugin';
+import type { PlatePlugin } from './plugin/PlatePlugin';
 import type { TEditableProps } from './slate-react/TEditableProps';
 
 export type PlateChangeKey =

@@ -1,9 +1,7 @@
 import type { Range } from 'slate';
 
 import {
-  type PlateEditor,
-  type Value,
-  type WithPlatePlugin,
+  type WithOverride,
   getAboveNode,
   getNodeString,
   getPluginTypes,
@@ -11,7 +9,7 @@ import {
   isHotkey,
 } from '@udecode/plate-common/server';
 
-import type { CaptionPlugin } from './createCaptionPlugin';
+import type { CaptionPluginOptions } from './CaptionPlugin';
 
 import { captionGlobalStore } from './captionGlobalStore';
 
@@ -26,12 +24,9 @@ import { captionGlobalStore } from './captionGlobalStore';
  * - If focus is in table, anchor in a block after: set focus to the point before
  *   start of table
  */
-export const withCaption = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E,
-  { options }: WithPlatePlugin<CaptionPlugin, V, E>
+export const withCaption: WithOverride<CaptionPluginOptions> = (
+  editor,
+  { options }
 ) => {
   const { apply } = editor;
 

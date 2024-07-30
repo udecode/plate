@@ -1,7 +1,5 @@
 import {
-  type PlateEditor,
-  type Value,
-  type WithPlatePlugin,
+  type WithOverride,
   getAboveNode,
   isBlockAboveEmpty,
   isSelectionExpanded,
@@ -9,15 +7,12 @@ import {
   removeNodes,
 } from '@udecode/plate-common/server';
 
-import type { DeletePlugin } from './createDeletePlugin';
+import type { DeletePlugin } from './DeletePlugin';
 
 /** Set a list of element types to select on backspace */
-export const withDelete = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E,
-  { options: { query } }: WithPlatePlugin<DeletePlugin, V, E>
+export const withDelete: WithOverride<DeletePlugin> = (
+  editor,
+  { options: { query } }
 ) => {
   const { deleteForward } = editor;
   editor.deleteForward = (unit) => {

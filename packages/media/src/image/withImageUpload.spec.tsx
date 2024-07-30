@@ -3,7 +3,7 @@
 import { createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createImagePlugin } from './createImagePlugin';
+import { createImagePlugin } from './ImagePlugin';
 
 jsx;
 

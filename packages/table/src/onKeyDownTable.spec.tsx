@@ -5,7 +5,7 @@ import type { PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { createPlateTestEditor } from '../../core/src/client/__tests__/createPlateTestEditor';
-import { createTablePlugin } from './createTablePlugin';
+import { createTablePlugin } from './TablePlugin';
 
 jsx;
 

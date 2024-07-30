@@ -1,12 +1,10 @@
 import {
-  type PlateEditor,
-  type Value,
-  type WithPlatePlugin,
+  type WithOverride,
   getInjectedPlugins,
   pipeInsertDataQuery,
 } from '@udecode/plate-common/server';
 
-import type { ImagePlugin } from './types';
+import type { ImagePluginOptions } from './types';
 
 import { insertImage } from './transforms/insertImage';
 
@@ -14,12 +12,9 @@ import { insertImage } from './transforms/insertImage';
  * Allows for pasting images from clipboard. Not yet: dragging and dropping
  * images, selecting them through a file system dialog.
  */
-export const withImageUpload = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E,
-  plugin: WithPlatePlugin<ImagePlugin, V, E>
+export const withImageUpload: WithOverride<ImagePluginOptions> = (
+  editor,
+  plugin
 ) => {
   const {
     options: { uploadImage },
@@ -31,10 +26,10 @@ export const withImageUpload = <
     const { files } = dataTransfer;
 
     if (!text && files && files.length > 0) {
-      const injectedPlugins = getInjectedPlugins<{}, V, E>(editor, plugin);
+      const injectedPlugins = getInjectedPlugins(editor, plugin);
 
       if (
-        !pipeInsertDataQuery<{}, V, E>(injectedPlugins, {
+        !pipeInsertDataQuery(injectedPlugins, {
           data: text,
           dataTransfer,
         })

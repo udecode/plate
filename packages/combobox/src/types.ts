@@ -1,6 +1,6 @@
 import type { PlateEditor, TElement } from '@udecode/plate-common/server';
 
-export interface TriggerComboboxPlugin {
+export interface TriggerComboboxPluginOptions {
   createComboboxInput?: (trigger: string) => TElement;
   trigger?: RegExp | string | string[];
   triggerPreviousCharPattern?: RegExp;

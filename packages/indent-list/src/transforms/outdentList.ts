@@ -4,10 +4,7 @@ import { setIndent } from '@udecode/plate-indent';
 
 import type { IndentListOptions } from './indentList';
 
-import {
-  KEY_LIST_CHECKED,
-  KEY_LIST_STYLE_TYPE,
-} from '../createIndentListPlugin';
+import { KEY_LIST_CHECKED, KEY_LIST_STYLE_TYPE } from '../IndentListPlugin';
 
 /** Decrease the indentation of the selected blocks. */
 export const outdentList = <V extends Value>(

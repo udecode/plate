@@ -1,12 +1,11 @@
 import {
   type PlateEditor,
-  type Value,
   getAboveNode,
   getPluginType,
 } from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
-import { ELEMENT_LI } from '../createListPlugin';
+import { ELEMENT_LI } from '../ListPlugin';
 import { getListTypes } from './getListTypes';
 
 /**
@@ -17,8 +16,8 @@ import { getListTypes } from './getListTypes';
  * - The list has less than 2 items.
  * - Its path is not equals to diffListPath.
  */
-export const getHighestEmptyList = <V extends Value>(
-  editor: PlateEditor<V>,
+export const getHighestEmptyList = (
+  editor: PlateEditor,
   {
     diffListPath,
     liPath,

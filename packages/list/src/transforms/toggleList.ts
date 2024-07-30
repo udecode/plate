@@ -2,7 +2,6 @@ import {
   ELEMENT_DEFAULT,
   type PlateEditor,
   type TElement,
-  type Value,
   findNode,
   getBlockAbove,
   getCommonNode,
@@ -18,14 +17,14 @@ import {
 } from '@udecode/plate-common/server';
 import { Range } from 'slate';
 
-import type { ListPlugin } from '../types';
+import type { ListPluginOptions } from '../types';
 
-import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
+import { ELEMENT_LI, ELEMENT_LIC } from '../ListPlugin';
 import { getListItemEntry, getListTypes } from '../queries/index';
 import { unwrapList } from './unwrapList';
 
-export const toggleList = <V extends Value>(
-  editor: PlateEditor<V>,
+export const toggleList = (
+  editor: PlateEditor,
   { type, pluginKey = type }: { pluginKey?: string; type: string }
 ) =>
   withoutNormalizing(editor, () => {
@@ -33,7 +32,7 @@ export const toggleList = <V extends Value>(
       return;
     }
 
-    const { validLiChildrenTypes } = getPluginOptions<ListPlugin, V>(
+    const { validLiChildrenTypes } = getPluginOptions<ListPluginOptions>(
       editor,
       pluginKey
     );

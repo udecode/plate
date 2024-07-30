@@ -1,13 +1,13 @@
+import type { WithOverride } from '@udecode/plate-common';
+
 import { HocuspocusProvider } from '@hocuspocus/provider';
 import {
   type PlateEditor,
-  type UnknownObject,
-  type Value,
   getPluginOptions,
 } from '@udecode/plate-common/server';
 import * as Y from 'yjs';
 
-import { KEY_YJS, type YjsPlugin } from './createYjsPlugin';
+import { KEY_YJS, type YjsPluginOptions } from './YjsPlugin';
 import { type CursorEditorProps, withTCursors } from './withTCursors';
 import { withTYHistory } from './withTYHistory';
 import { withTYjs } from './withTYjs';
@@ -19,22 +19,15 @@ export interface PlateYjsEditorProps extends CursorEditorProps {
   };
 }
 
-export const withPlateYjs = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
-  EE extends E & PlateYjsEditorProps = E & PlateYjsEditorProps,
-  TCursorData extends UnknownObject = UnknownObject,
->(
-  e: E
-) => {
-  const editor = e as unknown as EE;
+export const withPlateYjs: WithOverride<YjsPluginOptions> = (_editor) => {
+  const editor = _editor as unknown as PlateEditor & PlateYjsEditorProps;
 
   const {
     cursorOptions,
     disableCursors,
     hocuspocusProviderOptions,
     yjsOptions,
-  } = getPluginOptions<YjsPlugin<TCursorData>, V, E>(editor, KEY_YJS);
+  } = getPluginOptions<YjsPluginOptions>(editor, KEY_YJS);
 
   if (!hocuspocusProviderOptions) {
     throw new Error('HocuspocusProvider configuration is required');
@@ -74,21 +67,21 @@ export const withPlateYjs = <
 
   if (disableCursors) {
     return withTYHistory(
-      withTYjs<V, EE, EE>(editor, sharedType, {
+      withTYjs(editor, sharedType, {
         autoConnect: false,
         ...yjsOptions,
       })
-    ) as EE;
+    );
   }
 
   return withTYHistory(
-    withTCursors<TCursorData, V, EE, EE>(
-      withTYjs<V, EE, EE>(editor, sharedType, {
+    withTCursors(
+      withTYjs(editor, sharedType, {
         autoConnect: false,
         ...yjsOptions,
       }),
       provider.awareness!,
       cursorOptions
     )
-  ) as EE;
+  );
 };

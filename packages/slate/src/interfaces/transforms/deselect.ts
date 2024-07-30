@@ -1,8 +1,8 @@
 import { Transforms } from 'slate';
 
-import type { TEditor, Value } from '../editor/TEditor';
+import type { TEditor } from '../editor/TEditor';
 
 /** Unset the selection. */
-export const deselect = <V extends Value>(editor: TEditor<V>) => {
+export const deselect = (editor: TEditor) => {
   Transforms.deselect(editor as any);
 };

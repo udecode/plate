@@ -2,7 +2,6 @@ import type { Location, Point } from 'slate';
 
 import {
   type PlateEditor,
-  type Value,
   getEdgePoints,
   getPointAfter,
   getPointBefore,
@@ -15,10 +14,7 @@ import { findSuggestionNode } from './findSuggestionNode';
  * Find the suggestion id at the cursor point, the point before and after (if
  * offset = 0).
  */
-export const findSuggestionId = <V extends Value>(
-  editor: PlateEditor<V>,
-  at: Location
-) => {
+export const findSuggestionId = (editor: PlateEditor, at: Location) => {
   let entry = findSuggestionNode(editor, {
     at,
   });

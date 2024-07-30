@@ -4,7 +4,6 @@ import { type PlateProps, pluginRenderElement } from '@udecode/plate-common';
 import {
   type PlateEditor,
   type PlateRenderElementProps,
-  type Value,
   pipeInjectProps,
 } from '@udecode/plate-common/server';
 import { decode } from 'html-entities';
@@ -13,8 +12,8 @@ import { createElementWithSlate } from './utils/createElementWithSlate';
 import { renderToStaticMarkup } from './utils/renderToStaticMarkupClient';
 import { stripClassNames } from './utils/stripClassNames';
 
-export const elementToHtml = <V extends Value>(
-  editor: PlateEditor<V>,
+export const elementToHtml = (
+  editor: PlateEditor,
   {
     dndWrapper,
     plateProps,
@@ -24,7 +23,7 @@ export const elementToHtml = <V extends Value>(
     dndWrapper?: React.ComponentClass | React.FC | string;
     plateProps?: Partial<PlateProps>;
     preserveClassNames?: string[];
-    props: PlateRenderElementProps<V>;
+    props: PlateRenderElementProps;
   }
 ) => {
   let html = `<div>${props.children}</div>`;
@@ -34,7 +33,7 @@ export const elementToHtml = <V extends Value>(
     return html;
   }
 
-  props = pipeInjectProps<V>(editor, props);
+  props = pipeInjectProps(editor, props);
 
   // Search for matching plugin based on element type
   editor.plugins.some((plugin) => {

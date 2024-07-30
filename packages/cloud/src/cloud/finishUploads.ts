@@ -1,5 +1,3 @@
-import type { Value } from '@udecode/plate-common/server';
-
 import delay from 'delay';
 
 import type { FinishUploadsOptions, PlateCloudEditor } from './types';
@@ -16,8 +14,8 @@ const TEN_MINUTES = 1000 * 60 * 60;
  * method will return. This can be used if you only want to wait a certain
  * amount of time.
  */
-export const finishUploads = async <V extends Value>(
-  editor: PlateCloudEditor<V>,
+export const finishUploads = async (
+  editor: PlateCloudEditor,
   { maxTimeoutInMs = TEN_MINUTES }: FinishUploadsOptions = {}
 ): Promise<void> => {
   const uploads = editor.cloud.uploadStore.get.uploads();

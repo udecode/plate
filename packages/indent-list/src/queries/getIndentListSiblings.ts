@@ -9,10 +9,7 @@ import type {
 
 import type { GetSiblingIndentListOptions } from './getSiblingIndentList';
 
-import {
-  KEY_LIST_CHECKED,
-  KEY_LIST_STYLE_TYPE,
-} from '../createIndentListPlugin';
+import { KEY_LIST_CHECKED, KEY_LIST_STYLE_TYPE } from '../IndentListPlugin';
 import { getNextIndentList } from './getNextIndentList';
 import { getPreviousIndentList } from './getPreviousIndentList';
 

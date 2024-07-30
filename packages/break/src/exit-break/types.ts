@@ -28,6 +28,6 @@ export interface ExitBreakRule {
   relative?: boolean;
 }
 
-export interface ExitBreakPlugin {
+export interface ExitBreakPluginOptions {
   rules?: ExitBreakRule[];
 }

@@ -1,7 +1,7 @@
 import {
   type PlateEditor,
   type TElement,
-  type Value,
+  type WithOverride,
   getBlockAbove,
   getEndPoint,
   getPluginType,
@@ -17,7 +17,9 @@ import {
 } from '@udecode/plate-common/server';
 import { Point } from 'slate';
 
-import { ELEMENT_TABLE } from './createTablePlugin';
+import type { TablePluginOptions } from './types';
+
+import { ELEMENT_TABLE } from './TablePlugin';
 import { getTableGridAbove } from './queries/getTableGridAbove';
 import { getCellTypes } from './utils/getCellType';
 
@@ -27,8 +29,8 @@ import { getCellTypes } from './utils/getCellType';
  * - At start/end of a cell.
  * - Next to a table cell. Move selection to the table cell.
  */
-export const preventDeleteTableCell = <V extends Value = Value>(
-  editor: PlateEditor<V>,
+export const preventDeleteTableCell = (
+  editor: PlateEditor,
   {
     reverse,
     unit,
@@ -75,12 +77,7 @@ export const preventDeleteTableCell = <V extends Value = Value>(
 };
 
 /** Prevent cell deletion. */
-export const withDeleteTable = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E
-) => {
+export const withDeleteTable: WithOverride<TablePluginOptions> = (editor) => {
   const { deleteBackward, deleteForward, deleteFragment } = editor;
 
   editor.deleteBackward = (unit) => {

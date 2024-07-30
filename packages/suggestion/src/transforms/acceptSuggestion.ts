@@ -1,6 +1,5 @@
 import {
   type PlateEditor,
-  type Value,
   removeNodes,
   unsetNodes,
   withoutNormalizing,
@@ -11,8 +10,8 @@ import type { TSuggestionText } from '../types';
 import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from '../constants';
 import { type TSuggestionDescription, getSuggestionKey } from '../utils/index';
 
-export const acceptSuggestion = <V extends Value = Value>(
-  editor: PlateEditor<V>,
+export const acceptSuggestion = (
+  editor: PlateEditor,
   description: TSuggestionDescription
 ) => {
   withoutNormalizing(editor as any, () => {

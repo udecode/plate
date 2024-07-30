@@ -1,7 +1,6 @@
 import {
   ELEMENT_DEFAULT,
   type PlateEditor,
-  type Value,
   getPath,
   getPluginType,
   insertElements,
@@ -12,8 +11,8 @@ import type { ExitBreakRule } from '../types';
 
 import { exitBreakAtEdges } from '../queries/exitBreakAtEdges';
 
-export const exitBreak = <V extends Value>(
-  editor: PlateEditor<V>,
+export const exitBreak = (
+  editor: PlateEditor,
   {
     before,
     defaultType = getPluginType(editor, ELEMENT_DEFAULT),

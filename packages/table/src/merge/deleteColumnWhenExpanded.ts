@@ -1,7 +1,6 @@
 import {
   type PlateEditor,
   type TNodeEntry,
-  type Value,
   createPathRef,
   getAboveNode,
   removeNodes,
@@ -10,11 +9,11 @@ import { Node, type PathRef, Range } from 'slate';
 
 import type { TTableCellElement } from '../types';
 
-import { ELEMENT_TR } from '../createTablePlugin';
+import { ELEMENT_TR } from '../TablePlugin';
 import { getTableGridAbove } from '../queries';
 
-export const deleteColumnWhenExpanded = <V extends Value>(
-  editor: PlateEditor<V>,
+export const deleteColumnWhenExpanded = (
+  editor: PlateEditor,
   tableEntry: TNodeEntry<TTableCellElement>
 ) => {
   const [start, end] = Range.edges(editor.selection!);
@@ -42,7 +41,7 @@ export const deleteColumnWhenExpanded = <V extends Value>(
     deleteSelection(editor);
 };
 
-const deleteSelection = <V extends Value>(editor: PlateEditor<V>) => {
+const deleteSelection = (editor: PlateEditor) => {
   const cells = getTableGridAbove(editor, {
     format: 'cell',
   }) as TNodeEntry<TTableCellElement>[];

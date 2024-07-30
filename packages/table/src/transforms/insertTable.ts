@@ -13,7 +13,7 @@ import {
 
 import type { TTableElement } from '../types';
 
-import { ELEMENT_TABLE } from '../createTablePlugin';
+import { ELEMENT_TABLE } from '../TablePlugin';
 import {
   type GetEmptyTableNodeOptions,
   getEmptyTableNode,

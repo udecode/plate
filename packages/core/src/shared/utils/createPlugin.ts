@@ -2,25 +2,24 @@ import merge from 'lodash/merge';
 
 import type { PlatePlugin } from '../types';
 
-import { isFunction } from './misc/isFunction';
+import { isFunction } from './misc';
 
 export function createPlugin<O = {}, T = {}, Q = {}, S = {}>(
   config: Partial<PlatePlugin<O, T, Q, S>>
 ): PlatePlugin<O, T, Q, S> {
   const key = config.key ?? 'unnamed';
-  const options = config.options ?? ({} as O);
-  const queries = config.queries ?? ({} as Q);
-  const transforms = config.transforms ?? ({} as T);
 
   const plugin = merge(
     {},
     {
+      __extensions: [],
       editor: {},
       inject: {},
       key,
-      options,
-      queries,
-      transforms,
+      options: {},
+      plugins: [],
+      queries: {},
+      transforms: {},
       type: key,
     },
     config
@@ -30,68 +29,31 @@ export function createPlugin<O = {}, T = {}, Q = {}, S = {}>(
 
   plugin.extend = (extendConfig) => {
     const newPlugin = { ...plugin };
-
-    if (isFunction(extendConfig)) {
-      const oldExtend = newPlugin.__extend;
-      newPlugin.__extend = (editor, p) => {
-        let result = p;
-
-        if (oldExtend) {
-          result = oldExtend(editor, result) as any;
-        }
-
-        return extendConfig(editor, result) as any;
-      };
-    } else {
-      newPlugin.__extend = (editor, p) => {
-        let result = p;
-
-        if (newPlugin.__extend) {
-          result = newPlugin.__extend(editor, result) as any;
-        }
-
-        return merge({}, result, extendConfig) as any;
-      };
-    }
+    newPlugin.__extensions = [
+      ...(newPlugin.__extensions as any),
+      (editor, p) =>
+        isFunction(extendConfig) ? extendConfig(editor, p) : extendConfig,
+    ];
 
     return newPlugin as any;
   };
 
-  // TODO: pass plugin instead for types
   plugin.extendPlugin = (key, extendConfig) => {
-    const originalPlugins = plugin.plugins ?? [];
+    const newPlugin = { ...plugin };
+    newPlugin.__extensions = [
+      ...(newPlugin.__extensions as any),
+      (_, p) => ({
+        ...p,
+        plugins: p.plugins?.map((nestedPlugin) =>
+          nestedPlugin.key === key
+            ? nestedPlugin.extend(extendConfig)
+            : nestedPlugin
+        ),
+      }),
+    ];
 
-    const plugins = originalPlugins.map((p) => {
-      if (p.key === key) {
-        return isFunction(extendConfig)
-          ? ({
-              ...p,
-              __extend: extendConfig,
-            } as any)
-          : merge({}, p, extendConfig);
-      }
-
-      return p;
-    });
-
-    return {
-      ...plugin,
-      plugins,
-    };
+    return newPlugin;
   };
 
   return plugin;
 }
-
-const a = createPlugin({
-  options: { a: 1 },
-});
-
-const b = a.extend((editor, plugin) => ({
-  options: { b: 2 },
-}));
-const c = a.extend({
-  options: { c: 2 },
-});
-
-// b.configure({});

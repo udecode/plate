@@ -1,10 +1,7 @@
 import { Editor, type Location, type Point } from 'slate';
 
-import type { TEditor, Value } from './TEditor';
+import type { TEditor } from './TEditor';
 
 /** Check if a point is an edge of a location. */
-export const isEdgePoint = <V extends Value>(
-  editor: TEditor<V>,
-  point: Point,
-  at: Location
-) => Editor.isEdge(editor as any, point, at);
+export const isEdgePoint = (editor: TEditor, point: Point, at: Location) =>
+  Editor.isEdge(editor as any, point, at);

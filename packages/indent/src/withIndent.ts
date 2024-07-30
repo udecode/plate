@@ -1,26 +1,18 @@
 import {
-  type PlateEditor,
-  type Value,
-  type WithPlatePlugin,
+  type WithOverride,
   setElements,
   unsetNodes,
 } from '@udecode/plate-common/server';
 
-import type { IndentPlugin, TIndentElement } from './types';
+import type { IndentPluginOptions, TIndentElement } from './types';
 
 /**
  * - `node.indent` can not exceed `indentMax`
  * - `node.indent` is unset if `node.type` is not in `types`
  */
-export const withIndent = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E,
-  {
-    inject: { props: { validTypes } = {} },
-    options: { indentMax },
-  }: WithPlatePlugin<IndentPlugin, V, E>
+export const withIndent: WithOverride<IndentPluginOptions> = (
+  editor,
+  { inject: { props: { validTypes } = {} }, options: { indentMax } }
 ) => {
   const { normalizeNode } = editor;
 

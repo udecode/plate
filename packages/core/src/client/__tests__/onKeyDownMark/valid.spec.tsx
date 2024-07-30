@@ -6,7 +6,7 @@ import * as isHotkey from '@udecode/plate-core/server';
 import { jsx } from '@udecode/plate-test-utils';
 import { onKeyDownToggleMark } from '@udecode/plate-utils';
 
-import type { ToggleMarkPlugin } from '../../../shared/types';
+import type { ToggleMarkPluginOptions } from '../../../shared/types';
 
 import { getPlugin } from '../../../shared/utils/getPlugin';
 
@@ -50,7 +50,7 @@ it('should be', () => {
 
   onKeyDownToggleMark(
     editor,
-    getPlugin<ToggleMarkPlugin>(editor, MARK_BOLD)
+    getPlugin<ToggleMarkPluginOptions>(editor, MARK_BOLD)
   )(event as any);
   expect(editor.children).toEqual(output.children);
   expect(editor.selection).toEqual(output.selection);

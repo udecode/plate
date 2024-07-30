@@ -1,17 +1,13 @@
 import type { TElement } from '@udecode/plate-common';
 
-import {
-  type PlateEditor,
-  type Value,
-  getPluginType,
-} from '@udecode/plate-common/server';
+import { type PlateEditor, getPluginType } from '@udecode/plate-common/server';
 
 import type { CellFactoryOptions } from '../types';
 
-import { ELEMENT_TD, ELEMENT_TH } from '../createTablePlugin';
+import { ELEMENT_TD, ELEMENT_TH } from '../TablePlugin';
 
-export const getEmptyCellNode = <V extends Value>(
-  editor: PlateEditor<V>,
+export const getEmptyCellNode = (
+  editor: PlateEditor,
   { children, header, row }: CellFactoryOptions = {}
 ) => {
   header =

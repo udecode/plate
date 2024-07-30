@@ -4,7 +4,7 @@ export interface TIndentElement extends TElement {
   indent: number;
 }
 
-export type IndentPlugin = {
+export type IndentPluginOptions = {
   /** Maximum number of indentation. */
   indentMax?: number;
 

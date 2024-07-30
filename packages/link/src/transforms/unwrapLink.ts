@@ -1,7 +1,6 @@
 import {
   type PlateEditor,
   type UnwrapNodesOptions,
-  type Value,
   getAboveNode,
   getPluginType,
   isElement,
@@ -10,11 +9,11 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common/server';
 
-import { ELEMENT_LINK } from '../createLinkPlugin';
+import { ELEMENT_LINK } from '../LinkPlugin';
 
 /** Unwrap link node. */
-export const unwrapLink = <V extends Value>(
-  editor: PlateEditor<V>,
+export const unwrapLink = (
+  editor: PlateEditor,
   options?: {
     split?: boolean;
   } & UnwrapNodesOptions

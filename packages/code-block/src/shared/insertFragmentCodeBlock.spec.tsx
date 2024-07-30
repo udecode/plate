@@ -8,7 +8,7 @@ import {
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createCodeBlockPlugin } from '../client/createCodeBlockPlugin';
+import { createCodeBlockPlugin } from '../client/CodeBlockPlugin';
 
 jsx;
 

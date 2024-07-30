@@ -13,7 +13,7 @@ import {
 
 import type { Alignment } from '../types';
 
-import { KEY_ALIGN } from '../createAlignPlugin';
+import { KEY_ALIGN } from '../AlignPlugin';
 
 export const setAlign = <V extends Value>(
   editor: PlateEditor<V>,

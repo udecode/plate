@@ -1,7 +1,6 @@
 import {
-  type PlateEditor,
   type TElement,
-  type Value,
+  type WithOverride,
   getNodeEntries,
   isCollapsed,
   isText,
@@ -9,14 +8,11 @@ import {
   unsetNodes,
 } from '@udecode/plate-common/server';
 
+import type { TablePluginOptions } from './types';
+
 import { getTableGridAbove } from './queries';
 
-export const withMarkTable = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E
-) => {
+export const withMarkTable: WithOverride<TablePluginOptions> = (editor) => {
   const { addMark, getMarks, removeMark } = editor;
 
   editor.addMark = (key: string, value: any) => {

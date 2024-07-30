@@ -1,21 +1,15 @@
 import {
-  type PlateEditor,
-  type Value,
+  type WithOverride,
   getAboveNode,
   isCollapsed,
   isElement,
   isStartPoint,
 } from '@udecode/plate-common/server';
 
-import { ELEMENT_COLUMN } from './createColumnPlugin';
+import { ELEMENT_COLUMN } from './ColumnPlugin';
 import { normalizeColumn } from './normalizers/normalizedColumn';
 
-export const withColumn = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E
-) => {
+export const withColumn: WithOverride = (editor) => {
   const { deleteBackward, isEmpty } = editor;
 
   editor.normalizeNode = normalizeColumn(editor);

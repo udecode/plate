@@ -2,7 +2,6 @@ import {
   type PlateEditor,
   type TElement,
   type TElementEntry,
-  type Value,
   getNodeEntry,
   getParentNode,
   match,
@@ -15,8 +14,8 @@ import { getListTypes } from '../queries/index';
 // When pasting from e.g. Google Docs, the structure of nested lists like "ul -> ul"
 // should be normalized to "ul -> li -> lic + ul".
 // In other words, a nested list as a direct children of a list should be moved into a previous list item sibling
-export const normalizeNestedList = <V extends Value>(
-  editor: PlateEditor<V>,
+export const normalizeNestedList = (
+  editor: PlateEditor,
   { nestedListItem }: { nestedListItem: TElementEntry }
 ) => {
   const [, path] = nestedListItem;

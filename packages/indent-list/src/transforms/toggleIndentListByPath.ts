@@ -8,10 +8,7 @@ import {
 } from '@udecode/plate-common';
 import { KEY_INDENT } from '@udecode/plate-indent';
 
-import {
-  KEY_LIST_CHECKED,
-  KEY_LIST_STYLE_TYPE,
-} from '../createIndentListPlugin';
+import { KEY_LIST_CHECKED, KEY_LIST_STYLE_TYPE } from '../IndentListPlugin';
 
 export const toggleIndentListByPath = (
   editor: PlateEditor<Value>,

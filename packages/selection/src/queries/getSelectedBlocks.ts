@@ -1,13 +1,12 @@
 import {
   type TEditor,
   type TElement,
-  type Value,
   getNodeEntries,
 } from '@udecode/plate-common/server';
 
 import { blockSelectionSelectors } from '../blockSelectionStore';
 
-export const getSelectedBlocks = <V extends Value>(editor: TEditor<V>) => {
+export const getSelectedBlocks = (editor: TEditor) => {
   const selectedIds = blockSelectionSelectors.selectedIds();
 
   return [

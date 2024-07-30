@@ -2,7 +2,7 @@ import type { SetStateAction } from 'react';
 
 import type { buildToggleIndex } from './toggle-controller-store';
 
-export interface TogglePlugin {
+export interface TogglePluginOptions {
   // Options would go here
   // TODO a JOTAI layer in plate-core instead of relying on plugin options
   openIds?: Set<string>;

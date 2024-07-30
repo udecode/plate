@@ -1,15 +1,13 @@
-import { Hotkeys } from '@udecode/plate-common';
+import { Hotkeys, type KeyboardHandler } from '@udecode/plate-common';
 import {
   type KeyboardHandlerReturnType,
-  type PlateEditor,
-  type PluginOptions,
   type TElement,
-  type Value,
-  type WithPlatePlugin,
   getAboveNode,
   isHotkey,
   select,
 } from '@udecode/plate-common/server';
+
+import type { TablePluginOptions } from './types';
 
 import { keyShiftEdges } from './constants';
 import {
@@ -19,15 +17,8 @@ import {
 } from './queries/index';
 import { moveSelectionFromCell } from './transforms/index';
 
-export const onKeyDownTable =
-  <
-    P = PluginOptions,
-    V extends Value = Value,
-    E extends PlateEditor<V> = PlateEditor<V>,
-  >(
-    editor: E,
-    { type }: WithPlatePlugin<P, V, E>
-  ): KeyboardHandlerReturnType =>
+export const onKeyDownTable: KeyboardHandler<TablePluginOptions> =
+  (editor, { type }): KeyboardHandlerReturnType =>
   (e) => {
     if (e.defaultPrevented) return;
 

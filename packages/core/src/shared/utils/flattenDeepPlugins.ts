@@ -3,7 +3,7 @@ import merge from 'lodash/merge.js';
 import type { PlateEditor } from '../types/PlateEditor';
 import type { PlatePlugin } from '../types/plugin/PlatePlugin';
 
-import { mergeDeepPlugins } from './mergeDeepPlugins';
+import { resolvePlugin } from './resolvePlugin';
 
 /** Recursively merge plugin.plugins into editor.plugins and editor.pluginsByKey */
 export const flattenDeepPlugins = (
@@ -13,7 +13,7 @@ export const flattenDeepPlugins = (
   if (!plugins) return;
 
   plugins.forEach((plugin) => {
-    plugin = mergeDeepPlugins(editor, plugin);
+    plugin = resolvePlugin(editor, plugin);
 
     if (plugin.enabled === false) return;
     if (editor.pluginsByKey[plugin.key]) {

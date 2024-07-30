@@ -2,7 +2,6 @@ import type { Point, Range } from 'slate';
 
 import {
   type PlateEditor,
-  type Value,
   deleteText,
   insertText,
 } from '@udecode/plate-common/server';
@@ -13,14 +12,13 @@ import type { AutoformatTextRule } from '../types';
 import { getMatchPoints } from '../utils/getMatchPoints';
 import { getMatchRange } from '../utils/getMatchRange';
 
-export interface AutoformatTextOptions<V extends Value = Value>
-  extends AutoformatTextRule<V> {
+export interface AutoformatTextOptions extends AutoformatTextRule {
   text: string;
 }
 
-export const autoformatText = <V extends Value>(
-  editor: PlateEditor<V>,
-  { format, match: _match, text, trigger }: AutoformatTextOptions<V>
+export const autoformatText = (
+  editor: PlateEditor,
+  { format, match: _match, text, trigger }: AutoformatTextOptions
 ) => {
   const selection = editor.selection as Range;
   const matches = castArray(_match);

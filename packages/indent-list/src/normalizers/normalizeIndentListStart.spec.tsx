@@ -6,7 +6,7 @@ import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { indentListPluginPage } from '../__tests__/indentListPluginPage';
-import { createIndentListPlugin } from '../createIndentListPlugin';
+import { createIndentListPlugin } from '../IndentListPlugin';
 
 jsx;
 

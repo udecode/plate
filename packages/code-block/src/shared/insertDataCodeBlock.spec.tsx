@@ -4,7 +4,7 @@ import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { createDataTransfer, jsx } from '@udecode/plate-test-utils';
 
-import { createCodeBlockPlugin } from '../client/createCodeBlockPlugin';
+import { createCodeBlockPlugin } from '../client/CodeBlockPlugin';
 
 jsx;
 

@@ -2,21 +2,20 @@ import type { Location } from 'slate';
 
 import {
   type PlateEditor,
-  type Value,
   findNode,
   getAboveNode,
   getPluginType,
 } from '@udecode/plate-common/server';
 
-import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
+import { ELEMENT_TABLE, ELEMENT_TR } from '../TablePlugin';
 import { getCellTypes } from '../utils/index';
 
 /**
  * If at (default = selection) is in table>tr>td|th, return table, row, and cell
  * node entries.
  */
-export const getTableEntries = <V extends Value>(
-  editor: PlateEditor<V>,
+export const getTableEntries = (
+  editor: PlateEditor,
   { at = editor.selection }: { at?: Location | null } = {}
 ) => {
   if (!at) return;

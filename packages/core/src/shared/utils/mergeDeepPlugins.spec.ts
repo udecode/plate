@@ -1,12 +1,12 @@
 import { createTEditor } from '@udecode/slate';
 
-import { mergeDeepPlugins } from './mergeDeepPlugins';
 import { mockPlugin } from './mockPlugin';
+import { resolvePlugin } from './resolvePlugin';
 
 describe('mergeDeepPlugins', () => {
   it('should be', () => {
     expect(
-      mergeDeepPlugins(
+      resolvePlugin(
         createTEditor() as any,
         mockPlugin({
           key: 'a',

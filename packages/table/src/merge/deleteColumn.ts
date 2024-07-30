@@ -2,7 +2,6 @@ import type { Path } from 'slate';
 
 import {
   type PlateEditor,
-  type Value,
   getAboveNode,
   getPluginOptions,
   getPluginType,
@@ -13,9 +12,13 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common/server';
 
-import type { TTableCellElement, TTableElement, TablePlugin } from '../types';
+import type {
+  TTableCellElement,
+  TTableElement,
+  TablePluginOptions,
+} from '../types';
 
-import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
+import { ELEMENT_TABLE, ELEMENT_TR } from '../TablePlugin';
 import { getColSpan } from '../queries/getColSpan';
 import { getCellTypes } from '../utils';
 import { deleteColumnWhenExpanded } from './deleteColumnWhenExpanded';
@@ -23,15 +26,13 @@ import { findCellByIndexes } from './findCellByIndexes';
 import { getCellIndices } from './getCellIndices';
 import { getCellPath } from './getCellPath';
 
-export const deleteTableMergeColumn = <V extends Value>(
-  editor: PlateEditor<V>
-) => {
+export const deleteTableMergeColumn = (editor: PlateEditor) => {
   if (
     someNode(editor, {
       match: { type: getPluginType(editor, ELEMENT_TABLE) },
     })
   ) {
-    const { _cellIndices: cellIndices } = getPluginOptions<TablePlugin, V>(
+    const { _cellIndices: cellIndices } = getPluginOptions<TablePluginOptions>(
       editor,
       ELEMENT_TABLE
     );

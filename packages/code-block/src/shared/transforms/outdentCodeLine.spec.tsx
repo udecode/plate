@@ -8,7 +8,7 @@ import {
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createCodeBlockPlugin } from '../../client/createCodeBlockPlugin';
+import { createCodeBlockPlugin } from '../../client/CodeBlockPlugin';
 import { outdentCodeLine } from './outdentCodeLine';
 
 jsx;

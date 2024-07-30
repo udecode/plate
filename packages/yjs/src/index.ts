@@ -3,7 +3,7 @@
  */
 
 export * from './RenderAboveEditableYjs';
-export * from './createYjsPlugin';
+export * from './YjsPlugin';
 export * from './withPlateYjs';
 export * from './withTCursors';
 export * from './withTYHistory';

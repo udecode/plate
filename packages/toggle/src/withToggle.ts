@@ -1,6 +1,6 @@
 import {
   type PlateEditor,
-  type Value,
+  type WithOverride,
   getBlockAbove,
   isNode,
   moveNodes,
@@ -16,16 +16,11 @@ import {
 } from './transforms';
 import { ELEMENT_TOGGLE } from './types';
 
-export const withToggle = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E
-) => {
+export const withToggle: WithOverride = (editor) => {
   const { deleteBackward, deleteForward, insertBreak, isSelectable } = editor;
 
   editor.isSelectable = (element) => {
-    if (isNode(element) && isInClosedToggle<V, E>(editor, element.id as string))
+    if (isNode(element) && isInClosedToggle(editor, element.id as string))
       return false;
 
     return isSelectable(element);
@@ -63,7 +58,7 @@ export const withToggle = <
     }
 
     const toggleId = currentBlockEntry[0].id as string;
-    const isOpen = isToggleOpen<V, E>(editor, toggleId);
+    const isOpen = isToggleOpen(editor, toggleId);
 
     editor.withoutNormalizing(() => {
       if (isOpen) {
@@ -71,7 +66,7 @@ export const withToggle = <
         toggleNodeType(editor, { activeType: ELEMENT_TOGGLE });
         indent(editor);
       } else {
-        const lastEntryEnclosedInToggle = getLastEntryEnclosedInToggle<V, E>(
+        const lastEntryEnclosedInToggle = getLastEntryEnclosedInToggle(
           editor,
           toggleId
         );

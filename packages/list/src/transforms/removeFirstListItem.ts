@@ -1,15 +1,11 @@
-import type {
-  PlateEditor,
-  TElementEntry,
-  Value,
-} from '@udecode/plate-common/server';
+import type { PlateEditor, TElementEntry } from '@udecode/plate-common/server';
 
 import { isListNested } from '../queries/isListNested';
 import { moveListItemUp } from './moveListItemUp';
 
 /** If list is not nested and if li is not the first child, move li up. */
-export const removeFirstListItem = <V extends Value>(
-  editor: PlateEditor<V>,
+export const removeFirstListItem = (
+  editor: PlateEditor,
   {
     list,
     listItem,

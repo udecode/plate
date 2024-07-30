@@ -1,15 +1,6 @@
-import {
-  type PlateEditor,
-  type Value,
-  removeNodes,
-} from '@udecode/plate-common/server';
+import { type WithOverride, removeNodes } from '@udecode/plate-common/server';
 
-export const withSingleLine = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E
-) => {
+export const withSingleLine: WithOverride = (editor) => {
   const { normalizeNode } = editor;
 
   editor.insertBreak = () => null;

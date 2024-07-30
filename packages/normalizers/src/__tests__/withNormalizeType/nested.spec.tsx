@@ -5,7 +5,7 @@ import { ELEMENT_H1 } from '@udecode/plate-heading';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createNormalizeTypesPlugin } from '../../createNormalizeTypesPlugin';
+import { createNormalizeTypesPlugin } from '../../NormalizeTypesPlugin';
 
 jsx;
 

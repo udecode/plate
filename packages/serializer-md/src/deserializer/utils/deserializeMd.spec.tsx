@@ -4,7 +4,7 @@ import { createPlateEditor } from '@udecode/plate-common';
 import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createDeserializeMdPlugin } from '../createDeserializeMdPlugin';
+import { createDeserializeMdPlugin } from '../DeserializeMdPlugin';
 import { deserializeMd } from './deserializeMd';
 
 jsx;

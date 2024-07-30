@@ -2,7 +2,6 @@ import type { Range } from 'slate';
 
 import {
   type PlateEditor,
-  type Value,
   createPathRef,
   deleteMerge,
   getAboveNode,
@@ -14,12 +13,12 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common/server';
 
-import { ELEMENT_LI } from './createListPlugin';
+import { ELEMENT_LI } from './ListPlugin';
 import { getHighestEmptyList } from './queries/getHighestEmptyList';
 import { hasListChild } from './queries/hasListChild';
 import { isAcrossListItems } from './queries/isAcrossListItems';
 
-const getLiStart = <V extends Value>(editor: PlateEditor<V>) => {
+const getLiStart = (editor: PlateEditor) => {
   const start = getStartPoint(editor, editor.selection as Range);
 
   return getAboveNode(editor, {
@@ -28,7 +27,7 @@ const getLiStart = <V extends Value>(editor: PlateEditor<V>) => {
   });
 };
 
-export const deleteFragmentList = <V extends Value>(editor: PlateEditor<V>) => {
+export const deleteFragmentList = (editor: PlateEditor) => {
   let deleted = false;
 
   withoutNormalizing(editor, () => {

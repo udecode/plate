@@ -1,7 +1,6 @@
 import type React from 'react';
 
 import type { Value } from '@udecode/slate';
-import type { WithRequired } from '@udecode/utils';
 
 import type { PlateEditor } from '../PlateEditor';
 import type { Nullable } from '../misc';
@@ -15,6 +14,7 @@ import type { PlatePluginComponent } from './PlatePluginComponent';
 import type { PlatePluginInsertData } from './PlatePluginInsertData';
 import type { PlatePluginKey, PluginKey } from './PlatePluginKey';
 import type { PlatePluginProps } from './PlatePluginProps';
+import type { PlatePluginUseHooks } from './PlatePluginUseHooks';
 import type { RenderAfterEditable } from './RenderAfterEditable';
 import type { SerializeHtml } from './SerializeHtml';
 import type { WithOverride } from './WithOverride';
@@ -24,17 +24,16 @@ export type PlatePluginConfigure<O = {}, T = {}, Q = {}, S = {}> = (
 ) => PlatePlugin<O, T, Q, S>;
 
 export type PlatePluginMethods<O = {}, T = {}, Q = {}, S = {}> = {
-  __extend?: <EO = {}, ET = {}, EQ = {}, ES = {}>(
+  __extensions: ((
     editor: PlateEditor,
     plugin: PlatePlugin<O, T, Q, S>
-  ) => Partial<PlatePlugin<EO, ET, EQ, ES>>;
-  __extendCount?: number;
+  ) => Partial<PlatePlugin<O, T, Q, S>>)[];
 
   configure: PlatePluginConfigure<O, T, Q, S>;
 
   extend: <EO = {}, ET = {}, EQ = {}, ES = {}>(
     extendConfig:
-      | ((
+      | (<EO = {}, ET = {}, EQ = {}, ES = {}>(
           editor: PlateEditor,
           plugin: PlatePlugin<O, T, Q, S>
         ) => Partial<PlatePlugin<EO, ET, EQ, ES>>)
@@ -44,9 +43,9 @@ export type PlatePluginMethods<O = {}, T = {}, Q = {}, S = {}> = {
   extendPlugin: <EO = {}, ET = {}, EQ = {}, ES = {}>(
     key: string,
     extendConfig:
-      | ((
+      | (<EO = {}, ET = {}, EQ = {}, ES = {}>(
           editor: PlateEditor,
-          plugin: PlatePlugin
+          plugin: PlatePlugin<O, T, Q, S>
         ) => Partial<PlatePlugin<EO, ET, EQ, ES>>)
       | Partial<PlatePlugin<EO, ET, EQ, ES>>
   ) => PlatePlugin<O, T, Q, S>;
@@ -134,6 +133,12 @@ export type PlatePlugin<O = {}, T = {}, Q = {}, S = {}> = {
   /** Extended properties used by any plugin as options. */
   options: O;
 
+  /**
+   * Recursive plugin support to allow having multiple plugins in a single
+   * plugin. Plate eventually flattens all the plugins into the editor.
+   */
+  plugins: PlatePlugin<O, T, Q, S>[];
+
   queries: Q;
 
   transforms: T;
@@ -174,12 +179,6 @@ export type PlatePlugin<O = {}, T = {}, Q = {}, S = {}> = {
     overrideByKey?: Record<PluginKey, Partial<PlatePlugin<O, T, Q, S>>>;
 
     /**
-     * Recursive plugin support to allow having multiple plugins in a single
-     * plugin. Plate eventually flattens all the plugins into the editor.
-     */
-    plugins?: PlatePlugin<O, T, Q, S>[];
-
-    /**
      * Property used by Plate to override node `component` props. If function,
      * its returning value will be shallow merged to the old props, with the old
      * props as parameter. If object, its value will be shallow merged to the
@@ -216,19 +215,14 @@ export type PlatePlugin<O = {}, T = {}, Q = {}, S = {}> = {
     //  */
     // then?: (
     //   editor: PlateEditor,
-    //   plugin: WithPlatePlugin<O, T, Q, S>
+    //   plugin: PlatePlugin<O, T, Q, S>
     // ) => Partial<PlatePlugin<O, T, Q, S>> | undefined | void;
 
     /** Hook called when the editor is initialized. */
-    useHooks?: (editor: PlateEditor, plugin: PlatePlugin<O, T, Q, S>) => void;
+    useHooks?: PlatePluginUseHooks<O, T, Q, S>;
 
     /** Editor method overriders. */
     withOverrides?: WithOverride<O, T, Q, S>;
   }> &
   PlatePluginMethods<O, T, Q, S> &
   Required<PlatePluginKey>;
-
-export type WithPlatePlugin<O = {}, T = {}, Q = {}, S = {}> = WithRequired<
-  PlatePlugin<O, T, Q, S>,
-  'editor' | 'inject' | 'options' | 'type'
->;

@@ -1,4 +1,4 @@
-import type { PlateEditor, TElement, Value } from '@udecode/plate-common';
+import type { PlateEditor, TElement } from '@udecode/plate-common';
 import type { TDescendant } from '@udecode/plate-common/server';
 import type { Path } from 'slate';
 
@@ -8,7 +8,7 @@ export type CellFactoryOptions = {
   row?: TTableRowElement;
 };
 
-export interface TablePlugin<V extends Value = Value> {
+export interface TablePluginOptions {
   /**
    * For internal use. Keeps track of cell indices. Used only when enableMerging
    * is true.
@@ -49,7 +49,7 @@ export interface TablePlugin<V extends Value = Value> {
 
   /** @default insertTableColumn */
   insertColumn?: (
-    editor: PlateEditor<V>,
+    editor: PlateEditor,
     options: {
       fromCell: Path;
     }
@@ -57,7 +57,7 @@ export interface TablePlugin<V extends Value = Value> {
 
   /** @default insertTableRow */
   insertRow?: (
-    editor: PlateEditor<V>,
+    editor: PlateEditor,
     options: {
       fromRow: Path;
     }

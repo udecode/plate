@@ -1,10 +1,6 @@
-import type React from 'react';
+import type { KeyboardHandler } from '@udecode/plate-common';
 
 import {
-  type KeyboardHandlerReturnType,
-  type PlateEditor,
-  type Value,
-  type WithPlatePlugin,
   deleteBackward,
   getEditorString,
   getPointBefore,
@@ -14,19 +10,14 @@ import {
 import { Range } from 'slate';
 
 import type {
-  AutoformatPlugin,
+  AutoformatPluginOptions,
   AutoformatRule,
   AutoformatTextRule,
 } from './types';
 
-export const onKeyDownAutoformat =
-  <V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>(
-    editor: PlateEditor<V>,
-    {
-      options: { enableUndoOnDelete, rules },
-    }: WithPlatePlugin<AutoformatPlugin, V, E>
-  ): KeyboardHandlerReturnType =>
-  (e: React.KeyboardEvent) => {
+export const onKeyDownAutoformat: KeyboardHandler<AutoformatPluginOptions> =
+  (editor, { options: { enableUndoOnDelete, rules } }) =>
+  (e) => {
     if (e.defaultPrevented) return false;
     // Abort quicky if hotKey was not pressed.
     if (!isHotkey('backspace', { byKey: true }, e)) return false;

@@ -2,7 +2,6 @@ import {
   type PlateEditor,
   type TNode,
   type TNodeEntry,
-  type Value,
   createPathRef,
   getLastChildPath,
   isElement,
@@ -10,14 +9,12 @@ import {
 
 import type { TColumnGroupElement } from '../types';
 
-import { ELEMENT_COLUMN_GROUP } from '../createColumnPlugin';
+import { ELEMENT_COLUMN_GROUP } from '../ColumnPlugin';
 import { moveMiddleColumn } from '../transforms';
 import { insertEmptyColumn } from '../transforms/insertEmptyColumn';
 import { setColumnWidth } from '../transforms/setColumnWidth';
 
-export const normalizeColumn = <V extends Value, N extends TNode>(
-  editor: PlateEditor<V>
-) => {
+export const normalizeColumn = <N extends TNode>(editor: PlateEditor) => {
   const { normalizeNode } = editor;
 
   return function (entry: TNodeEntry<N>) {
@@ -32,8 +29,8 @@ export const normalizeColumn = <V extends Value, N extends TNode>(
   };
 };
 
-const normalizeColumnHelper = <V extends Value, N extends TColumnGroupElement>(
-  editor: PlateEditor<V>,
+const normalizeColumnHelper = <N extends TColumnGroupElement>(
+  editor: PlateEditor,
   entry: TNodeEntry<N>
 ) => {
   const [node, path] = entry;

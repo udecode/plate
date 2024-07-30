@@ -4,7 +4,6 @@ import {
   type TElement,
   type TElementEntry,
   type TNodeEntry,
-  type Value,
   createPathRef,
   getChildren,
   getParentNode,
@@ -18,9 +17,9 @@ import {
 } from '@udecode/plate-common/server';
 import { Path, type PathRef } from 'slate';
 
-import type { ListPlugin } from '../types';
+import type { ListPluginOptions } from '../types';
 
-import { ELEMENT_LIC, ELEMENT_OL, ELEMENT_UL } from '../createListPlugin';
+import { ELEMENT_LIC, ELEMENT_OL, ELEMENT_UL } from '../ListPlugin';
 import { getListTypes } from '../queries/index';
 import { moveListItemUp } from '../transforms/index';
 
@@ -30,8 +29,8 @@ import { moveListItemUp } from '../transforms/index';
  * - Block children
  * - Inline children except those at excludeDepth
  */
-export const getDeepInlineChildren = <V extends Value>(
-  editor: PlateEditor<V>,
+export const getDeepInlineChildren = (
+  editor: PlateEditor,
   {
     children,
   }: {
@@ -59,12 +58,12 @@ export const getDeepInlineChildren = <V extends Value>(
  * If the list item has no child: insert an empty list item container. Else:
  * move the children that are not valid to the list item container.
  */
-export const normalizeListItem = <V extends Value>(
-  editor: PlateEditor<V>,
+export const normalizeListItem = (
+  editor: PlateEditor,
   {
     listItem,
     validLiChildrenTypes = [],
-  }: { listItem: TElementEntry } & ListPlugin
+  }: { listItem: TElementEntry } & ListPluginOptions
 ) => {
   let changed = false;
 

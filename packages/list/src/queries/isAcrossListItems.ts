@@ -1,16 +1,15 @@
 import {
   type PlateEditor,
-  type Value,
   getPluginType,
   isCollapsed,
   isRangeAcrossBlocks,
   someNode,
 } from '@udecode/plate-common/server';
 
-import { ELEMENT_LI } from '../createListPlugin';
+import { ELEMENT_LI } from '../ListPlugin';
 
 /** Is selection across blocks with list items */
-export const isAcrossListItems = <V extends Value>(editor: PlateEditor<V>) => {
+export const isAcrossListItems = (editor: PlateEditor) => {
   const { selection } = editor;
 
   if (!selection || isCollapsed(selection)) {

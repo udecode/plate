@@ -5,7 +5,7 @@ import { createIndentPlugin } from '@udecode/plate-indent';
 import { createParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createIndentListPlugin } from '../createIndentListPlugin';
+import { createIndentListPlugin } from '../IndentListPlugin';
 
 jsx;
 

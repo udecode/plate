@@ -1,14 +1,14 @@
 import type React from 'react';
 
 import { findEventRange } from '@udecode/plate-common';
-import { type Value, select } from '@udecode/plate-common/server';
+import { select } from '@udecode/plate-common/server';
 
 import type { PlateCloudEditor } from './types';
 
 import { uploadFiles } from './uploadFiles';
 
-export const onDropCloud = <V extends Value = Value>(
-  editor: PlateCloudEditor<V>,
+export const onDropCloud = (
+  editor: PlateCloudEditor,
   e: React.DragEvent
 ): boolean => {
   const { files } = e.dataTransfer;
@@ -33,8 +33,8 @@ export const onDropCloud = <V extends Value = Value>(
   return true;
 };
 
-export const onPasteCloud = <V extends Value = Value>(
-  editor: PlateCloudEditor<V>,
+export const onPasteCloud = (
+  editor: PlateCloudEditor,
   e: React.ClipboardEvent
 ): boolean => {
   const { files } = e.clipboardData;
@@ -43,7 +43,7 @@ export const onPasteCloud = <V extends Value = Value>(
 
   e.preventDefault();
   e.stopPropagation();
-  uploadFiles<V>(editor, files);
+  uploadFiles(editor, files);
 
   return true;
 };

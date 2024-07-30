@@ -8,7 +8,7 @@ import {
 
 import type { TTableElement } from '../types';
 
-import { ELEMENT_TABLE } from '../createTablePlugin';
+import { ELEMENT_TABLE } from '../TablePlugin';
 import { getTableColumnCount } from '../queries/getTableColumnCount';
 
 export const setTableColSize = <V extends Value>(

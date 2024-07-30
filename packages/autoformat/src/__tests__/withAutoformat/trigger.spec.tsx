@@ -13,7 +13,7 @@ import type { AutoformatPlugin } from '../../../common/types';
 import {
   KEY_AUTOFORMAT,
   createAutoformatPlugin,
-} from '../../createAutoformatPlugin';
+} from '../../AutoformatPlugin';
 import { onKeyDownAutoformat } from '../../onKeyDownAutoformat';
 
 jsx;

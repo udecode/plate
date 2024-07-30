@@ -3,7 +3,7 @@
  */
 
 export * from './blockSelectionStore';
-export * from './createBlockSelectionPlugin';
+export * from './BlockSelectionPlugin';
 export * from './onKeyDownSelection';
 export * from './useHooksBlockSelection';
 export * from './withSelection';

@@ -1,6 +1,6 @@
 import { type DragSourceHookSpec, useDrag } from 'react-dnd';
 
-import type { TEditor, Value } from '@udecode/plate-common/server';
+import type { TEditor } from '@udecode/plate-common/server';
 
 import type { DragItemNode } from '../types';
 
@@ -28,8 +28,8 @@ export interface UseDragNodeOptions
  *
  * - IsDragging: true if mouse is dragging the block
  */
-export const useDragNode = <V extends Value>(
-  editor: TEditor<V>,
+export const useDragNode = (
+  editor: TEditor,
   { id, item, ...options }: UseDragNodeOptions
 ) => {
   return useDrag<DragItemNode, unknown, { isDragging: boolean }>(

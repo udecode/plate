@@ -3,7 +3,7 @@
  */
 
 export * from './constants';
-export * from './createTablePlugin';
+export * from './TablePlugin';
 export * from './onKeyDownTable';
 export * from './types';
 export * from './withDeleteTable';

@@ -1,23 +1,18 @@
 import React from 'react';
 
 import type { PlateRenderElementProps } from '@udecode/plate-core';
-import type { EElement, TElement, Value } from '@udecode/slate';
+import type { TElement } from '@udecode/slate';
 
 import { Box, type BoxProps, useComposedRef } from '@udecode/react-utils';
 import { clsx } from 'clsx';
 
-export type PlateElementProps<
-  V extends Value = Value,
-  N extends TElement = EElement<V>,
-> = {
+export type PlateElementProps = {
   /** Get HTML attributes from Slate element. Alternative to `PlatePlugin.props`. */
-  elementToAttributes?: (element: N) => any;
+  elementToAttributes?: (element: TElement) => any;
 } & BoxProps &
-  PlateRenderElementProps<V, N>;
+  PlateRenderElementProps;
 
-export const usePlateElement = <T extends TElement = TElement>(
-  props: PlateElementProps<Value, T>
-) => {
+export const usePlateElement = (props: PlateElementProps) => {
   const {
     attributes,
     editor,
@@ -32,7 +27,7 @@ export const usePlateElement = <T extends TElement = TElement>(
       ...attributes,
       ...rootProps,
       ...nodeProps,
-      ...elementToAttributes?.(element as T),
+      ...elementToAttributes?.(element),
       className: clsx(props.className, nodeProps?.className),
     },
     ref: useComposedRef(props.ref, attributes.ref),
@@ -49,8 +44,8 @@ const PlateElement = React.forwardRef<HTMLDivElement, PlateElementProps>(
 
     return <Box {...rootProps} ref={rootRef} />;
   }
-) as (<V extends Value = Value, N extends TElement = EElement<V>>(
-  props: PlateElementProps<V, N> & React.RefAttributes<HTMLDivElement>
+) as ((
+  props: PlateElementProps & React.RefAttributes<HTMLDivElement>
 ) => React.ReactElement) & { displayName?: string };
 PlateElement.displayName = 'PlateElement';
 

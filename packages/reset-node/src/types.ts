@@ -1,15 +1,11 @@
 import type {
-  HotkeyPlugin,
+  HotkeyPluginOptions,
   PlateEditor,
-  Value,
 } from '@udecode/plate-common/server';
 
-export interface ResetNodePluginRule<
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
-> extends HotkeyPlugin {
+export interface ResetNodePluginRule extends HotkeyPluginOptions {
   /** Additional condition to the rule. */
-  predicate: (editor: E) => boolean;
+  predicate: (editor: PlateEditor) => boolean;
 
   /** Node types where the rule applies. */
   types: string[];
@@ -17,14 +13,11 @@ export interface ResetNodePluginRule<
   defaultType?: string;
 
   /** Callback called when resetting. */
-  onReset?: (editor: E) => void;
+  onReset?: (editor: PlateEditor) => void;
 }
 
-export interface ResetNodePlugin<
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
-> {
+export interface ResetNodePluginOptions {
   disableEditorReset?: boolean;
   disableFirstBlockReset?: boolean;
-  rules?: ResetNodePluginRule<V, E>[];
+  rules?: ResetNodePluginRule[];
 }

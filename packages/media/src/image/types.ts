@@ -1,8 +1,8 @@
-import type { MediaPlugin, TMediaElement } from '../media/index';
+import type { MediaPluginOptions, TMediaElement } from '../media/index';
 
 export interface TImageElement extends TMediaElement {}
 
-export interface ImagePlugin extends MediaPlugin {
+export interface ImagePluginOptions extends MediaPluginOptions {
   /** Disable url embed on insert data. */
   disableEmbedInsert?: boolean;
 

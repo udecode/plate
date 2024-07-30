@@ -3,7 +3,6 @@ import type { Location } from 'slate';
 import {
   ELEMENT_DEFAULT,
   type PlateEditor,
-  type Value,
   getChildren,
   getNodeEntries,
   getPluginType,
@@ -14,7 +13,7 @@ import {
 
 import { ELEMENT_CODE_BLOCK } from '../constants';
 
-export const unwrapCodeBlock = <V extends Value>(editor: PlateEditor<V>) => {
+export const unwrapCodeBlock = (editor: PlateEditor) => {
   if (!editor.selection) return;
 
   const codeBlockType = getPluginType(editor, ELEMENT_CODE_BLOCK);

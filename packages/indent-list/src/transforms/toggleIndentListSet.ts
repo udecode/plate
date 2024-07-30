@@ -1,9 +1,6 @@
 import type { TEditor, TNodeEntry, Value } from '@udecode/plate-common/server';
 
-import {
-  KEY_LIST_CHECKED,
-  KEY_LIST_STYLE_TYPE,
-} from '../createIndentListPlugin';
+import { KEY_LIST_CHECKED, KEY_LIST_STYLE_TYPE } from '../IndentListPlugin';
 import { ListStyleType } from '../types';
 import { type IndentListOptions, indentList, indentTodo } from './indentList';
 

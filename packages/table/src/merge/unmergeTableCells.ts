@@ -1,7 +1,6 @@
 import {
   type PlateEditor,
   type TDescendant,
-  type Value,
   findNode,
   getPluginOptions,
   getPluginType,
@@ -13,24 +12,22 @@ import {
 import type {
   TTableCellElement,
   TTableRowElement,
-  TablePlugin,
+  TablePluginOptions,
 } from '../types';
 
-import { ELEMENT_TABLE, ELEMENT_TH, ELEMENT_TR } from '../createTablePlugin';
+import { ELEMENT_TABLE, ELEMENT_TH, ELEMENT_TR } from '../TablePlugin';
 import { getTableGridAbove } from '../queries';
 import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';
 import { getCellIndices } from './getCellIndices';
 
-export const unmergeTableCells = <V extends Value = Value>(
-  editor: PlateEditor<V>
-) => {
+export const unmergeTableCells = (editor: PlateEditor) => {
   withoutNormalizing(editor, () => {
     const {
       _cellIndices: cellIndices,
       cellFactory,
       getCellChildren,
-    } = getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
+    } = getPluginOptions<TablePluginOptions>(editor, ELEMENT_TABLE);
 
     const cellEntries = getTableGridAbove(editor, { format: 'cell' });
     const [[cellElem, path]] = cellEntries;

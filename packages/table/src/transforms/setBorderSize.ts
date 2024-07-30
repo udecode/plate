@@ -3,7 +3,6 @@ import type { Path } from 'slate';
 import {
   type PlateEditor,
   type SetNodesOptions,
-  type Value,
   findNode,
   isElement,
   setNodes,
@@ -16,8 +15,8 @@ import { getLeftTableCell } from '../queries/getLeftTableCell';
 import { getTopTableCell } from '../queries/getTopTableCell';
 import { getCellTypes } from '../utils/index';
 
-export const setBorderSize = <V extends Value>(
-  editor: PlateEditor<V>,
+export const setBorderSize = (
+  editor: PlateEditor,
   size: number,
   {
     at,

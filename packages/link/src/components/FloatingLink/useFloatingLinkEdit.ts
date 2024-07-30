@@ -19,7 +19,7 @@ import {
   getRangeBoundingClientRect,
 } from '@udecode/plate-floating';
 
-import { ELEMENT_LINK, type LinkPlugin } from '../../createLinkPlugin';
+import { ELEMENT_LINK, type LinkPluginOptions } from '../../LinkPlugin';
 import { type LinkFloatingToolbarState, unwrapLink } from '../../index';
 import { triggerFloatingLinkEdit } from '../../utils/triggerFloatingLinkEdit';
 import {
@@ -35,7 +35,7 @@ export const useFloatingLinkEditState = ({
   floatingOptions,
 }: LinkFloatingToolbarState = {}) => {
   const editor = useEditorRef();
-  const { triggerFloatingLinkHotkeys } = getPluginOptions<LinkPlugin>(
+  const { triggerFloatingLinkHotkeys } = getPluginOptions<LinkPluginOptions>(
     editor,
     ELEMENT_LINK
   );

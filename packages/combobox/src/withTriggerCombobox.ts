@@ -1,20 +1,16 @@
 import {
   type PlateEditor,
   type TElement,
-  type Value,
-  type WithPlatePlugin,
+  type WithOverride,
   getEditorString,
   getPointBefore,
   getRange,
 } from '@udecode/plate-common/server';
 
-import type { TriggerComboboxPlugin } from './types';
+import type { TriggerComboboxPluginOptions } from './types';
 
-export const withTriggerCombobox = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E,
+export const withTriggerCombobox: WithOverride<TriggerComboboxPluginOptions> = (
+  editor,
   {
     options: {
       createComboboxInput,
@@ -23,7 +19,7 @@ export const withTriggerCombobox = <
       triggerQuery,
     },
     type,
-  }: WithPlatePlugin<TriggerComboboxPlugin, V, E>
+  }
 ) => {
   const { insertText } = editor;
 

@@ -3,7 +3,7 @@
  */
 
 export * from './constants';
-export * from './createCommentsPlugin';
+export * from './CommentsPlugin';
 export * from './types';
 export * from './useHooksComments';
 export * from './withComments';

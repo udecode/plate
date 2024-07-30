@@ -7,9 +7,9 @@ import VanillaSelectionArea, {
 } from '@viselect/vanilla';
 
 import {
-  type BlockSelectionPlugin,
+  type BlockSelectionPluginOptions,
   KEY_BLOCK_SELECTION,
-} from '../createBlockSelectionPlugin';
+} from '../BlockSelectionPlugin';
 
 export interface SelectionAreaProps
   extends Omit<Partial<SelectionOptions>, 'boundaries'>,
@@ -52,10 +52,11 @@ export function SelectionArea({
   const areaBoundariesRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
-    const { scrollContainerSelector } = getPluginOptions<BlockSelectionPlugin>(
-      editor,
-      KEY_BLOCK_SELECTION
-    );
+    const { scrollContainerSelector } =
+      getPluginOptions<BlockSelectionPluginOptions>(
+        editor,
+        KEY_BLOCK_SELECTION
+      );
 
     if (scrollContainerSelector) {
       areaBoundariesRef.current = window.document.querySelector(

@@ -1,4 +1,4 @@
-import type { TEditor, TOperation, Value } from '@udecode/plate-common/server';
+import type { PlateEditor, TOperation } from '@udecode/plate-common/server';
 import type * as Y from 'yjs';
 
 import { type YjsEditor, withYjs } from '@slate-yjs/core';
@@ -27,12 +27,9 @@ export type YjsEditorProps = {
   | 'sharedRoot'
 >;
 
-export const withTYjs = <
-  V extends Value,
-  E extends TEditor<V>,
-  EE extends E & YjsEditorProps = E & YjsEditorProps,
->(
-  editor: E,
+export const withTYjs = (
+  editor: PlateEditor,
   sharedRoot: Y.XmlText,
   options?: WithYjsOptions
-) => withYjs(editor as any, sharedRoot, options) as any as EE;
+) =>
+  withYjs(editor as any, sharedRoot, options) as PlateEditor & YjsEditorProps;

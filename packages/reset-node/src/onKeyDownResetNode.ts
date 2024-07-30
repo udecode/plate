@@ -1,26 +1,21 @@
+import type { KeyboardHandler } from '@udecode/plate-common';
+
 import {
-  type KeyboardHandlerReturnType,
-  type PlateEditor,
-  type Value,
-  type WithPlatePlugin,
   isCollapsed,
   isHotkey,
   setElements,
   someNode,
 } from '@udecode/plate-common/server';
 
-import type { ResetNodePlugin } from './types';
+import type { ResetNodePluginOptions } from './types';
 
 export const SIMULATE_BACKSPACE: any = {
   key: '',
   which: 8,
 };
 
-export const onKeyDownResetNode =
-  <V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>(
-    editor: E,
-    { options: { rules } }: WithPlatePlugin<ResetNodePlugin, V, E>
-  ): KeyboardHandlerReturnType =>
+export const onKeyDownResetNode: KeyboardHandler<ResetNodePluginOptions> =
+  (editor, { options: { rules } }) =>
   (event) => {
     if (event.defaultPrevented) return;
 

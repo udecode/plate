@@ -6,9 +6,9 @@ import {
 } from '@udecode/plate-common/server';
 import { useReadOnly, useSelected } from 'slate-react';
 
-import type { TTableCellElement, TablePlugin } from '../types';
+import type { TTableCellElement, TablePluginOptions } from '../types';
 
-import { ELEMENT_TABLE } from '../createTablePlugin';
+import { ELEMENT_TABLE } from '../TablePlugin';
 import { getTableGridAbove } from '../queries';
 import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';
@@ -18,7 +18,7 @@ import { isTableRectangular } from './isTableRectangular';
 export const useTableMergeState = () => {
   const editorRef = useEditorRef();
 
-  const { enableMerging } = getPluginOptions<TablePlugin>(
+  const { enableMerging } = getPluginOptions<TablePluginOptions>(
     editorRef,
     ELEMENT_TABLE
   );

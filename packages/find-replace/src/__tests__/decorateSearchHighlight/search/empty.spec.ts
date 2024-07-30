@@ -5,7 +5,7 @@ import { createPlateEditor } from '@udecode/plate-common';
 import {
   MARK_SEARCH_HIGHLIGHT,
   createFindReplacePlugin,
-} from '../../../createFindReplacePlugin';
+} from '../../../FindReplacePlugin';
 import { decorateFindReplace } from '../../../decorateFindReplace';
 
 const output: Range[] = [];

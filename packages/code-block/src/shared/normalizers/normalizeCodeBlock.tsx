@@ -2,7 +2,6 @@ import {
   type PlateEditor,
   type TElement,
   type TNodeEntry,
-  type Value,
   getChildren,
   getPluginType,
   isElement,
@@ -13,7 +12,7 @@ import { ELEMENT_CODE_BLOCK } from '../constants';
 import { getCodeLineType } from '../options';
 
 /** Normalize code block node to force the pre>code>div.codeline structure. */
-export const normalizeCodeBlock = <V extends Value>(editor: PlateEditor<V>) => {
+export const normalizeCodeBlock = (editor: PlateEditor) => {
   const codeBlockType = getPluginType(editor, ELEMENT_CODE_BLOCK);
   const codeLineType = getCodeLineType(editor);
 

@@ -8,10 +8,10 @@ import {
 import { clsx } from 'clsx';
 
 import {
-  type IndentListPlugin,
+  type IndentListPluginOptions,
   KEY_LIST_START,
   KEY_LIST_STYLE_TYPE,
-} from './createIndentListPlugin';
+} from './IndentListPlugin';
 import { ULIST_STYLE_TYPES } from './types';
 
 export const injectIndentListComponent = (
@@ -34,7 +34,7 @@ export const injectIndentListComponent = (
     return function Component({ children, ...props }) {
       const { editor } = props;
 
-      const { listStyleTypes = {} } = getPluginOptions<IndentListPlugin>(
+      const { listStyleTypes = {} } = getPluginOptions<IndentListPluginOptions>(
         editor,
         KEY_LIST_STYLE_TYPE
       );

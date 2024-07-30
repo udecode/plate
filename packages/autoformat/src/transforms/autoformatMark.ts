@@ -2,7 +2,6 @@ import type { Point, Range } from 'slate';
 
 import {
   type TEditor,
-  type Value,
   collapseSelection,
   deleteText,
   getEditorString,
@@ -20,8 +19,8 @@ export interface AutoformatMarkOptions extends AutoformatMarkRule {
   text: string;
 }
 
-export const autoformatMark = <V extends Value>(
-  editor: TEditor<V>,
+export const autoformatMark = (
+  editor: TEditor,
   { ignoreTrim, match: _match, text, trigger, type }: AutoformatMarkOptions
 ) => {
   if (!type) return false;

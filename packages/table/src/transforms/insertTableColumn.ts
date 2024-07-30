@@ -1,7 +1,6 @@
 import {
   type PlateEditor,
   type TElement,
-  type Value,
   findNode,
   getBlockAbove,
   getPluginOptions,
@@ -12,14 +11,14 @@ import {
 } from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
-import type { TTableElement, TablePlugin } from '../types';
+import type { TTableElement, TablePluginOptions } from '../types';
 
-import { ELEMENT_TABLE, ELEMENT_TH } from '../createTablePlugin';
+import { ELEMENT_TABLE, ELEMENT_TH } from '../TablePlugin';
 import { insertTableMergeColumn } from '../merge/insertTableColumn';
 import { getCellTypes } from '../utils/index';
 
-export const insertTableColumn = <V extends Value>(
-  editor: PlateEditor<V>,
+export const insertTableColumn = (
+  editor: PlateEditor,
   options: {
     /** Exact path of the cell to insert the column at. Will overrule `fromCell`. */
     at?: Path;
@@ -33,7 +32,7 @@ export const insertTableColumn = <V extends Value>(
     header?: boolean;
   } = {}
 ) => {
-  const { enableMerging } = getPluginOptions<TablePlugin, V>(
+  const { enableMerging } = getPluginOptions<TablePluginOptions>(
     editor,
     ELEMENT_TABLE
   );
@@ -79,10 +78,8 @@ export const insertTableColumn = <V extends Value>(
 
   const currentRowIndex = cellPath.at(-2);
 
-  const { cellFactory, initialTableWidth, minColumnWidth } = getPluginOptions<
-    TablePlugin,
-    V
-  >(editor, ELEMENT_TABLE);
+  const { cellFactory, initialTableWidth, minColumnWidth } =
+    getPluginOptions<TablePluginOptions>(editor, ELEMENT_TABLE);
 
   withoutNormalizing(editor, () => {
     // for each row, insert a new cell

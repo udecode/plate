@@ -1,16 +1,15 @@
 import {
   ELEMENT_DEFAULT,
   type PlateEditor,
-  type Value,
   insertNodes,
   withoutNormalizing,
 } from '@udecode/plate-common/server';
 
 import type { TColumnGroupElement } from '../types';
 
-import { ELEMENT_COLUMN, ELEMENT_COLUMN_GROUP } from '../createColumnPlugin';
+import { ELEMENT_COLUMN, ELEMENT_COLUMN_GROUP } from '../ColumnPlugin';
 
-export const insertColumnGroup = <V extends Value>(editor: PlateEditor<V>) => {
+export const insertColumnGroup = (editor: PlateEditor) => {
   withoutNormalizing(editor, () => {
     insertNodes<TColumnGroupElement>(editor, {
       children: [

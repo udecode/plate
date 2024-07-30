@@ -1,7 +1,7 @@
+import type { WithOverride } from '@udecode/plate-common';
+
 import {
   type PlateEditor,
-  type Value,
-  type WithPlatePlugin,
   getNode,
   getPointAfter,
   getPointBefore,
@@ -12,7 +12,7 @@ import {
 
 import type {
   SuggestionEditorProps,
-  SuggestionPlugin,
+  SuggestionPluginOptions,
   TSuggestionText,
 } from './types';
 
@@ -23,15 +23,10 @@ import { insertFragmentSuggestion } from './transforms/insertFragmentSuggestion'
 import { insertTextSuggestion } from './transforms/insertTextSuggestion';
 import { getSuggestionId, getSuggestionKeys } from './utils/index';
 
-export const withSuggestion = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
-  EE extends E & SuggestionEditorProps = E & SuggestionEditorProps,
->(
-  e: E,
-  _plugin: WithPlatePlugin<SuggestionPlugin, V, E>
+export const withSuggestion: WithOverride<SuggestionPluginOptions> = (
+  _editor
 ) => {
-  const editor = e as unknown as EE;
+  const editor = _editor as unknown as PlateEditor & SuggestionEditorProps;
 
   const {
     deleteBackward,

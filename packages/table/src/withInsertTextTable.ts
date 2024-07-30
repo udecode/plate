@@ -1,21 +1,15 @@
 import {
-  type PlateEditor,
-  type Value,
-  type WithPlatePlugin,
+  type WithOverride,
   collapseSelection,
   isExpanded,
 } from '@udecode/plate-common/server';
 
-import type { TablePlugin } from './types';
+import type { TablePluginOptions } from './types';
 
 import { getTableAbove, getTableGridAbove } from './queries/index';
 
-export const withInsertTextTable = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E,
-  _plugin: WithPlatePlugin<TablePlugin<V>, V, E>
+export const withInsertTextTable: WithOverride<TablePluginOptions> = (
+  editor
 ) => {
   const { insertText } = editor;
 

@@ -3,7 +3,7 @@
  */
 
 export * from './column-store';
-export * from './createColumnPlugin';
+export * from './ColumnPlugin';
 export * from './onKeyDownColumn';
 export * from './types';
 export * from './withColumn';

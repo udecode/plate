@@ -4,14 +4,13 @@ import {
   type PlateEditor,
   type TElement,
   type TElementEntry,
-  type Value,
   getNode,
   getPluginOptions,
 } from '@udecode/plate-common/server';
 
-import type { TTableElement, TablePlugin } from '../types';
+import type { TTableElement, TablePluginOptions } from '../types';
 
-import { ELEMENT_TABLE } from '../createTablePlugin';
+import { ELEMENT_TABLE } from '../TablePlugin';
 import { getTableMergeGridByRange } from '../merge/getTableGridByRange';
 import { getEmptyTableNode } from '../utils/getEmptyTableNode';
 
@@ -28,11 +27,11 @@ export interface GetTableGridByRangeOptions {
 }
 
 /** Get sub table between 2 cell paths. */
-export const getTableGridByRange = <V extends Value>(
-  editor: PlateEditor<V>,
+export const getTableGridByRange = (
+  editor: PlateEditor,
   { at, format = 'table' }: GetTableGridByRangeOptions
 ): TElementEntry[] => {
-  const { enableMerging } = getPluginOptions<TablePlugin, V>(
+  const { enableMerging } = getPluginOptions<TablePluginOptions>(
     editor,
     ELEMENT_TABLE
   );

@@ -1,14 +1,14 @@
-import type { TEditor, TNodeEntry, Value } from '@udecode/plate-common/server';
+import type { TEditor, TNodeEntry } from '@udecode/plate-common/server';
 
 import {
   KEY_LIST_CHECKED,
   KEY_LIST_STYLE_TYPE,
   KEY_TODO_STYLE_TYPE,
-} from '../createIndentListPlugin';
+} from '../IndentListPlugin';
 import { ListStyleType } from '../types';
 
-export const areEqListStyleType = <V extends Value>(
-  editor: TEditor<V>,
+export const areEqListStyleType = (
+  editor: TEditor,
   entries: TNodeEntry[],
   {
     listStyleType = ListStyleType.Disc,

@@ -2,7 +2,6 @@ import type { PathRef } from 'slate';
 
 import {
   type PlateEditor,
-  type Value,
   getChildren,
   getNodeEntry,
   isElement,
@@ -11,10 +10,10 @@ import {
 
 import type { TColumnElement, TColumnGroupElement } from '../types';
 
-import { ELEMENT_COLUMN } from '../createColumnPlugin';
+import { ELEMENT_COLUMN } from '../ColumnPlugin';
 
-export const setColumnWidth = <V extends Value>(
-  editor: PlateEditor<V>,
+export const setColumnWidth = (
+  editor: PlateEditor,
   groupPathRef: PathRef,
   layout: Required<TColumnGroupElement>['layout']
 ) => {

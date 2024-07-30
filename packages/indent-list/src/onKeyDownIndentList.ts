@@ -1,26 +1,20 @@
+import type { KeyboardHandler } from '@udecode/plate-common';
+
 import {
-  type KeyboardHandlerReturnType,
-  type PlateEditor,
   type TElement,
-  type Value,
-  type WithPlatePlugin,
   getBlockAbove,
   isBlockAboveEmpty,
   isHotkey,
 } from '@udecode/plate-common/server';
 
 import {
-  type IndentListPlugin,
+  type IndentListPluginOptions,
   KEY_LIST_STYLE_TYPE,
-} from './createIndentListPlugin';
+} from './IndentListPlugin';
 import { outdentList } from './transforms/index';
 
-export const onKeyDownIndentList =
-  <V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>(
-    editor: E,
-    _plugin: WithPlatePlugin<IndentListPlugin, V, E>
-  ): KeyboardHandlerReturnType =>
-  (e) => {
+export const onKeyDownIndentList: KeyboardHandler<IndentListPluginOptions> =
+  (editor) => (e) => {
     if (e.defaultPrevented) return;
     if (!editor.selection) return;
 

@@ -1,21 +1,17 @@
 import type { Path } from 'slate';
 
-import {
-  type TEditor,
-  type Value,
-  setElements,
-} from '@udecode/plate-common/server';
+import { type TEditor, setElements } from '@udecode/plate-common/server';
 import { KEY_INDENT } from '@udecode/plate-indent';
 
 import {
   KEY_LIST_CHECKED,
   KEY_LIST_STYLE_TYPE,
   KEY_TODO_STYLE_TYPE,
-} from '../createIndentListPlugin';
+} from '../IndentListPlugin';
 import { ListStyleType } from '../types';
 
-export const setIndentListNode = <V extends Value>(
-  editor: TEditor<V>,
+export const setIndentListNode = (
+  editor: TEditor,
   {
     at,
     indent = 0,
@@ -35,8 +31,8 @@ export const setIndentListNode = <V extends Value>(
   );
 };
 
-export const setIndentTodoNode = <V extends Value>(
-  editor: TEditor<V>,
+export const setIndentTodoNode = (
+  editor: TEditor,
   {
     at,
     indent = 0,

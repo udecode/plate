@@ -12,13 +12,13 @@ import {
 import { Path } from 'slate';
 
 import {
+  type BlockSelectionPluginOptions,
+  KEY_BLOCK_SELECTION,
+} from '../BlockSelectionPlugin';
+import {
   blockSelectionActions,
   useBlockSelectionSelectors,
 } from '../blockSelectionStore';
-import {
-  type BlockSelectionPlugin,
-  KEY_BLOCK_SELECTION,
-} from '../createBlockSelectionPlugin';
 import { isNodeBlockSelected } from '../queries';
 
 export interface BlockSelectableOptions {
@@ -44,7 +44,7 @@ export const useBlockSelectableState = ({
     };
   }
 
-  const { query } = getPluginOptions<BlockSelectionPlugin>(
+  const { query } = getPluginOptions<BlockSelectionPluginOptions>(
     editor,
     KEY_BLOCK_SELECTION
   );
@@ -87,7 +87,10 @@ export const useBlockSelectable = ({
         if (!editor) return;
 
         const { disableContextMenu = true } =
-          getPluginOptions<BlockSelectionPlugin>(editor, KEY_BLOCK_SELECTION);
+          getPluginOptions<BlockSelectionPluginOptions>(
+            editor,
+            KEY_BLOCK_SELECTION
+          );
 
         if (disableContextMenu) return;
         if (editor.selection?.focus) {

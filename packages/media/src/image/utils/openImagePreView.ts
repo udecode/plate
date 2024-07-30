@@ -2,7 +2,7 @@ import { type PlateEditor, getNodeEntries } from '@udecode/plate-common';
 
 import type { TMediaElement } from '../..';
 
-import { ELEMENT_IMAGE } from '../createImagePlugin';
+import { ELEMENT_IMAGE } from '../ImagePlugin';
 import { imagePreviewActions, type previewItem } from '../image-preview-store';
 
 const getUrlList = (editor: PlateEditor) => {

@@ -1,11 +1,11 @@
-import type { PlateEditor, Value } from '@udecode/plate-common/server';
+import type { PlateEditor } from '@udecode/plate-common/server';
 
 import { floatingLinkSelectors } from '../components/index';
 import { triggerFloatingLinkEdit } from './triggerFloatingLinkEdit';
 import { triggerFloatingLinkInsert } from './triggerFloatingLinkInsert';
 
-export const triggerFloatingLink = <V extends Value>(
-  editor: PlateEditor<V>,
+export const triggerFloatingLink = (
+  editor: PlateEditor,
   {
     focused,
   }: {

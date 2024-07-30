@@ -1,6 +1,5 @@
 import {
   type PlateEditor,
-  type Value,
   findNode,
   getNodeEntry,
 } from '@udecode/plate-common/server';
@@ -11,8 +10,8 @@ import type { TTableCellElement } from '../types';
 import { getCellTypes } from '../utils/index';
 
 // Get cell to the left of the current cell
-export const getLeftTableCell = <V extends Value>(
-  editor: PlateEditor<V>,
+export const getLeftTableCell = (
+  editor: PlateEditor,
   {
     at: cellPath,
   }: {

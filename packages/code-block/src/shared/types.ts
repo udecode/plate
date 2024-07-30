@@ -1,5 +1,5 @@
 import type {
-  HotkeyPlugin,
+  HotkeyPluginOptions,
   InsertNodesOptions,
   TElement,
   Value,
@@ -12,7 +12,7 @@ export type Prism = {
   tokenize: typeof tokenize;
 };
 
-export interface CodeBlockPlugin extends HotkeyPlugin {
+export interface CodeBlockPluginOptions extends HotkeyPluginOptions {
   deserializers?: string[];
   prism?: Prism;
   syntax?: boolean;

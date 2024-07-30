@@ -1,9 +1,8 @@
 import type { PlateEditor } from '@udecode/plate-core';
-import type { Value } from '@udecode/slate';
 
 // Return undefined if not import the `BlockSelectionPlugin` plugin
-export const blockSelectedIds = <V extends Value>(
-  editor: PlateEditor<V>
+export const blockSelectedIds = (
+  editor: PlateEditor
 ): Set<string> | undefined => {
   const { blockSelectionStore } = editor as any;
 

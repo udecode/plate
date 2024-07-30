@@ -1,6 +1,5 @@
 import {
   type PlateEditor,
-  type Value,
   insertNodes,
   isSelectionExpanded,
   nanoid,
@@ -13,10 +12,7 @@ import { findSuggestionId } from '../queries/findSuggestionId';
 import { deleteFragmentSuggestion } from './deleteFragmentSuggestion';
 import { getSuggestionProps } from './getSuggestionProps';
 
-export const insertTextSuggestion = <V extends Value>(
-  editor: PlateEditor<V>,
-  text: string
-) => {
+export const insertTextSuggestion = (editor: PlateEditor, text: string) => {
   withoutNormalizing(editor, () => {
     const id = findSuggestionId(editor, editor.selection!) ?? nanoid();
 

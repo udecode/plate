@@ -1,10 +1,10 @@
-import type { TElement, Value } from '@udecode/plate-common/server';
+import type { TElement } from '@udecode/plate-common/server';
 
 import type { MdastNode, RemarkPluginOptions } from './types';
 
-export const remarkTransformElement = <V extends Value>(
+export const remarkTransformElement = (
   node: MdastNode,
-  options: RemarkPluginOptions<V>
+  options: RemarkPluginOptions
 ): TElement | TElement[] => {
   const { elementRules } = options;
 

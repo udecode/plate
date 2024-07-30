@@ -5,7 +5,7 @@ import type { PlateEditor } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createAlignPlugin } from '../../shared/createAlignPlugin';
+import { createAlignPlugin } from '../../shared/AlignPlugin';
 import { setAlign } from '../../shared/transforms/index';
 
 jsx;

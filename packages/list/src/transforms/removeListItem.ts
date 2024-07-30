@@ -2,7 +2,6 @@ import {
   type PlateEditor,
   type TElement,
   type TElementEntry,
-  type Value,
   createPathRef,
   deleteMerge,
   getNodeEntry,
@@ -15,7 +14,7 @@ import {
 } from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
-import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
+import { ELEMENT_LI, ELEMENT_LIC } from '../ListPlugin';
 import { hasListChild } from '../queries/hasListChild';
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 import { moveListItemsToList } from './moveListItemsToList';
@@ -27,8 +26,8 @@ export interface RemoveListItemOptions {
 }
 
 /** Remove list item and move its sublist to list if any. */
-export const removeListItem = <V extends Value>(
-  editor: PlateEditor<V>,
+export const removeListItem = (
+  editor: PlateEditor,
   { list, listItem, reverse = true }: RemoveListItemOptions
 ) => {
   const [liNode, liPath] = listItem;

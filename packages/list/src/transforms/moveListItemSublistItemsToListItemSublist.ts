@@ -2,7 +2,6 @@ import {
   type PlateEditor,
   type TElement,
   type TElementEntry,
-  type Value,
   deleteText,
   findDescendant,
   getLastChildPath,
@@ -30,8 +29,8 @@ export interface MoveListItemSublistItemsToListItemSublistOptions {
  * Move fromListItem sublist list items to the end of `toListItem` sublist. If
  * there is no `toListItem` sublist, insert one.
  */
-export const moveListItemSublistItemsToListItemSublist = <V extends Value>(
-  editor: PlateEditor<V>,
+export const moveListItemSublistItemsToListItemSublist = (
+  editor: PlateEditor,
   {
     fromListItem,
     start,

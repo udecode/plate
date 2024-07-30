@@ -1,8 +1,4 @@
-import type {
-  PlateEditor,
-  TElement,
-  Value,
-} from '@udecode/plate-common/server';
+import type { PlateEditor, TElement } from '@udecode/plate-common/server';
 
 export type MdastElementType =
   | 'blockquote'
@@ -42,29 +38,29 @@ export interface MdastNode {
   value?: string;
 }
 
-export type RemarkElementRule<V extends Value> = {
+export type RemarkElementRule = {
   transform: (
     node: MdastNode,
-    options: RemarkPluginOptions<V>
+    options: RemarkPluginOptions
   ) => TElement | TElement[];
 };
 
-export type RemarkElementRules<V extends Value> = {
-  [key in MdastElementType]?: RemarkElementRule<V>;
+export type RemarkElementRules = {
+  [key in MdastElementType]?: RemarkElementRule;
 };
 
-export type RemarkTextRule<V extends Value> = {
-  mark?: (options: RemarkPluginOptions<V>) => string;
+export type RemarkTextRule = {
+  mark?: (options: RemarkPluginOptions) => string;
   transform?: (text: string) => string;
 };
 
-export type RemarkTextRules<V extends Value> = {
-  [key in MdastTextType]?: RemarkTextRule<V>;
+export type RemarkTextRules = {
+  [key in MdastTextType]?: RemarkTextRule;
 };
 
-export type RemarkPluginOptions<V extends Value> = {
-  editor: PlateEditor<V>;
-  elementRules: RemarkElementRules<V>;
+export type RemarkPluginOptions = {
+  editor: PlateEditor;
+  elementRules: RemarkElementRules;
   indentList?: boolean;
-  textRules: RemarkTextRules<V>;
+  textRules: RemarkTextRules;
 };

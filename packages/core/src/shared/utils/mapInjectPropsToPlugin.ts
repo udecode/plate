@@ -1,5 +1,5 @@
 import type { PlateEditor } from '../types/PlateEditor';
-import type { PlatePlugin, PlatePlugin } from '../types/plugin/PlatePlugin';
+import type { PlatePlugin } from '../types/plugin/PlatePlugin';
 import type { PluginKey } from '../types/plugin/PlatePluginKey';
 
 import { getKeysByTypes } from './getKeysByTypes';
@@ -12,7 +12,7 @@ export const mapInjectPropsToPlugin = (
 ) => {
   const validTypes = plugin.inject.props?.validTypes;
 
-  if (!validTypes) return;
+  if (!validTypes) return {};
 
   const keys = getKeysByTypes(editor, validTypes);
 

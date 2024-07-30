@@ -1,6 +1,5 @@
 import {
-  type PlateEditor,
-  type Value,
+  type WithOverride,
   getBlockAbove,
   getEndPoint,
   getPluginType,
@@ -10,7 +9,9 @@ import {
 } from '@udecode/plate-common/server';
 import { Range } from 'slate';
 
-import { ELEMENT_TABLE } from './createTablePlugin';
+import type { TablePluginOptions } from './types';
+
+import { ELEMENT_TABLE } from './TablePlugin';
 import { overrideSelectionFromCell } from './transforms/overrideSelectionFromCell';
 
 // TODO: tests
@@ -24,11 +25,8 @@ import { overrideSelectionFromCell } from './transforms/overrideSelectionFromCel
  * - If focus is in table, anchor in a block after: set focus to the point before
  *   start of table
  */
-export const withSelectionTable = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E
+export const withSelectionTable: WithOverride<TablePluginOptions> = (
+  editor
 ) => {
   const { apply } = editor;
 

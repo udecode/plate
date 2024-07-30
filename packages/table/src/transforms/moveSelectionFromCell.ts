@@ -2,7 +2,6 @@ import type { Location } from 'slate';
 
 import {
   type PlateEditor,
-  type Value,
   getBlockAbove,
   getEndPoint,
   getStartPoint,
@@ -16,8 +15,8 @@ import { getTableGridAbove } from '../queries/getTableGridAbove';
 import { getCellTypes } from '../utils/getCellType';
 
 /** Move selection by cell unit. */
-export const moveSelectionFromCell = <V extends Value = Value>(
-  editor: PlateEditor<V>,
+export const moveSelectionFromCell = (
+  editor: PlateEditor,
   {
     at,
     edge,

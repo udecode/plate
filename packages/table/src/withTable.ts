@@ -1,10 +1,6 @@
-import type {
-  PlateEditor,
-  Value,
-  WithPlatePlugin,
-} from '@udecode/plate-common/server';
+import type { WithOverride } from '@udecode/plate-common/server';
 
-import type { TablePlugin } from './types';
+import type { TablePluginOptions } from './types';
 
 import { withDeleteTable } from './withDeleteTable';
 import { withGetFragmentTable } from './withGetFragmentTable';
@@ -15,21 +11,15 @@ import { withNormalizeTable } from './withNormalizeTable';
 import { withSelectionTable } from './withSelectionTable';
 import { withSetFragmentDataTable } from './withSetFragmentDataTable';
 
-export const withTable = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E,
-  plugin: WithPlatePlugin<TablePlugin<V>, V, E>
-) => {
-  editor = withNormalizeTable<V, E>(editor);
-  editor = withDeleteTable<V, E>(editor);
-  editor = withGetFragmentTable<V, E>(editor, plugin);
-  editor = withInsertFragmentTable<V, E>(editor, plugin);
-  editor = withInsertTextTable<V, E>(editor, plugin);
-  editor = withSelectionTable<V, E>(editor);
-  editor = withSetFragmentDataTable<V, E>(editor);
-  editor = withMarkTable<V, E>(editor);
+export const withTable: WithOverride<TablePluginOptions> = (editor, plugin) => {
+  editor = withNormalizeTable(editor, plugin);
+  editor = withDeleteTable(editor, plugin);
+  editor = withGetFragmentTable(editor, plugin);
+  editor = withInsertFragmentTable(editor, plugin);
+  editor = withInsertTextTable(editor, plugin);
+  editor = withSelectionTable(editor, plugin);
+  editor = withSetFragmentDataTable(editor, plugin);
+  editor = withMarkTable(editor, plugin);
 
   return editor;
 };

@@ -1,7 +1,6 @@
 import {
   type PlateEditor,
   type TElement,
-  type Value,
   collapseSelection,
   deleteText,
   getAboveNode,
@@ -19,12 +18,10 @@ import {
 } from '@udecode/plate-common/server';
 import { Path, Range } from 'slate';
 
-import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
+import { ELEMENT_LI, ELEMENT_LIC } from '../ListPlugin';
 
 /** Insert list item if selection in li>p. TODO: test */
-export const insertListItem = <V extends Value>(
-  editor: PlateEditor<V>
-): boolean => {
+export const insertListItem = (editor: PlateEditor): boolean => {
   const liType = getPluginType(editor, ELEMENT_LI);
   const licType = getPluginType(editor, ELEMENT_LIC);
 

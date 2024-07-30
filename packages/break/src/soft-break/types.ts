@@ -7,6 +7,6 @@ export interface SoftBreakRule {
   query?: QueryNodeOptions;
 }
 
-export interface SoftBreakPlugin {
+export interface SoftBreakPluginOptions {
   rules?: SoftBreakRule[];
 }

@@ -3,16 +3,16 @@ import {
   type PlateEditor,
   isHotkey,
 } from '@udecode/plate-core/server';
-import { type Value, moveSelection } from '@udecode/slate';
+import { moveSelection } from '@udecode/slate';
 import { Range } from 'slate';
 
-export interface MoveSelectionByOffsetOptions<V extends Value = Value> {
-  query?: (editor: PlateEditor<V>) => boolean;
+export interface MoveSelectionByOffsetOptions {
+  query?: (editor: PlateEditor) => boolean;
 }
 
-export const moveSelectionByOffset: <V extends Value>(
-  editor: PlateEditor<V>,
-  options?: MoveSelectionByOffsetOptions<V>
+export const moveSelectionByOffset: (
+  editor: PlateEditor,
+  options?: MoveSelectionByOffsetOptions
 ) => KeyboardEventHandler =
   (editor, { query = () => true } = {}) =>
   (event) => {

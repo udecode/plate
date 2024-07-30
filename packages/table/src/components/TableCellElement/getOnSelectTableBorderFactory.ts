@@ -1,8 +1,4 @@
-import type {
-  PlateEditor,
-  TElement,
-  Value,
-} from '@udecode/plate-common/server';
+import type { PlateEditor, TElement } from '@udecode/plate-common/server';
 
 import { focusEditor } from '@udecode/plate-common';
 
@@ -12,7 +8,7 @@ import { isTableBorderHidden } from '../../queries/index';
 import { setBorderSize } from '../../transforms/index';
 
 export const getOnSelectTableBorderFactory =
-  <V extends Value>(editor: PlateEditor<V>, selectedCells: TElement[] | null) =>
+  (editor: PlateEditor, selectedCells: TElement[] | null) =>
   (border: 'none' | 'outer' | BorderDirection) =>
   () => {
     if (selectedCells) return;

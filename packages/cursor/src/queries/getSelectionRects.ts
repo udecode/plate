@@ -3,17 +3,13 @@ import {
   toDOMNode,
   toDOMRange,
 } from '@udecode/plate-common';
-import {
-  type Value,
-  getNodeEntries,
-  isText,
-} from '@udecode/plate-common/server';
+import { getNodeEntries, isText } from '@udecode/plate-common/server';
 import { Path, Range } from 'slate';
 
 import type { SelectionRect } from '../types';
 
-export const getSelectionRects = <V extends Value>(
-  editor: TReactEditor<V>,
+export const getSelectionRects = (
+  editor: TReactEditor,
   {
     range,
     xOffset,

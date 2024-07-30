@@ -1,32 +1,25 @@
 import * as portiveClient from '@portive/client';
 import {
   type Value,
-  type WithPlatePlugin,
+  type WithOverride,
   insertNode,
 } from '@udecode/plate-common/server';
 import Defer from 'p-defer';
 
 import type { PlateCloudEditor } from '../cloud';
 import type { UploadError, UploadSuccess } from '../upload';
-import type {
-  CloudImagePlugin,
-  PlateCloudImageEditor,
-  TCloudImageElement,
-} from './types';
+import type { CloudImagePluginOptions, TCloudImageElement } from './types';
 
 const DEFAULT_MAX_INITIAL_WIDTH = 320;
 const DEFAULT_MAX_INITIAL_HEIGHT = 320;
 const DEFAULT_MIN_RESIZE_WIDTH = 100;
 const DEFAULT_MAX_RESIZE_WIDTH = 640;
 
-export const withCloudImage = <
-  V extends Value = Value,
-  E extends PlateCloudImageEditor<V> = PlateCloudImageEditor<V>,
->(
-  $editor: E,
-  plugin: WithPlatePlugin<CloudImagePlugin, V, E>
+export const withCloudImage: WithOverride<CloudImagePluginOptions> = (
+  e,
+  plugin
 ) => {
-  const editor = $editor as E & PlateCloudEditor<V>;
+  const editor = e as PlateCloudEditor;
   const { maxInitialHeight, maxInitialWidth, maxResizeWidth, minResizeWidth } =
     {
       maxInitialHeight: DEFAULT_MAX_INITIAL_HEIGHT,

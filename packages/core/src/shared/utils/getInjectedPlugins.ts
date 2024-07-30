@@ -1,5 +1,5 @@
 import type { PlateEditor } from '../types/PlateEditor';
-import type { PlatePlugin, PlatePlugin } from '../types/plugin/PlatePlugin';
+import type { PlatePlugin } from '../types/plugin/PlatePlugin';
 
 export type InjectedPlugin<O = {}, T = {}, Q = {}, S = {}> = Partial<
   PlatePlugin<O, T, Q, S>

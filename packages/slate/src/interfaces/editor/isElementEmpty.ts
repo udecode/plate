@@ -1,10 +1,8 @@
 import { Editor } from 'slate';
 
-import type { EElement } from '../element/TElement';
-import type { TEditor, Value } from './TEditor';
+import type { TElement } from '../element/TElement';
+import type { TEditor } from './TEditor';
 
 /** Check if an element is empty, accounting for void nodes. */
-export const isElementEmpty = <V extends Value>(
-  editor: TEditor<V>,
-  element: EElement<V>
-) => Editor.isEmpty(editor as any, element);
+export const isElementEmpty = (editor: TEditor, element: TElement) =>
+  Editor.isEmpty(editor as any, element);

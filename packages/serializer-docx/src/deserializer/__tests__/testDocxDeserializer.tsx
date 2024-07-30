@@ -22,7 +22,7 @@ import { alignPlugin } from 'www/src/lib/plate/demo/plugins/alignPlugin';
 import { lineHeightPlugin } from 'www/src/lib/plate/demo/plugins/lineHeightPlugin';
 
 import { readTestFile } from '../../__tests__/readTestFile';
-import { createDeserializeDocxPlugin } from '../createDeserializeDocxPlugin';
+import { createDeserializeDocxPlugin } from '../DeserializeDocxPlugin';
 
 jsx;
 

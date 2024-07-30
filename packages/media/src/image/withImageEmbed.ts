@@ -1,21 +1,14 @@
-import type {
-  PlateEditor,
-  Value,
-  WithPlatePlugin,
-} from '@udecode/plate-common/server';
+import type { WithOverride } from '@udecode/plate-common/server';
 
-import type { ImagePlugin } from './types';
+import type { ImagePluginOptions } from './types';
 
 import { insertImage } from './transforms/insertImage';
 import { isImageUrl } from './utils/isImageUrl';
 
 /** If inserted text is image url, insert image instead. */
-export const withImageEmbed = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E,
-  _plugin: WithPlatePlugin<ImagePlugin, V, E>
+export const withImageEmbed: WithOverride<ImagePluginOptions> = (
+  editor,
+  _plugin
 ) => {
   const { insertData } = editor;
 

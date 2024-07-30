@@ -3,9 +3,9 @@ import React from 'react';
 import { findNodePath, useEditorRef } from '@udecode/plate-common';
 import { getPluginOptions, unsetNodes } from '@udecode/plate-common/server';
 
-import type { TTableElement, TablePlugin } from '../../types';
+import type { TTableElement, TablePluginOptions } from '../../types';
 
-import { ELEMENT_TABLE } from '../../createTablePlugin';
+import { ELEMENT_TABLE } from '../../TablePlugin';
 import {
   getTableColumnCount,
   getTableOverriddenColSizes,
@@ -23,7 +23,7 @@ export const useTableColSizes = (
   const editor = useEditorRef();
   const colSizeOverrides = useTableStore().get.colSizeOverrides();
 
-  const { enableUnsetSingleColSize } = getPluginOptions<TablePlugin>(
+  const { enableUnsetSingleColSize } = getPluginOptions<TablePluginOptions>(
     editor,
     ELEMENT_TABLE
   );

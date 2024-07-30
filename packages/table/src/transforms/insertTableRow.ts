@@ -1,7 +1,6 @@
 import {
   type PlateEditor,
   type TElement,
-  type Value,
   findNode,
   getBlockAbove,
   getPluginOptions,
@@ -12,14 +11,14 @@ import {
 } from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
-import type { TablePlugin } from '../types';
+import type { TablePluginOptions } from '../types';
 
-import { ELEMENT_TABLE, ELEMENT_TH, ELEMENT_TR } from '../createTablePlugin';
+import { ELEMENT_TABLE, ELEMENT_TH, ELEMENT_TR } from '../TablePlugin';
 import { insertTableMergeRow } from '../merge/insertTableRow';
 import { getCellTypes } from '../utils/index';
 
-export const insertTableRow = <V extends Value>(
-  editor: PlateEditor<V>,
+export const insertTableRow = (
+  editor: PlateEditor,
   options: {
     /** Exact path of the row to insert the column at. Will overrule `fromRow`. */
     at?: Path;
@@ -28,7 +27,7 @@ export const insertTableRow = <V extends Value>(
     header?: boolean;
   } = {}
 ) => {
-  const { cellFactory, enableMerging } = getPluginOptions<TablePlugin, V>(
+  const { cellFactory, enableMerging } = getPluginOptions<TablePluginOptions>(
     editor,
     ELEMENT_TABLE
   );

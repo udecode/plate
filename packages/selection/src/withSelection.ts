@@ -1,13 +1,8 @@
-import type { PlateEditor, Value } from '@udecode/plate-common/server';
+import type { WithOverride } from '@udecode/plate-common/server';
 
 import { blockSelectionStore } from './blockSelectionStore';
 
-export const withSelection = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E
-) => {
+export const withSelection: WithOverride = (editor) => {
   (editor as any).blockSelectionStore = blockSelectionStore;
 
   return editor;

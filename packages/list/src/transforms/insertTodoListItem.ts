@@ -1,6 +1,5 @@
 import {
   type PlateEditor,
-  type Value,
   deleteText,
   getAboveNode,
   getMarks,
@@ -14,17 +13,17 @@ import {
 } from '@udecode/plate-common/server';
 import { Path, Range } from 'slate';
 
-import type { TodoListPlugin } from '../types';
+import type { TodoListPluginOptions } from '../types';
 
 import { ELEMENT_TODO_LI } from '../todo-list/index';
 
 /** Insert todo list item if selection in li>p. TODO: test */
-export const insertTodoListItem = <V extends Value>(
-  editor: PlateEditor<V>,
+export const insertTodoListItem = (
+  editor: PlateEditor,
   {
     inheritCheckStateOnLineEndBreak = false,
     inheritCheckStateOnLineStartBreak = false,
-  }: TodoListPlugin
+  }: TodoListPluginOptions
 ): boolean => {
   const todoType = getPluginType(editor, ELEMENT_TODO_LI);
 

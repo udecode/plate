@@ -1,19 +1,12 @@
-import type {
-  PlateEditor,
-  Value,
-  WithPlatePlugin,
-} from '@udecode/plate-common/server';
+import type { WithOverride } from '@udecode/plate-common/server';
 
-import type { TodoListPlugin } from './types';
+import type { TodoListPluginOptions } from './types';
 
 import { insertBreakTodoList } from './insertBreakTodoList';
 
-export const withTodoList = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E,
-  { options }: WithPlatePlugin<TodoListPlugin, V, E>
+export const withTodoList: WithOverride<TodoListPluginOptions> = (
+  editor,
+  { options }
 ) => {
   const { insertBreak } = editor;
 

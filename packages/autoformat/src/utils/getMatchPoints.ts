@@ -2,7 +2,6 @@ import type { Point, Range } from 'slate';
 
 import {
   type TEditor,
-  type Value,
   getPointBeforeLocation,
 } from '@udecode/plate-common/server';
 
@@ -18,10 +17,7 @@ export type GetMatchPointsReturnType =
     }
   | undefined;
 
-export const getMatchPoints = <V extends Value>(
-  editor: TEditor<V>,
-  { end, start }: MatchRange
-) => {
+export const getMatchPoints = (editor: TEditor, { end, start }: MatchRange) => {
   const selection = editor.selection as Range;
 
   let beforeEndMatchPoint = selection.anchor;

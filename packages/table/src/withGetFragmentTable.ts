@@ -1,24 +1,19 @@
 import {
-  type PlateEditor,
   type TDescendant,
   type TElement,
-  type Value,
-  type WithPlatePlugin,
+  type WithOverride,
   getPluginType,
 } from '@udecode/plate-common/server';
 
-import type { TTableRowElement, TablePlugin } from './types';
+import type { TTableRowElement, TablePluginOptions } from './types';
 
-import { ELEMENT_TABLE } from './createTablePlugin';
+import { ELEMENT_TABLE } from './TablePlugin';
 import { getTableGridAbove } from './queries/getTableGridAbove';
 
 /** If selection is in a table, get subtable above. */
-export const withGetFragmentTable = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E,
-  { options }: WithPlatePlugin<TablePlugin<V>, V, E>
+export const withGetFragmentTable: WithOverride<TablePluginOptions> = (
+  editor,
+  { options }
 ) => {
   const { getFragment } = editor;
   const { getCellChildren } = options;

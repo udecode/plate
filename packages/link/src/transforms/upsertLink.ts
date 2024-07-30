@@ -18,7 +18,7 @@ import {
 
 import type { TLinkElement } from '../types';
 
-import { ELEMENT_LINK } from '../createLinkPlugin';
+import { ELEMENT_LINK } from '../LinkPlugin';
 import { type CreateLinkNodeOptions, validateUrl } from '../utils/index';
 import { insertLink } from './insertLink';
 import { unwrapLink } from './unwrapLink';

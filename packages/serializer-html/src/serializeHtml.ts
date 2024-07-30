@@ -1,14 +1,8 @@
 import type React from 'react';
 
-import type { PlateProps } from '@udecode/plate-common';
+import type { PlateProps, TDescendant } from '@udecode/plate-common';
 
-import {
-  type EDescendant,
-  type EElement,
-  type PlateEditor,
-  type Value,
-  isText,
-} from '@udecode/plate-common/server';
+import { type PlateEditor, isText } from '@udecode/plate-common/server';
 import { encode } from 'html-entities';
 
 import { elementToHtml } from './elementToHtml';
@@ -18,8 +12,8 @@ import { stripSlateDataAttributes } from './utils/stripSlateDataAttributes';
 import { trimWhitespace } from './utils/trimWhitespace';
 
 /** Convert Slate Nodes into HTML string. */
-export const serializeHtml = <V extends Value>(
-  editor: PlateEditor<V>,
+export const serializeHtml = (
+  editor: PlateEditor,
   {
     convertNewLinesToHtmlBr = false,
     dndWrapper,
@@ -40,7 +34,7 @@ export const serializeHtml = <V extends Value>(
     dndWrapper?: React.ComponentClass | React.FC | string;
 
     /** Slate nodes to convert to HTML. */
-    nodes: EDescendant<V>[];
+    nodes: TDescendant[];
 
     /** Slate props to provide if the rendering depends on plate/slate hooks */
     plateProps?: Partial<PlateProps>;
@@ -79,7 +73,7 @@ export const serializeHtml = <V extends Value>(
         });
       }
 
-      return elementToHtml<V>(editor, {
+      return elementToHtml(editor, {
         dndWrapper,
         plateProps,
         preserveClassNames,
@@ -87,12 +81,12 @@ export const serializeHtml = <V extends Value>(
           attributes: { 'data-slate-node': 'element', ref: null },
           children: serializeHtml(editor, {
             convertNewLinesToHtmlBr,
-            nodes: node.children as EDescendant<V>[],
+            nodes: node.children as TDescendant[],
             preserveClassNames,
             stripWhitespace,
           }),
           editor,
-          element: node as EElement<V>,
+          element: node,
         },
       });
     })

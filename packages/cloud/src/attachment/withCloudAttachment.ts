@@ -1,26 +1,22 @@
 import {
   type EElementOrText,
   type Value,
-  type WithPlatePlugin,
+  type WithOverride,
   insertNode,
 } from '@udecode/plate-common/server';
 import Defer from 'p-defer';
 
 import type { PlateCloudEditor } from '../cloud/types';
 import type { UploadError, UploadSuccess } from '../upload';
-import type { CloudAttachmentPlugin, TCloudAttachmentElement } from './types';
+import type { TCloudAttachmentElement } from './types';
 
 type CloudAttachmentValue = TCloudAttachmentElement[];
 
 // const uploadMap = new Map<string, Atom<Upload>>();
 
-export const withCloudAttachment = <
-  V extends Value = Value,
-  E extends PlateCloudEditor<V> = PlateCloudEditor<V>,
->(
-  editor: E,
-  _plugin: WithPlatePlugin<CloudAttachmentPlugin, V, E>
-) => {
+export const withCloudAttachment: WithOverride = (_editor) => {
+  const editor = _editor as PlateCloudEditor;
+
   /**
    * We create a deferredFinish which is an object with a `promise` and a way to
    * `resolve` or `reject` the Promise outside of the Promise. We use `p-defer`

@@ -1,12 +1,9 @@
 import {
-  type PlateEditor,
   type TElement,
-  type Value,
+  type WithOverride,
   getBlockAbove,
   getParentNode,
-  getPluginOptions,
   getPluginType,
-  getTEditor,
   isElement,
   isText,
   setNodes,
@@ -14,9 +11,9 @@ import {
   wrapNodeChildren,
 } from '@udecode/plate-common/server';
 
-import type { TTableElement, TablePlugin } from './types';
+import type { TTableElement, TablePluginOptions } from './types';
 
-import { ELEMENT_TABLE, ELEMENT_TR } from './createTablePlugin';
+import { ELEMENT_TABLE, ELEMENT_TR } from './TablePlugin';
 import { getCellTypes } from './utils/index';
 
 /**
@@ -24,22 +21,14 @@ import { getCellTypes } from './utils/index';
  *
  * - Wrap cell children in a paragraph if they are texts.
  */
-export const withNormalizeTable = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E
+export const withNormalizeTable: WithOverride<TablePluginOptions> = (
+  editor,
+  { options }
 ) => {
   const { normalizeNode } = editor;
+  const { initialTableWidth } = options;
 
-  const myEditor = getTEditor<V>(editor);
-
-  const { initialTableWidth } = getPluginOptions<TablePlugin>(
-    editor as any,
-    ELEMENT_TABLE
-  );
-
-  myEditor.normalizeNode = ([node, path]) => {
+  editor.normalizeNode = ([node, path]) => {
     if (isElement(node)) {
       if (node.type === getPluginType(editor, ELEMENT_TABLE)) {
         const tableEntry = getBlockAbove(editor, {

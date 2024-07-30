@@ -23,7 +23,7 @@ export type TabbableEntry = {
   slateNode: TNode;
 };
 
-export interface TabbablePlugin<V extends Value = Value> {
+export interface TabbablePluginOptions {
   /**
    * When true, the plugin will add its event listener to the document instead
    * of the editor, allowing it to capture events from outside the editor.
@@ -39,7 +39,7 @@ export interface TabbablePlugin<V extends Value = Value> {
    * @default: () => []
    */
   insertTabbableEntries?: (
-    editor: PlateEditor<V>,
+    editor: PlateEditor,
     event: KeyboardEvent
   ) => TabbableEntry[];
 
@@ -49,7 +49,7 @@ export interface TabbablePlugin<V extends Value = Value> {
    * @default: (editor, tabbableEntry) => isVoid(editor, tabbableEntry.slateNode)
    */
   isTabbable?: (
-    editor: PlateEditor<V>,
+    editor: PlateEditor,
     tabbableEntry: TabbableEntry
   ) => boolean;
 
@@ -58,5 +58,5 @@ export interface TabbablePlugin<V extends Value = Value> {
    *
    * @default: () => true
    */
-  query?: (editor: PlateEditor<V>, event: KeyboardEvent) => boolean;
+  query?: (editor: PlateEditor, event: KeyboardEvent) => boolean;
 }

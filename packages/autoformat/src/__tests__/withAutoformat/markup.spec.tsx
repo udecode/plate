@@ -8,7 +8,7 @@ import {
 import { createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createAutoformatPlugin } from '../../createAutoformatPlugin';
+import { createAutoformatPlugin } from '../../AutoformatPlugin';
 
 jsx;
 

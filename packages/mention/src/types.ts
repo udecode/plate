@@ -1,4 +1,4 @@
-import type { TriggerComboboxPlugin } from '@udecode/plate-combobox';
+import type { TriggerComboboxPluginOptions } from '@udecode/plate-combobox';
 import type { TElement, TNodeProps } from '@udecode/plate-common';
 
 export interface TMentionItemBase {
@@ -13,9 +13,9 @@ export interface TMentionElement extends TElement {
   value: string;
 }
 
-export interface MentionPlugin<
+export interface MentionPluginOptions<
   TItem extends TMentionItemBase = TMentionItemBase,
-> extends TriggerComboboxPlugin {
+> extends TriggerComboboxPluginOptions {
   createMentionNode?: (
     item: TItem,
     search: string

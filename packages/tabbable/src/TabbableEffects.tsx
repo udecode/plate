@@ -12,7 +12,7 @@ import { getPluginOptions } from '@udecode/plate-common/server';
 import { Path } from 'slate';
 import { tabbable } from 'tabbable';
 
-import type { TabbableEntry, TabbablePlugin } from './types';
+import type { TabbableEntry, TabbablePluginOptions } from './types';
 
 import { KEY_TABBABLE } from './constants';
 import { findTabDestination } from './findTabDestination';
@@ -25,7 +25,7 @@ export function TabbableEffects() {
     if (readOnly) return;
 
     const { globalEventListener, insertTabbableEntries, isTabbable, query } =
-      getPluginOptions<TabbablePlugin>(editor, KEY_TABBABLE);
+      getPluginOptions<TabbablePluginOptions>(editor, KEY_TABBABLE);
 
     const editorDOMNode = toDOMNode(editor, editor);
 

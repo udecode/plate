@@ -30,6 +30,6 @@ export interface TCommentText extends TText {
   comments?: Record<string, boolean>;
 }
 
-export interface CommentsPlugin {
+export interface CommentsPluginOptions {
   hotkey?: string | string[];
 }

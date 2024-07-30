@@ -1,7 +1,6 @@
 import {
-  type PlateEditor,
   type TElement,
-  type Value,
+  type WithOverride,
   getEndPoint,
   getPluginType,
   getStartPoint,
@@ -10,16 +9,13 @@ import {
 } from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
-import type { TTableCellElement } from './types';
+import type { TTableCellElement, TablePluginOptions } from './types';
 
-import { ELEMENT_TH } from './createTablePlugin';
+import { ELEMENT_TH } from './TablePlugin';
 import { getColSpan, getRowSpan, getTableGridAbove } from './queries/index';
 
-export const withSetFragmentDataTable = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E
+export const withSetFragmentDataTable: WithOverride<TablePluginOptions> = (
+  editor
 ) => {
   const { setFragmentData } = editor;
 

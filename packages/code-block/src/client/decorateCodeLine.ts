@@ -1,35 +1,30 @@
+import type { Decorate } from '@udecode/plate-common';
 import type { Range } from 'slate';
 
 import {
   type DecorateEntry,
-  type PlateEditor,
-  type Value,
   getNodeString,
   getParentNode,
   getPlugin,
 } from '@udecode/plate-common/server';
 
-import type { CodeBlockPlugin, TCodeBlockElement } from '../shared/types';
+import type {
+  CodeBlockPluginOptions,
+  TCodeBlockElement,
+} from '../shared/types';
 
-import {
-  ELEMENT_CODE_BLOCK,
-  ELEMENT_CODE_LINE,
-  ELEMENT_CODE_SYNTAX,
-} from '../shared/constants';
+import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_SYNTAX } from '../shared/constants';
 
 export interface CodeSyntaxRange extends Range {
   [ELEMENT_CODE_SYNTAX]: true;
   tokenType: string;
 }
 
-export const decorateCodeLine = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E
-): DecorateEntry => {
-  const code_block = getPlugin<CodeBlockPlugin, V>(editor, ELEMENT_CODE_BLOCK);
-  const code_line = getPlugin<{}, V>(editor, ELEMENT_CODE_LINE);
+export const decorateCodeLine: Decorate = (editor, plugin): DecorateEntry => {
+  const code_block = getPlugin<CodeBlockPluginOptions>(
+    editor,
+    ELEMENT_CODE_BLOCK
+  );
 
   const { prism: Prism } = code_block.options;
 
@@ -40,7 +35,7 @@ export const decorateCodeLine = <
   return ([node, path]): CodeSyntaxRange[] => {
     const ranges: CodeSyntaxRange[] = [];
 
-    if (!code_block.options.syntax || node.type !== code_line.type) {
+    if (!code_block.options.syntax || node.type !== plugin.type) {
       return ranges;
     }
 

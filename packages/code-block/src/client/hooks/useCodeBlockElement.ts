@@ -4,7 +4,7 @@ import { useEditorRef } from '@udecode/plate-common';
 import { getPluginOptions } from '@udecode/plate-common/server';
 
 import {
-  type CodeBlockPlugin,
+  type CodeBlockPluginOptions,
   ELEMENT_CODE_BLOCK,
   type TCodeBlockElement,
 } from '../../shared';
@@ -24,7 +24,7 @@ export const useCodeBlockElementState = ({
     setDomLoaded(true);
   }, []);
 
-  const { syntax } = getPluginOptions<CodeBlockPlugin>(
+  const { syntax } = getPluginOptions<CodeBlockPluginOptions>(
     editor,
     ELEMENT_CODE_BLOCK
   );

@@ -1,10 +1,6 @@
-import type {
-  PlateEditor,
-  Value,
-  WithPlatePlugin,
-} from '@udecode/plate-common/server';
+import type { WithOverride } from '@udecode/plate-common/server';
 
-import type { ImagePlugin } from './types';
+import type { ImagePluginOptions } from './types';
 
 import { withImageEmbed } from './withImageEmbed';
 import { withImageUpload } from './withImageUpload';
@@ -13,13 +9,7 @@ import { withImageUpload } from './withImageUpload';
  * @see withImageUpload
  * @see withImageEmbed
  */
-export const withImage = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E,
-  plugin: WithPlatePlugin<ImagePlugin, V, E>
-) => {
+export const withImage: WithOverride<ImagePluginOptions> = (editor, plugin) => {
   const {
     options: { disableEmbedInsert, disableUploadInsert },
   } = plugin;

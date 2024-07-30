@@ -8,9 +8,9 @@ import {
   insertNodes,
 } from '@udecode/plate-common';
 
-import type { EmojiPlugin } from '../types';
+import type { EmojiPluginOptions } from '../types';
 
-import { KEY_EMOJI } from '../createEmojiPlugin';
+import { KEY_EMOJI } from '../EmojiPlugin';
 
 export const insertEmoji = <
   V extends Value = Value,
@@ -20,7 +20,7 @@ export const insertEmoji = <
   editor: E,
   emoji: TEmoji
 ) => {
-  const { createEmojiNode } = getPluginOptions<EmojiPlugin, V, E>(
+  const { createEmojiNode } = getPluginOptions<EmojiPluginOptions>(
     editor,
     KEY_EMOJI
   );

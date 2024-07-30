@@ -9,7 +9,7 @@ import {
 
 import type { TMediaEmbedElement } from '../types';
 
-import { ELEMENT_MEDIA_EMBED } from '../createMediaEmbedPlugin';
+import { ELEMENT_MEDIA_EMBED } from '../MediaEmbedPlugin';
 
 export const insertMediaEmbed = <V extends Value>(
   editor: PlateEditor<V>,

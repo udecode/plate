@@ -1,19 +1,18 @@
 import type { PathRef } from 'slate';
 
 import {
-  type PlateEditor,
   type TElement,
   type Value,
-  type WithPlatePlugin,
+  type WithOverride,
   createPathRef,
   getNode,
 } from '@udecode/plate-common/server';
 import { KEY_INDENT } from '@udecode/plate-indent';
 
 import {
-  type IndentListPlugin,
+  type IndentListPluginOptions,
   KEY_LIST_STYLE_TYPE,
-} from './createIndentListPlugin';
+} from './IndentListPlugin';
 import { normalizeIndentList } from './normalizeIndentList';
 import {
   deleteBackwardIndentList,
@@ -25,12 +24,9 @@ import { getNextIndentList } from './queries/getNextIndentList';
 import { getPreviousIndentList } from './queries/getPreviousIndentList';
 import { ListStyleType } from './types';
 
-export const withIndentList = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E,
-  { options }: WithPlatePlugin<IndentListPlugin, V, E>
+export const withIndentList: WithOverride<IndentListPluginOptions> = (
+  editor,
+  { options }
 ) => {
   const { apply } = editor;
 

@@ -3,7 +3,7 @@
  */
 
 export * from './constants';
-export * from './createEmojiPlugin';
+export * from './EmojiPlugin';
 export * from './types';
 export * from './hooks/index';
 export * from './storage/index';

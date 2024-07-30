@@ -3,7 +3,7 @@ import { setNodes } from '@udecode/plate-common/server';
 
 import type { TColumnGroupElement } from './types';
 
-import { ELEMENT_COLUMN_GROUP } from './createColumnPlugin';
+import { ELEMENT_COLUMN_GROUP } from './ColumnPlugin';
 
 export const useColumnState = () => {
   const editor = useEditorRef();

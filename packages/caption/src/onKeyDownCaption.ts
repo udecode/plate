@@ -5,11 +5,11 @@ import {
   isHotkey,
 } from '@udecode/plate-common/server';
 
-import type { CaptionPlugin } from './createCaptionPlugin';
+import type { CaptionPluginOptions } from './CaptionPlugin';
 
 import { captionGlobalStore } from './captionGlobalStore';
 
-export const onKeyDownCaption: KeyboardHandler<CaptionPlugin> =
+export const onKeyDownCaption: KeyboardHandler<CaptionPluginOptions> =
   (editor, { options }) =>
   (e) => {
     if (e.defaultPrevented) return;

@@ -1,24 +1,16 @@
 import type { Range } from 'slate';
 
-import {
-  type DecorateEntry,
-  type PlateEditor,
-  type Value,
-  type WithPlatePlugin,
-  isText,
-} from '@udecode/plate-common/server';
+import { type Decorate, getPluginOptions } from '@udecode/plate-common';
+import { isText } from '@udecode/plate-common/server';
 
-import type { FindReplacePlugin } from './types';
+import type { FindReplacePluginOptions } from './types';
 
-export const decorateFindReplace =
-  <V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>(
-    editor: E,
-    { key, type }: WithPlatePlugin<FindReplacePlugin, V, E>
-  ): DecorateEntry =>
+export const decorateFindReplace: Decorate<FindReplacePluginOptions> =
+  (editor, { key, type }) =>
   ([node, path]) => {
     const ranges: SearchRange[] = [];
 
-    const { search } = editor.pluginsByKey[key].options as FindReplacePlugin;
+    const { search } = getPluginOptions<FindReplacePluginOptions>(editor, key);
 
     if (!search || !isText(node)) {
       return ranges;
