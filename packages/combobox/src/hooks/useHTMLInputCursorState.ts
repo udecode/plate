@@ -1,4 +1,10 @@
-import { type RefObject, useCallback, useEffect, useState, useMemo } from 'react';
+import {
+  type RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 
 import type { ComboboxInputCursorState } from '../types';
 
@@ -12,6 +18,7 @@ export const useHTMLInputCursorState = (
     // Wait for events to finish processing
     setTimeout(() => {
       if (!ref.current) return;
+
       const { selectionEnd, selectionStart, value } = ref.current;
       setAtStart(selectionStart === 0);
       setAtEnd(selectionEnd === value.length);
@@ -45,8 +52,11 @@ export const useHTMLInputCursorState = (
     };
   }, [recomputeCursorState, ref]);
 
-  return useMemo(() => ({
-    atStart,
-    atEnd,
-  }), [atStart, atEnd]);
+  return useMemo(
+    () => ({
+      atEnd,
+      atStart,
+    }),
+    [atStart, atEnd]
+  );
 };

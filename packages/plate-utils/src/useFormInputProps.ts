@@ -1,7 +1,7 @@
 interface InputProps {
   /**
-   * Should we activate the onKeyDownCapture handler to preventDefault when
-   * the user presses enter?
+   * Should we activate the onKeyDownCapture handler to preventDefault when the
+   * user presses enter?
    */
   preventDefaultOnEnterKeydown?: boolean;
 }
@@ -10,8 +10,9 @@ interface InputProps {
  * Hook to allow the user to spread a set of predefined props to the Div wrapper
  * of an Input element
  *
- * @param param0 an options object which can be expanded to add further functionality
- * @returns a props object which can be spread onto the element
+ * @param param0 An options object which can be expanded to add further
+ *   functionality
+ * @returns A props object which can be spread onto the element
  */
 export const useFormInputProps = (options?: InputProps) => {
   // Nothing provided to just return an empty object which can still be spread.
@@ -33,8 +34,8 @@ export const useFormInputProps = (options?: InputProps) => {
    * By calling preventDefault we short circuit the form's submission thus
    * allowing the user to continue filling in the other fields
    *
-   * @param e The original event which was provided by the VDOM
-   * implement their own behaviour on this event
+   * @param e The original event which was provided by the VDOM implement their
+   *   own behaviour on this event
    */
   const handleEnterKeydownCapture = (
     e: React.KeyboardEvent<HTMLDivElement>
