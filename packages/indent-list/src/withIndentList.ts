@@ -334,6 +334,7 @@ export const withIndentList = <
             breakOnEqIndentNeqListStyleType: false,
             breakOnLowerIndent: false,
             eqIndent: false,
+            ...getSiblingIndentListOptions,
           }
         );
 
@@ -356,6 +357,7 @@ export const withIndentList = <
           breakOnEqIndentNeqListStyleType: false,
           breakOnLowerIndent: false,
           eqIndent: false,
+          ...getSiblingIndentListOptions,
         });
 
         if (nextNodeEntry) {
