@@ -1,6 +1,6 @@
+import type { TElement } from '@udecode/slate';
 
 import { getTableColumnCount } from './getTableColumnCount';
-import { TElement } from '@udecode/slate';
 
 describe('getTableColumnCount', () => {
   it('should return 0 if tableNode has no children', () => {
