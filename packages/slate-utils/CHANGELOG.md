@@ -1,5 +1,11 @@
 # @udecode/slate-utils
 
+## 36.3.4
+
+### Patch Changes
+
+- [#3408](https://github.com/udecode/plate/pull/3408) by [@yf-yang](https://github.com/yf-yang) – add removeOptions to replaceNode
+
 ## 36.0.6
 
 ## 34.0.4
