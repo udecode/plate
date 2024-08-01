@@ -3,6 +3,7 @@ import {
   type TDescendant,
   type Value,
   findNode,
+  getNode,
   getPluginOptions,
   getPluginType,
   insertElements,
@@ -12,6 +13,7 @@ import {
 
 import type {
   TTableCellElement,
+  TTableElement,
   TTableRowElement,
   TablePlugin,
 } from '../types';
@@ -20,6 +22,7 @@ import { ELEMENT_TABLE, ELEMENT_TH, ELEMENT_TR } from '../createTablePlugin';
 import { getTableGridAbove } from '../queries';
 import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';
+import { computeCellIndices } from './computeCellIndices';
 import { getCellIndices } from './getCellIndices';
 
 export const unmergeTableCells = <V extends Value = Value>(
@@ -31,6 +34,7 @@ export const unmergeTableCells = <V extends Value = Value>(
       cellFactory,
       getCellChildren,
     } = getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
+    console.log('🚀 ~ withoutNormalizing ~ cellIndices:', cellIndices);
 
     const cellEntries = getTableGridAbove(editor, { format: 'cell' });
     const [[cellElem, path]] = cellEntries;
@@ -145,5 +149,27 @@ export const unmergeTableCells = <V extends Value = Value>(
         );
       }
     }
+
+    // Recalculate the split cells
+    const needComputeCells: number[][] = [];
+    const cols = [];
+    const maxCol = colPath + colSpan;
+    const maxRow = rowPath + rowSpan;
+
+    for (let col = colPath; col < maxCol; col++) {
+      cols.push(col);
+    }
+
+    for (let row = rowPath; row < maxRow; row++) {
+      cols.forEach((col) => {
+        needComputeCells.push([...tablePath, row, col]);
+      });
+    }
+
+    const tableElement = getNode(editor, tablePath) as TTableElement;
+    needComputeCells.forEach((path) => {
+      const cell = getNode(editor, path);
+      computeCellIndices(editor, tableElement, cell as TTableCellElement);
+    });
   });
 };
