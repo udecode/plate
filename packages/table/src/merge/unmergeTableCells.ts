@@ -34,7 +34,6 @@ export const unmergeTableCells = <V extends Value = Value>(
       cellFactory,
       getCellChildren,
     } = getPluginOptions<TablePlugin, V>(editor, ELEMENT_TABLE);
-    console.log('🚀 ~ withoutNormalizing ~ cellIndices:', cellIndices);
 
     const cellEntries = getTableGridAbove(editor, { format: 'cell' });
     const [[cellElem, path]] = cellEntries;

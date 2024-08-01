@@ -189,7 +189,7 @@ export const usePlaygroundPlugins = ({
           createTablePlugin({
             enabled: !!enabled.table,
             options: {
-              enableMerging: true,
+              enableMerging: id === 'tableMerge',
             },
           }),
           createTodoListPlugin({ enabled: !!enabled.action_item }),
