@@ -14,10 +14,10 @@ export const replaceNode = <
   V extends Value = Value,
 >(
   editor: TEditor<V>,
-  { at, insertOptions, nodes }: ReplaceNodeChildrenOptions<N, V>
+  { at, insertOptions, nodes, removeOptions }: ReplaceNodeChildrenOptions<N, V>
 ) => {
   withoutNormalizing(editor, () => {
-    removeNodes(editor, { ...insertOptions, at });
+    removeNodes(editor, { ...removeOptions, at });
 
     insertNodes(editor, nodes, {
       ...insertOptions,

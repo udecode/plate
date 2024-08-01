@@ -1,5 +1,11 @@
 # @udecode/plate-indent-list
 
+## 36.3.3
+
+### Patch Changes
+
+- [#3395](https://github.com/udecode/plate/pull/3395) by [@tomdyqin](https://github.com/tomdyqin) – fix: missing `getSiblingIndentListOptions`
+
 ## 36.0.1
 
 ### Patch Changes

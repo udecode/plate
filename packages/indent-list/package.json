@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-indent-list",
-  "version": "36.0.1",
+  "version": "36.3.3",
   "description": "Indent list plugin for Plate",
   "license": "MIT",
   "homepage": "https://platejs.org",
@@ -47,7 +47,7 @@
     "@udecode/plate-common": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=36.2.1",
+    "@udecode/plate-common": ">=36.3.4",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.94.0",
