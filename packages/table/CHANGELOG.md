@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 36.3.5
+
+### Patch Changes
+
+- [#3410](https://github.com/udecode/plate/pull/3410) by [@AHappyAtlas](https://github.com/AHappyAtlas) – Recalculate the split cells after unmerge
+
 ## 36.3.1
 
 ### Patch Changes
