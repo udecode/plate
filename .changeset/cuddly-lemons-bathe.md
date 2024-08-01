@@ -1,5 +1,5 @@
 ---
-'@udecode/slate-utils': minor
+'@udecode/slate-utils': patch
 ---
 
 add removeOptions to replaceNode
