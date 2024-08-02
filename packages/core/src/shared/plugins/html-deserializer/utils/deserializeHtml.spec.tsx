@@ -1,32 +1,29 @@
 /** @jsx jsx */
 
 import { renderHook } from '@testing-library/react-hooks';
-import { createAlignPlugin } from '@udecode/plate-alignment';
+import { AlignPlugin } from '@udecode/plate-alignment';
 import {
-  createBoldPlugin,
-  createCodePlugin,
-  createItalicPlugin,
-  createStrikethroughPlugin,
-  createSubscriptPlugin,
-  createSuperscriptPlugin,
-  createUnderlinePlugin,
+  BoldPlugin,
+  CodePlugin,
+  ItalicPlugin,
+  StrikethroughPlugin,
+  SubscriptPlugin,
+  SuperscriptPlugin,
+  UnderlinePlugin,
 } from '@udecode/plate-basic-marks';
-import { createBlockquotePlugin } from '@udecode/plate-block-quote';
-import { createSoftBreakPlugin } from '@udecode/plate-break';
-import { createCodeBlockPlugin } from '@udecode/plate-code-block';
+import { BlockquotePlugin } from '@udecode/plate-block-quote';
+import { SoftBreakPlugin } from '@udecode/plate-break';
+import { CodeBlockPlugin } from '@udecode/plate-code-block';
 import { createPlateEditor } from '@udecode/plate-common';
-import { createFindReplacePlugin } from '@udecode/plate-find-replace';
-import { createHeadingPlugin } from '@udecode/plate-heading';
-import { createHighlightPlugin } from '@udecode/plate-highlight';
-import { createKbdPlugin } from '@udecode/plate-kbd';
-import { createLinkPlugin } from '@udecode/plate-link';
-import { createListPlugin } from '@udecode/plate-list';
-import {
-  createImagePlugin,
-  createMediaEmbedPlugin,
-} from '@udecode/plate-media';
-import { createParagraphPlugin } from '@udecode/plate-paragraph';
-import { createTablePlugin } from '@udecode/plate-table';
+import { FindReplacePlugin } from '@udecode/plate-find-replace';
+import { HeadingPlugin } from '@udecode/plate-heading';
+import { HighlightPlugin } from '@udecode/plate-highlight';
+import { KbdPlugin } from '@udecode/plate-kbd';
+import { LinkPlugin } from '@udecode/plate-link';
+import { ListPlugin } from '@udecode/plate-list';
+import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media';
+import { ParagraphPlugin } from '@udecode/plate-paragraph';
+import { TablePlugin } from '@udecode/plate-table';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 
 import { deserializeHtml } from './deserializeHtml';
@@ -81,7 +78,7 @@ describe('when element is 2 p', () => {
     expect(
       deserializeHtml(
         createPlateEditor({
-          plugins: [createParagraphPlugin()],
+          plugins: [ParagraphPlugin],
         }),
         {
           element: '<p>first</p><p>second</p>',
@@ -199,27 +196,27 @@ describe('when deserializing all plugins', () => {
 
   it('should be', () => {
     const plugins = renderHook(() => [
-      createBlockquotePlugin(),
-      createHeadingPlugin({ options: { levels: 1 } }),
-      createImagePlugin(),
-      createLinkPlugin(),
-      createListPlugin(),
-      createParagraphPlugin(),
-      createCodeBlockPlugin(),
-      createTablePlugin(),
-      createMediaEmbedPlugin(),
-      createFindReplacePlugin(),
-      createSoftBreakPlugin(),
-      createAlignPlugin(),
-      createBoldPlugin(),
-      createHighlightPlugin(),
-      createCodePlugin(),
-      createKbdPlugin(),
-      createItalicPlugin(),
-      createStrikethroughPlugin(),
-      createSubscriptPlugin(),
-      createSuperscriptPlugin(),
-      createUnderlinePlugin(),
+      BlockquotePlugin,
+      HeadingPlugin.configure({ levels: 1 }),
+      ImagePlugin,
+      LinkPlugin,
+      ListPlugin,
+      ParagraphPlugin,
+      CodeBlockPlugin,
+      TablePlugin,
+      MediaEmbedPlugin,
+      FindReplacePlugin,
+      SoftBreakPlugin,
+      AlignPlugin,
+      BoldPlugin,
+      HighlightPlugin,
+      CodePlugin,
+      KbdPlugin,
+      ItalicPlugin,
+      StrikethroughPlugin,
+      SubscriptPlugin,
+      SuperscriptPlugin,
+      UnderlinePlugin,
     ]).result.current;
 
     expect(

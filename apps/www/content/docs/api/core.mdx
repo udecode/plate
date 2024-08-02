@@ -86,25 +86,59 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
   settings applied.
 </APIReturns>
 
-### createPluginFactory
+### createPlugin
 
-Generates a factory for creating plugins with a default plugin, which can be overridden.
+Creates a new Plate plugin with the given configuration, supporting extension, nested plugin manipulation, and runtime configuration.
 
 <APIParameters>
-  <APIItem name="defaultPlugin" type="PlatePlugin">
-    The default plugin. The only required property is `key`.
-  </APIItem>
-  <APIItem name="override" type="Partial<PlatePlugin>" optional>
-    Overrides for the default plugin.
-  </APIItem>
-  <APIItem name="overrideByKey" type="OverrideByKey" optional>
-    Overrides for nested plugins (in `plugin.plugins`) by key.
+  <APIItem name="config" type="Partial<PlatePlugin<O, T, Q, S>>">
+    The configuration object for the plugin. All properties are optional except `key`.
+    <APISubList>
+      <APISubItem name="key" type="string">
+        Unique identifier for the plugin. Defaults to 'unnamed' if not provided.
+      </APISubItem>
+      <APISubItem name="options" type="O">
+        Plugin-specific options.
+      </APISubItem>
+      <APISubItem name="transforms" type="T">
+        Transformation functions provided by the plugin.
+      </APISubItem>
+      <APISubItem name="queries" type="Q">
+        Query functions provided by the plugin.
+      </APISubItem>
+      <APISubItem name="plugins" type="PlatePlugin[]">
+        Nested plugins.
+      </APISubItem>
+      <APISubItem name="...other" type="Partial<PlatePlugin>">
+        Any other valid PlatePlugin properties.
+      </APISubItem>
+    </APISubList>
   </APIItem>
 </APIParameters>
+
 <APIReturns>
-  A plugin factory based on the default one, with the specified overrides
-  applied.
+  A new `PlatePlugin<O, T, Q, S>` instance with the following properties and methods:
+  - All properties from the input config, merged with default values.
+  - `configure(options: Partial<O>): PlatePlugin<O, T, Q, S>`
+  - `extend(extendConfig: Partial<PlatePlugin> | ((editor: PlateEditor, plugin: PlatePlugin) => Partial<PlatePlugin>)): PlatePlugin<O, T, Q, S>`
+  - `extendPlugin(key: string, extendConfig: Partial<PlatePlugin> | ((editor: PlateEditor, plugin: PlatePlugin) => Partial<PlatePlugin>)): PlatePlugin<O, T, Q, S>`
 </APIReturns>
+
+The `createPlugin` function provides a flexible and powerful way to create and manipulate plugins in Plate:
+- **Default Values**: Automatically sets default values for essential plugin properties.
+- **Nested Plugin Support**: Allows for creating and extending plugins at any nesting level.
+- **Configuration**: The `configure` method enables updating plugin options.
+- **Flexible Extension**: The `extend` and `extendPlugin` methods support both object and function-based extensions. See [PlatePlugin API](/docs/api/core/plate-plugin).
+
+#### Basic Usage
+
+```typescript
+const myPlugin = createPlugin({
+  key: 'myPlugin',
+  options: { someOption: true },
+  transforms: { someTransform: () => {} },
+});
+```
 
 ### getPlugin
 
@@ -450,49 +484,49 @@ Get the version of the editor selection. That version is incremented on each sel
 
 ## Core plugins
 
-### createDeserializeAstPlugin
+### DeserializeAstPlugin
 
 Enables support for deserializing inserted content from Slate Ast format to Slate format while applying a small bug fix.
 
-### createDeserializeHtmlPlugin
+### DeserializeHtmlPlugin
 
 Enables support for deserializing inserted content from HTML format to Slate format.
 
-### createEditorProtocolPlugin
+### EditorProtocolPlugin
 
 Reset marks when the selection is at the start of a block and after delete operations.
 
-### createEventEditorPlugin
+### EventEditorPlugin
 
-Creates a plugin that dispatches focus and blur events.
+Plugin that dispatches focus and blur events.
 
-### createHistoryPlugin
+### HistoryPlugin
 
-Creates a plugin that enables history support for the editor.
+Plugin that enables history support for the editor.
 
-### createInlineVoidPlugin
+### InlineVoidPlugin
 
-Creates a plugin that merges and registers all the inline types and void types from the plugins and options, using `editor.isInline` and `editor.isVoid`.
+Plugin that merges and registers all the inline types and void types from the plugins and options, using `editor.isInline` and `editor.isVoid`.
 
-### createInsertDataPlugin
+### InsertDataPlugin
 
-Creates a plugin that overrides the default `insertData` function in the editor, which is called when data is being pasted or dragged into the editor.
+Plugin that overrides the default `insertData` function in the editor, which is called when data is being pasted or dragged into the editor.
 
-### createLengthPlugin
+### LengthPlugin
 
-Creates a plugin that enforces a maximum length for the editor.
+Plugin that enforces a maximum length for the editor.
 
-### createNodeFactoryPlugin
+### NodeFactoryPlugin
 
-Creates a plugin that overrides the default `blockFactory` and `childrenFactory` functions in the editor. These functions are used to generate the default blocks and children for the editor.
+Plugin that overrides the default `blockFactory` and `childrenFactory` functions in the editor. These functions are used to generate the default blocks and children for the editor.
 
-### createPrevSelectionPlugin
+### PrevSelectionPlugin
 
-Creates a plugin that keeps track of the previous selection in the editor and the current keyboard event being processed.
+Plugin that keeps track of the previous selection in the editor and the current keyboard event being processed.
 
-### createReactPlugin
+### ReactPlugin
 
-Creates a plugin that adds `withTReact` to the editor, which is a generic typed version of `withReact` from 'slate-react' library.
+Plugin that adds `withTReact` to the editor, which is a generic typed version of `withReact` from 'slate-react' library.
 
 ### withPlate
 

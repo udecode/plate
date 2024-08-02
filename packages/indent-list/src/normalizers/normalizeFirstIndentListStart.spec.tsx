@@ -2,7 +2,7 @@
 
 import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
 import { createIndentPlugin } from '@udecode/plate-indent';
-import { createParagraphPlugin } from '@udecode/plate-paragraph';
+import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { createIndentListPlugin } from '../IndentListPlugin';
@@ -31,11 +31,7 @@ it('should be', async () => {
   const editor = createPlateEditor({
     editor: input,
     normalizeInitialValue: true,
-    plugins: [
-      createParagraphPlugin(),
-      createIndentPlugin(),
-      createIndentListPlugin(),
-    ],
+    plugins: [ParagraphPlugin, createIndentPlugin(), createIndentListPlugin()],
   });
 
   expect(editor.children).toEqual(output.children);

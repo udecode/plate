@@ -7,7 +7,7 @@ import {
 
 import { withTrailingBlock } from './withTrailingBlock';
 
-export interface TrailingBlockPlugin extends QueryNodeOptions {
+export interface TrailingBlockPluginOptions extends QueryNodeOptions {
   /** Level where the trailing node should be, the first level being 0. */
   level?: number;
 
@@ -18,10 +18,10 @@ export interface TrailingBlockPlugin extends QueryNodeOptions {
 export const KEY_TRAILING_BLOCK = 'trailingBlock';
 
 /** @see {@link withTrailingBlock} */
-export const TrailingBlockPlugin = createPlugin<TrailingBlockPlugin>({
+export const TrailingBlockPlugin = createPlugin<TrailingBlockPluginOptions>({
   key: KEY_TRAILING_BLOCK,
   withOverrides: withTrailingBlock,
-}).extend((editor) => ({
+}).extend((editor, plugin) => ({
   options: {
     level: 0,
     type: getPluginType(editor, ELEMENT_DEFAULT),

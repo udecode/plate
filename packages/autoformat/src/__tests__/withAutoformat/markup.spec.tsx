@@ -8,7 +8,7 @@ import {
 import { createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createAutoformatPlugin } from '../../AutoformatPlugin';
+import { AutoformatPlugin } from '../../AutoformatPlugin';
 
 jsx;
 
@@ -36,17 +36,15 @@ describe('when match is an array', () => {
     const editor = createPlateEditor({
       editor: input,
       plugins: [
-        createAutoformatPlugin({
-          options: {
-            rules: [
-              {
-                ignoreTrim: true,
-                match: ['_***', '***_'],
-                mode: 'mark',
-                type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
-              },
-            ],
-          },
+        AutoformatPlugin.configure({
+          rules: [
+            {
+              ignoreTrim: true,
+              match: ['_***', '***_'],
+              mode: 'mark',
+              type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
+            },
+          ],
         }),
       ],
     });
@@ -81,17 +79,15 @@ describe('when match is a string', () => {
     const editor = createPlateEditor({
       editor: input,
       plugins: [
-        createAutoformatPlugin({
-          options: {
-            rules: [
-              {
-                ignoreTrim: true,
-                match: '_***',
-                mode: 'mark',
-                type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
-              },
-            ],
-          },
+        AutoformatPlugin.configure({
+          rules: [
+            {
+              ignoreTrim: true,
+              match: '_***',
+              mode: 'mark',
+              type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
+            },
+          ],
         }),
       ],
     });

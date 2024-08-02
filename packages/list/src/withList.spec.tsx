@@ -5,32 +5,27 @@ import {
   type PlatePlugin,
   createPlateEditor,
 } from '@udecode/plate-common';
-import { createLinkPlugin } from '@udecode/plate-link';
-import { createParagraphPlugin } from '@udecode/plate-paragraph';
+import { LinkPlugin } from '@udecode/plate-link';
+import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
 import type { ListPluginOptions } from './types';
 
-import { ELEMENT_UL, createListPlugin } from './ListPlugin';
+import { ELEMENT_UL, ListPlugin } from './ListPlugin';
 
 jsx;
 
 const testInsertText = (
   input: any,
   expected: any,
-  listPluginOptions?: Partial<PlatePlugin<ListPluginOptions>>
+  listPluginOptions: Partial<PlatePlugin> = {}
 ) => {
   const editor = createPlateEditor({
     editor: input,
     plugins: [
-      createParagraphPlugin(),
-      createListPlugin(
-        {},
-        {
-          [ELEMENT_UL]: listPluginOptions!,
-        }
-      ),
-      createLinkPlugin(),
+      ParagraphPlugin,
+      ListPlugin.extendPlugin(ELEMENT_UL, listPluginOptions),
+      LinkPlugin,
     ],
   });
 
@@ -42,7 +37,7 @@ const testInsertText = (
 const testDeleteBackward = (input: any, expected: any) => {
   const editor = createPlateEditor({
     editor: input,
-    plugins: [createParagraphPlugin(), createListPlugin()],
+    plugins: [ParagraphPlugin, ListPlugin],
   });
 
   editor.deleteBackward('character');
@@ -53,7 +48,7 @@ const testDeleteBackward = (input: any, expected: any) => {
 const testDeleteForward = (input: any, expected: any) => {
   const editor = createPlateEditor({
     editor: input,
-    plugins: [createParagraphPlugin(), createListPlugin()],
+    plugins: [ParagraphPlugin, ListPlugin],
   });
 
   editor.deleteForward('character');

@@ -1,13 +1,14 @@
 /** @jsx jsx */
 
-import { createBoldPlugin } from '@udecode/plate-basic-marks';
+import { BoldPlugin } from '@udecode/plate-basic-marks';
 import { createPlateEditor } from '@udecode/plate-common';
-import { createLinkPlugin } from '@udecode/plate-link';
-import { createImagePlugin } from '@udecode/plate-media';
-import { createParagraphPlugin } from '@udecode/plate-paragraph';
-import { createTablePlugin } from '@udecode/plate-table';
+import { LinkPlugin } from '@udecode/plate-link';
+import { ImagePlugin } from '@udecode/plate-media';
+import { ParagraphPlugin } from '@udecode/plate-paragraph';
+import { TablePlugin } from '@udecode/plate-table';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 
+import { createPlugin } from '../../../utils';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 
 jsx;
@@ -29,7 +30,7 @@ describe('when element has class and attribute, and plugin has deserialize type,
       deserializeHtmlElement(
         createPlateEditor({
           plugins: [
-            {
+            createPlugin({
               deserializeHtml: {
                 getNode: (el) => ({
                   id: el.dataset.id,
@@ -45,7 +46,7 @@ describe('when element has class and attribute, and plugin has deserialize type,
               },
               key: 'a',
               type: 'poll',
-            },
+            }),
           ],
         }),
         element
@@ -77,7 +78,7 @@ describe('when plugin has deserialize attributeNames', () => {
     expect(
       deserializeHtmlElement(
         createPlateEditor({
-          plugins: [createTablePlugin()],
+          plugins: [TablePlugin],
         }),
         element
       )
@@ -151,7 +152,7 @@ describe('when plugin has deserialize.attributeNames', () => {
 
   const editor = createPlateEditor({
     plugins: [
-      createImagePlugin({
+      ImagePlugin.extend({
         deserializeHtml: {
           attributeNames: ['alt'],
         },
@@ -182,8 +183,8 @@ describe('when plugin has deserialize.getNode', () => {
 
   const editor = createPlateEditor({
     plugins: [
-      createParagraphPlugin(),
-      createLinkPlugin({
+      ParagraphPlugin,
+      LinkPlugin.extend({
         deserializeHtml: {
           getNode: (el) => ({
             opener: el.getAttribute('target') === '_blank',
@@ -217,8 +218,8 @@ describe('when plugin has deserialize.rules.validNodeName', () => {
 
   const editor = createPlateEditor({
     plugins: [
-      createParagraphPlugin(),
-      createBoldPlugin({
+      ParagraphPlugin,
+      BoldPlugin.extend({
         deserializeHtml: { rules: [{ validNodeName: ['B'] }] },
       }),
     ],

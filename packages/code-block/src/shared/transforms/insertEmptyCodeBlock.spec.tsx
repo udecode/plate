@@ -3,7 +3,7 @@
 import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createCodeBlockPlugin } from '../../client/CodeBlockPlugin';
+import { CodeBlockPlugin } from '../../client/CodeBlockPlugin';
 import { insertEmptyCodeBlock } from './insertEmptyCodeBlock';
 
 jsx;
@@ -30,7 +30,7 @@ describe('insert empty code block', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createCodeBlockPlugin()],
+      plugins: [CodeBlockPlugin],
     });
 
     insertEmptyCodeBlock(editor, {
@@ -63,7 +63,7 @@ describe('insert empty code block', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createCodeBlockPlugin()],
+      plugins: [CodeBlockPlugin],
     });
 
     insertEmptyCodeBlock(editor, {
@@ -105,7 +105,7 @@ describe('insert empty code block', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createCodeBlockPlugin()],
+      plugins: [CodeBlockPlugin],
     });
 
     insertEmptyCodeBlock(editor, {

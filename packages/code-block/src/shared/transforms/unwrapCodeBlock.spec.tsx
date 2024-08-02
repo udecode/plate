@@ -3,7 +3,7 @@
 import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createCodeBlockPlugin } from '../../client/CodeBlockPlugin';
+import { CodeBlockPlugin } from '../../client/CodeBlockPlugin';
 import { unwrapCodeBlock } from './unwrapCodeBlock';
 
 jsx;
@@ -35,7 +35,7 @@ describe('unwrap code block', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createCodeBlockPlugin()],
+      plugins: [CodeBlockPlugin],
     });
 
     unwrapCodeBlock(editor);
@@ -82,7 +82,7 @@ describe('unwrap code block', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createCodeBlockPlugin()],
+      plugins: [CodeBlockPlugin],
     });
 
     unwrapCodeBlock(editor);
@@ -124,7 +124,7 @@ describe('unwrap code block', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [createCodeBlockPlugin()],
+        plugins: [CodeBlockPlugin],
       });
 
       unwrapCodeBlock(editor);

@@ -5,8 +5,7 @@ import { isBlock, setNodes } from '@udecode/slate';
 import isEqual from 'lodash/isEqual.js';
 import memoize from 'lodash/memoize.js';
 
-import type { PlatePlugin } from '../../../common/types';
-
+import { type PlatePlugin, createPlugin } from '../../shared';
 import { createPlateEditor } from '../utils';
 import { Plate } from './Plate';
 import { PlateContent } from './PlateContent';
@@ -66,9 +65,8 @@ describe('Plate', () => {
         }
       });
 
-      // @ts-ignore
       const plugins: PlatePlugin[] = memoize((): PlatePlugin[] => [
-        {
+        createPlugin({
           key: 'a',
           withOverrides: (e) => {
             const { normalizeNode } = e;
@@ -79,7 +77,7 @@ describe('Plate', () => {
 
             return e;
           },
-        },
+        }),
       ])();
 
       const editor = createPlateEditor();
@@ -105,12 +103,12 @@ describe('Plate', () => {
   describe('when renderAboveSlate renders null', () => {
     it('should not normalize editor children', () => {
       const plugins: PlatePlugin[] = [
-        {
+        createPlugin({
           key: 'a',
           renderAboveSlate: () => {
             return null;
           },
-        },
+        }),
       ];
 
       const editor = createPlateEditor({
@@ -130,12 +128,12 @@ describe('Plate', () => {
   describe('when renderAboveSlate renders children', () => {
     it("should not trigger plugin's normalize", () => {
       const plugins: PlatePlugin[] = [
-        {
+        createPlugin({
           key: 'a',
           renderAboveSlate: ({ children }) => {
             return <>{children}</>;
           },
-        },
+        }),
       ];
 
       const editor = createPlateEditor({
@@ -155,7 +153,7 @@ describe('Plate', () => {
   describe('when nested Plate', () => {
     it('should work', () => {
       const plugins: PlatePlugin[] = [
-        {
+        createPlugin({
           component: ({ attributes, children }) => (
             <div {...attributes}>
               <Plate id="test">
@@ -167,7 +165,7 @@ describe('Plate', () => {
           isElement: true,
           isVoid: true,
           key: 'a',
-        },
+        }),
       ];
 
       const editor = createPlateEditor({

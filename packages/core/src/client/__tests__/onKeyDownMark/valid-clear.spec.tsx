@@ -1,18 +1,12 @@
 /** @jsx jsx */
 
-import {
-  MARK_BOLD,
-  MARK_ITALIC,
-  createBoldPlugin,
-} from '@udecode/plate-basic-marks';
-import {
-  type ToggleMarkPlugin,
-  createPlateEditor,
-  getPlugin,
-  onKeyDownToggleMark,
-} from '@udecode/plate-common';
+import { BoldPlugin, MARK_BOLD, MARK_ITALIC } from '@udecode/plate-basic-marks';
 import * as isHotkey from '@udecode/plate-core/server';
 import { jsx } from '@udecode/plate-test-utils';
+import { onKeyDownToggleMark } from '@udecode/plate-utils';
+
+import { type ToggleMarkPluginOptions, getPlugin } from '../../../shared';
+import { createPlateEditor } from '../../utils';
 
 jsx;
 
@@ -52,8 +46,9 @@ const output = (
 const editor = createPlateEditor({
   editor: input,
   plugins: [
-    createBoldPlugin({
-      options: { clear: MARK_ITALIC, hotkey: 'ctrl+b' },
+    BoldPlugin.configure({
+      clear: MARK_ITALIC,
+      hotkey: 'ctrl+b',
     }),
   ],
 });
@@ -63,7 +58,7 @@ it('should be', () => {
 
   onKeyDownToggleMark(
     editor,
-    getPlugin<ToggleMarkPlugin>(editor, MARK_BOLD)
+    getPlugin<ToggleMarkPluginOptions>(editor, MARK_BOLD)
   )(event as any);
   expect(editor.children).toEqual(output.children);
   expect(editor.selection).toEqual(output.selection);

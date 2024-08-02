@@ -2,8 +2,7 @@ import React from 'react';
 
 import { render } from '@testing-library/react';
 
-import type { PlatePlugin } from '../../../common/types';
-
+import { type PlatePlugin, createPlugin } from '../../shared';
 import { Plate, PlateContent } from '../components';
 
 describe('useEditableProps', () => {
@@ -12,14 +11,14 @@ describe('useEditableProps', () => {
       const decorate = jest.fn();
 
       const plugins: PlatePlugin[] = [
-        {
+        createPlugin({
           decorate: () => () => {
             decorate();
 
             return [];
           },
           key: 'a',
-        },
+        }),
       ];
 
       render(

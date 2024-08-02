@@ -1,20 +1,17 @@
-import {
-  createBoldPlugin,
-  createItalicPlugin,
-} from '@udecode/plate-basic-marks';
+import { ItalicPlugin } from '@udecode/plate-basic-marks';
 import { type Value, htmlStringToDOMNode } from '@udecode/plate-common';
-import { createListPlugin } from '@udecode/plate-list';
-import { createParagraphPlugin } from '@udecode/plate-paragraph';
+import { ListPlugin } from '@udecode/plate-list';
+import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { createPlateUIEditor } from 'www/src/lib/plate/create-plate-ui-editor';
 
 import { serializeHtml } from '../../serializeHtml';
 
 it('serialize complex example list with paragraphs to html', () => {
   const plugins = [
-    createItalicPlugin(),
-    createBoldPlugin(),
-    createParagraphPlugin(),
-    createListPlugin(),
+    ItalicPlugin,
+    BoldPlugin,
+    ParagraphPlugin,
+    ListPlugin,
   ];
   const editor = createPlateUIEditor({ plugins });
 
@@ -90,10 +87,10 @@ it('serialize complex example list with paragraphs to html', () => {
 
 it('serialize complex example with no type on top level node to html', () => {
   const plugins = [
-    createItalicPlugin(),
-    createBoldPlugin(),
-    createParagraphPlugin(),
-    createListPlugin(),
+    ItalicPlugin,
+    BoldPlugin,
+    ParagraphPlugin,
+    ListPlugin,
   ];
   const editor = createPlateUIEditor({ plugins });
 
@@ -134,10 +131,10 @@ it('serialize complex example with no type on top level node to html', () => {
 
 it('serialize complex example with multiple no types on top level node to html', () => {
   const plugins = [
-    createItalicPlugin(),
-    createBoldPlugin(),
-    createParagraphPlugin(),
-    createListPlugin(),
+    ItalicPlugin,
+    BoldPlugin,
+    ParagraphPlugin,
+    ListPlugin,
   ];
   const editor = createPlateUIEditor({ plugins });
 
@@ -180,7 +177,7 @@ it('serialize complex example with multiple no types on top level node to html',
 });
 
 it('serialize string with %', () => {
-  const plugins = [createParagraphPlugin()];
+  const plugins = [ParagraphPlugin];
   const editor = createPlateUIEditor({ plugins });
 
   const render = serializeHtml(editor, {

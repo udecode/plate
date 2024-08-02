@@ -6,13 +6,13 @@ import {
 } from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
-import type { TrailingBlockPlugin } from './TrailingBlockPlugin';
+import type { TrailingBlockPluginOptions } from './TrailingBlockPlugin';
 
 /**
  * Add a trailing block when the last node type is not `type` and when the
  * editor has .
  */
-export const withTrailingBlock: WithOverride<TrailingBlockPlugin> = (
+export const withTrailingBlock: WithOverride<TrailingBlockPluginOptions> = (
   editor,
   { options: { level, type, ...query } }
 ) => {

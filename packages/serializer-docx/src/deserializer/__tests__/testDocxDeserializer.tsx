@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { createAlignPlugin } from '@udecode/plate-alignment';
-import { createBasicElementsPlugin } from '@udecode/plate-basic-elements';
-import { createBasicMarksPlugin } from '@udecode/plate-basic-marks';
+import { AlignPlugin } from '@udecode/plate-alignment';
+import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
+import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
 import {
   type OverrideByKey,
   type PlatePlugin,
@@ -13,10 +13,10 @@ import { createHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { createIndentPlugin } from '@udecode/plate-indent';
 import { createJuicePlugin } from '@udecode/plate-juice';
 import { createLineHeightPlugin } from '@udecode/plate-line-height';
-import { createLinkPlugin } from '@udecode/plate-link';
-import { createImagePlugin } from '@udecode/plate-media';
+import { LinkPlugin } from '@udecode/plate-link';
+import { ImagePlugin } from '@udecode/plate-media';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
-import { createTablePlugin } from '@udecode/plate-table';
+import { TablePlugin } from '@udecode/plate-table';
 import { jsx } from '@udecode/plate-test-utils';
 import { alignPlugin } from 'www/src/lib/plate/demo/plugins/alignPlugin';
 import { lineHeightPlugin } from 'www/src/lib/plate/demo/plugins/lineHeightPlugin';
@@ -58,15 +58,15 @@ export const testDocxDeserializer = ({
       overrideByKey,
       plugins: [
         ...plugins,
-        createImagePlugin(),
+        ImagePlugin,
         createHorizontalRulePlugin(),
-        createLinkPlugin(),
-        createTablePlugin(),
-        createBasicElementsPlugin(),
-        createBasicMarksPlugin(),
-        createTablePlugin(),
+        LinkPlugin,
+        TablePlugin,
+        BasicElementsPlugin,
+        BasicMarksPlugin,
+        TablePlugin,
         createLineHeightPlugin(lineHeightPlugin as any),
-        createAlignPlugin(alignPlugin as any),
+        AlignPlugin.extend(alignPlugin as any),
         createIndentPlugin({
           inject: {
             props: {

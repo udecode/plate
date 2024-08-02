@@ -3,7 +3,7 @@
 import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createTablePlugin } from '../TablePlugin';
+import { TablePlugin } from '../TablePlugin';
 import { deleteColumn } from './deleteColumn';
 
 jsx;
@@ -56,7 +56,7 @@ describe('deleteColumn', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [createTablePlugin()],
+        plugins: [TablePlugin],
       });
 
       deleteColumn(editor);
@@ -109,7 +109,7 @@ describe('deleteColumn', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [createTablePlugin()],
+        plugins: [TablePlugin],
       });
 
       deleteColumn(editor);
@@ -162,7 +162,7 @@ describe('deleteColumn', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [createTablePlugin()],
+        plugins: [TablePlugin],
       });
 
       deleteColumn(editor);
@@ -221,7 +221,7 @@ describe('deleteColumn', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [createTablePlugin()],
+        plugins: [TablePlugin],
       });
 
       deleteColumn(editor);

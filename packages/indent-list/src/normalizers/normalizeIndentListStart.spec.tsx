@@ -2,7 +2,7 @@
 
 import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
 import { createIndentPlugin } from '@udecode/plate-indent';
-import { createParagraphPlugin } from '@udecode/plate-paragraph';
+import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { indentListPluginPage } from '../__tests__/indentListPluginPage';
@@ -89,7 +89,7 @@ describe('normalizeIndentListStart', () => {
         editor: input,
         normalizeInitialValue: true,
         plugins: [
-          createParagraphPlugin(),
+          ParagraphPlugin,
           createIndentPlugin(),
           createIndentListPlugin(),
         ],
@@ -152,7 +152,7 @@ describe('normalizeIndentListStart', () => {
         editor: input,
         normalizeInitialValue: true,
         plugins: [
-          createParagraphPlugin(),
+          ParagraphPlugin,
           createIndentPlugin(),
           createIndentListPlugin(indentListPluginPage),
         ],
@@ -204,7 +204,7 @@ describe('normalizeIndentListStart', () => {
         editor: input,
         normalizeInitialValue: true,
         plugins: [
-          createParagraphPlugin(),
+          ParagraphPlugin,
           createIndentPlugin(),
           createIndentListPlugin(indentListPluginPage),
         ],

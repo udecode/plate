@@ -4,8 +4,6 @@ import { ELEMENT_DEFAULT, createPlateEditor } from '@udecode/plate-common';
 import { ELEMENT_H1 } from '@udecode/plate-heading';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createTrailingBlockPlugin } from './TrailingBlockPlugin';
-
 jsx;
 
 describe('when last node is invalid', () => {
@@ -30,11 +28,9 @@ describe('when last node is invalid', () => {
     const editor = createPlateEditor({
       editor: input,
       plugins: [
-        createTrailingBlockPlugin({
-          options: {
-            level: 0,
-            type: ELEMENT_DEFAULT,
-          },
+        TrailingBlockPlugin.configure({
+          level: 0,
+          type: ELEMENT_DEFAULT,
         }),
       ],
     });
@@ -71,11 +67,9 @@ describe('when level = 1', () => {
     const editor = createPlateEditor({
       editor: input,
       plugins: [
-        createTrailingBlockPlugin({
-          options: {
-            level: 1,
-            type: ELEMENT_DEFAULT,
-          },
+        TrailingBlockPlugin.configure({
+          level: 1,
+          type: ELEMENT_DEFAULT,
         }),
       ],
     });
@@ -105,12 +99,10 @@ describe('when using query', () => {
     const editor = createPlateEditor({
       editor: input,
       plugins: [
-        createTrailingBlockPlugin({
-          options: {
-            exclude: [ELEMENT_H1],
-            level: 0,
-            type: ELEMENT_DEFAULT,
-          },
+        TrailingBlockPlugin.configure({
+          exclude: [ELEMENT_H1],
+          level: 0,
+          type: ELEMENT_DEFAULT,
         }),
       ],
     });
@@ -141,7 +133,7 @@ describe('when the last node is valid', () => {
   it('should be', () => {
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createTrailingBlockPlugin()],
+      plugins: [TrailingBlockPlugin],
     });
 
     editor.normalizeNode([input, []]);
@@ -164,7 +156,7 @@ describe('when editor has no children', () => {
   it('should be', () => {
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createTrailingBlockPlugin()],
+      plugins: [TrailingBlockPlugin],
     });
 
     editor.normalizeNode([editor, []]);

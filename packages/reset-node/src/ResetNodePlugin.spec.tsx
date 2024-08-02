@@ -3,11 +3,11 @@
 import { createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createResetNodePlugin } from './ResetNodePlugin';
+import { ResetNodePlugin } from './ResetNodePlugin';
 
 jsx;
 
-describe('createResetNodePlugin', () => {
+describe('ResetNodePlugin', () => {
   describe('when delete from start to end of editor', () => {
     const input = (
       <editor>
@@ -34,7 +34,7 @@ describe('createResetNodePlugin', () => {
     it('should reset', () => {
       const editor = createPlateEditor({
         editor: input,
-        plugins: [createResetNodePlugin()],
+        plugins: [ResetNodePlugin],
       });
 
       editor.deleteFragment();
@@ -69,7 +69,7 @@ describe('createResetNodePlugin', () => {
     it('should reset', () => {
       const editor = createPlateEditor({
         editor: input,
-        plugins: [createResetNodePlugin()],
+        plugins: [ResetNodePlugin],
       });
 
       editor.deleteFragment();
@@ -100,7 +100,7 @@ describe('createResetNodePlugin', () => {
     it('should reset', () => {
       const editor = createPlateEditor({
         editor: input,
-        plugins: [createResetNodePlugin()],
+        plugins: [ResetNodePlugin],
       });
 
       editor.deleteBackward();

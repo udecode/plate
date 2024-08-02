@@ -5,6 +5,43 @@ description: API reference for Plate plugins.
 
 Plate plugins are objects passed to `Plate` [plugins](/docs/api/core/plate#plugins) prop.
 
+
+## Generic Types
+
+The `PlatePlugin` interface uses four generic types:
+
+<APIAttributes>
+<APIItem name="O" type="object" optional>
+Represents the plugin options. This type defines the structure of the `options` object that can be passed to the plugin.
+</APIItem>
+
+<APIItem name="T" type="object" optional>
+Represents the plugin transforms. This type defines the structure of any transform functions the plugin may provide.
+</APIItem>
+
+<APIItem name="Q" type="object" optional>
+Represents the plugin queries. This type defines the structure of any query functions the plugin may provide.
+</APIItem>
+
+<APIItem name="S" type="object" optional>
+Represents the plugin storage. This type defines the structure of any data the plugin may need to dynamically store.
+</APIItem>
+</APIAttributes>
+
+Usage example:
+```typescript
+type MyPluginOptions = { customOption: boolean };
+type MyPluginTransforms = { customTransform: () => void };
+type MyPluginQueries = { customQuery: () => boolean };
+type MyPluginStorage = { customData: string };
+
+const myPlugin = createPlugin<MyPluginOptions, MyPluginTransforms, MyPluginQueries, MyPluginStorage>({
+  // plugin implementation
+});
+```
+
+## Plugins Properties
+
 <APIAttributes>
 <APIItem name="key" type="string" required>
 
@@ -34,14 +71,7 @@ Property used by Plate to decorate editor ranges.
 - See https://docs.slatejs.org/concepts/09-rendering#decorations
 
 ```ts
-export type Decorate<
-  P = PluginOptions,
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>
-> = (
-  editor: PlateEditor<V>,
-  plugin: WithPlatePlugin<P, V, E>
-) => (entry: ENodeEntry<V>) => Range[] | undefined;
+type Decorate = (editor: PlateEditor, plugin: PlatePlugin) => (entry: TNodeEntry) => Range[] | undefined;
 ```
 
 </APIItem>
@@ -111,7 +141,7 @@ Whether or not to include deserialized children on this node.
 
 </APIItem>
 
-<APIItem name="editor" type="object" optional>
+<APIItem name="editor" type="object">
 <APISubList>
 <APISubListItem parent="editor" name="insertData" type="object" optional>
 Properties used by the `insertData` core plugin to deserialize inserted data to a slate fragment.
@@ -129,7 +159,7 @@ Query to skip this plugin.
 <APISubListItem parent="editor.insertData" name="getFragment" type="function" optional>
 Deserialize data to fragment.
 ```ts
-(options: PlatePluginInsertDataOptions) => EElementOrText[] | undefined
+(options: PlatePluginInsertDataOptions) => TDescendant[] | undefined
 ```
 </APISubListItem>
 <APISubListItem parent="editor.insertData" name="preInsert" type="function" optional>
@@ -137,7 +167,7 @@ Function called on `editor.insertData` just before `editor.insertFragment`.
 - Default: if the block above the selection is empty and the first fragment node type is not inline, set the selected node type to the first fragment node type
 - Returns: if true, the next handlers will be skipped.
 ```ts
-(fragment: EElementOrText[], options: PlatePluginInsertDataOptions) => HandlerReturnType
+(fragment: TDescendant[], options: PlatePluginInsertDataOptions) => HandlerReturnType
 ```
 </APISubListItem>
 <APISubListItem parent="editor.insertData" name="transformData" type="function" optional>
@@ -149,7 +179,7 @@ Transform the inserted data.
 <APISubListItem parent="editor.insertData" name="transformFragment" type="function" optional>
 Transform the fragment to insert.
 ```ts
-(fragment: EElementOrText[], options: PlatePluginInsertDataOptions ) => EElementOrText[]
+(fragment: TDescendant[], options: PlatePluginInsertDataOptions ) => TDescendant[]
 ```
 </APISubListItem>
 
@@ -218,16 +248,12 @@ This attribute extends most `textarea` handlers like:
 - ...
 
 ```ts
-type Handler<
-  P = PluginOptions,
-  V extends Value,
-  E extends PlateEditor = PlateEditor
-> = (editor: E, plugin: WithPlatePlugin) => (event: Event) => boolean | void;
+(editor: PlateEditor, plugin: PlatePlugin) => (event: Event) => boolean | void;
 ```
 
 </APIItem>
 
-<APIItem name="inject" type="object" optional>
+<APIItem name="inject" type="object">
 <APISubList>
 <APISubListItem parent="inject" name="aboveComponent" type="InjectComponent" optional>
 Property used by Plate to inject a component above other plugins `component`.
@@ -243,7 +269,7 @@ Property that can be used by a plugin to allow other plugins to inject code.
 `insertData` plugin will call all of these `transformData` for `KEY_DESERIALIZE_HTML` plugin.
 - The value of this property is an object with keys being the plugin keys and values being the injected code.
 ```ts
-Record<PluginKey, Partial<PlatePlugin<PluginOptions, V, E>>>
+Record<PluginKey, Partial<PlatePlugin>>
 ```
 </APISubListItem>
 <APISubListItem parent="inject" name="props" type="object" optional>
@@ -263,8 +289,8 @@ Node key to map to the styles.
 Whether to inject the props. If true, overrides all other checks.
 ```ts
 (
-  options: NonNullable<NonNullable<InjectProps<V>['inject']>['props']>,
-  nodeProps: GetInjectPropsOptions<V>
+  options: InjectProps,
+  nodeProps: GetInjectPropsOptions
 ) => boolean
 ```
 </APISubListItem>
@@ -290,7 +316,7 @@ Transform the node value for the style or className.
 Transform the injected props.
 ```ts
 (
-  options: TransformOptions<V>,
+  options: TransformOptions,
   props: GetInjectPropsReturnType
 ) => AnyObject | undefined
 ```
@@ -376,14 +402,14 @@ markable.
 <APIItem name="normalizeInitialValue" type="(initialValue: V) => V" optional>
 Normalize value before passing it into the editor.
 </APIItem>
-<APIItem name="options" type="P" optional>
+<APIItem name="options" type="O">
 Extended properties used by any plugin as options.
 - Its type is the second generic type of `PlatePlugin`.
 </APIItem>
 <APIItem name="overrideByKey" type="Record<PluginKey, Partial<PlatePlugin>>" optional>
 Property used by Plate to deeply override plugins by key.
 </APIItem>
-<APIItem name="plugins" type="PlatePlugin[]" optional>
+<APIItem name="plugins" type="PlatePlugin[]">
 Recursive plugin support to allow having multiple plugins in a single plugin.
 - Plate eventually flattens all the plugins into the editor.
 </APIItem>
@@ -440,19 +466,7 @@ React.FC<{
 ```
 
 </APIItem>
-<APIItem name="then" type="function" optional>
-
-Recursive plugin merging.
-
-- Can be used to derive plugin fields from `editor` and `plugin`.
-- The returned value will be deeply merged to the plugin.
-
-```tsx
-(editor: PlateEditor, plugin: WithPlatePlugin) => Partial<PlatePlugin> | void;
-```
-
-</APIItem>
-<APIItem name="type" type="string" optional>
+<APIItem name="type" type="string">
 Property used by Plate to render a node by type.
 - It requires slate element properties to have a `type` property with the plugin `type` as value.
 - Example: `{ type: 'p' }` where plugin `type` is `'p'`.
@@ -464,7 +478,7 @@ Property used by Plate to render a node by type.
 Use any React hooks here. Each plugin `useHooks` will be called in a React component.
 
 ```tsx
-(editor: PlateEditor, plugin: WithPlatePlugin) => void
+(editor: PlateEditor, plugin: PlatePlugin) => void;
 ```
 
 </APIItem>
@@ -473,9 +487,75 @@ Editor method overriders.
 - See https://docs.slatejs.org/concepts/08-plugins
 
 ```tsx
-(editor: PlateEditor, plugin: WithPlatePlugin) => PlateEditor;
+(editor: PlateEditor, plugin: PlatePlugin) => void;
 ```
 
 </APIItem>
+<APIItem name="configure" type="function">
+Creates a new plugin instance with updated options.
 
+```tsx
+(options: Partial<O>) => PlatePlugin
+```
+
+</APIItem>
+<APIItem name="extend" type="function">
+Creates a new plugin instance with additional configuration. Can accept either an object or a function.
+
+```tsx
+(extendConfig: Partial<PlatePlugin> | ((editor: PlateEditor, plugin: PlatePlugin) => Partial<PlatePlugin>)) => PlatePlugin
+```
+
+</APIItem>
+<APIItem name="extendPlugin" type="function">
+Extends an existing nested plugin or adds a new one if not found. Supports deep nesting.
+
+```tsx
+(key: string, extendConfig: Partial<PlatePlugin> | ((editor: PlateEditor, plugin: PlatePlugin) => Partial<PlatePlugin>)) => PlatePlugin
+```
+
+</APIItem>
 </APIAttributes>
+
+## Plugin Methods
+
+- `configure`: Creates a new plugin instance with updated options.
+
+```ts
+const configuredPlugin = myPlugin.configure({ someOption: false });
+```
+which is equivalent to
+```ts
+const configuredPlugin = myPlugin.extend({ options: { someOption: false } });
+```
+
+- `extend`: Creates a new plugin instance with additional configuration. Can accept either an object or a function.
+```ts
+const extendedPlugin = myPlugin.extend({
+  component: { anotherOption: false },
+});
+
+// or using a function
+const functionallyExtendedPlugin = myPlugin.extend((editor, plugin) => ({
+  options: { editorOption: editor.someOption },
+}));
+```
+
+- `extendPlugin`: Extends an existing nested plugin or adds a new one if not found. Supports deep nesting.
+```ts
+const pluginWithNestedExtension = myPlugin.extendPlugin('nestedPlugin', {
+  options: { nestedOption: true },
+});
+
+// Extending a deeply nested plugin
+const deeplyExtendedPlugin = myPlugin.extendPlugin('deeplyNestedPlugin', {
+  options: { deepOption: true },
+});
+
+// Using a function for dynamic extension
+const dynamicallyExtendedPlugin = myPlugin.extendPlugin('dynamicPlugin', 
+  (editor, plugin) => ({
+    options: { isActive: editor.selection !== null },
+  })
+);
+```

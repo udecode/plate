@@ -7,7 +7,7 @@ import {
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createCodeBlockPlugin } from '../../client/CodeBlockPlugin';
+import { CodeBlockPlugin } from '../../client/CodeBlockPlugin';
 
 jsx;
 
@@ -33,7 +33,7 @@ describe('clean up code block', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createCodeBlockPlugin()],
+      plugins: [CodeBlockPlugin],
     });
 
     const path = [0];

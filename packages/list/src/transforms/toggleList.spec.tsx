@@ -5,7 +5,7 @@ import {
   createPlateEditor,
   getPluginType,
 } from '@udecode/plate-common';
-import { ELEMENT_OL, ELEMENT_UL, createListPlugin } from '@udecode/plate-list';
+import { ELEMENT_OL, ELEMENT_UL, ListPlugin } from '@udecode/plate-list';
 import { ELEMENT_IMAGE } from '@udecode/plate-media';
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -35,7 +35,7 @@ describe('toggle on', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createListPlugin()],
+      plugins: [ListPlugin],
     });
 
     toggleList(editor, { type: getPluginType(editor, ELEMENT_UL) });
@@ -69,13 +69,9 @@ describe('toggle on', () => {
     const editor = createPlateEditor({
       editor: input,
       plugins: [
-        createListPlugin({
-          overrideByKey: {
-            [ELEMENT_UL]: {
+        ListPlugin.extendPlugin(ELEMENT_UL, {
               options: {
                 validLiChildrenTypes: [ELEMENT_IMAGE],
-              },
-            },
           },
         }),
       ],
@@ -113,7 +109,7 @@ describe('toggle on', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createListPlugin()],
+      plugins: [ListPlugin],
     });
 
     toggleList(editor, { type: getPluginType(editor, ELEMENT_UL) });
@@ -152,7 +148,7 @@ describe('toggle on', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createListPlugin()],
+      plugins: [ListPlugin],
     });
 
     toggleList(editor, { type: getPluginType(editor, ELEMENT_UL) });
@@ -204,14 +200,10 @@ describe('toggle on', () => {
     const editor = createPlateEditor({
       editor: input,
       plugins: [
-        createListPlugin({
-          overrideByKey: {
-            [ELEMENT_UL]: {
+        ListPlugin.extendPlugin(ELEMENT_UL, {
               options: {
                 validLiChildrenTypes: [ELEMENT_IMAGE],
               },
-            },
-          },
         }),
       ],
     });
@@ -266,7 +258,7 @@ describe('toggle on', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createListPlugin()],
+      plugins: [ListPlugin],
     });
 
     toggleList(editor, { type: getPluginType(editor, ELEMENT_UL) });
@@ -319,7 +311,7 @@ describe('toggle on', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createListPlugin()],
+      plugins: [ListPlugin],
     });
 
     toggleList(editor, { type: getPluginType(editor, ELEMENT_UL) });
@@ -367,7 +359,7 @@ describe('toggle off', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createListPlugin()],
+      plugins: [ListPlugin],
     });
 
     toggleList(editor, { type: getPluginType(editor, ELEMENT_UL) });
@@ -423,7 +415,7 @@ describe('toggle off', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createListPlugin()],
+      plugins: [ListPlugin],
     });
 
     toggleList(editor, { type: getPluginType(editor, ELEMENT_UL) });
@@ -462,7 +454,7 @@ describe('toggle off', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createListPlugin()],
+      plugins: [ListPlugin],
     });
 
     toggleList(editor, { type: getPluginType(editor, ELEMENT_UL) });
@@ -518,13 +510,9 @@ describe('toggle off', () => {
     const editor = createPlateEditor({
       editor: input,
       plugins: [
-        createListPlugin({
-          overrideByKey: {
-            [ELEMENT_UL]: {
+        ListPlugin.extendPlugin(ELEMENT_UL, {
               options: {
                 validLiChildrenTypes: [ELEMENT_IMAGE],
-              },
-            },
           },
         }),
       ],
@@ -562,7 +550,7 @@ describe('toggle over', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createListPlugin()],
+      plugins: [ListPlugin],
     });
 
     toggleList(editor, { type: getPluginType(editor, ELEMENT_OL) });
@@ -606,7 +594,7 @@ describe('toggle over', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createListPlugin()],
+      plugins: [ListPlugin],
     });
 
     toggleList(editor, { type: getPluginType(editor, ELEMENT_OL) });
@@ -652,7 +640,7 @@ describe('toggle over', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createListPlugin()],
+      plugins: [ListPlugin],
     });
 
     toggleList(editor, { type: getPluginType(editor, ELEMENT_OL) });
@@ -702,7 +690,7 @@ describe('toggle over', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createListPlugin()],
+      plugins: [ListPlugin],
     });
 
     toggleList(editor, { type: getPluginType(editor, ELEMENT_OL) });

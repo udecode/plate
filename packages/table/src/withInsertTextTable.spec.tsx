@@ -3,7 +3,7 @@
 import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createTablePlugin } from './TablePlugin';
+import { TablePlugin } from './TablePlugin';
 
 jsx;
 
@@ -65,7 +65,7 @@ describe('withInsertTextTable', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [createTablePlugin()],
+        plugins: [TablePlugin],
       });
 
       editor.deleteFragment();

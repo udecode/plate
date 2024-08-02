@@ -5,27 +5,28 @@ import { renderHook } from '@testing-library/react-hooks';
 import type { PlatePlugin } from '../types/index';
 
 import { Plate, usePlateSelectors } from '../../client';
+import { createPlugin } from './createPlugin';
 
 describe('normalizeInitialValue', () => {
   describe('defined', () => {
     it('should normalize the initial value', () => {
       const plugins: PlatePlugin[] = [
-        {
+        createPlugin({
           key: 'a',
           normalizeInitialValue: (initialValue: any) => {
             initialValue[0].count += 1;
 
             return initialValue;
           },
-        },
-        {
+        }),
+        createPlugin({
           key: 'b',
           normalizeInitialValue: (initialValue: any) => {
             initialValue[0].count += 1;
 
             return initialValue;
           },
-        },
+        }),
       ];
 
       const wrapper = ({ children }: any) => (

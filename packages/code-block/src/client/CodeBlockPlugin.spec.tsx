@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
 import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
-import { createParagraphPlugin } from '@udecode/plate-paragraph';
+import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createCodeBlockPlugin } from './CodeBlockPlugin';
+import { CodeBlockPlugin } from './CodeBlockPlugin';
 
 jsx;
 
@@ -33,8 +33,8 @@ describe('code block deserialization', () => {
       const editor = createPlateEditor({
         editor: input,
         plugins: [
-          createParagraphPlugin(),
-          createCodeBlockPlugin(),
+          ParagraphPlugin,
+          CodeBlockPlugin,
           {
             editor: {
               insertData: {
@@ -77,7 +77,7 @@ describe('code block deserialization', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [createParagraphPlugin(), createCodeBlockPlugin()],
+        plugins: [ParagraphPlugin, CodeBlockPlugin],
       });
 
       editor.insertData({
@@ -117,7 +117,7 @@ describe('code block deserialization', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [createParagraphPlugin(), createCodeBlockPlugin()],
+        plugins: [ParagraphPlugin, CodeBlockPlugin],
       });
 
       editor.deleteBackward('character');

@@ -1,18 +1,18 @@
 import { htmlStringToDOMNode } from '@udecode/plate-core';
-import { createLinkPlugin } from '@udecode/plate-link';
-import { createImagePlugin } from '@udecode/plate-media';
+import { LinkPlugin } from '@udecode/plate-link';
+import { ImagePlugin } from '@udecode/plate-media';
 import { createPlateUIEditor } from 'www/src/lib/plate/create-plate-ui-editor';
 
 import { serializeHtml } from '../../serializeHtml';
 
 const plugins = [
-  createLinkPlugin({
+  LinkPlugin.extend({
     props: ({ element }) =>
       /^https?:\/\/slatejs.org\/?/.test((element as any).url)
         ? {}
         : { target: '_blank' },
   }),
-  createImagePlugin({
+  ImagePlugin.extend({
     props: ({ element }) => ({
       alt: (element as any).attributes?.alt,
       width: (element as any).url.split('/').pop(),

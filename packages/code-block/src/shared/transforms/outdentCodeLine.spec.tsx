@@ -8,7 +8,7 @@ import {
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createCodeBlockPlugin } from '../../client/CodeBlockPlugin';
+import { CodeBlockPlugin } from '../../client/CodeBlockPlugin';
 import { outdentCodeLine } from './outdentCodeLine';
 
 jsx;
@@ -34,7 +34,7 @@ describe('outdent code line', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [createCodeBlockPlugin()],
+        plugins: [CodeBlockPlugin],
       });
 
       const codeBlock = getNodeEntry(editor, [0]) as TElementEntry;
@@ -66,7 +66,7 @@ describe('outdent code line', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [createCodeBlockPlugin()],
+        plugins: [CodeBlockPlugin],
       });
 
       const codeBlock = getNodeEntry(editor, [0]) as TElementEntry;

@@ -1,15 +1,15 @@
 /** @jsx jsx */
 
-import { createBoldPlugin } from '@udecode/plate-basic-marks';
+import { BoldPlugin } from '@udecode/plate-basic-marks';
 import {
   type PlateEditor,
   type PlatePlugin,
   createPlateEditor,
 } from '@udecode/plate-common';
-import { createHeadingPlugin } from '@udecode/plate-heading';
-import { createLinkPlugin } from '@udecode/plate-link';
-import { createMediaEmbedPlugin } from '@udecode/plate-media';
-import { createParagraphPlugin } from '@udecode/plate-paragraph';
+import { HeadingPlugin } from '@udecode/plate-heading';
+import { LinkPlugin } from '@udecode/plate-link';
+import { MediaEmbedPlugin } from '@udecode/plate-media';
+import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
 jsx;
@@ -53,7 +53,7 @@ describe('when inserting html', () => {
         </editor>
       ) as any;
 
-      const plugins: PlatePlugin[] = [createHeadingPlugin()];
+      const plugins: PlatePlugin[] = [HeadingPlugin];
 
       const editor = createPlateEditor({
         editor: input,
@@ -85,7 +85,7 @@ describe('when inserting html', () => {
         </editor>
       ) as any;
 
-      const plugins: PlatePlugin[] = [createHeadingPlugin()];
+      const plugins: PlatePlugin[] = [HeadingPlugin];
 
       const editor = createPlateEditor({
         editor: input,
@@ -118,7 +118,7 @@ describe('when inserting html', () => {
       </editor>
     ) as any;
 
-    const plugins: PlatePlugin[] = [createParagraphPlugin()];
+    const plugins: PlatePlugin[] = [ParagraphPlugin];
 
     const editor = createPlateEditor({
       editor: input,
@@ -160,7 +160,7 @@ describe('when inserting empty html', () => {
   ) as any;
 
   it('should do nothing', () => {
-    const plugins: PlatePlugin[] = [createBoldPlugin()];
+    const plugins: PlatePlugin[] = [BoldPlugin];
 
     const editor = createPlateEditor({
       editor: input,
@@ -200,7 +200,7 @@ describe('when inserting an iframe without src', () => {
   ) as any;
 
   it('should do nothing', () => {
-    const plugins: PlatePlugin[] = [createMediaEmbedPlugin()];
+    const plugins: PlatePlugin[] = [MediaEmbedPlugin];
 
     const editor = createPlateEditor({
       editor: input,
@@ -243,10 +243,7 @@ describe('when inserting link with href', () => {
   ) as any;
 
   it('should insert the link with url', () => {
-    const plugins: PlatePlugin[] = [
-      createParagraphPlugin(),
-      createLinkPlugin(),
-    ];
+    const plugins: PlatePlugin[] = [ParagraphPlugin, LinkPlugin];
 
     const editor = createPlateEditor({
       editor: input,

@@ -1,15 +1,15 @@
 /** @jsx jsx */
 
 import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
-import { createParagraphPlugin } from '@udecode/plate-paragraph';
+import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { createDataTransfer, jsx } from '@udecode/plate-test-utils';
 
-import { createCodeBlockPlugin } from '../client/CodeBlockPlugin';
+import { CodeBlockPlugin } from '../client/CodeBlockPlugin';
 
 jsx;
 
 const editorTest = (input: any, data: DataTransfer, expected: any) => {
-  const plugins = [createParagraphPlugin(), createCodeBlockPlugin()];
+  const plugins = [ParagraphPlugin, CodeBlockPlugin];
 
   const editor = createPlateEditor({
     editor: input,

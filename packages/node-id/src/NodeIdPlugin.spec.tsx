@@ -11,7 +11,7 @@ import { ELEMENT_LI, ELEMENT_UL } from '@udecode/plate-list';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createNodeIdPlugin } from './NodeIdPlugin';
+import { NodeIdPlugin } from './NodeIdPlugin';
 
 jsx;
 
@@ -45,12 +45,10 @@ describe('when inserting nodes', () => {
       const editor = createPlateEditor({
         editor: input,
         plugins: [
-          createNodeIdPlugin({
-            options: {
-              allow: [ELEMENT_PARAGRAPH],
-              idCreator: getIdFactory(),
-              reuseId: true,
-            },
+          NodeIdPlugin.configure({
+            allow: [ELEMENT_PARAGRAPH],
+            idCreator: getIdFactory(),
+            reuseId: true,
           }),
         ],
       });
@@ -95,12 +93,10 @@ describe('when inserting nodes', () => {
       const editor = createPlateEditor({
         editor: input,
         plugins: [
-          createNodeIdPlugin({
-            options: {
-              exclude: [ELEMENT_PARAGRAPH],
-              idCreator: getIdFactory(),
-              reuseId: true,
-            },
+          NodeIdPlugin.configure({
+            exclude: [ELEMENT_PARAGRAPH],
+            idCreator: getIdFactory(),
+            reuseId: true,
           }),
         ],
       });
@@ -145,13 +141,11 @@ describe('when inserting nodes', () => {
       const editor = createPlateEditor({
         editor: input,
         plugins: [
-          createNodeIdPlugin({
-            options: {
-              allow: [ELEMENT_UL, ELEMENT_LI, ELEMENT_PARAGRAPH],
-              exclude: [ELEMENT_PARAGRAPH],
-              idCreator: getIdFactory(),
-              reuseId: true,
-            },
+          NodeIdPlugin.configure({
+            allow: [ELEMENT_UL, ELEMENT_LI, ELEMENT_PARAGRAPH],
+            exclude: [ELEMENT_PARAGRAPH],
+            idCreator: getIdFactory(),
+            reuseId: true,
           }),
         ],
       });
@@ -196,11 +190,9 @@ describe('when inserting nodes', () => {
       const editor = createPlateEditor({
         editor: input,
         plugins: [
-          createNodeIdPlugin({
-            options: {
-              idCreator: getIdFactory(),
-              reuseId: true,
-            },
+          NodeIdPlugin.configure({
+            idCreator: getIdFactory(),
+            reuseId: true,
           }),
         ],
       });
@@ -245,8 +237,9 @@ describe('when inserting nodes', () => {
       const editor = createPlateEditor({
         editor: input,
         plugins: [
-          createNodeIdPlugin({
-            options: { filterText: false, idCreator: getIdFactory() },
+          NodeIdPlugin.configure({
+            filterText: false,
+            idCreator: getIdFactory(),
           }),
         ],
       });
@@ -285,11 +278,9 @@ describe('when inserting nodes', () => {
       const editor = createPlateEditor({
         editor: input,
         plugins: [
-          createNodeIdPlugin({
-            options: {
-              idCreator: getIdFactory(),
-              reuseId: true,
-            },
+          NodeIdPlugin.configure({
+            idCreator: getIdFactory(),
+            reuseId: true,
           }),
         ],
       });
@@ -335,10 +326,8 @@ describe('when inserting nodes', () => {
       const editor = createPlateEditor({
         editor: input,
         plugins: [
-          createNodeIdPlugin({
-            options: {
-              idCreator: getIdFactory(),
-            },
+          NodeIdPlugin.configure({
+            idCreator: getIdFactory(),
           }),
         ],
       });
@@ -381,8 +370,10 @@ describe('when inserting nodes', () => {
       const editor = createPlateEditor({
         editor: input,
         plugins: [
-          createNodeIdPlugin({
-            options: { idCreator: getIdFactory(), idKey: 'foo', reuseId: true },
+          NodeIdPlugin.configure({
+            idCreator: getIdFactory(),
+            idKey: 'foo',
+            reuseId: true,
           }),
         ],
       });
@@ -428,8 +419,9 @@ describe('when inserting nodes', () => {
       const editor = createPlateEditor({
         editor: input,
         plugins: [
-          createNodeIdPlugin({
-            options: { idCreator: getIdFactory(), reuseId: true },
+          NodeIdPlugin.configure({
+            idCreator: getIdFactory(),
+            reuseId: true,
           }),
         ],
       });
@@ -471,7 +463,7 @@ describe('when splitting nodes', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [createNodeIdPlugin()],
+        plugins: [NodeIdPlugin],
       });
 
       splitNodes(editor);
@@ -501,11 +493,9 @@ describe('when splitting nodes', () => {
       const editor = createPlateEditor({
         editor: input,
         plugins: [
-          createNodeIdPlugin({
-            options: {
-              idCreator: getIdFactory(),
-              reuseId: true,
-            },
+          NodeIdPlugin.configure({
+            idCreator: getIdFactory(),
+            reuseId: true,
           }),
         ],
       });
@@ -542,10 +532,8 @@ describe('when splitting nodes', () => {
       const editor = createPlateEditor({
         editor: input,
         plugins: [
-          createNodeIdPlugin({
-            options: {
-              idCreator: getIdFactory(),
-            },
+          NodeIdPlugin.configure({
+            idCreator: getIdFactory(),
           }),
         ],
       });
@@ -582,11 +570,9 @@ describe('when splitting nodes', () => {
       const editor = createPlateEditor({
         editor: input,
         plugins: [
-          createNodeIdPlugin({
-            options: {
-              allow: [ELEMENT_PARAGRAPH],
-              idCreator: getIdFactory(),
-            },
+          NodeIdPlugin.configure({
+            allow: [ELEMENT_PARAGRAPH],
+            idCreator: getIdFactory(),
           }),
         ],
       });
@@ -625,12 +611,10 @@ describe('when splitting nodes', () => {
       const editor = createPlateEditor({
         editor: input,
         plugins: [
-          createNodeIdPlugin({
-            options: {
-              filterText: false,
-              idCreator: getIdFactory(),
-              reuseId: true,
-            },
+          NodeIdPlugin.configure({
+            filterText: false,
+            idCreator: getIdFactory(),
+            reuseId: true,
           }),
         ],
       });
@@ -669,12 +653,10 @@ describe('when merging nodes', () => {
       const editor = createPlateEditor({
         editor: input,
         plugins: [
-          createNodeIdPlugin({
-            options: {
-              filterText: false,
-              idCreator: getIdFactory(),
-              reuseId: true,
-            },
+          NodeIdPlugin.configure({
+            filterText: false,
+            idCreator: getIdFactory(),
+            reuseId: true,
           }),
         ],
       });
@@ -705,10 +687,8 @@ describe('when merging nodes', () => {
       const editor = createPlateEditor({
         editor: input,
         plugins: [
-          createNodeIdPlugin({
-            options: {
-              idCreator: getIdFactory(),
-            },
+          NodeIdPlugin.configure({
+            idCreator: getIdFactory(),
           }),
         ],
       });
@@ -748,11 +728,9 @@ describe('when merging nodes', () => {
       const editor = createPlateEditor({
         editor: input,
         plugins: [
-          createNodeIdPlugin({
-            options: {
-              filter: ([, path]) => path.length === 2,
-              idCreator: getIdFactory(),
-            },
+          NodeIdPlugin.configure({
+            filter: ([, path]) => path.length === 2,
+            idCreator: getIdFactory(),
           }),
         ],
       });
@@ -794,10 +772,8 @@ describe('when merging nodes', () => {
       const editor = createPlateEditor({
         editor: input,
         plugins: [
-          createNodeIdPlugin({
-            options: {
-              idCreator: getIdFactory(),
-            },
+          NodeIdPlugin.configure({
+            idCreator: getIdFactory(),
           }),
         ],
       });

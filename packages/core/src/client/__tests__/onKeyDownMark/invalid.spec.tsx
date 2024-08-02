@@ -1,13 +1,11 @@
 /** @jsx jsx */
 
-import { MARK_BOLD, createBoldPlugin } from '@udecode/plate-basic-marks';
-import {
-  type ToggleMarkPlugin,
-  createPlateEditor,
-  getPlugin,
-} from '@udecode/plate-common';
+import { BoldPlugin, MARK_BOLD } from '@udecode/plate-basic-marks';
 import { jsx } from '@udecode/plate-test-utils';
 import { onKeyDownToggleMark } from '@udecode/plate-utils';
+
+import { type ToggleMarkPluginOptions, getPlugin } from '../../../shared';
+import { createPlateEditor } from '../../utils';
 
 jsx;
 
@@ -36,10 +34,8 @@ const output = (
 const editor = createPlateEditor({
   editor: input,
   plugins: [
-    createBoldPlugin({
-      options: {
-        hotkey: 'enter',
-      },
+    BoldPlugin.configure({
+      hotkey: 'enter',
     }),
   ],
 });
@@ -47,7 +43,7 @@ const editor = createPlateEditor({
 it('should be', () => {
   onKeyDownToggleMark(
     editor,
-    getPlugin<ToggleMarkPlugin>(editor, MARK_BOLD)
+    getPlugin<ToggleMarkPluginOptions>(editor, MARK_BOLD)
   )(event as any);
   expect(editor.children).toEqual(output.children);
   expect(editor.selection).toEqual(output.selection);

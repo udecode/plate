@@ -97,7 +97,7 @@ export type PlatePlugin<O = {}, T = {}, Q = {}, S = {}> = {
      * `KEY_DESERIALIZE_HTML` plugin. Differs from `overrideByKey` as this is
      * not overriding any plugin.
      */
-    pluginsByKey?: Record<PluginKey, Partial<PlatePlugin<O, T, Q, S>>>;
+    pluginsByKey?: Record<PluginKey, Partial<PlatePlugin>>;
   };
 
   /**

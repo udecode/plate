@@ -1,13 +1,13 @@
 import { htmlStringToDOMNode } from '@udecode/plate-core';
-import { createLinkPlugin } from '@udecode/plate-link';
-import { createImagePlugin } from '@udecode/plate-media';
+import { LinkPlugin } from '@udecode/plate-link';
+import { ImagePlugin } from '@udecode/plate-media';
 import { createPlateUIEditor } from 'www/src/lib/plate/create-plate-ui-editor';
 
 import { serializeHtml } from '../../serializeHtml';
 
 it('serialize link to html with attributes', () => {
   const plugins = [
-    createLinkPlugin({
+    LinkPlugin.extend({
       props: {
         rel: 'noopener nofollow',
         target: '_blank',
@@ -39,7 +39,7 @@ it('serialize link to html with attributes', () => {
 });
 
 it('serialize image with alt to html', () => {
-  const plugins = [createImagePlugin()];
+  const plugins = [ImagePlugin];
 
   const element = {
     attributes: { alt: 'Never gonna give you up' },

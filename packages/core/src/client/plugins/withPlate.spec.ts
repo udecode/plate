@@ -1,7 +1,7 @@
 import type { PlatePlugin } from '@udecode/plate-common';
 
-import { createHeadingPlugin } from '@udecode/plate-heading';
-import { createParagraphPlugin } from '@udecode/plate-paragraph';
+import { HeadingPlugin } from '@udecode/plate-heading';
+import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { createTEditor } from '@udecode/slate';
 
 import {
@@ -13,6 +13,7 @@ import {
   KEY_INSERT_DATA,
   KEY_NODE_FACTORY,
   KEY_PREV_SELECTION,
+  createPlugin,
   getPlugin,
 } from '../../shared';
 import { withPlate } from './withPlate';
@@ -46,16 +47,13 @@ describe('withPlate', () => {
 
   describe('when same plugin with different keys', () => {
     it('should be', () => {
-      const pluginP: PlatePlugin = createParagraphPlugin();
-      const pluginA: PlatePlugin = createParagraphPlugin({ key: 'a' });
-      const pluginB: PlatePlugin = createHeadingPlugin(
-        { options: { levels: 2 } },
-        {
-          h1: {
-            key: 'hh1',
-          },
-        }
-      );
+      const pluginP: PlatePlugin = ParagraphPlugin;
+      const pluginA: PlatePlugin = ParagraphPlugin.extend({ key: 'a' });
+      const pluginB = HeadingPlugin.configure({
+        levels: 2,
+      }).extendPlugin('h1', {
+        key: 'hh1',
+      });
 
       const editor = withPlate(createTEditor(), {
         id: '1',
@@ -68,33 +66,33 @@ describe('withPlate', () => {
     });
   });
 
-  describe('when it has recursive then', () => {
+  describe('when it has many extend', () => {
     it('should deep merge', () => {
-      const pluginInput: PlatePlugin = {
+      const pluginInput: PlatePlugin = createPlugin({
         inject: {
           props: {
             nodeKey: 'a',
           },
         },
         key: 'a',
-        then: (editor, { type }) => ({
+        type: 'a',
+      })
+        .extend((_, { type }) => ({
           inject: {
             props: {
               nodeKey: `${type}b`,
             },
           },
-          then: (e, { type: _type }) => ({
-            inject: {
-              props: {
-                nodeKey: `${_type}c`,
-              },
-            },
-            type: `${_type}c`,
-          }),
           type: `${type}b`,
-        }),
-        type: 'a',
-      };
+        }))
+        .extend((_, { type: _type }) => ({
+          inject: {
+            props: {
+              nodeKey: `${_type}c`,
+            },
+          },
+          type: `${_type}c`,
+        }));
 
       const plugins = [pluginInput];
 
@@ -113,41 +111,38 @@ describe('withPlate', () => {
     });
   });
 
-  describe('when then with nested plugins', () => {
-    it('should deep merge the plugins', () => {
-      const pluginAA: PlatePlugin = {
+  describe('when extendPlugin', () => {
+    it('should concat the plugins', () => {
+      const pluginAA: PlatePlugin = createPlugin({
         key: 'aa',
         type: 'aa',
-      };
+      });
 
-      const pluginAB1: PlatePlugin = {
+      const pluginAB1: PlatePlugin = createPlugin({
         key: 'ab',
         type: 'ab1',
-      };
-      const pluginAB2: PlatePlugin = {
+      });
+      const pluginAB2: PlatePlugin = createPlugin({
         key: 'ab',
         type: 'ab2',
-      };
+      });
 
-      const pluginAC: PlatePlugin = {
+      const pluginAC: PlatePlugin = createPlugin({
         key: 'ac',
         type: 'ac',
-      };
-      const pluginAD: PlatePlugin = {
+      });
+      const pluginAD: PlatePlugin = createPlugin({
         key: 'ad',
         type: 'ad',
-      };
+      });
 
-      const pluginA: PlatePlugin = {
+      const pluginA: PlatePlugin = createPlugin({
         key: 'a',
         plugins: [pluginAA, pluginAB1],
-        then: () => ({
-          plugins: [pluginAB2, pluginAC],
-          then: () => ({
-            plugins: [pluginAD],
-          }),
-        }),
-      };
+      })
+        .extendPlugin(pluginAB2.key, pluginAB2)
+        .extendPlugin(pluginAC.key, pluginAC)
+        .extendPlugin(pluginAD.key, pluginAD);
 
       const editor = withPlate(createTEditor(), {
         id: '1',
@@ -185,43 +180,36 @@ describe('withPlate', () => {
     });
   });
 
-  describe('when then in nested plugins', () => {
+  describe('when extend in nested plugins', () => {
     it('should deep merge the plugins', () => {
       const editor = withPlate(createTEditor(), {
         id: '1',
         plugins: [
-          {
+          createPlugin({
             key: 'a',
             plugins: [
-              {
+              createPlugin({
                 key: 'aa',
                 type: 'aa',
-              },
+              }),
             ],
-            then: () => ({
-              plugins: [
-                {
-                  key: 'bb',
-                  then: () => ({
-                    plugins: [
-                      {
-                        key: 'aa',
-                        type: 'ab',
-                      },
-                      {
-                        key: 'cc',
-                        type: 'cc',
-                      },
-                    ],
-                    type: 'athen2',
-                  }),
-                  type: 'bb',
-                },
-              ],
-              type: 'athen',
-            }),
             type: 'a',
-          },
+          })
+            .extend({
+              type: 'athen',
+            })
+            .extendPlugin('bb', {
+              type: 'bb',
+            })
+            .extendPlugin('aa', {
+              type: 'ab',
+            })
+            .extendPlugin('cc', {
+              type: 'cc',
+            })
+            .extendPlugin('bb', {
+              type: 'athen2',
+            }),
         ],
       });
 
@@ -250,7 +238,7 @@ describe('withPlate', () => {
       const editor = withPlate(createTEditor(), {
         id: '1',
         plugins: [
-          {
+          createPlugin({
             key: 'a',
             overrideByKey: {
               a: {
@@ -264,35 +252,33 @@ describe('withPlate', () => {
               },
             },
             plugins: [
-              {
+              createPlugin({
                 key: 'aa',
                 type: 'aa',
-              },
+              }),
             ],
-            then: () => ({
-              plugins: [
-                {
-                  key: 'bb',
-                  then: () => ({
-                    plugins: [
-                      {
-                        key: 'aa',
-                        type: 'ab',
-                      },
-                      {
-                        key: 'cc',
-                        type: 'cc',
-                      },
-                    ],
-                    type: 'athen2',
-                  }),
-                  type: 'bb',
-                },
-              ],
-              type: 'athen',
-            }),
             type: 'a',
-          },
+          }).extend({
+            plugins: [
+              createPlugin({
+                key: 'bb',
+                type: 'bb',
+              }).extend({
+                plugins: [
+                  createPlugin({
+                    key: 'aa',
+                    type: 'ab',
+                  }),
+                  createPlugin({
+                    key: 'cc',
+                    type: 'cc',
+                  }),
+                ],
+                type: 'athen2',
+              }),
+            ],
+            type: 'athen',
+          }),
         ],
       });
 

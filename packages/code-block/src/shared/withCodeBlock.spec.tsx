@@ -3,7 +3,7 @@
 import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createCodeBlockPlugin } from '../client/CodeBlockPlugin';
+import { CodeBlockPlugin } from '../client/CodeBlockPlugin';
 
 jsx;
 
@@ -37,7 +37,7 @@ describe('insert break', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [createCodeBlockPlugin()],
+        plugins: [CodeBlockPlugin],
       });
 
       editor.insertBreak();

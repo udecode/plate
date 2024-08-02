@@ -7,7 +7,7 @@ import {
   createPlateEditor,
   getBlockAbove,
 } from '@udecode/plate-common';
-import { createLinkPlugin } from '@udecode/plate-link';
+import { LinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { getNextSiblingNodes } from '../../getNextSiblingNodes';
@@ -33,7 +33,7 @@ const output = [<htext />, <htext>last</htext>];
 it('should be', () => {
   const editor = createPlateEditor({
     editor: input,
-    plugins: [createLinkPlugin()],
+    plugins: [LinkPlugin],
   });
 
   const above = getBlockAbove(editor) as any;

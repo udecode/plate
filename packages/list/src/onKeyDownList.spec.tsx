@@ -6,7 +6,7 @@ import {
   createPlateEditor,
   getPlugin,
 } from '@udecode/plate-common';
-import { createListPlugin } from '@udecode/plate-list';
+import { ListPlugin } from '@udecode/plate-list';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { onKeyDownList } from './onKeyDownList';
@@ -60,7 +60,7 @@ it('should indent single list item (start of item)', () => {
   const event = new KeyboardEvent('keydown', { key: 'Tab' }) as any;
   const editor = createPlateEditor({
     editor: input,
-    plugins: [createListPlugin()],
+    plugins: [ListPlugin],
   });
 
   onKeyDownList(editor, getPlugin<HotkeyPlugin>(editor, 'ul'))(event as any);
@@ -114,7 +114,7 @@ it('should indent single list item (end of item)', () => {
   const event = new KeyboardEvent('keydown', { key: 'Tab' }) as any;
   const editor = createPlateEditor({
     editor: input,
-    plugins: [createListPlugin()],
+    plugins: [ListPlugin],
   });
 
   onKeyDownList(editor, getPlugin<HotkeyPlugin>(editor, 'ul'))(event as any);
@@ -182,7 +182,7 @@ it('should indent multiple list items (start/end)', () => {
   const event = new KeyboardEvent('keydown', { key: 'Tab' }) as any;
   const editor = createPlateEditor({
     editor: input,
-    plugins: [createListPlugin()],
+    plugins: [ListPlugin],
   });
 
   onKeyDownList(editor, getPlugin<HotkeyPlugin>(editor, 'ul'))(event as any);
@@ -253,7 +253,7 @@ it('should un-indent multiple list items (start/end)', () => {
   }) as any;
   const editor = createPlateEditor({
     editor: input,
-    plugins: [createListPlugin()],
+    plugins: [ListPlugin],
   });
 
   onKeyDownList(editor, getPlugin<HotkeyPlugin>(editor, 'list'))(event as any);
@@ -326,7 +326,7 @@ it('should un-indent multiple list items (start/out)', () => {
   }) as any;
   const editor = createPlateEditor({
     editor: input,
-    plugins: [createListPlugin()],
+    plugins: [ListPlugin],
   });
 
   onKeyDownList(editor, getPlugin<HotkeyPlugin>(editor, 'list'))(event as any);
@@ -391,7 +391,7 @@ it('should unhang before indentation', () => {
   }) as any;
   const editor = createPlateEditor({
     editor: input,
-    plugins: [createListPlugin()],
+    plugins: [ListPlugin],
   });
 
   onKeyDownList(editor, getPlugin<HotkeyPlugin>(editor, 'list'))(event as any);
@@ -410,7 +410,7 @@ it('should NOT not adjust selection length when unhanging ranges', () => {
   ) as any;
   const editor: PlateEditor<any> = createPlateEditor({
     editor: input,
-    plugins: [createListPlugin()],
+    plugins: [ListPlugin],
   });
 
   const selectionBefore = editor.selection;
@@ -482,7 +482,7 @@ it('should convert top-level list item into body upon unindent if enableResetOnS
   }) as any;
   const editor = createPlateEditor({
     editor: input,
-    plugins: [createListPlugin({ options: { enableResetOnShiftTab: true } })],
+    plugins: [ListPlugin.configure({  enableResetOnShiftTab: true } )],
   });
 
   onKeyDownList(editor, getPlugin<HotkeyPlugin>(editor, 'list'))(event as any);
@@ -531,7 +531,7 @@ it('should convert top-level (first) list item into body upon unindent if enable
   }) as any;
   const editor = createPlateEditor({
     editor: input,
-    plugins: [createListPlugin({ options: { enableResetOnShiftTab: true } })],
+    plugins: [ListPlugin.configure({ enableResetOnShiftTab: true })],
   });
 
   onKeyDownList(editor, getPlugin<HotkeyPlugin>(editor, 'list'))(event as any);
@@ -580,7 +580,7 @@ it('should convert top-level (last) list item into body upon unindent if enableR
   }) as any;
   const editor = createPlateEditor({
     editor: input,
-    plugins: [createListPlugin({ options: { enableResetOnShiftTab: true } })],
+    plugins: [ListPlugin.configure({ enableResetOnShiftTab: true  })],
   });
 
   onKeyDownList(editor, getPlugin<HotkeyPlugin>(editor, 'list'))(event as any);
@@ -632,7 +632,7 @@ it('should NOT convert top-level list item into body upon unindent if enableRese
   }) as any;
   const editor = createPlateEditor({
     editor: input,
-    plugins: [createListPlugin()],
+    plugins: [ListPlugin],
   });
 
   onKeyDownList(editor, getPlugin<HotkeyPlugin>(editor, 'list'))(event as any);

@@ -3,7 +3,7 @@
 import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createListPlugin } from '../ListPlugin';
+import { ListPlugin } from '../ListPlugin';
 import { unwrapList } from './unwrapList';
 
 jsx;
@@ -41,7 +41,7 @@ describe('li list unwrapping', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createListPlugin()],
+      plugins: [ListPlugin],
     });
 
     unwrapList(editor);
@@ -80,7 +80,7 @@ describe('li list unwrapping', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createListPlugin()],
+      plugins: [ListPlugin],
     });
 
     unwrapList(editor);
@@ -122,7 +122,7 @@ describe('li list unwrapping', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createListPlugin()],
+      plugins: [ListPlugin],
     });
 
     unwrapList(editor);
@@ -170,7 +170,7 @@ describe('li list unwrapping', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createListPlugin()],
+      plugins: [ListPlugin],
     });
 
     unwrapList(editor);

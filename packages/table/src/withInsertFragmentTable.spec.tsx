@@ -7,7 +7,7 @@ import {
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createTablePlugin } from './TablePlugin';
+import { TablePlugin } from './TablePlugin';
 
 jsx;
 
@@ -83,7 +83,7 @@ describe('withInsertFragmentTable', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [createTablePlugin()],
+        plugins: [TablePlugin],
       });
 
       editor.insertFragment(fragment);
@@ -159,7 +159,7 @@ describe('withInsertFragmentTable', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [createTablePlugin()],
+        plugins: [TablePlugin],
       });
 
       editor.insertFragment(fragment);
@@ -240,7 +240,7 @@ describe('withInsertFragmentTable', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [createTablePlugin()],
+        plugins: [TablePlugin],
       });
 
       editor.deleteFragment();
@@ -325,7 +325,7 @@ describe('withInsertFragmentTable', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [createTablePlugin()],
+        plugins: [TablePlugin],
       });
 
       editor.insertFragment(fragment);
@@ -441,8 +441,8 @@ describe('withInsertFragmentTable', () => {
       const editor = createPlateEditor({
         editor: input,
         plugins: [
-          createTablePlugin({
-            options: { newCellChildren: [{ text: '' }] },
+          TablePlugin.configure({
+             // newCellChildren: [{ text: '' }] 
           }),
         ],
       });
@@ -536,11 +536,9 @@ describe('withInsertFragmentTable', () => {
       const editor = createPlateEditor({
         editor: input,
         plugins: [
-          createTablePlugin({
-            options: {
+          TablePlugin.configure({
               disableExpandOnInsert: true,
-              newCellChildren: [{ text: '' }],
-            },
+              // newCellChildren: [{ text: '' }],
           }),
         ],
       });
@@ -609,7 +607,7 @@ describe('withInsertFragmentTable', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [createTablePlugin()],
+        plugins: [TablePlugin],
       });
 
       editor.insertFragment(fragment);
@@ -668,7 +666,7 @@ describe('withInsertFragmentTable', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [createTablePlugin()],
+        plugins: [TablePlugin],
       });
 
       editor.insertFragment(fragment);

@@ -1,14 +1,12 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /** @jsx jsx */
 
-import {
-  createBoldPlugin,
-  createItalicPlugin,
-} from '@udecode/plate-basic-marks';
+import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks';
 import { createPlateEditor } from '@udecode/plate-common';
-import { createListPlugin } from '@udecode/plate-list';
-import { createParagraphPlugin } from '@udecode/plate-paragraph';
+import { ListPlugin } from '@udecode/plate-list';
+import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
+import { createPlugin } from "../../../utils";
 
 import { htmlElementToLeaf } from './htmlElementToLeaf';
 import { parseHtmlElement } from './parseHtmlElement';
@@ -26,7 +24,7 @@ describe('when children is a text', () => {
     expect(
       htmlElementToLeaf(
         createPlateEditor({
-          plugins: [createBoldPlugin()],
+          plugins: [BoldPlugin],
         }),
         parseHtmlElement(`<strong>test</strong>`)
       )
@@ -41,7 +39,7 @@ describe('when there is no plugins', () => {
     expect(
       htmlElementToLeaf(
         createPlateEditor({
-          plugins: [{ key: 'a' }],
+          plugins: [createPlugin({ key: 'a' })],
         }),
         parseHtmlElement(`<strong>test</strong>`)
       )
@@ -66,10 +64,10 @@ describe('when there is a mark above multiple elements', () => {
       htmlElementToLeaf(
         createPlateEditor({
           plugins: [
-            createParagraphPlugin(),
-            createListPlugin(),
-            createBoldPlugin(),
-            createItalicPlugin(),
+            ParagraphPlugin,
+            ListPlugin,
+            BoldPlugin,
+            ItalicPlugin,
           ],
         }),
         parseHtmlElement(`<strong><li><p>test</p>test</li></strong>`)

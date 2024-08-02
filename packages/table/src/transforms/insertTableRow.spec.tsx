@@ -3,7 +3,7 @@
 import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createTablePlugin } from '../TablePlugin';
+import { TablePlugin } from '../TablePlugin';
 import { insertTableRow } from './insertTableRow';
 
 jsx;
@@ -75,10 +75,8 @@ describe('insertTableRow', () => {
       const editor = createPlateEditor({
         editor: input,
         plugins: [
-          createTablePlugin({
-            options: {
-              newCellChildren: [{ text: '' }],
-            },
+          TablePlugin.configure({
+              // newCellChildren: [{ text: '' }],
           }),
         ],
       });
@@ -156,8 +154,8 @@ describe('insertTableRow', () => {
       const editor = createPlateEditor({
         editor: input,
         plugins: [
-          createTablePlugin({
-            options: { newCellChildren: [{ text: '' }] },
+          TablePlugin.configure({
+            // newCellChildren: [{ text: '' }] 
           }),
         ],
       });

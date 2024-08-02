@@ -8,12 +8,9 @@ import {
 import { createPlateEditor, getPlugin } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import type { AutoformatPlugin } from '../../../common/types';
+import type { AutoformatPluginOptions } from '../../types';
 
-import {
-  KEY_AUTOFORMAT,
-  createAutoformatPlugin,
-} from '../../AutoformatPlugin';
+import { AutoformatPlugin, KEY_AUTOFORMAT } from '../../AutoformatPlugin';
 import { onKeyDownAutoformat } from '../../onKeyDownAutoformat';
 
 jsx;
@@ -42,18 +39,16 @@ describe('when trigger is defined', () => {
     const editor = createPlateEditor({
       editor: input,
       plugins: [
-        createAutoformatPlugin({
-          options: {
-            rules: [
-              {
-                ignoreTrim: true,
-                match: { end: '***', start: '_***' },
-                mode: 'mark',
-                trigger: '_',
-                type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
-              },
-            ],
-          },
+        AutoformatPlugin.configure({
+          rules: [
+            {
+              ignoreTrim: true,
+              match: { end: '***', start: '_***' },
+              mode: 'mark',
+              trigger: '_',
+              type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
+            },
+          ],
         }),
       ],
     });
@@ -87,17 +82,15 @@ describe('when undo is enabled', () => {
     const editor = createPlateEditor({
       editor: undoInput,
       plugins: [
-        createAutoformatPlugin({
-          options: {
-            enableUndoOnDelete: true,
-            rules: [
-              {
-                format: '¼',
-                match: '1/4',
-                mode: 'text',
-              },
-            ],
-          },
+        AutoformatPlugin.configure({
+          enableUndoOnDelete: true,
+          rules: [
+            {
+              format: '¼',
+              match: '1/4',
+              mode: 'text',
+            },
+          ],
         }),
       ],
     });
@@ -110,7 +103,7 @@ describe('when undo is enabled', () => {
 
     onKeyDownAutoformat(
       editor,
-      getPlugin<AutoformatPlugin>(editor, KEY_AUTOFORMAT)
+      getPlugin<AutoformatPluginOptions>(editor, KEY_AUTOFORMAT)
     )(event as any);
 
     expect(undoInput.children).toEqual(undoOutput.children);
@@ -139,16 +132,14 @@ describe('when undo is disabled', () => {
     const editor = createPlateEditor({
       editor: undoInput,
       plugins: [
-        createAutoformatPlugin({
-          options: {
-            rules: [
-              {
-                format: '¼',
-                match: '1/4',
-                mode: 'text',
-              },
-            ],
-          },
+        AutoformatPlugin.configure({
+          rules: [
+            {
+              format: '¼',
+              match: '1/4',
+              mode: 'text',
+            },
+          ],
         }),
       ],
     });
@@ -161,7 +152,7 @@ describe('when undo is disabled', () => {
 
     onKeyDownAutoformat(
       editor,
-      getPlugin<AutoformatPlugin>(editor, KEY_AUTOFORMAT)
+      getPlugin<AutoformatPluginOptions>(editor, KEY_AUTOFORMAT)
     )(event as any);
 
     expect(undoInput.children).toEqual(undoOutput.children);

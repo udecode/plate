@@ -9,7 +9,7 @@ export const getPlugin = <O = {}, T = {}, Q = {}, S = {}>(
   editor: PlateEditor,
   key: PluginKey
 ) =>
-  ((editor.pluginsByKey[key] as any) ?? createPlugin({ key })) as PlatePlugin<
+  ((editor.pluginsByKey?.[key] as any) ?? createPlugin({ key })) as PlatePlugin<
     O,
     T,
     Q,

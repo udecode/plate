@@ -4,7 +4,7 @@
 import { type TEditor, createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createTablePlugin } from '../TablePlugin';
+import { TablePlugin } from '../TablePlugin';
 import { insertTableColumn } from './insertTableColumn';
 
 jsx;
@@ -44,7 +44,7 @@ const makeTableWithCols = ({
 describe('insertTableColumn', () => {
   describe('without initialTableWidth', () => {
     const editorOptions = {
-      plugins: [createTablePlugin()],
+      plugins: [TablePlugin],
     };
 
     it('should insert at last column', () => {
@@ -134,11 +134,9 @@ describe('insertTableColumn', () => {
   describe('with initialTableWidth', () => {
     const editorOptions = {
       plugins: [
-        createTablePlugin({
-          options: {
+        TablePlugin.configure({
             initialTableWidth: 100,
             minColumnWidth: 10,
-          },
         }),
       ],
     };

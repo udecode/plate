@@ -3,7 +3,7 @@
 import { createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { type LinkPluginOptions, createLinkPlugin } from '../LinkPlugin';
+import { type LinkPluginOptions, LinkPlugin } from '../LinkPlugin';
 import { upsertLink } from './upsertLink';
 
 jsx;
@@ -15,9 +15,7 @@ const createEditor = (editor: any, options?: LinkPluginOptions) =>
   createPlateEditor({
     editor,
     plugins: [
-      createLinkPlugin({
-        options,
-      }),
+      LinkPlugin.configure(options!),
     ],
   });
 

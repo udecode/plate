@@ -3,7 +3,7 @@
 import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createTablePlugin } from '../TablePlugin';
+import { TablePlugin } from '../TablePlugin';
 import { setBorderSize } from './setBorderSize';
 
 jsx;
@@ -13,7 +13,7 @@ jsx;
 // sets the border size for the given border,
 // and then checks if the output matches the expected output.
 describe('setBorderSize', () => {
-  const createTablePluginWithOptions = () => createTablePlugin();
+  const createTablePluginWithOptions = () => TablePlugin;
 
   const createEditorInstance = (input: any) => {
     return createPlateEditor({

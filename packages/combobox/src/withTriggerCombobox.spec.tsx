@@ -5,7 +5,7 @@ import {
   withTriggerCombobox,
 } from '@udecode/plate-combobox';
 import { createPlateEditor, createPluginFactory } from '@udecode/plate-common';
-import { createParagraphPlugin } from '@udecode/plate-paragraph';
+import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
 const createExampleComboboxPlugin = createPluginFactory<TriggerComboboxPlugin>({
@@ -22,7 +22,7 @@ const createExampleComboboxPlugin = createPluginFactory<TriggerComboboxPlugin>({
 });
 
 const plugins = [
-  createParagraphPlugin(),
+  ParagraphPlugin,
 
   createExampleComboboxPlugin({
     key: 'exampleCombobox1',

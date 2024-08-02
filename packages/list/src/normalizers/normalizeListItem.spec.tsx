@@ -7,7 +7,7 @@ import {
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createListPlugin } from '../ListPlugin';
+import { ListPlugin } from '../ListPlugin';
 
 jsx;
 
@@ -39,7 +39,7 @@ describe('clean up list items', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createListPlugin()],
+      plugins: [ListPlugin],
     });
 
     const path = [0, 0];

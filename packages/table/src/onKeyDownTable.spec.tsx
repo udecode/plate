@@ -5,7 +5,7 @@ import type { PlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { createPlateTestEditor } from '../../core/src/client/__tests__/createPlateTestEditor';
-import { createTablePlugin } from './TablePlugin';
+import { TablePlugin } from './TablePlugin';
 
 jsx;
 
@@ -59,7 +59,7 @@ describe('onKeyDownTable', () => {
   //
   //     const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
   //       editor: input,
-  //       plugins: [createTablePlugin()],
+  //       plugins: [TablePlugin],
   //     });
   //
   //     await triggerKeyboardEvent('ArrowUp');
@@ -113,7 +113,7 @@ describe('onKeyDownTable', () => {
   //
   //     const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
   //       editor: input,
-  //       plugins: [createTablePlugin()],
+  //       plugins: [TablePlugin],
   //     });
   //
   //     await triggerKeyboardEvent('ArrowUp');
@@ -162,7 +162,7 @@ describe('onKeyDownTable', () => {
   //
   //     const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
   //       editor: input,
-  //       plugins: [createTablePlugin()],
+  //       plugins: [TablePlugin],
   //     });
   //
   //     await triggerKeyboardEvent('ArrowDown');
@@ -213,7 +213,7 @@ describe('onKeyDownTable', () => {
   //
   //     const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
   //       editor: input,
-  //       plugins: [createTablePlugin()],
+  //       plugins: [TablePlugin],
   //     });
   //
   //     await triggerKeyboardEvent('ArrowUp');
@@ -264,7 +264,7 @@ describe('onKeyDownTable', () => {
   //
   //     const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
   //       editor: input,
-  //       plugins: [createTablePlugin()],
+  //       plugins: [TablePlugin],
   //     });
   //
   //     await triggerKeyboardEvent('ArrowDown');
@@ -329,7 +329,7 @@ describe('onKeyDownTable', () => {
 
       const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
         editor: input,
-        plugins: [createTablePlugin()],
+        plugins: [TablePlugin],
       });
 
       await triggerKeyboardEvent('shift+ArrowDown');
@@ -394,7 +394,7 @@ describe('onKeyDownTable', () => {
 
       const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
         editor: input,
-        plugins: [createTablePlugin()],
+        plugins: [TablePlugin],
       });
 
       await triggerKeyboardEvent('shift+ArrowUp');
@@ -454,7 +454,7 @@ describe('onKeyDownTable', () => {
 
       const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
         editor: input,
-        plugins: [createTablePlugin()],
+        plugins: [TablePlugin],
       });
 
       await triggerKeyboardEvent('shift+ArrowRight');
@@ -514,7 +514,7 @@ describe('onKeyDownTable', () => {
 
       const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
         editor: input,
-        plugins: [createTablePlugin()],
+        plugins: [TablePlugin],
       });
 
       await triggerKeyboardEvent('shift+ArrowLeft');

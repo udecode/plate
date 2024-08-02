@@ -7,14 +7,14 @@ import {
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createListPlugin } from './ListPlugin';
+import { ListPlugin } from './ListPlugin';
 
 jsx;
 
 const editorTest = (input: any, fragment: any, expected: any) => {
   const editor = createPlateEditor({
     editor: input,
-    plugins: [createListPlugin()],
+    plugins: [ListPlugin],
   });
 
   editor.insertFragment(fragment);

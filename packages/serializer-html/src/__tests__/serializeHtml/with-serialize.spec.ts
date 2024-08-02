@@ -1,19 +1,19 @@
 import React from 'react';
 
-import { createBoldPlugin } from '@udecode/plate';
+import { BoldPlugin } from '@udecode/plate';
 import { MARK_BOLD } from '@udecode/plate-basic-marks';
 import {
   type PlatePlugin,
   createPlateEditor,
   htmlStringToDOMNode,
 } from '@udecode/plate-core';
-import { createImagePlugin } from '@udecode/plate-media';
+import { ImagePlugin } from '@udecode/plate-media';
 import { createPlateUIEditor } from 'www/src/lib/plate/create-plate-ui-editor';
 
 import { serializeHtml } from '../../serializeHtml';
 
 const plugins = [
-  createImagePlugin({
+  ImagePlugin.extend({
     serializeHtml: ({ element }) =>
       React.createElement('img', { src: element.url }),
   }),
@@ -42,7 +42,7 @@ it('custom serialize bold to html', () => {
     serializeHtml(
       createPlateUIEditor({
         plugins: [
-          createBoldPlugin({
+          BoldPlugin.extend({
             serializeHtml: ({ children, leaf }) =>
               leaf[MARK_BOLD] && !!leaf.text
                 ? React.createElement('b', {}, children)

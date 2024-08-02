@@ -3,7 +3,7 @@
 import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createListPlugin } from './ListPlugin';
+import { ListPlugin } from './ListPlugin';
 
 jsx;
 
@@ -35,7 +35,7 @@ describe('li > lic * 2 with selection at second child start', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createListPlugin()],
+      plugins: [ListPlugin],
     });
 
     editor.deleteBackward('character');
@@ -75,7 +75,7 @@ describe('li with selection at start', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createListPlugin()],
+      plugins: [ListPlugin],
     });
 
     editor.deleteBackward('character');
@@ -135,7 +135,7 @@ describe('list + sublist where second item has multiple children', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createListPlugin()],
+      plugins: [ListPlugin],
     });
 
     editor.deleteBackward('character');

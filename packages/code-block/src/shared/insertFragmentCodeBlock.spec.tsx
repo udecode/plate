@@ -5,17 +5,17 @@ import {
   type TDescendant,
   createPlateEditor,
 } from '@udecode/plate-common';
-import { createParagraphPlugin } from '@udecode/plate-paragraph';
+import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createCodeBlockPlugin } from '../client/CodeBlockPlugin';
+import { CodeBlockPlugin } from '../client/CodeBlockPlugin';
 
 jsx;
 
 const editorTest = (input: any, fragment: any, expected: any) => {
   const editor = createPlateEditor({
     editor: input,
-    plugins: [createParagraphPlugin(), createCodeBlockPlugin()],
+    plugins: [ParagraphPlugin, CodeBlockPlugin],
   });
 
   editor.insertFragment(fragment);

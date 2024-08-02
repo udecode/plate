@@ -8,7 +8,7 @@ import {
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createCodeBlockPlugin } from '../../client/CodeBlockPlugin';
+import { CodeBlockPlugin } from '../../client/CodeBlockPlugin';
 import { indentCodeLine } from './indentCodeLine';
 
 jsx;
@@ -42,7 +42,7 @@ describe('indent code line', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [createCodeBlockPlugin()],
+        plugins: [CodeBlockPlugin],
       });
 
       const codeBlock = getNodeEntry(editor, [0]) as TElementEntry;
@@ -83,7 +83,7 @@ describe('indent code line', () => {
 
         const editor = createPlateEditor({
           editor: input,
-          plugins: [createCodeBlockPlugin()],
+          plugins: [CodeBlockPlugin],
         });
 
         const codeBlock = getNodeEntry(editor, [0]) as TElementEntry;
@@ -123,7 +123,7 @@ describe('indent code line', () => {
 
         const editor = createPlateEditor({
           editor: input,
-          plugins: [createCodeBlockPlugin()],
+          plugins: [CodeBlockPlugin],
         });
 
         const codeBlock = getNodeEntry(editor, [0]) as TElementEntry;

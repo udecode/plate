@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { MARK_BOLD, createBoldPlugin } from '@udecode/plate-basic-marks';
+import { BoldPlugin, MARK_BOLD } from '@udecode/plate-basic-marks';
 import { createPlateEditor } from '@udecode/plate-common';
 import * as isHotkey from '@udecode/plate-core/server';
 import { jsx } from '@udecode/plate-test-utils';
@@ -39,8 +39,8 @@ const output = (
 const editor = createPlateEditor({
   editor: input,
   plugins: [
-    createBoldPlugin({
-      options: { hotkey: 'ctrl+b' },
+    BoldPlugin.configure({
+      hotkey: 'ctrl+b',
     }),
   ],
 });

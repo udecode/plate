@@ -3,7 +3,7 @@
 import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createListPlugin } from './ListPlugin';
+import { ListPlugin } from './ListPlugin';
 
 jsx;
 
@@ -34,7 +34,7 @@ describe('p (empty) + list when selection not in list', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createListPlugin()],
+      plugins: [ListPlugin],
     });
 
     editor.deleteForward('character');
@@ -67,7 +67,7 @@ describe('p /w text + list when selection not in list', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createListPlugin()],
+      plugins: [ListPlugin],
     });
 
     editor.deleteForward('character');
@@ -106,7 +106,7 @@ describe('p /w text + list when selection not in list', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createListPlugin()],
+      plugins: [ListPlugin],
     });
 
     editor.deleteForward('character');
@@ -161,7 +161,7 @@ describe('p /w text + list when selection not in list', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createListPlugin()],
+      plugins: [ListPlugin],
     });
 
     editor.deleteForward('character');
@@ -217,7 +217,7 @@ describe('list + list when selection is at the end of the first list', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createListPlugin()],
+      plugins: [ListPlugin],
     });
 
     editor.deleteForward('character');
@@ -265,7 +265,7 @@ describe('list where second item has multiple children', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createListPlugin()],
+      plugins: [ListPlugin],
     });
 
     editor.deleteForward('character');
@@ -325,7 +325,7 @@ describe('list + sublist where second item has multiple children', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createListPlugin()],
+      plugins: [ListPlugin],
     });
 
     editor.deleteForward('character');
