@@ -1,5 +1,11 @@
 # @udecode/plate-node-id
 
+## 36.3.6
+
+### Patch Changes
+
+- [#3413](https://github.com/udecode/plate/pull/3413) by [@AHappyAtlas](https://github.com/AHappyAtlas) – ignore undefined node when insert nodes
+
 ## 36.0.0
 
 ## 34.0.0
