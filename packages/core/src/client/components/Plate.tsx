@@ -49,6 +49,7 @@ export interface PlateProps<
         insertData?: boolean;
         length?: boolean;
         nodeFactory?: boolean;
+        queryCachToState?: boolean;
         react?: boolean;
         selection?: boolean;
       }

@@ -11,6 +11,7 @@ import type {
 import type { TReactEditor } from '@udecode/slate-react';
 import type { Path } from 'slate';
 
+import type { QueryCachToSateEditor } from '../plugins';
 import type { PlateEditorMethods } from './PlateEditorMethods';
 import type { WithPlatePlugin } from './plugin/PlatePlugin';
 import type { PluginKey } from './plugin/PlatePluginKey';
@@ -45,6 +46,7 @@ export type PlateEditor<V extends Value = Value> = {
 
   prevSelection: TRange | null;
 } & PlateEditorMethods<V> &
+  QueryCachToSateEditor<V> &
   TEditor<V> &
   THistoryEditor<V> &
   TReactEditor<V>;

@@ -57,7 +57,6 @@ export const createPlateEditor = <
     components,
     overrideByKey,
   });
-
   const e = withPlate<V>(editor, {
     plugins,
     ...withPlateOptions,
