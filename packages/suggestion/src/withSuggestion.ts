@@ -23,10 +23,10 @@ import { insertFragmentSuggestion } from './transforms/insertFragmentSuggestion'
 import { insertTextSuggestion } from './transforms/insertTextSuggestion';
 import { getSuggestionId, getSuggestionKeys } from './utils/index';
 
-export const withSuggestion: WithOverride<SuggestionPluginOptions> = (
-  _editor
-) => {
-  const editor = _editor as unknown as PlateEditor & SuggestionEditorProps;
+export const withSuggestion: WithOverride<SuggestionPluginOptions> = ({
+  editor: e,
+}) => {
+  const editor = e as unknown as PlateEditor & SuggestionEditorProps;
 
   const {
     deleteBackward,

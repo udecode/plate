@@ -8,9 +8,9 @@ import type { TablePluginOptions } from './types';
 
 import { getTableAbove, getTableGridAbove } from './queries/index';
 
-export const withInsertTextTable: WithOverride<TablePluginOptions> = (
-  editor
-) => {
+export const withInsertTextTable: WithOverride<TablePluginOptions> = ({
+  editor,
+}) => {
   const { insertText } = editor;
 
   editor.insertText = (text) => {

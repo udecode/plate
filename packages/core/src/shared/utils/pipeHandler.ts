@@ -1,10 +1,7 @@
 import type React from 'react';
 
 import type { PlateEditor } from '../types/PlateEditor';
-import type {
-  DOMHandlers,
-  HandlerReturnType,
-} from '../types/plugin/DOMHandlers';
+import type { DOMHandlers } from '../types/plugin/DOMHandlers';
 import type { TEditableProps } from '../types/slate-react/TEditableProps';
 
 export const convertDomEventToSyntheticEvent = (
@@ -76,18 +73,17 @@ export const pipeHandler = <K extends keyof DOMHandlers>(
   {
     editableProps,
     handlerKey,
-  }: { editableProps?: TEditableProps | null; handlerKey: K }
+  }: { editableProps?: Omit<TEditableProps, 'decorate'> | null; handlerKey: K }
 ): ((event: any) => void) | undefined => {
-  let pluginsHandlers: ((event: any) => HandlerReturnType)[] = [];
-  pluginsHandlers = editor.plugins.flatMap(
-    (plugin) => plugin.handlers?.[handlerKey]?.(editor, plugin) ?? []
-  );
-
   const propsHandler = editableProps?.[handlerKey] as (
     event: any
-  ) => HandlerReturnType | undefined;
+  ) => boolean | void;
 
-  if (pluginsHandlers.length === 0 && !propsHandler) return;
+  const relevantPlugins = editor.plugins.filter(
+    (plugin) => plugin.handlers?.[handlerKey]
+  );
+
+  if (relevantPlugins.length === 0 && !propsHandler) return;
 
   return (event: any) => {
     const isDomEvent = event instanceof Event;
@@ -95,9 +91,21 @@ export const pipeHandler = <K extends keyof DOMHandlers>(
       ? convertDomEventToSyntheticEvent(event)
       : event;
 
-    const eventIsHandled = pluginsHandlers.some((handler) =>
-      isEventHandled(handledEvent, handler)
-    );
+    const eventIsHandled = relevantPlugins.some((plugin) => {
+      const pluginHandler = plugin.handlers[handlerKey]!;
+
+      const shouldTreatEventAsHandled = pluginHandler({
+        editor,
+        event: handledEvent,
+        plugin,
+      });
+
+      if (shouldTreatEventAsHandled != null) {
+        return shouldTreatEventAsHandled;
+      }
+
+      return false;
+    });
 
     if (eventIsHandled) return true;
 

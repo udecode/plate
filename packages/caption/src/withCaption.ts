@@ -24,10 +24,10 @@ import { captionGlobalStore } from './captionGlobalStore';
  * - If focus is in table, anchor in a block after: set focus to the point before
  *   start of table
  */
-export const withCaption: WithOverride<CaptionPluginOptions> = (
+export const withCaption: WithOverride<CaptionPluginOptions> = ({
   editor,
-  { options }
-) => {
+  plugin: { options },
+}) => {
   const { apply } = editor;
 
   const { pluginKeys } = options;

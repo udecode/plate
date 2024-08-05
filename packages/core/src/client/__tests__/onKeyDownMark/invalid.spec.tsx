@@ -41,10 +41,11 @@ const editor = createPlateEditor({
 });
 
 it('should be', () => {
-  onKeyDownToggleMark(
+  onKeyDownToggleMark({
     editor,
-    getPlugin<ToggleMarkPluginOptions>(editor, MARK_BOLD)
-  )(event as any);
+    event: event as any,
+    plugin: getPlugin<ToggleMarkPluginOptions>(editor, MARK_BOLD),
+  });
   expect(editor.children).toEqual(output.children);
   expect(editor.selection).toEqual(output.selection);
 });

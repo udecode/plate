@@ -6,13 +6,15 @@ import type {
   GetInjectPropsOptions,
   GetInjectPropsReturnType,
 } from '../../utils/pluginInjectProps';
+import type { PlatePluginContext } from './PlatePlugin';
 
-export interface TransformOptions extends GetInjectPropsOptions {
+export type TransformOptions<O = {}, A = {}, T = {}, S = {}> = {
   nodeValue?: any;
   value?: any;
-}
+} & GetInjectPropsOptions &
+  PlatePluginContext<string, O, A, T, S>;
 
-export interface InjectProps {
+export interface InjectProps<O = {}, A = {}, T = {}, S = {}> {
   inject?: {
     /** Properties used by Plate to inject props into any node `component`. */
     props?: {
@@ -33,8 +35,10 @@ export interface InjectProps {
 
       /** Whether to inject the props. If true, overrides all other checks. */
       query?: (
-        options: NonNullable<NonNullable<InjectProps['inject']>['props']>,
-        nodeProps: GetInjectPropsOptions
+        options: {
+          nodeProps: GetInjectPropsOptions;
+        } & NonNullable<NonNullable<InjectProps['inject']>['props']> &
+          PlatePluginContext<string, O, A, T, S>
       ) => boolean;
 
       /**
@@ -49,19 +53,20 @@ export interface InjectProps {
        *
        * @default clsx(className, classNames[value])
        */
-      transformClassName?: (options: TransformOptions) => any;
+      transformClassName?: (options: TransformOptions<O, A, T, S>) => any;
 
       /**
        * Transform the node value for the style or className.
        *
        * @default nodeValue
        */
-      transformNodeValue?: (options: TransformOptions) => any;
+      transformNodeValue?: (options: TransformOptions<O, A, T, S>) => any;
 
       /** Transform the injected props. */
       transformProps?: (
-        options: TransformOptions,
-        props: GetInjectPropsReturnType
+        options: {
+          props: GetInjectPropsReturnType;
+        } & TransformOptions<O, A, T, S>
       ) => AnyObject | undefined;
 
       /**
@@ -69,7 +74,9 @@ export interface InjectProps {
        *
        * @default { ...style, [styleKey]: value }
        */
-      transformStyle?: (options: TransformOptions) => React.CSSProperties;
+      transformStyle?: (
+        options: TransformOptions<O, A, T, S>
+      ) => React.CSSProperties;
 
       /** List of supported node values. */
       validNodeValues?: any[];

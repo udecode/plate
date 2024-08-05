@@ -18,7 +18,12 @@ import type { SelectOnBackspacePluginOptions } from './SelectOnBackspacePlugin';
 /** Set a list of element types to select on backspace */
 export const withSelectOnBackspace: WithOverride<
   SelectOnBackspacePluginOptions
-> = (editor, { options: { query, removeNodeIfEmpty } }) => {
+> = ({
+  editor,
+  plugin: {
+    options: { query, removeNodeIfEmpty },
+  },
+}) => {
   const { deleteBackward } = editor;
 
   editor.deleteBackward = (unit: 'block' | 'character' | 'line' | 'word') => {

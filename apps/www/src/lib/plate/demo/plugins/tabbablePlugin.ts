@@ -16,7 +16,7 @@ const TABBABLE_ELEMENT = 'tabbable_element';
 
 export const tabbablePlugin: Partial<PlatePlugin<TabbablePlugin>> = {
   options: {
-    query: (editor) => {
+    query: ({ editor }) => {
       if (isSelectionAtBlockStart(editor)) return false;
 
       return !someNode(editor, {

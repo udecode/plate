@@ -1,18 +1,22 @@
 import React from 'react';
 
-import { createPlateEditor } from '../utils/createPlateEditor';
+import {
+  type CreatePlateEditorOptions,
+  createPlateEditor,
+} from '../utils/createPlateEditor';
 import { Plate, type PlateProps } from './Plate';
 import { PlateContent, type PlateContentProps } from './PlateContent';
 
 export function PlateTest({
   editableProps,
-  normalizeInitialValue,
+  shouldNormalizeEditor,
   variant = 'wordProcessor',
   ...props
 }: {
   editableProps?: PlateContentProps;
   variant?: 'comment' | 'wordProcessor';
-} & PlateProps) {
+} & CreatePlateEditorOptions &
+  PlateProps) {
   const { editor: _editor, id, plugins } = props;
 
   let editor = _editor;
@@ -21,8 +25,8 @@ export function PlateTest({
     editor = createPlateEditor({
       editor,
       id,
-      normalizeInitialValue,
       plugins,
+      shouldNormalizeEditor,
     });
   }
 

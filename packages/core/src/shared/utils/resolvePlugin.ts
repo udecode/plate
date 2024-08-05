@@ -18,15 +18,21 @@ import type { PlatePlugin } from '../types/plugin/PlatePlugin';
  *   const plugin = createPlugin({ key: 'myPlugin', ...otherOptions }).extend(...);
  *   const resolvedPlugin = resolvePlugin(editor, plugin);
  */
-export const resolvePlugin = <O = {}, T = {}, Q = {}, S = {}>(
+export const resolvePlugin = <
+  K extends string = '',
+  O = {},
+  A = {},
+  T = {},
+  S = {},
+>(
   editor: PlateEditor,
-  _plugin: PlatePlugin<O, T, Q, S>
-): PlatePlugin<O, T, Q, S> => {
+  _plugin: PlatePlugin<K, O, A, T, S>
+): PlatePlugin<K, O, A, T, S> => {
   let plugin = { ..._plugin };
 
   if (plugin.__extensions && plugin.__extensions.length > 0) {
     plugin.__extensions.forEach((extension) => {
-      plugin = merge({}, plugin, extension(editor, plugin));
+      plugin = merge({}, plugin, extension({ editor, plugin }));
     });
     plugin.__extensions = [];
   }
@@ -34,5 +40,23 @@ export const resolvePlugin = <O = {}, T = {}, Q = {}, S = {}>(
     plugin.plugins = plugin.plugins.map((p) => resolvePlugin(editor, p));
   }
 
+  validatePlugin(plugin);
+
   return plugin;
+};
+
+export const validatePlugin = <
+  K extends string = '',
+  O = {},
+  A = {},
+  T = {},
+  S = {},
+>(
+  plugin: PlatePlugin<K, O, A, T, S>
+) => {
+  if (plugin.isElement && plugin.isLeaf) {
+    throw new Error(
+      `Plugin ${plugin.key} cannot be both an element and a leaf`
+    );
+  }
 };

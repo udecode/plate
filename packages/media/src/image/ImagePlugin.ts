@@ -7,16 +7,16 @@ import { withImage } from './withImage';
 export const ELEMENT_IMAGE = 'img';
 
 /** Enables support for images. */
-export const ImagePlugin = createPlugin<ImagePluginOptions>({
+export const ImagePlugin = createPlugin<'img', ImagePluginOptions>({
   isElement: true,
   isVoid: true,
   key: ELEMENT_IMAGE,
   withOverrides: withImage,
-}).extend((_, { type }) => ({
+}).extend(({ plugin }) => ({
   deserializeHtml: {
-    getNode: (el) => ({
-      type,
-      url: el.getAttribute('src'),
+    getNode: ({ element }) => ({
+      type: plugin.type,
+      url: element.getAttribute('src'),
     }),
     rules: [
       {

@@ -5,5 +5,4 @@
 export * from './ReactPlugin';
 export * from './createPlateEditor';
 export * from './hotkeys';
-export * from './setPlatePlugins';
 export * from './withPlate';

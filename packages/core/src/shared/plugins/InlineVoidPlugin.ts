@@ -8,7 +8,7 @@ export const KEY_INLINE_VOID = 'inline-void';
  * Merge and register all the inline types and void types from the plugins and
  * options, using `editor.isInline`, `editor.markableVoid` and `editor.isVoid`
  */
-export const withInlineVoid: WithOverride = (editor) => {
+export const withInlineVoid: WithOverride = ({ editor }) => {
   const { isInline, isVoid, markableVoid } = editor;
 
   const voidTypes: string[] = [];

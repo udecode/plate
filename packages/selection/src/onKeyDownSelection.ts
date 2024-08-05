@@ -10,7 +10,7 @@ import {
 
 import { blockSelectionActions } from './blockSelectionStore';
 
-export const onKeyDownSelection: KeyboardHandler = (editor) => (event) => {
+export const onKeyDownSelection: KeyboardHandler = ({ editor, event }) => {
   if (isHotkey('mod+a', event)) {
     const ancestorNode = getAncestorNode(editor);
 

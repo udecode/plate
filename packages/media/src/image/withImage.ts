@@ -9,16 +9,19 @@ import { withImageUpload } from './withImageUpload';
  * @see withImageUpload
  * @see withImageEmbed
  */
-export const withImage: WithOverride<ImagePluginOptions> = (editor, plugin) => {
+export const withImage: WithOverride<ImagePluginOptions> = ({
+  editor,
+  plugin,
+}) => {
   const {
     options: { disableEmbedInsert, disableUploadInsert },
   } = plugin;
 
   if (!disableUploadInsert) {
-    editor = withImageUpload(editor, plugin);
+    editor = withImageUpload({ editor, plugin });
   }
   if (!disableEmbedInsert) {
-    editor = withImageEmbed(editor, plugin);
+    editor = withImageEmbed({ editor, plugin });
   }
 
   return editor;

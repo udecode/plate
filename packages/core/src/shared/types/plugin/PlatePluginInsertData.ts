@@ -1,19 +1,21 @@
 import type { TDescendant } from '@udecode/slate';
 
 import type { HandlerReturnType } from './DOMHandlers';
+import type { PlatePluginContext } from './PlatePlugin';
 
 export type PlatePluginInsertDataOptions = {
   data: string;
   dataTransfer: DataTransfer;
 };
 
-export type PlatePluginInsertData = {
+export type PlatePluginInsertData<O = {}, A = {}, T = {}, S = {}> = {
   /** Format to get data. Example data types are text/plain and text/uri-list. */
   format?: string;
 
   /** Deserialize data to fragment */
   getFragment?: (
-    options: PlatePluginInsertDataOptions
+    options: PlatePluginContext<string, O, A, T, S> &
+      PlatePluginInsertDataOptions
   ) => TDescendant[] | undefined;
 
   /**
@@ -25,24 +27,39 @@ export type PlatePluginInsertData = {
    * @returns If true, the next handlers will be skipped.
    */
   preInsert?: (
-    fragment: TDescendant[],
-    options: PlatePluginInsertDataOptions
+    options: { fragment: TDescendant[] } & PlatePluginContext<
+      string,
+      O,
+      A,
+      T,
+      S
+    > &
+      PlatePluginInsertDataOptions
   ) => HandlerReturnType;
 
   // injected
 
   /** Query to skip this plugin. */
-  query?: (options: PlatePluginInsertDataOptions) => boolean;
+  query?: (
+    options: PlatePluginContext<string, O, A, T, S> &
+      PlatePluginInsertDataOptions
+  ) => boolean;
 
   /** Transform the inserted data. */
   transformData?: (
-    data: string,
-    options: { dataTransfer: DataTransfer }
+    options: PlatePluginContext<string, O, A, T, S> &
+      PlatePluginInsertDataOptions
   ) => string;
 
   /** Transform the fragment to insert. */
   transformFragment?: (
-    fragment: TDescendant[],
-    options: PlatePluginInsertDataOptions
+    options: { fragment: TDescendant[] } & PlatePluginContext<
+      string,
+      O,
+      A,
+      T,
+      S
+    > &
+      PlatePluginInsertDataOptions
   ) => TDescendant[];
 };

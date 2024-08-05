@@ -6,7 +6,7 @@ export const KEY_EVENT_EDITOR = 'event-editor';
 
 export const EventEditorPlugin = createPlugin({
   handlers: {
-    onBlur: (editor) => () => {
+    onBlur: ({ editor }) => {
       const focus = eventEditorSelectors.focus();
 
       if (focus === editor.id) {
@@ -21,7 +21,7 @@ export const EventEditorPlugin = createPlugin({
         })
       );
     },
-    onFocus: (editor) => () => {
+    onFocus: ({ editor }) => {
       eventEditorActions.focus(editor.id);
 
       document.dispatchEvent(

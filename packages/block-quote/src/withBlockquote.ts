@@ -2,7 +2,7 @@ import type { TElement, WithOverride } from '@udecode/plate-common/server';
 
 import { ELEMENT_BLOCKQUOTE } from './BlockquotePlugin';
 
-export const withBlockquote: WithOverride = (editor) => {
+export const withBlockquote: WithOverride = ({ editor }) => {
   const { shouldMergeNodesRemovePrevNode } = editor;
 
   if (shouldMergeNodesRemovePrevNode) {

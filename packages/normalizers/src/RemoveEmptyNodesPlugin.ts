@@ -9,8 +9,10 @@ export interface RemoveEmptyNodesPluginOptions {
 export const KEY_REMOVE_EMPTY_NODES = 'removeEmptyNodes';
 
 /** @see {@link withRemoveEmptyNodes} */
-export const RemoveEmptyNodesPlugin =
-  createPlugin<RemoveEmptyNodesPluginOptions>({
-    key: KEY_REMOVE_EMPTY_NODES,
-    withOverrides: withRemoveEmptyNodes,
-  });
+export const RemoveEmptyNodesPlugin = createPlugin<
+  'removeEmptyNodes',
+  RemoveEmptyNodesPluginOptions
+>({
+  key: KEY_REMOVE_EMPTY_NODES,
+  withOverrides: withRemoveEmptyNodes,
+});

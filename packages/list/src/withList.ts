@@ -9,10 +9,12 @@ import { insertBreakList } from './insertBreakList';
 import { insertFragmentList } from './insertFragmentList';
 import { normalizeList } from './normalizers/index';
 
-export const withList: WithOverride<ListPluginOptions> = (
+export const withList: WithOverride<ListPluginOptions> = ({
   editor,
-  { options: { validLiChildrenTypes } }
-) => {
+  plugin: {
+    options: { validLiChildrenTypes },
+  },
+}) => {
   const { deleteBackward, deleteForward, deleteFragment, insertBreak } = editor;
 
   editor.insertBreak = () => {

@@ -1,13 +1,13 @@
 import React from 'react';
 
-import { type UsePlateEffectsProps, usePlateEffects } from '../hooks';
+import { usePlateEffects } from '../hooks';
 
-export interface PlateEffectsProps extends UsePlateEffectsProps {
+export interface PlateEffectsProps {
   children: React.ReactNode;
 }
 
-export function PlateEffects({ children, ...props }: PlateEffectsProps) {
-  usePlateEffects(props);
+export function PlateEffects({ children }: PlateEffectsProps) {
+  usePlateEffects();
 
   return <>{children}</>;
 }

@@ -10,8 +10,10 @@ import {
 import type { NormalizeTypesPluginOptions } from './NormalizeTypesPlugin';
 
 export const withNormalizeTypes: WithOverride<NormalizeTypesPluginOptions> = (
-  editor,
-  { options: { onError, rules } }
+  {
+    editor,
+    plugin: { options: { onError, rules } }
+  }
 ) => {
   const { normalizeNode } = editor;
 

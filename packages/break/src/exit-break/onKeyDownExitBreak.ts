@@ -10,23 +10,27 @@ import type { ExitBreakPluginOptions } from './types';
 
 import { exitBreak } from './transforms/exitBreak';
 
-export const onKeyDownExitBreak: KeyboardHandler<ExitBreakPluginOptions> =
-  (editor, { options: { rules = [] } }) =>
-  (event) => {
-    if (event.defaultPrevented) return;
+export const onKeyDownExitBreak: KeyboardHandler<ExitBreakPluginOptions> = ({
+  editor,
+  event,
+  plugin: {
+    options: { rules = [] },
+  },
+}) => {
+  if (event.defaultPrevented) return;
 
-    const entry = getBlockAbove(editor);
+  const entry = getBlockAbove(editor);
 
-    if (!entry) return;
+  if (!entry) return;
 
-    rules.forEach(({ hotkey, ...rule }) => {
-      if (
-        isHotkey(hotkey, event as any) &&
-        queryNode(entry, rule.query) &&
-        exitBreak(editor as any, rule)
-      ) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-    });
-  };
+  rules.forEach(({ hotkey, ...rule }) => {
+    if (
+      isHotkey(hotkey, event as any) &&
+      queryNode(entry, rule.query) &&
+      exitBreak(editor as any, rule)
+    ) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  });
+};

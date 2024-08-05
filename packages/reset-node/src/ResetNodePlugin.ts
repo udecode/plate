@@ -20,7 +20,10 @@ import { onKeyDownResetNode } from './onKeyDownResetNode';
 export const KEY_RESET_NODE = 'resetNode';
 
 /** Enables support for resetting block type from rules. */
-export const ResetNodePlugin = createPlugin<ResetNodePluginOptions>({
+export const ResetNodePlugin = createPlugin<
+  'resetNode',
+  ResetNodePluginOptions
+>({
   handlers: {
     onKeyDown: onKeyDownResetNode,
   },
@@ -28,7 +31,7 @@ export const ResetNodePlugin = createPlugin<ResetNodePluginOptions>({
   options: {
     rules: [],
   },
-  withOverrides: (editor, { options }) => {
+  withOverrides: ({ editor, plugin: { options } }) => {
     const { deleteBackward, deleteFragment } = editor;
 
     if (!options.disableEditorReset) {

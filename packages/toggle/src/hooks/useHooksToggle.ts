@@ -9,10 +9,10 @@ import {
   useToggleIndex,
 } from '../toggle-controller-store';
 
-export const useHooksToggle: PlatePluginUseHooks<TogglePluginOptions> = (
+export const useHooksToggle: PlatePluginUseHooks<TogglePluginOptions> = ({
   editor,
-  { options }
-) => {
+  plugin: { options },
+}) => {
   const [openIds, setOpenIds] = useToggleControllerStore().use.openIds();
   const toggleIndex = useToggleIndex();
 

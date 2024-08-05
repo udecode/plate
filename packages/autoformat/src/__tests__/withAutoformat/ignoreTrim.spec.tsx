@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { MARK_ITALIC } from '@udecode/plate-basic-marks';
-import { mockPlugin } from '@udecode/plate-common';
+import { createPlugin } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 import { autoformatPlugin } from 'www/src/lib/plate/demo/plugins/autoformatPlugin';
@@ -31,7 +31,7 @@ describe('when ignoreTrim is true', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin({
+      createPlugin({
         options: {
           rules: [
             {
@@ -71,7 +71,7 @@ describe('when ignoreTrim is false', () => {
 
       const editor = withAutoformat(
         withReact(input),
-        mockPlugin(autoformatPlugin as any)
+        createPlugin(autoformatPlugin as any)
       );
 
       editor.insertText(' ');

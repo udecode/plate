@@ -16,7 +16,7 @@ export const ColumnItemPlugin = createPlugin({
   withOverrides: withColumn,
 });
 
-export const ColumnPlugin = createPlugin<HotkeyPluginOptions>({
+export const ColumnPlugin = createPlugin<'column_group', HotkeyPluginOptions>({
   handlers: {
     onKeyDown: onKeyDownColumn,
   },

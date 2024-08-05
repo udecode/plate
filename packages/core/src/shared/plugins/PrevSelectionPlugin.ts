@@ -6,15 +6,15 @@ export const KEY_PREV_SELECTION = 'prevSelection';
 
 export const PrevSelectionPlugin = createPlugin({
   handlers: {
-    onKeyDown: (editor) => (e) => {
+    onKeyDown: ({ editor, event }) => {
       // React 16.x needs this event to be persistented due to it's event pooling implementation.
       // https://reactjs.org/docs/legacy-event-pooling.html
-      e.persist();
-      editor.currentKeyboardEvent = e;
+      event.persist();
+      editor.currentKeyboardEvent = event;
     },
   },
   key: KEY_PREV_SELECTION,
-  withOverrides: (editor) => {
+  withOverrides: ({ editor }) => {
     const { apply } = editor;
 
     editor.apply = (operation) => {

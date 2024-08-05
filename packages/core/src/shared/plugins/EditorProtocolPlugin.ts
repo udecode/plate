@@ -55,7 +55,7 @@ const removeSelectionMark = (editor: TEditor) => {
 
 export const KEY_EDITOR_PROTOCOL = 'editorProtocol';
 
-export const withEditorProtocol: WithOverride = (editor) => {
+export const withEditorProtocol: WithOverride = ({ editor }) => {
   const { deleteBackward, deleteForward, deleteFragment } = editor;
 
   const resetMarks = () => {

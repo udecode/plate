@@ -6,11 +6,12 @@ import { withCloudAttachment } from './withCloudAttachment';
 
 export const ELEMENT_CLOUD_ATTACHMENT = 'cloud_attachment';
 
-export const CloudAttachmentPlugin = createPlugin<CloudAttachmentPluginOptions>(
-  {
-    isElement: true,
-    isVoid: true,
-    key: ELEMENT_CLOUD_ATTACHMENT,
-    withOverrides: withCloudAttachment,
-  }
-);
+export const CloudAttachmentPlugin = createPlugin<
+  'cloud_attachment',
+  CloudAttachmentPluginOptions
+>({
+  isElement: true,
+  isVoid: true,
+  key: ELEMENT_CLOUD_ATTACHMENT,
+  withOverrides: withCloudAttachment,
+});

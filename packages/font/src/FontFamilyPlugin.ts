@@ -9,9 +9,9 @@ export const FontFamilyPlugin = createPlugin({
     },
   },
   key: MARK_FONT_FAMILY,
-}).extend((_, { type }) => ({
+}).extend(({ plugin: { type } }) => ({
   deserializeHtml: {
-    getNode: (element) => ({ [type]: element.style.fontFamily }),
+    getNode: ({ element }) => ({ [type]: element.style.fontFamily }),
     isLeaf: true,
     rules: [
       {

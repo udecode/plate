@@ -1,9 +1,9 @@
 import {
   ELEMENT_DEFAULT,
   type PlateEditor,
+  createPlugin,
   getPluginType,
   isBlockAboveEmpty,
-  mockPlugin,
 } from '@udecode/plate-common/server';
 import {
   type ResetNodePluginOptions,
@@ -38,9 +38,10 @@ export const insertBreakList = (editor: PlateEditor) => {
     }
   }
 
-  const didReset = onKeyDownResetNode(
-    editor as any,
-    mockPlugin<ResetNodePluginOptions>({
+  const didReset = onKeyDownResetNode({
+    editor,
+    event: SIMULATE_BACKSPACE,
+    plugin: createPlugin<string, ResetNodePluginOptions>({
       options: {
         rules: [
           {
@@ -51,8 +52,8 @@ export const insertBreakList = (editor: PlateEditor) => {
           },
         ],
       },
-    })
-  )(SIMULATE_BACKSPACE as any);
+    }),
+  });
 
   if (didReset) return true;
   /** If selection is in li > p, insert li. */

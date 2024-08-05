@@ -15,8 +15,11 @@ describe('createPlugins', () => {
           [ELEMENT_H1]: () => null,
         },
       });
+      console.log(plugins);
 
       const editor = withPlate(createTEditor(), { id: '1', plugins });
+
+      console.log(getPlugin(editor, ELEMENT_H1));
 
       expect(getPlugin(editor, ELEMENT_H1).component).toBeDefined();
     });

@@ -13,7 +13,10 @@ import { finishUploads } from './finishUploads';
 import { getSaveValue } from './getSaveValue';
 import { uploadFiles } from './uploadFiles';
 
-export const withCloud: WithOverride<CloudPluginOptions> = (e, plugin) => {
+export const withCloud: WithOverride<CloudPluginOptions> = ({
+  editor: e,
+  plugin,
+}) => {
   const editor = e as CloudEditorProps & PlateEditor;
 
   const { apiKey, apiOrigin, authToken, uploadStoreInitialValue } =

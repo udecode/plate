@@ -31,16 +31,19 @@ export interface BlockSelectionPluginOptions {
   };
 }
 
-export const BlockSelectionPlugin = createPlugin<BlockSelectionPluginOptions>({
+export const BlockSelectionPlugin = createPlugin<
+  'blockSelection',
+  BlockSelectionPluginOptions
+>({
   handlers: {
     onChange: onCloseBlockSelection,
     onKeyDown: onKeyDownSelection,
-    onMouseDown: (editor) => (e) => {
-      if (e.button === 0 && blockContextMenuSelectors.isOpen(editor.id)) {
-        e.preventDefault();
+    onMouseDown: ({ editor, event }) => {
+      if (event.button === 0 && blockContextMenuSelectors.isOpen(editor.id)) {
+        event.preventDefault();
         blockContextMenuActions.hide();
       }
-      if (e.button === 2) e.preventDefault();
+      if (event.button === 2) event.preventDefault();
     },
   },
   inject: {
@@ -68,7 +71,7 @@ export const BlockSelectionPlugin = createPlugin<BlockSelectionPluginOptions>({
   },
   useHooks: useHooksBlockSelection,
   withOverrides: withSelection,
-}).extend((_, { options }) => ({
+}).extend(({ plugin: { options } }) => ({
   renderAboveEditable: ({ children }) => (
     <BlockSelectionArea>
       <BlockStartArea

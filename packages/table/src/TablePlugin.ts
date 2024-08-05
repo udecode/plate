@@ -20,7 +20,7 @@ export const ELEMENT_TR = 'tr';
 export const ELEMENT_TD = 'td';
 
 const createGetNodeFunc = (type: string) => {
-  const getNode: DeserializeHtml['getNode'] = (element) => {
+  const getNode: DeserializeHtml['getNode'] = ({ element }) => {
     const background =
       element.style.background || element.style.backgroundColor;
 
@@ -54,7 +54,7 @@ export const TableCellPlugin = createPlugin({
       rowSpan: (element?.attributes as any)?.rowspan,
     },
   }),
-}).extend((editor) => ({
+}).extend(({ editor }) => ({
   deserializeHtml: {
     attributeNames: ['rowspan', 'colspan'],
     getNode: createGetNodeFunc(getPluginType(editor, ELEMENT_TD)),
@@ -71,7 +71,7 @@ export const TableCellHeaderPlugin = createPlugin({
       rowSpan: (element?.attributes as any)?.rowspan,
     },
   }),
-}).extend((editor) => ({
+}).extend(({ editor }) => ({
   deserializeHtml: {
     attributeNames: ['rowspan', 'colspan'],
     getNode: createGetNodeFunc(getPluginType(editor, ELEMENT_TH)),
@@ -80,7 +80,7 @@ export const TableCellHeaderPlugin = createPlugin({
 }));
 
 /** Enables support for tables. */
-export const TablePlugin = createPlugin<TablePluginOptions>({
+export const TablePlugin = createPlugin<'table', TablePluginOptions>({
   deserializeHtml: {
     rules: [{ validNodeName: 'TABLE' }],
   },
@@ -108,7 +108,7 @@ export const TablePlugin = createPlugin<TablePluginOptions>({
   },
   plugins: [TableRowPlugin, TableCellPlugin, TableCellHeaderPlugin],
   withOverrides: withTable,
-}).extend((editor) => ({
+}).extend(({ editor }) => ({
   options: {
     cellFactory: (options: any) => getEmptyCellNode(editor, options),
     getCellChildren: (cell: any) => cell.children,

@@ -13,7 +13,7 @@ export type DeletePlugin = {
 export const KEY_DELETE = 'delete';
 
 /** @see {@link withDelete} */
-export const DeletePlugin = createPlugin<DeletePlugin>({
+export const DeletePlugin = createPlugin<'delete', DeletePlugin>({
   key: KEY_DELETE,
   options: {
     query: {

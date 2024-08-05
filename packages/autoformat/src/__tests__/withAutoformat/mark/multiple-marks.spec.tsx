@@ -5,7 +5,7 @@ import {
   MARK_ITALIC,
   MARK_UNDERLINE,
 } from '@udecode/plate-basic-marks';
-import { mockPlugin } from '@udecode/plate-common';
+import { createPlugin } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 import { autoformatPlugin } from 'www/src/lib/plate/demo/plugins/autoformatPlugin';
@@ -37,7 +37,7 @@ describe('when inserting ***', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(autoformatPlugin as any)
+      createPlugin(autoformatPlugin as any)
     );
 
     editor.insertText('*');
@@ -71,7 +71,7 @@ describe('when inserting ***___', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin({
+      createPlugin({
         options: {
           rules: [
             {

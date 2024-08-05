@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { mockPlugin } from '@udecode/plate-common';
+import { createPlugin } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 import { autoformatPlugin } from 'www/src/lib/plate/demo/plugins/autoformatPlugin';
@@ -28,7 +28,7 @@ const output = (
 it('should autoformat', () => {
   const editor = withAutoformat(
     withReact(input),
-    mockPlugin(autoformatPlugin as any)
+    createPlugin(autoformatPlugin as any)
   );
 
   editor.insertText(' ');

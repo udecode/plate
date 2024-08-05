@@ -48,7 +48,10 @@ export interface IndentListPluginOptions {
   >;
 }
 
-export const IndentListPlugin = createPlugin<IndentListPluginOptions>({
+export const IndentListPlugin = createPlugin<
+  'listStyleType',
+  IndentListPluginOptions
+>({
   handlers: {
     onKeyDown: onKeyDownIndentList,
   },
@@ -60,9 +63,9 @@ export const IndentListPlugin = createPlugin<IndentListPluginOptions>({
     getListStyleType: (element) => element.style.listStyleType as ListStyleType,
   },
   withOverrides: withIndentList,
-}).extend((editor, { options }) => ({
+}).extend(({ editor, plugin: { options } }) => ({
   deserializeHtml: {
-    getNode: (element) => ({
+    getNode: ({ element }) => ({
       // gdoc uses aria-level attribute
       indent: Number(element.getAttribute('aria-level')),
       listStyleType: options.getListStyleType?.(element),
@@ -80,7 +83,7 @@ export const IndentListPlugin = createPlugin<IndentListPluginOptions>({
       [KEY_DESERIALIZE_HTML]: {
         editor: {
           insertData: {
-            transformData: (data) => {
+            transformData: ({ data }) => {
               const document = new DOMParser().parseFromString(
                 data,
                 'text/html'

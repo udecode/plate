@@ -36,10 +36,10 @@ Sets the value of `<key>` in the Plate store. The following keys are currently s
 - `renderLeaf`
 
 </APIItem>
-  <APIItem name="plugins" type="PlatePlugin[]">
+  <APIItem name="plugins" type="PlatePluginList">
     An array of plugins that are currently being used by the editor.
   </APIItem>
-  <APIItem name="pluginsByKey" type="Record<PluginKey, PlatePlugin>">
+  <APIItem name="pluginsByKey" type="Record<PluginKey, AnyPlatePlugin>">
     A record of plugins indexed by their keys.
   </APIItem>
   <APIItem name="prevSelection" type="TRange | null">

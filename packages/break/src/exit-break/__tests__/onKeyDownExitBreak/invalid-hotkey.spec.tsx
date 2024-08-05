@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { mockPlugin } from '@udecode/plate-common';
+import { createPlugin } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { onKeyDownExitBreak } from '../../onKeyDownExitBreak';
@@ -28,6 +28,6 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  onKeyDownExitBreak(input, mockPlugin())(event);
+  onKeyDownExitBreak(input, createPlugin())(event);
   expect(input.children).toEqual(output.children);
 });

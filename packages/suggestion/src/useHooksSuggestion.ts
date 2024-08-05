@@ -12,7 +12,7 @@ import { getSuggestionId } from './utils/getSuggestionId';
 
 export const useHooksSuggestion: PlatePluginUseHooks<
   SuggestionPluginOptions
-> = (editor) => {
+> = ({ editor }) => {
   const version = useEditorVersion();
   const setActiveSuggestionId = useSetActiveSuggestionId();
 

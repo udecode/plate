@@ -36,9 +36,14 @@ export interface GetInjectPropsReturnType extends AnyObject {
  */
 export const pluginInjectProps = (
   editor: PlateEditor,
-  { inject: { props }, key }: PlatePlugin,
+  plugin: PlatePlugin,
   nodeProps: GetInjectPropsOptions
 ): GetInjectPropsReturnType | undefined => {
+  const {
+    inject: { props },
+    key,
+  } = plugin;
+
   const { className, element, style, text } = nodeProps;
 
   const node = element ?? text;
@@ -60,7 +65,7 @@ export const pluginInjectProps = (
     validTypes,
   } = props;
 
-  const queryResult = query?.(props, nodeProps);
+  const queryResult = query?.({ ...props, editor, nodeProps, plugin });
 
   if (
     !queryResult &&
@@ -84,7 +89,12 @@ export const pluginInjectProps = (
     return;
   }
 
-  const transformOptions: TransformOptions = { ...nodeProps, nodeValue };
+  const transformOptions: TransformOptions = {
+    ...nodeProps,
+    editor,
+    nodeValue,
+    plugin,
+  };
   const value = transformNodeValue?.(transformOptions) ?? nodeValue;
   transformOptions.value = value;
 
@@ -105,7 +115,7 @@ export const pluginInjectProps = (
     };
   }
   if (transformProps) {
-    res = transformProps(transformOptions, res) ?? res;
+    res = transformProps({ ...transformOptions, props: res }) ?? res;
   }
 
   return res;

@@ -19,7 +19,7 @@ export const ELEMENT_LI = 'li';
 
 export const ELEMENT_LIC = 'lic';
 
-export const ListUnorderedPlugin = createPlugin<ListPluginOptions>({
+export const ListUnorderedPlugin = createPlugin<'ul', ListPluginOptions>({
   deserializeHtml: {
     rules: [
       {
@@ -35,7 +35,7 @@ export const ListUnorderedPlugin = createPlugin<ListPluginOptions>({
   withOverrides: withList,
 });
 
-export const ListOrderedPlugin = createPlugin<ListPluginOptions>({
+export const ListOrderedPlugin = createPlugin<'ol', ListPluginOptions>({
   deserializeHtml: { rules: [{ validNodeName: 'OL' }] },
   handlers: {
     onKeyDown: onKeyDownList,
@@ -48,7 +48,7 @@ export const ListItemPlugin = createPlugin({
   deserializeHtml: { rules: [{ validNodeName: 'LI' }] },
   isElement: true,
   key: ELEMENT_LI,
-}).extend((editor, { type }) => ({
+}).extend(({ editor, plugin: { type } }) => ({
   inject: {
     pluginsByKey: {
       [KEY_DESERIALIZE_HTML]: {

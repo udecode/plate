@@ -10,10 +10,12 @@ import { autoformatText } from './transforms/autoformatText';
  * Enables support for autoformatting actions. Once a match rule is validated,
  * it does not check the following rules.
  */
-export const withAutoformat: WithOverride<AutoformatPluginOptions> = (
+export const withAutoformat: WithOverride<AutoformatPluginOptions> = ({
   editor,
-  { options: { rules } }
-) => {
+  plugin: {
+    options: { rules },
+  },
+}) => {
   const { insertText } = editor;
 
   editor.insertText = (text) => {

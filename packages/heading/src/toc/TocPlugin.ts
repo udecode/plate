@@ -8,7 +8,7 @@ export interface TocPluginOptions {
   queryHeading?: (editor: PlateEditor) => Heading[];
 }
 
-export const TocPlugin = createPlugin<TocPluginOptions>({
+export const TocPlugin = createPlugin<'toc', TocPluginOptions>({
   isElement: true,
   isVoid: true,
   key: ELEMENT_TOC,

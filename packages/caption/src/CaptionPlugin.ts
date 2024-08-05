@@ -11,7 +11,7 @@ export interface CaptionPluginOptions {
 export const KEY_CAPTION = 'caption';
 
 /** Enables support for caption. */
-export const CaptionPlugin = createPlugin<CaptionPluginOptions>({
+export const CaptionPlugin = createPlugin<'caption', CaptionPluginOptions>({
   handlers: {
     onKeyDown: onKeyDownCaption,
   },

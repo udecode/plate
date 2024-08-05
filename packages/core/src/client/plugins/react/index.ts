@@ -3,4 +3,4 @@
  */
 
 export * from './ReactPlugin';
-export * from './withTReact';
+export * from './withPlateReact';

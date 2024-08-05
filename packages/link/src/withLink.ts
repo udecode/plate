@@ -1,6 +1,7 @@
 import {
   type WithOverride,
   collapseSelection,
+  createPlugin,
   getAboveNode,
   getEditorString,
   getNextNodeStartPoint,
@@ -12,12 +13,14 @@ import {
   isCollapsed,
   isEndPoint,
   isStartPoint,
-  mockPlugin,
   select,
   someNode,
   withoutNormalizing,
 } from '@udecode/plate-common/server';
-import { withRemoveEmptyNodes } from '@udecode/plate-normalizers';
+import {
+  type RemoveEmptyNodesPluginOptions,
+  withRemoveEmptyNodes,
+} from '@udecode/plate-normalizers';
 import { Path, type Point, type Range } from 'slate';
 
 import { ELEMENT_LINK, type LinkPluginOptions } from './LinkPlugin';
@@ -32,13 +35,13 @@ import { upsertLink } from './transforms/index';
  * text but not its url.
  */
 
-export const withLink: WithOverride<LinkPluginOptions> = (
+export const withLink: WithOverride<LinkPluginOptions> = ({
   editor,
-  {
+  plugin: {
     options: { getUrlHref, isUrl, keepSelectedTextOnPaste, rangeBeforeOptions },
     type,
-  }
-) => {
+  },
+}) => {
   const { apply, insertBreak, insertData, insertText, normalizeNode } = editor;
 
   const wrapLink = () => {
@@ -181,12 +184,12 @@ export const withLink: WithOverride<LinkPluginOptions> = (
     normalizeNode([node, path]);
   };
 
-  editor = withRemoveEmptyNodes(
+  editor = withRemoveEmptyNodes({
     editor,
-    mockPlugin({
+    plugin: createPlugin<string, RemoveEmptyNodesPluginOptions>({
       options: { types: type },
-    })
-  );
+    }),
+  });
 
   return editor;
 };

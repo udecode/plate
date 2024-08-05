@@ -1,9 +1,15 @@
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
 import { ELEMENT_LINK, LinkPlugin } from '@udecode/plate-link';
 
-import { type PlatePlugin, getPlugin, mockPlugin } from '../../server';
-import { createPlugin } from '../../shared';
-import { createPlateEditor } from './createPlateEditor';
+import { createPlateEditor } from '../../client/utils/createPlateEditor';
+import {
+  type PlatePlugin,
+  getPlugin,
+  getPluginOptions,
+  resolveCreatePluginTest,
+  resolvePluginTest,
+} from '../../server';
+import { createPlugin } from '../index';
 
 describe('createPlugin', () => {
   const basePlugin = createPlugin({ key: 'a', type: 'a' });
@@ -16,20 +22,30 @@ describe('createPlugin', () => {
     });
   });
 
+  describe('when configure', () => {
+    it(' should be', () => {
+      const { key, type } = basePlugin;
+
+      expect({ key, type }).toEqual({ key: 'a', type: 'a' });
+    });
+  });
+
   describe('when extend', () => {
     it('should be', () => {
-      const basePlugin = createPlugin({ key: 'a', type: 'a' });
-
-      const plugin = mockPlugin(
+      const plugin = resolvePluginTest(
         basePlugin.extend({
           inject: {
             props: {
               nodeKey: 'b',
             },
           },
+          options: {
+            a: 1,
+          },
           type: 'b',
         })
       );
+      const c = plugin.options.a;
 
       expect({
         inject: plugin.inject,
@@ -47,9 +63,25 @@ describe('createPlugin', () => {
     });
   });
 
+  describe('when created with a function', () => {
+    it('should resolve correctly when mocked', () => {
+      const pluginFn = (editor: any) => ({
+        key: 'functionPlugin',
+        options: { editorId: editor.id },
+        type: 'function',
+      });
+
+      const plugin = resolveCreatePluginTest(pluginFn);
+
+      expect(plugin.key).toBe('functionPlugin');
+      expect(plugin.type).toBe('function');
+      expect(plugin.options).toHaveProperty('editorId');
+    });
+  });
+
   describe('when extendPlugin', () => {
     it('should be', () => {
-      const plugin = mockPlugin(
+      const plugin = resolvePluginTest(
         createPlugin({
           key: 'a',
           plugins: [
@@ -64,13 +96,15 @@ describe('createPlugin', () => {
         })
       );
 
+      const a = plugin.key;
+
       expect(plugin.plugins[0].type).toBe('aaa');
     });
   });
 
   describe('when extendPlugin twice', () => {
     it('should be', () => {
-      const plugin = mockPlugin(
+      const plugin = resolvePluginTest(
         createPlugin({
           key: 'a',
           plugins: [
@@ -104,37 +138,94 @@ describe('createPlugin', () => {
                 key: 'aa',
                 type: 'aa',
               }).extendPlugin('aaa', {
-                a: 1,
-                b: 1,
-                plugins: [createPlugin({ key: 'bbb', type: 'bbb' })],
+                options: {
+                  a: 1,
+                  b: 1,
+                },
+                plugins: [
+                  createPlugin({ key: 'bbb', options: {}, type: 'bbb' }),
+                ],
                 type: 'aaa',
               }),
             ],
             type: 'a',
-          })
-            .extendPlugin('aaa', {
-              b: 2,
-              c: 2,
-            })
-            .extendPlugin('bbb', {
-              a: 1,
-            }),
+          }).extendPlugin('aa', {
+            plugins: [
+              createPlugin({
+                key: 'aaa',
+                plugins: [
+                  createPlugin({
+                    key: 'bbb',
+                    options: {
+                      a: 1,
+                    },
+                  }),
+                ],
+              }),
+            ],
+          }),
         ],
       });
 
-      const plugin = getPlugin(editor, 'aaa');
-      const plugin2 = getPlugin(editor, 'bbb');
+      const plugin = getPluginOptions<{ a: number; b: number; c: number }>(
+        editor,
+        'aaa'
+      );
+      const plugin2 = getPluginOptions<{ a: number }>(editor, 'bbb');
 
       expect(plugin.a).toBe(1);
-      expect(plugin.b).toBe(2);
-      expect(plugin.c).toBe(2);
+      expect(plugin.b).toBe(1);
       expect(plugin2.a).toBe(1);
+    });
+  });
+
+  describe('extendPlugin for nested plugins', () => {
+    it('should correctly extend a nested plugin', () => {
+      const editor = createPlateEditor({
+        plugins: [
+          createPlugin({
+            key: 'parent',
+            plugins: [
+              createPlugin({
+                key: 'child',
+              }).extendPlugin('child2', {
+                options: {
+                  testOption: 1,
+                },
+                plugins: [
+                  createPlugin({
+                    key: 'grandchild',
+                    options: { testOption: 1 },
+                  }),
+                ],
+                type: 'aaa',
+              }),
+            ],
+          }).extendPlugin('child', {
+            plugins: [
+              createPlugin({
+                key: 'grandchild',
+                options: {
+                  testOption: 1,
+                },
+              }),
+            ],
+          }),
+        ],
+      });
+
+      const grandchildOptions = getPluginOptions<{ testOption: number }>(
+        editor,
+        'grandchild'
+      );
+
+      expect(grandchildOptions.testOption).toBe(1);
     });
   });
 
   describe('when new extendPlugin', () => {
     it('should be', () => {
-      const plugin = mockPlugin(
+      const plugin = resolvePluginTest(
         createPlugin({
           key: 'a',
           type: 'a',
@@ -149,7 +240,7 @@ describe('createPlugin', () => {
 
   describe('when new extendPlugin twice', () => {
     it('should be', () => {
-      const plugin = mockPlugin(
+      const plugin = resolvePluginTest(
         createPlugin({
           key: 'a',
           type: 'a',
@@ -170,7 +261,7 @@ describe('createPlugin', () => {
     it('should be', () => {
       const basePlugin = createPlugin({ key: 'a', type: 'a' });
 
-      const plugin = mockPlugin(
+      const plugin = resolvePluginTest(
         basePlugin
           .extend({
             inject: {
@@ -208,7 +299,7 @@ describe('createPlugin', () => {
 
   describe('when extend plugins', () => {
     it('should be', () => {
-      const plugin: PlatePlugin = mockPlugin(
+      const plugin: PlatePlugin = resolvePluginTest(
         BasicElementsPlugin.extendPlugin('heading', {
           key: 'h',
           options: {
@@ -231,7 +322,7 @@ describe('createPlugin', () => {
 
   describe('when extend + extendPlugin', () => {
     it('should be', () => {
-      const plugin: PlatePlugin = mockPlugin(
+      const plugin = resolvePluginTest(
         createPlugin({
           key: 'a',
           plugins: [

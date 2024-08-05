@@ -10,7 +10,10 @@ export const KEY_EXIT_BREAK = 'exitBreak';
  * Insert soft break following configurable rules. Each rule specifies a hotkey
  * and query options.
  */
-export const ExitBreakPlugin = createPlugin<ExitBreakPluginOptions>({
+export const ExitBreakPlugin = createPlugin<
+  'exitBreak',
+  ExitBreakPluginOptions
+>({
   handlers: {
     onKeyDown: onKeyDownExitBreak,
   },

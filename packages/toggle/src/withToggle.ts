@@ -16,7 +16,7 @@ import {
 } from './transforms';
 import { ELEMENT_TOGGLE } from './types';
 
-export const withToggle: WithOverride = (editor) => {
+export const withToggle: WithOverride = ({ editor }) => {
   const { deleteBackward, deleteForward, insertBreak, isSelectable } = editor;
 
   editor.isSelectable = (element) => {

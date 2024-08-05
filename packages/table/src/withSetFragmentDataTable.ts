@@ -14,9 +14,9 @@ import type { TTableCellElement, TablePluginOptions } from './types';
 import { ELEMENT_TH } from './TablePlugin';
 import { getColSpan, getRowSpan, getTableGridAbove } from './queries/index';
 
-export const withSetFragmentDataTable: WithOverride<TablePluginOptions> = (
-  editor
-) => {
+export const withSetFragmentDataTable: WithOverride<TablePluginOptions> = ({
+  editor,
+}) => {
   const { setFragmentData } = editor;
 
   editor.setFragmentData = (

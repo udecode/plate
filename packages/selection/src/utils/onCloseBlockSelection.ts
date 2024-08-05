@@ -9,7 +9,7 @@ import {
   blockContextMenuSelectors,
 } from '../context-menu';
 
-export const onCloseBlockSelection: OnChange = (editor) => () => {
+export const onCloseBlockSelection: OnChange = ({ editor }) => {
   if (
     editor.selection &&
     blockSelectionSelectors.isSelecting() &&

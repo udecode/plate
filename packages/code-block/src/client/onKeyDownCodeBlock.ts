@@ -19,11 +19,11 @@ import { outdentCodeLine } from '../shared/transforms/outdentCodeLine';
  * - Shift+Tab: outdent code line.
  * - Tab: indent code line.
  */
-export const onKeyDownCodeBlock: KeyboardHandler = (editor) => (e) => {
-  if (e.defaultPrevented) return;
+export const onKeyDownCodeBlock: KeyboardHandler = ({ editor, event }) => {
+  if (event.defaultPrevented) return;
 
-  const isTab = Hotkeys.isTab(editor, e);
-  const isUntab = Hotkeys.isUntab(editor, e);
+  const isTab = Hotkeys.isTab(editor, event);
+  const isUntab = Hotkeys.isUntab(editor, event);
 
   if (isTab || isUntab) {
     const _codeLines = getNodeEntries<TElement>(editor, {
@@ -32,7 +32,7 @@ export const onKeyDownCodeBlock: KeyboardHandler = (editor) => (e) => {
     const codeLines = Array.from(_codeLines);
 
     if (codeLines.length > 0) {
-      e.preventDefault();
+      event.preventDefault();
       const [, firstLinePath] = codeLines[0];
       const codeBlock = getParentNode<TElement>(editor, firstLinePath);
 
@@ -51,7 +51,7 @@ export const onKeyDownCodeBlock: KeyboardHandler = (editor) => (e) => {
       });
     }
   }
-  if (isHotkey('mod+a', e)) {
+  if (isHotkey('mod+a', event)) {
     const res = getCodeLineEntry(editor, {});
 
     if (!res) return;
@@ -65,8 +65,8 @@ export const onKeyDownCodeBlock: KeyboardHandler = (editor) => (e) => {
     // select the whole code block
     select(editor, codeBlockPath);
 
-    e.preventDefault();
-    e.stopPropagation();
+    event.preventDefault();
+    event.stopPropagation();
   }
 
   // Note: rather than handling mod+enter/mod+shift+enter here, we recommend

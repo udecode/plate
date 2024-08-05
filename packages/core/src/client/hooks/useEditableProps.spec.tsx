@@ -2,27 +2,30 @@ import React from 'react';
 
 import { render } from '@testing-library/react';
 
-import { type PlatePlugin, createPlugin } from '../../shared';
+import { createPlugin } from '../../shared';
 import { Plate, PlateContent } from '../components';
+import { createPlateEditor } from '../utils';
 
 describe('useEditableProps', () => {
   describe('default', () => {
     it('should trigger decorate only once', () => {
       const decorate = jest.fn();
 
-      const plugins: PlatePlugin[] = [
-        createPlugin({
-          decorate: () => () => {
-            decorate();
+      const editor = createPlateEditor({
+        plugins: [
+          createPlugin({
+            decorate: () => {
+              decorate();
 
-            return [];
-          },
-          key: 'a',
-        }),
-      ];
+              return [];
+            },
+            key: 'a',
+          }),
+        ],
+      });
 
       render(
-        <Plate plugins={plugins}>
+        <Plate editor={editor}>
           <PlateContent />
         </Plate>
       );
@@ -35,10 +38,10 @@ describe('useEditableProps', () => {
   //   it('should trigger decorate twice', () => {
   //     const decorate = jest.fn();
   //
-  //     const plugins: PlatePlugin[] = [
+  //     const plugins: PlatePluginList = [
   //       {
   //         key: 'a',
-  //         decorate: () => () => {
+  //         decorate: () => {
   //           decorate();
   //           return [];
   //         },

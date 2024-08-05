@@ -12,10 +12,10 @@ import { insertImage } from './transforms/insertImage';
  * Allows for pasting images from clipboard. Not yet: dragging and dropping
  * images, selecting them through a file system dialog.
  */
-export const withImageUpload: WithOverride<ImagePluginOptions> = (
+export const withImageUpload: WithOverride<ImagePluginOptions> = ({
   editor,
-  plugin
-) => {
+  plugin,
+}) => {
   const {
     options: { uploadImage },
   } = plugin;
@@ -29,7 +29,7 @@ export const withImageUpload: WithOverride<ImagePluginOptions> = (
       const injectedPlugins = getInjectedPlugins(editor, plugin);
 
       if (
-        !pipeInsertDataQuery(injectedPlugins, {
+        !pipeInsertDataQuery(editor, injectedPlugins, {
           data: text,
           dataTransfer,
         })

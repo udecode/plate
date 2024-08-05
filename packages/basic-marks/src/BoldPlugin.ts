@@ -8,10 +8,10 @@ import {
 export const MARK_BOLD = 'bold';
 
 /** Enables support for bold formatting */
-export const BoldPlugin = createPlugin<ToggleMarkPluginOptions>({
+export const BoldPlugin = createPlugin<'bold', ToggleMarkPluginOptions>({
   deserializeHtml: {
-    query: (el) =>
-      !someHtmlElement(el, (node) => node.style.fontWeight === 'normal'),
+    query: ({ element }) =>
+      !someHtmlElement(element, (node) => node.style.fontWeight === 'normal'),
     rules: [
       { validNodeName: ['STRONG', 'B'] },
       {

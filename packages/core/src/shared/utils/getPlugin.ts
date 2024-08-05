@@ -5,13 +5,20 @@ import type { PluginKey } from '../types/plugin/PlatePluginKey';
 import { createPlugin } from './createPlugin';
 
 /** Get plugin options by plugin key. */
-export const getPlugin = <O = {}, T = {}, Q = {}, S = {}>(
+export const getPlugin = <
+  // K extends string = '',
+  O = {},
+  A = {},
+  T = {},
+  S = {},
+>(
   editor: PlateEditor,
   key: PluginKey
 ) =>
   ((editor.pluginsByKey?.[key] as any) ?? createPlugin({ key })) as PlatePlugin<
+    string,
     O,
+    A,
     T,
-    Q,
     S
   >;

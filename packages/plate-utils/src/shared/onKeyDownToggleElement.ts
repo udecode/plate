@@ -9,26 +9,31 @@ import {
 } from '@udecode/plate-core/server';
 import castArray from 'lodash/castArray.js';
 
-export const onKeyDownToggleElement: KeyboardHandler<HotkeyPluginOptions> =
-  (editor, { options: { hotkey }, type }) =>
-  (e) => {
-    if (e.defaultPrevented) return;
+export const onKeyDownToggleElement: KeyboardHandler<HotkeyPluginOptions> = ({
+  editor,
+  event,
+  plugin: {
+    options: { hotkey },
+    type,
+  },
+}) => {
+  if (event.defaultPrevented) return;
 
-    const defaultType = getPluginType(editor, ELEMENT_DEFAULT);
+  const defaultType = getPluginType(editor, ELEMENT_DEFAULT);
 
-    if (!hotkey) return;
+  if (!hotkey) return;
 
-    const hotkeys = castArray(hotkey);
+  const hotkeys = castArray(hotkey);
 
-    for (const _hotkey of hotkeys) {
-      if (isHotkey(_hotkey, e as any)) {
-        e.preventDefault();
-        toggleNodeType(editor, {
-          activeType: type,
-          inactiveType: defaultType,
-        });
+  for (const _hotkey of hotkeys) {
+    if (isHotkey(_hotkey, event as any)) {
+      event.preventDefault();
+      toggleNodeType(editor, {
+        activeType: type,
+        inactiveType: defaultType,
+      });
 
-        return;
-      }
+      return;
     }
-  };
+  }
+};

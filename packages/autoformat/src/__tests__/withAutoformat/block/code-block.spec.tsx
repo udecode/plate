@@ -1,6 +1,5 @@
 /** @jsx jsx */
 
-import type { AutoformatPlugin } from '@udecode/plate-autoformat';
 import type { Range } from 'slate';
 
 import {
@@ -10,15 +9,17 @@ import {
 import {
   ELEMENT_DEFAULT,
   type PlateEditor,
+  createPlugin,
   getEditorString,
   getPluginType,
   getRangeFromBlockStart,
-  mockPlugin,
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 import { autoformatPlugin } from 'www/src/lib/plate/demo/plugins/autoformatPlugin';
 import { preFormat } from 'www/src/lib/plate/demo/plugins/autoformatUtils';
+
+import type { AutoformatPluginOptions } from '../../../types';
 
 import { withAutoformat } from '../../../withAutoformat';
 
@@ -77,7 +78,7 @@ describe('when ``` at block start, but customising with query we get the most re
 
     const codeEditor = withAutoformat(
       withReact(input),
-      mockPlugin<AutoformatPlugin>({
+      createPlugin<'autoformat', AutoformatPluginOptions>({
         options: {
           rules: [
             {
@@ -142,7 +143,7 @@ describe('when ```', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(autoformatPlugin as any)
+      createPlugin(autoformatPlugin as any)
     );
 
     editor.insertText('`');

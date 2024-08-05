@@ -15,7 +15,10 @@ export const SlashInputPlugin = createPlugin({
   key: ELEMENT_SLASH_INPUT,
 });
 
-export const SlashPlugin = createPlugin<TriggerComboboxPluginOptions>({
+export const SlashPlugin = createPlugin<
+  'slash_command',
+  TriggerComboboxPluginOptions
+>({
   key: KEY_SLASH_COMMAND,
   options: {
     createComboboxInput: () => ({

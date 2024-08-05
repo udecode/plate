@@ -1,5 +1,3 @@
-import type { PlatePlugin } from '@udecode/plate-common';
-
 import { HeadingPlugin } from '@udecode/plate-heading';
 import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { createTEditor } from '@udecode/slate';
@@ -13,12 +11,14 @@ import {
   KEY_INSERT_DATA,
   KEY_NODE_FACTORY,
   KEY_PREV_SELECTION,
+  type PlatePlugin,
   createPlugin,
   getPlugin,
 } from '../../shared';
 import { withPlate } from './withPlate';
 
 const coreKeys = [
+  'editor',
   'react',
   'history',
   KEY_NODE_FACTORY,
@@ -66,239 +66,40 @@ describe('withPlate', () => {
     });
   });
 
-  describe('when it has many extend', () => {
-    it('should deep merge', () => {
-      const pluginInput: PlatePlugin = createPlugin({
-        inject: {
-          props: {
-            nodeKey: 'a',
-          },
-        },
-        key: 'a',
-        type: 'a',
-      })
-        .extend((_, { type }) => ({
-          inject: {
-            props: {
-              nodeKey: `${type}b`,
-            },
-          },
-          type: `${type}b`,
-        }))
-        .extend((_, { type: _type }) => ({
-          inject: {
-            props: {
-              nodeKey: `${_type}c`,
-            },
-          },
-          type: `${_type}c`,
-        }));
-
-      const plugins = [pluginInput];
-
-      const editor = withPlate(createTEditor(), { id: '1', plugins });
-
-      const { inject, type } = getPlugin(editor, 'a');
-
-      expect({ inject, type }).toEqual({
-        inject: {
-          props: {
-            nodeKey: 'abc',
-          },
-        },
-        type: 'abc',
-      });
-    });
-  });
-
-  describe('when extendPlugin', () => {
-    it('should concat the plugins', () => {
-      const pluginAA: PlatePlugin = createPlugin({
-        key: 'aa',
-        type: 'aa',
-      });
-
-      const pluginAB1: PlatePlugin = createPlugin({
-        key: 'ab',
-        type: 'ab1',
-      });
-      const pluginAB2: PlatePlugin = createPlugin({
-        key: 'ab',
-        type: 'ab2',
-      });
-
-      const pluginAC: PlatePlugin = createPlugin({
-        key: 'ac',
-        type: 'ac',
-      });
-      const pluginAD: PlatePlugin = createPlugin({
-        key: 'ad',
-        type: 'ad',
-      });
-
-      const pluginA: PlatePlugin = createPlugin({
-        key: 'a',
-        plugins: [pluginAA, pluginAB1],
-      })
-        .extendPlugin(pluginAB2.key, pluginAB2)
-        .extendPlugin(pluginAC.key, pluginAC)
-        .extendPlugin(pluginAD.key, pluginAD);
-
-      const editor = withPlate(createTEditor(), {
-        id: '1',
-        plugins: [pluginA],
-      });
-
-      const outputPluginAA = getPlugin(editor, 'aa');
-      const outputPluginAB = getPlugin(editor, 'ab');
-      const outputPluginAC = getPlugin(editor, 'ac');
-      const outputPluginAD = getPlugin(editor, 'ad');
-
-      expect([
-        {
-          key: outputPluginAA.key,
-          type: outputPluginAA.type,
-        },
-        {
-          key: outputPluginAB.key,
-          type: outputPluginAB.type,
-        },
-        {
-          key: outputPluginAC.key,
-          type: outputPluginAC.type,
-        },
-        {
-          key: outputPluginAD.key,
-          type: outputPluginAD.type,
-        },
-      ]).toEqual([
-        { key: pluginAA.key, type: pluginAA.type },
-        { key: pluginAB2.key, type: pluginAB2.type },
-        { key: pluginAC.key, type: pluginAC.type },
-        { key: pluginAD.key, type: pluginAD.type },
-      ]);
-    });
-  });
-
-  describe('when extend in nested plugins', () => {
-    it('should deep merge the plugins', () => {
+  describe('when extending nested plugins', () => {
+    it('should correctly merge and extend nested plugins', () => {
       const editor = withPlate(createTEditor(), {
         id: '1',
         plugins: [
           createPlugin({
-            key: 'a',
+            key: 'parent',
             plugins: [
               createPlugin({
-                key: 'aa',
-                type: 'aa',
+                key: 'child',
+                type: 'childOriginal',
               }),
             ],
-            type: 'a',
+            type: 'parentOriginal',
           })
             .extend({
-              type: 'athen',
+              type: 'parentExtended',
             })
-            .extendPlugin('bb', {
-              type: 'bb',
+            .extendPlugin('child', {
+              type: 'childExtended',
             })
-            .extendPlugin('aa', {
-              type: 'ab',
-            })
-            .extendPlugin('cc', {
-              type: 'cc',
-            })
-            .extendPlugin('bb', {
-              type: 'athen2',
+            .extendPlugin('newChild', {
+              type: 'newChildType',
             }),
         ],
       });
 
-      const a = getPlugin(editor, 'a');
-      const aa = getPlugin(editor, 'aa');
-      const bb = getPlugin(editor, 'bb');
-      const cc = getPlugin(editor, 'cc');
+      const parent = getPlugin(editor, 'parent');
+      const child = getPlugin(editor, 'child');
+      const newChild = getPlugin(editor, 'newChild');
 
-      expect({
-        type: a.type,
-      }).toEqual({ type: 'athen' });
-      expect({
-        type: aa.type,
-      }).toEqual({ type: 'ab' });
-      expect({
-        type: bb.type,
-      }).toEqual({ type: 'athen2' });
-      expect({
-        type: cc.type,
-      }).toEqual({ type: 'cc' });
-    });
-  });
-
-  describe('when plugin has overridesByKey', () => {
-    it('should be', () => {
-      const editor = withPlate(createTEditor(), {
-        id: '1',
-        plugins: [
-          createPlugin({
-            key: 'a',
-            overrideByKey: {
-              a: {
-                type: 'a1',
-              },
-              aa: {
-                type: 'aa1',
-              },
-              cc: {
-                type: 'cc1',
-              },
-            },
-            plugins: [
-              createPlugin({
-                key: 'aa',
-                type: 'aa',
-              }),
-            ],
-            type: 'a',
-          }).extend({
-            plugins: [
-              createPlugin({
-                key: 'bb',
-                type: 'bb',
-              }).extend({
-                plugins: [
-                  createPlugin({
-                    key: 'aa',
-                    type: 'ab',
-                  }),
-                  createPlugin({
-                    key: 'cc',
-                    type: 'cc',
-                  }),
-                ],
-                type: 'athen2',
-              }),
-            ],
-            type: 'athen',
-          }),
-        ],
-      });
-
-      const a = getPlugin(editor, 'a');
-      const aa = getPlugin(editor, 'aa');
-      const bb = getPlugin(editor, 'bb');
-      const cc = getPlugin(editor, 'cc');
-
-      expect({
-        type: a.type,
-      }).toEqual({ type: 'a1' });
-      expect({
-        type: aa.type,
-      }).toEqual({ type: 'aa1' });
-      expect({
-        type: bb.type,
-      }).toEqual({ type: 'athen2' });
-      expect({
-        type: cc.type,
-      }).toEqual({ type: 'cc1' });
+      expect(parent.type).toBe('parentExtended');
+      expect(child.type).toBe('childExtended');
+      expect(newChild.type).toBe('newChildType');
     });
   });
 });

@@ -1,8 +1,5 @@
 import { isDefined } from '@udecode/utils';
 
-import type { PlateProps } from '../client';
-import type { PlateEditor, PlatePlugin } from '../shared/types';
-
 import {
   DeserializeAstPlugin,
   DeserializeHtmlPlugin,
@@ -17,32 +14,56 @@ import {
   KEY_EVENT_EDITOR,
   KEY_INLINE_VOID,
   KEY_INSERT_DATA,
-  KEY_LENGTH,
   KEY_NODE_FACTORY,
   KEY_PREV_SELECTION,
   LengthPlugin,
   NodeFactoryPlugin,
+  type PlateEditor,
+  type PlatePlugin,
+  type PlatePluginList,
   PrevSelectionPlugin,
-} from '../shared/plugins';
-import { flattenDeepPlugins } from '../shared/utils/flattenDeepPlugins';
-import { overridePluginsByKey } from '../shared/utils/overridePluginsByKey';
-import { ReactPlugin } from './ReactPlugin';
+} from '../index';
 
-export const setPlatePlugins = (
+export type GetCorePluginsOptions = {
+  /**
+   * If `true`, disable all the core plugins. If an object, disable the core
+   * plugin properties that are `true` in the object.
+   */
+  disableCorePlugins?:
+    | {
+        deserializeAst?: boolean;
+        deserializeHtml?: boolean;
+        editorProtocol?: boolean;
+        eventEditor?: boolean;
+        history?: boolean;
+        inlineVoid?: boolean;
+        insertData?: boolean;
+        length?: boolean;
+        nodeFactory?: boolean;
+        react?: boolean;
+        selection?: boolean;
+      }
+    | boolean;
+
+  /** Specifies the maximum number of characters allowed in the editor. */
+  maxLength?: number;
+};
+
+export const getCorePlugins = (
   editor: PlateEditor,
   {
     disableCorePlugins,
     maxLength,
-    plugins: _plugins = [],
-  }: Pick<PlateProps, 'disableCorePlugins' | 'maxLength' | 'plugins'>
+    reactPlugin,
+  }: { reactPlugin: PlatePlugin<'react'> } & GetCorePluginsOptions
 ) => {
-  let plugins: PlatePlugin[] = [];
+  const plugins: PlatePluginList = [];
 
   if (disableCorePlugins !== true) {
     const dcp = disableCorePlugins;
 
     if (typeof dcp !== 'object' || !dcp?.react) {
-      plugins.push((editor?.pluginsByKey?.react as any) ?? ReactPlugin);
+      plugins.push((editor?.pluginsByKey?.react as any) ?? reactPlugin);
     }
     if (typeof dcp !== 'object' || !dcp?.history) {
       plugins.push((editor?.pluginsByKey?.history as any) ?? HistoryPlugin);
@@ -75,7 +96,7 @@ export const setPlatePlugins = (
     }
     if ((typeof dcp !== 'object' || !dcp?.length) && isDefined(maxLength)) {
       plugins.push(
-        (editor?.pluginsByKey?.[KEY_LENGTH] as any) ??
+        (editor?.pluginsByKey?.[LengthPlugin.key] as any) ??
           LengthPlugin.configure({
             maxLength,
           })
@@ -101,25 +122,5 @@ export const setPlatePlugins = (
     }
   }
 
-  plugins = [...plugins, ..._plugins] as any;
-
-  editor.plugins = [];
-  editor.pluginsByKey = {};
-
-  flattenDeepPlugins(editor, plugins);
-
-  // override all the plugins one by one, so plugin.overrideByKey effects can be overridden by the next plugin
-  editor.plugins.forEach((plugin) => {
-    if (plugin.overrideByKey) {
-      const newPlugins = editor.plugins.map((p) => {
-        return overridePluginsByKey(p as any, plugin.overrideByKey as any);
-      });
-
-      editor.plugins = [];
-      editor.pluginsByKey = {};
-
-      // flatten again the overrides
-      flattenDeepPlugins(editor, newPlugins as any);
-    }
-  });
+  return plugins;
 };

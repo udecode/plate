@@ -1,6 +1,6 @@
 import merge from 'lodash/merge';
 
-import type { PlatePlugin } from '../types';
+import type { PlateEditor, PlatePlugin, PlatePluginList } from '../types';
 
 import { isFunction } from './misc';
 
@@ -8,7 +8,7 @@ import { isFunction } from './misc';
  * Creates a new Plate plugin with the given configuration.
  *
  * @remarks
- *   - The plugin's key defaults to 'unnamed' if not provided in the config.
+ *   - The plugin's key is required and specified by the K generic.
  *   - The `__extensions` array stores functions to be applied when `resolvePlugin`
  *       is called with an editor.
  *   - The `extend` method adds new extensions to be applied later.
@@ -16,7 +16,12 @@ import { isFunction } from './misc';
  *       plugins) or adds a new one if not found.
  *
  * @example
- *   const myPlugin = createPlugin({
+ *   const myPlugin = createPlugin<
+ *     'myPlugin',
+ *     MyOptions,
+ *     MyApi,
+ *     MyTransforms
+ *   >({
  *     key: 'myPlugin',
  *     options: { someOption: true },
  *     transforms: { someTransform: () => {} },
@@ -33,13 +38,14 @@ import { isFunction } from './misc';
  *     }
  *   );
  *
+ * @template K - The literal type of the plugin key.
  * @template O - The type of the plugin options.
+ * @template A - The type of the plugin utilities.
  * @template T - The type of the plugin transforms.
- * @template Q - The type of the plugin queries.
  * @template S - The type of the plugin storage.
- * @param {Partial<PlatePlugin<O, T, Q, S>>} config - The configuration object
- *   for the plugin.
- * @returns {PlatePlugin<O, T, Q, S>} A new Plate plugin instance with the
+ * @param {Partial<PlatePlugin<K, O, A, T, S>>} config - The configuration
+ *   object for the plugin.
+ * @returns {PlatePlugin<K, O, A, T, S>} A new Plate plugin instance with the
  *   following properties and methods:
  *
  *   - All properties from the input config, merged with default values.
@@ -49,26 +55,51 @@ import { isFunction } from './misc';
  *   - `extendPlugin`: A method to extend an existing plugin (including nested
  *       plugins) or add a new one if not found.
  */
-export function createPlugin<O = {}, T = {}, Q = {}, S = {}>(
-  config: Partial<PlatePlugin<O, T, Q, S>>
-): PlatePlugin<O, T, Q, S> {
-  const key = config.key ?? 'unnamed';
+export function createPlugin<
+  K extends string = '',
+  O = {},
+  A = {},
+  T = {},
+  S = {},
+>(
+  config:
+    | ((editor: PlateEditor) => Partial<PlatePlugin<K, O, A, T, S>>)
+    | Partial<PlatePlugin<K, O, A, T, S>>
+): PlatePlugin<K, O, A, T, S> {
+  let baseConfig: Partial<PlatePlugin<K, O, A, T, S>>;
+  let initialExtension:
+    | ((
+        editor: PlateEditor,
+        plugin: PlatePlugin<K, O, A, T, S>
+      ) => Partial<PlatePlugin<K, O, A, T, S>>)
+    | undefined;
+
+  if (isFunction(config)) {
+    baseConfig = { key: '' as K };
+    initialExtension = (editor) => config(editor);
+  } else {
+    baseConfig = config;
+  }
+
+  const key = baseConfig.key ?? '';
 
   const plugin = merge(
     {},
     {
-      __extensions: [],
+      __extensions: initialExtension ? [initialExtension] : [],
+      api: {},
+      dependencies: [],
       editor: {},
       inject: {},
       key,
       options: {},
       plugins: [],
-      queries: {},
+      priority: 100,
       transforms: {},
       type: key,
     },
     config
-  ) as PlatePlugin<O, T, Q, S>;
+  ) as PlatePlugin<K, O, A, T, S>;
 
   plugin.configure = (opt) => createPlugin(merge({}, plugin, { options: opt }));
 
@@ -76,8 +107,7 @@ export function createPlugin<O = {}, T = {}, Q = {}, S = {}>(
     const newPlugin = { ...plugin };
     newPlugin.__extensions = [
       ...(newPlugin.__extensions as any),
-      (editor, p) =>
-        isFunction(extendConfig) ? extendConfig(editor, p) : extendConfig,
+      (ctx) => (isFunction(extendConfig) ? extendConfig(ctx) : extendConfig),
     ];
 
     return createPlugin(newPlugin) as any;
@@ -87,8 +117,8 @@ export function createPlugin<O = {}, T = {}, Q = {}, S = {}>(
     const newPlugin = { ...plugin };
 
     const extendNestedPlugin = (
-      plugins: PlatePlugin[]
-    ): { found: boolean; plugins: PlatePlugin[] } => {
+      plugins: PlatePluginList
+    ): { found: boolean; plugins: PlatePluginList } => {
       let found = false;
       const updatedPlugins = plugins.map((nestedPlugin) => {
         if (nestedPlugin.key === key) {
@@ -98,10 +128,8 @@ export function createPlugin<O = {}, T = {}, Q = {}, S = {}>(
             ...nestedPlugin,
             __extensions: [
               ...(nestedPlugin.__extensions as any),
-              (editor, p) =>
-                isFunction(extendConfig)
-                  ? extendConfig(editor, p as any)
-                  : extendConfig,
+              (ctx) =>
+                isFunction(extendConfig) ? extendConfig(ctx) : extendConfig,
             ],
           });
         }
@@ -132,9 +160,9 @@ export function createPlugin<O = {}, T = {}, Q = {}, S = {}>(
       newPlugin.plugins.push(
         createPlugin({
           __extensions: [
-            (editor, p) =>
+            (ctx) =>
               isFunction(extendConfig)
-                ? extendConfig(editor, p)
+                ? extendConfig(ctx as any)
                 : (extendConfig as any),
           ],
           key,

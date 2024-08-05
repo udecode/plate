@@ -8,13 +8,12 @@ export type LengthPluginOptions = {
   maxLength: number;
 };
 
-export const KEY_LENGTH = 'length';
-
-export const withLength: WithOverride<LengthPluginOptions> = (
+export const withLength: WithOverride<LengthPluginOptions> = ({
   editor,
-  { options }
-) => {
+  plugin,
+}) => {
   const { apply } = editor;
+  const { options } = plugin;
 
   editor.apply = (operation) => {
     withoutNormalizing(editor, () => {
@@ -40,7 +39,7 @@ export const withLength: WithOverride<LengthPluginOptions> = (
   return editor;
 };
 
-export const LengthPlugin = createPlugin<LengthPluginOptions>({
-  key: KEY_LENGTH,
+export const LengthPlugin = createPlugin<'length', LengthPluginOptions>({
+  key: 'length',
   withOverrides: withLength,
 });

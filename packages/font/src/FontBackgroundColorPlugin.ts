@@ -9,9 +9,9 @@ export const FontBackgroundColorPlugin = createPlugin({
     },
   },
   key: MARK_BG_COLOR,
-}).extend((_, { type }) => ({
+}).extend(({ plugin: { type } }) => ({
   deserializeHtml: {
-    getNode: (element) => ({ [type]: element.style.backgroundColor }),
+    getNode: ({ element }) => ({ [type]: element.style.backgroundColor }),
     isLeaf: true,
     rules: [
       {

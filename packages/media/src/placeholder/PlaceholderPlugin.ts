@@ -4,9 +4,9 @@ import type { MediaPlaceholder } from './types';
 
 export const ELEMENT_PLACEHOLDER = 'placeholder';
 
-export const PlaceholderPlugin = createPlugin<MediaPlaceholder>({
+export const PlaceholderPlugin = createPlugin<'placeholder', MediaPlaceholder>({
   handlers: {
-    onKeyDown: (editor) => (event) => {
+    onKeyDown: ({ editor, event }) => {
       if (isHotkey('escape')(event)) {
         blurEditor(editor);
       }

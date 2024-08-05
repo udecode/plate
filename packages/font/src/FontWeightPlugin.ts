@@ -9,16 +9,16 @@ export const FontWeightPlugin = createPlugin({
     },
   },
   key: MARK_FONT_WEIGHT,
-}).extend((_, { type }) => ({
-    deserializeHtml: {
-      getNode: (element) => ({ [type]: element.style.fontWeight }),
-      isLeaf: true,
-      rules: [
-        {
-          validStyle: {
-            fontWeight: '*',
-          },
+}).extend(({ plugin: { type } }) => ({
+  deserializeHtml: {
+    getNode: ({ element }) => ({ [type]: element.style.fontWeight }),
+    isLeaf: true,
+    rules: [
+      {
+        validStyle: {
+          fontWeight: '*',
         },
-      ],
-    },
-  }))
+      },
+    ],
+  },
+}));

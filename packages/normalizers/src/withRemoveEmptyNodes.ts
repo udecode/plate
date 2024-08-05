@@ -11,7 +11,12 @@ import type { RemoveEmptyNodesPluginOptions } from './RemoveEmptyNodesPlugin';
 /** Remove nodes with empty text. */
 export const withRemoveEmptyNodes: WithOverride<
   RemoveEmptyNodesPluginOptions
-> = (editor, { options: { types: _types } }) => {
+> = ({
+  editor,
+  plugin: {
+    options: { types: _types },
+  },
+}) => {
   const types = castArray(_types);
 
   const { normalizeNode } = editor;

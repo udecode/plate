@@ -6,13 +6,13 @@ export const KEY_DRAG_OVER_CURSOR = 'dragOverCursor';
 
 export const dragOverCursorPlugin: PlatePlugin = {
   handlers: {
-    onDragEnd: () => () => {
+    onDragEnd: () => {
       cursorStore.set.cursors({});
     },
-    onDragLeave: () => () => {
+    onDragLeave: () => {
       cursorStore.set.cursors({});
     },
-    onDragOver: (editor) => (event) => {
+    onDragOver: ({ editor, event }) => {
       if (editor.isDragging) return;
 
       const range = findEventRange(editor, event);
@@ -32,7 +32,7 @@ export const dragOverCursorPlugin: PlatePlugin = {
         },
       });
     },
-    onDrop: () => () => {
+    onDrop: () => {
       cursorStore.set.cursors({});
     },
   },

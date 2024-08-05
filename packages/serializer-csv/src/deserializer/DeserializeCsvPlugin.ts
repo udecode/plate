@@ -7,7 +7,10 @@ import { deserializeCsv } from './utils/index';
 export const KEY_DESERIALIZE_CSV = 'deserializeCsv';
 
 /** Enables support for deserializing content from CSV format to Slate format. */
-export const DeserializeCsvPlugin = createPlugin<DeserializeCsvPluginOptions>({
+export const DeserializeCsvPlugin = createPlugin<
+  'deserializeCsv',
+  DeserializeCsvPluginOptions
+>({
   key: KEY_DESERIALIZE_CSV,
   options: {
     errorTolerance: 0.25,
@@ -15,7 +18,7 @@ export const DeserializeCsvPlugin = createPlugin<DeserializeCsvPluginOptions>({
       header: true,
     },
   },
-}).extend((editor) => ({
+}).extend(({ editor }) => ({
   editor: {
     insertData: {
       format: 'text/plain',

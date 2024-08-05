@@ -1,10 +1,15 @@
-import type { TEditor, Value } from '@udecode/slate';
+import { type TEditor, type Value, normalizeEditor } from '@udecode/slate';
 
 import type { WithPlateOptions } from '../client';
 import type { PlateEditor } from '../shared/types/PlateEditor';
 
+import {
+  getCorePlugins,
+  pipeNormalizeInitialValue,
+  resolvePlugins,
+} from '../shared';
 import { resetEditor } from '../shared/transforms';
-import { setPlatePlugins } from './setPlatePlugins';
+import { ReactPlugin } from './ReactPlugin';
 
 const shouldHaveBeenOverridden = (fnName: string) => () => {
   console.warn(
@@ -19,11 +24,13 @@ export const withPlate = <
 >(
   e: E,
   {
+    children,
     disableCorePlugins,
     id,
     maxLength,
     plugins = [],
-  }: WithPlateOptions<V, E & PlateEditor<V>> = {}
+    shouldNormalizeEditor,
+  }: WithPlateOptions<V> = {}
 ): E & PlateEditor<V> => {
   let editor = e as any as E & PlateEditor<V>;
 
@@ -48,18 +55,32 @@ export const withPlate = <
     editor.key = Math.random();
   }
 
-  setPlatePlugins(editor as any, {
-    disableCorePlugins,
-    maxLength,
-    plugins: plugins as any,
-  });
+  resolvePlugins(editor as any, [
+    ...getCorePlugins(editor, {
+      disableCorePlugins,
+      maxLength,
+      reactPlugin: ReactPlugin,
+    }),
+    ...plugins,
+  ]);
 
   // withOverrides
   editor.plugins.forEach((plugin) => {
     if (plugin.withOverrides) {
-      editor = plugin.withOverrides(editor as any, plugin) as any;
+      editor = plugin.withOverrides({ editor: editor as any, plugin }) as any;
     }
   });
+
+  if (children) {
+    editor.children = children;
+  }
+  if (editor.children?.length) {
+    pipeNormalizeInitialValue(editor);
+
+    if (shouldNormalizeEditor) {
+      normalizeEditor(editor, { force: true });
+    }
+  }
 
   return editor;
 };

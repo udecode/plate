@@ -4,10 +4,10 @@ import type { TodoListPluginOptions } from './types';
 
 import { insertBreakTodoList } from './insertBreakTodoList';
 
-export const withTodoList: WithOverride<TodoListPluginOptions> = (
+export const withTodoList: WithOverride<TodoListPluginOptions> = ({
   editor,
-  { options }
-) => {
+  plugin: { options },
+}) => {
   const { insertBreak } = editor;
 
   editor.insertBreak = () => {

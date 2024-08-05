@@ -1,13 +1,17 @@
 import type { AnyObject } from '@udecode/utils';
 
-export type DeserializeHtml = {
+import type { PlatePluginContext } from './PlatePlugin';
+
+export type DeserializeHtml<O = {}, A = {}, T = {}, S = {}> = {
   /** List of HTML attribute names to store their values in `node.attributes`. */
   attributeNames?: string[];
 
   /** Deserialize html element to slate node. */
   getNode?: (
-    element: HTMLElement,
-    node: AnyObject
+    options: {
+      element: HTMLElement;
+      node: AnyObject;
+    } & PlatePluginContext<string, O, A, T, S>
   ) => AnyObject | undefined | void;
 
   /**
@@ -26,7 +30,9 @@ export type DeserializeHtml = {
    */
   isLeaf?: boolean;
 
-  query?: (element: HTMLElement) => boolean;
+  query?: (
+    options: { element: HTMLElement } & PlatePluginContext<string, O, A, T, S>
+  ) => boolean;
 
   rules?: {
     /**

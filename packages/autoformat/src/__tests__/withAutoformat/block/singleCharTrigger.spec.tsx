@@ -1,16 +1,16 @@
 /** @jsx jsx */
 
 import {
+  createPlugin,
   getEditorString,
   insertText,
-  mockPlugin,
   wrapNodes,
 } from '@udecode/plate-common';
 import { ELEMENT_LINK } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 
-import type { AutoformatPlugin } from '../../../common/types';
+import type { AutoformatPluginOptions } from '../../../types';
 
 import { withAutoformat } from '../../../withAutoformat';
 
@@ -36,7 +36,7 @@ const output = (
 it('autoformats a block with a single character trigger', () => {
   const linkEditor = withAutoformat(
     withReact(input),
-    mockPlugin<AutoformatPlugin>({
+    createPlugin<'autoformat', AutoformatPluginOptions>({
       options: {
         rules: [
           {

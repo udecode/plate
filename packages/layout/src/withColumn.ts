@@ -9,7 +9,7 @@ import {
 import { ELEMENT_COLUMN } from './ColumnPlugin';
 import { normalizeColumn } from './normalizers/normalizedColumn';
 
-export const withColumn: WithOverride = (editor) => {
+export const withColumn: WithOverride = ({ editor }) => {
   const { deleteBackward, isEmpty } = editor;
 
   editor.normalizeNode = normalizeColumn(editor);

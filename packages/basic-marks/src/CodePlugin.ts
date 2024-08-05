@@ -8,14 +8,14 @@ import {
 export const MARK_CODE = 'code';
 
 /** Enables support for code formatting */
-export const CodePlugin = createPlugin<ToggleMarkPluginOptions>({
+export const CodePlugin = createPlugin<'code', ToggleMarkPluginOptions>({
   deserializeHtml: {
-    query(el) {
-      const blockAbove = findHtmlParentElement(el, 'P');
+    query({ element }) {
+      const blockAbove = findHtmlParentElement(element, 'P');
 
       if (blockAbove?.style.fontFamily === 'Consolas') return false;
 
-      return !findHtmlParentElement(el, 'PRE');
+      return !findHtmlParentElement(element, 'PRE');
     },
     rules: [
       {

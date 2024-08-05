@@ -29,27 +29,20 @@ export const CodeSyntaxPlugin = createPlugin({
 });
 
 /** Enables support for pre-formatted code blocks. */
-export const CodeBlockPlugin = createPlugin<CodeBlockPluginOptions>({
+export const CodeBlockPlugin = createPlugin<
+  'code_block',
+  CodeBlockPluginOptions
+>({
   deserializeHtml: deserializeHtmlCodeBlock,
   handlers: {
     onKeyDown: onKeyDownCodeBlock,
   },
-  isElement: true,
-  key: ELEMENT_CODE_BLOCK,
-  options: {
-    hotkey: ['mod+opt+8', 'mod+shift+8'],
-    syntax: true,
-    syntaxPopularFirst: false,
-  },
-  plugins: [CodeLinePlugin, CodeSyntaxPlugin],
-  withOverrides: withCodeBlock,
-}).extend((editor) => ({
   inject: {
     pluginsByKey: {
       [KEY_DESERIALIZE_HTML]: {
         editor: {
           insertData: {
-            query: () => {
+            query: ({ editor }) => {
               const code_line = getPlugin(editor, ELEMENT_CODE_LINE);
 
               return !someNode(editor, {
@@ -61,4 +54,13 @@ export const CodeBlockPlugin = createPlugin<CodeBlockPluginOptions>({
       },
     },
   },
-}));
+  isElement: true,
+  key: ELEMENT_CODE_BLOCK,
+  options: {
+    hotkey: ['mod+opt+8', 'mod+shift+8'],
+    syntax: true,
+    syntaxPopularFirst: false,
+  },
+  plugins: [CodeLinePlugin, CodeSyntaxPlugin],
+  withOverrides: withCodeBlock,
+});

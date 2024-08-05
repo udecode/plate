@@ -8,12 +8,12 @@ import type { CommentsPluginOptions } from './types';
 
 import { useAddCommentMark, useCommentsActions } from './stores';
 
-export const useHooksComments: PlatePluginUseHooks<CommentsPluginOptions> = (
+export const useHooksComments: PlatePluginUseHooks<CommentsPluginOptions> = ({
   editor,
-  { options }
-) => {
-  const { hotkey } = options;
-
+  plugin: {
+    options: { hotkey },
+  },
+}) => {
   const addCommentMark = useAddCommentMark();
   const setFocusTextarea = useCommentsActions().focusTextarea();
 

@@ -26,7 +26,7 @@ import { overrideSelectionFromCell } from './transforms/overrideSelectionFromCel
  *   start of table
  */
 export const withSelectionTable: WithOverride<TablePluginOptions> = (
-  editor
+  { editor }
 ) => {
   const { apply } = editor;
 

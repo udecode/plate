@@ -32,15 +32,12 @@ export const createPlateStore = <
 >({
   decorate = null,
   editor = createPlateFallbackEditor<V, E>(),
-  editorRef = null,
   id,
   isMounted = false,
   onChange = null,
   onSelectionChange = null,
   onValueChange = null,
-  plugins = [],
   primary = true,
-  rawPlugins = [],
   readOnly = null,
   renderElement = null,
   renderLeaf = null,
@@ -54,15 +51,11 @@ export const createPlateStore = <
     {
       decorate,
       editor,
-      editorRef,
-      id,
       isMounted,
       onChange,
       onSelectionChange,
       onValueChange,
-      plugins,
       primary,
-      rawPlugins,
       readOnly,
       renderElement,
       renderLeaf,
@@ -180,4 +173,4 @@ export const usePlateStates = (
 
 /** Get the closest `Plate` id. */
 export const usePlateId = (): PlateId =>
-  usePlateSelectors(undefined, { debugHookName: 'usePlateId' }).id();
+  usePlateSelectors(undefined, { debugHookName: 'usePlateId' }).editor().id;

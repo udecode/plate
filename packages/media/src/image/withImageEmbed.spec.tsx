@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { mockPlugin } from '@udecode/plate-common';
+import { createPlugin } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 
@@ -25,7 +25,7 @@ describe('withImageEmbed', () => {
   ) as any;
 
   it('should insert image from the text', () => {
-    const editor = withImageEmbed(withReact(input), mockPlugin());
+    const editor = withImageEmbed(withReact(input), createPlugin());
 
     const data = {
       getData: () => 'https://i.imgur.com/removed.png',

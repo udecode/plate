@@ -11,13 +11,17 @@ import { KEYS_HEADING } from './constants';
 export const KEY_HEADING = 'heading';
 
 /** Enables support for headings with configurable levels (from 1 to 6). */
-export const HeadingPlugin = createPlugin<HeadingsPluginOptions>({
+export const HeadingPlugin = createPlugin<'heading', HeadingsPluginOptions>({
   key: KEY_HEADING,
   options: {
     levels: [1, 2, 3, 4, 5, 6],
   },
-}).extend((_, { options: { levels } = {} }) => {
-  const plugins: PlatePlugin<HeadingPluginOptions>[] = [];
+}).extend(({ plugin }) => {
+  const {
+    options: { levels },
+  } = plugin;
+
+  const plugins: PlatePlugin<string, HeadingPluginOptions>[] = [];
 
   const headingLevels = Array.isArray(levels)
     ? levels
@@ -26,7 +30,7 @@ export const HeadingPlugin = createPlugin<HeadingsPluginOptions>({
   headingLevels.forEach((level) => {
     const key = KEYS_HEADING[level - 1];
 
-    const plugin: PlatePlugin<HeadingPluginOptions> = createPlugin({
+    const plugin: PlatePlugin<string, HeadingPluginOptions> = createPlugin({
       deserializeHtml: {
         rules: [
           {

@@ -3,12 +3,14 @@ import type { DeserializeHtml } from '@udecode/plate-common/server';
 import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from './constants';
 
 export const deserializeHtmlCodeBlock: DeserializeHtml = {
-  getNode: (el) => {
+  getNode: ({ element }) => {
     const languageSelectorText =
-      [...el.childNodes].find((node: ChildNode) => node.nodeName === 'SELECT')
-        ?.textContent || '';
+      [...element.childNodes].find(
+        (node: ChildNode) => node.nodeName === 'SELECT'
+      )?.textContent || '';
 
-    const textContent = el.textContent?.replace(languageSelectorText, '') || '';
+    const textContent =
+      element.textContent?.replace(languageSelectorText, '') || '';
 
     let lines = textContent.split('\n');
 

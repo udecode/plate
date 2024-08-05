@@ -3,6 +3,7 @@ import {
   type PlateEditor,
   type TElement,
   type TNodeEntry,
+  createPlugin,
   deleteMerge,
   getNodeEntries,
   getNodeEntry,
@@ -10,7 +11,6 @@ import {
   getPointBefore,
   isFirstChild,
   isSelectionAtBlockStart,
-  mockPlugin,
   removeNodes,
   withoutNormalizing,
 } from '@udecode/plate-common/server';
@@ -52,21 +52,22 @@ export const deleteBackwardList = (editor: PlateEditor, unit: TextUnit) => {
         if (moved) return true;
         if (isFirstChild(listItem[1]) && !isListNested(editor, list[1])) {
           onKeyDownResetNode(
-            editor as any,
-            mockPlugin<ResetNodePluginOptions>({
-              options: {
-                rules: [
-                  {
-                    defaultType: getPluginType(editor, ELEMENT_DEFAULT),
-                    hotkey: 'backspace',
-                    onReset: (e) => unwrapList(e),
-                    predicate: () => isSelectionAtBlockStart(editor),
-                    types: [getPluginType(editor, ELEMENT_LI)],
-                  },
-                ],
-              },
-            })
-          )(SIMULATE_BACKSPACE);
+            {editor, plugin:             createPlugin<string, ResetNodePluginOptions>({
+                          options: {
+                            rules: [
+                              {
+                                defaultType: getPluginType(editor, ELEMENT_DEFAULT),
+                                hotkey: 'backspace',
+                                onReset: (e) => unwrapList(e),
+                                predicate: () => isSelectionAtBlockStart(editor),
+                                types: [getPluginType(editor, ELEMENT_LI)],
+                              },
+                            ],
+                          },
+                        }),
+              event: SIMULATE_BACKSPACE
+            }
+          )
           moved = true;
 
           return;

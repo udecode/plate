@@ -14,17 +14,19 @@ import { getSlateClass } from './misc/getSlateClass';
 export const getRenderNodeProps = ({
   attributes,
   nodeProps,
-  props,
-  type,
+  plugin,
 }: {
   attributes?: AnyObject;
   nodeProps: PlateRenderNodeProps;
-} & Pick<PlatePlugin, 'props' | 'type'>): PlateRenderNodeProps => {
+  plugin: PlatePlugin;
+}): PlateRenderNodeProps => {
   let newProps: AnyObject = {};
 
-  if (props) {
+  if (plugin.props) {
     newProps =
-      (typeof props === 'function' ? props(nodeProps as any) : props) ?? {};
+      (typeof plugin.props === 'function'
+        ? plugin.props(nodeProps as any)
+        : plugin.props) ?? {};
   }
   if (!newProps.nodeProps && attributes) {
     newProps.nodeProps = attributes;
@@ -43,5 +45,9 @@ export const getRenderNodeProps = ({
 
   const { className } = nodeProps;
 
-  return { ...nodeProps, className: clsx(getSlateClass(type), className) };
+  return {
+    ...nodeProps,
+    className: clsx(getSlateClass(plugin.type), className),
+    plugin,
+  };
 };

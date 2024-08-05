@@ -1,9 +1,10 @@
+import type { PlateEditor, PlatePluginList } from '../types';
 import type { PlatePluginInsertDataOptions } from '../types/plugin/PlatePluginInsertData';
-import type { InjectedPlugin } from './getInjectedPlugins';
 
 /** Pipe editor.insertData.transformData */
 export const pipeTransformData = (
-  plugins: InjectedPlugin[],
+  editor: PlateEditor,
+  plugins: PlatePluginList,
   { data, dataTransfer }: PlatePluginInsertDataOptions
 ) => {
   plugins.forEach((p) => {
@@ -11,7 +12,7 @@ export const pipeTransformData = (
 
     if (!transformData) return;
 
-    data = transformData(data, { dataTransfer });
+    data = transformData({ data, dataTransfer, editor, plugin: p });
   });
 
   return data;

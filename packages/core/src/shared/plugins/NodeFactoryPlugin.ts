@@ -5,7 +5,7 @@ export const KEY_NODE_FACTORY = 'nodeFactory';
 
 export const NodeFactoryPlugin = createPlugin({
   key: KEY_NODE_FACTORY,
-  withOverrides: (editor) => {
+  withOverrides: ({ editor }) => {
     editor.blockFactory = (node) => ({
       children: [{ text: '' }],
       type: getPluginType(editor, ELEMENT_DEFAULT),

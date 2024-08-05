@@ -1,14 +1,11 @@
 import type React from 'react';
 
-import type { DOMHandler, DOMHandlerReturnType } from './DOMHandlers';
+import type { DOMHandler } from './DOMHandlers';
 
-export type KeyboardHandler<O = {}, T = {}, Q = {}, S = {}> = DOMHandler<
+export type KeyboardHandler<O = {}, A = {}, T = {}, S = {}> = DOMHandler<
   O,
+  A,
   T,
-  Q,
   S,
   React.KeyboardEvent
 >;
-
-export type KeyboardHandlerReturnType =
-  DOMHandlerReturnType<React.KeyboardEvent>;

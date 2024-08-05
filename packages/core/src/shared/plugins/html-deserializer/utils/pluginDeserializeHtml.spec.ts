@@ -1,5 +1,5 @@
 import { MARK_BOLD } from '@udecode/plate-basic-marks';
-import { createPlateEditor, mockPlugin } from '@udecode/plate-common';
+import { createPlateEditor, createPlugin } from '@udecode/plate-common';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
@@ -11,7 +11,7 @@ describe('when element is p and validNodeName is P', () => {
     expect(
       pluginDeserializeHtml(
         createPlateEditor(),
-        mockPlugin({
+        createPlugin({
           deserializeHtml: {
             getNode: node,
             isElement: true,
@@ -37,7 +37,7 @@ describe('when element is p, validAttribute', () => {
     expect(
       pluginDeserializeHtml(
         createPlateEditor(),
-        mockPlugin({
+        createPlugin({
           deserializeHtml: {
             getNode: node,
             isElement: true,
@@ -60,7 +60,7 @@ describe('when element is p, validAttribute', () => {
     expect(
       pluginDeserializeHtml(
         createPlateEditor(),
-        mockPlugin({
+        createPlugin({
           deserializeHtml: {
             getNode: node,
             isElement: true,
@@ -86,7 +86,7 @@ describe('when element is p with color and rule style is different', () => {
     expect(
       pluginDeserializeHtml(
         createPlateEditor(),
-        mockPlugin({
+        createPlugin({
           deserializeHtml: {
             getNode: node,
             isElement: true,
@@ -114,7 +114,7 @@ describe('when element is p with same style color than rule', () => {
     expect(
       pluginDeserializeHtml(
         createPlateEditor(),
-        mockPlugin({
+        createPlugin({
           deserializeHtml: {
             getNode: node,
             isElement: true,
@@ -142,7 +142,7 @@ describe('when element has style color and rule style color is *', () => {
     expect(
       pluginDeserializeHtml(
         createPlateEditor(),
-        mockPlugin({
+        createPlugin({
           deserializeHtml: {
             getNode: node,
             isElement: true,
@@ -170,7 +170,7 @@ describe('when element is strong and validNodeName is strong', () => {
     expect(
       pluginDeserializeHtml(
         createPlateEditor(),
-        mockPlugin({
+        createPlugin({
           deserializeHtml: {
             rules: [
               {

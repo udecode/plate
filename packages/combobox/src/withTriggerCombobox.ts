@@ -9,9 +9,11 @@ import {
 
 import type { TriggerComboboxPluginOptions } from './types';
 
-export const withTriggerCombobox: WithOverride<TriggerComboboxPluginOptions> = (
+export const withTriggerCombobox: WithOverride<
+  TriggerComboboxPluginOptions
+> = ({
   editor,
-  {
+  plugin: {
     options: {
       createComboboxInput,
       trigger,
@@ -19,8 +21,8 @@ export const withTriggerCombobox: WithOverride<TriggerComboboxPluginOptions> = (
       triggerQuery,
     },
     type,
-  }
-) => {
+  },
+}) => {
   const { insertText } = editor;
 
   const matchesTrigger = (text: string) => {

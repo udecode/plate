@@ -5,7 +5,7 @@ import { normalizeCodeBlock } from './normalizers/normalizeCodeBlock';
 import { getCodeLineEntry, getIndentDepth } from './queries';
 import { indentCodeLine } from './transforms';
 
-export const withCodeBlock: WithOverride = (editor) => {
+export const withCodeBlock: WithOverride = ({ editor }) => {
   const { insertBreak } = editor;
 
   const insertBreakCodeBlock = () => {

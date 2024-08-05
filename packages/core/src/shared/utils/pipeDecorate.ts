@@ -1,5 +1,7 @@
+import type { TNodeEntry } from '@udecode/slate';
 import type { Range } from 'slate';
 
+import type { PlateProps } from '../../client';
 import type { PlateEditor } from '../types/PlateEditor';
 import type { TEditableProps } from '../types/slate-react/TEditableProps';
 
@@ -9,27 +11,37 @@ import type { TEditableProps } from '../types/slate-react/TEditableProps';
  */
 export const pipeDecorate = (
   editor: PlateEditor,
-  decorateProp?: TEditableProps['decorate']
+  decorateProp?: PlateProps['decorate']
 ): TEditableProps['decorate'] => {
-  const decorates = editor.plugins.flatMap(
-    (plugin) => plugin.decorate?.(editor, plugin) ?? []
-  );
+  const relevantPlugins = editor.plugins.filter((plugin) => plugin.decorate);
 
-  if (decorateProp) {
-    decorates.push(decorateProp);
-  }
-  if (decorates.length === 0) return;
+  if (relevantPlugins.length === 0 && !decorateProp) return;
 
-  return (entry) => {
+  return (entry: TNodeEntry) => {
     let ranges: Range[] = [];
 
     const addRanges = (newRanges?: Range[]) => {
       if (newRanges?.length) ranges = [...ranges, ...newRanges];
     };
 
-    decorates.forEach((decorate) => {
-      addRanges(decorate(entry));
+    relevantPlugins.forEach((plugin) => {
+      addRanges(
+        plugin.decorate!({
+          editor,
+          entry,
+          plugin,
+        })
+      );
     });
+
+    if (decorateProp) {
+      addRanges(
+        decorateProp({
+          editor,
+          entry,
+        })
+      );
+    }
 
     return ranges;
   };

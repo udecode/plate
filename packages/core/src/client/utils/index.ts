@@ -4,10 +4,8 @@
 
 export * from './createPlateEditor';
 export * from './createPlateFallbackEditor';
-export * from './getCorePlugins';
 export * from './hotkeys';
 export * from './pipeRenderElement';
 export * from './pipeRenderLeaf';
 export * from './pluginRenderElement';
 export * from './pluginRenderLeaf';
-export * from './setEditorPlugins';

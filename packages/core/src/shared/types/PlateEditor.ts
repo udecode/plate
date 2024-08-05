@@ -12,10 +12,11 @@ import type { TReactEditor } from '@udecode/slate-react';
 import type { Path } from 'slate';
 
 import type { PlateEditorMethods } from './PlateEditorMethods';
-import type { PlatePlugin } from './plugin/PlatePlugin';
+import { AnyPlatePlugin, PlatePlugin, PlatePluginList } from "./plugin/PlatePlugin";
 import type { PluginKey } from './plugin/PlatePluginKey';
 
 export type PlateEditor<V extends Value = Value> = {
+  api: Record<PluginKey, any>;
   /**
    * Default block factory.
    *
@@ -29,6 +30,7 @@ export type PlateEditor<V extends Value = Value> = {
    */
   childrenFactory: () => V;
   currentKeyboardEvent: React.KeyboardEvent | null;
+
   /**
    * Whether the editor is a fallback editor.
    *
@@ -39,9 +41,9 @@ export type PlateEditor<V extends Value = Value> = {
 
   key: any;
 
-  plugins: PlatePlugin[];
+  plugins: PlatePluginList;
 
-  pluginsByKey: Record<PluginKey, PlatePlugin>;
+  pluginsByKey: Record<PluginKey, AnyPlatePlugin>;
 
   prevSelection: TRange | null;
 } & PlateEditorMethods &

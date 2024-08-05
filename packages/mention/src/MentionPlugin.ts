@@ -15,7 +15,7 @@ export const MentionInputPlugin = createPlugin({
 });
 
 /** Enables support for autocompleting @mentions. */
-export const MentionPlugin = createPlugin<MentionPluginOptions>({
+export const MentionPlugin = createPlugin<'mention', MentionPluginOptions>({
   isElement: true,
   isInline: true,
   isMarkableVoid: true,

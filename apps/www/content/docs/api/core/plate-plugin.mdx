@@ -11,16 +11,20 @@ Plate plugins are objects passed to `Plate` [plugins](/docs/api/core/plate#plugi
 The `PlatePlugin` interface uses four generic types:
 
 <APIAttributes>
+<APIItem name="K" type="string" optional>
+Represents the plugin key. This type defines the literal string type for the plugin's unique identifier.
+</APIItem>
+
 <APIItem name="O" type="object" optional>
 Represents the plugin options. This type defines the structure of the `options` object that can be passed to the plugin.
 </APIItem>
 
-<APIItem name="T" type="object" optional>
-Represents the plugin transforms. This type defines the structure of any transform functions the plugin may provide.
+<APIItem name="A" type="object" optional>
+Represents the plugin API. This type defines the structure of any API functions the plugin may provide. These should not transform the editor state.
 </APIItem>
 
-<APIItem name="Q" type="object" optional>
-Represents the plugin queries. This type defines the structure of any query functions the plugin may provide.
+<APIItem name="T" type="object" optional>
+Represents the plugin transforms. This type defines the structure of any editor transform functions the plugin may provide.
 </APIItem>
 
 <APIItem name="S" type="object" optional>
@@ -35,7 +39,8 @@ type MyPluginTransforms = { customTransform: () => void };
 type MyPluginQueries = { customQuery: () => boolean };
 type MyPluginStorage = { customData: string };
 
-const myPlugin = createPlugin<MyPluginOptions, MyPluginTransforms, MyPluginQueries, MyPluginStorage>({
+const myPlugin = createPlugin<'myPlugin', MyPluginOptions, MyPluginTransforms, MyPluginQueries, MyPluginStorage>({
+  key: 'myPlugin'
   // plugin implementation
 });
 ```
@@ -43,15 +48,61 @@ const myPlugin = createPlugin<MyPluginOptions, MyPluginTransforms, MyPluginQueri
 ## Plugins Properties
 
 <APIAttributes>
-<APIItem name="key" type="string" required>
+<APIItem name="key" type="K" required>
 
-Property used by Plate to store the plugins by key in `editor.pluginsByKey`.
+Unique property used by Plate to store the plugins by key in `editor.pluginsByKey`.
 
-- Unique in the editor.
-- Naming convention:
-- all Plate element keys start with `ELEMENT_`.
-- all Plate mark keys start with `MARK_`.
+</APIItem>
 
+<APIItem name="api" type="A">
+An object of API functions provided by the plugin.
+- An API function could be any utility that doesn't directly modify the editor state: 
+  - Synchronous or asynchronous functions
+  - Query functions
+  - Helper utilities
+  - State accessors
+- API functions are stored in `editor.api[key]`.
+- Can be accessed as `editor.api.myPlugin.customFunction()`.
+- Useful for exposing plugin functionality to other plugins or external code.
+
+Example:
+```typescript
+const myPlugin = createPlugin({
+  key: 'myPlugin',
+  api: {
+    getData: () => 'Some data',
+  },
+});
+
+// Usage
+const data = editor.api.myPlugin.getData();
+```
+</APIItem>
+
+<APIItem name="transforms" type="T">
+Transform functions provided by the plugin.
+- Transforms are functions that modify the editor state.
+- They are typically used for operations like:
+  - Inserting, deleting, or modifying nodes
+  - Applying or removing marks
+  - Normalizing the document structure
+- Transforms are stored in `editor.tf[key]`.
+- Can be accessed as `editor.tf.myPlugin.customTransform()`.
+
+Example:
+```typescript
+const myPlugin = createPlugin({
+  key: 'myPlugin',
+  transforms: {
+    insertNode: (text: string) => {
+      editor.insertNode({ text });
+    },
+  },
+});
+
+// Usage
+editor.transforms.myPlugin.insertNode('New text');
+```
 </APIItem>
 
 <APIItem name="component" type="React.FC" optional>
@@ -71,7 +122,7 @@ Property used by Plate to decorate editor ranges.
 - See https://docs.slatejs.org/concepts/09-rendering#decorations
 
 ```ts
-type Decorate = (editor: PlateEditor, plugin: PlatePlugin) => (entry: TNodeEntry) => Range[] | undefined;
+type Decorate = (ctx: { editor: PlateEditor, plugin: PlatePlugin, entry: TNodeEntry }) => Range[] | undefined;
 ```
 
 </APIItem>
@@ -96,12 +147,12 @@ Deserialize a leaf.
 <APISubListItem parent="deserializeHtml" name="getNode" type="function" optional>
 Deserialize html element to slate node.
 ```ts
-(element: HTMLElement, node: AnyObject) => AnyObject | undefined
+(options: {element: HTMLElement, node: AnyObject}) => AnyObject | undefined
 ```
 </APISubListItem>
 <APISubListItem parent="deserializeHtml" name="query" type="function" optional>
 ```ts
-(element: HTMLElement) => boolean
+(options: {element: HTMLElement}) => boolean
 ```
 </APISubListItem>
 
@@ -153,13 +204,13 @@ Format to get data. Example data types are `text/plain` and `text/uri-list`.
 <APISubListItem parent="editor.insertData" name="query" type="function" optional>
 Query to skip this plugin.
 ```ts
-(options: PlatePluginInsertDataOptions) => boolean
+(options: PlatePluginInsertDataOptions & PlatePluginContext) => boolean
 ```
 </APISubListItem>
 <APISubListItem parent="editor.insertData" name="getFragment" type="function" optional>
 Deserialize data to fragment.
 ```ts
-(options: PlatePluginInsertDataOptions) => TDescendant[] | undefined
+(options: PlatePluginInsertDataOptions & PlatePluginContext) => TDescendant[] | undefined
 ```
 </APISubListItem>
 <APISubListItem parent="editor.insertData" name="preInsert" type="function" optional>
@@ -167,19 +218,19 @@ Function called on `editor.insertData` just before `editor.insertFragment`.
 - Default: if the block above the selection is empty and the first fragment node type is not inline, set the selected node type to the first fragment node type
 - Returns: if true, the next handlers will be skipped.
 ```ts
-(fragment: TDescendant[], options: PlatePluginInsertDataOptions) => HandlerReturnType
+(options: { fragment: TDescendant[] } & PlatePluginInsertDataOptions & PlatePluginContext) => HandlerReturnType
 ```
 </APISubListItem>
 <APISubListItem parent="editor.insertData" name="transformData" type="function" optional>
 Transform the inserted data.
 ```ts
-(data: string, options: { dataTransfer: DataTransfer }) => string
+(options: { data: string; dataTransfer: DataTransfer } & PlatePluginContext) => string
 ```
 </APISubListItem>
 <APISubListItem parent="editor.insertData" name="transformFragment" type="function" optional>
 Transform the fragment to insert.
 ```ts
-(fragment: TDescendant[], options: PlatePluginInsertDataOptions ) => TDescendant[]
+(options: { fragment: TDescendant[] } & PlatePluginInsertDataOptions & PlatePluginContext ) => TDescendant[]
 ```
 </APISubListItem>
 
@@ -197,10 +248,20 @@ Handlers called whenever the corresponding event occurs in the editor.
 - If it returns `true`, the next handlers will not be called.
 
 <APISubList>
+<APISubListItem parent="handlers" name="onChange" type="function" optional>
+
+Called whenever the editor value changes.
+
+```ts
+({ value, editor, plugin }: { value: Value } & PlatePluginContext) => void;
+```
+
+</APISubListItem>
+
 <APISubListItem parent="handlers" name="onKeyDown" type="function" optional>
 
 ```ts
-(event, editor, next) => {
+({ event, editor, plugin }) => {
   // Implement custom event logic...
   // When no value is returned, the next handlers will be executed when
   // isPropagationStopped was not set on the event
@@ -211,7 +272,7 @@ Handlers called whenever the corresponding event occurs in the editor.
 <APISubListItem parent="handlers" name="onDrop" type="function" optional>
 
 ```ts
-(event, editor, next) => {
+({ event, editor, plugin }) => {
   // Implement custom event logic...
 
   // No matter the state of the event, treat it as being handled by returning
@@ -224,7 +285,7 @@ Handlers called whenever the corresponding event occurs in the editor.
 <APISubListItem parent="handlers" name="onDragStart" type="function" optional>
 
 ```ts
-(event, editor, next) => {
+({ event, editor, plugin }) => {
   // Implement custom event logic...
 
   // No matter the status of the event, treat event as *not* being handled by
@@ -248,7 +309,7 @@ This attribute extends most `textarea` handlers like:
 - ...
 
 ```ts
-(editor: PlateEditor, plugin: PlatePlugin) => (event: Event) => boolean | void;
+({ event, editor, plugin }: { event: Event } & PlatePluginContext) => boolean | void;
 ```
 
 </APIItem>
@@ -269,7 +330,7 @@ Property that can be used by a plugin to allow other plugins to inject code.
 `insertData` plugin will call all of these `transformData` for `KEY_DESERIALIZE_HTML` plugin.
 - The value of this property is an object with keys being the plugin keys and values being the injected code.
 ```ts
-Record<PluginKey, Partial<PlatePlugin>>
+Record<PluginKey, Partial<AnyPlatePlugin>>
 ```
 </APISubListItem>
 <APISubListItem parent="inject" name="props" type="object" optional>
@@ -288,10 +349,7 @@ Node key to map to the styles.
 <APISubListItem parent="inject.props" name="query" type="function" optional>
 Whether to inject the props. If true, overrides all other checks.
 ```ts
-(
-  options: InjectProps,
-  nodeProps: GetInjectPropsOptions
-) => boolean
+(options: InjectProps & { nodeProps: GetInjectPropsOptions }) => boolean
 ```
 </APISubListItem>
 <APISubListItem parent="inject.props" name="styleKey" type="keyofCSSProperties" optional>
@@ -315,10 +373,7 @@ Transform the node value for the style or className.
 <APISubListItem parent="inject.props" name="transformProps" type="function" optional>
 Transform the injected props.
 ```ts
-(
-  options: TransformOptions,
-  props: GetInjectPropsReturnType
-) => AnyObject | undefined
+(options: TransformOptions & { props: GetInjectPropsReturnType }) => AnyObject | undefined
 ```
 </APISubListItem>
 <APISubListItem parent="inject.props" name="transformStyle" type="function" optional>
@@ -399,17 +454,17 @@ void.
 Property used by `markableVoid` core plugin to set void elements of this `type` as
 markable.
 </APIItem>
-<APIItem name="normalizeInitialValue" type="(initialValue: V) => V" optional>
+<APIItem name="normalizeInitialValue" type="(options: { value: Value } & PlatePluginContext) => Value" optional>
 Normalize value before passing it into the editor.
 </APIItem>
 <APIItem name="options" type="O">
 Extended properties used by any plugin as options.
 - Its type is the second generic type of `PlatePlugin`.
 </APIItem>
-<APIItem name="overrideByKey" type="Record<PluginKey, Partial<PlatePlugin>>" optional>
+<APIItem name="overrideByKey" type="Record<PluginKey, Partial<AnyPlatePlugin>>" optional>
 Property used by Plate to deeply override plugins by key.
 </APIItem>
-<APIItem name="plugins" type="PlatePlugin[]">
+<APIItem name="plugins" type="PlatePluginList">
 Recursive plugin support to allow having multiple plugins in a single plugin.
 - Plate eventually flattens all the plugins into the editor.
 </APIItem>
@@ -446,6 +501,7 @@ Property used by `serializeHtml` util to replace `renderElement` and
 React.FC<{
   className?: string;
   editor: PlateEditor;
+  plugin: PlatePlugin;
   nodeProps?: AnyObject;
   children: any;
   attributes:
@@ -478,16 +534,24 @@ Property used by Plate to render a node by type.
 Use any React hooks here. Each plugin `useHooks` will be called in a React component.
 
 ```tsx
-(editor: PlateEditor, plugin: PlatePlugin) => void;
+(ctx: PlatePluginContext) => void;
 ```
 
 </APIItem>
+
+<APIItem name="dependencies" type="string[]">
+An array of plugin keys that this plugin depends on.
+- These plugins will be loaded before the current plugin.
+- Useful for ensuring that required plugins are available before the current plugin is initialized.
+- Example: `['indent']`
+</APIItem>
+
 <APIItem name="withOverrides" type="WithOverride" optional>
 Editor method overriders.
 - See https://docs.slatejs.org/concepts/08-plugins
 
 ```tsx
-(editor: PlateEditor, plugin: PlatePlugin) => void;
+(ctx: PlatePluginContext) => void;
 ```
 
 </APIItem>
@@ -503,7 +567,7 @@ Creates a new plugin instance with updated options.
 Creates a new plugin instance with additional configuration. Can accept either an object or a function.
 
 ```tsx
-(extendConfig: Partial<PlatePlugin> | ((editor: PlateEditor, plugin: PlatePlugin) => Partial<PlatePlugin>)) => PlatePlugin
+(extendConfig: Partial<PlatePlugin> | ((ctx: PlatePluginContext) => Partial<PlatePlugin>)) => PlatePlugin
 ```
 
 </APIItem>
@@ -511,7 +575,7 @@ Creates a new plugin instance with additional configuration. Can accept either a
 Extends an existing nested plugin or adds a new one if not found. Supports deep nesting.
 
 ```tsx
-(key: string, extendConfig: Partial<PlatePlugin> | ((editor: PlateEditor, plugin: PlatePlugin) => Partial<PlatePlugin>)) => PlatePlugin
+(key: string, extendConfig: Partial<PlatePlugin> | ((ctx: PlatePluginContext) => Partial<PlatePlugin>)) => PlatePlugin
 ```
 
 </APIItem>
@@ -536,7 +600,7 @@ const extendedPlugin = myPlugin.extend({
 });
 
 // or using a function
-const functionallyExtendedPlugin = myPlugin.extend((editor, plugin) => ({
+const functionallyExtendedPlugin = myPlugin.extend(({ editor, plugin }) => ({
   options: { editorOption: editor.someOption },
 }));
 ```
@@ -554,8 +618,22 @@ const deeplyExtendedPlugin = myPlugin.extendPlugin('deeplyNestedPlugin', {
 
 // Using a function for dynamic extension
 const dynamicallyExtendedPlugin = myPlugin.extendPlugin('dynamicPlugin', 
-  (editor, plugin) => ({
+  ({ editor, plugin }) => ({
     options: { isActive: editor.selection !== null },
   })
 );
 ```
+
+### Plugin Context
+
+In most plugin functions, the first parameter extends `PlatePluginContext`. This object contains the following properties:
+
+<APIAttributes>
+<APIItem name="editor" type="PlateEditor" required>
+The editor instance.
+</APIItem>
+<APIItem name="plugin" type="PlatePlugin" required>
+The plugin instance.
+</APIItem>
+</APIAttributes>
+

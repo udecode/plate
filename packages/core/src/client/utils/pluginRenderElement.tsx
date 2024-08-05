@@ -16,12 +16,13 @@ import { ElementProvider } from '../stores/element/useElementStore';
  */
 export const pluginRenderElement = (
   editor: PlateEditor,
-  { component: _component, key, props, type }: PlatePlugin
+  plugin: PlatePlugin
 ): RenderElement =>
   function render(nodeProps) {
+    const { component: _component, key } = plugin;
     const { children: _children, element } = nodeProps;
 
-    if (element.type === type) {
+    if (element.type === plugin.type) {
       const Element = _component ?? DefaultElement;
 
       const injectAboveComponents = editor.plugins.flatMap(
@@ -34,9 +35,9 @@ export const pluginRenderElement = (
       nodeProps = getRenderNodeProps({
         attributes: element.attributes as any,
         nodeProps: nodeProps as any,
-        props,
-        type: type!,
+        plugin,
       }) as any;
+      nodeProps.plugin = plugin;
 
       let children = _children;
 

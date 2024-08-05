@@ -8,10 +8,10 @@ import {
 export const MARK_ITALIC = 'italic';
 
 /** Enables support for italic formatting. */
-export const ItalicPlugin = createPlugin<ToggleMarkPluginOptions>({
+export const ItalicPlugin = createPlugin<'italic', ToggleMarkPluginOptions>({
   deserializeHtml: {
-    query: (el) =>
-      !someHtmlElement(el, (node) => node.style.fontStyle === 'normal'),
+    query: ({ element }) =>
+      !someHtmlElement(element, (node) => node.style.fontStyle === 'normal'),
     rules: [
       { validNodeName: ['EM', 'I'] },
       {

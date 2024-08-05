@@ -15,9 +15,9 @@ import cloneDeep from 'lodash/cloneDeep.js';
 import type { NodeIdPlugin } from './NodeIdPlugin';
 
 /** Enables support for inserting nodes with an id key. */
-export const withNodeId: WithOverride<NodeIdPlugin> = (
+export const withNodeId: WithOverride<NodeIdPlugin> = ({
   editor,
-  {
+  plugin: {
     options: {
       allow,
       disableInsertOverrides,
@@ -28,8 +28,8 @@ export const withNodeId: WithOverride<NodeIdPlugin> = (
       idKey = '',
       reuseId,
     },
-  }
-) => {
+  },
+}) => {
   const { apply, insertNode, insertNodes } = editor;
 
   const idPropsCreator = () => ({ [idKey]: idCreator!() });

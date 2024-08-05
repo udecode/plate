@@ -2,6 +2,7 @@ import React from 'react';
 
 import { Editable } from 'slate-react';
 
+import type { PlateStoreState } from '../../shared';
 import type { TEditableProps } from '../../shared/types/slate-react/TEditableProps';
 
 import { useEditableProps } from '../hooks';
@@ -13,9 +14,10 @@ import { PlateControllerEffect } from './PlateControllerEffect';
 import { PlateSlate } from './PlateSlate';
 
 export type PlateContentProps = {
+  decorate?: PlateStoreState['decorate'];
   /** Renders the editable content. */
   renderEditable?: (editable: React.ReactElement) => React.ReactNode;
-} & TEditableProps;
+} & Omit<TEditableProps, 'decorate'>;
 
 /**
  * Editable with plugins.

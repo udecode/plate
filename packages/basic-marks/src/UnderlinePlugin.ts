@@ -8,10 +8,13 @@ import {
 export const MARK_UNDERLINE = 'underline';
 
 /** Enables support for underline formatting. */
-export const UnderlinePlugin = createPlugin<ToggleMarkPluginOptions>({
+export const UnderlinePlugin = createPlugin<
+  'underline',
+  ToggleMarkPluginOptions
+>({
   deserializeHtml: {
-    query: (el) =>
-      !someHtmlElement(el, (node) => node.style.textDecoration === 'none'),
+    query: ({ element }) =>
+      !someHtmlElement(element, (node) => node.style.textDecoration === 'none'),
     rules: [
       {
         validNodeName: ['U'],

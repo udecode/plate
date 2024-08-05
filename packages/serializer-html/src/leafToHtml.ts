@@ -19,7 +19,7 @@ export const leafToHtml = (
   }: {
     plateProps?: Partial<PlateProps>;
     preserveClassNames?: string[];
-    props: PlateRenderLeafProps;
+    props: Omit<PlateRenderLeafProps, 'plugin'>;
   }
 ) => {
   const { children } = props;
@@ -30,11 +30,12 @@ export const leafToHtml = (
     props = {
       ...pipeInjectProps(editor, props),
       children: result,
+      plugin,
     };
 
     const serialized =
       plugin.serializeHtml?.(props as any) ??
-      pluginRenderLeaf(editor, plugin)(props);
+      pluginRenderLeaf(editor, plugin)(props as any);
 
     if (serialized === children) return result;
 

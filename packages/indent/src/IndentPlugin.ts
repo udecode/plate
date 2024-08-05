@@ -11,7 +11,7 @@ import { withIndent } from './withIndent';
 
 export const KEY_INDENT = 'indent';
 
-export const IndentPlugin = createPlugin<IndentPluginOptions>({
+export const IndentPlugin = createPlugin<'indent', IndentPluginOptions>({
   handlers: {
     onKeyDown: onKeyDownIndent,
   },
@@ -21,13 +21,20 @@ export const IndentPlugin = createPlugin<IndentPluginOptions>({
     unit: 'px',
   },
   withOverrides: withIndent,
-}).extend((editor, { options: { offset, unit } = {} }) => ({
-  inject: {
-    props: {
-      nodeKey: KEY_INDENT,
-      styleKey: 'marginLeft',
-      transformNodeValue: ({ nodeValue }) => nodeValue * offset! + unit!,
-      validTypes: [getPluginType(editor, ELEMENT_DEFAULT)],
+}).extend(
+  ({
+    editor,
+    plugin: {
+      options: { offset, unit },
     },
-  },
-}));
+  }) => ({
+    inject: {
+      props: {
+        nodeKey: KEY_INDENT,
+        styleKey: 'marginLeft',
+        transformNodeValue: ({ nodeValue }) => nodeValue * offset! + unit!,
+        validTypes: [getPluginType(editor, ELEMENT_DEFAULT)],
+      },
+    },
+  })
+);

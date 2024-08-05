@@ -31,10 +31,10 @@ import { getTableGridAbove } from './queries/getTableGridAbove';
  * - Replace each cell above by the inserted table until out of bounds.
  * - Select the inserted cells.
  */
-export const withInsertFragmentTable: WithOverride<TablePluginOptions> = (
+export const withInsertFragmentTable: WithOverride<TablePluginOptions> = ({
   editor,
-  { options }
-) => {
+  plugin: { options },
+}) => {
   const { insertFragment } = editor;
   const { disableExpandOnInsert, getCellChildren, insertColumn, insertRow } =
     options;

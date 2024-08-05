@@ -5,7 +5,6 @@ import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
 import {
   type OverrideByKey,
-  type PlatePlugin,
   createPlateEditor,
 } from '@udecode/plate-common/server';
 import { ELEMENT_H1, ELEMENT_H2, ELEMENT_H3 } from '@udecode/plate-heading';
@@ -50,7 +49,7 @@ export const testDocxDeserializer = ({
   filename: string;
   input?: any;
   overrideByKey?: OverrideByKey;
-  plugins?: PlatePlugin[];
+  plugins?: PlatePluginList;
 }) => {
   it('should deserialize', () => {
     const actual = createPlateEditor({

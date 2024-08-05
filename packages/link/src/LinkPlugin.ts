@@ -96,7 +96,7 @@ export interface LinkPluginOptions {
 }
 
 /** Enables support for hyperlinks. */
-export const LinkPlugin = createPlugin<LinkPluginOptions>({
+export const LinkPlugin = createPlugin<'a', LinkPluginOptions>({
   isElement: true,
   isInline: true,
   key: ELEMENT_LINK,
@@ -114,14 +114,14 @@ export const LinkPlugin = createPlugin<LinkPluginOptions>({
     triggerFloatingLinkHotkeys: 'meta+k, ctrl+k',
   },
   withOverrides: withLink,
-}).extend((editor, { type }) => ({
+}).extend(({ editor, plugin: { type } }) => ({
   deserializeHtml: {
-    getNode: (el) => {
-      const url = el.getAttribute('href');
+    getNode: ({ element }) => {
+      const url = element.getAttribute('href');
 
       if (url && validateUrl(editor, url)) {
         return {
-          target: el.getAttribute('target') || '_blank',
+          target: element.getAttribute('target') || '_blank',
           type,
           url,
         };

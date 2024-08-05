@@ -1,7 +1,5 @@
-import type { PlateEditor } from '../PlateEditor';
-import type { PlatePlugin } from './PlatePlugin';
+import type { PlatePluginContext } from './PlatePlugin';
 
-export type PlatePluginUseHooks<O = {}, T = {}, Q = {}, S = {}> = (
-  editor: PlateEditor,
-  plugin: PlatePlugin<O, T, Q, S>
+export type PlatePluginUseHooks<O = {}, A = {}, T = {}, S = {}> = (
+  ctx: PlatePluginContext<string, O, A, T, S>
 ) => void;

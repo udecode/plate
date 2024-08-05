@@ -9,9 +9,9 @@ import {
 } from '@udecode/plate-code-block';
 import {
   createPlateEditor,
+  createPlugin,
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
-  mockPlugin,
 } from '@udecode/plate-common';
 import * as isHotkey from '@udecode/plate-core/server';
 import { ELEMENT_LI, unwrapList } from '@udecode/plate-list';
@@ -39,7 +39,7 @@ describe('onKeyDownResetNode', () => {
       types: [ELEMENT_BLOCKQUOTE],
     };
 
-    const plugin = mockPlugin({
+    const plugin = createPlugin({
       options: {
         rules: [
           { ...blockquoteRule, ...enterRule },
@@ -120,7 +120,7 @@ describe('onKeyDownResetNode', () => {
       types: [ELEMENT_CODE_BLOCK],
     };
 
-    const plugin = mockPlugin({
+    const plugin = createPlugin({
       options: {
         rules: [
           {
@@ -295,7 +295,7 @@ describe('onKeyDownResetNode', () => {
       types: [ELEMENT_LI],
     };
 
-    const plugin = mockPlugin({
+    const plugin = createPlugin({
       options: {
         rules: [
           { ...listRule, ...enterRule },

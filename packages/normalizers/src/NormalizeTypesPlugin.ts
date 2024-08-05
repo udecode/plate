@@ -27,11 +27,13 @@ export interface NormalizeTypesPluginOptions extends ErrorHandler {
 export const KEY_NORMALIZE_TYPES = 'normalizeTypes';
 
 /** @see {@link withNormalizeTypes} */
-export const NormalizeTypesPlugin =
-  createPlugin<NormalizeTypesPluginOptions>({
-    key: KEY_NORMALIZE_TYPES,
-    options: {
-      rules: [],
-    },
-    withOverrides: withNormalizeTypes,
-  });
+export const NormalizeTypesPlugin = createPlugin<
+  'normalizeTypes',
+  NormalizeTypesPluginOptions
+>({
+  key: KEY_NORMALIZE_TYPES,
+  options: {
+    rules: [],
+  },
+  withOverrides: withNormalizeTypes,
+});

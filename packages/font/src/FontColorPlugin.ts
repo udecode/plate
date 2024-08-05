@@ -10,9 +10,9 @@ export const FontColorPlugin = createPlugin({
     },
   },
   key: MARK_COLOR,
-}).extend((_, { type }) => ({
+}).extend(({ plugin: { type } }) => ({
   deserializeHtml: {
-    getNode(element) {
+    getNode({ element }) {
       if (element.style.color) {
         return { [type]: element.style.color };
       }

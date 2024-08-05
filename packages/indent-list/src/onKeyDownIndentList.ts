@@ -13,23 +13,25 @@ import {
 } from './IndentListPlugin';
 import { outdentList } from './transforms/index';
 
-export const onKeyDownIndentList: KeyboardHandler<IndentListPluginOptions> =
-  (editor) => (e) => {
-    if (e.defaultPrevented) return;
-    if (!editor.selection) return;
+export const onKeyDownIndentList: KeyboardHandler<IndentListPluginOptions> = ({
+  editor,
+  event,
+}) => {
+  if (event.defaultPrevented) return;
+  if (!editor.selection) return;
 
-    const entry = getBlockAbove(editor);
+  const entry = getBlockAbove(editor);
 
-    if (!entry) return;
+  if (!entry) return;
 
-    const node = entry[0] as TElement;
+  const node = entry[0] as TElement;
 
-    const listStyleType = node[KEY_LIST_STYLE_TYPE] as string | undefined;
+  const listStyleType = node[KEY_LIST_STYLE_TYPE] as string | undefined;
 
-    if (!listStyleType) return;
-    if (isHotkey('Enter', e) && isBlockAboveEmpty(editor) && node.indent) {
-      outdentList(editor);
-      e.stopPropagation();
-      e.preventDefault();
-    }
-  };
+  if (!listStyleType) return;
+  if (isHotkey('Enter', event) && isBlockAboveEmpty(editor) && node.indent) {
+    outdentList(editor);
+    event.stopPropagation();
+    event.preventDefault();
+  }
+};

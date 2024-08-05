@@ -14,8 +14,8 @@ type CloudAttachmentValue = TCloudAttachmentElement[];
 
 // const uploadMap = new Map<string, Atom<Upload>>();
 
-export const withCloudAttachment: WithOverride = (_editor) => {
-  const editor = _editor as PlateCloudEditor;
+export const withCloudAttachment: WithOverride = ({ editor: e }) => {
+  const editor = e as PlateCloudEditor;
 
   /**
    * We create a deferredFinish which is an object with a `promise` and a way to

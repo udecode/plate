@@ -6,7 +6,7 @@ import { MARK_COMMENT } from './constants';
 import { useHooksComments } from './useHooksComments';
 import { withComments } from './withComments';
 
-export const CommentsPlugin = createPlugin<CommentsPluginOptions>({
+export const CommentsPlugin = createPlugin<'comment', CommentsPluginOptions>({
   isLeaf: true,
   key: MARK_COMMENT,
   options: {

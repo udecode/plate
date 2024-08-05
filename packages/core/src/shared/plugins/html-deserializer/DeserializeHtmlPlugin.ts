@@ -9,12 +9,10 @@ export const KEY_DESERIALIZE_HTML = 'deserializeHtml';
  * format.
  */
 export const DeserializeHtmlPlugin = createPlugin({
-  key: KEY_DESERIALIZE_HTML,
-}).extend((editor) => ({
   editor: {
     insertData: {
       format: 'text/html',
-      getFragment: ({ data }) => {
+      getFragment: ({ data, editor }) => {
         const document = parseHtmlDocument(data);
 
         return deserializeHtml(editor, {
@@ -23,4 +21,5 @@ export const DeserializeHtmlPlugin = createPlugin({
       },
     },
   },
-}));
+  key: KEY_DESERIALIZE_HTML,
+});

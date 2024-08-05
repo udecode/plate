@@ -8,14 +8,16 @@ import { withAutoformat } from './withAutoformat';
 export const KEY_AUTOFORMAT = 'autoformat';
 
 /** @see {@link withAutoformat} */
-export const AutoformatPlugin =
-  createPlugin<AutoformatPluginOptions>({
-    handlers: {
-      onKeyDown: onKeyDownAutoformat,
-    },
-    key: KEY_AUTOFORMAT,
-    options: {
-      rules: [],
-    },
-    withOverrides: withAutoformat,
-  });
+export const AutoformatPlugin = createPlugin<
+  'autoformat',
+  AutoformatPluginOptions
+>({
+  handlers: {
+    onKeyDown: onKeyDownAutoformat,
+  },
+  key: KEY_AUTOFORMAT,
+  options: {
+    rules: [],
+  },
+  withOverrides: withAutoformat,
+});

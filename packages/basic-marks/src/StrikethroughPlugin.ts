@@ -8,10 +8,13 @@ import {
 export const MARK_STRIKETHROUGH = 'strikethrough';
 
 /** Enables support for strikethrough formatting. */
-export const StrikethroughPlugin = createPlugin<ToggleMarkPluginOptions>({
+export const StrikethroughPlugin = createPlugin<
+  'strikethrough',
+  ToggleMarkPluginOptions
+>({
   deserializeHtml: {
-    query: (el) =>
-      !someHtmlElement(el, (node) => node.style.textDecoration === 'none'),
+    query: ({ element }) =>
+      !someHtmlElement(element, (node) => node.style.textDecoration === 'none'),
     rules: [
       { validNodeName: ['S', 'DEL', 'STRIKE'] },
       {

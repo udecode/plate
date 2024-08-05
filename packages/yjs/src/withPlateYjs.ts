@@ -19,8 +19,8 @@ export interface PlateYjsEditorProps extends CursorEditorProps {
   };
 }
 
-export const withPlateYjs: WithOverride<YjsPluginOptions> = (_editor) => {
-  const editor = _editor as unknown as PlateEditor & PlateYjsEditorProps;
+export const withPlateYjs: WithOverride<YjsPluginOptions> = ({ editor: e }) => {
+  const editor = e as unknown as PlateEditor & PlateYjsEditorProps;
 
   const {
     cursorOptions,

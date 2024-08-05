@@ -18,10 +18,13 @@ export interface TrailingBlockPluginOptions extends QueryNodeOptions {
 export const KEY_TRAILING_BLOCK = 'trailingBlock';
 
 /** @see {@link withTrailingBlock} */
-export const TrailingBlockPlugin = createPlugin<TrailingBlockPluginOptions>({
+export const TrailingBlockPlugin = createPlugin<
+  'trailingBlock',
+  TrailingBlockPluginOptions
+>({
   key: KEY_TRAILING_BLOCK,
   withOverrides: withTrailingBlock,
-}).extend((editor, plugin) => ({
+}).extend(({ editor }) => ({
   options: {
     level: 0,
     type: getPluginType(editor, ELEMENT_DEFAULT),

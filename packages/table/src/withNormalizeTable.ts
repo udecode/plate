@@ -21,10 +21,10 @@ import { getCellTypes } from './utils/index';
  *
  * - Wrap cell children in a paragraph if they are texts.
  */
-export const withNormalizeTable: WithOverride<TablePluginOptions> = (
+export const withNormalizeTable: WithOverride<TablePluginOptions> = ({
   editor,
-  { options }
-) => {
+  plugin: { options },
+}) => {
   const { normalizeNode } = editor;
   const { initialTableWidth } = options;
 

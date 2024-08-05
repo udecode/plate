@@ -9,9 +9,9 @@ export const FontSizePlugin = createPlugin({
     },
   },
   key: MARK_FONT_SIZE,
-}).extend((_, { type }) => ({
+}).extend(({ plugin: { type } }) => ({
   deserializeHtml: {
-    getNode: (element) => ({ [type]: element.style.fontSize }),
+    getNode: ({ element }) => ({ [type]: element.style.fontSize }),
     isLeaf: true,
     rules: [
       {

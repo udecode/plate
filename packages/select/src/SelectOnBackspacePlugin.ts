@@ -13,11 +13,13 @@ export type SelectOnBackspacePluginOptions = {
 export const KEY_SELECT_ON_BACKSPACE = 'selectOnBackspace';
 
 /** @see {@link withSelectOnBackspace} */
-export const SelectOnBackspacePlugin =
-  createPlugin<SelectOnBackspacePluginOptions>({
-    key: KEY_SELECT_ON_BACKSPACE,
-    options: {
-      removeNodeIfEmpty: false,
-    },
-    withOverrides: withSelectOnBackspace,
-  });
+export const SelectOnBackspacePlugin = createPlugin<
+  'selectOnBackspace',
+  SelectOnBackspacePluginOptions
+>({
+  key: KEY_SELECT_ON_BACKSPACE,
+  options: {
+    removeNodeIfEmpty: false,
+  },
+  withOverrides: withSelectOnBackspace,
+});

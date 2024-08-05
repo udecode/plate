@@ -7,9 +7,9 @@ import {
 export const ELEMENT_PARAGRAPH = 'p';
 
 /** Enables support for paragraphs. */
-export const ParagraphPlugin = createPlugin<HotkeyPluginOptions>({
+export const ParagraphPlugin = createPlugin<'p', HotkeyPluginOptions>({
   deserializeHtml: {
-    query: (el) => el.style.fontFamily !== 'Consolas',
+    query: ({ element }) => element.style.fontFamily !== 'Consolas',
     rules: [
       {
         validNodeName: 'P',

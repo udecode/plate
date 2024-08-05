@@ -11,7 +11,7 @@ export const KEY_ALIGN = 'align';
 export const AlignPlugin = createPlugin({
   key: KEY_ALIGN,
 })
-  .extend((editor) => ({
+  .extend(({ editor }) => ({
     inject: {
       props: {
         defaultNodeValue: 'start',
@@ -22,12 +22,12 @@ export const AlignPlugin = createPlugin({
       },
     },
   }))
-  .extend((editor, plugin) =>
+  .extend(({ editor, plugin }) =>
     mapInjectPropsToPlugin(editor, plugin, {
       deserializeHtml: {
-        getNode: (el, node) => {
-          if (el.style.textAlign) {
-            node[plugin.key] = el.style.textAlign;
+        getNode: ({ element, node }) => {
+          if (element.style.textAlign) {
+            node[plugin.key] = element.style.textAlign;
           }
         },
       },

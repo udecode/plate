@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { mockPlugin } from '@udecode/plate-common';
+import { createPlugin } from '@udecode/plate-common';
 import * as isHotkey from '@udecode/plate-core/server';
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -36,7 +36,7 @@ it('should be', () => {
   jest.spyOn(isHotkey, 'isHotkey').mockReturnValue(true);
   onKeyDownExitBreak(
     input,
-    mockPlugin({
+    createPlugin({
       options: {
         rules: [
           { hotkey: 'enter', level: 0, query: { end: true, start: true } },

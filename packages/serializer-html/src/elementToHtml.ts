@@ -23,7 +23,7 @@ export const elementToHtml = (
     dndWrapper?: React.ComponentClass | React.FC | string;
     plateProps?: Partial<PlateProps>;
     preserveClassNames?: string[];
-    props: PlateRenderElementProps;
+    props: Omit<PlateRenderElementProps, 'plugin'>;
   }
 ) => {
   let html = `<div>${props.children}</div>`;
@@ -51,8 +51,8 @@ export const elementToHtml = (
           {
             ...plateProps,
             children:
-              plugin.serializeHtml?.(props as any) ??
-              pluginRenderElement(editor, plugin)(props),
+              plugin.serializeHtml?.({ ...props, plugin } as any) ??
+              pluginRenderElement(editor, plugin)({ ...props, plugin }),
           },
           dndWrapper
         )

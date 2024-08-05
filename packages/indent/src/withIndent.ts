@@ -10,10 +10,13 @@ import type { IndentPluginOptions, TIndentElement } from './types';
  * - `node.indent` can not exceed `indentMax`
  * - `node.indent` is unset if `node.type` is not in `types`
  */
-export const withIndent: WithOverride<IndentPluginOptions> = (
+export const withIndent: WithOverride<IndentPluginOptions> = ({
   editor,
-  { inject: { props: { validTypes } = {} }, options: { indentMax } }
-) => {
+  plugin: {
+    inject: { props: { validTypes } = {} },
+    options: { indentMax },
+  },
+}) => {
   const { normalizeNode } = editor;
 
   editor.normalizeNode = ([node, path]) => {

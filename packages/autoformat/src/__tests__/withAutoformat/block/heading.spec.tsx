@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { mockPlugin } from '@udecode/plate-common';
+import { createPlugin } from '@udecode/plate-common';
 import { ELEMENT_H1 } from '@udecode/plate-heading';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
@@ -31,7 +31,7 @@ describe('when #space', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin({
+      createPlugin({
         options: {
           rules: [
             {
@@ -71,7 +71,7 @@ describe('when ##space', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(autoformatPlugin as any)
+      createPlugin(autoformatPlugin as any)
     );
 
     editor.insertText(' ');

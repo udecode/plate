@@ -9,7 +9,10 @@ import { withTodoList } from '../withTodoList';
 
 export const ELEMENT_TODO_LI = 'action_item';
 
-export const TodoListPlugin = createPlugin<TodoListPluginOptions>({
+export const TodoListPlugin = createPlugin<
+  'action_item',
+  TodoListPluginOptions
+>({
   handlers: {
     onKeyDown: onKeyDownToggleElement,
   },

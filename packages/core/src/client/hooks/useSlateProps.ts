@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { Value } from '@udecode/slate';
+import type { TSelection, Value } from '@udecode/slate';
 import type { SlateProps } from '@udecode/slate-react';
 
 import { pipeOnChange } from '../../shared/utils/pipeOnChange';
@@ -26,10 +26,10 @@ export const useSlateProps = ({
 
   const onChange = React.useCallback(
     (newValue: Value) => {
-      const eventIsHandled = pipeOnChange(editor)(newValue);
+      const eventIsHandled = pipeOnChange(editor, newValue);
 
       if (!eventIsHandled) {
-        onChangeProp?.(newValue);
+        onChangeProp?.({ editor, value: newValue });
       }
 
       setValue(newValue);
@@ -37,14 +37,18 @@ export const useSlateProps = ({
     [editor, setValue, onChangeProp]
   );
 
-  const onValueChange = React.useMemo(
-    () => onValueChangeProp,
-    [onValueChangeProp]
+  const onValueChange: SlateProps['onValueChange'] = React.useMemo(
+    () => (value) => {
+      onValueChangeProp?.({ editor, value });
+    },
+    [editor, onValueChangeProp]
   );
 
-  const onSelectionChange = React.useMemo(
-    () => onSelectionChangeProp,
-    [onSelectionChangeProp]
+  const onSelectionChange: SlateProps['onSelectionChange'] = React.useMemo(
+    () => (selection: TSelection) => {
+      onSelectionChangeProp?.({ editor, selection });
+    },
+    [editor, onSelectionChangeProp]
   );
 
   return React.useMemo(() => {

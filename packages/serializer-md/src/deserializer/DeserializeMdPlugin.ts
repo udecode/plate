@@ -10,14 +10,17 @@ import { deserializeMd } from './utils/index';
 
 export const KEY_DESERIALIZE_MD = 'deserializeMd';
 
-export const DeserializeMdPlugin = createPlugin<DeserializeMdPluginOptions>({
+export const DeserializeMdPlugin = createPlugin<
+  'deserializeMd',
+  DeserializeMdPluginOptions
+>({
   key: KEY_DESERIALIZE_MD,
   options: {
     elementRules: remarkDefaultElementRules,
     indentList: false,
     textRules: remarkDefaultTextRules,
   },
-}).extend((editor) => ({
+}).extend(({ editor }) => ({
   editor: {
     insertData: {
       format: 'text/plain',

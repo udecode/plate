@@ -20,19 +20,19 @@ export const LineHeightPlugin = createPlugin({
   },
   key: KEY_LINE_HEIGHT,
 })
-  .extend((editor) => ({
+  .extend(({ editor }) => ({
     inject: {
       props: {
         validTypes: [getPluginType(editor, ELEMENT_DEFAULT)],
       },
     },
   }))
-  .extend((editor, plugin) =>
+  .extend(({ editor, plugin }) =>
     mapInjectPropsToPlugin(editor, plugin, {
       deserializeHtml: {
-        getNode: (el, node) => {
-          if (el.style.lineHeight) {
-            node[plugin.key] = el.style.lineHeight;
+        getNode: ({ element, node }) => {
+          if (element.style.lineHeight) {
+            node[plugin.key] = element.style.lineHeight;
           }
         },
       },

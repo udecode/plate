@@ -10,17 +10,19 @@ export const ELEMENT_MEDIA_EMBED = 'media_embed';
  * Enables support for embeddable media such as YouTube or Vimeo videos,
  * Instagram posts and tweets or Google Maps.
  */
-export const MediaEmbedPlugin = createPlugin<MediaPluginOptions>({
-  isElement: true,
-  isVoid: true,
-  key: ELEMENT_MEDIA_EMBED,
-  options: {
-    transformUrl: parseIframeUrl,
-  },
-}).extend((_, { type }) => ({
+export const MediaEmbedPlugin = createPlugin<'media_embed', MediaPluginOptions>(
+  {
+    isElement: true,
+    isVoid: true,
+    key: ELEMENT_MEDIA_EMBED,
+    options: {
+      transformUrl: parseIframeUrl,
+    },
+  }
+).extend(({ plugin: { type } }) => ({
   deserializeHtml: {
-    getNode: (el: HTMLElement) => {
-      const url = el.getAttribute('src');
+    getNode: ({ element }) => {
+      const url = element.getAttribute('src');
 
       if (url) {
         return {

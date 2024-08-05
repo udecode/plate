@@ -1,6 +1,6 @@
 import { type WithOverride, removeNodes } from '@udecode/plate-common/server';
 
-export const withSingleLine: WithOverride = (editor) => {
+export const withSingleLine: WithOverride = ({ editor }) => {
   const { normalizeNode } = editor;
 
   editor.insertBreak = () => null;

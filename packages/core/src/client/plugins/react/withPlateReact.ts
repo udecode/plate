@@ -1,9 +1,9 @@
 import { focusEditorEdge, isEditorFocused } from '@udecode/slate-react';
 import { withReact } from 'slate-react';
 
-import type { PlateEditor } from '../../../shared/types';
+import type { PlateEditor, WithOverride } from '../../../shared/types';
 
-export const withTReact = (editor: PlateEditor) => {
+export const withPlateReact: WithOverride = ({ editor }) => {
   const e = withReact(editor as any) as any as PlateEditor;
   const { reset } = e;
 

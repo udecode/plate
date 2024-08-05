@@ -9,7 +9,10 @@ export const MARK_SUBSCRIPT = 'subscript';
 const MARK_SUPERSCRIPT = 'superscript';
 
 /** Enables support for subscript formatting. */
-export const SubscriptPlugin = createPlugin<ToggleMarkPluginOptions>({
+export const SubscriptPlugin = createPlugin<
+  'subscript',
+  ToggleMarkPluginOptions
+>({
   deserializeHtml: {
     rules: [
       { validNodeName: ['SUB'] },

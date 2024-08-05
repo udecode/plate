@@ -14,7 +14,7 @@ export const EmojiInputPlugin = createPlugin({
   key: ELEMENT_EMOJI_INPUT,
 });
 
-export const EmojiPlugin = createPlugin<EmojiPluginOptions>({
+export const EmojiPlugin = createPlugin<'emoji', EmojiPluginOptions>({
   key: KEY_EMOJI,
   options: {
     createComboboxInput: () => ({

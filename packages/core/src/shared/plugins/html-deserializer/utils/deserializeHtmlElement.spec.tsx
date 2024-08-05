@@ -32,8 +32,8 @@ describe('when element has class and attribute, and plugin has deserialize type,
           plugins: [
             createPlugin({
               deserializeHtml: {
-                getNode: (el) => ({
-                  id: el.dataset.id,
+                getNode: ({ element }) => ({
+                  id: element.dataset.id,
                   type: 'poll',
                 }),
                 isElement: true,
@@ -186,10 +186,10 @@ describe('when plugin has deserialize.getNode', () => {
       ParagraphPlugin,
       LinkPlugin.extend({
         deserializeHtml: {
-          getNode: (el) => ({
-            opener: el.getAttribute('target') === '_blank',
+          getNode: ({ element }) => ({
+            opener: element.getAttribute('target') === '_blank',
             type: 'a',
-            url: el.getAttribute('href'),
+            url: element.getAttribute('href'),
           }),
         },
       }),

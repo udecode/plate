@@ -91,20 +91,20 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
 Creates a new Plate plugin with the given configuration, supporting extension, nested plugin manipulation, and runtime configuration.
 
 <APIParameters>
-  <APIItem name="config" type="Partial<PlatePlugin<O, T, Q, S>>">
-    The configuration object for the plugin. All properties are optional except `key`.
+  <APIItem name="config" type="Partial<PlatePlugin<K, O, A, T, S>> | ((editor: PlateEditor) => Partial<PlatePlugin<K, O, A, T, S>>)">
+    The configuration object for the plugin, or a function that returns the configuration. If a function is provided, it will be stored in `__extensions` and executed when the plugin is resolved with the editor. All properties are optional except `key`.
     <APISubList>
-      <APISubItem name="key" type="string">
-        Unique identifier for the plugin. Defaults to 'unnamed' if not provided.
+      <APISubItem name="key" type="string" required>
+        Unique identifier for the plugin. Required and specified by the K generic.
       </APISubItem>
       <APISubItem name="options" type="O">
         Plugin-specific options.
       </APISubItem>
-      <APISubItem name="transforms" type="T">
-        Transformation functions provided by the plugin.
+      <APISubItem name="api" type="A">
+        API functions provided by the plugin. These should not mutate the editor state.
       </APISubItem>
-      <APISubItem name="queries" type="Q">
-        Query functions provided by the plugin.
+      <APISubItem name="transforms" type="T">
+        Transformation functions provided by the plugin. These should mutate the editor state.
       </APISubItem>
       <APISubItem name="plugins" type="PlatePlugin[]">
         Nested plugins.
@@ -117,14 +117,15 @@ Creates a new Plate plugin with the given configuration, supporting extension, n
 </APIParameters>
 
 <APIReturns>
-  A new `PlatePlugin<O, T, Q, S>` instance with the following properties and methods:
+  A new `PlatePlugin<K, O, A, T, S>` instance with the following properties and methods:
   - All properties from the input config, merged with default values.
-  - `configure(options: Partial<O>): PlatePlugin<O, T, Q, S>`
-  - `extend(extendConfig: Partial<PlatePlugin> | ((editor: PlateEditor, plugin: PlatePlugin) => Partial<PlatePlugin>)): PlatePlugin<O, T, Q, S>`
-  - `extendPlugin(key: string, extendConfig: Partial<PlatePlugin> | ((editor: PlateEditor, plugin: PlatePlugin) => Partial<PlatePlugin>)): PlatePlugin<O, T, Q, S>`
+  - `configure(options: Partial<O>): PlatePlugin<K, O, A, T, S>`
+  - `extend(extendConfig: Partial<PlatePlugin> | ((editor: PlateEditor, plugin: PlatePlugin) => Partial<PlatePlugin>)): PlatePlugin<K, O, A, T, S>`
+  - `extendPlugin(key: string, extendConfig: Partial<PlatePlugin> | ((editor: PlateEditor, plugin: PlatePlugin) => Partial<PlatePlugin>)): PlatePlugin<K, O, A, T, S>`
 </APIReturns>
 
 The `createPlugin` function provides a flexible and powerful way to create and manipulate plugins in Plate:
+- **Generic Support**: Uses generics `K`, `O`, `A`, `T`, and `S` for strict typing of key, options, API, transforms, and storage respectively.
 - **Default Values**: Automatically sets default values for essential plugin properties.
 - **Nested Plugin Support**: Allows for creating and extending plugins at any nesting level.
 - **Configuration**: The `configure` method enables updating plugin options.
@@ -133,11 +134,18 @@ The `createPlugin` function provides a flexible and powerful way to create and m
 #### Basic Usage
 
 ```typescript
-const myPlugin = createPlugin({
+const myPlugin = createPlugin<'myPlugin', MyOptions, MyApi, MyTransforms>({
   key: 'myPlugin',
   options: { someOption: true },
   transforms: { someTransform: () => {} },
 });
+
+// or with a function / types inferred
+const myPlugin2 = createPlugin((editor) => ({
+  key: 'myPlugin',
+  options: { someOption: true },
+  transforms: { someTransform: () => {} },
+}));
 ```
 
 ### getPlugin

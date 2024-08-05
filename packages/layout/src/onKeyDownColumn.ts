@@ -11,12 +11,12 @@ import { Path } from 'slate';
 
 import { ELEMENT_COLUMN_GROUP } from './ColumnPlugin';
 
-export const onKeyDownColumn: KeyboardHandler = (editor) => (e) => {
-  if (e.defaultPrevented) return;
+export const onKeyDownColumn: KeyboardHandler = ({ editor, event }) => {
+  if (event.defaultPrevented) return;
 
   const at = editor.selection;
 
-  if (isHotkey('mod+a', e) && at) {
+  if (isHotkey('mod+a', event) && at) {
     const aboveNode = getAboveNode(editor);
     const ancestorNode = getAncestorNode(editor);
 
@@ -38,7 +38,7 @@ export const onKeyDownColumn: KeyboardHandler = (editor) => (e) => {
 
     select(editor, targetPath);
 
-    e.preventDefault();
-    e.stopPropagation();
+    event.preventDefault();
+    event.stopPropagation();
   }
 };

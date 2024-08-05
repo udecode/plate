@@ -12,10 +12,12 @@ import type { TrailingBlockPluginOptions } from './TrailingBlockPlugin';
  * Add a trailing block when the last node type is not `type` and when the
  * editor has .
  */
-export const withTrailingBlock: WithOverride<TrailingBlockPluginOptions> = (
+export const withTrailingBlock: WithOverride<TrailingBlockPluginOptions> = ({
   editor,
-  { options: { level, type, ...query } }
-) => {
+  plugin: {
+    options: { level, type, ...query },
+  },
+}) => {
   const { normalizeNode } = editor;
 
   editor.normalizeNode = ([currentNode, currentPath]) => {

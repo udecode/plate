@@ -1,7 +1,7 @@
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import type { OverrideByKey } from '../types/OverrideByKey';
-import type { PlatePlugin } from '../types/plugin/PlatePlugin';
+import type { PlatePluginList } from '../types/plugin/PlatePlugin';
 import type { PlatePluginComponent } from '../types/plugin/PlatePluginComponent';
 
 import { overridePluginsByKey } from './overridePluginsByKey';
@@ -13,7 +13,7 @@ import { overridePluginsByKey } from './overridePluginsByKey';
  * the second param.
  */
 export const createPlugins = (
-  plugins: PlatePlugin[],
+  plugins: PlatePluginList,
   {
     components,
     overrideByKey,
@@ -24,7 +24,7 @@ export const createPlugins = (
     /** Override plugin by key. */
     overrideByKey?: OverrideByKey;
   } = {}
-): PlatePlugin[] => {
+): PlatePluginList => {
   let allOverrideByKey: OverrideByKey = {};
 
   if (overrideByKey) {
@@ -43,5 +43,5 @@ export const createPlugins = (
     });
   }
 
-  return plugins as PlatePlugin[];
+  return plugins;
 };

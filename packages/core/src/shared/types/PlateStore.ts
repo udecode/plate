@@ -1,11 +1,9 @@
-import type React from 'react';
-
-import type { TSelection, Value } from '@udecode/slate';
+import type { TNodeEntry, TSelection, Value } from '@udecode/slate';
+import type { Range } from 'slate';
 
 import type { PlateId } from '../../client';
 import type { PlateEditor } from './PlateEditor';
 import type { Nullable } from './misc/Nullable';
-import type { PlatePlugin } from './plugin/PlatePlugin';
 import type { TEditableProps } from './slate-react/TEditableProps';
 
 export type PlateChangeKey =
@@ -32,12 +30,6 @@ export type PlateStoreState<
    */
   id: PlateId;
 
-  /** Flattened plugins. */
-  plugins: PlatePlugin[];
-
-  /** Plugins prop passed to `Plate`. */
-  rawPlugins: PlatePlugin[];
-
   /**
    * Value of the editor.
    *
@@ -45,22 +37,24 @@ export type PlateStoreState<
    */
   value: V;
 } & Nullable<{
-  decorate: NonNullable<TEditableProps['decorate']>;
-
-  /** Access the editor object using a React ref. */
-  editorRef: React.ForwardedRef<E>;
+  decorate: NonNullable<
+    (options: { editor: PlateEditor; entry: TNodeEntry }) => Range[]
+  >;
 
   /** Whether `Editable` is rendered so slate DOM is resolvable. */
   isMounted: boolean;
 
   /** Controlled callback called when the editor state changes. */
-  onChange: (value: V) => void;
+  onChange: (options: { editor: PlateEditor; value: V }) => void;
 
   /** Controlled callback called when the editor.selection changes. */
-  onSelectionChange: (selection: TSelection) => void;
+  onSelectionChange: (options: {
+    editor: PlateEditor;
+    selection: TSelection;
+  }) => void;
 
   /** Controlled callback called when the editor.children changes. */
-  onValueChange: (value: V) => void;
+  onValueChange: (options: { editor: PlateEditor; value: V }) => void;
 
   /**
    * Whether the editor is primary. If no editor is active, then PlateController
@@ -91,7 +85,6 @@ export type PlateStoreState<
 // A list of store keys to be exposed in `editor.plate.set`.
 export const EXPOSED_STORE_KEYS: (keyof PlateStoreState)[] = [
   'readOnly',
-  'plugins',
   'onChange',
   'decorate',
   'renderElement',

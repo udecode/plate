@@ -7,7 +7,7 @@ import { pipeInsertFragment } from '../utils/pipeInsertFragment';
 import { pipeTransformData } from '../utils/pipeTransformData';
 import { pipeTransformFragment } from '../utils/pipeTransformFragment';
 
-export const withInsertData: WithOverride = (editor) => {
+export const withInsertData: WithOverride = ({ editor, plugin }) => {
   const { insertData } = editor;
 
   editor.insertData = (dataTransfer) => {
@@ -25,7 +25,7 @@ export const withInsertData: WithOverride = (editor) => {
 
       if (!data) return;
       if (
-        !pipeInsertDataQuery(injectedPlugins, {
+        !pipeInsertDataQuery(editor, injectedPlugins, {
           data,
           dataTransfer,
         })
@@ -33,7 +33,7 @@ export const withInsertData: WithOverride = (editor) => {
         return false;
       }
 
-      data = pipeTransformData(injectedPlugins, {
+      data = pipeTransformData(editor, injectedPlugins, {
         data,
         dataTransfer,
       });
@@ -41,11 +41,13 @@ export const withInsertData: WithOverride = (editor) => {
       let fragment = getFragment?.({
         data,
         dataTransfer,
+        editor,
+        plugin,
       });
 
       if (!fragment?.length) return false;
 
-      fragment = pipeTransformFragment(injectedPlugins, {
+      fragment = pipeTransformFragment(editor, injectedPlugins, {
         data,
         dataTransfer,
         fragment,

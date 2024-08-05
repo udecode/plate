@@ -10,9 +10,10 @@ import { Path } from 'slate';
 import type { IndentListPluginOptions } from '../IndentListPlugin';
 import type { GetSiblingIndentListOptions } from '../queries/getSiblingIndentList';
 
-export const indentListPluginPage = createPlugin<IndentListPluginOptions>(
-  {}
-).extend((e) => ({
+export const indentListPluginPage = createPlugin<
+  'listStyleType',
+  IndentListPluginOptions
+>({}).extend((e) => ({
   options: {
     getSiblingIndentListOptions: {
       getNextEntry: ([, path]: any) => {

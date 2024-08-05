@@ -1,10 +1,10 @@
-import type { PlateEditor } from '../shared/types';
+import type { WithOverride } from '../shared/types';
 
 import { createPlugin } from '../shared';
 
 const noop = (returnValue?: any) => (() => returnValue) as any;
 
-export const withReact = (editor: PlateEditor) => {
+export const withReact: WithOverride = ({ editor }) => {
   editor.hasEditableTarget = noop(false);
   editor.hasRange = noop(false);
   editor.hasSelectableTarget = noop(false);

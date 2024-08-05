@@ -10,7 +10,10 @@ export const MARK_HIGHLIGHT = 'highlight';
  * Enables support for highlights, useful when reviewing content or highlighting
  * it for future reference.
  */
-export const HighlightPlugin = createPlugin<ToggleMarkPluginOptions>({
+export const HighlightPlugin = createPlugin<
+  'highlight',
+  ToggleMarkPluginOptions
+>({
   deserializeHtml: {
     rules: [
       {

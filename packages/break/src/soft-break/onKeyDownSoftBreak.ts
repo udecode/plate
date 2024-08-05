@@ -8,21 +8,25 @@ import {
 
 import type { SoftBreakPluginOptions } from './types';
 
-export const onKeyDownSoftBreak: KeyboardHandler<SoftBreakPluginOptions> =
-  (editor, { options: { rules = [] } }) =>
-  (event) => {
-    if (event.defaultPrevented) return;
+export const onKeyDownSoftBreak: KeyboardHandler<SoftBreakPluginOptions> = ({
+  editor,
+  event,
+  plugin: {
+    options: { rules = [] },
+  },
+}) => {
+  if (event.defaultPrevented) return;
 
-    const entry = getBlockAbove(editor);
+  const entry = getBlockAbove(editor);
 
-    if (!entry) return;
+  if (!entry) return;
 
-    rules.forEach(({ hotkey, query }) => {
-      if (isHotkey(hotkey, event as any) && queryNode(entry, query)) {
-        event.preventDefault();
-        event.stopPropagation();
+  rules.forEach(({ hotkey, query }) => {
+    if (isHotkey(hotkey, event as any) && queryNode(entry, query)) {
+      event.preventDefault();
+      event.stopPropagation();
 
-        editor.insertText('\n');
-      }
-    });
-  };
+      editor.insertText('\n');
+    }
+  });
+};

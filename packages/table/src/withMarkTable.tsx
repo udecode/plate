@@ -12,7 +12,7 @@ import type { TablePluginOptions } from './types';
 
 import { getTableGridAbove } from './queries';
 
-export const withMarkTable: WithOverride<TablePluginOptions> = (editor) => {
+export const withMarkTable: WithOverride<TablePluginOptions> = ({ editor }) => {
   const { addMark, getMarks, removeMark } = editor;
 
   editor.addMark = (key: string, value: any) => {

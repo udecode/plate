@@ -15,10 +15,10 @@ const DEFAULT_MAX_INITIAL_HEIGHT = 320;
 const DEFAULT_MIN_RESIZE_WIDTH = 100;
 const DEFAULT_MAX_RESIZE_WIDTH = 640;
 
-export const withCloudImage: WithOverride<CloudImagePluginOptions> = (
-  e,
-  plugin
-) => {
+export const withCloudImage: WithOverride<CloudImagePluginOptions> = ({
+  editor: e,
+  plugin,
+}) => {
   const editor = e as PlateCloudEditor;
   const { maxInitialHeight, maxInitialWidth, maxResizeWidth, minResizeWidth } =
     {

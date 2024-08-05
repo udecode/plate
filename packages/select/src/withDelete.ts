@@ -10,10 +10,12 @@ import {
 import type { DeletePlugin } from './DeletePlugin';
 
 /** Set a list of element types to select on backspace */
-export const withDelete: WithOverride<DeletePlugin> = (
+export const withDelete: WithOverride<DeletePlugin> = ({
   editor,
-  { options: { query } }
-) => {
+  plugin: {
+    options: { query },
+  },
+}) => {
   const { deleteForward } = editor;
   editor.deleteForward = (unit) => {
     if (!editor.selection) return;

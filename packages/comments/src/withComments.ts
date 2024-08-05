@@ -6,10 +6,9 @@ import { MARK_COMMENT } from './constants';
 import { removeCommentMark } from './transforms/removeCommentMark';
 import { getCommentCount } from './utils/getCommentCount';
 
-export const withComments: WithOverride<CommentsPluginOptions> = (
+export const withComments: WithOverride<CommentsPluginOptions> = ({
   editor,
-  _plugin
-) => {
+}) => {
   const { insertBreak, normalizeNode } = editor;
 
   editor.insertBreak = () => {

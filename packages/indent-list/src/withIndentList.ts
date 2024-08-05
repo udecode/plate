@@ -24,10 +24,10 @@ import { getNextIndentList } from './queries/getNextIndentList';
 import { getPreviousIndentList } from './queries/getPreviousIndentList';
 import { ListStyleType } from './types';
 
-export const withIndentList: WithOverride<IndentListPluginOptions> = (
+export const withIndentList: WithOverride<IndentListPluginOptions> = ({
   editor,
-  { options }
-) => {
+  plugin: { options },
+}) => {
   const { apply } = editor;
 
   const { getSiblingIndentListOptions } = options;

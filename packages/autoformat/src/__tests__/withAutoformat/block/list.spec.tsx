@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { mockPlugin } from '@udecode/plate-common';
+import { createPlugin } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 import { autoformatPlugin } from 'www/src/lib/plate/demo/plugins/autoformatPlugin';
@@ -35,7 +35,7 @@ describe('when -space', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(autoformatPlugin as any)
+      createPlugin(autoformatPlugin as any)
     );
 
     editor.insertText(' ');
@@ -68,7 +68,7 @@ describe('when 1.space', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(autoformatPlugin as any)
+      createPlugin(autoformatPlugin as any)
     );
 
     editor.insertText(' ');
@@ -97,7 +97,7 @@ describe('when [].space', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(autoformatPlugin as any)
+      createPlugin(autoformatPlugin as any)
     );
 
     editor.insertText(' ');
@@ -126,7 +126,7 @@ describe('when [x].space', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(autoformatPlugin as any)
+      createPlugin(autoformatPlugin as any)
     );
 
     editor.insertText(' ');
@@ -175,7 +175,7 @@ describe('when +space', () => {
 
     const editor = withAutoformat(
       withReact(input),
-      mockPlugin(autoformatPluginWitoutTogglePreformat)
+      createPlugin(autoformatPluginWitoutTogglePreformat)
     );
 
     editor.insertText(' ');

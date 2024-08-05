@@ -7,11 +7,23 @@ import type { PlatePlugin } from '../types/plugin/PlatePlugin';
  * Recursive deep merge of each plugin from `overrideByKey` into plugin with
  * same key (plugin > plugin.plugins).
  */
-export const overridePluginsByKey = <O = {}, T = {}, Q = {}, S = {}>(
-  plugin: PlatePlugin<NoInfer<O>, NoInfer<T>, NoInfer<Q>, NoInfer<S>>,
+export const overridePluginsByKey = <
+  K extends string = '',
+  O = {},
+  A = {},
+  T = {},
+  S = {},
+>(
+  plugin: PlatePlugin<
+    NoInfer<K>,
+    NoInfer<O>,
+    NoInfer<A>,
+    NoInfer<T>,
+    NoInfer<S>
+  >,
   overrideByKey: Record<string, Partial<PlatePlugin<any, any, any, any>>> = {},
   nested = false
-): PlatePlugin<NoInfer<O>, NoInfer<T>, NoInfer<Q>, NoInfer<S>> => {
+): PlatePlugin<NoInfer<K>, NoInfer<O>, NoInfer<A>, NoInfer<T>, NoInfer<S>> => {
   if (overrideByKey[plugin.key]) {
     const {
       __extensions: pluginOverridesExtensions,

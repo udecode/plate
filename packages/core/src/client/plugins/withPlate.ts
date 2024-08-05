@@ -1,10 +1,17 @@
-import type { TEditor, Value } from '@udecode/slate';
+import { type TEditor, type Value, normalizeEditor } from '@udecode/slate';
 
 import type { PlateEditor } from '../../shared/types/PlateEditor';
-import type { PlateProps } from '../components';
 
+import {
+  type GetCorePluginsOptions,
+  type PlatePlugin,
+  createPlugin,
+  getCorePlugins,
+  pipeNormalizeInitialValue,
+} from '../../shared';
 import { resetEditor } from '../../shared/transforms';
-import { setEditorPlugins } from '../utils/setEditorPlugins';
+import { resolvePlugins } from '../../shared/utils/resolvePlugins';
+import { ReactPlugin } from './react';
 
 const shouldHaveBeenOverridden = (fnName: string) => () => {
   console.warn(
@@ -12,15 +19,30 @@ const shouldHaveBeenOverridden = (fnName: string) => () => {
   );
 };
 
-export interface WithPlateOptions<
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
-> extends Pick<
-    PlateProps<V, E>,
-    'disableCorePlugins' | 'maxLength' | 'plugins'
-  > {
+export type WithPlateOptions<V extends Value> = {
+  children?: V;
+
   id?: any;
-}
+
+  /** Normalize editor value on initialization. */
+  shouldNormalizeEditor?: boolean;
+} & GetCorePluginsOptions &
+  Omit<
+    Partial<PlatePlugin<'editor'>>,
+    | '__extensions'
+    | 'component'
+    | 'dependencies'
+    | 'deserializeHtml'
+    | 'isElement'
+    | 'isInline'
+    | 'isLeaf'
+    | 'isMarkableVoid'
+    | 'isVoid'
+    | 'key'
+    | 'priority'
+    | 'serializeHtml'
+    | 'type'
+  >;
 
 /**
  * Apply `withInlineVoid` and all plate plugins `withOverrides`. Overrides:
@@ -36,11 +58,14 @@ export const withPlate = <
 >(
   e: E,
   {
+    children,
     disableCorePlugins,
     id,
     maxLength,
     plugins = [],
-  }: WithPlateOptions<V, E & PlateEditor<V>> = {}
+    shouldNormalizeEditor,
+    ...pluginConfig
+  }: WithPlateOptions<V> = {}
 ): E & PlateEditor<V> => {
   let editor = e as any as E & PlateEditor<V>;
 
@@ -65,18 +90,39 @@ export const withPlate = <
     editor.key = Math.random();
   }
 
-  setEditorPlugins(editor, {
-    disableCorePlugins,
-    maxLength,
-    plugins,
+  const editorPlugin = createPlugin({
+    key: 'editor',
+    priority: 10_000,
+    ...pluginConfig,
+    plugins: [
+      ...getCorePlugins(editor, {
+        disableCorePlugins,
+        maxLength,
+        reactPlugin: ReactPlugin,
+      }),
+      ...plugins,
+    ],
   });
+
+  resolvePlugins(editor, [editorPlugin]);
 
   // withOverrides
   editor.plugins.forEach((plugin) => {
     if (plugin.withOverrides) {
-      editor = plugin.withOverrides(editor, plugin) as any;
+      editor = plugin.withOverrides({ editor, plugin }) as any;
     }
   });
+
+  if (children) {
+    editor.children = children;
+  }
+  if (editor.children?.length) {
+    pipeNormalizeInitialValue(editor);
+
+    if (shouldNormalizeEditor) {
+      normalizeEditor(editor, { force: true });
+    }
+  }
 
   return editor;
 };

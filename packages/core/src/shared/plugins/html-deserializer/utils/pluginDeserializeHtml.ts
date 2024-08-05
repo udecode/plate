@@ -107,7 +107,7 @@ export const pluginDeserializeHtml = (
 
     if (!isValid) return;
   }
-  if (query && !query(el)) {
+  if (query && !query({ editor, element: el, plugin })) {
     return;
   }
   if (!getNode) {
@@ -120,14 +120,19 @@ export const pluginDeserializeHtml = (
     }
   }
 
-  let node = getNode(el, {}) ?? {};
+  let node = getNode({ editor, element: el, node: {}, plugin }) ?? {};
 
   if (Object.keys(node).length === 0) return;
 
   const injectedPlugins = getInjectedPlugins(editor, plugin);
 
   injectedPlugins.forEach((injectedPlugin) => {
-    const res = injectedPlugin.deserializeHtml?.getNode?.(el, node);
+    const res = injectedPlugin.deserializeHtml?.getNode?.({
+      editor,
+      element: el,
+      node,
+      plugin,
+    });
 
     if (res) {
       node = {

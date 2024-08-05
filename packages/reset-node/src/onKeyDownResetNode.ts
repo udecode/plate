@@ -14,34 +14,38 @@ export const SIMULATE_BACKSPACE: any = {
   which: 8,
 };
 
-export const onKeyDownResetNode: KeyboardHandler<ResetNodePluginOptions> =
-  (editor, { options: { rules } }) =>
-  (event) => {
-    if (event.defaultPrevented) return;
+export const onKeyDownResetNode: KeyboardHandler<ResetNodePluginOptions> = ({
+  editor,
+  event,
+  plugin: {
+    options: { rules },
+  },
+}) => {
+  if (event.defaultPrevented) return;
 
-    let reset;
+  let reset;
 
-    if (!editor.selection) return;
-    if (isCollapsed(editor.selection)) {
-      rules!.forEach(({ defaultType, hotkey, onReset, predicate, types }) => {
-        if (
-          hotkey &&
-          isHotkey(hotkey, event as any) &&
-          predicate(editor as any) &&
-          someNode(editor, { match: { type: types } })
-        ) {
-          event.preventDefault?.();
+  if (!editor.selection) return;
+  if (isCollapsed(editor.selection)) {
+    rules!.forEach(({ defaultType, hotkey, onReset, predicate, types }) => {
+      if (
+        hotkey &&
+        isHotkey(hotkey, event as any) &&
+        predicate(editor as any) &&
+        someNode(editor, { match: { type: types } })
+      ) {
+        event.preventDefault?.();
 
-          setElements(editor, { type: defaultType });
+        setElements(editor, { type: defaultType });
 
-          if (onReset) {
-            onReset(editor as any);
-          }
-
-          reset = true;
+        if (onReset) {
+          onReset(editor as any);
         }
-      });
-    }
 
-    return reset;
-  };
+        reset = true;
+      }
+    });
+  }
+
+  return reset;
+};

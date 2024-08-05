@@ -12,18 +12,18 @@ export interface DndPluginOptions {
 
 export const KEY_DND = 'dnd';
 
-export const DndPlugin = createPlugin<DndPluginOptions>({
+export const DndPlugin = createPlugin<'dnd', DndPluginOptions>({
   handlers: {
-    onDragEnd: () => () => {
+    onDragEnd: () => {
       return dndStore.set.isDragging(false);
     },
-    onDragStart: () => (e) => {
-      const id = (e.target as HTMLDivElement).dataset.key ?? null;
+    onDragStart: ({ event }) => {
+      const id = (event.target as HTMLDivElement).dataset.key ?? null;
       dndStore.set.DraggingId(id);
 
       return dndStore.set.isDragging(true);
     },
-    onDrop: (editor) => () => {
+    onDrop: ({ editor }) => {
       const id = dndStore.get.DraggingId();
 
       setTimeout(() => {
@@ -34,7 +34,7 @@ export const DndPlugin = createPlugin<DndPluginOptions>({
     },
   },
   key: KEY_DND,
-}).extend((_, { options }) => ({
+}).extend(({ plugin: { options } }) => ({
   renderAfterEditable: options.enableScroller
     ? () => <DndScroller {...options?.scrollerProps} />
     : undefined,

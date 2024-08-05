@@ -7,12 +7,12 @@ import { withCloud } from './withCloud';
 
 export const KEY_CLOUD = 'cloud';
 
-export const CloudPlugin = createPlugin<CloudPluginOptions>({
+export const CloudPlugin = createPlugin<'cloud', CloudPluginOptions>({
   handlers: {
     // TODO
-    onDrop: (editor) => (e) => onDropCloud(editor as any, e),
+    onDrop: ({ editor, event }) => onDropCloud(editor as any, event),
     // TODO
-    onPaste: (editor) => (e) => onPasteCloud(editor as any, e),
+    onPaste: ({ editor, event }) => onPasteCloud(editor as any, event),
   },
   key: KEY_CLOUD,
   withOverrides: withCloud,
