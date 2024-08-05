@@ -1,10 +1,12 @@
-import type { TElement } from '@udecode/plate-common';
+import type { PlateEditor, TElement, Value } from '@udecode/plate-common';
 
 export interface TIndentElement extends TElement {
   indent: number;
 }
 
 export type IndentPlugin = {
+  disableTab?: <V extends Value>(e: PlateEditor<V>) => boolean;
+
   /** Maximum number of indentation. */
   indentMax?: number;
 
