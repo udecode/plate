@@ -8,7 +8,11 @@ export type CreatePlateEditorOptions<
   V extends Value = Value,
   E extends TEditor<V> = TEditor<V>,
 > = {
-  /** Initial editor (without `withPlate`). */
+  /**
+   * Initial editor to be extended with `withPlate`.
+   *
+   * @default createEditor()
+   */
   editor?: E;
 } & WithPlateOptions<V>;
 

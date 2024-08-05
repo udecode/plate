@@ -2,7 +2,7 @@ import type { WithOverride } from '../types';
 
 import { createPlugin } from '../utils';
 
-export const KEY_INLINE_VOID = 'inline-void';
+export const KEY_INLINE_VOID = 'inlineVoid';
 
 /**
  * Merge and register all the inline types and void types from the plugins and

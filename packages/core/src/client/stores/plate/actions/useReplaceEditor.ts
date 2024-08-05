@@ -25,8 +25,6 @@ export const useReplaceEditor = (
 
   return React.useCallback(() => {
     const newEditor = createPlateEditor({
-      // disable core plugins as it's already included
-      disableCorePlugins: true,
       id: editor.id,
       plugins: editor.plugins,
     });

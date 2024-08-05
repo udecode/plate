@@ -24,12 +24,11 @@ export const withPlate = <
 >(
   e: E,
   {
-    children,
-    disableCorePlugins,
     id,
     maxLength,
     plugins = [],
     shouldNormalizeEditor,
+    value,
   }: WithPlateOptions<V> = {}
 ): E & PlateEditor<V> => {
   let editor = e as any as E & PlateEditor<V>;
@@ -56,8 +55,7 @@ export const withPlate = <
   }
 
   resolvePlugins(editor as any, [
-    ...getCorePlugins(editor, {
-      disableCorePlugins,
+    ...getCorePlugins({
       maxLength,
       reactPlugin: ReactPlugin,
     }),
@@ -71,8 +69,8 @@ export const withPlate = <
     }
   });
 
-  if (children) {
-    editor.children = children;
+  if (value) {
+    editor.children = value;
   }
   if (editor.children?.length) {
     pipeNormalizeInitialValue(editor);

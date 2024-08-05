@@ -67,21 +67,6 @@ function PlateInner({
   shouldNormalizeEditor,
   value: valueProp,
 }: PlateProps) {
-  // const editor = React.useMemo(
-  //   () =>
-  //     editorProp
-  // ??
-  // createPlateEditor({
-  //   disableCorePlugins,
-  //   id,
-  //   maxLength,
-  //   plugins: pluginsProp as any,
-  //   ...rootPluginOptions,
-  // }),
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  //   []
-  // );
-
   const value = React.useMemo(
     () => {
       editor.children = initialValue ?? valueProp ?? editor.children;

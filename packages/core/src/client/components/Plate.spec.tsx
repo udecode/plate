@@ -1,14 +1,17 @@
 import React from 'react';
 
+import type { Value } from '@udecode/slate';
+
 import { renderHook } from '@testing-library/react-hooks';
-import {
-  createPlateEditor,
-  useEditorRef,
-  usePlateSelectors,
-} from '@udecode/plate-common';
 
 import { createPlugin } from '../../shared';
-import { PlateController, usePlateEditorStore } from '../stores';
+import {
+  PlateController,
+  useEditorRef,
+  usePlateEditorStore,
+  usePlateSelectors,
+} from '../stores';
+import { createPlateEditor } from '../utils';
 import { Plate } from './Plate';
 
 describe('Plate', () => {
@@ -74,7 +77,9 @@ describe('Plate', () => {
   describe('usePlateSelectors().value()', () => {
     describe('when initialValue is defined', () => {
       it('should be initialValue', async () => {
-        const initialValue = [{ children: [{ text: 'test' }], type: 'p' }];
+        const initialValue: Value = [
+          { children: [{ text: 'test' }], type: 'p' },
+        ];
         const editor = createPlateEditor();
 
         const wrapper = ({ children }: any) => (
@@ -92,7 +97,7 @@ describe('Plate', () => {
 
     describe('when value is defined', () => {
       it('should be value', async () => {
-        const value = [{ children: [{ text: 'value' }], type: 'p' }];
+        const value: Value = [{ children: [{ text: 'value' }], type: 'p' }];
         const editor = createPlateEditor();
 
         const wrapper = ({ children }: any) => (

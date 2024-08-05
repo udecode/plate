@@ -2,7 +2,7 @@ import { createPlugin } from '../../utils';
 import { BLUR_EDITOR_EVENT, FOCUS_EDITOR_EVENT } from './constants';
 import { eventEditorActions, eventEditorSelectors } from './eventEditorStore';
 
-export const KEY_EVENT_EDITOR = 'event-editor';
+export const KEY_EVENT_EDITOR = 'eventEditor';
 
 export const EventEditorPlugin = createPlugin({
   handlers: {

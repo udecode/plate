@@ -2,7 +2,7 @@ import { getEditorString, withoutNormalizing } from '@udecode/slate';
 
 import type { WithOverride } from '../types/index';
 
-import { createPlugin } from '../utils';
+import { createPlugin, getPluginOptions } from "../utils";
 
 export type LengthPluginOptions = {
   maxLength: number;
@@ -10,11 +10,10 @@ export type LengthPluginOptions = {
 
 export const withLength: WithOverride<LengthPluginOptions> = ({
   editor,
-  plugin,
+  plugin: { options },
 }) => {
   const { apply } = editor;
-  const { options } = plugin;
-
+  
   editor.apply = (operation) => {
     withoutNormalizing(editor, () => {
       apply(operation);

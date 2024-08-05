@@ -32,6 +32,11 @@ export type PlatePluginMethods<
 
   configure: (options: O) => PlatePlugin<K, O, A, T, S>;
 
+  configurePlugin: <EO = {}>(
+    key: string,
+    options: EO
+  ) => PlatePlugin<K, O, A, T, S>;
+
   extend: <EO = {}, EA = {}, ET = {}, ES = {}>(
     extendConfig:
       | ((
@@ -151,6 +156,17 @@ export type PlatePlugin<
   /** Extended properties used by any plugin as options. */
   options: O;
 
+  override: {
+    /** Replace plugin components by key. */
+    components?: Record<PluginKey, PlatePluginComponent>;
+
+    /** Enable or disable plugins */
+    enabled?: Partial<Record<string, boolean>>;
+
+    /** Extend plugins by key. */
+    plugins?: Record<PluginKey, Partial<PlatePlugin<any, any, any, any, any>>>;
+  };
+
   /**
    * Recursive plugin support to allow having multiple plugins in a single
    * plugin. Plate eventually flattens all the plugins into the editor.
@@ -191,9 +207,6 @@ export type PlatePlugin<
      */
     component?: PlatePluginComponent;
 
-    /** Override components by plugin key. */
-    componentsByKey?: Record<string, PlatePluginComponent>;
-
     /** @see {@link Decorate} */
     decorate?: Decorate<O, A, T, S>;
 
@@ -211,12 +224,6 @@ export type PlatePlugin<
     normalizeInitialValue?: (
       ctx: { value: Value } & PlatePluginContext<string, O, A, T, S>
     ) => Value;
-
-    /** Property used by Plate to deeply override plugins by key. */
-    overrideByKey?: Record<
-      PluginKey,
-      Partial<PlatePlugin<any, any, any, any, any>>
-    >;
 
     /**
      * Property used by Plate to override node `component` props. If function,
@@ -243,16 +250,6 @@ export type PlatePlugin<
      * `renderLeaf` when serializing a node of this `type`.
      */
     serializeHtml?: SerializeHtml<O, A, T, S>;
-
-    // /**
-    //  * Recursive plugin merging. Can be used to derive plugin fields from
-    //  * `editor` and `plugin`. The returned value will be deeply merged to the
-    //  * plugin.
-    //  */
-    // then?: (
-    //   editor: PlateEditor,
-    //   plugin: PlatePlugin<K, O, A, T, S>
-    // ) => Partial<PlatePlugin<K, O, A, T, S>> | undefined | void;
 
     /** Hook called when the editor is initialized. */
     useHooks?: PlatePluginUseHooks<O, A, T, S>;

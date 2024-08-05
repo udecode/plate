@@ -397,14 +397,12 @@ describe('createPlugin', () => {
               type: 'athen',
             })
             .extendPlugin('bb', {
-              key: 'bb',
               type: 'bb',
             })
             .extendPlugin('aa', {
               type: 'ab',
             })
             .extendPlugin('cc', {
-              key: 'cc',
               type: 'cc',
             })
             .extend({
@@ -439,6 +437,122 @@ describe('createPlugin', () => {
       expect({
         type: cc.type,
       }).toEqual({ type: 'cc1' });
+    });
+  });
+
+  describe('when extendPlugin a cousin plugin', () => {
+    it('should correctly extend a plugin at the same level', () => {
+      const editor = createPlateEditor({
+        plugins: [
+          createPlugin({
+            key: 'parent1',
+            plugins: [
+              createPlugin({
+                key: 'child1',
+                options: {
+                  initialValue: 'child1',
+                },
+              }),
+            ],
+          }),
+          createPlugin({
+            key: 'parent2',
+            plugins: [
+              createPlugin({
+                key: 'child2',
+                options: {
+                  initialValue: 'child2',
+                },
+              }),
+            ],
+          }).extendPlugin('child1', {
+            options: {
+              extendedValue: 'extended child1',
+            },
+          }),
+        ],
+      });
+
+      const child1Plugin = getPlugin(editor, 'child1');
+      const child1Options = getPluginOptions(editor, 'child1');
+
+      expect(child1Plugin.key).toBe('child1');
+      expect(child1Options.initialValue).toBe('child1');
+      expect(child1Options.extendedValue).toBe('extended child1');
+
+      const child2Plugin = getPlugin(editor, 'child2');
+      const child2Options = getPluginOptions(editor, 'child2');
+
+      expect(child2Plugin.key).toBe('child2');
+      expect(child2Options.initialValue).toBe('child2');
+      expect(child2Options.extendedValue).toBeUndefined();
+    });
+  });
+
+  describe('when configurePlugin', () => {
+    it('should configure an existing plugin', () => {
+      const plugin = resolvePluginTest(
+        createPlugin({
+          key: 'a',
+          plugins: [
+            createPlugin({
+              key: 'aa',
+              options: { initialValue: 'aa' },
+            }),
+          ],
+        }).configurePlugin('aa', { newOption: 'new' })
+      );
+
+      expect(plugin.plugins[0].options).toEqual({
+        initialValue: 'aa',
+        newOption: 'new',
+      });
+    });
+
+    it('should not add a new plugin if not found', () => {
+      const basePlugin = createPlugin({
+        key: 'a',
+        plugins: [
+          createPlugin({
+            key: 'aa',
+            options: { initialValue: 'aa' },
+          }),
+        ],
+      });
+
+      const configuredPlugin = resolvePluginTest(
+        basePlugin.configurePlugin('bb', { newOption: 'new' })
+      );
+
+      expect(configuredPlugin.plugins).toHaveLength(1);
+      expect(configuredPlugin.plugins[0].key).toBe('aa');
+      expect(configuredPlugin.plugins[0].options).toEqual({
+        initialValue: 'aa',
+      });
+    });
+
+    it('should configure a deeply nested plugin', () => {
+      const plugin = resolvePluginTest(
+        createPlugin({
+          key: 'a',
+          plugins: [
+            createPlugin({
+              key: 'b',
+              plugins: [
+                createPlugin({
+                  key: 'c',
+                  options: { initialValue: 'c' },
+                }),
+              ],
+            }),
+          ],
+        }).configurePlugin('c', { newOption: 'new' })
+      );
+
+      expect(plugin.plugins[0].plugins[0].options).toEqual({
+        initialValue: 'c',
+        newOption: 'new',
+      });
     });
   });
 });

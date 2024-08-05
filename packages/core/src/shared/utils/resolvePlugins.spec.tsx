@@ -62,8 +62,10 @@ describe('resolvePlugins', () => {
     const plugins = [
       createPlugin({
         key: 'a',
-        overrideByKey: {
-          b: { type: 'overridden' },
+        override: {
+          plugins: {
+            b: { type: 'overridden' },
+          },
         },
         type: 'original',
       }),
@@ -230,8 +232,10 @@ describe('applyPluginOverrides', () => {
     editor.plugins = [
       createPlugin({
         key: 'a',
-        overrideByKey: {
-          b: { type: 'overriddenB' },
+        override: {
+          plugins: {
+            b: { type: 'overriddenB' },
+          },
         },
         type: 'originalA',
       }),
@@ -254,8 +258,10 @@ describe('applyPluginOverrides', () => {
     resolvePlugins(editor, [
       createPlugin({
         key: 'parent',
-        overrideByKey: {
-          child: { type: 'overriddenChild' },
+        override: {
+          plugins: {
+            child: { type: 'overriddenChild' },
+          },
         },
         plugins: [createPlugin({ key: 'child', type: 'originalChild' })],
       }),
@@ -269,15 +275,19 @@ describe('applyPluginOverrides', () => {
     editor.plugins = [
       createPlugin({
         key: 'a',
-        overrideByKey: {
-          c: { type: 'overriddenByA' },
+        override: {
+          plugins: {
+            c: { type: 'overriddenByA' },
+          },
         },
         type: 'originalA',
       }),
       createPlugin({
         key: 'b',
-        overrideByKey: {
-          c: { type: 'overriddenByB' },
+        override: {
+          plugins: {
+            c: { type: 'overriddenByB' },
+          },
         },
         type: 'originalB',
       }),
@@ -303,13 +313,15 @@ describe('applyPluginOverrides', () => {
 
     editor.plugins = [
       createPlugin({
-        componentsByKey: {
-          b: OverrideComponent,
-          c: OverrideComponent,
-          d: OverrideComponent,
-          e: OverrideComponent,
-        },
         key: 'a',
+        override: {
+          components: {
+            b: OverrideComponent,
+            c: OverrideComponent,
+            d: OverrideComponent,
+            e: OverrideComponent,
+          },
+        },
         priority: 2,
       }),
       createPlugin({
@@ -327,11 +339,13 @@ describe('applyPluginOverrides', () => {
         priority: 1,
       }),
       createPlugin({
-        componentsByKey: {
-          b: HighPriorityComponent,
-          d: HighPriorityComponent,
-        },
         key: 'e',
+        override: {
+          components: {
+            b: HighPriorityComponent,
+            d: HighPriorityComponent,
+          },
+        },
         priority: 4,
       }),
       createPlugin({

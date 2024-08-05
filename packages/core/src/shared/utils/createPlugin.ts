@@ -93,6 +93,7 @@ export function createPlugin<
       inject: {},
       key,
       options: {},
+      override: {},
       plugins: [],
       priority: 100,
       transforms: {},
@@ -102,6 +103,49 @@ export function createPlugin<
   ) as PlatePlugin<K, O, A, T, S>;
 
   plugin.configure = (opt) => createPlugin(merge({}, plugin, { options: opt }));
+
+  plugin.configurePlugin = (key, options) => {
+    const newPlugin = { ...plugin };
+
+    const configureNestedPlugin = (
+      plugins: PlatePluginList
+    ): { found: boolean; plugins: PlatePluginList } => {
+      let found = false;
+      const updatedPlugins = plugins.map((nestedPlugin) => {
+        if (nestedPlugin.key === key) {
+          found = true;
+
+          return createPlugin({
+            ...nestedPlugin,
+            options: merge({}, nestedPlugin.options, options),
+          });
+        }
+        if (nestedPlugin.plugins && nestedPlugin.plugins.length > 0) {
+          const result = configureNestedPlugin(nestedPlugin.plugins);
+
+          if (result.found) {
+            found = true;
+
+            return {
+              ...nestedPlugin,
+              plugins: result.plugins,
+            };
+          }
+        }
+
+        return nestedPlugin;
+      });
+
+      return { found, plugins: updatedPlugins };
+    };
+
+    const result = configureNestedPlugin(newPlugin.plugins as any);
+    newPlugin.plugins = result.plugins as any;
+
+    // We're not adding a new plugin if not found
+
+    return createPlugin(newPlugin);
+  };
 
   plugin.extend = (extendConfig) => {
     const newPlugin = { ...plugin };

@@ -24,6 +24,13 @@ export const resolvePlugins = (
   applyPluginOverrides(editor);
 
   mergePluginApis(editor);
+
+  // withOverrides
+  editor.plugins.forEach((plugin) => {
+    if (plugin.withOverrides) {
+      editor = plugin.withOverrides({ editor, plugin }) as any;
+    }
+  });
 };
 
 const mergePluginApis = (editor: PlateEditor) => {
@@ -46,7 +53,9 @@ export const resolveAndSortPlugins = (
   const processPlugin = (plugin: PlatePlugin) => {
     const resolvedPlugin = resolvePlugin(editor, plugin);
 
-    if (resolvedPlugin.enabled !== false) {
+    if (resolvedPlugin.enabled === false) {
+      console.log(resolvedPlugin);
+    } else {
       resolvedPlugins.push(resolvedPlugin);
 
       if (resolvedPlugin.plugins && resolvedPlugin.plugins.length > 0) {
@@ -119,29 +128,37 @@ export const applyPluginOverrides = (editor: PlateEditor) => {
   const applyOverrides = (plugins: PlatePluginList): PlatePluginList => {
     let overriddenPlugins = plugins;
 
+    const enabledOverrides: Record<string, boolean> = {};
+
     for (const plugin of plugins) {
-      if (plugin.overrideByKey) {
+      if (plugin.override.enabled) {
+        Object.assign(enabledOverrides, plugin.override.enabled);
+      }
+    }
+
+    for (const plugin of plugins) {
+      if (plugin.override.plugins) {
         overriddenPlugins = overriddenPlugins.map((p) =>
-          overridePluginsByKey(p, plugin.overrideByKey!)
+          overridePluginsByKey(p, plugin.override.plugins!)
         );
       }
       // Apply component overrides
-      if (plugin.componentsByKey) {
+      if (plugin.override.components) {
         overriddenPlugins = overriddenPlugins.map((p) => {
-          if (plugin.componentsByKey![p.key]) {
+          if (plugin.override.components![p.key]) {
             if (p.component) {
               // Only override if the current plugin has higher priority
               if (plugin.priority > p.priority) {
                 return {
                   ...p,
-                  component: plugin.componentsByKey![p.key],
+                  component: plugin.override.components![p.key],
                 };
               }
             } else {
               // If there's no existing component, apply the override
               return {
                 ...p,
-                component: plugin.componentsByKey![p.key],
+                component: plugin.override.components![p.key],
               };
             }
           }
@@ -151,10 +168,17 @@ export const applyPluginOverrides = (editor: PlateEditor) => {
       }
     }
 
-    return overriddenPlugins.map((plugin) => ({
-      ...plugin,
-      plugins: applyOverrides(plugin.plugins),
+    overriddenPlugins = overriddenPlugins.map((p) => ({
+      ...p,
+      enabled: enabledOverrides[p.key] ?? p.enabled,
     }));
+
+    return overriddenPlugins
+      .filter((p) => p.enabled !== false)
+      .map((plugin) => ({
+        ...plugin,
+        plugins: applyOverrides(plugin.plugins),
+      }));
   };
 
   editor.plugins = applyOverrides(editor.plugins);
