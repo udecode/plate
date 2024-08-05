@@ -1,5 +1,6 @@
 import {
   type TEditor,
+  type TSelection,
   type Value,
   getEndPoint,
   getStartPoint,
@@ -38,15 +39,17 @@ export type WithPlateOptions<V extends Value> = {
    */
   autoSelect?: 'end' | 'start' | boolean;
 
+  children?: V;
+
   id?: any;
 
   /** Function to configure the root plugin */
   rootPlugin?: (plugin: AnyPlatePlugin) => AnyPlatePlugin;
 
+  selection?: TSelection;
+
   /** Normalize editor value on initialization. */
   shouldNormalizeEditor?: boolean;
-
-  value?: V;
 } & GetCorePluginsOptions &
   Omit<
     Partial<AnyPlatePlugin>,
@@ -86,12 +89,13 @@ export const withPlate = <
   e: E,
   {
     autoSelect,
+    children,
     id,
     maxLength,
     plugins = [],
     rootPlugin,
+    selection,
     shouldNormalizeEditor,
-    value,
     ...pluginConfig
   }: WithPlateOptions<V> = {}
 ): E & PlateEditor<V> => {
@@ -137,23 +141,25 @@ export const withPlate = <
 
   resolvePlugins(editor, [rootPluginInstance]);
 
-  if (value) {
-    editor.children = value;
+  if (children) {
+    editor.children = children;
   }
   if (editor.children?.length === 0) {
     editor.children = editor.childrenFactory();
   }
-  if (value) {
-    pipeNormalizeInitialValue(editor);
-  }
-  if (shouldNormalizeEditor) {
-    normalizeEditor(editor, { force: true });
-  }
-  if (autoSelect) {
+  if (selection) {
+    editor.selection = selection;
+  } else if (autoSelect) {
     const edge = autoSelect === 'start' ? 'start' : 'end';
     const target =
       edge === 'start' ? getStartPoint(editor, []) : getEndPoint(editor, []);
     select(editor, target);
+  }
+  if (children) {
+    pipeNormalizeInitialValue(editor);
+  }
+  if (shouldNormalizeEditor) {
+    normalizeEditor(editor, { force: true });
   }
 
   return editor;

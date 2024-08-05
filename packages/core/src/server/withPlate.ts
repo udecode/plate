@@ -24,11 +24,11 @@ export const withPlate = <
 >(
   e: E,
   {
+    children,
     id,
     maxLength,
     plugins = [],
     shouldNormalizeEditor,
-    value,
   }: WithPlateOptions<V> = {}
 ): E & PlateEditor<V> => {
   let editor = e as any as E & PlateEditor<V>;

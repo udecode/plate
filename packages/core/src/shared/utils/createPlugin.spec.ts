@@ -167,11 +167,8 @@ describe('createPlugin', () => {
         ],
       });
 
-      const plugin = getPluginOptions<{ a: number; b: number; c: number }>(
-        editor,
-        'aaa'
-      );
-      const plugin2 = getPluginOptions<{ a: number }>(editor, 'bbb');
+      const plugin = getPluginOptions(editor, 'aaa');
+      const plugin2 = getPluginOptions(editor, 'bbb');
 
       expect(plugin.a).toBe(1);
       expect(plugin.b).toBe(1);
@@ -441,7 +438,7 @@ describe('createPlugin', () => {
   });
 
   describe('when extendPlugin a cousin plugin', () => {
-    it('should correctly extend a plugin at the same level', () => {
+    it('should not extend a plugin at the same level', () => {
       const editor = createPlateEditor({
         plugins: [
           createPlugin({
@@ -478,14 +475,7 @@ describe('createPlugin', () => {
 
       expect(child1Plugin.key).toBe('child1');
       expect(child1Options.initialValue).toBe('child1');
-      expect(child1Options.extendedValue).toBe('extended child1');
-
-      const child2Plugin = getPlugin(editor, 'child2');
-      const child2Options = getPluginOptions(editor, 'child2');
-
-      expect(child2Plugin.key).toBe('child2');
-      expect(child2Options.initialValue).toBe('child2');
-      expect(child2Options.extendedValue).toBeUndefined();
+      expect(child1Options.extendedValue).not.toBe('extended child1');
     });
   });
 

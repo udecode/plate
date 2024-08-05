@@ -23,8 +23,8 @@ describe('pipeNormalizeInitialValue', () => {
   describe('when children is passed to createPlateEditor', () => {
     it('should normalize the initial value once', () => {
       const editor = createPlateEditor({
+        children: [{ children: [{ text: '' }], count: 0, type: 'p' }],
         plugins,
-        value: [{ children: [{ text: '' }], count: 0, type: 'p' }],
       });
 
       const wrapper = ({ children }: any) => (
@@ -69,8 +69,8 @@ describe('pipeNormalizeInitialValue', () => {
   describe('when both children and initialValue are provided', () => {
     it('should use initialValue and normalize it once', () => {
       const editor = createPlateEditor({
+        children: [{ children: [{ text: 'ignored' }], count: 0, type: 'p' }],
         plugins,
-        value: [{ children: [{ text: 'ignored' }], count: 0, type: 'p' }],
       });
 
       const wrapper = ({ children }: any) => (
