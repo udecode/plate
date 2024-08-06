@@ -34,9 +34,9 @@ const output = (
 ) as any;
 
 it('autoformats a block with a single character trigger', () => {
-  const linkEditor = withAutoformat(
-    withReact(input),
-    createPlugin<'autoformat', AutoformatPluginOptions>({
+  const linkEditor = withAutoformat({
+    editor: withReact(input),
+    plugin: createPlugin<string, AutoformatPluginOptions>({
       options: {
         rules: [
           {
@@ -58,8 +58,8 @@ it('autoformats a block with a single character trigger', () => {
           },
         ],
       },
-    })
-  );
+    }),
+  });
 
   linkEditor.insertText(')');
 

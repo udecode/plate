@@ -53,9 +53,7 @@ export const resolveAndSortPlugins = (
   const processPlugin = (plugin: PlatePlugin) => {
     const resolvedPlugin = resolvePlugin(editor, plugin);
 
-    if (resolvedPlugin.enabled === false) {
-      console.log(resolvedPlugin);
-    } else {
+    if (resolvedPlugin.enabled !== false) {
       resolvedPlugins.push(resolvedPlugin);
 
       if (resolvedPlugin.plugins && resolvedPlugin.plugins.length > 0) {

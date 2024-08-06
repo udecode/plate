@@ -19,6 +19,7 @@ export const usePlateLeaf = (props: PlateLeafProps) => {
     leaf,
     leafToAttributes,
     nodeProps,
+    plugin,
     text,
     ...rootProps
   } = props;

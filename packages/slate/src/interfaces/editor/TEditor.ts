@@ -12,6 +12,8 @@ export type Value = TElement[];
 /** A helper type for getting the value of an editor. */
 export type ValueOf<E extends TEditor> = E['children'];
 
+export type InferEditorValue<E> = E extends TEditor<infer V> ? V : never;
+
 export type TEditor<V extends Value = Value> = Modify<
   Editor,
   {

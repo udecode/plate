@@ -35,10 +35,10 @@ describe('when inserting ***', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      createPlugin(autoformatPlugin as any)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: createPlugin(autoformatPlugin),
+    });
 
     editor.insertText('*');
     editor.insertText('*');

@@ -2,15 +2,11 @@ import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
 import { htmlStringToDOMNode } from '@udecode/plate-core';
 import { HighlightPlugin } from '@udecode/plate-highlight';
 import { KbdPlugin } from '@udecode/plate-kbd';
-import { createPlateUIEditor } from 'www/src/lib/plate/create-plate-ui-editor';
 
 import { serializeHtml } from '../../serializeHtml';
+import { createPlateUIEditor } from '../create-plate-ui-editor';
 
-const plugins = [
-  BasicMarksPlugin,
-  HighlightPlugin,
-  KbdPlugin,
-];
+const plugins = [BasicMarksPlugin, HighlightPlugin, KbdPlugin];
 const editor = createPlateUIEditor({ plugins });
 
 it('serialize bold to html', () => {

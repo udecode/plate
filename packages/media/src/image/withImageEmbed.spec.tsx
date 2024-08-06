@@ -25,7 +25,10 @@ describe('withImageEmbed', () => {
   ) as any;
 
   it('should insert image from the text', () => {
-    const editor = withImageEmbed(withReact(input), createPlugin());
+    const editor = withImageEmbed({
+      editor: withReact(input),
+      plugin: createPlugin(),
+    });
 
     const data = {
       getData: () => 'https://i.imgur.com/removed.png',

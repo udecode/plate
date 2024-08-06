@@ -26,10 +26,10 @@ describe('when the start match is not present and the end match is present', () 
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      createPlugin(autoformatPlugin as any)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: createPlugin(autoformatPlugin),
+    });
 
     editor.insertText(' ');
 
@@ -54,10 +54,10 @@ describe('when there is a character before match', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      createPlugin(autoformatPlugin as any)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: createPlugin(autoformatPlugin),
+    });
 
     editor.insertText('*');
     editor.insertText('*');
@@ -83,10 +83,10 @@ describe('when there is a character before match', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      createPlugin(autoformatPlugin as any)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: createPlugin(autoformatPlugin),
+    });
 
     editor.insertText('*');
     editor.insertText('*');
@@ -109,10 +109,10 @@ describe('when selection is null', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      createPlugin(autoformatPlugin as any)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: createPlugin(autoformatPlugin),
+    });
 
     editor.insertText(' ');
 

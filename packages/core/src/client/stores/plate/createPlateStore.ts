@@ -1,6 +1,5 @@
 import React from 'react';
 
-import type { Value } from '@udecode/slate';
 import type { JotaiStore } from 'jotai-x';
 
 import { atom, createStore } from 'jotai';
@@ -26,12 +25,9 @@ export const PLATE_SCOPE = 'plate';
 
 export const GLOBAL_PLATE_SCOPE = Symbol('global-plate');
 
-export const createPlateStore = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->({
+export const createPlateStore = <E extends PlateEditor = PlateEditor>({
   decorate = null,
-  editor = createPlateFallbackEditor<V, E>(),
+  editor = createPlateFallbackEditor<E>(),
   id,
   isMounted = false,
   onChange = null,
@@ -46,7 +42,7 @@ export const createPlateStore = <
   versionEditor = 1,
   versionSelection = 1,
   ...state
-}: Partial<PlateStoreState<V, E>> = {}) =>
+}: Partial<PlateStoreState<E>> = {}) =>
   createAtomStore(
     {
       decorate,
@@ -64,7 +60,7 @@ export const createPlateStore = <
       versionEditor,
       versionSelection,
       ...state,
-    } as PlateStoreState<V, E>,
+    } as PlateStoreState<E>,
     {
       extend: (atoms) => ({
         trackedEditor: atom((get) => ({

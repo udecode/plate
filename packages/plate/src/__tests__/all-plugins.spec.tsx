@@ -7,7 +7,7 @@ import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
 import { BlockquotePlugin } from '@udecode/plate-block-quote';
 import { ExitBreakPlugin, SoftBreakPlugin } from '@udecode/plate-break';
-import { Plate, PlateContent, createPlugins } from '@udecode/plate-common';
+import { Plate, PlateContent, usePlateEditor } from '@udecode/plate-common';
 import { HeadingPlugin } from '@udecode/plate-heading';
 import { HighlightPlugin } from '@udecode/plate-highlight';
 import { LinkPlugin } from '@udecode/plate-link';
@@ -22,33 +22,35 @@ import { TablePlugin } from '@udecode/plate-table';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
 function PlateContainer() {
-  const plugins = createPlugins([
-    BlockquotePlugin,
-    TodoListPlugin,
-    HeadingPlugin.configure({ levels: 5 }),
-    BasicElementsPlugin,
-    BasicMarksPlugin,
-    TodoListPlugin,
-    ImagePlugin,
-    LinkPlugin,
-    ListPlugin,
-    TablePlugin,
-    MediaEmbedPlugin,
-    AlignPlugin,
-    HighlightPlugin,
-    MentionPlugin,
-    NodeIdPlugin,
-    AutoformatPlugin,
-    ResetNodePlugin,
-    SoftBreakPlugin,
-    ExitBreakPlugin,
-    NormalizeTypesPlugin,
-    TrailingBlockPlugin,
-    SelectOnBackspacePlugin,
-  ]);
+  const editor = usePlateEditor({
+    plugins: [
+      BlockquotePlugin,
+      TodoListPlugin,
+      HeadingPlugin.configure({ levels: 5 }),
+      BasicElementsPlugin,
+      BasicMarksPlugin,
+      TodoListPlugin,
+      ImagePlugin,
+      LinkPlugin,
+      ListPlugin,
+      TablePlugin,
+      MediaEmbedPlugin,
+      AlignPlugin,
+      HighlightPlugin,
+      MentionPlugin,
+      NodeIdPlugin,
+      AutoformatPlugin,
+      ResetNodePlugin,
+      SoftBreakPlugin,
+      ExitBreakPlugin,
+      NormalizeTypesPlugin,
+      TrailingBlockPlugin,
+      SelectOnBackspacePlugin,
+    ],
+  });
 
   return (
-    <Plate plugins={plugins}>
+    <Plate editor={editor}>
       <PlateContent />
     </Plate>
   );

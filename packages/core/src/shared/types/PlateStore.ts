@@ -1,4 +1,4 @@
-import type { TNodeEntry, TSelection, Value } from '@udecode/slate';
+import type { TNodeEntry, TSelection, ValueOf } from '@udecode/slate';
 import type { Range } from 'slate';
 
 import type { PlateId } from '../../client';
@@ -11,10 +11,7 @@ export type PlateChangeKey =
   | 'versionEditor'
   | 'versionSelection';
 
-export type PlateStoreState<
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
-> = {
+export type PlateStoreState<E extends PlateEditor = PlateEditor> = {
   /**
    * Slate editor reference.
    *
@@ -35,26 +32,21 @@ export type PlateStoreState<
    *
    * @default [{ type: 'p'; children: [{ text: '' }] }]
    */
-  value: V;
+  value: ValueOf<E>;
 } & Nullable<{
-  decorate: NonNullable<
-    (options: { editor: PlateEditor; entry: TNodeEntry }) => Range[]
-  >;
+  decorate: NonNullable<(options: { editor: E; entry: TNodeEntry }) => Range[]>;
 
   /** Whether `Editable` is rendered so slate DOM is resolvable. */
   isMounted: boolean;
 
   /** Controlled callback called when the editor state changes. */
-  onChange: (options: { editor: PlateEditor; value: V }) => void;
+  onChange: (options: { editor: E; value: ValueOf<E> }) => void;
 
   /** Controlled callback called when the editor.selection changes. */
-  onSelectionChange: (options: {
-    editor: PlateEditor;
-    selection: TSelection;
-  }) => void;
+  onSelectionChange: (options: { editor: E; selection: TSelection }) => void;
 
   /** Controlled callback called when the editor.children changes. */
-  onValueChange: (options: { editor: PlateEditor; value: V }) => void;
+  onValueChange: (options: { editor: E; value: ValueOf<E> }) => void;
 
   /**
    * Whether the editor is primary. If no editor is active, then PlateController

@@ -3,7 +3,7 @@ import { ELEMENT_LINK, LinkPlugin } from '@udecode/plate-link';
 
 import { createPlateEditor } from '../../client/utils/createPlateEditor';
 import {
-  type PlatePlugin,
+  type PlatePluginComponent,
   getPlugin,
   getPluginOptions,
   resolveCreatePluginTest,
@@ -256,7 +256,13 @@ describe('createPlugin', () => {
 
   describe('when extend twice', () => {
     it('should be', () => {
-      const basePlugin = createPlugin({ key: 'a', type: 'a' });
+      const basePlugin = createPlugin({
+        key: 'a',
+        options: {
+          a: 1,
+        },
+        type: 'a',
+      });
 
       const plugin = resolvePluginTest(
         basePlugin
@@ -266,6 +272,9 @@ describe('createPlugin', () => {
                 nodeKey: 'b',
               },
             },
+            options: {
+              b: 1,
+            },
             type: 'b',
           })
           .extend({
@@ -273,6 +282,10 @@ describe('createPlugin', () => {
               props: {
                 nodeKey: 'c',
               },
+            },
+            options: {
+              b: 1,
+              c: 1,
             },
             type: 'b',
           })
@@ -296,7 +309,7 @@ describe('createPlugin', () => {
 
   describe('when extend plugins', () => {
     it('should be', () => {
-      const plugin: PlatePlugin = resolvePluginTest(
+      const plugin = resolvePluginTest(
         BasicElementsPlugin.extendPlugin('heading', {
           key: 'h',
           options: {
@@ -479,6 +492,130 @@ describe('createPlugin', () => {
     });
   });
 
+  describe('configure method', () => {
+    const basePlugin = createPlugin({
+      key: 'testPlugin',
+      options: {
+        optionA: 'initial',
+        optionB: 10,
+      },
+    });
+
+    it('should override existing options', () => {
+      const configured = basePlugin.configure({
+        optionA: 'modified',
+      });
+
+      const resolved = resolvePluginTest(configured);
+
+      expect(resolved.options).toEqual({
+        optionA: 'modified',
+        optionB: 10,
+      });
+    });
+
+    it('should work with function-based configuration', () => {
+      const configured = basePlugin.configure((ctx) => ({
+        optionB: ctx.plugin.options.optionB * 2,
+        optionD: 'new option',
+      }));
+
+      const resolved = resolvePluginTest(configured);
+
+      expect(resolved.options).toEqual({
+        optionA: 'initial',
+        optionB: 20,
+        optionD: 'new option',
+      });
+    });
+
+    it('should allow chaining configure calls', () => {
+      const configured = basePlugin
+        .configure({ optionA: 'first change' })
+        .configure({ optionB: 30 })
+        .configure((ctx) => ({ optionB: ctx.plugin.options.optionB + 10 }));
+
+      const resolved = resolvePluginTest(configured);
+
+      expect(resolved.options).toEqual({
+        optionA: 'first change',
+        optionB: 40,
+      });
+    });
+
+    it('should not modify the original plugin', () => {
+      basePlugin.configure({ optionA: 'modified' });
+
+      expect(basePlugin.options).toEqual({
+        optionA: 'initial',
+        optionB: 10,
+      });
+    });
+
+    it('should handle empty configuration objects', () => {
+      const configured = basePlugin.configure({});
+
+      const resolved = resolvePluginTest(configured);
+
+      expect(resolved.options).toEqual(basePlugin.options);
+    });
+  });
+
+  describe('when configure twice', () => {
+    it('should override existing options', () => {
+      const basePlugin = createPlugin({
+        key: 'testPlugin',
+        options: {
+          optionA: 'initial',
+          optionB: 'initial',
+        },
+      });
+
+      const configuredOnce = basePlugin.configure({
+        optionA: 'modified',
+      });
+
+      const configuredTwice = configuredOnce.configure({
+        optionB: 'modified',
+      } as any);
+
+      const resolvedPlugin = resolvePluginTest(configuredTwice);
+
+      expect(resolvedPlugin.options).toEqual({
+        optionA: 'modified',
+        optionB: 'modified',
+      });
+      expect(resolvedPlugin.options).not.toHaveProperty('newOption');
+    });
+
+    it('should allow function-based configuration to override existing options', () => {
+      const basePlugin = createPlugin({
+        key: 'testPlugin',
+        options: {
+          count: 0,
+          text: 'initial',
+        },
+      });
+
+      const configuredOnce = basePlugin.configure((ctx) => ({
+        count: ctx.plugin.options.count + 1,
+      }));
+
+      const configuredTwice = configuredOnce.configure((ctx) => ({
+        count: ctx.plugin.options.count + 1,
+        text: 'modified',
+      }));
+
+      const resolvedPlugin = resolvePluginTest(configuredTwice);
+
+      expect(resolvedPlugin.options).toEqual({
+        count: 2,
+        text: 'modified',
+      });
+      expect(resolvedPlugin.options).not.toHaveProperty('newOption');
+    });
+  });
+
   describe('when configurePlugin', () => {
     it('should configure an existing plugin', () => {
       const plugin = resolvePluginTest(
@@ -543,6 +680,34 @@ describe('createPlugin', () => {
         initialValue: 'c',
         newOption: 'new',
       });
+    });
+  });
+
+  describe('withComponent method', () => {
+    it('should set the component for the plugin', () => {
+      const MockComponent: PlatePluginComponent = () => null;
+      const basePlugin = createPlugin({ key: 'testPlugin' });
+
+      const pluginWithComponent = basePlugin.withComponent(MockComponent);
+      const resolvedPlugin = resolvePluginTest(pluginWithComponent);
+
+      expect(resolvedPlugin.component).toBe(MockComponent);
+    });
+
+    it('should override an existing component', () => {
+      const OriginalComponent: PlatePluginComponent = () => null;
+      const NewComponent: PlatePluginComponent = () => null;
+
+      const basePlugin = createPlugin({
+        component: OriginalComponent,
+        key: 'testPlugin',
+      });
+
+      const pluginWithNewComponent = basePlugin.withComponent(NewComponent);
+      const resolvedPlugin = resolvePluginTest(pluginWithNewComponent);
+
+      expect(resolvedPlugin.component).not.toBe(OriginalComponent);
+      expect(resolvedPlugin.component).toBe(NewComponent);
     });
   });
 });

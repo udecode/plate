@@ -1,7 +1,7 @@
 import { BoldPlugin, ELEMENT_PARAGRAPH, ParagraphPlugin } from '@udecode/plate';
-import { createPlateUIEditor } from 'www/src/lib/plate/create-plate-ui-editor';
 
 import { serializeHtml } from '../../serializeHtml';
+import { createPlateUIEditor } from '../create-plate-ui-editor';
 
 it('serialize with slate className', () => {
   const editor = createPlateUIEditor({

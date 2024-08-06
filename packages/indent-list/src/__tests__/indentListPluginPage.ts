@@ -1,28 +1,24 @@
 import {
   type TElement,
-  type Value,
-  createPlugin,
   getNode,
   getPreviousPath,
 } from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
-import type { IndentListPluginOptions } from '../IndentListPlugin';
 import type { GetSiblingIndentListOptions } from '../queries/getSiblingIndentList';
 
-export const indentListPluginPage = createPlugin<
-  'listStyleType',
-  IndentListPluginOptions
->({}).extend((e) => ({
+import { IndentListPlugin } from '../IndentListPlugin';
+
+export const indentListPluginPage = IndentListPlugin.extend(({ editor }) => ({
   options: {
     getSiblingIndentListOptions: {
       getNextEntry: ([, path]: any) => {
         const nextPath = Path.next(path);
-        const nextNode = getNode<TElement>(e, nextPath);
+        const nextNode = getNode<TElement>(editor, nextPath);
 
         if (!nextNode) {
           const nextPagePath = [path[0] + 1];
-          const nextPageNode = getNode<TElement>(e, nextPagePath);
+          const nextPageNode = getNode<TElement>(editor, nextPagePath);
 
           if (!nextPageNode) return;
 
@@ -39,7 +35,7 @@ export const indentListPluginPage = createPlugin<
 
           const prevPagePath = [path[0] - 1];
 
-          const node = getNode<TElement>(e, prevPagePath);
+          const node = getNode<TElement>(editor, prevPagePath);
 
           if (!node) return;
 
@@ -48,12 +44,12 @@ export const indentListPluginPage = createPlugin<
           return [lastNode, prevPagePath.concat(node.children.length - 1)];
         }
 
-        const prevNode = getNode(e, prevPath);
+        const prevNode = getNode(editor, prevPath);
 
         if (!prevNode) return;
 
         return [prevNode, prevPath];
       },
-    } as GetSiblingIndentListOptions<TElement, Value>,
+    } as GetSiblingIndentListOptions<TElement>,
   },
 }));

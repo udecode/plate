@@ -7,8 +7,8 @@ import {
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
+import { SuggestionPlugin } from './SuggestionPlugin';
 import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from './constants';
-import { createSuggestionPlugin } from './SuggestionPlugin';
 
 jsx;
 
@@ -36,7 +36,7 @@ describe('withSuggestion', () => {
 
         const editor = createPlateEditor({
           editor: input,
-          plugins: [createSuggestionPlugin()],
+          plugins: [SuggestionPlugin],
         });
         editor.isSuggesting = false;
 
@@ -69,7 +69,7 @@ describe('withSuggestion', () => {
 
           const editor = createPlateEditor({
             editor: input,
-            plugins: [createSuggestionPlugin()],
+            plugins: [SuggestionPlugin],
           });
           editor.isSuggesting = true;
 
@@ -108,7 +108,7 @@ describe('withSuggestion', () => {
       //
       //     const editor = createPlateEditor({
       //       editor: input,
-      //       plugins: [createSuggestionPlugin()],
+      //       plugins: [SuggestionPlugin],
       //     });
       //     editor.isSuggesting = true;
       //
@@ -143,7 +143,7 @@ describe('withSuggestion', () => {
 
         const editor = createPlateEditor({
           editor: input,
-          plugins: [createSuggestionPlugin()],
+          plugins: [SuggestionPlugin],
         });
         editor.isSuggesting = false;
 
@@ -180,7 +180,7 @@ describe('withSuggestion', () => {
 
           const editor = createPlateEditor({
             editor: input,
-            plugins: [createSuggestionPlugin()],
+            plugins: [SuggestionPlugin],
           });
           editor.isSuggesting = true;
 
@@ -203,7 +203,7 @@ describe('withSuggestion', () => {
 
           const editor = createPlateEditor({
             editor: input,
-            plugins: [createSuggestionPlugin()],
+            plugins: [SuggestionPlugin],
           });
           editor.isSuggesting = true;
 
@@ -233,7 +233,7 @@ describe('withSuggestion', () => {
 
           const editor = createPlateEditor({
             editor: input,
-            plugins: [createSuggestionPlugin()],
+            plugins: [SuggestionPlugin],
           });
           editor.isSuggesting = true;
 
@@ -274,7 +274,7 @@ describe('withSuggestion', () => {
 
           const editor = createPlateEditor({
             editor: input,
-            plugins: [createSuggestionPlugin()],
+            plugins: [SuggestionPlugin],
           });
           editor.isSuggesting = true;
 
@@ -317,7 +317,7 @@ describe('withSuggestion', () => {
 
         const editor = createPlateEditor({
           editor: input,
-          plugins: [createSuggestionPlugin()],
+          plugins: [SuggestionPlugin],
         });
 
         normalizeEditor(editor, {

@@ -101,10 +101,11 @@ describe('when undo is enabled', () => {
       key: 'backspace',
     }) as any;
 
-    onKeyDownAutoformat(
+    onKeyDownAutoformat({
       editor,
-      getPlugin<AutoformatPluginOptions>(editor, KEY_AUTOFORMAT)
-    )(event as any);
+      event: event as any,
+      plugin: getPlugin<AutoformatPluginOptions>(editor, KEY_AUTOFORMAT),
+    });
 
     expect(undoInput.children).toEqual(undoOutput.children);
   });
@@ -150,10 +151,11 @@ describe('when undo is disabled', () => {
       key: 'backspace',
     }) as any;
 
-    onKeyDownAutoformat(
+    onKeyDownAutoformat({
       editor,
-      getPlugin<AutoformatPluginOptions>(editor, KEY_AUTOFORMAT)
-    )(event as any);
+      event: event as any,
+      plugin: getPlugin<AutoformatPluginOptions>(editor, KEY_AUTOFORMAT),
+    });
 
     expect(undoInput.children).toEqual(undoOutput.children);
   });

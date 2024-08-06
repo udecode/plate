@@ -16,8 +16,6 @@ export const withLength: WithOverride<LengthPluginOptions> = ({
 
   const opt = getPluginOptions(editor, LengthPlugin);
 
-  console.log(1, opt);
-
   editor.apply = (operation) => {
     withoutNormalizing(editor, () => {
       apply(operation);
@@ -43,12 +41,6 @@ export const withLength: WithOverride<LengthPluginOptions> = ({
 };
 
 export const LengthPlugin = createPlugin<'length', LengthPluginOptions>({
-  handlers: {
-    onChange: ({ editor }) => {
-      const opt = getPluginOptions(editor, LengthPlugin);
-      console.log(2, opt);
-    },
-  },
   key: 'length',
   withOverrides: withLength,
 });

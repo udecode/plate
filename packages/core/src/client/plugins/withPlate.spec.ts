@@ -164,7 +164,7 @@ describe('withPlate', () => {
     });
   });
 
-  describe('when using overrideByKey', () => {
+  describe('when using override.plugins', () => {
     it('should override plugin properties', () => {
       const CustomPlugin = createPlugin({
         key: 'custom',

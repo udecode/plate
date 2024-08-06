@@ -51,17 +51,23 @@ const getListNode =
 
 const KEYS = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
 
-const overrideByKey: Record<string, Partial<AnyPlatePlugin>> = {};
+const overridePlugins: Record<string, Partial<AnyPlatePlugin>> = {};
 
+// TODO
 KEYS.forEach((key) => {
-  overrideByKey[key] = createPlugin({}).extend(({ plugin: { type } }) => ({
+  // overridePlugins[key] = createPlugin({}).extend(({ plugin: { type } }) => ({
+  //   deserializeHtml: {
+  //     getNode: getListNode(type),
+  //   },
+  // }));
+  overridePlugins[key] = {
     deserializeHtml: {
-      getNode: getListNode(type),
+      getNode: getListNode(key),
     },
-  }));
+  };
 });
 
-export const DeserializeDocxPlugin = createPlugin({
+export const DeserializeDocxPlugin = createPlugin((editor) => ({
   inject: {
     pluginsByKey: {
       [KEY_DESERIALIZE_HTML]: {
@@ -78,19 +84,24 @@ export const DeserializeDocxPlugin = createPlugin({
     },
   },
   key: KEY_DESERIALIZE_DOCX,
-  overrideByKey: {
-    ...overrideByKey,
-    img: {
-      editor: {
-        insertData: {
-          query: ({ dataTransfer }) => {
-            const data = dataTransfer.getData('text/html');
-            const { body } = new DOMParser().parseFromString(data, 'text/html');
+  override: {
+    plugins: {
+      ...overridePlugins,
+      img: {
+        editor: {
+          insertData: {
+            query: ({ dataTransfer }) => {
+              const data = dataTransfer.getData('text/html');
+              const { body } = new DOMParser().parseFromString(
+                data,
+                'text/html'
+              );
 
-            return !isDocxContent(body);
+              return !isDocxContent(body);
+            },
           },
         },
       },
     },
   },
-});
+}));

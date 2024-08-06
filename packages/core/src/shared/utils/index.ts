@@ -4,16 +4,11 @@
 
 export * from './applyDeepToNodes';
 export * from './createPlugin';
-export * from './createPlugins';
 export * from './getCorePlugins';
 export * from './getInjectedPlugins';
 export * from './getKeysByTypes';
 export * from './getPlugin';
-export * from './getPluginApi';
 export * from './getPluginInjectProps';
-export * from './getPluginOptions';
-export * from './getPluginType';
-export * from './getPluginTypes';
 export * from './getRenderNodeProps';
 export * from './mapInjectPropsToPlugin';
 export * from './mergeDeepToNodes';

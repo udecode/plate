@@ -28,6 +28,6 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  onKeyDownExitBreak(input, createPlugin())(event);
+  onKeyDownExitBreak({ editor: input, event, plugin: createPlugin({}) });
   expect(input.children).toEqual(output.children);
 });

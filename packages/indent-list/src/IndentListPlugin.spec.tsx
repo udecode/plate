@@ -5,20 +5,20 @@ import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
 import { createPlateEditor } from '@udecode/plate-core';
 import { ELEMENT_H1, ELEMENT_H2, ELEMENT_H3 } from '@udecode/plate-heading';
-import { createHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
-import { createIndentPlugin } from '@udecode/plate-indent';
-import { createJuicePlugin } from '@udecode/plate-juice';
-import { createLineHeightPlugin } from '@udecode/plate-line-height';
+import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
+import { IndentPlugin } from '@udecode/plate-indent';
+import { JuicePlugin } from '@udecode/plate-juice';
+import { LineHeightPlugin } from '@udecode/plate-line-height';
 import { LinkPlugin } from '@udecode/plate-link';
 import { ImagePlugin } from '@udecode/plate-media';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
-import { createDeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
+import { DeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
 import { TablePlugin } from '@udecode/plate-table';
 import { jsx } from '@udecode/plate-test-utils';
 import { alignPlugin } from 'www/src/lib/plate/demo/plugins/alignPlugin';
 import { lineHeightPlugin } from 'www/src/lib/plate/demo/plugins/lineHeightPlugin';
 
-import { createIndentListPlugin } from './IndentListPlugin';
+import { IndentListPlugin } from './IndentListPlugin';
 
 jsx;
 
@@ -39,15 +39,15 @@ describe('when insertData disc and decimal from gdocs', () => {
       ) as any,
       plugins: [
         ImagePlugin,
-        createHorizontalRulePlugin(),
+        HorizontalRulePlugin,
         LinkPlugin,
         TablePlugin,
         BasicElementsPlugin,
         BasicMarksPlugin,
         TablePlugin,
-        createLineHeightPlugin(lineHeightPlugin as any),
-        AlignPlugin.extend(alignPlugin as any),
-        createIndentPlugin({
+        LineHeightPlugin.extend(lineHeightPlugin),
+        AlignPlugin.extend(alignPlugin),
+        IndentPlugin.extend({
           inject: {
             props: {
               validTypes: [
@@ -59,9 +59,9 @@ describe('when insertData disc and decimal from gdocs', () => {
             },
           },
         }),
-        createIndentListPlugin(),
-        createDeserializeDocxPlugin(),
-        createJuicePlugin(),
+        IndentListPlugin,
+        DeserializeDocxPlugin,
+        JuicePlugin,
       ],
     });
 

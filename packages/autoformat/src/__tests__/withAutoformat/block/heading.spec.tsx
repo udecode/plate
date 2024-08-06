@@ -7,6 +7,7 @@ import { withReact } from 'slate-react';
 import { autoformatPlugin } from 'www/src/lib/plate/demo/plugins/autoformatPlugin';
 import { preFormat } from 'www/src/lib/plate/demo/plugins/autoformatUtils';
 
+import { AutoformatPlugin } from '../../../AutoformatPlugin';
 import { withAutoformat } from '../../../withAutoformat';
 
 jsx;
@@ -29,21 +30,19 @@ describe('when #space', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      createPlugin({
-        options: {
-          rules: [
-            {
-              match: '# ',
-              mode: 'block',
-              preFormat: preFormat,
-              type: ELEMENT_H1,
-            },
-          ],
-        },
-      })
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: AutoformatPlugin.configure({
+        rules: [
+          {
+            match: '# ',
+            mode: 'block',
+            preFormat: preFormat,
+            type: ELEMENT_H1,
+          },
+        ],
+      }),
+    });
 
     editor.insertText(' ');
 
@@ -69,10 +68,10 @@ describe('when ##space', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      createPlugin(autoformatPlugin as any)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: createPlugin(autoformatPlugin),
+    });
 
     editor.insertText(' ');
 

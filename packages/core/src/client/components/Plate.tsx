@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { type Value, normalizeEditor } from '@udecode/slate';
+import { type ValueOf, normalizeEditor } from '@udecode/slate';
 
 import type {
   PlateEditor,
@@ -12,12 +12,10 @@ import { pipeNormalizeInitialValue } from '../../shared';
 import { PlateStoreProvider } from '../stores';
 import { PlateEffects } from './PlateEffects';
 
-export interface PlateProps<
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
-> extends Partial<
+export interface PlateProps<E extends PlateEditor = PlateEditor>
+  extends Partial<
     Pick<
-      PlateStoreState<V, E>,
+      PlateStoreState<E>,
       | 'decorate'
       | 'onChange'
       | 'onSelectionChange'
@@ -36,7 +34,7 @@ export interface PlateProps<
    *
    * @default editor.childrenFactory()
    */
-  initialValue?: PlateStoreState<V>['value'];
+  initialValue?: ValueOf<E>;
 
   renderElement?: TEditableProps['renderElement'];
 
@@ -108,9 +106,8 @@ function PlateInner({
   );
 }
 
-export function Plate<
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(props: PlateProps<V, E>) {
+export function Plate<E extends PlateEditor = PlateEditor>(
+  props: PlateProps<E>
+) {
   return <PlateInner key={props.editor.id?.toString()} {...(props as any)} />;
 }

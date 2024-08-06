@@ -2,13 +2,13 @@
 
 import { createPlateEditor, getPlugin } from '@udecode/plate-common';
 import * as isHotkey from '@udecode/plate-core/server';
-import { createIndentPlugin } from '@udecode/plate-indent';
+import { IndentPlugin } from '@udecode/plate-indent';
 import { jsx } from '@udecode/plate-test-utils';
 
 import {
+  IndentListPlugin,
   type IndentListPluginOptions,
   KEY_LIST_STYLE_TYPE,
-  createIndentListPlugin,
 } from './IndentListPlugin';
 import { onKeyDownIndentList } from './onKeyDownIndentList';
 
@@ -37,13 +37,14 @@ describe('when indented list and empty', () => {
     const event = new KeyboardEvent('keydown', { key: 'Enter' }) as any;
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createIndentPlugin(), createIndentListPlugin()],
+      plugins: [IndentPlugin, IndentListPlugin],
     });
 
-    onKeyDownIndentList(
+    onKeyDownIndentList({
       editor,
-      getPlugin<IndentListPluginOptions>(editor, KEY_LIST_STYLE_TYPE)
-    )(event as any);
+      event: event as any,
+      plugin: getPlugin<IndentListPluginOptions>(editor, KEY_LIST_STYLE_TYPE),
+    });
 
     expect(editor.children).toEqual(output.children);
 
@@ -55,10 +56,11 @@ describe('when indented list and empty', () => {
       </editor>
     ) as any;
 
-    onKeyDownIndentList(
+    onKeyDownIndentList({
       editor,
-      getPlugin<IndentListPluginOptions>(editor, KEY_LIST_STYLE_TYPE)
-    )(event as any);
+      event: event as any,
+      plugin: getPlugin<IndentListPluginOptions>(editor, KEY_LIST_STYLE_TYPE),
+    });
 
     expect(editor.children).toEqual(output2.children);
   });
@@ -85,13 +87,14 @@ describe('when indented and empty but not list', () => {
     const event = new KeyboardEvent('keydown', { key: 'Enter' }) as any;
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createIndentPlugin(), createIndentListPlugin()],
+      plugins: [IndentPlugin, IndentListPlugin],
     });
 
-    onKeyDownIndentList(
+    onKeyDownIndentList({
       editor,
-      getPlugin<IndentListPluginOptions>(editor, KEY_LIST_STYLE_TYPE)
-    )(event as any);
+      event: event as any,
+      plugin: getPlugin<IndentListPluginOptions>(editor, KEY_LIST_STYLE_TYPE),
+    });
 
     expect(editor.children).toEqual(output.children);
   });

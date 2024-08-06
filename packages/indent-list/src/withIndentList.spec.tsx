@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
 import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
-import { createIndentPlugin } from '@udecode/plate-indent';
+import { IndentPlugin } from '@udecode/plate-indent';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createIndentListPlugin } from './IndentListPlugin';
+import { IndentListPlugin } from './IndentListPlugin';
 
 jsx;
 
@@ -41,8 +41,8 @@ describe('normalizeIndentList', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        normalizeInitialValue: true,
-        plugins: [createIndentListPlugin(), createIndentPlugin()],
+        plugins: [IndentListPlugin, IndentPlugin],
+        shouldNormalizeEditor: true,
       });
 
       editor.deleteBackward('character');

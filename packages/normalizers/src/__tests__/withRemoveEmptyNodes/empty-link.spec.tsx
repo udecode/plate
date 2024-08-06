@@ -31,10 +31,8 @@ it('should be', () => {
   const editor = createPlateEditor({
     editor: input,
     plugins: [
-      RemoveEmptyNodesPlugin({
-        options: {
-          types: ELEMENT_LINK,
-        },
+      RemoveEmptyNodesPlugin.configure({
+        types: ELEMENT_LINK,
       }),
     ],
   });

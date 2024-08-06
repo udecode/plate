@@ -3,7 +3,7 @@
 import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createDeletePlugin } from './DeletePlugin';
+import { DeletePlugin } from './DeletePlugin';
 
 jsx;
 
@@ -32,7 +32,7 @@ describe('p (empty) + codeblock when selection not in code block', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createDeletePlugin()],
+      plugins: [DeletePlugin],
     });
 
     editor.deleteForward('character');
@@ -67,7 +67,7 @@ describe('p (not empty) + code block when selection not in code block', () => {
 
     const editor = createPlateEditor({
       editor: input,
-      plugins: [createDeletePlugin()],
+      plugins: [DeletePlugin],
     });
 
     editor.deleteForward('character');

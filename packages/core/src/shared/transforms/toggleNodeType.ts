@@ -8,7 +8,7 @@ import {
 import type { PlateEditor } from '../types/PlateEditor';
 
 import { ELEMENT_DEFAULT } from '../constants/ELEMENT_DEFAULT';
-import { getPluginType } from '../utils/getPluginType';
+import { getPluginType } from '../utils';
 
 export interface ToggleNodeTypeOptions {
   /**

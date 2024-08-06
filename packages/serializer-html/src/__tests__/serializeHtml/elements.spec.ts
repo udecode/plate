@@ -6,19 +6,10 @@ import { LinkPlugin } from '@udecode/plate-link';
 import { ListPlugin } from '@udecode/plate-list';
 import { ImagePlugin } from '@udecode/plate-media';
 import { ELEMENT_PARAGRAPH, ParagraphPlugin } from '@udecode/plate-paragraph';
-import {
-  ELEMENT_TABLE,
-  ELEMENT_TD,
-  ELEMENT_TH,
-  ELEMENT_TR,
-  TablePlugin,
-} from '@udecode/plate-table';
-import { createPlateUIEditor } from 'www/src/lib/plate/create-plate-ui-editor';
-import { TableCellElement } from 'www/src/registry/default/plate-ui/table-cell-element';
-import { TableElement } from 'www/src/registry/default/plate-ui/table-element';
-import { TableRowElement } from 'www/src/registry/default/plate-ui/table-row-element';
+import { TablePlugin } from '@udecode/plate-table';
 
 import { serializeHtml } from '../../serializeHtml';
+import { createPlateUIEditor } from '../create-plate-ui-editor';
 
 it('serialize list to html', () => {
   const editor = createPlateUIEditor({
@@ -178,12 +169,6 @@ it('serialize image to html', () => {
 
 it('serialize table to html', () => {
   const editor = createPlateUIEditor({
-    components: {
-      [ELEMENT_TABLE]: TableElement,
-      [ELEMENT_TD]: TableCellElement,
-      [ELEMENT_TH]: TableCellElement,
-      [ELEMENT_TR]: TableRowElement,
-    },
     plugins: [TablePlugin],
   });
 

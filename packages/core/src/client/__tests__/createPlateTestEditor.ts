@@ -1,7 +1,8 @@
-import type { TEditor, Value } from '@udecode/slate';
 import type { RenderEditorReturnTuple } from 'slate-test-utils/dist/esm/buildTestHarness';
 
 import { buildTestHarness } from 'slate-test-utils';
+
+import type { PlateEditor } from '../../shared';
 
 import { PlateTest } from '../components/PlateTest';
 import {
@@ -16,10 +17,9 @@ import {
  * - `editor`: `createPlateEditor`
  */
 export const createPlateTestEditor = async <
-  V extends Value = Value,
-  E extends TEditor<V> = TEditor<V>,
+  E extends PlateEditor = PlateEditor,
 >(
-  options: CreatePlateEditorOptions<V, E>,
+  options: CreatePlateEditorOptions<E>,
   buildTestHarnessOptions?: Omit<
     Parameters<ReturnType<typeof buildTestHarness>>[0],
     'editor'

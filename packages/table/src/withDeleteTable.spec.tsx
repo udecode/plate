@@ -49,12 +49,13 @@ describe('withDeleteTable', () => {
         </editor>
       ) as any as PlateEditor;
 
+      const plugin = TablePlugin;
       let editor = createPlateEditor({
         editor: input,
-        plugins: [TablePlugin],
+        plugins: [plugin],
       });
 
-      editor = withDeleteTable(editor);
+      editor = withDeleteTable({ editor, plugin });
 
       editor.deleteBackward('character');
 
@@ -109,7 +110,7 @@ describe('withDeleteTable', () => {
         plugins: [TablePlugin],
       });
 
-      editor = withDeleteTable(editor);
+      editor = withDeleteTable({ editor });
 
       editor.deleteForward('character');
 

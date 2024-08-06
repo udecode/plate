@@ -4,7 +4,7 @@ import type { NoInfer } from '../types/misc/NoInfer';
 import type { PlatePlugin } from '../types/plugin/PlatePlugin';
 
 /**
- * Recursive deep merge of each plugin from `overrideByKey` into plugin with
+ * Recursive deep merge of each plugin from `override.plugins` into plugin with
  * same key (plugin > plugin.plugins).
  */
 export const overridePluginsByKey = <

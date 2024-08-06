@@ -19,8 +19,7 @@ import { withReact } from 'slate-react';
 import { autoformatPlugin } from 'www/src/lib/plate/demo/plugins/autoformatPlugin';
 import { preFormat } from 'www/src/lib/plate/demo/plugins/autoformatUtils';
 
-import type { AutoformatPluginOptions } from '../../../types';
-
+import { AutoformatPlugin } from '../../../AutoformatPlugin';
 import { withAutoformat } from '../../../withAutoformat';
 
 jsx;
@@ -46,7 +45,10 @@ describe('when ``` at block start', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(withReact(input), autoformatPlugin as any);
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: autoformatPlugin,
+    });
 
     editor.insertText('`');
     editor.insertText('new');
@@ -76,42 +78,40 @@ describe('when ``` at block start, but customising with query we get the most re
       </editor>
     ) as any;
 
-    const codeEditor = withAutoformat(
-      withReact(input),
-      createPlugin<'autoformat', AutoformatPluginOptions>({
-        options: {
-          rules: [
-            {
-              format: (editor) => {
-                insertEmptyCodeBlock(editor, {
-                  defaultType: getPluginType(
-                    editor as PlateEditor,
-                    ELEMENT_DEFAULT
-                  ),
-                  insertNodesOptions: { select: true },
-                });
-              },
-              match: '```',
-              mode: 'block',
-              preFormat: preFormat as any,
-              query: (editor, rule): boolean => {
-                if (!editor.selection) {
-                  return false;
-                }
-
-                const matchRange = getRangeFromBlockStart(editor) as Range;
-                const textFromBlockStart = getEditorString(editor, matchRange);
-                const currentNodeText = (textFromBlockStart || '') + rule.text;
-
-                return rule.match === currentNodeText;
-              },
-              triggerAtBlockStart: false,
-              type: ELEMENT_CODE_BLOCK,
+    const codeEditor = withAutoformat({
+      editor: withReact(input),
+      plugin: AutoformatPlugin.configure({
+        rules: [
+          {
+            format: (editor) => {
+              insertEmptyCodeBlock(editor, {
+                defaultType: getPluginType(
+                  editor as PlateEditor,
+                  ELEMENT_DEFAULT
+                ),
+                insertNodesOptions: { select: true },
+              });
             },
-          ],
-        },
-      })
-    );
+            match: '```',
+            mode: 'block',
+            preFormat: preFormat as any,
+            query: (editor, rule): boolean => {
+              if (!editor.selection) {
+                return false;
+              }
+
+              const matchRange = getRangeFromBlockStart(editor) as Range;
+              const textFromBlockStart = getEditorString(editor, matchRange);
+              const currentNodeText = (textFromBlockStart || '') + rule.text;
+
+              return rule.match === currentNodeText;
+            },
+            triggerAtBlockStart: false,
+            type: ELEMENT_CODE_BLOCK,
+          },
+        ],
+      }),
+    });
 
     codeEditor.insertText('`');
     codeEditor.insertText('inside code-block');
@@ -141,10 +141,10 @@ describe('when ```', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      createPlugin(autoformatPlugin as any)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: createPlugin(autoformatPlugin),
+    });
 
     editor.insertText('`');
     editor.insertText('new');

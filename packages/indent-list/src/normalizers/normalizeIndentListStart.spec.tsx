@@ -1,12 +1,12 @@
 /** @jsx jsx */
 
 import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
-import { createIndentPlugin } from '@udecode/plate-indent';
+import { IndentPlugin } from '@udecode/plate-indent';
 import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { indentListPluginPage } from '../__tests__/indentListPluginPage';
-import { createIndentListPlugin } from '../IndentListPlugin';
+import { IndentListPlugin } from '../IndentListPlugin';
 
 jsx;
 
@@ -87,12 +87,8 @@ describe('normalizeIndentListStart', () => {
     it('should be', async () => {
       const editor = createPlateEditor({
         editor: input,
-        normalizeInitialValue: true,
-        plugins: [
-          ParagraphPlugin,
-          createIndentPlugin(),
-          createIndentListPlugin(),
-        ],
+        plugins: [ParagraphPlugin, IndentPlugin, IndentListPlugin],
+        shouldNormalizeEditor: true,
       });
 
       expect(editor.children).toEqual(output.children);
@@ -150,12 +146,8 @@ describe('normalizeIndentListStart', () => {
     it('should be', async () => {
       const editor = createPlateEditor({
         editor: input,
-        normalizeInitialValue: true,
-        plugins: [
-          ParagraphPlugin,
-          createIndentPlugin(),
-          createIndentListPlugin(indentListPluginPage),
-        ],
+        plugins: [ParagraphPlugin, IndentPlugin, indentListPluginPage],
+        shouldNormalizeEditor: true,
       }) as any;
 
       expect(editor.children).toEqual(output.children);
@@ -202,12 +194,8 @@ describe('normalizeIndentListStart', () => {
     it('should be', async () => {
       const editor = createPlateEditor({
         editor: input,
-        normalizeInitialValue: true,
-        plugins: [
-          ParagraphPlugin,
-          createIndentPlugin(),
-          createIndentListPlugin(indentListPluginPage),
-        ],
+        plugins: [ParagraphPlugin, IndentPlugin, indentListPluginPage],
+        shouldNormalizeEditor: true,
       }) as any;
 
       expect(editor.children).toEqual(output.children);

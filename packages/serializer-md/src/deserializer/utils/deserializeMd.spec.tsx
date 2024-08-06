@@ -4,14 +4,14 @@ import { createPlateEditor } from '@udecode/plate-common';
 import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createDeserializeMdPlugin } from '../DeserializeMdPlugin';
+import { DeserializeMdPlugin } from '../DeserializeMdPlugin';
 import { deserializeMd } from './deserializeMd';
 
 jsx;
 
 describe('deserializeMd', () => {
   const editor = createPlateEditor({
-    plugins: [createDeserializeMdPlugin() as any],
+    plugins: [DeserializeMdPlugin],
   });
 
   it('should deserialize paragraphs', () => {
@@ -306,9 +306,7 @@ describe('deserializeMd', () => {
 
 describe('deserializeMdIndentList', () => {
   const editor = createPlateEditor({
-    plugins: [
-      createDeserializeMdPlugin({ options: { indentList: true } }) as any,
-    ],
+    plugins: [DeserializeMdPlugin.configure({ indentList: true })],
   });
 
   it('should deserialize unordered lists', () => {

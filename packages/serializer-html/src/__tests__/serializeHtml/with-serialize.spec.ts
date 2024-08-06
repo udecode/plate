@@ -4,9 +4,9 @@ import { BoldPlugin } from '@udecode/plate';
 import { MARK_BOLD } from '@udecode/plate-basic-marks';
 import { createPlateEditor, htmlStringToDOMNode } from '@udecode/plate-core';
 import { ImagePlugin } from '@udecode/plate-media';
-import { createPlateUIEditor } from 'www/src/lib/plate/create-plate-ui-editor';
 
 import { serializeHtml } from '../../serializeHtml';
+import { createPlateUIEditor } from '../create-plate-ui-editor';
 
 const plugins = [
   ImagePlugin.extend({

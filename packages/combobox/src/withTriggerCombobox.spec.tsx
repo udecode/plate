@@ -1,22 +1,25 @@
 /** @jsx jsx */
 
 import {
-  type TriggerComboboxPlugin,
+  type TriggerComboboxPluginOptions,
   withTriggerCombobox,
 } from '@udecode/plate-combobox';
-import { createPlateEditor, createPluginFactory } from '@udecode/plate-common';
+import { createPlateEditor, createPlugin } from '@udecode/plate-common';
 import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
-const createExampleComboboxPlugin = createPluginFactory<TriggerComboboxPlugin>({
+const ExampleComboboxPlugin = createPlugin<
+  string,
+  TriggerComboboxPluginOptions
+>({
   key: 'exampleCombobox',
   plugins: [
-    {
+    createPlugin({
       isElement: true,
       isInline: true,
       isVoid: true,
       key: 'mention_input',
-    },
+    }),
   ],
   withOverrides: withTriggerCombobox,
 });
@@ -24,7 +27,7 @@ const createExampleComboboxPlugin = createPluginFactory<TriggerComboboxPlugin>({
 const plugins = [
   ParagraphPlugin,
 
-  createExampleComboboxPlugin({
+  ExampleComboboxPlugin.extend<TriggerComboboxPluginOptions>({
     key: 'exampleCombobox1',
     options: {
       createComboboxInput: (trigger) => ({
@@ -37,7 +40,7 @@ const plugins = [
     },
   }),
 
-  createExampleComboboxPlugin({
+  ExampleComboboxPlugin.extend<TriggerComboboxPluginOptions>({
     key: 'exampleCombobox2',
     options: {
       createComboboxInput: () => ({

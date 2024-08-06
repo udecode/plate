@@ -30,19 +30,41 @@ export type PlatePluginMethods<
     ctx: PlatePluginContext<K, O, A, T, S>
   ) => Partial<PlatePlugin<K, O, A, T, S>>)[];
 
-  configure: (options: O) => PlatePlugin<K, O, A, T, S>;
+  configure: (
+    options:
+      | ((ctx: PlatePluginContext<K, O, A, T, S>) => Partial<O>)
+      | Partial<O>
+  ) => PlatePlugin<K, O, A, T, S>;
 
   configurePlugin: <EO = {}>(
     key: string,
-    options: EO
+    options:
+      | ((ctx: PlatePluginContext<K, O, A, T, S>) => Partial<EO>)
+      | Partial<EO>
   ) => PlatePlugin<K, O, A, T, S>;
 
   extend: <EO = {}, EA = {}, ET = {}, ES = {}>(
     extendConfig:
       | ((
           ctx: PlatePluginContext<K, O, A, T, S>
-        ) => Partial<PlatePlugin<K, EO, EA, ET, ES>>)
-      | Partial<PlatePlugin<K, EO, EA, ET, ES>>
+        ) => Partial<
+          PlatePlugin<
+            K,
+            EO & Partial<O>,
+            EA & Partial<A>,
+            ET & Partial<T>,
+            ES & Partial<S>
+          >
+        >)
+      | Partial<
+          PlatePlugin<
+            K,
+            EO & Partial<O>,
+            EA & Partial<A>,
+            ET & Partial<T>,
+            ES & Partial<S>
+          >
+        >
   ) => PlatePlugin<K, EO & O, A & EA, ET & T, ES & S>;
 
   extendPlugin: <EO = {}, EA = {}, ET = {}, ES = {}>(
@@ -52,6 +74,16 @@ export type PlatePluginMethods<
           ctx: PlatePluginContext<K, O, A, T, S>
         ) => Partial<PlatePlugin<K, EO, EA, ET, ES>>)
       | Partial<PlatePlugin<K, EO, EA, ET, ES>>
+  ) => PlatePlugin<K, O, A, T, S>;
+
+  /**
+   * Set the component for the plugin.
+   *
+   * @param component The React component to be used for rendering.
+   * @returns A new instance of the plugin with the updated component.
+   */
+  withComponent: (
+    component: PlatePluginComponent
   ) => PlatePlugin<K, O, A, T, S>;
 };
 
@@ -112,7 +144,7 @@ export type PlatePlugin<
      * code. For example, if multiple plugins have defined
      * `inject.editor.insertData.transformData` for `key=KEY_DESERIALIZE_HTML`,
      * `insertData` plugin will call all of these `transformData` for
-     * `KEY_DESERIALIZE_HTML` plugin. Differs from `overrideByKey` as this is
+     * `KEY_DESERIALIZE_HTML` plugin. Differs from `override.plugins` as this is
      * not overriding any plugin.
      */
     pluginsByKey?: Record<

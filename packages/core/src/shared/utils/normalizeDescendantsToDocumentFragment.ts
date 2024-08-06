@@ -8,7 +8,7 @@ import {
 import type { PlateEditor } from '../types/PlateEditor';
 
 import { ELEMENT_DEFAULT } from '../constants';
-import { getPluginType } from './getPluginType';
+import { getPluginType } from './getPlugin';
 
 const isInlineNode =
   (editor: Pick<TEditor, 'isInline'>) => (node: TDescendant) =>

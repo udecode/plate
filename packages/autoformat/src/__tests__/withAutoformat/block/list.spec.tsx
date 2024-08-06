@@ -33,10 +33,10 @@ describe('when -space', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      createPlugin(autoformatPlugin as any)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: createPlugin(autoformatPlugin),
+    });
 
     editor.insertText(' ');
 
@@ -66,10 +66,10 @@ describe('when 1.space', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      createPlugin(autoformatPlugin as any)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: createPlugin(autoformatPlugin),
+    });
 
     editor.insertText(' ');
 
@@ -95,10 +95,10 @@ describe('when [].space', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      createPlugin(autoformatPlugin as any)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: createPlugin(autoformatPlugin),
+    });
 
     editor.insertText(' ');
 
@@ -124,10 +124,10 @@ describe('when [x].space', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      createPlugin(autoformatPlugin as any)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: createPlugin(autoformatPlugin),
+    });
 
     editor.insertText(' ');
 

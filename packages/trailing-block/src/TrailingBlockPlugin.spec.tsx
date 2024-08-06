@@ -4,6 +4,8 @@ import { ELEMENT_DEFAULT, createPlateEditor } from '@udecode/plate-common';
 import { ELEMENT_H1 } from '@udecode/plate-heading';
 import { jsx } from '@udecode/plate-test-utils';
 
+import { TrailingBlockPlugin } from './TrailingBlockPlugin';
+
 jsx;
 
 describe('when last node is invalid', () => {

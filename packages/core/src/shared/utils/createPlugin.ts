@@ -1,6 +1,11 @@
 import merge from 'lodash/merge';
 
-import type { PlateEditor, PlatePlugin, PlatePluginList } from '../types';
+import type {
+  PlateEditor,
+  PlatePlugin,
+  PlatePluginComponent,
+  PlatePluginList,
+} from '../types';
 
 import { isFunction } from './misc';
 
@@ -56,7 +61,7 @@ import { isFunction } from './misc';
  *       plugins) or add a new one if not found.
  */
 export function createPlugin<
-  K extends string = '',
+  K extends string = string,
   O = {},
   A = {},
   T = {},
@@ -64,7 +69,7 @@ export function createPlugin<
 >(
   config:
     | ((editor: PlateEditor) => Partial<PlatePlugin<K, O, A, T, S>>)
-    | Partial<PlatePlugin<K, O, A, T, S>>
+    | Partial<PlatePlugin<K, O, A, T, S>> = {}
 ): PlatePlugin<K, O, A, T, S> {
   let baseConfig: Partial<PlatePlugin<K, O, A, T, S>>;
   let initialExtension:
@@ -90,6 +95,7 @@ export function createPlugin<
       api: {},
       dependencies: [],
       editor: {},
+      handlers: {},
       inject: {},
       key,
       options: {},
@@ -102,9 +108,33 @@ export function createPlugin<
     config
   ) as PlatePlugin<K, O, A, T, S>;
 
-  plugin.configure = (opt) => createPlugin(merge({}, plugin, { options: opt }));
+  plugin.configure = (config) => {
+    if (plugin.__extensions.length > 0 || isFunction(config)) {
+      const newPlugin = { ...plugin };
+      newPlugin.__extensions = [
+        ...(newPlugin.__extensions as any),
+        (ctx) => ({
+          options: {
+            ...ctx.plugin.options,
+            ...(isFunction(config) ? config(ctx) : config),
+          },
+        }),
+      ];
 
-  plugin.configurePlugin = (key, options) => {
+      return createPlugin(newPlugin) as any;
+    }
+
+    return createPlugin(
+      merge({}, plugin, {
+        options: {
+          ...plugin.options,
+          ...config,
+        },
+      })
+    ) as any;
+  };
+
+  plugin.configurePlugin = (key, config) => {
     const newPlugin = { ...plugin };
 
     const configureNestedPlugin = (
@@ -117,7 +147,7 @@ export function createPlugin<
 
           return createPlugin({
             ...nestedPlugin,
-            options: merge({}, nestedPlugin.options, options),
+            options: merge({}, nestedPlugin.options, config),
           });
         }
         if (nestedPlugin.plugins && nestedPlugin.plugins.length > 0) {
@@ -215,6 +245,12 @@ export function createPlugin<
     }
 
     return createPlugin(newPlugin);
+  };
+
+  plugin.withComponent = (component: PlatePluginComponent) => {
+    return plugin.extend({
+      component,
+    }) as any;
   };
 
   return plugin;

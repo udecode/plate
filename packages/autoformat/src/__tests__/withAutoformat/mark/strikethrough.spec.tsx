@@ -27,10 +27,10 @@ const output = (
 ) as any;
 
 it('should autoformat', () => {
-  const editor = withAutoformat(
-    withReact(input),
-    createPlugin(autoformatPlugin as any)
-  );
+  const editor = withAutoformat({
+    editor: withReact(input),
+    plugin: createPlugin(autoformatPlugin),
+  });
 
   editor.insertText('~');
 

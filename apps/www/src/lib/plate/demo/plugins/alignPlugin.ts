@@ -1,4 +1,4 @@
-import type { PlatePlugin } from '@udecode/plate-common';
+import type { AnyPlatePlugin } from '@udecode/plate-common';
 
 import {
   ELEMENT_H1,
@@ -11,7 +11,7 @@ import {
 import { ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from '@udecode/plate-media';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 
-export const alignPlugin: Partial<PlatePlugin> = {
+export const alignPlugin: Partial<AnyPlatePlugin> = {
   inject: {
     props: {
       validTypes: [

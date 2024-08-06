@@ -4,7 +4,7 @@ import { createPlateEditor } from '@udecode/plate-common';
 import { ELEMENT_H1 } from '@udecode/plate-heading';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createNormalizeTypesPlugin } from '../../../NormalizeTypesPlugin';
+import { NormalizeTypesPlugin } from '../../../NormalizeTypesPlugin';
 
 jsx;
 
@@ -28,10 +28,8 @@ it('should be', () => {
   const editor = createPlateEditor({
     editor: input,
     plugins: [
-      createNormalizeTypesPlugin({
-        options: {
-          rules: [{ path: [0], type: ELEMENT_H1 }],
-        },
+      NormalizeTypesPlugin.configure({
+        rules: [{ path: [0], type: ELEMENT_H1 }],
       }),
     ],
   });

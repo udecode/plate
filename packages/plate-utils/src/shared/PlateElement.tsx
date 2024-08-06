@@ -19,6 +19,7 @@ export const usePlateElement = (props: PlateElementProps) => {
     element,
     elementToAttributes,
     nodeProps,
+    plugin,
     ...rootProps
   } = props;
 
