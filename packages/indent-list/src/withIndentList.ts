@@ -330,6 +330,7 @@ export const withIndentList: WithOverride<IndentListPluginOptions> = ({
             breakOnEqIndentNeqListStyleType: false,
             breakOnLowerIndent: false,
             eqIndent: false,
+            ...getSiblingIndentListOptions,
           }
         );
 
@@ -352,6 +353,7 @@ export const withIndentList: WithOverride<IndentListPluginOptions> = ({
           breakOnEqIndentNeqListStyleType: false,
           breakOnLowerIndent: false,
           eqIndent: false,
+          ...getSiblingIndentListOptions,
         });
 
         if (nextNodeEntry) {

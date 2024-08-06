@@ -67,7 +67,9 @@ export const withNodeId: WithOverride<NodeIdPlugin> = ({
   };
 
   editor.insertNodes = (_nodes, options) => {
-    const nodes = castArray<TNode>(_nodes as any);
+    const nodes = castArray<TNode>(_nodes as any).filter((node) => !!node);
+
+    if (nodes.length === 0) return;
 
     insertNodes(
       nodes.map((node) => {
