@@ -20,6 +20,10 @@ export const createDeserializeAstPlugin = createPluginFactory({
           /* empty */
         }
 
+        if (parsed) {
+          return Array.isArray(parsed) ? parsed : [parsed];
+        }
+
         return parsed;
       },
     },
