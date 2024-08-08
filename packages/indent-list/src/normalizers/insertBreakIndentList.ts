@@ -2,7 +2,6 @@ import {
   ELEMENT_DEFAULT,
   type PlateEditor,
   type TElement,
-  type Value,
   getAboveNode,
   insertNodes,
   isDefined,
@@ -10,14 +9,9 @@ import {
   isExpanded,
 } from '@udecode/plate-common/server';
 
-import {
-  KEY_LIST_STYLE_TYPE,
-  KEY_TODO_STYLE_TYPE,
-} from '../createIndentListPlugin';
+import { KEY_LIST_STYLE_TYPE, KEY_TODO_STYLE_TYPE } from '../IndentListPlugin';
 
-export const insertBreakIndentList = <V extends Value>(
-  editor: PlateEditor<V>
-) => {
+export const insertBreakIndentList = (editor: PlateEditor) => {
   const { insertBreak } = editor;
 
   return function () {

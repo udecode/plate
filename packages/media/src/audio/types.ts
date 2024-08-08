@@ -2,4 +2,4 @@ import type { TMediaElement } from '../media';
 
 export interface TAudioElement extends TMediaElement {}
 
-export interface AudioPlugin {}
+export interface AudioPluginOptions {}

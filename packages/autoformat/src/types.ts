@@ -1,4 +1,4 @@
-import type { PlateEditor, Value } from '@udecode/plate-common/server';
+import type { PlateEditor } from '@udecode/plate-common';
 
 import type { GetMatchPointsReturnType } from './utils/getMatchPoints';
 
@@ -7,18 +7,13 @@ export interface MatchRange {
   start: string;
 }
 
-export interface AutoformatQueryOptions<
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
-> extends Omit<AutoformatCommonRule<V, E>, 'query'> {
+export interface AutoformatQueryOptions
+  extends Omit<AutoformatCommonRule, 'query'> {
   /** `insertText` text. */
   text: string;
 }
 
-export interface AutoformatCommonRule<
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
-> {
+export interface AutoformatCommonRule {
   /**
    * The rule applies when the trigger and the text just before the cursor
    * matches. For `mode: 'block'`: lookup for the end match(es) before the
@@ -37,7 +32,7 @@ export interface AutoformatCommonRule<
   insertTrigger?: boolean;
 
   /** Query to allow autoformat. */
-  query?: (editor: E, options: AutoformatQueryOptions<V, E>) => boolean;
+  query?: (editor: PlateEditor, options: AutoformatQueryOptions) => boolean;
 
   /**
    * Triggering character to autoformat.
@@ -47,10 +42,7 @@ export interface AutoformatCommonRule<
   trigger?: string | string[];
 }
 
-export interface AutoformatBlockRule<
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
-> extends AutoformatCommonRule<V, E> {
+export interface AutoformatBlockRule extends AutoformatCommonRule {
   match: string | string[];
 
   /**
@@ -75,13 +67,13 @@ export interface AutoformatBlockRule<
    *
    * @default setNodes(editor, { type }, { match: (n) => isBlock(editor, n) })
    */
-  format?: (editor: E) => void;
+  format?: (editor: PlateEditor) => void;
 
   /**
    * Function called just before `format`. Generally used to reset the selected
    * block.
    */
-  preFormat?: (editor: E) => void;
+  preFormat?: (editor: PlateEditor) => void;
 
   /**
    * If true, the trigger should be at block start to allow autoformatting.
@@ -97,10 +89,7 @@ export interface AutoformatBlockRule<
   type?: string;
 }
 
-export interface AutoformatMarkRule<
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
-> extends AutoformatCommonRule<V, E> {
+export interface AutoformatMarkRule extends AutoformatCommonRule {
   mode: 'mark';
 
   /** Mark(s) to add. */
@@ -110,17 +99,14 @@ export interface AutoformatMarkRule<
   ignoreTrim?: boolean;
 }
 
-export interface AutoformatTextRule<
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
-> extends AutoformatCommonRule<V, E> {
+export interface AutoformatTextRule extends AutoformatCommonRule {
   /**
    * String: the matched text is replaced by that string. string[]: the matched
    * texts are replaced by these strings. function: called when there is a
    * match.
    */
   format:
-    | ((editor: E, options: GetMatchPointsReturnType) => void)
+    | ((editor: PlateEditor, options: GetMatchPointsReturnType) => void)
     | string
     | string[];
 
@@ -129,19 +115,13 @@ export interface AutoformatTextRule<
   mode: 'text';
 }
 
-export type AutoformatRule<
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
-> =
-  | AutoformatBlockRule<V, E>
-  | AutoformatMarkRule<V, E>
-  | AutoformatTextRule<V, E>;
+export type AutoformatRule =
+  | AutoformatBlockRule
+  | AutoformatMarkRule
+  | AutoformatTextRule;
 
-export interface AutoformatPlugin<
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
-> {
+export interface AutoformatPluginOptions {
   enableUndoOnDelete?: boolean;
   /** A list of triggering rules. */
-  rules?: AutoformatRule<V, E>[];
+  rules?: AutoformatRule[];
 }

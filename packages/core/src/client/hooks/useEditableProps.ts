@@ -5,6 +5,7 @@ import omit from 'lodash/omit.js';
 import { useDeepCompareMemo } from 'use-deep-compare';
 
 import type { TEditableProps } from '../../shared/types/slate-react/TEditableProps';
+import type { PlateProps } from '../components';
 
 import { DOM_HANDLERS } from '../../shared/types/misc/dom-attributes';
 import { pipeDecorate } from '../../shared/utils/pipeDecorate';
@@ -14,7 +15,8 @@ import { pipeRenderElement } from '../utils/pipeRenderElement';
 import { pipeRenderLeaf } from '../utils/pipeRenderLeaf';
 
 export const useEditableProps = (
-  editableProps: TEditableProps = {}
+  editableProps: Omit<TEditableProps, 'decorate'> &
+    Pick<PlateProps, 'decorate'> = {}
 ): TEditableProps => {
   const { id } = editableProps;
 
@@ -74,7 +76,12 @@ export const useEditableProps = (
 
   return useDeepCompareMemo(
     () => ({
-      ...omit(editableProps, [...DOM_HANDLERS, 'renderElement', 'renderLeaf']),
+      ...omit(editableProps, [
+        ...DOM_HANDLERS,
+        'renderElement',
+        'renderLeaf',
+        'decorate',
+      ]),
       ...props,
     }),
     [editableProps, props]

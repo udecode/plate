@@ -1,4 +1,4 @@
-import type { EElement, Value } from '@udecode/slate';
+import type { EElement, ValueOf } from '@udecode/slate';
 
 import {
   type ReplaceNodeChildrenOptions,
@@ -8,11 +8,14 @@ import {
 import type { PlateEditor } from '../types/index';
 
 /** Replace editor children by default block. */
-export const resetEditorChildren = <V extends Value>(
-  editor: PlateEditor<V>,
-  options?: Omit<ReplaceNodeChildrenOptions<EElement<V>, V>, 'at' | 'nodes'>
+export const resetEditorChildren = <E extends PlateEditor = PlateEditor>(
+  editor: E,
+  options?: Omit<
+    ReplaceNodeChildrenOptions<EElement<ValueOf<E>>, ValueOf<E>>,
+    'at' | 'nodes'
+  >
 ) => {
-  replaceNodeChildren<EElement<V>>(editor, {
+  replaceNodeChildren<EElement<ValueOf<E>>>(editor, {
     at: [],
     nodes: editor.childrenFactory(),
     ...options,

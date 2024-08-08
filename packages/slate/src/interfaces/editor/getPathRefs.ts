@@ -1,7 +1,6 @@
 import { Editor } from 'slate';
 
-import type { TEditor, Value } from './TEditor';
+import type { TEditor } from './TEditor';
 
 /** Get the set of currently tracked path refs of the editor. */
-export const getPathRefs = <V extends Value>(editor: TEditor<V>) =>
-  Editor.pathRefs(editor as any);
+export const getPathRefs = (editor: TEditor) => Editor.pathRefs(editor as any);

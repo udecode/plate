@@ -1,7 +1,7 @@
 import { Editor } from 'slate';
 
-import type { TEditor, Value } from './TEditor';
+import type { TEditor } from './TEditor';
 
 /** Get the set of currently tracked range refs of the editor. */
-export const getRangeRefs = <V extends Value>(editor: TEditor<V>) =>
+export const getRangeRefs = (editor: TEditor) =>
   Editor.rangeRefs(editor as any);

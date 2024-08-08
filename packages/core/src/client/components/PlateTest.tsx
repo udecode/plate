@@ -1,20 +1,22 @@
 import React from 'react';
 
-import type { Value } from '@udecode/slate';
-
-import { createPlateEditor } from '../utils/createPlateEditor';
+import {
+  type CreatePlateEditorOptions,
+  createPlateEditor,
+} from '../utils/createPlateEditor';
 import { Plate, type PlateProps } from './Plate';
 import { PlateContent, type PlateContentProps } from './PlateContent';
 
-export function PlateTest<V extends Value>({
+export function PlateTest({
   editableProps,
-  normalizeInitialValue,
+  shouldNormalizeEditor,
   variant = 'wordProcessor',
   ...props
 }: {
   editableProps?: PlateContentProps;
   variant?: 'comment' | 'wordProcessor';
-} & PlateProps<V>) {
+} & CreatePlateEditorOptions &
+  PlateProps) {
   const { editor: _editor, id, plugins } = props;
 
   let editor = _editor;
@@ -23,8 +25,8 @@ export function PlateTest<V extends Value>({
     editor = createPlateEditor({
       editor,
       id,
-      normalizeInitialValue,
       plugins,
+      shouldNormalizeEditor,
     });
   }
 

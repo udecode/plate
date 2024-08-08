@@ -1,7 +1,6 @@
 import {
   type PlateEditor,
   type TDescendant,
-  type Value,
   applyDeepToNodes,
   nanoid,
   withoutNormalizing,
@@ -13,8 +12,8 @@ import { getSuggestionKeys } from '../utils/index';
 import { deleteFragmentSuggestion } from './deleteFragmentSuggestion';
 import { getSuggestionCurrentUserKey } from './getSuggestionProps';
 
-export const insertFragmentSuggestion = <V extends Value>(
-  editor: PlateEditor<V>,
+export const insertFragmentSuggestion = (
+  editor: PlateEditor,
   fragment: TDescendant[],
   {
     insertFragment = editor.insertFragment,

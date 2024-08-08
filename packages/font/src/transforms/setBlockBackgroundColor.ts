@@ -5,7 +5,7 @@ import {
   setNodes,
 } from '@udecode/plate-common';
 
-import { MARK_BG_COLOR } from '../createFontBackgroundColorPlugin';
+import { MARK_BG_COLOR } from '../FontBackgroundColorPlugin';
 
 export const setBlockBackgroundColor = (
   editor: PlateEditor<Value>,

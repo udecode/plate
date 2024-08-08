@@ -6,7 +6,7 @@ export const useEventPlateId = (id?: PlateId) => {
   const focus = useEventEditorSelectors.focus();
   const blur = useEventEditorSelectors.blur();
   const last = useEventEditorSelectors.last();
-  const providerId = usePlateSelectors().id();
+  const providerId = usePlateSelectors().editor().id;
 
   if (id) return id;
   if (focus) return focus;

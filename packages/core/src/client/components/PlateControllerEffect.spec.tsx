@@ -4,6 +4,7 @@ import { act, render, renderHook } from '@testing-library/react';
 import { useFocused } from 'slate-react';
 
 import { PlateController, usePlateControllerSelectors } from '../stores';
+import { createPlateEditor } from '../utils';
 import { Plate } from './Plate';
 import { PlateControllerEffect } from './PlateControllerEffect';
 
@@ -101,10 +102,14 @@ describe('ControlledFocusedContext', () => {
 describe('PlateControllerEffect', () => {
   describe('when PlateController exists', () => {
     describe('when a non-primary editor mounts and unmounts', () => {
+      const editor = createPlateEditor({
+        id: 'test',
+      });
+
       const children = (
         <PlateController>
           <UnmountablePlate>
-            <Plate id="test" primary={false}>
+            <Plate editor={editor} primary={false}>
               <PlateControllerEffect />
             </Plate>
           </UnmountablePlate>
@@ -129,9 +134,13 @@ describe('PlateControllerEffect', () => {
 
     describe('when the editor is focused', () => {
       it('becomes active', () => {
+        const editor = createPlateEditor({
+          id: 'test',
+        });
+
         const { getByText } = render(
           <PlateController>
-            <Plate id="test">
+            <Plate editor={editor}>
               <ControlledFocusedContext>
                 <PlateControllerEffect />
               </ControlledFocusedContext>
@@ -152,7 +161,7 @@ describe('PlateControllerEffect', () => {
       const { getByText, queryByText } = render(
         <PlateController primaryEditorIds={['1', '2']}>
           <UnmountablePlate initialMounted={false}>
-            <Plate id="3" primary={true}>
+            <Plate editor={createPlateEditor({ id: '3' })} primary={true}>
               <PlateControllerEffect />
             </Plate>
           </UnmountablePlate>
@@ -177,7 +186,7 @@ describe('PlateControllerEffect', () => {
   describe('when PlateController does not exist', () => {
     it('does not throw an error', () => {
       const { getByText } = render(
-        <Plate>
+        <Plate editor={createPlateEditor()}>
           <PlateControllerEffect />
           <p>No error</p>
         </Plate>

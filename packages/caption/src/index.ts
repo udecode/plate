@@ -4,7 +4,7 @@
 
 export * from './TCaptionElement';
 export * from './captionGlobalStore';
-export * from './createCaptionPlugin';
+export * from './CaptionPlugin';
 export * from './onKeyDownCaption';
 export * from './withCaption';
 export * from './components/index';

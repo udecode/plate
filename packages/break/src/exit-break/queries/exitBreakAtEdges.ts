@@ -1,6 +1,5 @@
 import {
   type TEditor,
-  type Value,
   isExpanded,
   isSelectionAtBlockEnd,
   isSelectionAtBlockStart,
@@ -10,8 +9,8 @@ import {
  * Check if the selection is at the edge of its parent block. If it is and if
  * the selection is expanded, delete its content.
  */
-export const exitBreakAtEdges = <V extends Value>(
-  editor: TEditor<V>,
+export const exitBreakAtEdges = (
+  editor: TEditor,
   {
     end,
     start,

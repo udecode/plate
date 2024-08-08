@@ -1,12 +1,14 @@
 /** @jsx jsx */
 
-import { mockPlugin } from '@udecode/plate-common';
 import { ELEMENT_H1 } from '@udecode/plate-heading';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
-import { autoformatPlugin } from 'www/src/lib/plate/demo/plugins/autoformatPlugin';
-import { preFormat } from 'www/src/lib/plate/demo/plugins/autoformatUtils';
+import {
+  getAutoformatOptions,
+  preFormat,
+} from 'www/src/lib/plate/demo/plugins/autoformatOptions';
 
+import { AutoformatPlugin } from '../../../AutoformatPlugin';
 import { withAutoformat } from '../../../withAutoformat';
 
 jsx;
@@ -29,21 +31,19 @@ describe('when #space', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      mockPlugin({
-        options: {
-          rules: [
-            {
-              match: '# ',
-              mode: 'block',
-              preFormat: preFormat,
-              type: ELEMENT_H1,
-            },
-          ],
-        },
-      })
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: AutoformatPlugin.configure({
+        rules: [
+          {
+            match: '# ',
+            mode: 'block',
+            preFormat: preFormat,
+            type: ELEMENT_H1,
+          },
+        ],
+      }),
+    });
 
     editor.insertText(' ');
 
@@ -69,10 +69,10 @@ describe('when ##space', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      mockPlugin(autoformatPlugin as any)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    });
 
     editor.insertText(' ');
 

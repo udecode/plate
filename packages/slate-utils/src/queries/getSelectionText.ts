@@ -1,5 +1,5 @@
-import { type TEditor, type Value, getEditorString } from '@udecode/slate';
+import { type TEditor, getEditorString } from '@udecode/slate';
 
 /** Get the selected text. Return empty string if no selection. */
-export const getSelectionText = <V extends Value>(editor: TEditor<V>) =>
+export const getSelectionText = (editor: TEditor) =>
   getEditorString(editor, editor.selection);

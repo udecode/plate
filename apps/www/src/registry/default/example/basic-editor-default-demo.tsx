@@ -1,10 +1,12 @@
 import React from 'react';
 
-import { Plate, PlateContent } from '@udecode/plate-common';
+import { Plate, PlateContent, usePlateEditor } from '@udecode/plate-common';
 
 export default function BasicEditorDefaultDemo() {
+  const editor = usePlateEditor();
+
   return (
-    <Plate>
+    <Plate editor={editor}>
       <PlateContent placeholder="Type..." />
     </Plate>
   );

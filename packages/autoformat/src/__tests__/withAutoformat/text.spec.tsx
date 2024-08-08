@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
-import { mockPlugin } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
-import { autoformatPlugin } from 'www/src/lib/plate/demo/plugins/autoformatPlugin';
+import { getAutoformatOptions } from 'www/src/lib/plate/demo/plugins/autoformatOptions';
 
+import { AutoformatPlugin } from '../../AutoformatPlugin';
 import { withAutoformat } from '../../withAutoformat';
 
 jsx;
@@ -31,10 +31,10 @@ describe('when --space', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      mockPlugin(autoformatPlugin as any)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    });
 
     editor.insertText('-');
 
@@ -62,10 +62,10 @@ describe('when --space', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      mockPlugin(autoformatPlugin as any)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    });
 
     editor.insertText('-');
 
@@ -93,10 +93,10 @@ describe('when --space', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      mockPlugin(autoformatPlugin as any)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    });
 
     editor.insertText('-');
 
@@ -126,10 +126,10 @@ describe('when (tm)', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      mockPlugin(autoformatPlugin as any)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    });
 
     editor.insertText(')');
 
@@ -159,10 +159,10 @@ describe('when &sect', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      mockPlugin(autoformatPlugin as any)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    });
 
     editor.insertText(';');
 
@@ -192,10 +192,10 @@ describe('when //', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      mockPlugin(autoformatPlugin as any)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    });
 
     editor.insertText('/');
 
@@ -235,10 +235,10 @@ describe('when typing %%%', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      mockPlugin(autoformatPlugin as any)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    });
 
     editor.insertText('%');
 
@@ -267,20 +267,18 @@ describe('when using quotes', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      mockPlugin({
-        options: {
-          rules: [
-            {
-              format: ['“', '”'],
-              match: '"',
-              mode: 'text',
-            },
-          ],
-        },
-      })
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: AutoformatPlugin.configure({
+        rules: [
+          {
+            format: ['“', '”'],
+            match: '"',
+            mode: 'text',
+          },
+        ],
+      }),
+    });
 
     editor.insertText('"');
 

@@ -1,7 +1,6 @@
 import {
   type TEditor,
   type TElementEntry,
-  type Value,
   getEditorString,
   getRange,
   getStartPoint,
@@ -22,8 +21,8 @@ export interface IndentCodeLineOptions {
  * - There are no non-whitespace characters left of the cursor Indentation = 2
  *   spaces.
  */
-export const indentCodeLine = <V extends Value>(
-  editor: TEditor<V>,
+export const indentCodeLine = (
+  editor: TEditor,
   { codeLine, indentDepth = 2 }: IndentCodeLineOptions
 ) => {
   const [, codeLinePath] = codeLine;

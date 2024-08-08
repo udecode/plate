@@ -8,7 +8,7 @@ import {
 
 import type { TTableElement, TTableRowElement } from '../types';
 
-import { ELEMENT_TABLE } from '../createTablePlugin';
+import { ELEMENT_TABLE } from '../TablePlugin';
 
 export const setTableRowSize = <V extends Value>(
   editor: TEditor<V>,

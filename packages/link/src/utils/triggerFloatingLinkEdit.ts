@@ -1,6 +1,5 @@
 import {
   type PlateEditor,
-  type Value,
   findNode,
   getEditorString,
   getPluginType,
@@ -8,12 +7,10 @@ import {
 
 import type { TLinkElement } from '../types';
 
+import { ELEMENT_LINK } from '../LinkPlugin';
 import { floatingLinkActions } from '../components/FloatingLink/floatingLinkStore';
-import { ELEMENT_LINK } from '../createLinkPlugin';
 
-export const triggerFloatingLinkEdit = <V extends Value>(
-  editor: PlateEditor<V>
-) => {
+export const triggerFloatingLinkEdit = (editor: PlateEditor) => {
   const entry = findNode<TLinkElement>(editor, {
     match: { type: getPluginType(editor, ELEMENT_LINK) },
   });

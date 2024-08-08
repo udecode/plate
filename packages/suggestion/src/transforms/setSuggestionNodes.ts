@@ -2,7 +2,6 @@ import {
   type PlateEditor,
   type SetNodesOptions,
   type TNodeProps,
-  type Value,
   addRangeMarks,
   getNodeEntries,
   isInline,
@@ -15,8 +14,8 @@ import type { SuggestionEditorProps, TSuggestionText } from '../types';
 
 import { getSuggestionProps } from './getSuggestionProps';
 
-export const setSuggestionNodes = <V extends Value = Value>(
-  editor: PlateEditor<V> & SuggestionEditorProps,
+export const setSuggestionNodes = (
+  editor: PlateEditor & SuggestionEditorProps,
   options?: {
     suggestionDeletion?: boolean;
     suggestionId?: string;

@@ -4,7 +4,7 @@ import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
 import { ELEMENT_LINK } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createRemoveEmptyNodesPlugin } from '../../createRemoveEmptyNodesPlugin';
+import { RemoveEmptyNodesPlugin } from '../../RemoveEmptyNodesPlugin';
 
 jsx;
 
@@ -31,10 +31,8 @@ it('should be', () => {
   const editor = createPlateEditor({
     editor: input,
     plugins: [
-      createRemoveEmptyNodesPlugin({
-        options: {
-          types: ELEMENT_LINK,
-        },
+      RemoveEmptyNodesPlugin.configure({
+        types: ELEMENT_LINK,
       }),
     ],
   });

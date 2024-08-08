@@ -15,13 +15,13 @@ import {
   KEY_LIST_RESTART,
   KEY_LIST_START,
   KEY_LIST_STYLE_TYPE,
-} from '../createIndentListPlugin';
+} from '../IndentListPlugin';
 import { getNextIndentList } from '../queries/getNextIndentList';
 import { getPreviousIndentList } from '../queries/getPreviousIndentList';
 import { normalizeFirstIndentListStart } from './normalizeFirstIndentListStart';
 
-export const normalizeNextIndentListStart = <V extends Value>(
-  editor: TEditor<V>,
+export const normalizeNextIndentListStart = (
+  editor: TEditor,
   entry: TNodeEntry,
   prevEntry?: TNodeEntry
 ) => {

@@ -1,14 +1,15 @@
-import type { Value } from '@udecode/slate';
 import type { AnyObject } from '@udecode/utils';
 
 import type { PlateEditor } from './PlateEditor';
+import type { AnyEditorPlugin } from './plugin';
 
 /** Node props passed by Plate */
 export interface PlateRenderNodeProps<
-  V extends Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
+  P extends AnyEditorPlugin = AnyEditorPlugin,
 > {
-  editor: E;
+  editor: PlateEditor;
+
+  plugin: P;
 
   className?: string;
 

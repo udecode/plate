@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { createPlateEditor } from '@udecode/plate-common';
-import { createParagraphPlugin } from '@udecode/plate-paragraph';
+import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { htmlBodyToFragment } from './htmlBodyToFragment';
@@ -24,7 +24,7 @@ describe('when element is a body', () => {
 
     expect(
       htmlBodyToFragment(
-        createPlateEditor({ plugins: [createParagraphPlugin()] }),
+        createPlateEditor({ plugins: [ParagraphPlugin] }),
         body
       )
     ).toEqual(output);

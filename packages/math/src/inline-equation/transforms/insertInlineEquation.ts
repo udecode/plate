@@ -7,7 +7,7 @@ import {
 
 import type { TInlineEquationElement } from '../types';
 
-import { ELEMENT_INLINE_EQUATION } from '../createInlineEquationPlugin';
+import { ELEMENT_INLINE_EQUATION } from '../InlineEquationPlugin';
 
 export const insertInlineEquation = <V extends Value>(
   editor: PlateEditor<V>,

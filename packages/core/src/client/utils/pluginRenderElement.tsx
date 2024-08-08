@@ -1,12 +1,10 @@
 import React from 'react';
 
-import type { Value } from '@udecode/slate';
-
 import { DefaultElement } from 'slate-react';
 
 import type { PlateEditor } from '../../shared/types/PlateEditor';
 import type { RenderElement } from '../../shared/types/RenderElement';
-import type { PlatePlugin } from '../../shared/types/plugin/PlatePlugin';
+import type { AnyEditorPlugin } from '../../shared/types/plugin/PlatePlugin';
 
 import { getRenderNodeProps } from '../../shared/utils/getRenderNodeProps';
 import { ElementProvider } from '../stores/element/useElementStore';
@@ -16,14 +14,15 @@ import { ElementProvider } from '../stores/element/useElementStore';
  * equals to the slate element type, render `options.component`. Else, return
  * `undefined` so the pipeline can check the next plugin.
  */
-export const pluginRenderElement = <V extends Value>(
-  editor: PlateEditor<V>,
-  { component: _component, key, props, type }: PlatePlugin<{}, V>
+export const pluginRenderElement = (
+  editor: PlateEditor,
+  plugin: AnyEditorPlugin
 ): RenderElement =>
   function render(nodeProps) {
+    const { component: _component, key } = plugin;
     const { children: _children, element } = nodeProps;
 
-    if (element.type === type) {
+    if (element.type === plugin.type) {
       const Element = _component ?? DefaultElement;
 
       const injectAboveComponents = editor.plugins.flatMap(
@@ -36,9 +35,9 @@ export const pluginRenderElement = <V extends Value>(
       nodeProps = getRenderNodeProps({
         attributes: element.attributes as any,
         nodeProps: nodeProps as any,
-        props,
-        type: type!,
+        plugin,
       }) as any;
+      nodeProps.plugin = plugin;
 
       let children = _children;
 

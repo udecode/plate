@@ -7,17 +7,13 @@ import {
   type TCloudImageElement,
   useCloudImageElementState,
 } from '@udecode/plate-cloud';
-import {
-  PlateElement,
-  type PlateElementProps,
-  type Value,
-} from '@udecode/plate-common';
+import { PlateElement, type PlateElementProps } from '@udecode/plate-common';
 
 import { ResizeControls } from './cloud-resize-controls';
 import { StatusBar } from './cloud-status-bar';
 
 export interface CloudImageElementProps
-  extends PlateElementProps<Value, TCloudImageElement> {}
+  extends PlateElementProps<TCloudImageElement> {}
 
 export function CloudImageElement({
   className,

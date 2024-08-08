@@ -3,7 +3,7 @@
  */
 
 export * from './constants';
-export * from './createSuggestionPlugin';
+export * from './SuggestionPlugin';
 export * from './diffToSuggestions';
 export * from './types';
 export * from './useHooksSuggestion';

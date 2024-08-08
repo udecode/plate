@@ -45,9 +45,10 @@ import { ELEMENT_TABLE } from '@udecode/plate-table';
 import { ELEMENT_TOGGLE } from '@udecode/plate-toggle';
 import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
 
-import { KEY_DRAG_OVER_CURSOR } from '@/plate/demo/plugins/dragOverCursorPlugin';
+import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
 
 export const descriptions: Record<string, string> = {
+  [DragOverCursorPlugin.key]: 'Customize the cursor when dragging.',
   [ELEMENT_BLOCKQUOTE]: 'Highlight important text or citations.',
   [ELEMENT_EXCALIDRAW]: 'Create drawings and diagrams as block nodes.',
   [ELEMENT_HR]: 'Insert horizontal lines.',
@@ -71,7 +72,6 @@ export const descriptions: Record<string, string> = {
   [KEY_DESERIALIZE_DOCX]: 'Copy paste from DOCX to Slate.',
   [KEY_DESERIALIZE_MD]: 'Copy paste from MD to Slate.',
   [KEY_DND]: 'Move blocks within the editor.',
-  [KEY_DRAG_OVER_CURSOR]: 'Customize the cursor when dragging.',
   [KEY_EMOJI]: 'Enhance your text with emojis.',
   [KEY_EXIT_BREAK]: 'Exit a large block using a shortcut.',
   [KEY_INDENT]: 'Customize text indentation.',

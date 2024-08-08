@@ -1,14 +1,11 @@
-import {
-  ELEMENT_PARAGRAPH,
-  createParagraphPlugin,
-} from '@udecode/plate-paragraph';
-import { createPlateUIEditor } from 'www/src/lib/plate/create-plate-ui-editor';
+import { ELEMENT_PARAGRAPH, ParagraphPlugin } from '@udecode/plate-paragraph';
 
 import { serializeHtml } from '../../serializeHtml';
+import { createPlateUIEditor } from '../create-plate-ui-editor';
 
 describe('when there is no deserializer', () => {
   it('not serialize', () => {
-    const plugin = createParagraphPlugin({
+    const plugin = ParagraphPlugin.extend({
       serializeHtml: null,
     });
 

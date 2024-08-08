@@ -1,6 +1,5 @@
 import {
   type PlateEditor,
-  type Value,
   collapseSelection,
   getEdgePoints,
   withoutNormalizing,
@@ -8,8 +7,8 @@ import {
 
 import { deleteSuggestion } from './deleteSuggestion';
 
-export const deleteFragmentSuggestion = <V extends Value>(
-  editor: PlateEditor<V>,
+export const deleteFragmentSuggestion = (
+  editor: PlateEditor,
   { reverse }: { reverse?: boolean } = {}
 ) => {
   withoutNormalizing(editor, () => {

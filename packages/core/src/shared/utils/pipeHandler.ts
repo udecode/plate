@@ -1,12 +1,7 @@
 import type React from 'react';
 
-import type { Value } from '@udecode/slate';
-
 import type { PlateEditor } from '../types/PlateEditor';
-import type {
-  DOMHandlers,
-  HandlerReturnType,
-} from '../types/plugin/DOMHandlers';
+import type { DOMHandlers } from '../types/plugin/DOMHandlers';
 import type { TEditableProps } from '../types/slate-react/TEditableProps';
 
 export const convertDomEventToSyntheticEvent = (
@@ -73,23 +68,22 @@ export const isEventHandled = <
  * - Any handler returning true will stop the next handlers to be called,
  *   including slate internal handler.
  */
-export const pipeHandler = <V extends Value, K extends keyof DOMHandlers<V>>(
-  editor: PlateEditor<V>,
+export const pipeHandler = <K extends keyof DOMHandlers>(
+  editor: PlateEditor,
   {
     editableProps,
     handlerKey,
-  }: { editableProps?: TEditableProps | null; handlerKey: K }
+  }: { editableProps?: Omit<TEditableProps, 'decorate'> | null; handlerKey: K }
 ): ((event: any) => void) | undefined => {
-  let pluginsHandlers: ((event: any) => HandlerReturnType)[] = [];
-  pluginsHandlers = editor.plugins.flatMap(
-    (plugin) => plugin.handlers?.[handlerKey]?.(editor, plugin) ?? []
-  );
-
   const propsHandler = editableProps?.[handlerKey] as (
     event: any
-  ) => HandlerReturnType | undefined;
+  ) => boolean | void;
 
-  if (pluginsHandlers.length === 0 && !propsHandler) return;
+  const relevantPlugins = editor.plugins.filter(
+    (plugin) => plugin.handlers?.[handlerKey]
+  );
+
+  if (relevantPlugins.length === 0 && !propsHandler) return;
 
   return (event: any) => {
     const isDomEvent = event instanceof Event;
@@ -97,9 +91,21 @@ export const pipeHandler = <V extends Value, K extends keyof DOMHandlers<V>>(
       ? convertDomEventToSyntheticEvent(event)
       : event;
 
-    const eventIsHandled = pluginsHandlers.some((handler) =>
-      isEventHandled(handledEvent, handler)
-    );
+    const eventIsHandled = relevantPlugins.some((plugin) => {
+      const pluginHandler = plugin.handlers[handlerKey]!;
+
+      const shouldTreatEventAsHandled = pluginHandler({
+        editor,
+        event: handledEvent,
+        plugin,
+      });
+
+      if (shouldTreatEventAsHandled != null) {
+        return shouldTreatEventAsHandled;
+      }
+
+      return false;
+    });
 
     if (eventIsHandled) return true;
 

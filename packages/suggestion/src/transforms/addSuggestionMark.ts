@@ -1,16 +1,12 @@
-import {
-  type PlateEditor,
-  type Value,
-  nanoid,
-} from '@udecode/plate-common/server';
+import { type PlateEditor, nanoid } from '@udecode/plate-common/server';
 
 import type { SuggestionEditorProps } from '../types';
 
 import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from '../constants';
 import { findSuggestionId } from '../queries/findSuggestionId';
 
-export const addSuggestionMark = <V extends Value = Value>(
-  editor: PlateEditor<V> & SuggestionEditorProps
+export const addSuggestionMark = (
+  editor: PlateEditor & SuggestionEditorProps
 ) => {
   if (!editor.selection) return;
 

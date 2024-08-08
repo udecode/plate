@@ -12,7 +12,7 @@ import { getPluginOptions } from '@udecode/plate-common/server';
 import { Path } from 'slate';
 import { tabbable } from 'tabbable';
 
-import type { TabbableEntry, TabbablePlugin } from './types';
+import type { TabbableEntry, TabbablePluginOptions } from './types';
 
 import { KEY_TABBABLE } from './constants';
 import { findTabDestination } from './findTabDestination';
@@ -25,7 +25,7 @@ export function TabbableEffects() {
     if (readOnly) return;
 
     const { globalEventListener, insertTabbableEntries, isTabbable, query } =
-      getPluginOptions<TabbablePlugin>(editor, KEY_TABBABLE);
+      getPluginOptions<TabbablePluginOptions>(editor, KEY_TABBABLE);
 
     const editorDOMNode = toDOMNode(editor, editor);
 
@@ -33,11 +33,7 @@ export function TabbableEffects() {
 
     const handler = (event: KeyboardEvent) => {
       // Check if the keydown is a tab key that should be handled
-      if (
-        event.key !== 'Tab' ||
-        event.defaultPrevented ||
-        !query?.(editor, event)
-      ) {
+      if (event.key !== 'Tab' || event.defaultPrevented || !query?.(event)) {
         return;
       }
 
@@ -46,7 +42,6 @@ export function TabbableEffects() {
        * options
        */
       const insertedTabbableEntries = insertTabbableEntries?.(
-        editor,
         event
       ) as TabbableEntry[];
 
@@ -85,9 +80,7 @@ export function TabbableEffects() {
             slateNode,
           } as TabbableEntry;
         })
-        .filter(
-          (entry) => entry && isTabbable?.(editor, entry)
-        ) as TabbableEntry[];
+        .filter((entry) => entry && isTabbable?.(entry)) as TabbableEntry[];
 
       /**
        * The list of all tabbable entries. Sorting by path ensures a consistent

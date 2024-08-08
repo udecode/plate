@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import { withProps } from '@udecode/cn';
 import {
   MARK_BOLD,
@@ -20,6 +22,7 @@ import {
   PlateLeaf,
   type PlatePluginComponent,
 } from '@udecode/plate-common';
+import { EmojiInputPlugin } from '@udecode/plate-emoji';
 import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
 import { MARK_SEARCH_HIGHLIGHT } from '@udecode/plate-find-replace';
 import {
@@ -87,15 +90,10 @@ import { TodoListElement } from '@/registry/default/plate-ui/todo-list-element';
 import { ToggleElement } from '@/registry/default/plate-ui/toggle-element';
 import { withDraggables } from '@/registry/default/plate-ui/with-draggables';
 
-import { ELEMENT_EMOJI_INPUT } from '../../../../../packages/emoji/dist';
-
-export const createPlateUI = (
-  overrideByKey?: Partial<Record<string, PlatePluginComponent>>,
-  {
-    draggable,
-    placeholder,
-  }: { draggable?: boolean; placeholder?: boolean } = {}
-) => {
+export const createPlateUI = ({
+  draggable,
+  placeholder,
+}: { draggable?: boolean; placeholder?: boolean } = {}) => {
   let components: Record<string, PlatePluginComponent> = {
     [ELEMENT_BLOCKQUOTE]: BlockquoteElement,
     [ELEMENT_CODE_BLOCK]: CodeBlockElement,
@@ -103,7 +101,6 @@ export const createPlateUI = (
     [ELEMENT_CODE_SYNTAX]: CodeSyntaxLeaf,
     [ELEMENT_COLUMN]: ColumnElement,
     [ELEMENT_COLUMN_GROUP]: ColumnGroupElement,
-    [ELEMENT_EMOJI_INPUT]: EmojiInputElement,
     [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
     [ELEMENT_H1]: withProps(HeadingElement, { variant: 'h1' }),
     [ELEMENT_H2]: withProps(HeadingElement, { variant: 'h2' }),
@@ -128,6 +125,7 @@ export const createPlateUI = (
     [ELEMENT_TOGGLE]: ToggleElement,
     [ELEMENT_TR]: TableRowElement,
     [ELEMENT_UL]: withProps(ListElement, { variant: 'ul' }),
+    [EmojiInputPlugin.key]: EmojiInputElement,
     [MARK_BOLD]: withProps(PlateLeaf, { as: 'strong' }),
     [MARK_CODE]: CodeLeaf,
     [MARK_COMMENT]: CommentLeaf,
@@ -141,11 +139,6 @@ export const createPlateUI = (
     [MARK_UNDERLINE]: withProps(PlateLeaf, { as: 'u' }),
   };
 
-  if (overrideByKey) {
-    Object.keys(overrideByKey).forEach((key) => {
-      (components as any)[key] = (overrideByKey as any)[key];
-    });
-  }
   if (placeholder) {
     components = withPlaceholders(components);
   }

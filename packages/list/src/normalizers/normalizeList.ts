@@ -3,7 +3,6 @@ import {
   type PlateEditor,
   type TElement,
   type TNodeEntry,
-  type Value,
   getChildren,
   getNode,
   getParentNode,
@@ -17,18 +16,18 @@ import {
 } from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
-import type { ListPlugin } from '../types';
+import type { ListPluginOptions } from '../types';
 
-import { ELEMENT_LI, ELEMENT_LIC } from '../createListPlugin';
+import { ELEMENT_LI, ELEMENT_LIC } from '../ListPlugin';
 import { getListTypes, isListRoot } from '../queries/index';
 import { moveListItemsToList } from '../transforms/index';
 import { normalizeListItem } from './normalizeListItem';
 import { normalizeNestedList } from './normalizeNestedList';
 
 /** Normalize list node to force the ul>li>p+ul structure. */
-export const normalizeList = <V extends Value>(
-  editor: PlateEditor<V>,
-  { validLiChildrenTypes }: ListPlugin
+export const normalizeList = (
+  editor: PlateEditor,
+  { validLiChildrenTypes }: ListPluginOptions
 ) => {
   const { normalizeNode } = editor;
   const liType = getPluginType(editor, ELEMENT_LI);

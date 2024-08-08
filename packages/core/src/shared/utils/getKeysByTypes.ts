@@ -1,19 +1,20 @@
-import type { Value } from '@udecode/slate';
-
-import castArray from 'lodash/castArray.js';
-
 import type { PlateEditor } from '../types/PlateEditor';
 
 /** Get plugin keys by types */
-export const getKeysByTypes = <V extends Value>(
-  editor: PlateEditor<V>,
-  type: string | string[]
-) => {
-  const types = castArray<string>(type);
+export const getKeysByTypes = (
+  editor: PlateEditor,
+  types: string[]
+): string[] => {
+  return Object.values(editor.pluginsByKey)
+    .filter((plugin) => types.includes(plugin.type))
+    .map((plugin) => plugin.key);
+};
 
-  const found = Object.values(editor.pluginsByKey).filter((plugin) => {
-    return types.includes(plugin.type);
-  });
+/** Get plugin key by type */
+export const getKeyByType = (editor: PlateEditor, type: string): string => {
+  const plugin = Object.values(editor.pluginsByKey).find(
+    (plugin) => plugin.type === type
+  );
 
-  return found.map((p) => p.key);
+  return plugin?.key ?? type;
 };

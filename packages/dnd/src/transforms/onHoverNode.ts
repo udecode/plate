@@ -1,11 +1,7 @@
 import type { DropTargetMonitor } from 'react-dnd';
 
 import { type TReactEditor, focusEditor } from '@udecode/plate-common';
-import {
-  type Value,
-  collapseSelection,
-  isExpanded,
-} from '@udecode/plate-common/server';
+import { collapseSelection, isExpanded } from '@udecode/plate-common/server';
 
 import type { UseDropNodeOptions } from '../hooks/useDropNode';
 import type { DragItemNode } from '../types';
@@ -13,8 +9,8 @@ import type { DragItemNode } from '../types';
 import { getHoverDirection, getNewDirection } from '../utils';
 
 /** Callback called when dragging a node and hovering nodes. */
-export const onHoverNode = <V extends Value>(
-  editor: TReactEditor<V>,
+export const onHoverNode = (
+  editor: TReactEditor,
   {
     dragItem,
     dropLine,

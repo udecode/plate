@@ -1,15 +1,14 @@
 import { focusEditor } from '@udecode/plate-common';
 import {
   type PlateEditor,
-  type Value,
   getPluginOptions,
 } from '@udecode/plate-common/server';
 
+import { ELEMENT_LINK, type LinkPluginOptions } from '../LinkPlugin';
 import {
   floatingLinkActions,
   floatingLinkSelectors,
 } from '../components/FloatingLink/floatingLinkStore';
-import { ELEMENT_LINK, type LinkPlugin } from '../createLinkPlugin';
 import { validateUrl } from '../utils/index';
 import { upsertLink } from './index';
 
@@ -17,10 +16,10 @@ import { upsertLink } from './index';
  * Insert link if url is valid. Text is url if empty. Close floating link. Focus
  * editor.
  */
-export const submitFloatingLink = <V extends Value>(editor: PlateEditor<V>) => {
+export const submitFloatingLink = (editor: PlateEditor) => {
   if (!editor.selection) return;
 
-  const { forceSubmit, transformInput } = getPluginOptions<LinkPlugin, V>(
+  const { forceSubmit, transformInput } = getPluginOptions<LinkPluginOptions>(
     editor,
     ELEMENT_LINK
   );

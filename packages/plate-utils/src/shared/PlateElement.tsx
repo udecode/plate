@@ -1,29 +1,31 @@
 import React from 'react';
 
-import type { PlateRenderElementProps } from '@udecode/plate-core';
-import type { EElement, TElement, Value } from '@udecode/slate';
+import type {
+  AnyPlatePlugin,
+  PlateRenderElementProps,
+} from '@udecode/plate-core';
+import type { TElement } from '@udecode/slate';
 
 import { Box, type BoxProps, useComposedRef } from '@udecode/react-utils';
 import { clsx } from 'clsx';
 
 export type PlateElementProps<
-  V extends Value = Value,
-  N extends TElement = EElement<V>,
+  N extends TElement = TElement,
+  P extends AnyPlatePlugin = AnyPlatePlugin,
 > = {
   /** Get HTML attributes from Slate element. Alternative to `PlatePlugin.props`. */
   elementToAttributes?: (element: N) => any;
 } & BoxProps &
-  PlateRenderElementProps<V, N>;
+  PlateRenderElementProps<N, P>;
 
-export const usePlateElement = <T extends TElement = TElement>(
-  props: PlateElementProps<Value, T>
-) => {
+export const usePlateElement = (props: PlateElementProps) => {
   const {
     attributes,
     editor,
     element,
     elementToAttributes,
     nodeProps,
+    plugin,
     ...rootProps
   } = props;
 
@@ -32,7 +34,7 @@ export const usePlateElement = <T extends TElement = TElement>(
       ...attributes,
       ...rootProps,
       ...nodeProps,
-      ...elementToAttributes?.(element as T),
+      ...elementToAttributes?.(element),
       className: clsx(props.className, nodeProps?.className),
     },
     ref: useComposedRef(props.ref, attributes.ref),
@@ -49,8 +51,11 @@ const PlateElement = React.forwardRef<HTMLDivElement, PlateElementProps>(
 
     return <Box {...rootProps} ref={rootRef} />;
   }
-) as (<V extends Value = Value, N extends TElement = EElement<V>>(
-  props: PlateElementProps<V, N> & React.RefAttributes<HTMLDivElement>
+) as (<
+  N extends TElement = TElement,
+  P extends AnyPlatePlugin = AnyPlatePlugin,
+>(
+  props: PlateElementProps<N, P> & React.RefAttributes<HTMLDivElement>
 ) => React.ReactElement) & { displayName?: string };
 PlateElement.displayName = 'PlateElement';
 

@@ -1,5 +1,5 @@
 import * as portiveClient from '@portive/client';
-import { type Value, nanoid } from '@udecode/plate-common/server';
+import { nanoid } from '@udecode/plate-common/server';
 
 import type { FileEvent, PlateCloudEditor, ProgressEvent } from './types';
 
@@ -26,11 +26,9 @@ const createFileEvent = (
   };
 };
 
-export const uploadFile = <V extends Value = Value>(
-  editor: PlateCloudEditor<V>,
-  file: File
-) => {
+export const uploadFile = (editor: PlateCloudEditor, file: File) => {
   const id = `#${nanoid()}`;
+
   const { client } = editor.cloud;
   void portiveClient.uploadFile({
     client,
@@ -91,8 +89,8 @@ export const uploadFile = <V extends Value = Value>(
   });
 };
 
-export const uploadFiles = <V extends Value = Value>(
-  editor: PlateCloudEditor<V>,
+export const uploadFiles = (
+  editor: PlateCloudEditor,
   files: Iterable<File>
 ) => {
   for (const file of files) {

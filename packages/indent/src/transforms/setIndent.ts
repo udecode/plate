@@ -11,7 +11,7 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common/server';
 
-import { KEY_INDENT } from '../createIndentPlugin';
+import { KEY_INDENT } from '../IndentPlugin';
 
 export interface SetIndentOptions<V extends Value = Value> {
   /** GetNodeEntries options */

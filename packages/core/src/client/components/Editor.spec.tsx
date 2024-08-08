@@ -1,12 +1,11 @@
 import React from 'react';
 
 import { render } from '@testing-library/react';
-import { isBlock, setNodes } from '@udecode/slate';
+import { type Value, isBlock, setNodes } from '@udecode/slate';
 import isEqual from 'lodash/isEqual.js';
 import memoize from 'lodash/memoize.js';
 
-import type { PlatePlugin } from '../../../common/types';
-
+import { type PlatePlugins, createPlugin } from '../../shared';
 import { createPlateEditor } from '../utils';
 import { Plate } from './Plate';
 import { PlateContent } from './PlateContent';
@@ -24,7 +23,7 @@ describe('Plate', () => {
     //     }
     //   });
     //
-    //   const plugins: PlatePlugin[] = [
+    //   const plugins: PlatePluginList = [
     //     {
     //       key: 'a',
     //       withOverrides: (e) => {
@@ -57,38 +56,36 @@ describe('Plate', () => {
 
     it('should not trigger normalize if normalizeInitialValue is not set to true', () => {
       const fn = jest.fn((e, [node, path]) => {
-        if (
-          isBlock(e, node) &&
-          path?.length &&
-          !isEqual((node as any).path, path)
-        ) {
-          setNodes(e, { path } as any, { at: path });
+        if (isBlock(e, node) && path?.length && !isEqual(node.path, path)) {
+          setNodes(e, { path }, { at: path });
         }
       });
 
-      // @ts-ignore
-      const plugins: PlatePlugin[] = memoize((): PlatePlugin[] => [
-        {
-          key: 'a',
-          withOverrides: (e) => {
-            const { normalizeNode } = e;
-            e.normalizeNode = (n) => {
-              fn(e, n);
-              normalizeNode(n);
-            };
+      const plugins: PlatePlugins = memoize(
+        (): PlatePlugins => [
+          createPlugin({
+            key: 'a',
+            withOverrides: ({ editor }) => {
+              const { normalizeNode } = editor;
+              editor.normalizeNode = (n) => {
+                fn(editor, n);
+                normalizeNode(n);
+              };
 
-            return e;
-          },
-        },
-      ])();
+              return editor;
+            },
+          }),
+        ]
+      )();
 
-      const editor = createPlateEditor();
+      const editor = createPlateEditor({
+        plugins,
+      });
 
       render(
         <Plate
           editor={editor}
-          initialValue={[{ children: [{ text: '' }] } as any]}
-          plugins={plugins}
+          initialValue={[{ children: [{ text: '' }] }] as Value}
         >
           <PlateContent />
         </Plate>
@@ -104,13 +101,13 @@ describe('Plate', () => {
 
   describe('when renderAboveSlate renders null', () => {
     it('should not normalize editor children', () => {
-      const plugins: PlatePlugin[] = [
-        {
+      const plugins: PlatePlugins = [
+        createPlugin({
           key: 'a',
           renderAboveSlate: () => {
             return null;
           },
-        },
+        }),
       ];
 
       const editor = createPlateEditor({
@@ -129,13 +126,13 @@ describe('Plate', () => {
 
   describe('when renderAboveSlate renders children', () => {
     it("should not trigger plugin's normalize", () => {
-      const plugins: PlatePlugin[] = [
-        {
+      const plugins: PlatePlugins = [
+        createPlugin({
           key: 'a',
           renderAboveSlate: ({ children }) => {
             return <>{children}</>;
           },
-        },
+        }),
       ];
 
       const editor = createPlateEditor({
@@ -144,7 +141,7 @@ describe('Plate', () => {
 
       expect(() =>
         render(
-          <Plate editor={editor} initialValue={[{}] as any}>
+          <Plate editor={editor} initialValue={[{}] as Value}>
             <PlateContent />
           </Plate>
         )
@@ -154,11 +151,15 @@ describe('Plate', () => {
 
   describe('when nested Plate', () => {
     it('should work', () => {
-      const plugins: PlatePlugin[] = [
-        {
+      const nestedEditor = createPlateEditor({
+        id: 'test',
+      });
+
+      const plugins: PlatePlugins = [
+        createPlugin({
           component: ({ attributes, children }) => (
             <div {...attributes}>
-              <Plate id="test">
+              <Plate editor={nestedEditor}>
                 <PlateContent id="test" />
               </Plate>
               {children}
@@ -167,7 +168,7 @@ describe('Plate', () => {
           isElement: true,
           isVoid: true,
           key: 'a',
-        },
+        }),
       ];
 
       const editor = createPlateEditor({
@@ -178,7 +179,7 @@ describe('Plate', () => {
         render(
           <Plate
             editor={editor}
-            initialValue={[{ children: [{ text: '' }], type: 'a' }] as any}
+            initialValue={[{ children: [{ text: '' }], type: 'a' }] as Value}
           >
             <PlateContent />
           </Plate>

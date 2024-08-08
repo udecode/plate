@@ -1,9 +1,8 @@
-import {
-  Hotkeys,
-  type KeyboardHandlerReturnType,
-} from '@udecode/plate-common/server';
+import type { KeyboardHandler } from '@udecode/plate-common';
 
-export const onKeyDownSingleLine = (): KeyboardHandlerReturnType => (event) => {
+import { Hotkeys } from '@udecode/plate-common/server';
+
+export const onKeyDownSingleLine: KeyboardHandler = ({ event }) => {
   if (event.defaultPrevented) return;
   if (Hotkeys.isSplitBlock(event)) {
     event.preventDefault();

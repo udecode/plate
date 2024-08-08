@@ -5,16 +5,16 @@ import type { Upload } from '../upload';
 import type { createUploadStore } from '../upload/createUploadStore';
 
 /** Specifies just the `options` part of the CloudPlugin */
-export type CloudPlugin = {
+export type CloudPluginOptions = {
   uploadStoreInitialValue?: Record<string, Upload>;
 } & portiveClient.ClientOptions;
 
-export type PlateCloudEditor<V extends Value = Value> = CloudEditorProps<V> &
+export type PlateCloudEditor<V extends Value = Value> = CloudEditorProps &
   PlateEditor<V>;
 
 export type FinishUploadsOptions = { maxTimeoutInMs?: number };
 
-export type CloudEditorProps<V extends Value = Value> = {
+export type CloudEditorProps = {
   cloud: {
     client: portiveClient.Client;
     finishUploads: (options?: FinishUploadsOptions) => Promise<void>;
@@ -24,7 +24,7 @@ export type CloudEditorProps<V extends Value = Value> = {
       onStart?: (e: FileEvent) => void;
       onSuccess?: (e: FileEvent & SuccessEvent) => void;
     };
-    getSaveValue: () => V;
+    getSaveValue: () => Value;
     imageFileHandlers?: {
       onError?: (e: ErrorEvent & ImageFileEvent) => void;
       onProgress?: (e: ImageFileEvent & ProgressEvent) => void;

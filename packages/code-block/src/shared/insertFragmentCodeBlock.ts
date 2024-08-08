@@ -1,9 +1,7 @@
 import {
-  type EElement,
   type PlateEditor,
   type TDescendant,
   type TElement,
-  type Value,
   getBlockAbove,
   getNodeString,
   getPluginType,
@@ -15,9 +13,7 @@ function extractCodeLinesFromCodeBlock(node: TElement) {
   return node.children as TElement[];
 }
 
-export const insertFragmentCodeBlock = <V extends Value>(
-  editor: PlateEditor<V>
-) => {
+export const insertFragmentCodeBlock = (editor: PlateEditor) => {
   const { insertFragment } = editor;
   const codeBlockType = getPluginType(editor, ELEMENT_CODE_BLOCK);
   const codeLineType = getPluginType(editor, ELEMENT_CODE_LINE);
@@ -40,11 +36,9 @@ export const insertFragmentCodeBlock = <V extends Value>(
         fragment.flatMap((node) => {
           const element = node as TElement;
 
-          return (
-            element.type === codeBlockType
-              ? extractCodeLinesFromCodeBlock(element)
-              : convertNodeToCodeLine(element)
-          ) as EElement<V>;
+          return element.type === codeBlockType
+            ? extractCodeLinesFromCodeBlock(element)
+            : convertNodeToCodeLine(element);
         })
       );
     }

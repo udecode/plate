@@ -3,14 +3,13 @@ import type { NodeEntry } from 'slate';
 import {
   type PlateEditor,
   type TElement,
-  type Value,
   isDefined,
 } from '@udecode/plate-common/server';
 
-import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
+import { KEY_LIST_STYLE_TYPE } from '../IndentListPlugin';
 
-export const shouldMergeNodesRemovePrevNodeIndentList = <V extends Value>(
-  editor: PlateEditor<V>
+export const shouldMergeNodesRemovePrevNodeIndentList = (
+  editor: PlateEditor
 ) => {
   const { shouldMergeNodesRemovePrevNode } = editor;
 

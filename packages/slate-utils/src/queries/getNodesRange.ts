@@ -1,15 +1,7 @@
-import {
-  type TEditor,
-  type TNodeEntry,
-  type Value,
-  getRange,
-} from '@udecode/slate';
+import { type TEditor, type TNodeEntry, getRange } from '@udecode/slate';
 
 /** Get node entries range. */
-export const getNodesRange = <V extends Value>(
-  editor: TEditor<V>,
-  nodeEntries: TNodeEntry[]
-) => {
+export const getNodesRange = (editor: TEditor, nodeEntries: TNodeEntry[]) => {
   if (nodeEntries.length === 0) return;
 
   const firstBlockPath = nodeEntries[0][1];

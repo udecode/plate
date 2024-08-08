@@ -1,25 +1,30 @@
-import {
-  type EElementOrText,
-  type Value,
-  withoutNormalizing,
-} from '@udecode/slate';
+import { type TDescendant, withoutNormalizing } from '@udecode/slate';
 
-import type { PlateEditor } from '../types';
-import type { PlatePluginInsertDataOptions } from '../types/plugin/PlatePluginInsertData';
-import type { InjectedPlugin } from './getInjectedPlugins';
+import type {
+  AnyEditorPlugin,
+  PlateEditor,
+  PlatePluginInsertDataOptions,
+} from '../types';
 
 /** Pipe preInsert then insertFragment. */
-export const pipeInsertFragment = <V extends Value>(
-  editor: PlateEditor<V>,
-  injectedPlugins: InjectedPlugin<{}, V>[],
+export const pipeInsertFragment = (
+  editor: PlateEditor,
+  injectedPlugins: Partial<AnyEditorPlugin>[],
   {
     fragment,
     ...options
-  }: { fragment: EElementOrText<V>[] } & PlatePluginInsertDataOptions
+  }: { fragment: TDescendant[] } & PlatePluginInsertDataOptions
 ) => {
   withoutNormalizing(editor, () => {
     injectedPlugins.some((p) => {
-      return p.editor?.insertData?.preInsert?.(fragment, options) === true;
+      return (
+        p.editor?.insertData?.preInsert?.({
+          editor,
+          fragment,
+          plugin: p as any,
+          ...options,
+        }) === true
+      );
     });
 
     editor.insertFragment(fragment);

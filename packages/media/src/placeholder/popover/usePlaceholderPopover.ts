@@ -8,7 +8,7 @@ import { useFocused, useReadOnly, useSelected } from 'slate-react';
 
 import type { TPlaceholderElement } from '../types';
 
-import { ELEMENT_PLACEHOLDER } from '../createPlaceholderPlugin';
+import { ELEMENT_PLACEHOLDER } from '../PlaceholderPlugin';
 import { usePlaceholderStore } from '../placeholderStore';
 
 export const usePlaceholderPopoverState = () => {

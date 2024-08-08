@@ -7,7 +7,7 @@ import {
 
 import type { TEquationElement } from '../types';
 
-import { ELEMENT_EQUATION } from '../createEquationPlugin';
+import { ELEMENT_EQUATION } from '../EquationPlugin';
 
 export const insertEquation = <V extends Value>(
   editor: PlateEditor<V>,

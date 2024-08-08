@@ -1,13 +1,8 @@
 import React from 'react';
 
-import { createSoftBreakPlugin } from '@/../../../packages/break/dist';
+import { SoftBreakPlugin } from '@/../../../packages/break/dist';
 import { cn, withProps } from '@udecode/cn';
-import {
-  MARK_BOLD,
-  MARK_ITALIC,
-  createBoldPlugin,
-  createItalicPlugin,
-} from '@udecode/plate-basic-marks';
+import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks';
 import {
   Plate,
   PlateContent,
@@ -18,9 +13,9 @@ import {
   type PlateProps,
   type Value,
   createPlateEditor,
-  createPluginFactory,
-  createPlugins,
+  createPlugin,
   isInline,
+  usePlateEditor,
 } from '@udecode/plate-common';
 import {
   type DiffOperation,
@@ -28,30 +23,23 @@ import {
   computeDiff,
   withGetFragmentExcludeDiff,
 } from '@udecode/plate-diff';
-import {
-  ELEMENT_PARAGRAPH,
-  createParagraphPlugin,
-} from '@udecode/plate-paragraph';
+import { ELEMENT_PARAGRAPH, ParagraphPlugin } from '@udecode/plate-paragraph';
 import { useSelected } from 'slate-react';
 
 import { Button } from '@/registry/default/plate-ui/button';
 import { ParagraphElement } from '@/registry/default/plate-ui/paragraph-element';
 
-const ELEMENT_INLINE = 'inline';
-
-const createInlinePlugin = createPluginFactory({
+const InlinePlugin = createPlugin({
   isElement: true,
   isInline: true,
-  key: ELEMENT_INLINE,
+  key: 'inline',
 });
 
-const ELEMENT_INLINE_VOID = 'inlineVoid';
-
-const createInlineVoidPlugin = createPluginFactory({
+const InlineVoidPlugin = createPlugin({
   isElement: true,
   isInline: true,
   isVoid: true,
-  key: ELEMENT_INLINE_VOID,
+  key: 'inlineVoid',
 });
 
 const diffOperationColors: Record<DiffOperation['type'], string> = {
@@ -133,9 +121,8 @@ const InlineVoidElement = ({ children, ...props }: PlateElementProps) => {
   );
 };
 
-const MARK_DIFF = 'diff';
-
-const createDiffPlugin = createPluginFactory({
+const DiffPlugin = createPlugin({
+  component: DiffLeaf,
   inject: {
     aboveComponent:
       () =>
@@ -144,11 +131,13 @@ const createDiffPlugin = createPluginFactory({
 
         const diffOperation = element.diffOperation as DiffOperation;
 
-        const label = {
-          delete: 'deletion',
-          insert: 'insertion',
-          update: 'update',
-        }[diffOperation.type];
+        const label = (
+          {
+            delete: 'deletion',
+            insert: 'insertion',
+            update: 'update',
+          } as any
+        )[diffOperation.type];
 
         const Component = isInline(editor, element) ? 'span' : 'div';
 
@@ -168,18 +157,20 @@ const createDiffPlugin = createPluginFactory({
       },
   },
   isLeaf: true,
-  key: MARK_DIFF,
+  key: 'diff',
   withOverrides: withGetFragmentExcludeDiff,
 });
 
 function DiffLeaf({ children, ...props }: PlateLeafProps) {
   const diffOperation = props.leaf.diffOperation as DiffOperation;
 
-  const Component = {
-    delete: 'del',
-    insert: 'ins',
-    update: 'span',
-  }[diffOperation.type] as any;
+  const Component = (
+    {
+      delete: 'del',
+      insert: 'ins',
+      update: 'span',
+    } as any
+  )[diffOperation.type];
 
   return (
     <PlateLeaf {...props} asChild>
@@ -197,32 +188,10 @@ function DiffLeaf({ children, ...props }: PlateLeafProps) {
   );
 }
 
-const plugins = createPlugins(
-  [
-    createParagraphPlugin(),
-    createInlinePlugin(),
-    createInlineVoidPlugin(),
-    createBoldPlugin(),
-    createItalicPlugin(),
-    createDiffPlugin(),
-    createSoftBreakPlugin(),
-  ],
-  {
-    components: {
-      [ELEMENT_INLINE]: InlineElement,
-      [ELEMENT_INLINE_VOID]: InlineVoidElement,
-      [ELEMENT_PARAGRAPH]: ParagraphElement,
-      [MARK_BOLD]: withProps(PlateLeaf, { as: 'strong' }),
-      [MARK_DIFF]: DiffLeaf,
-      [MARK_ITALIC]: withProps(PlateLeaf, { as: 'em' }),
-    },
-  }
-);
-
 const initialValue: Value = [
   {
     children: [{ text: 'This is a version history demo.' }],
-    type: ELEMENT_PARAGRAPH,
+    type: ParagraphPlugin.key,
   },
   {
     children: [
@@ -230,29 +199,43 @@ const initialValue: Value = [
       { bold: true, text: 'text and see what' },
       { text: ' happens.' },
     ],
-    type: ELEMENT_PARAGRAPH,
+    type: ParagraphPlugin.key,
   },
   {
     children: [
       { text: 'This is an ' },
-      { children: [{ text: '' }], type: ELEMENT_INLINE_VOID },
+      { children: [{ text: '' }], type: InlineVoidPlugin.key },
       { text: '. Try removing it.' },
     ],
-    type: ELEMENT_PARAGRAPH,
+    type: ParagraphPlugin.key,
   },
   {
     children: [
       { text: 'This is an ' },
-      { children: [{ text: 'editable inline' }], type: ELEMENT_INLINE },
+      { children: [{ text: 'editable inline' }], type: InlinePlugin.key },
       { text: '. Try editing it.' },
     ],
     type: ELEMENT_PARAGRAPH,
   },
 ];
 
-function VersionHistoryPlate(props: Omit<PlateProps, 'children' | 'plugins'>) {
+const plugins = [
+  ParagraphPlugin.withComponent(ParagraphElement),
+  InlinePlugin.withComponent(InlineElement),
+  InlineVoidPlugin.withComponent(InlineVoidElement),
+  BoldPlugin.withComponent(withProps(PlateLeaf, { as: 'strong' })),
+  ItalicPlugin.withComponent(withProps(PlateLeaf, { as: 'em' })),
+  DiffPlugin,
+  SoftBreakPlugin,
+];
+
+function VersionHistoryPlate(props: Omit<PlateProps, 'children' | 'editor'>) {
+  const editor = usePlateEditor({
+    plugins,
+  });
+
   return (
-    <Plate {...props} plugins={plugins}>
+    <Plate {...props} editor={editor}>
       <PlateContent className="rounded-md border p-3" />
     </Plate>
   );
@@ -305,7 +288,10 @@ export default function VersionHistoryDemo() {
     <div className="flex flex-col gap-3 p-3">
       <Button onClick={saveRevision}>Save revision</Button>
 
-      <VersionHistoryPlate initialValue={initialValue} onChange={setValue} />
+      <VersionHistoryPlate
+        initialValue={initialValue}
+        onChange={({ value }) => setValue(value)}
+      />
 
       <label>
         Revision to compare:

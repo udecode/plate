@@ -2,7 +2,6 @@ import {
   type PlateEditor,
   type TElement,
   type TElementEntry,
-  type Value,
   getAboveNode,
   getNode,
   getParentNode,
@@ -11,14 +10,14 @@ import {
 } from '@udecode/plate-common/server';
 import { type Location, type Path, Range } from 'slate';
 
-import { ELEMENT_TODO_LI } from '../todo-list/createTodoListPlugin';
+import { ELEMENT_TODO_LI } from '../todo-list/TodoListPlugin';
 
 /**
  * Returns the nearest li and ul / ol wrapping node entries for a given path
  * (default = selection)
  */
-export const getTodoListItemEntry = <V extends Value>(
-  editor: PlateEditor<V>,
+export const getTodoListItemEntry = (
+  editor: PlateEditor,
   { at = editor.selection }: { at?: Location | null } = {}
 ): { list: TElementEntry; listItem: TElementEntry } | undefined => {
   const todoType = getPluginType(editor, ELEMENT_TODO_LI);

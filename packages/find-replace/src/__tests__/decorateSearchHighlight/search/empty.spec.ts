@@ -3,22 +3,23 @@ import type { Range } from 'slate';
 import { createPlateEditor } from '@udecode/plate-common';
 
 import {
+  FindReplacePlugin,
   MARK_SEARCH_HIGHLIGHT,
-  createFindReplacePlugin,
-} from '../../../createFindReplacePlugin';
+} from '../../../FindReplacePlugin';
 import { decorateFindReplace } from '../../../decorateFindReplace';
 
 const output: Range[] = [];
 
 it('should be', () => {
   const editor = createPlateEditor({
-    plugins: [createFindReplacePlugin({ options: { search: '' } })],
+    plugins: [FindReplacePlugin.configure({ search: '' })],
   });
 
   expect(
-    decorateFindReplace(
+    decorateFindReplace({
       editor,
-      editor.pluginsByKey[MARK_SEARCH_HIGHLIGHT]
-    )([{ text: '' }, [0, 0]])
+      entry: [{ text: '' }, [0, 0]],
+      plugin: editor.pluginsByKey[MARK_SEARCH_HIGHLIGHT],
+    })
   ).toEqual(output);
 });

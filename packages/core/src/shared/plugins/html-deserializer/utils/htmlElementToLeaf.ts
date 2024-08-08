@@ -1,10 +1,4 @@
-import {
-  type EDescendant,
-  type TDescendant,
-  type Value,
-  isElement,
-  isText,
-} from '@udecode/slate';
+import { type TDescendant, isElement, isText } from '@udecode/slate';
 import { jsx } from 'slate-hyperscript';
 
 import type { PlateEditor } from '../../../types';
@@ -17,8 +11,8 @@ import { pipeDeserializeHtmlLeaf } from './pipeDeserializeHtmlLeaf';
  * Deserialize HTML to TDescendant[] with marks on Text. Build the leaf from the
  * leaf deserializers of each plugin.
  */
-export const htmlElementToLeaf = <V extends Value>(
-  editor: PlateEditor<V>,
+export const htmlElementToLeaf = (
+  editor: PlateEditor,
   element: HTMLElement
 ) => {
   const node = pipeDeserializeHtmlLeaf(editor, element);
@@ -56,5 +50,5 @@ export const htmlElementToLeaf = <V extends Value>(
       return arr;
     },
     []
-  ) as EDescendant<V>[];
+  ) as TDescendant[];
 };

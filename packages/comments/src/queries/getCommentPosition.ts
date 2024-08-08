@@ -1,4 +1,4 @@
-import type { PlateEditor, Value } from '@udecode/plate-common/server';
+import type { PlateEditor } from '@udecode/plate-common/server';
 
 import { toDOMNode } from '@udecode/plate-common';
 import clamp from 'lodash/clamp.js';
@@ -7,10 +7,7 @@ import type { TCommentText } from '../types';
 
 import { getElementAbsolutePosition } from '../utils/getElementAbsolutePosition';
 
-export const getCommentPosition = <V extends Value>(
-  editor: PlateEditor<V>,
-  node: TCommentText
-) => {
+export const getCommentPosition = (editor: PlateEditor, node: TCommentText) => {
   const DOMNode = toDOMNode(editor, node);
 
   if (!DOMNode) return;

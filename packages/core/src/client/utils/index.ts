@@ -9,4 +9,3 @@ export * from './pipeRenderElement';
 export * from './pipeRenderLeaf';
 export * from './pluginRenderElement';
 export * from './pluginRenderLeaf';
-export * from './setPlatePlugins';

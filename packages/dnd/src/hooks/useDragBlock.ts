@@ -1,12 +1,12 @@
-import type { TEditor, Value } from '@udecode/plate-common/server';
+import type { TEditor } from '@udecode/plate-common/server';
 
 import { useDragNode } from './useDragNode';
 
 export const DRAG_ITEM_BLOCK = 'block';
 
 /** {@link useDragNode} */
-export const useDragBlock = <V extends Value>(editor: TEditor<V>, id: string) =>
-  useDragNode<V>(editor, {
+export const useDragBlock = (editor: TEditor, id: string) =>
+  useDragNode(editor, {
     id,
     type: DRAG_ITEM_BLOCK,
   });

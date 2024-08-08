@@ -8,7 +8,7 @@ export interface TMediaElement extends TElement {
   name?: string;
 }
 
-export interface MediaPlugin {
+export interface MediaPluginOptions {
   isUrl?: (text: string) => boolean;
 
   /** Transforms the url. */

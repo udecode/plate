@@ -300,11 +300,14 @@ Moves the selection by offset based on the keyboard arrow keys.
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
-  <APIItem name="options" type="MoveSelectionByOffsetOptions" optional>
+  <APIItem name="options" type="object" optional>
     Options for moving the selection by offset. This is an optional parameter.
     <APISubList>
       <APISubListItem parent="options" name="query" type="function" optional>
         A query function to enable the behavior.
+      </APISubListItem>
+      <APISubListItem parent="options" name="event" type="KeyboardEvent">
+        The keyboard event that triggered the move.
       </APISubListItem>
     </APISubList>
   </APIItem>

@@ -2,56 +2,51 @@
 
 import React, { useState } from 'react';
 
-import { createBasicElementsPlugin } from '@udecode/plate-basic-elements';
-import {
-  createExitBreakPlugin,
-  createSoftBreakPlugin,
-} from '@udecode/plate-break';
+import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
+import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
+import { ExitBreakPlugin, SoftBreakPlugin } from '@udecode/plate-break';
 import {
   Plate,
   type PlateRenderElementProps,
-  createPluginFactory,
+  createPlugin,
+  usePlateEditor,
 } from '@udecode/plate-common';
-import { createPlugins } from '@udecode/plate-core';
-import { createResetNodePlugin } from '@udecode/plate-reset-node';
+import { ResetNodePlugin } from '@udecode/plate-reset-node';
 
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { editableProps } from '@/plate/demo/editableProps';
-import { plateUI } from '@/plate/demo/plateUI';
-import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
-import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
-import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin';
-import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
+import { PlateUI } from '@/plate/demo/plate-ui';
+import { exitBreakOptions } from '@/plate/demo/plugins/exitBreakOptions';
+import { resetBlockTypeOptions } from '@/plate/demo/plugins/resetBlockTypeOptions';
+import { softBreakOptions } from '@/plate/demo/plugins/softBreakOptions';
 import { editableVoidsValue } from '@/plate/demo/values/editableVoidsValue';
 import { Editor } from '@/registry/default/plate-ui/editor';
 import { Input } from '@/registry/default/plate-ui/input';
 
-export const ELEMENT_EDITABLE_VOID = 'editable-void';
-
-export const createEditableVoidPlugin = createPluginFactory({
+export const EditableVoidPlugin = createPlugin({
+  component: EditableVoidElement,
   isElement: true,
   isVoid: true,
-  key: ELEMENT_EDITABLE_VOID,
+  key: 'editable-void',
 });
-
-const editableVoidPlugins = createPlugins(
-  [
-    createBasicElementsPlugin(),
-    createResetNodePlugin(resetBlockTypePlugin),
-    createSoftBreakPlugin(softBreakPlugin),
-    createExitBreakPlugin(exitBreakPlugin),
-  ],
-  {
-    components: plateUI,
-  }
-);
 
 export function EditableVoidElement({
   attributes,
   children,
 }: PlateRenderElementProps) {
   const [inputValue, setInputValue] = useState('');
+
+  const editor = usePlateEditor({
+    id: 'editable-void-basic-elements',
+    override: { components: PlateUI },
+    plugins: [
+      BasicElementsPlugin,
+      ResetNodePlugin.configure(resetBlockTypeOptions),
+      SoftBreakPlugin.configure(softBreakOptions),
+      ExitBreakPlugin.configure(exitBreakOptions),
+    ],
+  });
 
   return (
     // Need contentEditable=false or Firefox has issues with certain input types.
@@ -89,8 +84,7 @@ export function EditableVoidElement({
           </Label>
 
           <Plate
-            id="editable-void-basic-elements"
-            plugins={editableVoidPlugins}
+            editor={editor}
             // initialValue={basicElementsValue}
           >
             <Editor {...editableProps} />
@@ -102,22 +96,15 @@ export function EditableVoidElement({
   );
 }
 
-const plugins = createPlugins(
-  [
-    ...basicNodesPlugins,
-    createEditableVoidPlugin({
-      component: EditableVoidElement,
-    }),
-  ],
-  {
-    components: plateUI,
-  }
-);
-
 export default function EditableVoidsDemo() {
+  const editor = usePlateEditor({
+    override: { components: PlateUI },
+    plugins: [BasicElementsPlugin, BasicMarksPlugin, EditableVoidPlugin],
+  });
+
   return (
     <div className="p-10">
-      <Plate initialValue={editableVoidsValue} plugins={plugins}>
+      <Plate editor={editor} initialValue={editableVoidsValue}>
         <Editor {...editableProps} />
       </Plate>
     </div>

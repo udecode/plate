@@ -1,14 +1,11 @@
 import type { Path } from 'slate';
 
 import {
-  type PlateEditor,
   type TElement,
-  type Value,
-  type WithPlatePlugin,
+  type WithOverride,
   getEndPoint,
   getPluginType,
   getStartPoint,
-  getTEditor,
   hasNode,
   replaceNodeChildren,
   select,
@@ -20,10 +17,10 @@ import type {
   TTableCellElement,
   TTableElement,
   TTableRowElement,
-  TablePlugin,
+  TablePluginOptions,
 } from './types';
 
-import { ELEMENT_TABLE } from './createTablePlugin';
+import { ELEMENT_TABLE } from './TablePlugin';
 import { getTableAbove } from './queries/getTableAbove';
 import { getTableGridAbove } from './queries/getTableGridAbove';
 
@@ -33,20 +30,15 @@ import { getTableGridAbove } from './queries/getTableGridAbove';
  * - Replace each cell above by the inserted table until out of bounds.
  * - Select the inserted cells.
  */
-export const withInsertFragmentTable = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E,
-  { options }: WithPlatePlugin<TablePlugin<V>, V, E>
-) => {
+export const withInsertFragmentTable: WithOverride<TablePluginOptions> = ({
+  editor,
+  plugin: { options },
+}) => {
   const { insertFragment } = editor;
   const { disableExpandOnInsert, getCellChildren, insertColumn, insertRow } =
     options;
 
-  const myEditor = getTEditor(editor);
-
-  myEditor.insertFragment = (fragment) => {
+  editor.insertFragment = (fragment) => {
     const insertedTable = fragment.find(
       (n) => (n as TElement).type === getPluginType(editor, ELEMENT_TABLE)
     ) as TTableElement | undefined;

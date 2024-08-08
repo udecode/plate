@@ -2,7 +2,6 @@ import {
   type TDescendant,
   type TElement,
   type TText,
-  type Value,
   getPluginType,
 } from '@udecode/plate-common/server';
 
@@ -11,7 +10,7 @@ import type { MdastNode, RemarkElementRules } from './types';
 import { remarkTransformElementChildren } from './remarkTransformElementChildren';
 
 // FIXME: underline, subscript superscript not yet supported by remark-slate
-export const remarkDefaultElementRules: RemarkElementRules<Value> = {
+export const remarkDefaultElementRules: RemarkElementRules = {
   blockquote: {
     transform: (node, options) => {
       return {

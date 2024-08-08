@@ -1,27 +1,23 @@
+import { getKeyByType } from '@udecode/plate-common';
 import {
-  type PlateEditor,
-  type Value,
-  type WithPlatePlugin,
+  type WithOverride,
   setElements,
   unsetNodes,
 } from '@udecode/plate-common/server';
 
-import type { IndentPlugin, TIndentElement } from './types';
+import type { IndentPluginOptions, TIndentElement } from './types';
 
 /**
  * - `node.indent` can not exceed `indentMax`
  * - `node.indent` is unset if `node.type` is not in `types`
  */
-export const withIndent = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E,
-  {
-    inject: { props: { validTypes } = {} },
+export const withIndent: WithOverride<IndentPluginOptions> = ({
+  editor,
+  plugin: {
+    inject: { props: { validPlugins } = {} },
     options: { indentMax },
-  }: WithPlatePlugin<IndentPlugin, V, E>
-) => {
+  },
+}) => {
   const { normalizeNode } = editor;
 
   editor.normalizeNode = ([node, path]) => {
@@ -29,7 +25,7 @@ export const withIndent = <
     const { type } = element;
 
     if (type) {
-      if (validTypes!.includes(type)) {
+      if (validPlugins!.includes(getKeyByType(editor, type))) {
         if (indentMax && element.indent && element.indent > indentMax) {
           setElements(editor, { indent: indentMax }, { at: path });
 

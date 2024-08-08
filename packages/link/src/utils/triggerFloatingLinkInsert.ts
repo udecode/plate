@@ -1,17 +1,16 @@
 import {
   type PlateEditor,
-  type Value,
   getEditorString,
   getPluginType,
   isRangeAcrossBlocks,
   someNode,
 } from '@udecode/plate-common/server';
 
+import { ELEMENT_LINK } from '../LinkPlugin';
 import {
   floatingLinkActions,
   floatingLinkSelectors,
 } from '../components/FloatingLink/floatingLinkStore';
-import { ELEMENT_LINK } from '../createLinkPlugin';
 
 /**
  * Trigger floating link.
@@ -23,8 +22,8 @@ import { ELEMENT_LINK } from '../createLinkPlugin';
  * - Lowest selection is not text
  * - Selection has a link node
  */
-export const triggerFloatingLinkInsert = <V extends Value>(
-  editor: PlateEditor<V>,
+export const triggerFloatingLinkInsert = (
+  editor: PlateEditor,
   {
     focused,
   }: {

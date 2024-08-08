@@ -1,8 +1,4 @@
-import {
-  type PlateEditor,
-  type Value,
-  findNode,
-} from '@udecode/plate-common/server';
+import { type PlateEditor, findNode } from '@udecode/plate-common/server';
 
 import type { BorderDirection, TTableCellElement } from '../types';
 
@@ -10,8 +6,8 @@ import { getCellTypes } from '../utils/index';
 import { getLeftTableCell } from './getLeftTableCell';
 import { getTopTableCell } from './getTopTableCell';
 
-export const isTableBorderHidden = <V extends Value>(
-  editor: PlateEditor<V>,
+export const isTableBorderHidden = (
+  editor: PlateEditor,
   border: BorderDirection
 ) => {
   if (border === 'left') {

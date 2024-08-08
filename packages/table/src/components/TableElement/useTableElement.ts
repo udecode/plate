@@ -6,9 +6,9 @@ import {
   getPluginOptions,
 } from '@udecode/plate-common/server';
 
-import type { TTableElement, TablePlugin } from '../../types';
+import type { TTableElement, TablePluginOptions } from '../../types';
 
-import { ELEMENT_TABLE } from '../../createTablePlugin';
+import { ELEMENT_TABLE } from '../../TablePlugin';
 import { computeAllCellIndices } from '../../merge/computeCellIndices';
 import { useTableStore } from '../../stores/tableStore';
 import { useSelectedCells } from './useSelectedCells';
@@ -30,7 +30,7 @@ export const useTableElementState = ({
   const editor = useEditorRef();
 
   const { disableMarginLeft, enableMerging, minColumnWidth } =
-    getPluginOptions<TablePlugin>(editor, ELEMENT_TABLE);
+    getPluginOptions<TablePluginOptions>(editor, ELEMENT_TABLE);
 
   const element = useElement<TTableElement>();
   const selectedCells = useTableStore().get.selectedCells();

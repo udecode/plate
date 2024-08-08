@@ -1,7 +1,6 @@
 import {
   type PlateEditor,
   type TElement,
-  type Value,
   createPointRef,
   deleteText,
   findNode,
@@ -30,8 +29,8 @@ import { setSuggestionNodes } from './setSuggestionNodes';
  * Suggest deletion one character at a time until target point is reached.
  * Suggest additions are safely deleted.
  */
-export const deleteSuggestion = <V extends Value>(
-  editor: PlateEditor<V>,
+export const deleteSuggestion = (
+  editor: PlateEditor,
   at: Range,
   {
     reverse,

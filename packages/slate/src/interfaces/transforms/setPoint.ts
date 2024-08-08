@@ -2,11 +2,11 @@ import type { SelectionSetPointOptions } from 'slate/dist/interfaces/transforms/
 
 import { type Point, Transforms } from 'slate';
 
-import type { TEditor, Value } from '../editor/TEditor';
+import type { TEditor } from '../editor/TEditor';
 
 /** Set new properties on one of the selection's points. */
-export const setPoint = <V extends Value>(
-  editor: TEditor<V>,
+export const setPoint = (
+  editor: TEditor,
   props: Partial<Point>,
   options?: SelectionSetPointOptions
 ) => {

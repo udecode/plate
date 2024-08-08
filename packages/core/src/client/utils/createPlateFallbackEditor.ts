@@ -1,5 +1,3 @@
-import type { TEditor, Value } from '@udecode/slate';
-
 import type { PlateEditor } from '../../shared';
 
 import {
@@ -7,13 +5,10 @@ import {
   createPlateEditor,
 } from './createPlateEditor';
 
-export const createPlateFallbackEditor = <
-  V extends Value = Value,
-  E extends TEditor<V> = TEditor<V>,
->(
-  options: CreatePlateEditorOptions<V, E> = {}
-): E & PlateEditor<V> => {
-  const editor = createPlateEditor<V, E>(options);
+export const createPlateFallbackEditor = <E extends PlateEditor = PlateEditor>(
+  options: CreatePlateEditorOptions<E> = {}
+): E => {
+  const editor = createPlateEditor<E>(options);
 
   editor.isFallback = true;
 

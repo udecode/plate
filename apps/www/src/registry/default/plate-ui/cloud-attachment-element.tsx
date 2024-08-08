@@ -7,18 +7,14 @@ import {
   type TCloudAttachmentElement,
   useCloudAttachmentElementState,
 } from '@udecode/plate-cloud';
-import {
-  PlateElement,
-  type PlateElementProps,
-  type Value,
-} from '@udecode/plate-common';
+import { PlateElement, type PlateElementProps } from '@udecode/plate-common';
 
 import { Icons } from '@/components/icons';
 
 import { StatusBar } from './cloud-status-bar';
 
 export interface CloudAttachmentElementProps
-  extends PlateElementProps<Value, TCloudAttachmentElement> {}
+  extends PlateElementProps<TCloudAttachmentElement> {}
 
 export function CloudAttachmentElement({
   className,

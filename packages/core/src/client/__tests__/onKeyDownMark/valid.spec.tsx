@@ -1,12 +1,12 @@
 /** @jsx jsx */
 
-import { MARK_BOLD, createBoldPlugin } from '@udecode/plate-basic-marks';
+import { BoldPlugin, MARK_BOLD } from '@udecode/plate-basic-marks';
 import { createPlateEditor } from '@udecode/plate-common';
 import * as isHotkey from '@udecode/plate-core/server';
 import { jsx } from '@udecode/plate-test-utils';
 import { onKeyDownToggleMark } from '@udecode/plate-utils';
 
-import type { ToggleMarkPlugin } from '../../../shared/types';
+import type { ToggleMarkPluginOptions } from '../../../shared/types';
 
 import { getPlugin } from '../../../shared/utils/getPlugin';
 
@@ -39,8 +39,8 @@ const output = (
 const editor = createPlateEditor({
   editor: input,
   plugins: [
-    createBoldPlugin({
-      options: { hotkey: 'ctrl+b' },
+    BoldPlugin.configure({
+      hotkey: 'ctrl+b',
     }),
   ],
 });
@@ -48,10 +48,11 @@ const editor = createPlateEditor({
 it('should be', () => {
   jest.spyOn(isHotkey, 'isHotkey').mockReturnValue(true);
 
-  onKeyDownToggleMark(
+  onKeyDownToggleMark({
     editor,
-    getPlugin<ToggleMarkPlugin>(editor, MARK_BOLD)
-  )(event as any);
+    event,
+    plugin: getPlugin<ToggleMarkPluginOptions>(editor, MARK_BOLD),
+  });
   expect(editor.children).toEqual(output.children);
   expect(editor.selection).toEqual(output.selection);
 });

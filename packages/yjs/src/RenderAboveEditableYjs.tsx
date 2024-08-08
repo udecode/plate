@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { PlateEditor, Value } from '@udecode/plate-common/server';
+import type { PlateEditor } from '@udecode/plate-common/server';
 
 import { YjsEditor } from '@slate-yjs/core';
 import { useEditorRef } from '@udecode/plate-common';
@@ -12,7 +12,7 @@ import { useYjsSelectors } from './yjsStore';
 export const RenderAboveEditableYjs: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const editor = useEditorRef<Value, PlateEditor & PlateYjsEditorProps>();
+  const editor = useEditorRef<PlateEditor & PlateYjsEditorProps>();
 
   const isSynced = useYjsSelectors.isSynced();
 

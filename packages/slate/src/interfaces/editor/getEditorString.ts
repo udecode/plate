@@ -2,7 +2,7 @@ import type { EditorStringOptions } from 'slate/dist/interfaces/editor';
 
 import { Editor, type Location } from 'slate';
 
-import type { TEditor, Value } from './TEditor';
+import type { TEditor } from './TEditor';
 
 /**
  * Get the text string content of a location.
@@ -10,8 +10,8 @@ import type { TEditor, Value } from './TEditor';
  * Note: by default the text of void nodes is considered to be an empty string,
  * regardless of content, unless you pass in true for the voids option
  */
-export const getEditorString = <V extends Value>(
-  editor: TEditor<V>,
+export const getEditorString = (
+  editor: TEditor,
   at: Location | null | undefined,
   options?: EditorStringOptions
 ) => {

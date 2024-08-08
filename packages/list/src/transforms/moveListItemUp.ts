@@ -2,7 +2,6 @@ import {
   type PlateEditor,
   type TElement,
   type TElementEntry,
-  type Value,
   getAboveNode,
   getNode,
   getPluginType,
@@ -13,7 +12,7 @@ import {
 } from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
-import { ELEMENT_LI } from '../createListPlugin';
+import { ELEMENT_LI } from '../ListPlugin';
 import { hasListChild } from '../queries/hasListChild';
 import { moveListItemsToList } from './moveListItemsToList';
 import { unwrapList } from './unwrapList';
@@ -24,8 +23,8 @@ export interface MoveListItemUpOptions {
 }
 
 /** Move a list item up. */
-export const moveListItemUp = <V extends Value>(
-  editor: PlateEditor<V>,
+export const moveListItemUp = (
+  editor: PlateEditor,
   { list, listItem }: MoveListItemUpOptions
 ) => {
   const move = () => {

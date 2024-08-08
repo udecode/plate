@@ -1,9 +1,4 @@
-import type {
-  PlateEditor,
-  TNode,
-  TPath,
-  Value,
-} from '@udecode/plate-common/server';
+import type { TNode, TPath } from '@udecode/plate-common/server';
 
 export type TabDestinationPath = {
   path: TPath;
@@ -23,7 +18,7 @@ export type TabbableEntry = {
   slateNode: TNode;
 };
 
-export interface TabbablePlugin<V extends Value = Value> {
+export interface TabbablePluginOptions {
   /**
    * When true, the plugin will add its event listener to the document instead
    * of the editor, allowing it to capture events from outside the editor.
@@ -38,25 +33,19 @@ export interface TabbablePlugin<V extends Value = Value> {
    *
    * @default: () => []
    */
-  insertTabbableEntries?: (
-    editor: PlateEditor<V>,
-    event: KeyboardEvent
-  ) => TabbableEntry[];
+  insertTabbableEntries?: (event: KeyboardEvent) => TabbableEntry[];
 
   /**
    * Determine whether an element should be included in the tabbable list.
    *
    * @default: (editor, tabbableEntry) => isVoid(editor, tabbableEntry.slateNode)
    */
-  isTabbable?: (
-    editor: PlateEditor<V>,
-    tabbableEntry: TabbableEntry
-  ) => boolean;
+  isTabbable?: (entry: TabbableEntry) => boolean;
 
   /**
    * Dynamically enable or disable the plugin.
    *
    * @default: () => true
    */
-  query?: (editor: PlateEditor<V>, event: KeyboardEvent) => boolean;
+  query?: (event: KeyboardEvent) => boolean;
 }

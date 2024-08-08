@@ -3,5 +3,5 @@
  */
 
 export * from './constants';
-export * from './createHeadingPlugin';
+export * from './HeadingPlugin';
 export * from './types';

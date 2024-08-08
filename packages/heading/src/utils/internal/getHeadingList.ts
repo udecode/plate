@@ -1,7 +1,6 @@
 import {
   type PlateEditor,
   type TElement,
-  type Value,
   getNodeEntries,
   getNodeString,
   getPluginOptions,
@@ -15,7 +14,7 @@ import {
   ELEMENT_H5,
   ELEMENT_H6,
 } from '../../heading';
-import { ELEMENT_TOC, type Heading, type TocPlugin } from '../../toc';
+import { ELEMENT_TOC, type Heading, type TocPluginOptions } from '../../toc';
 import { isHeading } from '../isHeading';
 
 export const headingDepth: Record<string, number> = {
@@ -27,13 +26,11 @@ export const headingDepth: Record<string, number> = {
   [ELEMENT_H6]: 6,
 };
 
-export const getHeadingList = <V extends Value = Value>(
-  editor: PlateEditor<V>
-) => {
-  const options = getPluginOptions<TocPlugin, V>(editor, ELEMENT_TOC);
+export const getHeadingList = (editor: PlateEditor) => {
+  const options = getPluginOptions<TocPluginOptions>(editor, ELEMENT_TOC);
 
   if (options.queryHeading) {
-    return options.queryHeading<V>(editor);
+    return options.queryHeading(editor);
   }
 
   const headingList: Heading[] = [];

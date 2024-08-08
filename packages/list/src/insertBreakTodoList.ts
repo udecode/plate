@@ -1,13 +1,13 @@
-import type { PlateEditor, Value } from '@udecode/plate-common/server';
+import type { PlateEditor } from '@udecode/plate-common/server';
 
-import type { TodoListPlugin } from './types';
+import type { TodoListPluginOptions } from './types';
 
 import { getTodoListItemEntry } from './queries/getTodoListItemEntry';
 import { insertTodoListItem } from './transforms/insertTodoListItem';
 
-export const insertBreakTodoList = <V extends Value>(
-  editor: PlateEditor<V>,
-  options: TodoListPlugin
+export const insertBreakTodoList = (
+  editor: PlateEditor,
+  options: TodoListPluginOptions
 ) => {
   if (!editor.selection) return;
 

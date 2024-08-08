@@ -5,7 +5,7 @@ import {
   createPlateEditor,
   normalizeEditor,
 } from '@udecode/plate-common';
-import { createListPlugin } from '@udecode/plate-list';
+import { ListPlugin } from '@udecode/plate-list';
 import { jsx } from '@udecode/plate-test-utils';
 
 jsx;
@@ -13,7 +13,7 @@ jsx;
 const testNormalize = (input: PlateEditor, output: PlateEditor): void => {
   const editor = createPlateEditor({
     editor: input,
-    plugins: [createListPlugin()],
+    plugins: [ListPlugin],
   });
 
   normalizeEditor(editor, { force: true });

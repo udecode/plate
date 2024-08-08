@@ -1,7 +1,6 @@
 import {
   type PlateEditor,
   type TElement,
-  type Value,
   getAboveNode,
   getPluginOptions,
   getPluginType,
@@ -12,19 +11,19 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common/server';
 
-import type { TTableElement, TablePlugin } from '../types';
+import type { TTableElement, TablePluginOptions } from '../types';
 
 import {
   ELEMENT_TABLE,
   ELEMENT_TD,
   ELEMENT_TH,
   ELEMENT_TR,
-} from '../createTablePlugin';
+} from '../TablePlugin';
 import { deleteTableMergeColumn } from '../merge/deleteColumn';
 import { deleteColumnWhenExpanded } from '../merge/deleteColumnWhenExpanded';
 
-export const deleteColumn = <V extends Value>(editor: PlateEditor<V>) => {
-  const { enableMerging } = getPluginOptions<TablePlugin, V>(
+export const deleteColumn = (editor: PlateEditor) => {
+  const { enableMerging } = getPluginOptions<TablePluginOptions>(
     editor,
     ELEMENT_TABLE
   );

@@ -8,7 +8,7 @@ import type {
 
 import type { ListStyleType } from '../types';
 
-import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
+import { KEY_LIST_STYLE_TYPE } from '../IndentListPlugin';
 import {
   type GetIndentListSiblingsOptions,
   getIndentListSiblings,

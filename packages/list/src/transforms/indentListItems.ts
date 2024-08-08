@@ -1,7 +1,7 @@
-import type { PlateEditor, Value } from '@udecode/plate-common/server';
+import type { PlateEditor } from '@udecode/plate-common/server';
 
 import { moveListItems } from './moveListItems';
 
-export const indentListItems = <V extends Value>(editor: PlateEditor<V>) => {
+export const indentListItems = (editor: PlateEditor) => {
   moveListItems(editor, { increase: true });
 };

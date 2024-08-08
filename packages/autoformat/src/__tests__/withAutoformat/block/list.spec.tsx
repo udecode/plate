@@ -1,12 +1,15 @@
 /** @jsx jsx */
 
-import { mockPlugin } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
-import { autoformatPlugin } from 'www/src/lib/plate/demo/plugins/autoformatPlugin';
+import { getAutoformatOptions } from 'www/src/lib/plate/demo/plugins/autoformatOptions';
 
-import type { AutoformatBlockRule } from '../../../common/types';
+import type {
+  AutoformatBlockRule,
+  AutoformatPluginOptions,
+} from '../../../types';
 
+import { AutoformatPlugin } from '../../../AutoformatPlugin';
 import { withAutoformat } from '../../../withAutoformat';
 
 jsx;
@@ -33,10 +36,10 @@ describe('when -space', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      mockPlugin(autoformatPlugin as any)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    });
 
     editor.insertText(' ');
 
@@ -66,10 +69,10 @@ describe('when 1.space', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      mockPlugin(autoformatPlugin as any)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    });
 
     editor.insertText(' ');
 
@@ -95,10 +98,10 @@ describe('when [].space', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      mockPlugin(autoformatPlugin as any)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    });
 
     editor.insertText(' ');
 
@@ -124,10 +127,10 @@ describe('when [x].space', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      mockPlugin(autoformatPlugin as any)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    });
 
     editor.insertText(' ');
 
@@ -157,7 +160,7 @@ describe('when +space', () => {
     //   so here we need to remove the `preformat` property of the autoformat rule that uses this overload.
 
     const autoformatPluginRulesWitoutTogglePreformat =
-      autoformatPlugin.options!.rules!.map((rule) => {
+      getAutoformatOptions()!.rules!.map((rule) => {
         const { preFormat, ...rest } = rule as AutoformatBlockRule;
 
         if (rule.match === '+ ') return rest;
@@ -165,18 +168,15 @@ describe('when +space', () => {
         return rule;
       });
 
-    const autoformatPluginWitoutTogglePreformat: typeof autoformatPlugin = {
-      ...autoformatPlugin,
-      options: {
-        ...autoformatPlugin.options,
-        rules: autoformatPluginRulesWitoutTogglePreformat as any,
-      },
+    const autoformatPluginWitoutTogglePreformat: AutoformatPluginOptions = {
+      ...getAutoformatOptions(),
+      rules: autoformatPluginRulesWitoutTogglePreformat as any,
     };
 
-    const editor = withAutoformat(
-      withReact(input),
-      mockPlugin(autoformatPluginWitoutTogglePreformat)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: AutoformatPlugin.configure(autoformatPluginWitoutTogglePreformat),
+    });
 
     editor.insertText(' ');
 

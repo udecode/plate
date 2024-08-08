@@ -3,7 +3,6 @@ import type { PathRef } from 'slate';
 import {
   type PlateEditor,
   type TNodeEntry,
-  type Value,
   createPathRef,
   removeNodes,
 } from '@udecode/plate-common/server';
@@ -14,8 +13,8 @@ import { getRowSpan, getTableGridAbove } from '../queries';
 import { getCellRowIndexByPath } from '../utils/getCellRowIndexByPath';
 import { getTableMergedColumnCount } from './getTableMergedColumnCount';
 
-export const deleteRowWhenExpanded = <V extends Value>(
-  editor: PlateEditor<V>,
+export const deleteRowWhenExpanded = (
+  editor: PlateEditor,
   [table, tablePath]: TNodeEntry<TTableCellElement>
 ) => {
   const columnCount = getTableMergedColumnCount(table);

@@ -1,4 +1,4 @@
-import type { TEditor, Value } from '@udecode/slate';
+import type { TEditor } from '@udecode/slate';
 
 import { type Location, Path, Point, Range } from 'slate';
 
@@ -7,8 +7,8 @@ import { type Location, Path, Point, Range } from 'slate';
  * range, get the anchor point. If the location is a path, get the point at this
  * path with offset 0. If `focus` is true, get the focus point.
  */
-export const getPointFromLocation = <V extends Value>(
-  editor: TEditor<V>,
+export const getPointFromLocation = (
+  editor: TEditor,
   {
     at = editor.selection,
     focus,

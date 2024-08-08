@@ -1,43 +1,38 @@
 // local import, not from npm
 import {
-  createBoldPlugin,
-  createCodePlugin,
-  createItalicPlugin,
-  createStrikethroughPlugin,
-  createUnderlinePlugin,
+  BoldPlugin,
+  CodePlugin,
+  ItalicPlugin,
+  StrikethroughPlugin,
+  UnderlinePlugin,
 } from '@udecode/plate-basic-marks';
-import { createBlockquotePlugin } from '@udecode/plate-block-quote';
-import { createCodeBlockPlugin } from '@udecode/plate-code-block';
-import { Plate, createPlugins } from '@udecode/plate-common';
-import { createHeadingPlugin } from '@udecode/plate-heading';
-import { createParagraphPlugin } from '@udecode/plate-paragraph';
+import { BlockquotePlugin } from '@udecode/plate-block-quote';
+import { CodeBlockPlugin } from '@udecode/plate-code-block';
+import { Plate, usePlateEditor } from '@udecode/plate-common';
+import { HeadingPlugin } from '@udecode/plate-heading';
+import { ParagraphPlugin } from '@udecode/plate-paragraph';
 
-import { createPlateUI } from '@/plate/create-plate-ui';
+import { PlateUI } from '@/plate/demo/plate-ui';
 import { Editor } from '@/registry/default/plate-ui/editor';
 
-const plugins = createPlugins(
-  [
-    // Pick your plugins in https://platejs.org/?builder=true
-    createParagraphPlugin(),
-    createBlockquotePlugin(),
-    createCodeBlockPlugin(),
-    createHeadingPlugin(),
-
-    createBoldPlugin(),
-    createItalicPlugin(),
-    createUnderlinePlugin(),
-    createStrikethroughPlugin(),
-    createCodePlugin(),
-  ],
-  {
-    // Pick your components in https://platejs.org/?builder=true
-    components: createPlateUI(),
-  }
-);
-
 export default function BasicPluginsComponentsDemo() {
+  const editor = usePlateEditor({
+    override: { components: PlateUI },
+    plugins: [
+      ParagraphPlugin,
+      BlockquotePlugin,
+      CodeBlockPlugin,
+      HeadingPlugin,
+      BoldPlugin,
+      ItalicPlugin,
+      UnderlinePlugin,
+      StrikethroughPlugin,
+      CodePlugin,
+    ],
+  });
+
   return (
-    <Plate initialValue={basicEditorValue} plugins={plugins}>
+    <Plate editor={editor} initialValue={basicEditorValue}>
       <Editor autoFocus={false} placeholder="Type..." spellCheck={false} />
     </Plate>
   );

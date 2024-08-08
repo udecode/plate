@@ -1,4 +1,4 @@
-import type { TEditor, Value } from '@udecode/plate-common/server';
+import type { PlateEditor } from '@udecode/plate-common/server';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import type { Awareness } from 'y-protocols/awareness';
 
@@ -20,13 +20,11 @@ export type CursorEditorProps = Pick<
 > &
   YjsEditorProps;
 
-export const withTCursors = <
-  TCursorData extends Record<string, unknown>,
-  V extends Value,
-  E extends TEditor<V> & YjsEditorProps,
-  EE extends CursorEditorProps & E = CursorEditorProps & E,
->(
-  editor: E,
+export const withTCursors = <TCursorData extends Record<string, unknown>>(
+  editor: PlateEditor,
   awareness: Awareness,
   options?: WithCursorsOptions<TCursorData>
-) => withCursors(editor as any, awareness, options) as any as EE;
+) =>
+  withCursors(editor as any, awareness, options) as CursorEditorProps &
+    PlateEditor &
+    YjsEditorProps;

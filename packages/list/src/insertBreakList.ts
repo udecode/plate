@@ -1,24 +1,23 @@
 import {
   ELEMENT_DEFAULT,
   type PlateEditor,
-  type Value,
+  createPlugin,
   getPluginType,
   isBlockAboveEmpty,
-  mockPlugin,
 } from '@udecode/plate-common/server';
 import {
-  type ResetNodePlugin,
+  type ResetNodePluginOptions,
   SIMULATE_BACKSPACE,
   onKeyDownResetNode,
 } from '@udecode/plate-reset-node';
 
-import { ELEMENT_LI } from './createListPlugin';
+import { ELEMENT_LI } from './ListPlugin';
 import { getListItemEntry } from './queries/getListItemEntry';
 import { insertListItem } from './transforms/insertListItem';
 import { moveListItemUp } from './transforms/moveListItemUp';
 import { unwrapList } from './transforms/unwrapList';
 
-export const insertBreakList = <V extends Value>(editor: PlateEditor<V>) => {
+export const insertBreakList = (editor: PlateEditor) => {
   if (!editor.selection) return;
 
   const res = getListItemEntry(editor, {});
@@ -39,9 +38,10 @@ export const insertBreakList = <V extends Value>(editor: PlateEditor<V>) => {
     }
   }
 
-  const didReset = onKeyDownResetNode(
-    editor as any,
-    mockPlugin<ResetNodePlugin>({
+  const didReset = onKeyDownResetNode({
+    editor,
+    event: SIMULATE_BACKSPACE,
+    plugin: createPlugin<string, ResetNodePluginOptions>({
       options: {
         rules: [
           {
@@ -52,8 +52,8 @@ export const insertBreakList = <V extends Value>(editor: PlateEditor<V>) => {
           },
         ],
       },
-    })
-  )(SIMULATE_BACKSPACE as any);
+    }),
+  });
 
   if (didReset) return true;
   /** If selection is in li > p, insert li. */

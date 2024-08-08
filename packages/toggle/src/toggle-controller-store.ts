@@ -13,7 +13,7 @@ import {
 } from '@udecode/plate-common/server';
 import { KEY_INDENT, type TIndentElement } from '@udecode/plate-indent';
 
-import { ELEMENT_TOGGLE, type TogglePlugin } from './types';
+import { ELEMENT_TOGGLE, type TogglePluginOptions } from './types';
 
 // Duplicate constant instead of importing from "plate-indent-list" to avoid a dependency.
 const KEY_LIST_STYLE_TYPE = 'listStyleType';
@@ -65,7 +65,7 @@ export const someToggleClosed = <
   editor: E,
   toggleIds: string[]
 ): boolean => {
-  const options = getPluginOptions<TogglePlugin, V, E>(editor, ELEMENT_TOGGLE);
+  const options = getPluginOptions<TogglePluginOptions>(editor, ELEMENT_TOGGLE);
   const openIds = options.openIds!;
 
   return toggleIds.some((id) => !openIds.has(id));
@@ -78,7 +78,7 @@ export const isToggleOpen = <
   editor: E,
   toggleId: string
 ): boolean => {
-  const options = getPluginOptions<TogglePlugin, V, E>(editor, ELEMENT_TOGGLE);
+  const options = getPluginOptions<TogglePluginOptions>(editor, ELEMENT_TOGGLE);
   const openIds = options.openIds!;
 
   return openIds.has(toggleId);
@@ -92,7 +92,7 @@ export const toggleIds = <
   ids: string[],
   force: boolean | null = null
 ): void => {
-  const options = getPluginOptions<TogglePlugin, V, E>(editor, ELEMENT_TOGGLE);
+  const options = getPluginOptions<TogglePluginOptions>(editor, ELEMENT_TOGGLE);
   options.setOpenIds!((openIds) => _toggleIds(openIds, ids, force));
 };
 

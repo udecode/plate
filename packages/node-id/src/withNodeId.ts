@@ -1,10 +1,8 @@
 import {
-  type PlateEditor,
   type TDescendant,
   type TNode,
   type TNodeEntry,
-  type Value,
-  type WithPlatePlugin,
+  type WithOverride,
   applyDeepToNodes,
   defaultsDeepToNodes,
   isDefined,
@@ -14,15 +12,12 @@ import {
 import castArray from 'lodash/castArray.js';
 import cloneDeep from 'lodash/cloneDeep.js';
 
-import type { NodeIdPlugin } from './createNodeIdPlugin';
+import type { NodeIdPlugin } from './NodeIdPlugin';
 
 /** Enables support for inserting nodes with an id key. */
-export const withNodeId = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E,
-  {
+export const withNodeId: WithOverride<NodeIdPlugin> = ({
+  editor,
+  plugin: {
     options: {
       allow,
       disableInsertOverrides,
@@ -33,8 +28,8 @@ export const withNodeId = <
       idKey = '',
       reuseId,
     },
-  }: WithPlatePlugin<NodeIdPlugin, V, E>
-) => {
+  },
+}) => {
   const { apply, insertNode, insertNodes } = editor;
 
   const idPropsCreator = () => ({ [idKey]: idCreator!() });

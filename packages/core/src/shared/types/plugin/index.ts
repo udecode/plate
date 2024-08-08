@@ -3,19 +3,7 @@
  */
 
 export * from './DOMHandlers';
-export * from './Decorate';
-export * from './DeserializeHtml';
-export * from './HotkeyPlugin';
-export * from './InjectComponent';
-export * from './InjectProps';
+export * from './HotkeyPluginOptions';
 export * from './KeyboardHandler';
-export * from './OnChange';
 export * from './PlatePlugin';
-export * from './PlatePluginComponent';
-export * from './PlatePluginInsertData';
-export * from './PlatePluginKey';
-export * from './PlatePluginProps';
-export * from './RenderAfterEditable';
-export * from './SerializeHtml';
-export * from './ToggleMarkPlugin';
-export * from './WithOverride';
+export * from './ToggleMarkPluginOptions';

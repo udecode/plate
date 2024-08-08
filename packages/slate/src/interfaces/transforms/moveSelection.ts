@@ -2,11 +2,11 @@ import type { SelectionMoveOptions } from 'slate/dist/interfaces/transforms/sele
 
 import { Transforms } from 'slate';
 
-import type { TEditor, Value } from '../editor/TEditor';
+import type { TEditor } from '../editor/TEditor';
 
 /** Move the selection's point forward or backward. */
-export const moveSelection = <V extends Value>(
-  editor: TEditor<V>,
+export const moveSelection = (
+  editor: TEditor,
   options?: SelectionMoveOptions
 ) => {
   Transforms.move(editor as any, options);

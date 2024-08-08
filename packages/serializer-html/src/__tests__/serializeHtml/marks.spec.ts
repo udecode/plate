@@ -1,16 +1,12 @@
-import { createBasicMarksPlugin } from '@udecode/plate-basic-marks';
+import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
 import { htmlStringToDOMNode } from '@udecode/plate-core';
-import { createHighlightPlugin } from '@udecode/plate-highlight';
-import { createKbdPlugin } from '@udecode/plate-kbd';
-import { createPlateUIEditor } from 'www/src/lib/plate/create-plate-ui-editor';
+import { HighlightPlugin } from '@udecode/plate-highlight';
+import { KbdPlugin } from '@udecode/plate-kbd';
 
 import { serializeHtml } from '../../serializeHtml';
+import { createPlateUIEditor } from '../create-plate-ui-editor';
 
-const plugins = [
-  createBasicMarksPlugin(),
-  createHighlightPlugin(),
-  createKbdPlugin(),
-];
+const plugins = [BasicMarksPlugin, HighlightPlugin, KbdPlugin];
 const editor = createPlateUIEditor({ plugins });
 
 it('serialize bold to html', () => {

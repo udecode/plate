@@ -1,4 +1,4 @@
-import type { EDescendant, Value } from '@udecode/slate';
+import type { TDescendant } from '@udecode/slate';
 
 import type { PlateEditor } from '../../../types';
 
@@ -8,8 +8,8 @@ import { deserializeHtmlElement } from './deserializeHtmlElement';
 import { htmlStringToDOMNode } from './htmlStringToDOMNode';
 
 /** Deserialize HTML element to a valid document fragment. */
-export const deserializeHtml = <V extends Value>(
-  editor: PlateEditor<V>,
+export const deserializeHtml = (
+  editor: PlateEditor,
   {
     collapseWhiteSpace: shouldCollapseWhiteSpace = true,
     element,
@@ -17,7 +17,7 @@ export const deserializeHtml = <V extends Value>(
     collapseWhiteSpace?: boolean;
     element: HTMLElement | string;
   }
-): EDescendant<V>[] => {
+): TDescendant[] => {
   // for serializer
   if (typeof element === 'string') {
     element = htmlStringToDOMNode(element);
@@ -26,7 +26,7 @@ export const deserializeHtml = <V extends Value>(
     element = collapseWhiteSpace(element);
   }
 
-  const fragment = deserializeHtmlElement(editor, element) as EDescendant<V>[];
+  const fragment = deserializeHtmlElement(editor, element) as TDescendant[];
 
   return normalizeDescendantsToDocumentFragment(editor, {
     descendants: fragment,

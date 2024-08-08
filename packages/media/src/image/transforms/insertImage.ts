@@ -8,7 +8,7 @@ import {
 
 import type { TImageElement } from '../types';
 
-import { ELEMENT_IMAGE } from '../createImagePlugin';
+import { ELEMENT_IMAGE } from '../ImagePlugin';
 
 export const insertImage = <V extends Value>(
   editor: PlateEditor<V>,

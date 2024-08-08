@@ -1,13 +1,11 @@
-import type { Value } from '@udecode/slate';
-
 import type { EXPOSED_STORE_KEYS, PlateStoreState } from './PlateStore';
 
-export type PlateEditorMethods<V extends Value = Value> = {
+export type PlateEditorMethods = {
   // Example: editor.plate.set.readOnly(true)
   plate: {
     set: {
       [K in (typeof EXPOSED_STORE_KEYS)[number]]: (
-        value: PlateStoreState<V>[K]
+        value: PlateStoreState[K]
       ) => void;
     };
   };

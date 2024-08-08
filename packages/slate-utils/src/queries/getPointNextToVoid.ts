@@ -1,6 +1,5 @@
 import {
   type TEditor,
-  type Value,
   getPointAfter,
   getPointBefore,
   getVoidNode,
@@ -13,8 +12,8 @@ import { getBlockAbove } from './getBlockAbove';
  * If the start point is inside an inline void, get the point before or after
  * it.
  */
-export const getPointNextToVoid = <V extends Value>(
-  editor: TEditor<V>,
+export const getPointNextToVoid = (
+  editor: TEditor,
   {
     after,
     at,

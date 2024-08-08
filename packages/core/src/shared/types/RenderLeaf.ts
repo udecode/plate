@@ -1,5 +1,3 @@
-import type { Value } from '@udecode/slate';
-
 import type { PlateRenderLeafProps } from './PlateRenderLeafProps';
 
 /**
@@ -11,6 +9,4 @@ import type { PlateRenderLeafProps } from './PlateRenderLeafProps';
  * The attributes are added by default. RenderLeaf always returns a JSX element
  * (even if unmodified) to support multiple marks on a node.
  */
-export type RenderLeaf = <V extends Value = Value>(
-  props: PlateRenderLeafProps<V>
-) => React.ReactElement;
+export type RenderLeaf = (props: PlateRenderLeafProps) => React.ReactElement;

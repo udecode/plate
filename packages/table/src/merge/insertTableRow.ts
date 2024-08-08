@@ -1,6 +1,5 @@
 import {
   type PlateEditor,
-  type Value,
   findNode,
   getBlockAbove,
   getParentNode,
@@ -16,10 +15,10 @@ import type {
   TTableCellElement,
   TTableElement,
   TTableRowElement,
-  TablePlugin,
+  TablePluginOptions,
 } from '../types';
 
-import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
+import { ELEMENT_TABLE, ELEMENT_TR } from '../TablePlugin';
 import { getTableColumnCount } from '../queries';
 import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';
@@ -29,8 +28,8 @@ import { findCellByIndexes } from './findCellByIndexes';
 import { getCellIndices } from './getCellIndices';
 import { getCellPath } from './getCellPath';
 
-export const insertTableMergeRow = <V extends Value>(
-  editor: PlateEditor<V>,
+export const insertTableMergeRow = (
+  editor: PlateEditor,
   {
     at,
     fromRow,
@@ -43,10 +42,8 @@ export const insertTableMergeRow = <V extends Value>(
     header?: boolean;
   } = {}
 ) => {
-  const { _cellIndices: cellIndices, cellFactory } = getPluginOptions<
-    TablePlugin,
-    V
-  >(editor, ELEMENT_TABLE);
+  const { _cellIndices: cellIndices, cellFactory } =
+    getPluginOptions<TablePluginOptions>(editor, ELEMENT_TABLE);
 
   const trEntry = fromRow
     ? findNode(editor, {

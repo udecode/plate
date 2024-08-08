@@ -3,7 +3,6 @@ import type { Range } from 'slate';
 import {
   ELEMENT_DEFAULT,
   type PlateEditor,
-  type Value,
   deleteText,
   getEditorString,
   getRangeBefore,
@@ -19,13 +18,12 @@ import type { AutoformatBlockRule } from '../types';
 
 import { getMatchRange } from '../utils/getMatchRange';
 
-export interface AutoformatBlockOptions<V extends Value = Value>
-  extends AutoformatBlockRule<V> {
+export interface AutoformatBlockOptions extends AutoformatBlockRule {
   text: string;
 }
 
-export const autoformatBlock = <V extends Value>(
-  editor: PlateEditor<V>,
+export const autoformatBlock = (
+  editor: PlateEditor,
   {
     allowSameTypeAbove = false,
     format,
@@ -35,7 +33,7 @@ export const autoformatBlock = <V extends Value>(
     trigger,
     triggerAtBlockStart = true,
     type = ELEMENT_DEFAULT,
-  }: AutoformatBlockOptions<V>
+  }: AutoformatBlockOptions
 ) => {
   const matches = castArray(_match as string | string[]);
 

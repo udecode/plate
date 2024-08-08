@@ -1,9 +1,7 @@
 import { Editor, type Location } from 'slate';
 
-import type { TEditor, Value } from './TEditor';
+import type { TEditor } from './TEditor';
 
 /** Get the start point of a location. */
-export const getStartPoint = <V extends Value>(
-  editor: TEditor<V>,
-  at: Location
-) => Editor.start(editor as any, at);
+export const getStartPoint = (editor: TEditor, at: Location) =>
+  Editor.start(editor as any, at);

@@ -53,7 +53,7 @@ import {
 } from '@/config/customizer-badges';
 import { customizerComponents } from '@/config/customizer-components';
 import { customizerPlugins } from '@/config/customizer-plugins';
-import { KEY_DRAG_OVER_CURSOR } from '@/plate/demo/plugins/dragOverCursorPlugin';
+import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
 
 export type SettingPlugin = {
   badges?: CustomizerBadge[];
@@ -88,6 +88,13 @@ export type SettingPlugin = {
 };
 
 export const customizerItems: Record<string, SettingPlugin> = {
+  [DragOverCursorPlugin.key]: {
+    badges: [customizerBadges.handler, customizerBadges.ui],
+    id: DragOverCursorPlugin.key,
+    // npmPackage: '@udecode/plate-cursor',
+    label: 'Drag Cursor',
+    route: customizerPlugins.cursoroverlay.route,
+  },
   [ELEMENT_BLOCKQUOTE]: {
     badges: [customizerBadges.element],
     components: [
@@ -359,7 +366,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginOptions: [
       `inject: {`,
       `  props: {`,
-      `    validTypes: [`,
+      `    validPlugins: [`,
       `      ELEMENT_PARAGRAPH,`,
       `      // ELEMENT_H1, ELEMENT_H2, ELEMENT_H3`,
       `    ],`,
@@ -474,13 +481,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginOptions: ['  options: { enableScroller: true },'],
     route: customizerPlugins.dnd.route,
   },
-  [KEY_DRAG_OVER_CURSOR]: {
-    badges: [customizerBadges.handler, customizerBadges.ui],
-    id: KEY_DRAG_OVER_CURSOR,
-    // npmPackage: '@udecode/plate-cursor',
-    label: 'Drag Cursor',
-    route: customizerPlugins.cursoroverlay.route,
-  },
   [KEY_EMOJI]: {
     badges: [customizerBadges.handler],
     components: [
@@ -537,7 +537,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginOptions: [
       `inject: {`,
       `  props: {`,
-      `    validTypes: [`,
+      `    validPlugins: [`,
       `      ELEMENT_PARAGRAPH,`,
       `      // ELEMENT_H1, ELEMENT_H2, ELEMENT_H3, ELEMENT_BLOCKQUOTE, ELEMENT_CODE_BLOCK`,
       `    ],`,
@@ -565,7 +565,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
       `  props: {`,
       `    defaultNodeValue: 1.5,`,
       `    validNodeValues: [1, 1.2, 1.5, 2, 3],`,
-      `    validTypes: [`,
+      `    validPlugins: [`,
       `      ELEMENT_PARAGRAPH,`,
       `      // ELEMENT_H1, ELEMENT_H2, ELEMENT_H3`,
       `    ],`,
@@ -585,7 +585,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginOptions: [
       `inject: {`,
       `  props: {`,
-      `    validTypes: [`,
+      `    validPlugins: [`,
       `      ELEMENT_PARAGRAPH,`,
       `      // ELEMENT_H1, ELEMENT_H2, ELEMENT_H3, ELEMENT_BLOCKQUOTE, ELEMENT_CODE_BLOCK`,
       `    ],`,

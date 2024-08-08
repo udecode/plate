@@ -1,19 +1,16 @@
 import React from 'react';
 
-import { createBoldPlugin } from '@udecode/plate';
+import { BoldPlugin } from '@udecode/plate';
 import { MARK_BOLD } from '@udecode/plate-basic-marks';
-import {
-  type PlatePlugin,
-  createPlateEditor,
-  htmlStringToDOMNode,
-} from '@udecode/plate-core';
-import { createImagePlugin } from '@udecode/plate-media';
-import { createPlateUIEditor } from 'www/src/lib/plate/create-plate-ui-editor';
+import { type PlatePlugins, createPlugin } from '@udecode/plate-common';
+import { createPlateEditor, htmlStringToDOMNode } from '@udecode/plate-core';
+import { ImagePlugin } from '@udecode/plate-media';
 
 import { serializeHtml } from '../../serializeHtml';
+import { createPlateUIEditor } from '../create-plate-ui-editor';
 
 const plugins = [
-  createImagePlugin({
+  ImagePlugin.extend({
     serializeHtml: ({ element }) =>
       React.createElement('img', { src: element.url }),
   }),
@@ -42,7 +39,7 @@ it('custom serialize bold to html', () => {
     serializeHtml(
       createPlateUIEditor({
         plugins: [
-          createBoldPlugin({
+          BoldPlugin.extend({
             serializeHtml: ({ children, leaf }) =>
               leaf[MARK_BOLD] && !!leaf.text
                 ? React.createElement('b', {}, children)
@@ -70,17 +67,17 @@ describe('multiple custom leaf serializers', () => {
     new DOMParser().parseFromString(html, 'text/html').body.innerHTML;
 
   it('serialization with the similar renderLeaf/serialize.left options of the same nodes should give the same result', () => {
-    const pluginsWithoutSerializers: PlatePlugin[] = [
-      { component: Bold as any, isLeaf: true, key: 'bold' }, // always bold
+    const pluginsWithoutSerializers: PlatePlugins = [
+      createPlugin({ component: Bold as any, isLeaf: true, key: 'bold' }), // always bold
     ];
 
-    const pluginsWithSerializers: PlatePlugin[] = [
-      {
+    const pluginsWithSerializers: PlatePlugins = [
+      createPlugin({
         component: Bold as any,
         isLeaf: true,
         key: 'bold',
         serializeHtml: Bold,
-      },
+      }),
     ];
 
     const result1 = serializeHtml(

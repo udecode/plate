@@ -1,4 +1,4 @@
-import type { PlateEditor, Value } from '@udecode/plate-common/server';
+import type { PlateEditor } from '@udecode/plate-common/server';
 
 import { findSuggestionNode } from '../queries/index';
 import { getSuggestionKey, getSuggestionUserIds } from './getSuggestionKeys';
@@ -36,8 +36,8 @@ export type TSuggestionDescription =
  * multiple suggestions (multiple users). Each description maps to a user
  * suggestion.
  */
-export const getActiveSuggestionDescriptions = <V extends Value = Value>(
-  editor: PlateEditor<V>
+export const getActiveSuggestionDescriptions = (
+  editor: PlateEditor
 ): TSuggestionDescription[] => {
   const aboveEntry = findSuggestionNode(editor);
 

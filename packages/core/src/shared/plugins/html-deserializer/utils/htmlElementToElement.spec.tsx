@@ -2,7 +2,7 @@
 /** @jsx jsx */
 
 import { createPlateEditor } from '@udecode/plate-common';
-import { createParagraphPlugin } from '@udecode/plate-paragraph';
+import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { htmlElementToElement } from './htmlElementToElement';
@@ -21,7 +21,7 @@ describe('when deserializing p > test', () => {
     expect(
       htmlElementToElement(
         createPlateEditor({
-          plugins: [createParagraphPlugin()],
+          plugins: [ParagraphPlugin],
         }),
         parseHtmlElement(`<p>test</p>`)
       )

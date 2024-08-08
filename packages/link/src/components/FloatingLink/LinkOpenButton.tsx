@@ -9,7 +9,7 @@ import { findNode, getPluginType } from '@udecode/plate-common/server';
 
 import type { TLinkElement } from '../../types';
 
-import { ELEMENT_LINK } from '../../createLinkPlugin';
+import { ELEMENT_LINK } from '../../LinkPlugin';
 import { getLinkAttributes } from '../../utils/index';
 
 export const useLinkOpenButtonState = () => {

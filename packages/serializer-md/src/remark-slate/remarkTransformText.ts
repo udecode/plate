@@ -1,12 +1,12 @@
-import type { TText, Value } from '@udecode/plate-common/server';
+import type { TText } from '@udecode/plate-common/server';
 
 import type { MdastNode, RemarkPluginOptions } from './types';
 
 import { remarkDefaultTextRules } from './remarkDefaultTextRules';
 
-export const remarkTransformText = <V extends Value>(
+export const remarkTransformText = (
   node: MdastNode,
-  options: RemarkPluginOptions<V>,
+  options: RemarkPluginOptions,
   inheritedMarkProps: Record<string, boolean> = {}
 ): TText | TText[] => {
   const { editor, textRules } = options;

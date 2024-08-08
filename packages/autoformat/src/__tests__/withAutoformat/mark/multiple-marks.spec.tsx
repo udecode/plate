@@ -5,11 +5,11 @@ import {
   MARK_ITALIC,
   MARK_UNDERLINE,
 } from '@udecode/plate-basic-marks';
-import { mockPlugin } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
-import { autoformatPlugin } from 'www/src/lib/plate/demo/plugins/autoformatPlugin';
+import { getAutoformatOptions } from 'www/src/lib/plate/demo/plugins/autoformatOptions';
 
+import { AutoformatPlugin } from '../../../AutoformatPlugin';
 import { withAutoformat } from '../../../withAutoformat';
 
 jsx;
@@ -35,10 +35,10 @@ describe('when inserting ***', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      mockPlugin(autoformatPlugin as any)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    });
 
     editor.insertText('*');
     editor.insertText('*');
@@ -69,21 +69,19 @@ describe('when inserting ***___', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      mockPlugin({
-        options: {
-          rules: [
-            {
-              match: { end: '***__', start: '___***' },
-              mode: 'mark',
-              trigger: '_',
-              type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
-            },
-          ],
-        },
-      })
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: AutoformatPlugin.configure({
+        rules: [
+          {
+            match: { end: '***__', start: '___***' },
+            mode: 'mark',
+            trigger: '_',
+            type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
+          },
+        ],
+      }),
+    });
 
     editor.insertText('*');
     editor.insertText('*');

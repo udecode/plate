@@ -2,7 +2,6 @@ import {
   type PlateEditor,
   type TElement,
   type TElementEntry,
-  type Value,
   getBlockAbove,
   getChildren,
   getEditorString,
@@ -18,7 +17,7 @@ import {
 } from '@udecode/plate-common/server';
 import { Path, type TextUnit } from 'slate';
 
-import { ELEMENT_LI, ELEMENT_LIC } from './createListPlugin';
+import { ELEMENT_LI, ELEMENT_LIC } from './ListPlugin';
 import {
   getListItemEntry,
   getListRoot,
@@ -32,9 +31,7 @@ import {
   removeListItem,
 } from './transforms/index';
 
-const selectionIsNotInAListHandler = <V extends Value>(
-  editor: PlateEditor<V>
-): boolean => {
+const selectionIsNotInAListHandler = (editor: PlateEditor): boolean => {
   const pointAfterSelection = getPointAfter(
     editor,
     editor.selection!.focus.path
@@ -73,8 +70,8 @@ const selectionIsNotInAListHandler = <V extends Value>(
   return false;
 };
 
-const selectionIsInAListHandler = <V extends Value>(
-  editor: PlateEditor<V>,
+const selectionIsInAListHandler = (
+  editor: PlateEditor,
   res: { list: TElementEntry; listItem: TElementEntry },
   defaultDelete: (unit: TextUnit) => void,
   unit: 'block' | 'character' | 'line' | 'word'
@@ -221,8 +218,8 @@ const selectionIsInAListHandler = <V extends Value>(
   return false;
 };
 
-export const deleteForwardList = <V extends Value>(
-  editor: PlateEditor<V>,
+export const deleteForwardList = (
+  editor: PlateEditor,
   defaultDelete: (unit: TextUnit) => void,
   unit: TextUnit
 ) => {

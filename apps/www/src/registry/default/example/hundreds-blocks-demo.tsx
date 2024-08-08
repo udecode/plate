@@ -1,6 +1,13 @@
 import React, { useCallback, useMemo, useState } from 'react';
 
-import { Plate, type TElement, type Value } from '@udecode/plate-common';
+import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
+import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
+import {
+  Plate,
+  type TElement,
+  type Value,
+  usePlateEditor,
+} from '@udecode/plate-common';
 import { createEditor } from 'slate';
 import {
   Editable,
@@ -11,15 +18,20 @@ import {
 } from 'slate-react';
 
 import { editableProps } from '@/plate/demo/editableProps';
-import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
+import { PlateUI } from '@/plate/demo/plate-ui';
 import { createHugeDocumentValue } from '@/plate/demo/values/createHugeDocumentValue';
 import { Editor } from '@/registry/default/plate-ui/editor';
 
 const initialValue = createHugeDocumentValue();
 
 function WithPlate() {
+  const editor = usePlateEditor({
+    override: { components: PlateUI },
+    plugins: [BasicElementsPlugin, BasicMarksPlugin],
+  });
+
   return (
-    <Plate initialValue={initialValue} plugins={basicNodesPlugins}>
+    <Plate editor={editor} initialValue={initialValue}>
       <Editor {...editableProps} />
     </Plate>
   );

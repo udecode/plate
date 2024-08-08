@@ -5,28 +5,38 @@ import { ELEMENT_H1 } from '@udecode/plate-heading';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createNormalizeTypesPlugin } from '../../createNormalizeTypesPlugin';
+import { NormalizeTypesPlugin } from '../../NormalizeTypesPlugin';
 
 jsx;
 
-const input = (<editor />) as any;
+const input = (
+  <editor>
+    <hp>
+      <htext />
+    </hp>
+  </editor>
+) as any;
 
-const output = (<editor />) as any;
+const output = (
+  <editor>
+    <hp>
+      <htext />
+    </hp>
+  </editor>
+) as any;
 
 it('should be', () => {
   const editor = createPlateEditor({
     editor: input,
     plugins: [
-      createNormalizeTypesPlugin({
-        options: {
-          rules: [
-            {
-              path: [0, 0],
-              strictType: ELEMENT_H1,
-            },
-            { path: [0, 1], type: ELEMENT_PARAGRAPH },
-          ],
-        },
+      NormalizeTypesPlugin.configure({
+        rules: [
+          {
+            path: [0, 0],
+            strictType: ELEMENT_H1,
+          },
+          { path: [0, 1], type: ELEMENT_PARAGRAPH },
+        ],
       }),
     ],
   });

@@ -1,11 +1,11 @@
 /** @jsx jsx */
 
 import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
-import { createIndentPlugin } from '@udecode/plate-indent';
-import { createParagraphPlugin } from '@udecode/plate-paragraph';
+import { IndentPlugin } from '@udecode/plate-indent';
+import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createIndentListPlugin } from '../createIndentListPlugin';
+import { IndentListPlugin } from '../IndentListPlugin';
 
 jsx;
 
@@ -30,12 +30,8 @@ const output = (
 it('should be', async () => {
   const editor = createPlateEditor({
     editor: input,
-    normalizeInitialValue: true,
-    plugins: [
-      createParagraphPlugin(),
-      createIndentPlugin(),
-      createIndentListPlugin(),
-    ],
+    plugins: [ParagraphPlugin, IndentPlugin, IndentListPlugin],
+    shouldNormalizeEditor: true,
   });
 
   expect(editor.children).toEqual(output.children);

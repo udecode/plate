@@ -8,10 +8,10 @@ import {
   resizeLengthClampStatic,
 } from '@udecode/plate-resizable';
 
-import type { TTableElement, TablePlugin } from '../../types';
+import type { TTableElement, TablePluginOptions } from '../../types';
 import type { TableCellElementState } from './useTableCellElementState';
 
-import { ELEMENT_TABLE } from '../../createTablePlugin';
+import { ELEMENT_TABLE } from '../../TablePlugin';
 import {
   useOverrideColSize,
   useOverrideMarginLeft,
@@ -44,7 +44,7 @@ export const useTableCellElementResizableState = ({
   stepY = step,
 }: TableCellElementResizableOptions) => {
   const editor = useEditorRef();
-  const { disableMarginLeft } = getPluginOptions<TablePlugin>(
+  const { disableMarginLeft } = getPluginOptions<TablePluginOptions>(
     editor,
     ELEMENT_TABLE
   );
@@ -75,7 +75,7 @@ export const useTableCellElementResizable = ({
   const editor = useEditorRef();
   const element = useElement();
   const tableElement = useElement<TTableElement>(ELEMENT_TABLE);
-  const { minColumnWidth = 0 } = getPluginOptions<TablePlugin>(
+  const { minColumnWidth = 0 } = getPluginOptions<TablePluginOptions>(
     editor,
     ELEMENT_TABLE
   );

@@ -10,7 +10,7 @@ import {
 
 import type { TExcalidrawElement } from '../types';
 
-import { ELEMENT_EXCALIDRAW } from '../createExcalidrawPlugin';
+import { ELEMENT_EXCALIDRAW } from '../ExcalidrawPlugin';
 
 export const insertExcalidraw = <V extends Value>(
   editor: PlateEditor<V>,

@@ -1,30 +1,34 @@
 /** @jsx jsx */
 
-import { createAlignPlugin } from '@udecode/plate-alignment';
-import { createBasicElementsPlugin } from '@udecode/plate-basic-elements';
-import { createBasicMarksPlugin } from '@udecode/plate-basic-marks';
-import {
-  type OverrideByKey,
-  type PlatePlugin,
-  createPlateEditor,
-} from '@udecode/plate-common/server';
+import type { PlatePlugin, PlatePlugins } from '@udecode/plate-common';
+
+import { AlignPlugin } from '@udecode/plate-alignment';
+import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
+import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
+import { createPlateEditor } from '@udecode/plate-common/server';
 import { ELEMENT_H1, ELEMENT_H2, ELEMENT_H3 } from '@udecode/plate-heading';
-import { createHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
-import { createIndentPlugin } from '@udecode/plate-indent';
-import { createJuicePlugin } from '@udecode/plate-juice';
-import { createLineHeightPlugin } from '@udecode/plate-line-height';
-import { createLinkPlugin } from '@udecode/plate-link';
-import { createImagePlugin } from '@udecode/plate-media';
+import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
+import { IndentPlugin } from '@udecode/plate-indent';
+import { JuicePlugin } from '@udecode/plate-juice';
+import { LineHeightPlugin } from '@udecode/plate-line-height';
+import { LinkPlugin } from '@udecode/plate-link';
+import { ImagePlugin } from '@udecode/plate-media';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
-import { createTablePlugin } from '@udecode/plate-table';
+import { TablePlugin } from '@udecode/plate-table';
 import { jsx } from '@udecode/plate-test-utils';
-import { alignPlugin } from 'www/src/lib/plate/demo/plugins/alignPlugin';
-import { lineHeightPlugin } from 'www/src/lib/plate/demo/plugins/lineHeightPlugin';
 
 import { readTestFile } from '../../__tests__/readTestFile';
-import { createDeserializeDocxPlugin } from '../createDeserializeDocxPlugin';
+import { DeserializeDocxPlugin } from '../DeserializeDocxPlugin';
 
 jsx;
+
+const injectConfig = {
+  inject: {
+    props: {
+      validPlugins: [ELEMENT_PARAGRAPH, ELEMENT_H1, ELEMENT_H2, ELEMENT_H3],
+    },
+  },
+};
 
 export const createClipboardData = (html: string, rtf?: string): DataTransfer =>
   ({
@@ -43,44 +47,35 @@ export const testDocxDeserializer = ({
       </hp>
     </editor>
   ),
-  overrideByKey,
+  overridePlugins,
   plugins = [],
 }: {
   expected: any;
   filename: string;
   input?: any;
-  overrideByKey?: OverrideByKey;
-  plugins?: PlatePlugin[];
+  overridePlugins?: PlatePlugin['override']['plugins'];
+  plugins?: PlatePlugins;
 }) => {
   it('should deserialize', () => {
     const actual = createPlateEditor({
       editor: input,
-      overrideByKey,
+      override: {
+        plugins: overridePlugins,
+      },
       plugins: [
         ...plugins,
-        createImagePlugin(),
-        createHorizontalRulePlugin(),
-        createLinkPlugin(),
-        createTablePlugin(),
-        createBasicElementsPlugin(),
-        createBasicMarksPlugin(),
-        createTablePlugin(),
-        createLineHeightPlugin(lineHeightPlugin as any),
-        createAlignPlugin(alignPlugin as any),
-        createIndentPlugin({
-          inject: {
-            props: {
-              validTypes: [
-                ELEMENT_PARAGRAPH,
-                ELEMENT_H1,
-                ELEMENT_H2,
-                ELEMENT_H3,
-              ],
-            },
-          },
-        }),
-        createDeserializeDocxPlugin(),
-        createJuicePlugin(),
+        ImagePlugin,
+        HorizontalRulePlugin,
+        LinkPlugin,
+        TablePlugin,
+        BasicElementsPlugin,
+        BasicMarksPlugin,
+        TablePlugin,
+        LineHeightPlugin.extend(injectConfig),
+        AlignPlugin.extend(injectConfig),
+        IndentPlugin.extend(injectConfig),
+        DeserializeDocxPlugin,
+        JuicePlugin,
       ],
     });
 

@@ -1,7 +1,6 @@
 import {
   type GetNodeEntriesOptions,
   type PlateEditor,
-  type Value,
   createPathRef,
   getNodeEntries,
   getParentNode,
@@ -10,7 +9,7 @@ import {
 } from '@udecode/plate-common/server';
 import { Path, type PathRef } from 'slate';
 
-import { ELEMENT_LIC } from '../createListPlugin';
+import { ELEMENT_LIC } from '../ListPlugin';
 import { isListNested } from '../queries/isListNested';
 import { moveListItemDown } from './moveListItemDown';
 import { moveListItemUp } from './moveListItemUp';
@@ -22,8 +21,8 @@ export type MoveListItemsOptions = {
   increase?: boolean;
 };
 
-export const moveListItems = <V extends Value>(
-  editor: PlateEditor<V>,
+export const moveListItems = (
+  editor: PlateEditor,
   {
     at = editor.selection ?? undefined,
     enableResetOnShiftTab,

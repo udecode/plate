@@ -2,7 +2,6 @@ import {
   type PlateEditor,
   type TNode,
   type TNodeEntry,
-  type Value,
   moveNodes,
   removeNodes,
   unwrapNodes,
@@ -15,8 +14,8 @@ import type { TColumnElement } from '../types';
  * Move the middle column to the left of right by options.direction. if the
  * middle node is empty return false and remove it.
  */
-export const moveMiddleColumn = <V extends Value, N extends TNode>(
-  editor: PlateEditor<V>,
+export const moveMiddleColumn = <N extends TNode>(
+  editor: PlateEditor,
   [node, path]: TNodeEntry<N>,
   options?: {
     direction: 'left' | 'right';

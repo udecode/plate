@@ -1,7 +1,5 @@
 import React from 'react';
 
-import type { Value } from '@udecode/slate';
-
 import type { PlateEditor } from '../../shared/types/PlateEditor';
 import type { PlateRenderLeafProps } from '../../shared/types/PlateRenderLeafProps';
 import type { RenderLeaf } from '../../shared/types/RenderLeaf';
@@ -12,8 +10,8 @@ import { pipeInjectProps } from '../../shared/utils/pipeInjectProps';
 import { pluginRenderLeaf } from './pluginRenderLeaf';
 
 /** @see {@link RenderLeaf} */
-export const pipeRenderLeaf = <V extends Value>(
-  editor: PlateEditor<V>,
+export const pipeRenderLeaf = (
+  editor: PlateEditor,
   renderLeafProp?: TEditableProps['renderLeaf']
 ): TEditableProps['renderLeaf'] => {
   const renderLeafs: RenderLeaf[] = [];
@@ -25,7 +23,7 @@ export const pipeRenderLeaf = <V extends Value>(
   });
 
   return function render(nodeProps) {
-    const props = pipeInjectProps(editor, nodeProps) as PlateRenderLeafProps<V>;
+    const props = pipeInjectProps(editor, nodeProps) as PlateRenderLeafProps;
 
     renderLeafs.forEach((renderLeaf) => {
       const newChildren = renderLeaf(props as any);

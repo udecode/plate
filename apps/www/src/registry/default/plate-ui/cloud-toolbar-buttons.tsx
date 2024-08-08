@@ -4,7 +4,7 @@ import React from 'react';
 
 import type { PlateCloudEditor } from '@udecode/plate-cloud';
 
-import { type Value, useEditorRef } from '@udecode/plate-common';
+import { useEditorRef } from '@udecode/plate-common';
 
 const buttonStyle: React.CSSProperties = {
   background: '#f0f0f0',
@@ -15,7 +15,7 @@ const buttonStyle: React.CSSProperties = {
 };
 
 export function CloudToolbarButtons() {
-  const editor = useEditorRef<Value, PlateCloudEditor>();
+  const editor = useEditorRef<PlateCloudEditor>();
   const getSaveValue = () => {
     console.info('editor.children', editor.children);
     console.info('editor.cloud.getSaveValue()', editor.cloud.getSaveValue());

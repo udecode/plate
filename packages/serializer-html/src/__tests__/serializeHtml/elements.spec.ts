@@ -1,31 +1,19 @@
-import { createAlignPlugin } from '@udecode/plate-alignment';
-import { createBlockquotePlugin } from '@udecode/plate-block-quote';
+import { AlignPlugin } from '@udecode/plate-alignment';
+import { BlockquotePlugin } from '@udecode/plate-block-quote';
 import { htmlStringToDOMNode } from '@udecode/plate-common';
-import { createHeadingPlugin } from '@udecode/plate-heading';
-import { createLinkPlugin } from '@udecode/plate-link';
-import { createListPlugin } from '@udecode/plate-list';
-import { createImagePlugin } from '@udecode/plate-media';
-import {
-  ELEMENT_PARAGRAPH,
-  createParagraphPlugin,
-} from '@udecode/plate-paragraph';
-import {
-  ELEMENT_TABLE,
-  ELEMENT_TD,
-  ELEMENT_TH,
-  ELEMENT_TR,
-  createTablePlugin,
-} from '@udecode/plate-table';
-import { createPlateUIEditor } from 'www/src/lib/plate/create-plate-ui-editor';
-import { TableCellElement } from 'www/src/registry/default/plate-ui/table-cell-element';
-import { TableElement } from 'www/src/registry/default/plate-ui/table-element';
-import { TableRowElement } from 'www/src/registry/default/plate-ui/table-row-element';
+import { HeadingPlugin } from '@udecode/plate-heading';
+import { LinkPlugin } from '@udecode/plate-link';
+import { ListPlugin } from '@udecode/plate-list';
+import { ImagePlugin } from '@udecode/plate-media';
+import { ELEMENT_PARAGRAPH, ParagraphPlugin } from '@udecode/plate-paragraph';
+import { TablePlugin } from '@udecode/plate-table';
 
 import { serializeHtml } from '../../serializeHtml';
+import { createPlateUIEditor } from '../create-plate-ui-editor';
 
 it('serialize list to html', () => {
   const editor = createPlateUIEditor({
-    plugins: [createListPlugin()],
+    plugins: [ListPlugin],
   });
 
   const render = htmlStringToDOMNode(
@@ -52,7 +40,7 @@ it('serialize list to html', () => {
 
 it('serialize link to html', () => {
   const editor = createPlateUIEditor({
-    plugins: [createLinkPlugin()],
+    plugins: [LinkPlugin],
   });
 
   expect(
@@ -74,7 +62,7 @@ it('serialize link to html', () => {
 
 it('serialize blockquote to html', () => {
   const editor = createPlateUIEditor({
-    plugins: [createBlockquotePlugin()],
+    plugins: [BlockquotePlugin],
   });
 
   expect(
@@ -93,7 +81,7 @@ it('serialize blockquote to html', () => {
 
 it('serialize blockquote to html, without trimming whitespace', () => {
   const editor = createPlateUIEditor({
-    plugins: [createBlockquotePlugin()],
+    plugins: [BlockquotePlugin],
   });
 
   const html = serializeHtml(editor, {
@@ -106,7 +94,7 @@ it('serialize blockquote to html, without trimming whitespace', () => {
     stripWhitespace: false,
   });
 
-  const node = htmlStringToDOMNode(html, false);
+  const node = htmlStringToDOMNode(html);
   expect(node.querySelectorAll('blockquote')[0]).toHaveTextContent(
     'Blockquoted text here...'
   );
@@ -114,7 +102,7 @@ it('serialize blockquote to html, without trimming whitespace', () => {
 
 it('serialize headings to html', () => {
   const editor = createPlateUIEditor({
-    plugins: [createHeadingPlugin()],
+    plugins: [HeadingPlugin],
   });
 
   const render = htmlStringToDOMNode(
@@ -142,7 +130,7 @@ it('serialize headings to html', () => {
 
 it('serialize paragraph to html', () => {
   const editor = createPlateUIEditor({
-    plugins: [createParagraphPlugin()],
+    plugins: [ParagraphPlugin],
   });
 
   expect(
@@ -161,7 +149,7 @@ it('serialize paragraph to html', () => {
 
 it('serialize image to html', () => {
   const editor = createPlateUIEditor({
-    plugins: [createImagePlugin()],
+    plugins: [ImagePlugin],
   });
 
   expect(
@@ -181,13 +169,7 @@ it('serialize image to html', () => {
 
 it('serialize table to html', () => {
   const editor = createPlateUIEditor({
-    components: {
-      [ELEMENT_TABLE]: TableElement,
-      [ELEMENT_TD]: TableCellElement,
-      [ELEMENT_TH]: TableCellElement,
-      [ELEMENT_TR]: TableRowElement,
-    },
-    plugins: [createTablePlugin()],
+    plugins: [TablePlugin],
   });
 
   const render = htmlStringToDOMNode(
@@ -234,7 +216,7 @@ it('serialize table to html', () => {
 
 it('serialize align style to html', () => {
   const editor = createPlateUIEditor({
-    plugins: [createParagraphPlugin(), createAlignPlugin()],
+    plugins: [ParagraphPlugin, AlignPlugin],
   });
 
   expect(
@@ -254,8 +236,8 @@ it('serialize align style to html', () => {
 
 it('serialize align className to html', () => {
   const plugins = [
-    createParagraphPlugin(),
-    createAlignPlugin({
+    ParagraphPlugin,
+    AlignPlugin.extend({
       props: { classNames: { center: 'slate-align-center' } },
     }),
   ];
@@ -280,7 +262,7 @@ it('serialize align className to html', () => {
 });
 
 it('serialize image and paragraph to html', () => {
-  const plugins = [createParagraphPlugin(), createImagePlugin()];
+  const plugins = [ParagraphPlugin, ImagePlugin];
   const render = serializeHtml(createPlateUIEditor({ plugins }), {
     nodes: [
       {

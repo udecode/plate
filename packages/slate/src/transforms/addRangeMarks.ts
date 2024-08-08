@@ -8,13 +8,13 @@ import {
   Transforms,
 } from 'slate';
 
-import type { TEditor, Value } from '../interfaces/editor/TEditor';
+import type { TEditor } from '../interfaces/editor/TEditor';
 
 import { getRange } from '../interfaces';
 
 /** Add marks to each node of a range. */
-export const addRangeMarks = <V extends Value>(
-  editor: TEditor<V>,
+export const addRangeMarks = (
+  editor: TEditor,
   props: any,
   {
     at = editor.selection,

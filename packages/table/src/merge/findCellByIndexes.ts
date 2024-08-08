@@ -1,23 +1,26 @@
 import {
   type PlateEditor,
-  type Value,
   getPluginOptions,
 } from '@udecode/plate-common/server';
 
-import type { TTableCellElement, TTableElement, TablePlugin } from '../types';
+import type {
+  TTableCellElement,
+  TTableElement,
+  TablePluginOptions,
+} from '../types';
 
-import { ELEMENT_TABLE } from '../createTablePlugin';
+import { ELEMENT_TABLE } from '../TablePlugin';
 import { getCellIndices } from '../merge/getCellIndices';
 import { computeCellIndices } from './computeCellIndices';
 import { getCellIndicesWithSpans } from './getCellIndicesWithSpans';
 
-export const findCellByIndexes = <V extends Value>(
-  editor: PlateEditor<V>,
+export const findCellByIndexes = (
+  editor: PlateEditor,
   table: TTableElement,
   searchRowIndex: number,
   searchColIndex: number
 ) => {
-  const { _cellIndices: cellIndices } = getPluginOptions<TablePlugin, V>(
+  const { _cellIndices: cellIndices } = getPluginOptions<TablePluginOptions>(
     editor,
     ELEMENT_TABLE
   );

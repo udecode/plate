@@ -1,7 +1,6 @@
 import {
   type PlateEditor,
   type TRange,
-  type Value,
   isHotkey,
   isRangeAcrossBlocks,
   isRangeInSameBlock,
@@ -15,8 +14,8 @@ import { moveSelectionFromCell } from './index';
  * Override the new selection if the previous selection and the new one are in
  * different cells.
  */
-export const overrideSelectionFromCell = <V extends Value = Value>(
-  editor: PlateEditor<V>,
+export const overrideSelectionFromCell = (
+  editor: PlateEditor,
   newSelection?: TRange | null
 ) => {
   let hotkey: string | undefined;

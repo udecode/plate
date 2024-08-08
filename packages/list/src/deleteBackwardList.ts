@@ -3,7 +3,7 @@ import {
   type PlateEditor,
   type TElement,
   type TNodeEntry,
-  type Value,
+  createPlugin,
   deleteMerge,
   getNodeEntries,
   getNodeEntry,
@@ -11,18 +11,17 @@ import {
   getPointBefore,
   isFirstChild,
   isSelectionAtBlockStart,
-  mockPlugin,
   removeNodes,
   withoutNormalizing,
 } from '@udecode/plate-common/server';
 import {
-  type ResetNodePlugin,
+  type ResetNodePluginOptions,
   SIMULATE_BACKSPACE,
   onKeyDownResetNode,
 } from '@udecode/plate-reset-node';
 import { Path, type TextUnit } from 'slate';
 
-import { ELEMENT_LI, ELEMENT_LIC } from './createListPlugin';
+import { ELEMENT_LI, ELEMENT_LIC } from './ListPlugin';
 import { isAcrossListItems } from './queries';
 import { getListItemEntry } from './queries/getListItemEntry';
 import { isListNested } from './queries/isListNested';
@@ -30,10 +29,7 @@ import { removeFirstListItem } from './transforms/removeFirstListItem';
 import { removeListItem } from './transforms/removeListItem';
 import { unwrapList } from './transforms/unwrapList';
 
-export const deleteBackwardList = <V extends Value>(
-  editor: PlateEditor<V>,
-  unit: TextUnit
-) => {
+export const deleteBackwardList = (editor: PlateEditor, unit: TextUnit) => {
   const res = getListItemEntry(editor, {});
 
   let moved: boolean | undefined = false;
@@ -55,9 +51,10 @@ export const deleteBackwardList = <V extends Value>(
 
         if (moved) return true;
         if (isFirstChild(listItem[1]) && !isListNested(editor, list[1])) {
-          onKeyDownResetNode(
-            editor as any,
-            mockPlugin<ResetNodePlugin>({
+          onKeyDownResetNode({
+            editor,
+            event: SIMULATE_BACKSPACE,
+            plugin: createPlugin<string, ResetNodePluginOptions>({
               options: {
                 rules: [
                   {
@@ -69,8 +66,8 @@ export const deleteBackwardList = <V extends Value>(
                   },
                 ],
               },
-            })
-          )(SIMULATE_BACKSPACE);
+            }),
+          });
           moved = true;
 
           return;

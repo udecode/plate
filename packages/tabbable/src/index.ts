@@ -4,6 +4,6 @@
 
 export * from './TabbableEffects';
 export * from './constants';
-export * from './createTabbablePlugin';
+export * from './TabbablePlugin';
 export * from './findTabDestination';
 export * from './types';

@@ -1,58 +1,55 @@
 import {
-  type PlatePlugin,
   type TElement,
-  type Value,
   getNode,
   getPreviousPath,
 } from '@udecode/plate-common/server';
 import { Path } from 'slate';
 
-import type { IndentListPlugin } from '../createIndentListPlugin';
 import type { GetSiblingIndentListOptions } from '../queries/getSiblingIndentList';
 
-export const indentListPluginPage: Partial<PlatePlugin<IndentListPlugin>> = {
-  then: (e) => ({
-    options: {
-      getSiblingIndentListOptions: {
-        getNextEntry: ([, path]: any) => {
-          const nextPath = Path.next(path);
-          const nextNode = getNode<TElement>(e, nextPath);
+import { IndentListPlugin } from '../IndentListPlugin';
 
-          if (!nextNode) {
-            const nextPagePath = [path[0] + 1];
-            const nextPageNode = getNode<TElement>(e, nextPagePath);
+export const indentListPluginPage = IndentListPlugin.extend(({ editor }) => ({
+  options: {
+    getSiblingIndentListOptions: {
+      getNextEntry: ([, path]: any) => {
+        const nextPath = Path.next(path);
+        const nextNode = getNode<TElement>(editor, nextPath);
 
-            if (!nextPageNode) return;
+        if (!nextNode) {
+          const nextPagePath = [path[0] + 1];
+          const nextPageNode = getNode<TElement>(editor, nextPagePath);
 
-            return [nextPageNode.children[0], nextPagePath.concat([0])];
-          }
+          if (!nextPageNode) return;
 
-          return [nextNode, nextPath];
-        },
-        getPreviousEntry: ([, path]: any) => {
-          const prevPath = getPreviousPath(path);
+          return [nextPageNode.children[0], nextPagePath.concat([0])];
+        }
 
-          if (!prevPath) {
-            if (path[0] === 0) return;
+        return [nextNode, nextPath];
+      },
+      getPreviousEntry: ([, path]: any) => {
+        const prevPath = getPreviousPath(path);
 
-            const prevPagePath = [path[0] - 1];
+        if (!prevPath) {
+          if (path[0] === 0) return;
 
-            const node = getNode<TElement>(e, prevPagePath);
+          const prevPagePath = [path[0] - 1];
 
-            if (!node) return;
+          const node = getNode<TElement>(editor, prevPagePath);
 
-            const lastNode = node.children.at(-1);
+          if (!node) return;
 
-            return [lastNode, prevPagePath.concat(node.children.length - 1)];
-          }
+          const lastNode = node.children.at(-1);
 
-          const prevNode = getNode(e, prevPath);
+          return [lastNode, prevPagePath.concat(node.children.length - 1)];
+        }
 
-          if (!prevNode) return;
+        const prevNode = getNode(editor, prevPath);
 
-          return [prevNode, prevPath];
-        },
-      } as GetSiblingIndentListOptions<TElement, Value>,
-    },
-  }),
-};
+        if (!prevNode) return;
+
+        return [prevNode, prevPath];
+      },
+    } as GetSiblingIndentListOptions<TElement>,
+  },
+}));

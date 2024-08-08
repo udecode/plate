@@ -2,7 +2,6 @@ import {
   type MoveChildrenOptions,
   type PlateEditor,
   type TElementEntry,
-  type Value,
   deleteText,
   findDescendant,
   getLastChildPath,
@@ -13,7 +12,7 @@ import { Path } from 'slate';
 
 import { getListTypes } from '../queries/getListTypes';
 
-export interface MergeListItemIntoListOptions<V extends Value = Value> {
+export interface MergeListItemIntoListOptions {
   /**
    * Delete `fromListItem` sublist if true.
    *
@@ -27,7 +26,7 @@ export interface MergeListItemIntoListOptions<V extends Value = Value> {
   /** List items of the sublist of this node will be moved. */
   fromListItem?: TElementEntry;
 
-  fromStartIndex?: MoveChildrenOptions<V>['fromStartIndex'];
+  fromStartIndex?: MoveChildrenOptions['fromStartIndex'];
 
   to?: Path;
 
@@ -43,8 +42,8 @@ export interface MergeListItemIntoListOptions<V extends Value = Value> {
  * `fromListItem` is defined). Move the list items of `fromList` to `toList` (if
  * `fromList` is defined).
  */
-export const moveListItemsToList = <V extends Value>(
-  editor: PlateEditor<V>,
+export const moveListItemsToList = (
+  editor: PlateEditor,
   {
     deleteFromList = true,
     fromList,
@@ -53,7 +52,7 @@ export const moveListItemsToList = <V extends Value>(
     to: _to,
     toList,
     toListIndex = null,
-  }: MergeListItemIntoListOptions<V>
+  }: MergeListItemIntoListOptions
 ) => {
   let fromListPath: Path | undefined;
   let moved;

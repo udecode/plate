@@ -2,15 +2,14 @@ import type { Path, Range } from 'slate';
 
 import {
   type PlateEditor,
-  type Value,
   focusEditor,
   getNextNodeStartPoint,
   getPreviousNodeEndPoint,
   setSelection,
 } from '@udecode/plate-common';
 
-export const setSelectionInlineEquation = <V extends Value>(
-  editor: PlateEditor<V>,
+export const setSelectionInlineEquation = (
+  editor: PlateEditor,
   at: Path,
   direction: 'left' | 'right'
 ) => {

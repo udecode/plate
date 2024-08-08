@@ -1,7 +1,6 @@
 import {
   type PlateEditor,
   type TText,
-  type Value,
   getAboveNode,
   getEditorString,
   getPluginType,
@@ -11,15 +10,15 @@ import {
 import type { TLinkElement } from '../types';
 import type { UpsertLinkOptions } from './upsertLink';
 
-import { ELEMENT_LINK } from '../createLinkPlugin';
+import { ELEMENT_LINK } from '../LinkPlugin';
 
 /**
  * If the text is different than the link above text, replace link children by a
  * new text. The new text has the same marks than the first text replaced.
  */
-export const upsertLinkText = <V extends Value>(
-  editor: PlateEditor<V>,
-  { text }: UpsertLinkOptions<V>
+export const upsertLinkText = (
+  editor: PlateEditor,
+  { text }: UpsertLinkOptions
 ) => {
   const newLink = getAboveNode<TLinkElement>(editor, {
     match: { type: getPluginType(editor, ELEMENT_LINK) },

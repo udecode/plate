@@ -7,7 +7,7 @@ import {
 
 import type { TCalloutElement } from '../hooks';
 
-import { ELEMENT_CALLOUT } from '../createCalloutPlugin';
+import { ELEMENT_CALLOUT } from '../CalloutPlugin';
 
 export const insertCallout = <V extends Value>(
   editor: PlateEditor<V>,

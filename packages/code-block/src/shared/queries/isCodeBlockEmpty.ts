@@ -1,6 +1,5 @@
 import {
   type PlateEditor,
-  type Value,
   getChildren,
   getNodeString,
 } from '@udecode/plate-common/server';
@@ -8,7 +7,7 @@ import {
 import { getCodeLineEntry } from './getCodeLineEntry';
 
 /** Is the selection inside an empty code block */
-export const isCodeBlockEmpty = <V extends Value>(editor: PlateEditor<V>) => {
+export const isCodeBlockEmpty = (editor: PlateEditor) => {
   const { codeBlock } = getCodeLineEntry(editor) ?? {};
 
   if (!codeBlock) return false;

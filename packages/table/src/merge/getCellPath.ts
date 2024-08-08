@@ -1,7 +1,6 @@
 import {
   type PlateEditor,
   type TNodeEntry,
-  type Value,
   getPluginOptions,
 } from '@udecode/plate-common/server';
 
@@ -9,19 +8,19 @@ import type {
   TTableCellElement,
   TTableElement,
   TTableRowElement,
-  TablePlugin,
+  TablePluginOptions,
 } from '../types';
 
-import { ELEMENT_TABLE } from '../createTablePlugin';
+import { ELEMENT_TABLE } from '../TablePlugin';
 import { getCellIndices } from './getCellIndices';
 
-export const getCellPath = <V extends Value>(
-  editor: PlateEditor<V>,
+export const getCellPath = (
+  editor: PlateEditor,
   tableEntry: TNodeEntry<TTableElement>,
   curRowIndex: number,
   curColIndex: number
 ) => {
-  const { _cellIndices: cellIndices } = getPluginOptions<TablePlugin, V>(
+  const { _cellIndices: cellIndices } = getPluginOptions<TablePluginOptions>(
     editor,
     ELEMENT_TABLE
   );

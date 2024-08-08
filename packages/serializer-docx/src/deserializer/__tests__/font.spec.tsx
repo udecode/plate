@@ -1,11 +1,11 @@
 /** @jsx jsx */
 
 import {
-  createFontBackgroundColorPlugin,
-  createFontColorPlugin,
-  createFontFamilyPlugin,
-  createFontSizePlugin,
-  createFontWeightPlugin,
+  FontBackgroundColorPlugin,
+  FontColorPlugin,
+  FontFamilyPlugin,
+  FontSizePlugin,
+  FontWeightPlugin,
 } from '@udecode/plate-font';
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -81,11 +81,11 @@ describe(getDocxTestName(name), () => {
     ),
     filename: name,
     plugins: [
-      createFontBackgroundColorPlugin(),
-      createFontFamilyPlugin(),
-      createFontColorPlugin(),
-      createFontSizePlugin(),
-      createFontWeightPlugin(),
+      FontBackgroundColorPlugin,
+      FontFamilyPlugin,
+      FontColorPlugin,
+      FontSizePlugin,
+      FontWeightPlugin,
     ],
   });
 });

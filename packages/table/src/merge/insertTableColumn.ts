@@ -1,6 +1,5 @@
 import {
   type PlateEditor,
-  type Value,
   findNode,
   getBlockAbove,
   getParentNode,
@@ -16,10 +15,10 @@ import type {
   TTableCellElement,
   TTableElement,
   TTableRowElement,
-  TablePlugin,
+  TablePluginOptions,
 } from '../types';
 
-import { ELEMENT_TABLE } from '../createTablePlugin';
+import { ELEMENT_TABLE } from '../TablePlugin';
 import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';
 import { getCellTypes } from '../utils';
@@ -28,8 +27,8 @@ import { findCellByIndexes } from './findCellByIndexes';
 import { getCellIndices } from './getCellIndices';
 import { getCellPath } from './getCellPath';
 
-export const insertTableMergeColumn = <V extends Value>(
-  editor: PlateEditor<V>,
+export const insertTableMergeColumn = (
+  editor: PlateEditor,
   {
     at,
     fromCell,
@@ -47,7 +46,7 @@ export const insertTableMergeColumn = <V extends Value>(
     header?: boolean;
   } = {}
 ) => {
-  const { _cellIndices: cellIndices } = getPluginOptions<TablePlugin, V>(
+  const { _cellIndices: cellIndices } = getPluginOptions<TablePluginOptions>(
     editor,
     ELEMENT_TABLE
   );
@@ -73,10 +72,8 @@ export const insertTableMergeColumn = <V extends Value>(
 
   if (!tableEntry) return;
 
-  const { cellFactory, initialTableWidth, minColumnWidth } = getPluginOptions<
-    TablePlugin,
-    V
-  >(editor, ELEMENT_TABLE);
+  const { cellFactory, initialTableWidth, minColumnWidth } =
+    getPluginOptions<TablePluginOptions>(editor, ELEMENT_TABLE);
   const [tableNode, tablePath] = tableEntry;
 
   const { col: cellColIndex } =

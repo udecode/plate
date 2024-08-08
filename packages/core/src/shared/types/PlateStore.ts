@@ -1,15 +1,9 @@
-import type React from 'react';
-
-import type { TSelection, Value } from '@udecode/slate';
+import type { TNodeEntry, TSelection, ValueOf } from '@udecode/slate';
+import type { Range } from 'slate';
 
 import type { PlateId } from '../../client';
 import type { PlateEditor } from './PlateEditor';
 import type { Nullable } from './misc/Nullable';
-import type {
-  PlatePlugin,
-  PluginOptions,
-  WithPlatePlugin,
-} from './plugin/PlatePlugin';
 import type { TEditableProps } from './slate-react/TEditableProps';
 
 export type PlateChangeKey =
@@ -17,10 +11,7 @@ export type PlateChangeKey =
   | 'versionEditor'
   | 'versionSelection';
 
-export type PlateStoreState<
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
-> = {
+export type PlateStoreState<E extends PlateEditor = PlateEditor> = {
   /**
    * Slate editor reference.
    *
@@ -36,35 +27,26 @@ export type PlateStoreState<
    */
   id: PlateId;
 
-  /** Flattened plugins. */
-  plugins: WithPlatePlugin<PluginOptions, V, E>[];
-
-  /** Plugins prop passed to `Plate`. */
-  rawPlugins: PlatePlugin<PluginOptions, V, E>[];
-
   /**
    * Value of the editor.
    *
    * @default [{ type: 'p'; children: [{ text: '' }] }]
    */
-  value: V;
+  value: ValueOf<E>;
 } & Nullable<{
-  decorate: NonNullable<TEditableProps['decorate']>;
-
-  /** Access the editor object using a React ref. */
-  editorRef: React.ForwardedRef<E>;
+  decorate: NonNullable<(options: { editor: E; entry: TNodeEntry }) => Range[]>;
 
   /** Whether `Editable` is rendered so slate DOM is resolvable. */
   isMounted: boolean;
 
   /** Controlled callback called when the editor state changes. */
-  onChange: (value: V) => void;
+  onChange: (options: { editor: E; value: ValueOf<E> }) => void;
 
   /** Controlled callback called when the editor.selection changes. */
-  onSelectionChange: (selection: TSelection) => void;
+  onSelectionChange: (options: { editor: E; selection: TSelection }) => void;
 
   /** Controlled callback called when the editor.children changes. */
-  onValueChange: (value: V) => void;
+  onValueChange: (options: { editor: E; value: ValueOf<E> }) => void;
 
   /**
    * Whether the editor is primary. If no editor is active, then PlateController
@@ -95,7 +77,6 @@ export type PlateStoreState<
 // A list of store keys to be exposed in `editor.plate.set`.
 export const EXPOSED_STORE_KEYS: (keyof PlateStoreState)[] = [
   'readOnly',
-  'plugins',
   'onChange',
   'decorate',
   'renderElement',

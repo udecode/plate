@@ -1,12 +1,11 @@
-import type { Value } from '@udecode/slate';
 import type { AnyObject } from '@udecode/utils';
 
 import type { PlateEditor } from '../../../types/PlateEditor';
 
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
 
-export const pipeDeserializeHtmlLeaf = <V extends Value>(
-  editor: PlateEditor<V>,
+export const pipeDeserializeHtmlLeaf = (
+  editor: PlateEditor,
   element: HTMLElement
 ) => {
   let node: AnyObject = {};

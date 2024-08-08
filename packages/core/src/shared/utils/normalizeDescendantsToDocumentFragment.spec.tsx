@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { createLinkPlugin } from '@udecode/plate-link';
+import { LinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { createPlateEditor } from '../../client';
@@ -103,7 +103,7 @@ describe('normalizeDescendantsToDocumentFragment()', () => {
     'should wrap inline blocks and text nodes in case they have a sibling block',
     ({ input, output }: any) => {
       const editor = createPlateEditor({
-        plugins: [createLinkPlugin()],
+        plugins: [LinkPlugin],
       });
       const result = normalizeDescendantsToDocumentFragment(editor, {
         descendants: input,

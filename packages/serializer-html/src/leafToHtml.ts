@@ -2,7 +2,6 @@ import { type PlateProps, pluginRenderLeaf } from '@udecode/plate-common';
 import {
   type PlateEditor,
   type PlateRenderLeafProps,
-  type Value,
   pipeInjectProps,
 } from '@udecode/plate-common/server';
 import { decode } from 'html-entities';
@@ -11,8 +10,8 @@ import { createElementWithSlate } from './utils/createElementWithSlate';
 import { renderToStaticMarkup } from './utils/renderToStaticMarkupClient';
 import { stripClassNames } from './utils/stripClassNames';
 
-export const leafToHtml = <V extends Value>(
-  editor: PlateEditor<V>,
+export const leafToHtml = (
+  editor: PlateEditor,
   {
     plateProps,
     preserveClassNames,
@@ -20,7 +19,7 @@ export const leafToHtml = <V extends Value>(
   }: {
     plateProps?: Partial<PlateProps>;
     preserveClassNames?: string[];
-    props: PlateRenderLeafProps<V>;
+    props: Omit<PlateRenderLeafProps, 'plugin'>;
   }
 ) => {
   const { children } = props;
@@ -29,13 +28,14 @@ export const leafToHtml = <V extends Value>(
     if (!plugin.isLeaf) return result;
 
     props = {
-      ...pipeInjectProps<V>(editor, props),
+      ...pipeInjectProps(editor, props),
       children: result,
+      plugin,
     };
 
     const serialized =
       plugin.serializeHtml?.(props as any) ??
-      pluginRenderLeaf(editor, plugin)(props);
+      pluginRenderLeaf(editor, plugin)(props as any);
 
     if (serialized === children) return result;
 

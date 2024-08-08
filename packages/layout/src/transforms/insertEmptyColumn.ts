@@ -9,7 +9,7 @@ import {
 
 import type { TColumnElement } from '../types';
 
-import { ELEMENT_COLUMN } from '../createColumnPlugin';
+import { ELEMENT_COLUMN } from '../ColumnPlugin';
 
 export const insertEmptyColumn = <V extends Value>(
   editor: PlateEditor<V>,

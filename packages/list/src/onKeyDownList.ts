@@ -1,9 +1,5 @@
-import { Hotkeys } from '@udecode/plate-common';
+import { Hotkeys, type KeyboardHandler } from '@udecode/plate-common';
 import {
-  type KeyboardHandlerReturnType,
-  type PlateEditor,
-  type Value,
-  type WithPlatePlugin,
   getPluginType,
   isCollapsed,
   isHotkey,
@@ -14,69 +10,68 @@ import {
 import castArray from 'lodash/castArray.js';
 import { Range } from 'slate';
 
-import type { ListPlugin } from './types';
+import type { ListPluginOptions } from './types';
 
-import { ELEMENT_LI } from './createListPlugin';
+import { ELEMENT_LI } from './ListPlugin';
 import { moveListItems, toggleList } from './transforms/index';
 
-export const onKeyDownList =
-  <V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>(
-    editor: E,
-    {
-      options: { enableResetOnShiftTab, hotkey },
-      type,
-    }: WithPlatePlugin<ListPlugin, V, E>
-  ): KeyboardHandlerReturnType =>
-  (e) => {
-    if (e.defaultPrevented) return;
+export const onKeyDownList: KeyboardHandler<ListPluginOptions> = ({
+  editor,
+  event,
+  plugin: {
+    options: { enableResetOnShiftTab, hotkey },
+    type,
+  },
+}) => {
+  if (event.defaultPrevented) return;
 
-    const isTab = Hotkeys.isTab(editor, e);
-    const isUntab = Hotkeys.isUntab(editor, e);
+  const isTab = Hotkeys.isTab(editor, event);
+  const isUntab = Hotkeys.isUntab(editor, event);
 
-    let workRange = editor.selection;
+  let workRange = editor.selection;
 
-    if (editor.selection && (isTab || isUntab)) {
-      const { selection } = editor;
+  if (editor.selection && (isTab || isUntab)) {
+    const { selection } = editor;
 
-      // Unhang the expanded selection
-      if (!isCollapsed(editor.selection)) {
-        const { anchor, focus } = Range.isBackward(selection)
-          ? { anchor: { ...selection.focus }, focus: { ...selection.anchor } }
-          : { anchor: { ...selection.anchor }, focus: { ...selection.focus } };
+    // Unhang the expanded selection
+    if (!isCollapsed(editor.selection)) {
+      const { anchor, focus } = Range.isBackward(selection)
+        ? { anchor: { ...selection.focus }, focus: { ...selection.anchor } }
+        : { anchor: { ...selection.anchor }, focus: { ...selection.focus } };
 
-        // This is a workaround for a Slate bug
-        // See: https://github.com/ianstormtaylor/slate/pull/5039
-        const unHungRange = unhangRange(editor, { anchor, focus });
+      // This is a workaround for a Slate bug
+      // See: https://github.com/ianstormtaylor/slate/pull/5039
+      const unHungRange = unhangRange(editor, { anchor, focus });
 
-        if (unHungRange) {
-          workRange = unHungRange;
-          select(editor, unHungRange);
-        }
+      if (unHungRange) {
+        workRange = unHungRange;
+        select(editor, unHungRange);
       }
+    }
 
-      // check if we're in a list context.
-      const listSelected = someNode(editor, {
-        match: { type: getPluginType(editor, ELEMENT_LI) },
+    // check if we're in a list context.
+    const listSelected = someNode(editor, {
+      match: { type: getPluginType(editor, ELEMENT_LI) },
+    });
+
+    if (workRange && listSelected) {
+      event.preventDefault();
+      moveListItems(editor, {
+        at: workRange,
+        enableResetOnShiftTab,
+        increase: isTab,
       });
 
-      if (workRange && listSelected) {
-        e.preventDefault();
-        moveListItems(editor, {
-          at: workRange,
-          enableResetOnShiftTab,
-          increase: isTab,
-        });
-
-        return true;
-      }
+      return true;
     }
-    if (!hotkey) return;
+  }
+  if (!hotkey) return;
 
-    const hotkeys = castArray(hotkey);
+  const hotkeys = castArray(hotkey);
 
-    for (const _hotkey of hotkeys) {
-      if (isHotkey(_hotkey)(e as any)) {
-        toggleList(editor, { type: type! });
-      }
+  for (const _hotkey of hotkeys) {
+    if (isHotkey(_hotkey)(event as any)) {
+      toggleList(editor, { type: type! });
     }
-  };
+  }
+};

@@ -16,10 +16,10 @@ import { KEY_INDENT } from '@udecode/plate-indent';
 import type { IndentListOptions } from './indentList';
 
 import {
-  type IndentListPlugin,
+  type IndentListPluginOptions,
   KEY_LIST_CHECKED,
   KEY_LIST_STYLE_TYPE,
-} from '../createIndentListPlugin';
+} from '../IndentListPlugin';
 import { areEqListStyleType } from '../queries/areEqListStyleType';
 import { setIndentListNodes } from './setIndentListNodes';
 import { setIndentListSiblingNodes } from './setIndentListSiblingNodes';
@@ -33,10 +33,8 @@ export const toggleIndentList = <V extends Value>(
 ) => {
   const { listStyleType } = options;
 
-  const { getSiblingIndentListOptions } = getPluginOptions<IndentListPlugin, V>(
-    editor,
-    KEY_LIST_STYLE_TYPE
-  );
+  const { getSiblingIndentListOptions } =
+    getPluginOptions<IndentListPluginOptions>(editor, KEY_LIST_STYLE_TYPE);
 
   if (isCollapsed(editor.selection)) {
     const entry = getBlockAbove<TElement>(editor);

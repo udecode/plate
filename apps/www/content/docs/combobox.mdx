@@ -3,27 +3,23 @@ title: Combobox
 description: Utilities for adding comboboxes to your editor.
 ---
 
-## TriggerComboboxPlugin
+## TriggerComboboxPluginOptions
 
-The TriggerComboboxPlugin mixin configures your plugin to insert a combobox input element when the user types a specified trigger character is typed.
+The TriggerComboboxPluginOptions mixin configures your plugin to insert a combobox input element when the user types a specified trigger character is typed.
 
-For example, the [Mention](/docs/mention) plugin uses TriggerComboboxPlugin to insert an `ELEMENT_MENTION_INPUT` whenever the user types `@`.
+For example, the [Mention](/docs/mention) plugin uses TriggerComboboxPluginOptions to insert an `ELEMENT_MENTION_INPUT` whenever the user types `@`.
 
 ### Usage
 
 <Steps>
 
 <Step>
-Extend your plugin options type with TriggerComboboxPlugin.
+Extend your plugin options type with TriggerComboboxPluginOptions.
 
 ```ts
-interface MyPlugin extends TriggerComboboxPlugin {}
-const createMyPlugin = createPluginFactory<MyPlugin>({
-  // ...
-});
+type O = TriggerComboboxPluginOptions
 
-// Or simply:
-const createMyPlugin = createPluginFactory<TriggerComboboxPlugin>({
+const MyPlugin = createPlugin<O>({
   // ...
 });
 ```
@@ -33,7 +29,7 @@ const createMyPlugin = createPluginFactory<TriggerComboboxPlugin>({
 Add the withTriggerCombobox override and specify default values for the required options. (See below for the full list of options).
 
 ```ts
-const createMyPlugin = createPluginFactory<MyPlugin>({
+const MyPlugin = createPlugin<O>({
   // ...
   withOverrides: withTriggerCombobox,
   options: {
@@ -53,7 +49,7 @@ const createMyPlugin = createPluginFactory<MyPlugin>({
 Define your input element as an inline void element. It's often useful to do this inside a nested plugin.
 
 ```ts
-const createMyPlugin = createPluginFactory<MyPlugin>({
+const MyPlugin = createPlugin<O>({
   // ...
   plugins: [
     {

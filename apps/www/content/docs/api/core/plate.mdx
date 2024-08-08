@@ -21,7 +21,7 @@ A unique ID to store the editor state by ID. This is mandatory when nesting **`P
 Children components have access to the plate store. 
 
 </APIItem>
-<APIItem name="decorate" type="(entry: TNodeEntry) => Range[]" optional>
+<APIItem name="decorate" type="(ctx: { editor: PlateEditor, plugin: PlatePlugin, entry: TNodeEntry }) => Range[]" optional>
 
 See [decorations](https://docs.slatejs.org/concepts/09-rendering#decorations).
 
@@ -77,12 +77,12 @@ If **`true`**, normalizes the initial **`editor`** value upon creation. This is 
 - **Default:** **`false`**
 
 </APIItem>
-<APIItem name="onChange" type="function" optional>
+<APIItem name="onChange" type="({ value, editor }: { value: Value; editor: PlateEditor }) => void" optional>
 
 Controlled callback called when the editor state changes.
 
 </APIItem>
-<APIItem name="plugins" type="PlatePlugin[]" optional>
+<APIItem name="plugins" type="PlatePluginList" optional>
 
 Plate plugins. See [Plugin](/docs/plugin) guide.
 
@@ -127,7 +127,7 @@ Custom **`Editable`** node.
 />
 <APIItem
   name="decorate"
-  type="(entry: TNodeEntry) => Range[]"
+  type="(options: { entry: TNodeEntry; editor: PlateEditor }) => Range[]"
   optional
 />
 <APIItem

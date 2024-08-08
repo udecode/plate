@@ -2,7 +2,6 @@ import {
   type PlateEditor,
   type TDescendant,
   type TNodeEntry,
-  type Value,
   collapseSelection,
   getBlockAbove,
   getPluginOptions,
@@ -14,9 +13,13 @@ import {
 } from '@udecode/plate-common/server';
 import cloneDeep from 'lodash/cloneDeep.js';
 
-import type { TTableCellElement, TTableElement, TablePlugin } from '../types';
+import type {
+  TTableCellElement,
+  TTableElement,
+  TablePluginOptions,
+} from '../types';
 
-import { ELEMENT_TABLE, ELEMENT_TH } from '../createTablePlugin';
+import { ELEMENT_TABLE, ELEMENT_TH } from '../TablePlugin';
 import { getTableGridAbove } from '../queries';
 import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';
@@ -24,14 +27,10 @@ import { computeCellIndices } from './computeCellIndices';
 import { getCellIndices } from './getCellIndices';
 
 /** Merges multiple selected cells into one. */
-export const mergeTableCells = <V extends Value = Value>(
-  editor: PlateEditor<V>
-) => {
+export const mergeTableCells = (editor: PlateEditor) => {
   withoutNormalizing(editor, () => {
-    const { _cellIndices, cellFactory, getCellChildren } = getPluginOptions<
-      TablePlugin,
-      V
-    >(editor, ELEMENT_TABLE);
+    const { _cellIndices, cellFactory, getCellChildren } =
+      getPluginOptions<TablePluginOptions>(editor, ELEMENT_TABLE);
     const tableEntry = getBlockAbove(editor, {
       at: editor.selection?.anchor.path,
       match: { type: getPluginType(editor, ELEMENT_TABLE) },

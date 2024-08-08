@@ -1,3 +1,4 @@
+import { getKeyByType } from '@udecode/plate-common';
 import {
   type PlateEditor,
   type SetNodesOptions,
@@ -9,7 +10,7 @@ import {
   unsetNodes,
 } from '@udecode/plate-common/server';
 
-import { KEY_LINE_HEIGHT } from '../createLineHeightPlugin';
+import { KEY_LINE_HEIGHT } from '../LineHeightPlugin';
 
 export const setLineHeight = <V extends Value>(
   editor: PlateEditor<V>,
@@ -18,13 +19,15 @@ export const setLineHeight = <V extends Value>(
     value,
   }: { setNodesOptions?: SetNodesOptions<V>; value: number }
 ): void => {
-  const { defaultNodeValue, nodeKey, validTypes } = getPluginInjectProps(
+  const { defaultNodeValue, nodeKey, validPlugins } = getPluginInjectProps(
     editor,
     KEY_LINE_HEIGHT
   );
 
   const match: TNodeMatch = (n) =>
-    isBlock(editor, n) && !!validTypes && validTypes.includes(n.type as string);
+    isBlock(editor, n) &&
+    !!validPlugins &&
+    validPlugins.includes(getKeyByType(editor, n.type as string));
 
   if (value === defaultNodeValue) {
     unsetNodes(editor, nodeKey!, {

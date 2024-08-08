@@ -27,6 +27,6 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  onKeyDownSingleLine()(event);
+  onKeyDownSingleLine({ event } as any);
   expect(input.children).toEqual(output.children);
 });

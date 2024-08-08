@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
-import { mockPlugin } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
-import { autoformatPlugin } from 'www/src/lib/plate/demo/plugins/autoformatPlugin';
+import { getAutoformatOptions } from 'www/src/lib/plate/demo/plugins/autoformatOptions';
 
+import { AutoformatPlugin } from '../../AutoformatPlugin';
 import { withAutoformat } from '../../withAutoformat';
 
 jsx;
@@ -26,10 +26,10 @@ describe('when the start match is not present and the end match is present', () 
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      mockPlugin(autoformatPlugin as any)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    });
 
     editor.insertText(' ');
 
@@ -54,10 +54,10 @@ describe('when there is a character before match', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      mockPlugin(autoformatPlugin as any)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    });
 
     editor.insertText('*');
     editor.insertText('*');
@@ -83,10 +83,10 @@ describe('when there is a character before match', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      mockPlugin(autoformatPlugin as any)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    });
 
     editor.insertText('*');
     editor.insertText('*');
@@ -109,10 +109,10 @@ describe('when selection is null', () => {
       </editor>
     ) as any;
 
-    const editor = withAutoformat(
-      withReact(input),
-      mockPlugin(autoformatPlugin as any)
-    );
+    const editor = withAutoformat({
+      editor: withReact(input),
+      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    });
 
     editor.insertText(' ');
 

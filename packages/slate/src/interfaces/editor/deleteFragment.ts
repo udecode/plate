@@ -2,10 +2,10 @@ import type { EditorFragmentDeletionOptions } from 'slate/dist/interfaces/editor
 
 import { Editor } from 'slate';
 
-import type { TEditor, Value } from './TEditor';
+import type { TEditor } from './TEditor';
 
 /** Delete the content in the current selection. */
-export const deleteFragment = <V extends Value>(
-  editor: TEditor<V>,
+export const deleteFragment = (
+  editor: TEditor,
   options?: EditorFragmentDeletionOptions
 ) => Editor.deleteFragment(editor as any, options);

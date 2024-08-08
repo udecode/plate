@@ -1,14 +1,9 @@
-import type { Value } from '@udecode/slate';
-
 import type { PlateEditor } from '../types/PlateEditor';
 
 import { pluginInjectProps } from './pluginInjectProps';
 
 /** Inject plugin props, editor. */
-export const pipeInjectProps = <V extends Value>(
-  editor: PlateEditor<V>,
-  nodeProps: any
-) => {
+export const pipeInjectProps = (editor: PlateEditor, nodeProps: any) => {
   editor.plugins.forEach((plugin) => {
     if (plugin.inject.props) {
       const props = pluginInjectProps(editor, plugin, nodeProps);

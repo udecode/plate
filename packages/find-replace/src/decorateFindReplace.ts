@@ -1,47 +1,41 @@
 import type { Range } from 'slate';
 
-import {
-  type DecorateEntry,
-  type PlateEditor,
-  type Value,
-  type WithPlatePlugin,
-  isText,
-} from '@udecode/plate-common/server';
+import { type Decorate, getPluginOptions } from '@udecode/plate-common';
+import { isText } from '@udecode/plate-common/server';
 
-import type { FindReplacePlugin } from './types';
+import type { FindReplacePluginOptions } from './types';
 
-export const decorateFindReplace =
-  <V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>(
-    editor: E,
-    { key, type }: WithPlatePlugin<FindReplacePlugin, V, E>
-  ): DecorateEntry =>
-  ([node, path]) => {
-    const ranges: SearchRange[] = [];
+export const decorateFindReplace: Decorate<FindReplacePluginOptions> = ({
+  editor,
+  entry: [node, path],
+  plugin: { key, type },
+}) => {
+  const ranges: SearchRange[] = [];
 
-    const { search } = editor.pluginsByKey[key].options as FindReplacePlugin;
+  const { search } = getPluginOptions<FindReplacePluginOptions>(editor, key);
 
-    if (!search || !isText(node)) {
-      return ranges;
+  if (!search || !isText(node)) {
+    return ranges;
+  }
+
+  const { text } = node;
+  const parts = text.toLowerCase().split(search.toLowerCase());
+  let offset = 0;
+  parts.forEach((part, i) => {
+    if (i !== 0) {
+      ranges.push({
+        anchor: { offset: offset - search.length, path },
+        focus: { offset, path },
+        search,
+        [type]: true,
+      });
     }
 
-    const { text } = node;
-    const parts = text.toLowerCase().split(search.toLowerCase());
-    let offset = 0;
-    parts.forEach((part, i) => {
-      if (i !== 0) {
-        ranges.push({
-          anchor: { offset: offset - search.length, path },
-          focus: { offset, path },
-          search,
-          [type]: true,
-        });
-      }
+    offset = offset + part.length + search.length;
+  });
 
-      offset = offset + part.length + search.length;
-    });
-
-    return ranges;
-  };
+  return ranges;
+};
 
 type SearchRange = {
   search: string;

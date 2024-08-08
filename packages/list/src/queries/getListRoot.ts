@@ -4,16 +4,15 @@ import {
   type PlateEditor,
   type TElement,
   type TElementEntry,
-  type Value,
   getAboveNode,
   getPluginType,
 } from '@udecode/plate-common/server';
 
-import { ELEMENT_OL, ELEMENT_UL } from '../createListPlugin';
+import { ELEMENT_OL, ELEMENT_UL } from '../ListPlugin';
 
 /** Searches upward for the root list element */
-export const getListRoot = <V extends Value>(
-  editor: PlateEditor<V>,
+export const getListRoot = (
+  editor: PlateEditor,
   at: Path | Point | Range | null = editor.selection
 ): TElementEntry | undefined => {
   if (!at) return;

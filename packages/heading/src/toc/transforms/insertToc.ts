@@ -6,7 +6,7 @@ import {
   insertNodes,
 } from '@udecode/plate-common';
 
-import { ELEMENT_TOC } from '../createTocPlugin';
+import { ELEMENT_TOC } from '../TocPlugin';
 
 export const insertToc = <V extends Value>(
   editor: PlateEditor<V>,

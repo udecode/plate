@@ -1,8 +1,4 @@
-import {
-  type PlateEditor,
-  type Value,
-  someNode,
-} from '@udecode/plate-common/server';
+import { type PlateEditor, someNode } from '@udecode/plate-common/server';
 
 import {
   KEY_LIST_CHECKED,
@@ -10,7 +6,7 @@ import {
   KEY_TODO_STYLE_TYPE,
 } from '../index';
 
-export const someIndentTodo = <V extends Value>(editor: PlateEditor<V>) => {
+export const someIndentTodo = (editor: PlateEditor) => {
   return someNode(editor, {
     at: editor.selection!,
     match: (n) => {

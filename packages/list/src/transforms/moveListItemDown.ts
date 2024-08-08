@@ -2,7 +2,6 @@ import {
   type PlateEditor,
   type TElement,
   type TElementEntry,
-  type Value,
   getNodeEntry,
   match,
   moveNodes,
@@ -18,8 +17,8 @@ export interface MoveListItemDownOptions {
   listItem: TElementEntry;
 }
 
-export const moveListItemDown = <V extends Value>(
-  editor: PlateEditor<V>,
+export const moveListItemDown = (
+  editor: PlateEditor,
   { list, listItem }: MoveListItemDownOptions
 ) => {
   let moved = false;

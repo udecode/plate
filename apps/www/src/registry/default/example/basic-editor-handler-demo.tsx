@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { Plate, type Value } from '@udecode/plate-common';
+import { Plate, type Value, usePlateEditor } from '@udecode/plate-common';
 
 import {
   Accordion,
@@ -24,12 +24,14 @@ const initialValue = [
 
 export default function BasicEditorHandlerDemo() {
   const [debugValue, setDebugValue] = useState<Value>(initialValue);
+  const editor = usePlateEditor();
 
   return (
     <Plate
+      editor={editor}
       initialValue={initialValue}
-      onChange={(newValue) => {
-        setDebugValue(newValue);
+      onChange={({ value }) => {
+        setDebugValue(value);
         // save newValue...
       }}
     >

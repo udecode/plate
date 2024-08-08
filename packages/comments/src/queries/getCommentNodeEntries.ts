@@ -1,16 +1,10 @@
-import {
-  type PlateEditor,
-  type Value,
-  getNodeEntries,
-} from '@udecode/plate-common/server';
+import { type PlateEditor, getNodeEntries } from '@udecode/plate-common/server';
 
 import type { TCommentText } from '../types';
 
 import { isCommentText } from '../utils/index';
 
-export const getCommentNodeEntries = <V extends Value>(
-  editor: PlateEditor<V>
-) => {
+export const getCommentNodeEntries = (editor: PlateEditor) => {
   return [
     ...getNodeEntries<TCommentText>(editor, {
       at: [],

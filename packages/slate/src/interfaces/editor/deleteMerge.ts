@@ -1,7 +1,7 @@
 import { Editor, type Location, Path, Point, Range } from 'slate';
 
 import type { TNodeEntry } from '../node/TNodeEntry';
-import type { TEditor, Value } from './TEditor';
+import type { TEditor } from './TEditor';
 
 import { mergeNodes } from '../transforms/mergeNodes';
 import { removeNodes } from '../transforms/removeNodes';
@@ -20,8 +20,8 @@ import { isBlock } from './isBlock';
 import { isVoid } from './isVoid';
 import { withoutNormalizing } from './withoutNormalizing';
 
-export const deleteMerge = <V extends Value>(
-  editor: TEditor<V>,
+export const deleteMerge = (
+  editor: TEditor,
   options: {
     at?: Location;
     distance?: number;

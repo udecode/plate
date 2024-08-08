@@ -1,36 +1,27 @@
 /** @jsx jsx */
 
-import {
-  type PlateEditor,
-  type PlatePlugin,
-  createPlateEditor,
-} from '@udecode/plate-common';
-import { createLinkPlugin } from '@udecode/plate-link';
-import { createParagraphPlugin } from '@udecode/plate-paragraph';
+import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
+import { LinkPlugin } from '@udecode/plate-link';
+import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
-import type { ListPlugin } from './types';
+import type { ListPluginOptions } from './types';
 
-import { ELEMENT_UL, createListPlugin } from './createListPlugin';
+import { ELEMENT_UL, ListPlugin } from './ListPlugin';
 
 jsx;
 
 const testInsertText = (
   input: any,
   expected: any,
-  listPluginOptions?: Partial<PlatePlugin<ListPlugin>>
+  listPluginOptions: Partial<ListPluginOptions> = {}
 ) => {
   const editor = createPlateEditor({
     editor: input,
     plugins: [
-      createParagraphPlugin(),
-      createListPlugin(
-        {},
-        {
-          [ELEMENT_UL]: listPluginOptions!,
-        }
-      ),
-      createLinkPlugin(),
+      ParagraphPlugin,
+      ListPlugin.configurePlugin(ELEMENT_UL, listPluginOptions),
+      LinkPlugin,
     ],
   });
 
@@ -42,7 +33,7 @@ const testInsertText = (
 const testDeleteBackward = (input: any, expected: any) => {
   const editor = createPlateEditor({
     editor: input,
-    plugins: [createParagraphPlugin(), createListPlugin()],
+    plugins: [ParagraphPlugin, ListPlugin],
   });
 
   editor.deleteBackward('character');
@@ -53,7 +44,7 @@ const testDeleteBackward = (input: any, expected: any) => {
 const testDeleteForward = (input: any, expected: any) => {
   const editor = createPlateEditor({
     editor: input,
-    plugins: [createParagraphPlugin(), createListPlugin()],
+    plugins: [ParagraphPlugin, ListPlugin],
   });
 
   editor.deleteForward('character');
@@ -259,9 +250,7 @@ describe('withList', () => {
         ) as any as PlateEditor;
 
         testInsertText(input, expected, {
-          options: {
-            validLiChildrenTypes: ['p', 'blockquote'],
-          },
+          validLiChildrenTypes: ['p', 'blockquote'],
         });
       });
     });

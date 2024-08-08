@@ -1,13 +1,9 @@
-import {
-  type TEditor,
-  type Value,
-  isBlock,
-} from '@udecode/plate-common/server';
+import { type TEditor, isBlock } from '@udecode/plate-common/server';
 
 import { blockSelectionActions } from '../blockSelectionStore';
 
 /** Select inserted blocks from the last operations. */
-export const selectInsertedBlocks = <V extends Value>(editor: TEditor<V>) => {
+export const selectInsertedBlocks = (editor: TEditor) => {
   const ids = new Set();
 
   editor.operations.forEach((op) => {

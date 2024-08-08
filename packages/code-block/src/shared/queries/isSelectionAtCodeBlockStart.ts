@@ -1,6 +1,5 @@
 import {
   type PlateEditor,
-  type Value,
   isExpanded,
   isStartPoint,
 } from '@udecode/plate-common/server';
@@ -8,9 +7,7 @@ import {
 import { getCodeLineEntry } from './getCodeLineEntry';
 
 /** Is the selection at the start of the first code line in a code block */
-export const isSelectionAtCodeBlockStart = <V extends Value>(
-  editor: PlateEditor<V>
-) => {
+export const isSelectionAtCodeBlockStart = (editor: PlateEditor) => {
   const { selection } = editor;
 
   if (!selection || isExpanded(selection)) return false;

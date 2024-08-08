@@ -2,7 +2,7 @@ import { createPlateEditor } from '@udecode/plate-common';
 
 import type { TLinkElement } from '../types';
 
-import { type LinkPlugin, createLinkPlugin } from '../createLinkPlugin';
+import { LinkPlugin, type LinkPluginOptions } from '../LinkPlugin';
 import { getLinkAttributes } from './getLinkAttributes';
 
 const baseLink = {
@@ -10,20 +10,18 @@ const baseLink = {
   type: 'a',
 };
 
-const defaultOptions: LinkPlugin = {
+const defaultOptions: LinkPluginOptions = {
   defaultLinkAttributes: {
     rel: 'noopener noreferrer',
   },
 };
 
-const createEditor = (options: LinkPlugin = {}) =>
+const createEditor = (options: LinkPluginOptions = {}) =>
   createPlateEditor({
     plugins: [
-      createLinkPlugin({
-        options: {
-          ...defaultOptions,
-          ...options,
-        },
+      LinkPlugin.configure({
+        ...defaultOptions,
+        ...options,
       }),
     ],
   });

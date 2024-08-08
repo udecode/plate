@@ -1,19 +1,19 @@
-import type { Value } from '@udecode/slate';
-
 import { type AnyObject, isDefined } from '@udecode/utils';
 import castArray from 'lodash/castArray.js';
 
-import type { Nullable } from '../../../types';
+import type {
+  AnyEditorPlugin,
+  DeserializeHtml,
+  Nullable,
+} from '../../../types';
 import type { PlateEditor } from '../../../types/PlateEditor';
-import type { DeserializeHtml } from '../../../types/plugin/DeserializeHtml';
-import type { WithPlatePlugin } from '../../../types/plugin/PlatePlugin';
 
 import { getInjectedPlugins } from '../../../utils/getInjectedPlugins';
 
 /** Get a deserializer by type, node names, class names and styles. */
-export const pluginDeserializeHtml = <V extends Value>(
-  editor: PlateEditor<V>,
-  plugin: WithPlatePlugin<{}, V>,
+export const pluginDeserializeHtml = (
+  editor: PlateEditor,
+  plugin: AnyEditorPlugin,
   {
     deserializeLeaf,
     element: el,
@@ -109,7 +109,7 @@ export const pluginDeserializeHtml = <V extends Value>(
 
     if (!isValid) return;
   }
-  if (query && !query(el)) {
+  if (query && !query({ editor, element: el, plugin })) {
     return;
   }
   if (!getNode) {
@@ -122,14 +122,19 @@ export const pluginDeserializeHtml = <V extends Value>(
     }
   }
 
-  let node = getNode(el, {}) ?? {};
+  let node = getNode({ editor, element: el, node: {}, plugin }) ?? {};
 
   if (Object.keys(node).length === 0) return;
 
-  const injectedPlugins = getInjectedPlugins<{}, V>(editor, plugin);
+  const injectedPlugins = getInjectedPlugins(editor, plugin);
 
   injectedPlugins.forEach((injectedPlugin) => {
-    const res = injectedPlugin.deserializeHtml?.getNode?.(el, node);
+    const res = injectedPlugin.deserializeHtml?.getNode?.({
+      editor,
+      element: el,
+      node,
+      plugin,
+    });
 
     if (res) {
       node = {

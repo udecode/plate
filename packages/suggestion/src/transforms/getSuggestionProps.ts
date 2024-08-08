@@ -1,18 +1,15 @@
 import {
   type PlateEditor,
-  type Value,
   getPluginOptions,
 } from '@udecode/plate-common/server';
 
-import type { SuggestionPlugin } from '../types';
+import type { SuggestionPluginOptions } from '../types';
 
 import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from '../constants';
 import { getSuggestionKey } from '../utils/index';
 
-export const getSuggestionCurrentUserKey = <V extends Value>(
-  editor: PlateEditor<V>
-) => {
-  const { currentUserId } = getPluginOptions<SuggestionPlugin, V>(
+export const getSuggestionCurrentUserKey = (editor: PlateEditor) => {
+  const { currentUserId } = getPluginOptions<SuggestionPluginOptions>(
     editor,
     MARK_SUGGESTION
   );
@@ -20,8 +17,8 @@ export const getSuggestionCurrentUserKey = <V extends Value>(
   return getSuggestionKey(currentUserId);
 };
 
-export const getSuggestionProps = <V extends Value>(
-  editor: PlateEditor<V>,
+export const getSuggestionProps = (
+  editor: PlateEditor,
   id: string,
   {
     suggestionDeletion,

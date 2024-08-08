@@ -3,7 +3,7 @@
 import { createPlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { type LinkPlugin, createLinkPlugin } from '../createLinkPlugin';
+import { LinkPlugin, type LinkPluginOptions } from '../LinkPlugin';
 import { upsertLink } from './upsertLink';
 
 jsx;
@@ -11,14 +11,10 @@ jsx;
 const url = 'http://google.com';
 const urlOutput = 'http://output.com';
 
-const createEditor = (editor: any, options?: LinkPlugin) =>
+const createEditor = (editor: any, options?: LinkPluginOptions) =>
   createPlateEditor({
     editor,
-    plugins: [
-      createLinkPlugin({
-        options,
-      }),
-    ],
+    plugins: [LinkPlugin.configure(options!)],
   });
 
 describe('upsertLink', () => {

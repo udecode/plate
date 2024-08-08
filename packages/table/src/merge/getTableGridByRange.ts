@@ -5,7 +5,6 @@ import {
   type PlateEditor,
   type TElement,
   type TElementEntry,
-  type Value,
   findNode,
   getPluginOptions,
   getPluginType,
@@ -15,10 +14,10 @@ import type {
   TTableCellElement,
   TTableElement,
   TTableRowElement,
-  TablePlugin,
+  TablePluginOptions,
 } from '../types';
 
-import { ELEMENT_TABLE } from '../createTablePlugin';
+import { ELEMENT_TABLE } from '../TablePlugin';
 import { computeCellIndices } from '../merge/computeCellIndices';
 import { findCellByIndexes } from '../merge/findCellByIndexes';
 import { getCellIndices } from '../merge/getCellIndices';
@@ -53,14 +52,12 @@ interface GetTableGridByRangeOptions<T extends FormatType> {
  * Get sub table between 2 cell paths. Ensure that the selection is always a
  * valid table grid.
  */
-export const getTableMergeGridByRange = <T extends FormatType, V extends Value>(
-  editor: PlateEditor<V>,
+export const getTableMergeGridByRange = <T extends FormatType>(
+  editor: PlateEditor,
   { at, format }: GetTableGridByRangeOptions<T>
 ): GetTableGridReturnType<T> => {
-  const { _cellIndices: cellIndices, getCellChildren } = getPluginOptions<
-    TablePlugin,
-    V
-  >(editor, ELEMENT_TABLE);
+  const { _cellIndices: cellIndices, getCellChildren } =
+    getPluginOptions<TablePluginOptions>(editor, ELEMENT_TABLE);
 
   const startCellEntry = findNode<TTableCellElement>(editor, {
     at: at.anchor.path,

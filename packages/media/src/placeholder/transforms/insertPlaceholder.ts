@@ -12,7 +12,7 @@ import { ELEMENT_AUDIO } from '../../audio';
 import { ELEMENT_FILE } from '../../file';
 import { ELEMENT_IMAGE } from '../../image';
 import { ELEMENT_VIDEO } from '../../video';
-import { ELEMENT_PLACEHOLDER } from '../createPlaceholderPlugin';
+import { ELEMENT_PLACEHOLDER } from '../PlaceholderPlugin';
 
 export const insertPlaceHolder = <V extends Value>(
   editor: PlateEditor<V>,

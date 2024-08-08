@@ -2,19 +2,16 @@ import type { TextUnit } from 'slate';
 
 import {
   type PlateEditor,
-  type Value,
   getAboveNode,
   getNodeString,
   isCollapsed,
   isDefined,
 } from '@udecode/plate-common/server';
 
-import { KEY_LIST_STYLE_TYPE } from '../createIndentListPlugin';
+import { KEY_LIST_STYLE_TYPE } from '../IndentListPlugin';
 import { outdentList } from '../transforms';
 
-export const deleteBackwardIndentList = <V extends Value>(
-  editor: PlateEditor<V>
-) => {
+export const deleteBackwardIndentList = (editor: PlateEditor) => {
   const { deleteBackward } = editor;
 
   return function (unit: TextUnit) {
