@@ -103,7 +103,7 @@ describe('ResetNodePlugin', () => {
         plugins: [ResetNodePlugin],
       });
 
-      editor.deleteBackward();
+      editor.deleteBackward('character');
 
       expect(editor.children).toEqual(output.children);
     });

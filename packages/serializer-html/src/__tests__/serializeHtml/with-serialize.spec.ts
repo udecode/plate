@@ -2,7 +2,7 @@ import React from 'react';
 
 import { BoldPlugin } from '@udecode/plate';
 import { MARK_BOLD } from '@udecode/plate-basic-marks';
-import { type PlatePluginList, createPlugin } from '@udecode/plate-common';
+import { type PlatePlugins, createPlugin } from '@udecode/plate-common';
 import { createPlateEditor, htmlStringToDOMNode } from '@udecode/plate-core';
 import { ImagePlugin } from '@udecode/plate-media';
 
@@ -67,11 +67,11 @@ describe('multiple custom leaf serializers', () => {
     new DOMParser().parseFromString(html, 'text/html').body.innerHTML;
 
   it('serialization with the similar renderLeaf/serialize.left options of the same nodes should give the same result', () => {
-    const pluginsWithoutSerializers: PlatePluginList = [
+    const pluginsWithoutSerializers: PlatePlugins = [
       createPlugin({ component: Bold as any, isLeaf: true, key: 'bold' }), // always bold
     ];
 
-    const pluginsWithSerializers: PlatePluginList = [
+    const pluginsWithSerializers: PlatePlugins = [
       createPlugin({
         component: Bold as any,
         isLeaf: true,

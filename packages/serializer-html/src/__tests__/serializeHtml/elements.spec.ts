@@ -94,7 +94,7 @@ it('serialize blockquote to html, without trimming whitespace', () => {
     stripWhitespace: false,
   });
 
-  const node = htmlStringToDOMNode(html, false);
+  const node = htmlStringToDOMNode(html);
   expect(node.querySelectorAll('blockquote')[0]).toHaveTextContent(
     'Blockquoted text here...'
   );
