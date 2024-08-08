@@ -1,5 +1,5 @@
+import type { PluginKey } from '../types';
 import type { PlateEditor } from '../types/PlateEditor';
-import type { PluginKey } from '../types/plugin/PlatePluginKey';
 
 import { getPlugin } from './getPlugin';
 

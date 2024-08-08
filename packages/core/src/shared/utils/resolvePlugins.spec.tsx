@@ -2,6 +2,7 @@ import type { PlateEditor } from '../types';
 
 import { createPlateEditor } from '../../client';
 import { createPlugin } from './createPlugin';
+import { resolvePluginTest } from './resolveCreatePluginTest';
 import {
   applyPluginOverrides,
   mergePlugins,
@@ -376,5 +377,68 @@ describe('applyPluginOverrides', () => {
 
     // Highest priority original component is preserved
     expect(editor.pluginsByKey.f.component).toBe(PreservedOriginalComponent);
+  });
+
+  describe('validPlugins', () => {
+    it('should correctly apply validPluginToInjectPlugin and merge with existing pluginsByKey', () => {
+      const plugin = createPlugin({
+        inject: {
+          pluginsByKey: {
+            plugin1: {
+              deserializeHtml: {
+                getNode: () => {},
+              },
+            },
+            plugin3: {
+              deserializeHtml: {
+                getNode: () => {},
+              },
+            },
+          },
+          props: {
+            validPluginToInjectPlugin: ({ validPlugin }) => ({
+              deserializeHtml: {
+                getNode: () => {},
+              },
+            }),
+            validPlugins: ['plugin1', 'plugin2'],
+          },
+        },
+        key: 'testPlugin',
+      });
+
+      const resolvedPlugin = resolvePluginTest(plugin);
+
+      expect(resolvedPlugin.inject?.pluginsByKey).toBeDefined();
+      expect(Object.keys(resolvedPlugin.inject!.pluginsByKey!)).toEqual([
+        'plugin1',
+        'plugin3',
+        'plugin2',
+      ]);
+
+      // Check merged result for plugin1
+      expect(resolvedPlugin.inject!.pluginsByKey!.plugin1).toHaveProperty(
+        'deserializeHtml.getNode'
+      );
+      expect(
+        resolvedPlugin.inject!.pluginsByKey!.plugin1.deserializeHtml!.getNode
+      ).toBeDefined();
+
+      // Check injected result for plugin2
+      expect(resolvedPlugin.inject!.pluginsByKey!.plugin2).toHaveProperty(
+        'deserializeHtml.getNode'
+      );
+      expect(
+        resolvedPlugin.inject!.pluginsByKey!.plugin2.deserializeHtml!.getNode
+      ).toBeDefined();
+
+      // Check existing result for plugin3 is preserved
+      expect(resolvedPlugin.inject!.pluginsByKey!.plugin3).toHaveProperty(
+        'deserializeHtml.getNode'
+      );
+      expect(
+        resolvedPlugin.inject!.pluginsByKey!.plugin3.deserializeHtml!.getNode
+      ).toBeDefined();
+    });
   });
 });

@@ -1,10 +1,13 @@
-import type { PlateEditor, PlatePluginList } from '../types';
-import type { PlatePluginInsertDataOptions } from '../types/plugin/PlatePluginInsertData';
+import type {
+  AnyEditorPlugin,
+  PlateEditor,
+  PlatePluginInsertDataOptions,
+} from '../types';
 
 /** Is the plugin disabled by another plugin. */
 export const pipeInsertDataQuery = (
   editor: PlateEditor,
-  plugins: PlatePluginList,
+  plugins: Partial<AnyEditorPlugin>[],
   { data, dataTransfer }: PlatePluginInsertDataOptions
 ) =>
   plugins.every((p) => {
@@ -16,7 +19,7 @@ export const pipeInsertDataQuery = (
         data,
         dataTransfer,
         editor,
-        plugin: p,
+        plugin: p as any,
       })
     );
   });

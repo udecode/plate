@@ -4,8 +4,6 @@ import {
   useEditorSelector,
 } from '@udecode/plate-common';
 import {
-  type PlateEditor,
-  type Value,
   collapseSelection,
   toggleNodeType,
 } from '@udecode/plate-common/server';
@@ -25,7 +23,7 @@ export const useToggleToolbarButtonState = () => {
 export const useToggleToolbarButton = ({
   pressed,
 }: ReturnType<typeof useToggleToolbarButtonState>) => {
-  const editor = useEditorRef<Value, PlateEditor<Value>>();
+  const editor = useEditorRef();
 
   return {
     props: {

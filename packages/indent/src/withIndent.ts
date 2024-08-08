@@ -1,3 +1,4 @@
+import { getKeyByType } from '@udecode/plate-common';
 import {
   type WithOverride,
   setElements,
@@ -13,7 +14,7 @@ import type { IndentPluginOptions, TIndentElement } from './types';
 export const withIndent: WithOverride<IndentPluginOptions> = ({
   editor,
   plugin: {
-    inject: { props: { validTypes } = {} },
+    inject: { props: { validPlugins } = {} },
     options: { indentMax },
   },
 }) => {
@@ -24,7 +25,7 @@ export const withIndent: WithOverride<IndentPluginOptions> = ({
     const { type } = element;
 
     if (type) {
-      if (validTypes!.includes(type)) {
+      if (validPlugins!.includes(getKeyByType(editor, type))) {
         if (indentMax && element.indent && element.indent > indentMax) {
           setElements(editor, { indent: indentMax }, { at: path });
 

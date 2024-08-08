@@ -5,7 +5,7 @@ import { type Value, isBlock, setNodes } from '@udecode/slate';
 import isEqual from 'lodash/isEqual.js';
 import memoize from 'lodash/memoize.js';
 
-import { type PlatePluginList, createPlugin } from '../../shared';
+import { type PlatePlugins, createPlugin } from '../../shared';
 import { createPlateEditor } from '../utils';
 import { Plate } from './Plate';
 import { PlateContent } from './PlateContent';
@@ -56,17 +56,13 @@ describe('Plate', () => {
 
     it('should not trigger normalize if normalizeInitialValue is not set to true', () => {
       const fn = jest.fn((e, [node, path]) => {
-        if (
-          isBlock(e, node) &&
-          path?.length &&
-          !isEqual((node as any).path, path)
-        ) {
-          setNodes(e, { path } as any, { at: path });
+        if (isBlock(e, node) && path?.length && !isEqual(node.path, path)) {
+          setNodes(e, { path }, { at: path });
         }
       });
 
-      const plugins: PlatePluginList = memoize(
-        (): PlatePluginList => [
+      const plugins: PlatePlugins = memoize(
+        (): PlatePlugins => [
           createPlugin({
             key: 'a',
             withOverrides: ({ editor }) => {
@@ -105,7 +101,7 @@ describe('Plate', () => {
 
   describe('when renderAboveSlate renders null', () => {
     it('should not normalize editor children', () => {
-      const plugins: PlatePluginList = [
+      const plugins: PlatePlugins = [
         createPlugin({
           key: 'a',
           renderAboveSlate: () => {
@@ -130,7 +126,7 @@ describe('Plate', () => {
 
   describe('when renderAboveSlate renders children', () => {
     it("should not trigger plugin's normalize", () => {
-      const plugins: PlatePluginList = [
+      const plugins: PlatePlugins = [
         createPlugin({
           key: 'a',
           renderAboveSlate: ({ children }) => {
@@ -159,7 +155,7 @@ describe('Plate', () => {
         id: 'test',
       });
 
-      const plugins: PlatePluginList = [
+      const plugins: PlatePlugins = [
         createPlugin({
           component: ({ attributes, children }) => (
             <div {...attributes}>

@@ -129,7 +129,7 @@ describe('withNormalizeTable', () => {
         editor: input,
         plugins: [
           TablePlugin.configure({
-              initialTableWidth: 90,
+            initialTableWidth: 90,
           }),
         ],
       });
@@ -213,7 +213,7 @@ describe('withNormalizeTable', () => {
         editor: input,
         plugins: [
           TablePlugin.configure({
-              initialTableWidth: 90,
+            initialTableWidth: 90,
           }),
         ],
       });
@@ -297,7 +297,7 @@ describe('withNormalizeTable', () => {
         editor: input,
         plugins: [
           TablePlugin.configure({
-              initialTableWidth: 90,
+            initialTableWidth: 90,
           }),
         ],
       });

@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
-import { createPlugin } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
-import { autoformatPlugin } from 'www/src/lib/plate/demo/plugins/autoformatPlugin';
+import { autoformatOptions } from 'www/src/lib/plate/demo/plugins/autoformatOptions';
 
+import { AutoformatPlugin } from '../../../AutoformatPlugin';
 import { withAutoformat } from '../../../withAutoformat';
 
 jsx;
@@ -28,7 +28,7 @@ const output = (
 it('should autoformat', () => {
   const editor = withAutoformat({
     editor: withReact(input),
-    plugin: createPlugin(autoformatPlugin),
+    plugin: AutoformatPlugin.configure(autoformatOptions),
   });
 
   editor.insertText(' ');

@@ -16,7 +16,7 @@ export const useAlignDropdownMenuState = () => {
       match: (n) => isBlock(editor, n),
     });
     const nodes = Array.from(codeBlockEntries);
-    nodes.forEach(([node, path]) => {
+    nodes.forEach(([node]) => {
       const align: string = (node[KEY_ALIGN] as string) || 'start';
 
       if (!isDefined(commonAlignment)) {

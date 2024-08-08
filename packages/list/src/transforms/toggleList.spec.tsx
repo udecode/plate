@@ -70,8 +70,8 @@ describe('toggle on', () => {
       editor: input,
       plugins: [
         ListPlugin.extendPlugin(ELEMENT_UL, {
-              options: {
-                validLiChildrenTypes: [ELEMENT_IMAGE],
+          options: {
+            validLiChildrenTypes: [ELEMENT_IMAGE],
           },
         }),
       ],
@@ -201,9 +201,9 @@ describe('toggle on', () => {
       editor: input,
       plugins: [
         ListPlugin.extendPlugin(ELEMENT_UL, {
-              options: {
-                validLiChildrenTypes: [ELEMENT_IMAGE],
-              },
+          options: {
+            validLiChildrenTypes: [ELEMENT_IMAGE],
+          },
         }),
       ],
     });
@@ -511,8 +511,8 @@ describe('toggle off', () => {
       editor: input,
       plugins: [
         ListPlugin.extendPlugin(ELEMENT_UL, {
-              options: {
-                validLiChildrenTypes: [ELEMENT_IMAGE],
+          options: {
+            validLiChildrenTypes: [ELEMENT_IMAGE],
           },
         }),
       ],

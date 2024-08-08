@@ -76,7 +76,7 @@ describe('insertTableRow', () => {
         editor: input,
         plugins: [
           TablePlugin.configure({
-              // newCellChildren: [{ text: '' }],
+            // newCellChildren: [{ text: '' }],
           }),
         ],
       });
@@ -155,7 +155,7 @@ describe('insertTableRow', () => {
         editor: input,
         plugins: [
           TablePlugin.configure({
-            // newCellChildren: [{ text: '' }] 
+            // newCellChildren: [{ text: '' }]
           }),
         ],
       });

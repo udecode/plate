@@ -1,3 +1,4 @@
+import { getKeyByType } from '@udecode/plate-common';
 import {
   type ENode,
   type PlateEditor,
@@ -23,7 +24,7 @@ export const setAlign = <V extends Value>(
     value,
   }: { setNodesOptions?: SetNodesOptions<V>; value: Alignment } & PlatePluginKey
 ) => {
-  const { defaultNodeValue, nodeKey, validTypes } = getPluginInjectProps(
+  const { defaultNodeValue, nodeKey, validPlugins } = getPluginInjectProps(
     editor,
     key
   );
@@ -31,8 +32,8 @@ export const setAlign = <V extends Value>(
   const match: TNodeMatch<ENode<Value>> = (n) => {
     return (
       isBlock(editor, n) &&
-      !!validTypes &&
-      validTypes.includes(n.type as string)
+      !!validPlugins &&
+      validPlugins.includes(getKeyByType(editor, n.type as string))
     );
   };
 

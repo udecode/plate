@@ -12,6 +12,7 @@ import type { PlateEditor } from '../../shared/types/PlateEditor';
 import {
   type AnyPlatePlugin,
   type GetCorePluginsOptions,
+  type PlatePlugins,
   createPlugin,
   getCorePlugins,
   pipeNormalizeInitialValue,
@@ -42,6 +43,8 @@ export type WithPlateOptions<E extends PlateEditor = PlateEditor> = {
 
   id?: any;
 
+  plugins?: PlatePlugins;
+
   /** Function to configure the root plugin */
   rootPlugin?: (plugin: AnyPlatePlugin) => AnyPlatePlugin;
 
@@ -50,27 +53,22 @@ export type WithPlateOptions<E extends PlateEditor = PlateEditor> = {
   /** Normalize editor value on initialization. */
   shouldNormalizeEditor?: boolean;
 } & GetCorePluginsOptions &
-  Omit<
+  Pick<
     Partial<AnyPlatePlugin>,
-    | '__extensions'
-    | 'component'
-    | 'configure'
-    | 'dependencies'
-    | 'deserializeHtml'
-    | 'editor'
-    | 'enabled'
-    | 'extend'
-    | 'extendPlugin'
-    | 'isElement'
-    | 'isInline'
-    | 'isLeaf'
-    | 'isMarkableVoid'
-    | 'isVoid'
-    | 'key'
-    | 'priority'
-    | 'props'
-    | 'serializeHtml'
-    | 'type'
+    | 'api'
+    | 'decorate'
+    | 'handlers'
+    | 'inject'
+    | 'normalizeInitialValue'
+    | 'options'
+    | 'override'
+    | 'renderAboveEditable'
+    | 'renderAboveSlate'
+    | 'renderAfterEditable'
+    | 'renderBeforeEditable'
+    | 'transforms'
+    | 'useHooks'
+    | 'withOverrides'
   >;
 
 /**
@@ -132,7 +130,7 @@ export const withPlate = <E extends PlateEditor = PlateEditor>(
 
   // Apply rootPlugin configuration if provided
   if (rootPlugin) {
-    rootPluginInstance = rootPlugin(rootPluginInstance);
+    rootPluginInstance = rootPlugin(rootPluginInstance) as any;
   }
 
   resolvePlugins(editor, [rootPluginInstance]);

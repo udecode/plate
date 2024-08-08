@@ -1,14 +1,11 @@
 /** @jsx jsx */
 
-import type { PlatePluginList } from '@udecode/plate-common';
+import type { PlatePlugin, PlatePlugins } from '@udecode/plate-common';
 
 import { AlignPlugin } from '@udecode/plate-alignment';
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
-import {
-  type OverridePlugins,
-  createPlateEditor,
-} from '@udecode/plate-common/server';
+import { createPlateEditor } from '@udecode/plate-common/server';
 import { ELEMENT_H1, ELEMENT_H2, ELEMENT_H3 } from '@udecode/plate-heading';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { IndentPlugin } from '@udecode/plate-indent';
@@ -19,13 +16,19 @@ import { ImagePlugin } from '@udecode/plate-media';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { TablePlugin } from '@udecode/plate-table';
 import { jsx } from '@udecode/plate-test-utils';
-import { alignPlugin } from 'www/src/lib/plate/demo/plugins/alignPlugin';
-import { lineHeightPlugin } from 'www/src/lib/plate/demo/plugins/lineHeightPlugin';
 
 import { readTestFile } from '../../__tests__/readTestFile';
 import { DeserializeDocxPlugin } from '../DeserializeDocxPlugin';
 
 jsx;
+
+const injectConfig = {
+  inject: {
+    props: {
+      validPlugins: [ELEMENT_PARAGRAPH, ELEMENT_H1, ELEMENT_H2, ELEMENT_H3],
+    },
+  },
+};
 
 export const createClipboardData = (html: string, rtf?: string): DataTransfer =>
   ({
@@ -50,8 +53,8 @@ export const testDocxDeserializer = ({
   expected: any;
   filename: string;
   input?: any;
-  overridePlugins?: OverridePlugins;
-  plugins?: PlatePluginList;
+  overridePlugins?: PlatePlugin['override']['plugins'];
+  plugins?: PlatePlugins;
 }) => {
   it('should deserialize', () => {
     const actual = createPlateEditor({
@@ -68,20 +71,9 @@ export const testDocxDeserializer = ({
         BasicElementsPlugin,
         BasicMarksPlugin,
         TablePlugin,
-        LineHeightPlugin.extend(lineHeightPlugin),
-        AlignPlugin.extend(alignPlugin),
-        IndentPlugin.extend({
-          inject: {
-            props: {
-              validTypes: [
-                ELEMENT_PARAGRAPH,
-                ELEMENT_H1,
-                ELEMENT_H2,
-                ELEMENT_H3,
-              ],
-            },
-          },
-        }),
+        LineHeightPlugin.extend(injectConfig),
+        AlignPlugin.extend(injectConfig),
+        IndentPlugin.extend(injectConfig),
         DeserializeDocxPlugin,
         JuicePlugin,
       ],

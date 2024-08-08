@@ -1,5 +1,4 @@
-import type { AnyPlatePlugin } from '@udecode/plate-common';
-
+import { getPluginType } from '@udecode/plate-common';
 import {
   type DeserializeHtml,
   KEY_DESERIALIZE_HTML,
@@ -49,24 +48,6 @@ const getListNode =
     return node;
   };
 
-const KEYS = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
-
-const overridePlugins: Record<string, Partial<AnyPlatePlugin>> = {};
-
-// TODO
-KEYS.forEach((key) => {
-  // overridePlugins[key] = createPlugin({}).extend(({ plugin: { type } }) => ({
-  //   deserializeHtml: {
-  //     getNode: getListNode(type),
-  //   },
-  // }));
-  overridePlugins[key] = {
-    deserializeHtml: {
-      getNode: getListNode(key),
-    },
-  };
-});
-
 export const DeserializeDocxPlugin = createPlugin((editor) => ({
   inject: {
     pluginsByKey: {
@@ -86,7 +67,16 @@ export const DeserializeDocxPlugin = createPlugin((editor) => ({
   key: KEY_DESERIALIZE_DOCX,
   override: {
     plugins: {
-      ...overridePlugins,
+      ...Object.fromEntries(
+        ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'].map((key) => [
+          key,
+          {
+            deserializeHtml: {
+              getNode: getListNode(getPluginType(editor, key)),
+            },
+          },
+        ])
+      ),
       img: {
         editor: {
           insertData: {

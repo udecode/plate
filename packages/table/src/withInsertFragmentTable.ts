@@ -6,7 +6,6 @@ import {
   getEndPoint,
   getPluginType,
   getStartPoint,
-  getTEditor,
   hasNode,
   replaceNodeChildren,
   select,
@@ -39,9 +38,7 @@ export const withInsertFragmentTable: WithOverride<TablePluginOptions> = ({
   const { disableExpandOnInsert, getCellChildren, insertColumn, insertRow } =
     options;
 
-  const myEditor = getTEditor(editor);
-
-  myEditor.insertFragment = (fragment) => {
+  editor.insertFragment = (fragment) => {
     const insertedTable = fragment.find(
       (n) => (n as TElement).type === getPluginType(editor, ELEMENT_TABLE)
     ) as TTableElement | undefined;

@@ -4,7 +4,7 @@ import { DefaultElement } from 'slate-react';
 
 import type { PlateEditor } from '../../shared/types/PlateEditor';
 import type { RenderElement } from '../../shared/types/RenderElement';
-import type { PlatePlugin } from '../../shared/types/plugin/PlatePlugin';
+import type { AnyEditorPlugin } from '../../shared/types/plugin/PlatePlugin';
 
 import { getRenderNodeProps } from '../../shared/utils/getRenderNodeProps';
 import { ElementProvider } from '../stores/element/useElementStore';
@@ -16,7 +16,7 @@ import { ElementProvider } from '../stores/element/useElementStore';
  */
 export const pluginRenderElement = (
   editor: PlateEditor,
-  plugin: PlatePlugin
+  plugin: AnyEditorPlugin
 ): RenderElement =>
   function render(nodeProps) {
     const { component: _component, key } = plugin;

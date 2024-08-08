@@ -1,5 +1,3 @@
-import type { Value } from '@udecode/slate';
-
 import type { PlateEditor } from '../../../../shared/types';
 
 import {
@@ -9,10 +7,7 @@ import {
 } from '../createPlateStore';
 
 /** Get editor state which is updated on editor change. */
-export const useEditorState = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
+export const useEditorState = <E extends PlateEditor = PlateEditor>(
   id?: PlateId,
   options: UsePlateEditorStoreOptions = {}
 ): E => {

@@ -7,7 +7,7 @@ import { MediaEmbedPlugin } from '@udecode/plate-media';
 import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
-import type { PlateEditor, PlatePluginList } from '../../types';
+import type { PlateEditor, PlatePlugins } from '../../types';
 
 import { createPlateEditor } from '../../../client';
 
@@ -52,7 +52,7 @@ describe('when inserting html', () => {
         </editor>
       ) as any;
 
-      const plugins: PlatePluginList = [HeadingPlugin];
+      const plugins: PlatePlugins = [HeadingPlugin];
 
       const editor = createPlateEditor({
         editor: input,
@@ -84,7 +84,7 @@ describe('when inserting html', () => {
         </editor>
       ) as any;
 
-      const plugins: PlatePluginList = [HeadingPlugin];
+      const plugins: PlatePlugins = [HeadingPlugin];
 
       const editor = createPlateEditor({
         editor: input,
@@ -117,7 +117,7 @@ describe('when inserting html', () => {
       </editor>
     ) as any;
 
-    const plugins: PlatePluginList = [ParagraphPlugin];
+    const plugins: PlatePlugins = [ParagraphPlugin];
 
     const editor = createPlateEditor({
       editor: input,
@@ -159,7 +159,7 @@ describe('when inserting empty html', () => {
   ) as any;
 
   it('should do nothing', () => {
-    const plugins: PlatePluginList = [BoldPlugin];
+    const plugins: PlatePlugins = [BoldPlugin];
 
     const editor = createPlateEditor({
       editor: input,
@@ -199,7 +199,7 @@ describe('when inserting an iframe without src', () => {
   ) as any;
 
   it('should do nothing', () => {
-    const plugins: PlatePluginList = [MediaEmbedPlugin];
+    const plugins: PlatePlugins = [MediaEmbedPlugin];
 
     const editor = createPlateEditor({
       editor: input,
@@ -242,7 +242,7 @@ describe('when inserting link with href', () => {
   ) as any;
 
   it('should insert the link with url', () => {
-    const plugins: PlatePluginList = [ParagraphPlugin, LinkPlugin];
+    const plugins: PlatePlugins = [ParagraphPlugin, LinkPlugin];
 
     const editor = createPlateEditor({
       editor: input,

@@ -58,7 +58,7 @@ it('should be', () => {
 
   onKeyDownToggleMark({
     editor,
-    event: event as any,
+    event,
     plugin: getPlugin<ToggleMarkPluginOptions>(editor, MARK_BOLD),
   });
   expect(editor.children).toEqual(output.children);

@@ -1,17 +1,25 @@
 import React from 'react';
 
-import { Plate } from '@udecode/plate-common';
+import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
+import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
+import { Plate, usePlateEditor } from '@udecode/plate-common';
 
 import { editableProps } from '@/plate/demo/editableProps';
-import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
+import { PlateUI } from '@/plate/demo/plate-ui';
 import { createMultiEditorsValue } from '@/plate/demo/values/createMultiEditorsValue';
 import { Editor } from '@/registry/default/plate-ui/editor';
 
 const initialValues = createMultiEditorsValue();
 
 function WithPlate({ id, initialValue }: any) {
+  const editor = usePlateEditor({
+    id,
+    override: { components: PlateUI },
+    plugins: [BasicElementsPlugin, BasicMarksPlugin],
+  });
+
   return (
-    <Plate id={id} initialValue={initialValue} plugins={basicNodesPlugins}>
+    <Plate editor={editor} initialValue={initialValue}>
       <Editor {...editableProps} />
     </Plate>
   );

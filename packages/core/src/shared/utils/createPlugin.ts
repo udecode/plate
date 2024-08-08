@@ -1,10 +1,10 @@
-import merge from 'lodash/merge';
+import merge from 'lodash/merge.js';
 
 import type {
   PlateEditor,
   PlatePlugin,
   PlatePluginComponent,
-  PlatePluginList,
+  PlatePlugins,
 } from '../types';
 
 import { isFunction } from './misc';
@@ -61,7 +61,7 @@ import { isFunction } from './misc';
  *       plugins) or add a new one if not found.
  */
 export function createPlugin<
-  K extends string = string,
+  K extends string = any,
   O = {},
   A = {},
   T = {},
@@ -138,8 +138,8 @@ export function createPlugin<
     const newPlugin = { ...plugin };
 
     const configureNestedPlugin = (
-      plugins: PlatePluginList
-    ): { found: boolean; plugins: PlatePluginList } => {
+      plugins: PlatePlugins
+    ): { found: boolean; plugins: PlatePlugins } => {
       let found = false;
       const updatedPlugins = plugins.map((nestedPlugin) => {
         if (nestedPlugin.key === key) {
@@ -191,8 +191,8 @@ export function createPlugin<
     const newPlugin = { ...plugin };
 
     const extendNestedPlugin = (
-      plugins: PlatePluginList
-    ): { found: boolean; plugins: PlatePluginList } => {
+      plugins: PlatePlugins
+    ): { found: boolean; plugins: PlatePlugins } => {
       let found = false;
       const updatedPlugins = plugins.map((nestedPlugin) => {
         if (nestedPlugin.key === key) {

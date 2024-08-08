@@ -1,15 +1,18 @@
 import React from 'react';
 
-import type { PlateRenderLeafProps } from '@udecode/plate-core';
+import type { AnyPlatePlugin, PlateRenderLeafProps } from '@udecode/plate-core';
 import type { TText } from '@udecode/slate';
 
 import { Text, type TextProps, useComposedRef } from '@udecode/react-utils';
 import { clsx } from 'clsx';
 
-export type PlateLeafProps = {
+export type PlateLeafProps<
+  T extends TText = TText,
+  P extends AnyPlatePlugin = AnyPlatePlugin,
+> = {
   /** Get HTML attributes from Slate leaf. Alternative to `PlatePlugin.props`. */
-  leafToAttributes?: (leaf: TText) => any;
-} & PlateRenderLeafProps &
+  leafToAttributes?: (leaf: T) => any;
+} & PlateRenderLeafProps<T, P> &
   TextProps;
 
 export const usePlateLeaf = (props: PlateLeafProps) => {
@@ -43,10 +46,10 @@ const PlateLeaf = React.forwardRef<HTMLSpanElement, PlateLeafProps>(
 
     return <Text {...rootProps} ref={rootRef} />;
   }
-) as (({
+) as (<N extends TText = TText, P extends AnyPlatePlugin = AnyPlatePlugin>({
   className,
   ...props
-}: PlateLeafProps &
+}: PlateLeafProps<N, P> &
   React.RefAttributes<HTMLSpanElement>) => React.ReactElement) & {
   displayName?: string;
 };

@@ -1,3 +1,3 @@
 import { createPlateUI } from '@/plate/create-plate-ui';
 
-export const plateUI = createPlateUI();
+export const PlateUI = createPlateUI();

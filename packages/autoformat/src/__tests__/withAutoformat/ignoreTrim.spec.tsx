@@ -1,10 +1,12 @@
 /** @jsx jsx */
 
-import { MARK_ITALIC } from '@udecode/plate-basic-marks';
-import { createPlugin } from '@udecode/plate-common';
+import {
+  MARK_BOLD,
+  MARK_ITALIC,
+  MARK_UNDERLINE,
+} from '@udecode/plate-basic-marks';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
-import { autoformatPlugin } from 'www/src/lib/plate/demo/plugins/autoformatPlugin';
 
 import { AutoformatPlugin } from '../../AutoformatPlugin';
 import { withAutoformat } from '../../withAutoformat';
@@ -68,10 +70,19 @@ describe('when ignoreTrim is false', () => {
         </editor>
       ) as any;
 
-      const editor = withAutoformat(
-        withReact(input),
-        createPlugin(autoformatPlugin as any)
-      );
+      const editor = withAutoformat({
+        editor: withReact(input),
+        plugin: AutoformatPlugin.configure({
+          rules: [
+            {
+              match: { end: '***__', start: '___***' },
+              mode: 'mark',
+              trigger: '_',
+              type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
+            },
+          ],
+        }),
+      });
 
       editor.insertText(' ');
 

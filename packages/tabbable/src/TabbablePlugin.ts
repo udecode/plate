@@ -13,7 +13,7 @@ export const TabbablePlugin = createPlugin<'tabbable', TabbablePluginOptions>({
     query: () => true,
   },
   renderAfterEditable: TabbableEffects,
-}).extend<TabbablePluginOptions>(({ editor }) => ({
+}).extend(({ editor }) => ({
   options: {
     isTabbable: (tabbableEntry: TabbableEntry) =>
       isVoid(editor, tabbableEntry.slateNode),

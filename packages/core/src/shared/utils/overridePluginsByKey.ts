@@ -1,29 +1,16 @@
 import defaultsDeep from 'lodash/defaultsDeep.js';
 
-import type { NoInfer } from '../types/misc/NoInfer';
-import type { PlatePlugin } from '../types/plugin/PlatePlugin';
+import type { AnyPlatePlugin } from '../types/plugin/PlatePlugin';
 
 /**
  * Recursive deep merge of each plugin from `override.plugins` into plugin with
  * same key (plugin > plugin.plugins).
  */
-export const overridePluginsByKey = <
-  K extends string = '',
-  O = {},
-  A = {},
-  T = {},
-  S = {},
->(
-  plugin: PlatePlugin<
-    NoInfer<K>,
-    NoInfer<O>,
-    NoInfer<A>,
-    NoInfer<T>,
-    NoInfer<S>
-  >,
-  overrideByKey: Record<string, Partial<PlatePlugin<any, any, any, any>>> = {},
+export const overridePluginsByKey = <P extends AnyPlatePlugin = AnyPlatePlugin>(
+  plugin: P,
+  overrideByKey: Record<string, Partial<AnyPlatePlugin>> = {},
   nested = false
-): PlatePlugin<NoInfer<K>, NoInfer<O>, NoInfer<A>, NoInfer<T>, NoInfer<S>> => {
+): P => {
   if (overrideByKey[plugin.key]) {
     const {
       __extensions: pluginOverridesExtensions,

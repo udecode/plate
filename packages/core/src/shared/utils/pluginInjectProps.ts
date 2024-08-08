@@ -4,9 +4,10 @@ import { type TElement, type TText, isElement } from '@udecode/slate';
 import { type AnyObject, isDefined } from '@udecode/utils';
 import { clsx } from 'clsx';
 
-import type { TransformOptions } from '../types';
+import type { EditorPlugin, TransformOptions } from '../types';
 import type { PlateEditor } from '../types/PlateEditor';
-import type { PlatePlugin } from '../types/plugin/PlatePlugin';
+
+import { getKeyByType } from './getKeysByTypes';
 
 export interface GetInjectPropsOptions {
   /** Existing className. */
@@ -29,14 +30,14 @@ export interface GetInjectPropsReturnType extends AnyObject {
 
 /**
  * Return if `element`, `text`, `nodeKey` is defined. Return if `node.type` is
- * not in `validTypes` (if defined). Return if `value = node[nodeKey]` is not in
- * `validNodeValues` (if defined). If `classNames[value]` is defined, override
- * `className` with it. If `styleKey` is defined, override `style` with
+ * not in `validPlugins` (if defined). Return if `value = node[nodeKey]` is not
+ * in `validNodeValues` (if defined). If `classNames[value]` is defined,
+ * override `className` with it. If `styleKey` is defined, override `style` with
  * `[styleKey]: value`.
  */
 export const pluginInjectProps = (
   editor: PlateEditor,
-  plugin: PlatePlugin,
+  plugin: EditorPlugin,
   nodeProps: GetInjectPropsOptions
 ): GetInjectPropsReturnType | undefined => {
   const {
@@ -62,17 +63,17 @@ export const pluginInjectProps = (
     transformProps,
     transformStyle,
     validNodeValues,
-    validTypes,
+    validPlugins,
   } = props;
 
   const queryResult = query?.({ ...props, editor, nodeProps, plugin });
 
   if (
     !queryResult &&
-    validTypes &&
+    validPlugins &&
     isElement(node) &&
     node.type &&
-    !validTypes.includes(node.type)
+    !validPlugins.includes(getKeyByType(editor, node.type))
   ) {
     return;
   }

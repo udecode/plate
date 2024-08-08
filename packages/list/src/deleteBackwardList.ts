@@ -51,23 +51,23 @@ export const deleteBackwardList = (editor: PlateEditor, unit: TextUnit) => {
 
         if (moved) return true;
         if (isFirstChild(listItem[1]) && !isListNested(editor, list[1])) {
-          onKeyDownResetNode(
-            {editor, plugin:             createPlugin<string, ResetNodePluginOptions>({
-                          options: {
-                            rules: [
-                              {
-                                defaultType: getPluginType(editor, ELEMENT_DEFAULT),
-                                hotkey: 'backspace',
-                                onReset: (e) => unwrapList(e),
-                                predicate: () => isSelectionAtBlockStart(editor),
-                                types: [getPluginType(editor, ELEMENT_LI)],
-                              },
-                            ],
-                          },
-                        }),
-              event: SIMULATE_BACKSPACE
-            }
-          )
+          onKeyDownResetNode({
+            editor,
+            event: SIMULATE_BACKSPACE,
+            plugin: createPlugin<string, ResetNodePluginOptions>({
+              options: {
+                rules: [
+                  {
+                    defaultType: getPluginType(editor, ELEMENT_DEFAULT),
+                    hotkey: 'backspace',
+                    onReset: (e) => unwrapList(e),
+                    predicate: () => isSelectionAtBlockStart(editor),
+                    types: [getPluginType(editor, ELEMENT_LI)],
+                  },
+                ],
+              },
+            }),
+          });
           moved = true;
 
           return;

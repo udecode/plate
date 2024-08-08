@@ -9,9 +9,21 @@ import { NormalizeTypesPlugin } from '../../NormalizeTypesPlugin';
 
 jsx;
 
-const input = (<editor />) as any;
+const input = (
+  <editor>
+    <hp>
+      <htext />
+    </hp>
+  </editor>
+) as any;
 
-const output = (<editor />) as any;
+const output = (
+  <editor>
+    <hp>
+      <htext />
+    </hp>
+  </editor>
+) as any;
 
 it('should be', () => {
   const editor = createPlateEditor({

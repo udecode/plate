@@ -15,12 +15,18 @@ import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { DeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
 import { TablePlugin } from '@udecode/plate-table';
 import { jsx } from '@udecode/plate-test-utils';
-import { alignPlugin } from 'www/src/lib/plate/demo/plugins/alignPlugin';
-import { lineHeightPlugin } from 'www/src/lib/plate/demo/plugins/lineHeightPlugin';
 
 import { IndentListPlugin } from './IndentListPlugin';
 
 jsx;
+
+const injectConfig = {
+  inject: {
+    props: {
+      validPlugins: [ELEMENT_PARAGRAPH, ELEMENT_H1, ELEMENT_H2, ELEMENT_H3],
+    },
+  },
+};
 
 const createClipboardData = (html: string, rtf?: string): DataTransfer =>
   ({
@@ -45,20 +51,9 @@ describe('when insertData disc and decimal from gdocs', () => {
         BasicElementsPlugin,
         BasicMarksPlugin,
         TablePlugin,
-        LineHeightPlugin.extend(lineHeightPlugin),
-        AlignPlugin.extend(alignPlugin),
-        IndentPlugin.extend({
-          inject: {
-            props: {
-              validTypes: [
-                ELEMENT_PARAGRAPH,
-                ELEMENT_H1,
-                ELEMENT_H2,
-                ELEMENT_H3,
-              ],
-            },
-          },
-        }),
+        LineHeightPlugin.extend(injectConfig),
+        AlignPlugin.extend(injectConfig),
+        IndentPlugin.extend(injectConfig),
         IndentListPlugin,
         DeserializeDocxPlugin,
         JuicePlugin,

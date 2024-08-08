@@ -2,7 +2,7 @@ import {
   type EAncestor,
   type GetAboveNodeOptions,
   type TEditor,
-  type Value,
+  type ValueOf,
   getAboveNode,
   getMarks,
   isExpanded,
@@ -14,18 +14,21 @@ import type { WithOverride } from '../types/index';
 
 import { createPlugin } from '../utils';
 
-const getBlockAbove = <N extends EAncestor<V>, V extends Value = Value>(
-  editor: TEditor<V>,
-  options: GetAboveNodeOptions<V> = {}
+const getBlockAbove = <
+  N extends EAncestor<ValueOf<E>>,
+  E extends TEditor = TEditor,
+>(
+  editor: E,
+  options: GetAboveNodeOptions<ValueOf<E>> = {}
 ) =>
-  getAboveNode<N, V>(editor, {
+  getAboveNode<N, ValueOf<E>>(editor, {
     ...options,
     block: true,
   });
 
-const isSelectionAtBlockStart = <V extends Value>(
-  editor: TEditor<V>,
-  options?: GetAboveNodeOptions<V>
+const isSelectionAtBlockStart = <E extends TEditor = TEditor>(
+  editor: E,
+  options?: GetAboveNodeOptions<ValueOf<E>>
 ) => {
   const { selection } = editor;
 

@@ -80,7 +80,7 @@ export const TableCellHeaderPlugin = createPlugin({
 }));
 
 /** Enables support for tables. */
-export const TablePlugin = createPlugin<'table', TablePluginOptions>({
+export const TablePlugin = createPlugin({
   deserializeHtml: {
     rules: [{ validNodeName: 'TABLE' }],
   },
@@ -89,9 +89,14 @@ export const TablePlugin = createPlugin<'table', TablePluginOptions>({
   },
   isElement: true,
   key: ELEMENT_TABLE,
+  plugins: [TableRowPlugin, TableCellPlugin, TableCellHeaderPlugin],
+  withOverrides: withTable,
+}).extend<TablePluginOptions>(({ editor }) => ({
   options: {
     _cellIndices: new WeakMap() as TableStoreCellAttributes,
+    cellFactory: (options: any) => getEmptyCellNode(editor, options),
     enableMerging: false,
+    getCellChildren: (cell: any) => cell.children,
     insertColumn: (e, { fromCell }) => {
       insertTableColumn(e, {
         disableSelect: true,
@@ -105,12 +110,5 @@ export const TablePlugin = createPlugin<'table', TablePluginOptions>({
       });
     },
     minColumnWidth: 48,
-  },
-  plugins: [TableRowPlugin, TableCellPlugin, TableCellHeaderPlugin],
-  withOverrides: withTable,
-}).extend(({ editor }) => ({
-  options: {
-    cellFactory: (options: any) => getEmptyCellNode(editor, options),
-    getCellChildren: (cell: any) => cell.children,
   },
 }));

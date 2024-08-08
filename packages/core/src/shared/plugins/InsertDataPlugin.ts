@@ -7,7 +7,7 @@ import { pipeInsertFragment } from '../utils/pipeInsertFragment';
 import { pipeTransformData } from '../utils/pipeTransformData';
 import { pipeTransformFragment } from '../utils/pipeTransformFragment';
 
-export const withInsertData: WithOverride = ({ editor, plugin }) => {
+export const withInsertData: WithOverride = ({ editor }) => {
   const { insertData } = editor;
 
   editor.insertData = (dataTransfer) => {
@@ -72,9 +72,7 @@ export const withInsertData: WithOverride = ({ editor, plugin }) => {
   return editor;
 };
 
-export const KEY_INSERT_DATA = 'insertData';
-
 export const InsertDataPlugin = createPlugin({
-  key: KEY_INSERT_DATA,
+  key: 'insertData',
   withOverrides: withInsertData,
 });

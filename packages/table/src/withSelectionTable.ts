@@ -25,9 +25,9 @@ import { overrideSelectionFromCell } from './transforms/overrideSelectionFromCel
  * - If focus is in table, anchor in a block after: set focus to the point before
  *   start of table
  */
-export const withSelectionTable: WithOverride<TablePluginOptions> = (
-  { editor }
-) => {
+export const withSelectionTable: WithOverride<TablePluginOptions> = ({
+  editor,
+}) => {
   const { apply } = editor;
 
   editor.apply = (op) => {

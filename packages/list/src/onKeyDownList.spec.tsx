@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import {
-  type HotkeyPlugin,
+  type HotkeyPluginOptions,
   type PlateEditor,
   createPlateEditor,
   getPlugin,
@@ -63,7 +63,11 @@ it('should indent single list item (start of item)', () => {
     plugins: [ListPlugin],
   });
 
-  onKeyDownList(editor, getPlugin<HotkeyPlugin>(editor, 'ul'))(event as any);
+  onKeyDownList({
+    editor,
+    event,
+    plugin: getPlugin<HotkeyPluginOptions>(editor, 'ul'),
+  });
   expect(editor.children).toEqual(output.children);
 });
 
@@ -117,7 +121,11 @@ it('should indent single list item (end of item)', () => {
     plugins: [ListPlugin],
   });
 
-  onKeyDownList(editor, getPlugin<HotkeyPlugin>(editor, 'ul'))(event as any);
+  onKeyDownList({
+    editor,
+    event,
+    plugin: getPlugin<HotkeyPluginOptions>(editor, 'ul'),
+  });
   expect(editor.children).toEqual(output.children);
 });
 
@@ -185,7 +193,11 @@ it('should indent multiple list items (start/end)', () => {
     plugins: [ListPlugin],
   });
 
-  onKeyDownList(editor, getPlugin<HotkeyPlugin>(editor, 'ul'))(event as any);
+  onKeyDownList({
+    editor,
+    event,
+    plugin: getPlugin<HotkeyPluginOptions>(editor, 'ul'),
+  });
   expect(editor.children).toEqual(output.children);
 });
 
@@ -256,7 +268,11 @@ it('should un-indent multiple list items (start/end)', () => {
     plugins: [ListPlugin],
   });
 
-  onKeyDownList(editor, getPlugin<HotkeyPlugin>(editor, 'list'))(event as any);
+  onKeyDownList({
+    editor,
+    event,
+    plugin: getPlugin<HotkeyPluginOptions>(editor, 'list'),
+  });
   expect(editor.children).toEqual(output.children);
 });
 
@@ -329,7 +345,11 @@ it('should un-indent multiple list items (start/out)', () => {
     plugins: [ListPlugin],
   });
 
-  onKeyDownList(editor, getPlugin<HotkeyPlugin>(editor, 'list'))(event as any);
+  onKeyDownList({
+    editor,
+    event,
+    plugin: getPlugin<HotkeyPluginOptions>(editor, 'list'),
+  });
   expect(editor.children).toEqual(output.children);
 });
 
@@ -394,7 +414,11 @@ it('should unhang before indentation', () => {
     plugins: [ListPlugin],
   });
 
-  onKeyDownList(editor, getPlugin<HotkeyPlugin>(editor, 'list'))(event as any);
+  onKeyDownList({
+    editor,
+    event,
+    plugin: getPlugin<HotkeyPluginOptions>(editor, 'list'),
+  });
   expect(editor.children).toEqual(output.children);
 });
 
@@ -415,26 +439,24 @@ it('should NOT not adjust selection length when unhanging ranges', () => {
 
   const selectionBefore = editor.selection;
 
-  onKeyDownList(
+  onKeyDownList({
     editor,
-    getPlugin<HotkeyPlugin>(editor, 'list')
-  )(
-    new KeyboardEvent('keydown', {
+    event: new KeyboardEvent('keydown', {
       key: 'Tab',
-    }) as any // Using a native keyboard event but this wants a React.KeyboardEvent.
-  );
+    }) as any,
+    plugin: getPlugin<HotkeyPluginOptions>(editor, 'list'),
+  });
   expect(editor.selection).toEqual(selectionBefore);
 
   // Do the same with shift tab.
-  onKeyDownList(
+  onKeyDownList({
     editor,
-    getPlugin<HotkeyPlugin>(editor, 'list')
-  )(
-    new KeyboardEvent('keydown', {
+    event: new KeyboardEvent('keydown', {
       key: 'Tab',
       shiftKey: true,
-    }) as any // Using a native keyboard event but this wants a React.KeyboardEvent.
-  );
+    }) as any,
+    plugin: getPlugin<HotkeyPluginOptions>(editor, 'list'),
+  });
   expect(editor.selection).toEqual(selectionBefore);
 });
 
@@ -482,10 +504,14 @@ it('should convert top-level list item into body upon unindent if enableResetOnS
   }) as any;
   const editor = createPlateEditor({
     editor: input,
-    plugins: [ListPlugin.configure({  enableResetOnShiftTab: true } )],
+    plugins: [ListPlugin.configure({ enableResetOnShiftTab: true })],
   });
 
-  onKeyDownList(editor, getPlugin<HotkeyPlugin>(editor, 'list'))(event as any);
+  onKeyDownList({
+    editor,
+    event,
+    plugin: getPlugin<HotkeyPluginOptions>(editor, 'list'),
+  });
   expect(editor.children).toEqual(output.children);
 });
 
@@ -534,7 +560,11 @@ it('should convert top-level (first) list item into body upon unindent if enable
     plugins: [ListPlugin.configure({ enableResetOnShiftTab: true })],
   });
 
-  onKeyDownList(editor, getPlugin<HotkeyPlugin>(editor, 'list'))(event as any);
+  onKeyDownList({
+    editor,
+    event,
+    plugin: getPlugin<HotkeyPluginOptions>(editor, 'list'),
+  });
   expect(editor.children).toEqual(output.children);
 });
 
@@ -580,10 +610,14 @@ it('should convert top-level (last) list item into body upon unindent if enableR
   }) as any;
   const editor = createPlateEditor({
     editor: input,
-    plugins: [ListPlugin.configure({ enableResetOnShiftTab: true  })],
+    plugins: [ListPlugin.configure({ enableResetOnShiftTab: true })],
   });
 
-  onKeyDownList(editor, getPlugin<HotkeyPlugin>(editor, 'list'))(event as any);
+  onKeyDownList({
+    editor,
+    event,
+    plugin: getPlugin<HotkeyPluginOptions>(editor, 'list'),
+  });
   expect(editor.children).toEqual(output.children);
 });
 
@@ -635,6 +669,10 @@ it('should NOT convert top-level list item into body upon unindent if enableRese
     plugins: [ListPlugin],
   });
 
-  onKeyDownList(editor, getPlugin<HotkeyPlugin>(editor, 'list'))(event as any);
+  onKeyDownList({
+    editor,
+    event,
+    plugin: getPlugin<HotkeyPluginOptions>(editor, 'list'),
+  });
   expect(editor.children).toEqual(output.children);
 });

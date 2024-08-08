@@ -11,12 +11,10 @@ import { ELEMENT_TABLE } from './TablePlugin';
 import { getTableGridAbove } from './queries/getTableGridAbove';
 
 /** If selection is in a table, get subtable above. */
-export const withGetFragmentTable: WithOverride<TablePluginOptions> = (
-  {
-    editor,
-    plugin: { options }
-  }
-) => {
+export const withGetFragmentTable: WithOverride<TablePluginOptions> = ({
+  editor,
+  plugin: { options },
+}) => {
   const { getFragment } = editor;
   const { getCellChildren } = options;
 

@@ -2,7 +2,7 @@ import { createPlateEditor } from '@udecode/plate-common';
 
 import type { TLinkElement } from '../types';
 
-import { type LinkPluginOptions, LinkPlugin } from '../LinkPlugin';
+import { LinkPlugin, type LinkPluginOptions } from '../LinkPlugin';
 import { getLinkAttributes } from './getLinkAttributes';
 
 const baseLink = {
@@ -20,8 +20,8 @@ const createEditor = (options: LinkPluginOptions = {}) =>
   createPlateEditor({
     plugins: [
       LinkPlugin.configure({
-          ...defaultOptions,
-          ...options,
+        ...defaultOptions,
+        ...options,
       }),
     ],
   });

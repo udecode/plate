@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { PlateEditor } from '../../shared/types/PlateEditor';
 import type { RenderLeaf } from '../../shared/types/RenderLeaf';
-import type { PlatePlugin } from '../../shared/types/plugin/PlatePlugin';
+import type { AnyEditorPlugin } from '../../shared/types/plugin/PlatePlugin';
 
 import { DefaultLeaf } from '../../shared/components/DefaultLeaf';
 import { getRenderNodeProps } from '../../shared/utils/getRenderNodeProps';
@@ -13,7 +13,7 @@ import { getRenderNodeProps } from '../../shared/utils/getRenderNodeProps';
  */
 export const pluginRenderLeaf = (
   editor: PlateEditor,
-  plugin: PlatePlugin
+  plugin: AnyEditorPlugin
 ): RenderLeaf =>
   function render(nodeProps) {
     const { component } = plugin;

@@ -1,6 +1,5 @@
 import type React from 'react';
 
-import type { AutoformatRule } from '@udecode/plate-autoformat';
 import type { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
 import type {
   ELEMENT_CODE_BLOCK,
@@ -51,45 +50,11 @@ import type { ELEMENT_TOGGLE, TToggleElement } from '@udecode/plate-toggle';
 import type { TText } from '@udecode/slate';
 
 import {
-  type CreatePlateEditorOptions,
-  type DOMHandler,
-  type Decorate,
-  type DecorateEntry,
-  type EDescendant,
   type EElement,
-  type EElementEntry,
-  type EElementOrText,
-  type EMarks,
-  type ENode,
-  type ENodeEntry,
-  type EText,
-  type ETextEntry,
-  type InjectComponent,
-  type InjectProps,
-  type KeyboardHandler,
-  type NoInfer,
-  type OnChange,
-  type OverrideByKey,
   type PlateEditor,
   type PlateId,
-  type PlatePlugin,
-  type PlatePluginComponent,
-  type PlatePluginInsertData,
-  type PlatePluginProps,
-  type PlateProps,
-  type PluginOptions,
-  type SerializeHtml,
   type TElement,
-  type TNodeEntry,
-  type TReactEditor,
-  type WithOverride,
-  createPlateEditor,
-  createPluginFactory,
-  createPlugins,
-  createTEditor,
-  getTEditor,
   useEditorRef,
-  useEditorState,
 } from '@udecode/plate-common';
 
 /** Text */
@@ -290,9 +255,9 @@ export interface MyExcalidrawElement
 
 export type MyNestableBlock = MyParagraphElement;
 
-export type MyBlock = Exclude<MyElement, MyInlineElement>;
+export type MyElement = EElement<MyValue>;
 
-export type MyBlockEntry = TNodeEntry<MyBlock>;
+export type MyBlock = Exclude<MyElement, MyInlineElement>;
 
 export type MyRootBlock =
   | MyBlockquoteElement
@@ -314,102 +279,10 @@ export type MyRootBlock =
   | MyTodoListElement
   | MyToggleElement;
 
-export type MyValue = MyRootBlock[];
-
 /** Editor types */
+
+export type MyValue = MyRootBlock[];
 
 export type MyEditor = { isDragging?: boolean } & PlateEditor<MyValue>;
 
-export type MyReactEditor = TReactEditor<MyValue>;
-
-export type MyNode = ENode<MyValue>;
-
-export type MyNodeEntry = ENodeEntry<MyValue>;
-
-export type MyElement = EElement<MyValue>;
-
-export type MyElementEntry = EElementEntry<MyValue>;
-
-export type MyText = EText<MyValue>;
-
-export type MyTextEntry = ETextEntry<MyValue>;
-
-export type MyElementOrText = EElementOrText<MyValue>;
-
-export type MyDescendant = EDescendant<MyValue>;
-
-export type MyMarks = EMarks<MyValue>;
-
-export type MyMark = keyof MyMarks;
-
-/** Plate types */
-
-export type MyDecorate<P = PluginOptions> = Decorate<P, MyValue, MyEditor>;
-
-export type MyDecorateEntry = DecorateEntry<MyValue>;
-
-export type MyDOMHandler<P = PluginOptions> = DOMHandler<P, MyValue, MyEditor>;
-
-export type MyInjectComponent = InjectComponent<MyValue>;
-
-export type MyInjectProps = InjectProps<MyValue>;
-
-export type MyKeyboardHandler<P = PluginOptions> = KeyboardHandler<
-  P,
-  MyValue,
-  MyEditor
->;
-
-export type MyOnChange<P = PluginOptions> = OnChange<P, MyValue, MyEditor>;
-
-export type MyOverrideByKey = OverrideByKey<MyValue, MyEditor>;
-
-export type MyPlatePlugin<P = PluginOptions> = PlatePlugin<
-  P,
-  MyValue,
-  MyEditor
->;
-
-export type MyPlatePluginInsertData = PlatePluginInsertData<MyValue>;
-
-export type MyPlatePluginProps = PlatePluginProps<MyValue>;
-
-export type MyPlateProps = PlateProps<MyValue, MyEditor>;
-
-export type MySerializeHtml = SerializeHtml<MyValue>;
-
-export type MyWithOverride<P = PluginOptions> = WithOverride<
-  P,
-  MyValue,
-  MyEditor
->;
-
-/** Plate store, Slate context */
-
-export const getMyEditor = (editor: MyEditor) =>
-  getTEditor<MyValue, MyEditor>(editor);
-
-export const useMyEditorRef = () => useEditorRef<MyValue, MyEditor>();
-
-export const useMyEditorState = () => useEditorState<MyValue, MyEditor>();
-
-/** Utils */
-export const createMyEditor = () => createTEditor() as MyEditor;
-
-export const createMyPlateEditor = (
-  options: CreatePlateEditorOptions<MyValue, MyEditor> = {}
-) => createPlateEditor<MyValue, MyEditor>(options);
-
-export const createMyPluginFactory = <P = PluginOptions>(
-  defaultPlugin: PlatePlugin<NoInfer<P>, MyValue, MyEditor>
-) => createPluginFactory(defaultPlugin);
-
-export const createMyPlugins = (
-  plugins: PlatePlugin[],
-  options?: {
-    components?: Record<string, PlatePluginComponent>;
-    overrideByKey?: OverrideByKey;
-  }
-) => createPlugins<MyValue, MyEditor>(plugins, options);
-
-export type MyAutoformatRule = AutoformatRule<MyValue, MyEditor>;
+export const useMyEditorRef = () => useEditorRef<MyEditor>();

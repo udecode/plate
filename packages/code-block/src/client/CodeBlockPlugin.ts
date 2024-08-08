@@ -18,12 +18,12 @@ import { decorateCodeLine } from './decorateCodeLine';
 import { onKeyDownCodeBlock } from './onKeyDownCodeBlock';
 
 export const CodeLinePlugin = createPlugin({
+  decorate: decorateCodeLine,
   isElement: true,
   key: ELEMENT_CODE_LINE,
 });
 
 export const CodeSyntaxPlugin = createPlugin({
-  decorate: decorateCodeLine,
   isLeaf: true,
   key: ELEMENT_CODE_SYNTAX,
 });

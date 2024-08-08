@@ -35,7 +35,7 @@ import { ELEMENT_TOGGLE } from '@udecode/plate-toggle';
 import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
 
 import { columnValue } from '@/lib/plate/demo/values/columnValue';
-import { KEY_DRAG_OVER_CURSOR } from '@/plate/demo/plugins/dragOverCursorPlugin';
+import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
 import { alignValue } from '@/plate/demo/values/alignValue';
 import { autoformatValue } from '@/plate/demo/values/autoformatValue';
 import { basicElementsValue } from '@/plate/demo/values/basicElementsValue';
@@ -138,7 +138,7 @@ export const customizerPlugins = {
   cursoroverlay: {
     id: 'cursoroverlay',
     label: 'Cursor Overlay',
-    plugins: [KEY_DRAG_OVER_CURSOR],
+    plugins: [DragOverCursorPlugin.key],
     route: '/docs/cursor-overlay',
     value: cursorOverlayValue,
   },

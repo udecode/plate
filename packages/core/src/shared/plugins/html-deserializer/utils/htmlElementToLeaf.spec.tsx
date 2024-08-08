@@ -6,8 +6,8 @@ import { createPlateEditor } from '@udecode/plate-common';
 import { ListPlugin } from '@udecode/plate-list';
 import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
-import { createPlugin } from "../../../utils";
 
+import { createPlugin } from '../../../utils';
 import { htmlElementToLeaf } from './htmlElementToLeaf';
 import { parseHtmlElement } from './parseHtmlElement';
 
@@ -63,12 +63,7 @@ describe('when there is a mark above multiple elements', () => {
     expect(
       htmlElementToLeaf(
         createPlateEditor({
-          plugins: [
-            ParagraphPlugin,
-            ListPlugin,
-            BoldPlugin,
-            ItalicPlugin,
-          ],
+          plugins: [ParagraphPlugin, ListPlugin, BoldPlugin, ItalicPlugin],
         }),
         parseHtmlElement(`<strong><li><p>test</p>test</li></strong>`)
       )

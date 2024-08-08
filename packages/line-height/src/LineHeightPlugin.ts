@@ -1,9 +1,5 @@
-import {
-  ELEMENT_DEFAULT,
-  createPlugin,
-  getPluginType,
-  mapInjectPropsToPlugin,
-} from '@udecode/plate-common/server';
+import { getPluginType } from '@udecode/plate-common';
+import { ELEMENT_DEFAULT, createPlugin } from '@udecode/plate-common/server';
 
 export const KEY_LINE_HEIGHT = 'lineHeight';
 
@@ -16,25 +12,17 @@ export const LineHeightPlugin = createPlugin({
     props: {
       defaultNodeValue: 1.5,
       nodeKey: KEY_LINE_HEIGHT,
+      validPluginToInjectPlugin: ({ editor, plugin }) => ({
+        deserializeHtml: {
+          getNode: ({ element, node }) => {
+            if (element.style.lineHeight) {
+              node[getPluginType(editor, plugin)] = element.style.lineHeight;
+            }
+          },
+        },
+      }),
+      validPlugins: [ELEMENT_DEFAULT],
     },
   },
   key: KEY_LINE_HEIGHT,
-})
-  .extend(({ editor }) => ({
-    inject: {
-      props: {
-        validTypes: [getPluginType(editor, ELEMENT_DEFAULT)],
-      },
-    },
-  }))
-  .extend(({ editor, plugin }) =>
-    mapInjectPropsToPlugin(editor, plugin, {
-      deserializeHtml: {
-        getNode: ({ element, node }) => {
-          if (element.style.lineHeight) {
-            node[plugin.key] = element.style.lineHeight;
-          }
-        },
-      },
-    })
-  );
+});

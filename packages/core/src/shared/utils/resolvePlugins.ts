@@ -1,5 +1,5 @@
 import type { PlateEditor } from '../types/PlateEditor';
-import type { PlatePlugin, PlatePluginList } from '../types/plugin/PlatePlugin';
+import type { PlatePlugin, PlatePlugins } from '../types/plugin/PlatePlugin';
 
 import { resolvePlugin } from '../index';
 import { overridePluginsByKey } from './overridePluginsByKey';
@@ -11,7 +11,7 @@ import { overridePluginsByKey } from './overridePluginsByKey';
  */
 export const resolvePlugins = (
   editor: PlateEditor,
-  plugins: PlatePluginList = []
+  plugins: PlatePlugins = []
 ) => {
   editor.plugins = [];
   editor.pluginsByKey = {};
@@ -46,9 +46,9 @@ const mergePluginApis = (editor: PlateEditor) => {
 
 export const resolveAndSortPlugins = (
   editor: PlateEditor,
-  plugins: PlatePluginList
-): PlatePluginList => {
-  const resolvedPlugins: PlatePluginList = [];
+  plugins: PlatePlugins
+): PlatePlugins => {
+  const resolvedPlugins: PlatePlugins = [];
 
   const processPlugin = (plugin: PlatePlugin) => {
     const resolvedPlugin = resolvePlugin(editor, plugin);
@@ -69,7 +69,7 @@ export const resolveAndSortPlugins = (
 
   // Reorder based on dependencies
   const pluginMap = new Map(resolvedPlugins.map((p) => [p.key, p]));
-  const orderedPlugins: PlatePluginList = [];
+  const orderedPlugins: PlatePlugins = [];
   const visited = new Set<string>();
 
   const visit = (plugin: PlatePlugin) => {
@@ -97,7 +97,7 @@ export const resolveAndSortPlugins = (
   return orderedPlugins;
 };
 
-export const mergePlugins = (editor: PlateEditor, plugins: PlatePluginList) => {
+export const mergePlugins = (editor: PlateEditor, plugins: PlatePlugins) => {
   plugins.forEach((plugin) => {
     if (editor.pluginsByKey[plugin.key]) {
       // Update existing plugin
@@ -123,7 +123,7 @@ export const mergePlugins = (editor: PlateEditor, plugins: PlatePluginList) => {
 };
 
 export const applyPluginOverrides = (editor: PlateEditor) => {
-  const applyOverrides = (plugins: PlatePluginList): PlatePluginList => {
+  const applyOverrides = (plugins: PlatePlugin[]): PlatePlugin[] => {
     let overriddenPlugins = plugins;
 
     const enabledOverrides: Record<string, boolean> = {};
@@ -179,11 +179,11 @@ export const applyPluginOverrides = (editor: PlateEditor) => {
       }));
   };
 
-  editor.plugins = applyOverrides(editor.plugins);
+  editor.plugins = applyOverrides(editor.plugins as any);
 
   // Final pass: ensure all plugins are properly resolved after overrides
   editor.plugins = editor.plugins.map((plugin) =>
-    resolvePlugin(editor, plugin)
+    resolvePlugin(editor, plugin as any)
   );
   editor.pluginsByKey = Object.fromEntries(
     editor.plugins.map((plugin) => [plugin.key, plugin])

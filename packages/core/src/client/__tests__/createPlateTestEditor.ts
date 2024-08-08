@@ -19,7 +19,7 @@ import {
 export const createPlateTestEditor = async <
   E extends PlateEditor = PlateEditor,
 >(
-  options: CreatePlateEditorOptions<E>,
+  options: NoInfer<CreatePlateEditorOptions>,
   buildTestHarnessOptions?: Omit<
     Parameters<ReturnType<typeof buildTestHarness>>[0],
     'editor'

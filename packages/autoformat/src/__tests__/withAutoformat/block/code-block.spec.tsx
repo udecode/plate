@@ -9,15 +9,16 @@ import {
 import {
   ELEMENT_DEFAULT,
   type PlateEditor,
-  createPlugin,
   getEditorString,
   getPluginType,
   getRangeFromBlockStart,
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
-import { autoformatPlugin } from 'www/src/lib/plate/demo/plugins/autoformatPlugin';
-import { preFormat } from 'www/src/lib/plate/demo/plugins/autoformatUtils';
+import {
+  autoformatOptions,
+  preFormat,
+} from 'www/src/lib/plate/demo/plugins/autoformatOptions';
 
 import { AutoformatPlugin } from '../../../AutoformatPlugin';
 import { withAutoformat } from '../../../withAutoformat';
@@ -47,7 +48,7 @@ describe('when ``` at block start', () => {
 
     const editor = withAutoformat({
       editor: withReact(input),
-      plugin: autoformatPlugin,
+      plugin: AutoformatPlugin.configure(autoformatOptions),
     });
 
     editor.insertText('`');
@@ -143,7 +144,7 @@ describe('when ```', () => {
 
     const editor = withAutoformat({
       editor: withReact(input),
-      plugin: createPlugin(autoformatPlugin),
+      plugin: AutoformatPlugin.configure(autoformatOptions),
     });
 
     editor.insertText('`');

@@ -9,12 +9,12 @@ import {
 
 import type { NormalizeTypesPluginOptions } from './NormalizeTypesPlugin';
 
-export const withNormalizeTypes: WithOverride<NormalizeTypesPluginOptions> = (
-  {
-    editor,
-    plugin: { options: { onError, rules } }
-  }
-) => {
+export const withNormalizeTypes: WithOverride<NormalizeTypesPluginOptions> = ({
+  editor,
+  plugin: {
+    options: { onError, rules },
+  },
+}) => {
   const { normalizeNode } = editor;
 
   editor.normalizeNode = ([currentNode, currentPath]) => {

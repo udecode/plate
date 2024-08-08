@@ -77,7 +77,9 @@ export const preventDeleteTableCell = (
 };
 
 /** Prevent cell deletion. */
-export const withDeleteTable: WithOverride<TablePluginOptions> = ({ editor }) => {
+export const withDeleteTable: WithOverride<TablePluginOptions> = ({
+  editor,
+}) => {
   const { deleteBackward, deleteForward, deleteFragment } = editor;
 
   editor.deleteBackward = (unit) => {

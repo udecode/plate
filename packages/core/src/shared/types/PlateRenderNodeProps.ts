@@ -1,13 +1,15 @@
 import type { AnyObject } from '@udecode/utils';
 
 import type { PlateEditor } from './PlateEditor';
-import type { PlatePlugin } from './plugin';
+import type { AnyEditorPlugin } from './plugin';
 
 /** Node props passed by Plate */
-export interface PlateRenderNodeProps<O = {}, A = {}, T = {}, S = {}> {
+export interface PlateRenderNodeProps<
+  P extends AnyEditorPlugin = AnyEditorPlugin,
+> {
   editor: PlateEditor;
 
-  plugin: PlatePlugin<string, O, A, T, S>;
+  plugin: P;
 
   className?: string;
 

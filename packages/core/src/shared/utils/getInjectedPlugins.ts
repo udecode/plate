@@ -1,29 +1,18 @@
 import type { PlateEditor } from '../types/PlateEditor';
-import type { PlatePlugin, PlatePluginList } from '../types/plugin/PlatePlugin';
-
-export type InjectedPlugin<
-  K extends string = '',
-  O = {},
-  A = {},
-  T = {},
-  S = {},
-> = Partial<PlatePlugin<K, O, A, T, S>>;
+import type {
+  AnyEditorPlugin,
+  PlatePlugins,
+} from '../types/plugin/PlatePlugin';
 
 /**
  * Get all plugins having a defined `inject.pluginsByKey[plugin.key]`. It
  * includes `plugin` itself.
  */
-export const getInjectedPlugins = <
-  K extends string = '',
-  O = {},
-  A = {},
-  T = {},
-  S = {},
->(
+export const getInjectedPlugins = (
   editor: PlateEditor,
-  plugin: PlatePlugin<K, O, A, T, S>
-): PlatePluginList => {
-  const injectedPlugins: PlatePluginList = [];
+  plugin: AnyEditorPlugin
+): Partial<AnyEditorPlugin>[] => {
+  const injectedPlugins: PlatePlugins = [];
 
   [...editor.plugins].reverse().forEach((p) => {
     const injectedPlugin = p.inject.pluginsByKey?.[plugin.key];

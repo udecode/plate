@@ -1,51 +1,43 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import type { ValueId } from '@/config/customizer-plugins';
 
 import { cn } from '@udecode/cn';
-import { createAlignPlugin } from '@udecode/plate-alignment';
-import { createAutoformatPlugin } from '@udecode/plate-autoformat';
+import { AlignPlugin } from '@udecode/plate-alignment';
+import { AutoformatPlugin } from '@udecode/plate-autoformat';
 import {
-  createBoldPlugin,
-  createCodePlugin,
-  createItalicPlugin,
-  createStrikethroughPlugin,
-  createSubscriptPlugin,
-  createSuperscriptPlugin,
-  createUnderlinePlugin,
+  BoldPlugin,
+  CodePlugin,
+  ItalicPlugin,
+  StrikethroughPlugin,
+  SubscriptPlugin,
+  SuperscriptPlugin,
+  UnderlinePlugin,
 } from '@udecode/plate-basic-marks';
 import {
+  BlockquotePlugin,
   ELEMENT_BLOCKQUOTE,
-  createBlockquotePlugin,
 } from '@udecode/plate-block-quote';
 import {
-  createExitBreakPlugin,
-  createSingleLinePlugin,
-  createSoftBreakPlugin,
+  ExitBreakPlugin,
+  SingleLinePlugin,
+  SoftBreakPlugin,
 } from '@udecode/plate-break';
-import { createCaptionPlugin } from '@udecode/plate-caption';
+import { CaptionPlugin } from '@udecode/plate-caption';
+import { CodeBlockPlugin, ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
+import { CommentsPlugin } from '@udecode/plate-comments';
+import { Plate, type Value, usePlateEditor } from '@udecode/plate-common';
+import { DndPlugin } from '@udecode/plate-dnd';
+import { EmojiPlugin } from '@udecode/plate-emoji';
+import { ExcalidrawPlugin } from '@udecode/plate-excalidraw';
 import {
-  ELEMENT_CODE_BLOCK,
-  createCodeBlockPlugin,
-} from '@udecode/plate-code-block';
-import { createCommentsPlugin } from '@udecode/plate-comments';
-import {
-  Plate,
-  type PlatePluginComponent,
-  type Value,
-  createPlugins,
-} from '@udecode/plate-common';
-import { createDndPlugin } from '@udecode/plate-dnd';
-import { createEmojiPlugin } from '@udecode/plate-emoji';
-import { createExcalidrawPlugin } from '@udecode/plate-excalidraw';
-import {
-  createFontBackgroundColorPlugin,
-  createFontColorPlugin,
-  createFontSizePlugin,
+  FontBackgroundColorPlugin,
+  FontColorPlugin,
+  FontSizePlugin,
 } from '@udecode/plate-font';
 import {
   ELEMENT_H1,
@@ -54,67 +46,55 @@ import {
   ELEMENT_H4,
   ELEMENT_H5,
   ELEMENT_H6,
-  createHeadingPlugin,
+  HeadingPlugin,
 } from '@udecode/plate-heading';
-import { createHighlightPlugin } from '@udecode/plate-highlight';
-import { createHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
-import { createIndentPlugin } from '@udecode/plate-indent';
-import { createIndentListPlugin } from '@udecode/plate-indent-list';
-import { createJuicePlugin } from '@udecode/plate-juice';
-import { createKbdPlugin } from '@udecode/plate-kbd';
-import { createColumnPlugin } from '@udecode/plate-layout';
-import { createLineHeightPlugin } from '@udecode/plate-line-height';
-import { createLinkPlugin } from '@udecode/plate-link';
-import { createListPlugin, createTodoListPlugin } from '@udecode/plate-list';
+import { HighlightPlugin } from '@udecode/plate-highlight';
 import {
-  createImagePlugin,
-  createMediaEmbedPlugin,
+  ELEMENT_HR,
+  HorizontalRulePlugin,
+} from '@udecode/plate-horizontal-rule';
+import { IndentPlugin } from '@udecode/plate-indent';
+import { IndentListPlugin } from '@udecode/plate-indent-list';
+import { JuicePlugin } from '@udecode/plate-juice';
+import { KbdPlugin } from '@udecode/plate-kbd';
+import { ColumnPlugin } from '@udecode/plate-layout';
+import { LineHeightPlugin } from '@udecode/plate-line-height';
+import { LinkPlugin } from '@udecode/plate-link';
+import { ListPlugin, TodoListPlugin } from '@udecode/plate-list';
+import {
+  ELEMENT_IMAGE,
+  ELEMENT_MEDIA_EMBED,
+  ImagePlugin,
+  MediaEmbedPlugin,
 } from '@udecode/plate-media';
-import { createMentionPlugin } from '@udecode/plate-mention';
-import { createNodeIdPlugin } from '@udecode/plate-node-id';
-import { createNormalizeTypesPlugin } from '@udecode/plate-normalizers';
-import {
-  ELEMENT_PARAGRAPH,
-  createParagraphPlugin,
-} from '@udecode/plate-paragraph';
-import { createResetNodePlugin } from '@udecode/plate-reset-node';
-import {
-  createDeletePlugin,
-  createSelectOnBackspacePlugin,
-} from '@udecode/plate-select';
-import { createBlockSelectionPlugin } from '@udecode/plate-selection';
-import { createDeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
-import { createDeserializeMdPlugin } from '@udecode/plate-serializer-md';
-import { createSlashPlugin } from '@udecode/plate-slash-command';
-import { createTabbablePlugin } from '@udecode/plate-tabbable';
-import { createTablePlugin } from '@udecode/plate-table';
-import { ELEMENT_TOGGLE, createTogglePlugin } from '@udecode/plate-toggle';
-import { createTrailingBlockPlugin } from '@udecode/plate-trailing-block';
+import { MentionPlugin } from '@udecode/plate-mention';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
+import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
+import { ELEMENT_PARAGRAPH, ParagraphPlugin } from '@udecode/plate-paragraph';
+import { ResetNodePlugin } from '@udecode/plate-reset-node';
+import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
+import { BlockSelectionPlugin } from '@udecode/plate-selection';
+import { DeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
+import { DeserializeMdPlugin } from '@udecode/plate-serializer-md';
+import { SlashPlugin } from '@udecode/plate-slash-command';
+import { TablePlugin } from '@udecode/plate-table';
+import { ELEMENT_TOGGLE, TogglePlugin } from '@udecode/plate-toggle';
+import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
 import { settingsStore } from '@/components/context/settings-store';
 import { PlaygroundFixedToolbarButtons } from '@/components/plate-ui/playground-fixed-toolbar-buttons';
 import { PlaygroundFloatingToolbarButtons } from '@/components/plate-ui/playground-floating-toolbar-buttons';
-import { captionPlugin } from '@/lib/plate/demo/plugins/captionPlugin';
+import { getAutoformatOptions } from '@/lib/plate/demo/plugins/autoformatOptions';
 import { createPlateUI } from '@/plate/create-plate-ui';
 import { CommentsProvider } from '@/plate/demo/comments/CommentsProvider';
 import { editableProps } from '@/plate/demo/editableProps';
 import { isEnabled } from '@/plate/demo/is-enabled';
-import { alignPlugin } from '@/plate/demo/plugins/alignPlugin';
-import { autoformatIndentLists } from '@/plate/demo/plugins/autoformatIndentLists';
-import { autoformatLists } from '@/plate/demo/plugins/autoformatLists';
-import { autoformatRules } from '@/plate/demo/plugins/autoformatRules';
-import { dragOverCursorPlugin } from '@/plate/demo/plugins/dragOverCursorPlugin';
-import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
-import { forcedLayoutPlugin } from '@/plate/demo/plugins/forcedLayoutPlugin';
-import { lineHeightPlugin } from '@/plate/demo/plugins/lineHeightPlugin';
-import { linkPlugin } from '@/plate/demo/plugins/linkPlugin';
-import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin';
-import { selectOnBackspacePlugin } from '@/plate/demo/plugins/selectOnBackspacePlugin';
-import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
-import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
-import { trailingBlockPlugin } from '@/plate/demo/plugins/trailingBlockPlugin';
+import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
+import { TabbablePlugin } from '@/plate/demo/plugins/TabbablePlugin';
+import { exitBreakOptions } from '@/plate/demo/plugins/exitBreakOptions';
+import { resetBlockTypeOptions } from '@/plate/demo/plugins/resetBlockTypeOptions';
+import { softBreakOptions } from '@/plate/demo/plugins/softBreakOptions';
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
-import { Prism } from '@/registry/default/plate-ui/code-block-combobox';
 import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
 import { CursorOverlay } from '@/registry/default/plate-ui/cursor-overlay';
 import { Editor } from '@/registry/default/plate-ui/editor';
@@ -129,249 +109,199 @@ import {
   TodoLi,
   TodoMarker,
 } from '@/registry/default/plate-ui/indent-todo-marker-component';
+import { LinkFloatingToolbar } from '@/registry/default/plate-ui/link-floating-toolbar';
 
-export const usePlaygroundPlugins = ({
-  components = createPlateUI(),
+import { usePlaygroundEnabled } from './usePlaygroundEnabled';
+
+export const usePlaygroundEditor = ({
   id,
 }: {
-  components?: Record<string, PlatePluginComponent>;
   id?: ValueId;
 } = {}) => {
   const enabled = settingsStore.use.checkedPlugins();
 
-  const autoformatOptions = {
-    enableUndoOnDelete: true,
-    rules: [...autoformatRules],
-  };
+  const autoformatOptions = getAutoformatOptions(id, enabled);
+  const overridePlugins = usePlaygroundEnabled(id);
 
-  if (id === 'indentlist') {
-    autoformatOptions.rules.push(...autoformatIndentLists);
-  } else if (id === 'list') {
-    autoformatOptions.rules.push(...autoformatLists);
-  } else if (enabled.listStyleType) {
-    autoformatOptions.rules.push(...autoformatIndentLists);
-  } else if (enabled.list) {
-    autoformatOptions.rules.push(...autoformatLists);
-  }
+  return usePlateEditor(
+    {
+      override: {
+        components: createPlateUI({
+          draggable: isEnabled('dnd', id),
+          placeholder: isEnabled('placeholder', id),
+        }),
+        plugins: overridePlugins,
+      },
+      plugins: [
+        // Nodes
+        ParagraphPlugin,
+        HeadingPlugin,
+        BlockquotePlugin,
+        CodeBlockPlugin,
+        HorizontalRulePlugin,
+        LinkPlugin.extend({
+          renderAfterEditable: () => <LinkFloatingToolbar />,
+        }),
+        ListPlugin,
+        ImagePlugin.extend({
+          renderAfterEditable: ImagePreview,
+        }),
+        MediaEmbedPlugin,
+        CaptionPlugin.configure({
+          pluginKeys: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED],
+        }),
+        MentionPlugin.configure({
+          triggerPreviousCharPattern: /^$|^[\s"']$/,
+        }),
+        SlashPlugin,
+        TablePlugin.configure({
+          enableMerging: id === 'tableMerge',
+        }),
+        TodoListPlugin,
+        TogglePlugin,
+        ExcalidrawPlugin,
 
-  return useMemo(
-    () => {
-      return createPlugins(
-        [
-          // Nodes
-          createParagraphPlugin({ enabled: !!enabled.p }),
-          createHeadingPlugin({ enabled: !!enabled.heading }),
-          createBlockquotePlugin({ enabled: !!enabled.blockquote }),
-          createCodeBlockPlugin({
-            enabled: !!enabled.code_block,
-            options: {
-              prism: Prism,
+        // Marks
+        BoldPlugin,
+        ItalicPlugin,
+        UnderlinePlugin,
+        StrikethroughPlugin,
+        CodePlugin,
+        SubscriptPlugin,
+        SuperscriptPlugin,
+        FontColorPlugin,
+        FontBackgroundColorPlugin,
+        FontSizePlugin,
+        HighlightPlugin,
+        KbdPlugin,
+
+        // Block Style
+        AlignPlugin.extend({
+          inject: {
+            props: {
+              validPlugins: [
+                ELEMENT_PARAGRAPH,
+                ELEMENT_MEDIA_EMBED,
+                ELEMENT_H1,
+                ELEMENT_H2,
+                ELEMENT_H3,
+                ELEMENT_H4,
+                ELEMENT_H5,
+                ELEMENT_IMAGE,
+                ELEMENT_H6,
+              ],
             },
-          }),
-          createHorizontalRulePlugin({ enabled: !!enabled.hr }),
-          createLinkPlugin({ ...linkPlugin, enabled: !!enabled.a }),
-          createListPlugin({
-            enabled: id === 'list' || !!enabled.list,
-          }),
-          createImagePlugin({
-            enabled: !!enabled.img,
-            renderAfterEditable: ImagePreview,
-          }),
-          createMediaEmbedPlugin({ enabled: !!enabled.media_embed }),
-          createCaptionPlugin({ ...captionPlugin, enabled: !!enabled.caption }),
-          createMentionPlugin({
-            enabled: !!enabled.mention,
-            options: {
-              triggerPreviousCharPattern: /^$|^[\s"']$/,
+          },
+        }),
+        IndentPlugin.extend({
+          inject: {
+            props: {
+              validPlugins: [
+                ELEMENT_PARAGRAPH,
+                ELEMENT_H1,
+                ELEMENT_H2,
+                ELEMENT_H3,
+                ELEMENT_H4,
+                ELEMENT_H5,
+                ELEMENT_H6,
+                ELEMENT_BLOCKQUOTE,
+                ELEMENT_CODE_BLOCK,
+                ELEMENT_TOGGLE,
+              ],
             },
-          }),
-          createSlashPlugin(),
-          createTablePlugin({
-            enabled: !!enabled.table,
-            options: {
-              enableMerging: id === 'tableMerge',
+          },
+        }),
+        IndentListPlugin.extend({
+          inject: {
+            props: {
+              validPlugins: [
+                ELEMENT_PARAGRAPH,
+                ELEMENT_H1,
+                ELEMENT_H2,
+                ELEMENT_H3,
+                ELEMENT_H4,
+                ELEMENT_H5,
+                ELEMENT_H6,
+                ELEMENT_BLOCKQUOTE,
+                ELEMENT_CODE_BLOCK,
+                ELEMENT_TOGGLE,
+              ],
             },
-          }),
-          createTodoListPlugin({ enabled: !!enabled.action_item }),
-          createTogglePlugin({ enabled: !!enabled.toggle }),
-          createExcalidrawPlugin({ enabled: !!enabled.excalidraw }),
-
-          // Marks
-          createBoldPlugin({ enabled: !!enabled.bold }),
-          createItalicPlugin({ enabled: !!enabled.italic }),
-          createUnderlinePlugin({ enabled: !!enabled.underline }),
-          createStrikethroughPlugin({ enabled: !!enabled.strikethrough }),
-          createCodePlugin({ enabled: !!enabled.code }),
-          createSubscriptPlugin({ enabled: !!enabled.subscript }),
-          createSuperscriptPlugin({ enabled: !!enabled.superscript }),
-          createFontColorPlugin({ enabled: !!enabled.color }),
-          createFontBackgroundColorPlugin({
-            enabled: !!enabled.backgroundColor,
-          }),
-          createFontSizePlugin({ enabled: !!enabled.fontSize }),
-          createHighlightPlugin({ enabled: !!enabled.highlight }),
-          createKbdPlugin({ enabled: !!enabled.kbd }),
-
-          // Block Style
-          createAlignPlugin({
-            ...alignPlugin,
-            enabled: !!enabled.align,
-          }),
-          createIndentPlugin({
-            enabled: !!enabled.indent,
-            inject: {
-              props: {
-                validTypes: [
-                  ELEMENT_PARAGRAPH,
-                  ELEMENT_H1,
-                  ELEMENT_H2,
-                  ELEMENT_H3,
-                  ELEMENT_H4,
-                  ELEMENT_H5,
-                  ELEMENT_H6,
-                  ELEMENT_BLOCKQUOTE,
-                  ELEMENT_CODE_BLOCK,
-                  ELEMENT_TOGGLE,
-                ],
+          },
+          options: {
+            listStyleTypes: {
+              fire: {
+                liComponent: FireLiComponent,
+                markerComponent: FireMarker,
+                type: 'fire',
+              },
+              todo: {
+                liComponent: TodoLi,
+                markerComponent: TodoMarker,
+                type: 'todo',
               },
             },
-          }),
-          createIndentListPlugin({
-            enabled: id === 'indentlist' || !!enabled.listStyleType,
-            inject: {
-              props: {
-                validTypes: [
-                  ELEMENT_PARAGRAPH,
-                  ELEMENT_H1,
-                  ELEMENT_H2,
-                  ELEMENT_H3,
-                  ELEMENT_H4,
-                  ELEMENT_H5,
-                  ELEMENT_H6,
-                  ELEMENT_BLOCKQUOTE,
-                  ELEMENT_CODE_BLOCK,
-                  ELEMENT_TOGGLE,
-                ],
-              },
+          },
+        }),
+        LineHeightPlugin.extend({
+          inject: {
+            props: {
+              defaultNodeValue: 1.5,
+              validNodeValues: [1, 1.2, 1.5, 2, 3],
+              validPlugins: [
+                ELEMENT_PARAGRAPH,
+                ELEMENT_H1,
+                ELEMENT_H2,
+                ELEMENT_H3,
+                ELEMENT_H4,
+                ELEMENT_H5,
+                ELEMENT_H6,
+              ],
             },
-            options: {
-              listStyleTypes: {
-                fire: {
-                  liComponent: FireLiComponent,
-                  markerComponent: FireMarker,
-                  type: 'fire',
-                },
-                todo: {
-                  liComponent: TodoLi,
-                  markerComponent: TodoMarker,
-                  type: 'todo',
-                },
-              },
-            },
-          }),
-          createLineHeightPlugin({
-            ...lineHeightPlugin,
-            enabled: !!enabled.lineHeight,
-          }),
+          },
+        }),
 
-          // Functionality
-          createAutoformatPlugin({
-            enabled: !!enabled.autoformat,
-            options: autoformatOptions,
-          }),
-          createBlockSelectionPlugin({
-            enabled: id === 'blockselection' || !!enabled.blockSelection,
-            options: {
-              disableContextMenu: true,
-              sizes: {
-                bottom: 0,
-                top: 0,
-              },
-            },
-          }),
-          createDndPlugin({
-            enabled: !!enabled.dnd,
-            options: { enableScroller: true },
-          }),
-          createEmojiPlugin({ enabled: !!enabled.emoji }),
-          createExitBreakPlugin({
-            ...exitBreakPlugin,
-            enabled: !!enabled.exitBreak,
-          }),
-          createNodeIdPlugin({ enabled: !!enabled.nodeId }),
-          createNormalizeTypesPlugin({
-            ...forcedLayoutPlugin,
-            enabled: !!enabled.normalizeTypes,
-          }),
-          createResetNodePlugin({
-            ...resetBlockTypePlugin,
-            enabled: !!enabled.resetNode,
-          }),
-          createSelectOnBackspacePlugin({
-            ...selectOnBackspacePlugin,
-            enabled: !!enabled.selectOnBackspace,
-          }),
-          createDeletePlugin({
-            enabled: !!enabled.delete,
-          }),
-          createSingleLinePlugin({
-            enabled: id === 'singleline' || !!enabled.singleLine,
-          }),
-          createSoftBreakPlugin({
-            ...softBreakPlugin,
-            enabled: !!enabled.softBreak,
-          }),
-          createTabbablePlugin({
-            ...tabbablePlugin,
-            enabled: !!enabled.tabbable,
-          }),
-          createTrailingBlockPlugin({
-            ...trailingBlockPlugin,
-            enabled: id !== 'singleline' && !!enabled.trailingBlock,
-          }),
-          { ...dragOverCursorPlugin, enabled: !!enabled.dragOverCursor },
+        // Functionality
+        AutoformatPlugin.configure(autoformatOptions),
+        BlockSelectionPlugin.configure({
+          disableContextMenu: true,
+          sizes: {
+            bottom: 0,
+            top: 0,
+          },
+        }),
+        DndPlugin.configure({ enableScroller: true }),
+        EmojiPlugin,
+        ExitBreakPlugin.configure(exitBreakOptions),
+        NodeIdPlugin,
+        NormalizeTypesPlugin.configure({
+          rules: [{ path: [0], strictType: ELEMENT_H1 }],
+        }),
+        ResetNodePlugin.configure(resetBlockTypeOptions),
+        SelectOnBackspacePlugin.configure({
+          query: {
+            allow: [ELEMENT_IMAGE, ELEMENT_HR],
+          },
+        }),
+        DeletePlugin,
+        SingleLinePlugin,
+        SoftBreakPlugin.configure(softBreakOptions),
+        TabbablePlugin,
+        TrailingBlockPlugin.configure({ type: ELEMENT_PARAGRAPH }),
+        DragOverCursorPlugin,
 
-          // Collaboration
-          createCommentsPlugin({ enabled: !!enabled.comment }),
+        // Collaboration
+        CommentsPlugin,
 
-          // Deserialization
-          createDeserializeDocxPlugin({ enabled: !!enabled.deserializeDocx }),
-          createDeserializeMdPlugin({ enabled: !!enabled.deserializeMd }),
-          createJuicePlugin({ enabled: !!enabled.juice }),
-          createColumnPlugin({ enabled: !!enabled.column }),
-        ],
-        {
-          components,
-        }
-      );
+        // Deserialization
+        DeserializeDocxPlugin,
+        DeserializeMdPlugin,
+        JuicePlugin,
+        ColumnPlugin,
+      ],
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [enabled]
   );
-};
-
-// reset editor when initialValue changes
-export const useInitialValueVersion = (initialValue: Value) => {
-  const enabled = settingsStore.use.checkedPlugins();
-  const [version, setVersion] = useState(1);
-  const prevEnabled = useRef(enabled);
-  const prevInitialValueRef = useRef(initialValue);
-
-  useEffect(() => {
-    if (enabled === prevEnabled.current) return;
-
-    prevEnabled.current = enabled;
-    setVersion((v) => v + 1);
-  }, [enabled]);
-
-  useEffect(() => {
-    if (initialValue === prevInitialValueRef.current) return;
-
-    prevInitialValueRef.current = initialValue;
-    setVersion((v) => v + 1);
-  }, [initialValue]);
-
-  return version;
 };
 
 export default function PlaygroundDemo({ id }: { id?: ValueId }) {
@@ -380,25 +310,16 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
   const initialValue = usePlaygroundValue(id);
   const key = useInitialValueVersion(initialValue);
 
-  const plugins = usePlaygroundPlugins({
-    components: createPlateUI(
-      {},
-      {
-        draggable: isEnabled('dnd', id),
-        placeholder: isEnabled('placeholder', id),
-      }
-    ),
-    id,
-  });
+  const editor = usePlaygroundEditor({ id });
 
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="relative">
         <Plate
+          editor={editor}
           initialValue={initialValue}
           key={key}
-          normalizeInitialValue
-          plugins={plugins}
+          shouldNormalizeEditor
         >
           <CommentsProvider>
             {enabled['fixed-toolbar'] && (
@@ -463,3 +384,27 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
     </DndProvider>
   );
 }
+
+// reset editor when initialValue changes
+export const useInitialValueVersion = (initialValue: Value) => {
+  const enabled = settingsStore.use.checkedPlugins();
+  const [version, setVersion] = useState(1);
+  const prevEnabled = useRef(enabled);
+  const prevInitialValueRef = useRef(initialValue);
+
+  useEffect(() => {
+    if (enabled === prevEnabled.current) return;
+
+    prevEnabled.current = enabled;
+    setVersion((v) => v + 1);
+  }, [enabled]);
+
+  useEffect(() => {
+    if (initialValue === prevInitialValueRef.current) return;
+
+    prevInitialValueRef.current = initialValue;
+    setVersion((v) => v + 1);
+  }, [initialValue]);
+
+  return version;
+};

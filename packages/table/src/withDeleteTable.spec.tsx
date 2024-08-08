@@ -105,12 +105,13 @@ describe('withDeleteTable', () => {
         </editor>
       ) as any as PlateEditor;
 
+      const plugin = TablePlugin;
       let editor = createPlateEditor({
         editor: input,
-        plugins: [TablePlugin],
+        plugins: [plugin],
       });
 
-      editor = withDeleteTable({ editor });
+      editor = withDeleteTable({ editor, plugin });
 
       editor.deleteForward('character');
 
@@ -180,12 +181,13 @@ describe('withDeleteTable', () => {
         </editor>
       ) as any as PlateEditor;
 
+      const plugin = TablePlugin;
       editor = createPlateEditor({
         editor: input,
-        plugins: [TablePlugin],
+        plugins: [plugin],
       });
 
-      editor = withDeleteTable(editor);
+      editor = withDeleteTable({ editor, plugin });
 
       editor.deleteFragment();
     });

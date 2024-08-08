@@ -13,10 +13,8 @@ Plugins are the building blocks of a Plate editor. Many plugins are provided out
 Most plugins you'll create will look something like this:
 
 ```ts showLineNumbers
-const KEY_AMAZING = 'amazing';
-
-const createAmazingPlugin = createPluginFactory({
-  key: KEY_AMAZING,
+const AmazingPlugin = createPlugin({
+  key: 'amazing',
 });
 ```
 
@@ -189,19 +187,15 @@ const KEY_ALIGN = 'align';
 
 const createAlignPlugin = createPluginFactory({
   key: KEY_ALIGN,
-
-  // Note that we're using `then` to access to the editor
-  then: (editor) => ({
-    inject: {
-      props: {
-        nodeKey: KEY_ALIGN,
-        defaultNodeValue: 'left',
-        styleKey: 'textAlign',
-        validNodeValues: ['left', 'center', 'right', 'justify'],
-        validTypes: [getPluginType(editor, ELEMENT_DEFAULT)],
-      },
+  inject: {
+    props: {
+      nodeKey: KEY_ALIGN,
+      defaultNodeValue: 'left',
+      styleKey: 'textAlign',
+      validNodeValues: ['left', 'center', 'right', 'justify'],
+      validPlugins: [ELEMENT_DEFAULT],
     },
-  }),
+  },
 });
 ```
 

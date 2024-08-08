@@ -31,9 +31,7 @@ export const useBlockContextMenuState = () => {
   };
 };
 
-export const useBlockContextMenu = ({
-  editor,
-}: ReturnType<typeof useBlockContextMenuState>) => {
+export const useBlockContextMenu = () => {
   return {
     props: {
       // onOpenChange: (value: boolean) => {

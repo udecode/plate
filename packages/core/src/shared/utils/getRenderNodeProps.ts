@@ -3,7 +3,7 @@ import type { AnyObject } from '@udecode/utils';
 import { clsx } from 'clsx';
 
 import type { PlateRenderNodeProps } from '../types/PlateRenderNodeProps';
-import type { PlatePlugin } from '../types/plugin/PlatePlugin';
+import type { AnyEditorPlugin } from '../types/plugin/PlatePlugin';
 
 import { getSlateClass } from './misc/getSlateClass';
 
@@ -18,7 +18,7 @@ export const getRenderNodeProps = ({
 }: {
   attributes?: AnyObject;
   nodeProps: PlateRenderNodeProps;
-  plugin: PlatePlugin;
+  plugin: AnyEditorPlugin;
 }): PlateRenderNodeProps => {
   let newProps: AnyObject = {};
 

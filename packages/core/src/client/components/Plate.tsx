@@ -88,7 +88,7 @@ function PlateInner({
   return (
     <PlateStoreProvider
       decorate={decorate}
-      editor={editor as any}
+      editor={editor}
       onChange={onChange as PlateStoreState['onChange']}
       onSelectionChange={
         onSelectionChange as PlateStoreState['onSelectionChange']

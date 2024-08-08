@@ -1,6 +1,6 @@
 import type React from 'react';
 
-import type { PlatePluginContext } from './PlatePlugin';
+import type { EditorPluginContext } from './PlatePlugin';
 
 /** If true, the next handlers will be skipped. */
 export type HandlerReturnType = boolean | void;
@@ -8,7 +8,7 @@ export type HandlerReturnType = boolean | void;
 export type DOMHandler<O = {}, A = {}, T = {}, S = {}, EV = {}> = (
   ctx: {
     event: EV;
-  } & PlatePluginContext<string, O, A, T, S>
+  } & EditorPluginContext<O, A, T, S>
 ) => HandlerReturnType;
 
 export interface DOMHandlers<O = {}, A = {}, T = {}, S = {}> {

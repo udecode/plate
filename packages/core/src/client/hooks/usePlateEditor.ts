@@ -17,7 +17,7 @@ import {
  * @returns {E & PlateEditor<V>} - The created Plate editor instance.
  */
 export function usePlateEditor<E extends PlateEditor = PlateEditor>(
-  options: CreatePlateEditorOptions<E>,
+  options: CreatePlateEditorOptions<E> = {},
   deps: React.DependencyList = []
 ): E {
   return React.useMemo(

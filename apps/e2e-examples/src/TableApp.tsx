@@ -1,11 +1,7 @@
-import {
-  Plate,
-  PlateContent,
-  createPlugins,
-  createTablePlugin,
-} from '@udecode/plate';
+import { Plate, PlateContent, TablePlugin } from '@udecode/plate';
+import { usePlateEditor } from '@udecode/plate-common';
 
-import { createPlateUI } from '@/plate/create-plate-ui';
+import { PlateUI } from '@/plate/demo/plate-ui';
 
 import { useVariant } from './useVariant';
 
@@ -36,19 +32,17 @@ export function TableApp() {
     },
   });
 
-  const plugins = createPlugins(
-    [
-      createTablePlugin({
-        options: {
-          disableMarginLeft,
-          initialTableWidth,
-        },
+  const editor = usePlateEditor({
+    override: {
+      components: PlateUI,
+    },
+    plugins: [
+      TablePlugin.configure({
+        disableMarginLeft,
+        initialTableWidth,
       }),
     ],
-    {
-      components: createPlateUI(),
-    }
-  );
+  });
 
   const initialValue = [
     {
@@ -86,7 +80,7 @@ export function TableApp() {
   ];
 
   return (
-    <Plate initialValue={initialValue} plugins={plugins}>
+    <Plate editor={editor} initialValue={initialValue}>
       <PlateContent readOnly={readOnly} />
     </Plate>
   );

@@ -9,7 +9,7 @@ import {
   LengthPlugin,
   NodeFactoryPlugin,
   type PlatePlugin,
-  type PlatePluginList,
+  type PlatePlugins,
   PrevSelectionPlugin,
 } from '../index';
 
@@ -22,7 +22,7 @@ export const getCorePlugins = ({
   maxLength,
   reactPlugin,
 }: { reactPlugin: PlatePlugin<'react'> } & GetCorePluginsOptions) => {
-  const plugins: PlatePluginList = [
+  const plugins: PlatePlugins = [
     reactPlugin,
     HistoryPlugin,
     NodeFactoryPlugin,

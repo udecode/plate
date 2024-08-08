@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { AnyPlatePlugin } from '../../shared/types/plugin/PlatePlugin';
+import type { AnyEditorPlugin } from '../../shared/types/plugin/PlatePlugin';
 
 import { type PlateId, useEditorRef, usePlateSelectors } from '../stores';
 
@@ -9,7 +9,7 @@ export function EditorRefPluginEffect({
   plugin,
 }: {
   id?: PlateId;
-  plugin: AnyPlatePlugin;
+  plugin: AnyEditorPlugin;
 }) {
   const editor = useEditorRef(id);
 

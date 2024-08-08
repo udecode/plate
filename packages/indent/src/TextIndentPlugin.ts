@@ -1,8 +1,4 @@
-import {
-  ELEMENT_DEFAULT,
-  createPlugin,
-  getPluginType,
-} from '@udecode/plate-common/server';
+import { ELEMENT_DEFAULT, createPlugin } from '@udecode/plate-common/server';
 
 import type { IndentPluginOptions } from './types';
 
@@ -18,7 +14,6 @@ export const TextIndentPlugin = createPlugin<'textIndent', IndentPluginOptions>(
   }
 ).extend(
   ({
-    editor,
     plugin: {
       options: { offset, unit },
     },
@@ -30,7 +25,7 @@ export const TextIndentPlugin = createPlugin<'textIndent', IndentPluginOptions>(
         transformNodeValue({ nodeValue }) {
           return nodeValue * offset! + unit!;
         },
-        validTypes: [getPluginType(editor, ELEMENT_DEFAULT)],
+        validPlugins: [ELEMENT_DEFAULT],
       },
     },
   })

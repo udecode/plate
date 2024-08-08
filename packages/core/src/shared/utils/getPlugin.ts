@@ -1,6 +1,10 @@
 import type { PlateEditor } from '../types/PlateEditor';
-import type { AnyPlatePlugin, PlatePlugin } from '../types/plugin/PlatePlugin';
-import type { PluginKey } from '../types/plugin/PlatePluginKey';
+import type {
+  AnyEditorPlugin,
+  EditorPlugin,
+  PlatePlugin,
+  PluginKey,
+} from '../types/plugin/PlatePlugin';
 
 import { createPlugin } from './createPlugin';
 
@@ -16,18 +20,18 @@ export type InferPluginTransforms<P> =
 /** Get editor plugin by key or plugin object. */
 export function getPlugin<O = {}, A = {}, T = {}, S = {}>(
   editor: PlateEditor,
-  keyOrPlugin: PlatePlugin<any, O, A, T, S> | PluginKey
-): PlatePlugin<string, O, A, T, S> {
+  keyOrPlugin: EditorPlugin<O, A, T, S> | PluginKey
+): EditorPlugin<O, A, T, S> {
   const key = typeof keyOrPlugin === 'string' ? keyOrPlugin : keyOrPlugin.key;
 
   return ((editor.pluginsByKey?.[key] as any) ??
-    createPlugin({ key })) as PlatePlugin<string, O, A, T, S>;
+    createPlugin({ key })) as EditorPlugin<O, A, T, S>;
 }
 
 /** Get editor plugin options by key or plugin object. */
 export function getPluginOptions<O = any>(
   editor: PlateEditor,
-  keyOrPlugin: PlatePlugin<any, O, any, any, any> | PluginKey
+  keyOrPlugin: EditorPlugin<O, any, any, any> | PluginKey
 ): O {
   const plugin = getPlugin(editor, keyOrPlugin);
 
@@ -37,7 +41,7 @@ export function getPluginOptions<O = any>(
 /** Get editor plugin type by key or plugin object. */
 export function getPluginType(
   editor: PlateEditor,
-  keyOrPlugin: AnyPlatePlugin | PluginKey
+  keyOrPlugin: AnyEditorPlugin | PluginKey
 ): string {
   const plugin = getPlugin(editor, keyOrPlugin);
 
@@ -48,7 +52,7 @@ export function getPluginType(
 export const getPluginTypes = (editor: PlateEditor, keys: PluginKey[]) =>
   keys.map((key) => getPluginType(editor, key));
 
-// export function getPluginApi<P extends PlatePlugin<any, any, any, any>>(
+// export function getPluginApi<P extends EditorPlugin< any, any, any>>(
 //   editor: PlateEditor,
 //   plugin: P
 // ): InferPluginApi<P> {

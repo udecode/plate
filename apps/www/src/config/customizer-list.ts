@@ -49,7 +49,7 @@ import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
 import { uniqBy } from 'lodash';
 
 import { customizerItems } from '@/config/customizer-items';
-import { KEY_DRAG_OVER_CURSOR } from '@/plate/demo/plugins/dragOverCursorPlugin';
+import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
 
 export const customizerList = [
   {
@@ -109,7 +109,7 @@ export const customizerList = [
       customizerItems[KEY_BLOCK_SELECTION],
       customizerItems[KEY_CAPTION],
       customizerItems[KEY_DND],
-      customizerItems[KEY_DRAG_OVER_CURSOR],
+      customizerItems[DragOverCursorPlugin.key],
       customizerItems[KEY_EMOJI],
       customizerItems[KEY_EXIT_BREAK],
       customizerItems[KEY_NODE_ID],
@@ -188,7 +188,7 @@ export const orderedPluginKeys = [
   KEY_SOFT_BREAK,
   KEY_TABBABLE,
   KEY_TRAILING_BLOCK,
-  KEY_DRAG_OVER_CURSOR,
+  DragOverCursorPlugin.key,
 
   // Collaboration
   MARK_COMMENT,

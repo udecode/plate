@@ -45,7 +45,6 @@ describe('createPlugin', () => {
           type: 'b',
         })
       );
-      const c = plugin.options.a;
 
       expect({
         inject: plugin.inject,
@@ -95,8 +94,6 @@ describe('createPlugin', () => {
           type: 'aaa',
         })
       );
-
-      const a = plugin.key;
 
       expect(plugin.plugins[0].type).toBe('aaa');
     });
@@ -311,21 +308,21 @@ describe('createPlugin', () => {
     it('should be', () => {
       const plugin = resolvePluginTest(
         BasicElementsPlugin.extendPlugin('heading', {
-          key: 'h',
           options: {
             levels: 5,
           },
+          type: 'h',
         })
       );
 
-      const headingPlugin = plugin.plugins.find((p) => p.key === 'h');
-      const { key, options } = headingPlugin!;
+      const headingPlugin = plugin.plugins.find((p) => p.key === 'heading');
+      const { options, type } = headingPlugin!;
 
-      expect({ key, options }).toEqual({
-        key: 'h',
+      expect({ options, type }).toEqual({
         options: {
           levels: 5,
         },
+        type: 'h',
       });
     });
   });
@@ -382,10 +379,10 @@ describe('createPlugin', () => {
 
       const plugin = getPlugin(editor, ELEMENT_LINK);
 
-      expect((plugin.deserializeHtml as any)?.getNode?.({} as any)).toEqual({
+      expect(plugin.deserializeHtml?.getNode?.({} as any)).toEqual({
         test: true,
       });
-      expect((plugin.deserializeHtml as any)?.withoutChildren).toBeTruthy();
+      expect(plugin.deserializeHtml?.withoutChildren).toBeTruthy();
     });
   });
 
@@ -577,7 +574,7 @@ describe('createPlugin', () => {
 
       const configuredTwice = configuredOnce.configure({
         optionB: 'modified',
-      } as any);
+      });
 
       const resolvedPlugin = resolvePluginTest(configuredTwice);
 

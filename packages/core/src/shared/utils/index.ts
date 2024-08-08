@@ -10,7 +10,6 @@ export * from './getKeysByTypes';
 export * from './getPlugin';
 export * from './getPluginInjectProps';
 export * from './getRenderNodeProps';
-export * from './mapInjectPropsToPlugin';
 export * from './mergeDeepToNodes';
 export * from './normalizeDescendantsToDocumentFragment';
 export * from './overridePluginsByKey';
