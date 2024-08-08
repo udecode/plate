@@ -94,24 +94,24 @@ Creates a new Plate plugin with the given configuration, supporting extension, n
   <APIItem name="config" type="Partial<PlatePlugin<K, O, A, T, S>> | ((editor: PlateEditor) => Partial<PlatePlugin<K, O, A, T, S>>)">
     The configuration object for the plugin, or a function that returns the configuration. If a function is provided, it will be stored in `__extensions` and executed when the plugin is resolved with the editor. All properties are optional except `key`.
     <APISubList>
-      <APISubItem name="key" type="string" required>
+      <APISubListItem name="key" type="string" required>
         Unique identifier for the plugin. Required and specified by the K generic.
-      </APISubItem>
-      <APISubItem name="options" type="O">
+      </APISubListItem>
+      <APISubListItem name="options" type="O">
         Plugin-specific options.
-      </APISubItem>
-      <APISubItem name="api" type="A">
+      </APISubListItem>
+      <APISubListItem name="api" type="A">
         API functions provided by the plugin. These should not mutate the editor state.
-      </APISubItem>
-      <APISubItem name="transforms" type="T">
+      </APISubListItem>
+      <APISubListItem name="transforms" type="T">
         Transformation functions provided by the plugin. These should mutate the editor state.
-      </APISubItem>
-      <APISubItem name="plugins" type="PlatePlugin[]">
+      </APISubListItem>
+      <APISubListItem name="plugins" type="PlatePlugin[]">
         Nested plugins.
-      </APISubItem>
-      <APISubItem name="...other" type="Partial<PlatePlugin>">
+      </APISubListItem>
+      <APISubListItem name="...other" type="Partial<PlatePlugin>">
         Any other valid PlatePlugin properties.
-      </APISubItem>
+      </APISubListItem>
     </APISubList>
   </APIItem>
 </APIParameters>

@@ -1,8 +1,7 @@
-import type { KeyboardHandler } from '@udecode/plate-common';
-
 import {
   ELEMENT_DEFAULT,
   type HotkeyPluginOptions,
+  type KeyboardHandler,
   getPluginType,
   isHotkey,
   toggleNodeType,
