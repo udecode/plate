@@ -1,6 +1,5 @@
-import type { KeyboardHandler } from '@udecode/plate-common';
-
 import {
+  type KeyboardHandler,
   type ToggleMarkPluginOptions,
   isHotkey,
 } from '@udecode/plate-core/server';
