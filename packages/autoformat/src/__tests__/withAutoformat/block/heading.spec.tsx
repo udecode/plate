@@ -4,7 +4,7 @@ import { ELEMENT_H1 } from '@udecode/plate-heading';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 import {
-  autoformatOptions,
+  getAutoformatOptions,
   preFormat,
 } from 'www/src/lib/plate/demo/plugins/autoformatOptions';
 
@@ -71,7 +71,7 @@ describe('when ##space', () => {
 
     const editor = withAutoformat({
       editor: withReact(input),
-      plugin: AutoformatPlugin.configure(autoformatOptions),
+      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
     });
 
     editor.insertText(' ');

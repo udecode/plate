@@ -2,9 +2,12 @@
 
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
-import { autoformatOptions } from 'www/src/lib/plate/demo/plugins/autoformatOptions';
+import { getAutoformatOptions } from 'www/src/lib/plate/demo/plugins/autoformatOptions';
 
-import type { AutoformatBlockRule } from '../../../common/types';
+import type {
+  AutoformatBlockRule,
+  AutoformatPluginOptions,
+} from '../../../types';
 
 import { AutoformatPlugin } from '../../../AutoformatPlugin';
 import { withAutoformat } from '../../../withAutoformat';
@@ -35,7 +38,7 @@ describe('when -space', () => {
 
     const editor = withAutoformat({
       editor: withReact(input),
-      plugin: AutoformatPlugin.configure(autoformatOptions),
+      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
     });
 
     editor.insertText(' ');
@@ -68,7 +71,7 @@ describe('when 1.space', () => {
 
     const editor = withAutoformat({
       editor: withReact(input),
-      plugin: AutoformatPlugin.configure(autoformatOptions),
+      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
     });
 
     editor.insertText(' ');
@@ -97,7 +100,7 @@ describe('when [].space', () => {
 
     const editor = withAutoformat({
       editor: withReact(input),
-      plugin: AutoformatPlugin.configure(autoformatOptions),
+      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
     });
 
     editor.insertText(' ');
@@ -126,7 +129,7 @@ describe('when [x].space', () => {
 
     const editor = withAutoformat({
       editor: withReact(input),
-      plugin: AutoformatPlugin.configure(autoformatOptions),
+      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
     });
 
     editor.insertText(' ');
@@ -157,7 +160,7 @@ describe('when +space', () => {
     //   so here we need to remove the `preformat` property of the autoformat rule that uses this overload.
 
     const autoformatPluginRulesWitoutTogglePreformat =
-      autoformatOptions!.rules!.map((rule) => {
+      getAutoformatOptions()!.rules!.map((rule) => {
         const { preFormat, ...rest } = rule as AutoformatBlockRule;
 
         if (rule.match === '+ ') return rest;
@@ -165,8 +168,8 @@ describe('when +space', () => {
         return rule;
       });
 
-    const autoformatPluginWitoutTogglePreformat: typeof autoformatOptions = {
-      ...autoformatOptions,
+    const autoformatPluginWitoutTogglePreformat: AutoformatPluginOptions = {
+      ...getAutoformatOptions(),
       rules: autoformatPluginRulesWitoutTogglePreformat as any,
     };
 

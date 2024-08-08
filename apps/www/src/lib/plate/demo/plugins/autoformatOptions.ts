@@ -335,7 +335,7 @@ export const autoformatIndentLists: AutoformatRule[] = [
 ];
 
 export const getAutoformatOptions = (
-  id: string | undefined,
+  id?: string,
   enabled?: Record<string, boolean>
 ): Partial<AutoformatPluginOptions> => {
   const autoformatOptions: Partial<AutoformatPluginOptions> = {
