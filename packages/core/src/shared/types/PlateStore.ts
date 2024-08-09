@@ -26,13 +26,6 @@ export type PlateStoreState<E extends PlateEditor = PlateEditor> = {
    * @default random id
    */
   id: PlateId;
-
-  /**
-   * Value of the editor.
-   *
-   * @default [{ type: 'p'; children: [{ text: '' }] }]
-   */
-  value: ValueOf<E>;
 } & Nullable<{
   decorate: NonNullable<(options: { editor: E; entry: TNodeEntry }) => Range[]>;
 
@@ -72,6 +65,8 @@ export type PlateStoreState<E extends PlateEditor = PlateEditor> = {
   versionEditor: number;
   /** Version incremented on each editor.selection change. */
   versionSelection: number;
+  /** Version incremented on each editor.children change. */
+  versionValue: number;
 }>;
 
 // A list of store keys to be exposed in `editor.plate.set`.

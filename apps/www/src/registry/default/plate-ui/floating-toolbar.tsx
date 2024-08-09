@@ -6,8 +6,8 @@ import { cn, withRef } from '@udecode/cn';
 import {
   PortalBody,
   useComposedRef,
+  useEditorId,
   useEventEditorSelectors,
-  usePlateId,
 } from '@udecode/plate-common';
 import {
   type FloatingToolbarState,
@@ -25,7 +25,7 @@ export const FloatingToolbar = withRef<
     state?: FloatingToolbarState;
   }
 >(({ children, state, ...props }, componentRef) => {
-  const editorId = usePlateId();
+  const editorId = useEditorId();
   const focusedEditorId = useEventEditorSelectors.focus();
 
   const floatingToolbarState = useFloatingToolbarState({

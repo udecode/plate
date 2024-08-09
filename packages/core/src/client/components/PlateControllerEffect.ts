@@ -5,8 +5,8 @@ import { useFocused } from 'slate-react';
 
 import {
   plateControllerStore,
+  useEditorId,
   usePlateControllerActions,
-  usePlateId,
   usePlateSelectors,
   usePlateStore,
 } from '../stores';
@@ -18,7 +18,7 @@ export interface PlateControllerEffectProps {
 export const PlateControllerEffect = ({
   id: idProp,
 }: PlateControllerEffectProps) => {
-  const idFromStore = usePlateId();
+  const idFromStore = useEditorId();
   const id = idProp ?? idFromStore;
 
   const currentStoreAtom = React.useMemo(

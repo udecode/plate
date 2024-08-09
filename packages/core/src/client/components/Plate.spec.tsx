@@ -8,6 +8,7 @@ import { createPlugin } from '../../shared';
 import {
   PlateController,
   useEditorRef,
+  useEditorValue,
   usePlateEditorStore,
   usePlateSelectors,
 } from '../stores';
@@ -74,42 +75,22 @@ describe('Plate', () => {
     });
   });
 
-  describe('usePlateSelectors().value()', () => {
+  describe('useEditorValue()', () => {
     describe('when initialValue is defined', () => {
       it('should be initialValue', async () => {
         const initialValue: Value = [
           { children: [{ text: 'test' }], type: 'p' },
         ];
-        const editor = createPlateEditor();
+        const editor = createPlateEditor({ children: initialValue });
 
         const wrapper = ({ children }: any) => (
-          <Plate editor={editor} initialValue={initialValue}>
-            {children}
-          </Plate>
+          <Plate editor={editor}>{children}</Plate>
         );
-        const { result } = renderHook(() => usePlateSelectors().value(), {
+        const { result } = renderHook(() => useEditorValue(), {
           wrapper,
         });
 
         expect(result.current).toBe(initialValue);
-      });
-    });
-
-    describe('when value is defined', () => {
-      it('should be value', async () => {
-        const value: Value = [{ children: [{ text: 'value' }], type: 'p' }];
-        const editor = createPlateEditor();
-
-        const wrapper = ({ children }: any) => (
-          <Plate editor={editor} value={value}>
-            {children}
-          </Plate>
-        );
-        const { result } = renderHook(() => usePlateSelectors().value(), {
-          wrapper,
-        });
-
-        expect(result.current).toBe(value);
       });
     });
 
@@ -121,7 +102,7 @@ describe('Plate', () => {
         const wrapper = ({ children }: any) => (
           <Plate editor={editor}>{children}</Plate>
         );
-        const { result } = renderHook(() => usePlateSelectors().value(), {
+        const { result } = renderHook(() => useEditorValue(), {
           wrapper,
         });
 
@@ -136,7 +117,7 @@ describe('Plate', () => {
         const wrapper = ({ children }: any) => (
           <Plate editor={editor}>{children}</Plate>
         );
-        const { result } = renderHook(() => usePlateSelectors().value(), {
+        const { result } = renderHook(() => useEditorValue(), {
           wrapper,
         });
 

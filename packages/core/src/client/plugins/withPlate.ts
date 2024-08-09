@@ -50,7 +50,13 @@ export type WithPlateOptions<E extends PlateEditor = PlateEditor> = {
 
   selection?: TSelection;
 
-  /** Normalize editor value on initialization. */
+  /**
+   * When `true`, it will normalize the initial `value` passed to the `editor`.
+   * This is useful when adding normalization rules on already existing
+   * content.
+   *
+   * @default false
+   */
   shouldNormalizeEditor?: boolean;
 } & GetCorePluginsOptions &
   Pick<

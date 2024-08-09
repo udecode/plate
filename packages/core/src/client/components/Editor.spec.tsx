@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { render } from '@testing-library/react';
-import { type Value, isBlock, setNodes } from '@udecode/slate';
+import { isBlock, setNodes } from '@udecode/slate';
 import isEqual from 'lodash/isEqual.js';
 import memoize from 'lodash/memoize.js';
 
@@ -79,14 +79,12 @@ describe('Plate', () => {
       )();
 
       const editor = createPlateEditor({
+        children: [{ children: [{ text: '' }] }] as any,
         plugins,
       });
 
       render(
-        <Plate
-          editor={editor}
-          initialValue={[{ children: [{ text: '' }] }] as Value}
-        >
+        <Plate editor={editor}>
           <PlateContent />
         </Plate>
       );
@@ -111,41 +109,17 @@ describe('Plate', () => {
       ];
 
       const editor = createPlateEditor({
+        children: [{} as any],
         plugins,
       });
 
       expect(() =>
         render(
-          <Plate editor={editor} initialValue={[{}] as any}>
+          <Plate editor={editor}>
             <PlateContent />
           </Plate>
         )
       ).not.toThrow();
-    });
-  });
-
-  describe('when renderAboveSlate renders children', () => {
-    it("should not trigger plugin's normalize", () => {
-      const plugins: PlatePlugins = [
-        createPlugin({
-          key: 'a',
-          renderAboveSlate: ({ children }) => {
-            return <>{children}</>;
-          },
-        }),
-      ];
-
-      const editor = createPlateEditor({
-        plugins,
-      });
-
-      expect(() =>
-        render(
-          <Plate editor={editor} initialValue={[{}] as Value}>
-            <PlateContent />
-          </Plate>
-        )
-      ).toThrow();
     });
   });
 
@@ -155,32 +129,28 @@ describe('Plate', () => {
         id: 'test',
       });
 
-      const plugins: PlatePlugins = [
-        createPlugin({
-          component: ({ attributes, children }) => (
-            <div {...attributes}>
-              <Plate editor={nestedEditor}>
-                <PlateContent id="test" />
-              </Plate>
-              {children}
-            </div>
-          ),
-          isElement: true,
-          isVoid: true,
-          key: 'a',
-        }),
-      ];
-
       const editor = createPlateEditor({
-        plugins,
+        children: [{ children: [{ text: '' }], type: 'a' }],
+        plugins: [
+          createPlugin({
+            component: ({ attributes, children }) => (
+              <div {...attributes}>
+                <Plate editor={nestedEditor}>
+                  <PlateContent id="test" />
+                </Plate>
+                {children}
+              </div>
+            ),
+            isElement: true,
+            isVoid: true,
+            key: 'a',
+          }),
+        ],
       });
 
       expect(() =>
         render(
-          <Plate
-            editor={editor}
-            initialValue={[{ children: [{ text: '' }], type: 'a' }] as Value}
-          >
+          <Plate editor={editor}>
             <PlateContent />
           </Plate>
         )

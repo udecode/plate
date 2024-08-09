@@ -4,12 +4,7 @@ import type { TSelection, Value } from '@udecode/slate';
 import type { SlateProps } from '@udecode/slate-react';
 
 import { pipeOnChange } from '../../shared/utils/pipeOnChange';
-import {
-  type PlateId,
-  useEditorRef,
-  usePlateActions,
-  usePlateSelectors,
-} from '../stores';
+import { type PlateId, useEditorRef, usePlateSelectors } from '../stores';
 
 /** Get Slate props stored in a global store. */
 export const useSlateProps = ({
@@ -18,8 +13,6 @@ export const useSlateProps = ({
   id?: PlateId;
 }): Omit<SlateProps, 'children'> => {
   const editor = useEditorRef(id);
-  const value = usePlateSelectors(id).value();
-  const setValue = usePlateActions(id).value();
   const onChangeProp = usePlateSelectors(id).onChange();
   const onValueChangeProp = usePlateSelectors(id).onValueChange();
   const onSelectionChangeProp = usePlateSelectors(id).onSelectionChange();
@@ -31,10 +24,8 @@ export const useSlateProps = ({
       if (!eventIsHandled) {
         onChangeProp?.({ editor, value: newValue });
       }
-
-      setValue(newValue);
     },
-    [editor, setValue, onChangeProp]
+    [editor, onChangeProp]
   );
 
   const onValueChange: SlateProps['onValueChange'] = React.useMemo(
@@ -54,12 +45,12 @@ export const useSlateProps = ({
   return React.useMemo(() => {
     return {
       editor,
-      initialValue: value,
+      initialValue: editor.children,
       key: editor.key,
       onChange,
       onSelectionChange,
       onValueChange,
-      value,
+      value: editor.children,
     };
-  }, [editor, onChange, onSelectionChange, onValueChange, value]);
+  }, [editor, onChange, onSelectionChange, onValueChange]);
 };

@@ -1,16 +1,12 @@
 import React from 'react';
 
-import { type ValueOf, normalizeEditor } from '@udecode/slate';
-
 import type {
   PlateEditor,
   PlateStoreState,
   TEditableProps,
 } from '../../shared/types';
 
-import { pipeNormalizeInitialValue } from '../../shared';
 import { PlateStoreProvider } from '../stores';
-import { PlateEffects } from './PlateEffects';
 
 export interface PlateProps<E extends PlateEditor = PlateEditor>
   extends Partial<
@@ -22,39 +18,21 @@ export interface PlateProps<E extends PlateEditor = PlateEditor>
       | 'onValueChange'
       | 'primary'
       | 'readOnly'
-      | 'value'
     >
   > {
   children: React.ReactNode;
 
   editor: E;
 
-  /**
-   * Initial value of the editor.
-   *
-   * @default editor.childrenFactory()
-   */
-  initialValue?: ValueOf<E>;
-
   renderElement?: TEditableProps['renderElement'];
 
   renderLeaf?: TEditableProps['renderLeaf'];
-
-  /**
-   * When `true`, it will normalize the initial `value` passed to the `editor`.
-   * This is useful when adding normalization rules on already existing
-   * content.
-   *
-   * @default false
-   */
-  shouldNormalizeEditor?: boolean;
 }
 
 function PlateInner({
   children,
   decorate,
   editor,
-  initialValue,
   onChange,
   onSelectionChange,
   onValueChange,
@@ -62,29 +40,7 @@ function PlateInner({
   readOnly,
   renderElement,
   renderLeaf,
-  shouldNormalizeEditor,
-  value: valueProp,
 }: PlateProps) {
-  const value = React.useMemo(
-    () => {
-      editor.children = initialValue ?? valueProp ?? editor.children;
-
-      if (editor.children?.length === 0) {
-        editor.children = editor.childrenFactory();
-      }
-      if (initialValue || valueProp) {
-        pipeNormalizeInitialValue(editor);
-      }
-      if (shouldNormalizeEditor) {
-        normalizeEditor(editor, { force: true });
-      }
-
-      return editor.children;
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
-
   return (
     <PlateStoreProvider
       decorate={decorate}
@@ -99,9 +55,8 @@ function PlateInner({
       renderElement={renderElement}
       renderLeaf={renderLeaf}
       scope={editor.id}
-      value={value}
     >
-      <PlateEffects>{children}</PlateEffects>
+      {children}
     </PlateStoreProvider>
   );
 }

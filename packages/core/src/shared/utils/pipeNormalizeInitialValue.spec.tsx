@@ -1,10 +1,8 @@
 import React from 'react';
 
-import type { Value } from '@udecode/slate';
-
 import { renderHook } from '@testing-library/react-hooks';
 
-import { Plate, createPlateEditor, usePlateSelectors } from '../../client';
+import { Plate, createPlateEditor, useEditorValue } from '../../client';
 import { createPlugin } from './createPlugin';
 
 describe('pipeNormalizeInitialValue', () => {
@@ -31,7 +29,7 @@ describe('pipeNormalizeInitialValue', () => {
         <Plate editor={editor}>{children}</Plate>
       );
 
-      const { result } = renderHook(() => usePlateSelectors().value(), {
+      const { result } = renderHook(() => useEditorValue(), {
         wrapper,
       });
 
@@ -41,48 +39,39 @@ describe('pipeNormalizeInitialValue', () => {
     });
   });
 
-  describe('when initialValue is passed to Plate', () => {
+  describe('when initialValue was previously passed to Plate', () => {
     it('should normalize the initial value once', () => {
-      const editor = createPlateEditor({ plugins });
-
-      const wrapper = ({ children }: any) => (
-        <Plate
-          editor={editor}
-          initialValue={
-            [{ children: [{ text: '' }], count: 0, type: 'p' }] as Value
-          }
-        >
-          {children}
-        </Plate>
-      );
-
-      const { result } = renderHook(() => usePlateSelectors().value(), {
-        wrapper,
-      });
-
-      expect(result.current).toEqual([
-        { children: [{ text: '' }], count: 2, type: 'p' },
-      ]);
-    });
-  });
-
-  describe('when both children and initialValue are provided', () => {
-    it('should use initialValue and normalize it once', () => {
       const editor = createPlateEditor({
-        children: [{ children: [{ text: 'ignored' }], count: 0, type: 'p' }],
+        children: [{ children: [{ text: '' }], count: 0, type: 'p' }],
         plugins,
       });
 
       const wrapper = ({ children }: any) => (
-        <Plate
-          editor={editor}
-          initialValue={[{ children: [{ text: '' }], count: 0, type: 'p' }]}
-        >
-          {children}
-        </Plate>
+        <Plate editor={editor}>{children}</Plate>
       );
 
-      const { result } = renderHook(() => usePlateSelectors().value(), {
+      const { result } = renderHook(() => useEditorValue(), {
+        wrapper,
+      });
+
+      expect(result.current).toEqual([
+        { children: [{ text: '' }], count: 2, type: 'p' },
+      ]);
+    });
+  });
+
+  describe('when both children and initialValue were previously provided', () => {
+    it('should use children and normalize it once', () => {
+      const editor = createPlateEditor({
+        children: [{ children: [{ text: '' }], count: 0, type: 'p' }],
+        plugins,
+      });
+
+      const wrapper = ({ children }: any) => (
+        <Plate editor={editor}>{children}</Plate>
+      );
+
+      const { result } = renderHook(() => useEditorValue(), {
         wrapper,
       });
 
@@ -102,11 +91,100 @@ describe('pipeNormalizeInitialValue', () => {
         <Plate editor={editor}>{children}</Plate>
       );
 
-      const { result } = renderHook(() => usePlateSelectors().value(), {
+      const { result } = renderHook(() => useEditorValue(), {
         wrapper,
       });
 
       expect(result.current).toEqual([{ children: [{ text: '' }], type: 'p' }]);
+    });
+  });
+
+  describe('withPlate', () => {
+    describe('children handling', () => {
+      it('should use provided children', () => {
+        const children = [
+          { children: [{ text: 'Test' }], count: 0, type: 'p' },
+        ];
+        const editor = createPlateEditor({
+          children,
+          plugins,
+        });
+
+        const wrapper = ({ children }: any) => (
+          <Plate editor={editor}>{children}</Plate>
+        );
+
+        const { result } = renderHook(() => useEditorValue(), {
+          wrapper,
+        });
+
+        expect(result.current).toEqual([
+          { children: [{ text: 'Test' }], count: 2, type: 'p' },
+        ]);
+      });
+
+      it('should use childrenFactory when children is empty', () => {
+        const childrenFactory = () => [
+          { children: [{ text: 'Factory' }], count: 0, type: 'p' },
+        ];
+        const editor = createPlateEditor({
+          children: childrenFactory(),
+          plugins,
+        });
+
+        const wrapper = ({ children }: any) => (
+          <Plate editor={editor}>{children}</Plate>
+        );
+
+        const { result } = renderHook(() => useEditorValue(), {
+          wrapper,
+        });
+
+        expect(result.current).toEqual([
+          { children: [{ text: 'Factory' }], count: 2, type: 'p' },
+        ]);
+      });
+    });
+
+    describe('selection handling', () => {
+      it('should use provided selection', () => {
+        const selection = {
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 1, path: [0, 0] },
+        };
+        const editor = createPlateEditor({
+          plugins,
+          selection,
+        });
+
+        expect(editor.selection).toEqual(selection);
+      });
+
+      it('should auto-select start when autoSelect is "start"', () => {
+        const editor = createPlateEditor({
+          autoSelect: 'start',
+          children: [{ children: [{ text: 'Test' }], type: 'p' }],
+          plugins,
+        });
+
+        expect(editor.selection).toEqual({
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 0, path: [0, 0] },
+        });
+      });
+
+      it('should auto-select end when autoSelect is true', () => {
+        const editor = createPlateEditor({
+          autoSelect: true,
+          children: [{ children: [{ text: 'Test' }], type: 'p' }],
+          plugins,
+        });
+
+        expect(editor.selection).toEqual({
+          anchor: { offset: 4, path: [0, 0] },
+          focus: { offset: 4, path: [0, 0] },
+        });
+      });
     });
   });
 });

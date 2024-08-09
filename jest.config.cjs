@@ -40,6 +40,7 @@ module.exports = {
     '!**/*stories*',
     '!**/*.development.*',
   ],
+  coveragePathIgnorePatterns: ['/node_modules/', '\\.d\\.ts$'],
   displayName: packageName,
   moduleDirectories: ['node_modules'],
   moduleFileExtensions: ['js', 'json', 'ts', 'tsx'],
@@ -52,7 +53,7 @@ module.exports = {
   preset: 'ts-jest',
   setupFilesAfterEnv: ['<rootDir>/scripts/setupTests.ts'],
   testEnvironment: 'jsdom',
-  testPathIgnorePatterns: ['/playwright/'],
+  testPathIgnorePatterns: ['/playwright/', '/packages/cli/'],
   testRegex: '(test|spec).tsx?$',
   transform: {
     '^.+\\.(t|j)sx?$': '@swc/jest',

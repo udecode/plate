@@ -77,7 +77,7 @@ The active editor is determined as follows:
 
 ```tsx
 const App = withHoc(PlateController, () => {
-  const activeEditorId = usePlateId();
+  const activeEditorId = useEditorId();
   const isFallback = !useEditorMounted();
   
   const message = isFallback

@@ -37,10 +37,10 @@ export const createPlateStore = <E extends PlateEditor = PlateEditor>({
   readOnly = null,
   renderElement = null,
   renderLeaf = null,
-  value = null as any,
   versionDecorate = 1,
   versionEditor = 1,
   versionSelection = 1,
+  versionValue = 1,
   ...state
 }: Partial<PlateStoreState<E>> = {}) =>
   createAtomStore(
@@ -55,10 +55,10 @@ export const createPlateStore = <E extends PlateEditor = PlateEditor>({
       readOnly,
       renderElement,
       renderLeaf,
-      value,
       versionDecorate,
       versionEditor,
       versionSelection,
+      versionValue,
       ...state,
     } as PlateStoreState<E>,
     {
@@ -70,6 +70,10 @@ export const createPlateStore = <E extends PlateEditor = PlateEditor>({
         trackedSelection: atom((get) => ({
           selection: get(atoms.editor).selection,
           version: get(atoms.versionSelection),
+        })),
+        trackedValue: atom((get) => ({
+          value: get(atoms.editor).children,
+          version: get(atoms.versionValue),
         })),
       }),
       name: 'plate',
@@ -166,7 +170,3 @@ export const usePlateStates = (
 
   return usePlateStore({ store }).use;
 };
-
-/** Get the closest `Plate` id. */
-export const usePlateId = (): PlateId =>
-  usePlateSelectors(undefined, { debugHookName: 'usePlateId' }).editor().id;

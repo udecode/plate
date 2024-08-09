@@ -58,7 +58,7 @@ describe('useEditableProps', () => {
   //       <Plate plugins={plugins}><A />{children}</Plate>
   //     );
   //
-  //     const { result } = renderHook(() => usePlateSelectors().value(), {
+  //     const { result } = renderHook(() => useEditorValue(), {
   //       wrapper,
   //     });
   //

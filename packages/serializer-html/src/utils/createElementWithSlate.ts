@@ -12,7 +12,6 @@ export const createElementWithSlate = (
     children,
     editor = createPlateEditor(),
     onChange = () => {},
-    value = [],
     ...props
   } = plateProps || {};
 
@@ -24,7 +23,6 @@ export const createElementWithSlate = (
     Plate,
     {
       editor,
-      initialValue: value,
       onChange,
       ...props,
     } as PlateProps,
