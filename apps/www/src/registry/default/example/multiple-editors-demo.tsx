@@ -20,12 +20,14 @@ export default function MultipleEditorsDemo() {
   const editor = usePlateEditor({
     override: { components: PlateUI },
     plugins: [BasicElementsPlugin, BasicMarksPlugin],
+    value: basicElementsValue,
   });
 
   const editorMarks = usePlateEditor({
     id: 'marks',
     override: { components: PlateUI },
     plugins: [BasicElementsPlugin, BasicMarksPlugin],
+    value: basicMarksValue,
   });
 
   const editorImage = usePlateEditor({
@@ -41,12 +43,13 @@ export default function MultipleEditorsDemo() {
         },
       }),
     ],
+    value: imageValue,
   });
 
   return (
-    <Plate editor={editor} initialValue={basicElementsValue}>
-      <Plate editor={editorMarks} initialValue={basicMarksValue}>
-        <Plate editor={editorImage} initialValue={imageValue}>
+    <Plate editor={editor}>
+      <Plate editor={editorMarks}>
+        <Plate editor={editorImage}>
           <FixedToolbar>
             <PlaygroundTurnIntoDropdownMenu />
           </FixedToolbar>

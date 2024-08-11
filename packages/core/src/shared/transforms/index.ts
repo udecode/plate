@@ -4,5 +4,4 @@
 
 export * from './resetEditor';
 export * from './resetEditorChildren';
-export * from './temp';
 export * from './toggleNodeType';

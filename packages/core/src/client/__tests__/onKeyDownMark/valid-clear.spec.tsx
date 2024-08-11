@@ -1,12 +1,12 @@
 /** @jsx jsx */
 
 import { BoldPlugin, MARK_BOLD, MARK_ITALIC } from '@udecode/plate-basic-marks';
+import { createPlateEditor } from '@udecode/plate-common';
 import * as isHotkey from '@udecode/plate-core/server';
 import { jsx } from '@udecode/plate-test-utils';
 import { onKeyDownToggleMark } from '@udecode/plate-utils';
 
 import { type ToggleMarkPluginOptions, getPlugin } from '../../../shared';
-import { createPlateEditor } from '../../utils';
 
 jsx;
 

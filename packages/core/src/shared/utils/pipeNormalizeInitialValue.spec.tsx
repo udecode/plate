@@ -21,8 +21,8 @@ describe('pipeNormalizeInitialValue', () => {
   describe('when children is passed to createPlateEditor', () => {
     it('should normalize the initial value once', () => {
       const editor = createPlateEditor({
-        children: [{ children: [{ text: '' }], count: 0, type: 'p' }],
         plugins,
+        value: [{ children: [{ text: '' }], count: 0, type: 'p' }],
       });
 
       const wrapper = ({ children }: any) => (
@@ -42,8 +42,8 @@ describe('pipeNormalizeInitialValue', () => {
   describe('when initialValue was previously passed to Plate', () => {
     it('should normalize the initial value once', () => {
       const editor = createPlateEditor({
-        children: [{ children: [{ text: '' }], count: 0, type: 'p' }],
         plugins,
+        value: [{ children: [{ text: '' }], count: 0, type: 'p' }],
       });
 
       const wrapper = ({ children }: any) => (
@@ -63,8 +63,8 @@ describe('pipeNormalizeInitialValue', () => {
   describe('when both children and initialValue were previously provided', () => {
     it('should use children and normalize it once', () => {
       const editor = createPlateEditor({
-        children: [{ children: [{ text: '' }], count: 0, type: 'p' }],
         plugins,
+        value: [{ children: [{ text: '' }], count: 0, type: 'p' }],
       });
 
       const wrapper = ({ children }: any) => (
@@ -106,8 +106,8 @@ describe('pipeNormalizeInitialValue', () => {
           { children: [{ text: 'Test' }], count: 0, type: 'p' },
         ];
         const editor = createPlateEditor({
-          children,
           plugins,
+          value: children,
         });
 
         const wrapper = ({ children }: any) => (
@@ -128,8 +128,8 @@ describe('pipeNormalizeInitialValue', () => {
           { children: [{ text: 'Factory' }], count: 0, type: 'p' },
         ];
         const editor = createPlateEditor({
-          children: childrenFactory(),
           plugins,
+          value: childrenFactory(),
         });
 
         const wrapper = ({ children }: any) => (
@@ -163,8 +163,8 @@ describe('pipeNormalizeInitialValue', () => {
       it('should auto-select start when autoSelect is "start"', () => {
         const editor = createPlateEditor({
           autoSelect: 'start',
-          children: [{ children: [{ text: 'Test' }], type: 'p' }],
           plugins,
+          value: [{ children: [{ text: 'Test' }], type: 'p' }],
         });
 
         expect(editor.selection).toEqual({
@@ -176,8 +176,8 @@ describe('pipeNormalizeInitialValue', () => {
       it('should auto-select end when autoSelect is true', () => {
         const editor = createPlateEditor({
           autoSelect: true,
-          children: [{ children: [{ text: 'Test' }], type: 'p' }],
           plugins,
+          value: [{ children: [{ text: 'Test' }], type: 'p' }],
         });
 
         expect(editor.selection).toEqual({

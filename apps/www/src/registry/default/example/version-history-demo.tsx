@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { SoftBreakPlugin } from '@/../../../packages/break/dist';
-import { cn, withProps } from '@udecode/cn';
+import { cn } from '@udecode/cn';
 import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks';
 import {
   Plate,
@@ -24,10 +24,11 @@ import {
   withGetFragmentExcludeDiff,
 } from '@udecode/plate-diff';
 import { ELEMENT_PARAGRAPH, ParagraphPlugin } from '@udecode/plate-paragraph';
+import { cloneDeep } from 'lodash';
 import { useSelected } from 'slate-react';
 
+import { PlateUI } from '@/lib/plate/demo/plate-ui';
 import { Button } from '@/registry/default/plate-ui/button';
-import { ParagraphElement } from '@/registry/default/plate-ui/paragraph-element';
 
 const InlinePlugin = createPlugin({
   isElement: true,
@@ -39,7 +40,7 @@ const InlineVoidPlugin = createPlugin({
   isElement: true,
   isInline: true,
   isVoid: true,
-  key: 'inlineVoid',
+  key: 'inline-void',
 });
 
 const diffOperationColors: Record<DiffOperation['type'], string> = {
@@ -220,22 +221,18 @@ const initialValue: Value = [
 ];
 
 const plugins = [
-  ParagraphPlugin.withComponent(ParagraphElement),
+  ParagraphPlugin,
   InlinePlugin.withComponent(InlineElement),
   InlineVoidPlugin.withComponent(InlineVoidElement),
-  BoldPlugin.withComponent(withProps(PlateLeaf, { as: 'strong' })),
-  ItalicPlugin.withComponent(withProps(PlateLeaf, { as: 'em' })),
+  BoldPlugin,
+  ItalicPlugin,
   DiffPlugin,
   SoftBreakPlugin,
 ];
 
-function VersionHistoryPlate(props: Omit<PlateProps, 'children' | 'editor'>) {
-  const editor = usePlateEditor({
-    plugins,
-  });
-
+function VersionHistoryPlate(props: Omit<PlateProps, 'children'>) {
   return (
-    <Plate {...props} editor={editor}>
+    <Plate {...props}>
       <PlateContent className="rounded-md border p-3" />
     </Plate>
   );
@@ -248,20 +245,31 @@ interface DiffProps {
 
 function Diff({ current, previous }: DiffProps) {
   const diffValue = React.useMemo(() => {
-    const editor = createPlateEditor({ plugins });
+    const editor = createPlateEditor({
+      plugins,
+    });
 
-    return computeDiff(previous, current, {
+    return computeDiff(previous, cloneDeep(current), {
       isInline: editor.isInline,
       lineBreakChar: '¶',
     }) as Value;
   }, [previous, current]);
 
+  const editor = usePlateEditor(
+    {
+      override: { components: PlateUI },
+      plugins,
+      value: diffValue,
+    },
+    [diffValue]
+  );
+
   return (
     <>
       <VersionHistoryPlate
+        editor={editor}
         key={JSON.stringify(diffValue)}
         readOnly
-        value={diffValue}
       />
 
       <pre>{JSON.stringify(diffValue, null, 2)}</pre>
@@ -284,12 +292,27 @@ export default function VersionHistoryDemo() {
     setRevisions([...revisions, value]);
   };
 
+  const editor = usePlateEditor({
+    override: { components: PlateUI },
+    plugins,
+    value: initialValue,
+  });
+
+  const editorRevision = usePlateEditor(
+    {
+      override: { components: PlateUI },
+      plugins,
+      value: selectedRevisionValue,
+    },
+    [selectedRevisionValue]
+  );
+
   return (
     <div className="flex flex-col gap-3 p-3">
       <Button onClick={saveRevision}>Save revision</Button>
 
       <VersionHistoryPlate
-        initialValue={initialValue}
+        editor={editor}
         onChange={({ value }) => setValue(value)}
       />
 
@@ -311,7 +334,7 @@ export default function VersionHistoryDemo() {
         <div>
           <h2>Revision {selectedRevisionIndex + 1}</h2>
           <VersionHistoryPlate
-            initialValue={selectedRevisionValue}
+            editor={editorRevision}
             key={selectedRevisionIndex}
             readOnly
           />

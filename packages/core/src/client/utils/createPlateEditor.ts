@@ -1,17 +1,20 @@
-import { type TEditor, createTEditor } from '@udecode/slate';
+import { type TEditor, type Value, createTEditor } from '@udecode/slate';
 
-import type { PlateEditor } from '../../shared/types/PlateEditor';
+import type { AnyPlatePlugin } from '../../shared';
 
 import { type WithPlateOptions, withPlate } from '../plugins/withPlate';
 
-export type CreatePlateEditorOptions<E extends PlateEditor = PlateEditor> = {
+export type CreatePlateEditorOptions<
+  V extends Value = Value,
+  P extends AnyPlatePlugin = AnyPlatePlugin,
+> = {
   /**
    * Initial editor to be extended with `withPlate`.
    *
    * @default createEditor()
    */
   editor?: TEditor;
-} & WithPlateOptions<E>;
+} & WithPlateOptions<V, P>;
 
 /**
  * Create a plate editor with:
@@ -20,9 +23,12 @@ export type CreatePlateEditorOptions<E extends PlateEditor = PlateEditor> = {
  * - `withPlate`
  * - Custom `components`
  */
-export const createPlateEditor = <E extends PlateEditor = PlateEditor>({
+export const createPlateEditor = <
+  V extends Value = Value,
+  P extends AnyPlatePlugin = AnyPlatePlugin,
+>({
   editor = createTEditor(),
   ...options
-}: CreatePlateEditorOptions<E> = {}): E => {
-  return withPlate<E>(editor, options);
+}: CreatePlateEditorOptions<V, P> = {}) => {
+  return withPlate<V, P>(editor, options);
 };

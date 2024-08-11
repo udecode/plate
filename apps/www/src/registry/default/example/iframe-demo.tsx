@@ -28,11 +28,12 @@ export default function IframeDemo() {
   const editor = usePlateEditor({
     override: { components: PlateUI },
     plugins: [BasicElementsPlugin, BasicMarksPlugin, EditableVoidPlugin],
+    value: iframeValue,
   });
 
   return (
     <IFrame className="p-10">
-      <Plate editor={editor} initialValue={iframeValue}>
+      <Plate editor={editor}>
         <Editor {...editableProps} />
       </Plate>
     </IFrame>

@@ -81,7 +81,7 @@ describe('Plate', () => {
         const initialValue: Value = [
           { children: [{ text: 'test' }], type: 'p' },
         ];
-        const editor = createPlateEditor({ children: initialValue });
+        const editor = createPlateEditor({ value: initialValue });
 
         const wrapper = ({ children }: any) => (
           <Plate editor={editor}>{children}</Plate>

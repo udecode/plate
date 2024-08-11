@@ -1,3 +1,5 @@
+import type { ValueOf } from '@udecode/plate-common';
+
 import {
   type InsertNodesOptions,
   type PlateEditor,
@@ -41,8 +43,8 @@ export type UpsertLinkOptions<V extends Value = Value> = {
  * - Remove link node, get link text Then:
  * - Insert link node
  */
-export const upsertLink = <V extends Value>(
-  editor: PlateEditor<V>,
+export const upsertLink = <E extends PlateEditor>(
+  editor: E,
   {
     insertNodesOptions,
     insertTextInLink,
@@ -50,7 +52,7 @@ export const upsertLink = <V extends Value>(
     target,
     text,
     url,
-  }: UpsertLinkOptions<V>
+  }: UpsertLinkOptions<ValueOf<E>>
 ) => {
   const at = editor.selection;
 

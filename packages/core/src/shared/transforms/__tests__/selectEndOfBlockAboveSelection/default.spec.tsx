@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import type { PlateEditor } from '@udecode/plate-common';
-
 import { jsx } from '@udecode/plate-test-utils';
 import { selectEndOfBlockAboveSelection } from '@udecode/slate-utils';
+
+import type { PlateEditor } from '../../../types';
 
 jsx;
 

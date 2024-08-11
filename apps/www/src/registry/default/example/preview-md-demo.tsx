@@ -110,11 +110,12 @@ export default function PreviewMdDemo() {
       decorate: decoratePreview,
       key: 'preview-md',
     })],
+    value: previewMdValue,
   })
   
   return (
     <div className="p-10">
-      <Plate editor={editor} initialValue={previewMdValue}>
+      <Plate editor={editor}>
         <Editor {..._editableProps} />
       </Plate>
     </div>

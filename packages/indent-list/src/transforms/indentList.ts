@@ -1,3 +1,4 @@
+import type { ValueOf } from '@udecode/plate-common';
 import type { PlateEditor, Value } from '@udecode/plate-common/server';
 import type { Location } from 'slate';
 
@@ -13,9 +14,12 @@ export interface IndentListOptions<V extends Value = Value>
 }
 
 /** Increase the indentation of the selected blocks. */
-export const indentList = <V extends Value>(
-  editor: PlateEditor<V>,
-  { listStyleType = ListStyleType.Disc, ...options }: IndentListOptions<V> = {}
+export const indentList = <E extends PlateEditor>(
+  editor: E,
+  {
+    listStyleType = ListStyleType.Disc,
+    ...options
+  }: IndentListOptions<ValueOf<E>> = {}
 ) => {
   setIndent(editor, {
     offset: 1,
@@ -26,9 +30,12 @@ export const indentList = <V extends Value>(
   });
 };
 
-export const indentTodo = <V extends Value>(
-  editor: PlateEditor<V>,
-  { listStyleType = ListStyleType.Disc, ...options }: IndentListOptions<V> = {}
+export const indentTodo = <E extends PlateEditor>(
+  editor: E,
+  {
+    listStyleType = ListStyleType.Disc,
+    ...options
+  }: IndentListOptions<ValueOf<E>> = {}
 ) => {
   setIndent(editor, {
     offset: 1,

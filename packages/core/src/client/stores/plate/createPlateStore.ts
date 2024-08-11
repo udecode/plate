@@ -27,7 +27,7 @@ export const GLOBAL_PLATE_SCOPE = Symbol('global-plate');
 
 export const createPlateStore = <E extends PlateEditor = PlateEditor>({
   decorate = null,
-  editor = createPlateFallbackEditor<E>(),
+  editor = createPlateFallbackEditor() as E,
   id,
   isMounted = false,
   onChange = null,

@@ -1,17 +1,15 @@
+import type { ValueOf } from '@udecode/plate-common';
+
 import {
   type PlateEditor,
   type TDescendant,
-  type Value,
   nanoid,
 } from '@udecode/plate-common/server';
 import { type ComputeDiffOptions, computeDiff } from '@udecode/plate-diff';
 
 import { getSuggestionProps } from './transforms';
 
-export function diffToSuggestions<
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
+export function diffToSuggestions<E extends PlateEditor>(
   editor: E,
   doc0: TDescendant[],
   doc1: TDescendant[],
@@ -28,12 +26,12 @@ export function diffToSuggestions<
     isInline = editor.isInline,
     ...options
   }: Partial<ComputeDiffOptions> = {}
-): V {
+): ValueOf<E> {
   return computeDiff(doc0, doc1, {
     getDeleteProps,
     getInsertProps,
     getUpdateProps,
     isInline,
     ...options,
-  }) as V;
+  }) as ValueOf<E>;
 }

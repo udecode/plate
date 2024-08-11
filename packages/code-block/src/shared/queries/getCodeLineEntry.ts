@@ -1,3 +1,4 @@
+import type { ValueOf } from '@udecode/plate-common';
 import type { Location } from 'slate';
 
 import {
@@ -5,7 +6,6 @@ import {
   type PlateEditor,
   type TElement,
   type TNodeEntry,
-  type Value,
   getAboveNode,
   getParentNode,
   isElement,
@@ -16,10 +16,10 @@ import { getCodeLineType } from '../options';
 
 /** If at (default = selection) is in ul>li>p, return li and ul node entries. */
 export const getCodeLineEntry = <
-  N extends EElement<V>,
-  V extends Value = Value,
+  N extends EElement<ValueOf<E>>,
+  E extends PlateEditor,
 >(
-  editor: PlateEditor<V>,
+  editor: E,
   { at = editor.selection }: { at?: Location | null } = {}
 ) => {
   if (

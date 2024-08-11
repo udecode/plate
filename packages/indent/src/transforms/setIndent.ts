@@ -1,3 +1,5 @@
+import type { ValueOf } from '@udecode/plate-common';
+
 import {
   type AnyObject,
   type GetNodeEntriesOptions,
@@ -32,14 +34,14 @@ export interface SetIndentOptions<V extends Value = Value> {
 }
 
 /** Add offset to the indentation of the selected blocks. */
-export const setIndent = <V extends Value>(
-  editor: PlateEditor<V>,
+export const setIndent = <E extends PlateEditor>(
+  editor: E,
   {
     getNodesOptions,
     offset = 1,
     setNodesProps,
     unsetNodesProps = [],
-  }: SetIndentOptions<V>
+  }: SetIndentOptions<ValueOf<E>>
 ) => {
   const { nodeKey } = getPluginInjectProps(editor, KEY_INDENT);
 

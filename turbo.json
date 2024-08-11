@@ -47,7 +47,7 @@
     },
     "typecheck": {
       "outputs": [],
-      "cache": true
+      "cache": false
     },
     "e2e-examples#typecheck": {
       "dependsOn": [],

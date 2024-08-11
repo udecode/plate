@@ -58,11 +58,8 @@ export const toggleIndexAtom = atom((get) =>
 
 export const useToggleIndex = () => usePlateStore().get.atom(toggleIndexAtom);
 
-export const someToggleClosed = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E,
+export const someToggleClosed = (
+  editor: PlateEditor,
   toggleIds: string[]
 ): boolean => {
   const options = getPluginOptions<TogglePluginOptions>(editor, ELEMENT_TOGGLE);
@@ -71,11 +68,8 @@ export const someToggleClosed = <
   return toggleIds.some((id) => !openIds.has(id));
 };
 
-export const isToggleOpen = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E,
+export const isToggleOpen = (
+  editor: PlateEditor,
   toggleId: string
 ): boolean => {
   const options = getPluginOptions<TogglePluginOptions>(editor, ELEMENT_TOGGLE);
@@ -84,11 +78,8 @@ export const isToggleOpen = <
   return openIds.has(toggleId);
 };
 
-export const toggleIds = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E,
+export const toggleIds = (
+  editor: PlateEditor,
   ids: string[],
   force: boolean | null = null
 ): void => {

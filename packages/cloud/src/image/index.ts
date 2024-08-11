@@ -5,4 +5,3 @@
 export * from './CloudImagePlugin';
 export * from './types';
 export * from './useCloudImageElementState';
-export * from './withCloudImage';

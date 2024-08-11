@@ -29,10 +29,11 @@ export default function BasicPluginsComponentsDemo() {
       StrikethroughPlugin,
       CodePlugin,
     ],
+    value: basicEditorValue,
   });
 
   return (
-    <Plate editor={editor} initialValue={basicEditorValue}>
+    <Plate editor={editor}>
       <Editor autoFocus={false} placeholder="Type..." spellCheck={false} />
     </Plate>
   );

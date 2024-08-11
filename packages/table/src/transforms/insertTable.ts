@@ -1,8 +1,7 @@
-import { selectEditor } from '@udecode/plate-common';
+import { type ValueOf, selectEditor } from '@udecode/plate-common';
 import {
   type InsertNodesOptions,
   type PlateEditor,
-  type Value,
   getBlockAbove,
   getPluginType,
   getStartPoint,
@@ -20,10 +19,10 @@ import {
 } from '../utils/getEmptyTableNode';
 
 /** Insert table if selection not in table. Select start of table. */
-export const insertTable = <V extends Value>(
-  editor: PlateEditor<V>,
+export const insertTable = <E extends PlateEditor>(
+  editor: E,
   { colCount = 2, header, rowCount = 2 }: GetEmptyTableNodeOptions = {},
-  options: InsertNodesOptions<V> = {}
+  options: InsertNodesOptions<ValueOf<E>> = {}
 ) => {
   withoutNormalizing(editor, () => {
     if (

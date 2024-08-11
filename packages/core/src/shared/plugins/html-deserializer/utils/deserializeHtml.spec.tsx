@@ -1,6 +1,5 @@
 /** @jsx jsx */
 
-import { renderHook } from '@testing-library/react-hooks';
 import { AlignPlugin } from '@udecode/plate-alignment';
 import {
   BoldPlugin,
@@ -14,7 +13,6 @@ import {
 import { BlockquotePlugin } from '@udecode/plate-block-quote';
 import { SoftBreakPlugin } from '@udecode/plate-break';
 import { CodeBlockPlugin } from '@udecode/plate-code-block';
-import { createPlateEditor } from '@udecode/plate-common';
 import { FindReplacePlugin } from '@udecode/plate-find-replace';
 import { HeadingPlugin } from '@udecode/plate-heading';
 import { HighlightPlugin } from '@udecode/plate-highlight';
@@ -26,6 +24,7 @@ import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { TablePlugin } from '@udecode/plate-table';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 
+import { createPlateEditor } from '../../../../client';
 import { deserializeHtml } from './deserializeHtml';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 
@@ -195,34 +194,32 @@ describe('when deserializing all plugins', () => {
   ) as any;
 
   it('should be', () => {
-    const plugins = renderHook(() => [
-      BlockquotePlugin,
-      HeadingPlugin.configure({ levels: 1 }),
-      ImagePlugin,
-      LinkPlugin,
-      ListPlugin,
-      ParagraphPlugin,
-      CodeBlockPlugin,
-      TablePlugin,
-      MediaEmbedPlugin,
-      FindReplacePlugin,
-      SoftBreakPlugin,
-      AlignPlugin,
-      BoldPlugin,
-      HighlightPlugin,
-      CodePlugin,
-      KbdPlugin,
-      ItalicPlugin,
-      StrikethroughPlugin,
-      SubscriptPlugin,
-      SuperscriptPlugin,
-      UnderlinePlugin,
-    ]).result.current;
-
     expect(
       deserializeHtmlElement(
         createPlateEditor({
-          plugins,
+          plugins: [
+            BlockquotePlugin,
+            HeadingPlugin.configure({ levels: 1 }),
+            ImagePlugin,
+            LinkPlugin,
+            ListPlugin,
+            ParagraphPlugin,
+            CodeBlockPlugin,
+            TablePlugin,
+            MediaEmbedPlugin,
+            FindReplacePlugin,
+            SoftBreakPlugin,
+            AlignPlugin,
+            BoldPlugin,
+            HighlightPlugin,
+            CodePlugin,
+            KbdPlugin,
+            ItalicPlugin,
+            StrikethroughPlugin,
+            SubscriptPlugin,
+            SuperscriptPlugin,
+            UnderlinePlugin,
+          ],
         }),
         element
       )

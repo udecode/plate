@@ -14,7 +14,7 @@ import type {
   GetInjectPropsOptions,
   GetInjectPropsReturnType,
 } from '../../utils';
-import type { PlateEditor } from '../PlateEditor';
+import type { BasePlateEditor } from '../PlateEditor';
 import type { PlateRenderElementProps } from '../PlateRenderElementProps';
 import type { PlateRenderLeafProps } from '../PlateRenderLeafProps';
 import type { Nullable } from '../misc';
@@ -237,7 +237,7 @@ export type AnyEditorPlugin = EditorPlugin<any, any, any, any>;
 export type EditorPlugins = AnyEditorPlugin[];
 
 export type EditorPluginContext<O = {}, A = {}, T = {}, S = {}> = {
-  editor: PlateEditor;
+  editor: BasePlateEditor;
   plugin: EditorPlugin<O, A, T, S>;
 };
 
@@ -249,6 +249,7 @@ export type PlatePluginMethods<
   S = {},
 > = {
   __extensions: ((ctx: EditorPluginContext<O, A, T, S>) => any)[];
+  __methodExtensions: ((ctx: EditorPluginContext<O, A, T, S>) => any)[];
 
   configure: (
     options: ((ctx: EditorPluginContext<O, A, T, S>) => Partial<O>) | Partial<O>
@@ -274,7 +275,7 @@ export type PlatePluginMethods<
               ET & Partial<T>,
               ES & Partial<S>
             >,
-            keyof PlatePluginMethods
+            'api' | keyof PlatePluginMethods
           >
         >)
       | Partial<
@@ -286,10 +287,14 @@ export type PlatePluginMethods<
               ET & Partial<T>,
               ES & Partial<S>
             >,
-            keyof PlatePluginMethods
+            'api' | keyof PlatePluginMethods
           >
         >
   ) => PlatePlugin<K, EO & O, A & EA, ET & T, ES & S>;
+
+  extendApi: <EA = {}>(
+    extendedApi: (ctx: EditorPluginContext<O, A, T, S>) => EA
+  ) => PlatePlugin<K, O, A & EA, T, S>;
 
   extendPlugin: <EO = {}, EA = {}, ET = {}, ES = {}>(
     key: string,
@@ -298,9 +303,12 @@ export type PlatePluginMethods<
           ctx: EditorPluginContext<O, A, T, S>
         ) => Omit<
           Partial<PlatePlugin<K, EO, EA, ET, ES>>,
-          keyof PlatePluginMethods
+          'api' | keyof PlatePluginMethods
         >)
-      | Omit<Partial<PlatePlugin<K, EO, EA, ET, ES>>, keyof PlatePluginMethods>
+      | Omit<
+          Partial<PlatePlugin<K, EO, EA, ET, ES>>,
+          'api' | keyof PlatePluginMethods
+        >
   ) => PlatePlugin<K, O, A, T, S>;
 
   /**
@@ -398,7 +406,7 @@ export type SerializeHtml<O = {}, A = {}, T = {}, S = {}> = React.FC<
 /** Plate plugin overriding the `editor` methods. Naming convention is `with*`. */
 export type WithOverride<O = {}, A = {}, T = {}, S = {}> = (
   ctx: EditorPluginContext<O, A, T, S>
-) => PlateEditor;
+) => BasePlateEditor;
 
 /**
  * Function called whenever a change occurs in the editor. Return `false` to
@@ -577,3 +585,12 @@ export type DeserializeHtml<O = {}, A = {}, T = {}, S = {}> = {
 export type Decorate<O = {}, A = {}, T = {}, S = {}> = (
   ctx: { entry: TNodeEntry } & EditorPluginContext<O, A, T, S>
 ) => Range[] | undefined;
+
+export type InferPluginOptions<P> =
+  P extends PlatePlugin<any, infer O, any, any, any> ? O : never;
+
+export type InferPluginApi<P> =
+  P extends PlatePlugin<any, any, infer A, any, any> ? A : never;
+
+export type InferPluginTransforms<P> =
+  P extends PlatePlugin<any, any, any, infer T, any> ? T : never;

@@ -2,7 +2,6 @@
 
 import {
   type HotkeyPluginOptions,
-  type PlateEditor,
   createPlateEditor,
   getPlugin,
 } from '@udecode/plate-common';
@@ -432,7 +431,7 @@ it('should NOT not adjust selection length when unhanging ranges', () => {
       </hp>
     </editor>
   ) as any;
-  const editor: PlateEditor<any> = createPlateEditor({
+  const editor = createPlateEditor({
     editor: input,
     plugins: [ListPlugin],
   });

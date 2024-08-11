@@ -1,7 +1,8 @@
+import type { ValueOf } from '@udecode/plate-common';
+
 import {
   type InsertNodesOptions,
   type PlateEditor,
-  type Value,
   getPluginType,
   insertNodes,
 } from '@udecode/plate-common/server';
@@ -10,10 +11,10 @@ import type { TImageElement } from '../types';
 
 import { ELEMENT_IMAGE } from '../ImagePlugin';
 
-export const insertImage = <V extends Value>(
-  editor: PlateEditor<V>,
+export const insertImage = <E extends PlateEditor>(
+  editor: E,
   url: ArrayBuffer | string,
-  options: InsertNodesOptions<V> = {}
+  options: InsertNodesOptions<ValueOf<E>> = {}
 ) => {
   const text = { text: '' };
   const image: TImageElement = {

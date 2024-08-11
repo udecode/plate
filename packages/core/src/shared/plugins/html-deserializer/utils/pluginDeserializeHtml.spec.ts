@@ -1,7 +1,8 @@
 import { MARK_BOLD } from '@udecode/plate-basic-marks';
-import { createPlateEditor, createPlugin } from '@udecode/plate-common';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 
+import { createPlateEditor } from '../../../../client';
+import { createPlugin } from '../../../utils';
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
 
 const node = () => ({ type: ELEMENT_PARAGRAPH });

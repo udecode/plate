@@ -80,6 +80,7 @@ import { SlashPlugin } from '@udecode/plate-slash-command';
 import { TablePlugin } from '@udecode/plate-table';
 import { ELEMENT_TOGGLE, TogglePlugin } from '@udecode/plate-toggle';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
+import Prism from 'prismjs';
 
 import { settingsStore } from '@/components/context/settings-store';
 import { PlaygroundFixedToolbarButtons } from '@/components/plate-ui/playground-fixed-toolbar-buttons';
@@ -113,17 +114,16 @@ import { LinkFloatingToolbar } from '@/registry/default/plate-ui/link-floating-t
 
 import { usePlaygroundEnabled } from './usePlaygroundEnabled';
 
-export const usePlaygroundEditor = ({
-  id,
-}: {
-  id?: ValueId;
-} = {}) => {
-  const enabled = settingsStore.use.checkedPlugins();
+export default function PlaygroundDemo({ id }: { id?: ValueId }) {
+  const containerRef = useRef(null);
+  const enabled = settingsStore.use.checkedComponents();
+  const value = usePlaygroundValue(id);
+  const key = useInitialValueVersion(value);
 
   const autoformatOptions = getAutoformatOptions(id, enabled);
   const overridePlugins = usePlaygroundEnabled(id);
 
-  return usePlateEditor(
+  const editor = usePlateEditor(
     {
       override: {
         components: createPlateUI({
@@ -137,7 +137,9 @@ export const usePlaygroundEditor = ({
         ParagraphPlugin,
         HeadingPlugin,
         BlockquotePlugin,
-        CodeBlockPlugin,
+        CodeBlockPlugin.configure({
+          prism: Prism,
+        }),
         HorizontalRulePlugin,
         LinkPlugin.extend({
           renderAfterEditable: () => <LinkFloatingToolbar />,
@@ -299,28 +301,16 @@ export const usePlaygroundEditor = ({
         JuicePlugin,
         ColumnPlugin,
       ],
+      shouldNormalizeEditor: true,
+      value: value,
     },
     [enabled]
   );
-};
-
-export default function PlaygroundDemo({ id }: { id?: ValueId }) {
-  const containerRef = useRef(null);
-  const enabled = settingsStore.use.checkedComponents();
-  const initialValue = usePlaygroundValue(id);
-  const key = useInitialValueVersion(initialValue);
-
-  const editor = usePlaygroundEditor({ id });
 
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="relative">
-        <Plate
-          editor={editor}
-          initialValue={initialValue}
-          key={key}
-          shouldNormalizeEditor
-        >
+        <Plate editor={editor} key={key}>
           <CommentsProvider>
             {enabled['fixed-toolbar'] && (
               <FixedToolbar className="no-scrollbar">

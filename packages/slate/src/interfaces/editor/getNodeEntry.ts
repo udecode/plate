@@ -47,7 +47,7 @@ export const getNodeEntry = <N extends ENode<V>, V extends Value = Value>(
 // type A = { children: [{ text: '' }]; type: 'a' };
 // type B = { children: [{ text: '' }]; type: 'b' };
 //
-// const editor = {} as { test: 1 } & PlateEditor<A[]>;
+// const editor = {} as { test: 1 } & PlateEditor;
 // const a = getNodeEntry<A>(editor, {} as any);
 // const type = a?.[0].type;
 //

@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { createPlateEditor } from '@udecode/plate-common';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 
+import { createPlateEditor } from '../../../../client';
 import { deserializeHtmlNode } from './deserializeHtmlNode';
 
 jsx;

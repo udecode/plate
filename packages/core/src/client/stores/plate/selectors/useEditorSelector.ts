@@ -1,7 +1,5 @@
 import React from 'react';
 
-import type { Value } from '@udecode/slate';
-
 import { selectAtom } from 'jotai/utils';
 
 import type { PlateEditor } from '../../../../shared';
@@ -19,11 +17,7 @@ export interface UseEditorSelectorOptions<T>
   id?: PlateId;
 }
 
-export const useEditorSelector = <
-  T,
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
+export const useEditorSelector = <T, E extends PlateEditor = PlateEditor>(
   selector: (editor: E, prev?: T) => T,
   deps: React.DependencyList,
   {

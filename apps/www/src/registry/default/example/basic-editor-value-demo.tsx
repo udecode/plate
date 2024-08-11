@@ -5,7 +5,7 @@ import { Plate, usePlateEditor } from '@udecode/plate-common';
 import { editableProps } from '@/plate/demo/editableProps';
 import { Editor } from '@/registry/default/plate-ui/editor';
 
-const initialValue = [
+const value = [
   {
     children: [
       {
@@ -17,10 +17,10 @@ const initialValue = [
 ];
 
 export default function BasicEditorValueDemo() {
-  const editor = usePlateEditor();
+  const editor = usePlateEditor({ value });
 
   return (
-    <Plate editor={editor} initialValue={initialValue}>
+    <Plate editor={editor}>
       <Editor {...editableProps} />
     </Plate>
   );

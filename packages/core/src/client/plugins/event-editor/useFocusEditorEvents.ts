@@ -1,7 +1,5 @@
 import { useEffect } from 'react';
 
-import type { Value } from '@udecode/slate';
-
 import type { PlateEditor } from '../../../shared/types';
 
 import {
@@ -14,7 +12,7 @@ export const useFocusEditorEvents = ({
   onEditorBlur,
   onEditorFocus,
 }: {
-  editorRef: PlateEditor<Value> | null;
+  editorRef: PlateEditor | null;
   onEditorBlur?: () => void;
   onEditorFocus?: () => void;
 }) => {

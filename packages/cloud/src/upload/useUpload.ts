@@ -1,14 +1,17 @@
-import { useEditorRef } from '@udecode/plate-common';
+import { getPluginApi, useEditorRef } from '@udecode/plate-common';
 
-import type { PlateCloudEditor } from '../cloud/types';
 import type { Upload } from './types';
+
+import { CloudPlugin } from '../cloud';
 
 /**
  * Takes an `element` (which it only needs for its `id`) and returns the Upload
  * object from it.
  */
 export const useUpload = (id: string): Upload => {
-  const editor = useEditorRef() as PlateCloudEditor;
+  const editor = useEditorRef();
+
+  const api = getPluginApi(editor, CloudPlugin);
 
   /**
    * We call this even if it's not always required because it calls `useStore`
@@ -17,7 +20,7 @@ export const useUpload = (id: string): Upload => {
   // const upload: Upload = editor.cloud.useUploadStore(
   //   (state) => state.uploads[id] || { status: 'not-found' }
   // );
-  const upload: Upload = editor.cloud.uploadStore.use.upload(id) || {
+  const upload: Upload = api.cloud.uploadStore.use.upload(id) || {
     status: 'not-found',
   };
 

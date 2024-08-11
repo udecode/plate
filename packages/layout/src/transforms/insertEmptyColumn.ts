@@ -1,8 +1,9 @@
+import type { ValueOf } from '@udecode/plate-common';
+
 import {
   ELEMENT_DEFAULT,
   type InsertNodesOptions,
   type PlateEditor,
-  type Value,
   getQueryOptions,
   insertNodes,
 } from '@udecode/plate-common/server';
@@ -11,9 +12,9 @@ import type { TColumnElement } from '../types';
 
 import { ELEMENT_COLUMN } from '../ColumnPlugin';
 
-export const insertEmptyColumn = <V extends Value>(
-  editor: PlateEditor<V>,
-  options?: { width?: string } & InsertNodesOptions<V>
+export const insertEmptyColumn = <E extends PlateEditor>(
+  editor: E,
+  options?: { width?: string } & InsertNodesOptions<ValueOf<E>>
 ) => {
   const width = options?.width || '33%';
 

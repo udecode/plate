@@ -1,18 +1,11 @@
-import type {
-  PlateEditor,
-  TNodeEntry,
-  Value,
-} from '@udecode/plate-common/server';
+import type { PlateEditor, TNodeEntry } from '@udecode/plate-common/server';
 
 import last from 'lodash/last.js';
 
 import { buildToggleIndex } from '../toggle-controller-store';
 
-export const getLastEntryEnclosedInToggle = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E,
+export const getLastEntryEnclosedInToggle = (
+  editor: PlateEditor,
   toggleId: string
 ): TNodeEntry | undefined => {
   const toggleIndex = buildToggleIndex(editor.children);

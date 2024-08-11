@@ -1,18 +1,13 @@
 import {
-  type EElement,
-  type ENode,
   type PlateEditor,
+  type TElement,
   type TNodeEntry,
-  type Value,
   replaceNode,
 } from '@udecode/plate-common';
 
 import { ELEMENT_COLUMN, ELEMENT_COLUMN_GROUP } from '../ColumnPlugin';
 
-export const toggleColumns = <V extends Value>(
-  editor: PlateEditor<V>,
-  nodeEntry: TNodeEntry<ENode<V>>
-) => {
+export const toggleColumns = (editor: PlateEditor, nodeEntry: TNodeEntry) => {
   const nodes = {
     children: [
       {
@@ -32,10 +27,10 @@ export const toggleColumns = <V extends Value>(
       },
     ],
     type: ELEMENT_COLUMN_GROUP,
-  };
+  } as TElement;
 
   replaceNode(editor, {
     at: nodeEntry[1],
-    nodes: nodes as EElement<V>,
+    nodes,
   });
 };

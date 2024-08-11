@@ -1,9 +1,9 @@
+import type { ValueOf } from '@udecode/plate-common';
 import type {
   EElement,
   PlateEditor,
   TElement,
   TNodeEntry,
-  Value,
 } from '@udecode/plate-common/server';
 
 import type { ListStyleType } from '../types';
@@ -18,8 +18,8 @@ import {
  * Get the first sibling list style type at the given indent. If none, return
  * the entry list style type.
  */
-export const getSiblingListStyleType = <V extends Value = Value>(
-  editor: PlateEditor<V>,
+export const getSiblingListStyleType = <E extends PlateEditor>(
+  editor: E,
   {
     entry,
     indent,
@@ -27,7 +27,7 @@ export const getSiblingListStyleType = <V extends Value = Value>(
   }: {
     entry: TNodeEntry<TElement>;
     indent: number;
-  } & GetIndentListSiblingsOptions<EElement<V>, V>
+  } & GetIndentListSiblingsOptions<EElement<ValueOf<E>>, ValueOf<E>>
 ) => {
   const siblingEntry: TNodeEntry<TElement> = [
     { ...entry[0], indent },

@@ -100,11 +100,12 @@ export default function EditableVoidsDemo() {
   const editor = usePlateEditor({
     override: { components: PlateUI },
     plugins: [BasicElementsPlugin, BasicMarksPlugin, EditableVoidPlugin],
+    value: editableVoidsValue,
   });
 
   return (
     <div className="p-10">
-      <Plate editor={editor} initialValue={editableVoidsValue}>
+      <Plate editor={editor}>
         <Editor {...editableProps} />
       </Plate>
     </div>

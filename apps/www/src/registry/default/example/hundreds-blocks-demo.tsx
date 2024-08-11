@@ -22,16 +22,17 @@ import { PlateUI } from '@/plate/demo/plate-ui';
 import { createHugeDocumentValue } from '@/plate/demo/values/createHugeDocumentValue';
 import { Editor } from '@/registry/default/plate-ui/editor';
 
-const initialValue = createHugeDocumentValue();
+const value = createHugeDocumentValue();
 
 function WithPlate() {
   const editor = usePlateEditor({
     override: { components: PlateUI },
     plugins: [BasicElementsPlugin, BasicMarksPlugin],
+    value,
   });
 
   return (
-    <Plate editor={editor} initialValue={initialValue}>
+    <Plate editor={editor}>
       <Editor {...editableProps} />
     </Plate>
   );
@@ -49,13 +50,17 @@ function Element({ attributes, children, element }: RenderElementProps) {
 }
 
 function WithoutPlate() {
-  const [value, setValue] = useState(initialValue);
+  const [initialValue, setValue] = useState(value);
   const renderElement = useCallback((p: any) => <Element {...p} />, []);
   const editor = useMemo(() => withReact(createEditor() as ReactEditor), []);
   const onChange = useCallback((newValue: Value) => setValue(newValue), []);
 
   return (
-    <Slate editor={editor} initialValue={value} onChange={onChange as any}>
+    <Slate
+      editor={editor}
+      initialValue={initialValue}
+      onChange={onChange as any}
+    >
       <Editable renderElement={renderElement} {...(editableProps as any)} />
     </Slate>
   );

@@ -75,6 +75,7 @@ export default function FindReplaceDemo() {
           search,
         }),
       ],
+      value: findReplaceValue,
     },
     [search]
   );
@@ -83,7 +84,7 @@ export default function FindReplaceDemo() {
     <>
       <SearchHighlightToolbar icon={Icons.search} setSearch={setSearch} />
 
-      <Plate editor={editor} initialValue={findReplaceValue}>
+      <Plate editor={editor}>
         <Editor {...editableProps} />
       </Plate>
     </>

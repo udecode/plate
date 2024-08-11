@@ -1,8 +1,9 @@
+import merge from 'lodash/merge.js';
+
 import type { PlateEditor } from '../types/PlateEditor';
 import type { PlatePlugin, PlatePlugins } from '../types/plugin/PlatePlugin';
 
-import { resolvePlugin } from '../index';
-import { overridePluginsByKey } from './overridePluginsByKey';
+import { overridePluginsByKey, resolvePlugin } from '../index';
 
 /**
  * Initialize and configure the editor's plugin system. This function sets up
@@ -15,7 +16,7 @@ export const resolvePlugins = (
 ) => {
   editor.plugins = [];
   editor.pluginsByKey = {};
-  editor.api = {};
+  editor.api = {} as any;
 
   const resolvedPlugins = resolveAndSortPlugins(editor, plugins);
 
@@ -31,44 +32,61 @@ export const resolvePlugins = (
       editor = plugin.withOverrides({ editor, plugin }) as any;
     }
   });
+
+  return editor;
 };
 
 const mergePluginApis = (editor: PlateEditor) => {
   editor.plugins.forEach((plugin) => {
     if (plugin.api) {
-      editor.api[plugin.key] = {};
       Object.entries(plugin.api).forEach(([apiKey, apiFunction]) => {
-        editor.api[plugin.key][apiKey] = apiFunction;
+        (editor.api as any)[apiKey] = apiFunction;
       });
     }
   });
+};
+
+const flattenAndMergePlugins = (
+  plugins: PlatePlugins
+): Map<string, PlatePlugin> => {
+  const pluginMap = new Map<string, PlatePlugin>();
+
+  const processPlugin = (plugin: PlatePlugin) => {
+    const existingPlugin = pluginMap.get(plugin.key);
+
+    if (existingPlugin) {
+      pluginMap.set(plugin.key, merge({}, existingPlugin, plugin));
+    } else {
+      pluginMap.set(plugin.key, plugin);
+    }
+    if (plugin.plugins && plugin.plugins.length > 0) {
+      plugin.plugins.forEach(processPlugin);
+    }
+  };
+
+  plugins.forEach(processPlugin);
+
+  return pluginMap;
 };
 
 export const resolveAndSortPlugins = (
   editor: PlateEditor,
   plugins: PlatePlugins
 ): PlatePlugins => {
-  const resolvedPlugins: PlatePlugins = [];
+  // Step 1: Resolve, flatten, and merge all plugins
+  const pluginMap = flattenAndMergePlugins(
+    plugins.map((plugin) => resolvePlugin(editor, plugin))
+  );
 
-  const processPlugin = (plugin: PlatePlugin) => {
-    const resolvedPlugin = resolvePlugin(editor, plugin);
+  // Step 2: Filter out disabled plugins
+  const enabledPlugins = Array.from(pluginMap.values()).filter(
+    (plugin) => plugin.enabled !== false
+  );
 
-    if (resolvedPlugin.enabled !== false) {
-      resolvedPlugins.push(resolvedPlugin);
+  // Step 4: Sort plugins by priority
+  enabledPlugins.sort((a, b) => b.priority - a.priority);
 
-      if (resolvedPlugin.plugins && resolvedPlugin.plugins.length > 0) {
-        resolvedPlugin.plugins.forEach(processPlugin);
-      }
-    }
-  };
-
-  plugins.forEach(processPlugin);
-
-  // Sort resolved plugins by priority (higher priority first)
-  resolvedPlugins.sort((a, b) => b.priority - a.priority);
-
-  // Reorder based on dependencies
-  const pluginMap = new Map(resolvedPlugins.map((p) => [p.key, p]));
+  // Step 5: Reorder based on dependencies
   const orderedPlugins: PlatePlugins = [];
   const visited = new Set<string>();
 
@@ -92,34 +110,16 @@ export const resolveAndSortPlugins = (
     orderedPlugins.push(plugin);
   };
 
-  resolvedPlugins.forEach(visit);
+  enabledPlugins.forEach(visit);
 
   return orderedPlugins;
 };
 
 export const mergePlugins = (editor: PlateEditor, plugins: PlatePlugins) => {
-  plugins.forEach((plugin) => {
-    if (editor.pluginsByKey[plugin.key]) {
-      // Update existing plugin
-      const index = editor.plugins.findIndex((p) => p.key === plugin.key);
-      const existingPlugin = editor.pluginsByKey[plugin.key];
-      const mergedPlugin = {
-        ...existingPlugin,
-        ...plugin,
-        component: plugin.component || existingPlugin.component, // Preserve existing component if not overridden
-      };
-
-      if (index >= 0) {
-        editor.plugins[index] = mergedPlugin;
-      }
-
-      editor.pluginsByKey[plugin.key] = mergedPlugin;
-    } else {
-      // Add new plugin
-      editor.plugins.push(plugin);
-      editor.pluginsByKey[plugin.key] = plugin;
-    }
-  });
+  editor.plugins = plugins;
+  editor.pluginsByKey = Object.fromEntries(
+    plugins.map((plugin) => [plugin.key, plugin])
+  );
 };
 
 export const applyPluginOverrides = (editor: PlateEditor) => {

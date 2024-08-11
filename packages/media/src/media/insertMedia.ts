@@ -1,3 +1,5 @@
+import type { ValueOf } from '@udecode/plate-common';
+
 import {
   type InsertNodesOptions,
   type PlateEditor,
@@ -23,13 +25,13 @@ export interface InsertMediaOptions<V extends Value>
   type?: string;
 }
 
-export const insertMedia = async <V extends Value>(
-  editor: PlateEditor<V>,
+export const insertMedia = async <E extends PlateEditor>(
+  editor: E,
   {
     getUrl,
     type = getPluginType(editor, ELEMENT_IMAGE),
     ...options
-  }: InsertMediaOptions<V> = {}
+  }: InsertMediaOptions<ValueOf<E>> = {}
 ) => {
   const url = getUrl
     ? await getUrl()

@@ -1,6 +1,7 @@
 import type { PlateEditor } from '../types';
 
 import { createPlateEditor } from '../../client';
+import { DebugPlugin } from '../plugins';
 import { createPlugin } from './createPlugin';
 import { resolvePluginTest } from './resolveCreatePluginTest';
 import {
@@ -76,6 +77,43 @@ describe('resolvePlugins', () => {
     resolvePlugins(editor, plugins);
 
     expect(editor.pluginsByKey.b.type).toBe('overridden');
+  });
+
+  it('should merge all plugin APIs into editor.api', () => {
+    const editor = createPlateEditor({
+      plugins: [
+        createPlugin({
+          api: { methodA: () => 'A' },
+          key: 'plugin1',
+        }),
+        createPlugin({
+          api: { methodB: () => 'B' },
+          key: 'plugin2',
+        }),
+      ],
+    });
+
+    expect(editor.api.methodA).toBeDefined();
+    expect(editor.api.methodB).toBeDefined();
+    expect(editor.api.methodA()).toBe('A');
+    expect(editor.api.methodB()).toBe('B');
+  });
+
+  it('should overwrite API methods with the same name', () => {
+    const editor = createPlateEditor({
+      plugins: [
+        createPlugin<'plugin1', {}>({
+          api: { method: (_: string) => 'first' },
+          key: 'plugin1',
+        }),
+        createPlugin({
+          api: { method: (_: number) => 'second' },
+          key: 'plugin2',
+        }),
+      ],
+    });
+
+    expect(editor.api.method(1)).toBe('second');
   });
 });
 
@@ -439,6 +477,61 @@ describe('applyPluginOverrides', () => {
       expect(
         resolvedPlugin.inject!.pluginsByKey!.plugin3.deserializeHtml!.getNode
       ).toBeDefined();
+    });
+  });
+
+  it('should replace plugins with the same key and merge their APIs', () => {
+    const originalLogger = jest.fn();
+    const replacementLogger = jest.fn();
+
+    const editor = createPlateEditor({
+      plugins: [
+        createPlugin({
+          api: { method: originalLogger },
+          key: 'a',
+        }),
+        // This should replace the previous plugin
+        createPlugin({
+          api: { method: replacementLogger },
+          key: 'a',
+        }),
+      ],
+    });
+
+    editor.api.method({
+      level: 'debug',
+      message: 'Test message',
+      type: 'TEST',
+    });
+
+    expect(originalLogger).not.toHaveBeenCalled();
+    expect(replacementLogger).toHaveBeenCalledWith({
+      level: 'debug',
+      message: 'Test message',
+      type: 'TEST',
+    });
+  });
+
+  it('should allow overriding core plugins like DebugPlugin', () => {
+    const customLogger = jest.fn();
+
+    const editor = createPlateEditor({
+      plugins: [
+        DebugPlugin.configure({
+          logger: customLogger,
+        }),
+      ],
+    });
+
+    editor.api.debug.log({
+      message: 'Test message',
+      type: 'TEST',
+    });
+
+    expect(customLogger).toHaveBeenCalledWith({
+      level: 'debug',
+      message: 'Test message',
+      type: 'TEST',
     });
   });
 });

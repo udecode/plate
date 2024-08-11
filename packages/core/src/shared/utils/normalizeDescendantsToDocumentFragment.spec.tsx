@@ -105,6 +105,7 @@ describe('normalizeDescendantsToDocumentFragment()', () => {
       const editor = createPlateEditor({
         plugins: [LinkPlugin],
       });
+
       const result = normalizeDescendantsToDocumentFragment(editor, {
         descendants: input,
       });

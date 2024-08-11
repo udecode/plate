@@ -1,15 +1,23 @@
 /* eslint-disable jest/no-conditional-expect */
-import { createTEditor } from '@udecode/slate';
+import { type Value, createTEditor } from '@udecode/slate';
 
 import {
-  KEY_DESERIALIZE_AST,
-  KEY_DESERIALIZE_HTML,
-  KEY_EDITOR_PROTOCOL,
-  KEY_EVENT_EDITOR,
-  KEY_INLINE_VOID,
-  KEY_NODE_FACTORY,
-  KEY_PREV_SELECTION,
+  HistoryPlugin,
+  NodeFactoryPlugin,
+  type PlatePlugin,
+  ReactPlugin,
+} from '../../server';
+import {
+  DebugPlugin,
+  DeserializeAstPlugin,
+  DeserializeHtmlPlugin,
+  EditorProtocolPlugin,
+  EventEditorPlugin,
+  InlineVoidPlugin,
+  InsertDataPlugin,
+  LengthPlugin,
   type LengthPluginOptions,
+  PrevSelectionPlugin,
   createPlugin,
   getPlugin,
 } from '../../shared';
@@ -17,17 +25,18 @@ import { withPlate } from './withPlate';
 
 const coreKeys = [
   'root',
-  'react',
-  'history',
-  KEY_NODE_FACTORY,
-  KEY_EVENT_EDITOR,
-  KEY_INLINE_VOID,
-  'insertData',
-  KEY_PREV_SELECTION,
-  'length',
-  KEY_DESERIALIZE_HTML,
-  KEY_DESERIALIZE_AST,
-  KEY_EDITOR_PROTOCOL,
+  ReactPlugin.key,
+  HistoryPlugin.key,
+  DebugPlugin.key,
+  NodeFactoryPlugin.key,
+  EventEditorPlugin.key,
+  InlineVoidPlugin.key,
+  InsertDataPlugin.key,
+  PrevSelectionPlugin.key,
+  LengthPlugin.key,
+  DeserializeHtmlPlugin.key,
+  DeserializeAstPlugin.key,
+  EditorProtocolPlugin.key,
 ];
 
 describe('withPlate', () => {
@@ -62,7 +71,7 @@ describe('withPlate', () => {
 
   describe('when plugins is an empty array', () => {
     it('should only have core plugins', () => {
-      const editor = withPlate(createTEditor(), {
+      const editor = withPlate<Value, PlatePlugin>(createTEditor(), {
         id: '1',
         plugins: [],
       });

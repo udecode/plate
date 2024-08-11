@@ -1,7 +1,7 @@
 import {
   type InsertNodesOptions,
   type PlateEditor,
-  type Value,
+  type ValueOf,
   insertNodes,
   withoutNormalizing,
 } from '@udecode/plate-common';
@@ -14,10 +14,10 @@ import { ELEMENT_IMAGE } from '../../image';
 import { ELEMENT_VIDEO } from '../../video';
 import { ELEMENT_PLACEHOLDER } from '../PlaceholderPlugin';
 
-export const insertPlaceHolder = <V extends Value>(
-  editor: PlateEditor<V>,
+export const insertPlaceHolder = <E extends PlateEditor>(
+  editor: E,
   mediaType: string,
-  options?: InsertNodesOptions<V>
+  options?: InsertNodesOptions<ValueOf<E>>
 ) => {
   withoutNormalizing(editor, () =>
     insertNodes<TPlaceholderElement>(
@@ -32,22 +32,22 @@ export const insertPlaceHolder = <V extends Value>(
   );
 };
 
-export const insertImagePlaceholder = <V extends Value>(
-  editor: PlateEditor<V>,
-  options?: InsertNodesOptions<V>
+export const insertImagePlaceholder = <E extends PlateEditor>(
+  editor: E,
+  options?: InsertNodesOptions<ValueOf<E>>
 ) => insertPlaceHolder(editor, ELEMENT_IMAGE, options);
 
-export const insertVideoPlaceholder = <V extends Value>(
-  editor: PlateEditor<V>,
-  options?: InsertNodesOptions<V>
+export const insertVideoPlaceholder = <E extends PlateEditor>(
+  editor: E,
+  options?: InsertNodesOptions<ValueOf<E>>
 ) => insertPlaceHolder(editor, ELEMENT_VIDEO, options);
 
-export const insertAudioPlaceholer = <V extends Value>(
-  editor: PlateEditor<V>,
-  options?: InsertNodesOptions<V>
+export const insertAudioPlaceholer = <E extends PlateEditor>(
+  editor: E,
+  options?: InsertNodesOptions<ValueOf<E>>
 ) => insertPlaceHolder(editor, ELEMENT_AUDIO, options);
 
-export const insertFilePlaceholer = <V extends Value>(
-  editor: PlateEditor<V>,
-  options?: InsertNodesOptions<V>
+export const insertFilePlaceholer = <E extends PlateEditor>(
+  editor: E,
+  options?: InsertNodesOptions<ValueOf<E>>
 ) => insertPlaceHolder(editor, ELEMENT_FILE, options);

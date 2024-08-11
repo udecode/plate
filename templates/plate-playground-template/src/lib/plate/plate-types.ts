@@ -316,7 +316,7 @@ export type MyValue = MyRootBlock[];
  * Editor types
  */
 
-export type MyEditor = PlateEditor<MyValue> & { isDragging?: boolean };
+export type MyEditor = TPlateEditor<MyValue> & { isDragging?: boolean };
 export type MyReactEditor = TReactEditor<MyValue>;
 export type MyNode = ENode<MyValue>;
 export type MyNodeEntry = ENodeEntry<MyValue>;

@@ -47,17 +47,34 @@ import type {
   TTableElement,
 } from '@udecode/plate-table';
 import type { ELEMENT_TOGGLE, TToggleElement } from '@udecode/plate-toggle';
-import type { TText } from '@udecode/slate';
 
 import {
   type EElement,
-  type PlateEditor,
   type PlateId,
   type TElement,
+  type TPlateEditor,
+  type TText,
+  type Value,
+  createPlugin,
+  createTEditor,
   useEditorRef,
+  withPlate,
 } from '@udecode/plate-common';
 
 /** Text */
+
+const MyCustomPlugin = createPlugin({
+  api: {
+    myCustomMethod: () => {},
+  },
+  key: 'myCustom',
+});
+
+const editor = withPlate<Value, typeof MyCustomPlugin>(createTEditor(), {
+  plugins: [MyCustomPlugin],
+});
+const b: TPlateEditor<Value, typeof MyCustomPlugin> = {};
+b.api.myCustomMethod();
 
 export type EmptyText = {
   text: '';
@@ -283,6 +300,6 @@ export type MyRootBlock =
 
 export type MyValue = MyRootBlock[];
 
-export type MyEditor = { isDragging?: boolean } & PlateEditor<MyValue>;
+export type MyEditor = { isDragging?: boolean } & TPlateEditor<MyValue>;
 
 export const useMyEditorRef = () => useEditorRef<MyEditor>();

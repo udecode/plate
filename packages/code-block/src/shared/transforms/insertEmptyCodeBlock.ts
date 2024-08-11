@@ -1,7 +1,8 @@
+import type { ValueOf } from '@udecode/plate-common';
+
 import {
   ELEMENT_DEFAULT,
   type PlateEditor,
-  type Value,
   getPluginType,
   insertElements,
   isBlockAboveEmpty,
@@ -16,12 +17,12 @@ import { insertCodeBlock } from './insertCodeBlock';
  * Called by toolbars to make sure a code-block gets inserted below a paragraph
  * rather than awkwardly splitting the current selection.
  */
-export const insertEmptyCodeBlock = <V extends Value>(
-  editor: PlateEditor<V>,
+export const insertEmptyCodeBlock = <E extends PlateEditor>(
+  editor: E,
   {
     defaultType = getPluginType(editor, ELEMENT_DEFAULT),
     insertNodesOptions,
-  }: CodeBlockInsertOptions<V> = {}
+  }: CodeBlockInsertOptions<ValueOf<E>> = {}
 ) => {
   if (!editor.selection) return;
   if (isExpanded(editor.selection) || !isBlockAboveEmpty(editor)) {

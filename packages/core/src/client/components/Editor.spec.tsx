@@ -79,8 +79,8 @@ describe('Plate', () => {
       )();
 
       const editor = createPlateEditor({
-        children: [{ children: [{ text: '' }] }] as any,
         plugins,
+        value: [{ children: [{ text: '' }] }] as any,
       });
 
       render(
@@ -109,8 +109,8 @@ describe('Plate', () => {
       ];
 
       const editor = createPlateEditor({
-        children: [{} as any],
         plugins,
+        value: [{} as any],
       });
 
       expect(() =>
@@ -130,7 +130,6 @@ describe('Plate', () => {
       });
 
       const editor = createPlateEditor({
-        children: [{ children: [{ text: '' }], type: 'a' }],
         plugins: [
           createPlugin({
             component: ({ attributes, children }) => (
@@ -146,6 +145,7 @@ describe('Plate', () => {
             key: 'a',
           }),
         ],
+        value: [{ children: [{ text: '' }], type: 'a' }],
       });
 
       expect(() =>

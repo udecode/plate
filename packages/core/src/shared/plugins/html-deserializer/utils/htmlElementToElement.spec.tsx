@@ -1,10 +1,10 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /** @jsx jsx */
 
-import { createPlateEditor } from '@udecode/plate-common';
 import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
+import { createPlateEditor } from '../../../../client';
 import { htmlElementToElement } from './htmlElementToElement';
 import { parseHtmlElement } from './parseHtmlElement';
 

@@ -1,16 +1,17 @@
 import {
+  type AnyPlatePlugin,
   type CreatePlateEditorOptions,
-  type PlateEditor,
+  type Value,
   createPlateEditor,
 } from '@udecode/plate-common';
 import { createPlateUI } from 'www/src/lib/plate/create-plate-ui';
 
 /** Create a plate editor with default UI. */
-export const createPlateUIEditor = <E extends PlateEditor = PlateEditor>({
-  override,
-  ...options
-}: CreatePlateEditorOptions<E> = {}): E =>
-  createPlateEditor<E>({
+export const createPlateUIEditor = <
+  V extends Value = Value,
+  P extends AnyPlatePlugin = AnyPlatePlugin,
+>({ override, ...options }: CreatePlateEditorOptions<V, P> = {}) =>
+  createPlateEditor<V, P>({
     ...options,
     override: {
       components: createPlateUI(override?.components),

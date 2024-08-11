@@ -10,4 +10,3 @@ export * from './getSaveValue';
 export * from './handlers';
 export * from './types';
 export * from './uploadFiles';
-export * from './withCloud';

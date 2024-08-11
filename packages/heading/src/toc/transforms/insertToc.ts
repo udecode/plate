@@ -2,15 +2,15 @@ import {
   type InsertNodesOptions,
   type PlateEditor,
   type TElement,
-  type Value,
+  type ValueOf,
   insertNodes,
 } from '@udecode/plate-common';
 
 import { ELEMENT_TOC } from '../TocPlugin';
 
-export const insertToc = <V extends Value>(
-  editor: PlateEditor<V>,
-  options?: InsertNodesOptions<V>
+export const insertToc = <E extends PlateEditor>(
+  editor: E,
+  options?: InsertNodesOptions<ValueOf<E>>
 ) => {
   insertNodes<TElement>(
     editor,

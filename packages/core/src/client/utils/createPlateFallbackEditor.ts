@@ -5,10 +5,10 @@ import {
   createPlateEditor,
 } from './createPlateEditor';
 
-export const createPlateFallbackEditor = <E extends PlateEditor = PlateEditor>(
-  options: CreatePlateEditorOptions<E> = {}
-): E => {
-  const editor = createPlateEditor<E>(options);
+export const createPlateFallbackEditor = (
+  options: CreatePlateEditorOptions = {}
+): PlateEditor => {
+  const editor = createPlateEditor(options);
 
   editor.isFallback = true;
 

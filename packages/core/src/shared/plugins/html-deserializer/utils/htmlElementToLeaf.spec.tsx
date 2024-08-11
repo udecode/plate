@@ -2,11 +2,11 @@
 /** @jsx jsx */
 
 import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks';
-import { createPlateEditor } from '@udecode/plate-common';
 import { ListPlugin } from '@udecode/plate-list';
 import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
+import { createPlateEditor } from '../../../../client';
 import { createPlugin } from '../../../utils';
 import { htmlElementToLeaf } from './htmlElementToLeaf';
 import { parseHtmlElement } from './parseHtmlElement';

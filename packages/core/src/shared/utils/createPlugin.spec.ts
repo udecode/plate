@@ -448,7 +448,7 @@ describe('createPlugin', () => {
   });
 
   describe('when extendPlugin a cousin plugin', () => {
-    it('should not extend a plugin at the same level', () => {
+    it('should extend a plugin at the same level', () => {
       const editor = createPlateEditor({
         plugins: [
           createPlugin({
@@ -485,7 +485,7 @@ describe('createPlugin', () => {
 
       expect(child1Plugin.key).toBe('child1');
       expect(child1Options.initialValue).toBe('child1');
-      expect(child1Options.extendedValue).not.toBe('extended child1');
+      expect(child1Options.extendedValue).toBe('extended child1');
     });
   });
 
@@ -705,6 +705,101 @@ describe('createPlugin', () => {
 
       expect(resolvedPlugin.component).not.toBe(OriginalComponent);
       expect(resolvedPlugin.component).toBe(NewComponent);
+    });
+  });
+
+  describe('extendApi method', () => {
+    it('should correctly handle api extensions through extend, extendApi, and configure', () => {
+      const basePlugin = createPlugin({
+        key: 'testPlugin',
+        options: {
+          baseValue: 10,
+        },
+      });
+
+      const extendedPlugin = basePlugin
+        .extend({
+          options: {
+            baseValue: 15,
+          },
+        })
+        .extendApi(({ plugin: { options } }) => ({
+          sampleMethod: () => options.baseValue + 1,
+        }))
+        .extend({
+          options: {
+            baseValue: 20,
+          },
+        })
+        .extendApi(({ plugin: { api, options } }) => ({
+          anotherMethod: () => (api as any).sampleMethod() + options.baseValue,
+        }))
+        .configure({
+          baseValue: 25,
+        });
+
+      const resolvedPlugin = resolvePluginTest(extendedPlugin);
+
+      expect(resolvedPlugin.options.baseValue).toBe(25);
+      expect(resolvedPlugin.api.sampleMethod()).toBe(26);
+      expect(resolvedPlugin.api.anotherMethod()).toBe(51);
+    });
+
+    it('should allow multiple extendApi calls', () => {
+      const basePlugin = createPlugin({
+        key: 'testPlugin',
+        options: {
+          baseValue: 10,
+        },
+      });
+
+      const extendedPlugin = basePlugin
+        .extendApi(() => ({
+          method1: () => 1,
+        }))
+        .extendApi(() => ({
+          method2: () => 2,
+        }))
+        .extendApi(({ plugin: { api } }) => ({
+          method3: () => (api as any).method1() + (api as any).method2(),
+        }));
+
+      const resolvedPlugin = resolvePluginTest(extendedPlugin);
+
+      expect(resolvedPlugin.api.method1()).toBe(1);
+      expect(resolvedPlugin.api.method2()).toBe(2);
+      expect(resolvedPlugin.api.method3()).toBe(3);
+    });
+  });
+
+  describe('when creating a plugin with options, extending it, and configuring', () => {
+    it('should correctly handle options through extend, extendApi, and configure', () => {
+      const basePlugin = createPlugin({
+        key: 'testPlugin',
+        options: {
+          baseValue: 10,
+        },
+      });
+
+      const a = 1;
+
+      const extendedPlugin = basePlugin
+        .extendApi(({ plugin: { options } }) => ({
+          sampleMethod: () => a + options.baseValue,
+        }))
+        .extend({
+          options: {
+            baseValue: 15,
+          },
+        });
+
+      const configuredPlugin = extendedPlugin.configure({
+        baseValue: 20,
+      });
+
+      const resolvedPlugin = resolvePluginTest(configuredPlugin);
+
+      expect(resolvedPlugin.api.sampleMethod()).toBe(21);
     });
   });
 });

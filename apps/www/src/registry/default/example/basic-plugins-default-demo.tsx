@@ -38,12 +38,12 @@ export default function BasicPluginsDefaultDemo() {
       StrikethroughPlugin,
       CodePlugin,
     ],
+    value: basicEditorValue,
   });
 
   return (
     <Plate
       editor={editor}
-      initialValue={basicEditorValue}
       onChange={({ value }) => {
         setDebugValue(value);
         // save newValue...

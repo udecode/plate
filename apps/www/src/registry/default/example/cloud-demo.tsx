@@ -39,10 +39,11 @@ export default function CloudDemo() {
         minResizeWidth: 100,
       }).withComponent(CloudImageElement),
     ],
+    value: cloudValue,
   });
 
   return (
-    <Plate editor={editor} initialValue={cloudValue}>
+    <Plate editor={editor}>
       <FixedToolbar>
         <CloudToolbarButtons />
       </FixedToolbar>

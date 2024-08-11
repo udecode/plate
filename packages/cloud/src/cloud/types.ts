@@ -1,5 +1,5 @@
 import type * as portiveClient from '@portive/client';
-import type { PlateEditor, Value } from '@udecode/plate-common/server';
+import type { Value } from '@udecode/plate-common/server';
 
 import type { Upload } from '../upload';
 import type { createUploadStore } from '../upload/createUploadStore';
@@ -9,33 +9,18 @@ export type CloudPluginOptions = {
   uploadStoreInitialValue?: Record<string, Upload>;
 } & portiveClient.ClientOptions;
 
-export type PlateCloudEditor<V extends Value = Value> = CloudEditorProps &
-  PlateEditor<V>;
-
-export type FinishUploadsOptions = { maxTimeoutInMs?: number };
-
-export type CloudEditorProps = {
+export type CloudPluginApi = {
   cloud: {
     client: portiveClient.Client;
     finishUploads: (options?: FinishUploadsOptions) => Promise<void>;
-    genericFileHandlers?: {
-      onError?: (e: ErrorEvent & FileEvent) => void;
-      onProgress?: (e: FileEvent & ProgressEvent) => void;
-      onStart?: (e: FileEvent) => void;
-      onSuccess?: (e: FileEvent & SuccessEvent) => void;
-    };
     getSaveValue: () => Value;
-    imageFileHandlers?: {
-      onError?: (e: ErrorEvent & ImageFileEvent) => void;
-      onProgress?: (e: ImageFileEvent & ProgressEvent) => void;
-      onStart?: (e: ImageFileEvent) => void;
-      onSuccess?: (e: ImageFileEvent & SuccessEvent) => void;
-    };
     uploadFiles: (msg: any) => void;
     uploadStore: ReturnType<typeof createUploadStore>;
     // save: (options: { maxTimeoutInMs?: number }) => Promise<V>;
   };
 };
+
+export type FinishUploadsOptions = { maxTimeoutInMs?: number };
 
 /**
  * The part of the FileEvent shared between the GenericFileEvent and the

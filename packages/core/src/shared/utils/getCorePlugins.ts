@@ -1,4 +1,7 @@
+import type { PlatePlugin, PlatePlugins } from '../types';
+
 import {
+  DebugPlugin,
   DeserializeAstPlugin,
   DeserializeHtmlPlugin,
   EditorProtocolPlugin,
@@ -8,10 +11,8 @@ import {
   InsertDataPlugin,
   LengthPlugin,
   NodeFactoryPlugin,
-  type PlatePlugin,
-  type PlatePlugins,
   PrevSelectionPlugin,
-} from '../index';
+} from '../plugins';
 
 export type GetCorePluginsOptions = {
   /** Specifies the maximum number of characters allowed in the editor. */
@@ -25,6 +26,7 @@ export const getCorePlugins = ({
   const plugins: PlatePlugins = [
     reactPlugin,
     HistoryPlugin,
+    DebugPlugin,
     NodeFactoryPlugin,
     EventEditorPlugin,
     InlineVoidPlugin,

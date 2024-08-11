@@ -24,6 +24,7 @@ export const resolvePlugin = <P extends AnyPlatePlugin>(
 ): P => {
   let plugin = { ..._plugin };
 
+  // Apply all stored extensions
   if (plugin.__extensions && plugin.__extensions.length > 0) {
     plugin.__extensions.forEach((extension) => {
       plugin = merge({}, plugin, extension({ editor, plugin }));
@@ -32,6 +33,15 @@ export const resolvePlugin = <P extends AnyPlatePlugin>(
   }
   if (plugin.plugins) {
     plugin.plugins = plugin.plugins.map((p) => resolvePlugin(editor, p));
+  }
+  // Apply method extensions
+  if (plugin.__methodExtensions && plugin.__methodExtensions.length > 0) {
+    plugin.api = plugin.api || {};
+    plugin.__methodExtensions.forEach((methodExtension) => {
+      const newApi = methodExtension({ editor, plugin });
+      plugin.api = merge({}, plugin.api, newApi);
+    });
+    delete (plugin as any).__methodExtensions;
   }
 
   const validPluginToInjectPlugin =

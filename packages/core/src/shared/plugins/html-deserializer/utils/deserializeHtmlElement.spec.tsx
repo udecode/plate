@@ -1,13 +1,13 @@
 /** @jsx jsx */
 
 import { BoldPlugin } from '@udecode/plate-basic-marks';
-import { createPlateEditor } from '@udecode/plate-common';
 import { LinkPlugin } from '@udecode/plate-link';
 import { ImagePlugin } from '@udecode/plate-media';
 import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { TablePlugin } from '@udecode/plate-table';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 
+import { createPlateEditor } from '../../../../client';
 import { createPlugin } from '../../../utils';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 

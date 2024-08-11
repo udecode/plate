@@ -1,7 +1,9 @@
+import { type PlateEditor, getPluginApi } from '@udecode/plate-common';
 import delay from 'delay';
 
-import type { FinishUploadsOptions, PlateCloudEditor } from './types';
+import type { FinishUploadsOptions } from './types';
 
+import { CloudPlugin } from './CloudPlugin';
 import { getInProgressUploads } from './getInProgressUploads';
 
 const TEN_MINUTES = 1000 * 60 * 60;
@@ -15,10 +17,12 @@ const TEN_MINUTES = 1000 * 60 * 60;
  * amount of time.
  */
 export const finishUploads = async (
-  editor: PlateCloudEditor,
+  editor: PlateEditor,
   { maxTimeoutInMs = TEN_MINUTES }: FinishUploadsOptions = {}
 ): Promise<void> => {
-  const uploads = editor.cloud.uploadStore.get.uploads();
+  const api = getPluginApi(editor, CloudPlugin);
+
+  const uploads = api.cloud.uploadStore.get.uploads();
   const uploadingOrigins = getInProgressUploads(editor.children, uploads);
   const finishPromises = uploadingOrigins.map((origin) => origin.finishPromise);
   const timeoutPromise = delay(maxTimeoutInMs, { value: 'timeout' });

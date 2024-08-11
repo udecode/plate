@@ -11,7 +11,7 @@ import {
 import { editableProps } from '@/plate/demo/editableProps';
 import { Editor } from '@/registry/default/plate-ui/editor';
 
-const initialValue = [
+const value = [
   {
     children: [
       {
@@ -23,13 +23,12 @@ const initialValue = [
 ];
 
 export default function BasicEditorHandlerDemo() {
-  const [debugValue, setDebugValue] = useState<Value>(initialValue);
-  const editor = usePlateEditor();
+  const [debugValue, setDebugValue] = useState<Value>(value);
+  const editor = usePlateEditor({ value });
 
   return (
     <Plate
       editor={editor}
-      initialValue={initialValue}
       onChange={({ value }) => {
         setDebugValue(value);
         // save newValue...
