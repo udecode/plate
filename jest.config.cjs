@@ -25,6 +25,7 @@ Object.keys(aliases).forEach((key) => {
   const value = aliases[key];
 
   modules[`^${key}$`] = `<rootDir>/packages/${value}/src`;
+  modules[`^${key}/react$`] = `<rootDir>/packages/${value}/src/react`;
 });
 
 /** @type {import('ts-jest').JestConfigWithTsJest} */
@@ -47,7 +48,6 @@ module.exports = {
   moduleNameMapper: {
     '\\.(css|less|sass|scss)$': '<rootDir>/scripts/styleMock.cjs',
     ...getTsConfigBasePaths(),
-    // '^@udecode/plate-core$': '<rootDir>/packages/core/src',
     ...modules,
   },
   preset: 'ts-jest',

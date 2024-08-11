@@ -8,7 +8,7 @@ import {
   CloudPlugin,
 } from '@udecode/plate-cloud';
 import { Plate } from '@udecode/plate-common';
-import { usePlateEditor } from '@udecode/plate-core';
+import { usePlateEditor } from '@udecode/plate-core/react';
 
 import { uploadStoreInitialValue } from '@/plate/demo/cloud/uploadStoreInitialValue';
 import { editableProps } from '@/plate/demo/editableProps';

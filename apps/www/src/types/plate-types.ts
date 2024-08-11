@@ -54,11 +54,8 @@ import {
   type TElement,
   type TPlateEditor,
   type TText,
-  type Value,
   createPlugin,
-  createTEditor,
   useEditorRef,
-  withPlate,
 } from '@udecode/plate-common';
 
 /** Text */
@@ -70,11 +67,11 @@ const MyCustomPlugin = createPlugin({
   key: 'myCustom',
 });
 
-const editor = withPlate<Value, typeof MyCustomPlugin>(createTEditor(), {
-  plugins: [MyCustomPlugin],
-});
-const b: TPlateEditor<Value, typeof MyCustomPlugin> = {};
-b.api.myCustomMethod();
+// const editor = withPlate<Value, typeof MyCustomPlugin>(createTEditor(), {
+//   plugins: [MyCustomPlugin],
+// });
+// const b: TPlateEditor<Value, typeof MyCustomPlugin> = {};
+// b.api.myCustomMethod();
 
 export type EmptyText = {
   text: '';

@@ -3,7 +3,10 @@ import React from 'react';
 import { BoldPlugin } from '@udecode/plate';
 import { MARK_BOLD } from '@udecode/plate-basic-marks';
 import { type PlatePlugins, createPlugin } from '@udecode/plate-common';
-import { createPlateEditor, htmlStringToDOMNode } from '@udecode/plate-core';
+import {
+  createPlateEditor,
+  htmlStringToDOMNode,
+} from '@udecode/plate-core/react';
 import { ImagePlugin } from '@udecode/plate-media';
 
 import { serializeHtml } from '../../serializeHtml';

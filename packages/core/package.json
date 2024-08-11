@@ -31,11 +31,11 @@
       "module": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
-    "./server": {
-      "types": "./dist/server.d.ts",
-      "import": "./dist/server.mjs",
-      "module": "./dist/server.mjs",
-      "require": "./dist/server.js"
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.mjs",
+      "module": "./dist/react/index.mjs",
+      "require": "./dist/react/index.js"
     }
   },
   "main": "dist/index.js",
