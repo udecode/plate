@@ -1,4 +1,5 @@
 import { createPluginFactory } from '../utils/createPluginFactory';
+import castArray from 'lodash/castArray.js';
 
 export const KEY_DESERIALIZE_AST = 'deserializeAst';
 
@@ -20,11 +21,7 @@ export const createDeserializeAstPlugin = createPluginFactory({
           /* empty */
         }
 
-        if (parsed) {
-          return Array.isArray(parsed) ? parsed : [parsed];
-        }
-
-        return parsed;
+        return castArray(parsed);
       },
     },
   },
