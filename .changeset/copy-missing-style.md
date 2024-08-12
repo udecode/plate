@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-core/shared/plugins/createDeserializeAstPlugin': patch
+'@udecode/plate-core': patch
 ---
 
 fix cannot copy a row/column format from table 
