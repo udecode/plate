@@ -9,12 +9,10 @@ export function CommentsProvider({ children }: { children: ReactNode }) {
     <CommentsProviderPrimitive
       comments={commentsData}
       myUserId="1"
-      /* eslint-disable no-console */
-      onCommentAdd={(comment) => console.log('Comment added', comment)}
-      onCommentDelete={(comment) => console.log('Comment deleted', comment)}
-      onCommentUpdate={(comment) => console.log('Comment updated', comment)}
+      onCommentAdd={(comment) => console.info('Comment added', comment)}
+      onCommentDelete={(comment) => console.info('Comment deleted', comment)}
+      onCommentUpdate={(comment) => console.info('Comment updated', comment)}
       users={usersData}
-      /* eslint-enable no-console */
     >
       {children}
     </CommentsProviderPrimitive>
