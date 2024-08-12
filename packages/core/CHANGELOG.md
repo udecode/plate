@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 36.3.7
+
+### Patch Changes
+
+- [#3418](https://github.com/udecode/plate/pull/3418) by [@beeant0512](https://github.com/beeant0512) – fix cannot copy a row/column format from table
+
 ## 36.3.4
 
 ## 36.2.1
