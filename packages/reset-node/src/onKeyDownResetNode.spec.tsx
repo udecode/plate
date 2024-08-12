@@ -9,11 +9,11 @@ import {
 } from '@udecode/plate-code-block';
 import {
   type AnyPlatePlugin,
-  createPlateEditor,
   createPlugin,
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
 } from '@udecode/plate-common';
+import { createPlateEditor } from '@udecode/plate-common/react';
 import * as isHotkey from '@udecode/plate-core';
 import { ELEMENT_LI, unwrapList } from '@udecode/plate-list';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';

@@ -34,15 +34,6 @@ export const resolvePlugin = <P extends AnyPlatePlugin>(
   if (plugin.plugins) {
     plugin.plugins = plugin.plugins.map((p) => resolvePlugin(editor, p));
   }
-  // Apply method extensions
-  if (plugin.__methodExtensions && plugin.__methodExtensions.length > 0) {
-    plugin.api = plugin.api || {};
-    plugin.__methodExtensions.forEach((methodExtension) => {
-      const newApi = methodExtension({ editor, plugin });
-      plugin.api = merge({}, plugin.api, newApi);
-    });
-    delete (plugin as any).__methodExtensions;
-  }
 
   const validPluginToInjectPlugin =
     plugin.inject?.props?.validPluginToInjectPlugin;
@@ -70,7 +61,7 @@ export const resolvePlugin = <P extends AnyPlatePlugin>(
     plugin.plugins = plugin.plugins.map((p) => resolvePlugin(editor, p));
   }
 
-  validatePlugin(plugin);
+  validatePlugin(editor, plugin);
 
   return plugin;
 };
@@ -82,16 +73,19 @@ export const validatePlugin = <
   T = {},
   S = {},
 >(
+  editor: PlateEditor,
   plugin: PlatePlugin<K, O, A, T, S>
 ) => {
   if (!plugin.__extensions) {
-    throw new Error(
-      `Invalid plugin '${plugin.key}', you should use createPlugin.`
+    editor.api.debug.error(
+      `Invalid plugin '${plugin.key}', you should use createPlugin.`,
+      'USE_CREATE_PLUGIN'
     );
   }
   if (plugin.isElement && plugin.isLeaf) {
-    throw new Error(
-      `Plugin ${plugin.key} cannot be both an element and a leaf.`
+    editor.api.debug.error(
+      `Plugin ${plugin.key} cannot be both an element and a leaf.`,
+      'PLUGIN_NODE_TYPE'
     );
   }
 };

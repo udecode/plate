@@ -73,7 +73,7 @@ export const ResetNodePlugin = createPlugin<
           if (Point.equals(selection.anchor, start)) {
             const node = getNode<TElement>(editor, [0])!;
 
-            const { children, ...props } = editor.blockFactory({}, [0]);
+            const { children, ...props } = editor.api.blockFactory({}, [0]);
 
             // replace props
             withoutNormalizing(editor, () => {

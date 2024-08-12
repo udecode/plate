@@ -1,10 +1,6 @@
 import type { KeyboardHandler } from '@udecode/plate-common';
 
-import {
-  getBlockAbove,
-  isHotkey,
-  queryNode,
-} from '@udecode/plate-common';
+import { getBlockAbove, isHotkey, queryNode } from '@udecode/plate-common';
 
 import type { ExitBreakPluginOptions } from './types';
 
@@ -27,7 +23,7 @@ export const onKeyDownExitBreak: KeyboardHandler<ExitBreakPluginOptions> = ({
     if (
       isHotkey(hotkey, event as any) &&
       queryNode(entry, rule.query) &&
-      exitBreak(editor as any, rule)
+      exitBreak(editor, rule)
     ) {
       event.preventDefault();
       event.stopPropagation();

@@ -1,6 +1,8 @@
-import type { TElement } from '@udecode/plate-common';
-
-import { type PlateEditor, getPluginType } from '@udecode/plate-common';
+import {
+  type PlateEditor,
+  type TElement,
+  getPluginType,
+} from '@udecode/plate-common';
 
 import type { CellFactoryOptions } from '../types';
 
@@ -19,7 +21,7 @@ export const getEmptyCellNode = (
       : false);
 
   return {
-    children: children ?? [editor.blockFactory()],
+    children: children ?? [editor.api.blockFactory()],
     type: header
       ? getPluginType(editor, ELEMENT_TH)
       : getPluginType(editor, ELEMENT_TD),

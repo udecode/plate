@@ -1,5 +1,5 @@
 import * as portiveClient from '@portive/client';
-import { type PlateEditor, getPluginApi } from '@udecode/plate-common';
+import { type PlateEditor, getEditorApi } from '@udecode/plate-common';
 import { nanoid } from '@udecode/plate-common';
 
 import type { FileEvent, ProgressEvent } from './types';
@@ -32,9 +32,9 @@ const createFileEvent = (
 };
 
 export const uploadFile = (editor: PlateEditor, file: File) => {
-  const api = getPluginApi(editor, CloudPlugin);
-  const apiImage = getPluginApi(editor, CloudImagePlugin);
-  const apiAttachment = getPluginApi(editor, CloudAttachmentPlugin);
+  const api = getEditorApi(editor, CloudPlugin);
+  const apiImage = getEditorApi(editor, CloudImagePlugin);
+  const apiAttachment = getEditorApi(editor, CloudAttachmentPlugin);
 
   const id = `#${nanoid()}`;
 

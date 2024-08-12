@@ -1,4 +1,4 @@
-import { type PlateEditor, getPluginApi } from '@udecode/plate-common';
+import { type PlateEditor, getEditorApi } from '@udecode/plate-common';
 import delay from 'delay';
 
 import type { FinishUploadsOptions } from './types';
@@ -20,7 +20,7 @@ export const finishUploads = async (
   editor: PlateEditor,
   { maxTimeoutInMs = TEN_MINUTES }: FinishUploadsOptions = {}
 ): Promise<void> => {
-  const api = getPluginApi(editor, CloudPlugin);
+  const api = getEditorApi(editor, CloudPlugin);
 
   const uploads = api.cloud.uploadStore.get.uploads();
   const uploadingOrigins = getInProgressUploads(editor.children, uploads);

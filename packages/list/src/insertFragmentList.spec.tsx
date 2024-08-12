@@ -3,7 +3,7 @@
 import {
   type PlateEditor,
   type TDescendant,
-  createPlateEditor,
+  createSlateEditor,
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -12,7 +12,7 @@ import { ListPlugin } from './ListPlugin';
 jsx;
 
 const editorTest = (input: any, fragment: any, expected: any) => {
-  const editor = createPlateEditor({
+  const editor = createSlateEditor({
     editor: input,
     plugins: [ListPlugin],
   });

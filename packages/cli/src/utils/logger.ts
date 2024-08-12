@@ -9,18 +9,18 @@ import chalk from 'chalk';
  */
 export const logger = {
   break() {
-    console.log('');
+    console.info('');
   },
   error(...args: unknown[]) {
-    console.log(chalk.red(...args));
+    console.info(chalk.red(...args));
   },
   info(...args: unknown[]) {
-    console.log(chalk.cyan(...args));
+    console.info(chalk.cyan(...args));
   },
   success(...args: unknown[]) {
-    console.log(chalk.green(...args));
+    console.info(chalk.green(...args));
   },
   warn(...args: unknown[]) {
-    console.log(chalk.yellow(...args));
+    console.info(chalk.yellow(...args));
   },
 };

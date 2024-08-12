@@ -1,5 +1,5 @@
 import * as portiveClient from '@portive/client';
-import { createPlugin, getPluginApi } from '@udecode/plate-common';
+import { createPlugin, getEditorApi } from '@udecode/plate-common';
 import Defer from 'p-defer';
 
 import type { UploadError, UploadSuccess } from '../upload';
@@ -14,7 +14,7 @@ import {
 } from '../cloud';
 
 export const CloudImagePlugin = createPlugin({
-  dependencies: [CloudPlugin.key],
+  dependencies: ['cloud'],
   isElement: true,
   isVoid: true,
   key: 'cloud_image',
@@ -25,7 +25,7 @@ export const CloudImagePlugin = createPlugin({
     minResizeWidth: 100,
   },
 }).extendApi(({ editor, plugin: { options } }) => {
-  const cloudApi = getPluginApi(editor, CloudPlugin);
+  const cloudApi = getEditorApi(editor, CloudPlugin);
 
   /**
    * We create a deferredFinish which is an object with a `promise` and a way to

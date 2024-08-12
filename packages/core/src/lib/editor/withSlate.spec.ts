@@ -1,6 +1,12 @@
 /* eslint-disable jest/no-conditional-expect */
-import { type Value, createTEditor } from '@udecode/slate';
+import {
+  type Value,
+  createTEditor,
+  getEndPoint,
+  getStartPoint,
+} from '@udecode/slate';
 
+import { withPlate } from '../../react/editor/withPlate';
 import {
   DOMPlugin,
   DebugPlugin,
@@ -18,8 +24,8 @@ import {
   PrevSelectionPlugin,
   createPlugin,
   getPlugin,
-} from '../../lib';
-import { withPlate } from './withPlate';
+  withSlate,
+} from '../index';
 
 const coreKeys = [
   'root',
@@ -310,5 +316,68 @@ describe('withPlate', () => {
       const lengthPlugin = getPlugin<LengthPluginOptions>(editor, 'length');
       expect(lengthPlugin.options.maxLength).toBe(100);
     });
+  });
+
+  it('should handle value, selection, and autoSelect options correctly', () => {
+    const editor = createTEditor();
+    const value = [{ children: [{ text: 'Hello' }], type: 'paragraph' }];
+    const selection = {
+      anchor: { offset: 2, path: [0, 0] },
+      focus: { offset: 4, path: [0, 0] },
+    };
+
+    const result = withSlate(editor, {
+      selection,
+      shouldNormalizeEditor: true,
+      value,
+    });
+
+    expect(result.children).toEqual(value);
+    expect(result.selection).toEqual(selection);
+
+    // Test autoSelect start
+    const editorWithAutoSelectStart = withSlate(createTEditor(), {
+      autoSelect: 'start',
+      value,
+    });
+    const expectedStartSelection = {
+      anchor: getStartPoint(editorWithAutoSelectStart, []),
+      focus: getStartPoint(editorWithAutoSelectStart, []),
+    };
+    expect(editorWithAutoSelectStart.selection).toEqual(expectedStartSelection);
+
+    // Test autoSelect end
+    const editorWithAutoSelectEnd = withSlate(createTEditor(), {
+      autoSelect: 'end',
+      value,
+    });
+    const expectedEndSelection = {
+      anchor: getEndPoint(editorWithAutoSelectEnd, []),
+      focus: getEndPoint(editorWithAutoSelectEnd, []),
+    };
+    expect(editorWithAutoSelectEnd.selection).toEqual(expectedEndSelection);
+
+    // Test empty children
+    const editorWithEmptyChildren = withSlate(createTEditor());
+    expect(editorWithEmptyChildren.children).toEqual(
+      editorWithEmptyChildren.api.childrenFactory()
+    );
+
+    // Test pipeNormalizeInitialValue and normalizeEditor
+    const editor2 = withSlate(createTEditor(), {
+      shouldNormalizeEditor: true,
+      value: [],
+    });
+
+    expect(editor2.children).toEqual([
+      {
+        children: [
+          {
+            text: '',
+          },
+        ],
+        type: 'p',
+      },
+    ]);
   });
 });

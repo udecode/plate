@@ -93,9 +93,13 @@ export const withNormalizeTable: WithOverride<TablePluginOptions> = ({
           return;
         }
         if (isText(children[0])) {
-          wrapNodeChildren<TElement>(editor, editor.blockFactory({}, path), {
-            at: path,
-          });
+          wrapNodeChildren<TElement>(
+            editor,
+            editor.api.blockFactory({}, path),
+            {
+              at: path,
+            }
+          );
 
           return;
         }

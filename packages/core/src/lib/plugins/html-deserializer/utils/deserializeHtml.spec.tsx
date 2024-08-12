@@ -12,7 +12,7 @@ import {
 } from '@udecode/plate-basic-marks';
 import { BlockquotePlugin } from '@udecode/plate-block-quote';
 import { SoftBreakPlugin } from '@udecode/plate-break';
-import { CodeBlockPlugin } from '@udecode/plate-code-block';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { FindReplacePlugin } from '@udecode/plate-find-replace';
 import { HeadingPlugin } from '@udecode/plate-heading';
 import { HighlightPlugin } from '@udecode/plate-highlight';

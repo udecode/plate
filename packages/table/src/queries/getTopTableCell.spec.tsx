@@ -3,7 +3,7 @@
 import {
   type PlateEditor,
   type TElement,
-  createPlateEditor,
+  createSlateEditor,
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -15,7 +15,7 @@ jsx;
 const createTablePluginWithOptions = () => TablePlugin;
 
 const createEditorInstance = (input: any) => {
-  return createPlateEditor({
+  return createSlateEditor({
     editor: input,
     plugins: [createTablePluginWithOptions()],
   });

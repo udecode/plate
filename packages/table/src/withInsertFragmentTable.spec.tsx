@@ -3,7 +3,7 @@
 import {
   type PlateEditor,
   type TElement,
-  createPlateEditor,
+  createSlateEditor,
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -81,7 +81,7 @@ describe('withInsertFragmentTable', () => {
         </editor>
       ) as any as PlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         editor: input,
         plugins: [TablePlugin],
       });
@@ -157,7 +157,7 @@ describe('withInsertFragmentTable', () => {
         </editor>
       ) as any as PlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         editor: input,
         plugins: [TablePlugin],
       });
@@ -238,7 +238,7 @@ describe('withInsertFragmentTable', () => {
         </editor>
       ) as any as PlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         editor: input,
         plugins: [TablePlugin],
       });
@@ -323,7 +323,7 @@ describe('withInsertFragmentTable', () => {
         </editor>
       ) as any as PlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         editor: input,
         plugins: [TablePlugin],
       });
@@ -438,7 +438,7 @@ describe('withInsertFragmentTable', () => {
         </editor>
       ) as any as PlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         editor: input,
         plugins: [
           TablePlugin.configure({
@@ -533,7 +533,7 @@ describe('withInsertFragmentTable', () => {
         </editor>
       ) as any as PlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         editor: input,
         plugins: [
           TablePlugin.configure({
@@ -605,7 +605,7 @@ describe('withInsertFragmentTable', () => {
         </editor>
       ) as any as PlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         editor: input,
         plugins: [TablePlugin],
       });
@@ -664,7 +664,7 @@ describe('withInsertFragmentTable', () => {
         </editor>
       ) as any as PlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         editor: input,
         plugins: [TablePlugin],
       });

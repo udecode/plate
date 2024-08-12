@@ -10,16 +10,6 @@ import { Editor } from '@/registry/default/plate-ui/editor';
 import { FloatingToolbar } from '@/registry/default/plate-ui/floating-toolbar';
 import { FloatingToolbarButtons } from '@/registry/default/plate-ui/floating-toolbar-buttons';
 
-// const a: MyEditor = {} as any
-//
-// const b =  getFragment(a)
-//
-// b.forEach((item) => {
-//   if (isElement(item)) {
-//     console.log(item.)
-//   }
-// });
-
 export default function EditorLabel() {
   const editor = usePlateEditor({
     id: 'message',

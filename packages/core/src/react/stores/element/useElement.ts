@@ -14,11 +14,10 @@ export const useElement = <T extends TElement = TElement>(
   const value = useElementStore(pluginKey).get.element();
 
   if (!value) {
-    editor.api.debug.warn({
-      message:
-        "The `useElement(pluginKey)` hook must be used inside the node component's context",
-      type: 'USE_ELEMENT_CONTEXT',
-    });
+    editor.api.debug.warn(
+      `useElement(${pluginKey}) hook must be used inside the node component's context`,
+      'USE_ELEMENT_CONTEXT'
+    );
 
     return {} as T;
   }

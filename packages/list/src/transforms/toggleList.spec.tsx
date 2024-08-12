@@ -2,7 +2,7 @@
 
 import {
   type PlateEditor,
-  createPlateEditor,
+  createSlateEditor,
   getPluginType,
 } from '@udecode/plate-common';
 import { ELEMENT_OL, ELEMENT_UL, ListPlugin } from '@udecode/plate-list';
@@ -33,7 +33,7 @@ describe('toggle on', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       editor: input,
       plugins: [ListPlugin],
     });
@@ -66,7 +66,7 @@ describe('toggle on', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       editor: input,
       plugins: [
         ListPlugin.extendPlugin(ELEMENT_UL, {
@@ -107,7 +107,7 @@ describe('toggle on', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       editor: input,
       plugins: [ListPlugin],
     });
@@ -146,7 +146,7 @@ describe('toggle on', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       editor: input,
       plugins: [ListPlugin],
     });
@@ -197,7 +197,7 @@ describe('toggle on', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       editor: input,
       plugins: [
         ListPlugin.extendPlugin(ELEMENT_UL, {
@@ -256,7 +256,7 @@ describe('toggle on', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       editor: input,
       plugins: [ListPlugin],
     });
@@ -309,7 +309,7 @@ describe('toggle on', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       editor: input,
       plugins: [ListPlugin],
     });
@@ -357,7 +357,7 @@ describe('toggle off', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       editor: input,
       plugins: [ListPlugin],
     });
@@ -413,7 +413,7 @@ describe('toggle off', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       editor: input,
       plugins: [ListPlugin],
     });
@@ -452,7 +452,7 @@ describe('toggle off', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       editor: input,
       plugins: [ListPlugin],
     });
@@ -507,7 +507,7 @@ describe('toggle off', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       editor: input,
       plugins: [
         ListPlugin.extendPlugin(ELEMENT_UL, {
@@ -548,7 +548,7 @@ describe('toggle over', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       editor: input,
       plugins: [ListPlugin],
     });
@@ -592,7 +592,7 @@ describe('toggle over', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       editor: input,
       plugins: [ListPlugin],
     });
@@ -638,7 +638,7 @@ describe('toggle over', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       editor: input,
       plugins: [ListPlugin],
     });
@@ -688,7 +688,7 @@ describe('toggle over', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       editor: input,
       plugins: [ListPlugin],
     });

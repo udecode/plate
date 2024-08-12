@@ -8,7 +8,7 @@ import { TablePlugin } from '@udecode/plate-table';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 
 import { createPlateEditor } from '../../../../react';
-import { createPlugin } from '../../../utils';
+import { createPlugin } from "../../../plugin";
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 
 jsx;

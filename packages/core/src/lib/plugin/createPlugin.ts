@@ -1,4 +1,4 @@
-import merge from 'lodash/merge';
+import merge from 'lodash/merge.js';
 
 import type { PlateEditor } from '../editor';
 import type {
@@ -8,7 +8,7 @@ import type {
   PlatePlugins,
 } from './types/PlatePlugin';
 
-import { isFunction } from '../utils';
+import { isFunction } from '../utils/misc/isFunction';
 
 /**
  * Creates a new Plate plugin with the given configuration.

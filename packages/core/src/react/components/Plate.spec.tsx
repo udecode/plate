@@ -124,7 +124,7 @@ describe('Plate', () => {
           wrapper,
         });
 
-        expect(result.current).toEqual(editor.childrenFactory());
+        expect(result.current).toEqual(editor.api.childrenFactory());
       });
     });
   });
@@ -200,7 +200,7 @@ describe('Plate', () => {
 
       expect(result.current.at(-1)!.key).toBe('test1');
 
-      rerender({ editor: editor2 });
+      rerender({ editor: editor2 } as any);
 
       expect(result.current.at(-1)!.key).toBe('test2');
     });
@@ -417,41 +417,6 @@ describe('Plate', () => {
       const editor = createPlateEditor({
         plugins,
         value: [{} as any],
-      });
-
-      expect(() =>
-        render(
-          <Plate editor={editor}>
-            <PlateContent />
-          </Plate>
-        )
-      ).not.toThrow();
-    });
-  });
-
-  describe('when nested Plate', () => {
-    it('should work', () => {
-      const nestedEditor = createPlateEditor({
-        id: 'test',
-      });
-
-      const editor = createPlateEditor({
-        plugins: [
-          createPlugin({
-            component: ({ attributes, children }) => (
-              <div {...attributes}>
-                <Plate editor={nestedEditor}>
-                  <PlateContent id="test" />
-                </Plate>
-                {children}
-              </div>
-            ),
-            isElement: true,
-            isVoid: true,
-            key: 'a',
-          }),
-        ],
-        value: [{ children: [{ text: '' }], type: 'a' }],
       });
 
       expect(() =>

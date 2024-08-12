@@ -2,7 +2,7 @@
 
 import {
   type PlateEditor,
-  createPlateEditor,
+  createSlateEditor,
   getNode,
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
@@ -37,7 +37,7 @@ describe('clean up list items', () => {
       </editor>
     ) as any as PlateEditor;
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       editor: input,
       plugins: [ListPlugin],
     });

@@ -1,16 +1,8 @@
 import type React from 'react';
 
-import type {
-  EElement,
-  TEditor,
-  TElement,
-  THistoryEditor,
-  TRange,
-  Value,
-} from '@udecode/slate';
+import type { TEditor, THistoryEditor, TRange, Value } from '@udecode/slate';
 import type { TReactEditor } from '@udecode/slate-react';
 import type { UnionToIntersection } from '@udecode/utils';
-import type { Path } from 'slate';
 
 import type {
   AnyEditorPlugin,
@@ -25,20 +17,6 @@ import type { EXPOSED_STORE_KEYS, PlateStoreState } from '../types';
 
 export type PlateEditor = {
   api: UnionToIntersection<InferPluginApi<CorePlugin>>;
-
-  /**
-   * Default block factory.
-   *
-   * @default [{ type: getPluginType(editor, ELEMENT_DEFAULT), children: [{ text: '' }] }]
-   */
-  blockFactory: (node?: Partial<TElement>, path?: Path) => TElement;
-
-  /**
-   * Editor children factory.
-   *
-   * @default [editor.blockFactory()]
-   */
-  childrenFactory: () => Value;
 
   currentKeyboardEvent: React.KeyboardEvent | null;
   /**
@@ -81,22 +59,10 @@ export type TPlateEditor<
 > = {
   api: UnionToIntersection<InferPluginApi<CorePlugin | P>>;
 
-  /**
-   * Default block factory.
-   *
-   * @default [{ type: getPluginType(editor, ELEMENT_DEFAULT), children: [{ text: '' }] }]
-   */
-  blockFactory: (node?: Partial<TElement>, path?: Path) => EElement<V>;
-
-  /**
-   * Editor children factory.
-   *
-   * @default [editor.blockFactory()]
-   */
-  childrenFactory: () => V;
+  children: V;
 
   plugins: P[];
-  // plugins: P[];
+
   // transforms: UnionToIntersection<
   //   InferPluginTransforms<
   // | P

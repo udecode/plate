@@ -23,7 +23,7 @@ export const pasteSelectedBlocks = (editor: PlateEditor, e: ClipboardEvent) => {
     if (!isElementEmpty(editor, node as any)) {
       const at = Path.next(path);
 
-      insertNodes(editor, editor.blockFactory({}, at), {
+      insertNodes(editor, editor.api.blockFactory({}, at), {
         at,
         select: true,
       });

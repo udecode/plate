@@ -107,7 +107,7 @@ export const withDeleteTable: WithOverride<TablePluginOptions> = ({
           cellEntries.forEach(([, cellPath]) => {
             replaceNodeChildren<TElement>(editor, {
               at: cellPath,
-              nodes: editor.blockFactory(),
+              nodes: editor.api.blockFactory(),
             });
           });
 

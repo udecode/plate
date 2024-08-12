@@ -3,7 +3,7 @@
 import {
   type PlateEditor,
   type TElement,
-  createPlateEditor,
+  createSlateEditor,
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -36,7 +36,7 @@ describe('getTableGridByRange', () => {
         </htable>
       ) as any as TElement[];
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         editor: input,
         plugins: [TablePlugin],
       });
@@ -81,7 +81,7 @@ describe('getTableGridByRange', () => {
         </htable>
       ) as any as TElement;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         editor: input,
         plugins: [TablePlugin],
       });
@@ -124,7 +124,7 @@ describe('getTableGridByRange', () => {
         </htable>
       ) as any as TElement;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         editor: input,
         plugins: [TablePlugin],
       });
@@ -170,7 +170,7 @@ describe('getTableGridByRange', () => {
         </htable>
       ) as any as TElement;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         editor: input,
         plugins: [TablePlugin],
       });
@@ -217,7 +217,7 @@ describe('getTableGridByRange', () => {
         </htable>
       ) as any as TElement;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         editor: input,
         plugins: [TablePlugin],
       });
@@ -264,7 +264,7 @@ describe('getTableGridByRange', () => {
         </htable>
       ) as any as TElement;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         editor: input,
         plugins: [TablePlugin],
       });
@@ -311,7 +311,7 @@ describe('getTableGridByRange', () => {
         </htable>
       ) as any as TElement;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         editor: input,
         plugins: [TablePlugin],
       });
@@ -358,7 +358,7 @@ describe('getTableGridByRange', () => {
         </htable>
       ) as any as TElement;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         editor: input,
         plugins: [TablePlugin],
       });

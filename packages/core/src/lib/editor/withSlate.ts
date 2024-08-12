@@ -141,17 +141,17 @@ export const withSlate = <
   // Editor methods
   editor.reset = () => resetEditor(editor);
   editor.redecorate = () => {
-    editor.api.debug.warn({
-      message: `editor.redecorate should have been overridden but was not. Please report this issue here: https://github.com/udecode/plate/issues`,
-      type: 'OVERRIDE_ERROR',
-    });
+    editor.api.debug.warn(
+      `editor.redecorate should have been overridden but was not. Please report this issue here: https://github.com/udecode/plate/issues`,
+      'OVERRIDE_MISSING'
+    );
   };
   editor.plate = {
     get set() {
-      editor.api.debug.warn({
-        message: `editor.plate.set should have been overridden but was not. Please report this issue here: https://github.com/udecode/plate/issues`,
-        type: 'OVERRIDE_ERROR',
-      });
+      editor.api.debug.warn(
+        `editor.plate.set should have been overridden but was not. Please report this issue here: https://github.com/udecode/plate/issues`,
+        'OVERRIDE_MISSING'
+      );
 
       return null as any;
     },
@@ -184,7 +184,7 @@ export const withSlate = <
     editor.children = value;
   }
   if (editor.children?.length === 0) {
-    editor.children = editor.childrenFactory();
+    editor.children = editor.api.childrenFactory();
   }
   if (selection) {
     editor.selection = selection;

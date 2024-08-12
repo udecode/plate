@@ -2,7 +2,7 @@
 
 import {
   type PlateEditor,
-  createPlateEditor,
+  createSlateEditor,
   findNode,
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
@@ -56,7 +56,7 @@ const output = (
 ) as any as PlateEditor;
 
 it('should', () => {
-  const editor = createPlateEditor({
+  const editor = createSlateEditor({
     editor: input,
   });
 

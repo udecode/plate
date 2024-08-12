@@ -43,9 +43,16 @@ export function getPluginType(
 export const getPluginTypes = (editor: PlateEditor, keys: PluginKey[]) =>
   keys.map((key) => getPluginType(editor, key));
 
-export function getPluginApi<P extends EditorPlugin<any, any, any>>(
+export function getPluginApi<P extends AnyEditorPlugin>(
   editor: PlateEditor,
   plugin: P
 ): InferPluginApi<P> {
   return getPlugin(editor, plugin).api as InferPluginApi<P>;
+}
+
+export function getEditorApi<P extends AnyEditorPlugin>(
+  editor: PlateEditor,
+  _plugin: P
+): InferPluginApi<P> {
+  return editor.api as InferPluginApi<P>;
 }

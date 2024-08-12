@@ -32,7 +32,7 @@ export const withTrailingBlock: WithOverride<TrailingBlockPluginOptions> = ({
       ) {
         const at = lastChild ? Path.next(lastChild[1]) : [0];
 
-        insertElements(editor, editor.blockFactory({ type }, at), { at });
+        insertElements(editor, editor.api.blockFactory({ type }, at), { at });
 
         return;
       }

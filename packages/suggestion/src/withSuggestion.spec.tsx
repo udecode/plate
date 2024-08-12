@@ -1,10 +1,7 @@
 /** @jsx jsx */
 
-import {
-  type PlateEditor,
-  createPlateEditor,
-  normalizeEditor,
-} from '@udecode/plate-common';
+import { type PlateEditor, normalizeEditor } from '@udecode/plate-common';
+import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { SuggestionPlugin } from './SuggestionPlugin';

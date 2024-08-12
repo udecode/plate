@@ -2,7 +2,7 @@
 
 import {
   type PlateEditor,
-  createPlateEditor,
+  createSlateEditor,
   normalizeEditor,
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
@@ -45,7 +45,7 @@ describe('withNormalizeTable', () => {
         </editor>
       ) as any as PlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         editor: input,
         plugins: [TablePlugin],
       });
@@ -125,7 +125,7 @@ describe('withNormalizeTable', () => {
         </editor>
       ) as any as PlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         editor: input,
         plugins: [
           TablePlugin.configure({
@@ -209,7 +209,7 @@ describe('withNormalizeTable', () => {
         </editor>
       ) as any as PlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         editor: input,
         plugins: [
           TablePlugin.configure({
@@ -293,7 +293,7 @@ describe('withNormalizeTable', () => {
         </editor>
       ) as any as PlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         editor: input,
         plugins: [
           TablePlugin.configure({
@@ -348,7 +348,7 @@ describe('withNormalizeTable', () => {
         </editor>
       ) as any as PlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         editor: input,
         plugins: [TablePlugin],
       });

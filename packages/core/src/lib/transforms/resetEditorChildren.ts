@@ -17,7 +17,7 @@ export const resetEditorChildren = <E extends PlateEditor = PlateEditor>(
 ) => {
   replaceNodeChildren<EElement<ValueOf<E>>>(editor, {
     at: [],
-    nodes: editor.childrenFactory(),
+    nodes: editor.api.childrenFactory(),
     ...options,
   } as any);
 };

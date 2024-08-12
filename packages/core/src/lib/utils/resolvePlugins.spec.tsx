@@ -1,4 +1,4 @@
-import type { PlateEditor } from '../types';
+import type { PlateEditor } from '../editor';
 
 import { createPlateEditor } from '../../react';
 import { createPlugin } from '../plugin';
@@ -252,9 +252,9 @@ describe('mergePlugins', () => {
   });
 
   it('should update existing plugins', () => {
-    const editor = createPlateEditor();
-    editor.plugins = [createPlugin({ key: 'a', type: 'oldType' })];
-    editor.pluginsByKey = { a: editor.plugins[0] };
+    const editor = createPlateEditor({
+      plugins: [createPlugin({ key: 'a', type: 'oldType' })],
+    });
 
     const plugins = [createPlugin({ key: 'a', type: 'newType' })];
 
@@ -267,23 +267,20 @@ describe('mergePlugins', () => {
 
 describe('applyPluginOverrides', () => {
   it('should apply overrides correctly', () => {
-    const editor = createPlateEditor();
-    editor.plugins = [
-      createPlugin({
-        key: 'a',
-        override: {
-          plugins: {
-            b: { type: 'overriddenB' },
+    const editor = createPlateEditor({
+      plugins: [
+        createPlugin({
+          key: 'a',
+          override: {
+            plugins: {
+              b: { type: 'overriddenB' },
+            },
           },
-        },
-        type: 'originalA',
-      }),
-      createPlugin({ key: 'b', type: 'originalB' }),
-    ];
-    editor.pluginsByKey = {
-      a: editor.plugins[0],
-      b: editor.plugins[1],
-    };
+          type: 'originalA',
+        }),
+        createPlugin({ key: 'b', type: 'originalB' }),
+      ],
+    });
 
     applyPluginOverrides(editor);
 
@@ -310,33 +307,29 @@ describe('applyPluginOverrides', () => {
   });
 
   it('should apply multiple overrides in correct order', () => {
-    const editor = createPlateEditor();
-    editor.plugins = [
-      createPlugin({
-        key: 'a',
-        override: {
-          plugins: {
-            c: { type: 'overriddenByA' },
+    const editor = createPlateEditor({
+      plugins: [
+        createPlugin({
+          key: 'a',
+          override: {
+            plugins: {
+              c: { type: 'overriddenByA' },
+            },
           },
-        },
-        type: 'originalA',
-      }),
-      createPlugin({
-        key: 'b',
-        override: {
-          plugins: {
-            c: { type: 'overriddenByB' },
+          type: 'originalA',
+        }),
+        createPlugin({
+          key: 'b',
+          override: {
+            plugins: {
+              c: { type: 'overriddenByB' },
+            },
           },
-        },
-        type: 'originalB',
-      }),
-      createPlugin({ key: 'c', type: 'originalC' }),
-    ];
-    editor.pluginsByKey = {
-      a: editor.plugins[0],
-      b: editor.plugins[1],
-      c: editor.plugins[2],
-    };
+          type: 'originalB',
+        }),
+        createPlugin({ key: 'c', type: 'originalC' }),
+      ],
+    });
 
     applyPluginOverrides(editor);
 
@@ -344,63 +337,56 @@ describe('applyPluginOverrides', () => {
   });
 
   it('should override components based on priority only if target plugin has a component', () => {
-    const editor = createPlateEditor();
     const OriginalComponent = () => null;
     const OverrideComponent = () => null;
     const HighPriorityComponent = () => null;
     const PreservedOriginalComponent = () => null;
 
-    editor.plugins = [
-      createPlugin({
-        key: 'a',
-        override: {
-          components: {
-            b: OverrideComponent,
-            c: OverrideComponent,
-            d: OverrideComponent,
-            e: OverrideComponent,
+    const editor = createPlateEditor({
+      plugins: [
+        createPlugin({
+          key: 'a',
+          override: {
+            components: {
+              b: OverrideComponent,
+              c: OverrideComponent,
+              d: OverrideComponent,
+              e: OverrideComponent,
+            },
           },
-        },
-        priority: 2,
-      }),
-      createPlugin({
-        component: OriginalComponent,
-        key: 'b',
-        priority: 3,
-      }),
-      createPlugin({
-        key: 'c',
-        priority: 1,
-      }),
-      createPlugin({
-        component: OriginalComponent,
-        key: 'd',
-        priority: 1,
-      }),
-      createPlugin({
-        key: 'e',
-        override: {
-          components: {
-            b: HighPriorityComponent,
-            d: HighPriorityComponent,
+          priority: 2,
+        }),
+        createPlugin({
+          component: OriginalComponent,
+          key: 'b',
+          priority: 3,
+        }),
+        createPlugin({
+          key: 'c',
+          priority: 1,
+        }),
+        createPlugin({
+          component: OriginalComponent,
+          key: 'd',
+          priority: 1,
+        }),
+        createPlugin({
+          key: 'e',
+          override: {
+            components: {
+              b: HighPriorityComponent,
+              d: HighPriorityComponent,
+            },
           },
-        },
-        priority: 4,
-      }),
-      createPlugin({
-        component: PreservedOriginalComponent,
-        key: 'f',
-        priority: 5,
-      }),
-    ];
-    editor.pluginsByKey = {
-      a: editor.plugins[0],
-      b: editor.plugins[1],
-      c: editor.plugins[2],
-      d: editor.plugins[3],
-      e: editor.plugins[4],
-      f: editor.plugins[5],
-    };
+          priority: 4,
+        }),
+        createPlugin({
+          component: PreservedOriginalComponent,
+          key: 'f',
+          priority: 5,
+        }),
+      ],
+    });
 
     applyPluginOverrides(editor);
 
@@ -518,20 +504,65 @@ describe('applyPluginOverrides', () => {
     const editor = createPlateEditor({
       plugins: [
         DebugPlugin.configure({
-          logger: customLogger,
+          logger: { log: customLogger },
         }),
       ],
     });
 
-    editor.api.debug.log({
-      message: 'Test message',
-      type: 'TEST',
+    editor.api.debug.log('Test message', 'TEST');
+
+    expect(customLogger).toHaveBeenCalledWith(
+      'Test message',
+      'TEST',
+      undefined
+    );
+  });
+
+  it('should not include plugins disabled through overrides.enabled', () => {
+    const editor = createPlateEditor({
+      override: {
+        enabled: {
+          b: false,
+        },
+      },
+      plugins: [
+        createPlugin({
+          key: 'a',
+        }),
+        createPlugin({ key: 'b' }),
+        createPlugin({ key: 'c' }),
+      ],
     });
 
-    expect(customLogger).toHaveBeenCalledWith({
-      level: 'debug',
-      message: 'Test message',
-      type: 'TEST',
+    applyPluginOverrides(editor);
+
+    expect(editor.pluginsByKey).toHaveProperty('a');
+    expect(editor.pluginsByKey).not.toHaveProperty('b');
+    expect(editor.pluginsByKey).toHaveProperty('c');
+  });
+
+  it('should not include plugins disabled through overrides.plugins', () => {
+    const editor = createPlateEditor({
+      override: {
+        plugins: {
+          b: {
+            enabled: false,
+          },
+        },
+      },
+      plugins: [
+        createPlugin({
+          key: 'a',
+        }),
+        createPlugin({ key: 'b' }),
+        createPlugin({ key: 'c' }),
+      ],
     });
+
+    applyPluginOverrides(editor);
+
+    expect(editor.pluginsByKey).toHaveProperty('a');
+    expect(editor.pluginsByKey).not.toHaveProperty('b');
+    expect(editor.pluginsByKey).toHaveProperty('c');
   });
 });

@@ -41,6 +41,7 @@ export default function CloudDemo() {
     ],
     value: cloudValue,
   });
+  console.log(editor.api);
 
   return (
     <Plate editor={editor}>

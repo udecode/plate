@@ -2,11 +2,7 @@ import merge from 'lodash/merge.js';
 
 import type { PlatePlugin, PlatePlugins } from '../plugin/types/PlatePlugin';
 
-import {
-  type PlateEditor,
-  overridePluginsByKey,
-  resolvePlugin,
-} from '../index';
+import { type PlateEditor, resolvePlugin } from '../index';
 
 /**
  * Initialize and configure the editor's plugin system. This function sets up
@@ -41,10 +37,21 @@ export const resolvePlugins = (
 
 const mergePluginApis = (editor: PlateEditor) => {
   editor.plugins.forEach((plugin) => {
-    if (plugin.api) {
-      Object.entries(plugin.api).forEach(([apiKey, apiFunction]) => {
-        (editor.api as any)[apiKey] = apiFunction;
+    Object.entries(plugin.api).forEach(([apiKey, apiFunction]) => {
+      (editor.api as any)[apiKey] = apiFunction;
+    });
+  });
+
+  (editor.plugins as PlatePlugin[]).forEach((plugin) => {
+    // Apply method extensions
+    if (plugin.__methodExtensions && plugin.__methodExtensions.length > 0) {
+      plugin.__methodExtensions.forEach((methodExtension) => {
+        const newApi = methodExtension({ editor, plugin });
+
+        merge(plugin.api, newApi);
+        merge(editor.api, newApi);
       });
+      delete (plugin as any).__methodExtensions;
     }
   });
 };
@@ -104,10 +111,10 @@ export const resolveAndSortPlugins = (
       if (depPlugin) {
         visit(depPlugin);
       } else {
-        editor.api.debug.warn({
-          message: `Plugin "${plugin.key}" depends on missing plugin "${depKey}"`,
-          type: 'PLUGIN_DEPENDENCY_MISSING',
-        });
+        editor.api.debug.warn(
+          `Plugin "${plugin.key}" depends on missing plugin "${depKey}"`,
+          'PLUGIN_DEPENDENCY_MISSING'
+        );
       }
     });
 
@@ -128,58 +135,73 @@ export const mergePlugins = (editor: PlateEditor, plugins: PlatePlugins) => {
 
 export const applyPluginOverrides = (editor: PlateEditor) => {
   const applyOverrides = (plugins: PlatePlugin[]): PlatePlugin[] => {
-    let overriddenPlugins = plugins;
+    let overriddenPlugins = [...plugins];
 
     const enabledOverrides: Record<string, boolean> = {};
+    const componentOverrides: Record<
+      string,
+      { component: any; priority: number }
+    > = {};
+    const pluginOverrides: Record<string, Partial<PlatePlugin>> = {};
 
+    // Collect all overrides
     for (const plugin of plugins) {
       if (plugin.override.enabled) {
-        Object.assign(enabledOverrides, plugin.override.enabled);
+        merge(enabledOverrides, plugin.override.enabled);
       }
-    }
-
-    for (const plugin of plugins) {
-      if (plugin.override.plugins) {
-        overriddenPlugins = overriddenPlugins.map((p) =>
-          overridePluginsByKey(p, plugin.override.plugins!)
-        );
-      }
-      // Apply component overrides
       if (plugin.override.components) {
-        overriddenPlugins = overriddenPlugins.map((p) => {
-          if (plugin.override.components![p.key]) {
-            if (p.component) {
-              // Only override if the current plugin has higher priority
-              if (plugin.priority > p.priority) {
-                return {
-                  ...p,
-                  component: plugin.override.components![p.key],
-                };
-              }
-            } else {
-              // If there's no existing component, apply the override
-              return {
-                ...p,
-                component: plugin.override.components![p.key],
+        Object.entries(plugin.override.components).forEach(
+          ([key, component]) => {
+            if (
+              !componentOverrides[key] ||
+              plugin.priority > componentOverrides[key].priority
+            ) {
+              componentOverrides[key] = {
+                component,
+                priority: plugin.priority,
               };
             }
           }
+        );
+      }
+      if (plugin.override.plugins) {
+        Object.entries(plugin.override.plugins).forEach(([key, value]) => {
+          pluginOverrides[key] = merge({}, pluginOverrides[key], value);
 
-          return p;
+          if (value.enabled !== undefined) {
+            enabledOverrides[key] = value.enabled;
+          }
         });
       }
     }
 
-    overriddenPlugins = overriddenPlugins.map((p) => ({
-      ...p,
-      enabled: enabledOverrides[p.key] ?? p.enabled,
-    }));
+    // Apply overrides
+    overriddenPlugins = overriddenPlugins.map((p) => {
+      let updatedPlugin = { ...p };
+
+      // Apply plugin overrides
+      if (pluginOverrides[p.key]) {
+        updatedPlugin = merge({}, updatedPlugin, pluginOverrides[p.key]);
+      }
+      // Apply component overrides
+      if (
+        componentOverrides[p.key] &&
+        (!p.component || componentOverrides[p.key].priority > p.priority)
+      ) {
+        updatedPlugin.component = componentOverrides[p.key].component;
+      }
+
+      // Apply enabled overrides
+      updatedPlugin.enabled = enabledOverrides[p.key] ?? updatedPlugin.enabled;
+
+      return updatedPlugin;
+    });
 
     return overriddenPlugins
       .filter((p) => p.enabled !== false)
       .map((plugin) => ({
         ...plugin,
-        plugins: applyOverrides(plugin.plugins),
+        plugins: applyOverrides(plugin.plugins || []),
       }));
   };
 

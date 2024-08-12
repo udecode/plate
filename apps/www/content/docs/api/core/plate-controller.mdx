@@ -47,7 +47,7 @@ const App = withHoc(PlateController, () => {
   
   useEffect(() => {
     if (!mainEditor.isFallback) {
-      console.log('Editor mounted', mainEditor);
+      console.info('Editor mounted', mainEditor);
     }
   }, [mainEditor]);
   

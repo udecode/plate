@@ -2,11 +2,8 @@
 
 import type { Range } from 'slate';
 
-import {
-  type PlateEditor,
-  createPlateEditor,
-  getBlockAbove,
-} from '@udecode/plate-common';
+import { type PlateEditor, getBlockAbove } from '@udecode/plate-common';
+import { createPlateEditor } from '@udecode/plate-common/react';
 import { LinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
 

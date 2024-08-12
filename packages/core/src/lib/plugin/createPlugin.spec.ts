@@ -4,12 +4,12 @@ import { ELEMENT_LINK, LinkPlugin } from '@udecode/plate-link';
 import { createPlateEditor } from '../../react';
 import {
   type PlatePluginComponent,
+  createPlugin,
   getPlugin,
   getPluginOptions,
   resolveCreatePluginTest,
   resolvePluginTest,
-} from '../../server';
-import { createPlugin } from '../index';
+} from '../index';
 
 describe('createPlugin', () => {
   const basePlugin = createPlugin({ key: 'a', type: 'a' });
@@ -315,7 +315,9 @@ describe('createPlugin', () => {
         })
       );
 
-      const headingPlugin = plugin.plugins.find((p) => p.key === 'heading');
+      const headingPlugin = plugin.plugins.find(
+        (p: any) => p.key === 'heading'
+      );
       const { options, type } = headingPlugin!;
 
       expect({ options, type }).toEqual({
@@ -556,6 +558,24 @@ describe('createPlugin', () => {
 
       expect(resolved.options).toEqual(basePlugin.options);
     });
+
+    // TODO
+    // it('should allow configuration after extension, using previous options', () => {
+    //   const extendedPlugin = basePlugin.extend((ctx) => ({
+    //     options: {
+    //       ...ctx.plugin.options,
+    //       optionC: ctx.plugin.options.optionA + '1',
+    //     },
+    //   }));
+    //
+    //   const configured = extendedPlugin.configure((ctx) => ({
+    //     optionA: '',
+    //   }));
+    //
+    //   const resolved = resolvePluginTest(configured);
+    //
+    //   expect(resolved.options.optionC).toEqual('1');
+    // });
   });
 
   describe('when configure twice', () => {
@@ -705,101 +725,6 @@ describe('createPlugin', () => {
 
       expect(resolvedPlugin.component).not.toBe(OriginalComponent);
       expect(resolvedPlugin.component).toBe(NewComponent);
-    });
-  });
-
-  describe('extendApi method', () => {
-    it('should correctly handle api extensions through extend, extendApi, and configure', () => {
-      const basePlugin = createPlugin({
-        key: 'testPlugin',
-        options: {
-          baseValue: 10,
-        },
-      });
-
-      const extendedPlugin = basePlugin
-        .extend({
-          options: {
-            baseValue: 15,
-          },
-        })
-        .extendApi(({ plugin: { options } }) => ({
-          sampleMethod: () => options.baseValue + 1,
-        }))
-        .extend({
-          options: {
-            baseValue: 20,
-          },
-        })
-        .extendApi(({ plugin: { api, options } }) => ({
-          anotherMethod: () => (api as any).sampleMethod() + options.baseValue,
-        }))
-        .configure({
-          baseValue: 25,
-        });
-
-      const resolvedPlugin = resolvePluginTest(extendedPlugin);
-
-      expect(resolvedPlugin.options.baseValue).toBe(25);
-      expect(resolvedPlugin.api.sampleMethod()).toBe(26);
-      expect(resolvedPlugin.api.anotherMethod()).toBe(51);
-    });
-
-    it('should allow multiple extendApi calls', () => {
-      const basePlugin = createPlugin({
-        key: 'testPlugin',
-        options: {
-          baseValue: 10,
-        },
-      });
-
-      const extendedPlugin = basePlugin
-        .extendApi(() => ({
-          method1: () => 1,
-        }))
-        .extendApi(() => ({
-          method2: () => 2,
-        }))
-        .extendApi(({ plugin: { api } }) => ({
-          method3: () => (api as any).method1() + (api as any).method2(),
-        }));
-
-      const resolvedPlugin = resolvePluginTest(extendedPlugin);
-
-      expect(resolvedPlugin.api.method1()).toBe(1);
-      expect(resolvedPlugin.api.method2()).toBe(2);
-      expect(resolvedPlugin.api.method3()).toBe(3);
-    });
-  });
-
-  describe('when creating a plugin with options, extending it, and configuring', () => {
-    it('should correctly handle options through extend, extendApi, and configure', () => {
-      const basePlugin = createPlugin({
-        key: 'testPlugin',
-        options: {
-          baseValue: 10,
-        },
-      });
-
-      const a = 1;
-
-      const extendedPlugin = basePlugin
-        .extendApi(({ plugin: { options } }) => ({
-          sampleMethod: () => a + options.baseValue,
-        }))
-        .extend({
-          options: {
-            baseValue: 15,
-          },
-        });
-
-      const configuredPlugin = extendedPlugin.configure({
-        baseValue: 20,
-      });
-
-      const resolvedPlugin = resolvePluginTest(configuredPlugin);
-
-      expect(resolvedPlugin.api.sampleMethod()).toBe(21);
     });
   });
 });

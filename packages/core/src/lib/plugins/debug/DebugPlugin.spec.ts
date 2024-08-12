@@ -1,73 +1,113 @@
+/* eslint-disable jest/no-conditional-expect */
 import { createPlateEditor } from '../../../react';
 import { createPlugin } from '../../plugin';
-import { getPlugin } from '../../plugin/getPlugin';
-import { DebugPlugin } from './DebugPlugin';
+import { DebugPlugin, PlateError } from './DebugPlugin';
 
 describe('DebugPlugin', () => {
-  it('should create an editor with combined plugin APIs MyEditor', () => {
-    let a = 1;
-
-    const fn = jest.fn();
-
-    // Create the editor with our plugins
+  it('should create an editor with combined plugin APIs', () => {
+    const mockLogger = jest.fn();
     const editor = createPlateEditor({
       plugins: [
-        DebugPlugin,
+        DebugPlugin.configure({
+          logLevel: 'log',
+          logger: {
+            log: mockLogger,
+          } as any,
+        }),
         createPlugin({
           api: {
-            sampleMethod: () => {
-              a = 2;
-            },
+            sampleMethod: () => {},
           },
           key: 'sample',
         }),
       ],
-      rootPlugin: (plugin) =>
-        plugin.configurePlugin(DebugPlugin.key, { logger: fn }),
     });
 
-    expect(editor.api).toBeDefined();
+    expect(editor.api.debug).toBeDefined();
     expect(typeof editor.api.debug.log).toBe('function');
     expect(typeof editor.api.debug.error).toBe('function');
     expect(typeof editor.api.debug.info).toBe('function');
     expect(typeof editor.api.debug.warn).toBe('function');
-
-    // Test SamplePlugin API
     expect(typeof editor.api.sampleMethod).toBe('function');
 
-    // Ensure type safety
-    editor.api.debug.log({
-      message: 'Test message',
-      type: 'TEST',
-    });
+    editor.api.debug.log('Test message', 'TEST');
 
-    editor.api.sampleMethod();
-
-    expect(a).toBe(2);
+    expect(mockLogger).toHaveBeenCalledWith('Test message', 'TEST', undefined);
   });
 
-  it('should create a PlateEditor with DebugPlugin', () => {
-    const logger = jest.fn();
+  it('should respect log levels', () => {
+    const mockLogger = jest.fn();
     const editor = createPlateEditor({
       plugins: [
         DebugPlugin.configure({
-          logger,
+          logLevel: 'info',
+          logger: {
+            error: mockLogger,
+            info: mockLogger,
+            log: mockLogger,
+            warn: mockLogger,
+          },
         }),
       ],
     });
 
-    expect(getPlugin(editor, DebugPlugin).options.logger).toBe(logger);
-    expect(editor.api).toBeDefined();
+    editor.api.debug.log('Log message', 'TEST');
+    editor.api.debug.info('Info message', 'TEST');
+    editor.api.debug.warn('Warn message', 'TEST');
 
-    editor.api.debug.log({
-      message: 'Test message',
-      type: 'TEST',
+    expect(mockLogger).toHaveBeenCalledTimes(2);
+    expect(mockLogger).toHaveBeenCalledWith('Info message', 'TEST', undefined);
+    expect(mockLogger).toHaveBeenCalledWith('Warn message', 'TEST', undefined);
+  });
+
+  it('should throw errors when throwErrors is true', () => {
+    const editor = createPlateEditor({
+      plugins: [DebugPlugin],
     });
 
-    expect(logger).toHaveBeenCalledWith({
-      level: 'log',
-      message: 'Test message',
-      type: 'TEST',
+    expect(() => {
+      editor.api.debug.error('Test error', 'TEST_ERROR');
+    }).toThrow(PlateError);
+
+    try {
+      editor.api.debug.error('Test error', 'TEST_ERROR', { foo: 'bar' });
+    } catch (error) {
+      expect(error).toBeInstanceOf(PlateError);
+      expect((error as PlateError).message).toBe('[TEST_ERROR] Test error');
+      expect((error as PlateError).type).toBe('TEST_ERROR');
+    }
+  });
+
+  it('should not throw errors when throwErrors is false', () => {
+    const editor = createPlateEditor({
+      plugins: [
+        DebugPlugin.configure({
+          throwErrors: false,
+        }),
+      ],
     });
+
+    expect(() => {
+      editor.api.debug.error('Test error', 'TEST_ERROR');
+    }).not.toThrow();
+  });
+
+  it('should not log in production mode', () => {
+    const mockLogger = jest.fn();
+    const editor = createPlateEditor({
+      plugins: [
+        DebugPlugin.configure({
+          isProduction: true,
+          logLevel: 'log',
+          logger: {
+            log: mockLogger,
+          } as any,
+        }),
+      ],
+    });
+
+    editor.api.debug.log('This should not be logged', 'TEST');
+
+    expect(mockLogger).not.toHaveBeenCalled();
   });
 });
