@@ -52,6 +52,7 @@ import 'prismjs/components/prism-lua.js';
 import 'prismjs/components/prism-makefile.js';
 import 'prismjs/components/prism-markdown.js';
 import 'prismjs/components/prism-matlab.js';
+import 'prismjs/components/prism-mermaid.js';
 import 'prismjs/components/prism-objectivec.js';
 import 'prismjs/components/prism-perl.js';
 // import 'prismjs/components/prism-php.js';
@@ -110,6 +111,7 @@ const languages: { label: string; value: string }[] = [
   { label: 'Makefile', value: 'makefile' },
   { label: 'Markup', value: 'markup' },
   { label: 'MATLAB', value: 'matlab' },
+  { label: 'Mermaid', value: 'mermaid' },
   { label: 'Objective-C', value: 'objectivec' },
   { label: 'Perl', value: 'perl' },
   { label: 'PHP', value: 'php' },
