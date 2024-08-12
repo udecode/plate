@@ -7,7 +7,7 @@ import {
   type TNodeProps,
   getParentNode,
   insertNodes,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type { TExcalidrawElement } from '../types';
 

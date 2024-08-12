@@ -1,4 +1,4 @@
-import { createPlateEditor } from '@udecode/plate-common';
+import { createPlateEditor } from '@udecode/plate-common/react';
 
 import type { TLinkElement } from '../types';
 

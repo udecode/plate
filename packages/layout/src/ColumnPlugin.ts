@@ -1,7 +1,7 @@
 import {
   type HotkeyPluginOptions,
   createPlugin,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import { onKeyDownColumn } from './onKeyDownColumn';
 import { withColumn } from './withColumn';

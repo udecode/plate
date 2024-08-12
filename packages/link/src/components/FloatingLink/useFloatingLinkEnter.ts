@@ -1,4 +1,4 @@
-import { useEditorRef, useHotkeys } from '@udecode/plate-common';
+import { useEditorRef, useHotkeys } from '@udecode/plate-common/react';
 
 import { submitFloatingLink } from '../../transforms/submitFloatingLink';
 import { useFloatingLinkSelectors } from './floatingLinkStore';

@@ -1,11 +1,10 @@
 import {
-  type PlateId,
   type UsePlateEditorStoreOptions,
   usePlateSelectors,
 } from '../createPlateStore';
 
 export const useEditorMounted = (
-  id?: PlateId,
+  id?: string,
   options: UsePlateEditorStoreOptions = {}
 ): boolean => {
   return !!usePlateSelectors(id, {

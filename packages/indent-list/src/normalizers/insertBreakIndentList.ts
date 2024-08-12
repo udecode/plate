@@ -7,7 +7,7 @@ import {
   isDefined,
   isEndPoint,
   isExpanded,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import { KEY_LIST_STYLE_TYPE, KEY_TODO_STYLE_TYPE } from '../IndentListPlugin';
 

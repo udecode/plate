@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
-import { Plate, usePlateEditor } from '@udecode/plate-common';
+import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 
 import { editableProps } from '@/plate/demo/editableProps';
 import { PlateUI } from '@/plate/demo/plate-ui';

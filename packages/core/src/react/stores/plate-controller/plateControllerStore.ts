@@ -4,8 +4,6 @@ import type { JotaiStore } from 'jotai-x';
 
 import { type Atom, atom } from 'jotai';
 
-import type { PlateId } from '../plate';
-
 import { createAtomStore } from '../../libs';
 
 export const {
@@ -14,9 +12,9 @@ export const {
   usePlateControllerStore,
 } = createAtomStore(
   {
-    activeId: atom(null as PlateId | null),
-    editorStores: atom({} as Record<PlateId, JotaiStore | null>),
-    primaryEditorIds: atom([] as PlateId[]),
+    activeId: atom(null as null | string),
+    editorStores: atom({} as Record<string, JotaiStore | null>),
+    primaryEditorIds: atom([] as string[]),
   },
   {
     name: 'plateController',
@@ -38,14 +36,14 @@ export const usePlateControllerExists = () =>
  * editor is active, or null.
  */
 export const usePlateControllerEditorStore = (
-  idProp?: PlateId
+  idProp?: string
 ): JotaiStore | null => {
   const storeAtom: Atom<JotaiStore | null> = React.useMemo(
     () =>
       atom((get) => {
         const editorStores = get(plateControllerStore.atom.editorStores);
 
-        const forId = (id: PlateId | null): JotaiStore | null => {
+        const forId = (id: null | string): JotaiStore | null => {
           if (!id) return null;
 
           return editorStores[id] ?? null;

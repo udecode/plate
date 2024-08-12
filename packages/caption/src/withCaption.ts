@@ -7,7 +7,7 @@ import {
   getPluginTypes,
   isCollapsed,
   isHotkey,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type { CaptionPluginOptions } from './CaptionPlugin';
 

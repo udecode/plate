@@ -3,7 +3,7 @@ import {
   type PlateEditor,
   insertNodes,
   withoutNormalizing,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type { TColumnGroupElement } from '../types';
 

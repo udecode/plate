@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { type AnyPlatePlugin, createPlugin } from '@udecode/plate-common';
-import * as isHotkey from '@udecode/plate-core/server';
+import * as isHotkey from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { onKeyDownExitBreak } from '../../onKeyDownExitBreak';

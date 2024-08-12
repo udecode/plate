@@ -5,7 +5,7 @@ import {
   type PlateEditor,
   type TText,
   insertNodes,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type { TLinkElement } from '../types';
 

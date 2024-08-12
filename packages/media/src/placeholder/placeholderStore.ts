@@ -1,4 +1,4 @@
-import { createAtomStore } from '@udecode/plate-common';
+import { createAtomStore } from '@udecode/plate-common/react';
 
 type progresses = Record<string, number>;
 interface placeholderStore {

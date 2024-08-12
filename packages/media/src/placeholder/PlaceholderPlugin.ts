@@ -1,4 +1,5 @@
-import { blurEditor, createPlugin, isHotkey } from '@udecode/plate-common';
+import { createPlugin, isHotkey } from '@udecode/plate-common';
+import { blurEditor } from '@udecode/plate-common/react';
 
 import type { MediaPlaceholder } from './types';
 

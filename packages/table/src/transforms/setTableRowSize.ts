@@ -4,7 +4,7 @@ import {
   type Value,
   findNode,
   setNodes,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type { TTableElement, TTableRowElement } from '../types';
 

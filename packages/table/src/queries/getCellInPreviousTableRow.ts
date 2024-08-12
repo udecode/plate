@@ -6,7 +6,7 @@ import {
   type TNodeEntry,
   getNodeEntry,
   getPreviousPath,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 export const getCellInPreviousTableRow = (
   editor: TEditor,

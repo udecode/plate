@@ -2,30 +2,28 @@
 import { type Value, createTEditor } from '@udecode/slate';
 
 import {
+  DOMPlugin,
   DebugPlugin,
   DeserializeAstPlugin,
   DeserializeHtmlPlugin,
   EditorProtocolPlugin,
   EventEditorPlugin,
+  HistoryPlugin,
   InlineVoidPlugin,
   InsertDataPlugin,
   LengthPlugin,
   type LengthPluginOptions,
+  NodeFactoryPlugin,
+  type PlatePlugin,
   PrevSelectionPlugin,
   createPlugin,
   getPlugin,
 } from '../../lib';
-import {
-  HistoryPlugin,
-  NodeFactoryPlugin,
-  type PlatePlugin,
-  VanillaReactPlugin,
-} from '../../server';
 import { withPlate } from './withPlate';
 
 const coreKeys = [
   'root',
-  VanillaReactPlugin.key,
+  DOMPlugin.key,
   HistoryPlugin.key,
   DebugPlugin.key,
   NodeFactoryPlugin.key,
@@ -200,21 +198,21 @@ describe('withPlate', () => {
     it('should not duplicate core plugins', () => {
       const existingEditor = createTEditor();
       existingEditor.plugins = [
-        createPlugin({ key: 'react' }),
+        createPlugin({ key: 'dom' }),
         createPlugin({ key: 'history' }),
       ];
 
       const editor = withPlate(existingEditor, { id: '1' });
 
       const pluginKeys = editor.plugins.map((plugin) => plugin.key);
-      expect(pluginKeys.filter((key) => key === 'react')).toHaveLength(1);
+      expect(pluginKeys.filter((key) => key === 'dom')).toHaveLength(1);
       expect(pluginKeys.filter((key) => key === 'history')).toHaveLength(1);
     });
 
     it('should add missing core plugins', () => {
       const existingEditor = createTEditor();
       existingEditor.plugins = [
-        createPlugin({ key: 'react' }),
+        createPlugin({ key: 'dom' }),
         createPlugin({ key: 'history' }),
       ];
 
@@ -230,7 +228,7 @@ describe('withPlate', () => {
       const customPlugin = createPlugin({ key: 'custom' });
       const existingEditor = createTEditor();
       existingEditor.plugins = [
-        createPlugin({ key: 'react' }),
+        createPlugin({ key: 'dom' }),
         createPlugin({ key: 'history' }),
         customPlugin,
       ];

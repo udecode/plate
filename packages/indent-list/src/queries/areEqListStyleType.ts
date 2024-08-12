@@ -1,4 +1,4 @@
-import type { TEditor, TNodeEntry } from '@udecode/plate-common/server';
+import type { TEditor, TNodeEntry } from '@udecode/plate-common';
 
 import {
   KEY_LIST_CHECKED,

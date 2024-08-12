@@ -2,7 +2,7 @@ import {
   createPrimitiveComponent,
   useEditorRef,
   useElement,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/react';
 
 import type { TMediaElement } from '../../media';
 

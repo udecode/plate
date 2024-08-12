@@ -3,7 +3,7 @@ import {
   type TElement,
   type TNodeEntry,
   getNodeEntry,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 
 export const getCellInNextTableRow = (

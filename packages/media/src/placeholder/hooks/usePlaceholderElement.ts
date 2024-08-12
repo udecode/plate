@@ -1,4 +1,4 @@
-import { useEditorRef, useElement } from '@udecode/plate-common';
+import { useEditorRef, useElement } from '@udecode/plate-common/react';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
 
 import type { TPlaceholderElement } from '../types';

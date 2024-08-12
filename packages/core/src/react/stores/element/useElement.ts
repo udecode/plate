@@ -1,5 +1,6 @@
 import type { TElement } from '@udecode/slate';
 
+import { useEditorRef } from '../plate';
 import { SCOPE_ELEMENT, useElementStore } from './useElementStore';
 
 /**
@@ -9,12 +10,15 @@ import { SCOPE_ELEMENT, useElementStore } from './useElementStore';
 export const useElement = <T extends TElement = TElement>(
   pluginKey = SCOPE_ELEMENT
 ): T => {
+  const editor = useEditorRef();
   const value = useElementStore(pluginKey).get.element();
 
   if (!value) {
-    console.warn(
-      `The \`useElement(pluginKey)\` hook must be used inside the node component's context`
-    );
+    editor.api.debug.warn({
+      message:
+        "The `useElement(pluginKey)` hook must be used inside the node component's context",
+      type: 'USE_ELEMENT_CONTEXT',
+    });
 
     return {} as T;
   }

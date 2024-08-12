@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { TEditor, TElement } from '@udecode/plate-common/server';
+import type { TEditor, TElement } from '@udecode/plate-common';
 import type { DropTargetMonitor } from 'react-dnd';
 
 import { type DragItemNode, type DropLineDirection, useDndBlock } from '..';

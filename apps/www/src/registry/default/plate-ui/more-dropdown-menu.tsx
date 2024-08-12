@@ -3,7 +3,8 @@ import React from 'react';
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 import { MARK_SUBSCRIPT, MARK_SUPERSCRIPT } from '@udecode/plate-basic-marks';
-import { focusEditor, toggleMark, useEditorRef } from '@udecode/plate-common';
+import { toggleMark } from '@udecode/plate-common';
+import { focusEditor, useEditorRef } from '@udecode/plate-common/react';
 
 import { Icons } from '@/components/icons';
 

@@ -6,7 +6,7 @@ import {
   getPointBefore,
   getStartPoint,
   isRangeAcrossBlocks,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import { Range } from 'slate';
 
 import type { TablePluginOptions } from './types';

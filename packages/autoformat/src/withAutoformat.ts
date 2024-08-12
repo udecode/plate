@@ -1,4 +1,4 @@
-import { type WithOverride, isCollapsed } from '@udecode/plate-common/server';
+import { type WithOverride, isCollapsed } from '@udecode/plate-common';
 
 import type { AutoformatPluginOptions } from './types';
 

@@ -1,4 +1,4 @@
-import type { TDescendant, WithOverride } from '@udecode/plate-common/server';
+import type { TDescendant, WithOverride } from '@udecode/plate-common';
 
 import cloneDeep from 'lodash/cloneDeep.js';
 

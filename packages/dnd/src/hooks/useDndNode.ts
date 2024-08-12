@@ -1,10 +1,10 @@
 import React from 'react';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 
-import type { TEditor } from '@udecode/plate-common/server';
+import type { TEditor } from '@udecode/plate-common';
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { useEditorRef } from '@udecode/plate-common';
+import { useEditorRef } from '@udecode/plate-common/react';
 
 import type { DragItemNode, DropLineDirection } from '../types';
 

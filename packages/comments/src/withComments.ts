@@ -1,4 +1,4 @@
-import { type WithOverride, unsetNodes } from '@udecode/plate-common/server';
+import { type WithOverride, unsetNodes } from '@udecode/plate-common';
 
 import type { CommentsPluginOptions } from './types';
 

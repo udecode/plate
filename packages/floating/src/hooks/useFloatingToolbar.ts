@@ -1,11 +1,11 @@
 import React from 'react';
 
-import { useEditorSelector } from '@udecode/plate-common';
 import {
   getSelectionText,
   isSelectionExpanded,
   mergeProps,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
+import { useEditorSelector } from '@udecode/plate-common/react';
 import { useFocused } from 'slate-react';
 
 import {

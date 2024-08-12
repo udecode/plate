@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { addSelectedRow, createPlugin } from '@udecode/plate-common/server';
+import { addSelectedRow, createPlugin } from '@udecode/plate-common';
 
 import { DndScroller, type ScrollerProps } from './components/Scroller';
 import { dndStore } from './dndStore';

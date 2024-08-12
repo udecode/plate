@@ -16,7 +16,7 @@ import {
   removeNodes,
   unhangCharacterRange,
   withoutNormalizing,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import { Point, type Range } from 'slate';
 
 import { MARK_SUGGESTION } from '../constants';

@@ -6,11 +6,10 @@ import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
 import { ExitBreakPlugin, SoftBreakPlugin } from '@udecode/plate-break';
 import {
-  Plate,
   type PlateRenderElementProps,
   createPlugin,
-  usePlateEditor,
 } from '@udecode/plate-common';
+import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 import { ResetNodePlugin } from '@udecode/plate-reset-node';
 
 import { Label } from '@/components/ui/label';

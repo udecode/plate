@@ -3,7 +3,7 @@ import {
   type WithOverride,
   setElements,
   unsetNodes,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type { IndentPluginOptions, TIndentElement } from './types';
 

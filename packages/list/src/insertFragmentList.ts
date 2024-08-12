@@ -18,7 +18,7 @@ import {
   insertElements,
   isElement,
   removeNodes,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 
 import { ELEMENT_LI } from './ListPlugin';

@@ -1,4 +1,4 @@
-import { type PlateEditor, nanoid } from '@udecode/plate-common/server';
+import { type PlateEditor, nanoid } from '@udecode/plate-common';
 
 import type { SuggestionEditorProps } from '../types';
 

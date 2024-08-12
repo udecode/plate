@@ -9,7 +9,7 @@ import { Editable } from 'slate-react';
 import type { Nullable, PlateEditor } from '../../lib';
 
 import { useEditableProps } from '../hooks';
-import { type PlateId, useEditorRef } from '../stores';
+import { useEditorRef } from '../stores';
 import { EditorMethodsEffect } from './EditorMethodsEffect';
 import { EditorRefEffect } from './EditorRefEffect';
 import { EditorStateEffect } from './EditorStateEffect';
@@ -35,7 +35,7 @@ export type PlateStoreState<E extends PlateEditor = PlateEditor> = {
    *
    * @default random id
    */
-  id: PlateId;
+  id: string;
 } & Nullable<{
   decorate: NonNullable<(options: { editor: E; entry: TNodeEntry }) => Range[]>;
 

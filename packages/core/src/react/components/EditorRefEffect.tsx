@@ -2,13 +2,13 @@ import React from 'react';
 
 import type { AnyEditorPlugin } from '../../lib/plugin/types/PlatePlugin';
 
-import { type PlateId, useEditorRef, usePlateSelectors } from '../stores';
+import { useEditorRef, usePlateSelectors } from '../stores';
 
 export function EditorRefPluginEffect({
   id,
   plugin,
 }: {
-  id?: PlateId;
+  id?: string;
   plugin: AnyEditorPlugin;
 }) {
   const editor = useEditorRef(id);
@@ -18,7 +18,7 @@ export function EditorRefPluginEffect({
   return null;
 }
 
-export function EditorRefEffect({ id }: { id?: PlateId }) {
+export function EditorRefEffect({ id }: { id?: string }) {
   const editor = usePlateSelectors(id).editor();
 
   return (

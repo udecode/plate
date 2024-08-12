@@ -1,8 +1,5 @@
-import {
-  type PlatePlugin,
-  createPlugin,
-  onKeyDownToggleElement,
-} from '@udecode/plate-common/server';
+import { type PlatePlugin, createPlugin } from '@udecode/plate-common';
+import { onKeyDownToggleElement } from '@udecode/plate-common/react';
 
 import type { HeadingPluginOptions, HeadingsPluginOptions } from './types';
 

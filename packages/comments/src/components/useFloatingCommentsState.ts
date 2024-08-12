@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { useEditorRef, useEditorVersion } from '@udecode/plate-common';
-import { someNode } from '@udecode/plate-common/server';
+import { someNode } from '@udecode/plate-common';
+import { useEditorRef, useEditorVersion } from '@udecode/plate-common/react';
 
 import { MARK_COMMENT } from '../constants';
 import {

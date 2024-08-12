@@ -6,7 +6,7 @@ import {
   useEditorRef,
   useElement,
   useHotkeys,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/react';
 
 import type { TMediaElement } from '../types';
 

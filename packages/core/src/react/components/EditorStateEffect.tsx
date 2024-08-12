@@ -4,9 +4,9 @@ import React from 'react';
 import { Range, type Selection } from 'slate';
 import { useSlate } from 'slate-react';
 
-import { type PlateId, useIncrementVersion } from '../stores';
+import { useIncrementVersion } from '../stores';
 
-export const EditorStateEffect = React.memo(({ id }: { id?: PlateId }) => {
+export const EditorStateEffect = React.memo(({ id }: { id?: string }) => {
   const editorState = useSlate();
   const updateVersionEditor = useIncrementVersion('versionEditor', id);
 

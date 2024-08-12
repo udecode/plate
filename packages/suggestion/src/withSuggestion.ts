@@ -8,7 +8,7 @@ import {
   removeNodes,
   setNodes,
   unsetNodes,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type {
   SuggestionEditorProps,

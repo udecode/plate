@@ -1,10 +1,7 @@
 import React from 'react';
 
-import { useEditorRef, useElement } from '@udecode/plate-common';
-import {
-  collapseSelection,
-  getPluginOptions,
-} from '@udecode/plate-common/server';
+import { collapseSelection, getPluginOptions } from '@udecode/plate-common';
+import { useEditorRef, useElement } from '@udecode/plate-common/react';
 
 import type { TTableElement, TablePluginOptions } from '../../types';
 

@@ -2,11 +2,8 @@
 
 import React from 'react';
 
-import type {
-  ClassNames,
-  PlateElementProps,
-  TEditor,
-} from '@udecode/plate-common';
+import type { ClassNames, TEditor } from '@udecode/plate-common';
+import type { PlateElementProps } from '@udecode/plate-common/react';
 import type { DropTargetMonitor } from 'react-dnd';
 
 import { cn, withRef } from '@udecode/cn';

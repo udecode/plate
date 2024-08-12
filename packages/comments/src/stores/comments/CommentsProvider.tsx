@@ -1,10 +1,10 @@
-import { createAtomStore } from '@udecode/plate-common';
 import {
   type Value,
   type WithPartial,
   getNodeString,
   nanoid,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
+import { createAtomStore } from '@udecode/plate-common/react';
 
 import type { CommentUser, TComment } from '../../types';
 

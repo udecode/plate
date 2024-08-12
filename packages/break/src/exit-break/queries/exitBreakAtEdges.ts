@@ -3,7 +3,7 @@ import {
   isExpanded,
   isSelectionAtBlockEnd,
   isSelectionAtBlockStart,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 /**
  * Check if the selection is at the edge of its parent block. If it is and if

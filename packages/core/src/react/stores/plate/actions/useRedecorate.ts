@@ -1,11 +1,11 @@
 import React from 'react';
 
-import type { PlateId, UsePlateEditorStoreOptions } from '../createPlateStore';
+import type { UsePlateEditorStoreOptions } from '../createPlateStore';
 
 import { useIncrementVersion } from './useIncrementVersion';
 
 export const useRedecorate = (
-  id?: PlateId,
+  id?: string,
   options: UsePlateEditorStoreOptions = {}
 ) => {
   const updateDecorate = useIncrementVersion('versionDecorate', id, {

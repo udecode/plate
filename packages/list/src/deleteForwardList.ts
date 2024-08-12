@@ -14,7 +14,7 @@ import {
   isSelectionAtBlockEnd,
   removeNodes,
   withoutNormalizing,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import { Path, type TextUnit } from 'slate';
 
 import { ELEMENT_LI, ELEMENT_LIC } from './ListPlugin';

@@ -1,7 +1,7 @@
 import {
   type PlateEditor,
   getPluginOptions,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import markdown from 'remark-parse';
 import unified from 'unified';
 

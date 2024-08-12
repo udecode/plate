@@ -1,14 +1,15 @@
-import { type ValueOf, selectEditor } from '@udecode/plate-common';
 import {
   type InsertNodesOptions,
   type PlateEditor,
+  type ValueOf,
   getBlockAbove,
   getPluginType,
   getStartPoint,
   insertNodes,
   someNode,
   withoutNormalizing,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
+import { selectEditor } from '@udecode/plate-common/react';
 
 import type { TTableElement } from '../types';
 

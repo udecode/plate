@@ -3,14 +3,13 @@ import React from 'react';
 import type { PlateChangeKey } from '../../../../lib/types/PlateStore';
 
 import {
-  type PlateId,
   type UsePlateEditorStoreOptions,
   usePlateActions,
 } from '../createPlateStore';
 
 export const useIncrementVersion = (
   key: PlateChangeKey,
-  id?: PlateId,
+  id?: string,
   options: UsePlateEditorStoreOptions = {}
 ) => {
   const previousVersionRef = React.useRef(1);

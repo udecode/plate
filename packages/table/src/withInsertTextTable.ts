@@ -2,7 +2,7 @@ import {
   type WithOverride,
   collapseSelection,
   isExpanded,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type { TablePluginOptions } from './types';
 

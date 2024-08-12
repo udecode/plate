@@ -10,7 +10,7 @@ import {
   useFloatingCommentsContentState,
   useFloatingCommentsState,
 } from '@udecode/plate-comments';
-import { PortalBody } from '@udecode/plate-common';
+import { PortalBody } from '@udecode/plate-common/react';
 
 import { CommentCreateForm } from './comment-create-form';
 import { CommentItem } from './comment-item';

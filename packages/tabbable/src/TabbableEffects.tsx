@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { getPluginOptions } from '@udecode/plate-common';
 import {
   findNodePath,
   focusEditor,
@@ -7,8 +8,7 @@ import {
   toSlateNode,
   useEditorReadOnly,
   useEditorRef,
-} from '@udecode/plate-common';
-import { getPluginOptions } from '@udecode/plate-common/server';
+} from '@udecode/plate-common/react';
 import { Path } from 'slate';
 import { tabbable } from 'tabbable';
 

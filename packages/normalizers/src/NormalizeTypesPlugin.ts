@@ -1,6 +1,6 @@
 import type { Path } from 'slate';
 
-import { type ErrorHandler, createPlugin } from '@udecode/plate-common/server';
+import { type ErrorHandler, createPlugin } from '@udecode/plate-common';
 
 import { withNormalizeTypes } from './withNormalizeTypes';
 

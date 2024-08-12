@@ -1,4 +1,4 @@
-import { isUrl } from '@udecode/plate-common/server';
+import { isUrl } from '@udecode/plate-common';
 
 const imageExtensions = new Set([
   'ase',

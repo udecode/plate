@@ -1,4 +1,5 @@
-import { getPluginApi, useEditorRef } from '@udecode/plate-common';
+import { getPluginApi } from '@udecode/plate-common';
+import { useEditorRef } from '@udecode/plate-common/react';
 
 import type { Upload } from './types';
 

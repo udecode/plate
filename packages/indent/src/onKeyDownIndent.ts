@@ -1,4 +1,6 @@
-import { Hotkeys, type KeyboardHandler } from '@udecode/plate-common';
+import type { KeyboardHandler } from '@udecode/plate-common';
+
+import { Hotkeys } from '@udecode/plate-common/react';
 
 import { indent, outdent } from './transforms/index';
 

@@ -3,7 +3,7 @@ import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import { Tweet } from 'react-tweet';
 
 import { cn, withRef } from '@udecode/cn';
-import { PlateElement, withHOC } from '@udecode/plate-common';
+import { PlateElement, withHOC } from '@udecode/plate-common/react';
 import {
   ELEMENT_MEDIA_EMBED,
   parseTwitterUrl,

@@ -3,7 +3,7 @@
 import { AlignPlugin } from '@udecode/plate-alignment';
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
-import { createPlateEditor } from '@udecode/plate-core';
+import { createPlateEditor } from '@udecode/plate-common/react';
 import { ELEMENT_H1, ELEMENT_H2, ELEMENT_H3 } from '@udecode/plate-heading';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { IndentPlugin } from '@udecode/plate-indent';

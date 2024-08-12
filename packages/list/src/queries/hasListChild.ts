@@ -2,7 +2,7 @@ import {
   type PlateEditor,
   type TAncestor,
   match,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import { getListTypes } from './getListTypes';
 

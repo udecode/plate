@@ -1,7 +1,7 @@
 import {
   type QueryNodeOptions,
   createPlugin,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import { withSelectOnBackspace } from './withSelectOnBackspace';
 

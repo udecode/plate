@@ -1,9 +1,9 @@
 import React from 'react';
 
-import type { PlateEditor } from '@udecode/plate-common/server';
+import type { PlateEditor } from '@udecode/plate-common';
 
 import { YjsEditor } from '@slate-yjs/core';
-import { useEditorRef } from '@udecode/plate-common';
+import { useEditorRef } from '@udecode/plate-common/react';
 
 import type { PlateYjsEditorProps } from './withPlateYjs';
 

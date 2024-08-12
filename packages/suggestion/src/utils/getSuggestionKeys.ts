@@ -1,4 +1,4 @@
-import { type TNode, isDefined } from '@udecode/plate-common/server';
+import { type TNode, isDefined } from '@udecode/plate-common';
 
 import { MARK_SUGGESTION } from '../constants';
 

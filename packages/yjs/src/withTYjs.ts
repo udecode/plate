@@ -1,4 +1,4 @@
-import type { PlateEditor, TOperation } from '@udecode/plate-common/server';
+import type { PlateEditor, TOperation } from '@udecode/plate-common';
 import type * as Y from 'yjs';
 
 import { type YjsEditor, withYjs } from '@slate-yjs/core';

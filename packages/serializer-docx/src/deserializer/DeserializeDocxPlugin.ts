@@ -3,7 +3,7 @@ import {
   type DeserializeHtml,
   KEY_DESERIALIZE_HTML,
   createPlugin,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import { cleanDocx } from '../docx-cleaner/cleanDocx';
 import {

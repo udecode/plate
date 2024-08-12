@@ -1,6 +1,6 @@
-import type { PlateEditor } from '@udecode/plate-common/server';
+import type { PlateEditor } from '@udecode/plate-common';
 
-import { toDOMNode } from '@udecode/plate-common';
+import { toDOMNode } from '@udecode/plate-common/react';
 import clamp from 'lodash/clamp.js';
 
 import type { TCommentText } from '../types';

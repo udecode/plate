@@ -4,7 +4,7 @@ import {
   isHotkey,
   isRangeAcrossBlocks,
   isRangeInSameBlock,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import { keyShiftEdges } from '../constants';
 import { getCellTypes } from '../utils/index';

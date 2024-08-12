@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import { type TDescendant, isText } from '@udecode/plate-common/server';
+import { type TDescendant, isText } from '@udecode/plate-common';
 import isEqual from 'lodash/isEqual.js';
 
 import type { ComputeDiffOptions } from '../../computeDiff';

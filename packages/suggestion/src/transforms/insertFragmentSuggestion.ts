@@ -4,7 +4,7 @@ import {
   applyDeepToNodes,
   nanoid,
   withoutNormalizing,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from '../constants';
 import { findSuggestionId } from '../queries/findSuggestionId';

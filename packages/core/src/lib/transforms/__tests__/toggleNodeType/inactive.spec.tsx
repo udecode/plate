@@ -3,7 +3,7 @@
 import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
 import { jsx } from '@udecode/plate-test-utils';
 
-import type { PlateEditor } from '../../../types';
+import type { PlateEditor } from '../../../editor';
 
 import { toggleNodeType } from '../../toggleNodeType';
 

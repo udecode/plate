@@ -1,5 +1,5 @@
-import { createAtomStore } from '@udecode/plate-common';
-import { type WithPartial, nanoid } from '@udecode/plate-common/server';
+import { type WithPartial, nanoid } from '@udecode/plate-common';
+import { createAtomStore } from '@udecode/plate-common/react';
 
 import type { SuggestionUser, TSuggestion } from '../types';
 

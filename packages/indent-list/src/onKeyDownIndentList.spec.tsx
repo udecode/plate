@@ -1,7 +1,8 @@
 /** @jsx jsx */
 
-import { createPlateEditor, getPlugin } from '@udecode/plate-common';
-import * as isHotkey from '@udecode/plate-core/server';
+import { getPlugin } from '@udecode/plate-common';
+import { createPlateEditor } from '@udecode/plate-common/react';
+import * as isHotkey from '@udecode/plate-core';
 import { IndentPlugin } from '@udecode/plate-indent';
 import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';

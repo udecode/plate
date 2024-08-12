@@ -5,7 +5,7 @@ import {
   PlateElement,
   useElement,
   useRemoveNodeButton,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/react';
 import {
   ELEMENT_COLUMN,
   type TColumnElement,

@@ -1,8 +1,8 @@
 import {
   type ToggleMarkPluginOptions,
   createPlugin,
-  onKeyDownToggleMark,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
+import { onKeyDownToggleMark } from '@udecode/plate-common/react';
 
 export const MARK_HIGHLIGHT = 'highlight';
 

@@ -3,7 +3,7 @@ import {
   findNode,
   getEditorString,
   getPluginType,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type { TLinkElement } from '../types';
 

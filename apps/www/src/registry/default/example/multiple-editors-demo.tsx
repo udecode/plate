@@ -2,7 +2,7 @@ import React from 'react';
 
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
-import { Plate, usePlateEditor } from '@udecode/plate-common';
+import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
 import { ELEMENT_IMAGE, ImagePlugin } from '@udecode/plate-media';
 import { SelectOnBackspacePlugin } from '@udecode/plate-select';

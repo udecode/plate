@@ -1,11 +1,11 @@
 import React from 'react';
 
+import { getNode } from '@udecode/plate-common';
 import {
-  getNode,
   toDOMNode,
   useEditorRef,
   useEditorSelector,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/react';
 
 import { getHeadingList } from '../../utils/internal/getHeadingList';
 

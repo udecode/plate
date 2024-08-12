@@ -8,7 +8,7 @@ import {
   insertText,
   isEndPoint,
   moveSelection,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type {
   MentionPluginOptions,

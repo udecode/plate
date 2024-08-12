@@ -1,4 +1,5 @@
-import { createPlateEditor, getPlugin } from '@udecode/plate-common';
+import { getPlugin } from '@udecode/plate-common';
+import { createPlateEditor } from '@udecode/plate-common/react';
 
 import {
   FindReplacePlugin,

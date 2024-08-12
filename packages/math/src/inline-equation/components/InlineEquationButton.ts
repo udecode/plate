@@ -1,6 +1,10 @@
 import { useMemo } from 'react';
 
-import { findNodePath, useEditorRef, useElement } from '@udecode/plate-common';
+import {
+  findNodePath,
+  useEditorRef,
+  useElement,
+} from '@udecode/plate-common/react';
 
 import type { TInlineEquationElement } from '../types';
 

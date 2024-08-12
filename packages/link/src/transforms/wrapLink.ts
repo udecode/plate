@@ -6,7 +6,7 @@ import {
   type WrapNodesOptions,
   getPluginType,
   wrapNodes,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type { TLinkElement } from '../types';
 

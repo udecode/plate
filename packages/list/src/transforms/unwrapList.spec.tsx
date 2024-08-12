@@ -1,6 +1,8 @@
 /** @jsx jsx */
 
-import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
+import type { PlateEditor } from '@udecode/plate-common';
+
+import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { ListPlugin } from '../ListPlugin';

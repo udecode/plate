@@ -1,4 +1,5 @@
-import { Hotkeys, type KeyboardHandler } from '@udecode/plate-common';
+import type { KeyboardHandler } from '@udecode/plate-common';
+
 import {
   getPluginType,
   isCollapsed,
@@ -6,7 +7,8 @@ import {
   select,
   someNode,
   unhangRange,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
+import { Hotkeys } from '@udecode/plate-common/react';
 import castArray from 'lodash/castArray.js';
 import { Range } from 'slate';
 

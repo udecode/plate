@@ -2,7 +2,7 @@
 
 import type { PlateEditor } from '@udecode/plate-common';
 
-import { createPlateEditor } from '@udecode/plate-common';
+import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { AlignPlugin } from '../../shared/AlignPlugin';

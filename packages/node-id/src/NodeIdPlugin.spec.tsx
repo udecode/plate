@@ -2,11 +2,11 @@
 
 import {
   type PlateEditor,
-  createPlateEditor,
   insertNodes,
   mergeNodes,
   splitNodes,
 } from '@udecode/plate-common';
+import { createPlateEditor } from '@udecode/plate-common/react';
 import { ELEMENT_LI, ELEMENT_UL } from '@udecode/plate-list';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';

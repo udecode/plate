@@ -1,5 +1,5 @@
 import type { PlateEditor, TElement } from '@udecode/plate-common';
-import type { TDescendant } from '@udecode/plate-common/server';
+import type { TDescendant } from '@udecode/plate-common';
 import type { Path } from 'slate';
 
 export type CellFactoryOptions = {

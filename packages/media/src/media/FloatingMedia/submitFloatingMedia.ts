@@ -1,10 +1,10 @@
-import { focusEditor } from '@udecode/plate-common';
 import {
   type PlateEditor,
   getPluginOptions,
   isUrl,
   setNodes,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
+import { focusEditor } from '@udecode/plate-common/react';
 
 import {
   ELEMENT_MEDIA,

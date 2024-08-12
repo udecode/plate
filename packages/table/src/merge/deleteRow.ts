@@ -1,4 +1,3 @@
-import { findNodePath } from '@udecode/plate-common';
 import {
   type PlateEditor,
   getAboveNode,
@@ -9,7 +8,8 @@ import {
   removeNodes,
   setNodes,
   someNode,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
+import { findNodePath } from '@udecode/plate-common/react';
 
 import type {
   TTableCellElement,

@@ -2,7 +2,7 @@
 
 import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
 import { type AnyPlatePlugin, createPlugin } from '@udecode/plate-common';
-import * as isHotkey from '@udecode/plate-core/server';
+import * as isHotkey from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { onKeyDownSoftBreak } from '../../onKeyDownSoftBreak';

@@ -1,6 +1,6 @@
 import { type DragSourceHookSpec, useDrag } from 'react-dnd';
 
-import type { TEditor } from '@udecode/plate-common/server';
+import type { TEditor } from '@udecode/plate-common';
 
 import type { DragItemNode } from '../types';
 

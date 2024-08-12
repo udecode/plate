@@ -1,4 +1,4 @@
-import { type PlateEditor, getNodeEntries } from '@udecode/plate-common/server';
+import { type PlateEditor, getNodeEntries } from '@udecode/plate-common';
 
 import type { TCommentText } from '../types';
 

@@ -2,7 +2,7 @@ import {
   type TEditor,
   type TNodeEntry,
   getNodeEntry,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 
 import { getCellInNextTableRow } from './getCellInNextTableRow';

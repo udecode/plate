@@ -1,7 +1,5 @@
-import {
-  createPlugin,
-  onKeyDownToggleElement,
-} from '@udecode/plate-common/server';
+import { createPlugin } from '@udecode/plate-common';
+import { onKeyDownToggleElement } from '@udecode/plate-common/react';
 
 import type { TodoListPluginOptions } from '../types';
 

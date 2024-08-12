@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { getPluginOptions, useEditorRef } from '@udecode/plate-common';
+import { getPluginOptions } from '@udecode/plate-common';
+import { useEditorRef } from '@udecode/plate-common/react';
 import VanillaSelectionArea, {
   type SelectionEvents,
   type SelectionOptions,

@@ -1,6 +1,5 @@
 import * as portiveClient from '@portive/client';
-import { getPluginApi } from '@udecode/plate-common';
-import { createPlugin } from '@udecode/plate-common/server';
+import { createPlugin, getPluginApi } from '@udecode/plate-common';
 import Defer from 'p-defer';
 
 import type { UploadError, UploadSuccess } from '../upload';

@@ -1,4 +1,4 @@
-import { useEditorRef } from '@udecode/plate-common';
+import { useEditorRef } from '@udecode/plate-common/react';
 
 import { useBlockContextMenuSelectors } from '.';
 import { useBlockSelectionSelectors } from '../blockSelectionStore';

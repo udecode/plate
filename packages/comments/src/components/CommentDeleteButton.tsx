@@ -1,4 +1,7 @@
-import { createPrimitiveComponent, useEditorRef } from '@udecode/plate-common';
+import {
+  createPrimitiveComponent,
+  useEditorRef,
+} from '@udecode/plate-common/react';
 
 import { useCommentSelectors } from '../stores/comment/CommentProvider';
 import {

@@ -1,6 +1,6 @@
-import type { PlateEditor, TElement } from '@udecode/plate-common/server';
+import type { PlateEditor, TElement } from '@udecode/plate-common';
 
-import { focusEditor } from '@udecode/plate-common';
+import { focusEditor } from '@udecode/plate-common/react';
 
 import type { BorderDirection } from '../../types';
 

@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { focusEditor, isEditorReadOnly } from '@udecode/plate-common';
 import {
   type PlatePluginUseHooks,
   findNode,
@@ -9,7 +8,8 @@ import {
   getPreviousNode,
   isHotkey,
   removeNodes,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
+import { focusEditor, isEditorReadOnly } from '@udecode/plate-common/react';
 
 import type { BlockSelectionPluginOptions } from './BlockSelectionPlugin';
 

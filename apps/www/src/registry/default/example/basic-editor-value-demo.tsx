@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Plate, usePlateEditor } from '@udecode/plate-common';
+import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 
 import { editableProps } from '@/plate/demo/editableProps';
 import { Editor } from '@/registry/default/plate-ui/editor';

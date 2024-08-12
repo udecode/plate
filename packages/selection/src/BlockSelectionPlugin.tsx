@@ -3,7 +3,7 @@ import React from 'react';
 import {
   type QueryNodeOptions,
   createPlugin,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import { BlockSelectionArea, BlockStartArea } from './components';
 import { BlockSelectable } from './components/BlockSelectable';

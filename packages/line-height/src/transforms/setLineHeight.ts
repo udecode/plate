@@ -7,7 +7,7 @@ import {
   isBlock,
   setElements,
   unsetNodes,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import { KEY_LINE_HEIGHT } from '../LineHeightPlugin';
 

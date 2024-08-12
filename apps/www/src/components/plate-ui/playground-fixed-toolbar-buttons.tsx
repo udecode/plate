@@ -9,7 +9,7 @@ import {
   MARK_STRIKETHROUGH,
   MARK_UNDERLINE,
 } from '@udecode/plate-basic-marks';
-import { useEditorReadOnly } from '@udecode/plate-common';
+import { useEditorReadOnly } from '@udecode/plate-common/react';
 import { MARK_BG_COLOR, MARK_COLOR } from '@udecode/plate-font';
 import { KEY_LIST_STYLE_TYPE, ListStyleType } from '@udecode/plate-indent-list';
 import { ELEMENT_OL, ELEMENT_UL } from '@udecode/plate-list';

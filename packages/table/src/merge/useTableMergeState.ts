@@ -1,9 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { useEditorRef, useEditorSelector } from '@udecode/plate-common';
-import {
-  getPluginOptions,
-  isSelectionExpanded,
-} from '@udecode/plate-common/server';
+import { getPluginOptions, isSelectionExpanded } from '@udecode/plate-common';
+import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
 import { useReadOnly, useSelected } from 'slate-react';
 
 import type { TTableCellElement, TablePluginOptions } from '../types';

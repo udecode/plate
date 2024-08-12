@@ -4,7 +4,7 @@ import {
   getPluginType,
   isRangeAcrossBlocks,
   someNode,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import { ELEMENT_LINK } from '../LinkPlugin';
 import {

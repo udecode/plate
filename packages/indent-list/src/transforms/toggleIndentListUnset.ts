@@ -2,7 +2,7 @@ import {
   type TEditor,
   type TNodeEntry,
   unsetNodes,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import {
   KEY_LIST_CHECKED,

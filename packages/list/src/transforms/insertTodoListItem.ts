@@ -10,7 +10,7 @@ import {
   select,
   splitNodes,
   withoutNormalizing,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import { Path, Range } from 'slate';
 
 import type { TodoListPluginOptions } from '../types';

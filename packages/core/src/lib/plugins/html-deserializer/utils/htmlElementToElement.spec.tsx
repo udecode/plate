@@ -4,7 +4,7 @@
 import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createPlateEditor } from '../../../../react';
+import { createPlateEditor } from '../../../../react/editor/withPlate';
 import { htmlElementToElement } from './htmlElementToElement';
 import { parseHtmlElement } from './parseHtmlElement';
 

@@ -1,5 +1,5 @@
-import { useEditorRef, useEditorSelector } from '@udecode/plate-common';
-import { getPluginType, someNode } from '@udecode/plate-common/server';
+import { getPluginType, someNode } from '@udecode/plate-common';
+import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
 
 import { ELEMENT_UL, toggleList } from '../index';
 

@@ -1,6 +1,9 @@
 import React from 'react';
 
-import { createPrimitiveComponent, useElement } from '@udecode/plate-common';
+import {
+  createPrimitiveComponent,
+  useElement,
+} from '@udecode/plate-common/react';
 
 import type { TMediaElement } from '../types';
 

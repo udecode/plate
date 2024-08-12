@@ -1,7 +1,7 @@
 import {
   type PlateEditor,
   getPluginOptions,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type { SuggestionPluginOptions } from '../types';
 

@@ -17,7 +17,7 @@ description: API reference for Plate store.
 The PlateStoreState object stores the state of the Plate editor. It contains information about the editor's ID, its current value, its plugins, and other settings.
 
 <APIAttributes>
-<APIItem name="id" type="PlateId">
+<APIItem name="id" type="string">
 
 A unique ID used as a provider scope. Use it if you have multiple `Plate` in the same React tree.
 
@@ -147,19 +147,19 @@ This store is an object whose property keys are event names (e.g. `'focus'`) and
 ### State
 
 <APIAttributes>
-<APIItem name="blur" type="PlateId | null">
+<APIItem name="blur" type="string | null">
 
 Last editor ID that has been blurred.
 
 </APIItem>
 
-<APIItem name="focus" type="PlateId | null">
+<APIItem name="focus" type="string | null">
 
 Editor ID that is currently being focused.
 
 </APIItem>
 
-<APIItem name="last" type="PlateId | null">
+<APIItem name="last" type="string | null">
 
 Last editor ID.
 
@@ -178,7 +178,7 @@ Hook selectors.
 Get the last event editor ID.
 
 <APIParameters>
-<APIItem name="id" type="PlateId | null">
+<APIItem name="id" type="string | null">
 
 Returned ID if defined.
 
@@ -186,6 +186,6 @@ Returned ID if defined.
 </APIParameters>
 
 <APIReturns>
-  The `PlateId` from the context if available, otherwise the last event editor
+  The plate id from the context if available, otherwise the last event editor
   ID or `PLATE_SCOPE`.
 </APIReturns>

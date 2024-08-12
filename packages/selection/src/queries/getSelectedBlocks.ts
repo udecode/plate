@@ -2,7 +2,7 @@ import {
   type TEditor,
   type TElement,
   getNodeEntries,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import { blockSelectionSelectors } from '../blockSelectionStore';
 

@@ -1,8 +1,9 @@
 import React from 'react';
 
-import { SoftBreakPlugin } from '@/../../../packages/break/dist';
 import { cn } from '@udecode/cn';
 import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks';
+import { SoftBreakPlugin } from '@udecode/plate-break';
+import { type Value, createPlugin, isInline } from '@udecode/plate-common';
 import {
   Plate,
   PlateContent,
@@ -11,12 +12,9 @@ import {
   PlateLeaf,
   type PlateLeafProps,
   type PlateProps,
-  type Value,
   createPlateEditor,
-  createPlugin,
-  isInline,
   usePlateEditor,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/react';
 import {
   type DiffOperation,
   type DiffUpdate,

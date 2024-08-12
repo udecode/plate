@@ -1,5 +1,5 @@
 import type { ValueOf } from '@udecode/plate-common';
-import type { PlateEditor, Value } from '@udecode/plate-common/server';
+import type { PlateEditor, Value } from '@udecode/plate-common';
 import type { Location } from 'slate';
 
 import { type SetIndentOptions, setIndent } from '@udecode/plate-indent';

@@ -1,7 +1,7 @@
 import {
   type PlateEditor,
   withoutNormalizing,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import { MARK_COMMENT } from '../constants';
 import { findCommentNode } from '../queries/index';

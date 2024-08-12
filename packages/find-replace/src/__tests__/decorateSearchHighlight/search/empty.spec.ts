@@ -1,6 +1,6 @@
 import type { Range } from 'slate';
 
-import { createPlateEditor } from '@udecode/plate-common';
+import { createPlateEditor } from '@udecode/plate-common/react';
 
 import {
   FindReplacePlugin,

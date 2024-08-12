@@ -1,5 +1,5 @@
-import { findNodePath, useEditorRef } from '@udecode/plate-common';
-import { setNodes } from '@udecode/plate-common/server';
+import { setNodes } from '@udecode/plate-common';
+import { findNodePath, useEditorRef } from '@udecode/plate-common/react';
 import { useReadOnly } from 'slate-react';
 
 import type { TTodoListItemElement } from '../index';

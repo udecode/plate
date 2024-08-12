@@ -3,7 +3,7 @@ import type { Point, Range } from 'slate';
 import {
   type TEditor,
   getPointBeforeLocation,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type { MatchRange } from '../types';
 

@@ -1,5 +1,9 @@
-import { findNodePath, useEditorRef, useElement } from '@udecode/plate-common';
-import { setNodes } from '@udecode/plate-common/server';
+import { setNodes } from '@udecode/plate-common';
+import {
+  findNodePath,
+  useEditorRef,
+  useElement,
+} from '@udecode/plate-common/react';
 
 import type { TColumnGroupElement } from './types';
 

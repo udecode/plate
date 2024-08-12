@@ -1,9 +1,9 @@
-import { type PlateProps, pluginRenderLeaf } from '@udecode/plate-common';
 import {
   type PlateEditor,
   type PlateRenderLeafProps,
   pipeInjectProps,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
+import { type PlateProps, pluginRenderLeaf } from '@udecode/plate-common/react';
 import { decode } from 'html-entities';
 
 import { createElementWithSlate } from './utils/createElementWithSlate';

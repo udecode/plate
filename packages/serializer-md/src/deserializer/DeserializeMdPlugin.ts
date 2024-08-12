@@ -1,4 +1,4 @@
-import { createPlugin, isUrl } from '@udecode/plate-common/server';
+import { createPlugin, isUrl } from '@udecode/plate-common';
 
 import type { DeserializeMdPluginOptions } from './types';
 

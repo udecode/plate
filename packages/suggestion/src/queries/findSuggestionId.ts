@@ -5,7 +5,7 @@ import {
   getEdgePoints,
   getPointAfter,
   getPointBefore,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import { KEY_SUGGESTION_ID } from '../constants';
 import { findSuggestionNode } from './findSuggestionNode';

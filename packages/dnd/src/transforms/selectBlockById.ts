@@ -1,5 +1,5 @@
-import { type TReactEditor, focusEditor } from '@udecode/plate-common';
-import { findNode, getRange, select } from '@udecode/plate-common/server';
+import { findNode, getRange, select } from '@udecode/plate-common';
+import { type TReactEditor, focusEditor } from '@udecode/plate-common/react';
 
 /** Select the block above the selection by id and focus the editor. */
 export const selectBlockById = (editor: TReactEditor, id: string) => {

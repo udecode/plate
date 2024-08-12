@@ -1,7 +1,7 @@
 import type { ClientRectObject } from '@floating-ui/core';
 import type { Range } from 'slate';
 
-import { type TReactEditor, toDOMRange } from '@udecode/plate-common';
+import { type TReactEditor, toDOMRange } from '@udecode/plate-common/react';
 
 import { getDefaultBoundingClientRect } from '../createVirtualElement';
 

@@ -5,7 +5,7 @@ import {
   type TNodeEntry,
   createPathRef,
   removeNodes,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type { TTableCellElement } from '../types';
 

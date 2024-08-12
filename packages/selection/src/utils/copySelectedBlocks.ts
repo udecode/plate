@@ -5,7 +5,7 @@ import {
   getStartPoint,
   select,
   withoutNormalizing,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import copyToClipboard from 'copy-to-clipboard';
 
 import {

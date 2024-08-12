@@ -1,7 +1,7 @@
 import type {
   HotkeyPluginOptions,
   PlateEditor,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 export interface ResetNodePluginRule extends HotkeyPluginOptions {
   /** Additional condition to the rule. */

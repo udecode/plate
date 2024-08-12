@@ -1,6 +1,10 @@
 import React from 'react';
 import { cn, withRef } from '@udecode/cn';
-import { getHandler, PlateElement, useElement } from '@udecode/plate-common';
+import {
+  getHandler,
+  PlateElement,
+  useElement,
+} from '@udecode/plate-common/react';
 import { TMentionElement } from '@udecode/plate-mention';
 import { useFocused, useSelected } from 'slate-react';
 

@@ -362,7 +362,7 @@ Get the Slate editor reference without re-rendering.
 - Note the reference does not change when the editor changes.
 
 <APIParameters>
-  <APIItem name="id" type="PlateId" optional>
+  <APIItem name="id" type="string" optional>
     The ID of the plate editor. Useful only when nesting editors. Default is using the closest editor id.
   </APIItem>
 </APIParameters>
@@ -391,7 +391,7 @@ Subscribe to a specific property of the editor.
 
   <APIItem name="options" type="UseEditorSelectorOptions<T>" optional>
     <APISubList>
-      <APISubListItem parent="options" name="id" type="PlateId" optional>
+      <APISubListItem parent="options" name="id" type="string" optional>
         The ID of the plate editor. Useful only when nesting editors. Default is using the closest editor id.
       </APISubListItem>
 
@@ -417,7 +417,7 @@ Get the Slate editor reference with re-rendering.
 - If performance is a concern, `useEditorSelector` should be used instead.
 
 <APIParameters>
-  <APIItem name="id" type="PlateId" optional>
+  <APIItem name="id" type="string" optional>
     The ID of the plate editor. Default is using the closest editor id.
   </APIItem>
 </APIParameters>
@@ -432,7 +432,7 @@ A `PlateEditor` object, which is the Slate editor.
 Get the editor's `readOnly` state.
 
 <APIParameters>
-  <APIItem name="id" type="PlateId" optional>
+  <APIItem name="id" type="string" optional>
     The ID of the plate editor.
   </APIItem>
 </APIParameters>
@@ -447,7 +447,7 @@ The `readOnly` state of the editor.
 Get the editor's `isMounted` state.
 
 <APIParameters>
-  <APIItem name="id" type="PlateId" optional>
+  <APIItem name="id" type="string" optional>
     The ID of the plate editor.
   </APIItem>
 </APIParameters>
@@ -462,7 +462,7 @@ The `isMounted` state of the editor.
 Get the editor's selection. Memoized so it does not re-render if the range is the same.
 
 <APIParameters>
-  <APIItem name="id" type="PlateId" optional>
+  <APIItem name="id" type="string" optional>
     The ID of the plate editor.
   </APIItem>
 </APIParameters>
@@ -473,7 +473,7 @@ Get the editor's selection. Memoized so it does not re-render if the range is th
 Get the version of the editor value. That version is incremented on each editor change.
 
 <APIParameters>
-  <APIItem name="id" type="PlateId" optional>
+  <APIItem name="id" type="string" optional>
     The ID of the plate editor.
   </APIItem>
 </APIParameters>
@@ -484,7 +484,7 @@ Get the version of the editor value. That version is incremented on each editor 
 Get the version of the editor selection. That version is incremented on each selection change (the range being different).
 
 <APIParameters>
-  <APIItem name="id" type="PlateId" optional>
+  <APIItem name="id" type="string" optional>
     The ID of the plate editor.
   </APIItem>
 </APIParameters>

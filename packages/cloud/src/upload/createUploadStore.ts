@@ -1,4 +1,4 @@
-import { createZustandStore } from '@udecode/plate-common/server';
+import { createZustandStore } from '@udecode/plate-common';
 
 import type { Upload } from './types';
 

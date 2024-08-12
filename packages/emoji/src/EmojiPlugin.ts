@@ -1,5 +1,5 @@
 import { withTriggerCombobox } from '@udecode/plate-combobox';
-import { createPlugin } from '@udecode/plate-common/server';
+import { createPlugin } from '@udecode/plate-common';
 
 import type { EmojiPluginOptions } from './types';
 

@@ -5,7 +5,7 @@ import type {
   TElement,
   TNodeEntry,
   Value,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type { GetSiblingIndentListOptions } from './getSiblingIndentList';
 

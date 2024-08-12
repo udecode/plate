@@ -4,7 +4,7 @@ import type { TNode } from '@udecode/slate';
 
 import { jsx } from '@udecode/plate-test-utils';
 
-import type { PlateEditor } from '../../../types';
+import type { PlateEditor } from '../../../editor';
 
 import { mergeDeepToNodes } from '../../../utils';
 

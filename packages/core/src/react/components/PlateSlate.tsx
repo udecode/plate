@@ -3,7 +3,7 @@ import React from 'react';
 import { Slate } from 'slate-react';
 
 import { useSlateProps } from '../hooks';
-import { type PlateId, useEditorRef } from '../stores/plate';
+import { useEditorRef } from '../stores/plate';
 
 /**
  * Slate with plugins.
@@ -16,7 +16,7 @@ export function PlateSlate({
   id,
 }: {
   children: React.ReactNode;
-  id?: PlateId;
+  id?: string;
 }) {
   const slateProps = useSlateProps({ id });
 

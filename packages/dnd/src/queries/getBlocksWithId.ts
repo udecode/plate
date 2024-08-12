@@ -4,7 +4,7 @@ import {
   type Value,
   getNodeEntries,
   isBlock,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 /** Get blocks with an id */
 export const getBlocksWithId = <V extends Value>(

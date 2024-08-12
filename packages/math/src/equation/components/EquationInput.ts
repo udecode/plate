@@ -1,12 +1,7 @@
 import React, { useEffect } from 'react';
 
-import {
-  addSelectedRow,
-  isHotkey,
-  setNodes,
-  useEditorRef,
-  useElement,
-} from '@udecode/plate-common';
+import { addSelectedRow, isHotkey, setNodes } from '@udecode/plate-common';
+import { useEditorRef, useElement } from '@udecode/plate-common/react';
 
 import type { TEquationElement } from '../types';
 

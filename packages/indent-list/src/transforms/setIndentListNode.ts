@@ -1,6 +1,6 @@
 import type { Path } from 'slate';
 
-import { type TEditor, setElements } from '@udecode/plate-common/server';
+import { type TEditor, setElements } from '@udecode/plate-common';
 import { KEY_INDENT } from '@udecode/plate-indent';
 
 import {

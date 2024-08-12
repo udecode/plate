@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { createPrimitiveComponent } from '@udecode/plate-common';
+import { createPrimitiveComponent } from '@udecode/plate-common/react';
 
 import {
   useCommentActions,

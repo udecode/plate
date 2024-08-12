@@ -1,7 +1,9 @@
 import type React from 'react';
 
-import { type PlateEditor, findEventRange } from '@udecode/plate-common';
-import { select } from '@udecode/plate-common/server';
+import type { PlateEditor } from '@udecode/plate-common';
+
+import { select } from '@udecode/plate-common';
+import { findEventRange } from '@udecode/plate-common/react';
 
 import { uploadFiles } from './uploadFiles';
 

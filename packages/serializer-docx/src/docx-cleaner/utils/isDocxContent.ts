@@ -1,4 +1,4 @@
-import { traverseHtmlElements } from '@udecode/plate-common/server';
+import { traverseHtmlElements } from '@udecode/plate-common';
 
 /**
  * Check if the element contains docx content. True if one element has:

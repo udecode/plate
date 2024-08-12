@@ -3,7 +3,8 @@ import React from 'react';
 import type { TMentionElement } from '@udecode/plate-mention';
 
 import { cn, withRef } from '@udecode/cn';
-import { PlateElement, getHandler, useElement } from '@udecode/plate-common';
+import { getHandler } from '@udecode/plate-common';
+import { PlateElement, useElement } from '@udecode/plate-common/react';
 import { useFocused, useSelected } from 'slate-react';
 
 export const MentionElement = withRef<

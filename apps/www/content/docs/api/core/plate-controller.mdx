@@ -12,21 +12,21 @@ description: API reference for PlateController component.
 The PlateController Store contains the information required to fetch a Plate Store based on its **`id`**, and to determine which **`id`** is currently active.
 
 <APIAttributes>
-<APIItem name="activeId" type="PlateId | null">
+<APIItem name="activeId" type="string | null">
 
 The **`id`** of the most recently focused Plate editor.
 
 - **Default:** `null`
 
 </APIItem>
-<APIItem name="primaryEditorIds" type="PlateId[]">
+<APIItem name="primaryEditorIds" type="string[]">
 
 The **`id`**'s of all primary Plate editors. By default, an editor is considered primary unless **`primary={false}`** was passed to its **`Plate`** component.
 
 - **Default:** `[]`
 
 </APIItem>
-<APIItem name="editorStores" type="Record<PlateId, JotaiStore | null>">
+<APIItem name="editorStores" type="Record<string, JotaiStore | null>">
 
 A map from the **`id`** of each mounted Plate editor to the **`JotaiStore`** corresponding to that editor's Plate Store.
 

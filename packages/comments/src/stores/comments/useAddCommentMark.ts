@@ -1,10 +1,5 @@
-import { deselectEditor, useEditorRef } from '@udecode/plate-common';
-import {
-  isExpanded,
-  isText,
-  nanoid,
-  setNodes,
-} from '@udecode/plate-common/server';
+import { isExpanded, isText, nanoid, setNodes } from '@udecode/plate-common';
+import { deselectEditor, useEditorRef } from '@udecode/plate-common/react';
 
 import { MARK_COMMENT } from '../../constants';
 import { getCommentKey } from '../../utils/index';

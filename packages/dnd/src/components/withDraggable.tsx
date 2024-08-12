@@ -3,7 +3,7 @@ import React from 'react';
 import type {
   AnyObject,
   PlateRenderElementProps,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import {
   type WithDraggableOptions,

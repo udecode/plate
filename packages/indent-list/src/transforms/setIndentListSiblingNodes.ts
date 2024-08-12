@@ -5,7 +5,7 @@ import {
   type Value,
   unsetNodes,
   withoutNormalizing,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import { KEY_INDENT } from '@udecode/plate-indent';
 
 import type { GetSiblingIndentListOptions } from '../queries/getSiblingIndentList';

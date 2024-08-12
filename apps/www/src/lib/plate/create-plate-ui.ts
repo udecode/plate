@@ -1,5 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
+import type { PlatePluginComponent } from '@udecode/plate-common';
+
 import { withProps } from '@udecode/cn';
 import {
   MARK_BOLD,
@@ -17,11 +19,7 @@ import {
   ELEMENT_CODE_SYNTAX,
 } from '@udecode/plate-code-block';
 import { MARK_COMMENT } from '@udecode/plate-comments';
-import {
-  PlateElement,
-  PlateLeaf,
-  type PlatePluginComponent,
-} from '@udecode/plate-common';
+import { PlateElement, PlateLeaf } from '@udecode/plate-common/react';
 import { EmojiInputPlugin } from '@udecode/plate-emoji';
 import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
 import { MARK_SEARCH_HIGHLIGHT } from '@udecode/plate-find-replace';

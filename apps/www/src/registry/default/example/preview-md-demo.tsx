@@ -6,10 +6,9 @@ import { BasicElementsPlugin } from "@udecode/plate-basic-elements";
 import { BasicMarksPlugin } from "@udecode/plate-basic-marks";
 import {
   type Decorate,
-  Plate,
-  type TRenderLeafProps,
-  type TText, createPlugin, isText, usePlateEditor
+  type TText, createPlugin, isText
 } from "@udecode/plate-common";
+import { Plate, type TRenderLeafProps , usePlateEditor } from "@udecode/plate-common/react";
 import Prism from 'prismjs';
 
 import { editableProps } from '@/plate/demo/editableProps';

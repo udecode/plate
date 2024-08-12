@@ -6,7 +6,7 @@ import {
   getParentNode,
   match,
   moveNodes,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 
 import { getListTypes } from '../queries/index';

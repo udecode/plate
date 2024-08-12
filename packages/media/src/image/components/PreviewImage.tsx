@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 
-import { createPrimitiveComponent } from '@udecode/plate-common';
+import { createPrimitiveComponent } from '@udecode/plate-common/react';
 
 import { useZoom } from '../hooks/useZoom';
 import {

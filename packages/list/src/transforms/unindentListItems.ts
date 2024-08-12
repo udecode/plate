@@ -1,4 +1,4 @@
-import type { PlateEditor } from '@udecode/plate-common/server';
+import type { PlateEditor } from '@udecode/plate-common';
 
 import { type MoveListItemsOptions, moveListItems } from './moveListItems';
 

@@ -1,6 +1,6 @@
 import type { TElement } from '@udecode/plate-common';
 
-import { type PlateEditor, getPluginType } from '@udecode/plate-common/server';
+import { type PlateEditor, getPluginType } from '@udecode/plate-common';
 
 import type { CellFactoryOptions } from '../types';
 

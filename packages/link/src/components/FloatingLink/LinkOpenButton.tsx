@@ -1,11 +1,11 @@
 import React from 'react';
 
+import { findNode, getPluginType } from '@udecode/plate-common';
 import {
   createPrimitiveComponent,
   useEditorRef,
   useEditorSelection,
-} from '@udecode/plate-common';
-import { findNode, getPluginType } from '@udecode/plate-common/server';
+} from '@udecode/plate-common/react';
 
 import type { TLinkElement } from '../../types';
 

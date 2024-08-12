@@ -4,7 +4,7 @@ import {
   createPlugin,
   getPluginType,
   isBlockAboveEmpty,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import {
   type ResetNodePluginOptions,
   SIMULATE_BACKSPACE,

@@ -6,13 +6,13 @@ import {
   useRef,
 } from 'react';
 
+import { Hotkeys, isHotkey, removeNodes } from '@udecode/plate-common';
 import {
   findNodePath,
   focusEditor,
   useEditorRef,
   useElement,
-} from '@udecode/plate-common';
-import { Hotkeys, isHotkey, removeNodes } from '@udecode/plate-common/server';
+} from '@udecode/plate-common/react';
 import { useSelected } from 'slate-react';
 
 import type {

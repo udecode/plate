@@ -1,8 +1,5 @@
-import { useHotkeys } from '@udecode/plate-common';
-import {
-  type PlatePluginUseHooks,
-  isExpanded,
-} from '@udecode/plate-common/server';
+import { type PlatePluginUseHooks, isExpanded } from '@udecode/plate-common';
+import { useHotkeys } from '@udecode/plate-common/react';
 
 import type { CommentsPluginOptions } from './types';
 

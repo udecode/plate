@@ -5,7 +5,6 @@ import { selectAtom } from 'jotai/utils';
 import type { PlateEditor } from '../../../../lib';
 
 import {
-  type PlateId,
   type UsePlateEditorStoreOptions,
   plateStore,
   usePlateSelectors,
@@ -14,7 +13,7 @@ import {
 export interface UseEditorSelectorOptions<T>
   extends UsePlateEditorStoreOptions {
   equalityFn?: (a: T, b: T) => boolean;
-  id?: PlateId;
+  id?: string;
 }
 
 export const useEditorSelector = <T, E extends PlateEditor = PlateEditor>(

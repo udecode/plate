@@ -4,7 +4,7 @@ import { HocuspocusProvider } from '@hocuspocus/provider';
 import {
   type PlateEditor,
   getPluginOptions,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import * as Y from 'yjs';
 
 import { KEY_YJS, type YjsPluginOptions } from './YjsPlugin';

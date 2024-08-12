@@ -4,7 +4,7 @@ import {
   isSelectionExpanded,
   nanoid,
   withoutNormalizing,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type { TSuggestionText } from '../types';
 

@@ -4,7 +4,7 @@ import {
   type FindNodeOptions,
   type PlateEditor,
   findNode,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type { TSuggestionText } from '../types';
 

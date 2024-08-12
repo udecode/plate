@@ -4,8 +4,8 @@ import {
   useDrop,
 } from 'react-dnd';
 
-import type { TReactEditor } from '@udecode/plate-common';
-import type { TEditor } from '@udecode/plate-common/server';
+import type { TEditor } from '@udecode/plate-common';
+import type { TReactEditor } from '@udecode/plate-common/react';
 
 import type { DragItemNode, DropLineDirection } from '../types';
 

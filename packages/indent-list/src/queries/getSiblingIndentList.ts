@@ -7,7 +7,7 @@ import {
   type TNodeEntry,
   type Value,
   isDefined,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import { KEY_INDENT } from '@udecode/plate-indent';
 
 import { KEY_LIST_STYLE_TYPE } from '../IndentListPlugin';

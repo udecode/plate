@@ -1,19 +1,19 @@
 /** @jsx jsx */
 
 import { BoldPlugin, MARK_BOLD, MARK_ITALIC } from '@udecode/plate-basic-marks';
-import { createPlateEditor } from '@udecode/plate-common';
-import * as isHotkey from '@udecode/plate-core/server';
+import { createPlateEditor } from '@udecode/plate-common/react';
+import { onKeyDownToggleMark } from '@udecode/plate-common/react';
+import * as isHotkey from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
-import { onKeyDownToggleMark } from '@udecode/plate-utils';
 
 import { type ToggleMarkPluginOptions, getPlugin } from '../../../lib';
 
 jsx;
 
-jest.mock('@udecode/plate-core/server', () => {
+jest.mock('@udecode/plate-core', () => {
   return {
     __esModule: true,
-    ...jest.requireActual('@udecode/plate-core/server'),
+    ...jest.requireActual('@udecode/plate-core'),
   };
 });
 

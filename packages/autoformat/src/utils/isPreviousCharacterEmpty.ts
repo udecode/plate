@@ -4,7 +4,7 @@ import {
   type TEditor,
   getEditorString,
   getRangeBefore,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 export const isPreviousCharacterEmpty = (editor: TEditor, at: Location) => {
   const range = getRangeBefore(editor, at);

@@ -1,11 +1,11 @@
-import { focusEditor, insertData } from '@udecode/plate-common';
 import {
   type PlateEditor,
   deselect,
   getStartPoint,
   insertNodes,
   isElementEmpty,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
+import { focusEditor, insertData } from '@udecode/plate-common/react';
 import { Path } from 'slate';
 
 import { getSelectedBlocks } from '../queries/getSelectedBlocks';

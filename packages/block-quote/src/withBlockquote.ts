@@ -1,4 +1,4 @@
-import type { TElement, WithOverride } from '@udecode/plate-common/server';
+import type { TElement, WithOverride } from '@udecode/plate-common';
 
 import { ELEMENT_BLOCKQUOTE } from './BlockquotePlugin';
 

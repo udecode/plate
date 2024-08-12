@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useEditorRef } from '@udecode/plate-common';
+import { useEditorRef } from '@udecode/plate-common/react';
 import { useReadOnly, useSelected } from 'slate-react';
 
 import { getTableGridAbove } from '../../queries/index';

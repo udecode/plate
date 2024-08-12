@@ -9,7 +9,7 @@ import {
   setNodes,
   unwrapNodes,
   wrapNodeChildren,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type { TTableElement, TablePluginOptions } from './types';
 

@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { findNodePath, useEditorRef } from '@udecode/plate-common';
-import { getPluginOptions, unsetNodes } from '@udecode/plate-common/server';
+import { getPluginOptions, unsetNodes } from '@udecode/plate-common';
+import { findNodePath, useEditorRef } from '@udecode/plate-common/react';
 
 import type { TTableElement, TablePluginOptions } from '../../types';
 

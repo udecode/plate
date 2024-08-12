@@ -6,7 +6,7 @@ import {
   createNodeHOC,
   createNodesHOC,
   usePlaceholderState,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/react';
 import { ELEMENT_H1 } from '@udecode/plate-heading';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 

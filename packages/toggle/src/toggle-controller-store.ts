@@ -1,16 +1,16 @@
 import { useMemo } from 'react';
 
 import {
+  type PlateEditor,
+  type Value,
+  getPluginOptions,
+} from '@udecode/plate-common';
+import {
   atom,
   createAtomStore,
   plateStore,
   usePlateStore,
-} from '@udecode/plate-common';
-import {
-  type PlateEditor,
-  type Value,
-  getPluginOptions,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common/react';
 import { KEY_INDENT, type TIndentElement } from '@udecode/plate-indent';
 
 import { ELEMENT_TOGGLE, type TogglePluginOptions } from './types';

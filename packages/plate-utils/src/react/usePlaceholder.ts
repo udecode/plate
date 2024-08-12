@@ -8,7 +8,7 @@ import {
 import { findNodePath } from '@udecode/slate-react';
 import { useFocused, useSelected } from 'slate-react';
 
-import type { PlateElementProps } from '../index';
+import type { PlateElementProps } from './PlateElement';
 
 export interface PlaceholderProps extends PlateElementProps {
   placeholder: string;

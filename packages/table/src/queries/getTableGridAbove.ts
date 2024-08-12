@@ -7,7 +7,7 @@ import {
   type TElementEntry,
   type Value,
   getEdgeBlocksAbove,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 
 import { getCellTypes } from '../utils/getCellType';

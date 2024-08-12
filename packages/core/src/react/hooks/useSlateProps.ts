@@ -4,13 +4,13 @@ import type { TSelection, Value } from '@udecode/slate';
 import type { SlateProps } from '@udecode/slate-react';
 
 import { pipeOnChange } from '../../lib/utils/pipeOnChange';
-import { type PlateId, useEditorRef, usePlateSelectors } from '../stores';
+import { useEditorRef, usePlateSelectors } from '../stores';
 
 /** Get Slate props stored in a global store. */
 export const useSlateProps = ({
   id,
 }: {
-  id?: PlateId;
+  id?: string;
 }): Omit<SlateProps, 'children'> => {
   const editor = useEditorRef(id);
   const onChangeProp = usePlateSelectors(id).onChange();

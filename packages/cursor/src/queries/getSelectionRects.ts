@@ -1,9 +1,9 @@
+import { getNodeEntries, isText } from '@udecode/plate-common';
 import {
   type TReactEditor,
   toDOMNode,
   toDOMRange,
-} from '@udecode/plate-common';
-import { getNodeEntries, isText } from '@udecode/plate-common/server';
+} from '@udecode/plate-common/react';
 import { Path, Range } from 'slate';
 
 import type { SelectionRect } from '../types';

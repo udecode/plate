@@ -1,4 +1,4 @@
-import { createPlugin, isVoid } from '@udecode/plate-common/server';
+import { createPlugin, isVoid } from '@udecode/plate-common';
 
 import type { TabbableEntry, TabbablePluginOptions } from './types';
 

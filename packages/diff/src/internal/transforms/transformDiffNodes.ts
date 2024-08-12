@@ -4,7 +4,7 @@
  */
 
 /* eslint-disable no-restricted-syntax */
-import type { TDescendant } from '@udecode/plate-common/server';
+import type { TDescendant } from '@udecode/plate-common';
 
 import isEqual from 'lodash/isEqual.js';
 

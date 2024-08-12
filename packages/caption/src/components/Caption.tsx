@@ -1,6 +1,9 @@
 import type React from 'react';
 
-import { createPrimitiveComponent, useElement } from '@udecode/plate-common';
+import {
+  createPrimitiveComponent,
+  useElement,
+} from '@udecode/plate-common/react';
 import { useReadOnly, useSelected } from 'slate-react';
 
 import { useCaptionSelectors } from '../captionGlobalStore';

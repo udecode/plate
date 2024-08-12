@@ -7,8 +7,8 @@ import {
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks';
 import { BlockquotePlugin } from '@udecode/plate-block-quote';
-import { CodeBlockPlugin } from '@udecode/plate-code-block';
-import { Plate, usePlateEditor } from '@udecode/plate-common';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 import { HeadingPlugin } from '@udecode/plate-heading';
 import { ParagraphPlugin } from '@udecode/plate-paragraph';
 

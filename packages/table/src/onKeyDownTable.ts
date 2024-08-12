@@ -1,10 +1,11 @@
-import { Hotkeys, type KeyboardHandler } from '@udecode/plate-common';
 import {
+  type KeyboardHandler,
   type TElement,
   getAboveNode,
   isHotkey,
   select,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
+import { Hotkeys } from '@udecode/plate-common/react';
 
 import type { TablePluginOptions } from './types';
 

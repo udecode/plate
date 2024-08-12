@@ -1,4 +1,4 @@
-import { getPluginType } from '@udecode/plate-common/server';
+import { getPluginType } from '@udecode/plate-common';
 
 import type { RemarkTextRules } from './types';
 

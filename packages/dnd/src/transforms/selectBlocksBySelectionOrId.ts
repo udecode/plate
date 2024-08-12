@@ -1,7 +1,7 @@
 import type { Range } from 'slate';
 
-import { focusEditor, getNodesRange } from '@udecode/plate-common';
-import { type PlateEditor, select } from '@udecode/plate-common/server';
+import { type PlateEditor, getNodesRange, select } from '@udecode/plate-common';
+import { focusEditor } from '@udecode/plate-common/react';
 
 import { getBlocksWithId } from '../queries/getBlocksWithId';
 import { selectBlockById } from './selectBlockById';

@@ -14,7 +14,7 @@ import {
   setElements,
   withoutNormalizing,
   wrapNodes,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import { Range } from 'slate';
 
 import type { ListPluginOptions } from '../types';

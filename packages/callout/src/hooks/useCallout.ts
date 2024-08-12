@@ -1,12 +1,11 @@
 import React from 'react';
 
+import { type TElement, setNodes } from '@udecode/plate-common';
 import {
-  type TElement,
   findNodePath,
-  setNodes,
   useEditorRef,
   useElement,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/react';
 
 export interface TCalloutElement extends TElement {
   backgroundColor?: string;

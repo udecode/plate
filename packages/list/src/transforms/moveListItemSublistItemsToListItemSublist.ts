@@ -9,7 +9,7 @@ import {
   insertElements,
   moveChildren,
   withoutNormalizing,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 
 import { getListTypes } from '../queries/getListTypes';

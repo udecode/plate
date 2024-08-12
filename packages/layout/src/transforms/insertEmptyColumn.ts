@@ -6,7 +6,7 @@ import {
   type PlateEditor,
   getQueryOptions,
   insertNodes,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type { TColumnElement } from '../types';
 

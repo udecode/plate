@@ -104,9 +104,10 @@ export const resolveAndSortPlugins = (
       if (depPlugin) {
         visit(depPlugin);
       } else {
-        console.warn(
-          `Plugin "${plugin.key}" depends on missing plugin "${depKey}"`
-        );
+        editor.api.debug.warn({
+          message: `Plugin "${plugin.key}" depends on missing plugin "${depKey}"`,
+          type: 'PLUGIN_DEPENDENCY_MISSING',
+        });
       }
     });
 

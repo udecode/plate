@@ -1,6 +1,6 @@
-import type { TElement } from '@udecode/plate-common/server';
+import type { TElement } from '@udecode/plate-common';
 
-import { type TReactEditor, findNodePath } from '@udecode/plate-common';
+import { type TReactEditor, findNodePath } from '@udecode/plate-common/react';
 import { Path } from 'slate';
 
 /** Get table row index of a cell node. */

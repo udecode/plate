@@ -1,4 +1,4 @@
-import type { TNode, TPath } from '@udecode/plate-common/server';
+import type { TNode, TPath } from '@udecode/plate-common';
 
 export type TabDestinationPath = {
   path: TPath;

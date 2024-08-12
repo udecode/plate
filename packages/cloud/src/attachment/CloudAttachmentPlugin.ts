@@ -1,5 +1,4 @@
-import { getPluginApi } from '@udecode/plate-common';
-import { createPlugin, insertNode } from '@udecode/plate-common/server';
+import { createPlugin, getPluginApi, insertNode } from '@udecode/plate-common';
 import Defer from 'p-defer';
 
 import type { UploadError, UploadSuccess } from '../upload';

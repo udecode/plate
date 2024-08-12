@@ -5,7 +5,7 @@ import {
   insertElements,
   isElement,
   setElements,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type { NormalizeTypesPluginOptions } from './NormalizeTypesPlugin';
 

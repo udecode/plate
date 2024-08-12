@@ -1,11 +1,14 @@
 import type React from 'react';
 
-import { type PlateProps, pluginRenderElement } from '@udecode/plate-common';
 import {
   type PlateEditor,
   type PlateRenderElementProps,
   pipeInjectProps,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
+import {
+  type PlateProps,
+  pluginRenderElement,
+} from '@udecode/plate-common/react';
 import { decode } from 'html-entities';
 
 import { createElementWithSlate } from './utils/createElementWithSlate';

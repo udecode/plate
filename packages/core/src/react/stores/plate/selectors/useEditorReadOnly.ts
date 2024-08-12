@@ -1,5 +1,4 @@
 import {
-  type PlateId,
   type UsePlateEditorStoreOptions,
   usePlateSelectors,
 } from '../createPlateStore';
@@ -9,7 +8,7 @@ import {
  * `slate-react` in node components.
  */
 export const useEditorReadOnly = (
-  id?: PlateId,
+  id?: string,
   options: UsePlateEditorStoreOptions = {}
 ): boolean => {
   return !!usePlateSelectors(id, {

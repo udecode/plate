@@ -1,5 +1,5 @@
-import { type TReactEditor, toDOMRange } from '@udecode/plate-common';
-import { getRange } from '@udecode/plate-common/server';
+import { getRange } from '@udecode/plate-common';
+import { type TReactEditor, toDOMRange } from '@udecode/plate-common/react';
 import { type Location, Path, type Range } from 'slate';
 
 import { mergeClientRects } from './mergeClientRects';

@@ -1,6 +1,5 @@
 import React, { useRef } from 'react';
 
-import { findNodePath, useEditorRef } from '@udecode/plate-common';
 import {
   type TElement,
   getAboveNode,
@@ -8,7 +7,8 @@ import {
   isInline,
   isVoid,
   queryNode,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
+import { findNodePath, useEditorRef } from '@udecode/plate-common/react';
 import { Path } from 'slate';
 
 import {

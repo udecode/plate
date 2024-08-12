@@ -1,13 +1,12 @@
 import React, { useEffect } from 'react';
 
+import { isHotkey, setNodes } from '@udecode/plate-common';
 import {
   findNodePath,
-  isHotkey,
-  setNodes,
   useEditorRef,
   useEditorSelector,
   useElement,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/react';
 
 import type { TInlineEquationElement } from '../types';
 

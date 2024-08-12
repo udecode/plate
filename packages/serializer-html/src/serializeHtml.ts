@@ -1,8 +1,12 @@
 import type React from 'react';
 
-import type { PlateProps, TDescendant } from '@udecode/plate-common';
+import type { PlateProps } from '@udecode/plate-common/react';
 
-import { type PlateEditor, isText } from '@udecode/plate-common/server';
+import {
+  type PlateEditor,
+  type TDescendant,
+  isText,
+} from '@udecode/plate-common';
 import { encode } from 'html-entities';
 
 import { elementToHtml } from './elementToHtml';

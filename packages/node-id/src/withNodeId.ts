@@ -8,7 +8,7 @@ import {
   isDefined,
   queryNode,
   someNode,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import castArray from 'lodash/castArray.js';
 import cloneDeep from 'lodash/cloneDeep.js';
 

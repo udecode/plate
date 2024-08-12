@@ -1,5 +1,5 @@
 import type * as portiveClient from '@portive/client';
-import type { Value } from '@udecode/plate-common/server';
+import type { Value } from '@udecode/plate-common';
 
 import type { Upload } from '../upload';
 import type { createUploadStore } from '../upload/createUploadStore';

@@ -1,11 +1,9 @@
+import { getNodeEntries, isBlock, isDefined } from '@udecode/plate-common';
 import {
   focusEditor,
-  getNodeEntries,
-  isBlock,
   useEditorRef,
   useEditorSelector,
-} from '@udecode/plate-common';
-import { isDefined } from '@udecode/plate-common/server';
+} from '@udecode/plate-common/react';
 
 import { type Alignment, KEY_ALIGN, setAlign } from '../index';
 

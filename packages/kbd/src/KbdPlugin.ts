@@ -1,7 +1,5 @@
-import {
-  createPlugin,
-  onKeyDownToggleMark,
-} from '@udecode/plate-common/server';
+import { createPlugin } from '@udecode/plate-common';
+import { onKeyDownToggleMark } from '@udecode/plate-common/react';
 
 export const MARK_KBD = 'kbd';
 

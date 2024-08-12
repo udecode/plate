@@ -7,7 +7,7 @@ import type {
   PlateEditor,
   TDescendant,
   TElement,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type { DiffProps } from './types';
 

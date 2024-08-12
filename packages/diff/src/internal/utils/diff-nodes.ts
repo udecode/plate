@@ -7,7 +7,7 @@ import {
   type TDescendant,
   isElement,
   isText,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import isEqual from 'lodash/isEqual.js';
 
 import type { ComputeDiffOptions } from '../../computeDiff';

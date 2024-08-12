@@ -1,5 +1,5 @@
-import { createAtomStore } from '@udecode/plate-common';
-import { type Value, getNodeString } from '@udecode/plate-common/server';
+import { type Value, getNodeString } from '@udecode/plate-common';
+import { createAtomStore } from '@udecode/plate-common/react';
 
 import type { CommentUser, TComment } from '../../types';
 

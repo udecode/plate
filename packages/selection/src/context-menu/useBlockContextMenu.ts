@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { useEditorRef } from '@udecode/plate-common';
+import { useEditorRef } from '@udecode/plate-common/react';
 
 import { useBlockSelectionSelectors } from '../blockSelectionStore';
 import { getSelectedBlocks } from '../queries';

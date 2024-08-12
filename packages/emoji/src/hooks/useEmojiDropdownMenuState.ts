@@ -1,4 +1,4 @@
-import { useStableMemo } from '@udecode/plate-common';
+import { useStableMemo } from '@udecode/plate-common/react';
 
 import {
   EmojiFloatingIndexSearch,

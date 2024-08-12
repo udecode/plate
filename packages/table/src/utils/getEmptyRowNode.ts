@@ -2,7 +2,7 @@ import {
   type PlateEditor,
   getPluginOptions,
   getPluginType,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type { CellFactoryOptions, TablePluginOptions } from '../types';
 

@@ -3,7 +3,7 @@ import {
   type TElement,
   type WithOverride,
   getPluginType,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type { TTableRowElement, TablePluginOptions } from './types';
 

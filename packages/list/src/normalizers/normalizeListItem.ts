@@ -14,7 +14,7 @@ import {
   moveNodes,
   removeNodes,
   setElements,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import { Path, type PathRef } from 'slate';
 
 import type { ListPluginOptions } from '../types';

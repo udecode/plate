@@ -5,7 +5,7 @@ import {
   getEditorString,
   getPluginType,
   replaceNodeChildren,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type { TLinkElement } from '../types';
 import type { UpsertLinkOptions } from './upsertLink';

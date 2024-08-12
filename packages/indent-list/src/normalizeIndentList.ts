@@ -4,7 +4,7 @@ import {
   type TElement,
   type Value,
   withoutNormalizing,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type { IndentListPluginOptions } from './IndentListPlugin';
 

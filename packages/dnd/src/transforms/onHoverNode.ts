@@ -1,7 +1,7 @@
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { type TReactEditor, focusEditor } from '@udecode/plate-common';
-import { collapseSelection, isExpanded } from '@udecode/plate-common/server';
+import { collapseSelection, isExpanded } from '@udecode/plate-common';
+import { type TReactEditor, focusEditor } from '@udecode/plate-common/react';
 
 import type { UseDropNodeOptions } from '../hooks/useDropNode';
 import type { DragItemNode } from '../types';

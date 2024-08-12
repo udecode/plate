@@ -3,7 +3,7 @@ import {
   type TNodeEntry,
   unsetNodes,
   withoutNormalizing,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import { KEY_INDENT } from '@udecode/plate-indent';
 
 import { KEY_LIST_CHECKED, KEY_LIST_STYLE_TYPE } from '../IndentListPlugin';

@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { TElement } from '@udecode/plate-common';
 
-import { atom, createAtomStore } from '@udecode/plate-common';
+import { atom, createAtomStore } from '@udecode/plate-common/react';
 
 export type TableStoreSizeOverrides = Map<number, number>;
 

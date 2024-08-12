@@ -2,7 +2,7 @@ import type { FC } from 'react';
 
 import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
 import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
-import { createNodesWithHOC } from '@udecode/plate-common';
+import { createNodesWithHOC } from '@udecode/plate-common/react';
 import {
   type WithDraggableOptions,
   withDraggable as withDraggablePrimitive,

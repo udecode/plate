@@ -4,7 +4,8 @@ import {
   type TriggerComboboxPluginOptions,
   withTriggerCombobox,
 } from '@udecode/plate-combobox';
-import { createPlateEditor, createPlugin } from '@udecode/plate-common';
+import { createPlugin } from '@udecode/plate-common';
+import { createPlateEditor } from '@udecode/plate-common/react';
 import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 

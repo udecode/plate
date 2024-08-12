@@ -1,6 +1,6 @@
 import * as portiveClient from '@portive/client';
 import { type PlateEditor, getPluginApi } from '@udecode/plate-common';
-import { nanoid } from '@udecode/plate-common/server';
+import { nanoid } from '@udecode/plate-common';
 
 import type { FileEvent, ProgressEvent } from './types';
 

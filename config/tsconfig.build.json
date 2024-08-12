@@ -5,5 +5,16 @@
     "declarationMap": true,
     "emitDeclarationOnly": true,
     "noEmit": false
-  }
+  },
+  "exclude": [
+    "../node_modules",
+    "../**/node_modules",
+    "../dist",
+    "../**/dist",
+    "../**/*.stories.*",
+    "../**/*fixture*",
+    "../**/*spec*",
+    "../**/*test.*",
+    "../**/*template*"
+  ]
 }

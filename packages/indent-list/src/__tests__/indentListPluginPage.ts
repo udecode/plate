@@ -2,7 +2,7 @@ import {
   type TElement,
   getNode,
   getPreviousPath,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 
 import type { GetSiblingIndentListOptions } from '../queries/getSiblingIndentList';

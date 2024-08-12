@@ -11,7 +11,7 @@ import {
   setElements,
   unwrapNodes,
   withoutNormalizing,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import { ELEMENT_LI, ELEMENT_LIC, ELEMENT_OL, ELEMENT_UL } from '../ListPlugin';
 import { getListTypes } from '../queries/index';

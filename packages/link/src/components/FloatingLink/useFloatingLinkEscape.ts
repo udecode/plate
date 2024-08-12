@@ -1,4 +1,8 @@
-import { focusEditor, useEditorRef, useHotkeys } from '@udecode/plate-common';
+import {
+  focusEditor,
+  useEditorRef,
+  useHotkeys,
+} from '@udecode/plate-common/react';
 
 import {
   floatingLinkActions,

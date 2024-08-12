@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 
-import { Plate, type Value, usePlateEditor } from '@udecode/plate-common';
+import type { Value } from '@udecode/plate-common';
+
+import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 
 import {
   Accordion,

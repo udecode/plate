@@ -9,11 +9,8 @@ import {
   ELEMENT_CODE_BLOCK,
   insertEmptyCodeBlock,
 } from '@udecode/plate-code-block';
-import {
-  focusEditor,
-  insertEmptyElement,
-  useEditorRef,
-} from '@udecode/plate-common';
+import { insertEmptyElement } from '@udecode/plate-common';
+import { focusEditor, useEditorRef } from '@udecode/plate-common/react';
 import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
 import {
   ELEMENT_H1,

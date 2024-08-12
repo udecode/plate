@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { useEditorRef, useElement } from '@udecode/plate-common';
-import { getPluginOptions } from '@udecode/plate-common/server';
+import { getPluginOptions } from '@udecode/plate-common';
+import { useEditorRef, useElement } from '@udecode/plate-common/react';
 import { useReadOnly } from 'slate-react';
 
 import type {

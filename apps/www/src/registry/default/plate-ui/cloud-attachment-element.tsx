@@ -7,7 +7,10 @@ import {
   type TCloudAttachmentElement,
   useCloudAttachmentElementState,
 } from '@udecode/plate-cloud';
-import { PlateElement, type PlateElementProps } from '@udecode/plate-common';
+import {
+  PlateElement,
+  type PlateElementProps,
+} from '@udecode/plate-common/react';
 
 import { Icons } from '@/components/icons';
 

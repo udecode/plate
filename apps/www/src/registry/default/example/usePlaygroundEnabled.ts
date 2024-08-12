@@ -18,7 +18,7 @@ import {
   SoftBreakPlugin,
 } from '@udecode/plate-break';
 import { CaptionPlugin } from '@udecode/plate-caption';
-import { CodeBlockPlugin } from '@udecode/plate-code-block';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { CommentsPlugin } from '@udecode/plate-comments';
 import { DndPlugin } from '@udecode/plate-dnd';
 import { EmojiPlugin } from '@udecode/plate-emoji';

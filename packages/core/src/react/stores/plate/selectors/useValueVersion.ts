@@ -1,12 +1,11 @@
 import {
-  type PlateId,
   type UsePlateEditorStoreOptions,
   usePlateSelectors,
 } from '../createPlateStore';
 
 /** Version incremented on value change. */
 export const useValueVersion = (
-  id?: PlateId,
+  id?: string,
   options: UsePlateEditorStoreOptions = {}
 ) => {
   return usePlateSelectors(id, {

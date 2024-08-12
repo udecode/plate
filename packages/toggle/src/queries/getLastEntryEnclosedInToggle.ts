@@ -1,4 +1,4 @@
-import type { PlateEditor, TNodeEntry } from '@udecode/plate-common/server';
+import type { PlateEditor, TNodeEntry } from '@udecode/plate-common';
 
 import last from 'lodash/last.js';
 

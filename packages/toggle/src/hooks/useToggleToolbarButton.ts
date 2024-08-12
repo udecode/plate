@@ -1,12 +1,9 @@
+import { collapseSelection, toggleNodeType } from '@udecode/plate-common';
 import {
   focusEditor,
   useEditorRef,
   useEditorSelector,
-} from '@udecode/plate-common';
-import {
-  collapseSelection,
-  toggleNodeType,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common/react';
 
 import { someToggle } from '../queries/someToggle';
 import { openNextToggles } from '../transforms';

@@ -3,7 +3,7 @@
 import React from 'react';
 
 import { cn, withRef } from '@udecode/cn';
-import { useComposedRef } from '@udecode/plate-common';
+import { useComposedRef } from '@udecode/plate-common/react';
 import { useColorInput } from '@udecode/plate-font';
 
 export const ColorInput = withRef<'input'>(

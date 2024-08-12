@@ -3,12 +3,12 @@
 import React from 'react';
 
 import { cn, withRef } from '@udecode/cn';
+import { useEventEditorSelectors } from '@udecode/plate-common';
 import {
   PortalBody,
   useComposedRef,
   useEditorId,
-  useEventEditorSelectors,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/react';
 import {
   type FloatingToolbarState,
   flip,

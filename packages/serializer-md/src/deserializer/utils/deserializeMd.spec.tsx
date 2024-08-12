@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { createPlateEditor } from '@udecode/plate-common';
+import { createPlateEditor } from '@udecode/plate-common/react';
 import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
 import { jsx } from '@udecode/plate-test-utils';
 

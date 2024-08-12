@@ -8,7 +8,7 @@ import {
   useCommentLeaf,
   useCommentLeafState,
 } from '@udecode/plate-comments';
-import { PlateLeaf, type PlateLeafProps } from '@udecode/plate-common';
+import { PlateLeaf, type PlateLeafProps } from '@udecode/plate-common/react';
 
 export function CommentLeaf({
   className,

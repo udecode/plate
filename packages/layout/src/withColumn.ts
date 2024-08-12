@@ -4,7 +4,7 @@ import {
   isCollapsed,
   isElement,
   isStartPoint,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import { ELEMENT_COLUMN } from './ColumnPlugin';
 import { normalizeColumn } from './normalizers/normalizedColumn';

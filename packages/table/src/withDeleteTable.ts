@@ -14,7 +14,7 @@ import {
   replaceNodeChildren,
   select,
   withoutNormalizing,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import { Point } from 'slate';
 
 import type { TablePluginOptions } from './types';

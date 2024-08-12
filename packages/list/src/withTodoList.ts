@@ -1,4 +1,4 @@
-import type { WithOverride } from '@udecode/plate-common/server';
+import type { WithOverride } from '@udecode/plate-common';
 
 import type { TodoListPluginOptions } from './types';
 

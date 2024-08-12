@@ -8,7 +8,7 @@ import {
   type TOperation,
   type TText,
   isText,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import { Path, createEditor, withoutNormalizing } from 'slate';
 
 import type { ComputeDiffOptions } from '../../computeDiff';

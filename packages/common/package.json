@@ -39,7 +39,7 @@
     "dist/**/*"
   ],
   "scripts": {
-    "brl": "yarn p:brl:below",
+    "brl": "yarn p:brl",
     "build": "yarn p:build",
     "build:watch": "yarn p:build:watch",
     "clean": "yarn p:clean",

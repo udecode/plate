@@ -7,7 +7,10 @@ import {
   type TCloudImageElement,
   useCloudImageElementState,
 } from '@udecode/plate-cloud';
-import { PlateElement, type PlateElementProps } from '@udecode/plate-common';
+import {
+  PlateElement,
+  type PlateElementProps,
+} from '@udecode/plate-common/react';
 
 import { ResizeControls } from './cloud-resize-controls';
 import { StatusBar } from './cloud-status-bar';

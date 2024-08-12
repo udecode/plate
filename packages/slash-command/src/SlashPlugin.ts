@@ -2,7 +2,7 @@ import {
   type TriggerComboboxPluginOptions,
   withTriggerCombobox,
 } from '@udecode/plate-combobox';
-import { createPlugin } from '@udecode/plate-common/server';
+import { createPlugin } from '@udecode/plate-common';
 
 export const KEY_SLASH_COMMAND = 'slash_command';
 

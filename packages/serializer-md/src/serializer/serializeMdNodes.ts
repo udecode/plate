@@ -1,4 +1,4 @@
-import type { TDescendant } from '@udecode/plate-common/server';
+import type { TDescendant } from '@udecode/plate-common';
 
 import merge from 'lodash/merge.js';
 

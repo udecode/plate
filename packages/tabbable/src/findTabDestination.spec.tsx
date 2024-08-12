@@ -1,11 +1,7 @@
 /** @jsx jsx */
 
-import {
-  type PlateEditor,
-  type TNode,
-  createPlateEditor,
-  getNode,
-} from '@udecode/plate-common';
+import { type PlateEditor, type TNode, getNode } from '@udecode/plate-common';
+import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 import type { TabbableEntry } from './types';

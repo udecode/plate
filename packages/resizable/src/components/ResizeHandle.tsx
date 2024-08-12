@@ -1,11 +1,11 @@
 import React from 'react';
 
-import type { Nullable } from '@udecode/plate-common/server';
+import type { Nullable } from '@udecode/plate-common';
 
 import {
   createAtomStore,
   createPrimitiveComponent,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/react';
 
 import type { ResizeDirection, ResizeEvent } from '../types';
 

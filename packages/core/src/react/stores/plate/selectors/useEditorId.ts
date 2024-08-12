@@ -1,5 +1,5 @@
-import { type PlateId, usePlateSelectors } from '../createPlateStore';
+import { usePlateSelectors } from '../createPlateStore';
 
 /** Get the closest `Plate` id. */
-export const useEditorId = (): PlateId =>
+export const useEditorId = (): string =>
   usePlateSelectors(undefined, { debugHookName: 'useEditorId' }).editor().id;

@@ -14,14 +14,6 @@ import {
   usePlateControllerExists,
 } from '../plate-controller';
 
-/**
- * A unique id used as a provider scope. Use it if you have multiple `Plate` in
- * the same React tree.
- *
- * @default PLATE_SCOPE
- */
-export type PlateId = string;
-
 export const PLATE_SCOPE = 'plate';
 
 export const GLOBAL_PLATE_SCOPE = Symbol('global-plate');
@@ -92,7 +84,7 @@ export interface UsePlateEditorStoreOptions {
 }
 
 export const usePlateEditorStore = (
-  id?: PlateId,
+  id?: string,
   { debugHookName = 'usePlateEditorStore' }: UsePlateEditorStoreOptions = {}
 ): JotaiStore => {
   // Try to fetch the store from a Plate provider
@@ -137,7 +129,7 @@ export const usePlateEditorStore = (
 };
 
 export const usePlateSelectors = (
-  id?: PlateId,
+  id?: string,
   options?: UsePlateEditorStoreOptions
 ) => {
   const store = usePlateEditorStore(id, {
@@ -149,7 +141,7 @@ export const usePlateSelectors = (
 };
 
 export const usePlateActions = (
-  id?: PlateId,
+  id?: string,
   options?: UsePlateEditorStoreOptions
 ) => {
   const store = usePlateEditorStore(id, {
@@ -161,7 +153,7 @@ export const usePlateActions = (
 };
 
 export const usePlateStates = (
-  id?: PlateId,
+  id?: string,
   options?: UsePlateEditorStoreOptions
 ) => {
   const store = usePlateEditorStore(id, {

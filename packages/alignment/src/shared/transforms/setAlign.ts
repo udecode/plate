@@ -10,7 +10,7 @@ import {
   isBlock,
   setElements,
   unsetNodes,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type { Alignment } from '../types';
 

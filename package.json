@@ -51,7 +51,6 @@
     "lint:templates": "turbo --filter \"./templates/plate-playground-template/**\" lint --no-daemon",
     "nuke:node_modules": "rimraf '**/node_modules'",
     "p:brl": "sh scripts/brl.sh",
-    "p:brl:below": "cd $INIT_CWD && barrelsby -d $INIT_CWD/src -D -l below -q -e '.*__tests__.*|(.*(fixture|template|spec|internal).*)|server.ts'",
     "p:build": "cd $INIT_CWD && yarn p:tsup",
     "p:build:watch": "cd $INIT_CWD && yarn p:tsup --watch",
     "p:clean": "cd $INIT_CWD && rimraf dist && jest --clear-cache",

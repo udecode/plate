@@ -1,4 +1,4 @@
-import { createPlugin } from '@udecode/plate-common/server';
+import { createPlugin } from '@udecode/plate-common';
 
 import { onKeyDownSingleLine } from './onKeyDownSingleLine';
 import { withSingleLine } from './withSingleLine';

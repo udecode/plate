@@ -5,7 +5,7 @@ import {
   moveNodes,
   removeNodes,
   unwrapNodes,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import { Node } from 'slate';
 
 import type { TColumnElement } from '../types';

@@ -1,9 +1,9 @@
+import { isSelectionExpanded } from '@udecode/plate-common';
 import {
-  isSelectionExpanded,
   useEditorRef,
   useEditorSelector,
   useElement,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/react';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
 
 import type { TPlaceholderElement } from '../types';

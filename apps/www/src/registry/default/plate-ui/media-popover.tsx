@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 
+import { isSelectionExpanded } from '@udecode/plate-common';
 import {
-  isSelectionExpanded,
   useEditorSelector,
   useElement,
   useRemoveNodeButton,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/react';
 import {
   FloatingMedia as FloatingMediaPrimitive,
   floatingMediaActions,

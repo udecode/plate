@@ -1,4 +1,4 @@
-import type { QueryNodeOptions } from '@udecode/plate-common/server';
+import type { QueryNodeOptions } from '@udecode/plate-common';
 
 export interface ExitBreakRule {
   /** Hotkey to trigger exit break. */

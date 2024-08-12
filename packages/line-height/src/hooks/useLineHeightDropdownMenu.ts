@@ -1,14 +1,14 @@
 import {
-  focusEditor,
-  useEditorRef,
-  useEditorSelector,
-} from '@udecode/plate-common';
-import {
   type TElement,
   getBlockAbove,
   getPluginInjectProps,
   isCollapsed,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
+import {
+  focusEditor,
+  useEditorRef,
+  useEditorSelector,
+} from '@udecode/plate-common/react';
 
 import { KEY_LINE_HEIGHT, setLineHeight } from '../index';
 

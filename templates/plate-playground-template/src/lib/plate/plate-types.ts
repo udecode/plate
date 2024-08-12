@@ -32,7 +32,7 @@ import {
   OnChange,
   OverrideByKey,
   PlateEditor,
-  PlateId,
+  string,
   PlatePlugin,
   PlatePluginComponent,
   PlatePluginInsertData,
@@ -168,7 +168,7 @@ export interface MyBlockElement
   extends TElement,
     MyIndentListProps,
     MyLineHeightProps {
-  id?: PlateId;
+  id?: string;
 }
 
 /**

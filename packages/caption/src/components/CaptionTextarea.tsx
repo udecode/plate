@@ -3,19 +3,19 @@ import React from 'react';
 import type { TextareaAutosizeProps } from 'react-textarea-autosize';
 
 import {
-  createPrimitiveComponent,
-  findNodePath,
-  focusEditor,
-  useEditorRef,
-  useElement,
-} from '@udecode/plate-common';
-import {
   type TElement,
   getNodeString,
   getPointAfter,
   isHotkey,
   setNodes,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
+import {
+  createPrimitiveComponent,
+  findNodePath,
+  focusEditor,
+  useEditorRef,
+  useElement,
+} from '@udecode/plate-common/react';
 import { Path } from 'slate';
 import { useReadOnly } from 'slate-react';
 

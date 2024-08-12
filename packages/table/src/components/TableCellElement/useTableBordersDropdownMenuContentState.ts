@@ -1,4 +1,4 @@
-import { useEditorRef, useEditorSelector } from '@udecode/plate-common';
+import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
 
 import { isTableBorderHidden } from '../../queries/index';
 import { useTableStore } from '../../stores/index';

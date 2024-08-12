@@ -1,4 +1,4 @@
-import { createPlugin } from '@udecode/plate-common/server';
+import { createPlugin } from '@udecode/plate-common';
 
 export const ELEMENT_EXCALIDRAW = 'excalidraw';
 

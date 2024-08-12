@@ -1,7 +1,7 @@
 import {
   hexToBase64,
   traverseHtmlElements,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import validator from 'validator';
 
 import { getRtfImagesMap } from './getRtfImagesMap';

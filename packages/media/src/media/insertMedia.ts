@@ -5,7 +5,7 @@ import {
   type PlateEditor,
   type Value,
   getPluginType,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import {
   ELEMENT_IMAGE,

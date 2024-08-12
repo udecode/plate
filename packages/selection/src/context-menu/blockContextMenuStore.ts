@@ -1,4 +1,4 @@
-import { createZustandStore } from '@udecode/plate-common/server';
+import { createZustandStore } from '@udecode/plate-common';
 
 export const blockContextMenuStore = createZustandStore('contextMenu')({
   action: { group: null, value: null } as {

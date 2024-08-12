@@ -1,4 +1,8 @@
-import { findNodePath, useEditorRef, useElement } from '@udecode/plate-common';
+import {
+  findNodePath,
+  useEditorRef,
+  useElement,
+} from '@udecode/plate-common/react';
 
 import { captionActions, captionGlobalStore } from '../captionGlobalStore';
 

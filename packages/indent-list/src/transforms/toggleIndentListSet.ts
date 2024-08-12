@@ -1,4 +1,4 @@
-import type { TEditor, TNodeEntry, Value } from '@udecode/plate-common/server';
+import type { TEditor, TNodeEntry, Value } from '@udecode/plate-common';
 
 import { KEY_LIST_CHECKED, KEY_LIST_STYLE_TYPE } from '../IndentListPlugin';
 import { ListStyleType } from '../types';

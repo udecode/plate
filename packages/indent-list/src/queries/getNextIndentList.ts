@@ -5,7 +5,7 @@ import {
   type TNodeEntry,
   type Value,
   getNode,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 
 import {

@@ -1,8 +1,5 @@
-import {
-  type HotkeyPluginOptions,
-  createPlugin,
-  onKeyDownToggleElement,
-} from '@udecode/plate-common/server';
+import { type HotkeyPluginOptions, createPlugin } from '@udecode/plate-common';
+import { onKeyDownToggleElement } from '@udecode/plate-common/react';
 
 export const ELEMENT_PARAGRAPH = 'p';
 

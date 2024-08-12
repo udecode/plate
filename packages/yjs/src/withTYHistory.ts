@@ -1,4 +1,4 @@
-import type { PlateEditor } from '@udecode/plate-common/server';
+import type { PlateEditor } from '@udecode/plate-common';
 import type * as Y from 'yjs';
 
 import {

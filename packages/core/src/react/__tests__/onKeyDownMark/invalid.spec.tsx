@@ -2,10 +2,10 @@
 
 import { BoldPlugin, MARK_BOLD } from '@udecode/plate-basic-marks';
 import { jsx } from '@udecode/plate-test-utils';
-import { onKeyDownToggleMark } from '@udecode/plate-utils';
+import { onKeyDownToggleMark } from '@udecode/plate-utils/react';
 
 import { type ToggleMarkPluginOptions, getPlugin } from '../../../lib';
-import { createPlateEditor } from '../../utils';
+import { createPlateEditor } from '../../editor';
 
 jsx;
 

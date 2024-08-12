@@ -1,4 +1,4 @@
-import type { TDescendant } from '@udecode/plate-common/server';
+import type { TDescendant } from '@udecode/plate-common';
 
 import type { MdastNode, RemarkPluginOptions } from './types';
 

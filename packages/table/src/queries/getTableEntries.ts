@@ -5,7 +5,7 @@ import {
   findNode,
   getAboveNode,
   getPluginType,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import { ELEMENT_TABLE, ELEMENT_TR } from '../TablePlugin';
 import { getCellTypes } from '../utils/index';

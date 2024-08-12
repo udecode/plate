@@ -1,4 +1,4 @@
-import type { TEditor } from '@udecode/plate-common/server';
+import type { TEditor } from '@udecode/plate-common';
 
 import { useDragNode } from './useDragNode';
 

@@ -1,6 +1,5 @@
 import type { Range } from 'slate';
 
-import { findNodePath } from '@udecode/plate-common';
 import {
   type PlateEditor,
   type TElement,
@@ -8,7 +7,8 @@ import {
   findNode,
   getPluginOptions,
   getPluginType,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
+import { findNodePath } from '@udecode/plate-common/react';
 
 import type {
   TTableCellElement,

@@ -1,13 +1,10 @@
 import React, { useCallback, useMemo, useState } from 'react';
 
+import type { TElement, Value } from '@udecode/plate-common';
+
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
-import {
-  Plate,
-  type TElement,
-  type Value,
-  usePlateEditor,
-} from '@udecode/plate-common';
+import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 import { createEditor } from 'slate';
 import {
   Editable,

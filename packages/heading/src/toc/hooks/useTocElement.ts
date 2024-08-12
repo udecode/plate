@@ -1,12 +1,11 @@
 import React, { useEffect } from 'react';
 
+import { addSelectedRow, getNode } from '@udecode/plate-common';
 import {
-  addSelectedRow,
-  getNode,
   toDOMNode,
   useEditorRef,
   useEditorSelector,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/react';
 
 import type { Heading } from '../types';
 

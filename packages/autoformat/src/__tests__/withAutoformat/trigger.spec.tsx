@@ -5,7 +5,8 @@ import {
   MARK_ITALIC,
   MARK_UNDERLINE,
 } from '@udecode/plate-basic-marks';
-import { createPlateEditor, getPlugin } from '@udecode/plate-common';
+import { getPlugin } from '@udecode/plate-common';
+import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 import type { AutoformatPluginOptions } from '../../types';

@@ -1,4 +1,4 @@
-import { createPrimitiveComponent } from '@udecode/plate-common';
+import { createPrimitiveComponent } from '@udecode/plate-common/react';
 
 export interface BlockStartAreaState {
   placement?: 'bottom' | 'left' | 'right' | 'top';

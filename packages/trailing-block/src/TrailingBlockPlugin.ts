@@ -3,7 +3,7 @@ import {
   type QueryNodeOptions,
   createPlugin,
   getPluginType,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import { withTrailingBlock } from './withTrailingBlock';
 

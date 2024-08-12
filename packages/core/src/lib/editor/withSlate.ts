@@ -23,12 +23,6 @@ import { createPlugin } from '../plugin/createPlugin';
 import { getCorePlugins } from '../plugins/getCorePlugins';
 import { resetEditor } from '../transforms';
 
-const shouldHaveBeenOverridden = (fnName: string) => () => {
-  console.warn(
-    `editor.${fnName} should have been overriden but was not. Please report this issue here: https://github.com/udecode/plate/issues`
-  );
-};
-
 export type WithSlateOptions<
   V extends Value = Value,
   P extends AnyPlatePlugin = CorePlugin,
@@ -146,10 +140,18 @@ export const withSlate = <
 
   // Editor methods
   editor.reset = () => resetEditor(editor);
-  editor.redecorate = () => shouldHaveBeenOverridden('redecorate');
+  editor.redecorate = () => {
+    editor.api.debug.warn({
+      message: `editor.redecorate should have been overridden but was not. Please report this issue here: https://github.com/udecode/plate/issues`,
+      type: 'OVERRIDE_ERROR',
+    });
+  };
   editor.plate = {
     get set() {
-      shouldHaveBeenOverridden('plate.set');
+      editor.api.debug.warn({
+        message: `editor.plate.set should have been overridden but was not. Please report this issue here: https://github.com/udecode/plate/issues`,
+        type: 'OVERRIDE_ERROR',
+      });
 
       return null as any;
     },

@@ -4,7 +4,7 @@ import {
   getPath,
   getPluginType,
   insertElements,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 
 import type { ExitBreakRule } from '../types';

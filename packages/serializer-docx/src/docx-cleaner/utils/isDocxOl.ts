@@ -1,4 +1,4 @@
-import { isOlSymbol } from '@udecode/plate-common/server';
+import { isOlSymbol } from '@udecode/plate-common';
 
 import { getDocxListNode } from './getDocxListNode';
 

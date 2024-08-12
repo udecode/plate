@@ -50,13 +50,12 @@ import type { ELEMENT_TOGGLE, TToggleElement } from '@udecode/plate-toggle';
 
 import {
   type EElement,
-  type PlateId,
   type TElement,
   type TPlateEditor,
   type TText,
   createPlugin,
-  useEditorRef,
 } from '@udecode/plate-common';
+import { useEditorRef } from '@udecode/plate-common/react';
 
 /** Text */
 
@@ -146,7 +145,7 @@ export interface MyBlockElement
   extends TElement,
     MyIndentListProps,
     MyLineHeightProps {
-  id?: PlateId;
+  id?: string;
 }
 
 /** Blocks */

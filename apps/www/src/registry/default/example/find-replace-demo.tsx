@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
-import { Plate } from '@udecode/plate-common';
+import { Plate } from '@udecode/plate-common/react';
 import { usePlateEditor } from '@udecode/plate-core/react';
 import { FindReplacePlugin } from '@udecode/plate-find-replace';
 

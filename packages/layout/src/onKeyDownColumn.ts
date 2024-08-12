@@ -6,7 +6,7 @@ import {
   isHotkey,
   isSelectionCoverBlock,
   select,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 
 import { ELEMENT_COLUMN_GROUP } from './ColumnPlugin';

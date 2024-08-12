@@ -4,7 +4,7 @@ import {
   type PlateEditor,
   type TDescendant,
   nanoid,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import { type ComputeDiffOptions, computeDiff } from '@udecode/plate-diff';
 
 import { getSuggestionProps } from './transforms';

@@ -1,4 +1,5 @@
-import { createPrimitiveComponent, nanoid } from '@udecode/plate-common';
+import { nanoid } from '@udecode/plate-common';
+import { createPrimitiveComponent } from '@udecode/plate-common/react';
 
 import {
   SCOPE_ACTIVE_COMMENT,

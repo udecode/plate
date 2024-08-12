@@ -1,4 +1,4 @@
-import type { PlateEditor } from '@udecode/plate-common/server';
+import type { PlateEditor } from '@udecode/plate-common';
 
 import { findSuggestionNode } from '../queries/index';
 import { getSuggestionKey, getSuggestionUserIds } from './getSuggestionKeys';

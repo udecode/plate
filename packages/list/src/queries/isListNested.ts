@@ -5,7 +5,7 @@ import {
   type TElement,
   getParentNode,
   getPluginType,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import { ELEMENT_LI } from '../ListPlugin';
 

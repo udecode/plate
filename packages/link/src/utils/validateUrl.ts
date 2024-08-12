@@ -2,7 +2,7 @@ import {
   type PlateEditor,
   getPluginOptions,
   sanitizeUrl,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import { ELEMENT_LINK, type LinkPluginOptions } from '../LinkPlugin';
 

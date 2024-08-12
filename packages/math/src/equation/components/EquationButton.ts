@@ -1,8 +1,5 @@
-import {
-  addSelectedRow,
-  useEditorRef,
-  useElement,
-} from '@udecode/plate-common';
+import { addSelectedRow } from '@udecode/plate-common';
+import { useEditorRef, useElement } from '@udecode/plate-common/react';
 
 import type { TEquationElement } from '../types';
 

@@ -6,7 +6,7 @@ import {
   isRangeInSameBlock,
   isSelectionCoverBlock,
   select,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import { blockSelectionActions } from './blockSelectionStore';
 

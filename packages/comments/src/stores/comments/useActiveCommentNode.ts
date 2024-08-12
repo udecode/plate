@@ -1,4 +1,4 @@
-import { useEditorRef } from '@udecode/plate-common';
+import { useEditorRef } from '@udecode/plate-common/react';
 
 import { findCommentNodeById } from '../../queries/index';
 import { useCommentsSelectors } from './CommentsProvider';

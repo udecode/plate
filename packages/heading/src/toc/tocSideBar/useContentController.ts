@@ -2,7 +2,8 @@
 
 import React from 'react';
 
-import { addSelectedRow, useEditorRef } from '@udecode/plate-common';
+import { addSelectedRow } from '@udecode/plate-common';
+import { useEditorRef } from '@udecode/plate-common/react';
 
 import type { UseContentController } from '../types';
 

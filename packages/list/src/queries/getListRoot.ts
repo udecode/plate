@@ -6,7 +6,7 @@ import {
   type TElementEntry,
   getAboveNode,
   getPluginType,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import { ELEMENT_OL, ELEMENT_UL } from '../ListPlugin';
 

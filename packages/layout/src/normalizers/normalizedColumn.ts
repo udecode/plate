@@ -5,7 +5,7 @@ import {
   createPathRef,
   getLastChildPath,
   isElement,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type { TColumnGroupElement } from '../types';
 

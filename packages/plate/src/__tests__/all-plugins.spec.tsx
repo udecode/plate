@@ -7,7 +7,11 @@ import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
 import { BlockquotePlugin } from '@udecode/plate-block-quote';
 import { ExitBreakPlugin, SoftBreakPlugin } from '@udecode/plate-break';
-import { Plate, PlateContent, usePlateEditor } from '@udecode/plate-common';
+import {
+  Plate,
+  PlateContent,
+  usePlateEditor,
+} from '@udecode/plate-common/react';
 import { HeadingPlugin } from '@udecode/plate-heading';
 import { HighlightPlugin } from '@udecode/plate-highlight';
 import { LinkPlugin } from '@udecode/plate-link';

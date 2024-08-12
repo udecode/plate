@@ -1,14 +1,11 @@
 import {
-  type TReactEditor,
-  focusEditor,
-  getNodesRange,
-} from '@udecode/plate-common';
-import {
   type GetNodeEntriesOptions,
   type Value,
+  getNodesRange,
   removeNodes,
   unhangRange,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
+import { type TReactEditor, focusEditor } from '@udecode/plate-common/react';
 
 import { getBlocksWithId } from '../queries/getBlocksWithId';
 

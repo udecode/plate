@@ -1,4 +1,4 @@
-import { type WithOverride, removeNodes } from '@udecode/plate-common/server';
+import { type WithOverride, removeNodes } from '@udecode/plate-common';
 
 export const withSingleLine: WithOverride = ({ editor }) => {
   const { normalizeNode } = editor;

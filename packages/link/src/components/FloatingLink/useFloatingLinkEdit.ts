@@ -1,19 +1,19 @@
 import React from 'react';
 
 import {
-  useEditorReadOnly,
-  useEditorRef,
-  useEditorVersion,
-  useHotkeys,
-} from '@udecode/plate-common';
-import {
   getAboveNode,
   getEndPoint,
   getPluginOptions,
   getPluginType,
   getStartPoint,
   someNode,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
+import {
+  useEditorReadOnly,
+  useEditorRef,
+  useEditorVersion,
+  useHotkeys,
+} from '@udecode/plate-common/react';
 import {
   getDefaultBoundingClientRect,
   getRangeBoundingClientRect,

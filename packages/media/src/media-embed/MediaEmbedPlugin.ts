@@ -1,4 +1,4 @@
-import { createPlugin } from '@udecode/plate-common/server';
+import { createPlugin } from '@udecode/plate-common';
 
 import type { MediaPluginOptions } from '../media/index';
 

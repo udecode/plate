@@ -4,15 +4,15 @@ import type * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 
 import { PopoverAnchor } from '@radix-ui/react-popover';
 import { cn, withRef } from '@udecode/cn';
+import { isSelectionExpanded } from '@udecode/plate-common';
 import {
   PlateElement,
-  isSelectionExpanded,
   useEditorRef,
   useEditorSelector,
   useElement,
   useRemoveNodeButton,
   withHOC,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/react';
 import {
   type TTableElement,
   TableProvider,

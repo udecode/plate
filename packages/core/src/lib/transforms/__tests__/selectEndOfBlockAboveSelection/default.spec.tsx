@@ -3,7 +3,7 @@
 import { jsx } from '@udecode/plate-test-utils';
 import { selectEndOfBlockAboveSelection } from '@udecode/slate-utils';
 
-import type { PlateEditor } from '../../../types';
+import type { PlateEditor } from '../../../editor';
 
 jsx;
 

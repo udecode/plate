@@ -4,7 +4,7 @@ import {
   createPathRef,
   getAboveNode,
   removeNodes,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import { Node, type PathRef, Range } from 'slate';
 
 import type { TTableCellElement } from '../types';

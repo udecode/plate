@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { createPrimitiveComponent } from '@udecode/plate-common';
+import { createPrimitiveComponent } from '@udecode/plate-common/react';
 
 import { encodeUrlIfNeeded } from '../../utils/encodeUrlIfNeeded';
 import { safeDecodeUrl } from '../../utils/safeDecodeUrl';

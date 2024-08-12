@@ -1,7 +1,9 @@
 /* eslint-disable react/jsx-key */
 /** @jsx jsx */
 
-import { type TEditor, createPlateEditor } from '@udecode/plate-common';
+import type { TEditor } from '@udecode/plate-common';
+
+import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { TablePlugin } from '../TablePlugin';

@@ -4,7 +4,7 @@ import {
   createPrimitiveComponent,
   toDOMNode,
   useEditorRef,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/react';
 
 import { getCommentPosition } from '../queries/index';
 import { useCommentsSelectors } from '../stores/comments/CommentsProvider';

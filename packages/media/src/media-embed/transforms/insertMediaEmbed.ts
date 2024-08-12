@@ -6,7 +6,7 @@ import {
   type PlatePluginKey,
   getParentNode,
   insertNodes,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type { TMediaEmbedElement } from '../types';
 

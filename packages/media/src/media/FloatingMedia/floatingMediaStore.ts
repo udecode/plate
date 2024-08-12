@@ -1,4 +1,4 @@
-import { createZustandStore } from '@udecode/plate-common/server';
+import { createZustandStore } from '@udecode/plate-common';
 
 export const floatingMediaStore = createZustandStore('floatingMedia')({
   isEditing: false,

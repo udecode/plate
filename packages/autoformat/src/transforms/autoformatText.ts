@@ -4,7 +4,7 @@ import {
   type PlateEditor,
   deleteText,
   insertText,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import castArray from 'lodash/castArray.js';
 
 import type { AutoformatTextRule } from '../types';

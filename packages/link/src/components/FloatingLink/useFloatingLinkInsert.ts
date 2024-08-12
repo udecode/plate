@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { getPluginOptions } from '@udecode/plate-common';
 import {
   focusEditor,
   useComposedRef,
@@ -7,8 +8,7 @@ import {
   useEditorRef,
   useHotkeys,
   useOnClickOutside,
-} from '@udecode/plate-common';
-import { getPluginOptions } from '@udecode/plate-common/server';
+} from '@udecode/plate-common/react';
 import {
   type UseVirtualFloatingOptions,
   getSelectionBoundingClientRect,

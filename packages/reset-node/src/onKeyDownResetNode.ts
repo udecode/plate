@@ -5,7 +5,7 @@ import {
   isHotkey,
   setElements,
   someNode,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type { ResetNodePluginOptions } from './types';
 

@@ -11,7 +11,7 @@ import {
   queryNode,
   removeNodes,
   select,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
 import type { SelectOnBackspacePluginOptions } from './SelectOnBackspacePlugin';
 

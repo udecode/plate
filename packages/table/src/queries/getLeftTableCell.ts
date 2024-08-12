@@ -2,7 +2,7 @@ import {
   type PlateEditor,
   findNode,
   getNodeEntry,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 
 import type { TTableCellElement } from '../types';

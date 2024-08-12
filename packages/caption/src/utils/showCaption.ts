@@ -1,8 +1,6 @@
-import {
-  type PlateEditor,
-  type TElement,
-  findNodePath,
-} from '@udecode/plate-common';
+import type { PlateEditor, TElement } from '@udecode/plate-common';
+
+import { findNodePath } from '@udecode/plate-common/react';
 
 import { captionActions, captionGlobalStore } from '../captionGlobalStore';
 

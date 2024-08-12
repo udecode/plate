@@ -6,7 +6,7 @@ import {
   type TNode,
   getPluginOptions,
   getPluginType,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import papaparse from 'papaparse';
 
 import type {

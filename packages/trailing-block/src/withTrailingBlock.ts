@@ -3,7 +3,7 @@ import {
   getLastNodeByLevel,
   insertElements,
   queryNode,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import { Path } from 'slate';
 
 import type { TrailingBlockPluginOptions } from './TrailingBlockPlugin';

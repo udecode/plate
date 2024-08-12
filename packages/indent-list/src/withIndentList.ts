@@ -6,7 +6,7 @@ import {
   type WithOverride,
   createPathRef,
   getNode,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 import { KEY_INDENT } from '@udecode/plate-indent';
 
 import {

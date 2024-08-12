@@ -5,6 +5,7 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import type { ValueId } from '@/config/customizer-plugins';
+import type { Value } from '@udecode/plate-common';
 
 import { cn } from '@udecode/cn';
 import { AlignPlugin } from '@udecode/plate-alignment';
@@ -28,9 +29,9 @@ import {
   SoftBreakPlugin,
 } from '@udecode/plate-break';
 import { CaptionPlugin } from '@udecode/plate-caption';
-import { CodeBlockPlugin, ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { CommentsPlugin } from '@udecode/plate-comments';
-import { Plate, type Value, usePlateEditor } from '@udecode/plate-common';
+import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 import { DndPlugin } from '@udecode/plate-dnd';
 import { EmojiPlugin } from '@udecode/plate-emoji';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw';
@@ -207,7 +208,7 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
                 ELEMENT_H5,
                 ELEMENT_H6,
                 ELEMENT_BLOCKQUOTE,
-                ELEMENT_CODE_BLOCK,
+                CodeBlockPlugin.key,
                 ELEMENT_TOGGLE,
               ],
             },
@@ -225,7 +226,7 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
                 ELEMENT_H5,
                 ELEMENT_H6,
                 ELEMENT_BLOCKQUOTE,
-                ELEMENT_CODE_BLOCK,
+                CodeBlockPlugin.key,
                 ELEMENT_TOGGLE,
               ],
             },

@@ -2,8 +2,8 @@ import {
   type ToggleMarkPluginOptions,
   createPlugin,
   findHtmlParentElement,
-  onKeyDownToggleMark,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
+import { onKeyDownToggleMark } from '@udecode/plate-common/react';
 
 export const MARK_CODE = 'code';
 

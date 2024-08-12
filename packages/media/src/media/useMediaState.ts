@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useElement } from '@udecode/plate-common';
+import { useElement } from '@udecode/plate-common/react';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
 
 import type { TMediaElement } from './types';

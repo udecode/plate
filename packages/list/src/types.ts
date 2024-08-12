@@ -1,4 +1,4 @@
-import type { HotkeyPluginOptions } from '@udecode/plate-common/server';
+import type { HotkeyPluginOptions } from '@udecode/plate-common';
 
 export interface ListPluginOptions extends HotkeyPluginOptions {
   enableResetOnShiftTab?: boolean;

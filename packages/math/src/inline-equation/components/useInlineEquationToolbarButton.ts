@@ -1,4 +1,5 @@
-import { getSelectionText, useEditorRef } from '@udecode/plate-common';
+import { getSelectionText } from '@udecode/plate-common';
+import { useEditorRef } from '@udecode/plate-common/react';
 
 import { insertInlineEquation } from '../transforms';
 

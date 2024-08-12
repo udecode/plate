@@ -1,7 +1,7 @@
 import type { Range } from 'slate';
 
 import { type Decorate, getPluginOptions } from '@udecode/plate-common';
-import { isText } from '@udecode/plate-common/server';
+import { isText } from '@udecode/plate-common';
 
 import type { FindReplacePluginOptions } from './types';
 

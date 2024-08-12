@@ -1,4 +1,4 @@
-import { ELEMENT_DEFAULT, createPlugin } from '@udecode/plate-common/server';
+import { ELEMENT_DEFAULT, createPlugin } from '@udecode/plate-common';
 
 import type { IndentPluginOptions } from './types';
 

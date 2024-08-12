@@ -1,4 +1,4 @@
-import type { PlateEditor } from '@udecode/plate-common/server';
+import type { PlateEditor } from '@udecode/plate-common';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import type { Awareness } from 'y-protocols/awareness';
 

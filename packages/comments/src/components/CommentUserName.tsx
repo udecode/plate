@@ -1,4 +1,4 @@
-import { createPrimitiveComponent } from '@udecode/plate-common';
+import { createPrimitiveComponent } from '@udecode/plate-common/react';
 
 import { useCommentUser } from '../stores/comment/CommentProvider';
 

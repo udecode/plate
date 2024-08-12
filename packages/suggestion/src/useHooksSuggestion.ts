@@ -1,8 +1,8 @@
 import React from 'react';
 
-import type { PlatePluginUseHooks } from '@udecode/plate-common/server';
+import type { PlatePluginUseHooks } from '@udecode/plate-common';
 
-import { useEditorVersion } from '@udecode/plate-common';
+import { useEditorVersion } from '@udecode/plate-common/react';
 
 import type { SuggestionPluginOptions } from './types';
 
