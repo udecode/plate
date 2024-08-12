@@ -14,7 +14,7 @@ export const pipeDecorate = (
     | ((ctx: { editor: PlateEditor; entry: TNodeEntry }) => Range[] | undefined)
     | null
 ): TEditableProps['decorate'] => {
-  const relevantPlugins = editor.plugins.filter((plugin) => plugin.decorate);
+  const relevantPlugins = editor.pluginList.filter((plugin) => plugin.decorate);
 
   if (relevantPlugins.length === 0 && !decorateProp) return;
 

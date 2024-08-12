@@ -1,6 +1,5 @@
 import {
   type PlateEditor,
-  type PlatePluginKey,
   getBlockAbove,
   getPluginOptions,
   getPluginType,
@@ -25,7 +24,7 @@ export type MentionOnSelectItem<
 export const getMentionOnSelectItem =
   <TItem extends TMentionItemBase = TMentionItemBase>({
     key = ELEMENT_MENTION,
-  }: PlatePluginKey = {}): MentionOnSelectItem<TItem> =>
+  }: { key?: string } = {}): MentionOnSelectItem<TItem> =>
   (editor, item, search = '') => {
     const { createMentionNode, insertSpaceAfterMention } =
       getPluginOptions<MentionPluginOptions>(editor as any, key);

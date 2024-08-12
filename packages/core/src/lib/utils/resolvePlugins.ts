@@ -13,8 +13,8 @@ export const resolvePlugins = (
   editor: PlateEditor,
   plugins: PlatePlugins = []
 ) => {
-  editor.plugins = [];
-  editor.pluginsByKey = {};
+  editor.pluginList = [];
+  editor.plugins = {};
   editor.api = {} as any;
 
   const resolvedPlugins = resolveAndSortPlugins(editor, plugins);
@@ -26,7 +26,7 @@ export const resolvePlugins = (
   mergePluginApis(editor);
 
   // withOverrides
-  editor.plugins.forEach((plugin) => {
+  editor.pluginList.forEach((plugin) => {
     if (plugin.withOverrides) {
       editor = plugin.withOverrides({ editor, plugin }) as any;
     }
@@ -36,13 +36,13 @@ export const resolvePlugins = (
 };
 
 const mergePluginApis = (editor: PlateEditor) => {
-  editor.plugins.forEach((plugin) => {
+  editor.pluginList.forEach((plugin) => {
     Object.entries(plugin.api).forEach(([apiKey, apiFunction]) => {
       (editor.api as any)[apiKey] = apiFunction;
     });
   });
 
-  (editor.plugins as PlatePlugin[]).forEach((plugin) => {
+  (editor.pluginList as PlatePlugin[]).forEach((plugin) => {
     // Apply method extensions
     if (plugin.__methodExtensions && plugin.__methodExtensions.length > 0) {
       plugin.__methodExtensions.forEach((methodExtension) => {
@@ -127,8 +127,8 @@ export const resolveAndSortPlugins = (
 };
 
 export const mergePlugins = (editor: PlateEditor, plugins: PlatePlugins) => {
-  editor.plugins = plugins;
-  editor.pluginsByKey = Object.fromEntries(
+  editor.pluginList = plugins;
+  editor.plugins = Object.fromEntries(
     plugins.map((plugin) => [plugin.key, plugin])
   );
 };
@@ -205,13 +205,13 @@ export const applyPluginOverrides = (editor: PlateEditor) => {
       }));
   };
 
-  editor.plugins = applyOverrides(editor.plugins as any);
+  editor.pluginList = applyOverrides(editor.pluginList as any);
 
   // Final pass: ensure all plugins are properly resolved after overrides
-  editor.plugins = editor.plugins.map((plugin) =>
+  editor.pluginList = editor.pluginList.map((plugin) =>
     resolvePlugin(editor, plugin as any)
   );
-  editor.pluginsByKey = Object.fromEntries(
-    editor.plugins.map((plugin) => [plugin.key, plugin])
+  editor.plugins = Object.fromEntries(
+    editor.pluginList.map((plugin) => [plugin.key, plugin])
   );
 };

@@ -39,7 +39,7 @@ export const elementToHtml = (
   props = pipeInjectProps(editor, props);
 
   // Search for matching plugin based on element type
-  editor.plugins.some((plugin) => {
+  editor.pluginList.some((plugin) => {
     if (
       !plugin.isElement ||
       plugin.serializeHtml === null ||

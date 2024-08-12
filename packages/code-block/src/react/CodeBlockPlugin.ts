@@ -38,7 +38,7 @@ export const CodeBlockPlugin = createPlugin<
     onKeyDown: onKeyDownCodeBlock,
   },
   inject: {
-    pluginsByKey: {
+    plugins: {
       [KEY_DESERIALIZE_HTML]: {
         editor: {
           insertData: {

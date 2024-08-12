@@ -1,9 +1,7 @@
-import type { ValueOf } from '@udecode/plate-common';
-
 import {
   type InsertNodesOptions,
   type PlateEditor,
-  type PlatePluginKey,
+  type ValueOf,
   getParentNode,
   insertNodes,
 } from '@udecode/plate-common';
@@ -17,7 +15,7 @@ export const insertMediaEmbed = <E extends PlateEditor>(
   {
     key = ELEMENT_MEDIA_EMBED,
     url = '',
-  }: Partial<TMediaEmbedElement> & PlatePluginKey,
+  }: { key?: string } & Partial<TMediaEmbedElement>,
   options: InsertNodesOptions<ValueOf<E>> = {}
 ): void => {
   if (!editor.selection) return;

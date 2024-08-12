@@ -46,7 +46,7 @@ export const withPlate = <
  *
  *   - Integrates core plugins and user-provided plugins.
  *   - Creates a root plugin that encapsulates all other plugins.
- *   - Resolves plugins into editor.plugins, editor.pluginsByKey.
+ *   - Resolves plugins into editor.plugins, editor.pluginList.
  *
  *   3. Content Initialization:
  *

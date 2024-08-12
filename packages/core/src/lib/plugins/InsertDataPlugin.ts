@@ -11,7 +11,7 @@ export const withInsertData: WithOverride = ({ editor }) => {
   const { insertData } = editor;
 
   editor.insertData = (dataTransfer) => {
-    const inserted = [...editor.plugins].reverse().some((plugin) => {
+    const inserted = [...editor.pluginList].reverse().some((plugin) => {
       const insertDataOptions = plugin.editor.insertData;
 
       if (!insertDataOptions) return false;

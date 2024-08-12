@@ -12,16 +12,14 @@ import {
   DebugPlugin,
   DeserializeAstPlugin,
   DeserializeHtmlPlugin,
-  EditorProtocolPlugin,
   EventEditorPlugin,
   HistoryPlugin,
   InlineVoidPlugin,
   InsertDataPlugin,
   LengthPlugin,
   type LengthPluginOptions,
-  NodeFactoryPlugin,
   type PlatePlugin,
-  PrevSelectionPlugin,
+  SlateNextPlugin,
   createPlugin,
   getPlugin,
   withSlate,
@@ -29,18 +27,17 @@ import {
 
 const coreKeys = [
   'root',
+  DebugPlugin.key,
+  SlateNextPlugin.key,
   DOMPlugin.key,
   HistoryPlugin.key,
-  DebugPlugin.key,
-  NodeFactoryPlugin.key,
-  EventEditorPlugin.key,
+  'plateApi',
   InlineVoidPlugin.key,
   InsertDataPlugin.key,
-  PrevSelectionPlugin.key,
+  EventEditorPlugin.key,
   LengthPlugin.key,
   DeserializeHtmlPlugin.key,
   DeserializeAstPlugin.key,
-  EditorProtocolPlugin.key,
 ];
 
 describe('withPlate', () => {
@@ -51,9 +48,9 @@ describe('withPlate', () => {
       expect(editor.id).toBe('1');
       expect(editor.history).toBeDefined();
       expect(editor.key).toBeDefined();
-      expect(editor.plugins.map((plugin) => plugin.key)).toEqual(coreKeys);
-      expect(editor.plugins.map((plugin) => plugin.type)).toEqual(coreKeys);
-      expect(Object.keys(editor.pluginsByKey)).toEqual(coreKeys);
+      expect(editor.pluginList.map((plugin) => plugin.key)).toEqual(coreKeys);
+      expect(editor.pluginList.map((plugin) => plugin.type)).toEqual(coreKeys);
+      expect(Object.keys(editor.plugins)).toEqual(coreKeys);
     });
   });
 
@@ -65,7 +62,7 @@ describe('withPlate', () => {
         plugins: [customPlugin],
       });
 
-      expect(editor.plugins.map((plugin) => plugin.key)).toEqual([
+      expect(editor.pluginList.map((plugin) => plugin.key)).toEqual([
         ...coreKeys,
         'custom',
       ]);
@@ -80,7 +77,7 @@ describe('withPlate', () => {
         plugins: [],
       });
 
-      expect(editor.plugins.map((plugin) => plugin.key)).toEqual(coreKeys);
+      expect(editor.pluginList.map((plugin) => plugin.key)).toEqual(coreKeys);
     });
   });
 
@@ -210,21 +207,21 @@ describe('withPlate', () => {
 
       const editor = withPlate(existingEditor, { id: '1' });
 
-      const pluginKeys = editor.plugins.map((plugin) => plugin.key);
+      const pluginKeys = editor.pluginList.map((plugin) => plugin.key);
       expect(pluginKeys.filter((key) => key === 'dom')).toHaveLength(1);
       expect(pluginKeys.filter((key) => key === 'history')).toHaveLength(1);
     });
 
     it('should add missing core plugins', () => {
       const existingEditor = createTEditor();
-      existingEditor.plugins = [
+      existingEditor.pluginList = [
         createPlugin({ key: 'dom' }),
         createPlugin({ key: 'history' }),
       ];
 
       const editor = withPlate(existingEditor, { id: '1' });
 
-      const pluginKeys = editor.plugins.map((plugin) => plugin.key);
+      const pluginKeys = editor.pluginList.map((plugin) => plugin.key);
       coreKeys.forEach((key) => {
         expect(pluginKeys).toContain(key);
       });
@@ -241,7 +238,7 @@ describe('withPlate', () => {
 
       const editor = withPlate(existingEditor, { id: '1' });
 
-      expect(editor.plugins.map((plugin) => plugin.key)).not.toContain(
+      expect(editor.pluginList.map((plugin) => plugin.key)).not.toContain(
         'custom'
       );
     });
@@ -259,7 +256,7 @@ describe('withPlate', () => {
         },
       });
 
-      const pluginKeys = editor.plugins.map((plugin) => plugin.key);
+      const pluginKeys = editor.pluginList.map((plugin) => plugin.key);
       expect(pluginKeys).not.toContain('history');
       expect(pluginKeys).not.toContain('eventEditor');
       expect(pluginKeys).toHaveLength(coreKeys.length - 2);
@@ -279,7 +276,7 @@ describe('withPlate', () => {
         plugins: [customPlugin1, customPlugin2],
       });
 
-      const pluginKeys = editor.plugins.map((plugin) => plugin.key);
+      const pluginKeys = editor.pluginList.map((plugin) => plugin.key);
       expect(pluginKeys).not.toContain('custom1');
       expect(pluginKeys).toContain('custom2');
     });
@@ -294,7 +291,7 @@ describe('withPlate', () => {
         },
       });
 
-      const pluginKeys = editor.plugins.map((plugin) => plugin.key);
+      const pluginKeys = editor.pluginList.map((plugin) => plugin.key);
       coreKeys.forEach((key) => {
         if (key !== 'history') {
           expect(pluginKeys).toContain(key);

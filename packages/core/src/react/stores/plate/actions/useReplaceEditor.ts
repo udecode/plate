@@ -25,7 +25,7 @@ export const useReplaceEditor = (
   return React.useCallback(() => {
     const newEditor = createPlateEditor({
       id: editor.id,
-      plugins: editor.plugins as any,
+      plugins: editor.pluginList as any,
     });
 
     setEditor(newEditor);

@@ -83,7 +83,7 @@ export type PlatePlugin<
      * `KEY_DESERIALIZE_HTML` plugin. Differs from `override.plugins` as this is
      * not overriding any plugin.
      */
-    pluginsByKey?: Record<PluginKey, Partial<EditorPlugin<any, any, any, any>>>;
+    plugins?: Record<PluginKey, Partial<EditorPlugin<any, any, any, any>>>;
 
     /** Properties used by Plate to inject props into any node `component`. */
     props?: InjectProps<O, A, T, S>;
@@ -327,14 +327,6 @@ export type PlatePluginMethods<
 /** Unique key to store the plugins by key. */
 export type PluginKey = string;
 
-export interface PlatePluginKey {
-  /**
-   * Property used by Plate to store the plugins by key in
-   * `editor.pluginsByKey`.
-   */
-  key?: PluginKey;
-}
-
 export type PlatePluginInsertDataOptions = {
   data: string;
   dataTransfer: DataTransfer;
@@ -490,7 +482,7 @@ export interface InjectProps<O = {}, A = {}, T = {}, S = {}> {
 
   /**
    * A function that returns a plugin config to be injected into other plugins
-   * `inject.pluginsByKey` specified by validPlugins.
+   * `inject.plugins` specified by validPlugins.
    */
   validPluginToInjectPlugin?: (
     ctx: { validPlugin: string } & EditorPluginContext<O, A, T, S>

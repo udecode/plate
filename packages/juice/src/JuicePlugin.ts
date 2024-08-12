@@ -1,14 +1,11 @@
-import {
-  KEY_DESERIALIZE_HTML,
-  createPlugin,
-} from '@udecode/plate-common';
+import { KEY_DESERIALIZE_HTML, createPlugin } from '@udecode/plate-common';
 import juice from 'juice';
 
 export const KEY_JUICE = 'juice';
 
 export const JuicePlugin = createPlugin({
   inject: {
-    pluginsByKey: {
+    plugins: {
       [KEY_DESERIALIZE_HTML]: {
         editor: {
           insertData: {

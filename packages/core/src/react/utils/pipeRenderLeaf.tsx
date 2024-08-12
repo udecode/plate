@@ -16,7 +16,7 @@ export const pipeRenderLeaf = (
 ): TEditableProps['renderLeaf'] => {
   const renderLeafs: RenderLeaf[] = [];
 
-  editor.plugins.forEach((plugin) => {
+  editor.pluginList.forEach((plugin) => {
     if (plugin.isLeaf && plugin.key) {
       renderLeafs.push(pluginRenderLeaf(editor, plugin));
     }

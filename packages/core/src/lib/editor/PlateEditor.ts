@@ -11,7 +11,6 @@ import type {
   PluginKey,
 } from '../plugin';
 import type { CorePlugin } from '../plugins';
-import type { EXPOSED_STORE_KEYS, PlateStoreState } from '../types';
 
 // [K in MyPlugins['key']]: InferPluginApi<Extract<MyPlugins, { key: K }>>;
 
@@ -19,6 +18,9 @@ export type PlateEditor = {
   api: UnionToIntersection<InferPluginApi<CorePlugin>>;
 
   currentKeyboardEvent: React.KeyboardEvent | null;
+
+  id: any;
+
   /**
    * Whether the editor is a fallback editor.
    *
@@ -29,29 +31,14 @@ export type PlateEditor = {
 
   key: any;
 
-  plugins: AnyEditorPlugin[];
+  pluginList: AnyEditorPlugin[];
 
-  pluginsByKey: Record<PluginKey, AnyEditorPlugin>;
+  plugins: Record<PluginKey, AnyEditorPlugin>;
 
   prevSelection: TRange | null;
-} & PlateEditorMethods &
-  TEditor &
+} & TEditor &
   THistoryEditor &
   TReactEditor;
-
-export type PlateEditorMethods = {
-  // Example: editor.plate.set.readOnly(true)
-  plate: {
-    set: {
-      [K in (typeof EXPOSED_STORE_KEYS)[number]]: (
-        value: PlateStoreState[K]
-      ) => void;
-    };
-  };
-  redecorate: () => void;
-
-  reset: () => void;
-};
 
 export type TPlateEditor<
   V extends Value = Value,
@@ -61,7 +48,7 @@ export type TPlateEditor<
 
   children: V;
 
-  plugins: P[];
+  pluginList: P[];
 
   // transforms: UnionToIntersection<
   //   InferPluginTransforms<

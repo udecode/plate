@@ -19,7 +19,7 @@ it('should be', () => {
     decorateFindReplace({
       editor,
       entry: [{ text: '' }, [0, 0]],
-      plugin: editor.pluginsByKey[MARK_SEARCH_HIGHLIGHT],
+      plugin: editor.plugins[MARK_SEARCH_HIGHLIGHT],
     })
   ).toEqual(output);
 });

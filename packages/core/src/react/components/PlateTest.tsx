@@ -20,7 +20,7 @@ export function PlateTest({
 
   let editor = _editor;
 
-  if (editor && !editor.plugins) {
+  if (editor && !editor.pluginList) {
     editor = createPlateEditor({
       editor,
       id,

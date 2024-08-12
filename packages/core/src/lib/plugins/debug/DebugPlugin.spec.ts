@@ -36,16 +36,17 @@ describe('DebugPlugin', () => {
   });
 
   it('should respect log levels', () => {
-    const mockLogger = jest.fn();
+    const warnLogger = jest.fn();
+    const logLogger = jest.fn();
+    const infoLogger = jest.fn();
     const editor = createPlateEditor({
       plugins: [
         DebugPlugin.configure({
           logLevel: 'info',
           logger: {
-            error: mockLogger,
-            info: mockLogger,
-            log: mockLogger,
-            warn: mockLogger,
+            info: infoLogger,
+            log: logLogger,
+            warn: warnLogger,
           },
         }),
       ],
@@ -55,9 +56,9 @@ describe('DebugPlugin', () => {
     editor.api.debug.info('Info message', 'TEST');
     editor.api.debug.warn('Warn message', 'TEST');
 
-    expect(mockLogger).toHaveBeenCalledTimes(2);
-    expect(mockLogger).toHaveBeenCalledWith('Info message', 'TEST', undefined);
-    expect(mockLogger).toHaveBeenCalledWith('Warn message', 'TEST', undefined);
+    expect(infoLogger).toHaveBeenCalledTimes(1);
+    expect(warnLogger).toHaveBeenCalledTimes(1);
+    expect(logLogger).toHaveBeenCalledTimes(0);
   });
 
   it('should throw errors when throwErrors is true', () => {

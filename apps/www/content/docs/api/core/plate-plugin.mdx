@@ -50,7 +50,7 @@ const myPlugin = createPlugin<'myPlugin', MyPluginOptions, MyPluginTransforms, M
 <APIAttributes>
 <APIItem name="key" type="K" required>
 
-Unique property used by Plate to store the plugins by key in `editor.pluginsByKey`.
+Unique property used by Plate to store the plugins by key in `editor.plugins`.
 
 </APIItem>
 
@@ -322,7 +322,7 @@ Property used by Plate to inject a component above other plugins `component`.
 <APISubListItem parent="inject" name="belowComponent" type="InjectComponent" optional>
 Property used by Plate to inject a component below other plugins `component`, i.e. above its `children`.
 </APISubListItem>
-<APISubListItem parent="inject" name="pluginsByKey" type="object" optional>
+<APISubListItem parent="inject" name="plugins" type="object" optional>
 Property that can be used by a plugin to allow other plugins to inject code.
 - Differs from `overrideByKey` as this is not overriding any plugin.
 - For example, if multiple plugins have defined

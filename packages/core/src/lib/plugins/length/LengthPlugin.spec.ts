@@ -94,7 +94,7 @@ describe('LengthPlugin', () => {
   describe('plugin options', () => {
     it('should correctly set maxLength option', () => {
       editor = createEditorWithLength(15);
-      const options = editor.pluginsByKey.length.options as LengthPluginOptions;
+      const options = editor.plugins.length.options as LengthPluginOptions;
 
       expect(options.maxLength).toBe(15);
     });

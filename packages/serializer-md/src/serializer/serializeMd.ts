@@ -14,7 +14,7 @@ export const serializeMd = (
   editor: PlateEditor,
   options?: Parameters<typeof serializeMdNodes>['1']
 ) => {
-  const plugins = editor.plugins.filter((p) => p.isElement || p.isLeaf);
+  const plugins = editor.pluginList.filter((p) => p.isElement || p.isLeaf);
 
   const nodes = plugins.reduce(
     (acc, plugin) => {

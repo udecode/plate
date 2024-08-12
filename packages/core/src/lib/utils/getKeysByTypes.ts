@@ -5,14 +5,14 @@ export const getKeysByTypes = (
   editor: PlateEditor,
   types: string[]
 ): string[] => {
-  return Object.values(editor.pluginsByKey)
+  return Object.values(editor.plugins)
     .filter((plugin) => types.includes(plugin.type))
     .map((plugin) => plugin.key);
 };
 
 /** Get plugin key by type */
 export const getKeyByType = (editor: PlateEditor, type: string): string => {
-  const plugin = Object.values(editor.pluginsByKey).find(
+  const plugin = Object.values(editor.plugins).find(
     (plugin) => plugin.type === type
   );
 

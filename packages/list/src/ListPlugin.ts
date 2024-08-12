@@ -50,7 +50,7 @@ export const ListItemPlugin = createPlugin({
   key: ELEMENT_LI,
 }).extend(({ editor, plugin: { type } }) => ({
   inject: {
-    pluginsByKey: {
+    plugins: {
       [KEY_DESERIALIZE_HTML]: {
         editor: {
           insertData: {

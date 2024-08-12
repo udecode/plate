@@ -3,7 +3,7 @@ import type { Value } from '@udecode/slate';
 import type { PlateEditor } from '../editor';
 
 export const pipeOnChange = (editor: PlateEditor, value: Value) => {
-  return editor.plugins.some((plugin) => {
+  return editor.pluginList.some((plugin) => {
     const handler = plugin.handlers.onChange;
 
     if (!handler) {

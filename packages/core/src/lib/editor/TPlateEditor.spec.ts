@@ -114,7 +114,7 @@ describe('TPlateEditor', () => {
         Value,
         InferPlugins<typeof plugins> | typeof TablePlugin
       >(editor1, {
-        plugins: [...editor1.plugins, TablePlugin],
+        plugins: [...editor1.pluginList, TablePlugin],
       });
 
       expect(editor.api.bold).toBeInstanceOf(Function);
@@ -171,7 +171,7 @@ describe('TPlateEditor', () => {
         plugins: [BoldPlugin],
       });
 
-      expect(editor.pluginsByKey[BoldPlugin.key]).toBeDefined();
+      expect(editor.plugins[BoldPlugin.key]).toBeDefined();
     });
   });
 });

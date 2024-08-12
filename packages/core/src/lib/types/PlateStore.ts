@@ -68,7 +68,7 @@ export type PlateStoreState<E extends PlateEditor = PlateEditor> = {
   versionValue: number;
 }>;
 
-//  A list of store keys to be exposed in `editor.plate.set`.
+//  A list of store keys to be exposed in `editor.api.plate.set`.
 export const EXPOSED_STORE_KEYS: (keyof PlateStoreState)[] = [
   'readOnly',
   'onChange',

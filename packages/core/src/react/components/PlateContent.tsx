@@ -79,15 +79,6 @@ export type PlateStoreState<E extends PlateEditor = PlateEditor> = {
   versionValue: number;
 }>;
 
-//  A list of store keys to be exposed in `editor.plate.set`.
-export const EXPOSED_STORE_KEYS: (keyof PlateStoreState)[] = [
-  'readOnly',
-  'onChange',
-  'decorate',
-  'renderElement',
-  'renderLeaf',
-];
-
 export type PlateContentProps = {
   decorate?: PlateStoreState['decorate'];
   /** R enders the editable content. */
@@ -125,7 +116,7 @@ const PlateContent = React.forwardRef(
     let afterEditable: React.ReactNode = null;
     let beforeEditable: React.ReactNode = null;
 
-    editor.plugins.forEach((plugin) => {
+    editor.pluginList.forEach((plugin) => {
       const {
         renderAfterEditable: RenderAfterEditable,
         renderBeforeEditable: RenderBeforeEditable,
@@ -164,7 +155,7 @@ const PlateContent = React.forwardRef(
       </>
     );
 
-    editor.plugins.forEach((plugin) => {
+    editor.pluginList.forEach((plugin) => {
       const { renderAboveEditable: RenderAboveEditable } = plugin;
 
       if (RenderAboveEditable)

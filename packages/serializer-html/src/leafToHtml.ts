@@ -24,7 +24,7 @@ export const leafToHtml = (
 ) => {
   const { children } = props;
 
-  return editor.plugins.reduce((result, plugin) => {
+  return editor.pluginList.reduce((result, plugin) => {
     if (!plugin.isLeaf) return result;
 
     props = {

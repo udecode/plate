@@ -3,5 +3,7 @@
  */
 
 export * from './useContentController';
+export * from './useContentObserver';
 export * from './useTocController';
+export * from './useTocObserver';
 export * from './useTocSideBarState';

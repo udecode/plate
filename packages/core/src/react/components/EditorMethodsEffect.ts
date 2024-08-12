@@ -9,7 +9,7 @@ export const EditorMethodsEffect = ({ id }: { id?: string }) => {
 
   const plateStore = usePlateStore(id);
 
-  // Mu st be in a scope where hooks can be called.
+  // Must be in a scope where hooks can be called.
   const storeSetters = Object.fromEntries(
     EXPOSED_STORE_KEYS.map((key) => [key, plateStore.set[key]()])
   ) as any;
@@ -18,10 +18,8 @@ export const EditorMethodsEffect = ({ id }: { id?: string }) => {
   const memorizedStoreSetters = React.useMemo(() => storeSetters, []);
 
   React.useEffect(() => {
-    editor.redecorate = redecorate;
-    editor.plate = {
-      set: memorizedStoreSetters,
-    };
+    editor.api.redecorate = redecorate;
+    editor.api.plate.set = memorizedStoreSetters;
   }, [editor, redecorate, memorizedStoreSetters]);
 
   return null;

@@ -3,7 +3,7 @@
  */
 
 export * from './TabbableEffects';
-export * from './constants';
 export * from './TabbablePlugin';
+export * from './constants';
 export * from './findTabDestination';
 export * from './types';

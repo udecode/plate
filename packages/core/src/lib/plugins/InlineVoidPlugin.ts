@@ -15,7 +15,7 @@ export const withInlineVoid: WithOverride = ({ editor }) => {
   const inlineTypes: string[] = [];
   const markableVoidTypes: string[] = [];
 
-  editor.plugins.forEach((plugin) => {
+  editor.pluginList.forEach((plugin) => {
     if (plugin.isInline) {
       inlineTypes.push(plugin.type);
     }

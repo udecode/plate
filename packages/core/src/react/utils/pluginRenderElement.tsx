@@ -34,10 +34,10 @@ export const pluginRenderElement = (
     if (element.type === plugin.type) {
       const Element = _component ?? DefaultElement;
 
-      const injectAboveComponents = editor.plugins.flatMap(
+      const injectAboveComponents = editor.pluginList.flatMap(
         (o) => o.inject?.aboveComponent ?? []
       );
-      const injectBelowComponents = editor.plugins.flatMap(
+      const injectBelowComponents = editor.pluginList.flatMap(
         (o) => o.inject?.belowComponent ?? []
       );
 

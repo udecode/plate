@@ -50,7 +50,7 @@ const getListNode =
 
 export const DeserializeDocxPlugin = createPlugin((editor) => ({
   inject: {
-    pluginsByKey: {
+    plugins: {
       [KEY_DESERIALIZE_HTML]: {
         editor: {
           insertData: {

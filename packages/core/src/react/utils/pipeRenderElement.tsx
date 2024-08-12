@@ -16,7 +16,7 @@ export const pipeRenderElement = (
 ): TEditableProps['renderElement'] => {
   const renderElements: RenderElement[] = [];
 
-  editor.plugins.forEach((plugin) => {
+  editor.pluginList.forEach((plugin) => {
     if (plugin.isElement) {
       renderElements.push(pluginRenderElement(editor, plugin));
     }

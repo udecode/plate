@@ -23,7 +23,7 @@ export function EditorRefEffect({ id }: { id?: string }) {
 
   return (
     <>
-      {editor.plugins.map((plugin) => (
+      {editor.pluginList.map((plugin) => (
         <EditorRefPluginEffect id={id} key={plugin.key} plugin={plugin} />
       ))}
     </>

@@ -27,7 +27,7 @@ describe('resolvePlugins', () => {
 
     resolvePlugins(editor, plugins);
 
-    expect(editor.plugins.map((p) => p.key)).toEqual(['b', 'c', 'a']);
+    expect(editor.pluginList.map((p) => p.key)).toEqual(['b', 'c', 'a']);
   });
 
   it('should handle nested plugins', () => {
@@ -43,9 +43,9 @@ describe('resolvePlugins', () => {
 
     resolvePlugins(editor, plugins);
 
-    expect(editor.plugins.map((p) => p.key)).toContain('parent');
-    expect(editor.plugins.map((p) => p.key)).toContain('child1');
-    expect(editor.plugins.map((p) => p.key)).toContain('child2');
+    expect(editor.pluginList.map((p) => p.key)).toContain('parent');
+    expect(editor.pluginList.map((p) => p.key)).toContain('child1');
+    expect(editor.pluginList.map((p) => p.key)).toContain('child2');
   });
 
   it('should not include disabled plugins', () => {
@@ -56,8 +56,8 @@ describe('resolvePlugins', () => {
 
     resolvePlugins(editor, plugins);
 
-    expect(editor.plugins.map((p) => p.key)).toContain('enabled');
-    expect(editor.plugins.map((p) => p.key)).not.toContain('disabled');
+    expect(editor.pluginList.map((p) => p.key)).toContain('enabled');
+    expect(editor.pluginList.map((p) => p.key)).not.toContain('disabled');
   });
 
   it('should apply overrides correctly', () => {
@@ -76,7 +76,7 @@ describe('resolvePlugins', () => {
 
     resolvePlugins(editor, plugins);
 
-    expect(editor.pluginsByKey.b.type).toBe('overridden');
+    expect(editor.plugins.b.type).toBe('overridden');
   });
 
   it('should merge all plugin APIs into editor.api', () => {
@@ -236,8 +236,8 @@ describe('resolveAndSortPlugins', () => {
 describe('mergePlugins', () => {
   it('should merge plugins correctly', () => {
     const editor = createPlateEditor();
-    editor.plugins = [];
-    editor.pluginsByKey = {};
+    editor.pluginList = [];
+    editor.plugins = {};
 
     const plugins = [
       createPlugin({ key: 'a', type: 'typeA' }),
@@ -246,9 +246,9 @@ describe('mergePlugins', () => {
 
     mergePlugins(editor, plugins);
 
-    expect(editor.plugins).toHaveLength(2);
-    expect(editor.pluginsByKey.a.type).toBe('typeA');
-    expect(editor.pluginsByKey.b.type).toBe('typeB');
+    expect(editor.pluginList).toHaveLength(2);
+    expect(editor.plugins.a.type).toBe('typeA');
+    expect(editor.plugins.b.type).toBe('typeB');
   });
 
   it('should update existing plugins', () => {
@@ -260,8 +260,8 @@ describe('mergePlugins', () => {
 
     mergePlugins(editor, plugins);
 
-    expect(editor.plugins).toHaveLength(1);
-    expect(editor.pluginsByKey.a.type).toBe('newType');
+    expect(editor.pluginList).toHaveLength(1);
+    expect(editor.plugins.a.type).toBe('newType');
   });
 });
 
@@ -284,8 +284,8 @@ describe('applyPluginOverrides', () => {
 
     applyPluginOverrides(editor);
 
-    expect(editor.pluginsByKey.a.type).toBe('originalA');
-    expect(editor.pluginsByKey.b.type).toBe('overriddenB');
+    expect(editor.plugins.a.type).toBe('originalA');
+    expect(editor.plugins.b.type).toBe('overriddenB');
   });
 
   it('should handle nested overrides', () => {
@@ -303,7 +303,7 @@ describe('applyPluginOverrides', () => {
       }),
     ]);
 
-    expect(editor.pluginsByKey.child.type).toBe('overriddenChild');
+    expect(editor.plugins.child.type).toBe('overriddenChild');
   });
 
   it('should apply multiple overrides in correct order', () => {
@@ -333,7 +333,7 @@ describe('applyPluginOverrides', () => {
 
     applyPluginOverrides(editor);
 
-    expect(editor.pluginsByKey.c.type).toBe('overriddenByB');
+    expect(editor.plugins.c.type).toBe('overriddenByB');
   });
 
   it('should override components based on priority only if target plugin has a component', () => {
@@ -391,23 +391,23 @@ describe('applyPluginOverrides', () => {
     applyPluginOverrides(editor);
 
     // Higher priority override
-    expect(editor.pluginsByKey.b.component).toBe(HighPriorityComponent);
+    expect(editor.plugins.b.component).toBe(HighPriorityComponent);
 
     // No initial component, so it gets set
-    expect(editor.pluginsByKey.c.component).toBe(OverrideComponent);
+    expect(editor.plugins.c.component).toBe(OverrideComponent);
 
     // Lower priority component gets overridden
-    expect(editor.pluginsByKey.d.component).toBe(HighPriorityComponent);
+    expect(editor.plugins.d.component).toBe(HighPriorityComponent);
 
     // Highest priority original component is preserved
-    expect(editor.pluginsByKey.f.component).toBe(PreservedOriginalComponent);
+    expect(editor.plugins.f.component).toBe(PreservedOriginalComponent);
   });
 
   describe('validPlugins', () => {
-    it('should correctly apply validPluginToInjectPlugin and merge with existing pluginsByKey', () => {
+    it('should correctly apply validPluginToInjectPlugin and merge with existing plugins', () => {
       const plugin = createPlugin({
         inject: {
-          pluginsByKey: {
+          plugins: {
             plugin1: {
               deserializeHtml: {
                 getNode: () => {},
@@ -433,35 +433,35 @@ describe('applyPluginOverrides', () => {
 
       const resolvedPlugin = resolvePluginTest(plugin);
 
-      expect(resolvedPlugin.inject?.pluginsByKey).toBeDefined();
-      expect(Object.keys(resolvedPlugin.inject!.pluginsByKey!)).toEqual([
+      expect(resolvedPlugin.inject?.plugins).toBeDefined();
+      expect(Object.keys(resolvedPlugin.inject!.plugins!)).toEqual([
         'plugin1',
         'plugin3',
         'plugin2',
       ]);
 
       // Check merged result for plugin1
-      expect(resolvedPlugin.inject!.pluginsByKey!.plugin1).toHaveProperty(
+      expect(resolvedPlugin.inject!.plugins!.plugin1).toHaveProperty(
         'deserializeHtml.getNode'
       );
       expect(
-        resolvedPlugin.inject!.pluginsByKey!.plugin1.deserializeHtml!.getNode
+        resolvedPlugin.inject!.plugins!.plugin1.deserializeHtml!.getNode
       ).toBeDefined();
 
       // Check injected result for plugin2
-      expect(resolvedPlugin.inject!.pluginsByKey!.plugin2).toHaveProperty(
+      expect(resolvedPlugin.inject!.plugins!.plugin2).toHaveProperty(
         'deserializeHtml.getNode'
       );
       expect(
-        resolvedPlugin.inject!.pluginsByKey!.plugin2.deserializeHtml!.getNode
+        resolvedPlugin.inject!.plugins!.plugin2.deserializeHtml!.getNode
       ).toBeDefined();
 
       // Check existing result for plugin3 is preserved
-      expect(resolvedPlugin.inject!.pluginsByKey!.plugin3).toHaveProperty(
+      expect(resolvedPlugin.inject!.plugins!.plugin3).toHaveProperty(
         'deserializeHtml.getNode'
       );
       expect(
-        resolvedPlugin.inject!.pluginsByKey!.plugin3.deserializeHtml!.getNode
+        resolvedPlugin.inject!.plugins!.plugin3.deserializeHtml!.getNode
       ).toBeDefined();
     });
   });
@@ -536,9 +536,9 @@ describe('applyPluginOverrides', () => {
 
     applyPluginOverrides(editor);
 
-    expect(editor.pluginsByKey).toHaveProperty('a');
-    expect(editor.pluginsByKey).not.toHaveProperty('b');
-    expect(editor.pluginsByKey).toHaveProperty('c');
+    expect(editor.plugins).toHaveProperty('a');
+    expect(editor.plugins).not.toHaveProperty('b');
+    expect(editor.plugins).toHaveProperty('c');
   });
 
   it('should not include plugins disabled through overrides.plugins', () => {
@@ -561,8 +561,8 @@ describe('applyPluginOverrides', () => {
 
     applyPluginOverrides(editor);
 
-    expect(editor.pluginsByKey).toHaveProperty('a');
-    expect(editor.pluginsByKey).not.toHaveProperty('b');
-    expect(editor.pluginsByKey).toHaveProperty('c');
+    expect(editor.plugins).toHaveProperty('a');
+    expect(editor.plugins).not.toHaveProperty('b');
+    expect(editor.plugins).toHaveProperty('c');
   });
 });

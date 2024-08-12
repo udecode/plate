@@ -8,7 +8,7 @@ export const pipeNormalizeInitialValue = (editor: PlateEditor) => {
   const value = editor.children;
   let normalizedValue = cloneDeep(value);
 
-  editor.plugins.forEach((p) => {
+  editor.pluginList.forEach((p) => {
     const _normalizedValue = p.normalizeInitialValue?.({
       editor,
       plugin: p,

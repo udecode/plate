@@ -15,3 +15,4 @@ export * from './editor-protocol/index';
 export * from './event-editor/index';
 export * from './html-deserializer/index';
 export * from './length/index';
+export { PlateApiPlugin } from "./PlateApiPlugin";

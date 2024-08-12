@@ -9,7 +9,6 @@ export * from './EditorStateEffect';
 export * from './Plate';
 export * from './PlateContent';
 export * from './PlateControllerEffect';
-export * from './PlateEffects';
 export * from './PlateSlate';
 export * from './PlateTest';
 export * from './withHOC';

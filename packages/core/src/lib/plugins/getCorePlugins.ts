@@ -5,10 +5,9 @@ import { DeserializeAstPlugin } from './DeserializeAstPlugin';
 import { HistoryPlugin } from './HistoryPlugin';
 import { InlineVoidPlugin } from './InlineVoidPlugin';
 import { InsertDataPlugin } from './InsertDataPlugin';
-import { NodeFactoryPlugin } from './NodeFactoryPlugin';
-import { PrevSelectionPlugin } from './PrevSelectionPlugin';
+import { PlateApiPlugin } from './PlateApiPlugin';
 import { DebugPlugin } from './debug/DebugPlugin';
-import { EditorProtocolPlugin } from './editor-protocol/EditorProtocolPlugin';
+import { SlateNextPlugin } from './editor-protocol/SlateNextPlugin';
 import { EventEditorPlugin } from './event-editor';
 import { DeserializeHtmlPlugin } from './html-deserializer';
 import { LengthPlugin } from './length/LengthPlugin';
@@ -27,14 +26,14 @@ export const getCorePlugins = ({
   maxLength,
 }: GetCorePluginsOptions) => {
   const plugins = [
+    DebugPlugin,
+    SlateNextPlugin,
     (domPlugin ?? DOMPlugin) as typeof DOMPlugin,
     HistoryPlugin,
-    DebugPlugin,
-    NodeFactoryPlugin,
-    EventEditorPlugin,
+    PlateApiPlugin,
     InlineVoidPlugin,
     InsertDataPlugin,
-    PrevSelectionPlugin,
+    EventEditorPlugin,
     maxLength
       ? LengthPlugin.configure({
           maxLength,
@@ -42,7 +41,6 @@ export const getCorePlugins = ({
       : LengthPlugin,
     DeserializeHtmlPlugin,
     DeserializeAstPlugin,
-    EditorProtocolPlugin,
   ];
 
   return plugins;

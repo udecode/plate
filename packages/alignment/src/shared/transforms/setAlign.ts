@@ -1,11 +1,11 @@
-import { type ValueOf, getKeyByType } from '@udecode/plate-common';
 import {
   type ENode,
   type PlateEditor,
-  type PlatePluginKey,
   type SetNodesOptions,
   type TNodeMatch,
   type Value,
+  type ValueOf,
+  getKeyByType,
   getPluginInjectProps,
   isBlock,
   setElements,
@@ -23,9 +23,10 @@ export const setAlign = <E extends PlateEditor>(
     setNodesOptions,
     value,
   }: {
+    key?: string;
     setNodesOptions?: SetNodesOptions<ValueOf<E>>;
     value: Alignment;
-  } & PlatePluginKey
+  }
 ) => {
   const { defaultNodeValue, nodeKey, validPlugins } = getPluginInjectProps(
     editor,

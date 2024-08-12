@@ -5,8 +5,8 @@ import type {
 } from '../plugin/types/PlatePlugin';
 
 /**
- * Get all plugins having a defined `inject.pluginsByKey[plugin.key]`. It
- * includes `plugin` itself.
+ * Get all plugins having a defined `inject.plugins[plugin.key]`. It includes
+ * `plugin` itself.
  */
 export const getInjectedPlugins = (
   editor: PlateEditor,
@@ -14,8 +14,8 @@ export const getInjectedPlugins = (
 ): Partial<AnyEditorPlugin>[] => {
   const injectedPlugins: PlatePlugins = [];
 
-  [...editor.plugins].reverse().forEach((p) => {
-    const injectedPlugin = p.inject.pluginsByKey?.[plugin.key];
+  [...editor.pluginList].reverse().forEach((p) => {
+    const injectedPlugin = p.inject.plugins?.[plugin.key];
 
     if (injectedPlugin) injectedPlugins.push(injectedPlugin as any);
   });

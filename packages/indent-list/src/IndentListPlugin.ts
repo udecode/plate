@@ -79,7 +79,7 @@ export const IndentListPlugin = createPlugin<
     ],
   },
   inject: {
-    pluginsByKey: {
+    plugins: {
       [KEY_DESERIALIZE_HTML]: {
         editor: {
           insertData: {

@@ -15,7 +15,7 @@ export function getPlugin<O = {}, A = {}, T = {}, S = {}>(
 ): EditorPlugin<O, A, T, S> {
   const key = typeof keyOrPlugin === 'string' ? keyOrPlugin : keyOrPlugin.key;
 
-  return ((editor.pluginsByKey?.[key] as any) ??
+  return ((editor.plugins?.[key] as any) ??
     createPlugin({ key })) as EditorPlugin<O, A, T, S>;
 }
 

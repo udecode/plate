@@ -140,7 +140,7 @@ describe('Plate', () => {
           <Plate editor={editor}>{children}</Plate>
         );
         const { rerender, result } = renderHook(
-          () => usePlateSelectors().editor().plugins,
+          () => usePlateSelectors().editor().pluginList,
           {
             initialProps: {
               editor,
@@ -151,7 +151,7 @@ describe('Plate', () => {
 
         expect(result.current.at(-1)!.key).toBe('test');
 
-        editor.plugins = [createPlugin({ key: 'test2' })];
+        editor.pluginList = [createPlugin({ key: 'test2' })];
 
         rerender({
           editor,
@@ -170,7 +170,7 @@ describe('Plate', () => {
       );
 
       const { result } = renderHook(
-        () => usePlateSelectors().editor().plugins,
+        () => usePlateSelectors().editor().pluginList,
         {
           wrapper,
         }
@@ -191,7 +191,7 @@ describe('Plate', () => {
         <Plate editor={editor}>{children}</Plate>
       );
       const { rerender, result } = renderHook(
-        ({ editor }) => usePlateSelectors(editor.id).editor().plugins,
+        ({ editor }) => usePlateSelectors(editor.id).editor().pluginList,
         {
           initialProps: { editor: editor1 },
           wrapper,

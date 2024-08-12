@@ -41,9 +41,9 @@ export const resolvePlugin = <P extends AnyPlatePlugin>(
 
   if (validPluginToInjectPlugin && validPlugins && validPlugins.length > 0) {
     plugin.inject = plugin.inject || {};
-    plugin.inject.pluginsByKey = merge(
+    plugin.inject.plugins = merge(
       {},
-      plugin.inject.pluginsByKey,
+      plugin.inject.plugins,
       Object.fromEntries(
         validPlugins.map((validPlugin) => {
           const injectedPlugin = validPluginToInjectPlugin({
