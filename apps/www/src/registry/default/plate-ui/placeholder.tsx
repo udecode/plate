@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { cn } from '@udecode/cn';
-import { ParagraphPlugin } from '@udecode/plate-common';
+import { ParagraphPlugin } from '@udecode/plate-common/react';
 import {
   type PlaceholderProps,
   createNodeHOC,

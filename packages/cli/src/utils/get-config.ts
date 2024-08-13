@@ -27,7 +27,6 @@ export const DEFAULT_TAILWIND_CONFIG = 'tailwind.config.js';
 
 export const DEFAULT_TAILWIND_BASE_COLOR = 'slate';
 
-// TODO: Figure out if we want to support all cosmiconfig formats.
 const explorerPlateComponents = cosmiconfig('components', {
   searchPlaces: ['plate-components.json'],
 });

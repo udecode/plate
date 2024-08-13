@@ -4,4 +4,3 @@
 
 export * from './useIncrementVersion';
 export * from './useRedecorate';
-export * from './useReplaceEditor';

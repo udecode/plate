@@ -35,7 +35,6 @@ export function rehypeComponent() {
                 let source = fs.readFileSync(filePath, 'utf8');
 
                 // Replace imports.
-                // TODO: Use @swc/core and a visitor to replace this.
                 // For now a simple regex should do.
                 source = source.replaceAll(
                   `@/registry/${style.name}/`,
@@ -97,7 +96,6 @@ export function rehypeComponent() {
                 let source = fs.readFileSync(filePath, 'utf8');
 
                 // Replace imports.
-                // TODO: Use @swc/core and a visitor to replace this.
                 // For now a simple regex should do.
                 source = source.replaceAll(
                   `@/registry/${style.name}/`,
@@ -176,7 +174,6 @@ export function rehypeComponent() {
               extractClassname.value !== 'false'
             ) {
               // Extract className from string
-              // TODO: Use @swc/core and a visitor to extract this.
               // For now, a simple regex should do.
               const values = source.match(/className="(.*)"/);
               const className = values ? values[1] : '';

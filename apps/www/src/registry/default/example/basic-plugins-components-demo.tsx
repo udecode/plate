@@ -8,7 +8,6 @@ import {
 } from '@udecode/plate-basic-marks';
 import { BlockquotePlugin } from '@udecode/plate-block-quote';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { ParagraphPlugin } from '@udecode/plate-common';
 import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 import { HeadingPlugin } from '@udecode/plate-heading';
 
@@ -19,7 +18,6 @@ export default function BasicPluginsComponentsDemo() {
   const editor = usePlateEditor({
     override: { components: PlateUI },
     plugins: [
-      ParagraphPlugin,
       BlockquotePlugin,
       CodeBlockPlugin,
       HeadingPlugin,

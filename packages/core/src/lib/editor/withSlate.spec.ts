@@ -6,6 +6,7 @@ import {
   getStartPoint,
 } from '@udecode/slate';
 
+import { ParagraphPlugin, ReactPlugin } from '../../react';
 import { withPlate } from '../../react/editor/withPlate';
 import {
   DOMPlugin,
@@ -18,6 +19,7 @@ import {
   InsertDataPlugin,
   LengthPlugin,
   type LengthPluginOptions,
+  PlateApiPlugin,
   type PlatePlugin,
   SlateNextPlugin,
   createPlugin,
@@ -31,13 +33,14 @@ const coreKeys = [
   SlateNextPlugin.key,
   DOMPlugin.key,
   HistoryPlugin.key,
-  'plateApi',
+  PlateApiPlugin.key,
   InlineVoidPlugin.key,
   InsertDataPlugin.key,
   EventEditorPlugin.key,
   LengthPlugin.key,
   DeserializeHtmlPlugin.key,
   DeserializeAstPlugin.key,
+  ParagraphPlugin.key,
 ];
 
 describe('withPlate', () => {
@@ -194,6 +197,55 @@ describe('withPlate', () => {
 
       const customPlugin = getPlugin(editor, 'custom');
       expect(customPlugin.type).toBe('overriddenType');
+    });
+  });
+
+  describe('when replacing core plugins', () => {
+    it('should replace core plugins with custom plugins, maintain order, and add additional plugins', () => {
+      const additionalPlugin = createPlugin({
+        key: 'additional',
+        type: 'additional',
+      });
+
+      const editor = withPlate(createTEditor(), {
+        id: '1',
+        plugins: [ParagraphPlugin, ReactPlugin, additionalPlugin],
+      });
+
+      const pluginKeys = editor.pluginList.map((plugin) => plugin.key);
+      const pluginTypes = editor.pluginList.map((plugin) => plugin.type);
+
+      // Check if ReactPlugin replaced DOMPlugin
+      expect(pluginKeys).toContain(ReactPlugin.key);
+      expect(pluginTypes).toContain(ReactPlugin.type);
+
+      // Check if ParagraphPlugin is present
+      expect(pluginKeys).toContain(ParagraphPlugin.key);
+      expect(pluginTypes).toContain(ParagraphPlugin.type);
+
+      // Check if additional plugin is added
+      expect(pluginKeys).toContain('additional');
+      expect(pluginTypes).toContain('additional');
+
+      // Check if the order is correct
+      const reactIndex = pluginKeys.indexOf(ReactPlugin.key);
+      const paragraphIndex = pluginKeys.indexOf(ParagraphPlugin.key);
+      const additionalIndex = pluginKeys.indexOf('additional');
+
+      expect(reactIndex).toBeLessThan(paragraphIndex);
+      expect(paragraphIndex).toBeLessThan(additionalIndex);
+
+      // Check if other core plugins are still present (e.g., HistoryPlugin)
+      expect(pluginKeys).toContain('history');
+
+      // Ensure the total number of plugins is correct
+      // This number should be the sum of:
+      // 1. Number of core plugins
+      // 2. Number of replacing plugins (ReactPlugin, ParagraphPlugin)
+      // 3. Number of additional plugins (additionalPlugin)
+      // Minus the number of replaced plugins (DOMPlugin)
+      const expectedPluginCount = editor.pluginList.length;
+      expect(pluginKeys).toHaveLength(expectedPluginCount);
     });
   });
 

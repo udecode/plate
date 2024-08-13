@@ -61,5 +61,5 @@ function PlateInner({
 export function Plate<E extends PlateEditor = PlateEditor>(
   props: PlateProps<E>
 ) {
-  return <PlateInner key={props.editor.id?.toString()} {...(props as any)} />;
+  return <PlateInner key={props.editor.key} {...(props as any)} />;
 }

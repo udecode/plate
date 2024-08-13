@@ -8,6 +8,7 @@ import {
   type WithSlateOptions,
   withSlate,
 } from '../../lib';
+import { ParagraphPlugin } from '../plugins';
 import { ReactPlugin } from '../plugins/react';
 
 /**
@@ -22,11 +23,11 @@ export const withPlate = <
   P extends AnyPlatePlugin = CorePlugin,
 >(
   e: TEditor,
-  options: WithSlateOptions<V, P> = {}
+  { plugins = [], ...options }: WithSlateOptions<V, P> = {}
 ) => {
   return withSlate<V, P>(e, {
-    domPlugin: ReactPlugin,
     ...options,
+    plugins: [ReactPlugin as P, ParagraphPlugin as P, ...plugins],
   });
 };
 

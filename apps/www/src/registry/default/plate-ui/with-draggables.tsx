@@ -2,8 +2,10 @@ import type { FC } from 'react';
 
 import { BlockquotePlugin } from '@udecode/plate-block-quote';
 import { CodeBlockPlugin } from '@udecode/plate-code-block';
-import { ParagraphPlugin } from '@udecode/plate-common';
-import { createNodesWithHOC } from '@udecode/plate-common/react';
+import {
+  ParagraphPlugin,
+  createNodesWithHOC,
+} from '@udecode/plate-common/react';
 import {
   type WithDraggableOptions,
   withDraggable as withDraggablePrimitive,

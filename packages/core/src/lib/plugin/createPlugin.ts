@@ -96,6 +96,7 @@ export function createPlugin<
     {
       __extensions: initialExtension ? [initialExtension] : [],
       __methodExtensions: [],
+      // __configuration: null,
       api: {},
       dependencies: [],
       editor: {},

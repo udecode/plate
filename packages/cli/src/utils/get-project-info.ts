@@ -11,7 +11,6 @@ import {
   resolveConfigPaths,
 } from '../utils/get-config';
 
-// TODO: Add support for more frameworks.
 // We'll start with Next.js for now.
 const PROJECT_TYPES = [
   'next-app',

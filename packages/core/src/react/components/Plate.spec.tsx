@@ -7,7 +7,7 @@ import isEqual from 'lodash/isEqual';
 import memoize from 'lodash/memoize';
 
 import { type PlatePlugins, createPlugin } from '../../lib';
-import { createPlateEditor } from '../editor';
+import { createPlateEditor, usePlateEditor } from '../editor';
 import {
   PlateController,
   useEditorRef,
@@ -426,6 +426,43 @@ describe('Plate', () => {
           </Plate>
         )
       ).not.toThrow();
+    });
+  });
+
+  describe('Plate remounting', () => {
+    it('should remount when editor is recreated', () => {
+      let mountCount = 0;
+
+      const MountCounter = () => {
+        React.useEffect(() => {
+          mountCount++;
+        }, []);
+
+        return null;
+      };
+
+      const TestComponent = ({ dep }: { dep: number }) => {
+        const editor = usePlateEditor({ id: 'test' }, [dep]);
+
+        return (
+          <Plate editor={editor}>
+            <PlateContent />
+            <MountCounter />
+          </Plate>
+        );
+      };
+
+      const { rerender } = render(<TestComponent dep={1} />);
+
+      expect(mountCount).toBe(1);
+
+      // Rerender with the same dependency
+      rerender(<TestComponent dep={1} />);
+      expect(mountCount).toBe(1);
+
+      // Rerender with a different dependency
+      rerender(<TestComponent dep={2} />);
+      expect(mountCount).toBe(2);
     });
   });
 });

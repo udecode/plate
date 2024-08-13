@@ -4,7 +4,7 @@ import { cn } from '@udecode/cn';
 import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks';
 import { SoftBreakPlugin } from '@udecode/plate-break';
 import { type Value, createPlugin, isInline } from '@udecode/plate-common';
-import { ParagraphPlugin } from '@udecode/plate-common';
+import { ParagraphPlugin } from '@udecode/plate-common/react';
 import {
   Plate,
   PlateContent,
@@ -219,7 +219,6 @@ const initialValue: Value = [
 ];
 
 const plugins = [
-  ParagraphPlugin,
   InlinePlugin.withComponent(InlineElement),
   InlineVoidPlugin.withComponent(InlineVoidElement),
   BoldPlugin,

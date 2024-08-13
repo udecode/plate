@@ -14,7 +14,6 @@ import type { InferPlugins, TPlateEditor } from './PlateEditor';
 
 import {
   type CorePlugin,
-  type GetCorePluginsOptions,
   type PlateEditor,
   pipeNormalizeInitialValue,
   resolvePlugins,
@@ -37,32 +36,10 @@ export type WithSlateOptions<
    */
   autoSelect?: 'end' | 'start' | boolean;
 
-  /**
-   * Plugin that implements `ReactEditor` functionality from `slate-react`.
-   *
-   * @remarks
-   *   - Use `ReactPlugin` when working with React applications.
-   *   - The default `DOMPlugin` sets noop for each `ReactEditor` method.
-   *   - This plugin is crucial for integrating Slate with the DOM or React
-   *       environment.
-   *
-   * @example
-   *   // Using ReactPlugin for React applications
-   *   withSlate({
-   *     domPlugin: ReactPlugin,
-   *   });
-   *
-   * @example
-   *   // Using custom DOM plugin
-   *   withPlate({
-   *     domPlugin: MyCustomDOMPlugin,
-   *   });
-   *
-   * @default DOMPlugin
-   */
-  domPlugin?: AnyPlatePlugin;
-
   id?: any;
+
+  /** Specifies the maximum number of characters allowed in the editor. */
+  maxLength?: number;
 
   plugins?: P[];
 
@@ -81,24 +58,23 @@ export type WithSlateOptions<
   shouldNormalizeEditor?: boolean;
 
   value?: V;
-} & GetCorePluginsOptions &
-  Pick<
-    Partial<AnyPlatePlugin>,
-    | 'api'
-    | 'decorate'
-    | 'handlers'
-    | 'inject'
-    | 'normalizeInitialValue'
-    | 'options'
-    | 'override'
-    | 'renderAboveEditable'
-    | 'renderAboveSlate'
-    | 'renderAfterEditable'
-    | 'renderBeforeEditable'
-    | 'transforms'
-    | 'useHooks'
-    | 'withOverrides'
-  >;
+} & Pick<
+  Partial<AnyPlatePlugin>,
+  | 'api'
+  | 'decorate'
+  | 'handlers'
+  | 'inject'
+  | 'normalizeInitialValue'
+  | 'options'
+  | 'override'
+  | 'renderAboveEditable'
+  | 'renderAboveSlate'
+  | 'renderAfterEditable'
+  | 'renderBeforeEditable'
+  | 'transforms'
+  | 'useHooks'
+  | 'withOverrides'
+>;
 
 /**
  * Applies Plate enhancements to an editor instance (non-React version).
@@ -118,7 +94,6 @@ export const withSlate = <
   e: TEditor,
   {
     autoSelect,
-    domPlugin,
     id,
     maxLength,
     plugins = [],
@@ -137,9 +112,9 @@ export const withSlate = <
   editor.isFallback = false;
 
   const corePlugins = getCorePlugins({
-    domPlugin,
     maxLength,
-  }).filter((p) => !editor.plugins?.[p.key]);
+    plugins,
+  });
 
   let rootPluginInstance = createPlugin({
     key: 'root',

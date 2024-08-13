@@ -28,8 +28,11 @@ import {
 import { CaptionPlugin } from '@udecode/plate-caption';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { CommentsPlugin } from '@udecode/plate-comments';
-import { ParagraphPlugin } from '@udecode/plate-common';
-import { Plate, usePlateEditor } from '@udecode/plate-common/react';
+import {
+  ParagraphPlugin,
+  Plate,
+  usePlateEditor,
+} from '@udecode/plate-common/react';
 import { DndPlugin } from '@udecode/plate-dnd';
 import { EmojiPlugin } from '@udecode/plate-emoji';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw';
@@ -124,7 +127,6 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
       },
       plugins: [
         // Nodes
-        ParagraphPlugin,
         HeadingPlugin,
         BlockquotePlugin,
         CodeBlockPlugin.configure({
