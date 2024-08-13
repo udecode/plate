@@ -1,6 +1,10 @@
 import { AutoformatRule } from '@udecode/plate-autoformat';
 import { ListStyleType, toggleIndentList } from '@udecode/plate-indent-list';
 
+
+
+
+
 export const autoformatIndentLists: AutoformatRule[] = [
   {
     mode: 'block',
@@ -15,7 +19,8 @@ export const autoformatIndentLists: AutoformatRule[] = [
   {
     mode: 'block',
     type: 'list',
-    match: ['1. ', '1) '],
+    match: ['^\\d+\\.$ ', '^\\d+\\)$ '],
+    matchByRegex: true,
     format: (editor) =>
       toggleIndentList(editor, {
         listStyleType: ListStyleType.Decimal,

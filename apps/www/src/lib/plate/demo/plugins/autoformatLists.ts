@@ -21,7 +21,8 @@ export const autoformatLists: AutoformatRule[] = [
   },
   {
     format: (editor) => formatList(editor, ELEMENT_OL),
-    match: ['1. ', '1) '],
+    match: ['^\\d+\\.$ ', '^\\d+\\)$ '],
+    matchByRegex: true,
     mode: 'block',
     preFormat,
     type: ELEMENT_LI,
