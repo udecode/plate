@@ -5,7 +5,6 @@ import {
 } from '@udecode/plate-common';
 import { onKeyDownToggleMark } from '@udecode/plate-common/react';
 
-export const MARK_ITALIC = 'italic';
 
 /** Enables support for italic formatting. */
 export const ItalicPlugin = createPlugin<'italic', ToggleMarkPluginOptions>({
@@ -25,7 +24,7 @@ export const ItalicPlugin = createPlugin<'italic', ToggleMarkPluginOptions>({
     onKeyDown: onKeyDownToggleMark,
   },
   isLeaf: true,
-  key: MARK_ITALIC,
+  key: 'italic',
   options: {
     hotkey: 'mod+i',
   },

@@ -6,13 +6,14 @@ import {
 
 import type { TSuggestionText } from '../types';
 
-import { MARK_SUGGESTION } from '../constants';
+import { SuggestionPlugin } from '../SuggestionPlugin';
 
 export const findSuggestionNode = <E extends PlateEditor>(
   editor: E,
   { match, ...options }: FindNodeOptions<E> = {}
 ) =>
   findNode<TSuggestionText>(editor, {
-    match: (n, p) => n[MARK_SUGGESTION] && (!match || (match as any)(n, p)),
+    match: (n, p) =>
+      n[SuggestionPlugin.key] && (!match || (match as any)(n, p)),
     ...options,
   });

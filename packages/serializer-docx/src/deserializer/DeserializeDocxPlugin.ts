@@ -1,7 +1,7 @@
 import { getPluginType } from '@udecode/plate-common';
 import {
   type DeserializeHtml,
-  KEY_DESERIALIZE_HTML,
+  DeserializeHtmlPlugin,
   createPlugin,
 } from '@udecode/plate-common';
 
@@ -15,8 +15,6 @@ import { getDocxListIndent } from '../docx-cleaner/utils/getDocxListIndent';
 import { getTextListStyleType } from '../docx-cleaner/utils/getTextListStyleType';
 import { isDocxContent } from '../docx-cleaner/utils/isDocxContent';
 import { isDocxList } from '../docx-cleaner/utils/isDocxList';
-
-export const KEY_DESERIALIZE_DOCX = 'deserializeDocx';
 
 const getListNode =
   (type: string): DeserializeHtml['getNode'] =>
@@ -51,7 +49,7 @@ const getListNode =
 export const DeserializeDocxPlugin = createPlugin((editor) => ({
   inject: {
     plugins: {
-      [KEY_DESERIALIZE_HTML]: {
+      [DeserializeHtmlPlugin.key]: {
         editor: {
           insertData: {
             transformData: ({ data, dataTransfer }) => {
@@ -64,7 +62,7 @@ export const DeserializeDocxPlugin = createPlugin((editor) => ({
       },
     },
   },
-  key: KEY_DESERIALIZE_DOCX,
+  key: 'deserializeDocx',
   override: {
     plugins: {
       ...Object.fromEntries(

@@ -7,7 +7,7 @@ import {
 
 import type { TTableRowElement, TablePluginOptions } from './types';
 
-import { ELEMENT_TABLE } from './TablePlugin';
+import { TablePlugin } from './TablePlugin';
 import { getTableGridAbove } from './queries/getTableGridAbove';
 
 /** If selection is in a table, get subtable above. */
@@ -24,7 +24,7 @@ export const withGetFragmentTable: WithOverride<TablePluginOptions> = ({
     const newFragment: TDescendant[] = [];
 
     fragment.forEach((node) => {
-      if (node.type === getPluginType(editor, ELEMENT_TABLE)) {
+      if (node.type === getPluginType(editor, TablePlugin.key)) {
         const rows = node.children as TTableRowElement[];
 
         const rowCount = rows.length;

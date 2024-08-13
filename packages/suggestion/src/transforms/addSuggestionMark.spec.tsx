@@ -5,7 +5,8 @@ import type { PlateEditor } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from '../constants';
+import { KEY_SUGGESTION_ID } from '../SuggestionPlugin';
+import { SuggestionPlugin } from '../SuggestionPlugin';
 import { addSuggestionMark } from './addSuggestionMark';
 
 jsx;
@@ -34,7 +35,7 @@ describe('addSuggestionMark', () => {
   // });
 
   describe('when editor.activeSuggestionId is not defined', () => {
-    describe('when editor.marks?.[MARK_SUGGESTION] is not defined', () => {
+    describe('when editor.marks?.[SuggestionPlugin.key] is not defined', () => {
       it('should add marks', () => {
         const input = (
           <editor>
@@ -50,7 +51,7 @@ describe('addSuggestionMark', () => {
         });
 
         addSuggestionMark(editor);
-        expect(editor.marks?.[MARK_SUGGESTION]).toBeTruthy();
+        expect(editor.marks?.[SuggestionPlugin.key]).toBeTruthy();
         expect(editor.marks?.[KEY_SUGGESTION_ID]).toBeTruthy();
       });
     });

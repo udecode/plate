@@ -5,11 +5,9 @@ import type { HeadingPluginOptions, HeadingsPluginOptions } from './types';
 
 import { KEYS_HEADING } from './constants';
 
-export const KEY_HEADING = 'heading';
-
 /** Enables support for headings with configurable levels (from 1 to 6). */
 export const HeadingPlugin = createPlugin<'heading', HeadingsPluginOptions>({
-  key: KEY_HEADING,
+  key: 'heading',
   options: {
     levels: [1, 2, 3, 4, 5, 6],
   },

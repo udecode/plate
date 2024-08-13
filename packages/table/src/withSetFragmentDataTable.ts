@@ -11,7 +11,7 @@ import { Path } from 'slate';
 
 import type { TTableCellElement, TablePluginOptions } from './types';
 
-import { ELEMENT_TH } from './TablePlugin';
+import { TableCellHeaderPlugin } from './TablePlugin';
 import { getColSpan, getRowSpan, getTableGridAbove } from './queries/index';
 
 export const withSetFragmentDataTable: WithOverride<TablePluginOptions> = ({
@@ -82,7 +82,7 @@ export const withSetFragmentDataTable: WithOverride<TablePluginOptions> = ({
 
         const cellStrings: string[] = [];
         const rowElement =
-          row.type === getPluginType(editor, ELEMENT_TH)
+          row.type === getPluginType(editor, TableCellHeaderPlugin.key)
             ? document.createElement('th')
             : document.createElement('tr');
 

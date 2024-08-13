@@ -5,7 +5,7 @@ import {
   getPluginType,
 } from '@udecode/plate-common';
 
-import { ELEMENT_TABLE } from '../TablePlugin';
+import { TablePlugin } from '../TablePlugin';
 
 export const getTableAbove = <E extends PlateEditor>(
   editor: E,
@@ -13,7 +13,7 @@ export const getTableAbove = <E extends PlateEditor>(
 ) =>
   getBlockAbove(editor, {
     match: {
-      type: getPluginType(editor, ELEMENT_TABLE),
+      type: getPluginType(editor, TablePlugin.key),
     },
     ...options,
   });

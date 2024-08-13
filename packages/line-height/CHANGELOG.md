@@ -279,7 +279,7 @@
 
 - [#1190](https://github.com/udecode/plate/pull/1190) by [@zbeyens](https://github.com/zbeyens) –
   - `setLineHeight`: option `lineHeight` renamed to `value`
-  - removed `getLineHeightOverrideProps` in favor of `getOverrideProps(KEY_LINE_HEIGHT)`
+  - removed `getLineHeightOverrideProps` in favor of `getOverrideProps(LineHeightPlugin.key)`
 
 ## 6.4.1
 

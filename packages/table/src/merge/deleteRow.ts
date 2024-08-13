@@ -18,7 +18,7 @@ import type {
   TablePluginOptions,
 } from '../types';
 
-import { ELEMENT_TABLE } from '../TablePlugin';
+import { TablePlugin } from '../TablePlugin';
 import { getTableColumnCount } from '../queries';
 import { getRowSpan } from '../queries/getRowSpan';
 import { getCellTypes } from '../utils';
@@ -29,16 +29,16 @@ import { getCellIndices } from './getCellIndices';
 export const deleteTableMergeRow = (editor: PlateEditor) => {
   if (
     someNode(editor, {
-      match: { type: getPluginType(editor, ELEMENT_TABLE) },
+      match: { type: getPluginType(editor, TablePlugin.key) },
     })
   ) {
     const { _cellIndices: cellIndices } = getPluginOptions<TablePluginOptions>(
       editor,
-      ELEMENT_TABLE
+      TablePlugin.key
     );
 
     const currentTableItem = getAboveNode<TTableElement>(editor, {
-      match: { type: getPluginType(editor, ELEMENT_TABLE) },
+      match: { type: getPluginType(editor, TablePlugin.key) },
     });
 
     if (!currentTableItem) return;

@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useMemo, useState } from 'react';
 
-import { KEY_DND } from '@udecode/plate-dnd';
+import { DndPlugin } from '@udecode/plate-dnd';
 import { uniqBy } from 'lodash';
 
 import {
@@ -307,7 +307,7 @@ export default function InstallationTab() {
     ');',
   ].join('\n');
 
-  const hasDnd = plugins.some((plugin) => plugin.id === KEY_DND);
+  const hasDnd = plugins.some((plugin) => plugin.id === DndPlugin.key);
 
   const hasCommentsPopover = components.some(
     (comp) => comp.id === 'comments-popover'

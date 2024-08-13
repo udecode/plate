@@ -1,8 +1,7 @@
-import type { ValueOf } from '@udecode/plate-common';
-
 import {
   type PlateEditor,
   type TDescendant,
+  type ValueOf,
   nanoid,
 } from '@udecode/plate-common';
 import { type ComputeDiffOptions, computeDiff } from '@udecode/plate-diff';

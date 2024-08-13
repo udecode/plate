@@ -5,8 +5,6 @@ import {
 } from '@udecode/plate-common';
 import { onKeyDownToggleMark } from '@udecode/plate-common/react';
 
-export const MARK_BOLD = 'bold';
-
 /** Enables support for bold formatting */
 export const BoldPlugin = createPlugin<'bold', ToggleMarkPluginOptions>({
   deserializeHtml: {
@@ -26,7 +24,7 @@ export const BoldPlugin = createPlugin<'bold', ToggleMarkPluginOptions>({
   },
   isLeaf: true,
 
-  key: MARK_BOLD,
+  key: 'bold',
   options: {
     hotkey: 'mod+b',
   },

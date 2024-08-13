@@ -1,7 +1,7 @@
 import { type PlateEditor, getPluginOptions } from '@udecode/plate-common';
 import { focusEditor } from '@udecode/plate-common/react';
 
-import { ELEMENT_LINK, type LinkPluginOptions } from '../LinkPlugin';
+import { LinkPlugin, type LinkPluginOptions } from '../LinkPlugin';
 import {
   floatingLinkActions,
   floatingLinkSelectors,
@@ -18,7 +18,7 @@ export const submitFloatingLink = (editor: PlateEditor) => {
 
   const { forceSubmit, transformInput } = getPluginOptions<LinkPluginOptions>(
     editor,
-    ELEMENT_LINK
+    LinkPlugin.key
   );
 
   const inputUrl = floatingLinkSelectors.url();

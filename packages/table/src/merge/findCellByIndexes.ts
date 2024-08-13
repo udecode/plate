@@ -1,7 +1,4 @@
-import {
-  type PlateEditor,
-  getPluginOptions,
-} from '@udecode/plate-common';
+import { type PlateEditor, getPluginOptions } from '@udecode/plate-common';
 
 import type {
   TTableCellElement,
@@ -9,7 +6,7 @@ import type {
   TablePluginOptions,
 } from '../types';
 
-import { ELEMENT_TABLE } from '../TablePlugin';
+import { TablePlugin } from '../TablePlugin';
 import { getCellIndices } from '../merge/getCellIndices';
 import { computeCellIndices } from './computeCellIndices';
 import { getCellIndicesWithSpans } from './getCellIndicesWithSpans';
@@ -22,7 +19,7 @@ export const findCellByIndexes = (
 ) => {
   const { _cellIndices: cellIndices } = getPluginOptions<TablePluginOptions>(
     editor,
-    ELEMENT_TABLE
+    TablePlugin.key
   );
 
   const allCells = table.children.flatMap(

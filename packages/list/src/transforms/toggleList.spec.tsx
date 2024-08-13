@@ -5,8 +5,12 @@ import {
   createSlateEditor,
   getPluginType,
 } from '@udecode/plate-common';
-import { ELEMENT_OL, ELEMENT_UL, ListPlugin } from '@udecode/plate-list';
-import { ELEMENT_IMAGE } from '@udecode/plate-media';
+import {
+  ListOrderedPlugin,
+  ListPlugin,
+  ListUnorderedPlugin,
+} from '@udecode/plate-list';
+import { ImagePlugin } from '@udecode/plate-media';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { toggleList } from './toggleList';
@@ -38,7 +42,9 @@ describe('toggle on', () => {
       plugins: [ListPlugin],
     });
 
-    toggleList(editor, { type: getPluginType(editor, ELEMENT_UL) });
+    toggleList(editor, {
+      type: getPluginType(editor, ListUnorderedPlugin.key),
+    });
 
     expect(input.children).toEqual(output.children);
   });
@@ -69,15 +75,17 @@ describe('toggle on', () => {
     const editor = createSlateEditor({
       editor: input,
       plugins: [
-        ListPlugin.extendPlugin(ELEMENT_UL, {
+        ListPlugin.extendPlugin(ListUnorderedPlugin.key, {
           options: {
-            validLiChildrenTypes: [ELEMENT_IMAGE],
+            validLiChildrenTypes: [ImagePlugin.key],
           },
         }),
       ],
     });
 
-    toggleList(editor, { type: getPluginType(editor, ELEMENT_UL) });
+    toggleList(editor, {
+      type: getPluginType(editor, ListUnorderedPlugin.key),
+    });
 
     expect(input.children).toEqual(output.children);
   });
@@ -112,7 +120,9 @@ describe('toggle on', () => {
       plugins: [ListPlugin],
     });
 
-    toggleList(editor, { type: getPluginType(editor, ELEMENT_UL) });
+    toggleList(editor, {
+      type: getPluginType(editor, ListUnorderedPlugin.key),
+    });
 
     expect(input.children).toEqual(output.children);
   });
@@ -151,7 +161,9 @@ describe('toggle on', () => {
       plugins: [ListPlugin],
     });
 
-    toggleList(editor, { type: getPluginType(editor, ELEMENT_UL) });
+    toggleList(editor, {
+      type: getPluginType(editor, ListUnorderedPlugin.key),
+    });
 
     expect(input.children).toEqual(output.children);
   });
@@ -200,15 +212,17 @@ describe('toggle on', () => {
     const editor = createSlateEditor({
       editor: input,
       plugins: [
-        ListPlugin.extendPlugin(ELEMENT_UL, {
+        ListPlugin.extendPlugin(ListUnorderedPlugin.key, {
           options: {
-            validLiChildrenTypes: [ELEMENT_IMAGE],
+            validLiChildrenTypes: [ImagePlugin.key],
           },
         }),
       ],
     });
 
-    toggleList(editor, { type: getPluginType(editor, ELEMENT_UL) });
+    toggleList(editor, {
+      type: getPluginType(editor, ListUnorderedPlugin.key),
+    });
 
     expect(input.children).toEqual(output.children);
   });
@@ -261,7 +275,9 @@ describe('toggle on', () => {
       plugins: [ListPlugin],
     });
 
-    toggleList(editor, { type: getPluginType(editor, ELEMENT_UL) });
+    toggleList(editor, {
+      type: getPluginType(editor, ListUnorderedPlugin.key),
+    });
 
     expect(input.children).toEqual(output.children);
   });
@@ -314,7 +330,9 @@ describe('toggle on', () => {
       plugins: [ListPlugin],
     });
 
-    toggleList(editor, { type: getPluginType(editor, ELEMENT_UL) });
+    toggleList(editor, {
+      type: getPluginType(editor, ListUnorderedPlugin.key),
+    });
 
     expect(input.children).toEqual(output.children);
   });
@@ -362,7 +380,9 @@ describe('toggle off', () => {
       plugins: [ListPlugin],
     });
 
-    toggleList(editor, { type: getPluginType(editor, ELEMENT_UL) });
+    toggleList(editor, {
+      type: getPluginType(editor, ListUnorderedPlugin.key),
+    });
 
     expect(input.children).toEqual(output.children);
   });
@@ -418,7 +438,9 @@ describe('toggle off', () => {
       plugins: [ListPlugin],
     });
 
-    toggleList(editor, { type: getPluginType(editor, ELEMENT_UL) });
+    toggleList(editor, {
+      type: getPluginType(editor, ListUnorderedPlugin.key),
+    });
 
     expect(input.children).toEqual(output.children);
   });
@@ -457,7 +479,9 @@ describe('toggle off', () => {
       plugins: [ListPlugin],
     });
 
-    toggleList(editor, { type: getPluginType(editor, ELEMENT_UL) });
+    toggleList(editor, {
+      type: getPluginType(editor, ListUnorderedPlugin.key),
+    });
 
     expect(input.children).toEqual(output.children);
   });
@@ -510,15 +534,17 @@ describe('toggle off', () => {
     const editor = createSlateEditor({
       editor: input,
       plugins: [
-        ListPlugin.extendPlugin(ELEMENT_UL, {
+        ListPlugin.extendPlugin(ListUnorderedPlugin.key, {
           options: {
-            validLiChildrenTypes: [ELEMENT_IMAGE],
+            validLiChildrenTypes: [ImagePlugin.key],
           },
         }),
       ],
     });
 
-    toggleList(editor, { type: getPluginType(editor, ELEMENT_UL) });
+    toggleList(editor, {
+      type: getPluginType(editor, ListUnorderedPlugin.key),
+    });
 
     expect(input.children).toEqual(output.children);
   });
@@ -553,7 +579,7 @@ describe('toggle over', () => {
       plugins: [ListPlugin],
     });
 
-    toggleList(editor, { type: getPluginType(editor, ELEMENT_OL) });
+    toggleList(editor, { type: getPluginType(editor, ListOrderedPlugin.key) });
 
     expect(input.children).toEqual(output.children);
   });
@@ -597,7 +623,7 @@ describe('toggle over', () => {
       plugins: [ListPlugin],
     });
 
-    toggleList(editor, { type: getPluginType(editor, ELEMENT_OL) });
+    toggleList(editor, { type: getPluginType(editor, ListOrderedPlugin.key) });
 
     expect(input.children).toEqual(output.children);
   });
@@ -643,7 +669,7 @@ describe('toggle over', () => {
       plugins: [ListPlugin],
     });
 
-    toggleList(editor, { type: getPluginType(editor, ELEMENT_OL) });
+    toggleList(editor, { type: getPluginType(editor, ListOrderedPlugin.key) });
 
     expect(input.children).toEqual(output.children);
   });
@@ -693,7 +719,7 @@ describe('toggle over', () => {
       plugins: [ListPlugin],
     });
 
-    toggleList(editor, { type: getPluginType(editor, ELEMENT_OL) });
+    toggleList(editor, { type: getPluginType(editor, ListOrderedPlugin.key) });
 
     expect(input.children).toEqual(output.children);
   });

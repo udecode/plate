@@ -1,4 +1,4 @@
-import { ELEMENT_PARAGRAPH, ParagraphPlugin } from '@udecode/plate-paragraph';
+import { ParagraphPlugin } from '@udecode/plate-common';
 
 import { serializeHtml } from '../../serializeHtml';
 import { createPlateUIEditor } from '../create-plate-ui-editor';
@@ -18,7 +18,7 @@ describe('when there is no deserializer', () => {
           nodes: [
             {
               children: [{ text: 'I am centered text!' }],
-              type: ELEMENT_PARAGRAPH,
+              type: ParagraphPlugin.key,
             },
           ],
         }

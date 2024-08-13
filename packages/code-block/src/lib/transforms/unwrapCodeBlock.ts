@@ -1,7 +1,7 @@
 import type { Location } from 'slate';
 
 import {
-  ELEMENT_DEFAULT,
+  ParagraphPlugin,
   type PlateEditor,
   getChildren,
   getNodeEntries,
@@ -11,13 +11,13 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 
-import { ELEMENT_CODE_BLOCK } from '../constants';
+import { CodeBlockPlugin } from '../CodeBlockPlugin';
 
 export const unwrapCodeBlock = (editor: PlateEditor) => {
   if (!editor.selection) return;
 
-  const codeBlockType = getPluginType(editor, ELEMENT_CODE_BLOCK);
-  const defaultType = getPluginType(editor, ELEMENT_DEFAULT);
+  const codeBlockType = getPluginType(editor, CodeBlockPlugin.key);
+  const defaultType = getPluginType(editor, ParagraphPlugin.key);
 
   withoutNormalizing(editor, () => {
     const codeBlockEntries = getNodeEntries(editor, {

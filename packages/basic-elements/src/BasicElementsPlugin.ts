@@ -1,10 +1,7 @@
 import { BlockquotePlugin } from '@udecode/plate-block-quote';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { createPlugin } from '@udecode/plate-common';
+import { ParagraphPlugin, createPlugin } from '@udecode/plate-common';
 import { HeadingPlugin } from '@udecode/plate-heading';
-import { ParagraphPlugin } from '@udecode/plate-paragraph';
-
-export const KEY_BASIC_ELEMENTS = 'basicElements';
 
 /**
  * Enables support for basic elements:
@@ -15,6 +12,6 @@ export const KEY_BASIC_ELEMENTS = 'basicElements';
  * - Paragraph
  */
 export const BasicElementsPlugin = createPlugin({
-  key: KEY_BASIC_ELEMENTS,
+  key: 'basicElements',
   plugins: [BlockquotePlugin, CodeBlockPlugin, HeadingPlugin, ParagraphPlugin],
 });

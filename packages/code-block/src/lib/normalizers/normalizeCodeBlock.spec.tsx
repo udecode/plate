@@ -4,7 +4,7 @@ import { type PlateEditor, getNode } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
+import { CodeBlockPlugin } from '../../react/CodeBlockPlugin.react';
 
 jsx;
 

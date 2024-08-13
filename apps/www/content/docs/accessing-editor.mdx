@@ -15,7 +15,7 @@ Use the first argument of the handler function.
 
 ```ts showLineNumbers {4,7}
 const createMyPlugin = createPlugin({
-  key: KEY_MY_PLUGIN,
+  key: 'my',
   handlers: {
     onKeyDown: (editor) => (event) => {
       // Do something with editor
@@ -35,7 +35,7 @@ For example, suppose you had this code and wanted to access the **`editor`** ins
 
 ```ts showLineNumbers
 const MyPlugin = createPlugin({
-  key: KEY_MY_PLUGIN,
+  key: 'my',
   deserializeHtml: {
     // Need editor here
   },
@@ -46,7 +46,7 @@ You would wrap the **`deserializeHtml`** option inside **`then`**.
 
 ```ts showLineNumbers {3,7}
 const MyPlugin = createPlugin({
-  key: KEY_MY_PLUGIN,
+  key: 'my',
   then: (editor) => ({
     deserializeHtml: {
       // Do something with editor
@@ -77,7 +77,7 @@ You can call these hooks from any React component that is rendered as a descenda
 
 ```tsx showLineNumbers {2}
 const Toolbar = () => {
-  const boldActive = useEditorSelector((editor) => isMarkActive(editor, MARK_BOLD), []);
+  const boldActive = useEditorSelector((editor) => isMarkActive(editor, BoldPlugin.key), []);
   // ...
 };
 

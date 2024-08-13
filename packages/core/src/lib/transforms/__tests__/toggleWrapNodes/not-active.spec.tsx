@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
+import { CodeBlockPlugin } from '@udecode/plate-code-block';
 import { jsx } from '@udecode/plate-test-utils';
 import { toggleWrapNodes } from '@udecode/slate-utils';
 
@@ -27,7 +27,7 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  toggleWrapNodes(input, ELEMENT_CODE_BLOCK);
+  toggleWrapNodes(input, CodeBlockPlugin.key);
 
   expect(input.children).toEqual(output.children);
 });

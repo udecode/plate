@@ -1,11 +1,11 @@
 /** @jsx jsx */
 
-import { BoldPlugin, MARK_BOLD } from '@udecode/plate-basic-marks';
+import { BoldPlugin } from '@udecode/plate-basic-marks';
 import { jsx } from '@udecode/plate-test-utils';
-import { onKeyDownToggleMark } from '@udecode/plate-utils/react';
 
-import { type ToggleMarkPluginOptions, getPlugin } from '../../../lib';
-import { createPlateEditor } from '../../editor';
+import { type ToggleMarkPluginOptions, getPlugin } from '../../lib';
+import { createPlateEditor } from '../editor';
+import { onKeyDownToggleMark } from './onKeyDownToggleMark';
 
 jsx;
 
@@ -44,7 +44,7 @@ it('should be', () => {
   onKeyDownToggleMark({
     editor,
     event,
-    plugin: getPlugin<ToggleMarkPluginOptions>(editor, MARK_BOLD),
+    plugin: getPlugin<ToggleMarkPluginOptions>(editor, BoldPlugin.key),
   });
   expect(editor.children).toEqual(output.children);
   expect(editor.selection).toEqual(output.selection);

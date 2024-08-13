@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
 import {
-  MARK_BOLD,
-  MARK_ITALIC,
-  MARK_UNDERLINE,
+  BoldPlugin,
+  ItalicPlugin,
+  UnderlinePlugin,
 } from '@udecode/plate-basic-marks';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
@@ -42,7 +42,7 @@ describe('when match is an array', () => {
               ignoreTrim: true,
               match: ['_***', '***_'],
               mode: 'mark',
-              type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
+              type: [UnderlinePlugin.key, BoldPlugin.key, ItalicPlugin.key],
             },
           ],
         }),
@@ -85,7 +85,7 @@ describe('when match is a string', () => {
               ignoreTrim: true,
               match: '_***',
               mode: 'mark',
-              type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
+              type: [UnderlinePlugin.key, BoldPlugin.key, ItalicPlugin.key],
             },
           ],
         }),

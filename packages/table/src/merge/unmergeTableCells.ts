@@ -17,7 +17,11 @@ import type {
   TablePluginOptions,
 } from '../types';
 
-import { ELEMENT_TABLE, ELEMENT_TH, ELEMENT_TR } from '../TablePlugin';
+import {
+  TableCellHeaderPlugin,
+  TablePlugin,
+  TableRowPlugin,
+} from '../TablePlugin';
 import { getTableGridAbove } from '../queries';
 import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';
@@ -30,7 +34,7 @@ export const unmergeTableCells = (editor: PlateEditor) => {
       _cellIndices: cellIndices,
       cellFactory,
       getCellChildren,
-    } = getPluginOptions<TablePluginOptions>(editor, ELEMENT_TABLE);
+    } = getPluginOptions<TablePluginOptions>(editor, TablePlugin.key);
 
     const cellEntries = getTableGridAbove(editor, { format: 'cell' });
     const [[cellElem, path]] = cellEntries;
@@ -40,7 +44,8 @@ export const unmergeTableCells = (editor: PlateEditor) => {
       return {
         ...cellFactory!({
           children,
-          header: cellElem.type === getPluginType(editor, ELEMENT_TH),
+          header:
+            cellElem.type === getPluginType(editor, TableCellHeaderPlugin.key),
         }),
         colSpan: 1,
         rowSpan: 1,
@@ -74,7 +79,7 @@ export const unmergeTableCells = (editor: PlateEditor) => {
 
       const rowEntry = findNode(editor, {
         at: [...tablePath, row],
-        match: { type: getPluginType(editor, ELEMENT_TR) },
+        match: { type: getPluginType(editor, TableRowPlugin.key) },
       })!; // TODO: improve typing
 
       if (!rowEntry) {
@@ -112,7 +117,7 @@ export const unmergeTableCells = (editor: PlateEditor) => {
       const _rowPath = [...tablePath, currentRowPath];
       const rowEntry = findNode(editor, {
         at: _rowPath,
-        match: { type: getPluginType(editor, ELEMENT_TABLE) },
+        match: { type: getPluginType(editor, TablePlugin.key) },
       });
 
       for (let j = 0; j < colPaths.length; j++) {
@@ -139,7 +144,7 @@ export const unmergeTableCells = (editor: PlateEditor) => {
           editor,
           {
             children: newRowChildren,
-            type: getPluginType(editor, ELEMENT_TR),
+            type: getPluginType(editor, TableRowPlugin.key),
           },
           { at: _rowPath }
         );

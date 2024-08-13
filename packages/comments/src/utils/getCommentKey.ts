@@ -1,3 +1,3 @@
-import { MARK_COMMENT } from '../constants';
+import { CommentsPlugin } from '../CommentsPlugin';
 
-export const getCommentKey = (id: string) => `${MARK_COMMENT}_${id}`;
+export const getCommentKey = (id: string) => `${CommentsPlugin.key}_${id}`;

@@ -5,8 +5,6 @@ import {
 } from '@udecode/plate-common';
 import { onKeyDownToggleMark } from '@udecode/plate-common/react';
 
-export const MARK_UNDERLINE = 'underline';
-
 /** Enables support for underline formatting. */
 export const UnderlinePlugin = createPlugin<
   'underline',
@@ -30,7 +28,7 @@ export const UnderlinePlugin = createPlugin<
     onKeyDown: onKeyDownToggleMark,
   },
   isLeaf: true,
-  key: MARK_UNDERLINE,
+  key: 'underline',
   options: {
     hotkey: 'mod+u',
   },

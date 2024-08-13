@@ -5,7 +5,7 @@ import { useReadOnly, useSelected } from 'slate-react';
 
 import type { TTableCellElement, TablePluginOptions } from '../types';
 
-import { ELEMENT_TABLE } from '../TablePlugin';
+import { TablePlugin } from '../TablePlugin';
 import { getTableGridAbove } from '../queries';
 import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';
@@ -17,7 +17,7 @@ export const useTableMergeState = () => {
 
   const { enableMerging } = getPluginOptions<TablePluginOptions>(
     editorRef,
-    ELEMENT_TABLE
+    TablePlugin.key
   );
 
   if (!enableMerging) return { canMerge: false, canUnmerge: false };

@@ -5,7 +5,7 @@ import { Tweet } from 'react-tweet';
 import { cn, withRef } from '@udecode/cn';
 import { PlateElement, withHOC } from '@udecode/plate-common/react';
 import {
-  ELEMENT_MEDIA_EMBED,
+  MediaEmbedPlugin,
   parseTwitterUrl,
   parseVideoUrl,
   useMediaState,
@@ -39,7 +39,7 @@ export const MediaEmbedElement = withHOC(
     const provider = embed?.provider;
 
     return (
-      <MediaPopover pluginKey={ELEMENT_MEDIA_EMBED}>
+      <MediaPopover pluginKey={MediaEmbedPlugin.key}>
         <PlateElement
           className={cn('relative py-2.5', className)}
           ref={ref}

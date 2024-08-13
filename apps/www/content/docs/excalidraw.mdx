@@ -27,7 +27,7 @@ npm install @udecode/plate-excalidraw
 ```tsx
 import {
   createExcalidrawPlugin,
-  ELEMENT_EXCALIDRAW,
+  ExcalidrawPlugin,
   ExcalidrawElement,
 } from '@udecode/plate-excalidraw';
 import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
@@ -36,7 +36,7 @@ const plugins = [
   // ...otherPlugins
   createExcalidrawPlugin(),
   createSelectOnBackspacePlugin({
-    options: { query: { allow: [ELEMENT_EXCALIDRAW] } },
+    options: { query: { allow: [ExcalidrawPlugin.key] } },
   }),
 ];
 ```
@@ -63,7 +63,7 @@ The props and key for the Excalidraw element.
 <APISubListItem parent="props" name="key" type="string">
 The key for the Excalidraw element.
 
-- **Default:** `ELEMENT_EXCALIDRAW`
+- **Default:** `ExcalidrawPlugin.key`
 
 </APISubListItem>
 

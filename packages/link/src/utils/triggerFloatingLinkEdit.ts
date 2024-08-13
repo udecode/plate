@@ -7,12 +7,12 @@ import {
 
 import type { TLinkElement } from '../types';
 
-import { ELEMENT_LINK } from '../LinkPlugin';
+import { LinkPlugin } from '../LinkPlugin';
 import { floatingLinkActions } from '../components/FloatingLink/floatingLinkStore';
 
 export const triggerFloatingLinkEdit = (editor: PlateEditor) => {
   const entry = findNode<TLinkElement>(editor, {
-    match: { type: getPluginType(editor, ELEMENT_LINK) },
+    match: { type: getPluginType(editor, LinkPlugin.key) },
   });
 
   if (!entry) return;

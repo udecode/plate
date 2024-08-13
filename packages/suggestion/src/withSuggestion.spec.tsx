@@ -4,8 +4,8 @@ import { type PlateEditor, normalizeEditor } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
+import { KEY_SUGGESTION_ID } from './SuggestionPlugin';
 import { SuggestionPlugin } from './SuggestionPlugin';
-import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from './constants';
 
 jsx;
 
@@ -72,7 +72,9 @@ describe('withSuggestion', () => {
 
           editor.insertText('test');
 
-          expect(editor.children[0].children[1][MARK_SUGGESTION]).toBeTruthy();
+          expect(
+            editor.children[0].children[1][SuggestionPlugin.key]
+          ).toBeTruthy();
           expect(
             editor.children[0].children[1][KEY_SUGGESTION_ID]
           ).toBeTruthy();
@@ -206,7 +208,9 @@ describe('withSuggestion', () => {
 
           editor.deleteBackward('character');
 
-          expect(editor.children[0].children[1][MARK_SUGGESTION]).toBeTruthy();
+          expect(
+            editor.children[0].children[1][SuggestionPlugin.key]
+          ).toBeTruthy();
           expect(
             editor.children[0].children[1].suggestionDeletion
           ).toBeTruthy();
@@ -236,7 +240,9 @@ describe('withSuggestion', () => {
 
           editor.deleteBackward('character');
 
-          expect(editor.children[0].children[1][MARK_SUGGESTION]).toBeTruthy();
+          expect(
+            editor.children[0].children[1][SuggestionPlugin.key]
+          ).toBeTruthy();
           expect(
             editor.children[0].children[1].suggestionDeletion
           ).toBeTruthy();
@@ -277,7 +283,9 @@ describe('withSuggestion', () => {
 
           editor.deleteBackward('line');
 
-          expect(editor.children[0].children[0][MARK_SUGGESTION]).toBeTruthy();
+          expect(
+            editor.children[0].children[0][SuggestionPlugin.key]
+          ).toBeTruthy();
           expect(
             editor.children[0].children[0].suggestionDeletion
           ).toBeTruthy();

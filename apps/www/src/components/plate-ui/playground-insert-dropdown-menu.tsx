@@ -4,14 +4,14 @@ import React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
+import { BlockquotePlugin } from '@udecode/plate-block-quote';
 import {
-  ELEMENT_CODE_BLOCK,
+  CodeBlockPlugin,
   insertEmptyCodeBlock,
 } from '@udecode/plate-code-block';
-import { insertEmptyElement } from '@udecode/plate-common';
+import { ParagraphPlugin, insertEmptyElement } from '@udecode/plate-common';
 import { focusEditor, useEditorRef } from '@udecode/plate-common/react';
-import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
+import { ExcalidrawPlugin } from '@udecode/plate-excalidraw';
 import {
   ELEMENT_H1,
   ELEMENT_H2,
@@ -20,21 +20,17 @@ import {
   ELEMENT_H5,
   ELEMENT_H6,
 } from '@udecode/plate-heading';
-import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
-import {
-  KEY_LIST_STYLE_TYPE,
-  toggleIndentList,
-} from '@udecode/plate-indent-list';
-import { ELEMENT_COLUMN_GROUP, insertColumnGroup } from '@udecode/plate-layout';
-import { ELEMENT_LINK, triggerFloatingLink } from '@udecode/plate-link';
+import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
+import { IndentListPlugin, toggleIndentList } from '@udecode/plate-indent-list';
+import { ColumnPlugin, insertColumnGroup } from '@udecode/plate-layout';
+import { LinkPlugin, triggerFloatingLink } from '@udecode/plate-link';
 import { toggleList } from '@udecode/plate-list';
 import {
-  ELEMENT_IMAGE,
-  ELEMENT_MEDIA_EMBED,
+  ImagePlugin,
+  MediaEmbedPlugin,
   insertMedia,
 } from '@udecode/plate-media';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
-import { ELEMENT_TABLE, insertTable } from '@udecode/plate-table';
+import { TablePlugin, insertTable } from '@udecode/plate-table';
 
 import { settingsStore } from '@/components/context/settings-store';
 import { Icons } from '@/components/icons';
@@ -56,7 +52,7 @@ const items = [
         description: 'Paragraph',
         icon: Icons.paragraph,
         label: 'Paragraph',
-        value: ELEMENT_PARAGRAPH,
+        value: ParagraphPlugin.key,
       },
       {
         description: 'Heading 1',
@@ -98,7 +94,7 @@ const items = [
         description: 'Table',
         icon: Icons.table,
         label: 'Table',
-        value: ELEMENT_TABLE,
+        value: TablePlugin.key,
       },
       {
         description: 'Bulleted list',
@@ -116,19 +112,19 @@ const items = [
         description: 'Quote (⌘+⇧+.)',
         icon: Icons.blockquote,
         label: 'Quote',
-        value: ELEMENT_BLOCKQUOTE,
+        value: BlockquotePlugin.key,
       },
       {
         description: 'Divider (---)',
         icon: Icons.hr,
         label: 'Divider',
-        value: ELEMENT_HR,
+        value: HorizontalRulePlugin.key,
       },
       {
         description: 'Columns',
         icon: Icons.LayoutIcon,
         label: 'Columns',
-        value: ELEMENT_COLUMN_GROUP,
+        value: ColumnPlugin.key,
       },
     ],
     label: 'Basic blocks',
@@ -139,25 +135,25 @@ const items = [
         description: 'Code (```)',
         icon: Icons.codeblock,
         label: 'Code',
-        value: ELEMENT_CODE_BLOCK,
+        value: CodeBlockPlugin.key,
       },
       {
         description: 'Image',
         icon: Icons.image,
         label: 'Image',
-        value: ELEMENT_IMAGE,
+        value: ImagePlugin.key,
       },
       {
         description: 'Embed',
         icon: Icons.embed,
         label: 'Embed',
-        value: ELEMENT_MEDIA_EMBED,
+        value: MediaEmbedPlugin.key,
       },
       {
         description: 'Excalidraw',
         icon: Icons.excalidraw,
         label: 'Excalidraw',
-        value: ELEMENT_EXCALIDRAW,
+        value: ExcalidrawPlugin.key,
       },
     ],
     label: 'Media',
@@ -168,7 +164,7 @@ const items = [
         description: 'Link',
         icon: Icons.link,
         label: 'Link',
-        value: ELEMENT_LINK,
+        value: LinkPlugin.key,
       },
     ],
     label: 'Inline',
@@ -203,36 +199,36 @@ export function PlaygroundInsertDropdownMenu(props: DropdownMenuProps) {
                   key={type}
                   onSelect={async () => {
                     switch (type) {
-                      case ELEMENT_COLUMN_GROUP: {
+                      case ColumnPlugin.key: {
                         insertColumnGroup(editor);
 
                         break;
                       }
-                      case ELEMENT_CODE_BLOCK: {
+                      case CodeBlockPlugin.key: {
                         insertEmptyCodeBlock(editor);
 
                         break;
                       }
-                      case ELEMENT_IMAGE: {
-                        await insertMedia(editor, { type: ELEMENT_IMAGE });
+                      case ImagePlugin.key: {
+                        await insertMedia(editor, { type: ImagePlugin.key });
 
                         break;
                       }
-                      case ELEMENT_MEDIA_EMBED: {
+                      case MediaEmbedPlugin.key: {
                         await insertMedia(editor, {
-                          type: ELEMENT_MEDIA_EMBED,
+                          type: MediaEmbedPlugin.key,
                         });
 
                         break;
                       }
                       case 'ul':
                       case 'ol': {
-                        insertEmptyElement(editor, ELEMENT_PARAGRAPH, {
+                        insertEmptyElement(editor, ParagraphPlugin.key, {
                           nextBlock: true,
                           select: true,
                         });
 
-                        if (settingsStore.get.checkedId(KEY_LIST_STYLE_TYPE)) {
+                        if (settingsStore.get.checkedId(IndentListPlugin.key)) {
                           toggleIndentList(editor, {
                             listStyleType: type === 'ul' ? 'disc' : 'decimal',
                           });
@@ -242,12 +238,12 @@ export function PlaygroundInsertDropdownMenu(props: DropdownMenuProps) {
 
                         break;
                       }
-                      case ELEMENT_TABLE: {
+                      case TablePlugin.key: {
                         insertTable(editor);
 
                         break;
                       }
-                      case ELEMENT_LINK: {
+                      case LinkPlugin.key: {
                         triggerFloatingLink(editor, { focused: true });
 
                         break;

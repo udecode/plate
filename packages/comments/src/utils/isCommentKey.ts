@@ -1,3 +1,4 @@
-import { MARK_COMMENT } from '../constants';
+import { CommentsPlugin } from '../CommentsPlugin';
 
-export const isCommentKey = (key: string) => key.startsWith(`${MARK_COMMENT}_`);
+export const isCommentKey = (key: string) =>
+  key.startsWith(`${CommentsPlugin.key}_`);

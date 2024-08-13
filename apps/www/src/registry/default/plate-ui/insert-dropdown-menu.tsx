@@ -2,11 +2,10 @@ import React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
-import { insertEmptyElement } from '@udecode/plate-common';
+import { BlockquotePlugin } from '@udecode/plate-block-quote';
+import { ParagraphPlugin, insertEmptyElement } from '@udecode/plate-common';
 import { focusEditor, useEditorRef } from '@udecode/plate-common/react';
 import { ELEMENT_H1, ELEMENT_H2, ELEMENT_H3 } from '@udecode/plate-heading';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 
 import { Icons } from '@/components/icons';
 
@@ -28,7 +27,7 @@ const items = [
         description: 'Paragraph',
         icon: Icons.paragraph,
         label: 'Paragraph',
-        value: ELEMENT_PARAGRAPH,
+        value: ParagraphPlugin.key,
       },
       {
         description: 'Heading 1',
@@ -52,10 +51,10 @@ const items = [
         description: 'Quote (⌘+⇧+.)',
         icon: Icons.blockquote,
         label: 'Quote',
-        value: ELEMENT_BLOCKQUOTE,
+        value: BlockquotePlugin.key,
       },
       // {
-      //   value: ELEMENT_TABLE,
+      //   value: TablePlugin.key,
       //   label: 'Table',
       //   description: 'Table',
       //   icon: Icons.table,
@@ -73,7 +72,7 @@ const items = [
       //   icon: Icons.ol,
       // },
       // {
-      //   value: ELEMENT_HR,
+      //   value: HorizontalRulePlugin.key,
       //   label: 'Divider',
       //   description: 'Divider (---)',
       //   icon: Icons.hr,
@@ -85,25 +84,25 @@ const items = [
   //   label: 'Media',
   //   items: [
   //     {
-  //       value: ELEMENT_CODE_BLOCK,
+  //       value: CodeBlockPlugin.key,
   //       label: 'Code',
   //       description: 'Code (```)',
   //       icon: Icons.codeblock,
   //     },
   //     {
-  //       value: ELEMENT_IMAGE,
+  //       value: ImagePlugin.key,
   //       label: 'Image',
   //       description: 'Image',
   //       icon: Icons.image,
   //     },
   //     {
-  //       value: ELEMENT_MEDIA_EMBED,
+  //       value: MediaEmbedPlugin.key,
   //       label: 'Embed',
   //       description: 'Embed',
   //       icon: Icons.embed,
   //     },
   //     {
-  //       value: ELEMENT_EXCALIDRAW,
+  //       value: ExcalidrawPlugin.key,
   //       label: 'Excalidraw',
   //       description: 'Excalidraw',
   //       icon: Icons.excalidraw,
@@ -114,7 +113,7 @@ const items = [
   //   label: 'Inline',
   //   items: [
   //     {
-  //       value: ELEMENT_LINK,
+  //       value: LinkPlugin.key,
   //       label: 'Link',
   //       description: 'Link',
   //       icon: Icons.link,
@@ -151,31 +150,31 @@ export function InsertDropdownMenu(props: DropdownMenuProps) {
                   key={type}
                   onSelect={() => {
                     switch (type) {
-                      // case ELEMENT_CODE_BLOCK: {
+                      // case CodeBlockPlugin.key: {
                       //   insertEmptyCodeBlock(editor);
                       //
                       //   break;
                       // }
-                      // case ELEMENT_IMAGE: {
-                      //   await insertMedia(editor, { type: ELEMENT_IMAGE });
+                      // case ImagePlugin.key: {
+                      //   await insertMedia(editor, { type: ImagePlugin.key });
                       //
                       //   break;
                       // }
-                      // case ELEMENT_MEDIA_EMBED: {
+                      // case MediaEmbedPlugin.key: {
                       //   await insertMedia(editor, {
-                      //     type: ELEMENT_MEDIA_EMBED,
+                      //     type: MediaEmbedPlugin.key,
                       //   });
                       //
                       //   break;
                       // }
                       // case 'ul':
                       // case 'ol': {
-                      //   insertEmptyElement(editor, ELEMENT_PARAGRAPH, {
+                      //   insertEmptyElement(editor, ParagraphPlugin.key, {
                       //     select: true,
                       //     nextBlock: true,
                       //   });
                       //
-                      //   if (settingsStore.get.checkedId(KEY_LIST_STYLE_TYPE)) {
+                      //   if (settingsStore.get.checkedId(IndentListPlugin.key)) {
                       //     toggleIndentList(editor, {
                       //       listStyleType: type === 'ul' ? 'disc' : 'decimal',
                       //     });
@@ -185,12 +184,12 @@ export function InsertDropdownMenu(props: DropdownMenuProps) {
                       //
                       //   break;
                       // }
-                      // case ELEMENT_TABLE: {
+                      // case TablePlugin.key: {
                       //   insertTable(editor);
                       //
                       //   break;
                       // }
-                      // case ELEMENT_LINK: {
+                      // case LinkPlugin.key: {
                       //   triggerFloatingLink(editor, { focused: true });
                       //
                       //   break;

@@ -27,7 +27,7 @@ import { createTrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
 const plugins = [
   // ...otherPlugins
-  createTrailingBlockPlugin({ options: { type: ELEMENT_PARAGRAPH } }),
+  createTrailingBlockPlugin({ options: { type: ParagraphPlugin.key } }),
   createNormalizeTypesPlugin({
     options: {
       rules: [{ path: [0], strictType: ELEMENT_H1 }],

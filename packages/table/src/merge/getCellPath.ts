@@ -11,7 +11,7 @@ import type {
   TablePluginOptions,
 } from '../types';
 
-import { ELEMENT_TABLE } from '../TablePlugin';
+import { TablePlugin } from '../TablePlugin';
 import { getCellIndices } from './getCellIndices';
 
 export const getCellPath = (
@@ -22,7 +22,7 @@ export const getCellPath = (
 ) => {
   const { _cellIndices: cellIndices } = getPluginOptions<TablePluginOptions>(
     editor,
-    ELEMENT_TABLE
+    TablePlugin.key
   );
   const [tableNode, tablePath] = tableEntry;
 

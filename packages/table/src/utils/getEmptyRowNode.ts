@@ -6,7 +6,7 @@ import {
 
 import type { CellFactoryOptions, TablePluginOptions } from '../types';
 
-import { ELEMENT_TABLE, ELEMENT_TR } from '../TablePlugin';
+import { TablePlugin, TableRowPlugin } from '../TablePlugin';
 
 export interface GetEmptyRowNodeOptions extends CellFactoryOptions {
   colCount?: number;
@@ -18,13 +18,13 @@ export const getEmptyRowNode = (
 ) => {
   const { cellFactory } = getPluginOptions<TablePluginOptions>(
     editor,
-    ELEMENT_TABLE
+    TablePlugin.key
   );
 
   return {
     children: Array.from({ length: colCount })
       .fill(colCount)
       .map(() => cellFactory!(cellOptions)),
-    type: getPluginType(editor, ELEMENT_TR),
+    type: getPluginType(editor, TableRowPlugin.key),
   };
 };

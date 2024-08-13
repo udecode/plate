@@ -3,11 +3,11 @@
 import type { Range } from 'slate';
 
 import {
-  ELEMENT_CODE_BLOCK,
+  CodeBlockPlugin,
   insertEmptyCodeBlock,
 } from '@udecode/plate-code-block';
 import {
-  ELEMENT_DEFAULT,
+  ParagraphPlugin,
   type PlateEditor,
   getEditorString,
   getPluginType,
@@ -88,7 +88,7 @@ describe('when ``` at block start, but customising with query we get the most re
               insertEmptyCodeBlock(editor, {
                 defaultType: getPluginType(
                   editor as PlateEditor,
-                  ELEMENT_DEFAULT
+                  ParagraphPlugin.key
                 ),
                 insertNodesOptions: { select: true },
               });
@@ -108,7 +108,7 @@ describe('when ``` at block start, but customising with query we get the most re
               return rule.match === currentNodeText;
             },
             triggerAtBlockStart: false,
-            type: ELEMENT_CODE_BLOCK,
+            type: CodeBlockPlugin.key,
           },
         ],
       }),

@@ -7,7 +7,7 @@ import {
   getPluginType,
 } from '@udecode/plate-common';
 
-import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_LINE } from './constants';
+import { CodeBlockPlugin, CodeLinePlugin } from './CodeBlockPlugin';
 
 function extractCodeLinesFromCodeBlock(node: TElement) {
   return node.children as TElement[];
@@ -15,8 +15,8 @@ function extractCodeLinesFromCodeBlock(node: TElement) {
 
 export const insertFragmentCodeBlock = (editor: PlateEditor) => {
   const { insertFragment } = editor;
-  const codeBlockType = getPluginType(editor, ELEMENT_CODE_BLOCK);
-  const codeLineType = getPluginType(editor, ELEMENT_CODE_LINE);
+  const codeBlockType = getPluginType(editor, CodeBlockPlugin.key);
+  const codeLineType = getPluginType(editor, CodeLinePlugin.key);
 
   function convertNodeToCodeLine(node: TElement): TElement {
     return {

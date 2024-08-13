@@ -1,12 +1,12 @@
 import { type PlateEditor, someNode } from '@udecode/plate-common';
 
-import { ELEMENT_TOGGLE } from '../types';
+import { TogglePlugin } from '../TogglePlugin';
 
 export const someToggle = (editor: PlateEditor) => {
   return (
     !!editor.selection &&
     someNode(editor, {
-      match: (n) => n.type === ELEMENT_TOGGLE,
+      match: (n) => n.type === TogglePlugin.key,
     })
   );
 };

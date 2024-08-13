@@ -1,5 +1,5 @@
 import {
-  KEY_DESERIALIZE_HTML,
+  DeserializeHtmlPlugin,
   createPlugin,
   getPlugin,
   someNode,
@@ -7,43 +7,33 @@ import {
 
 import type { CodeBlockPluginOptions } from '../lib/types';
 
-import {
-  ELEMENT_CODE_BLOCK,
-  ELEMENT_CODE_LINE,
-  ELEMENT_CODE_SYNTAX,
-} from '../lib/constants';
 import { deserializeHtmlCodeBlock } from '../lib/deserializeHtmlCodeBlockPre';
 import { withCodeBlock } from '../lib/withCodeBlock';
 import { decorateCodeLine } from './decorateCodeLine';
-import { onKeyDownCodeBlock } from './onKeyDownCodeBlock';
 
 export const CodeLinePlugin = createPlugin({
   decorate: decorateCodeLine,
   isElement: true,
-  key: ELEMENT_CODE_LINE,
+  key: 'code_line',
 });
 
 export const CodeSyntaxPlugin = createPlugin({
   isLeaf: true,
-  key: ELEMENT_CODE_SYNTAX,
+  key: 'code_syntax',
 });
 
-/** Enables support for pre-formatted code blocks. */
 export const CodeBlockPlugin = createPlugin<
   'code_block',
   CodeBlockPluginOptions
 >({
   deserializeHtml: deserializeHtmlCodeBlock,
-  handlers: {
-    onKeyDown: onKeyDownCodeBlock,
-  },
   inject: {
     plugins: {
-      [KEY_DESERIALIZE_HTML]: {
+      [DeserializeHtmlPlugin.key]: {
         editor: {
           insertData: {
             query: ({ editor }) => {
-              const code_line = getPlugin(editor, ELEMENT_CODE_LINE);
+              const code_line = getPlugin(editor, CodeLinePlugin.key);
 
               return !someNode(editor, {
                 match: { type: code_line.type },
@@ -55,9 +45,8 @@ export const CodeBlockPlugin = createPlugin<
     },
   },
   isElement: true,
-  key: ELEMENT_CODE_BLOCK,
+  key: 'code_block',
   options: {
-    hotkey: ['mod+opt+8', 'mod+shift+8'],
     syntax: true,
     syntaxPopularFirst: false,
   },

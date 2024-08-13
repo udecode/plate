@@ -3,7 +3,7 @@ import React from 'react';
 import { someNode } from '@udecode/plate-common';
 import { useEditorRef, useEditorVersion } from '@udecode/plate-common/react';
 
-import { MARK_COMMENT } from '../constants';
+import { CommentsPlugin } from '../CommentsPlugin';
 import {
   useCommentsActions,
   useCommentsSelectors,
@@ -26,12 +26,12 @@ export const useFloatingCommentsState = () => {
     if (
       activeCommentId &&
       someNode(editor, {
-        match: (n) => n[MARK_COMMENT],
+        match: (n) => n[CommentsPlugin.key],
       })
     ) {
       setActive(true);
     }
-    if (!someNode(editor, { match: (n) => n[MARK_COMMENT] })) {
+    if (!someNode(editor, { match: (n) => n[CommentsPlugin.key] })) {
       setActiveCommentId(null);
       setActive(false);
     }

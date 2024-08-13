@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { MARK_BOLD, MARK_ITALIC } from '@udecode/plate-basic-marks';
+import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks';
 import { jsx } from '@udecode/plate-test-utils';
 import { toggleMark } from '@udecode/slate-utils';
 
@@ -28,6 +28,6 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  toggleMark(input, { clear: MARK_BOLD, key: MARK_ITALIC });
+  toggleMark(input, { clear: BoldPlugin.key, key: ItalicPlugin.key });
   expect(input.children).toEqual(output.children);
 });

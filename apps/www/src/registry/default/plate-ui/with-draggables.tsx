@@ -1,7 +1,8 @@
 import type { FC } from 'react';
 
-import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
-import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
+import { BlockquotePlugin } from '@udecode/plate-block-quote';
+import { CodeBlockPlugin } from '@udecode/plate-code-block';
+import { ParagraphPlugin } from '@udecode/plate-common';
 import { createNodesWithHOC } from '@udecode/plate-common/react';
 import {
   type WithDraggableOptions,
@@ -15,8 +16,7 @@ import {
   ELEMENT_H5,
   ELEMENT_H6,
 } from '@udecode/plate-heading';
-import { ELEMENT_OL, ELEMENT_UL } from '@udecode/plate-list';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
+import { ListOrderedPlugin, ListUnorderedPlugin } from '@udecode/plate-list';
 
 import { Draggable, type DraggableProps } from './draggable';
 
@@ -33,7 +33,11 @@ export const withDraggablesPrimitive = createNodesWithHOC(withDraggable);
 export const withDraggables = (components: any) => {
   return withDraggablesPrimitive(components, [
     {
-      keys: [ELEMENT_PARAGRAPH, ELEMENT_UL, ELEMENT_OL],
+      keys: [
+        ParagraphPlugin.key,
+        ListUnorderedPlugin.key,
+        ListOrderedPlugin.key,
+      ],
       level: 0,
     },
     {
@@ -78,7 +82,7 @@ export const withDraggables = (components: any) => {
           gutterLeft: 'pt-[3px] px-0 pb-0',
         },
       },
-      keys: [ELEMENT_PARAGRAPH],
+      keys: [ParagraphPlugin.key],
     },
     {
       draggableProps: {
@@ -86,7 +90,7 @@ export const withDraggables = (components: any) => {
           gutterLeft: 'px-0 pb-0',
         },
       },
-      keys: [ELEMENT_H6, ELEMENT_UL, ELEMENT_OL],
+      keys: [ELEMENT_H6, ListUnorderedPlugin.key, ListOrderedPlugin.key],
     },
     {
       draggableProps: {
@@ -94,7 +98,7 @@ export const withDraggables = (components: any) => {
           gutterLeft: 'px-0 pb-0',
         },
       },
-      key: ELEMENT_BLOCKQUOTE,
+      key: BlockquotePlugin.key,
     },
     {
       draggableProps: {
@@ -102,7 +106,7 @@ export const withDraggables = (components: any) => {
           gutterLeft: 'pt-8 px-0 pb-0',
         },
       },
-      key: ELEMENT_CODE_BLOCK,
+      key: CodeBlockPlugin.key,
     },
   ]);
 };

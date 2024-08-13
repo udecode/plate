@@ -4,14 +4,12 @@ import type { DeserializeCsvPluginOptions } from './types';
 
 import { deserializeCsv } from './utils/index';
 
-export const KEY_DESERIALIZE_CSV = 'deserializeCsv';
-
 /** Enables support for deserializing content from CSV format to Slate format. */
 export const DeserializeCsvPlugin = createPlugin<
   'deserializeCsv',
   DeserializeCsvPluginOptions
 >({
-  key: KEY_DESERIALIZE_CSV,
+  key: 'deserializeCsv',
   options: {
     errorTolerance: 0.25,
     parseOptions: {

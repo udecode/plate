@@ -1,5 +1,5 @@
 import {
-  ELEMENT_DEFAULT,
+  ParagraphPlugin,
   type PlateEditor,
   type TElement,
   getAboveNode,
@@ -9,7 +9,7 @@ import {
   isExpanded,
 } from '@udecode/plate-common';
 
-import { KEY_LIST_STYLE_TYPE, KEY_TODO_STYLE_TYPE } from '../IndentListPlugin';
+import { IndentListPlugin, KEY_TODO_STYLE_TYPE } from '../IndentListPlugin';
 
 export const insertBreakIndentList = (editor: PlateEditor) => {
   const { insertBreak } = editor;
@@ -22,8 +22,8 @@ export const insertBreakIndentList = (editor: PlateEditor) => {
     const [node] = nodeEntry;
 
     if (
-      !isDefined(node[KEY_LIST_STYLE_TYPE]) ||
-      node[KEY_LIST_STYLE_TYPE] !== KEY_TODO_STYLE_TYPE ||
+      !isDefined(node[IndentListPlugin.key]) ||
+      node[IndentListPlugin.key] !== KEY_TODO_STYLE_TYPE ||
       // https://github.com/udecode/plate/issues/3340
       isExpanded(editor.selection) ||
       !isEndPoint(editor, editor.selection?.focus, nodeEntry[1])
@@ -31,11 +31,11 @@ export const insertBreakIndentList = (editor: PlateEditor) => {
       return insertBreak();
 
     insertNodes<TElement>(editor, {
-      [KEY_LIST_STYLE_TYPE]: KEY_TODO_STYLE_TYPE,
+      [IndentListPlugin.key]: KEY_TODO_STYLE_TYPE,
       checked: false,
       children: [{ text: '' }],
       indent: node.indent,
-      type: ELEMENT_DEFAULT,
+      type: ParagraphPlugin.key,
     });
   };
 };

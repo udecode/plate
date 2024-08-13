@@ -13,7 +13,7 @@ import {
 
 import type { TTableElement, TablePluginOptions } from './types';
 
-import { ELEMENT_TABLE, ELEMENT_TR } from './TablePlugin';
+import { TablePlugin, TableRowPlugin } from './TablePlugin';
 import { getCellTypes } from './utils/index';
 
 /**
@@ -30,10 +30,10 @@ export const withNormalizeTable: WithOverride<TablePluginOptions> = ({
 
   editor.normalizeNode = ([node, path]) => {
     if (isElement(node)) {
-      if (node.type === getPluginType(editor, ELEMENT_TABLE)) {
+      if (node.type === getPluginType(editor, TablePlugin.key)) {
         const tableEntry = getBlockAbove(editor, {
           at: path,
-          match: { type: getPluginType(editor, ELEMENT_TABLE) },
+          match: { type: getPluginType(editor, TablePlugin.key) },
         });
 
         if (tableEntry) {
@@ -69,10 +69,10 @@ export const withNormalizeTable: WithOverride<TablePluginOptions> = ({
           }
         }
       }
-      if (node.type === getPluginType(editor, ELEMENT_TR)) {
+      if (node.type === getPluginType(editor, TableRowPlugin.key)) {
         const parentEntry = getParentNode(editor, path);
 
-        if (parentEntry?.[0].type !== getPluginType(editor, ELEMENT_TABLE)) {
+        if (parentEntry?.[0].type !== getPluginType(editor, TablePlugin.key)) {
           unwrapNodes(editor, {
             at: path,
           });
@@ -85,7 +85,9 @@ export const withNormalizeTable: WithOverride<TablePluginOptions> = ({
 
         const parentEntry = getParentNode(editor, path);
 
-        if (parentEntry?.[0].type !== getPluginType(editor, ELEMENT_TR)) {
+        if (
+          parentEntry?.[0].type !== getPluginType(editor, TableRowPlugin.key)
+        ) {
           unwrapNodes(editor, {
             at: path,
           });

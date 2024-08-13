@@ -1,7 +1,7 @@
 import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks';
 import { type Value, htmlStringToDOMNode } from '@udecode/plate-common';
+import { ParagraphPlugin } from '@udecode/plate-common';
 import { ListPlugin } from '@udecode/plate-list';
-import { ParagraphPlugin } from '@udecode/plate-paragraph';
 
 import { serializeHtml } from '../../serializeHtml';
 import { createPlateUIEditor } from '../create-plate-ui-editor';

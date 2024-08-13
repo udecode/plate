@@ -10,7 +10,7 @@ import {
 
 import type { TColumnElement, TColumnGroupElement } from '../types';
 
-import { ELEMENT_COLUMN } from '../ColumnPlugin';
+import { ColumnItemPlugin } from '../ColumnPlugin';
 
 export const setColumnWidth = (
   editor: PlateEditor,
@@ -37,7 +37,7 @@ export const setColumnWidth = (
       { width: width },
       {
         at: item,
-        match: (n) => isElement(n) && n.type === ELEMENT_COLUMN,
+        match: (n) => isElement(n) && n.type === ColumnItemPlugin.key,
       }
     );
   });

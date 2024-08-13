@@ -1,5 +1,5 @@
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
-import { ELEMENT_LINK, LinkPlugin } from '@udecode/plate-link';
+import { LinkPlugin } from '@udecode/plate-link';
 
 import { createPlateEditor } from '../../react';
 import {
@@ -379,7 +379,7 @@ describe('createPlugin', () => {
         ],
       });
 
-      const plugin = getPlugin(editor, ELEMENT_LINK);
+      const plugin = getPlugin(editor, LinkPlugin.key);
 
       expect(plugin.deserializeHtml?.getNode?.({} as any)).toEqual({
         test: true,

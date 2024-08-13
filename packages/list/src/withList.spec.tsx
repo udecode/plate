@@ -2,14 +2,14 @@
 
 import type { PlateEditor } from '@udecode/plate-common';
 
+import { ParagraphPlugin } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { LinkPlugin } from '@udecode/plate-link';
-import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
 import type { ListPluginOptions } from './types';
 
-import { ELEMENT_UL, ListPlugin } from './ListPlugin';
+import { ListPlugin, ListUnorderedPlugin } from './ListPlugin';
 
 jsx;
 
@@ -22,7 +22,7 @@ const testInsertText = (
     editor: input,
     plugins: [
       ParagraphPlugin,
-      ListPlugin.configurePlugin(ELEMENT_UL, listPluginOptions),
+      ListPlugin.configurePlugin(ListUnorderedPlugin.key, listPluginOptions),
       LinkPlugin,
     ],
   });

@@ -3,23 +3,19 @@ import { createPlugin } from '@udecode/plate-common';
 
 import type { EmojiPluginOptions } from './types';
 
-export const KEY_EMOJI = 'emoji';
-
-export const ELEMENT_EMOJI_INPUT = 'emoji_input';
-
 export const EmojiInputPlugin = createPlugin({
   isElement: true,
   isInline: true,
   isVoid: true,
-  key: ELEMENT_EMOJI_INPUT,
+  key: 'emoji_input',
 });
 
 export const EmojiPlugin = createPlugin<'emoji', EmojiPluginOptions>({
-  key: KEY_EMOJI,
+  key: 'emoji',
   options: {
     createComboboxInput: () => ({
       children: [{ text: '' }],
-      type: ELEMENT_EMOJI_INPUT,
+      type: EmojiInputPlugin.key,
     }),
     createEmojiNode: ({ skins }) => ({ text: skins[0].native }),
     trigger: ':',

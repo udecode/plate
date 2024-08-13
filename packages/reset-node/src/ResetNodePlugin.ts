@@ -17,8 +17,6 @@ import type { ResetNodePluginOptions } from './types';
 
 import { onKeyDownResetNode } from './onKeyDownResetNode';
 
-export const KEY_RESET_NODE = 'resetNode';
-
 /** Enables support for resetting block type from rules. */
 export const ResetNodePlugin = createPlugin<
   'resetNode',
@@ -27,7 +25,7 @@ export const ResetNodePlugin = createPlugin<
   handlers: {
     onKeyDown: onKeyDownResetNode,
   },
-  key: KEY_RESET_NODE,
+  key: 'resetNode',
   options: {
     rules: [],
   },

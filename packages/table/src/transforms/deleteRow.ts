@@ -10,14 +10,14 @@ import {
 
 import type { TTableElement, TablePluginOptions } from '../types';
 
-import { ELEMENT_TABLE, ELEMENT_TR } from '../TablePlugin';
+import { TablePlugin, TableRowPlugin } from '../TablePlugin';
 import { deleteTableMergeRow } from '../merge/deleteRow';
 import { deleteRowWhenExpanded } from '../merge/deleteRowWhenExpanded';
 
 export const deleteRow = (editor: PlateEditor) => {
   const { enableMerging } = getPluginOptions<TablePluginOptions>(
     editor,
-    ELEMENT_TABLE
+    TablePlugin.key
   );
 
   if (enableMerging) {
@@ -25,11 +25,11 @@ export const deleteRow = (editor: PlateEditor) => {
   }
   if (
     someNode(editor, {
-      match: { type: getPluginType(editor, ELEMENT_TABLE) },
+      match: { type: getPluginType(editor, TablePlugin.key) },
     })
   ) {
     const currentTableItem = getAboveNode<TTableElement>(editor, {
-      match: { type: getPluginType(editor, ELEMENT_TABLE) },
+      match: { type: getPluginType(editor, TablePlugin.key) },
     });
 
     if (!currentTableItem) return;
@@ -37,7 +37,7 @@ export const deleteRow = (editor: PlateEditor) => {
       return deleteRowWhenExpanded(editor, currentTableItem);
 
     const currentRowItem = getAboveNode(editor, {
-      match: { type: getPluginType(editor, ELEMENT_TR) },
+      match: { type: getPluginType(editor, TableRowPlugin.key) },
     });
 
     if (

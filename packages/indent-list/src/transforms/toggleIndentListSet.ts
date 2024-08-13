@@ -1,6 +1,6 @@
 import type { TEditor, TNodeEntry } from '@udecode/plate-common';
 
-import { KEY_LIST_CHECKED, KEY_LIST_STYLE_TYPE } from '../IndentListPlugin';
+import { KEY_LIST_CHECKED, IndentListPlugin } from '../IndentListPlugin';
 import { ListStyleType } from '../types';
 import { type IndentListOptions, indentList, indentTodo } from './indentList';
 
@@ -10,7 +10,7 @@ export const toggleIndentListSet = <E extends TEditor>(
   [node, _path]: TNodeEntry,
   { listStyleType = ListStyleType.Disc, ...options }: IndentListOptions<E>
 ) => {
-  if (node.hasOwnProperty(KEY_LIST_CHECKED) || node[KEY_LIST_STYLE_TYPE])
+  if (node.hasOwnProperty(KEY_LIST_CHECKED) || node[IndentListPlugin.key])
     return;
   if (listStyleType === 'todo') {
     indentTodo(editor as any, {

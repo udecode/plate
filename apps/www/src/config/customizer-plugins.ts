@@ -1,38 +1,38 @@
-import { KEY_ALIGN } from '@udecode/plate-alignment';
-import { KEY_AUTOFORMAT } from '@udecode/plate-autoformat';
+import { AlignPlugin } from '@udecode/plate-alignment';
+import { AutoformatPlugin } from '@udecode/plate-autoformat';
 import {
-  KEY_EXIT_BREAK,
-  KEY_SINGLE_LINE,
-  KEY_SOFT_BREAK,
+  ExitBreakPlugin,
+  SingleLinePlugin,
+  SoftBreakPlugin,
 } from '@udecode/plate-break';
-import { KEY_CAPTION } from '@udecode/plate-caption';
-import { MARK_COMMENT } from '@udecode/plate-comments';
-import { KEY_DND } from '@udecode/plate-dnd';
-import { KEY_EMOJI } from '@udecode/plate-emoji';
-import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
-import { MARK_BG_COLOR, MARK_FONT_SIZE } from '@udecode/plate-font';
-import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
-import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
-import { KEY_INDENT } from '@udecode/plate-indent';
-import { KEY_LIST_STYLE_TYPE } from '@udecode/plate-indent-list';
-import { MARK_KBD } from '@udecode/plate-kbd';
-import { ELEMENT_COLUMN_GROUP } from '@udecode/plate-layout';
-import { KEY_LINE_HEIGHT } from '@udecode/plate-line-height';
-import { ELEMENT_LINK } from '@udecode/plate-link';
-import { ELEMENT_TODO_LI } from '@udecode/plate-list';
-import { ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from '@udecode/plate-media';
-import { ELEMENT_MENTION } from '@udecode/plate-mention';
-import { KEY_NODE_ID } from '@udecode/plate-node-id';
-import { KEY_NORMALIZE_TYPES } from '@udecode/plate-normalizers';
-import { KEY_RESET_NODE } from '@udecode/plate-reset-node';
-import { KEY_BLOCK_SELECTION } from '@udecode/plate-selection';
-import { KEY_DESERIALIZE_CSV } from '@udecode/plate-serializer-csv';
-import { KEY_DESERIALIZE_DOCX } from '@udecode/plate-serializer-docx';
-import { KEY_DESERIALIZE_MD } from '@udecode/plate-serializer-md';
-import { KEY_TABBABLE } from '@udecode/plate-tabbable';
-import { ELEMENT_TABLE } from '@udecode/plate-table';
-import { ELEMENT_TOGGLE } from '@udecode/plate-toggle';
-import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
+import { CaptionPlugin } from '@udecode/plate-caption';
+import { CommentsPlugin } from '@udecode/plate-comments';
+import { DndPlugin } from '@udecode/plate-dnd';
+import { EmojiPlugin } from '@udecode/plate-emoji';
+import { ExcalidrawPlugin } from '@udecode/plate-excalidraw';
+import { FontBackgroundColorPlugin, FontSizePlugin } from '@udecode/plate-font';
+import { HighlightPlugin } from '@udecode/plate-highlight';
+import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
+import { IndentPlugin } from '@udecode/plate-indent';
+import { IndentListPlugin } from '@udecode/plate-indent-list';
+import { KbdPlugin } from '@udecode/plate-kbd';
+import { ColumnPlugin } from '@udecode/plate-layout';
+import { LineHeightPlugin } from '@udecode/plate-line-height';
+import { LinkPlugin } from '@udecode/plate-link';
+import { TodoListPlugin } from '@udecode/plate-list';
+import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media';
+import { MentionPlugin } from '@udecode/plate-mention';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
+import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
+import { ResetNodePlugin } from '@udecode/plate-reset-node';
+import { BlockSelectionPlugin } from '@udecode/plate-selection';
+import { DeserializeCsvPlugin } from '@udecode/plate-serializer-csv';
+import { DeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
+import { DeserializeMdPlugin } from '@udecode/plate-serializer-md';
+import { TabbablePlugin } from '@udecode/plate-tabbable';
+import { TablePlugin } from '@udecode/plate-table';
+import { TogglePlugin } from '@udecode/plate-toggle';
+import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
 import { columnValue } from '@/lib/plate/demo/values/columnValue';
 import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
@@ -77,14 +77,14 @@ export const customizerPlugins = {
   align: {
     id: 'align',
     label: 'Align',
-    plugins: [KEY_ALIGN],
+    plugins: [AlignPlugin.key],
     route: '/docs/alignment',
     value: alignValue,
   },
   autoformat: {
     id: 'autoformat',
     label: 'Autoformat',
-    plugins: [KEY_AUTOFORMAT],
+    plugins: [AutoformatPlugin.key],
     route: '/docs/autoformat',
     value: autoformatValue,
   },
@@ -106,10 +106,10 @@ export const customizerPlugins = {
     id: 'blockselection',
     label: 'Block Selection',
     plugins: [
-      KEY_NODE_ID,
-      KEY_BLOCK_SELECTION,
-      ELEMENT_IMAGE,
-      ELEMENT_MEDIA_EMBED,
+      NodeIdPlugin.key,
+      BlockSelectionPlugin.key,
+      ImagePlugin.key,
+      MediaEmbedPlugin.key,
     ],
     route: '/docs/block-selection',
     value: mediaValue,
@@ -117,21 +117,21 @@ export const customizerPlugins = {
   caption: {
     id: 'caption',
     label: 'Caption',
-    plugins: [KEY_CAPTION],
+    plugins: [CaptionPlugin.key],
     route: '/docs/caption',
     value: mediaValue,
   },
   column: {
     id: 'column',
     label: 'Column',
-    plugins: [ELEMENT_COLUMN_GROUP],
+    plugins: [ColumnPlugin.key],
     route: '/docs/column',
     value: columnValue,
   },
   comment: {
     id: 'comment',
     label: 'Comment',
-    plugins: [MARK_COMMENT],
+    plugins: [CommentsPlugin.key],
     route: '/docs/comments',
     value: commentsValue,
   },
@@ -145,14 +145,14 @@ export const customizerPlugins = {
   deserializecsv: {
     id: 'deserializecsv',
     label: 'Deserialize CSV',
-    plugins: [KEY_DESERIALIZE_CSV],
+    plugins: [DeserializeCsvPlugin.key],
     route: '/docs/serializing-csv',
     value: deserializeCsvValue,
   },
   deserializedocx: {
     id: 'deserializedocx',
     label: 'Deserialize DOCX',
-    plugins: [KEY_DESERIALIZE_DOCX],
+    plugins: [DeserializeDocxPlugin.key],
     route: '/docs/serializing-docx',
     value: deserializeDocxValue,
   },
@@ -166,98 +166,98 @@ export const customizerPlugins = {
   deserializemd: {
     id: 'deserializemd',
     label: 'Deserialize Markdown',
-    plugins: [KEY_DESERIALIZE_MD],
+    plugins: [DeserializeMdPlugin.key],
     route: '/docs/serializing-md',
     value: deserializeMdValue,
   },
   dnd: {
     id: 'dnd',
     label: 'Drag & Drop',
-    plugins: [KEY_DND],
+    plugins: [DndPlugin.key],
     route: '/docs/components/draggable',
     value: [],
   },
   emoji: {
     id: 'emoji',
     label: 'Emoji',
-    plugins: [KEY_EMOJI],
+    plugins: [EmojiPlugin.key],
     route: '/docs/emoji',
     value: emojiValue,
   },
   excalidraw: {
     id: 'excalidraw',
     label: 'Excalidraw',
-    plugins: [ELEMENT_EXCALIDRAW],
+    plugins: [ExcalidrawPlugin.key],
     route: '/docs/excalidraw',
     value: excalidrawValue,
   },
   exitbreak: {
     id: 'exitbreak',
     label: 'Exit Break',
-    plugins: [KEY_EXIT_BREAK],
+    plugins: [ExitBreakPlugin.key],
     route: '/docs/exit-break',
     value: exitBreakValue,
   },
   font: {
     id: 'font',
     label: 'Font',
-    plugins: [MARK_FONT_SIZE, MARK_BG_COLOR],
+    plugins: [FontSizePlugin.key, FontBackgroundColorPlugin.key],
     route: '/docs/font',
     value: fontValue,
   },
   forcedlayout: {
     id: 'forcedlayout',
     label: 'Forced Layout',
-    plugins: [KEY_NORMALIZE_TYPES, KEY_TRAILING_BLOCK],
+    plugins: [NormalizeTypesPlugin.key, TrailingBlockPlugin.key],
     route: '/docs/forced-layout',
     value: [],
   },
   highlight: {
     id: 'highlight',
     label: 'Highlight',
-    plugins: [MARK_HIGHLIGHT],
+    plugins: [HighlightPlugin.key],
     route: '/docs/highlight',
     value: highlightValue,
   },
   hr: {
     id: 'hr',
     label: 'Horizontal Rule',
-    plugins: [ELEMENT_HR],
+    plugins: [HorizontalRulePlugin.key],
     route: '/docs/horizontal-rule',
     value: horizontalRuleValue,
   },
   indent: {
     id: 'indent',
     label: 'Indent',
-    plugins: [KEY_INDENT],
+    plugins: [IndentPlugin.key],
     route: '/docs/indent',
     value: indentValue,
   },
   indentlist: {
     id: 'indentlist',
     label: 'Indent List',
-    plugins: [KEY_LIST_STYLE_TYPE],
+    plugins: [IndentListPlugin.key],
     route: '/docs/indent-list',
     value: indentListValue,
   },
   kbd: {
     id: 'kbd',
     label: 'Keyboard Input',
-    plugins: [MARK_KBD],
+    plugins: [KbdPlugin.key],
     route: '/docs/components/kbd-leaf',
     value: kbdValue,
   },
   lineheight: {
     id: 'lineheight',
     label: 'Line Height',
-    plugins: [KEY_LINE_HEIGHT],
+    plugins: [LineHeightPlugin.key],
     route: '/docs/line-height',
     value: lineHeightValue,
   },
   link: {
     id: 'link',
     label: 'Link',
-    plugins: [ELEMENT_LINK],
+    plugins: [LinkPlugin.key],
     route: '/docs/link',
     value: linkValue,
   },
@@ -271,14 +271,14 @@ export const customizerPlugins = {
   media: {
     id: 'media',
     label: 'Media',
-    plugins: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED],
+    plugins: [ImagePlugin.key, MediaEmbedPlugin.key],
     route: '/docs/media',
     value: mediaValue,
   },
   mention: {
     id: 'mention',
     label: 'Mention',
-    plugins: [ELEMENT_MENTION],
+    plugins: [MentionPlugin.key],
     route: '/docs/mention',
     value: mentionValue,
   },
@@ -297,56 +297,56 @@ export const customizerPlugins = {
   resetnode: {
     id: 'resetnode',
     label: 'Reset Node',
-    plugins: [KEY_RESET_NODE],
+    plugins: [ResetNodePlugin.key],
     route: '/docs/reset-node',
     value: [],
   },
   singleline: {
     id: 'singleline',
     label: 'Single Line',
-    plugins: [KEY_SINGLE_LINE],
+    plugins: [SingleLinePlugin.key],
     route: '/docs/single-line',
     value: singleLineValue,
   },
   softbreak: {
     id: 'softbreak',
     label: 'Soft Break',
-    plugins: [KEY_SOFT_BREAK],
+    plugins: [SoftBreakPlugin.key],
     route: '/docs/soft-break',
     value: softBreakValue,
   },
   tabbable: {
     id: 'tabbable',
     label: 'Tabbable',
-    plugins: [KEY_TABBABLE],
+    plugins: [TabbablePlugin.key],
     route: '/docs/tabbable',
     value: tabbableValue,
   },
   table: {
     id: 'table',
     label: 'Table',
-    plugins: [ELEMENT_TABLE],
+    plugins: [TablePlugin.key],
     route: '/docs/table',
     value: tableValue,
   },
   todoli: {
     id: 'todoli',
     label: 'Todo List',
-    plugins: [ELEMENT_TODO_LI],
+    plugins: [TodoListPlugin.key],
     route: '/docs/list',
     value: todoListValue,
   },
   toggle: {
     id: 'toggle',
     label: 'Toggle',
-    plugins: [ELEMENT_TOGGLE],
+    plugins: [TogglePlugin.key],
     route: '/docs/toggle',
     value: toggleValue,
   },
   trailingblock: {
     id: 'trailingblock',
     label: 'Trailing Block',
-    plugins: [KEY_TRAILING_BLOCK],
+    plugins: [TrailingBlockPlugin.key],
     route: '/docs/trailing-block',
     value: trailingBlockValue,
   },

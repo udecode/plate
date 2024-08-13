@@ -39,22 +39,22 @@ import { createCaptionPlugin } from '@udecode/plate-caption';
 import {
   createImagePlugin,
   createMediaEmbedPlugin,
-  ELEMENT_IMAGE,
-  ELEMENT_MEDIA_EMBED,
+  ImagePlugin,
+  MediaEmbedPlugin,
 } from '@udecode/plate-media';
 import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
 
 const plugins = [
   // ...otherPlugins,
   createCaptionPlugin({
-    options: { pluginKeys: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED] },
+    options: { pluginKeys: [ImagePlugin.key, MediaEmbedPlugin.key] },
   }),
   createImagePlugin(),
   createMediaEmbedPlugin(),
   createSelectOnBackspacePlugin({
     options: {
       query: {
-        allow: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED],
+        allow: [ImagePlugin.key, MediaEmbedPlugin.key],
       },
     },
   }),
@@ -87,7 +87,7 @@ URL.
 The type of media to insert. Defaults to the editor's image element
 type.
 
-- **Default:** `getPluginType(editor, ELEMENT_IMAGE)`
+- **Default:** `getPluginType(editor, ImagePlugin.key)`
 
 </APISubListItem>
 </APISubList>
@@ -275,7 +275,7 @@ The URL of the media embed.
 >
 The key of the media embed element.
 
-- **Default:** `ELEMENT_MEDIA_EMBED`
+- **Default:** `MediaEmbedPlugin.key`
 
 </APISubListItem>
 </APISubList>

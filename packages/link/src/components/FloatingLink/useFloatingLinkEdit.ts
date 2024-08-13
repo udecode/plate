@@ -19,7 +19,7 @@ import {
   getRangeBoundingClientRect,
 } from '@udecode/plate-floating';
 
-import { ELEMENT_LINK, type LinkPluginOptions } from '../../LinkPlugin';
+import { LinkPlugin, type LinkPluginOptions } from '../../LinkPlugin';
 import { type LinkFloatingToolbarState, unwrapLink } from '../../index';
 import { triggerFloatingLinkEdit } from '../../utils/triggerFloatingLinkEdit';
 import {
@@ -37,7 +37,7 @@ export const useFloatingLinkEditState = ({
   const editor = useEditorRef();
   const { triggerFloatingLinkHotkeys } = getPluginOptions<LinkPluginOptions>(
     editor,
-    ELEMENT_LINK
+    LinkPlugin.key
   );
   const readOnly = useEditorReadOnly();
   const isEditing = useFloatingLinkSelectors().isEditing();
@@ -47,7 +47,7 @@ export const useFloatingLinkEditState = ({
 
   const getBoundingClientRect = React.useCallback(() => {
     const entry = getAboveNode(editor, {
-      match: { type: getPluginType(editor, ELEMENT_LINK) },
+      match: { type: getPluginType(editor, LinkPlugin.key) },
     });
 
     if (entry) {
@@ -92,7 +92,7 @@ export const useFloatingLinkEdit = ({
     if (
       editor.selection &&
       someNode(editor, {
-        match: { type: getPluginType(editor, ELEMENT_LINK) },
+        match: { type: getPluginType(editor, LinkPlugin.key) },
       })
     ) {
       floatingLinkActions.show('edit', editor.id);

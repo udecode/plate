@@ -18,12 +18,12 @@ import {
 } from '@udecode/plate-common';
 import { Path, Range } from 'slate';
 
-import { ELEMENT_LI, ELEMENT_LIC } from '../ListPlugin';
+import { ListItemPlugin, ListItemContentPlugin } from '../ListPlugin';
 
 /** Insert list item if selection in li>p. TODO: test */
 export const insertListItem = (editor: PlateEditor): boolean => {
-  const liType = getPluginType(editor, ELEMENT_LI);
-  const licType = getPluginType(editor, ELEMENT_LIC);
+  const liType = getPluginType(editor, ListItemPlugin.key);
+  const licType = getPluginType(editor, ListItemContentPlugin.key);
 
   if (!editor.selection) {
     return false;

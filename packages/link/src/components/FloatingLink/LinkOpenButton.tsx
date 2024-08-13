@@ -9,7 +9,7 @@ import {
 
 import type { TLinkElement } from '../../types';
 
-import { ELEMENT_LINK } from '../../LinkPlugin';
+import { LinkPlugin } from '../../LinkPlugin';
 import { getLinkAttributes } from '../../utils/index';
 
 export const useLinkOpenButtonState = () => {
@@ -19,7 +19,7 @@ export const useLinkOpenButtonState = () => {
   const entry = React.useMemo(
     () =>
       findNode<TLinkElement>(editor, {
-        match: { type: getPluginType(editor, ELEMENT_LINK) },
+        match: { type: getPluginType(editor, LinkPlugin.key) },
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [editor, selection]

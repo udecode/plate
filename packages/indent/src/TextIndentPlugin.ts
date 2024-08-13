@@ -1,12 +1,10 @@
-import { ELEMENT_DEFAULT, createPlugin } from '@udecode/plate-common';
+import { ParagraphPlugin, createPlugin } from '@udecode/plate-common';
 
 import type { IndentPluginOptions } from './types';
 
-export const KEY_TEXT_INDENT = 'textIndent';
-
 export const TextIndentPlugin = createPlugin<'textIndent', IndentPluginOptions>(
   {
-    key: KEY_TEXT_INDENT,
+    key: 'textIndent',
     options: {
       offset: 24,
       unit: 'px',
@@ -20,12 +18,12 @@ export const TextIndentPlugin = createPlugin<'textIndent', IndentPluginOptions>(
   }) => ({
     inject: {
       props: {
-        nodeKey: KEY_TEXT_INDENT,
+        nodeKey: 'textIndent',
         styleKey: 'textIndent',
         transformNodeValue({ nodeValue }) {
           return nodeValue * offset! + unit!;
         },
-        validPlugins: [ELEMENT_DEFAULT],
+        validPlugins: [ParagraphPlugin.key],
       },
     },
   })

@@ -7,7 +7,7 @@ import {
   useRemoveNodeButton,
 } from '@udecode/plate-common/react';
 import {
-  ELEMENT_COLUMN,
+  ColumnItemPlugin,
   type TColumnElement,
   useColumnState,
   useDebouncePopoverOpen,
@@ -43,7 +43,7 @@ export function ColumnFloatingToolbar({ children }: React.PropsWithChildren) {
     setThreeColumn,
   } = useColumnState();
 
-  const element = useElement<TColumnElement>(ELEMENT_COLUMN);
+  const element = useElement<TColumnElement>(ColumnItemPlugin.key);
 
   const { props: buttonProps } = useRemoveNodeButton({ element });
 

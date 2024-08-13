@@ -18,7 +18,7 @@ import type {
   TablePluginOptions,
 } from '../types';
 
-import { ELEMENT_TABLE, ELEMENT_TR } from '../TablePlugin';
+import { TablePlugin, TableRowPlugin } from '../TablePlugin';
 import { getColSpan } from '../queries/getColSpan';
 import { getCellTypes } from '../utils';
 import { deleteColumnWhenExpanded } from './deleteColumnWhenExpanded';
@@ -29,16 +29,16 @@ import { getCellPath } from './getCellPath';
 export const deleteTableMergeColumn = (editor: PlateEditor) => {
   if (
     someNode(editor, {
-      match: { type: getPluginType(editor, ELEMENT_TABLE) },
+      match: { type: getPluginType(editor, TablePlugin.key) },
     })
   ) {
     const { _cellIndices: cellIndices } = getPluginOptions<TablePluginOptions>(
       editor,
-      ELEMENT_TABLE
+      TablePlugin.key
     );
 
     const tableEntry = getAboveNode<TTableElement>(editor, {
-      match: { type: getPluginType(editor, ELEMENT_TABLE) },
+      match: { type: getPluginType(editor, TablePlugin.key) },
     });
 
     if (!tableEntry) return;
@@ -137,7 +137,7 @@ export const deleteTableMergeColumn = (editor: PlateEditor) => {
     });
 
     const trEntry = getAboveNode(editor, {
-      match: { type: getPluginType(editor, ELEMENT_TR) },
+      match: { type: getPluginType(editor, TableRowPlugin.key) },
     });
 
     /** Remove cells */

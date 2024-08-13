@@ -8,14 +8,12 @@ export interface CaptionPluginOptions {
   pluginKeys?: string[];
 }
 
-export const KEY_CAPTION = 'caption';
-
 /** Enables support for caption. */
 export const CaptionPlugin = createPlugin<'caption', CaptionPluginOptions>({
   handlers: {
     onKeyDown: onKeyDownCaption,
   },
-  key: KEY_CAPTION,
+  key: 'caption',
   options: {
     pluginKeys: [],
   },

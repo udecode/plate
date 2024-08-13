@@ -5,13 +5,13 @@ import {
   unsetNodes,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import { KEY_INDENT } from '@udecode/plate-indent';
+import { IndentPlugin } from '@udecode/plate-indent';
 
 import type { GetSiblingIndentListOptions } from '../queries/getSiblingIndentList';
 
 import {
+  IndentListPlugin,
   KEY_LIST_CHECKED,
-  KEY_LIST_STYLE_TYPE,
   KEY_TODO_STYLE_TYPE,
 } from '../IndentListPlugin';
 import { getIndentListSiblings } from '../queries/getIndentListSiblings';
@@ -42,17 +42,17 @@ export const setIndentListSiblingNodes = <
 
     siblings.forEach(([node, path]) => {
       if (listStyleType === KEY_TODO_STYLE_TYPE) {
-        unsetNodes(editor as any, KEY_LIST_STYLE_TYPE, { at: path });
+        unsetNodes(editor as any, IndentListPlugin.key, { at: path });
         setIndentTodoNode(editor, {
           at: path,
-          indent: node[KEY_INDENT] as number,
+          indent: node[IndentPlugin.key] as number,
           listStyleType,
         });
       } else {
         unsetNodes(editor as any, KEY_LIST_CHECKED, { at: path });
         setIndentListNode(editor, {
           at: path,
-          indent: node[KEY_INDENT] as number,
+          indent: node[IndentPlugin.key] as number,
           listStyleType,
         });
       }

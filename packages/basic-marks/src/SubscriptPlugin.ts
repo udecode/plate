@@ -4,10 +4,6 @@ import {
 } from '@udecode/plate-common';
 import { onKeyDownToggleMark } from '@udecode/plate-common/react';
 
-export const MARK_SUBSCRIPT = 'subscript';
-
-const MARK_SUPERSCRIPT = 'superscript';
-
 /** Enables support for subscript formatting. */
 export const SubscriptPlugin = createPlugin<
   'subscript',
@@ -27,9 +23,9 @@ export const SubscriptPlugin = createPlugin<
     onKeyDown: onKeyDownToggleMark,
   },
   isLeaf: true,
-  key: MARK_SUBSCRIPT,
+  key: 'subscript',
   options: {
-    clear: MARK_SUPERSCRIPT,
+    clear: 'superscript',
     hotkey: 'mod+,',
   },
 });

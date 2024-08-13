@@ -11,14 +11,6 @@ import { insertTableColumn, insertTableRow } from './transforms/index';
 import { getEmptyCellNode } from './utils';
 import { withTable } from './withTable';
 
-export const ELEMENT_TABLE = 'table';
-
-export const ELEMENT_TH = 'th';
-
-export const ELEMENT_TR = 'tr';
-
-export const ELEMENT_TD = 'td';
-
 const createGetNodeFunc = (type: string) => {
   const getNode: DeserializeHtml['getNode'] = ({ element }) => {
     const background =
@@ -42,12 +34,12 @@ export const TableRowPlugin = createPlugin({
     rules: [{ validNodeName: 'TR' }],
   },
   isElement: true,
-  key: ELEMENT_TR,
+  key: 'tr',
 });
 
 export const TableCellPlugin = createPlugin({
   isElement: true,
-  key: ELEMENT_TD,
+  key: 'td',
   props: ({ element }) => ({
     nodeProps: {
       colSpan: (element?.attributes as any)?.colspan,
@@ -57,14 +49,14 @@ export const TableCellPlugin = createPlugin({
 }).extend(({ editor }) => ({
   deserializeHtml: {
     attributeNames: ['rowspan', 'colspan'],
-    getNode: createGetNodeFunc(getPluginType(editor, ELEMENT_TD)),
+    getNode: createGetNodeFunc(getPluginType(editor, 'td')),
     rules: [{ validNodeName: 'TD' }],
   },
 }));
 
 export const TableCellHeaderPlugin = createPlugin({
   isElement: true,
-  key: ELEMENT_TH,
+  key: 'th',
   props: ({ element }) => ({
     nodeProps: {
       colSpan: (element?.attributes as any)?.colspan,
@@ -74,7 +66,7 @@ export const TableCellHeaderPlugin = createPlugin({
 }).extend(({ editor }) => ({
   deserializeHtml: {
     attributeNames: ['rowspan', 'colspan'],
-    getNode: createGetNodeFunc(getPluginType(editor, ELEMENT_TH)),
+    getNode: createGetNodeFunc(getPluginType(editor, 'th')),
     rules: [{ validNodeName: 'TH' }],
   },
 }));
@@ -88,7 +80,7 @@ export const TablePlugin = createPlugin({
     onKeyDown: onKeyDownTable,
   },
   isElement: true,
-  key: ELEMENT_TABLE,
+  key: 'table',
   plugins: [TableRowPlugin, TableCellPlugin, TableCellHeaderPlugin],
   withOverrides: withTable,
 }).extend<TablePluginOptions>(({ editor }) => ({

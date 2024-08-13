@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
 import { BoldPlugin } from '@udecode/plate-basic-marks';
+import { ParagraphPlugin } from '@udecode/plate-common';
 import { HeadingPlugin } from '@udecode/plate-heading';
 import { LinkPlugin } from '@udecode/plate-link';
 import { MediaEmbedPlugin } from '@udecode/plate-media';
-import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
 import type { PlateEditor, PlatePlugins } from '../../types';

@@ -3,7 +3,7 @@
 import type { PlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { ELEMENT_LINK } from '@udecode/plate-link';
+import { LinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { RemoveEmptyNodesPlugin } from '../../RemoveEmptyNodesPlugin';
@@ -34,7 +34,7 @@ it('should be', () => {
     editor: input,
     plugins: [
       RemoveEmptyNodesPlugin.configure({
-        types: ELEMENT_LINK,
+        types: LinkPlugin.key,
       }),
     ],
   });

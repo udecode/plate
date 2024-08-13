@@ -1,16 +1,15 @@
 /** @jsx jsx */
 
 import { getPlugin } from '@udecode/plate-common';
+import { ParagraphPlugin } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import * as isHotkey from '@udecode/plate-core';
 import { IndentPlugin } from '@udecode/plate-indent';
-import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
 import {
   IndentListPlugin,
   type IndentListPluginOptions,
-  KEY_LIST_STYLE_TYPE,
 } from './IndentListPlugin';
 import { onKeyDownIndentList } from './onKeyDownIndentList';
 
@@ -45,7 +44,7 @@ describe('when indented list and empty', () => {
     onKeyDownIndentList({
       editor,
       event: event as any,
-      plugin: getPlugin<IndentListPluginOptions>(editor, KEY_LIST_STYLE_TYPE),
+      plugin: getPlugin<IndentListPluginOptions>(editor, IndentListPlugin.key),
     });
 
     expect(editor.children).toEqual(output.children);
@@ -61,7 +60,7 @@ describe('when indented list and empty', () => {
     // onKeyDownIndentList({
     //   editor,
     //   event: event as any,
-    //   plugin: getPlugin<IndentListPluginOptions>(editor, KEY_LIST_STYLE_TYPE),
+    //   plugin: getPlugin<IndentListPluginOptions>(editor, IndentListPlugin.key),
     // });
     //
     // expect(editor.children).toEqual(output2.children);
@@ -95,7 +94,7 @@ describe('when indented and empty but not list', () => {
     onKeyDownIndentList({
       editor,
       event: event as any,
-      plugin: getPlugin<IndentListPluginOptions>(editor, KEY_LIST_STYLE_TYPE),
+      plugin: getPlugin<IndentListPluginOptions>(editor, IndentListPlugin.key),
     });
 
     expect(editor.children).toEqual(output.children);

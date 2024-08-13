@@ -1,5 +1,5 @@
 import {
-  ELEMENT_DEFAULT,
+  ParagraphPlugin,
   type PlateEditor,
   type TElement,
   type TNodeEntry,
@@ -18,7 +18,7 @@ import { Path } from 'slate';
 
 import type { ListPluginOptions } from '../types';
 
-import { ELEMENT_LI, ELEMENT_LIC } from '../ListPlugin';
+import { ListItemPlugin, ListItemContentPlugin } from '../ListPlugin';
 import { getListTypes, isListRoot } from '../queries/index';
 import { moveListItemsToList } from '../transforms/index';
 import { normalizeListItem } from './normalizeListItem';
@@ -30,9 +30,9 @@ export const normalizeList = (
   { validLiChildrenTypes }: ListPluginOptions
 ) => {
   const { normalizeNode } = editor;
-  const liType = getPluginType(editor, ELEMENT_LI);
-  const licType = getPluginType(editor, ELEMENT_LIC);
-  const defaultType = getPluginType(editor, ELEMENT_DEFAULT);
+  const liType = getPluginType(editor, ListItemPlugin.key);
+  const licType = getPluginType(editor, ListItemContentPlugin.key);
+  const defaultType = getPluginType(editor, ParagraphPlugin.key);
 
   return ([node, path]: TNodeEntry) => {
     if (!isElement(node)) {
@@ -87,7 +87,7 @@ export const normalizeList = (
       }
     }
     if (
-      node.type === getPluginType(editor, ELEMENT_LI) &&
+      node.type === getPluginType(editor, ListItemPlugin.key) &&
       normalizeListItem(editor, {
         listItem: [node, path],
         validLiChildrenTypes,

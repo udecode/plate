@@ -1,9 +1,8 @@
 import {
-  ELEMENT_LI,
-  ELEMENT_LIC,
-  ELEMENT_TODO_LI,
-  ELEMENT_UL,
+  ListItemContentPlugin,
+  ListItemPlugin,
   ListPlugin,
+  ListUnorderedPlugin,
   TodoListPlugin,
 } from '@udecode/plate-list';
 
@@ -13,13 +12,13 @@ import { createPlateUIEditor } from '../create-plate-ui-editor';
 it('serialize elements using useSlateStatic', () => {
   const plugins = [
     TodoListPlugin,
-    ListPlugin.extendPlugin(ELEMENT_LI, {
+    ListPlugin.extendPlugin(ListItemPlugin.key, {
       type: 'list-item',
     })
-      .extendPlugin(ELEMENT_LIC, {
+      .extendPlugin(ListItemContentPlugin.key, {
         type: 'list-item-child',
       })
-      .extendPlugin(ELEMENT_UL, {
+      .extendPlugin(ListUnorderedPlugin.key, {
         type: 'unordered-list',
       }),
   ];
@@ -29,7 +28,7 @@ it('serialize elements using useSlateStatic', () => {
       {
         checked: true,
         children: [{ text: 'Slide to the right.' }],
-        type: ELEMENT_TODO_LI,
+        type: TodoListPlugin.key,
       },
       {
         children: [

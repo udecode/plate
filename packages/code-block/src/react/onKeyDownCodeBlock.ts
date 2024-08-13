@@ -1,4 +1,3 @@
-import { Hotkeys } from '@udecode/plate-common/react';
 import {
   type KeyboardHandler,
   type TElement,
@@ -10,6 +9,9 @@ import {
   select,
   withoutNormalizing,
 } from '@udecode/plate-common';
+import { Hotkeys } from '@udecode/plate-common/react';
+
+import type { CodeBlockPluginOptions } from '../lib';
 
 import { getCodeLineType } from '../lib/options/getCodeLineType';
 import { getCodeLineEntry } from '../lib/queries/getCodeLineEntry';
@@ -20,7 +22,10 @@ import { outdentCodeLine } from '../lib/transforms/outdentCodeLine';
  * - Shift+Tab: outdent code line.
  * - Tab: indent code line.
  */
-export const onKeyDownCodeBlock: KeyboardHandler = ({ editor, event }) => {
+export const onKeyDownCodeBlock: KeyboardHandler<CodeBlockPluginOptions> = ({
+  editor,
+  event,
+}) => {
   if (event.defaultPrevented) return;
 
   const isTab = Hotkeys.isTab(editor, event);

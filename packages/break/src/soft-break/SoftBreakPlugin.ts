@@ -4,8 +4,6 @@ import type { SoftBreakPluginOptions } from './types';
 
 import { onKeyDownSoftBreak } from './onKeyDownSoftBreak';
 
-export const KEY_SOFT_BREAK = 'softBreak';
-
 /**
  * Insert soft break following configurable rules. Each rule specifies a hotkey
  * and query options.
@@ -17,7 +15,7 @@ export const SoftBreakPlugin = createPlugin<
   handlers: {
     onKeyDown: onKeyDownSoftBreak,
   },
-  key: KEY_SOFT_BREAK,
+  key: 'softBreak',
   options: {
     rules: [{ hotkey: 'shift+enter' }],
   },

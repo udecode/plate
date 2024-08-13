@@ -15,7 +15,7 @@ import { Path, Range } from 'slate';
 
 import type { TodoListPluginOptions } from '../types';
 
-import { ELEMENT_TODO_LI } from '../todo-list/index';
+import { TodoListPlugin } from '../todo-list/index';
 
 /** Insert todo list item if selection in li>p. TODO: test */
 export const insertTodoListItem = (
@@ -25,7 +25,7 @@ export const insertTodoListItem = (
     inheritCheckStateOnLineStartBreak = false,
   }: TodoListPluginOptions
 ): boolean => {
-  const todoType = getPluginType(editor, ELEMENT_TODO_LI);
+  const todoType = getPluginType(editor, TodoListPlugin.key);
 
   if (!editor.selection) {
     return false;

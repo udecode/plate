@@ -1,5 +1,5 @@
 import {
-  ELEMENT_DEFAULT,
+  ParagraphPlugin,
   type PlateEditor,
   type TDescendant,
   type TElement,
@@ -14,7 +14,7 @@ import type {
   DeserializeCsvPluginOptions,
 } from '../types';
 
-import { KEY_DESERIALIZE_CSV } from '../DeserializeCsvPlugin';
+import { DeserializeCsvPlugin } from '../DeserializeCsvPlugin';
 
 const { parse } = papaparse;
 
@@ -44,7 +44,7 @@ export const deserializeCsv = (
   } & DeserializeCsvParseOptions
 ): TDescendant[] | undefined => {
   const { errorTolerance, parseOptions: pluginParseOptions } =
-    getPluginOptions<DeserializeCsvPluginOptions>(editor, KEY_DESERIALIZE_CSV);
+    getPluginOptions<DeserializeCsvPluginOptions>(editor, DeserializeCsvPlugin.key);
 
   // Verify it's a csv string
   const testCsv = parse(data, { preview: 2 });
@@ -64,7 +64,7 @@ export const deserializeCsv = (
     )
       return;
 
-    const paragraph = getPluginType(editor, ELEMENT_DEFAULT);
+    const paragraph = getPluginType(editor, ParagraphPlugin.key);
     const table = getPluginType(editor, 'table');
     const th = getPluginType(editor, 'th');
     const tr = getPluginType(editor, 'tr');

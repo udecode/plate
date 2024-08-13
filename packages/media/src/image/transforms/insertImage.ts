@@ -7,7 +7,7 @@ import {
 
 import type { TImageElement } from '../types';
 
-import { ELEMENT_IMAGE } from '../ImagePlugin';
+import { ImagePlugin } from '../ImagePlugin';
 
 export const insertImage = <E extends PlateEditor>(
   editor: E,
@@ -17,7 +17,7 @@ export const insertImage = <E extends PlateEditor>(
   const text = { text: '' };
   const image: TImageElement = {
     children: [text],
-    type: getPluginType(editor, ELEMENT_IMAGE),
+    type: getPluginType(editor, ImagePlugin.key),
     url: url as any,
   };
   insertNodes<TImageElement>(editor, image, {

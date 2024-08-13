@@ -1,7 +1,6 @@
-import type { WithOverride } from '@udecode/plate-common';
-
 import {
   type PlateEditor,
+  type WithOverride,
   getNode,
   getPointAfter,
   getPointBefore,
@@ -16,7 +15,7 @@ import type {
   TSuggestionText,
 } from './types';
 
-import { KEY_SUGGESTION_ID, MARK_SUGGESTION } from './constants';
+import { KEY_SUGGESTION_ID, SuggestionPlugin } from './SuggestionPlugin';
 import { deleteFragmentSuggestion } from './transforms/deleteFragmentSuggestion';
 import { deleteSuggestion } from './transforms/deleteSuggestion';
 import { insertFragmentSuggestion } from './transforms/insertFragmentSuggestion';
@@ -126,7 +125,7 @@ export const withSuggestion: WithOverride<SuggestionPluginOptions> = ({
   editor.normalizeNode = (entry) => {
     const [node, path] = entry;
 
-    if (node[MARK_SUGGESTION]) {
+    if (node[SuggestionPlugin.key]) {
       const pointBefore = getPointBefore(editor, path);
 
       // Merge with previous suggestion
@@ -134,7 +133,7 @@ export const withSuggestion: WithOverride<SuggestionPluginOptions> = ({
         const nodeBefore = getNode(editor, pointBefore.path);
 
         if (
-          (nodeBefore as any)?.[MARK_SUGGESTION] &&
+          (nodeBefore as any)?.[SuggestionPlugin.key] &&
           (nodeBefore as any)[KEY_SUGGESTION_ID] !== node[KEY_SUGGESTION_ID]
         ) {
           setNodes<TSuggestionText>(
@@ -149,9 +148,13 @@ export const withSuggestion: WithOverride<SuggestionPluginOptions> = ({
       // Unset suggestion when there is no suggestion id
       if (!getSuggestionId(node)) {
         const keys = getSuggestionKeys(node);
-        unsetNodes(editor, [MARK_SUGGESTION, 'suggestionDeletion', ...keys], {
-          at: path,
-        });
+        unsetNodes(
+          editor,
+          [SuggestionPlugin.key, 'suggestionDeletion', ...keys],
+          {
+            at: path,
+          }
+        );
 
         return;
       }
@@ -159,7 +162,7 @@ export const withSuggestion: WithOverride<SuggestionPluginOptions> = ({
       if (getSuggestionKeys(node).length === 0) {
         if (node.suggestionDeletion) {
           // Unset deletions
-          unsetNodes(editor, [MARK_SUGGESTION, KEY_SUGGESTION_ID], {
+          unsetNodes(editor, [SuggestionPlugin.key, KEY_SUGGESTION_ID], {
             at: path,
           });
         } else {
@@ -188,7 +191,7 @@ export const withSuggestion: WithOverride<SuggestionPluginOptions> = ({
 //       // if (node && node.suggestionId !== id) {
 //       insertNodes<TSuggestionText>(
 //         editor,
-//         { text, [MARK_SUGGESTION]: true, [KEY_SUGGESTION_ID]: id },
+//         { text, [SuggestionPlugin.key]: true, [KEY_SUGGESTION_ID]: id },
 //         {
 //           at: {
 //             path,
@@ -206,7 +209,7 @@ export const withSuggestion: WithOverride<SuggestionPluginOptions> = ({
 //       const suggestionNode = node as TSuggestionText;
 //
 //       if (
-//         suggestionNode[MARK_SUGGESTION] &&
+//         suggestionNode[SuggestionPlugin.key] &&
 //         suggestionNode[KEY_SUGGESTION_ID] &&
 //         !suggestionNode.suggestionDeletion
 //       ) {
@@ -214,9 +217,9 @@ export const withSuggestion: WithOverride<SuggestionPluginOptions> = ({
 //         return;
 //       }
 //
-//       if (!suggestionNode[MARK_SUGGESTION]) {
+//       if (!suggestionNode[SuggestionPlugin.key]) {
 //         // Add suggestion mark
-//         suggestionNode[MARK_SUGGESTION] = true;
+//         suggestionNode[SuggestionPlugin.key] = true;
 //       }
 //       if (suggestionNode.suggestionDeletion) {
 //         // Remove suggestion deletion mark
@@ -233,7 +236,7 @@ export const withSuggestion: WithOverride<SuggestionPluginOptions> = ({
 //       const { node } = op;
 //
 //       // additions are safe to remove
-//       if (node[MARK_SUGGESTION]) {
+//       if (node[SuggestionPlugin.key]) {
 //         if (!node.suggestionDeletion) {
 //           apply(op);
 //         }
@@ -262,7 +265,7 @@ export const withSuggestion: WithOverride<SuggestionPluginOptions> = ({
 //       if (!node) return;
 //
 //       // additions are safe to remove
-//       if (node[MARK_SUGGESTION] && !node.suggestionDeletion) {
+//       if (node[SuggestionPlugin.key] && !node.suggestionDeletion) {
 //         apply(op);
 //         return;
 //       }
@@ -290,7 +293,7 @@ export const withSuggestion: WithOverride<SuggestionPluginOptions> = ({
 //     }
 //     if (op.type === 'move_node') {
 //       const node = getNode(editor, op.path);
-//       if (node && isBlock(editor, node) && !node[MARK_SUGGESTION]) {
+//       if (node && isBlock(editor, node) && !node[SuggestionPlugin.key]) {
 //         // TODO: ?
 //         return;
 //       }
@@ -298,7 +301,7 @@ export const withSuggestion: WithOverride<SuggestionPluginOptions> = ({
 //     if (op.type === 'merge_node') {
 //       const node = getNode(editor, op.path);
 //       if (node && isBlock(editor, node)) {
-//         // if (node && isBlock(editor, node) && !node[MARK_SUGGESTION]) {
+//         // if (node && isBlock(editor, node) && !node[SuggestionPlugin.key]) {
 //         // TODO: delete block suggestion
 //         return;
 //       }
@@ -306,7 +309,7 @@ export const withSuggestion: WithOverride<SuggestionPluginOptions> = ({
 //     if (op.type === 'split_node') {
 //       const node = getNode(editor, op.path);
 //       // allow splitting suggestion blocks
-//       if (node && isBlock(editor, node) && !node[MARK_SUGGESTION]) {
+//       if (node && isBlock(editor, node) && !node[SuggestionPlugin.key]) {
 //         // TODO: insert block suggestion
 //         return;
 //       }

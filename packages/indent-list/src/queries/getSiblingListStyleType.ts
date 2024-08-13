@@ -7,7 +7,7 @@ import type {
 
 import type { ListStyleType } from '../types';
 
-import { KEY_LIST_STYLE_TYPE } from '../IndentListPlugin';
+import { IndentListPlugin } from '../IndentListPlugin';
 import {
   type GetIndentListSiblingsOptions,
   getIndentListSiblings,
@@ -42,7 +42,7 @@ export const getSiblingListStyleType = <E extends PlateEditor>(
 
   return (
     siblings.length > 0
-      ? siblings[0][0][KEY_LIST_STYLE_TYPE]
-      : entry[0][KEY_LIST_STYLE_TYPE]
+      ? siblings[0][0][IndentListPlugin.key]
+      : entry[0][IndentListPlugin.key]
   ) as ListStyleType;
 };

@@ -13,7 +13,7 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 
-import { ELEMENT_LI } from './ListPlugin';
+import { ListItemPlugin } from './ListPlugin';
 import { getHighestEmptyList } from './queries/getHighestEmptyList';
 import { hasListChild } from './queries/hasListChild';
 import { isAcrossListItems } from './queries/isAcrossListItems';
@@ -23,7 +23,7 @@ const getLiStart = (editor: PlateEditor) => {
 
   return getAboveNode(editor, {
     at: start,
-    match: { type: getPluginType(editor, ELEMENT_LI) },
+    match: { type: getPluginType(editor, ListItemPlugin.key) },
   });
 };
 
@@ -41,7 +41,7 @@ export const deleteFragmentList = (editor: PlateEditor) => {
     const end = getEndPoint(editor, editor.selection as Range);
     const liEnd = getAboveNode(editor, {
       at: end,
-      match: { type: getPluginType(editor, ELEMENT_LI) },
+      match: { type: getPluginType(editor, ListItemPlugin.key) },
     });
     const liEndCanBeDeleted = liEnd && !hasListChild(editor, liEnd[0]);
     const liEndPathRef = liEndCanBeDeleted

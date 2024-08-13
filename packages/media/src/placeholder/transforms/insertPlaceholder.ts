@@ -9,7 +9,7 @@ import type { TPlaceholderElement } from '../types';
 
 import { ELEMENT_AUDIO } from '../../audio';
 import { ELEMENT_FILE } from '../../file';
-import { ELEMENT_IMAGE } from '../../image';
+import { ImagePlugin } from '../../image';
 import { ELEMENT_VIDEO } from '../../video';
 import { ELEMENT_PLACEHOLDER } from '../PlaceholderPlugin';
 
@@ -34,7 +34,7 @@ export const insertPlaceHolder = <E extends PlateEditor>(
 export const insertImagePlaceholder = <E extends PlateEditor>(
   editor: E,
   options?: InsertNodesOptions<E>
-) => insertPlaceHolder(editor, ELEMENT_IMAGE, options);
+) => insertPlaceHolder(editor, ImagePlugin.key, options);
 
 export const insertVideoPlaceholder = <E extends PlateEditor>(
   editor: E,

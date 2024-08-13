@@ -13,7 +13,7 @@ import { Path } from 'slate';
 
 import type { TTableElement, TablePluginOptions } from '../types';
 
-import { ELEMENT_TABLE, ELEMENT_TH } from '../TablePlugin';
+import { TableCellHeaderPlugin, TablePlugin } from '../TablePlugin';
 import { insertTableMergeColumn } from '../merge/insertTableColumn';
 import { getCellTypes } from '../utils/index';
 
@@ -34,7 +34,7 @@ export const insertTableColumn = (
 ) => {
   const { enableMerging } = getPluginOptions<TablePluginOptions>(
     editor,
-    ELEMENT_TABLE
+    TablePlugin.key
   );
 
   if (enableMerging) {
@@ -58,7 +58,7 @@ export const insertTableColumn = (
 
   const tableEntry = getBlockAbove<TTableElement>(editor, {
     at: cellPath,
-    match: { type: getPluginType(editor, ELEMENT_TABLE) },
+    match: { type: getPluginType(editor, TablePlugin.key) },
   });
 
   if (!tableEntry) return;
@@ -79,7 +79,7 @@ export const insertTableColumn = (
   const currentRowIndex = cellPath.at(-2);
 
   const { cellFactory, initialTableWidth, minColumnWidth } =
-    getPluginOptions<TablePluginOptions>(editor, ELEMENT_TABLE);
+    getPluginOptions<TablePluginOptions>(editor, TablePlugin.key);
 
   withoutNormalizing(editor, () => {
     // for each row, insert a new cell
@@ -95,7 +95,7 @@ export const insertTableColumn = (
       const isHeaderRow =
         header === undefined
           ? (row as TElement).children.every(
-              (c) => c.type === getPluginType(editor, ELEMENT_TH)
+              (c) => c.type === getPluginType(editor, TableCellHeaderPlugin.key)
             )
           : header;
 

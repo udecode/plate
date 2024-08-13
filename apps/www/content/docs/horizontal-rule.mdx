@@ -27,9 +27,9 @@ npm install @udecode/plate-horizontal-rule
 
 ```tsx
 import { createAutoformatPlugin } from '@udecode/plate-autoformat';
-import { ELEMENT_DEFAULT, insertNodes, setNodes } from '@udecode/plate-common';
+import { ParagraphPlugin, insertNodes, setNodes } from '@udecode/plate-common';
 import {
-  ELEMENT_HR,
+  HorizontalRulePlugin,
   createHorizontalRulePlugin,
 } from '@udecode/plate-horizontal-rule';
 import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
@@ -38,19 +38,19 @@ const plugins = [
   // ...otherPlugins,
   createHorizontalRulePlugin(),
   createSelectOnBackspacePlugin({
-    options: { query: { allow: [ELEMENT_HR] } },
+    options: { query: { allow: [HorizontalRulePlugin.key] } },
   }),
   createAutoformatPlugin({
     options: {
       rules: [
         {
           mode: 'block',
-          type: ELEMENT_HR,
+          type: HorizontalRulePlugin.key,
           match: ['---', '—-', '___ '],
           format: (editor) => {
-            setNodes(editor, { type: ELEMENT_HR });
+            setNodes(editor, { type: HorizontalRulePlugin.key });
             insertNodes(editor, {
-              type: ELEMENT_DEFAULT,
+              type: ParagraphPlugin.key,
               children: [{ text: '' }],
             });
           },

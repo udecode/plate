@@ -1,11 +1,11 @@
 import { AlignPlugin } from '@udecode/plate-alignment';
 import { BlockquotePlugin } from '@udecode/plate-block-quote';
 import { htmlStringToDOMNode } from '@udecode/plate-common';
+import { ParagraphPlugin } from '@udecode/plate-common';
 import { HeadingPlugin } from '@udecode/plate-heading';
 import { LinkPlugin } from '@udecode/plate-link';
 import { ListPlugin } from '@udecode/plate-list';
 import { ImagePlugin } from '@udecode/plate-media';
-import { ELEMENT_PARAGRAPH, ParagraphPlugin } from '@udecode/plate-paragraph';
 import { TablePlugin } from '@udecode/plate-table';
 
 import { serializeHtml } from '../../serializeHtml';
@@ -225,7 +225,7 @@ it('serialize align style to html', () => {
         {
           align: 'center',
           children: [{ text: 'I am centered text!' }],
-          type: ELEMENT_PARAGRAPH,
+          type: ParagraphPlugin.key,
         },
       ],
     })
@@ -252,7 +252,7 @@ it('serialize align className to html', () => {
         {
           align: 'center',
           children: [{ text: 'I am centered text!' }],
-          type: ELEMENT_PARAGRAPH,
+          type: ParagraphPlugin.key,
         },
       ],
     })
@@ -267,7 +267,7 @@ it('serialize image and paragraph to html', () => {
     nodes: [
       {
         children: [{ text: 'I am centered text!' }],
-        type: ELEMENT_PARAGRAPH,
+        type: ParagraphPlugin.key,
       },
       {
         children: [],

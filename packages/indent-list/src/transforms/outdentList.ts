@@ -4,7 +4,7 @@ import { setIndent } from '@udecode/plate-indent';
 
 import type { IndentListOptions } from './indentList';
 
-import { KEY_LIST_CHECKED, KEY_LIST_STYLE_TYPE } from '../IndentListPlugin';
+import { KEY_LIST_CHECKED, IndentListPlugin } from '../IndentListPlugin';
 
 /** Decrease the indentation of the selected blocks. */
 export const outdentList = <E extends PlateEditor>(
@@ -13,7 +13,7 @@ export const outdentList = <E extends PlateEditor>(
 ) => {
   setIndent(editor, {
     offset: -1,
-    unsetNodesProps: [KEY_LIST_STYLE_TYPE, KEY_LIST_CHECKED],
+    unsetNodesProps: [IndentListPlugin.key, KEY_LIST_CHECKED],
     ...options,
   });
 };

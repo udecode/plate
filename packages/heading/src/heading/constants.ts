@@ -10,6 +10,15 @@ export const ELEMENT_H5 = 'h5';
 
 export const ELEMENT_H6 = 'h6';
 
+// export const HeadingKeys = {
+//   h1: 'h1',
+//   h2: 'h2',
+//   h3: 'h3',
+//   h4: 'h4',
+//   h5: 'h5',
+//   h6: 'h6',
+// };
+
 export const KEYS_HEADING = [
   ELEMENT_H1,
   ELEMENT_H2,

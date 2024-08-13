@@ -4,9 +4,9 @@ import {
   unsetNodes,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import { KEY_INDENT } from '@udecode/plate-indent';
+import { IndentPlugin } from '@udecode/plate-indent';
 
-import { KEY_LIST_CHECKED, KEY_LIST_STYLE_TYPE } from '../IndentListPlugin';
+import { KEY_LIST_CHECKED, IndentListPlugin } from '../IndentListPlugin';
 import { ListStyleType } from '../types';
 import { setIndentListNode, setIndentTodoNode } from './setIndentListNode';
 
@@ -27,14 +27,14 @@ export const setIndentListNodes = (
     entries.forEach((entry) => {
       const [node, path] = entry;
 
-      let indent = (node[KEY_INDENT] as number) ?? 0;
+      let indent = (node[IndentPlugin.key] as number) ?? 0;
       indent =
-        node[KEY_LIST_STYLE_TYPE] || node.hasOwnProperty(KEY_LIST_CHECKED)
+        node[IndentListPlugin.key] || node.hasOwnProperty(KEY_LIST_CHECKED)
           ? indent
           : indent + 1;
 
       if (listStyleType === 'todo') {
-        unsetNodes(editor as any, KEY_LIST_STYLE_TYPE, { at: path });
+        unsetNodes(editor as any, IndentListPlugin.key, { at: path });
         setIndentTodoNode(editor, {
           at: path,
           indent,

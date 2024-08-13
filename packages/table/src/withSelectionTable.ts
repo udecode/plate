@@ -11,7 +11,7 @@ import { Range } from 'slate';
 
 import type { TablePluginOptions } from './types';
 
-import { ELEMENT_TABLE } from './TablePlugin';
+import { TablePlugin } from './TablePlugin';
 import { overrideSelectionFromCell } from './transforms/overrideSelectionFromCell';
 
 // TODO: tests
@@ -41,12 +41,12 @@ export const withSelectionTable: WithOverride<TablePluginOptions> = ({
         Range.isRange(newSelection) &&
         isRangeAcrossBlocks(editor, {
           at: newSelection,
-          match: (n) => n.type === getPluginType(editor, ELEMENT_TABLE),
+          match: (n) => n.type === getPluginType(editor, TablePlugin.key),
         })
       ) {
         const anchorEntry = getBlockAbove(editor, {
           at: newSelection.anchor,
-          match: (n) => n.type === getPluginType(editor, ELEMENT_TABLE),
+          match: (n) => n.type === getPluginType(editor, TablePlugin.key),
         });
 
         if (anchorEntry) {
@@ -67,7 +67,7 @@ export const withSelectionTable: WithOverride<TablePluginOptions> = ({
         } else {
           const focusEntry = getBlockAbove(editor, {
             at: newSelection.focus,
-            match: (n) => n.type === getPluginType(editor, ELEMENT_TABLE),
+            match: (n) => n.type === getPluginType(editor, TablePlugin.key),
           });
 
           if (focusEntry) {

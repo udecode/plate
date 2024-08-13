@@ -2,7 +2,6 @@ import { createPlugin } from '@udecode/plate-common';
 
 import type { SuggestionPluginOptions } from './types';
 
-import { MARK_SUGGESTION } from './constants';
 import { useHooksSuggestion } from './useHooksSuggestion';
 import { withSuggestion } from './withSuggestion';
 
@@ -11,7 +10,9 @@ export const SuggestionPlugin = createPlugin<
   SuggestionPluginOptions
 >({
   isLeaf: true,
-  key: MARK_SUGGESTION,
+  key: 'suggestion',
   useHooks: useHooksSuggestion,
   withOverrides: withSuggestion,
 });
+
+export const KEY_SUGGESTION_ID = 'suggestionId';

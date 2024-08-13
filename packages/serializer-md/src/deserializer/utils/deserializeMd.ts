@@ -11,12 +11,12 @@ import {
   type RemarkPluginOptions,
   remarkPlugin,
 } from '../../remark-slate/index';
-import { KEY_DESERIALIZE_MD } from '../DeserializeMdPlugin';
+import { DeserializeMdPlugin } from '../DeserializeMdPlugin';
 
 /** Deserialize content from Markdown format to Slate format. `editor` needs */
 export const deserializeMd = (editor: PlateEditor, data: string) => {
   const { elementRules, indentList, textRules } =
-    getPluginOptions<DeserializeMdPluginOptions>(editor, KEY_DESERIALIZE_MD);
+    getPluginOptions<DeserializeMdPluginOptions>(editor, DeserializeMdPlugin.key);
 
   const tree: any = unified()
     .use(markdown)

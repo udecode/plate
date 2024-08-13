@@ -13,7 +13,7 @@ import { Path } from 'slate';
 
 import {
   type BlockSelectionPluginOptions,
-  KEY_BLOCK_SELECTION,
+  BlockSelectionPlugin,
 } from '../BlockSelectionPlugin';
 import {
   blockSelectionActions,
@@ -46,7 +46,7 @@ export const useBlockSelectableState = ({
 
   const { query } = getPluginOptions<BlockSelectionPluginOptions>(
     editor,
-    KEY_BLOCK_SELECTION
+    BlockSelectionPlugin.key
   );
 
   if (query && !queryNode([element, path], query)) {
@@ -89,7 +89,7 @@ export const useBlockSelectable = ({
         const { disableContextMenu = true } =
           getPluginOptions<BlockSelectionPluginOptions>(
             editor,
-            KEY_BLOCK_SELECTION
+            BlockSelectionPlugin.key
           );
 
         if (disableContextMenu) return;

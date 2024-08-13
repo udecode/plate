@@ -2,9 +2,9 @@
 
 import type { PlateEditor } from '@udecode/plate-common';
 
+import { ParagraphPlugin } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { IndentPlugin } from '@udecode/plate-indent';
-import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { IndentListPlugin } from '../IndentListPlugin';

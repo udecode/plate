@@ -18,7 +18,7 @@ import {
 
 import type { TLinkElement } from '../types';
 
-import { ELEMENT_LINK } from '../LinkPlugin';
+import { LinkPlugin } from '../LinkPlugin';
 import { type CreateLinkNodeOptions, validateUrl } from '../utils/index';
 import { insertLink } from './insertLink';
 import { unwrapLink } from './unwrapLink';
@@ -58,7 +58,7 @@ export const upsertLink = <E extends PlateEditor>(
 
   const linkAbove = getAboveNode<TLinkElement>(editor, {
     at,
-    match: { type: getPluginType(editor, ELEMENT_LINK) },
+    match: { type: getPluginType(editor, LinkPlugin.key) },
   });
 
   // anchor and focus in link -> insert text
@@ -92,7 +92,7 @@ export const upsertLink = <E extends PlateEditor>(
   // selection contains at one edge edge or between the edges
   const linkEntry = findNode<TLinkElement>(editor, {
     at,
-    match: { type: getPluginType(editor, ELEMENT_LINK) },
+    match: { type: getPluginType(editor, LinkPlugin.key) },
   });
 
   const [linkNode, linkPath] = linkEntry ?? [];

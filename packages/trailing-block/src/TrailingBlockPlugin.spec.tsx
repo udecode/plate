@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { ELEMENT_DEFAULT } from '@udecode/plate-common';
+import { ParagraphPlugin } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { ELEMENT_H1 } from '@udecode/plate-heading';
 import { jsx } from '@udecode/plate-test-utils';
@@ -33,7 +33,7 @@ describe('when last node is invalid', () => {
       plugins: [
         TrailingBlockPlugin.configure({
           level: 0,
-          type: ELEMENT_DEFAULT,
+          type: ParagraphPlugin.key,
         }),
       ],
     });
@@ -72,7 +72,7 @@ describe('when level = 1', () => {
       plugins: [
         TrailingBlockPlugin.configure({
           level: 1,
-          type: ELEMENT_DEFAULT,
+          type: ParagraphPlugin.key,
         }),
       ],
     });
@@ -105,7 +105,7 @@ describe('when using query', () => {
         TrailingBlockPlugin.configure({
           exclude: [ELEMENT_H1],
           level: 0,
-          type: ELEMENT_DEFAULT,
+          type: ParagraphPlugin.key,
         }),
       ],
     });

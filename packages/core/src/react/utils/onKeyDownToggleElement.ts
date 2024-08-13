@@ -1,12 +1,13 @@
+import { isHotkey } from 'is-hotkey';
+import castArray from 'lodash/castArray.js';
+
 import {
-  ELEMENT_DEFAULT,
   type HotkeyPluginOptions,
   type KeyboardHandler,
+  ParagraphPlugin,
   getPluginType,
-  isHotkey,
   toggleNodeType,
-} from '@udecode/plate-core';
-import castArray from 'lodash/castArray.js';
+} from '../../lib';
 
 export const onKeyDownToggleElement: KeyboardHandler<HotkeyPluginOptions> = ({
   editor,
@@ -18,7 +19,7 @@ export const onKeyDownToggleElement: KeyboardHandler<HotkeyPluginOptions> = ({
 }) => {
   if (event.defaultPrevented) return;
 
-  const defaultType = getPluginType(editor, ELEMENT_DEFAULT);
+  const defaultType = getPluginType(editor, ParagraphPlugin.key);
 
   if (!hotkey) return;
 

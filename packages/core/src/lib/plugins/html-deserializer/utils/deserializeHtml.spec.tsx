@@ -13,6 +13,7 @@ import {
 import { BlockquotePlugin } from '@udecode/plate-block-quote';
 import { SoftBreakPlugin } from '@udecode/plate-break';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+import { ParagraphPlugin } from '@udecode/plate-common';
 import { FindReplacePlugin } from '@udecode/plate-find-replace';
 import { HeadingPlugin } from '@udecode/plate-heading';
 import { HighlightPlugin } from '@udecode/plate-highlight';
@@ -20,7 +21,6 @@ import { KbdPlugin } from '@udecode/plate-kbd';
 import { LinkPlugin } from '@udecode/plate-link';
 import { ListPlugin } from '@udecode/plate-list';
 import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media';
-import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { TablePlugin } from '@udecode/plate-table';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 

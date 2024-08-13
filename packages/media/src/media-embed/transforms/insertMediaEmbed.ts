@@ -7,12 +7,12 @@ import {
 
 import type { TMediaEmbedElement } from '../types';
 
-import { ELEMENT_MEDIA_EMBED } from '../MediaEmbedPlugin';
+import { MediaEmbedPlugin } from '../MediaEmbedPlugin';
 
 export const insertMediaEmbed = <E extends PlateEditor>(
   editor: E,
   {
-    key = ELEMENT_MEDIA_EMBED,
+    key = MediaEmbedPlugin.key,
     url = '',
   }: { key?: string } & Partial<TMediaEmbedElement>,
   options: InsertNodesOptions<E> = {}

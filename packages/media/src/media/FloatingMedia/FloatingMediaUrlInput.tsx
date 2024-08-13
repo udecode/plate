@@ -19,8 +19,8 @@ import { submitFloatingMedia } from './submitFloatingMedia';
 export const useFloatingMediaUrlInputState = ({
   pluginKey,
 }: {
-  pluginKey?: string;
-} = {}) => {
+  pluginKey: string;
+}) => {
   const editor = useEditorRef();
   const element = useElement<TMediaElement>();
 

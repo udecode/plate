@@ -21,7 +21,7 @@ import {
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
-import { ELEMENT_LI } from './ListPlugin';
+import { ListItemPlugin } from './ListPlugin';
 import {
   getListItemContentType,
   getListItemType,
@@ -31,7 +31,7 @@ import {
 export const insertFragmentList = (editor: PlateEditor) => {
   const { insertFragment } = editor;
 
-  const listItemPlugin = getPlugin(editor, ELEMENT_LI);
+  const listItemPlugin = getPlugin(editor, ListItemPlugin.key);
   const listItemType = getListItemType(editor);
   const listItemContentType = getListItemContentType(editor);
 

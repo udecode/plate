@@ -9,7 +9,7 @@ import {
 } from '@udecode/plate-common';
 import { Path, type PathRef } from 'slate';
 
-import { ELEMENT_LIC } from '../ListPlugin';
+import { ListItemContentPlugin } from '../ListPlugin';
 import { isListNested } from '../queries/isListNested';
 import { moveListItemDown } from './moveListItemDown';
 import { moveListItemUp } from './moveListItemUp';
@@ -32,7 +32,7 @@ export const moveListItems = (
   const _nodes = getNodeEntries(editor, {
     at,
     match: {
-      type: getPluginType(editor, ELEMENT_LIC),
+      type: getPluginType(editor, ListItemContentPlugin.key),
     },
   });
 

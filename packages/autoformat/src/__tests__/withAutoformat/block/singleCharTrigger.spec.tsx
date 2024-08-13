@@ -6,7 +6,7 @@ import {
   insertText,
   wrapNodes,
 } from '@udecode/plate-common';
-import { ELEMENT_LINK } from '@udecode/plate-link';
+import { LinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 
@@ -47,14 +47,14 @@ it('autoformats a block with a single character trigger', () => {
               insertText(editor, text, { at: linkInputRange });
               wrapNodes(
                 editor,
-                { children: [], type: ELEMENT_LINK, url },
+                { children: [], type: LinkPlugin.key, url },
                 { at: linkInputRange }
               );
             },
             match: ')',
             mode: 'block',
             triggerAtBlockStart: false,
-            type: ELEMENT_LINK,
+            type: LinkPlugin.key,
           },
         ],
       },

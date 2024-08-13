@@ -1,5 +1,5 @@
 import {
-  ELEMENT_DEFAULT,
+  ParagraphPlugin,
   type PlateEditor,
   getPluginType,
   insertElements,
@@ -18,7 +18,7 @@ import { insertCodeBlock } from './insertCodeBlock';
 export const insertEmptyCodeBlock = <E extends PlateEditor>(
   editor: E,
   {
-    defaultType = getPluginType(editor, ELEMENT_DEFAULT),
+    defaultType = getPluginType(editor, ParagraphPlugin.key),
     insertNodesOptions,
   }: CodeBlockInsertOptions<E> = {}
 ) => {

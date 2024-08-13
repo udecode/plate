@@ -5,8 +5,6 @@ import type { AutoformatPluginOptions } from './types';
 import { onKeyDownAutoformat } from './onKeyDownAutoformat';
 import { withAutoformat } from './withAutoformat';
 
-export const KEY_AUTOFORMAT = 'autoformat';
-
 /** @see {@link withAutoformat} */
 export const AutoformatPlugin = createPlugin<
   'autoformat',
@@ -15,7 +13,7 @@ export const AutoformatPlugin = createPlugin<
   handlers: {
     onKeyDown: onKeyDownAutoformat,
   },
-  key: KEY_AUTOFORMAT,
+  key: 'autoformat',
   options: {
     rules: [],
   },

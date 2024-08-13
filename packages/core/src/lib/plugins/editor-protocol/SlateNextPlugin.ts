@@ -16,10 +16,10 @@ import {
 
 import type { WithOverride } from '../../plugin/types/PlatePlugin';
 
-import { ELEMENT_DEFAULT } from '../../constants';
 import { getPluginType } from '../../plugin';
 import { createPlugin } from '../../plugin/createPlugin';
 import { resetEditor } from '../../transforms';
+import { ParagraphPlugin } from '../paragraph';
 
 const getBlockAbove = <N extends AncestorOf<E>, E extends TEditor = TEditor>(
   editor: E,
@@ -126,7 +126,7 @@ export const SlateNextPlugin = createPlugin({
     /** Default block factory. */
     blockFactory: (node?: Partial<TElement>, _path?: Path): TElement => ({
       children: [{ text: '' }],
-      type: getPluginType(editor, ELEMENT_DEFAULT),
+      type: getPluginType(editor, ParagraphPlugin.key),
       ...node,
     }),
   }))

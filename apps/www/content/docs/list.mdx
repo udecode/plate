@@ -73,10 +73,10 @@ const plugins = [
 
 - `key: 'list'`
 - Contains the following element plugins:
-  - `ELEMENT_UL`: plugin options below.
-  - `ELEMENT_OL`: plugin options below.
-  - `ELEMENT_LI`
-  - `ELEMENT_LIC`
+  - `ListUnorderedPlugin.key`: plugin options below.
+  - `ListOrderedPlugin.key`: plugin options below.
+  - `ListItemPlugin.key`
+  - `ListItemContentPlugin.key`
 
 <APIOptions>
   <APIItem name="validLiChildrenTypes" type="string[]" optional>
@@ -730,7 +730,7 @@ The pressed state of the button.
 <APIItem name="nodeType" type="string">
 The node type of the list.
 
-- **Default:** `ELEMENT_UL`
+- **Default:** `ListUnorderedPlugin.key`
 
 </APIItem>
 </APIState>

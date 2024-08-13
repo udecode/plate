@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
+import { ParagraphPlugin } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { ELEMENT_H1 } from '@udecode/plate-heading';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { NormalizeTypesPlugin } from '../../NormalizeTypesPlugin';
@@ -38,7 +38,7 @@ it('should be', () => {
             path: [0, 0],
             strictType: ELEMENT_H1,
           },
-          { path: [0, 1], type: ELEMENT_PARAGRAPH },
+          { path: [0, 1], type: ParagraphPlugin.key },
         ],
       }),
     ],

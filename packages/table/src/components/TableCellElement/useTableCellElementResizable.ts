@@ -15,7 +15,7 @@ import {
 import type { TTableElement, TablePluginOptions } from '../../types';
 import type { TableCellElementState } from './useTableCellElementState';
 
-import { ELEMENT_TABLE } from '../../TablePlugin';
+import { TablePlugin } from '../../TablePlugin';
 import {
   useOverrideColSize,
   useOverrideMarginLeft,
@@ -50,7 +50,7 @@ export const useTableCellElementResizableState = ({
   const editor = useEditorRef();
   const { disableMarginLeft } = getPluginOptions<TablePluginOptions>(
     editor,
-    ELEMENT_TABLE
+    TablePlugin.key
   );
 
   return {
@@ -78,10 +78,10 @@ export const useTableCellElementResizable = ({
 } => {
   const editor = useEditorRef();
   const element = useElement();
-  const tableElement = useElement<TTableElement>(ELEMENT_TABLE);
+  const tableElement = useElement<TTableElement>(TablePlugin.key);
   const { minColumnWidth = 0 } = getPluginOptions<TablePluginOptions>(
     editor,
-    ELEMENT_TABLE
+    TablePlugin.key
   );
 
   let initialWidth: number | undefined;

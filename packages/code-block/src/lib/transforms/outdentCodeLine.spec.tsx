@@ -8,7 +8,7 @@ import {
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
+import { CodeBlockPlugin } from '../../react/CodeBlockPlugin.react';
 import { outdentCodeLine } from './outdentCodeLine';
 
 jsx;

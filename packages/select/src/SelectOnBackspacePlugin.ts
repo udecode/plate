@@ -10,14 +10,12 @@ export type SelectOnBackspacePluginOptions = {
   removeNodeIfEmpty?: boolean;
 };
 
-export const KEY_SELECT_ON_BACKSPACE = 'selectOnBackspace';
-
 /** @see {@link withSelectOnBackspace} */
 export const SelectOnBackspacePlugin = createPlugin<
   'selectOnBackspace',
   SelectOnBackspacePluginOptions
 >({
-  key: KEY_SELECT_ON_BACKSPACE,
+  key: 'selectOnBackspace',
   options: {
     removeNodeIfEmpty: false,
   },

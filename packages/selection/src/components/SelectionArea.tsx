@@ -9,7 +9,7 @@ import VanillaSelectionArea, {
 
 import {
   type BlockSelectionPluginOptions,
-  KEY_BLOCK_SELECTION,
+  BlockSelectionPlugin,
 } from '../BlockSelectionPlugin';
 
 export interface SelectionAreaProps
@@ -56,7 +56,7 @@ export function SelectionArea({
     const { scrollContainerSelector } =
       getPluginOptions<BlockSelectionPluginOptions>(
         editor,
-        KEY_BLOCK_SELECTION
+        BlockSelectionPlugin.key
       );
 
     if (scrollContainerSelector) {

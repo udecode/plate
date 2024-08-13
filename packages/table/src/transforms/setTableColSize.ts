@@ -7,7 +7,7 @@ import {
 
 import type { TTableElement } from '../types';
 
-import { ELEMENT_TABLE } from '../TablePlugin';
+import { TablePlugin } from '../TablePlugin';
 import { getTableColumnCount } from '../queries/getTableColumnCount';
 
 export const setTableColSize = <E extends TEditor>(
@@ -16,7 +16,7 @@ export const setTableColSize = <E extends TEditor>(
   options: GetAboveNodeOptions<E> = {}
 ) => {
   const table = findNode<TTableElement>(editor, {
-    match: { type: ELEMENT_TABLE },
+    match: { type: TablePlugin.key },
     ...options,
   });
 

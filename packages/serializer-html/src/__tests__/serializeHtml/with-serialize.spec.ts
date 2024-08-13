@@ -1,7 +1,6 @@
 import React from 'react';
 
-import { BoldPlugin } from '@udecode/plate';
-import { MARK_BOLD } from '@udecode/plate-basic-marks';
+import { BoldPlugin } from '@udecode/plate-basic-marks';
 import {
   type PlatePlugins,
   createPlugin,
@@ -45,7 +44,7 @@ it('custom serialize bold to html', () => {
         plugins: [
           BoldPlugin.extend({
             serializeHtml: ({ children, leaf }) =>
-              leaf[MARK_BOLD] && !!leaf.text
+              leaf[BoldPlugin.key] && !!leaf.text
                 ? React.createElement('b', {}, children)
                 : children,
           }),

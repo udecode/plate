@@ -2,8 +2,6 @@ import { createPlugin } from '../../plugin';
 import { BLUR_EDITOR_EVENT, FOCUS_EDITOR_EVENT } from './constants';
 import { eventEditorActions, eventEditorSelectors } from './eventEditorStore';
 
-export const KEY_EVENT_EDITOR = 'eventEditor';
-
 export const EventEditorPlugin = createPlugin({
   handlers: {
     onBlur: ({ editor }) => {
@@ -31,5 +29,5 @@ export const EventEditorPlugin = createPlugin({
       );
     },
   },
-  key: KEY_EVENT_EDITOR,
+  key: 'eventEditor',
 });

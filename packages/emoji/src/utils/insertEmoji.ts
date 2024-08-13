@@ -8,7 +8,7 @@ import {
 
 import type { EmojiPluginOptions } from '../types';
 
-import { KEY_EMOJI } from '../EmojiPlugin';
+import { EmojiPlugin } from '../EmojiPlugin';
 
 export const insertEmoji = <TEmoji extends Emoji = Emoji>(
   editor: PlateEditor,
@@ -16,7 +16,7 @@ export const insertEmoji = <TEmoji extends Emoji = Emoji>(
 ) => {
   const { createEmojiNode } = getPluginOptions<EmojiPluginOptions>(
     editor,
-    KEY_EMOJI
+    EmojiPlugin.key
   );
 
   const emojiNode = createEmojiNode!(emoji);

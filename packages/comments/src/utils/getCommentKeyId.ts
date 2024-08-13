@@ -1,4 +1,4 @@
-import { MARK_COMMENT } from '../constants';
+import { CommentsPlugin } from '../CommentsPlugin';
 
 export const getCommentKeyId = (key: string) =>
-  key.replace(`${MARK_COMMENT}_`, '');
+  key.replace(`${CommentsPlugin.key}_`, '');

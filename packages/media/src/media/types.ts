@@ -14,5 +14,3 @@ export interface MediaPluginOptions {
   /** Transforms the url. */
   transformUrl?: (url: string) => string;
 }
-
-export const ELEMENT_MEDIA = 'media';

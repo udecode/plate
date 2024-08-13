@@ -7,7 +7,7 @@ import {
 } from '@udecode/plate-common';
 import * as Y from 'yjs';
 
-import { KEY_YJS, type YjsPluginOptions } from './YjsPlugin';
+import { YjsPlugin, type YjsPluginOptions } from './YjsPlugin';
 import { type CursorEditorProps, withTCursors } from './withTCursors';
 import { withTYHistory } from './withTYHistory';
 import { withTYjs } from './withTYjs';
@@ -27,7 +27,7 @@ export const withPlateYjs: WithOverride<YjsPluginOptions> = ({ editor: e }) => {
     disableCursors,
     hocuspocusProviderOptions,
     yjsOptions,
-  } = getPluginOptions<YjsPluginOptions>(editor, KEY_YJS);
+  } = getPluginOptions<YjsPluginOptions>(editor, YjsPlugin.key);
 
   if (!hocuspocusProviderOptions) {
     throw new Error('HocuspocusProvider configuration is required');

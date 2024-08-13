@@ -2,11 +2,11 @@ import React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { MARK_SUBSCRIPT, MARK_SUPERSCRIPT } from '@udecode/plate-basic-marks';
+import { SubscriptPlugin, SuperscriptPlugin } from '@udecode/plate-basic-marks';
 import { collapseSelection, toggleMark } from '@udecode/plate-common';
 import { focusEditor, useEditorRef } from '@udecode/plate-common/react';
-import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
-import { MARK_KBD } from '@udecode/plate-kbd';
+import { HighlightPlugin } from '@udecode/plate-highlight';
+import { KbdPlugin } from '@udecode/plate-kbd';
 
 import { Icons } from '@/components/icons';
 import {
@@ -37,7 +37,7 @@ export function PlaygroundMoreDropdownMenu(props: DropdownMenuProps) {
         <DropdownMenuItem
           onSelect={() => {
             toggleMark(editor, {
-              key: MARK_HIGHLIGHT,
+              key: HighlightPlugin.key,
             });
             collapseSelection(editor, { edge: 'end' });
             focusEditor(editor);
@@ -50,7 +50,7 @@ export function PlaygroundMoreDropdownMenu(props: DropdownMenuProps) {
         <DropdownMenuItem
           onSelect={() => {
             toggleMark(editor, {
-              key: MARK_KBD,
+              key: KbdPlugin.key,
             });
             collapseSelection(editor, { edge: 'end' });
             focusEditor(editor);
@@ -63,8 +63,8 @@ export function PlaygroundMoreDropdownMenu(props: DropdownMenuProps) {
         <DropdownMenuItem
           onSelect={() => {
             toggleMark(editor, {
-              clear: [MARK_SUBSCRIPT, MARK_SUPERSCRIPT],
-              key: MARK_SUPERSCRIPT,
+              clear: [SubscriptPlugin.key, SuperscriptPlugin.key],
+              key: SuperscriptPlugin.key,
             });
             focusEditor(editor);
           }}
@@ -76,8 +76,8 @@ export function PlaygroundMoreDropdownMenu(props: DropdownMenuProps) {
         <DropdownMenuItem
           onSelect={() => {
             toggleMark(editor, {
-              clear: [MARK_SUPERSCRIPT, MARK_SUBSCRIPT],
-              key: MARK_SUBSCRIPT,
+              clear: [SuperscriptPlugin.key, SubscriptPlugin.key],
+              key: SubscriptPlugin.key,
             });
             focusEditor(editor);
           }}

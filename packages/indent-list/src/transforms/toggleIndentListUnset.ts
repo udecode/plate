@@ -5,8 +5,8 @@ import {
 } from '@udecode/plate-common';
 
 import {
+  IndentListPlugin,
   KEY_LIST_CHECKED,
-  KEY_LIST_STYLE_TYPE,
   KEY_TODO_STYLE_TYPE,
 } from '../IndentListPlugin';
 import { ListStyleType } from '../types';
@@ -31,8 +31,8 @@ export const toggleIndentListUnset = (
 
     return true;
   }
-  if (listStyleType === node[KEY_LIST_STYLE_TYPE]) {
-    unsetNodes(editor as any, [KEY_LIST_STYLE_TYPE], {
+  if (listStyleType === node[IndentListPlugin.key]) {
+    unsetNodes(editor as any, [IndentListPlugin.key], {
       at: path,
     });
 

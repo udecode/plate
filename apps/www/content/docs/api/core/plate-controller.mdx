@@ -119,7 +119,7 @@ const App = withHoc(PlateController, () => {
   
   const toggleBold = () => {
     if (activeEditor.isFallback) return;
-    toggleMark(activeEditor, { key: MARK_BOLD });
+    toggleMark(activeEditor, { key: BoldPlugin.key });
   };
   
   return (
@@ -146,7 +146,7 @@ const App = withHoc(PlateController, () => {
   const isFallback = !useEditorMounted();
   
   const toggleBold = () => {
-    toggleMark(activeEditor, { key: MARK_BOLD });
+    toggleMark(activeEditor, { key: BoldPlugin.key });
   };
   
   return (

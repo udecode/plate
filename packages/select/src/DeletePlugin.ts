@@ -1,23 +1,21 @@
 import {
-  ELEMENT_DEFAULT,
+  ParagraphPlugin,
   type QueryNodeOptions,
   createPlugin,
 } from '@udecode/plate-common';
 
 import { withDelete } from './withDelete';
 
-export type DeletePlugin = {
+export type DeletePluginOptions = {
   query?: QueryNodeOptions;
 };
 
-export const KEY_DELETE = 'delete';
-
 /** @see {@link withDelete} */
-export const DeletePlugin = createPlugin<'delete', DeletePlugin>({
-  key: KEY_DELETE,
+export const DeletePlugin = createPlugin<'delete', DeletePluginOptions>({
+  key: 'delete',
   options: {
     query: {
-      allow: [ELEMENT_DEFAULT],
+      allow: [ParagraphPlugin.key],
     },
   },
   withOverrides: withDelete,

@@ -1,5 +1,5 @@
 import {
-  ELEMENT_DEFAULT,
+  ParagraphPlugin,
   type PlateEditor,
   type TElement,
   findNode,
@@ -19,7 +19,7 @@ import { Range } from 'slate';
 
 import type { ListPluginOptions } from '../types';
 
-import { ELEMENT_LI, ELEMENT_LIC } from '../ListPlugin';
+import { ListItemPlugin, ListItemContentPlugin } from '../ListPlugin';
 import { getListItemEntry, getListTypes } from '../queries/index';
 import { unwrapList } from './unwrapList';
 
@@ -63,7 +63,7 @@ export const toggleList = (
         wrapNodes<TElement>(editor, list);
 
         const _nodes = getNodeEntries(editor, {
-          match: { type: getPluginType(editor, ELEMENT_DEFAULT) },
+          match: { type: getPluginType(editor, ParagraphPlugin.key) },
         });
         const nodes = Array.from(_nodes);
 
@@ -73,13 +73,13 @@ export const toggleList = (
 
         if (!blockAbove) {
           setElements(editor, {
-            type: getPluginType(editor, ELEMENT_LIC),
+            type: getPluginType(editor, ListItemContentPlugin.key),
           });
         }
 
         const listItem = {
           children: [],
-          type: getPluginType(editor, ELEMENT_LI),
+          type: getPluginType(editor, ListItemPlugin.key),
         };
 
         for (const [, path] of nodes) {
@@ -100,7 +100,7 @@ export const toggleList = (
 
       if (
         getListTypes(editor).includes(commonEntry[0].type) ||
-        (commonEntry[0] as TElement).type === getPluginType(editor, ELEMENT_LI)
+        (commonEntry[0] as TElement).type === getPluginType(editor, ListItemPlugin.key)
       ) {
         if ((commonEntry[0] as TElement).type === type) {
           unwrapList(editor);
@@ -157,14 +157,14 @@ export const toggleList = (
             if (!validLiChildrenTypes?.includes(n[0].type)) {
               setElements(
                 editor,
-                { type: getPluginType(editor, ELEMENT_LIC) },
+                { type: getPluginType(editor, ListItemContentPlugin.key) },
                 { at: n[1] }
               );
             }
 
             const listItem = {
               children: [],
-              type: getPluginType(editor, ELEMENT_LI),
+              type: getPluginType(editor, ListItemPlugin.key),
             };
             wrapNodes<TElement>(editor, listItem, {
               at: n[1],

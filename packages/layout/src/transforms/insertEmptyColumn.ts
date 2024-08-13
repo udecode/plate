@@ -1,5 +1,5 @@
 import {
-  ELEMENT_DEFAULT,
+  ParagraphPlugin,
   type InsertNodesOptions,
   type PlateEditor,
   getQueryOptions,
@@ -8,7 +8,7 @@ import {
 
 import type { TColumnElement } from '../types';
 
-import { ELEMENT_COLUMN } from '../ColumnPlugin';
+import { ColumnItemPlugin } from '../ColumnPlugin';
 
 export const insertEmptyColumn = <E extends PlateEditor>(
   editor: E,
@@ -19,8 +19,8 @@ export const insertEmptyColumn = <E extends PlateEditor>(
   insertNodes<TColumnElement>(
     editor,
     {
-      children: [{ children: [{ text: '' }], type: ELEMENT_DEFAULT }],
-      type: ELEMENT_COLUMN,
+      children: [{ children: [{ text: '' }], type: ParagraphPlugin.key }],
+      type: ColumnItemPlugin.key,
       width,
     },
     getQueryOptions(editor, options)

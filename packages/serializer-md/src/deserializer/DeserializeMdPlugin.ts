@@ -8,13 +8,11 @@ import {
 } from '../remark-slate/index';
 import { deserializeMd } from './utils/index';
 
-export const KEY_DESERIALIZE_MD = 'deserializeMd';
-
 export const DeserializeMdPlugin = createPlugin<
   'deserializeMd',
   DeserializeMdPluginOptions
 >({
-  key: KEY_DESERIALIZE_MD,
+  key: 'deserializeMd',
   options: {
     elementRules: remarkDefaultElementRules,
     indentList: false,

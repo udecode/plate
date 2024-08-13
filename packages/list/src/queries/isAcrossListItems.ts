@@ -6,7 +6,7 @@ import {
   someNode,
 } from '@udecode/plate-common';
 
-import { ELEMENT_LI } from '../ListPlugin';
+import { ListItemPlugin } from '../ListPlugin';
 
 /** Is selection across blocks with list items */
 export const isAcrossListItems = (editor: PlateEditor) => {
@@ -21,6 +21,6 @@ export const isAcrossListItems = (editor: PlateEditor) => {
   if (!isAcrossBlocks) return false;
 
   return someNode(editor, {
-    match: { type: getPluginType(editor, ELEMENT_LI) },
+    match: { type: getPluginType(editor, ListItemPlugin.key) },
   });
 };

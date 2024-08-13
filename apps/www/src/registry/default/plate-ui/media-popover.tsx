@@ -23,7 +23,7 @@ import { Separator } from './separator';
 
 export interface MediaPopoverProps {
   children: React.ReactNode;
-  pluginKey?: string;
+  pluginKey: string;
 }
 
 export function MediaPopover({ children, pluginKey }: MediaPopoverProps) {

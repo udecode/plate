@@ -5,7 +5,7 @@ import {
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
-import { ELEMENT_LI } from '../ListPlugin';
+import { ListItemPlugin } from '../ListPlugin';
 import { getListTypes } from './getListTypes';
 
 /**
@@ -39,7 +39,7 @@ export const getHighestEmptyList = (
     if (listNode.children.length < 2) {
       const liParent = getAboveNode(editor, {
         at: listPath,
-        match: { type: getPluginType(editor, ELEMENT_LI) },
+        match: { type: getPluginType(editor, ListItemPlugin.key) },
       });
 
       if (liParent) {

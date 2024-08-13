@@ -2,8 +2,8 @@
 /** @jsx jsx */
 
 import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks';
+import { ParagraphPlugin } from '@udecode/plate-common';
 import { ListPlugin } from '@udecode/plate-list';
-import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { createPlateEditor } from '../../../../react';

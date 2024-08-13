@@ -17,7 +17,7 @@ import type {
   TablePluginOptions,
 } from '../types';
 
-import { ELEMENT_TABLE } from '../TablePlugin';
+import { TablePlugin } from '../TablePlugin';
 import { computeCellIndices } from '../merge/computeCellIndices';
 import { findCellByIndexes } from '../merge/findCellByIndexes';
 import { getCellIndices } from '../merge/getCellIndices';
@@ -57,7 +57,7 @@ export const getTableMergeGridByRange = <T extends FormatType>(
   { at, format }: GetTableGridByRangeOptions<T>
 ): GetTableGridReturnType<T> => {
   const { _cellIndices: cellIndices, getCellChildren } =
-    getPluginOptions<TablePluginOptions>(editor, ELEMENT_TABLE);
+    getPluginOptions<TablePluginOptions>(editor, TablePlugin.key);
 
   const startCellEntry = findNode<TTableCellElement>(editor, {
     at: at.anchor.path,
@@ -76,7 +76,7 @@ export const getTableMergeGridByRange = <T extends FormatType>(
 
   const tableEntry = findNode<TTableElement>(editor, {
     at: tablePath,
-    match: { type: getPluginType(editor, ELEMENT_TABLE) },
+    match: { type: getPluginType(editor, TablePlugin.key) },
   })!;
   const realTable = tableEntry[0];
 

@@ -1,31 +1,24 @@
 /** @jsx jsx */
 
-import { BoldPlugin, MARK_BOLD, MARK_ITALIC } from '@udecode/plate-basic-marks';
-import { createPlateEditor } from '@udecode/plate-common/react';
-import { onKeyDownToggleMark } from '@udecode/plate-common/react';
-import * as isHotkey from '@udecode/plate-core';
+import { BoldPlugin } from '@udecode/plate-basic-marks';
 import { jsx } from '@udecode/plate-test-utils';
+import * as isHotkey from 'is-hotkey';
 
-import { type ToggleMarkPluginOptions, getPlugin } from '../../../lib';
+import type { ToggleMarkPluginOptions } from '../../lib/types';
+
+import { getPlugin } from '../../lib/plugin/getPlugin';
+import { createPlateEditor } from '../editor';
+import { onKeyDownToggleMark } from './onKeyDownToggleMark';
 
 jsx;
-
-jest.mock('@udecode/plate-core', () => {
-  return {
-    __esModule: true,
-    ...jest.requireActual('@udecode/plate-core'),
-  };
-});
 
 const input = (
   <editor>
     <hp>
-      t<htext italic>est</htext>
+      t<anchor />
+      est
+      <focus />
     </hp>
-    <selection>
-      <anchor offset={0} path={[0, 1]} />
-      <focus offset={3} path={[0, 1]} />
-    </selection>
   </editor>
 ) as any;
 
@@ -47,7 +40,6 @@ const editor = createPlateEditor({
   editor: input,
   plugins: [
     BoldPlugin.configure({
-      clear: MARK_ITALIC,
       hotkey: 'ctrl+b',
     }),
   ],
@@ -59,7 +51,7 @@ it('should be', () => {
   onKeyDownToggleMark({
     editor,
     event,
-    plugin: getPlugin<ToggleMarkPluginOptions>(editor, MARK_BOLD),
+    plugin: getPlugin<ToggleMarkPluginOptions>(editor, BoldPlugin.key),
   });
   expect(editor.children).toEqual(output.children);
   expect(editor.selection).toEqual(output.selection);

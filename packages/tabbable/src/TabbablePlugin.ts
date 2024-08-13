@@ -3,10 +3,9 @@ import { createPlugin, isVoid } from '@udecode/plate-common';
 import type { TabbableEntry, TabbablePluginOptions } from './types';
 
 import { TabbableEffects } from './TabbableEffects';
-import { KEY_TABBABLE } from './constants';
 
 export const TabbablePlugin = createPlugin<'tabbable', TabbablePluginOptions>({
-  key: KEY_TABBABLE,
+  key: 'tabbable',
   options: {
     globalEventListener: false,
     insertTabbableEntries: () => [],

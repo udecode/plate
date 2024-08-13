@@ -2,11 +2,11 @@
 
 import type { PlateEditor } from '@udecode/plate-common';
 
+import { ParagraphPlugin } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { createDataTransfer, jsx } from '@udecode/plate-test-utils';
 
-import { CodeBlockPlugin } from '../react/CodeBlockPlugin';
+import { CodeBlockPlugin } from '../react/CodeBlockPlugin.react';
 
 jsx;
 

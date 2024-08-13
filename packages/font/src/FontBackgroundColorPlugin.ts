@@ -1,14 +1,12 @@
 import { createPlugin } from '@udecode/plate-common';
 
-export const MARK_BG_COLOR = 'backgroundColor';
-
 export const FontBackgroundColorPlugin = createPlugin({
   inject: {
     props: {
-      nodeKey: MARK_BG_COLOR,
+      nodeKey: 'backgroundColor',
     },
   },
-  key: MARK_BG_COLOR,
+  key: 'backgroundColor',
 }).extend(({ plugin: { type } }) => ({
   deserializeHtml: {
     getNode: ({ element }) => ({ [type]: element.style.backgroundColor }),

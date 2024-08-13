@@ -8,7 +8,7 @@ import {
   isDefined,
 } from '@udecode/plate-common';
 
-import { KEY_LIST_STYLE_TYPE } from '../IndentListPlugin';
+import { IndentListPlugin } from '../IndentListPlugin';
 import { outdentList } from '../transforms';
 
 export const deleteBackwardIndentList = (editor: PlateEditor) => {
@@ -23,7 +23,7 @@ export const deleteBackwardIndentList = (editor: PlateEditor) => {
 
     if (isCollapsed(editor.selection) && getNodeString(listNode))
       return deleteBackward(unit);
-    if (isDefined(listNode[KEY_LIST_STYLE_TYPE])) {
+    if (isDefined(listNode[IndentListPlugin.key])) {
       return outdentList(editor);
     }
 

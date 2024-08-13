@@ -9,7 +9,7 @@ import {
   useEditorSelector,
 } from '@udecode/plate-common/react';
 import {
-  ELEMENT_TABLE,
+  TablePlugin,
   deleteColumn,
   deleteRow,
   deleteTable,
@@ -34,7 +34,7 @@ import { ToolbarButton } from './toolbar';
 
 export function TableDropdownMenu(props: DropdownMenuProps) {
   const tableSelected = useEditorSelector(
-    (editor) => someNode(editor, { match: { type: ELEMENT_TABLE } }),
+    (editor) => someNode(editor, { match: { type: TablePlugin.key } }),
     []
   );
 

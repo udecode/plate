@@ -7,11 +7,11 @@ import {
   getPluginType,
 } from '@udecode/plate-common';
 
-import { ELEMENT_LI } from '../ListPlugin';
+import { ListItemPlugin } from '../ListPlugin';
 
 /** Is the list nested, i.e. its parent is a list item. */
 export const isListNested = (editor: PlateEditor, listPath: Path) => {
   const listParentNode = getParentNode<TElement>(editor, listPath)?.[0];
 
-  return listParentNode?.type === getPluginType(editor, ELEMENT_LI);
+  return listParentNode?.type === getPluginType(editor, ListItemPlugin.key);
 };

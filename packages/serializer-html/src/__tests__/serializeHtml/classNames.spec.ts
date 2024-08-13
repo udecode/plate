@@ -1,4 +1,4 @@
-import { BoldPlugin, ELEMENT_PARAGRAPH, ParagraphPlugin } from '@udecode/plate';
+import { BoldPlugin, ParagraphPlugin } from '@udecode/plate';
 
 import { serializeHtml } from '../../serializeHtml';
 import { createPlateUIEditor } from '../create-plate-ui-editor';
@@ -13,7 +13,7 @@ it('serialize with slate className', () => {
       nodes: [
         {
           children: [{ text: 'I am centered text!' }],
-          type: ELEMENT_PARAGRAPH,
+          type: ParagraphPlugin.key,
         },
       ],
     })
@@ -30,7 +30,7 @@ it('serialize with without modifying content', () => {
       nodes: [
         {
           children: [{ text: 'I am class="preserved" text!' }],
-          type: ELEMENT_PARAGRAPH,
+          type: ParagraphPlugin.key,
         },
       ],
     })
@@ -53,7 +53,7 @@ it('serialize with slate classNames: a+slate', () => {
       nodes: [
         {
           children: [{ text: 'I am centered text!' }],
-          type: ELEMENT_PARAGRAPH,
+          type: ParagraphPlugin.key,
         },
       ],
     })
@@ -76,7 +76,7 @@ it('serialize with slate classNames: slate+b', () => {
       nodes: [
         {
           children: [{ text: 'I am centered text!' }],
-          type: ELEMENT_PARAGRAPH,
+          type: ParagraphPlugin.key,
         },
       ],
     })
@@ -99,7 +99,7 @@ it('serialize with classNames: a+slate+b', () => {
       nodes: [
         {
           children: [{ text: 'I am centered text!' }],
-          type: ELEMENT_PARAGRAPH,
+          type: ParagraphPlugin.key,
         },
       ],
     })
@@ -122,7 +122,7 @@ it('serialize with classNames: a+slate+b+slate', () => {
       nodes: [
         {
           children: [{ text: 'I am centered text!' }],
-          type: ELEMENT_PARAGRAPH,
+          type: ParagraphPlugin.key,
         },
       ],
     })
@@ -147,11 +147,11 @@ it('serialize with slate classNames: multiple tags', () => {
       nodes: [
         {
           children: [{ text: 'I am centered text!' }],
-          type: ELEMENT_PARAGRAPH,
+          type: ParagraphPlugin.key,
         },
         {
           children: [{ text: 'I am centered text!' }],
-          type: ELEMENT_PARAGRAPH,
+          type: ParagraphPlugin.key,
         },
       ],
     })
@@ -176,7 +176,7 @@ it('serialize with custom preserved classname: a+custom', () => {
       nodes: [
         {
           children: [{ text: 'I am centered text!' }],
-          type: ELEMENT_PARAGRAPH,
+          type: ParagraphPlugin.key,
         },
       ],
       preserveClassNames: ['custom-'],
@@ -200,7 +200,7 @@ it('serialize without preserving classnames', () => {
       nodes: [
         {
           children: [{ text: 'I am centered text!' }],
-          type: ELEMENT_PARAGRAPH,
+          type: ParagraphPlugin.key,
         },
       ],
       preserveClassNames: [],
@@ -233,7 +233,7 @@ it('serialize nested with custom preserved classname: a+custom', () => {
             { bold: true, text: 'centered' },
             { text: ' text!' },
           ],
-          type: ELEMENT_PARAGRAPH,
+          type: ParagraphPlugin.key,
         },
       ],
       preserveClassNames: ['custom-'],
@@ -259,7 +259,7 @@ it('serialize with multiple custom classname: a+custom+slate', () => {
       nodes: [
         {
           children: [{ text: 'I am centered text!' }],
-          type: ELEMENT_PARAGRAPH,
+          type: ParagraphPlugin.key,
         },
       ],
       preserveClassNames: ['custom-', 'slate-'],

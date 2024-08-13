@@ -14,7 +14,7 @@ import {
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
-import { ELEMENT_LI, ELEMENT_LIC } from '../ListPlugin';
+import { ListItemPlugin, ListItemContentPlugin } from '../ListPlugin';
 import { hasListChild } from '../queries/hasListChild';
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 import { moveListItemsToList } from './moveListItemsToList';
@@ -65,10 +65,10 @@ export const removeListItem = (
           children: [
             {
               children: [{ text: '' }],
-              type: getPluginType(editor, ELEMENT_LIC),
+              type: getPluginType(editor, ListItemContentPlugin.key),
             },
           ],
-          type: getPluginType(editor, ELEMENT_LI),
+          type: getPluginType(editor, ListItemPlugin.key),
         },
         { at: tempLiPath }
       );

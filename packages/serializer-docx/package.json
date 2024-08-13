@@ -50,7 +50,6 @@
     "@udecode/plate-indent": "36.0.0",
     "@udecode/plate-indent-list": "36.3.3",
     "@udecode/plate-media": "36.2.2",
-    "@udecode/plate-paragraph": "36.0.0",
     "@udecode/plate-table": "36.3.5",
     "validator": "^13.11.0"
   },

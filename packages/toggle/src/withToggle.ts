@@ -8,13 +8,13 @@ import {
 } from '@udecode/plate-common';
 import { type TIndentElement, indent } from '@udecode/plate-indent';
 
+import { TogglePlugin } from './TogglePlugin';
 import { getLastEntryEnclosedInToggle, isInClosedToggle } from './queries';
 import { isToggleOpen } from './toggle-controller-store';
 import {
   moveCurrentBlockAfterPreviousSelectable,
   moveNextSelectableAfterCurrentBlock,
 } from './transforms';
-import { ELEMENT_TOGGLE } from './types';
 
 export const withToggle: WithOverride = ({ editor }) => {
   const { deleteBackward, deleteForward, insertBreak, isSelectable } = editor;
@@ -53,7 +53,7 @@ export const withToggle: WithOverride = ({ editor }) => {
     // Note: We are relying on the default behaviour of `insertBreak` which inserts a toggle right after the current toggle with the same indent
     const currentBlockEntry = getBlockAbove<TIndentElement>(editor);
 
-    if (!currentBlockEntry || currentBlockEntry[0].type !== ELEMENT_TOGGLE) {
+    if (!currentBlockEntry || currentBlockEntry[0].type !== TogglePlugin.key) {
       return insertBreak();
     }
 
@@ -63,7 +63,7 @@ export const withToggle: WithOverride = ({ editor }) => {
     editor.withoutNormalizing(() => {
       if (isOpen) {
         insertBreak();
-        toggleNodeType(editor, { activeType: ELEMENT_TOGGLE });
+        toggleNodeType(editor, { activeType: TogglePlugin.key });
         indent(editor);
       } else {
         const lastEntryEnclosedInToggle = getLastEntryEnclosedInToggle(

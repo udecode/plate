@@ -6,8 +6,8 @@ import {
 } from '@udecode/plate-common';
 
 import {
-  ELEMENT_IMAGE,
-  ELEMENT_MEDIA_EMBED,
+  ImagePlugin,
+  MediaEmbedPlugin,
   insertImage,
   insertMediaEmbed,
 } from '..';
@@ -27,7 +27,7 @@ export const insertMedia = async <E extends PlateEditor>(
   editor: E,
   {
     getUrl,
-    type = getPluginType(editor, ELEMENT_IMAGE),
+    type = getPluginType(editor, ImagePlugin.key),
     ...options
   }: InsertMediaOptions<E> = {}
 ) => {
@@ -35,12 +35,12 @@ export const insertMedia = async <E extends PlateEditor>(
     ? await getUrl()
     : window.prompt(
         `Enter the URL of the ${
-          type === ELEMENT_IMAGE ? ELEMENT_IMAGE : ELEMENT_MEDIA_EMBED
+          type === ImagePlugin.key ? ImagePlugin.key : MediaEmbedPlugin.key
         }`
       );
 
   if (!url) return;
-  if (type === getPluginType(editor, ELEMENT_IMAGE)) {
+  if (type === getPluginType(editor, ImagePlugin.key)) {
     insertImage(editor, url, options);
   } else {
     insertMediaEmbed(editor, { url }, options);

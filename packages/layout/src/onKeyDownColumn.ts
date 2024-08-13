@@ -9,7 +9,7 @@ import {
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
-import { ELEMENT_COLUMN_GROUP } from './ColumnPlugin';
+import { ColumnPlugin } from './ColumnPlugin';
 
 export const onKeyDownColumn: KeyboardHandler = ({ editor, event }) => {
   if (event.defaultPrevented) return;
@@ -25,7 +25,7 @@ export const onKeyDownColumn: KeyboardHandler = ({ editor, event }) => {
 
     const [node] = ancestorNode;
 
-    if (node.type !== ELEMENT_COLUMN_GROUP) return;
+    if (node.type !== ColumnPlugin.key) return;
 
     const [, abovePath] = aboveNode;
 

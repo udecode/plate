@@ -12,7 +12,7 @@ import { selectEditor } from '@udecode/plate-common/react';
 
 import type { TTableElement } from '../types';
 
-import { ELEMENT_TABLE } from '../TablePlugin';
+import { TablePlugin } from '../TablePlugin';
 import {
   type GetEmptyTableNodeOptions,
   getEmptyTableNode,
@@ -27,7 +27,7 @@ export const insertTable = <E extends PlateEditor>(
   withoutNormalizing(editor, () => {
     if (
       !someNode(editor, {
-        match: { type: getPluginType(editor, ELEMENT_TABLE) },
+        match: { type: getPluginType(editor, TablePlugin.key) },
       })
     ) {
       insertNodes<TTableElement>(
@@ -45,7 +45,7 @@ export const insertTable = <E extends PlateEditor>(
 
       if (editor.selection) {
         const tableEntry = getBlockAbove(editor, {
-          match: { type: getPluginType(editor, ELEMENT_TABLE) },
+          match: { type: getPluginType(editor, TablePlugin.key) },
         });
 
         if (!tableEntry) return;

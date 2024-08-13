@@ -6,16 +6,16 @@ import {
   someNode,
 } from '@udecode/plate-common';
 
-import { ELEMENT_TABLE } from '../TablePlugin';
+import { TablePlugin } from '../TablePlugin';
 
 export const deleteTable = (editor: PlateEditor) => {
   if (
     someNode(editor, {
-      match: { type: getPluginType(editor, ELEMENT_TABLE) },
+      match: { type: getPluginType(editor, TablePlugin.key) },
     })
   ) {
     const tableItem = getAboveNode(editor, {
-      match: { type: getPluginType(editor, ELEMENT_TABLE) },
+      match: { type: getPluginType(editor, TablePlugin.key) },
     });
 
     if (tableItem) {

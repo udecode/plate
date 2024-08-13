@@ -2,13 +2,13 @@ import { type PlateEditor, getNodeEntries } from '@udecode/plate-common';
 
 import type { TMediaElement } from '../..';
 
-import { ELEMENT_IMAGE } from '../ImagePlugin';
+import { ImagePlugin } from '../ImagePlugin';
 import { imagePreviewActions, type previewItem } from '../image-preview-store';
 
 const getUrlList = (editor: PlateEditor) => {
   const enties = getNodeEntries(editor, {
     at: [],
-    match: (n) => n.type === ELEMENT_IMAGE,
+    match: (n) => n.type === ImagePlugin.key,
   });
 
   return Array.from(enties, (item) => ({

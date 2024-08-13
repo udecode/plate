@@ -20,6 +20,7 @@ import {
 import { CaptionPlugin } from '@udecode/plate-caption';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { CommentsPlugin } from '@udecode/plate-comments';
+import { ParagraphPlugin } from '@udecode/plate-common';
 import { DndPlugin } from '@udecode/plate-dnd';
 import { EmojiPlugin } from '@udecode/plate-emoji';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw';
@@ -43,7 +44,6 @@ import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media';
 import { MentionPlugin } from '@udecode/plate-mention';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
-import { ParagraphPlugin } from '@udecode/plate-paragraph';
 import { ResetNodePlugin } from '@udecode/plate-reset-node';
 import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
 import { BlockSelectionPlugin } from '@udecode/plate-selection';

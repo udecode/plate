@@ -7,13 +7,13 @@ import {
 
 import type { TColumnGroupElement } from './types';
 
-import { ELEMENT_COLUMN_GROUP } from './ColumnPlugin';
+import { ColumnPlugin } from './ColumnPlugin';
 
 export const useColumnState = () => {
   const editor = useEditorRef();
 
   const columnGroupElement =
-    useElement<TColumnGroupElement>(ELEMENT_COLUMN_GROUP);
+    useElement<TColumnGroupElement>(ColumnPlugin.key);
 
   const columnPath = findNodePath(editor, columnGroupElement);
 

@@ -5,8 +5,6 @@ import {
 } from '@udecode/plate-common';
 import { onKeyDownToggleMark } from '@udecode/plate-common/react';
 
-export const MARK_STRIKETHROUGH = 'strikethrough';
-
 /** Enables support for strikethrough formatting. */
 export const StrikethroughPlugin = createPlugin<
   'strikethrough',
@@ -28,7 +26,7 @@ export const StrikethroughPlugin = createPlugin<
     onKeyDown: onKeyDownToggleMark,
   },
   isLeaf: true,
-  key: MARK_STRIKETHROUGH,
+  key: 'strikethrough',
   options: {
     hotkey: 'mod+shift+x',
   },

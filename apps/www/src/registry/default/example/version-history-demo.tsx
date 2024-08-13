@@ -4,6 +4,7 @@ import { cn } from '@udecode/cn';
 import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks';
 import { SoftBreakPlugin } from '@udecode/plate-break';
 import { type Value, createPlugin, isInline } from '@udecode/plate-common';
+import { ParagraphPlugin } from '@udecode/plate-common';
 import {
   Plate,
   PlateContent,
@@ -21,7 +22,6 @@ import {
   computeDiff,
   withGetFragmentExcludeDiff,
 } from '@udecode/plate-diff';
-import { ELEMENT_PARAGRAPH, ParagraphPlugin } from '@udecode/plate-paragraph';
 import { cloneDeep } from 'lodash';
 import { useSelected } from 'slate-react';
 
@@ -214,7 +214,7 @@ const initialValue: Value = [
       { children: [{ text: 'editable inline' }], type: InlinePlugin.key },
       { text: '. Try editing it.' },
     ],
-    type: ELEMENT_PARAGRAPH,
+    type: ParagraphPlugin.key,
   },
 ];
 

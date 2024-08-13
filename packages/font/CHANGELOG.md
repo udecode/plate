@@ -292,19 +292,19 @@
   - Previously, we had these mark components that can be removed now:
 
   ```ts
-  [MARK_COLOR]: withStyledProps(PlateLeaf, {
+  [FontColorPlugin.key]: withStyledProps(PlateLeaf, {
     leafProps: {
-      [MARK_COLOR]: ['color'],
+      [FontColorPlugin.key]: ['color'],
     },
   }),
-  [MARK_BG_COLOR]: withStyledProps(PlateLeaf, {
+  [FontBackgroundColorPlugin.key]: withStyledProps(PlateLeaf, {
     leafProps: {
-      [MARK_BG_COLOR]: ['backgroundColor'],
+      [FontBackgroundColorPlugin.key]: ['backgroundColor'],
     },
   }),
-  [MARK_FONT_SIZE]: withStyledProps(PlateLeaf, {
+  [FontSizePlugin.key]: withStyledProps(PlateLeaf, {
     leafProps: {
-      [MARK_FONT_SIZE]: ['fontSize'],
+      [FontSizePlugin.key]: ['fontSize'],
     },
   }),
   ```
@@ -392,7 +392,7 @@
 
 ### Minor Changes
 
-- [#977](https://github.com/udecode/plate/pull/977) [`8b7c85b3`](https://github.com/udecode/plate/commit/8b7c85b3ec63d94cf9f1ce66afa2092d0f76812a) Thanks [@karthikcodes6](https://github.com/karthikcodes6)! - new plugin for font size: `createFontSizePlugin` using `MARK_FONT_SIZE` plugin key
+- [#977](https://github.com/udecode/plate/pull/977) [`8b7c85b3`](https://github.com/udecode/plate/commit/8b7c85b3ec63d94cf9f1ce66afa2092d0f76812a) Thanks [@karthikcodes6](https://github.com/karthikcodes6)! - new plugin for font size: `createFontSizePlugin` using `FontSizePlugin.key` plugin key
 
 ## 3.2.0
 

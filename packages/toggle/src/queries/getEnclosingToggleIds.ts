@@ -1,15 +1,17 @@
-import {
-  type PlateEditor,
-  getPluginOptions,
-} from '@udecode/plate-common';
+import { type PlateEditor, getPluginOptions } from '@udecode/plate-common';
 
-import { ELEMENT_TOGGLE, type TogglePluginOptions } from '../types';
+import type { TogglePluginOptions } from '../types';
+
+import { TogglePlugin } from '../TogglePlugin';
 
 export function getEnclosingToggleIds(
   editor: PlateEditor,
   elementId: string
 ): string[] {
-  const options = getPluginOptions<TogglePluginOptions>(editor, ELEMENT_TOGGLE);
+  const options = getPluginOptions<TogglePluginOptions>(
+    editor,
+    TogglePlugin.key
+  );
 
   return options.toggleIndex?.get(elementId) || [];
 }

@@ -19,7 +19,7 @@ import type {
   TablePluginOptions,
 } from '../types';
 
-import { ELEMENT_TABLE, ELEMENT_TH } from '../TablePlugin';
+import { TableCellHeaderPlugin, TablePlugin } from '../TablePlugin';
 import { getTableGridAbove } from '../queries';
 import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';
@@ -30,10 +30,10 @@ import { getCellIndices } from './getCellIndices';
 export const mergeTableCells = (editor: PlateEditor) => {
   withoutNormalizing(editor, () => {
     const { _cellIndices, cellFactory, getCellChildren } =
-      getPluginOptions<TablePluginOptions>(editor, ELEMENT_TABLE);
+      getPluginOptions<TablePluginOptions>(editor, TablePlugin.key);
     const tableEntry = getBlockAbove(editor, {
       at: editor.selection?.anchor.path,
-      match: { type: getPluginType(editor, ELEMENT_TABLE) },
+      match: { type: getPluginType(editor, TablePlugin.key) },
     })!;
 
     const cellEntries = getTableGridAbove(editor, {
@@ -115,7 +115,9 @@ export const mergeTableCells = (editor: PlateEditor) => {
     const mergedCell = {
       ...cellFactory!({
         children: mergingCellChildren,
-        header: cellEntries[0][0].type === getPluginType(editor, ELEMENT_TH),
+        header:
+          cellEntries[0][0].type ===
+          getPluginType(editor, TableCellHeaderPlugin.key),
       }),
       colSpan,
       rowSpan,

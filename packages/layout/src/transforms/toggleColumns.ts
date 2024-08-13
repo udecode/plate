@@ -5,28 +5,28 @@ import {
   replaceNode,
 } from '@udecode/plate-common';
 
-import { ELEMENT_COLUMN, ELEMENT_COLUMN_GROUP } from '../ColumnPlugin';
+import { ColumnItemPlugin, ColumnPlugin } from '../ColumnPlugin';
 
 export const toggleColumns = (editor: PlateEditor, nodeEntry: TNodeEntry) => {
   const nodes = {
     children: [
       {
         children: [nodeEntry[0]],
-        type: ELEMENT_COLUMN,
+        type: ColumnItemPlugin.key,
         width: '33.33%',
       },
       {
         children: [{ text: '' }],
-        type: ELEMENT_COLUMN,
+        type: ColumnItemPlugin.key,
         width: '33.33%',
       },
       {
         children: [{ text: '' }],
-        type: ELEMENT_COLUMN,
+        type: ColumnItemPlugin.key,
         width: '33.33%',
       },
     ],
-    type: ELEMENT_COLUMN_GROUP,
+    type: ColumnPlugin.key,
   } as TElement;
 
   replaceNode(editor, {

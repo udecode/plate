@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
+import { BlockquotePlugin } from '@udecode/plate-block-quote';
 import { jsx } from '@udecode/plate-test-utils';
 
 import type { PlateEditor } from '../../../editor';
@@ -28,7 +28,7 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  toggleNodeType(input, { activeType: ELEMENT_BLOCKQUOTE });
+  toggleNodeType(input, { activeType: BlockquotePlugin.key });
 
   expect(input.children).toEqual(output.children);
 });

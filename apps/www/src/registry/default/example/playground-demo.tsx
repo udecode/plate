@@ -19,10 +19,7 @@ import {
   SuperscriptPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks';
-import {
-  BlockquotePlugin,
-  ELEMENT_BLOCKQUOTE,
-} from '@udecode/plate-block-quote';
+import { BlockquotePlugin } from '@udecode/plate-block-quote';
 import {
   ExitBreakPlugin,
   SingleLinePlugin,
@@ -31,6 +28,7 @@ import {
 import { CaptionPlugin } from '@udecode/plate-caption';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { CommentsPlugin } from '@udecode/plate-comments';
+import { ParagraphPlugin } from '@udecode/plate-common';
 import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 import { DndPlugin } from '@udecode/plate-dnd';
 import { EmojiPlugin } from '@udecode/plate-emoji';
@@ -50,10 +48,7 @@ import {
   HeadingPlugin,
 } from '@udecode/plate-heading';
 import { HighlightPlugin } from '@udecode/plate-highlight';
-import {
-  ELEMENT_HR,
-  HorizontalRulePlugin,
-} from '@udecode/plate-horizontal-rule';
+import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { IndentPlugin } from '@udecode/plate-indent';
 import { IndentListPlugin } from '@udecode/plate-indent-list';
 import { JuicePlugin } from '@udecode/plate-juice';
@@ -62,16 +57,10 @@ import { ColumnPlugin } from '@udecode/plate-layout';
 import { LineHeightPlugin } from '@udecode/plate-line-height';
 import { LinkPlugin } from '@udecode/plate-link';
 import { ListPlugin, TodoListPlugin } from '@udecode/plate-list';
-import {
-  ELEMENT_IMAGE,
-  ELEMENT_MEDIA_EMBED,
-  ImagePlugin,
-  MediaEmbedPlugin,
-} from '@udecode/plate-media';
+import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media';
 import { MentionPlugin } from '@udecode/plate-mention';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
-import { ELEMENT_PARAGRAPH, ParagraphPlugin } from '@udecode/plate-paragraph';
 import { ResetNodePlugin } from '@udecode/plate-reset-node';
 import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
 import { BlockSelectionPlugin } from '@udecode/plate-selection';
@@ -79,7 +68,7 @@ import { DeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
 import { DeserializeMdPlugin } from '@udecode/plate-serializer-md';
 import { SlashPlugin } from '@udecode/plate-slash-command';
 import { TablePlugin } from '@udecode/plate-table';
-import { ELEMENT_TOGGLE, TogglePlugin } from '@udecode/plate-toggle';
+import { TogglePlugin } from '@udecode/plate-toggle';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import Prism from 'prismjs';
 
@@ -151,7 +140,7 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
         }),
         MediaEmbedPlugin,
         CaptionPlugin.configure({
-          pluginKeys: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED],
+          pluginKeys: [ImagePlugin.key, MediaEmbedPlugin.key],
         }),
         MentionPlugin.configure({
           triggerPreviousCharPattern: /^$|^[\s"']$/,
@@ -183,14 +172,14 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
           inject: {
             props: {
               validPlugins: [
-                ELEMENT_PARAGRAPH,
-                ELEMENT_MEDIA_EMBED,
+                ParagraphPlugin.key,
+                MediaEmbedPlugin.key,
                 ELEMENT_H1,
                 ELEMENT_H2,
                 ELEMENT_H3,
                 ELEMENT_H4,
                 ELEMENT_H5,
-                ELEMENT_IMAGE,
+                ImagePlugin.key,
                 ELEMENT_H6,
               ],
             },
@@ -200,16 +189,16 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
           inject: {
             props: {
               validPlugins: [
-                ELEMENT_PARAGRAPH,
+                ParagraphPlugin.key,
                 ELEMENT_H1,
                 ELEMENT_H2,
                 ELEMENT_H3,
                 ELEMENT_H4,
                 ELEMENT_H5,
                 ELEMENT_H6,
-                ELEMENT_BLOCKQUOTE,
+                BlockquotePlugin.key,
                 CodeBlockPlugin.key,
-                ELEMENT_TOGGLE,
+                TogglePlugin.key,
               ],
             },
           },
@@ -218,16 +207,16 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
           inject: {
             props: {
               validPlugins: [
-                ELEMENT_PARAGRAPH,
+                ParagraphPlugin.key,
                 ELEMENT_H1,
                 ELEMENT_H2,
                 ELEMENT_H3,
                 ELEMENT_H4,
                 ELEMENT_H5,
                 ELEMENT_H6,
-                ELEMENT_BLOCKQUOTE,
+                BlockquotePlugin.key,
                 CodeBlockPlugin.key,
-                ELEMENT_TOGGLE,
+                TogglePlugin.key,
               ],
             },
           },
@@ -252,7 +241,7 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
               defaultNodeValue: 1.5,
               validNodeValues: [1, 1.2, 1.5, 2, 3],
               validPlugins: [
-                ELEMENT_PARAGRAPH,
+                ParagraphPlugin.key,
                 ELEMENT_H1,
                 ELEMENT_H2,
                 ELEMENT_H3,
@@ -283,14 +272,14 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
         ResetNodePlugin.configure(resetBlockTypeOptions),
         SelectOnBackspacePlugin.configure({
           query: {
-            allow: [ELEMENT_IMAGE, ELEMENT_HR],
+            allow: [ImagePlugin.key, HorizontalRulePlugin.key],
           },
         }),
         DeletePlugin,
         SingleLinePlugin,
         SoftBreakPlugin.configure(softBreakOptions),
         TabbablePlugin,
-        TrailingBlockPlugin.configure({ type: ELEMENT_PARAGRAPH }),
+        TrailingBlockPlugin.configure({ type: ParagraphPlugin.key }),
         DragOverCursorPlugin,
 
         // Collaboration

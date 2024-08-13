@@ -14,7 +14,7 @@ import { tabbable } from 'tabbable';
 
 import type { TabbableEntry, TabbablePluginOptions } from './types';
 
-import { KEY_TABBABLE } from './constants';
+import { TabbablePlugin } from './TabbablePlugin';
 import { findTabDestination } from './findTabDestination';
 
 export function TabbableEffects() {
@@ -25,7 +25,7 @@ export function TabbableEffects() {
     if (readOnly) return;
 
     const { globalEventListener, insertTabbableEntries, isTabbable, query } =
-      getPluginOptions<TabbablePluginOptions>(editor, KEY_TABBABLE);
+      getPluginOptions<TabbablePluginOptions>(editor, TabbablePlugin.key);
 
     const editorDOMNode = toDOMNode(editor, editor);
 

@@ -1,14 +1,12 @@
 import { createPlugin } from '@udecode/plate-common';
 
-export const MARK_FONT_FAMILY = 'fontFamily';
-
 export const FontFamilyPlugin = createPlugin({
   inject: {
     props: {
-      nodeKey: MARK_FONT_FAMILY,
+      nodeKey: 'fontFamily',
     },
   },
-  key: MARK_FONT_FAMILY,
+  key: 'fontFamily',
 }).extend(({ plugin: { type } }) => ({
   deserializeHtml: {
     getNode: ({ element }) => ({ [type]: element.style.fontFamily }),

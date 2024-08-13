@@ -8,12 +8,12 @@ import {
 
 import type { TExcalidrawElement } from '../types';
 
-import { ELEMENT_EXCALIDRAW } from '../ExcalidrawPlugin';
+import { ExcalidrawPlugin } from '../ExcalidrawPlugin';
 
 export const insertExcalidraw = <E extends PlateEditor>(
   editor: E,
   {
-    key = ELEMENT_EXCALIDRAW,
+    key = ExcalidrawPlugin.key,
     ...props
   }: { key?: string } & TNodeProps<TExcalidrawElement> = {},
   options: InsertNodesOptions<E> = {}

@@ -1,5 +1,5 @@
 import {
-  ELEMENT_DEFAULT,
+  ParagraphPlugin,
   type QueryNodeOptions,
   createPlugin,
   getPluginType,
@@ -15,18 +15,16 @@ export interface TrailingBlockPluginOptions extends QueryNodeOptions {
   type?: string;
 }
 
-export const KEY_TRAILING_BLOCK = 'trailingBlock';
-
 /** @see {@link withTrailingBlock} */
 export const TrailingBlockPlugin = createPlugin<
   'trailingBlock',
   TrailingBlockPluginOptions
 >({
-  key: KEY_TRAILING_BLOCK,
+  key: 'trailingBlock',
   withOverrides: withTrailingBlock,
 }).extend(({ editor }) => ({
   options: {
     level: 0,
-    type: getPluginType(editor, ELEMENT_DEFAULT),
+    type: getPluginType(editor, ParagraphPlugin.key),
   },
 }));

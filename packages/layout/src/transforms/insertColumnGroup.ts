@@ -1,5 +1,5 @@
 import {
-  ELEMENT_DEFAULT,
+  ParagraphPlugin,
   type PlateEditor,
   insertNodes,
   withoutNormalizing,
@@ -7,25 +7,25 @@ import {
 
 import type { TColumnGroupElement } from '../types';
 
-import { ELEMENT_COLUMN, ELEMENT_COLUMN_GROUP } from '../ColumnPlugin';
+import { ColumnItemPlugin, ColumnPlugin } from '../ColumnPlugin';
 
 export const insertColumnGroup = (editor: PlateEditor) => {
   withoutNormalizing(editor, () => {
     insertNodes<TColumnGroupElement>(editor, {
       children: [
         {
-          children: [{ children: [{ text: '' }], type: ELEMENT_DEFAULT }],
-          type: ELEMENT_COLUMN,
+          children: [{ children: [{ text: '' }], type: ParagraphPlugin.key }],
+          type: ColumnItemPlugin.key,
           width: '50%',
         },
         {
-          children: [{ children: [{ text: '' }], type: ELEMENT_DEFAULT }],
-          type: ELEMENT_COLUMN,
+          children: [{ children: [{ text: '' }], type: ParagraphPlugin.key }],
+          type: ColumnItemPlugin.key,
           width: '50%',
         },
       ],
       layout: [50, 50],
-      type: ELEMENT_COLUMN_GROUP,
+      type: ColumnPlugin.key,
     });
   });
 };

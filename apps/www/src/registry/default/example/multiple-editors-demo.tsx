@@ -3,8 +3,8 @@ import React from 'react';
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
 import { Plate, usePlateEditor } from '@udecode/plate-common/react';
-import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
-import { ELEMENT_IMAGE, ImagePlugin } from '@udecode/plate-media';
+import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
+import { ImagePlugin } from '@udecode/plate-media';
 import { SelectOnBackspacePlugin } from '@udecode/plate-select';
 
 import { PlaygroundTurnIntoDropdownMenu } from '@/components/plate-ui/playground-turn-into-dropdown-menu';
@@ -39,7 +39,7 @@ export default function MultipleEditorsDemo() {
       ImagePlugin,
       SelectOnBackspacePlugin.configure({
         query: {
-          allow: [ELEMENT_IMAGE, ELEMENT_HR],
+          allow: [ImagePlugin.key, HorizontalRulePlugin.key],
         },
       }),
     ],

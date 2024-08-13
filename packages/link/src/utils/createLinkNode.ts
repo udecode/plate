@@ -6,7 +6,7 @@ import {
 
 import type { TLinkElement } from '../types';
 
-import { ELEMENT_LINK } from '../LinkPlugin';
+import { LinkPlugin } from '../LinkPlugin';
 
 export interface CreateLinkNodeOptions {
   url: string;
@@ -19,7 +19,7 @@ export const createLinkNode = (
   editor: PlateEditor,
   { children, target, text = '', url }: CreateLinkNodeOptions
 ): TLinkElement => {
-  const type = getPluginType(editor, ELEMENT_LINK);
+  const type = getPluginType(editor, LinkPlugin.key);
 
   return {
     children: children ?? [{ text }],

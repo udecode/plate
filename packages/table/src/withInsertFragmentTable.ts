@@ -20,7 +20,7 @@ import type {
   TablePluginOptions,
 } from './types';
 
-import { ELEMENT_TABLE } from './TablePlugin';
+import { TablePlugin } from './TablePlugin';
 import { getTableAbove } from './queries/getTableAbove';
 import { getTableGridAbove } from './queries/getTableGridAbove';
 
@@ -40,7 +40,7 @@ export const withInsertFragmentTable: WithOverride<TablePluginOptions> = ({
 
   editor.insertFragment = (fragment) => {
     const insertedTable = fragment.find(
-      (n) => (n as TElement).type === getPluginType(editor, ELEMENT_TABLE)
+      (n) => (n as TElement).type === getPluginType(editor, TablePlugin.key)
     ) as TTableElement | undefined;
 
     if (!insertedTable) {
@@ -161,7 +161,10 @@ export const withInsertFragmentTable: WithOverride<TablePluginOptions> = ({
 
           return;
         }
-      } else if (fragment.length === 1 && fragment[0].type === ELEMENT_TABLE) {
+      } else if (
+        fragment.length === 1 &&
+        fragment[0].type === TablePlugin.key
+      ) {
         // needed to insert as node, otherwise it will be inserted as text
         editor.insertNode(fragment[0]);
 

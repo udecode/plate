@@ -1,13 +1,13 @@
 import { type PlateEditor, someNode } from '@udecode/plate-common';
 
-import { KEY_LIST_CHECKED, KEY_LIST_STYLE_TYPE, ListStyleType } from '../index';
+import { KEY_LIST_CHECKED, IndentListPlugin, ListStyleType } from '../index';
 
 export const someIndentList = (editor: PlateEditor, type: string) => {
   return (
     !!editor.selection &&
     someNode(editor, {
       match: (n) => {
-        const list = n[KEY_LIST_STYLE_TYPE];
+        const list = n[IndentListPlugin.key];
 
         if ((type as any) === ListStyleType.Disc) {
           return list === ListStyleType.Disc;

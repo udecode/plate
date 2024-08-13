@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
-import { ELEMENT_LI } from '@udecode/plate-list';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
+import { ParagraphPlugin } from '@udecode/plate-common';
+import { ListItemPlugin } from '@udecode/plate-list';
 import { jsx } from '@udecode/plate-test-utils';
 import { isDescendant } from '@udecode/slate';
 
@@ -19,9 +19,9 @@ const node = (
 const props = { a: 1 };
 
 const output = (
-  <element a={1} type={ELEMENT_LI}>
+  <element a={1} type={ListItemPlugin.key}>
     <htext a={1}>test</htext>
-    <element a={1} type={ELEMENT_PARAGRAPH}>
+    <element a={1} type={ParagraphPlugin.key}>
       <htext a={1}>test</htext>
     </element>
     <htext a={1}>test</htext>

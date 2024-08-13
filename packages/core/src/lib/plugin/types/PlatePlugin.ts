@@ -78,9 +78,9 @@ export type PlatePlugin<
     /**
      * Property that can be used by a plugin to allow other plugins to inject
      * code. For example, if multiple plugins have defined
-     * `inject.editor.insertData.transformData` for `key=KEY_DESERIALIZE_HTML`,
+     * `inject.editor.insertData.transformData` for `key=DeserializeHtmlPlugin.key`,
      * `insertData` plugin will call all of these `transformData` for
-     * `KEY_DESERIALIZE_HTML` plugin. Differs from `override.plugins` as this is
+     * `DeserializeHtmlPlugin.key` plugin. Differs from `override.plugins` as this is
      * not overriding any plugin.
      */
     plugins?: Record<PluginKey, Partial<EditorPlugin<any, any, any, any>>>;
@@ -491,7 +491,7 @@ export interface InjectProps<O = {}, A = {}, T = {}, S = {}> {
   /**
    * Plugin keys required to inject the props.
    *
-   * @default [ELEMENT_DEFAULT]
+   * @default [ParagraphPlugin.key]
    */
   validPlugins?: string[];
 }

@@ -1,6 +1,10 @@
 import type { TElement, TText } from '@udecode/plate-common';
 
-import { ELEMENT_LI, ELEMENT_LIC, ELEMENT_UL } from '@udecode/plate-list';
+import {
+  ListItemPlugin,
+  ListItemContentPlugin,
+  ListUnorderedPlugin,
+} from '@udecode/plate-list';
 
 export const createList = (
   items: string[],
@@ -22,17 +26,17 @@ export const createList = (
       children: [
         {
           children: marks,
-          type: ELEMENT_LIC,
+          type: ListItemContentPlugin.key,
         },
       ],
-      type: ELEMENT_LI,
+      type: ListItemPlugin.key,
     };
   });
 
   return [
     {
       children,
-      type: ELEMENT_UL,
+      type: ListUnorderedPlugin.key,
     },
   ];
 };

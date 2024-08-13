@@ -1,7 +1,7 @@
 import type { Range } from 'slate';
 
 import {
-  ELEMENT_DEFAULT,
+  ParagraphPlugin,
   type PlateEditor,
   deleteText,
   getEditorString,
@@ -32,7 +32,7 @@ export const autoformatBlock = (
     text,
     trigger,
     triggerAtBlockStart = true,
-    type = ELEMENT_DEFAULT,
+    type = ParagraphPlugin.key,
   }: AutoformatBlockOptions
 ) => {
   const matches = castArray(_match as string | string[]);

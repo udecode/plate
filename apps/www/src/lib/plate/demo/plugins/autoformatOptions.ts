@@ -10,22 +10,22 @@ import {
   autoformatSmartQuotes,
 } from '@udecode/plate-autoformat';
 import {
-  MARK_BOLD,
-  MARK_CODE,
-  MARK_ITALIC,
-  MARK_STRIKETHROUGH,
-  MARK_SUBSCRIPT,
-  MARK_SUPERSCRIPT,
-  MARK_UNDERLINE,
+  BoldPlugin,
+  CodePlugin,
+  ItalicPlugin,
+  StrikethroughPlugin,
+  SubscriptPlugin,
+  SuperscriptPlugin,
+  UnderlinePlugin,
 } from '@udecode/plate-basic-marks';
-import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
+import { BlockquotePlugin } from '@udecode/plate-block-quote';
 import {
-  ELEMENT_CODE_BLOCK,
-  ELEMENT_CODE_LINE,
+  CodeBlockPlugin,
+  CodeLinePlugin,
   insertEmptyCodeBlock,
 } from '@udecode/plate-code-block';
 import {
-  ELEMENT_DEFAULT,
+  ParagraphPlugin,
   type PlateEditor,
   getParentNode,
   insertNodes,
@@ -42,23 +42,23 @@ import {
   ELEMENT_H5,
   ELEMENT_H6,
 } from '@udecode/plate-heading';
-import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
-import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
+import { HighlightPlugin } from '@udecode/plate-highlight';
+import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import {
   KEY_TODO_STYLE_TYPE,
   ListStyleType,
   toggleIndentList,
 } from '@udecode/plate-indent-list';
 import {
-  ELEMENT_LI,
-  ELEMENT_OL,
-  ELEMENT_TODO_LI,
-  ELEMENT_UL,
+  ListItemPlugin,
+  ListOrderedPlugin,
+  ListUnorderedPlugin,
   type TTodoListItemElement,
+  TodoListPlugin,
   toggleList,
   unwrapList,
 } from '@udecode/plate-list';
-import { ELEMENT_TOGGLE, openNextToggles } from '@udecode/plate-toggle';
+import { TogglePlugin, openNextToggles } from '@udecode/plate-toggle';
 
 export const preFormat: AutoformatBlockRule['preFormat'] = (editor) =>
   unwrapList(editor);
@@ -73,8 +73,8 @@ export const format = (editor: PlateEditor, customFormatting: any) => {
 
     if (
       isElement(node) &&
-      !isType(editor, node, ELEMENT_CODE_BLOCK) &&
-      !isType(editor, node, ELEMENT_CODE_LINE)
+      !isType(editor, node, CodeBlockPlugin.key) &&
+      !isType(editor, node, CodeLinePlugin.key)
     ) {
       customFormatting();
     }
@@ -93,72 +93,72 @@ export const autoformatMarks: AutoformatRule[] = [
   {
     match: '***',
     mode: 'mark',
-    type: [MARK_BOLD, MARK_ITALIC],
+    type: [BoldPlugin.key, ItalicPlugin.key],
   },
   {
     match: '__*',
     mode: 'mark',
-    type: [MARK_UNDERLINE, MARK_ITALIC],
+    type: [UnderlinePlugin.key, ItalicPlugin.key],
   },
   {
     match: '__**',
     mode: 'mark',
-    type: [MARK_UNDERLINE, MARK_BOLD],
+    type: [UnderlinePlugin.key, BoldPlugin.key],
   },
   {
     match: '___***',
     mode: 'mark',
-    type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
+    type: [UnderlinePlugin.key, BoldPlugin.key, ItalicPlugin.key],
   },
   {
     match: '**',
     mode: 'mark',
-    type: MARK_BOLD,
+    type: BoldPlugin.key,
   },
   {
     match: '__',
     mode: 'mark',
-    type: MARK_UNDERLINE,
+    type: UnderlinePlugin.key,
   },
   {
     match: '*',
     mode: 'mark',
-    type: MARK_ITALIC,
+    type: ItalicPlugin.key,
   },
   {
     match: '_',
     mode: 'mark',
-    type: MARK_ITALIC,
+    type: ItalicPlugin.key,
   },
   {
     match: '~~',
     mode: 'mark',
-    type: MARK_STRIKETHROUGH,
+    type: StrikethroughPlugin.key,
   },
   {
     match: '^',
     mode: 'mark',
-    type: MARK_SUPERSCRIPT,
+    type: SuperscriptPlugin.key,
   },
   {
     match: '~',
     mode: 'mark',
-    type: MARK_SUBSCRIPT,
+    type: SubscriptPlugin.key,
   },
   {
     match: '==',
     mode: 'mark',
-    type: MARK_HIGHLIGHT,
+    type: HighlightPlugin.key,
   },
   {
     match: '≡',
     mode: 'mark',
-    type: MARK_HIGHLIGHT,
+    type: HighlightPlugin.key,
   },
   {
     match: '`',
     mode: 'mark',
-    type: MARK_CODE,
+    type: CodePlugin.key,
   },
 ];
 
@@ -203,12 +203,12 @@ export const autoformatBlocks: AutoformatRule[] = [
     match: '> ',
     mode: 'block',
     preFormat,
-    type: ELEMENT_BLOCKQUOTE,
+    type: BlockquotePlugin.key,
   },
   {
     format: (editor) => {
       insertEmptyCodeBlock(editor, {
-        defaultType: ELEMENT_DEFAULT,
+        defaultType: ParagraphPlugin.key,
         insertNodesOptions: { select: true },
       });
     },
@@ -216,25 +216,25 @@ export const autoformatBlocks: AutoformatRule[] = [
     mode: 'block',
     preFormat,
     triggerAtBlockStart: false,
-    type: ELEMENT_CODE_BLOCK,
+    type: CodeBlockPlugin.key,
   },
   {
     match: '+ ',
     mode: 'block',
     preFormat: openNextToggles,
-    type: ELEMENT_TOGGLE,
+    type: TogglePlugin.key,
   },
   {
     format: (editor) => {
-      setNodes(editor, { type: ELEMENT_HR });
+      setNodes(editor, { type: HorizontalRulePlugin.key });
       insertNodes(editor, {
         children: [{ text: '' }],
-        type: ELEMENT_DEFAULT,
+        type: ParagraphPlugin.key,
       });
     },
     match: ['---', '—-', '___ '],
     mode: 'block',
-    type: ELEMENT_HR,
+    type: HorizontalRulePlugin.key,
   },
 ];
 
@@ -251,36 +251,36 @@ export const autoformatRules: AutoformatRule[] = [
 
 export const autoformatLists: AutoformatRule[] = [
   {
-    format: (editor) => formatList(editor, ELEMENT_UL),
+    format: (editor) => formatList(editor, ListUnorderedPlugin.key),
     match: ['* ', '- '],
     mode: 'block',
     preFormat,
-    type: ELEMENT_LI,
+    type: ListItemPlugin.key,
   },
   {
-    format: (editor) => formatList(editor, ELEMENT_OL),
+    format: (editor) => formatList(editor, ListOrderedPlugin.key),
     match: ['1. ', '1) '],
     mode: 'block',
     preFormat,
-    type: ELEMENT_LI,
+    type: ListItemPlugin.key,
   },
   {
     match: '[] ',
     mode: 'block',
-    type: ELEMENT_TODO_LI,
+    type: TodoListPlugin.key,
   },
   {
     format: (editor) =>
       setNodes<TTodoListItemElement>(
         editor,
-        { checked: true, type: ELEMENT_TODO_LI },
+        { checked: true, type: TodoListPlugin.key },
         {
           match: (n) => isBlock(editor, n),
         }
       ),
     match: '[x] ',
     mode: 'block',
-    type: ELEMENT_TODO_LI,
+    type: TodoListPlugin.key,
   },
 ];
 

@@ -10,7 +10,7 @@ import {
 } from '@udecode/plate-common';
 import { type Location, type Path, Range } from 'slate';
 
-import { ELEMENT_LI } from '../ListPlugin';
+import { ListItemPlugin } from '../ListPlugin';
 
 /**
  * Returns the nearest li and ul / ol wrapping node entries for a given path
@@ -20,7 +20,7 @@ export const getListItemEntry = (
   editor: PlateEditor,
   { at = editor.selection }: { at?: Location | null } = {}
 ): { list: TElementEntry; listItem: TElementEntry } | undefined => {
-  const liType = getPluginType(editor, ELEMENT_LI);
+  const liType = getPluginType(editor, ListItemPlugin.key);
 
   let _at: Path;
 

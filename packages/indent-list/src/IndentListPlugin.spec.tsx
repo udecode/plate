@@ -3,6 +3,7 @@
 import { AlignPlugin } from '@udecode/plate-alignment';
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
+import { ParagraphPlugin } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { ELEMENT_H1, ELEMENT_H2, ELEMENT_H3 } from '@udecode/plate-heading';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
@@ -11,7 +12,6 @@ import { JuicePlugin } from '@udecode/plate-juice';
 import { LineHeightPlugin } from '@udecode/plate-line-height';
 import { LinkPlugin } from '@udecode/plate-link';
 import { ImagePlugin } from '@udecode/plate-media';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { DeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
 import { TablePlugin } from '@udecode/plate-table';
 import { jsx } from '@udecode/plate-test-utils';
@@ -23,7 +23,7 @@ jsx;
 const injectConfig = {
   inject: {
     props: {
-      validPlugins: [ELEMENT_PARAGRAPH, ELEMENT_H1, ELEMENT_H2, ELEMENT_H3],
+      validPlugins: [ParagraphPlugin.key, ELEMENT_H1, ELEMENT_H2, ELEMENT_H3],
     },
   },
 };

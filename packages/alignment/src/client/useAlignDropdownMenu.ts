@@ -5,7 +5,7 @@ import {
   useEditorSelector,
 } from '@udecode/plate-common/react';
 
-import { type Alignment, KEY_ALIGN, setAlign } from '../index';
+import { AlignPlugin, type Alignment, setAlign } from '../index';
 
 export const useAlignDropdownMenuState = () => {
   const value: Alignment = useEditorSelector((editor) => {
@@ -15,7 +15,7 @@ export const useAlignDropdownMenuState = () => {
     });
     const nodes = Array.from(codeBlockEntries);
     nodes.forEach(([node]) => {
-      const align: string = (node[KEY_ALIGN] as string) || 'start';
+      const align: string = (node[AlignPlugin.key] as string) || 'start';
 
       if (!isDefined(commonAlignment)) {
         commonAlignment = align;
@@ -51,7 +51,7 @@ export const useAlignDropdownMenu = ({
     radioGroupProps: {
       onValueChange: (newValue: string) => {
         setAlign(editor, {
-          key: KEY_ALIGN,
+          key: AlignPlugin.key,
           value: newValue as Alignment,
         });
 

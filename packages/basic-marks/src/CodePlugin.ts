@@ -5,8 +5,6 @@ import {
 } from '@udecode/plate-common';
 import { onKeyDownToggleMark } from '@udecode/plate-common/react';
 
-export const MARK_CODE = 'code';
-
 /** Enables support for code formatting */
 export const CodePlugin = createPlugin<'code', ToggleMarkPluginOptions>({
   deserializeHtml: {
@@ -32,7 +30,7 @@ export const CodePlugin = createPlugin<'code', ToggleMarkPluginOptions>({
     onKeyDown: onKeyDownToggleMark,
   },
   isLeaf: true,
-  key: MARK_CODE,
+  key: 'code',
   options: {
     hotkey: 'mod+e',
   },

@@ -11,7 +11,7 @@ import type {
   TablePluginOptions,
 } from '../../types';
 
-import { ELEMENT_TABLE, ELEMENT_TR } from '../../TablePlugin';
+import { TablePlugin, TableRowPlugin } from '../../TablePlugin';
 import { computeCellIndices } from '../../merge/computeCellIndices';
 import { getCellIndices } from '../../merge/getCellIndices';
 import { getColSpan } from '../../queries/getColSpan';
@@ -55,13 +55,13 @@ export const useTableCellElementState = ({
   const hoveredColIndex = useTableStore().get.hoveredColIndex();
   const selectedCells = useTableStore().get.selectedCells();
 
-  const tableElement = useElement<TTableElement>(ELEMENT_TABLE);
-  const rowElement = useElement<TTableRowElement>(ELEMENT_TR);
+  const tableElement = useElement<TTableElement>(TablePlugin.key);
+  const rowElement = useElement<TTableRowElement>(TableRowPlugin.key);
   const rowSizeOverrides = useTableStore().get.rowSizeOverrides();
 
   const { _cellIndices, enableMerging } = getPluginOptions<TablePluginOptions>(
     editor as any,
-    ELEMENT_TABLE
+    TablePlugin.key
   );
 
   if (!enableMerging) {

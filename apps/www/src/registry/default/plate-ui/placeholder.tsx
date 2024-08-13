@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { cn } from '@udecode/cn';
+import { ParagraphPlugin } from '@udecode/plate-common';
 import {
   type PlaceholderProps,
   createNodeHOC,
@@ -8,7 +9,6 @@ import {
   usePlaceholderState,
 } from '@udecode/plate-common/react';
 import { ELEMENT_H1 } from '@udecode/plate-heading';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 
 export const Placeholder = (props: PlaceholderProps) => {
   const { children, nodeProps, placeholder } = props;
@@ -38,7 +38,7 @@ export const withPlaceholders = (components: any) =>
   withPlaceholdersPrimitive(components, [
     {
       hideOnBlur: true,
-      key: ELEMENT_PARAGRAPH,
+      key: ParagraphPlugin.key,
       placeholder: 'Type a paragraph',
       query: {
         maxLevel: 1,

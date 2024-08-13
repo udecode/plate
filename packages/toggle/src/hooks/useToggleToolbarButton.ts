@@ -5,9 +5,9 @@ import {
   useEditorSelector,
 } from '@udecode/plate-common/react';
 
+import { TogglePlugin } from '../TogglePlugin';
 import { someToggle } from '../queries/someToggle';
 import { openNextToggles } from '../transforms';
-import { ELEMENT_TOGGLE } from '../types';
 
 export const useToggleToolbarButtonState = () => {
   const pressed = useEditorSelector((editor) => someToggle(editor), []);
@@ -26,7 +26,7 @@ export const useToggleToolbarButton = ({
     props: {
       onClick: () => {
         openNextToggles(editor);
-        toggleNodeType(editor, { activeType: ELEMENT_TOGGLE });
+        toggleNodeType(editor, { activeType: TogglePlugin.key });
         collapseSelection(editor);
         focusEditor(editor);
       },

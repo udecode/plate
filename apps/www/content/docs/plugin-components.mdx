@@ -93,8 +93,8 @@ const plugins = createPlugins([
   createParagraphPlugin(),
 ], {
   components: {
-    [ELEMENT_PARAGRAPH]: ParagraphElement,
-    [ELEMENT_LINK]: LinkElement,
+    [ParagraphPlugin.key]: ParagraphElement,
+    [LinkPlugin.key]: LinkElement,
     // ...other components
   },
 });

@@ -7,8 +7,8 @@ import {
 
 import type { PlateEditor } from '../editor';
 
-import { ELEMENT_DEFAULT } from '../constants';
 import { getPluginType } from '../plugin/getPlugin';
+import { ParagraphPlugin } from '../plugins';
 
 const isInlineNode =
   (editor: Pick<TEditor, 'isInline'>) => (node: TDescendant) =>
@@ -121,7 +121,7 @@ export const normalizeDescendantsToDocumentFragment = (
   { descendants }: { descendants: TDescendant[] }
 ): TDescendant[] => {
   const isInline = isInlineNode(editor);
-  const defaultType = getPluginType(editor, ELEMENT_DEFAULT);
+  const defaultType = getPluginType(editor, ParagraphPlugin.key);
   const makeDefaultBlock = makeBlockLazy(defaultType);
 
   return normalize(descendants, isInline, makeDefaultBlock as any);

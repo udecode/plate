@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
 import {
-  MARK_BOLD,
-  MARK_ITALIC,
-  MARK_UNDERLINE,
+  BoldPlugin,
+  ItalicPlugin,
+  UnderlinePlugin,
 } from '@udecode/plate-basic-marks';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
@@ -77,7 +77,7 @@ describe('when inserting ***___', () => {
             match: { end: '***__', start: '___***' },
             mode: 'mark',
             trigger: '_',
-            type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
+            type: [UnderlinePlugin.key, BoldPlugin.key, ItalicPlugin.key],
           },
         ],
       }),

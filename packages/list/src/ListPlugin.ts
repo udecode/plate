@@ -1,5 +1,5 @@
 import {
-  KEY_DESERIALIZE_HTML,
+  DeserializeHtmlPlugin,
   createPlugin,
   someNode,
 } from '@udecode/plate-common';
@@ -8,16 +8,6 @@ import type { ListPluginOptions } from './types';
 
 import { onKeyDownList } from './onKeyDownList';
 import { withList } from './withList';
-
-export const KEY_LIST = 'list';
-
-export const ELEMENT_UL = 'ul';
-
-export const ELEMENT_OL = 'ol';
-
-export const ELEMENT_LI = 'li';
-
-export const ELEMENT_LIC = 'lic';
 
 export const ListUnorderedPlugin = createPlugin<'ul', ListPluginOptions>({
   deserializeHtml: {
@@ -31,7 +21,7 @@ export const ListUnorderedPlugin = createPlugin<'ul', ListPluginOptions>({
     onKeyDown: onKeyDownList,
   },
   isElement: true,
-  key: ELEMENT_UL,
+  key: 'ul',
   withOverrides: withList,
 });
 
@@ -41,17 +31,17 @@ export const ListOrderedPlugin = createPlugin<'ol', ListPluginOptions>({
     onKeyDown: onKeyDownList,
   },
   isElement: true,
-  key: ELEMENT_OL,
+  key: 'ol',
 });
 
 export const ListItemPlugin = createPlugin({
   deserializeHtml: { rules: [{ validNodeName: 'LI' }] },
   isElement: true,
-  key: ELEMENT_LI,
+  key: 'li',
 }).extend(({ editor, plugin: { type } }) => ({
   inject: {
     plugins: {
-      [KEY_DESERIALIZE_HTML]: {
+      [DeserializeHtmlPlugin.key]: {
         editor: {
           insertData: {
             preInsert: () => {
@@ -66,12 +56,12 @@ export const ListItemPlugin = createPlugin({
 
 export const ListItemContentPlugin = createPlugin({
   isElement: true,
-  key: ELEMENT_LIC,
+  key: 'lic',
 });
 
 /** Enables support for bulleted, numbered and to-do lists. */
 export const ListPlugin = createPlugin({
-  key: KEY_LIST,
+  key: 'list',
   plugins: [
     ListUnorderedPlugin,
     ListOrderedPlugin,

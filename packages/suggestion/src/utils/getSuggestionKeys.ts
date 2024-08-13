@@ -1,11 +1,11 @@
 import { type TNode, isDefined } from '@udecode/plate-common';
 
-import { MARK_SUGGESTION } from '../constants';
+import { SuggestionPlugin } from '../SuggestionPlugin';
 
-export const getSuggestionKey = (id = '0') => `${MARK_SUGGESTION}_${id}`;
+export const getSuggestionKey = (id = '0') => `${SuggestionPlugin.key}_${id}`;
 
 export const isSuggestionKey = (key: string) =>
-  key.startsWith(`${MARK_SUGGESTION}_`);
+  key.startsWith(`${SuggestionPlugin.key}_`);
 
 export const getSuggestionKeys = (node: TNode) => {
   const keys: string[] = [];
@@ -18,7 +18,7 @@ export const getSuggestionKeys = (node: TNode) => {
 };
 
 export const getSuggestionUserIdByKey = (key?: null | string) =>
-  isDefined(key) ? key.split(`${MARK_SUGGESTION}_`)[1] : null;
+  isDefined(key) ? key.split(`${SuggestionPlugin.key}_`)[1] : null;
 
 export const getSuggestionUserIds = (node: TNode) => {
   return getSuggestionKeys(node).map(

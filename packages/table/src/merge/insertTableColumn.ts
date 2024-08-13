@@ -18,7 +18,7 @@ import type {
   TablePluginOptions,
 } from '../types';
 
-import { ELEMENT_TABLE } from '../TablePlugin';
+import { TablePlugin } from '../TablePlugin';
 import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';
 import { getCellTypes } from '../utils';
@@ -48,7 +48,7 @@ export const insertTableMergeColumn = (
 ) => {
   const { _cellIndices: cellIndices } = getPluginOptions<TablePluginOptions>(
     editor,
-    ELEMENT_TABLE
+    TablePlugin.key
   );
 
   const cellEntry = fromCell
@@ -67,13 +67,13 @@ export const insertTableMergeColumn = (
 
   const tableEntry = getBlockAbove<TTableElement>(editor, {
     at: cellPath,
-    match: { type: getPluginType(editor, ELEMENT_TABLE) },
+    match: { type: getPluginType(editor, TablePlugin.key) },
   });
 
   if (!tableEntry) return;
 
   const { cellFactory, initialTableWidth, minColumnWidth } =
-    getPluginOptions<TablePluginOptions>(editor, ELEMENT_TABLE);
+    getPluginOptions<TablePluginOptions>(editor, TablePlugin.key);
   const [tableNode, tablePath] = tableEntry;
 
   const { col: cellColIndex } =

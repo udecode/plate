@@ -10,14 +10,14 @@ import {
   unsetNodes,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import { KEY_INDENT } from '@udecode/plate-indent';
+import { IndentPlugin } from '@udecode/plate-indent';
 
 import type { IndentListOptions } from './indentList';
 
 import {
+  IndentListPlugin,
   type IndentListPluginOptions,
   KEY_LIST_CHECKED,
-  KEY_LIST_STYLE_TYPE,
 } from '../IndentListPlugin';
 import { areEqListStyleType } from '../queries/areEqListStyleType';
 import { setIndentListNodes } from './setIndentListNodes';
@@ -33,7 +33,7 @@ export const toggleIndentList = <E extends PlateEditor>(
   const { listStyleType } = options;
 
   const { getSiblingIndentListOptions } =
-    getPluginOptions<IndentListPluginOptions>(editor, KEY_LIST_STYLE_TYPE);
+    getPluginOptions<IndentListPluginOptions>(editor, IndentListPlugin.key);
 
   if (isCollapsed(editor.selection)) {
     const entry = getBlockAbove<TElement>(editor);
@@ -66,18 +66,24 @@ export const toggleIndentList = <E extends PlateEditor>(
         entries.forEach((entry) => {
           const [node, path] = entry;
 
-          const indent = node[KEY_INDENT] as number;
+          const indent = node[IndentPlugin.key] as number;
 
-          unsetNodes(editor, KEY_LIST_STYLE_TYPE, { at: path });
+          unsetNodes(editor, IndentListPlugin.key, { at: path });
 
           if (indent > 1) {
-            setElements(editor, { [KEY_INDENT]: indent - 1 }, { at: path });
+            setElements(
+              editor,
+              { [IndentPlugin.key]: indent - 1 },
+              { at: path }
+            );
           } else {
-            unsetNodes(editor, [KEY_INDENT, KEY_LIST_CHECKED], { at: path });
+            unsetNodes(editor, [IndentPlugin.key, KEY_LIST_CHECKED], {
+              at: path,
+            });
           }
           // setIndentListNode(editor, {
           //   listStyleType,
-          //   indent: node[KEY_INDENT],
+          //   indent: node[IndentPlugin.key],
           //   at: path,
           // });
         });

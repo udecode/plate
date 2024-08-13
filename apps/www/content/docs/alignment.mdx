@@ -34,7 +34,7 @@ const plugins = [
     inject: {
       props: {
         validPlugins: [
-          ELEMENT_PARAGRAPH,
+          ParagraphPlugin.key,
           ELEMENT_H1,
           ELEMENT_H2,
           ELEMENT_H3,
@@ -65,7 +65,7 @@ The editor instance.
 <APISubListItem parent="options" name="key" type="string" optional>
 The plugin key.
 
-- **Default:** `KEY_ALIGN`
+- **Default:** `AlignPlugin.key`
 
 </APISubListItem>
 <APISubListItem parent="options" name="value" type="Alignment" optional>

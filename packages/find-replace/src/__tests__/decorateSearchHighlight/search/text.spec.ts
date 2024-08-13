@@ -1,10 +1,7 @@
 import { getPlugin } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 
-import {
-  FindReplacePlugin,
-  MARK_SEARCH_HIGHLIGHT,
-} from '../../../FindReplacePlugin';
+import { FindReplacePlugin } from '../../../FindReplacePlugin';
 
 it('should be', () => {
   const editor = createPlateEditor({
@@ -15,13 +12,13 @@ it('should be', () => {
     ],
   });
 
-  const plugin = getPlugin(editor, MARK_SEARCH_HIGHLIGHT);
+  const plugin = getPlugin(editor, FindReplacePlugin.key);
 
   expect(
     plugin.decorate?.({ editor, entry: [{ text: 'test' }, [0, 0]], plugin })
   ).toEqual([
     {
-      [MARK_SEARCH_HIGHLIGHT]: true,
+      [FindReplacePlugin.key]: true,
       anchor: {
         offset: 0,
         path: [0, 0],
@@ -44,13 +41,13 @@ it('should be', () => {
     ],
   });
 
-  const plugin = getPlugin(editor, MARK_SEARCH_HIGHLIGHT);
+  const plugin = getPlugin(editor, FindReplacePlugin.key);
 
   expect(
     plugin.decorate?.({ editor, entry: [{ text: 'test' }, [0, 0]], plugin })
   ).toEqual([
     {
-      [MARK_SEARCH_HIGHLIGHT]: true,
+      [FindReplacePlugin.key]: true,
       anchor: {
         offset: 0,
         path: [0, 0],

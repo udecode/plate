@@ -13,7 +13,11 @@ import { Path } from 'slate';
 
 import type { TablePluginOptions } from '../types';
 
-import { ELEMENT_TABLE, ELEMENT_TH, ELEMENT_TR } from '../TablePlugin';
+import {
+  TableCellHeaderPlugin,
+  TablePlugin,
+  TableRowPlugin,
+} from '../TablePlugin';
 import { insertTableMergeRow } from '../merge/insertTableRow';
 import { getCellTypes } from '../utils/index';
 
@@ -29,7 +33,7 @@ export const insertTableRow = (
 ) => {
   const { cellFactory, enableMerging } = getPluginOptions<TablePluginOptions>(
     editor,
-    ELEMENT_TABLE
+    TablePlugin.key
   );
 
   if (enableMerging) {
@@ -41,10 +45,10 @@ export const insertTableRow = (
   const trEntry = fromRow
     ? findNode(editor, {
         at: fromRow,
-        match: { type: getPluginType(editor, ELEMENT_TR) },
+        match: { type: getPluginType(editor, TableRowPlugin.key) },
       })
     : getBlockAbove(editor, {
-        match: { type: getPluginType(editor, ELEMENT_TR) },
+        match: { type: getPluginType(editor, TableRowPlugin.key) },
       });
 
   if (!trEntry) return;
@@ -53,7 +57,7 @@ export const insertTableRow = (
 
   const tableEntry = getBlockAbove(editor, {
     at: trPath,
-    match: { type: getPluginType(editor, ELEMENT_TABLE) },
+    match: { type: getPluginType(editor, TablePlugin.key) },
   });
 
   if (!tableEntry) return;
@@ -64,14 +68,16 @@ export const insertTableRow = (
       const isHeaderColumn =
         !hasSingleRow &&
         (tableEntry[0].children as TElement[]).every(
-          (n) => n.children[i].type === getPluginType(editor, ELEMENT_TH)
+          (n) =>
+            n.children[i].type ===
+            getPluginType(editor, TableCellHeaderPlugin.key)
         );
 
       return cellFactory!({
         header: header ?? isHeaderColumn,
       });
     }),
-    type: getPluginType(editor, ELEMENT_TR),
+    type: getPluginType(editor, TableRowPlugin.key),
   });
 
   withoutNormalizing(editor, () => {

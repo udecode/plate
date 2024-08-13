@@ -9,7 +9,7 @@ import {
   unsetNodes,
 } from '@udecode/plate-common';
 
-import { KEY_LINE_HEIGHT } from '../LineHeightPlugin';
+import { LineHeightPlugin } from '../LineHeightPlugin';
 
 export const setLineHeight = <E extends PlateEditor>(
   editor: E,
@@ -20,7 +20,7 @@ export const setLineHeight = <E extends PlateEditor>(
 ): void => {
   const { defaultNodeValue, nodeKey, validPlugins } = getPluginInjectProps(
     editor,
-    KEY_LINE_HEIGHT
+    LineHeightPlugin.key
   );
 
   const match: TNodeMatch = (n) =>

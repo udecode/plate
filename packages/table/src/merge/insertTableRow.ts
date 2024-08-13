@@ -18,7 +18,7 @@ import type {
   TablePluginOptions,
 } from '../types';
 
-import { ELEMENT_TABLE, ELEMENT_TR } from '../TablePlugin';
+import { TablePlugin, TableRowPlugin } from '../TablePlugin';
 import { getTableColumnCount } from '../queries';
 import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';
@@ -43,15 +43,15 @@ export const insertTableMergeRow = (
   } = {}
 ) => {
   const { _cellIndices: cellIndices, cellFactory } =
-    getPluginOptions<TablePluginOptions>(editor, ELEMENT_TABLE);
+    getPluginOptions<TablePluginOptions>(editor, TablePlugin.key);
 
   const trEntry = fromRow
     ? findNode(editor, {
         at: fromRow,
-        match: { type: getPluginType(editor, ELEMENT_TR) },
+        match: { type: getPluginType(editor, TableRowPlugin.key) },
       })
     : getBlockAbove(editor, {
-        match: { type: getPluginType(editor, ELEMENT_TR) },
+        match: { type: getPluginType(editor, TableRowPlugin.key) },
       });
 
   if (!trEntry) return;
@@ -60,7 +60,7 @@ export const insertTableMergeRow = (
 
   const tableEntry = getBlockAbove<TTableElement>(editor, {
     at: trPath,
-    match: { type: getPluginType(editor, ELEMENT_TABLE) },
+    match: { type: getPluginType(editor, TablePlugin.key) },
   });
 
   if (!tableEntry) return;
@@ -161,7 +161,7 @@ export const insertTableMergeRow = (
       editor,
       {
         children: newRowChildren,
-        type: getPluginType(editor, ELEMENT_TR),
+        type: getPluginType(editor, TableRowPlugin.key),
       },
       {
         at: nextRowPath,

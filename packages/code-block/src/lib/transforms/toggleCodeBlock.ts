@@ -8,14 +8,14 @@ import {
   wrapNodes,
 } from '@udecode/plate-common';
 
-import { ELEMENT_CODE_BLOCK } from '../constants';
+import { CodeBlockPlugin } from '../CodeBlockPlugin';
 import { getCodeLineType } from '../options';
 import { unwrapCodeBlock } from './unwrapCodeBlock';
 
 export const toggleCodeBlock = (editor: PlateEditor) => {
   if (!editor.selection) return;
 
-  const codeBlockType = getPluginType(editor, ELEMENT_CODE_BLOCK);
+  const codeBlockType = getPluginType(editor, CodeBlockPlugin.key);
   const codeLineType = getCodeLineType(editor);
 
   const isActive = someNode(editor, {

@@ -1,6 +1,6 @@
 import {
-  ELEMENT_DEFAULT,
-  KEY_DESERIALIZE_HTML,
+  ParagraphPlugin,
+  DeserializeHtmlPlugin,
   type PlateRenderElementProps,
   type TElement,
   createPlugin,
@@ -16,8 +16,6 @@ import type { ListStyleType } from './types';
 import { injectIndentListComponent } from './injectIndentListComponent';
 import { onKeyDownIndentList } from './onKeyDownIndentList';
 import { withIndentList } from './withIndentList';
-
-export const KEY_LIST_STYLE_TYPE = 'listStyleType';
 
 export const KEY_LIST_START = 'listStart';
 
@@ -58,7 +56,7 @@ export const IndentListPlugin = createPlugin<
   inject: {
     belowComponent: injectIndentListComponent,
   },
-  key: KEY_LIST_STYLE_TYPE,
+  key: 'listStyleType',
   options: {
     getListStyleType: (element) => element.style.listStyleType as ListStyleType,
   },
@@ -69,7 +67,7 @@ export const IndentListPlugin = createPlugin<
       // gdoc uses aria-level attribute
       indent: Number(element.getAttribute('aria-level')),
       listStyleType: options.getListStyleType?.(element),
-      type: getPluginType(editor, ELEMENT_DEFAULT),
+      type: getPluginType(editor, ParagraphPlugin.key),
     }),
     isElement: true,
     rules: [
@@ -80,7 +78,7 @@ export const IndentListPlugin = createPlugin<
   },
   inject: {
     plugins: {
-      [KEY_DESERIALIZE_HTML]: {
+      [DeserializeHtmlPlugin.key]: {
         editor: {
           insertData: {
             transformData: ({ data }) => {

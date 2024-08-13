@@ -43,11 +43,9 @@ export interface NodeIdPlugin extends QueryNodeOptions {
   reuseId?: boolean;
 }
 
-export const KEY_NODE_ID = 'nodeId';
-
 /** @see {@link withNodeId} */
 export const NodeIdPlugin = createPlugin<'nodeId', NodeIdPlugin>({
-  key: KEY_NODE_ID,
+  key: 'nodeId',
   options: {
     filter: () => true,
     filterText: true,

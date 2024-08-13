@@ -1,5 +1,6 @@
 import type { SetStateAction } from 'react';
 
+import type { TogglePlugin } from './TogglePlugin';
 import type { buildToggleIndex } from './toggle-controller-store';
 
 export interface TogglePluginOptions {
@@ -10,8 +11,6 @@ export interface TogglePluginOptions {
   toggleIndex?: ReturnType<typeof buildToggleIndex>;
 }
 
-export const ELEMENT_TOGGLE = 'toggle';
-
 export type TToggleElement = {
-  type: typeof ELEMENT_TOGGLE;
+  type: typeof TogglePlugin.key;
 };

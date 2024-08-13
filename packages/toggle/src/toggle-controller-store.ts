@@ -11,12 +11,14 @@ import {
   plateStore,
   usePlateStore,
 } from '@udecode/plate-common/react';
-import { KEY_INDENT, type TIndentElement } from '@udecode/plate-indent';
+import { IndentPlugin, type TIndentElement } from '@udecode/plate-indent';
 
-import { ELEMENT_TOGGLE, type TogglePluginOptions } from './types';
+import type { TogglePluginOptions } from './types';
+
+import { TogglePlugin } from './TogglePlugin';
 
 // Duplicate constant instead of importing from "plate-indent-list" to avoid a dependency.
-const KEY_LIST_STYLE_TYPE = 'listStyleType';
+const IndentListPluginKey = 'listStyleType';
 
 export const {
   ToggleControllerProvider,
@@ -62,7 +64,10 @@ export const someToggleClosed = (
   editor: PlateEditor,
   toggleIds: string[]
 ): boolean => {
-  const options = getPluginOptions<TogglePluginOptions>(editor, ELEMENT_TOGGLE);
+  const options = getPluginOptions<TogglePluginOptions>(
+    editor,
+    TogglePlugin.key
+  );
   const openIds = options.openIds!;
 
   return toggleIds.some((id) => !openIds.has(id));
@@ -72,7 +77,10 @@ export const isToggleOpen = (
   editor: PlateEditor,
   toggleId: string
 ): boolean => {
-  const options = getPluginOptions<TogglePluginOptions>(editor, ELEMENT_TOGGLE);
+  const options = getPluginOptions<TogglePluginOptions>(
+    editor,
+    TogglePlugin.key
+  );
   const openIds = options.openIds!;
 
   return openIds.has(toggleId);
@@ -83,7 +91,10 @@ export const toggleIds = (
   ids: string[],
   force: boolean | null = null
 ): void => {
-  const options = getPluginOptions<TogglePluginOptions>(editor, ELEMENT_TOGGLE);
+  const options = getPluginOptions<TogglePluginOptions>(
+    editor,
+    TogglePlugin.key
+  );
   options.setOpenIds!((openIds) => _toggleIds(openIds, ids, force));
 };
 
@@ -112,10 +123,10 @@ export const buildToggleIndex = (elements: Value): Map<string, string[]> => {
   const result = new Map<string, string[]>();
   let currentEnclosingToggles: [string, number][] = []; // [toggleId, indent][]
   elements.forEach((element) => {
-    const elementIndent = (element[KEY_INDENT] as number) || 0;
+    const elementIndent = (element[IndentPlugin.key] as number) || 0;
     // For some reason, indent lists have a min indent of 1, even though they are not indented
     const elementIndentWithIndentListCorrection =
-      element[KEY_LIST_STYLE_TYPE] && element[KEY_INDENT]
+      element[IndentListPluginKey] && element[IndentPlugin.key]
         ? elementIndent - 1
         : elementIndent;
 
@@ -128,7 +139,7 @@ export const buildToggleIndex = (elements: Value): Map<string, string[]> => {
       enclosingToggles.map(([toggleId]) => toggleId)
     );
 
-    if (element.type === ELEMENT_TOGGLE) {
+    if (element.type === TogglePlugin.key) {
       currentEnclosingToggles.push([element.id as string, elementIndent]);
     }
   });

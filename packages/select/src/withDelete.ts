@@ -7,10 +7,10 @@ import {
   removeNodes,
 } from '@udecode/plate-common';
 
-import type { DeletePlugin } from './DeletePlugin';
+import type { DeletePluginOptions } from './DeletePlugin';
 
 /** Set a list of element types to select on backspace */
-export const withDelete: WithOverride<DeletePlugin> = ({
+export const withDelete: WithOverride<DeletePluginOptions> = ({
   editor,
   plugin: {
     options: { query },

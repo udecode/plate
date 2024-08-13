@@ -1,7 +1,7 @@
 import { isExpanded, isText, nanoid, setNodes } from '@udecode/plate-common';
 import { deselectEditor, useEditorRef } from '@udecode/plate-common/react';
 
-import { MARK_COMMENT } from '../../constants';
+import { CommentsPlugin } from '../../CommentsPlugin';
 import { getCommentKey } from '../../utils/index';
 import { useCommentsActions } from './CommentsProvider';
 
@@ -33,7 +33,7 @@ export const useAddCommentMark = () => {
 
     setNodes(
       editor,
-      { [MARK_COMMENT]: true, [getCommentKey(id)]: true },
+      { [CommentsPlugin.key]: true, [getCommentKey(id)]: true },
       { match: isText, split: true }
     );
 

@@ -326,8 +326,8 @@ Property used by Plate to inject a component below other plugins `component`, i.
 Property that can be used by a plugin to allow other plugins to inject code.
 - Differs from `overrideByKey` as this is not overriding any plugin.
 - For example, if multiple plugins have defined
-`inject.editor.insertData.transformData` for `key=KEY_DESERIALIZE_HTML`,
-`insertData` plugin will call all of these `transformData` for `KEY_DESERIALIZE_HTML` plugin.
+`inject.editor.insertData.transformData` for `key=DeserializeHtmlPlugin.key`,
+`insertData` plugin will call all of these `transformData` for `DeserializeHtmlPlugin.key` plugin.
 - The value of this property is an object with keys being the plugin keys and values being the injected code.
 ```ts
 Record<PluginKey, Partial<AnyPlatePlugin>>
@@ -391,7 +391,7 @@ List of supported node values.
 
 Plugin keys required to inject the props.
 
-- Default: `[ELEMENT_DEFAULT]`
+- Default: `[ParagraphPlugin.key]`
 
 </APISubListItem>
 </APISubList>

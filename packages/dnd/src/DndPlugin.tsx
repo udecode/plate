@@ -10,8 +10,6 @@ export interface DndPluginOptions {
   scrollerProps?: Partial<ScrollerProps>;
 }
 
-export const KEY_DND = 'dnd';
-
 export const DndPlugin = createPlugin<'dnd', DndPluginOptions>({
   handlers: {
     onDragEnd: () => {
@@ -33,7 +31,7 @@ export const DndPlugin = createPlugin<'dnd', DndPluginOptions>({
       return editor.isDragging as boolean;
     },
   },
-  key: KEY_DND,
+  key: 'dnd',
 }).extend(({ plugin: { options } }) => ({
   renderAfterEditable: options.enableScroller
     ? () => <DndScroller {...options?.scrollerProps} />

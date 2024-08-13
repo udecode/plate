@@ -7,12 +7,12 @@ import {
   getPluginOptions,
 } from '@udecode/plate-common';
 
-import type { CodeBlockPluginOptions, TCodeBlockElement } from '../lib/types';
+import type { CodeBlockPluginOptions, TCodeBlockElement } from './types';
 
-import { ELEMENT_CODE_BLOCK, ELEMENT_CODE_SYNTAX } from '../lib/constants';
+import { CodeBlockPlugin, CodeSyntaxPlugin } from './CodeBlockPlugin';
 
 export interface CodeSyntaxRange extends Range {
-  [ELEMENT_CODE_SYNTAX]: true;
+  [CodeSyntaxPlugin.key]: true;
   tokenType: string;
 }
 
@@ -23,7 +23,7 @@ export const decorateCodeLine: Decorate = ({
 }): CodeSyntaxRange[] => {
   const codeBlockOptions = getPluginOptions<CodeBlockPluginOptions>(
     editor,
-    ELEMENT_CODE_BLOCK
+    CodeBlockPlugin.key
   );
 
   const { prism: Prism } = codeBlockOptions;
@@ -63,7 +63,7 @@ export const decorateCodeLine: Decorate = ({
   for (const element of tokens) {
     if (element instanceof Token) {
       ranges.push({
-        [ELEMENT_CODE_SYNTAX]: true,
+        [CodeSyntaxPlugin.key]: true,
         anchor: { offset, path },
         focus: { offset: offset + element.length, path },
         tokenType: element.type,

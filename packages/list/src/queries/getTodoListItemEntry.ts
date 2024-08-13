@@ -10,7 +10,7 @@ import {
 } from '@udecode/plate-common';
 import { type Location, type Path, Range } from 'slate';
 
-import { ELEMENT_TODO_LI } from '../todo-list/TodoListPlugin';
+import { TodoListPlugin } from '../todo-list/TodoListPlugin';
 
 /**
  * Returns the nearest li and ul / ol wrapping node entries for a given path
@@ -20,7 +20,7 @@ export const getTodoListItemEntry = (
   editor: PlateEditor,
   { at = editor.selection }: { at?: Location | null } = {}
 ): { list: TElementEntry; listItem: TElementEntry } | undefined => {
-  const todoType = getPluginType(editor, ELEMENT_TODO_LI);
+  const todoType = getPluginType(editor, TodoListPlugin.key);
 
   let _at: Path;
 

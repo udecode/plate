@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
 import {
-  MARK_BOLD,
-  MARK_ITALIC,
-  MARK_UNDERLINE,
+  BoldPlugin,
+  ItalicPlugin,
+  UnderlinePlugin,
 } from '@udecode/plate-basic-marks';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
@@ -40,7 +40,7 @@ describe('when ignoreTrim is true', () => {
             ignoreTrim: true,
             match: '*',
             mode: 'mark',
-            type: MARK_ITALIC,
+            type: ItalicPlugin.key,
           },
         ],
       }),
@@ -78,7 +78,7 @@ describe('when ignoreTrim is false', () => {
               match: { end: '***__', start: '___***' },
               mode: 'mark',
               trigger: '_',
-              type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
+              type: [UnderlinePlugin.key, BoldPlugin.key, ItalicPlugin.key],
             },
           ],
         }),

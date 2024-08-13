@@ -1,14 +1,12 @@
 import { getPluginType } from '@udecode/plate-common';
-import { ELEMENT_DEFAULT, createPlugin } from '@udecode/plate-common';
-
-export const KEY_ALIGN = 'align';
+import { ParagraphPlugin, createPlugin } from '@udecode/plate-common';
 
 /** Creates a plugin that adds alignment functionality to the editor. */
 export const AlignPlugin = createPlugin({
   inject: {
     props: {
       defaultNodeValue: 'start',
-      nodeKey: KEY_ALIGN,
+      nodeKey: 'align',
       styleKey: 'textAlign',
       validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
       validPluginToInjectPlugin: ({ editor, plugin }) => ({
@@ -20,8 +18,8 @@ export const AlignPlugin = createPlugin({
           },
         },
       }),
-      validPlugins: [ELEMENT_DEFAULT],
+      validPlugins: [ParagraphPlugin.key],
     },
   },
-  key: KEY_ALIGN,
+  key: 'align',
 });

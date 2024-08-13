@@ -11,7 +11,7 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 
-import { KEY_INDENT } from '../IndentPlugin';
+import { IndentPlugin } from '../IndentPlugin';
 
 export interface SetIndentOptions<E extends TEditor = TEditor> {
   /** GetNodeEntries options */
@@ -41,7 +41,7 @@ export const setIndent = <E extends PlateEditor>(
     unsetNodesProps = [],
   }: SetIndentOptions<E>
 ) => {
-  const { nodeKey } = getPluginInjectProps(editor, KEY_INDENT);
+  const { nodeKey } = getPluginInjectProps(editor, IndentPlugin.key);
 
   const _nodes = getNodeEntries(editor, {
     block: true,

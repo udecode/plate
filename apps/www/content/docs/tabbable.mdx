@@ -42,8 +42,8 @@ Use the `query` option to disable the Tabbable plugin when the `Tab` key should 
 
 ```tsx
 query: (editor) => {
-  const inList = findNode(editor, { match: { type: ELEMENT_LI } });
-  const inCodeBlock = findNode(editor, { match: { type: ELEMENT_CODE_BLOCK } });
+  const inList = findNode(editor, { match: { type: ListItemPlugin.key } });
+  const inCodeBlock = findNode(editor, { match: { type: CodeBlockPlugin.key } });
   return !inList && !inCodeBlock;
 },
 ```

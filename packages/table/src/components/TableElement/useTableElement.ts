@@ -5,7 +5,7 @@ import { useEditorRef, useElement } from '@udecode/plate-common/react';
 
 import type { TTableElement, TablePluginOptions } from '../../types';
 
-import { ELEMENT_TABLE } from '../../TablePlugin';
+import { TablePlugin } from '../../TablePlugin';
 import { computeAllCellIndices } from '../../merge/computeCellIndices';
 import { useTableStore } from '../../stores/tableStore';
 import { useSelectedCells } from './useSelectedCells';
@@ -27,7 +27,7 @@ export const useTableElementState = ({
   const editor = useEditorRef();
 
   const { disableMarginLeft, enableMerging, minColumnWidth } =
-    getPluginOptions<TablePluginOptions>(editor, ELEMENT_TABLE);
+    getPluginOptions<TablePluginOptions>(editor, TablePlugin.key);
 
   const element = useElement<TTableElement>();
   const selectedCells = useTableStore().get.selectedCells();

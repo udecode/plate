@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
+import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { DeserializeMdPlugin } from '../DeserializeMdPlugin';
@@ -198,7 +198,7 @@ describe('deserializeMd', () => {
     const output = (
       <fragment>
         <hp>Line 1</hp>
-        <element type={ELEMENT_HR}>
+        <element type={HorizontalRulePlugin.key}>
           <htext />
         </element>
         <hp>Line 2</hp>

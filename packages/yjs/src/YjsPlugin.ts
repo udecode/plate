@@ -27,10 +27,8 @@ export type YjsPluginOptions<
   yjsOptions?: WithYjsOptions;
 };
 
-export const KEY_YJS = 'yjs';
-
 export const YjsPlugin = createPlugin<'yjs', YjsPluginOptions>({
-  key: KEY_YJS,
+  key: 'yjs',
   renderAboveEditable: RenderAboveEditableYjs,
   withOverrides: withPlateYjs,
 });

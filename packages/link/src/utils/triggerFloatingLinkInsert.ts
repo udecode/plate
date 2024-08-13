@@ -6,7 +6,7 @@ import {
   someNode,
 } from '@udecode/plate-common';
 
-import { ELEMENT_LINK } from '../LinkPlugin';
+import { LinkPlugin } from '../LinkPlugin';
 import {
   floatingLinkActions,
   floatingLinkSelectors,
@@ -35,7 +35,7 @@ export const triggerFloatingLinkInsert = (
   if (isRangeAcrossBlocks(editor, { at: editor.selection })) return;
 
   const hasLink = someNode(editor, {
-    match: { type: getPluginType(editor, ELEMENT_LINK) },
+    match: { type: getPluginType(editor, LinkPlugin.key) },
   });
 
   if (hasLink) return;

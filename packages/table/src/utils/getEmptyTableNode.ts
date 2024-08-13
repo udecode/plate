@@ -2,7 +2,7 @@ import { type PlateEditor, getPluginType } from '@udecode/plate-common';
 
 import type { TTableElement } from '../types';
 
-import { ELEMENT_TABLE } from '../TablePlugin';
+import { TablePlugin } from '../TablePlugin';
 import {
   type GetEmptyRowNodeOptions,
   getEmptyRowNode,
@@ -33,6 +33,6 @@ export const getEmptyTableNode = (
 
   return {
     children: rows,
-    type: getPluginType(editor, ELEMENT_TABLE),
+    type: getPluginType(editor, TablePlugin.key),
   };
 };

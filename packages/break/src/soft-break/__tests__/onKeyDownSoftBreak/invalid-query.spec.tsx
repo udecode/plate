@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
+import { CodeBlockPlugin } from '@udecode/plate-code-block';
 import { type AnyPlatePlugin, createPlugin } from '@udecode/plate-common';
 import * as isHotkey from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
@@ -36,7 +36,7 @@ it('should be', () => {
     event: event as any,
     plugin: createPlugin({
       options: {
-        rules: [{ hotkey: 'enter', query: { allow: [ELEMENT_CODE_BLOCK] } }],
+        rules: [{ hotkey: 'enter', query: { allow: [CodeBlockPlugin.key] } }],
       },
     }) as AnyPlatePlugin,
   });

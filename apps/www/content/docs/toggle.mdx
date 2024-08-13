@@ -37,7 +37,7 @@ npm install @udecode/plate-indent @udecode/plate-node-id @udecode/plate-toggle
 // ...
 import { createIndentPlugin } from '@udecode/plate-indent';
 import { createNodeIdPlugin } from '@udecode/plate-node-id';
-import { createTogglePlugin, ELEMENT_TOGGLE } from '@udecode/plate-toggle';
+import { createTogglePlugin, TogglePlugin } from '@udecode/plate-toggle';
 
 const plugins = [
   // ...otherPlugins,
@@ -46,7 +46,7 @@ const plugins = [
   createIndentPlugin({
     inject: {
       props: {
-        validPlugins: [ELEMENT_TOGGLE, ELEMENT_PARAGRAPH, ELEMENT_H1],
+        validPlugins: [TogglePlugin.key, ParagraphPlugin.key, ELEMENT_H1],
       },
     },
   }),

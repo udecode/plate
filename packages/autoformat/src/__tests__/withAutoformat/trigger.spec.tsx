@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
 import {
-  MARK_BOLD,
-  MARK_ITALIC,
-  MARK_UNDERLINE,
+  BoldPlugin,
+  ItalicPlugin,
+  UnderlinePlugin,
 } from '@udecode/plate-basic-marks';
 import { getPlugin } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
@@ -11,7 +11,7 @@ import { jsx } from '@udecode/plate-test-utils';
 
 import type { AutoformatPluginOptions } from '../../types';
 
-import { AutoformatPlugin, KEY_AUTOFORMAT } from '../../AutoformatPlugin';
+import { AutoformatPlugin } from '../../AutoformatPlugin';
 import { onKeyDownAutoformat } from '../../onKeyDownAutoformat';
 
 jsx;
@@ -47,7 +47,7 @@ describe('when trigger is defined', () => {
               match: { end: '***', start: '_***' },
               mode: 'mark',
               trigger: '_',
-              type: [MARK_UNDERLINE, MARK_BOLD, MARK_ITALIC],
+              type: [UnderlinePlugin.key, BoldPlugin.key, ItalicPlugin.key],
             },
           ],
         }),
@@ -105,7 +105,7 @@ describe('when undo is enabled', () => {
     onKeyDownAutoformat({
       editor,
       event: event as any,
-      plugin: getPlugin<AutoformatPluginOptions>(editor, KEY_AUTOFORMAT),
+      plugin: getPlugin<AutoformatPluginOptions>(editor, AutoformatPlugin.key),
     });
 
     expect(undoInput.children).toEqual(undoOutput.children);
@@ -155,7 +155,7 @@ describe('when undo is disabled', () => {
     onKeyDownAutoformat({
       editor,
       event: event as any,
-      plugin: getPlugin<AutoformatPluginOptions>(editor, KEY_AUTOFORMAT),
+      plugin: getPlugin<AutoformatPluginOptions>(editor, AutoformatPlugin.key),
     });
 
     expect(undoInput.children).toEqual(undoOutput.children);

@@ -1,5 +1,5 @@
 import {
-  ELEMENT_DEFAULT,
+  ParagraphPlugin,
   type PlateEditor,
   getPath,
   getPluginType,
@@ -15,7 +15,7 @@ export const exitBreak = (
   editor: PlateEditor,
   {
     before,
-    defaultType = getPluginType(editor, ELEMENT_DEFAULT),
+    defaultType = getPluginType(editor, ParagraphPlugin.key),
     level = 0,
     query = {},
     relative = false,

@@ -10,7 +10,7 @@ import {
 
 import type { TTableElement, TablePluginOptions } from '../types';
 
-import { ELEMENT_TABLE } from '../TablePlugin';
+import { TablePlugin } from '../TablePlugin';
 import { getTableMergeGridByRange } from '../merge/getTableGridByRange';
 import { getEmptyTableNode } from '../utils/getEmptyTableNode';
 
@@ -33,7 +33,7 @@ export const getTableGridByRange = (
 ): TElementEntry[] => {
   const { enableMerging } = getPluginOptions<TablePluginOptions>(
     editor,
-    ELEMENT_TABLE
+    TablePlugin.key
   );
 
   if (enableMerging) {

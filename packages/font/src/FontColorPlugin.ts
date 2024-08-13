@@ -1,15 +1,13 @@
 import { createPlugin } from '@udecode/plate-common';
 
-export const MARK_COLOR = 'color';
-
 export const FontColorPlugin = createPlugin({
   inject: {
     props: {
       defaultNodeValue: 'black',
-      nodeKey: MARK_COLOR,
+      nodeKey: 'color',
     },
   },
-  key: MARK_COLOR,
+  key: 'color',
 }).extend(({ plugin: { type } }) => ({
   deserializeHtml: {
     getNode({ element }) {

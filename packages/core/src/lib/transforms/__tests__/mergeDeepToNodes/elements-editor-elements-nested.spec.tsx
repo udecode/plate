@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
-import { ELEMENT_LI } from '@udecode/plate-list';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
+import { ParagraphPlugin } from '@udecode/plate-common';
+import { ListItemPlugin } from '@udecode/plate-list';
 import { jsx } from '@udecode/plate-test-utils';
 import { isElement } from '@udecode/slate';
 
@@ -22,9 +22,9 @@ const props = { a: 1 };
 
 const output = (
   <editor>
-    <element a={1} type={ELEMENT_LI}>
+    <element a={1} type={ListItemPlugin.key}>
       test
-      <element a={1} type={ELEMENT_PARAGRAPH}>
+      <element a={1} type={ParagraphPlugin.key}>
         test
       </element>
       test

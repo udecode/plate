@@ -1,19 +1,20 @@
 import type React from 'react';
 
-import type { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
+import type { BlockquotePlugin } from '@udecode/plate-block-quote';
 import type {
-  ELEMENT_CODE_BLOCK,
-  ELEMENT_CODE_LINE,
+  CodeBlockPlugin,
+  CodeLinePlugin,
 } from '@udecode/plate-code-block';
 import type { TCommentText } from '@udecode/plate-comments';
 import type {
   ElementOf,
+  ParagraphPlugin,
   TElement,
   TPlateEditor,
   TText,
 } from '@udecode/plate-common';
 import type {
-  ELEMENT_EXCALIDRAW,
+  ExcalidrawPlugin,
   TExcalidrawElement,
 } from '@udecode/plate-excalidraw';
 import type {
@@ -24,35 +25,34 @@ import type {
   ELEMENT_H5,
   ELEMENT_H6,
 } from '@udecode/plate-heading';
-import type { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
-import type { ELEMENT_LINK, TLinkElement } from '@udecode/plate-link';
+import type { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
+import type { LinkPlugin, TLinkElement } from '@udecode/plate-link';
 import type {
-  ELEMENT_LI,
-  ELEMENT_OL,
-  ELEMENT_TODO_LI,
-  ELEMENT_UL,
+  ListItemPlugin,
+  ListOrderedPlugin,
+  ListUnorderedPlugin,
   TTodoListItemElement,
+  TodoListPlugin,
 } from '@udecode/plate-list';
 import type {
-  ELEMENT_IMAGE,
-  ELEMENT_MEDIA_EMBED,
+  ImagePlugin,
+  MediaEmbedPlugin,
   TImageElement,
   TMediaEmbedElement,
 } from '@udecode/plate-media';
 import type {
-  ELEMENT_MENTION,
-  ELEMENT_MENTION_INPUT,
+  MentionInputPlugin,
+  MentionPlugin,
   TMentionElement,
   TMentionInputElement,
 } from '@udecode/plate-mention';
-import type { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import type {
-  ELEMENT_TABLE,
-  ELEMENT_TD,
-  ELEMENT_TR,
   TTableElement,
+  TableCellPlugin,
+  TablePlugin,
+  TableRowPlugin,
 } from '@udecode/plate-table';
-import type { ELEMENT_TOGGLE, TToggleElement } from '@udecode/plate-toggle';
+import type { TToggleElement, TogglePlugin } from '@udecode/plate-toggle';
 
 import { useEditorRef } from '@udecode/plate-common/react';
 
@@ -85,17 +85,17 @@ export interface RichText extends TText, TCommentText {
 
 export interface MyLinkElement extends TLinkElement {
   children: RichText[];
-  type: typeof ELEMENT_LINK;
+  type: typeof LinkPlugin.key;
 }
 
 export interface MyMentionInputElement extends TMentionInputElement {
   children: [PlainText];
-  type: typeof ELEMENT_MENTION_INPUT;
+  type: typeof MentionInputPlugin.key;
 }
 
 export interface MyMentionElement extends TMentionElement {
   children: [EmptyText];
-  type: typeof ELEMENT_MENTION;
+  type: typeof MentionPlugin.key;
 }
 
 export type MyInlineElement =
@@ -138,7 +138,7 @@ export interface MyBlockElement
 
 export interface MyParagraphElement extends MyBlockElement {
   children: MyInlineChildren;
-  type: typeof ELEMENT_PARAGRAPH;
+  type: typeof ParagraphPlugin.key;
 }
 
 export interface MyH1Element extends MyBlockElement {
@@ -173,83 +173,83 @@ export interface MyH6Element extends MyBlockElement {
 
 export interface MyBlockquoteElement extends MyBlockElement {
   children: MyInlineChildren;
-  type: typeof ELEMENT_BLOCKQUOTE;
+  type: typeof BlockquotePlugin.key;
 }
 
 export interface MyCodeBlockElement extends MyBlockElement {
   children: MyCodeLineElement[];
-  type: typeof ELEMENT_CODE_BLOCK;
+  type: typeof CodeBlockPlugin.key;
 }
 
 export interface MyCodeLineElement extends TElement {
   children: PlainText[];
-  type: typeof ELEMENT_CODE_LINE;
+  type: typeof CodeLinePlugin.key;
 }
 
 export interface MyTableElement extends TTableElement, MyBlockElement {
   children: MyTableRowElement[];
-  type: typeof ELEMENT_TABLE;
+  type: typeof TablePlugin.key;
 }
 
 export interface MyTableRowElement extends TElement {
   children: MyTableCellElement[];
-  type: typeof ELEMENT_TR;
+  type: typeof TableRowPlugin.key;
 }
 
 export interface MyTableCellElement extends TElement {
   children: MyNestableBlock[];
-  type: typeof ELEMENT_TD;
+  type: typeof TableCellPlugin.key;
 }
 
 export interface MyBulletedListElement extends TElement, MyBlockElement {
   children: MyListItemElement[];
-  type: typeof ELEMENT_UL;
+  type: typeof ListUnorderedPlugin.key;
 }
 
 export interface MyNumberedListElement extends TElement, MyBlockElement {
   children: MyListItemElement[];
-  type: typeof ELEMENT_OL;
+  type: typeof ListOrderedPlugin.key;
 }
 
 export interface MyListItemElement extends TElement, MyBlockElement {
   children: MyInlineChildren;
-  type: typeof ELEMENT_LI;
+  type: typeof ListItemPlugin.key;
 }
 
 export interface MyTodoListElement
   extends TTodoListItemElement,
     MyBlockElement {
   children: MyInlineChildren;
-  type: typeof ELEMENT_TODO_LI;
+  type: typeof TodoListPlugin.key;
 }
 
 export interface MyToggleElement extends TToggleElement, MyBlockElement {
   children: MyInlineChildren;
-  type: typeof ELEMENT_TOGGLE;
+  type: typeof TogglePlugin.key;
 }
 
 export interface MyImageElement extends TImageElement, MyBlockElement {
   children: [EmptyText];
-  type: typeof ELEMENT_IMAGE;
+  type: typeof ImagePlugin.key;
 }
 
 export interface MyMediaEmbedElement
   extends TMediaEmbedElement,
     MyBlockElement {
   children: [EmptyText];
-  type: typeof ELEMENT_MEDIA_EMBED;
+  type: typeof MediaEmbedPlugin.key;
 }
 
 export interface MyHrElement extends MyBlockElement {
   children: [EmptyText];
-  type: typeof ELEMENT_HR;
+  type: typeof HorizontalRulePlugin.key;
 }
 
 export interface MyExcalidrawElement
   extends TExcalidrawElement,
     MyBlockElement {
   children: [EmptyText];
-  type: typeof ELEMENT_EXCALIDRAW;
+  type: typeof ExcalidrawPlugin.key;
 }
 
 export type MyNestableBlock = MyParagraphElement;

@@ -19,7 +19,7 @@ import { Point } from 'slate';
 
 import type { TablePluginOptions } from './types';
 
-import { ELEMENT_TABLE } from './TablePlugin';
+import { TablePlugin } from './TablePlugin';
 import { getTableGridAbove } from './queries/getTableGridAbove';
 import { getCellTypes } from './utils/getCellType';
 
@@ -97,7 +97,7 @@ export const withDeleteTable: WithOverride<TablePluginOptions> = ({
   editor.deleteFragment = (direction) => {
     if (
       isRangeInSameBlock(editor, {
-        match: (n) => n.type === getPluginType(editor, ELEMENT_TABLE),
+        match: (n) => n.type === getPluginType(editor, TablePlugin.key),
       })
     ) {
       const cellEntries = getTableGridAbove(editor, { format: 'cell' });

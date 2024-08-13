@@ -1,11 +1,11 @@
-import { MARK_BOLD } from '@udecode/plate-basic-marks';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
+import { BoldPlugin } from '@udecode/plate-basic-marks';
+import { ParagraphPlugin } from '@udecode/plate-common';
 
 import { createPlateEditor } from '../../../../react/editor/withPlate';
 import { createPlugin } from '../../../plugin';
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
 
-const node = () => ({ type: ELEMENT_PARAGRAPH });
+const node = () => ({ type: ParagraphPlugin.key });
 
 describe('when element is p and validNodeName is P', () => {
   it('should be p type', () => {
@@ -22,7 +22,7 @@ describe('when element is p and validNodeName is P', () => {
               },
             ],
           },
-          type: ELEMENT_PARAGRAPH,
+          type: ParagraphPlugin.key,
         }),
         { element: document.createElement('p') }
       )?.node
@@ -48,7 +48,7 @@ describe('when element is p, validAttribute', () => {
               },
             ],
           },
-          type: ELEMENT_PARAGRAPH,
+          type: ParagraphPlugin.key,
         }),
         { element }
       )?.node
@@ -71,7 +71,7 @@ describe('when element is p, validAttribute', () => {
               },
             ],
           },
-          type: ELEMENT_PARAGRAPH,
+          type: ParagraphPlugin.key,
         }),
         { element }
       )?.node
@@ -99,7 +99,7 @@ describe('when element is p with color and rule style is different', () => {
               },
             ],
           },
-          type: ELEMENT_PARAGRAPH,
+          type: ParagraphPlugin.key,
         }),
         { element }
       )?.node
@@ -127,7 +127,7 @@ describe('when element is p with same style color than rule', () => {
               },
             ],
           },
-          type: ELEMENT_PARAGRAPH,
+          type: ParagraphPlugin.key,
         }),
         { element }
       )?.node
@@ -155,7 +155,7 @@ describe('when element has style color and rule style color is *', () => {
               },
             ],
           },
-          type: ELEMENT_PARAGRAPH,
+          type: ParagraphPlugin.key,
         }),
         { element }
       )?.node
@@ -180,10 +180,10 @@ describe('when element is strong and validNodeName is strong', () => {
             ],
           },
           isLeaf: true,
-          type: MARK_BOLD,
+          type: BoldPlugin.key,
         }),
         { deserializeLeaf: true, element: el }
       )?.node
-    ).toEqual({ [MARK_BOLD]: true });
+    ).toEqual({ [BoldPlugin.key]: true });
   });
 });

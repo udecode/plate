@@ -9,7 +9,7 @@ import { Node, type PathRef, Range } from 'slate';
 
 import type { TTableCellElement } from '../types';
 
-import { ELEMENT_TR } from '../TablePlugin';
+import { TableRowPlugin } from '../TablePlugin';
 import { getTableGridAbove } from '../queries';
 
 export const deleteColumnWhenExpanded = (
@@ -25,12 +25,12 @@ export const deleteColumnWhenExpanded = (
 
   const firstSelectionRow = getAboveNode(editor, {
     at: start,
-    match: (n) => n.type === ELEMENT_TR,
+    match: (n) => n.type === TableRowPlugin.key,
   });
 
   const lastSelectionRow = getAboveNode(editor, {
     at: end,
-    match: (n) => n.type === ELEMENT_TR,
+    match: (n) => n.type === TableRowPlugin.key,
   });
 
   if (!firstSelectionRow || !lastSelectionRow) return;

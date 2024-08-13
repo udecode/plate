@@ -1,7 +1,7 @@
 import type { Path } from 'slate';
 
 import {
-  ELEMENT_DEFAULT,
+  ParagraphPlugin,
   type PlateEditor,
   getAboveNode,
   getBlockAbove,
@@ -13,7 +13,12 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 
-import { ELEMENT_LI, ELEMENT_LIC, ELEMENT_OL, ELEMENT_UL } from '../ListPlugin';
+import {
+  ListItemPlugin,
+  ListItemContentPlugin,
+  ListOrderedPlugin,
+  ListUnorderedPlugin,
+} from '../ListPlugin';
 import { getListTypes } from '../queries/index';
 
 export const unwrapList = (editor: PlateEditor, { at }: { at?: Path } = {}) => {
@@ -44,19 +49,19 @@ export const unwrapList = (editor: PlateEditor, { at }: { at?: Path } = {}) => {
     do {
       const licEntry = getBlockAbove(editor, {
         at,
-        match: { type: getPluginType(editor, ELEMENT_LIC) },
+        match: { type: getPluginType(editor, ListItemContentPlugin.key) },
       });
 
       if (licEntry) {
         setElements(editor, {
           at,
-          type: getPluginType(editor, ELEMENT_DEFAULT),
+          type: getPluginType(editor, ParagraphPlugin.key),
         });
       }
 
       unwrapNodes(editor, {
         at,
-        match: { type: getPluginType(editor, ELEMENT_LI) },
+        match: { type: getPluginType(editor, ListItemPlugin.key) },
         split: true,
       });
 
@@ -64,8 +69,8 @@ export const unwrapList = (editor: PlateEditor, { at }: { at?: Path } = {}) => {
         at,
         match: {
           type: [
-            getPluginType(editor, ELEMENT_UL),
-            getPluginType(editor, ELEMENT_OL),
+            getPluginType(editor, ListUnorderedPlugin.key),
+            getPluginType(editor, ListOrderedPlugin.key),
           ],
         },
         split: true,

@@ -2,7 +2,7 @@ import { type WithOverride, unsetNodes } from '@udecode/plate-common';
 
 import type { CommentsPluginOptions } from './types';
 
-import { MARK_COMMENT } from './constants';
+import { CommentsPlugin } from './CommentsPlugin';
 import { removeCommentMark } from './transforms/removeCommentMark';
 import { getCommentCount } from './utils/getCommentCount';
 
@@ -20,9 +20,9 @@ export const withComments: WithOverride<CommentsPluginOptions> = ({
   editor.normalizeNode = (entry) => {
     const [node, path] = entry;
 
-    // Unset MARK_COMMENT prop when there is no comments
-    if (node[MARK_COMMENT] && getCommentCount(node as any) < 1) {
-      unsetNodes(editor, MARK_COMMENT, { at: path });
+    // Unset CommentsPlugin.key prop when there is no comments
+    if (node[CommentsPlugin.key] && getCommentCount(node as any) < 1) {
+      unsetNodes(editor, CommentsPlugin.key, { at: path });
 
       return;
     }

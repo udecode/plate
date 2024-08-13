@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /** @jsx jsx */
 
-import { ParagraphPlugin } from '@udecode/plate-paragraph';
+import { ParagraphPlugin } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { createPlateEditor } from '../../../../react/editor/withPlate';

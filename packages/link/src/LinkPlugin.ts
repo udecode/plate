@@ -9,8 +9,6 @@ import type { TLinkElement } from './types';
 import { getLinkAttributes, validateUrl } from './utils/index';
 import { withLink } from './withLink';
 
-export const ELEMENT_LINK = 'a';
-
 export interface LinkPluginOptions {
   /**
    * List of allowed URL schemes.
@@ -99,7 +97,7 @@ export interface LinkPluginOptions {
 export const LinkPlugin = createPlugin<'a', LinkPluginOptions>({
   isElement: true,
   isInline: true,
-  key: ELEMENT_LINK,
+  key: 'a',
   options: {
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],
     dangerouslySkipSanitization: false,

@@ -8,7 +8,7 @@ import type {
 
 import type { GetSiblingIndentListOptions } from './getSiblingIndentList';
 
-import { KEY_LIST_CHECKED, KEY_LIST_STYLE_TYPE } from '../IndentListPlugin';
+import { KEY_LIST_CHECKED, IndentListPlugin } from '../IndentListPlugin';
 import { getNextIndentList } from './getNextIndentList';
 import { getPreviousIndentList } from './getPreviousIndentList';
 
@@ -38,8 +38,8 @@ export const getIndentListSiblings = <
 
   const node = entry[0] as TElement;
 
-  // if (!(node as any)[KEY_LIST_STYLE_TYPE]) return siblings;
-  if (!node[KEY_LIST_STYLE_TYPE] && !node.hasOwnProperty(KEY_LIST_CHECKED)) {
+  // if (!(node as any)[IndentListPlugin.key]) return siblings;
+  if (!node[IndentListPlugin.key] && !node.hasOwnProperty(KEY_LIST_CHECKED)) {
     return siblings;
   }
 

@@ -31,13 +31,13 @@ import {
 import { createResetNodePlugin } from '@udecode/plate-reset-node';
 
 const resetBlockTypesCommonRule = {
-  types: [ELEMENT_BLOCKQUOTE, ELEMENT_TODO_LI],
-  defaultType: ELEMENT_PARAGRAPH,
+  types: [BlockquotePlugin.key, TodoListPlugin.key],
+  defaultType: ParagraphPlugin.key,
 };
 
 const resetBlockTypesCodeBlockRule = {
-  types: [ELEMENT_CODE_BLOCK],
-  defaultType: ELEMENT_PARAGRAPH,
+  types: [CodeBlockPlugin.key],
+  defaultType: ParagraphPlugin.key,
   onReset: unwrapCodeBlock,
 };
 

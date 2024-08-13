@@ -1,13 +1,13 @@
-import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
+import { CodeBlockPlugin } from '@udecode/plate-code-block';
 import {
   createPlugin,
   isSelectionAtBlockStart,
   someNode,
 } from '@udecode/plate-common';
-import { KEY_LIST_STYLE_TYPE } from '@udecode/plate-indent-list';
-import { ELEMENT_LI } from '@udecode/plate-list';
+import { IndentListPlugin } from '@udecode/plate-indent-list';
+import { ListItemPlugin } from '@udecode/plate-list';
 import { TabbablePlugin as TabbableBasePlugin } from '@udecode/plate-tabbable';
-import { ELEMENT_TABLE } from '@udecode/plate-table';
+import { TablePlugin } from '@udecode/plate-table';
 
 import { TabbableElement } from './TabbableElement';
 
@@ -28,10 +28,10 @@ export const TabbablePlugin = TabbableBasePlugin.extend({
       match: (n) => {
         return !!(
           n.type &&
-          ([ELEMENT_CODE_BLOCK, ELEMENT_LI, ELEMENT_TABLE].includes(
-            n.type as string
+          ([CodeBlockPlugin.key, ListItemPlugin.key, TablePlugin.key].includes(
+            n.type as any
           ) ||
-            n[KEY_LIST_STYLE_TYPE])
+            n[IndentListPlugin.key])
         );
       },
     });

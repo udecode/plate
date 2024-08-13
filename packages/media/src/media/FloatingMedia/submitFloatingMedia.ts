@@ -6,11 +6,8 @@ import {
 } from '@udecode/plate-common';
 import { focusEditor } from '@udecode/plate-common/react';
 
-import {
-  ELEMENT_MEDIA,
-  type MediaPluginOptions,
-  type TMediaElement,
-} from '../types';
+import type { MediaPluginOptions, TMediaElement } from '../types';
+
 import {
   floatingMediaActions,
   floatingMediaSelectors,
@@ -20,10 +17,10 @@ export const submitFloatingMedia = (
   editor: PlateEditor,
   {
     element,
-    pluginKey = ELEMENT_MEDIA,
+    pluginKey,
   }: {
     element: TMediaElement;
-    pluginKey?: string;
+    pluginKey: string;
   }
 ) => {
   let url = floatingMediaSelectors.url();

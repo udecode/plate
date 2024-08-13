@@ -6,7 +6,7 @@ import {
   isDefined,
 } from '@udecode/plate-common';
 
-import { KEY_LIST_STYLE_TYPE } from '../IndentListPlugin';
+import { IndentListPlugin } from '../IndentListPlugin';
 
 export const shouldMergeNodesRemovePrevNodeIndentList = (
   editor: PlateEditor
@@ -18,8 +18,8 @@ export const shouldMergeNodesRemovePrevNodeIndentList = (
     const curNode = curNodeEntry[0] as TElement;
 
     if (
-      isDefined(curNode[KEY_LIST_STYLE_TYPE]) ||
-      isDefined(prevNode[KEY_LIST_STYLE_TYPE])
+      isDefined(curNode[IndentListPlugin.key]) ||
+      isDefined(prevNode[IndentListPlugin.key])
     ) {
       return false;
     }

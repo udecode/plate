@@ -5,7 +5,7 @@ import { useFocused, useReadOnly, useSelected } from 'slate-react';
 
 import type { TMediaElement } from './types';
 
-import { ELEMENT_MEDIA_EMBED, VIDEO_PROVIDERS } from '../media-embed';
+import { MediaEmbedPlugin, VIDEO_PROVIDERS } from '../media-embed';
 import { ELEMENT_VIDEO } from '../video';
 
 export type EmbedUrlData = {
@@ -69,7 +69,10 @@ export const useMediaState = ({
   const { align, id, isUpload, name, type, url } = element;
 
   const embed = React.useMemo(() => {
-    if (!urlParsers || (type !== ELEMENT_VIDEO && type !== ELEMENT_MEDIA_EMBED))
+    if (
+      !urlParsers ||
+      (type !== ELEMENT_VIDEO && type !== MediaEmbedPlugin.key)
+    )
       return;
 
     return parseMediaUrl(url, { urlParsers });

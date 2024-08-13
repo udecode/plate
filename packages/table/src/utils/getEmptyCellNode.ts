@@ -6,7 +6,7 @@ import {
 
 import type { CellFactoryOptions } from '../types';
 
-import { ELEMENT_TD, ELEMENT_TH } from '../TablePlugin';
+import { TableCellHeaderPlugin, TableCellPlugin } from '../TablePlugin';
 
 export const getEmptyCellNode = (
   editor: PlateEditor,
@@ -16,14 +16,14 @@ export const getEmptyCellNode = (
     header ??
     (row
       ? (row as TElement).children.every(
-          (c) => c.type === getPluginType(editor, ELEMENT_TH)
+          (c) => c.type === getPluginType(editor, TableCellHeaderPlugin.key)
         )
       : false);
 
   return {
     children: children ?? [editor.api.blockFactory()],
     type: header
-      ? getPluginType(editor, ELEMENT_TH)
-      : getPluginType(editor, ELEMENT_TD),
+      ? getPluginType(editor, TableCellHeaderPlugin.key)
+      : getPluginType(editor, TableCellPlugin.key),
   };
 };

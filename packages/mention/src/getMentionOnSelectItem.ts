@@ -15,7 +15,7 @@ import type {
   TMentionItemBase,
 } from './types';
 
-import { ELEMENT_MENTION } from './MentionPlugin';
+import { MentionPlugin } from './MentionPlugin';
 
 export type MentionOnSelectItem<
   TItem extends TMentionItemBase = TMentionItemBase,
@@ -23,7 +23,7 @@ export type MentionOnSelectItem<
 
 export const getMentionOnSelectItem =
   <TItem extends TMentionItemBase = TMentionItemBase>({
-    key = ELEMENT_MENTION,
+    key = MentionPlugin.key,
   }: { key?: string } = {}): MentionOnSelectItem<TItem> =>
   (editor, item, search = '') => {
     const { createMentionNode, insertSpaceAfterMention } =

@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { MARK_SUBSCRIPT, MARK_SUPERSCRIPT } from '@udecode/plate-basic-marks';
+import { SubscriptPlugin, SuperscriptPlugin } from '@udecode/plate-basic-marks';
 import { toggleMark } from '@udecode/plate-common';
 import { focusEditor, useEditorRef } from '@udecode/plate-common/react';
 
@@ -36,8 +36,8 @@ export function MoreDropdownMenu(props: DropdownMenuProps) {
         <DropdownMenuItem
           onSelect={() => {
             toggleMark(editor, {
-              clear: [MARK_SUBSCRIPT, MARK_SUPERSCRIPT],
-              key: MARK_SUPERSCRIPT,
+              clear: [SubscriptPlugin.key, SuperscriptPlugin.key],
+              key: SuperscriptPlugin.key,
             });
             focusEditor(editor);
           }}
@@ -49,8 +49,8 @@ export function MoreDropdownMenu(props: DropdownMenuProps) {
         <DropdownMenuItem
           onSelect={() => {
             toggleMark(editor, {
-              clear: [MARK_SUPERSCRIPT, MARK_SUBSCRIPT],
-              key: MARK_SUBSCRIPT,
+              clear: [SuperscriptPlugin.key, SubscriptPlugin.key],
+              key: SubscriptPlugin.key,
             });
             focusEditor(editor);
           }}

@@ -1,11 +1,11 @@
 import React from 'react';
 
 import {
-  MARK_BOLD,
-  MARK_CODE,
-  MARK_ITALIC,
-  MARK_STRIKETHROUGH,
-  MARK_UNDERLINE,
+  BoldPlugin,
+  CodePlugin,
+  ItalicPlugin,
+  StrikethroughPlugin,
+  UnderlinePlugin,
 } from '@udecode/plate-basic-marks';
 import { useEditorReadOnly } from '@udecode/plate-common/react';
 
@@ -36,26 +36,29 @@ export function FixedToolbarButtons() {
             </ToolbarGroup>
 
             <ToolbarGroup>
-              <MarkToolbarButton nodeType={MARK_BOLD} tooltip="Bold (⌘+B)">
+              <MarkToolbarButton nodeType={BoldPlugin.key} tooltip="Bold (⌘+B)">
                 <Icons.bold />
               </MarkToolbarButton>
-              <MarkToolbarButton nodeType={MARK_ITALIC} tooltip="Italic (⌘+I)">
+              <MarkToolbarButton
+                nodeType={ItalicPlugin.key}
+                tooltip="Italic (⌘+I)"
+              >
                 <Icons.italic />
               </MarkToolbarButton>
               <MarkToolbarButton
-                nodeType={MARK_UNDERLINE}
+                nodeType={UnderlinePlugin.key}
                 tooltip="Underline (⌘+U)"
               >
                 <Icons.underline />
               </MarkToolbarButton>
 
               <MarkToolbarButton
-                nodeType={MARK_STRIKETHROUGH}
+                nodeType={StrikethroughPlugin.key}
                 tooltip="Strikethrough (⌘+⇧+M)"
               >
                 <Icons.strikethrough />
               </MarkToolbarButton>
-              <MarkToolbarButton nodeType={MARK_CODE} tooltip="Code (⌘+E)">
+              <MarkToolbarButton nodeType={CodePlugin.key} tooltip="Code (⌘+E)">
                 <Icons.code />
               </MarkToolbarButton>
             </ToolbarGroup>

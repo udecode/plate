@@ -4,20 +4,20 @@ import {
   isDefined,
   unsetNodes,
 } from '@udecode/plate-common';
-import { KEY_INDENT } from '@udecode/plate-indent';
+import { IndentPlugin } from '@udecode/plate-indent';
 
-import { KEY_LIST_START, KEY_LIST_STYLE_TYPE } from '../IndentListPlugin';
+import { KEY_LIST_START, IndentListPlugin } from '../IndentListPlugin';
 
-/** Unset KEY_LIST_STYLE_TYPE, KEY_LIST_START if KEY_INDENT is not defined. */
+/** Unset IndentListPlugin.key, KEY_LIST_START if IndentPlugin.key is not defined. */
 export const normalizeIndentListNotIndented = (
   editor: TEditor,
   [node, path]: TNodeEntry
 ) => {
   if (
-    !isDefined(node[KEY_INDENT]) &&
-    (node[KEY_LIST_STYLE_TYPE] || node[KEY_LIST_START])
+    !isDefined(node[IndentPlugin.key]) &&
+    (node[IndentListPlugin.key] || node[KEY_LIST_START])
   ) {
-    unsetNodes(editor, [KEY_LIST_STYLE_TYPE, KEY_LIST_START], { at: path });
+    unsetNodes(editor, [IndentListPlugin.key, KEY_LIST_START], { at: path });
 
     return true;
   }

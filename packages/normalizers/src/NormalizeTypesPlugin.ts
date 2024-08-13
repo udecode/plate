@@ -24,14 +24,12 @@ export interface NormalizeTypesPluginOptions extends ErrorHandler {
   rules?: Rule[];
 }
 
-export const KEY_NORMALIZE_TYPES = 'normalizeTypes';
-
 /** @see {@link withNormalizeTypes} */
 export const NormalizeTypesPlugin = createPlugin<
   'normalizeTypes',
   NormalizeTypesPluginOptions
 >({
-  key: KEY_NORMALIZE_TYPES,
+  key: 'normalizeTypes',
   options: {
     rules: [],
   },

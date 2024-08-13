@@ -2,7 +2,7 @@ import React from 'react';
 
 import { cn, withRef } from '@udecode/cn';
 import { PlateElement, withHOC } from '@udecode/plate-common/react';
-import { ELEMENT_IMAGE, Image, useMediaState } from '@udecode/plate-media';
+import { ImagePlugin, Image, useMediaState } from '@udecode/plate-media';
 import { ResizableProvider, useResizableStore } from '@udecode/plate-resizable';
 
 import { Caption, CaptionTextarea } from './caption';
@@ -22,7 +22,7 @@ export const ImageElement = withHOC(
       const width = useResizableStore().get.width();
 
       return (
-        <MediaPopover pluginKey={ELEMENT_IMAGE}>
+        <MediaPopover pluginKey={ImagePlugin.key}>
           <PlateElement
             className={cn('py-2.5', className)}
             ref={ref}

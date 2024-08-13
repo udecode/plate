@@ -5,7 +5,6 @@ import type { TodoListPluginOptions } from '../types';
 
 import { withTodoList } from '../withTodoList';
 
-export const ELEMENT_TODO_LI = 'action_item';
 
 export const TodoListPlugin = createPlugin<
   'action_item',
@@ -15,7 +14,7 @@ export const TodoListPlugin = createPlugin<
     onKeyDown: onKeyDownToggleElement,
   },
   isElement: true,
-  key: ELEMENT_TODO_LI,
+  key: 'action_item',
   options: {
     hotkey: ['mod+opt+4', 'mod+shift+4'],
   },

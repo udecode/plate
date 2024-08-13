@@ -14,7 +14,7 @@ import { Range } from 'slate';
 
 import type { ListPluginOptions } from './types';
 
-import { ELEMENT_LI } from './ListPlugin';
+import { ListItemPlugin } from './ListPlugin';
 import { moveListItems, toggleList } from './transforms/index';
 
 export const onKeyDownList: KeyboardHandler<ListPluginOptions> = ({
@@ -53,7 +53,7 @@ export const onKeyDownList: KeyboardHandler<ListPluginOptions> = ({
 
     // check if we're in a list context.
     const listSelected = someNode(editor, {
-      match: { type: getPluginType(editor, ELEMENT_LI) },
+      match: { type: getPluginType(editor, ListItemPlugin.key) },
     });
 
     if (workRange && listSelected) {

@@ -18,7 +18,7 @@ const AmazingPlugin = createPlugin({
 });
 ```
 
-The only required option for **`createPluginFactory`** is **`key`**, which is used to uniquely identify your plugin. We typically store the key in a constant so that it can be referenced later. The naming convention for this constant is **`KEY_`** for behavioral plugins (like [Reset Node](/docs/reset-node)), **`ELEMENT_`** for elements and **`MARK_`** for marks.
+The only required option for **`createPluginFactory`** is **`key`**, which is used to uniquely identify your plugin. We typically store the key in a constant so that it can be referenced later.
 
 Your plugin won't do anything yet, but let's add it to a Plate editor all the same.
 
@@ -47,7 +47,7 @@ To create a new type of element using your plugin, use the **`isElement: true`**
 
 ```ts showLineNumbers {3}
 const createParagraphPlugin = createPluginFactory({
-  key: ELEMENT_PARAGRAPH,
+  key: ParagraphPlugin.key,
   isElement: true,
 });
 ```
@@ -57,7 +57,7 @@ Each element should have an associated component, which you can provide either a
 ```ts showLineNumbers {4}
 const plugins = createPlugins([createParagraphPlugin()], {
   components: {
-    [ELEMENT_PARAGRAPH]: ParagraphElement,
+    [ParagraphPlugin.key]: ParagraphElement,
   },
 });
 ```
@@ -83,7 +83,7 @@ You can also configure a hotkey to toggle your new element. In the following exa
 
 ```tsx showLineNumbers {1,4-11}
 const createParagraphPlugin = createPluginFactory<HotkeyPlugin>({
-  key: ELEMENT_PARAGRAPH,
+  key: ParagraphPlugin.key,
   isElement: true,
   handlers: {
     // Check for the hotkey on keydown
@@ -102,7 +102,7 @@ You can configure your element to be inline or void using the **`isInline`** and
 
 ```ts showLineNumbers {3-4}
 const createLinkPlugin = createPluginFactory({
-  key: ELEMENT_LINK,
+  key: LinkPlugin.key,
   isElement: true,
   isInline: true,
   // ...
@@ -111,7 +111,7 @@ const createLinkPlugin = createPluginFactory({
 
 ```ts showLineNumbers {3-4}
 const createImagePlugin = createPluginFactory({
-  key: ELEMENT_IMAGE,
+  key: ImagePlugin.key,
   isElement: true,
   isVoid: true,
   // ...
@@ -122,14 +122,14 @@ To create a new type of mark, use **`isLeaf: true`**. Similarly to with element 
 
 ```ts showLineNumbers {1,3-10}
 const createSubscriptPlugin = createPluginFactory<ToggleMarkPlugin>({
-  key: MARK_SUBSCRIPT,
+  key: SubscriptPlugin.key,
   isLeaf: true,
   handlers: {
     onKeyDown: onKeyDownToggleMark,
   },
   options: {
     hotkey: 'mod+.',
-    clear: MARK_SUBSCRIPT,
+    clear: SubscriptPlugin.key,
   },
 });
 ```
@@ -166,7 +166,7 @@ The **`onChange`** handler, which is called when the editor value changes, is an
 
 ```ts showLineNumbers
 const createExamplePlugin = createPluginFactory({
-  key: KEY_EXAMPLE,
+  key: 'example',
   handlers: {
     onChange: (editor) => (value) => {
       console.info(editor, value);
@@ -183,17 +183,17 @@ const createExamplePlugin = createPluginFactory({
 You may want to inject a class name or CSS property into any node having a certain property. For example, the following plugin sets the **`textAlign`** CSS property on paragraphs with an **`align`** property.
 
 ```ts showLineNumbers
-const KEY_ALIGN = 'align';
+const AlignPlugin.key = 'align';
 
 const createAlignPlugin = createPluginFactory({
-  key: KEY_ALIGN,
+  key: AlignPlugin.key,
   inject: {
     props: {
-      nodeKey: KEY_ALIGN,
+      nodeKey: AlignPlugin.key,
       defaultNodeValue: 'left',
       styleKey: 'textAlign',
       validNodeValues: ['left', 'center', 'right', 'justify'],
-      validPlugins: [ELEMENT_DEFAULT],
+      validPlugins: [ParagraphPlugin.key],
     },
   },
 });
@@ -236,7 +236,7 @@ const withCustomNormalizer = <
 };
 
 const createCustomNormalizerPlugin = createPluginFactory({
-  key: KEY_CUSTOM_NORMALIZER,
+  key: 'customNormalizer',
   withOverrides: withCustomNormalizer,
 });
 ```
@@ -252,13 +252,11 @@ interface DemoPlugin {
   username?: string;
 }
 
-const KEY_DEMO = 'demo';
-
 const createDemoPlugin = createPluginFactory<DemoPlugin>({
-  key: KEY_DEMO,
+  key: 'demo',
   handlers: {
     onKeyDown: (editor) => (event) => {
-      const { username } = getPluginOptions<DemoPlugin>(editor, KEY_DEMO);
+      const { username } = getPluginOptions<DemoPlugin>(editor, 'demo');
       console.info(`${username} pressed ${event.key}`);
     },
   },

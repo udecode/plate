@@ -10,7 +10,7 @@ import {
   wrapNodes,
 } from '@udecode/plate-common';
 
-import { ELEMENT_CODE_BLOCK } from '../constants';
+import { CodeBlockPlugin } from '../CodeBlockPlugin';
 import { getCodeLineType } from '../options';
 
 /**
@@ -24,7 +24,7 @@ export const insertCodeBlock = <E extends PlateEditor>(
   if (!editor.selection || isExpanded(editor.selection)) return;
 
   const matchCodeElements = (node: TElement) =>
-    node.type === getPluginType(editor, ELEMENT_CODE_BLOCK) ||
+    node.type === getPluginType(editor, CodeBlockPlugin.key) ||
     node.type === getCodeLineType(editor);
 
   if (
@@ -51,7 +51,7 @@ export const insertCodeBlock = <E extends PlateEditor>(
     editor,
     {
       children: [],
-      type: getPluginType(editor, ELEMENT_CODE_BLOCK),
+      type: getPluginType(editor, CodeBlockPlugin.key),
     },
     insertNodesOptions
   );

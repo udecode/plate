@@ -2,8 +2,6 @@ import type { WithOverride } from '../plugin/types/PlatePlugin';
 
 import { createPlugin } from '../plugin/createPlugin';
 
-export const KEY_INLINE_VOID = 'inlineVoid';
-
 /**
  * Merge and register all the inline types and void types from the plugins and
  * options, using `editor.isInline`, `editor.markableVoid` and `editor.isVoid`
@@ -46,6 +44,6 @@ export const withInlineVoid: WithOverride = ({ editor }) => {
 
 /** @see {@link withInlineVoid} */
 export const InlineVoidPlugin = createPlugin({
-  key: KEY_INLINE_VOID,
+  key: 'inlineVoid',
   withOverrides: withInlineVoid,
 });

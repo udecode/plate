@@ -1,5 +1,5 @@
 import {
-  ELEMENT_DEFAULT,
+  ParagraphPlugin,
   type PlateEditor,
   createPlugin,
   getPluginType,
@@ -11,7 +11,7 @@ import {
   onKeyDownResetNode,
 } from '@udecode/plate-reset-node';
 
-import { ELEMENT_LI } from './ListPlugin';
+import { ListItemPlugin } from './ListPlugin';
 import { getListItemEntry } from './queries/getListItemEntry';
 import { insertListItem } from './transforms/insertListItem';
 import { moveListItemUp } from './transforms/moveListItemUp';
@@ -45,10 +45,10 @@ export const insertBreakList = (editor: PlateEditor) => {
       options: {
         rules: [
           {
-            defaultType: getPluginType(editor, ELEMENT_DEFAULT),
+            defaultType: getPluginType(editor, ParagraphPlugin.key),
             onReset: (_editor) => unwrapList(_editor),
             predicate: () => !moved && isBlockAboveEmpty(editor),
-            types: [getPluginType(editor, ELEMENT_LI)],
+            types: [getPluginType(editor, ListItemPlugin.key)],
           },
         ],
       },

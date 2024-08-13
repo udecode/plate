@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
+import { BlockquotePlugin } from '@udecode/plate-block-quote';
 import {
-  ELEMENT_CODE_BLOCK,
+  CodeBlockPlugin,
   isCodeBlockEmpty,
   isSelectionAtCodeBlockStart,
   unwrapCodeBlock,
@@ -13,10 +13,10 @@ import {
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
 } from '@udecode/plate-common';
+import { ParagraphPlugin } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import * as isHotkey from '@udecode/plate-core';
-import { ELEMENT_LI, unwrapList } from '@udecode/plate-list';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
+import { ListItemPlugin, unwrapList } from '@udecode/plate-list';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { onKeyDownResetNode } from './onKeyDownResetNode';
@@ -36,8 +36,8 @@ describe('onKeyDownResetNode', () => {
 
   describe('when inside a blockquote', () => {
     const blockquoteRule = {
-      defaultType: ELEMENT_PARAGRAPH,
-      types: [ELEMENT_BLOCKQUOTE],
+      defaultType: ParagraphPlugin.key,
+      types: [BlockquotePlugin.key],
     };
 
     const plugin: AnyPlatePlugin = createPlugin({
@@ -129,9 +129,9 @@ describe('onKeyDownResetNode', () => {
 
   describe('when inside a code block', () => {
     const codeBlockRule = {
-      defaultType: ELEMENT_PARAGRAPH,
+      defaultType: ParagraphPlugin.key,
       onReset: unwrapCodeBlock as any,
-      types: [ELEMENT_CODE_BLOCK],
+      types: [CodeBlockPlugin.key],
     };
 
     const plugin: AnyPlatePlugin = createPlugin({
@@ -320,9 +320,9 @@ describe('onKeyDownResetNode', () => {
 
   describe('when inside a list', () => {
     const listRule = {
-      defaultType: ELEMENT_PARAGRAPH,
+      defaultType: ParagraphPlugin.key,
       onReset: unwrapList as any,
-      types: [ELEMENT_LI],
+      types: [ListItemPlugin.key],
     };
 
     const plugin: AnyPlatePlugin = createPlugin({

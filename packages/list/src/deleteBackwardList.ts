@@ -1,5 +1,5 @@
 import {
-  ELEMENT_DEFAULT,
+  ParagraphPlugin,
   type PlateEditor,
   type TElement,
   type TNodeEntry,
@@ -21,7 +21,7 @@ import {
 } from '@udecode/plate-reset-node';
 import { Path, type TextUnit } from 'slate';
 
-import { ELEMENT_LI, ELEMENT_LIC } from './ListPlugin';
+import { ListItemPlugin, ListItemContentPlugin } from './ListPlugin';
 import { isAcrossListItems } from './queries';
 import { getListItemEntry } from './queries/getListItemEntry';
 import { isListNested } from './queries/isListNested';
@@ -39,7 +39,7 @@ export const deleteBackwardList = (editor: PlateEditor, unit: TextUnit) => {
 
     if (
       isSelectionAtBlockStart(editor, {
-        match: (node) => node.type === getPluginType(editor, ELEMENT_LI),
+        match: (node) => node.type === getPluginType(editor, ListItemPlugin.key),
       })
     ) {
       withoutNormalizing(editor, () => {
@@ -58,11 +58,11 @@ export const deleteBackwardList = (editor: PlateEditor, unit: TextUnit) => {
               options: {
                 rules: [
                   {
-                    defaultType: getPluginType(editor, ELEMENT_DEFAULT),
+                    defaultType: getPluginType(editor, ParagraphPlugin.key),
                     hotkey: 'backspace',
                     onReset: (e) => unwrapList(e),
                     predicate: () => isSelectionAtBlockStart(editor),
-                    types: [getPluginType(editor, ELEMENT_LI)],
+                    types: [getPluginType(editor, ListItemPlugin.key)],
                   },
                 ],
               },
@@ -93,7 +93,7 @@ export const deleteBackwardList = (editor: PlateEditor, unit: TextUnit) => {
           })
         ) {
           // get closest lic ancestor of current selectable
-          const licType = getPluginType(editor, ELEMENT_LIC);
+          const licType = getPluginType(editor, ListItemContentPlugin.key);
           const _licNodes = getNodeEntries<TElement>(editor, {
             at: listItem[1],
             match: (node) => node.type === licType,

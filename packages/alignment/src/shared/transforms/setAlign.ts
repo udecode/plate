@@ -11,12 +11,12 @@ import {
 
 import type { Alignment } from '../types';
 
-import { KEY_ALIGN } from '../AlignPlugin';
+import { AlignPlugin } from '../AlignPlugin';
 
 export const setAlign = <E extends PlateEditor>(
   editor: E,
   {
-    key = KEY_ALIGN,
+    key = AlignPlugin.key,
     setNodesOptions,
     value,
   }: {

@@ -8,12 +8,12 @@ import {
   setNodes,
 } from '@udecode/plate-common';
 
-import { ELEMENT_CODE_BLOCK } from '../constants';
+import { CodeBlockPlugin } from '../CodeBlockPlugin';
 import { getCodeLineType } from '../options';
 
 /** Normalize code block node to force the pre>code>div.codeline structure. */
 export const normalizeCodeBlock = (editor: PlateEditor) => {
-  const codeBlockType = getPluginType(editor, ELEMENT_CODE_BLOCK);
+  const codeBlockType = getPluginType(editor, CodeBlockPlugin.key);
   const codeLineType = getCodeLineType(editor);
 
   const { normalizeNode } = editor;

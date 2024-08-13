@@ -5,7 +5,7 @@ import { getPluginOptions } from '@udecode/plate-common';
 
 import {
   type CodeBlockPluginOptions,
-  ELEMENT_CODE_BLOCK,
+  CodeBlockPlugin,
   type TCodeBlockElement,
 } from '../../lib';
 
@@ -26,7 +26,7 @@ export const useCodeBlockElementState = ({
 
   const { syntax } = getPluginOptions<CodeBlockPluginOptions>(
     editor,
-    ELEMENT_CODE_BLOCK
+    CodeBlockPlugin.key
   );
 
   return {

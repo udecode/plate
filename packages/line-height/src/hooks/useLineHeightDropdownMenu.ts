@@ -10,12 +10,12 @@ import {
   useEditorSelector,
 } from '@udecode/plate-common/react';
 
-import { KEY_LINE_HEIGHT, setLineHeight } from '../index';
+import { LineHeightPlugin, setLineHeight } from '../index';
 
 export const useLineHeightDropdownMenuState = () => {
   const editor = useEditorRef();
   const { defaultNodeValue, validNodeValues: values = [] } =
-    getPluginInjectProps(editor, KEY_LINE_HEIGHT);
+    getPluginInjectProps(editor, LineHeightPlugin.key);
 
   // eslint-disable-next-line @typescript-eslint/no-shadow
   const value: string | undefined = useEditorSelector((editor) => {
@@ -24,7 +24,7 @@ export const useLineHeightDropdownMenuState = () => {
 
       if (entry) {
         return (
-          values.find((item) => item === entry[0][KEY_LINE_HEIGHT]) ??
+          values.find((item) => item === entry[0][LineHeightPlugin.key]) ??
           defaultNodeValue
         );
       }

@@ -1,6 +1,5 @@
-import type { KeyboardHandler } from '@udecode/plate-common';
-
 import {
+  type KeyboardHandler,
   type TElement,
   getBlockAbove,
   isBlockAboveEmpty,
@@ -8,8 +7,8 @@ import {
 } from '@udecode/plate-common';
 
 import {
+  IndentListPlugin,
   type IndentListPluginOptions,
-  KEY_LIST_STYLE_TYPE,
 } from './IndentListPlugin';
 import { outdentList } from './transforms/index';
 
@@ -26,7 +25,7 @@ export const onKeyDownIndentList: KeyboardHandler<IndentListPluginOptions> = ({
 
   const node = entry[0] as TElement;
 
-  const listStyleType = node[KEY_LIST_STYLE_TYPE] as string | undefined;
+  const listStyleType = node[IndentListPlugin.key] as string | undefined;
 
   if (!listStyleType) return;
   if (isHotkey('Enter', event) && isBlockAboveEmpty(editor) && node.indent) {

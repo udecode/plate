@@ -6,14 +6,14 @@ import {
 
 import type { TCommentText } from '../types';
 
-import { MARK_COMMENT } from '../constants';
+import { CommentsPlugin } from '../CommentsPlugin';
 
 export const findCommentNode = (
   editor: PlateEditor,
   options?: FindNodeOptions
 ) => {
   return findNode<TCommentText>(editor, {
-    match: (n) => n[MARK_COMMENT],
+    match: (n) => n[CommentsPlugin.key],
     ...options,
   });
 };

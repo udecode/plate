@@ -1,14 +1,14 @@
 import { getPluginType, someNode } from '@udecode/plate-common';
 import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
 
-import { ELEMENT_LINK, triggerFloatingLink } from '../index';
+import { LinkPlugin, triggerFloatingLink } from '../index';
 
 export const useLinkToolbarButtonState = () => {
   const pressed = useEditorSelector(
     (editor) =>
       !!editor?.selection &&
       someNode(editor, {
-        match: { type: getPluginType(editor, ELEMENT_LINK) },
+        match: { type: getPluginType(editor, LinkPlugin.key) },
       }),
     []
   );

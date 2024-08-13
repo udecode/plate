@@ -6,9 +6,9 @@ import {
   mergeNodes,
   splitNodes,
 } from '@udecode/plate-common';
+import { ParagraphPlugin } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { ELEMENT_LI, ELEMENT_UL } from '@udecode/plate-list';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
+import { ListItemPlugin, ListUnorderedPlugin } from '@udecode/plate-list';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { NodeIdPlugin } from './NodeIdPlugin';
@@ -46,7 +46,7 @@ describe('when inserting nodes', () => {
         editor: input,
         plugins: [
           NodeIdPlugin.configure({
-            allow: [ELEMENT_PARAGRAPH],
+            allow: [ParagraphPlugin.key],
             idCreator: getIdFactory(),
             reuseId: true,
           }),
@@ -94,7 +94,7 @@ describe('when inserting nodes', () => {
         editor: input,
         plugins: [
           NodeIdPlugin.configure({
-            exclude: [ELEMENT_PARAGRAPH],
+            exclude: [ParagraphPlugin.key],
             idCreator: getIdFactory(),
             reuseId: true,
           }),
@@ -142,8 +142,12 @@ describe('when inserting nodes', () => {
         editor: input,
         plugins: [
           NodeIdPlugin.configure({
-            allow: [ELEMENT_UL, ELEMENT_LI, ELEMENT_PARAGRAPH],
-            exclude: [ELEMENT_PARAGRAPH],
+            allow: [
+              ListUnorderedPlugin.key,
+              ListItemPlugin.key,
+              ParagraphPlugin.key,
+            ],
+            exclude: [ParagraphPlugin.key],
             idCreator: getIdFactory(),
             reuseId: true,
           }),
@@ -571,7 +575,7 @@ describe('when splitting nodes', () => {
         editor: input,
         plugins: [
           NodeIdPlugin.configure({
-            allow: [ELEMENT_PARAGRAPH],
+            allow: [ParagraphPlugin.key],
             idCreator: getIdFactory(),
           }),
         ],

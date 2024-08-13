@@ -10,7 +10,7 @@ import { useReadOnly } from 'slate-react';
 
 import {
   type CodeBlockPluginOptions,
-  ELEMENT_CODE_BLOCK,
+  CodeBlockPlugin,
   type TCodeBlockElement,
 } from '../../lib';
 
@@ -22,7 +22,7 @@ export const useCodeBlockComboboxState = () => {
 
   const { syntaxPopularFirst } = getPluginOptions<CodeBlockPluginOptions>(
     editor,
-    ELEMENT_CODE_BLOCK
+    CodeBlockPlugin.key
   );
 
   React.useEffect(() => {

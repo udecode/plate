@@ -7,7 +7,7 @@ import {
 
 import type { TSuggestionText } from '../types';
 
-import { KEY_SUGGESTION_ID } from '../constants';
+import { KEY_SUGGESTION_ID } from '../SuggestionPlugin';
 import { type TSuggestionDescription, getSuggestionKey } from '../utils/index';
 
 export const rejectSuggestion = (

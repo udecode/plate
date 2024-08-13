@@ -1,9 +1,6 @@
-import {
-  type PlateEditor,
-  withoutNormalizing,
-} from '@udecode/plate-common';
+import { type PlateEditor, withoutNormalizing } from '@udecode/plate-common';
 
-import { MARK_COMMENT } from '../constants';
+import { CommentsPlugin } from '../CommentsPlugin';
 import { findCommentNode } from '../queries/index';
 import { getCommentKeys } from '../utils/index';
 
@@ -19,6 +16,6 @@ export const removeCommentMark = (editor: PlateEditor) => {
       editor.removeMark(key);
     });
 
-    editor.removeMark(MARK_COMMENT);
+    editor.removeMark(CommentsPlugin.key);
   });
 };

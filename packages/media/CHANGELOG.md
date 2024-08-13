@@ -150,10 +150,10 @@
   - Caption is now a separate plugin. Install `@udecode/plate-caption` and add it to your plugins:
 
   ```ts
-  import { ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from '@udecode/plate-media';
+  import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media';
 
   createCaptionPlugin({
-    options: { pluginKeys: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED] },
+    options: { pluginKeys: [ImagePlugin.key, ELEMENT_MEDIA_EMBED] },
   });
   ```
 

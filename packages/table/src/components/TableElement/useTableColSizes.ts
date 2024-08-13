@@ -5,7 +5,7 @@ import { findNodePath, useEditorRef } from '@udecode/plate-common/react';
 
 import type { TTableElement, TablePluginOptions } from '../../types';
 
-import { ELEMENT_TABLE } from '../../TablePlugin';
+import { TablePlugin } from '../../TablePlugin';
 import {
   getTableColumnCount,
   getTableOverriddenColSizes,
@@ -25,7 +25,7 @@ export const useTableColSizes = (
 
   const { enableUnsetSingleColSize } = getPluginOptions<TablePluginOptions>(
     editor,
-    ELEMENT_TABLE
+    TablePlugin.key
   );
 
   const overriddenColSizes = getTableOverriddenColSizes(

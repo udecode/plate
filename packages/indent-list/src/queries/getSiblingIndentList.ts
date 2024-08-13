@@ -7,9 +7,9 @@ import {
   type TNodeEntry,
   isDefined,
 } from '@udecode/plate-common';
-import { KEY_INDENT } from '@udecode/plate-indent';
+import { IndentPlugin } from '@udecode/plate-indent';
 
-import { KEY_LIST_STYLE_TYPE } from '../IndentListPlugin';
+import { IndentListPlugin } from '../IndentListPlugin';
 
 export interface GetSiblingIndentListOptions<
   N extends ElementOf<E>,
@@ -62,8 +62,8 @@ export const getSiblingIndentList = <
 
     const [nextNode, nextPath] = nextEntry;
 
-    const indent = (node as any)[KEY_INDENT] as number;
-    const nextIndent = (nextNode as any)[KEY_INDENT] as number;
+    const indent = (node as any)[IndentPlugin.key] as number;
+    const nextIndent = (nextNode as any)[IndentPlugin.key] as number;
 
     if (!isDefined(nextIndent)) return;
     if (breakQuery?.(nextNode)) return;
@@ -71,8 +71,8 @@ export const getSiblingIndentList = <
     if (
       breakOnEqIndentNeqListStyleType &&
       nextIndent === indent &&
-      (nextNode as any)[KEY_LIST_STYLE_TYPE] !==
-        (node as any)[KEY_LIST_STYLE_TYPE]
+      (nextNode as any)[IndentListPlugin.key] !==
+        (node as any)[IndentListPlugin.key]
     )
       return;
 

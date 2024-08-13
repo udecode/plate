@@ -1,7 +1,5 @@
 import { createPlugin } from '../plugin';
 
-export const KEY_DESERIALIZE_AST = 'deserializeAst';
-
 /**
  * Enables support for deserializing inserted content from Slate Ast format to
  * Slate format while apply a small bug fix.
@@ -24,5 +22,5 @@ export const DeserializeAstPlugin = createPlugin({
       },
     },
   },
-  key: KEY_DESERIALIZE_AST,
+  key: 'deserializeAst',
 });

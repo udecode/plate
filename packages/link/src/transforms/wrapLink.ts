@@ -8,7 +8,7 @@ import {
 
 import type { TLinkElement } from '../types';
 
-import { ELEMENT_LINK } from '../LinkPlugin';
+import { LinkPlugin } from '../LinkPlugin';
 
 export interface WrapLinkOptions<E extends TEditor = TEditor>
   extends WrapNodesOptions<E> {
@@ -26,7 +26,7 @@ export const wrapLink = <E extends PlateEditor>(
     {
       children: [],
       target,
-      type: getPluginType(editor, ELEMENT_LINK),
+      type: getPluginType(editor, LinkPlugin.key),
       url,
     },
     { split: true, ...options } as any

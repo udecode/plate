@@ -16,8 +16,6 @@ import { useHooksBlockSelection } from './useHooksBlockSelection';
 import { onCloseBlockSelection } from './utils';
 import { withSelection } from './withSelection';
 
-export const KEY_BLOCK_SELECTION = 'blockSelection';
-
 export interface BlockSelectionPluginOptions {
   disableContextMenu?: boolean;
   onKeyDownSelecting?: (e: KeyboardEvent) => void;
@@ -57,7 +55,7 @@ export const BlockSelectionPlugin = createPlugin<
           },
         }),
   },
-  key: KEY_BLOCK_SELECTION,
+  key: 'blockSelection',
   options: {
     query: {
       maxLevel: 1,

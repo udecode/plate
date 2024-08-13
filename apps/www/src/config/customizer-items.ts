@@ -1,51 +1,55 @@
-import { KEY_ALIGN } from '@udecode/plate-alignment';
-import { KEY_AUTOFORMAT } from '@udecode/plate-autoformat';
+import { AlignPlugin } from '@udecode/plate-alignment';
+import { AutoformatPlugin } from '@udecode/plate-autoformat';
 import {
-  MARK_BOLD,
-  MARK_CODE,
-  MARK_ITALIC,
-  MARK_STRIKETHROUGH,
-  MARK_SUBSCRIPT,
-  MARK_SUPERSCRIPT,
-  MARK_UNDERLINE,
+  BoldPlugin,
+  CodePlugin,
+  ItalicPlugin,
+  StrikethroughPlugin,
+  SubscriptPlugin,
+  SuperscriptPlugin,
+  UnderlinePlugin,
 } from '@udecode/plate-basic-marks';
-import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
+import { BlockquotePlugin } from '@udecode/plate-block-quote';
 import {
-  KEY_EXIT_BREAK,
-  KEY_SINGLE_LINE,
-  KEY_SOFT_BREAK,
+  ExitBreakPlugin,
+  SingleLinePlugin,
+  SoftBreakPlugin,
 } from '@udecode/plate-break';
-import { KEY_CAPTION } from '@udecode/plate-caption';
-import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
-import { MARK_COMMENT } from '@udecode/plate-comments';
-import { KEY_DND } from '@udecode/plate-dnd';
-import { KEY_EMOJI } from '@udecode/plate-emoji';
-import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
-import { MARK_BG_COLOR, MARK_COLOR, MARK_FONT_SIZE } from '@udecode/plate-font';
-import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
-import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
-import { KEY_INDENT } from '@udecode/plate-indent';
-import { KEY_LIST_STYLE_TYPE } from '@udecode/plate-indent-list';
-import { KEY_JUICE } from '@udecode/plate-juice';
-import { MARK_KBD } from '@udecode/plate-kbd';
-import { KEY_LINE_HEIGHT } from '@udecode/plate-line-height';
-import { ELEMENT_LINK } from '@udecode/plate-link';
-import { ELEMENT_TODO_LI } from '@udecode/plate-list';
-import { ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from '@udecode/plate-media';
-import { ELEMENT_MENTION } from '@udecode/plate-mention';
-import { KEY_NODE_ID } from '@udecode/plate-node-id';
-import { KEY_NORMALIZE_TYPES } from '@udecode/plate-normalizers';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
-import { KEY_RESET_NODE } from '@udecode/plate-reset-node';
-import { KEY_DELETE, KEY_SELECT_ON_BACKSPACE } from '@udecode/plate-select';
-import { KEY_BLOCK_SELECTION } from '@udecode/plate-selection';
-import { KEY_DESERIALIZE_CSV } from '@udecode/plate-serializer-csv';
-import { KEY_DESERIALIZE_DOCX } from '@udecode/plate-serializer-docx';
-import { KEY_DESERIALIZE_MD } from '@udecode/plate-serializer-md';
-import { KEY_TABBABLE } from '@udecode/plate-tabbable';
-import { ELEMENT_TABLE } from '@udecode/plate-table';
-import { ELEMENT_TOGGLE } from '@udecode/plate-toggle';
-import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
+import { CaptionPlugin } from '@udecode/plate-caption';
+import { CodeBlockPlugin } from '@udecode/plate-code-block';
+import { CommentsPlugin } from '@udecode/plate-comments';
+import { ParagraphPlugin } from '@udecode/plate-common';
+import { DndPlugin } from '@udecode/plate-dnd';
+import { EmojiPlugin } from '@udecode/plate-emoji';
+import { ExcalidrawPlugin } from '@udecode/plate-excalidraw';
+import {
+  FontBackgroundColorPlugin,
+  FontColorPlugin,
+  FontSizePlugin,
+} from '@udecode/plate-font';
+import { HighlightPlugin } from '@udecode/plate-highlight';
+import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
+import { IndentPlugin } from '@udecode/plate-indent';
+import { IndentListPlugin } from '@udecode/plate-indent-list';
+import { JuicePlugin } from '@udecode/plate-juice';
+import { KbdPlugin } from '@udecode/plate-kbd';
+import { LineHeightPlugin } from '@udecode/plate-line-height';
+import { LinkPlugin } from '@udecode/plate-link';
+import { TodoListPlugin } from '@udecode/plate-list';
+import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media';
+import { MentionPlugin } from '@udecode/plate-mention';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
+import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
+import { ResetNodePlugin } from '@udecode/plate-reset-node';
+import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
+import { BlockSelectionPlugin } from '@udecode/plate-selection';
+import { DeserializeCsvPlugin } from '@udecode/plate-serializer-csv';
+import { DeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
+import { DeserializeMdPlugin } from '@udecode/plate-serializer-md';
+import { TabbablePlugin } from '@udecode/plate-tabbable';
+import { TablePlugin } from '@udecode/plate-table';
+import { TogglePlugin } from '@udecode/plate-toggle';
+import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
 import {
   type CustomizerBadge,
@@ -67,7 +71,7 @@ export type SettingPlugin = {
     label: string; // e.g. 'Blockquote'
     noImport?: boolean;
     plateImports?: string[];
-    pluginKey?: string; // Plugin components only, e.g. 'ELEMENT_BLOCKQUOTE'
+    pluginKey?: string; // Plugin components only, e.g. 'BlockquotePlugin.key'
     pluginOptions?: string[];
     registry?: string;
     route?: string;
@@ -88,278 +92,9 @@ export type SettingPlugin = {
 };
 
 export const customizerItems: Record<string, SettingPlugin> = {
-  [DragOverCursorPlugin.key]: {
-    badges: [customizerBadges.handler, customizerBadges.ui],
-    id: DragOverCursorPlugin.key,
-    // npmPackage: '@udecode/plate-cursor',
-    label: 'Drag Cursor',
-    route: customizerPlugins.cursoroverlay.route,
-  },
-  [ELEMENT_BLOCKQUOTE]: {
-    badges: [customizerBadges.element],
-    components: [
-      {
-        id: 'blockquote-element',
-        label: 'BlockquoteElement',
-        pluginKey: 'ELEMENT_BLOCKQUOTE',
-        route: customizerComponents.blockquoteElement.href,
-        usage: 'BlockquoteElement',
-      },
-    ],
-    id: ELEMENT_BLOCKQUOTE,
-    label: 'Blockquote',
-    npmPackage: '@udecode/plate-block-quote',
-    pluginFactory: 'createBlockquotePlugin',
-    route: customizerPlugins.basicnodes.route,
-  },
-  [ELEMENT_CODE_BLOCK]: {
-    badges: [customizerBadges.element],
-    components: [
-      {
-        id: 'code-block-element',
-        label: 'CodeBlockElement',
-        pluginKey: 'ELEMENT_CODE_BLOCK',
-        route: customizerComponents.codeBlockElement.href,
-        usage: 'CodeBlockElement',
-      },
-      {
-        id: 'code-line-element',
-        label: 'CodeLineElement',
-        pluginKey: 'ELEMENT_CODE_LINE',
-        route: customizerComponents.codeLineElement.href,
-        usage: 'CodeLineElement',
-      },
-      {
-        id: 'code-syntax-leaf',
-        label: 'CodeSyntaxLeaf',
-        pluginKey: 'ELEMENT_CODE_SYNTAX',
-        route: customizerComponents.codeSyntaxLeaf.href,
-        usage: 'CodeSyntaxLeaf',
-      },
-    ],
-    id: ELEMENT_CODE_BLOCK,
-    label: 'Code block',
-    npmPackage: '@udecode/plate-code-block',
-    pluginFactory: 'createCodeBlockPlugin',
-    route: customizerPlugins.basicnodes.route,
-  },
-  [ELEMENT_EXCALIDRAW]: {
-    badges: [customizerBadges.element, customizerBadges.void],
-    components: [
-      {
-        id: 'excalidraw-element',
-        label: 'ExcalidrawElement',
-        pluginKey: 'ELEMENT_EXCALIDRAW',
-        route: customizerComponents.excalidrawElement.href,
-        usage: 'ExcalidrawElement',
-      },
-    ],
-    id: ELEMENT_EXCALIDRAW,
-    label: 'Excalidraw',
-    npmPackage: '@udecode/plate-excalidraw',
-    pluginFactory: 'createExcalidrawPlugin',
-    route: customizerPlugins.excalidraw.route,
-  },
-  [ELEMENT_HR]: {
-    badges: [customizerBadges.element, customizerBadges.void],
-    components: [
-      {
-        id: 'hr-element',
-        label: 'HrElement',
-        pluginKey: 'ELEMENT_HR',
-        route: customizerComponents.hrElement.href,
-        usage: 'HrElement',
-      },
-    ],
-    id: ELEMENT_HR,
-    label: 'Horizontal Rule',
-    npmPackage: '@udecode/plate-horizontal-rule',
-    pluginFactory: 'createHorizontalRulePlugin',
-    route: customizerPlugins.hr.route,
-  },
-  [ELEMENT_IMAGE]: {
-    badges: [customizerBadges.element, customizerBadges.void],
-    components: [
-      {
-        id: 'image-element',
-        label: 'ImageElement',
-        pluginKey: 'ELEMENT_IMAGE',
-        route: customizerComponents.imageElement.href,
-        usage: 'ImageElement',
-      },
-    ],
-    id: ELEMENT_IMAGE,
-    label: 'Image',
-    npmPackage: '@udecode/plate-media',
-    pluginFactory: 'createImagePlugin',
-    route: customizerPlugins.media.route,
-  },
-  [ELEMENT_LINK]: {
-    badges: [customizerBadges.element, customizerBadges.inline],
-    components: [
-      {
-        id: 'link-element',
-        label: 'LinkElement',
-        pluginKey: 'ELEMENT_LINK',
-        route: customizerComponents.linkElement.href,
-        usage: 'LinkElement',
-      },
-      {
-        id: 'link-floating-toolbar',
-        label: 'LinkFloatingToolbar',
-        plateImports: ['RenderAfterEditable'],
-        pluginOptions: [
-          `renderAfterEditable: LinkFloatingToolbar as RenderAfterEditable,`,
-        ],
-        route: customizerComponents.linkFloatingToolbar.href,
-        usage: 'LinkFloatingToolbar',
-      },
-    ],
-    id: ELEMENT_LINK,
-    label: 'Link',
-    npmPackage: '@udecode/plate-link',
-    pluginFactory: 'createLinkPlugin',
-    route: customizerPlugins.link.route,
-  },
-  [ELEMENT_MEDIA_EMBED]: {
-    badges: [customizerBadges.element, customizerBadges.void],
-    components: [
-      {
-        id: 'media-embed-element',
-        label: 'MediaEmbedElement',
-        pluginKey: 'ELEMENT_MEDIA_EMBED',
-        route: customizerComponents.mediaEmbedElement.href,
-        usage: 'MediaEmbedElement',
-      },
-    ],
-    id: ELEMENT_MEDIA_EMBED,
-    label: 'Media Embed',
-    npmPackage: '@udecode/plate-media',
-    pluginFactory: 'createMediaEmbedPlugin',
-    route: customizerPlugins.media.route,
-  },
-  [ELEMENT_MENTION]: {
-    badges: [
-      customizerBadges.element,
-      customizerBadges.inline,
-      customizerBadges.void,
-    ],
-    components: [
-      {
-        id: 'mention-element',
-        label: 'MentionElement',
-        pluginKey: 'ELEMENT_MENTION',
-        route: customizerComponents.mentionElement.href,
-        usage: 'MentionElement',
-      },
-      {
-        id: 'mention-input-element',
-        label: 'MentionInputElement',
-        pluginKey: 'ELEMENT_MENTION_INPUT',
-        route: customizerComponents.mentionInputElement.href,
-        usage: 'MentionInputElement',
-      },
-    ],
-    id: ELEMENT_MENTION,
-    label: 'Mention',
-    npmPackage: '@udecode/plate-mention',
-    pluginFactory: 'createMentionPlugin',
-    route: customizerPlugins.mention.route,
-  },
-  [ELEMENT_PARAGRAPH]: {
-    badges: [customizerBadges.element],
-    components: [
-      {
-        id: 'paragraph-element',
-        label: 'ParagraphElement',
-        pluginKey: 'ELEMENT_PARAGRAPH',
-        route: customizerComponents.paragraphElement.href,
-        usage: 'ParagraphElement',
-      },
-    ],
-    id: ELEMENT_PARAGRAPH,
-    label: 'Paragraph',
-    npmPackage: '@udecode/plate-paragraph',
-    pluginFactory: 'createParagraphPlugin',
-    route: customizerPlugins.basicnodes.route,
-  },
-  [ELEMENT_TABLE]: {
-    badges: [customizerBadges.element],
-    components: [
-      {
-        id: 'table-element',
-        label: 'TableElement',
-        pluginKey: 'ELEMENT_TABLE',
-        route: customizerComponents.tableElement.href,
-        usage: 'TableElement',
-      },
-      {
-        id: 'table-row-element',
-        label: 'TableRowElement',
-        pluginKey: 'ELEMENT_TR',
-        route: customizerComponents.tableRowElement.href,
-        usage: 'TableRowElement',
-      },
-      {
-        filename: 'table-cell-element',
-        id: 'td',
-        label: 'TableCellElement',
-        pluginKey: 'ELEMENT_TD',
-        route: customizerComponents.tableCellElement.href,
-        usage: 'TableCellElement',
-      },
-      {
-        filename: 'table-cell-element',
-        id: 'th',
-        label: 'TableCellHeaderElement',
-        pluginKey: 'ELEMENT_TH',
-        route: customizerComponents.tableCellElement.href,
-        usage: 'TableCellHeaderElement',
-      },
-    ],
-    id: ELEMENT_TABLE,
-    label: 'Table',
-    npmPackage: '@udecode/plate-table',
-    pluginFactory: 'createTablePlugin',
-    route: customizerPlugins.table.route,
-  },
-  [ELEMENT_TODO_LI]: {
-    badges: [customizerBadges.element],
-    components: [
-      {
-        id: 'todo-list-element',
-        label: 'TodoListElement',
-        pluginKey: 'ELEMENT_TODO_LI',
-        route: customizerComponents.todoListElement.href,
-        usage: 'TodoListElement',
-      },
-    ],
-    id: ELEMENT_TODO_LI,
-    label: 'Todo List',
-    npmPackage: '@udecode/plate-list',
-    pluginFactory: 'createTodoListPlugin',
-    route: customizerPlugins.todoli.route,
-  },
-  [ELEMENT_TOGGLE]: {
-    badges: [customizerBadges.element],
-    components: [
-      {
-        id: 'toggle-element',
-        label: 'ToggleElement',
-        pluginKey: 'ELEMENT_TOGGLE',
-        route: customizerComponents.toggleElement.href,
-        usage: 'ToggleElement',
-      },
-    ],
-    id: ELEMENT_TOGGLE,
-    label: 'Toggle',
-    npmPackage: '@udecode/plate-toggle',
-    pluginFactory: 'createTogglePlugin',
-    route: customizerPlugins.toggle.route,
-  },
-  [KEY_ALIGN]: {
+  [AlignPlugin.key]: {
     badges: [customizerBadges.style],
-    id: KEY_ALIGN,
+    id: AlignPlugin.key,
     label: 'Align',
     npmPackage: '@udecode/plate-alignment',
     pluginFactory: 'createAlignPlugin',
@@ -367,7 +102,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
       `inject: {`,
       `  props: {`,
       `    validPlugins: [`,
-      `      ELEMENT_PARAGRAPH,`,
+      `      ParagraphPlugin.key,`,
       `      // ELEMENT_H1, ELEMENT_H2, ELEMENT_H3`,
       `    ],`,
       `  },`,
@@ -376,9 +111,9 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.align.route,
   },
   // Functionality
-  [KEY_AUTOFORMAT]: {
+  [AutoformatPlugin.key]: {
     badges: [customizerBadges.handler],
-    id: KEY_AUTOFORMAT,
+    id: AutoformatPlugin.key,
     label: 'Autoformat',
     npmPackage: '@udecode/plate-autoformat',
     pluginFactory: 'createAutoformatPlugin',
@@ -392,10 +127,10 @@ export const customizerItems: Record<string, SettingPlugin> = {
     ],
     route: customizerPlugins.autoformat.route,
   },
-  [KEY_BLOCK_SELECTION]: {
+  [BlockSelectionPlugin.key]: {
     badges: [customizerBadges.ui],
-    dependencies: [KEY_NODE_ID],
-    id: KEY_BLOCK_SELECTION,
+    dependencies: [NodeIdPlugin.key],
+    id: BlockSelectionPlugin.key,
     label: 'Block Selection',
     npmPackage: '@udecode/plate-selection',
     pluginFactory: 'createBlockSelectionPlugin',
@@ -409,55 +144,163 @@ export const customizerItems: Record<string, SettingPlugin> = {
     ],
     route: customizerPlugins.blockselection.route,
   },
-  [KEY_CAPTION]: {
+  [BlockquotePlugin.key]: {
+    badges: [customizerBadges.element],
+    components: [
+      {
+        id: 'blockquote-element',
+        label: 'BlockquoteElement',
+        pluginKey: 'BlockquotePlugin.key',
+        route: customizerComponents.blockquoteElement.href,
+        usage: 'BlockquoteElement',
+      },
+    ],
+    id: BlockquotePlugin.key,
+    label: 'Blockquote',
+    npmPackage: '@udecode/plate-block-quote',
+    pluginFactory: 'createBlockquotePlugin',
+    route: customizerPlugins.basicnodes.route,
+  },
+  [BoldPlugin.key]: {
+    badges: [customizerBadges.leaf],
+    components: [
+      {
+        cnImports: ['withProps'],
+        id: 'bold',
+        label: 'BoldLeaf',
+        noImport: true,
+        plateImports: ['PlateLeaf'],
+        pluginKey: 'BoldPlugin.key',
+        usage: `withProps(PlateLeaf, { as: 'strong' })`,
+      },
+    ],
+    id: BoldPlugin.key,
+    label: 'Bold',
+    npmPackage: '@udecode/plate-basic-marks',
+    pluginFactory: 'createBoldPlugin',
+    route: customizerPlugins.basicmarks.route,
+  },
+  [CaptionPlugin.key]: {
     badges: [customizerBadges.handler],
-    id: KEY_CAPTION,
+    id: CaptionPlugin.key,
     label: 'Caption',
     npmPackage: '@udecode/plate-caption',
     pluginFactory: 'createCaptionPlugin',
     pluginOptions: [
       `options: {`,
       `  pluginKeys: [`,
-      `    // ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED`,
+      `    // ImagePlugin.key, MediaEmbedPlugin.key`,
       `  ]`,
       `},`,
     ],
     route: customizerPlugins.media.route,
   },
-  [KEY_DELETE]: {
+  [CodeBlockPlugin.key]: {
+    badges: [customizerBadges.element],
+    components: [
+      {
+        id: 'code-block-element',
+        label: 'CodeBlockElement',
+        pluginKey: 'CodeBlockPlugin.key',
+        route: customizerComponents.codeBlockElement.href,
+        usage: 'CodeBlockElement',
+      },
+      {
+        id: 'code-line-element',
+        label: 'CodeLineElement',
+        pluginKey: 'CodeLinePlugin.key',
+        route: customizerComponents.codeLineElement.href,
+        usage: 'CodeLineElement',
+      },
+      {
+        id: 'code-syntax-leaf',
+        label: 'CodeSyntaxLeaf',
+        pluginKey: 'CodeSyntaxPlugin.key',
+        route: customizerComponents.codeSyntaxLeaf.href,
+        usage: 'CodeSyntaxLeaf',
+      },
+    ],
+    id: CodeBlockPlugin.key,
+    label: 'Code block',
+    npmPackage: '@udecode/plate-code-block',
+    pluginFactory: 'createCodeBlockPlugin',
+    route: customizerPlugins.basicnodes.route,
+  },
+  [CodePlugin.key]: {
+    badges: [customizerBadges.leaf],
+    components: [
+      {
+        id: 'code-leaf',
+        label: 'CodeLeaf',
+        pluginKey: 'CodePlugin.key',
+        route: customizerComponents.codeLeaf.href,
+        usage: `CodeLeaf`,
+      },
+    ],
+    id: CodePlugin.key,
+    label: 'Code',
+    npmPackage: '@udecode/plate-basic-marks',
+    pluginFactory: 'createCodePlugin',
+    route: customizerPlugins.basicmarks.route,
+  },
+  [CommentsPlugin.key]: {
+    badges: [customizerBadges.leaf],
+    components: [
+      {
+        id: 'comment-leaf',
+        label: 'CommentLeaf',
+        pluginKey: 'CommentsPlugin.key',
+        route: customizerComponents.commentLeaf.href,
+        usage: 'CommentLeaf',
+      },
+      {
+        id: 'comments-popover',
+        label: 'CommentsPopover',
+        route: customizerComponents.commentsPopover.href,
+        usage: 'CommentsPopover',
+      },
+    ],
+    id: CommentsPlugin.key,
+    label: 'Comments',
+    npmPackage: '@udecode/plate-comments',
+    packageImports: ['CommentsProvider'],
+    pluginFactory: 'createCommentsPlugin',
+    route: customizerPlugins.comment.route,
+  },
+  [DeletePlugin.key]: {
     badges: [customizerBadges.handler],
-    id: KEY_DELETE,
+    id: DeletePlugin.key,
     label: 'Delete',
     npmPackage: '@udecode/plate-select',
     pluginFactory: 'createDeletePlugin',
   },
   // Deserialization
-  [KEY_DESERIALIZE_CSV]: {
+  [DeserializeCsvPlugin.key]: {
     badges: [customizerBadges.handler],
-    id: KEY_DESERIALIZE_CSV,
+    id: DeserializeCsvPlugin.key,
     label: 'Deserialize CSV',
     npmPackage: '@udecode/plate-serializer-csv',
     pluginFactory: 'createDeserializeCsvPlugin',
     route: customizerPlugins.deserializecsv.route,
   },
-  [KEY_DESERIALIZE_DOCX]: {
+  [DeserializeDocxPlugin.key]: {
     badges: [customizerBadges.handler],
-    dependencies: [KEY_JUICE],
-    id: KEY_DESERIALIZE_DOCX,
+    dependencies: [JuicePlugin.key],
+    id: DeserializeDocxPlugin.key,
     label: 'Deserialize DOCX',
     npmPackage: '@udecode/plate-serializer-docx',
     pluginFactory: 'createDeserializeDocxPlugin',
     route: customizerPlugins.deserializedocx.route,
   },
-  [KEY_DESERIALIZE_MD]: {
+  [DeserializeMdPlugin.key]: {
     badges: [customizerBadges.handler],
-    id: KEY_DESERIALIZE_MD,
+    id: DeserializeMdPlugin.key,
     label: 'Deserialize MD',
     npmPackage: '@udecode/plate-serializer-md',
     pluginFactory: 'createDeserializeMdPlugin',
     route: customizerPlugins.deserializemd.route,
   },
-  [KEY_DND]: {
+  [DndPlugin.key]: {
     badges: [customizerBadges.handler, customizerBadges.ui],
     components: [
       {
@@ -473,15 +316,22 @@ export const customizerItems: Record<string, SettingPlugin> = {
       `import { DndProvider } from 'react-dnd';`,
       `import { HTML5Backend } from 'react-dnd-html5-backend';`,
     ],
-    dependencies: [KEY_NODE_ID],
-    id: KEY_DND,
+    dependencies: [NodeIdPlugin.key],
+    id: DndPlugin.key,
     label: 'Drag & Drop',
     npmPackage: '@udecode/plate-dnd',
     pluginFactory: 'createDndPlugin',
     pluginOptions: ['  options: { enableScroller: true },'],
     route: customizerPlugins.dnd.route,
   },
-  [KEY_EMOJI]: {
+  [DragOverCursorPlugin.key]: {
+    badges: [customizerBadges.handler, customizerBadges.ui],
+    id: DragOverCursorPlugin.key,
+    // npmPackage: '@udecode/plate-cursor',
+    label: 'Drag Cursor',
+    route: customizerPlugins.cursoroverlay.route,
+  },
+  [EmojiPlugin.key]: {
     badges: [customizerBadges.handler],
     components: [
       {
@@ -491,15 +341,32 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: 'EmojiInputElement',
       },
     ],
-    id: KEY_EMOJI,
+    id: EmojiPlugin.key,
     label: 'Emoji',
     npmPackage: '@udecode/plate-emoji',
     pluginFactory: 'createEmojiPlugin',
     route: customizerPlugins.emoji.route,
   },
-  [KEY_EXIT_BREAK]: {
+  [ExcalidrawPlugin.key]: {
+    badges: [customizerBadges.element, customizerBadges.void],
+    components: [
+      {
+        id: 'excalidraw-element',
+        label: 'ExcalidrawElement',
+        pluginKey: 'ExcalidrawPlugin.key',
+        route: customizerComponents.excalidrawElement.href,
+        usage: 'ExcalidrawElement',
+      },
+    ],
+    id: ExcalidrawPlugin.key,
+    label: 'Excalidraw',
+    npmPackage: '@udecode/plate-excalidraw',
+    pluginFactory: 'createExcalidrawPlugin',
+    route: customizerPlugins.excalidraw.route,
+  },
+  [ExitBreakPlugin.key]: {
     badges: [customizerBadges.handler],
-    id: KEY_EXIT_BREAK,
+    id: ExitBreakPlugin.key,
     label: 'Exit Break',
     npmPackage: '@udecode/plate-break',
     pluginFactory: 'createExitBreakPlugin',
@@ -528,9 +395,104 @@ export const customizerItems: Record<string, SettingPlugin> = {
     ],
     route: customizerPlugins.exitbreak.route,
   },
-  [KEY_INDENT]: {
+  [FontBackgroundColorPlugin.key]: {
     badges: [customizerBadges.style],
-    id: KEY_INDENT,
+    id: FontBackgroundColorPlugin.key,
+    label: 'Font Background',
+    npmPackage: '@udecode/plate-font',
+    pluginFactory: 'createFontBackgroundColorPlugin',
+    route: customizerPlugins.font.route,
+  },
+  [FontColorPlugin.key]: {
+    badges: [customizerBadges.style],
+    id: FontColorPlugin.key,
+    label: 'Font Color',
+    npmPackage: '@udecode/plate-font',
+    pluginFactory: 'createFontColorPlugin',
+    route: customizerPlugins.font.route,
+  },
+  [FontSizePlugin.key]: {
+    badges: [customizerBadges.style],
+    id: FontSizePlugin.key,
+    label: 'Font Size',
+    npmPackage: '@udecode/plate-font',
+    pluginFactory: 'createFontSizePlugin',
+    route: customizerPlugins.font.route,
+  },
+  [HighlightPlugin.key]: {
+    badges: [customizerBadges.leaf],
+    components: [
+      {
+        id: 'highlight-leaf',
+        label: 'HighlightLeaf',
+        pluginKey: 'HighlightPlugin.key',
+        route: customizerComponents.highlightLeaf.href,
+        usage: 'HighlightLeaf',
+      },
+    ],
+    id: HighlightPlugin.key,
+    label: 'Highlight',
+    npmPackage: '@udecode/plate-highlight',
+    pluginFactory: 'createHighlightPlugin',
+    route: customizerPlugins.highlight.route,
+  },
+  [HorizontalRulePlugin.key]: {
+    badges: [customizerBadges.element, customizerBadges.void],
+    components: [
+      {
+        id: 'hr-element',
+        label: 'HrElement',
+        pluginKey: 'HorizontalRulePlugin.key',
+        route: customizerComponents.hrElement.href,
+        usage: 'HrElement',
+      },
+    ],
+    id: HorizontalRulePlugin.key,
+    label: 'Horizontal Rule',
+    npmPackage: '@udecode/plate-horizontal-rule',
+    pluginFactory: 'createHorizontalRulePlugin',
+    route: customizerPlugins.hr.route,
+  },
+  [ImagePlugin.key]: {
+    badges: [customizerBadges.element, customizerBadges.void],
+    components: [
+      {
+        id: 'image-element',
+        label: 'ImageElement',
+        pluginKey: 'ImagePlugin.key',
+        route: customizerComponents.imageElement.href,
+        usage: 'ImageElement',
+      },
+    ],
+    id: ImagePlugin.key,
+    label: 'Image',
+    npmPackage: '@udecode/plate-media',
+    pluginFactory: 'createImagePlugin',
+    route: customizerPlugins.media.route,
+  },
+  [IndentListPlugin.key]: {
+    badges: [customizerBadges.style],
+    conflicts: ['list'],
+    dependencies: [IndentPlugin.key],
+    id: IndentListPlugin.key,
+    label: 'Indent List',
+    npmPackage: '@udecode/plate-indent-list',
+    pluginFactory: 'createIndentListPlugin',
+    pluginOptions: [
+      `inject: {`,
+      `  props: {`,
+      `    validPlugins: [`,
+      `      ParagraphPlugin.key,`,
+      `      // ELEMENT_H1, ELEMENT_H2, ELEMENT_H3, BlockquotePlugin.key, CodeBlockPlugin.key`,
+      `    ],`,
+      `  },`,
+      `},`,
+    ],
+    route: customizerPlugins.indentlist.route,
+  },
+  [IndentPlugin.key]: {
+    badges: [customizerBadges.style],
+    id: IndentPlugin.key,
     label: 'Indent',
     npmPackage: '@udecode/plate-indent',
     pluginFactory: 'createIndentPlugin',
@@ -538,25 +500,61 @@ export const customizerItems: Record<string, SettingPlugin> = {
       `inject: {`,
       `  props: {`,
       `    validPlugins: [`,
-      `      ELEMENT_PARAGRAPH,`,
-      `      // ELEMENT_H1, ELEMENT_H2, ELEMENT_H3, ELEMENT_BLOCKQUOTE, ELEMENT_CODE_BLOCK`,
+      `      ParagraphPlugin.key,`,
+      `      // ELEMENT_H1, ELEMENT_H2, ELEMENT_H3, BlockquotePlugin.key, CodeBlockPlugin.key`,
       `    ],`,
       `  },`,
       `},`,
     ],
     route: customizerPlugins.indent.route,
   },
-  [KEY_JUICE]: {
+  [ItalicPlugin.key]: {
+    badges: [customizerBadges.leaf],
+    components: [
+      {
+        cnImports: ['withProps'],
+        id: 'italic',
+        label: 'ItalicLeaf',
+        noImport: true,
+        plateImports: ['PlateLeaf'],
+        pluginKey: 'ItalicPlugin.key',
+        usage: `withProps(PlateLeaf, { as: 'em' })`,
+      },
+    ],
+    id: ItalicPlugin.key,
+    label: 'Italic',
+    npmPackage: '@udecode/plate-basic-marks',
+    pluginFactory: 'createItalicPlugin',
+    route: customizerPlugins.basicmarks.route,
+  },
+  [JuicePlugin.key]: {
     badges: [customizerBadges.handler],
-    id: KEY_JUICE,
+    id: JuicePlugin.key,
     label: 'Juice',
     npmPackage: '@udecode/plate-juice',
     pluginFactory: 'createJuicePlugin',
     route: customizerPlugins.deserializedocx.route,
   },
-  [KEY_LINE_HEIGHT]: {
+  [KbdPlugin.key]: {
+    badges: [customizerBadges.leaf],
+    components: [
+      {
+        id: 'kbd-leaf',
+        label: 'KbdLeaf',
+        pluginKey: 'KbdPlugin.key',
+        route: customizerComponents.kbdLeaf.href,
+        usage: 'KbdLeaf',
+      },
+    ],
+    id: KbdPlugin.key,
+    label: 'Keyboard Input',
+    npmPackage: '@udecode/plate-kbd',
+    pluginFactory: 'createKbdPlugin',
+    route: customizerPlugins.kbd.route,
+  },
+  [LineHeightPlugin.key]: {
     badges: [customizerBadges.style],
-    id: KEY_LINE_HEIGHT,
+    id: LineHeightPlugin.key,
     label: 'Line Height',
     npmPackage: '@udecode/plate-line-height',
     pluginFactory: 'createLineHeightPlugin',
@@ -566,7 +564,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
       `    defaultNodeValue: 1.5,`,
       `    validNodeValues: [1, 1.2, 1.5, 2, 3],`,
       `    validPlugins: [`,
-      `      ELEMENT_PARAGRAPH,`,
+      `      ParagraphPlugin.key,`,
       `      // ELEMENT_H1, ELEMENT_H2, ELEMENT_H3`,
       `    ],`,
       `  },`,
@@ -574,45 +572,115 @@ export const customizerItems: Record<string, SettingPlugin> = {
     ],
     route: customizerPlugins.lineheight.route,
   },
-  [KEY_LIST_STYLE_TYPE]: {
-    badges: [customizerBadges.style],
-    conflicts: ['list'],
-    dependencies: [KEY_INDENT],
-    id: KEY_LIST_STYLE_TYPE,
-    label: 'Indent List',
-    npmPackage: '@udecode/plate-indent-list',
-    pluginFactory: 'createIndentListPlugin',
-    pluginOptions: [
-      `inject: {`,
-      `  props: {`,
-      `    validPlugins: [`,
-      `      ELEMENT_PARAGRAPH,`,
-      `      // ELEMENT_H1, ELEMENT_H2, ELEMENT_H3, ELEMENT_BLOCKQUOTE, ELEMENT_CODE_BLOCK`,
-      `    ],`,
-      `  },`,
-      `},`,
+  [LinkPlugin.key]: {
+    badges: [customizerBadges.element, customizerBadges.inline],
+    components: [
+      {
+        id: 'link-element',
+        label: 'LinkElement',
+        pluginKey: 'LinkPlugin.key',
+        route: customizerComponents.linkElement.href,
+        usage: 'LinkElement',
+      },
+      {
+        id: 'link-floating-toolbar',
+        label: 'LinkFloatingToolbar',
+        plateImports: ['RenderAfterEditable'],
+        pluginOptions: [
+          `renderAfterEditable: LinkFloatingToolbar as RenderAfterEditable,`,
+        ],
+        route: customizerComponents.linkFloatingToolbar.href,
+        usage: 'LinkFloatingToolbar',
+      },
     ],
-    route: customizerPlugins.indentlist.route,
+    id: LinkPlugin.key,
+    label: 'Link',
+    npmPackage: '@udecode/plate-link',
+    pluginFactory: 'createLinkPlugin',
+    route: customizerPlugins.link.route,
   },
-  [KEY_NODE_ID]: {
+  [MediaEmbedPlugin.key]: {
+    badges: [customizerBadges.element, customizerBadges.void],
+    components: [
+      {
+        id: 'media-embed-element',
+        label: 'MediaEmbedElement',
+        pluginKey: 'MediaEmbedPlugin.key',
+        route: customizerComponents.mediaEmbedElement.href,
+        usage: 'MediaEmbedElement',
+      },
+    ],
+    id: MediaEmbedPlugin.key,
+    label: 'Media Embed',
+    npmPackage: '@udecode/plate-media',
+    pluginFactory: 'createMediaEmbedPlugin',
+    route: customizerPlugins.media.route,
+  },
+
+  [MentionPlugin.key]: {
+    badges: [
+      customizerBadges.element,
+      customizerBadges.inline,
+      customizerBadges.void,
+    ],
+    components: [
+      {
+        id: 'mention-element',
+        label: 'MentionElement',
+        pluginKey: 'MentionPlugin.key',
+        route: customizerComponents.mentionElement.href,
+        usage: 'MentionElement',
+      },
+      {
+        id: 'mention-input-element',
+        label: 'MentionInputElement',
+        pluginKey: 'MentionInputPlugin.key',
+        route: customizerComponents.mentionInputElement.href,
+        usage: 'MentionInputElement',
+      },
+    ],
+    id: MentionPlugin.key,
+    label: 'Mention',
+    npmPackage: '@udecode/plate-mention',
+    pluginFactory: 'createMentionPlugin',
+    route: customizerPlugins.mention.route,
+  },
+  [NodeIdPlugin.key]: {
     badges: [customizerBadges.normalizer],
-    id: KEY_NODE_ID,
+    id: NodeIdPlugin.key,
     label: 'Id',
     npmPackage: '@udecode/plate-node-id',
     pluginFactory: 'createNodeIdPlugin',
     // route: settingValues.nodeid.route,
   },
-  [KEY_NORMALIZE_TYPES]: {
+  [NormalizeTypesPlugin.key]: {
     badges: [customizerBadges.normalizer],
-    id: KEY_NORMALIZE_TYPES,
+    id: NormalizeTypesPlugin.key,
     label: 'Normalize Types',
     npmPackage: '@udecode/plate-normalizers',
     pluginFactory: 'createNormalizeTypesPlugin',
     route: customizerPlugins.forcedlayout.route,
   },
-  [KEY_RESET_NODE]: {
+  [ParagraphPlugin.key]: {
+    badges: [customizerBadges.element],
+    components: [
+      {
+        id: 'paragraph-element',
+        label: 'ParagraphElement',
+        pluginKey: 'ParagraphPlugin.key',
+        route: customizerComponents.paragraphElement.href,
+        usage: 'ParagraphElement',
+      },
+    ],
+    id: ParagraphPlugin.key,
+    label: 'Paragraph',
+    npmPackage: '@udecode/plate-common',
+    pluginFactory: 'createParagraphPlugin',
+    route: customizerPlugins.basicnodes.route,
+  },
+  [ResetNodePlugin.key]: {
     badges: [customizerBadges.handler],
-    id: KEY_RESET_NODE,
+    id: ResetNodePlugin.key,
     label: 'Reset Node',
     npmPackage: '@udecode/plate-reset-node',
     pluginFactory: 'createResetNodePlugin',
@@ -625,9 +693,9 @@ export const customizerItems: Record<string, SettingPlugin> = {
     ],
     route: customizerPlugins.resetnode.route,
   },
-  [KEY_SELECT_ON_BACKSPACE]: {
+  [SelectOnBackspacePlugin.key]: {
     badges: [customizerBadges.handler],
-    id: KEY_SELECT_ON_BACKSPACE,
+    id: SelectOnBackspacePlugin.key,
     label: 'Select on Backspace',
     npmPackage: '@udecode/plate-select',
     pluginFactory: 'createSelectOnBackspacePlugin',
@@ -635,27 +703,26 @@ export const customizerItems: Record<string, SettingPlugin> = {
       `options: {`,
       `  query: {`,
       `    allow: [`,
-      `      // ELEMENT_IMAGE, ELEMENT_HR`,
+      `      // ImagePlugin.key, HorizontalRulePlugin.key`,
       `    ],`,
       `  },`,
       `},`,
     ],
     route: customizerPlugins.media.route,
   },
-
-  [KEY_SINGLE_LINE]: {
+  [SingleLinePlugin.key]: {
     badges: [customizerBadges.normalizer],
-    conflicts: [KEY_TRAILING_BLOCK],
-    disablePlugins: [KEY_TRAILING_BLOCK],
-    id: KEY_SINGLE_LINE,
+    conflicts: [TrailingBlockPlugin.key],
+    disablePlugins: [TrailingBlockPlugin.key],
+    id: SingleLinePlugin.key,
     label: 'Single Line',
     npmPackage: '@udecode/plate-break',
     pluginFactory: 'createSingleLinePlugin',
     route: customizerPlugins.singleline.route,
   },
-  [KEY_SOFT_BREAK]: {
+  [SoftBreakPlugin.key]: {
     badges: [customizerBadges.handler],
-    id: KEY_SOFT_BREAK,
+    id: SoftBreakPlugin.key,
     label: 'Soft Break',
     // options: {
     //         rules: [
@@ -663,7 +730,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     //           {
     //             hotkey: 'enter',
     //             query: {
-    //               allow: [ELEMENT_CODE_BLOCK, ELEMENT_BLOCKQUOTE, ELEMENT_TD],
+    //               allow: [CodeBlockPlugin.key, BlockquotePlugin.key, TableCellPlugin.key],
     //             },
     //           },
     //         ],
@@ -678,7 +745,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
       `      hotkey: 'enter',`,
       `      query: {`,
       `        allow: [`,
-      `          // ELEMENT_CODE_BLOCK, ELEMENT_BLOCKQUOTE, ELEMENT_TD`,
+      `          // CodeBlockPlugin.key, BlockquotePlugin.key, TableCellPlugin.key`,
       `        ],`,
       `      },`,
       `    },`,
@@ -687,163 +754,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     ],
     route: customizerPlugins.softbreak.route,
   },
-  [KEY_TABBABLE]: {
-    badges: [customizerBadges.handler],
-    id: KEY_TABBABLE,
-    label: 'Tabbable',
-    npmPackage: '@udecode/plate-tabbable',
-    pluginFactory: 'createTabbablePlugin',
-    route: customizerPlugins.tabbable.route,
-  },
-  [KEY_TRAILING_BLOCK]: {
-    badges: [customizerBadges.normalizer],
-    conflicts: [KEY_SINGLE_LINE],
-    disablePlugins: [KEY_SINGLE_LINE],
-    id: KEY_TRAILING_BLOCK,
-    label: 'Trailing Block',
-    npmPackage: '@udecode/plate-trailing-block',
-    pluginFactory: 'createTrailingBlockPlugin',
-    pluginOptions: [`options: { type: ELEMENT_PARAGRAPH },`],
-    route: customizerPlugins.trailingblock.route,
-  },
-  [MARK_BG_COLOR]: {
-    badges: [customizerBadges.style],
-    id: MARK_BG_COLOR,
-    label: 'Font Background',
-    npmPackage: '@udecode/plate-font',
-    pluginFactory: 'createFontBackgroundColorPlugin',
-    route: customizerPlugins.font.route,
-  },
-  [MARK_BOLD]: {
-    badges: [customizerBadges.leaf],
-    components: [
-      {
-        cnImports: ['withProps'],
-        id: 'bold',
-        label: 'BoldLeaf',
-        noImport: true,
-        plateImports: ['PlateLeaf'],
-        pluginKey: 'MARK_BOLD',
-        usage: `withProps(PlateLeaf, { as: 'strong' })`,
-      },
-    ],
-    id: MARK_BOLD,
-    label: 'Bold',
-    npmPackage: '@udecode/plate-basic-marks',
-    pluginFactory: 'createBoldPlugin',
-    route: customizerPlugins.basicmarks.route,
-  },
-  [MARK_CODE]: {
-    badges: [customizerBadges.leaf],
-    components: [
-      {
-        id: 'code-leaf',
-        label: 'CodeLeaf',
-        pluginKey: 'MARK_CODE',
-        route: customizerComponents.codeLeaf.href,
-        usage: `CodeLeaf`,
-      },
-    ],
-    id: MARK_CODE,
-    label: 'Code',
-    npmPackage: '@udecode/plate-basic-marks',
-    pluginFactory: 'createCodePlugin',
-    route: customizerPlugins.basicmarks.route,
-  },
-  [MARK_COLOR]: {
-    badges: [customizerBadges.style],
-    id: MARK_COLOR,
-    label: 'Font Color',
-    npmPackage: '@udecode/plate-font',
-    pluginFactory: 'createFontColorPlugin',
-    route: customizerPlugins.font.route,
-  },
-  [MARK_COMMENT]: {
-    badges: [customizerBadges.leaf],
-    components: [
-      {
-        id: 'comment-leaf',
-        label: 'CommentLeaf',
-        pluginKey: 'MARK_COMMENT',
-        route: customizerComponents.commentLeaf.href,
-        usage: 'CommentLeaf',
-      },
-      {
-        id: 'comments-popover',
-        label: 'CommentsPopover',
-        route: customizerComponents.commentsPopover.href,
-        usage: 'CommentsPopover',
-      },
-    ],
-    id: MARK_COMMENT,
-    label: 'Comments',
-    npmPackage: '@udecode/plate-comments',
-    packageImports: ['CommentsProvider'],
-    pluginFactory: 'createCommentsPlugin',
-    route: customizerPlugins.comment.route,
-  },
-  [MARK_FONT_SIZE]: {
-    badges: [customizerBadges.style],
-    id: MARK_FONT_SIZE,
-    label: 'Font Size',
-    npmPackage: '@udecode/plate-font',
-    pluginFactory: 'createFontSizePlugin',
-    route: customizerPlugins.font.route,
-  },
-  [MARK_HIGHLIGHT]: {
-    badges: [customizerBadges.leaf],
-    components: [
-      {
-        id: 'highlight-leaf',
-        label: 'HighlightLeaf',
-        pluginKey: 'MARK_HIGHLIGHT',
-        route: customizerComponents.highlightLeaf.href,
-        usage: 'HighlightLeaf',
-      },
-    ],
-    id: MARK_HIGHLIGHT,
-    label: 'Highlight',
-    npmPackage: '@udecode/plate-highlight',
-    pluginFactory: 'createHighlightPlugin',
-    route: customizerPlugins.highlight.route,
-  },
-  [MARK_ITALIC]: {
-    badges: [customizerBadges.leaf],
-    components: [
-      {
-        cnImports: ['withProps'],
-        id: 'italic',
-        label: 'ItalicLeaf',
-        noImport: true,
-        plateImports: ['PlateLeaf'],
-        pluginKey: 'MARK_ITALIC',
-        usage: `withProps(PlateLeaf, { as: 'em' })`,
-      },
-    ],
-    id: MARK_ITALIC,
-    label: 'Italic',
-    npmPackage: '@udecode/plate-basic-marks',
-    pluginFactory: 'createItalicPlugin',
-    route: customizerPlugins.basicmarks.route,
-  },
-  [MARK_KBD]: {
-    badges: [customizerBadges.leaf],
-    components: [
-      {
-        id: 'kbd-leaf',
-        label: 'KbdLeaf',
-        pluginKey: 'MARK_KBD',
-        route: customizerComponents.kbdLeaf.href,
-        usage: 'KbdLeaf',
-      },
-    ],
-    id: MARK_KBD,
-    label: 'Keyboard Input',
-    npmPackage: '@udecode/plate-kbd',
-    pluginFactory: 'createKbdPlugin',
-    route: customizerPlugins.kbd.route,
-  },
-  [MARK_STRIKETHROUGH]: {
+  [StrikethroughPlugin.key]: {
     badges: [customizerBadges.leaf],
     components: [
       {
@@ -852,17 +763,17 @@ export const customizerItems: Record<string, SettingPlugin> = {
         label: 'StrikethroughLeaf',
         noImport: true,
         plateImports: ['PlateLeaf'],
-        pluginKey: 'MARK_STRIKETHROUGH',
+        pluginKey: 'StrikethroughPlugin.key',
         usage: `withProps(PlateLeaf, { as: 's' })`,
       },
     ],
-    id: MARK_STRIKETHROUGH,
+    id: StrikethroughPlugin.key,
     label: 'Strikethrough',
     npmPackage: '@udecode/plate-basic-marks',
     pluginFactory: 'createStrikethroughPlugin',
     route: customizerPlugins.basicmarks.route,
   },
-  [MARK_SUBSCRIPT]: {
+  [SubscriptPlugin.key]: {
     badges: [customizerBadges.leaf],
     components: [
       {
@@ -871,17 +782,17 @@ export const customizerItems: Record<string, SettingPlugin> = {
         label: 'SubscriptLeaf',
         noImport: true,
         plateImports: ['PlateLeaf'],
-        pluginKey: 'MARK_SUBSCRIPT',
+        pluginKey: 'SubscriptPlugin.key',
         usage: `withProps(PlateLeaf, { as: 'sub' })`,
       },
     ],
-    id: MARK_SUBSCRIPT,
+    id: SubscriptPlugin.key,
     label: 'Subscript',
     npmPackage: '@udecode/plate-basic-marks',
     pluginFactory: 'createSubscriptPlugin',
     route: customizerPlugins.basicmarks.route,
   },
-  [MARK_SUPERSCRIPT]: {
+  [SuperscriptPlugin.key]: {
     badges: [customizerBadges.leaf],
     components: [
       {
@@ -890,17 +801,110 @@ export const customizerItems: Record<string, SettingPlugin> = {
         label: 'SuperscriptLeaf',
         noImport: true,
         plateImports: ['PlateLeaf'],
-        pluginKey: 'MARK_SUPERSCRIPT',
+        pluginKey: 'SuperscriptPlugin.key',
         usage: `withProps(PlateLeaf, { as: 'sup' })`,
       },
     ],
-    id: MARK_SUPERSCRIPT,
+    id: SuperscriptPlugin.key,
     label: 'Superscript',
     npmPackage: '@udecode/plate-basic-marks',
     pluginFactory: 'createSuperscriptPlugin',
     route: customizerPlugins.basicmarks.route,
   },
-  [MARK_UNDERLINE]: {
+  [TabbablePlugin.key]: {
+    badges: [customizerBadges.handler],
+    id: TabbablePlugin.key,
+    label: 'Tabbable',
+    npmPackage: '@udecode/plate-tabbable',
+    pluginFactory: 'createTabbablePlugin',
+    route: customizerPlugins.tabbable.route,
+  },
+  [TablePlugin.key]: {
+    badges: [customizerBadges.element],
+    components: [
+      {
+        id: 'table-element',
+        label: 'TableElement',
+        pluginKey: 'TablePlugin.key',
+        route: customizerComponents.tableElement.href,
+        usage: 'TableElement',
+      },
+      {
+        id: 'table-row-element',
+        label: 'TableRowElement',
+        pluginKey: 'TableRowPlugin.key',
+        route: customizerComponents.tableRowElement.href,
+        usage: 'TableRowElement',
+      },
+      {
+        filename: 'table-cell-element',
+        id: 'td',
+        label: 'TableCellElement',
+        pluginKey: 'TableCellPlugin.key',
+        route: customizerComponents.tableCellElement.href,
+        usage: 'TableCellElement',
+      },
+      {
+        filename: 'table-cell-element',
+        id: 'th',
+        label: 'TableCellHeaderElement',
+        pluginKey: 'TableCellHeaderPlugin.key',
+        route: customizerComponents.tableCellElement.href,
+        usage: 'TableCellHeaderElement',
+      },
+    ],
+    id: TablePlugin.key,
+    label: 'Table',
+    npmPackage: '@udecode/plate-table',
+    pluginFactory: 'createTablePlugin',
+    route: customizerPlugins.table.route,
+  },
+  [TodoListPlugin.key]: {
+    badges: [customizerBadges.element],
+    components: [
+      {
+        id: 'todo-list-element',
+        label: 'TodoListElement',
+        pluginKey: 'TodoListPlugin.key',
+        route: customizerComponents.todoListElement.href,
+        usage: 'TodoListElement',
+      },
+    ],
+    id: TodoListPlugin.key,
+    label: 'Todo List',
+    npmPackage: '@udecode/plate-list',
+    pluginFactory: 'createTodoListPlugin',
+    route: customizerPlugins.todoli.route,
+  },
+  [TogglePlugin.key]: {
+    badges: [customizerBadges.element],
+    components: [
+      {
+        id: 'toggle-element',
+        label: 'ToggleElement',
+        pluginKey: 'TogglePlugin.key',
+        route: customizerComponents.toggleElement.href,
+        usage: 'ToggleElement',
+      },
+    ],
+    id: TogglePlugin.key,
+    label: 'Toggle',
+    npmPackage: '@udecode/plate-toggle',
+    pluginFactory: 'createTogglePlugin',
+    route: customizerPlugins.toggle.route,
+  },
+  [TrailingBlockPlugin.key]: {
+    badges: [customizerBadges.normalizer],
+    conflicts: [SingleLinePlugin.key],
+    disablePlugins: [SingleLinePlugin.key],
+    id: TrailingBlockPlugin.key,
+    label: 'Trailing Block',
+    npmPackage: '@udecode/plate-trailing-block',
+    pluginFactory: 'createTrailingBlockPlugin',
+    pluginOptions: [`options: { type: ParagraphPlugin.key },`],
+    route: customizerPlugins.trailingblock.route,
+  },
+  [UnderlinePlugin.key]: {
     badges: [customizerBadges.leaf],
     components: [
       {
@@ -909,11 +913,11 @@ export const customizerItems: Record<string, SettingPlugin> = {
         label: 'UnderlineLeaf',
         noImport: true,
         plateImports: ['PlateLeaf'],
-        pluginKey: 'MARK_UNDERLINE',
+        pluginKey: 'UnderlinePlugin.key',
         usage: `withProps(PlateLeaf, { as: 'u' })`,
       },
     ],
-    id: MARK_UNDERLINE,
+    id: UnderlinePlugin.key,
     label: 'Underline',
     npmPackage: '@udecode/plate-basic-marks',
     pluginFactory: 'createUnderlinePlugin',
@@ -926,14 +930,14 @@ export const customizerItems: Record<string, SettingPlugin> = {
       {
         id: 'column-group-element',
         label: 'ColumnGroupElement',
-        pluginKey: 'ELEMENT_COLUMN_GROUP',
+        pluginKey: 'ColumnPlugin.key',
         route: customizerComponents.columnGroupElement.href,
         usage: 'ColumnGroupElement',
       },
       {
         id: 'column-element',
         label: 'ColumnElement',
-        pluginKey: 'ELEMENT_COLUMN',
+        pluginKey: 'ColumnItemPlugin.key',
         route: customizerComponents.columnElement.href,
         usage: 'ColumnElement',
       },
@@ -1067,7 +1071,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
         id: 'ul',
         import: 'ListElement',
         label: 'BulletedListElement',
-        pluginKey: 'ELEMENT_UL',
+        pluginKey: 'ListUnorderedPlugin.key',
         route: customizerComponents.listElement.href,
         usage: `withProps(ListElement, { variant: 'ul' })`,
       },
@@ -1078,7 +1082,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
         import: 'ListElement',
         label: 'NumberedListElement',
         noImport: true,
-        pluginKey: 'ELEMENT_OL',
+        pluginKey: 'ListOrderedPlugin.key',
         route: customizerComponents.listElement.href,
         usage: `withProps(ListElement, { variant: 'ol' })`,
       },
@@ -1089,11 +1093,11 @@ export const customizerItems: Record<string, SettingPlugin> = {
         label: 'ListItemElement',
         noImport: true,
         plateImports: ['PlateElement'],
-        pluginKey: 'ELEMENT_LI',
+        pluginKey: 'ListItemPlugin.key',
         usage: `withProps(PlateElement, { as: 'li' })`,
       },
     ],
-    conflicts: [KEY_LIST_STYLE_TYPE],
+    conflicts: [IndentListPlugin.key],
     id: 'list',
     label: 'List',
     npmPackage: '@udecode/plate-list',
