@@ -7,6 +7,12 @@ import type {
 } from '@udecode/plate-code-block';
 import type { TCommentText } from '@udecode/plate-comments';
 import type {
+  ElementOf,
+  TElement,
+  TPlateEditor,
+  TText,
+} from '@udecode/plate-common';
+import type {
   ELEMENT_EXCALIDRAW,
   TExcalidrawElement,
 } from '@udecode/plate-excalidraw';
@@ -48,29 +54,9 @@ import type {
 } from '@udecode/plate-table';
 import type { ELEMENT_TOGGLE, TToggleElement } from '@udecode/plate-toggle';
 
-import {
-  type EElement,
-  type TElement,
-  type TPlateEditor,
-  type TText,
-  createPlugin,
-} from '@udecode/plate-common';
 import { useEditorRef } from '@udecode/plate-common/react';
 
 /** Text */
-
-const MyCustomPlugin = createPlugin({
-  api: {
-    myCustomMethod: () => {},
-  },
-  key: 'myCustom',
-});
-
-// const editor = withPlate<Value, typeof MyCustomPlugin>(createTEditor(), {
-//   plugins: [MyCustomPlugin],
-// });
-// const b: TPlateEditor<Value, typeof MyCustomPlugin> = {};
-// b.api.myCustomMethod();
 
 export type EmptyText = {
   text: '';
@@ -268,7 +254,7 @@ export interface MyExcalidrawElement
 
 export type MyNestableBlock = MyParagraphElement;
 
-export type MyElement = EElement<MyValue>;
+export type MyElement = ElementOf<MyEditor>;
 
 export type MyBlock = Exclude<MyElement, MyInlineElement>;
 

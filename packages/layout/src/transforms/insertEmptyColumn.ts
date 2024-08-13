@@ -1,5 +1,3 @@
-import type { ValueOf } from '@udecode/plate-common';
-
 import {
   ELEMENT_DEFAULT,
   type InsertNodesOptions,
@@ -14,7 +12,7 @@ import { ELEMENT_COLUMN } from '../ColumnPlugin';
 
 export const insertEmptyColumn = <E extends PlateEditor>(
   editor: E,
-  options?: { width?: string } & InsertNodesOptions<ValueOf<E>>
+  options?: { width?: string } & InsertNodesOptions<E>
 ) => {
   const width = options?.width || '33%';
 

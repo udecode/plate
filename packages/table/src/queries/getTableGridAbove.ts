@@ -1,11 +1,9 @@
-import type { ValueOf } from '@udecode/plate-common';
-
 import {
   type GetAboveNodeOptions,
   type PlateEditor,
+  type TEditor,
   type TElement,
   type TElementEntry,
-  type Value,
   getEdgeBlocksAbove,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
@@ -17,13 +15,13 @@ import {
   getTableGridByRange,
 } from './getTableGridByRange';
 
-export type GetTableGridAboveOptions<V extends Value = Value> =
-  GetAboveNodeOptions<V> & Pick<GetTableGridByRangeOptions, 'format'>;
+export type GetTableGridAboveOptions<E extends TEditor = TEditor> =
+  GetAboveNodeOptions<E> & Pick<GetTableGridByRangeOptions, 'format'>;
 
 /** Get sub table above anchor and focus. Format: tables or cells. */
 export const getTableGridAbove = <E extends PlateEditor>(
   editor: E,
-  { format = 'table', ...options }: GetTableGridAboveOptions<ValueOf<E>> = {}
+  { format = 'table', ...options }: GetTableGridAboveOptions<E> = {}
 ): TElementEntry[] => {
   const edges = getEdgeBlocksAbove<TElement>(editor, {
     match: {

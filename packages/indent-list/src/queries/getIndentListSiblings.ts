@@ -1,10 +1,9 @@
 import type {
-  EElement,
-  EElementEntry,
+  ElementEntryOf,
+  ElementOf,
   TEditor,
   TElement,
   TNodeEntry,
-  Value,
 } from '@udecode/plate-common';
 
 import type { GetSiblingIndentListOptions } from './getSiblingIndentList';
@@ -14,26 +13,26 @@ import { getNextIndentList } from './getNextIndentList';
 import { getPreviousIndentList } from './getPreviousIndentList';
 
 export interface GetIndentListSiblingsOptions<
-  N extends EElement<V>,
-  V extends Value = Value,
-> extends Partial<GetSiblingIndentListOptions<N, V>> {
+  N extends ElementOf<E>,
+  E extends TEditor = TEditor,
+> extends Partial<GetSiblingIndentListOptions<N, E>> {
   current?: boolean;
   next?: boolean;
   previous?: boolean;
 }
 
 export const getIndentListSiblings = <
-  N extends EElement<V>,
-  V extends Value = Value,
+  N extends ElementOf<E>,
+  E extends TEditor = TEditor,
 >(
-  editor: TEditor<V>,
-  entry: EElementEntry<V>,
+  editor: E,
+  entry: ElementEntryOf<E>,
   {
     current = true,
     next = true,
     previous = true,
     ...options
-  }: GetIndentListSiblingsOptions<N, V> = {}
+  }: GetIndentListSiblingsOptions<N, E> = {}
 ) => {
   const siblings: TNodeEntry[] = [];
 
@@ -49,7 +48,7 @@ export const getIndentListSiblings = <
   if (previous) {
     // eslint-disable-next-line no-constant-condition
     while (true) {
-      const prevEntry = getPreviousIndentList<N, V>(editor, iterEntry, options);
+      const prevEntry = getPreviousIndentList<N, E>(editor, iterEntry, options);
 
       if (!prevEntry) break;
 

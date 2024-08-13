@@ -1,5 +1,3 @@
-import type { ValueOf } from '@udecode/plate-common';
-
 import {
   type FindNodeOptions,
   type PlateEditor,
@@ -12,7 +10,7 @@ import { MARK_SUGGESTION } from '../constants';
 
 export const findSuggestionNode = <E extends PlateEditor>(
   editor: E,
-  { match, ...options }: FindNodeOptions<ValueOf<E>> = {}
+  { match, ...options }: FindNodeOptions<E> = {}
 ) =>
   findNode<TSuggestionText>(editor, {
     match: (n, p) => n[MARK_SUGGESTION] && (!match || (match as any)(n, p)),

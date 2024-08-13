@@ -1,5 +1,3 @@
-import type { ValueOf } from '@udecode/plate-common';
-
 import {
   type GetAboveNodeOptions,
   type PlateEditor,
@@ -11,7 +9,7 @@ import { ELEMENT_TABLE } from '../TablePlugin';
 
 export const getTableAbove = <E extends PlateEditor>(
   editor: E,
-  options?: GetAboveNodeOptions<ValueOf<E>>
+  options?: GetAboveNodeOptions<E>
 ) =>
   getBlockAbove(editor, {
     match: {

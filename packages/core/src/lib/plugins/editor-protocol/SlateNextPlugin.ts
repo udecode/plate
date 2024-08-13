@@ -1,13 +1,12 @@
 import type { Path } from 'slate';
 
 import {
-  type EAncestor,
+  type AncestorOf,
   type GetAboveNodeOptions,
   type TEditor,
   type TElement,
   type TRange,
   type Value,
-  type ValueOf,
   getAboveNode,
   getMarks,
   isExpanded,
@@ -22,21 +21,18 @@ import { getPluginType } from '../../plugin';
 import { createPlugin } from '../../plugin/createPlugin';
 import { resetEditor } from '../../transforms';
 
-const getBlockAbove = <
-  N extends EAncestor<ValueOf<E>>,
-  E extends TEditor = TEditor,
->(
+const getBlockAbove = <N extends AncestorOf<E>, E extends TEditor = TEditor>(
   editor: E,
-  options: GetAboveNodeOptions<ValueOf<E>> = {}
+  options: GetAboveNodeOptions<E> = {}
 ) =>
-  getAboveNode<N, ValueOf<E>>(editor, {
+  getAboveNode<N, E>(editor, {
     ...options,
     block: true,
   });
 
-const isSelectionAtBlockStart = <E extends TEditor = TEditor>(
+const isSelectionAtBlockStart = <E extends TEditor>(
   editor: E,
-  options?: GetAboveNodeOptions<ValueOf<E>>
+  options?: GetAboveNodeOptions<E>
 ) => {
   const { selection } = editor;
 

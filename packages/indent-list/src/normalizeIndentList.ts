@@ -1,8 +1,7 @@
 import {
-  type ENodeEntry,
+  type NodeEntryOf,
   type TEditor,
   type TElement,
-  type Value,
   withoutNormalizing,
 } from '@udecode/plate-common';
 
@@ -11,17 +10,17 @@ import type { IndentListPluginOptions } from './IndentListPlugin';
 import { normalizeIndentListNotIndented } from './normalizers/normalizeIndentListNotIndented';
 import { normalizeIndentListStart } from './normalizers/normalizeIndentListStart';
 
-export const normalizeIndentList = <V extends Value>(
-  editor: TEditor<V>,
+export const normalizeIndentList = <E extends TEditor>(
+  editor: E,
   { getSiblingIndentListOptions }: IndentListPluginOptions = {}
 ) => {
   const { normalizeNode } = editor;
 
-  return ([node, path]: ENodeEntry<V>) => {
+  return ([node, path]: NodeEntryOf<E>) => {
     const normalized = withoutNormalizing(editor, () => {
       if (normalizeIndentListNotIndented(editor, [node, path])) return true;
       if (
-        normalizeIndentListStart<TElement, Value>(
+        normalizeIndentListStart(
           editor,
           [node as TElement, path],
           getSiblingIndentListOptions

@@ -1,6 +1,5 @@
 import {
   type GetNodeEntriesOptions,
-  type Value,
   getNodesRange,
   removeNodes,
   unhangRange,
@@ -10,9 +9,9 @@ import { type TReactEditor, focusEditor } from '@udecode/plate-common/react';
 import { getBlocksWithId } from '../queries/getBlocksWithId';
 
 /** Remove blocks with an id and focus the editor. */
-export const removeBlocksAndFocus = <V extends Value>(
-  editor: TReactEditor<V>,
-  options: GetNodeEntriesOptions<V>
+export const removeBlocksAndFocus = <E extends TReactEditor = TReactEditor>(
+  editor: E,
+  options: GetNodeEntriesOptions<E>
 ) => {
   unhangRange(editor, options?.at, options);
 

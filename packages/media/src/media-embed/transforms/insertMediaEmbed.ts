@@ -1,7 +1,6 @@
 import {
   type InsertNodesOptions,
   type PlateEditor,
-  type ValueOf,
   getParentNode,
   insertNodes,
 } from '@udecode/plate-common';
@@ -16,7 +15,7 @@ export const insertMediaEmbed = <E extends PlateEditor>(
     key = ELEMENT_MEDIA_EMBED,
     url = '',
   }: { key?: string } & Partial<TMediaEmbedElement>,
-  options: InsertNodesOptions<ValueOf<E>> = {}
+  options: InsertNodesOptions<E> = {}
 ): void => {
   if (!editor.selection) return;
 

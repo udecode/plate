@@ -2,7 +2,6 @@ import {
   type InsertNodesOptions,
   type PlateEditor,
   type TNodeProps,
-  type ValueOf,
   getParentNode,
   insertNodes,
 } from '@udecode/plate-common';
@@ -17,7 +16,7 @@ export const insertExcalidraw = <E extends PlateEditor>(
     key = ELEMENT_EXCALIDRAW,
     ...props
   }: { key?: string } & TNodeProps<TExcalidrawElement> = {},
-  options: InsertNodesOptions<ValueOf<E>> = {}
+  options: InsertNodesOptions<E> = {}
 ): void => {
   if (!editor.selection) return;
 

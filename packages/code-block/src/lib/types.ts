@@ -1,8 +1,8 @@
 import type {
   HotkeyPluginOptions,
   InsertNodesOptions,
+  TEditor,
   TElement,
-  Value,
 } from '@udecode/plate-common';
 import type { Token, languages, tokenize } from 'prismjs';
 
@@ -23,7 +23,7 @@ export interface TCodeBlockElement extends TElement {
   lang?: string;
 }
 
-export interface CodeBlockInsertOptions<V extends Value = Value> {
+export interface CodeBlockInsertOptions<E extends TEditor = TEditor> {
   defaultType?: string;
-  insertNodesOptions?: Omit<InsertNodesOptions<V>, 'match'>;
+  insertNodesOptions?: Omit<InsertNodesOptions<E>, 'match'>;
 }

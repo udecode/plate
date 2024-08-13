@@ -148,7 +148,7 @@ Retrieves the start point of the next node at a specified path in the editor.
 Retrieves the sibling nodes following a specified path in the ancestor node.
 
 <APIParameters>
-  <APIItem name="ancestorEntry" type="EAncestorEntry">
+  <APIItem name="ancestorEntry" type="AncestorEntryOf<E>">
     The ancestor node of the sibling nodes.
   </APIItem>
   <APIItem name="path" type="Path">
@@ -758,7 +758,7 @@ Sets marks to selected text.
   <APIItem name="editor" type="TEditor">
     The editor instance.
   </APIItem>
-  <APIItem name="marks" type="EMarks">
+  <APIItem name="marks" type="MarksOf<E>">
     The marks to set.
   </APIItem>
   <APIItem name="clear" type="string | string[]" optional>

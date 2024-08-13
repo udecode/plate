@@ -1,7 +1,6 @@
 import {
-  type EElementOrText,
+  type ElementOrTextOf,
   type TEditor,
-  type Value,
   insertNodes,
   removeNodes,
   withoutNormalizing,
@@ -10,11 +9,11 @@ import {
 import type { ReplaceNodeChildrenOptions } from './replaceNodeChildren';
 
 export const replaceNode = <
-  N extends EElementOrText<V>,
-  V extends Value = Value,
+  N extends ElementOrTextOf<E>,
+  E extends TEditor = TEditor,
 >(
-  editor: TEditor<V>,
-  { at, insertOptions, nodes, removeOptions }: ReplaceNodeChildrenOptions<N, V>
+  editor: E,
+  { at, insertOptions, nodes, removeOptions }: ReplaceNodeChildrenOptions<N, E>
 ) => {
   withoutNormalizing(editor, () => {
     removeNodes(editor, { ...removeOptions, at });

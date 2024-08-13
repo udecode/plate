@@ -2,10 +2,9 @@ import type { Modify } from '@udecode/utils';
 import type { Path } from 'slate';
 
 import {
-  type EElement,
+  type ElementOf,
   type TEditor,
   type TElement,
-  type Value,
   type WrapNodesOptions,
   getNode,
   withoutNormalizing,
@@ -21,12 +20,12 @@ import { moveChildren } from './moveChildren';
  * - Move the other child nodes next to the element children.
  */
 export const wrapNodeChildren = <
-  N extends EElement<V>,
-  V extends Value = Value,
+  N extends ElementOf<E>,
+  E extends TEditor = TEditor,
 >(
-  editor: TEditor<V>,
+  editor: E,
   element: N,
-  options: Modify<WrapNodesOptions<V>, { at: Path }>
+  options: Modify<WrapNodesOptions<E>, { at: Path }>
 ) => {
   const path = options?.at;
   const node = getNode<TElement>(editor, path);

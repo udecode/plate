@@ -1,11 +1,10 @@
 import {
-  type EElement,
-  type EElementEntry,
-  type EElementOrText,
+  type ElementEntryOf,
+  type ElementOf,
+  type ElementOrTextOf,
   type TEditor,
   type TNode,
   type TNodeEntry,
-  type Value,
   isDefined,
 } from '@udecode/plate-common';
 import { KEY_INDENT } from '@udecode/plate-indent';
@@ -13,8 +12,8 @@ import { KEY_INDENT } from '@udecode/plate-indent';
 import { KEY_LIST_STYLE_TYPE } from '../IndentListPlugin';
 
 export interface GetSiblingIndentListOptions<
-  N extends EElement<V>,
-  V extends Value = Value,
+  N extends ElementOf<E>,
+  E extends TEditor = TEditor,
 > {
   breakOnEqIndentNeqListStyleType?: boolean;
   breakOnLowerIndent?: boolean;
@@ -22,10 +21,10 @@ export interface GetSiblingIndentListOptions<
   /** Query to break lookup */
   eqIndent?: boolean;
   getNextEntry?: (
-    entry: TNodeEntry<EElementOrText<V>>
+    entry: TNodeEntry<ElementOrTextOf<E>>
   ) => TNodeEntry<N> | undefined;
   getPreviousEntry?: (
-    entry: TNodeEntry<EElementOrText<V>>
+    entry: TNodeEntry<ElementOrTextOf<E>>
   ) => TNodeEntry<N> | undefined;
   /** Query to validate lookup. If false, check the next sibling. */
   query?: (siblingNode: TNode) => boolean | undefined;
@@ -36,11 +35,11 @@ export interface GetSiblingIndentListOptions<
  * have the same listStyleType.
  */
 export const getSiblingIndentList = <
-  N extends EElement<V>,
-  V extends Value = Value,
+  N extends ElementOf<E>,
+  E extends TEditor = TEditor,
 >(
-  editor: TEditor<V>,
-  [node, path]: EElementEntry<V>,
+  editor: E,
+  [node, path]: ElementEntryOf<E>,
   {
     breakOnEqIndentNeqListStyleType = true,
     breakOnLowerIndent = true,
@@ -49,7 +48,7 @@ export const getSiblingIndentList = <
     getNextEntry,
     getPreviousEntry,
     query,
-  }: GetSiblingIndentListOptions<N, V>
+  }: GetSiblingIndentListOptions<N, E>
 ): TNodeEntry<N> | undefined => {
   if (!getPreviousEntry && !getNextEntry) return;
 

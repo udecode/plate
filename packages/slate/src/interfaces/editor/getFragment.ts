@@ -1,10 +1,10 @@
 import { Editor, type Location } from 'slate';
 
-import type { EElementOrText } from '../element/TElement';
-import type { TEditor, Value } from './TEditor';
+import type { ElementOrTextOf } from '../element/TElement';
+import type { TEditor } from './TEditor';
 
 /** Get the fragment at a location. */
-export const getFragment = <V extends Value>(
-  editor: TEditor<V>,
+export const getFragment = <E extends TEditor>(
+  editor: E,
   at: Location
-): EElementOrText<V>[] => Editor.fragment(editor as any, at) as any;
+): ElementOrTextOf<E>[] => Editor.fragment(editor as any, at) as any;

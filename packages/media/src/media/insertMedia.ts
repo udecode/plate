@@ -1,9 +1,7 @@
-import type { ValueOf } from '@udecode/plate-common';
-
 import {
   type InsertNodesOptions,
   type PlateEditor,
-  type Value,
+  type TEditor,
   getPluginType,
 } from '@udecode/plate-common';
 
@@ -14,8 +12,8 @@ import {
   insertMediaEmbed,
 } from '..';
 
-export interface InsertMediaOptions<V extends Value>
-  extends InsertNodesOptions<V> {
+export interface InsertMediaOptions<E extends TEditor = TEditor>
+  extends InsertNodesOptions<E> {
   /**
    * Default onClick is getting the image url by calling this promise before
    * inserting the image.
@@ -31,7 +29,7 @@ export const insertMedia = async <E extends PlateEditor>(
     getUrl,
     type = getPluginType(editor, ELEMENT_IMAGE),
     ...options
-  }: InsertMediaOptions<ValueOf<E>> = {}
+  }: InsertMediaOptions<E> = {}
 ) => {
   const url = getUrl
     ? await getUrl()

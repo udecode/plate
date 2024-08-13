@@ -1,7 +1,6 @@
 import {
   type InsertNodesOptions,
   type PlateEditor,
-  type ValueOf,
   insertNodes,
 } from '@udecode/plate-common';
 
@@ -11,7 +10,7 @@ import { ELEMENT_CALLOUT } from '../CalloutPlugin';
 
 export const insertCallout = <E extends PlateEditor>(
   editor: E,
-  options?: InsertNodesOptions<ValueOf<E>>
+  options?: InsertNodesOptions<E>
 ) => {
   insertNodes<TCalloutElement>(
     editor,

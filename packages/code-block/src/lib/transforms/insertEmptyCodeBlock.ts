@@ -1,5 +1,3 @@
-import type { ValueOf } from '@udecode/plate-common';
-
 import {
   ELEMENT_DEFAULT,
   type PlateEditor,
@@ -22,7 +20,7 @@ export const insertEmptyCodeBlock = <E extends PlateEditor>(
   {
     defaultType = getPluginType(editor, ELEMENT_DEFAULT),
     insertNodesOptions,
-  }: CodeBlockInsertOptions<ValueOf<E>> = {}
+  }: CodeBlockInsertOptions<E> = {}
 ) => {
   if (!editor.selection) return;
   if (isExpanded(editor.selection) || !isBlockAboveEmpty(editor)) {

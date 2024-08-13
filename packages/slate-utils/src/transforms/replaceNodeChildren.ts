@@ -1,11 +1,10 @@
 import type { Path } from 'slate';
 
 import {
-  type EElementOrText,
+  type ElementOrTextOf,
   type InsertNodesOptions,
   type RemoveNodesOptions,
   type TEditor,
-  type Value,
   insertNodes,
   withoutNormalizing,
 } from '@udecode/slate';
@@ -13,22 +12,22 @@ import {
 import { removeNodeChildren } from './removeNodeChildren';
 
 export interface ReplaceNodeChildrenOptions<
-  N extends EElementOrText<V>,
-  V extends Value = Value,
+  N extends ElementOrTextOf<E>,
+  E extends TEditor = TEditor,
 > {
   at: Path;
   nodes: N | N[];
-  insertOptions?: Omit<InsertNodesOptions<V>, 'at'>;
-  removeOptions?: Omit<RemoveNodesOptions<V>, 'at'>;
+  insertOptions?: Omit<InsertNodesOptions<E>, 'at'>;
+  removeOptions?: Omit<RemoveNodesOptions<E>, 'at'>;
 }
 
 /** Replace node children: remove then insert. */
 export const replaceNodeChildren = <
-  N extends EElementOrText<V>,
-  V extends Value = Value,
+  N extends ElementOrTextOf<E>,
+  E extends TEditor = TEditor,
 >(
-  editor: TEditor<V>,
-  { at, insertOptions, nodes, removeOptions }: ReplaceNodeChildrenOptions<N, V>
+  editor: E,
+  { at, insertOptions, nodes, removeOptions }: ReplaceNodeChildrenOptions<N, E>
 ) => {
   withoutNormalizing(editor, () => {
     removeNodeChildren(editor, at, removeOptions);

@@ -1,7 +1,6 @@
 import {
   type GetAboveNodeOptions,
   type TEditor,
-  type Value,
   findNode,
   setNodes,
 } from '@udecode/plate-common';
@@ -10,10 +9,10 @@ import type { TTableElement, TTableRowElement } from '../types';
 
 import { ELEMENT_TABLE } from '../TablePlugin';
 
-export const setTableRowSize = <V extends Value>(
-  editor: TEditor<V>,
+export const setTableRowSize = <E extends TEditor>(
+  editor: E,
   { height, rowIndex }: { height: number; rowIndex: number },
-  options: GetAboveNodeOptions<V> = {}
+  options: GetAboveNodeOptions<E> = {}
 ) => {
   const table = findNode<TTableElement>(editor, {
     match: { type: ELEMENT_TABLE },

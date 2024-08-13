@@ -1,4 +1,4 @@
-import type { TEditor, Value } from '../editor/TEditor';
+import type { TEditor } from '../editor/TEditor';
 import type { ElementOf, TElement } from '../element/TElement';
 import type { TNode } from './TNode';
 
@@ -8,9 +8,6 @@ import type { TNode } from './TNode';
  * the more generic `Node` union.
  */
 export type TAncestor = TEditor | TElement;
-
-/** Ancestor of an editor. */
-export type EAncestor<V extends Value> = AncestorOf<TEditor<V>>;
 
 /** A utility type to get all the ancestor node types from a root node type. */
 export type AncestorOf<N extends TNode> = TEditor extends N

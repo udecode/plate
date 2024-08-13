@@ -3,19 +3,19 @@ import type { Modify } from '@udecode/utils';
 import { Transforms } from 'slate';
 
 import type { NodeMatchOption } from '../../types/NodeMatchOption';
-import type { TEditor, Value } from '../editor/TEditor';
-import type { ENode, TNodeProps } from '../node/TNode';
+import type { TEditor } from '../editor/TEditor';
+import type { NodeOf, TNodeProps } from '../node/TNode';
 
-export type UnsetNodesOptions<V extends Value = Value> = Modify<
+export type UnsetNodesOptions<E extends TEditor = TEditor> = Modify<
   NonNullable<Parameters<typeof Transforms.unsetNodes>[2]>,
-  NodeMatchOption<V>
+  NodeMatchOption<E>
 >;
 
 /** Unset properties on the nodes at a location. */
-export const unsetNodes = <N extends ENode<V>, V extends Value = Value>(
-  editor: TEditor<V>,
+export const unsetNodes = <N extends NodeOf<E>, E extends TEditor = TEditor>(
+  editor: E,
   props: (keyof TNodeProps<N>)[] | keyof TNodeProps<N>,
-  options?: UnsetNodesOptions<V>
+  options?: UnsetNodesOptions<E>
 ) => {
   return Transforms.unsetNodes(editor as any, props as any, options as any);
 };

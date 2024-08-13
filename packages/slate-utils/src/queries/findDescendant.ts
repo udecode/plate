@@ -3,12 +3,11 @@
  * no match is found, return undefined.
  */
 import {
-  type EDescendant,
-  type ENodeEntry,
+  type DescendantOf,
   type FindNodeOptions,
+  type NodeEntryOf,
   type TEditor,
   type TNodeEntry,
-  type Value,
   getNodeDescendants,
   getNodeEntry,
   getPath,
@@ -19,11 +18,11 @@ import { Path, Range, Span } from 'slate';
 
 /** Get the first descendant node matching the condition. */
 export const findDescendant = <
-  N extends EDescendant<V>,
-  V extends Value = Value,
+  N extends DescendantOf<E>,
+  E extends TEditor = TEditor,
 >(
-  editor: TEditor<V>,
-  options: FindNodeOptions<V>
+  editor: E,
+  options: FindNodeOptions<E>
 ): TNodeEntry<N> | undefined => {
   // Slate throws when things aren't found so we wrap in a try catch and return undefined on throw.
   try {
@@ -48,7 +47,7 @@ export const findDescendant = <
       to = reverse ? first : last;
     }
 
-    let root: ENodeEntry<V> = [editor, []];
+    let root: NodeEntryOf<E> = [editor, []];
 
     if (Path.isPath(at)) {
       root = getNodeEntry(editor, at) as any;

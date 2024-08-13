@@ -1,8 +1,8 @@
 import type { PathRef } from 'slate';
 
 import {
+  type TEditor,
   type TElement,
-  type Value,
   type WithOverride,
   createPathRef,
   getNode,
@@ -32,7 +32,7 @@ export const withIndentList: WithOverride<IndentListPluginOptions> = ({
 
   const { getSiblingIndentListOptions } = options;
 
-  editor.normalizeNode = normalizeIndentList<Value>(editor, options);
+  editor.normalizeNode = normalizeIndentList<TEditor>(editor, options);
 
   editor.deleteBackward = deleteBackwardIndentList(editor);
 

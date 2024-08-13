@@ -1,16 +1,15 @@
 import {
-  type EElement,
+  type ElementOf,
   type InsertNodesOptions,
   type TEditor,
   type TElement,
-  type Value,
   insertNodes,
 } from '@udecode/slate';
 
-export const insertElements = <V extends Value>(
-  editor: TEditor<V>,
+export const insertElements = <E extends TEditor>(
+  editor: E,
   nodes: TElement | TElement[],
-  options?: InsertNodesOptions<V>
+  options?: InsertNodesOptions<E>
 ) => {
-  insertNodes(editor, nodes as EElement<V> | EElement<V>[], options);
+  insertNodes(editor, nodes as ElementOf<E> | ElementOf<E>[], options);
 };

@@ -15,17 +15,17 @@ export type ValueOf<E extends TEditor> = E['children'];
 export type InferEditorValue<E> = E extends TEditor<infer V> ? V : never;
 
 // type EditorWithV<V extends Value> = {
-//   apply: (operation: TOperation<EElementOrText<V>>) => void;
-//   getFragment: () => EElementOrText<V>[];
-//   insertFragment: (fragment: EElementOrText<V>[]) => void;
-//   insertNode: (node: EElementOrText<V> | EElementOrText<V>[]) => void;
-//   isInline: (element: EElement<V>) => boolean;
-//   isVoid: (element: EElement<V>) => boolean;
+//   apply: (operation: TOperation<ElementOrTextOf<E>>) => void;
+//   getFragment: () => ElementOrTextOf<E>[];
+//   insertFragment: (fragment: ElementOrTextOf<E>[]) => void;
+//   insertNode: (node: ElementOrTextOf<E> | ElementOrTextOf<E>[]) => void;
+//   isInline: (element: ElementOf<E>) => boolean;
+//   isVoid: (element: ElementOf<E>) => boolean;
 //   normalizeNode: (
 //     entry: ENodeEntry<V>,
 //     options?: { operation?: TOperation }
 //   ) => void;
-//   operations: TOperation<EElementOrText<V>>[];
+//   operations: TOperation<ElementOrTextOf<E>>[];
 // };
 
 export type TEditor<V extends Value = Value> = Modify<
@@ -63,18 +63,18 @@ export type TEditor<V extends Value = Value> = Modify<
 //     E,
 //     {
 //       // Overrideable core actions.
-//       apply: (operation: TOperation<EElementOrText<V>>) => void;
-//       getFragment: () => EElementOrText<V>[];
-//       insertFragment: (fragment: EElementOrText<V>[]) => void;
-//       insertNode: (node: EElementOrText<V> | EElementOrText<V>[]) => void;
+//       apply: (operation: TOperation<ElementOrTextOf<E>>) => void;
+//       getFragment: () => ElementOrTextOf<E>[];
+//       insertFragment: (fragment: ElementOrTextOf<E>[]) => void;
+//       insertNode: (node: ElementOrTextOf<E> | ElementOrTextOf<E>[]) => void;
 //
 //       // Schema-specific node behaviors.
-//       isInline: (element: EElement<V>) => boolean;
-//       isVoid: (element: EElement<V>) => boolean;
+//       isInline: (element: ElementOf<E>) => boolean;
+//       isVoid: (element: ElementOf<E>) => boolean;
 //       normalizeNode: (
-//         entry: TNodeEntry<ENode<V>>,
+//         entry: TNodeEntry<NodeOf<E>>,
 //         options?: { operation?: TOperation }
 //       ) => void;
-//       operations: TOperation<EElementOrText<V>>[];
+//       operations: TOperation<ElementOrTextOf<E>>[];
 //     }
 //   >;

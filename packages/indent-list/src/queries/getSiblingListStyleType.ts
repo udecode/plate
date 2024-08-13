@@ -1,6 +1,5 @@
-import type { ValueOf } from '@udecode/plate-common';
 import type {
-  EElement,
+  ElementOf,
   PlateEditor,
   TElement,
   TNodeEntry,
@@ -27,7 +26,7 @@ export const getSiblingListStyleType = <E extends PlateEditor>(
   }: {
     entry: TNodeEntry<TElement>;
     indent: number;
-  } & GetIndentListSiblingsOptions<EElement<ValueOf<E>>, ValueOf<E>>
+  } & GetIndentListSiblingsOptions<ElementOf<E>, E>
 ) => {
   const siblingEntry: TNodeEntry<TElement> = [
     { ...entry[0], indent },

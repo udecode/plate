@@ -1,9 +1,8 @@
 import {
-  type EElement,
-  type EElementEntry,
+  type ElementEntryOf,
+  type ElementOf,
   type TEditor,
   type TNodeEntry,
-  type Value,
   getNode,
   setElements,
   withoutNormalizing,
@@ -43,12 +42,12 @@ export const normalizeNextIndentListStart = (
 };
 
 export const normalizeIndentListStart = <
-  N extends EElement<V>,
-  V extends Value = Value,
+  N extends ElementOf<E>,
+  E extends TEditor = TEditor,
 >(
-  editor: TEditor<V>,
-  entry: EElementEntry<V>,
-  options?: Partial<GetSiblingIndentListOptions<N, V>>
+  editor: E,
+  entry: ElementEntryOf<E>,
+  options?: Partial<GetSiblingIndentListOptions<N, E>>
 ) => {
   return withoutNormalizing(editor, () => {
     const [node] = entry;
@@ -69,7 +68,7 @@ export const normalizeIndentListStart = <
 
     let normalizeNext = true;
 
-    let currEntry: EElementEntry<V> | undefined = entry;
+    let currEntry: ElementEntryOf<E> | undefined = entry;
 
     // normalize next until current is not normalized
     while (normalizeNext) {

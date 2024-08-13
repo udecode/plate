@@ -1,5 +1,3 @@
-import type { ValueOf } from '@udecode/plate-common';
-
 import {
   type InsertNodesOptions,
   type PlateEditor,
@@ -21,7 +19,7 @@ import { getCodeLineType } from '../options';
  */
 export const insertCodeBlock = <E extends PlateEditor>(
   editor: E,
-  insertNodesOptions: Omit<InsertNodesOptions<ValueOf<E>>, 'match'> = {}
+  insertNodesOptions: Omit<InsertNodesOptions<E>, 'match'> = {}
 ) => {
   if (!editor.selection || isExpanded(editor.selection)) return;
 

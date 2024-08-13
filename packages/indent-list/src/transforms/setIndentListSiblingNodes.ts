@@ -1,8 +1,7 @@
 import {
-  type EElement,
-  type EElementEntry,
+  type ElementEntryOf,
+  type ElementOf,
   type TEditor,
-  type Value,
   unsetNodes,
   withoutNormalizing,
 } from '@udecode/plate-common';
@@ -21,16 +20,16 @@ import { setIndentListNode, setIndentTodoNode } from './setIndentListNode';
 
 /** Set indent list to entry + siblings. */
 export const setIndentListSiblingNodes = <
-  N extends EElement<V>,
-  V extends Value = Value,
+  N extends ElementOf<E>,
+  E extends TEditor = TEditor,
 >(
-  editor: TEditor<V>,
-  entry: EElementEntry<V>,
+  editor: E,
+  entry: ElementEntryOf<E>,
   {
     getSiblingIndentListOptions,
     listStyleType = ListStyleType.Disc,
   }: {
-    getSiblingIndentListOptions?: GetSiblingIndentListOptions<N, V>;
+    getSiblingIndentListOptions?: GetSiblingIndentListOptions<N, E>;
     listStyleType?: string;
   }
 ) => {

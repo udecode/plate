@@ -1,7 +1,6 @@
 import {
   type InsertNodesOptions,
   type PlateEditor,
-  type ValueOf,
   insertNodes,
   withoutNormalizing,
 } from '@udecode/plate-common';
@@ -17,7 +16,7 @@ import { ELEMENT_PLACEHOLDER } from '../PlaceholderPlugin';
 export const insertPlaceHolder = <E extends PlateEditor>(
   editor: E,
   mediaType: string,
-  options?: InsertNodesOptions<ValueOf<E>>
+  options?: InsertNodesOptions<E>
 ) => {
   withoutNormalizing(editor, () =>
     insertNodes<TPlaceholderElement>(
@@ -34,20 +33,20 @@ export const insertPlaceHolder = <E extends PlateEditor>(
 
 export const insertImagePlaceholder = <E extends PlateEditor>(
   editor: E,
-  options?: InsertNodesOptions<ValueOf<E>>
+  options?: InsertNodesOptions<E>
 ) => insertPlaceHolder(editor, ELEMENT_IMAGE, options);
 
 export const insertVideoPlaceholder = <E extends PlateEditor>(
   editor: E,
-  options?: InsertNodesOptions<ValueOf<E>>
+  options?: InsertNodesOptions<E>
 ) => insertPlaceHolder(editor, ELEMENT_VIDEO, options);
 
 export const insertAudioPlaceholer = <E extends PlateEditor>(
   editor: E,
-  options?: InsertNodesOptions<ValueOf<E>>
+  options?: InsertNodesOptions<E>
 ) => insertPlaceHolder(editor, ELEMENT_AUDIO, options);
 
 export const insertFilePlaceholer = <E extends PlateEditor>(
   editor: E,
-  options?: InsertNodesOptions<ValueOf<E>>
+  options?: InsertNodesOptions<E>
 ) => insertPlaceHolder(editor, ELEMENT_FILE, options);

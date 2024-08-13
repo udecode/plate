@@ -1,11 +1,9 @@
-import type { ValueOf } from '@udecode/plate-common';
-
 import {
   type AnyObject,
   type GetNodeEntriesOptions,
   type PlateEditor,
+  type TEditor,
   type UnhangRangeOptions,
-  type Value,
   getNodeEntries,
   getPluginInjectProps,
   setElements,
@@ -15,9 +13,9 @@ import {
 
 import { KEY_INDENT } from '../IndentPlugin';
 
-export interface SetIndentOptions<V extends Value = Value> {
+export interface SetIndentOptions<E extends TEditor = TEditor> {
   /** GetNodeEntries options */
-  getNodesOptions?: GetNodeEntriesOptions<V> & UnhangRangeOptions;
+  getNodesOptions?: GetNodeEntriesOptions<E> & UnhangRangeOptions;
 
   /**
    * 1 to indent -1 to outdent
@@ -41,7 +39,7 @@ export const setIndent = <E extends PlateEditor>(
     offset = 1,
     setNodesProps,
     unsetNodesProps = [],
-  }: SetIndentOptions<ValueOf<E>>
+  }: SetIndentOptions<E>
 ) => {
   const { nodeKey } = getPluginInjectProps(editor, KEY_INDENT);
 

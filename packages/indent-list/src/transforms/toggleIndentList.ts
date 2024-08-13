@@ -1,5 +1,3 @@
-import type { ValueOf } from '@udecode/plate-common';
-
 import {
   type PlateEditor,
   type TElement,
@@ -30,7 +28,7 @@ import { toggleIndentListUnset } from './toggleIndentListUnset';
 /** Toggle indent list. */
 export const toggleIndentList = <E extends PlateEditor>(
   editor: E,
-  options: IndentListOptions<ValueOf<E>>
+  options: IndentListOptions<E>
 ) => {
   const { listStyleType } = options;
 

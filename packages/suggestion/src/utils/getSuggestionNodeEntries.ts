@@ -1,5 +1,3 @@
-import type { ValueOf } from '@udecode/plate-common';
-
 import {
   type GetNodeEntriesOptions,
   type PlateEditor,
@@ -17,7 +15,7 @@ export const getSuggestionNodeEntries = <E extends PlateEditor>(
     ...options
   }: {
     match?: (suggestion: TSuggestionText) => boolean;
-  } & GetNodeEntriesOptions<ValueOf<E>> = {}
+  } & GetNodeEntriesOptions<E> = {}
 ) =>
   getNodeEntries<TSuggestionText>(editor, {
     at,

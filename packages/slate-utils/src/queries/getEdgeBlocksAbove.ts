@@ -1,9 +1,8 @@
 import {
-  type EAncestor,
+  type AncestorOf,
   type GetAboveNodeOptions,
   type TEditor,
   type TNodeEntry,
-  type Value,
   getEdgePoints,
 } from '@udecode/slate';
 
@@ -11,12 +10,12 @@ import { getBlockAbove } from './getBlockAbove';
 
 /** Get the edge blocks above a location (default: selection). */
 export const getEdgeBlocksAbove = <
-  N1 extends EAncestor<V>,
-  N2 extends EAncestor<V> = N1,
-  V extends Value = Value,
+  N1 extends AncestorOf<E>,
+  N2 extends AncestorOf<E> = N1,
+  E extends TEditor = TEditor,
 >(
-  editor: TEditor<V>,
-  { at: _at, ...options }: GetAboveNodeOptions<V> = {}
+  editor: E,
+  { at: _at, ...options }: GetAboveNodeOptions<E> = {}
 ): [TNodeEntry<N1>, TNodeEntry<N2>] | null => {
   const at = _at ?? editor.selection;
 

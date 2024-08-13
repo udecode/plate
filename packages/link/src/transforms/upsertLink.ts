@@ -1,10 +1,8 @@
-import type { ValueOf } from '@udecode/plate-common';
-
 import {
   type InsertNodesOptions,
   type PlateEditor,
+  type TEditor,
   type UnwrapNodesOptions,
-  type Value,
   type WrapNodesOptions,
   findNode,
   getAboveNode,
@@ -27,13 +25,13 @@ import { unwrapLink } from './unwrapLink';
 import { upsertLinkText } from './upsertLinkText';
 import { wrapLink } from './wrapLink';
 
-export type UpsertLinkOptions<V extends Value = Value> = {
-  insertNodesOptions?: InsertNodesOptions<V>;
+export type UpsertLinkOptions<E extends TEditor = TEditor> = {
+  insertNodesOptions?: InsertNodesOptions<E>;
   /** If true, insert text when selection is in url. */
   insertTextInLink?: boolean;
   skipValidation?: boolean;
-  unwrapNodesOptions?: UnwrapNodesOptions<V>;
-  wrapNodesOptions?: WrapNodesOptions<V>;
+  unwrapNodesOptions?: UnwrapNodesOptions<E>;
+  wrapNodesOptions?: WrapNodesOptions<E>;
 } & CreateLinkNodeOptions;
 
 /**
@@ -52,7 +50,7 @@ export const upsertLink = <E extends PlateEditor>(
     target,
     text,
     url,
-  }: UpsertLinkOptions<ValueOf<E>>
+  }: UpsertLinkOptions<E>
 ) => {
   const at = editor.selection;
 

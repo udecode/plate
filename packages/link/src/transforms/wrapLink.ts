@@ -1,8 +1,6 @@
-import type { ValueOf } from '@udecode/plate-common';
-
 import {
   type PlateEditor,
-  type Value,
+  type TEditor,
   type WrapNodesOptions,
   getPluginType,
   wrapNodes,
@@ -12,8 +10,8 @@ import type { TLinkElement } from '../types';
 
 import { ELEMENT_LINK } from '../LinkPlugin';
 
-export interface WrapLinkOptions<V extends Value = Value>
-  extends WrapNodesOptions<V> {
+export interface WrapLinkOptions<E extends TEditor = TEditor>
+  extends WrapNodesOptions<E> {
   url: string;
   target?: string;
 }
@@ -21,9 +19,9 @@ export interface WrapLinkOptions<V extends Value = Value>
 /** Wrap a link node with split. */
 export const wrapLink = <E extends PlateEditor>(
   editor: E,
-  { target, url, ...options }: WrapLinkOptions<ValueOf<E>>
+  { target, url, ...options }: WrapLinkOptions<E>
 ) => {
-  wrapNodes<TLinkElement, Value>(
+  wrapNodes<TLinkElement>(
     editor,
     {
       children: [],

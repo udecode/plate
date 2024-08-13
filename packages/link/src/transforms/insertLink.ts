@@ -1,5 +1,3 @@
-import type { ValueOf } from '@udecode/plate-common';
-
 import {
   type InsertNodesOptions,
   type PlateEditor,
@@ -15,7 +13,7 @@ import { type CreateLinkNodeOptions, createLinkNode } from '../utils/index';
 export const insertLink = <E extends PlateEditor>(
   editor: E,
   createLinkNodeOptions: CreateLinkNodeOptions,
-  options?: InsertNodesOptions<ValueOf<E>>
+  options?: InsertNodesOptions<E>
 ) => {
   insertNodes<TLinkElement | TText>(
     editor,

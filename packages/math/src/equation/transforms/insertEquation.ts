@@ -1,7 +1,6 @@
 import {
   type InsertNodesOptions,
   type PlateEditor,
-  type ValueOf,
   insertNodes,
 } from '@udecode/plate-common';
 
@@ -11,7 +10,7 @@ import { ELEMENT_EQUATION } from '../EquationPlugin';
 
 export const insertEquation = <E extends PlateEditor>(
   editor: E,
-  options?: InsertNodesOptions<ValueOf<E>>
+  options?: InsertNodesOptions<E>
 ) => {
   insertNodes<TEquationElement>(
     editor,

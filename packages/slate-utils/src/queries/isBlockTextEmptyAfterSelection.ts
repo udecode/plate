@@ -1,6 +1,5 @@
 import {
   type TEditor,
-  type Value,
   getParentNode,
   isEndPoint,
   isText,
@@ -14,9 +13,7 @@ import { getNextSiblingNodes } from './getNextSiblingNodes';
  * selected leaf, return {@link isEndPoint}. Else, check if the next leaves are
  * empty.
  */
-export const isBlockTextEmptyAfterSelection = <V extends Value>(
-  editor: TEditor<V>
-) => {
+export const isBlockTextEmptyAfterSelection = (editor: TEditor) => {
   if (!editor.selection) return false;
 
   const blockAbove = getBlockAbove(editor);

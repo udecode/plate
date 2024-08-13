@@ -1,7 +1,6 @@
 import {
   type InsertNodesOptions,
   type PlateEditor,
-  type ValueOf,
   insertNodes,
 } from '@udecode/plate-common';
 
@@ -12,7 +11,7 @@ import { ELEMENT_INLINE_EQUATION } from '../InlineEquationPlugin';
 export const insertInlineEquation = <E extends PlateEditor>(
   editor: E,
   texExpression?: string,
-  options?: InsertNodesOptions<ValueOf<E>>
+  options?: InsertNodesOptions<E>
 ) => {
   insertNodes<TInlineEquationElement>(
     editor,

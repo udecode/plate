@@ -15,15 +15,15 @@ import {
   Decorate,
   DecorateEntry,
   DOMHandler,
-  EDescendant,
-  EElement,
-  EElementEntry,
-  EElementOrText,
-  EMarks,
-  ENode,
-  ENodeEntry,
-  EText,
-  ETextEntry,
+  DescendantOf,
+  ElementOf,
+  ElementEntryOf,
+  ElementOrTextOf,
+  MarksOf,
+  NodeOf,
+  NodeEntryOf,
+  TextOf,
+  TextEntryOf,
   getTEditor,
   InjectComponent,
   InjectProps,
@@ -318,15 +318,15 @@ export type MyValue = MyRootBlock[];
 
 export type MyEditor = TPlateEditor<MyValue> & { isDragging?: boolean };
 export type MyReactEditor = TReactEditor<MyValue>;
-export type MyNode = ENode<MyValue>;
-export type MyNodeEntry = ENodeEntry<MyValue>;
-export type MyElement = EElement<MyValue>;
-export type MyElementEntry = EElementEntry<MyValue>;
-export type MyText = EText<MyValue>;
-export type MyTextEntry = ETextEntry<MyValue>;
-export type MyElementOrText = EElementOrText<MyValue>;
-export type MyDescendant = EDescendant<MyValue>;
-export type MyMarks = EMarks<MyValue>;
+export type MyNode = NodeOf<MyValue>;
+export type MyNodeEntry = NodeEntryOf<MyValue>;
+export type MyElement = ElementOf<MyValue>;
+export type MyElementEntry = ElementEntryOf<MyValue>;
+export type MyText = TextOf<MyValue>;
+export type MyTextEntry = TextEntryOf<MyValue>;
+export type MyElementOrText = ElementOrTextOf<MyValue>;
+export type MyDescendant = DescendantOf<MyValue>;
+export type MyMarks = MarksOf<MyValue>;
 export type MyMark = keyof MyMarks;
 
 /**

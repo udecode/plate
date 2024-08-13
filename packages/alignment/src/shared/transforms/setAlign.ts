@@ -1,10 +1,7 @@
 import {
-  type ENode,
   type PlateEditor,
   type SetNodesOptions,
   type TNodeMatch,
-  type Value,
-  type ValueOf,
   getKeyByType,
   getPluginInjectProps,
   isBlock,
@@ -24,7 +21,7 @@ export const setAlign = <E extends PlateEditor>(
     value,
   }: {
     key?: string;
-    setNodesOptions?: SetNodesOptions<ValueOf<E>>;
+    setNodesOptions?: SetNodesOptions<E>;
     value: Alignment;
   }
 ) => {
@@ -33,7 +30,7 @@ export const setAlign = <E extends PlateEditor>(
     key
   );
 
-  const match: TNodeMatch<ENode<Value>> = (n) => {
+  const match: TNodeMatch = (n) => {
     return (
       isBlock(editor, n) &&
       !!validPlugins &&

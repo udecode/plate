@@ -1,7 +1,6 @@
 import {
   type SetNodesOptions,
   type TEditor,
-  type Value,
   getMarks,
   isText,
   unsetNodes,
@@ -9,8 +8,8 @@ import {
 import castArray from 'lodash/castArray.js';
 import { Range } from 'slate';
 
-export interface RemoveMarkOptions<V extends Value = Value>
-  extends Omit<SetNodesOptions<V>, 'match' | 'split'> {
+export interface RemoveMarkOptions<E extends TEditor>
+  extends Omit<SetNodesOptions<E>, 'match' | 'split'> {
   /** Mark or the array of marks that will be removed */
   key: string | string[];
 
@@ -27,9 +26,9 @@ export interface RemoveMarkOptions<V extends Value = Value>
 }
 
 /** Remove mark and trigger `onChange` if collapsed selection. */
-export const removeMark = <V extends Value>(
-  editor: TEditor<V>,
-  { at, key, shouldChange = true, ...rest }: RemoveMarkOptions<V>
+export const removeMark = <E extends TEditor>(
+  editor: E,
+  { at, key, shouldChange = true, ...rest }: RemoveMarkOptions<E>
 ) => {
   const selection = at ?? editor.selection;
   key = castArray(key);

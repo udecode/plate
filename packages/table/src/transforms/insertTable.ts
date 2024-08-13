@@ -1,7 +1,6 @@
 import {
   type InsertNodesOptions,
   type PlateEditor,
-  type ValueOf,
   getBlockAbove,
   getPluginType,
   getStartPoint,
@@ -23,7 +22,7 @@ import {
 export const insertTable = <E extends PlateEditor>(
   editor: E,
   { colCount = 2, header, rowCount = 2 }: GetEmptyTableNodeOptions = {},
-  options: InsertNodesOptions<ValueOf<E>> = {}
+  options: InsertNodesOptions<E> = {}
 ) => {
   withoutNormalizing(editor, () => {
     if (

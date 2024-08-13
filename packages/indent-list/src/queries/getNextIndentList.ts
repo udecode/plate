@@ -1,9 +1,8 @@
 import {
-  type EElement,
-  type EElementEntry,
+  type ElementEntryOf,
+  type ElementOf,
   type TEditor,
   type TNodeEntry,
-  type Value,
   getNode,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
@@ -15,12 +14,12 @@ import {
 
 /** Get the next indent list. */
 export const getNextIndentList = <
-  N extends EElement<V>,
-  V extends Value = Value,
+  N extends ElementOf<E>,
+  E extends TEditor = TEditor,
 >(
-  editor: TEditor<V>,
-  entry: EElementEntry<V>,
-  options?: Partial<GetSiblingIndentListOptions<N, V>>
+  editor: E,
+  entry: ElementEntryOf<E>,
+  options?: Partial<GetSiblingIndentListOptions<N, E>>
 ): TNodeEntry<N> | undefined => {
   return getSiblingIndentList(editor, entry, {
     getNextEntry: ([, currPath]) => {
