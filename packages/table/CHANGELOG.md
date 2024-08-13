@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 36.3.8
+
+### Patch Changes
+
+- [#3406](https://github.com/udecode/plate/pull/3406) by [@beeant0512](https://github.com/beeant0512) – fix: where total or num is a string
+
 ## 36.3.5
 
 ### Patch Changes
