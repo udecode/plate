@@ -1,5 +1,11 @@
 # @udecode/plate-break
 
+## 36.3.8
+
+### Patch Changes
+
+- [#3427](https://github.com/udecode/plate/pull/3427) by [@yf-yang](https://github.com/yf-yang) – fix single line plugin normalization
+
 ## 36.0.0
 
 ## 34.0.0

@@ -1,5 +1,11 @@
 # @udecode/plate-floating
 
+## 36.3.8
+
+### Patch Changes
+
+- [#3429](https://github.com/udecode/plate/pull/3429) by [@nklhtv](https://github.com/nklhtv) – export FloatingArrow
+
 ## 36.3.2
 
 ### Patch Changes
