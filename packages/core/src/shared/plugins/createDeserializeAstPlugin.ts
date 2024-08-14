@@ -1,5 +1,6 @@
-import { createPluginFactory } from '../utils/createPluginFactory';
 import castArray from 'lodash/castArray.js';
+
+import { createPluginFactory } from '../utils/createPluginFactory';
 
 export const KEY_DESERIALIZE_AST = 'deserializeAst';
 
