@@ -2,4 +2,4 @@
 '@udecode/plate-link': patch
 ---
 
-fix: Uncaught error when dismounting the floating link input
+fix: Potential uncaught error when immediately dismounting the floating link input after update
