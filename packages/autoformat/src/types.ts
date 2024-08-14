@@ -78,6 +78,14 @@ export interface AutoformatBlockRule<
   format?: (editor: E) => void;
 
   /**
+   * If true, `match` will be interpreted as regex expression(s). Otherwise, it
+   * will be compared by string equality.
+   *
+   * @default false
+   */
+  matchByRegex?: boolean;
+
+  /**
    * Function called just before `format`. Generally used to reset the selected
    * block.
    */

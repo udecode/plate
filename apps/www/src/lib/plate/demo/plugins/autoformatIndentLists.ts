@@ -23,7 +23,8 @@ export const autoformatIndentLists: AutoformatRule[] = [
       toggleIndentList(editor, {
         listStyleType: ListStyleType.Decimal,
       }),
-    match: ['1. ', '1) '],
+    match: ['^\\d+\\.$ ', '^\\d+\\)$ '],
+    matchByRegex: true,
     mode: 'block',
     type: 'list',
   },
