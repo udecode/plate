@@ -17,8 +17,12 @@ export const useFloatingLinkUrlInputState = () => {
   React.useEffect(() => {
     if (ref.current && updated) {
       setTimeout(() => {
-        ref.current?.focus();
-        ref.current!.value = floatingLinkSelectors.url()
+        const input = ref.current;
+
+        if (!input) return;
+
+        input.focus();
+        input.value = floatingLinkSelectors.url()
           ? safeDecodeUrl(floatingLinkSelectors.url())
           : '';
       }, 0);
