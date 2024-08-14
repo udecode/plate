@@ -171,7 +171,7 @@ export function serializeMdNode(
          * @example
          *   { type: 'paragraph', children: [   { text: '' },   { type: 'link', children: [{ text: foo.com }]}   { text: '' } ]}
          */
-        if (!isLeafNode(node) && Array.isArray(node.children)) {
+        if (!isLeafNode(c) && Array.isArray(node.children)) {
           ignoreParagraphNewlineProp = true;
         }
 
