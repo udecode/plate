@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-autoformat': minor
+'@udecode/plate-autoformat': patch
 ---
 
 feat: `autoformatBlock` - Add `matchByRegex` option
