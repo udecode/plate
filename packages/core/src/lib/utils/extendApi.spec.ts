@@ -309,13 +309,13 @@ describe('extendApi method', () => {
         override: () => 'original',
       }))
       .extendTransforms(({ plugin: { options } }) => ({
-        transform1: (_: any, amount: number) => options.baseValue + amount,
+        transform1: (amount: number) => options.baseValue + amount,
       }))
       .extendTransforms(({ plugin: { transforms } }) => ({
-        transform2: (editor: any) => transforms.transform1(editor, 5) * 2,
+        transform2: () => transforms.transform1(5) * 2,
       }))
       .extendApi(({ plugin: { api, transforms } }) => ({
-        combined: () => api.level1.method3() + transforms.transform2(editor),
+        combined: () => api.level1.method3() + transforms.transform2(),
       }));
 
     const overridePlugin = createPlugin({
