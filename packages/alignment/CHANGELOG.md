@@ -299,7 +299,7 @@
 
 - [#1190](https://github.com/udecode/plate/pull/1190) by [@zbeyens](https://github.com/zbeyens) –
   - `setAlign`: option `align` renamed to `value`
-  - removed `getAlignOverrideProps()` in favor of `getOverrideProps(AlignPlugin.key)`
+  - removed `getAlignOverrideProps()` in favor of `getOverrideProps(KEY_ALIGN)`
 
 ## 6.4.1
 
@@ -329,7 +329,7 @@
     - `ELEMENT_ALIGN_CENTER`
     - `ELEMENT_ALIGN_RIGHT`
     - `ELEMENT_ALIGN_JUSTIFY`
-    - `KEYS_ALIGN` in favor of `AlignPlugin.key`
+    - `KEYS_ALIGN` in favor of `KEY_ALIGN`
     - `getAlignDeserialize`
     - `upsertAlign` in favor of `setAlign`
 
@@ -343,7 +343,7 @@
 ### Minor Changes
 
 - [#1154](https://github.com/udecode/plate/pull/1154) by [@zbeyens](https://github.com/zbeyens) –
-  - `AlignPlugin.keyMENT`
+  - `KEY_ALIGNMENT`
   - `DEFAULT_ALIGNMENTS`
   - `DEFAULT_ALIGNMENT`
   - `getAlignOverrideProps`

@@ -42,7 +42,7 @@
 
 - [#3125](https://github.com/udecode/plate/pull/3125) by [@zbeyens](https://github.com/zbeyens) –
   - Use `editor.reset` instead of `resetEditor` to focus the editor after reset so it's decoupled from `slate-react`.
-  - Add a server bundle including `createPlateEditor`. It can be imported using `import { createPlateEditor } from '@udecode/plate-core'`.
+  - Add a server bundle including `createPlateEditor`. It can be imported using `import { createPlateEditor } from '@udecode/plate-core/server'`.
 
 ## 32.0.1
 
@@ -1376,7 +1376,7 @@ Removing node props types in favor of element types (same props + extends `TElem
   // option 2: use createPlugins
   plugins = createPlugins(plugins, {
     components: {
-      [ParagraphPlugin.key]: ParagraphElement,
+      [ELEMENT_PARAGRAPH]: ParagraphElement,
     },
   });
 
@@ -1400,7 +1400,7 @@ Removing node props types in favor of element types (same props + extends `TElem
   // option 2: use createPlugins
   plugins = createPlugins(plugins, {
     overrideByKey: {
-      [ParagraphPlugin.key]: {
+      [ELEMENT_PARAGRAPH]: {
         type: 'paragraph',
       },
     },
@@ -1668,8 +1668,8 @@ Removing node props types in favor of element types (same props + extends `TElem
       /**
        * Any plugin can use this field to inject code into a stack. For example,
        * if multiple plugins have defined `inject.editor.insertData.transformData`
-       * for `key=DeserializeHtmlPlugin.key`, `insertData` plugin will call all of
-       * these `transformData` for `DeserializeHtmlPlugin.key` plugin. Differs from
+       * for `key=KEY_DESERIALIZE_HTML`, `insertData` plugin will call all of
+       * these `transformData` for `KEY_DESERIALIZE_HTML` plugin. Differs from
        * `overrideByKey` as this is not overriding any plugin.
        */
       pluginsByKey?: Record<PluginKey, Partial<PlatePlugin<T>>>;

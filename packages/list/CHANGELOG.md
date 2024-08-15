@@ -691,7 +691,7 @@ occurrences of:
 
 ### Patch Changes
 
-- [#817](https://github.com/udecode/slate-plugins/pull/817) [`a15ab621`](https://github.com/udecode/slate-plugins/commit/a15ab6217c6e2d4eb2a1320f6b76c483fc963047) Thanks [@whytspace](https://github.com/whytspace)! - add deserializer for `ListItemContentPlugin.key`
+- [#817](https://github.com/udecode/slate-plugins/pull/817) [`a15ab621`](https://github.com/udecode/slate-plugins/commit/a15ab6217c6e2d4eb2a1320f6b76c483fc963047) Thanks [@whytspace](https://github.com/whytspace)! - add deserializer for `ELEMENT_LIC`
 
 ## 1.0.0-next.46
 
@@ -717,7 +717,7 @@ occurrences of:
 
 ### Patch Changes
 
-- [#787](https://github.com/udecode/slate-plugins/pull/787) [`558a89da`](https://github.com/udecode/slate-plugins/commit/558a89da4217e9be57bc6ab2abcc48482c9f60bd) Thanks [@zbeyens](https://github.com/zbeyens)! - normalizer: set node with ListItemContentPlugin.key type to ParagraphPlugin.key if its parent type is not ListItemPlugin.key
+- [#787](https://github.com/udecode/slate-plugins/pull/787) [`558a89da`](https://github.com/udecode/slate-plugins/commit/558a89da4217e9be57bc6ab2abcc48482c9f60bd) Thanks [@zbeyens](https://github.com/zbeyens)! - normalizer: set node with ELEMENT_LIC type to ELEMENT_DEFAULT if its parent type is not ELEMENT_LI
 
 ## 1.0.0-next.40
 

@@ -38,9 +38,7 @@
 
 ### Minor Changes
 
-- [#3241](https://github.com/udecode/plate/pull/3241) by [@felixfeng33](https://github.com/felixfeng33) –
-  - Add plugins: `mediaPlaceholder`, `video`,`audio` and `file`
-  - Set the default align to 'left' in `useMediaState`
+- [#3241](https://github.com/udecode/plate/pull/3241) by [@felixfeng33](https://github.com/felixfeng33) – Add plugins: `mediaPlaceholder`, `video`,`audio` and `file`
 
 ## 33.0.2
 
@@ -150,10 +148,10 @@
   - Caption is now a separate plugin. Install `@udecode/plate-caption` and add it to your plugins:
 
   ```ts
-  import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media';
+  import { ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from '@udecode/plate-media';
 
   createCaptionPlugin({
-    options: { pluginKeys: [ImagePlugin.key, ELEMENT_MEDIA_EMBED] },
+    options: { pluginKeys: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED] },
   });
   ```
 
