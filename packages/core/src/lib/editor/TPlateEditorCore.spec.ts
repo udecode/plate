@@ -1,3 +1,5 @@
+import type { Value } from '@udecode/slate';
+
 import {
   DebugPlugin,
   type InferPlugins,
@@ -6,7 +8,7 @@ import {
   someHtmlElement,
 } from '@udecode/plate-core';
 import { createPlateEditor, withPlate } from '@udecode/plate-core/react';
-import { type Value, createTEditor } from '@udecode/slate';
+import { LinkPlugin } from '@udecode/plate-link';
 
 import type { ToggleMarkConfig } from '../types/ToggleMarkConfig';
 
@@ -50,7 +52,7 @@ describe('TPlateEditor core package', () => {
 
   describe('Core Plugins', () => {
     it('should have DebugPlugin methods with default generics', () => {
-      const editor: TPlateEditor = withPlate(createTEditor());
+      const editor: TPlateEditor = createPlateEditor();
 
       expect(editor.api.debug).toBeDefined();
       expect(editor.api.debug.log).toBeInstanceOf(Function);
@@ -63,8 +65,8 @@ describe('TPlateEditor core package', () => {
     });
 
     it('should work with a mix of core and custom plugins', () => {
-      const editor = withPlate(createTEditor(), {
-        plugins: [DebugPlugin, TextFormattingPlugin, ImagePlugin],
+      const editor = createPlateEditor({
+        plugins: [DebugPlugin, TextFormattingPlugin, ImagePlugin, LinkPlugin],
       });
 
       expect(editor.api.debug).toBeDefined();
@@ -74,16 +76,34 @@ describe('TPlateEditor core package', () => {
       // @ts-expect-error
       editor.api.createBulletedList;
     });
+
+    it('should work extending a plugin', () => {
+      const editor = createPlateEditor({
+        plugins: [
+          LinkPlugin.extend({
+            deserializeHtml: {
+              getNode: () => ({ test: true }),
+              withoutChildren: true,
+            },
+          }),
+        ],
+      });
+
+      expect(editor.api.link).toBeDefined();
+
+      // @ts-expect-error
+      editor.api.createBulletedList;
+    });
   });
 
   describe('Custom Plugins', () => {
     it('should infer single and multiple plugin types correctly', () => {
-      const singlePluginEditor = withPlate(createTEditor(), {
+      const singlePluginEditor = createPlateEditor({
         plugins: [MyCustomPlugin],
       });
       expect(singlePluginEditor.api.myCustomMethod).toBeInstanceOf(Function);
 
-      const multiPluginEditor = withPlate(createTEditor(), {
+      const multiPluginEditor = createPlateEditor({
         plugins: [TextFormattingPlugin, ListPlugin, TablePlugin],
       });
       expect(multiPluginEditor.api.bold).toBeInstanceOf(Function);
@@ -109,7 +129,7 @@ describe('TPlateEditor core package', () => {
 
     it('should allow extending editor with new plugins', () => {
       const plugins = [TextFormattingPlugin, ListPlugin];
-      const editor1 = withPlate(createTEditor(), {
+      const editor1 = createPlateEditor({
         plugins,
       });
 
@@ -137,7 +157,7 @@ describe('TPlateEditor core package', () => {
         key: 'overlapping',
       });
 
-      const editor = withPlate(createTEditor(), {
+      const editor = createPlateEditor({
         plugins: [TextFormattingPlugin, OverlappingPlugin, ImagePlugin],
       });
 

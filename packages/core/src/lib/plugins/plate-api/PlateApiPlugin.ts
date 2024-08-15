@@ -15,7 +15,7 @@ export const PlateApiPlugin = createPlugin({
   },
   setStore: {} as {
     [K in (typeof EXPOSED_STORE_KEYS)[number]]: (
-      value: PlateStoreState[K]
+      value: PlateStoreState<any>[K]
     ) => void;
   },
 }));
