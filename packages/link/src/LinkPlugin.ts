@@ -1,7 +1,9 @@
 import {
+  type OmitFirst,
   type PluginConfig,
   type RangeBeforeOptions,
-  createPlugin,
+  bindFirst,
+  createTPlugin,
   isUrl,
 } from '@udecode/plate-common';
 
@@ -10,14 +12,8 @@ import type { TLinkElement } from './types';
 import { getLinkAttributes, validateUrl } from './utils/index';
 import { withLink } from './withLink';
 
-type RemoveFirstParameter<T extends (...args: any[]) => any> = T extends (
-  first: any,
-  ...rest: infer R
-) => infer U
-  ? (...args: R) => U
-  : never;
-
 export type LinkConfig = PluginConfig<
+  'a',
   {
     /**
      * List of allowed URL schemes.
@@ -104,13 +100,13 @@ export type LinkConfig = PluginConfig<
   },
   {
     link: {
-      getAttributes: RemoveFirstParameter<typeof getLinkAttributes>;
+      getAttributes: OmitFirst<typeof getLinkAttributes>;
     };
   }
 >;
 
 /** Enables support for hyperlinks. */
-export const LinkPlugin = createPlugin({
+export const LinkPlugin = createTPlugin<LinkConfig>({
   isElement: true,
   isInline: true,
   key: 'a',
@@ -129,9 +125,9 @@ export const LinkPlugin = createPlugin({
   },
   withOverrides: withLink,
 })
-  .extendApi<LinkConfig['api']>(({ editor }) => ({
+  .extendApi(({ editor }) => ({
     link: {
-      getAttributes: (element) => getLinkAttributes(editor, element),
+      getAttributes: bindFirst(getLinkAttributes, editor),
     },
   }))
   .extend(({ api, editor, plugin: { type } }) => ({
@@ -156,4 +152,4 @@ export const LinkPlugin = createPlugin({
     props: ({ element }) => ({
       nodeProps: api.link.getAttributes(element as TLinkElement),
     }),
-  })) satisfies LinkConfig;
+  }));

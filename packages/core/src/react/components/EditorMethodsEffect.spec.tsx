@@ -78,12 +78,11 @@ describe('EditorMethodsEffect and redecorate', () => {
 
     renderHook(() => null, { wrapper });
 
-    expect(editor.api.plate).toBeDefined();
-    expect(editor.api.plate.set).toBeDefined();
+    expect(editor.api.setStore).toBeDefined();
 
     // Check if all EXPOSED_STORE_KEYS are present in editor.api.plate.set
     EXPOSED_STORE_KEYS.forEach((key) => {
-      expect(editor.api.plate.set[key]).toBeDefined();
+      expect(editor.api.setStore[key]).toBeDefined();
     });
   });
 });

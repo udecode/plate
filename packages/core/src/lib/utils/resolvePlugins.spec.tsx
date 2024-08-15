@@ -102,7 +102,7 @@ describe('resolvePlugins', () => {
   it('should overwrite API methods with the same name', () => {
     const editor = createPlateEditor({
       plugins: [
-        createPlugin<'plugin1', {}>({
+        createPlugin<'plugin1'>({
           api: { method: (_: string) => 'first' },
           key: 'plugin1',
         }),

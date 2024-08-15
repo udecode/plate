@@ -1,5 +1,6 @@
 import { type PlateEditor, sanitizeUrl } from '@udecode/plate-common';
 
+import type { LinkConfig } from '../LinkPlugin';
 import type { TLinkElement } from '../types';
 
 export const getLinkAttributes = (editor: PlateEditor, link: TLinkElement) => {

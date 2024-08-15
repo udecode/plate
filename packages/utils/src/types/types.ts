@@ -1,5 +1,9 @@
 import type { AnyObject } from './AnyObject';
 
+export type OmitFirst<F> = F extends (x: any, ...args: infer P) => infer R
+  ? (...args: P) => R
+  : never;
+
 export type WithRequired<T, K extends keyof T> = Omit<T, K> &
   Required<Pick<T, K>>;
 /**

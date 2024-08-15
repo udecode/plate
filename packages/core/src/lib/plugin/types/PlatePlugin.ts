@@ -8,7 +8,7 @@ import type {
   Value,
 } from '@udecode/slate';
 import type { TEditableProps } from '@udecode/slate-react';
-import type { AnyObject, DeepPartial } from '@udecode/utils';
+import type { AnyObject } from '@udecode/utils';
 import type { Range } from 'slate';
 
 import type { PlateEditor } from '../../editor';
@@ -22,8 +22,8 @@ import type { PlateRenderElementProps } from './PlateRenderElementProps';
 import type { PlateRenderLeafProps } from './PlateRenderLeafProps';
 
 /** The `PlatePlugin` interface is a base interface for all plugins. */
-export type PlatePlugin<K extends string = any, O = {}, A = {}, T = {}> = {
-  api: A;
+export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
+  api: InferApi<C>;
 
   /**
    * An array of plugin keys that this plugin depends on. These plugins will be
@@ -37,7 +37,7 @@ export type PlatePlugin<K extends string = any, O = {}, A = {}, T = {}> = {
      * data to a slate fragment. The fragment will be inserted to the editor if
      * not empty.
      */
-    insertData?: PlatePluginInsertData<PluginConfig<O, A, T>>;
+    insertData?: PlatePluginInsertData<C>;
   };
 
   /** Property used by Plate to enable/disable the plugin. */
@@ -51,8 +51,8 @@ export type PlatePlugin<K extends string = any, O = {}, A = {}, T = {}> = {
   handlers: Nullable<
     {
       /** @see {@link OnChange} */
-      onChange?: OnChange<PluginConfig<O, A, T>>;
-    } & DOMHandlers<PluginConfig<O, A, T>>
+      onChange?: OnChange<C>;
+    } & DOMHandlers<C>
   >;
 
   /** Inject into Plate. */
@@ -61,13 +61,13 @@ export type PlatePlugin<K extends string = any, O = {}, A = {}, T = {}> = {
      * Property used by Plate to inject a component above other plugins
      * `component`.
      */
-    aboveComponent?: InjectComponent<PluginConfig<O, A, T>>;
+    aboveComponent?: InjectComponent<C>;
 
     /**
      * Property used by Plate to inject a component below other plugins
      * `component`, i.e. above its `children`.
      */
-    belowComponent?: InjectComponent<PluginConfig<O, A, T>>;
+    belowComponent?: InjectComponent<C>;
 
     /**
      * Property that can be used by a plugin to allow other plugins to inject
@@ -80,7 +80,7 @@ export type PlatePlugin<K extends string = any, O = {}, A = {}, T = {}> = {
     plugins?: Record<string, Partial<EditorPlugin<AnyPluginConfig>>>;
 
     /** Properties used by Plate to inject props into any node `component`. */
-    props?: InjectProps<PluginConfig<O, A, T>>;
+    props?: InjectProps<C>;
   };
 
   /**
@@ -113,10 +113,10 @@ export type PlatePlugin<K extends string = any, O = {}, A = {}, T = {}> = {
    */
   isVoid?: boolean;
 
-  key: K;
+  key: C['key'];
 
   /** Extended properties used by any plugin as options. */
-  options: O;
+  options: InferOptions<C>;
 
   override: {
     /** Replace plugin components by key. */
@@ -151,7 +151,7 @@ export type PlatePlugin<K extends string = any, O = {}, A = {}, T = {}> = {
   priority: number;
 
   /** Transforms (state-modifying operations) that can be applied to the editor. */
-  transforms: T;
+  transforms: InferTransforms<C>;
 
   /**
    * Property used by Plate to render a node by type. It requires slate node
@@ -169,10 +169,10 @@ export type PlatePlugin<K extends string = any, O = {}, A = {}, T = {}> = {
   component?: PlatePluginComponent;
 
   /** @see {@link Decorate} */
-  decorate?: Decorate<PluginConfig<O, A, T>>;
+  decorate?: Decorate<C>;
 
   /** Properties used by the HTML deserializer core plugin for each HTML element. */
-  deserializeHtml?: Nullable<DeserializeHtml<PluginConfig<O, A, T>>>;
+  deserializeHtml?: Nullable<DeserializeHtml<C>>;
 
   /**
    * Normalize initial value before passing it into the editor.
@@ -180,7 +180,7 @@ export type PlatePlugin<K extends string = any, O = {}, A = {}, T = {}> = {
    * @returns Normalized value
    */
   normalizeInitialValue?: (
-    ctx: { value: Value } & EditorPluginContext<PluginConfig<O, A, T>>
+    ctx: { value: Value } & EditorPluginContext<C>
   ) => Value;
 
   /**
@@ -189,7 +189,7 @@ export type PlatePlugin<K extends string = any, O = {}, A = {}, T = {}> = {
    * as parameter. If object, its value will be shallow merged to the old
    * props.
    */
-  props?: PlatePluginProps<PluginConfig<O, A, T>>;
+  props?: PlatePluginProps<C>;
 
   /** Render a component above `Editable`. */
   renderAboveEditable?: React.FC<{ children: React.ReactNode }>;
@@ -207,22 +207,22 @@ export type PlatePlugin<K extends string = any, O = {}, A = {}, T = {}> = {
    * Property used by `serializeHtml` util to replace `renderElement` and
    * `renderLeaf` when serializing a node of this `type`.
    */
-  serializeHtml?: SerializeHtml<PluginConfig<O, A, T>>;
+  serializeHtml?: SerializeHtml<C>;
 
   /** Hook called when the editor is initialized. */
-  useHooks?: PlatePluginUseHooks<PluginConfig<O, A, T>>;
+  useHooks?: PlatePluginUseHooks<C>;
 
   /** Editor method overriders. */
-  withOverrides?: WithOverride<PluginConfig<O, A, T>>;
+  withOverrides?: WithOverride<C>;
 }> &
-  PlatePluginMethods<K, O, A, T>;
+  PlatePluginMethods<C>;
 
-export type AnyPlatePlugin = PlatePlugin<any, any, any, any>;
+export type AnyPlatePlugin = PlatePlugin<AnyPluginConfig>;
 
 export type PlatePlugins = AnyPlatePlugin[];
 
 export type EditorPlugin<C extends AnyPluginConfig = PluginConfig> = Omit<
-  PlatePlugin<any, C['options'], C['api'], C['transforms']>,
+  PlatePlugin<C>,
   'override' | 'plugins' | keyof PlatePluginMethods
 >;
 
@@ -230,14 +230,16 @@ export type AnyEditorPlugin = EditorPlugin<AnyPluginConfig>;
 
 export type EditorPlugins = AnyEditorPlugin[];
 
-export type PluginConfig<O = {}, A = {}, T = {}> = {
+export type PluginConfig<K extends string = any, O = {}, A = {}, T = {}> = {
   api: A;
+  key: K;
   options: O;
   transforms: T;
 };
 
 export type AnyPluginConfig = {
   api: any;
+  key: any;
   options: any;
   transforms: any;
 };
@@ -258,17 +260,12 @@ export type PlatePluginConfig<
   ET = {},
 > = Partial<
   { api: EA; options: EO; transforms: ET } & Omit<
-    PlatePlugin<K, Partial<O>, Partial<A>, Partial<T>>,
+    PlatePlugin<PluginConfig<K, Partial<O>, Partial<A>, Partial<T>>>,
     'api' | keyof PlatePluginMethods
   >
 >;
 
-export type PlatePluginMethods<
-  K extends string = any,
-  O = {},
-  A = {},
-  T = {},
-> = {
+export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   __configuration: ((ctx: EditorPluginContext<AnyPluginConfig>) => any) | null;
   __extensions: ((ctx: EditorPluginContext<AnyPluginConfig>) => any)[];
   __methodExtensions: ((ctx: EditorPluginContext<AnyPluginConfig>) => any)[];
@@ -276,10 +273,20 @@ export type PlatePluginMethods<
   configure: (
     config:
       | ((
-          ctx: EditorPluginContext<PluginConfig<O, A, T>>
-        ) => PlatePluginConfig<K, O, A, T>)
-      | PlatePluginConfig<K, O, A, T>
-  ) => PlatePlugin<K, O, A, T>;
+          ctx: EditorPluginContext<C>
+        ) => PlatePluginConfig<
+          C['key'],
+          InferOptions<C>,
+          InferApi<C>,
+          InferTransforms<C>
+        >)
+      | PlatePluginConfig<
+          C['key'],
+          InferOptions<C>,
+          InferApi<C>,
+          InferTransforms<C>
+        >
+  ) => PlatePlugin<C>;
 
   configurePlugin: <P extends AnyPlatePlugin>(
     plugin: Partial<P>,
@@ -293,21 +300,105 @@ export type PlatePluginMethods<
           InferTransforms<P>
         >)
       | PlatePluginConfig<any, InferOptions<P>, InferApi<P>, InferTransforms<P>>
-  ) => PlatePlugin<K, O, A, T>;
+  ) => PlatePlugin<C>;
 
   extend: <EO = {}, EA = {}, ET = {}>(
     extendConfig:
       | ((
-          ctx: EditorPluginContext<PluginConfig<O, A, T>>
-        ) => PlatePluginConfig<K, O, A, T, EO, EA, ET>)
-      | PlatePluginConfig<K, O, A, T, EO, EA, ET>
-  ) => PlatePlugin<K, EO & O, A & EA, ET & T>;
+          ctx: EditorPluginContext<C>
+        ) => PlatePluginConfig<
+          C['key'],
+          InferOptions<C>,
+          InferApi<C>,
+          InferTransforms<C>,
+          EO,
+          EA,
+          ET
+        >)
+      | PlatePluginConfig<
+          C['key'],
+          InferOptions<C>,
+          InferApi<C>,
+          InferTransforms<C>,
+          EO,
+          EA,
+          ET
+        >
+  ) => PlatePlugin<
+    PluginConfig<
+      C['key'],
+      EO & InferOptions<C>,
+      EA & InferApi<C>,
+      ET & InferTransforms<C>
+    >
+  >;
 
-  extendApi: <EA = {}>(
-    extendedApi: (
-      ctx: EditorPluginContext<PluginConfig<O, A, T>>
-    ) => DeepPartial<A> & EA
-  ) => PlatePlugin<K, O, A & EA, T>;
+  /**
+   * Extends the plugin's API with new methods or nested objects.
+   *
+   * This method allows you to add new functionality to the plugin's API or
+   * extend existing ones. You can add top-level methods, nested objects with
+   * methods, or extend existing nested objects. The types of existing methods
+   * and nested objects are preserved, while new ones are inferred.
+   *
+   * @remarks
+   *   - New methods can be added at the top level or within nested objects.
+   *   - Existing methods can be overridden, but their parameter and return types
+   *       must match the original.
+   *   - When extending nested objects, you don't need to specify all existing
+   *       properties; they will be preserved.
+   *   - Only one level of nesting is supported for API objects.
+   *
+   * @example
+   *   ```typescript
+   *   const extendedPlugin = basePlugin.extendApi(({ plugin }) => ({
+   *     newMethod: (param: string) => param.length,
+   *     existingMethod: (n) => n * 2, // Must match original signature
+   *     nested: {
+   *       newNestedMethod: () => 'new nested method',
+   *     },
+   *   }));
+   *   ```;
+   *
+   * @template EA - The type of the extended API, inferred from the returned
+   *   object.
+   * @param extendedApi - A function that returns an object with the new or
+   *   extended API methods.
+   * @returns A new instance of the plugin with the extended API.
+   */
+  extendApi: <
+    EA extends Record<
+      string,
+      ((...args: any[]) => any) | Record<string, (...args: any[]) => any>
+    > = Record<string, never>,
+  >(
+    extendedApi: (ctx: EditorPluginContext<C>) => {
+      [K in keyof InferApi<C>]?: InferApi<C>[K] extends (...args: any[]) => any
+        ? (...args: Parameters<InferApi<C>[K]>) => ReturnType<InferApi<C>[K]>
+        : InferApi<C>[K] extends Record<string, (...args: any[]) => any>
+          ? {
+              [N in keyof InferApi<C>[K]]?: (
+                ...args: Parameters<InferApi<C>[K][N]>
+              ) => ReturnType<InferApi<C>[K][N]>;
+            }
+          : never;
+    } & EA
+  ) => PlatePlugin<
+    PluginConfig<
+      C['key'],
+      InferOptions<C>,
+      {
+        [K in keyof (EA & InferApi<C>)]: (EA & InferApi<C>)[K] extends (
+          ...args: any[]
+        ) => any
+          ? (EA & InferApi<C>)[K]
+          : {
+              [N in keyof (EA & InferApi<C>)[K]]: (EA & InferApi<C>)[K][N];
+            };
+      },
+      InferTransforms<C>
+    >
+  >;
 
   extendPlugin: <P extends AnyPlatePlugin, EO = {}, EA = {}, ET = {}>(
     plugin: Partial<P>,
@@ -332,7 +423,7 @@ export type PlatePluginMethods<
           EA,
           ET
         >
-  ) => PlatePlugin<K, O, A, T>;
+  ) => PlatePlugin<C>;
 
   /**
    * Set the component for the plugin.
@@ -340,7 +431,7 @@ export type PlatePluginMethods<
    * @param component The React component to be used for rendering.
    * @returns A new instance of the plugin with the updated component.
    */
-  withComponent: (component: PlatePluginComponent) => PlatePlugin<K, O, A, T>;
+  withComponent: (component: PlatePluginComponent) => PlatePlugin<C>;
 };
 
 /** PlatePlugin fields */
@@ -502,7 +593,7 @@ export interface InjectProps<C extends AnyPluginConfig = PluginConfig> {
    */
   validPluginToInjectPlugin?: (
     ctx: { validPlugin: string } & EditorPluginContext<C>
-  ) => Partial<PlatePlugin<any, any, any, any>>;
+  ) => Partial<PlatePlugin<AnyPluginConfig>>;
 
   /**
    * Plugin keys required to inject the props.

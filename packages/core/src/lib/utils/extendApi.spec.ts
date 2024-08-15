@@ -1,5 +1,10 @@
 import { createPlateEditor } from '../../react';
-import { createPlugin, getPlugin } from '../plugin';
+import {
+  type PluginConfig,
+  createPlugin,
+  createTPlugin,
+  getPlugin,
+} from '../plugin';
 
 describe('extendApi method', () => {
   it('should maintain editor and plugin API reference while extending', () => {
@@ -28,6 +33,48 @@ describe('extendApi method', () => {
 
     expect(editor.api.method2).toBeDefined(); // The new method should be available
     expect(editor.api.method2()).toBe(2);
+  });
+
+  it('should correctly handle extendApi with function parameters', () => {
+    type CustomConfig = PluginConfig<
+      'customPlugin',
+      { baseValue: number },
+      { multiply: (factor: number) => number }
+    >;
+
+    const customPlugin = createTPlugin<CustomConfig>({
+      key: 'customPlugin',
+      options: {
+        baseValue: 5,
+      },
+    });
+
+    const extendedPlugin = customPlugin.extendApi(
+      ({ plugin: { options } }) => ({
+        multiply: (factor) => options.baseValue * factor,
+      })
+    );
+
+    const furtherExtendedPlugin = extendedPlugin.extendApi(
+      ({ plugin: { api, options } }) => ({
+        getTotal: (factor: number) => api.multiply(factor) + options.baseValue,
+        increment: (amount: number) => {
+          options.baseValue += amount;
+        },
+      })
+    );
+
+    const editor = createPlateEditor({
+      plugins: [furtherExtendedPlugin],
+    });
+
+    expect(editor.plugins.customPlugin.options.baseValue).toBe(5);
+    expect(editor.api.multiply(3)).toBe(15);
+
+    editor.api.increment(2);
+    expect(editor.plugins.customPlugin.options.baseValue).toBe(7);
+
+    expect(editor.api.getTotal(3)).toBe(28); // (7 * 3) + 7
   });
 
   it('should correctly handle api extensions through extend, extendApi, and configure', () => {
@@ -207,8 +254,8 @@ describe('extendApi method', () => {
       key: 'plugin1',
     })
       .extendApi(() => ({
-        method: () => 'plugin1',
-        scoped: () => 'scoped1',
+        method: () => 'plugin1' as string,
+        scoped: () => 'scoped1' as string,
       }))
       .extendApi(({ api, plugin }) => {
         // This should access the current plugin's scoped api method

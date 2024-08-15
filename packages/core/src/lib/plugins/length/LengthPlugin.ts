@@ -5,11 +5,14 @@ import type {
   WithOverride,
 } from '../../plugin/types/PlatePlugin';
 
-import { createPlugin } from '../../plugin/createPlugin';
+import { createTPlugin } from '../../plugin/createPlugin';
 
-export type LengthConfig = PluginConfig<{
-  maxLength: number;
-}>;
+export type LengthConfig = PluginConfig<
+  'length',
+  {
+    maxLength: number;
+  }
+>;
 
 export const withLength: WithOverride<LengthConfig> = ({
   editor,
@@ -41,7 +44,7 @@ export const withLength: WithOverride<LengthConfig> = ({
   return editor;
 };
 
-export const LengthPlugin = createPlugin<'length', LengthConfig['options']>({
+export const LengthPlugin = createTPlugin<LengthConfig>({
   key: 'length',
   withOverrides: withLength,
 });

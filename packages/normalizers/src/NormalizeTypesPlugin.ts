@@ -18,6 +18,7 @@ interface Rule {
 }
 
 export type NormalizeTypesConfig = PluginConfig<
+  'normalizeTypes',
   {
     /**
      * Set of rules for the types. For each rule, provide a `path` and either

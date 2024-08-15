@@ -7,7 +7,7 @@ describe('getApi method', () => {
       key: 'test',
     }).extendApi(() => ({
       testMethod: () => 'test',
-      testNumber: 42,
+      testNumber: () => 42,
     }));
 
     const editor = createPlateEditor({
@@ -22,7 +22,7 @@ describe('getApi method', () => {
 
     // Functionality checking
     expect(testApi.testMethod()).toBe('test');
-    expect(testApi.testNumber).toBe(42);
+    expect(testApi.testNumber()).toBe(42);
   });
 
   it('should work with generic', () => {

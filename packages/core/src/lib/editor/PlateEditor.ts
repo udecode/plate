@@ -17,8 +17,6 @@ import type {
 } from '../plugin';
 import type { CorePlugin } from '../plugins';
 
-// [K in MyPlugins['key']]: InferPluginApi<Extract<MyPlugins, { key: K }>>;
-
 export type PlateEditor = {
   api: UnionToIntersection<InferApi<CorePlugin>>;
 
@@ -75,6 +73,8 @@ export type TPlateEditor<
   children: V;
 
   pluginList: P[];
+
+  plugins: { [K in P['key']]: Extract<P, { key: K }> };
 
   // transforms: UnionToIntersection<
   //   InferPluginTransforms<

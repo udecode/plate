@@ -2,10 +2,12 @@ import merge from 'lodash/merge.js';
 
 import type { PlateEditor } from '../editor';
 import type {
+  AnyPluginConfig,
   PlatePlugin,
   PlatePluginComponent,
   PlatePluginMethods,
   PlatePlugins,
+  PluginConfig,
 } from './types/PlatePlugin';
 
 import { isFunction } from '../utils/misc/isFunction';
@@ -65,15 +67,21 @@ export function createPlugin<K extends string = any, O = {}, A = {}, T = {}>(
   config:
     | ((
         editor: PlateEditor
-      ) => Omit<Partial<PlatePlugin<K, O, A, T>>, keyof PlatePluginMethods>)
-    | Omit<Partial<PlatePlugin<K, O, A, T>>, keyof PlatePluginMethods> = {}
-): PlatePlugin<K, O, A, T> {
-  let baseConfig: Partial<PlatePlugin<K, O, A, T>>;
+      ) => Omit<
+        Partial<PlatePlugin<PluginConfig<K, O, A, T>>>,
+        keyof PlatePluginMethods
+      >)
+    | Omit<
+        Partial<PlatePlugin<PluginConfig<K, O, A, T>>>,
+        keyof PlatePluginMethods
+      > = {}
+): PlatePlugin<PluginConfig<K, O, A, T>> {
+  let baseConfig: Partial<PlatePlugin<PluginConfig<K, O, A, T>>>;
   let initialExtension:
     | ((
         editor: PlateEditor,
-        plugin: PlatePlugin<K, O, A, T>
-      ) => Partial<PlatePlugin<K, O, A, T>>)
+        plugin: PlatePlugin<PluginConfig<K, O, A, T>>
+      ) => Partial<PlatePlugin<PluginConfig<K, O, A, T>>>)
     | undefined;
 
   if (isFunction(config)) {
@@ -105,7 +113,7 @@ export function createPlugin<K extends string = any, O = {}, A = {}, T = {}>(
       type: key,
     },
     config
-  ) as unknown as PlatePlugin<K, O, A, T>;
+  ) as unknown as PlatePlugin<PluginConfig<K, O, A, T>>;
 
   plugin.configure = (config) => {
     const newPlugin = { ...plugin };
@@ -159,49 +167,6 @@ export function createPlugin<K extends string = any, O = {}, A = {}, T = {}>(
 
     return createPlugin(newPlugin);
   };
-
-  // plugin.configurePlugin = (key, config) => {
-  //   const newPlugin = { ...plugin };
-  //
-  //   const configureNestedPlugin = (
-  //     plugins: PlatePlugins
-  //   ): { found: boolean; plugins: PlatePlugins } => {
-  //     let found = false;
-  //     const updatedPlugins = plugins.map((nestedPlugin) => {
-  //       if (nestedPlugin.key === key) {
-  //         found = true;
-  //
-  //         return createPlugin({
-  //           ...nestedPlugin,
-  //           options: merge({}, nestedPlugin.options, config),
-  //         });
-  //       }
-  //       if (nestedPlugin.plugins && nestedPlugin.plugins.length > 0) {
-  //         const result = configureNestedPlugin(nestedPlugin.plugins);
-  //
-  //         if (result.found) {
-  //           found = true;
-  //
-  //           return {
-  //             ...nestedPlugin,
-  //             plugins: result.plugins,
-  //           };
-  //         }
-  //       }
-  //
-  //       return nestedPlugin;
-  //     });
-  //
-  //     return { found, plugins: updatedPlugins };
-  //   };
-  //
-  //   const result = configureNestedPlugin(newPlugin.plugins as any);
-  //   newPlugin.plugins = result.plugins as any;
-  //
-  //   // We're not adding a new plugin if not found
-  //
-  //   return createPlugin(newPlugin);
-  // };
 
   plugin.extendApi = (apiExtension) => {
     const newPlugin = { ...plugin };
@@ -290,4 +255,22 @@ export function createPlugin<K extends string = any, O = {}, A = {}, T = {}>(
   };
 
   return plugin;
+}
+
+/**
+ * Explicitly typed version of `createPlugin`.
+ *
+ * @remarks
+ *   While `createPlugin` uses type inference, this function requires an explicit
+ *   type parameter. Use this when you need precise control over the plugin's
+ *   type structure or when type inference doesn't provide the desired result.
+ */
+export function createTPlugin<C extends AnyPluginConfig = PluginConfig>(
+  config:
+    | ((
+        editor: PlateEditor
+      ) => Omit<Partial<PlatePlugin<C>>, keyof PlatePluginMethods>)
+    | Omit<Partial<PlatePlugin<C>>, keyof PlatePluginMethods> = {}
+): PlatePlugin<C> {
+  return createPlugin(config as any) as any;
 }

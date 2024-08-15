@@ -10,7 +10,7 @@ import {
 } from '../../lib';
 
 export const onKeyDownToggleElement: KeyboardHandler<
-  PluginConfig<HotkeyPluginOptions>
+  PluginConfig<any, HotkeyPluginOptions>
 > = ({
   editor,
   event,

@@ -179,9 +179,9 @@ describe('createPlugin', () => {
       });
 
       const aaaOptions = editor.getOptions<
-        PluginConfig<{ a: number; b: number }>
+        PluginConfig<any, { a: number; b: number }>
       >({ key: 'aaa' });
-      const bbbOptions = editor.getOptions<PluginConfig<{ a: number }>>({
+      const bbbOptions = editor.getOptions<PluginConfig<any, { a: number }>>({
         key: 'bbb',
       });
 
@@ -197,6 +197,7 @@ describe('createPlugin', () => {
         key: 'child',
         options: { childOption: 'child' },
       });
+
       const parentPlugin = createPlugin({
         key: 'parent',
         options: { parentOption: 'parent' },
@@ -265,7 +266,7 @@ describe('createPlugin', () => {
       });
 
       const grandchildOptions = editor.getOptions<
-        PluginConfig<{ testOption: number }>
+        PluginConfig<any, { testOption: number }>
       >({
         key: 'grandchild',
       });
@@ -574,7 +575,7 @@ describe('createPlugin', () => {
 
       const child1Plugin = editor.getPlugin({ key: 'child1' });
       const child1Options = editor.getOptions<
-        PluginConfig<{ extendedValue: number; initialValue: number }>
+        PluginConfig<any, { extendedValue: number; initialValue: number }>
       >({ key: 'child1' });
 
       expect(child1Plugin.key).toBe('child1');

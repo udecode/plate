@@ -1,7 +1,11 @@
 import merge from 'lodash/merge.js';
 
 import type { PlateEditor } from '../editor';
-import type { AnyPlatePlugin, PlatePlugin } from '../plugin/types/PlatePlugin';
+import type {
+  AnyPlatePlugin,
+  PlatePlugin,
+  PluginConfig,
+} from '../plugin/types/PlatePlugin';
 
 import { getPluginContext } from '../plugin';
 
@@ -77,7 +81,7 @@ export const resolvePlugin = <P extends AnyPlatePlugin>(
 
 export const validatePlugin = <K extends string = any, O = {}, A = {}, T = {}>(
   editor: PlateEditor,
-  plugin: PlatePlugin<K, O, A, T>
+  plugin: PlatePlugin<PluginConfig<K, O, A, T>>
 ) => {
   if (!plugin.__extensions) {
     editor.api.debug.error(

@@ -1,7 +1,7 @@
 import {
   type WithOverride,
   collapseSelection,
-  createPlugin,
+  createTPlugin,
   getAboveNode,
   getEditorString,
   getNextNodeStartPoint,
@@ -187,7 +187,7 @@ export const withLink: WithOverride<LinkConfig> = ({
   editor = withRemoveEmptyNodes(
     getPluginContext<RemoveEmptyNodesConfig>(
       editor,
-      createPlugin({
+      createTPlugin<RemoveEmptyNodesConfig>({
         options: { types: type },
       })
     )
