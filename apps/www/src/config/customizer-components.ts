@@ -104,6 +104,7 @@ export const customizerComponents = {
   },
   floatingToolbar: {
     href: '/docs/components/floating-toolbar',
+    new: true,
     title: 'Floating Toolbar',
   },
   floatingToolbarButtons: {
@@ -128,6 +129,7 @@ export const customizerComponents = {
   imageElement: {
     href: '/docs/components/image-element',
     label: 'Element',
+    new: true,
     title: 'Image',
   },
   indentListToolbarButton: {

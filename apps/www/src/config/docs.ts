@@ -2,6 +2,8 @@ import type { MainNavItem, SidebarNavItem } from '@/types/nav';
 
 import { customizerComponents } from '@/config/customizer-components';
 
+import { potionComponents } from './potion-components';
+
 export interface DocsConfig {
   componentsNav: SidebarNavItem[];
   mainNav: MainNavItem[];
@@ -45,6 +47,15 @@ export const docsConfig: DocsConfig = {
     },
     {
       items: [
+        potionComponents.aiMenu,
+        potionComponents.contextMenu,
+        potionComponents.equation,
+        potionComponents.inlineEquation,
+        potionComponents.mediaController,
+        potionComponents.slashMenu,
+        potionComponents.toolbar,
+        potionComponents.tocElement,
+        potionComponents.tocSideBar,
         customizerComponents.editor,
         customizerComponents.alignDropdownMenu,
         customizerComponents.avatar,

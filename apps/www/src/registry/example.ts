@@ -2,6 +2,16 @@ import type { Registry } from './schema';
 
 export const example: Registry = [
   {
+    files: ['example/toolbar-pro-demo.tsx'],
+    name: 'toolbar-pro-demo',
+    type: 'components:example',
+  },
+  {
+    files: ['example/image-pro-demo.tsx'],
+    name: 'image-pro-demo',
+    type: 'components:example',
+  },
+  {
     files: ['example/editor-default.tsx'],
     name: 'editor-default',
     registryDependencies: [],
