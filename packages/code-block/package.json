@@ -54,7 +54,7 @@
     "prismjs": "^1.29.0"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=36.3.7",
+    "@udecode/plate-common": ">=36.3.9",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.94.0",
