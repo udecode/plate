@@ -194,10 +194,10 @@ None (CI release issue)
   - Caption is now a separate plugin. Install `@udecode/plate-caption` and add it to your plugins:
 
   ```ts
-  import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media';
+  import { ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from '@udecode/plate-media';
 
   createCaptionPlugin({
-    options: { pluginKeys: [ImagePlugin.key, ELEMENT_MEDIA_EMBED] },
+    options: { pluginKeys: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED] },
   });
   ```
 
@@ -624,7 +624,7 @@ Migration:
 ### Major Changes
 
 - [#1871](https://github.com/udecode/plate/pull/1871) by [@zbeyens](https://github.com/zbeyens) –
-  - Removed `[CodeBlockPlugin.key]: CodeBlockElement` from Plate UI. You can define it in your app.
+  - Removed `[ELEMENT_CODE_BLOCK]: CodeBlockElement` from Plate UI. You can define it in your app.
 
 # 16.0.0
 
@@ -659,7 +659,7 @@ Migration:
 
 - [#1721](https://github.com/udecode/plate/pull/1721) by [@zbeyens](https://github.com/zbeyens) –
 - `TableElementBase` props:
-  - replace `onRenderContainer` by `floatingOptions` or by replacing `TablePlugin.key` in the `createPlateUI` function.
+  - replace `onRenderContainer` by `floatingOptions` or by replacing `ELEMENT_TABLE` in the `createPlateUI` function.
 - `TablePopover` is now a floating instead of tippy
 - deps:
   - replaced `plate-ui-popover` by `plate-floating`
@@ -1026,7 +1026,7 @@ getEmptyTableNode(editor, { rowCount: 2, colCount: 2 });
   // option 2: use createPlugins
   plugins = createPlugins(plugins, {
     components: {
-      [ParagraphPlugin.key]: ParagraphElement,
+      [ELEMENT_PARAGRAPH]: ParagraphElement,
     },
   });
 
@@ -1050,7 +1050,7 @@ getEmptyTableNode(editor, { rowCount: 2, colCount: 2 });
   // option 2: use createPlugins
   plugins = createPlugins(plugins, {
     overrideByKey: {
-      [ParagraphPlugin.key]: {
+      [ELEMENT_PARAGRAPH]: {
         type: 'paragraph',
       },
     },
@@ -1402,11 +1402,11 @@ getEmptyTableNode(editor, { rowCount: 2, colCount: 2 });
 ## `@udecode/plate-alignment`
 
 - `setAlign`: option `align` renamed to `value`
-- removed `getAlignOverrideProps()` in favor of `getOverrideProps(AlignPlugin.key)`
+- removed `getAlignOverrideProps()` in favor of `getOverrideProps(KEY_ALIGN)`
 
 ## `@udecode/plate-indent`
 
-- removed `getIndentOverrideProps()` in favor of `getOverrideProps(IndentPlugin.key)`
+- removed `getIndentOverrideProps()` in favor of `getOverrideProps(KEY_INDENT)`
 - rename `onKeyDownHandler` to `getIndentOnKeyDown()`
 - `IndentPluginOptions`
   - rename `types` to `validTypes`
@@ -1416,7 +1416,7 @@ getEmptyTableNode(editor, { rowCount: 2, colCount: 2 });
 ## `@udecode/plate-line-height`
 
 - `setLineHeight`: option `lineHeight` renamed to `value`
-- removed `getLineHeightOverrideProps` in favor of `getOverrideProps(LineHeightPlugin.key)`
+- removed `getLineHeightOverrideProps` in favor of `getOverrideProps(KEY_LINE_HEIGHT)`
 
 ## `@udecode/plate-mention`
 
@@ -1458,7 +1458,7 @@ The align plugin is no longer wrapping a block, but instead setting an `align` p
   - `ELEMENT_ALIGN_CENTER`
   - `ELEMENT_ALIGN_RIGHT`
   - `ELEMENT_ALIGN_JUSTIFY`
-  - `KEYS_ALIGN` in favor of `AlignPlugin.key`
+  - `KEYS_ALIGN` in favor of `KEY_ALIGN`
   - `getAlignDeserialize`
   - `upsertAlign` in favor of `setAlign`
 
