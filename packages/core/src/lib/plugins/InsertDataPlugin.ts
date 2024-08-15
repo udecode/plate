@@ -39,6 +39,7 @@ export const withInsertData: WithOverride = ({ editor }) => {
       });
 
       let fragment = getFragment?.({
+        api: editor.api,
         data,
         dataTransfer,
         editor,

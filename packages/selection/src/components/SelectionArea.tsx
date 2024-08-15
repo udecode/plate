@@ -1,16 +1,12 @@
 import React from 'react';
 
-import { getPluginOptions } from '@udecode/plate-common';
 import { useEditorRef } from '@udecode/plate-common/react';
 import VanillaSelectionArea, {
   type SelectionEvents,
   type SelectionOptions,
 } from '@viselect/vanilla';
 
-import {
-  type BlockSelectionPluginOptions,
-  BlockSelectionPlugin,
-} from '../BlockSelectionPlugin';
+import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
 export interface SelectionAreaProps
   extends Omit<Partial<SelectionOptions>, 'boundaries'>,
@@ -53,11 +49,7 @@ export function SelectionArea({
   const areaBoundariesRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
-    const { scrollContainerSelector } =
-      getPluginOptions<BlockSelectionPluginOptions>(
-        editor,
-        BlockSelectionPlugin.key
-      );
+    const { scrollContainerSelector } = editor.getOptions(BlockSelectionPlugin);
 
     if (scrollContainerSelector) {
       areaBoundariesRef.current = window.document.querySelector(

@@ -21,7 +21,7 @@ export const upsertLinkText = (
   { text }: UpsertLinkOptions
 ) => {
   const newLink = getAboveNode<TLinkElement>(editor, {
-    match: { type: getPluginType(editor, LinkPlugin.key) },
+    match: { type: editor.getType(LinkPlugin) },
   });
 
   if (newLink) {

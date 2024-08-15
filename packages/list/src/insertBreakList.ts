@@ -45,10 +45,10 @@ export const insertBreakList = (editor: PlateEditor) => {
       options: {
         rules: [
           {
-            defaultType: getPluginType(editor, ParagraphPlugin.key),
+            defaultType: editor.getType(ParagraphPlugin),
             onReset: (_editor) => unwrapList(_editor),
             predicate: () => !moved && isBlockAboveEmpty(editor),
-            types: [getPluginType(editor, ListItemPlugin.key)],
+            types: [editor.getType(ListItemPlugin)],
           },
         ],
       },

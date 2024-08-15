@@ -1,7 +1,7 @@
-import type { EXPOSED_STORE_KEYS, PlateStoreState } from '../types';
+import type { EXPOSED_STORE_KEYS, PlateStoreState } from '../../types';
 
-import { createPlugin } from '../plugin';
-import { DebugPlugin } from './debug';
+import { createPlugin } from '../../plugin';
+import { DebugPlugin } from '../debug';
 
 export const PlateApiPlugin = createPlugin({
   dependencies: [DebugPlugin.key],

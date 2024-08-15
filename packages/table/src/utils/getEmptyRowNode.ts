@@ -1,10 +1,6 @@
-import {
-  type PlateEditor,
-  getPluginOptions,
-  getPluginType,
-} from '@udecode/plate-common';
+import { type PlateEditor, getPluginType } from '@udecode/plate-common';
 
-import type { CellFactoryOptions, TablePluginOptions } from '../types';
+import type { CellFactoryOptions } from '../types';
 
 import { TablePlugin, TableRowPlugin } from '../TablePlugin';
 
@@ -16,15 +12,12 @@ export const getEmptyRowNode = (
   editor: PlateEditor,
   { colCount = 1, ...cellOptions }: GetEmptyRowNodeOptions = {}
 ) => {
-  const { cellFactory } = getPluginOptions<TablePluginOptions>(
-    editor,
-    TablePlugin.key
-  );
+  const api = editor.getApi(TablePlugin);
 
   return {
     children: Array.from({ length: colCount })
       .fill(colCount)
-      .map(() => cellFactory!(cellOptions)),
-    type: getPluginType(editor, TableRowPlugin.key),
+      .map(() => api.table.cellFactory!(cellOptions)),
+    type: editor.getType(TableRowPlugin),
   };
 };

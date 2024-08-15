@@ -38,8 +38,10 @@ export default function MultipleEditorsDemo() {
       BasicMarksPlugin,
       ImagePlugin,
       SelectOnBackspacePlugin.configure({
-        query: {
-          allow: [ImagePlugin.key, HorizontalRulePlugin.key],
+        options: {
+          query: {
+            allow: [ImagePlugin.key, HorizontalRulePlugin.key],
+          },
         },
       }),
     ],

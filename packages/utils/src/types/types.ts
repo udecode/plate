@@ -40,3 +40,5 @@ export type PartialPick<T, K extends keyof T> = {
 };
 
 export type WithPartial<T, K extends keyof T> = Omit<T, K> & Partial<T>;
+
+export type PartialExcept<T, K extends keyof T> = Partial<T> & Pick<T, K>;

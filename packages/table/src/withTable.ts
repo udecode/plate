@@ -1,6 +1,6 @@
 import type { WithOverride } from '@udecode/plate-common';
 
-import type { TablePluginOptions } from './types';
+import type { TableContext } from './types';
 
 import { withDeleteTable } from './withDeleteTable';
 import { withGetFragmentTable } from './withGetFragmentTable';
@@ -11,18 +11,15 @@ import { withNormalizeTable } from './withNormalizeTable';
 import { withSelectionTable } from './withSelectionTable';
 import { withSetFragmentDataTable } from './withSetFragmentDataTable';
 
-export const withTable: WithOverride<TablePluginOptions> = ({
-  editor,
-  plugin,
-}) => {
-  editor = withNormalizeTable({ editor, plugin });
-  editor = withDeleteTable({ editor, plugin });
-  editor = withGetFragmentTable({ editor, plugin });
-  editor = withInsertFragmentTable({ editor, plugin });
-  editor = withInsertTextTable({ editor, plugin });
-  editor = withSelectionTable({ editor, plugin });
-  editor = withSetFragmentDataTable({ editor, plugin });
-  editor = withMarkTable({ editor, plugin });
+export const withTable: WithOverride<TableContext> = ({ editor, ...ctx }) => {
+  editor = withNormalizeTable({ editor, ...ctx });
+  editor = withDeleteTable({ editor, ...ctx });
+  editor = withGetFragmentTable({ editor, ...ctx });
+  editor = withInsertFragmentTable({ editor, ...ctx });
+  editor = withInsertTextTable({ editor, ...ctx });
+  editor = withSelectionTable({ editor, ...ctx });
+  editor = withSetFragmentDataTable({ editor, ...ctx });
+  editor = withMarkTable({ editor, ...ctx });
 
   return editor;
 };

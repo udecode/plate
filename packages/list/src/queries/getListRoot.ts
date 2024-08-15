@@ -21,8 +21,8 @@ export const getListRoot = (
     at,
     match: {
       type: [
-        getPluginType(editor, ListUnorderedPlugin.key),
-        getPluginType(editor, ListOrderedPlugin.key),
+        editor.getType(ListUnorderedPlugin),
+        editor.getType(ListOrderedPlugin),
       ],
     },
   });

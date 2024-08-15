@@ -1,9 +1,8 @@
 /** @jsx jsx */
 
-import { ParagraphPlugin } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createPlateEditor } from '../../../../react';
+import { ParagraphPlugin, createPlateEditor } from '../../../../react';
 import { htmlBodyToFragment } from './htmlBodyToFragment';
 import { parseHtmlElement } from './parseHtmlElement';
 

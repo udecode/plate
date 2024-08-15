@@ -5,7 +5,6 @@ import {
   getAboveNode,
   getEditorString,
   getNextNodeStartPoint,
-  getPluginType,
   getPreviousNodeEndPoint,
   getRangeBefore,
   getRangeFromBlockStart,
@@ -18,12 +17,12 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 import {
-  type RemoveEmptyNodesPluginOptions,
+  type RemoveEmptyNodesContext,
   withRemoveEmptyNodes,
 } from '@udecode/plate-normalizers';
 import { Path, type Point, type Range } from 'slate';
 
-import { LinkPlugin, type LinkPluginOptions } from './LinkPlugin';
+import { type LinkContext, LinkPlugin } from './LinkPlugin';
 import { upsertLink } from './transforms/index';
 
 /**
@@ -35,7 +34,7 @@ import { upsertLink } from './transforms/index';
  * text but not its url.
  */
 
-export const withLink: WithOverride<LinkPluginOptions> = ({
+export const withLink: WithOverride<LinkContext> = ({
   editor,
   plugin: {
     options: { getUrlHref, isUrl, keepSelectedTextOnPaste, rangeBeforeOptions },
@@ -64,7 +63,7 @@ export const withLink: WithOverride<LinkPluginOptions> = ({
 
       const hasLink = someNode(editor, {
         at: beforeWordRange,
-        match: { type: getPluginType(editor, LinkPlugin.key) },
+        match: { type: editor.getType(LinkPlugin) },
       });
 
       // if word before the cursor has a link, exit
@@ -130,7 +129,7 @@ export const withLink: WithOverride<LinkPluginOptions> = ({
       if (range?.focus && range.anchor && isCollapsed(range)) {
         const entry = getAboveNode(editor, {
           at: range,
-          match: { type: getPluginType(editor, LinkPlugin.key) },
+          match: { type: editor.getType(LinkPlugin) },
         });
 
         if (entry) {
@@ -159,7 +158,7 @@ export const withLink: WithOverride<LinkPluginOptions> = ({
 
   // TODO: plugin
   editor.normalizeNode = ([node, path]) => {
-    if (node.type === getPluginType(editor, LinkPlugin.key)) {
+    if (node.type === editor.getType(LinkPlugin)) {
       const range = editor.selection as Range | null;
 
       if (
@@ -185,8 +184,9 @@ export const withLink: WithOverride<LinkPluginOptions> = ({
   };
 
   editor = withRemoveEmptyNodes({
+    api: editor.api,
     editor,
-    plugin: createPlugin<string, RemoveEmptyNodesPluginOptions>({
+    plugin: createPlugin<string, RemoveEmptyNodesContext['options']>({
       options: { types: type },
     }),
   });

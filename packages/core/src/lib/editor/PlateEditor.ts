@@ -7,15 +7,20 @@ import type { UnionToIntersection } from '@udecode/utils';
 import type {
   AnyEditorPlugin,
   AnyPlatePlugin,
-  InferPluginApi,
-  PluginKey,
+  AnyPluginContext,
+  EditorPlugin,
+  InferApi,
+  InferOptions,
+  InjectProps,
+  PluginContext,
+  WithRequiredKey,
 } from '../plugin';
 import type { CorePlugin } from '../plugins';
 
 // [K in MyPlugins['key']]: InferPluginApi<Extract<MyPlugins, { key: K }>>;
 
 export type PlateEditor = {
-  api: UnionToIntersection<InferPluginApi<CorePlugin>>;
+  api: UnionToIntersection<InferApi<CorePlugin>>;
 
   currentKeyboardEvent: React.KeyboardEvent | null;
 
@@ -33,18 +38,39 @@ export type PlateEditor = {
 
   pluginList: AnyEditorPlugin[];
 
-  plugins: Record<PluginKey, AnyEditorPlugin>;
+  plugins: Record<string, AnyEditorPlugin>;
 
   prevSelection: TRange | null;
-} & TEditor &
+} & PlateEditorMethods &
+  TEditor &
   THistoryEditor &
   TReactEditor;
+
+export type PlateEditorMethods = {
+  getApi: <C extends AnyPluginContext = PluginContext>(
+    plugin?: WithRequiredKey<C>
+  ) => InferApi<C>;
+
+  getInjectProps: <C extends AnyPluginContext = PluginContext>(
+    plugin: WithRequiredKey<C>
+  ) => InjectProps<C>;
+
+  getOptions: <C extends AnyPluginContext = PluginContext>(
+    plugin: WithRequiredKey<C>
+  ) => InferOptions<C>;
+
+  getPlugin: <C extends AnyPluginContext = PluginContext>(
+    plugin: WithRequiredKey<C>
+  ) => EditorPlugin<C>;
+
+  getType: (plugin: WithRequiredKey) => string;
+};
 
 export type TPlateEditor<
   V extends Value = Value,
   P extends AnyPlatePlugin = CorePlugin,
 > = {
-  api: UnionToIntersection<InferPluginApi<CorePlugin | P>>;
+  api: UnionToIntersection<InferApi<CorePlugin | P>>;
 
   children: V;
 

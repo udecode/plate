@@ -28,7 +28,7 @@ export const resolvePlugins = (
   // withOverrides
   editor.pluginList.forEach((plugin) => {
     if (plugin.withOverrides) {
-      editor = plugin.withOverrides({ editor, plugin }) as any;
+      editor = plugin.withOverrides({ api: editor.api, editor, plugin }) as any;
     }
   });
 
@@ -46,7 +46,7 @@ const mergePluginApis = (editor: PlateEditor) => {
     // Apply method extensions
     if (plugin.__methodExtensions && plugin.__methodExtensions.length > 0) {
       plugin.__methodExtensions.forEach((methodExtension) => {
-        const newApi = methodExtension({ editor, plugin });
+        const newApi = methodExtension({ api: editor.api, editor, plugin });
 
         merge(plugin.api, newApi);
         merge(editor.api, newApi);

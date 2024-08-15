@@ -1,8 +1,6 @@
 import {
   type PlateEditor,
   getAboveNode,
-  getPluginOptions,
-  getPluginType,
   insertElements,
   isExpanded,
   removeNodes,
@@ -15,7 +13,6 @@ import type {
   TTableCellElement,
   TTableElement,
   TTableRowElement,
-  TablePluginOptions,
 } from '../types';
 
 import { TablePlugin } from '../TablePlugin';
@@ -29,16 +26,13 @@ import { getCellIndices } from './getCellIndices';
 export const deleteTableMergeRow = (editor: PlateEditor) => {
   if (
     someNode(editor, {
-      match: { type: getPluginType(editor, TablePlugin.key) },
+      match: { type: editor.getType(TablePlugin) },
     })
   ) {
-    const { _cellIndices: cellIndices } = getPluginOptions<TablePluginOptions>(
-      editor,
-      TablePlugin.key
-    );
+    const { _cellIndices: cellIndices } = editor.getOptions(TablePlugin);
 
     const currentTableItem = getAboveNode<TTableElement>(editor, {
-      match: { type: getPluginType(editor, TablePlugin.key) },
+      match: { type: editor.getType(TablePlugin) },
     });
 
     if (!currentTableItem) return;

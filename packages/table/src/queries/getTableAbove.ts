@@ -13,7 +13,7 @@ export const getTableAbove = <E extends PlateEditor>(
 ) =>
   getBlockAbove(editor, {
     match: {
-      type: getPluginType(editor, TablePlugin.key),
+      type: editor.getType(TablePlugin),
     },
     ...options,
   });

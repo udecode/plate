@@ -15,7 +15,13 @@ export const pipeTransformData = (
 
     if (!transformData) return;
 
-    data = transformData({ data, dataTransfer, editor, plugin: p as any });
+    data = transformData({
+      api: editor.api,
+      data,
+      dataTransfer,
+      editor,
+      plugin: p as any,
+    });
   });
 
   return data;

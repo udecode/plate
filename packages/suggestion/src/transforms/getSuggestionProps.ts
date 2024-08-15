@@ -1,15 +1,10 @@
-import { type PlateEditor, getPluginOptions } from '@udecode/plate-common';
-
-import type { SuggestionPluginOptions } from '../types';
+import type { PlateEditor } from '@udecode/plate-common';
 
 import { KEY_SUGGESTION_ID, SuggestionPlugin } from '../SuggestionPlugin';
 import { getSuggestionKey } from '../utils/index';
 
 export const getSuggestionCurrentUserKey = (editor: PlateEditor) => {
-  const { currentUserId } = getPluginOptions<SuggestionPluginOptions>(
-    editor,
-    SuggestionPlugin.key
-  );
+  const { currentUserId } = editor.getOptions(SuggestionPlugin);
 
   return getSuggestionKey(currentUserId);
 };

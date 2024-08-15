@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import {
-  type PlateEditor,
+  type Value,
   createSlateEditor,
   normalizeEditor,
 } from '@udecode/plate-common';
@@ -16,7 +16,7 @@ describe('withNormalizeTable', () => {
   describe('cell child is a text', () => {
     it('should wrap the children into a p', async () => {
       const input = (
-        <editor>
+        <fragment>
           <htable>
             <htr>
               <htd>
@@ -26,11 +26,11 @@ describe('withNormalizeTable', () => {
               </htd>
             </htr>
           </htable>
-        </editor>
-      ) as any as PlateEditor;
+        </fragment>
+      ) as any as Value;
 
       const output = (
-        <editor>
+        <fragment>
           <htable>
             <htr>
               <htd>
@@ -42,25 +42,25 @@ describe('withNormalizeTable', () => {
               </htd>
             </htr>
           </htable>
-        </editor>
-      ) as any as PlateEditor;
+        </fragment>
+      ) as any as Value;
 
       const editor = createSlateEditor({
-        editor: input,
         plugins: [TablePlugin],
+        value: input,
       });
 
       normalizeEditor(editor, {
         force: true,
       });
-      expect(editor.children).toEqual(output.children);
+      expect(editor.children).toEqual(output);
     });
   });
 
   describe('initialTableWidth is defined and colSizes is not defined', () => {
     it('should set colSizes', () => {
       const input = (
-        <editor>
+        <fragment>
           <htable>
             <htr>
               <htd>
@@ -89,11 +89,11 @@ describe('withNormalizeTable', () => {
               </htd>
             </htr>
           </htable>
-        </editor>
-      ) as any as PlateEditor;
+        </fragment>
+      ) as any as Value;
 
       const output = (
-        <editor>
+        <fragment>
           <htable colSizes={[30, 30, 30]}>
             <htr>
               <htd>
@@ -122,29 +122,31 @@ describe('withNormalizeTable', () => {
               </htd>
             </htr>
           </htable>
-        </editor>
-      ) as any as PlateEditor;
+        </fragment>
+      ) as any as Value;
 
       const editor = createSlateEditor({
-        editor: input,
         plugins: [
           TablePlugin.configure({
-            initialTableWidth: 90,
+            options: {
+              initialTableWidth: 90,
+            },
           }),
         ],
+        value: input,
       });
 
       normalizeEditor(editor, {
         force: true,
       });
-      expect(editor.children).toEqual(output.children);
+      expect(editor.children).toEqual(output);
     });
   });
 
   describe('initialTableWidth is defined and colSizes is partially defined', () => {
     it('should set colSizes', () => {
       const input = (
-        <editor>
+        <fragment>
           <htable colSizes={[0, 40, 0]}>
             <htr>
               <htd>
@@ -173,11 +175,11 @@ describe('withNormalizeTable', () => {
               </htd>
             </htr>
           </htable>
-        </editor>
-      ) as any as PlateEditor;
+        </fragment>
+      ) as any as Value;
 
       const output = (
-        <editor>
+        <fragment>
           <htable colSizes={[30, 40, 30]}>
             <htr>
               <htd>
@@ -206,29 +208,31 @@ describe('withNormalizeTable', () => {
               </htd>
             </htr>
           </htable>
-        </editor>
-      ) as any as PlateEditor;
+        </fragment>
+      ) as any as Value;
 
       const editor = createSlateEditor({
-        editor: input,
         plugins: [
           TablePlugin.configure({
-            initialTableWidth: 90,
+            options: {
+              initialTableWidth: 90,
+            },
           }),
         ],
+        value: input,
       });
 
       normalizeEditor(editor, {
         force: true,
       });
-      expect(editor.children).toEqual(output.children);
+      expect(editor.children).toEqual(output);
     });
   });
 
   describe('initialTableWidth is defined and colSizes is fully defined', () => {
     it('should do nothing', () => {
       const input = (
-        <editor>
+        <fragment>
           <htable colSizes={[40, 40, 40]}>
             <htr>
               <htd>
@@ -257,11 +261,11 @@ describe('withNormalizeTable', () => {
               </htd>
             </htr>
           </htable>
-        </editor>
-      ) as any as PlateEditor;
+        </fragment>
+      ) as any as Value;
 
       const output = (
-        <editor>
+        <fragment>
           <htable colSizes={[40, 40, 40]}>
             <htr>
               <htd>
@@ -290,22 +294,24 @@ describe('withNormalizeTable', () => {
               </htd>
             </htr>
           </htable>
-        </editor>
-      ) as any as PlateEditor;
+        </fragment>
+      ) as any as Value;
 
       const editor = createSlateEditor({
-        editor: input,
         plugins: [
           TablePlugin.configure({
-            initialTableWidth: 90,
+            options: {
+              initialTableWidth: 90,
+            },
           }),
         ],
+        value: input,
       });
 
       normalizeEditor(editor, {
         force: true,
       });
-      expect(editor.children).toEqual(output.children);
+      expect(editor.children).toEqual(output);
     });
   });
 
@@ -313,7 +319,7 @@ describe('withNormalizeTable', () => {
   describe('table in a table', () => {
     it('should unwrap the nested table, tr, td', async () => {
       const input = (
-        <editor>
+        <fragment>
           <htable>
             <htr>
               <htd>
@@ -331,11 +337,11 @@ describe('withNormalizeTable', () => {
               </htd>
             </htr>
           </htable>
-        </editor>
-      ) as any as PlateEditor;
+        </fragment>
+      ) as any as Value;
 
       const output = (
-        <editor>
+        <fragment>
           <htable>
             <htr>
               <htd>
@@ -345,18 +351,18 @@ describe('withNormalizeTable', () => {
               </htd>
             </htr>
           </htable>
-        </editor>
-      ) as any as PlateEditor;
+        </fragment>
+      ) as any as Value;
 
       const editor = createSlateEditor({
-        editor: input,
         plugins: [TablePlugin],
+        value: input,
       });
 
       normalizeEditor(editor, {
         force: true,
       });
-      expect(editor.children).toEqual(output.children);
+      expect(editor.children).toEqual(output);
     });
   });
 });

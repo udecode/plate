@@ -20,7 +20,7 @@ export const getListItemEntry = (
   editor: PlateEditor,
   { at = editor.selection }: { at?: Location | null } = {}
 ): { list: TElementEntry; listItem: TElementEntry } | undefined => {
-  const liType = getPluginType(editor, ListItemPlugin.key);
+  const liType = editor.getType(ListItemPlugin);
 
   let _at: Path;
 

@@ -3,8 +3,6 @@ import {
   findNode,
   getBlockAbove,
   getParentNode,
-  getPluginOptions,
-  getPluginType,
   insertElements,
   setNodes,
   withoutNormalizing,
@@ -15,7 +13,6 @@ import type {
   TTableCellElement,
   TTableElement,
   TTableRowElement,
-  TablePluginOptions,
 } from '../types';
 
 import { TablePlugin, TableRowPlugin } from '../TablePlugin';
@@ -42,16 +39,16 @@ export const insertTableMergeRow = (
     header?: boolean;
   } = {}
 ) => {
-  const { _cellIndices: cellIndices, cellFactory } =
-    getPluginOptions<TablePluginOptions>(editor, TablePlugin.key);
+  const { _cellIndices: cellIndices } = editor.getOptions(TablePlugin);
+  const api = editor.getApi(TablePlugin);
 
   const trEntry = fromRow
     ? findNode(editor, {
         at: fromRow,
-        match: { type: getPluginType(editor, TableRowPlugin.key) },
+        match: { type: editor.getType(TableRowPlugin) },
       })
     : getBlockAbove(editor, {
-        match: { type: getPluginType(editor, TableRowPlugin.key) },
+        match: { type: editor.getType(TableRowPlugin) },
       });
 
   if (!trEntry) return;
@@ -60,7 +57,7 @@ export const insertTableMergeRow = (
 
   const tableEntry = getBlockAbove<TTableElement>(editor, {
     at: trPath,
-    match: { type: getPluginType(editor, TablePlugin.key) },
+    match: { type: editor.getType(TablePlugin) },
   });
 
   if (!tableEntry) return;
@@ -146,7 +143,7 @@ export const insertTableMergeRow = (
       // add new
       const row = getParentNode(editor, currentCellPath)!;
       const rowElement = row[0] as TTableRowElement;
-      const emptyCell = cellFactory!({ header, row: rowElement });
+      const emptyCell = api.table.cellFactory!({ header, row: rowElement });
 
       newRowChildren.push({
         ...emptyCell,
@@ -161,7 +158,7 @@ export const insertTableMergeRow = (
       editor,
       {
         children: newRowChildren,
-        type: getPluginType(editor, TableRowPlugin.key),
+        type: editor.getType(TableRowPlugin),
       },
       {
         at: nextRowPath,

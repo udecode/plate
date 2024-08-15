@@ -8,47 +8,46 @@ import {
 } from '@udecode/plate-code-block';
 import {
   ParagraphPlugin,
-  type PlateEditor,
   getEditorString,
-  getPluginType,
   getRangeFromBlockStart,
 } from '@udecode/plate-common';
+import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
-import { withReact } from 'slate-react';
 import {
   getAutoformatOptions,
   preFormat,
 } from 'www/src/lib/plate/demo/plugins/autoformatOptions';
 
 import { AutoformatPlugin } from '../../../AutoformatPlugin';
-import { withAutoformat } from '../../../withAutoformat';
 
 jsx;
 
 describe('when ``` at block start', () => {
   it('should insert a code block below', () => {
     const input = (
-      <editor>
+      <fragment>
         <hp>
           ``
           <cursor />
           hello
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const output = (
-      <editor>
+      <fragment>
         <hp>hello</hp>
         <hcodeblock>
           <hcodeline>new</hcodeline>
         </hcodeblock>
-      </editor>
+      </fragment>
     ) as any;
 
-    const editor = withAutoformat({
-      editor: withReact(input),
-      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    const editor = createPlateEditor({
+      plugins: [
+        AutoformatPlugin.configure({ options: getAutoformatOptions() }),
+      ],
+      value: input,
     });
 
     editor.insertText('`');
@@ -61,57 +60,62 @@ describe('when ``` at block start', () => {
 describe('when ``` at block start, but customising with query we get the most recent character typed', () => {
   it('should insert a code block below', () => {
     const input = (
-      <editor>
+      <fragment>
         <hp>
           ``
           <cursor />
           hello
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const output = (
-      <editor>
+      <fragment>
         <hp>hello</hp>
         <hcodeblock>
           <hcodeline>inside code-block</hcodeline>
         </hcodeblock>
-      </editor>
+      </fragment>
     ) as any;
 
-    const codeEditor = withAutoformat({
-      editor: withReact(input),
-      plugin: AutoformatPlugin.configure({
-        rules: [
-          {
-            format: (editor) => {
-              insertEmptyCodeBlock(editor, {
-                defaultType: getPluginType(
-                  editor as PlateEditor,
-                  ParagraphPlugin.key
-                ),
-                insertNodesOptions: { select: true },
-              });
-            },
-            match: '```',
-            mode: 'block',
-            preFormat: preFormat as any,
-            query: (editor, rule): boolean => {
-              if (!editor.selection) {
-                return false;
-              }
+    const codeEditor = createPlateEditor({
+      plugins: [
+        AutoformatPlugin.configure({
+          options: {
+            rules: [
+              {
+                format: (editor) => {
+                  insertEmptyCodeBlock(editor, {
+                    defaultType: editor.getType(ParagraphPlugin),
+                    insertNodesOptions: { select: true },
+                  });
+                },
+                match: '```',
+                mode: 'block',
+                preFormat: preFormat as any,
+                query: (editor, rule): boolean => {
+                  if (!editor.selection) {
+                    return false;
+                  }
 
-              const matchRange = getRangeFromBlockStart(editor) as Range;
-              const textFromBlockStart = getEditorString(editor, matchRange);
-              const currentNodeText = (textFromBlockStart || '') + rule.text;
+                  const matchRange = getRangeFromBlockStart(editor) as Range;
+                  const textFromBlockStart = getEditorString(
+                    editor,
+                    matchRange
+                  );
+                  const currentNodeText =
+                    (textFromBlockStart || '') + rule.text;
 
-              return rule.match === currentNodeText;
-            },
-            triggerAtBlockStart: false,
-            type: CodeBlockPlugin.key,
+                  return rule.match === currentNodeText;
+                },
+                triggerAtBlockStart: false,
+                type: CodeBlockPlugin.key,
+              },
+            ],
           },
-        ],
-      }),
+        }),
+      ],
+      value: input,
     });
 
     codeEditor.insertText('`');
@@ -124,27 +128,29 @@ describe('when ``` at block start, but customising with query we get the most re
 describe('when ```', () => {
   it('should insert a code block below', () => {
     const input = (
-      <editor>
+      <fragment>
         <hp>
           hello``
           <cursor />
           world
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const output = (
-      <editor>
+      <fragment>
         <hp>helloworld</hp>
         <hcodeblock>
           <hcodeline>new</hcodeline>
         </hcodeblock>
-      </editor>
+      </fragment>
     ) as any;
 
-    const editor = withAutoformat({
-      editor: withReact(input),
-      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    const editor = createPlateEditor({
+      plugins: [
+        AutoformatPlugin.configure({ options: getAutoformatOptions() }),
+      ],
+      value: input,
     });
 
     editor.insertText('`');

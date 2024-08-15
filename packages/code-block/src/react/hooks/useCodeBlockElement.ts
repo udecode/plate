@@ -1,13 +1,8 @@
 import React from 'react';
 
 import { useEditorRef } from '@udecode/plate-common/react';
-import { getPluginOptions } from '@udecode/plate-common';
 
-import {
-  type CodeBlockPluginOptions,
-  CodeBlockPlugin,
-  type TCodeBlockElement,
-} from '../../lib';
+import { CodeBlockPlugin, type TCodeBlockElement } from '../../lib';
 
 export const useCodeBlockElementState = ({
   element,
@@ -24,10 +19,7 @@ export const useCodeBlockElementState = ({
     setDomLoaded(true);
   }, []);
 
-  const { syntax } = getPluginOptions<CodeBlockPluginOptions>(
-    editor,
-    CodeBlockPlugin.key
-  );
+  const { syntax } = editor.getOptions(CodeBlockPlugin);
 
   return {
     className: domLoaded && codeClassName,

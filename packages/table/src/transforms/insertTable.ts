@@ -27,7 +27,7 @@ export const insertTable = <E extends PlateEditor>(
   withoutNormalizing(editor, () => {
     if (
       !someNode(editor, {
-        match: { type: getPluginType(editor, TablePlugin.key) },
+        match: { type: editor.getType(TablePlugin) },
       })
     ) {
       insertNodes<TTableElement>(
@@ -45,7 +45,7 @@ export const insertTable = <E extends PlateEditor>(
 
       if (editor.selection) {
         const tableEntry = getBlockAbove(editor, {
-          match: { type: getPluginType(editor, TablePlugin.key) },
+          match: { type: editor.getType(TablePlugin) },
         });
 
         if (!tableEntry) return;

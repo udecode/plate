@@ -1,5 +1,4 @@
 import type { PlateEditor } from '../../editor';
-import type { LengthPluginOptions } from './LengthPlugin';
 
 import { createPlateEditor } from '../../../react';
 
@@ -94,7 +93,7 @@ describe('LengthPlugin', () => {
   describe('plugin options', () => {
     it('should correctly set maxLength option', () => {
       editor = createEditorWithLength(15);
-      const options = editor.plugins.length.options as LengthPluginOptions;
+      const options = editor.plugins.length.options;
 
       expect(options.maxLength).toBe(15);
     });

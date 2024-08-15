@@ -1,5 +1,6 @@
 /** @jsx jsx */
 
+import { createPlateEditor } from "@udecode/plate-common/react";
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 import { getAutoformatOptions } from 'www/src/lib/plate/demo/plugins/autoformatOptions';
@@ -12,23 +13,22 @@ jsx;
 describe('when the start match is not present and the end match is present', () => {
   it('should run default', () => {
     const input = (
-      <editor>
+      <fragment>
         <hp>
           hello*
           <cursor />
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const output = (
-      <editor>
+      <fragment>
         <hp>hello* </hp>
-      </editor>
+      </fragment>
     ) as any;
 
-    const editor = withAutoformat({
-      editor: withReact(input),
-      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    const editor = createPlateEditor({ value: input,
+      plugins: [AutoformatPlugin.configure({ options: getAutoformatOptions() }),]
     });
 
     editor.insertText(' ');
@@ -40,23 +40,22 @@ describe('when the start match is not present and the end match is present', () 
 describe('when there is a character before match', () => {
   it('should run default', () => {
     const input = (
-      <editor>
+      <fragment>
         <hp>
           a**hello
           <cursor />
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const output = (
-      <editor>
+      <fragment>
         <hp>a**hello**</hp>
-      </editor>
+      </fragment>
     ) as any;
 
-    const editor = withAutoformat({
-      editor: withReact(input),
-      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    const editor = createPlateEditor({ value: input,
+      plugins: [AutoformatPlugin.configure({ options: getAutoformatOptions() }),]
     });
 
     editor.insertText('*');
@@ -69,23 +68,22 @@ describe('when there is a character before match', () => {
 describe('when there is a character before match', () => {
   it('should run default', () => {
     const input = (
-      <editor>
+      <fragment>
         <hp>
           a**hello
           <cursor />
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const output = (
-      <editor>
+      <fragment>
         <hp>a**hello**</hp>
-      </editor>
+      </fragment>
     ) as any;
 
-    const editor = withAutoformat({
-      editor: withReact(input),
-      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    const editor = createPlateEditor({ value: input,
+      plugins: [AutoformatPlugin.configure({ options: getAutoformatOptions() }),]
     });
 
     editor.insertText('*');
@@ -98,20 +96,19 @@ describe('when there is a character before match', () => {
 describe('when selection is null', () => {
   it('should run insertText', () => {
     const input = (
-      <editor>
+      <fragment>
         <hp>**hello**</hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const output = (
-      <editor>
+      <fragment>
         <hp>**hello**</hp>
-      </editor>
+      </fragment>
     ) as any;
 
-    const editor = withAutoformat({
-      editor: withReact(input),
-      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    const editor = createPlateEditor({ value: input,
+      plugins: [AutoformatPlugin.configure({ options: getAutoformatOptions() }),]
     });
 
     editor.insertText(' ');

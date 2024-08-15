@@ -53,7 +53,7 @@ export const onKeyDownList: KeyboardHandler<ListPluginOptions> = ({
 
     // check if we're in a list context.
     const listSelected = someNode(editor, {
-      match: { type: getPluginType(editor, ListItemPlugin.key) },
+      match: { type: editor.getType(ListItemPlugin) },
     });
 
     if (workRange && listSelected) {

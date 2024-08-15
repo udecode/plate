@@ -5,10 +5,9 @@ import {
   type TElement,
   type TElementEntry,
   getNode,
-  getPluginOptions,
 } from '@udecode/plate-common';
 
-import type { TTableElement, TablePluginOptions } from '../types';
+import type { TTableElement } from '../types';
 
 import { TablePlugin } from '../TablePlugin';
 import { getTableMergeGridByRange } from '../merge/getTableGridByRange';
@@ -31,10 +30,7 @@ export const getTableGridByRange = (
   editor: PlateEditor,
   { at, format = 'table' }: GetTableGridByRangeOptions
 ): TElementEntry[] => {
-  const { enableMerging } = getPluginOptions<TablePluginOptions>(
-    editor,
-    TablePlugin.key
-  );
+  const { enableMerging } = editor.getOptions(TablePlugin);
 
   if (enableMerging) {
     return getTableMergeGridByRange(editor, { at, format });

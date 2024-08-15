@@ -5,7 +5,6 @@ import {
   getAboveNode,
   getNode,
   getParentNode,
-  getPluginType,
   isCollapsed,
 } from '@udecode/plate-common';
 import { type Location, type Path, Range } from 'slate';
@@ -20,7 +19,7 @@ export const getTodoListItemEntry = (
   editor: PlateEditor,
   { at = editor.selection }: { at?: Location | null } = {}
 ): { list: TElementEntry; listItem: TElementEntry } | undefined => {
-  const todoType = getPluginType(editor, TodoListPlugin.key);
+  const todoType = editor.getType(TodoListPlugin);
 
   let _at: Path;
 

@@ -1,4 +1,7 @@
-import type { HocuspocusProviderConfiguration } from '@hocuspocus/provider';
+import type {
+  HocuspocusProvider,
+  HocuspocusProviderConfiguration,
+} from '@hocuspocus/provider';
 import type { WithCursorsOptions } from '@slate-yjs/core';
 
 import { type UnknownObject, createPlugin } from '@udecode/plate-common';
@@ -22,6 +25,8 @@ export type YjsPluginOptions<
    * @required
    */
   hocuspocusProviderOptions?: HocuspocusProviderConfiguration;
+
+  provider: HocuspocusProvider;
 
   /** WithYjs options */
   yjsOptions?: WithYjsOptions;

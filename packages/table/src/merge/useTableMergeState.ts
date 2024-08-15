@@ -1,9 +1,9 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { getPluginOptions, isSelectionExpanded } from '@udecode/plate-common';
+import { isSelectionExpanded } from '@udecode/plate-common';
 import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
 import { useReadOnly, useSelected } from 'slate-react';
 
-import type { TTableCellElement, TablePluginOptions } from '../types';
+import type { TTableCellElement } from '../types';
 
 import { TablePlugin } from '../TablePlugin';
 import { getTableGridAbove } from '../queries';
@@ -13,12 +13,9 @@ import { useTableStore } from '../stores';
 import { isTableRectangular } from './isTableRectangular';
 
 export const useTableMergeState = () => {
-  const editorRef = useEditorRef();
+  const editor = useEditorRef();
 
-  const { enableMerging } = getPluginOptions<TablePluginOptions>(
-    editorRef,
-    TablePlugin.key
-  );
+  const { enableMerging } = editor.getOptions(TablePlugin);
 
   if (!enableMerging) return { canMerge: false, canUnmerge: false };
 

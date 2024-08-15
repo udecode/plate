@@ -28,7 +28,9 @@ it('should be', () => {
     editor: input,
     plugins: [
       NormalizeTypesPlugin.configure({
-        rules: [{ path: [1], strictType: ELEMENT_H2 }],
+        options: {
+          rules: [{ path: [1], strictType: ELEMENT_H2 }],
+        },
       }),
     ],
   });

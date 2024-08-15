@@ -1,75 +1,68 @@
-import type { PlateEditor, TElement } from '@udecode/plate-common';
-import type { TDescendant } from '@udecode/plate-common';
-import type { Path } from 'slate';
+import type {
+  PluginContext,
+  TDescendant,
+  TElement,
+} from '@udecode/plate-common';
+
+import type { insertTableColumn, insertTableRow } from './transforms';
+
+export type TableContext = PluginContext<
+  {
+    /**
+     * For internal use. Keeps track of cell indices. Used only when
+     * enableMerging is true.
+     */
+    _cellIndices?: TableStoreCellAttributes;
+
+    /** Disable expanding the table when inserting cells. */
+    disableExpandOnInsert?: boolean;
+
+    // Disable first column left resizer.
+    disableMarginLeft?: boolean;
+
+    /**
+     * Enable cells merging functionality.
+     *
+     * @default false
+     */
+    enableMerging?: boolean;
+
+    /**
+     * Disable unsetting the first column width when the table has one column.
+     * Set it to true if you want to resize the table width when there is only
+     * one column. Keep it false if you have a full-width table.
+     */
+    enableUnsetSingleColSize?: boolean;
+
+    /**
+     * If defined, a normalizer will set each undefined table `colSizes` to this
+     * value divided by the number of columns. Merged cells not supported.
+     */
+    initialTableWidth?: number;
+
+    /**
+     * The minimum width of a column.
+     *
+     * @default 48
+     */
+    minColumnWidth?: number;
+  },
+  {
+    table: {
+      /** Cell node factory used each time a cell is created. */
+      cellFactory: (options?: CellFactoryOptions) => TTableCellElement;
+      getCellChildren: (cell: TTableCellElement) => TDescendant[];
+      insertColumn: (options?: Parameters<typeof insertTableColumn>[1]) => void;
+      insertRow: (options?: Parameters<typeof insertTableRow>[1]) => void;
+    };
+  }
+>;
 
 export type CellFactoryOptions = {
   children?: TDescendant[];
   header?: boolean;
   row?: TTableRowElement;
 };
-
-export interface TablePluginOptions {
-  /**
-   * For internal use. Keeps track of cell indices. Used only when enableMerging
-   * is true.
-   */
-  _cellIndices?: TableStoreCellAttributes;
-
-  /** Cell node factory used each time a cell is created. */
-  cellFactory?: (options?: CellFactoryOptions) => TTableCellElement;
-
-  /** Disable expanding the table when inserting cells. */
-  disableExpandOnInsert?: boolean;
-
-  // Disable first column left resizer.
-  disableMarginLeft?: boolean;
-
-  /**
-   * Enable cells merging functionality.
-   *
-   * @default false
-   */
-  enableMerging?: boolean;
-
-  /**
-   * Disable unsetting the first column width when the table has one column. Set
-   * it to true if you want to resize the table width when there is only one
-   * column. Keep it false if you have a full-width table.
-   */
-  enableUnsetSingleColSize?: boolean;
-
-  /** @default cell.children */
-  getCellChildren?: <T = TDescendant>(cell: TTableCellElement) => T[];
-
-  /**
-   * If defined, a normalizer will set each undefined table `colSizes` to this
-   * value divided by the number of columns. Merged cells not supported.
-   */
-  initialTableWidth?: number;
-
-  /** @default insertTableColumn */
-  insertColumn?: (
-    editor: PlateEditor,
-    options: {
-      fromCell: Path;
-    }
-  ) => void;
-
-  /** @default insertTableRow */
-  insertRow?: (
-    editor: PlateEditor,
-    options: {
-      fromRow: Path;
-    }
-  ) => void;
-
-  /**
-   * The minimum width of a column.
-   *
-   * @default 48
-   */
-  minColumnWidth?: number;
-}
 
 export type TableStoreCellAttributes = WeakMap<
   TTableCellElement,

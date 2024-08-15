@@ -32,8 +32,10 @@ describe('when last node is invalid', () => {
       editor: input,
       plugins: [
         TrailingBlockPlugin.configure({
-          level: 0,
-          type: ParagraphPlugin.key,
+          options: {
+            level: 0,
+            type: ParagraphPlugin.key,
+          },
         }),
       ],
     });
@@ -71,8 +73,10 @@ describe('when level = 1', () => {
       editor: input,
       plugins: [
         TrailingBlockPlugin.configure({
-          level: 1,
-          type: ParagraphPlugin.key,
+          options: {
+            level: 1,
+            type: ParagraphPlugin.key,
+          },
         }),
       ],
     });
@@ -103,9 +107,11 @@ describe('when using query', () => {
       editor: input,
       plugins: [
         TrailingBlockPlugin.configure({
-          exclude: [ELEMENT_H1],
-          level: 0,
-          type: ParagraphPlugin.key,
+          options: {
+            exclude: [ELEMENT_H1],
+            level: 0,
+            type: ParagraphPlugin.key,
+          },
         }),
       ],
     });

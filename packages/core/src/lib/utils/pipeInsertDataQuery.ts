@@ -16,6 +16,7 @@ export const pipeInsertDataQuery = (
     return (
       !query ||
       query({
+        api: editor.api,
         data,
         dataTransfer,
         editor,

@@ -8,11 +8,11 @@ import {
   unsetNodes,
 } from '@udecode/plate-common';
 
-import type { TablePluginOptions } from './types';
+import type { TableContext } from './types';
 
 import { getTableGridAbove } from './queries';
 
-export const withMarkTable: WithOverride<TablePluginOptions> = ({ editor }) => {
+export const withMarkTable: WithOverride<TableContext> = ({ editor }) => {
   const { addMark, getMarks, removeMark } = editor;
 
   editor.addMark = (key: string, value: any) => {

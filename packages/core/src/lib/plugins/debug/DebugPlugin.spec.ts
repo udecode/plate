@@ -9,10 +9,12 @@ describe('DebugPlugin', () => {
     const editor = createPlateEditor({
       plugins: [
         DebugPlugin.configure({
-          logLevel: 'log',
-          logger: {
-            log: mockLogger,
-          } as any,
+          options: {
+            logLevel: 'log',
+            logger: {
+              log: mockLogger,
+            } as any,
+          },
         }),
         createPlugin({
           api: {
@@ -42,11 +44,13 @@ describe('DebugPlugin', () => {
     const editor = createPlateEditor({
       plugins: [
         DebugPlugin.configure({
-          logLevel: 'info',
-          logger: {
-            info: infoLogger,
-            log: logLogger,
-            warn: warnLogger,
+          options: {
+            logLevel: 'info',
+            logger: {
+              info: infoLogger,
+              log: logLogger,
+              warn: warnLogger,
+            },
           },
         }),
       ],
@@ -83,7 +87,9 @@ describe('DebugPlugin', () => {
     const editor = createPlateEditor({
       plugins: [
         DebugPlugin.configure({
-          throwErrors: false,
+          options: {
+            throwErrors: false,
+          },
         }),
       ],
     });
@@ -98,11 +104,13 @@ describe('DebugPlugin', () => {
     const editor = createPlateEditor({
       plugins: [
         DebugPlugin.configure({
-          isProduction: true,
-          logLevel: 'log',
-          logger: {
-            log: mockLogger,
-          } as any,
+          options: {
+            isProduction: true,
+            logLevel: 'log',
+            logger: {
+              log: mockLogger,
+            } as any,
+          },
         }),
       ],
     });

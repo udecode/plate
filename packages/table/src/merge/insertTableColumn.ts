@@ -3,8 +3,6 @@ import {
   findNode,
   getBlockAbove,
   getParentNode,
-  getPluginOptions,
-  getPluginType,
   insertElements,
   setNodes,
   withoutNormalizing,
@@ -15,7 +13,6 @@ import type {
   TTableCellElement,
   TTableElement,
   TTableRowElement,
-  TablePluginOptions,
 } from '../types';
 
 import { TablePlugin } from '../TablePlugin';
@@ -46,10 +43,7 @@ export const insertTableMergeColumn = (
     header?: boolean;
   } = {}
 ) => {
-  const { _cellIndices: cellIndices } = getPluginOptions<TablePluginOptions>(
-    editor,
-    TablePlugin.key
-  );
+  const { _cellIndices: cellIndices } = editor.getOptions(TablePlugin);
 
   const cellEntry = fromCell
     ? findNode(editor, {
@@ -67,13 +61,14 @@ export const insertTableMergeColumn = (
 
   const tableEntry = getBlockAbove<TTableElement>(editor, {
     at: cellPath,
-    match: { type: getPluginType(editor, TablePlugin.key) },
+    match: { type: editor.getType(TablePlugin) },
   });
 
   if (!tableEntry) return;
 
-  const { cellFactory, initialTableWidth, minColumnWidth } =
-    getPluginOptions<TablePluginOptions>(editor, TablePlugin.key);
+  const { initialTableWidth, minColumnWidth } = editor.getOptions(TablePlugin);
+  const api = editor.getApi(TablePlugin);
+
   const [tableNode, tablePath] = tableEntry;
 
   const { col: cellColIndex } =
@@ -148,7 +143,7 @@ export const insertTableMergeColumn = (
       const row = getParentNode(editor, currentCellPath)!;
       const rowElement = row[0] as TTableRowElement;
       const emptyCell = {
-        ...cellFactory!({ header, row: rowElement }),
+        ...api.table.cellFactory!({ header, row: rowElement }),
         colSpan: 1,
         rowSpan: curRowSpan,
       };

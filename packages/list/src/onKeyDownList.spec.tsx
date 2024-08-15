@@ -500,7 +500,9 @@ it('should convert top-level list item into body upon unindent if enableResetOnS
   }) as any;
   const editor = createPlateEditor({
     editor: input,
-    plugins: [ListPlugin.configure({ enableResetOnShiftTab: true })],
+    plugins: [
+      ListPlugin.configure({ options: { enableResetOnShiftTab: true } }),
+    ],
   });
 
   onKeyDownList({
@@ -553,7 +555,9 @@ it('should convert top-level (first) list item into body upon unindent if enable
   }) as any;
   const editor = createPlateEditor({
     editor: input,
-    plugins: [ListPlugin.configure({ enableResetOnShiftTab: true })],
+    plugins: [
+      ListPlugin.configure({ options: { enableResetOnShiftTab: true } }),
+    ],
   });
 
   onKeyDownList({
@@ -606,7 +610,9 @@ it('should convert top-level (last) list item into body upon unindent if enableR
   }) as any;
   const editor = createPlateEditor({
     editor: input,
-    plugins: [ListPlugin.configure({ enableResetOnShiftTab: true })],
+    plugins: [
+      ListPlugin.configure({ options: { enableResetOnShiftTab: true } }),
+    ],
   });
 
   onKeyDownList({

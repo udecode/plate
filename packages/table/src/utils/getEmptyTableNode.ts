@@ -33,6 +33,6 @@ export const getEmptyTableNode = (
 
   return {
     children: rows,
-    type: getPluginType(editor, TablePlugin.key),
+    type: editor.getType(TablePlugin),
   };
 };

@@ -2,7 +2,6 @@ import {
   ParagraphPlugin,
   type PlateEditor,
   getPath,
-  getPluginType,
   insertElements,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
@@ -15,7 +14,7 @@ export const exitBreak = (
   editor: PlateEditor,
   {
     before,
-    defaultType = getPluginType(editor, ParagraphPlugin.key),
+    defaultType = editor.getType(ParagraphPlugin),
     level = 0,
     query = {},
     relative = false,

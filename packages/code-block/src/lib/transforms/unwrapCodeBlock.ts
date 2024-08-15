@@ -16,8 +16,8 @@ import { CodeBlockPlugin } from '../CodeBlockPlugin';
 export const unwrapCodeBlock = (editor: PlateEditor) => {
   if (!editor.selection) return;
 
-  const codeBlockType = getPluginType(editor, CodeBlockPlugin.key);
-  const defaultType = getPluginType(editor, ParagraphPlugin.key);
+  const codeBlockType = editor.getType(CodeBlockPlugin);
+  const defaultType = editor.getType(ParagraphPlugin);
 
   withoutNormalizing(editor, () => {
     const codeBlockEntries = getNodeEntries(editor, {

@@ -5,6 +5,7 @@ import { jsx } from '@udecode/plate-test-utils';
 
 import type { PlateEditor } from '../../../editor';
 
+import { createPlateEditor } from '../../../../react';
 import { toggleNodeType } from '../../toggleNodeType';
 
 jsx;
@@ -28,7 +29,8 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  toggleNodeType(input, { activeType: BlockquotePlugin.key });
+  const editor = createPlateEditor({ editor: input });
+  toggleNodeType(editor, { activeType: BlockquotePlugin.key });
 
-  expect(input.children).toEqual(output.children);
+  expect(editor.children).toEqual(output.children);
 });

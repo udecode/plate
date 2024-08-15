@@ -22,7 +22,7 @@ export const unwrapLink = (
     if (options?.split) {
       const linkAboveAnchor = getAboveNode(editor, {
         at: editor.selection?.anchor,
-        match: { type: getPluginType(editor, LinkPlugin.key) },
+        match: { type: editor.getType(LinkPlugin) },
       });
 
       // anchor in link
@@ -30,7 +30,7 @@ export const unwrapLink = (
         splitNodes(editor, {
           at: editor.selection?.anchor,
           match: (n) =>
-            isElement(n) && n.type === getPluginType(editor, LinkPlugin.key),
+            isElement(n) && n.type === editor.getType(LinkPlugin),
         });
         unwrapLink(editor, {
           at: editor.selection?.anchor,
@@ -41,7 +41,7 @@ export const unwrapLink = (
 
       const linkAboveFocus = getAboveNode(editor, {
         at: editor.selection?.focus,
-        match: { type: getPluginType(editor, LinkPlugin.key) },
+        match: { type: editor.getType(LinkPlugin) },
       });
 
       // focus in link
@@ -49,7 +49,7 @@ export const unwrapLink = (
         splitNodes(editor, {
           at: editor.selection?.focus,
           match: (n) =>
-            isElement(n) && n.type === getPluginType(editor, LinkPlugin.key),
+            isElement(n) && n.type === editor.getType(LinkPlugin),
         });
         unwrapLink(editor, {
           at: editor.selection?.focus,
@@ -60,7 +60,7 @@ export const unwrapLink = (
     }
 
     unwrapNodes(editor, {
-      match: { type: getPluginType(editor, LinkPlugin.key) },
+      match: { type: editor.getType(LinkPlugin) },
       ...options,
     });
   });

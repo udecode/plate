@@ -3,15 +3,11 @@ import {
   type TElement,
   findNode,
   getBlockAbove,
-  getPluginOptions,
-  getPluginType,
   insertElements,
   select,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
-
-import type { TablePluginOptions } from '../types';
 
 import {
   TableCellHeaderPlugin,
@@ -31,10 +27,8 @@ export const insertTableRow = (
     header?: boolean;
   } = {}
 ) => {
-  const { cellFactory, enableMerging } = getPluginOptions<TablePluginOptions>(
-    editor,
-    TablePlugin.key
-  );
+  const { enableMerging } = editor.getOptions(TablePlugin);
+  const api = editor.getApi(TablePlugin);
 
   if (enableMerging) {
     return insertTableMergeRow(editor, options);
@@ -45,10 +39,10 @@ export const insertTableRow = (
   const trEntry = fromRow
     ? findNode(editor, {
         at: fromRow,
-        match: { type: getPluginType(editor, TableRowPlugin.key) },
+        match: { type: editor.getType(TableRowPlugin) },
       })
     : getBlockAbove(editor, {
-        match: { type: getPluginType(editor, TableRowPlugin.key) },
+        match: { type: editor.getType(TableRowPlugin) },
       });
 
   if (!trEntry) return;
@@ -57,7 +51,7 @@ export const insertTableRow = (
 
   const tableEntry = getBlockAbove(editor, {
     at: trPath,
-    match: { type: getPluginType(editor, TablePlugin.key) },
+    match: { type: editor.getType(TablePlugin) },
   });
 
   if (!tableEntry) return;
@@ -68,16 +62,14 @@ export const insertTableRow = (
       const isHeaderColumn =
         !hasSingleRow &&
         (tableEntry[0].children as TElement[]).every(
-          (n) =>
-            n.children[i].type ===
-            getPluginType(editor, TableCellHeaderPlugin.key)
+          (n) => n.children[i].type === editor.getType(TableCellHeaderPlugin)
         );
 
-      return cellFactory!({
+      return api.table.cellFactory!({
         header: header ?? isHeaderColumn,
       });
     }),
-    type: getPluginType(editor, TableRowPlugin.key),
+    type: editor.getType(TableRowPlugin),
   });
 
   withoutNormalizing(editor, () => {

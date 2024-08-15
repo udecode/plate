@@ -256,7 +256,7 @@ const createDemoPlugin = createPluginFactory<DemoPlugin>({
   key: 'demo',
   handlers: {
     onKeyDown: (editor) => (event) => {
-      const { username } = getPluginOptions<DemoPlugin>(editor, 'demo');
+      const { username } = editor.getOptions(DemoPlugin);
       console.info(`${username} pressed ${event.key}`);
     },
   },

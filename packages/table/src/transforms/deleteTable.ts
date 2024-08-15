@@ -11,11 +11,11 @@ import { TablePlugin } from '../TablePlugin';
 export const deleteTable = (editor: PlateEditor) => {
   if (
     someNode(editor, {
-      match: { type: getPluginType(editor, TablePlugin.key) },
+      match: { type: editor.getType(TablePlugin) },
     })
   ) {
     const tableItem = getAboveNode(editor, {
-      match: { type: getPluginType(editor, TablePlugin.key) },
+      match: { type: editor.getType(TablePlugin) },
     });
 
     if (tableItem) {

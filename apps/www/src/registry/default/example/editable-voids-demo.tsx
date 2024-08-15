@@ -4,21 +4,19 @@ import React, { useState } from 'react';
 
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
-import { ExitBreakPlugin, SoftBreakPlugin } from '@udecode/plate-break';
+import { ExitBreakPlugin } from '@udecode/plate-break';
 import {
   type PlateRenderElementProps,
   createPlugin,
 } from '@udecode/plate-common';
 import { Plate, usePlateEditor } from '@udecode/plate-common/react';
-import { ResetNodePlugin } from '@udecode/plate-reset-node';
 
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { editableProps } from '@/plate/demo/editableProps';
 import { PlateUI } from '@/plate/demo/plate-ui';
-import { exitBreakOptions } from '@/plate/demo/plugins/exitBreakOptions';
-import { resetBlockTypeOptions } from '@/plate/demo/plugins/resetBlockTypeOptions';
-import { softBreakOptions } from '@/plate/demo/plugins/softBreakOptions';
+import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin';
+import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { editableVoidsValue } from '@/plate/demo/values/editableVoidsValue';
 import { Editor } from '@/registry/default/plate-ui/editor';
 import { Input } from '@/registry/default/plate-ui/input';
@@ -41,9 +39,9 @@ export function EditableVoidElement({
     override: { components: PlateUI },
     plugins: [
       BasicElementsPlugin,
-      ResetNodePlugin.configure(resetBlockTypeOptions),
-      SoftBreakPlugin.configure(softBreakOptions),
-      ExitBreakPlugin.configure(exitBreakOptions),
+      resetBlockTypePlugin,
+      softBreakPlugin,
+      ExitBreakPlugin,
     ],
   });
 

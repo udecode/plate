@@ -14,7 +14,7 @@ const urlOutput = 'http://output.com';
 const createEditor = (editor: any, options?: LinkPluginOptions) =>
   createPlateEditor({
     editor,
-    plugins: [LinkPlugin.configure(options!)],
+    plugins: [LinkPlugin.configure({ options })],
   });
 
 describe('upsertLink', () => {

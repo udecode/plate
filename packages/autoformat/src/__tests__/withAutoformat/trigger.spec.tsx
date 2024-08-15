@@ -17,41 +17,43 @@ import { onKeyDownAutoformat } from '../../onKeyDownAutoformat';
 jsx;
 
 const input = (
-  <editor>
+  <fragment>
     <hp>
       _***hello***
       <cursor />
     </hp>
-  </editor>
+  </fragment>
 ) as any;
 
 const output = (
-  <editor>
+  <fragment>
     <hp>
       <htext bold italic underline>
         hello
       </htext>
     </hp>
-  </editor>
+  </fragment>
 ) as any;
 
 describe('when trigger is defined', () => {
   it('should autoformat', () => {
     const editor = createPlateEditor({
-      editor: input,
       plugins: [
         AutoformatPlugin.configure({
-          rules: [
-            {
-              ignoreTrim: true,
-              match: { end: '***', start: '_***' },
-              mode: 'mark',
-              trigger: '_',
-              type: [UnderlinePlugin.key, BoldPlugin.key, ItalicPlugin.key],
-            },
-          ],
+          options: {
+            rules: [
+              {
+                ignoreTrim: true,
+                match: { end: '***', start: '_***' },
+                mode: 'mark',
+                trigger: '_',
+                type: [UnderlinePlugin.key, BoldPlugin.key, ItalicPlugin.key],
+              },
+            ],
+          },
         }),
       ],
+      value: input,
     });
 
     editor.insertText('_');
@@ -63,37 +65,39 @@ describe('when trigger is defined', () => {
 describe('when undo is enabled', () => {
   it('should undo text format upon delete', () => {
     const undoInput = (
-      <editor>
+      <fragment>
         <hp>
           1/
           <cursor />
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const undoOutput = (
-      <editor>
+      <fragment>
         <hp>
           1/4
           <cursor />
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const editor = createPlateEditor({
-      editor: undoInput,
       plugins: [
         AutoformatPlugin.configure({
-          enableUndoOnDelete: true,
-          rules: [
-            {
-              format: '¼',
-              match: '1/4',
-              mode: 'text',
-            },
-          ],
+          options: {
+            enableUndoOnDelete: true,
+            rules: [
+              {
+                format: '¼',
+                match: '1/4',
+                mode: 'text',
+              },
+            ],
+          },
         }),
       ],
+      value: undoInput,
     });
 
     editor.insertText('4'); // <-- this should triger the conversion
@@ -115,35 +119,37 @@ describe('when undo is enabled', () => {
 describe('when undo is disabled', () => {
   it('should delete the autoformat text character itself', () => {
     const undoInput = (
-      <editor>
+      <fragment>
         <hp>
           1/
           <cursor />
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const undoOutput = (
-      <editor>
+      <fragment>
         <hp>
           ¼<cursor />
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const editor = createPlateEditor({
-      editor: undoInput,
       plugins: [
         AutoformatPlugin.configure({
-          rules: [
-            {
-              format: '¼',
-              match: '1/4',
-              mode: 'text',
-            },
-          ],
+          options: {
+            rules: [
+              {
+                format: '¼',
+                match: '1/4',
+                mode: 'text',
+              },
+            ],
+          },
         }),
       ],
+      value: undoInput,
     });
 
     editor.insertText('4'); // <-- this should triger the conversion

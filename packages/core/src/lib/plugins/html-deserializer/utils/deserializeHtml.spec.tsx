@@ -199,7 +199,7 @@ describe('when deserializing all plugins', () => {
         createPlateEditor({
           plugins: [
             BlockquotePlugin,
-            HeadingPlugin.configure({ levels: 1 }),
+            HeadingPlugin.configure({ options: { levels: 1 } }),
             ImagePlugin,
             LinkPlugin,
             ListPlugin,

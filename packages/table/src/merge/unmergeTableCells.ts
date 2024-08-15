@@ -3,8 +3,6 @@ import {
   type TDescendant,
   findNode,
   getNode,
-  getPluginOptions,
-  getPluginType,
   insertElements,
   removeNodes,
   withoutNormalizing,
@@ -14,7 +12,6 @@ import type {
   TTableCellElement,
   TTableElement,
   TTableRowElement,
-  TablePluginOptions,
 } from '../types';
 
 import {
@@ -30,11 +27,8 @@ import { getCellIndices } from './getCellIndices';
 
 export const unmergeTableCells = (editor: PlateEditor) => {
   withoutNormalizing(editor, () => {
-    const {
-      _cellIndices: cellIndices,
-      cellFactory,
-      getCellChildren,
-    } = getPluginOptions<TablePluginOptions>(editor, TablePlugin.key);
+    const { _cellIndices: cellIndices } = editor.getOptions(TablePlugin);
+    const api = editor.getApi(TablePlugin);
 
     const cellEntries = getTableGridAbove(editor, { format: 'cell' });
     const [[cellElem, path]] = cellEntries;
@@ -42,10 +36,9 @@ export const unmergeTableCells = (editor: PlateEditor) => {
     // creating new object per iteration is essential here
     const createEmptyCell = (children?: TDescendant[]) => {
       return {
-        ...cellFactory!({
+        ...api.table.cellFactory!({
           children,
-          header:
-            cellElem.type === getPluginType(editor, TableCellHeaderPlugin.key),
+          header: cellElem.type === editor.getType(TableCellHeaderPlugin),
         }),
         colSpan: 1,
         rowSpan: 1,
@@ -79,7 +72,7 @@ export const unmergeTableCells = (editor: PlateEditor) => {
 
       const rowEntry = findNode(editor, {
         at: [...tablePath, row],
-        match: { type: getPluginType(editor, TableRowPlugin.key) },
+        match: { type: editor.getType(TableRowPlugin) },
       })!; // TODO: improve typing
 
       if (!rowEntry) {
@@ -117,11 +110,11 @@ export const unmergeTableCells = (editor: PlateEditor) => {
       const _rowPath = [...tablePath, currentRowPath];
       const rowEntry = findNode(editor, {
         at: _rowPath,
-        match: { type: getPluginType(editor, TablePlugin.key) },
+        match: { type: editor.getType(TablePlugin) },
       });
 
       for (let j = 0; j < colPaths.length; j++) {
-        const cellChildren = getCellChildren!(cellElem);
+        const cellChildren = api.table.getCellChildren!(cellElem);
 
         const cellToInsert =
           i === 0 && j === 0
@@ -144,7 +137,7 @@ export const unmergeTableCells = (editor: PlateEditor) => {
           editor,
           {
             children: newRowChildren,
-            type: getPluginType(editor, TableRowPlugin.key),
+            type: editor.getType(TableRowPlugin),
           },
           { at: _rowPath }
         );

@@ -1,14 +1,17 @@
 import { getEditorString, withoutNormalizing } from '@udecode/slate';
 
-import type { WithOverride } from '../../plugin/types/PlatePlugin';
+import type {
+  PluginContext,
+  WithOverride,
+} from '../../plugin/types/PlatePlugin';
 
 import { createPlugin } from '../../plugin/createPlugin';
 
-export type LengthPluginOptions = {
+export type LengthContext = PluginContext<{
   maxLength: number;
-};
+}>;
 
-export const withLength: WithOverride<LengthPluginOptions> = ({
+export const withLength: WithOverride<LengthContext> = ({
   editor,
   plugin: { options },
 }) => {
@@ -38,7 +41,7 @@ export const withLength: WithOverride<LengthPluginOptions> = ({
   return editor;
 };
 
-export const LengthPlugin = createPlugin<'length', LengthPluginOptions>({
+export const LengthPlugin = createPlugin<'length', LengthContext['options']>({
   key: 'length',
   withOverrides: withLength,
 });

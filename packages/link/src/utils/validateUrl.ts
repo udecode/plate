@@ -1,14 +1,10 @@
-import {
-  type PlateEditor,
-  getPluginOptions,
-  sanitizeUrl,
-} from '@udecode/plate-common';
+import { type PlateEditor, sanitizeUrl } from '@udecode/plate-common';
 
-import { LinkPlugin, type LinkPluginOptions } from '../LinkPlugin';
+import { LinkPlugin } from '../LinkPlugin';
 
 export const validateUrl = (editor: PlateEditor, url: string): boolean => {
   const { allowedSchemes, dangerouslySkipSanitization, isUrl } =
-    getPluginOptions<LinkPluginOptions>(editor, LinkPlugin.key);
+    editor.getOptions(LinkPlugin);
 
   if (isUrl && !isUrl(url)) return false;
   if (

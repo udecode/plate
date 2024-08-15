@@ -22,8 +22,8 @@ import { ListItemPlugin, ListItemContentPlugin } from '../ListPlugin';
 
 /** Insert list item if selection in li>p. TODO: test */
 export const insertListItem = (editor: PlateEditor): boolean => {
-  const liType = getPluginType(editor, ListItemPlugin.key);
-  const licType = getPluginType(editor, ListItemContentPlugin.key);
+  const liType = editor.getType(ListItemPlugin);
+  const licType = editor.getType(ListItemContentPlugin);
 
   if (!editor.selection) {
     return false;

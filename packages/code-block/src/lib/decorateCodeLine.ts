@@ -1,13 +1,9 @@
 import type { Decorate } from '@udecode/plate-common';
 import type { Range } from 'slate';
 
-import {
-  getNodeString,
-  getParentNode,
-  getPluginOptions,
-} from '@udecode/plate-common';
+import { getNodeString, getParentNode } from '@udecode/plate-common';
 
-import type { CodeBlockPluginOptions, TCodeBlockElement } from './types';
+import type { TCodeBlockElement } from './types';
 
 import { CodeBlockPlugin, CodeSyntaxPlugin } from './CodeBlockPlugin';
 
@@ -21,10 +17,7 @@ export const decorateCodeLine: Decorate = ({
   entry: [node, path],
   plugin,
 }): CodeSyntaxRange[] => {
-  const codeBlockOptions = getPluginOptions<CodeBlockPluginOptions>(
-    editor,
-    CodeBlockPlugin.key
-  );
+  const codeBlockOptions = editor.getOptions(CodeBlockPlugin);
 
   const { prism: Prism } = codeBlockOptions;
 

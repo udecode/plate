@@ -1,22 +1,20 @@
-import {
-  type TDescendant,
-  type TElement,
-  type WithOverride,
-  getPluginType,
+import type {
+  TDescendant,
+  TElement,
+  WithOverride,
 } from '@udecode/plate-common';
 
-import type { TTableRowElement, TablePluginOptions } from './types';
+import type { TTableRowElement, TableContext } from './types';
 
 import { TablePlugin } from './TablePlugin';
 import { getTableGridAbove } from './queries/getTableGridAbove';
 
 /** If selection is in a table, get subtable above. */
-export const withGetFragmentTable: WithOverride<TablePluginOptions> = ({
+export const withGetFragmentTable: WithOverride<TableContext> = ({
+  api,
   editor,
-  plugin: { options },
 }) => {
   const { getFragment } = editor;
-  const { getCellChildren } = options;
 
   editor.getFragment = (): any[] => {
     const fragment = getFragment();
@@ -24,7 +22,7 @@ export const withGetFragmentTable: WithOverride<TablePluginOptions> = ({
     const newFragment: TDescendant[] = [];
 
     fragment.forEach((node) => {
-      if (node.type === getPluginType(editor, TablePlugin.key)) {
+      if (node.type === editor.getType(TablePlugin)) {
         const rows = node.children as TTableRowElement[];
 
         const rowCount = rows.length;
@@ -36,7 +34,7 @@ export const withGetFragmentTable: WithOverride<TablePluginOptions> = ({
 
         if (hasOneCell) {
           const cell = rows[0];
-          const cellChildren = getCellChildren!(cell);
+          const cellChildren = api.table.getCellChildren!(cell);
           newFragment.push(...(cellChildren[0].children as TElement[]));
 
           return;

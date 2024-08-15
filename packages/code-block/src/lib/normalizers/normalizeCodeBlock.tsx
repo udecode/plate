@@ -13,7 +13,7 @@ import { getCodeLineType } from '../options';
 
 /** Normalize code block node to force the pre>code>div.codeline structure. */
 export const normalizeCodeBlock = (editor: PlateEditor) => {
-  const codeBlockType = getPluginType(editor, CodeBlockPlugin.key);
+  const codeBlockType = editor.getType(CodeBlockPlugin);
   const codeLineType = getCodeLineType(editor);
 
   const { normalizeNode } = editor;

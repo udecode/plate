@@ -1,5 +1,5 @@
 import { createPlateEditor } from '../../react';
-import { createPlugin, getEditorApi, getPluginOptions } from '../plugin';
+import { createPlugin, getPlugin } from '../plugin';
 
 describe('extendApi method', () => {
   it('should maintain editor and plugin API reference while extending', () => {
@@ -11,14 +11,14 @@ describe('extendApi method', () => {
         createPlugin({
           key: 'testPlugin',
         })
-          .extendApi(({ editor, plugin: { api } }) => {
-            api1 = getEditorApi(editor, {} as any);
-            pluginApi1 = api;
+          .extendApi(({ editor, plugin }) => {
+            api1 = editor.getApi({} as any);
+            pluginApi1 = plugin.api;
 
             return { method1: () => 1 };
           })
           .extendApi(({ editor, plugin: { api } }) => {
-            expect(api1).toBe(getEditorApi(editor, {} as any)); // The reference should be the same
+            expect(api1).toBe(editor.getApi({} as any)); // The reference should be the same
             expect(pluginApi1).toBe(api); // The reference should be the same
 
             return { method2: () => 2 };
@@ -45,7 +45,7 @@ describe('extendApi method', () => {
         },
       })
       .extendApi(({ plugin: { options } }) => ({
-        sampleMethod: () => options.baseValue + 1,
+        sampleMethod: (inc: number) => options.baseValue + inc,
       }))
       .extend({
         options: {
@@ -53,19 +53,16 @@ describe('extendApi method', () => {
         },
       })
       .extendApi(({ plugin: { api, options } }) => ({
-        anotherMethod: () => (api as any).sampleMethod() + options.baseValue,
-      }))
-      .configure({
-        baseValue: 25,
-      });
+        anotherMethod: () => api.sampleMethod(1) + options.baseValue,
+      }));
 
     const editor = createPlateEditor({
       plugins: [extendedPlugin],
     });
 
-    expect(getPluginOptions(editor, extendedPlugin).baseValue).toBe(25);
-    expect(editor.api.sampleMethod()).toBe(26);
-    expect(editor.api.anotherMethod()).toBe(51);
+    expect(editor.getOptions(extendedPlugin).baseValue).toBe(20);
+    expect(editor.api.sampleMethod(1)).toBe(21);
+    expect(editor.api.anotherMethod()).toBe(41);
   });
 
   it('should allow multiple extendApi calls', () => {
@@ -96,7 +93,7 @@ describe('extendApi method', () => {
     expect(editor.api.method3()).toBe(3);
   });
 
-  it('should allow getPluginApi', () => {
+  it('should allow plugin api', () => {
     const testPlugin = createPlugin({
       key: 'testPlugin',
       options: {
@@ -120,7 +117,7 @@ describe('extendApi method', () => {
           key: 'another',
         }).extendApi(({ editor }) => ({
           method4: () => {
-            const api = getEditorApi(editor, testPlugin);
+            const api = editor.getApi(testPlugin);
 
             return api.method3();
           },
@@ -131,7 +128,7 @@ describe('extendApi method', () => {
     expect(editor.api.method4()).toBe(3);
   });
 
-  it('should allow stable getPluginApi', () => {
+  it('should allow stable plugin api', () => {
     const testPlugin = createPlugin({
       key: 'testPlugin',
       options: { baseValue: 10 },
@@ -146,7 +143,7 @@ describe('extendApi method', () => {
       plugins: [
         testPlugin,
         createPlugin({ key: 'another' }).extendApi(({ editor }) => {
-          const api = getEditorApi(editor, testPlugin);
+          const api = editor.getApi(testPlugin);
 
           return {
             method4: () => {
@@ -170,7 +167,7 @@ describe('extendApi method', () => {
     const overridePlugin = createPlugin({
       key: 'overridePlugin',
     }).extendApi(({ editor }) => {
-      const { method } = getEditorApi(editor, basePlugin);
+      const { method } = editor.getApi(basePlugin);
 
       return {
         method: () => `override ${method()}`,
@@ -203,5 +200,44 @@ describe('extendApi method', () => {
 
     expect(editor.api.cloud.a()).toBe('a');
     expect(editor.api.cloud.b()).toBe('b');
+  });
+
+  it('should distinguish between editor.api and plugin.api', () => {
+    const plugin1 = createPlugin({
+      key: 'plugin1',
+    })
+      .extendApi(() => ({
+        method: () => 'plugin1',
+        scoped: () => 'scoped1',
+      }))
+      .extendApi(({ api, plugin }) => {
+        // This should access the current plugin's scoped api method
+        const currentScoped = plugin.api.scoped;
+
+        return {
+          method: () => 'plugin2',
+          scoped: () => 'scoped2',
+          testMethod: () => {
+            // This should access the overridden editor.api.method
+            const editorMethod = api.method();
+
+            return `${editorMethod}-${currentScoped()}`;
+          },
+        };
+      });
+
+    const plugin3 = createPlugin({
+      key: 'plugin3',
+    }).extendApi(() => ({
+      method: () => 'plugin3',
+    }));
+
+    const editor = createPlateEditor({
+      plugins: [plugin1, plugin3],
+    });
+
+    expect(editor.api.method()).toBe('plugin3'); // Overridden by plugin2
+    expect(getPlugin(editor, plugin1).api.scoped()).toBe('scoped2'); // From plugin1, not overridden
+    expect(editor.api.testMethod()).toBe('plugin3-scoped1');
   });
 });

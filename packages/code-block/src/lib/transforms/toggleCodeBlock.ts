@@ -15,7 +15,7 @@ import { unwrapCodeBlock } from './unwrapCodeBlock';
 export const toggleCodeBlock = (editor: PlateEditor) => {
   if (!editor.selection) return;
 
-  const codeBlockType = getPluginType(editor, CodeBlockPlugin.key);
+  const codeBlockType = editor.getType(CodeBlockPlugin);
   const codeLineType = getCodeLineType(editor);
 
   const isActive = someNode(editor, {

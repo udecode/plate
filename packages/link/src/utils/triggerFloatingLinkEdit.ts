@@ -12,7 +12,7 @@ import { floatingLinkActions } from '../components/FloatingLink/floatingLinkStor
 
 export const triggerFloatingLinkEdit = (editor: PlateEditor) => {
   const entry = findNode<TLinkElement>(editor, {
-    match: { type: getPluginType(editor, LinkPlugin.key) },
+    match: { type: editor.getType(LinkPlugin) },
   });
 
   if (!entry) return;

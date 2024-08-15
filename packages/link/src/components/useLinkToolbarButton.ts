@@ -8,7 +8,7 @@ export const useLinkToolbarButtonState = () => {
     (editor) =>
       !!editor?.selection &&
       someNode(editor, {
-        match: { type: getPluginType(editor, LinkPlugin.key) },
+        match: { type: editor.getType(LinkPlugin) },
       }),
     []
   );

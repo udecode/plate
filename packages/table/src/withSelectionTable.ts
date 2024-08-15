@@ -2,14 +2,13 @@ import {
   type WithOverride,
   getBlockAbove,
   getEndPoint,
-  getPluginType,
   getPointBefore,
   getStartPoint,
   isRangeAcrossBlocks,
 } from '@udecode/plate-common';
 import { Range } from 'slate';
 
-import type { TablePluginOptions } from './types';
+import type { TableContext } from './types';
 
 import { TablePlugin } from './TablePlugin';
 import { overrideSelectionFromCell } from './transforms/overrideSelectionFromCell';
@@ -25,9 +24,7 @@ import { overrideSelectionFromCell } from './transforms/overrideSelectionFromCel
  * - If focus is in table, anchor in a block after: set focus to the point before
  *   start of table
  */
-export const withSelectionTable: WithOverride<TablePluginOptions> = ({
-  editor,
-}) => {
+export const withSelectionTable: WithOverride<TableContext> = ({ editor }) => {
   const { apply } = editor;
 
   editor.apply = (op) => {
@@ -41,12 +38,12 @@ export const withSelectionTable: WithOverride<TablePluginOptions> = ({
         Range.isRange(newSelection) &&
         isRangeAcrossBlocks(editor, {
           at: newSelection,
-          match: (n) => n.type === getPluginType(editor, TablePlugin.key),
+          match: (n) => n.type === editor.getType(TablePlugin),
         })
       ) {
         const anchorEntry = getBlockAbove(editor, {
           at: newSelection.anchor,
-          match: (n) => n.type === getPluginType(editor, TablePlugin.key),
+          match: (n) => n.type === editor.getType(TablePlugin),
         });
 
         if (anchorEntry) {
@@ -67,7 +64,7 @@ export const withSelectionTable: WithOverride<TablePluginOptions> = ({
         } else {
           const focusEntry = getBlockAbove(editor, {
             at: newSelection.focus,
-            match: (n) => n.type === getPluginType(editor, TablePlugin.key),
+            match: (n) => n.type === editor.getType(TablePlugin),
           });
 
           if (focusEntry) {

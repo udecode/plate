@@ -5,45 +5,48 @@ import {
   ItalicPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks';
+import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
-import { withReact } from 'slate-react';
 
 import { AutoformatPlugin } from '../../AutoformatPlugin';
-import { withAutoformat } from '../../withAutoformat';
 
 jsx;
 
 describe('when ignoreTrim is true', () => {
   it('should autoformat', () => {
     const input = (
-      <editor>
+      <fragment>
         <hp>
           * hello
           <cursor />
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const output = (
-      <editor>
+      <fragment>
         <hp>
           <htext italic> hello</htext>
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
-    const editor = withAutoformat({
-      editor: withReact(input),
-      plugin: AutoformatPlugin.configure({
-        rules: [
-          {
-            ignoreTrim: true,
-            match: '*',
-            mode: 'mark',
-            type: ItalicPlugin.key,
+    const editor = createPlateEditor({
+      plugins: [
+        AutoformatPlugin.configure({
+          options: {
+            rules: [
+              {
+                ignoreTrim: true,
+                match: '*',
+                mode: 'mark',
+                type: ItalicPlugin.key,
+              },
+            ],
           },
-        ],
-      }),
+        }),
+      ],
+      value: input,
     });
 
     editor.insertText('*');
@@ -56,32 +59,36 @@ describe('when ignoreTrim is false', () => {
   describe('when the match text is not trimmed', () => {
     it('should run default', () => {
       const input = (
-        <editor>
+        <fragment>
           <hp>
             **hello **
             <cursor />
           </hp>
-        </editor>
+        </fragment>
       ) as any;
 
       const output = (
-        <editor>
+        <fragment>
           <hp>**hello ** </hp>
-        </editor>
+        </fragment>
       ) as any;
 
-      const editor = withAutoformat({
-        editor: withReact(input),
-        plugin: AutoformatPlugin.configure({
-          rules: [
-            {
-              match: { end: '***__', start: '___***' },
-              mode: 'mark',
-              trigger: '_',
-              type: [UnderlinePlugin.key, BoldPlugin.key, ItalicPlugin.key],
+      const editor = createPlateEditor({
+        plugins: [
+          AutoformatPlugin.configure({
+            options: {
+              rules: [
+                {
+                  match: { end: '***__', start: '___***' },
+                  mode: 'mark',
+                  trigger: '_',
+                  type: [UnderlinePlugin.key, BoldPlugin.key, ItalicPlugin.key],
+                },
+              ],
             },
-          ],
-        }),
+          }),
+        ],
+        value: input,
       });
 
       editor.insertText(' ');

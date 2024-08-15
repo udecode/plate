@@ -1,4 +1,3 @@
-import { getEditorApi } from '@udecode/plate-common';
 import { useEditorRef } from '@udecode/plate-common/react';
 
 import type { Upload } from './types';
@@ -12,7 +11,7 @@ import { CloudPlugin } from '../cloud';
 export const useUpload = (id: string): Upload => {
   const editor = useEditorRef();
 
-  const api = getEditorApi(editor, CloudPlugin);
+  const api = editor.getApi(CloudPlugin);
 
   /**
    * We call this even if it's not always required because it calls `useStore`

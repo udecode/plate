@@ -3,7 +3,6 @@ import {
   deleteText,
   getAboveNode,
   getMarks,
-  getPluginType,
   insertElements,
   isBlockTextEmptyAfterSelection,
   isStartPoint,
@@ -25,7 +24,7 @@ export const insertTodoListItem = (
     inheritCheckStateOnLineStartBreak = false,
   }: TodoListPluginOptions
 ): boolean => {
-  const todoType = getPluginType(editor, TodoListPlugin.key);
+  const todoType = editor.getType(TodoListPlugin);
 
   if (!editor.selection) {
     return false;

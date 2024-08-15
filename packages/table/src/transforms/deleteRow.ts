@@ -1,35 +1,30 @@
 import {
   type PlateEditor,
   getAboveNode,
-  getPluginOptions,
-  getPluginType,
   isExpanded,
   removeNodes,
   someNode,
 } from '@udecode/plate-common';
 
-import type { TTableElement, TablePluginOptions } from '../types';
+import type { TTableElement } from '../types';
 
 import { TablePlugin, TableRowPlugin } from '../TablePlugin';
 import { deleteTableMergeRow } from '../merge/deleteRow';
 import { deleteRowWhenExpanded } from '../merge/deleteRowWhenExpanded';
 
 export const deleteRow = (editor: PlateEditor) => {
-  const { enableMerging } = getPluginOptions<TablePluginOptions>(
-    editor,
-    TablePlugin.key
-  );
+  const { enableMerging } = editor.getOptions(TablePlugin);
 
   if (enableMerging) {
     return deleteTableMergeRow(editor);
   }
   if (
     someNode(editor, {
-      match: { type: getPluginType(editor, TablePlugin.key) },
+      match: { type: editor.getType(TablePlugin) },
     })
   ) {
     const currentTableItem = getAboveNode<TTableElement>(editor, {
-      match: { type: getPluginType(editor, TablePlugin.key) },
+      match: { type: editor.getType(TablePlugin) },
     });
 
     if (!currentTableItem) return;
@@ -37,7 +32,7 @@ export const deleteRow = (editor: PlateEditor) => {
       return deleteRowWhenExpanded(editor, currentTableItem);
 
     const currentRowItem = getAboveNode(editor, {
-      match: { type: getPluginType(editor, TableRowPlugin.key) },
+      match: { type: editor.getType(TableRowPlugin) },
     });
 
     if (

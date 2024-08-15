@@ -1,4 +1,3 @@
-import { getPluginType } from '@udecode/plate-common';
 import {
   type DeserializeHtml,
   DeserializeHtmlPlugin,
@@ -70,7 +69,7 @@ export const DeserializeDocxPlugin = createPlugin((editor) => ({
           key,
           {
             deserializeHtml: {
-              getNode: getListNode(getPluginType(editor, key)),
+              getNode: getListNode(editor.getType({ key })),
             },
           },
         ])

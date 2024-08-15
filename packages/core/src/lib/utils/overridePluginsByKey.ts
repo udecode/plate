@@ -6,11 +6,11 @@ import type { AnyPlatePlugin } from '../plugin/types/PlatePlugin';
  * Recursive deep merge of each plugin from `override.plugins` into plugin with
  * same key (plugin > plugin.plugins).
  */
-export const overridePluginsByKey = <P extends AnyPlatePlugin = AnyPlatePlugin>(
-  plugin: P,
+export const overridePluginsByKey = (
+  plugin: AnyPlatePlugin,
   overrideByKey: Record<string, Partial<AnyPlatePlugin>> = {},
   nested = false
-): P => {
+): AnyPlatePlugin => {
   if (overrideByKey[plugin.key]) {
     const {
       __extensions: pluginOverridesExtensions,

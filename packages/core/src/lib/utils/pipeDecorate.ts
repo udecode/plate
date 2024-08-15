@@ -28,6 +28,7 @@ export const pipeDecorate = (
     relevantPlugins.forEach((plugin) => {
       addRanges(
         plugin.decorate!({
+          api: editor.api,
           editor,
           entry,
           plugin,

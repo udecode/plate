@@ -91,10 +91,7 @@ export const toggleIds = (
   ids: string[],
   force: boolean | null = null
 ): void => {
-  const options = getPluginOptions<TogglePluginOptions>(
-    editor,
-    TogglePlugin.key
-  );
+  const options = editor.getOptions(TogglePlugin);
   options.setOpenIds!((openIds) => _toggleIds(openIds, ids, force));
 };
 

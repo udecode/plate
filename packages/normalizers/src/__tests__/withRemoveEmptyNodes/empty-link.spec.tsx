@@ -34,7 +34,9 @@ it('should be', () => {
     editor: input,
     plugins: [
       RemoveEmptyNodesPlugin.configure({
-        types: LinkPlugin.key,
+        options: {
+          types: LinkPlugin.key,
+        },
       }),
     ],
   });

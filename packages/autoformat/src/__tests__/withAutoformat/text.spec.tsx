@@ -1,5 +1,6 @@
 /** @jsx jsx */
 
+import { createPlateEditor } from "@udecode/plate-common/react";
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 import { getAutoformatOptions } from 'www/src/lib/plate/demo/plugins/autoformatOptions';
@@ -12,28 +13,27 @@ jsx;
 describe('when --space', () => {
   it('should insert —', () => {
     const input = (
-      <editor>
+      <fragment>
         <hp>
           -
           <cursor />
           hello
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const output = (
-      <editor>
+      <fragment>
         <hp>
           —
           <cursor />
           hello
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
-    const editor = withAutoformat({
-      editor: withReact(input),
-      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    const editor = createPlateEditor({ value: input,
+      plugins: [AutoformatPlugin.configure({ options: getAutoformatOptions() }),]
     });
 
     editor.insertText('-');
@@ -43,28 +43,27 @@ describe('when --space', () => {
 
   it('should not insert — with multiple in between chars', () => {
     const input = (
-      <editor>
+      <fragment>
         <hp>
           -OO
           <cursor />
           hello
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const output = (
-      <editor>
+      <fragment>
         <hp>
           -OO-
           <cursor />
           hello
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
-    const editor = withAutoformat({
-      editor: withReact(input),
-      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    const editor = createPlateEditor({ value: input,
+      plugins: [AutoformatPlugin.configure({ options: getAutoformatOptions() }),]
     });
 
     editor.insertText('-');
@@ -74,28 +73,27 @@ describe('when --space', () => {
 
   it('should not insert — with 1 in between char', () => {
     const input = (
-      <editor>
+      <fragment>
         <hp>
           -O
           <cursor />
           hello
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const output = (
-      <editor>
+      <fragment>
         <hp>
           -O-
           <cursor />
           hello
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
-    const editor = withAutoformat({
-      editor: withReact(input),
-      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    const editor = createPlateEditor({ value: input,
+      plugins: [AutoformatPlugin.configure({ options: getAutoformatOptions() }),]
     });
 
     editor.insertText('-');
@@ -107,28 +105,27 @@ describe('when --space', () => {
 describe('when (tm)', () => {
   it('should insert &trade;', () => {
     const input = (
-      <editor>
+      <fragment>
         <hp>
           (tm
           <cursor />
           hello
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const output = (
-      <editor>
+      <fragment>
         <hp>
           ™
           <cursor />
           hello
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
-    const editor = withAutoformat({
-      editor: withReact(input),
-      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    const editor = createPlateEditor({ value: input,
+      plugins: [AutoformatPlugin.configure({ options: getAutoformatOptions() }),]
     });
 
     editor.insertText(')');
@@ -140,28 +137,27 @@ describe('when (tm)', () => {
 describe('when &sect', () => {
   it('should insert §', () => {
     const input = (
-      <editor>
+      <fragment>
         <hp>
           &sect
           <cursor />
           hello
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const output = (
-      <editor>
+      <fragment>
         <hp>
           §
           <cursor />
           hello
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
-    const editor = withAutoformat({
-      editor: withReact(input),
-      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    const editor = createPlateEditor({ value: input,
+      plugins: [AutoformatPlugin.configure({ options: getAutoformatOptions() }),]
     });
 
     editor.insertText(';');
@@ -173,28 +169,27 @@ describe('when &sect', () => {
 describe('when //', () => {
   it('should insert ÷', () => {
     const input = (
-      <editor>
+      <fragment>
         <hp>
           /
           <cursor />
           hello
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const output = (
-      <editor>
+      <fragment>
         <hp>
           ÷
           <cursor />
           hello
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
-    const editor = withAutoformat({
-      editor: withReact(input),
-      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    const editor = createPlateEditor({ value: input,
+      plugins: [AutoformatPlugin.configure({ options: getAutoformatOptions() }),]
     });
 
     editor.insertText('/');
@@ -206,38 +201,37 @@ describe('when //', () => {
 describe('when typing %%%', () => {
   it('should autoformat', () => {
     const input = (
-      <editor>
+      <fragment>
         <hp>
           %
           <cursor />
           hello
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const output1 = (
-      <editor>
+      <fragment>
         <hp>
           ‰
           <cursor />
           hello
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const output2 = (
-      <editor>
+      <fragment>
         <hp>
           ‱
           <cursor />
           hello
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
-    const editor = withAutoformat({
-      editor: withReact(input),
-      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    const editor = createPlateEditor({ value: input,
+      plugins: [AutoformatPlugin.configure({ options: getAutoformatOptions() }),]
     });
 
     editor.insertText('%');
@@ -253,31 +247,32 @@ describe('when typing %%%', () => {
 describe('when using quotes', () => {
   it('should autoformat to smart quotes', () => {
     const input = (
-      <editor>
+      <fragment>
         <hp>
           "hello
           <cursor /> .
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const output = (
-      <editor>
+      <fragment>
         <hp>“hello” .</hp>
-      </editor>
+      </fragment>
     ) as any;
 
-    const editor = withAutoformat({
-      editor: withReact(input),
-      plugin: AutoformatPlugin.configure({
-        rules: [
-          {
-            format: ['“', '”'],
-            match: '"',
-            mode: 'text',
-          },
-        ],
-      }),
+    const editor = createPlateEditor({ value: input,
+      plugins: [AutoformatPlugin.configure({
+        options: {
+          rules: [
+            {
+              format: ['“', '”'],
+              match: '"',
+              mode: 'text',
+            },
+          ],
+        },
+      }),]
     });
 
     editor.insertText('"');

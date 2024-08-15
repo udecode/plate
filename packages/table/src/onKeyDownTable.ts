@@ -7,7 +7,7 @@ import {
 } from '@udecode/plate-common';
 import { Hotkeys } from '@udecode/plate-common/react';
 
-import type { TablePluginOptions } from './types';
+import type { TableContext } from './types';
 
 import { keyShiftEdges } from './constants';
 import {
@@ -17,7 +17,7 @@ import {
 } from './queries/index';
 import { moveSelectionFromCell } from './transforms/index';
 
-export const onKeyDownTable: KeyboardHandler<TablePluginOptions> = ({
+export const onKeyDownTable: KeyboardHandler<TableContext> = ({
   editor,
   event,
   plugin: { type },

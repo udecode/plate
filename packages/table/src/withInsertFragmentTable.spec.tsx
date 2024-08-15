@@ -398,7 +398,7 @@ describe('withInsertFragmentTable', () => {
               <htd>
                 <hp>12</hp>
               </htd>
-              <htd>
+              <htd custom>
                 <hp>
                   <htext />
                 </hp>
@@ -414,20 +414,20 @@ describe('withInsertFragmentTable', () => {
                   aa
                 </hp>
               </htd>
-              <htd>
+              <htd custom>
                 <hp>ab</hp>
               </htd>
             </htr>
             <htr>
-              <htd>
+              <htd custom>
                 <hp>
                   <htext />
                 </hp>
               </htd>
-              <htd>
+              <htd custom>
                 <hp>ba</hp>
               </htd>
-              <htd>
+              <htd custom>
                 <hp>
                   bb
                   <focus />
@@ -441,16 +441,21 @@ describe('withInsertFragmentTable', () => {
       const editor = createSlateEditor({
         editor: input,
         plugins: [
-          TablePlugin.configure({
-            // newCellChildren: [{ text: '' }]
-          }),
+          TablePlugin.extendApi(() => ({
+            table: {
+              cellFactory: () => ({
+                children: [{ text: '' }],
+                custom: true,
+                type: 'td',
+              }),
+            },
+          })),
         ],
       });
 
       editor.insertFragment(fragment);
 
       expect(editor.children).toEqual(output.children);
-
       expect(editor.selection).toEqual(output.selection);
     });
   });
@@ -537,8 +542,9 @@ describe('withInsertFragmentTable', () => {
         editor: input,
         plugins: [
           TablePlugin.configure({
-            disableExpandOnInsert: true,
-            // newCellChildren: [{ text: '' }],
+            options: {
+              disableExpandOnInsert: true,
+            },
           }),
         ],
       });

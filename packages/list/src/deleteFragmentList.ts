@@ -23,7 +23,7 @@ const getLiStart = (editor: PlateEditor) => {
 
   return getAboveNode(editor, {
     at: start,
-    match: { type: getPluginType(editor, ListItemPlugin.key) },
+    match: { type: editor.getType(ListItemPlugin) },
   });
 };
 
@@ -41,7 +41,7 @@ export const deleteFragmentList = (editor: PlateEditor) => {
     const end = getEndPoint(editor, editor.selection as Range);
     const liEnd = getAboveNode(editor, {
       at: end,
-      match: { type: getPluginType(editor, ListItemPlugin.key) },
+      match: { type: editor.getType(ListItemPlugin) },
     });
     const liEndCanBeDeleted = liEnd && !hasListChild(editor, liEnd[0]);
     const liEndPathRef = liEndCanBeDeleted

@@ -6,12 +6,12 @@ import {
 } from '@udecode/plate-common';
 import { IndentListPlugin } from '@udecode/plate-indent-list';
 import { ListItemPlugin } from '@udecode/plate-list';
-import { TabbablePlugin as TabbableBasePlugin } from '@udecode/plate-tabbable';
+import { TabbablePlugin } from '@udecode/plate-tabbable';
 import { TablePlugin } from '@udecode/plate-table';
 
 import { TabbableElement } from './TabbableElement';
 
-export const TabbablePlugin = TabbableBasePlugin.extend({
+export const tabbablePlugin = TabbablePlugin.extend({
   plugins: [
     createPlugin({
       component: TabbableElement,
@@ -21,19 +21,23 @@ export const TabbablePlugin = TabbableBasePlugin.extend({
     }),
   ],
 }).configure(({ editor }) => ({
-  query: () => {
-    if (isSelectionAtBlockStart(editor)) return false;
+  options: {
+    query: () => {
+      if (isSelectionAtBlockStart(editor)) return false;
 
-    return !someNode(editor, {
-      match: (n) => {
-        return !!(
-          n.type &&
-          ([CodeBlockPlugin.key, ListItemPlugin.key, TablePlugin.key].includes(
-            n.type as any
-          ) ||
-            n[IndentListPlugin.key])
-        );
-      },
-    });
+      return !someNode(editor, {
+        match: (n) => {
+          return !!(
+            n.type &&
+            ([
+              CodeBlockPlugin.key,
+              ListItemPlugin.key,
+              TablePlugin.key,
+            ].includes(n.type as any) ||
+              n[IndentListPlugin.key])
+          );
+        },
+      });
+    },
   },
 }));

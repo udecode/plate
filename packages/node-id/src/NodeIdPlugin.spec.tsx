@@ -46,9 +46,11 @@ describe('when inserting nodes', () => {
         editor: input,
         plugins: [
           NodeIdPlugin.configure({
-            allow: [ParagraphPlugin.key],
-            idCreator: getIdFactory(),
-            reuseId: true,
+            options: {
+              allow: [ParagraphPlugin.key],
+              idCreator: getIdFactory(),
+              reuseId: true,
+            },
           }),
         ],
       });
@@ -94,9 +96,11 @@ describe('when inserting nodes', () => {
         editor: input,
         plugins: [
           NodeIdPlugin.configure({
-            exclude: [ParagraphPlugin.key],
-            idCreator: getIdFactory(),
-            reuseId: true,
+            options: {
+              exclude: [ParagraphPlugin.key],
+              idCreator: getIdFactory(),
+              reuseId: true,
+            },
           }),
         ],
       });
@@ -142,14 +146,16 @@ describe('when inserting nodes', () => {
         editor: input,
         plugins: [
           NodeIdPlugin.configure({
-            allow: [
-              ListUnorderedPlugin.key,
-              ListItemPlugin.key,
-              ParagraphPlugin.key,
-            ],
-            exclude: [ParagraphPlugin.key],
-            idCreator: getIdFactory(),
-            reuseId: true,
+            options: {
+              allow: [
+                ListUnorderedPlugin.key,
+                ListItemPlugin.key,
+                ParagraphPlugin.key,
+              ],
+              exclude: [ParagraphPlugin.key],
+              idCreator: getIdFactory(),
+              reuseId: true,
+            },
           }),
         ],
       });
@@ -195,8 +201,10 @@ describe('when inserting nodes', () => {
         editor: input,
         plugins: [
           NodeIdPlugin.configure({
-            idCreator: getIdFactory(),
-            reuseId: true,
+            options: {
+              idCreator: getIdFactory(),
+              reuseId: true,
+            },
           }),
         ],
       });
@@ -242,8 +250,10 @@ describe('when inserting nodes', () => {
         editor: input,
         plugins: [
           NodeIdPlugin.configure({
-            filterText: false,
-            idCreator: getIdFactory(),
+            options: {
+              filterText: false,
+              idCreator: getIdFactory(),
+            },
           }),
         ],
       });
@@ -283,8 +293,10 @@ describe('when inserting nodes', () => {
         editor: input,
         plugins: [
           NodeIdPlugin.configure({
-            idCreator: getIdFactory(),
-            reuseId: true,
+            options: {
+              idCreator: getIdFactory(),
+              reuseId: true,
+            },
           }),
         ],
       });
@@ -330,9 +342,7 @@ describe('when inserting nodes', () => {
       const editor = createPlateEditor({
         editor: input,
         plugins: [
-          NodeIdPlugin.configure({
-            idCreator: getIdFactory(),
-          }),
+          NodeIdPlugin.configure({ options: { idCreator: getIdFactory() } }),
         ],
       });
 
@@ -375,9 +385,11 @@ describe('when inserting nodes', () => {
         editor: input,
         plugins: [
           NodeIdPlugin.configure({
-            idCreator: getIdFactory(),
-            idKey: 'foo',
-            reuseId: true,
+            options: {
+              idCreator: getIdFactory(),
+              idKey: 'foo',
+              reuseId: true,
+            },
           }),
         ],
       });
@@ -424,8 +436,10 @@ describe('when inserting nodes', () => {
         editor: input,
         plugins: [
           NodeIdPlugin.configure({
-            idCreator: getIdFactory(),
-            reuseId: true,
+            options: {
+              idCreator: getIdFactory(),
+              reuseId: true,
+            },
           }),
         ],
       });
@@ -498,8 +512,10 @@ describe('when splitting nodes', () => {
         editor: input,
         plugins: [
           NodeIdPlugin.configure({
-            idCreator: getIdFactory(),
-            reuseId: true,
+            options: {
+              idCreator: getIdFactory(),
+              reuseId: true,
+            },
           }),
         ],
       });
@@ -536,9 +552,7 @@ describe('when splitting nodes', () => {
       const editor = createPlateEditor({
         editor: input,
         plugins: [
-          NodeIdPlugin.configure({
-            idCreator: getIdFactory(),
-          }),
+          NodeIdPlugin.configure({ options: { idCreator: getIdFactory() } }),
         ],
       });
 
@@ -575,8 +589,10 @@ describe('when splitting nodes', () => {
         editor: input,
         plugins: [
           NodeIdPlugin.configure({
-            allow: [ParagraphPlugin.key],
-            idCreator: getIdFactory(),
+            options: {
+              allow: [ParagraphPlugin.key],
+              idCreator: getIdFactory(),
+            },
           }),
         ],
       });
@@ -616,9 +632,11 @@ describe('when splitting nodes', () => {
         editor: input,
         plugins: [
           NodeIdPlugin.configure({
-            filterText: false,
-            idCreator: getIdFactory(),
-            reuseId: true,
+            options: {
+              filterText: false,
+              idCreator: getIdFactory(),
+              reuseId: true,
+            },
           }),
         ],
       });
@@ -658,9 +676,11 @@ describe('when merging nodes', () => {
         editor: input,
         plugins: [
           NodeIdPlugin.configure({
-            filterText: false,
-            idCreator: getIdFactory(),
-            reuseId: true,
+            options: {
+              filterText: false,
+              idCreator: getIdFactory(),
+              reuseId: true,
+            },
           }),
         ],
       });
@@ -691,9 +711,7 @@ describe('when merging nodes', () => {
       const editor = createPlateEditor({
         editor: input,
         plugins: [
-          NodeIdPlugin.configure({
-            idCreator: getIdFactory(),
-          }),
+          NodeIdPlugin.configure({ options: { idCreator: getIdFactory() } }),
         ],
       });
 
@@ -733,8 +751,10 @@ describe('when merging nodes', () => {
         editor: input,
         plugins: [
           NodeIdPlugin.configure({
-            filter: ([, path]) => path.length === 2,
-            idCreator: getIdFactory(),
+            options: {
+              filter: ([, path]) => path.length === 2,
+              idCreator: getIdFactory(),
+            },
           }),
         ],
       });
@@ -777,7 +797,9 @@ describe('when merging nodes', () => {
         editor: input,
         plugins: [
           NodeIdPlugin.configure({
-            idCreator: getIdFactory(),
+            options: {
+              idCreator: getIdFactory(),
+            },
           }),
         ],
       });

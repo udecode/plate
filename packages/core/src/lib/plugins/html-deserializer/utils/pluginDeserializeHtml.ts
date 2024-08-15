@@ -109,7 +109,7 @@ export const pluginDeserializeHtml = (
 
     if (!isValid) return;
   }
-  if (query && !query({ editor, element: el, plugin })) {
+  if (query && !query({ api: editor.api, editor, element: el, plugin })) {
     return;
   }
   if (!getNode) {
@@ -122,7 +122,8 @@ export const pluginDeserializeHtml = (
     }
   }
 
-  let node = getNode({ editor, element: el, node: {}, plugin }) ?? {};
+  let node =
+    getNode({ api: editor.api, editor, element: el, node: {}, plugin }) ?? {};
 
   if (Object.keys(node).length === 0) return;
 
@@ -130,6 +131,7 @@ export const pluginDeserializeHtml = (
 
   injectedPlugins.forEach((injectedPlugin) => {
     const res = injectedPlugin.deserializeHtml?.getNode?.({
+      api: editor.api,
       editor,
       element: el,
       node,

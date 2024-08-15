@@ -1,4 +1,4 @@
-import { getPluginType, someNode } from '@udecode/plate-common';
+import { someNode } from '@udecode/plate-common';
 import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
 
 import { ListUnorderedPlugin, toggleList } from '../index';
@@ -9,7 +9,7 @@ export const useListToolbarButtonState = ({
   const pressed = useEditorSelector(
     (editor) =>
       !!editor.selection &&
-      someNode(editor, { match: { type: getPluginType(editor, nodeType) } }),
+      someNode(editor, { match: { type: editor.getType({ key: nodeType }) } }),
     [nodeType]
   );
 

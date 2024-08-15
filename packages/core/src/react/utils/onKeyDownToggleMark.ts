@@ -1,9 +1,9 @@
 import { toggleMark } from '@udecode/slate-utils';
 import { isHotkey } from 'is-hotkey';
 
-import type { KeyboardHandler, ToggleMarkPluginOptions } from '../../lib';
+import type { KeyboardHandler, ToggleMarkContext } from '../../lib';
 
-export const onKeyDownToggleMark: KeyboardHandler<ToggleMarkPluginOptions> = ({
+export const onKeyDownToggleMark: KeyboardHandler<ToggleMarkContext> = ({
   editor,
   event,
   plugin: {

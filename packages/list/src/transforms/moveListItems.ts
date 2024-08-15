@@ -32,7 +32,7 @@ export const moveListItems = (
   const _nodes = getNodeEntries(editor, {
     at,
     match: {
-      type: getPluginType(editor, ListItemContentPlugin.key),
+      type: editor.getType(ListItemContentPlugin),
     },
   });
 

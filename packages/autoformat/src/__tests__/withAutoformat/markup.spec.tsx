@@ -15,36 +15,38 @@ jsx;
 describe('when match is an array', () => {
   it('should autoformat', () => {
     const input = (
-      <editor>
+      <fragment>
         <hp>
           _***hello***
           <cursor />
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const output = (
-      <editor>
+      <fragment>
         <hp>
           <htext bold italic underline>
             hello
           </htext>
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input,
       plugins: [
         AutoformatPlugin.configure({
-          rules: [
-            {
-              ignoreTrim: true,
-              match: ['_***', '***_'],
-              mode: 'mark',
-              type: [UnderlinePlugin.key, BoldPlugin.key, ItalicPlugin.key],
-            },
-          ],
+          options: {
+            rules: [
+              {
+                ignoreTrim: true,
+                match: ['_***', '***_'],
+                mode: 'mark',
+                type: [UnderlinePlugin.key, BoldPlugin.key, ItalicPlugin.key],
+              },
+            ],
+          },
         }),
       ],
     });
@@ -58,36 +60,38 @@ describe('when match is an array', () => {
 describe('when match is a string', () => {
   it('should autoformat', () => {
     const input = (
-      <editor>
+      <fragment>
         <hp>
           _***hello***
           <cursor />
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const output = (
-      <editor>
+      <fragment>
         <hp>
           <htext bold italic underline>
             hello
           </htext>
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const editor = createPlateEditor({
-      editor: input,
+      value: input,
       plugins: [
         AutoformatPlugin.configure({
-          rules: [
-            {
-              ignoreTrim: true,
-              match: '_***',
-              mode: 'mark',
-              type: [UnderlinePlugin.key, BoldPlugin.key, ItalicPlugin.key],
-            },
-          ],
+          options: {
+            rules: [
+              {
+                ignoreTrim: true,
+                match: '_***',
+                mode: 'mark',
+                type: [UnderlinePlugin.key, BoldPlugin.key, ItalicPlugin.key],
+              },
+            ],
+          },
         }),
       ],
     });

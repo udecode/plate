@@ -306,7 +306,7 @@ describe('deserializeMd', () => {
 
 describe('deserializeMdIndentList', () => {
   const editor = createPlateEditor({
-    plugins: [DeserializeMdPlugin.configure({ indentList: true })],
+    plugins: [DeserializeMdPlugin.configure({ options: { indentList: true } })],
   });
 
   it('should deserialize unordered lists', () => {

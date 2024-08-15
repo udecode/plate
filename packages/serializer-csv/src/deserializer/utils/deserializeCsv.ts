@@ -4,15 +4,10 @@ import {
   type TDescendant,
   type TElement,
   type TNode,
-  getPluginOptions,
-  getPluginType,
 } from '@udecode/plate-common';
 import papaparse from 'papaparse';
 
-import type {
-  DeserializeCsvParseOptions,
-  DeserializeCsvPluginOptions,
-} from '../types';
+import type { DeserializeCsvParseOptions } from '../types';
 
 import { DeserializeCsvPlugin } from '../DeserializeCsvPlugin';
 
@@ -44,7 +39,7 @@ export const deserializeCsv = (
   } & DeserializeCsvParseOptions
 ): TDescendant[] | undefined => {
   const { errorTolerance, parseOptions: pluginParseOptions } =
-    getPluginOptions<DeserializeCsvPluginOptions>(editor, DeserializeCsvPlugin.key);
+    editor.getOptions(DeserializeCsvPlugin);
 
   // Verify it's a csv string
   const testCsv = parse(data, { preview: 2 });
@@ -64,11 +59,11 @@ export const deserializeCsv = (
     )
       return;
 
-    const paragraph = getPluginType(editor, ParagraphPlugin.key);
-    const table = getPluginType(editor, 'table');
-    const th = getPluginType(editor, 'th');
-    const tr = getPluginType(editor, 'tr');
-    const td = getPluginType(editor, 'td');
+    const paragraph = editor.getType(ParagraphPlugin);
+    const table = editor.getType({ key: 'table' });
+    const th = editor.getType({ key: 'th' });
+    const tr = editor.getType({ key: 'tr' });
+    const td = editor.getType({ key: 'td' });
 
     const ast: TNode = {
       children: [],

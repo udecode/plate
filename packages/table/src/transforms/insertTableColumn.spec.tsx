@@ -137,8 +137,10 @@ describe('insertTableColumn', () => {
     const editorOptions = {
       plugins: [
         TablePlugin.configure({
-          initialTableWidth: 100,
-          minColumnWidth: 10,
+          options: {
+            initialTableWidth: 100,
+            minColumnWidth: 10,
+          },
         }),
       ],
     };

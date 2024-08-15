@@ -4,9 +4,8 @@ import { LinkPlugin } from '@udecode/plate-link';
 import { createPlateEditor } from '../../react';
 import {
   type PlatePluginComponent,
+  type PluginContext,
   createPlugin,
-  getPlugin,
-  getPluginOptions,
   resolveCreatePluginTest,
   resolvePluginTest,
 } from '../index';
@@ -90,9 +89,12 @@ describe('createPlugin', () => {
             }),
           ],
           type: 'a',
-        }).extendPlugin('aa', {
-          type: 'aaa',
-        })
+        }).extendPlugin(
+          { key: 'aa' },
+          {
+            type: 'aaa',
+          }
+        )
       );
 
       expect(plugin.plugins[0].type).toBe('aaa');
@@ -112,12 +114,18 @@ describe('createPlugin', () => {
           ],
           type: 'a',
         })
-          .extendPlugin('aa', {
-            type: 'aaa',
-          })
-          .extendPlugin('aa', {
-            type: 'aab',
-          })
+          .extendPlugin(
+            { key: 'aa' },
+            {
+              type: 'aaa',
+            }
+          )
+          .extendPlugin(
+            { key: 'aa' },
+            {
+              type: 'aab',
+            }
+          )
       );
 
       expect(plugin.plugins[0].type).toBe('aab');
@@ -134,42 +142,84 @@ describe('createPlugin', () => {
               createPlugin({
                 key: 'aa',
                 type: 'aa',
-              }).extendPlugin('aaa', {
-                options: {
-                  a: 1,
-                  b: 1,
-                },
-                plugins: [
-                  createPlugin({ key: 'bbb', options: {}, type: 'bbb' }),
-                ],
-                type: 'aaa',
-              }),
+              }).extendPlugin(
+                { key: 'aaa' },
+                {
+                  options: {
+                    a: 1,
+                    b: 1,
+                  },
+                  plugins: [
+                    createPlugin({ key: 'bbb', options: {}, type: 'bbb' }),
+                  ],
+                  type: 'aaa',
+                }
+              ),
             ],
             type: 'a',
-          }).extendPlugin('aa', {
-            plugins: [
-              createPlugin({
-                key: 'aaa',
-                plugins: [
-                  createPlugin({
-                    key: 'bbb',
-                    options: {
-                      a: 1,
-                    },
-                  }),
-                ],
-              }),
-            ],
-          }),
+          }).extendPlugin(
+            { key: 'aa' },
+            {
+              plugins: [
+                createPlugin({
+                  key: 'aaa',
+                  plugins: [
+                    createPlugin({
+                      key: 'bbb',
+                      options: {
+                        a: 1,
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }
+          ),
         ],
       });
 
-      const plugin = getPluginOptions(editor, 'aaa');
-      const plugin2 = getPluginOptions(editor, 'bbb');
+      const aaaOptions = editor.getOptions<
+        PluginContext<{ a: number; b: number }>
+      >({ key: 'aaa' });
+      const bbbOptions = editor.getOptions<PluginContext<{ a: number }>>({
+        key: 'bbb',
+      });
 
-      expect(plugin.a).toBe(1);
-      expect(plugin.b).toBe(1);
-      expect(plugin2.a).toBe(1);
+      expect(aaaOptions.a).toBe(1);
+      expect(aaaOptions.b).toBe(1);
+      expect(bbbOptions.a).toBe(1);
+    });
+  });
+
+  describe('extendPlugin context', () => {
+    it('should use the plugin context rather than the parent context', () => {
+      const childPlugin = createPlugin({
+        key: 'child',
+        options: { childOption: 'child' },
+      });
+      const parentPlugin = createPlugin({
+        key: 'parent',
+        options: { parentOption: 'parent' },
+        plugins: [childPlugin],
+      });
+
+      const extendedPlugin = parentPlugin.extendPlugin(childPlugin, (ctx) => ({
+        options: {
+          // TODO
+          // childOption: '',
+          extendedOption: `extended ${ctx.plugin.options.childOption}`,
+        },
+      }));
+
+      const editor = createPlateEditor({
+        plugins: [extendedPlugin],
+      });
+
+      expect(editor.getOptions(childPlugin)).toEqual({
+        childOption: 'child',
+        extendedOption: 'extended child',
+      });
+      expect(editor.getOptions(childPlugin)).not.toHaveProperty('parentOption');
     });
   });
 
@@ -182,36 +232,43 @@ describe('createPlugin', () => {
             plugins: [
               createPlugin({
                 key: 'child',
-              }).extendPlugin('child2', {
-                options: {
-                  testOption: 1,
-                },
-                plugins: [
-                  createPlugin({
-                    key: 'grandchild',
-                    options: { testOption: 1 },
-                  }),
-                ],
-                type: 'aaa',
-              }),
+              }).extendPlugin(
+                { key: 'child2' },
+                {
+                  options: {
+                    testOption: 1,
+                  },
+                  plugins: [
+                    createPlugin({
+                      key: 'grandchild',
+                      options: { testOption: 1 },
+                    }),
+                  ],
+                  type: 'aaa',
+                }
+              ),
             ],
-          }).extendPlugin('child', {
-            plugins: [
-              createPlugin({
-                key: 'grandchild',
-                options: {
-                  testOption: 1,
-                },
-              }),
-            ],
-          }),
+          }).extendPlugin(
+            { key: 'child' },
+            {
+              plugins: [
+                createPlugin({
+                  key: 'grandchild',
+                  options: {
+                    testOption: 1,
+                  },
+                }),
+              ],
+            }
+          ),
         ],
       });
 
-      const grandchildOptions = getPluginOptions<{ testOption: number }>(
-        editor,
-        'grandchild'
-      );
+      const grandchildOptions = editor.getOptions<
+        PluginContext<{ testOption: number }>
+      >({
+        key: 'grandchild',
+      });
 
       expect(grandchildOptions.testOption).toBe(1);
     });
@@ -223,9 +280,12 @@ describe('createPlugin', () => {
         createPlugin({
           key: 'a',
           type: 'a',
-        }).extendPlugin('aa', {
-          type: 'aaa',
-        })
+        }).extendPlugin(
+          { key: 'aa' },
+          {
+            type: 'aaa',
+          }
+        )
       );
 
       expect(plugin.plugins[0].type).toBe('aaa');
@@ -239,12 +299,18 @@ describe('createPlugin', () => {
           key: 'a',
           type: 'a',
         })
-          .extendPlugin('aa', {
-            type: 'aaa',
-          })
-          .extendPlugin('aa', {
-            type: 'aab',
-          })
+          .extendPlugin(
+            { key: 'aa' },
+            {
+              type: 'aaa',
+            }
+          )
+          .extendPlugin(
+            { key: 'aa' },
+            {
+              type: 'aab',
+            }
+          )
       );
 
       expect(plugin.plugins[0].type).toBe('aab');
@@ -307,12 +373,15 @@ describe('createPlugin', () => {
   describe('when extend plugins', () => {
     it('should be', () => {
       const plugin = resolvePluginTest(
-        BasicElementsPlugin.extendPlugin('heading', {
-          options: {
-            levels: 5,
-          },
-          type: 'h',
-        })
+        BasicElementsPlugin.extendPlugin(
+          { key: 'heading' },
+          {
+            options: {
+              levels: 5,
+            },
+            type: 'h',
+          }
+        )
       );
 
       const headingPlugin = plugin.plugins.find(
@@ -345,12 +414,15 @@ describe('createPlugin', () => {
           .extend({
             type: 'a_extend',
           })
-          .extendPlugin('aa', {
-            options: {
-              levels: 5,
-            },
-            type: 'aa_extend',
-          })
+          .extendPlugin(
+            { key: 'aa' },
+            {
+              options: {
+                levels: 5,
+              },
+              type: 'aa_extend',
+            }
+          )
       );
 
       const headingPlugin = plugin.plugins.find((p) => p.key === 'aa');
@@ -379,7 +451,7 @@ describe('createPlugin', () => {
         ],
       });
 
-      const plugin = getPlugin(editor, LinkPlugin.key);
+      const plugin = editor.getPlugin(LinkPlugin);
 
       expect(plugin.deserializeHtml?.getNode?.({} as any)).toEqual({
         test: true,
@@ -405,34 +477,49 @@ describe('createPlugin', () => {
             .extend({
               type: 'athen',
             })
-            .extendPlugin('bb', {
-              type: 'bb',
-            })
-            .extendPlugin('aa', {
-              type: 'ab',
-            })
-            .extendPlugin('cc', {
-              type: 'cc',
-            })
+            .extendPlugin(
+              { key: 'bb' },
+              {
+                type: 'bb',
+              }
+            )
+            .extendPlugin(
+              { key: 'aa' },
+              {
+                type: 'ab',
+              }
+            )
+            .extendPlugin(
+              { key: 'cc' },
+              {
+                type: 'cc',
+              }
+            )
             .extend({
               type: 'athen2',
             })
             .extend({
               type: 'a1',
             })
-            .extendPlugin('aa', {
-              type: 'aa1',
-            })
-            .extendPlugin('cc', {
-              type: 'cc1',
-            }),
+            .extendPlugin(
+              { key: 'aa' },
+              {
+                type: 'aa1',
+              }
+            )
+            .extendPlugin(
+              { key: 'cc' },
+              {
+                type: 'cc1',
+              }
+            ),
         ],
       });
 
-      const a = getPlugin(editor, 'a');
-      const aa = getPlugin(editor, 'aa');
-      const bb = getPlugin(editor, 'bb');
-      const cc = getPlugin(editor, 'cc');
+      const a = editor.getPlugin({ key: 'a' });
+      const aa = editor.getPlugin({ key: 'aa' });
+      const bb = editor.getPlugin({ key: 'bb' });
+      const cc = editor.getPlugin({ key: 'cc' });
 
       expect({
         type: a.type,
@@ -474,16 +561,21 @@ describe('createPlugin', () => {
                 },
               }),
             ],
-          }).extendPlugin('child1', {
-            options: {
-              extendedValue: 'extended child1',
-            },
-          }),
+          }).extendPlugin(
+            { key: 'child1' },
+            {
+              options: {
+                extendedValue: 'extended child1',
+              },
+            }
+          ),
         ],
       });
 
-      const child1Plugin = getPlugin(editor, 'child1');
-      const child1Options = getPluginOptions(editor, 'child1');
+      const child1Plugin = editor.getPlugin({ key: 'child1' });
+      const child1Options = editor.getOptions<
+        PluginContext<{ extendedValue: number; initialValue: number }>
+      >({ key: 'child1' });
 
       expect(child1Plugin.key).toBe('child1');
       expect(child1Options.initialValue).toBe('child1');
@@ -502,7 +594,9 @@ describe('createPlugin', () => {
 
     it('should override existing options', () => {
       const configured = basePlugin.configure({
-        optionA: 'modified',
+        options: {
+          optionA: 'modified',
+        },
       });
 
       const resolved = resolvePluginTest(configured);
@@ -515,8 +609,10 @@ describe('createPlugin', () => {
 
     it('should work with function-based configuration', () => {
       const configured = basePlugin.configure((ctx) => ({
-        optionB: ctx.plugin.options.optionB * 2,
-        optionD: 'new option',
+        options: {
+          optionB: ctx.plugin.options.optionB * 2,
+          optionD: 'new option',
+        },
       }));
 
       const resolved = resolvePluginTest(configured);
@@ -528,22 +624,21 @@ describe('createPlugin', () => {
       });
     });
 
-    it('should allow chaining configure calls', () => {
+    it('should override previous configuration on multiple configure calls', () => {
       const configured = basePlugin
-        .configure({ optionA: 'first change' })
-        .configure({ optionB: 30 })
-        .configure((ctx) => ({ optionB: ctx.plugin.options.optionB + 10 }));
+        .configure({ options: { optionA: 'first change' } })
+        .configure({ options: { optionB: 30 } })
+        .configure(() => ({ options: { optionB: 40 } }));
 
       const resolved = resolvePluginTest(configured);
-
       expect(resolved.options).toEqual({
-        optionA: 'first change',
+        optionA: 'initial', // This remains 'initial' because it's not in the last configure call
         optionB: 40,
       });
     });
 
     it('should not modify the original plugin', () => {
-      basePlugin.configure({ optionA: 'modified' });
+      basePlugin.configure({ options: { optionA: 'modified' } });
 
       expect(basePlugin.options).toEqual({
         optionA: 'initial',
@@ -559,23 +654,80 @@ describe('createPlugin', () => {
       expect(resolved.options).toEqual(basePlugin.options);
     });
 
-    // TODO
-    // it('should allow configuration after extension, using previous options', () => {
-    //   const extendedPlugin = basePlugin.extend((ctx) => ({
-    //     options: {
-    //       ...ctx.plugin.options,
-    //       optionC: ctx.plugin.options.optionA + '1',
-    //     },
-    //   }));
-    //
-    //   const configured = extendedPlugin.configure((ctx) => ({
-    //     optionA: '',
-    //   }));
-    //
-    //   const resolved = resolvePluginTest(configured);
-    //
-    //   expect(resolved.options.optionC).toEqual('1');
-    // });
+    it('should allow configuration after extension, using previous options', () => {
+      const extendedPlugin = basePlugin.extend((ctx) => ({
+        options: {
+          ...ctx.plugin.options,
+          optionC: ctx.plugin.options.optionA + '1',
+        },
+      }));
+
+      const configured = extendedPlugin.configure(() => ({
+        options: {
+          optionA: '',
+        },
+      }));
+
+      const resolved = resolvePluginTest(configured);
+
+      expect(resolved.options.optionC).toEqual('1');
+    });
+
+    it('should allow configuration of type and use it in deserializeHtml.getNode', () => {
+      const TableCellPlugin = createPlugin({
+        key: 'td',
+      }).extend(({ plugin }) => ({
+        deserializeHtml: {
+          getNode: () => ({ type: plugin.type }),
+        },
+      }));
+
+      // Configure the plugin to use a custom type
+      const configuredPlugin = TableCellPlugin.configure({
+        type: 'custom-td',
+      });
+
+      // Resolve the plugin
+      const resolvedPlugin = resolvePluginTest(configuredPlugin);
+
+      // Call getNode and check the type
+      const nodeResult = resolvedPlugin.deserializeHtml!.getNode!({} as any);
+
+      expect(nodeResult).toEqual({ type: 'custom-td' });
+    });
+
+    describe('when configure type and use in withOverrides', () => {
+      it('should use the configured type in withOverrides', () => {
+        const basePlugin = createPlugin({
+          key: 'testPlugin',
+          type: 'defaultType',
+        });
+
+        let type = basePlugin.type;
+
+        const configuredPlugin = basePlugin
+          .configure({
+            type: 'customType',
+          })
+          .extend({
+            withOverrides: ({ editor, plugin }) => {
+              editor.insertText = () => {
+                type = plugin.type;
+              };
+
+              return editor;
+            },
+          });
+
+        const editor = createPlateEditor({
+          plugins: [configuredPlugin],
+        });
+
+        editor.insertText('');
+
+        expect(type).toBe('customType');
+      });
+    });
   });
 
   describe('when configure twice', () => {
@@ -589,17 +741,15 @@ describe('createPlugin', () => {
       });
 
       const configuredOnce = basePlugin.configure({
-        optionA: 'modified',
+        options: { optionA: 'modified' },
       });
-
       const configuredTwice = configuredOnce.configure({
-        optionB: 'modified',
+        options: { optionB: 'modified' },
       });
 
       const resolvedPlugin = resolvePluginTest(configuredTwice);
-
       expect(resolvedPlugin.options).toEqual({
-        optionA: 'modified',
+        optionA: 'initial', // This remains 'initial' because it's not in the last configure call
         optionB: 'modified',
       });
       expect(resolvedPlugin.options).not.toHaveProperty('newOption');
@@ -615,18 +765,20 @@ describe('createPlugin', () => {
       });
 
       const configuredOnce = basePlugin.configure((ctx) => ({
-        count: ctx.plugin.options.count + 1,
+        options: {
+          count: ctx.plugin.options.count + 1,
+        },
       }));
-
       const configuredTwice = configuredOnce.configure((ctx) => ({
-        count: ctx.plugin.options.count + 1,
-        text: 'modified',
+        options: {
+          count: ctx.plugin.options.count + 1,
+          text: 'modified',
+        },
       }));
 
       const resolvedPlugin = resolvePluginTest(configuredTwice);
-
       expect(resolvedPlugin.options).toEqual({
-        count: 2,
+        count: 1, // This is 1, not 2, because the last configure overwrites the previous one
         text: 'modified',
       });
       expect(resolvedPlugin.options).not.toHaveProperty('newOption');
@@ -635,21 +787,25 @@ describe('createPlugin', () => {
 
   describe('when configurePlugin', () => {
     it('should configure an existing plugin', () => {
+      const aa = createPlugin({
+        key: 'aa',
+        options: { another: 'b', initialValue: 'aa' },
+      });
+
       const plugin = resolvePluginTest(
         createPlugin({
           key: 'a',
-          plugins: [
-            createPlugin({
-              key: 'aa',
-              options: { initialValue: 'aa' },
-            }),
-          ],
-        }).configurePlugin('aa', { newOption: 'new' })
+          plugins: [aa],
+        }).configurePlugin(aa, {
+          options: {
+            initialValue: 'aaa',
+          },
+        })
       );
 
       expect(plugin.plugins[0].options).toEqual({
-        initialValue: 'aa',
-        newOption: 'new',
+        another: 'b',
+        initialValue: 'aaa',
       });
     });
 
@@ -665,7 +821,10 @@ describe('createPlugin', () => {
       });
 
       const configuredPlugin = resolvePluginTest(
-        basePlugin.configurePlugin('bb', { newOption: 'new' })
+        basePlugin.configurePlugin(
+          { key: 'bb' },
+          { options: { newOption: 'new' } }
+        )
       );
 
       expect(configuredPlugin.plugins).toHaveLength(1);
@@ -676,26 +835,27 @@ describe('createPlugin', () => {
     });
 
     it('should configure a deeply nested plugin', () => {
+      const c = createPlugin({
+        key: 'c',
+        options: { initialValue: 'c' },
+      });
+
+      const b = createPlugin({
+        key: 'b',
+        plugins: [c],
+      });
+
+      const a = createPlugin({
+        key: 'a',
+        plugins: [b],
+      });
+
       const plugin = resolvePluginTest(
-        createPlugin({
-          key: 'a',
-          plugins: [
-            createPlugin({
-              key: 'b',
-              plugins: [
-                createPlugin({
-                  key: 'c',
-                  options: { initialValue: 'c' },
-                }),
-              ],
-            }),
-          ],
-        }).configurePlugin('c', { newOption: 'new' })
+        a.configurePlugin(c, { options: { initialValue: 'cc' } })
       );
 
       expect(plugin.plugins[0].plugins[0].options).toEqual({
-        initialValue: 'c',
-        newOption: 'new',
+        initialValue: 'cc',
       });
     });
   });

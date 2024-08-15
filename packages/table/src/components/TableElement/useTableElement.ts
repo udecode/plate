@@ -1,9 +1,9 @@
 import React from 'react';
 
-import { collapseSelection, getPluginOptions } from '@udecode/plate-common';
+import { collapseSelection } from '@udecode/plate-common';
 import { useEditorRef, useElement } from '@udecode/plate-common/react';
 
-import type { TTableElement, TablePluginOptions } from '../../types';
+import type { TTableElement } from '../../types';
 
 import { TablePlugin } from '../../TablePlugin';
 import { computeAllCellIndices } from '../../merge/computeCellIndices';
@@ -27,7 +27,7 @@ export const useTableElementState = ({
   const editor = useEditorRef();
 
   const { disableMarginLeft, enableMerging, minColumnWidth } =
-    getPluginOptions<TablePluginOptions>(editor, TablePlugin.key);
+    editor.getOptions(TablePlugin);
 
   const element = useElement<TTableElement>();
   const selectedCells = useTableStore().get.selectedCells();

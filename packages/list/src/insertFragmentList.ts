@@ -14,7 +14,6 @@ import {
   getNodeString,
   getNodeTexts,
   getNodes,
-  getPlugin,
   insertElements,
   isElement,
   removeNodes,
@@ -31,7 +30,7 @@ import {
 export const insertFragmentList = (editor: PlateEditor) => {
   const { insertFragment } = editor;
 
-  const listItemPlugin = getPlugin(editor, ListItemPlugin.key);
+  const listItemPlugin = editor.getPlugin(ListItemPlugin);
   const listItemType = getListItemType(editor);
   const listItemContentType = getListItemContentType(editor);
 

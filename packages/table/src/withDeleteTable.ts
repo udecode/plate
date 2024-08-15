@@ -4,7 +4,6 @@ import {
   type WithOverride,
   getBlockAbove,
   getEndPoint,
-  getPluginType,
   getPointAfter,
   getPointBefore,
   getStartPoint,
@@ -17,7 +16,7 @@ import {
 } from '@udecode/plate-common';
 import { Point } from 'slate';
 
-import type { TablePluginOptions } from './types';
+import type { TableContext } from './types';
 
 import { TablePlugin } from './TablePlugin';
 import { getTableGridAbove } from './queries/getTableGridAbove';
@@ -77,9 +76,7 @@ export const preventDeleteTableCell = (
 };
 
 /** Prevent cell deletion. */
-export const withDeleteTable: WithOverride<TablePluginOptions> = ({
-  editor,
-}) => {
+export const withDeleteTable: WithOverride<TableContext> = ({ editor }) => {
   const { deleteBackward, deleteForward, deleteFragment } = editor;
 
   editor.deleteBackward = (unit) => {
@@ -97,7 +94,7 @@ export const withDeleteTable: WithOverride<TablePluginOptions> = ({
   editor.deleteFragment = (direction) => {
     if (
       isRangeInSameBlock(editor, {
-        match: (n) => n.type === getPluginType(editor, TablePlugin.key),
+        match: (n) => n.type === editor.getType(TablePlugin),
       })
     ) {
       const cellEntries = getTableGridAbove(editor, { format: 'cell' });

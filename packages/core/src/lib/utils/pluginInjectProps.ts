@@ -69,7 +69,13 @@ export const pluginInjectProps = (
     validPlugins,
   } = props;
 
-  const queryResult = query?.({ ...props, editor, nodeProps, plugin });
+  const queryResult = query?.({
+    ...props,
+    api: editor.api,
+    editor,
+    nodeProps,
+    plugin,
+  });
 
   if (
     !queryResult &&
@@ -95,6 +101,7 @@ export const pluginInjectProps = (
 
   const transformOptions: TransformOptions = {
     ...nodeProps,
+    api: editor.api,
     editor,
     nodeValue,
     plugin,

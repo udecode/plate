@@ -1,8 +1,7 @@
-import {
-  type InsertNodesOptions,
-  type PlateEditor,
-  type TEditor,
-  getPluginType,
+import type {
+  InsertNodesOptions,
+  PlateEditor,
+  TEditor,
 } from '@udecode/plate-common';
 
 import {
@@ -27,7 +26,7 @@ export const insertMedia = async <E extends PlateEditor>(
   editor: E,
   {
     getUrl,
-    type = getPluginType(editor, ImagePlugin.key),
+    type = editor.getType(ImagePlugin),
     ...options
   }: InsertMediaOptions<E> = {}
 ) => {
@@ -40,7 +39,7 @@ export const insertMedia = async <E extends PlateEditor>(
       );
 
   if (!url) return;
-  if (type === getPluginType(editor, ImagePlugin.key)) {
+  if (type === editor.getType(ImagePlugin)) {
     insertImage(editor, url, options);
   } else {
     insertMediaEmbed(editor, { url }, options);

@@ -1,6 +1,10 @@
 import type { Path } from 'slate';
 
-import { type ErrorHandler, createPlugin } from '@udecode/plate-common';
+import {
+  type ErrorHandler,
+  type PluginContext,
+  createPlugin,
+} from '@udecode/plate-common';
 
 import { withNormalizeTypes } from './withNormalizeTypes';
 
@@ -13,25 +17,24 @@ interface Rule {
   type?: string;
 }
 
-export interface NormalizeTypesPluginOptions extends ErrorHandler {
-  /**
-   * Set of rules for the types. For each rule, provide a `path` and either
-   * `strictType` or `type`. If there is no node existing at `path`: insert a
-   * node with `strictType`. If there is a node existing at `path` but its type
-   * is not `strictType` or `type`: set the node type to `strictType` or
-   * `type`.
-   */
-  rules?: Rule[];
-}
+export type NormalizeTypesContext = PluginContext<
+  {
+    /**
+     * Set of rules for the types. For each rule, provide a `path` and either
+     * `strictType` or `type`. If there is no node existing at `path`: insert a
+     * node with `strictType`. If there is a node existing at `path` but its
+     * type is not `strictType` or `type`: set the node type to `strictType` or
+     * `type`.
+     */
+    rules?: Rule[];
+  } & ErrorHandler
+>;
 
 /** @see {@link withNormalizeTypes} */
-export const NormalizeTypesPlugin = createPlugin<
-  'normalizeTypes',
-  NormalizeTypesPluginOptions
->({
+export const NormalizeTypesPlugin = createPlugin({
   key: 'normalizeTypes',
   options: {
     rules: [],
   },
   withOverrides: withNormalizeTypes,
-});
+}) satisfies NormalizeTypesContext;

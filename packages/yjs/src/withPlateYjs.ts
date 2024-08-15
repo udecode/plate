@@ -1,25 +1,19 @@
-import type { WithOverride } from '@udecode/plate-common';
+import type { PlateEditor, WithOverride } from '@udecode/plate-common';
 
 import { HocuspocusProvider } from '@hocuspocus/provider';
-import {
-  type PlateEditor,
-  getPluginOptions,
-} from '@udecode/plate-common';
 import * as Y from 'yjs';
 
-import { YjsPlugin, type YjsPluginOptions } from './YjsPlugin';
-import { type CursorEditorProps, withTCursors } from './withTCursors';
+import type { YjsPluginOptions } from './YjsPlugin';
+
+import { type PlateYjsEditorProps, withTCursors } from './withTCursors';
 import { withTYHistory } from './withTYHistory';
 import { withTYjs } from './withTYjs';
 import { yjsActions } from './yjsStore';
 
-export interface PlateYjsEditorProps extends CursorEditorProps {
-  yjs: {
-    provider: HocuspocusProvider;
-  };
-}
-
-export const withPlateYjs: WithOverride<YjsPluginOptions> = ({ editor: e }) => {
+export const withPlateYjs: WithOverride<YjsPluginOptions> = ({
+  editor: e,
+  plugin,
+}) => {
   const editor = e as unknown as PlateEditor & PlateYjsEditorProps;
 
   const {
@@ -27,7 +21,7 @@ export const withPlateYjs: WithOverride<YjsPluginOptions> = ({ editor: e }) => {
     disableCursors,
     hocuspocusProviderOptions,
     yjsOptions,
-  } = getPluginOptions<YjsPluginOptions>(editor, YjsPlugin.key);
+  } = plugin.options;
 
   if (!hocuspocusProviderOptions) {
     throw new Error('HocuspocusProvider configuration is required');

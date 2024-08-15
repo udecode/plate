@@ -1,17 +1,13 @@
 import React from 'react';
 
-import {
-  type InjectComponentProps,
-  type InjectComponentReturnType,
-  getPluginOptions,
+import type {
+  InjectComponentProps,
+  InjectComponentReturnType,
 } from '@udecode/plate-common';
+
 import { clsx } from 'clsx';
 
-import {
-  IndentListPlugin,
-  type IndentListPluginOptions,
-  KEY_LIST_START,
-} from './IndentListPlugin';
+import { IndentListPlugin, KEY_LIST_START } from './IndentListPlugin';
 import { ULIST_STYLE_TYPES } from './types';
 
 export const injectIndentListComponent = (
@@ -34,10 +30,7 @@ export const injectIndentListComponent = (
     return function Component({ children, ...props }) {
       const { editor } = props;
 
-      const { listStyleTypes = {} } = getPluginOptions<IndentListPluginOptions>(
-        editor,
-        IndentListPlugin.key
-      );
+      const { listStyleTypes = {} } = editor.getOptions(IndentListPlugin);
 
       let listOptions = listStyleTypes[listStyleType];
 

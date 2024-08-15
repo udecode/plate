@@ -1,33 +1,11 @@
-import {
-  type DeserializeHtml,
-  createPlugin,
-  getPluginType,
-} from '@udecode/plate-common';
+import { type DeserializeHtml, createPlugin } from '@udecode/plate-common';
 
-import type { TablePluginOptions, TableStoreCellAttributes } from './types';
+import type { TableContext } from './types';
 
 import { onKeyDownTable } from './onKeyDownTable';
 import { insertTableColumn, insertTableRow } from './transforms/index';
 import { getEmptyCellNode } from './utils';
 import { withTable } from './withTable';
-
-const createGetNodeFunc = (type: string) => {
-  const getNode: DeserializeHtml['getNode'] = ({ element }) => {
-    const background =
-      element.style.background || element.style.backgroundColor;
-
-    if (background) {
-      return {
-        background,
-        type,
-      };
-    }
-
-    return { type };
-  };
-
-  return getNode;
-};
 
 export const TableRowPlugin = createPlugin({
   deserializeHtml: {
@@ -49,7 +27,7 @@ export const TableCellPlugin = createPlugin({
 }).extend(({ editor }) => ({
   deserializeHtml: {
     attributeNames: ['rowspan', 'colspan'],
-    getNode: createGetNodeFunc(getPluginType(editor, 'td')),
+    getNode: createGetNodeFunc(editor.getType({ key: 'td' })),
     rules: [{ validNodeName: 'TD' }],
   },
 }));
@@ -66,7 +44,7 @@ export const TableCellHeaderPlugin = createPlugin({
 }).extend(({ editor }) => ({
   deserializeHtml: {
     attributeNames: ['rowspan', 'colspan'],
-    getNode: createGetNodeFunc(getPluginType(editor, 'th')),
+    getNode: createGetNodeFunc(editor.getType({ key: 'th' })),
     rules: [{ validNodeName: 'TH' }],
   },
 }));
@@ -81,26 +59,36 @@ export const TablePlugin = createPlugin({
   },
   isElement: true,
   key: 'table',
-  plugins: [TableRowPlugin, TableCellPlugin, TableCellHeaderPlugin],
-  withOverrides: withTable,
-}).extend<TablePluginOptions>(({ editor }) => ({
   options: {
-    _cellIndices: new WeakMap() as TableStoreCellAttributes,
-    cellFactory: (options: any) => getEmptyCellNode(editor, options),
+    _cellIndices: new WeakMap(),
     enableMerging: false,
-    getCellChildren: (cell: any) => cell.children,
-    insertColumn: (e, { fromCell }) => {
-      insertTableColumn(e, {
-        disableSelect: true,
-        fromCell,
-      });
-    },
-    insertRow: (e, { fromRow }) => {
-      insertTableRow(e, {
-        disableSelect: true,
-        fromRow,
-      });
-    },
     minColumnWidth: 48,
   },
-}));
+  plugins: [TableRowPlugin, TableCellPlugin, TableCellHeaderPlugin],
+  withOverrides: withTable,
+}).extendApi<TableContext['api']>(({ editor }) => ({
+  table: {
+    cellFactory: (options) => getEmptyCellNode(editor, options),
+    getCellChildren: (cell) => cell.children,
+    insertColumn: (options) => insertTableColumn(editor, options),
+    insertRow: (options) => insertTableRow(editor, options),
+  },
+})) satisfies TableContext;
+
+const createGetNodeFunc = (type: string) => {
+  const getNode: DeserializeHtml['getNode'] = ({ element }) => {
+    const background =
+      element.style.background || element.style.backgroundColor;
+
+    if (background) {
+      return {
+        background,
+        type,
+      };
+    }
+
+    return { type };
+  };
+
+  return getNode;
+};

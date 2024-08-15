@@ -33,7 +33,7 @@ export const moveListItemUp = (
 
     const liParent = getAboveNode<TElement>(editor, {
       at: listPath,
-      match: { type: getPluginType(editor, ListItemPlugin.key) },
+      match: { type: editor.getType(ListItemPlugin) },
     });
 
     if (!liParent) {

@@ -12,7 +12,12 @@ export const pipeOnChange = (editor: PlateEditor, value: Value) => {
 
     // The custom event handler may return a boolean to specify whether the event
     // shall be treated as being handled or not.
-    const shouldTreatEventAsHandled = handler({ editor, plugin, value });
+    const shouldTreatEventAsHandled = handler({
+      api: editor.api,
+      editor,
+      plugin,
+      value,
+    });
 
     if (shouldTreatEventAsHandled != null) {
       return shouldTreatEventAsHandled;

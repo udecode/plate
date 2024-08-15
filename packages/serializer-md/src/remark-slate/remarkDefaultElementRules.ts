@@ -1,9 +1,4 @@
-import {
-  type TDescendant,
-  type TElement,
-  type TText,
-  getPluginType,
-} from '@udecode/plate-common';
+import type { TDescendant, TElement, TText } from '@udecode/plate-common';
 
 import type { MdastNode, RemarkElementRules } from './types';
 
@@ -17,7 +12,7 @@ export const remarkDefaultElementRules: RemarkElementRules = {
         children: node.children!.flatMap((paragraph) =>
           remarkTransformElementChildren(paragraph, options)
         ),
-        type: getPluginType(options.editor, 'blockquote'),
+        type: options.editor.getType({ key: 'blockquote' }),
       };
     },
   },
@@ -25,10 +20,10 @@ export const remarkDefaultElementRules: RemarkElementRules = {
     transform: (node, options) => ({
       children: (node.value || '').split('\n').map((line) => ({
         children: [{ text: line } as TText],
-        type: getPluginType(options.editor, 'code_line'),
+        type: options.editor.getType({ key: 'code_line' }),
       })),
       lang: node.lang ?? undefined,
-      type: getPluginType(options.editor, 'code_block'),
+      type: options.editor.getType({ key: 'code_block' }),
     }),
   },
   heading: {
@@ -44,7 +39,7 @@ export const remarkDefaultElementRules: RemarkElementRules = {
 
       return {
         children: remarkTransformElementChildren(node, options),
-        type: getPluginType(options.editor, headingType),
+        type: options.editor.getType({ key: headingType }),
       };
     },
   },
@@ -52,14 +47,14 @@ export const remarkDefaultElementRules: RemarkElementRules = {
     transform: (node, options) => ({
       caption: [{ text: node.alt } as TText],
       children: [{ text: '' } as TText],
-      type: getPluginType(options.editor, 'img'),
+      type: options.editor.getType({ key: 'img' }),
       url: node.url,
     }),
   },
   link: {
     transform: (node, options) => ({
       children: remarkTransformElementChildren(node, options),
-      type: getPluginType(options.editor, 'a'),
+      type: options.editor.getType({ key: 'a' }),
       url: node.url,
     }),
   },
@@ -83,7 +78,7 @@ export const remarkDefaultElementRules: RemarkElementRules = {
               ),
               indent,
               listStyleType,
-              type: getPluginType(options.editor, 'p'),
+              type: options.editor.getType({ key: 'p' }),
             });
 
             subLists.forEach((subList) => {
@@ -98,7 +93,7 @@ export const remarkDefaultElementRules: RemarkElementRules = {
       } else {
         return {
           children: remarkTransformElementChildren(node, options),
-          type: getPluginType(options.editor, node.ordered ? 'ol' : 'ul'),
+          type: options.editor.getType({ key: node.ordered ? 'ol' : 'ul' }),
         };
       }
     },
@@ -110,20 +105,20 @@ export const remarkDefaultElementRules: RemarkElementRules = {
           ({
             ...child,
             type:
-              child.type === getPluginType(options.editor, 'p')
-                ? getPluginType(options.editor, 'lic')
+              child.type === options.editor.getType({ key: 'p' })
+                ? options.editor.getType({ key: 'lic' })
                 : child.type,
           }) as TDescendant
       ),
-      type: getPluginType(options.editor, 'li'),
+      type: options.editor.getType({ key: 'li' }),
     }),
   },
   paragraph: {
     transform: (node, options) => {
       const children = remarkTransformElementChildren(node, options);
 
-      const paragraphType = getPluginType(options.editor, 'p');
-      const splitBlockTypes = new Set([getPluginType(options.editor, 'img')]);
+      const paragraphType = options.editor.getType({ key: 'p' });
+      const splitBlockTypes = new Set([options.editor.getType({ key: 'img' })]);
 
       const elements: TElement[] = [];
       let inlineNodes: TDescendant[] = [];
@@ -158,7 +153,7 @@ export const remarkDefaultElementRules: RemarkElementRules = {
   thematicBreak: {
     transform: (node, options) => ({
       children: [{ text: '' } as TText],
-      type: getPluginType(options.editor, 'hr'),
+      type: options.editor.getType({ key: 'hr' }),
     }),
   },
 };

@@ -39,7 +39,7 @@ export const getHighestEmptyList = (
     if (listNode.children.length < 2) {
       const liParent = getAboveNode(editor, {
         at: listPath,
-        match: { type: getPluginType(editor, ListItemPlugin.key) },
+        match: { type: editor.getType(ListItemPlugin) },
       });
 
       if (liParent) {

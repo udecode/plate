@@ -1,10 +1,6 @@
-import { type PlateEditor, getPluginOptions } from '@udecode/plate-common';
+import type { PlateEditor } from '@udecode/plate-common';
 
-import type {
-  TTableCellElement,
-  TTableElement,
-  TablePluginOptions,
-} from '../types';
+import type { TTableCellElement, TTableElement } from '../types';
 
 import { TablePlugin } from '../TablePlugin';
 import { getCellIndices } from '../merge/getCellIndices';
@@ -17,10 +13,7 @@ export const findCellByIndexes = (
   searchRowIndex: number,
   searchColIndex: number
 ) => {
-  const { _cellIndices: cellIndices } = getPluginOptions<TablePluginOptions>(
-    editor,
-    TablePlugin.key
-  );
+  const { _cellIndices: cellIndices } = editor.getOptions(TablePlugin);
 
   const allCells = table.children.flatMap(
     (current) => current.children

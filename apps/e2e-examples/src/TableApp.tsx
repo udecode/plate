@@ -38,8 +38,10 @@ export function TableApp() {
     },
     plugins: [
       TablePlugin.configure({
-        disableMarginLeft,
-        initialTableWidth,
+        options: {
+          disableMarginLeft,
+          initialTableWidth,
+        },
       }),
     ],
   });

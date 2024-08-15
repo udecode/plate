@@ -72,9 +72,9 @@ export const normalizeListItem = (
   let changed = false;
 
   const allValidLiChildrenTypes = new Set([
-    getPluginType(editor, ListUnorderedPlugin.key),
-    getPluginType(editor, ListOrderedPlugin.key),
-    getPluginType(editor, ListItemContentPlugin.key),
+    editor.getType(ListUnorderedPlugin),
+    editor.getType(ListOrderedPlugin),
+    editor.getType(ListItemContentPlugin),
     ...validLiChildrenTypes,
   ]);
 
@@ -91,13 +91,9 @@ export const normalizeListItem = (
 
   // If li has no child or inline child, insert lic
   if (!firstLiChild || !isBlock(editor, firstLiChildNode)) {
-    insertEmptyElement(
-      editor,
-      getPluginType(editor, ListItemContentPlugin.key),
-      {
-        at: liPath.concat([0]),
-      }
-    );
+    insertEmptyElement(editor, editor.getType(ListItemContentPlugin), {
+      at: liPath.concat([0]),
+    });
 
     return true;
   }
@@ -105,7 +101,7 @@ export const normalizeListItem = (
   if (
     isBlock(editor, firstLiChildNode) &&
     !match(firstLiChildNode, [], {
-      type: getPluginType(editor, ListItemContentPlugin.key),
+      type: editor.getType(ListItemContentPlugin),
     })
   ) {
     if (
@@ -136,7 +132,7 @@ export const normalizeListItem = (
     setElements(
       editor,
       {
-        type: getPluginType(editor, ListItemContentPlugin.key),
+        type: editor.getType(ListItemContentPlugin),
       },
       {
         at: firstLiChildPath,

@@ -20,11 +20,7 @@ import {
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks';
 import { BlockquotePlugin } from '@udecode/plate-block-quote';
-import {
-  ExitBreakPlugin,
-  SingleLinePlugin,
-  SoftBreakPlugin,
-} from '@udecode/plate-break';
+import { SingleLinePlugin } from '@udecode/plate-break';
 import { CaptionPlugin } from '@udecode/plate-caption';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { CommentsPlugin } from '@udecode/plate-comments';
@@ -64,7 +60,6 @@ import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media';
 import { MentionPlugin } from '@udecode/plate-mention';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
-import { ResetNodePlugin } from '@udecode/plate-reset-node';
 import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
 import { BlockSelectionPlugin } from '@udecode/plate-selection';
 import { DeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
@@ -84,10 +79,10 @@ import { CommentsProvider } from '@/plate/demo/comments/CommentsProvider';
 import { editableProps } from '@/plate/demo/editableProps';
 import { isEnabled } from '@/plate/demo/is-enabled';
 import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
-import { TabbablePlugin } from '@/plate/demo/plugins/TabbablePlugin';
-import { exitBreakOptions } from '@/plate/demo/plugins/exitBreakOptions';
-import { resetBlockTypeOptions } from '@/plate/demo/plugins/resetBlockTypeOptions';
-import { softBreakOptions } from '@/plate/demo/plugins/softBreakOptions';
+import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
+import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin';
+import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
+import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
 import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
 import { CursorOverlay } from '@/registry/default/plate-ui/cursor-overlay';
@@ -130,7 +125,9 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
         HeadingPlugin,
         BlockquotePlugin,
         CodeBlockPlugin.configure({
-          prism: Prism,
+          options: {
+            prism: Prism,
+          },
         }),
         HorizontalRulePlugin,
         LinkPlugin.extend({
@@ -142,14 +139,20 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
         }),
         MediaEmbedPlugin,
         CaptionPlugin.configure({
-          pluginKeys: [ImagePlugin.key, MediaEmbedPlugin.key],
+          options: {
+            pluginKeys: [ImagePlugin.key, MediaEmbedPlugin.key],
+          },
         }),
         MentionPlugin.configure({
-          triggerPreviousCharPattern: /^$|^[\s"']$/,
+          options: {
+            triggerPreviousCharPattern: /^$|^[\s"']$/,
+          },
         }),
         SlashPlugin,
         TablePlugin.configure({
-          enableMerging: id === 'tableMerge',
+          options: {
+            enableMerging: id === 'tableMerge',
+          },
         }),
         TodoListPlugin,
         TogglePlugin,
@@ -256,31 +259,37 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
         }),
 
         // Functionality
-        AutoformatPlugin.configure(autoformatOptions),
+        AutoformatPlugin.configure({ options: autoformatOptions }),
         BlockSelectionPlugin.configure({
-          disableContextMenu: true,
-          sizes: {
-            bottom: 0,
-            top: 0,
+          options: {
+            disableContextMenu: true,
+            sizes: {
+              bottom: 0,
+              top: 0,
+            },
           },
         }),
-        DndPlugin.configure({ enableScroller: true }),
+        DndPlugin.configure({ options: { enableScroller: true } }),
         EmojiPlugin,
-        ExitBreakPlugin.configure(exitBreakOptions),
+        exitBreakPlugin,
         NodeIdPlugin,
         NormalizeTypesPlugin.configure({
-          rules: [{ path: [0], strictType: ELEMENT_H1 }],
+          options: {
+            rules: [{ path: [0], strictType: ELEMENT_H1 }],
+          },
         }),
-        ResetNodePlugin.configure(resetBlockTypeOptions),
+        resetBlockTypePlugin,
         SelectOnBackspacePlugin.configure({
-          query: {
-            allow: [ImagePlugin.key, HorizontalRulePlugin.key],
+          options: {
+            query: {
+              allow: [ImagePlugin.key, HorizontalRulePlugin.key],
+            },
           },
         }),
         DeletePlugin,
         SingleLinePlugin,
-        SoftBreakPlugin.configure(softBreakOptions),
-        TabbablePlugin,
+        softBreakPlugin,
+        tabbablePlugin,
         TrailingBlockPlugin.configure({ type: ParagraphPlugin.key }),
         DragOverCursorPlugin,
 

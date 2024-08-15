@@ -5,13 +5,13 @@ import { DeserializeAstPlugin } from './DeserializeAstPlugin';
 import { HistoryPlugin } from './HistoryPlugin';
 import { InlineVoidPlugin } from './InlineVoidPlugin';
 import { InsertDataPlugin } from './InsertDataPlugin';
-import { PlateApiPlugin } from './PlateApiPlugin';
 import { DebugPlugin } from './debug/DebugPlugin';
 import { SlateNextPlugin } from './editor-protocol/SlateNextPlugin';
 import { EventEditorPlugin } from './event-editor';
 import { DeserializeHtmlPlugin } from './html-deserializer';
-import { LengthPlugin } from './length/LengthPlugin';
+import { LengthPlugin } from './length';
 import { ParagraphPlugin } from './paragraph';
+import { PlateApiPlugin } from './plate-api/PlateApiPlugin';
 
 export type CorePlugin = ReturnType<typeof getCorePlugins>[number];
 
@@ -27,7 +27,7 @@ export const getCorePlugins = ({
   maxLength,
   plugins = [],
 }: GetCorePluginsOptions) => {
-  const corePlugins = [
+  let corePlugins = [
     DebugPlugin,
     SlateNextPlugin,
     DOMPlugin,
@@ -38,7 +38,7 @@ export const getCorePlugins = ({
     EventEditorPlugin,
     maxLength
       ? LengthPlugin.configure({
-          maxLength,
+          options: { maxLength },
         })
       : LengthPlugin,
     DeserializeHtmlPlugin,
@@ -52,7 +52,7 @@ export const getCorePlugins = ({
   );
 
   // Replace core plugins with custom plugins if they exist and remove them from plugins
-  return corePlugins.map((corePlugin) => {
+  corePlugins = corePlugins.map((corePlugin) => {
     const customPlugin = customPluginsMap.get(corePlugin.key);
 
     if (customPlugin) {
@@ -68,4 +68,6 @@ export const getCorePlugins = ({
 
     return corePlugin;
   });
+
+  return corePlugins;
 };

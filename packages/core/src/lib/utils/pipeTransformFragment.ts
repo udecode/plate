@@ -23,6 +23,7 @@ export const pipeTransformFragment = (
     fragment = transformFragment({
       fragment,
       ...options,
+      api: editor.api,
       editor,
       plugin: p as any,
     });

@@ -4,7 +4,6 @@ import React from 'react';
 
 import { CloudPlugin } from '@udecode/plate-cloud';
 import { useEditorRef } from '@udecode/plate-common/react';
-import { getEditorApi } from '@udecode/plate-core';
 
 const buttonStyle: React.CSSProperties = {
   background: '#f0f0f0',
@@ -17,7 +16,7 @@ const buttonStyle: React.CSSProperties = {
 export function CloudToolbarButtons() {
   const editor = useEditorRef();
 
-  const cloudApi = getEditorApi(editor, CloudPlugin);
+  const cloudApi = editor.getApi(CloudPlugin);
 
   const getSaveValue = () => {
     console.info('editor.children', editor.children);

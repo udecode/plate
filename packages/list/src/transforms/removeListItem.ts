@@ -65,10 +65,10 @@ export const removeListItem = (
           children: [
             {
               children: [{ text: '' }],
-              type: getPluginType(editor, ListItemContentPlugin.key),
+              type: editor.getType(ListItemContentPlugin),
             },
           ],
-          type: getPluginType(editor, ListItemPlugin.key),
+          type: editor.getType(ListItemPlugin),
         },
         { at: tempLiPath }
       );

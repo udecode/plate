@@ -13,5 +13,5 @@ import { ListItemPlugin } from '../ListPlugin';
 export const isListNested = (editor: PlateEditor, listPath: Path) => {
   const listParentNode = getParentNode<TElement>(editor, listPath)?.[0];
 
-  return listParentNode?.type === getPluginType(editor, ListItemPlugin.key);
+  return listParentNode?.type === editor.getType(ListItemPlugin);
 };

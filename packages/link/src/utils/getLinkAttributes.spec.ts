@@ -20,8 +20,10 @@ const createEditor = (options: LinkPluginOptions = {}) =>
   createPlateEditor({
     plugins: [
       LinkPlugin.configure({
-        ...defaultOptions,
-        ...options,
+        options: {
+          ...defaultOptions,
+          ...options,
+        },
       }),
     ],
   });

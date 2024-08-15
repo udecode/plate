@@ -21,6 +21,6 @@ export const isAcrossListItems = (editor: PlateEditor) => {
   if (!isAcrossBlocks) return false;
 
   return someNode(editor, {
-    match: { type: getPluginType(editor, ListItemPlugin.key) },
+    match: { type: editor.getType(ListItemPlugin) },
   });
 };

@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { getPluginOptions } from '@udecode/plate-common';
 import {
   findNodePath,
   useEditorRef,
@@ -12,7 +11,7 @@ import {
   resizeLengthClampStatic,
 } from '@udecode/plate-resizable';
 
-import type { TTableElement, TablePluginOptions } from '../../types';
+import type { TTableElement } from '../../types';
 import type { TableCellElementState } from './useTableCellElementState';
 
 import { TablePlugin } from '../../TablePlugin';
@@ -48,10 +47,7 @@ export const useTableCellElementResizableState = ({
   stepY = step,
 }: TableCellElementResizableOptions) => {
   const editor = useEditorRef();
-  const { disableMarginLeft } = getPluginOptions<TablePluginOptions>(
-    editor,
-    TablePlugin.key
-  );
+  const { disableMarginLeft } = editor.getOptions(TablePlugin);
 
   return {
     colIndex,
@@ -79,10 +75,7 @@ export const useTableCellElementResizable = ({
   const editor = useEditorRef();
   const element = useElement();
   const tableElement = useElement<TTableElement>(TablePlugin.key);
-  const { minColumnWidth = 0 } = getPluginOptions<TablePluginOptions>(
-    editor,
-    TablePlugin.key
-  );
+  const { minColumnWidth = 0 } = editor.getOptions(TablePlugin);
 
   let initialWidth: number | undefined;
 

@@ -397,8 +397,10 @@ describe('withLink', () => {
             editor: input,
             plugins: [
               LinkPlugin.configure({
-                getUrlHref: (_url) => {
-                  return 'http://google.com';
+                options: {
+                  getUrlHref: (_url) => {
+                    return 'http://google.com';
+                  },
                 },
               }),
             ],
@@ -501,7 +503,11 @@ describe('withLink', () => {
         const createModifiedEditor = (editor: any) =>
           createPlateEditor({
             editor,
-            plugins: [LinkPlugin.configure({ keepSelectedTextOnPaste: false })],
+            plugins: [
+              LinkPlugin.configure({
+                options: { keepSelectedTextOnPaste: false },
+              }),
+            ],
           });
         const editor = createModifiedEditor(input);
 

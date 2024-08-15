@@ -1,7 +1,6 @@
 import {
   type InsertNodesOptions,
   type PlateEditor,
-  getPluginType,
   insertNodes,
 } from '@udecode/plate-common';
 
@@ -17,7 +16,7 @@ export const insertImage = <E extends PlateEditor>(
   const text = { text: '' };
   const image: TImageElement = {
     children: [text],
-    type: getPluginType(editor, ImagePlugin.key),
+    type: editor.getType(ImagePlugin),
     url: url as any,
   };
   insertNodes<TImageElement>(editor, image, {

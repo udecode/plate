@@ -6,6 +6,7 @@ import {
   insertText,
   wrapNodes,
 } from '@udecode/plate-common';
+import { createPlateEditor } from "@udecode/plate-common/react";
 import { LinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
@@ -17,26 +18,25 @@ import { withAutoformat } from '../../../withAutoformat';
 jsx;
 
 const input = (
-  <editor>
+  <fragment>
     <hp>
       [Example site](https://example.com
       <cursor />
     </hp>
-  </editor>
+  </fragment>
 ) as any;
 
 const output = (
-  <editor>
+  <fragment>
     <hp>
       <ha url="https://example.com">Example site</ha>
     </hp>
-  </editor>
+  </fragment>
 ) as any;
 
 it('autoformats a block with a single character trigger', () => {
-  const linkEditor = withAutoformat({
-    editor: withReact(input),
-    plugin: createPlugin<string, AutoformatPluginOptions>({
+  const linkEditor = createPlateEditor({ value: input,
+    plugins: [createPlugin<string, AutoformatPluginOptions>({
       options: {
         rules: [
           {
@@ -58,7 +58,7 @@ it('autoformats a block with a single character trigger', () => {
           },
         ],
       },
-    }),
+    }),]
   });
 
   linkEditor.insertText(')');

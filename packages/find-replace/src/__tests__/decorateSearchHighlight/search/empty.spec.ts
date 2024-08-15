@@ -9,7 +9,7 @@ const output: Range[] = [];
 
 it('should be', () => {
   const editor = createPlateEditor({
-    plugins: [FindReplacePlugin.configure({ search: '' })],
+    plugins: [FindReplacePlugin.configure({ options: { search: '' } })],
   });
 
   expect(

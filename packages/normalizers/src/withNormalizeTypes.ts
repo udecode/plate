@@ -7,9 +7,9 @@ import {
   setElements,
 } from '@udecode/plate-common';
 
-import type { NormalizeTypesPluginOptions } from './NormalizeTypesPlugin';
+import type { NormalizeTypesContext } from './NormalizeTypesPlugin';
 
-export const withNormalizeTypes: WithOverride<NormalizeTypesPluginOptions> = ({
+export const withNormalizeTypes: WithOverride<NormalizeTypesContext> = ({
   editor,
   plugin: {
     options: { onError, rules },

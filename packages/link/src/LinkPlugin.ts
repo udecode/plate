@@ -1,4 +1,5 @@
 import {
+  type PluginContext,
   type RangeBeforeOptions,
   createPlugin,
   isUrl,
@@ -9,92 +10,107 @@ import type { TLinkElement } from './types';
 import { getLinkAttributes, validateUrl } from './utils/index';
 import { withLink } from './withLink';
 
-export interface LinkPluginOptions {
-  /**
-   * List of allowed URL schemes.
-   *
-   * @default ['http', 'https', 'mailto', 'tel']
-   */
-  allowedSchemes?: string[];
+type RemoveFirstParameter<T extends (...args: any[]) => any> = T extends (
+  first: any,
+  ...rest: infer R
+) => infer U
+  ? (...args: R) => U
+  : never;
 
-  /**
-   * Skips sanitation of links.
-   *
-   * @default false
-   */
-  dangerouslySkipSanitization?: boolean;
+export type LinkContext = PluginContext<
+  {
+    /**
+     * List of allowed URL schemes.
+     *
+     * @default ['http', 'https', 'mailto', 'tel']
+     */
+    allowedSchemes?: string[];
 
-  /**
-   * Default HTML attributes for link elements.
-   *
-   * @default { }
-   */
-  defaultLinkAttributes?: React.AnchorHTMLAttributes<HTMLAnchorElement>;
+    /**
+     * Skips sanitation of links.
+     *
+     * @default false
+     */
+    dangerouslySkipSanitization?: boolean;
 
-  forceSubmit?: boolean;
+    /**
+     * Default HTML attributes for link elements.
+     *
+     * @default { }
+     */
+    defaultLinkAttributes?: React.AnchorHTMLAttributes<HTMLAnchorElement>;
 
-  /**
-   * On keyboard shortcut or toolbar mousedown, get the link url by calling this
-   * promise. The default behavior is to use the browser's native `prompt`.
-   */
-  getLinkUrl?: (prevUrl: null | string) => Promise<null | string>;
+    forceSubmit?: boolean;
 
-  /**
-   * Callback to optionally get the href for a url
-   *
-   * @returns Href: an optional link to be used that is different from the text
-   *   content (example https://google.com for google.com)
-   */
-  getUrlHref?: (url: string) => string | undefined;
+    /**
+     * On keyboard shortcut or toolbar mousedown, get the link url by calling
+     * this promise. The default behavior is to use the browser's native
+     * `prompt`.
+     */
+    getLinkUrl?: (prevUrl: null | string) => Promise<null | string>;
 
-  /**
-   * Callback to validate an url.
-   *
-   * @default isUrl
-   */
-  isUrl?: (text: string) => boolean;
+    /**
+     * Callback to optionally get the href for a url
+     *
+     * @returns Href: an optional link to be used that is different from the
+     *   text content (example https://google.com for google.com)
+     */
+    getUrlHref?: (url: string) => string | undefined;
 
-  /**
-   * Keeps selected text on pasting links by default.
-   *
-   * @default true
-   */
-  keepSelectedTextOnPaste?: boolean;
+    /**
+     * Callback to validate an url.
+     *
+     * @default isUrl
+     */
+    isUrl?: (text: string) => boolean;
 
-  /**
-   * Allow custom config for rangeBeforeOptions.
-   *
-   * @example
-   *   default
-   *   {
-   *   matchString: ' ',
-   *   skipInvalid: true,
-   *   afterMatch: true,
-   *   }
-   */
-  rangeBeforeOptions?: RangeBeforeOptions;
+    /**
+     * Keeps selected text on pasting links by default.
+     *
+     * @default true
+     */
+    keepSelectedTextOnPaste?: boolean;
 
-  /**
-   * Transform the content of the URL input before validating it. Useful for
-   * adding a protocol to a URL. E.g. `google.com` -> `https://google.com`
-   *
-   * Similar to `getUrlHref` but is used on URL inputs. Whereas that is used on
-   * any entered text.
-   *
-   * @returns The transformed URL.
-   */
-  transformInput?: (url: string) => string | undefined;
+    /**
+     * Allow custom config for rangeBeforeOptions.
+     *
+     * @example
+     *   default
+     *   {
+     *   matchString: ' ',
+     *   skipInvalid: true,
+     *   afterMatch: true,
+     *   }
+     */
+    rangeBeforeOptions?: RangeBeforeOptions;
 
-  /**
-   * Hotkeys to trigger floating link.
-   *
-   * @default 'meta+k, ctrl+k'
-   */
-  triggerFloatingLinkHotkeys?: string | string[];
-}
+    /**
+     * Transform the content of the URL input before validating it. Useful for
+     * adding a protocol to a URL. E.g. `google.com` -> `https://google.com`
+     *
+     * Similar to `getUrlHref` but is used on URL inputs. Whereas that is used
+     * on any entered text.
+     *
+     * @returns The transformed URL.
+     */
+    transformInput?: (url: string) => string | undefined;
+
+    /**
+     * Hotkeys to trigger floating link.
+     *
+     * @default 'meta+k, ctrl+k'
+     */
+    triggerFloatingLinkHotkeys?: string | string[];
+  },
+  {
+    link: {
+      getAttributes: RemoveFirstParameter<typeof getLinkAttributes>;
+    };
+  }
+>;
 
 /** Enables support for hyperlinks. */
-export const LinkPlugin = createPlugin<'a', LinkPluginOptions>({
+export const LinkPlugin = createPlugin({
   isElement: true,
   isInline: true,
   key: 'a',
@@ -112,26 +128,32 @@ export const LinkPlugin = createPlugin<'a', LinkPluginOptions>({
     triggerFloatingLinkHotkeys: 'meta+k, ctrl+k',
   },
   withOverrides: withLink,
-}).extend(({ editor, plugin: { type } }) => ({
-  deserializeHtml: {
-    getNode: ({ element }) => {
-      const url = element.getAttribute('href');
-
-      if (url && validateUrl(editor, url)) {
-        return {
-          target: element.getAttribute('target') || '_blank',
-          type,
-          url,
-        };
-      }
+})
+  .extendApi<LinkContext['api']>(({ editor }) => ({
+    link: {
+      getAttributes: (element) => getLinkAttributes(editor, element),
     },
-    rules: [
-      {
-        validNodeName: 'A',
+  }))
+  .extend(({ api, editor, plugin: { type } }) => ({
+    deserializeHtml: {
+      getNode: ({ element }) => {
+        const url = element.getAttribute('href');
+
+        if (url && validateUrl(editor, url)) {
+          return {
+            target: element.getAttribute('target') || '_blank',
+            type,
+            url,
+          };
+        }
       },
-    ],
-  },
-  props: ({ element }) => ({
-    nodeProps: getLinkAttributes(editor, element as TLinkElement),
-  }),
-}));
+      rules: [
+        {
+          validNodeName: 'A',
+        },
+      ],
+    },
+    props: ({ element }) => ({
+      nodeProps: api.link.getAttributes(element as TLinkElement),
+    }),
+  })) satisfies LinkContext;

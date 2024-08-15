@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { getPluginOptions } from '@udecode/plate-common';
 import {
   focusEditor,
   useComposedRef,
@@ -15,7 +14,7 @@ import {
 } from '@udecode/plate-floating';
 import { useFocused } from 'slate-react';
 
-import { LinkPlugin, type LinkPluginOptions } from '../../LinkPlugin';
+import { LinkPlugin } from '../../LinkPlugin';
 import { triggerFloatingLinkInsert } from '../../utils/triggerFloatingLinkInsert';
 import {
   floatingLinkActions,
@@ -33,10 +32,7 @@ export const useFloatingLinkInsertState = ({
   floatingOptions,
 }: LinkFloatingToolbarState = {}) => {
   const editor = useEditorRef();
-  const { triggerFloatingLinkHotkeys } = getPluginOptions<LinkPluginOptions>(
-    editor,
-    LinkPlugin.key
-  );
+  const { triggerFloatingLinkHotkeys } = editor.getOptions(LinkPlugin);
   const readOnly = useEditorReadOnly();
   const focused = useFocused();
   const mode = useFloatingLinkSelectors().mode();

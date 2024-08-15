@@ -1,9 +1,4 @@
-import {
-  type PlateEditor,
-  getPluginOptions,
-  isUrl,
-  setNodes,
-} from '@udecode/plate-common';
+import { type PlateEditor, isUrl, setNodes } from '@udecode/plate-common';
 import { focusEditor } from '@udecode/plate-common/react';
 
 import type { MediaPluginOptions, TMediaElement } from '../types';
@@ -32,7 +27,7 @@ export const submitFloatingMedia = (
   }
 
   const { isUrl: _isUrl = isUrl, transformUrl } =
-    getPluginOptions<MediaPluginOptions>(editor, pluginKey);
+    editor.getOptions<MediaPluginOptions>({ key: pluginKey });
   const isValid = _isUrl(url);
 
   if (!isValid) return;

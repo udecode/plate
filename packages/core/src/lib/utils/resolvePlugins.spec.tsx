@@ -504,7 +504,9 @@ describe('applyPluginOverrides', () => {
     const editor = createPlateEditor({
       plugins: [
         DebugPlugin.configure({
-          logger: { log: customLogger },
+          options: {
+            logger: { log: customLogger },
+          },
         }),
       ],
     });

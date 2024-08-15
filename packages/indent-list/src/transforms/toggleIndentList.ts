@@ -3,7 +3,6 @@ import {
   type TElement,
   getBlockAbove,
   getNodeEntries,
-  getPluginOptions,
   isCollapsed,
   isExpanded,
   setElements,
@@ -14,11 +13,7 @@ import { IndentPlugin } from '@udecode/plate-indent';
 
 import type { IndentListOptions } from './indentList';
 
-import {
-  IndentListPlugin,
-  type IndentListPluginOptions,
-  KEY_LIST_CHECKED,
-} from '../IndentListPlugin';
+import { IndentListPlugin, KEY_LIST_CHECKED } from '../IndentListPlugin';
 import { areEqListStyleType } from '../queries/areEqListStyleType';
 import { setIndentListNodes } from './setIndentListNodes';
 import { setIndentListSiblingNodes } from './setIndentListSiblingNodes';
@@ -32,8 +27,7 @@ export const toggleIndentList = <E extends PlateEditor>(
 ) => {
   const { listStyleType } = options;
 
-  const { getSiblingIndentListOptions } =
-    getPluginOptions<IndentListPluginOptions>(editor, IndentListPlugin.key);
+  const { getSiblingIndentListOptions } = editor.getOptions(IndentListPlugin);
 
   if (isCollapsed(editor.selection)) {
     const entry = getBlockAbove<TElement>(editor);

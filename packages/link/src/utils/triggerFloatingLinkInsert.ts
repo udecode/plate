@@ -35,7 +35,7 @@ export const triggerFloatingLinkInsert = (
   if (isRangeAcrossBlocks(editor, { at: editor.selection })) return;
 
   const hasLink = someNode(editor, {
-    match: { type: getPluginType(editor, LinkPlugin.key) },
+    match: { type: editor.getType(LinkPlugin) },
   });
 
   if (hasLink) return;

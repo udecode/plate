@@ -1,5 +1,6 @@
 /** @jsx jsx */
 
+import { createPlateEditor } from "@udecode/plate-common/react";
 import { ELEMENT_H1 } from '@udecode/plate-heading';
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
@@ -16,33 +17,34 @@ jsx;
 describe('when #space', () => {
   it('should set block type to h1', () => {
     const input = (
-      <editor>
+      <fragment>
         <hp>
           #
           <cursor />
           hello
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const output = (
-      <editor>
+      <fragment>
         <hh1>hello</hh1>
-      </editor>
+      </fragment>
     ) as any;
 
-    const editor = withAutoformat({
-      editor: withReact(input),
-      plugin: AutoformatPlugin.configure({
-        rules: [
-          {
-            match: '# ',
-            mode: 'block',
-            preFormat: preFormat,
-            type: ELEMENT_H1,
-          },
-        ],
-      }),
+    const editor = createPlateEditor({ value: input,
+      plugins: [AutoformatPlugin.configure({
+        options: {
+          rules: [
+            {
+              match: '# ',
+              mode: 'block',
+              preFormat: preFormat,
+              type: ELEMENT_H1,
+            },
+          ],
+        },
+      }),]
     });
 
     editor.insertText(' ');
@@ -54,24 +56,23 @@ describe('when #space', () => {
 describe('when ##space', () => {
   it('should set block type to h2', () => {
     const input = (
-      <editor>
+      <fragment>
         <hp>
           ##
           <cursor />
           hello
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const output = (
-      <editor>
+      <fragment>
         <hh2>hello</hh2>
-      </editor>
+      </fragment>
     ) as any;
 
-    const editor = withAutoformat({
-      editor: withReact(input),
-      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    const editor = createPlateEditor({ value: input,
+      plugins: [AutoformatPlugin.configure({ options: getAutoformatOptions() }),]
     });
 
     editor.insertText(' ');

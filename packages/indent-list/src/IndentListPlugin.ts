@@ -1,10 +1,9 @@
 import {
-  ParagraphPlugin,
   DeserializeHtmlPlugin,
+  ParagraphPlugin,
   type PlateRenderElementProps,
   type TElement,
   createPlugin,
-  getPluginType,
   isHtmlBlockElement,
   postCleanHtml,
   traverseHtmlElements,
@@ -67,7 +66,7 @@ export const IndentListPlugin = createPlugin<
       // gdoc uses aria-level attribute
       indent: Number(element.getAttribute('aria-level')),
       listStyleType: options.getListStyleType?.(element),
-      type: getPluginType(editor, ParagraphPlugin.key),
+      type: editor.getType(ParagraphPlugin),
     }),
     isElement: true,
     rules: [

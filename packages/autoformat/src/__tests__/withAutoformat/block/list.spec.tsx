@@ -1,5 +1,6 @@
 /** @jsx jsx */
 
+import { createPlateEditor } from "@udecode/plate-common/react";
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 import { getAutoformatOptions } from 'www/src/lib/plate/demo/plugins/autoformatOptions';
@@ -17,28 +18,27 @@ jsx;
 describe('when -space', () => {
   it('should format to ul', () => {
     const input = (
-      <editor>
+      <fragment>
         <hp>
           -
           <cursor />
           hello
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const output = (
-      <editor>
+      <fragment>
         <hul>
           <hli>
             <hlic>hello</hlic>
           </hli>
         </hul>
-      </editor>
+      </fragment>
     ) as any;
 
-    const editor = withAutoformat({
-      editor: withReact(input),
-      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    const editor = createPlateEditor({ value: input,
+      plugins: [AutoformatPlugin.configure({ options: getAutoformatOptions() }),]
     });
 
     editor.insertText(' ');
@@ -50,28 +50,27 @@ describe('when -space', () => {
 describe('when 1.space', () => {
   it('should format to ol', () => {
     const input = (
-      <editor>
+      <fragment>
         <hp>
           1.
           <cursor />
           hello
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const output = (
-      <editor>
+      <fragment>
         <hol>
           <hli>
             <hlic>hello</hlic>
           </hli>
         </hol>
-      </editor>
+      </fragment>
     ) as any;
 
-    const editor = withAutoformat({
-      editor: withReact(input),
-      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    const editor = createPlateEditor({ value: input,
+      plugins: [AutoformatPlugin.configure({ options: getAutoformatOptions() }),]
     });
 
     editor.insertText(' ');
@@ -83,24 +82,23 @@ describe('when 1.space', () => {
 describe('when [].space', () => {
   it('should format to todo list', () => {
     const input = (
-      <editor>
+      <fragment>
         <hp>
           []
           <cursor />
           hello
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const output = (
-      <editor>
+      <fragment>
         <htodoli>hello</htodoli>
-      </editor>
+      </fragment>
     ) as any;
 
-    const editor = withAutoformat({
-      editor: withReact(input),
-      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    const editor = createPlateEditor({ value: input,
+      plugins: [AutoformatPlugin.configure({ options: getAutoformatOptions() }),]
     });
 
     editor.insertText(' ');
@@ -112,24 +110,23 @@ describe('when [].space', () => {
 describe('when [x].space', () => {
   it('should format to todo list', () => {
     const input = (
-      <editor>
+      <fragment>
         <hp>
           [x]
           <cursor />
           hello
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const output = (
-      <editor>
+      <fragment>
         <htodoli checked>hello</htodoli>
-      </editor>
+      </fragment>
     ) as any;
 
-    const editor = withAutoformat({
-      editor: withReact(input),
-      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    const editor = createPlateEditor({ value: input,
+      plugins: [AutoformatPlugin.configure({ options: getAutoformatOptions() }),]
     });
 
     editor.insertText(' ');
@@ -141,19 +138,19 @@ describe('when [x].space', () => {
 describe('when +space', () => {
   it('should format to a toggle', () => {
     const input = (
-      <editor>
+      <fragment>
         <hp>
           +
           <cursor />
           hello
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const output = (
-      <editor>
+      <fragment>
         <htoggle>hello</htoggle>
-      </editor>
+      </fragment>
     ) as any;
 
     // See useHooksToggle.ts, we overload the plugin with a `setOpenIds` function until there's a JOTAI layer in plate-core,
@@ -173,9 +170,10 @@ describe('when +space', () => {
       rules: autoformatPluginRulesWitoutTogglePreformat as any,
     };
 
-    const editor = withAutoformat({
-      editor: withReact(input),
-      plugin: AutoformatPlugin.configure(autoformatPluginWitoutTogglePreformat),
+    const editor = createPlateEditor({ value: input,
+      plugins: [AutoformatPlugin.configure({
+        options: autoformatPluginWitoutTogglePreformat,
+      }),]
     });
 
     editor.insertText(' ');

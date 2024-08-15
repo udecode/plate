@@ -5,8 +5,6 @@ import {
   type TElement,
   type TElementEntry,
   findNode,
-  getPluginOptions,
-  getPluginType,
 } from '@udecode/plate-common';
 import { findNodePath } from '@udecode/plate-common/react';
 
@@ -14,7 +12,6 @@ import type {
   TTableCellElement,
   TTableElement,
   TTableRowElement,
-  TablePluginOptions,
 } from '../types';
 
 import { TablePlugin } from '../TablePlugin';
@@ -56,8 +53,8 @@ export const getTableMergeGridByRange = <T extends FormatType>(
   editor: PlateEditor,
   { at, format }: GetTableGridByRangeOptions<T>
 ): GetTableGridReturnType<T> => {
-  const { _cellIndices: cellIndices, getCellChildren } =
-    getPluginOptions<TablePluginOptions>(editor, TablePlugin.key);
+  const { _cellIndices: cellIndices } = editor.getOptions(TablePlugin);
+  const api = editor.getApi(TablePlugin);
 
   const startCellEntry = findNode<TTableCellElement>(editor, {
     at: at.anchor.path,
@@ -76,7 +73,7 @@ export const getTableMergeGridByRange = <T extends FormatType>(
 
   const tableEntry = findNode<TTableElement>(editor, {
     at: tablePath,
-    match: { type: getPluginType(editor, TablePlugin.key) },
+    match: { type: editor.getType(TablePlugin) },
   })!;
   const realTable = tableEntry[0];
 
@@ -191,7 +188,7 @@ export const getTableMergeGridByRange = <T extends FormatType>(
     const filteredChildren = rowElement.children?.filter((cellEl) => {
       const cellElement = cellEl as TTableCellElement;
 
-      return getCellChildren!(cellElement).length > 0;
+      return api.table.getCellChildren!(cellElement).length > 0;
     });
 
     rowElement.children = filteredChildren;

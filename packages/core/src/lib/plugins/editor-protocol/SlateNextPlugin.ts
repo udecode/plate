@@ -16,7 +16,6 @@ import {
 
 import type { WithOverride } from '../../plugin/types/PlatePlugin';
 
-import { getPluginType } from '../../plugin';
 import { createPlugin } from '../../plugin/createPlugin';
 import { resetEditor } from '../../transforms';
 import { ParagraphPlugin } from '../paragraph';
@@ -126,7 +125,7 @@ export const SlateNextPlugin = createPlugin({
     /** Default block factory. */
     blockFactory: (node?: Partial<TElement>, _path?: Path): TElement => ({
       children: [{ text: '' }],
-      type: getPluginType(editor, ParagraphPlugin.key),
+      type: editor.getType(ParagraphPlugin),
       ...node,
     }),
   }))

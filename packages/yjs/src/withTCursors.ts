@@ -10,7 +10,7 @@ import {
 
 import type { YjsEditorProps } from './withTYjs';
 
-export type CursorEditorProps = Pick<
+export type PlateYjsEditorProps = Pick<
   CursorEditor,
   | 'awareness'
   | 'cursorDataField'
@@ -25,6 +25,6 @@ export const withTCursors = <TCursorData extends Record<string, unknown>>(
   awareness: Awareness,
   options?: WithCursorsOptions<TCursorData>
 ) =>
-  withCursors(editor as any, awareness, options) as CursorEditorProps &
-    PlateEditor &
+  withCursors(editor as any, awareness, options) as PlateEditor &
+    PlateYjsEditorProps &
     YjsEditorProps;

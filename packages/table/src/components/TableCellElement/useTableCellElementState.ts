@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { getPluginOptions } from '@udecode/plate-common';
 import { useEditorRef, useElement } from '@udecode/plate-common/react';
 import { useReadOnly } from 'slate-react';
 
@@ -8,7 +7,6 @@ import type {
   TTableCellElement,
   TTableElement,
   TTableRowElement,
-  TablePluginOptions,
 } from '../../types';
 
 import { TablePlugin, TableRowPlugin } from '../../TablePlugin';
@@ -59,10 +57,7 @@ export const useTableCellElementState = ({
   const rowElement = useElement<TTableRowElement>(TableRowPlugin.key);
   const rowSizeOverrides = useTableStore().get.rowSizeOverrides();
 
-  const { _cellIndices, enableMerging } = getPluginOptions<TablePluginOptions>(
-    editor as any,
-    TablePlugin.key
-  );
+  const { _cellIndices, enableMerging } = editor.getOptions(TablePlugin);
 
   if (!enableMerging) {
     const colIndex = getTableColumnIndex(editor, cellElement);

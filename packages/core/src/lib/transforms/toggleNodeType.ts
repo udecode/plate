@@ -6,7 +6,6 @@ import {
 
 import type { PlateEditor } from '../editor';
 
-import { getPluginType } from '../plugin/getPlugin';
 import { ParagraphPlugin } from '../plugins';
 
 export interface ToggleNodeTypeOptions {
@@ -32,10 +31,8 @@ export const toggleNodeType = <E extends PlateEditor = PlateEditor>(
   options: ToggleNodeTypeOptions,
   editorNodesOptions?: Omit<GetNodeEntriesOptions<E>, 'match'>
 ) => {
-  const {
-    activeType,
-    inactiveType = getPluginType(editor, ParagraphPlugin.key),
-  } = options;
+  const { activeType, inactiveType = editor.getType(ParagraphPlugin) } =
+    options;
 
   const at = editorNodesOptions?.at ?? editor.selection;
 

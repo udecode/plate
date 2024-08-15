@@ -19,6 +19,7 @@ export const pipeInsertFragment = (
     injectedPlugins.some((p) => {
       return (
         p.editor?.insertData?.preInsert?.({
+          api: editor.api,
           editor,
           fragment,
           plugin: p as any,

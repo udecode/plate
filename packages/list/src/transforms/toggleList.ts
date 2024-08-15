@@ -6,8 +6,6 @@ import {
   getBlockAbove,
   getCommonNode,
   getNodeEntries,
-  getPluginOptions,
-  getPluginType,
   isCollapsed,
   isElement,
   isRangeAcrossBlocks,
@@ -19,7 +17,7 @@ import { Range } from 'slate';
 
 import type { ListPluginOptions } from '../types';
 
-import { ListItemPlugin, ListItemContentPlugin } from '../ListPlugin';
+import { ListItemContentPlugin, ListItemPlugin } from '../ListPlugin';
 import { getListItemEntry, getListTypes } from '../queries/index';
 import { unwrapList } from './unwrapList';
 
@@ -32,10 +30,9 @@ export const toggleList = (
       return;
     }
 
-    const { validLiChildrenTypes } = getPluginOptions<ListPluginOptions>(
-      editor,
-      pluginKey
-    );
+    const { validLiChildrenTypes } = editor.getOptions<ListPluginOptions>({
+      key: pluginKey,
+    });
 
     if (isCollapsed(editor.selection) || !isRangeAcrossBlocks(editor)) {
       // selection is collapsed
@@ -63,7 +60,7 @@ export const toggleList = (
         wrapNodes<TElement>(editor, list);
 
         const _nodes = getNodeEntries(editor, {
-          match: { type: getPluginType(editor, ParagraphPlugin.key) },
+          match: { type: editor.getType(ParagraphPlugin) },
         });
         const nodes = Array.from(_nodes);
 
@@ -73,13 +70,13 @@ export const toggleList = (
 
         if (!blockAbove) {
           setElements(editor, {
-            type: getPluginType(editor, ListItemContentPlugin.key),
+            type: editor.getType(ListItemContentPlugin),
           });
         }
 
         const listItem = {
           children: [],
-          type: getPluginType(editor, ListItemPlugin.key),
+          type: editor.getType(ListItemPlugin),
         };
 
         for (const [, path] of nodes) {
@@ -100,7 +97,7 @@ export const toggleList = (
 
       if (
         getListTypes(editor).includes(commonEntry[0].type) ||
-        (commonEntry[0] as TElement).type === getPluginType(editor, ListItemPlugin.key)
+        (commonEntry[0] as TElement).type === editor.getType(ListItemPlugin)
       ) {
         if ((commonEntry[0] as TElement).type === type) {
           unwrapList(editor);
@@ -157,14 +154,14 @@ export const toggleList = (
             if (!validLiChildrenTypes?.includes(n[0].type)) {
               setElements(
                 editor,
-                { type: getPluginType(editor, ListItemContentPlugin.key) },
+                { type: editor.getType(ListItemContentPlugin) },
                 { at: n[1] }
               );
             }
 
             const listItem = {
               children: [],
-              type: getPluginType(editor, ListItemPlugin.key),
+              type: editor.getType(ListItemPlugin),
             };
             wrapNodes<TElement>(editor, listItem, {
               at: n[1],

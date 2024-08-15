@@ -3,7 +3,6 @@
 import { BoldPlugin } from '@udecode/plate-basic-marks';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { type ToggleMarkPluginOptions, getPlugin } from '../../lib';
 import { createPlateEditor } from '../editor';
 import { onKeyDownToggleMark } from './onKeyDownToggleMark';
 
@@ -35,16 +34,19 @@ const editor = createPlateEditor({
   editor: input,
   plugins: [
     BoldPlugin.configure({
-      hotkey: 'enter',
+      options: {
+        hotkey: 'enter',
+      },
     }),
   ],
 });
 
 it('should be', () => {
   onKeyDownToggleMark({
+    api: editor.api,
     editor,
     event,
-    plugin: getPlugin<ToggleMarkPluginOptions>(editor, BoldPlugin.key),
+    plugin: editor.getPlugin(BoldPlugin),
   });
   expect(editor.children).toEqual(output.children);
   expect(editor.selection).toEqual(output.selection);

@@ -24,7 +24,7 @@ export const insertCodeBlock = <E extends PlateEditor>(
   if (!editor.selection || isExpanded(editor.selection)) return;
 
   const matchCodeElements = (node: TElement) =>
-    node.type === getPluginType(editor, CodeBlockPlugin.key) ||
+    node.type === editor.getType(CodeBlockPlugin) ||
     node.type === getCodeLineType(editor);
 
   if (
@@ -51,7 +51,7 @@ export const insertCodeBlock = <E extends PlateEditor>(
     editor,
     {
       children: [],
-      type: getPluginType(editor, CodeBlockPlugin.key),
+      type: editor.getType(CodeBlockPlugin),
     },
     insertNodesOptions
   );

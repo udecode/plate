@@ -76,11 +76,7 @@ describe('insertTableRow', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [
-          TablePlugin.configure({
-            // newCellChildren: [{ text: '' }],
-          }),
-        ],
+        plugins: [TablePlugin],
       });
 
       insertTableRow(editor);

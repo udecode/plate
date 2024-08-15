@@ -4,7 +4,6 @@ import {
   type TElement,
   type WithOverride,
   getEndPoint,
-  getPluginType,
   getStartPoint,
   hasNode,
   replaceNodeChildren,
@@ -17,7 +16,7 @@ import type {
   TTableCellElement,
   TTableElement,
   TTableRowElement,
-  TablePluginOptions,
+  TableContext,
 } from './types';
 
 import { TablePlugin } from './TablePlugin';
@@ -30,17 +29,16 @@ import { getTableGridAbove } from './queries/getTableGridAbove';
  * - Replace each cell above by the inserted table until out of bounds.
  * - Select the inserted cells.
  */
-export const withInsertFragmentTable: WithOverride<TablePluginOptions> = ({
+export const withInsertFragmentTable: WithOverride<TableContext> = ({
   editor,
-  plugin: { options },
+  plugin: { api, options },
 }) => {
   const { insertFragment } = editor;
-  const { disableExpandOnInsert, getCellChildren, insertColumn, insertRow } =
-    options;
+  const { disableExpandOnInsert } = options;
 
   editor.insertFragment = (fragment) => {
     const insertedTable = fragment.find(
-      (n) => (n as TElement).type === getPluginType(editor, TablePlugin.key)
+      (n) => (n as TElement).type === editor.getType(TablePlugin)
     ) as TTableElement | undefined;
 
     if (!insertedTable) {
@@ -108,7 +106,8 @@ export const withInsertFragmentTable: WithOverride<TablePluginOptions> = ({
                   if (disableExpandOnInsert) {
                     return;
                   } else {
-                    insertRow?.(editor, {
+                    api.table.insertRow?.({
+                      disableSelect: true,
                       fromRow,
                     });
                   }
@@ -129,7 +128,8 @@ export const withInsertFragmentTable: WithOverride<TablePluginOptions> = ({
                     if (disableExpandOnInsert) {
                       return;
                     } else {
-                      insertColumn?.(editor, {
+                      api.table.insertColumn?.({
+                        disableSelect: true,
                         fromCell,
                       });
                     }
@@ -138,7 +138,7 @@ export const withInsertFragmentTable: WithOverride<TablePluginOptions> = ({
 
                 initCell = false;
 
-                const cellChildren = getCellChildren!(
+                const cellChildren = api.table.getCellChildren!(
                   cell
                 ) as TTableCellElement[];
 

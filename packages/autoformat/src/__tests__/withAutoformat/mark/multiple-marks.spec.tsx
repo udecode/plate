@@ -5,6 +5,7 @@ import {
   ItalicPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks';
+import { createPlateEditor } from "@udecode/plate-common/react";
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 import { getAutoformatOptions } from 'www/src/lib/plate/demo/plugins/autoformatOptions';
@@ -17,27 +18,26 @@ jsx;
 describe('when inserting ***', () => {
   it('should autoformat to italic bold', () => {
     const input = (
-      <editor>
+      <fragment>
         <hp>
           ***hello
           <cursor />
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const output = (
-      <editor>
+      <fragment>
         <hp>
           <htext bold italic>
             hello
           </htext>
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
-    const editor = withAutoformat({
-      editor: withReact(input),
-      plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+    const editor = createPlateEditor({ value: input,
+      plugins: [AutoformatPlugin.configure({ options: getAutoformatOptions() }),]
     });
 
     editor.insertText('*');
@@ -51,36 +51,37 @@ describe('when inserting ***', () => {
 describe('when inserting ***___', () => {
   it('should autoformat to italic bold', () => {
     const input = (
-      <editor>
+      <fragment>
         <hp>
           ___***hello
           <cursor />
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
     const output = (
-      <editor>
+      <fragment>
         <hp>
           <htext bold italic underline>
             hello
           </htext>
         </hp>
-      </editor>
+      </fragment>
     ) as any;
 
-    const editor = withAutoformat({
-      editor: withReact(input),
-      plugin: AutoformatPlugin.configure({
-        rules: [
-          {
-            match: { end: '***__', start: '___***' },
-            mode: 'mark',
-            trigger: '_',
-            type: [UnderlinePlugin.key, BoldPlugin.key, ItalicPlugin.key],
-          },
-        ],
-      }),
+    const editor = createPlateEditor({ value: input,
+      plugins: [AutoformatPlugin.configure({
+        options: {
+          rules: [
+            {
+              match: { end: '***__', start: '___***' },
+              mode: 'mark',
+              trigger: '_',
+              type: [UnderlinePlugin.key, BoldPlugin.key, ItalicPlugin.key],
+            },
+          ],
+        },
+      }),]
     });
 
     editor.insertText('*');

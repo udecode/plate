@@ -3,15 +3,13 @@ import {
   type TElement,
   findNode,
   getBlockAbove,
-  getPluginOptions,
-  getPluginType,
   insertElements,
   setNodes,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
-import type { TTableElement, TablePluginOptions } from '../types';
+import type { TTableElement } from '../types';
 
 import { TableCellHeaderPlugin, TablePlugin } from '../TablePlugin';
 import { insertTableMergeColumn } from '../merge/insertTableColumn';
@@ -32,10 +30,7 @@ export const insertTableColumn = (
     header?: boolean;
   } = {}
 ) => {
-  const { enableMerging } = getPluginOptions<TablePluginOptions>(
-    editor,
-    TablePlugin.key
-  );
+  const { enableMerging } = editor.getOptions(TablePlugin);
 
   if (enableMerging) {
     return insertTableMergeColumn(editor, options);
@@ -58,7 +53,7 @@ export const insertTableColumn = (
 
   const tableEntry = getBlockAbove<TTableElement>(editor, {
     at: cellPath,
-    match: { type: getPluginType(editor, TablePlugin.key) },
+    match: { type: editor.getType(TablePlugin) },
   });
 
   if (!tableEntry) return;
@@ -78,8 +73,8 @@ export const insertTableColumn = (
 
   const currentRowIndex = cellPath.at(-2);
 
-  const { cellFactory, initialTableWidth, minColumnWidth } =
-    getPluginOptions<TablePluginOptions>(editor, TablePlugin.key);
+  const { initialTableWidth, minColumnWidth } = editor.getOptions(TablePlugin);
+  const api = editor.getApi(TablePlugin);
 
   withoutNormalizing(editor, () => {
     // for each row, insert a new cell
@@ -95,13 +90,13 @@ export const insertTableColumn = (
       const isHeaderRow =
         header === undefined
           ? (row as TElement).children.every(
-              (c) => c.type === getPluginType(editor, TableCellHeaderPlugin.key)
+              (c) => c.type === editor.getType(TableCellHeaderPlugin)
             )
           : header;
 
       insertElements(
         editor,
-        cellFactory!({
+        api.table.cellFactory!({
           header: isHeaderRow,
         }),
         {

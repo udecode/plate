@@ -4,13 +4,11 @@ import {
   isExpanded,
 } from '@udecode/plate-common';
 
-import type { TablePluginOptions } from './types';
+import type { TableContext } from './types';
 
 import { getTableAbove, getTableGridAbove } from './queries/index';
 
-export const withInsertTextTable: WithOverride<TablePluginOptions> = ({
-  editor,
-}) => {
+export const withInsertTextTable: WithOverride<TableContext> = ({ editor }) => {
   const { insertText } = editor;
 
   editor.insertText = (text) => {

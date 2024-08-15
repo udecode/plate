@@ -19,7 +19,7 @@ export const useLinkOpenButtonState = () => {
   const entry = React.useMemo(
     () =>
       findNode<TLinkElement>(editor, {
-        match: { type: getPluginType(editor, LinkPlugin.key) },
+        match: { type: editor.getType(LinkPlugin) },
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [editor, selection]

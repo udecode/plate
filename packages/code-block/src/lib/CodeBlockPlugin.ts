@@ -1,7 +1,6 @@
 import {
   DeserializeHtmlPlugin,
   createPlugin,
-  getPlugin,
   someNode,
 } from '@udecode/plate-common';
 
@@ -33,7 +32,7 @@ export const CodeBlockPlugin = createPlugin<
         editor: {
           insertData: {
             query: ({ editor }) => {
-              const code_line = getPlugin(editor, CodeLinePlugin.key);
+              const code_line = editor.getPlugin(CodeLinePlugin);
 
               return !someNode(editor, {
                 match: { type: code_line.type },

@@ -1,4 +1,4 @@
-import { createPlugin, getEditorApi, insertNode } from '@udecode/plate-common';
+import { createPlugin, insertNode } from '@udecode/plate-common';
 import Defer from 'p-defer';
 
 import type { UploadError, UploadSuccess } from '../upload';
@@ -12,7 +12,7 @@ export const CloudAttachmentPlugin = createPlugin({
   isVoid: true,
   key: 'cloud_attachment',
 }).extendApi(({ editor }) => {
-  const api = getEditorApi(editor, CloudPlugin);
+  const api = editor.getApi(CloudPlugin);
 
   const deferredFinish = Defer<UploadError | UploadSuccess>();
   const finishPromise = deferredFinish.promise;

@@ -3,7 +3,6 @@ import {
   type WithOverride,
   getBlockAbove,
   getParentNode,
-  getPluginType,
   isElement,
   isText,
   setNodes,
@@ -11,7 +10,7 @@ import {
   wrapNodeChildren,
 } from '@udecode/plate-common';
 
-import type { TTableElement, TablePluginOptions } from './types';
+import type { TTableElement, TableContext } from './types';
 
 import { TablePlugin, TableRowPlugin } from './TablePlugin';
 import { getCellTypes } from './utils/index';
@@ -21,7 +20,7 @@ import { getCellTypes } from './utils/index';
  *
  * - Wrap cell children in a paragraph if they are texts.
  */
-export const withNormalizeTable: WithOverride<TablePluginOptions> = ({
+export const withNormalizeTable: WithOverride<TableContext> = ({
   editor,
   plugin: { options },
 }) => {
@@ -30,10 +29,10 @@ export const withNormalizeTable: WithOverride<TablePluginOptions> = ({
 
   editor.normalizeNode = ([node, path]) => {
     if (isElement(node)) {
-      if (node.type === getPluginType(editor, TablePlugin.key)) {
+      if (node.type === editor.getType(TablePlugin)) {
         const tableEntry = getBlockAbove(editor, {
           at: path,
-          match: { type: getPluginType(editor, TablePlugin.key) },
+          match: { type: editor.getType(TablePlugin) },
         });
 
         if (tableEntry) {
@@ -69,10 +68,10 @@ export const withNormalizeTable: WithOverride<TablePluginOptions> = ({
           }
         }
       }
-      if (node.type === getPluginType(editor, TableRowPlugin.key)) {
+      if (node.type === editor.getType(TableRowPlugin)) {
         const parentEntry = getParentNode(editor, path);
 
-        if (parentEntry?.[0].type !== getPluginType(editor, TablePlugin.key)) {
+        if (parentEntry?.[0].type !== editor.getType(TablePlugin)) {
           unwrapNodes(editor, {
             at: path,
           });
@@ -85,9 +84,7 @@ export const withNormalizeTable: WithOverride<TablePluginOptions> = ({
 
         const parentEntry = getParentNode(editor, path);
 
-        if (
-          parentEntry?.[0].type !== getPluginType(editor, TableRowPlugin.key)
-        ) {
+        if (parentEntry?.[0].type !== editor.getType(TableRowPlugin)) {
           unwrapNodes(editor, {
             at: path,
           });

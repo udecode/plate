@@ -80,7 +80,7 @@ const selectionIsInAListHandler = (
 
   // if it has no children
   if (!hasListChild(editor, listItem[0])) {
-    const liType = getPluginType(editor, ListItemPlugin.key);
+    const liType = editor.getType(ListItemPlugin);
     const _nodes = getNodeEntries(editor, {
       at: listItem[1],
       match: (node, path) => {
@@ -161,7 +161,7 @@ const selectionIsInAListHandler = (
     }
 
     // get closest lic ancestor of next selectable
-    const licType = getPluginType(editor, ListItemContentPlugin.key);
+    const licType = editor.getType(ListItemContentPlugin);
     const _licNodes = getNodeEntries<TElement>(editor, {
       at: pointAfterListItem.path,
       match: (node) => node.type === licType,

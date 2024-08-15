@@ -1,8 +1,4 @@
-import {
-  ParagraphPlugin,
-  createPlugin,
-  getPluginType,
-} from '@udecode/plate-common';
+import { ParagraphPlugin, createPlugin } from '@udecode/plate-common';
 
 /**
  * Enables support for text alignment, useful to align your content to left,
@@ -17,7 +13,7 @@ export const LineHeightPlugin = createPlugin({
         deserializeHtml: {
           getNode: ({ element, node }) => {
             if (element.style.lineHeight) {
-              node[getPluginType(editor, plugin)] = element.style.lineHeight;
+              node[editor.getType(plugin)] = element.style.lineHeight;
             }
           },
         },

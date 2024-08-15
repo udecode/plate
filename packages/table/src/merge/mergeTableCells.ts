@@ -4,8 +4,6 @@ import {
   type TNodeEntry,
   collapseSelection,
   getBlockAbove,
-  getPluginOptions,
-  getPluginType,
   insertElements,
   isElementEmpty,
   removeNodes,
@@ -13,11 +11,7 @@ import {
 } from '@udecode/plate-common';
 import cloneDeep from 'lodash/cloneDeep.js';
 
-import type {
-  TTableCellElement,
-  TTableElement,
-  TablePluginOptions,
-} from '../types';
+import type { TTableCellElement, TTableElement } from '../types';
 
 import { TableCellHeaderPlugin, TablePlugin } from '../TablePlugin';
 import { getTableGridAbove } from '../queries';
@@ -29,11 +23,12 @@ import { getCellIndices } from './getCellIndices';
 /** Merges multiple selected cells into one. */
 export const mergeTableCells = (editor: PlateEditor) => {
   withoutNormalizing(editor, () => {
-    const { _cellIndices, cellFactory, getCellChildren } =
-      getPluginOptions<TablePluginOptions>(editor, TablePlugin.key);
+    const { _cellIndices } = editor.getOptions(TablePlugin);
+    const api = editor.getApi(TablePlugin);
+
     const tableEntry = getBlockAbove(editor, {
       at: editor.selection?.anchor.path,
-      match: { type: getPluginType(editor, TablePlugin.key) },
+      match: { type: editor.getType(TablePlugin) },
     })!;
 
     const cellEntries = getTableGridAbove(editor, {
@@ -78,7 +73,7 @@ export const mergeTableCells = (editor: PlateEditor) => {
     for (const cellEntry of cellEntries) {
       const [el] = cellEntry;
 
-      const cellChildren = getCellChildren!(el);
+      const cellChildren = api.table.getCellChildren!(el);
 
       if (
         cellChildren.length !== 1 ||
@@ -113,11 +108,10 @@ export const mergeTableCells = (editor: PlateEditor) => {
     // Create a new cell to replace the merged cells, with
     // calculated colSpan and rowSpan attributes and combined content
     const mergedCell = {
-      ...cellFactory!({
+      ...api.table.cellFactory!({
         children: mergingCellChildren,
         header:
-          cellEntries[0][0].type ===
-          getPluginType(editor, TableCellHeaderPlugin.key),
+          cellEntries[0][0].type === editor.getType(TableCellHeaderPlugin),
       }),
       colSpan,
       rowSpan,

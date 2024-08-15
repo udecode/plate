@@ -15,6 +15,7 @@ import type { InferPlugins, TPlateEditor } from './PlateEditor';
 import {
   type CorePlugin,
   type PlateEditor,
+  getPlugin,
   pipeNormalizeInitialValue,
   resolvePlugins,
 } from '../index';
@@ -110,6 +111,13 @@ export const withSlate = <
   editor.id = id ?? editor.id;
   editor.key = editor.key ?? Math.random();
   editor.isFallback = false;
+
+  editor.getApi = () => editor.api as any;
+  editor.getPlugin = (plugin) => getPlugin(editor, plugin);
+  editor.getOptions = (plugin) => editor.getPlugin(plugin).options;
+  editor.getType = (plugin) => editor.getPlugin(plugin).type;
+  editor.getInjectProps = (plugin) =>
+    editor.getPlugin(plugin).inject?.props ?? ({} as any);
 
   const corePlugins = getCorePlugins({
     maxLength,

@@ -1,11 +1,9 @@
-import { getPluginType } from '@udecode/plate-common';
-
 import type { RemarkTextRules } from './types';
 
 export const remarkDefaultTextRules: RemarkTextRules = {
-  emphasis: { mark: ({ editor }) => getPluginType(editor, 'italic') },
+  emphasis: { mark: ({ editor }) => editor.getType({ key: 'italic' }) },
   html: { transform: (text: string) => text.replaceAll('<br>', '\n') },
-  inlineCode: { mark: ({ editor }) => getPluginType(editor, 'code') },
-  strong: { mark: ({ editor }) => getPluginType(editor, 'bold') },
+  inlineCode: { mark: ({ editor }) => editor.getType({ key: 'code' }) },
+  strong: { mark: ({ editor }) => editor.getType({ key: 'bold' }) },
   text: {},
 };

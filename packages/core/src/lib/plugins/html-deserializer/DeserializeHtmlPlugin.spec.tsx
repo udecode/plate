@@ -7,7 +7,7 @@ import { LinkPlugin } from '@udecode/plate-link';
 import { MediaEmbedPlugin } from '@udecode/plate-media';
 import { jsx } from '@udecode/plate-test-utils';
 
-import type { PlateEditor, PlatePlugins } from '../../types';
+import type { PlateEditor } from '../../editor';
 
 import { createPlateEditor } from '../../../react';
 
@@ -52,7 +52,7 @@ describe('when inserting html', () => {
         </editor>
       ) as any;
 
-      const plugins: PlatePlugins = [HeadingPlugin];
+      const plugins = [HeadingPlugin];
 
       const editor = createPlateEditor({
         editor: input,
@@ -84,7 +84,7 @@ describe('when inserting html', () => {
         </editor>
       ) as any;
 
-      const plugins: PlatePlugins = [HeadingPlugin];
+      const plugins = [HeadingPlugin];
 
       const editor = createPlateEditor({
         editor: input,
@@ -117,7 +117,7 @@ describe('when inserting html', () => {
       </editor>
     ) as any;
 
-    const plugins: PlatePlugins = [ParagraphPlugin];
+    const plugins = [ParagraphPlugin];
 
     const editor = createPlateEditor({
       editor: input,
@@ -159,7 +159,7 @@ describe('when inserting empty html', () => {
   ) as any;
 
   it('should do nothing', () => {
-    const plugins: PlatePlugins = [BoldPlugin];
+    const plugins = [BoldPlugin];
 
     const editor = createPlateEditor({
       editor: input,
@@ -199,7 +199,7 @@ describe('when inserting an iframe without src', () => {
   ) as any;
 
   it('should do nothing', () => {
-    const plugins: PlatePlugins = [MediaEmbedPlugin];
+    const plugins = [MediaEmbedPlugin];
 
     const editor = createPlateEditor({
       editor: input,
@@ -242,7 +242,7 @@ describe('when inserting link with href', () => {
   ) as any;
 
   it('should insert the link with url', () => {
-    const plugins: PlatePlugins = [ParagraphPlugin, LinkPlugin];
+    const plugins = [ParagraphPlugin, LinkPlugin];
 
     const editor = createPlateEditor({
       editor: input,

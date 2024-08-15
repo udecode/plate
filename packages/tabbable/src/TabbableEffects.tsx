@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { getPluginOptions } from '@udecode/plate-common';
 import {
   findNodePath,
   focusEditor,
@@ -12,7 +11,7 @@ import {
 import { Path } from 'slate';
 import { tabbable } from 'tabbable';
 
-import type { TabbableEntry, TabbablePluginOptions } from './types';
+import type { TabbableEntry } from './types';
 
 import { TabbablePlugin } from './TabbablePlugin';
 import { findTabDestination } from './findTabDestination';
@@ -25,7 +24,7 @@ export function TabbableEffects() {
     if (readOnly) return;
 
     const { globalEventListener, insertTabbableEntries, isTabbable, query } =
-      getPluginOptions<TabbablePluginOptions>(editor, TabbablePlugin.key);
+      editor.getOptions(TabbablePlugin);
 
     const editorDOMNode = toDOMNode(editor, editor);
 

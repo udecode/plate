@@ -18,7 +18,7 @@ import { Path } from 'slate';
 
 import type { ListPluginOptions } from '../types';
 
-import { ListItemPlugin, ListItemContentPlugin } from '../ListPlugin';
+import { ListItemContentPlugin, ListItemPlugin } from '../ListPlugin';
 import { getListTypes, isListRoot } from '../queries/index';
 import { moveListItemsToList } from '../transforms/index';
 import { normalizeListItem } from './normalizeListItem';
@@ -30,9 +30,9 @@ export const normalizeList = (
   { validLiChildrenTypes }: ListPluginOptions
 ) => {
   const { normalizeNode } = editor;
-  const liType = getPluginType(editor, ListItemPlugin.key);
-  const licType = getPluginType(editor, ListItemContentPlugin.key);
-  const defaultType = getPluginType(editor, ParagraphPlugin.key);
+  const liType = editor.getType(ListItemPlugin);
+  const licType = editor.getType(ListItemContentPlugin);
+  const defaultType = editor.getType(ParagraphPlugin);
 
   return ([node, path]: TNodeEntry) => {
     if (!isElement(node)) {
@@ -87,7 +87,7 @@ export const normalizeList = (
       }
     }
     if (
-      node.type === getPluginType(editor, ListItemPlugin.key) &&
+      node.type === editor.getType(ListItemPlugin) &&
       normalizeListItem(editor, {
         listItem: [node, path],
         validLiChildrenTypes,

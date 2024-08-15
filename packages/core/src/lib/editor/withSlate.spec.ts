@@ -18,12 +18,10 @@ import {
   InlineVoidPlugin,
   InsertDataPlugin,
   LengthPlugin,
-  type LengthPluginOptions,
   PlateApiPlugin,
   type PlatePlugin,
   SlateNextPlugin,
   createPlugin,
-  getPlugin,
   withSlate,
 } from '../index';
 
@@ -69,7 +67,7 @@ describe('withPlate', () => {
         ...coreKeys,
         'custom',
       ]);
-      expect(getPlugin(editor, 'custom')).toEqual(customPlugin);
+      expect(editor.getPlugin({ key: 'custom' })).toEqual(customPlugin);
     });
   });
 
@@ -104,18 +102,24 @@ describe('withPlate', () => {
             .extend({
               type: 'parentExtended',
             })
-            .extendPlugin('child', {
-              type: 'childExtended',
-            })
-            .extendPlugin('newChild', {
-              type: 'newChildType',
-            }),
+            .extendPlugin(
+              { key: 'child' },
+              {
+                type: 'childExtended',
+              }
+            )
+            .extendPlugin(
+              { key: 'newChild' },
+              {
+                type: 'newChildType',
+              }
+            ),
         ],
       });
 
-      const parent = getPlugin(editor, 'parent');
-      const child = getPlugin(editor, 'child');
-      const newChild = getPlugin(editor, 'newChild');
+      const parent = editor.getPlugin({ key: 'parent' });
+      const child = editor.getPlugin({ key: 'child' });
+      const newChild = editor.getPlugin({ key: 'newChild' });
 
       expect(parent.type).toBe('parentExtended');
       expect(child.type).toBe('childExtended');
@@ -138,7 +142,7 @@ describe('withPlate', () => {
         plugins: [HeadingPlugin],
       });
 
-      const h1Plugin = getPlugin(editor, 'h1');
+      const h1Plugin = editor.getPlugin({ key: 'h1' });
       expect(h1Plugin.component).toBe(customComponent);
     });
 
@@ -157,7 +161,7 @@ describe('withPlate', () => {
         plugins: [HeadingPlugin],
       });
 
-      let h1Plugin = getPlugin(editor, 'h1');
+      let h1Plugin = editor.getPlugin({ key: 'h1' });
       expect(h1Plugin.component).toBe(originalComponent);
 
       // Test with high priority override
@@ -171,7 +175,7 @@ describe('withPlate', () => {
         plugins: [HeadingPlugin],
       });
 
-      h1Plugin = getPlugin(editor, 'h1');
+      h1Plugin = editor.getPlugin({ key: 'h1' });
       expect(h1Plugin.component).toBe(overrideComponent);
     });
   });
@@ -195,7 +199,7 @@ describe('withPlate', () => {
         plugins: [CustomPlugin],
       });
 
-      const customPlugin = getPlugin(editor, 'custom');
+      const customPlugin = editor.getPlugin({ key: 'custom' });
       expect(customPlugin.type).toBe('overriddenType');
     });
   });
@@ -357,13 +361,15 @@ describe('withPlate', () => {
       const editor = withPlate(createTEditor(), {
         id: '1',
         rootPlugin: (plugin) =>
-          plugin.configurePlugin('length', {
-            maxLength: 100,
+          plugin.configurePlugin(LengthPlugin, {
+            options: {
+              maxLength: 100,
+            },
           }),
       });
 
-      const lengthPlugin = getPlugin<LengthPluginOptions>(editor, 'length');
-      expect(lengthPlugin.options.maxLength).toBe(100);
+      const options = editor.getOptions(LengthPlugin);
+      expect(options.maxLength).toBe(100);
     });
   });
 

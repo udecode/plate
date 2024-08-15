@@ -27,16 +27,20 @@ export default function CloudDemo() {
       BasicElementsPlugin,
       BasicMarksPlugin,
       CloudPlugin.configure({
-        authToken:
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InB1UFoyZTdlN0tUVzh0MjQifQ.eyJpYXQiOjE2Njg0NTUxMDksImV4cCI6MTcwMDAxMjcwOX0.xEznN3Wl6GqN57wsDGq0Z6giI4TvU32gvmMJUzcg2No',
-        uploadStoreInitialValue,
+        options: {
+          authToken:
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InB1UFoyZTdlN0tUVzh0MjQifQ.eyJpYXQiOjE2Njg0NTUxMDksImV4cCI6MTcwMDAxMjcwOX0.xEznN3Wl6GqN57wsDGq0Z6giI4TvU32gvmMJUzcg2No',
+          uploadStoreInitialValue,
+        },
       }),
       CloudAttachmentPlugin.withComponent(CloudAttachmentElement),
       CloudImagePlugin.configure({
-        maxInitialHeight: 320,
-        maxInitialWidth: 320,
-        maxResizeWidth: 720,
-        minResizeWidth: 100,
+        options: {
+          maxInitialHeight: 320,
+          maxInitialWidth: 320,
+          maxResizeWidth: 720,
+          minResizeWidth: 100,
+        },
       }).withComponent(CloudImageElement),
     ],
     value: cloudValue,

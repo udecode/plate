@@ -43,7 +43,7 @@ describe('toggle on', () => {
     });
 
     toggleList(editor, {
-      type: getPluginType(editor, ListUnorderedPlugin.key),
+      type: editor.getType(ListUnorderedPlugin),
     });
 
     expect(input.children).toEqual(output.children);
@@ -75,7 +75,7 @@ describe('toggle on', () => {
     const editor = createSlateEditor({
       editor: input,
       plugins: [
-        ListPlugin.extendPlugin(ListUnorderedPlugin.key, {
+        ListPlugin.extendPlugin(ListUnorderedPlugin, {
           options: {
             validLiChildrenTypes: [ImagePlugin.key],
           },
@@ -84,7 +84,7 @@ describe('toggle on', () => {
     });
 
     toggleList(editor, {
-      type: getPluginType(editor, ListUnorderedPlugin.key),
+      type: editor.getType(ListUnorderedPlugin),
     });
 
     expect(input.children).toEqual(output.children);
@@ -121,7 +121,7 @@ describe('toggle on', () => {
     });
 
     toggleList(editor, {
-      type: getPluginType(editor, ListUnorderedPlugin.key),
+      type: editor.getType(ListUnorderedPlugin),
     });
 
     expect(input.children).toEqual(output.children);
@@ -162,7 +162,7 @@ describe('toggle on', () => {
     });
 
     toggleList(editor, {
-      type: getPluginType(editor, ListUnorderedPlugin.key),
+      type: editor.getType(ListUnorderedPlugin),
     });
 
     expect(input.children).toEqual(output.children);
@@ -212,7 +212,7 @@ describe('toggle on', () => {
     const editor = createSlateEditor({
       editor: input,
       plugins: [
-        ListPlugin.extendPlugin(ListUnorderedPlugin.key, {
+        ListPlugin.extendPlugin(ListUnorderedPlugin, {
           options: {
             validLiChildrenTypes: [ImagePlugin.key],
           },
@@ -221,7 +221,7 @@ describe('toggle on', () => {
     });
 
     toggleList(editor, {
-      type: getPluginType(editor, ListUnorderedPlugin.key),
+      type: editor.getType(ListUnorderedPlugin),
     });
 
     expect(input.children).toEqual(output.children);
@@ -276,7 +276,7 @@ describe('toggle on', () => {
     });
 
     toggleList(editor, {
-      type: getPluginType(editor, ListUnorderedPlugin.key),
+      type: editor.getType(ListUnorderedPlugin),
     });
 
     expect(input.children).toEqual(output.children);
@@ -331,7 +331,7 @@ describe('toggle on', () => {
     });
 
     toggleList(editor, {
-      type: getPluginType(editor, ListUnorderedPlugin.key),
+      type: editor.getType(ListUnorderedPlugin),
     });
 
     expect(input.children).toEqual(output.children);
@@ -381,7 +381,7 @@ describe('toggle off', () => {
     });
 
     toggleList(editor, {
-      type: getPluginType(editor, ListUnorderedPlugin.key),
+      type: editor.getType(ListUnorderedPlugin),
     });
 
     expect(input.children).toEqual(output.children);
@@ -439,7 +439,7 @@ describe('toggle off', () => {
     });
 
     toggleList(editor, {
-      type: getPluginType(editor, ListUnorderedPlugin.key),
+      type: editor.getType(ListUnorderedPlugin),
     });
 
     expect(input.children).toEqual(output.children);
@@ -480,7 +480,7 @@ describe('toggle off', () => {
     });
 
     toggleList(editor, {
-      type: getPluginType(editor, ListUnorderedPlugin.key),
+      type: editor.getType(ListUnorderedPlugin),
     });
 
     expect(input.children).toEqual(output.children);
@@ -534,7 +534,7 @@ describe('toggle off', () => {
     const editor = createSlateEditor({
       editor: input,
       plugins: [
-        ListPlugin.extendPlugin(ListUnorderedPlugin.key, {
+        ListPlugin.extendPlugin(ListUnorderedPlugin, {
           options: {
             validLiChildrenTypes: [ImagePlugin.key],
           },
@@ -543,7 +543,7 @@ describe('toggle off', () => {
     });
 
     toggleList(editor, {
-      type: getPluginType(editor, ListUnorderedPlugin.key),
+      type: editor.getType(ListUnorderedPlugin),
     });
 
     expect(input.children).toEqual(output.children);
@@ -579,7 +579,7 @@ describe('toggle over', () => {
       plugins: [ListPlugin],
     });
 
-    toggleList(editor, { type: getPluginType(editor, ListOrderedPlugin.key) });
+    toggleList(editor, { type: editor.getType(ListOrderedPlugin) });
 
     expect(input.children).toEqual(output.children);
   });
@@ -623,7 +623,7 @@ describe('toggle over', () => {
       plugins: [ListPlugin],
     });
 
-    toggleList(editor, { type: getPluginType(editor, ListOrderedPlugin.key) });
+    toggleList(editor, { type: editor.getType(ListOrderedPlugin) });
 
     expect(input.children).toEqual(output.children);
   });
@@ -669,7 +669,7 @@ describe('toggle over', () => {
       plugins: [ListPlugin],
     });
 
-    toggleList(editor, { type: getPluginType(editor, ListOrderedPlugin.key) });
+    toggleList(editor, { type: editor.getType(ListOrderedPlugin) });
 
     expect(input.children).toEqual(output.children);
   });
@@ -719,7 +719,7 @@ describe('toggle over', () => {
       plugins: [ListPlugin],
     });
 
-    toggleList(editor, { type: getPluginType(editor, ListOrderedPlugin.key) });
+    toggleList(editor, { type: editor.getType(ListOrderedPlugin) });
 
     expect(input.children).toEqual(output.children);
   });

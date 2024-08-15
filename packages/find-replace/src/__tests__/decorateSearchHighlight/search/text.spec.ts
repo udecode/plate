@@ -1,4 +1,3 @@
-import { getPlugin } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 
 import { FindReplacePlugin } from '../../../FindReplacePlugin';
@@ -7,12 +6,14 @@ it('should be', () => {
   const editor = createPlateEditor({
     plugins: [
       FindReplacePlugin.configure({
-        search: 'test',
+        options: {
+          search: 'test',
+        },
       }),
     ],
   });
 
-  const plugin = getPlugin(editor, FindReplacePlugin.key);
+  const plugin = editor.getPlugin(FindReplacePlugin);
 
   expect(
     plugin.decorate?.({ editor, entry: [{ text: 'test' }, [0, 0]], plugin })
@@ -36,12 +37,14 @@ it('should be', () => {
   const editor = createPlateEditor({
     plugins: [
       FindReplacePlugin.configure({
-        search: 'Test',
+        options: {
+          search: 'Test',
+        },
       }),
     ],
   });
 
-  const plugin = getPlugin(editor, FindReplacePlugin.key);
+  const plugin = editor.getPlugin(FindReplacePlugin);
 
   expect(
     plugin.decorate?.({ editor, entry: [{ text: 'test' }, [0, 0]], plugin })

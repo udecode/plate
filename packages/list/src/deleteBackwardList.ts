@@ -21,7 +21,7 @@ import {
 } from '@udecode/plate-reset-node';
 import { Path, type TextUnit } from 'slate';
 
-import { ListItemPlugin, ListItemContentPlugin } from './ListPlugin';
+import { ListItemContentPlugin, ListItemPlugin } from './ListPlugin';
 import { isAcrossListItems } from './queries';
 import { getListItemEntry } from './queries/getListItemEntry';
 import { isListNested } from './queries/isListNested';
@@ -39,7 +39,8 @@ export const deleteBackwardList = (editor: PlateEditor, unit: TextUnit) => {
 
     if (
       isSelectionAtBlockStart(editor, {
-        match: (node) => node.type === getPluginType(editor, ListItemPlugin.key),
+        match: (node) =>
+          node.type === editor.getType(ListItemPlugin),
       })
     ) {
       withoutNormalizing(editor, () => {
@@ -58,11 +59,11 @@ export const deleteBackwardList = (editor: PlateEditor, unit: TextUnit) => {
               options: {
                 rules: [
                   {
-                    defaultType: getPluginType(editor, ParagraphPlugin.key),
+                    defaultType: editor.getType(ParagraphPlugin),
                     hotkey: 'backspace',
                     onReset: (e) => unwrapList(e),
                     predicate: () => isSelectionAtBlockStart(editor),
-                    types: [getPluginType(editor, ListItemPlugin.key)],
+                    types: [editor.getType(ListItemPlugin)],
                   },
                 ],
               },
@@ -93,7 +94,7 @@ export const deleteBackwardList = (editor: PlateEditor, unit: TextUnit) => {
           })
         ) {
           // get closest lic ancestor of current selectable
-          const licType = getPluginType(editor, ListItemContentPlugin.key);
+          const licType = editor.getType(ListItemContentPlugin);
           const _licNodes = getNodeEntries<TElement>(editor, {
             at: listItem[1],
             match: (node) => node.type === licType,

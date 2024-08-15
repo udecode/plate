@@ -3,7 +3,6 @@ import React, { useRef } from 'react';
 import {
   type TElement,
   getAboveNode,
-  getPluginOptions,
   isInline,
   isVoid,
   queryNode,
@@ -11,10 +10,7 @@ import {
 import { findNodePath, useEditorRef } from '@udecode/plate-common/react';
 import { Path } from 'slate';
 
-import {
-  type BlockSelectionPluginOptions,
-  BlockSelectionPlugin,
-} from '../BlockSelectionPlugin';
+import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 import {
   blockSelectionActions,
   useBlockSelectionSelectors,
@@ -44,10 +40,7 @@ export const useBlockSelectableState = ({
     };
   }
 
-  const { query } = getPluginOptions<BlockSelectionPluginOptions>(
-    editor,
-    BlockSelectionPlugin.key
-  );
+  const { query } = editor.getOptions(BlockSelectionPlugin);
 
   if (query && !queryNode([element, path], query)) {
     return {
@@ -87,10 +80,7 @@ export const useBlockSelectable = ({
         if (!editor) return;
 
         const { disableContextMenu = true } =
-          getPluginOptions<BlockSelectionPluginOptions>(
-            editor,
-            BlockSelectionPlugin.key
-          );
+          editor.getOptions(BlockSelectionPlugin);
 
         if (disableContextMenu) return;
         if (editor.selection?.focus) {

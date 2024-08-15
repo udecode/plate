@@ -14,8 +14,8 @@ import {
 } from '@udecode/plate-common';
 
 import {
-  ListItemPlugin,
   ListItemContentPlugin,
+  ListItemPlugin,
   ListOrderedPlugin,
   ListUnorderedPlugin,
 } from '../ListPlugin';
@@ -49,19 +49,19 @@ export const unwrapList = (editor: PlateEditor, { at }: { at?: Path } = {}) => {
     do {
       const licEntry = getBlockAbove(editor, {
         at,
-        match: { type: getPluginType(editor, ListItemContentPlugin.key) },
+        match: { type: editor.getType(ListItemContentPlugin) },
       });
 
       if (licEntry) {
         setElements(editor, {
           at,
-          type: getPluginType(editor, ParagraphPlugin.key),
+          type: editor.getType(ParagraphPlugin),
         });
       }
 
       unwrapNodes(editor, {
         at,
-        match: { type: getPluginType(editor, ListItemPlugin.key) },
+        match: { type: editor.getType(ListItemPlugin) },
         split: true,
       });
 
@@ -69,8 +69,8 @@ export const unwrapList = (editor: PlateEditor, { at }: { at?: Path } = {}) => {
         at,
         match: {
           type: [
-            getPluginType(editor, ListUnorderedPlugin.key),
-            getPluginType(editor, ListOrderedPlugin.key),
+            editor.getType(ListUnorderedPlugin),
+            editor.getType(ListOrderedPlugin),
           ],
         },
         split: true,

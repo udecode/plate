@@ -71,9 +71,7 @@ export default function FindReplaceDemo() {
       plugins: [
         BasicElementsPlugin,
         BasicMarksPlugin,
-        FindReplacePlugin.configure({
-          search,
-        }),
+        FindReplacePlugin.configure({ options: { search } }),
       ],
       value: findReplaceValue,
     },

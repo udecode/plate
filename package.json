@@ -59,7 +59,7 @@
     "p:lint:fix": "eslint $INIT_CWD/src --color --fix",
     "p:test": "cd $INIT_CWD && jest --config=${PROJECT_CWD}/jest.config.cjs --maxWorkers=1 --passWithNoTests $INIT_CWD ",
     "p:tsup": "cd $INIT_CWD && tsup --config=${PROJECT_CWD}/config/tsup.config.ts",
-    "p:typecheck": "cd $INIT_CWD && tsc -p $INIT_CWD/tsconfig.build.json",
+    "p:typecheck": "cd $INIT_CWD && tsc -p $INIT_CWD/tsconfig.json",
     "playwright": "yarn g:playwright",
     "release": "yarn build && yarn changeset publish",
     "sync:templates": "./scripts/sync-templates.sh \"templates/*\"",

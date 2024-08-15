@@ -12,13 +12,13 @@ import { createPlateUIEditor } from '../create-plate-ui-editor';
 it('serialize elements using useSlateStatic', () => {
   const plugins = [
     TodoListPlugin,
-    ListPlugin.extendPlugin(ListItemPlugin.key, {
+    ListPlugin.extendPlugin(ListItemPlugin, {
       type: 'list-item',
     })
-      .extendPlugin(ListItemContentPlugin.key, {
+      .extendPlugin(ListItemContentPlugin, {
         type: 'list-item-child',
       })
-      .extendPlugin(ListUnorderedPlugin.key, {
+      .extendPlugin(ListUnorderedPlugin, {
         type: 'unordered-list',
       }),
   ];

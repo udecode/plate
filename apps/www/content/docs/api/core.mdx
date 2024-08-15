@@ -20,7 +20,7 @@ The options to override plugins.
 <APISubListItem parent="options" name="components" type="Record<string, React.FC>" optional>
 Components to override by plugin key.
 </APISubListItem>
-<APISubListItem parent="options" name="overrideByKey" type="Record<PluginKey, Partial<PlatePlugin>>" optional>
+<APISubListItem parent="options" name="overrideByKey" type="Record<string, Partial<PlatePlugin>>" optional>
 Plugin attributes to override by plugin key.
 </APISubListItem>
 </APISubList>
@@ -156,7 +156,7 @@ Retrieves a plugin by plugin key.
   <APIItem name="editor" type="PlateEditor">
     The editor to extract the plugin from.
   </APIItem>
-  <APIItem name="key" type="PluginKey">
+  <APIItem name="key" type="string">
     The key of the plugin to retrieve.
   </APIItem>
 </APIParameters>
@@ -173,7 +173,7 @@ Retrieves the props to be injected by a plugin, identified by its key.
   <APIItem name="editor" type="PlateEditor">
     The editor to extract the plugin from.
   </APIItem>
-  <APIItem name="key" type="PluginKey">
+  <APIItem name="key" type="string">
     The key of the plugin whose inject props to retrieve.
   </APIItem>
 </APIParameters>
@@ -190,7 +190,7 @@ Retrieves the options of a plugin, identified by its key.
   <APIItem name="editor" type="PlateEditor">
     The editor to extract the plugin from.
   </APIItem>
-  <APIItem name="key" type="PluginKey">
+  <APIItem name="key" type="string">
     The key of the plugin whose options to retrieve.
   </APIItem>
 </APIParameters>

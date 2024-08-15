@@ -1,4 +1,3 @@
-import { getPluginType } from '@udecode/plate-common';
 import { ParagraphPlugin, createPlugin } from '@udecode/plate-common';
 
 /** Creates a plugin that adds alignment functionality to the editor. */
@@ -13,7 +12,7 @@ export const AlignPlugin = createPlugin({
         deserializeHtml: {
           getNode: ({ element, node }) => {
             if (element.style.textAlign) {
-              node[getPluginType(editor, plugin)] = element.style.textAlign;
+              node[editor.getType(plugin)] = element.style.textAlign;
             }
           },
         },

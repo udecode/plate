@@ -1,10 +1,9 @@
-import { type PlateEditor, getPluginOptions } from '@udecode/plate-common';
+import type { PlateEditor } from '@udecode/plate-common';
 
 import type {
   TTableCellElement,
   TTableElement,
   TTableRowElement,
-  TablePluginOptions,
 } from '../types';
 
 import { TablePlugin } from '../TablePlugin';
@@ -16,7 +15,7 @@ export function computeCellIndices(
   tableEl: TTableElement,
   cellEl: TTableCellElement
 ) {
-  const options = getPluginOptions<TablePluginOptions>(editor, TablePlugin.key);
+  const options = editor.getOptions(TablePlugin);
 
   const tableNodes = tableEl.children;
 
@@ -80,7 +79,7 @@ export const computeAllCellIndices = (
   editor: PlateEditor,
   tableNode: TTableElement
 ) => {
-  const options = getPluginOptions<TablePluginOptions>(editor, TablePlugin.key);
+  const options = editor.getOptions(TablePlugin);
 
   // Iterate through the table rows
   for (const tableChild of tableNode.children) {

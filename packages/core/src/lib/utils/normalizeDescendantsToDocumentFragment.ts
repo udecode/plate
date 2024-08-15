@@ -7,7 +7,6 @@ import {
 
 import type { PlateEditor } from '../editor';
 
-import { getPluginType } from '../plugin/getPlugin';
 import { ParagraphPlugin } from '../plugins';
 
 const isInlineNode =
@@ -121,7 +120,7 @@ export const normalizeDescendantsToDocumentFragment = (
   { descendants }: { descendants: TDescendant[] }
 ): TDescendant[] => {
   const isInline = isInlineNode(editor);
-  const defaultType = getPluginType(editor, ParagraphPlugin.key);
+  const defaultType = editor.getType(ParagraphPlugin);
   const makeDefaultBlock = makeBlockLazy(defaultType);
 
   return normalize(descendants, isInline, makeDefaultBlock as any);

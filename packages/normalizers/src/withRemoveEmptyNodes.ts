@@ -6,12 +6,10 @@ import {
 } from '@udecode/plate-common';
 import castArray from 'lodash/castArray.js';
 
-import type { RemoveEmptyNodesPluginOptions } from './RemoveEmptyNodesPlugin';
+import type { RemoveEmptyNodesContext } from './RemoveEmptyNodesPlugin';
 
 /** Remove nodes with empty text. */
-export const withRemoveEmptyNodes: WithOverride<
-  RemoveEmptyNodesPluginOptions
-> = ({
+export const withRemoveEmptyNodes: WithOverride<RemoveEmptyNodesContext> = ({
   editor,
   plugin: {
     options: { types: _types },

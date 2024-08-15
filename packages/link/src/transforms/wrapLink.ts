@@ -26,7 +26,7 @@ export const wrapLink = <E extends PlateEditor>(
     {
       children: [],
       target,
-      type: getPluginType(editor, LinkPlugin.key),
+      type: editor.getType(LinkPlugin),
       url,
     },
     { split: true, ...options } as any

@@ -19,7 +19,7 @@ export const createLinkNode = (
   editor: PlateEditor,
   { children, target, text = '', url }: CreateLinkNodeOptions
 ): TLinkElement => {
-  const type = getPluginType(editor, LinkPlugin.key);
+  const type = editor.getType(LinkPlugin);
 
   return {
     children: children ?? [{ text }],

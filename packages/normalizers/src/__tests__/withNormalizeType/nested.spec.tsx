@@ -33,13 +33,15 @@ it('should be', () => {
     editor: input,
     plugins: [
       NormalizeTypesPlugin.configure({
-        rules: [
-          {
-            path: [0, 0],
-            strictType: ELEMENT_H1,
-          },
-          { path: [0, 1], type: ParagraphPlugin.key },
-        ],
+        options: {
+          rules: [
+            {
+              path: [0, 0],
+              strictType: ELEMENT_H1,
+            },
+            { path: [0, 1], type: ParagraphPlugin.key },
+          ],
+        },
       }),
     ],
   });

@@ -5,11 +5,13 @@ import {
   type HotkeyPluginOptions,
   type KeyboardHandler,
   ParagraphPlugin,
-  getPluginType,
+  type PluginContext,
   toggleNodeType,
 } from '../../lib';
 
-export const onKeyDownToggleElement: KeyboardHandler<HotkeyPluginOptions> = ({
+export const onKeyDownToggleElement: KeyboardHandler<
+  PluginContext<HotkeyPluginOptions>
+> = ({
   editor,
   event,
   plugin: {
@@ -19,7 +21,7 @@ export const onKeyDownToggleElement: KeyboardHandler<HotkeyPluginOptions> = ({
 }) => {
   if (event.defaultPrevented) return;
 
-  const defaultType = getPluginType(editor, ParagraphPlugin.key);
+  const defaultType = editor.getType(ParagraphPlugin);
 
   if (!hotkey) return;
 

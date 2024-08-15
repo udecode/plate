@@ -16,12 +16,18 @@ describe('resolvePlugin', () => {
             }),
           ],
         })
-          .extendPlugin('aa', {
-            type: 'ab',
-          })
-          .extendPlugin('aa', {
-            type: 'ac',
-          })
+          .extendPlugin(
+            { key: 'aa' },
+            {
+              type: 'ab',
+            }
+          )
+          .extendPlugin(
+            { key: 'aa' },
+            {
+              type: 'ac',
+            }
+          )
       ).plugins[0].type
     ).toBe('ac');
   });

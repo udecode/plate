@@ -30,7 +30,7 @@ function PlateContainer() {
     plugins: [
       BlockquotePlugin,
       TodoListPlugin,
-      HeadingPlugin.configure({ levels: 5 }),
+      HeadingPlugin.configure({ options: { levels: 5 } }),
       BasicElementsPlugin,
       BasicMarksPlugin,
       TodoListPlugin,

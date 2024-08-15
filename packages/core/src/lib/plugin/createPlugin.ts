@@ -38,7 +38,7 @@ import { isFunction } from '../utils/misc/isFunction';
  *   });
  *
  *   const pluginWithNestedExtension = extendedPlugin.extendPlugin(
- *     'nestedPlugin',
+ *     nestedPlugin,
  *     {
  *       options: { nestedOption: true },
  *     }
@@ -49,9 +49,9 @@ import { isFunction } from '../utils/misc/isFunction';
  * @template A - The type of the plugin utilities.
  * @template T - The type of the plugin transforms.
  * @template S - The type of the plugin storage.
- * @param {Partial<PlatePlugin<K, O, A, T, S>>} config - The configuration
- *   object for the plugin.
- * @returns {PlatePlugin<K, O, A, T, S>} A new Plate plugin instance with the
+ * @param {Partial<PlatePlugin<K, O, A, T>>} config - The configuration object
+ *   for the plugin.
+ * @returns {PlatePlugin<K, O, A, T>} A new Plate plugin instance with the
  *   following properties and methods:
  *
  *   - All properties from the input config, merged with default values.
@@ -61,25 +61,19 @@ import { isFunction } from '../utils/misc/isFunction';
  *   - `extendPlugin`: A method to extend an existing plugin (including nested
  *       plugins) or add a new one if not found.
  */
-export function createPlugin<
-  K extends string = any,
-  O = {},
-  A = {},
-  T = {},
-  S = {},
->(
+export function createPlugin<K extends string = any, O = {}, A = {}, T = {}>(
   config:
     | ((
         editor: PlateEditor
-      ) => Omit<Partial<PlatePlugin<K, O, A, T, S>>, keyof PlatePluginMethods>)
-    | Omit<Partial<PlatePlugin<K, O, A, T, S>>, keyof PlatePluginMethods> = {}
-): PlatePlugin<K, O, A, T, S> {
-  let baseConfig: Partial<PlatePlugin<K, O, A, T, S>>;
+      ) => Omit<Partial<PlatePlugin<K, O, A, T>>, keyof PlatePluginMethods>)
+    | Omit<Partial<PlatePlugin<K, O, A, T>>, keyof PlatePluginMethods> = {}
+): PlatePlugin<K, O, A, T> {
+  let baseConfig: Partial<PlatePlugin<K, O, A, T>>;
   let initialExtension:
     | ((
         editor: PlateEditor,
-        plugin: PlatePlugin<K, O, A, T, S>
-      ) => Partial<PlatePlugin<K, O, A, T, S>>)
+        plugin: PlatePlugin<K, O, A, T>
+      ) => Partial<PlatePlugin<K, O, A, T>>)
     | undefined;
 
   if (isFunction(config)) {
@@ -94,9 +88,9 @@ export function createPlugin<
   const plugin = merge(
     {},
     {
+      __configuration: null,
       __extensions: initialExtension ? [initialExtension] : [],
       __methodExtensions: [],
-      // __configuration: null,
       api: {},
       dependencies: [],
       editor: {},
@@ -111,49 +105,33 @@ export function createPlugin<
       type: key,
     },
     config
-  ) as unknown as PlatePlugin<K, O, A, T, S>;
+  ) as unknown as PlatePlugin<K, O, A, T>;
 
   plugin.configure = (config) => {
-    if (plugin.__extensions.length > 0 || isFunction(config)) {
-      const newPlugin = { ...plugin };
-      newPlugin.__extensions = [
-        ...(newPlugin.__extensions as any),
-        (ctx) => ({
-          options: {
-            ...ctx.plugin.options,
-            ...(isFunction(config) ? config(ctx) : config),
-          },
-        }),
-      ];
+    const newPlugin = { ...plugin };
+    newPlugin.__configuration = (ctx) =>
+      isFunction(config) ? config(ctx) : config;
 
-      return createPlugin(newPlugin) as any;
-    }
-
-    return createPlugin(
-      merge({}, plugin, {
-        options: {
-          ...plugin.options,
-          ...config,
-        },
-      })
-    ) as any;
+    return createPlugin(newPlugin) as any;
   };
 
-  plugin.configurePlugin = (key, config) => {
+  plugin.configurePlugin = (p, config) => {
     const newPlugin = { ...plugin };
 
     const configureNestedPlugin = (
       plugins: PlatePlugins
     ): { found: boolean; plugins: PlatePlugins } => {
       let found = false;
+
       const updatedPlugins = plugins.map((nestedPlugin) => {
-        if (nestedPlugin.key === key) {
+        if (nestedPlugin.key === p.key) {
           found = true;
 
           return createPlugin({
             ...nestedPlugin,
-            options: merge({}, nestedPlugin.options, config),
-          });
+            __configuration: (ctx: any) =>
+              isFunction(config) ? config(ctx) : config,
+          } as any);
         }
         if (nestedPlugin.plugins && nestedPlugin.plugins.length > 0) {
           const result = configureNestedPlugin(nestedPlugin.plugins);
@@ -182,6 +160,49 @@ export function createPlugin<
     return createPlugin(newPlugin);
   };
 
+  // plugin.configurePlugin = (key, config) => {
+  //   const newPlugin = { ...plugin };
+  //
+  //   const configureNestedPlugin = (
+  //     plugins: PlatePlugins
+  //   ): { found: boolean; plugins: PlatePlugins } => {
+  //     let found = false;
+  //     const updatedPlugins = plugins.map((nestedPlugin) => {
+  //       if (nestedPlugin.key === key) {
+  //         found = true;
+  //
+  //         return createPlugin({
+  //           ...nestedPlugin,
+  //           options: merge({}, nestedPlugin.options, config),
+  //         });
+  //       }
+  //       if (nestedPlugin.plugins && nestedPlugin.plugins.length > 0) {
+  //         const result = configureNestedPlugin(nestedPlugin.plugins);
+  //
+  //         if (result.found) {
+  //           found = true;
+  //
+  //           return {
+  //             ...nestedPlugin,
+  //             plugins: result.plugins,
+  //           };
+  //         }
+  //       }
+  //
+  //       return nestedPlugin;
+  //     });
+  //
+  //     return { found, plugins: updatedPlugins };
+  //   };
+  //
+  //   const result = configureNestedPlugin(newPlugin.plugins as any);
+  //   newPlugin.plugins = result.plugins as any;
+  //
+  //   // We're not adding a new plugin if not found
+  //
+  //   return createPlugin(newPlugin);
+  // };
+
   plugin.extendApi = (apiExtension) => {
     const newPlugin = { ...plugin };
     newPlugin.__methodExtensions = [
@@ -202,7 +223,7 @@ export function createPlugin<
     return createPlugin(newPlugin) as any;
   };
 
-  plugin.extendPlugin = (key, extendConfig) => {
+  plugin.extendPlugin = (p, extendConfig) => {
     const newPlugin = { ...plugin };
 
     const extendNestedPlugin = (
@@ -210,7 +231,7 @@ export function createPlugin<
     ): { found: boolean; plugins: PlatePlugins } => {
       let found = false;
       const updatedPlugins = plugins.map((nestedPlugin) => {
-        if (nestedPlugin.key === key) {
+        if (nestedPlugin.key === p.key) {
           found = true;
 
           return createPlugin({
@@ -254,7 +275,7 @@ export function createPlugin<
                 ? extendConfig(ctx as any)
                 : (extendConfig as any),
           ],
-          key,
+          key: p.key,
         } as any)
       );
     }

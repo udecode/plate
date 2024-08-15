@@ -1,5 +1,6 @@
 /** @jsx jsx */
 
+import { createPlateEditor } from "@udecode/plate-common/react";
 import { jsx } from '@udecode/plate-test-utils';
 import { withReact } from 'slate-react';
 import { getAutoformatOptions } from 'www/src/lib/plate/demo/plugins/autoformatOptions';
@@ -10,25 +11,24 @@ import { withAutoformat } from '../../../withAutoformat';
 jsx;
 
 const input = (
-  <editor>
+  <fragment>
     <hp>
       {'>'}
       <cursor />
       hello
     </hp>
-  </editor>
+  </fragment>
 ) as any;
 
 const output = (
-  <editor>
+  <fragment>
     <hblockquote>hello</hblockquote>
-  </editor>
+  </fragment>
 ) as any;
 
 it('should autoformat', () => {
-  const editor = withAutoformat({
-    editor: withReact(input),
-    plugin: AutoformatPlugin.configure(getAutoformatOptions()),
+  const editor = createPlateEditor({ value: input,
+    plugins: [AutoformatPlugin.configure({ options: getAutoformatOptions() }),]
   });
 
   editor.insertText(' ');

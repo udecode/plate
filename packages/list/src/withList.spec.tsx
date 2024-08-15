@@ -7,8 +7,6 @@ import { createPlateEditor } from '@udecode/plate-common/react';
 import { LinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
 
-import type { ListPluginOptions } from './types';
-
 import { ListPlugin, ListUnorderedPlugin } from './ListPlugin';
 
 jsx;
@@ -16,13 +14,13 @@ jsx;
 const testInsertText = (
   input: any,
   expected: any,
-  listPluginOptions: Partial<ListPluginOptions> = {}
+  listPluginOptions: Partial<typeof ListUnorderedPlugin> = {}
 ) => {
   const editor = createPlateEditor({
     editor: input,
     plugins: [
       ParagraphPlugin,
-      ListPlugin.configurePlugin(ListUnorderedPlugin.key, listPluginOptions),
+      ListPlugin.configurePlugin(ListUnorderedPlugin, listPluginOptions),
       LinkPlugin,
     ],
   });
@@ -252,7 +250,9 @@ describe('withList', () => {
         ) as any as PlateEditor;
 
         testInsertText(input, expected, {
-          validLiChildrenTypes: ['p', 'blockquote'],
+          options: {
+            validLiChildrenTypes: ['p', 'blockquote'],
+          },
         });
       });
     });

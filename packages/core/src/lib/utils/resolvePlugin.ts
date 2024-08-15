@@ -24,10 +24,24 @@ export const resolvePlugin = <P extends AnyPlatePlugin>(
 ): P => {
   let plugin = { ..._plugin };
 
+  // Apply the stored configuration first
+  if (plugin.__configuration) {
+    const configResult = plugin.__configuration({
+      api: editor.api,
+      editor,
+      plugin,
+    });
+    plugin = merge({}, plugin, configResult);
+    delete (plugin as any).__configuration;
+  }
   // Apply all stored extensions
   if (plugin.__extensions && plugin.__extensions.length > 0) {
     plugin.__extensions.forEach((extension) => {
-      plugin = merge({}, plugin, extension({ editor, plugin }));
+      plugin = merge(
+        {},
+        plugin,
+        extension({ api: editor.api, editor, plugin })
+      );
     });
     plugin.__extensions = [];
   }
@@ -47,6 +61,7 @@ export const resolvePlugin = <P extends AnyPlatePlugin>(
       Object.fromEntries(
         validPlugins.map((validPlugin) => {
           const injectedPlugin = validPluginToInjectPlugin({
+            api: editor.api,
             editor,
             plugin: plugin as any,
             validPlugin,
@@ -66,15 +81,9 @@ export const resolvePlugin = <P extends AnyPlatePlugin>(
   return plugin;
 };
 
-export const validatePlugin = <
-  K extends string = any,
-  O = {},
-  A = {},
-  T = {},
-  S = {},
->(
+export const validatePlugin = <K extends string = any, O = {}, A = {}, T = {}>(
   editor: PlateEditor,
-  plugin: PlatePlugin<K, O, A, T, S>
+  plugin: PlatePlugin<K, O, A, T>
 ) => {
   if (!plugin.__extensions) {
     editor.api.debug.error(

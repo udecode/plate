@@ -10,6 +10,7 @@ export const pipeNormalizeInitialValue = (editor: PlateEditor) => {
 
   editor.pluginList.forEach((p) => {
     const _normalizedValue = p.normalizeInitialValue?.({
+      api: editor.api,
       editor,
       plugin: p,
       value: normalizedValue,

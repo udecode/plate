@@ -5,7 +5,6 @@
 export * from './applyDeepToNodes';
 export * from './getInjectedPlugins';
 export * from './getKeysByTypes';
-export * from './getPluginInjectProps';
 export * from './getRenderNodeProps';
 export * from './hotkeys';
 export * from './mergeDeepToNodes';

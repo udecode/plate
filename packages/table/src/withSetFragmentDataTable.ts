@@ -2,19 +2,18 @@ import {
   type TElement,
   type WithOverride,
   getEndPoint,
-  getPluginType,
   getStartPoint,
   select,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
-import type { TTableCellElement, TablePluginOptions } from './types';
+import type { TTableCellElement, TableContext } from './types';
 
 import { TableCellHeaderPlugin } from './TablePlugin';
 import { getColSpan, getRowSpan, getTableGridAbove } from './queries/index';
 
-export const withSetFragmentDataTable: WithOverride<TablePluginOptions> = ({
+export const withSetFragmentDataTable: WithOverride<TableContext> = ({
   editor,
 }) => {
   const { setFragmentData } = editor;
@@ -82,7 +81,7 @@ export const withSetFragmentDataTable: WithOverride<TablePluginOptions> = ({
 
         const cellStrings: string[] = [];
         const rowElement =
-          row.type === getPluginType(editor, TableCellHeaderPlugin.key)
+          row.type === editor.getType(TableCellHeaderPlugin)
             ? document.createElement('th')
             : document.createElement('tr');
 

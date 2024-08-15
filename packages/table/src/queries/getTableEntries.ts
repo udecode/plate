@@ -33,7 +33,7 @@ export const getTableEntries = (
 
   const rowEntry = getAboveNode(editor, {
     at: cellPath,
-    match: { type: getPluginType(editor, TableRowPlugin.key) },
+    match: { type: editor.getType(TableRowPlugin) },
   });
 
   if (!rowEntry) return;
@@ -42,7 +42,7 @@ export const getTableEntries = (
 
   const tableEntry = getAboveNode(editor, {
     at: rowPath,
-    match: { type: getPluginType(editor, TablePlugin.key) },
+    match: { type: editor.getType(TablePlugin) },
   });
 
   if (!tableEntry) return;
