@@ -1,13 +1,21 @@
 import {
   DeserializeHtmlPlugin,
+  type HotkeyPluginOptions,
+  type PluginConfig,
   createPlugin,
   someNode,
 } from '@udecode/plate-common';
 
-import type { ListPluginOptions } from './types';
-
 import { onKeyDownList } from './onKeyDownList';
 import { withList } from './withList';
+
+export type ListPluginOptions = {
+  enableResetOnShiftTab?: boolean;
+  /** Valid children types for list items, in addition to p and ul types. */
+  validLiChildrenTypes?: string[];
+} & HotkeyPluginOptions;
+
+export type ListConfig = PluginConfig<any, ListPluginOptions>;
 
 export const ListUnorderedPlugin = createPlugin<'ul', ListPluginOptions>({
   deserializeHtml: {

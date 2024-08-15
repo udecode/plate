@@ -1,15 +1,20 @@
-import { type PlateEditor, createPlugin } from '@udecode/plate-common';
+import {
+  type PlateEditor,
+  type PluginConfig,
+  createTPlugin,
+} from '@udecode/plate-common';
 
 import type { Heading } from './types';
 
-export const ELEMENT_TOC = 'toc';
+export type TocConfig = PluginConfig<
+  'toc',
+  {
+    queryHeading?: (editor: PlateEditor) => Heading[];
+  }
+>;
 
-export interface TocPluginOptions {
-  queryHeading?: (editor: PlateEditor) => Heading[];
-}
-
-export const TocPlugin = createPlugin<'toc', TocPluginOptions>({
+export const TocPlugin = createTPlugin<TocConfig>({
   isElement: true,
   isVoid: true,
-  key: ELEMENT_TOC,
+  key: 'toc',
 });

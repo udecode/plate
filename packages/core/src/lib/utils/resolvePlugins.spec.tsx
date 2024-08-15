@@ -236,8 +236,6 @@ describe('resolveAndSortPlugins', () => {
 describe('mergePlugins', () => {
   it('should merge plugins correctly', () => {
     const editor = createPlateEditor();
-    editor.pluginList = [];
-    editor.plugins = {};
 
     const plugins = [
       createPlugin({ key: 'a', type: 'typeA' }),

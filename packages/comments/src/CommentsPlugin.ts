@@ -1,11 +1,16 @@
-import { createPlugin } from '@udecode/plate-common';
-
-import type { CommentsPluginOptions } from './types';
+import { type PluginConfig, createTPlugin } from '@udecode/plate-common';
 
 import { useHooksComments } from './useHooksComments';
 import { withComments } from './withComments';
 
-export const CommentsPlugin = createPlugin<'comment', CommentsPluginOptions>({
+export type CommentsConfig = PluginConfig<
+  'comment',
+  {
+    hotkey?: string | string[];
+  }
+>;
+
+export const CommentsPlugin = createTPlugin<CommentsConfig>({
   isLeaf: true,
   key: 'comment',
   options: {

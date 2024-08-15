@@ -9,7 +9,7 @@ import {
   isHotkey,
 } from '@udecode/plate-common';
 
-import type { CaptionPluginOptions } from './CaptionPlugin';
+import type { CaptionConfig } from './CaptionPlugin';
 
 import { captionGlobalStore } from './captionGlobalStore';
 
@@ -24,7 +24,7 @@ import { captionGlobalStore } from './captionGlobalStore';
  * - If focus is in table, anchor in a block after: set focus to the point before
  *   start of table
  */
-export const withCaption: WithOverride<CaptionPluginOptions> = ({
+export const withCaption: WithOverride<CaptionConfig> = ({
   editor,
   plugin: { options },
 }) => {

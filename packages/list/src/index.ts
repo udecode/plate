@@ -10,7 +10,6 @@ export * from './insertBreakList';
 export * from './insertBreakTodoList';
 export * from './insertFragmentList';
 export * from './onKeyDownList';
-export * from './types';
 export * from './withList';
 export * from './withTodoList';
 export * from './hooks/index';

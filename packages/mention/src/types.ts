@@ -13,12 +13,12 @@ export interface TMentionElement extends TElement {
   value: string;
 }
 
-export interface MentionPluginOptions<
+export type MentionPluginOptions<
   TItem extends TMentionItemBase = TMentionItemBase,
-> extends TriggerComboboxPluginOptions {
+> = {
   createMentionNode?: (
     item: TItem,
     search: string
   ) => TNodeProps<TMentionElement>;
   insertSpaceAfterMention?: boolean;
-}
+} & TriggerComboboxPluginOptions;

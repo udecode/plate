@@ -1,11 +1,15 @@
-import { createPlugin, isHotkey } from '@udecode/plate-common';
+import {
+  type PluginConfig,
+  createTPlugin,
+  isHotkey,
+} from '@udecode/plate-common';
 import { blurEditor } from '@udecode/plate-common/react';
 
 import type { MediaPlaceholder } from './types';
 
-export const ELEMENT_PLACEHOLDER = 'placeholder';
+export type PlaceholderConfig = PluginConfig<'placeholder', MediaPlaceholder>;
 
-export const PlaceholderPlugin = createPlugin<'placeholder', MediaPlaceholder>({
+export const PlaceholderPlugin = createTPlugin<PlaceholderConfig>({
   handlers: {
     onKeyDown: ({ editor, event }) => {
       if (isHotkey('escape')(event)) {
@@ -15,5 +19,5 @@ export const PlaceholderPlugin = createPlugin<'placeholder', MediaPlaceholder>({
   },
   isElement: true,
   isVoid: true,
-  key: ELEMENT_PLACEHOLDER,
+  key: 'placeholder',
 });

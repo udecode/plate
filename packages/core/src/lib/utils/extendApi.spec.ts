@@ -287,4 +287,82 @@ describe('extendApi method', () => {
     expect(getPlugin(editor, plugin1).api.scoped()).toBe('scoped2'); // From plugin1, not overridden
     expect(editor.api.testMethod()).toBe('plugin3-scoped1');
   });
+
+  it('should comprehensively handle all aspects of extendApi and extendTransforms', () => {
+    const basePlugin = createPlugin({
+      key: 'testPlugin',
+      options: {
+        baseValue: 10,
+      },
+    })
+      .extendApi(({ plugin: { options } }) => ({
+        level1: {
+          method1: () => options.baseValue,
+          method2: (factor: number) => options.baseValue * factor,
+        },
+        standalone: () => 'base',
+      }))
+      .extendApi(({ plugin: { api } }) => ({
+        level1: {
+          method3: () => api.level1.method1() + api.level1.method2(2),
+        },
+        override: () => 'original',
+      }))
+      .extendTransforms(({ plugin: { options } }) => ({
+        transform1: (_: any, amount: number) => options.baseValue + amount,
+      }))
+      .extendTransforms(({ plugin: { transforms } }) => ({
+        transform2: (editor: any) => transforms.transform1(editor, 5) * 2,
+      }))
+      .extendApi(({ plugin: { api, transforms } }) => ({
+        combined: () => api.level1.method3() + transforms.transform2(editor),
+      }));
+
+    const overridePlugin = createPlugin({
+      key: 'overridePlugin',
+    }).extendApi(({ editor }) => {
+      const baseApi = editor.getApi(basePlugin);
+
+      return {
+        override: () => `overridden: ${baseApi.standalone()}`,
+      };
+    });
+
+    const editor = createPlateEditor({
+      plugins: [basePlugin, overridePlugin],
+    });
+
+    // Test nested API methods
+    expect(editor.api.level1.method1()).toBe(10);
+    expect(editor.api.level1.method2(3)).toBe(30);
+    expect(editor.api.level1.method3()).toBe(30); // 10 + (10 * 2)
+
+    // Test standalone method
+    expect(editor.api.standalone()).toBe('base');
+
+    // Test transforms
+    expect(editor.transforms.transform1(5)).toBe(15);
+    expect(editor.transforms.transform2()).toBe(30); // (10 + 5) * 2
+
+    // Test combined API and transform method
+    expect(editor.api.combined()).toBe(60); // 40 + 20
+
+    // Test method overriding
+    expect(editor.api.override()).toBe('overridden: base');
+
+    // Test that transforms and API methods are also available in the plugin
+    const plugin = getPlugin(editor, basePlugin);
+    expect(plugin.api.level1.method1()).toBe(10);
+    expect(plugin.transforms.transform1(5)).toBe(15);
+
+    // Test that editor.api and plugin.api are distinct
+    plugin.api.level1.method1 = () => 100;
+    expect(plugin.api.level1.method1()).toBe(100);
+    expect(editor.api.level1.method1()).toBe(10); // Unchanged
+
+    // Test that options are correctly bound
+    editor.plugins.testPlugin.options.baseValue = 20;
+    expect(editor.api.level1.method1()).toBe(20);
+    expect(editor.transforms.transform1(5)).toBe(25);
+  });
 });

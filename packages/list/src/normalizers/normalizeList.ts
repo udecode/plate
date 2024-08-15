@@ -6,7 +6,6 @@ import {
   getChildren,
   getNode,
   getParentNode,
-  getPluginType,
   getPreviousPath,
   isElement,
   match,
@@ -16,7 +15,7 @@ import {
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
-import type { ListPluginOptions } from '../types';
+import type { ListPluginOptions } from '../ListPlugin';
 
 import { ListItemContentPlugin, ListItemPlugin } from '../ListPlugin';
 import { getListTypes, isListRoot } from '../queries/index';

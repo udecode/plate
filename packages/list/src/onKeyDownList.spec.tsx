@@ -1,10 +1,14 @@
 /** @jsx jsx */
 
-import { type HotkeyPluginOptions, getPlugin } from '@udecode/plate-common';
+import {
+  type HotkeyPluginOptions,
+  type PluginConfig,
+  getPluginContext,
+} from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { ListPlugin } from '@udecode/plate-list';
 import { jsx } from '@udecode/plate-test-utils';
 
+import { ListPlugin } from './ListPlugin';
 import { onKeyDownList } from './onKeyDownList';
 
 jsx;
@@ -60,9 +64,11 @@ it('should indent single list item (start of item)', () => {
   });
 
   onKeyDownList({
-    editor,
+    ...getPluginContext(
+      editor,
+      editor.getPlugin<PluginConfig<any, HotkeyPluginOptions>>({ key: 'ul' })
+    ),
     event,
-    plugin: getPlugin<HotkeyPluginOptions>(editor, 'ul'),
   });
   expect(editor.children).toEqual(output.children);
 });
@@ -118,9 +124,11 @@ it('should indent single list item (end of item)', () => {
   });
 
   onKeyDownList({
-    editor,
+    ...getPluginContext(
+      editor,
+      editor.getPlugin<PluginConfig<any, HotkeyPluginOptions>>({ key: 'ul' })
+    ),
     event,
-    plugin: getPlugin<HotkeyPluginOptions>(editor, 'ul'),
   });
   expect(editor.children).toEqual(output.children);
 });
@@ -190,9 +198,11 @@ it('should indent multiple list items (start/end)', () => {
   });
 
   onKeyDownList({
-    editor,
+    ...getPluginContext(
+      editor,
+      editor.getPlugin<PluginConfig<any, HotkeyPluginOptions>>({ key: 'ul' })
+    ),
     event,
-    plugin: getPlugin<HotkeyPluginOptions>(editor, 'ul'),
   });
   expect(editor.children).toEqual(output.children);
 });
@@ -265,9 +275,11 @@ it('should un-indent multiple list items (start/end)', () => {
   });
 
   onKeyDownList({
-    editor,
+    ...getPluginContext(
+      editor,
+      editor.getPlugin<PluginConfig<any, HotkeyPluginOptions>>({ key: 'list' })
+    ),
     event,
-    plugin: getPlugin<HotkeyPluginOptions>(editor, 'list'),
   });
   expect(editor.children).toEqual(output.children);
 });
@@ -342,9 +354,11 @@ it('should un-indent multiple list items (start/out)', () => {
   });
 
   onKeyDownList({
-    editor,
+    ...getPluginContext(
+      editor,
+      editor.getPlugin<PluginConfig<any, HotkeyPluginOptions>>({ key: 'list' })
+    ),
     event,
-    plugin: getPlugin<HotkeyPluginOptions>(editor, 'list'),
   });
   expect(editor.children).toEqual(output.children);
 });
@@ -411,9 +425,11 @@ it('should unhang before indentation', () => {
   });
 
   onKeyDownList({
-    editor,
+    ...getPluginContext(
+      editor,
+      editor.getPlugin<PluginConfig<any, HotkeyPluginOptions>>({ key: 'list' })
+    ),
     event,
-    plugin: getPlugin<HotkeyPluginOptions>(editor, 'list'),
   });
   expect(editor.children).toEqual(output.children);
 });
@@ -436,22 +452,26 @@ it('should NOT not adjust selection length when unhanging ranges', () => {
   const selectionBefore = editor.selection;
 
   onKeyDownList({
-    editor,
+    ...getPluginContext(
+      editor,
+      editor.getPlugin<PluginConfig<any, HotkeyPluginOptions>>({ key: 'list' })
+    ),
     event: new KeyboardEvent('keydown', {
       key: 'Tab',
     }) as any,
-    plugin: getPlugin<HotkeyPluginOptions>(editor, 'list'),
   });
   expect(editor.selection).toEqual(selectionBefore);
 
   // Do the same with shift tab.
   onKeyDownList({
-    editor,
+    ...getPluginContext(
+      editor,
+      editor.getPlugin<PluginConfig<any, HotkeyPluginOptions>>({ key: 'list' })
+    ),
     event: new KeyboardEvent('keydown', {
       key: 'Tab',
       shiftKey: true,
     }) as any,
-    plugin: getPlugin<HotkeyPluginOptions>(editor, 'list'),
   });
   expect(editor.selection).toEqual(selectionBefore);
 });
@@ -506,9 +526,11 @@ it('should convert top-level list item into body upon unindent if enableResetOnS
   });
 
   onKeyDownList({
-    editor,
+    ...getPluginContext(
+      editor,
+      editor.getPlugin<PluginConfig<any, HotkeyPluginOptions>>({ key: 'list' })
+    ),
     event,
-    plugin: getPlugin<HotkeyPluginOptions>(editor, 'list'),
   });
   expect(editor.children).toEqual(output.children);
 });
@@ -561,9 +583,11 @@ it('should convert top-level (first) list item into body upon unindent if enable
   });
 
   onKeyDownList({
-    editor,
+    ...getPluginContext(
+      editor,
+      editor.getPlugin<PluginConfig<any, HotkeyPluginOptions>>({ key: 'list' })
+    ),
     event,
-    plugin: getPlugin<HotkeyPluginOptions>(editor, 'list'),
   });
   expect(editor.children).toEqual(output.children);
 });
@@ -616,9 +640,11 @@ it('should convert top-level (last) list item into body upon unindent if enableR
   });
 
   onKeyDownList({
-    editor,
+    ...getPluginContext(
+      editor,
+      editor.getPlugin<PluginConfig<any, HotkeyPluginOptions>>({ key: 'list' })
+    ),
     event,
-    plugin: getPlugin<HotkeyPluginOptions>(editor, 'list'),
   });
   expect(editor.children).toEqual(output.children);
 });
@@ -672,9 +698,11 @@ it('should NOT convert top-level list item into body upon unindent if enableRese
   });
 
   onKeyDownList({
-    editor,
+    ...getPluginContext(
+      editor,
+      editor.getPlugin<PluginConfig<any, HotkeyPluginOptions>>({ key: 'list' })
+    ),
     event,
-    plugin: getPlugin<HotkeyPluginOptions>(editor, 'list'),
   });
   expect(editor.children).toEqual(output.children);
 });

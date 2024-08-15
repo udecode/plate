@@ -24,11 +24,6 @@ export interface TSuggestionText extends TText {
   suggestionId?: string;
 }
 
-export interface SuggestionPluginOptions {
-  currentUserId?: string;
-  hotkey?: string;
-}
-
 export interface SuggestionEditorProps {
   activeSuggestionId?: null | string;
   isSuggesting?: boolean;

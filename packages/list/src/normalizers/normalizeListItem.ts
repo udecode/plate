@@ -7,7 +7,6 @@ import {
   createPathRef,
   getChildren,
   getParentNode,
-  getPluginType,
   insertEmptyElement,
   isBlock,
   match,
@@ -17,11 +16,10 @@ import {
 } from '@udecode/plate-common';
 import { Path, type PathRef } from 'slate';
 
-import type { ListPluginOptions } from '../types';
-
 import {
   ListItemContentPlugin,
   ListOrderedPlugin,
+  type ListPluginOptions,
   ListUnorderedPlugin,
 } from '../ListPlugin';
 import { getListTypes } from '../queries/index';

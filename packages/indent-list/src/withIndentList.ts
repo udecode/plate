@@ -9,10 +9,7 @@ import {
 } from '@udecode/plate-common';
 import { IndentPlugin } from '@udecode/plate-indent';
 
-import {
-  IndentListPlugin,
-  type IndentListPluginOptions,
-} from './IndentListPlugin';
+import { type IndentListConfig, IndentListPlugin } from './IndentListPlugin';
 import { normalizeIndentList } from './normalizeIndentList';
 import {
   deleteBackwardIndentList,
@@ -24,7 +21,7 @@ import { getNextIndentList } from './queries/getNextIndentList';
 import { getPreviousIndentList } from './queries/getPreviousIndentList';
 import { ListStyleType } from './types';
 
-export const withIndentList: WithOverride<IndentListPluginOptions> = ({
+export const withIndentList: WithOverride<IndentListConfig> = ({
   editor,
   plugin: { options },
 }) => {

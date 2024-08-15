@@ -1,20 +1,21 @@
 import {
+  type PluginConfig,
   type QueryNodeOptions,
-  createPlugin,
+  createTPlugin,
 } from '@udecode/plate-common';
 
 import { withSelectOnBackspace } from './withSelectOnBackspace';
 
-export type SelectOnBackspacePluginOptions = {
-  query?: QueryNodeOptions;
-  removeNodeIfEmpty?: boolean;
-};
+export type SelectOnBackspaceConfig = PluginConfig<
+  'selectOnBackspace',
+  {
+    query?: QueryNodeOptions;
+    removeNodeIfEmpty?: boolean;
+  }
+>;
 
 /** @see {@link withSelectOnBackspace} */
-export const SelectOnBackspacePlugin = createPlugin<
-  'selectOnBackspace',
-  SelectOnBackspacePluginOptions
->({
+export const SelectOnBackspacePlugin = createTPlugin<SelectOnBackspaceConfig>({
   key: 'selectOnBackspace',
   options: {
     removeNodeIfEmpty: false,

@@ -8,3 +8,4 @@ export * from './PlatePlugin';
 export * from './PlateRenderElementProps';
 export * from './PlateRenderLeafProps';
 export * from './PlateRenderNodeProps';
+export * from './infer-types';

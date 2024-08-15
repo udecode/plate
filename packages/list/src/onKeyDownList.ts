@@ -1,7 +1,6 @@
 import type { KeyboardHandler } from '@udecode/plate-common';
 
 import {
-  getPluginType,
   isCollapsed,
   isHotkey,
   select,
@@ -12,12 +11,10 @@ import { Hotkeys } from '@udecode/plate-common/react';
 import castArray from 'lodash/castArray.js';
 import { Range } from 'slate';
 
-import type { ListPluginOptions } from './types';
-
-import { ListItemPlugin } from './ListPlugin';
+import { type ListConfig, ListItemPlugin } from './ListPlugin';
 import { moveListItems, toggleList } from './transforms/index';
 
-export const onKeyDownList: KeyboardHandler<ListPluginOptions> = ({
+export const onKeyDownList: KeyboardHandler<ListConfig> = ({
   editor,
   event,
   plugin: {

@@ -11,7 +11,7 @@ import {
 } from '@udecode/plate-common';
 import { focusEditor, isEditorReadOnly } from '@udecode/plate-common/react';
 
-import type { BlockSelectionPluginOptions } from './BlockSelectionPlugin';
+import type { BlockSelectionConfig } from './BlockSelectionPlugin';
 
 import {
   blockSelectionActions,
@@ -24,7 +24,7 @@ import { selectInsertedBlocks } from './utils/index';
 import { pasteSelectedBlocks } from './utils/pasteSelectedBlocks';
 
 export const useHooksBlockSelection: PlatePluginUseHooks<
-  BlockSelectionPluginOptions
+  BlockSelectionConfig
 > = ({
   editor,
   plugin: {

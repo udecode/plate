@@ -4,15 +4,15 @@ import type { PlatePluginUseHooks } from '@udecode/plate-common';
 
 import { useEditorVersion } from '@udecode/plate-common/react';
 
-import type { SuggestionPluginOptions } from './types';
+import type { SuggestionConfig } from './SuggestionPlugin';
 
 import { findSuggestionNode } from './queries/index';
 import { useSetActiveSuggestionId } from './store/useSetActiveSuggestionId';
 import { getSuggestionId } from './utils/getSuggestionId';
 
-export const useHooksSuggestion: PlatePluginUseHooks<
-  SuggestionPluginOptions
-> = ({ editor }) => {
+export const useHooksSuggestion: PlatePluginUseHooks<SuggestionConfig> = ({
+  editor,
+}) => {
   const version = useEditorVersion();
   const setActiveSuggestionId = useSetActiveSuggestionId();
 

@@ -9,20 +9,20 @@ import {
   unsetNodes,
 } from '@udecode/plate-common';
 
-import type {
-  SuggestionEditorProps,
-  SuggestionPluginOptions,
-  TSuggestionText,
-} from './types';
+import type { SuggestionEditorProps, TSuggestionText } from './types';
 
-import { KEY_SUGGESTION_ID, SuggestionPlugin } from './SuggestionPlugin';
+import {
+  KEY_SUGGESTION_ID,
+  type SuggestionConfig,
+  SuggestionPlugin,
+} from './SuggestionPlugin';
 import { deleteFragmentSuggestion } from './transforms/deleteFragmentSuggestion';
 import { deleteSuggestion } from './transforms/deleteSuggestion';
 import { insertFragmentSuggestion } from './transforms/insertFragmentSuggestion';
 import { insertTextSuggestion } from './transforms/insertTextSuggestion';
 import { getSuggestionId, getSuggestionKeys } from './utils/index';
 
-export const withSuggestion: WithOverride<SuggestionPluginOptions> = ({
+export const withSuggestion: WithOverride<SuggestionConfig> = ({
   editor: e,
 }) => {
   const editor = e as unknown as PlateEditor & SuggestionEditorProps;

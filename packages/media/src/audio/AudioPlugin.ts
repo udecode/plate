@@ -1,11 +1,7 @@
 import { createPlugin } from '@udecode/plate-common';
 
-import type { AudioPluginOptions } from './types';
-
-export const ELEMENT_AUDIO = 'audio';
-
-export const AudioPlugin = createPlugin<'audio', AudioPluginOptions>({
+export const AudioPlugin = createPlugin({
   isElement: true,
   isVoid: true,
-  key: ELEMENT_AUDIO,
+  key: 'audio',
 });

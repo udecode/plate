@@ -9,7 +9,10 @@ import {
   select,
 } from '@udecode/slate';
 
-import type { AnyPlatePlugin } from '../plugin/types/PlatePlugin';
+import type {
+  AnyPlatePlugin,
+  AnyPluginConfig,
+} from '../plugin/types/PlatePlugin';
 import type { InferPlugins, TPlateEditor } from './PlateEditor';
 
 import {
@@ -24,7 +27,7 @@ import { getCorePlugins } from '../plugins/getCorePlugins';
 
 export type WithSlateOptions<
   V extends Value = Value,
-  P extends AnyPlatePlugin = CorePlugin,
+  P extends AnyPluginConfig = CorePlugin,
 > = {
   /**
    * Select the editor after initialization.
@@ -90,7 +93,7 @@ export type WithSlateOptions<
  */
 export const withSlate = <
   V extends Value = Value,
-  P extends AnyPlatePlugin = CorePlugin,
+  P extends AnyPluginConfig = CorePlugin,
 >(
   e: TEditor,
   {
@@ -164,7 +167,8 @@ export const withSlate = <
 
 export type CreateSlateEditorOptions<
   V extends Value = Value,
-  P extends AnyPlatePlugin = CorePlugin,
+  // P extends AnyPlatePlugin = CorePlugin,
+  P extends AnyPluginConfig = CorePlugin,
 > = {
   /**
    * Initial editor to be extended with `withPlate`.
@@ -183,7 +187,8 @@ export type CreateSlateEditorOptions<
  */
 export const createSlateEditor = <
   V extends Value = Value,
-  P extends AnyPlatePlugin = CorePlugin,
+  // P extends AnyPlatePlugin = CorePlugin,
+  P extends AnyPluginConfig = CorePlugin,
 >({
   editor = createTEditor(),
   ...options

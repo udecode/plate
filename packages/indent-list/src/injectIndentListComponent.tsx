@@ -7,11 +7,15 @@ import type {
 
 import { clsx } from 'clsx';
 
-import { IndentListPlugin, KEY_LIST_START } from './IndentListPlugin';
+import {
+  type IndentListConfig,
+  IndentListPlugin,
+  KEY_LIST_START,
+} from './IndentListPlugin';
 import { ULIST_STYLE_TYPES } from './types';
 
 export const injectIndentListComponent = (
-  injectProps: InjectComponentProps
+  injectProps: InjectComponentProps<IndentListConfig>
 ): InjectComponentReturnType => {
   const { element } = injectProps;
 

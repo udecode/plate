@@ -1,17 +1,20 @@
 import {
+  type PluginConfig,
   type ToggleMarkPluginOptions,
-  createPlugin,
+  createTPlugin,
 } from '@udecode/plate-common';
 import { onKeyDownToggleMark } from '@udecode/plate-common/react';
+
+export type HighlightConfig = PluginConfig<
+  'highlight',
+  ToggleMarkPluginOptions
+>;
 
 /**
  * Enables support for highlights, useful when reviewing content or highlighting
  * it for future reference.
  */
-export const HighlightPlugin = createPlugin<
-  'highlight',
-  ToggleMarkPluginOptions
->({
+export const HighlightPlugin = createTPlugin<HighlightConfig>({
   deserializeHtml: {
     rules: [
       {

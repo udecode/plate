@@ -3,14 +3,14 @@ import type { PlateEditor, WithOverride } from '@udecode/plate-common';
 import { HocuspocusProvider } from '@hocuspocus/provider';
 import * as Y from 'yjs';
 
-import type { YjsPluginOptions } from './YjsPlugin';
+import type { YjsConfig } from './YjsPlugin';
 
 import { type PlateYjsEditorProps, withTCursors } from './withTCursors';
 import { withTYHistory } from './withTYHistory';
 import { withTYjs } from './withTYjs';
 import { yjsActions } from './yjsStore';
 
-export const withPlateYjs: WithOverride<YjsPluginOptions> = ({
+export const withPlateYjs: WithOverride<YjsConfig> = ({
   editor: e,
   plugin,
 }) => {

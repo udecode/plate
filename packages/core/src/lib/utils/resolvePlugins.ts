@@ -16,6 +16,7 @@ export const resolvePlugins = (
   editor.pluginList = [];
   editor.plugins = {};
   editor.api = {} as any;
+  editor.transforms = {} as any;
 
   const resolvedPlugins = resolveAndSortPlugins(editor, plugins);
 
@@ -43,15 +44,30 @@ const mergePluginApis = (editor: PlateEditor) => {
   });
 
   (editor.pluginList as PlatePlugin[]).forEach((plugin) => {
-    // Apply method extensions
-    if (plugin.__methodExtensions && plugin.__methodExtensions.length > 0) {
-      plugin.__methodExtensions.forEach((methodExtension) => {
+    // Apply api extensions
+    if (plugin.__apiExtensions && plugin.__apiExtensions.length > 0) {
+      plugin.__apiExtensions.forEach((methodExtension) => {
         const newApi = methodExtension(getPluginContext(editor, plugin));
 
         merge(plugin.api, newApi);
         merge(editor.api, newApi);
       });
-      delete (plugin as any).__methodExtensions;
+      delete (plugin as any).__apiExtensions;
+    }
+    // Apply transform extensions
+    if (
+      plugin.__transformExtensions &&
+      plugin.__transformExtensions.length > 0
+    ) {
+      plugin.__transformExtensions.forEach((transformExtension) => {
+        const newTransforms = transformExtension(
+          getPluginContext(editor, plugin)
+        );
+
+        merge(plugin.transforms, newTransforms);
+        merge(editor.transforms, newTransforms); // Add transforms to editor.api as well
+      });
+      delete (plugin as any).__transformExtensions;
     }
   });
 };

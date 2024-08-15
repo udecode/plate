@@ -7,14 +7,14 @@ import {
   someNode,
 } from '@udecode/plate-common';
 
-import type { ResetNodePluginOptions } from './types';
+import type { ResetNodeConfig } from './ResetNodePlugin';
 
 export const SIMULATE_BACKSPACE: any = {
   key: '',
   which: 8,
 };
 
-export const onKeyDownResetNode: KeyboardHandler<ResetNodePluginOptions> = ({
+export const onKeyDownResetNode: KeyboardHandler<ResetNodeConfig> = ({
   editor,
   event,
   plugin: {

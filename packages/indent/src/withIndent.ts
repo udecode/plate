@@ -5,13 +5,14 @@ import {
   unsetNodes,
 } from '@udecode/plate-common';
 
-import type { IndentPluginOptions, TIndentElement } from './types';
+import type { IndentConfig } from './IndentPlugin';
+import type { TIndentElement } from './types';
 
 /**
  * - `node.indent` can not exceed `indentMax`
  * - `node.indent` is unset if `node.type` is not in `types`
  */
-export const withIndent: WithOverride<IndentPluginOptions> = ({
+export const withIndent: WithOverride<IndentConfig> = ({
   editor,
   plugin: {
     inject: { props: { validPlugins } = {} },

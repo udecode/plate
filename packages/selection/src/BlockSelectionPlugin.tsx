@@ -1,8 +1,9 @@
 import React from 'react';
 
 import {
+  type PluginConfig,
   type QueryNodeOptions,
-  createPlugin,
+  createTPlugin,
 } from '@udecode/plate-common';
 
 import { BlockSelectionArea, BlockStartArea } from './components';
@@ -16,23 +17,23 @@ import { useHooksBlockSelection } from './useHooksBlockSelection';
 import { onCloseBlockSelection } from './utils';
 import { withSelection } from './withSelection';
 
-export interface BlockSelectionPluginOptions {
-  disableContextMenu?: boolean;
-  onKeyDownSelecting?: (e: KeyboardEvent) => void;
-  query?: QueryNodeOptions;
-  scrollContainerSelector?: string;
-  sizes?: {
-    bottom?: number;
-    left?: number;
-    right?: number;
-    top?: number;
-  };
-}
-
-export const BlockSelectionPlugin = createPlugin<
+export type BlockSelectionConfig = PluginConfig<
   'blockSelection',
-  BlockSelectionPluginOptions
->({
+  {
+    disableContextMenu?: boolean;
+    onKeyDownSelecting?: (e: KeyboardEvent) => void;
+    query?: QueryNodeOptions;
+    scrollContainerSelector?: string;
+    sizes?: {
+      bottom?: number;
+      left?: number;
+      right?: number;
+      top?: number;
+    };
+  }
+>;
+
+export const BlockSelectionPlugin = createTPlugin<BlockSelectionConfig>({
   handlers: {
     onChange: onCloseBlockSelection,
     onKeyDown: onKeyDownSelection,

@@ -1,4 +1,4 @@
-import type { AnyPlatePlugin } from '../plugin/types/PlatePlugin';
+import type { AnyPluginConfig } from '../plugin/types/PlatePlugin';
 
 import { DOMPlugin } from './DOMPlugin';
 import { DeserializeAstPlugin } from './DeserializeAstPlugin';
@@ -20,7 +20,7 @@ export type GetCorePluginsOptions = {
   maxLength?: number;
 
   /** Override the core plugins using the same key. */
-  plugins?: AnyPlatePlugin[];
+  plugins?: AnyPluginConfig[];
 };
 
 export const getCorePlugins = ({
@@ -66,7 +66,7 @@ export const getCorePlugins = ({
       return customPlugin;
     }
 
-    return corePlugin;
+    return corePlugin as any;
   });
 
   return corePlugins;

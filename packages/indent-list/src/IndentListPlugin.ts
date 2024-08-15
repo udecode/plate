@@ -2,8 +2,9 @@ import {
   DeserializeHtmlPlugin,
   ParagraphPlugin,
   type PlateRenderElementProps,
+  type PluginConfig,
   type TElement,
-  createPlugin,
+  createTPlugin,
   isHtmlBlockElement,
   postCleanHtml,
   traverseHtmlElements,
@@ -24,31 +25,27 @@ export const KEY_LIST_CHECKED = 'checked';
 
 export const KEY_TODO_STYLE_TYPE = 'todo';
 
-export type MarkerFC = React.FC<Omit<PlateRenderElementProps, 'children'>>;
-
-export type LiFC = React.FC<PlateRenderElementProps>;
-
-export interface IndentListPluginOptions {
-  /** X Map html element to list style type. */
-  getListStyleType?: (element: HTMLElement) => ListStyleType;
-
-  getSiblingIndentListOptions?: GetSiblingIndentListOptions<TElement>;
-
-  listStyleTypes?: Record<
-    string,
-    {
-      isOrdered?: boolean;
-      liComponent?: LiFC;
-      markerComponent?: MarkerFC;
-      type: string;
-    }
-  >;
-}
-
-export const IndentListPlugin = createPlugin<
+export type IndentListConfig = PluginConfig<
   'listStyleType',
-  IndentListPluginOptions
->({
+  {
+    /** X Map html element to list style type. */
+    getListStyleType?: (element: HTMLElement) => ListStyleType;
+
+    getSiblingIndentListOptions?: GetSiblingIndentListOptions<TElement>;
+
+    listStyleTypes?: Record<
+      string,
+      {
+        isOrdered?: boolean;
+        liComponent?: React.FC<PlateRenderElementProps>;
+        markerComponent?: React.FC<Omit<PlateRenderElementProps, 'children'>>;
+        type: string;
+      }
+    >;
+  }
+>;
+
+export const IndentListPlugin = createTPlugin<IndentListConfig>({
   handlers: {
     onKeyDown: onKeyDownIndentList,
   },

@@ -1,12 +1,12 @@
 import {
   ParagraphPlugin,
   type PlateEditor,
-  createPlugin,
-  getPluginType,
+  createTPlugin,
+  getPluginContext,
   isBlockAboveEmpty,
 } from '@udecode/plate-common';
 import {
-  type ResetNodePluginOptions,
+  type ResetNodeConfig,
   SIMULATE_BACKSPACE,
   onKeyDownResetNode,
 } from '@udecode/plate-reset-node';
@@ -39,20 +39,22 @@ export const insertBreakList = (editor: PlateEditor) => {
   }
 
   const didReset = onKeyDownResetNode({
-    editor,
+    ...getPluginContext(
+      editor,
+      createTPlugin<ResetNodeConfig>({
+        options: {
+          rules: [
+            {
+              defaultType: editor.getType(ParagraphPlugin),
+              onReset: (_editor) => unwrapList(_editor),
+              predicate: () => !moved && isBlockAboveEmpty(editor),
+              types: [editor.getType(ListItemPlugin)],
+            },
+          ],
+        },
+      })
+    ),
     event: SIMULATE_BACKSPACE,
-    plugin: createPlugin<string, ResetNodePluginOptions>({
-      options: {
-        rules: [
-          {
-            defaultType: editor.getType(ParagraphPlugin),
-            onReset: (_editor) => unwrapList(_editor),
-            predicate: () => !moved && isBlockAboveEmpty(editor),
-            types: [editor.getType(ListItemPlugin)],
-          },
-        ],
-      },
-    }),
   });
 
   if (didReset) return true;

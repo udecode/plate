@@ -1,13 +1,16 @@
-import { createPlugin } from '@udecode/plate-common';
-
-import type { FindReplacePluginOptions } from './types';
+import { type PluginConfig, createTPlugin } from '@udecode/plate-common';
 
 import { decorateFindReplace } from './decorateFindReplace';
 
-export const FindReplacePlugin = createPlugin<
+export type FindReplaceConfig = PluginConfig<
   'search_highlight',
-  FindReplacePluginOptions
->({
+  {
+    /** Searching text to highlight */
+    search?: string;
+  }
+>;
+
+export const FindReplacePlugin = createTPlugin<FindReplaceConfig>({
   decorate: decorateFindReplace,
   isLeaf: true,
   key: 'search_highlight',

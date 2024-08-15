@@ -1,14 +1,10 @@
 import { type WithOverride, unsetNodes } from '@udecode/plate-common';
 
-import type { CommentsPluginOptions } from './types';
-
-import { CommentsPlugin } from './CommentsPlugin';
+import { type CommentsConfig, CommentsPlugin } from './CommentsPlugin';
 import { removeCommentMark } from './transforms/removeCommentMark';
 import { getCommentCount } from './utils/getCommentCount';
 
-export const withComments: WithOverride<CommentsPluginOptions> = ({
-  editor,
-}) => {
+export const withComments: WithOverride<CommentsConfig> = ({ editor }) => {
   const { insertBreak, normalizeNode } = editor;
 
   editor.insertBreak = () => {

@@ -1,15 +1,21 @@
-import { createPlugin } from '@udecode/plate-common';
+import {
+  type HotkeyPluginOptions,
+  type PluginConfig,
+  createTPlugin,
+} from '@udecode/plate-common';
 import { onKeyDownToggleElement } from '@udecode/plate-common/react';
-
-import type { TodoListPluginOptions } from '../types';
 
 import { withTodoList } from '../withTodoList';
 
-
-export const TodoListPlugin = createPlugin<
+export type TodoListConfig = PluginConfig<
   'action_item',
-  TodoListPluginOptions
->({
+  {
+    inheritCheckStateOnLineEndBreak?: boolean;
+    inheritCheckStateOnLineStartBreak?: boolean;
+  } & HotkeyPluginOptions
+>;
+
+export const TodoListPlugin = createTPlugin<TodoListConfig>({
   handlers: {
     onKeyDown: onKeyDownToggleElement,
   },

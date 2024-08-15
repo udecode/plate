@@ -1,11 +1,35 @@
-import { ParagraphPlugin, createPlugin } from '@udecode/plate-common';
-
-import type { IndentPluginOptions } from './types';
+import {
+  ParagraphPlugin,
+  type PluginConfig,
+  createTPlugin,
+} from '@udecode/plate-common';
 
 import { onKeyDownIndent } from './onKeyDownIndent';
 import { withIndent } from './withIndent';
 
-export const IndentPlugin = createPlugin<'indent', IndentPluginOptions>({
+export type IndentConfig = PluginConfig<
+  'indent',
+  {
+    /** Maximum number of indentation. */
+    indentMax?: number;
+
+    /**
+     * Indentation offset used in `(offset * element.indent) + unit`.
+     *
+     * @default 40
+     */
+    offset?: number;
+
+    /**
+     * Indentation unit used in `(offset * element.indent) + unit`.
+     *
+     * @default 'px'
+     */
+    unit?: string;
+  }
+>;
+
+export const IndentPlugin = createTPlugin<IndentConfig>({
   handlers: {
     onKeyDown: onKeyDownIndent,
   },

@@ -1,5 +1,6 @@
 import {
   type PlateEditor,
+  type PluginConfig,
   type TElement,
   type WithOverride,
   getEditorString,
@@ -10,7 +11,7 @@ import {
 import type { TriggerComboboxPluginOptions } from './types';
 
 export const withTriggerCombobox: WithOverride<
-  TriggerComboboxPluginOptions
+  PluginConfig<any, TriggerComboboxPluginOptions>
 > = ({
   editor,
   plugin: {

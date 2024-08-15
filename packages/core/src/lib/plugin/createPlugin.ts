@@ -96,9 +96,10 @@ export function createPlugin<K extends string = any, O = {}, A = {}, T = {}>(
   const plugin = merge(
     {},
     {
+      __apiExtensions: [],
       __configuration: null,
       __extensions: initialExtension ? [initialExtension] : [],
-      __methodExtensions: [],
+      __transformExtensions: [],
       api: {},
       dependencies: [],
       editor: {},
@@ -168,11 +169,21 @@ export function createPlugin<K extends string = any, O = {}, A = {}, T = {}>(
     return createPlugin(newPlugin);
   };
 
-  plugin.extendApi = (apiExtension) => {
+  plugin.extendApi = (extension) => {
     const newPlugin = { ...plugin };
-    newPlugin.__methodExtensions = [
-      ...(newPlugin.__methodExtensions as any),
-      apiExtension,
+    newPlugin.__apiExtensions = [
+      ...(newPlugin.__apiExtensions as any),
+      extension,
+    ];
+
+    return createPlugin(newPlugin) as any;
+  };
+
+  plugin.extendTransforms = (extension) => {
+    const newPlugin = { ...plugin };
+    newPlugin.__transformExtensions = [
+      ...(newPlugin.__transformExtensions as any),
+      extension,
     ];
 
     return createPlugin(newPlugin) as any;

@@ -1,4 +1,4 @@
-import type { QueryNodeOptions } from '@udecode/plate-common';
+import type { PluginConfig, QueryNodeOptions } from '@udecode/plate-common';
 
 export interface SoftBreakRule {
   hotkey: string;
@@ -7,6 +7,9 @@ export interface SoftBreakRule {
   query?: QueryNodeOptions;
 }
 
-export interface SoftBreakPluginOptions {
-  rules?: SoftBreakRule[];
-}
+export type SoftBreakConfig = PluginConfig<
+  'softBreak',
+  {
+    rules?: SoftBreakRule[];
+  }
+>;

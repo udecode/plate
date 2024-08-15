@@ -3,18 +3,16 @@ import type { Range } from 'slate';
 
 import { isText } from '@udecode/plate-common';
 
-import type { FindReplacePluginOptions } from './types';
+import type { FindReplaceConfig } from './FindReplacePlugin';
 
-import { FindReplacePlugin } from './FindReplacePlugin';
-
-export const decorateFindReplace: Decorate<FindReplacePluginOptions> = ({
-  editor,
+export const decorateFindReplace: Decorate<FindReplaceConfig> = ({
   entry: [node, path],
-  plugin: { key, type },
+  plugin: {
+    options: { search },
+    type,
+  },
 }) => {
   const ranges: SearchRange[] = [];
-
-  const { search } = editor.getOptions(FindReplacePlugin);
 
   if (!search || !isText(node)) {
     return ranges;

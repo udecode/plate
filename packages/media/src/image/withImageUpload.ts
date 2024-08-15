@@ -4,7 +4,7 @@ import {
   pipeInsertDataQuery,
 } from '@udecode/plate-common';
 
-import type { ImagePluginOptions } from './types';
+import type { ImageConfig } from './ImagePlugin';
 
 import { insertImage } from './transforms/insertImage';
 
@@ -12,7 +12,7 @@ import { insertImage } from './transforms/insertImage';
  * Allows for pasting images from clipboard. Not yet: dragging and dropping
  * images, selecting them through a file system dialog.
  */
-export const withImageUpload: WithOverride<ImagePluginOptions> = ({
+export const withImageUpload: WithOverride<ImageConfig> = ({
   editor,
   plugin,
 }) => {

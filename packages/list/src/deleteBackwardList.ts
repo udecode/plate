@@ -3,11 +3,11 @@ import {
   type PlateEditor,
   type TElement,
   type TNodeEntry,
-  createPlugin,
+  createTPlugin,
   deleteMerge,
   getNodeEntries,
   getNodeEntry,
-  getPluginType,
+  getPluginContext,
   getPointBefore,
   isFirstChild,
   isSelectionAtBlockStart,
@@ -15,7 +15,7 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 import {
-  type ResetNodePluginOptions,
+  type ResetNodeConfig,
   SIMULATE_BACKSPACE,
   onKeyDownResetNode,
 } from '@udecode/plate-reset-node';
@@ -39,8 +39,7 @@ export const deleteBackwardList = (editor: PlateEditor, unit: TextUnit) => {
 
     if (
       isSelectionAtBlockStart(editor, {
-        match: (node) =>
-          node.type === editor.getType(ListItemPlugin),
+        match: (node) => node.type === editor.getType(ListItemPlugin),
       })
     ) {
       withoutNormalizing(editor, () => {
@@ -53,21 +52,23 @@ export const deleteBackwardList = (editor: PlateEditor, unit: TextUnit) => {
         if (moved) return true;
         if (isFirstChild(listItem[1]) && !isListNested(editor, list[1])) {
           onKeyDownResetNode({
-            editor,
+            ...getPluginContext(
+              editor,
+              createTPlugin<ResetNodeConfig>({
+                options: {
+                  rules: [
+                    {
+                      defaultType: editor.getType(ParagraphPlugin),
+                      hotkey: 'backspace',
+                      onReset: (e) => unwrapList(e),
+                      predicate: () => isSelectionAtBlockStart(editor),
+                      types: [editor.getType(ListItemPlugin)],
+                    },
+                  ],
+                },
+              })
+            ),
             event: SIMULATE_BACKSPACE,
-            plugin: createPlugin<string, ResetNodePluginOptions>({
-              options: {
-                rules: [
-                  {
-                    defaultType: editor.getType(ParagraphPlugin),
-                    hotkey: 'backspace',
-                    onReset: (e) => unwrapList(e),
-                    predicate: () => isSelectionAtBlockStart(editor),
-                    types: [editor.getType(ListItemPlugin)],
-                  },
-                ],
-              },
-            }),
           });
           moved = true;
 

@@ -1,8 +1,6 @@
 import { type PlateEditor, getPluginOptions } from '@udecode/plate-common';
 
-import type { TogglePluginOptions } from '../types';
-
-import { TogglePlugin } from '../TogglePlugin';
+import { TogglePlugin, type TogglePluginOptions } from '../TogglePlugin';
 
 export function getEnclosingToggleIds(
   editor: PlateEditor,

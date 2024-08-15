@@ -1,10 +1,10 @@
-import { createPlugin, isVoid } from '@udecode/plate-common';
+import { createTPlugin, isVoid } from '@udecode/plate-common';
 
-import type { TabbableEntry, TabbablePluginOptions } from './types';
+import type { TabbableEntry, TabblableConfig } from './types';
 
 import { TabbableEffects } from './TabbableEffects';
 
-export const TabbablePlugin = createPlugin<'tabbable', TabbablePluginOptions>({
+export const TabbablePlugin = createTPlugin<TabblableConfig>({
   key: 'tabbable',
   options: {
     globalEventListener: false,

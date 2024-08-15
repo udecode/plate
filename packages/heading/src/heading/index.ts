@@ -4,4 +4,3 @@
 
 export * from './HeadingPlugin';
 export * from './constants';
-export * from './types';

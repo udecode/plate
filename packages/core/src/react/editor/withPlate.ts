@@ -1,6 +1,6 @@
 import { type TEditor, type Value, createTEditor } from '@udecode/slate';
 
-import type { AnyPlatePlugin } from '../../lib/plugin/types/PlatePlugin';
+import type { AnyPluginConfig } from '../../lib/plugin/types/PlatePlugin';
 
 import {
   type CorePlugin,
@@ -20,14 +20,14 @@ import { ReactPlugin } from '../plugins/react';
  */
 export const withPlate = <
   V extends Value = Value,
-  P extends AnyPlatePlugin = CorePlugin,
+  P extends AnyPluginConfig = CorePlugin,
 >(
   e: TEditor,
   { plugins = [], ...options }: WithSlateOptions<V, P> = {}
 ) => {
   return withSlate<V, P>(e, {
     ...options,
-    plugins: [ReactPlugin as P, ParagraphPlugin as P, ...plugins],
+    plugins: [ReactPlugin as any, ParagraphPlugin as any, ...plugins],
   });
 };
 
@@ -91,7 +91,8 @@ export const withPlate = <
  */
 export const createPlateEditor = <
   V extends Value = Value,
-  P extends AnyPlatePlugin = CorePlugin,
+  P extends AnyPluginConfig = CorePlugin,
+  // P extends AnyPlatePlugin = CorePlugin,
 >({
   editor = createTEditor(),
   ...options

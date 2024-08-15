@@ -2,8 +2,11 @@ import {
   type TriggerComboboxPluginOptions,
   withTriggerCombobox,
 } from '@udecode/plate-combobox';
-import { createPlugin } from '@udecode/plate-common';
-
+import {
+  type PluginConfig,
+  createPlugin,
+  createTPlugin,
+} from '@udecode/plate-common';
 
 export const SlashInputPlugin = createPlugin({
   isElement: true,
@@ -12,10 +15,12 @@ export const SlashInputPlugin = createPlugin({
   key: 'slash_input',
 });
 
-export const SlashPlugin = createPlugin<
+export type SlashConfig = PluginConfig<
   'slash_command',
   TriggerComboboxPluginOptions
->({
+>;
+
+export const SlashPlugin = createTPlugin<SlashConfig>({
   key: 'slash_command',
   options: {
     createComboboxInput: () => ({

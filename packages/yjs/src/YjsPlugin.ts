@@ -4,7 +4,11 @@ import type {
 } from '@hocuspocus/provider';
 import type { WithCursorsOptions } from '@slate-yjs/core';
 
-import { type UnknownObject, createPlugin } from '@udecode/plate-common';
+import {
+  type PluginConfig,
+  type UnknownObject,
+  createTPlugin,
+} from '@udecode/plate-common';
 
 import type { WithYjsOptions } from './withTYjs';
 
@@ -32,7 +36,9 @@ export type YjsPluginOptions<
   yjsOptions?: WithYjsOptions;
 };
 
-export const YjsPlugin = createPlugin<'yjs', YjsPluginOptions>({
+export type YjsConfig = PluginConfig<'yjs', YjsPluginOptions>;
+
+export const YjsPlugin = createTPlugin<YjsConfig>({
   key: 'yjs',
   renderAboveEditable: RenderAboveEditableYjs,
   withOverrides: withPlateYjs,

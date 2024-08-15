@@ -1,6 +1,6 @@
-import { createPlugin } from '@udecode/plate-common';
+import { createTPlugin } from '@udecode/plate-common';
 
-import type { SoftBreakPluginOptions } from './types';
+import type { SoftBreakConfig } from './types';
 
 import { onKeyDownSoftBreak } from './onKeyDownSoftBreak';
 
@@ -8,10 +8,7 @@ import { onKeyDownSoftBreak } from './onKeyDownSoftBreak';
  * Insert soft break following configurable rules. Each rule specifies a hotkey
  * and query options.
  */
-export const SoftBreakPlugin = createPlugin<
-  'softBreak',
-  SoftBreakPluginOptions
->({
+export const SoftBreakPlugin = createTPlugin<SoftBreakConfig>({
   handlers: {
     onKeyDown: onKeyDownSoftBreak,
   },

@@ -22,10 +22,9 @@ export type EmojiSettingsType = {
   };
 };
 
-export interface EmojiPluginOptions<TEmoji extends Emoji = Emoji>
-  extends TriggerComboboxPluginOptions {
+export type EmojiPluginOptions<TEmoji extends Emoji = Emoji> = {
   createEmojiNode?: (emoji: TEmoji) => TDescendant;
-}
+} & TriggerComboboxPluginOptions;
 
 export const EmojiCategory = {
   Activity: 'activity',

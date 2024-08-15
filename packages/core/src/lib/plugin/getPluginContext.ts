@@ -13,6 +13,9 @@ export function getPluginContext<C extends AnyPluginConfig = PluginConfig>(
   return {
     api: editor.api,
     editor,
+    options: plugin.options,
     plugin,
+    transforms: editor.transforms,
+    type: plugin.type,
   };
 }

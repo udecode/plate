@@ -6,13 +6,10 @@ import {
   isHotkey,
 } from '@udecode/plate-common';
 
-import {
-  IndentListPlugin,
-  type IndentListPluginOptions,
-} from './IndentListPlugin';
+import { type IndentListConfig, IndentListPlugin } from './IndentListPlugin';
 import { outdentList } from './transforms/index';
 
-export const onKeyDownIndentList: KeyboardHandler<IndentListPluginOptions> = ({
+export const onKeyDownIndentList: KeyboardHandler<IndentListConfig> = ({
   editor,
   event,
 }) => {

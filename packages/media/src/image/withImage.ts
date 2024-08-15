@@ -1,6 +1,6 @@
 import type { WithOverride } from '@udecode/plate-common';
 
-import type { ImagePluginOptions } from './types';
+import type { ImageConfig } from './ImagePlugin';
 
 import { withImageEmbed } from './withImageEmbed';
 import { withImageUpload } from './withImageUpload';
@@ -9,19 +9,16 @@ import { withImageUpload } from './withImageUpload';
  * @see withImageUpload
  * @see withImageEmbed
  */
-export const withImage: WithOverride<ImagePluginOptions> = ({
-  editor,
-  plugin,
-}) => {
+export const withImage: WithOverride<ImageConfig> = ({ editor, ...ctx }) => {
   const {
     options: { disableEmbedInsert, disableUploadInsert },
-  } = plugin;
+  } = ctx.plugin;
 
   if (!disableUploadInsert) {
-    editor = withImageUpload({ editor, plugin });
+    editor = withImageUpload({ editor, ...ctx });
   }
   if (!disableEmbedInsert) {
-    editor = withImageEmbed({ editor, plugin });
+    editor = withImageEmbed({ editor, ...ctx });
   }
 
   return editor;

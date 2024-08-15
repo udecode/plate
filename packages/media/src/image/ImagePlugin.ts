@@ -1,11 +1,31 @@
-import { createPlugin } from '@udecode/plate-common';
+import { type PluginConfig, createTPlugin } from '@udecode/plate-common';
 
-import type { ImagePluginOptions } from './types';
+import type { MediaPluginOptions } from '../media';
 
 import { withImage } from './withImage';
 
+export type ImageConfig = PluginConfig<
+  'img',
+  {
+    /** Disable url embed on insert data. */
+    disableEmbedInsert?: boolean;
+
+    /** Disable file upload on insert data. */
+    disableUploadInsert?: boolean;
+
+    /**
+     * An optional method that will upload the image to a server. The method
+     * receives the base64 dataUrl of the uploaded image, and should return the
+     * URL of the uploaded image.
+     */
+    uploadImage?: (
+      dataUrl: ArrayBuffer | string
+    ) => ArrayBuffer | Promise<ArrayBuffer | string> | string;
+  } & MediaPluginOptions
+>;
+
 /** Enables support for images. */
-export const ImagePlugin = createPlugin<'img', ImagePluginOptions>({
+export const ImagePlugin = createTPlugin<ImageConfig>({
   isElement: true,
   isVoid: true,
   key: 'img',

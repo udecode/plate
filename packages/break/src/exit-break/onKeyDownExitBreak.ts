@@ -2,11 +2,11 @@ import type { KeyboardHandler } from '@udecode/plate-common';
 
 import { getBlockAbove, isHotkey, queryNode } from '@udecode/plate-common';
 
-import type { ExitBreakPluginOptions } from './types';
+import type { ExitBreakConfig } from './types';
 
 import { exitBreak } from './transforms/exitBreak';
 
-export const onKeyDownExitBreak: KeyboardHandler<ExitBreakPluginOptions> = ({
+export const onKeyDownExitBreak: KeyboardHandler<ExitBreakConfig> = ({
   editor,
   event,
   plugin: {

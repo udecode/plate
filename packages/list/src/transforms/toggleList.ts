@@ -15,9 +15,11 @@ import {
 } from '@udecode/plate-common';
 import { Range } from 'slate';
 
-import type { ListPluginOptions } from '../types';
-
-import { ListItemContentPlugin, ListItemPlugin } from '../ListPlugin';
+import {
+  type ListConfig,
+  ListItemContentPlugin,
+  ListItemPlugin,
+} from '../ListPlugin';
 import { getListItemEntry, getListTypes } from '../queries/index';
 import { unwrapList } from './unwrapList';
 
@@ -30,7 +32,7 @@ export const toggleList = (
       return;
     }
 
-    const { validLiChildrenTypes } = editor.getOptions<ListPluginOptions>({
+    const { validLiChildrenTypes } = editor.getOptions<ListConfig>({
       key: pluginKey,
     });
 

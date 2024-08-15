@@ -6,20 +6,21 @@ import type { UnionToIntersection } from '@udecode/utils';
 
 import type {
   AnyEditorPlugin,
-  AnyPlatePlugin,
   AnyPluginConfig,
   EditorPlugin,
-  InferApi,
-  InferOptions,
   InjectProps,
   PluginConfig,
   WithRequiredKey,
-} from '../plugin';
+} from '../plugin/types/PlatePlugin';
+import type {
+  InferApi,
+  InferOptions,
+  InferTransforms,
+} from '../plugin/types/infer-types';
 import type { CorePlugin } from '../plugins';
 
 export type PlateEditor = {
   api: UnionToIntersection<InferApi<CorePlugin>>;
-
   currentKeyboardEvent: React.KeyboardEvent | null;
 
   id: any;
@@ -39,6 +40,8 @@ export type PlateEditor = {
   plugins: Record<string, AnyEditorPlugin>;
 
   prevSelection: TRange | null;
+
+  transforms: UnionToIntersection<InferTransforms<CorePlugin>>;
 } & PlateEditorMethods &
   TEditor &
   THistoryEditor &
@@ -66,22 +69,16 @@ export type PlateEditorMethods = {
 
 export type TPlateEditor<
   V extends Value = Value,
-  P extends AnyPlatePlugin = CorePlugin,
+  P extends AnyPluginConfig = CorePlugin,
 > = {
   api: UnionToIntersection<InferApi<CorePlugin | P>>;
-
   children: V;
 
   pluginList: P[];
 
   plugins: { [K in P['key']]: Extract<P, { key: K }> };
 
-  // transforms: UnionToIntersection<
-  //   InferPluginTransforms<
-  // | P
-
-  // >
-  // >;
+  transforms: UnionToIntersection<InferTransforms<CorePlugin | P>>;
 } & PlateEditor;
 
-export type InferPlugins<T extends AnyPlatePlugin[]> = T[number];
+export type InferPlugins<T extends AnyPluginConfig[]> = T[number];

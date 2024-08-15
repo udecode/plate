@@ -1,10 +1,10 @@
 import type { WithOverride } from '@udecode/plate-common';
 
-import type { TodoListPluginOptions } from './types';
+import type { TodoListConfig } from './todo-list';
 
 import { insertBreakTodoList } from './insertBreakTodoList';
 
-export const withTodoList: WithOverride<TodoListPluginOptions> = ({
+export const withTodoList: WithOverride<TodoListConfig> = ({
   editor,
   plugin: { options },
 }) => {

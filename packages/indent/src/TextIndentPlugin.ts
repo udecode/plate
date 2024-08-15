@@ -1,16 +1,23 @@
-import { ParagraphPlugin, createPlugin } from '@udecode/plate-common';
+import {
+  ParagraphPlugin,
+  type PluginConfig,
+  createTPlugin,
+} from '@udecode/plate-common';
 
-import type { IndentPluginOptions } from './types';
+import type { IndentConfig } from './IndentPlugin';
 
-export const TextIndentPlugin = createPlugin<'textIndent', IndentPluginOptions>(
-  {
-    key: 'textIndent',
-    options: {
-      offset: 24,
-      unit: 'px',
-    },
-  }
-).extend(
+export type TextIndentConfig = PluginConfig<
+  'textIndent',
+  IndentConfig['options']
+>;
+
+export const TextIndentPlugin = createTPlugin<TextIndentConfig>({
+  key: 'textIndent',
+  options: {
+    offset: 24,
+    unit: 'px',
+  },
+}).extend(
   ({
     plugin: {
       options: { offset, unit },

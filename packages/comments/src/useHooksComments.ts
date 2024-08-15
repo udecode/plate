@@ -1,11 +1,11 @@
 import { type PlatePluginUseHooks, isExpanded } from '@udecode/plate-common';
 import { useHotkeys } from '@udecode/plate-common/react';
 
-import type { CommentsPluginOptions } from './types';
+import type { CommentsConfig } from './CommentsPlugin';
 
 import { useAddCommentMark, useCommentsActions } from './stores';
 
-export const useHooksComments: PlatePluginUseHooks<CommentsPluginOptions> = ({
+export const useHooksComments: PlatePluginUseHooks<CommentsConfig> = ({
   editor,
   plugin: {
     options: { hotkey },

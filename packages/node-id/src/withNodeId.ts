@@ -12,10 +12,10 @@ import {
 import castArray from 'lodash/castArray.js';
 import cloneDeep from 'lodash/cloneDeep.js';
 
-import type { NodeIdPlugin } from './NodeIdPlugin';
+import type { NodeIdConfig } from './NodeIdPlugin';
 
 /** Enables support for inserting nodes with an id key. */
-export const withNodeId: WithOverride<NodeIdPlugin> = ({
+export const withNodeId: WithOverride<NodeIdConfig> = ({
   editor,
   plugin: {
     options: {

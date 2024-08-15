@@ -13,9 +13,7 @@ import {
 } from '@udecode/plate-common/react';
 import { IndentPlugin, type TIndentElement } from '@udecode/plate-indent';
 
-import type { TogglePluginOptions } from './types';
-
-import { TogglePlugin } from './TogglePlugin';
+import { TogglePlugin, type TogglePluginOptions } from './TogglePlugin';
 
 // Duplicate constant instead of importing from "plate-indent-list" to avoid a dependency.
 const IndentListPluginKey = 'listStyleType';

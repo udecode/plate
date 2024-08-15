@@ -1,14 +1,17 @@
-import { createPlugin } from '@udecode/plate-common';
-
-import type { SuggestionPluginOptions } from './types';
+import { type PluginConfig, createTPlugin } from '@udecode/plate-common';
 
 import { useHooksSuggestion } from './useHooksSuggestion';
 import { withSuggestion } from './withSuggestion';
 
-export const SuggestionPlugin = createPlugin<
+export type SuggestionConfig = PluginConfig<
   'suggestion',
-  SuggestionPluginOptions
->({
+  {
+    currentUserId?: string;
+    hotkey?: string;
+  }
+>;
+
+export const SuggestionPlugin = createTPlugin<SuggestionConfig>({
   isLeaf: true,
   key: 'suggestion',
   useHooks: useHooksSuggestion,

@@ -1,18 +1,14 @@
 /** @jsx jsx */
 
-import {
-  type PlateEditor,
-  createSlateEditor,
-  getPluginType,
-} from '@udecode/plate-common';
+import { type PlateEditor, createSlateEditor } from '@udecode/plate-common';
+import { ImagePlugin } from '@udecode/plate-media';
+import { jsx } from '@udecode/plate-test-utils';
+
 import {
   ListOrderedPlugin,
   ListPlugin,
   ListUnorderedPlugin,
-} from '@udecode/plate-list';
-import { ImagePlugin } from '@udecode/plate-media';
-import { jsx } from '@udecode/plate-test-utils';
-
+} from '../ListPlugin';
 import { toggleList } from './toggleList';
 
 jsx;
