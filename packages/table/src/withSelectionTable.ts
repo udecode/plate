@@ -8,7 +8,7 @@ import {
 } from '@udecode/plate-common';
 import { Range } from 'slate';
 
-import type { TableContext } from './types';
+import type { TableConfig } from './types';
 
 import { TablePlugin } from './TablePlugin';
 import { overrideSelectionFromCell } from './transforms/overrideSelectionFromCell';
@@ -24,7 +24,7 @@ import { overrideSelectionFromCell } from './transforms/overrideSelectionFromCel
  * - If focus is in table, anchor in a block after: set focus to the point before
  *   start of table
  */
-export const withSelectionTable: WithOverride<TableContext> = ({ editor }) => {
+export const withSelectionTable: WithOverride<TableConfig> = ({ editor }) => {
   const { apply } = editor;
 
   editor.apply = (op) => {

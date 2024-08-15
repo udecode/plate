@@ -4,6 +4,8 @@ import type { Range } from 'slate';
 
 import type { PlateEditor } from '../editor';
 
+import { getPluginContext } from '../plugin';
+
 /**
  * @see {@link Decorate} .
  * Optimization: return undefined if empty list so Editable uses a memo.
@@ -28,10 +30,8 @@ export const pipeDecorate = (
     relevantPlugins.forEach((plugin) => {
       addRanges(
         plugin.decorate!({
-          api: editor.api,
-          editor,
+          ...getPluginContext(editor, plugin),
           entry,
-          plugin,
         })
       );
     });

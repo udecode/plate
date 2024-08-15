@@ -10,6 +10,7 @@ import type {
   TransformOptions,
 } from '../plugin/types/PlatePlugin';
 
+import { getPluginContext } from '../plugin';
 import { getKeyByType } from './getKeysByTypes';
 
 export interface GetInjectPropsOptions {
@@ -71,10 +72,8 @@ export const pluginInjectProps = (
 
   const queryResult = query?.({
     ...props,
-    api: editor.api,
-    editor,
+    ...getPluginContext(editor, plugin),
     nodeProps,
-    plugin,
   });
 
   if (
@@ -101,10 +100,8 @@ export const pluginInjectProps = (
 
   const transformOptions: TransformOptions = {
     ...nodeProps,
-    api: editor.api,
-    editor,
+    ...getPluginContext(editor, plugin),
     nodeValue,
-    plugin,
   };
   const value = transformNodeValue?.(transformOptions) ?? nodeValue;
   transformOptions.value = value;

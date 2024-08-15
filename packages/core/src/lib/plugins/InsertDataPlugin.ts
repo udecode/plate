@@ -1,5 +1,6 @@
 import type { WithOverride } from '../plugin/types/PlatePlugin';
 
+import { getPluginContext } from '../plugin';
 import { createPlugin } from '../plugin/createPlugin';
 import { getInjectedPlugins } from '../utils/getInjectedPlugins';
 import { pipeInsertDataQuery } from '../utils/pipeInsertDataQuery';
@@ -39,11 +40,9 @@ export const withInsertData: WithOverride = ({ editor }) => {
       });
 
       let fragment = getFragment?.({
-        api: editor.api,
+        ...getPluginContext(editor, plugin),
         data,
         dataTransfer,
-        editor,
-        plugin,
       });
 
       if (!fragment?.length) return false;

@@ -2,7 +2,7 @@ import merge from 'lodash/merge.js';
 
 import type { PlatePlugin, PlatePlugins } from '../plugin/types/PlatePlugin';
 
-import { type PlateEditor, resolvePlugin } from '../index';
+import { type PlateEditor, getPluginContext, resolvePlugin } from '../index';
 
 /**
  * Initialize and configure the editor's plugin system. This function sets up
@@ -28,7 +28,7 @@ export const resolvePlugins = (
   // withOverrides
   editor.pluginList.forEach((plugin) => {
     if (plugin.withOverrides) {
-      editor = plugin.withOverrides({ api: editor.api, editor, plugin }) as any;
+      editor = plugin.withOverrides(getPluginContext(editor, plugin)) as any;
     }
   });
 
@@ -46,7 +46,7 @@ const mergePluginApis = (editor: PlateEditor) => {
     // Apply method extensions
     if (plugin.__methodExtensions && plugin.__methodExtensions.length > 0) {
       plugin.__methodExtensions.forEach((methodExtension) => {
-        const newApi = methodExtension({ api: editor.api, editor, plugin });
+        const newApi = methodExtension(getPluginContext(editor, plugin));
 
         merge(plugin.api, newApi);
         merge(editor.api, newApi);

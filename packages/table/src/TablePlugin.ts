@@ -1,6 +1,6 @@
 import { type DeserializeHtml, createPlugin } from '@udecode/plate-common';
 
-import type { TableContext } from './types';
+import type { TableConfig } from './types';
 
 import { onKeyDownTable } from './onKeyDownTable';
 import { insertTableColumn, insertTableRow } from './transforms/index';
@@ -66,14 +66,14 @@ export const TablePlugin = createPlugin({
   },
   plugins: [TableRowPlugin, TableCellPlugin, TableCellHeaderPlugin],
   withOverrides: withTable,
-}).extendApi<TableContext['api']>(({ editor }) => ({
+}).extendApi<TableConfig['api']>(({ editor }) => ({
   table: {
     cellFactory: (options) => getEmptyCellNode(editor, options),
     getCellChildren: (cell) => cell.children,
     insertColumn: (options) => insertTableColumn(editor, options),
     insertRow: (options) => insertTableRow(editor, options),
   },
-})) satisfies TableContext;
+})) satisfies TableConfig;
 
 const createGetNodeFunc = (type: string) => {
   const getNode: DeserializeHtml['getNode'] = ({ element }) => {

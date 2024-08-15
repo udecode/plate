@@ -7,12 +7,12 @@ import type { UnionToIntersection } from '@udecode/utils';
 import type {
   AnyEditorPlugin,
   AnyPlatePlugin,
-  AnyPluginContext,
+  AnyPluginConfig,
   EditorPlugin,
   InferApi,
   InferOptions,
   InjectProps,
-  PluginContext,
+  PluginConfig,
   WithRequiredKey,
 } from '../plugin';
 import type { CorePlugin } from '../plugins';
@@ -47,19 +47,19 @@ export type PlateEditor = {
   TReactEditor;
 
 export type PlateEditorMethods = {
-  getApi: <C extends AnyPluginContext = PluginContext>(
+  getApi: <C extends AnyPluginConfig = PluginConfig>(
     plugin?: WithRequiredKey<C>
   ) => InferApi<C>;
 
-  getInjectProps: <C extends AnyPluginContext = PluginContext>(
+  getInjectProps: <C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
   ) => InjectProps<C>;
 
-  getOptions: <C extends AnyPluginContext = PluginContext>(
+  getOptions: <C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
   ) => InferOptions<C>;
 
-  getPlugin: <C extends AnyPluginContext = PluginContext>(
+  getPlugin: <C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
   ) => EditorPlugin<C>;
 

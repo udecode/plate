@@ -4,7 +4,7 @@ import { LinkPlugin } from '@udecode/plate-link';
 import { createPlateEditor } from '../../react';
 import {
   type PlatePluginComponent,
-  type PluginContext,
+  type PluginConfig,
   createPlugin,
   resolveCreatePluginTest,
   resolvePluginTest,
@@ -179,9 +179,9 @@ describe('createPlugin', () => {
       });
 
       const aaaOptions = editor.getOptions<
-        PluginContext<{ a: number; b: number }>
+        PluginConfig<{ a: number; b: number }>
       >({ key: 'aaa' });
-      const bbbOptions = editor.getOptions<PluginContext<{ a: number }>>({
+      const bbbOptions = editor.getOptions<PluginConfig<{ a: number }>>({
         key: 'bbb',
       });
 
@@ -265,7 +265,7 @@ describe('createPlugin', () => {
       });
 
       const grandchildOptions = editor.getOptions<
-        PluginContext<{ testOption: number }>
+        PluginConfig<{ testOption: number }>
       >({
         key: 'grandchild',
       });
@@ -574,7 +574,7 @@ describe('createPlugin', () => {
 
       const child1Plugin = editor.getPlugin({ key: 'child1' });
       const child1Options = editor.getOptions<
-        PluginContext<{ extendedValue: number; initialValue: number }>
+        PluginConfig<{ extendedValue: number; initialValue: number }>
       >({ key: 'child1' });
 
       expect(child1Plugin.key).toBe('child1');

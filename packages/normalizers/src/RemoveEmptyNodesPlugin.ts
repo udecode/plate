@@ -1,8 +1,8 @@
-import { type PluginContext, createPlugin } from '@udecode/plate-common';
+import { type PluginConfig, createPlugin } from '@udecode/plate-common';
 
 import { withRemoveEmptyNodes } from './withRemoveEmptyNodes';
 
-export type RemoveEmptyNodesContext = PluginContext<{
+export type RemoveEmptyNodesConfig = PluginConfig<{
   types?: string | string[];
 }>;
 
@@ -10,4 +10,4 @@ export type RemoveEmptyNodesContext = PluginContext<{
 export const RemoveEmptyNodesPlugin = createPlugin({
   key: 'removeEmptyNodes',
   withOverrides: withRemoveEmptyNodes,
-}) satisfies RemoveEmptyNodesContext;
+}) satisfies RemoveEmptyNodesConfig;

@@ -4,5 +4,5 @@
 
 export * from './HotkeyPluginOptions';
 export * from './PlateStore';
-export * from './ToggleMarkContext';
+export * from './ToggleMarkConfig';
 export * from './misc/index';

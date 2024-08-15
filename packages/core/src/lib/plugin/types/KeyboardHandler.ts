@@ -1,7 +1,7 @@
 import type React from 'react';
 
 import type { DOMHandler } from './DOMHandlers';
-import type { AnyPluginContext, PluginContext } from './PlatePlugin';
+import type { AnyPluginConfig, PluginConfig } from './PlatePlugin';
 
-export type KeyboardHandler<C extends AnyPluginContext = PluginContext> =
+export type KeyboardHandler<C extends AnyPluginConfig = PluginConfig> =
   DOMHandler<C, React.KeyboardEvent>;

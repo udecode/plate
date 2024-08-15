@@ -4,6 +4,7 @@ import { BoldPlugin } from '@udecode/plate-basic-marks';
 import { jsx } from '@udecode/plate-test-utils';
 import * as isHotkey from 'is-hotkey';
 
+import { getPluginContext } from '../../lib';
 import { createPlateEditor } from '../editor';
 import { onKeyDownToggleMark } from './onKeyDownToggleMark';
 
@@ -48,10 +49,8 @@ it('should be', () => {
   jest.spyOn(isHotkey, 'isHotkey').mockReturnValue(true);
 
   onKeyDownToggleMark({
-    api: editor.api,
-    editor,
+    ...getPluginContext(editor, editor.getPlugin(BoldPlugin)),
     event,
-    plugin: editor.getPlugin(BoldPlugin),
   });
   expect(editor.children).toEqual(output.children);
   expect(editor.selection).toEqual(output.selection);

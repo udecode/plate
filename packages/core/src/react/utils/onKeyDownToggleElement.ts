@@ -5,12 +5,12 @@ import {
   type HotkeyPluginOptions,
   type KeyboardHandler,
   ParagraphPlugin,
-  type PluginContext,
+  type PluginConfig,
   toggleNodeType,
 } from '../../lib';
 
 export const onKeyDownToggleElement: KeyboardHandler<
-  PluginContext<HotkeyPluginOptions>
+  PluginConfig<HotkeyPluginOptions>
 > = ({
   editor,
   event,

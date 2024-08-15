@@ -8,6 +8,7 @@ import type {
 } from '../../../plugin/types/PlatePlugin';
 import type { Nullable } from '../../../types';
 
+import { getPluginContext } from '../../../plugin';
 import { getInjectedPlugins } from '../../../utils/getInjectedPlugins';
 
 /** Get a deserializer by type, node names, class names and styles. */
@@ -109,7 +110,7 @@ export const pluginDeserializeHtml = (
 
     if (!isValid) return;
   }
-  if (query && !query({ api: editor.api, editor, element: el, plugin })) {
+  if (query && !query({ ...getPluginContext(editor, plugin), element: el })) {
     return;
   }
   if (!getNode) {
@@ -123,7 +124,11 @@ export const pluginDeserializeHtml = (
   }
 
   let node =
-    getNode({ api: editor.api, editor, element: el, node: {}, plugin }) ?? {};
+    getNode({
+      ...getPluginContext(editor, plugin),
+      element: el,
+      node: {},
+    }) ?? {};
 
   if (Object.keys(node).length === 0) return;
 
@@ -131,11 +136,9 @@ export const pluginDeserializeHtml = (
 
   injectedPlugins.forEach((injectedPlugin) => {
     const res = injectedPlugin.deserializeHtml?.getNode?.({
-      api: editor.api,
-      editor,
+      ...getPluginContext(editor, plugin),
       element: el,
       node,
-      plugin,
     });
 
     if (res) {

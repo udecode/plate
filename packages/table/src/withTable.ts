@@ -1,6 +1,6 @@
 import type { WithOverride } from '@udecode/plate-common';
 
-import type { TableContext } from './types';
+import type { TableConfig } from './types';
 
 import { withDeleteTable } from './withDeleteTable';
 import { withGetFragmentTable } from './withGetFragmentTable';
@@ -11,7 +11,7 @@ import { withNormalizeTable } from './withNormalizeTable';
 import { withSelectionTable } from './withSelectionTable';
 import { withSetFragmentDataTable } from './withSetFragmentDataTable';
 
-export const withTable: WithOverride<TableContext> = ({ editor, ...ctx }) => {
+export const withTable: WithOverride<TableConfig> = ({ editor, ...ctx }) => {
   editor = withNormalizeTable({ editor, ...ctx });
   editor = withDeleteTable({ editor, ...ctx });
   editor = withGetFragmentTable({ editor, ...ctx });

@@ -1,21 +1,21 @@
 import type React from 'react';
 
 import type {
-  AnyPluginContext,
+  AnyPluginConfig,
   EditorPluginContext,
-  PluginContext,
+  PluginConfig,
 } from './PlatePlugin';
 
 /** If true, the next handlers will be skipped. */
 export type HandlerReturnType = boolean | void;
 
-export type DOMHandler<C extends AnyPluginContext = PluginContext, EV = {}> = (
+export type DOMHandler<C extends AnyPluginConfig = PluginConfig, EV = {}> = (
   ctx: {
     event: EV;
   } & EditorPluginContext<C>
 ) => HandlerReturnType;
 
-export interface DOMHandlers<C extends AnyPluginContext = PluginContext> {
+export interface DOMHandlers<C extends AnyPluginConfig = PluginConfig> {
   // Media Events
   onAbort?: DOMHandler<C, React.SyntheticEvent>;
   onAbortCapture?: DOMHandler<C, React.SyntheticEvent>;

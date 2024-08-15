@@ -1,7 +1,6 @@
 /** @jsx jsx */
 
-import type { PlateEditor } from '@udecode/plate-common';
-
+import { type PlateEditor, getPluginContext } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -57,7 +56,7 @@ describe('withDeleteTable', () => {
         plugins: [plugin],
       });
 
-      editor = withDeleteTable({ api: editor.api, editor, plugin }) as any;
+      editor = withDeleteTable(getPluginContext(editor, plugin)) as any;
 
       editor.deleteBackward('character');
 
@@ -113,7 +112,7 @@ describe('withDeleteTable', () => {
         plugins: [plugin],
       });
 
-      editor = withDeleteTable({ api: editor.api, editor, plugin }) as any;
+      editor = withDeleteTable(getPluginContext(editor, plugin)) as any;
 
       editor.deleteForward('character');
 
@@ -189,7 +188,7 @@ describe('withDeleteTable', () => {
         plugins: [plugin],
       });
 
-      editor = withDeleteTable({ api: editor.api, editor, plugin });
+      editor = withDeleteTable(getPluginContext(editor, plugin));
 
       editor.deleteFragment();
     });

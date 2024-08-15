@@ -1,6 +1,6 @@
 import type { PlateEditor } from '../editor';
 import type {
-  AnyPluginContext,
+  AnyPluginConfig,
   EditorPlugin,
   WithRequiredKey,
 } from './types/PlatePlugin';
@@ -8,7 +8,7 @@ import type {
 import { createPlugin } from './createPlugin';
 
 /** Get editor plugin by key or plugin object. */
-export function getPlugin<C extends AnyPluginContext = AnyPluginContext>(
+export function getPlugin<C extends AnyPluginConfig = AnyPluginConfig>(
   editor: PlateEditor,
   plugin: WithRequiredKey<C>
 ): EditorPlugin<C> {

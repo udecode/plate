@@ -3,6 +3,8 @@ import isEqual from 'lodash/isEqual.js';
 
 import type { PlateEditor } from '../editor';
 
+import { getPluginContext } from '../plugin';
+
 /** Normalize initial value from editor plugins. Set into plate store if diff. */
 export const pipeNormalizeInitialValue = (editor: PlateEditor) => {
   const value = editor.children;
@@ -10,9 +12,7 @@ export const pipeNormalizeInitialValue = (editor: PlateEditor) => {
 
   editor.pluginList.forEach((p) => {
     const _normalizedValue = p.normalizeInitialValue?.({
-      api: editor.api,
-      editor,
-      plugin: p,
+      ...getPluginContext(editor, p),
       value: normalizedValue,
     });
 

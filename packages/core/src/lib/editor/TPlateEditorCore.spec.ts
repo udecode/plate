@@ -8,7 +8,7 @@ import {
 import { createPlateEditor, withPlate } from '@udecode/plate-core/react';
 import { type Value, createTEditor } from '@udecode/slate';
 
-import type { ToggleMarkContext } from '../types';
+import type { ToggleMarkConfig } from '../types/ToggleMarkConfig';
 
 describe('TPlateEditor core package', () => {
   const MyCustomPlugin = createPlugin({
@@ -152,7 +152,7 @@ describe('TPlateEditor core package', () => {
   });
 
   describe('Plugin', () => {
-    const BoldPlugin = createPlugin<'bold', ToggleMarkContext['options']>({
+    const BoldPlugin = createPlugin<'bold', ToggleMarkConfig['options']>({
       deserializeHtml: {
         query: ({ element }) =>
           !someHtmlElement(

@@ -2,7 +2,7 @@ import type { Path } from 'slate';
 
 import {
   type ErrorHandler,
-  type PluginContext,
+  type PluginConfig,
   createPlugin,
 } from '@udecode/plate-common';
 
@@ -17,7 +17,7 @@ interface Rule {
   type?: string;
 }
 
-export type NormalizeTypesContext = PluginContext<
+export type NormalizeTypesConfig = PluginConfig<
   {
     /**
      * Set of rules for the types. For each rule, provide a `path` and either
@@ -37,4 +37,4 @@ export const NormalizeTypesPlugin = createPlugin({
     rules: [],
   },
   withOverrides: withNormalizeTypes,
-}) satisfies NormalizeTypesContext;
+}) satisfies NormalizeTypesConfig;

@@ -5,6 +5,7 @@ import {
   getAboveNode,
   getEditorString,
   getNextNodeStartPoint,
+  getPluginContext,
   getPreviousNodeEndPoint,
   getRangeBefore,
   getRangeFromBlockStart,
@@ -17,12 +18,12 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 import {
-  type RemoveEmptyNodesContext,
+  type RemoveEmptyNodesConfig,
   withRemoveEmptyNodes,
 } from '@udecode/plate-normalizers';
 import { Path, type Point, type Range } from 'slate';
 
-import { type LinkContext, LinkPlugin } from './LinkPlugin';
+import { type LinkConfig, LinkPlugin } from './LinkPlugin';
 import { upsertLink } from './transforms/index';
 
 /**
@@ -34,7 +35,7 @@ import { upsertLink } from './transforms/index';
  * text but not its url.
  */
 
-export const withLink: WithOverride<LinkContext> = ({
+export const withLink: WithOverride<LinkConfig> = ({
   editor,
   plugin: {
     options: { getUrlHref, isUrl, keepSelectedTextOnPaste, rangeBeforeOptions },
@@ -183,13 +184,14 @@ export const withLink: WithOverride<LinkContext> = ({
     normalizeNode([node, path]);
   };
 
-  editor = withRemoveEmptyNodes({
-    api: editor.api,
-    editor,
-    plugin: createPlugin<string, RemoveEmptyNodesContext['options']>({
-      options: { types: type },
-    }),
-  });
+  editor = withRemoveEmptyNodes(
+    getPluginContext<RemoveEmptyNodesConfig>(
+      editor,
+      createPlugin({
+        options: { types: type },
+      })
+    )
+  );
 
   return editor;
 };

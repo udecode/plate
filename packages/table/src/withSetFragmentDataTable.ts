@@ -8,12 +8,12 @@ import {
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
-import type { TTableCellElement, TableContext } from './types';
+import type { TTableCellElement, TableConfig } from './types';
 
 import { TableCellHeaderPlugin } from './TablePlugin';
 import { getColSpan, getRowSpan, getTableGridAbove } from './queries/index';
 
-export const withSetFragmentDataTable: WithOverride<TableContext> = ({
+export const withSetFragmentDataTable: WithOverride<TableConfig> = ({
   editor,
 }) => {
   const { setFragmentData } = editor;

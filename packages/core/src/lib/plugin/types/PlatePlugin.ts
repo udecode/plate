@@ -37,7 +37,7 @@ export type PlatePlugin<K extends string = any, O = {}, A = {}, T = {}> = {
      * data to a slate fragment. The fragment will be inserted to the editor if
      * not empty.
      */
-    insertData?: PlatePluginInsertData<PluginContext<O, A, T>>;
+    insertData?: PlatePluginInsertData<PluginConfig<O, A, T>>;
   };
 
   /** Property used by Plate to enable/disable the plugin. */
@@ -51,8 +51,8 @@ export type PlatePlugin<K extends string = any, O = {}, A = {}, T = {}> = {
   handlers: Nullable<
     {
       /** @see {@link OnChange} */
-      onChange?: OnChange<PluginContext<O, A, T>>;
-    } & DOMHandlers<PluginContext<O, A, T>>
+      onChange?: OnChange<PluginConfig<O, A, T>>;
+    } & DOMHandlers<PluginConfig<O, A, T>>
   >;
 
   /** Inject into Plate. */
@@ -61,13 +61,13 @@ export type PlatePlugin<K extends string = any, O = {}, A = {}, T = {}> = {
      * Property used by Plate to inject a component above other plugins
      * `component`.
      */
-    aboveComponent?: InjectComponent<PluginContext<O, A, T>>;
+    aboveComponent?: InjectComponent<PluginConfig<O, A, T>>;
 
     /**
      * Property used by Plate to inject a component below other plugins
      * `component`, i.e. above its `children`.
      */
-    belowComponent?: InjectComponent<PluginContext<O, A, T>>;
+    belowComponent?: InjectComponent<PluginConfig<O, A, T>>;
 
     /**
      * Property that can be used by a plugin to allow other plugins to inject
@@ -77,10 +77,10 @@ export type PlatePlugin<K extends string = any, O = {}, A = {}, T = {}> = {
      * these `transformData` for `DeserializeHtmlPlugin.key` plugin. Differs
      * from `override.plugins` as this is not overriding any plugin.
      */
-    plugins?: Record<string, Partial<EditorPlugin<AnyPluginContext>>>;
+    plugins?: Record<string, Partial<EditorPlugin<AnyPluginConfig>>>;
 
     /** Properties used by Plate to inject props into any node `component`. */
-    props?: InjectProps<PluginContext<O, A, T>>;
+    props?: InjectProps<PluginConfig<O, A, T>>;
   };
 
   /**
@@ -126,7 +126,7 @@ export type PlatePlugin<K extends string = any, O = {}, A = {}, T = {}> = {
     enabled?: Partial<Record<string, boolean>>;
 
     /** Extend plugins by key. */
-    plugins?: Record<string, Partial<EditorPlugin<AnyPluginContext>>>;
+    plugins?: Record<string, Partial<EditorPlugin<AnyPluginConfig>>>;
   };
 
   /**
@@ -169,10 +169,10 @@ export type PlatePlugin<K extends string = any, O = {}, A = {}, T = {}> = {
   component?: PlatePluginComponent;
 
   /** @see {@link Decorate} */
-  decorate?: Decorate<PluginContext<O, A, T>>;
+  decorate?: Decorate<PluginConfig<O, A, T>>;
 
   /** Properties used by the HTML deserializer core plugin for each HTML element. */
-  deserializeHtml?: Nullable<DeserializeHtml<PluginContext<O, A, T>>>;
+  deserializeHtml?: Nullable<DeserializeHtml<PluginConfig<O, A, T>>>;
 
   /**
    * Normalize initial value before passing it into the editor.
@@ -180,7 +180,7 @@ export type PlatePlugin<K extends string = any, O = {}, A = {}, T = {}> = {
    * @returns Normalized value
    */
   normalizeInitialValue?: (
-    ctx: { value: Value } & EditorPluginContext<PluginContext<O, A, T>>
+    ctx: { value: Value } & EditorPluginContext<PluginConfig<O, A, T>>
   ) => Value;
 
   /**
@@ -189,7 +189,7 @@ export type PlatePlugin<K extends string = any, O = {}, A = {}, T = {}> = {
    * as parameter. If object, its value will be shallow merged to the old
    * props.
    */
-  props?: PlatePluginProps<PluginContext<O, A, T>>;
+  props?: PlatePluginProps<PluginConfig<O, A, T>>;
 
   /** Render a component above `Editable`. */
   renderAboveEditable?: React.FC<{ children: React.ReactNode }>;
@@ -207,13 +207,13 @@ export type PlatePlugin<K extends string = any, O = {}, A = {}, T = {}> = {
    * Property used by `serializeHtml` util to replace `renderElement` and
    * `renderLeaf` when serializing a node of this `type`.
    */
-  serializeHtml?: SerializeHtml<PluginContext<O, A, T>>;
+  serializeHtml?: SerializeHtml<PluginConfig<O, A, T>>;
 
   /** Hook called when the editor is initialized. */
-  useHooks?: PlatePluginUseHooks<PluginContext<O, A, T>>;
+  useHooks?: PlatePluginUseHooks<PluginConfig<O, A, T>>;
 
   /** Editor method overriders. */
-  withOverrides?: WithOverride<PluginContext<O, A, T>>;
+  withOverrides?: WithOverride<PluginConfig<O, A, T>>;
 }> &
   PlatePluginMethods<K, O, A, T>;
 
@@ -221,28 +221,28 @@ export type AnyPlatePlugin = PlatePlugin<any, any, any, any>;
 
 export type PlatePlugins = AnyPlatePlugin[];
 
-export type EditorPlugin<C extends AnyPluginContext = PluginContext> = Omit<
+export type EditorPlugin<C extends AnyPluginConfig = PluginConfig> = Omit<
   PlatePlugin<any, C['options'], C['api'], C['transforms']>,
   'override' | 'plugins' | keyof PlatePluginMethods
 >;
 
-export type AnyEditorPlugin = EditorPlugin<AnyPluginContext>;
+export type AnyEditorPlugin = EditorPlugin<AnyPluginConfig>;
 
 export type EditorPlugins = AnyEditorPlugin[];
 
-export type PluginContext<O = {}, A = {}, T = {}> = {
+export type PluginConfig<O = {}, A = {}, T = {}> = {
   api: A;
   options: O;
   transforms: T;
 };
 
-export type AnyPluginContext = {
+export type AnyPluginConfig = {
   api: any;
   options: any;
   transforms: any;
 };
 
-export type EditorPluginContext<C extends AnyPluginContext = PluginContext> = {
+export type EditorPluginContext<C extends AnyPluginConfig = PluginConfig> = {
   api: C['api'];
   editor: PlateEditor;
   plugin: EditorPlugin<C>;
@@ -269,14 +269,14 @@ export type PlatePluginMethods<
   A = {},
   T = {},
 > = {
-  __configuration: ((ctx: EditorPluginContext<AnyPluginContext>) => any) | null;
-  __extensions: ((ctx: EditorPluginContext<AnyPluginContext>) => any)[];
-  __methodExtensions: ((ctx: EditorPluginContext<AnyPluginContext>) => any)[];
+  __configuration: ((ctx: EditorPluginContext<AnyPluginConfig>) => any) | null;
+  __extensions: ((ctx: EditorPluginContext<AnyPluginConfig>) => any)[];
+  __methodExtensions: ((ctx: EditorPluginContext<AnyPluginConfig>) => any)[];
 
   configure: (
     config:
       | ((
-          ctx: EditorPluginContext<PluginContext<O, A, T>>
+          ctx: EditorPluginContext<PluginConfig<O, A, T>>
         ) => PlatePluginConfig<K, O, A, T>)
       | PlatePluginConfig<K, O, A, T>
   ) => PlatePlugin<K, O, A, T>;
@@ -298,14 +298,14 @@ export type PlatePluginMethods<
   extend: <EO = {}, EA = {}, ET = {}>(
     extendConfig:
       | ((
-          ctx: EditorPluginContext<PluginContext<O, A, T>>
+          ctx: EditorPluginContext<PluginConfig<O, A, T>>
         ) => PlatePluginConfig<K, O, A, T, EO, EA, ET>)
       | PlatePluginConfig<K, O, A, T, EO, EA, ET>
   ) => PlatePlugin<K, EO & O, A & EA, ET & T>;
 
   extendApi: <EA = {}>(
     extendedApi: (
-      ctx: EditorPluginContext<PluginContext<O, A, T>>
+      ctx: EditorPluginContext<PluginConfig<O, A, T>>
     ) => DeepPartial<A> & EA
   ) => PlatePlugin<K, O, A & EA, T>;
 
@@ -350,58 +350,57 @@ export type PlatePluginInsertDataOptions = {
   dataTransfer: DataTransfer;
 };
 
-export type PlatePluginInsertData<C extends AnyPluginContext = PluginContext> =
-  {
-    /** Format to get data. Example data types are text/plain and text/uri-list. */
-    format?: string;
+export type PlatePluginInsertData<C extends AnyPluginConfig = PluginConfig> = {
+  /** Format to get data. Example data types are text/plain and text/uri-list. */
+  format?: string;
 
-    /** Deserialize data to fragment */
-    getFragment?: (
-      options: EditorPluginContext<C> & PlatePluginInsertDataOptions
-    ) => TDescendant[] | undefined;
+  /** Deserialize data to fragment */
+  getFragment?: (
+    options: EditorPluginContext<C> & PlatePluginInsertDataOptions
+  ) => TDescendant[] | undefined;
 
-    /**
-     * Function called on `editor.insertData` just before
-     * `editor.insertFragment`. Default: if the block above the selection is
-     * empty and the first fragment node type is not inline, set the selected
-     * node type to the first fragment node type.
-     *
-     * @returns If true, the next handlers will be skipped.
-     */
-    preInsert?: (
-      options: { fragment: TDescendant[] } & EditorPluginContext<C> &
-        PlatePluginInsertDataOptions
-    ) => HandlerReturnType;
+  /**
+   * Function called on `editor.insertData` just before `editor.insertFragment`.
+   * Default: if the block above the selection is empty and the first fragment
+   * node type is not inline, set the selected node type to the first fragment
+   * node type.
+   *
+   * @returns If true, the next handlers will be skipped.
+   */
+  preInsert?: (
+    options: { fragment: TDescendant[] } & EditorPluginContext<C> &
+      PlatePluginInsertDataOptions
+  ) => HandlerReturnType;
 
-    /** Query to skip this plugin. */
-    query?: (
-      options: EditorPluginContext<C> & PlatePluginInsertDataOptions
-    ) => boolean;
+  /** Query to skip this plugin. */
+  query?: (
+    options: EditorPluginContext<C> & PlatePluginInsertDataOptions
+  ) => boolean;
 
-    /** Transform the inserted data. */
-    transformData?: (
-      options: EditorPluginContext<C> & PlatePluginInsertDataOptions
-    ) => string;
+  /** Transform the inserted data. */
+  transformData?: (
+    options: EditorPluginContext<C> & PlatePluginInsertDataOptions
+  ) => string;
 
-    /** Transform the fragment to insert. */
-    transformFragment?: (
-      options: { fragment: TDescendant[] } & EditorPluginContext<C> &
-        PlatePluginInsertDataOptions
-    ) => TDescendant[];
-  };
+  /** Transform the fragment to insert. */
+  transformFragment?: (
+    options: { fragment: TDescendant[] } & EditorPluginContext<C> &
+      PlatePluginInsertDataOptions
+  ) => TDescendant[];
+};
 
 /** The plate plugin component. */
 export type PlatePluginComponent<T = any> = React.FC<T>;
 
 /** Props object or function returning props object. */
-export type PlatePluginProps<C extends AnyPluginContext = PluginContext> =
+export type PlatePluginProps<C extends AnyPluginConfig = PluginConfig> =
   | ((
       props: PlateRenderElementProps<TElement, EditorPlugin<C>> &
         PlateRenderLeafProps<TText, EditorPlugin<C>>
     ) => AnyObject | undefined)
   | AnyObject;
 
-export type PlatePluginUseHooks<C extends AnyPluginContext = PluginContext> = (
+export type PlatePluginUseHooks<C extends AnyPluginConfig = PluginConfig> = (
   ctx: EditorPluginContext<C>
 ) => void;
 
@@ -409,14 +408,13 @@ export type RenderAfterEditable = (
   editableProps: TEditableProps
 ) => React.ReactElement | null;
 
-export type SerializeHtml<C extends AnyPluginContext = PluginContext> =
-  React.FC<
-    PlateRenderElementProps<TElement, EditorPlugin<C>> &
-      PlateRenderLeafProps<TText, EditorPlugin<C>>
-  >;
+export type SerializeHtml<C extends AnyPluginConfig = PluginConfig> = React.FC<
+  PlateRenderElementProps<TElement, EditorPlugin<C>> &
+    PlateRenderLeafProps<TText, EditorPlugin<C>>
+>;
 
 /** Plate plugin overriding the `editor` methods. Naming convention is `with*`. */
-export type WithOverride<C extends AnyPluginContext = PluginContext> = (
+export type WithOverride<C extends AnyPluginConfig = PluginConfig> = (
   ctx: EditorPluginContext<C>
 ) => PlateEditor;
 
@@ -426,17 +424,17 @@ export type WithOverride<C extends AnyPluginContext = PluginContext> = (
  *
  * @see {@link SlatePropsOnChange}
  */
-export type OnChange<C extends AnyPluginContext = PluginContext> = (
+export type OnChange<C extends AnyPluginConfig = PluginConfig> = (
   ctx: { value: Value } & EditorPluginContext<C>
 ) => HandlerReturnType;
 
-export type TransformOptions<C extends AnyPluginContext = PluginContext> = {
+export type TransformOptions<C extends AnyPluginConfig = PluginConfig> = {
   nodeValue?: any;
   value?: any;
 } & EditorPluginContext<C> &
   GetInjectPropsOptions;
 
-export interface InjectProps<C extends AnyPluginContext = PluginContext> {
+export interface InjectProps<C extends AnyPluginConfig = PluginConfig> {
   /**
    * Object whose keys are node values and values are classNames which will be
    * extended.
@@ -514,21 +512,20 @@ export interface InjectProps<C extends AnyPluginContext = PluginContext> {
   validPlugins?: string[];
 }
 
-export interface InjectComponentProps<
-  C extends AnyPluginContext = PluginContext,
-> extends PlateRenderElementProps<TElement, EditorPlugin<C>> {
+export interface InjectComponentProps<C extends AnyPluginConfig = PluginConfig>
+  extends PlateRenderElementProps<TElement, EditorPlugin<C>> {
   key: string;
 }
 
 export type InjectComponentReturnType<
-  C extends AnyPluginContext = PluginContext,
+  C extends AnyPluginConfig = PluginConfig,
 > = React.FC<PlateRenderElementProps<TElement, EditorPlugin<C>>> | undefined;
 
-export type InjectComponent<C extends AnyPluginContext = PluginContext> = (
+export type InjectComponent<C extends AnyPluginConfig = PluginConfig> = (
   props: InjectComponentProps<C>
 ) => InjectComponentReturnType<C>;
 
-export type DeserializeHtml<C extends AnyPluginContext = PluginContext> = {
+export type DeserializeHtml<C extends AnyPluginConfig = PluginConfig> = {
   /** List of HTML attribute names to store their values in `node.attributes`. */
   attributeNames?: string[];
 
@@ -593,15 +590,15 @@ export type DeserializeHtml<C extends AnyPluginContext = PluginContext> = {
  * undefined then no ranges are modified. If the function returns an array the
  * returned ranges are merged with the ranges called by other plugins.
  */
-export type Decorate<C extends AnyPluginContext = PluginContext> = (
+export type Decorate<C extends AnyPluginConfig = PluginConfig> = (
   ctx: { entry: TNodeEntry } & EditorPluginContext<C>
 ) => Range[] | undefined;
 
-export type InferOptions<P> = P extends PluginContext ? P['options'] : never;
+export type InferOptions<P> = P extends PluginConfig ? P['options'] : never;
 
-export type InferApi<P> = P extends PluginContext ? P['api'] : never;
+export type InferApi<P> = P extends PluginConfig ? P['api'] : never;
 
-export type InferTransforms<P> = P extends PluginContext
+export type InferTransforms<P> = P extends PluginConfig
   ? P['transforms']
   : never;
 

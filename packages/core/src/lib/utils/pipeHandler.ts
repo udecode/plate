@@ -5,6 +5,8 @@ import type { TEditableProps } from '@udecode/slate-react';
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { DOMHandlers } from '../plugin/types/DOMHandlers';
 
+import { getPluginContext } from '../plugin';
+
 export const convertDomEventToSyntheticEvent = (
   domEvent: Event
 ): React.SyntheticEvent<unknown, unknown> => {
@@ -96,10 +98,8 @@ export const pipeHandler = <K extends keyof DOMHandlers>(
       const pluginHandler = plugin.handlers[handlerKey]!;
 
       const shouldTreatEventAsHandled = pluginHandler({
-        api: editor.api,
-        editor,
+        ...getPluginContext(editor, plugin),
         event: handledEvent,
-        plugin,
       });
 
       if (shouldTreatEventAsHandled != null) {

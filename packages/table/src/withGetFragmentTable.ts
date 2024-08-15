@@ -4,13 +4,13 @@ import type {
   WithOverride,
 } from '@udecode/plate-common';
 
-import type { TTableRowElement, TableContext } from './types';
+import type { TTableRowElement, TableConfig } from './types';
 
 import { TablePlugin } from './TablePlugin';
 import { getTableGridAbove } from './queries/getTableGridAbove';
 
 /** If selection is in a table, get subtable above. */
-export const withGetFragmentTable: WithOverride<TableContext> = ({
+export const withGetFragmentTable: WithOverride<TableConfig> = ({
   api,
   editor,
 }) => {

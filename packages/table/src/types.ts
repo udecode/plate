@@ -1,12 +1,12 @@
 import type {
-  PluginContext,
+  PluginConfig,
   TDescendant,
   TElement,
 } from '@udecode/plate-common';
 
 import type { insertTableColumn, insertTableRow } from './transforms';
 
-export type TableContext = PluginContext<
+export type TableConfig = PluginConfig<
   {
     /**
      * For internal use. Keeps track of cell indices. Used only when

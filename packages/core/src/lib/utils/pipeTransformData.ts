@@ -4,6 +4,8 @@ import type {
   PlatePluginInsertDataOptions,
 } from '../plugin/types/PlatePlugin';
 
+import { getPluginContext } from '../plugin';
+
 /** Pipe editor.insertData.transformData */
 export const pipeTransformData = (
   editor: PlateEditor,
@@ -16,11 +18,9 @@ export const pipeTransformData = (
     if (!transformData) return;
 
     data = transformData({
-      api: editor.api,
+      ...getPluginContext(editor, p as any),
       data,
       dataTransfer,
-      editor,
-      plugin: p as any,
     });
   });
 

@@ -10,7 +10,7 @@ import {
   wrapNodeChildren,
 } from '@udecode/plate-common';
 
-import type { TTableElement, TableContext } from './types';
+import type { TTableElement, TableConfig } from './types';
 
 import { TablePlugin, TableRowPlugin } from './TablePlugin';
 import { getCellTypes } from './utils/index';
@@ -20,7 +20,7 @@ import { getCellTypes } from './utils/index';
  *
  * - Wrap cell children in a paragraph if they are texts.
  */
-export const withNormalizeTable: WithOverride<TableContext> = ({
+export const withNormalizeTable: WithOverride<TableConfig> = ({
   editor,
   plugin: { options },
 }) => {

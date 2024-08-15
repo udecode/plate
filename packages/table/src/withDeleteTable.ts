@@ -16,7 +16,7 @@ import {
 } from '@udecode/plate-common';
 import { Point } from 'slate';
 
-import type { TableContext } from './types';
+import type { TableConfig } from './types';
 
 import { TablePlugin } from './TablePlugin';
 import { getTableGridAbove } from './queries/getTableGridAbove';
@@ -76,7 +76,7 @@ export const preventDeleteTableCell = (
 };
 
 /** Prevent cell deletion. */
-export const withDeleteTable: WithOverride<TableContext> = ({ editor }) => {
+export const withDeleteTable: WithOverride<TableConfig> = ({ editor }) => {
   const { deleteBackward, deleteForward, deleteFragment } = editor;
 
   editor.deleteBackward = (unit) => {

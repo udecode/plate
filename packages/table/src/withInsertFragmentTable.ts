@@ -16,7 +16,7 @@ import type {
   TTableCellElement,
   TTableElement,
   TTableRowElement,
-  TableContext,
+  TableConfig,
 } from './types';
 
 import { TablePlugin } from './TablePlugin';
@@ -29,7 +29,7 @@ import { getTableGridAbove } from './queries/getTableGridAbove';
  * - Replace each cell above by the inserted table until out of bounds.
  * - Select the inserted cells.
  */
-export const withInsertFragmentTable: WithOverride<TableContext> = ({
+export const withInsertFragmentTable: WithOverride<TableConfig> = ({
   editor,
   plugin: { api, options },
 }) => {

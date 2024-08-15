@@ -4,4 +4,5 @@
 
 export * from './createPlugin';
 export * from './getPlugin';
+export * from './getPluginContext';
 export * from './types/index';

@@ -6,6 +6,8 @@ import type {
   PlatePluginInsertDataOptions,
 } from '../plugin/types/PlatePlugin';
 
+import { getPluginContext } from '../plugin';
+
 /** Pipe preInsert then insertFragment. */
 export const pipeInsertFragment = (
   editor: PlateEditor,
@@ -19,10 +21,8 @@ export const pipeInsertFragment = (
     injectedPlugins.some((p) => {
       return (
         p.editor?.insertData?.preInsert?.({
-          api: editor.api,
-          editor,
+          ...getPluginContext(editor, p as any),
           fragment,
-          plugin: p as any,
           ...options,
         }) === true
       );

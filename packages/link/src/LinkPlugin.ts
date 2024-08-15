@@ -1,5 +1,5 @@
 import {
-  type PluginContext,
+  type PluginConfig,
   type RangeBeforeOptions,
   createPlugin,
   isUrl,
@@ -17,7 +17,7 @@ type RemoveFirstParameter<T extends (...args: any[]) => any> = T extends (
   ? (...args: R) => U
   : never;
 
-export type LinkContext = PluginContext<
+export type LinkConfig = PluginConfig<
   {
     /**
      * List of allowed URL schemes.
@@ -129,7 +129,7 @@ export const LinkPlugin = createPlugin({
   },
   withOverrides: withLink,
 })
-  .extendApi<LinkContext['api']>(({ editor }) => ({
+  .extendApi<LinkConfig['api']>(({ editor }) => ({
     link: {
       getAttributes: (element) => getLinkAttributes(editor, element),
     },
@@ -156,4 +156,4 @@ export const LinkPlugin = createPlugin({
     props: ({ element }) => ({
       nodeProps: api.link.getAttributes(element as TLinkElement),
     }),
-  })) satisfies LinkContext;
+  })) satisfies LinkConfig;
