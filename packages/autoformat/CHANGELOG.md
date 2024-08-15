@@ -1,5 +1,11 @@
 # @udecode/plate-autoformat
 
+## 36.4.0
+
+### Minor Changes
+
+- [`8342b6c2f333ee445c8b6be7e864857fd2a2584a`](https://github.com/udecode/plate/commit/8342b6c2f333ee445c8b6be7e864857fd2a2584a) by [@zbeyens](https://github.com/zbeyens) – feat: `autoformatBlock` - Add `matchByRegex` option
+
 ## 36.0.0
 
 ## 34.0.0

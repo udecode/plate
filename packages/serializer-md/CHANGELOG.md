@@ -1,5 +1,11 @@
 # @udecode/plate-md-serializer
 
+## 36.4.0
+
+### Patch Changes
+
+- [`8342b6c2f333ee445c8b6be7e864857fd2a2584a`](https://github.com/udecode/plate/commit/8342b6c2f333ee445c8b6be7e864857fd2a2584a) by [@zbeyens](https://github.com/zbeyens) – fix(serializer-md): invalid condition for ignoreParagraphNewLine
+
 ## 36.0.7
 
 ### Patch Changes
