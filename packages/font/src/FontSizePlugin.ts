@@ -1,6 +1,5 @@
 import { createPlugin } from '@udecode/plate-common';
 
-
 export const FontSizePlugin = createPlugin({
   inject: {
     props: {
@@ -8,7 +7,7 @@ export const FontSizePlugin = createPlugin({
     },
   },
   key: 'fontSize',
-}).extend(({ plugin: { type } }) => ({
+}).extend(({ type }) => ({
   deserializeHtml: {
     getNode: ({ element }) => ({ [type]: element.style.fontSize }),
     isLeaf: true,

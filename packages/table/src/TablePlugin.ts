@@ -1,4 +1,9 @@
-import { type DeserializeHtml, createPlugin } from '@udecode/plate-common';
+import {
+  type DeserializeHtml,
+  bindFirst,
+  createPlugin,
+  createTPlugin,
+} from '@udecode/plate-common';
 
 import type { TableConfig } from './types';
 
@@ -50,7 +55,7 @@ export const TableCellHeaderPlugin = createPlugin({
 }));
 
 /** Enables support for tables. */
-export const TablePlugin = createPlugin({
+export const TablePlugin = createTPlugin<TableConfig>({
   deserializeHtml: {
     rules: [{ validNodeName: 'TABLE' }],
   },
@@ -66,14 +71,19 @@ export const TablePlugin = createPlugin({
   },
   plugins: [TableRowPlugin, TableCellPlugin, TableCellHeaderPlugin],
   withOverrides: withTable,
-}).extendApi<TableConfig['api']>(({ editor }) => ({
-  table: {
-    cellFactory: (options) => getEmptyCellNode(editor, options),
-    getCellChildren: (cell) => cell.children,
-    insertColumn: (options) => insertTableColumn(editor, options),
-    insertRow: (options) => insertTableRow(editor, options),
-  },
-})) satisfies TableConfig;
+})
+  .extendApi(({ editor }) => ({
+    table: {
+      cellFactory: bindFirst(getEmptyCellNode, editor),
+      getCellChildren: (cell) => cell.children,
+    },
+  }))
+  .extendTransforms(({ editor }) => ({
+    table: {
+      insertColumn: bindFirst(insertTableColumn, editor),
+      insertRow: bindFirst(insertTableRow, editor),
+    },
+  }));
 
 const createGetNodeFunc = (type: string) => {
   const getNode: DeserializeHtml['getNode'] = ({ element }) => {

@@ -14,9 +14,7 @@ import type { TrailingBlockConfig } from './TrailingBlockPlugin';
  */
 export const withTrailingBlock: WithOverride<TrailingBlockConfig> = ({
   editor,
-  plugin: {
-    options: { level, type, ...query },
-  },
+  options: { level, type, ...query },
 }) => {
   const { normalizeNode } = editor;
 

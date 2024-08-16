@@ -4,7 +4,7 @@
 
 export * from './IndentListPlugin';
 export * from './injectIndentListComponent';
-export * from './normalizeIndentList';
+export * from './withNormalizeIndentList';
 export * from './onKeyDownIndentList';
 export * from './types';
 export * from './withIndentList';

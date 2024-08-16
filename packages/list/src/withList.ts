@@ -11,9 +11,7 @@ import { normalizeList } from './normalizers/index';
 
 export const withList: WithOverride<ListConfig> = ({
   editor,
-  plugin: {
-    options: { validLiChildrenTypes },
-  },
+  options: { validLiChildrenTypes },
 }) => {
   const { deleteBackward, deleteForward, deleteFragment, insertBreak } = editor;
 

@@ -1,12 +1,12 @@
 import React from 'react';
 
-import { useElement } from '@udecode/plate-common/react';
+import { useEditorRef, useElement } from '@udecode/plate-common/react';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
 
 import type { TMediaElement } from './types';
 
 import { MediaEmbedPlugin, VIDEO_PROVIDERS } from '../media-embed';
-import { ELEMENT_VIDEO } from '../video';
+import { VideoPlugin } from '../video';
 
 export type EmbedUrlData = {
   id?: string;
@@ -61,6 +61,7 @@ export const useMediaState = ({
 }: {
   urlParsers?: EmbedUrlParser[];
 } = {}) => {
+  const editor = useEditorRef();
   const element = useElement<TMediaElement>();
   const focused = useFocused();
   const selected = useSelected();
@@ -71,7 +72,8 @@ export const useMediaState = ({
   const embed = React.useMemo(() => {
     if (
       !urlParsers ||
-      (type !== ELEMENT_VIDEO && type !== MediaEmbedPlugin.key)
+      (type !== editor.getType(VideoPlugin) &&
+        type !== editor.getType(MediaEmbedPlugin))
     )
       return;
 

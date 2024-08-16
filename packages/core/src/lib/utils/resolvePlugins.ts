@@ -1,3 +1,4 @@
+import { isDefined } from '@udecode/utils';
 import merge from 'lodash/merge.js';
 
 import type { PlatePlugin, PlatePlugins } from '../plugin/types/PlatePlugin';
@@ -208,7 +209,11 @@ export const applyPluginOverrides = (editor: PlateEditor) => {
       }
 
       // Apply enabled overrides
-      updatedPlugin.enabled = enabledOverrides[p.key] ?? updatedPlugin.enabled;
+      const enabled = enabledOverrides[p.key] ?? updatedPlugin.enabled;
+
+      if (isDefined(enabled)) {
+        updatedPlugin.enabled = enabled;
+      }
 
       return updatedPlugin;
     });

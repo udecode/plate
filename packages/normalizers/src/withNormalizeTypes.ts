@@ -11,9 +11,7 @@ import type { NormalizeTypesConfig } from './NormalizeTypesPlugin';
 
 export const withNormalizeTypes: WithOverride<NormalizeTypesConfig> = ({
   editor,
-  plugin: {
-    options: { onError, rules },
-  },
+  options: { onError, rules },
 }) => {
   const { normalizeNode } = editor;
 

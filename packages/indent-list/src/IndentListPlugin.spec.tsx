@@ -5,7 +5,7 @@ import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
 import { ParagraphPlugin } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { ELEMENT_H1, ELEMENT_H2, ELEMENT_H3 } from '@udecode/plate-heading';
+import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { IndentPlugin } from '@udecode/plate-indent';
 import { JuicePlugin } from '@udecode/plate-juice';
@@ -23,7 +23,12 @@ jsx;
 const injectConfig = {
   inject: {
     props: {
-      validPlugins: [ParagraphPlugin.key, ELEMENT_H1, ELEMENT_H2, ELEMENT_H3],
+      validPlugins: [
+        ParagraphPlugin.key,
+        HEADING_KEYS.h1,
+        HEADING_KEYS.h2,
+        HEADING_KEYS.h3,
+      ],
     },
   },
 };

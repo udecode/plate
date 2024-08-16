@@ -6,7 +6,7 @@ import {
 
 import type { TEquationElement } from '../types';
 
-import { ELEMENT_EQUATION } from '../EquationPlugin';
+import { EquationPlugin } from '../EquationPlugin';
 
 export const insertEquation = <E extends PlateEditor>(
   editor: E,
@@ -17,7 +17,7 @@ export const insertEquation = <E extends PlateEditor>(
     {
       children: [{ text: '' }],
       texExpression: '',
-      type: ELEMENT_EQUATION,
+      type: editor.getType(EquationPlugin),
     },
     options as any
   );

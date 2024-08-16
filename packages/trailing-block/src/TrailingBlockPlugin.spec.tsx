@@ -2,7 +2,7 @@
 
 import { ParagraphPlugin } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { ELEMENT_H1 } from '@udecode/plate-heading';
+import { HEADING_KEYS } from '@udecode/plate-heading';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { TrailingBlockPlugin } from './TrailingBlockPlugin';
@@ -108,7 +108,7 @@ describe('when using query', () => {
       plugins: [
         TrailingBlockPlugin.configure({
           options: {
-            exclude: [ELEMENT_H1],
+            exclude: [HEADING_KEYS.h1],
             level: 0,
             type: ParagraphPlugin.key,
           },

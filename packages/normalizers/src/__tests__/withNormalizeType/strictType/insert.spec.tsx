@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { ELEMENT_H2 } from '@udecode/plate-heading';
+import { HEADING_KEYS } from '@udecode/plate-heading';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { NormalizeTypesPlugin } from '../../../NormalizeTypesPlugin';
@@ -29,7 +29,7 @@ it('should be', () => {
     plugins: [
       NormalizeTypesPlugin.configure({
         options: {
-          rules: [{ path: [1], strictType: ELEMENT_H2 }],
+          rules: [{ path: [1], strictType: HEADING_KEYS.h2 }],
         },
       }),
     ],

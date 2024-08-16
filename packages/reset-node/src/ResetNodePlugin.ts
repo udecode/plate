@@ -29,7 +29,7 @@ export const ResetNodePlugin = createTPlugin<ResetNodeConfig>({
   options: {
     rules: [],
   },
-  withOverrides: ({ editor, plugin: { options } }) => {
+  withOverrides: ({ editor, options }) => {
     const { deleteBackward, deleteFragment } = editor;
 
     if (!options.disableEditorReset) {

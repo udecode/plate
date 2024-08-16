@@ -7,7 +7,7 @@ export const FontWeightPlugin = createPlugin({
     },
   },
   key: 'fontWeight',
-}).extend(({ plugin: { type } }) => ({
+}).extend(({ type }) => ({
   deserializeHtml: {
     getNode: ({ element }) => ({ [type]: element.style.fontWeight }),
     isLeaf: true,

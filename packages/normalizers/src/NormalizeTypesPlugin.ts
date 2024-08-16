@@ -3,7 +3,7 @@ import type { Path } from 'slate';
 import {
   type ErrorHandler,
   type PluginConfig,
-  createPlugin,
+  createTPlugin,
 } from '@udecode/plate-common';
 
 import { withNormalizeTypes } from './withNormalizeTypes';
@@ -32,10 +32,10 @@ export type NormalizeTypesConfig = PluginConfig<
 >;
 
 /** @see {@link withNormalizeTypes} */
-export const NormalizeTypesPlugin = createPlugin({
+export const NormalizeTypesPlugin = createTPlugin<NormalizeTypesConfig>({
   key: 'normalizeTypes',
   options: {
     rules: [],
   },
   withOverrides: withNormalizeTypes,
-}) satisfies NormalizeTypesConfig;
+});

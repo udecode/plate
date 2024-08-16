@@ -25,12 +25,7 @@ import { pasteSelectedBlocks } from './utils/pasteSelectedBlocks';
 
 export const useHooksBlockSelection: PlatePluginUseHooks<
   BlockSelectionConfig
-> = ({
-  editor,
-  plugin: {
-    options: { onKeyDownSelecting },
-  },
-}) => {
+> = ({ editor, options: { onKeyDownSelecting } }) => {
   const isSelecting = useBlockSelectionSelectors().isSelecting();
   const selectedIds = useBlockSelectionSelectors().selectedIds();
   const isOpen = useBlockContextMenuSelectors().isOpen(editor.id);

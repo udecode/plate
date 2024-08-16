@@ -7,7 +7,7 @@ export const FontFamilyPlugin = createPlugin({
     },
   },
   key: 'fontFamily',
-}).extend(({ plugin: { type } }) => ({
+}).extend(({ type }) => ({
   deserializeHtml: {
     getNode: ({ element }) => ({ [type]: element.style.fontFamily }),
     isLeaf: true,

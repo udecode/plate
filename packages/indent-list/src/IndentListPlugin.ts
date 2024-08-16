@@ -57,7 +57,7 @@ export const IndentListPlugin = createTPlugin<IndentListConfig>({
     getListStyleType: (element) => element.style.listStyleType as ListStyleType,
   },
   withOverrides: withIndentList,
-}).extend(({ editor, plugin: { options } }) => ({
+}).extend(({ editor, options }) => ({
   deserializeHtml: {
     getNode: ({ element }) => ({
       // gdoc uses aria-level attribute

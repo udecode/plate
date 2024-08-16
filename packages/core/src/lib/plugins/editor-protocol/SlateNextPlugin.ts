@@ -129,7 +129,7 @@ export const SlateNextPlugin = createPlugin({
       ...node,
     }),
   }))
-  .extendApi(({ plugin: { api } }) => ({
+  .extendApi(({ api }) => ({
     /** Editor children factory. */
     childrenFactory: (): Value => [api.blockFactory()],
   }))

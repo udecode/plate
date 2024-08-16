@@ -1,16 +1,13 @@
 /** @jsx jsx */
 
-import { createPlateEditor } from "@udecode/plate-common/react";
-import { ELEMENT_H1 } from '@udecode/plate-heading';
+import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
-import { withReact } from 'slate-react';
 import {
   getAutoformatOptions,
   preFormat,
 } from 'www/src/lib/plate/demo/plugins/autoformatOptions';
 
 import { AutoformatPlugin } from '../../../AutoformatPlugin';
-import { withAutoformat } from '../../../withAutoformat';
 
 jsx;
 
@@ -32,19 +29,22 @@ describe('when #space', () => {
       </fragment>
     ) as any;
 
-    const editor = createPlateEditor({ value: input,
-      plugins: [AutoformatPlugin.configure({
-        options: {
-          rules: [
-            {
-              match: '# ',
-              mode: 'block',
-              preFormat: preFormat,
-              type: ELEMENT_H1,
-            },
-          ],
-        },
-      }),]
+    const editor = createPlateEditor({
+      plugins: [
+        AutoformatPlugin.configure({
+          options: {
+            rules: [
+              {
+                match: '# ',
+                mode: 'block',
+                preFormat: preFormat,
+                type: HEADING_KEYS.h1,
+              },
+            ],
+          },
+        }),
+      ],
+      value: input,
     });
 
     editor.insertText(' ');
@@ -71,8 +71,11 @@ describe('when ##space', () => {
       </fragment>
     ) as any;
 
-    const editor = createPlateEditor({ value: input,
-      plugins: [AutoformatPlugin.configure({ options: getAutoformatOptions() }),]
+    const editor = createPlateEditor({
+      plugins: [
+        AutoformatPlugin.configure({ options: getAutoformatOptions() }),
+      ],
+      value: input,
     });
 
     editor.insertText(' ');

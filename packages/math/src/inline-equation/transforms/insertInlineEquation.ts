@@ -6,7 +6,7 @@ import {
 
 import type { TInlineEquationElement } from '../types';
 
-import { ELEMENT_INLINE_EQUATION } from '../InlineEquationPlugin';
+import { InlineEquationPlugin } from '../InlineEquationPlugin';
 
 export const insertInlineEquation = <E extends PlateEditor>(
   editor: E,
@@ -18,7 +18,7 @@ export const insertInlineEquation = <E extends PlateEditor>(
     {
       children: [{ text: '' }],
       texExpression: texExpression ?? '',
-      type: ELEMENT_INLINE_EQUATION,
+      type: editor.getType(InlineEquationPlugin),
     },
     options as any
   );

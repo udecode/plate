@@ -49,11 +49,9 @@ describe('extendApi method', () => {
       },
     });
 
-    const extendedPlugin = customPlugin.extendApi(
-      ({ plugin: { options } }) => ({
-        multiply: (factor) => options.baseValue * factor,
-      })
-    );
+    const extendedPlugin = customPlugin.extendApi(({ options }) => ({
+      multiply: (factor) => options.baseValue * factor,
+    }));
 
     const furtherExtendedPlugin = extendedPlugin.extendApi(
       ({ plugin: { api, options } }) => ({
@@ -91,7 +89,7 @@ describe('extendApi method', () => {
           baseValue: 15,
         },
       })
-      .extendApi(({ plugin: { options } }) => ({
+      .extendApi(({ options }) => ({
         sampleMethod: (inc: number) => options.baseValue + inc,
       }))
       .extend({
@@ -295,7 +293,7 @@ describe('extendApi method', () => {
         baseValue: 10,
       },
     })
-      .extendApi(({ plugin: { options } }) => ({
+      .extendApi(({ options }) => ({
         level1: {
           method1: () => options.baseValue,
           method2: (factor: number) => options.baseValue * factor,
@@ -308,7 +306,7 @@ describe('extendApi method', () => {
         },
         override: () => 'original',
       }))
-      .extendTransforms(({ plugin: { options } }) => ({
+      .extendTransforms(({ options }) => ({
         transform1: (amount: number) => options.baseValue + amount,
       }))
       .extendTransforms(({ plugin: { transforms } }) => ({

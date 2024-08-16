@@ -1,7 +1,7 @@
 import {
   ParagraphPlugin,
-  type PlateEditor,
   type TElement,
+  type WithOverride,
   getAboveNode,
   insertNodes,
   isDefined,
@@ -9,12 +9,18 @@ import {
   isExpanded,
 } from '@udecode/plate-common';
 
-import { IndentListPlugin, KEY_TODO_STYLE_TYPE } from '../IndentListPlugin';
+import {
+  type IndentListConfig,
+  IndentListPlugin,
+  KEY_TODO_STYLE_TYPE,
+} from '../IndentListPlugin';
 
-export const insertBreakIndentList = (editor: PlateEditor) => {
+export const withInsertBreakIndentList: WithOverride<IndentListConfig> = ({
+  editor,
+}) => {
   const { insertBreak } = editor;
 
-  return function () {
+  editor.insertBreak = () => {
     const nodeEntry = getAboveNode(editor);
 
     if (!nodeEntry) return insertBreak();
@@ -38,4 +44,6 @@ export const insertBreakIndentList = (editor: PlateEditor) => {
       type: ParagraphPlugin.key,
     });
   };
+
+  return editor;
 };

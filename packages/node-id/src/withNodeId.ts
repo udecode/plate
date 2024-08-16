@@ -17,7 +17,6 @@ import type { NodeIdConfig } from './NodeIdPlugin';
 /** Enables support for inserting nodes with an id key. */
 export const withNodeId: WithOverride<NodeIdConfig> = ({
   editor,
-  plugin: {
     options: {
       allow,
       disableInsertOverrides,
@@ -28,7 +27,6 @@ export const withNodeId: WithOverride<NodeIdConfig> = ({
       idKey = '',
       reuseId,
     },
-  },
 }) => {
   const { apply, insertNode, insertNodes } = editor;
 

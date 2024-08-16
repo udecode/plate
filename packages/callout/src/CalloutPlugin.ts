@@ -1,7 +1,5 @@
 import { createPlugin } from '@udecode/plate-common';
 
-export const ELEMENT_CALLOUT = 'callout';
-
 export type CalloutColor = {
   bgColor: string;
   borderColor: string;
@@ -10,5 +8,5 @@ export type CalloutColor = {
 
 export const CalloutPlugin = createPlugin({
   isElement: true,
-  key: ELEMENT_CALLOUT,
+  key: 'callout',
 });

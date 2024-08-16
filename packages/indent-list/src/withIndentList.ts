@@ -1,7 +1,6 @@
 import type { PathRef } from 'slate';
 
 import {
-  type TEditor,
   type TElement,
   type WithOverride,
   createPathRef,
@@ -10,30 +9,28 @@ import {
 import { IndentPlugin } from '@udecode/plate-indent';
 
 import { type IndentListConfig, IndentListPlugin } from './IndentListPlugin';
-import { normalizeIndentList } from './normalizeIndentList';
 import {
-  deleteBackwardIndentList,
   shouldMergeNodesRemovePrevNodeIndentList,
+  withDeleteBackwardIndentList,
 } from './normalizers';
-import { insertBreakIndentList } from './normalizers/insertBreakIndentList';
 import { normalizeIndentListStart } from './normalizers/normalizeIndentListStart';
+import { withInsertBreakIndentList } from './normalizers/withInsertBreakIndentList';
 import { getNextIndentList } from './queries/getNextIndentList';
 import { getPreviousIndentList } from './queries/getPreviousIndentList';
 import { ListStyleType } from './types';
+import { withNormalizeIndentList } from './withNormalizeIndentList';
 
 export const withIndentList: WithOverride<IndentListConfig> = ({
   editor,
-  plugin: { options },
+  ...ctx
 }) => {
   const { apply } = editor;
 
-  const { getSiblingIndentListOptions } = options;
+  const { getSiblingIndentListOptions } = ctx.options;
 
-  editor.normalizeNode = normalizeIndentList<TEditor>(editor, options);
-
-  editor.deleteBackward = deleteBackwardIndentList(editor);
-
-  editor.insertBreak = insertBreakIndentList(editor);
+  editor = withNormalizeIndentList({ editor, ...ctx });
+  editor = withDeleteBackwardIndentList({ editor, ...ctx });
+  editor = withInsertBreakIndentList({ editor, ...ctx });
 
   /**
    * To prevent users without upgraded Slate version from experiencing

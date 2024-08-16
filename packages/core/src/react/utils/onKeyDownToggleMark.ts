@@ -6,10 +6,8 @@ import type { KeyboardHandler, ToggleMarkConfig } from '../../lib';
 export const onKeyDownToggleMark: KeyboardHandler<ToggleMarkConfig> = ({
   editor,
   event,
-  plugin: {
-    options: { clear, hotkey },
-    type,
-  },
+  options: { clear, hotkey },
+  type,
 }) => {
   if (event.defaultPrevented) return;
   if (!hotkey) return;

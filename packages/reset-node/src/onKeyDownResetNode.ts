@@ -17,9 +17,7 @@ export const SIMULATE_BACKSPACE: any = {
 export const onKeyDownResetNode: KeyboardHandler<ResetNodeConfig> = ({
   editor,
   event,
-  plugin: {
-    options: { rules },
-  },
+  options: { rules },
 }) => {
   if (event.defaultPrevented) return;
 

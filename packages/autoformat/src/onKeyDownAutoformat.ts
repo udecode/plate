@@ -15,9 +15,7 @@ import type { AutoformatRule, AutoformatTextRule } from './types';
 export const onKeyDownAutoformat: KeyboardHandler<AutoformatConfig> = ({
   editor,
   event,
-  plugin: {
-    options: { enableUndoOnDelete, rules },
-  },
+  options: { enableUndoOnDelete, rules },
 }) => {
   if (event.defaultPrevented) return false;
   // Abort quicky if hotKey was not pressed.

@@ -39,19 +39,13 @@ export const IndentPlugin = createTPlugin<IndentConfig>({
     unit: 'px',
   },
   withOverrides: withIndent,
-}).extend(
-  ({
-    plugin: {
-      options: { offset, unit },
+}).extend(({ options: { offset, unit } }) => ({
+  inject: {
+    props: {
+      nodeKey: 'indent',
+      styleKey: 'marginLeft',
+      transformNodeValue: ({ nodeValue }) => nodeValue * offset! + unit!,
+      validPlugins: [ParagraphPlugin.key],
     },
-  }) => ({
-    inject: {
-      props: {
-        nodeKey: 'indent',
-        styleKey: 'marginLeft',
-        transformNodeValue: ({ nodeValue }) => nodeValue * offset! + unit!,
-        validPlugins: [ParagraphPlugin.key],
-      },
-    },
-  })
-);
+  },
+}));

@@ -10,7 +10,6 @@ import { Range } from 'slate';
 
 import type { TableConfig } from './types';
 
-import { TablePlugin } from './TablePlugin';
 import { overrideSelectionFromCell } from './transforms/overrideSelectionFromCell';
 
 // TODO: tests
@@ -24,7 +23,10 @@ import { overrideSelectionFromCell } from './transforms/overrideSelectionFromCel
  * - If focus is in table, anchor in a block after: set focus to the point before
  *   start of table
  */
-export const withSelectionTable: WithOverride<TableConfig> = ({ editor }) => {
+export const withSelectionTable: WithOverride<TableConfig> = ({
+  editor,
+  type,
+}) => {
   const { apply } = editor;
 
   editor.apply = (op) => {
@@ -38,12 +40,12 @@ export const withSelectionTable: WithOverride<TableConfig> = ({ editor }) => {
         Range.isRange(newSelection) &&
         isRangeAcrossBlocks(editor, {
           at: newSelection,
-          match: (n) => n.type === editor.getType(TablePlugin),
+          match: (n) => n.type === type,
         })
       ) {
         const anchorEntry = getBlockAbove(editor, {
           at: newSelection.anchor,
-          match: (n) => n.type === editor.getType(TablePlugin),
+          match: (n) => n.type === type,
         });
 
         if (anchorEntry) {
@@ -64,7 +66,7 @@ export const withSelectionTable: WithOverride<TableConfig> = ({ editor }) => {
         } else {
           const focusEntry = getBlockAbove(editor, {
             at: newSelection.focus,
-            match: (n) => n.type === editor.getType(TablePlugin),
+            match: (n) => n.type === type,
           });
 
           if (focusEntry) {

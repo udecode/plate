@@ -3,7 +3,6 @@ import {
   type SetNodesOptions,
   type TNodeMatch,
   getKeyByType,
-  getPluginInjectProps,
   isBlock,
   setElements,
   unsetNodes,
@@ -18,10 +17,8 @@ export const setLineHeight = <E extends PlateEditor>(
     value,
   }: { setNodesOptions?: SetNodesOptions<E>; value: number }
 ): void => {
-  const { defaultNodeValue, nodeKey, validPlugins } = getPluginInjectProps(
-    editor,
-    LineHeightPlugin.key
-  );
+  const { defaultNodeValue, nodeKey, validPlugins } =
+    editor.getInjectProps(LineHeightPlugin);
 
   const match: TNodeMatch = (n) =>
     isBlock(editor, n) &&

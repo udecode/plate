@@ -3,18 +3,16 @@ import {
   type TElement,
   type TNodeEntry,
   getChildren,
-  getPluginType,
   isElement,
   setNodes,
 } from '@udecode/plate-common';
 
-import { CodeBlockPlugin } from '../CodeBlockPlugin';
-import { getCodeLineType } from '../options';
+import { CodeBlockPlugin, CodeLinePlugin } from '../CodeBlockPlugin';
 
 /** Normalize code block node to force the pre>code>div.codeline structure. */
 export const normalizeCodeBlock = (editor: PlateEditor) => {
   const codeBlockType = editor.getType(CodeBlockPlugin);
-  const codeLineType = getCodeLineType(editor);
+  const codeLineType = editor.getType(CodeLinePlugin);
 
   const { normalizeNode } = editor;
 

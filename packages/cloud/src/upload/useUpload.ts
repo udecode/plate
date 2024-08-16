@@ -11,7 +11,7 @@ import { CloudPlugin } from '../cloud';
 export const useUpload = (id: string): Upload => {
   const editor = useEditorRef();
 
-  const api = editor.getApi(CloudPlugin);
+  const { uploadStore } = editor.getOptions(CloudPlugin);
 
   /**
    * We call this even if it's not always required because it calls `useStore`
@@ -20,7 +20,7 @@ export const useUpload = (id: string): Upload => {
   // const upload: Upload = editor.cloud.useUploadStore(
   //   (state) => state.uploads[id] || { status: 'not-found' }
   // );
-  const upload: Upload = api.cloud.uploadStore.use.upload(id) || {
+  const upload: Upload = uploadStore.use.upload(id) || {
     status: 'not-found',
   };
 

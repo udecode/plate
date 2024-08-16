@@ -26,7 +26,7 @@ import { captionGlobalStore } from './captionGlobalStore';
  */
 export const withCaption: WithOverride<CaptionConfig> = ({
   editor,
-  plugin: { options },
+  options,
 }) => {
   const { apply } = editor;
 

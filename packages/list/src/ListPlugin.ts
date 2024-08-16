@@ -46,7 +46,7 @@ export const ListItemPlugin = createPlugin({
   deserializeHtml: { rules: [{ validNodeName: 'LI' }] },
   isElement: true,
   key: 'li',
-}).extend(({ editor, plugin: { type } }) => ({
+}).extend(({ editor, type }) => ({
   inject: {
     plugins: {
       [DeserializeHtmlPlugin.key]: {

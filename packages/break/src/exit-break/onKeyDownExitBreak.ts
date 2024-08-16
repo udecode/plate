@@ -9,9 +9,7 @@ import { exitBreak } from './transforms/exitBreak';
 export const onKeyDownExitBreak: KeyboardHandler<ExitBreakConfig> = ({
   editor,
   event,
-  plugin: {
-    options: { rules = [] },
-  },
+  options: { rules = [] },
 }) => {
   if (event.defaultPrevented) return;
 

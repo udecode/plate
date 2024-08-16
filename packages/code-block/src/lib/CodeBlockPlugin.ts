@@ -1,14 +1,27 @@
 import {
   DeserializeHtmlPlugin,
+  type HotkeyPluginOptions,
+  type PluginConfig,
   createPlugin,
+  createTPlugin,
   someNode,
 } from '@udecode/plate-common';
 
-import type { CodeBlockPluginOptions } from '../lib/types';
+import type { Prism } from './types';
 
 import { deserializeHtmlCodeBlock } from '../lib/deserializeHtmlCodeBlockPre';
 import { withCodeBlock } from '../lib/withCodeBlock';
 import { decorateCodeLine } from './decorateCodeLine';
+
+export type CodeBlockConfig = PluginConfig<
+  'code_block',
+  {
+    deserializers?: string[];
+    prism?: Prism;
+    syntax?: boolean;
+    syntaxPopularFirst?: boolean;
+  } & HotkeyPluginOptions
+>;
 
 export const CodeLinePlugin = createPlugin({
   decorate: decorateCodeLine,
@@ -21,10 +34,7 @@ export const CodeSyntaxPlugin = createPlugin({
   key: 'code_syntax',
 });
 
-export const CodeBlockPlugin = createPlugin<
-  'code_block',
-  CodeBlockPluginOptions
->({
+export const CodeBlockPlugin = createTPlugin<CodeBlockConfig>({
   deserializeHtml: deserializeHtmlCodeBlock,
   inject: {
     plugins: {
@@ -32,10 +42,10 @@ export const CodeBlockPlugin = createPlugin<
         editor: {
           insertData: {
             query: ({ editor }) => {
-              const code_line = editor.getPlugin(CodeLinePlugin);
+              const codeLineType = editor.getType(CodeLinePlugin);
 
               return !someNode(editor, {
-                match: { type: code_line.type },
+                match: { type: codeLineType },
               });
             },
           },

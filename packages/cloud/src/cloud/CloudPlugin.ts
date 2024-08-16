@@ -1,5 +1,9 @@
 import * as portiveClient from '@portive/client';
-import { type Value, createPlugin } from '@udecode/plate-common';
+import {
+  type PluginConfig,
+  type Value,
+  createTPlugin,
+} from '@udecode/plate-common';
 
 import type { Upload } from '../upload';
 import type { FinishUploadsOptions } from './types';
@@ -10,43 +14,70 @@ import { getSaveValue } from './getSaveValue';
 import { onDropCloud, onPasteCloud } from './handlers';
 import { uploadFiles } from './uploadFiles';
 
-export const CloudPlugin = createPlugin({
+export type CloudConfig = PluginConfig<
+  'cloud',
+  {
+    client?: portiveClient.Client;
+    uploadStore?: ReturnType<typeof createUploadStore>;
+    uploadStoreInitialValue?: Record<string, Upload>;
+  } & portiveClient.ClientOptions,
+  {
+    cloud: {
+      finishUploads: (options?: FinishUploadsOptions) => Promise<void>;
+      getSaveValue: () => Value;
+      uploadFiles: (files: Iterable<File>) => void;
+    };
+  }
+>;
+
+export const CloudPlugin = createTPlugin<CloudConfig>({
   handlers: {
     onDrop: ({ editor, event }) => onDropCloud(editor, event),
     onPaste: ({ editor, event }) => onPasteCloud(editor, event),
   },
   key: 'cloud',
-  options: {} as {
-    uploadStoreInitialValue?: Record<string, Upload>;
-  } & portiveClient.ClientOptions,
-}).extendApi(({ editor, plugin: { options } }) => {
-  const { apiKey, apiOrigin, authToken, uploadStoreInitialValue } = options;
+  options: {},
+})
+  .extend(
+    ({
+      editor,
+      options: { apiKey, apiOrigin, authToken, uploadStoreInitialValue },
+    }) => {
+      let client: portiveClient.Client;
 
-  let client: portiveClient.Client;
+      try {
+        client = portiveClient.createClient({ apiKey, apiOrigin, authToken });
+      } catch (error) {
+        editor.api.debug.error(error, 'PORTIVE_CLIENT');
+      }
 
-  try {
-    client = portiveClient.createClient({ apiKey, apiOrigin, authToken });
-  } catch (error) {
-    editor.api.debug.error(error, 'PORTIVE_CLIENT');
-  }
-
-  const uploadStore = createUploadStore({
-    uploads: uploadStoreInitialValue || {},
+      return {
+        options: {
+          client: client!,
+          uploadStore: createUploadStore({
+            uploads: uploadStoreInitialValue || {},
+          }),
+        },
+      };
+    }
+  )
+  .extendApi(({ editor, options }) => {
+    return {
+      cloud: {
+        finishUploads: async (
+          options?: FinishUploadsOptions
+        ): Promise<void> => {
+          return finishUploads(editor, options);
+        },
+        getSaveValue: (): Value => {
+          return getSaveValue(
+            editor.children,
+            options.uploadStore.get.uploads()
+          );
+        },
+        uploadFiles: (files: Iterable<File>) => {
+          uploadFiles(editor, files);
+        },
+      },
+    };
   });
-
-  return {
-    cloud: {
-      client: client!,
-      finishUploads: async (options?: FinishUploadsOptions): Promise<void> => {
-        return finishUploads(editor, options);
-      },
-      getSaveValue: (): Value => {
-        return getSaveValue(editor.children, uploadStore.get.uploads());
-      },
-      uploadFiles: (files: Iterable<File>) => {
-        uploadFiles(editor, files);
-      },
-      uploadStore,
-    },
-  };
-});

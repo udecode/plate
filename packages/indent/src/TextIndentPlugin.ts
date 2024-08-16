@@ -17,21 +17,15 @@ export const TextIndentPlugin = createTPlugin<TextIndentConfig>({
     offset: 24,
     unit: 'px',
   },
-}).extend(
-  ({
-    plugin: {
-      options: { offset, unit },
-    },
-  }) => ({
-    inject: {
-      props: {
-        nodeKey: 'textIndent',
-        styleKey: 'textIndent',
-        transformNodeValue({ nodeValue }) {
-          return nodeValue * offset! + unit!;
-        },
-        validPlugins: [ParagraphPlugin.key],
+}).extend(({ options: { offset, unit } }) => ({
+  inject: {
+    props: {
+      nodeKey: 'textIndent',
+      styleKey: 'textIndent',
+      transformNodeValue({ nodeValue }) {
+        return nodeValue * offset! + unit!;
       },
+      validPlugins: [ParagraphPlugin.key],
     },
-  })
-);
+  },
+}));

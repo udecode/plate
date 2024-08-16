@@ -130,7 +130,7 @@ export const LinkPlugin = createTPlugin<LinkConfig>({
       getAttributes: bindFirst(getLinkAttributes, editor),
     },
   }))
-  .extend(({ api, editor, plugin: { type } }) => ({
+  .extend(({ api, editor, type }) => ({
     deserializeHtml: {
       getNode: ({ element }) => {
         const url = element.getAttribute('href');

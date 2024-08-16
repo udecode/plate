@@ -2,7 +2,7 @@
 
 import { type AnyPlatePlugin, createPlugin } from '@udecode/plate-common';
 import * as isHotkey from '@udecode/plate-core';
-import { ELEMENT_H1 } from '@udecode/plate-heading';
+import { HEADING_KEYS } from '@udecode/plate-heading';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { onKeyDownExitBreak } from '../../onKeyDownExitBreak';
@@ -36,7 +36,7 @@ it('should be', () => {
     event,
     plugin: createPlugin({
       options: {
-        rules: [{ hotkey: 'enter', query: { allow: [ELEMENT_H1] } }],
+        rules: [{ hotkey: 'enter', query: { allow: [HEADING_KEYS.h1] } }],
       },
     }) as AnyPlatePlugin,
   });

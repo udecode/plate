@@ -33,34 +33,34 @@ const createFileEvent = (
 };
 
 export const uploadFile = (editor: PlateEditor, file: File) => {
-  const api = editor.getApi(CloudPlugin);
+  const { client } = editor.getOptions(CloudPlugin);
   const apiImage = editor.getApi(CloudImagePlugin);
   const apiAttachment = editor.getApi(CloudAttachmentPlugin);
 
   const id = `#${nanoid()}`;
 
   void portiveClient.uploadFile({
-    client: api.cloud.client,
+    client,
     file,
     onBeforeFetch(e) {
       const fileEvent = createFileEvent(id, e.clientFile);
 
       if (fileEvent.type === 'image') {
-        apiImage.cloud.imageFileHandlers?.onStart?.(fileEvent);
+        apiImage.cloudImage?.onStart?.(fileEvent);
       } else {
-        apiAttachment.cloud.genericFileHandlers?.onStart?.(fileEvent);
+        apiAttachment.cloudAttachment?.onStart?.(fileEvent);
       }
     },
     onError(e) {
       const fileEvent = createFileEvent(id, e.clientFile);
 
       if (fileEvent.type === 'image') {
-        apiImage.cloud.imageFileHandlers?.onError?.({
+        apiImage.cloudImage?.onError?.({
           ...fileEvent,
           message: e.message,
         });
       } else {
-        apiAttachment.cloud.genericFileHandlers?.onError?.({
+        apiAttachment.cloudAttachment?.onError?.({
           ...fileEvent,
           message: e.message,
         } as any);
@@ -74,12 +74,12 @@ export const uploadFile = (editor: PlateEditor, file: File) => {
       };
 
       if (fileEvent.type === 'image') {
-        apiImage.cloud.imageFileHandlers?.onProgress?.({
+        apiImage.cloudImage?.onProgress?.({
           ...fileEvent,
           ...progressEvent,
         });
       } else {
-        apiAttachment.cloud.genericFileHandlers?.onProgress?.({
+        apiAttachment.cloudAttachment?.onProgress?.({
           ...fileEvent,
           ...progressEvent,
         } as any);
@@ -90,9 +90,9 @@ export const uploadFile = (editor: PlateEditor, file: File) => {
       const { url } = e.hostedFile;
 
       if (fileEvent.type === 'image') {
-        apiImage.cloud.imageFileHandlers?.onSuccess?.({ ...fileEvent, url });
+        apiImage.cloudImage?.onSuccess?.({ ...fileEvent, url });
       } else {
-        apiAttachment.cloud.genericFileHandlers?.onSuccess?.({
+        apiAttachment.cloudAttachment?.onSuccess?.({
           ...fileEvent,
           url,
         });

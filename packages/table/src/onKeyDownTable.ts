@@ -20,7 +20,7 @@ import { moveSelectionFromCell } from './transforms/index';
 export const onKeyDownTable: KeyboardHandler<TableConfig> = ({
   editor,
   event,
-  plugin: { type },
+  type,
 }) => {
   if (event.defaultPrevented) return;
 

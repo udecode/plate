@@ -1,4 +1,5 @@
 import type {
+  OmitFirst,
   PluginConfig,
   TDescendant,
   TElement,
@@ -7,6 +8,7 @@ import type {
 import type { insertTableColumn, insertTableRow } from './transforms';
 
 export type TableConfig = PluginConfig<
+  'table',
   {
     /**
      * For internal use. Keeps track of cell indices. Used only when
@@ -52,8 +54,12 @@ export type TableConfig = PluginConfig<
       /** Cell node factory used each time a cell is created. */
       cellFactory: (options?: CellFactoryOptions) => TTableCellElement;
       getCellChildren: (cell: TTableCellElement) => TDescendant[];
-      insertColumn: (options?: Parameters<typeof insertTableColumn>[1]) => void;
-      insertRow: (options?: Parameters<typeof insertTableRow>[1]) => void;
+    };
+  },
+  {
+    table: {
+      insertColumn: OmitFirst<typeof insertTableColumn>;
+      insertRow: OmitFirst<typeof insertTableRow>;
     };
   }
 >;

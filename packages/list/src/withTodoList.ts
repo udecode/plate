@@ -6,7 +6,7 @@ import { insertBreakTodoList } from './insertBreakTodoList';
 
 export const withTodoList: WithOverride<TodoListConfig> = ({
   editor,
-  plugin: { options },
+  options,
 }) => {
   const { insertBreak } = editor;
 

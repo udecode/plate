@@ -21,9 +21,9 @@ export const finishUploads = async (
   editor: PlateEditor,
   { maxTimeoutInMs = TEN_MINUTES }: FinishUploadsOptions = {}
 ): Promise<void> => {
-  const api = editor.getApi(CloudPlugin);
+  const { uploadStore } = editor.getOptions(CloudPlugin);
 
-  const uploads = api.cloud.uploadStore.get.uploads();
+  const uploads = uploadStore.get.uploads();
   const uploadingOrigins = getInProgressUploads(editor.children, uploads);
   const finishPromises = uploadingOrigins.map((origin) => origin.finishPromise);
   const timeoutPromise = delay(maxTimeoutInMs, { value: 'timeout' });

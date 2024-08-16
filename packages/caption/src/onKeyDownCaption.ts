@@ -12,7 +12,7 @@ import { captionGlobalStore } from './captionGlobalStore';
 export const onKeyDownCaption: KeyboardHandler<CaptionConfig> = ({
   editor,
   event,
-  plugin: { options },
+  options,
 }) => {
   if (event.defaultPrevented) return;
   // focus caption from image

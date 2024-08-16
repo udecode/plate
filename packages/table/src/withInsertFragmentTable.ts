@@ -30,15 +30,17 @@ import { getTableGridAbove } from './queries/getTableGridAbove';
  * - Select the inserted cells.
  */
 export const withInsertFragmentTable: WithOverride<TableConfig> = ({
+  api,
   editor,
-  plugin: { api, options },
+  options: { disableExpandOnInsert },
+  transforms,
+  type,
 }) => {
   const { insertFragment } = editor;
-  const { disableExpandOnInsert } = options;
 
   editor.insertFragment = (fragment) => {
     const insertedTable = fragment.find(
-      (n) => (n as TElement).type === editor.getType(TablePlugin)
+      (n) => (n as TElement).type === type
     ) as TTableElement | undefined;
 
     if (!insertedTable) {
@@ -106,7 +108,7 @@ export const withInsertFragmentTable: WithOverride<TableConfig> = ({
                   if (disableExpandOnInsert) {
                     return;
                   } else {
-                    api.table.insertRow?.({
+                    transforms.table.insertRow?.({
                       disableSelect: true,
                       fromRow,
                     });
@@ -128,7 +130,7 @@ export const withInsertFragmentTable: WithOverride<TableConfig> = ({
                     if (disableExpandOnInsert) {
                       return;
                     } else {
-                      api.table.insertColumn?.({
+                      transforms.table.insertColumn?.({
                         disableSelect: true,
                         fromCell,
                       });

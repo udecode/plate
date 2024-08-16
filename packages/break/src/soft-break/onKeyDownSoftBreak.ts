@@ -1,19 +1,13 @@
 import type { KeyboardHandler } from '@udecode/plate-common';
 
-import {
-  getBlockAbove,
-  isHotkey,
-  queryNode,
-} from '@udecode/plate-common';
+import { getBlockAbove, isHotkey, queryNode } from '@udecode/plate-common';
 
-import type { SoftBreakPluginOptions } from './types';
+import type { SoftBreakConfig } from './SoftBreakPlugin';
 
-export const onKeyDownSoftBreak: KeyboardHandler<SoftBreakPluginOptions> = ({
+export const onKeyDownSoftBreak: KeyboardHandler<SoftBreakConfig> = ({
   editor,
   event,
-  plugin: {
-    options: { rules = [] },
-  },
+  options: { rules = [] },
 }) => {
   if (event.defaultPrevented) return;
 

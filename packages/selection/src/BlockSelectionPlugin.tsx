@@ -70,7 +70,7 @@ export const BlockSelectionPlugin = createTPlugin<BlockSelectionConfig>({
   },
   useHooks: useHooksBlockSelection,
   withOverrides: withSelection,
-}).extend(({ plugin: { options } }) => ({
+}).extend(({ options }) => ({
   renderAboveEditable: ({ children }) => (
     <BlockSelectionArea>
       <BlockStartArea

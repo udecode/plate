@@ -6,7 +6,7 @@ import {
 
 import type { TCalloutElement } from '../hooks';
 
-import { ELEMENT_CALLOUT } from '../CalloutPlugin';
+import { CalloutPlugin } from '../CalloutPlugin';
 
 export const insertCallout = <E extends PlateEditor>(
   editor: E,
@@ -16,7 +16,7 @@ export const insertCallout = <E extends PlateEditor>(
     editor,
     {
       children: [{ text: '' }],
-      type: ELEMENT_CALLOUT,
+      type: editor.getType(CalloutPlugin),
       variant: 'info',
     },
     options as any

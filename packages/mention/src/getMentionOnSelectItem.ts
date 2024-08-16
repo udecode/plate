@@ -7,13 +7,9 @@ import {
   moveSelection,
 } from '@udecode/plate-common';
 
-import type {
-  MentionPluginOptions,
-  TMentionElement,
-  TMentionItemBase,
-} from './types';
+import type { TMentionElement, TMentionItemBase } from './types';
 
-import { MentionPlugin } from './MentionPlugin';
+import { type MentionConfig, MentionPlugin } from './MentionPlugin';
 
 export type MentionOnSelectItem<
   TItem extends TMentionItemBase = TMentionItemBase,
@@ -25,7 +21,7 @@ export const getMentionOnSelectItem =
   }: { key?: string } = {}): MentionOnSelectItem<TItem> =>
   (editor, item, search = '') => {
     const { createMentionNode, insertSpaceAfterMention } =
-      editor.getOptions<MentionPluginOptions>({ key });
+      editor.getOptions<MentionConfig>({ key: key as any });
     const type = editor.getType({ key });
 
     const props = createMentionNode!(item, search);

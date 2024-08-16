@@ -5,24 +5,17 @@ import {
   getNodeString,
 } from '@udecode/plate-common';
 
-import {
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_H3,
-  ELEMENT_H4,
-  ELEMENT_H5,
-  ELEMENT_H6,
-} from '../../heading';
+import { HEADING_KEYS } from '../../heading';
 import { type Heading, TocPlugin } from '../../toc';
 import { isHeading } from '../isHeading';
 
-export const headingDepth: Record<string, number> = {
-  [ELEMENT_H1]: 1,
-  [ELEMENT_H2]: 2,
-  [ELEMENT_H3]: 3,
-  [ELEMENT_H4]: 4,
-  [ELEMENT_H5]: 5,
-  [ELEMENT_H6]: 6,
+const headingDepth: Record<string, number> = {
+  [HEADING_KEYS.h1]: 1,
+  [HEADING_KEYS.h2]: 2,
+  [HEADING_KEYS.h3]: 3,
+  [HEADING_KEYS.h4]: 4,
+  [HEADING_KEYS.h5]: 5,
+  [HEADING_KEYS.h6]: 6,
 };
 
 export const getHeadingList = (editor: PlateEditor) => {

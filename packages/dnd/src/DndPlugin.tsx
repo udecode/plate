@@ -39,7 +39,7 @@ export const DndPlugin = createTPlugin<DndConfig>({
     },
   },
   key: 'dnd',
-}).extend(({ plugin: { options } }) => ({
+}).extend(({ options }) => ({
   renderAfterEditable: options.enableScroller
     ? () => <DndScroller {...options?.scrollerProps} />
     : undefined,

@@ -5,7 +5,6 @@ import {
   type TEditor,
   type UnhangRangeOptions,
   getNodeEntries,
-  getPluginInjectProps,
   setElements,
   unsetNodes,
   withoutNormalizing,
@@ -41,7 +40,7 @@ export const setIndent = <E extends PlateEditor>(
     unsetNodesProps = [],
   }: SetIndentOptions<E>
 ) => {
-  const { nodeKey } = getPluginInjectProps(editor, IndentPlugin.key);
+  const { nodeKey } = editor.getInjectProps(IndentPlugin);
 
   const _nodes = getNodeEntries(editor, {
     block: true,

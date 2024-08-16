@@ -1,5 +1,4 @@
 import type {
-  HotkeyPluginOptions,
   InsertNodesOptions,
   TEditor,
   TElement,
@@ -11,13 +10,6 @@ export type Prism = {
   languages: typeof languages;
   tokenize: typeof tokenize;
 };
-
-export interface CodeBlockPluginOptions extends HotkeyPluginOptions {
-  deserializers?: string[];
-  prism?: Prism;
-  syntax?: boolean;
-  syntaxPopularFirst?: boolean;
-}
 
 export interface TCodeBlockElement extends TElement {
   lang?: string;

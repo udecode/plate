@@ -6,13 +6,13 @@ import type {
 
 import type { TTableRowElement, TableConfig } from './types';
 
-import { TablePlugin } from './TablePlugin';
 import { getTableGridAbove } from './queries/getTableGridAbove';
 
 /** If selection is in a table, get subtable above. */
 export const withGetFragmentTable: WithOverride<TableConfig> = ({
   api,
   editor,
+  type,
 }) => {
   const { getFragment } = editor;
 
@@ -22,7 +22,7 @@ export const withGetFragmentTable: WithOverride<TableConfig> = ({
     const newFragment: TDescendant[] = [];
 
     fragment.forEach((node) => {
-      if (node.type === editor.getType(TablePlugin)) {
+      if (node.type === type) {
         const rows = node.children as TTableRowElement[];
 
         const rowCount = rows.length;

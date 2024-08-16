@@ -18,7 +18,6 @@ import { Point } from 'slate';
 
 import type { TableConfig } from './types';
 
-import { TablePlugin } from './TablePlugin';
 import { getTableGridAbove } from './queries/getTableGridAbove';
 import { getCellTypes } from './utils/getCellType';
 
@@ -76,7 +75,10 @@ export const preventDeleteTableCell = (
 };
 
 /** Prevent cell deletion. */
-export const withDeleteTable: WithOverride<TableConfig> = ({ editor }) => {
+export const withDeleteTable: WithOverride<TableConfig> = ({
+  editor,
+  type,
+}) => {
   const { deleteBackward, deleteForward, deleteFragment } = editor;
 
   editor.deleteBackward = (unit) => {
@@ -94,7 +96,7 @@ export const withDeleteTable: WithOverride<TableConfig> = ({ editor }) => {
   editor.deleteFragment = (direction) => {
     if (
       isRangeInSameBlock(editor, {
-        match: (n) => n.type === editor.getType(TablePlugin),
+        match: (n) => n.type === type,
       })
     ) {
       const cellEntries = getTableGridAbove(editor, { format: 'cell' });

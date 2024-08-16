@@ -7,10 +7,8 @@ import type { FindReplaceConfig } from './FindReplacePlugin';
 
 export const decorateFindReplace: Decorate<FindReplaceConfig> = ({
   entry: [node, path],
-  plugin: {
-    options: { search },
-    type,
-  },
+  options: { search },
+  type,
 }) => {
   const ranges: SearchRange[] = [];
 

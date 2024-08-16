@@ -5,7 +5,7 @@ import {
   insertNodes,
 } from '@udecode/plate-common';
 
-import { ELEMENT_TOC } from '../TocPlugin';
+import { TocPlugin } from '../TocPlugin';
 
 export const insertToc = <E extends PlateEditor>(
   editor: E,
@@ -15,7 +15,7 @@ export const insertToc = <E extends PlateEditor>(
     editor,
     {
       children: [{ text: '' }],
-      type: ELEMENT_TOC,
+      type: editor.getType(TocPlugin),
     },
     options as any
   );

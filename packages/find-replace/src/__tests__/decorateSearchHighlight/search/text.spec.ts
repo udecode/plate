@@ -1,3 +1,4 @@
+import { getPluginContext } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 
 import { FindReplacePlugin } from '../../../FindReplacePlugin';
@@ -16,7 +17,10 @@ it('should be', () => {
   const plugin = editor.getPlugin(FindReplacePlugin);
 
   expect(
-    plugin.decorate?.({ editor, entry: [{ text: 'test' }, [0, 0]], plugin })
+    plugin.decorate?.({
+      ...getPluginContext(editor, plugin),
+      entry: [{ text: 'test' }, [0, 0]],
+    })
   ).toEqual([
     {
       [FindReplacePlugin.key]: true,
@@ -47,7 +51,10 @@ it('should be', () => {
   const plugin = editor.getPlugin(FindReplacePlugin);
 
   expect(
-    plugin.decorate?.({ editor, entry: [{ text: 'test' }, [0, 0]], plugin })
+    plugin.decorate?.({
+      ...getPluginContext(editor, plugin),
+      entry: [{ text: 'test' }, [0, 0]],
+    })
   ).toEqual([
     {
       [FindReplacePlugin.key]: true,

@@ -1,7 +1,6 @@
 import {
   type TElement,
   getBlockAbove,
-  getPluginInjectProps,
   isCollapsed,
 } from '@udecode/plate-common';
 import {
@@ -15,7 +14,7 @@ import { LineHeightPlugin, setLineHeight } from '../index';
 export const useLineHeightDropdownMenuState = () => {
   const editor = useEditorRef();
   const { defaultNodeValue, validNodeValues: values = [] } =
-    getPluginInjectProps(editor, LineHeightPlugin.key);
+    editor.getInjectProps(LineHeightPlugin);
 
   // eslint-disable-next-line @typescript-eslint/no-shadow
   const value: string | undefined = useEditorSelector((editor) => {

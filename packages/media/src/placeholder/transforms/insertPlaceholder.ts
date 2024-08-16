@@ -7,11 +7,11 @@ import {
 
 import type { TPlaceholderElement } from '../types';
 
-import { ELEMENT_AUDIO } from '../../audio';
-import { ELEMENT_FILE } from '../../file';
+import { AudioPlugin } from '../../audio';
+import { FilePlugin } from '../../file';
 import { ImagePlugin } from '../../image';
-import { ELEMENT_VIDEO } from '../../video';
-import { ELEMENT_PLACEHOLDER } from '../PlaceholderPlugin';
+import { VideoPlugin } from '../../video';
+import { PlaceholderPlugin } from '../PlaceholderPlugin';
 
 export const insertPlaceHolder = <E extends PlateEditor>(
   editor: E,
@@ -24,7 +24,7 @@ export const insertPlaceHolder = <E extends PlateEditor>(
       {
         children: [{ text: '' }],
         mediaType,
-        type: ELEMENT_PLACEHOLDER,
+        type: editor.getType(PlaceholderPlugin),
       },
       options as any
     )
@@ -39,14 +39,14 @@ export const insertImagePlaceholder = <E extends PlateEditor>(
 export const insertVideoPlaceholder = <E extends PlateEditor>(
   editor: E,
   options?: InsertNodesOptions<E>
-) => insertPlaceHolder(editor, ELEMENT_VIDEO, options);
+) => insertPlaceHolder(editor, VideoPlugin.key, options);
 
 export const insertAudioPlaceholer = <E extends PlateEditor>(
   editor: E,
   options?: InsertNodesOptions<E>
-) => insertPlaceHolder(editor, ELEMENT_AUDIO, options);
+) => insertPlaceHolder(editor, AudioPlugin.key, options);
 
 export const insertFilePlaceholer = <E extends PlateEditor>(
   editor: E,
   options?: InsertNodesOptions<E>
-) => insertPlaceHolder(editor, ELEMENT_FILE, options);
+) => insertPlaceHolder(editor, FilePlugin.key, options);

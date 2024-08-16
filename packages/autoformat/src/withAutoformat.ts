@@ -12,9 +12,7 @@ import { autoformatText } from './transforms/autoformatText';
  */
 export const withAutoformat: WithOverride<AutoformatConfig> = ({
   editor,
-  plugin: {
-    options: { rules },
-  },
+  options: { rules },
 }) => {
   const { insertText } = editor;
 

@@ -17,7 +17,7 @@ export const MediaEmbedPlugin = createTPlugin<MediaEmbedConfig>({
   options: {
     transformUrl: parseIframeUrl,
   },
-}).extend(({ plugin: { type } }) => ({
+}).extend(({ type }) => ({
   deserializeHtml: {
     getNode: ({ element }) => {
       const url = element.getAttribute('src');

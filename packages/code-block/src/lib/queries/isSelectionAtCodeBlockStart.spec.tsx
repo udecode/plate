@@ -2,6 +2,7 @@
 
 import type { PlateEditor } from '@udecode/plate-common';
 
+import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { isSelectionAtCodeBlockStart } from './isSelectionAtCodeBlockStart';
@@ -24,7 +25,9 @@ describe('isSelectionAtCodeBlockStart', () => {
       </editor>
     ) as any as PlateEditor;
 
-    expect(isSelectionAtCodeBlockStart(input)).toBe(false);
+    expect(
+      isSelectionAtCodeBlockStart(createPlateEditor({ editor: input }))
+    ).toBe(false);
   });
 
   it('should be false when on a non-first line of a code block', () => {
@@ -42,7 +45,9 @@ describe('isSelectionAtCodeBlockStart', () => {
       </editor>
     ) as any as PlateEditor;
 
-    expect(isSelectionAtCodeBlockStart(input)).toBe(false);
+    expect(
+      isSelectionAtCodeBlockStart(createPlateEditor({ editor: input }))
+    ).toBe(false);
   });
 
   it('should be false when not at the start of a code line', () => {
@@ -57,7 +62,9 @@ describe('isSelectionAtCodeBlockStart', () => {
       </editor>
     ) as any as PlateEditor;
 
-    expect(isSelectionAtCodeBlockStart(input)).toBe(false);
+    expect(
+      isSelectionAtCodeBlockStart(createPlateEditor({ editor: input }))
+    ).toBe(false);
   });
 
   it('should be true when at the start of the first line of a code block', () => {
@@ -73,6 +80,8 @@ describe('isSelectionAtCodeBlockStart', () => {
       </editor>
     ) as any as PlateEditor;
 
-    expect(isSelectionAtCodeBlockStart(input)).toBe(true);
+    expect(
+      isSelectionAtCodeBlockStart(createPlateEditor({ editor: input }))
+    ).toBe(true);
   });
 });

@@ -8,15 +8,13 @@ import type {
   AnyEditorPlugin,
   AnyPluginConfig,
   EditorPlugin,
+  InferApi,
+  InferOptions,
+  InferTransforms,
   InjectProps,
   PluginConfig,
   WithRequiredKey,
 } from '../plugin/types/PlatePlugin';
-import type {
-  InferApi,
-  InferOptions,
-  InferTransforms,
-} from '../plugin/types/infer-types';
 import type { CorePlugin } from '../plugins';
 
 export type PlateEditor = {

@@ -12,7 +12,7 @@ import {
 
 import type { TTableElement, TableConfig } from './types';
 
-import { TablePlugin, TableRowPlugin } from './TablePlugin';
+import { TableRowPlugin } from './TablePlugin';
 import { getCellTypes } from './utils/index';
 
 /**
@@ -22,17 +22,18 @@ import { getCellTypes } from './utils/index';
  */
 export const withNormalizeTable: WithOverride<TableConfig> = ({
   editor,
-  plugin: { options },
+  options,
+  type,
 }) => {
   const { normalizeNode } = editor;
   const { initialTableWidth } = options;
 
   editor.normalizeNode = ([node, path]) => {
     if (isElement(node)) {
-      if (node.type === editor.getType(TablePlugin)) {
+      if (node.type === type) {
         const tableEntry = getBlockAbove(editor, {
           at: path,
-          match: { type: editor.getType(TablePlugin) },
+          match: { type: type },
         });
 
         if (tableEntry) {
@@ -71,7 +72,7 @@ export const withNormalizeTable: WithOverride<TableConfig> = ({
       if (node.type === editor.getType(TableRowPlugin)) {
         const parentEntry = getParentNode(editor, path);
 
-        if (parentEntry?.[0].type !== editor.getType(TablePlugin)) {
+        if (parentEntry?.[0].type !== type) {
           unwrapNodes(editor, {
             at: path,
           });

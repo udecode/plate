@@ -8,7 +8,7 @@ export const FontColorPlugin = createPlugin({
     },
   },
   key: 'color',
-}).extend(({ plugin: { type } }) => ({
+}).extend(({ type }) => ({
   deserializeHtml: {
     getNode({ element }) {
       if (element.style.color) {

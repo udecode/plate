@@ -1,10 +1,7 @@
 import { useMemo } from 'react';
 
-import {
-  type PlateEditor,
-  type Value,
-  getPluginOptions,
-} from '@udecode/plate-common';
+import type { PlateEditor, Value } from '@udecode/plate-common';
+
 import {
   atom,
   createAtomStore,
@@ -13,7 +10,7 @@ import {
 } from '@udecode/plate-common/react';
 import { IndentPlugin, type TIndentElement } from '@udecode/plate-indent';
 
-import { TogglePlugin, type TogglePluginOptions } from './TogglePlugin';
+import { TogglePlugin } from './TogglePlugin';
 
 // Duplicate constant instead of importing from "plate-indent-list" to avoid a dependency.
 const IndentListPluginKey = 'listStyleType';
@@ -62,11 +59,7 @@ export const someToggleClosed = (
   editor: PlateEditor,
   toggleIds: string[]
 ): boolean => {
-  const options = getPluginOptions<TogglePluginOptions>(
-    editor,
-    TogglePlugin.key
-  );
-  const openIds = options.openIds!;
+  const openIds = editor.getOptions(TogglePlugin).openIds!;
 
   return toggleIds.some((id) => !openIds.has(id));
 };
@@ -75,11 +68,7 @@ export const isToggleOpen = (
   editor: PlateEditor,
   toggleId: string
 ): boolean => {
-  const options = getPluginOptions<TogglePluginOptions>(
-    editor,
-    TogglePlugin.key
-  );
-  const openIds = options.openIds!;
+  const openIds = editor.getOptions(TogglePlugin).openIds!;
 
   return openIds.has(toggleId);
 };
@@ -89,8 +78,9 @@ export const toggleIds = (
   ids: string[],
   force: boolean | null = null
 ): void => {
-  const options = editor.getOptions(TogglePlugin);
-  options.setOpenIds!((openIds) => _toggleIds(openIds, ids, force));
+  editor.getOptions(TogglePlugin).setOpenIds!((openIds) =>
+    _toggleIds(openIds, ids, force)
+  );
 };
 
 const _toggleIds = (

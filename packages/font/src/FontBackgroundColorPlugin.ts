@@ -7,7 +7,7 @@ export const FontBackgroundColorPlugin = createPlugin({
     },
   },
   key: 'backgroundColor',
-}).extend(({ plugin: { type } }) => ({
+}).extend(({ type }) => ({
   deserializeHtml: {
     getNode: ({ element }) => ({ [type]: element.style.backgroundColor }),
     isLeaf: true,

@@ -2,7 +2,7 @@
 
 import { ParagraphPlugin } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { ELEMENT_H1 } from '@udecode/plate-heading';
+import { HEADING_KEYS } from '@udecode/plate-heading';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { NormalizeTypesPlugin } from '../../NormalizeTypesPlugin';
@@ -34,7 +34,7 @@ it('should be', () => {
           rules: [
             {
               path: [0, 0],
-              strictType: ELEMENT_H1,
+              strictType: HEADING_KEYS.h1,
             },
             { path: [0, 1], type: ParagraphPlugin.key },
           ],

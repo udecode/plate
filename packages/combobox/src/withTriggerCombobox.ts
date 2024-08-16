@@ -14,15 +14,13 @@ export const withTriggerCombobox: WithOverride<
   PluginConfig<any, TriggerComboboxPluginOptions>
 > = ({
   editor,
-  plugin: {
-    options: {
-      createComboboxInput,
-      trigger,
-      triggerPreviousCharPattern,
-      triggerQuery,
-    },
-    type,
+  options: {
+    createComboboxInput,
+    trigger,
+    triggerPreviousCharPattern,
+    triggerQuery,
   },
+  type,
 }) => {
   const { insertText } = editor;
 

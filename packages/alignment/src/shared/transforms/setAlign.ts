@@ -3,7 +3,6 @@ import {
   type SetNodesOptions,
   type TNodeMatch,
   getKeyByType,
-  getPluginInjectProps,
   isBlock,
   setElements,
   unsetNodes,
@@ -25,10 +24,9 @@ export const setAlign = <E extends PlateEditor>(
     value: Alignment;
   }
 ) => {
-  const { defaultNodeValue, nodeKey, validPlugins } = getPluginInjectProps(
-    editor,
-    key
-  );
+  const { defaultNodeValue, nodeKey, validPlugins } = editor.getInjectProps({
+    key,
+  });
 
   const match: TNodeMatch = (n) => {
     return (

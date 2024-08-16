@@ -7,7 +7,7 @@ import type {
   PluginConfig,
 } from '../plugin/types/PlatePlugin';
 
-import { getPluginContext } from '../plugin';
+import { createPlugin, getPluginContext } from '../plugin';
 
 /**
  * Resolves and finalizes a plugin configuration for use in a Plate editor.
@@ -28,7 +28,8 @@ export const resolvePlugin = <P extends AnyPlatePlugin>(
   editor: PlateEditor,
   _plugin: P
 ): P => {
-  let plugin = { ..._plugin };
+  // Create a deep clone of the plugin
+  let plugin = createPlugin(_plugin) as P;
 
   // Apply the stored configuration first
   if (plugin.__configuration) {

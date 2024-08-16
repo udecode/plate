@@ -1,8 +1,24 @@
-import { createTPlugin } from '@udecode/plate-common';
-
-import type { SoftBreakConfig } from './types';
+import {
+  type PluginConfig,
+  type QueryNodeOptions,
+  createTPlugin,
+} from '@udecode/plate-common';
 
 import { onKeyDownSoftBreak } from './onKeyDownSoftBreak';
+
+export interface SoftBreakRule {
+  hotkey: string;
+
+  /** Filter the block types where the rule applies. */
+  query?: QueryNodeOptions;
+}
+
+export type SoftBreakConfig = PluginConfig<
+  'softBreak',
+  {
+    rules?: SoftBreakRule[];
+  }
+>;
 
 /**
  * Insert soft break following configurable rules. Each rule specifies a hotkey

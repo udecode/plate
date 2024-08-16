@@ -15,7 +15,7 @@ export interface CodeSyntaxRange extends Range {
 export const decorateCodeLine: Decorate = ({
   editor,
   entry: [node, path],
-  plugin,
+  type,
 }): CodeSyntaxRange[] => {
   const codeBlockOptions = editor.getOptions(CodeBlockPlugin);
 
@@ -27,7 +27,7 @@ export const decorateCodeLine: Decorate = ({
 
   const ranges: CodeSyntaxRange[] = [];
 
-  if (!codeBlockOptions.syntax || node.type !== plugin.type) {
+  if (!codeBlockOptions.syntax || node.type !== type) {
     return ranges;
   }
 

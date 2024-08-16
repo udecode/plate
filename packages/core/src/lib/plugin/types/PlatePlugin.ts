@@ -20,7 +20,6 @@ import type {
 import type { DOMHandlers, HandlerReturnType } from './DOMHandlers';
 import type { PlateRenderElementProps } from './PlateRenderElementProps';
 import type { PlateRenderLeafProps } from './PlateRenderLeafProps';
-import type { InferApi, InferOptions, InferTransforms } from './infer-types';
 
 /** The `PlatePlugin` interface is a base interface for all plugins. */
 export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
@@ -28,7 +27,7 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
 
   /**
    * An array of plugin keys that this plugin depends on. These plugins will be
-   * loaded before the current plugin.
+   * loaded before this plugin.
    */
   dependencies: string[];
 
@@ -229,8 +228,6 @@ export type EditorPlugin<C extends AnyPluginConfig = PluginConfig> = Omit<
 
 export type AnyEditorPlugin = EditorPlugin<AnyPluginConfig>;
 
-export type EditorPlugins = AnyEditorPlugin[];
-
 export type PluginConfig<K extends string = any, O = {}, A = {}, T = {}> = {
   api: A;
   key: K;
@@ -313,6 +310,8 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
         >)
       | PlatePluginConfig<any, InferOptions<P>, InferApi<P>, InferTransforms<P>>
   ) => PlatePlugin<C>;
+
+  create: () => PlatePlugin<C>;
 
   extend: <EO = {}, EA = {}, ET = {}>(
     extendConfig:
@@ -736,3 +735,11 @@ export type Decorate<C extends AnyPluginConfig = PluginConfig> = (
 ) => Range[] | undefined;
 
 export type WithRequiredKey<P = {}> = { key: string } & Partial<P>;
+
+export type InferOptions<P> = P extends PluginConfig ? P['options'] : never;
+
+export type InferApi<P> = P extends PluginConfig ? P['api'] : never;
+
+export type InferTransforms<P> = P extends PluginConfig
+  ? P['transforms']
+  : never;

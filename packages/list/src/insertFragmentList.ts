@@ -1,6 +1,5 @@
 import {
   type PlateEditor,
-  type PlatePlugin,
   type TAncestor,
   type TAncestorEntry,
   type TDescendant,
@@ -20,24 +19,19 @@ import {
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
-import { ListItemPlugin } from './ListPlugin';
-import {
-  getListItemContentType,
-  getListItemType,
-  isListRoot,
-} from './queries/index';
+import { ListItemContentPlugin, ListItemPlugin } from './ListPlugin';
+import { isListRoot } from './queries/index';
 
 export const insertFragmentList = (editor: PlateEditor) => {
   const { insertFragment } = editor;
 
-  const listItemPlugin = editor.getPlugin(ListItemPlugin);
-  const listItemType = getListItemType(editor);
-  const listItemContentType = getListItemContentType(editor);
+  const listItemType = editor.getType(ListItemPlugin);
+  const listItemContentType = editor.getType(ListItemContentPlugin);
 
   const getFirstAncestorOfType = (
     root: TDescendant,
     entry: TDescendantEntry,
-    { type }: PlatePlugin
+    type: string
   ): TAncestorEntry => {
     let ancestor: Path = Path.parent(entry[1]);
 
@@ -85,7 +79,7 @@ export const insertFragmentList = (editor: PlateEditor) => {
           ? commonAncestor
           : (getCommonNode(listRoot, textEntry[1], commonAncestor[1]) as any),
       // any list item would do, we grab the first one
-      getFirstAncestorOfType(listRoot, textEntries[0], listItemPlugin as any)
+      getFirstAncestorOfType(listRoot, textEntries[0], listItemType)
     );
 
     const [first, ...rest] = isListRoot(

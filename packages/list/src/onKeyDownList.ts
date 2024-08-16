@@ -17,10 +17,8 @@ import { moveListItems, toggleList } from './transforms/index';
 export const onKeyDownList: KeyboardHandler<ListConfig> = ({
   editor,
   event,
-  plugin: {
-    options: { enableResetOnShiftTab, hotkey },
-    type,
-  },
+  options: { enableResetOnShiftTab, hotkey },
+  type,
 }) => {
   if (event.defaultPrevented) return;
 

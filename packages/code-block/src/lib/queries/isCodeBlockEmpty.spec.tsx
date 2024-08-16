@@ -2,6 +2,7 @@
 
 import type { PlateEditor } from '@udecode/plate-common';
 
+import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { isCodeBlockEmpty } from './isCodeBlockEmpty';
@@ -24,7 +25,7 @@ describe('isCodeBlockEmpty', () => {
       </editor>
     ) as any as PlateEditor;
 
-    expect(isCodeBlockEmpty(input)).toBe(false);
+    expect(isCodeBlockEmpty(createPlateEditor({ editor: input }))).toBe(false);
   });
 
   it('should be false when in a code block with multiple lines', () => {
@@ -42,7 +43,7 @@ describe('isCodeBlockEmpty', () => {
       </editor>
     ) as any as PlateEditor;
 
-    expect(isCodeBlockEmpty(input)).toBe(false);
+    expect(isCodeBlockEmpty(createPlateEditor({ editor: input }))).toBe(false);
   });
 
   it('should be false when in a non-empty code line', () => {
@@ -57,7 +58,7 @@ describe('isCodeBlockEmpty', () => {
       </editor>
     ) as any as PlateEditor;
 
-    expect(isCodeBlockEmpty(input)).toBe(false);
+    expect(isCodeBlockEmpty(createPlateEditor({ editor: input }))).toBe(false);
   });
 
   it('should be true when in an empty code line', () => {
@@ -72,6 +73,6 @@ describe('isCodeBlockEmpty', () => {
       </editor>
     ) as any as PlateEditor;
 
-    expect(isCodeBlockEmpty(input)).toBe(true);
+    expect(isCodeBlockEmpty(createPlateEditor({ editor: input }))).toBe(true);
   });
 });

@@ -15,7 +15,6 @@ import {
 } from '@udecode/plate-cloud';
 import { setNodes } from '@udecode/plate-common';
 import { findNodePath, useEditorRef } from '@udecode/plate-common/react';
-import { getPluginOptions } from '@udecode/plate-core';
 
 type ImageSize = { height: number; width: number };
 
@@ -113,10 +112,8 @@ export function ResizeControls({
   const editor = useEditorRef();
   const [isResizing, setIsResizing] = useState(false);
 
-  const { maxResizeWidth, minResizeWidth } = getPluginOptions(
-    editor,
-    CloudImagePlugin
-  );
+  const { maxResizeWidth, minResizeWidth } =
+    editor.getOptions(CloudImagePlugin);
 
   const currentSizeRef = useRef<{ height: number; width: number }>();
 

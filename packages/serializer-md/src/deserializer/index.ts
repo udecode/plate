@@ -3,5 +3,4 @@
  */
 
 export * from './DeserializeMdPlugin';
-export * from './types';
 export * from './utils/index';

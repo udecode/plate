@@ -11,14 +11,7 @@ import {
 
 export const onKeyDownToggleElement: KeyboardHandler<
   PluginConfig<any, HotkeyPluginOptions>
-> = ({
-  editor,
-  event,
-  plugin: {
-    options: { hotkey },
-    type,
-  },
-}) => {
+> = ({ editor, event, options: { hotkey }, type }) => {
   if (event.defaultPrevented) return;
 
   const defaultType = editor.getType(ParagraphPlugin);

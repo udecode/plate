@@ -14,10 +14,7 @@ export type LengthConfig = PluginConfig<
   }
 >;
 
-export const withLength: WithOverride<LengthConfig> = ({
-  editor,
-  plugin: { options },
-}) => {
+export const withLength: WithOverride<LengthConfig> = ({ editor, options }) => {
   const { apply } = editor;
 
   editor.apply = (operation) => {

@@ -1,3 +1,4 @@
+import cloneDeep from 'lodash/cloneDeep.js';
 import merge from 'lodash/merge.js';
 
 import type { PlateEditor } from '../editor';
@@ -113,7 +114,8 @@ export function createPlugin<K extends string = any, O = {}, A = {}, T = {}>(
       transforms: {},
       type: key,
     },
-    config
+    // config
+    cloneDeep(config)
   ) as unknown as PlatePlugin<PluginConfig<K, O, A, T>>;
 
   plugin.configure = (config) => {

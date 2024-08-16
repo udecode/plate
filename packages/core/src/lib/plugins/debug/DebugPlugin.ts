@@ -44,7 +44,7 @@ export const DebugPlugin = createPlugin({
     } as Partial<Record<LogLevel, LogFunction>>,
     throwErrors: true,
   },
-}).extendApi(({ plugin: { options } }) => {
+}).extendApi(({ options }) => {
   const logLevels: LogLevel[] = ['error', 'warn', 'info', 'log'];
 
   const log = (

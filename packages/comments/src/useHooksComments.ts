@@ -7,9 +7,7 @@ import { useAddCommentMark, useCommentsActions } from './stores';
 
 export const useHooksComments: PlatePluginUseHooks<CommentsConfig> = ({
   editor,
-  plugin: {
-    options: { hotkey },
-  },
+  options: { hotkey },
 }) => {
   const addCommentMark = useAddCommentMark();
   const setFocusTextarea = useCommentsActions().focusTextarea();

@@ -13,16 +13,12 @@ import {
   select,
 } from '@udecode/plate-common';
 
-import type { SelectOnBackspacePluginOptions } from './SelectOnBackspacePlugin';
+import type { SelectOnBackspaceConfig } from './SelectOnBackspacePlugin';
 
 /** Set a list of element types to select on backspace */
-export const withSelectOnBackspace: WithOverride<
-  SelectOnBackspacePluginOptions
-> = ({
+export const withSelectOnBackspace: WithOverride<SelectOnBackspaceConfig> = ({
   editor,
-  plugin: {
-    options: { query, removeNodeIfEmpty },
-  },
+  options: { query, removeNodeIfEmpty },
 }) => {
   const { deleteBackward } = editor;
 

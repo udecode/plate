@@ -11,7 +11,7 @@ import {
 
 import { type ComputeDiffOptions, computeDiff } from './computeDiff';
 
-const ELEMENT_INLINE_VOID = 'inline-void';
+const type = 'inline-void';
 
 interface ComputeDiffFixture
   extends Pick<ComputeDiffOptions, 'elementsAreRelated' | 'lineBreakChar'> {
@@ -401,7 +401,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         children: [
           { id: '1', text: 'PingCode' },
-          { children: [{ text: '' }], id: '4', type: ELEMENT_INLINE_VOID },
+          { children: [{ text: '' }], id: '4', type: type },
           { id: '3', text: 'Worktile' },
         ],
         type: 'paragraph',
@@ -411,7 +411,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         children: [
           { id: '1', text: 'PingCode' },
-          { children: [{ text: '' }], id: '2', type: ELEMENT_INLINE_VOID },
+          { children: [{ text: '' }], id: '2', type: type },
           { id: '3', text: 'Worktile' },
         ],
         type: 'paragraph',
@@ -421,7 +421,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         children: [
           { id: '1', text: 'PingCode' },
-          { children: [{ text: '' }], id: '4', type: ELEMENT_INLINE_VOID },
+          { children: [{ text: '' }], id: '4', type: type },
           { id: '3', text: 'Worktile' },
         ],
         type: 'paragraph',
@@ -535,7 +535,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
             children: [{ text: '' }],
             diff: true,
             diffOperation: { type: 'insert' },
-            type: ELEMENT_INLINE_VOID,
+            type: type,
           },
           { text: '!' },
         ],
@@ -554,7 +554,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           { text: 'This is an ' },
           {
             children: [{ text: '' }],
-            type: ELEMENT_INLINE_VOID,
+            type: type,
           },
           { text: '!' },
         ],
@@ -1169,7 +1169,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
             children: [{ text: '' }],
             diff: true,
             diffOperation: { type: 'delete' },
-            type: ELEMENT_INLINE_VOID,
+            type: type,
           },
           { text: '!' },
         ],
@@ -1182,7 +1182,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           { text: 'This is an ' },
           {
             children: [{ text: '' }],
-            type: ELEMENT_INLINE_VOID,
+            type: type,
           },
           { text: '!' },
         ],
@@ -1568,14 +1568,14 @@ const fixtures: Record<string, ComputeDiffFixture> = {
             diff: true,
             diffOperation: { type: 'delete' },
             someProp: 'Hello',
-            type: ELEMENT_INLINE_VOID,
+            type: type,
           },
           {
             children: [{ text: '' }],
             diff: true,
             diffOperation: { type: 'insert' },
             someProp: 'World',
-            type: ELEMENT_INLINE_VOID,
+            type: type,
           },
           { text: '!' },
         ],
@@ -1589,7 +1589,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             children: [{ text: '' }],
             someProp: 'Hello',
-            type: ELEMENT_INLINE_VOID,
+            type: type,
           },
           { text: '!' },
         ],
@@ -1603,7 +1603,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             children: [{ text: '' }],
             someProp: 'World',
-            type: ELEMENT_INLINE_VOID,
+            type: type,
           },
           { text: '!' },
         ],
@@ -1619,7 +1619,7 @@ describe('computeDiff', () => {
       itFn(name, () => {
         const output = computeDiff(input1, input2, {
           ignoreProps: ['id'],
-          isInline: (node) => node.type === ELEMENT_INLINE_VOID,
+          isInline: (node) => node.type === type,
           ...options,
         });
 

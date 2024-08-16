@@ -1,20 +1,20 @@
-import type { TextUnit } from 'slate';
-
 import {
-  type PlateEditor,
+  type WithOverride,
   getAboveNode,
   getNodeString,
   isCollapsed,
   isDefined,
 } from '@udecode/plate-common';
 
-import { IndentListPlugin } from '../IndentListPlugin';
+import { type IndentListConfig, IndentListPlugin } from '../IndentListPlugin';
 import { outdentList } from '../transforms';
 
-export const deleteBackwardIndentList = (editor: PlateEditor) => {
+export const withDeleteBackwardIndentList: WithOverride<IndentListConfig> = ({
+  editor,
+}) => {
   const { deleteBackward } = editor;
 
-  return function (unit: TextUnit) {
+  editor.deleteBackward = (unit) => {
     const nodeEntry = getAboveNode(editor);
 
     if (!nodeEntry) return deleteBackward(unit);
@@ -29,4 +29,6 @@ export const deleteBackwardIndentList = (editor: PlateEditor) => {
 
     return deleteBackward(unit);
   };
+
+  return editor;
 };

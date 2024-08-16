@@ -1,22 +1,20 @@
 import {
   type PlateEditor,
   type TElement,
-  getPluginType,
   setElements,
   someNode,
   withoutNormalizing,
   wrapNodes,
 } from '@udecode/plate-common';
 
-import { CodeBlockPlugin } from '../CodeBlockPlugin';
-import { getCodeLineType } from '../options';
+import { CodeBlockPlugin, CodeLinePlugin } from '../CodeBlockPlugin';
 import { unwrapCodeBlock } from './unwrapCodeBlock';
 
 export const toggleCodeBlock = (editor: PlateEditor) => {
   if (!editor.selection) return;
 
   const codeBlockType = editor.getType(CodeBlockPlugin);
-  const codeLineType = getCodeLineType(editor);
+  const codeLineType = editor.getType(CodeLinePlugin);
 
   const isActive = someNode(editor, {
     match: { type: codeBlockType },

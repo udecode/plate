@@ -11,9 +11,7 @@ import {
 } from '@udecode/plate-common';
 import { Hotkeys } from '@udecode/plate-common/react';
 
-import type { CodeBlockPluginOptions } from '../lib';
-
-import { getCodeLineType } from '../lib/options/getCodeLineType';
+import { type CodeBlockConfig, CodeLinePlugin } from '../lib';
 import { getCodeLineEntry } from '../lib/queries/getCodeLineEntry';
 import { indentCodeLine } from '../lib/transforms/indentCodeLine';
 import { outdentCodeLine } from '../lib/transforms/outdentCodeLine';
@@ -22,7 +20,7 @@ import { outdentCodeLine } from '../lib/transforms/outdentCodeLine';
  * - Shift+Tab: outdent code line.
  * - Tab: indent code line.
  */
-export const onKeyDownCodeBlock: KeyboardHandler<CodeBlockPluginOptions> = ({
+export const onKeyDownCodeBlock: KeyboardHandler<CodeBlockConfig> = ({
   editor,
   event,
 }) => {
@@ -33,7 +31,7 @@ export const onKeyDownCodeBlock: KeyboardHandler<CodeBlockPluginOptions> = ({
 
   if (isTab || isUntab) {
     const _codeLines = getNodeEntries<TElement>(editor, {
-      match: { type: getCodeLineType(editor) },
+      match: { type: editor.getType(CodeLinePlugin) },
     });
     const codeLines = Array.from(_codeLines);
 

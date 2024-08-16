@@ -23,7 +23,8 @@ import {
 } from '@udecode/plate-normalizers';
 import { Path, type Point, type Range } from 'slate';
 
-import { type LinkConfig, LinkPlugin } from './LinkPlugin';
+import type { LinkConfig } from './LinkPlugin';
+
 import { upsertLink } from './transforms/index';
 
 /**
@@ -37,10 +38,8 @@ import { upsertLink } from './transforms/index';
 
 export const withLink: WithOverride<LinkConfig> = ({
   editor,
-  plugin: {
-    options: { getUrlHref, isUrl, keepSelectedTextOnPaste, rangeBeforeOptions },
-    type,
-  },
+  options: { getUrlHref, isUrl, keepSelectedTextOnPaste, rangeBeforeOptions },
+  type,
 }) => {
   const { apply, insertBreak, insertData, insertText, normalizeNode } = editor;
 
@@ -64,7 +63,7 @@ export const withLink: WithOverride<LinkConfig> = ({
 
       const hasLink = someNode(editor, {
         at: beforeWordRange,
-        match: { type: editor.getType(LinkPlugin) },
+        match: { type },
       });
 
       // if word before the cursor has a link, exit
@@ -130,7 +129,7 @@ export const withLink: WithOverride<LinkConfig> = ({
       if (range?.focus && range.anchor && isCollapsed(range)) {
         const entry = getAboveNode(editor, {
           at: range,
-          match: { type: editor.getType(LinkPlugin) },
+          match: { type },
         });
 
         if (entry) {
@@ -159,7 +158,7 @@ export const withLink: WithOverride<LinkConfig> = ({
 
   // TODO: plugin
   editor.normalizeNode = ([node, path]) => {
-    if (node.type === editor.getType(LinkPlugin)) {
+    if (node.type === type) {
       const range = editor.selection as Range | null;
 
       if (

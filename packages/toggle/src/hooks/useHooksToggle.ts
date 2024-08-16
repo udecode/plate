@@ -11,7 +11,7 @@ import {
 
 export const useHooksToggle: PlatePluginUseHooks<ToggleConfig> = ({
   editor,
-  plugin: { options },
+  options,
 }) => {
   const [openIds, setOpenIds] = useToggleControllerStore().use.openIds();
   const toggleIndex = useToggleIndex();

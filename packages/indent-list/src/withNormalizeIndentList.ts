@@ -1,22 +1,21 @@
 import {
-  type NodeEntryOf,
-  type TEditor,
   type TElement,
+  type WithOverride,
   withoutNormalizing,
 } from '@udecode/plate-common';
 
-import type { IndentListPluginOptions } from './IndentListPlugin';
+import type { IndentListConfig } from './IndentListPlugin';
 
 import { normalizeIndentListNotIndented } from './normalizers/normalizeIndentListNotIndented';
 import { normalizeIndentListStart } from './normalizers/normalizeIndentListStart';
 
-export const normalizeIndentList = <E extends TEditor>(
-  editor: E,
-  { getSiblingIndentListOptions }: IndentListPluginOptions = {}
-) => {
+export const withNormalizeIndentList: WithOverride<IndentListConfig> = ({
+  editor,
+  options: { getSiblingIndentListOptions },
+}) => {
   const { normalizeNode } = editor;
 
-  return ([node, path]: NodeEntryOf<E>) => {
+  editor.normalizeNode = ([node, path]) => {
     const normalized = withoutNormalizing(editor, () => {
       if (normalizeIndentListNotIndented(editor, [node, path])) return true;
       if (
@@ -33,4 +32,6 @@ export const normalizeIndentList = <E extends TEditor>(
 
     return normalizeNode([node, path]);
   };
+
+  return editor;
 };

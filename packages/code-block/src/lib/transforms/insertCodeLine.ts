@@ -1,6 +1,6 @@
 import { type PlateEditor, insertElements } from '@udecode/plate-common';
 
-import { getCodeLineType } from '../options';
+import { CodeLinePlugin } from '../CodeBlockPlugin';
 
 /** Insert a code line starting with indentation. */
 export const insertCodeLine = (editor: PlateEditor, indentDepth = 0) => {
@@ -9,7 +9,7 @@ export const insertCodeLine = (editor: PlateEditor, indentDepth = 0) => {
 
     insertElements(editor, {
       children: [{ text: indent }],
-      type: getCodeLineType(editor),
+      type: editor.getType(CodeLinePlugin),
     });
   }
 };
