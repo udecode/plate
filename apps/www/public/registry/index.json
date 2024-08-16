@@ -476,8 +476,7 @@
   {
     "dependencies": [
       "@udecode/plate-block-quote",
-      "@udecode/plate-heading",
-      "@udecode/plate-paragraph"
+      "@udecode/plate-heading"
     ],
     "files": [
       "plate-ui/insert-dropdown-menu.tsx"
@@ -701,9 +700,6 @@
     "type": "components:plate-ui"
   },
   {
-    "dependencies": [
-      "@udecode/plate-paragraph"
-    ],
     "files": [
       "plate-ui/paragraph-element.tsx"
     ],
@@ -887,8 +883,7 @@
   {
     "dependencies": [
       "@udecode/plate-block-quote",
-      "@udecode/plate-heading",
-      "@udecode/plate-paragraph"
+      "@udecode/plate-heading"
     ],
     "files": [
       "plate-ui/turn-into-dropdown-menu.tsx"

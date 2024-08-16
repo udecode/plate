@@ -1,7 +1,4 @@
 {
-  "dependencies": [
-    "@udecode/plate-paragraph"
-  ],
   "files": [
     {
       "content": "import { withCn } from '@udecode/cn';\nimport { PlateElement } from '@udecode/plate-common/react';\n\nexport const ParagraphElement = withCn(PlateElement, 'm-0 px-0 py-1');\n",
