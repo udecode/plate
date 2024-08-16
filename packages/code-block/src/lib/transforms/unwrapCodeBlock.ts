@@ -5,7 +5,6 @@ import {
   type PlateEditor,
   getChildren,
   getNodeEntries,
-  getPluginType,
   setElements,
   unwrapNodes,
   withoutNormalizing,

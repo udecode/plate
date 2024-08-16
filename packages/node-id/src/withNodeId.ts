@@ -17,16 +17,16 @@ import type { NodeIdConfig } from './NodeIdPlugin';
 /** Enables support for inserting nodes with an id key. */
 export const withNodeId: WithOverride<NodeIdConfig> = ({
   editor,
-    options: {
-      allow,
-      disableInsertOverrides,
-      exclude,
-      filter,
-      filterText,
-      idCreator,
-      idKey = '',
-      reuseId,
-    },
+  options: {
+    allow,
+    disableInsertOverrides,
+    exclude,
+    filter,
+    filterText,
+    idCreator,
+    idKey = '',
+    reuseId,
+  },
 }) => {
   const { apply, insertNode, insertNodes } = editor;
 

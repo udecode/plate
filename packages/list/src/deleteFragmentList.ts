@@ -7,7 +7,6 @@ import {
   getAboveNode,
   getEndPoint,
   getParentNode,
-  getPluginType,
   getStartPoint,
   removeNodes,
   withoutNormalizing,

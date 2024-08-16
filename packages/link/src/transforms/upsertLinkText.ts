@@ -3,7 +3,6 @@ import {
   type TText,
   getAboveNode,
   getEditorString,
-  getPluginType,
   replaceNodeChildren,
 } from '@udecode/plate-common';
 

@@ -1,4 +1,4 @@
-import { getPluginType, someNode } from '@udecode/plate-common';
+import { someNode } from '@udecode/plate-common';
 import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
 
 import { LinkPlugin, triggerFloatingLink } from '../index';

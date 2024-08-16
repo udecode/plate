@@ -2,7 +2,6 @@ import {
   type PlateEditor,
   type UnwrapNodesOptions,
   getAboveNode,
-  getPluginType,
   isElement,
   splitNodes,
   unwrapNodes,
@@ -29,8 +28,7 @@ export const unwrapLink = (
       if (linkAboveAnchor) {
         splitNodes(editor, {
           at: editor.selection?.anchor,
-          match: (n) =>
-            isElement(n) && n.type === editor.getType(LinkPlugin),
+          match: (n) => isElement(n) && n.type === editor.getType(LinkPlugin),
         });
         unwrapLink(editor, {
           at: editor.selection?.anchor,
@@ -48,8 +46,7 @@ export const unwrapLink = (
       if (linkAboveFocus) {
         splitNodes(editor, {
           at: editor.selection?.focus,
-          match: (n) =>
-            isElement(n) && n.type === editor.getType(LinkPlugin),
+          match: (n) => isElement(n) && n.type === editor.getType(LinkPlugin),
         });
         unwrapLink(editor, {
           at: editor.selection?.focus,

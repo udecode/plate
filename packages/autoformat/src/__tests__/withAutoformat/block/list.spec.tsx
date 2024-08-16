@@ -1,8 +1,7 @@
 /** @jsx jsx */
 
-import { createPlateEditor } from "@udecode/plate-common/react";
+import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
-import { withReact } from 'slate-react';
 import { getAutoformatOptions } from 'www/src/lib/plate/demo/plugins/autoformatOptions';
 
 import type {
@@ -11,7 +10,6 @@ import type {
 } from '../../../types';
 
 import { AutoformatPlugin } from '../../../AutoformatPlugin';
-import { withAutoformat } from '../../../withAutoformat';
 
 jsx;
 
@@ -37,8 +35,11 @@ describe('when -space', () => {
       </fragment>
     ) as any;
 
-    const editor = createPlateEditor({ value: input,
-      plugins: [AutoformatPlugin.configure({ options: getAutoformatOptions() }),]
+    const editor = createPlateEditor({
+      plugins: [
+        AutoformatPlugin.configure({ options: getAutoformatOptions() }),
+      ],
+      value: input,
     });
 
     editor.insertText(' ');
@@ -69,8 +70,11 @@ describe('when 1.space', () => {
       </fragment>
     ) as any;
 
-    const editor = createPlateEditor({ value: input,
-      plugins: [AutoformatPlugin.configure({ options: getAutoformatOptions() }),]
+    const editor = createPlateEditor({
+      plugins: [
+        AutoformatPlugin.configure({ options: getAutoformatOptions() }),
+      ],
+      value: input,
     });
 
     editor.insertText(' ');
@@ -97,8 +101,11 @@ describe('when [].space', () => {
       </fragment>
     ) as any;
 
-    const editor = createPlateEditor({ value: input,
-      plugins: [AutoformatPlugin.configure({ options: getAutoformatOptions() }),]
+    const editor = createPlateEditor({
+      plugins: [
+        AutoformatPlugin.configure({ options: getAutoformatOptions() }),
+      ],
+      value: input,
     });
 
     editor.insertText(' ');
@@ -125,8 +132,11 @@ describe('when [x].space', () => {
       </fragment>
     ) as any;
 
-    const editor = createPlateEditor({ value: input,
-      plugins: [AutoformatPlugin.configure({ options: getAutoformatOptions() }),]
+    const editor = createPlateEditor({
+      plugins: [
+        AutoformatPlugin.configure({ options: getAutoformatOptions() }),
+      ],
+      value: input,
     });
 
     editor.insertText(' ');
@@ -170,10 +180,13 @@ describe('when +space', () => {
       rules: autoformatPluginRulesWitoutTogglePreformat as any,
     };
 
-    const editor = createPlateEditor({ value: input,
-      plugins: [AutoformatPlugin.configure({
-        options: autoformatPluginWitoutTogglePreformat,
-      }),]
+    const editor = createPlateEditor({
+      plugins: [
+        AutoformatPlugin.configure({
+          options: autoformatPluginWitoutTogglePreformat,
+        }),
+      ],
+      value: input,
     });
 
     editor.insertText(' ');

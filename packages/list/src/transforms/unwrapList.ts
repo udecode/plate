@@ -6,7 +6,6 @@ import {
   getAboveNode,
   getBlockAbove,
   getCommonNode,
-  getPluginType,
   isElement,
   setElements,
   unwrapNodes,

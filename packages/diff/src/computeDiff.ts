@@ -3,11 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import type {
-  PlateEditor,
-  TDescendant,
-  TElement,
-} from '@udecode/plate-common';
+import type { PlateEditor, TDescendant, TElement } from '@udecode/plate-common';
 
 import type { DiffProps } from './types';
 

@@ -2,7 +2,6 @@ import {
   type GetAboveNodeOptions,
   type PlateEditor,
   getBlockAbove,
-  getPluginType,
 } from '@udecode/plate-common';
 
 import { TablePlugin } from '../TablePlugin';

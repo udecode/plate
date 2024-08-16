@@ -4,7 +4,6 @@ import {
   type PlateEditor,
   type TElement,
   getParentNode,
-  getPluginType,
 } from '@udecode/plate-common';
 
 import { ListItemPlugin } from '../ListPlugin';

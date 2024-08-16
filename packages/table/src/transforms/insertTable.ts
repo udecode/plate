@@ -2,7 +2,6 @@ import {
   type InsertNodesOptions,
   type PlateEditor,
   getBlockAbove,
-  getPluginType,
   getStartPoint,
   insertNodes,
   someNode,

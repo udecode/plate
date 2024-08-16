@@ -1,7 +1,6 @@
 import {
   type PlateEditor,
   getAboveNode,
-  getPluginType,
   removeNodes,
   someNode,
 } from '@udecode/plate-common';

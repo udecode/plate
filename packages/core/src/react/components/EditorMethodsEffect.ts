@@ -14,8 +14,11 @@ export const EditorMethodsEffect = ({ id }: { id?: string }) => {
     EXPOSED_STORE_KEYS.map((key) => [key, plateStore.set[key]()])
   ) as any;
 
-  // es lint-disable-next-line react-hooks/exhaustive-deps
-  const memorizedStoreSetters = React.useMemo(() => storeSetters, []);
+  const memorizedStoreSetters = React.useMemo(
+    () => storeSetters,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
 
   React.useEffect(() => {
     editor.api.redecorate = redecorate;

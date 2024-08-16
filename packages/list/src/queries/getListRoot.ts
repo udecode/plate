@@ -5,7 +5,6 @@ import {
   type TElement,
   type TElementEntry,
   getAboveNode,
-  getPluginType,
 } from '@udecode/plate-common';
 
 import { ListOrderedPlugin, ListUnorderedPlugin } from '../ListPlugin';

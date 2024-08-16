@@ -1,4 +1,4 @@
-import { type PlateEditor, getPluginType } from '@udecode/plate-common';
+import type { PlateEditor } from '@udecode/plate-common';
 
 import type { CellFactoryOptions } from '../types';
 

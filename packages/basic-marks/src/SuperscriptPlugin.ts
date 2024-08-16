@@ -4,7 +4,6 @@ import {
 } from '@udecode/plate-common';
 import { onKeyDownToggleMark } from '@udecode/plate-common/react';
 
-
 /** Enables support for superscript formatting. */
 export const SuperscriptPlugin = createPlugin<
   'superscript',

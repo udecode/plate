@@ -2,7 +2,6 @@ import {
   type PlateEditor,
   findNode,
   getEditorString,
-  getPluginType,
 } from '@udecode/plate-common';
 
 import type { TLinkElement } from '../types';

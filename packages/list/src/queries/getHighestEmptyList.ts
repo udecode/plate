@@ -1,8 +1,4 @@
-import {
-  type PlateEditor,
-  getAboveNode,
-  getPluginType,
-} from '@udecode/plate-common';
+import { type PlateEditor, getAboveNode } from '@udecode/plate-common';
 import { Path } from 'slate';
 
 import { ListItemPlugin } from '../ListPlugin';

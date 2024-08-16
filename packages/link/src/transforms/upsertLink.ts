@@ -9,7 +9,6 @@ import {
   getEditorString,
   getNodeLeaf,
   getNodeProps,
-  getPluginType,
   isDefined,
   isExpanded,
   removeNodes,

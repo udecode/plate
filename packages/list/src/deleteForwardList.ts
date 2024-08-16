@@ -9,7 +9,6 @@ import {
   getNodeEntries,
   getNodeEntry,
   getParentNode,
-  getPluginType,
   getPointAfter,
   isSelectionAtBlockEnd,
   removeNodes,
@@ -17,7 +16,7 @@ import {
 } from '@udecode/plate-common';
 import { Path, type TextUnit } from 'slate';
 
-import { ListItemPlugin, ListItemContentPlugin } from './ListPlugin';
+import { ListItemContentPlugin, ListItemPlugin } from './ListPlugin';
 import {
   getListItemEntry,
   getListRoot,

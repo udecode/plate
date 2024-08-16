@@ -6,7 +6,6 @@ import {
   getAboveNode,
   getMarks,
   getParentNode,
-  getPluginType,
   insertElements,
   isBlockTextEmptyAfterSelection,
   isStartPoint,
@@ -18,7 +17,7 @@ import {
 } from '@udecode/plate-common';
 import { Path, Range } from 'slate';
 
-import { ListItemPlugin, ListItemContentPlugin } from '../ListPlugin';
+import { ListItemContentPlugin, ListItemPlugin } from '../ListPlugin';
 
 /** Insert list item if selection in li>p. TODO: test */
 export const insertListItem = (editor: PlateEditor): boolean => {

@@ -4,7 +4,6 @@ import {
   type TElementEntry,
   getAboveNode,
   getNode,
-  getPluginType,
   insertElements,
   isLastChild,
   moveNodes,

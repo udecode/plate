@@ -34,7 +34,6 @@ describe('when match is an array', () => {
     ) as any;
 
     const editor = createPlateEditor({
-      value: input,
       plugins: [
         AutoformatPlugin.configure({
           options: {
@@ -49,6 +48,7 @@ describe('when match is an array', () => {
           },
         }),
       ],
+      value: input,
     });
 
     editor.insertText('_');
@@ -79,7 +79,6 @@ describe('when match is a string', () => {
     ) as any;
 
     const editor = createPlateEditor({
-      value: input,
       plugins: [
         AutoformatPlugin.configure({
           options: {
@@ -94,6 +93,7 @@ describe('when match is a string', () => {
           },
         }),
       ],
+      value: input,
     });
 
     editor.insertText('_');

@@ -5,7 +5,6 @@ import {
   createPathRef,
   deleteMerge,
   getNodeEntry,
-  getPluginType,
   getPreviousPath,
   insertElements,
   isExpanded,
@@ -14,7 +13,7 @@ import {
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
-import { ListItemPlugin, ListItemContentPlugin } from '../ListPlugin';
+import { ListItemContentPlugin, ListItemPlugin } from '../ListPlugin';
 import { hasListChild } from '../queries/hasListChild';
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 import { moveListItemsToList } from './moveListItemsToList';

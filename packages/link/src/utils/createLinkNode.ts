@@ -1,8 +1,4 @@
-import {
-  type PlateEditor,
-  type TText,
-  getPluginType,
-} from '@udecode/plate-common';
+import type { PlateEditor, TText } from '@udecode/plate-common';
 
 import type { TLinkElement } from '../types';
 

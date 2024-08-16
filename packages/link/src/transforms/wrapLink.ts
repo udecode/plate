@@ -2,7 +2,6 @@ import {
   type PlateEditor,
   type TEditor,
   type WrapNodesOptions,
-  getPluginType,
   wrapNodes,
 } from '@udecode/plate-common';
 

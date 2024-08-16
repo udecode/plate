@@ -1,7 +1,6 @@
 import {
   type PlateEditor,
   getEditorString,
-  getPluginType,
   isRangeAcrossBlocks,
   someNode,
 } from '@udecode/plate-common';

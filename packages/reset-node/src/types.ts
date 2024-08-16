@@ -1,7 +1,4 @@
-import type {
-  HotkeyPluginOptions,
-  PlateEditor,
-} from '@udecode/plate-common';
+import type { HotkeyPluginOptions, PlateEditor } from '@udecode/plate-common';
 
 export interface ResetNodePluginRule extends HotkeyPluginOptions {
   /** Additional condition to the rule. */

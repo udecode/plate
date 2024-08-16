@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { findNode, getPluginType } from '@udecode/plate-common';
+import { findNode } from '@udecode/plate-common';
 import {
   createPrimitiveComponent,
   useEditorRef,

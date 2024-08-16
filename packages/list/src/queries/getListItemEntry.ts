@@ -5,7 +5,6 @@ import {
   getAboveNode,
   getNode,
   getParentNode,
-  getPluginType,
   isCollapsed,
 } from '@udecode/plate-common';
 import { type Location, type Path, Range } from 'slate';

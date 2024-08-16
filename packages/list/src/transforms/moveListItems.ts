@@ -4,7 +4,6 @@ import {
   createPathRef,
   getNodeEntries,
   getParentNode,
-  getPluginType,
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path, type PathRef } from 'slate';

@@ -5,7 +5,6 @@ import {
 } from '@udecode/plate-common';
 import { onKeyDownToggleMark } from '@udecode/plate-common/react';
 
-
 /** Enables support for italic formatting. */
 export const ItalicPlugin = createPlugin<'italic', ToggleMarkPluginOptions>({
   deserializeHtml: {

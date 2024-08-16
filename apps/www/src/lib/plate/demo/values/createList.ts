@@ -1,8 +1,8 @@
 import type { TElement, TText } from '@udecode/plate-common';
 
 import {
-  ListItemPlugin,
   ListItemContentPlugin,
+  ListItemPlugin,
   ListUnorderedPlugin,
 } from '@udecode/plate-list';
 

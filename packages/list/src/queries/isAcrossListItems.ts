@@ -1,6 +1,5 @@
 import {
   type PlateEditor,
-  getPluginType,
   isCollapsed,
   isRangeAcrossBlocks,
   someNode,

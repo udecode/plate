@@ -1,6 +1,6 @@
 import {
-  ParagraphPlugin,
   type InsertNodesOptions,
+  ParagraphPlugin,
   type PlateEditor,
   getQueryOptions,
   insertNodes,

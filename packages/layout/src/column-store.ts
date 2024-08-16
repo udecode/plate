@@ -12,8 +12,7 @@ import { ColumnPlugin } from './ColumnPlugin';
 export const useColumnState = () => {
   const editor = useEditorRef();
 
-  const columnGroupElement =
-    useElement<TColumnGroupElement>(ColumnPlugin.key);
+  const columnGroupElement = useElement<TColumnGroupElement>(ColumnPlugin.key);
 
   const columnPath = findNodePath(editor, columnGroupElement);
 

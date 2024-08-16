@@ -4,7 +4,6 @@ import {
   type PlateEditor,
   findNode,
   getAboveNode,
-  getPluginType,
 } from '@udecode/plate-common';
 
 import { TablePlugin, TableRowPlugin } from '../TablePlugin';
