@@ -1,7 +1,8 @@
+import { TEditor } from "@udecode/plate-common";
 import type { DropTargetMonitor } from 'react-dnd';
 
 import { findNode, moveNodes } from '@udecode/plate-common';
-import { type TReactEditor, focusEditor } from '@udecode/plate-common/react';
+import {  focusEditor } from '@udecode/plate-common/react';
 import { Path } from 'slate';
 
 import type { UseDropNodeOptions } from '../hooks';
@@ -11,7 +12,7 @@ import { getHoverDirection } from '../utils';
 
 /** Callback called on drag an drop a node with id. */
 export const onDropNode = (
-  editor: TReactEditor,
+  editor: TEditor,
   {
     dragItem,
     id,

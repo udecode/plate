@@ -1,15 +1,11 @@
-import { getNodeEntries, isText } from '@udecode/plate-common';
-import {
-  type TReactEditor,
-  toDOMNode,
-  toDOMRange,
-} from '@udecode/plate-common/react';
+import { type TEditor, getNodeEntries, isText } from '@udecode/plate-common';
+import { toDOMNode, toDOMRange } from '@udecode/plate-common/react';
 import { Path, Range } from 'slate';
 
 import type { SelectionRect } from '../types';
 
 export const getSelectionRects = (
-  editor: TReactEditor,
+  editor: TEditor,
   {
     range,
     xOffset,

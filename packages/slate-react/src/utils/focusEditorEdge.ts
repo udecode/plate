@@ -1,12 +1,10 @@
-import { getEndPoint, getStartPoint } from '@udecode/slate';
-
-import type { TReactEditor } from '../types/index';
+import { type TEditor, getEndPoint, getStartPoint } from '@udecode/slate';
 
 import { focusEditor } from '../react-editor/index';
 
 /** Focus an editor edge. */
 export const focusEditorEdge = (
-  editor: TReactEditor,
+  editor: TEditor,
   {
     edge = 'start',
   }: {

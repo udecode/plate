@@ -1,7 +1,7 @@
 import { HistoryEditor } from 'slate-history';
 
-import type { THistoryEditor } from './THistoryEditor';
+import type { TEditor } from '../editor';
 
 /** {@link HistoryEditor.isMerging} */
-export const isHistoryMerging = (editor: THistoryEditor) =>
+export const isHistoryMerging = (editor: TEditor) =>
   HistoryEditor.isMerging(editor as any);

@@ -1,10 +1,10 @@
-import { ReactEditor } from 'slate-react';
+import type { TEditor } from '@udecode/slate';
 
-import type { TReactEditor } from '../types/TReactEditor';
+import { ReactEditor } from 'slate-react';
 
 /** Check if the target is in the editor. */
 export const hasEditorTarget = (
-  editor: TReactEditor,
+  editor: TEditor,
   target: EventTarget | null
 ): target is Node => {
   try {

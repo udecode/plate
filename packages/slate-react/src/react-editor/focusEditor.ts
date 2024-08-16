@@ -1,9 +1,8 @@
+import type { TEditor } from '@udecode/slate';
 import type { Location } from 'slate';
 
 import { deselect, select, withoutNormalizing } from '@udecode/slate';
 import { ReactEditor } from 'slate-react';
-
-import type { TReactEditor } from '../types/TReactEditor';
 
 /**
  * Focus the editor. Extension:
@@ -14,7 +13,7 @@ import type { TReactEditor } from '../types/TReactEditor';
  * - Select the editor
  * - Focus the editor
  */
-export const focusEditor = (editor: TReactEditor, target?: Location) => {
+export const focusEditor = (editor: TEditor, target?: Location) => {
   if (target) {
     withoutNormalizing(editor, () => {
       deselect(editor);

@@ -1,5 +1,6 @@
 import type { Modify, UnknownObject } from '@udecode/utils';
-import type { Editor, Path } from 'slate';
+import type { Editor, Path, Range } from 'slate';
+import type { HistoryEditor } from 'slate-history';
 
 import type { TOperation } from '../../types/TOperation';
 import type { TElement } from '../element/TElement';
@@ -12,23 +13,29 @@ export type Value = TElement[];
 /** A helper type for getting the value of an editor. */
 export type ValueOf<E extends TEditor> = E['children'];
 
-export type InferEditorValue<E> = E extends TEditor<infer V> ? V : never;
-
-// type EditorWithV<V extends Value> = {
-//   apply: (operation: TOperation<ElementOrTextOf<E>>) => void;
-//   getFragment: () => ElementOrTextOf<E>[];
-//   insertFragment: (fragment: ElementOrTextOf<E>[]) => void;
-//   insertNode: (node: ElementOrTextOf<E> | ElementOrTextOf<E>[]) => void;
-//   isInline: (element: ElementOf<E>) => boolean;
-//   isVoid: (element: ElementOf<E>) => boolean;
-//   normalizeNode: (
-//     entry: ENodeEntry<V>,
-//     options?: { operation?: TOperation }
-//   ) => void;
-//   operations: TOperation<ElementOrTextOf<E>>[];
-// };
-
-export type TEditor<V extends Value = Value> = Modify<
+export type TEditor<V extends Value = Value> = {
+  hasEditableTarget: (
+    editor: TEditor<V>,
+    target: EventTarget | null
+  ) => target is Node;
+  hasRange: (editor: TEditor<V>, range: Range) => boolean;
+  hasSelectableTarget: (
+    editor: TEditor<V>,
+    target: EventTarget | null
+  ) => boolean;
+  hasTarget: (editor: TEditor<V>, target: EventTarget | null) => target is Node;
+  insertData: (data: DataTransfer) => void;
+  insertFragmentData: (data: DataTransfer) => boolean;
+  insertTextData: (data: DataTransfer) => boolean;
+  isTargetInsideNonReadonlyVoid: (
+    editor: TEditor<V>,
+    target: EventTarget | null
+  ) => boolean;
+  setFragmentData: (
+    data: DataTransfer,
+    originEvent?: 'copy' | 'cut' | 'drag'
+  ) => void;
+} & Modify<
   Editor,
   {
     apply: <N extends TDescendant>(operation: TOperation<N>) => void;
@@ -48,9 +55,23 @@ export type TEditor<V extends Value = Value> = Modify<
     ) => void;
     operations: TOperation[];
   }
-  // & EditorWithV<V>
 > &
+  Pick<HistoryEditor, 'history' | 'redo' | 'undo' | 'writeHistory'> &
   UnknownObject;
+
+// type EditorWithV<V extends Value> = {
+//   apply: (operation: TOperation<ElementOrTextOf<E>>) => void;
+//   getFragment: () => ElementOrTextOf<E>[];
+//   insertFragment: (fragment: ElementOrTextOf<E>[]) => void;
+//   insertNode: (node: ElementOrTextOf<E> | ElementOrTextOf<E>[]) => void;
+//   isInline: (element: ElementOf<E>) => boolean;
+//   isVoid: (element: ElementOf<E>) => boolean;
+//   normalizeNode: (
+//     entry: ENodeEntry<V>,
+//     options?: { operation?: TOperation }
+//   ) => void;
+//   operations: TOperation<ElementOrTextOf<E>>[];
+// };
 
 /**
  * Get editor with typed methods and operations. Note that it can't be used as a

@@ -1,12 +1,11 @@
+import type { TEditor } from '@udecode/slate';
 import type { DOMNode } from 'slate-react/dist/utils/dom';
 
 import { ReactEditor } from 'slate-react';
 
-import type { TReactEditor } from '../types/TReactEditor';
-
 /** Check if a DOM node is within the editor. */
 export const hasEditorDOMNode = (
-  editor: TReactEditor,
+  editor: TEditor,
   target: DOMNode,
   options?: Parameters<typeof ReactEditor.hasDOMNode>[2]
 ) => {

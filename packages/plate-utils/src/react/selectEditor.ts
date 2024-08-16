@@ -1,7 +1,12 @@
 import type { Location } from 'slate';
 
-import { getEndPoint, getStartPoint, select } from '@udecode/slate';
-import { type TReactEditor, focusEditor } from '@udecode/slate-react';
+import {
+  type TEditor,
+  getEndPoint,
+  getStartPoint,
+  select,
+} from '@udecode/slate';
+import { focusEditor } from '@udecode/slate-react';
 
 export interface SelectEditorOptions {
   /** Specific location if edge is not defined. */
@@ -16,7 +21,7 @@ export interface SelectEditorOptions {
 
 /** Select an editor at a target or an edge (start, end). */
 export const selectEditor = (
-  editor: TReactEditor,
+  editor: TEditor,
   { at, edge, focus }: SelectEditorOptions
 ) => {
   if (focus) {

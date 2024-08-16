@@ -5,7 +5,6 @@ import {
 } from 'react-dnd';
 
 import type { TEditor } from '@udecode/plate-common';
-import type { TReactEditor } from '@udecode/plate-common/react';
 
 import type { DragItemNode, DropLineDirection } from '../types';
 
@@ -63,7 +62,7 @@ export interface UseDropNodeOptions
  * - IsOver: true if mouse is over the block
  */
 export const useDropNode = (
-  editor: TReactEditor,
+  editor: TEditor,
   {
     dropLine,
     id,

@@ -1,11 +1,11 @@
-import { getRange } from '@udecode/plate-common';
-import { type TReactEditor, toDOMRange } from '@udecode/plate-common/react';
+import { type TEditor, getRange } from '@udecode/plate-common';
+import { toDOMRange } from '@udecode/plate-common/react';
 import { type Location, Path, type Range } from 'slate';
 
 import { mergeClientRects } from './mergeClientRects';
 
 export const getBoundingClientRect = (
-  editor: TReactEditor,
+  editor: TEditor,
   at?: Location | Location[]
 ): DOMRect | undefined => {
   const atRanges: Range[] = (() => {

@@ -1,7 +1,6 @@
 import type React from 'react';
 
-import type { TEditor, THistoryEditor, TRange, Value } from '@udecode/slate';
-import type { TReactEditor } from '@udecode/slate-react';
+import type { TEditor, TRange, Value } from '@udecode/slate';
 import type { UnionToIntersection } from '@udecode/utils';
 
 import type {
@@ -41,9 +40,7 @@ export type PlateEditor = {
 
   transforms: UnionToIntersection<InferTransforms<CorePlugin>>;
 } & PlateEditorMethods &
-  TEditor &
-  THistoryEditor &
-  TReactEditor;
+  TEditor;
 
 export type PlateEditorMethods = {
   getApi: <C extends AnyPluginConfig = PluginConfig>(

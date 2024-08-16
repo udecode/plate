@@ -1,13 +1,11 @@
-import type { TNode } from '@udecode/slate';
+import type { TEditor, TNode } from '@udecode/slate';
 import type { Path } from 'slate';
 
 import { ReactEditor } from 'slate-react';
 
-import type { TReactEditor } from '../types/TReactEditor';
-
 /** Find the path of Slate node. */
 export const findNodePath = (
-  editor: TReactEditor,
+  editor: TEditor,
   node: TNode
 ): Path | undefined => {
   try {

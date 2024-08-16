@@ -1,6 +1,6 @@
 import type React from 'react';
 
-import type { TReactEditor } from '@udecode/plate-common/react';
+import type { TEditor } from '@udecode/plate-common';
 import type { Location } from 'slate';
 
 import { getBoundingClientRect } from './getBoundingClientRect';
@@ -10,7 +10,7 @@ export type VirtualRef = React.RefObject<
 >;
 
 export const createVirtualRef = (
-  editor: TReactEditor,
+  editor: TEditor,
   at?: Location | Location[],
   {
     fallbackRect,

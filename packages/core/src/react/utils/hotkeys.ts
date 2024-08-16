@@ -1,6 +1,8 @@
 import type React from 'react';
 
-import { type TReactEditor, isComposing } from '@udecode/slate-react';
+import type { TEditor } from '@udecode/plate-common';
+
+import { isComposing } from '@udecode/slate-react';
 
 import {
   Hotkeys as VanillaHotkeys,
@@ -10,7 +12,7 @@ import {
 const createComposing =
   (key: string) =>
   (
-    editor: TReactEditor,
+    editor: TEditor,
     event: React.KeyboardEvent,
     {
       composing,

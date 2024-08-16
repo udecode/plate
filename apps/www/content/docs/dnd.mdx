@@ -57,7 +57,7 @@ Props for the `Scroller` component.
 Selects the start of a block by ID and focuses the editor.
 
 <APIParameters>
-  <APIItem name="editor" type="TReactEditor">
+  <APIItem name="editor" type="TEditor">
     The editor instance.
   </APIItem>
   <APIItem name="id" type="string">
@@ -91,7 +91,7 @@ An array of blocks that have an ID.
 ### selectBlockById
 
 <APIParameters>
-  <APIItem name="editor" type="TReactEditor">
+  <APIItem name="editor" type="TEditor">
     The editor instance.
   </APIItem>
   <APIItem name="id" type="string">
@@ -342,7 +342,7 @@ A custom hook that provides the necessary properties and event handlers for maki
 A custom hook that enables dropping a block into the editor. It internally uses the `useDropNode` hook to handle the drop behavior.
 
 <APIParameters>
-  <APIItem name="editor" type="TReactEditor">
+  <APIItem name="editor" type="TEditor">
     The editor instance.
   </APIItem>
   <APIItem name="options" type="Omit<UseDropNodeOptions, 'accept'>"></APIItem>
@@ -353,7 +353,7 @@ A custom hook that enables dropping a block into the editor. It internally uses 
 A custom hook that enables dropping a node on the editor. It uses the `useDrop` hook from `react-dnd` to handle the drop behavior.
 
 <APIParameters>
-  <APIItem name="editor" type="TReactEditor">
+  <APIItem name="editor" type="TEditor">
     The editor instance.
   </APIItem>
   <APIItem name="options" type="UseDropNodeOptions">

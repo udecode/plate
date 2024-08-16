@@ -4,6 +4,5 @@
 
 export * from './SlateProps';
 export * from './TEditableProps';
-export * from './TReactEditor';
 export * from './TRenderElementProps';
 export * from './TRenderLeafProps';
