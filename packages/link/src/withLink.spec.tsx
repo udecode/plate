@@ -517,4 +517,73 @@ describe('withLink', () => {
       });
     });
   });
+
+  describe('withRemoveEmptyNodes', () => {
+    describe('when link becomes empty', () => {
+      const input = (
+        <editor>
+          <hp>
+            Before <ha url="http://example.com">link text</ha> after
+          </hp>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp>Before {` `}after</hp>
+        </editor>
+      ) as any;
+
+      it('should remove the empty link node', () => {
+        const editor = createEditor(input);
+
+        // Select the entire link text
+        editor.select({
+          anchor: { offset: 0, path: [0, 1, 0] },
+          focus: { offset: 9, path: [0, 1, 0] },
+        });
+
+        // Delete the selected text
+        editor.deleteFragment();
+
+        expect(input.children).toEqual(output.children);
+      });
+    });
+
+    describe('when link becomes empty but contains zero-width space', () => {
+      const input = (
+        <editor>
+          <hp>
+            Before <ha url="http://example.com">link text</ha> after
+          </hp>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp>
+            Before <ha url="http://example.com">{'\u200B'}</ha> after
+          </hp>
+        </editor>
+      ) as any;
+
+      it('should not remove the link node', () => {
+        const editor = createEditor(input);
+
+        // Select the entire link text
+        editor.select({
+          anchor: { offset: 0, path: [0, 1, 0] },
+          focus: { offset: 9, path: [0, 1, 0] },
+        });
+
+        // Replace the selected text with a zero-width space
+        editor.insertText('\u200B');
+
+        // Trigger normalization
+        editor.normalize();
+
+        expect(input.children).toEqual(output.children);
+      });
+    });
+  });
 });

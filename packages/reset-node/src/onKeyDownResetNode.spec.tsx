@@ -10,6 +10,7 @@ import {
 import {
   type AnyPlatePlugin,
   createPlugin,
+  getPluginContext,
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
 } from '@udecode/plate-common';
@@ -77,14 +78,12 @@ describe('onKeyDownResetNode', () => {
         .mockImplementation((hotkey) => hotkey === 'Enter');
 
       onKeyDownResetNode({
-        editor,
+        ...getPluginContext(editor, plugin),
         event: new KeyboardEvent('keydown') as any,
-        plugin,
       });
       onKeyDownResetNode({
-        editor,
+        ...getPluginContext(editor, plugin),
         event: new KeyboardEvent('keydown') as any,
-        plugin,
       });
 
       expect(editor.children).toEqual(output.children);
@@ -118,9 +117,8 @@ describe('onKeyDownResetNode', () => {
         .mockImplementation((hotkey) => hotkey === 'Backspace');
 
       onKeyDownResetNode({
-        editor,
+        ...getPluginContext(editor, plugin),
         event: new KeyboardEvent('keydown') as any,
-        plugin,
       });
 
       expect(editor.children).toEqual(output.children);
@@ -181,9 +179,8 @@ describe('onKeyDownResetNode', () => {
         .mockImplementation((hotkey) => hotkey === 'Enter');
 
       onKeyDownResetNode({
-        editor,
+        ...getPluginContext(editor, plugin),
         event: new KeyboardEvent('keydown') as any,
-        plugin,
       });
 
       expect(editor.children).toEqual(output.children);
@@ -225,9 +222,8 @@ describe('onKeyDownResetNode', () => {
         .mockImplementation((hotkey) => hotkey === 'Enter');
 
       onKeyDownResetNode({
-        editor,
+        ...getPluginContext(editor, plugin),
         event: new KeyboardEvent('keydown') as any,
-        plugin,
       });
 
       expect(editor.children).toEqual(output.children);
@@ -265,9 +261,8 @@ describe('onKeyDownResetNode', () => {
         .mockImplementation((hotkey) => hotkey === 'Backspace');
 
       onKeyDownResetNode({
-        editor,
+        ...getPluginContext(editor, plugin),
         event: new KeyboardEvent('keydown') as any,
-        plugin,
       });
 
       expect(editor.children).toEqual(output.children);
@@ -309,9 +304,8 @@ describe('onKeyDownResetNode', () => {
         .mockImplementation((hotkey) => hotkey === 'Backspace');
 
       onKeyDownResetNode({
-        editor,
+        ...getPluginContext(editor, plugin),
         event: new KeyboardEvent('keydown') as any,
-        plugin,
       });
 
       expect(editor.children).toEqual(output.children);
@@ -366,9 +360,8 @@ describe('onKeyDownResetNode', () => {
         .mockImplementation((hotkey) => hotkey === 'Enter');
 
       onKeyDownResetNode({
-        editor,
+        ...getPluginContext(editor, plugin),
         event: new KeyboardEvent('keydown') as any,
-        plugin,
       });
 
       expect(editor.children).toEqual(output.children);
@@ -414,9 +407,8 @@ describe('onKeyDownResetNode', () => {
         .mockImplementation((hotkey) => hotkey === 'Backspace');
 
       onKeyDownResetNode({
-        editor,
+        ...getPluginContext(editor, plugin),
         event: new KeyboardEvent('keydown') as any,
-        plugin,
       });
 
       expect(editor.children).toEqual(output.children);

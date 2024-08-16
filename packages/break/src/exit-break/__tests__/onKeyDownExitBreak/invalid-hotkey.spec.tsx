@@ -1,6 +1,7 @@
 /** @jsx jsx */
 
-import { createPlugin } from '@udecode/plate-common';
+import { createPlugin, getPluginContext } from '@udecode/plate-common';
+import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { onKeyDownExitBreak } from '../../onKeyDownExitBreak';
@@ -28,6 +29,9 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  onKeyDownExitBreak({ editor: input, event, plugin: createPlugin({}) });
+  onKeyDownExitBreak({
+    ...getPluginContext(createPlateEditor({ editor: input }), createPlugin({})),
+    event,
+  });
   expect(input.children).toEqual(output.children);
 });

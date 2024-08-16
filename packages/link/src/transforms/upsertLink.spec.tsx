@@ -3,7 +3,7 @@
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { LinkPlugin, type LinkPluginOptions } from '../LinkPlugin';
+import { type LinkConfig, LinkPlugin } from '../LinkPlugin';
 import { upsertLink } from './upsertLink';
 
 jsx;
@@ -11,7 +11,7 @@ jsx;
 const url = 'http://google.com';
 const urlOutput = 'http://output.com';
 
-const createEditor = (editor: any, options?: LinkPluginOptions) =>
+const createEditor = (editor: any, options?: LinkConfig['options']) =>
   createPlateEditor({
     editor,
     plugins: [LinkPlugin.configure({ options })],

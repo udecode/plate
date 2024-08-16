@@ -24,14 +24,7 @@ import { PlateElement, PlateLeaf } from '@udecode/plate-common/react';
 import { EmojiInputPlugin } from '@udecode/plate-emoji';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw';
 import { FindReplacePlugin } from '@udecode/plate-find-replace';
-import {
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_H3,
-  ELEMENT_H4,
-  ELEMENT_H5,
-  ELEMENT_H6,
-} from '@udecode/plate-heading';
+import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HighlightPlugin } from '@udecode/plate-highlight';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { KbdPlugin } from '@udecode/plate-kbd';
@@ -102,15 +95,15 @@ export const createPlateUI = ({
     [ColumnItemPlugin.key]: ColumnElement,
     [ColumnPlugin.key]: ColumnGroupElement,
     [CommentsPlugin.key]: CommentLeaf,
-    [ELEMENT_H1]: withProps(HeadingElement, { variant: 'h1' }),
-    [ELEMENT_H2]: withProps(HeadingElement, { variant: 'h2' }),
-    [ELEMENT_H3]: withProps(HeadingElement, { variant: 'h3' }),
-    [ELEMENT_H4]: withProps(HeadingElement, { variant: 'h4' }),
-    [ELEMENT_H5]: withProps(HeadingElement, { variant: 'h5' }),
-    [ELEMENT_H6]: withProps(HeadingElement, { variant: 'h6' }),
     [EmojiInputPlugin.key]: EmojiInputElement,
     [ExcalidrawPlugin.key]: ExcalidrawElement,
     [FindReplacePlugin.key]: SearchHighlightLeaf,
+    [HEADING_KEYS.h1]: withProps(HeadingElement, { variant: 'h1' }),
+    [HEADING_KEYS.h2]: withProps(HeadingElement, { variant: 'h2' }),
+    [HEADING_KEYS.h3]: withProps(HeadingElement, { variant: 'h3' }),
+    [HEADING_KEYS.h4]: withProps(HeadingElement, { variant: 'h4' }),
+    [HEADING_KEYS.h5]: withProps(HeadingElement, { variant: 'h5' }),
+    [HEADING_KEYS.h6]: withProps(HeadingElement, { variant: 'h6' }),
     [HighlightPlugin.key]: HighlightLeaf,
     [HorizontalRulePlugin.key]: HrElement,
     [ImagePlugin.key]: ImageElement,

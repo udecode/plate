@@ -1,6 +1,7 @@
 /** @jsx jsx */
 
-import { type AnyPlatePlugin, createPlugin } from '@udecode/plate-common';
+import { createPlugin, getPluginContext } from '@udecode/plate-common';
+import { createPlateEditor } from '@udecode/plate-common/react';
 import * as isHotkey from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -34,19 +35,21 @@ const output = (
 it('should be', () => {
   jest.spyOn(isHotkey, 'isHotkey').mockReturnValue(true);
   onKeyDownExitBreak({
-    editor: input,
+    ...getPluginContext(
+      createPlateEditor({ editor: input }),
+      createPlugin({
+        options: {
+          rules: [
+            {
+              hotkey: 'enter',
+              level: 0,
+              query: { end: true, start: true },
+            },
+          ],
+        },
+      })
+    ),
     event,
-    plugin: createPlugin({
-      options: {
-        rules: [
-          {
-            hotkey: 'enter',
-            level: 0,
-            query: { end: true, start: true },
-          },
-        ],
-      },
-    }) as AnyPlatePlugin,
   });
   expect(input.children).toEqual(output.children);
   expect(input.selection?.anchor).toEqual({ offset: 0, path: [1, 0] });

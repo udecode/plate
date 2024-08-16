@@ -5,11 +5,9 @@ import {
   ItalicPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks';
-import { getPlugin } from '@udecode/plate-common';
+import { getPluginContext } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
-
-import type { AutoformatPluginOptions } from '../../types';
 
 import { AutoformatPlugin } from '../../AutoformatPlugin';
 import { onKeyDownAutoformat } from '../../onKeyDownAutoformat';
@@ -107,9 +105,8 @@ describe('when undo is enabled', () => {
     }) as any;
 
     onKeyDownAutoformat({
-      editor,
+      ...getPluginContext(editor, AutoformatPlugin.key),
       event: event as any,
-      plugin: getPlugin<AutoformatPluginOptions>(editor, AutoformatPlugin.key),
     });
 
     expect(undoInput.children).toEqual(undoOutput.children);
@@ -159,9 +156,9 @@ describe('when undo is disabled', () => {
     }) as any;
 
     onKeyDownAutoformat({
+      ...getPluginContext(editor, AutoformatPlugin.key),
       editor,
       event: event as any,
-      plugin: getPlugin<AutoformatPluginOptions>(editor, AutoformatPlugin.key),
     });
 
     expect(undoInput.children).toEqual(undoOutput.children);

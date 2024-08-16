@@ -2,6 +2,7 @@
 
 import type { PlateEditor } from '@udecode/plate-common';
 
+import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { getListItemEntry } from './getListItemEntry';
@@ -43,7 +44,9 @@ describe('when the cursor is in a list item paragraph', () => {
   ) as any;
 
   it('should be', () => {
-    const res = getListItemEntry(input);
+    const editor = createPlateEditor({ editor: input });
+
+    const res = getListItemEntry(editor);
 
     expect(res).toEqual({
       list: [listNode, [0]],
@@ -92,7 +95,9 @@ describe('when the cursor is in a nested list item paragraph', () => {
   ) as any;
 
   it('should be', () => {
-    const res = getListItemEntry(input);
+    const editor = createPlateEditor({ editor: input });
+
+    const res = getListItemEntry(editor);
 
     expect(res).toEqual({
       list: [listNode, [0, 0, 1]],
@@ -158,7 +163,9 @@ describe('when the selection range includes root list item', () => {
   ) as any;
 
   it('should be', () => {
-    const res = getListItemEntry(input);
+    const editor = createPlateEditor({ editor: input });
+
+    const res = getListItemEntry(editor);
 
     expect(res).toEqual({
       list: [listNode, [0]],
@@ -182,7 +189,9 @@ describe('when the cursor is not in a list item', () => {
   ) as any as PlateEditor;
 
   it('should be', () => {
-    const res = getListItemEntry(input);
+    const editor = createPlateEditor({ editor: input });
+
+    const res = getListItemEntry(editor);
 
     expect(res).toEqual(undefined);
   });

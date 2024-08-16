@@ -45,7 +45,7 @@ const getListNode =
     return node;
   };
 
-export const DeserializeDocxPlugin = createPlugin((editor) => ({
+export const DeserializeDocxPlugin = createPlugin({
   inject: {
     plugins: {
       [DeserializeHtmlPlugin.key]: {
@@ -62,6 +62,7 @@ export const DeserializeDocxPlugin = createPlugin((editor) => ({
     },
   },
   key: 'deserializeDocx',
+}).extend(({ editor }) => ({
   override: {
     plugins: {
       ...Object.fromEntries(

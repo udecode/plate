@@ -1,7 +1,6 @@
 import {
   type WithOverride,
   collapseSelection,
-  createTPlugin,
   getAboveNode,
   getEditorString,
   getNextNodeStartPoint,
@@ -18,7 +17,7 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 import {
-  type RemoveEmptyNodesConfig,
+  RemoveEmptyNodesPlugin,
   withRemoveEmptyNodes,
 } from '@udecode/plate-normalizers';
 import { Path, type Point, type Range } from 'slate';
@@ -184,9 +183,9 @@ export const withLink: WithOverride<LinkConfig> = ({
   };
 
   editor = withRemoveEmptyNodes(
-    getPluginContext<RemoveEmptyNodesConfig>(
+    getPluginContext(
       editor,
-      createTPlugin<RemoveEmptyNodesConfig>({
+      RemoveEmptyNodesPlugin.configure({
         options: { types: type },
       })
     )

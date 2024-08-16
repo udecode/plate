@@ -1,5 +1,6 @@
 import type { Range } from 'slate';
 
+import { getPluginContext } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 
 import { FindReplacePlugin } from '../../../FindReplacePlugin';
@@ -14,9 +15,8 @@ it('should be', () => {
 
   expect(
     decorateFindReplace({
-      editor,
+      ...getPluginContext(editor, FindReplacePlugin.key),
       entry: [{ text: '' }, [0, 0]],
-      plugin: editor.plugins[FindReplacePlugin.key],
     })
   ).toEqual(output);
 });

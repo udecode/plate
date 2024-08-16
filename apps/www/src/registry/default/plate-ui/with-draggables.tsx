@@ -10,14 +10,7 @@ import {
   type WithDraggableOptions,
   withDraggable as withDraggablePrimitive,
 } from '@udecode/plate-dnd';
-import {
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_H3,
-  ELEMENT_H4,
-  ELEMENT_H5,
-  ELEMENT_H6,
-} from '@udecode/plate-heading';
+import { HEADING_KEYS } from '@udecode/plate-heading';
 import { ListOrderedPlugin, ListUnorderedPlugin } from '@udecode/plate-list';
 
 import { Draggable, type DraggableProps } from './draggable';
@@ -49,7 +42,7 @@ export const withDraggables = (components: any) => {
           gutterLeft: 'px-0 pb-1 text-[1.875em]',
         },
       },
-      key: ELEMENT_H1,
+      key: HEADING_KEYS.h1,
     },
     {
       draggableProps: {
@@ -58,7 +51,7 @@ export const withDraggables = (components: any) => {
           gutterLeft: 'px-0 pb-1 text-[1.5em]',
         },
       },
-      key: ELEMENT_H2,
+      key: HEADING_KEYS.h2,
     },
     {
       draggableProps: {
@@ -67,7 +60,7 @@ export const withDraggables = (components: any) => {
           gutterLeft: 'pt-[2px] px-0 pb-1 text-[1.25em]',
         },
       },
-      key: ELEMENT_H3,
+      key: HEADING_KEYS.h3,
     },
     {
       draggableProps: {
@@ -76,7 +69,7 @@ export const withDraggables = (components: any) => {
           gutterLeft: 'pt-[3px] px-0 pb-0 text-[1.1em]',
         },
       },
-      keys: [ELEMENT_H4, ELEMENT_H5],
+      keys: [HEADING_KEYS.h4, HEADING_KEYS.h5],
     },
     {
       draggableProps: {
@@ -92,7 +85,7 @@ export const withDraggables = (components: any) => {
           gutterLeft: 'px-0 pb-0',
         },
       },
-      keys: [ELEMENT_H6, ListUnorderedPlugin.key, ListOrderedPlugin.key],
+      keys: [HEADING_KEYS.h6, ListUnorderedPlugin.key, ListOrderedPlugin.key],
     },
     {
       draggableProps: {

@@ -15,7 +15,7 @@ import {
   useEditorRef,
   useEditorSelector,
 } from '@udecode/plate-common/react';
-import { ELEMENT_H1, ELEMENT_H2, ELEMENT_H3 } from '@udecode/plate-heading';
+import { HEADING_KEYS } from '@udecode/plate-heading';
 
 import { Icons } from '@/components/icons';
 
@@ -41,19 +41,19 @@ const items = [
     description: 'Heading 1',
     icon: Icons.h1,
     label: 'Heading 1',
-    value: ELEMENT_H1,
+    value: HEADING_KEYS.h1,
   },
   {
     description: 'Heading 2',
     icon: Icons.h2,
     label: 'Heading 2',
-    value: ELEMENT_H2,
+    value: HEADING_KEYS.h2,
   },
   {
     description: 'Heading 3',
     icon: Icons.h3,
     label: 'Heading 3',
-    value: ELEMENT_H3,
+    value: HEADING_KEYS.h3,
   },
   {
     description: 'Quote (⌘+⇧+.)',

@@ -31,6 +31,8 @@ export const resolvePlugin = <P extends AnyPlatePlugin>(
   // Create a deep clone of the plugin
   let plugin = createPlugin(_plugin) as P;
 
+  plugin.__resolved = true;
+
   // Apply the stored configuration first
   if (plugin.__configuration) {
     const configResult = plugin.__configuration(

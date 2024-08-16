@@ -12,14 +12,7 @@ import {
 import { ParagraphPlugin, insertEmptyElement } from '@udecode/plate-common';
 import { focusEditor, useEditorRef } from '@udecode/plate-common/react';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw';
-import {
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_H3,
-  ELEMENT_H4,
-  ELEMENT_H5,
-  ELEMENT_H6,
-} from '@udecode/plate-heading';
+import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { IndentListPlugin, toggleIndentList } from '@udecode/plate-indent-list';
 import { ColumnPlugin, insertColumnGroup } from '@udecode/plate-layout';
@@ -58,37 +51,37 @@ const items = [
         description: 'Heading 1',
         icon: Icons.h1,
         label: 'Heading 1',
-        value: ELEMENT_H1,
+        value: HEADING_KEYS.h1,
       },
       {
         description: 'Heading 2',
         icon: Icons.h2,
         label: 'Heading 2',
-        value: ELEMENT_H2,
+        value: HEADING_KEYS.h2,
       },
       {
         description: 'Heading 3',
         icon: Icons.h3,
         label: 'Heading 3',
-        value: ELEMENT_H3,
+        value: HEADING_KEYS.h3,
       },
       {
         description: 'Heading 4',
         icon: Icons.h4,
         label: 'Heading 4',
-        value: ELEMENT_H4,
+        value: HEADING_KEYS.h4,
       },
       {
         description: 'Heading 5',
         icon: Icons.h5,
         label: 'Heading 5',
-        value: ELEMENT_H5,
+        value: HEADING_KEYS.h5,
       },
       {
         description: 'Heading 6',
         icon: Icons.h6,
         label: 'Heading 6',
-        value: ELEMENT_H6,
+        value: HEADING_KEYS.h6,
       },
       {
         description: 'Table',

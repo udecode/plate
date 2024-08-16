@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-await-expression-member */
 import { expect, test } from 'vitest';
 
 import { resolveTree } from '../../src/utils/registry';
@@ -5,65 +6,69 @@ import { resolveTree } from '../../src/utils/registry';
 test('resolve tree', async () => {
   const index = [
     {
-      name: 'button',
       dependencies: ['@radix-ui/react-slot'],
-      type: 'components:plate-ui',
       files: ['button.tsx'],
+      name: 'button',
+      type: 'components:plate-ui',
     },
     {
-      name: 'dialog',
       dependencies: ['@radix-ui/react-dialog'],
+      files: ['dialog.tsx'],
+      name: 'dialog',
       registryDependencies: ['button'],
       type: 'components:plate-ui',
-      files: ['dialog.tsx'],
     },
     {
+      files: ['input.tsx'],
       name: 'input',
       registryDependencies: ['button'],
       type: 'components:plate-ui',
-      files: ['input.tsx'],
     },
     {
-      name: 'alert-dialog',
       dependencies: ['@radix-ui/react-alert-dialog'],
+      files: ['alert-dialog.tsx'],
+      name: 'alert-dialog',
       registryDependencies: ['button', 'dialog'],
       type: 'components:plate-ui',
-      files: ['alert-dialog.tsx'],
     },
     {
-      name: 'example-card',
-      type: 'components:component',
       files: ['example-card.tsx'],
+      name: 'example-card',
       registryDependencies: ['button', 'dialog', 'input'],
+      type: 'components:component',
     },
   ];
 
   expect(
-    (await resolveTree(index, ['button'])).map((entry) => entry.name).sort()
+    (await resolveTree(index as any, ['button']))
+      .map((entry) => entry.name)
+      .sort()
   ).toEqual(['button']);
 
   expect(
-    (await resolveTree(index, ['dialog'])).map((entry) => entry.name).sort()
+    (await resolveTree(index as any, ['dialog']))
+      .map((entry) => entry.name)
+      .sort()
   ).toEqual(['button', 'dialog']);
 
   expect(
-    (await resolveTree(index, ['alert-dialog', 'dialog']))
+    (await resolveTree(index as any, ['alert-dialog', 'dialog']))
       .map((entry) => entry.name)
       .sort()
   ).toEqual(['alert-dialog', 'button', 'dialog']);
 
   expect(
-    (await resolveTree(index, ['example-card']))
+    (await resolveTree(index as any, ['example-card']))
       .map((entry) => entry.name)
       .sort()
   ).toEqual(['button', 'dialog', 'example-card', 'input']);
 
   expect(
-    (await resolveTree(index, ['foo'])).map((entry) => entry.name).sort()
+    (await resolveTree(index as any, ['foo'])).map((entry) => entry.name).sort()
   ).toEqual([]);
 
   expect(
-    (await resolveTree(index, ['button', 'foo']))
+    (await resolveTree(index as any, ['button', 'foo']))
       .map((entry) => entry.name)
       .sort()
   ).toEqual(['button']);

@@ -37,15 +37,7 @@ import {
   FontColorPlugin,
   FontSizePlugin,
 } from '@udecode/plate-font';
-import {
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_H3,
-  ELEMENT_H4,
-  ELEMENT_H5,
-  ELEMENT_H6,
-  HeadingPlugin,
-} from '@udecode/plate-heading';
+import { HEADING_KEYS, HeadingPlugin } from '@udecode/plate-heading';
 import { HighlightPlugin } from '@udecode/plate-highlight';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { IndentPlugin } from '@udecode/plate-indent';
@@ -179,13 +171,13 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
               validPlugins: [
                 ParagraphPlugin.key,
                 MediaEmbedPlugin.key,
-                ELEMENT_H1,
-                ELEMENT_H2,
-                ELEMENT_H3,
-                ELEMENT_H4,
-                ELEMENT_H5,
+                HEADING_KEYS.h1,
+                HEADING_KEYS.h2,
+                HEADING_KEYS.h3,
+                HEADING_KEYS.h4,
+                HEADING_KEYS.h5,
                 ImagePlugin.key,
-                ELEMENT_H6,
+                HEADING_KEYS.h6,
               ],
             },
           },
@@ -195,12 +187,12 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
             props: {
               validPlugins: [
                 ParagraphPlugin.key,
-                ELEMENT_H1,
-                ELEMENT_H2,
-                ELEMENT_H3,
-                ELEMENT_H4,
-                ELEMENT_H5,
-                ELEMENT_H6,
+                HEADING_KEYS.h1,
+                HEADING_KEYS.h2,
+                HEADING_KEYS.h3,
+                HEADING_KEYS.h4,
+                HEADING_KEYS.h5,
+                HEADING_KEYS.h6,
                 BlockquotePlugin.key,
                 CodeBlockPlugin.key,
                 TogglePlugin.key,
@@ -213,12 +205,12 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
             props: {
               validPlugins: [
                 ParagraphPlugin.key,
-                ELEMENT_H1,
-                ELEMENT_H2,
-                ELEMENT_H3,
-                ELEMENT_H4,
-                ELEMENT_H5,
-                ELEMENT_H6,
+                HEADING_KEYS.h1,
+                HEADING_KEYS.h2,
+                HEADING_KEYS.h3,
+                HEADING_KEYS.h4,
+                HEADING_KEYS.h5,
+                HEADING_KEYS.h6,
                 BlockquotePlugin.key,
                 CodeBlockPlugin.key,
                 TogglePlugin.key,
@@ -247,12 +239,12 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
               validNodeValues: [1, 1.2, 1.5, 2, 3],
               validPlugins: [
                 ParagraphPlugin.key,
-                ELEMENT_H1,
-                ELEMENT_H2,
-                ELEMENT_H3,
-                ELEMENT_H4,
-                ELEMENT_H5,
-                ELEMENT_H6,
+                HEADING_KEYS.h1,
+                HEADING_KEYS.h2,
+                HEADING_KEYS.h3,
+                HEADING_KEYS.h4,
+                HEADING_KEYS.h5,
+                HEADING_KEYS.h6,
               ],
             },
           },
@@ -275,7 +267,7 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
         NodeIdPlugin,
         NormalizeTypesPlugin.configure({
           options: {
-            rules: [{ path: [0], strictType: ELEMENT_H1 }],
+            rules: [{ path: [0], strictType: HEADING_KEYS.h1 }],
           },
         }),
         resetBlockTypePlugin,

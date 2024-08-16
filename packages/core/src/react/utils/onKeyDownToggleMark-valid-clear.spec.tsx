@@ -59,7 +59,7 @@ it('should be', () => {
   jest.spyOn(isHotkey, 'isHotkey').mockReturnValue(true);
 
   onKeyDownToggleMark({
-    ...getPluginContext(editor, editor.getPlugin(BoldPlugin)),
+    ...getPluginContext(editor, BoldPlugin.key),
     event,
   });
   expect(editor.children).toEqual(output.children);

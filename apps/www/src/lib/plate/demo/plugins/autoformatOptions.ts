@@ -34,14 +34,7 @@ import {
   isType,
   setNodes,
 } from '@udecode/plate-common';
-import {
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_H3,
-  ELEMENT_H4,
-  ELEMENT_H5,
-  ELEMENT_H6,
-} from '@udecode/plate-heading';
+import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HighlightPlugin } from '@udecode/plate-highlight';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import {
@@ -167,37 +160,37 @@ export const autoformatBlocks: AutoformatRule[] = [
     match: '# ',
     mode: 'block',
     preFormat,
-    type: ELEMENT_H1,
+    type: HEADING_KEYS.h1,
   },
   {
     match: '## ',
     mode: 'block',
     preFormat,
-    type: ELEMENT_H2,
+    type: HEADING_KEYS.h2,
   },
   {
     match: '### ',
     mode: 'block',
     preFormat,
-    type: ELEMENT_H3,
+    type: HEADING_KEYS.h3,
   },
   {
     match: '#### ',
     mode: 'block',
     preFormat,
-    type: ELEMENT_H4,
+    type: HEADING_KEYS.h4,
   },
   {
     match: '##### ',
     mode: 'block',
     preFormat,
-    type: ELEMENT_H5,
+    type: HEADING_KEYS.h5,
   },
   {
     match: '###### ',
     mode: 'block',
     preFormat,
-    type: ELEMENT_H6,
+    type: HEADING_KEYS.h6,
   },
   {
     match: '> ',

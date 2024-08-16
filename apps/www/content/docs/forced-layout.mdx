@@ -30,7 +30,7 @@ const plugins = [
   createTrailingBlockPlugin({ options: { type: ParagraphPlugin.key } }),
   createNormalizeTypesPlugin({
     options: {
-      rules: [{ path: [0], strictType: ELEMENT_H1 }],
+      rules: [{ path: [0], strictType: HEADING_KEYS.h1 }],
     },
   }),
 ];

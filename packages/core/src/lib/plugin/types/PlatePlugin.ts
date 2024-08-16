@@ -277,6 +277,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   __apiExtensions: ((ctx: EditorPluginContext<AnyPluginConfig>) => any)[];
   __configuration: ((ctx: EditorPluginContext<AnyPluginConfig>) => any) | null;
   __extensions: ((ctx: EditorPluginContext<AnyPluginConfig>) => any)[];
+  __resolved?: boolean;
   __transformExtensions: ((ctx: EditorPluginContext<AnyPluginConfig>) => any)[];
 
   configure: (

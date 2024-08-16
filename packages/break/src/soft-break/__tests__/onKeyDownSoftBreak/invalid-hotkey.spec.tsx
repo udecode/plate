@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { createPlugin } from '@udecode/plate-common';
+import { createPlugin, getPluginContext } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { onKeyDownSoftBreak } from '../../onKeyDownSoftBreak';
@@ -28,6 +28,6 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  onKeyDownSoftBreak({ editor: input, event, plugin: createPlugin() });
+  onKeyDownSoftBreak({ ...getPluginContext(input, createPlugin()), event });
   expect(input.children).toEqual(output.children);
 });

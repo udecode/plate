@@ -12,9 +12,7 @@ export function getPlugin<C extends AnyPluginConfig = AnyPluginConfig>(
   editor: PlateEditor,
   plugin: WithRequiredKey<C>
 ): EditorPlugin<C> {
-  return (
-    (editor.plugins?.[plugin.key] as any) ?? createPlugin({ key: plugin.key })
-  );
+  return editor.plugins[plugin.key] ?? createPlugin({ key: plugin.key });
 }
 
 /** Get editor plugin type by key or plugin object. */

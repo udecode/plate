@@ -1,6 +1,7 @@
 /** @jsx jsx */
 
 import { createPlateEditor } from '@udecode/plate-common/react';
+import { HEADING_KEYS } from '@udecode/plate-heading';
 import { jsx } from '@udecode/plate-test-utils';
 import {
   getAutoformatOptions,

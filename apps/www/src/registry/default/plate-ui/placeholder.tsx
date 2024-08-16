@@ -8,7 +8,7 @@ import {
   createNodesHOC,
   usePlaceholderState,
 } from '@udecode/plate-common/react';
-import { ELEMENT_H1 } from '@udecode/plate-heading';
+import { HEADING_KEYS } from '@udecode/plate-heading';
 
 export const Placeholder = (props: PlaceholderProps) => {
   const { children, nodeProps, placeholder } = props;
@@ -46,7 +46,7 @@ export const withPlaceholders = (components: any) =>
     },
     {
       hideOnBlur: false,
-      key: ELEMENT_H1,
+      key: HEADING_KEYS.h1,
       placeholder: 'Untitled',
     },
   ]);

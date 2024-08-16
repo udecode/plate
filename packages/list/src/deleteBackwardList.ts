@@ -3,7 +3,6 @@ import {
   type PlateEditor,
   type TElement,
   type TNodeEntry,
-  createTPlugin,
   deleteMerge,
   getNodeEntries,
   getNodeEntry,
@@ -15,7 +14,7 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 import {
-  type ResetNodeConfig,
+  ResetNodePlugin,
   SIMULATE_BACKSPACE,
   onKeyDownResetNode,
 } from '@udecode/plate-reset-node';
@@ -54,7 +53,7 @@ export const deleteBackwardList = (editor: PlateEditor, unit: TextUnit) => {
           onKeyDownResetNode({
             ...getPluginContext(
               editor,
-              createTPlugin<ResetNodeConfig>({
+              ResetNodePlugin.configure({
                 options: {
                   rules: [
                     {

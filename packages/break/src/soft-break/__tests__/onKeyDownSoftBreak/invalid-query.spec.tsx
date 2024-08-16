@@ -1,7 +1,12 @@
 /** @jsx jsx */
 
 import { CodeBlockPlugin } from '@udecode/plate-code-block';
-import { type AnyPlatePlugin, createPlugin } from '@udecode/plate-common';
+import {
+  type AnyPlatePlugin,
+  createPlugin,
+  getPluginContext,
+} from '@udecode/plate-common';
+import { createPlateEditor } from '@udecode/plate-common/react';
 import * as isHotkey from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -32,13 +37,15 @@ const output = (
 it('should be', () => {
   jest.spyOn(isHotkey, 'isHotkey').mockReturnValue(true);
   onKeyDownSoftBreak({
-    editor: input,
+    ...getPluginContext(
+      createPlateEditor({ editor: input }),
+      createPlugin({
+        options: {
+          rules: [{ hotkey: 'enter', query: { allow: [CodeBlockPlugin.key] } }],
+        },
+      }) as AnyPlatePlugin
+    ),
     event: event as any,
-    plugin: createPlugin({
-      options: {
-        rules: [{ hotkey: 'enter', query: { allow: [CodeBlockPlugin.key] } }],
-      },
-    }) as AnyPlatePlugin,
   });
   expect(input.children).toEqual(output.children);
 });

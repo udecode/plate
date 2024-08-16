@@ -1,6 +1,7 @@
 /** @jsx jsx */
 
 import { type PlateEditor, findNode } from '@udecode/plate-common';
+import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { removeListItem } from './removeListItem';
@@ -86,7 +87,7 @@ const output = (
 ) as any as PlateEditor;
 
 it('should', () => {
-  const editor = input;
+  const editor = createPlateEditor({ editor: input });
 
   const list = findNode(input, { match: { id: '1' } }) as any;
   const listItem = findNode(input, { match: { id: '13' } }) as any;

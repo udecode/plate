@@ -17,14 +17,7 @@ import type {
   ExcalidrawPlugin,
   TExcalidrawElement,
 } from '@udecode/plate-excalidraw';
-import type {
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_H3,
-  ELEMENT_H4,
-  ELEMENT_H5,
-  ELEMENT_H6,
-} from '@udecode/plate-heading';
+import type { HEADING_KEYS } from '@udecode/plate-heading';
 import type { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import type { LinkPlugin, TLinkElement } from '@udecode/plate-link';
 import type {
@@ -143,32 +136,32 @@ export interface MyParagraphElement extends MyBlockElement {
 
 export interface MyH1Element extends MyBlockElement {
   children: MyInlineChildren;
-  type: typeof ELEMENT_H1;
+  type: typeof HEADING_KEYS.h1;
 }
 
 export interface MyH2Element extends MyBlockElement {
   children: MyInlineChildren;
-  type: typeof ELEMENT_H2;
+  type: typeof HEADING_KEYS.h2;
 }
 
 export interface MyH3Element extends MyBlockElement {
   children: MyInlineChildren;
-  type: typeof ELEMENT_H3;
+  type: typeof HEADING_KEYS.h3;
 }
 
 export interface MyH4Element extends MyBlockElement {
   children: MyInlineChildren;
-  type: typeof ELEMENT_H4;
+  type: typeof HEADING_KEYS.h4;
 }
 
 export interface MyH5Element extends MyBlockElement {
   children: MyInlineChildren;
-  type: typeof ELEMENT_H5;
+  type: typeof HEADING_KEYS.h5;
 }
 
 export interface MyH6Element extends MyBlockElement {
   children: MyInlineChildren;
-  type: typeof ELEMENT_H6;
+  type: typeof HEADING_KEYS.h6;
 }
 
 export interface MyBlockquoteElement extends MyBlockElement {

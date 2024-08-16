@@ -1,9 +1,10 @@
 /** @jsx jsx */
 
-import { createPlugin } from '@udecode/plate-common';
+import { getPluginContext } from '@udecode/plate-common';
+import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
-import { withReact } from 'slate-react';
 
+import { ImagePlugin } from './ImagePlugin';
 import { withImageEmbed } from './withImageEmbed';
 
 jsx;
@@ -25,10 +26,9 @@ describe('withImageEmbed', () => {
   ) as any;
 
   it('should insert image from the text', () => {
-    const editor = withImageEmbed({
-      editor: withReact(input),
-      plugin: createPlugin(),
-    });
+    const editor = withImageEmbed(
+      getPluginContext(createPlateEditor({ editor: input }), ImagePlugin.key)
+    );
 
     const data = {
       getData: () => 'https://i.imgur.com/removed.png',
