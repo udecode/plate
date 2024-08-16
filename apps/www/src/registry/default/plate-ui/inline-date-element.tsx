@@ -1,33 +1,29 @@
 'use client';
-import React from 'react';
-
-import type { TInlineDateElement } from '@udecode/plate-date';
+import React, { useMemo } from 'react';
 
 import { cn } from '@udecode/cn';
 import {
   PlateElement,
   findNodePath,
   setNodes,
-  useEditorRef,
-  useElement,
   withRef,
 } from '@udecode/plate-common';
-import { format } from 'date-fns';
 
 import { Calendar } from './calendar';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
 
 export const InlineDateElement = withRef<typeof PlateElement>(
-  ({ children, className, ...props }, ref) => {
-    const element = useElement<TInlineDateElement>();
-
-    const editor = useEditorRef();
-    const path = findNodePath(editor, element);
+  ({ children, className, editor, element, ...props }, ref) => {
+    const path = useMemo(() => {
+      return findNodePath(editor, element);
+    }, [editor, element]);
 
     return (
       <PlateElement
         className={cn('inline-block', className)}
         contentEditable={false}
+        editor={editor}
+        element={element}
         ref={ref}
         {...props}
       >
@@ -42,7 +38,7 @@ export const InlineDateElement = withRef<typeof PlateElement>(
               {element.date ? (
                 (() => {
                   const today = new Date();
-                  const elementDate = new Date(element.date);
+                  const elementDate = new Date(element.date as string);
                   const isToday =
                     elementDate.getDate() === today.getDate() &&
                     elementDate.getMonth() === today.getMonth() &&
@@ -61,7 +57,11 @@ export const InlineDateElement = withRef<typeof PlateElement>(
                   if (isYesterday) return 'Yesterday';
                   if (isTomorrow) return 'Tomorrow';
 
-                  return format(elementDate, 'PPP');
+                  return elementDate.toLocaleDateString(undefined, {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  });
                 })()
               ) : (
                 <span>Pick a date</span>
@@ -75,13 +75,9 @@ export const InlineDateElement = withRef<typeof PlateElement>(
               onSelect={(date) => {
                 if (!date) return;
 
-                setNodes(
-                  editor,
-                  { date: format(date, 'yyyy-MM-dd') },
-                  { at: path }
-                );
+                setNodes(editor, { date: date.toDateString() }, { at: path });
               }}
-              selected={new Date(element.date)}
+              selected={new Date(element.date as string)}
             />
           </PopoverContent>
         </Popover>

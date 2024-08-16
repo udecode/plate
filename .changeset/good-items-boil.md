@@ -1,5 +1,4 @@
 ---
-'@udecode/plate-test-utils': minor
 '@udecode/plate-date': minor
 ---
 
