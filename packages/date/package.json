@@ -7,7 +7,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
-    "directory": "packages/math"
+    "directory": "packages/date"
   },
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
