@@ -16,6 +16,7 @@ import {
   KEY_SOFT_BREAK,
 } from '@udecode/plate-break';
 import { MARK_COMMENT } from '@udecode/plate-comments';
+import { ELEMENT_INLINE_DATE } from '@udecode/plate-date';
 import { KEY_DND } from '@udecode/plate-dnd';
 import { KEY_EMOJI } from '@udecode/plate-emoji';
 import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
@@ -52,6 +53,7 @@ export const descriptions: Record<string, string> = {
   [ELEMENT_EXCALIDRAW]: 'Create drawings and diagrams as block nodes.',
   [ELEMENT_HR]: 'Insert horizontal lines.',
   [ELEMENT_IMAGE]: 'Embed images into your document.',
+  [ELEMENT_INLINE_DATE]: 'Add inline date plugins',
   [ELEMENT_LINK]: 'Insert and manage hyperlinks.',
   [ELEMENT_MEDIA_EMBED]:
     'Embed medias like videos or tweets into your document.',

@@ -69,6 +69,7 @@ const ELEMENT_TR = 'tr';
 const ELEMENT_UL = 'ul';
 const ELEMENT_COLUMN_GROUP = 'column_group';
 const ELEMENT_COLUMN = 'column';
+const ELEMENT_INLINE_DATE = 'inline_date'
 
 const elements: HyperscriptShorthands = {
   ha: { type: ELEMENT_LINK },
@@ -86,6 +87,7 @@ const elements: HyperscriptShorthands = {
   hh5: { type: ELEMENT_H5 },
   hh6: { type: ELEMENT_H6 },
   himg: { children: voidChildren, type: ELEMENT_IMAGE },
+  hinlinedate: { children: voidChildren, type: ELEMENT_INLINE_DATE },
   hli: { type: ELEMENT_LI },
   hlic: { type: ELEMENT_LIC },
   hmediaembed: { children: voidChildren, type: ELEMENT_MEDIA_EMBED },

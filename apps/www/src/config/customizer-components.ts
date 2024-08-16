@@ -142,6 +142,11 @@ export const customizerComponents = {
     href: '/docs/components/inline-combobox',
     title: 'Inline Combobox',
   },
+  inlineDateElement: {
+    href: '/docs/components/inline-date-element',
+    label: 'Element',
+    title: 'Inline Date',
+  },
   input: { href: '/docs/components/input', title: 'Input' },
   insertDropdownMenu: {
     href: '/docs/components/insert-dropdown-menu',

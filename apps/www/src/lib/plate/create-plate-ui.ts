@@ -20,6 +20,7 @@ import {
   PlateLeaf,
   type PlatePluginComponent,
 } from '@udecode/plate-common';
+import { ELEMENT_INLINE_DATE } from '@udecode/plate-date';
 import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
 import { MARK_SEARCH_HIGHLIGHT } from '@udecode/plate-find-replace';
 import {
@@ -67,6 +68,7 @@ import { HeadingElement } from '@/registry/default/plate-ui/heading-element';
 import { HighlightLeaf } from '@/registry/default/plate-ui/highlight-leaf';
 import { HrElement } from '@/registry/default/plate-ui/hr-element';
 import { ImageElement } from '@/registry/default/plate-ui/image-element';
+import { InlineDateElement } from '@/registry/default/plate-ui/inline-date-element';
 import { KbdLeaf } from '@/registry/default/plate-ui/kbd-leaf';
 import { LinkElement } from '@/registry/default/plate-ui/link-element';
 import { ListElement } from '@/registry/default/plate-ui/list-element';
@@ -113,6 +115,7 @@ export const createPlateUI = (
     [ELEMENT_H6]: withProps(HeadingElement, { variant: 'h6' }),
     [ELEMENT_HR]: HrElement,
     [ELEMENT_IMAGE]: ImageElement,
+    [ELEMENT_INLINE_DATE]: InlineDateElement,
     [ELEMENT_LI]: withProps(PlateElement, { as: 'li' }),
     [ELEMENT_LINK]: LinkElement,
     [ELEMENT_MEDIA_EMBED]: MediaEmbedElement,
