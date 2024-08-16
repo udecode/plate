@@ -1,5 +1,5 @@
 import { ExitBreakPlugin } from '@udecode/plate-break';
-import { KEYS_HEADING } from '@udecode/plate-heading';
+import { HEADING_LEVELS } from '@udecode/plate-heading';
 
 export const exitBreakPlugin = ExitBreakPlugin.configure({
   options: {
@@ -15,7 +15,7 @@ export const exitBreakPlugin = ExitBreakPlugin.configure({
         hotkey: 'enter',
         level: 1,
         query: {
-          allow: KEYS_HEADING,
+          allow: HEADING_LEVELS,
           end: true,
           start: true,
         },

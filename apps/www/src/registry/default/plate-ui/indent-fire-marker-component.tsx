@@ -1,7 +1,9 @@
+import type { PlateRenderElementProps } from '@udecode/plate-common';
 import type { TIndentElement } from '@udecode/plate-indent';
-import type { LiFC, MarkerFC } from '@udecode/plate-indent-list';
 
-export const FireMarker: MarkerFC = (props) => {
+export const FireMarker = (
+  props: Omit<PlateRenderElementProps, 'children'>
+) => {
   const { element } = props;
 
   return (
@@ -13,7 +15,7 @@ export const FireMarker: MarkerFC = (props) => {
   );
 };
 
-export const FireLiComponent: LiFC = (props) => {
+export const FireLiComponent = (props: PlateRenderElementProps) => {
   const { children } = props;
 
   return <span>{children}</span>;
