@@ -2,7 +2,7 @@ import { type PlateEditor, nanoid } from '@udecode/plate-common';
 
 import type { SuggestionEditorProps } from '../types';
 
-import { KEY_SUGGESTION_ID, SuggestionPlugin } from '../SuggestionPlugin';
+import { SUGGESTION_KEYS, SuggestionPlugin } from '../SuggestionPlugin';
 import { findSuggestionId } from '../queries/findSuggestionId';
 
 export const addSuggestionMark = (
@@ -15,7 +15,7 @@ export const addSuggestionMark = (
   if (!editor.marks?.[SuggestionPlugin.key]) {
     editor.addMark(SuggestionPlugin.key, true);
   }
-  if (!editor.marks?.[KEY_SUGGESTION_ID]) {
-    editor.addMark(KEY_SUGGESTION_ID, id);
+  if (!editor.marks?.[SUGGESTION_KEYS.id]) {
+    editor.addMark(SUGGESTION_KEYS.id, id);
   }
 };

@@ -7,7 +7,7 @@ import {
 
 import type { TSuggestionText } from '../types';
 
-import { KEY_SUGGESTION_ID, SuggestionPlugin } from '../SuggestionPlugin';
+import { SUGGESTION_KEYS, SuggestionPlugin } from '../SuggestionPlugin';
 import { type TSuggestionDescription, getSuggestionKey } from '../utils/index';
 
 export const acceptSuggestion = (
@@ -24,7 +24,7 @@ export const acceptSuggestion = (
 
         // unset additions
         return (
-          node[KEY_SUGGESTION_ID] === description.suggestionId &&
+          node[SUGGESTION_KEYS.id] === description.suggestionId &&
           !node.suggestionDeletion &&
           !!node[suggestionKey]
         );
@@ -37,7 +37,7 @@ export const acceptSuggestion = (
 
         // remove deletions
         return (
-          node[KEY_SUGGESTION_ID] === description.suggestionId &&
+          node[SUGGESTION_KEYS.id] === description.suggestionId &&
           !!node.suggestionDeletion &&
           !!node[suggestionKey]
         );

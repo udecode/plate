@@ -20,7 +20,6 @@ export interface TSuggestion extends UnknownObject {
 export interface TSuggestionText extends TText {
   suggestion?: boolean;
   suggestionDeletion?: boolean;
-
   suggestionId?: string;
 }
 

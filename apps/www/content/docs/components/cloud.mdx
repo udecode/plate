@@ -85,8 +85,8 @@ const plugins = createMyPlugins(
   {
     components: {
       ...plateUI,
-      [ELEMENT_CLOUD_ATTACHMENT]: CloudAttachmentElement,
-      [ELEMENT_CLOUD_IMAGE]: CloudImageElement,
+      [CloudAttachmentPlugin.key]: CloudAttachmentElement,
+      [CloudImagePlugin.key]: CloudImageElement,
     },
   }
 );

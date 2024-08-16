@@ -6,7 +6,7 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 
-import { KEY_SUGGESTION_ID, SuggestionPlugin } from '../SuggestionPlugin';
+import { SUGGESTION_KEYS, SuggestionPlugin } from '../SuggestionPlugin';
 import { findSuggestionId } from '../queries/findSuggestionId';
 import { getSuggestionKeys } from '../utils/index';
 import { deleteFragmentSuggestion } from './deleteFragmentSuggestion';
@@ -38,7 +38,7 @@ export const insertFragmentSuggestion = (
             delete n.suggestionDeletion;
           }
 
-          n[KEY_SUGGESTION_ID] = id;
+          n[SUGGESTION_KEYS.id] = id;
 
           // remove the other user keys
           const otherUserKeys = getSuggestionKeys(n);

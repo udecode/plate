@@ -8,9 +8,9 @@ import type {
 import { clsx } from 'clsx';
 
 import {
+  INDENT_LIST_KEYS,
   type IndentListConfig,
   IndentListPlugin,
-  KEY_LIST_START,
 } from './IndentListPlugin';
 import { ULIST_STYLE_TYPES } from './types';
 
@@ -20,7 +20,7 @@ export const injectIndentListComponent = (
   const { element } = injectProps;
 
   const listStyleType = element[IndentListPlugin.key] as string;
-  const listStart = element[KEY_LIST_START] as number;
+  const listStart = element[INDENT_LIST_KEYS.listStart] as number;
 
   if (listStyleType) {
     let className = clsx(`slate-${IndentListPlugin.key}-${listStyleType}`);

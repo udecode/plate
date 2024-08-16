@@ -1,6 +1,6 @@
 import { type PlateEditor, someNode } from '@udecode/plate-common';
 
-import { KEY_LIST_CHECKED, IndentListPlugin, ListStyleType } from '../index';
+import { INDENT_LIST_KEYS, IndentListPlugin, ListStyleType } from '../index';
 
 export const someIndentList = (editor: PlateEditor, type: string) => {
   return (
@@ -13,7 +13,7 @@ export const someIndentList = (editor: PlateEditor, type: string) => {
           return list === ListStyleType.Disc;
         }
 
-        const isHasProperty = n.hasOwnProperty(KEY_LIST_CHECKED);
+        const isHasProperty = n.hasOwnProperty(INDENT_LIST_KEYS.checked);
 
         return !!list && list !== ListStyleType.Disc && !isHasProperty;
       },

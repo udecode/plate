@@ -36,7 +36,7 @@ const MyPlugin = createPlugin<O>({
     createComboboxInput: (trigger) => ({
       children: [{ text: '' }],
       trigger,
-      type: ELEMENT_MY_INPUT,
+      type: 'input',
     }),
     trigger: '@',
     triggerPreviousCharPattern: /^\s?$/,
@@ -56,7 +56,7 @@ const MyPlugin = createPlugin<O>({
       isElement: true,
       isInline: true,
       isVoid: true,
-      key: ELEMENT_MY_INPUT,
+      key: 'input',
     },
   ],
 });

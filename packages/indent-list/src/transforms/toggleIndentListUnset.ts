@@ -4,11 +4,7 @@ import {
   unsetNodes,
 } from '@udecode/plate-common';
 
-import {
-  IndentListPlugin,
-  KEY_LIST_CHECKED,
-  KEY_TODO_STYLE_TYPE,
-} from '../IndentListPlugin';
+import { INDENT_LIST_KEYS, IndentListPlugin } from '../IndentListPlugin';
 import { ListStyleType } from '../types';
 import { outdentList } from './outdentList';
 
@@ -23,10 +19,10 @@ export const toggleIndentListUnset = (
   }
 ) => {
   if (
-    listStyleType === KEY_TODO_STYLE_TYPE &&
-    node.hasOwnProperty(KEY_LIST_CHECKED)
+    listStyleType === INDENT_LIST_KEYS.todo &&
+    node.hasOwnProperty(INDENT_LIST_KEYS.checked)
   ) {
-    unsetNodes(editor as any, KEY_LIST_CHECKED, { at: path });
+    unsetNodes(editor as any, INDENT_LIST_KEYS.checked, { at: path });
     outdentList(editor as any, { listStyleType });
 
     return true;

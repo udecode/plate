@@ -12,7 +12,7 @@ import {
 import type { SuggestionEditorProps, TSuggestionText } from './types';
 
 import {
-  KEY_SUGGESTION_ID,
+  SUGGESTION_KEYS,
   type SuggestionConfig,
   SuggestionPlugin,
 } from './SuggestionPlugin';
@@ -134,11 +134,11 @@ export const withSuggestion: WithOverride<SuggestionConfig> = ({
 
         if (
           (nodeBefore as any)?.[SuggestionPlugin.key] &&
-          (nodeBefore as any)[KEY_SUGGESTION_ID] !== node[KEY_SUGGESTION_ID]
+          (nodeBefore as any)[SUGGESTION_KEYS.id] !== node[SUGGESTION_KEYS.id]
         ) {
           setNodes<TSuggestionText>(
             editor,
-            { [KEY_SUGGESTION_ID]: (nodeBefore as any)[KEY_SUGGESTION_ID] },
+            { [SUGGESTION_KEYS.id]: (nodeBefore as any)[SUGGESTION_KEYS.id] },
             { at: path }
           );
 
@@ -162,7 +162,7 @@ export const withSuggestion: WithOverride<SuggestionConfig> = ({
       if (getSuggestionKeys(node).length === 0) {
         if (node.suggestionDeletion) {
           // Unset deletions
-          unsetNodes(editor, [SuggestionPlugin.key, KEY_SUGGESTION_ID], {
+          unsetNodes(editor, [SuggestionPlugin.key, SUGGESTION_KEYS.id], {
             at: path,
           });
         } else {
@@ -191,7 +191,7 @@ export const withSuggestion: WithOverride<SuggestionConfig> = ({
 //       // if (node && node.suggestionId !== id) {
 //       insertNodes<TSuggestionText>(
 //         editor,
-//         { text, [SuggestionPlugin.key]: true, [KEY_SUGGESTION_ID]: id },
+//         { text, [SuggestionPlugin.key]: true, [SUGGESTION_KEYS.id]: id },
 //         {
 //           at: {
 //             path,
@@ -210,7 +210,7 @@ export const withSuggestion: WithOverride<SuggestionConfig> = ({
 //
 //       if (
 //         suggestionNode[SuggestionPlugin.key] &&
-//         suggestionNode[KEY_SUGGESTION_ID] &&
+//         suggestionNode[SUGGESTION_KEYS.id] &&
 //         !suggestionNode.suggestionDeletion
 //       ) {
 //         apply(op);
@@ -227,7 +227,7 @@ export const withSuggestion: WithOverride<SuggestionConfig> = ({
 //       }
 //
 //       const id = findSuggestionId(editor, path) ?? nanoid();
-//       suggestionNode[KEY_SUGGESTION_ID] = id;
+//       suggestionNode[SUGGESTION_KEYS.id] = id;
 //
 //       insertNodes(editor, cloneDeep(node) as any, { at: path });
 //       return;

@@ -1,19 +1,15 @@
 import { type PlateEditor, someNode } from '@udecode/plate-common';
 
-import {
-  IndentListPlugin,
-  KEY_LIST_CHECKED,
-  KEY_TODO_STYLE_TYPE,
-} from '../index';
+import { INDENT_LIST_KEYS, IndentListPlugin } from '../index';
 
 export const someIndentTodo = (editor: PlateEditor) => {
   return someNode(editor, {
     at: editor.selection!,
     match: (n) => {
       const list = n[IndentListPlugin.key];
-      const isHasProperty = n.hasOwnProperty(KEY_LIST_CHECKED);
+      const isHasProperty = n.hasOwnProperty(INDENT_LIST_KEYS.checked);
 
-      return n.type === 'p' && isHasProperty && list === KEY_TODO_STYLE_TYPE;
+      return n.type === 'p' && isHasProperty && list === INDENT_LIST_KEYS.todo;
     },
   });
 };

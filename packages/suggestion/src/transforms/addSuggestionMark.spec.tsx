@@ -5,7 +5,7 @@ import type { PlateEditor } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { KEY_SUGGESTION_ID } from '../SuggestionPlugin';
+import { SUGGESTION_KEYS } from '../SuggestionPlugin';
 import { SuggestionPlugin } from '../SuggestionPlugin';
 import { addSuggestionMark } from './addSuggestionMark';
 
@@ -52,7 +52,7 @@ describe('addSuggestionMark', () => {
 
         addSuggestionMark(editor);
         expect(editor.marks?.[SuggestionPlugin.key]).toBeTruthy();
-        expect(editor.marks?.[KEY_SUGGESTION_ID]).toBeTruthy();
+        expect(editor.marks?.[SUGGESTION_KEYS.id]).toBeTruthy();
       });
     });
   });

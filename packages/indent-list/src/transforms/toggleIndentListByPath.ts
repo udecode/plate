@@ -7,7 +7,7 @@ import {
 } from '@udecode/plate-common';
 import { IndentPlugin } from '@udecode/plate-indent';
 
-import { KEY_LIST_CHECKED, IndentListPlugin } from '../IndentListPlugin';
+import { INDENT_LIST_KEYS, IndentListPlugin } from '../IndentListPlugin';
 
 export const toggleIndentListByPath = (
   editor: PlateEditor,
@@ -17,10 +17,10 @@ export const toggleIndentListByPath = (
   setNodes(
     editor,
     {
-      [IndentPlugin.key]: node.indent ?? 1,
       // TODO: normalized if not todo remove this property.
-      [KEY_LIST_CHECKED]: false,
+      [INDENT_LIST_KEYS.checked]: false,
       [IndentListPlugin.key]: listStyleType,
+      [IndentPlugin.key]: node.indent ?? 1,
       type: ParagraphPlugin.key,
     },
     {
@@ -33,6 +33,10 @@ export const toggleIndentListByPathUnSet = (
   editor: PlateEditor,
   [, path]: TNodeEntry
 ) =>
-  unsetNodes(editor, [IndentListPlugin.key, IndentPlugin.key, KEY_LIST_CHECKED], {
-    at: path,
-  });
+  unsetNodes(
+    editor,
+    [IndentListPlugin.key, IndentPlugin.key, INDENT_LIST_KEYS.checked],
+    {
+      at: path,
+    }
+  );

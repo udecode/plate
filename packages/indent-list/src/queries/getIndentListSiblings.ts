@@ -8,7 +8,7 @@ import type {
 
 import type { GetSiblingIndentListOptions } from './getSiblingIndentList';
 
-import { KEY_LIST_CHECKED, IndentListPlugin } from '../IndentListPlugin';
+import { INDENT_LIST_KEYS, IndentListPlugin } from '../IndentListPlugin';
 import { getNextIndentList } from './getNextIndentList';
 import { getPreviousIndentList } from './getPreviousIndentList';
 
@@ -39,7 +39,10 @@ export const getIndentListSiblings = <
   const node = entry[0] as TElement;
 
   // if (!(node as any)[IndentListPlugin.key]) return siblings;
-  if (!node[IndentListPlugin.key] && !node.hasOwnProperty(KEY_LIST_CHECKED)) {
+  if (
+    !node[IndentListPlugin.key] &&
+    !node.hasOwnProperty(INDENT_LIST_KEYS.checked)
+  ) {
     return siblings;
   }
 

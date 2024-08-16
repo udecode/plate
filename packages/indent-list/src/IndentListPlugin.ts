@@ -17,13 +17,12 @@ import { injectIndentListComponent } from './injectIndentListComponent';
 import { onKeyDownIndentList } from './onKeyDownIndentList';
 import { withIndentList } from './withIndentList';
 
-export const KEY_LIST_START = 'listStart';
-
-export const KEY_LIST_RESTART = 'listRestart';
-
-export const KEY_LIST_CHECKED = 'checked';
-
-export const KEY_TODO_STYLE_TYPE = 'todo';
+export const INDENT_LIST_KEYS = {
+  checked: 'checked',
+  listRestart: 'listRestart',
+  listStart: 'listStart',
+  todo: 'todo',
+} as const;
 
 export type IndentListConfig = PluginConfig<
   'listStyleType',

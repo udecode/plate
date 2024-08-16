@@ -7,7 +7,7 @@ import {
   getPointBefore,
 } from '@udecode/plate-common';
 
-import { KEY_SUGGESTION_ID } from '../SuggestionPlugin';
+import { SUGGESTION_KEYS } from '../SuggestionPlugin';
 import { findSuggestionNode } from './findSuggestionNode';
 
 /**
@@ -48,6 +48,6 @@ export const findSuggestionId = (editor: PlateEditor, at: Location) => {
     }
   }
   if (entry) {
-    return entry[0][KEY_SUGGESTION_ID];
+    return entry[0][SUGGESTION_KEYS.id];
   }
 };

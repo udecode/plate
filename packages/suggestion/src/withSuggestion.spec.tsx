@@ -4,7 +4,7 @@ import { type PlateEditor, normalizeEditor } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { KEY_SUGGESTION_ID } from './SuggestionPlugin';
+import { SUGGESTION_KEYS } from './SuggestionPlugin';
 import { SuggestionPlugin } from './SuggestionPlugin';
 
 jsx;
@@ -76,7 +76,7 @@ describe('withSuggestion', () => {
             editor.children[0].children[1][SuggestionPlugin.key]
           ).toBeTruthy();
           expect(
-            editor.children[0].children[1][KEY_SUGGESTION_ID]
+            editor.children[0].children[1][SUGGESTION_KEYS.id]
           ).toBeTruthy();
         });
       });
@@ -215,7 +215,7 @@ describe('withSuggestion', () => {
             editor.children[0].children[1].suggestionDeletion
           ).toBeTruthy();
           expect(
-            editor.children[0].children[1][KEY_SUGGESTION_ID]
+            editor.children[0].children[1][SUGGESTION_KEYS.id]
           ).toBeTruthy();
           expect(editor.children[0].children[0].text).toBe('tes');
         });
@@ -247,7 +247,7 @@ describe('withSuggestion', () => {
             editor.children[0].children[1].suggestionDeletion
           ).toBeTruthy();
           expect(
-            editor.children[0].children[1][KEY_SUGGESTION_ID]
+            editor.children[0].children[1][SUGGESTION_KEYS.id]
           ).toBeTruthy();
           expect(editor.children[0].children[0].text).toBe('tes');
         });
@@ -290,7 +290,7 @@ describe('withSuggestion', () => {
             editor.children[0].children[0].suggestionDeletion
           ).toBeTruthy();
           expect(
-            editor.children[0].children[0][KEY_SUGGESTION_ID]
+            editor.children[0].children[0][SUGGESTION_KEYS.id]
           ).toBeTruthy();
         });
       });

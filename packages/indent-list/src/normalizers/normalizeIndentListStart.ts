@@ -10,11 +10,7 @@ import {
 
 import type { GetSiblingIndentListOptions } from '../queries/getSiblingIndentList';
 
-import {
-  IndentListPlugin,
-  KEY_LIST_RESTART,
-  KEY_LIST_START,
-} from '../IndentListPlugin';
+import { INDENT_LIST_KEYS, IndentListPlugin } from '../IndentListPlugin';
 import { getNextIndentList } from '../queries/getNextIndentList';
 import { getPreviousIndentList } from '../queries/getPreviousIndentList';
 import { normalizeFirstIndentListStart } from './normalizeFirstIndentListStart';
@@ -27,13 +23,17 @@ export const normalizeNextIndentListStart = (
   const [node, path] = entry;
   const [prevNode] = prevEntry ?? [null];
 
-  const prevListStart = (prevNode?.[KEY_LIST_START] as number) ?? 1;
-  const currListStart = (node[KEY_LIST_START] as number) ?? 1;
-  const restart = node[KEY_LIST_RESTART];
+  const prevListStart = (prevNode?.[INDENT_LIST_KEYS.listStart] as number) ?? 1;
+  const currListStart = (node[INDENT_LIST_KEYS.listStart] as number) ?? 1;
+  const restart = node[INDENT_LIST_KEYS.listRestart];
   const listStart = restart == null ? prevListStart + 1 : restart;
 
   if (currListStart !== listStart) {
-    setElements(editor, { [KEY_LIST_START]: listStart }, { at: path });
+    setElements(
+      editor,
+      { [INDENT_LIST_KEYS.listStart]: listStart },
+      { at: path }
+    );
 
     return true;
   }

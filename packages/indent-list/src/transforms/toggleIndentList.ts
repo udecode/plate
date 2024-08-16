@@ -13,7 +13,7 @@ import { IndentPlugin } from '@udecode/plate-indent';
 
 import type { IndentListOptions } from './indentList';
 
-import { IndentListPlugin, KEY_LIST_CHECKED } from '../IndentListPlugin';
+import { INDENT_LIST_KEYS, IndentListPlugin } from '../IndentListPlugin';
 import { areEqListStyleType } from '../queries/areEqListStyleType';
 import { setIndentListNodes } from './setIndentListNodes';
 import { setIndentListSiblingNodes } from './setIndentListSiblingNodes';
@@ -71,7 +71,7 @@ export const toggleIndentList = <E extends PlateEditor>(
               { at: path }
             );
           } else {
-            unsetNodes(editor, [IndentPlugin.key, KEY_LIST_CHECKED], {
+            unsetNodes(editor, [IndentPlugin.key, INDENT_LIST_KEYS.checked], {
               at: path,
             });
           }

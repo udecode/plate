@@ -38,7 +38,7 @@ import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HighlightPlugin } from '@udecode/plate-highlight';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import {
-  KEY_TODO_STYLE_TYPE,
+  INDENT_LIST_KEYS,
   ListStyleType,
   toggleIndentList,
 } from '@udecode/plate-indent-list';
@@ -300,11 +300,11 @@ export const autoformatIndentLists: AutoformatRule[] = [
   {
     format: (editor) => {
       toggleIndentList(editor, {
-        listStyleType: KEY_TODO_STYLE_TYPE,
+        listStyleType: INDENT_LIST_KEYS.todo,
       });
       setNodes(editor, {
         checked: false,
-        listStyleType: KEY_TODO_STYLE_TYPE,
+        listStyleType: INDENT_LIST_KEYS.todo,
       });
     },
     match: ['[] '],
@@ -314,11 +314,11 @@ export const autoformatIndentLists: AutoformatRule[] = [
   {
     format: (editor) => {
       toggleIndentList(editor, {
-        listStyleType: KEY_TODO_STYLE_TYPE,
+        listStyleType: INDENT_LIST_KEYS.todo,
       });
       setNodes(editor, {
         checked: true,
-        listStyleType: KEY_TODO_STYLE_TYPE,
+        listStyleType: INDENT_LIST_KEYS.todo,
       });
     },
     match: ['[x] '],

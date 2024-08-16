@@ -5,7 +5,7 @@ import {
   unsetNodes,
 } from '@udecode/plate-common';
 
-import { KEY_LIST_START } from '../IndentListPlugin';
+import { INDENT_LIST_KEYS } from '../IndentListPlugin';
 
 /**
  * If there is no previous list item and node list start is defined, unset list
@@ -15,8 +15,8 @@ export const normalizeFirstIndentListStart = (
   editor: TEditor,
   [node, path]: TNodeEntry
 ) => {
-  if (isDefined(node[KEY_LIST_START])) {
-    unsetNodes(editor, KEY_LIST_START, { at: path });
+  if (isDefined(node[INDENT_LIST_KEYS.listStart])) {
+    unsetNodes(editor, INDENT_LIST_KEYS.listStart, { at: path });
 
     return true;
   }

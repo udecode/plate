@@ -10,9 +10,9 @@ import {
 } from '@udecode/plate-common';
 
 import {
+  INDENT_LIST_KEYS,
   type IndentListConfig,
   IndentListPlugin,
-  KEY_TODO_STYLE_TYPE,
 } from '../IndentListPlugin';
 
 export const withInsertBreakIndentList: WithOverride<IndentListConfig> = ({
@@ -29,7 +29,7 @@ export const withInsertBreakIndentList: WithOverride<IndentListConfig> = ({
 
     if (
       !isDefined(node[IndentListPlugin.key]) ||
-      node[IndentListPlugin.key] !== KEY_TODO_STYLE_TYPE ||
+      node[IndentListPlugin.key] !== INDENT_LIST_KEYS.todo ||
       // https://github.com/udecode/plate/issues/3340
       isExpanded(editor.selection) ||
       !isEndPoint(editor, editor.selection?.focus, nodeEntry[1])
@@ -37,7 +37,7 @@ export const withInsertBreakIndentList: WithOverride<IndentListConfig> = ({
       return insertBreak();
 
     insertNodes<TElement>(editor, {
-      [IndentListPlugin.key]: KEY_TODO_STYLE_TYPE,
+      [IndentListPlugin.key]: INDENT_LIST_KEYS.todo,
       checked: false,
       children: [{ text: '' }],
       indent: node.indent,
