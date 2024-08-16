@@ -380,7 +380,6 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
   const containerRef = useRef(null);
   const enabled = settingsStore.use.checkedComponents();
   const initialValue = usePlaygroundValue(id);
-  console.log('🚀 ~ PlaygroundDemo ~ initialValue:', initialValue);
   const key = useInitialValueVersion(initialValue);
 
   const plugins = usePlaygroundPlugins({
@@ -393,8 +392,6 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
     ),
     id,
   });
-
-  console.log(plugins, 'fj');
 
   return (
     <DndProvider backend={HTML5Backend}>

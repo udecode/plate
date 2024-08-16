@@ -21,8 +21,6 @@ export const InlineDateElement = withRef<typeof PlateElement>(
   ({ children, className, ...props }, ref) => {
     const element = useElement<TInlineDateElement>();
 
-    console.log(element, 'fj');
-
     const editor = useEditorRef();
     const path = findNodePath(editor, element);
 
