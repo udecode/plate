@@ -1,9 +1,9 @@
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
 import { LinkPlugin } from '@udecode/plate-link';
 
-import { createPlateEditor } from '../../react';
+import { type PlatePluginComponent, createPlateEditor } from '../../react';
+import { createReactPlugin } from '../../react/plugin/createReactPlugin';
 import {
-  type PlatePluginComponent,
   type PluginConfig,
   createPlugin,
   resolveCreatePluginTest,
@@ -864,7 +864,7 @@ describe('createPlugin', () => {
   describe('withComponent method', () => {
     it('should set the component for the plugin', () => {
       const MockComponent: PlatePluginComponent = () => null;
-      const basePlugin = createPlugin({ key: 'testPlugin' });
+      const basePlugin = createReactPlugin({ key: 'testPlugin' });
 
       const pluginWithComponent = basePlugin.withComponent(MockComponent);
       const resolvedPlugin = resolvePluginTest(pluginWithComponent);
@@ -876,7 +876,7 @@ describe('createPlugin', () => {
       const OriginalComponent: PlatePluginComponent = () => null;
       const NewComponent: PlatePluginComponent = () => null;
 
-      const basePlugin = createPlugin({
+      const basePlugin = createReactPlugin({
         component: OriginalComponent,
         key: 'testPlugin',
       });

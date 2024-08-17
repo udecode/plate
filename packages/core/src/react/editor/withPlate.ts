@@ -1,15 +1,41 @@
 import { type TEditor, type Value, createTEditor } from '@udecode/slate';
 
-import type { AnyPluginConfig } from '../../lib/plugin/types/PlatePlugin';
+import type { AnyPluginConfig } from '../../lib/plugin/BasePlugin';
+import type { AnyPlatePlugin } from '../plugin';
+import type { TPlateEditor } from '../plugin/PlateEditor';
 
 import {
+  type BaseWithSlateOptions,
   type CorePlugin,
-  type CreateSlateEditorOptions,
-  type WithSlateOptions,
+  type InferPlugins,
   withSlate,
 } from '../../lib';
 import { ParagraphPlugin } from '../plugins';
 import { ReactPlugin } from '../plugins/react';
+
+export type WithPlateOptions<
+  V extends Value = Value,
+  P extends AnyPluginConfig = CorePlugin,
+> = {
+  rootPlugin?: (plugin: AnyPlatePlugin) => AnyPlatePlugin;
+} & BaseWithSlateOptions<V, P> &
+  Pick<
+    Partial<AnyPlatePlugin>,
+    | 'api'
+    | 'decorate'
+    | 'handlers'
+    | 'inject'
+    | 'normalizeInitialValue'
+    | 'options'
+    | 'override'
+    | 'renderAboveEditable'
+    | 'renderAboveSlate'
+    | 'renderAfterEditable'
+    | 'renderBeforeEditable'
+    | 'transforms'
+    | 'useHooks'
+    | 'withOverrides'
+  >;
 
 /**
  * Applies Plate-specific enhancements to an editor instance with ReactPlugin.
@@ -23,13 +49,25 @@ export const withPlate = <
   P extends AnyPluginConfig = CorePlugin,
 >(
   e: TEditor,
-  { plugins = [], ...options }: WithSlateOptions<V, P> = {}
-) => {
+  { plugins = [], ...options }: WithPlateOptions<V, P> = {}
+): TPlateEditor<V, InferPlugins<P[]>> => {
   return withSlate<V, P>(e, {
     ...options,
     plugins: [ReactPlugin as any, ParagraphPlugin as any, ...plugins],
-  });
+  } as any) as any;
 };
+
+export type CreatePlateEditorOptions<
+  V extends Value = Value,
+  P extends AnyPluginConfig = CorePlugin,
+> = {
+  /**
+   * Initial editor to be extended with `withPlate`.
+   *
+   * @default createEditor()
+   */
+  editor?: TEditor;
+} & WithPlateOptions<V, P>;
 
 /**
  * Creates a fully configured Plate editor with optional customizations.
@@ -92,10 +130,9 @@ export const withPlate = <
 export const createPlateEditor = <
   V extends Value = Value,
   P extends AnyPluginConfig = CorePlugin,
-  // P extends AnyPlatePlugin = CorePlugin,
 >({
   editor = createTEditor(),
   ...options
-}: CreateSlateEditorOptions<V, P> = {}) => {
+}: CreatePlateEditorOptions<V, P> = {}): TPlateEditor<V, InferPlugins<P[]>> => {
   return withPlate<V, P>(editor, options);
 };

@@ -2,12 +2,12 @@ import React from 'react';
 
 import { DefaultElement } from 'slate-react';
 
-import type { PlateEditor } from '../../lib';
-import type { AnyEditorPlugin } from '../../lib/plugin/types/PlatePlugin';
-import type { PlateRenderElementProps } from '../../lib/plugin/types/PlateRenderElementProps';
+import type { PlateEditor } from '../plugin/PlateEditor';
+import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
+import type { PlateRenderElementProps } from '../plugin/PlateRenderElementProps';
 
-import { getRenderNodeProps } from '../../lib/utils/getRenderNodeProps';
 import { ElementProvider } from '../stores/element/useElementStore';
+import { getRenderNodeProps } from './getRenderNodeProps';
 
 /**
  * Function used to render an element. If the function returns undefined then
@@ -25,7 +25,7 @@ export type RenderElement = (
  */
 export const pluginRenderElement = (
   editor: PlateEditor,
-  plugin: AnyEditorPlugin
+  plugin: AnyEditorPlatePlugin
 ): RenderElement =>
   function render(nodeProps) {
     const { component: _component, key } = plugin;

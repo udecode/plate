@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
-import { ParagraphPlugin } from '@udecode/plate-common';
 import { ListItemPlugin } from '@udecode/plate-list';
 import { jsx } from '@udecode/plate-test-utils';
 import { isElement } from '@udecode/slate';
 
+import { ParagraphPlugin } from '../../../plugins';
 import { mergeDeepToNodes } from '../../../utils';
 
 jsx;

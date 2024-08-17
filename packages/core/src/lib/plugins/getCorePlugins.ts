@@ -1,4 +1,4 @@
-import type { AnyPluginConfig } from '../plugin/types/PlatePlugin';
+import type { AnyPluginConfig } from '../plugin/BasePlugin';
 
 import { DOMPlugin } from './DOMPlugin';
 import { DeserializeAstPlugin } from './DeserializeAstPlugin';

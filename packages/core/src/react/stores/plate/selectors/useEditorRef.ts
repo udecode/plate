@@ -1,4 +1,4 @@
-import type { PlateEditor } from '../../../../lib';
+import type { PlateEditor } from '../../../plugin/PlateEditor';
 
 import {
   type UsePlateEditorStoreOptions,

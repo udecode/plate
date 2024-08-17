@@ -167,55 +167,49 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
         // Block Style
         AlignPlugin.extend({
           inject: {
-            props: {
-              validPlugins: [
-                ParagraphPlugin.key,
-                MediaEmbedPlugin.key,
-                HEADING_KEYS.h1,
-                HEADING_KEYS.h2,
-                HEADING_KEYS.h3,
-                HEADING_KEYS.h4,
-                HEADING_KEYS.h5,
-                ImagePlugin.key,
-                HEADING_KEYS.h6,
-              ],
-            },
+            targetPlugins: [
+              ParagraphPlugin.key,
+              MediaEmbedPlugin.key,
+              HEADING_KEYS.h1,
+              HEADING_KEYS.h2,
+              HEADING_KEYS.h3,
+              HEADING_KEYS.h4,
+              HEADING_KEYS.h5,
+              ImagePlugin.key,
+              HEADING_KEYS.h6,
+            ],
           },
         }),
         IndentPlugin.extend({
           inject: {
-            props: {
-              validPlugins: [
-                ParagraphPlugin.key,
-                HEADING_KEYS.h1,
-                HEADING_KEYS.h2,
-                HEADING_KEYS.h3,
-                HEADING_KEYS.h4,
-                HEADING_KEYS.h5,
-                HEADING_KEYS.h6,
-                BlockquotePlugin.key,
-                CodeBlockPlugin.key,
-                TogglePlugin.key,
-              ],
-            },
+            targetPlugins: [
+              ParagraphPlugin.key,
+              HEADING_KEYS.h1,
+              HEADING_KEYS.h2,
+              HEADING_KEYS.h3,
+              HEADING_KEYS.h4,
+              HEADING_KEYS.h5,
+              HEADING_KEYS.h6,
+              BlockquotePlugin.key,
+              CodeBlockPlugin.key,
+              TogglePlugin.key,
+            ],
           },
         }),
         IndentListPlugin.extend({
           inject: {
-            props: {
-              validPlugins: [
-                ParagraphPlugin.key,
-                HEADING_KEYS.h1,
-                HEADING_KEYS.h2,
-                HEADING_KEYS.h3,
-                HEADING_KEYS.h4,
-                HEADING_KEYS.h5,
-                HEADING_KEYS.h6,
-                BlockquotePlugin.key,
-                CodeBlockPlugin.key,
-                TogglePlugin.key,
-              ],
-            },
+            targetPlugins: [
+              ParagraphPlugin.key,
+              HEADING_KEYS.h1,
+              HEADING_KEYS.h2,
+              HEADING_KEYS.h3,
+              HEADING_KEYS.h4,
+              HEADING_KEYS.h5,
+              HEADING_KEYS.h6,
+              BlockquotePlugin.key,
+              CodeBlockPlugin.key,
+              TogglePlugin.key,
+            ],
           },
           options: {
             listStyleTypes: {
@@ -237,16 +231,16 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
             props: {
               defaultNodeValue: 1.5,
               validNodeValues: [1, 1.2, 1.5, 2, 3],
-              validPlugins: [
-                ParagraphPlugin.key,
-                HEADING_KEYS.h1,
-                HEADING_KEYS.h2,
-                HEADING_KEYS.h3,
-                HEADING_KEYS.h4,
-                HEADING_KEYS.h5,
-                HEADING_KEYS.h6,
-              ],
             },
+            targetPlugins: [
+              ParagraphPlugin.key,
+              HEADING_KEYS.h1,
+              HEADING_KEYS.h2,
+              HEADING_KEYS.h3,
+              HEADING_KEYS.h4,
+              HEADING_KEYS.h5,
+              HEADING_KEYS.h6,
+            ],
           },
         }),
 

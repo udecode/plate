@@ -5,7 +5,7 @@ import {
   isText,
 } from '@udecode/slate';
 
-import type { PlateEditor } from '../editor';
+import type { SlateEditor } from '../editor';
 
 import { ParagraphPlugin } from '../plugins';
 
@@ -116,7 +116,7 @@ const normalize = (
 
 /** Normalize the descendants to a valid document fragment. */
 export const normalizeDescendantsToDocumentFragment = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   { descendants }: { descendants: TDescendant[] }
 ): TDescendant[] => {
   const isInline = isInlineNode(editor);

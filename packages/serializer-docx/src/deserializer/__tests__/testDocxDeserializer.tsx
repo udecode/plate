@@ -24,14 +24,12 @@ jsx;
 
 const injectConfig = {
   inject: {
-    props: {
-      validPlugins: [
-        ParagraphPlugin.key,
-        HEADING_KEYS.h1,
-        HEADING_KEYS.h2,
-        HEADING_KEYS.h3,
-      ],
-    },
+    targetPlugins: [
+      ParagraphPlugin.key,
+      HEADING_KEYS.h1,
+      HEADING_KEYS.h2,
+      HEADING_KEYS.h3,
+    ],
   },
 };
 

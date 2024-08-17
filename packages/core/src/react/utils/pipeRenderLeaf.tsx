@@ -2,8 +2,8 @@ import React from 'react';
 
 import type { TEditableProps } from '@udecode/slate-react';
 
-import type { PlateEditor } from '../../lib';
-import type { PlateRenderLeafProps } from '../../lib/plugin/types/PlateRenderLeafProps';
+import type { PlateEditor } from '../plugin/PlateEditor';
+import type { PlateRenderLeafProps } from '../plugin/PlateRenderLeafProps';
 
 import { pipeInjectProps } from '../../lib/utils/pipeInjectProps';
 import { DefaultLeaf } from '../components';

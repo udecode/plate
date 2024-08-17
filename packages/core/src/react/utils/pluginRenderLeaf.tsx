@@ -1,11 +1,11 @@
 import React from 'react';
 
-import type { PlateEditor } from '../../lib';
-import type { AnyEditorPlugin } from '../../lib/plugin/types/PlatePlugin';
-import type { PlateRenderLeafProps } from '../../lib/plugin/types/PlateRenderLeafProps';
+import type { PlateEditor } from '../plugin/PlateEditor';
+import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
+import type { PlateRenderLeafProps } from '../plugin/PlateRenderLeafProps';
 
-import { getRenderNodeProps } from '../../lib/utils/getRenderNodeProps';
 import { DefaultLeaf } from '../components/DefaultLeaf';
+import { getRenderNodeProps } from './getRenderNodeProps';
 
 export type RenderLeaf = (props: PlateRenderLeafProps) => React.ReactElement;
 
@@ -15,7 +15,7 @@ export type RenderLeaf = (props: PlateRenderLeafProps) => React.ReactElement;
  */
 export const pluginRenderLeaf = (
   editor: PlateEditor,
-  plugin: AnyEditorPlugin
+  plugin: AnyEditorPlatePlugin
 ): RenderLeaf =>
   function render(nodeProps) {
     const { component } = plugin;

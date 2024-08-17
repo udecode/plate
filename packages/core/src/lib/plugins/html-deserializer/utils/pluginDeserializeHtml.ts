@@ -1,11 +1,11 @@
 import { type AnyObject, isDefined } from '@udecode/utils';
 import castArray from 'lodash/castArray.js';
 
-import type { PlateEditor } from '../../../editor';
+import type { SlateEditor } from '../../../editor';
 import type {
   AnyEditorPlugin,
   DeserializeHtml,
-} from '../../../plugin/types/PlatePlugin';
+} from '../../../plugin/SlatePlugin';
 import type { Nullable } from '../../../types';
 
 import { getPluginContext } from '../../../plugin';
@@ -13,7 +13,7 @@ import { getInjectedPlugins } from '../../../utils/getInjectedPlugins';
 
 /** Get a deserializer by type, node names, class names and styles. */
 export const pluginDeserializeHtml = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   plugin: AnyEditorPlugin,
   {
     deserializeLeaf,

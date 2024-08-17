@@ -4,7 +4,7 @@ import {
   someNode,
 } from '@udecode/slate';
 
-import type { PlateEditor } from '../editor';
+import type { SlateEditor } from '../editor';
 
 import { ParagraphPlugin } from '../plugins';
 
@@ -26,7 +26,7 @@ export interface ToggleNodeTypeOptions {
  * Toggle the type of the selected node. Don't do anything if activeType ===
  * inactiveType.
  */
-export const toggleNodeType = <E extends PlateEditor = PlateEditor>(
+export const toggleNodeType = <E extends SlateEditor = SlateEditor>(
   editor: E,
   options: ToggleNodeTypeOptions,
   editorNodesOptions?: Omit<GetNodeEntriesOptions<E>, 'match'>

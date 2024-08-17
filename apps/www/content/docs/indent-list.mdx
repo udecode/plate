@@ -39,18 +39,10 @@ const plugins = [
   createHeadingPlugin(),
   createParagraphPlugin(),
   createIndentPlugin({
-    inject: {
-      props: {
-        validPlugins: [ParagraphPlugin.key, HEADING_KEYS.h1],
-      },
-    },
+    targetPlugins: [ParagraphPlugin.key, HEADING_KEYS.h1],
   }),
   createIndentListPlugin({
-    inject: {
-      props: {
-        validPlugins: [ParagraphPlugin.key, HEADING_KEYS.h1],
-      },
-    },
+    targetPlugins: [ParagraphPlugin.key, HEADING_KEYS.h1],
   }),
 ];
 ```

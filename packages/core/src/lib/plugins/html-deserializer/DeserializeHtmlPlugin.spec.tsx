@@ -1,15 +1,15 @@
 /** @jsx jsx */
 
 import { BoldPlugin } from '@udecode/plate-basic-marks';
-import { ParagraphPlugin } from '@udecode/plate-common';
 import { HeadingPlugin } from '@udecode/plate-heading';
 import { LinkPlugin } from '@udecode/plate-link';
 import { MediaEmbedPlugin } from '@udecode/plate-media';
 import { jsx } from '@udecode/plate-test-utils';
 
-import type { PlateEditor } from '../../editor';
+import type { SlateEditor } from '../../editor';
 
 import { createPlateEditor } from '../../../react';
+import { ParagraphPlugin } from '../paragraph';
 
 jsx;
 
@@ -41,7 +41,7 @@ describe('when inserting html', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const expected = (
         <editor>
@@ -73,7 +73,7 @@ describe('when inserting html', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const expected = (
         <editor>
@@ -104,7 +104,7 @@ describe('when inserting html', () => {
           <cursor />
         </hp>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const expected = (
       <editor>
@@ -142,7 +142,7 @@ describe('when inserting empty html', () => {
         <cursor />
       </hp>
     </editor>
-  ) as any as PlateEditor;
+  ) as any as SlateEditor;
 
   // noinspection CheckTagEmptyBody
   const dataTransfer = {
@@ -180,7 +180,7 @@ describe('when inserting an iframe without src', () => {
         <cursor />
       </hp>
     </editor>
-  ) as any as PlateEditor;
+  ) as any as SlateEditor;
 
   // noinspection CheckTagEmptyBody
   const data = {
@@ -220,7 +220,7 @@ describe('when inserting link with href', () => {
         <cursor />
       </hp>
     </editor>
-  ) as any as PlateEditor;
+  ) as any as SlateEditor;
 
   // noinspection CheckTagEmptyBody
   const data = {
@@ -263,7 +263,7 @@ describe('when inserting plain text', () => {
         <cursor />
       </hp>
     </editor>
-  ) as any as PlateEditor;
+  ) as any as SlateEditor;
 
   const data = {
     getData: (format: string) => (format === 'text/html' ? '' : 'inserted'),

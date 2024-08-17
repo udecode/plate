@@ -1,4 +1,4 @@
-import type { PlateEditor } from '../../../editor';
+import type { SlateEditor } from '../../../editor';
 import type { DeserializeHtmlNodeReturnType } from '../types';
 
 import { htmlBodyToFragment } from './htmlBodyToFragment';
@@ -10,7 +10,7 @@ import { isHtmlElement } from './isHtmlElement';
 
 /** Deserialize HTML element or child node. */
 export const deserializeHtmlNode =
-  (editor: PlateEditor) =>
+  (editor: SlateEditor) =>
   (node: ChildNode | HTMLElement): DeserializeHtmlNodeReturnType => {
     const textNode = htmlTextNodeToString(node);
 

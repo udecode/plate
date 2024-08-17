@@ -32,17 +32,15 @@ const plugins = [
   // ...otherPlugins,
   createAlignPlugin({
     inject: {
-      props: {
-        validPlugins: [
-          ParagraphPlugin.key,
-          HEADING_KEYS.h1,
-          HEADING_KEYS.h2,
-          HEADING_KEYS.h3,
-          HEADING_KEYS.h4,
-          HEADING_KEYS.h5,
-          HEADING_KEYS.h6,
-        ],
-      },
+      targetPlugins: [
+        ParagraphPlugin.key,
+        HEADING_KEYS.h1,
+        HEADING_KEYS.h2,
+        HEADING_KEYS.h3,
+        HEADING_KEYS.h4,
+        HEADING_KEYS.h5,
+        HEADING_KEYS.h6,
+      ],
     },
   }),
 ];

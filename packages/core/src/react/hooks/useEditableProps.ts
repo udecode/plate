@@ -8,10 +8,10 @@ import { useDeepCompareMemo } from 'use-deep-compare';
 
 import type { PlateProps } from '../components';
 
-import { DOM_HANDLERS } from '../../lib/types/misc/dom-attributes';
-import { pipeDecorate } from '../../lib/utils/pipeDecorate';
-import { pipeHandler } from '../../lib/utils/pipeHandler';
 import { useEditorRef, usePlateSelectors } from '../stores';
+import { DOM_HANDLERS } from '../utils/dom-attributes';
+import { pipeDecorate } from '../utils/pipeDecorate';
+import { pipeHandler } from '../utils/pipeHandler';
 import { pipeRenderElement } from '../utils/pipeRenderElement';
 import { pipeRenderLeaf } from '../utils/pipeRenderLeaf';
 

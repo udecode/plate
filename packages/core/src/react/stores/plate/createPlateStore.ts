@@ -4,8 +4,8 @@ import type { JotaiStore } from 'jotai-x';
 
 import { atom, createStore } from 'jotai';
 
-import type { PlateEditor } from '../../../lib';
 import type { PlateStoreState } from '../../../lib/types/PlateStore';
+import type { PlateEditor } from '../../plugin/PlateEditor';
 
 import { createAtomStore } from '../../libs';
 import { createPlateFallbackEditor } from '../../utils';

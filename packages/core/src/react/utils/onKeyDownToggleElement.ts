@@ -1,9 +1,10 @@
 import { isHotkey } from 'is-hotkey';
 import castArray from 'lodash/castArray.js';
 
+import type { KeyboardHandler } from '../plugin';
+
 import {
   type HotkeyPluginOptions,
-  type KeyboardHandler,
   ParagraphPlugin,
   type PluginConfig,
   toggleNodeType,

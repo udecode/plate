@@ -1,6 +1,6 @@
 import { createTEditor } from '@udecode/slate';
 
-import type { AnyPluginConfig } from '../plugin/types/PlatePlugin';
+import type { AnyPluginConfig } from '../plugin/BasePlugin';
 
 import { createPlugin } from '../plugin/createPlugin';
 import { resolvePlugin } from './resolvePlugin';

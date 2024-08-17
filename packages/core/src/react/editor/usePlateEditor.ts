@@ -2,10 +2,10 @@ import React from 'react';
 
 import type { Value } from '@udecode/slate';
 
-import type { CorePlugin, CreateSlateEditorOptions } from '../../lib';
-import type { AnyPlatePlugin } from '../../lib/plugin/types/PlatePlugin';
+import type { CorePlugin } from '../../lib';
+import type { AnySlatePlugin } from '../../lib/plugin/SlatePlugin';
 
-import { createPlateEditor } from '../editor';
+import { type CreatePlateEditorOptions, createPlateEditor } from '../editor';
 
 /**
  * A memoized version of createPlateEditor for use in React components.
@@ -20,9 +20,9 @@ import { createPlateEditor } from '../editor';
  */
 export function usePlateEditor<
   V extends Value = Value,
-  P extends AnyPlatePlugin = CorePlugin,
+  P extends AnySlatePlugin = CorePlugin,
 >(
-  options: CreateSlateEditorOptions<V, P> = {},
+  options: CreatePlateEditorOptions<V, P> = {},
   deps: React.DependencyList = []
 ) {
   return React.useMemo(

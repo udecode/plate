@@ -1,6 +1,6 @@
 import { focusEditorEdge, isEditorFocused } from '@udecode/slate-react';
 
-import type { PlateEditor } from '../../../lib';
+import type { PlateEditor } from '../../plugin/PlateEditor';
 
 import { createPlateEditor } from '../../../react';
 

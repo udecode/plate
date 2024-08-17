@@ -4,7 +4,9 @@
 
 export * from './DOMHandlers';
 export * from './KeyboardHandler';
-export * from './PlatePlugin';
 export * from './PlateRenderElementProps';
 export * from './PlateRenderLeafProps';
 export * from './PlateRenderNodeProps';
+export * from './PlateEditor';
+export * from './PlatePlugin';
+export * from './getPluginContext';

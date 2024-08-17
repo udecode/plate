@@ -3,8 +3,8 @@ import React from 'react';
 import type { TSelection, Value } from '@udecode/slate';
 import type { SlateProps } from '@udecode/slate-react';
 
-import { pipeOnChange } from '../../lib/utils/pipeOnChange';
 import { useEditorRef, usePlateSelectors } from '../stores';
+import { pipeOnChange } from '../utils/pipeOnChange';
 
 /** Get Slate props stored in a global store. */
 export const useSlateProps = ({

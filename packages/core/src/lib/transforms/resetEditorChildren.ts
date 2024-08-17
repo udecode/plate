@@ -5,10 +5,10 @@ import {
   replaceNodeChildren,
 } from '@udecode/slate-utils';
 
-import type { PlateEditor } from '../editor';
+import type { SlateEditor } from '../editor';
 
 /** Replace editor children by default block. */
-export const resetEditorChildren = <E extends PlateEditor = PlateEditor>(
+export const resetEditorChildren = <E extends SlateEditor = SlateEditor>(
   editor: E,
   options?: Omit<ReplaceNodeChildrenOptions<ElementOf<E>, E>, 'at' | 'nodes'>
 ) => {

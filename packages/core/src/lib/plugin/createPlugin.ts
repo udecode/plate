@@ -1,15 +1,14 @@
 import cloneDeep from 'lodash/cloneDeep.js';
 import merge from 'lodash/merge.js';
 
-import type { PlateEditor } from '../editor';
+import type { PlatePluginComponent } from '../../react';
+import type { SlateEditor } from '../editor';
+import type { AnyPluginConfig, PluginConfig } from './BasePlugin';
 import type {
-  AnyPluginConfig,
-  PlatePlugin,
-  PlatePluginComponent,
-  PlatePluginMethods,
-  PlatePlugins,
-  PluginConfig,
-} from './types/PlatePlugin';
+  SlatePlugin,
+  SlatePluginMethods,
+  SlatePlugins,
+} from './SlatePlugin';
 
 import { isFunction } from '../utils/misc/isFunction';
 
@@ -52,9 +51,9 @@ import { isFunction } from '../utils/misc/isFunction';
  * @template A - The type of the plugin utilities.
  * @template T - The type of the plugin transforms.
  * @template S - The type of the plugin storage.
- * @param {Partial<PlatePlugin<K, O, A, T>>} config - The configuration object
+ * @param {Partial<SlatePlugin<K, O, A, T>>} config - The configuration object
  *   for the plugin.
- * @returns {PlatePlugin<K, O, A, T>} A new Plate plugin instance with the
+ * @returns {SlatePlugin<K, O, A, T>} A new Plate plugin instance with the
  *   following properties and methods:
  *
  *   - All properties from the input config, merged with default values.
@@ -67,22 +66,22 @@ import { isFunction } from '../utils/misc/isFunction';
 export function createPlugin<K extends string = any, O = {}, A = {}, T = {}>(
   config:
     | ((
-        editor: PlateEditor
+        editor: SlateEditor
       ) => Omit<
-        Partial<PlatePlugin<PluginConfig<K, O, A, T>>>,
-        keyof PlatePluginMethods
+        Partial<SlatePlugin<PluginConfig<K, O, A, T>>>,
+        keyof SlatePluginMethods
       >)
     | Omit<
-        Partial<PlatePlugin<PluginConfig<K, O, A, T>>>,
-        keyof PlatePluginMethods
+        Partial<SlatePlugin<PluginConfig<K, O, A, T>>>,
+        keyof SlatePluginMethods
       > = {}
-): PlatePlugin<PluginConfig<K, O, A, T>> {
-  let baseConfig: Partial<PlatePlugin<PluginConfig<K, O, A, T>>>;
+): SlatePlugin<PluginConfig<K, O, A, T>> {
+  let baseConfig: Partial<SlatePlugin<PluginConfig<K, O, A, T>>>;
   let initialExtension:
     | ((
-        editor: PlateEditor,
-        plugin: PlatePlugin<PluginConfig<K, O, A, T>>
-      ) => Partial<PlatePlugin<PluginConfig<K, O, A, T>>>)
+        editor: SlateEditor,
+        plugin: SlatePlugin<PluginConfig<K, O, A, T>>
+      ) => Partial<SlatePlugin<PluginConfig<K, O, A, T>>>)
     | undefined;
 
   if (isFunction(config)) {
@@ -114,9 +113,8 @@ export function createPlugin<K extends string = any, O = {}, A = {}, T = {}>(
       transforms: {},
       type: key,
     },
-    // config
     cloneDeep(config)
-  ) as unknown as PlatePlugin<PluginConfig<K, O, A, T>>;
+  ) as unknown as SlatePlugin<PluginConfig<K, O, A, T>>;
 
   plugin.configure = (config) => {
     const newPlugin = { ...plugin };
@@ -130,8 +128,8 @@ export function createPlugin<K extends string = any, O = {}, A = {}, T = {}>(
     const newPlugin = { ...plugin };
 
     const configureNestedPlugin = (
-      plugins: PlatePlugins
-    ): { found: boolean; plugins: PlatePlugins } => {
+      plugins: SlatePlugins
+    ): { found: boolean; plugins: SlatePlugins } => {
       let found = false;
 
       const updatedPlugins = plugins.map((nestedPlugin) => {
@@ -205,8 +203,8 @@ export function createPlugin<K extends string = any, O = {}, A = {}, T = {}>(
     const newPlugin = { ...plugin };
 
     const extendNestedPlugin = (
-      plugins: PlatePlugins
-    ): { found: boolean; plugins: PlatePlugins } => {
+      plugins: SlatePlugins
+    ): { found: boolean; plugins: SlatePlugins } => {
       let found = false;
       const updatedPlugins = plugins.map((nestedPlugin) => {
         if (nestedPlugin.key === p.key) {
@@ -261,10 +259,12 @@ export function createPlugin<K extends string = any, O = {}, A = {}, T = {}>(
     return createPlugin(newPlugin);
   };
 
-  plugin.withComponent = (component: PlatePluginComponent) => {
+  // TODO react
+  (plugin as any).withComponent = (component: PlatePluginComponent) => {
     return plugin.extend({
       component,
-    }) as any;
+      // TODO react
+    } as any) as any;
   };
 
   return plugin;
@@ -281,9 +281,9 @@ export function createPlugin<K extends string = any, O = {}, A = {}, T = {}>(
 export function createTPlugin<C extends AnyPluginConfig = PluginConfig>(
   config:
     | ((
-        editor: PlateEditor
-      ) => Omit<Partial<PlatePlugin<C>>, keyof PlatePluginMethods>)
-    | Omit<Partial<PlatePlugin<C>>, keyof PlatePluginMethods> = {}
-): PlatePlugin<C> {
+        editor: SlateEditor
+      ) => Omit<Partial<SlatePlugin<C>>, keyof SlatePluginMethods>)
+    | Omit<Partial<SlatePlugin<C>>, keyof SlatePluginMethods> = {}
+): SlatePlugin<C> {
   return createPlugin(config as any) as any;
 }

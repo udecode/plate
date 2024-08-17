@@ -8,6 +8,8 @@ import {
 
 import { ParagraphPlugin, ReactPlugin } from '../../react';
 import { withPlate } from '../../react/editor/withPlate';
+import { createReactPlugin } from '../../react/plugin/createReactPlugin';
+import { getPlugin } from '../../react/plugin/getPlugin';
 import {
   DOMPlugin,
   DebugPlugin,
@@ -19,8 +21,8 @@ import {
   InsertDataPlugin,
   LengthPlugin,
   PlateApiPlugin,
-  type PlatePlugin,
   SlateNextPlugin,
+  type SlatePlugin,
   createPlugin,
   withSlate,
 } from '../index';
@@ -73,7 +75,7 @@ describe('withPlate', () => {
 
   describe('when plugins is an empty array', () => {
     it('should only have core plugins', () => {
-      const editor = withPlate<Value, PlatePlugin>(createTEditor(), {
+      const editor = withPlate<Value, SlatePlugin>(createTEditor(), {
         id: '1',
         plugins: [],
       });
@@ -142,14 +144,14 @@ describe('withPlate', () => {
         plugins: [HeadingPlugin],
       });
 
-      const h1Plugin = editor.getPlugin({ key: 'h1' });
+      const h1Plugin = getPlugin(editor, { key: 'h1' });
       expect(h1Plugin.component).toBe(customComponent);
     });
 
     it('should respect priority when overriding existing components', () => {
       const originalComponent = () => null;
       const overrideComponent = () => null;
-      const HeadingPlugin = createPlugin({
+      const HeadingPlugin = createReactPlugin({
         component: originalComponent,
         key: 'h1',
         priority: 100,
@@ -161,7 +163,7 @@ describe('withPlate', () => {
         plugins: [HeadingPlugin],
       });
 
-      let h1Plugin = editor.getPlugin({ key: 'h1' });
+      let h1Plugin = getPlugin(editor, HeadingPlugin);
       expect(h1Plugin.component).toBe(originalComponent);
 
       // Test with high priority override
@@ -175,7 +177,7 @@ describe('withPlate', () => {
         plugins: [HeadingPlugin],
       });
 
-      h1Plugin = editor.getPlugin({ key: 'h1' });
+      h1Plugin = getPlugin<typeof h1Plugin>(editor, { key: 'h1' });
       expect(h1Plugin.component).toBe(overrideComponent);
     });
   });

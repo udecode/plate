@@ -1,8 +1,6 @@
 import React from 'react';
 
-import type { CreateSlateEditorOptions } from '../../lib';
-
-import { createPlateEditor } from '../editor';
+import { type CreatePlateEditorOptions, createPlateEditor } from '../editor';
 import { Plate, type PlateProps } from './Plate';
 import { PlateContent, type PlateContentProps } from './PlateContent';
 
@@ -14,7 +12,7 @@ export function PlateTest({
 }: {
   editableProps?: PlateContentProps;
   variant?: 'comment' | 'wordProcessor';
-} & CreateSlateEditorOptions &
+} & CreatePlateEditorOptions &
   PlateProps) {
   const { editor: _editor, id, plugins } = props;
 

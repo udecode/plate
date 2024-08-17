@@ -8,17 +8,17 @@ export const AlignPlugin = createPlugin({
       nodeKey: 'align',
       styleKey: 'textAlign',
       validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
-      validPluginToInjectPlugin: ({ editor, plugin }) => ({
-        deserializeHtml: {
-          getNode: ({ element, node }) => {
-            if (element.style.textAlign) {
-              node[editor.getType(plugin)] = element.style.textAlign;
-            }
-          },
-        },
-      }),
-      validPlugins: [ParagraphPlugin.key],
     },
+    targetPluginToInject: ({ editor, plugin }) => ({
+      deserializeHtml: {
+        getNode: ({ element, node }) => {
+          if (element.style.textAlign) {
+            node[editor.getType(plugin)] = element.style.textAlign;
+          }
+        },
+      },
+    }),
+    targetPlugins: [ParagraphPlugin.key],
   },
   key: 'align',
 });

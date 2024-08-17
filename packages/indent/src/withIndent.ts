@@ -16,7 +16,7 @@ export const withIndent: WithOverride<IndentConfig> = ({
   editor,
   options: { indentMax },
   plugin: {
-    inject: { props: { validPlugins } = {} },
+    inject: { targetPlugins },
   },
 }) => {
   const { normalizeNode } = editor;
@@ -26,7 +26,7 @@ export const withIndent: WithOverride<IndentConfig> = ({
     const { type } = element;
 
     if (type) {
-      if (validPlugins!.includes(getKeyByType(editor, type))) {
+      if (targetPlugins!.includes(getKeyByType(editor, type))) {
         if (indentMax && element.indent && element.indent > indentMax) {
           setElements(editor, { indent: indentMax }, { at: path });
 

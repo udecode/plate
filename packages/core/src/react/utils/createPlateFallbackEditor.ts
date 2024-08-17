@@ -1,10 +1,11 @@
-import type { CreateSlateEditorOptions, PlateEditor } from '../../lib';
-
-import { createPlateEditor } from '../editor/withPlate';
+import {
+  type CreatePlateEditorOptions,
+  createPlateEditor,
+} from '../editor/withPlate';
 
 export const createPlateFallbackEditor = (
-  options: CreateSlateEditorOptions = {}
-): PlateEditor => {
+  options: CreatePlateEditorOptions = {}
+) => {
   const editor = createPlateEditor(options);
 
   editor.isFallback = true;

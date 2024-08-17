@@ -1,6 +1,8 @@
-import type { PlateEditor } from '../editor';
+import type { SlateEditor } from '../editor';
 
 import { createPlateEditor } from '../../react';
+import { createReactPlugin } from '../../react/plugin/createReactPlugin';
+import { getPlugin } from '../../react/plugin/getPlugin';
 import { createPlugin } from '../plugin';
 import { DebugPlugin } from '../plugins';
 import { resolvePluginTest } from './resolveCreatePluginTest';
@@ -12,7 +14,7 @@ import {
 } from './resolvePlugins';
 
 describe('resolvePlugins', () => {
-  let editor: PlateEditor;
+  let editor: SlateEditor;
 
   beforeEach(() => {
     editor = createPlateEditor();
@@ -287,7 +289,7 @@ describe('applyPluginOverrides', () => {
   });
 
   it('should handle nested overrides', () => {
-    const editor = createPlateEditor() as PlateEditor;
+    const editor = createPlateEditor() as SlateEditor;
 
     resolvePlugins(editor, [
       createPlugin({
@@ -342,7 +344,7 @@ describe('applyPluginOverrides', () => {
 
     const editor = createPlateEditor({
       plugins: [
-        createPlugin({
+        createReactPlugin({
           key: 'a',
           override: {
             components: {
@@ -354,7 +356,7 @@ describe('applyPluginOverrides', () => {
           },
           priority: 2,
         }),
-        createPlugin({
+        createReactPlugin({
           component: OriginalComponent,
           key: 'b',
           priority: 3,
@@ -363,12 +365,12 @@ describe('applyPluginOverrides', () => {
           key: 'c',
           priority: 1,
         }),
-        createPlugin({
+        createReactPlugin({
           component: OriginalComponent,
           key: 'd',
           priority: 1,
         }),
-        createPlugin({
+        createReactPlugin({
           key: 'e',
           override: {
             components: {
@@ -378,7 +380,7 @@ describe('applyPluginOverrides', () => {
           },
           priority: 4,
         }),
-        createPlugin({
+        createReactPlugin({
           component: PreservedOriginalComponent,
           key: 'f',
           priority: 5,
@@ -389,20 +391,26 @@ describe('applyPluginOverrides', () => {
     applyPluginOverrides(editor);
 
     // Higher priority override
-    expect(editor.plugins.b.component).toBe(HighPriorityComponent);
+    expect(getPlugin(editor, { key: 'b' }).component).toBe(
+      HighPriorityComponent
+    );
 
     // No initial component, so it gets set
-    expect(editor.plugins.c.component).toBe(OverrideComponent);
+    expect(getPlugin(editor, { key: 'c' }).component).toBe(OverrideComponent);
 
     // Lower priority component gets overridden
-    expect(editor.plugins.d.component).toBe(HighPriorityComponent);
+    expect(getPlugin(editor, { key: 'd' }).component).toBe(
+      HighPriorityComponent
+    );
 
     // Highest priority original component is preserved
-    expect(editor.plugins.f.component).toBe(PreservedOriginalComponent);
+    expect(getPlugin(editor, { key: 'f' }).component).toBe(
+      PreservedOriginalComponent
+    );
   });
 
-  describe('validPlugins', () => {
-    it('should correctly apply validPluginToInjectPlugin and merge with existing plugins', () => {
+  describe('targetPlugins', () => {
+    it('should correctly apply targetPluginToInject and merge with existing plugins', () => {
       const plugin = createPlugin({
         inject: {
           plugins: {
@@ -417,14 +425,12 @@ describe('applyPluginOverrides', () => {
               },
             },
           },
-          props: {
-            validPluginToInjectPlugin: ({ validPlugin }) => ({
-              deserializeHtml: {
-                getNode: () => {},
-              },
-            }),
-            validPlugins: ['plugin1', 'plugin2'],
-          },
+          targetPluginToInject: ({ targetPlugin }) => ({
+            deserializeHtml: {
+              getNode: () => {},
+            },
+          }),
+          targetPlugins: ['plugin1', 'plugin2'],
         },
         key: 'testPlugin',
       });

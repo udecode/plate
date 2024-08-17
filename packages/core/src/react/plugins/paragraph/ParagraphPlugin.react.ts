@@ -1,9 +1,11 @@
-import type { HotkeyPluginOptions } from '../../../lib';
-
 import { ParagraphPlugin as BaseParagraphPlugin } from '../../../lib/plugins/paragraph/ParagraphPlugin';
+import { createReactPlugin } from '../../plugin/createReactPlugin';
 import { onKeyDownToggleElement } from '../../utils/onKeyDownToggleElement';
 
-export const ParagraphPlugin = BaseParagraphPlugin.extend<HotkeyPluginOptions>({
+// TODO merge types
+// .extend<HotkeyPluginOptions>({
+export const ParagraphPlugin = createReactPlugin({
+  ...BaseParagraphPlugin,
   handlers: {
     onKeyDown: onKeyDownToggleElement,
   },

@@ -1,22 +1,21 @@
-import type { PlateEditor } from '../editor';
+import type { SlateEditor } from '../editor';
+import type { AnyPluginConfig, PluginConfig } from './BasePlugin';
 import type {
-  AnyPluginConfig,
   EditorPlugin,
-  EditorPluginContext,
-  PlatePlugin,
-  PluginConfig,
-} from './types';
+  SlatePlugin,
+  SlatePluginContext,
+} from './SlatePlugin';
 
 import { resolvePlugin } from '../utils';
 
 export function getPluginContext<C extends AnyPluginConfig = PluginConfig>(
-  editor: PlateEditor,
+  editor: SlateEditor,
   pluginOrKey: EditorPlugin<C> | string
-): EditorPluginContext<C> {
+): SlatePluginContext<C> {
   const plugin =
     typeof pluginOrKey === 'string'
       ? editor.getPlugin<C>({ key: pluginOrKey } as any)
-      : (pluginOrKey as any as PlatePlugin<C>).__resolved
+      : (pluginOrKey as any as SlatePlugin<C>).__resolved
         ? pluginOrKey
         : resolvePlugin(editor, pluginOrKey as any);
 

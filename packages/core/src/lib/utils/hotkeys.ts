@@ -1,7 +1,5 @@
-import type React from 'react';
-
 import { IS_APPLE } from '@udecode/utils';
-import { isKeyHotkey } from 'is-hotkey';
+import { type KeyboardEventLike, isKeyHotkey } from 'is-hotkey';
 
 export { isHotkey } from 'is-hotkey';
 
@@ -58,7 +56,7 @@ export const createHotkey = (key: string) => {
   const isApple = apple && isKeyHotkey(apple);
   const isWindows = windows && isKeyHotkey(windows);
 
-  return (event: React.KeyboardEvent) => {
+  return (event: KeyboardEventLike) => {
     if (isGeneric?.(event)) return true;
     if (IS_APPLE && isApple?.(event)) return true;
     if (!IS_APPLE && isWindows?.(event)) return true;

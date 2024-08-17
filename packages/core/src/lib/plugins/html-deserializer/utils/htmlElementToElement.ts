@@ -2,14 +2,14 @@ import type { TDescendant } from '@udecode/slate';
 
 import { jsx } from 'slate-hyperscript';
 
-import type { PlateEditor } from '../../../editor';
+import type { SlateEditor } from '../../../editor';
 
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
 import { pipeDeserializeHtmlElement } from './pipeDeserializeHtmlElement';
 
 /** Deserialize HTML to Element. */
 export const htmlElementToElement = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   element: HTMLElement
 ) => {
   const deserialized = pipeDeserializeHtmlElement(editor, element);

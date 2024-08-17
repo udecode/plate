@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import type { PlateEditor } from '../../../lib';
+import type { PlateEditor } from '../../plugin/PlateEditor';
 
 import {
   BLUR_EDITOR_EVENT,

@@ -1,14 +1,12 @@
-import type { PlateEditor } from '../editor';
-import type {
-  AnyEditorPlugin,
-  PlatePluginInsertDataOptions,
-} from '../plugin/types/PlatePlugin';
+import type { SlateEditor } from '../editor';
+import type { PlatePluginInsertDataOptions } from '../plugin/BasePlugin';
+import type { AnyEditorPlugin } from '../plugin/SlatePlugin';
 
 import { getPluginContext } from '../plugin';
 
 /** Pipe editor.insertData.transformData */
 export const pipeTransformData = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   plugins: Partial<AnyEditorPlugin>[],
   { data, dataTransfer }: PlatePluginInsertDataOptions
 ) => {

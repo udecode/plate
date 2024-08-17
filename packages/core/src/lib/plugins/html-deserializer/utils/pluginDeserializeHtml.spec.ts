@@ -1,8 +1,8 @@
 import { BoldPlugin } from '@udecode/plate-basic-marks';
-import { ParagraphPlugin } from '@udecode/plate-common';
 
 import { createPlateEditor } from '../../../../react/editor/withPlate';
 import { createPlugin } from '../../../plugin';
+import { ParagraphPlugin } from '../../paragraph';
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
 
 const node = () => ({ type: ParagraphPlugin.key });

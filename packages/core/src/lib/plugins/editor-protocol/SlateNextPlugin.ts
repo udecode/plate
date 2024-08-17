@@ -14,9 +14,9 @@ import {
   removeEditorMark,
 } from '@udecode/slate';
 
-import type { WithOverride } from '../../plugin/types/PlatePlugin';
+import type { WithOverride } from '../../plugin/SlatePlugin';
 
-import { createPlugin } from '../../plugin/createPlugin';
+import { createPlugin } from '../../plugin';
 import { resetEditor } from '../../transforms';
 import { ParagraphPlugin } from '../paragraph';
 
@@ -108,16 +108,17 @@ export const withSlateNext: WithOverride = ({ editor }) => {
   return editor;
 };
 
+// TODO react
 /** Opinionated extension of slate default behavior. */
 export const SlateNextPlugin = createPlugin({
-  handlers: {
-    onKeyDown: ({ editor, event }: any) => {
-      // React 16.x needs this event to be persistented due to it's event pooling implementation.
-      // https://reactjs.org/docs/legacy-event-pooling.html
-      event.persist();
-      editor.currentKeyboardEvent = event;
-    },
-  },
+  // handlers: {
+  //   onKeyDown: ({ editor, event }: any) => {
+  //     // React 16.x needs this event to be persistented due to it's event pooling implementation.
+  //     // https://reactjs.org/docs/legacy-event-pooling.html
+  //     event.persist();
+  //     editor.currentKeyboardEvent = event;
+  //   },
+  // },
   key: 'slateNext',
   withOverrides: withSlateNext,
 })

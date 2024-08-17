@@ -1,7 +1,8 @@
 import { toggleMark } from '@udecode/slate-utils';
 import { isHotkey } from 'is-hotkey';
 
-import type { KeyboardHandler, ToggleMarkConfig } from '../../lib';
+import type { ToggleMarkConfig } from '../../lib';
+import type { KeyboardHandler } from '../plugin/KeyboardHandler';
 
 export const onKeyDownToggleMark: KeyboardHandler<ToggleMarkConfig> = ({
   editor,

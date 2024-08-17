@@ -24,15 +24,18 @@ export const setAlign = <E extends PlateEditor>(
     value: Alignment;
   }
 ) => {
-  const { defaultNodeValue, nodeKey, validPlugins } = editor.getInjectProps({
+  const {
+    inject: { targetPlugins },
+  } = editor.getPlugin({ key });
+  const { defaultNodeValue, nodeKey } = editor.getInjectProps({
     key,
   });
 
   const match: TNodeMatch = (n) => {
     return (
       isBlock(editor, n) &&
-      !!validPlugins &&
-      validPlugins.includes(getKeyByType(editor, n.type as string))
+      !!targetPlugins &&
+      targetPlugins.includes(getKeyByType(editor, n.type as string))
     );
   };
 

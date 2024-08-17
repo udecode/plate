@@ -516,7 +516,7 @@ export const docsConfig: DocsConfig = {
                 'transformNodeValue',
                 'transformStyle',
                 'validNodeValues',
-                'validPlugins',
+                'targetPlugins',
                 'isInline',
                 'isElement',
                 'isLeaf',

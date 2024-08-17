@@ -1,9 +1,9 @@
-import type { PlateEditor } from '../../editor';
+import type { SlateEditor } from '../../editor';
 
 import { createPlateEditor } from '../../../react';
 
 describe('LengthPlugin', () => {
-  let editor: PlateEditor;
+  let editor: SlateEditor;
 
   const createEditorWithLength = (maxLength: number) => {
     return createPlateEditor({

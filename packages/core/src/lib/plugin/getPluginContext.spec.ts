@@ -1,13 +1,13 @@
-import type { PlateEditor } from '../editor';
-import type { AnyPlatePlugin } from './types';
+import type { SlateEditor } from '../editor';
+import type { AnySlatePlugin } from './SlatePlugin';
 
 import { createPlateEditor } from '../../react';
 import { createPlugin } from './createPlugin';
 import { getPluginContext } from './getPluginContext';
 
 describe('getPluginContext', () => {
-  let editor: PlateEditor;
-  let testPlugin: AnyPlatePlugin;
+  let editor: SlateEditor;
+  let testPlugin: AnySlatePlugin;
 
   beforeEach(() => {
     testPlugin = createPlugin({

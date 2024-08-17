@@ -1,7 +1,7 @@
 import { type TDescendant, isElement, isText } from '@udecode/slate';
 import { jsx } from 'slate-hyperscript';
 
-import type { PlateEditor } from '../../../editor';
+import type { SlateEditor } from '../../../editor';
 
 import { mergeDeepToNodes } from '../../../utils';
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
@@ -12,7 +12,7 @@ import { pipeDeserializeHtmlLeaf } from './pipeDeserializeHtmlLeaf';
  * leaf deserializers of each plugin.
  */
 export const htmlElementToLeaf = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   element: HTMLElement
 ) => {
   const node = pipeDeserializeHtmlLeaf(editor, element);

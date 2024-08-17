@@ -4,7 +4,7 @@ import type { TNode } from '@udecode/slate';
 
 import { jsx } from '@udecode/plate-test-utils';
 
-import type { PlateEditor } from '../../../editor';
+import type { SlateEditor } from '../../../editor';
 
 import { mergeDeepToNodes } from '../../../utils';
 
@@ -14,7 +14,7 @@ const editor = (
   <editor>
     <hp>test</hp>
   </editor>
-) as any as PlateEditor;
+) as any as SlateEditor;
 
 const props = { a: 1 };
 

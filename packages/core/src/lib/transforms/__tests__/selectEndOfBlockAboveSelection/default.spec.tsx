@@ -3,7 +3,7 @@
 import { jsx } from '@udecode/plate-test-utils';
 import { selectEndOfBlockAboveSelection } from '@udecode/slate-utils';
 
-import type { PlateEditor } from '../../../editor';
+import type { SlateEditor } from '../../../editor';
 
 jsx;
 
@@ -15,7 +15,7 @@ const input = (
       st
     </hp>
   </editor>
-) as any as PlateEditor;
+) as any as SlateEditor;
 
 it('should be', () => {
   selectEndOfBlockAboveSelection(input);

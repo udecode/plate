@@ -2,10 +2,10 @@ import type React from 'react';
 
 import type { TEditableProps } from '@udecode/slate-react';
 
-import type { PlateEditor } from '../editor/PlateEditor';
-import type { DOMHandlers } from '../plugin/types/DOMHandlers';
+import type { DOMHandlers } from '../plugin/DOMHandlers';
+import type { PlateEditor } from '../plugin/PlateEditor';
 
-import { getPluginContext } from '../plugin';
+import { getPluginContext } from '../plugin/getPluginContext';
 
 export const convertDomEventToSyntheticEvent = (
   domEvent: Event
@@ -98,7 +98,7 @@ export const pipeHandler = <K extends keyof DOMHandlers>(
       const pluginHandler = plugin.handlers[handlerKey]!;
 
       const shouldTreatEventAsHandled = pluginHandler({
-        ...getPluginContext(editor, plugin),
+        ...(getPluginContext(editor, plugin) as any),
         event: handledEvent,
       });
 

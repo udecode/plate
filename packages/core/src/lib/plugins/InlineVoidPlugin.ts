@@ -1,4 +1,4 @@
-import type { WithOverride } from '../plugin/types/PlatePlugin';
+import type { WithOverride } from '../plugin/SlatePlugin';
 
 import { createPlugin } from '../plugin/createPlugin';
 

@@ -1,7 +1,6 @@
 /** @jsx jsx */
 
 import { BoldPlugin } from '@udecode/plate-basic-marks';
-import { ParagraphPlugin } from '@udecode/plate-common';
 import { LinkPlugin } from '@udecode/plate-link';
 import { ImagePlugin } from '@udecode/plate-media';
 import { TablePlugin } from '@udecode/plate-table';
@@ -9,6 +8,7 @@ import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 
 import { createPlateEditor } from '../../../../react';
 import { createPlugin } from '../../../plugin';
+import { ParagraphPlugin } from '../../paragraph';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 
 jsx;

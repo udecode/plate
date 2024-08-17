@@ -6,6 +6,7 @@ export * from './components/index';
 export * from './editor/index';
 export * from './hooks/index';
 export * from './libs/index';
+export * from './plugin/index';
 export * from './plugins/index';
 export * from './stores/index';
 export * from './utils/index';

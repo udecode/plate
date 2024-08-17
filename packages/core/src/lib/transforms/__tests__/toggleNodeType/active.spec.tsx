@@ -2,7 +2,7 @@
 
 import { jsx } from '@udecode/plate-test-utils';
 
-import type { PlateEditor } from '../../../editor';
+import type { SlateEditor } from '../../../editor';
 
 import { createPlateEditor } from '../../../../react';
 import { toggleNodeType } from '../../toggleNodeType';
@@ -16,7 +16,7 @@ const input = (
       <cursor />
     </hblockquote>
   </editor>
-) as any as PlateEditor;
+) as any as SlateEditor;
 
 const output = (
   <editor>

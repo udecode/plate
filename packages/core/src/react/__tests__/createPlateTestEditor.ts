@@ -3,16 +3,11 @@ import type { RenderEditorReturnTuple } from 'slate-test-utils/dist/esm/buildTes
 
 import { buildTestHarness } from 'slate-test-utils';
 
-import type {
-  AnyPluginConfig,
-  CorePlugin,
-  CreateSlateEditorOptions,
-  InferPlugins,
-  TPlateEditor,
-} from '../../lib';
+import type { AnyPluginConfig, CorePlugin, InferPlugins } from '../../lib';
+import type { TPlateEditor } from '../plugin';
 
 import { PlateTest } from '../components/PlateTest';
-import { createPlateEditor } from '../editor';
+import { type CreatePlateEditorOptions, createPlateEditor } from '../editor';
 
 /**
  * `buildTestHarness` where:
@@ -24,7 +19,7 @@ export const createPlateTestEditor = async <
   V extends Value = Value,
   P extends AnyPluginConfig = CorePlugin,
 >(
-  options: CreateSlateEditorOptions<V, P>,
+  options: CreatePlateEditorOptions<V, P>,
   buildTestHarnessOptions?: Omit<
     Parameters<ReturnType<typeof buildTestHarness>>[0],
     'editor'

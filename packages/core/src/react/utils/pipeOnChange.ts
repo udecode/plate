@@ -1,8 +1,8 @@
 import type { Value } from '@udecode/slate';
 
-import type { PlateEditor } from '../editor';
+import type { PlateEditor } from '../plugin/PlateEditor';
 
-import { getPluginContext } from '../plugin';
+import { getPluginContext } from '../plugin/getPluginContext';
 
 export const pipeOnChange = (editor: PlateEditor, value: Value) => {
   return editor.pluginList.some((plugin) => {

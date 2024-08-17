@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { PlateRenderLeafProps } from '../../lib/plugin/types/PlateRenderLeafProps';
+import type { PlateRenderLeafProps } from '../plugin/PlateRenderLeafProps';
 
 export function DefaultLeaf({
   attributes,

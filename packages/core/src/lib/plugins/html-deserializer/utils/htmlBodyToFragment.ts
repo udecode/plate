@@ -2,7 +2,7 @@ import type { TDescendant } from '@udecode/slate';
 
 import { jsx } from 'slate-hyperscript';
 
-import type { PlateEditor } from '../../../editor';
+import type { SlateEditor } from '../../../editor';
 
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
 
@@ -10,7 +10,7 @@ jsx;
 
 /** Deserialize HTML body element to Fragment. */
 export const htmlBodyToFragment = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   element: HTMLElement
 ): TDescendant[] | undefined => {
   if (element.nodeName === 'BODY') {

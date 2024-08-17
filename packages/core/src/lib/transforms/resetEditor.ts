@@ -1,8 +1,8 @@
-import type { PlateEditor } from '../editor';
+import type { SlateEditor } from '../editor';
 
 import { resetEditorChildren } from './resetEditorChildren';
 
-export const resetEditor = (editor: PlateEditor) => {
+export const resetEditor = (editor: SlateEditor) => {
   resetEditorChildren(editor);
 
   editor.history.undos = [];

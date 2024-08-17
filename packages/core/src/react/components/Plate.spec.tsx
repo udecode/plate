@@ -6,8 +6,11 @@ import { type Value, isBlock, setNodes } from '@udecode/slate';
 import isEqual from 'lodash/isEqual';
 import memoize from 'lodash/memoize';
 
-import { type PlatePlugins, createPlugin } from '../../lib';
+import type { PlatePlugins } from '../plugin';
+
+import { type SlatePlugins, createPlugin } from '../../lib';
 import { createPlateEditor, usePlateEditor } from '../editor';
+import { createReactPlugin } from '../plugin/createReactPlugin';
 import {
   PlateController,
   useEditorRef,
@@ -151,7 +154,7 @@ describe('Plate', () => {
 
         expect(result.current.at(-1)!.key).toBe('test');
 
-        editor.pluginList = [createPlugin({ key: 'test2' })];
+        editor.pluginList = [createReactPlugin({ key: 'test2' }) as any];
 
         rerender({
           editor,
@@ -367,8 +370,8 @@ describe('Plate', () => {
         }
       });
 
-      const plugins: PlatePlugins = memoize(
-        (): PlatePlugins => [
+      const plugins: SlatePlugins = memoize(
+        (): SlatePlugins => [
           createPlugin({
             key: 'a',
             withOverrides: ({ editor }) => {
@@ -406,7 +409,7 @@ describe('Plate', () => {
   describe('when renderAboveSlate renders null', () => {
     it('should not normalize editor children', () => {
       const plugins: PlatePlugins = [
-        createPlugin({
+        createReactPlugin({
           key: 'a',
           renderAboveSlate: () => {
             return null;

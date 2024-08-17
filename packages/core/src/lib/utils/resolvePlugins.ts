@@ -1,9 +1,9 @@
 import { isDefined } from '@udecode/utils';
 import merge from 'lodash/merge.js';
 
-import type { PlatePlugin, PlatePlugins } from '../plugin/types/PlatePlugin';
+import type { SlatePlugin, SlatePlugins } from '../plugin/SlatePlugin';
 
-import { type PlateEditor, getPluginContext, resolvePlugin } from '../index';
+import { type SlateEditor, getPluginContext, resolvePlugin } from '../index';
 
 /**
  * Initialize and configure the editor's plugin system. This function sets up
@@ -11,8 +11,8 @@ import { type PlateEditor, getPluginContext, resolvePlugin } from '../index';
  * overrides specified in the plugins.
  */
 export const resolvePlugins = (
-  editor: PlateEditor,
-  plugins: PlatePlugins = []
+  editor: SlateEditor,
+  plugins: SlatePlugins = []
 ) => {
   editor.pluginList = [];
   editor.plugins = {};
@@ -37,14 +37,14 @@ export const resolvePlugins = (
   return editor;
 };
 
-const mergePluginApis = (editor: PlateEditor) => {
+const mergePluginApis = (editor: SlateEditor) => {
   editor.pluginList.forEach((plugin) => {
     Object.entries(plugin.api).forEach(([apiKey, apiFunction]) => {
       (editor.api as any)[apiKey] = apiFunction;
     });
   });
 
-  (editor.pluginList as PlatePlugin[]).forEach((plugin) => {
+  (editor.pluginList as SlatePlugin[]).forEach((plugin) => {
     // Apply api extensions
     if (plugin.__apiExtensions && plugin.__apiExtensions.length > 0) {
       plugin.__apiExtensions.forEach((methodExtension) => {
@@ -74,11 +74,11 @@ const mergePluginApis = (editor: PlateEditor) => {
 };
 
 const flattenAndMergePlugins = (
-  plugins: PlatePlugins
-): Map<string, PlatePlugin> => {
-  const pluginMap = new Map<string, PlatePlugin>();
+  plugins: SlatePlugins
+): Map<string, SlatePlugin> => {
+  const pluginMap = new Map<string, SlatePlugin>();
 
-  const processPlugin = (plugin: PlatePlugin) => {
+  const processPlugin = (plugin: SlatePlugin) => {
     const existingPlugin = pluginMap.get(plugin.key);
 
     if (existingPlugin) {
@@ -97,9 +97,9 @@ const flattenAndMergePlugins = (
 };
 
 export const resolveAndSortPlugins = (
-  editor: PlateEditor,
-  plugins: PlatePlugins
-): PlatePlugins => {
+  editor: SlateEditor,
+  plugins: SlatePlugins
+): SlatePlugins => {
   // Step 1: Resolve, flatten, and merge all plugins
   const pluginMap = flattenAndMergePlugins(
     plugins.map((plugin) => resolvePlugin(editor, plugin))
@@ -114,10 +114,10 @@ export const resolveAndSortPlugins = (
   enabledPlugins.sort((a, b) => b.priority - a.priority);
 
   // Step 5: Reorder based on dependencies
-  const orderedPlugins: PlatePlugins = [];
+  const orderedPlugins: SlatePlugins = [];
   const visited = new Set<string>();
 
-  const visit = (plugin: PlatePlugin) => {
+  const visit = (plugin: SlatePlugin) => {
     if (visited.has(plugin.key)) return;
 
     visited.add(plugin.key);
@@ -143,15 +143,15 @@ export const resolveAndSortPlugins = (
   return orderedPlugins;
 };
 
-export const mergePlugins = (editor: PlateEditor, plugins: PlatePlugins) => {
+export const mergePlugins = (editor: SlateEditor, plugins: SlatePlugins) => {
   editor.pluginList = plugins;
   editor.plugins = Object.fromEntries(
     plugins.map((plugin) => [plugin.key, plugin])
   );
 };
 
-export const applyPluginOverrides = (editor: PlateEditor) => {
-  const applyOverrides = (plugins: PlatePlugin[]): PlatePlugin[] => {
+export const applyPluginOverrides = (editor: SlateEditor) => {
+  const applyOverrides = (plugins: SlatePlugin[]): SlatePlugin[] => {
     let overriddenPlugins = [...plugins];
 
     const enabledOverrides: Record<string, boolean> = {};
@@ -159,15 +159,16 @@ export const applyPluginOverrides = (editor: PlateEditor) => {
       string,
       { component: any; priority: number }
     > = {};
-    const pluginOverrides: Record<string, Partial<PlatePlugin>> = {};
+    const pluginOverrides: Record<string, Partial<SlatePlugin>> = {};
 
     // Collect all overrides
     for (const plugin of plugins) {
       if (plugin.override.enabled) {
         merge(enabledOverrides, plugin.override.enabled);
       }
-      if (plugin.override.components) {
-        Object.entries(plugin.override.components).forEach(
+      // TODO react
+      if ((plugin.override as any).components) {
+        Object.entries((plugin.override as any).components).forEach(
           ([key, component]) => {
             if (
               !componentOverrides[key] ||
@@ -201,11 +202,13 @@ export const applyPluginOverrides = (editor: PlateEditor) => {
         updatedPlugin = merge({}, updatedPlugin, pluginOverrides[p.key]);
       }
       // Apply component overrides
+      // TODO react
       if (
         componentOverrides[p.key] &&
-        (!p.component || componentOverrides[p.key].priority > p.priority)
+        (!(p as any).component ||
+          componentOverrides[p.key].priority > p.priority)
       ) {
-        updatedPlugin.component = componentOverrides[p.key].component;
+        (updatedPlugin as any).component = componentOverrides[p.key].component;
       }
 
       // Apply enabled overrides

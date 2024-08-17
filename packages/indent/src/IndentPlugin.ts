@@ -45,7 +45,7 @@ export const IndentPlugin = createTPlugin<IndentConfig>({
       nodeKey: 'indent',
       styleKey: 'marginLeft',
       transformNodeValue: ({ nodeValue }) => nodeValue * offset! + unit!,
-      validPlugins: [ParagraphPlugin.key],
     },
+    targetPlugins: [ParagraphPlugin.key],
   },
 }));

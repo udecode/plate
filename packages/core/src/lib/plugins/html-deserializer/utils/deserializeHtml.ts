@@ -1,6 +1,6 @@
 import type { TDescendant } from '@udecode/slate';
 
-import type { PlateEditor } from '../../../editor';
+import type { SlateEditor } from '../../../editor';
 
 import { normalizeDescendantsToDocumentFragment } from '../../../utils/normalizeDescendantsToDocumentFragment';
 import { collapseWhiteSpace } from './collapse-white-space';
@@ -9,7 +9,7 @@ import { htmlStringToDOMNode } from './htmlStringToDOMNode';
 
 /** Deserialize HTML element to a valid document fragment. */
 export const deserializeHtml = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   {
     collapseWhiteSpace: shouldCollapseWhiteSpace = true,
     element,

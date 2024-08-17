@@ -9,17 +9,17 @@ export const LineHeightPlugin = createPlugin({
     props: {
       defaultNodeValue: 1.5,
       nodeKey: 'lineHeight',
-      validPluginToInjectPlugin: ({ editor, plugin }) => ({
-        deserializeHtml: {
-          getNode: ({ element, node }) => {
-            if (element.style.lineHeight) {
-              node[editor.getType(plugin)] = element.style.lineHeight;
-            }
-          },
-        },
-      }),
-      validPlugins: [ParagraphPlugin.key],
     },
+    targetPluginToInject: ({ editor, plugin }) => ({
+      deserializeHtml: {
+        getNode: ({ element, node }) => {
+          if (element.style.lineHeight) {
+            node[editor.getType(plugin)] = element.style.lineHeight;
+          }
+        },
+      },
+    }),
+    targetPlugins: [ParagraphPlugin.key],
   },
   key: 'lineHeight',
 });

@@ -2,17 +2,15 @@ import type React from 'react';
 
 import type {
   AnyPluginConfig,
-  EditorPluginContext,
   PluginConfig,
-} from './PlatePlugin';
-
-/** If true, the next handlers will be skipped. */
-export type HandlerReturnType = boolean | void;
+} from '../../lib/plugin/BasePlugin';
+import type { HandlerReturnType } from '../../lib/plugin/HandlerReturnType';
+import type { SlatePluginContext } from '../../lib/plugin/SlatePlugin';
 
 export type DOMHandler<C extends AnyPluginConfig = PluginConfig, EV = {}> = (
   ctx: {
     event: EV;
-  } & EditorPluginContext<C>
+  } & SlatePluginContext<C>
 ) => HandlerReturnType;
 
 export interface DOMHandlers<C extends AnyPluginConfig = PluginConfig> {

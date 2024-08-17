@@ -25,7 +25,7 @@ export const TextIndentPlugin = createTPlugin<TextIndentConfig>({
       transformNodeValue({ nodeValue }) {
         return nodeValue * offset! + unit!;
       },
-      validPlugins: [ParagraphPlugin.key],
     },
+    targetPlugins: [ParagraphPlugin.key],
   },
 }));

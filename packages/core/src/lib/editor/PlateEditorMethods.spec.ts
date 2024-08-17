@@ -14,6 +14,25 @@ describe('getApi method', () => {
       plugins: [TestPlugin],
     });
 
+    // const api2 = getPlugin(editor, TestPlugin);
+    // api2.api.testNumber();
+    //
+    // const api = getPlugin<typeof TestPlugin>(editor, { key: 'test' });
+    // api.api.testNumber();
+    //
+    // const TestPlugin2 = createReactPlugin({
+    //   key: 'test',
+    // }).extendApi(() => ({
+    //   testMethod: () => 'test',
+    //   testNumber: () => 42,
+    // }));
+    //
+    // const api22 = getPlugin(editor, TestPlugin2);
+    // api2.api.testNumber();
+    //
+    // const api222 = getPlugin<typeof TestPlugin2>(editor, { key: 'test' });
+    // api.api.testNumber();
+
     const testApi = editor.getApi(TestPlugin);
 
     // Type checking

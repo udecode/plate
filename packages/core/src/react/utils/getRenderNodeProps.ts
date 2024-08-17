@@ -2,10 +2,10 @@ import type { AnyObject } from '@udecode/utils';
 
 import { clsx } from 'clsx';
 
-import type { AnyEditorPlugin } from '../plugin/types/PlatePlugin';
-import type { PlateRenderNodeProps } from '../plugin/types/PlateRenderNodeProps';
+import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
+import type { PlateRenderNodeProps } from '../plugin/PlateRenderNodeProps';
 
-import { getSlateClass } from './misc/getSlateClass';
+import { getSlateClass } from '../../lib/utils/misc/getSlateClass';
 
 /**
  * Override node props with plugin props. `props.element.attributes` are passed
@@ -18,7 +18,7 @@ export const getRenderNodeProps = ({
 }: {
   attributes?: AnyObject;
   nodeProps: PlateRenderNodeProps;
-  plugin: AnyEditorPlugin;
+  plugin: AnyEditorPlatePlugin;
 }): PlateRenderNodeProps => {
   let newProps: AnyObject = {};
 

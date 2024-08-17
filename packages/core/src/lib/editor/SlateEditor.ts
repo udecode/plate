@@ -1,48 +1,20 @@
-import type React from 'react';
-
 import type { TEditor, TRange, Value } from '@udecode/slate';
 import type { UnionToIntersection } from '@udecode/utils';
 
 import type {
-  AnyEditorPlugin,
   AnyPluginConfig,
-  EditorPlugin,
   InferApi,
   InferOptions,
   InferTransforms,
-  InjectProps,
   PluginConfig,
   WithRequiredKey,
-} from '../plugin/types/PlatePlugin';
+} from '../plugin/BasePlugin';
+import type { EditorPlugin, InjectProps } from '../plugin/SlatePlugin';
 import type { CorePlugin } from '../plugins';
 
-export type PlateEditor = {
+export type SlateEditor = {
   api: UnionToIntersection<InferApi<CorePlugin>>;
-  currentKeyboardEvent: React.KeyboardEvent | null;
 
-  id: any;
-
-  /**
-   * Whether the editor is a fallback editor.
-   *
-   * @default false
-   * @see {@link createPlateFallbackEditor}
-   */
-  isFallback: boolean;
-
-  key: any;
-
-  pluginList: AnyEditorPlugin[];
-
-  plugins: Record<string, AnyEditorPlugin>;
-
-  prevSelection: TRange | null;
-
-  transforms: UnionToIntersection<InferTransforms<CorePlugin>>;
-} & PlateEditorMethods &
-  TEditor;
-
-export type PlateEditorMethods = {
   getApi: <C extends AnyPluginConfig = PluginConfig>(
     plugin?: WithRequiredKey<C>
   ) => InferApi<C>;
@@ -57,12 +29,32 @@ export type PlateEditorMethods = {
 
   getPlugin: <C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
-  ) => EditorPlugin<C>;
+  ) => C extends EditorPlugin<any> ? C : EditorPlugin<C>;
 
   getType: (plugin: WithRequiredKey) => string;
-};
 
-export type TPlateEditor<
+  id: any;
+
+  /**
+   * Whether the editor is a fallback editor.
+   *
+   * @default false
+   * @see {@link createPlateFallbackEditor}
+   */
+  isFallback: boolean;
+
+  key: any;
+
+  pluginList: any[];
+
+  plugins: Record<string, any>;
+
+  prevSelection: TRange | null;
+
+  transforms: UnionToIntersection<InferTransforms<CorePlugin>>;
+} & TEditor;
+
+export type TBaseEditor<
   V extends Value = Value,
   P extends AnyPluginConfig = CorePlugin,
 > = {
@@ -74,6 +66,11 @@ export type TPlateEditor<
   plugins: { [K in P['key']]: Extract<P, { key: K }> };
 
   transforms: UnionToIntersection<InferTransforms<CorePlugin | P>>;
-} & PlateEditor;
+};
+
+export type TSlateEditor<
+  V extends Value = Value,
+  P extends AnyPluginConfig = CorePlugin,
+> = SlateEditor & TBaseEditor<V, P>;
 
 export type InferPlugins<T extends AnyPluginConfig[]> = T[number];

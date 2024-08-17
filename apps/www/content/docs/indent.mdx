@@ -36,9 +36,7 @@ const plugins = [
   createParagraphPlugin(),
   createIndentPlugin({
     inject: {
-      props: {
-        validPlugins: [ParagraphPlugin.key, HEADING_KEYS.h1],
-      },
+      targetPlugins: [ParagraphPlugin.key, HEADING_KEYS.h1],
     },
   }),
 ];

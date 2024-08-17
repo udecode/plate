@@ -1,8 +1,8 @@
-import type { PlateEditor } from '../editor';
+import type { SlateEditor } from '../editor';
 
 /** Get plugin keys by types */
 export const getKeysByTypes = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   types: string[]
 ): string[] => {
   return Object.values(editor.plugins)
@@ -11,7 +11,7 @@ export const getKeysByTypes = (
 };
 
 /** Get plugin key by type */
-export const getKeyByType = (editor: PlateEditor, type: string): string => {
+export const getKeyByType = (editor: SlateEditor, type: string): string => {
   const plugin = Object.values(editor.plugins).find(
     (plugin) => plugin.type === type
   );

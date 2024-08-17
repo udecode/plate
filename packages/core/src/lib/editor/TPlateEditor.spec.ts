@@ -1,7 +1,7 @@
 import { type Value, createTEditor } from '@udecode/slate';
 
 import type { ToggleMarkConfig } from '../types';
-import type { InferPlugins, TPlateEditor } from './PlateEditor';
+import type { InferPlugins } from './SlateEditor';
 
 import { createPlateEditor, withPlate } from '../../react';
 import { createPlugin } from '../plugin';
@@ -47,7 +47,7 @@ describe('TPlateEditor', () => {
 
   describe('Core Plugins', () => {
     it('should have DebugPlugin methods with default generics', () => {
-      const editor: TPlateEditor = withPlate(createTEditor());
+      const editor = withPlate(createTEditor());
 
       expect(editor.api.debug).toBeDefined();
       expect(editor.api.debug.log).toBeInstanceOf(Function);

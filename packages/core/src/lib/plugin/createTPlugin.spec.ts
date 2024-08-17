@@ -1,5 +1,7 @@
-import type { PlatePluginComponent, PluginConfig } from './types';
+import type { PlatePluginComponent } from '../../react';
+import type { PluginConfig } from './BasePlugin';
 
+import { createTReactPlugin } from '../../react/plugin/createReactPlugin';
 import { resolveCreatePluginTest, resolvePluginTest } from '../utils';
 import { createTPlugin } from './createPlugin';
 
@@ -15,7 +17,7 @@ describe('createTPlugin', () => {
     }
 
     const basePlugin = resolvePluginTest(
-      createTPlugin<PluginConfig<'testPlugin', TestOptions, TestApi>>({
+      createTReactPlugin<PluginConfig<'testPlugin', TestOptions, TestApi>>({
         key: 'testPlugin',
         options: {
           optionA: 'initial',

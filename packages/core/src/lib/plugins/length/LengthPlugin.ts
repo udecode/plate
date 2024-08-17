@@ -1,9 +1,7 @@
 import { getEditorString, withoutNormalizing } from '@udecode/slate';
 
-import type {
-  PluginConfig,
-  WithOverride,
-} from '../../plugin/types/PlatePlugin';
+import type { PluginConfig } from '../../plugin/BasePlugin';
+import type { WithOverride } from '../../plugin/SlatePlugin';
 
 import { createTPlugin } from '../../plugin/createPlugin';
 

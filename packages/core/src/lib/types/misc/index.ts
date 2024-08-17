@@ -4,5 +4,4 @@
 
 export * from './NoInfer';
 export * from './Nullable';
-export * from './dom-attributes';
 export * from './types';

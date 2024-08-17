@@ -17,13 +17,15 @@ export const setLineHeight = <E extends PlateEditor>(
     value,
   }: { setNodesOptions?: SetNodesOptions<E>; value: number }
 ): void => {
-  const { defaultNodeValue, nodeKey, validPlugins } =
-    editor.getInjectProps(LineHeightPlugin);
+  const {
+    inject: { targetPlugins },
+  } = editor.getPlugin(LineHeightPlugin);
+  const { defaultNodeValue, nodeKey } = editor.getInjectProps(LineHeightPlugin);
 
   const match: TNodeMatch = (n) =>
     isBlock(editor, n) &&
-    !!validPlugins &&
-    validPlugins.includes(getKeyByType(editor, n.type as string));
+    !!targetPlugins &&
+    targetPlugins.includes(getKeyByType(editor, n.type as string));
 
   if (value === defaultNodeValue) {
     unsetNodes(editor, nodeKey!, {

@@ -1,11 +1,8 @@
 import merge from 'lodash/merge.js';
 
-import type { PlateEditor } from '../editor';
-import type {
-  AnyPlatePlugin,
-  PlatePlugin,
-  PluginConfig,
-} from '../plugin/types/PlatePlugin';
+import type { SlateEditor } from '../editor';
+import type { PluginConfig } from '../plugin/BasePlugin';
+import type { AnySlatePlugin, SlatePlugin } from '../plugin/SlatePlugin';
 
 import { createPlugin, getPluginContext } from '../plugin';
 
@@ -24,8 +21,8 @@ import { createPlugin, getPluginContext } from '../plugin';
  *   const plugin = createPlugin({ key: 'myPlugin', ...otherOptions }).extend(...);
  *   const resolvedPlugin = resolvePlugin(editor, plugin);
  */
-export const resolvePlugin = <P extends AnyPlatePlugin>(
-  editor: PlateEditor,
+export const resolvePlugin = <P extends AnySlatePlugin>(
+  editor: SlateEditor,
   _plugin: P
 ): P => {
   // Create a deep clone of the plugin
@@ -52,23 +49,22 @@ export const resolvePlugin = <P extends AnyPlatePlugin>(
     plugin.plugins = plugin.plugins.map((p) => resolvePlugin(editor, p));
   }
 
-  const validPluginToInjectPlugin =
-    plugin.inject?.props?.validPluginToInjectPlugin;
-  const validPlugins = plugin.inject?.props?.validPlugins;
+  const targetPluginToInject = plugin.inject?.targetPluginToInject;
+  const targetPlugins = plugin.inject?.targetPlugins;
 
-  if (validPluginToInjectPlugin && validPlugins && validPlugins.length > 0) {
+  if (targetPluginToInject && targetPlugins && targetPlugins.length > 0) {
     plugin.inject = plugin.inject || {};
     plugin.inject.plugins = merge(
       {},
       plugin.inject.plugins,
       Object.fromEntries(
-        validPlugins.map((validPlugin) => {
-          const injectedPlugin = validPluginToInjectPlugin({
+        targetPlugins.map((targetPlugin) => {
+          const injectedPlugin = targetPluginToInject({
             ...getPluginContext(editor, plugin),
-            validPlugin,
+            targetPlugin,
           });
 
-          return [validPlugin, injectedPlugin];
+          return [targetPlugin, injectedPlugin];
         })
       )
     );
@@ -83,8 +79,8 @@ export const resolvePlugin = <P extends AnyPlatePlugin>(
 };
 
 export const validatePlugin = <K extends string = any, O = {}, A = {}, T = {}>(
-  editor: PlateEditor,
-  plugin: PlatePlugin<PluginConfig<K, O, A, T>>
+  editor: SlateEditor,
+  plugin: SlatePlugin<PluginConfig<K, O, A, T>>
 ) => {
   if (!plugin.__extensions) {
     editor.api.debug.error(

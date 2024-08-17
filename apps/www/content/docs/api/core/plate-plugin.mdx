@@ -333,6 +333,13 @@ Property that can be used by a plugin to allow other plugins to inject code.
 Record<PluginKey, Partial<AnyPlatePlugin>>
 ```
 </APISubListItem>
+<APISubListItem parent="inject" name="targetPlugins" type="string[]" optional>
+
+Plugin keys required to inject the props.
+
+- Default: `[ParagraphPlugin.key]`
+
+</APISubListItem>
 <APISubListItem parent="inject" name="props" type="object" optional>
 Properties used by Plate to inject props into any node `component`.
 <APISubList>
@@ -386,13 +393,6 @@ Transform the style.
 
 <APISubListItem parent="inject.props" name="validNodeValues" type="any[]" optional>
 List of supported node values.
-</APISubListItem>
-<APISubListItem parent="inject.props" name="validPlugins" type="string[]" optional>
-
-Plugin keys required to inject the props.
-
-- Default: `[ParagraphPlugin.key]`
-
 </APISubListItem>
 </APISubList>
 

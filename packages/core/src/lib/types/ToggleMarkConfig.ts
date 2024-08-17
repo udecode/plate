@@ -1,4 +1,4 @@
-import type { PluginConfig } from '../plugin/types/PlatePlugin';
+import type { PluginConfig } from '../plugin/BasePlugin';
 import type { HotkeyPluginOptions } from './HotkeyPluginOptions';
 
 export type ToggleMarkPluginOptions = {
