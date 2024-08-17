@@ -1,5 +1,5 @@
 'use client';
-import React, { useMemo } from 'react';
+import React from 'react';
 
 import { cn } from '@udecode/cn';
 import {
@@ -14,10 +14,6 @@ import { Popover, PopoverContent, PopoverTrigger } from './popover';
 
 export const InlineDateElement = withRef<typeof PlateElement>(
   ({ children, className, editor, element, ...props }, ref) => {
-    const path = useMemo(() => {
-      return findNodePath(editor, element);
-    }, [editor, element]);
-
     return (
       <PlateElement
         className={cn('inline-block', className)}
@@ -75,7 +71,11 @@ export const InlineDateElement = withRef<typeof PlateElement>(
               onSelect={(date) => {
                 if (!date) return;
 
-                setNodes(editor, { date: date.toDateString() }, { at: path });
+                setNodes(
+                  editor,
+                  { date: date.toDateString() },
+                  { at: findNodePath(editor, element) }
+                );
               }}
               selected={new Date(element.date as string)}
             />

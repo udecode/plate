@@ -6,6 +6,7 @@ import {
   PlateElement,
   toggleNodeType,
 } from '@udecode/plate-common';
+import { insertInlineDate } from '@udecode/plate-date';
 import { ELEMENT_H1, ELEMENT_H2, ELEMENT_H3 } from '@udecode/plate-heading';
 import { ListStyleType, toggleIndentList } from '@udecode/plate-indent-list';
 
@@ -67,6 +68,14 @@ const rules: SlashCommandRule[] = [
       });
     },
     value: 'Numbered list',
+  },
+  {
+    icon: Icons.add,
+    keywords: ['inline', 'date'],
+    onSelect: (editor) => {
+      insertInlineDate(editor);
+    },
+    value: 'Inline date',
   },
 ];
 
