@@ -4,6 +4,8 @@ import { jsx } from '@udecode/plate-test-utils';
 
 jsx;
 
+const today = new Date().toISOString().split('T')[0];
+
 export const dateValue: any = (
   <fragment>
     <hh2>🕐 Date</hh2>
@@ -18,7 +20,7 @@ export const dateValue: any = (
         <htext />
       </hinlinedate>{' '}
       or{' '}
-      <hinlinedate date="2024-08-16">
+      <hinlinedate date={today}>
         <htext />
       </hinlinedate>
       .
