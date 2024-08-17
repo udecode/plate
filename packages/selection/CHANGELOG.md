@@ -1,5 +1,11 @@
 # @udecode/plate-selection
 
+## 36.4.1
+
+### Patch Changes
+
+- [#3437](https://github.com/udecode/plate/pull/3437) by [@felixfeng33](https://github.com/felixfeng33) – Add default `selectionContainerClass`
+
 ## 36.1.0
 
 ### Minor Changes
