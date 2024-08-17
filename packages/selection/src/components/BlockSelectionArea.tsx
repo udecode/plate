@@ -46,6 +46,7 @@ export const useBlockSelectionArea = (
     // document object - if you want to use it within an embed document (or iframe).
     // document={window.document}
     // Query selectors for elements from where a selection can be started from.
+    selectionContainerClass: 'slate-selection-container',
     startAreas: '.slate-start-area',
     style: {
       position: 'relative',
