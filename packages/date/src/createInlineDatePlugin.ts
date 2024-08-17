@@ -1,13 +1,10 @@
 import {
   type TElement,
   createPluginFactory,
-  getNodeEntry,
-  getRange,
-  isEndPoint,
   isSelectionExpanded,
-  isStartPoint,
 } from '@udecode/plate-common/server';
-import { Path } from 'slate';
+
+import { isPointNextToNode } from './utils';
 
 export const ELEMENT_INLINE_DATE = 'inline_date';
 
@@ -47,60 +44,15 @@ export const createInlineDatePlugin = createPluginFactory({
         editor.selection &&
         !isSelectionExpanded(editor)
       ) {
-        const point = editor.selection.anchor;
-        const selectedRange = getRange(editor, point.path);
+        const isNextDate = isPointNextToNode(editor, ELEMENT_INLINE_DATE, {
+          reverse,
+        });
 
-        const boundary = (() => {
-          let isStart = false;
-          let isEnd = false;
-
-          if (isStartPoint(editor, point, selectedRange)) {
-            isStart = true;
-          }
-          if (isEndPoint(editor, point, selectedRange)) {
-            isEnd = true;
-          }
-          if (isStart && isEnd) {
-            return 'single';
-          }
-          if (isStart) {
-            return 'start';
-          }
-          if (isEnd) {
-            return 'end';
-          }
-
-          return null;
-        })();
-
-        if (!boundary) return move(options);
-
-        const adjacentPathFn = (path: Path) => {
-          try {
-            if (reverse && boundary === 'start') return Path.previous(path);
-            if (!reverse && boundary === 'end') return Path.next(path);
-            if (boundary === 'single') {
-              return reverse ? Path.previous(path) : Path.next(path);
-            }
-          } catch (error) {
-            return null;
-          }
-        };
-
-        if (!adjacentPathFn) return move(options);
-
-        const adjacentPath = adjacentPathFn(point.path);
-
-        if (!adjacentPath) return move(options);
-
-        const nextNodeEntry = getNodeEntry(editor, adjacentPath) ?? null;
-
-        if (nextNodeEntry && nextNodeEntry[0].type === ELEMENT_INLINE_DATE) {
+        if (isNextDate)
           return move({
-            unit: 'offset',
             ...options,
+            unit: 'offset',
           });
-        }
       }
 
       return move(options);

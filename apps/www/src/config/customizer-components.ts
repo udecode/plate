@@ -10,6 +10,7 @@ export const customizerComponents = {
     title: 'Blockquote',
   },
   button: { href: '/docs/components/button', title: 'Button' },
+  calendar: { href: '/docs/components/calendar', title: 'Calendar' },
   caption: { href: '/docs/components/caption', title: 'Caption' },
   checkbox: { href: '/docs/components/checkbox', title: 'Checkbox' },
   cloud: { href: '/docs/components/cloud', title: 'Cloud' },

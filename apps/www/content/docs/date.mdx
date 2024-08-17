@@ -1,0 +1,91 @@
+---
+title: Date
+description: Insert and format dates in your document.
+docs:
+  - route: /docs/components/inline-date-element
+    title: Inline Date Element
+---
+
+<ComponentPreview name="playground-demo" id="inlinedate" />
+
+<PackageInfo>
+
+## Features
+
+- Insert and display dates within your text using inline date elements.
+- These dates can be easily selected and modified using a calendar interface.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-date
+```
+
+### Plugins
+
+```tsx
+import { createInlineDatePlugin } from ' @udecode/plate-date';
+
+const plugins = [
+  // ...otherPlugins,
+  createInlineDatePlugin()
+];
+```
+
+
+## API
+
+### insertInlineDate
+
+<APIOptions>
+
+<APIItem name="editor" type="TEditor">
+
+    The editor instance.
+
+</APIItem>
+
+<APIItem name="date" type="string">
+
+The date string to insert, in the format 'YYYY-MM-DD' (e.g., '2024-04-22'). If not provided, the current date will be used as the default.
+
+</APIItem>
+
+<APIItem name="options" type="InsertNodesOptions">
+
+The options for inserting nodes.
+
+</APIItem>
+</APIOptions>
+
+
+### isPointNextToNode
+
+<APIOptions>
+
+<APIItem name="editor" type="TEditor">
+
+    The editor instance.
+
+</APIItem>
+
+<APIItem name="nodeType" type="string">
+
+The type of node to check for adjacency. This should be a string representing the node type, such as 'inline_date' for inline date elements.
+
+</APIItem>
+
+<APIItem name="options" type="{
+    at?: Point;
+    reverse: boolean;
+  }">
+
+The options for checking adjacency:
+
+- `at`: An optional Point object specifying the position to check from. If not provided, the current selection anchor will be used.
+- `reverse`: A boolean indicating the direction to check. If true, checks the previous node; if false, checks the next node.
+
+</APIItem>
+</APIOptions>

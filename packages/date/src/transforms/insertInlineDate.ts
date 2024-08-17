@@ -22,6 +22,7 @@ export const insertInlineDate = <V extends Value>(
         date: date ?? new Date().toDateString(),
         type: ELEMENT_INLINE_DATE,
       },
+      // FIXME: for not losing the editor focus
       {
         text: ' ',
       },
