@@ -1,7 +1,7 @@
 import {
   type PluginConfig,
   type TElement,
-  createTPlugin,
+  createTSlatePlugin,
   getEndPoint,
   getNode,
   getNodeProps,
@@ -21,7 +21,7 @@ import { onKeyDownResetNode } from './onKeyDownResetNode';
 export type ResetNodeConfig = PluginConfig<'resetNode', ResetNodePluginOptions>;
 
 /** Enables support for resetting block type from rules. */
-export const ResetNodePlugin = createTPlugin<ResetNodeConfig>({
+export const ResetNodePlugin = createTSlatePlugin<ResetNodeConfig>({
   handlers: {
     onKeyDown: onKeyDownResetNode,
   },

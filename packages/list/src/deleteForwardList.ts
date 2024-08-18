@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   type TElement,
   type TElementEntry,
   getBlockAbove,
@@ -30,7 +30,7 @@ import {
   removeListItem,
 } from './transforms/index';
 
-const selectionIsNotInAListHandler = (editor: PlateEditor): boolean => {
+const selectionIsNotInAListHandler = (editor: SlateEditor): boolean => {
   const pointAfterSelection = getPointAfter(
     editor,
     editor.selection!.focus.path
@@ -70,7 +70,7 @@ const selectionIsNotInAListHandler = (editor: PlateEditor): boolean => {
 };
 
 const selectionIsInAListHandler = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   res: { list: TElementEntry; listItem: TElementEntry },
   defaultDelete: (unit: TextUnit) => void,
   unit: 'block' | 'character' | 'line' | 'word'
@@ -218,7 +218,7 @@ const selectionIsInAListHandler = (
 };
 
 export const deleteForwardList = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   defaultDelete: (unit: TextUnit) => void,
   unit: TextUnit
 ) => {

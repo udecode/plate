@@ -1,4 +1,4 @@
-import { createPlugin } from '@udecode/plate-common';
+import { createSlatePlugin } from '@udecode/plate-common';
 
 import { BoldPlugin } from './BoldPlugin';
 import { CodePlugin } from './CodePlugin';
@@ -19,7 +19,7 @@ import { UnderlinePlugin } from './UnderlinePlugin';
  * - Superscript
  * - Underline
  */
-export const BasicMarksPlugin = createPlugin({
+export const BasicMarksPlugin = createSlatePlugin({
   key: 'basicMarks',
   plugins: [
     BoldPlugin,

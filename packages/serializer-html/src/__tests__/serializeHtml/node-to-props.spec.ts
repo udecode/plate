@@ -2,7 +2,7 @@ import { htmlStringToDOMNode } from '@udecode/plate-core';
 import { LinkPlugin } from '@udecode/plate-link';
 import { ImagePlugin } from '@udecode/plate-media';
 
-import { serializeHtml } from '../../serializeHtml';
+import { serializeHtml } from '../../react/serializeHtml';
 import { createPlateUIEditor } from '../create-plate-ui-editor';
 
 const plugins = [

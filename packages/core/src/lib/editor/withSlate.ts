@@ -11,17 +11,12 @@ import {
 
 import type { AnyPluginConfig } from '../plugin/BasePlugin';
 import type { AnySlatePlugin } from '../plugin/SlatePlugin';
-import type { InferPlugins, TSlateEditor } from './SlateEditor';
+import type { InferPlugins, SlateEditor, TSlateEditor } from './SlateEditor';
 
-import {
-  type CorePlugin,
-  type SlateEditor,
-  getPlugin,
-  pipeNormalizeInitialValue,
-  resolvePlugins,
-} from '../index';
-import { createPlugin } from '../plugin/createPlugin';
-import { getCorePlugins } from '../plugins/getCorePlugins';
+import { getSlatePlugin } from '../plugin';
+import { createSlatePlugin } from '../plugin/createSlatePlugin';
+import { type CorePlugin, getCorePlugins } from '../plugins/getCorePlugins';
+import { pipeNormalizeInitialValue, resolvePlugins } from '../utils';
 
 export type BaseWithSlateOptions<
   V extends Value = Value,
@@ -114,7 +109,7 @@ export const withSlate = <
   editor.isFallback = false;
 
   editor.getApi = () => editor.api as any;
-  editor.getPlugin = (plugin) => getPlugin(editor, plugin) as any;
+  editor.getPlugin = (plugin) => getSlatePlugin(editor, plugin) as any;
   editor.getOptions = (plugin) => editor.getPlugin(plugin).options;
   editor.getType = (plugin) => editor.getPlugin(plugin).type;
   editor.getInjectProps = (plugin) =>
@@ -125,7 +120,7 @@ export const withSlate = <
     plugins,
   });
 
-  let rootPluginInstance = createPlugin({
+  let rootPluginInstance = createSlatePlugin({
     key: 'root',
     priority: 10_000,
     ...pluginConfig,

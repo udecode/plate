@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -22,7 +22,7 @@ describe('selectEditor', () => {
           <hp>world</hp>
         </element>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -34,7 +34,7 @@ describe('selectEditor', () => {
           </hp>
         </element>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     selectEditor(input, {
       edge: 'end',
@@ -56,7 +56,7 @@ describe('selectEditor', () => {
           <hp>world</hp>
         </element>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -68,7 +68,7 @@ describe('selectEditor', () => {
           <hp>world</hp>
         </element>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     selectEditor(input, {
       edge: 'start',
@@ -90,7 +90,7 @@ describe('selectEditor', () => {
           <hp>world</hp>
         </element>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -102,7 +102,7 @@ describe('selectEditor', () => {
           <hp>world</hp>
         </element>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     selectEditor(input, {
       at: {

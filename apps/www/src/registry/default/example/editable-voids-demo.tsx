@@ -7,7 +7,7 @@ import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
 import { ExitBreakPlugin } from '@udecode/plate-break';
 import {
   type PlateRenderElementProps,
-  createPlugin,
+  createSlatePlugin,
 } from '@udecode/plate-common';
 import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 
@@ -21,7 +21,7 @@ import { editableVoidsValue } from '@/plate/demo/values/editableVoidsValue';
 import { Editor } from '@/registry/default/plate-ui/editor';
 import { Input } from '@/registry/default/plate-ui/input';
 
-export const EditableVoidPlugin = createPlugin({
+export const EditableVoidPlugin = createSlatePlugin({
   component: EditableVoidElement,
   isElement: true,
   isVoid: true,

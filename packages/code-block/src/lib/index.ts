@@ -4,7 +4,7 @@
 
 export * from './CodeBlockPlugin';
 export * from './decorateCodeLine';
-export * from './deserializeHtmlCodeBlockPre';
+export * from './deserializeHtmlCodeBlock';
 export * from './insertFragmentCodeBlock';
 export * from './types';
 export * from './withCodeBlock';

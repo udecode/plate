@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import {
-  type PlateEditor,
+  type SlateEditor,
   insertNodes,
   mergeNodes,
   splitNodes,
@@ -31,7 +31,7 @@ describe('when inserting nodes', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = (
         <editor>
@@ -81,7 +81,7 @@ describe('when inserting nodes', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = (
         <editor>
@@ -129,7 +129,7 @@ describe('when inserting nodes', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = (
         <editor>
@@ -186,7 +186,7 @@ describe('when inserting nodes', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = (
         <editor>
@@ -233,7 +233,7 @@ describe('when inserting nodes', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = (
         <editor>
@@ -279,7 +279,7 @@ describe('when inserting nodes', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = (
         <editor>
@@ -329,7 +329,7 @@ describe('when inserting nodes', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = (
         <editor>
@@ -371,7 +371,7 @@ describe('when inserting nodes', () => {
         <editor>
           <hp foo={10}>test</hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = (
         <editor>
@@ -422,7 +422,7 @@ describe('when inserting nodes', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = (
         <editor>
@@ -499,7 +499,7 @@ describe('when splitting nodes', () => {
             <cursor />t
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = (
         <editor>
@@ -540,7 +540,7 @@ describe('when splitting nodes', () => {
             <cursor />t
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = (
         <editor>
@@ -576,7 +576,7 @@ describe('when splitting nodes', () => {
             <cursor />t
           </hli>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = (
         <editor>
@@ -617,7 +617,7 @@ describe('when splitting nodes', () => {
             <cursor />t
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = (
         <editor>
@@ -661,7 +661,7 @@ describe('when merging nodes', () => {
             <htext id={2}>t</htext>
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = (
         <editor>
@@ -699,7 +699,7 @@ describe('when merging nodes', () => {
           <hp id={1}>one</hp>
           <hp id={2}>two</hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = (
         <editor>
@@ -733,7 +733,7 @@ describe('when merging nodes', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = (
         <editor>
@@ -781,7 +781,7 @@ describe('when merging nodes', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = (
         <editor>

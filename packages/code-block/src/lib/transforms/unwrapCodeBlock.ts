@@ -2,7 +2,7 @@ import type { Location } from 'slate';
 
 import {
   ParagraphPlugin,
-  type PlateEditor,
+  type SlateEditor,
   getChildren,
   getNodeEntries,
   setElements,
@@ -12,7 +12,7 @@ import {
 
 import { CodeBlockPlugin } from '../CodeBlockPlugin';
 
-export const unwrapCodeBlock = (editor: PlateEditor) => {
+export const unwrapCodeBlock = (editor: SlateEditor) => {
   if (!editor.selection) return;
 
   const codeBlockType = editor.getType(CodeBlockPlugin);

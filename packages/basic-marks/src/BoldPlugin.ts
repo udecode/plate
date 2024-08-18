@@ -1,12 +1,12 @@
 import {
   type ToggleMarkPluginOptions,
-  createPlugin,
+  createSlatePlugin,
   someHtmlElement,
 } from '@udecode/plate-common';
 import { onKeyDownToggleMark } from '@udecode/plate-common/react';
 
 /** Enables support for bold formatting */
-export const BoldPlugin = createPlugin<'bold', ToggleMarkPluginOptions>({
+export const BoldPlugin = createSlatePlugin<'bold', ToggleMarkPluginOptions>({
   deserializeHtml: {
     query: ({ element }) =>
       !someHtmlElement(element, (node) => node.style.fontWeight === 'normal'),

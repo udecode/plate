@@ -1,4 +1,4 @@
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import markdown from 'remark-parse';
 import unified from 'unified';
@@ -10,7 +10,7 @@ import {
 import { DeserializeMdPlugin } from '../DeserializeMdPlugin';
 
 /** Deserialize content from Markdown format to Slate format. `editor` needs */
-export const deserializeMd = (editor: PlateEditor, data: string) => {
+export const deserializeMd = (editor: SlateEditor, data: string) => {
   const { elementRules, indentList, textRules } =
     editor.getOptions(DeserializeMdPlugin);
 

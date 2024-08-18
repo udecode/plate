@@ -7,7 +7,7 @@ import { TablePlugin } from '@udecode/plate-table';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 
 import { createPlateEditor } from '../../../../react';
-import { createPlugin } from '../../../plugin';
+import { createSlatePlugin } from '../../../plugin';
 import { ParagraphPlugin } from '../../paragraph';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 
@@ -30,7 +30,7 @@ describe('when element has class and attribute, and plugin has deserialize type,
       deserializeHtmlElement(
         createPlateEditor({
           plugins: [
-            createPlugin({
+            createSlatePlugin({
               deserializeHtml: {
                 getNode: ({ element }) => ({
                   id: element.dataset.id,

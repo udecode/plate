@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   type TNode,
   type TNodeEntry,
   moveNodes,
@@ -15,7 +15,7 @@ import type { TColumnElement } from '../types';
  * middle node is empty return false and remove it.
  */
 export const moveMiddleColumn = <N extends TNode>(
-  editor: PlateEditor,
+  editor: SlateEditor,
   [node, path]: TNodeEntry<N>,
   options?: {
     direction: 'left' | 'right';

@@ -86,7 +86,7 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
   settings applied.
 </APIReturns>
 
-### createPlugin
+### createSlatePlugin
 
 Creates a new Plate plugin with the given configuration, supporting extension, nested plugin manipulation, and runtime configuration.
 
@@ -124,7 +124,7 @@ Creates a new Plate plugin with the given configuration, supporting extension, n
   - `extendPlugin(key: string, extendConfig: Partial<PlatePlugin> | ((editor: PlateEditor, plugin: PlatePlugin) => Partial<PlatePlugin>)): PlatePlugin<K, O, A, T, S>`
 </APIReturns>
 
-The `createPlugin` function provides a flexible and powerful way to create and manipulate plugins in Plate:
+The `createSlatePlugin` function provides a flexible and powerful way to create and manipulate plugins in Plate:
 - **Generic Support**: Uses generics `K`, `O`, `A`, `T`, and `S` for strict typing of key, options, API, transforms, and storage respectively.
 - **Default Values**: Automatically sets default values for essential plugin properties.
 - **Nested Plugin Support**: Allows for creating and extending plugins at any nesting level.
@@ -134,14 +134,14 @@ The `createPlugin` function provides a flexible and powerful way to create and m
 #### Basic Usage
 
 ```typescript
-const myPlugin = createPlugin<'myPlugin', MyOptions, MyApi, MyTransforms>({
+const myPlugin = createSlatePlugin<'myPlugin', MyOptions, MyApi, MyTransforms>({
   key: 'myPlugin',
   options: { someOption: true },
   transforms: { someTransform: () => {} },
 });
 
 // or with a function / types inferred
-const myPlugin2 = createPlugin((editor) => ({
+const myPlugin2 = createSlatePlugin((editor) => ({
   key: 'myPlugin',
   options: { someOption: true },
   transforms: { someTransform: () => {} },

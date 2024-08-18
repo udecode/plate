@@ -1,11 +1,11 @@
 import {
   type ToggleMarkPluginOptions,
-  createPlugin,
+  createSlatePlugin,
 } from '@udecode/plate-common';
 import { onKeyDownToggleMark } from '@udecode/plate-common/react';
 
 /** Enables support for subscript formatting. */
-export const SubscriptPlugin = createPlugin<
+export const SubscriptPlugin = createSlatePlugin<
   'subscript',
   ToggleMarkPluginOptions
 >({

@@ -1,6 +1,6 @@
 import type {
   ElementOf,
-  PlateEditor,
+  SlateEditor,
   TElement,
   TNodeEntry,
 } from '@udecode/plate-common';
@@ -17,7 +17,7 @@ import {
  * Get the first sibling list style type at the given indent. If none, return
  * the entry list style type.
  */
-export const getSiblingListStyleType = <E extends PlateEditor>(
+export const getSiblingListStyleType = <E extends SlateEditor>(
   editor: E,
   {
     entry,

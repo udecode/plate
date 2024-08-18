@@ -6,7 +6,7 @@ import { BasicElementsPlugin } from "@udecode/plate-basic-elements";
 import { BasicMarksPlugin } from "@udecode/plate-basic-marks";
 import {
   type Decorate,
-  type TText, createPlugin, isText
+  type TText, createSlatePlugin, isText
 } from "@udecode/plate-common";
 import { Plate, type TRenderLeafProps , usePlateEditor } from "@udecode/plate-common/react";
 import Prism from 'prismjs';
@@ -105,7 +105,7 @@ const _editableProps = {
 export default function PreviewMdDemo() {
   const editor = usePlateEditor({
     override: { components: PlateUI },
-    plugins: [BasicElementsPlugin, BasicMarksPlugin, createPlugin({
+    plugins: [BasicElementsPlugin, BasicMarksPlugin, createSlatePlugin({
       decorate: decoratePreview,
       key: 'preview-md',
     })],

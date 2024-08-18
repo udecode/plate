@@ -2,8 +2,8 @@ import type React from 'react';
 
 import type { TEditableProps } from '@udecode/slate-react';
 
+import type { PlateEditor } from '../editor/PlateEditor';
 import type { DOMHandlers } from '../plugin/DOMHandlers';
-import type { PlateEditor } from '../plugin/PlateEditor';
 
 import { getPluginContext } from '../plugin/getPluginContext';
 

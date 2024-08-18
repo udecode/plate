@@ -4,7 +4,7 @@ import type { SlateEditor } from '../editor';
 import type { PlatePluginInsertDataOptions } from '../plugin/BasePlugin';
 import type { AnyEditorPlugin } from '../plugin/SlatePlugin';
 
-import { getPluginContext } from '../plugin';
+import { getSlatePluginContext } from '../plugin';
 
 /** Pipe preInsert then insertFragment. */
 export const pipeInsertFragment = (
@@ -19,7 +19,7 @@ export const pipeInsertFragment = (
     injectedPlugins.some((p) => {
       return (
         p.editor?.insertData?.preInsert?.({
-          ...getPluginContext(editor, p as any),
+          ...getSlatePluginContext(editor, p as any),
           fragment,
           ...options,
         }) === true

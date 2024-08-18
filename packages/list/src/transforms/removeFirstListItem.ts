@@ -1,11 +1,11 @@
-import type { PlateEditor, TElementEntry } from '@udecode/plate-common';
+import type { SlateEditor, TElementEntry } from '@udecode/plate-common';
 
 import { isListNested } from '../queries/isListNested';
 import { moveListItemUp } from './moveListItemUp';
 
 /** If list is not nested and if li is not the first child, move li up. */
 export const removeFirstListItem = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   {
     list,
     listItem,

@@ -1,6 +1,6 @@
 import { CodeBlockPlugin } from '@udecode/plate-code-block';
 import {
-  createPlugin,
+  createSlatePlugin,
   isSelectionAtBlockStart,
   someNode,
 } from '@udecode/plate-common';
@@ -13,7 +13,7 @@ import { TabbableElement } from './TabbableElement';
 
 export const tabbablePlugin = TabbablePlugin.extend({
   plugins: [
-    createPlugin({
+    createSlatePlugin({
       component: TabbableElement,
       isElement: true,
       isVoid: true,

@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import {
-  type PlateEditor,
+  type SlateEditor,
   type TDescendant,
   createSlateEditor,
 } from '@udecode/plate-common';
@@ -44,7 +44,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const fragment = (
         <fragment>
@@ -81,7 +81,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -106,7 +106,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const fragment = (
         <fragment>
@@ -147,7 +147,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -176,7 +176,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const fragment = (
         <fragment>
@@ -217,7 +217,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -241,7 +241,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const fragment = (
         <fragment>
@@ -279,7 +279,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -304,7 +304,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const fragment = (
         <fragment>
@@ -345,7 +345,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -368,7 +368,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const fragment = (
         <fragment>
@@ -397,7 +397,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -420,7 +420,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const fragment = (
         <fragment>
@@ -453,7 +453,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -476,7 +476,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const fragment = (
         <fragment>
@@ -505,7 +505,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -530,7 +530,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const fragment = (
         <fragment>
@@ -555,7 +555,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -579,7 +579,7 @@ describe('when pasting ul > 2 li fragment', () => {
             <focus offset={3} path={[0, 1, 0, 0]} />
           </selection>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const fragment = (
         <fragment>
@@ -601,7 +601,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -625,7 +625,7 @@ describe('when pasting ul > 2 li fragment', () => {
             <focus offset={3} path={[0, 1, 0, 0]} />
           </selection>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const fragment = (
         <fragment>
@@ -658,7 +658,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -682,7 +682,7 @@ describe('when pasting ul > 2 li fragment', () => {
             <focus offset={5} path={[0, 1, 0, 0]} />
           </selection>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const fragment = (
         <fragment>
@@ -724,7 +724,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -739,7 +739,7 @@ describe('when pasting ul > 2 li fragment', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const fragment = (
         <fragment>
@@ -763,7 +763,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -776,7 +776,7 @@ describe('when pasting ul > 2 li fragment', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const fragment = (
         <fragment>
@@ -806,7 +806,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -821,7 +821,7 @@ describe('when pasting ul > 2 li fragment', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const fragment = (
         <fragment>
@@ -861,7 +861,7 @@ describe('when pasting ul > 2 li fragment', () => {
             </hli>
           </hul>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       editorTest(input, fragment, expected);
     });

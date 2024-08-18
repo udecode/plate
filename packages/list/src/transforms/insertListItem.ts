@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   type TElement,
   collapseSelection,
   deleteText,
@@ -20,7 +20,7 @@ import { Path, Range } from 'slate';
 import { ListItemContentPlugin, ListItemPlugin } from '../ListPlugin';
 
 /** Insert list item if selection in li>p. TODO: test */
-export const insertListItem = (editor: PlateEditor): boolean => {
+export const insertListItem = (editor: SlateEditor): boolean => {
   const liType = editor.getType(ListItemPlugin);
   const licType = editor.getType(ListItemContentPlugin);
 

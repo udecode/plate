@@ -1,4 +1,4 @@
-import { type PluginConfig, createTPlugin } from '@udecode/plate-common';
+import { type PluginConfig, createTSlatePlugin } from '@udecode/plate-common';
 
 import { withRemoveEmptyNodes } from './withRemoveEmptyNodes';
 
@@ -10,7 +10,8 @@ export type RemoveEmptyNodesConfig = PluginConfig<
 >;
 
 /** @see {@link withRemoveEmptyNodes} */
-export const RemoveEmptyNodesPlugin = createTPlugin<RemoveEmptyNodesConfig>({
-  key: 'removeEmptyNodes',
-  withOverrides: withRemoveEmptyNodes,
-});
+export const RemoveEmptyNodesPlugin =
+  createTSlatePlugin<RemoveEmptyNodesConfig>({
+    key: 'removeEmptyNodes',
+    withOverrides: withRemoveEmptyNodes,
+  });

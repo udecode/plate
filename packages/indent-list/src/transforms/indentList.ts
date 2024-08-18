@@ -1,4 +1,4 @@
-import type { PlateEditor, TEditor } from '@udecode/plate-common';
+import type { SlateEditor, TEditor } from '@udecode/plate-common';
 import type { Location } from 'slate';
 
 import { type SetIndentOptions, setIndent } from '@udecode/plate-indent';
@@ -13,7 +13,7 @@ export interface IndentListOptions<E extends TEditor>
 }
 
 /** Increase the indentation of the selected blocks. */
-export const indentList = <E extends PlateEditor>(
+export const indentList = <E extends SlateEditor>(
   editor: E,
   { listStyleType = ListStyleType.Disc, ...options }: IndentListOptions<E> = {}
 ) => {
@@ -26,7 +26,7 @@ export const indentList = <E extends PlateEditor>(
   });
 };
 
-export const indentTodo = <E extends PlateEditor>(
+export const indentTodo = <E extends SlateEditor>(
   editor: E,
   { listStyleType = ListStyleType.Disc, ...options }: IndentListOptions<E> = {}
 ) => {

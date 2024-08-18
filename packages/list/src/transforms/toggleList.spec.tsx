@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { type PlateEditor, createSlateEditor } from '@udecode/plate-common';
+import { type SlateEditor, createSlateEditor } from '@udecode/plate-common';
 import { ImagePlugin } from '@udecode/plate-media';
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -21,7 +21,7 @@ describe('toggle on', () => {
           1<cursor />
         </hp>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -31,7 +31,7 @@ describe('toggle on', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createSlateEditor({
       editor: input,
@@ -54,7 +54,7 @@ describe('toggle on', () => {
           </htext>
         </himg>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -66,7 +66,7 @@ describe('toggle on', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createSlateEditor({
       editor: input,
@@ -95,7 +95,7 @@ describe('toggle on', () => {
           <focus /> gandavum!
         </hp>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -109,7 +109,7 @@ describe('toggle on', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createSlateEditor({
       editor: input,
@@ -134,7 +134,7 @@ describe('toggle on', () => {
           3<focus />
         </hp>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -150,7 +150,7 @@ describe('toggle on', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createSlateEditor({
       editor: input,
@@ -181,7 +181,7 @@ describe('toggle on', () => {
           </htext>
         </himg>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -203,7 +203,7 @@ describe('toggle on', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createSlateEditor({
       editor: input,
@@ -239,7 +239,7 @@ describe('toggle on', () => {
           <focus />
         </hp>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -264,7 +264,7 @@ describe('toggle on', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createSlateEditor({
       editor: input,
@@ -294,7 +294,7 @@ describe('toggle on', () => {
           <anchor />
         </hp>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -319,7 +319,7 @@ describe('toggle on', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createSlateEditor({
       editor: input,
@@ -353,7 +353,7 @@ describe('toggle off', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -369,7 +369,7 @@ describe('toggle off', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createSlateEditor({
       editor: input,
@@ -406,7 +406,7 @@ describe('toggle off', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -427,7 +427,7 @@ describe('toggle off', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createSlateEditor({
       editor: input,
@@ -460,7 +460,7 @@ describe('toggle off', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -468,7 +468,7 @@ describe('toggle off', () => {
         <hp>2</hp>
         <hp>3</hp>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createSlateEditor({
       editor: input,
@@ -507,7 +507,7 @@ describe('toggle off', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -525,7 +525,7 @@ describe('toggle off', () => {
           </htext>
         </himg>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createSlateEditor({
       editor: input,
@@ -558,7 +558,7 @@ describe('toggle over', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -568,7 +568,7 @@ describe('toggle over', () => {
           </hli>
         </hol>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createSlateEditor({
       editor: input,
@@ -597,7 +597,7 @@ describe('toggle over', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -612,7 +612,7 @@ describe('toggle over', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createSlateEditor({
       editor: input,
@@ -643,7 +643,7 @@ describe('toggle over', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -658,7 +658,7 @@ describe('toggle over', () => {
           </hli>
         </hol>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createSlateEditor({
       editor: input,
@@ -690,7 +690,7 @@ describe('toggle over', () => {
           <focus />
         </hp>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -708,7 +708,7 @@ describe('toggle over', () => {
           </hli>
         </hol>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createSlateEditor({
       editor: input,

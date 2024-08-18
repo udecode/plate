@@ -1,7 +1,7 @@
 import type { Path, Point, Range } from 'slate';
 
 import {
-  type PlateEditor,
+  type SlateEditor,
   type TElement,
   type TElementEntry,
   getAboveNode,
@@ -11,7 +11,7 @@ import { ListOrderedPlugin, ListUnorderedPlugin } from '../ListPlugin';
 
 /** Searches upward for the root list element */
 export const getListRoot = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   at: Path | Point | Range | null = editor.selection
 ): TElementEntry | undefined => {
   if (!at) return;

@@ -1,9 +1,9 @@
-import { type PlateEditor, sanitizeUrl } from '@udecode/plate-common';
+import { type SlateEditor, sanitizeUrl } from '@udecode/plate-common';
 
 import type { LinkConfig } from '../LinkPlugin';
 import type { TLinkElement } from '../types';
 
-export const getLinkAttributes = (editor: PlateEditor, link: TLinkElement) => {
+export const getLinkAttributes = (editor: SlateEditor, link: TLinkElement) => {
   const { allowedSchemes, dangerouslySkipSanitization, defaultLinkAttributes } =
     editor.getOptions<LinkConfig>({ key: 'a' });
 

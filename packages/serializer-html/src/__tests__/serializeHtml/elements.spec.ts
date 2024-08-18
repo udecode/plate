@@ -8,7 +8,7 @@ import { ListPlugin } from '@udecode/plate-list';
 import { ImagePlugin } from '@udecode/plate-media';
 import { TablePlugin } from '@udecode/plate-table';
 
-import { serializeHtml } from '../../serializeHtml';
+import { serializeHtml } from '../../react/serializeHtml';
 import { createPlateUIEditor } from '../create-plate-ui-editor';
 
 it('serialize list to html', () => {

@@ -1,4 +1,4 @@
-import { useEventEditorSelectors } from '../../../lib/plugins/event-editor/eventEditorStore';
+import { useEventEditorSelectors } from '../../plugins/event-editor/eventEditorStore';
 import { PLATE_SCOPE, usePlateSelectors } from '../plate';
 
 /** Get last event editor id: focus, blur or last. */

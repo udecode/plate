@@ -1,7 +1,7 @@
 import {
   type PluginConfig,
   type QueryNodeOptions,
-  createTPlugin,
+  createTSlatePlugin,
 } from '@udecode/plate-common';
 
 import { withSelectOnBackspace } from './withSelectOnBackspace';
@@ -15,10 +15,11 @@ export type SelectOnBackspaceConfig = PluginConfig<
 >;
 
 /** @see {@link withSelectOnBackspace} */
-export const SelectOnBackspacePlugin = createTPlugin<SelectOnBackspaceConfig>({
-  key: 'selectOnBackspace',
-  options: {
-    removeNodeIfEmpty: false,
-  },
-  withOverrides: withSelectOnBackspace,
-});
+export const SelectOnBackspacePlugin =
+  createTSlatePlugin<SelectOnBackspaceConfig>({
+    key: 'selectOnBackspace',
+    options: {
+      removeNodeIfEmpty: false,
+    },
+    withOverrides: withSelectOnBackspace,
+  });

@@ -1,11 +1,11 @@
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import { floatingLinkSelectors } from '../components/index';
 import { triggerFloatingLinkEdit } from './triggerFloatingLinkEdit';
 import { triggerFloatingLinkInsert } from './triggerFloatingLinkInsert';
 
 export const triggerFloatingLink = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   {
     focused,
   }: {

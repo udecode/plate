@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { type PlateEditor, findNode } from '@udecode/plate-common';
+import { type SlateEditor, findNode } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -46,7 +46,7 @@ const input = (
       </hli>
     </hul>
   </editor>
-) as any as PlateEditor;
+) as any as SlateEditor;
 
 const output = (
   <editor>
@@ -84,7 +84,7 @@ const output = (
       </hli>
     </hul>
   </editor>
-) as any as PlateEditor;
+) as any as SlateEditor;
 
 it('should', () => {
   const editor = createPlateEditor({ editor: input });

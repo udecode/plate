@@ -2,7 +2,7 @@ import React from 'react';
 
 import { selectAtom } from 'jotai/utils';
 
-import type { PlateEditor } from '../../../plugin/PlateEditor';
+import type { PlateEditor } from '../../../editor/PlateEditor';
 
 import {
   type UsePlateEditorStoreOptions,

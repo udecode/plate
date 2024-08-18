@@ -3,7 +3,7 @@ import {
   type PluginConfig,
   type RangeBeforeOptions,
   bindFirst,
-  createTPlugin,
+  createTSlatePlugin,
   isUrl,
 } from '@udecode/plate-common';
 
@@ -106,7 +106,7 @@ export type LinkConfig = PluginConfig<
 >;
 
 /** Enables support for hyperlinks. */
-export const LinkPlugin = createTPlugin<LinkConfig>({
+export const LinkPlugin = createTSlatePlugin<LinkConfig>({
   isElement: true,
   isInline: true,
   key: 'a',

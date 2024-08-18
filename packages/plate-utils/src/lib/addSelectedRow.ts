@@ -1,7 +1,7 @@
-import type { PlateEditor } from '@udecode/plate-core';
+import type { SlateEditor } from '@udecode/plate-common';
 
 export const addSelectedRow = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   id: string,
   options: { aboveHtmlNode?: HTMLDivElement; clear?: boolean } = {}
 ) => {

@@ -1,7 +1,7 @@
-import { ParagraphPlugin, createPlugin } from '@udecode/plate-common';
+import { ParagraphPlugin, createSlatePlugin } from '@udecode/plate-common';
 
 /** Creates a plugin that adds alignment functionality to the editor. */
-export const AlignPlugin = createPlugin({
+export const AlignPlugin = createSlatePlugin({
   inject: {
     props: {
       defaultNodeValue: 'start',

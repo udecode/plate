@@ -1,7 +1,7 @@
 import {
   type DeserializeHtml,
   DeserializeHtmlPlugin,
-  createPlugin,
+  createSlatePlugin,
 } from '@udecode/plate-common';
 
 import { cleanDocx } from '../docx-cleaner/cleanDocx';
@@ -45,7 +45,7 @@ const getListNode =
     return node;
   };
 
-export const DeserializeDocxPlugin = createPlugin({
+export const DeserializeDocxPlugin = createSlatePlugin({
   inject: {
     plugins: {
       [DeserializeHtmlPlugin.key]: {

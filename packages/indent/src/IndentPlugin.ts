@@ -1,7 +1,7 @@
 import {
   ParagraphPlugin,
   type PluginConfig,
-  createTPlugin,
+  createTSlatePlugin,
 } from '@udecode/plate-common';
 
 import { onKeyDownIndent } from './onKeyDownIndent';
@@ -29,7 +29,7 @@ export type IndentConfig = PluginConfig<
   }
 >;
 
-export const IndentPlugin = createTPlugin<IndentConfig>({
+export const IndentPlugin = createTSlatePlugin<IndentConfig>({
   handlers: {
     onKeyDown: onKeyDownIndent,
   },

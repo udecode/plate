@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   type TElement,
   type TNodeEntry,
   getChildren,
@@ -10,7 +10,7 @@ import {
 import { CodeBlockPlugin, CodeLinePlugin } from '../CodeBlockPlugin';
 
 /** Normalize code block node to force the pre>code>div.codeline structure. */
-export const normalizeCodeBlock = (editor: PlateEditor) => {
+export const normalizeCodeBlock = (editor: SlateEditor) => {
   const codeBlockType = editor.getType(CodeBlockPlugin);
   const codeLineType = editor.getType(CodeLinePlugin);
 

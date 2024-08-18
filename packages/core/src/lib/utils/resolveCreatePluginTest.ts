@@ -2,7 +2,7 @@ import { createTEditor } from '@udecode/slate';
 
 import type { AnyPluginConfig } from '../plugin/BasePlugin';
 
-import { createPlugin } from '../plugin/createPlugin';
+import { createSlatePlugin } from '../plugin/createSlatePlugin';
 import { resolvePlugin } from './resolvePlugin';
 
 export const resolvePluginTest = <P extends AnyPluginConfig>(plugin: P) => {
@@ -10,5 +10,8 @@ export const resolvePluginTest = <P extends AnyPluginConfig>(plugin: P) => {
 };
 
 export const resolveCreatePluginTest = ((plugin) => {
-  return resolvePlugin(createTEditor() as any, createPlugin(plugin) as any);
-}) as typeof createPlugin;
+  return resolvePlugin(
+    createTEditor() as any,
+    createSlatePlugin(plugin) as any
+  );
+}) as typeof createSlatePlugin;

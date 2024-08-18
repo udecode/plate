@@ -2,7 +2,7 @@ import {
   ParagraphPlugin,
   type PluginConfig,
   type QueryNodeOptions,
-  createTPlugin,
+  createTSlatePlugin,
 } from '@udecode/plate-common';
 
 import { withTrailingBlock } from './withTrailingBlock';
@@ -19,7 +19,7 @@ export type TrailingBlockConfig = PluginConfig<
 >;
 
 /** @see {@link withTrailingBlock} */
-export const TrailingBlockPlugin = createTPlugin<TrailingBlockConfig>({
+export const TrailingBlockPlugin = createTSlatePlugin<TrailingBlockConfig>({
   key: 'trailingBlock',
   options: {
     level: 0,

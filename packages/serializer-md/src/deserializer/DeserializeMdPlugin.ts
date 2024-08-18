@@ -1,4 +1,8 @@
-import { type PluginConfig, createTPlugin, isUrl } from '@udecode/plate-common';
+import {
+  type PluginConfig,
+  createTSlatePlugin,
+  isUrl,
+} from '@udecode/plate-common';
 
 import {
   type RemarkElementRules,
@@ -17,7 +21,7 @@ export type DeserializeMdConfig = PluginConfig<
   }
 >;
 
-export const DeserializeMdPlugin = createTPlugin<DeserializeMdConfig>({
+export const DeserializeMdPlugin = createTSlatePlugin<DeserializeMdConfig>({
   key: 'deserializeMd',
   options: {
     elementRules: remarkDefaultElementRules,

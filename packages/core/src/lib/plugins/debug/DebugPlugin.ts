@@ -1,4 +1,4 @@
-import { createPlugin } from '../../plugin';
+import { createSlatePlugin } from '../../plugin';
 
 export type DebugErrorType =
   | 'DEFAULT'
@@ -26,7 +26,7 @@ type LogFunction = (
   details?: any
 ) => void;
 
-export const DebugPlugin = createPlugin({
+export const DebugPlugin = createSlatePlugin({
   key: 'debug',
   options: {
     isProduction: process.env.NODE_ENV === 'production',

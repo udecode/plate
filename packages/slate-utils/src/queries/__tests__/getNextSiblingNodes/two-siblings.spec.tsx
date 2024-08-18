@@ -2,7 +2,7 @@
 
 import type { Range } from 'slate';
 
-import { type PlateEditor, getBlockAbove } from '@udecode/plate-common';
+import { type SlateEditor, getBlockAbove } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { LinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
@@ -23,7 +23,7 @@ const input = (
       <htext>last</htext>
     </hp>
   </editor>
-) as any as PlateEditor;
+) as any as SlateEditor;
 
 const output = [<htext />, <htext>last</htext>];
 

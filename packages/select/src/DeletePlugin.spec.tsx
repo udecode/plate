@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
@@ -21,7 +21,7 @@ describe('p (empty) + codeblock when selection not in code block', () => {
           <hcodeline>test2</hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const expected = (
       <editor>
@@ -30,7 +30,7 @@ describe('p (empty) + codeblock when selection not in code block', () => {
           <hcodeline>test2</hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createPlateEditor({
       editor: input,
@@ -56,7 +56,7 @@ describe('p (not empty) + code block when selection not in code block', () => {
           <hcodeline>test2</hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const expected = (
       <editor>
@@ -65,7 +65,7 @@ describe('p (not empty) + code block when selection not in code block', () => {
           <hcodeline>test2</hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createPlateEditor({
       editor: input,

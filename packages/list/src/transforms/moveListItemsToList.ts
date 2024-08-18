@@ -1,6 +1,6 @@
 import {
   type MoveChildrenOptions,
-  type PlateEditor,
+  type SlateEditor,
   type TElementEntry,
   deleteText,
   findDescendant,
@@ -43,7 +43,7 @@ export interface MergeListItemIntoListOptions {
  * `fromList` is defined).
  */
 export const moveListItemsToList = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   {
     deleteFromList = true,
     fromList,

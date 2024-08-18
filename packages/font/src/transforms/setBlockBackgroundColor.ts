@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   type TNodeEntry,
   setNodes,
 } from '@udecode/plate-common';
@@ -7,7 +7,7 @@ import {
 import { FontBackgroundColorPlugin } from '../FontBackgroundColorPlugin';
 
 export const setBlockBackgroundColor = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   block: TNodeEntry,
   backgroundColor: string
 ) => {

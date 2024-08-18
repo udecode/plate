@@ -1,11 +1,11 @@
 /** @jsx jsx */
 
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { CodeBlockPlugin } from '../react/CodeBlockPlugin.react';
+import { CodeBlockPlugin } from '../react/CodeBlockPlugin';
 
 jsx;
 
@@ -22,7 +22,7 @@ describe('insert break', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = (
         <editor>
@@ -35,7 +35,7 @@ describe('insert break', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const editor = createPlateEditor({
         editor: input,

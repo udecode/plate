@@ -2,7 +2,7 @@ import type { Path } from 'slate';
 
 import {
   ParagraphPlugin,
-  type PlateEditor,
+  type SlateEditor,
   getAboveNode,
   getBlockAbove,
   getCommonNode,
@@ -20,7 +20,7 @@ import {
 } from '../ListPlugin';
 import { getListTypes } from '../queries/index';
 
-export const unwrapList = (editor: PlateEditor, { at }: { at?: Path } = {}) => {
+export const unwrapList = (editor: SlateEditor, { at }: { at?: Path } = {}) => {
   const ancestorListTypeCheck = () => {
     if (getAboveNode(editor, { match: { at, type: getListTypes(editor) } })) {
       return true;

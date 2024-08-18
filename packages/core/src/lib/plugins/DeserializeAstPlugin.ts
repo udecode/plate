@@ -1,10 +1,10 @@
-import { createPlugin } from '../plugin';
+import { createSlatePlugin } from '../plugin';
 
 /**
  * Enables support for deserializing inserted content from Slate Ast format to
  * Slate format while apply a small bug fix.
  */
-export const DeserializeAstPlugin = createPlugin({
+export const DeserializeAstPlugin = createSlatePlugin({
   editor: {
     insertData: {
       format: 'application/x-slate-fragment',

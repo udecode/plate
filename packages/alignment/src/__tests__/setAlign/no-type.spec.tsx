@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
@@ -18,13 +18,13 @@ describe('when type (h1) is not in types', () => {
         <cursor />
       </hh1>
     </editor>
-  ) as any as PlateEditor;
+  ) as any as SlateEditor;
 
   const output = (
     <editor>
       <hh1>test</hh1>
     </editor>
-  ) as any as PlateEditor;
+  ) as any as SlateEditor;
 
   it('should not align', () => {
     const editor = createPlateEditor({

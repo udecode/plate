@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   type TElement,
   type TElementEntry,
   getNodeEntry,
@@ -18,7 +18,7 @@ export interface MoveListItemDownOptions {
 }
 
 export const moveListItemDown = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   { list, listItem }: MoveListItemDownOptions
 ) => {
   let moved = false;

@@ -1,6 +1,7 @@
 import React from 'react';
 
-import type { AnyObject, PlateRenderElementProps } from '@udecode/plate-common';
+import type { AnyObject } from '@udecode/plate-common';
+import type { PlateRenderElementProps } from '@udecode/plate-common/react';
 
 import {
   type WithDraggableOptions,

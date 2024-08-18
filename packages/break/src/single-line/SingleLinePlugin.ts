@@ -1,10 +1,10 @@
-import { createPlugin } from '@udecode/plate-common';
+import { createSlatePlugin } from '@udecode/plate-common';
 
 import { onKeyDownSingleLine } from './onKeyDownSingleLine';
 import { withSingleLine } from './withSingleLine';
 
 /** Forces editor to only have one line. */
-export const SingleLinePlugin = createPlugin({
+export const SingleLinePlugin = createSlatePlugin({
   handlers: {
     onKeyDown: onKeyDownSingleLine,
   },

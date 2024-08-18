@@ -1,6 +1,6 @@
 import {
-  type PlateEditor,
   type PluginConfig,
+  type SlateEditor,
   type TElement,
   type WithOverride,
   getEditorString,
@@ -39,7 +39,7 @@ export const withTriggerCombobox: WithOverride<
     if (
       !editor.selection ||
       !matchesTrigger(text) ||
-      (triggerQuery && !triggerQuery(editor as PlateEditor))
+      (triggerQuery && !triggerQuery(editor as SlateEditor))
     ) {
       return insertText(text);
     }

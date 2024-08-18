@@ -1,7 +1,7 @@
 import type { WithOverride } from '../plugin/SlatePlugin';
 
-import { getPluginContext } from '../plugin';
-import { createPlugin } from '../plugin/createPlugin';
+import { getSlatePluginContext } from '../plugin';
+import { createSlatePlugin } from '../plugin/createSlatePlugin';
 import { getInjectedPlugins } from '../utils/getInjectedPlugins';
 import { pipeInsertDataQuery } from '../utils/pipeInsertDataQuery';
 import { pipeInsertFragment } from '../utils/pipeInsertFragment';
@@ -40,7 +40,7 @@ export const withInsertData: WithOverride = ({ editor }) => {
       });
 
       let fragment = getFragment?.({
-        ...getPluginContext(editor, plugin),
+        ...getSlatePluginContext(editor, plugin),
         data,
         dataTransfer,
       });
@@ -72,7 +72,7 @@ export const withInsertData: WithOverride = ({ editor }) => {
   return editor;
 };
 
-export const InsertDataPlugin = createPlugin({
+export const InsertDataPlugin = createSlatePlugin({
   key: 'insertData',
   withOverrides: withInsertData,
 });

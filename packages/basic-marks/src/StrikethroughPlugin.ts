@@ -1,12 +1,12 @@
 import {
   type ToggleMarkPluginOptions,
-  createPlugin,
+  createSlatePlugin,
   someHtmlElement,
 } from '@udecode/plate-common';
 import { onKeyDownToggleMark } from '@udecode/plate-common/react';
 
 /** Enables support for strikethrough formatting. */
-export const StrikethroughPlugin = createPlugin<
+export const StrikethroughPlugin = createSlatePlugin<
   'strikethrough',
   ToggleMarkPluginOptions
 >({

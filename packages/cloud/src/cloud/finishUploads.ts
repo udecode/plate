@@ -1,4 +1,4 @@
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import delay from 'delay';
 
@@ -18,7 +18,7 @@ const TEN_MINUTES = 1000 * 60 * 60;
  * amount of time.
  */
 export const finishUploads = async (
-  editor: PlateEditor,
+  editor: SlateEditor,
   { maxTimeoutInMs = TEN_MINUTES }: FinishUploadsOptions = {}
 ): Promise<void> => {
   const { uploadStore } = editor.getOptions(CloudPlugin);

@@ -1,7 +1,7 @@
 import {
   type AnyObject,
   type GetNodeEntriesOptions,
-  type PlateEditor,
+  type SlateEditor,
   type TEditor,
   type UnhangRangeOptions,
   getNodeEntries,
@@ -31,7 +31,7 @@ export interface SetIndentOptions<E extends TEditor = TEditor> {
 }
 
 /** Add offset to the indentation of the selected blocks. */
-export const setIndent = <E extends PlateEditor>(
+export const setIndent = <E extends SlateEditor>(
   editor: E,
   {
     getNodesOptions,

@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   isCollapsed,
   isRangeAcrossBlocks,
   someNode,
@@ -8,7 +8,7 @@ import {
 import { ListItemPlugin } from '../ListPlugin';
 
 /** Is selection across blocks with list items */
-export const isAcrossListItems = (editor: PlateEditor) => {
+export const isAcrossListItems = (editor: SlateEditor) => {
   const { selection } = editor;
 
   if (!selection || isCollapsed(selection)) {

@@ -1,14 +1,14 @@
 /** @jsx jsx */
 
 import {
-  type PlateEditor,
+  type SlateEditor,
   type TElementEntry,
   getNodeEntry,
 } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { CodeBlockPlugin } from '../../react/CodeBlockPlugin.react';
+import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { indentCodeLine } from './indentCodeLine';
 
 jsx;
@@ -26,7 +26,7 @@ describe('indent code line', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = (
         <editor>
@@ -38,7 +38,7 @@ describe('indent code line', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const editor = createPlateEditor({
         editor: input,
@@ -67,7 +67,7 @@ describe('indent code line', () => {
               </hcodeline>
             </hcodeblock>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         const output = (
           <editor>
@@ -79,7 +79,7 @@ describe('indent code line', () => {
               </hcodeline>
             </hcodeblock>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         const editor = createPlateEditor({
           editor: input,
@@ -107,7 +107,7 @@ describe('indent code line', () => {
               </hcodeline>
             </hcodeblock>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         const output = (
           <editor>
@@ -119,7 +119,7 @@ describe('indent code line', () => {
               </hcodeline>
             </hcodeblock>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         const editor = createPlateEditor({
           editor: input,

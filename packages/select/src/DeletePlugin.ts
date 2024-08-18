@@ -2,7 +2,7 @@ import {
   ParagraphPlugin,
   type PluginConfig,
   type QueryNodeOptions,
-  createTPlugin,
+  createTSlatePlugin,
 } from '@udecode/plate-common';
 
 import { withDelete } from './withDelete';
@@ -15,7 +15,7 @@ export type DeleteConfig = PluginConfig<
 >;
 
 /** @see {@link withDelete} */
-export const DeletePlugin = createTPlugin<DeleteConfig>({
+export const DeletePlugin = createTSlatePlugin<DeleteConfig>({
   key: 'delete',
   options: {
     query: {

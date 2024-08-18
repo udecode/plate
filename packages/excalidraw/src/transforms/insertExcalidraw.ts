@@ -1,6 +1,6 @@
 import {
   type InsertNodesOptions,
-  type PlateEditor,
+  type SlateEditor,
   type TNodeProps,
   getParentNode,
   insertNodes,
@@ -10,7 +10,7 @@ import type { TExcalidrawElement } from '../types';
 
 import { ExcalidrawPlugin } from '../ExcalidrawPlugin';
 
-export const insertExcalidraw = <E extends PlateEditor>(
+export const insertExcalidraw = <E extends SlateEditor>(
   editor: E,
   {
     key = ExcalidrawPlugin.key,

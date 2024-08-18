@@ -1,13 +1,13 @@
-import { type PlateEditor, isHotkey } from '@udecode/plate-core';
+import { type SlateEditor, isHotkey } from '@udecode/plate-core';
 import { moveSelection } from '@udecode/slate';
 import { Range } from 'slate';
 
 export interface MoveSelectionByOffsetOptions {
-  query?: (editor: PlateEditor) => boolean;
+  query?: (editor: SlateEditor) => boolean;
 }
 
 export const moveSelectionByOffset = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   {
     event,
     query = () => true,

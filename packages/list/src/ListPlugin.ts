@@ -2,7 +2,7 @@ import {
   DeserializeHtmlPlugin,
   type HotkeyPluginOptions,
   type PluginConfig,
-  createPlugin,
+  createSlatePlugin,
   someNode,
 } from '@udecode/plate-common';
 
@@ -17,7 +17,7 @@ export type ListPluginOptions = {
 
 export type ListConfig = PluginConfig<any, ListPluginOptions>;
 
-export const ListUnorderedPlugin = createPlugin<'ul', ListPluginOptions>({
+export const ListUnorderedPlugin = createSlatePlugin<'ul', ListPluginOptions>({
   deserializeHtml: {
     rules: [
       {
@@ -33,7 +33,7 @@ export const ListUnorderedPlugin = createPlugin<'ul', ListPluginOptions>({
   withOverrides: withList,
 });
 
-export const ListOrderedPlugin = createPlugin<'ol', ListPluginOptions>({
+export const ListOrderedPlugin = createSlatePlugin<'ol', ListPluginOptions>({
   deserializeHtml: { rules: [{ validNodeName: 'OL' }] },
   handlers: {
     onKeyDown: onKeyDownList,
@@ -42,7 +42,7 @@ export const ListOrderedPlugin = createPlugin<'ol', ListPluginOptions>({
   key: 'ol',
 });
 
-export const ListItemPlugin = createPlugin({
+export const ListItemPlugin = createSlatePlugin({
   deserializeHtml: { rules: [{ validNodeName: 'LI' }] },
   isElement: true,
   key: 'li',
@@ -62,13 +62,13 @@ export const ListItemPlugin = createPlugin({
   },
 }));
 
-export const ListItemContentPlugin = createPlugin({
+export const ListItemContentPlugin = createSlatePlugin({
   isElement: true,
   key: 'lic',
 });
 
 /** Enables support for bulleted, numbered and to-do lists. */
-export const ListPlugin = createPlugin({
+export const ListPlugin = createSlatePlugin({
   key: 'list',
   plugins: [
     ListUnorderedPlugin,

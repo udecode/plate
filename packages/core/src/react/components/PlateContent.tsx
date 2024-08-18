@@ -7,7 +7,7 @@ import type { Range } from 'slate';
 import { Editable } from 'slate-react';
 
 import type { Nullable } from '../../lib';
-import type { PlateEditor } from '../plugin/PlateEditor';
+import type { PlateEditor } from '../editor/PlateEditor';
 
 import { useEditableProps } from '../hooks';
 import { useEditorRef } from '../stores';

@@ -1,9 +1,9 @@
-import { createPlugin } from '@udecode/plate-common';
+import { createSlatePlugin } from '@udecode/plate-common';
 import { findEventRange } from '@udecode/plate-common/react';
 
 import { cursorStore } from '@/registry/default/plate-ui/cursor-overlay';
 
-export const DragOverCursorPlugin = createPlugin({
+export const DragOverCursorPlugin = createSlatePlugin({
   handlers: {
     onDragEnd: () => {
       cursorStore.set.cursors({});

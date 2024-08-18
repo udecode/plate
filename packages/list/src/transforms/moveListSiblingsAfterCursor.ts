@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   type TElement,
   type TElementEntry,
   getNode,
@@ -11,7 +11,7 @@ import { Path } from 'slate';
 import { getListTypes } from '../queries/getListTypes';
 
 export const moveListSiblingsAfterCursor = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   {
     at,
     to,

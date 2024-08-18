@@ -1,4 +1,4 @@
-import { createPlugin } from '../../plugin';
+import { createSlatePlugin } from '../../plugin';
 import { deserializeHtml } from './utils/deserializeHtml';
 import { parseHtmlDocument } from './utils/parseHtmlDocument';
 
@@ -6,7 +6,7 @@ import { parseHtmlDocument } from './utils/parseHtmlDocument';
  * Enables support for deserializing inserted content from HTML format to Slate
  * format.
  */
-export const DeserializeHtmlPlugin = createPlugin({
+export const DeserializeHtmlPlugin = createSlatePlugin({
   editor: {
     insertData: {
       format: 'text/html',

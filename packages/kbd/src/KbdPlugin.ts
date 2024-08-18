@@ -1,8 +1,8 @@
-import { createPlugin } from '@udecode/plate-common';
+import { createSlatePlugin } from '@udecode/plate-common';
 import { onKeyDownToggleMark } from '@udecode/plate-common/react';
 
 /** Enables support for code formatting */
-export const KbdPlugin = createPlugin({
+export const KbdPlugin = createSlatePlugin({
   deserializeHtml: {
     rules: [{ validNodeName: ['KBD'] }],
   },

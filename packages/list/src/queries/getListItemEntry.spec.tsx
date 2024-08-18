@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
@@ -21,7 +21,7 @@ describe('when the cursor is in a list item paragraph', () => {
         </hli>
       </hul>
     </editor>
-  ) as any as PlateEditor;
+  ) as any as SlateEditor;
 
   const listNode = (
     <hul>
@@ -72,7 +72,7 @@ describe('when the cursor is in a nested list item paragraph', () => {
         </hli>
       </hul>
     </editor>
-  ) as any as PlateEditor;
+  ) as any as SlateEditor;
 
   const listNode = (
     <hul>
@@ -128,7 +128,7 @@ describe('when the selection range includes root list item', () => {
         </hli>
       </hul>
     </editor>
-  ) as any as PlateEditor;
+  ) as any as SlateEditor;
 
   const listNode = (
     <hul>
@@ -186,7 +186,7 @@ describe('when the cursor is not in a list item', () => {
         2<cursor />
       </hp>
     </editor>
-  ) as any as PlateEditor;
+  ) as any as SlateEditor;
 
   it('should be', () => {
     const editor = createPlateEditor({ editor: input });

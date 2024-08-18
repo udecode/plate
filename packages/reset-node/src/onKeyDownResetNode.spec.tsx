@@ -9,7 +9,7 @@ import {
 } from '@udecode/plate-code-block';
 import {
   type AnyPlatePlugin,
-  createPlugin,
+  createSlatePlugin,
   getPluginContext,
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
@@ -41,7 +41,7 @@ describe('onKeyDownResetNode', () => {
       types: [BlockquotePlugin.key],
     };
 
-    const plugin: AnyPlatePlugin = createPlugin({
+    const plugin: AnyPlatePlugin = createSlatePlugin({
       options: {
         rules: [
           { ...blockquoteRule, ...enterRule },
@@ -132,7 +132,7 @@ describe('onKeyDownResetNode', () => {
       types: [CodeBlockPlugin.key],
     };
 
-    const plugin: AnyPlatePlugin = createPlugin({
+    const plugin: AnyPlatePlugin = createSlatePlugin({
       options: {
         rules: [
           {
@@ -319,7 +319,7 @@ describe('onKeyDownResetNode', () => {
       types: [ListItemPlugin.key],
     };
 
-    const plugin: AnyPlatePlugin = createPlugin({
+    const plugin: AnyPlatePlugin = createSlatePlugin({
       options: {
         rules: [
           { ...listRule, ...enterRule },

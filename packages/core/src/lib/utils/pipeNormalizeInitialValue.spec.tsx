@@ -3,11 +3,11 @@ import React from 'react';
 import { renderHook } from '@testing-library/react-hooks';
 
 import { Plate, createPlateEditor, useEditorValue } from '../../react';
-import { createPlugin } from '../plugin';
+import { createSlatePlugin } from '../plugin';
 
 describe('pipeNormalizeInitialValue', () => {
   const createTestPlugin = (key: string) =>
-    createPlugin({
+    createSlatePlugin({
       key,
       normalizeInitialValue: ({ value: initialValue }: any) => {
         initialValue[0].count += 1;

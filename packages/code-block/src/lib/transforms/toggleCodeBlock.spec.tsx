@@ -1,11 +1,11 @@
 /** @jsx jsx */
 
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { CodeBlockPlugin } from '../../react/CodeBlockPlugin.react';
+import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { toggleCodeBlock } from './toggleCodeBlock';
 
 jsx;
@@ -20,7 +20,7 @@ describe('toggle on', () => {
         </hp>
         <hp>line 2</hp>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -32,7 +32,7 @@ describe('toggle on', () => {
         </hcodeblock>
         <hp>line 2</hp>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createPlateEditor({
       editor: input,
@@ -53,7 +53,7 @@ describe('toggle on', () => {
           <focus /> gandavum!
         </hp>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -65,7 +65,7 @@ describe('toggle on', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createPlateEditor({
       editor: input,
@@ -89,7 +89,7 @@ describe('toggle on', () => {
           line 3
         </hp>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -104,7 +104,7 @@ describe('toggle on', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createPlateEditor({
       editor: input,

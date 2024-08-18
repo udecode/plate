@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
@@ -23,7 +23,7 @@ describe('isSelectionAtCodeBlockStart', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     expect(
       isSelectionAtCodeBlockStart(createPlateEditor({ editor: input }))
@@ -43,7 +43,7 @@ describe('isSelectionAtCodeBlockStart', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     expect(
       isSelectionAtCodeBlockStart(createPlateEditor({ editor: input }))
@@ -60,7 +60,7 @@ describe('isSelectionAtCodeBlockStart', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     expect(
       isSelectionAtCodeBlockStart(createPlateEditor({ editor: input }))
@@ -78,7 +78,7 @@ describe('isSelectionAtCodeBlockStart', () => {
           <hcodeline>line 2</hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     expect(
       isSelectionAtCodeBlockStart(createPlateEditor({ editor: input }))

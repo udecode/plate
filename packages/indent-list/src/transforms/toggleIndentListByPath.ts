@@ -1,6 +1,6 @@
 import {
   ParagraphPlugin,
-  type PlateEditor,
+  type SlateEditor,
   type TNodeEntry,
   setNodes,
   unsetNodes,
@@ -10,7 +10,7 @@ import { IndentPlugin } from '@udecode/plate-indent';
 import { INDENT_LIST_KEYS, IndentListPlugin } from '../IndentListPlugin';
 
 export const toggleIndentListByPath = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   [node, path]: TNodeEntry,
   listStyleType: string
 ) => {
@@ -30,7 +30,7 @@ export const toggleIndentListByPath = (
 };
 
 export const toggleIndentListByPathUnSet = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   [, path]: TNodeEntry
 ) =>
   unsetNodes(

@@ -1,9 +1,13 @@
 import { isDefined } from '@udecode/utils';
-import merge from 'lodash/merge.js';
 
 import type { SlatePlugin, SlatePlugins } from '../plugin/SlatePlugin';
 
-import { type SlateEditor, getPluginContext, resolvePlugin } from '../index';
+import {
+  type SlateEditor,
+  getSlatePluginContext,
+  mergeWithoutArray,
+  resolvePlugin,
+} from '../index';
 
 /**
  * Initialize and configure the editor's plugin system. This function sets up
@@ -30,7 +34,9 @@ export const resolvePlugins = (
   // withOverrides
   editor.pluginList.forEach((plugin) => {
     if (plugin.withOverrides) {
-      editor = plugin.withOverrides(getPluginContext(editor, plugin)) as any;
+      editor = plugin.withOverrides(
+        getSlatePluginContext(editor, plugin)
+      ) as any;
     }
   });
 
@@ -48,10 +54,10 @@ const mergePluginApis = (editor: SlateEditor) => {
     // Apply api extensions
     if (plugin.__apiExtensions && plugin.__apiExtensions.length > 0) {
       plugin.__apiExtensions.forEach((methodExtension) => {
-        const newApi = methodExtension(getPluginContext(editor, plugin));
+        const newApi = methodExtension(getSlatePluginContext(editor, plugin));
 
-        merge(plugin.api, newApi);
-        merge(editor.api, newApi);
+        mergeWithoutArray(plugin.api, newApi);
+        mergeWithoutArray(editor.api, newApi);
       });
       delete (plugin as any).__apiExtensions;
     }
@@ -62,11 +68,11 @@ const mergePluginApis = (editor: SlateEditor) => {
     ) {
       plugin.__transformExtensions.forEach((transformExtension) => {
         const newTransforms = transformExtension(
-          getPluginContext(editor, plugin)
+          getSlatePluginContext(editor, plugin)
         );
 
-        merge(plugin.transforms, newTransforms);
-        merge(editor.transforms, newTransforms); // Add transforms to editor.api as well
+        mergeWithoutArray(plugin.transforms, newTransforms);
+        mergeWithoutArray(editor.transforms, newTransforms); // Add transforms to editor.api as well
       });
       delete (plugin as any).__transformExtensions;
     }
@@ -82,7 +88,7 @@ const flattenAndMergePlugins = (
     const existingPlugin = pluginMap.get(plugin.key);
 
     if (existingPlugin) {
-      pluginMap.set(plugin.key, merge({}, existingPlugin, plugin));
+      pluginMap.set(plugin.key, mergeWithoutArray({}, existingPlugin, plugin));
     } else {
       pluginMap.set(plugin.key, plugin);
     }
@@ -164,7 +170,7 @@ export const applyPluginOverrides = (editor: SlateEditor) => {
     // Collect all overrides
     for (const plugin of plugins) {
       if (plugin.override.enabled) {
-        merge(enabledOverrides, plugin.override.enabled);
+        mergeWithoutArray(enabledOverrides, plugin.override.enabled);
       }
       // TODO react
       if ((plugin.override as any).components) {
@@ -184,7 +190,11 @@ export const applyPluginOverrides = (editor: SlateEditor) => {
       }
       if (plugin.override.plugins) {
         Object.entries(plugin.override.plugins).forEach(([key, value]) => {
-          pluginOverrides[key] = merge({}, pluginOverrides[key], value);
+          pluginOverrides[key] = mergeWithoutArray(
+            {},
+            pluginOverrides[key],
+            value
+          );
 
           if (value.enabled !== undefined) {
             enabledOverrides[key] = value.enabled;
@@ -199,7 +209,11 @@ export const applyPluginOverrides = (editor: SlateEditor) => {
 
       // Apply plugin overrides
       if (pluginOverrides[p.key]) {
-        updatedPlugin = merge({}, updatedPlugin, pluginOverrides[p.key]);
+        updatedPlugin = mergeWithoutArray(
+          {},
+          updatedPlugin,
+          pluginOverrides[p.key]
+        );
       }
       // Apply component overrides
       // TODO react

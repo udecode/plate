@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { IndentPlugin } from '@udecode/plate-indent';
@@ -19,13 +19,13 @@ describe('normalizeIndentList', () => {
             1
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = (
         <editor>
           <hp>1</hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const editor = createPlateEditor({
         editor: input,

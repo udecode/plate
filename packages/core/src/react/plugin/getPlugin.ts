@@ -1,8 +1,8 @@
 import type { AnyPluginConfig, EditorPlugin, WithRequiredKey } from '../../lib';
-import type { PlateEditor } from './PlateEditor';
+import type { PlateEditor } from '../editor/PlateEditor';
 import type { EditorPlatePlugin } from './PlatePlugin';
 
-import { createReactPlugin } from './createReactPlugin';
+import { createPlatePlugin } from './createPlatePlugin';
 
 /** Get editor plugin by key or plugin object. */
 export function getPlugin<C extends AnyPluginConfig = AnyPluginConfig>(
@@ -15,6 +15,6 @@ export function getPlugin<C extends AnyPluginConfig = AnyPluginConfig>(
     : EditorPlatePlugin<C> {
   return (
     (editor.plugins[plugin.key] as any) ??
-    createReactPlugin({ key: plugin.key })
+    createPlatePlugin({ key: plugin.key })
   );
 }

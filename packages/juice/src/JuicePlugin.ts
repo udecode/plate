@@ -1,7 +1,10 @@
-import { DeserializeHtmlPlugin, createPlugin } from '@udecode/plate-common';
+import {
+  DeserializeHtmlPlugin,
+  createSlatePlugin,
+} from '@udecode/plate-common';
 import juice from 'juice';
 
-export const JuicePlugin = createPlugin({
+export const JuicePlugin = createSlatePlugin({
   inject: {
     plugins: {
       [DeserializeHtmlPlugin.key]: {

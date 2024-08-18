@@ -7,7 +7,6 @@ import { InlineVoidPlugin } from './InlineVoidPlugin';
 import { InsertDataPlugin } from './InsertDataPlugin';
 import { DebugPlugin } from './debug/DebugPlugin';
 import { SlateNextPlugin } from './editor-protocol/SlateNextPlugin';
-import { EventEditorPlugin } from './event-editor';
 import { DeserializeHtmlPlugin } from './html-deserializer';
 import { LengthPlugin } from './length';
 import { ParagraphPlugin } from './paragraph';
@@ -35,7 +34,6 @@ export const getCorePlugins = ({
     PlateApiPlugin,
     InlineVoidPlugin,
     InsertDataPlugin,
-    EventEditorPlugin,
     maxLength
       ? LengthPlugin.configure({
           options: { maxLength },

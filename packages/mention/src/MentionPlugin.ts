@@ -1,15 +1,15 @@
 import { withTriggerCombobox } from '@udecode/plate-combobox';
 import {
   type PluginConfig,
-  createPlugin,
-  createTPlugin,
+  createSlatePlugin,
+  createTSlatePlugin,
 } from '@udecode/plate-common';
 
 import type { MentionPluginOptions } from './types';
 
 export type MentionConfig = PluginConfig<'mention', MentionPluginOptions>;
 
-export const MentionInputPlugin = createPlugin({
+export const MentionInputPlugin = createSlatePlugin({
   isElement: true,
   isInline: true,
   isVoid: true,
@@ -17,7 +17,7 @@ export const MentionInputPlugin = createPlugin({
 });
 
 /** Enables support for autocompleting @mentions. */
-export const MentionPlugin = createTPlugin<MentionConfig>({
+export const MentionPlugin = createTSlatePlugin<MentionConfig>({
   isElement: true,
   isInline: true,
   isMarkableVoid: true,

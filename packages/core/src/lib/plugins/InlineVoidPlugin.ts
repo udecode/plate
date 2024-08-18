@@ -1,6 +1,6 @@
 import type { WithOverride } from '../plugin/SlatePlugin';
 
-import { createPlugin } from '../plugin/createPlugin';
+import { createSlatePlugin } from '../plugin/createSlatePlugin';
 
 /**
  * Merge and register all the inline types and void types from the plugins and
@@ -43,7 +43,7 @@ export const withInlineVoid: WithOverride = ({ editor }) => {
 };
 
 /** @see {@link withInlineVoid} */
-export const InlineVoidPlugin = createPlugin({
+export const InlineVoidPlugin = createSlatePlugin({
   key: 'inlineVoid',
   withOverrides: withInlineVoid,
 });

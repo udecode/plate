@@ -11,7 +11,6 @@ export * from './NodeFactoryPlugin';
 export * from './getCorePlugins';
 export * from './debug/index';
 export * from './editor-protocol/index';
-export * from './event-editor/index';
 export * from './html-deserializer/index';
 export * from './length/index';
 export * from './paragraph/index';

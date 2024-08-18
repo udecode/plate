@@ -1,4 +1,4 @@
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import { focusEditor } from '@udecode/plate-common/react';
 
@@ -14,7 +14,7 @@ import { upsertLink } from './index';
  * Insert link if url is valid. Text is url if empty. Close floating link. Focus
  * editor.
  */
-export const submitFloatingLink = (editor: PlateEditor) => {
+export const submitFloatingLink = (editor: SlateEditor) => {
   if (!editor.selection) return;
 
   const { forceSubmit, transformInput } = editor.getOptions(LinkPlugin);

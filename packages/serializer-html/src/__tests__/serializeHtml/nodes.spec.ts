@@ -3,7 +3,7 @@ import { type Value, htmlStringToDOMNode } from '@udecode/plate-common';
 import { ParagraphPlugin } from '@udecode/plate-common';
 import { ListPlugin } from '@udecode/plate-list';
 
-import { serializeHtml } from '../../serializeHtml';
+import { serializeHtml } from '../../react/serializeHtml';
 import { createPlateUIEditor } from '../create-plate-ui-editor';
 
 it('serialize complex example list with paragraphs to html', () => {

@@ -1,12 +1,12 @@
 import {
   type ToggleMarkPluginOptions,
-  createPlugin,
+  createSlatePlugin,
   findHtmlParentElement,
 } from '@udecode/plate-common';
 import { onKeyDownToggleMark } from '@udecode/plate-common/react';
 
 /** Enables support for code formatting */
-export const CodePlugin = createPlugin<'code', ToggleMarkPluginOptions>({
+export const CodePlugin = createSlatePlugin<'code', ToggleMarkPluginOptions>({
   deserializeHtml: {
     query({ element }) {
       const blockAbove = findHtmlParentElement(element, 'P');

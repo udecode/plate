@@ -2,7 +2,7 @@ import type { TNodeEntry } from '@udecode/slate';
 import type { TEditableProps } from '@udecode/slate-react';
 import type { Range } from 'slate';
 
-import type { PlateEditor } from '../plugin/PlateEditor';
+import type { PlateEditor } from '../editor/PlateEditor';
 
 import { getPluginContext } from '../plugin';
 

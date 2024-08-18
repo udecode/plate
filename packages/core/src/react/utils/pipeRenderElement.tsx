@@ -4,7 +4,7 @@ import type { TEditableProps } from '@udecode/slate-react';
 
 import { DefaultElement } from 'slate-react';
 
-import type { PlateEditor } from '../plugin/PlateEditor';
+import type { PlateEditor } from '../editor/PlateEditor';
 
 import { pipeInjectProps } from '../../lib/utils/pipeInjectProps';
 import { type RenderElement, pluginRenderElement } from './pluginRenderElement';

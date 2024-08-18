@@ -1,6 +1,6 @@
 import {
   type InsertNodesOptions,
-  type PlateEditor,
+  type SlateEditor,
   type TEditor,
   type UnwrapNodesOptions,
   type WrapNodesOptions,
@@ -40,7 +40,7 @@ export type UpsertLinkOptions<E extends TEditor = TEditor> = {
  * - Remove link node, get link text Then:
  * - Insert link node
  */
-export const upsertLink = <E extends PlateEditor>(
+export const upsertLink = <E extends SlateEditor>(
   editor: E,
   {
     insertNodesOptions,

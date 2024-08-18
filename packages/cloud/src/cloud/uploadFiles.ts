@@ -1,4 +1,4 @@
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import * as portiveClient from '@portive/client';
 import { nanoid } from '@udecode/plate-common';
@@ -32,7 +32,7 @@ const createFileEvent = (
   };
 };
 
-export const uploadFile = (editor: PlateEditor, file: File) => {
+export const uploadFile = (editor: SlateEditor, file: File) => {
   const { client } = editor.getOptions(CloudPlugin);
   const apiImage = editor.getApi(CloudImagePlugin);
   const apiAttachment = editor.getApi(CloudAttachmentPlugin);
@@ -101,7 +101,7 @@ export const uploadFile = (editor: PlateEditor, file: File) => {
   });
 };
 
-export const uploadFiles = (editor: PlateEditor, files: Iterable<File>) => {
+export const uploadFiles = (editor: SlateEditor, files: Iterable<File>) => {
   for (const file of files) {
     uploadFile(editor, file);
   }

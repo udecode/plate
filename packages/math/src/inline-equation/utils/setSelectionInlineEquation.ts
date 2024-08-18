@@ -1,7 +1,7 @@
 import type { Path, Range } from 'slate';
 
 import {
-  type PlateEditor,
+  type SlateEditor,
   getNextNodeStartPoint,
   getPreviousNodeEndPoint,
   setSelection,
@@ -9,7 +9,7 @@ import {
 import { focusEditor } from '@udecode/plate-common/react';
 
 export const setSelectionInlineEquation = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   at: Path,
   direction: 'left' | 'right'
 ) => {

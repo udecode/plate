@@ -2,7 +2,7 @@ import type { Range } from 'slate';
 
 import {
   ParagraphPlugin,
-  type PlateEditor,
+  type SlateEditor,
   deleteText,
   getEditorString,
   getRangeBefore,
@@ -23,7 +23,7 @@ export interface AutoformatBlockOptions extends AutoformatBlockRule {
 }
 
 export const autoformatBlock = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   {
     allowSameTypeAbove = false,
     format,

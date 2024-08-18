@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   type TElement,
   type TElementEntry,
   getAboveNode,
@@ -16,7 +16,7 @@ import { TodoListPlugin } from '../todo-list/TodoListPlugin';
  * (default = selection)
  */
 export const getTodoListItemEntry = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   { at = editor.selection }: { at?: Location | null } = {}
 ): { list: TElementEntry; listItem: TElementEntry } | undefined => {
   const todoType = editor.getType(TodoListPlugin);

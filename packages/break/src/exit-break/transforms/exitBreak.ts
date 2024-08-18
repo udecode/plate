@@ -1,6 +1,6 @@
 import {
   ParagraphPlugin,
-  type PlateEditor,
+  type SlateEditor,
   getPath,
   insertElements,
 } from '@udecode/plate-common';
@@ -11,7 +11,7 @@ import type { ExitBreakRule } from '../types';
 import { exitBreakAtEdges } from '../queries/exitBreakAtEdges';
 
 export const exitBreak = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   {
     before,
     defaultType = editor.getType(ParagraphPlugin),

@@ -1,6 +1,6 @@
 import { BoldPlugin, ParagraphPlugin } from '@udecode/plate';
 
-import { serializeHtml } from '../../serializeHtml';
+import { serializeHtml } from '../../react/serializeHtml';
 import { createPlateUIEditor } from '../create-plate-ui-editor';
 
 it('serialize with slate className', () => {

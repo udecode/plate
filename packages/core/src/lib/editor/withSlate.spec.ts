@@ -8,14 +8,14 @@ import {
 
 import { ParagraphPlugin, ReactPlugin } from '../../react';
 import { withPlate } from '../../react/editor/withPlate';
-import { createReactPlugin } from '../../react/plugin/createReactPlugin';
+import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';
 import { getPlugin } from '../../react/plugin/getPlugin';
+import { EventEditorPlugin } from '../../react/plugins/event-editor/EventEditorPlugin';
 import {
   DOMPlugin,
   DebugPlugin,
   DeserializeAstPlugin,
   DeserializeHtmlPlugin,
-  EventEditorPlugin,
   HistoryPlugin,
   InlineVoidPlugin,
   InsertDataPlugin,
@@ -23,7 +23,7 @@ import {
   PlateApiPlugin,
   SlateNextPlugin,
   type SlatePlugin,
-  createPlugin,
+  createSlatePlugin,
   withSlate,
 } from '../index';
 
@@ -36,11 +36,11 @@ const coreKeys = [
   PlateApiPlugin.key,
   InlineVoidPlugin.key,
   InsertDataPlugin.key,
-  EventEditorPlugin.key,
   LengthPlugin.key,
   DeserializeHtmlPlugin.key,
   DeserializeAstPlugin.key,
   ParagraphPlugin.key,
+  EventEditorPlugin.key,
 ];
 
 describe('withPlate', () => {
@@ -54,12 +54,17 @@ describe('withPlate', () => {
       expect(editor.pluginList.map((plugin) => plugin.key)).toEqual(coreKeys);
       expect(editor.pluginList.map((plugin) => plugin.type)).toEqual(coreKeys);
       expect(Object.keys(editor.plugins)).toEqual(coreKeys);
+      expect(
+        (editor.getPlugin(SlateNextPlugin).handlers as any).onKeyDown
+      ).toBeDefined();
+
+      expect(editor.prevSelection).toBeNull();
     });
   });
 
   describe('when plugins is an array', () => {
     it('should add custom plugins to core plugins', () => {
-      const customPlugin = createPlugin({ key: 'custom' });
+      const customPlugin = createSlatePlugin({ key: 'custom' });
       const editor = withPlate(createTEditor(), {
         id: '1',
         plugins: [customPlugin],
@@ -86,10 +91,10 @@ describe('withPlate', () => {
 
   describe('when extending nested plugins', () => {
     it('should correctly merge and extend nested plugins', () => {
-      const parentPlugin = createPlugin({
+      const parentPlugin = createSlatePlugin({
         key: 'parent',
         plugins: [
-          createPlugin({
+          createSlatePlugin({
             key: 'child',
             type: 'childOriginal',
           }),
@@ -131,7 +136,7 @@ describe('withPlate', () => {
 
   describe('when using override', () => {
     it('should merge components', () => {
-      const HeadingPlugin = createPlugin({ key: 'h1' });
+      const HeadingPlugin = createSlatePlugin({ key: 'h1' });
       const customComponent = () => null;
 
       const editor = withPlate(createTEditor(), {
@@ -151,7 +156,7 @@ describe('withPlate', () => {
     it('should respect priority when overriding existing components', () => {
       const originalComponent = () => null;
       const overrideComponent = () => null;
-      const HeadingPlugin = createReactPlugin({
+      const HeadingPlugin = createPlatePlugin({
         component: originalComponent,
         key: 'h1',
         priority: 100,
@@ -184,7 +189,7 @@ describe('withPlate', () => {
 
   describe('when using override.plugins', () => {
     it('should override plugin properties', () => {
-      const CustomPlugin = createPlugin({
+      const CustomPlugin = createSlatePlugin({
         key: 'custom',
         type: 'originalType',
       });
@@ -208,7 +213,7 @@ describe('withPlate', () => {
 
   describe('when replacing core plugins', () => {
     it('should replace core plugins with custom plugins, maintain order, and add additional plugins', () => {
-      const additionalPlugin = createPlugin({
+      const additionalPlugin = createSlatePlugin({
         key: 'additional',
         type: 'additional',
       });
@@ -220,6 +225,7 @@ describe('withPlate', () => {
 
       const pluginKeys = editor.pluginList.map((plugin) => plugin.key);
       const pluginTypes = editor.pluginList.map((plugin) => plugin.type);
+      const slateNextPlugin = editor.getPlugin({ key: SlateNextPlugin.key });
 
       // Check if ReactPlugin replaced DOMPlugin
       expect(pluginKeys).toContain(ReactPlugin.key);
@@ -259,8 +265,8 @@ describe('withPlate', () => {
     it('should not duplicate core plugins', () => {
       const existingEditor = createTEditor();
       existingEditor.plugins = [
-        createPlugin({ key: 'dom' }),
-        createPlugin({ key: 'history' }),
+        createSlatePlugin({ key: 'dom' }),
+        createSlatePlugin({ key: 'history' }),
       ];
 
       const editor = withPlate(existingEditor, { id: '1' });
@@ -273,8 +279,8 @@ describe('withPlate', () => {
     it('should add missing core plugins', () => {
       const existingEditor = createTEditor();
       existingEditor.pluginList = [
-        createPlugin({ key: 'dom' }),
-        createPlugin({ key: 'history' }),
+        createSlatePlugin({ key: 'dom' }),
+        createSlatePlugin({ key: 'history' }),
       ];
 
       const editor = withPlate(existingEditor, { id: '1' });
@@ -286,11 +292,11 @@ describe('withPlate', () => {
     });
 
     it('should not preserve custom plugins', () => {
-      const customPlugin = createPlugin({ key: 'custom' });
+      const customPlugin = createSlatePlugin({ key: 'custom' });
       const existingEditor = createTEditor();
       existingEditor.plugins = [
-        createPlugin({ key: 'dom' }),
-        createPlugin({ key: 'history' }),
+        createSlatePlugin({ key: 'dom' }),
+        createSlatePlugin({ key: 'history' }),
         customPlugin,
       ];
 
@@ -321,8 +327,8 @@ describe('withPlate', () => {
     });
 
     it('should disable specified custom plugins', () => {
-      const customPlugin1 = createPlugin({ key: 'custom1' });
-      const customPlugin2 = createPlugin({ key: 'custom2' });
+      const customPlugin1 = createSlatePlugin({ key: 'custom1' });
+      const customPlugin2 = createSlatePlugin({ key: 'custom2' });
 
       const editor = withPlate(createTEditor(), {
         id: '1',

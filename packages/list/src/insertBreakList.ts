@@ -1,7 +1,7 @@
 import {
   ParagraphPlugin,
-  type PlateEditor,
-  createTPlugin,
+  type SlateEditor,
+  createTSlatePlugin,
   getPluginContext,
   isBlockAboveEmpty,
 } from '@udecode/plate-common';
@@ -17,7 +17,7 @@ import { insertListItem } from './transforms/insertListItem';
 import { moveListItemUp } from './transforms/moveListItemUp';
 import { unwrapList } from './transforms/unwrapList';
 
-export const insertBreakList = (editor: PlateEditor) => {
+export const insertBreakList = (editor: SlateEditor) => {
   if (!editor.selection) return;
 
   const res = getListItemEntry(editor, {});
@@ -41,7 +41,7 @@ export const insertBreakList = (editor: PlateEditor) => {
   const didReset = onKeyDownResetNode({
     ...getPluginContext(
       editor,
-      createTPlugin<ResetNodeConfig>({
+      createTSlatePlugin<ResetNodeConfig>({
         options: {
           rules: [
             {

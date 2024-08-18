@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
@@ -31,7 +31,7 @@ describe('li list unwrapping', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -39,7 +39,7 @@ describe('li list unwrapping', () => {
         <hp>11</hp>
         <hp>12</hp>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createPlateEditor({
       editor: input,
@@ -65,7 +65,7 @@ describe('li list unwrapping', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -78,7 +78,7 @@ describe('li list unwrapping', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createPlateEditor({
       editor: input,
@@ -112,7 +112,7 @@ describe('li list unwrapping', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -120,7 +120,7 @@ describe('li list unwrapping', () => {
         <hp>11</hp>
         <hp>2</hp>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createPlateEditor({
       editor: input,
@@ -151,7 +151,7 @@ describe('li list unwrapping', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -168,7 +168,7 @@ describe('li list unwrapping', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createPlateEditor({
       editor: input,

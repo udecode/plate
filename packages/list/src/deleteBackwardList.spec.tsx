@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
@@ -23,7 +23,7 @@ describe('li > lic * 2 with selection at second child start', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const expected = (
       <editor>
@@ -33,7 +33,7 @@ describe('li > lic * 2 with selection at second child start', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createPlateEditor({
       editor: input,
@@ -62,7 +62,7 @@ describe('li with selection at start', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const expected = (
       <editor>
@@ -73,7 +73,7 @@ describe('li with selection at start', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createPlateEditor({
       editor: input,
@@ -112,7 +112,7 @@ describe('list + sublist where second item has multiple children', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const expected = (
       <editor>
@@ -133,7 +133,7 @@ describe('list + sublist where second item has multiple children', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createPlateEditor({
       editor: input,

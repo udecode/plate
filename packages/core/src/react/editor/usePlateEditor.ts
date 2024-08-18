@@ -2,8 +2,7 @@ import React from 'react';
 
 import type { Value } from '@udecode/slate';
 
-import type { CorePlugin } from '../../lib';
-import type { AnySlatePlugin } from '../../lib/plugin/SlatePlugin';
+import type { AnyPluginConfig, CorePlugin } from '../../lib';
 
 import { type CreatePlateEditorOptions, createPlateEditor } from '../editor';
 
@@ -20,7 +19,7 @@ import { type CreatePlateEditorOptions, createPlateEditor } from '../editor';
  */
 export function usePlateEditor<
   V extends Value = Value,
-  P extends AnySlatePlugin = CorePlugin,
+  P extends AnyPluginConfig = CorePlugin,
 >(
   options: CreatePlateEditorOptions<V, P> = {},
   deps: React.DependencyList = []

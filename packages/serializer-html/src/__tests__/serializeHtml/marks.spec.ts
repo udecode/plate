@@ -3,7 +3,7 @@ import { htmlStringToDOMNode } from '@udecode/plate-core';
 import { HighlightPlugin } from '@udecode/plate-highlight';
 import { KbdPlugin } from '@udecode/plate-kbd';
 
-import { serializeHtml } from '../../serializeHtml';
+import { serializeHtml } from '../../react/serializeHtml';
 import { createPlateUIEditor } from '../create-plate-ui-editor';
 
 const plugins = [BasicMarksPlugin, HighlightPlugin, KbdPlugin];

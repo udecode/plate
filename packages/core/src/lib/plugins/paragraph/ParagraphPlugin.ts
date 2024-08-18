@@ -1,6 +1,6 @@
-import { createPlugin } from '../../plugin';
+import { createSlatePlugin } from '../../plugin';
 
-export const ParagraphPlugin = createPlugin({
+export const ParagraphPlugin = createSlatePlugin({
   deserializeHtml: {
     query: ({ element }) => element.style.fontFamily !== 'Consolas',
     rules: [

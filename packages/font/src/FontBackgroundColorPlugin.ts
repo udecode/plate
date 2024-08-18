@@ -1,6 +1,6 @@
-import { createPlugin } from '@udecode/plate-common';
+import { createSlatePlugin } from '@udecode/plate-common';
 
-export const FontBackgroundColorPlugin = createPlugin({
+export const FontBackgroundColorPlugin = createSlatePlugin({
   inject: {
     props: {
       nodeKey: 'backgroundColor',

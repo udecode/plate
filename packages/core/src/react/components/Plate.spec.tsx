@@ -8,9 +8,9 @@ import memoize from 'lodash/memoize';
 
 import type { PlatePlugins } from '../plugin';
 
-import { type SlatePlugins, createPlugin } from '../../lib';
+import { type SlatePlugins, createSlatePlugin } from '../../lib';
 import { createPlateEditor, usePlateEditor } from '../editor';
-import { createReactPlugin } from '../plugin/createReactPlugin';
+import { createPlatePlugin } from '../plugin/createPlatePlugin';
 import {
   PlateController,
   useEditorRef,
@@ -136,7 +136,7 @@ describe('Plate', () => {
     describe('when plugins is updated', () => {
       it('should be updated', () => {
         const editor = createPlateEditor({
-          plugins: [createPlugin({ key: 'test' })],
+          plugins: [createSlatePlugin({ key: 'test' })],
         });
 
         const wrapper = ({ children, editor }: any) => (
@@ -154,7 +154,7 @@ describe('Plate', () => {
 
         expect(result.current.at(-1)!.key).toBe('test');
 
-        editor.pluginList = [createReactPlugin({ key: 'test2' }) as any];
+        editor.pluginList = [createPlatePlugin({ key: 'test2' }) as any];
 
         rerender({
           editor,
@@ -165,7 +165,7 @@ describe('Plate', () => {
     });
 
     it('should use plugins from editor', () => {
-      const _plugins = [createPlugin({ key: 'test' })];
+      const _plugins = [createSlatePlugin({ key: 'test' })];
       const editor = createPlateEditor({ plugins: _plugins });
 
       const wrapper = ({ children }: any) => (
@@ -185,8 +185,8 @@ describe('Plate', () => {
 
   describe('when id updates', () => {
     it('should remount Plate', () => {
-      const _plugins1 = [createPlugin({ key: 'test1' })];
-      const _plugins2 = [createPlugin({ key: 'test2' })];
+      const _plugins1 = [createSlatePlugin({ key: 'test1' })];
+      const _plugins2 = [createSlatePlugin({ key: 'test2' })];
       const editor1 = createPlateEditor({ id: '1', plugins: _plugins1 });
       const editor2 = createPlateEditor({ id: '2', plugins: _plugins2 });
 
@@ -372,7 +372,7 @@ describe('Plate', () => {
 
       const plugins: SlatePlugins = memoize(
         (): SlatePlugins => [
-          createPlugin({
+          createSlatePlugin({
             key: 'a',
             withOverrides: ({ editor }) => {
               const { normalizeNode } = editor;
@@ -409,7 +409,7 @@ describe('Plate', () => {
   describe('when renderAboveSlate renders null', () => {
     it('should not normalize editor children', () => {
       const plugins: PlatePlugins = [
-        createReactPlugin({
+        createPlatePlugin({
           key: 'a',
           renderAboveSlate: () => {
             return null;

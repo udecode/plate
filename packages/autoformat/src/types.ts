@@ -1,4 +1,4 @@
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import type { GetMatchPointsReturnType } from './utils/getMatchPoints';
 
@@ -32,7 +32,7 @@ export interface AutoformatCommonRule {
   insertTrigger?: boolean;
 
   /** Query to allow autoformat. */
-  query?: (editor: PlateEditor, options: AutoformatQueryOptions) => boolean;
+  query?: (editor: SlateEditor, options: AutoformatQueryOptions) => boolean;
 
   /**
    * Triggering character to autoformat.
@@ -67,13 +67,13 @@ export interface AutoformatBlockRule extends AutoformatCommonRule {
    *
    * @default setNodes(editor, { type }, { match: (n) => isBlock(editor, n) })
    */
-  format?: (editor: PlateEditor) => void;
+  format?: (editor: SlateEditor) => void;
 
   /**
    * Function called just before `format`. Generally used to reset the selected
    * block.
    */
-  preFormat?: (editor: PlateEditor) => void;
+  preFormat?: (editor: SlateEditor) => void;
 
   /**
    * If true, the trigger should be at block start to allow autoformatting.
@@ -106,7 +106,7 @@ export interface AutoformatTextRule extends AutoformatCommonRule {
    * match.
    */
   format:
-    | ((editor: PlateEditor, options: GetMatchPointsReturnType) => void)
+    | ((editor: SlateEditor, options: GetMatchPointsReturnType) => void)
     | string
     | string[];
 

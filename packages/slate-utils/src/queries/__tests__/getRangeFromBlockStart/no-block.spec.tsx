@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -14,7 +14,7 @@ const input = (
     <cursor />
     st
   </editor>
-) as any as PlateEditor;
+) as any as SlateEditor;
 
 it('should be', () => {
   expect(getRangeFromBlockStart(input)).toEqual(undefined);

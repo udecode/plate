@@ -1,5 +1,4 @@
 import {
-  type KeyboardHandler,
   type TElement,
   getNodeEntries,
   getParentNode,
@@ -9,9 +8,11 @@ import {
   select,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import { Hotkeys } from '@udecode/plate-common/react';
+import { Hotkeys, type KeyboardHandler } from '@udecode/plate-common/react';
 
-import { type CodeBlockConfig, CodeLinePlugin } from '../lib';
+import type { CodeBlockConfig } from './CodeBlockPlugin';
+
+import { CodeLinePlugin } from '../lib';
 import { getCodeLineEntry } from '../lib/queries/getCodeLineEntry';
 import { indentCodeLine } from '../lib/transforms/indentCodeLine';
 import { outdentCodeLine } from '../lib/transforms/outdentCodeLine';

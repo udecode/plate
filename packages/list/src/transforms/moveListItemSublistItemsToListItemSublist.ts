@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   type TElement,
   type TElementEntry,
   deleteText,
@@ -30,7 +30,7 @@ export interface MoveListItemSublistItemsToListItemSublistOptions {
  * there is no `toListItem` sublist, insert one.
  */
 export const moveListItemSublistItemsToListItemSublist = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   {
     fromListItem,
     start,

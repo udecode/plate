@@ -5,7 +5,7 @@ import type { JotaiStore } from 'jotai-x';
 import { atom, createStore } from 'jotai';
 
 import type { PlateStoreState } from '../../../lib/types/PlateStore';
-import type { PlateEditor } from '../../plugin/PlateEditor';
+import type { PlateEditor } from '../../editor/PlateEditor';
 
 import { createAtomStore } from '../../libs';
 import { createPlateFallbackEditor } from '../../utils';

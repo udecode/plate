@@ -192,7 +192,6 @@ describe('collapseWhiteSpace', () => {
     });
   });
 
-  // TODO: Explore what happens when a pre-line contains inline elements.
   describe('when `white-space: pre-line` is applied to a block element', () => {
     it('collapses horizontal whitespace', () => {
       const input = '<div style="white-space: pre-line">Hello   world!</div>';

@@ -1,7 +1,7 @@
 import {
   type PluginConfig,
   type QueryNodeOptions,
-  createTPlugin,
+  createTSlatePlugin,
 } from '@udecode/plate-common';
 
 import { withNodeId } from './withNodeId';
@@ -48,7 +48,7 @@ export type NodeIdConfig = PluginConfig<
 >;
 
 /** @see {@link withNodeId} */
-export const NodeIdPlugin = createTPlugin<NodeIdConfig>({
+export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
   key: 'nodeId',
   options: {
     filter: () => true,

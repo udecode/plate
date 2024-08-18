@@ -2,7 +2,7 @@ import type { SlateEditor } from '../editor';
 import type { PlatePluginInsertDataOptions } from '../plugin/BasePlugin';
 import type { AnyEditorPlugin } from '../plugin/SlatePlugin';
 
-import { getPluginContext } from '../plugin';
+import { getSlatePluginContext } from '../plugin';
 
 /** Is the plugin disabled by another plugin. */
 export const pipeInsertDataQuery = (
@@ -16,7 +16,7 @@ export const pipeInsertDataQuery = (
     return (
       !query ||
       query({
-        ...getPluginContext(editor, p as any),
+        ...getSlatePluginContext(editor, p as any),
         data,
         dataTransfer,
       })

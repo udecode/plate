@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { createPlugin, getPluginContext } from '@udecode/plate-common';
+import { createSlatePlugin, getPluginContext } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import * as isHotkey from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
@@ -37,7 +37,7 @@ it('should be', () => {
   onKeyDownExitBreak({
     ...getPluginContext(
       createPlateEditor({ editor: input }),
-      createPlugin({
+      createSlatePlugin({
         options: {
           rules: [
             {

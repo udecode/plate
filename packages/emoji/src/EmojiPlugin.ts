@@ -1,22 +1,22 @@
 import { withTriggerCombobox } from '@udecode/plate-combobox';
 import {
   type PluginConfig,
-  createPlugin,
-  createTPlugin,
+  createSlatePlugin,
+  createTSlatePlugin,
 } from '@udecode/plate-common';
 
 import type { EmojiPluginOptions } from './types';
 
 export type EmojiInputConfig = PluginConfig<'emoji', EmojiPluginOptions>;
 
-export const EmojiInputPlugin = createPlugin({
+export const EmojiInputPlugin = createSlatePlugin({
   isElement: true,
   isInline: true,
   isVoid: true,
   key: 'emoji_input',
 });
 
-export const EmojiPlugin = createTPlugin<EmojiInputConfig>({
+export const EmojiPlugin = createTSlatePlugin<EmojiInputConfig>({
   key: 'emoji',
   options: {
     createComboboxInput: () => ({

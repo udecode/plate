@@ -1,17 +1,16 @@
 import {
   DeserializeHtmlPlugin,
-  type HotkeyPluginOptions,
   type PluginConfig,
-  createPlugin,
-  createTPlugin,
+  createSlatePlugin,
+  createTSlatePlugin,
   someNode,
 } from '@udecode/plate-common';
 
 import type { Prism } from './types';
 
-import { deserializeHtmlCodeBlock } from '../lib/deserializeHtmlCodeBlockPre';
 import { withCodeBlock } from '../lib/withCodeBlock';
 import { decorateCodeLine } from './decorateCodeLine';
+import { deserializeHtmlCodeBlock } from './deserializeHtmlCodeBlock';
 
 export type CodeBlockConfig = PluginConfig<
   'code_block',
@@ -20,21 +19,21 @@ export type CodeBlockConfig = PluginConfig<
     prism?: Prism;
     syntax?: boolean;
     syntaxPopularFirst?: boolean;
-  } & HotkeyPluginOptions
+  }
 >;
 
-export const CodeLinePlugin = createPlugin({
+export const CodeLinePlugin = createSlatePlugin({
   decorate: decorateCodeLine,
   isElement: true,
   key: 'code_line',
 });
 
-export const CodeSyntaxPlugin = createPlugin({
+export const CodeSyntaxPlugin = createSlatePlugin({
   isLeaf: true,
   key: 'code_syntax',
 });
 
-export const CodeBlockPlugin = createTPlugin<CodeBlockConfig>({
+export const CodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
   deserializeHtml: deserializeHtmlCodeBlock,
   inject: {
     plugins: {

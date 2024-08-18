@@ -1,6 +1,6 @@
 import {
   type InsertNodesOptions,
-  type PlateEditor,
+  type SlateEditor,
   type TElement,
   isExpanded,
   isSelectionAtBlockStart,
@@ -15,7 +15,7 @@ import { CodeBlockPlugin, CodeLinePlugin } from '../CodeBlockPlugin';
  * Insert a code block: set the node to code line and wrap it with a code block.
  * If the cursor is not at the block start, insert break before.
  */
-export const insertCodeBlock = <E extends PlateEditor>(
+export const insertCodeBlock = <E extends SlateEditor>(
   editor: E,
   insertNodesOptions: Omit<InsertNodesOptions<E>, 'match'> = {}
 ) => {

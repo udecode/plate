@@ -1,10 +1,10 @@
-import { ParagraphPlugin, createPlugin } from '@udecode/plate-common';
+import { ParagraphPlugin, createSlatePlugin } from '@udecode/plate-common';
 
 /**
  * Enables support for text alignment, useful to align your content to left,
  * right and center it.
  */
-export const LineHeightPlugin = createPlugin({
+export const LineHeightPlugin = createSlatePlugin({
   inject: {
     props: {
       defaultNodeValue: 1.5,

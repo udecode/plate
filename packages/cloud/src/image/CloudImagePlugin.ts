@@ -1,5 +1,5 @@
 import * as portiveClient from '@portive/client';
-import { createPlugin } from '@udecode/plate-common';
+import { createSlatePlugin } from '@udecode/plate-common';
 import Defer from 'p-defer';
 
 import type { UploadError, UploadSuccess } from '../upload';
@@ -13,7 +13,7 @@ import {
   type SuccessEvent,
 } from '../cloud';
 
-export const CloudImagePlugin = createPlugin({
+export const CloudImagePlugin = createSlatePlugin({
   dependencies: ['cloud'],
   isElement: true,
   isVoid: true,

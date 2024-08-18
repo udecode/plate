@@ -1,6 +1,6 @@
 import {
   ParagraphPlugin,
-  type PlateEditor,
+  type SlateEditor,
   type TDescendant,
   type TElement,
   type TNode,
@@ -30,7 +30,7 @@ const isValidCsv = (
 };
 
 export const deserializeCsv = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   {
     data,
     ...parseOptions

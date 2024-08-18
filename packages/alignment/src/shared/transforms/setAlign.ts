@@ -1,6 +1,6 @@
 import {
-  type PlateEditor,
   type SetNodesOptions,
+  type SlateEditor,
   type TNodeMatch,
   getKeyByType,
   isBlock,
@@ -12,7 +12,7 @@ import type { Alignment } from '../types';
 
 import { AlignPlugin } from '../AlignPlugin';
 
-export const setAlign = <E extends PlateEditor>(
+export const setAlign = <E extends SlateEditor>(
   editor: E,
   {
     key = AlignPlugin.key,

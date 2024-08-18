@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   type TElement,
   type TElementEntry,
   getAboveNode,
@@ -16,7 +16,7 @@ import { ListItemPlugin } from '../ListPlugin';
  * (default = selection)
  */
 export const getListItemEntry = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   { at = editor.selection }: { at?: Location | null } = {}
 ): { list: TElementEntry; listItem: TElementEntry } | undefined => {
   const liType = editor.getType(ListItemPlugin);

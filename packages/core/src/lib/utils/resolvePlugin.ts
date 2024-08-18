@@ -1,10 +1,9 @@
-import merge from 'lodash/merge.js';
-
 import type { SlateEditor } from '../editor';
 import type { PluginConfig } from '../plugin/BasePlugin';
 import type { AnySlatePlugin, SlatePlugin } from '../plugin/SlatePlugin';
 
-import { createPlugin, getPluginContext } from '../plugin';
+import { mergeWithoutArray } from '../../internal/mergeWithoutArray';
+import { createSlatePlugin, getSlatePluginContext } from '../plugin';
 
 /**
  * Resolves and finalizes a plugin configuration for use in a Plate editor.
@@ -18,7 +17,7 @@ import { createPlugin, getPluginContext } from '../plugin';
  * 3. Clearing the extensions array after application
  *
  * @example
- *   const plugin = createPlugin({ key: 'myPlugin', ...otherOptions }).extend(...);
+ *   const plugin = createSlatePlugin({ key: 'myPlugin', ...otherOptions }).extend(...);
  *   const resolvedPlugin = resolvePlugin(editor, plugin);
  */
 export const resolvePlugin = <P extends AnySlatePlugin>(
@@ -26,22 +25,28 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
   _plugin: P
 ): P => {
   // Create a deep clone of the plugin
-  let plugin = createPlugin(_plugin) as P;
+  let plugin = createSlatePlugin(_plugin) as P;
 
   plugin.__resolved = true;
 
   // Apply the stored configuration first
   if (plugin.__configuration) {
     const configResult = plugin.__configuration(
-      getPluginContext(editor, plugin)
+      getSlatePluginContext(editor, plugin as any)
     );
-    plugin = merge({}, plugin, configResult);
+
+    plugin = mergeWithoutArray({}, plugin, configResult);
+
     delete (plugin as any).__configuration;
   }
   // Apply all stored extensions
   if (plugin.__extensions && plugin.__extensions.length > 0) {
     plugin.__extensions.forEach((extension) => {
-      plugin = merge({}, plugin, extension(getPluginContext(editor, plugin)));
+      plugin = mergeWithoutArray(
+        {},
+        plugin,
+        extension(getSlatePluginContext(editor, plugin as any))
+      );
     });
     plugin.__extensions = [];
   }
@@ -54,13 +59,13 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
 
   if (targetPluginToInject && targetPlugins && targetPlugins.length > 0) {
     plugin.inject = plugin.inject || {};
-    plugin.inject.plugins = merge(
+    plugin.inject.plugins = mergeWithoutArray(
       {},
       plugin.inject.plugins,
       Object.fromEntries(
         targetPlugins.map((targetPlugin) => {
           const injectedPlugin = targetPluginToInject({
-            ...getPluginContext(editor, plugin),
+            ...getSlatePluginContext(editor, plugin as any),
             targetPlugin,
           });
 
@@ -84,7 +89,7 @@ export const validatePlugin = <K extends string = any, O = {}, A = {}, T = {}>(
 ) => {
   if (!plugin.__extensions) {
     editor.api.debug.error(
-      `Invalid plugin '${plugin.key}', you should use createPlugin.`,
+      `Invalid plugin '${plugin.key}', you should use createSlatePlugin.`,
       'USE_CREATE_PLUGIN'
     );
   }

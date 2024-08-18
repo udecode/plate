@@ -24,7 +24,7 @@ describe('EditorMethodsEffect and redecorate', () => {
 
   // it('should trigger decorate when redecorate is called', () => {
   //   const decorate = jest.fn(() => []);
-  //   const plugins = [createPlugin({ decorate, key: 'test' })];
+  //   const plugins = [createSlatePlugin({ decorate, key: 'test' })];
   //   const editor = createPlateEditor({ plugins });
   //
   //   const wrapper = () => (

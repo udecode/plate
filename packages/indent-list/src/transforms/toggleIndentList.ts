@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   type TElement,
   getBlockAbove,
   getNodeEntries,
@@ -21,7 +21,7 @@ import { toggleIndentListSet } from './toggleIndentListSet';
 import { toggleIndentListUnset } from './toggleIndentListUnset';
 
 /** Toggle indent list. */
-export const toggleIndentList = <E extends PlateEditor>(
+export const toggleIndentList = <E extends SlateEditor>(
   editor: E,
   options: IndentListOptions<E>
 ) => {

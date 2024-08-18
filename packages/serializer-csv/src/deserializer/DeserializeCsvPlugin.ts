@@ -1,11 +1,11 @@
-import { createTPlugin } from '@udecode/plate-common';
+import { createTSlatePlugin } from '@udecode/plate-common';
 
 import type { DeserializeCsvConfig } from './types';
 
 import { deserializeCsv } from './utils/index';
 
 /** Enables support for deserializing content from CSV format to Slate format. */
-export const DeserializeCsvPlugin = createTPlugin<DeserializeCsvConfig>({
+export const DeserializeCsvPlugin = createTSlatePlugin<DeserializeCsvConfig>({
   key: 'deserializeCsv',
   options: {
     errorTolerance: 0.25,

@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   findNode,
   getEditorString,
 } from '@udecode/plate-common';
@@ -9,7 +9,7 @@ import type { TLinkElement } from '../types';
 import { LinkPlugin } from '../LinkPlugin';
 import { floatingLinkActions } from '../components/FloatingLink/floatingLinkStore';
 
-export const triggerFloatingLinkEdit = (editor: PlateEditor) => {
+export const triggerFloatingLinkEdit = (editor: SlateEditor) => {
   const entry = findNode<TLinkElement>(editor, {
     match: { type: editor.getType(LinkPlugin) },
   });

@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   type TAncestor,
   type TAncestorEntry,
   type TDescendant,
@@ -22,7 +22,7 @@ import { Path } from 'slate';
 import { ListItemContentPlugin, ListItemPlugin } from './ListPlugin';
 import { isListRoot } from './queries/index';
 
-export const insertFragmentList = (editor: PlateEditor) => {
+export const insertFragmentList = (editor: SlateEditor) => {
   const { insertFragment } = editor;
 
   const listItemType = editor.getType(ListItemPlugin);

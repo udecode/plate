@@ -1,6 +1,6 @@
-import { createPlugin } from '@udecode/plate-common';
+import { createSlatePlugin } from '@udecode/plate-common';
 
-export const FontFamilyPlugin = createPlugin({
+export const FontFamilyPlugin = createSlatePlugin({
   inject: {
     props: {
       nodeKey: 'fontFamily',

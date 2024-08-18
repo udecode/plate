@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import {
-  type PlateEditor,
+  type SlateEditor,
   createSlateEditor,
   findNode,
 } from '@udecode/plate-common';
@@ -39,7 +39,7 @@ describe('when there is toListItem sublist', () => {
         </hli>
       </hul>
     </editor>
-  ) as any as PlateEditor;
+  ) as any as SlateEditor;
 
   const output = (
     <editor>
@@ -66,7 +66,7 @@ describe('when there is toListItem sublist', () => {
         </hli>
       </hul>
     </editor>
-  ) as any as PlateEditor;
+  ) as any as SlateEditor;
 
   it('should', () => {
     const editor = createSlateEditor({
@@ -107,7 +107,7 @@ describe('when there is no list in toListItem', () => {
         </hli>
       </hul>
     </editor>
-  ) as any as PlateEditor;
+  ) as any as SlateEditor;
 
   const output = (
     <editor>
@@ -128,7 +128,7 @@ describe('when there is no list in toListItem', () => {
         </hli>
       </hul>
     </editor>
-  ) as any as PlateEditor;
+  ) as any as SlateEditor;
 
   it('should', () => {
     const editor = createSlateEditor({

@@ -1,6 +1,6 @@
-import { createPlugin } from '@udecode/plate-common';
+import { createSlatePlugin } from '@udecode/plate-common';
 
-export const HorizontalRulePlugin = createPlugin({
+export const HorizontalRulePlugin = createSlatePlugin({
   deserializeHtml: {
     rules: [
       {

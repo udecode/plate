@@ -1,4 +1,4 @@
-import type { KeyboardHandler } from '@udecode/plate-common';
+import type { KeyboardHandler } from '@udecode/plate-common/react';
 
 import {
   deleteBackward,

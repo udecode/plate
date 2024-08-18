@@ -1,4 +1,4 @@
-import { createTPlugin } from '@udecode/plate-common';
+import { createTSlatePlugin } from '@udecode/plate-common';
 
 import type { ExitBreakConfig } from './types';
 
@@ -8,7 +8,7 @@ import { onKeyDownExitBreak } from './onKeyDownExitBreak';
  * Insert soft break following configurable rules. Each rule specifies a hotkey
  * and query options.
  */
-export const ExitBreakPlugin = createTPlugin<ExitBreakConfig>({
+export const ExitBreakPlugin = createTSlatePlugin<ExitBreakConfig>({
   handlers: {
     onKeyDown: onKeyDownExitBreak,
   },

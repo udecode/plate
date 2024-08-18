@@ -1,6 +1,6 @@
 import {
   ParagraphPlugin,
-  type PlateEditor,
+  type SlateEditor,
   type TElement,
   findNode,
   getBlockAbove,
@@ -24,7 +24,7 @@ import { getListItemEntry, getListTypes } from '../queries/index';
 import { unwrapList } from './unwrapList';
 
 export const toggleList = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   { type, pluginKey = type }: { pluginKey?: string; type: string }
 ) =>
   withoutNormalizing(editor, () => {

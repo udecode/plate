@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   type TDescendant,
   type TElement,
   getBlockAbove,
@@ -12,7 +12,7 @@ function extractCodeLinesFromCodeBlock(node: TElement) {
   return node.children as TElement[];
 }
 
-export const insertFragmentCodeBlock = (editor: PlateEditor) => {
+export const insertFragmentCodeBlock = (editor: SlateEditor) => {
   const { insertFragment } = editor;
   const codeBlockType = editor.getType(CodeBlockPlugin);
   const codeLineType = editor.getType(CodeLinePlugin);

@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   type TDescendant,
   type TElement,
   type TElementEntry,
@@ -32,7 +32,7 @@ import { moveListItemUp } from '../transforms/index';
  * - Inline children except those at excludeDepth
  */
 export const getDeepInlineChildren = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   {
     children,
   }: {
@@ -61,7 +61,7 @@ export const getDeepInlineChildren = (
  * move the children that are not valid to the list item container.
  */
 export const normalizeListItem = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   {
     listItem,
     validLiChildrenTypes = [],

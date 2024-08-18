@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { IndentPlugin } from '@udecode/plate-indent';
@@ -21,7 +21,7 @@ describe('toggleIndentList', () => {
             1<cursor />
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = (
         <editor>
@@ -29,7 +29,7 @@ describe('toggleIndentList', () => {
             1<cursor />
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const editor = createPlateEditor({
         editor: input,
@@ -49,7 +49,7 @@ describe('toggleIndentList', () => {
               1<cursor />
             </hp>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         const output = (
           <editor>
@@ -57,7 +57,7 @@ describe('toggleIndentList', () => {
               1<cursor />
             </hp>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         const editor = createPlateEditor({
           editor: input,
@@ -79,7 +79,7 @@ describe('toggleIndentList', () => {
             1<cursor />
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = (
         <editor>
@@ -87,7 +87,7 @@ describe('toggleIndentList', () => {
             1<cursor />
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const editor = createPlateEditor({
         editor: input,
@@ -133,7 +133,7 @@ describe('toggleIndentList', () => {
             21
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = (
         <editor>
@@ -166,7 +166,7 @@ describe('toggleIndentList', () => {
             21
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const editor = createPlateEditor({
         editor: input,
@@ -194,7 +194,7 @@ describe('toggleIndentList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         const output = (
           <editor>
@@ -210,7 +210,7 @@ describe('toggleIndentList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         const editor = createPlateEditor({
           editor: input,
@@ -237,7 +237,7 @@ describe('toggleIndentList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         const output = (
           <editor>
@@ -253,7 +253,7 @@ describe('toggleIndentList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         const editor = createPlateEditor({
           editor: input,
@@ -282,7 +282,7 @@ describe('toggleIndentList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         const output = (
           <editor>
@@ -296,7 +296,7 @@ describe('toggleIndentList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         const editor = createPlateEditor({
           editor: input,
@@ -325,7 +325,7 @@ describe('toggleIndentList', () => {
               </hp>
             </element>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         const output = (
           <editor>
@@ -341,7 +341,7 @@ describe('toggleIndentList', () => {
               </hp>
             </element>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         const editor = createPlateEditor({
           editor: input,

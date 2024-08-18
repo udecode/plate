@@ -1,7 +1,7 @@
 import type { PathRef } from 'slate';
 
 import {
-  type PlateEditor,
+  type SlateEditor,
   getChildren,
   getNodeEntry,
   isElement,
@@ -13,7 +13,7 @@ import type { TColumnElement, TColumnGroupElement } from '../types';
 import { ColumnItemPlugin } from '../ColumnPlugin';
 
 export const setColumnWidth = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   groupPathRef: PathRef,
   layout: Required<TColumnGroupElement>['layout']
 ) => {

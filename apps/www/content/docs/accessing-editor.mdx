@@ -14,7 +14,7 @@ Most often, when you want to extend the functionality of your editor, you'll cre
 Use the first argument of the handler function.
 
 ```ts showLineNumbers {4,7}
-const createMyPlugin = createPlugin({
+const createMyPlugin = createSlatePlugin({
   key: 'my',
   handlers: {
     onKeyDown: (editor) => (event) => {
@@ -34,7 +34,7 @@ The purpose of the **`then`** option is to access the **`editor`** instance in p
 For example, suppose you had this code and wanted to access the **`editor`** instance inside **`deserializeHtml`**:
 
 ```ts showLineNumbers
-const MyPlugin = createPlugin({
+const MyPlugin = createSlatePlugin({
   key: 'my',
   deserializeHtml: {
     // Need editor here
@@ -45,7 +45,7 @@ const MyPlugin = createPlugin({
 You would wrap the **`deserializeHtml`** option inside **`then`**.
 
 ```ts showLineNumbers {3,7}
-const MyPlugin = createPlugin({
+const MyPlugin = createSlatePlugin({
   key: 'my',
   then: (editor) => ({
     deserializeHtml: {

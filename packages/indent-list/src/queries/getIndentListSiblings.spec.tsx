@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import {
-  type PlateEditor,
+  type SlateEditor,
   type TDescendant,
   type TElement,
   getBlockAbove,
@@ -29,7 +29,7 @@ describe('getIndentListSiblings', () => {
         </fragment>
       ) as any as TDescendant[];
 
-      const editor = (<editor>{input}</editor>) as any as PlateEditor;
+      const editor = (<editor>{input}</editor>) as any as SlateEditor;
 
       const entry = getBlockAbove<TElement>(editor);
 
@@ -89,7 +89,7 @@ describe('getIndentListSiblings', () => {
         </fragment>
       ) as any as TDescendant[];
 
-      const editor = (<editor>{input}</editor>) as any as PlateEditor;
+      const editor = (<editor>{input}</editor>) as any as SlateEditor;
 
       const entry = getBlockAbove<TElement>(editor);
 

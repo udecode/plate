@@ -1,7 +1,7 @@
 import type { NodeEntry } from 'slate';
 
 import {
-  type PlateEditor,
+  type SlateEditor,
   type TElement,
   isDefined,
 } from '@udecode/plate-common';
@@ -9,7 +9,7 @@ import {
 import { IndentListPlugin } from '../IndentListPlugin';
 
 export const shouldMergeNodesRemovePrevNodeIndentList = (
-  editor: PlateEditor
+  editor: SlateEditor
 ) => {
   const { shouldMergeNodesRemovePrevNode } = editor;
 

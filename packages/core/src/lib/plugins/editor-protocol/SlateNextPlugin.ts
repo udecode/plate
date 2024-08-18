@@ -16,7 +16,7 @@ import {
 
 import type { WithOverride } from '../../plugin/SlatePlugin';
 
-import { createPlugin } from '../../plugin';
+import { createSlatePlugin } from '../../plugin';
 import { resetEditor } from '../../transforms';
 import { ParagraphPlugin } from '../paragraph';
 
@@ -108,17 +108,8 @@ export const withSlateNext: WithOverride = ({ editor }) => {
   return editor;
 };
 
-// TODO react
 /** Opinionated extension of slate default behavior. */
-export const SlateNextPlugin = createPlugin({
-  // handlers: {
-  //   onKeyDown: ({ editor, event }: any) => {
-  //     // React 16.x needs this event to be persistented due to it's event pooling implementation.
-  //     // https://reactjs.org/docs/legacy-event-pooling.html
-  //     event.persist();
-  //     editor.currentKeyboardEvent = event;
-  //   },
-  // },
+export const SlateNextPlugin = createSlatePlugin({
   key: 'slateNext',
   withOverrides: withSlateNext,
 })

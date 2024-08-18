@@ -5,12 +5,12 @@ import type {
   PluginConfig,
 } from '../../lib/plugin/BasePlugin';
 import type { HandlerReturnType } from '../../lib/plugin/HandlerReturnType';
-import type { SlatePluginContext } from '../../lib/plugin/SlatePlugin';
+import type { PlatePluginContext } from './PlatePlugin';
 
 export type DOMHandler<C extends AnyPluginConfig = PluginConfig, EV = {}> = (
   ctx: {
     event: EV;
-  } & SlatePluginContext<C>
+  } & PlatePluginContext<C>
 ) => HandlerReturnType;
 
 export interface DOMHandlers<C extends AnyPluginConfig = PluginConfig> {

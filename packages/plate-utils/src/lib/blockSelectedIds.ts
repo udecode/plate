@@ -1,8 +1,8 @@
-import type { PlateEditor } from '@udecode/plate-core';
-
 // Return undefined if not import the `BlockSelectionPlugin` plugin
+import type { SlateEditor } from '@udecode/plate-common';
+
 export const blockSelectedIds = (
-  editor: PlateEditor
+  editor: SlateEditor
 ): Set<string> | undefined => {
   const { blockSelectionStore } = editor as any;
 

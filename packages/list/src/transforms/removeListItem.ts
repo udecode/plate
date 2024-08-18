@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   type TElement,
   type TElementEntry,
   createPathRef,
@@ -26,7 +26,7 @@ export interface RemoveListItemOptions {
 
 /** Remove list item and move its sublist to list if any. */
 export const removeListItem = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   { list, listItem, reverse = true }: RemoveListItemOptions
 ) => {
   const [liNode, liPath] = listItem;

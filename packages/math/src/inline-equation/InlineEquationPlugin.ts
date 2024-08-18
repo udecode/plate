@@ -1,6 +1,6 @@
-import { createPlugin } from '@udecode/plate-common';
+import { createSlatePlugin } from '@udecode/plate-common';
 
-export const InlineEquationPlugin = createPlugin({
+export const InlineEquationPlugin = createSlatePlugin({
   isElement: true,
   isInline: true,
   isVoid: true,

@@ -1,11 +1,11 @@
 import {
   type ToggleMarkPluginOptions,
-  createPlugin,
+  createSlatePlugin,
 } from '@udecode/plate-common';
 import { onKeyDownToggleMark } from '@udecode/plate-common/react';
 
 /** Enables support for superscript formatting. */
-export const SuperscriptPlugin = createPlugin<
+export const SuperscriptPlugin = createSlatePlugin<
   'superscript',
   ToggleMarkPluginOptions
 >({

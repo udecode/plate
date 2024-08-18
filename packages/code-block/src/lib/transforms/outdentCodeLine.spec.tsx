@@ -1,14 +1,14 @@
 /** @jsx jsx */
 
 import {
-  type PlateEditor,
+  type SlateEditor,
   type TElementEntry,
   getNodeEntry,
 } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { CodeBlockPlugin } from '../../react/CodeBlockPlugin.react';
+import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { outdentCodeLine } from './outdentCodeLine';
 
 jsx;
@@ -22,7 +22,7 @@ describe('outdent code line', () => {
             <hcodeline>{'    '}test</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = (
         <editor>
@@ -30,7 +30,7 @@ describe('outdent code line', () => {
             <hcodeline>{'  '}test</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const editor = createPlateEditor({
         editor: input,
@@ -54,7 +54,7 @@ describe('outdent code line', () => {
             <hcodeline>test</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = (
         <editor>
@@ -62,7 +62,7 @@ describe('outdent code line', () => {
             <hcodeline>test</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const editor = createPlateEditor({
         editor: input,

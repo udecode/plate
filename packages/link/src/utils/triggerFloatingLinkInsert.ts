@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   getEditorString,
   isRangeAcrossBlocks,
   someNode,
@@ -22,7 +22,7 @@ import {
  * - Selection has a link node
  */
 export const triggerFloatingLinkInsert = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   {
     focused,
   }: {

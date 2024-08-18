@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import { ParagraphPlugin } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
@@ -48,7 +48,7 @@ describe('normalizeIndentListStart', () => {
           14
         </hp>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -84,7 +84,7 @@ describe('normalizeIndentListStart', () => {
           14
         </hp>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     it('should be', async () => {
       const editor = createPlateEditor({
@@ -120,7 +120,7 @@ describe('normalizeIndentListStart', () => {
           </hp>
         </element>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -143,7 +143,7 @@ describe('normalizeIndentListStart', () => {
           </hp>
         </element>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     it('should be', async () => {
       const editor = createPlateEditor({
@@ -173,7 +173,7 @@ describe('normalizeIndentListStart', () => {
           </hp>
         </element>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -191,7 +191,7 @@ describe('normalizeIndentListStart', () => {
           </hp>
         </element>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     it('should be', async () => {
       const editor = createPlateEditor({

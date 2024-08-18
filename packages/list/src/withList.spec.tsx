@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import { ParagraphPlugin } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
@@ -66,7 +66,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         const expected = (
           <editor>
@@ -79,7 +79,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         testInsertText(input, expected);
       });
@@ -98,7 +98,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         const expected = (
           <editor>
@@ -108,7 +108,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         testInsertText(input, expected);
       });
@@ -129,7 +129,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         const expected = (
           <editor>
@@ -139,7 +139,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         testInsertText(input, expected);
       });
@@ -162,7 +162,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         const expected = (
           <editor>
@@ -172,7 +172,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         testInsertText(input, expected);
       });
@@ -198,7 +198,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         const expected = (
           <editor>
@@ -208,7 +208,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         testInsertText(input, expected);
       });
@@ -232,7 +232,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         const expected = (
           <editor>
@@ -247,7 +247,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         testInsertText(input, expected, {
           options: {
@@ -278,7 +278,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         const expected = (
           <editor>
@@ -290,7 +290,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         testDeleteBackward(input, expected);
       });
@@ -315,7 +315,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         const expected = (
           <editor>
@@ -326,7 +326,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         testDeleteBackward(input, expected);
       });
@@ -349,7 +349,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         const expected = (
           <editor>
@@ -361,7 +361,7 @@ describe('withList', () => {
             </hul>
             <hp>world</hp>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         testDeleteBackward(input, expected);
       });
@@ -388,7 +388,7 @@ describe('withList', () => {
     //         </hli>
     //       </hul>
     //     </editor>
-    //   ) as any) as PlateEditor;
+    //   ) as any) as SlateEditor;
     //
     //   const expected = ((
     //     <editor>
@@ -406,7 +406,7 @@ describe('withList', () => {
     //         </hli>
     //       </hul>
     //     </editor>
-    //   ) as any) as PlateEditor;
+    //   ) as any) as SlateEditor;
     //
     //   testDeleteBackward(input, expected);
     // });
@@ -427,7 +427,7 @@ describe('withList', () => {
     //           </hli>
     //         </hul>
     //       </editor>
-    //     ) as any) as PlateEditor;
+    //     ) as any) as SlateEditor;
     //
     //     const expected = ((
     //       <editor>
@@ -442,7 +442,7 @@ describe('withList', () => {
     //           </hli>
     //         </hul>
     //       </editor>
-    //     ) as any) as PlateEditor;
+    //     ) as any) as SlateEditor;
     //
     //     testDeleteBackward(input, expected);
     //   });
@@ -461,7 +461,7 @@ describe('withList', () => {
             </hul>
             <hp>level 2</hp>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         const expected = (
           <editor>
@@ -475,7 +475,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         testDeleteForward(input, expected);
       });
@@ -494,7 +494,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         const expected = (
           <editor>
@@ -508,7 +508,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         testDeleteForward(input, expected);
       });
@@ -537,7 +537,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         const expected = (
           <editor>
@@ -555,7 +555,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         testDeleteForward(input, expected);
       });
@@ -592,7 +592,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         const expected = (
           <editor>
@@ -622,7 +622,7 @@ describe('withList', () => {
               </hli>
             </hul>
           </editor>
-        ) as any as PlateEditor;
+        ) as any as SlateEditor;
 
         testDeleteForward(input, expected);
       });

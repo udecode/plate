@@ -247,11 +247,11 @@ export type EditorPlugin<C extends AnyPluginConfig = PluginConfig> = Omit<
 export type AnyEditorPlugin = EditorPlugin<AnyPluginConfig>;
 
 export type SlatePluginContext<C extends AnyPluginConfig = PluginConfig> = {
-  api: C['api'];
+  api: Required<C['api']>;
   editor: SlateEditor;
   options: InferOptions<C>;
   plugin: EditorPlugin<C>;
-  transforms: C['transforms'];
+  transforms: Required<C['transforms']>;
   type: string;
 };
 

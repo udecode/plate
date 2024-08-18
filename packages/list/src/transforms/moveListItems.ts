@@ -1,6 +1,6 @@
 import {
   type GetNodeEntriesOptions,
-  type PlateEditor,
+  type SlateEditor,
   createPathRef,
   getNodeEntries,
   getParentNode,
@@ -21,7 +21,7 @@ export type MoveListItemsOptions = {
 };
 
 export const moveListItems = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   {
     at = editor.selection ?? undefined,
     enableResetOnShiftTab,

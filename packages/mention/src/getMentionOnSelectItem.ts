@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   getBlockAbove,
   insertNodes,
   insertText,
@@ -13,7 +13,7 @@ import { type MentionConfig, MentionPlugin } from './MentionPlugin';
 
 export type MentionOnSelectItem<
   TItem extends TMentionItemBase = TMentionItemBase,
-> = (editor: PlateEditor, item: TItem, search?: string) => void;
+> = (editor: SlateEditor, item: TItem, search?: string) => void;
 
 export const getMentionOnSelectItem =
   <TItem extends TMentionItemBase = TMentionItemBase>({

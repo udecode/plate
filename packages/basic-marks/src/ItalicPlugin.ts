@@ -1,12 +1,15 @@
 import {
   type ToggleMarkPluginOptions,
-  createPlugin,
+  createSlatePlugin,
   someHtmlElement,
 } from '@udecode/plate-common';
 import { onKeyDownToggleMark } from '@udecode/plate-common/react';
 
 /** Enables support for italic formatting. */
-export const ItalicPlugin = createPlugin<'italic', ToggleMarkPluginOptions>({
+export const ItalicPlugin = createSlatePlugin<
+  'italic',
+  ToggleMarkPluginOptions
+>({
   deserializeHtml: {
     query: ({ element }) =>
       !someHtmlElement(element, (node) => node.style.fontStyle === 'normal'),

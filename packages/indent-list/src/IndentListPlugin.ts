@@ -4,7 +4,7 @@ import {
   type PlateRenderElementProps,
   type PluginConfig,
   type TElement,
-  createTPlugin,
+  createTSlatePlugin,
   isHtmlBlockElement,
   postCleanHtml,
   traverseHtmlElements,
@@ -44,7 +44,7 @@ export type IndentListConfig = PluginConfig<
   }
 >;
 
-export const IndentListPlugin = createTPlugin<IndentListConfig>({
+export const IndentListPlugin = createTSlatePlugin<IndentListConfig>({
   handlers: {
     onKeyDown: onKeyDownIndentList,
   },

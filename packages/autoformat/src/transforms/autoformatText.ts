@@ -1,7 +1,7 @@
 import type { Point, Range } from 'slate';
 
 import {
-  type PlateEditor,
+  type SlateEditor,
   deleteText,
   insertText,
 } from '@udecode/plate-common';
@@ -17,7 +17,7 @@ export interface AutoformatTextOptions extends AutoformatTextRule {
 }
 
 export const autoformatText = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   { format, match: _match, text, trigger }: AutoformatTextOptions
 ) => {
   const selection = editor.selection as Range;

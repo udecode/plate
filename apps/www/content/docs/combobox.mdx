@@ -19,7 +19,7 @@ Extend your plugin options type with TriggerComboboxPluginOptions.
 ```ts
 type O = TriggerComboboxPluginOptions
 
-const MyPlugin = createPlugin<O>({
+const MyPlugin = createSlatePlugin<O>({
   // ...
 });
 ```
@@ -29,7 +29,7 @@ const MyPlugin = createPlugin<O>({
 Add the withTriggerCombobox override and specify default values for the required options. (See below for the full list of options).
 
 ```ts
-const MyPlugin = createPlugin<O>({
+const MyPlugin = createSlatePlugin<O>({
   // ...
   withOverrides: withTriggerCombobox,
   options: {
@@ -49,7 +49,7 @@ const MyPlugin = createPlugin<O>({
 Define your input element as an inline void element. It's often useful to do this inside a nested plugin.
 
 ```ts
-const MyPlugin = createPlugin<O>({
+const MyPlugin = createSlatePlugin<O>({
   // ...
   plugins: [
     {

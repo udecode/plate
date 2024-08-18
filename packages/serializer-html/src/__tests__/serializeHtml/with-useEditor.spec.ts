@@ -6,7 +6,7 @@ import {
   TodoListPlugin,
 } from '@udecode/plate-list';
 
-import { serializeHtml } from '../../serializeHtml';
+import { serializeHtml } from '../../react/serializeHtml';
 import { createPlateUIEditor } from '../create-plate-ui-editor';
 
 it('serialize elements using useSlateStatic', () => {

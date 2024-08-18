@@ -1,10 +1,7 @@
 import React from 'react';
 
-import {
-  type PluginConfig,
-  addSelectedRow,
-  createTPlugin,
-} from '@udecode/plate-common';
+import { type PluginConfig, addSelectedRow } from '@udecode/plate-common';
+import { createTPlatePlugin } from '@udecode/plate-common/react';
 
 import { DndScroller, type ScrollerProps } from './components/Scroller';
 import { dndStore } from './dndStore';
@@ -17,7 +14,7 @@ export type DndConfig = PluginConfig<
   }
 >;
 
-export const DndPlugin = createTPlugin<DndConfig>({
+export const DndPlugin = createTPlatePlugin<DndConfig>({
   handlers: {
     onDragEnd: () => {
       return dndStore.set.isDragging(false);

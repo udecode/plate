@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import type { PlateEditor, TDescendant, TElement } from '@udecode/plate-common';
+import type { SlateEditor, TDescendant, TElement } from '@udecode/plate-common';
 
 import type { DiffProps } from './types';
 
@@ -19,7 +19,7 @@ export interface ComputeDiffOptions {
     properties: any,
     newProperties: any
   ) => any;
-  isInline: PlateEditor['isInline'];
+  isInline: SlateEditor['isInline'];
   elementsAreRelated?: (
     element: TElement,
     nextElement: TElement

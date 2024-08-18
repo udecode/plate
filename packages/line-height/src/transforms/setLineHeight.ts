@@ -1,6 +1,6 @@
 import {
-  type PlateEditor,
   type SetNodesOptions,
+  type SlateEditor,
   type TNodeMatch,
   getKeyByType,
   isBlock,
@@ -10,7 +10,7 @@ import {
 
 import { LineHeightPlugin } from '../LineHeightPlugin';
 
-export const setLineHeight = <E extends PlateEditor>(
+export const setLineHeight = <E extends SlateEditor>(
   editor: E,
   {
     setNodesOptions,

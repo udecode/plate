@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import type { PlateEditor } from '@udecode/plate-core';
+import type { SlateEditor } from '@udecode/plate-core';
 
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -18,7 +18,7 @@ describe('when skipInvalid is true', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = { offset: 4, path: [0, 0] };
 
@@ -40,7 +40,7 @@ describe('when skipInvalid is true', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = {
         offset: 5,
@@ -65,7 +65,7 @@ describe('when skipInvalid is true', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = undefined;
 
@@ -89,7 +89,7 @@ describe('when skipInvalid is false', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = {
         offset: 5,
@@ -113,7 +113,7 @@ describe('when skipInvalid is false', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const output = {
         offset: 5,

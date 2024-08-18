@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
@@ -17,13 +17,13 @@ const input = (
       <cursor />
     </hp>
   </editor>
-) as any as PlateEditor;
+) as any as SlateEditor;
 
 const output = (
   <editor>
     <hp align="center">test</hp>
   </editor>
-) as any as PlateEditor;
+) as any as SlateEditor;
 
 it('should align center', () => {
   const editor = createPlateEditor({

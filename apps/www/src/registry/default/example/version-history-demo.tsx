@@ -3,7 +3,7 @@ import React from 'react';
 import { cn } from '@udecode/cn';
 import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks';
 import { SoftBreakPlugin } from '@udecode/plate-break';
-import { type Value, createPlugin, isInline } from '@udecode/plate-common';
+import { type Value, createSlatePlugin, isInline } from '@udecode/plate-common';
 import { ParagraphPlugin } from '@udecode/plate-common/react';
 import {
   Plate,
@@ -28,13 +28,13 @@ import { useSelected } from 'slate-react';
 import { PlateUI } from '@/lib/plate/demo/plate-ui';
 import { Button } from '@/registry/default/plate-ui/button';
 
-const InlinePlugin = createPlugin({
+const InlinePlugin = createSlatePlugin({
   isElement: true,
   isInline: true,
   key: 'inline',
 });
 
-const InlineVoidPlugin = createPlugin({
+const InlineVoidPlugin = createSlatePlugin({
   isElement: true,
   isInline: true,
   isVoid: true,
@@ -120,7 +120,7 @@ const InlineVoidElement = ({ children, ...props }: PlateElementProps) => {
   );
 };
 
-const DiffPlugin = createPlugin({
+const DiffPlugin = createSlatePlugin({
   component: DiffLeaf,
   inject: {
     aboveComponent:

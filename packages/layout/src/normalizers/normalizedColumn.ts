@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   type TNode,
   type TNodeEntry,
   createPathRef,
@@ -14,7 +14,7 @@ import { moveMiddleColumn } from '../transforms';
 import { insertEmptyColumn } from '../transforms/insertEmptyColumn';
 import { setColumnWidth } from '../transforms/setColumnWidth';
 
-export const normalizeColumn = <N extends TNode>(editor: PlateEditor) => {
+export const normalizeColumn = <N extends TNode>(editor: SlateEditor) => {
   const { normalizeNode } = editor;
 
   return function (entry: TNodeEntry<N>) {
@@ -30,7 +30,7 @@ export const normalizeColumn = <N extends TNode>(editor: PlateEditor) => {
 };
 
 const normalizeColumnHelper = <N extends TColumnGroupElement>(
-  editor: PlateEditor,
+  editor: SlateEditor,
   entry: TNodeEntry<N>
 ) => {
   const [node, path] = entry;

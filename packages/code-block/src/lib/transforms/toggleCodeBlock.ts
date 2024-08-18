@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   type TElement,
   setElements,
   someNode,
@@ -10,7 +10,7 @@ import {
 import { CodeBlockPlugin, CodeLinePlugin } from '../CodeBlockPlugin';
 import { unwrapCodeBlock } from './unwrapCodeBlock';
 
-export const toggleCodeBlock = (editor: PlateEditor) => {
+export const toggleCodeBlock = (editor: SlateEditor) => {
   if (!editor.selection) return;
 
   const codeBlockType = editor.getType(CodeBlockPlugin);

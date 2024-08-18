@@ -20,3 +20,4 @@ export * from './resolveCreatePluginTest';
 export * from './resolvePlugin';
 export * from './resolvePlugins';
 export * from './misc/index';
+export { mergeWithoutArray } from "../../internal/mergeWithoutArray";

@@ -1,7 +1,7 @@
 import type { AnyObject } from '@udecode/utils';
 
 import type { AnyPluginConfig } from '../../lib/plugin/BasePlugin';
-import type { PlateEditor } from './PlateEditor';
+import type { PlateEditor } from '../editor/PlateEditor';
 import type { EditorPlatePlugin } from './PlatePlugin';
 
 /** Node props passed by Plate */

@@ -1,6 +1,6 @@
 import {
   type InsertNodesOptions,
-  type PlateEditor,
+  type SlateEditor,
   insertNodes,
 } from '@udecode/plate-common';
 
@@ -8,7 +8,7 @@ import type { TEquationElement } from '../types';
 
 import { EquationPlugin } from '../EquationPlugin';
 
-export const insertEquation = <E extends PlateEditor>(
+export const insertEquation = <E extends SlateEditor>(
   editor: E,
   options?: InsertNodesOptions<E>
 ) => {

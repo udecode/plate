@@ -2,7 +2,7 @@
 
 import {
   type AnyPlatePlugin,
-  createPlugin,
+  createSlatePlugin,
   getPluginContext,
 } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
@@ -39,7 +39,7 @@ it('should be', () => {
   onKeyDownExitBreak({
     ...getPluginContext(
       createPlateEditor({ editor: input }),
-      createPlugin({
+      createSlatePlugin({
         options: {
           rules: [{ hotkey: 'enter', query: { allow: [HEADING_KEYS.h1] } }],
         },

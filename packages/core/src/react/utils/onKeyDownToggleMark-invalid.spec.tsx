@@ -3,8 +3,8 @@
 import { BoldPlugin } from '@udecode/plate-basic-marks';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { getPluginContext } from '../../lib';
 import { createPlateEditor } from '../editor';
+import { getPluginContext } from '../plugin';
 import { onKeyDownToggleMark } from './onKeyDownToggleMark';
 
 jsx;
@@ -44,7 +44,7 @@ const editor = createPlateEditor({
 
 it('should be', () => {
   onKeyDownToggleMark({
-    ...getPluginContext(editor, BoldPlugin.key),
+    ...getPluginContext(editor, { key: BoldPlugin.key }),
     event,
   });
   expect(editor.children).toEqual(output.children);

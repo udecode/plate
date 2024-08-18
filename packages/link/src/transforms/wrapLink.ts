@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   type TEditor,
   type WrapNodesOptions,
   wrapNodes,
@@ -16,7 +16,7 @@ export interface WrapLinkOptions<E extends TEditor = TEditor>
 }
 
 /** Wrap a link node with split. */
-export const wrapLink = <E extends PlateEditor>(
+export const wrapLink = <E extends SlateEditor>(
   editor: E,
   { target, url, ...options }: WrapLinkOptions<E>
 ) => {

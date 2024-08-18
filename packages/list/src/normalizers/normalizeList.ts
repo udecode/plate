@@ -1,6 +1,6 @@
 import {
   ParagraphPlugin,
-  type PlateEditor,
+  type SlateEditor,
   type TElement,
   type TNodeEntry,
   getChildren,
@@ -25,7 +25,7 @@ import { normalizeNestedList } from './normalizeNestedList';
 
 /** Normalize list node to force the ul>li>p+ul structure. */
 export const normalizeList = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   { validLiChildrenTypes }: ListPluginOptions
 ) => {
   const { normalizeNode } = editor;

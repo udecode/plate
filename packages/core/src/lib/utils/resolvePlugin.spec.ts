@@ -1,6 +1,6 @@
 import { createTEditor } from '@udecode/slate';
 
-import { createPlugin } from '../plugin';
+import { createSlatePlugin } from '../plugin';
 import { resolvePlugin } from './resolvePlugin';
 
 describe('resolvePlugin', () => {
@@ -8,10 +8,10 @@ describe('resolvePlugin', () => {
     expect(
       resolvePlugin(
         createTEditor() as any,
-        createPlugin({
+        createSlatePlugin({
           key: 'a',
           plugins: [
-            createPlugin({
+            createSlatePlugin({
               key: 'aa',
             }),
           ],
@@ -34,7 +34,7 @@ describe('resolvePlugin', () => {
 
   it('should create a deep clone of the plugin', () => {
     const editor = createTEditor() as any;
-    const originalPlugin = createPlugin({
+    const originalPlugin = createSlatePlugin({
       key: 'test',
       options: {
         nestedObject: {

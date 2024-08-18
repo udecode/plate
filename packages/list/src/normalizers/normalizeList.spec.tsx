@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import {
-  type PlateEditor,
+  type SlateEditor,
   createSlateEditor,
   normalizeEditor,
 } from '@udecode/plate-common';
@@ -11,7 +11,7 @@ import { ListPlugin } from '../ListPlugin';
 
 jsx;
 
-const testNormalize = (input: PlateEditor, output: PlateEditor): void => {
+const testNormalize = (input: SlateEditor, output: SlateEditor): void => {
   const editor = createSlateEditor({
     editor: input,
     plugins: [ListPlugin],
@@ -37,7 +37,7 @@ describe('merge lists', () => {
           </hli>
         </hol>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -52,7 +52,7 @@ describe('merge lists', () => {
           </hli>
         </hol>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     testNormalize(input, output);
   });
@@ -71,7 +71,7 @@ describe('merge lists', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -84,7 +84,7 @@ describe('merge lists', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     testNormalize(input, output);
   });
@@ -103,7 +103,7 @@ describe('merge lists', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -116,7 +116,7 @@ describe('merge lists', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     testNormalize(input, output);
   });
@@ -128,9 +128,9 @@ describe('clean up lists', () => {
       <editor>
         <hul />
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
-    const output = (<editor />) as any as PlateEditor;
+    const output = (<editor />) as any as SlateEditor;
 
     testNormalize(input, output);
   });
@@ -146,7 +146,7 @@ describe('clean up lists', () => {
           <hp>bad</hp>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -162,7 +162,7 @@ describe('clean up lists', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     testNormalize(input, output);
   });

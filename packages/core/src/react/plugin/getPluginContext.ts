@@ -1,33 +1,29 @@
 import type {
   AnyPluginConfig,
   PluginConfig,
+  WithRequiredKey,
 } from '../../lib/plugin/BasePlugin';
-import type { PlateEditor } from './PlateEditor';
-import type {
-  EditorPlatePlugin,
-  PlatePlugin,
-  PlatePluginContext,
-} from './PlatePlugin';
+import type { PlateEditor } from '../editor/PlateEditor';
+import type { PlatePlugin, PlatePluginContext } from './PlatePlugin';
 
 import { resolvePlugin } from '../../lib';
 
 export function getPluginContext<C extends AnyPluginConfig = PluginConfig>(
   editor: PlateEditor,
-  pluginOrKey: EditorPlatePlugin<C> | string
+  plugin: WithRequiredKey<C>
 ): PlatePluginContext<C> {
-  const plugin =
-    typeof pluginOrKey === 'string'
-      ? editor.getPlugin<C>({ key: pluginOrKey } as any)
-      : (pluginOrKey as any as PlatePlugin<C>).__resolved
-        ? pluginOrKey
-        : resolvePlugin(editor, pluginOrKey as any);
+  const editorPlugin = (plugin as any).options
+    ? (plugin as any as PlatePlugin<C>).__resolved
+      ? plugin
+      : resolvePlugin(editor, plugin as any)
+    : editor.getPlugin<C>({ key: plugin } as any);
 
   return {
-    api: editor.api,
+    api: editor.api as any,
     editor,
-    options: plugin.options,
-    plugin,
-    transforms: editor.transforms,
-    type: plugin.type,
+    options: editorPlugin.options,
+    plugin: editorPlugin,
+    transforms: editor.transforms as any,
+    type: editorPlugin.type,
   };
 }

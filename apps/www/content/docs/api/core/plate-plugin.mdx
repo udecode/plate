@@ -39,7 +39,7 @@ type MyPluginTransforms = { customTransform: () => void };
 type MyPluginQueries = { customQuery: () => boolean };
 type MyPluginStorage = { customData: string };
 
-const myPlugin = createPlugin<'myPlugin', MyPluginOptions, MyPluginTransforms, MyPluginQueries, MyPluginStorage>({
+const myPlugin = createSlatePlugin<'myPlugin', MyPluginOptions, MyPluginTransforms, MyPluginQueries, MyPluginStorage>({
   key: 'myPlugin'
   // plugin implementation
 });
@@ -67,7 +67,7 @@ An object of API functions provided by the plugin.
 
 Example:
 ```typescript
-const myPlugin = createPlugin({
+const myPlugin = createSlatePlugin({
   key: 'myPlugin',
   api: {
     getData: () => 'Some data',
@@ -91,7 +91,7 @@ Transform functions provided by the plugin.
 
 Example:
 ```typescript
-const myPlugin = createPlugin({
+const myPlugin = createSlatePlugin({
   key: 'myPlugin',
   transforms: {
     insertNode: (text: string) => {

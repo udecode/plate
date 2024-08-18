@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   type TElement,
   type TElementEntry,
   getAboveNode,
@@ -23,7 +23,7 @@ export interface MoveListItemUpOptions {
 
 /** Move a list item up. */
 export const moveListItemUp = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   { list, listItem }: MoveListItemUpOptions
 ) => {
   const move = () => {

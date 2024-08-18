@@ -3,13 +3,13 @@ import React from 'react';
 import { BoldPlugin } from '@udecode/plate-basic-marks';
 import {
   type PlatePlugins,
-  createPlugin,
+  createSlatePlugin,
   htmlStringToDOMNode,
 } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-core/react';
 import { ImagePlugin } from '@udecode/plate-media';
 
-import { serializeHtml } from '../../serializeHtml';
+import { serializeHtml } from '../../react/serializeHtml';
 import { createPlateUIEditor } from '../create-plate-ui-editor';
 
 const plugins = [
@@ -71,11 +71,11 @@ describe('multiple custom leaf serializers', () => {
 
   it('serialization with the similar renderLeaf/serialize.left options of the same nodes should give the same result', () => {
     const pluginsWithoutSerializers: PlatePlugins = [
-      createPlugin({ component: Bold as any, isLeaf: true, key: 'bold' }), // always bold
+      createSlatePlugin({ component: Bold as any, isLeaf: true, key: 'bold' }), // always bold
     ];
 
     const pluginsWithSerializers: PlatePlugins = [
-      createPlugin({
+      createSlatePlugin({
         component: Bold as any,
         isLeaf: true,
         key: 'bold',

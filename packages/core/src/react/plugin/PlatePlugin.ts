@@ -22,7 +22,6 @@ import type {
   Nullable,
   PlatePluginInsertDataOptions,
   SlatePluginConfig,
-  SlatePluginContext,
 } from '../../lib';
 import type {
   AnyPluginConfig,
@@ -33,8 +32,8 @@ import type {
   WithAnyKey,
 } from '../../lib/plugin/BasePlugin';
 import type { HandlerReturnType } from '../../lib/plugin/HandlerReturnType';
+import type { PlateEditor } from '../editor/PlateEditor';
 import type { DOMHandlers } from './DOMHandlers';
-import type { PlateEditor } from './PlateEditor';
 import type { PlateRenderElementProps } from './PlateRenderElementProps';
 import type { PlateRenderLeafProps } from './PlateRenderLeafProps';
 
@@ -198,7 +197,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       | ((
           ctx: P extends AnyPlatePlugin
             ? PlatePluginContext<P>
-            : SlatePluginContext<P>
+            : PlatePluginContext<P>
         ) => P extends AnyPlatePlugin
           ? PlatePluginConfig<
               any,
@@ -333,7 +332,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       | ((
           ctx: P extends AnyPlatePlugin
             ? PlatePluginContext<P>
-            : SlatePluginContext<P>
+            : PlatePluginContext<P>
         ) => P extends AnyPlatePlugin
           ? PlatePluginConfig<
               any,
@@ -450,11 +449,11 @@ export type EditorPlatePlugin<C extends AnyPluginConfig = PluginConfig> = Omit<
 export type AnyEditorPlatePlugin = EditorPlatePlugin<AnyPluginConfig>;
 
 export type PlatePluginContext<C extends AnyPluginConfig = PluginConfig> = {
-  api: C['api'];
+  api: Required<C['api']>;
   editor: PlateEditor;
   options: InferOptions<C>;
   plugin: EditorPlatePlugin<C>;
-  transforms: C['transforms'];
+  transforms: Required<C['transforms']>;
   type: string;
 };
 

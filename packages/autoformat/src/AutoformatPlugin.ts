@@ -1,4 +1,4 @@
-import { type PluginConfig, createTPlugin } from '@udecode/plate-common';
+import { type PluginConfig, createTSlatePlugin } from '@udecode/plate-common';
 
 import type { AutoformatPluginOptions } from './types';
 
@@ -11,7 +11,7 @@ export type AutoformatConfig = PluginConfig<
 >;
 
 /** @see {@link withAutoformat} */
-export const AutoformatPlugin = createTPlugin<AutoformatConfig>({
+export const AutoformatPlugin = createTSlatePlugin<AutoformatConfig>({
   handlers: {
     onKeyDown: onKeyDownAutoformat,
   },

@@ -1,4 +1,4 @@
-import { createPlugin, insertNode } from '@udecode/plate-common';
+import { createSlatePlugin, insertNode } from '@udecode/plate-common';
 import Defer from 'p-defer';
 
 import type { UploadError, UploadSuccess } from '../upload';
@@ -6,7 +6,7 @@ import type { TCloudAttachmentElement } from './types';
 
 import { CloudPlugin, type FileEvent, type SuccessEvent } from '../cloud';
 
-export const CloudAttachmentPlugin = createPlugin({
+export const CloudAttachmentPlugin = createSlatePlugin({
   dependencies: ['cloud'],
   isElement: true,
   isVoid: true,

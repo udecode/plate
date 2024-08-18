@@ -1,6 +1,6 @@
 /* eslint-disable jest/no-conditional-expect */
 import { createPlateEditor } from '../../../react';
-import { createPlugin } from '../../plugin';
+import { createSlatePlugin } from '../../plugin';
 import { DebugPlugin, PlateError } from './DebugPlugin';
 
 describe('DebugPlugin', () => {
@@ -16,7 +16,7 @@ describe('DebugPlugin', () => {
             } as any,
           },
         }),
-        createPlugin({
+        createSlatePlugin({
           api: {
             sampleMethod: () => {},
           },

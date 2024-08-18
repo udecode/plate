@@ -1,4 +1,4 @@
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import merge from 'lodash/merge.js';
 
@@ -11,7 +11,7 @@ import { serializeMdNodes } from './serializeMdNodes';
 
 /** Serialize the editor value to Markdown. */
 export const serializeMd = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   options?: Parameters<typeof serializeMdNodes>['1']
 ) => {
   const plugins = editor.pluginList.filter((p) => p.isElement || p.isLeaf);

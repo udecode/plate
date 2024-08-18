@@ -4,10 +4,13 @@ import type { RenderEditorReturnTuple } from 'slate-test-utils/dist/esm/buildTes
 import { buildTestHarness } from 'slate-test-utils';
 
 import type { AnyPluginConfig, CorePlugin, InferPlugins } from '../../lib';
-import type { TPlateEditor } from '../plugin';
 
 import { PlateTest } from '../components/PlateTest';
-import { type CreatePlateEditorOptions, createPlateEditor } from '../editor';
+import {
+  type CreatePlateEditorOptions,
+  type TPlateEditor,
+  createPlateEditor,
+} from '../editor';
 
 /**
  * `buildTestHarness` where:

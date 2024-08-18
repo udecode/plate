@@ -1,8 +1,8 @@
-import { createPlugin } from '@udecode/plate-common';
+import { createSlatePlugin } from '@udecode/plate-common';
 
 import 'katex/dist/katex.min.css';
 
-export const EquationPlugin = createPlugin({
+export const EquationPlugin = createSlatePlugin({
   isElement: true,
   isVoid: true,
   key: 'equation',

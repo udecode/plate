@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   getChildren,
   getNodeString,
 } from '@udecode/plate-common';
@@ -7,7 +7,7 @@ import {
 import { getCodeLineEntry } from './getCodeLineEntry';
 
 /** Is the selection inside an empty code block */
-export const isCodeBlockEmpty = (editor: PlateEditor) => {
+export const isCodeBlockEmpty = (editor: SlateEditor) => {
   const { codeBlock } = getCodeLineEntry(editor) ?? {};
 
   if (!codeBlock) return false;

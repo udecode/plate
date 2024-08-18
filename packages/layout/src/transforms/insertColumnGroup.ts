@@ -1,6 +1,6 @@
 import {
   ParagraphPlugin,
-  type PlateEditor,
+  type SlateEditor,
   insertNodes,
   withoutNormalizing,
 } from '@udecode/plate-common';
@@ -9,7 +9,7 @@ import type { TColumnGroupElement } from '../types';
 
 import { ColumnItemPlugin, ColumnPlugin } from '../ColumnPlugin';
 
-export const insertColumnGroup = (editor: PlateEditor) => {
+export const insertColumnGroup = (editor: SlateEditor) => {
   withoutNormalizing(editor, () => {
     insertNodes<TColumnGroupElement>(editor, {
       children: [

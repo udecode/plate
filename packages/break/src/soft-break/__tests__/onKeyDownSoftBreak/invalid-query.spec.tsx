@@ -3,7 +3,7 @@
 import { CodeBlockPlugin } from '@udecode/plate-code-block';
 import {
   type AnyPlatePlugin,
-  createPlugin,
+  createSlatePlugin,
   getPluginContext,
 } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
@@ -39,7 +39,7 @@ it('should be', () => {
   onKeyDownSoftBreak({
     ...getPluginContext(
       createPlateEditor({ editor: input }),
-      createPlugin({
+      createSlatePlugin({
         options: {
           rules: [{ hotkey: 'enter', query: { allow: [CodeBlockPlugin.key] } }],
         },

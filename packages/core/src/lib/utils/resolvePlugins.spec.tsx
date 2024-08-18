@@ -1,9 +1,9 @@
 import type { SlateEditor } from '../editor';
 
 import { createPlateEditor } from '../../react';
-import { createReactPlugin } from '../../react/plugin/createReactPlugin';
+import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';
 import { getPlugin } from '../../react/plugin/getPlugin';
-import { createPlugin } from '../plugin';
+import { createSlatePlugin } from '../plugin';
 import { DebugPlugin } from '../plugins';
 import { resolvePluginTest } from './resolveCreatePluginTest';
 import {
@@ -22,9 +22,9 @@ describe('resolvePlugins', () => {
 
   it('should initialize plugins with correct order based on priority', () => {
     const plugins = [
-      createPlugin({ key: 'a', priority: 1 }),
-      createPlugin({ key: 'b', priority: 3 }),
-      createPlugin({ key: 'c', priority: 2 }),
+      createSlatePlugin({ key: 'a', priority: 1 }),
+      createSlatePlugin({ key: 'b', priority: 3 }),
+      createSlatePlugin({ key: 'c', priority: 2 }),
     ];
 
     resolvePlugins(editor, plugins);
@@ -34,11 +34,11 @@ describe('resolvePlugins', () => {
 
   it('should handle nested plugins', () => {
     const plugins = [
-      createPlugin({
+      createSlatePlugin({
         key: 'parent',
         plugins: [
-          createPlugin({ key: 'child1' }),
-          createPlugin({ key: 'child2' }),
+          createSlatePlugin({ key: 'child1' }),
+          createSlatePlugin({ key: 'child2' }),
         ],
       }),
     ];
@@ -52,8 +52,8 @@ describe('resolvePlugins', () => {
 
   it('should not include disabled plugins', () => {
     const plugins = [
-      createPlugin({ key: 'enabled' }),
-      createPlugin({ enabled: false, key: 'disabled' }),
+      createSlatePlugin({ key: 'enabled' }),
+      createSlatePlugin({ enabled: false, key: 'disabled' }),
     ];
 
     resolvePlugins(editor, plugins);
@@ -64,7 +64,7 @@ describe('resolvePlugins', () => {
 
   it('should apply overrides correctly', () => {
     const plugins = [
-      createPlugin({
+      createSlatePlugin({
         key: 'a',
         override: {
           plugins: {
@@ -73,7 +73,7 @@ describe('resolvePlugins', () => {
         },
         type: 'original',
       }),
-      createPlugin({ key: 'b', type: 'original' }),
+      createSlatePlugin({ key: 'b', type: 'original' }),
     ];
 
     resolvePlugins(editor, plugins);
@@ -84,11 +84,11 @@ describe('resolvePlugins', () => {
   it('should merge all plugin APIs into editor.api', () => {
     const editor = createPlateEditor({
       plugins: [
-        createPlugin({
+        createSlatePlugin({
           api: { methodA: () => 'A' },
           key: 'plugin1',
         }),
-        createPlugin({
+        createSlatePlugin({
           api: { methodB: () => 'B' },
           key: 'plugin2',
         }),
@@ -104,11 +104,11 @@ describe('resolvePlugins', () => {
   it('should overwrite API methods with the same name', () => {
     const editor = createPlateEditor({
       plugins: [
-        createPlugin<'plugin1'>({
+        createSlatePlugin<'plugin1'>({
           api: { method: (_: string) => 'first' },
           key: 'plugin1',
         }),
-        createPlugin({
+        createSlatePlugin({
           api: { method: (_: number) => 'second' },
           key: 'plugin2',
         }),
@@ -123,9 +123,9 @@ describe('resolveAndSortPlugins', () => {
   it('should resolve and sort plugins correctly', () => {
     const editor = createPlateEditor();
     const plugins = [
-      createPlugin({ key: 'a', priority: 1 }),
-      createPlugin({ key: 'b', priority: 3 }),
-      createPlugin({ key: 'c', priority: 2 }),
+      createSlatePlugin({ key: 'a', priority: 1 }),
+      createSlatePlugin({ key: 'b', priority: 3 }),
+      createSlatePlugin({ key: 'c', priority: 2 }),
     ];
 
     const result = resolveAndSortPlugins(editor, plugins);
@@ -136,11 +136,11 @@ describe('resolveAndSortPlugins', () => {
   it('should handle nested plugins', () => {
     const editor = createPlateEditor();
     const plugins = [
-      createPlugin({
+      createSlatePlugin({
         key: 'parent',
         plugins: [
-          createPlugin({ key: 'child1', priority: 2 }),
-          createPlugin({ key: 'child2', priority: 1 }),
+          createSlatePlugin({ key: 'child1', priority: 2 }),
+          createSlatePlugin({ key: 'child2', priority: 1 }),
         ],
       }),
     ];
@@ -153,9 +153,9 @@ describe('resolveAndSortPlugins', () => {
   it('should order plugins based on dependencies', () => {
     const editor = createPlateEditor();
     const plugins = [
-      createPlugin({ key: 'a', priority: 1 }),
-      createPlugin({ dependencies: ['c'], key: 'b', priority: 3 }),
-      createPlugin({ key: 'c', priority: 2 }),
+      createSlatePlugin({ key: 'a', priority: 1 }),
+      createSlatePlugin({ dependencies: ['c'], key: 'b', priority: 3 }),
+      createSlatePlugin({ key: 'c', priority: 2 }),
     ];
 
     const result = resolveAndSortPlugins(editor, plugins);
@@ -166,9 +166,9 @@ describe('resolveAndSortPlugins', () => {
   it('should handle multiple dependencies', () => {
     const editor = createPlateEditor();
     const plugins = [
-      createPlugin({ dependencies: ['b', 'c'], key: 'a', priority: 3 }),
-      createPlugin({ key: 'b', priority: 2 }),
-      createPlugin({ key: 'c', priority: 1 }),
+      createSlatePlugin({ dependencies: ['b', 'c'], key: 'a', priority: 3 }),
+      createSlatePlugin({ key: 'b', priority: 2 }),
+      createSlatePlugin({ key: 'c', priority: 1 }),
     ];
 
     const result = resolveAndSortPlugins(editor, plugins);
@@ -179,9 +179,9 @@ describe('resolveAndSortPlugins', () => {
   it('should handle nested dependencies', () => {
     const editor = createPlateEditor();
     const plugins = [
-      createPlugin({ dependencies: ['b'], key: 'a', priority: 3 }),
-      createPlugin({ dependencies: ['c'], key: 'b', priority: 2 }),
-      createPlugin({ key: 'c', priority: 1 }),
+      createSlatePlugin({ dependencies: ['b'], key: 'a', priority: 3 }),
+      createSlatePlugin({ dependencies: ['c'], key: 'b', priority: 2 }),
+      createSlatePlugin({ key: 'c', priority: 1 }),
     ];
 
     const result = resolveAndSortPlugins(editor, plugins);
@@ -192,9 +192,9 @@ describe('resolveAndSortPlugins', () => {
   it('should maintain priority order when no dependencies conflict', () => {
     const editor = createPlateEditor();
     const plugins = [
-      createPlugin({ key: 'a', priority: 3 }),
-      createPlugin({ dependencies: ['c'], key: 'b', priority: 2 }),
-      createPlugin({ key: 'c', priority: 1 }),
+      createSlatePlugin({ key: 'a', priority: 3 }),
+      createSlatePlugin({ dependencies: ['c'], key: 'b', priority: 2 }),
+      createSlatePlugin({ key: 'c', priority: 1 }),
     ];
 
     const result = resolveAndSortPlugins(editor, plugins);
@@ -205,8 +205,8 @@ describe('resolveAndSortPlugins', () => {
   it('should handle circular dependencies gracefully', () => {
     const editor = createPlateEditor();
     const plugins = [
-      createPlugin({ dependencies: ['b'], key: 'a' }),
-      createPlugin({ dependencies: ['a'], key: 'b' }),
+      createSlatePlugin({ dependencies: ['b'], key: 'a' }),
+      createSlatePlugin({ dependencies: ['a'], key: 'b' }),
     ];
 
     const result = resolveAndSortPlugins(editor, plugins);
@@ -219,11 +219,11 @@ describe('resolveAndSortPlugins', () => {
   it('should handle dependencies with nested plugins', () => {
     const editor = createPlateEditor();
     const plugins = [
-      createPlugin({
+      createSlatePlugin({
         key: 'parent',
         plugins: [
-          createPlugin({ dependencies: ['child2'], key: 'child1' }),
-          createPlugin({ key: 'child2' }),
+          createSlatePlugin({ dependencies: ['child2'], key: 'child1' }),
+          createSlatePlugin({ key: 'child2' }),
         ],
       }),
     ];
@@ -240,8 +240,8 @@ describe('mergePlugins', () => {
     const editor = createPlateEditor();
 
     const plugins = [
-      createPlugin({ key: 'a', type: 'typeA' }),
-      createPlugin({ key: 'b', type: 'typeB' }),
+      createSlatePlugin({ key: 'a', type: 'typeA' }),
+      createSlatePlugin({ key: 'b', type: 'typeB' }),
     ];
 
     mergePlugins(editor, plugins);
@@ -253,10 +253,10 @@ describe('mergePlugins', () => {
 
   it('should update existing plugins', () => {
     const editor = createPlateEditor({
-      plugins: [createPlugin({ key: 'a', type: 'oldType' })],
+      plugins: [createSlatePlugin({ key: 'a', type: 'oldType' })],
     });
 
-    const plugins = [createPlugin({ key: 'a', type: 'newType' })];
+    const plugins = [createSlatePlugin({ key: 'a', type: 'newType' })];
 
     mergePlugins(editor, plugins);
 
@@ -269,7 +269,7 @@ describe('applyPluginOverrides', () => {
   it('should apply overrides correctly', () => {
     const editor = createPlateEditor({
       plugins: [
-        createPlugin({
+        createSlatePlugin({
           key: 'a',
           override: {
             plugins: {
@@ -278,7 +278,7 @@ describe('applyPluginOverrides', () => {
           },
           type: 'originalA',
         }),
-        createPlugin({ key: 'b', type: 'originalB' }),
+        createSlatePlugin({ key: 'b', type: 'originalB' }),
       ],
     });
 
@@ -292,14 +292,14 @@ describe('applyPluginOverrides', () => {
     const editor = createPlateEditor() as SlateEditor;
 
     resolvePlugins(editor, [
-      createPlugin({
+      createSlatePlugin({
         key: 'parent',
         override: {
           plugins: {
             child: { type: 'overriddenChild' },
           },
         },
-        plugins: [createPlugin({ key: 'child', type: 'originalChild' })],
+        plugins: [createSlatePlugin({ key: 'child', type: 'originalChild' })],
       }),
     ]);
 
@@ -309,7 +309,7 @@ describe('applyPluginOverrides', () => {
   it('should apply multiple overrides in correct order', () => {
     const editor = createPlateEditor({
       plugins: [
-        createPlugin({
+        createSlatePlugin({
           key: 'a',
           override: {
             plugins: {
@@ -318,7 +318,7 @@ describe('applyPluginOverrides', () => {
           },
           type: 'originalA',
         }),
-        createPlugin({
+        createSlatePlugin({
           key: 'b',
           override: {
             plugins: {
@@ -327,7 +327,7 @@ describe('applyPluginOverrides', () => {
           },
           type: 'originalB',
         }),
-        createPlugin({ key: 'c', type: 'originalC' }),
+        createSlatePlugin({ key: 'c', type: 'originalC' }),
       ],
     });
 
@@ -344,7 +344,7 @@ describe('applyPluginOverrides', () => {
 
     const editor = createPlateEditor({
       plugins: [
-        createReactPlugin({
+        createPlatePlugin({
           key: 'a',
           override: {
             components: {
@@ -356,21 +356,21 @@ describe('applyPluginOverrides', () => {
           },
           priority: 2,
         }),
-        createReactPlugin({
+        createPlatePlugin({
           component: OriginalComponent,
           key: 'b',
           priority: 3,
         }),
-        createPlugin({
+        createSlatePlugin({
           key: 'c',
           priority: 1,
         }),
-        createReactPlugin({
+        createPlatePlugin({
           component: OriginalComponent,
           key: 'd',
           priority: 1,
         }),
-        createReactPlugin({
+        createPlatePlugin({
           key: 'e',
           override: {
             components: {
@@ -380,7 +380,7 @@ describe('applyPluginOverrides', () => {
           },
           priority: 4,
         }),
-        createReactPlugin({
+        createPlatePlugin({
           component: PreservedOriginalComponent,
           key: 'f',
           priority: 5,
@@ -411,7 +411,7 @@ describe('applyPluginOverrides', () => {
 
   describe('targetPlugins', () => {
     it('should correctly apply targetPluginToInject and merge with existing plugins', () => {
-      const plugin = createPlugin({
+      const plugin = createSlatePlugin({
         inject: {
           plugins: {
             plugin1: {
@@ -476,12 +476,12 @@ describe('applyPluginOverrides', () => {
 
     const editor = createPlateEditor({
       plugins: [
-        createPlugin({
+        createSlatePlugin({
           api: { method: originalLogger },
           key: 'a',
         }),
         // This should replace the previous plugin
-        createPlugin({
+        createSlatePlugin({
           api: { method: replacementLogger },
           key: 'a',
         }),
@@ -532,11 +532,11 @@ describe('applyPluginOverrides', () => {
         },
       },
       plugins: [
-        createPlugin({
+        createSlatePlugin({
           key: 'a',
         }),
-        createPlugin({ key: 'b' }),
-        createPlugin({ key: 'c' }),
+        createSlatePlugin({ key: 'b' }),
+        createSlatePlugin({ key: 'c' }),
       ],
     });
 
@@ -557,11 +557,11 @@ describe('applyPluginOverrides', () => {
         },
       },
       plugins: [
-        createPlugin({
+        createSlatePlugin({
           key: 'a',
         }),
-        createPlugin({ key: 'b' }),
-        createPlugin({ key: 'c' }),
+        createSlatePlugin({ key: 'b' }),
+        createSlatePlugin({ key: 'c' }),
       ],
     });
 

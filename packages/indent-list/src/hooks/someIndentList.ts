@@ -1,8 +1,8 @@
-import { type PlateEditor, someNode } from '@udecode/plate-common';
+import { type SlateEditor, someNode } from '@udecode/plate-common';
 
 import { INDENT_LIST_KEYS, IndentListPlugin, ListStyleType } from '../index';
 
-export const someIndentList = (editor: PlateEditor, type: string) => {
+export const someIndentList = (editor: SlateEditor, type: string) => {
   return (
     !!editor.selection &&
     someNode(editor, {

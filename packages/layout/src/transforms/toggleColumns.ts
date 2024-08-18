@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   type TElement,
   type TNodeEntry,
   replaceNode,
@@ -7,7 +7,7 @@ import {
 
 import { ColumnItemPlugin, ColumnPlugin } from '../ColumnPlugin';
 
-export const toggleColumns = (editor: PlateEditor, nodeEntry: TNodeEntry) => {
+export const toggleColumns = (editor: SlateEditor, nodeEntry: TNodeEntry) => {
   const nodes = {
     children: [
       {

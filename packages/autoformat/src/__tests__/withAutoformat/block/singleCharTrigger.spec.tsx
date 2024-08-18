@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import {
-  createPlugin,
+  createSlatePlugin,
   getEditorString,
   insertText,
   wrapNodes,
@@ -34,7 +34,7 @@ const output = (
 it('autoformats a block with a single character trigger', () => {
   const linkEditor = createPlateEditor({
     plugins: [
-      createPlugin<string, AutoformatPluginOptions>({
+      createSlatePlugin<string, AutoformatPluginOptions>({
         options: {
           rules: [
             {

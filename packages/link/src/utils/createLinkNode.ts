@@ -1,4 +1,4 @@
-import type { PlateEditor, TText } from '@udecode/plate-common';
+import type { SlateEditor, TText } from '@udecode/plate-common';
 
 import type { TLinkElement } from '../types';
 
@@ -12,7 +12,7 @@ export interface CreateLinkNodeOptions {
 }
 
 export const createLinkNode = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   { children, target, text = '', url }: CreateLinkNodeOptions
 ): TLinkElement => {
   const type = editor.getType(LinkPlugin);

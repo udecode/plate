@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   type TElement,
   type TElementEntry,
   getNodeEntry,
@@ -15,7 +15,7 @@ import { getListTypes } from '../queries/index';
 // should be normalized to "ul -> li -> lic + ul".
 // In other words, a nested list as a direct children of a list should be moved into a previous list item sibling
 export const normalizeNestedList = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   { nestedListItem }: { nestedListItem: TElementEntry }
 ) => {
   const [, path] = nestedListItem;

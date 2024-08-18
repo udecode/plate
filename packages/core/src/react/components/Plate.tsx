@@ -3,7 +3,7 @@ import React from 'react';
 import type { TEditableProps } from '@udecode/slate-react';
 
 import type { PlateStoreState } from '../../lib/types/PlateStore';
-import type { PlateEditor } from '../plugin/PlateEditor';
+import type { PlateEditor } from '../editor/PlateEditor';
 
 import { PlateStoreProvider } from '../stores';
 

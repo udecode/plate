@@ -2,7 +2,7 @@ import type { SlateEditor } from '../editor';
 import type { PlatePluginInsertDataOptions } from '../plugin/BasePlugin';
 import type { AnyEditorPlugin } from '../plugin/SlatePlugin';
 
-import { getPluginContext } from '../plugin';
+import { getSlatePluginContext } from '../plugin';
 
 /** Pipe editor.insertData.transformData */
 export const pipeTransformData = (
@@ -16,7 +16,7 @@ export const pipeTransformData = (
     if (!transformData) return;
 
     data = transformData({
-      ...getPluginContext(editor, p as any),
+      ...getSlatePluginContext(editor, p as any),
       data,
       dataTransfer,
     });

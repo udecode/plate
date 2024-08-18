@@ -1,10 +1,10 @@
-import type { PlateEditor } from '@udecode/plate-core';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import castArray from 'lodash/castArray.js';
 
 /** Does the node match the type provided. */
 export const isType = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   node: any,
   key?: string | string[]
 ) => {

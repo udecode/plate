@@ -1,7 +1,7 @@
 import type { Range } from 'slate';
 
 import {
-  type PlateEditor,
+  type SlateEditor,
   createPathRef,
   deleteMerge,
   getAboveNode,
@@ -17,7 +17,7 @@ import { getHighestEmptyList } from './queries/getHighestEmptyList';
 import { hasListChild } from './queries/hasListChild';
 import { isAcrossListItems } from './queries/isAcrossListItems';
 
-const getLiStart = (editor: PlateEditor) => {
+const getLiStart = (editor: SlateEditor) => {
   const start = getStartPoint(editor, editor.selection as Range);
 
   return getAboveNode(editor, {
@@ -26,7 +26,7 @@ const getLiStart = (editor: PlateEditor) => {
   });
 };
 
-export const deleteFragmentList = (editor: PlateEditor) => {
+export const deleteFragmentList = (editor: SlateEditor) => {
   let deleted = false;
 
   withoutNormalizing(editor, () => {

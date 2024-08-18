@@ -1,7 +1,7 @@
 import {
   type InsertNodesOptions,
   ParagraphPlugin,
-  type PlateEditor,
+  type SlateEditor,
   getQueryOptions,
   insertNodes,
 } from '@udecode/plate-common';
@@ -10,7 +10,7 @@ import type { TColumnElement } from '../types';
 
 import { ColumnItemPlugin } from '../ColumnPlugin';
 
-export const insertEmptyColumn = <E extends PlateEditor>(
+export const insertEmptyColumn = <E extends SlateEditor>(
   editor: E,
   options?: { width?: string } & InsertNodesOptions<E>
 ) => {

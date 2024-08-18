@@ -6,7 +6,7 @@ import { ListPlugin } from '@udecode/plate-list';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { createPlateEditor } from '../../../../react';
-import { createPlugin } from '../../../plugin';
+import { createSlatePlugin } from '../../../plugin';
 import { ParagraphPlugin } from '../../paragraph';
 import { htmlElementToLeaf } from './htmlElementToLeaf';
 import { parseHtmlElement } from './parseHtmlElement';
@@ -39,7 +39,7 @@ describe('when there is no plugins', () => {
     expect(
       htmlElementToLeaf(
         createPlateEditor({
-          plugins: [createPlugin({ key: 'a' })],
+          plugins: [createSlatePlugin({ key: 'a' })],
         }),
         parseHtmlElement(`<strong>test</strong>`)
       )

@@ -1,9 +1,12 @@
 import React from 'react';
 
-import type { PlateRenderElementProps, TEditor } from '@udecode/plate-common';
+import type { TEditor } from '@udecode/plate-common';
 import type { Path } from 'slate';
 
-import { findNodePath } from '@udecode/plate-common/react';
+import {
+  type PlateRenderElementProps,
+  findNodePath,
+} from '@udecode/plate-common/react';
 import { useReadOnly } from 'slate-react';
 
 export interface WithDraggableOptions<T = any> {

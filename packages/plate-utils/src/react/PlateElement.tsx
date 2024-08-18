@@ -3,7 +3,7 @@ import React from 'react';
 import type {
   AnyPlatePlugin,
   PlateRenderElementProps,
-} from '@udecode/plate-core';
+} from '@udecode/plate-core/react';
 import type { TElement } from '@udecode/slate';
 
 import { Box, type BoxProps, useComposedRef } from '@udecode/react-utils';

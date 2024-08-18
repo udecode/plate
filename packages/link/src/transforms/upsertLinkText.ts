@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   type TText,
   getAboveNode,
   getEditorString,
@@ -16,7 +16,7 @@ import { LinkPlugin } from '../LinkPlugin';
  * new text. The new text has the same marks than the first text replaced.
  */
 export const upsertLinkText = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   { text }: UpsertLinkOptions
 ) => {
   const newLink = getAboveNode<TLinkElement>(editor, {

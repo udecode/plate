@@ -1,6 +1,6 @@
 import {
   ParagraphPlugin,
-  type PlateEditor,
+  type SlateEditor,
   insertElements,
   isBlockAboveEmpty,
   isExpanded,
@@ -14,7 +14,7 @@ import { insertCodeBlock } from './insertCodeBlock';
  * Called by toolbars to make sure a code-block gets inserted below a paragraph
  * rather than awkwardly splitting the current selection.
  */
-export const insertEmptyCodeBlock = <E extends PlateEditor>(
+export const insertEmptyCodeBlock = <E extends SlateEditor>(
   editor: E,
   {
     defaultType = editor.getType(ParagraphPlugin),

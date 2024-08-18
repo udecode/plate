@@ -1,10 +1,10 @@
 import { focusEditorEdge, isEditorFocused } from '@udecode/slate-react';
 
-import { createPlugin } from '../../../lib';
+import { createSlatePlugin } from '../../../lib';
 import { withPlateReact } from './withPlateReact';
 
 /** @see {@link withReact} */
-export const ReactPlugin = createPlugin({
+export const ReactPlugin = createSlatePlugin({
   key: 'dom',
   withOverrides: withPlateReact,
 }).extendApi(({ editor }) => {

@@ -1,11 +1,11 @@
 /** @jsx jsx */
 
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { CodeBlockPlugin } from '../../react/CodeBlockPlugin.react';
+import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { insertEmptyCodeBlock } from './insertEmptyCodeBlock';
 
 jsx;
@@ -18,7 +18,7 @@ describe('insert empty code block', () => {
           <cursor />
         </hp>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -28,7 +28,7 @@ describe('insert empty code block', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createPlateEditor({
       editor: input,
@@ -50,7 +50,7 @@ describe('insert empty code block', () => {
           <cursor />
         </hp>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -61,7 +61,7 @@ describe('insert empty code block', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createPlateEditor({
       editor: input,
@@ -88,7 +88,7 @@ describe('insert empty code block', () => {
         </hp>
         <hp>line 5</hp>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const output = (
       <editor>
@@ -103,7 +103,7 @@ describe('insert empty code block', () => {
         </hcodeblock>
         <hp>line 5</hp>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const editor = createPlateEditor({
       editor: input,

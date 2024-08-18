@@ -1,6 +1,6 @@
 import { ParagraphPlugin } from '@udecode/plate-common';
 
-import { serializeHtml } from '../../serializeHtml';
+import { serializeHtml } from '../../react/serializeHtml';
 import { createPlateUIEditor } from '../create-plate-ui-editor';
 
 describe('when there is no deserializer', () => {

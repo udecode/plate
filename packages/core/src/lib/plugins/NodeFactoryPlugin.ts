@@ -1,5 +1,5 @@
-import { createPlugin } from '../plugin';
+import { createSlatePlugin } from '../plugin';
 
-export const NodeFactoryPlugin = createPlugin({
+export const NodeFactoryPlugin = createSlatePlugin({
   key: 'nodeFactory',
 });

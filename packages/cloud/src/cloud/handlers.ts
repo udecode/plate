@@ -1,6 +1,6 @@
 import type React from 'react';
 
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import { select } from '@udecode/plate-common';
 import { findEventRange } from '@udecode/plate-common/react';
@@ -8,7 +8,7 @@ import { findEventRange } from '@udecode/plate-common/react';
 import { uploadFiles } from './uploadFiles';
 
 export const onDropCloud = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   e: React.DragEvent
 ): boolean => {
   const { files } = e.dataTransfer;
@@ -34,7 +34,7 @@ export const onDropCloud = (
 };
 
 export const onPasteCloud = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   e: React.ClipboardEvent
 ): boolean => {
   const { files } = e.clipboardData;

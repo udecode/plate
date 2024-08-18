@@ -1,6 +1,6 @@
 import {
   ParagraphPlugin,
-  type PlateEditor,
+  type SlateEditor,
   type TElement,
   type TNodeEntry,
   deleteMerge,
@@ -28,7 +28,7 @@ import { removeFirstListItem } from './transforms/removeFirstListItem';
 import { removeListItem } from './transforms/removeListItem';
 import { unwrapList } from './transforms/unwrapList';
 
-export const deleteBackwardList = (editor: PlateEditor, unit: TextUnit) => {
+export const deleteBackwardList = (editor: SlateEditor, unit: TextUnit) => {
   const res = getListItemEntry(editor, {});
 
   let moved: boolean | undefined = false;

@@ -1,4 +1,4 @@
-import { createPlugin } from '@udecode/plate-common';
+import { createSlatePlugin } from '@udecode/plate-common';
 
 export type CalloutColor = {
   bgColor: string;
@@ -6,7 +6,7 @@ export type CalloutColor = {
   textColor: string;
 };
 
-export const CalloutPlugin = createPlugin({
+export const CalloutPlugin = createSlatePlugin({
   isElement: true,
   key: 'callout',
 });

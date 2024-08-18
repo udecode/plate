@@ -1,7 +1,7 @@
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import { moveListItems } from './moveListItems';
 
-export const indentListItems = (editor: PlateEditor) => {
+export const indentListItems = (editor: SlateEditor) => {
   moveListItems(editor, { increase: true });
 };

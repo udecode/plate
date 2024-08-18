@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   deleteText,
   getAboveNode,
   getMarks,
@@ -16,7 +16,7 @@ import { type TodoListConfig, TodoListPlugin } from '../todo-list/index';
 
 /** Insert todo list item if selection in li>p. TODO: test */
 export const insertTodoListItem = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   {
     inheritCheckStateOnLineEndBreak = false,
     inheritCheckStateOnLineStartBreak = false,

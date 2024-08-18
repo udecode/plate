@@ -1,7 +1,7 @@
 import {
   type HotkeyPluginOptions,
   type PluginConfig,
-  createTPlugin,
+  createTSlatePlugin,
 } from '@udecode/plate-common';
 import { onKeyDownToggleElement } from '@udecode/plate-common/react';
 
@@ -15,7 +15,7 @@ export type TodoListConfig = PluginConfig<
   } & HotkeyPluginOptions
 >;
 
-export const TodoListPlugin = createTPlugin<TodoListConfig>({
+export const TodoListPlugin = createTSlatePlugin<TodoListConfig>({
   handlers: {
     onKeyDown: onKeyDownToggleElement,
   },

@@ -1,12 +1,12 @@
 /** @jsx jsx */
 
-import type { PlateEditor, TDescendant } from '@udecode/plate-common';
+import type { SlateEditor, TDescendant } from '@udecode/plate-common';
 
 import { ParagraphPlugin } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { CodeBlockPlugin } from '../react/CodeBlockPlugin.react';
+import { CodeBlockPlugin } from '../react/CodeBlockPlugin';
 
 jsx;
 
@@ -35,7 +35,7 @@ describe('pasting a code block', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const fragment = (
         <fragment>
@@ -60,7 +60,7 @@ describe('pasting a code block', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -80,7 +80,7 @@ describe('pasting a code block', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       const fragment = (
         <fragment>
@@ -101,7 +101,7 @@ describe('pasting a code block', () => {
             <hcodeline>!</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as PlateEditor;
+      ) as any as SlateEditor;
 
       editorTest(input, fragment, expected);
     });
@@ -122,7 +122,7 @@ describe('pasting non-code block elements', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     const fragment = (
       <fragment>
@@ -141,7 +141,7 @@ describe('pasting non-code block elements', () => {
           <hcodeline>!</hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     editorTest(input, fragment, expected);
   });

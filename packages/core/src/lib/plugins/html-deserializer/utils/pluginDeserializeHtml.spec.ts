@@ -1,7 +1,7 @@
 import { BoldPlugin } from '@udecode/plate-basic-marks';
 
 import { createPlateEditor } from '../../../../react/editor/withPlate';
-import { createPlugin } from '../../../plugin';
+import { createSlatePlugin } from '../../../plugin';
 import { ParagraphPlugin } from '../../paragraph';
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
 
@@ -12,7 +12,7 @@ describe('when element is p and validNodeName is P', () => {
     expect(
       pluginDeserializeHtml(
         createPlateEditor(),
-        createPlugin({
+        createSlatePlugin({
           deserializeHtml: {
             getNode: node,
             isElement: true,
@@ -38,7 +38,7 @@ describe('when element is p, validAttribute', () => {
     expect(
       pluginDeserializeHtml(
         createPlateEditor(),
-        createPlugin({
+        createSlatePlugin({
           deserializeHtml: {
             getNode: node,
             isElement: true,
@@ -61,7 +61,7 @@ describe('when element is p, validAttribute', () => {
     expect(
       pluginDeserializeHtml(
         createPlateEditor(),
-        createPlugin({
+        createSlatePlugin({
           deserializeHtml: {
             getNode: node,
             isElement: true,
@@ -87,7 +87,7 @@ describe('when element is p with color and rule style is different', () => {
     expect(
       pluginDeserializeHtml(
         createPlateEditor(),
-        createPlugin({
+        createSlatePlugin({
           deserializeHtml: {
             getNode: node,
             isElement: true,
@@ -115,7 +115,7 @@ describe('when element is p with same style color than rule', () => {
     expect(
       pluginDeserializeHtml(
         createPlateEditor(),
-        createPlugin({
+        createSlatePlugin({
           deserializeHtml: {
             getNode: node,
             isElement: true,
@@ -143,7 +143,7 @@ describe('when element has style color and rule style color is *', () => {
     expect(
       pluginDeserializeHtml(
         createPlateEditor(),
-        createPlugin({
+        createSlatePlugin({
           deserializeHtml: {
             getNode: node,
             isElement: true,
@@ -171,7 +171,7 @@ describe('when element is strong and validNodeName is strong', () => {
     expect(
       pluginDeserializeHtml(
         createPlateEditor(),
-        createPlugin({
+        createSlatePlugin({
           deserializeHtml: {
             rules: [
               {

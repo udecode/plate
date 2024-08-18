@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -16,7 +16,7 @@ const input = (
       st
     </hp>
   </editor>
-) as any as PlateEditor;
+) as any as SlateEditor;
 
 const output: ReturnType<typeof getRangeFromBlockStart> = {
   anchor: { offset: 0, path: [0, 0] },

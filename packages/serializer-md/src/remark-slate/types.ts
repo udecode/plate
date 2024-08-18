@@ -1,4 +1,4 @@
-import type { PlateEditor, TElement } from '@udecode/plate-common';
+import type { SlateEditor, TElement } from '@udecode/plate-common';
 
 export type MdastElementType =
   | 'blockquote'
@@ -59,7 +59,7 @@ export type RemarkTextRules = {
 };
 
 export type RemarkPluginOptions = {
-  editor: PlateEditor;
+  editor: SlateEditor;
   elementRules: RemarkElementRules;
   indentList?: boolean;
   textRules: RemarkTextRules;

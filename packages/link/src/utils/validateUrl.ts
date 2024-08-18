@@ -1,8 +1,8 @@
-import { type PlateEditor, sanitizeUrl } from '@udecode/plate-common';
+import { type SlateEditor, sanitizeUrl } from '@udecode/plate-common';
 
 import { LinkPlugin } from '../LinkPlugin';
 
-export const validateUrl = (editor: PlateEditor, url: string): boolean => {
+export const validateUrl = (editor: SlateEditor, url: string): boolean => {
   const { allowedSchemes, dangerouslySkipSanitization, isUrl } =
     editor.getOptions(LinkPlugin);
 

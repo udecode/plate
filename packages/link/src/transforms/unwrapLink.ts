@@ -1,5 +1,5 @@
 import {
-  type PlateEditor,
+  type SlateEditor,
   type UnwrapNodesOptions,
   getAboveNode,
   isElement,
@@ -12,7 +12,7 @@ import { LinkPlugin } from '../LinkPlugin';
 
 /** Unwrap link node. */
 export const unwrapLink = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   options?: {
     split?: boolean;
   } & UnwrapNodesOptions

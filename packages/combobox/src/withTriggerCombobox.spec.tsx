@@ -4,18 +4,18 @@ import {
   type TriggerComboboxPluginOptions,
   withTriggerCombobox,
 } from '@udecode/plate-combobox';
-import { createPlugin } from '@udecode/plate-common';
+import { createSlatePlugin } from '@udecode/plate-common';
 import { ParagraphPlugin } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
-const ExampleComboboxPlugin = createPlugin<
+const ExampleComboboxPlugin = createSlatePlugin<
   string,
   TriggerComboboxPluginOptions
 >({
   key: 'exampleCombobox',
   plugins: [
-    createPlugin({
+    createSlatePlugin({
       isElement: true,
       isInline: true,
       isVoid: true,

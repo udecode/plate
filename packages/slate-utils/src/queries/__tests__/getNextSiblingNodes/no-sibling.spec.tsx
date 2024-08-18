@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 import type { TDescendant } from '@udecode/slate';
 import type { Range } from 'slate';
 
@@ -23,7 +23,7 @@ const input = (
       </ha>
     </hp>
   </editor>
-) as any as PlateEditor;
+) as any as SlateEditor;
 
 const output: TDescendant[] = [];
 

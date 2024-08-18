@@ -1,9 +1,7 @@
+import type { PluginConfig, Value } from '@udecode/plate-common';
+
 import * as portiveClient from '@portive/client';
-import {
-  type PluginConfig,
-  type Value,
-  createTPlugin,
-} from '@udecode/plate-common';
+import { createTPlatePlugin } from '@udecode/plate-common/react';
 
 import type { Upload } from '../upload';
 import type { FinishUploadsOptions } from './types';
@@ -30,7 +28,7 @@ export type CloudConfig = PluginConfig<
   }
 >;
 
-export const CloudPlugin = createTPlugin<CloudConfig>({
+export const CloudPlugin = createTPlatePlugin<CloudConfig>({
   handlers: {
     onDrop: ({ editor, event }) => onDropCloud(editor, event),
     onPaste: ({ editor, event }) => onPasteCloud(editor, event),

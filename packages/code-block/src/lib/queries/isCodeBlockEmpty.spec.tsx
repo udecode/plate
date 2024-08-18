@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
@@ -23,7 +23,7 @@ describe('isCodeBlockEmpty', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     expect(isCodeBlockEmpty(createPlateEditor({ editor: input }))).toBe(false);
   });
@@ -41,7 +41,7 @@ describe('isCodeBlockEmpty', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     expect(isCodeBlockEmpty(createPlateEditor({ editor: input }))).toBe(false);
   });
@@ -56,7 +56,7 @@ describe('isCodeBlockEmpty', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     expect(isCodeBlockEmpty(createPlateEditor({ editor: input }))).toBe(false);
   });
@@ -71,7 +71,7 @@ describe('isCodeBlockEmpty', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as PlateEditor;
+    ) as any as SlateEditor;
 
     expect(isCodeBlockEmpty(createPlateEditor({ editor: input }))).toBe(true);
   });
