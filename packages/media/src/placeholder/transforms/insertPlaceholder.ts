@@ -42,12 +42,12 @@ export const insertVideoPlaceholder = <V extends Value>(
   options?: InsertNodesOptions<V>
 ) => insertPlaceHolder(editor, ELEMENT_VIDEO, options);
 
-export const insertAudioPlaceholer = <V extends Value>(
+export const insertAudioPlaceholder = <V extends Value>(
   editor: PlateEditor<V>,
   options?: InsertNodesOptions<V>
 ) => insertPlaceHolder(editor, ELEMENT_AUDIO, options);
 
-export const insertFilePlaceholer = <V extends Value>(
+export const insertFilePlaceholder = <V extends Value>(
   editor: PlateEditor<V>,
   options?: InsertNodesOptions<V>
 ) => insertPlaceHolder(editor, ELEMENT_FILE, options);
