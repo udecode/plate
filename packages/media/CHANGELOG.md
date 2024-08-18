@@ -1,5 +1,11 @@
 # @udecode/plate-media
 
+## 36.5.3
+
+### Patch Changes
+
+- [#3446](https://github.com/udecode/plate/pull/3446) by [@felixfeng33](https://github.com/felixfeng33) – fix: typo `insertFilePlaceholer` => `insertFilePlaceholder`.
+
 ## 36.2.2
 
 ### Patch Changes
