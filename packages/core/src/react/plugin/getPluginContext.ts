@@ -1,8 +1,4 @@
-import type {
-  AnyPluginConfig,
-  PluginConfig,
-  WithRequiredKey,
-} from '../../lib/plugin/BasePlugin';
+import type { AnyPluginConfig, PluginConfig, WithRequiredKey } from '../../lib';
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { PlatePlugin, PlatePluginContext } from './PlatePlugin';
 

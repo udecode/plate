@@ -1,6 +1,6 @@
 import type { HotkeyPluginOptions } from '../../../lib';
 
-import { ParagraphPlugin as BaseParagraphPlugin } from '../../../lib/plugins/paragraph/ParagraphPlugin';
+import { ParagraphPlugin as BaseParagraphPlugin } from '../../../lib';
 import { extendPlatePlugin } from '../../plugin/extendPlatePlugin';
 import { onKeyDownToggleElement } from '../../utils/onKeyDownToggleElement';
 

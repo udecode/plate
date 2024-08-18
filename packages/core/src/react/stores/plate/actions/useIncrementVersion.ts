@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { PlateChangeKey } from '../../../../lib/types/PlateStore';
+import type { PlateChangeKey } from '../PlateStore';
 
 import {
   type UsePlateEditorStoreOptions,

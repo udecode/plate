@@ -1,4 +1,4 @@
-import { createSlatePlugin } from '../plugin/createSlatePlugin';
+import { createSlatePlugin } from '../plugin';
 
 /**
  * Placeholder plugin for DOM interaction, that could be replaced with

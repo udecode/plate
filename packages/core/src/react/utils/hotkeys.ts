@@ -4,10 +4,7 @@ import type { TEditor } from '@udecode/plate-common';
 
 import { isComposing } from '@udecode/slate-react';
 
-import {
-  Hotkeys as VanillaHotkeys,
-  createHotkey,
-} from '../../lib/utils/hotkeys';
+import { Hotkeys as VanillaHotkeys, createHotkey } from '../../lib';
 
 const createComposing =
   (key: string) =>

@@ -1,12 +1,15 @@
-import type { WithOverride } from '../plugin/SlatePlugin';
-
-import { getSlatePluginContext } from '../plugin';
-import { createSlatePlugin } from '../plugin/createSlatePlugin';
-import { getInjectedPlugins } from '../utils/getInjectedPlugins';
-import { pipeInsertDataQuery } from '../utils/pipeInsertDataQuery';
-import { pipeInsertFragment } from '../utils/pipeInsertFragment';
-import { pipeTransformData } from '../utils/pipeTransformData';
-import { pipeTransformFragment } from '../utils/pipeTransformFragment';
+import {
+  type WithOverride,
+  createSlatePlugin,
+  getSlatePluginContext,
+} from '../plugin';
+import {
+  getInjectedPlugins,
+  pipeInsertDataQuery,
+  pipeInsertFragment,
+  pipeTransformData,
+  pipeTransformFragment,
+} from '../utils';
 
 export const withInsertData: WithOverride = ({ editor }) => {
   const { insertData } = editor;

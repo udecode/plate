@@ -1,7 +1,7 @@
 import type { TElement } from '@udecode/slate';
 import type { TRenderElementProps } from '@udecode/slate-react';
 
-import type { AnyPluginConfig } from '../../lib/plugin/BasePlugin';
+import type { AnyPluginConfig } from '../../lib';
 import type { PlateRenderNodeProps } from './PlateRenderNodeProps';
 
 /** Element props passed by Plate */

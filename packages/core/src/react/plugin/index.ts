@@ -9,7 +9,6 @@ export * from './PlateRenderElementProps';
 export * from './PlateRenderLeafProps';
 export * from './PlateRenderNodeProps';
 export * from './createPlatePlugin';
+export * from './extendPlatePlugin';
 export * from './getPlugin';
 export * from './getPluginContext';
-export { extendTPlatePlugin } from "./extendPlatePlugin";
-export { extendPlatePlugin } from "./extendPlatePlugin";

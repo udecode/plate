@@ -1,7 +1,11 @@
 import type { Value } from '@udecode/slate';
 
-import type { CorePlugin, SlateEditor, TBaseEditor } from '../../lib';
-import type { AnyPluginConfig } from '../../lib/plugin/BasePlugin';
+import type {
+  AnyPluginConfig,
+  CorePlugin,
+  SlateEditor,
+  TBaseEditor,
+} from '../../lib';
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 
 export type PlateEditor = {

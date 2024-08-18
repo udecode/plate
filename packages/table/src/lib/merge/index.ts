@@ -19,4 +19,3 @@ export * from './insertTableRow';
 export * from './isTableRectangular';
 export * from './mergeTableCells';
 export * from './unmergeTableCells';
-export * from '../../react/hooks/useTableMergeState';

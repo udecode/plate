@@ -12,26 +12,24 @@ import type { TEditableProps } from '@udecode/slate-react';
 import type { AnyObject } from '@udecode/utils';
 
 import type {
+  AnyPluginConfig,
   AnySlatePlugin,
+  BaseDeserializeHtml,
+  BaseInjectProps,
   BasePlugin,
+  BaseTransformOptions,
   GetInjectPropsOptions,
   GetInjectPropsReturnType,
+  HandlerReturnType,
   InferApi,
   InferOptions,
   InferTransforms,
   Nullable,
   PlatePluginInsertDataOptions,
-  SlatePluginConfig,
-} from '../../lib';
-import type {
-  AnyPluginConfig,
-  BaseDeserializeHtml,
-  BaseInjectProps,
-  BaseTransformOptions,
   PluginConfig,
+  SlatePluginConfig,
   WithAnyKey,
-} from '../../lib/plugin/BasePlugin';
-import type { HandlerReturnType } from '../../lib/plugin/HandlerReturnType';
+} from '../../lib';
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { DOMHandlers } from './DOMHandlers';
 import type { PlateRenderElementProps } from './PlateRenderElementProps';

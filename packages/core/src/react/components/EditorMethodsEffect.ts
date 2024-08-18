@@ -1,7 +1,11 @@
 import React from 'react';
 
-import { EXPOSED_STORE_KEYS } from '../../lib/types/PlateStore';
-import { useEditorRef, usePlateStore, useRedecorate } from '../stores';
+import {
+  EXPOSED_STORE_KEYS,
+  useEditorRef,
+  usePlateStore,
+  useRedecorate,
+} from '../stores';
 
 export const EditorMethodsEffect = ({ id }: { id?: string }) => {
   const editor = useEditorRef(id);

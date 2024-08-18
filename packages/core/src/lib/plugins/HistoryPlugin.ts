@@ -1,9 +1,8 @@
 import { withHistory } from 'slate-history';
 
 import type { SlateEditor } from '../editor';
-import type { WithOverride } from '../plugin/SlatePlugin';
 
-import { createSlatePlugin } from '../plugin/createSlatePlugin';
+import { type WithOverride, createSlatePlugin } from '../plugin';
 
 export const withPlateHistory: WithOverride = ({ editor }) =>
   withHistory(editor as any) as any as SlateEditor;

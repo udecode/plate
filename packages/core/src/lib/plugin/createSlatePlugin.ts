@@ -1,7 +1,6 @@
 import cloneDeep from 'lodash/cloneDeep.js';
 import merge from 'lodash/merge.js';
 
-import type { PlatePluginComponent } from '../../react';
 import type { SlateEditor } from '../editor';
 import type { AnyPluginConfig, PluginConfig } from './BasePlugin';
 import type {
@@ -266,7 +265,7 @@ export function createSlatePlugin<
   };
 
   // TODO react
-  (plugin as any).withComponent = (component: PlatePluginComponent) => {
+  (plugin as any).withComponent = (component: any) => {
     return plugin.extend({
       component,
       // TODO react

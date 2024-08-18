@@ -12,12 +12,7 @@ import type {
   PlatePluginMethods,
 } from './PlatePlugin';
 
-export type PlatePluginConfig<
-  C extends AnyPluginConfig,
-  EO = {},
-  EA = {},
-  ET = {},
-> = {
+type PlatePluginConfig<C extends AnyPluginConfig, EO = {}, EA = {}, ET = {}> = {
   api?: EA & Partial<InferApi<C>>;
   options?: EO & Partial<InferOptions<C>>;
   transforms?: ET & Partial<InferTransforms<C>>;

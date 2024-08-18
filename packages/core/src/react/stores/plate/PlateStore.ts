@@ -2,16 +2,15 @@ import type { TNodeEntry, TSelection, ValueOf } from '@udecode/slate';
 import type { TEditableProps } from '@udecode/slate-react';
 import type { Range } from 'slate';
 
-import type { SlateEditor } from '../editor/SlateEditor';
-import type { Nullable } from './misc/Nullable';
+import type { Nullable } from '../../../lib';
+import type { PlateEditor } from '../../editor';
 
 export type PlateChangeKey =
   | 'versionDecorate'
   | 'versionEditor'
   | 'versionSelection';
 
-// TODO react
-export type PlateStoreState<E extends SlateEditor = SlateEditor> = {
+export type PlateStoreState<E extends PlateEditor = PlateEditor> = {
   /**
    * Slate editor reference.
    *

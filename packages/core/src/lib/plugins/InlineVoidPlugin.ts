@@ -1,6 +1,4 @@
-import type { WithOverride } from '../plugin/SlatePlugin';
-
-import { createSlatePlugin } from '../plugin/createSlatePlugin';
+import { type WithOverride, createSlatePlugin } from '../plugin';
 
 /**
  * Merge and register all the inline types and void types from the plugins and

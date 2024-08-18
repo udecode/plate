@@ -1,9 +1,6 @@
 import type React from 'react';
 
-import type {
-  AnyPluginConfig,
-  PluginConfig,
-} from '../../lib/plugin/BasePlugin';
+import type { AnyPluginConfig, PluginConfig } from '../../lib';
 import type { DOMHandler } from './DOMHandlers';
 
 export type KeyboardHandler<C extends AnyPluginConfig = PluginConfig> =

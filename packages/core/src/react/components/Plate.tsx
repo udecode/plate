@@ -2,10 +2,9 @@ import React from 'react';
 
 import type { TEditableProps } from '@udecode/slate-react';
 
-import type { PlateStoreState } from '../../lib/types/PlateStore';
 import type { PlateEditor } from '../editor/PlateEditor';
 
-import { PlateStoreProvider } from '../stores';
+import { PlateStoreProvider, type PlateStoreState } from '../stores';
 
 export interface PlateProps<E extends PlateEditor = PlateEditor>
   extends Partial<

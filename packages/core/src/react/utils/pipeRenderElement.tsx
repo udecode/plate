@@ -6,7 +6,7 @@ import { DefaultElement } from 'slate-react';
 
 import type { PlateEditor } from '../editor/PlateEditor';
 
-import { pipeInjectProps } from '../../lib/utils/pipeInjectProps';
+import { pipeInjectProps } from '../../lib';
 import { type RenderElement, pluginRenderElement } from './pluginRenderElement';
 
 /** @see {@link RenderElement} */

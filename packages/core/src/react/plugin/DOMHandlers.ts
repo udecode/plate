@@ -2,9 +2,9 @@ import type React from 'react';
 
 import type {
   AnyPluginConfig,
+  HandlerReturnType,
   PluginConfig,
-} from '../../lib/plugin/BasePlugin';
-import type { HandlerReturnType } from '../../lib/plugin/HandlerReturnType';
+} from '../../lib';
 import type { PlatePluginContext } from './PlatePlugin';
 
 export type DOMHandler<C extends AnyPluginConfig = PluginConfig, EV = {}> = (

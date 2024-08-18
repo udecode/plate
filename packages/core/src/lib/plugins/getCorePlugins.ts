@@ -5,12 +5,12 @@ import { DeserializeAstPlugin } from './DeserializeAstPlugin';
 import { HistoryPlugin } from './HistoryPlugin';
 import { InlineVoidPlugin } from './InlineVoidPlugin';
 import { InsertDataPlugin } from './InsertDataPlugin';
-import { DebugPlugin } from './debug/DebugPlugin';
-import { SlateNextPlugin } from './editor-protocol/SlateNextPlugin';
+import { DebugPlugin } from './debug';
+import { SlateNextPlugin } from './editor-protocol';
 import { DeserializeHtmlPlugin } from './html-deserializer';
 import { LengthPlugin } from './length';
 import { ParagraphPlugin } from './paragraph';
-import { PlateApiPlugin } from './plate-api/PlateApiPlugin';
+import { PlateApiPlugin } from './plate-api';
 
 export type CorePlugin = ReturnType<typeof getCorePlugins>[number];
 

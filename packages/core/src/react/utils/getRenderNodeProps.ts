@@ -5,7 +5,7 @@ import { clsx } from 'clsx';
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 import type { PlateRenderNodeProps } from '../plugin/PlateRenderNodeProps';
 
-import { getSlateClass } from '../../lib/utils/misc/getSlateClass';
+import { getSlateClass } from '../../lib';
 
 /**
  * Override node props with plugin props. `props.element.attributes` are passed

@@ -1,6 +1,5 @@
 import { createSlatePlugin } from '../../plugin';
-import { deserializeHtml } from './utils/deserializeHtml';
-import { parseHtmlDocument } from './utils/parseHtmlDocument';
+import { deserializeHtml, parseHtmlDocument } from './utils';
 
 /**
  * Enables support for deserializing inserted content from HTML format to Slate

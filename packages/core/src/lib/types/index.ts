@@ -3,6 +3,5 @@
  */
 
 export * from './HotkeyPluginOptions';
-export * from './PlateStore';
 export * from './ToggleMarkConfig';
 export * from './misc/index';

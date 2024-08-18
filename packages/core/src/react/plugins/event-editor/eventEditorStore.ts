@@ -1,4 +1,4 @@
-import { createZustandStore } from '../../../lib/libs';
+import { createZustandStore } from '../../../lib';
 
 export type EventEditorState = {
   /** Last editor id that has been blurred. */

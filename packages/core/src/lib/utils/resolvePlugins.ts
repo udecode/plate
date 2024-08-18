@@ -1,13 +1,14 @@
 import { isDefined } from '@udecode/utils';
 
-import type { SlatePlugin, SlatePlugins } from '../plugin/SlatePlugin';
+import type { SlateEditor } from '../editor';
 
+import { mergeWithoutArray } from '../../internal/mergeWithoutArray';
 import {
-  type SlateEditor,
+  type SlatePlugin,
+  type SlatePlugins,
   getSlatePluginContext,
-  mergeWithoutArray,
-  resolvePlugin,
-} from '../index';
+} from '../plugin';
+import { resolvePlugin } from './resolvePlugin';
 
 /**
  * Initialize and configure the editor's plugin system. This function sets up

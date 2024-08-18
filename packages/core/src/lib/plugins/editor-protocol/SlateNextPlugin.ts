@@ -14,9 +14,7 @@ import {
   removeEditorMark,
 } from '@udecode/slate';
 
-import type { WithOverride } from '../../plugin/SlatePlugin';
-
-import { createSlatePlugin } from '../../plugin';
+import { type WithOverride, createSlatePlugin } from '../../plugin';
 import { resetEditor } from '../../transforms';
 import { ParagraphPlugin } from '../paragraph';
 

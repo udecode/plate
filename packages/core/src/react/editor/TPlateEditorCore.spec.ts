@@ -3,6 +3,7 @@ import type { Value } from '@udecode/slate';
 import {
   DebugPlugin,
   type InferPlugins,
+  createSlateEditor,
   createSlatePlugin,
   someHtmlElement,
 } from '@udecode/plate-core';
@@ -50,6 +51,19 @@ describe('TPlateEditor core package', () => {
   });
 
   describe('Core Plugins', () => {
+    it('should have DebugPlugin methods with default generics', () => {
+      const editor = createSlateEditor();
+
+      expect(editor.api.debug).toBeDefined();
+      expect(editor.api.debug.log).toBeInstanceOf(Function);
+      expect(editor.api.debug.error).toBeInstanceOf(Function);
+      expect(editor.api.debug.info).toBeInstanceOf(Function);
+      expect(editor.api.debug.warn).toBeInstanceOf(Function);
+
+      // @ts-expect-error
+      editor.api.debug.nonExistentMethod;
+    });
+
     it('should have DebugPlugin methods with default generics', () => {
       const editor = createPlateEditor();
 
