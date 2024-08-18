@@ -1,5 +1,11 @@
 # @udecode/plate-test-utils
 
+## 36.5.0
+
+### Patch Changes
+
+- [#3436](https://github.com/udecode/plate/pull/3436) by [@felixfeng33](https://github.com/felixfeng33) – Add date plugin
+
 ## 30.5.3
 
 ### Patch Changes
