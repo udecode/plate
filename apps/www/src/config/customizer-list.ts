@@ -18,6 +18,7 @@ import {
 import { KEY_CAPTION } from '@udecode/plate-caption';
 import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
 import { MARK_COMMENT } from '@udecode/plate-comments';
+import { ELEMENT_INLINE_DATE } from '@udecode/plate-date';
 import { KEY_DND } from '@udecode/plate-dnd';
 import { KEY_EMOJI } from '@udecode/plate-emoji';
 import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
@@ -69,6 +70,7 @@ export const customizerList = [
       customizerItems[ELEMENT_PARAGRAPH],
       customizerItems[ELEMENT_TABLE],
       customizerItems[ELEMENT_TODO_LI],
+      customizerItems[ELEMENT_INLINE_DATE],
     ],
     id: 'blocks',
     label: 'Nodes',

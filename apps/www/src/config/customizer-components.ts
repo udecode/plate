@@ -10,6 +10,7 @@ export const customizerComponents = {
     title: 'Blockquote',
   },
   button: { href: '/docs/components/button', title: 'Button' },
+  calendar: { href: '/docs/components/calendar', title: 'Calendar' },
   caption: { href: '/docs/components/caption', title: 'Caption' },
   checkbox: { href: '/docs/components/checkbox', title: 'Checkbox' },
   cloud: { href: '/docs/components/cloud', title: 'Cloud' },
@@ -141,6 +142,11 @@ export const customizerComponents = {
   inlineCombobox: {
     href: '/docs/components/inline-combobox',
     title: 'Inline Combobox',
+  },
+  inlineDateElement: {
+    href: '/docs/components/inline-date-element',
+    label: 'Element',
+    title: 'Inline Date',
   },
   input: { href: '/docs/components/input', title: 'Input' },
   insertDropdownMenu: {

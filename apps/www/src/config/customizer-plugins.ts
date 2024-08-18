@@ -7,6 +7,7 @@ import {
 } from '@udecode/plate-break';
 import { KEY_CAPTION } from '@udecode/plate-caption';
 import { MARK_COMMENT } from '@udecode/plate-comments';
+import { ELEMENT_INLINE_DATE } from '@udecode/plate-date';
 import { KEY_DND } from '@udecode/plate-dnd';
 import { KEY_EMOJI } from '@udecode/plate-emoji';
 import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
@@ -35,6 +36,7 @@ import { ELEMENT_TOGGLE } from '@udecode/plate-toggle';
 import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
 
 import { columnValue } from '@/lib/plate/demo/values/columnValue';
+import { dateValue } from '@/lib/plate/demo/values/dateValue';
 import { KEY_DRAG_OVER_CURSOR } from '@/plate/demo/plugins/dragOverCursorPlugin';
 import { alignValue } from '@/plate/demo/values/alignValue';
 import { autoformatValue } from '@/plate/demo/values/autoformatValue';
@@ -239,6 +241,13 @@ export const customizerPlugins = {
     plugins: [KEY_LIST_STYLE_TYPE],
     route: '/docs/indent-list',
     value: indentListValue,
+  },
+  inlinedate: {
+    id: 'date',
+    label: 'Date',
+    plugins: [ELEMENT_INLINE_DATE],
+    route: '/docs/date',
+    value: dateValue,
   },
   kbd: {
     id: 'kbd',

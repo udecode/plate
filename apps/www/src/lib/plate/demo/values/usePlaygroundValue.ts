@@ -13,6 +13,7 @@ import { basicMarksValue } from './basicMarksValue';
 import { columnValue } from './columnValue';
 import { commentsValue } from './commentsValue';
 import { cursorOverlayValue } from './cursorOverlayValue';
+import { dateValue } from './dateValue';
 import { deserializeCsvValue } from './deserializeCsvValue';
 import { deserializeDocxValue } from './deserializeDocxValue';
 import { deserializeHtmlValue } from './deserializeHtmlValue';
@@ -67,6 +68,7 @@ export const usePlaygroundValue = (id?: ValueId) => {
     if (enabled.kbd) value.push(...kbdValue);
     // Inline nodes
     if (enabled.mention) value.push(...mentionValue);
+    if (enabled.inline_date) value.push(...dateValue);
     if (enabled.emoji) value.push(...emojiValue);
     // Nodes
     if (enabled.align) value.push(...alignValue);
@@ -130,6 +132,7 @@ export const usePlaygroundValue = (id?: ValueId) => {
     enabled.toggle,
     enabled.trailingBlock,
     enabled.column,
+    enabled.inline_date,
     valueId,
   ]);
 };

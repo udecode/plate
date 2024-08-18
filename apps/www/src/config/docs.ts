@@ -51,6 +51,7 @@ export const docsConfig: DocsConfig = {
         customizerComponents.blockquoteElement,
         customizerComponents.button,
         customizerComponents.caption,
+        customizerComponents.calendar,
         customizerComponents.checkbox,
         customizerComponents.cloud,
         customizerComponents.codeBlockElement,
@@ -66,6 +67,7 @@ export const docsConfig: DocsConfig = {
         customizerComponents.cursorOverlay,
         customizerComponents.columnGroupElement,
         customizerComponents.columnElement,
+        customizerComponents.inlineDateElement,
         customizerComponents.dialog,
         customizerComponents.draggable,
         customizerComponents.dropdownMenu,
@@ -237,6 +239,11 @@ export const docsConfig: DocsConfig = {
           href: '/docs/column',
           label: 'Element',
           title: 'Column',
+        },
+        {
+          href: '/docs/date',
+          label: 'Element',
+          title: 'Date',
         },
         {
           href: '/docs/dnd',

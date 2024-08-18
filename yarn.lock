@@ -6137,6 +6137,24 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@udecode/plate-date@workspace:^, @udecode/plate-date@workspace:packages/date":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-date@workspace:packages/date"
+  dependencies:
+    "@types/katex": "npm:0.16.7"
+    "@udecode/plate-common": "workspace:^"
+    katex: "npm:0.16.10"
+  peerDependencies:
+    "@udecode/plate-common": ">=36.3.9"
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.94.0"
+    slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
+    slate-react: ">=0.99.0"
+  languageName: unknown
+  linkType: soft
+
 "@udecode/plate-diff@npm:36.0.0, @udecode/plate-diff@workspace:^, @udecode/plate-diff@workspace:packages/diff":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-diff@workspace:packages/diff"
@@ -17534,6 +17552,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-day-picker@npm:^8.10.1 ":
+  version: 8.10.1
+  resolution: "react-day-picker@npm:8.10.1"
+  peerDependencies:
+    date-fns: ^2.28.0 || ^3.0.0
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+  checksum: 10c0/a0ff28c4b61b3882e6a825b19e5679e2fdf3256cf1be8eb0a0c028949815c1ae5a6561474c2c19d231c010c8e0e0b654d3a322610881e0655abca05a2e03d9df
+  languageName: node
+  linkType: hard
+
 "react-dnd-html5-backend@npm:^16.0.1":
   version: 16.0.1
   resolution: "react-dnd-html5-backend@npm:16.0.1"
@@ -21942,6 +21970,7 @@ __metadata:
     "@udecode/plate-common": "workspace:^"
     "@udecode/plate-core": "workspace:^"
     "@udecode/plate-cursor": "workspace:^"
+    "@udecode/plate-date": "workspace:^"
     "@udecode/plate-diff": "workspace:^"
     "@udecode/plate-dnd": "workspace:^"
     "@udecode/plate-emoji": "workspace:^"
@@ -22007,6 +22036,7 @@ __metadata:
     prism-react-renderer: "npm:^1.3.5"
     prismjs: "npm:^1.29.0"
     react: "npm:^18.2.0"
+    react-day-picker: "npm:^8.10.1 "
     react-dnd: "npm:16.0.1"
     react-dnd-html5-backend: "npm:^16.0.1"
     react-dom: "npm:^18.2.0"

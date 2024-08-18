@@ -39,6 +39,7 @@ import {
   type Value,
   createPlugins,
 } from '@udecode/plate-common';
+import { createInlineDatePlugin } from '@udecode/plate-date';
 import { createDndPlugin } from '@udecode/plate-dnd';
 import { createEmojiPlugin } from '@udecode/plate-emoji';
 import { createExcalidrawPlugin } from '@udecode/plate-excalidraw';
@@ -179,6 +180,7 @@ export const usePlaygroundPlugins = ({
           }),
           createMediaEmbedPlugin({ enabled: !!enabled.media_embed }),
           createCaptionPlugin({ ...captionPlugin, enabled: !!enabled.caption }),
+          createInlineDatePlugin({ enabled: !!enabled.inline_date }),
           createMentionPlugin({
             enabled: !!enabled.mention,
             options: {

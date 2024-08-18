@@ -18,6 +18,7 @@ import {
 import { KEY_CAPTION } from '@udecode/plate-caption';
 import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
 import { MARK_COMMENT } from '@udecode/plate-comments';
+import { ELEMENT_INLINE_DATE } from '@udecode/plate-date';
 import { KEY_DND } from '@udecode/plate-dnd';
 import { KEY_EMOJI } from '@udecode/plate-emoji';
 import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
@@ -186,6 +187,23 @@ export const customizerItems: Record<string, SettingPlugin> = {
     npmPackage: '@udecode/plate-media',
     pluginFactory: 'createImagePlugin',
     route: customizerPlugins.media.route,
+  },
+  [ELEMENT_INLINE_DATE]: {
+    badges: [customizerBadges.element],
+    components: [
+      {
+        id: 'inline-date-element',
+        label: 'InlineDateElement',
+        pluginKey: 'ELEMENT_INLINE_DATE',
+        route: customizerComponents.inlineDateElement.href,
+        usage: 'InlineDateElement',
+      },
+    ],
+    id: ELEMENT_INLINE_DATE,
+    label: 'InlineDate',
+    npmPackage: '@udecode/plate-date',
+    pluginFactory: 'createInlineDatePlugin',
+    route: customizerPlugins.inlinedate.route,
   },
   [ELEMENT_LINK]: {
     badges: [customizerBadges.element, customizerBadges.inline],
@@ -625,6 +643,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     ],
     route: customizerPlugins.resetnode.route,
   },
+
   [KEY_SELECT_ON_BACKSPACE]: {
     badges: [customizerBadges.handler],
     id: KEY_SELECT_ON_BACKSPACE,
@@ -642,7 +661,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
     ],
     route: customizerPlugins.media.route,
   },
-
   [KEY_SINGLE_LINE]: {
     badges: [customizerBadges.normalizer],
     conflicts: [KEY_TRAILING_BLOCK],
@@ -900,6 +918,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'createSuperscriptPlugin',
     route: customizerPlugins.basicmarks.route,
   },
+
   [MARK_UNDERLINE]: {
     badges: [customizerBadges.leaf],
     components: [
@@ -919,7 +938,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'createUnderlinePlugin',
     route: customizerPlugins.basicmarks.route,
   },
-
   column: {
     badges: [customizerBadges.element],
     components: [
