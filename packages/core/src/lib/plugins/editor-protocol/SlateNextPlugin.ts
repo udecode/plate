@@ -1,61 +1,14 @@
+import type { TElement, TRange, Value } from '@udecode/slate';
 import type { Path } from 'slate';
 
 import {
-  type AncestorOf,
-  type GetAboveNodeOptions,
-  type TEditor,
-  type TElement,
-  type TRange,
-  type Value,
-  getAboveNode,
-  getMarks,
-  isExpanded,
-  isStartPoint,
-  removeEditorMark,
-} from '@udecode/slate';
+  isSelectionAtBlockStart,
+  removeSelectionMark,
+} from '@udecode/slate-utils';
 
 import { type WithOverride, createSlatePlugin } from '../../plugin';
 import { resetEditor } from '../../transforms';
 import { ParagraphPlugin } from '../paragraph';
-
-const getBlockAbove = <N extends AncestorOf<E>, E extends TEditor = TEditor>(
-  editor: E,
-  options: GetAboveNodeOptions<E> = {}
-) =>
-  getAboveNode<N, E>(editor, {
-    ...options,
-    block: true,
-  });
-
-const isSelectionAtBlockStart = <E extends TEditor>(
-  editor: E,
-  options?: GetAboveNodeOptions<E>
-) => {
-  const { selection } = editor;
-
-  if (!selection) return false;
-
-  const path = getBlockAbove(editor, options)?.[1];
-
-  if (!path) return false;
-
-  return (
-    isStartPoint(editor, selection.focus, path) ||
-    (isExpanded(editor.selection) &&
-      isStartPoint(editor, selection.anchor, path))
-  );
-};
-
-const removeSelectionMark = (editor: TEditor) => {
-  const marks = getMarks(editor);
-
-  if (!marks) return;
-
-  // remove all marks
-  Object.keys(marks).forEach((key) => {
-    removeEditorMark(editor, key);
-  });
-};
 
 export const withSlateNext: WithOverride = ({ editor }) => {
   const { apply, deleteBackward, deleteForward, deleteFragment } = editor;

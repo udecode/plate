@@ -26,7 +26,7 @@ export const EditorMethodsEffect = ({ id }: { id?: string }) => {
 
   React.useEffect(() => {
     editor.api.redecorate = redecorate;
-    editor.api.setStore = memorizedStoreSetters;
+    editor.api.setStoreValue = memorizedStoreSetters;
   }, [editor, redecorate, memorizedStoreSetters]);
 
   return null;

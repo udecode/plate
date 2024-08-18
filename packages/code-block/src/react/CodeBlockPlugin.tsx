@@ -1,6 +1,6 @@
-import type { HotkeyPluginOptions } from '@udecode/plate-common';
+import type { ExtendConfig, HotkeyPluginOptions } from '@udecode/plate-common';
 
-import { extendPlugin } from '@udecode/plate-common/react';
+import { extendPlatePlugin } from '@udecode/plate-common/react';
 
 import {
   type CodeBlockConfig as BaseCodeBlockConfig,
@@ -8,12 +8,13 @@ import {
 } from '../lib/CodeBlockPlugin';
 import { onKeyDownCodeBlock } from './onKeyDownCodeBlock';
 
-export type CodeBlockConfig = {
-  options: HotkeyPluginOptions;
-} & BaseCodeBlockConfig;
+export type CodeBlockConfig = ExtendConfig<
+  BaseCodeBlockConfig,
+  HotkeyPluginOptions
+>;
 
 /** Enables support for pre-formatted code blocks. */
-export const CodeBlockPlugin = extendPlugin(BaseCodeBlockPlugin, {
+export const CodeBlockPlugin = extendPlatePlugin(BaseCodeBlockPlugin, {
   handlers: {
     onKeyDown: onKeyDownCodeBlock,
   },

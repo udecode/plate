@@ -1,7 +1,9 @@
-import { createSlatePlugin } from '../../plugin';
+import type { EXPOSED_STORE_KEYS, PlateStoreState } from '../stores';
+
+import { DebugPlugin, createSlatePlugin } from '../../lib';
 
 export const PlateApiPlugin = createSlatePlugin({
-  // dependencies: [DebugPlugin.key],
+  dependencies: [DebugPlugin.key],
   key: 'plateApi',
 }).extendApi(({ editor }) => ({
   redecorate: () => {
@@ -10,11 +12,9 @@ export const PlateApiPlugin = createSlatePlugin({
       'OVERRIDE_MISSING'
     );
   },
-  setStore: {} as any,
-  // TODO
-  //   {
-  //   [K in (typeof EXPOSED_STORE_KEYS)[number]]: (
-  //     value: PlateStoreState<any>[K]
-  //   ) => void;
-  // },
+  setStoreValue: {} as {
+    [K in (typeof EXPOSED_STORE_KEYS)[number]]: (
+      value: PlateStoreState<any>[K]
+    ) => void;
+  },
 }));

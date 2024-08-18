@@ -2,8 +2,8 @@ import React from 'react';
 
 import { renderHook } from '@testing-library/react-hooks';
 
-import { EXPOSED_STORE_KEYS } from '../../lib';
 import { createPlateEditor } from '../editor';
+import { EXPOSED_STORE_KEYS } from '../stores';
 import { Plate } from './Plate';
 import { PlateContent } from './PlateContent';
 
@@ -78,11 +78,11 @@ describe('EditorMethodsEffect and redecorate', () => {
 
     renderHook(() => null, { wrapper });
 
-    expect(editor.api.setStore).toBeDefined();
+    expect(editor.api.setStoreValue).toBeDefined();
 
     // Check if all EXPOSED_STORE_KEYS are present in editor.api.plate.set
     EXPOSED_STORE_KEYS.forEach((key) => {
-      expect(editor.api.setStore[key]).toBeDefined();
+      expect(editor.api.setStoreValue[key]).toBeDefined();
     });
   });
 });

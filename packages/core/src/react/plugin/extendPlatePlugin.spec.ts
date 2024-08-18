@@ -5,6 +5,7 @@ import type {
 } from './PlatePlugin';
 
 import {
+  type ExtendConfig,
   type HotkeyPluginOptions,
   type PluginConfig,
   type SlatePlugin,
@@ -283,7 +284,7 @@ describe('extendPlatePlugin type tests', () => {
 
   it('should allow adding new properties', () => {
     type BaseConfig = PluginConfig<'test', { foo: string }>;
-    type ExtendedConfig = { options: { bar: number } } & BaseConfig;
+    type ExtendedConfig = ExtendConfig<BaseConfig, { bar: number }>;
 
     const BasePlugin = createTSlatePlugin<BaseConfig>({
       key: 'test',
@@ -306,6 +307,20 @@ describe('extendPlatePlugin type tests', () => {
     const options = ExtendedPlugin.options;
     options.foo;
     options.bar;
+
+    const ExtendedTPlugin = extendTPlatePlugin<ExtendedConfig>(BasePlugin, {
+      options: { bar: 42 },
+    });
+
+    expect(ExtendedTPlugin.options).toEqual({
+      bar: 42,
+      foo: 'initial',
+    });
+
+    // Type checks
+    const options2 = ExtendedTPlugin.options;
+    options2.foo;
+    options2.bar;
   });
 });
 
@@ -401,7 +416,7 @@ describe('extendTPlatePlugin type tests', () => {
       'code_block',
       { syntax: boolean; syntaxPopularFirst: boolean }
     >;
-    type CodeBlockConfig2 = { options: { hotkey: string[] } } & CodeBlockConfig;
+    type CodeBlockConfig2 = ExtendConfig<CodeBlockConfig, { hotkey: string[] }>;
 
     const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
       key: 'code_block',

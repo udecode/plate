@@ -1,4 +1,4 @@
-import { extendPlugin } from '@udecode/plate-common/react';
+import { extendPlatePlugin } from '@udecode/plate-common/react';
 
 import {
   TableCellHeaderPlugin as BaseTableCellHeaderPlugin,
@@ -8,7 +8,7 @@ import {
 } from '../lib/TablePlugin';
 import { onKeyDownTable } from './onKeyDownTable';
 
-export const TableCellPlugin = extendPlugin(BaseTableCellPlugin, {
+export const TableCellPlugin = extendPlatePlugin(BaseTableCellPlugin, {
   props: ({ element }) => ({
     nodeProps: {
       colSpan: (element?.attributes as any)?.colspan,
@@ -17,17 +17,20 @@ export const TableCellPlugin = extendPlugin(BaseTableCellPlugin, {
   }),
 });
 
-export const TableCellHeaderPlugin = extendPlugin(BaseTableCellHeaderPlugin, {
-  props: ({ element }) => ({
-    nodeProps: {
-      colSpan: (element?.attributes as any)?.colspan,
-      rowSpan: (element?.attributes as any)?.rowspan,
-    },
-  }),
-});
+export const TableCellHeaderPlugin = extendPlatePlugin(
+  BaseTableCellHeaderPlugin,
+  {
+    props: ({ element }) => ({
+      nodeProps: {
+        colSpan: (element?.attributes as any)?.colspan,
+        rowSpan: (element?.attributes as any)?.rowspan,
+      },
+    }),
+  }
+);
 
 /** Enables support for tables with React-specific features. */
-export const TablePlugin = extendPlugin(BaseTablePlugin, {
+export const TablePlugin = extendPlatePlugin(BaseTablePlugin, {
   handlers: {
     onKeyDown: onKeyDownTable,
   },

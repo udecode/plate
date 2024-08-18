@@ -1,5 +1,6 @@
 import type { AnyPluginConfig } from '../plugin/BasePlugin';
 
+import { createSlatePlugin } from '../plugin';
 import { DOMPlugin } from './DOMPlugin';
 import { DeserializeAstPlugin } from './DeserializeAstPlugin';
 import { HistoryPlugin } from './HistoryPlugin';
@@ -11,6 +12,12 @@ import { DeserializeHtmlPlugin } from './html-deserializer';
 import { LengthPlugin } from './length';
 import { ParagraphPlugin } from './paragraph';
 import { PlateApiPlugin } from './plate-api';
+
+// Somehow needed to avoid cyclic dependency
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _ = () => {
+  createSlatePlugin();
+};
 
 export type CorePlugin = ReturnType<typeof getCorePlugins>[number];
 

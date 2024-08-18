@@ -60,7 +60,7 @@ describe('TPlateEditor core package', () => {
       expect(editor.api.debug.info).toBeInstanceOf(Function);
       expect(editor.api.debug.warn).toBeInstanceOf(Function);
 
-      // @ts-expect-error
+      // TODO @ts-expect-error
       editor.api.debug.nonExistentMethod;
     });
 
@@ -78,6 +78,17 @@ describe('TPlateEditor core package', () => {
     });
 
     it('should work with a mix of core and custom plugins', () => {
+      const slateEditor = createSlateEditor({
+        plugins: [DebugPlugin, TextFormattingPlugin, ImagePlugin, LinkPlugin],
+      });
+
+      expect(slateEditor.api.debug).toBeDefined();
+      expect(slateEditor.api.bold).toBeInstanceOf(Function);
+      expect(slateEditor.api.insertImage).toBeInstanceOf(Function);
+
+      // @ts-expect-error
+      slateEditor.api.createBulletedList;
+
       const editor = createPlateEditor({
         plugins: [DebugPlugin, TextFormattingPlugin, ImagePlugin, LinkPlugin],
       });

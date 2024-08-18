@@ -191,6 +191,13 @@ export type PluginConfig<K extends string = any, O = {}, A = {}, T = {}> = {
   transforms: T;
 };
 
+export type ExtendConfig<C extends PluginConfig, EO = {}, EA = {}, ET = {}> = {
+  api: C['api'] & EA;
+  key: C['key'];
+  options: C['options'] & EO;
+  transforms: C['transforms'] & ET;
+};
+
 export type AnyPluginConfig = {
   api: any;
   key: any;
