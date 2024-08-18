@@ -1,5 +1,11 @@
 # @udecode/plate-selection
 
+## 36.5.1
+
+### Patch Changes
+
+- [#3440](https://github.com/udecode/plate/pull/3440) by [@felixfeng33](https://github.com/felixfeng33) – Add test to `onKeyDownSelection`
+
 ## 36.4.1
 
 ### Patch Changes
