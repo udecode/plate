@@ -72,6 +72,8 @@ const ELEMENT_COLUMN = 'column';
 const ELEMENT_INLINE_DATE = 'inline_date'
 const ELEMENT_CALLOUT = 'callout';
 const ELEMENT_TOC = 'toc';
+const ELEMENT_EQUATION = 'equation';
+const ELEMENT_INLINE_EQUATION = 'inline_equation';
 
 const elements: HyperscriptShorthands = {
   ha: { type: ELEMENT_LINK },
@@ -82,6 +84,7 @@ const elements: HyperscriptShorthands = {
   hcolumn: { type: ELEMENT_COLUMN },
   hcolumngroup: { type: ELEMENT_COLUMN_GROUP },
   hdefault: { type: ELEMENT_PARAGRAPH },
+  hequation: { type: ELEMENT_EQUATION },
   hexcalidraw: { type: ELEMENT_EXCALIDRAW },
   hh1: { type: ELEMENT_H1 },
   hh2: { type: ELEMENT_H2 },
@@ -91,6 +94,7 @@ const elements: HyperscriptShorthands = {
   hh6: { type: ELEMENT_H6 },
   himg: { children: voidChildren, type: ELEMENT_IMAGE },
   hinlinedate: { children: voidChildren, type: ELEMENT_INLINE_DATE },
+  hinlineequation: { type: ELEMENT_INLINE_EQUATION },
   hli: { type: ELEMENT_LI },
   hlic: { type: ELEMENT_LIC },
   hmediaembed: { children: voidChildren, type: ELEMENT_MEDIA_EMBED },
