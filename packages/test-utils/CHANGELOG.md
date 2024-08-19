@@ -1,5 +1,11 @@
 # @udecode/plate-test-utils
 
+## 36.5.4
+
+### Patch Changes
+
+- [#3448](https://github.com/udecode/plate/pull/3448) by [@felixfeng33](https://github.com/felixfeng33) – Add callout and toc jsx tag.
+
 ## 36.5.0
 
 ### Patch Changes
