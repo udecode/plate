@@ -70,10 +70,13 @@ const ELEMENT_UL = 'ul';
 const ELEMENT_COLUMN_GROUP = 'column_group';
 const ELEMENT_COLUMN = 'column';
 const ELEMENT_INLINE_DATE = 'inline_date'
+const ELEMENT_CALLOUT = 'callout';
+const ELEMENT_TOC = 'toc';
 
 const elements: HyperscriptShorthands = {
   ha: { type: ELEMENT_LINK },
   hblockquote: { type: ELEMENT_BLOCKQUOTE },
+  hcallout: { type: ELEMENT_CALLOUT },
   hcodeblock: { type: ELEMENT_CODE_BLOCK },
   hcodeline: { type: ELEMENT_CODE_LINE },
   hcolumn: { type: ELEMENT_COLUMN },
@@ -99,6 +102,7 @@ const elements: HyperscriptShorthands = {
   htable: { type: ELEMENT_TABLE },
   htd: { type: ELEMENT_TD },
   hth: { type: ELEMENT_TH },
+  htoc: { type: ELEMENT_TOC },
   htodoli: { type: ELEMENT_TODO_LI },
   htoggle: { type: ELEMENT_TOGGLE },
   htr: { type: ELEMENT_TR },
