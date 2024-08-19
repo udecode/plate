@@ -1,5 +1,11 @@
 # @udecode/plate-test-utils
 
+## 36.5.5
+
+### Patch Changes
+
+- [#3451](https://github.com/udecode/plate/pull/3451) by [@felixfeng33](https://github.com/felixfeng33) – Add equation jsx tag.
+
 ## 36.5.4
 
 ### Patch Changes
