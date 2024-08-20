@@ -380,6 +380,11 @@ export const docsConfig: DocsConfig = {
           href: '/docs/examples/version-history',
           title: 'Version History',
         },
+        {
+          href: '/docs/examples/server',
+          label: 'New',
+          title: 'Server-Side',
+        },
       ],
       title: 'Examples',
     },

@@ -20,13 +20,17 @@ export type PlateLeafProps<
 
 export const usePlateLeaf = (props: PlateLeafProps) => {
   const {
+    api,
     attributes,
     editor,
     leaf,
     leafToAttributes,
     nodeProps,
+    options,
     plugin,
     text,
+    transforms,
+    type,
     ...rootProps
   } = props;
 

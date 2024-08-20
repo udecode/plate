@@ -146,6 +146,7 @@
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.2.0",
     "react-lite-youtube-embed": "^2.4.0",
+    "react-markdown": "8.0.7",
     "react-resizable-panels": "^0.0.55",
     "react-syntax-highlighter": "^15.5.0",
     "react-tweet": "^3.2.0",

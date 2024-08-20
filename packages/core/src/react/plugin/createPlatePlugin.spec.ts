@@ -1,6 +1,6 @@
 import type { PlatePluginComponent } from './PlatePlugin';
 
-import { resolvePluginTest } from '../../lib';
+import { type PluginConfig, resolvePluginTest } from '../../lib';
 import { createPlatePlugin } from './createPlatePlugin';
 
 describe('withComponent method', () => {
@@ -28,5 +28,43 @@ describe('withComponent method', () => {
 
     expect(resolvedPlugin.component).not.toBe(OriginalComponent);
     expect(resolvedPlugin.component).toBe(NewComponent);
+  });
+
+  it('extendApi', () => {
+    type CodeBlockConfig = PluginConfig<
+      'code_block',
+      { syntax: boolean; syntaxPopularFirst: boolean },
+      {
+        plugin: {
+          getSyntaxState: () => boolean;
+        };
+        toggleSyntax: () => void;
+      }
+    >;
+
+    createPlatePlugin({
+      key: 'code_block',
+      options: { syntax: true, syntaxPopularFirst: false },
+    })
+      .extendApi<CodeBlockConfig['api']>(() => ({
+        plugin: {
+          getSyntaxState: () => true,
+        },
+        toggleSyntax: () => {},
+      }))
+      .extend(() => ({
+        options: {
+          hotkey: ['mod+opt+8', 'mod+shift+8'],
+        },
+        withOverrides: ({ api, editor }) => {
+          // No type error
+          api.plugin.getSyntaxState();
+          api.toggleSyntax();
+
+          return editor;
+        },
+      }));
+
+    expect(1).toBe(1);
   });
 });

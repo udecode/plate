@@ -30,7 +30,7 @@ export const pipeDecorate = (
     relevantPlugins.forEach((plugin) => {
       addRanges(
         plugin.decorate!({
-          ...getPluginContext(editor, plugin),
+          ...(getPluginContext(editor, plugin) as any),
           entry,
         })
       );

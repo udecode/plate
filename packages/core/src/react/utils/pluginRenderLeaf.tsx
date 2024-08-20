@@ -24,13 +24,14 @@ export const pluginRenderLeaf = (
     if (leaf[plugin.type ?? plugin.key]) {
       const Leaf = component ?? DefaultLeaf;
 
-      nodeProps = getRenderNodeProps({
+      const ctxProps = getRenderNodeProps({
         attributes: leaf.attributes as any,
+        editor,
         nodeProps: nodeProps as any,
         plugin,
       }) as any;
 
-      return <Leaf {...nodeProps}>{children}</Leaf>;
+      return <Leaf {...ctxProps}>{children}</Leaf>;
     }
 
     return children;

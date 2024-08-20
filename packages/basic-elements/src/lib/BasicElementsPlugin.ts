@@ -1,5 +1,5 @@
 import { BlockquotePlugin } from '@udecode/plate-block-quote';
-import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+import { CodeBlockPlugin } from '@udecode/plate-code-block';
 import { ParagraphPlugin, createSlatePlugin } from '@udecode/plate-common';
 import { HeadingPlugin } from '@udecode/plate-heading';
 

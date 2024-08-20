@@ -43,10 +43,10 @@ export const pluginRenderElement = (
 
       nodeProps = getRenderNodeProps({
         attributes: element.attributes as any,
+        editor,
         nodeProps: nodeProps as any,
         plugin,
       }) as any;
-      nodeProps.plugin = plugin;
 
       let children = _children;
 

@@ -186,15 +186,15 @@ export function createSlatePlugin<
     return createSlatePlugin(newPlugin) as any;
   };
 
-  // plugin.extendPluginApi = (extension) => {
-  //   const newPlugin = { ...plugin };
-  //   newPlugin.__apiExtensions = [
-  //     ...(newPlugin.__apiExtensions as any),
-  //     extension,
-  //   ];
-  //
-  //   return createSlatePlugin(newPlugin) as any;
-  // };
+  plugin.extendPluginApi = (extension) => {
+    const newPlugin = { ...plugin };
+    newPlugin.__apiExtensions = [
+      ...(newPlugin.__apiExtensions as any),
+      extension,
+    ];
+
+    return createSlatePlugin(newPlugin) as any;
+  };
 
   plugin.extendTransforms = (extension) => {
     const newPlugin = { ...plugin };

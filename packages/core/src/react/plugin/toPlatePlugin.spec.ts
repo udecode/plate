@@ -349,11 +349,6 @@ describe('toTPlatePlugin type tests', () => {
         options: {
           hotkey: ['mod+opt+8', 'mod+shift+8'],
         },
-        withOverrides: ({ api, editor }) => {
-          api.plugin.getLanguage!();
-
-          return editor;
-        },
       }
     )
       .extendApi(() => ({
@@ -365,12 +360,11 @@ describe('toTPlatePlugin type tests', () => {
         },
       }))
       .extend({
-        // TODO
-        // withOverrides: (({ api, editor }) => {
-        //   api.plugin.getLanguage!();
-        //
-        //   return editor;
-        // }) as WithOverride2,
+        withOverrides: ({ api, editor }) => {
+          api.plugin.getLanguage!();
+
+          return editor;
+        },
       });
 
     const editor = createPlateEditor({

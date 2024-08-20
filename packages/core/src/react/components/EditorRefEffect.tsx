@@ -14,7 +14,7 @@ export function EditorRefPluginEffect({
 }) {
   const editor = useEditorRef(id);
 
-  plugin.useHooks?.(getPluginContext(editor, plugin));
+  plugin.useHooks?.(getPluginContext(editor, plugin) as any);
 
   return null;
 }

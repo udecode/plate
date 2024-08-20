@@ -66,7 +66,6 @@ export const serializeHtml = (
             children: convertNewLinesToHtmlBr
               ? newLinesToHtmlBr(children)
               : children,
-            editor,
             leaf: node as any,
             text: node as any,
           },
@@ -85,7 +84,6 @@ export const serializeHtml = (
             preserveClassNames,
             stripWhitespace,
           }),
-          editor,
           element: node,
         },
       });

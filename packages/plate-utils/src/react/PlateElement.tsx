@@ -20,12 +20,16 @@ export type PlateElementProps<
 
 export const usePlateElement = (props: PlateElementProps) => {
   const {
+    api,
     attributes,
     editor,
     element,
     elementToAttributes,
     nodeProps,
+    options,
     plugin,
+    transforms,
+    type,
     ...rootProps
   } = props;
 

@@ -1,8 +1,9 @@
-import { pipeInjectProps } from '@udecode/plate-common';
+import type { TRenderLeafProps } from '@udecode/slate-react';
+
+import { getPluginContext, pipeInjectProps } from '@udecode/plate-common';
 import {
   type PlateEditor,
   type PlateProps,
-  type PlateRenderLeafProps,
   pluginRenderLeaf,
 } from '@udecode/plate-common/react';
 import { decode } from 'html-entities';
@@ -20,7 +21,7 @@ export const leafToHtml = (
   }: {
     plateProps?: Partial<PlateProps>;
     preserveClassNames?: string[];
-    props: Omit<PlateRenderLeafProps, 'plugin'>;
+    props: TRenderLeafProps;
   }
 ) => {
   const { children } = props;
@@ -31,7 +32,7 @@ export const leafToHtml = (
     props = {
       ...pipeInjectProps(editor, props),
       children: result,
-      plugin,
+      ...getPluginContext(editor, plugin),
     };
 
     const serialized =

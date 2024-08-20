@@ -1,10 +1,11 @@
 import type React from 'react';
 
-import { pipeInjectProps } from '@udecode/plate-common';
+import type { TRenderElementProps } from '@udecode/slate-react';
+
+import { getPluginContext, pipeInjectProps } from '@udecode/plate-common';
 import {
   type PlateEditor,
   type PlateProps,
-  type PlateRenderElementProps,
   pluginRenderElement,
 } from '@udecode/plate-common/react';
 import { decode } from 'html-entities';
@@ -24,7 +25,7 @@ export const elementToHtml = (
     dndWrapper?: React.ComponentClass | React.FC | string;
     plateProps?: Partial<PlateProps>;
     preserveClassNames?: string[];
-    props: Omit<PlateRenderElementProps, 'plugin'>;
+    props: TRenderElementProps;
   }
 ) => {
   let html = `<div>${props.children}</div>`;
@@ -52,8 +53,11 @@ export const elementToHtml = (
           {
             ...plateProps,
             children:
-              plugin.serializeHtml?.({ ...props, plugin } as any) ??
-              pluginRenderElement(editor, plugin)({ ...props, plugin }),
+              plugin.serializeHtml?.({
+                ...props,
+                ...getPluginContext(editor, plugin),
+              } as any) ??
+              pluginRenderElement(editor, plugin)({ ...props } as any),
           },
           dndWrapper
         )

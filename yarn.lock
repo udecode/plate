@@ -6359,7 +6359,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-layout@workspace:^, @udecode/plate-layout@workspace:packages/layout":
+"@udecode/plate-layout@npm:36.0.0, @udecode/plate-layout@workspace:^, @udecode/plate-layout@workspace:packages/layout":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-layout@workspace:packages/layout"
   dependencies:
@@ -6657,7 +6657,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-slash-command@workspace:^, @udecode/plate-slash-command@workspace:packages/slash-command":
+"@udecode/plate-slash-command@npm:36.0.0, @udecode/plate-slash-command@workspace:^, @udecode/plate-slash-command@workspace:packages/slash-command":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-slash-command@workspace:packages/slash-command"
   dependencies:
@@ -6866,6 +6866,7 @@ __metadata:
     "@udecode/plate-indent": "npm:36.0.0"
     "@udecode/plate-indent-list": "npm:36.3.3"
     "@udecode/plate-kbd": "npm:36.0.0"
+    "@udecode/plate-layout": "npm:36.0.0"
     "@udecode/plate-line-height": "npm:36.0.0"
     "@udecode/plate-link": "npm:36.3.2"
     "@udecode/plate-list": "npm:36.0.0"
@@ -6881,6 +6882,7 @@ __metadata:
     "@udecode/plate-serializer-docx": "npm:36.3.5"
     "@udecode/plate-serializer-html": "npm:36.0.0"
     "@udecode/plate-serializer-md": "npm:36.0.7"
+    "@udecode/plate-slash-command": "npm:36.0.0"
     "@udecode/plate-suggestion": "npm:36.0.0"
     "@udecode/plate-tabbable": "npm:36.0.0"
     "@udecode/plate-table": "npm:36.3.5"
@@ -12031,6 +12033,13 @@ __metadata:
   version: 2.0.2
   resolution: "html-escaper@npm:2.0.2"
   checksum: 10c0/208e8a12de1a6569edbb14544f4567e6ce8ecc30b9394fcaa4e7bb1e60c12a7c9a1ed27e31290817157e8626f3a4f29e76c8747030822eb84a6abb15c255f0a0
+  languageName: node
+  linkType: hard
+
+"html-url-attributes@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "html-url-attributes@npm:3.0.0"
+  checksum: 10c0/af300ae1f3b9cf90aba0d95a165c3f4066ec2b3ee2f36a885a8d842e68675e4133896b00bde42d18ac799d0ce678fa1695baec3f865b01a628922d737c0d035c
   languageName: node
   linkType: hard
 
@@ -17606,6 +17615,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-markdown@npm:9.0.1":
+  version: 9.0.1
+  resolution: "react-markdown@npm:9.0.1"
+  dependencies:
+    "@types/hast": "npm:^3.0.0"
+    devlop: "npm:^1.0.0"
+    hast-util-to-jsx-runtime: "npm:^2.0.0"
+    html-url-attributes: "npm:^3.0.0"
+    mdast-util-to-hast: "npm:^13.0.0"
+    remark-parse: "npm:^11.0.0"
+    remark-rehype: "npm:^11.0.0"
+    unified: "npm:^11.0.0"
+    unist-util-visit: "npm:^5.0.0"
+    vfile: "npm:^6.0.0"
+  peerDependencies:
+    "@types/react": ">=18"
+    react: ">=18"
+  checksum: 10c0/3a3895dbd56647bc864b8da46dd575e71a9e609eb1e43fea8e8e6209d86e208eddd5b07bf8d7b5306a194b405440760a8d134aebd5a4ce5dc7dee4299e84db96
+  languageName: node
+  linkType: hard
+
 "react-refresh@npm:^0.14.0":
   version: 0.14.0
   resolution: "react-refresh@npm:0.14.0"
@@ -21975,6 +22005,7 @@ __metadata:
     react-dnd-html5-backend: "npm:^16.0.1"
     react-dom: "npm:^18.2.0"
     react-lite-youtube-embed: "npm:^2.4.0"
+    react-markdown: "npm:9.0.1"
     react-resizable-panels: "npm:^0.0.55"
     react-syntax-highlighter: "npm:^15.5.0"
     react-tweet: "npm:^3.2.0"

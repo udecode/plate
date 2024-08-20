@@ -1,19 +1,12 @@
 import type { AnyObject } from '@udecode/utils';
 
-import type { AnyPluginConfig } from '../../lib';
-import type { PlateEditor } from '../editor/PlateEditor';
-import type { EditorPlatePlugin } from './PlatePlugin';
+import type { AnyPluginConfig, PluginConfig } from '../../lib';
+import type { PlatePluginContext } from './PlatePlugin';
 
 /** Node props passed by Plate */
-export interface PlateRenderNodeProps<
-  C extends AnyPluginConfig = AnyPluginConfig,
-> {
-  editor: PlateEditor;
-
-  plugin: EditorPlatePlugin<C>;
-
+export type PlateRenderNodeProps<C extends AnyPluginConfig = PluginConfig> = {
   className?: string;
 
   /** @see {@link NodeProps} */
   nodeProps?: AnyObject;
-}
+} & PlatePluginContext<C>;

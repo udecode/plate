@@ -380,18 +380,18 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
             >)
   ) => PlatePlugin<C>;
 
-  // extendPluginApi: <
-  //   EA extends Record<string, (...args: any[]) => any> = Record<string, never>,
-  // >(
-  //   extension: (ctx: PlatePluginContext<C>) => EA
-  // ) => PlatePlugin<
-  //   PluginConfig<
-  //     C['key'],
-  //     InferOptions<C>,
-  //     InferApi<C> & Record<C['key'], EA>,
-  //     InferTransforms<C>
-  //   >
-  // >;
+  extendPluginApi: <
+    EA extends Record<string, (...args: any[]) => any> = Record<string, never>,
+  >(
+    extension: (ctx: PlatePluginContext<C>) => EA
+  ) => PlatePlugin<
+    PluginConfig<
+      C['key'],
+      InferOptions<C>,
+      InferApi<C> & Record<C['key'], EA>,
+      InferTransforms<C>
+    >
+  >;
 
   // extendPluginTransforms: <
   //   ET extends Record<string, (...args: any[]) => any> = Record<string, never>,
@@ -463,28 +463,10 @@ export type PlatePluginConfig<
   ET = {},
 > = Partial<
   { api: EA; options: EO; transforms: ET } & Omit<
-    PlatePlugin<PluginConfig<K, Partial<O>, Partial<A>, Partial<T>>>,
+    PlatePlugin<PluginConfig<K, Partial<O>, A, T>>,
     'api' | 'transforms' | keyof PlatePluginMethods
   >
 >;
-
-// type PlatePluginConfig<C extends AnyPluginConfig, EO = {}, EA = {}, ET = {}> = {
-//   api?: EA & Partial<InferApi<C>>;
-//   options?: EO & Partial<InferOptions<C>>;
-//   transforms?: ET & Partial<InferTransforms<C>>;
-// } & Omit<
-//   Partial<
-//     PlatePlugin<
-//       PluginConfig<
-//         C['key'],
-//         EO & InferOptions<C>,
-//         EA & InferApi<C>,
-//         ET & InferTransforms<C>
-//       >
-//     >
-//   >,
-//   'api' | 'options' | 'transforms' | keyof PlatePluginMethods
-// >;
 
 // -----------------------------------------------------------------------------
 
@@ -506,11 +488,11 @@ export type InferConfig<P> = P extends
   : never;
 
 export type PlatePluginContext<C extends AnyPluginConfig = PluginConfig> = {
-  api: Required<C['api']>;
+  api: C['api'];
   editor: PlateEditor;
   options: InferOptions<C>;
   plugin: EditorPlatePlugin<C>;
-  transforms: Required<C['transforms']>;
+  transforms: C['transforms'];
   type: string;
 };
 
@@ -630,8 +612,8 @@ export type PlatePluginComponent<T = any> = React.FC<T>;
 /** Props object or function returning props object. */
 export type PlatePluginProps<C extends AnyPluginConfig = PluginConfig> =
   | ((
-      props: PlateRenderElementProps<TElement, EditorPlatePlugin<C>> &
-        PlateRenderLeafProps<TText, EditorPlatePlugin<C>>
+      props: PlateRenderElementProps<TElement, C> &
+        PlateRenderLeafProps<TText, C>
     ) => AnyObject | undefined)
   | AnyObject;
 
@@ -644,23 +626,20 @@ export type RenderAfterEditable = (
 ) => React.ReactElement | null;
 
 export interface InjectComponentProps<C extends AnyPluginConfig = PluginConfig>
-  extends PlateRenderElementProps<TElement, EditorPlatePlugin<C>> {
+  extends PlateRenderElementProps<TElement, C> {
   key: string;
 }
 
 export type InjectComponentReturnType<
   C extends AnyPluginConfig = PluginConfig,
-> =
-  | React.FC<PlateRenderElementProps<TElement, EditorPlatePlugin<C>>>
-  | undefined;
+> = React.FC<PlateRenderElementProps<TElement, C>> | undefined;
 
 export type InjectComponent<C extends AnyPluginConfig = PluginConfig> = (
   props: InjectComponentProps<C>
 ) => InjectComponentReturnType<C>;
 
 export type SerializeHtml<C extends AnyPluginConfig = PluginConfig> = React.FC<
-  PlateRenderElementProps<TElement, EditorPlatePlugin<C>> &
-    PlateRenderLeafProps<TText, EditorPlatePlugin<C>>
+  PlateRenderElementProps<TElement, C> & PlateRenderLeafProps<TText, C>
 >;
 
 /**

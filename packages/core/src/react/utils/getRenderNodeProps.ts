@@ -2,10 +2,12 @@ import type { AnyObject } from '@udecode/utils';
 
 import { clsx } from 'clsx';
 
+import type { PlateEditor } from '../editor';
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 import type { PlateRenderNodeProps } from '../plugin/PlateRenderNodeProps';
 
 import { getSlateClass } from '../../lib';
+import { getPluginContext } from '../plugin';
 
 /**
  * Override node props with plugin props. `props.element.attributes` are passed
@@ -13,10 +15,12 @@ import { getSlateClass } from '../../lib';
  */
 export const getRenderNodeProps = ({
   attributes,
+  editor,
   nodeProps,
   plugin,
 }: {
   attributes?: AnyObject;
+  editor: PlateEditor;
   nodeProps: PlateRenderNodeProps;
   plugin: AnyEditorPlatePlugin;
 }): PlateRenderNodeProps => {
@@ -48,6 +52,6 @@ export const getRenderNodeProps = ({
   return {
     ...nodeProps,
     className: clsx(getSlateClass(plugin.type), className),
-    plugin,
+    ...(getPluginContext(editor, plugin) as any),
   };
 };
