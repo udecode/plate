@@ -61,21 +61,14 @@ export const CloudPlugin = createTPlatePlugin<CloudConfig>({
   )
   .extendApi(({ editor, options }) => {
     return {
-      cloud: {
-        finishUploads: async (
-          options?: FinishUploadsOptions
-        ): Promise<void> => {
-          return finishUploads(editor, options);
-        },
-        getSaveValue: (): Value => {
-          return getSaveValue(
-            editor.children,
-            options.uploadStore.get.uploads()
-          );
-        },
-        uploadFiles: (files: Iterable<File>) => {
-          uploadFiles(editor, files);
-        },
+      finishUploads: async (options?: FinishUploadsOptions): Promise<void> => {
+        return finishUploads(editor, options);
+      },
+      getSaveValue: (): Value => {
+        return getSaveValue(editor.children, options.uploadStore.get.uploads());
+      },
+      uploadFiles: (files: Iterable<File>) => {
+        uploadFiles(editor, files);
       },
     };
   });

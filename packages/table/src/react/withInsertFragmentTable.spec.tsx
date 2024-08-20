@@ -441,7 +441,7 @@ describe('withInsertFragmentTable', () => {
       const editor = createSlateEditor({
         editor: input,
         plugins: [
-          TablePlugin.extendApi(() => ({
+          TablePlugin.extendEditorApi(() => ({
             table: {
               cellFactory: () => ({
                 children: [{ text: '' }],

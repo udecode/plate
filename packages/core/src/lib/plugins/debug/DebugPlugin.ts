@@ -67,18 +67,13 @@ export const DebugPlugin = createSlatePlugin({
   };
 
   return {
-    debug: {
-      error: (
-        message: string | unknown,
-        type?: DebugErrorType,
-        details?: any
-      ) => log('error', message, type, details),
-      info: (message: string, type?: DebugErrorType, details?: any) =>
-        log('info', message, type, details),
-      log: (message: string, type?: DebugErrorType, details?: any) =>
-        log('log', message, type, details),
-      warn: (message: string, type?: DebugErrorType, details?: any) =>
-        log('warn', message, type, details),
-    },
+    error: (message: string | unknown, type?: DebugErrorType, details?: any) =>
+      log('error', message, type, details),
+    info: (message: string, type?: DebugErrorType, details?: any) =>
+      log('info', message, type, details),
+    log: (message: string, type?: DebugErrorType, details?: any) =>
+      log('log', message, type, details),
+    warn: (message: string, type?: DebugErrorType, details?: any) =>
+      log('warn', message, type, details),
   };
 });

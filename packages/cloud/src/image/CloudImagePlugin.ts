@@ -38,57 +38,55 @@ export const CloudImagePlugin = createPlatePlugin({
   const finishPromise = deferredFinish.promise;
 
   return {
-    cloudImage: {
-      onError: (e: ErrorEvent & ImageFileEvent) => {
-        const upload: UploadError = {
-          message: e.message,
-          status: 'error',
-          url: e.url,
-        };
-        uploadStore.set.upload(e.id, upload);
-        deferredFinish.resolve(upload);
-      },
-      onProgress: (e: ImageFileEvent & ProgressEvent) => {
-        uploadStore.set.upload(e.id, {
-          finishPromise,
-          sentBytes: e.sentBytes,
-          status: 'progress',
-          totalBytes: e.totalBytes,
-          url: e.url,
-        });
-      },
-      onStart: (e: ImageFileEvent) => {
-        const { height, width } = portiveClient.resizeIn(
-          { height: e.height, width: e.width },
-          { height: options.maxInitialHeight, width: options.maxInitialWidth }
-        );
-        const node: TCloudImageElement = {
-          bytes: e.file.size,
-          children: [{ text: '' }],
-          height,
-          maxHeight: e.height,
-          maxWidth: e.width,
-          type: 'cloud_image',
-          url: e.id,
-          width,
-        };
-        editor.insertNode(node);
-        uploadStore.set.upload(e.id, {
-          finishPromise,
-          sentBytes: 0,
-          status: 'progress',
-          totalBytes: e.file.size,
-          url: e.url,
-        });
-      },
-      onSuccess: (e: ImageFileEvent & SuccessEvent) => {
-        const upload: UploadSuccess = {
-          status: 'success',
-          url: e.url,
-        };
-        uploadStore.set.upload(e.id, upload);
-        deferredFinish.resolve(upload);
-      },
+    onError: (e: ErrorEvent & ImageFileEvent) => {
+      const upload: UploadError = {
+        message: e.message,
+        status: 'error',
+        url: e.url,
+      };
+      uploadStore.set.upload(e.id, upload);
+      deferredFinish.resolve(upload);
+    },
+    onProgress: (e: ImageFileEvent & ProgressEvent) => {
+      uploadStore.set.upload(e.id, {
+        finishPromise,
+        sentBytes: e.sentBytes,
+        status: 'progress',
+        totalBytes: e.totalBytes,
+        url: e.url,
+      });
+    },
+    onStart: (e: ImageFileEvent) => {
+      const { height, width } = portiveClient.resizeIn(
+        { height: e.height, width: e.width },
+        { height: options.maxInitialHeight, width: options.maxInitialWidth }
+      );
+      const node: TCloudImageElement = {
+        bytes: e.file.size,
+        children: [{ text: '' }],
+        height,
+        maxHeight: e.height,
+        maxWidth: e.width,
+        type: 'cloud_image',
+        url: e.id,
+        width,
+      };
+      editor.insertNode(node);
+      uploadStore.set.upload(e.id, {
+        finishPromise,
+        sentBytes: 0,
+        status: 'progress',
+        totalBytes: e.file.size,
+        url: e.url,
+      });
+    },
+    onSuccess: (e: ImageFileEvent & SuccessEvent) => {
+      const upload: UploadSuccess = {
+        status: 'success',
+        url: e.url,
+      };
+      uploadStore.set.upload(e.id, upload);
+      deferredFinish.resolve(upload);
     },
   };
 });

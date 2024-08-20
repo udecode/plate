@@ -176,7 +176,7 @@ export function createSlatePlugin<
     return createSlatePlugin(newPlugin);
   };
 
-  plugin.extendApi = (extension) => {
+  plugin.extendEditorApi = (extension) => {
     const newPlugin = { ...plugin };
     newPlugin.__apiEditorExtensions = [
       ...(newPlugin.__apiEditorExtensions as any),
@@ -186,7 +186,7 @@ export function createSlatePlugin<
     return createSlatePlugin(newPlugin) as any;
   };
 
-  plugin.extendPluginApi = (extension) => {
+  plugin.extendApi = (extension) => {
     const newPlugin = { ...plugin };
     newPlugin.__apiExtensions = [
       ...(newPlugin.__apiExtensions as any),

@@ -5,7 +5,7 @@ describe('getApi method', () => {
   it('should return correctly typed plugin API', () => {
     const TestPlugin = createSlatePlugin({
       key: 'test',
-    }).extendApi(() => ({
+    }).extendEditorApi(() => ({
       testMethod: () => 'test',
       testNumber: () => 42,
     }));
@@ -28,7 +28,7 @@ describe('getApi method', () => {
   it('should work with generic', () => {
     const Plugin1 = createSlatePlugin({
       key: 'plugin1',
-    }).extendApi(() => ({
+    }).extendEditorApi(() => ({
       method1: () => 'plugin1',
     }));
 

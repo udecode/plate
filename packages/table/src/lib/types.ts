@@ -49,20 +49,20 @@ export type TableConfig = PluginConfig<
      */
     minColumnWidth?: number;
   },
-  {
-    table: {
-      /** Cell node factory used each time a cell is created. */
-      cellFactory: (options?: CellFactoryOptions) => TTableCellElement;
-      getCellChildren: (cell: TTableCellElement) => TDescendant[];
-    };
-  },
-  {
-    table: {
-      insertColumn: OmitFirst<typeof insertTableColumn>;
-      insertRow: OmitFirst<typeof insertTableRow>;
-    };
-  }
+  { table: TableApi },
+  { table: TableTransforms }
 >;
+
+export type TableApi = {
+  /** Cell node factory used each time a cell is created. */
+  cellFactory: (options?: CellFactoryOptions) => TTableCellElement;
+  getCellChildren: (cell: TTableCellElement) => TDescendant[];
+};
+
+export type TableTransforms = {
+  insertColumn: OmitFirst<typeof insertTableColumn>;
+  insertRow: OmitFirst<typeof insertTableRow>;
+};
 
 export type CellFactoryOptions = {
   children?: TDescendant[];

@@ -39,7 +39,7 @@ export const LinkPlugin = toTPlatePlugin<LinkConfig>(BaseLinkPlugin, {
     triggerFloatingLinkHotkeys: 'meta+k, ctrl+k',
   },
 })
-  .extendApi<LinkConfig['api']>(({ editor }) => ({
+  .extendEditorApi<LinkConfig['api']>(({ editor }) => ({
     link: {
       getAttributes: bindFirst(getLinkAttributes, editor),
     },

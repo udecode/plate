@@ -64,7 +64,7 @@ export const SlateNextPlugin = createSlatePlugin({
   key: 'slateNext',
   withOverrides: withSlateNext,
 })
-  .extendApi(({ editor }) => ({
+  .extendEditorApi(({ editor }) => ({
     /** Default block fac tory. */
     blockFactory: (node?: Partial<TElement>, _path?: Path): TElement => ({
       children: [{ text: '' }],
@@ -72,11 +72,11 @@ export const SlateNextPlugin = createSlatePlugin({
       ...node,
     }),
   }))
-  .extendApi(({ api }) => ({
+  .extendEditorApi(({ api }) => ({
     /** Editor childr en factory. */
     childrenFactory: (): Value => [api.blockFactory()],
   }))
-  .extendApi(({ editor }) => ({
+  .extendEditorApi(({ editor }) => ({
     reset: () => {
       resetEditor(editor);
     },

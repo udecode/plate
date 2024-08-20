@@ -7,7 +7,7 @@ import { withPlateReact } from './withPlateReact';
 export const ReactPlugin = createSlatePlugin({
   key: 'dom',
   withOverrides: withPlateReact,
-}).extendApi(({ editor }) => {
+}).extendEditorApi(({ editor }) => {
   const { reset } = editor.api;
 
   return {

@@ -30,7 +30,7 @@ describe('withComponent method', () => {
     expect(resolvedPlugin.component).toBe(NewComponent);
   });
 
-  it('extendApi', () => {
+  it('extendEditorApi', () => {
     type CodeBlockConfig = PluginConfig<
       'code_block',
       { syntax: boolean; syntaxPopularFirst: boolean },
@@ -46,7 +46,7 @@ describe('withComponent method', () => {
       key: 'code_block',
       options: { syntax: true, syntaxPopularFirst: false },
     })
-      .extendApi<CodeBlockConfig['api']>(() => ({
+      .extendEditorApi<CodeBlockConfig['api']>(() => ({
         plugin: {
           getSyntaxState: () => true,
         },

@@ -5,7 +5,7 @@ import {
   createTSlatePlugin,
 } from '@udecode/plate-common';
 
-import type { TableConfig } from './types';
+import type { TableApi, TableConfig } from './types';
 
 import { insertTableColumn, insertTableRow } from './transforms/index';
 import { getEmptyCellNode } from './utils';
@@ -56,17 +56,9 @@ export const TablePlugin = createTSlatePlugin<TableConfig>({
   plugins: [TableRowPlugin, TableCellPlugin, TableCellHeaderPlugin],
   withOverrides: withTable,
 })
-  .extendApi(({ editor }) => ({
-    table: {
-      cellFactory: bindFirst(getEmptyCellNode, editor),
-      getCellChildren: (cell) => cell.children,
-    },
-  }))
-  .extendApi(({ editor }) => ({
-    table: {
-      cellFactory: bindFirst(getEmptyCellNode, editor),
-      getCellChildren: (cell) => cell.children,
-    },
+  .extendApi<TableApi>(({ editor }) => ({
+    cellFactory: bindFirst(getEmptyCellNode, editor),
+    getCellChildren: (cell) => cell.children,
   }))
   .extendTransforms(({ editor }) => ({
     table: {

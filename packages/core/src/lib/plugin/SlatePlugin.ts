@@ -125,6 +125,19 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   >;
 
   extendApi: <
+    EA extends Record<string, (...args: any[]) => any> = Record<string, never>,
+  >(
+    extension: (ctx: SlatePluginContext<C>) => EA
+  ) => SlatePlugin<
+    PluginConfig<
+      C['key'],
+      InferOptions<C>,
+      InferApi<C> & Record<C['key'], EA>,
+      InferTransforms<C>
+    >
+  >;
+
+  extendEditorApi: <
     EA extends Record<
       string,
       ((...args: any[]) => any) | Record<string, (...args: any[]) => any>
@@ -182,19 +195,6 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
           ET
         >
   ) => SlatePlugin<C>;
-
-  extendPluginApi: <
-    EA extends Record<string, (...args: any[]) => any> = Record<string, never>,
-  >(
-    extension: (ctx: SlatePluginContext<C>) => EA
-  ) => SlatePlugin<
-    PluginConfig<
-      C['key'],
-      InferOptions<C>,
-      InferApi<C> & Record<C['key'], EA>,
-      InferTransforms<C>
-    >
-  >;
 
   // extendPluginTransforms: <
   //   ET extends Record<string, (...args: any[]) => any> = Record<string, never>,

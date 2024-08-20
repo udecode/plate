@@ -195,7 +195,7 @@ describe('createSlatePlugin', () => {
       const childPlugin = createSlatePlugin({
         key: 'child',
         options: { childOption: 'child' },
-      }).extendApi(() => ({
+      }).extendEditorApi(() => ({
         method: () => 'child',
       }));
 

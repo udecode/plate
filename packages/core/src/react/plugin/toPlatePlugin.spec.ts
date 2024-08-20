@@ -48,7 +48,7 @@ describe('toPlatePlugin', () => {
     isElement: true,
     key: 'p',
     options: { t: 1 },
-  }).extendApi(() => ({
+  }).extendEditorApi(() => ({
     baseApiMethod: () => 'base',
   }));
 
@@ -61,7 +61,7 @@ describe('toPlatePlugin', () => {
       handlers: { onKeyDown: () => true },
       options: { hotkey: ['mod+opt+0', 'mod+shift+0'] },
       renderAboveEditable: MockAboveComponent,
-    }).extendApi(() => ({
+    }).extendEditorApi(() => ({
       someApiMethod: () => 'API method result',
     }));
 
@@ -86,7 +86,7 @@ describe('toPlatePlugin', () => {
         component: MockComponent,
         options: { editorId: editor.id },
       })
-    ).extendApi(({ editor }) => ({
+    ).extendEditorApi(({ editor }) => ({
       getEditorId: () => editor.id,
     }));
 
@@ -108,7 +108,7 @@ describe('toPlatePlugin', () => {
         onChange: mockOnChange,
         onKeyDown: mockOnKeyDown,
       },
-    }).extendApi(() => ({
+    }).extendEditorApi(() => ({
       customMethod: () => 'custom result',
     }));
 
@@ -149,7 +149,7 @@ describe('toPlatePlugin type tests', () => {
     const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
       key: 'code_block',
       options: { syntax: true, syntaxPopularFirst: false },
-    }).extendApi<CodeBlockConfig['api']>(() => ({
+    }).extendEditorApi<CodeBlockConfig['api']>(() => ({
       plugin: {
         getSyntaxState: () => true,
       },
@@ -172,7 +172,7 @@ describe('toPlatePlugin type tests', () => {
         return editor;
       },
     })
-      .extendApi(() => ({
+      .extendEditorApi(() => ({
         plugin: {
           getLanguage: () => 'javascript' as string,
         },
@@ -330,7 +330,7 @@ describe('toTPlatePlugin type tests', () => {
     const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
       key: 'code_block',
       options: { syntax: true, syntaxPopularFirst: false },
-    }).extendApi<CodeBlockConfig['api']>(() => ({
+    }).extendEditorApi<CodeBlockConfig['api']>(() => ({
       plugin: {
         getSyntaxState: () => true,
       },
@@ -351,7 +351,7 @@ describe('toTPlatePlugin type tests', () => {
         },
       }
     )
-      .extendApi(() => ({
+      .extendEditorApi(() => ({
         plugin: {
           getLanguage: () => 'javascript',
         },

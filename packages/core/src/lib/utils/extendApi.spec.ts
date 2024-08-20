@@ -6,7 +6,7 @@ import {
   getSlatePlugin,
 } from '../plugin';
 
-describe('extendApi method', () => {
+describe('extendEditorApi method', () => {
   it('should maintain editor and plugin API reference while extending', () => {
     let api1: any;
     let pluginApi1: any;
@@ -16,13 +16,13 @@ describe('extendApi method', () => {
         createSlatePlugin({
           key: 'testPlugin',
         })
-          .extendApi(({ editor, plugin }) => {
+          .extendEditorApi(({ editor, plugin }) => {
             api1 = editor.getApi({} as any);
             pluginApi1 = plugin.api;
 
             return { method1: () => 1 };
           })
-          .extendApi(({ editor, plugin: { api } }) => {
+          .extendEditorApi(({ editor, plugin: { api } }) => {
             expect(api1).toBe(editor.getApi({} as any)); // The reference should be the same
             expect(pluginApi1).toBe(api); // The reference should be the same
 
@@ -35,7 +35,7 @@ describe('extendApi method', () => {
     expect(editor.api.method2()).toBe(2);
   });
 
-  it('should correctly handle extendApi with function parameters', () => {
+  it('should correctly handle extendEditorApi with function parameters', () => {
     type CustomConfig = PluginConfig<
       'customPlugin',
       { baseValue: number },
@@ -49,11 +49,11 @@ describe('extendApi method', () => {
       },
     });
 
-    const extendedPlugin = customPlugin.extendApi(({ options }) => ({
+    const extendedPlugin = customPlugin.extendEditorApi(({ options }) => ({
       multiply: (factor) => options.baseValue * factor,
     }));
 
-    const furtherExtendedPlugin = extendedPlugin.extendApi(
+    const furtherExtendedPlugin = extendedPlugin.extendEditorApi(
       ({ plugin: { api, options } }) => ({
         getTotal: (factor: number) => api.multiply(factor) + options.baseValue,
         increment: (amount: number) => {
@@ -75,7 +75,7 @@ describe('extendApi method', () => {
     expect(editor.api.getTotal(3)).toBe(28); // (7 * 3) + 7
   });
 
-  it('should correctly handle api extensions through extend, extendApi, and configure', () => {
+  it('should correctly handle api extensions through extend, extendEditorApi, and configure', () => {
     const basePlugin = createSlatePlugin({
       key: 'testPlugin',
       options: {
@@ -89,7 +89,7 @@ describe('extendApi method', () => {
           baseValue: 15,
         },
       })
-      .extendApi(({ options }) => ({
+      .extendEditorApi(({ options }) => ({
         sampleMethod: (inc: number) => options.baseValue + inc,
       }))
       .extend({
@@ -97,7 +97,7 @@ describe('extendApi method', () => {
           baseValue: 20,
         },
       })
-      .extendApi(({ plugin: { api, options } }) => ({
+      .extendEditorApi(({ plugin: { api, options } }) => ({
         anotherMethod: () => api.sampleMethod(1) + options.baseValue,
       }));
 
@@ -110,7 +110,7 @@ describe('extendApi method', () => {
     expect(editor.api.anotherMethod()).toBe(41);
   });
 
-  it('should allow multiple extendApi calls', () => {
+  it('should allow multiple extendEditorApi calls', () => {
     const basePlugin = createSlatePlugin({
       key: 'testPlugin',
       options: {
@@ -119,13 +119,13 @@ describe('extendApi method', () => {
     });
 
     const extendedPlugin = basePlugin
-      .extendApi(() => ({
+      .extendEditorApi(() => ({
         method1: () => 1,
       }))
-      .extendApi(() => ({
+      .extendEditorApi(() => ({
         method2: () => 2,
       }))
-      .extendApi(({ plugin: { api } }) => ({
+      .extendEditorApi(({ plugin: { api } }) => ({
         method3: () => (api as any).method1() + (api as any).method2(),
       }));
 
@@ -145,13 +145,13 @@ describe('extendApi method', () => {
         baseValue: 10,
       },
     })
-      .extendApi(() => ({
+      .extendEditorApi(() => ({
         method1: () => 1,
       }))
-      .extendApi(() => ({
+      .extendEditorApi(() => ({
         method2: () => 2,
       }))
-      .extendApi(({ plugin: { api } }) => ({
+      .extendEditorApi(({ plugin: { api } }) => ({
         method3: () => api.method1() + api.method2(),
       }));
 
@@ -160,7 +160,7 @@ describe('extendApi method', () => {
         testPlugin,
         createSlatePlugin({
           key: 'another',
-        }).extendApi(({ editor }) => ({
+        }).extendEditorApi(({ editor }) => ({
           method4: () => {
             const api = editor.getApi(testPlugin);
 
@@ -178,16 +178,16 @@ describe('extendApi method', () => {
       key: 'testPlugin',
       options: { baseValue: 10 },
     })
-      .extendApi(() => ({ method1: () => 1 }))
-      .extendApi(() => ({ method2: () => 2 }))
-      .extendApi(({ plugin: { api } }) => ({
+      .extendEditorApi(() => ({ method1: () => 1 }))
+      .extendEditorApi(() => ({ method2: () => 2 }))
+      .extendEditorApi(({ plugin: { api } }) => ({
         method3: () => api.method1() + api.method2(),
       }));
 
     const editor = createPlateEditor({
       plugins: [
         testPlugin,
-        createSlatePlugin({ key: 'another' }).extendApi(({ editor }) => {
+        createSlatePlugin({ key: 'another' }).extendEditorApi(({ editor }) => {
           const api = editor.getApi(testPlugin);
 
           return {
@@ -205,13 +205,13 @@ describe('extendApi method', () => {
   it('should allow overriding plugin APIs', () => {
     const basePlugin = createSlatePlugin({
       key: 'basePlugin',
-    }).extendApi(() => ({
+    }).extendEditorApi(() => ({
       method: () => 'base',
     }));
 
     const overridePlugin = createSlatePlugin({
       key: 'overridePlugin',
-    }).extendApi(({ editor }) => {
+    }).extendEditorApi(({ editor }) => {
       const { method } = editor.getApi(basePlugin);
 
       return {
@@ -228,12 +228,12 @@ describe('extendApi method', () => {
 
   it('should merge nested API properties', () => {
     const basePlugin = createSlatePlugin({ key: 'nestedPlugin' })
-      .extendApi(() => ({
+      .extendEditorApi(() => ({
         cloud: {
           a: () => 'a',
         },
       }))
-      .extendApi(() => ({
+      .extendEditorApi(() => ({
         cloud: {
           b: () => 'b',
         },
@@ -251,11 +251,11 @@ describe('extendApi method', () => {
     const plugin1 = createSlatePlugin({
       key: 'plugin1',
     })
-      .extendApi(() => ({
+      .extendEditorApi(() => ({
         method: () => 'plugin1' as string,
         scoped: () => 'scoped1' as string,
       }))
-      .extendApi(({ api, plugin }) => {
+      .extendEditorApi(({ api, plugin }) => {
         // This should access the current plugin's scoped api method
         const currentScoped = plugin.api.scoped;
 
@@ -273,7 +273,7 @@ describe('extendApi method', () => {
 
     const plugin3 = createSlatePlugin({
       key: 'plugin3',
-    }).extendApi(() => ({
+    }).extendEditorApi(() => ({
       method: () => 'plugin3',
     }));
 
@@ -286,21 +286,21 @@ describe('extendApi method', () => {
     expect(editor.api.testMethod()).toBe('plugin3-scoped1');
   });
 
-  it('should comprehensively handle all aspects of extendApi and extendTransforms', () => {
+  it('should comprehensively handle all aspects of extendEditorApi and extendTransforms', () => {
     const basePlugin = createSlatePlugin({
       key: 'testPlugin',
       options: {
         baseValue: 10,
       },
     })
-      .extendApi(({ options }) => ({
+      .extendEditorApi(({ options }) => ({
         level1: {
           method1: () => options.baseValue,
           method2: (factor: number) => options.baseValue * factor,
         },
         standalone: () => 'base',
       }))
-      .extendApi(({ plugin: { api } }) => ({
+      .extendEditorApi(({ plugin: { api } }) => ({
         level1: {
           method3: () => api.level1.method1() + api.level1.method2(2),
         },
@@ -312,13 +312,13 @@ describe('extendApi method', () => {
       .extendTransforms(({ plugin: { transforms } }) => ({
         transform2: () => transforms.transform1(5) * 2,
       }))
-      .extendApi(({ plugin: { api, transforms } }) => ({
+      .extendEditorApi(({ plugin: { api, transforms } }) => ({
         combined: () => api.level1.method3() + transforms.transform2(),
       }));
 
     const overridePlugin = createSlatePlugin({
       key: 'overridePlugin',
-    }).extendApi(({ editor }) => {
+    }).extendEditorApi(({ editor }) => {
       const baseApi = editor.getApi(basePlugin);
 
       return {
@@ -365,15 +365,15 @@ describe('extendApi method', () => {
   });
 });
 
-describe('extendPluginApi method', () => {
+describe('extendApi method', () => {
   it('should extend plugin-specific API without affecting global API', () => {
     const testPlugin = createSlatePlugin({
       key: 'testPlugin',
     })
-      .extendApi(() => ({
+      .extendEditorApi(() => ({
         globalMethod: () => 'global',
       }))
-      .extendPluginApi(() => ({
+      .extendApi(() => ({
         pluginMethod: () => 'plugin',
       }));
 
@@ -388,17 +388,17 @@ describe('extendPluginApi method', () => {
     expect(editor.api.pluginMethod).toBeUndefined();
   });
 
-  it('should allow multiple extendPluginApi calls', () => {
+  it('should allow multiple extendApi calls', () => {
     const testPlugin = createSlatePlugin({
       key: 'testPlugin',
     })
-      .extendPluginApi(() => ({
+      .extendApi(() => ({
         method1: () => 1,
       }))
-      .extendPluginApi(() => ({
+      .extendApi(() => ({
         method2: () => 2,
       }))
-      .extendPluginApi(({ api }) => ({
+      .extendApi(({ api }) => ({
         method3: () => api.testPlugin.method1() + api.testPlugin.method2(),
       }));
 
@@ -411,13 +411,13 @@ describe('extendPluginApi method', () => {
     expect(editor.api.testPlugin.method3()).toBe(3);
   });
 
-  it('should allow access to plugin options in extendPluginApi', () => {
+  it('should allow access to plugin options in extendApi', () => {
     const testPlugin = createSlatePlugin({
       key: 'testPlugin',
       options: {
         baseValue: 10,
       },
-    }).extendPluginApi(({ options }) => ({
+    }).extendApi(({ options }) => ({
       getValue: () => options.baseValue,
     }));
 
@@ -432,10 +432,10 @@ describe('extendPluginApi method', () => {
     const testPlugin = createSlatePlugin({
       key: 'testPlugin',
     })
-      .extendApi(() => ({
+      .extendEditorApi(() => ({
         globalMethod: () => 5,
       }))
-      .extendPluginApi(({ api }) => ({
+      .extendApi(({ api }) => ({
         pluginMethod: () => api.globalMethod() * 2,
       }));
 
@@ -449,13 +449,13 @@ describe('extendPluginApi method', () => {
   it('should maintain separate contexts for different plugins', () => {
     const plugin1 = createSlatePlugin({
       key: 'plugin1',
-    }).extendPluginApi(() => ({
+    }).extendApi(() => ({
       method: () => 'plugin1',
     }));
 
     const plugin2 = createSlatePlugin({
       key: 'plugin2',
-    }).extendPluginApi(() => ({
+    }).extendApi(() => ({
       method: () => 'plugin2',
     }));
 
@@ -470,13 +470,13 @@ describe('extendPluginApi method', () => {
   it('should allow overriding plugin-specific APIs', () => {
     const basePlugin = createSlatePlugin({
       key: 'basePlugin',
-    }).extendPluginApi(() => ({
+    }).extendApi(() => ({
       method: () => 'base',
     }));
 
     const overridePlugin = createSlatePlugin({
       key: 'overridePlugin',
-    }).extendPluginApi(({ editor }) => {
+    }).extendApi(({ editor }) => {
       const baseApi = editor.getApi(basePlugin);
 
       return {
@@ -492,20 +492,20 @@ describe('extendPluginApi method', () => {
     expect(editor.api.overridePlugin.method()).toBe('override base');
   });
 
-  it('should handle complex scenarios with both extendApi and extendPluginApi', () => {
+  it('should handle complex scenarios with both extendEditorApi and extendApi', () => {
     const testPlugin = createSlatePlugin({
       key: 'testPlugin',
       options: {
         baseValue: 5,
       },
     })
-      .extendApi(() => ({
+      .extendEditorApi(() => ({
         globalMethod: () => 'global',
       }))
-      .extendPluginApi(({ options }) => ({
+      .extendApi(({ options }) => ({
         pluginMethod: () => options.baseValue,
       }))
-      .extendApi(({ api }) => ({
+      .extendEditorApi(({ api }) => ({
         combinedMethod: () =>
           `${api.globalMethod()}-${api.testPlugin.pluginMethod()}`,
       }));

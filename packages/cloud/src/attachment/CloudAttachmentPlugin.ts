@@ -19,52 +19,50 @@ export const CloudAttachmentPlugin = createPlatePlugin({
   const finishPromise = deferredFinish.promise;
 
   return {
-    cloudAttachment: {
-      onError(e: ErrorEvent & FileEvent) {
-        const upload: UploadError = {
-          message: e.message,
-          status: 'error',
-          url: e.url,
-        };
-        uploadStore.set.upload(e.id, upload);
-        deferredFinish.resolve(upload);
-      },
-      onProgress(e: FileEvent & ProgressEvent) {
-        uploadStore.set.upload(e.id, {
-          finishPromise,
-          sentBytes: (e as any).sentBytes,
-          status: 'progress',
-          totalBytes: (e as any).totalBytes,
-          url: e.url,
-        });
-      },
-      onStart(e: FileEvent) {
-        const node: TCloudAttachmentElement = {
-          bytes: e.file.size,
-          children: [{ text: '' }],
-          filename: e.file.name,
-          type: 'cloud_attachment',
-          url: e.id,
-        };
+    onError(e: ErrorEvent & FileEvent) {
+      const upload: UploadError = {
+        message: e.message,
+        status: 'error',
+        url: e.url,
+      };
+      uploadStore.set.upload(e.id, upload);
+      deferredFinish.resolve(upload);
+    },
+    onProgress(e: FileEvent & ProgressEvent) {
+      uploadStore.set.upload(e.id, {
+        finishPromise,
+        sentBytes: (e as any).sentBytes,
+        status: 'progress',
+        totalBytes: (e as any).totalBytes,
+        url: e.url,
+      });
+    },
+    onStart(e: FileEvent) {
+      const node: TCloudAttachmentElement = {
+        bytes: e.file.size,
+        children: [{ text: '' }],
+        filename: e.file.name,
+        type: 'cloud_attachment',
+        url: e.id,
+      };
 
-        insertNode(editor, node);
+      insertNode(editor, node);
 
-        uploadStore.set.upload(e.id, {
-          finishPromise,
-          sentBytes: 0,
-          status: 'progress',
-          totalBytes: e.file.size,
-          url: e.url,
-        });
-      },
-      onSuccess(e: FileEvent & SuccessEvent) {
-        const upload: UploadSuccess = {
-          status: 'success',
-          url: e.url,
-        };
-        uploadStore.set.upload(e.id, upload);
-        deferredFinish.resolve(upload);
-      },
+      uploadStore.set.upload(e.id, {
+        finishPromise,
+        sentBytes: 0,
+        status: 'progress',
+        totalBytes: e.file.size,
+        url: e.url,
+      });
+    },
+    onSuccess(e: FileEvent & SuccessEvent) {
+      const upload: UploadSuccess = {
+        status: 'success',
+        url: e.url,
+      };
+      uploadStore.set.upload(e.id, upload);
+      deferredFinish.resolve(upload);
     },
   };
 });

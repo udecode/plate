@@ -261,6 +261,19 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
     >
   >;
 
+  extendApi: <
+    EA extends Record<string, (...args: any[]) => any> = Record<string, never>,
+  >(
+    extension: (ctx: PlatePluginContext<C>) => EA
+  ) => PlatePlugin<
+    PluginConfig<
+      C['key'],
+      InferOptions<C>,
+      InferApi<C> & Record<C['key'], EA>,
+      InferTransforms<C>
+    >
+  >;
+
   /**
    * Extends the plugin's API with new methods or nested objects.
    *
@@ -279,7 +292,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
    *
    * @example
    *   ```typescript
-   *   const extendedPlugin = basePlugin.extendApi(({ plugin }) => ({
+   *   const extendedPlugin = basePlugin.extendEditorApi(({ plugin }) => ({
    *     newMethod: (param: string) => param.length,
    *     existingMethod: (n) => n * 2, // Must match original signature
    *     nested: {
@@ -294,7 +307,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
    *   extended API methods.
    * @returns A new instance of the plugin with the extended API.
    */
-  extendApi: <
+  extendEditorApi: <
     EA extends Record<
       string,
       ((...args: any[]) => any) | Record<string, (...args: any[]) => any>
@@ -379,19 +392,6 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
               ET
             >)
   ) => PlatePlugin<C>;
-
-  extendPluginApi: <
-    EA extends Record<string, (...args: any[]) => any> = Record<string, never>,
-  >(
-    extension: (ctx: PlatePluginContext<C>) => EA
-  ) => PlatePlugin<
-    PluginConfig<
-      C['key'],
-      InferOptions<C>,
-      InferApi<C> & Record<C['key'], EA>,
-      InferTransforms<C>
-    >
-  >;
 
   // extendPluginTransforms: <
   //   ET extends Record<string, (...args: any[]) => any> = Record<string, never>,

@@ -46,21 +46,21 @@ export const uploadFile = (editor: SlateEditor, file: File) => {
       const fileEvent = createFileEvent(id, e.clientFile);
 
       if (fileEvent.type === 'image') {
-        apiImage.cloudImage?.onStart?.(fileEvent);
+        apiImage.cloud_image?.onStart?.(fileEvent);
       } else {
-        apiAttachment.cloudAttachment?.onStart?.(fileEvent);
+        apiAttachment.cloud_attachment?.onStart?.(fileEvent);
       }
     },
     onError(e) {
       const fileEvent = createFileEvent(id, e.clientFile);
 
       if (fileEvent.type === 'image') {
-        apiImage.cloudImage?.onError?.({
+        apiImage.cloud_image?.onError?.({
           ...fileEvent,
           message: e.message,
         });
       } else {
-        apiAttachment.cloudAttachment?.onError?.({
+        apiAttachment.cloud_attachment?.onError?.({
           ...fileEvent,
           message: e.message,
         } as any);
@@ -74,12 +74,12 @@ export const uploadFile = (editor: SlateEditor, file: File) => {
       };
 
       if (fileEvent.type === 'image') {
-        apiImage.cloudImage?.onProgress?.({
+        apiImage.cloud_image?.onProgress?.({
           ...fileEvent,
           ...progressEvent,
         });
       } else {
-        apiAttachment.cloudAttachment?.onProgress?.({
+        apiAttachment.cloud_attachment?.onProgress?.({
           ...fileEvent,
           ...progressEvent,
         } as any);
@@ -90,9 +90,9 @@ export const uploadFile = (editor: SlateEditor, file: File) => {
       const { url } = e.hostedFile;
 
       if (fileEvent.type === 'image') {
-        apiImage.cloudImage?.onSuccess?.({ ...fileEvent, url });
+        apiImage.cloud_image?.onSuccess?.({ ...fileEvent, url });
       } else {
-        apiAttachment.cloudAttachment?.onSuccess?.({
+        apiAttachment.cloud_attachment?.onSuccess?.({
           ...fileEvent,
           url,
         });

@@ -5,7 +5,7 @@ import { createPlatePlugin } from '../plugin';
 export const PlateApiPlugin = createPlatePlugin({
   dependencies: ['debug'],
   key: 'plateApi',
-}).extendApi(({ editor }) => ({
+}).extendEditorApi(({ editor }) => ({
   redecorate: () => {
     editor.api.debug.warn(
       `The method editor.api.redecorate() has not been overridden. ` +

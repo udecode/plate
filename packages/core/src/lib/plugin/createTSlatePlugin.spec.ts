@@ -24,7 +24,7 @@ describe('createTSlatePlugin', () => {
           optionB: 10,
         },
         type: 'test',
-      }).extendApi(() => ({
+      }).extendEditorApi(() => ({
         testMethod: () => {},
       }))
     );
