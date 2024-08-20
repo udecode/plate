@@ -9,7 +9,7 @@ import type { Value } from '@udecode/plate-common';
 
 import { cn } from '@udecode/cn';
 import { AlignPlugin } from '@udecode/plate-alignment';
-import { AutoformatPlugin } from '@udecode/plate-autoformat';
+import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
   BoldPlugin,
   CodePlugin,
@@ -18,12 +18,12 @@ import {
   SubscriptPlugin,
   SuperscriptPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-marks';
-import { BlockquotePlugin } from '@udecode/plate-block-quote';
-import { SingleLinePlugin } from '@udecode/plate-break';
-import { CaptionPlugin } from '@udecode/plate-caption';
+} from '@udecode/plate-basic-marks/react';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+import { SingleLinePlugin } from '@udecode/plate-break/react';
+import { CaptionPlugin } from '@udecode/plate-caption/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { CommentsPlugin } from '@udecode/plate-comments';
+import { CommentsPlugin } from '@udecode/plate-comments/react';
 import {
   ParagraphPlugin,
   Plate,
@@ -31,34 +31,35 @@ import {
 } from '@udecode/plate-common/react';
 import { DndPlugin } from '@udecode/plate-dnd';
 import { EmojiPlugin } from '@udecode/plate-emoji';
-import { ExcalidrawPlugin } from '@udecode/plate-excalidraw';
+import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
   FontSizePlugin,
 } from '@udecode/plate-font';
-import { HEADING_KEYS, HeadingPlugin } from '@udecode/plate-heading';
-import { HighlightPlugin } from '@udecode/plate-highlight';
-import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
-import { IndentPlugin } from '@udecode/plate-indent';
-import { IndentListPlugin } from '@udecode/plate-indent-list';
+import { HEADING_KEYS } from '@udecode/plate-heading';
+import { HeadingPlugin } from '@udecode/plate-heading/react';
+import { HighlightPlugin } from '@udecode/plate-highlight/react';
+import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
+import { IndentPlugin } from '@udecode/plate-indent/react';
+import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import { JuicePlugin } from '@udecode/plate-juice';
-import { KbdPlugin } from '@udecode/plate-kbd';
-import { ColumnPlugin } from '@udecode/plate-layout';
+import { KbdPlugin } from '@udecode/plate-kbd/react';
+import { ColumnPlugin } from '@udecode/plate-layout/react';
 import { LineHeightPlugin } from '@udecode/plate-line-height';
-import { LinkPlugin } from '@udecode/plate-link';
-import { ListPlugin, TodoListPlugin } from '@udecode/plate-list';
-import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media';
-import { MentionPlugin } from '@udecode/plate-mention';
+import { LinkPlugin } from '@udecode/plate-link/react';
+import { ListPlugin, TodoListPlugin } from '@udecode/plate-list/react';
+import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
+import { MentionPlugin } from '@udecode/plate-mention/react';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
-import { BlockSelectionPlugin } from '@udecode/plate-selection';
+import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import { DeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
 import { DeserializeMdPlugin } from '@udecode/plate-serializer-md';
 import { SlashPlugin } from '@udecode/plate-slash-command';
-import { TablePlugin } from '@udecode/plate-table';
-import { TogglePlugin } from '@udecode/plate-toggle';
+import { TablePlugin } from '@udecode/plate-table/react';
+import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import Prism from 'prismjs';
 
@@ -94,16 +95,16 @@ import { LinkFloatingToolbar } from '@/registry/default/plate-ui/link-floating-t
 
 import { usePlaygroundEnabled } from './usePlaygroundEnabled';
 
-export default function PlaygroundDemo({ id }: { id?: ValueId }) {
-  const containerRef = useRef(null);
+export const usePlaygroundEditor = (id: any = '') => {
   const enabled = settingsStore.use.checkedComponents();
+  const overridePlugins = usePlaygroundEnabled(id);
+  const autoformatOptions = getAutoformatOptions(id, enabled);
+
   const value = usePlaygroundValue(id);
   const key = useInitialValueVersion(value);
+  id = id ?? '' + key;
 
-  const autoformatOptions = getAutoformatOptions(id, enabled);
-  const overridePlugins = usePlaygroundEnabled(id);
-
-  const editor = usePlateEditor(
+  return usePlateEditor(
     {
       override: {
         components: createPlateUI({
@@ -293,11 +294,18 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
     },
     [enabled]
   );
+};
+
+export default function PlaygroundDemo({ id }: { id?: ValueId }) {
+  const containerRef = useRef(null);
+  const enabled = settingsStore.use.checkedComponents();
+
+  const editor = usePlaygroundEditor(id);
 
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="relative">
-        <Plate editor={editor} key={key}>
+        <Plate editor={editor}>
           <CommentsProvider>
             {enabled['fixed-toolbar'] && (
               <FixedToolbar className="no-scrollbar">

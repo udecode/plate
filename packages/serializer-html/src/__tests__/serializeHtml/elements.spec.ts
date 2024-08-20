@@ -2,8 +2,9 @@ import { AlignPlugin } from '@udecode/plate-alignment';
 import { BlockquotePlugin } from '@udecode/plate-block-quote';
 import { htmlStringToDOMNode } from '@udecode/plate-common';
 import { ParagraphPlugin } from '@udecode/plate-common';
+import { toPlatePlugin } from '@udecode/plate-core/react';
 import { HeadingPlugin } from '@udecode/plate-heading';
-import { LinkPlugin } from '@udecode/plate-link';
+import { LinkPlugin } from '@udecode/plate-link/react';
 import { ListPlugin } from '@udecode/plate-list';
 import { ImagePlugin } from '@udecode/plate-media';
 import { TablePlugin } from '@udecode/plate-table';
@@ -237,7 +238,7 @@ it('serialize align style to html', () => {
 it('serialize align className to html', () => {
   const plugins = [
     ParagraphPlugin,
-    AlignPlugin.extend({
+    toPlatePlugin(AlignPlugin, {
       props: { classNames: { center: 'slate-align-center' } },
     }),
   ];

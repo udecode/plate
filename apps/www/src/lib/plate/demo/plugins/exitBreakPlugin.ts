@@ -1,4 +1,4 @@
-import { ExitBreakPlugin } from '@udecode/plate-break';
+import { ExitBreakPlugin } from '@udecode/plate-break/react';
 import { HEADING_LEVELS } from '@udecode/plate-heading';
 
 export const exitBreakPlugin = ExitBreakPlugin.configure({

@@ -1,4 +1,4 @@
-import type { WithOverride } from '@udecode/plate-common';
+import type { WithOverride } from '@udecode/plate-common/react';
 
 import { blockSelectionStore } from './blockSelectionStore';
 

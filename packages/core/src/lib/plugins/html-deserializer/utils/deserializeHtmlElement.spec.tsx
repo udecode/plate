@@ -184,7 +184,7 @@ describe('when plugin has deserialize.getNode', () => {
   const editor = createPlateEditor({
     plugins: [
       ParagraphPlugin,
-      LinkPlugin.extend({
+      LinkPlugin.extend(() => ({
         deserializeHtml: {
           getNode: ({ element }) => ({
             opener: element.getAttribute('target') === '_blank',
@@ -192,7 +192,7 @@ describe('when plugin has deserialize.getNode', () => {
             url: element.getAttribute('href'),
           }),
         },
-      }),
+      })),
     ],
   });
 

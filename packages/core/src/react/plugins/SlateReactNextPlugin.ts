@@ -1,7 +1,7 @@
 import { SlateNextPlugin } from '../../lib';
-import { extendPlatePlugin } from '../plugin';
+import { toPlatePlugin } from '../plugin';
 
-export const SlateReactNextPlugin = extendPlatePlugin(SlateNextPlugin, {
+export const SlateReactNextPlugin = toPlatePlugin(SlateNextPlugin, {
   handlers: {
     onKeyDown: ({ editor, event }: any) => {
       // React 16.x needs this event to be persistented due to it's event pooling implementation.

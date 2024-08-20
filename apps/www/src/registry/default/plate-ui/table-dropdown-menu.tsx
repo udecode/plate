@@ -9,14 +9,16 @@ import {
   useEditorSelector,
 } from '@udecode/plate-common/react';
 import {
-  TablePlugin,
-  deleteColumn,
-  deleteRow,
   deleteTable,
-  insertTable,
   insertTableColumn,
   insertTableRow,
 } from '@udecode/plate-table';
+import {
+  TablePlugin,
+  deleteColumn,
+  deleteRow,
+  insertTable,
+} from '@udecode/plate-table/react';
 
 import { Icons, iconVariants } from '@/components/icons';
 

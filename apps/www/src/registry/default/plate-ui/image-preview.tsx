@@ -5,7 +5,7 @@ import {
   useImagePreviewState,
   useScaleInput,
   useScaleInputState,
-} from '@udecode/plate-media';
+} from '@udecode/plate-media/react';
 import { cva } from 'class-variance-authority';
 
 import { Icons } from '@/components/icons';

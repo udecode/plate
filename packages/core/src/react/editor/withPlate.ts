@@ -1,6 +1,7 @@
 import { type TEditor, type Value, createTEditor } from '@udecode/slate';
 
 import type { AnyPlatePlugin } from '../plugin';
+import type { PlateApiPlugin } from '../plugins';
 import type { TPlateEditor } from './PlateEditor';
 
 import {
@@ -12,9 +13,11 @@ import {
 } from '../../lib';
 import { getPlateCorePlugins } from './getPlateCorePlugins';
 
+export type PlateCorePlugin = CorePlugin | typeof PlateApiPlugin;
+
 export type WithPlateOptions<
   V extends Value = Value,
-  P extends AnyPluginConfig = CorePlugin,
+  P extends AnyPluginConfig = PlateCorePlugin,
 > = {
   rootPlugin?: (plugin: AnyPlatePlugin) => AnyPlatePlugin;
 } & BaseWithSlateOptions<V, P> &
@@ -45,7 +48,7 @@ export type WithPlateOptions<
  */
 export const withPlate = <
   V extends Value = Value,
-  P extends AnyPluginConfig = CorePlugin,
+  P extends AnyPluginConfig = PlateCorePlugin,
 >(
   e: TEditor,
   { plugins = [], ...options }: WithPlateOptions<V, P> = {}
@@ -58,7 +61,7 @@ export const withPlate = <
 
 export type CreatePlateEditorOptions<
   V extends Value = Value,
-  P extends AnyPluginConfig = CorePlugin,
+  P extends AnyPluginConfig = PlateCorePlugin,
 > = {
   /**
    * Initial editor to be extended with `withPlate`.
@@ -128,7 +131,7 @@ export type CreatePlateEditorOptions<
  */
 export const createPlateEditor = <
   V extends Value = Value,
-  P extends AnyPluginConfig = CorePlugin,
+  P extends AnyPluginConfig = PlateCorePlugin,
 >({
   editor = createTEditor(),
   ...options

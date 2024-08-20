@@ -1,8 +1,8 @@
 import React, { type ComponentType, type SVGProps } from 'react';
 
 import { withRef } from '@udecode/cn';
-import { type PlateEditor, toggleNodeType } from '@udecode/plate-common';
-import { PlateElement } from '@udecode/plate-common/react';
+import { toggleNodeType } from '@udecode/plate-common';
+import { type PlateEditor, PlateElement } from '@udecode/plate-common/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { ListStyleType, toggleIndentList } from '@udecode/plate-indent-list';
 

@@ -3,13 +3,14 @@ import { isSelectionExpanded } from '@udecode/plate-common';
 import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
 import { useReadOnly, useSelected } from 'slate-react';
 
-import type { TTableCellElement } from '../../lib/types';
-
-import { TablePlugin } from '../../lib/TablePlugin';
-import { isTableRectangular } from '../../lib/merge/isTableRectangular';
-import { getTableGridAbove } from '../../lib/queries';
-import { getColSpan } from '../../lib/queries/getColSpan';
-import { getRowSpan } from '../../lib/queries/getRowSpan';
+import {
+  type TTableCellElement,
+  getColSpan,
+  getRowSpan,
+  isTableRectangular,
+} from '../../lib';
+import { TablePlugin } from '../TablePlugin';
+import { getTableGridAbove } from '../queries';
 import { useTableStore } from '../stores';
 
 export const useTableMergeState = () => {

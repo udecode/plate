@@ -4,7 +4,7 @@ import {
   ListItemContentPlugin,
   ListItemPlugin,
   ListUnorderedPlugin,
-} from '@udecode/plate-list';
+} from '@udecode/plate-list/react';
 
 export const createList = (
   items: string[],

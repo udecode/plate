@@ -9,7 +9,7 @@ import {
   SCOPE_ACTIVE_COMMENT,
   useFloatingCommentsContentState,
   useFloatingCommentsState,
-} from '@udecode/plate-comments';
+} from '@udecode/plate-comments/react';
 import { PortalBody } from '@udecode/plate-common/react';
 
 import { CommentCreateForm } from './comment-create-form';

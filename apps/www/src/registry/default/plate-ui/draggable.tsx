@@ -12,7 +12,7 @@ import {
   useDraggable,
   useDraggableState,
 } from '@udecode/plate-dnd';
-import { blockSelectionActions } from '@udecode/plate-selection';
+import { blockSelectionActions } from '@udecode/plate-selection/react';
 
 import { Icons } from '@/components/icons';
 

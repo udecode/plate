@@ -1,6 +1,6 @@
 import React, { type ReactNode } from 'react';
 
-import { CommentsProvider as CommentsProviderPrimitive } from '@udecode/plate-comments';
+import { CommentsProvider as CommentsProviderPrimitive } from '@udecode/plate-comments/react';
 
 import { commentsData, usersData } from '@/plate/demo/values/commentsValue';
 

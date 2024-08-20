@@ -1,6 +1,6 @@
 import type { PluginConfig } from '@udecode/plate-common';
 
-import { extendPlatePlugin } from '@udecode/plate-common/react';
+import { toPlatePlugin } from '@udecode/plate-common/react';
 
 import { CommentsPlugin as BaseCommentsPlugin } from '../lib/CommentsPlugin';
 import { useHooksComments } from './useHooksComments';
@@ -13,7 +13,7 @@ export type CommentsConfig = PluginConfig<
 >;
 
 /** Enables support for comments in the editor. */
-export const CommentsPlugin = extendPlatePlugin(BaseCommentsPlugin, {
+export const CommentsPlugin = toPlatePlugin(BaseCommentsPlugin, {
   options: {
     hotkey: ['meta+shift+m', 'ctrl+shift+m'],
   },

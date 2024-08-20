@@ -2,8 +2,8 @@ import React, { useCallback, useMemo, useState } from 'react';
 
 import type { TElement, Value } from '@udecode/plate-common';
 
-import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
-import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
+import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
+import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
 import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 import { createEditor } from 'slate';
 import {

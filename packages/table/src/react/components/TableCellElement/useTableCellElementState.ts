@@ -12,10 +12,10 @@ import {
   getCellIndices,
   getColSpan,
   getRowSpan,
-  getTableColumnIndex,
-  getTableRowIndex,
 } from '../../../lib';
 import { TablePlugin } from '../../TablePlugin';
+import { getTableColumnIndex } from '../../merge';
+import { getTableRowIndex } from '../../queries';
 import { useTableStore } from '../../stores';
 import {
   type BorderStylesDefault,

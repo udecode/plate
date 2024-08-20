@@ -2,11 +2,14 @@ import React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { SubscriptPlugin, SuperscriptPlugin } from '@udecode/plate-basic-marks';
+import {
+  SubscriptPlugin,
+  SuperscriptPlugin,
+} from '@udecode/plate-basic-marks/react';
 import { collapseSelection, toggleMark } from '@udecode/plate-common';
 import { focusEditor, useEditorRef } from '@udecode/plate-common/react';
-import { HighlightPlugin } from '@udecode/plate-highlight';
-import { KbdPlugin } from '@udecode/plate-kbd';
+import { HighlightPlugin } from '@udecode/plate-highlight/react';
+import { KbdPlugin } from '@udecode/plate-kbd/react';
 
 import { Icons } from '@/components/icons';
 import {

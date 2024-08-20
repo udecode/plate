@@ -23,6 +23,7 @@ export interface TSuggestionText extends TText {
   suggestionId?: string;
 }
 
+// TODO
 export interface SuggestionEditorProps {
   activeSuggestionId?: null | string;
   isSuggesting?: boolean;

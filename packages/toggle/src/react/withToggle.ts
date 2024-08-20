@@ -1,6 +1,7 @@
+import type { WithOverride } from '@udecode/plate-common/react';
+
 import {
   type SlateEditor,
-  type WithOverride,
   getBlockAbove,
   isNode,
   moveNodes,
@@ -16,6 +17,7 @@ import {
   moveNextSelectableAfterCurrentBlock,
 } from './transforms';
 
+// TODO react
 export const withToggle: WithOverride = ({ editor }) => {
   const { deleteBackward, deleteForward, insertBreak, isSelectable } = editor;
 

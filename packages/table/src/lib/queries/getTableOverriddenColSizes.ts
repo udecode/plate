@@ -1,5 +1,4 @@
-import type { TableStoreSizeOverrides } from '../../react/stores/index';
-import type { TTableElement } from '../types';
+import type { TTableElement, TableStoreSizeOverrides } from '../types';
 
 import { getTableColumnCount } from './index';
 

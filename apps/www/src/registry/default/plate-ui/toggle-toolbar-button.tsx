@@ -4,7 +4,7 @@ import { withRef } from '@udecode/cn';
 import {
   useToggleToolbarButton,
   useToggleToolbarButtonState,
-} from '@udecode/plate-toggle';
+} from '@udecode/plate-toggle/react';
 
 import { Icons } from '@/components/icons';
 

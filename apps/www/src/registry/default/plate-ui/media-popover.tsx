@@ -10,7 +10,7 @@ import {
   FloatingMedia as FloatingMediaPrimitive,
   floatingMediaActions,
   useFloatingMediaSelectors,
-} from '@udecode/plate-media';
+} from '@udecode/plate-media/react';
 import { useReadOnly, useSelected } from 'slate-react';
 
 import { Icons } from '@/components/icons';

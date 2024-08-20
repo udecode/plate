@@ -1,4 +1,4 @@
-import { BlockquotePlugin } from '@udecode/plate-block-quote';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import {
   CodeBlockPlugin,
   isCodeBlockEmpty,
@@ -10,7 +10,7 @@ import {
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
 } from '@udecode/plate-common';
-import { TodoListPlugin } from '@udecode/plate-list';
+import { TodoListPlugin } from '@udecode/plate-list/react';
 import { ResetNodePlugin } from '@udecode/plate-reset-node';
 
 const resetBlockTypesCommonRule = {

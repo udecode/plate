@@ -1,6 +1,6 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
-import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
+import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 jsx;

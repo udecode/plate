@@ -1,11 +1,5 @@
 {
   "extends": "../../config/tsconfig.base.json",
   "include": ["src"],
-  "exclude": [],
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@udecode/plate-core/react": ["./src/react"]
-    }
-  }
+  "exclude": []
 }

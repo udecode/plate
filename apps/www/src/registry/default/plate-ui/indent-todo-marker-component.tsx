@@ -1,10 +1,10 @@
-import type { PlateRenderElementProps } from '@udecode/plate-common';
+import type { PlateRenderElementProps } from '@udecode/plate-common/react';
 
 import { cn } from '@udecode/cn';
 import {
   useIndentTodoListElement,
   useIndentTodoListElementState,
-} from '@udecode/plate-indent-list';
+} from '@udecode/plate-indent-list/react';
 
 import { Checkbox } from './checkbox';
 

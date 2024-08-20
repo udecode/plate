@@ -224,7 +224,7 @@ export type InferTransforms<P> = P extends PluginConfig
   ? P['transforms']
   : never;
 
-export type PlatePluginInsertDataOptions = {
+export type EditorInsertDataOptions = {
   data: string;
   dataTransfer: DataTransfer;
 };

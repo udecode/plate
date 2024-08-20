@@ -1,7 +1,7 @@
 import {
   type WithOverride,
   createSlatePlugin,
-  getSlatePluginContext,
+  getPluginContext,
 } from '../plugin';
 import {
   getInjectedPlugins,
@@ -43,7 +43,7 @@ export const withInsertData: WithOverride = ({ editor }) => {
       });
 
       let fragment = getFragment?.({
-        ...getSlatePluginContext(editor, plugin),
+        ...getPluginContext(editor, plugin),
         data,
         dataTransfer,
       });

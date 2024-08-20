@@ -5,7 +5,7 @@ import {
   ListUnorderedPlugin,
   useListToolbarButton,
   useListToolbarButtonState,
-} from '@udecode/plate-list';
+} from '@udecode/plate-list/react';
 
 import { Icons } from '@/components/icons';
 

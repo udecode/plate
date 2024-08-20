@@ -6,7 +6,7 @@ import {
   CommentProvider,
   useCommentById,
   useCommentItemContentState,
-} from '@udecode/plate-comments';
+} from '@udecode/plate-comments/react';
 import { formatDistance } from 'date-fns';
 
 import { CommentAvatar } from './comment-avatar';

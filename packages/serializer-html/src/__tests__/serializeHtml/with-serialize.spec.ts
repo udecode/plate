@@ -1,19 +1,20 @@
 import React from 'react';
 
-import { BoldPlugin } from '@udecode/plate-basic-marks';
+import { BoldPlugin } from '@udecode/plate-basic-marks/react';
+import { htmlStringToDOMNode } from '@udecode/plate-common';
 import {
   type PlatePlugins,
-  createSlatePlugin,
-  htmlStringToDOMNode,
-} from '@udecode/plate-common';
-import { createPlateEditor } from '@udecode/plate-core/react';
+  createPlateEditor,
+  createPlatePlugin,
+  toPlatePlugin,
+} from '@udecode/plate-core/react';
 import { ImagePlugin } from '@udecode/plate-media';
 
 import { serializeHtml } from '../../react/serializeHtml';
 import { createPlateUIEditor } from '../create-plate-ui-editor';
 
 const plugins = [
-  ImagePlugin.extend({
+  toPlatePlugin(ImagePlugin, {
     serializeHtml: ({ element }) =>
       React.createElement('img', { src: element.url }),
   }),
@@ -71,11 +72,11 @@ describe('multiple custom leaf serializers', () => {
 
   it('serialization with the similar renderLeaf/serialize.left options of the same nodes should give the same result', () => {
     const pluginsWithoutSerializers: PlatePlugins = [
-      createSlatePlugin({ component: Bold as any, isLeaf: true, key: 'bold' }), // always bold
+      createPlatePlugin({ component: Bold as any, isLeaf: true, key: 'bold' }), // always bold
     ];
 
     const pluginsWithSerializers: PlatePlugins = [
-      createSlatePlugin({
+      createPlatePlugin({
         component: Bold as any,
         isLeaf: true,
         key: 'bold',

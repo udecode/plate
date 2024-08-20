@@ -1,18 +1,24 @@
-import type { AnyPluginConfig, PluginConfig, WithRequiredKey } from '../../lib';
-import type { PlateEditor } from '../editor/PlateEditor';
-import type { PlatePlugin, PlatePluginContext } from './PlatePlugin';
+import type { AnyPluginConfig, WithRequiredKey } from '../../lib';
+import type { PlateEditor } from '../editor';
+import type {
+  InferConfig,
+  PlatePlugin,
+  PlatePluginContext,
+} from './PlatePlugin';
 
 import { resolvePlugin } from '../../lib';
 
-export function getPluginContext<C extends AnyPluginConfig = PluginConfig>(
+export function getPluginContext<
+  P extends AnyPluginConfig | PlatePlugin<AnyPluginConfig>,
+>(
   editor: PlateEditor,
-  plugin: WithRequiredKey<C>
-): PlatePluginContext<C> {
+  plugin: WithRequiredKey<P>
+): PlatePluginContext<InferConfig<P> extends never ? P : InferConfig<P>> {
   const editorPlugin = (plugin as any).options
-    ? (plugin as any as PlatePlugin<C>).__resolved
+    ? (plugin as any).__resolved
       ? plugin
       : resolvePlugin(editor, plugin as any)
-    : editor.getPlugin<C>({ key: plugin } as any);
+    : editor.getPlugin({ key: plugin.key } as any);
 
   return {
     api: editor.api as any,

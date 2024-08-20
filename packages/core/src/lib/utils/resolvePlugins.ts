@@ -6,7 +6,7 @@ import { mergeWithoutArray } from '../../internal/mergeWithoutArray';
 import {
   type SlatePlugin,
   type SlatePlugins,
-  getSlatePluginContext,
+  getPluginContext,
 } from '../plugin';
 import { resolvePlugin } from './resolvePlugin';
 
@@ -35,9 +35,7 @@ export const resolvePlugins = (
   // withOverrides
   editor.pluginList.forEach((plugin) => {
     if (plugin.withOverrides) {
-      editor = plugin.withOverrides(
-        getSlatePluginContext(editor, plugin)
-      ) as any;
+      editor = plugin.withOverrides(getPluginContext(editor, plugin) as any);
     }
   });
 
@@ -52,28 +50,73 @@ const mergePluginApis = (editor: SlateEditor) => {
   });
 
   (editor.pluginList as SlatePlugin[]).forEach((plugin) => {
-    // Apply api extensions
-    if (plugin.__apiExtensions && plugin.__apiExtensions.length > 0) {
-      plugin.__apiExtensions.forEach((methodExtension) => {
-        const newApi = methodExtension(getSlatePluginContext(editor, plugin));
+    // Apply editor api extensions
+    if (
+      plugin.__apiEditorExtensions &&
+      plugin.__apiEditorExtensions.length > 0
+    ) {
+      plugin.__apiEditorExtensions.forEach((methodExtension) => {
+        const newApi = methodExtension(getPluginContext(editor, plugin) as any);
 
         mergeWithoutArray(plugin.api, newApi);
         mergeWithoutArray(editor.api, newApi);
       });
+      delete (plugin as any).__apiEditorExtensions;
+    }
+    // Apply plugin-specific api extensions
+    if (plugin.__apiExtensions && plugin.__apiExtensions.length > 0) {
+      plugin.__apiExtensions.forEach((methodExtension) => {
+        if (!(editor.api as any)[plugin.key]) {
+          (editor.api as any)[plugin.key] = {};
+        }
+        if (!(plugin.api as any)[plugin.key]) {
+          (plugin.api as any)[plugin.key] = {};
+        }
+
+        const newApi = methodExtension(getPluginContext(editor, plugin) as any);
+        mergeWithoutArray((plugin.api as any)[plugin.key], newApi);
+        mergeWithoutArray((editor.api as any)[plugin.key], newApi);
+      });
       delete (plugin as any).__apiExtensions;
     }
-    // Apply transform extensions
+    // Apply editor transform extensions
     if (
-      plugin.__transformExtensions &&
-      plugin.__transformExtensions.length > 0
+      plugin.__transformEditorExtensions &&
+      plugin.__transformEditorExtensions.length > 0
     ) {
-      plugin.__transformExtensions.forEach((transformExtension) => {
+      plugin.__transformEditorExtensions.forEach((transformExtension) => {
         const newTransforms = transformExtension(
-          getSlatePluginContext(editor, plugin)
+          getPluginContext(editor, plugin) as any
         );
 
         mergeWithoutArray(plugin.transforms, newTransforms);
         mergeWithoutArray(editor.transforms, newTransforms); // Add transforms to editor.api as well
+      });
+      delete (plugin as any).__transformEditorExtensions;
+    }
+    if (
+      plugin.__transformExtensions &&
+      plugin.__transformExtensions.length > 0
+    ) {
+      plugin.__transformExtensions.forEach((methodExtension) => {
+        if (!(editor.transforms as any)[plugin.key]) {
+          (editor.transforms as any)[plugin.key] = {};
+        }
+        if (!(plugin.transforms as any)[plugin.key]) {
+          (plugin.transforms as any)[plugin.key] = {};
+        }
+
+        const newTransforms = methodExtension(
+          getPluginContext(editor, plugin) as any
+        );
+        mergeWithoutArray(
+          (plugin.transforms as any)[plugin.key],
+          newTransforms
+        );
+        mergeWithoutArray(
+          (editor.transforms as any)[plugin.key],
+          newTransforms
+        );
       });
       delete (plugin as any).__transformExtensions;
     }

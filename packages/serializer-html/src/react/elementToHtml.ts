@@ -1,7 +1,8 @@
 import type React from 'react';
 
-import { type SlateEditor, pipeInjectProps } from '@udecode/plate-common';
+import { pipeInjectProps } from '@udecode/plate-common';
 import {
+  type PlateEditor,
   type PlateProps,
   type PlateRenderElementProps,
   pluginRenderElement,
@@ -13,7 +14,7 @@ import { createElementWithSlate } from './utils/createElementWithSlate';
 import { renderToStaticMarkup } from './utils/renderToStaticMarkupClient';
 
 export const elementToHtml = (
-  editor: SlateEditor,
+  editor: PlateEditor,
   {
     dndWrapper,
     plateProps,

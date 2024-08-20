@@ -1,7 +1,7 @@
 'use client';
 
-import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
-import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
+import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
+import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
 import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 
 import { Label } from '@/components/ui/label';

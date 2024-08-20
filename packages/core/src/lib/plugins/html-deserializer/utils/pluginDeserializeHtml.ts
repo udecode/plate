@@ -8,7 +8,7 @@ import type {
 } from '../../../plugin/SlatePlugin';
 import type { Nullable } from '../../../types';
 
-import { getSlatePluginContext } from '../../../plugin';
+import { getPluginContext } from '../../../plugin';
 import { getInjectedPlugins } from '../../../utils/getInjectedPlugins';
 
 /** Get a deserializer by type, node names, class names and styles. */
@@ -112,7 +112,7 @@ export const pluginDeserializeHtml = (
   }
   if (
     query &&
-    !query({ ...getSlatePluginContext(editor, plugin), element: el })
+    !query({ ...(getPluginContext(editor, plugin) as any), element: el })
   ) {
     return;
   }
@@ -128,7 +128,7 @@ export const pluginDeserializeHtml = (
 
   let node =
     getNode({
-      ...getSlatePluginContext(editor, plugin),
+      ...(getPluginContext(editor, plugin) as any),
       element: el,
       node: {},
     }) ?? {};
@@ -139,7 +139,7 @@ export const pluginDeserializeHtml = (
 
   injectedPlugins.forEach((injectedPlugin) => {
     const res = injectedPlugin.deserializeHtml?.getNode?.({
-      ...getSlatePluginContext(editor, plugin),
+      ...(getPluginContext(editor, plugin) as any),
       element: el,
       node,
     });

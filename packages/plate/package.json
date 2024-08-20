@@ -30,6 +30,12 @@
       "import": "./dist/index.mjs",
       "module": "./dist/index.mjs",
       "require": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.mjs",
+      "module": "./dist/react/index.mjs",
+      "require": "./dist/react/index.js"
     }
   },
   "main": "dist/index.js",
@@ -80,6 +86,7 @@
     "@udecode/plate-reset-node": "36.0.0",
     "@udecode/plate-resizable": "36.0.0",
     "@udecode/plate-select": "36.0.0",
+    "@udecode/plate-selection": "36.1.0",
     "@udecode/plate-serializer-csv": "36.3.5",
     "@udecode/plate-serializer-docx": "36.3.5",
     "@udecode/plate-serializer-html": "36.0.0",

@@ -1,12 +1,8 @@
 import type React from 'react';
 
-import type { PlateProps } from '@udecode/plate-common/react';
+import type { PlateEditor, PlateProps } from '@udecode/plate-common/react';
 
-import {
-  type SlateEditor,
-  type TDescendant,
-  isText,
-} from '@udecode/plate-common';
+import { type TDescendant, isText } from '@udecode/plate-common';
 import { encode } from 'html-entities';
 
 import { newLinesToHtmlBr } from '../lib/newLinesToHtmlBr';
@@ -17,7 +13,7 @@ import { leafToHtml } from './leafToHtml';
 
 /** Convert Slate Nodes into HTML string. */
 export const serializeHtml = (
-  editor: SlateEditor,
+  editor: PlateEditor,
   {
     convertNewLinesToHtmlBr = false,
     dndWrapper,

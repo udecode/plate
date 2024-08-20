@@ -17,8 +17,8 @@ import {
   SubscriptPlugin,
   SuperscriptPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-marks';
-import { BlockquotePlugin } from '@udecode/plate-block-quote';
+} from '@udecode/plate-basic-marks/react';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import {
   CodeBlockPlugin,
   CodeLinePlugin,
@@ -26,7 +26,7 @@ import {
 } from '@udecode/plate-code-block';
 import {
   ParagraphPlugin,
-  type PlateEditor,
+  type SlateEditor,
   getParentNode,
   insertNodes,
   isBlock,
@@ -35,28 +35,30 @@ import {
   setNodes,
 } from '@udecode/plate-common';
 import { HEADING_KEYS } from '@udecode/plate-heading';
-import { HighlightPlugin } from '@udecode/plate-highlight';
-import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
+import { HighlightPlugin } from '@udecode/plate-highlight/react';
+import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import {
   INDENT_LIST_KEYS,
   ListStyleType,
   toggleIndentList,
 } from '@udecode/plate-indent-list';
 import {
-  ListItemPlugin,
-  ListOrderedPlugin,
-  ListUnorderedPlugin,
   type TTodoListItemElement,
-  TodoListPlugin,
   toggleList,
   unwrapList,
 } from '@udecode/plate-list';
-import { TogglePlugin, openNextToggles } from '@udecode/plate-toggle';
+import {
+  ListItemPlugin,
+  ListOrderedPlugin,
+  ListUnorderedPlugin,
+  TodoListPlugin,
+} from '@udecode/plate-list/react';
+import { TogglePlugin, openNextToggles } from '@udecode/plate-toggle/react';
 
 export const preFormat: AutoformatBlockRule['preFormat'] = (editor) =>
   unwrapList(editor);
 
-export const format = (editor: PlateEditor, customFormatting: any) => {
+export const format = (editor: SlateEditor, customFormatting: any) => {
   if (editor.selection) {
     const parentEntry = getParentNode(editor, editor.selection);
 
@@ -74,7 +76,7 @@ export const format = (editor: PlateEditor, customFormatting: any) => {
   }
 };
 
-export const formatList = (editor: PlateEditor, elementType: string) => {
+export const formatList = (editor: SlateEditor, elementType: string) => {
   format(editor, () =>
     toggleList(editor, {
       type: elementType,

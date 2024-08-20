@@ -2,14 +2,16 @@
 
 import React, { useState } from 'react';
 
-import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
-import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
-import { ExitBreakPlugin } from '@udecode/plate-break';
+import type { PlateRenderElementProps } from '@udecode/plate-common/react';
+
+import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
+import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
+import { ExitBreakPlugin } from '@udecode/plate-break/react';
 import {
-  type PlateRenderElementProps,
-  createSlatePlugin,
-} from '@udecode/plate-common';
-import { Plate, usePlateEditor } from '@udecode/plate-common/react';
+  Plate,
+  createPlatePlugin,
+  usePlateEditor,
+} from '@udecode/plate-common/react';
 
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -21,7 +23,7 @@ import { editableVoidsValue } from '@/plate/demo/values/editableVoidsValue';
 import { Editor } from '@/registry/default/plate-ui/editor';
 import { Input } from '@/registry/default/plate-ui/input';
 
-export const EditableVoidPlugin = createSlatePlugin({
+export const EditableVoidPlugin = createPlatePlugin({
   component: EditableVoidElement,
   isElement: true,
   isVoid: true,

@@ -6,7 +6,7 @@ import {
   ItalicPlugin,
   StrikethroughPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-marks';
+} from '@udecode/plate-basic-marks/react';
 import { useEditorReadOnly } from '@udecode/plate-common/react';
 
 import { Icons } from '@/components/icons';

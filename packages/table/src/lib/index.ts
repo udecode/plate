@@ -3,15 +3,9 @@
  */
 
 export * from './TablePlugin';
+export * from './constants';
 export * from './types';
-export * from './withDeleteTable';
-export * from './withGetFragmentTable';
-export * from './withInsertFragmentTable';
-export * from './withInsertTextTable';
-export * from './withMarkTable';
 export * from './withNormalizeTable';
-export * from './withSelectionTable';
-export * from './withSetFragmentDataTable';
 export * from './withTable';
 export * from './merge/index';
 export * from './queries/index';

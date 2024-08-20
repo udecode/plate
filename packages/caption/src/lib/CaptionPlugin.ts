@@ -1,7 +1,17 @@
-import { type PluginConfig, createTSlatePlugin } from '@udecode/plate-common';
+import {
+  type PluginConfig,
+  type TElement,
+  createTSlatePlugin,
+} from '@udecode/plate-common';
 
-import { onKeyDownCaption } from '../react/onKeyDownCaption';
 import { withCaption } from './withCaption';
+
+export interface TCalloutElement extends TElement {
+  backgroundColor?: string;
+  color?: string;
+  icon?: string;
+  variant?: 'info' | 'note' | 'tip' | 'warning';
+}
 
 export type CaptionConfig = PluginConfig<
   'caption',
@@ -13,9 +23,6 @@ export type CaptionConfig = PluginConfig<
 
 /** Enables support for caption. */
 export const CaptionPlugin = createTSlatePlugin<CaptionConfig>({
-  handlers: {
-    onKeyDown: onKeyDownCaption,
-  },
   key: 'caption',
   options: {
     pluginKeys: [],

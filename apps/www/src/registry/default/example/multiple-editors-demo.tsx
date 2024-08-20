@@ -1,10 +1,10 @@
 import React from 'react';
 
-import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
-import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
+import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
+import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
 import { Plate, usePlateEditor } from '@udecode/plate-common/react';
-import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
-import { ImagePlugin } from '@udecode/plate-media';
+import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
+import { ImagePlugin } from '@udecode/plate-media/react';
 import { SelectOnBackspacePlugin } from '@udecode/plate-select';
 
 import { PlaygroundTurnIntoDropdownMenu } from '@/components/plate-ui/playground-turn-into-dropdown-menu';

@@ -1,10 +1,10 @@
 import type { HotkeyPluginOptions } from '../../../lib';
 
 import { ParagraphPlugin as BaseParagraphPlugin } from '../../../lib';
-import { extendPlatePlugin } from '../../plugin/extendPlatePlugin';
+import { toPlatePlugin } from '../../plugin/toPlatePlugin';
 import { onKeyDownToggleElement } from '../../utils/onKeyDownToggleElement';
 
-export const ParagraphPlugin = extendPlatePlugin(BaseParagraphPlugin, {
+export const ParagraphPlugin = toPlatePlugin(BaseParagraphPlugin, {
   handlers: {
     onKeyDown: onKeyDownToggleElement,
   },

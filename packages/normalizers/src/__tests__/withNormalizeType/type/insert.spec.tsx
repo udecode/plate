@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
-import { createPlateEditor } from '@udecode/plate-common/react';
+import { createSlateEditor } from '@udecode/plate-common';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { NormalizeTypesPlugin } from '../../../NormalizeTypesPlugin';
+import { NormalizeTypesPlugin } from '../../../lib/NormalizeTypesPlugin';
 
 jsx;
 
@@ -24,7 +24,7 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  const editor = createPlateEditor({
+  const editor = createSlateEditor({
     editor: input,
     plugins: [
       NormalizeTypesPlugin.configure({

@@ -6,7 +6,7 @@ import {
   getStartPoint,
 } from '@udecode/slate';
 
-import { ParagraphPlugin, ReactPlugin } from '../../react';
+import { ParagraphPlugin, PlateApiPlugin, ReactPlugin } from '../../react';
 import { withPlate } from '../../react/editor/withPlate';
 import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';
 import { getPlugin } from '../../react/plugin/getPlugin';
@@ -20,7 +20,6 @@ import {
   InlineVoidPlugin,
   InsertDataPlugin,
   LengthPlugin,
-  PlateApiPlugin,
   SlateNextPlugin,
   type SlatePlugin,
   createSlatePlugin,
@@ -33,7 +32,6 @@ const coreKeys = [
   SlateNextPlugin.key,
   DOMPlugin.key,
   HistoryPlugin.key,
-  PlateApiPlugin.key,
   InlineVoidPlugin.key,
   InsertDataPlugin.key,
   LengthPlugin.key,
@@ -41,6 +39,7 @@ const coreKeys = [
   DeserializeAstPlugin.key,
   ParagraphPlugin.key,
   EventEditorPlugin.key,
+  PlateApiPlugin.key,
 ];
 
 describe('withPlate', () => {
@@ -149,7 +148,7 @@ describe('withPlate', () => {
         plugins: [HeadingPlugin],
       });
 
-      const h1Plugin = getPlugin(editor, { key: 'h1' });
+      const h1Plugin = editor.getPlugin({ key: 'h1' });
       expect(h1Plugin.component).toBe(customComponent);
     });
 
@@ -168,7 +167,7 @@ describe('withPlate', () => {
         plugins: [HeadingPlugin],
       });
 
-      let h1Plugin = getPlugin(editor, HeadingPlugin);
+      let h1Plugin = editor.getPlugin(HeadingPlugin);
       expect(h1Plugin.component).toBe(originalComponent);
 
       // Test with high priority override
@@ -366,7 +365,7 @@ describe('withPlate', () => {
 
   describe('when configuring core plugins', () => {
     it('should correctly configure the length plugin', () => {
-      const editor = withPlate(createTEditor(), {
+      const editor = withSlate(createTEditor(), {
         id: '1',
         rootPlugin: (plugin) =>
           plugin.configurePlugin(LengthPlugin, {

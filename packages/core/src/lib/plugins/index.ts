@@ -14,4 +14,3 @@ export * from './editor-protocol/index';
 export * from './html-deserializer/index';
 export * from './length/index';
 export * from './paragraph/index';
-export * from './plate-api/index';

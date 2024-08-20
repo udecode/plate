@@ -3,7 +3,7 @@ import isEqual from 'lodash/isEqual.js';
 
 import type { SlateEditor } from '../editor';
 
-import { getSlatePluginContext } from '../plugin';
+import { getPluginContext } from '../plugin';
 
 /** Normalize initial value from editor plugins. Set into plate store if diff. */
 export const pipeNormalizeInitialValue = (editor: SlateEditor) => {
@@ -12,9 +12,9 @@ export const pipeNormalizeInitialValue = (editor: SlateEditor) => {
 
   editor.pluginList.forEach((p) => {
     const _normalizedValue = p.normalizeInitialValue?.({
-      ...getSlatePluginContext(editor, p),
+      ...getPluginContext(editor, p),
       value: normalizedValue,
-    });
+    } as any);
 
     if (_normalizedValue) {
       normalizedValue = _normalizedValue;

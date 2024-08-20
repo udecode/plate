@@ -6,13 +6,14 @@ import {
 } from '@udecode/plate-common';
 import { Hotkeys, type KeyboardHandler } from '@udecode/plate-common/react';
 
-import { type TableConfig, moveSelectionFromCell } from '../lib';
 import {
+  KEY_SHIFT_EDGES,
+  type TableConfig,
   getNextTableCell,
   getPreviousTableCell,
   getTableEntries,
-} from '../lib/queries/index';
-import { keyShiftEdges } from './constants';
+} from '../lib';
+import { moveSelectionFromCell } from './transforms';
 
 export const onKeyDownTable: KeyboardHandler<TableConfig> = ({
   editor,
@@ -32,7 +33,7 @@ export const onKeyDownTable: KeyboardHandler<TableConfig> = ({
     if (
       isKeyDown[key] && // if many cells are selected
       moveSelectionFromCell(editor, {
-        edge: (keyShiftEdges as any)[key],
+        edge: (KEY_SHIFT_EDGES as any)[key],
         reverse: key === 'shift+up',
       })
     ) {

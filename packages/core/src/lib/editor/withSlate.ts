@@ -111,9 +111,9 @@ export const withSlate = <
   editor.getApi = () => editor.api as any;
   editor.getPlugin = (plugin) => getSlatePlugin(editor, plugin) as any;
   editor.getOptions = (plugin) => editor.getPlugin(plugin).options;
-  editor.getType = (plugin) => editor.getPlugin(plugin).type;
+  editor.getType = (plugin) => editor.getPlugin<AnySlatePlugin>(plugin).type;
   editor.getInjectProps = (plugin) =>
-    editor.getPlugin(plugin).inject?.props ?? ({} as any);
+    editor.getPlugin<AnySlatePlugin>(plugin).inject?.props ?? ({} as any);
 
   const corePlugins = getCorePlugins({
     maxLength,

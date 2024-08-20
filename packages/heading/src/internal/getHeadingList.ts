@@ -5,7 +5,9 @@ import {
   getNodeString,
 } from '@udecode/plate-common';
 
-import { type Heading, TocPlugin } from '../lib';
+import type { Heading } from '../lib/types';
+
+import { TocPlugin } from '../lib';
 import { HEADING_KEYS } from '../lib/constants';
 import { isHeading } from '../lib/utils/isHeading';
 

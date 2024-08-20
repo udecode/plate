@@ -7,11 +7,12 @@ import {
   useEditorSelector,
 } from '@udecode/plate-common/react';
 
-import type { Heading, TocSideBarProps } from '../../lib/types';
+import type { Heading } from '../../lib/types';
+import type { TocSideBarProps } from '../types';
 
 import { useContentController, useTocController } from '.';
-import { checkIn } from '../utils';
 import { getHeadingList } from '../../internal/getHeadingList';
+import { checkIn } from '../utils';
 
 export const useTocSideBarState = ({
   containerRef,

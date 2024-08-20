@@ -6,4 +6,3 @@ export * from './CaptionPlugin';
 export * from './TCaptionElement';
 export * from './captionGlobalStore';
 export * from './withCaption';
-export * from './utils/index';

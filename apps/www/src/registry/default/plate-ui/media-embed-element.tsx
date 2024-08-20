@@ -4,12 +4,8 @@ import { Tweet } from 'react-tweet';
 
 import { cn, withRef } from '@udecode/cn';
 import { PlateElement, withHOC } from '@udecode/plate-common/react';
-import {
-  MediaEmbedPlugin,
-  parseTwitterUrl,
-  parseVideoUrl,
-  useMediaState,
-} from '@udecode/plate-media';
+import { parseTwitterUrl, parseVideoUrl } from '@udecode/plate-media';
+import { MediaEmbedPlugin, useMediaState } from '@udecode/plate-media/react';
 import { ResizableProvider, useResizableStore } from '@udecode/plate-resizable';
 
 import { Caption, CaptionTextarea } from './caption';

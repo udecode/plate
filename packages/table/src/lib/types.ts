@@ -113,3 +113,5 @@ export interface TTableCellElement extends TElement {
 }
 
 export type BorderDirection = 'bottom' | 'left' | 'right' | 'top';
+
+export type TableStoreSizeOverrides = Map<number, number>;

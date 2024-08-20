@@ -11,10 +11,10 @@ import type {
   BaseInjectProps,
   BasePlugin,
   BaseTransformOptions,
+  EditorInsertDataOptions,
   InferApi,
   InferOptions,
   InferTransforms,
-  PlatePluginInsertDataOptions,
   PluginConfig,
   WithAnyKey,
 } from './BasePlugin';
@@ -23,7 +23,7 @@ import type { HandlerReturnType } from './HandlerReturnType';
 /** The `PlatePlugin` interface is a base interface for all plugins. */
 export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
   editor: {
-    insertData?: PlatePluginInsertData<WithAnyKey<C>>;
+    insertData?: EditorInsertData<WithAnyKey<C>>;
   };
 
   handlers: {};
@@ -49,10 +49,14 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
   SlatePluginMethods<C>;
 
 export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
+  __apiEditorExtensions: ((ctx: SlatePluginContext<AnyPluginConfig>) => any)[];
   __apiExtensions: ((ctx: SlatePluginContext<AnyPluginConfig>) => any)[];
   __configuration: ((ctx: SlatePluginContext<AnyPluginConfig>) => any) | null;
   __extensions: ((ctx: SlatePluginContext<AnyPluginConfig>) => any)[];
   __resolved?: boolean;
+  __transformEditorExtensions: ((
+    ctx: SlatePluginContext<AnyPluginConfig>
+  ) => any)[];
   __transformExtensions: ((ctx: SlatePluginContext<AnyPluginConfig>) => any)[];
 
   configure: (
@@ -179,6 +183,32 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
         >
   ) => SlatePlugin<C>;
 
+  // extendPluginApi: <
+  //   EA extends Record<string, (...args: any[]) => any> = Record<string, never>,
+  // >(
+  //   extension: (ctx: SlatePluginContext<C>) => EA
+  // ) => SlatePlugin<
+  //   PluginConfig<
+  //     C['key'],
+  //     InferOptions<C>,
+  //     InferApi<C> & Record<C['key'], EA>,
+  //     InferTransforms<C>
+  //   >
+  // >;
+
+  // extendPluginTransforms: <
+  //   ET extends Record<string, (...args: any[]) => any> = Record<string, never>,
+  // >(
+  //   extension: (ctx: SlatePluginContext<C>) => ET
+  // ) => SlatePlugin<
+  //   PluginConfig<
+  //     C['key'],
+  //     InferOptions<C>,
+  //     InferApi<C>,
+  //     InferTransforms<C> & Record<C['key'], ET>
+  //   >
+  // >;
+
   extendTransforms: <
     ET extends Record<
       string,
@@ -233,6 +263,24 @@ export type SlatePluginConfig<
   >
 >;
 
+// type SlatePluginConfig<C extends AnyPluginConfig, EO = {}, EA = {}, ET = {}> = {
+//   api?: EA & Partial<InferApi<C>>;
+//   options?: EO & Partial<InferOptions<C>>;
+//   transforms?: ET & Partial<InferTransforms<C>>;
+// } & Omit<
+//   Partial<
+//     SlatePlugin<
+//       PluginConfig<
+//         C['key'],
+//         EO & InferOptions<C>,
+//         EA & InferApi<C>,
+//         ET & InferTransforms<C>
+//       >
+//     >
+//   >,
+//   'api' | 'options' | 'transforms' | keyof SlatePluginMethods
+// >;
+
 // -----------------------------------------------------------------------------
 
 export type AnySlatePlugin = SlatePlugin<AnyPluginConfig>;
@@ -246,34 +294,34 @@ export type EditorPlugin<C extends AnyPluginConfig = PluginConfig> = Omit<
 
 export type AnyEditorPlugin = EditorPlugin<AnyPluginConfig>;
 
+export type InferConfig<P> = P extends SlatePlugin<infer C> ? C : never;
+
 export type SlatePluginContext<C extends AnyPluginConfig = PluginConfig> = {
-  api: Required<C['api']>;
+  api: C['api'];
   editor: SlateEditor;
   options: InferOptions<C>;
   plugin: EditorPlugin<C>;
-  transforms: Required<C['transforms']>;
+  transforms: C['transforms'];
   type: string;
 };
 
 // -----------------------------------------------------------------------------
 
-export type PlatePluginInsertData<C extends AnyPluginConfig = PluginConfig> = {
+export type EditorInsertData<C extends AnyPluginConfig = PluginConfig> = {
   format?: string;
   getFragment?: (
-    options: PlatePluginInsertDataOptions & SlatePluginContext<C>
+    options: EditorInsertDataOptions & SlatePluginContext<C>
   ) => TDescendant[] | undefined;
   preInsert?: (
-    options: { fragment: TDescendant[] } & PlatePluginInsertDataOptions &
+    options: { fragment: TDescendant[] } & EditorInsertDataOptions &
       SlatePluginContext<C>
   ) => HandlerReturnType;
-  query?: (
-    options: PlatePluginInsertDataOptions & SlatePluginContext<C>
-  ) => boolean;
+  query?: (options: EditorInsertDataOptions & SlatePluginContext<C>) => boolean;
   transformData?: (
-    options: PlatePluginInsertDataOptions & SlatePluginContext<C>
+    options: EditorInsertDataOptions & SlatePluginContext<C>
   ) => string;
   transformFragment?: (
-    options: { fragment: TDescendant[] } & PlatePluginInsertDataOptions &
+    options: { fragment: TDescendant[] } & EditorInsertDataOptions &
       SlatePluginContext<C>
   ) => TDescendant[];
 };

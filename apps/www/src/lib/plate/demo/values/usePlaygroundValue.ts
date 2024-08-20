@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import type { Value } from '@udecode/plate-common';
+import type { MyValue } from '@/types/plate-types';
 
 import { settingsStore } from '@/components/context/settings-store';
 import { type ValueId, customizerPlugins } from '@/config/customizer-plugins';
@@ -36,7 +36,7 @@ import { tabbableValue } from './tabbableValue';
 import { tableMergeValue, tableValue } from './tableValue';
 import { toggleValue } from './toggleValue';
 
-export const usePlaygroundValue = (id?: ValueId) => {
+export const usePlaygroundValue = (id?: ValueId): MyValue => {
   let valueId = settingsStore.use.valueId();
 
   if (id) {
@@ -98,7 +98,7 @@ export const usePlaygroundValue = (id?: ValueId) => {
     if (enabled.trailingBlock) value.push(...trailingBlockValue);
     if (enabled.excalidraw) value.push(...excalidrawValue);
 
-    return mapNodeId(value) as Value;
+    return mapNodeId(value);
   }, [
     enabled.a,
     enabled.action_item,

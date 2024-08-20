@@ -3,7 +3,7 @@ import React from 'react';
 import { useEditorRef } from '@udecode/plate-common/react';
 import { useReadOnly, useSelected } from 'slate-react';
 
-import { getTableGridAbove } from '../../../lib';
+import { getTableGridAbove } from '../../queries';
 import { useTableStore } from '../../stores';
 
 /**

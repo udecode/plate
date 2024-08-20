@@ -1,14 +1,14 @@
 import type { SlateEditor } from '../editor';
-import type { PlatePluginInsertDataOptions } from '../plugin/BasePlugin';
+import type { EditorInsertDataOptions } from '../plugin/BasePlugin';
 import type { AnyEditorPlugin } from '../plugin/SlatePlugin';
 
-import { getSlatePluginContext } from '../plugin';
+import { getPluginContext } from '../plugin';
 
 /** Is the plugin disabled by another plugin. */
 export const pipeInsertDataQuery = (
   editor: SlateEditor,
   plugins: Partial<AnyEditorPlugin>[],
-  { data, dataTransfer }: PlatePluginInsertDataOptions
+  { data, dataTransfer }: EditorInsertDataOptions
 ) =>
   plugins.every((p) => {
     const query = p.editor?.insertData?.query;
@@ -16,7 +16,7 @@ export const pipeInsertDataQuery = (
     return (
       !query ||
       query({
-        ...getSlatePluginContext(editor, p as any),
+        ...getPluginContext(editor, p as any),
         data,
         dataTransfer,
       })

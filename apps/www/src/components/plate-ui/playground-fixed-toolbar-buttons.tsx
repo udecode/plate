@@ -8,15 +8,19 @@ import {
   ItalicPlugin,
   StrikethroughPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-marks';
+} from '@udecode/plate-basic-marks/react';
 import { useEditorReadOnly } from '@udecode/plate-common/react';
 import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
 } from '@udecode/plate-font';
-import { IndentListPlugin, ListStyleType } from '@udecode/plate-indent-list';
-import { ListOrderedPlugin, ListUnorderedPlugin } from '@udecode/plate-list';
-import { ImagePlugin } from '@udecode/plate-media';
+import { ListStyleType } from '@udecode/plate-indent-list';
+import { IndentListPlugin } from '@udecode/plate-indent-list/react';
+import {
+  ListOrderedPlugin,
+  ListUnorderedPlugin,
+} from '@udecode/plate-list/react';
+import { ImagePlugin } from '@udecode/plate-media/react';
 
 import { settingsStore } from '@/components/context/settings-store';
 import { Icons, iconVariants } from '@/components/icons';

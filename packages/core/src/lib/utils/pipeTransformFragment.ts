@@ -1,10 +1,10 @@
 import type { TDescendant } from '@udecode/slate';
 
 import type { SlateEditor } from '../editor';
-import type { PlatePluginInsertDataOptions } from '../plugin/BasePlugin';
+import type { EditorInsertDataOptions } from '../plugin/BasePlugin';
 import type { AnyEditorPlugin } from '../plugin/SlatePlugin';
 
-import { getSlatePluginContext } from '../plugin';
+import { getPluginContext } from '../plugin';
 
 /** Pipe editor.insertData.transformFragment */
 export const pipeTransformFragment = (
@@ -13,7 +13,7 @@ export const pipeTransformFragment = (
   {
     fragment,
     ...options
-  }: { fragment: TDescendant[] } & PlatePluginInsertDataOptions
+  }: { fragment: TDescendant[] } & EditorInsertDataOptions
 ) => {
   plugins.forEach((p) => {
     const transformFragment = p.editor?.insertData?.transformFragment;
@@ -23,7 +23,7 @@ export const pipeTransformFragment = (
     fragment = transformFragment({
       fragment,
       ...options,
-      ...getSlatePluginContext(editor, p as any),
+      ...getPluginContext(editor, p as any),
     });
   });
 

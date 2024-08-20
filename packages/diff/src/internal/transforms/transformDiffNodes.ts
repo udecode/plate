@@ -8,7 +8,7 @@ import type { TDescendant } from '@udecode/plate-common';
 
 import isEqual from 'lodash/isEqual.js';
 
-import { type ComputeDiffOptions, computeDiff } from '../../computeDiff';
+import { type ComputeDiffOptions, computeDiff } from '../../lib/computeDiff';
 import { copyWithout } from '../utils/copy-without';
 
 /**

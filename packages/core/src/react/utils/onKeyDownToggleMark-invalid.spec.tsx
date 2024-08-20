@@ -43,8 +43,10 @@ const editor = createPlateEditor({
 });
 
 it('should be', () => {
+  const ctx = getPluginContext(editor, { key: BoldPlugin.key });
+
   onKeyDownToggleMark({
-    ...getPluginContext(editor, { key: BoldPlugin.key }),
+    ...ctx,
     event,
   });
   expect(editor.children).toEqual(output.children);

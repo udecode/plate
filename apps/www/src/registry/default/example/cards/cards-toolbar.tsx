@@ -6,13 +6,13 @@ import {
   ItalicPlugin,
   StrikethroughPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-marks';
+} from '@udecode/plate-basic-marks/react';
 import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
 } from '@udecode/plate-font';
 import { ListStyleType } from '@udecode/plate-indent-list';
-import { ImagePlugin } from '@udecode/plate-media';
+import { ImagePlugin } from '@udecode/plate-media/react';
 
 import { Icons, iconVariants } from '@/components/icons';
 import { AlignDropdownMenu } from '@/registry/default/plate-ui/align-dropdown-menu';

@@ -18,6 +18,7 @@ import type {
   BaseInjectProps,
   BasePlugin,
   BaseTransformOptions,
+  EditorInsertDataOptions,
   GetInjectPropsOptions,
   GetInjectPropsReturnType,
   HandlerReturnType,
@@ -25,9 +26,10 @@ import type {
   InferOptions,
   InferTransforms,
   Nullable,
-  PlatePluginInsertDataOptions,
   PluginConfig,
+  SlatePlugin,
   SlatePluginConfig,
+  SlatePluginContext,
   WithAnyKey,
 } from '../../lib';
 import type { PlateEditor } from '../editor/PlateEditor';
@@ -43,7 +45,7 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
      * data to a slate fragment. The fragment will be inserted to the editor if
      * not empty.
      */
-    insertData?: PlatePluginInsertData<WithAnyKey<C>>;
+    insertData?: EditorInsertData<WithAnyKey<C>>;
   };
 
   /**
@@ -164,12 +166,14 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
   PlatePluginMethods<C>;
 
 export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
-  __apiExtensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
+  __apiEditorExtensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
 
   __configuration: ((ctx: PlatePluginContext<AnyPluginConfig>) => any) | null;
   __extensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
   __resolved?: boolean;
-  __transformExtensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
+  __transformEditorExtensions: ((
+    ctx: PlatePluginContext<AnyPluginConfig>
+  ) => any)[];
 
   configure: (
     config:
@@ -189,13 +193,13 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
         >
   ) => PlatePlugin<C>;
 
-  configurePlugin: <P extends AnySlatePlugin>(
+  configurePlugin: <P extends AnyPlatePlugin | AnySlatePlugin>(
     plugin: Partial<P>,
     config:
       | ((
           ctx: P extends AnyPlatePlugin
             ? PlatePluginContext<P>
-            : PlatePluginContext<P>
+            : SlatePluginContext<P>
         ) => P extends AnyPlatePlugin
           ? PlatePluginConfig<
               any,
@@ -324,13 +328,18 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
     >
   >;
 
-  extendPlugin: <P extends AnySlatePlugin, EO = {}, EA = {}, ET = {}>(
+  extendPlugin: <
+    P extends AnyPlatePlugin | AnySlatePlugin,
+    EO = {},
+    EA = {},
+    ET = {},
+  >(
     plugin: Partial<P>,
     extendConfig:
       | ((
           ctx: P extends AnyPlatePlugin
             ? PlatePluginContext<P>
-            : PlatePluginContext<P>
+            : SlatePluginContext<P>
         ) => P extends AnyPlatePlugin
           ? PlatePluginConfig<
               any,
@@ -370,6 +379,32 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
               ET
             >)
   ) => PlatePlugin<C>;
+
+  // extendPluginApi: <
+  //   EA extends Record<string, (...args: any[]) => any> = Record<string, never>,
+  // >(
+  //   extension: (ctx: PlatePluginContext<C>) => EA
+  // ) => PlatePlugin<
+  //   PluginConfig<
+  //     C['key'],
+  //     InferOptions<C>,
+  //     InferApi<C> & Record<C['key'], EA>,
+  //     InferTransforms<C>
+  //   >
+  // >;
+
+  // extendPluginTransforms: <
+  //   ET extends Record<string, (...args: any[]) => any> = Record<string, never>,
+  // >(
+  //   extension: (ctx: PlatePluginContext<C>) => ET
+  // ) => PlatePlugin<
+  //   PluginConfig<
+  //     C['key'],
+  //     InferOptions<C>,
+  //     InferApi<C>,
+  //     InferTransforms<C> & Record<C['key'], ET>
+  //   >
+  // >;
 
   extendTransforms: <
     ET extends Record<
@@ -433,6 +468,24 @@ export type PlatePluginConfig<
   >
 >;
 
+// type PlatePluginConfig<C extends AnyPluginConfig, EO = {}, EA = {}, ET = {}> = {
+//   api?: EA & Partial<InferApi<C>>;
+//   options?: EO & Partial<InferOptions<C>>;
+//   transforms?: ET & Partial<InferTransforms<C>>;
+// } & Omit<
+//   Partial<
+//     PlatePlugin<
+//       PluginConfig<
+//         C['key'],
+//         EO & InferOptions<C>,
+//         EA & InferApi<C>,
+//         ET & InferTransforms<C>
+//       >
+//     >
+//   >,
+//   'api' | 'options' | 'transforms' | keyof PlatePluginMethods
+// >;
+
 // -----------------------------------------------------------------------------
 
 export type AnyPlatePlugin = PlatePlugin<AnyPluginConfig>;
@@ -446,6 +499,12 @@ export type EditorPlatePlugin<C extends AnyPluginConfig = PluginConfig> = Omit<
 
 export type AnyEditorPlatePlugin = EditorPlatePlugin<AnyPluginConfig>;
 
+export type InferConfig<P> = P extends
+  | PlatePlugin<infer C>
+  | SlatePlugin<infer C>
+  ? C
+  : never;
+
 export type PlatePluginContext<C extends AnyPluginConfig = PluginConfig> = {
   api: Required<C['api']>;
   editor: PlateEditor;
@@ -457,13 +516,13 @@ export type PlatePluginContext<C extends AnyPluginConfig = PluginConfig> = {
 
 // -----------------------------------------------------------------------------
 
-export type PlatePluginInsertData<C extends AnyPluginConfig = PluginConfig> = {
+export type EditorInsertData<C extends AnyPluginConfig = PluginConfig> = {
   /** Format to get data. Example data types are text/plain and text/uri-list. */
   format?: string;
 
   /** Deserialize data to fragment */
   getFragment?: (
-    options: PlatePluginContext<C> & PlatePluginInsertDataOptions
+    options: EditorInsertDataOptions & PlatePluginContext<C>
   ) => TDescendant[] | undefined;
 
   /**
@@ -475,24 +534,22 @@ export type PlatePluginInsertData<C extends AnyPluginConfig = PluginConfig> = {
    * @returns If true, the next handlers will be skipped.
    */
   preInsert?: (
-    options: { fragment: TDescendant[] } & PlatePluginContext<C> &
-      PlatePluginInsertDataOptions
+    options: { fragment: TDescendant[] } & EditorInsertDataOptions &
+      PlatePluginContext<C>
   ) => HandlerReturnType;
 
   /** Query to skip this plugin. */
-  query?: (
-    options: PlatePluginContext<C> & PlatePluginInsertDataOptions
-  ) => boolean;
+  query?: (options: EditorInsertDataOptions & PlatePluginContext<C>) => boolean;
 
   /** Transform the inserted data. */
   transformData?: (
-    options: PlatePluginContext<C> & PlatePluginInsertDataOptions
+    options: EditorInsertDataOptions & PlatePluginContext<C>
   ) => string;
 
   /** Transform the fragment to insert. */
   transformFragment?: (
-    options: { fragment: TDescendant[] } & PlatePluginContext<C> &
-      PlatePluginInsertDataOptions
+    options: { fragment: TDescendant[] } & EditorInsertDataOptions &
+      PlatePluginContext<C>
   ) => TDescendant[];
 };
 

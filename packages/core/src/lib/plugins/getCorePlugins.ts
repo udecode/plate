@@ -11,7 +11,6 @@ import { SlateNextPlugin } from './editor-protocol';
 import { DeserializeHtmlPlugin } from './html-deserializer';
 import { LengthPlugin } from './length';
 import { ParagraphPlugin } from './paragraph';
-import { PlateApiPlugin } from './plate-api';
 
 // Somehow needed to avoid cyclic dependency
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -38,7 +37,6 @@ export const getCorePlugins = ({
     SlateNextPlugin,
     DOMPlugin,
     HistoryPlugin,
-    PlateApiPlugin,
     InlineVoidPlugin,
     InsertDataPlugin,
     maxLength

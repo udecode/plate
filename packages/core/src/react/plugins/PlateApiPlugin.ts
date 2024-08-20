@@ -1,14 +1,15 @@
 import type { EXPOSED_STORE_KEYS, PlateStoreState } from '../stores';
 
-import { DebugPlugin, createSlatePlugin } from '../../lib';
+import { createPlatePlugin } from '../plugin';
 
-export const PlateApiPlugin = createSlatePlugin({
-  dependencies: [DebugPlugin.key],
+export const PlateApiPlugin = createPlatePlugin({
+  dependencies: ['debug'],
   key: 'plateApi',
 }).extendApi(({ editor }) => ({
   redecorate: () => {
     editor.api.debug.warn(
-      `editor.api.redecorate should have been overridden but was not. Please report this issue here: https://github.com/udecode/plate/issues`,
+      `The method editor.api.redecorate() has not been overridden. ` +
+        `This may cause unexpected behavior. Please ensure that all required editor methods are properly defined.`,
       'OVERRIDE_MISSING'
     );
   },

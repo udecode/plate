@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 
-import { BlockquotePlugin } from '@udecode/plate-block-quote';
-import { CodeBlockPlugin } from '@udecode/plate-code-block';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import {
   ParagraphPlugin,
   createNodesWithHOC,
@@ -11,7 +11,10 @@ import {
   withDraggable as withDraggablePrimitive,
 } from '@udecode/plate-dnd';
 import { HEADING_KEYS } from '@udecode/plate-heading';
-import { ListOrderedPlugin, ListUnorderedPlugin } from '@udecode/plate-list';
+import {
+  ListOrderedPlugin,
+  ListUnorderedPlugin,
+} from '@udecode/plate-list/react';
 
 import { Draggable, type DraggableProps } from './draggable';
 

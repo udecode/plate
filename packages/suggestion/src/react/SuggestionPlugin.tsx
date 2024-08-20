@@ -1,6 +1,6 @@
 import type { ExtendConfig, HotkeyPluginOptions } from '@udecode/plate-common';
 
-import { extendPlatePlugin } from '@udecode/plate-common/react';
+import { toPlatePlugin } from '@udecode/plate-common/react';
 
 import {
   type SuggestionConfig as BaseSuggestionConfig,
@@ -14,6 +14,6 @@ export type SuggestionConfig = ExtendConfig<
 >;
 
 /** Enables support for suggestions in the editor. */
-export const SuggestionPlugin = extendPlatePlugin(BaseSuggestionPlugin, {
+export const SuggestionPlugin = toPlatePlugin(BaseSuggestionPlugin, {
   useHooks: useHooksSuggestion,
 });

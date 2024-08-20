@@ -9,12 +9,14 @@ import type {
   PluginConfig,
   WithRequiredKey,
 } from '../plugin/BasePlugin';
-import type { EditorPlugin, InjectProps } from '../plugin/SlatePlugin';
+import type {
+  AnyEditorPlugin,
+  EditorPlugin,
+  InjectProps,
+} from '../plugin/SlatePlugin';
 import type { CorePlugin } from '../plugins';
 
-export type SlateEditor = {
-  api: UnionToIntersection<InferApi<CorePlugin>>;
-
+export type BaseEditor = {
   getApi: <C extends AnyPluginConfig = PluginConfig>(
     plugin?: WithRequiredKey<C>
   ) => InferApi<C>;
@@ -29,7 +31,7 @@ export type SlateEditor = {
 
   getPlugin: <C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
-  ) => C extends EditorPlugin<any> ? C : EditorPlugin<C>;
+  ) => C extends { type: any } ? C : EditorPlugin<C>;
 
   getType: (plugin: WithRequiredKey) => string;
 
@@ -50,27 +52,26 @@ export type SlateEditor = {
   plugins: Record<string, any>;
 
   prevSelection: TRange | null;
-
-  transforms: UnionToIntersection<InferTransforms<CorePlugin>>;
 } & TEditor;
 
-export type TBaseEditor<
+export type SlateEditor = {
+  api: UnionToIntersection<InferApi<CorePlugin>>;
+  pluginList: AnyEditorPlugin[];
+
+  plugins: Record<string, AnyEditorPlugin>;
+
+  transforms: UnionToIntersection<InferTransforms<CorePlugin>>;
+} & BaseEditor;
+
+export type TSlateEditor<
   V extends Value = Value,
   P extends AnyPluginConfig = CorePlugin,
 > = {
   api: UnionToIntersection<InferApi<CorePlugin | P>>;
   children: V;
-
   pluginList: P[];
-
   plugins: { [K in P['key']]: Extract<P, { key: K }> };
-
   transforms: UnionToIntersection<InferTransforms<CorePlugin | P>>;
-};
-
-export type TSlateEditor<
-  V extends Value = Value,
-  P extends AnyPluginConfig = CorePlugin,
-> = SlateEditor & TBaseEditor<V, P>;
+} & SlateEditor;
 
 export type InferPlugins<T extends AnyPluginConfig[]> = T[number];

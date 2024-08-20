@@ -25,12 +25,12 @@ import {
   useComboboxStore,
 } from '@ariakit/react';
 import { cn } from '@udecode/cn';
+import { filterWords } from '@udecode/plate-combobox';
 import {
   type UseComboboxInputResult,
-  filterWords,
   useComboboxInput,
   useHTMLInputCursorState,
-} from '@udecode/plate-combobox';
+} from '@udecode/plate-combobox/react';
 import {
   type TElement,
   createPointRef,

@@ -2,9 +2,13 @@ import React from 'react';
 
 import type { Value } from '@udecode/slate';
 
-import type { AnyPluginConfig, CorePlugin } from '../../lib';
+import type { AnyPluginConfig } from '../../lib';
 
-import { type CreatePlateEditorOptions, createPlateEditor } from '../editor';
+import {
+  type CreatePlateEditorOptions,
+  type PlateCorePlugin,
+  createPlateEditor,
+} from '../editor';
 
 /**
  * A memoized version of createPlateEditor for use in React components.
@@ -19,7 +23,7 @@ import { type CreatePlateEditorOptions, createPlateEditor } from '../editor';
  */
 export function usePlateEditor<
   V extends Value = Value,
-  P extends AnyPluginConfig = CorePlugin,
+  P extends AnyPluginConfig = PlateCorePlugin,
 >(
   options: CreatePlateEditorOptions<V, P> = {},
   deps: React.DependencyList = []

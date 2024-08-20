@@ -1,4 +1,4 @@
-import { BoldPlugin, ParagraphPlugin } from '@udecode/plate';
+import { BoldPlugin, ParagraphPlugin } from '@udecode/plate/react';
 
 import { serializeHtml } from '../../react/serializeHtml';
 import { createPlateUIEditor } from '../create-plate-ui-editor';

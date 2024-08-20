@@ -7,7 +7,7 @@ import {
   useTableCellElementResizable,
   useTableCellElementResizableState,
   useTableCellElementState,
-} from '@udecode/plate-table';
+} from '@udecode/plate-table/react';
 
 import { ResizeHandle } from './resizable';
 

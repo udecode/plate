@@ -162,6 +162,7 @@ describe('createSlatePlugin', () => {
               plugins: [
                 createSlatePlugin({
                   key: 'aaa',
+                  options: { replaced: 1 },
                   plugins: [
                     createSlatePlugin({
                       key: 'bbb',
@@ -184,8 +185,7 @@ describe('createSlatePlugin', () => {
         key: 'bbb',
       });
 
-      expect(aaaOptions.a).toBe(1);
-      expect(aaaOptions.b).toBe(1);
+      expect(aaaOptions).toEqual({ replaced: 1 });
       expect(bbbOptions.a).toBe(1);
     });
   });
@@ -195,7 +195,9 @@ describe('createSlatePlugin', () => {
       const childPlugin = createSlatePlugin({
         key: 'child',
         options: { childOption: 'child' },
-      });
+      }).extendApi(() => ({
+        method: () => 'child',
+      }));
 
       const parentPlugin = createSlatePlugin({
         key: 'parent',
@@ -368,6 +370,46 @@ describe('createSlatePlugin', () => {
     });
   });
 
+  describe('extend method behavior', () => {
+    it('should directly merge object configs and use __extensions for function configs', () => {
+      const basePlugin = createSlatePlugin({
+        key: 'test',
+        options: { initial: true },
+        type: 'base',
+      });
+
+      const extendedWithFunction = basePlugin.extend(({ options }) => ({
+        options: { ...options, functional: true },
+      }));
+
+      const extendedWithObject = extendedWithFunction.extend({
+        options: { extended: true, functional: false },
+        type: 'extended',
+      });
+
+      // Check object-based extension
+      expect(extendedWithObject.options).toEqual({
+        extended: true,
+        functional: false,
+        initial: true,
+      });
+      expect(extendedWithObject.type).toBe('extended');
+
+      // Check function-based extension
+      expect(extendedWithFunction.__extensions).toHaveLength(1);
+
+      // Resolve the plugin to apply all extensions
+      const resolvedPlugin = resolvePluginTest(extendedWithObject);
+
+      expect(resolvedPlugin.options).toEqual({
+        extended: true,
+        functional: true,
+        initial: true,
+      });
+      expect(resolvedPlugin.type).toBe('extended');
+    });
+  });
+
   describe('when extend plugins', () => {
     it('should be', () => {
       const plugin = resolvePluginTest(
@@ -440,12 +482,12 @@ describe('createSlatePlugin', () => {
     it('should be', () => {
       const editor = createPlateEditor({
         plugins: [
-          LinkPlugin.extend({
+          LinkPlugin.extend(() => ({
             deserializeHtml: {
               getNode: () => ({ test: true }),
               withoutChildren: true,
             },
-          }),
+          })),
         ],
       });
 

@@ -1,14 +1,18 @@
 import type { SlateEditor } from '../editor';
-import type { AnyPluginConfig, WithRequiredKey } from './BasePlugin';
-import type { EditorPlugin } from './SlatePlugin';
+import type {
+  AnyPluginConfig,
+  PluginConfig,
+  WithRequiredKey,
+} from './BasePlugin';
+import type { AnySlatePlugin, SlatePlugin } from './SlatePlugin';
 
 import { createSlatePlugin } from './createSlatePlugin';
 
 /** Get editor plugin by key or plugin object. */
-export function getSlatePlugin<C extends AnyPluginConfig = AnyPluginConfig>(
+export function getSlatePlugin<C extends AnyPluginConfig = PluginConfig>(
   editor: SlateEditor,
   plugin: WithRequiredKey<C>
-): EditorPlugin<C> {
+): C extends { type: any } ? C : SlatePlugin<C> {
   return (
     (editor.plugins[plugin.key] as any) ??
     createSlatePlugin({ key: plugin.key })
@@ -20,7 +24,7 @@ export function getPluginType(
   editor: SlateEditor,
   plugin: WithRequiredKey
 ): string {
-  const p = editor.getPlugin(plugin);
+  const p = editor.getPlugin<AnySlatePlugin>(plugin);
 
   return p.type ?? p.key ?? '';
 }

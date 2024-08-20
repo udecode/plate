@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import { AlignPlugin } from '@udecode/plate-alignment';
-import { AutoformatPlugin } from '@udecode/plate-autoformat';
+import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
   BoldPlugin,
   CodePlugin,
@@ -10,48 +10,48 @@ import {
   SubscriptPlugin,
   SuperscriptPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-marks';
-import { BlockquotePlugin } from '@udecode/plate-block-quote';
+} from '@udecode/plate-basic-marks/react';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import {
   ExitBreakPlugin,
   SingleLinePlugin,
   SoftBreakPlugin,
-} from '@udecode/plate-break';
-import { CaptionPlugin } from '@udecode/plate-caption';
+} from '@udecode/plate-break/react';
+import { CaptionPlugin } from '@udecode/plate-caption/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
-import { CommentsPlugin } from '@udecode/plate-comments';
+import { CommentsPlugin } from '@udecode/plate-comments/react';
 import { ParagraphPlugin } from '@udecode/plate-common';
 import { DndPlugin } from '@udecode/plate-dnd';
 import { EmojiPlugin } from '@udecode/plate-emoji';
-import { ExcalidrawPlugin } from '@udecode/plate-excalidraw';
+import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
   FontSizePlugin,
 } from '@udecode/plate-font';
-import { HeadingPlugin } from '@udecode/plate-heading';
-import { HighlightPlugin } from '@udecode/plate-highlight';
-import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
-import { IndentPlugin } from '@udecode/plate-indent';
-import { IndentListPlugin } from '@udecode/plate-indent-list';
+import { HeadingPlugin } from '@udecode/plate-heading/react';
+import { HighlightPlugin } from '@udecode/plate-highlight/react';
+import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
+import { IndentPlugin } from '@udecode/plate-indent/react';
+import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import { JuicePlugin } from '@udecode/plate-juice';
-import { KbdPlugin } from '@udecode/plate-kbd';
-import { ColumnPlugin } from '@udecode/plate-layout';
+import { KbdPlugin } from '@udecode/plate-kbd/react';
+import { ColumnPlugin } from '@udecode/plate-layout/react';
 import { LineHeightPlugin } from '@udecode/plate-line-height';
-import { LinkPlugin } from '@udecode/plate-link';
-import { ListPlugin, TodoListPlugin } from '@udecode/plate-list';
-import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media';
-import { MentionPlugin } from '@udecode/plate-mention';
+import { LinkPlugin } from '@udecode/plate-link/react';
+import { ListPlugin, TodoListPlugin } from '@udecode/plate-list/react';
+import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
+import { MentionPlugin } from '@udecode/plate-mention/react';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { ResetNodePlugin } from '@udecode/plate-reset-node';
 import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
-import { BlockSelectionPlugin } from '@udecode/plate-selection';
+import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import { DeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
 import { DeserializeMdPlugin } from '@udecode/plate-serializer-md';
 import { TabbablePlugin } from '@udecode/plate-tabbable';
-import { TablePlugin } from '@udecode/plate-table';
-import { TogglePlugin } from '@udecode/plate-toggle';
+import { TablePlugin } from '@udecode/plate-table/react';
+import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
 import { settingsStore } from '@/components/context/settings-store';

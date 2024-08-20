@@ -5,7 +5,7 @@ import { clsx } from 'clsx';
 import type { SlateEditor } from '../editor';
 import type { EditorPlugin, TransformOptions } from '../plugin/SlatePlugin';
 
-import { getSlatePluginContext } from '../plugin';
+import { getPluginContext } from '../plugin';
 import { getKeyByType } from './getKeysByTypes';
 
 export interface GetInjectPropsOptions {
@@ -66,7 +66,7 @@ export const pluginInjectProps = (
 
   const queryResult = query?.({
     ...props,
-    ...getSlatePluginContext(editor, plugin),
+    ...(getPluginContext(editor, plugin) as any),
     nodeProps,
   });
 
@@ -94,7 +94,7 @@ export const pluginInjectProps = (
 
   const transformOptions: TransformOptions = {
     ...nodeProps,
-    ...getSlatePluginContext(editor, plugin),
+    ...(getPluginContext(editor, plugin) as any),
     nodeValue,
   };
   const value = transformNodeValue?.(transformOptions) ?? nodeValue;

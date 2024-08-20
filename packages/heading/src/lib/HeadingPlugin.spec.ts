@@ -1,6 +1,6 @@
 import { createPlateEditor } from '@udecode/plate-common/react';
 
-import { HeadingPlugin as ReactHeadingPlugin } from '../../react/HeadingPluginReact';
+import { HeadingPlugin as ReactHeadingPlugin } from '../react/HeadingPlugin';
 import { HeadingPlugin } from './HeadingPlugin';
 import { HEADING_LEVELS } from './constants';
 

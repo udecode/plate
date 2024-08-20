@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import type { PlatePluginComponent } from '@udecode/plate-common';
+import type { PlatePluginComponent } from '@udecode/plate-common/react';
 
 import { withProps } from '@udecode/cn';
 import {
@@ -11,41 +11,44 @@ import {
   SubscriptPlugin,
   SuperscriptPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-marks';
-import { BlockquotePlugin } from '@udecode/plate-block-quote';
+} from '@udecode/plate-basic-marks/react';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import {
   CodeBlockPlugin,
   CodeLinePlugin,
   CodeSyntaxPlugin,
-} from '@udecode/plate-code-block';
-import { CommentsPlugin } from '@udecode/plate-comments';
+} from '@udecode/plate-code-block/react';
+import { CommentsPlugin } from '@udecode/plate-comments/react';
 import { ParagraphPlugin } from '@udecode/plate-common';
 import { PlateElement, PlateLeaf } from '@udecode/plate-common/react';
 import { EmojiInputPlugin } from '@udecode/plate-emoji';
-import { ExcalidrawPlugin } from '@udecode/plate-excalidraw';
+import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import { FindReplacePlugin } from '@udecode/plate-find-replace';
 import { HEADING_KEYS } from '@udecode/plate-heading';
-import { HighlightPlugin } from '@udecode/plate-highlight';
-import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
-import { KbdPlugin } from '@udecode/plate-kbd';
-import { ColumnItemPlugin, ColumnPlugin } from '@udecode/plate-layout';
-import { LinkPlugin } from '@udecode/plate-link';
+import { HighlightPlugin } from '@udecode/plate-highlight/react';
+import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
+import { KbdPlugin } from '@udecode/plate-kbd/react';
+import { ColumnItemPlugin, ColumnPlugin } from '@udecode/plate-layout/react';
+import { LinkPlugin } from '@udecode/plate-link/react';
 import {
   ListItemPlugin,
   ListOrderedPlugin,
   ListUnorderedPlugin,
   TodoListPlugin,
-} from '@udecode/plate-list';
-import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media';
-import { MentionInputPlugin, MentionPlugin } from '@udecode/plate-mention';
+} from '@udecode/plate-list/react';
+import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
+import {
+  MentionInputPlugin,
+  MentionPlugin,
+} from '@udecode/plate-mention/react';
 import { SlashInputPlugin } from '@udecode/plate-slash-command';
 import {
   TableCellHeaderPlugin,
   TableCellPlugin,
   TablePlugin,
   TableRowPlugin,
-} from '@udecode/plate-table';
-import { TogglePlugin } from '@udecode/plate-toggle';
+} from '@udecode/plate-table/react';
+import { TogglePlugin } from '@udecode/plate-toggle/react';
 
 import { BlockquoteElement } from '@/registry/default/plate-ui/blockquote-element';
 import { CodeBlockElement } from '@/registry/default/plate-ui/code-block-element';

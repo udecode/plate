@@ -2,11 +2,11 @@
 
 import type { SlateEditor } from '@udecode/plate-common';
 
-import { createPlateEditor } from '@udecode/plate-common/react';
+import { createSlateEditor } from '@udecode/plate-common';
 import { LinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { RemoveEmptyNodesPlugin } from '../../RemoveEmptyNodesPlugin';
+import { RemoveEmptyNodesPlugin } from '../../lib/RemoveEmptyNodesPlugin';
 
 jsx;
 
@@ -30,7 +30,7 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  const editor = createPlateEditor({
+  const editor = createSlateEditor({
     editor: input,
     plugins: [
       RemoveEmptyNodesPlugin.configure({

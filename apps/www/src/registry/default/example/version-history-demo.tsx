@@ -1,10 +1,14 @@
 import React from 'react';
 
 import { cn } from '@udecode/cn';
-import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks';
-import { SoftBreakPlugin } from '@udecode/plate-break';
+import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks/react';
+import { SoftBreakPlugin } from '@udecode/plate-break/react';
 import { type Value, createSlatePlugin, isInline } from '@udecode/plate-common';
-import { ParagraphPlugin } from '@udecode/plate-common/react';
+import {
+  ParagraphPlugin,
+  createPlatePlugin,
+  toPlatePlugin,
+} from '@udecode/plate-common/react';
 import {
   Plate,
   PlateContent,
@@ -28,13 +32,13 @@ import { useSelected } from 'slate-react';
 import { PlateUI } from '@/lib/plate/demo/plate-ui';
 import { Button } from '@/registry/default/plate-ui/button';
 
-const InlinePlugin = createSlatePlugin({
+const InlinePlugin = createPlatePlugin({
   isElement: true,
   isInline: true,
   key: 'inline',
 });
 
-const InlineVoidPlugin = createSlatePlugin({
+const InlineVoidPlugin = createPlatePlugin({
   isElement: true,
   isInline: true,
   isVoid: true,
@@ -120,45 +124,49 @@ const InlineVoidElement = ({ children, ...props }: PlateElementProps) => {
   );
 };
 
-const DiffPlugin = createSlatePlugin({
-  component: DiffLeaf,
-  inject: {
-    aboveComponent:
-      () =>
-      ({ children, editor, element }) => {
-        if (!element.diff) return children;
+const DiffPlugin = toPlatePlugin(
+  createSlatePlugin({
+    isLeaf: true,
+    key: 'diff',
+    withOverrides: withGetFragmentExcludeDiff,
+  }),
+  {
+    component: DiffLeaf,
+    inject: {
+      aboveComponent:
+        () =>
+        ({ children, editor, element }) => {
+          if (!element.diff) return children;
 
-        const diffOperation = element.diffOperation as DiffOperation;
+          const diffOperation = element.diffOperation as DiffOperation;
 
-        const label = (
-          {
-            delete: 'deletion',
-            insert: 'insertion',
-            update: 'update',
-          } as any
-        )[diffOperation.type];
+          const label = (
+            {
+              delete: 'deletion',
+              insert: 'insertion',
+              update: 'update',
+            } as any
+          )[diffOperation.type];
 
-        const Component = isInline(editor, element) ? 'span' : 'div';
+          const Component = isInline(editor, element) ? 'span' : 'div';
 
-        return (
-          <Component
-            aria-label={label}
-            className={diffOperationColors[diffOperation.type]}
-            title={
-              diffOperation.type === 'update'
-                ? describeUpdate(diffOperation)
-                : undefined
-            }
-          >
-            {children}
-          </Component>
-        );
-      },
-  },
-  isLeaf: true,
-  key: 'diff',
-  withOverrides: withGetFragmentExcludeDiff,
-});
+          return (
+            <Component
+              aria-label={label}
+              className={diffOperationColors[diffOperation.type]}
+              title={
+                diffOperation.type === 'update'
+                  ? describeUpdate(diffOperation)
+                  : undefined
+              }
+            >
+              {children}
+            </Component>
+          );
+        },
+    },
+  }
+);
 
 function DiffLeaf({ children, ...props }: PlateLeafProps) {
   const diffOperation = props.leaf.diffOperation as DiffOperation;

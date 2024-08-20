@@ -1,5 +1,7 @@
 import React from 'react';
 
+import type { TColumnElement } from '@udecode/plate-layout';
+
 import { cn, withRef } from '@udecode/cn';
 import {
   PlateElement,
@@ -8,10 +10,9 @@ import {
 } from '@udecode/plate-common/react';
 import {
   ColumnItemPlugin,
-  type TColumnElement,
   useColumnState,
   useDebouncePopoverOpen,
-} from '@udecode/plate-layout';
+} from '@udecode/plate-layout/react';
 import { useReadOnly } from 'slate-react';
 
 import { Icons } from '@/components/icons';

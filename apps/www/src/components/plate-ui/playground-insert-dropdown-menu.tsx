@@ -4,26 +4,25 @@ import React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { BlockquotePlugin } from '@udecode/plate-block-quote';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import {
   CodeBlockPlugin,
   insertEmptyCodeBlock,
 } from '@udecode/plate-code-block';
 import { ParagraphPlugin, insertEmptyElement } from '@udecode/plate-common';
 import { focusEditor, useEditorRef } from '@udecode/plate-common/react';
-import { ExcalidrawPlugin } from '@udecode/plate-excalidraw';
+import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
-import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
-import { IndentListPlugin, toggleIndentList } from '@udecode/plate-indent-list';
-import { ColumnPlugin, insertColumnGroup } from '@udecode/plate-layout';
-import { LinkPlugin, triggerFloatingLink } from '@udecode/plate-link';
+import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
+import { toggleIndentList } from '@udecode/plate-indent-list';
+import { IndentListPlugin } from '@udecode/plate-indent-list/react';
+import { insertColumnGroup } from '@udecode/plate-layout';
+import { ColumnPlugin } from '@udecode/plate-layout/react';
+import { LinkPlugin, triggerFloatingLink } from '@udecode/plate-link/react';
 import { toggleList } from '@udecode/plate-list';
-import {
-  ImagePlugin,
-  MediaEmbedPlugin,
-  insertMedia,
-} from '@udecode/plate-media';
-import { TablePlugin, insertTable } from '@udecode/plate-table';
+import { insertMedia } from '@udecode/plate-media';
+import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
+import { TablePlugin, insertTable } from '@udecode/plate-table/react';
 
 import { settingsStore } from '@/components/context/settings-store';
 import { Icons } from '@/components/icons';

@@ -204,13 +204,13 @@ Format to get data. Example data types are `text/plain` and `text/uri-list`.
 <APISubListItem parent="editor.insertData" name="query" type="function" optional>
 Query to skip this plugin.
 ```ts
-(options: PlatePluginInsertDataOptions & PlatePluginContext) => boolean
+(options: EditorInsertDataOptions & PlatePluginContext) => boolean
 ```
 </APISubListItem>
 <APISubListItem parent="editor.insertData" name="getFragment" type="function" optional>
 Deserialize data to fragment.
 ```ts
-(options: PlatePluginInsertDataOptions & PlatePluginContext) => TDescendant[] | undefined
+(options: EditorInsertDataOptions & PlatePluginContext) => TDescendant[] | undefined
 ```
 </APISubListItem>
 <APISubListItem parent="editor.insertData" name="preInsert" type="function" optional>
@@ -218,7 +218,7 @@ Function called on `editor.insertData` just before `editor.insertFragment`.
 - Default: if the block above the selection is empty and the first fragment node type is not inline, set the selected node type to the first fragment node type
 - Returns: if true, the next handlers will be skipped.
 ```ts
-(options: { fragment: TDescendant[] } & PlatePluginInsertDataOptions & PlatePluginContext) => HandlerReturnType
+(options: { fragment: TDescendant[] } & EditorInsertDataOptions & PlatePluginContext) => HandlerReturnType
 ```
 </APISubListItem>
 <APISubListItem parent="editor.insertData" name="transformData" type="function" optional>
@@ -230,7 +230,7 @@ Transform the inserted data.
 <APISubListItem parent="editor.insertData" name="transformFragment" type="function" optional>
 Transform the fragment to insert.
 ```ts
-(options: { fragment: TDescendant[] } & PlatePluginInsertDataOptions & PlatePluginContext ) => TDescendant[]
+(options: { fragment: TDescendant[] } & EditorInsertDataOptions & PlatePluginContext ) => TDescendant[]
 ```
 </APISubListItem>
 

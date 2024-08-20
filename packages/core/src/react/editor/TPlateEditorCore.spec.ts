@@ -8,7 +8,7 @@ import {
   someHtmlElement,
 } from '@udecode/plate-core';
 import { createPlateEditor, withPlate } from '@udecode/plate-core/react';
-import { LinkPlugin } from '@udecode/plate-link';
+import { LinkPlugin } from '@udecode/plate-link/react';
 
 import type { ToggleMarkConfig } from '../../lib/types/ToggleMarkConfig';
 
@@ -113,7 +113,7 @@ describe('TPlateEditor core package', () => {
         ],
       });
 
-      expect(editor.api.link).toBeDefined();
+      expect(editor.api.link.getAttributes).toBeDefined();
 
       // @ts-expect-error
       editor.api.createBulletedList;

@@ -1,7 +1,7 @@
-import { BlockquotePlugin } from '@udecode/plate-block-quote';
-import { SoftBreakPlugin } from '@udecode/plate-break';
-import { CodeBlockPlugin } from '@udecode/plate-code-block';
-import { TableCellPlugin } from '@udecode/plate-table';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+import { SoftBreakPlugin } from '@udecode/plate-break/react';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+import { TableCellPlugin } from '@udecode/plate-table/react';
 
 export const softBreakPlugin = SoftBreakPlugin.configure({
   options: {

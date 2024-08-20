@@ -5890,7 +5890,6 @@ __metadata:
     "@udecode/plate-code-block": "npm:36.0.0"
     "@udecode/plate-common": "workspace:^"
     "@udecode/plate-heading": "npm:36.0.12"
-    "@udecode/plate-paragraph": "npm:36.0.0"
   peerDependencies:
     "@udecode/plate-common": ">=36.3.4"
     react: ">=16.8.0"
@@ -6514,22 +6513,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-paragraph@npm:36.0.0, @udecode/plate-paragraph@workspace:^, @udecode/plate-paragraph@workspace:packages/paragraph":
-  version: 0.0.0-use.local
-  resolution: "@udecode/plate-paragraph@workspace:packages/paragraph"
-  dependencies:
-    "@udecode/plate-common": "workspace:^"
-  peerDependencies:
-    "@udecode/plate-common": ">=36.3.4"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate: ">=0.94.0"
-    slate-history: ">=0.93.0"
-    slate-hyperscript: ">=0.66.0"
-    slate-react: ">=0.99.0"
-  languageName: unknown
-  linkType: soft
-
 "@udecode/plate-reset-node@npm:36.0.0, @udecode/plate-reset-node@workspace:^, @udecode/plate-reset-node@workspace:packages/reset-node":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-reset-node@workspace:packages/reset-node"
@@ -6578,7 +6561,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-selection@workspace:^, @udecode/plate-selection@workspace:packages/selection":
+"@udecode/plate-selection@npm:36.1.0, @udecode/plate-selection@workspace:^, @udecode/plate-selection@workspace:packages/selection":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-selection@workspace:packages/selection"
   dependencies:
@@ -6624,7 +6607,6 @@ __metadata:
     "@udecode/plate-indent": "npm:36.0.0"
     "@udecode/plate-indent-list": "npm:36.3.3"
     "@udecode/plate-media": "npm:36.2.2"
-    "@udecode/plate-paragraph": "npm:36.0.0"
     "@udecode/plate-table": "npm:36.3.5"
     validator: "npm:^13.11.0"
   peerDependencies:
@@ -6891,10 +6873,10 @@ __metadata:
     "@udecode/plate-mention": "npm:36.0.0"
     "@udecode/plate-node-id": "npm:36.3.6"
     "@udecode/plate-normalizers": "npm:36.0.0"
-    "@udecode/plate-paragraph": "npm:36.0.0"
     "@udecode/plate-reset-node": "npm:36.0.0"
     "@udecode/plate-resizable": "npm:36.0.0"
     "@udecode/plate-select": "npm:36.0.0"
+    "@udecode/plate-selection": "npm:36.1.0"
     "@udecode/plate-serializer-csv": "npm:36.3.5"
     "@udecode/plate-serializer-docx": "npm:36.3.5"
     "@udecode/plate-serializer-html": "npm:36.0.0"
@@ -21947,7 +21929,6 @@ __metadata:
     "@udecode/plate-mention": "workspace:^"
     "@udecode/plate-node-id": "workspace:^"
     "@udecode/plate-normalizers": "workspace:^"
-    "@udecode/plate-paragraph": "workspace:^"
     "@udecode/plate-reset-node": "workspace:^"
     "@udecode/plate-resizable": "workspace:^"
     "@udecode/plate-select": "workspace:^"

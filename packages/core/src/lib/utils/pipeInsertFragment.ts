@@ -1,10 +1,10 @@
 import { type TDescendant, withoutNormalizing } from '@udecode/slate';
 
 import type { SlateEditor } from '../editor';
-import type { PlatePluginInsertDataOptions } from '../plugin/BasePlugin';
+import type { EditorInsertDataOptions } from '../plugin/BasePlugin';
 import type { AnyEditorPlugin } from '../plugin/SlatePlugin';
 
-import { getSlatePluginContext } from '../plugin';
+import { getPluginContext } from '../plugin';
 
 /** Pipe preInsert then insertFragment. */
 export const pipeInsertFragment = (
@@ -13,13 +13,13 @@ export const pipeInsertFragment = (
   {
     fragment,
     ...options
-  }: { fragment: TDescendant[] } & PlatePluginInsertDataOptions
+  }: { fragment: TDescendant[] } & EditorInsertDataOptions
 ) => {
   withoutNormalizing(editor, () => {
     injectedPlugins.some((p) => {
       return (
         p.editor?.insertData?.preInsert?.({
-          ...getSlatePluginContext(editor, p as any),
+          ...getPluginContext(editor, p as any),
           fragment,
           ...options,
         }) === true

@@ -1,5 +1,6 @@
-import { type SlateEditor, pipeInjectProps } from '@udecode/plate-common';
+import { pipeInjectProps } from '@udecode/plate-common';
 import {
+  type PlateEditor,
   type PlateProps,
   type PlateRenderLeafProps,
   pluginRenderLeaf,
@@ -11,7 +12,7 @@ import { createElementWithSlate } from './utils/createElementWithSlate';
 import { renderToStaticMarkup } from './utils/renderToStaticMarkupClient';
 
 export const leafToHtml = (
-  editor: SlateEditor,
+  editor: PlateEditor,
   {
     plateProps,
     preserveClassNames,

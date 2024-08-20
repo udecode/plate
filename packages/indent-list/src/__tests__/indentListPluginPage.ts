@@ -1,9 +1,7 @@
 import { type TElement, getNode, getPreviousPath } from '@udecode/plate-common';
 import { Path } from 'slate';
 
-import type { GetSiblingIndentListOptions } from '../queries/getSiblingIndentList';
-
-import { IndentListPlugin } from '../IndentListPlugin';
+import { type GetSiblingIndentListOptions, IndentListPlugin } from '../lib';
 
 export const indentListPluginPage = IndentListPlugin.extend(({ editor }) => ({
   options: {

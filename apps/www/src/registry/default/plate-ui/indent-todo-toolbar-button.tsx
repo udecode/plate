@@ -1,7 +1,7 @@
 import {
   useIndentTodoToolBarButton,
   useIndentTodoToolBarButtonState,
-} from '@udecode/plate-indent-list';
+} from '@udecode/plate-indent-list/react';
 import { withRef } from '@udecode/react-utils';
 
 import { Icons } from '@/components/icons';

@@ -17,7 +17,7 @@ import {
   useFloatingLinkEditState,
   useFloatingLinkInsert,
   useFloatingLinkInsertState,
-} from '@udecode/plate-link';
+} from '@udecode/plate-link/react';
 
 import { Icons } from '@/components/icons';
 

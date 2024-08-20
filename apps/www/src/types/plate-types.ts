@@ -1,6 +1,7 @@
 import type React from 'react';
 
-import type { BlockquotePlugin } from '@udecode/plate-block-quote';
+import type { usePlaygroundEditor } from '@/registry/default/example/playground-demo';
+import type { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import type {
   CodeBlockPlugin,
   CodeLinePlugin,
@@ -10,42 +11,39 @@ import type {
   ElementOf,
   ParagraphPlugin,
   TElement,
-  TPlateEditor,
   TText,
 } from '@udecode/plate-common';
-import type {
-  ExcalidrawPlugin,
-  TExcalidrawElement,
-} from '@udecode/plate-excalidraw';
+import type { TExcalidrawElement } from '@udecode/plate-excalidraw';
+import type { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import type { HEADING_KEYS } from '@udecode/plate-heading';
-import type { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
-import type { LinkPlugin, TLinkElement } from '@udecode/plate-link';
+import type { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
+import type { TLinkElement } from '@udecode/plate-link';
+import type { LinkPlugin } from '@udecode/plate-link/react';
+import type { TTodoListItemElement } from '@udecode/plate-list';
 import type {
   ListItemPlugin,
   ListOrderedPlugin,
   ListUnorderedPlugin,
-  TTodoListItemElement,
   TodoListPlugin,
-} from '@udecode/plate-list';
+} from '@udecode/plate-list/react';
+import type { TImageElement, TMediaEmbedElement } from '@udecode/plate-media';
+import type { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
 import type {
-  ImagePlugin,
-  MediaEmbedPlugin,
-  TImageElement,
-  TMediaEmbedElement,
-} from '@udecode/plate-media';
-import type {
-  MentionInputPlugin,
-  MentionPlugin,
   TMentionElement,
   TMentionInputElement,
 } from '@udecode/plate-mention';
 import type {
-  TTableElement,
+  MentionInputPlugin,
+  MentionPlugin,
+} from '@udecode/plate-mention/react';
+import type { TTableElement } from '@udecode/plate-table';
+import type {
   TableCellPlugin,
   TablePlugin,
   TableRowPlugin,
-} from '@udecode/plate-table';
-import type { TToggleElement, TogglePlugin } from '@udecode/plate-toggle';
+} from '@udecode/plate-table/react';
+import type { TToggleElement } from '@udecode/plate-toggle';
+import type { TogglePlugin } from '@udecode/plate-toggle/react';
 
 import { useEditorRef } from '@udecode/plate-common/react';
 
@@ -275,6 +273,8 @@ export type MyRootBlock =
 
 export type MyValue = MyRootBlock[];
 
-export type MyEditor = { isDragging?: boolean } & TPlateEditor<MyValue>;
+export type MyEditor = { isDragging?: boolean } & ReturnType<
+  typeof usePlaygroundEditor
+>;
 
 export const useMyEditorRef = () => useEditorRef<MyEditor>();

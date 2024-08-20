@@ -3,7 +3,7 @@ import type { PluginConfig } from '../plugin/BasePlugin';
 import type { AnySlatePlugin, SlatePlugin } from '../plugin/SlatePlugin';
 
 import { mergeWithoutArray } from '../../internal/mergeWithoutArray';
-import { createSlatePlugin, getSlatePluginContext } from '../plugin';
+import { createSlatePlugin, getPluginContext } from '../plugin';
 
 /**
  * Resolves and finalizes a plugin configuration for use in a Plate editor.
@@ -32,7 +32,7 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
   // Apply the stored configuration first
   if (plugin.__configuration) {
     const configResult = plugin.__configuration(
-      getSlatePluginContext(editor, plugin as any)
+      getPluginContext(editor, plugin as any)
     );
 
     plugin = mergeWithoutArray({}, plugin, configResult);
@@ -45,7 +45,7 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
       plugin = mergeWithoutArray(
         {},
         plugin,
-        extension(getSlatePluginContext(editor, plugin as any))
+        extension(getPluginContext(editor, plugin as any))
       );
     });
     plugin.__extensions = [];
@@ -65,7 +65,7 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
       Object.fromEntries(
         targetPlugins.map((targetPlugin) => {
           const injectedPlugin = targetPluginToInject({
-            ...getSlatePluginContext(editor, plugin as any),
+            ...getPluginContext(editor, plugin as any),
             targetPlugin,
           });
 

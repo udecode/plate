@@ -6,7 +6,7 @@
 import { type TDescendant, isText } from '@udecode/plate-common';
 import isEqual from 'lodash/isEqual.js';
 
-import type { ComputeDiffOptions } from '../../computeDiff';
+import type { ComputeDiffOptions } from '../../lib/computeDiff';
 import type { StringCharMapping } from '../utils/string-char-mapping';
 
 import { transformDiffNodes } from '../transforms/transformDiffNodes';

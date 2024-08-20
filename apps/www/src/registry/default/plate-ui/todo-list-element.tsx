@@ -5,7 +5,7 @@ import { PlateElement } from '@udecode/plate-common/react';
 import {
   useTodoListElement,
   useTodoListElementState,
-} from '@udecode/plate-list';
+} from '@udecode/plate-list/react';
 
 import { Checkbox } from './checkbox';
 

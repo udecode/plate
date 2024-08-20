@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { useUserById } from '@udecode/plate-comments';
+import { useUserById } from '@udecode/plate-comments/react';
 
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
 

@@ -18,7 +18,7 @@ import {
   type SplitNodeOperation,
 } from 'slate';
 
-import type { ComputeDiffOptions } from '../../computeDiff';
+import type { ComputeDiffOptions } from '../../lib/computeDiff';
 
 export interface ChangeTrackingEditor {
   commitChangesToDiffs: () => void;

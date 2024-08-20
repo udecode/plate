@@ -5,7 +5,7 @@ import {
   type ImagePlugin,
   type MediaEmbedPlugin,
   useMediaToolbarButton,
-} from '@udecode/plate-media';
+} from '@udecode/plate-media/react';
 
 import { Icons } from '@/components/icons';
 

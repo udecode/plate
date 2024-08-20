@@ -1,19 +1,16 @@
-import { CodeBlockPlugin } from '@udecode/plate-code-block';
-import {
-  createSlatePlugin,
-  isSelectionAtBlockStart,
-  someNode,
-} from '@udecode/plate-common';
-import { IndentListPlugin } from '@udecode/plate-indent-list';
-import { ListItemPlugin } from '@udecode/plate-list';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+import { isSelectionAtBlockStart, someNode } from '@udecode/plate-common';
+import { createPlatePlugin } from '@udecode/plate-common/react';
+import { IndentListPlugin } from '@udecode/plate-indent-list/react';
+import { ListItemPlugin } from '@udecode/plate-list/react';
 import { TabbablePlugin } from '@udecode/plate-tabbable';
-import { TablePlugin } from '@udecode/plate-table';
+import { TablePlugin } from '@udecode/plate-table/react';
 
 import { TabbableElement } from './TabbableElement';
 
 export const tabbablePlugin = TabbablePlugin.extend({
   plugins: [
-    createSlatePlugin({
+    createPlatePlugin({
       component: TabbableElement,
       isElement: true,
       isVoid: true,

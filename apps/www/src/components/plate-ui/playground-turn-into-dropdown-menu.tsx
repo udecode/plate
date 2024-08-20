@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { BlockquotePlugin } from '@udecode/plate-block-quote';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import {
   ParagraphPlugin,
   collapseSelection,
@@ -16,7 +16,8 @@ import {
   useEditorSelector,
 } from '@udecode/plate-common/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
-import { IndentListPlugin, toggleIndentList } from '@udecode/plate-indent-list';
+import { toggleIndentList } from '@udecode/plate-indent-list';
+import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import { toggleList, unwrapList } from '@udecode/plate-list';
 
 import { settingsStore } from '@/components/context/settings-store';

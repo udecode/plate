@@ -9,6 +9,7 @@ import type {
   SlatePlugins,
 } from './SlatePlugin';
 
+import { mergeWithoutArray } from '../../internal/mergeWithoutArray';
 import { isFunction } from '../utils/misc/isFunction';
 
 /**
@@ -100,9 +101,11 @@ export function createSlatePlugin<
   const plugin = merge(
     {},
     {
+      __apiEditorExtensions: [],
       __apiExtensions: [],
       __configuration: null,
       __extensions: initialExtension ? [initialExtension] : [],
+      __transformEditorExtensions: [],
       __transformExtensions: [],
       api: {},
       dependencies: [],
@@ -175,31 +178,55 @@ export function createSlatePlugin<
 
   plugin.extendApi = (extension) => {
     const newPlugin = { ...plugin };
-    newPlugin.__apiExtensions = [
-      ...(newPlugin.__apiExtensions as any),
+    newPlugin.__apiEditorExtensions = [
+      ...(newPlugin.__apiEditorExtensions as any),
       extension,
     ];
 
     return createSlatePlugin(newPlugin) as any;
   };
+
+  // plugin.extendPluginApi = (extension) => {
+  //   const newPlugin = { ...plugin };
+  //   newPlugin.__apiExtensions = [
+  //     ...(newPlugin.__apiExtensions as any),
+  //     extension,
+  //   ];
+  //
+  //   return createSlatePlugin(newPlugin) as any;
+  // };
 
   plugin.extendTransforms = (extension) => {
     const newPlugin = { ...plugin };
-    newPlugin.__transformExtensions = [
-      ...(newPlugin.__transformExtensions as any),
+    newPlugin.__transformEditorExtensions = [
+      ...(newPlugin.__transformEditorExtensions as any),
       extension,
     ];
 
     return createSlatePlugin(newPlugin) as any;
   };
 
+  // plugin.extendPluginTransforms = (extension) => {
+  //   const newPlugin = { ...plugin };
+  //   newPlugin.__transformExtensions = [
+  //     ...(newPlugin.__transformExtensions as any),
+  //     extension,
+  //   ];
+  //
+  //   return createSlatePlugin(newPlugin) as any;
+  // };
+
   plugin.extend = (extendConfig) => {
-    const newPlugin = { ...plugin };
-    newPlugin.__extensions = [
-      ...(newPlugin.__extensions as any),
-      (ctx) =>
-        isFunction(extendConfig) ? extendConfig(ctx as any) : extendConfig,
-    ];
+    let newPlugin = { ...plugin };
+
+    if (isFunction(extendConfig)) {
+      newPlugin.__extensions = [
+        ...(newPlugin.__extensions as any),
+        extendConfig,
+      ];
+    } else {
+      newPlugin = mergeWithoutArray({}, newPlugin, extendConfig);
+    }
 
     return createSlatePlugin(newPlugin) as any;
   };

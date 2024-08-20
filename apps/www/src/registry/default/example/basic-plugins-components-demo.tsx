@@ -5,11 +5,11 @@ import {
   ItalicPlugin,
   StrikethroughPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-marks';
-import { BlockquotePlugin } from '@udecode/plate-block-quote';
+} from '@udecode/plate-basic-marks/react';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { Plate, usePlateEditor } from '@udecode/plate-common/react';
-import { HeadingPlugin } from '@udecode/plate-heading';
+import { HeadingPlugin } from '@udecode/plate-heading/react';
 
 import { PlateUI } from '@/plate/demo/plate-ui';
 import { Editor } from '@/registry/default/plate-ui/editor';

@@ -1,5 +1,5 @@
 import { htmlStringToDOMNode } from '@udecode/plate-core';
-import { LinkPlugin } from '@udecode/plate-link';
+import { LinkPlugin } from '@udecode/plate-link/react';
 import { ImagePlugin } from '@udecode/plate-media';
 
 import { serializeHtml } from '../../react/serializeHtml';
@@ -7,12 +7,12 @@ import { createPlateUIEditor } from '../create-plate-ui-editor';
 
 it('serialize link to html with attributes', () => {
   const plugins = [
-    LinkPlugin.extend({
+    LinkPlugin.extend(() => ({
       props: {
         rel: 'noopener nofollow',
         target: '_blank',
       },
-    }),
+    })),
   ];
 
   expect(

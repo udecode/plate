@@ -2,12 +2,13 @@
 
 import React from 'react';
 
+import type { TCommentText } from '@udecode/plate-comments';
+
 import { cn } from '@udecode/cn';
 import {
-  type TCommentText,
   useCommentLeaf,
   useCommentLeafState,
-} from '@udecode/plate-comments';
+} from '@udecode/plate-comments/react';
 import { PlateLeaf, type PlateLeafProps } from '@udecode/plate-common/react';
 
 export function CommentLeaf({

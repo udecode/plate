@@ -7,7 +7,7 @@ import {
   useEditorSelector,
 } from '@udecode/plate-common/react';
 
-import type { Heading } from '../../lib';
+import type { Heading } from '../../lib/types';
 
 import { getHeadingList } from '../../internal/getHeadingList';
 import { heightToTop } from '../utils';
