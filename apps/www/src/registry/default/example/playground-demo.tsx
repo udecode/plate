@@ -102,10 +102,11 @@ export const usePlaygroundEditor = (id: any = '') => {
 
   const value = usePlaygroundValue(id);
   const key = useInitialValueVersion(value);
-  id = id ?? '' + key;
+  id = id || 'playground-' + key;
 
   return usePlateEditor(
     {
+      id,
       override: {
         components: createPlateUI({
           draggable: isEnabled('dnd', id),
@@ -292,7 +293,7 @@ export const usePlaygroundEditor = (id: any = '') => {
       shouldNormalizeEditor: true,
       value: value,
     },
-    [enabled]
+    []
   );
 };
 

@@ -20,7 +20,7 @@ export interface PlateProps<E extends PlateEditor = PlateEditor>
   > {
   children: React.ReactNode;
 
-  editor: E;
+  editor: E | null;
 
   renderElement?: TEditableProps['renderElement'];
 
@@ -42,7 +42,7 @@ function PlateInner({
   return (
     <PlateStoreProvider
       decorate={decorate}
-      editor={editor}
+      editor={editor!}
       onChange={onChange}
       onSelectionChange={onSelectionChange}
       onValueChange={onValueChange}
@@ -50,7 +50,7 @@ function PlateInner({
       readOnly={readOnly}
       renderElement={renderElement}
       renderLeaf={renderLeaf}
-      scope={editor.id}
+      scope={editor!.id}
     >
       {children}
     </PlateStoreProvider>
@@ -60,5 +60,7 @@ function PlateInner({
 export function Plate<E extends PlateEditor = PlateEditor>(
   props: PlateProps<E>
 ) {
+  if (!props.editor) return null;
+
   return <PlateInner key={props.editor.key} {...(props as any)} />;
 }

@@ -10,6 +10,8 @@ import type {
 } from '@udecode/slate';
 import type { TEditableProps } from '@udecode/slate-react';
 import type { AnyObject } from '@udecode/utils';
+import type { Options } from 'react-hotkeys-hook';
+import type { HotkeysEvent } from 'react-hotkeys-hook/src/types';
 
 import type {
   AnyPluginConfig,
@@ -60,6 +62,8 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
       onChange?: OnChange<WithAnyKey<C>>;
     } & DOMHandlers<WithAnyKey<C>>
   >;
+
+  hotkeys: PlateHotkeys;
 
   /** Plugin injection. */
   inject: {
@@ -167,13 +171,14 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
 
 export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   __apiEditorExtensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
-
+  __apiExtensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
   __configuration: ((ctx: PlatePluginContext<AnyPluginConfig>) => any) | null;
   __extensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
   __resolved?: boolean;
   __transformEditorExtensions: ((
     ctx: PlatePluginContext<AnyPluginConfig>
   ) => any)[];
+  __transformExtensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
 
   configure: (
     config:
@@ -340,6 +345,10 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferTransforms<C>
     >
   >;
+
+  // extendHotkeys: (
+  //   hotkeys: ((ctx: PlatePluginContext<C>) => PlateHotkeys) | PlateHotkeys
+  // ) => PlatePlugin<C>;
 
   extendPlugin: <
     P extends AnyPlatePlugin | AnySlatePlugin,
@@ -651,3 +660,16 @@ export type SerializeHtml<C extends AnyPluginConfig = PluginConfig> = React.FC<
 export type OnChange<C extends AnyPluginConfig = PluginConfig> = (
   ctx: { value: Value } & PlatePluginContext<C>
 ) => HandlerReturnType;
+
+export type PlateHotkey = {
+  callback: (
+    ctx: {
+      event: KeyboardEvent;
+      handler: HotkeysEvent;
+    } & PlatePluginContext
+  ) => void;
+  hotkey: string | string[];
+  options?: Options;
+};
+
+export type PlateHotkeys = Record<string, PlateHotkey | null>;

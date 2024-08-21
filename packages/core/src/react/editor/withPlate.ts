@@ -53,10 +53,12 @@ export const withPlate = <
   e: TEditor,
   { plugins = [], ...options }: WithPlateOptions<V, P> = {}
 ): TPlateEditor<V, InferPlugins<P[]>> => {
-  return withSlate<V, P>(e, {
+  const editor = withSlate<V, P>(e, {
     ...options,
     plugins: [...getPlateCorePlugins(), ...plugins],
   } as any) as any;
+
+  return editor;
 };
 
 export type CreatePlateEditorOptions<

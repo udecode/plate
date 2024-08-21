@@ -13,7 +13,7 @@ export const PlateApiPlugin = createPlatePlugin({
       'OVERRIDE_MISSING'
     );
   },
-  setStoreValue: {} as {
+  setStoreState: {} as {
     [K in (typeof EXPOSED_STORE_KEYS)[number]]: (
       value: PlateStoreState<any>[K]
     ) => void;

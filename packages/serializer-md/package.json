@@ -58,10 +58,10 @@
     "@udecode/plate-common": ">=36.3.4",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "slate": ">=0.94.0",
+    "slate": ">=0.103.0",
     "slate-history": ">=0.93.0",
     "slate-hyperscript": ">=0.66.0",
-    "slate-react": ">=0.99.0"
+    "slate-react": ">=0.108.0"
   },
   "publishConfig": {
     "access": "public"

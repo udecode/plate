@@ -551,4 +551,19 @@ describe('toPlatePlugin with direct merge for object configs', () => {
       isUrl,
     });
   });
+
+  it('should override an existing component', () => {
+    const NewComponent: PlatePluginComponent = () => null;
+
+    const basePlugin = createSlatePlugin({
+      key: 'testPlugin',
+    });
+
+    const plugin = toPlatePlugin(basePlugin);
+
+    const pluginWithNewComponent = plugin.withComponent(NewComponent);
+    const resolvedPlugin = resolvePluginTest(pluginWithNewComponent);
+
+    expect(resolvedPlugin.component).toBe(NewComponent);
+  });
 });

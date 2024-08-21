@@ -111,6 +111,7 @@ export function createSlatePlugin<
       dependencies: [],
       editor: {},
       handlers: {},
+      hotkeys: {},
       inject: {},
       key,
       options: {},
@@ -289,14 +290,6 @@ export function createSlatePlugin<
     }
 
     return createSlatePlugin(newPlugin);
-  };
-
-  // TODO react
-  (plugin as any).withComponent = (component: any) => {
-    return plugin.extend({
-      component,
-      // TODO react
-    } as any) as any;
   };
 
   return plugin;

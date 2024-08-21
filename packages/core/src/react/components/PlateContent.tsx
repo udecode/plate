@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
+import { useHotkeys } from 'react-hotkeys-hook';
 
 import type { TEditableProps } from '@udecode/slate-react';
 
+import { useComposedRef } from '@udecode/react-utils';
 import { Editable } from 'slate-react';
 
 import { useEditableProps } from '../hooks';
+import { type PlateHotkey, getPluginContext } from '../plugin';
 import { type PlateStoreState, useEditorRef } from '../stores';
 import { EditorMethodsEffect } from './EditorMethodsEffect';
 import { EditorRefEffect } from './EditorRefEffect';
@@ -44,7 +47,22 @@ const PlateContent = React.forwardRef(
 
     const editableProps = useEditableProps(props);
 
-    const editable = <Editable ref={ref} {...(editableProps as any)} />;
+    const editableRef = useRef<HTMLDivElement | null>(null);
+    const hotkeyRefs = useRef<(HTMLElement | null)[]>([]);
+
+    const addHotkeyRef = useCallback((ref: HTMLElement | null) => {
+      if (ref && !hotkeyRefs.current.includes(ref)) {
+        hotkeyRefs.current.push(ref);
+      }
+    }, []);
+
+    const combinedRef = useComposedRef(
+      ref,
+      editableRef,
+      ...(hotkeyRefs.current as any)
+    );
+
+    const editable = <Editable ref={combinedRef} {...(editableProps as any)} />;
 
     let afterEditable: React.ReactNode = null;
     let beforeEditable: React.ReactNode = null;
@@ -80,6 +98,7 @@ const PlateContent = React.forwardRef(
         {renderEditable ? renderEditable(editable) : editable}
 
         <EditorMethodsEffect id={id} />
+        <EditorHotkeysEffect addHotkeyRef={addHotkeyRef} id={id} />
         <EditorStateEffect id={id} />
         <EditorRefEffect id={id} />
         <PlateControllerEffect id={id} />
@@ -103,3 +122,66 @@ const PlateContent = React.forwardRef(
 PlateContent.displayName = 'PlateContent';
 
 export { PlateContent };
+
+export function EditorHotkeysEffect({
+  addHotkeyRef,
+  id,
+}: {
+  addHotkeyRef: (ref: HTMLElement | null) => void;
+  id?: string;
+}) {
+  const editor = useEditorRef(id);
+
+  return (
+    <>
+      {Object.entries(editor.hotkeys).map(([hotkeyString, hotkeyConfig]) => {
+        if (!hotkeyConfig) return null;
+
+        return (
+          <HotkeyEffect
+            addHotkeyRef={addHotkeyRef}
+            hotkeyConfig={hotkeyConfig}
+            id={id}
+            key={hotkeyString}
+          />
+        );
+      })}
+    </>
+  );
+}
+
+function HotkeyEffect({
+  addHotkeyRef,
+  hotkeyConfig,
+  id,
+}: {
+  addHotkeyRef: (ref: HTMLElement | null) => void;
+  hotkeyConfig: PlateHotkey;
+  id?: string;
+}) {
+  const editor = useEditorRef(id);
+
+  const ref = useHotkeys(
+    hotkeyConfig.hotkey,
+    (event, handler) => {
+      hotkeyConfig.callback({
+        ...getPluginContext(editor, {} as any),
+        event,
+        handler,
+      });
+    },
+    {
+      enableOnContentEditable: true,
+      ...hotkeyConfig.options,
+    },
+    []
+  );
+
+  useEffect(() => {
+    addHotkeyRef(ref.current);
+
+    return () => addHotkeyRef(null);
+  }, [addHotkeyRef, ref]);
+
+  return null;
+}

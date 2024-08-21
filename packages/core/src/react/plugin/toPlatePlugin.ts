@@ -30,6 +30,16 @@ type PlatePluginConfig<C extends AnyPluginConfig, EO = {}, EA = {}, ET = {}> = {
   'api' | 'options' | 'transforms' | keyof PlatePluginMethods
 >;
 
+const methodsToWrap: (keyof SlatePlugin)[] = [
+  'configure',
+  'configurePlugin',
+  'extendEditorApi',
+  'extendApi',
+  'extendTransforms',
+  'extend',
+  'extendPlugin',
+];
+
 /**
  * Extends a SlatePlugin to create a React PlatePlugin.
  *
@@ -62,9 +72,25 @@ export function toPlatePlugin<
     ET & InferTransforms<C>
   >
 > {
-  if (!extendConfig) return basePlugin as any;
+  const plugin = { ...basePlugin } as unknown as PlatePlugin;
 
-  const extendedPlugin = basePlugin.extend(extendConfig as any);
+  methodsToWrap.forEach((method) => {
+    const originalMethod = plugin[method];
+
+    (plugin as any)[method] = (...args: any[]) => {
+      const slatePlugin = originalMethod(...args);
+
+      return toPlatePlugin(slatePlugin);
+    };
+  });
+
+  plugin.withComponent = (component) => {
+    return plugin.extend({ component }) as any;
+  };
+
+  if (!extendConfig) return plugin as any;
+
+  const extendedPlugin = plugin.extend(extendConfig as any);
 
   return extendedPlugin as any;
 }

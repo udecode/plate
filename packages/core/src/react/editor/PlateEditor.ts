@@ -12,6 +12,7 @@ import type {
 import type {
   AnyEditorPlatePlugin,
   EditorPlatePlugin,
+  PlateHotkeys,
 } from '../plugin/PlatePlugin';
 import type { PlateCorePlugin } from './withPlate';
 
@@ -23,6 +24,9 @@ export type PlateEditor = {
   getPlugin: <C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
   ) => C extends { type: any } ? C : EditorPlatePlugin<C>;
+
+  hotkeys: PlateHotkeys;
+
   pluginList: AnyEditorPlatePlugin[];
 
   plugins: Record<string, AnyEditorPlatePlugin>;

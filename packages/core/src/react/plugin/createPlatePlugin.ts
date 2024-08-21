@@ -1,17 +1,14 @@
 import type { PlateEditor } from '../editor/PlateEditor';
-import type {
-  PlatePlugin,
-  PlatePluginComponent,
-  PlatePluginMethods,
-} from './PlatePlugin';
+import type { PlatePlugin, PlatePluginMethods } from './PlatePlugin';
 
 import {
   type AnyPluginConfig,
   type PluginConfig,
   createSlatePlugin,
 } from '../../lib';
+import { toPlatePlugin } from './toPlatePlugin';
 
-export function createPlatePlugin<
+export const createPlatePlugin = <
   K extends string = any,
   O = {},
   A = {},
@@ -28,17 +25,11 @@ export function createPlatePlugin<
         Partial<PlatePlugin<PluginConfig<K, O, A, T>>>,
         keyof PlatePluginMethods
       > = {}
-) {
-  const plugin = createSlatePlugin(config as any) as unknown as PlatePlugin<
-    PluginConfig<K, O, A, T>
-  >;
+): PlatePlugin<PluginConfig<K, O, A, T>> => {
+  const plugin = createSlatePlugin(config as any);
 
-  plugin.withComponent = (component: PlatePluginComponent) => {
-    return plugin.extend({ component }) as any;
-  };
-
-  return plugin;
-}
+  return toPlatePlugin(plugin as any) as any;
+};
 
 /**
  * Explicitly typed version of `createPlatePlugin`.

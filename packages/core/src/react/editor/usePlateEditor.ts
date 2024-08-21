@@ -7,6 +7,7 @@ import type { AnyPluginConfig } from '../../lib';
 import {
   type CreatePlateEditorOptions,
   type PlateCorePlugin,
+  type TPlateEditor,
   createPlateEditor,
 } from '../editor';
 
@@ -24,13 +25,22 @@ import {
 export function usePlateEditor<
   V extends Value = Value,
   P extends AnyPluginConfig = PlateCorePlugin,
+  TEnabled extends boolean | undefined = undefined,
 >(
-  options: CreatePlateEditorOptions<V, P> = {},
+  options: { enabled?: TEnabled } & CreatePlateEditorOptions<V, P> = {},
   deps: React.DependencyList = []
-) {
+): TEnabled extends false
+  ? null
+  : TEnabled extends true | undefined
+    ? TPlateEditor<V, P>
+    : TPlateEditor<V, P> | null {
   return React.useMemo(
-    () => createPlateEditor<V, P>(options),
+    (): any => {
+      if (options.enabled === false) return null;
+
+      return createPlateEditor(options);
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [options.id, ...deps]
+    [options.id, options.enabled, ...deps]
   );
 }

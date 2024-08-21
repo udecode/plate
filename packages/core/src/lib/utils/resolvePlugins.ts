@@ -23,6 +23,7 @@ export const resolvePlugins = (
   editor.plugins = {};
   editor.api = {} as any;
   editor.transforms = {} as any;
+  editor.hotkeys = {} as any;
 
   const resolvedPlugins = resolveAndSortPlugins(editor, plugins);
 
@@ -43,29 +44,38 @@ export const resolvePlugins = (
 };
 
 const mergePluginApis = (editor: SlateEditor) => {
-  editor.pluginList.forEach((plugin) => {
+  editor.pluginList.forEach((plugin: any) => {
+    // Merge APIs
     Object.entries(plugin.api).forEach(([apiKey, apiFunction]) => {
       (editor.api as any)[apiKey] = apiFunction;
     });
-  });
 
-  (editor.pluginList as SlatePlugin[]).forEach((plugin) => {
+    // Merge hotkeys
+    if (plugin.hotkeys) {
+      Object.entries(plugin.hotkeys).forEach(([key, hotkey]) => {
+        if (hotkey === null) {
+          delete (editor.hotkeys as any)[key];
+        } else {
+          (editor.hotkeys as any)[key] = hotkey;
+        }
+      });
+    }
     // Apply editor api extensions
     if (
       plugin.__apiEditorExtensions &&
       plugin.__apiEditorExtensions.length > 0
     ) {
-      plugin.__apiEditorExtensions.forEach((methodExtension) => {
+      plugin.__apiEditorExtensions.forEach((methodExtension: any) => {
         const newApi = methodExtension(getPluginContext(editor, plugin) as any);
 
         mergeWithoutArray(plugin.api, newApi);
         mergeWithoutArray(editor.api, newApi);
       });
-      delete (plugin as any).__apiEditorExtensions;
+      delete plugin.__apiEditorExtensions;
     }
     // Apply plugin-specific api extensions
     if (plugin.__apiExtensions && plugin.__apiExtensions.length > 0) {
-      plugin.__apiExtensions.forEach((methodExtension) => {
+      plugin.__apiExtensions.forEach((methodExtension: any) => {
         if (!(editor.api as any)[plugin.key]) {
           (editor.api as any)[plugin.key] = {};
         }
@@ -77,14 +87,14 @@ const mergePluginApis = (editor: SlateEditor) => {
         mergeWithoutArray((plugin.api as any)[plugin.key], newApi);
         mergeWithoutArray((editor.api as any)[plugin.key], newApi);
       });
-      delete (plugin as any).__apiExtensions;
+      delete plugin.__apiExtensions;
     }
     // Apply editor transform extensions
     if (
       plugin.__transformEditorExtensions &&
       plugin.__transformEditorExtensions.length > 0
     ) {
-      plugin.__transformEditorExtensions.forEach((transformExtension) => {
+      plugin.__transformEditorExtensions.forEach((transformExtension: any) => {
         const newTransforms = transformExtension(
           getPluginContext(editor, plugin) as any
         );
@@ -92,13 +102,13 @@ const mergePluginApis = (editor: SlateEditor) => {
         mergeWithoutArray(plugin.transforms, newTransforms);
         mergeWithoutArray(editor.transforms, newTransforms); // Add transforms to editor.api as well
       });
-      delete (plugin as any).__transformEditorExtensions;
+      delete plugin.__transformEditorExtensions;
     }
     if (
       plugin.__transformExtensions &&
       plugin.__transformExtensions.length > 0
     ) {
-      plugin.__transformExtensions.forEach((methodExtension) => {
+      plugin.__transformExtensions.forEach((methodExtension: any) => {
         if (!(editor.transforms as any)[plugin.key]) {
           (editor.transforms as any)[plugin.key] = {};
         }
@@ -118,7 +128,7 @@ const mergePluginApis = (editor: SlateEditor) => {
           newTransforms
         );
       });
-      delete (plugin as any).__transformExtensions;
+      delete plugin.__transformExtensions;
     }
   });
 };

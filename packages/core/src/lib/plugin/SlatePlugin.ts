@@ -25,8 +25,8 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
   editor: {
     insertData?: EditorInsertData<WithAnyKey<C>>;
   };
-
   handlers: {};
+  hotkeys: {};
   inject: {
     plugins?: Record<string, Partial<EditorPlugin<AnyPluginConfig>>>;
     props?: InjectProps<WithAnyKey<C>>;
