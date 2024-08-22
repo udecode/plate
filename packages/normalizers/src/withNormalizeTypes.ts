@@ -28,7 +28,10 @@ export const withNormalizeTypes = <
 
           if (node) {
             if (strictType && isElement(node) && node.type !== strictType) {
-              setElements(editor, editor.blockFactory({ type: strictType }), {
+              const { children, ...props } = editor.blockFactory({
+                type: strictType,
+              });
+              setElements(editor, props, {
                 at: path,
               });
 
