@@ -7,7 +7,6 @@ import {
   createTSlatePlugin,
   someNode,
 } from '@udecode/plate-common';
-import { Key } from '@udecode/plate-common/react';
 
 import {
   toggleBulletedList,
@@ -88,29 +87,10 @@ export const ListPlugin = createTSlatePlugin<ListConfig>({
     ListItemPlugin,
     ListItemContentPlugin,
   ],
-})
-  .extendEditorTransforms(({ editor }) => ({
-    toggle: {
-      bulletedList: bindFirst(toggleBulletedList, editor),
-      list: bindFirst(toggleList, editor),
-      numberedList: bindFirst(toggleNumberedList, editor),
-    },
-  }))
-  .extend(({ editor }) => ({
-    shortcuts: {
-      toggleBulletedList: {
-        handler: () => {
-          editor.getTransforms(ListPlugin).toggle.bulletedList();
-        },
-        keys: [[Key.Mod, Key.Alt, '5']],
-        preventDefault: true,
-      },
-      toggleNumberedList: {
-        handler: () => {
-          editor.getTransforms(ListPlugin).toggle.numberedList();
-        },
-        keys: [[Key.Mod, Key.Alt, '6']],
-        preventDefault: true,
-      },
-    },
-  }));
+}).extendEditorTransforms(({ editor }) => ({
+  toggle: {
+    bulletedList: bindFirst(toggleBulletedList, editor),
+    list: bindFirst(toggleList, editor),
+    numberedList: bindFirst(toggleNumberedList, editor),
+  },
+}));

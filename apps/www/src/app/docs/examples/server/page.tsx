@@ -55,14 +55,12 @@ import { ExcalidrawPlugin } from '@udecode/plate-excalidraw';
 import { JuicePlugin } from '@udecode/plate-juice';
 import { ResetNodePlugin } from '@udecode/plate-reset-node';
 import { serializeMd } from '@udecode/plate-serializer-md';
-import remarkGfm from 'remark-gfm';
 
+import { Markdown } from '@/components/MemoizedReactMarkdownClient';
 import { Code } from '@/components/code';
 import { DocPageLayout } from '@/components/doc-page-layout';
 import { Link } from '@/components/link';
-import { MemoizedReactMarkdown } from '@/components/markdown';
 import { H2, H3, P } from '@/components/typography';
-import { CodeBlock } from '@/components/ui/codeblock';
 import { basicElementsValue } from '@/plate/demo/values/basicElementsValue';
 import { basicMarksValue } from '@/plate/demo/values/basicMarksValue';
 
@@ -265,33 +263,7 @@ export default function RSCPage() {
         within a React Server Component:
       </P>
 
-      <MemoizedReactMarkdown
-        className="prose max-w-none break-words rounded-sm border p-4 py-6 prose-p:leading-relaxed prose-pre:p-0"
-        components={{
-          code({ children, className, node, ...props }) {
-            const match = /language-(\w+)/.exec(className || '');
-
-            return match ? (
-              <CodeBlock
-                key={Math.random()}
-                language={match?.[1] || ''}
-                value={String(children).replace(/\n$/, '')}
-                {...props}
-              />
-            ) : (
-              <code className={className} {...props}>
-                {children}
-              </code>
-            );
-          },
-          p({ children }) {
-            return <p className="mb-2 last:mb-0">{children}</p>;
-          },
-        }}
-        remarkPlugins={[remarkGfm]}
-      >
-        {md}
-      </MemoizedReactMarkdown>
+      <Markdown>{md}</Markdown>
     </DocPageLayout>
   );
 }

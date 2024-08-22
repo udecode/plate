@@ -4,7 +4,7 @@
   ],
   "files": [
     {
-      "content": "import React from 'react';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { PlateElement, useElement } from '@udecode/plate-common/react';\nimport { type TLinkElement, useLink } from '@udecode/plate-link';\n\nexport const LinkElement = withRef<typeof PlateElement>(\n  ({ children, className, ...props }, ref) => {\n    const element = useElement<TLinkElement>();\n    const { props: linkProps } = useLink({ element });\n\n    return (\n      <PlateElement\n        asChild\n        className={cn(\n          'font-medium text-primary underline decoration-primary underline-offset-4',\n          className\n        )}\n        ref={ref}\n        {...(linkProps as any)}\n        {...props}\n      >\n        <a>{children}</a>\n      </PlateElement>\n    );\n  }\n);\n",
+      "content": "import React from 'react';\n\nimport type { TLinkElement } from '@udecode/plate-link';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { PlateElement, useElement } from '@udecode/plate-common/react';\nimport { useLink } from '@udecode/plate-link/react';\n\nexport const LinkElement = withRef<typeof PlateElement>(\n  ({ children, className, ...props }, ref) => {\n    const element = useElement<TLinkElement>();\n    const { props: linkProps } = useLink({ element });\n\n    return (\n      <PlateElement\n        asChild\n        className={cn(\n          'font-medium text-primary underline decoration-primary underline-offset-4',\n          className\n        )}\n        ref={ref}\n        {...(linkProps as any)}\n        {...props}\n      >\n        <a>{children}</a>\n      </PlateElement>\n    );\n  }\n);\n",
       "name": "link-element.tsx"
     }
   ],

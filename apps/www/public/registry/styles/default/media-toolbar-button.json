@@ -4,7 +4,7 @@
   ],
   "files": [
     {
-      "content": "import React from 'react';\n\nimport { withRef } from '@udecode/cn';\nimport {\n  type ImagePlugin,\n  type MediaEmbedPlugin,\n  useMediaToolbarButton,\n} from '@udecode/plate-media';\n\nimport { Icons } from '@/components/icons';\n\nimport { ToolbarButton } from './toolbar';\n\nexport const MediaToolbarButton = withRef<\n  typeof ToolbarButton,\n  {\n    nodeType?: typeof ImagePlugin.key | typeof MediaEmbedPlugin.key;\n  }\n>(({ nodeType, ...rest }, ref) => {\n  const { props } = useMediaToolbarButton({ nodeType });\n\n  return (\n    <ToolbarButton ref={ref} {...props} {...rest}>\n      <Icons.image />\n    </ToolbarButton>\n  );\n});\n",
+      "content": "import React from 'react';\n\nimport { withRef } from '@udecode/cn';\nimport {\n  type ImagePlugin,\n  type MediaEmbedPlugin,\n  useMediaToolbarButton,\n} from '@udecode/plate-media/react';\n\nimport { Icons } from '@/components/icons';\n\nimport { ToolbarButton } from './toolbar';\n\nexport const MediaToolbarButton = withRef<\n  typeof ToolbarButton,\n  {\n    nodeType?: typeof ImagePlugin.key | typeof MediaEmbedPlugin.key;\n  }\n>(({ nodeType, ...rest }, ref) => {\n  const { props } = useMediaToolbarButton({ nodeType });\n\n  return (\n    <ToolbarButton ref={ref} {...props} {...rest}>\n      <Icons.image />\n    </ToolbarButton>\n  );\n});\n",
       "name": "media-toolbar-button.tsx"
     }
   ],

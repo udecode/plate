@@ -1,3 +1,5 @@
+'use client';
+
 import { type FC, memo } from 'react';
 import ReactMarkdown, { type Options } from 'react-markdown';
 

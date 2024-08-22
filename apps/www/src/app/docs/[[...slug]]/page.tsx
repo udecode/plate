@@ -1,19 +1,10 @@
-import Balancer from 'react-wrap-balancer';
-
 import type { PackageInfoType } from '@/hooks/use-package-info';
 
-import { cn } from '@udecode/cn';
 import { allDocs } from 'contentlayer/generated';
-import { ChevronRight, ExternalLinkIcon } from 'lucide-react';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { Mdx } from '@/components/mdx-components';
-import { DocsPager } from '@/components/pager';
-import { DashboardTableOfContents } from '@/components/toc';
-import { badgeVariants } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { DocPageLayout } from '@/components/doc-page-layout';
+import { Mdx } from '@/components/mdx-components';
 // import { formatBytes, getPackageData } from '@/lib/bundlephobia';
 import { getTableOfContents } from '@/lib/toc';
 
@@ -124,7 +115,7 @@ export default async function DocPage({ params }: DocPageProps) {
   const toc = await getTableOfContents(doc.body.raw);
 
   return (
-    <DocPageLayout isUI={isUI} doc={doc} toc={toc}>
+    <DocPageLayout doc={doc} isUI={isUI} toc={toc}>
       <Mdx code={doc.body.code} packageInfo={packageInfo} />
     </DocPageLayout>
   );

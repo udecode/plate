@@ -1,4 +1,4 @@
-import { toPlatePlugin } from '@udecode/plate-common/react';
+import { Key, toPlatePlugin } from '@udecode/plate-common/react';
 
 import {
   BulletedListPlugin as BaseBulletedListPlugin,
@@ -40,4 +40,21 @@ export const ListPlugin = toPlatePlugin(BaseListPlugin, {
     ListItemContentPlugin,
   ],
   withOverrides: withList,
-});
+}).extend(({ editor }) => ({
+  shortcuts: {
+    toggleBulletedList: {
+      handler: () => {
+        editor.getTransforms(ListPlugin).toggle.bulletedList();
+      },
+      keys: [[Key.Mod, Key.Alt, '5']],
+      preventDefault: true,
+    },
+    toggleNumberedList: {
+      handler: () => {
+        editor.getTransforms(ListPlugin).toggle.numberedList();
+      },
+      keys: [[Key.Mod, Key.Alt, '6']],
+      preventDefault: true,
+    },
+  },
+}));
