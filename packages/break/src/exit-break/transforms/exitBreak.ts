@@ -39,7 +39,7 @@ export const exitBreak = <V extends Value>(
 
   insertElements(
     editor,
-    { children: [{ text: '' }], type: defaultType },
+    editor.blockFactory({ children: [{ text: '' }], type: defaultType }),
     {
       at: insertPath,
       select: !isStart,
