@@ -1,5 +1,11 @@
 # @udecode/plate-normalizers
 
+## 36.5.6
+
+### Patch Changes
+
+- [#3454](https://github.com/udecode/plate/pull/3454) by [@nklhtv](https://github.com/nklhtv) – Use blockFactory to create elements in NormalizeTypes plugin
+
 ## 36.0.0
 
 ## 34.0.0
