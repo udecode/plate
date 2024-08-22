@@ -31,6 +31,7 @@ const output = (
 
 it('should be', () => {
   jest.spyOn(isHotkey, 'isHotkey').mockReturnValue(true);
+  input.blockFactory = (node: any) => node;
   onKeyDownExitBreak(
     input,
     mockPlugin({

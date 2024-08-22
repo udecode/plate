@@ -12,8 +12,11 @@ import type { ExitBreakRule } from '../types';
 
 import { exitBreakAtEdges } from '../queries/exitBreakAtEdges';
 
-export const exitBreak = <V extends Value>(
-  editor: PlateEditor<V>,
+export const exitBreak = <
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>,
+>(
+  editor: E,
   {
     before,
     defaultType = getPluginType(editor, ELEMENT_DEFAULT),
@@ -39,7 +42,7 @@ export const exitBreak = <V extends Value>(
 
   insertElements(
     editor,
-    { children: [{ text: '' }], type: defaultType },
+    editor.blockFactory({ children: [{ text: '' }], type: defaultType }),
     {
       at: insertPath,
       select: !isStart,
