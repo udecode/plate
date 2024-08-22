@@ -1,5 +1,11 @@
 # @udecode/plate-autoformat
 
+## 36.5.6
+
+### Patch Changes
+
+- [#3457](https://github.com/udecode/plate/pull/3457) by [@nklhtv](https://github.com/nklhtv) – Use editor.blockFactory to create default elements
+
 ## 36.4.0
 
 ### Minor Changes
