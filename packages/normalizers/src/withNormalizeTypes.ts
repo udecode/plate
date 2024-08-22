@@ -28,13 +28,9 @@ export const withNormalizeTypes = <
 
           if (node) {
             if (strictType && isElement(node) && node.type !== strictType) {
-              setElements(
-                editor,
-                { type: strictType },
-                {
-                  at: path,
-                }
-              );
+              setElements(editor, editor.blockFactory({ type: strictType }), {
+                at: path,
+              });
 
               return true;
             }
@@ -42,10 +38,7 @@ export const withNormalizeTypes = <
             try {
               insertElements(
                 editor,
-                {
-                  children: [{ text: '' }],
-                  type: strictType ?? type!,
-                },
+                editor.blockFactory({ type: strictType ?? type! }),
                 { at: path }
               );
 
