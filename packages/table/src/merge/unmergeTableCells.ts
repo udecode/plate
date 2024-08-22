@@ -140,10 +140,10 @@ export const unmergeTableCells = <V extends Value = Value>(
       if (!rowEntry) {
         insertElements(
           editor,
-          {
+          editor.blockFactory({
             children: newRowChildren,
             type: getPluginType(editor, ELEMENT_TR),
-          },
+          }),
           { at: _rowPath }
         );
       }

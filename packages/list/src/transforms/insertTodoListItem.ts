@@ -58,11 +58,11 @@ export const insertTodoListItem = <V extends Value>(
     if (isStart) {
       insertElements(
         editor,
-        {
+        editor.blockFactory({
           checked: inheritCheckStateOnLineStartBreak ? todo.checked : false,
           children: [{ text: '' }],
           type: todoType,
-        },
+        }),
         { at: paragraphPath }
       );
 
@@ -76,11 +76,11 @@ export const insertTodoListItem = <V extends Value>(
       const marks = getMarks(editor) || {};
       insertElements(
         editor,
-        {
+        editor.blockFactory({
           checked: inheritCheckStateOnLineEndBreak ? todo.checked : false,
           children: [{ text: '', ...marks }],
           type: todoType,
-        },
+        }),
         { at: nextParagraphPath }
       );
       select(editor, nextParagraphPath);
