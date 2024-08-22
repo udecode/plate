@@ -91,7 +91,6 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
       document: window.document,
       selectables: [],
       selectionAreaClass: 'selection-area',
-      selectionContainerClass: undefined,
       startAreas: ['html'],
       ...opt,
 
@@ -137,8 +136,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
       }
     }
 
-    const { document, selectionAreaClass, selectionContainerClass } =
-      this._options;
+    const { document, selectionAreaClass } = this._options;
     this._area = document.createElement('div');
     // this._clippingElement = document.createElement('div');
     // this._clippingElement.appendChild(this._area);
@@ -242,7 +240,6 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
 
       //     // Detect mouse scrolling
       on(this._container, 'wheel', this._manualScroll, { passive: true });
-
       //     /**
       //      * The selection-area will also cover other element which are
       //      * out of the current scrollable parent. So find all elements
@@ -335,23 +332,52 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     }, 100);
   }
 
-  _onScroll(): void {
-    const {
-      _options: { document },
-      _scrollDelta,
-    } = this;
-    const { scrollLeft, scrollTop } =
-      document.scrollingElement ?? document.body;
+  _onScroll(evt: ScrollEvent): void {
+    const { document } = this._options;
 
-    // Adjust area start location
-    this._areaLocation.x1 += _scrollDelta.x - scrollLeft;
-    this._areaLocation.y1 += _scrollDelta.y - scrollTop;
-    _scrollDelta.x = scrollLeft;
-    _scrollDelta.y = scrollTop;
+    this.wheelTimer && clearTimeout(this.wheelTimer);
 
-    // The area needs to be set back as the target-container has changed in its position
-    this._setupSelectionArea();
+    const { x, y } = simplifyEvent(evt); // Capture event data immediately
+    console.log(
+      '🚀 ~ SelectionArea ~ _onScroll ~ y:',
+      y - this._containerRect!.top + this._container!.scrollTop
+    );
+
+    this._areaLocation.y2 =
+      y -
+      this._containerRect!.top +
+      this._container!.scrollTop +
+      document.scrollingElement!.scrollTop;
     this._frame.next(null);
+
+    // this.wheelTimer = setTimeout(() => {
+    //   const Ry = y - this._containerRect!.top;
+    // }, 100);
+    // this.wheelTimer && clearTimeout(this.wheelTimer);
+
+    // const { x, y } = simplifyEvent(evt); // Capture event data immediately
+
+    // this.wheelTimer = setTimeout(() => {
+    //   const Ry = y - this._containerRect!.top;
+    //   const Rx = x - this._containerRect!.left;
+    //   this._areaLocation.x2 = Rx + this._container!.scrollLeft;
+    //   this._areaLocation.y2 = Ry + this._container!.scrollTop;
+    //   this._frame.next(null);
+    // }, 100);
+    // const {
+    //   _options: { document },
+    //   _scrollDelta,
+    // } = this;
+    // const { scrollLeft, scrollTop } =
+    //   document.scrollingElement ?? document.body;
+    // // Adjust area start location
+    // this._areaLocation.x1 += _scrollDelta.x - scrollLeft;
+    // this._areaLocation.y1 += _scrollDelta.y - scrollTop;
+    // _scrollDelta.x = scrollLeft;
+    // _scrollDelta.y = scrollTop;
+    // // The area needs to be set back as the target-container has changed in its position
+    // this._setupSelectionArea();
+    // this._frame.next(null);
   }
 
   _onSingleTap(evt: MouseEvent | TouchEvent): void {
@@ -510,6 +536,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     const { target, x, y } = simplifyEvent(evt);
 
     this._container = selectAll(container, document)[0];
+
     this._containerRect = this._container.getBoundingClientRect();
 
     const Rx = x - this._containerRect.left + this._container.scrollLeft;
@@ -531,6 +558,12 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
       _options.boundaries,
       _options.document
     );
+    console.log(_options.document, 'document');
+    console.log(_options.boundaries, 'fj');
+    console.log(
+      '🚀 ~ SelectionArea ~ _onTapStart ~ resolvedBoundaries:',
+      resolvedBoundaries
+    );
 
     // Check in which container the user currently acts
     this._targetElement = resolvedBoundaries.find((el) => {
@@ -540,6 +573,8 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
         _options.behaviour.intersect
       );
     });
+
+    this._targetElement = this._container;
 
     // Check if area starts in one of the start areas / boundaries
     const evtPath = evt.composedPath();
@@ -575,7 +610,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
       passive: false,
     });
     on(document, ['mouseup', 'touchcancel', 'touchend'], this._onTapStop);
-    on(document, 'scroll', this._onScroll);
+    on(document, 'wheel', this._onScroll, { passive: false });
   }
 
   _onTapStop(evt: MouseEvent | TouchEvent | null, silent: boolean): void {
@@ -602,7 +637,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     this._scrollSpeed.y = 0;
 
     // Unbind mouse scrolling listener
-    off(this._targetElement, 'wheel', this._manualScroll, { passive: true });
+    off(this._container, 'wheel', this._manualScroll, { passive: true });
 
     // Remove selection-area from dom
     this._area.remove();
@@ -622,7 +657,6 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
       _container,
       _containerRect,
       _scrollSpeed,
-      _targetElement,
     } = this;
     const {
       clientHeight,
@@ -884,10 +918,13 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
    * everything which can be selected.
    */
   resolveSelectables(): void {
+    console.log(1, 'fj');
     this._selectables = selectAll(
       this._options.selectables,
       this._options.document
     );
+
+    console.log(this._selectables, 'fj');
   }
 
   /**

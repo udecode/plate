@@ -1,11 +1,8 @@
-import React from 'react';
-
 import {
   type QueryNodeOptions,
   createPluginFactory,
 } from '@udecode/plate-common/server';
 
-import { BlockSelectionArea, BlockStartArea } from './components';
 import { BlockSelectable } from './components/BlockSelectable';
 import {
   blockContextMenuActions,
@@ -67,37 +64,6 @@ export const createBlockSelectionPlugin =
         top: 4,
       },
     },
-    then: (editor, { options }) => ({
-      renderAboveEditable: ({ children }) => (
-        <BlockSelectionArea>
-          <BlockStartArea
-            state={{
-              placement: 'left',
-              size: options.sizes?.left,
-            }}
-          />
-          <BlockStartArea
-            state={{
-              placement: 'top',
-              size: options.sizes?.top,
-            }}
-          />
-          <BlockStartArea
-            state={{
-              placement: 'right',
-              size: options.sizes?.right,
-            }}
-          />
-          <BlockStartArea
-            state={{
-              placement: 'bottom',
-              size: options.sizes?.bottom,
-            }}
-          />
-          {children}
-        </BlockSelectionArea>
-      ),
-    }),
     useHooks: useHooksBlockSelection,
     withOverrides: withSelection,
   });

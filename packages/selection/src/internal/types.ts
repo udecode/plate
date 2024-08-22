@@ -110,7 +110,6 @@ export interface SelectionOptions {
   selectables: Quantify<string>;
   selectionAreaClass: string;
 
-  selectionContainerClass: string | undefined;
   startAreas: Quantify<HTMLElement | string>;
 }
 

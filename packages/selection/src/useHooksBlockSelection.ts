@@ -1,6 +1,10 @@
 import React from 'react';
 
-import { focusEditor, isEditorReadOnly } from '@udecode/plate-common';
+import {
+  deselectEditor,
+  focusEditor,
+  isEditorReadOnly,
+} from '@udecode/plate-common';
 import {
   type PlateEditor,
   type Value,
@@ -21,9 +25,12 @@ import {
   useBlockSelectionSelectors,
 } from './blockSelectionStore';
 import { useBlockContextMenuSelectors } from './context-menu';
+import { SelectionArea } from './internal';
 import { copySelectedBlocks } from './utils/copySelectedBlocks';
 import { selectInsertedBlocks } from './utils/index';
 import { pasteSelectedBlocks } from './utils/pasteSelectedBlocks';
+
+let called = false;
 
 export const useHooksBlockSelection = <
   V extends Value = Value,
@@ -32,6 +39,43 @@ export const useHooksBlockSelection = <
   editor: E,
   { options }: WithPlatePlugin<BlockSelectionPlugin>
 ) => {
+  React.useEffect(() => {
+    if (called) return;
+
+    called = true;
+
+    const selection = new SelectionArea({
+      boundaries: ['#selection-demo  #scroll_container'],
+      container: ['#selection-demo #scroll_container'],
+      document: window.document,
+      selectables: ['#selection-demo #scroll_container .slate-selectable'],
+      selectionAreaClass: 'slate-selection-area',
+    })
+      .on('start', ({ event, store }) => {
+        deselectEditor(editor);
+
+        if (!event?.shiftKey) {
+          selection.clearSelection();
+          blockSelectionActions.resetSelectedIds();
+        }
+      })
+      .on('move', ({ store: { changed } }) => {
+        if (changed.added.length === 0 && changed.removed.length === 0) return;
+
+        for (const el of changed.added) {
+          el.classList.add('selected');
+        }
+
+        for (const el of changed.removed) {
+          el.classList.remove('selected');
+        }
+
+        console.log(changed.added, 'fj');
+
+        blockSelectionActions.setSelectedIds(changed);
+      });
+  }, []);
+
   const { onKeyDownSelecting } = options;
   const isSelecting = useBlockSelectionSelectors().isSelecting();
   const selectedIds = useBlockSelectionSelectors().selectedIds();

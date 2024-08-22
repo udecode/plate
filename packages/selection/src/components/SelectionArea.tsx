@@ -1,15 +1,16 @@
 import React from 'react';
 
 import { getPluginOptions, useEditorRef } from '@udecode/plate-common';
-import VanillaSelectionArea, {
-  type SelectionEvents,
-  type SelectionOptions,
-} from '@viselect/vanilla';
 
 import {
   type BlockSelectionPlugin,
   KEY_BLOCK_SELECTION,
 } from '../createBlockSelectionPlugin';
+import {
+  type SelectionEvents,
+  type SelectionOptions,
+  SelectionArea as VanillaSelectionArea,
+} from '../internal';
 
 export interface SelectionAreaProps
   extends Omit<Partial<SelectionOptions>, 'boundaries'>,

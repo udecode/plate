@@ -76,6 +76,7 @@ const Editor = React.forwardRef<HTMLDivElement, EditorProps>(
             className
           )}
           disableDefaultStyles
+          id="scroll_container"
           readOnly={disabled ?? readOnly}
           {...props}
         />

@@ -88,7 +88,10 @@ export function BlockPreview({
                 minSize={30}
                 ref={ref}
               >
-                <div className="chunk-mode relative z-20 w-full bg-background">
+                <div
+                  className="chunk-mode relative z-20 w-full bg-background"
+                  id="selection-demo"
+                >
                   {children}
                 </div>
 
