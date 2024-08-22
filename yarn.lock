@@ -6327,13 +6327,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-indent-list@npm:36.3.3, @udecode/plate-indent-list@workspace:^, @udecode/plate-indent-list@workspace:packages/indent-list":
+"@udecode/plate-indent-list@npm:36.5.2, @udecode/plate-indent-list@workspace:^, @udecode/plate-indent-list@workspace:packages/indent-list":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-indent-list@workspace:packages/indent-list"
   dependencies:
     "@udecode/plate-common": "workspace:^"
     "@udecode/plate-indent": "npm:36.0.0"
-    "@udecode/plate-list": "npm:36.0.0"
+    "@udecode/plate-list": "npm:36.5.2"
     clsx: "npm:^1.2.1"
   peerDependencies:
     "@udecode/plate-common": ">=36.3.9"
@@ -6445,12 +6445,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-list@npm:36.0.0, @udecode/plate-list@workspace:^, @udecode/plate-list@workspace:packages/list":
+"@udecode/plate-list@npm:36.5.2, @udecode/plate-list@workspace:^, @udecode/plate-list@workspace:packages/list":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-list@workspace:packages/list"
   dependencies:
     "@udecode/plate-common": "workspace:^"
-    "@udecode/plate-reset-node": "npm:36.0.0"
+    "@udecode/plate-reset-node": "npm:36.5.2"
     lodash: "npm:^4.17.21"
   peerDependencies:
     "@udecode/plate-common": ">=36.3.9"
@@ -6481,7 +6481,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-media@npm:36.2.2, @udecode/plate-media@workspace:^, @udecode/plate-media@workspace:packages/media":
+"@udecode/plate-media@npm:36.5.3, @udecode/plate-media@workspace:^, @udecode/plate-media@workspace:packages/media":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-media@workspace:packages/media"
   dependencies:
@@ -6565,7 +6565,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-reset-node@npm:36.0.0, @udecode/plate-reset-node@workspace:^, @udecode/plate-reset-node@workspace:packages/reset-node":
+"@udecode/plate-reset-node@npm:36.5.2, @udecode/plate-reset-node@workspace:^, @udecode/plate-reset-node@workspace:packages/reset-node":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-reset-node@workspace:packages/reset-node"
   dependencies:
@@ -6650,15 +6650,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-serializer-docx@npm:36.3.8, @udecode/plate-serializer-docx@workspace:^, @udecode/plate-serializer-docx@workspace:packages/serializer-docx":
+"@udecode/plate-serializer-docx@npm:36.5.3, @udecode/plate-serializer-docx@workspace:^, @udecode/plate-serializer-docx@workspace:packages/serializer-docx":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-serializer-docx@workspace:packages/serializer-docx"
   dependencies:
     "@udecode/plate-common": "workspace:^"
     "@udecode/plate-heading": "npm:36.0.12"
     "@udecode/plate-indent": "npm:36.0.0"
-    "@udecode/plate-indent-list": "npm:36.3.3"
-    "@udecode/plate-media": "npm:36.2.2"
+    "@udecode/plate-indent-list": "npm:36.5.2"
+    "@udecode/plate-media": "npm:36.5.3"
     "@udecode/plate-paragraph": "npm:36.0.0"
     "@udecode/plate-table": "npm:36.3.8"
     validator: "npm:^13.11.0"
@@ -6917,21 +6917,21 @@ __metadata:
     "@udecode/plate-highlight": "npm:36.0.0"
     "@udecode/plate-horizontal-rule": "npm:36.0.0"
     "@udecode/plate-indent": "npm:36.0.0"
-    "@udecode/plate-indent-list": "npm:36.3.3"
+    "@udecode/plate-indent-list": "npm:36.5.2"
     "@udecode/plate-kbd": "npm:36.0.0"
     "@udecode/plate-line-height": "npm:36.0.0"
     "@udecode/plate-link": "npm:36.4.0"
-    "@udecode/plate-list": "npm:36.0.0"
-    "@udecode/plate-media": "npm:36.2.2"
+    "@udecode/plate-list": "npm:36.5.2"
+    "@udecode/plate-media": "npm:36.5.3"
     "@udecode/plate-mention": "npm:36.0.0"
     "@udecode/plate-node-id": "npm:36.3.6"
     "@udecode/plate-normalizers": "npm:36.0.0"
     "@udecode/plate-paragraph": "npm:36.0.0"
-    "@udecode/plate-reset-node": "npm:36.0.0"
+    "@udecode/plate-reset-node": "npm:36.5.2"
     "@udecode/plate-resizable": "npm:36.0.0"
     "@udecode/plate-select": "npm:36.0.0"
     "@udecode/plate-serializer-csv": "npm:36.3.8"
-    "@udecode/plate-serializer-docx": "npm:36.3.8"
+    "@udecode/plate-serializer-docx": "npm:36.5.3"
     "@udecode/plate-serializer-html": "npm:36.0.0"
     "@udecode/plate-serializer-md": "npm:36.4.0"
     "@udecode/plate-suggestion": "npm:36.0.0"
