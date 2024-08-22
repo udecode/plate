@@ -1,11 +1,10 @@
 import {
-  type ToggleMarkPluginOptions,
   createSlatePlugin,
   findHtmlParentElement,
 } from '@udecode/plate-common';
 
 /** Enables support for code formatting */
-export const CodePlugin = createSlatePlugin<'code', ToggleMarkPluginOptions>({
+export const CodePlugin = createSlatePlugin({
   deserializeHtml: {
     query({ element }) {
       const blockAbove = findHtmlParentElement(element, 'P');

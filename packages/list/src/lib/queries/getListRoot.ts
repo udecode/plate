@@ -7,7 +7,7 @@ import {
   getAboveNode,
 } from '@udecode/plate-common';
 
-import { ListOrderedPlugin, ListUnorderedPlugin } from '../ListPlugin';
+import { BulletedListPlugin, NumberedListPlugin } from '../ListPlugin';
 
 /** Searches upward for the root list element */
 export const getListRoot = (
@@ -20,8 +20,8 @@ export const getListRoot = (
     at,
     match: {
       type: [
-        editor.getType(ListUnorderedPlugin),
-        editor.getType(ListOrderedPlugin),
+        editor.getType(BulletedListPlugin),
+        editor.getType(NumberedListPlugin),
       ],
     },
   });

@@ -35,7 +35,7 @@ describe('getPluginContext', () => {
       editor,
       options: { testOption: 't' },
       plugin: expect.objectContaining({ key: 'test', type: 'test-type' }),
-      transforms: editor.transforms,
+      tf: editor.transforms,
       type: 'test-type',
     });
   });
@@ -71,7 +71,7 @@ describe('getPluginContext', () => {
       editor,
       options: testPlugin.options,
       plugin: expect.objectContaining({ key: 'test', type: 'test-type' }),
-      transforms: editor.transforms,
+      tf: editor.transforms,
       type: 'test-type',
     });
   });
@@ -95,7 +95,7 @@ describe('getPluginContext', () => {
         key: 'unresolved',
         type: 'unresolved-type',
       }),
-      transforms: editor.transforms,
+      tf: editor.transforms,
       type: 'unresolved-type',
     });
   });

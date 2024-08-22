@@ -8,17 +8,12 @@ import {
   collapseSelection,
   getNodeEntries,
   isBlock,
-  toggleNodeType,
 } from '@udecode/plate-common';
-import {
-  focusEditor,
-  useEditorRef,
-  useEditorSelector,
-} from '@udecode/plate-common/react';
+import { focusEditor, useEditorSelector } from '@udecode/plate-common/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { toggleIndentList } from '@udecode/plate-indent-list';
 import { IndentListPlugin } from '@udecode/plate-indent-list/react';
-import { toggleList, unwrapList } from '@udecode/plate-list';
+import { unwrapList } from '@udecode/plate-list';
 
 import { settingsStore } from '@/components/context/settings-store';
 import { Icons } from '@/components/icons';
@@ -32,6 +27,7 @@ import {
   useOpenState,
 } from '@/registry/default/plate-ui/dropdown-menu';
 import { ToolbarButton } from '@/registry/default/plate-ui/toolbar';
+import { useMyEditorRef } from '@/types/plate-types';
 
 const items = [
   {
@@ -120,7 +116,7 @@ export function PlaygroundTurnIntoDropdownMenu(props: DropdownMenuProps) {
     return allNodesMatchInitialNodeType ? initialNodeType : ParagraphPlugin.key;
   }, []);
 
-  const editor = useEditorRef();
+  const editor = useMyEditorRef();
   const openState = useOpenState();
 
   const selectedItem =
@@ -164,11 +160,11 @@ export function PlaygroundTurnIntoDropdownMenu(props: DropdownMenuProps) {
                   listStyleType: type === 'ul' ? 'disc' : 'decimal',
                 });
               } else if (settingsStore.get.checkedId('list')) {
-                toggleList(editor, { type });
+                editor.tf.toggle.list({ type });
               }
             } else {
               unwrapList(editor);
-              toggleNodeType(editor, { activeType: type });
+              editor.tf.toggle.block({ type });
             }
 
             collapseSelection(editor);

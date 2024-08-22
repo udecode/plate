@@ -1,10 +1,11 @@
 import { someNode } from '@udecode/plate-common';
 import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
 
-import { ListUnorderedPlugin, toggleList } from '../../lib/index';
+import { BulletedListPlugin } from '../../lib/index';
+import { ListPlugin } from '../ListPlugin';
 
 export const useListToolbarButtonState = ({
-  nodeType = ListUnorderedPlugin.key as string,
+  nodeType = BulletedListPlugin.key as string,
 } = {}) => {
   const pressed = useEditorSelector(
     (editor) =>
@@ -23,11 +24,12 @@ export const useListToolbarButton = (
   state: ReturnType<typeof useListToolbarButtonState>
 ) => {
   const editor = useEditorRef();
+  const tf = editor.getTransforms(ListPlugin);
 
   return {
     props: {
       onClick: () => {
-        toggleList(editor, { type: state.nodeType });
+        tf.toggle.list({ type: state.nodeType });
       },
       onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();

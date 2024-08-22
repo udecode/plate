@@ -13,10 +13,11 @@ import type { AnyPluginConfig } from '../plugin/BasePlugin';
 import type { AnySlatePlugin } from '../plugin/SlatePlugin';
 import type { InferPlugins, SlateEditor, TSlateEditor } from './SlateEditor';
 
-import { getSlatePlugin } from '../plugin';
 import { createSlatePlugin } from '../plugin/createSlatePlugin';
+import { getSlatePlugin } from '../plugin/getSlatePlugin';
 import { type CorePlugin, getCorePlugins } from '../plugins/getCorePlugins';
-import { pipeNormalizeInitialValue, resolvePlugins } from '../utils';
+import { pipeNormalizeInitialValue } from '../utils/pipeNormalizeInitialValue';
+import { resolvePlugins } from '../utils/resolvePlugins';
 
 export type BaseWithSlateOptions<
   V extends Value = Value,
@@ -109,6 +110,7 @@ export const withSlate = <
   editor.isFallback = false;
 
   editor.getApi = () => editor.api as any;
+  editor.getTransforms = () => editor.transforms as any;
   editor.getPlugin = (plugin) => getSlatePlugin(editor, plugin) as any;
   editor.getOptions = (plugin) => editor.getPlugin(plugin).options;
   editor.getType = (plugin) => editor.getPlugin<AnySlatePlugin>(plugin).type;

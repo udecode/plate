@@ -21,9 +21,9 @@ import type { TLinkElement } from '@udecode/plate-link';
 import type { LinkPlugin } from '@udecode/plate-link/react';
 import type { TTodoListItemElement } from '@udecode/plate-list';
 import type {
+  BulletedListPlugin,
   ListItemPlugin,
-  ListOrderedPlugin,
-  ListUnorderedPlugin,
+  NumberedListPlugin,
   TodoListPlugin,
 } from '@udecode/plate-list/react';
 import type { TImageElement, TMediaEmbedElement } from '@udecode/plate-media';
@@ -194,12 +194,12 @@ export interface MyTableCellElement extends TElement {
 
 export interface MyBulletedListElement extends TElement, MyBlockElement {
   children: MyListItemElement[];
-  type: typeof ListUnorderedPlugin.key;
+  type: typeof BulletedListPlugin.key;
 }
 
 export interface MyNumberedListElement extends TElement, MyBlockElement {
   children: MyListItemElement[];
-  type: typeof ListOrderedPlugin.key;
+  type: typeof NumberedListPlugin.key;
 }
 
 export interface MyListItemElement extends TElement, MyBlockElement {
@@ -273,8 +273,6 @@ export type MyRootBlock =
 
 export type MyValue = MyRootBlock[];
 
-export type MyEditor = { isDragging?: boolean } & ReturnType<
-  typeof usePlaygroundEditor
->;
+export type MyEditor = ReturnType<typeof usePlaygroundEditor>;
 
 export const useMyEditorRef = () => useEditorRef<MyEditor>();

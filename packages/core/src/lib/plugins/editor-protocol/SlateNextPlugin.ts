@@ -4,13 +4,35 @@ import type { Path } from 'slate';
 import {
   isSelectionAtBlockStart,
   removeSelectionMark,
+  toggleMark,
 } from '@udecode/slate-utils';
+import { type OmitFirst, bindFirst } from '@udecode/utils';
 
-import { type WithOverride, createSlatePlugin } from '../../plugin';
-import { resetEditor } from '../../transforms';
+import {
+  type PluginConfig,
+  type WithOverride,
+  createTSlatePlugin,
+} from '../../plugin';
+import { resetEditor, toggleBlock } from '../../transforms';
 import { ParagraphPlugin } from '../paragraph';
 
-export const withSlateNext: WithOverride = ({ editor }) => {
+export type SlateNextConfig = PluginConfig<
+  'slateNext',
+  {},
+  {
+    blockFactory: (node?: Partial<TElement>, path?: Path) => TElement;
+    childrenFactory: () => Value;
+    reset: () => void;
+  },
+  {
+    toggle: {
+      block: OmitFirst<typeof toggleBlock>;
+      mark: OmitFirst<typeof toggleMark>;
+    };
+  }
+>;
+
+export const withSlateNext: WithOverride<SlateNextConfig> = ({ editor }) => {
   const { apply, deleteBackward, deleteForward, deleteFragment } = editor;
 
   editor.prevSelection = null;
@@ -60,7 +82,7 @@ export const withSlateNext: WithOverride = ({ editor }) => {
 };
 
 /** Opinionated extension of slate default behavior. */
-export const SlateNextPlugin = createSlatePlugin({
+export const SlateNextPlugin = createTSlatePlugin<SlateNextConfig>({
   key: 'slateNext',
   withOverrides: withSlateNext,
 })
@@ -79,5 +101,11 @@ export const SlateNextPlugin = createSlatePlugin({
   .extendEditorApi(({ editor }) => ({
     reset: () => {
       resetEditor(editor);
+    },
+  }))
+  .extendEditorTransforms(({ editor }) => ({
+    toggle: {
+      block: bindFirst(toggleBlock, editor),
+      mark: bindFirst(toggleMark, editor),
     },
   }));

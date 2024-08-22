@@ -12,7 +12,7 @@ import type {
 import type {
   AnyEditorPlatePlugin,
   EditorPlatePlugin,
-  PlateHotkeys,
+  PlateShortcuts,
 } from '../plugin/PlatePlugin';
 import type { PlateCorePlugin } from './withPlate';
 
@@ -25,12 +25,14 @@ export type PlateEditor = {
     plugin: WithRequiredKey<C>
   ) => C extends { type: any } ? C : EditorPlatePlugin<C>;
 
-  hotkeys: PlateHotkeys;
-
   pluginList: AnyEditorPlatePlugin[];
 
   plugins: Record<string, AnyEditorPlatePlugin>;
 
+  shortcuts: PlateShortcuts;
+
+  // Alias for transforms
+  tf: PlateEditor['transforms'];
   transforms: UnionToIntersection<InferTransforms<PlateCorePlugin>>;
 } & BaseEditor;
 
@@ -42,20 +44,6 @@ export type TPlateEditor<
   children: V;
   pluginList: P[];
   plugins: { [K in P['key']]: Extract<P, { key: K }> };
+  tf: UnionToIntersection<InferTransforms<P | PlateCorePlugin>>;
   transforms: UnionToIntersection<InferTransforms<P | PlateCorePlugin>>;
 } & PlateEditor;
-
-// let slateEditor = {} as SlateEditor
-// let tSlateEditor = {} as TSlateEditor
-// let plateEditor = {} as PlateEditor
-// let tPlateEditor = createPlateEditor({
-//   // plugins: [LinkPlugin]
-// })
-//
-// const a = plateEditor.getPlugin<typeof LengthPlugin>({ key: 'a' })
-// const b = plateEditor.getPlugin(LengthPlugin)
-// const c = plateEditor.getPlugin<typeof PlateApiPlugin>({ key: 'a' })
-//
-// slateEditor = plateEditor
-// slateEditor = tPlateEditor
-// plateEditor = tPlateEditor

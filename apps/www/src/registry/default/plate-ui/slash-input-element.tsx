@@ -1,7 +1,6 @@
 import React, { type ComponentType, type SVGProps } from 'react';
 
 import { withRef } from '@udecode/cn';
-import { toggleNodeType } from '@udecode/plate-common';
 import { type PlateEditor, PlateElement } from '@udecode/plate-common/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { ListStyleType, toggleIndentList } from '@udecode/plate-indent-list';
@@ -27,21 +26,21 @@ const rules: SlashCommandRule[] = [
   {
     icon: Icons.h1,
     onSelect: (editor) => {
-      toggleNodeType(editor, { activeType: HEADING_KEYS.h1 });
+      editor.tf.toggle.block({ type: HEADING_KEYS.h1 });
     },
     value: 'Heading 1',
   },
   {
     icon: Icons.h2,
     onSelect: (editor) => {
-      toggleNodeType(editor, { activeType: HEADING_KEYS.h2 });
+      editor.tf.toggle.block({ type: HEADING_KEYS.h2 });
     },
     value: 'Heading 2',
   },
   {
     icon: Icons.h3,
     onSelect: (editor) => {
-      toggleNodeType(editor, { activeType: HEADING_KEYS.h3 });
+      editor.tf.toggle.block({ type: HEADING_KEYS.h3 });
     },
     value: 'Heading 3',
   },

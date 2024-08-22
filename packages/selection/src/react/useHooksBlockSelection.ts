@@ -9,7 +9,7 @@ import {
   removeNodes,
 } from '@udecode/plate-common';
 import {
-  type PlatePluginUseHooks,
+  type PlateUseHooks,
   focusEditor,
   isEditorReadOnly,
 } from '@udecode/plate-common/react';
@@ -26,9 +26,10 @@ import { selectInsertedBlocks } from './utils';
 import { copySelectedBlocks } from './utils/copySelectedBlocks';
 import { pasteSelectedBlocks } from './utils/pasteSelectedBlocks';
 
-export const useHooksBlockSelection: PlatePluginUseHooks<
-  BlockSelectionConfig
-> = ({ editor, options: { onKeyDownSelecting } }) => {
+export const useHooksBlockSelection: PlateUseHooks<BlockSelectionConfig> = ({
+  editor,
+  options: { onKeyDownSelecting },
+}) => {
   const isSelecting = useBlockSelectionSelectors().isSelecting();
   const selectedIds = useBlockSelectionSelectors().selectedIds();
   const isOpen = useBlockContextMenuSelectors().isOpen(editor.id);

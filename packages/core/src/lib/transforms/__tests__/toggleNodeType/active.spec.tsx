@@ -5,7 +5,6 @@ import { jsx } from '@udecode/plate-test-utils';
 import type { SlateEditor } from '../../../editor';
 
 import { createPlateEditor } from '../../../../react';
-import { toggleNodeType } from '../../toggleNodeType';
 
 jsx;
 
@@ -29,7 +28,7 @@ const output = (
 
 it('should be', () => {
   const editor = createPlateEditor({ editor: input });
-  toggleNodeType(editor, { activeType: 'blockquote' });
+  editor.tf.toggle.block({ type: 'blockquote' });
 
   expect(editor.children).toEqual(output.children);
 });

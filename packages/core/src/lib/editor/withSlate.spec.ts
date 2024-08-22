@@ -57,6 +57,7 @@ describe('withPlate', () => {
         (editor.getPlugin(SlateNextPlugin).handlers as any).onKeyDown
       ).toBeDefined();
 
+      expect(editor.tf.toggle.block).toBeDefined();
       expect(editor.prevSelection).toBeNull();
     });
   });

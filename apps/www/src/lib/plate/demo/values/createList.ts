@@ -1,9 +1,9 @@
 import type { TElement, TText } from '@udecode/plate-common';
 
 import {
+  BulletedListPlugin,
   ListItemContentPlugin,
   ListItemPlugin,
-  ListUnorderedPlugin,
 } from '@udecode/plate-list/react';
 
 export const createList = (
@@ -36,7 +36,7 @@ export const createList = (
   return [
     {
       children,
-      type: ListUnorderedPlugin.key,
+      type: BulletedListPlugin.key,
     },
   ];
 };

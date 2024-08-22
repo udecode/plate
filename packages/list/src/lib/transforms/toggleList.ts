@@ -16,9 +16,11 @@ import {
 import { Range } from 'slate';
 
 import {
+  BulletedListPlugin,
   ListItemContentPlugin,
   ListItemPlugin,
   ListPlugin,
+  NumberedListPlugin,
 } from '../ListPlugin';
 import { getListItemEntry, getListTypes } from '../queries/index';
 import { unwrapList } from './unwrapList';
@@ -171,3 +173,9 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
       }
     }
   });
+
+export const toggleBulletedList = (editor: SlateEditor) =>
+  toggleList(editor, { type: editor.getType(BulletedListPlugin) });
+
+export const toggleNumberedList = (editor: SlateEditor) =>
+  toggleList(editor, { type: editor.getType(NumberedListPlugin) });

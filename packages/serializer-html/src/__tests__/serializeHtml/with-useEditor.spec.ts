@@ -1,8 +1,8 @@
 import {
+  BulletedListPlugin,
   ListItemContentPlugin,
   ListItemPlugin,
   ListPlugin,
-  ListUnorderedPlugin,
   TodoListPlugin,
 } from '@udecode/plate-list';
 
@@ -18,7 +18,7 @@ it('serialize elements using useSlateStatic', () => {
       .extendPlugin(ListItemContentPlugin, {
         type: 'list-item-child',
       })
-      .extendPlugin(ListUnorderedPlugin, {
+      .extendPlugin(BulletedListPlugin, {
         type: 'unordered-list',
       }),
   ];

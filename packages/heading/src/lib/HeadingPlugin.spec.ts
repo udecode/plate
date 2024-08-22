@@ -1,7 +1,9 @@
 import { createPlateEditor } from '@udecode/plate-common/react';
 
-import { HeadingPlugin as ReactHeadingPlugin } from '../react/HeadingPlugin';
-import { HeadingPlugin } from './HeadingPlugin';
+import {
+  HeadingPlugin,
+  HeadingPlugin as ReactHeadingPlugin,
+} from '../react/HeadingPlugin';
 import { HEADING_LEVELS } from './constants';
 
 describe('HeadingPlugin', () => {
@@ -33,10 +35,9 @@ describe('HeadingPlugin', () => {
 
       for (let i = 0; i < 3; i++) {
         const plugin = headingPlugin.plugins[i];
-        expect(plugin.options?.hotkey).toEqual([
-          `mod+opt+${i + 1}`,
-          `mod+shift+${i + 1}`,
-        ]);
+        expect(
+          plugin.shortcuts['toggleHeading' + (i + 1)].keys.at(-1).at(-1)
+        ).toBe(String(i + 1));
       }
 
       for (let i = 3; i < 6; i++) {
@@ -130,28 +131,15 @@ describe('HeadingPluginReact', () => {
 
       for (let i = 0; i < 3; i++) {
         const plugin = headingPlugin.plugins[i];
-        expect(plugin.options?.hotkey).toEqual([
-          `mod+opt+${i + 1}`,
-          `mod+shift+${i + 1}`,
-        ]);
+        expect(
+          plugin.shortcuts['toggleHeading' + (i + 1)].keys.at(-1).at(-1)
+        ).toBe(String(i + 1));
       }
 
       for (let i = 3; i < 6; i++) {
         const plugin = headingPlugin.plugins[i];
-        expect(plugin.options?.hotkey).toBeUndefined();
+        expect(plugin.shortcuts['toggleHeading' + (i + 1)]).toBeUndefined();
       }
-    });
-
-    it('should add onKeyDown handler to all heading levels', () => {
-      const editor = createPlateEditor({
-        plugins: [ReactHeadingPlugin],
-      });
-
-      const headingPlugin = editor.getPlugin(ReactHeadingPlugin);
-
-      headingPlugin.plugins.forEach((plugin) => {
-        expect(plugin.handlers?.onKeyDown).toBeDefined();
-      });
     });
   });
 
@@ -186,9 +174,9 @@ describe('HeadingPluginReact', () => {
 
       const headingPlugin = editor.getPlugin(ReactHeadingPlugin);
 
-      expect(headingPlugin.plugins[0].options?.hotkey).toBeDefined();
-      expect(headingPlugin.plugins[1].options?.hotkey).toBeDefined();
-      expect(headingPlugin.plugins[2].options?.hotkey).toBeUndefined();
+      expect(headingPlugin.plugins[0].shortcuts.toggleHeading1).toBeDefined();
+      expect(headingPlugin.plugins[1].shortcuts.toggleHeading3).toBeDefined();
+      expect(headingPlugin.plugins[2].shortcuts.toggleHeading5).toBeUndefined();
     });
   });
 
@@ -202,7 +190,6 @@ describe('HeadingPluginReact', () => {
 
       headingPlugin.plugins.forEach((plugin, index) => {
         expect(plugin.isElement).toBe(true);
-        expect(plugin.handlers?.onKeyDown).toBeDefined();
         expect(plugin.deserializeHtml?.rules).toEqual([
           { validNodeName: `H${index + 1}` },
         ]);

@@ -1,8 +1,8 @@
 import type { EXPOSED_STORE_KEYS, PlateStoreState } from '../stores';
 
-import { createPlatePlugin } from '../plugin';
+import { createTPlatePlugin } from '../plugin';
 
-export const PlateApiPlugin = createPlatePlugin({
+export const PlateApiPlugin = createTPlatePlugin({
   dependencies: ['debug'],
   key: 'plateApi',
 }).extendEditorApi(({ editor }) => ({

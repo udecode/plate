@@ -7,14 +7,14 @@ import { createPlateEditor } from '@udecode/plate-common/react';
 import { LinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { type ListConfig, ListPlugin } from './ListPlugin';
+import { ListPlugin } from './ListPlugin';
 
 jsx;
 
 const testInsertText = (
   input: any,
   expected: any,
-  listConfig: Partial<ListConfig> = {}
+  listConfig: Parameters<typeof ListPlugin.configure>[0] = {}
 ) => {
   const editor = createPlateEditor({
     editor: input,

@@ -1,29 +1,22 @@
-import type { ExtendConfig, HotkeyPluginOptions } from '@udecode/plate-common';
+import { Key, toTPlatePlugin } from '@udecode/plate-common/react';
 
-import {
-  onKeyDownToggleElement,
-  toTPlatePlugin,
-} from '@udecode/plate-common/react';
-
-import {
-  type TodoListConfig as BaseTodoListConfig,
-  TodoListPlugin as BaseTodoListPlugin,
-} from '../lib/TodoListPlugin';
-
-export type TodoListConfig = ExtendConfig<
-  BaseTodoListConfig,
-  HotkeyPluginOptions
->;
+import { TodoListPlugin as BaseTodoListPlugin } from '../lib/TodoListPlugin';
 
 /** Enables support for todo lists with React-specific features. */
-export const TodoListPlugin = toTPlatePlugin<TodoListConfig>(
+export const TodoListPlugin = toTPlatePlugin(
   BaseTodoListPlugin,
-  {
-    handlers: {
-      onKeyDown: onKeyDownToggleElement,
+  ({ editor, type }) => ({
+    shortcuts: {
+      toggleTodoList: {
+        handler: () => {
+          editor.tf.toggle.block({ type });
+        },
+        keys: [
+          [Key.Mod, Key.Alt, '4'],
+          [Key.Mod, Key.Shift, '4'],
+        ],
+        preventDefault: true,
+      },
     },
-    options: {
-      hotkey: ['mod+opt+4', 'mod+shift+4'],
-    },
-  }
+  })
 );

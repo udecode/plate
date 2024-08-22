@@ -2,25 +2,20 @@ import type { KeyboardHandler } from '@udecode/plate-common/react';
 
 import {
   isCollapsed,
-  isHotkey,
   select,
   someNode,
   unhangRange,
 } from '@udecode/plate-common';
 import { Hotkeys } from '@udecode/plate-common/react';
-import castArray from 'lodash/castArray.js';
 import { Range } from 'slate';
 
-import type { ListConfig } from './ListPlugin';
-
-import { ListItemPlugin } from '../lib';
-import { moveListItems, toggleList } from '../lib/transforms/index';
+import { type ListConfig, ListItemPlugin } from '../lib';
+import { moveListItems } from '../lib/transforms/index';
 
 export const onKeyDownList: KeyboardHandler<ListConfig> = ({
   editor,
   event,
-  options: { enableResetOnShiftTab, hotkey },
-  type,
+  options: { enableResetOnShiftTab },
 }) => {
   if (event.defaultPrevented) return;
 
@@ -62,16 +57,6 @@ export const onKeyDownList: KeyboardHandler<ListConfig> = ({
       });
 
       return true;
-    }
-  }
-  if (!hotkey) return;
-
-  const hotkeys = castArray(hotkey);
-
-  for (const _hotkey of hotkeys) {
-    if (isHotkey(_hotkey)(event as any)) {
-      // TODO
-      toggleList(editor, { type: type! });
     }
   }
 };

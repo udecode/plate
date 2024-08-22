@@ -1,29 +1,22 @@
-import {
-  ParagraphPlugin as BaseParagraphPlugin,
-  toggleNodeType,
-} from '../../../lib';
-import { toPlatePlugin } from '../../plugin/toPlatePlugin';
-import { onKeyDownToggleElement } from '../../utils/onKeyDownToggleElement';
+import { Key } from '@udecode/react-hotkeys';
 
-export const ParagraphPlugin = toPlatePlugin(BaseParagraphPlugin, {
-  handlers: {
-    onKeyDown: onKeyDownToggleElement,
-  },
-  // options: {
-  //   hotkey: ['mod+opt+0', 'mod+shift+0'],
-  // } as HotkeyPluginOptions,
-  hotkeys: {
-    paragraph: {
-      callback: ({ editor, type }) => {
-        console.log('hey');
-        const defaultType = editor.getType(ParagraphPlugin);
-        console.log(defaultType, type);
-        toggleNodeType(editor, {
-          activeType: type,
-          inactiveType: defaultType,
-        });
+import { ParagraphPlugin as BaseParagraphPlugin } from '../../../lib';
+import { toPlatePlugin } from '../../plugin/toPlatePlugin';
+
+export const ParagraphPlugin = toPlatePlugin(
+  BaseParagraphPlugin,
+  ({ editor, type }) => ({
+    shortcuts: {
+      toggleParagraph: {
+        handler: () => {
+          editor.tf.toggle.block({ type });
+        },
+        keys: [
+          [Key.Mod, Key.Alt, '0'],
+          [Key.Mod, Key.Shift, '0'],
+        ],
+        preventDefault: true,
       },
-      hotkey: ['meta+option+0', 'meta+shift+0'],
     },
-  },
-});
+  })
+);

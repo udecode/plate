@@ -1,4 +1,6 @@
-import { createSlatePlugin } from '../../plugin';
+import type { DebugConfig } from '../getCorePlugins';
+
+import { createTSlatePlugin } from '../../plugin';
 
 export type DebugErrorType =
   | 'DEFAULT'
@@ -18,22 +20,16 @@ export class PlateError extends Error {
   }
 }
 
-type LogLevel = 'error' | 'info' | 'log' | 'warn';
+export type LogLevel = 'error' | 'info' | 'log' | 'warn';
 
-type LogFunction = (
-  message: string,
-  type?: DebugErrorType,
-  details?: any
-) => void;
-
-export const DebugPlugin = createSlatePlugin({
+export const DebugPlugin = createTSlatePlugin<DebugConfig>({
   key: 'debug',
   options: {
     isProduction: process.env.NODE_ENV === 'production',
     logLevel:
       process.env.NODE_ENV === 'production' ? 'error' : ('log' as LogLevel),
     logger: {
-      error: (message: any, type, details) =>
+      error: (message, type, details) =>
         console.error(`${type ? `[${type}] ` : ''}${message}`, details),
       info: (message, type, details) =>
         console.info(`${type ? `[${type}] ` : ''}${message}`, details),
@@ -41,10 +37,10 @@ export const DebugPlugin = createSlatePlugin({
         console.log(`${type ? `[${type}] ` : ''}${message}`, details),
       warn: (message, type, details) =>
         console.warn(`${type ? `[${type}] ` : ''}${message}`, details),
-    } as Partial<Record<LogLevel, LogFunction>>,
+    },
     throwErrors: true,
   },
-}).extendApi(({ options }) => {
+}).extendEditorApi<DebugConfig['api']>(({ options }) => {
   const logLevels: LogLevel[] = ['error', 'warn', 'info', 'log'];
 
   const log = (
@@ -67,13 +63,11 @@ export const DebugPlugin = createSlatePlugin({
   };
 
   return {
-    error: (message: string | unknown, type?: DebugErrorType, details?: any) =>
-      log('error', message, type, details),
-    info: (message: string, type?: DebugErrorType, details?: any) =>
-      log('info', message, type, details),
-    log: (message: string, type?: DebugErrorType, details?: any) =>
-      log('log', message, type, details),
-    warn: (message: string, type?: DebugErrorType, details?: any) =>
-      log('warn', message, type, details),
+    debug: {
+      error: (message, type, details) => log('error', message, type, details),
+      info: (message, type, details) => log('info', message, type, details),
+      log: (message, type, details) => log('log', message, type, details),
+      warn: (message, type, details) => log('warn', message, type, details),
+    },
   };
 });

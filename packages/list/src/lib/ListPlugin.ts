@@ -1,10 +1,19 @@
 import {
   DeserializeHtmlPlugin,
+  type OmitFirst,
   type PluginConfig,
+  bindFirst,
   createSlatePlugin,
   createTSlatePlugin,
   someNode,
 } from '@udecode/plate-common';
+import { Key } from '@udecode/plate-common/react';
+
+import {
+  toggleBulletedList,
+  toggleList,
+  toggleNumberedList,
+} from './transforms';
 
 export type ListPluginOptions = {
   enableResetOnShiftTab?: boolean;
@@ -12,9 +21,20 @@ export type ListPluginOptions = {
   validLiChildrenTypes?: string[];
 };
 
-export type ListConfig = PluginConfig<'list', ListPluginOptions>;
+export type ListConfig = PluginConfig<
+  'list',
+  ListPluginOptions,
+  {},
+  {
+    toggle: {
+      bulletedList: OmitFirst<typeof toggleBulletedList>;
+      list: OmitFirst<typeof toggleList>;
+      numberedList: OmitFirst<typeof toggleNumberedList>;
+    };
+  }
+>;
 
-export const ListUnorderedPlugin = createSlatePlugin({
+export const BulletedListPlugin = createSlatePlugin({
   deserializeHtml: {
     rules: [
       {
@@ -26,7 +46,7 @@ export const ListUnorderedPlugin = createSlatePlugin({
   key: 'ul',
 });
 
-export const ListOrderedPlugin = createSlatePlugin({
+export const NumberedListPlugin = createSlatePlugin({
   deserializeHtml: { rules: [{ validNodeName: 'OL' }] },
   isElement: true,
   key: 'ol',
@@ -63,9 +83,34 @@ export const ListPlugin = createTSlatePlugin<ListConfig>({
   // TODO react
   // withOverrides: withList,
   plugins: [
-    ListUnorderedPlugin,
-    ListOrderedPlugin,
+    BulletedListPlugin,
+    NumberedListPlugin,
     ListItemPlugin,
     ListItemContentPlugin,
   ],
-});
+})
+  .extendEditorTransforms(({ editor }) => ({
+    toggle: {
+      bulletedList: bindFirst(toggleBulletedList, editor),
+      list: bindFirst(toggleList, editor),
+      numberedList: bindFirst(toggleNumberedList, editor),
+    },
+  }))
+  .extend(({ editor }) => ({
+    shortcuts: {
+      toggleBulletedList: {
+        handler: () => {
+          editor.getTransforms(ListPlugin).toggle.bulletedList();
+        },
+        keys: [[Key.Mod, Key.Alt, '5']],
+        preventDefault: true,
+      },
+      toggleNumberedList: {
+        handler: () => {
+          editor.getTransforms(ListPlugin).toggle.numberedList();
+        },
+        keys: [[Key.Mod, Key.Alt, '6']],
+        preventDefault: true,
+      },
+    },
+  }));

@@ -301,9 +301,9 @@ An object containing functions to check for various hotkeys. Each function takes
   </APIItem>
 </APIParameters>
 
-### toggleNodeType
+### toggleBlock
 
-Toggle the type of the selected node. No operation is performed if `activeType` equals `inactiveType`.
+Toggle the type of the selected node. No operation is performed if `type` equals `intype`.
 
 <APIParameters>
   <APIItem name="editor" type="PlateEditor<V>">
@@ -311,18 +311,18 @@ Toggle the type of the selected node. No operation is performed if `activeType` 
   </APIItem>
   <APIItem name="options" type="ToggleNodeTypeOptions">
     <APISubList>
-      <APISubListItem parent="options" name="activeType" type="string" optional>
+      <APISubListItem parent="options" name="type" type="string" optional>
         If there is no node type above the selection, set the selected node type
-        to `activeType`.
+        to `type`.
       </APISubListItem>
       <APISubListItem
         parent="options"
-        name="inactiveType"
+        name="intype"
         type="string"
         optional
       >
         If there is a node type above the selection, set the selected node type
-        to `inactiveType`.
+        to `intype`.
       </APISubListItem>
     </APISubList>
   </APIItem>

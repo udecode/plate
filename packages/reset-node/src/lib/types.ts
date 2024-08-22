@@ -1,6 +1,6 @@
-import type { HotkeyPluginOptions, SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
-export interface ResetNodePluginRule extends HotkeyPluginOptions {
+export interface ResetNodePluginRule {
   /** Additional condition to the rule. */
   predicate: (editor: SlateEditor) => boolean;
 
@@ -8,6 +8,8 @@ export interface ResetNodePluginRule extends HotkeyPluginOptions {
   types: string[];
 
   defaultType?: string;
+
+  hotkey?: string | string[];
 
   /** Callback called when resetting. */
   onReset?: (editor: SlateEditor) => void;

@@ -10,8 +10,6 @@ import {
 import { createPlateEditor, withPlate } from '@udecode/plate-core/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 
-import type { ToggleMarkConfig } from '../../lib/types/ToggleMarkConfig';
-
 describe('TPlateEditor core package', () => {
   const MyCustomPlugin = createSlatePlugin({
     api: { myCustomMethod: () => {} },
@@ -60,7 +58,7 @@ describe('TPlateEditor core package', () => {
       expect(editor.api.debug.info).toBeInstanceOf(Function);
       expect(editor.api.debug.warn).toBeInstanceOf(Function);
 
-      // TODO @ts-expect-error
+      // @ts-expect-error
       editor.api.debug.nonExistentMethod;
     });
 
@@ -196,7 +194,7 @@ describe('TPlateEditor core package', () => {
   });
 
   describe('Plugin', () => {
-    const BoldPlugin = createSlatePlugin<'bold', ToggleMarkConfig['options']>({
+    const BoldPlugin = createSlatePlugin<'bold'>({
       deserializeHtml: {
         query: ({ element }) =>
           !someHtmlElement(
@@ -210,7 +208,6 @@ describe('TPlateEditor core package', () => {
       },
       isLeaf: true,
       key: 'bold',
-      options: { hotkey: 'mod+b' },
     });
 
     it('should work with specific plugin types', () => {

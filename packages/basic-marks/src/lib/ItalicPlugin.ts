@@ -1,14 +1,7 @@
-import {
-  type ToggleMarkPluginOptions,
-  createSlatePlugin,
-  someHtmlElement,
-} from '@udecode/plate-common';
+import { createSlatePlugin, someHtmlElement } from '@udecode/plate-common';
 
 /** Enables support for italic formatting. */
-export const ItalicPlugin = createSlatePlugin<
-  'italic',
-  ToggleMarkPluginOptions
->({
+export const ItalicPlugin = createSlatePlugin({
   deserializeHtml: {
     query: ({ element }) =>
       !someHtmlElement(element, (node) => node.style.fontStyle === 'normal'),

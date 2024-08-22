@@ -87,6 +87,7 @@ const createParagraphPlugin = createPluginFactory<HotkeyPlugin>({
   isElement: true,
   handlers: {
     // Check for the hotkey on keydown
+    // TODO
     onKeyDown: onKeyDownToggleElement,
   },
   options: {
@@ -125,6 +126,7 @@ const createSubscriptPlugin = createPluginFactory<ToggleMarkPlugin>({
   key: SubscriptPlugin.key,
   isLeaf: true,
   handlers: {
+    // todo
     onKeyDown: onKeyDownToggleMark,
   },
   options: {

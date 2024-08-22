@@ -8,7 +8,6 @@ import {
   collapseSelection,
   getNodeEntries,
   isBlock,
-  toggleNodeType,
 } from '@udecode/plate-common';
 import {
   focusEditor,
@@ -136,7 +135,7 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
             //   }
             // } else {
             //   unwrapList(editor);
-            toggleNodeType(editor, { activeType: type });
+            editor.tf.toggle.block({ type });
             // }
 
             collapseSelection(editor);

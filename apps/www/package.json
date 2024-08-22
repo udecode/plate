@@ -121,6 +121,7 @@
     "@udecode/plate-toggle": "workspace:^",
     "@udecode/plate-trailing-block": "workspace:^",
     "@udecode/plate-utils": "workspace:^",
+    "@udecode/react-hotkeys": "workspace:^",
     "@udecode/react-utils": "workspace:^",
     "@udecode/slate": "workspace:^",
     "@udecode/slate-react": "workspace:^",

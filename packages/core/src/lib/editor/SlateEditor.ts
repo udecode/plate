@@ -33,6 +33,10 @@ export type BaseEditor = {
     plugin: WithRequiredKey<C>
   ) => C extends { type: any } ? C : EditorPlugin<C>;
 
+  getTransforms: <C extends AnyPluginConfig = PluginConfig>(
+    plugin?: WithRequiredKey<C>
+  ) => InferTransforms<C>;
+
   getType: (plugin: WithRequiredKey) => string;
 
   id: any;
@@ -60,6 +64,8 @@ export type SlateEditor = {
 
   plugins: Record<string, AnyEditorPlugin>;
 
+  // Alias for transforms
+  tf: SlateEditor['transforms'];
   transforms: UnionToIntersection<InferTransforms<CorePlugin>>;
 } & BaseEditor;
 
@@ -71,6 +77,7 @@ export type TSlateEditor<
   children: V;
   pluginList: P[];
   plugins: { [K in P['key']]: Extract<P, { key: K }> };
+  tf: UnionToIntersection<InferTransforms<CorePlugin | P>>;
   transforms: UnionToIntersection<InferTransforms<CorePlugin | P>>;
 } & SlateEditor;
 

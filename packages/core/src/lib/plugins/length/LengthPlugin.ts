@@ -1,17 +1,8 @@
 import { getEditorString, withoutNormalizing } from '@udecode/slate';
 
-import {
-  type PluginConfig,
-  type WithOverride,
-  createTSlatePlugin,
-} from '../../plugin';
+import type { LengthConfig } from '../getCorePlugins';
 
-export type LengthConfig = PluginConfig<
-  'length',
-  {
-    maxLength: number;
-  }
->;
+import { type WithOverride, createTSlatePlugin } from '../../plugin';
 
 export const withLength: WithOverride<LengthConfig> = ({ editor, options }) => {
   const { apply } = editor;

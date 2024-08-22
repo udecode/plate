@@ -10,7 +10,7 @@ import {
   insertEmptyCodeBlock,
 } from '@udecode/plate-code-block';
 import { ParagraphPlugin, insertEmptyElement } from '@udecode/plate-common';
-import { focusEditor, useEditorRef } from '@udecode/plate-common/react';
+import { focusEditor } from '@udecode/plate-common/react';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
@@ -19,7 +19,6 @@ import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import { insertColumnGroup } from '@udecode/plate-layout';
 import { ColumnPlugin } from '@udecode/plate-layout/react';
 import { LinkPlugin, triggerFloatingLink } from '@udecode/plate-link/react';
-import { toggleList } from '@udecode/plate-list';
 import { insertMedia } from '@udecode/plate-media';
 import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
 import { TablePlugin, insertTable } from '@udecode/plate-table/react';
@@ -36,6 +35,7 @@ import {
   useOpenState,
 } from '@/registry/default/plate-ui/dropdown-menu';
 import { ToolbarButton } from '@/registry/default/plate-ui/toolbar';
+import { useMyEditorRef } from '@/types/plate-types';
 
 const items = [
   {
@@ -164,7 +164,7 @@ const items = [
 ];
 
 export function PlaygroundInsertDropdownMenu(props: DropdownMenuProps) {
-  const editor = useEditorRef();
+  const editor = useMyEditorRef();
   const openState = useOpenState();
 
   return (
@@ -225,7 +225,7 @@ export function PlaygroundInsertDropdownMenu(props: DropdownMenuProps) {
                             listStyleType: type === 'ul' ? 'disc' : 'decimal',
                           });
                         } else if (settingsStore.get.checkedId('list')) {
-                          toggleList(editor, { type });
+                          editor.tf.toggle.list({ type });
                         }
 
                         break;

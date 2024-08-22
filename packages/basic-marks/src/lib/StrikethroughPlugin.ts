@@ -1,14 +1,7 @@
-import {
-  type ToggleMarkPluginOptions,
-  createSlatePlugin,
-  someHtmlElement,
-} from '@udecode/plate-common';
+import { createSlatePlugin, someHtmlElement } from '@udecode/plate-common';
 
 /** Enables support for strikethrough formatting. */
-export const StrikethroughPlugin = createSlatePlugin<
-  'strikethrough',
-  ToggleMarkPluginOptions
->({
+export const StrikethroughPlugin = createSlatePlugin({
   deserializeHtml: {
     query: ({ element }) =>
       !someHtmlElement(element, (node) => node.style.textDecoration === 'none'),

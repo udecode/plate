@@ -6077,6 +6077,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate-core@workspace:packages/core"
   dependencies:
+    "@udecode/react-hotkeys": "npm:36.0.0"
     "@udecode/react-utils": "npm:33.0.0"
     "@udecode/slate": "npm:36.0.6"
     "@udecode/slate-react": "npm:36.0.6"
@@ -6090,7 +6091,6 @@ __metadata:
     lodash: "npm:^4.17.21"
     nanoid: "npm:^3.3.7"
     optics-ts: "npm:2.4.1"
-    react-hotkeys-hook: "npm:4.5.0"
     ts-key-enum: "npm:3.0.13"
     use-deep-compare: "npm:^1.2.1"
     zustand: "npm:^4.5.2"
@@ -6897,6 +6897,15 @@ __metadata:
     slate-history: ">=0.93.0"
     slate-hyperscript: ">=0.66.0"
     slate-react: ">=0.108.0"
+  languageName: unknown
+  linkType: soft
+
+"@udecode/react-hotkeys@npm:36.0.0, @udecode/react-hotkeys@workspace:^, @udecode/react-hotkeys@workspace:packages/react-hotkeys":
+  version: 0.0.0-use.local
+  resolution: "@udecode/react-hotkeys@workspace:packages/react-hotkeys"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
   languageName: unknown
   linkType: soft
 
@@ -17596,16 +17605,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-hotkeys-hook@npm:4.5.0":
-  version: 4.5.0
-  resolution: "react-hotkeys-hook@npm:4.5.0"
-  peerDependencies:
-    react: ">=16.8.1"
-    react-dom: ">=16.8.1"
-  checksum: 10c0/ae3ee47c623aaece4c21ce8027b0fff18caaee8c6cb22fafcbebbb54cee27ef7d0097145f04da1bd67b5af1d89cb4f983ae6a72b32451de81dca193255187480
-  languageName: node
-  linkType: hard
-
 "react-is@npm:18.2.0, react-is@npm:^16.12.0 || ^17.0.0 || ^18.0.0, react-is@npm:^18.0.0, react-is@npm:^18.2.0":
   version: 18.2.0
   resolution: "react-is@npm:18.2.0"
@@ -22026,6 +22025,7 @@ __metadata:
     "@udecode/plate-toggle": "workspace:^"
     "@udecode/plate-trailing-block": "workspace:^"
     "@udecode/plate-utils": "workspace:^"
+    "@udecode/react-hotkeys": "workspace:^"
     "@udecode/react-utils": "workspace:^"
     "@udecode/slate": "workspace:^"
     "@udecode/slate-react": "workspace:^"

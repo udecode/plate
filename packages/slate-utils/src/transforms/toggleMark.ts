@@ -5,17 +5,14 @@ import { isMarkActive } from '../queries';
 import { removeMark } from './removeMark';
 
 export interface ToggleMarkOptions {
+  /** The mark key to toggle. */
   key: string;
+
+  /** Mark keys to clear when adding the mark. */
   clear?: string | string[];
 }
 
-/**
- * Add/remove marks in the selection.
- *
- * @param editor
- * @param key Mark to toggle
- * @param clear Marks to clear when adding mark
- */
+/** Add or remove marks in the selection. */
 export const toggleMark = (
   editor: TEditor,
   { clear, key }: ToggleMarkOptions

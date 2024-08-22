@@ -1,7 +1,7 @@
 import cloneDeep from 'lodash/cloneDeep.js';
 import merge from 'lodash/merge.js';
 
-import type { SlateEditor } from '../editor';
+import type { SlateEditor } from '../editor/SlateEditor';
 import type { AnyPluginConfig, PluginConfig } from './BasePlugin';
 import type {
   SlatePlugin,
@@ -101,23 +101,20 @@ export function createSlatePlugin<
   const plugin = merge(
     {},
     {
-      __apiEditorExtensions: [],
       __apiExtensions: [],
       __configuration: null,
       __extensions: initialExtension ? [initialExtension] : [],
-      __transformEditorExtensions: [],
-      __transformExtensions: [],
       api: {},
       dependencies: [],
       editor: {},
       handlers: {},
-      hotkeys: {},
       inject: {},
       key,
       options: {},
       override: {},
       plugins: [],
       priority: 100,
+      shortcuts: {},
       transforms: {},
       type: key,
     },
@@ -179,9 +176,9 @@ export function createSlatePlugin<
 
   plugin.extendEditorApi = (extension) => {
     const newPlugin = { ...plugin };
-    newPlugin.__apiEditorExtensions = [
-      ...(newPlugin.__apiEditorExtensions as any),
-      extension,
+    newPlugin.__apiExtensions = [
+      ...(newPlugin.__apiExtensions as any),
+      { extension, isPluginSpecific: false },
     ];
 
     return createSlatePlugin(newPlugin) as any;
@@ -191,7 +188,17 @@ export function createSlatePlugin<
     const newPlugin = { ...plugin };
     newPlugin.__apiExtensions = [
       ...(newPlugin.__apiExtensions as any),
-      extension,
+      { extension, isPluginSpecific: true },
+    ];
+
+    return createSlatePlugin(newPlugin) as any;
+  };
+
+  plugin.extendEditorTransforms = (extension) => {
+    const newPlugin = { ...plugin };
+    newPlugin.__apiExtensions = [
+      ...(newPlugin.__apiExtensions as any),
+      { extension, isPluginSpecific: false, isTransform: true },
     ];
 
     return createSlatePlugin(newPlugin) as any;
@@ -199,23 +206,13 @@ export function createSlatePlugin<
 
   plugin.extendTransforms = (extension) => {
     const newPlugin = { ...plugin };
-    newPlugin.__transformEditorExtensions = [
-      ...(newPlugin.__transformEditorExtensions as any),
-      extension,
+    newPlugin.__apiExtensions = [
+      ...(newPlugin.__apiExtensions as any),
+      { extension, isPluginSpecific: true, isTransform: true },
     ];
 
     return createSlatePlugin(newPlugin) as any;
   };
-
-  // plugin.extendPluginTransforms = (extension) => {
-  //   const newPlugin = { ...plugin };
-  //   newPlugin.__transformExtensions = [
-  //     ...(newPlugin.__transformExtensions as any),
-  //     extension,
-  //   ];
-  //
-  //   return createSlatePlugin(newPlugin) as any;
-  // };
 
   plugin.extend = (extendConfig) => {
     let newPlugin = { ...plugin };

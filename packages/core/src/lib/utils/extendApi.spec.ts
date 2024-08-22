@@ -286,7 +286,7 @@ describe('extendEditorApi method', () => {
     expect(editor.api.testMethod()).toBe('plugin3-scoped1');
   });
 
-  it('should comprehensively handle all aspects of extendEditorApi and extendTransforms', () => {
+  it('should comprehensively handle all aspects of extendEditorApi and extendEditorTransforms', () => {
     const basePlugin = createSlatePlugin({
       key: 'testPlugin',
       options: {
@@ -306,10 +306,10 @@ describe('extendEditorApi method', () => {
         },
         override: () => 'original',
       }))
-      .extendTransforms(({ options }) => ({
+      .extendEditorTransforms(({ options }) => ({
         transform1: (amount: number) => options.baseValue + amount,
       }))
-      .extendTransforms(({ plugin: { transforms } }) => ({
+      .extendEditorTransforms(({ plugin: { transforms } }) => ({
         transform2: () => transforms.transform1(5) * 2,
       }))
       .extendEditorApi(({ plugin: { api, transforms } }) => ({
@@ -520,69 +520,71 @@ describe('extendApi method', () => {
   });
 });
 
-// describe('extendPluginTransforms method', () => {
-//   it('should extend plugin-specific transforms without affecting global transforms', () => {
-//     const testPlugin = createSlatePlugin({
-//       key: 'testPlugin',
-//     })
-//       .extendTransforms(() => ({
-//         globalTransform: () => 'global',
-//       }))
-//       .extendPluginTransforms(() => ({
-//         pluginTransform: () => 'plugin',
-//       }));
-//
-//     const editor = createPlateEditor({
-//       plugins: [testPlugin],
-//     });
-//
-//     expect(editor.transforms.globalTransform()).toBe('global');
-//     expect(editor.transforms.testPlugin.pluginTransform()).toBe('plugin');
-//
-//     // @ts-expect-error
-//     expect(editor.transforms.pluginTransform).toBeUndefined();
-//   });
-//
-//   it('should allow multiple extendPluginTransforms calls', () => {
-//     const testPlugin = createSlatePlugin({
-//       key: 'testPlugin',
-//     })
-//       .extendPluginTransforms(() => ({
-//         transform1: () => 1,
-//       }))
-//       .extendPluginTransforms(() => ({
-//         transform2: () => 2,
-//       }))
-//       .extendPluginTransforms(({ transforms }) => ({
-//         transform3: () =>
-//           transforms.testPlugin.transform1() +
-//           transforms.testPlugin.transform2(),
-//       }));
-//
-//     const editor = createPlateEditor({
-//       plugins: [testPlugin],
-//     });
-//
-//     expect(editor.transforms.testPlugin.transform1()).toBe(1);
-//     expect(editor.transforms.testPlugin.transform2()).toBe(2);
-//     expect(editor.transforms.testPlugin.transform3()).toBe(3);
-//   });
-//
-//   it('should allow interaction between global and plugin-specific transforms', () => {
-//     const testPlugin = createSlatePlugin({
-//       key: 'testPlugin',
-//     })
-//       .extendTransforms(() => ({
-//         globalTransform: () => 5,
-//       }))
-//       .extendPluginTransforms(({ transforms }) => ({
-//         pluginTransform: () => transforms.globalTransform() * 2,
-//       }));
-//
-//     const editor = createPlateEditor({
-//       plugins: [testPlugin],
-//     });
-//
-//     expect(editor.transforms.testPlugin.pluginTransform()).toBe(10);
-//   });
-// });
+describe('extendTransforms method', () => {
+  it('should extend plugin-specific transforms without affecting global transforms', () => {
+    const testPlugin = createSlatePlugin({
+      key: 'testPlugin',
+    })
+      .extendEditorTransforms(() => ({
+        globalTransform: () => 'global',
+      }))
+      .extendTransforms(() => ({
+        pluginTransform: () => 'plugin',
+      }));
+
+    const editor = createPlateEditor({
+      plugins: [testPlugin],
+    });
+
+    expect(editor.transforms.globalTransform()).toBe('global');
+    expect(editor.transforms.testPlugin.pluginTransform()).toBe('plugin');
+
+    // @ts-expect-error
+    expect(editor.transforms.pluginTransform).toBeUndefined();
+  });
+
+  it('should allow multiple extendTransforms calls', () => {
+    const testPlugin = createSlatePlugin({
+      key: 'testPlugin',
+    })
+      .extendTransforms(() => ({
+        transform1: () => 1,
+      }))
+      .extendTransforms(() => ({
+        transform2: () => 2,
+      }))
+      .extendTransforms(({ tf }) => ({
+        transform3: () =>
+          tf.testPlugin.transform1() + tf.testPlugin.transform2(),
+      }));
+
+    const editor = createPlateEditor({
+      plugins: [testPlugin],
+    });
+
+    expect(editor.transforms.testPlugin.transform1()).toBe(1);
+    expect(editor.transforms.testPlugin.transform2()).toBe(2);
+    expect(editor.transforms.testPlugin.transform3()).toBe(3);
+    expect(editor.tf.testPlugin.transform1()).toBe(1);
+    expect(editor.tf.testPlugin.transform2()).toBe(2);
+    expect(editor.tf.testPlugin.transform3()).toBe(3);
+  });
+
+  it('should allow interaction between global and plugin-specific transforms', () => {
+    const testPlugin = createSlatePlugin({
+      key: 'testPlugin',
+    })
+      .extendEditorTransforms(() => ({
+        globalTransform: () => 5,
+      }))
+      .extendTransforms(({ tf }) => ({
+        pluginTransform: () => tf.globalTransform() * 2,
+      }));
+
+    const editor = createPlateEditor({
+      plugins: [testPlugin],
+    });
+
+    expect(editor.transforms.testPlugin.pluginTransform()).toBe(10);
+  });
+});

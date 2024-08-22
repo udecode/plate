@@ -28,7 +28,7 @@ export const usePlateElement = (props: PlateElementProps) => {
     nodeProps,
     options,
     plugin,
-    transforms,
+    tf,
     type,
     ...rootProps
   } = props;

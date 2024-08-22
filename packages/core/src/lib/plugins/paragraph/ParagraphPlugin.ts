@@ -1,4 +1,6 @@
-import { createSlatePlugin } from '../../plugin';
+import { type PluginConfig, createSlatePlugin } from '../../plugin';
+
+export type ParagraphConfig = PluginConfig<'p'>;
 
 export const ParagraphPlugin = createSlatePlugin({
   deserializeHtml: {

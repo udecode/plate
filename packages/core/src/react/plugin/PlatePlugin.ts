@@ -1,6 +1,11 @@
 import type React from 'react';
 
 import type {
+  HotkeysEvent,
+  HotkeysOptions,
+  Keys,
+} from '@udecode/react-hotkeys';
+import type {
   TDescendant,
   TElement,
   TNodeEntry,
@@ -10,8 +15,6 @@ import type {
 } from '@udecode/slate';
 import type { TEditableProps } from '@udecode/slate-react';
 import type { AnyObject } from '@udecode/utils';
-import type { Options } from 'react-hotkeys-hook';
-import type { HotkeysEvent } from 'react-hotkeys-hook/src/types';
 
 import type {
   AnyPluginConfig,
@@ -63,8 +66,6 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
     } & DOMHandlers<WithAnyKey<C>>
   >;
 
-  hotkeys: PlateHotkeys;
-
   /** Plugin injection. */
   inject: {
     /**
@@ -108,6 +109,8 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
     /** Extend plugins by key. */
     plugins?: Record<string, Partial<EditorPlatePlugin<AnyPluginConfig>>>;
   };
+
+  shortcuts: PlateShortcuts;
 } & BasePlugin<C> &
   Nullable<{
     /**
@@ -162,7 +165,7 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
     serializeHtml?: SerializeHtml<WithAnyKey<C>>;
 
     /** Hook called when the editor is initialized. */
-    useHooks?: PlatePluginUseHooks<WithAnyKey<C>>;
+    useHooks?: PlateUseHooks<WithAnyKey<C>>;
 
     /** Editor method overriders. */
     withOverrides?: WithOverride<WithAnyKey<C>>;
@@ -170,15 +173,10 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
   PlatePluginMethods<C>;
 
 export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
-  __apiEditorExtensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
   __apiExtensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
   __configuration: ((ctx: PlatePluginContext<AnyPluginConfig>) => any) | null;
   __extensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
   __resolved?: boolean;
-  __transformEditorExtensions: ((
-    ctx: PlatePluginContext<AnyPluginConfig>
-  ) => any)[];
-  __transformExtensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
 
   configure: (
     config:
@@ -346,9 +344,43 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
     >
   >;
 
-  // extendHotkeys: (
-  //   hotkeys: ((ctx: PlatePluginContext<C>) => PlateHotkeys) | PlateHotkeys
-  // ) => PlatePlugin<C>;
+  extendEditorTransforms: <
+    ET extends Record<
+      string,
+      ((...args: any[]) => any) | Record<string, (...args: any[]) => any>
+    > = Record<string, never>,
+  >(
+    extension: (ctx: PlatePluginContext<C>) => {
+      [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
+        ...args: any[]
+      ) => any
+        ? (
+            ...args: Parameters<InferTransforms<C>[K]>
+          ) => ReturnType<InferTransforms<C>[K]>
+        : InferTransforms<C>[K] extends Record<string, (...args: any[]) => any>
+          ? {
+              [N in keyof InferTransforms<C>[K]]?: (
+                ...args: Parameters<InferTransforms<C>[K][N]>
+              ) => ReturnType<InferTransforms<C>[K][N]>;
+            }
+          : never;
+    } & ET
+  ) => PlatePlugin<
+    PluginConfig<
+      C['key'],
+      InferOptions<C>,
+      InferApi<C>,
+      {
+        [K in keyof (ET & InferTransforms<C>)]: (ET &
+          InferTransforms<C>)[K] extends (...args: any[]) => any
+          ? (ET & InferTransforms<C>)[K]
+          : {
+              [N in keyof (ET & InferTransforms<C>)[K]]: (ET &
+                InferTransforms<C>)[K][N];
+            };
+      }
+    >
+  >;
 
   extendPlugin: <
     P extends AnyPlatePlugin | AnySlatePlugin,
@@ -402,54 +434,16 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
             >)
   ) => PlatePlugin<C>;
 
-  // extendPluginTransforms: <
-  //   ET extends Record<string, (...args: any[]) => any> = Record<string, never>,
-  // >(
-  //   extension: (ctx: PlatePluginContext<C>) => ET
-  // ) => PlatePlugin<
-  //   PluginConfig<
-  //     C['key'],
-  //     InferOptions<C>,
-  //     InferApi<C>,
-  //     InferTransforms<C> & Record<C['key'], ET>
-  //   >
-  // >;
-
   extendTransforms: <
-    ET extends Record<
-      string,
-      ((...args: any[]) => any) | Record<string, (...args: any[]) => any>
-    > = Record<string, never>,
+    ET extends Record<string, (...args: any[]) => any> = Record<string, never>,
   >(
-    extension: (ctx: PlatePluginContext<C>) => {
-      [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
-        ...args: any[]
-      ) => any
-        ? (
-            ...args: Parameters<InferTransforms<C>[K]>
-          ) => ReturnType<InferTransforms<C>[K]>
-        : InferTransforms<C>[K] extends Record<string, (...args: any[]) => any>
-          ? {
-              [N in keyof InferTransforms<C>[K]]?: (
-                ...args: Parameters<InferTransforms<C>[K][N]>
-              ) => ReturnType<InferTransforms<C>[K][N]>;
-            }
-          : never;
-    } & ET
+    extension: (ctx: PlatePluginContext<C>) => ET
   ) => PlatePlugin<
     PluginConfig<
       C['key'],
       InferOptions<C>,
       InferApi<C>,
-      {
-        [K in keyof (ET & InferTransforms<C>)]: (ET &
-          InferTransforms<C>)[K] extends (...args: any[]) => any
-          ? (ET & InferTransforms<C>)[K]
-          : {
-              [N in keyof (ET & InferTransforms<C>)[K]]: (ET &
-                InferTransforms<C>)[K][N];
-            };
-      }
+      InferTransforms<C> & Record<C['key'], ET>
     >
   >;
 
@@ -501,7 +495,7 @@ export type PlatePluginContext<C extends AnyPluginConfig = PluginConfig> = {
   editor: PlateEditor;
   options: InferOptions<C>;
   plugin: EditorPlatePlugin<C>;
-  transforms: C['transforms'];
+  tf: C['transforms'];
   type: string;
 };
 
@@ -626,7 +620,7 @@ export type PlatePluginProps<C extends AnyPluginConfig = PluginConfig> =
     ) => AnyObject | undefined)
   | AnyObject;
 
-export type PlatePluginUseHooks<C extends AnyPluginConfig = PluginConfig> = (
+export type PlateUseHooks<C extends AnyPluginConfig = PluginConfig> = (
   ctx: PlatePluginContext<C>
 ) => void;
 
@@ -661,15 +655,14 @@ export type OnChange<C extends AnyPluginConfig = PluginConfig> = (
   ctx: { value: Value } & PlatePluginContext<C>
 ) => HandlerReturnType;
 
-export type PlateHotkey = {
-  callback: (
-    ctx: {
-      event: KeyboardEvent;
-      handler: HotkeysEvent;
-    } & PlatePluginContext
-  ) => void;
-  hotkey: string | string[];
-  options?: Options;
-};
+export type PlateShortcut = {
+  handler?: (ctx: {
+    editor: PlateEditor;
+    event: KeyboardEvent;
+    eventDetails: HotkeysEvent;
+  }) => void;
+  keys?: Keys;
+  priority?: number;
+} & HotkeysOptions;
 
-export type PlateHotkeys = Record<string, PlateHotkey | null>;
+export type PlateShortcuts = Record<string, PlateShortcut | null>;

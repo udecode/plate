@@ -1,6 +1,6 @@
 import type React from 'react';
 
-import type { TEditor } from '@udecode/plate-common';
+import type { TEditor } from '@udecode/slate';
 
 import { isComposing } from '@udecode/slate-react';
 

@@ -5,7 +5,6 @@ import {
   getBlockAbove,
   isNode,
   moveNodes,
-  toggleNodeType,
 } from '@udecode/plate-common';
 import { type TIndentElement, indent } from '@udecode/plate-indent';
 
@@ -65,7 +64,7 @@ export const withToggle: WithOverride = ({ editor }) => {
     editor.withoutNormalizing(() => {
       if (isOpen) {
         insertBreak();
-        toggleNodeType(editor, { activeType: TogglePlugin.key });
+        editor.tf.toggle.block({ type: TogglePlugin.key });
         indent(editor);
       } else {
         const lastEntryEnclosedInToggle = getLastEntryEnclosedInToggle(

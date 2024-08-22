@@ -1,5 +1,5 @@
 // Return undefined if not import the `BlockSelectionPlugin` plugin
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-core';
 
 export const blockSelectedIds = (
   editor: SlateEditor

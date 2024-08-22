@@ -1,4 +1,4 @@
-import { collapseSelection, toggleNodeType } from '@udecode/plate-common';
+import { collapseSelection } from '@udecode/plate-common';
 import {
   focusEditor,
   useEditorRef,
@@ -26,7 +26,7 @@ export const useToggleToolbarButton = ({
     props: {
       onClick: () => {
         openNextToggles(editor);
-        toggleNodeType(editor, { activeType: TogglePlugin.key });
+        editor.tf.toggle.block({ type: TogglePlugin.key });
         collapseSelection(editor);
         focusEditor(editor);
       },

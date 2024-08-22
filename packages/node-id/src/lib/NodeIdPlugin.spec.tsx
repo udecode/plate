@@ -8,7 +8,7 @@ import {
   splitNodes,
 } from '@udecode/plate-common';
 import { ParagraphPlugin } from '@udecode/plate-common';
-import { ListItemPlugin, ListUnorderedPlugin } from '@udecode/plate-list';
+import { BulletedListPlugin, ListItemPlugin } from '@udecode/plate-list';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { NodeIdPlugin } from './NodeIdPlugin';
@@ -148,7 +148,7 @@ describe('when inserting nodes', () => {
           NodeIdPlugin.configure({
             options: {
               allow: [
-                ListUnorderedPlugin.key,
+                BulletedListPlugin.key,
                 ListItemPlugin.key,
                 ParagraphPlugin.key,
               ],

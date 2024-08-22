@@ -9,12 +9,9 @@ import {
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
-import { type ColumnConfig, ColumnPlugin } from './ColumnPlugin';
+import { ColumnPlugin } from './ColumnPlugin';
 
-export const onKeyDownColumn: KeyboardHandler<ColumnConfig> = ({
-  editor,
-  event,
-}) => {
+export const onKeyDownColumn: KeyboardHandler = ({ editor, event }) => {
   if (event.defaultPrevented) return;
 
   const at = editor.selection;

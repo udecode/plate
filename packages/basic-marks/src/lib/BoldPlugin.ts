@@ -1,11 +1,7 @@
-import {
-  type ToggleMarkPluginOptions,
-  createSlatePlugin,
-  someHtmlElement,
-} from '@udecode/plate-common';
+import { createSlatePlugin, someHtmlElement } from '@udecode/plate-common';
 
 /** Enables support for bold formatting */
-export const BoldPlugin = createSlatePlugin<'bold', ToggleMarkPluginOptions>({
+export const BoldPlugin = createSlatePlugin({
   deserializeHtml: {
     query: ({ element }) =>
       !someHtmlElement(element, (node) => node.style.fontWeight === 'normal'),

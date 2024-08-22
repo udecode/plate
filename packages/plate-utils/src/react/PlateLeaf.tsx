@@ -29,7 +29,7 @@ export const usePlateLeaf = (props: PlateLeafProps) => {
     options,
     plugin,
     text,
-    transforms,
+    tf,
     type,
     ...rootProps
   } = props;

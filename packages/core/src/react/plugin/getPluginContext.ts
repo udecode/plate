@@ -21,11 +21,11 @@ export function getPluginContext<
     : editor.getPlugin({ key: plugin.key } as any);
 
   return {
-    api: editor.api as any,
+    api: editor.api,
     editor,
     options: editorPlugin.options,
     plugin: editorPlugin,
-    transforms: editor.transforms as any,
+    tf: editor.transforms,
     type: editorPlugin.type,
   };
 }

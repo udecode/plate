@@ -17,10 +17,10 @@ import {
 import { Path, type PathRef } from 'slate';
 
 import {
+  BulletedListPlugin,
   ListItemContentPlugin,
-  ListOrderedPlugin,
   type ListPluginOptions,
-  ListUnorderedPlugin,
+  NumberedListPlugin,
 } from '../ListPlugin';
 import { getListTypes } from '../queries/index';
 import { moveListItemUp } from '../transforms/index';
@@ -70,8 +70,8 @@ export const normalizeListItem = (
   let changed = false;
 
   const allValidLiChildrenTypes = new Set([
-    editor.getType(ListUnorderedPlugin),
-    editor.getType(ListOrderedPlugin),
+    editor.getType(BulletedListPlugin),
+    editor.getType(NumberedListPlugin),
     editor.getType(ListItemContentPlugin),
     ...validLiChildrenTypes,
   ]);

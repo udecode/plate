@@ -60,10 +60,10 @@ export const TablePlugin = createTSlatePlugin<TableConfig>({
     cellFactory: bindFirst(getEmptyCellNode, editor),
     getCellChildren: (cell) => cell.children,
   }))
-  .extendTransforms(({ editor }) => ({
-    table: {
-      insertColumn: bindFirst(insertTableColumn, editor),
-      insertRow: bindFirst(insertTableRow, editor),
+  .extendEditorTransforms(({ editor }) => ({
+    insert: {
+      tableColumn: bindFirst(insertTableColumn, editor),
+      tableRow: bindFirst(insertTableRow, editor),
     },
   }));
 

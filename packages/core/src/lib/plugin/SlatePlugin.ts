@@ -26,7 +26,6 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
     insertData?: EditorInsertData<WithAnyKey<C>>;
   };
   handlers: {};
-  hotkeys: {};
   inject: {
     plugins?: Record<string, Partial<EditorPlugin<AnyPluginConfig>>>;
     props?: InjectProps<WithAnyKey<C>>;
@@ -37,6 +36,7 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
   override: {
     plugins?: Record<string, Partial<EditorPlugin<AnyPluginConfig>>>;
   };
+  shortcuts: {};
 } & BasePlugin<C> &
   Nullable<{
     decorate?: Decorate<WithAnyKey<C>>;
@@ -49,15 +49,10 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
   SlatePluginMethods<C>;
 
 export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
-  __apiEditorExtensions: ((ctx: SlatePluginContext<AnyPluginConfig>) => any)[];
   __apiExtensions: ((ctx: SlatePluginContext<AnyPluginConfig>) => any)[];
   __configuration: ((ctx: SlatePluginContext<AnyPluginConfig>) => any) | null;
   __extensions: ((ctx: SlatePluginContext<AnyPluginConfig>) => any)[];
   __resolved?: boolean;
-  __transformEditorExtensions: ((
-    ctx: SlatePluginContext<AnyPluginConfig>
-  ) => any)[];
-  __transformExtensions: ((ctx: SlatePluginContext<AnyPluginConfig>) => any)[];
 
   configure: (
     config:
@@ -171,45 +166,7 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
     >
   >;
 
-  extendPlugin: <P extends AnySlatePlugin, EO = {}, EA = {}, ET = {}>(
-    plugin: Partial<P>,
-    extendConfig:
-      | ((
-          ctx: SlatePluginContext<P>
-        ) => SlatePluginConfig<
-          any,
-          InferOptions<P>,
-          InferApi<P>,
-          InferTransforms<P>,
-          EO,
-          EA,
-          ET
-        >)
-      | SlatePluginConfig<
-          any,
-          InferOptions<P>,
-          InferApi<P>,
-          InferTransforms<P>,
-          EO,
-          EA,
-          ET
-        >
-  ) => SlatePlugin<C>;
-
-  // extendPluginTransforms: <
-  //   ET extends Record<string, (...args: any[]) => any> = Record<string, never>,
-  // >(
-  //   extension: (ctx: SlatePluginContext<C>) => ET
-  // ) => SlatePlugin<
-  //   PluginConfig<
-  //     C['key'],
-  //     InferOptions<C>,
-  //     InferApi<C>,
-  //     InferTransforms<C> & Record<C['key'], ET>
-  //   >
-  // >;
-
-  extendTransforms: <
+  extendEditorTransforms: <
     ET extends Record<
       string,
       ((...args: any[]) => any) | Record<string, (...args: any[]) => any>
@@ -244,6 +201,44 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
                 InferTransforms<C>)[K][N];
             };
       }
+    >
+  >;
+
+  extendPlugin: <P extends AnySlatePlugin, EO = {}, EA = {}, ET = {}>(
+    plugin: Partial<P>,
+    extendConfig:
+      | ((
+          ctx: SlatePluginContext<P>
+        ) => SlatePluginConfig<
+          any,
+          InferOptions<P>,
+          InferApi<P>,
+          InferTransforms<P>,
+          EO,
+          EA,
+          ET
+        >)
+      | SlatePluginConfig<
+          any,
+          InferOptions<P>,
+          InferApi<P>,
+          InferTransforms<P>,
+          EO,
+          EA,
+          ET
+        >
+  ) => SlatePlugin<C>;
+
+  extendTransforms: <
+    ET extends Record<string, (...args: any[]) => any> = Record<string, never>,
+  >(
+    extension: (ctx: SlatePluginContext<C>) => ET
+  ) => SlatePlugin<
+    PluginConfig<
+      C['key'],
+      InferOptions<C>,
+      InferApi<C>,
+      InferTransforms<C> & Record<C['key'], ET>
     >
   >;
 };
@@ -283,7 +278,7 @@ export type SlatePluginContext<C extends AnyPluginConfig = PluginConfig> = {
   editor: SlateEditor;
   options: InferOptions<C>;
   plugin: EditorPlugin<C>;
-  transforms: C['transforms'];
+  tf: C['transforms'];
   type: string;
 };
 

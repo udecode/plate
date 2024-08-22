@@ -1,4 +1,4 @@
-import type { SlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-core';
 
 export const addSelectedRow = (
   editor: SlateEditor,

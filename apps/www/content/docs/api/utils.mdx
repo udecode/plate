@@ -328,39 +328,3 @@ Recursively merges a source object into children nodes using a query.
   No explicit return, but it modifies the children nodes based on the provided
   options.
 </APIReturns>
-
-### onKeyDownToggleElement
-
-A function that toggles the type of the node in the editor when a hotkey is pressed.
-
-<APIParameters>
-  <APIItem name="editor" type="E">
-    The PlateEditor instance.
-  </APIItem>
-  <APIItem name="options" type="{ type, options: { hotkey } }">
-    An object that contains the type of the node to be toggled and the hotkey(s)
-    that triggers the toggle.
-  </APIItem>
-</APIParameters>
-<APIReturns>
-  A keyboard handler function that toggles the node type when a specified hotkey
-  is pressed.
-</APIReturns>
-
-### onKeyDownToggleMark
-
-A function that toggles the mark of the node in the editor when a hotkey is pressed.
-
-<APIParameters>
-  <APIItem name="editor" type="E">
-    The PlateEditor instance.
-  </APIItem>
-  <APIItem name="options" type="{ type, options: { hotkey, clear } }">
-    An object that contains the type of the mark to be toggled, the hotkey that
-    triggers the toggle, and an option to clear existing marks.
-  </APIItem>
-</APIParameters>
-<APIReturns>
-  A keyboard handler function that toggles the mark when a specified hotkey is
-  pressed.
-</APIReturns>

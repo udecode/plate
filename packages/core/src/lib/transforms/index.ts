@@ -4,4 +4,4 @@
 
 export * from './resetEditor';
 export * from './resetEditorChildren';
-export * from './toggleNodeType';
+export * from './toggleBlock';

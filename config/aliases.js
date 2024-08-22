@@ -47,6 +47,7 @@ module.exports = {
   '@udecode/plate-toggle': 'toggle',
   '@udecode/plate-trailing-block': 'trailing-block',
   '@udecode/plate-utils': 'plate-utils',
+  '@udecode/react-hotkeys': 'react-hotkeys',
   '@udecode/react-utils': 'react-utils',
   '@udecode/slate': 'slate',
   '@udecode/slate-react': 'slate-react',

@@ -1,27 +1,24 @@
-import type { ExtendConfig, HotkeyPluginOptions } from '@udecode/plate-common';
-
 import { toPlatePlugin } from '@udecode/plate-common/react';
 
 import {
-  type ListConfig as BaseListConfig,
+  BulletedListPlugin as BaseBulletedListPlugin,
   ListItemContentPlugin as BaseListItemContentPlugin,
   ListItemPlugin as BaseListItemPlugin,
-  ListOrderedPlugin as BaseListOrderedPlugin,
   ListPlugin as BaseListPlugin,
-  ListUnorderedPlugin as BaseListUnorderedPlugin,
+  NumberedListPlugin as BaseNumberedListPlugin,
 } from '../lib';
 import { onKeyDownList } from './onKeyDownList';
 import { withList } from './withList';
 
-export type ListConfig = ExtendConfig<BaseListConfig, HotkeyPluginOptions>;
-
-export const ListUnorderedPlugin = toPlatePlugin(BaseListUnorderedPlugin, {
+export const BulletedListPlugin = toPlatePlugin(BaseBulletedListPlugin, {
+  dependencies: ['list'],
   handlers: {
     onKeyDown: onKeyDownList,
   },
 });
 
-export const ListOrderedPlugin = toPlatePlugin(BaseListOrderedPlugin, {
+export const NumberedListPlugin = toPlatePlugin(BaseNumberedListPlugin, {
+  dependencies: ['list'],
   handlers: {
     onKeyDown: onKeyDownList,
   },
@@ -37,8 +34,8 @@ export const ListItemPlugin = toPlatePlugin(BaseListItemPlugin);
  */
 export const ListPlugin = toPlatePlugin(BaseListPlugin, {
   plugins: [
-    ListUnorderedPlugin,
-    ListOrderedPlugin,
+    BulletedListPlugin,
+    NumberedListPlugin,
     ListItemPlugin,
     ListItemContentPlugin,
   ],

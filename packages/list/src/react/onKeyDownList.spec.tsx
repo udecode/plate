@@ -4,7 +4,7 @@ import { getPluginContext } from '@udecode/plate-common/react';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { ListPlugin, ListUnorderedPlugin } from './ListPlugin';
+import { BulletedListPlugin, ListPlugin } from './ListPlugin';
 import { onKeyDownList } from './onKeyDownList';
 
 jsx;
@@ -60,7 +60,7 @@ it('should indent single list item (start of item)', () => {
   });
 
   onKeyDownList({
-    ...getPluginContext(editor, { key: ListUnorderedPlugin.key }),
+    ...getPluginContext(editor, { key: BulletedListPlugin.key }),
     event,
   });
   expect(editor.children).toEqual(output.children);
@@ -117,7 +117,7 @@ it('should indent single list item (end of item)', () => {
   });
 
   onKeyDownList({
-    ...getPluginContext(editor, { key: ListUnorderedPlugin.key }),
+    ...getPluginContext(editor, { key: BulletedListPlugin.key }),
     event,
   });
   expect(editor.children).toEqual(output.children);
@@ -188,7 +188,7 @@ it('should indent multiple list items (start/end)', () => {
   });
 
   onKeyDownList({
-    ...getPluginContext(editor, { key: ListUnorderedPlugin.key }),
+    ...getPluginContext(editor, { key: BulletedListPlugin.key }),
     event,
   });
   expect(editor.children).toEqual(output.children);

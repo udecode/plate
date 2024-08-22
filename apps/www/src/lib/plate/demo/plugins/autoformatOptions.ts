@@ -48,9 +48,9 @@ import {
   unwrapList,
 } from '@udecode/plate-list';
 import {
+  BulletedListPlugin,
   ListItemPlugin,
-  ListOrderedPlugin,
-  ListUnorderedPlugin,
+  NumberedListPlugin,
   TodoListPlugin,
 } from '@udecode/plate-list/react';
 import { TogglePlugin, openNextToggles } from '@udecode/plate-toggle/react';
@@ -246,14 +246,14 @@ export const autoformatRules: AutoformatRule[] = [
 
 export const autoformatLists: AutoformatRule[] = [
   {
-    format: (editor) => formatList(editor, ListUnorderedPlugin.key),
+    format: (editor) => formatList(editor, BulletedListPlugin.key),
     match: ['* ', '- '],
     mode: 'block',
     preFormat,
     type: ListItemPlugin.key,
   },
   {
-    format: (editor) => formatList(editor, ListOrderedPlugin.key),
+    format: (editor) => formatList(editor, NumberedListPlugin.key),
     match: ['1. ', '1) '],
     mode: 'block',
     preFormat,

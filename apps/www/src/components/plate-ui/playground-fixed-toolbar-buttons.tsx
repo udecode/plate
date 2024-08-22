@@ -17,8 +17,8 @@ import {
 import { ListStyleType } from '@udecode/plate-indent-list';
 import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import {
-  ListOrderedPlugin,
-  ListUnorderedPlugin,
+  BulletedListPlugin,
+  NumberedListPlugin,
 } from '@udecode/plate-list/react';
 import { ImagePlugin } from '@udecode/plate-media/react';
 
@@ -140,8 +140,8 @@ export function PlaygroundFixedToolbarButtons({ id }: { id?: ValueId }) {
 
               {isEnabled('list', id) && !indentList && (
                 <>
-                  <ListToolbarButton nodeType={ListUnorderedPlugin.key} />
-                  <ListToolbarButton nodeType={ListOrderedPlugin.key} />
+                  <ListToolbarButton nodeType={BulletedListPlugin.key} />
+                  <ListToolbarButton nodeType={NumberedListPlugin.key} />
                 </>
               )}
 

@@ -3,6 +3,7 @@
  */
 
 export * from './DefaultLeaf';
+export * from './EditorHotkeysEffect';
 export * from './EditorMethodsEffect';
 export * from './EditorRefEffect';
 export * from './EditorStateEffect';

@@ -66,7 +66,7 @@ export function DocPageLayout({
                 <ExternalLinkIcon className="size-3" />
               </Link>
             )}
-            {doc.docs?.map((item) => (
+            {doc.docs?.map((item: any) => (
               <Link
                 className={cn(
                   badgeVariants({

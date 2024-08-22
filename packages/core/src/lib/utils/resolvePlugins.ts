@@ -23,7 +23,8 @@ export const resolvePlugins = (
   editor.plugins = {};
   editor.api = {} as any;
   editor.transforms = {} as any;
-  editor.hotkeys = {} as any;
+  editor.tf = editor.transforms;
+  editor.shortcuts = {} as any;
 
   const resolvedPlugins = resolveAndSortPlugins(editor, plugins);
 
@@ -44,93 +45,110 @@ export const resolvePlugins = (
 };
 
 const mergePluginApis = (editor: SlateEditor) => {
+  const shortcutsByPriority: any[] = [];
+
   editor.pluginList.forEach((plugin: any) => {
     // Merge APIs
     Object.entries(plugin.api).forEach(([apiKey, apiFunction]) => {
       (editor.api as any)[apiKey] = apiFunction;
     });
 
-    // Merge hotkeys
-    if (plugin.hotkeys) {
-      Object.entries(plugin.hotkeys).forEach(([key, hotkey]) => {
-        if (hotkey === null) {
-          delete (editor.hotkeys as any)[key];
-        } else {
-          (editor.hotkeys as any)[key] = hotkey;
-        }
-      });
-    }
-    // Apply editor api extensions
-    if (
-      plugin.__apiEditorExtensions &&
-      plugin.__apiEditorExtensions.length > 0
-    ) {
-      plugin.__apiEditorExtensions.forEach((methodExtension: any) => {
-        const newApi = methodExtension(getPluginContext(editor, plugin) as any);
-
-        mergeWithoutArray(plugin.api, newApi);
-        mergeWithoutArray(editor.api, newApi);
-      });
-      delete plugin.__apiEditorExtensions;
-    }
-    // Apply plugin-specific api extensions
+    // Apply API and transform extensions
     if (plugin.__apiExtensions && plugin.__apiExtensions.length > 0) {
-      plugin.__apiExtensions.forEach((methodExtension: any) => {
-        if (!(editor.api as any)[plugin.key]) {
-          (editor.api as any)[plugin.key] = {};
-        }
-        if (!(plugin.api as any)[plugin.key]) {
-          (plugin.api as any)[plugin.key] = {};
-        }
+      plugin.__apiExtensions.forEach(
+        ({ extension, isPluginSpecific, isTransform }: any) => {
+          const newExtensions = extension(
+            getPluginContext(editor, plugin) as any
+          );
 
-        const newApi = methodExtension(getPluginContext(editor, plugin) as any);
-        mergeWithoutArray((plugin.api as any)[plugin.key], newApi);
-        mergeWithoutArray((editor.api as any)[plugin.key], newApi);
-      });
+          if (isTransform) {
+            // Handle transforms
+            if (isPluginSpecific) {
+              // Plugin-specific transform
+              if (!(editor.transforms as any)[plugin.key]) {
+                (editor.transforms as any)[plugin.key] = {};
+              }
+              if (!(plugin.transforms as any)[plugin.key]) {
+                (plugin.transforms as any)[plugin.key] = {};
+              }
+
+              mergeWithoutArray(
+                (editor.transforms as any)[plugin.key],
+                newExtensions
+              );
+              mergeWithoutArray(
+                (plugin.transforms as any)[plugin.key],
+                newExtensions
+              );
+            } else {
+              // Editor-wide transform
+              mergeWithoutArray(editor.transforms, newExtensions);
+              mergeWithoutArray(plugin.transforms, newExtensions);
+            }
+          } else {
+            // Handle APIs
+            if (isPluginSpecific) {
+              // Plugin-specific API
+              if (!(editor.api as any)[plugin.key]) {
+                (editor.api as any)[plugin.key] = {};
+              }
+              if (!(plugin.api as any)[plugin.key]) {
+                (plugin.api as any)[plugin.key] = {};
+              }
+
+              mergeWithoutArray((editor.api as any)[plugin.key], newExtensions);
+              mergeWithoutArray((plugin.api as any)[plugin.key], newExtensions);
+            } else {
+              // Editor-wide API
+              mergeWithoutArray(editor.api, newExtensions);
+              mergeWithoutArray(plugin.api, newExtensions);
+            }
+          }
+        }
+      );
       delete plugin.__apiExtensions;
     }
-    // Apply editor transform extensions
-    if (
-      plugin.__transformEditorExtensions &&
-      plugin.__transformEditorExtensions.length > 0
-    ) {
-      plugin.__transformEditorExtensions.forEach((transformExtension: any) => {
-        const newTransforms = transformExtension(
-          getPluginContext(editor, plugin) as any
+
+    // Merge shortcuts
+    Object.entries(plugin.shortcuts).forEach(([key, hotkey]) => {
+      if (hotkey === null) {
+        // Remove any existing hotkey with this key
+        const index = shortcutsByPriority.findIndex((item) => item.key === key);
+
+        if (index !== -1) {
+          shortcutsByPriority.splice(index, 1);
+        }
+      } else {
+        const priority = (hotkey as any).priority ?? plugin.priority;
+        const existingIndex = shortcutsByPriority.findIndex(
+          (item) => item.key === key
         );
 
-        mergeWithoutArray(plugin.transforms, newTransforms);
-        mergeWithoutArray(editor.transforms, newTransforms); // Add transforms to editor.api as well
-      });
-      delete plugin.__transformEditorExtensions;
-    }
-    if (
-      plugin.__transformExtensions &&
-      plugin.__transformExtensions.length > 0
-    ) {
-      plugin.__transformExtensions.forEach((methodExtension: any) => {
-        if (!(editor.transforms as any)[plugin.key]) {
-          (editor.transforms as any)[plugin.key] = {};
-        }
-        if (!(plugin.transforms as any)[plugin.key]) {
-          (plugin.transforms as any)[plugin.key] = {};
-        }
+        if (
+          existingIndex === -1 ||
+          priority >= shortcutsByPriority[existingIndex].priority
+        ) {
+          if (existingIndex !== -1) {
+            shortcutsByPriority.splice(existingIndex, 1);
+          }
 
-        const newTransforms = methodExtension(
-          getPluginContext(editor, plugin) as any
-        );
-        mergeWithoutArray(
-          (plugin.transforms as any)[plugin.key],
-          newTransforms
-        );
-        mergeWithoutArray(
-          (editor.transforms as any)[plugin.key],
-          newTransforms
-        );
-      });
-      delete plugin.__transformExtensions;
-    }
+          shortcutsByPriority.push({ hotkey, key, priority });
+        }
+      }
+    });
   });
+
+  // Sort shortcuts by priority (descending)
+  shortcutsByPriority.sort((a, b) => b.hotkey.priority - a.hotkey.priority);
+
+  // After processing all plugins, set the final shortcuts on the editor
+  editor.shortcuts = Object.fromEntries(
+    shortcutsByPriority.map(({ hotkey, key }) => {
+      const { priority, ...hotkeyWithoutPriority } = hotkey;
+
+      return [key, hotkeyWithoutPriority];
+    })
+  );
 };
 
 const flattenAndMergePlugins = (

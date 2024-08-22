@@ -1,14 +1,7 @@
-import {
-  type ToggleMarkPluginOptions,
-  createSlatePlugin,
-  someHtmlElement,
-} from '@udecode/plate-common';
+import { createSlatePlugin, someHtmlElement } from '@udecode/plate-common';
 
 /** Enables support for underline formatting. */
-export const UnderlinePlugin = createSlatePlugin<
-  'underline',
-  ToggleMarkPluginOptions
->({
+export const UnderlinePlugin = createSlatePlugin({
   deserializeHtml: {
     query: ({ element }) =>
       !someHtmlElement(element, (node) => node.style.textDecoration === 'none'),

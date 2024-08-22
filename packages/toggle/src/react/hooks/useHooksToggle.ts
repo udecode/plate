@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import type { PlatePluginUseHooks } from '@udecode/plate-common/react';
+import type { PlateUseHooks } from '@udecode/plate-common/react';
 
 import type { ToggleConfig } from '../TogglePlugin';
 
@@ -9,7 +9,7 @@ import {
   useToggleIndex,
 } from '../toggle-controller-store';
 
-export const useHooksToggle: PlatePluginUseHooks<ToggleConfig> = ({
+export const useHooksToggle: PlateUseHooks<ToggleConfig> = ({
   editor,
   options,
 }) => {

@@ -50,18 +50,18 @@ export type TableConfig = PluginConfig<
     minColumnWidth?: number;
   },
   { table: TableApi },
-  { table: TableTransforms }
+  {
+    insert: {
+      tableColumn: OmitFirst<typeof insertTableColumn>;
+      tableRow: OmitFirst<typeof insertTableRow>;
+    };
+  }
 >;
 
 export type TableApi = {
   /** Cell node factory used each time a cell is created. */
   cellFactory: (options?: CellFactoryOptions) => TTableCellElement;
   getCellChildren: (cell: TTableCellElement) => TDescendant[];
-};
-
-export type TableTransforms = {
-  insertColumn: OmitFirst<typeof insertTableColumn>;
-  insertRow: OmitFirst<typeof insertTableRow>;
 };
 
 export type CellFactoryOptions = {

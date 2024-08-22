@@ -1,3 +1,6 @@
+import type { TCodeBlockElement } from '@udecode/plate-code-block';
+import type { TElement } from '@udecode/plate-common';
+
 import {
   AlignPlugin,
   AutoformatPlugin,
@@ -223,11 +226,13 @@ export default function RSCPage() {
       code_block: {
         serialize: (_, node) => {
           const codeLines = node.children
-            .filter((child) => child.type === 'code_line')
-            .map((child) => child.children.map((c) => c.text).join(''))
+            .filter((child) => (child as any).type === 'code_line')
+            .map((child) =>
+              (child as any).children.map((c: TElement) => c.text).join('')
+            )
             .join('\n');
 
-          return `\`\`\`${node.lang || ''}\n${codeLines}\n\`\`\``;
+          return `\`\`\`${(node as any as TCodeBlockElement).lang || ''}\n${codeLines}\n\`\`\``;
         },
       },
     },

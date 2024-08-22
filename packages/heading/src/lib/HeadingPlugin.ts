@@ -1,5 +1,4 @@
 import {
-  type HotkeyPluginOptions,
   type PluginConfig,
   type SlatePlugin,
   createSlatePlugin,
@@ -7,8 +6,6 @@ import {
 } from '@udecode/plate-common';
 
 import { HEADING_LEVELS } from './constants';
-
-export type HeadingPluginConfig = PluginConfig<any, HotkeyPluginOptions>;
 
 export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -31,16 +28,14 @@ export const HeadingPlugin = createTSlatePlugin<HeadingConfig>({
     options: { levels },
   } = plugin;
 
-  const plugins: SlatePlugin<HeadingPluginConfig>[] = [];
+  const plugins: SlatePlugin[] = [];
 
   const headingLevels = Array.isArray(levels)
     ? levels
     : Array.from({ length: levels || 6 }, (_, i) => i + 1);
 
   headingLevels.forEach((level) => {
-    const key = HEADING_LEVELS[level - 1];
-
-    const plugin: SlatePlugin<HeadingPluginConfig> = createSlatePlugin({
+    const plugin: SlatePlugin = createSlatePlugin({
       deserializeHtml: {
         rules: [
           {
@@ -49,13 +44,8 @@ export const HeadingPlugin = createTSlatePlugin<HeadingConfig>({
         ],
       },
       isElement: true,
-      key,
-      options: {},
+      key: HEADING_LEVELS[level - 1],
     });
-
-    if (level < 4) {
-      plugin.options!.hotkey = [`mod+opt+${level}`, `mod+shift+${level}`];
-    }
 
     plugins.push(plugin);
   });

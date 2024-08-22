@@ -1,13 +1,7 @@
-import {
-  type ToggleMarkPluginOptions,
-  createSlatePlugin,
-} from '@udecode/plate-common';
+import { createSlatePlugin } from '@udecode/plate-common';
 
 /** Enables support for subscript formatting. */
-export const SubscriptPlugin = createSlatePlugin<
-  'subscript',
-  ToggleMarkPluginOptions
->({
+export const SubscriptPlugin = createSlatePlugin({
   deserializeHtml: {
     rules: [
       { validNodeName: ['SUB'] },
@@ -16,7 +10,4 @@ export const SubscriptPlugin = createSlatePlugin<
   },
   isLeaf: true,
   key: 'subscript',
-  options: {
-    clear: 'superscript',
-  },
 });

@@ -56,6 +56,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
+    "@udecode/react-hotkeys": "36.0.0",
     "@udecode/react-utils": "33.0.0",
     "@udecode/slate": "36.0.6",
     "@udecode/slate-react": "36.0.6",
@@ -69,7 +70,6 @@
     "lodash": "^4.17.21",
     "nanoid": "^3.3.7",
     "optics-ts": "2.4.1",
-    "react-hotkeys-hook": "4.5.0",
     "ts-key-enum": "3.0.13",
     "use-deep-compare": "^1.2.1",
     "zustand": "^4.5.2",

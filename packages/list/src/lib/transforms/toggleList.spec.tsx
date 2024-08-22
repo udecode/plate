@@ -5,9 +5,9 @@ import { ImagePlugin } from '@udecode/plate-media';
 import { jsx } from '@udecode/plate-test-utils';
 
 import {
-  ListOrderedPlugin,
+  BulletedListPlugin,
   ListPlugin,
-  ListUnorderedPlugin,
+  NumberedListPlugin,
 } from '../../react';
 import { toggleList } from './toggleList';
 
@@ -39,7 +39,7 @@ describe('toggle on', () => {
     });
 
     toggleList(editor, {
-      type: editor.getType(ListUnorderedPlugin),
+      type: editor.getType(BulletedListPlugin),
     });
 
     expect(input.children).toEqual(output.children);
@@ -80,7 +80,7 @@ describe('toggle on', () => {
     });
 
     toggleList(editor, {
-      type: editor.getType(ListUnorderedPlugin),
+      type: editor.getType(BulletedListPlugin),
     });
 
     expect(input.children).toEqual(output.children);
@@ -117,7 +117,7 @@ describe('toggle on', () => {
     });
 
     toggleList(editor, {
-      type: editor.getType(ListUnorderedPlugin),
+      type: editor.getType(BulletedListPlugin),
     });
 
     expect(input.children).toEqual(output.children);
@@ -158,7 +158,7 @@ describe('toggle on', () => {
     });
 
     toggleList(editor, {
-      type: editor.getType(ListUnorderedPlugin),
+      type: editor.getType(BulletedListPlugin),
     });
 
     expect(input.children).toEqual(output.children);
@@ -217,7 +217,7 @@ describe('toggle on', () => {
     });
 
     toggleList(editor, {
-      type: editor.getType(ListUnorderedPlugin),
+      type: editor.getType(BulletedListPlugin),
     });
 
     expect(input.children).toEqual(output.children);
@@ -272,7 +272,7 @@ describe('toggle on', () => {
     });
 
     toggleList(editor, {
-      type: editor.getType(ListUnorderedPlugin),
+      type: editor.getType(BulletedListPlugin),
     });
 
     expect(input.children).toEqual(output.children);
@@ -327,7 +327,7 @@ describe('toggle on', () => {
     });
 
     toggleList(editor, {
-      type: editor.getType(ListUnorderedPlugin),
+      type: editor.getType(BulletedListPlugin),
     });
 
     expect(input.children).toEqual(output.children);
@@ -377,7 +377,7 @@ describe('toggle off', () => {
     });
 
     toggleList(editor, {
-      type: editor.getType(ListUnorderedPlugin),
+      type: editor.getType(BulletedListPlugin),
     });
 
     expect(input.children).toEqual(output.children);
@@ -435,7 +435,7 @@ describe('toggle off', () => {
     });
 
     toggleList(editor, {
-      type: editor.getType(ListUnorderedPlugin),
+      type: editor.getType(BulletedListPlugin),
     });
 
     expect(input.children).toEqual(output.children);
@@ -476,7 +476,7 @@ describe('toggle off', () => {
     });
 
     toggleList(editor, {
-      type: editor.getType(ListUnorderedPlugin),
+      type: editor.getType(BulletedListPlugin),
     });
 
     expect(input.children).toEqual(output.children);
@@ -539,7 +539,7 @@ describe('toggle off', () => {
     });
 
     toggleList(editor, {
-      type: editor.getType(ListUnorderedPlugin),
+      type: editor.getType(BulletedListPlugin),
     });
 
     expect(input.children).toEqual(output.children);
@@ -575,7 +575,7 @@ describe('toggle over', () => {
       plugins: [ListPlugin],
     });
 
-    toggleList(editor, { type: editor.getType(ListOrderedPlugin) });
+    toggleList(editor, { type: editor.getType(NumberedListPlugin) });
 
     expect(input.children).toEqual(output.children);
   });
@@ -619,7 +619,7 @@ describe('toggle over', () => {
       plugins: [ListPlugin],
     });
 
-    toggleList(editor, { type: editor.getType(ListOrderedPlugin) });
+    toggleList(editor, { type: editor.getType(NumberedListPlugin) });
 
     expect(input.children).toEqual(output.children);
   });
@@ -665,7 +665,7 @@ describe('toggle over', () => {
       plugins: [ListPlugin],
     });
 
-    toggleList(editor, { type: editor.getType(ListOrderedPlugin) });
+    toggleList(editor, { type: editor.getType(NumberedListPlugin) });
 
     expect(input.children).toEqual(output.children);
   });
@@ -715,7 +715,7 @@ describe('toggle over', () => {
       plugins: [ListPlugin],
     });
 
-    toggleList(editor, { type: editor.getType(ListOrderedPlugin) });
+    toggleList(editor, { type: editor.getType(NumberedListPlugin) });
 
     expect(input.children).toEqual(output.children);
   });

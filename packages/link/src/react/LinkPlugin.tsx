@@ -1,6 +1,5 @@
 import {
   type ExtendConfig,
-  type HotkeyPluginOptions,
   type OmitFirst,
   bindFirst,
 } from '@udecode/plate-common';
@@ -22,7 +21,7 @@ export type LinkConfig = ExtendConfig<
      * @default { }
      */
     defaultLinkAttributes?: React.AnchorHTMLAttributes<HTMLAnchorElement>;
-  } & HotkeyPluginOptions,
+  },
   {
     link: LinkApi;
   }

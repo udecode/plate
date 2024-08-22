@@ -3,4 +3,3 @@
  */
 
 export * from './jotai';
-export * from './react-hotkeys-hook';

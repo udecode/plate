@@ -1,7 +1,6 @@
 import { type Value, createTEditor } from '@udecode/slate';
 
 import type { InferPlugins } from '../../lib/editor/SlateEditor';
-import type { ToggleMarkConfig } from '../../lib/types';
 
 import { createSlatePlugin } from '../../lib/plugin';
 import { DebugPlugin, someHtmlElement } from '../../lib/plugins';
@@ -149,7 +148,7 @@ describe('TPlateEditor', () => {
   });
 
   describe('Plugin', () => {
-    const BoldPlugin = createSlatePlugin<'bold', ToggleMarkConfig['options']>({
+    const BoldPlugin = createSlatePlugin<'bold'>({
       deserializeHtml: {
         query: ({ element }) =>
           !someHtmlElement(
@@ -163,7 +162,6 @@ describe('TPlateEditor', () => {
       },
       isLeaf: true,
       key: 'bold',
-      options: { hotkey: 'mod+b' },
     });
 
     it('should work with specific plugin types', () => {

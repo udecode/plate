@@ -12,8 +12,8 @@ import {
 } from '@udecode/plate-dnd';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import {
-  ListOrderedPlugin,
-  ListUnorderedPlugin,
+  BulletedListPlugin,
+  NumberedListPlugin,
 } from '@udecode/plate-list/react';
 
 import { Draggable, type DraggableProps } from './draggable';
@@ -33,8 +33,8 @@ export const withDraggables = (components: any) => {
     {
       keys: [
         ParagraphPlugin.key,
-        ListUnorderedPlugin.key,
-        ListOrderedPlugin.key,
+        BulletedListPlugin.key,
+        NumberedListPlugin.key,
       ],
       level: 0,
     },
@@ -88,7 +88,7 @@ export const withDraggables = (components: any) => {
           gutterLeft: 'px-0 pb-0',
         },
       },
-      keys: [HEADING_KEYS.h6, ListUnorderedPlugin.key, ListOrderedPlugin.key],
+      keys: [HEADING_KEYS.h6, BulletedListPlugin.key, NumberedListPlugin.key],
     },
     {
       draggableProps: {

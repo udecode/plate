@@ -6,7 +6,6 @@ import type {
 
 import {
   type ExtendConfig,
-  type HotkeyPluginOptions,
   type PluginConfig,
   type SlatePlugin,
   createSlatePlugin,
@@ -36,7 +35,7 @@ type CodeBlockConfig2 = {
       setLanguage: (lang: string) => void;
     };
   };
-  options: HotkeyPluginOptions;
+  options: { hotkey: string | string[] };
 } & CodeBlockConfig;
 
 describe('toPlatePlugin', () => {
@@ -157,13 +156,8 @@ describe('toPlatePlugin type tests', () => {
     }));
 
     const CodeBlockPlugin = toPlatePlugin(BaseCodeBlockPlugin, {
-      handlers: {
-        // TODO
-        // onKeyDown: (() => {}) as KeyboardHandler<
-        //   PluginConfig<any, HotkeyPluginOptions, any>
-        // >,
-      },
-      options: { hotkey: ['mod+opt+8', 'mod+shift+8'] } as HotkeyPluginOptions,
+      handlers: {},
+      options: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
       withOverrides: ({ api, editor }) => {
         api.plugin.getSyntaxState();
         // @ts-expect-error
@@ -340,12 +334,6 @@ describe('toTPlatePlugin type tests', () => {
     const CodeBlockPlugin = toTPlatePlugin<CodeBlockConfig2, CodeBlockConfig>(
       BaseCodeBlockPlugin,
       {
-        handlers: {
-          // TODO
-          // onKeyDown: (() => {}) as KeyboardHandler<
-          //   PluginConfig<any, HotkeyPluginOptions>
-          // >,
-        },
         options: {
           hotkey: ['mod+opt+8', 'mod+shift+8'],
         },

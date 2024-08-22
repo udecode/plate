@@ -13,10 +13,10 @@ import {
 } from '@udecode/plate-common';
 
 import {
+  BulletedListPlugin,
   ListItemContentPlugin,
   ListItemPlugin,
-  ListOrderedPlugin,
-  ListUnorderedPlugin,
+  NumberedListPlugin,
 } from '../ListPlugin';
 import { getListTypes } from '../queries/index';
 
@@ -68,8 +68,8 @@ export const unwrapList = (editor: SlateEditor, { at }: { at?: Path } = {}) => {
         at,
         match: {
           type: [
-            editor.getType(ListUnorderedPlugin),
-            editor.getType(ListOrderedPlugin),
+            editor.getType(BulletedListPlugin),
+            editor.getType(NumberedListPlugin),
           ],
         },
         split: true,

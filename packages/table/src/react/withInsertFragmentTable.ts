@@ -32,7 +32,7 @@ export const withInsertFragmentTable: WithOverride<TableConfig> = ({
   api,
   editor,
   options: { disableExpandOnInsert },
-  transforms,
+  tf,
   type,
 }) => {
   const { insertFragment } = editor;
@@ -107,7 +107,7 @@ export const withInsertFragmentTable: WithOverride<TableConfig> = ({
                   if (disableExpandOnInsert) {
                     return;
                   } else {
-                    transforms.table.insertRow?.({
+                    tf.insert.tableRow({
                       disableSelect: true,
                       fromRow,
                     });
@@ -129,7 +129,7 @@ export const withInsertFragmentTable: WithOverride<TableConfig> = ({
                     if (disableExpandOnInsert) {
                       return;
                     } else {
-                      transforms.table.insertColumn?.({
+                      tf.insert.tableColumn({
                         disableSelect: true,
                         fromCell,
                       });

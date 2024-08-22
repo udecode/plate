@@ -1,4 +1,4 @@
-import type { ExtendConfig, HotkeyPluginOptions } from '@udecode/plate-common';
+import type { ExtendConfig } from '@udecode/plate-common';
 
 import {
   type PlateRenderElementProps,
@@ -24,7 +24,7 @@ export type IndentListConfig = ExtendConfig<
         type: string;
       }
     >;
-  } & HotkeyPluginOptions
+  }
 >;
 
 /** Enables support for indented lists with React-specific features. */

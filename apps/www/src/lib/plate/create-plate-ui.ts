@@ -31,9 +31,9 @@ import { KbdPlugin } from '@udecode/plate-kbd/react';
 import { ColumnItemPlugin, ColumnPlugin } from '@udecode/plate-layout/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import {
+  BulletedListPlugin,
   ListItemPlugin,
-  ListOrderedPlugin,
-  ListUnorderedPlugin,
+  NumberedListPlugin,
   TodoListPlugin,
 } from '@udecode/plate-list/react';
 import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
@@ -91,6 +91,7 @@ export const createPlateUI = ({
   let components: Record<string, PlatePluginComponent> = {
     [BlockquotePlugin.key]: BlockquoteElement,
     [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
+    [BulletedListPlugin.key]: withProps(ListElement, { variant: 'ul' }),
     [CodeBlockPlugin.key]: CodeBlockElement,
     [CodeLinePlugin.key]: CodeLineElement,
     [CodePlugin.key]: CodeLeaf,
@@ -114,11 +115,10 @@ export const createPlateUI = ({
     [KbdPlugin.key]: KbdLeaf,
     [LinkPlugin.key]: LinkElement,
     [ListItemPlugin.key]: withProps(PlateElement, { as: 'li' }),
-    [ListOrderedPlugin.key]: withProps(ListElement, { variant: 'ol' }),
-    [ListUnorderedPlugin.key]: withProps(ListElement, { variant: 'ul' }),
     [MediaEmbedPlugin.key]: MediaEmbedElement,
     [MentionInputPlugin.key]: MentionInputElement,
     [MentionPlugin.key]: MentionElement,
+    [NumberedListPlugin.key]: withProps(ListElement, { variant: 'ol' }),
     [ParagraphPlugin.key]: ParagraphElement,
     [SlashInputPlugin.key]: SlashInputElement,
     [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: 's' }),

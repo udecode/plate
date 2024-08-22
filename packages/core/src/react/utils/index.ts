@@ -6,8 +6,6 @@ export * from './createPlateFallbackEditor';
 export * from './dom-attributes';
 export * from './getRenderNodeProps';
 export * from './hotkeys';
-export * from './onKeyDownToggleElement';
-export * from './onKeyDownToggleMark';
 export * from './pipeDecorate';
 export * from './pipeHandler';
 export * from './pipeOnChange';
