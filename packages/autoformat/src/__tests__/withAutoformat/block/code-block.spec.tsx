@@ -45,6 +45,7 @@ describe('when ``` at block start', () => {
       </editor>
     ) as any;
 
+    input.blockFactory = (node: any) => node;
     const editor = withAutoformat(withReact(input), autoformatPlugin as any);
 
     editor.insertText('`');
@@ -75,6 +76,7 @@ describe('when ``` at block start, but customising with query we get the most re
       </editor>
     ) as any;
 
+    input.blockFactory = (node: any) => node;
     const codeEditor = withAutoformat(
       withReact(input),
       mockPlugin<AutoformatPlugin>({
@@ -140,6 +142,7 @@ describe('when ```', () => {
       </editor>
     ) as any;
 
+    input.blockFactory = (node: any) => node;
     const editor = withAutoformat(
       withReact(input),
       mockPlugin(autoformatPlugin as any)

@@ -28,6 +28,7 @@ const output = (
 ) as any;
 
 it('should be', () => {
+  input.blockFactory = (node: any) => node;
   onKeyDownExitBreak(input, mockPlugin())(event);
   expect(input.children).toEqual(output.children);
 });

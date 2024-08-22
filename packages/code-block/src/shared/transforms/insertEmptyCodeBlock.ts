@@ -16,8 +16,11 @@ import { insertCodeBlock } from './insertCodeBlock';
  * Called by toolbars to make sure a code-block gets inserted below a paragraph
  * rather than awkwardly splitting the current selection.
  */
-export const insertEmptyCodeBlock = <V extends Value>(
-  editor: PlateEditor<V>,
+export const insertEmptyCodeBlock = <
+  V extends Value = Value,
+  E extends PlateEditor<V> = PlateEditor<V>,
+>(
+  editor: E,
   {
     defaultType = getPluginType(editor, ELEMENT_DEFAULT),
     insertNodesOptions,
