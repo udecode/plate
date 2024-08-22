@@ -162,10 +162,10 @@ export const insertTableMergeRow = <V extends Value>(
   withoutNormalizing(editor, () => {
     insertElements(
       editor,
-      editor.blockFactory({
+      {
         children: newRowChildren,
         type: getPluginType(editor, ELEMENT_TR),
-      }),
+      },
       {
         at: nextRowPath,
         // select: !disableSelect

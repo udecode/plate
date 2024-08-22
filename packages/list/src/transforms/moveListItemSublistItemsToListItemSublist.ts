@@ -76,10 +76,7 @@ export const moveListItemSublistItemsToListItemSublist = <V extends Value>(
 
       insertElements(
         editor,
-        editor.blockFactory({
-          children: [],
-          type: fromListType as string,
-        }),
+        { children: [], type: fromListType as string },
         { at: toListItemSublistPath }
       );
 

@@ -53,10 +53,10 @@ export const moveListItemUp = <V extends Value>(
         // Insert a new list next to `list`
         insertElements(
           editor,
-          editor.blockFactory({
+          {
             children: [],
             type: listNode.type,
-          }),
+          },
           { at: toListPath }
         );
       }
@@ -102,10 +102,10 @@ export const moveListItemUp = <V extends Value>(
       if (!hasListChild(editor, liNode)) {
         insertElements(
           editor,
-          editor.blockFactory({
+          {
             children: [],
             type: listNode.type,
-          }),
+          },
           { at: toListPath }
         );
       }

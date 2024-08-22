@@ -67,10 +67,10 @@ export const insertListItem = <V extends Value>(
     if (isStart) {
       insertElements(
         editor,
-        editor.blockFactory({
+        {
           children: [{ children: [{ text: '' }], type: licType }],
           type: liType,
-        }),
+        },
         { at: listItemPath }
       );
 
@@ -87,10 +87,10 @@ export const insertListItem = <V extends Value>(
       const marks = getMarks(editor) || {};
       insertElements(
         editor,
-        editor.blockFactory({
+        {
           children: [{ children: [{ text: '', ...marks }], type: licType }],
           type: liType,
-        }),
+        },
         { at: nextListItemPath }
       );
       select(editor, nextListItemPath);

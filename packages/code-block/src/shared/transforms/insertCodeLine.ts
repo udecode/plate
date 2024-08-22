@@ -14,12 +14,9 @@ export const insertCodeLine = <V extends Value>(
   if (editor.selection) {
     const indent = ' '.repeat(indentDepth);
 
-    insertElements(
-      editor,
-      editor.blockFactory({
-        children: [{ text: indent }],
-        type: getCodeLineType(editor),
-      })
-    );
+    insertElements(editor, {
+      children: [{ text: indent }],
+      type: getCodeLineType(editor),
+    });
   }
 };
