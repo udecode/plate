@@ -1,7 +1,6 @@
 import type { AnyObject } from '@udecode/utils';
 import type { StoreApi } from 'zustand-x';
 
-import type { Nullable } from '../types';
 import type { GetInjectPropsOptions } from '../utils';
 import type { EditorPlugin } from './SlatePlugin';
 
@@ -103,7 +102,7 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
    * @default key
    */
   type: string;
-} & Nullable<{}>;
+};
 
 export type BaseSerializer = AnyObject;
 

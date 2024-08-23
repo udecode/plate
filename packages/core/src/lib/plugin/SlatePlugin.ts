@@ -283,7 +283,7 @@ export type SlatePluginConfig<
 > = Partial<
   { api: EA; options: EO; transforms: ET } & Omit<
     SlatePlugin<PluginConfig<K, Partial<O>, A, T>>,
-    'api' | 'transforms' | keyof SlatePluginMethods
+    'api' | 'store' | 'transforms' | keyof SlatePluginMethods
   >
 >;
 

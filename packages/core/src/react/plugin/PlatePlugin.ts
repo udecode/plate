@@ -476,7 +476,7 @@ export type PlatePluginConfig<
 > = Partial<
   { api: EA; options: EO; transforms: ET } & Omit<
     PlatePlugin<PluginConfig<K, Partial<O>, A, T>>,
-    'api' | 'transforms' | keyof PlatePluginMethods
+    'api' | 'store' | 'transforms' | 'useStore' | keyof PlatePluginMethods
   >
 >;
 

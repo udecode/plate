@@ -20,10 +20,14 @@ export function getPluginContext<
       : resolvePlugin(editor, plugin as any)
     : editor.getPlugin({ key: plugin.key } as any);
 
+  const options = editorPlugin.store
+    ? editor.getOptions(editorPlugin)
+    : editorPlugin.options;
+
   return {
     api: editor.api,
     editor,
-    options: editorPlugin.options,
+    options,
     plugin: editorPlugin,
     tf: editor.transforms,
     type: editorPlugin.type,

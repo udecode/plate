@@ -74,11 +74,11 @@ export function createSlatePlugin<
         editor: SlateEditor
       ) => Omit<
         Partial<SlatePlugin<PluginConfig<K, O, A, T>>>,
-        keyof SlatePluginMethods
+        'api' | 'store' | 'transforms' | keyof SlatePluginMethods
       >)
     | Omit<
         Partial<SlatePlugin<PluginConfig<K, O, A, T>>>,
-        keyof SlatePluginMethods
+        'api' | 'store' | 'transforms' | keyof SlatePluginMethods
       > = {}
 ): SlatePlugin<PluginConfig<K, O, A, T>> {
   let baseConfig: Partial<SlatePlugin<PluginConfig<K, O, A, T>>>;

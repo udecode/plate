@@ -102,11 +102,12 @@ export const usePlaygroundEditor = (id: any = '') => {
 
   const value = usePlaygroundValue(id);
   const key = useInitialValueVersion(value);
-  id = id || 'playground-' + key;
+
+  const editorId = id || 'playground-' + key;
 
   return usePlateEditor(
     {
-      id,
+      id: editorId,
       override: {
         components: createPlateUI({
           draggable: isEnabled('dnd', id),

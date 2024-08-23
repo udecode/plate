@@ -126,7 +126,14 @@ export const withSlate = <
     } else if (typeof keyOrOptions === 'function') {
       (store.set as any).state(keyOrOptions);
     } else {
-      (store.set as any)[keyOrOptions]?.(value);
+      if ((store.set as any)[keyOrOptions]) {
+        (store.set as any)[keyOrOptions]?.(value);
+      } else {
+        editor.api.debug.error(
+          `Option ${keyOrOptions} has undefined value in plugin ${plugin.key}, use null instead.`,
+          'OPTION_UNDEFINED'
+        );
+      }
     }
   };
 

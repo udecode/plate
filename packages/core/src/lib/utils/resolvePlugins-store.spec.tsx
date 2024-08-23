@@ -10,6 +10,7 @@ import {
 } from '../../react';
 import { createSlateEditor } from '../editor';
 import { type PluginConfig, createSlatePlugin } from '../plugin';
+import { PlateError } from '../plugins';
 
 // Mock component to test re-rendering
 const TestComponent = ({
@@ -268,6 +269,20 @@ describe('PlatePlugin useStore', () => {
 
       expect(renderCount).toBe(1);
       expect(getByTestId('test-hook')).toHaveTextContent('1');
+    });
+
+    it('should throw when setting an option that was undefined', () => {
+      // Create a plugin with no initial options, but with a defined type
+      type PluginOptions = {
+        existingOption: string;
+      };
+      const p1 = createSlatePlugin<any, PluginOptions>({ key: 'plugin1' });
+      const editor = createPlateEditor({ plugins: [p1] });
+
+      // Setting an existing option should work
+      expect(() => {
+        editor.setOption(p1, 'existingOption', 'value');
+      }).not.toThrow(new PlateError('', ''));
     });
   });
 

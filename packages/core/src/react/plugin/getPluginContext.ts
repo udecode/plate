@@ -23,7 +23,7 @@ export function getPluginContext<
   return {
     api: editor.api,
     editor,
-    options: editorPlugin.options,
+    options: editor.getOptions(editorPlugin),
     plugin: editorPlugin,
     tf: editor.transforms,
     type: editorPlugin.type,

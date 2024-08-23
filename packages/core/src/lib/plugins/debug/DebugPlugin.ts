@@ -4,6 +4,7 @@ import { createTSlatePlugin } from '../../plugin';
 
 export type DebugErrorType =
   | 'DEFAULT'
+  | 'OPTION_UNDEFINED'
   | 'OVERRIDE_MISSING'
   | 'PLUGIN_DEPENDENCY_MISSING'
   | 'USE_CREATE_PLUGIN'

@@ -3,18 +3,14 @@ import { createSlateEditor } from '@udecode/plate-common';
 
 import { FindReplacePlugin } from '../../../FindReplacePlugin';
 
-it('should be', () => {
+it('should decorate matching text', () => {
   const editor = createSlateEditor({
-    plugins: [
-      FindReplacePlugin.configure({
-        options: {
-          search: 'test',
-        },
-      }),
-    ],
+    plugins: [FindReplacePlugin],
   });
 
   const plugin = editor.getPlugin(FindReplacePlugin);
+
+  editor.setOption(FindReplacePlugin, 'search', 'test');
 
   expect(
     plugin.decorate?.({
@@ -37,18 +33,14 @@ it('should be', () => {
   ]);
 });
 
-it('should be', () => {
+it('should decorate matching text case-insensitively', () => {
   const editor = createSlateEditor({
-    plugins: [
-      FindReplacePlugin.configure({
-        options: {
-          search: 'Test',
-        },
-      }),
-    ],
+    plugins: [FindReplacePlugin],
   });
 
   const plugin = editor.getPlugin(FindReplacePlugin);
+
+  editor.setOption(FindReplacePlugin, 'search', 'Test');
 
   expect(
     plugin.decorate?.({

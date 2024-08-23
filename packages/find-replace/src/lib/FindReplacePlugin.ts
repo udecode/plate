@@ -14,4 +14,5 @@ export const FindReplacePlugin = createTSlatePlugin<FindReplaceConfig>({
   decorate: decorateFindReplace,
   isLeaf: true,
   key: 'search_highlight',
+  options: { search: '' },
 });
