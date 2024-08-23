@@ -157,10 +157,6 @@ export default function useHotkeys<T extends HTMLElement>(
           if (isKeyUp && hasTriggeredRef.current) {
             return;
           }
-
-          // DIFF-
-          // maybePreventDefault(e, hotkey, memoisedOptions?.preventDefault);
-
           if (!isHotkeyEnabled(e, hotkey, memoisedOptions?.enabled)) {
             stopPropagation(e);
 
@@ -170,6 +166,7 @@ export default function useHotkeys<T extends HTMLElement>(
           // Execute the user callback for that hotkey
           cbRef.current(e, hotkey);
 
+          // DIFF: after callback
           maybePreventDefault(e, hotkey, memoisedOptions?.preventDefault);
 
           if (!isKeyUp) {

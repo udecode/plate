@@ -21,6 +21,7 @@ import { CommentsPlugin } from '@udecode/plate-comments/react';
 import { ParagraphPlugin } from '@udecode/plate-common';
 import { CsvPlugin } from '@udecode/plate-csv';
 import { DndPlugin } from '@udecode/plate-dnd';
+import { DocxPlugin } from '@udecode/plate-docx';
 import { EmojiPlugin } from '@udecode/plate-emoji';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import {
@@ -45,7 +46,6 @@ import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { ResetNodePlugin } from '@udecode/plate-reset-node';
 import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
-import { DocxPlugin } from '@udecode/plate-serializer-docx';
 import { TabbablePlugin } from '@udecode/plate-tabbable';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
@@ -310,7 +310,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     dependencies: [JuicePlugin.key],
     id: DocxPlugin.key,
     label: 'Deserialize DOCX',
-    npmPackage: '@udecode/plate-serializer-docx',
+    npmPackage: '@udecode/plate-docx',
     pluginFactory: 'createDocxPlugin',
     route: customizerPlugins.docx.route,
   },

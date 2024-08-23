@@ -1,4 +1,7 @@
-import { type EmbedUrlParser, parseMediaUrl } from '../../lib/media/parseMediaUrl';
+import {
+  type EmbedUrlParser,
+  parseMediaUrl,
+} from '../../lib/media/parseMediaUrl';
 
 describe('parseMediaUrl', () => {
   const parsersWithoutFallback: EmbedUrlParser[] = [

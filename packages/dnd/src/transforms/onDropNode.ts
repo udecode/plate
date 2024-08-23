@@ -1,8 +1,7 @@
-import { TEditor } from "@udecode/plate-common";
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { findNode, moveNodes } from '@udecode/plate-common';
-import {  focusEditor } from '@udecode/plate-common/react';
+import { type TEditor, findNode, moveNodes } from '@udecode/plate-common';
+import { focusEditor } from '@udecode/plate-common/react';
 import { Path } from 'slate';
 
 import type { UseDropNodeOptions } from '../hooks';

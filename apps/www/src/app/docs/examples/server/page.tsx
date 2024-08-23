@@ -52,7 +52,7 @@ import { CaptionPlugin } from '@udecode/plate-caption';
 import { EmojiPlugin } from '@udecode/plate-emoji';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw';
 import { JuicePlugin } from '@udecode/plate-juice';
-import { MarkdownPlugin, serializeMd } from '@udecode/plate-markdown';
+import { MarkdownPlugin } from '@udecode/plate-markdown';
 import { ResetNodePlugin } from '@udecode/plate-reset-node';
 
 import { Markdown } from '@/components/MemoizedReactMarkdownClient';
@@ -218,7 +218,7 @@ export default function RSCPage() {
     value: [...basicElementsValue, ...basicMarksValue],
   });
 
-  const md = serializeMd(editor, {
+  const md = editor.api.markdown.serialize({
     nodes: {
       code_block: {
         serialize: (_, node) => {

@@ -6058,6 +6058,7 @@ __metadata:
   dependencies:
     "@udecode/plate-core": "npm:36.3.4"
     "@udecode/plate-utils": "npm:36.3.4"
+    "@udecode/react-hotkeys": "npm:36.0.0"
     "@udecode/react-utils": "npm:33.0.0"
     "@udecode/slate": "npm:36.0.6"
     "@udecode/slate-react": "npm:36.0.6"
@@ -6096,6 +6097,25 @@ __metadata:
     zustand: "npm:^4.5.2"
     zustand-x: "npm:^3.0.2"
   peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.103.0"
+    slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
+    slate-react: ">=0.108.0"
+  languageName: unknown
+  linkType: soft
+
+"@udecode/plate-csv@npm:36.3.5, @udecode/plate-csv@workspace:^, @udecode/plate-csv@workspace:packages/csv":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-csv@workspace:packages/csv"
+  dependencies:
+    "@types/papaparse": "npm:^5.3.14"
+    "@udecode/plate-common": "workspace:^"
+    "@udecode/plate-table": "npm:36.3.5"
+    papaparse: "npm:^5.4.1"
+  peerDependencies:
+    "@udecode/plate-common": ">=36.3.4"
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
     slate: ">=0.103.0"
@@ -6151,6 +6171,28 @@ __metadata:
     react: ">=16.8.0"
     react-dnd: ">=14.0.0"
     react-dnd-html5-backend: ">=14.0.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.103.0"
+    slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
+    slate-react: ">=0.108.0"
+  languageName: unknown
+  linkType: soft
+
+"@udecode/plate-docx@npm:36.3.5, @udecode/plate-docx@workspace:^, @udecode/plate-docx@workspace:packages/docx":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-docx@workspace:packages/docx"
+  dependencies:
+    "@udecode/plate-common": "workspace:^"
+    "@udecode/plate-heading": "npm:36.0.12"
+    "@udecode/plate-indent": "npm:36.0.0"
+    "@udecode/plate-indent-list": "npm:36.3.3"
+    "@udecode/plate-media": "npm:36.2.2"
+    "@udecode/plate-table": "npm:36.3.5"
+    validator: "npm:^13.11.0"
+  peerDependencies:
+    "@udecode/plate-common": ">=36.3.4"
+    react: ">=16.8.0"
     react-dom: ">=16.8.0"
     slate: ">=0.103.0"
     slate-history: ">=0.93.0"
@@ -6293,6 +6335,24 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@udecode/plate-html@npm:36.0.0, @udecode/plate-html@workspace:^, @udecode/plate-html@workspace:packages/html":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-html@workspace:packages/html"
+  dependencies:
+    "@types/papaparse": "npm:^5.3.14"
+    "@udecode/plate-common": "workspace:^"
+    html-entities: "npm:^2.5.2"
+  peerDependencies:
+    "@udecode/plate-common": ">=36.3.4"
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.103.0"
+    slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
+    slate-react: ">=0.108.0"
+  languageName: unknown
+  linkType: soft
+
 "@udecode/plate-indent-list@npm:36.3.3, @udecode/plate-indent-list@workspace:^, @udecode/plate-indent-list@workspace:packages/indent-list":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-indent-list@workspace:packages/indent-list"
@@ -6418,6 +6478,25 @@ __metadata:
     "@udecode/plate-common": "workspace:^"
     "@udecode/plate-reset-node": "npm:36.0.0"
     lodash: "npm:^4.17.21"
+  peerDependencies:
+    "@udecode/plate-common": ">=36.3.4"
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.103.0"
+    slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
+    slate-react: ">=0.108.0"
+  languageName: unknown
+  linkType: soft
+
+"@udecode/plate-markdown@npm:36.0.7, @udecode/plate-markdown@workspace:^, @udecode/plate-markdown@workspace:packages/markdown":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-markdown@workspace:packages/markdown"
+  dependencies:
+    "@udecode/plate-common": "workspace:^"
+    lodash: "npm:^4.17.21"
+    remark-parse: "npm:^9.0.0"
+    unified: "npm:^9.2.2"
   peerDependencies:
     "@udecode/plate-common": ">=36.3.4"
     react: ">=16.8.0"
@@ -6570,84 +6649,6 @@ __metadata:
     "@udecode/plate-common": "workspace:^"
     "@viselect/vanilla": "npm:3.2.5"
     copy-to-clipboard: "npm:^3.3.3"
-  peerDependencies:
-    "@udecode/plate-common": ">=36.3.4"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate: ">=0.103.0"
-    slate-history: ">=0.93.0"
-    slate-hyperscript: ">=0.66.0"
-    slate-react: ">=0.108.0"
-  languageName: unknown
-  linkType: soft
-
-"@udecode/plate-serializer-csv@npm:36.3.5, @udecode/plate-serializer-csv@workspace:^, @udecode/plate-serializer-csv@workspace:packages/serializer-csv":
-  version: 0.0.0-use.local
-  resolution: "@udecode/plate-serializer-csv@workspace:packages/serializer-csv"
-  dependencies:
-    "@types/papaparse": "npm:^5.3.14"
-    "@udecode/plate-common": "workspace:^"
-    "@udecode/plate-table": "npm:36.3.5"
-    papaparse: "npm:^5.4.1"
-  peerDependencies:
-    "@udecode/plate-common": ">=36.3.4"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate: ">=0.103.0"
-    slate-history: ">=0.93.0"
-    slate-hyperscript: ">=0.66.0"
-    slate-react: ">=0.108.0"
-  languageName: unknown
-  linkType: soft
-
-"@udecode/plate-serializer-docx@npm:36.3.5, @udecode/plate-serializer-docx@workspace:^, @udecode/plate-serializer-docx@workspace:packages/serializer-docx":
-  version: 0.0.0-use.local
-  resolution: "@udecode/plate-serializer-docx@workspace:packages/serializer-docx"
-  dependencies:
-    "@udecode/plate-common": "workspace:^"
-    "@udecode/plate-heading": "npm:36.0.12"
-    "@udecode/plate-indent": "npm:36.0.0"
-    "@udecode/plate-indent-list": "npm:36.3.3"
-    "@udecode/plate-media": "npm:36.2.2"
-    "@udecode/plate-table": "npm:36.3.5"
-    validator: "npm:^13.11.0"
-  peerDependencies:
-    "@udecode/plate-common": ">=36.3.4"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate: ">=0.103.0"
-    slate-history: ">=0.93.0"
-    slate-hyperscript: ">=0.66.0"
-    slate-react: ">=0.108.0"
-  languageName: unknown
-  linkType: soft
-
-"@udecode/plate-serializer-html@npm:36.0.0, @udecode/plate-serializer-html@workspace:^, @udecode/plate-serializer-html@workspace:packages/serializer-html":
-  version: 0.0.0-use.local
-  resolution: "@udecode/plate-serializer-html@workspace:packages/serializer-html"
-  dependencies:
-    "@types/papaparse": "npm:^5.3.14"
-    "@udecode/plate-common": "workspace:^"
-    html-entities: "npm:^2.5.2"
-  peerDependencies:
-    "@udecode/plate-common": ">=36.3.4"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate: ">=0.103.0"
-    slate-history: ">=0.93.0"
-    slate-hyperscript: ">=0.66.0"
-    slate-react: ">=0.108.0"
-  languageName: unknown
-  linkType: soft
-
-"@udecode/plate-serializer-md@npm:36.0.7, @udecode/plate-serializer-md@workspace:^, @udecode/plate-serializer-md@workspace:packages/serializer-md":
-  version: 0.0.0-use.local
-  resolution: "@udecode/plate-serializer-md@workspace:packages/serializer-md"
-  dependencies:
-    "@udecode/plate-common": "workspace:^"
-    lodash: "npm:^4.17.21"
-    remark-parse: "npm:^9.0.0"
-    unified: "npm:^9.2.2"
   peerDependencies:
     "@udecode/plate-common": ">=36.3.4"
     react: ">=16.8.0"
@@ -6858,13 +6859,16 @@ __metadata:
     "@udecode/plate-combobox": "npm:36.0.0"
     "@udecode/plate-comments": "npm:36.0.0"
     "@udecode/plate-common": "npm:36.3.4"
+    "@udecode/plate-csv": "npm:36.3.5"
     "@udecode/plate-diff": "npm:36.0.0"
+    "@udecode/plate-docx": "npm:36.3.5"
     "@udecode/plate-find-replace": "npm:36.0.0"
     "@udecode/plate-floating": "npm:36.3.2"
     "@udecode/plate-font": "npm:36.0.0"
     "@udecode/plate-heading": "npm:36.0.12"
     "@udecode/plate-highlight": "npm:36.0.0"
     "@udecode/plate-horizontal-rule": "npm:36.0.0"
+    "@udecode/plate-html": "npm:36.0.0"
     "@udecode/plate-indent": "npm:36.0.0"
     "@udecode/plate-indent-list": "npm:36.3.3"
     "@udecode/plate-kbd": "npm:36.0.0"
@@ -6872,6 +6876,7 @@ __metadata:
     "@udecode/plate-line-height": "npm:36.0.0"
     "@udecode/plate-link": "npm:36.3.2"
     "@udecode/plate-list": "npm:36.0.0"
+    "@udecode/plate-markdown": "npm:36.0.7"
     "@udecode/plate-media": "npm:36.2.2"
     "@udecode/plate-mention": "npm:36.0.0"
     "@udecode/plate-node-id": "npm:36.3.6"
@@ -6880,10 +6885,6 @@ __metadata:
     "@udecode/plate-resizable": "npm:36.0.0"
     "@udecode/plate-select": "npm:36.0.0"
     "@udecode/plate-selection": "npm:36.1.0"
-    "@udecode/plate-serializer-csv": "npm:36.3.5"
-    "@udecode/plate-serializer-docx": "npm:36.3.5"
-    "@udecode/plate-serializer-html": "npm:36.0.0"
-    "@udecode/plate-serializer-md": "npm:36.0.7"
     "@udecode/plate-slash-command": "npm:36.0.0"
     "@udecode/plate-suggestion": "npm:36.0.0"
     "@udecode/plate-tabbable": "npm:36.0.0"
@@ -21986,9 +21987,11 @@ __metadata:
     "@udecode/plate-comments": "workspace:^"
     "@udecode/plate-common": "workspace:^"
     "@udecode/plate-core": "workspace:^"
+    "@udecode/plate-csv": "workspace:^"
     "@udecode/plate-cursor": "workspace:^"
     "@udecode/plate-diff": "workspace:^"
     "@udecode/plate-dnd": "workspace:^"
+    "@udecode/plate-docx": "workspace:^"
     "@udecode/plate-emoji": "workspace:^"
     "@udecode/plate-excalidraw": "workspace:^"
     "@udecode/plate-find-replace": "workspace:^"
@@ -21997,6 +22000,7 @@ __metadata:
     "@udecode/plate-heading": "workspace:^"
     "@udecode/plate-highlight": "workspace:^"
     "@udecode/plate-horizontal-rule": "workspace:^"
+    "@udecode/plate-html": "workspace:^"
     "@udecode/plate-indent": "workspace:^"
     "@udecode/plate-indent-list": "workspace:^"
     "@udecode/plate-juice": "workspace:^"
@@ -22005,6 +22009,7 @@ __metadata:
     "@udecode/plate-line-height": "workspace:^"
     "@udecode/plate-link": "workspace:^"
     "@udecode/plate-list": "workspace:^"
+    "@udecode/plate-markdown": "workspace:^"
     "@udecode/plate-media": "workspace:^"
     "@udecode/plate-mention": "workspace:^"
     "@udecode/plate-node-id": "workspace:^"
@@ -22013,10 +22018,6 @@ __metadata:
     "@udecode/plate-resizable": "workspace:^"
     "@udecode/plate-select": "workspace:^"
     "@udecode/plate-selection": "workspace:^"
-    "@udecode/plate-serializer-csv": "workspace:^"
-    "@udecode/plate-serializer-docx": "workspace:^"
-    "@udecode/plate-serializer-html": "workspace:^"
-    "@udecode/plate-serializer-md": "workspace:^"
     "@udecode/plate-slash-command": "workspace:^"
     "@udecode/plate-suggestion": "workspace:^"
     "@udecode/plate-tabbable": "workspace:^"

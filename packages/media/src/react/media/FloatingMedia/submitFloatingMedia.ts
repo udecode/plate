@@ -6,7 +6,10 @@ import {
 } from '@udecode/plate-common';
 import { focusEditor } from '@udecode/plate-common/react';
 
-import type { MediaPluginOptions, TMediaElement } from '../../../lib/media/types';
+import type {
+  MediaPluginOptions,
+  TMediaElement,
+} from '../../../lib/media/types';
 
 import {
   floatingMediaActions,

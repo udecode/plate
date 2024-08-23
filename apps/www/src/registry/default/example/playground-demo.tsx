@@ -30,6 +30,7 @@ import {
   usePlateEditor,
 } from '@udecode/plate-common/react';
 import { DndPlugin } from '@udecode/plate-dnd';
+import { DocxPlugin } from '@udecode/plate-docx';
 import { EmojiPlugin } from '@udecode/plate-emoji';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import {
@@ -56,7 +57,6 @@ import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
-import { DocxPlugin } from '@udecode/plate-serializer-docx';
 import { SlashPlugin } from '@udecode/plate-slash-command';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';

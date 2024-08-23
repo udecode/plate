@@ -5,6 +5,7 @@ import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
 import { ParagraphPlugin } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
+import { DocxPlugin } from '@udecode/plate-docx';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { IndentPlugin } from '@udecode/plate-indent';
@@ -12,7 +13,6 @@ import { JuicePlugin } from '@udecode/plate-juice';
 import { LineHeightPlugin } from '@udecode/plate-line-height';
 import { LinkPlugin } from '@udecode/plate-link';
 import { ImagePlugin } from '@udecode/plate-media';
-import { DocxPlugin } from '@udecode/plate-serializer-docx';
 import { TablePlugin } from '@udecode/plate-table';
 import { jsx } from '@udecode/plate-test-utils';
 

@@ -28,7 +28,7 @@ export * from '@udecode/plate-normalizers';
 export * from '@udecode/plate-reset-node';
 export * from '@udecode/plate-select';
 export * from '@udecode/plate-csv';
-export * from '@udecode/plate-serializer-docx';
+export * from '../../docx';
 export * from '@udecode/plate-html';
 export * from '@udecode/plate-markdown';
 export * from '@udecode/plate-slash-command';

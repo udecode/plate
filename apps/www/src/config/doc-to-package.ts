@@ -12,7 +12,7 @@ const plateOverrides = {
   comments: 'plate-comments',
   csv: 'plate-csv',
   dnd: 'plate-dnd',
-  docx: 'plate-serializer-docx',
+  docx: 'plate-docx',
   emoji: 'plate-emoji',
   excalidraw: 'plate-excalidraw',
   'exit-break': 'plate-break',
