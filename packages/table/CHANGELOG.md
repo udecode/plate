@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 36.5.7
+
+### Patch Changes
+
+- [#3461](https://github.com/udecode/plate/pull/3461) by [@beeant0512](https://github.com/beeant0512) – fix delete last row will cause editor crash when `enableMerging: true`
+
 ## 36.3.8
 
 ### Patch Changes
