@@ -1,6 +1,6 @@
 import { createZustandStore } from '@udecode/plate-common/server';
 
-import type { ChangedElements } from './components/SelectionArea';
+import type { ChangedElements } from './internal';
 
 import { getAllSelectableDomNode, getSelectedDomNode } from './utils';
 import { extractSelectableIds } from './utils/extractSelectableIds';

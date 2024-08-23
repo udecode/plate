@@ -70,8 +70,6 @@ export const useHooksBlockSelection = <
           el.classList.remove('selected');
         }
 
-        console.log(changed.added, 'fj');
-
         blockSelectionActions.setSelectedIds(changed);
       });
   }, []);
