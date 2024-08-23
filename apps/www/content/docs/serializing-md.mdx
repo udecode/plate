@@ -3,7 +3,7 @@ title: Serializing Markdown
 description: Copy paste from Markdown to Slate.
 ---
 
-<ComponentPreview name="playground-demo" id="deserializemd" />
+<ComponentPreview name="playground-demo" id="markdown" />
 
 <PackageInfo>
 
@@ -28,11 +28,11 @@ npm install @udecode/plate-serializer-md
 ### Markdown -> Slate
 
 ```tsx
-import { createDeserializeMdPlugin } from '@udecode/plate-serializer-md';
+import { createMarkdownPlugin } from '@udecode/plate-serializer-md';
 
 const plugins = [
   // ...otherPlugins,
-  createDeserializeMdPlugin(),
+  createMarkdownPlugin(),
 ];
 ```
 
@@ -52,7 +52,7 @@ serializeMd(editor, { nodes });
 
 ## API
 
-### createDeserializeMdPlugin
+### createMarkdownPlugin
 
 <APIOptions>
 <APIItem name="elementRules" type="RemarkElementRules">

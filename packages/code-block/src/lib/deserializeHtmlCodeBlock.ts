@@ -1,9 +1,9 @@
-import type { DeserializeHtml } from '@udecode/plate-common';
+import type { HtmlDeserializer } from '@udecode/plate-common';
 
 import { CodeBlockPlugin, CodeLinePlugin } from './CodeBlockPlugin';
 
-export const deserializeHtmlCodeBlock: DeserializeHtml = {
-  getNode: ({ element }) => {
+export const deserializeHtmlCodeBlock: HtmlDeserializer = {
+  parse: ({ element }) => {
     const languageSelectorText =
       [...element.childNodes].find(
         (node: ChildNode) => node.nodeName === 'SELECT'

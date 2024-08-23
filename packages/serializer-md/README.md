@@ -5,7 +5,7 @@ This package implements the Markdown serializer for Plate.
 ## Documentation
 
 Check out
-[Serializing Markdown](https://platejs.org/docs/serializing-md).
+[Serializing Markdown](https://platejs.org/docs/markdown).
 
 ## License
 

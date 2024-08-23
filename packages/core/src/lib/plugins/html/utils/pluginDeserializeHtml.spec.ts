@@ -1,32 +1,45 @@
 import { BoldPlugin } from '@udecode/plate-basic-marks';
 
 import { createPlateEditor } from '../../../../react/editor/withPlate';
-import { createSlatePlugin } from '../../../plugin';
+import { type HtmlDeserializer, createSlatePlugin } from '../../../plugin';
 import { ParagraphPlugin } from '../../paragraph';
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
 
-const node = () => ({ type: ParagraphPlugin.key });
+const parse = () => ({ type: ParagraphPlugin.key });
+
+// describe('when type', () => {
+//   let deserializer: Deserializer = {};
+//   const htmlDeserializer: HtmlDeserializer = {};
+//
+//   deserializer = htmlDeserializer;
+// });
 
 describe('when element is p and validNodeName is P', () => {
   it('should be p type', () => {
+    const deserializer: HtmlDeserializer = {
+      isElement: true,
+      parse,
+      rules: [
+        {
+          validNodeName: 'P',
+        },
+      ],
+    };
+
     expect(
       pluginDeserializeHtml(
         createPlateEditor(),
         createSlatePlugin({
-          deserializeHtml: {
-            getNode: node,
-            isElement: true,
-            rules: [
-              {
-                validNodeName: 'P',
-              },
-            ],
+          parsers: {
+            html: {
+              deserializer,
+            },
           },
           type: ParagraphPlugin.key,
         }),
         { element: document.createElement('p') }
       )?.node
-    ).toEqual(node());
+    ).toEqual(parse());
   });
 });
 
@@ -39,20 +52,24 @@ describe('when element is p, validAttribute', () => {
       pluginDeserializeHtml(
         createPlateEditor(),
         createSlatePlugin({
-          deserializeHtml: {
-            getNode: node,
-            isElement: true,
-            rules: [
-              {
-                validAttribute: { title: '' },
+          parsers: {
+            html: {
+              deserializer: {
+                isElement: true,
+                parse: parse,
+                rules: [
+                  {
+                    validAttribute: { title: '' },
+                  },
+                ],
               },
-            ],
+            },
           },
           type: ParagraphPlugin.key,
         }),
         { element }
       )?.node
-    ).toEqual(node());
+    ).toEqual(parse());
   });
 
   it('doesnt return p type with an unset attribute', () => {
@@ -62,20 +79,24 @@ describe('when element is p, validAttribute', () => {
       pluginDeserializeHtml(
         createPlateEditor(),
         createSlatePlugin({
-          deserializeHtml: {
-            getNode: node,
-            isElement: true,
-            rules: [
-              {
-                validAttribute: { title: '' },
+          parsers: {
+            html: {
+              deserializer: {
+                isElement: true,
+                parse: parse,
+                rules: [
+                  {
+                    validAttribute: { title: '' },
+                  },
+                ],
               },
-            ],
+            },
           },
           type: ParagraphPlugin.key,
         }),
         { element }
       )?.node
-    ).not.toEqual(node());
+    ).not.toEqual(parse());
   });
 });
 
@@ -88,22 +109,26 @@ describe('when element is p with color and rule style is different', () => {
       pluginDeserializeHtml(
         createPlateEditor(),
         createSlatePlugin({
-          deserializeHtml: {
-            getNode: node,
-            isElement: true,
-            rules: [
-              {
-                validStyle: {
-                  color: '#333',
-                },
+          parsers: {
+            html: {
+              deserializer: {
+                isElement: true,
+                parse: parse,
+                rules: [
+                  {
+                    validStyle: {
+                      color: '#333',
+                    },
+                  },
+                ],
               },
-            ],
+            },
           },
           type: ParagraphPlugin.key,
         }),
         { element }
       )?.node
-    ).not.toEqual(node());
+    ).not.toEqual(parse());
   });
 });
 
@@ -116,22 +141,26 @@ describe('when element is p with same style color than rule', () => {
       pluginDeserializeHtml(
         createPlateEditor(),
         createSlatePlugin({
-          deserializeHtml: {
-            getNode: node,
-            isElement: true,
-            rules: [
-              {
-                validStyle: {
-                  color: 'rgb(255, 0, 0)',
-                },
+          parsers: {
+            html: {
+              deserializer: {
+                isElement: true,
+                parse: parse,
+                rules: [
+                  {
+                    validStyle: {
+                      color: 'rgb(255, 0, 0)',
+                    },
+                  },
+                ],
               },
-            ],
+            },
           },
           type: ParagraphPlugin.key,
         }),
         { element }
       )?.node
-    ).toEqual(node());
+    ).toEqual(parse());
   });
 });
 
@@ -144,22 +173,26 @@ describe('when element has style color and rule style color is *', () => {
       pluginDeserializeHtml(
         createPlateEditor(),
         createSlatePlugin({
-          deserializeHtml: {
-            getNode: node,
-            isElement: true,
-            rules: [
-              {
-                validStyle: {
-                  color: '*',
-                },
+          parsers: {
+            html: {
+              deserializer: {
+                isElement: true,
+                parse: parse,
+                rules: [
+                  {
+                    validStyle: {
+                      color: '*',
+                    },
+                  },
+                ],
               },
-            ],
+            },
           },
           type: ParagraphPlugin.key,
         }),
         { element }
       )?.node
-    ).toEqual(node());
+    ).toEqual(parse());
   });
 });
 
@@ -172,14 +205,18 @@ describe('when element is strong and validNodeName is strong', () => {
       pluginDeserializeHtml(
         createPlateEditor(),
         createSlatePlugin({
-          deserializeHtml: {
-            rules: [
-              {
-                validNodeName: 'STRONG',
-              },
-            ],
-          },
           isLeaf: true,
+          parsers: {
+            html: {
+              deserializer: {
+                rules: [
+                  {
+                    validNodeName: 'STRONG',
+                  },
+                ],
+              },
+            },
+          },
           type: BoldPlugin.key,
         }),
         { deserializeLeaf: true, element: el }

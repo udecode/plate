@@ -10,11 +10,15 @@ export const AlignPlugin = createSlatePlugin({
       validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
     },
     targetPluginToInject: ({ editor, plugin }) => ({
-      deserializeHtml: {
-        getNode: ({ element, node }) => {
-          if (element.style.textAlign) {
-            node[editor.getType(plugin)] = element.style.textAlign;
-          }
+      parsers: {
+        html: {
+          deserializer: {
+            parse: ({ element, node }) => {
+              if (element.style.textAlign) {
+                node[editor.getType(plugin)] = element.style.textAlign;
+              }
+            },
+          },
         },
       },
     }),

@@ -326,8 +326,8 @@ Property used by Plate to inject a component below other plugins `component`, i.
 Property that can be used by a plugin to allow other plugins to inject code.
 - Differs from `overrideByKey` as this is not overriding any plugin.
 - For example, if multiple plugins have defined
-`inject.editor.insertData.transformData` for `key=DeserializeHtmlPlugin.key`,
-`insertData` plugin will call all of these `transformData` for `DeserializeHtmlPlugin.key` plugin.
+`inject.editor.insertData.transformData` for `key=HtmlPlugin.key`,
+`insertData` plugin will call all of these `transformData` for `HtmlPlugin.key` plugin.
 - The value of this property is an object with keys being the plugin keys and values being the injected code.
 ```ts
 Record<PluginKey, Partial<AnyPlatePlugin>>

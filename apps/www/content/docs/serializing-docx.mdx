@@ -3,7 +3,7 @@ title: Serializing Docx
 description: Copy paste from DOCX to Slate.
 ---
 
-<ComponentPreview name="playground-demo" id="deserializedocx" />
+<ComponentPreview name="playground-demo" id="docx" />
 
 <PackageInfo>
 
@@ -29,11 +29,11 @@ npm install @udecode/plate-serializer-docx @udecode/plate-juice
 
 ```tsx
 import { createJuicePlugin } from '@udecode/plate-juice';
-import { createDeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
+import { createDocxPlugin } from '@udecode/plate-serializer-docx';
 
 const plugins = [
   // ...otherPlugins,
-  createDeserializeDocxPlugin(),
+  createDocxPlugin(),
   createJuicePlugin(),
 ];
 ```
@@ -42,4 +42,4 @@ Given pasted HTML, `@udecode/plate-juice` is used to inline CSS properties into 
 
 ## API
 
-### createDeserializeDocxPlugin
+### createDocxPlugin

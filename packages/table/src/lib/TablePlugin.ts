@@ -1,5 +1,5 @@
 import {
-  type DeserializeHtml,
+  type HtmlDeserializer,
   bindFirst,
   createSlatePlugin,
   createTSlatePlugin,
@@ -12,21 +12,29 @@ import { getEmptyCellNode } from './utils';
 import { withTable } from './withTable';
 
 export const TableRowPlugin = createSlatePlugin({
-  deserializeHtml: {
-    rules: [{ validNodeName: 'TR' }],
-  },
   isElement: true,
   key: 'tr',
+  parsers: {
+    html: {
+      deserializer: {
+        rules: [{ validNodeName: 'TR' }],
+      },
+    },
+  },
 });
 
 export const TableCellPlugin = createSlatePlugin({
   isElement: true,
   key: 'td',
 }).extend(({ editor }) => ({
-  deserializeHtml: {
-    attributeNames: ['rowspan', 'colspan'],
-    getNode: createGetNodeFunc(editor.getType({ key: 'td' })),
-    rules: [{ validNodeName: 'TD' }],
+  parsers: {
+    html: {
+      deserializer: {
+        attributeNames: ['rowspan', 'colspan'],
+        parse: getParse(editor.getType({ key: 'td' })),
+        rules: [{ validNodeName: 'TD' }],
+      },
+    },
   },
 }));
 
@@ -34,24 +42,32 @@ export const TableCellHeaderPlugin = createSlatePlugin({
   isElement: true,
   key: 'th',
 }).extend(({ editor }) => ({
-  deserializeHtml: {
-    attributeNames: ['rowspan', 'colspan'],
-    getNode: createGetNodeFunc(editor.getType({ key: 'th' })),
-    rules: [{ validNodeName: 'TH' }],
+  parsers: {
+    html: {
+      deserializer: {
+        attributeNames: ['rowspan', 'colspan'],
+        parse: getParse(editor.getType({ key: 'th' })),
+        rules: [{ validNodeName: 'TH' }],
+      },
+    },
   },
 }));
 
 /** Enables support for tables. */
 export const TablePlugin = createTSlatePlugin<TableConfig>({
-  deserializeHtml: {
-    rules: [{ validNodeName: 'TABLE' }],
-  },
   isElement: true,
   key: 'table',
   options: {
     _cellIndices: new WeakMap(),
     enableMerging: false,
     minColumnWidth: 48,
+  },
+  parsers: {
+    html: {
+      deserializer: {
+        rules: [{ validNodeName: 'TABLE' }],
+      },
+    },
   },
   plugins: [TableRowPlugin, TableCellPlugin, TableCellHeaderPlugin],
   withOverrides: withTable,
@@ -67,8 +83,8 @@ export const TablePlugin = createTSlatePlugin<TableConfig>({
     },
   }));
 
-const createGetNodeFunc = (type: string) => {
-  const getNode: DeserializeHtml['getNode'] = ({ element }) => {
+const getParse = (type: string): HtmlDeserializer['parse'] => {
+  return ({ element }) => {
     const background =
       element.style.background || element.style.backgroundColor;
 
@@ -81,6 +97,4 @@ const createGetNodeFunc = (type: string) => {
 
     return { type };
   };
-
-  return getNode;
 };

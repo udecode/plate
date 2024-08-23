@@ -7,9 +7,7 @@ import {
 } from '@udecode/plate-common';
 import papaparse from 'papaparse';
 
-import type { DeserializeCsvParseOptions } from '../types';
-
-import { DeserializeCsvPlugin } from '../DeserializeCsvPlugin';
+import { type CsvParseOptions, CsvPlugin } from '../../CsvPlugin';
 
 const { parse } = papaparse;
 
@@ -36,10 +34,10 @@ export const deserializeCsv = (
     ...parseOptions
   }: {
     data: string;
-  } & DeserializeCsvParseOptions
+  } & CsvParseOptions
 ): TDescendant[] | undefined => {
   const { errorTolerance, parseOptions: pluginParseOptions } =
-    editor.getOptions(DeserializeCsvPlugin);
+    editor.getOptions(CsvPlugin);
 
   // Verify it's a csv string
   const testCsv = parse(data, { preview: 2 });

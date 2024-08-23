@@ -11,11 +11,15 @@ export const LineHeightPlugin = createSlatePlugin({
       nodeKey: 'lineHeight',
     },
     targetPluginToInject: ({ editor, plugin }) => ({
-      deserializeHtml: {
-        getNode: ({ element, node }) => {
-          if (element.style.lineHeight) {
-            node[editor.getType(plugin)] = element.style.lineHeight;
-          }
+      parsers: {
+        html: {
+          deserializer: {
+            parse: ({ element, node }) => {
+              if (element.style.lineHeight) {
+                node[editor.getType(plugin)] = element.style.lineHeight;
+              }
+            },
+          },
         },
       },
     }),

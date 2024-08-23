@@ -9,19 +9,23 @@ export const FontColorPlugin = createSlatePlugin({
   },
   key: 'color',
 }).extend(({ type }) => ({
-  deserializeHtml: {
-    getNode({ element }) {
-      if (element.style.color) {
-        return { [type]: element.style.color };
-      }
-    },
-    isLeaf: true,
-    rules: [
-      {
-        validStyle: {
-          color: '*',
+  parsers: {
+    html: {
+      deserializer: {
+        isLeaf: true,
+        parse({ element }) {
+          if (element.style.color) {
+            return { [type]: element.style.color };
+          }
         },
+        rules: [
+          {
+            validStyle: {
+              color: '*',
+            },
+          },
+        ],
       },
-    ],
+    },
   },
 }));

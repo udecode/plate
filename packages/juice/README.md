@@ -7,7 +7,7 @@ Given inserted HTML, [juice](https://www.npmjs.com/package/juice) will inline th
 ## Documentation
 
 Check out
-[Serializing HTML](https://platejs.org/docs/serializing-html).
+[Serializing HTML](https://platejs.org/docs/html).
 
 ## License
 

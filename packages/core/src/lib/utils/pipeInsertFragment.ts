@@ -1,7 +1,7 @@
 import { type TDescendant, withoutNormalizing } from '@udecode/slate';
 
 import type { SlateEditor } from '../editor';
-import type { EditorInsertDataOptions } from '../plugin/BasePlugin';
+import type { ParserOptions } from '../plugin/BasePlugin';
 import type { AnyEditorPlugin } from '../plugin/SlatePlugin';
 
 import { getPluginContext } from '../plugin';
@@ -10,15 +10,12 @@ import { getPluginContext } from '../plugin';
 export const pipeInsertFragment = (
   editor: SlateEditor,
   injectedPlugins: Partial<AnyEditorPlugin>[],
-  {
-    fragment,
-    ...options
-  }: { fragment: TDescendant[] } & EditorInsertDataOptions
+  { fragment, ...options }: { fragment: TDescendant[] } & ParserOptions
 ) => {
   withoutNormalizing(editor, () => {
     injectedPlugins.some((p) => {
       return (
-        p.editor?.insertData?.preInsert?.({
+        p.parser?.preInsert?.({
           ...getPluginContext(editor, p as any),
           fragment,
           ...options,

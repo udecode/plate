@@ -7,14 +7,16 @@ import type { Nullable } from '../types/misc';
 import type { GetInjectPropsOptions, GetInjectPropsReturnType } from '../utils';
 import type {
   AnyPluginConfig,
-  BaseDeserializeHtml,
+  BaseDeserializer,
+  BaseHtmlDeserializer,
   BaseInjectProps,
   BasePlugin,
+  BaseSerializer,
   BaseTransformOptions,
-  EditorInsertDataOptions,
   InferApi,
   InferOptions,
   InferTransforms,
+  ParserOptions,
   PluginConfig,
   WithAnyKey,
 } from './BasePlugin';
@@ -22,9 +24,6 @@ import type { HandlerReturnType } from './HandlerReturnType';
 
 /** The `PlatePlugin` interface is a base interface for all plugins. */
 export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
-  editor: {
-    insertData?: EditorInsertData<WithAnyKey<C>>;
-  };
   handlers: {};
   inject: {
     plugins?: Record<string, Partial<EditorPlugin<AnyPluginConfig>>>;
@@ -36,11 +35,41 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
   override: {
     plugins?: Record<string, Partial<EditorPlugin<AnyPluginConfig>>>;
   };
+  parser: Nullable<Parser<WithAnyKey<C>>>;
+
+  // ast: Nullable<{
+  //   /** Function to deserialize AST to Slate nodes. */
+  //   deserialize?: DeserializeAst<WithAnyKey<C>>;
+  //   /** Function to serialize Slate nodes to AST. */
+  //   serialize?: SerializeAst<WithAnyKey<C>>;
+  // }>;
+  /** Markdown parser configuration. */
+  // markdown: Nullable<{
+  //   /** Function to deserialize Markdown to Slate nodes. */
+  //   deserialize?: DeserializeMarkdown<WithAnyKey<C>>;
+  //   /** Function to serialize Slate nodes to Markdown. */
+  //   serialize?: SerializeMarkdown<WithAnyKey<C>>;
+  // }>;
+
+  // Parsers
+  parsers:
+    | ({
+        [K in string]: {
+          deserializer?: Deserializer<WithAnyKey<C>>;
+          serializer?: Serializer<WithAnyKey<C>>;
+        };
+      } & { html?: never })
+    | {
+        html?: Nullable<{
+          deserializer?: HtmlDeserializer<WithAnyKey<C>>;
+          serializer?: HtmlSerializer<WithAnyKey<C>>;
+        }>;
+      };
+
   shortcuts: {};
 } & BasePlugin<C> &
   Nullable<{
     decorate?: Decorate<WithAnyKey<C>>;
-    deserializeHtml?: Nullable<DeserializeHtml<WithAnyKey<C>>>;
     normalizeInitialValue?: (
       ctx: { value: Value } & SlatePluginContext<WithAnyKey<C>>
     ) => Value;
@@ -284,22 +313,19 @@ export type SlatePluginContext<C extends AnyPluginConfig = PluginConfig> = {
 
 // -----------------------------------------------------------------------------
 
-export type EditorInsertData<C extends AnyPluginConfig = PluginConfig> = {
-  format?: string;
-  getFragment?: (
-    options: EditorInsertDataOptions & SlatePluginContext<C>
+export type Parser<C extends AnyPluginConfig = PluginConfig> = {
+  deserialize?: (
+    options: ParserOptions & SlatePluginContext<C>
   ) => TDescendant[] | undefined;
+  format?: string | string[];
+  mimeTypes?: string[];
   preInsert?: (
-    options: { fragment: TDescendant[] } & EditorInsertDataOptions &
-      SlatePluginContext<C>
+    options: { fragment: TDescendant[] } & ParserOptions & SlatePluginContext<C>
   ) => HandlerReturnType;
-  query?: (options: EditorInsertDataOptions & SlatePluginContext<C>) => boolean;
-  transformData?: (
-    options: EditorInsertDataOptions & SlatePluginContext<C>
-  ) => string;
+  query?: (options: ParserOptions & SlatePluginContext<C>) => boolean;
+  transformData?: (options: ParserOptions & SlatePluginContext<C>) => string;
   transformFragment?: (
-    options: { fragment: TDescendant[] } & EditorInsertDataOptions &
-      SlatePluginContext<C>
+    options: { fragment: TDescendant[] } & ParserOptions & SlatePluginContext<C>
   ) => TDescendant[];
 };
 
@@ -311,17 +337,45 @@ export type WithOverride<C extends AnyPluginConfig = PluginConfig> = (
 export type TransformOptions<C extends AnyPluginConfig = PluginConfig> =
   BaseTransformOptions & SlatePluginContext<C>;
 
-export type DeserializeHtml<C extends AnyPluginConfig = PluginConfig> = {
-  getNode?: (
+// -----------------------------------------------------------------------------
+
+export type Deserializer<C extends AnyPluginConfig = PluginConfig> = {
+  parse?: (
+    options: { element: any } & AnyObject & SlatePluginContext<C>
+  ) => Partial<TDescendant> | undefined | void;
+
+  query?: (
+    options: { element: any } & AnyObject & SlatePluginContext<C>
+  ) => boolean;
+} & BaseDeserializer;
+
+export type Serializer<C extends AnyPluginConfig = PluginConfig> = {
+  parse?: (
+    options: { node: TDescendant } & AnyObject & SlatePluginContext<C>
+  ) => any;
+  query?: (
+    options: { node: TDescendant } & AnyObject & SlatePluginContext<C>
+  ) => boolean;
+} & BaseSerializer;
+
+export type HtmlDeserializer<C extends AnyPluginConfig = PluginConfig> = {
+  parse?: (
     options: {
       element: HTMLElement;
       node: AnyObject;
     } & SlatePluginContext<C>
-  ) => AnyObject | undefined | void;
+  ) => Partial<TDescendant> | undefined | void;
   query?: (
     options: { element: HTMLElement } & SlatePluginContext<C>
   ) => boolean;
-} & BaseDeserializeHtml;
+} & BaseHtmlDeserializer;
+
+export type HtmlSerializer<C extends AnyPluginConfig = PluginConfig> = {
+  parse?: (options: { node: TDescendant } & SlatePluginContext<C>) => string;
+  query?: (options: { node: TDescendant } & SlatePluginContext<C>) => boolean;
+} & BaseSerializer;
+
+// -----------------------------------------------------------------------------
 
 /**
  * Property used by Plate to decorate editor ranges. If the function returns

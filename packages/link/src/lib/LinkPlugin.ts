@@ -107,22 +107,26 @@ export const LinkPlugin = createTSlatePlugin<LinkConfig>({
   },
   withOverrides: withLink,
 }).extend(({ editor, type }) => ({
-  deserializeHtml: {
-    getNode: ({ element }) => {
-      const url = element.getAttribute('href');
+  parsers: {
+    html: {
+      deserializer: {
+        parse: ({ element }) => {
+          const url = element.getAttribute('href');
 
-      if (url && validateUrl(editor, url)) {
-        return {
-          target: element.getAttribute('target') || '_blank',
-          type,
-          url,
-        };
-      }
-    },
-    rules: [
-      {
-        validNodeName: 'A',
+          if (url && validateUrl(editor, url)) {
+            return {
+              target: element.getAttribute('target') || '_blank',
+              type,
+              url,
+            };
+          }
+        },
+        rules: [
+          {
+            validNodeName: 'A',
+          },
+        ],
       },
-    ],
+    },
   },
 }));

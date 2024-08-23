@@ -47,8 +47,8 @@ import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { ResetNodePlugin } from '@udecode/plate-reset-node';
 import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
-import { DeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
-import { DeserializeMdPlugin } from '@udecode/plate-serializer-md';
+import { DocxPlugin } from '@udecode/plate-serializer-docx';
+import { MarkdownPlugin } from '@udecode/plate-serializer-md';
 import { TabbablePlugin } from '@udecode/plate-tabbable';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
@@ -75,9 +75,8 @@ export function usePlaygroundEnabled(id?: string) {
       [ColumnPlugin.key]: { enabled: !!enabled.column },
       [CommentsPlugin.key]: { enabled: !!enabled.comment },
       [DeletePlugin.key]: { enabled: !!enabled.delete },
-      [DeserializeDocxPlugin.key]: { enabled: !!enabled.deserializeDocx },
-      [DeserializeMdPlugin.key]: { enabled: !!enabled.deserializeMd },
       [DndPlugin.key]: { enabled: !!enabled.dnd },
+      [DocxPlugin.key]: { enabled: !!enabled.docx },
       [DragOverCursorPlugin.key]: { enabled: !!enabled.dragOverCursor },
       [EmojiPlugin.key]: { enabled: !!enabled.emoji },
       [ExcalidrawPlugin.key]: { enabled: !!enabled.excalidraw },
@@ -101,6 +100,7 @@ export function usePlaygroundEnabled(id?: string) {
       [LineHeightPlugin.key]: { enabled: !!enabled.lineHeight },
       [LinkPlugin.key]: { enabled: !!enabled.a },
       [ListPlugin.key]: { enabled: id === 'list' || !!enabled.list },
+      [MarkdownPlugin.key]: { enabled: !!enabled.markdown },
       [MediaEmbedPlugin.key]: { enabled: !!enabled.media_embed },
       [MentionPlugin.key]: { enabled: !!enabled.mention },
       [NodeIdPlugin.key]: { enabled: !!enabled.nodeId },

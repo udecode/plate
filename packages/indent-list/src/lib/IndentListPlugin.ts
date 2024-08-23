@@ -1,5 +1,5 @@
 import {
-  DeserializeHtmlPlugin,
+  HtmlPlugin,
   ParagraphPlugin,
   type PluginConfig,
   type TElement,
@@ -34,42 +34,37 @@ export type IndentListConfig = PluginConfig<
 export const IndentListPlugin = createTSlatePlugin<IndentListConfig>({
   inject: {
     plugins: {
-      [DeserializeHtmlPlugin.key]: {
-        editor: {
-          insertData: {
-            transformData: ({ data }) => {
-              const document = new DOMParser().parseFromString(
-                data,
-                'text/html'
-              );
-              const { body } = document;
+      [HtmlPlugin.key]: {
+        parser: {
+          transformData: ({ data }) => {
+            const document = new DOMParser().parseFromString(data, 'text/html');
+            const { body } = document;
 
-              traverseHtmlElements(body, (element) => {
-                if (element.tagName === 'LI') {
-                  const { childNodes } = element;
+            traverseHtmlElements(body, (element) => {
+              if (element.tagName === 'LI') {
+                const { childNodes } = element;
 
-                  // replace li block children (e.g. p) by their children
-                  const liChildren: Node[] = [];
-                  childNodes.forEach((child) => {
-                    if (isHtmlBlockElement(child as Element)) {
-                      liChildren.push(...child.childNodes);
-                    } else {
-                      liChildren.push(child);
-                    }
-                  });
+                // replace li block children (e.g. p) by their children
+                const liChildren: Node[] = [];
+                childNodes.forEach((child) => {
+                  if (isHtmlBlockElement(child as Element)) {
+                    liChildren.push(...child.childNodes);
+                  } else {
+                    liChildren.push(child);
+                  }
+                });
 
-                  element.replaceChildren(...liChildren);
+                element.replaceChildren(...liChildren);
 
-                  // TODO: recursive check on ul parents for indent
+                // TODO: recursive check on ul parents for indent
 
-                  return false;
-                }
+                return false;
+              }
 
-                return true;
-              });
+              return true;
+            });
 
-              return postCleanHtml(body.innerHTML);
-            },
+            return postCleanHtml(body.innerHTML);
           },
         },
       },
@@ -81,18 +76,22 @@ export const IndentListPlugin = createTSlatePlugin<IndentListConfig>({
   },
   withOverrides: withIndentList,
 }).extend(({ editor, options }) => ({
-  deserializeHtml: {
-    getNode: ({ element }) => ({
-      // gdoc uses aria-level attribute
-      indent: Number(element.getAttribute('aria-level')),
-      listStyleType: options.getListStyleType?.(element),
-      type: editor.getType(ParagraphPlugin),
-    }),
-    isElement: true,
-    rules: [
-      {
-        validNodeName: 'LI',
+  parsers: {
+    html: {
+      deserializer: {
+        isElement: true,
+        parse: ({ element }) => ({
+          // gdoc uses aria-level attribute
+          indent: Number(element.getAttribute('aria-level')),
+          listStyleType: options.getListStyleType?.(element),
+          type: editor.getType(ParagraphPlugin),
+        }),
+        rules: [
+          {
+            validNodeName: 'LI',
+          },
+        ],
       },
-    ],
+    },
   },
 }));

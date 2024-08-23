@@ -15,8 +15,14 @@ import { createPlateUIEditor } from '../create-plate-ui-editor';
 
 const plugins = [
   toPlatePlugin(ImagePlugin, {
-    serializeHtml: ({ element }) =>
-      React.createElement('img', { src: element.url }),
+    parsers: {
+      htmlReact: {
+        serializer: {
+          parse: ({ element }) =>
+            React.createElement('img', { src: element.url }),
+        },
+      },
+    },
   }),
 ];
 
@@ -44,10 +50,16 @@ it('custom serialize bold to html', () => {
       createPlateUIEditor({
         plugins: [
           BoldPlugin.extend({
-            serializeHtml: ({ children, leaf }) =>
-              leaf[BoldPlugin.key] && !!leaf.text
-                ? React.createElement('b', {}, children)
-                : children,
+            parsers: {
+              htmlReact: {
+                serializer: {
+                  parse: ({ children, leaf }) =>
+                    leaf[BoldPlugin.key] && !!leaf.text
+                      ? React.createElement('b', {}, children)
+                      : children,
+                },
+              },
+            },
           }),
         ],
       }),
@@ -80,7 +92,7 @@ describe('multiple custom leaf serializers', () => {
         component: Bold as any,
         isLeaf: true,
         key: 'bold',
-        serializeHtml: Bold,
+        parsers: { htmlReact: { serializer: { parse: Bold } } },
       }),
     ];
 

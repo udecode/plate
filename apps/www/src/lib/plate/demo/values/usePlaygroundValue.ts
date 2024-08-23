@@ -91,9 +91,9 @@ export const usePlaygroundValue = (id?: ValueId): MyValue => {
     // Deserialization
     value.push(...deserializeHtmlValue);
 
-    if (enabled.deserializeMd) value.push(...deserializeMdValue);
-    if (enabled.deserializeDocx) value.push(...deserializeDocxValue);
-    if (enabled.deserializeCsv) value.push(...deserializeCsvValue);
+    if (enabled.markdown) value.push(...deserializeMdValue);
+    if (enabled.docx) value.push(...deserializeDocxValue);
+    if (enabled.csv) value.push(...deserializeCsvValue);
     // Exceptions
     if (enabled.trailingBlock) value.push(...trailingBlockValue);
     if (enabled.excalidraw) value.push(...excalidrawValue);
@@ -107,9 +107,9 @@ export const usePlaygroundValue = (id?: ValueId): MyValue => {
     enabled.backgroundColor,
     enabled.color,
     enabled.comment,
-    enabled.deserializeCsv,
-    enabled.deserializeDocx,
-    enabled.deserializeMd,
+    enabled.csv,
+    enabled.docx,
+    enabled.markdown,
     enabled.dragOverCursor,
     enabled.emoji,
     enabled.excalidraw,

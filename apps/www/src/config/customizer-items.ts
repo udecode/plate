@@ -43,9 +43,9 @@ import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { ResetNodePlugin } from '@udecode/plate-reset-node';
 import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
-import { DeserializeCsvPlugin } from '@udecode/plate-serializer-csv';
-import { DeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
-import { DeserializeMdPlugin } from '@udecode/plate-serializer-md';
+import { CsvPlugin } from '@udecode/plate-serializer-csv';
+import { DocxPlugin } from '@udecode/plate-serializer-docx';
+import { MarkdownPlugin } from '@udecode/plate-serializer-md';
 import { TabbablePlugin } from '@udecode/plate-tabbable';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
@@ -265,38 +265,21 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'createCommentsPlugin',
     route: customizerPlugins.comment.route,
   },
+  // Deserialization
+  [CsvPlugin.key]: {
+    badges: [customizerBadges.handler],
+    id: CsvPlugin.key,
+    label: 'Deserialize CSV',
+    npmPackage: '@udecode/plate-serializer-csv',
+    pluginFactory: 'createCsvPlugin',
+    route: customizerPlugins.csv.route,
+  },
   [DeletePlugin.key]: {
     badges: [customizerBadges.handler],
     id: DeletePlugin.key,
     label: 'Delete',
     npmPackage: '@udecode/plate-select',
     pluginFactory: 'createDeletePlugin',
-  },
-  // Deserialization
-  [DeserializeCsvPlugin.key]: {
-    badges: [customizerBadges.handler],
-    id: DeserializeCsvPlugin.key,
-    label: 'Deserialize CSV',
-    npmPackage: '@udecode/plate-serializer-csv',
-    pluginFactory: 'createDeserializeCsvPlugin',
-    route: customizerPlugins.deserializecsv.route,
-  },
-  [DeserializeDocxPlugin.key]: {
-    badges: [customizerBadges.handler],
-    dependencies: [JuicePlugin.key],
-    id: DeserializeDocxPlugin.key,
-    label: 'Deserialize DOCX',
-    npmPackage: '@udecode/plate-serializer-docx',
-    pluginFactory: 'createDeserializeDocxPlugin',
-    route: customizerPlugins.deserializedocx.route,
-  },
-  [DeserializeMdPlugin.key]: {
-    badges: [customizerBadges.handler],
-    id: DeserializeMdPlugin.key,
-    label: 'Deserialize MD',
-    npmPackage: '@udecode/plate-serializer-md',
-    pluginFactory: 'createDeserializeMdPlugin',
-    route: customizerPlugins.deserializemd.route,
   },
   [DndPlugin.key]: {
     badges: [customizerBadges.handler, customizerBadges.ui],
@@ -321,6 +304,15 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'createDndPlugin',
     pluginOptions: ['  options: { enableScroller: true },'],
     route: customizerPlugins.dnd.route,
+  },
+  [DocxPlugin.key]: {
+    badges: [customizerBadges.handler],
+    dependencies: [JuicePlugin.key],
+    id: DocxPlugin.key,
+    label: 'Deserialize DOCX',
+    npmPackage: '@udecode/plate-serializer-docx',
+    pluginFactory: 'createDocxPlugin',
+    route: customizerPlugins.docx.route,
   },
   [DragOverCursorPlugin.key]: {
     badges: [customizerBadges.handler, customizerBadges.ui],
@@ -527,7 +519,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     label: 'Juice',
     npmPackage: '@udecode/plate-juice',
     pluginFactory: 'createJuicePlugin',
-    route: customizerPlugins.deserializedocx.route,
+    route: customizerPlugins.docx.route,
   },
   [KbdPlugin.key]: {
     badges: [customizerBadges.leaf],
@@ -592,6 +584,14 @@ export const customizerItems: Record<string, SettingPlugin> = {
     npmPackage: '@udecode/plate-link',
     pluginFactory: 'createLinkPlugin',
     route: customizerPlugins.link.route,
+  },
+  [MarkdownPlugin.key]: {
+    badges: [customizerBadges.handler],
+    id: MarkdownPlugin.key,
+    label: 'Deserialize MD',
+    npmPackage: '@udecode/plate-serializer-md',
+    pluginFactory: 'createMarkdownPlugin',
+    route: customizerPlugins.markdown.route,
   },
   [MediaEmbedPlugin.key]: {
     badges: [customizerBadges.element, customizerBadges.void],

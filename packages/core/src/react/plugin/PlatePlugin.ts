@@ -19,11 +19,12 @@ import type { AnyObject } from '@udecode/utils';
 import type {
   AnyPluginConfig,
   AnySlatePlugin,
-  BaseDeserializeHtml,
+  BaseDeserializer,
+  BaseHtmlDeserializer,
   BaseInjectProps,
   BasePlugin,
+  BaseSerializer,
   BaseTransformOptions,
-  EditorInsertDataOptions,
   GetInjectPropsOptions,
   GetInjectPropsReturnType,
   HandlerReturnType,
@@ -31,6 +32,7 @@ import type {
   InferOptions,
   InferTransforms,
   Nullable,
+  ParserOptions,
   PluginConfig,
   SlatePlugin,
   SlatePluginConfig,
@@ -44,15 +46,6 @@ import type { PlateRenderLeafProps } from './PlateRenderLeafProps';
 
 /** The `ReactPlatePlugin` interface is a React interface for all plugins. */
 export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
-  editor: {
-    /**
-     * Properties used by the `insertData` core plugin to deserialize inserted
-     * data to a slate fragment. The fragment will be inserted to the editor if
-     * not empty.
-     */
-    insertData?: EditorInsertData<WithAnyKey<C>>;
-  };
-
   /**
    * Handlers called whenever the corresponding event occurs in the editor.
    * Event handlers can return a boolean flag to specify whether the event can
@@ -83,10 +76,10 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
     /**
      * Property that can be used by a plugin to allow other plugins to inject
      * code. For example, if multiple plugins have defined
-     * `inject.editor.insertData.transformData` for
-     * `key=DeserializeHtmlPlugin.key`, `insertData` plugin will call all of
-     * these `transformData` for `DeserializeHtmlPlugin.key` plugin. Differs
-     * from `override.plugins` as this is not overriding any plugin.
+     * `inject.editor.insertData.transformData` for `key=HtmlPlugin.key`,
+     * `insertData` plugin will call all of these `transformData` for
+     * `HtmlPlugin.key` plugin. Differs from `override.plugins` as this is not
+     * overriding any plugin.
      */
     plugins?: Record<string, Partial<EditorPlatePlugin<AnyPluginConfig>>>;
 
@@ -110,6 +103,31 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
     plugins?: Record<string, Partial<EditorPlatePlugin<AnyPluginConfig>>>;
   };
 
+  /**
+   * Used by parser plugins like html to deserialize inserted data to a slate
+   * fragment. The fragment will be inserted to the editor if not empty.
+   */
+  parser: Nullable<Parser<WithAnyKey<C>>>;
+
+  parsers:
+    | ({
+        [K in string]: {
+          deserializer?: Deserializer<WithAnyKey<C>>;
+          serializer?: Serializer<WithAnyKey<C>>;
+        };
+      } & { html?: never; htmlReact?: never })
+    | {
+        html?: Nullable<{
+          deserializer?: HtmlDeserializer<WithAnyKey<C>>;
+          serializer?: HtmlSerializer<WithAnyKey<C>>;
+        }>;
+
+        htmlReact?: Nullable<{
+          /** Function to deserialize HTML to Slate nodes using React. */
+          serializer?: HtmlReactSerializer<WithAnyKey<C>>;
+        }>;
+      };
+
   shortcuts: PlateShortcuts;
 } & BasePlugin<C> &
   Nullable<{
@@ -122,12 +140,6 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
 
     /** @see {@link Decorate} */
     decorate?: Decorate<WithAnyKey<C>>;
-
-    /**
-     * Properties used by the HTML deserializer core plugin for each HTML
-     * element.
-     */
-    deserializeHtml?: Nullable<DeserializeHtml<WithAnyKey<C>>>;
 
     /**
      * Normalize initial value before passing it into the editor.
@@ -157,12 +169,6 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
 
     /** Render a component before `Editable`. */
     renderBeforeEditable?: RenderAfterEditable;
-
-    /**
-     * Property used by `serializeHtml` util to replace `renderElement` and
-     * `renderLeaf` when serializing a node of this `type`.
-     */
-    serializeHtml?: SerializeHtml<WithAnyKey<C>>;
 
     /** Hook called when the editor is initialized. */
     useHooks?: PlateUseHooks<WithAnyKey<C>>;
@@ -501,14 +507,16 @@ export type PlatePluginContext<C extends AnyPluginConfig = PluginConfig> = {
 
 // -----------------------------------------------------------------------------
 
-export type EditorInsertData<C extends AnyPluginConfig = PluginConfig> = {
-  /** Format to get data. Example data types are text/plain and text/uri-list. */
-  format?: string;
-
+export type Parser<C extends AnyPluginConfig = PluginConfig> = {
   /** Deserialize data to fragment */
-  getFragment?: (
-    options: EditorInsertDataOptions & PlatePluginContext<C>
+  deserialize?: (
+    options: ParserOptions & PlatePluginContext<C>
   ) => TDescendant[] | undefined;
+
+  /** Format to get data. Example data types are text/plain and text/uri-list. */
+  format?: string | string[];
+
+  mimeTypes?: string[];
 
   /**
    * Function called on `editor.insertData` just before `editor.insertFragment`.
@@ -519,22 +527,18 @@ export type EditorInsertData<C extends AnyPluginConfig = PluginConfig> = {
    * @returns If true, the next handlers will be skipped.
    */
   preInsert?: (
-    options: { fragment: TDescendant[] } & EditorInsertDataOptions &
-      PlatePluginContext<C>
+    options: { fragment: TDescendant[] } & ParserOptions & PlatePluginContext<C>
   ) => HandlerReturnType;
 
   /** Query to skip this plugin. */
-  query?: (options: EditorInsertDataOptions & PlatePluginContext<C>) => boolean;
+  query?: (options: ParserOptions & PlatePluginContext<C>) => boolean;
 
   /** Transform the inserted data. */
-  transformData?: (
-    options: EditorInsertDataOptions & PlatePluginContext<C>
-  ) => string;
+  transformData?: (options: ParserOptions & PlatePluginContext<C>) => string;
 
   /** Transform the fragment to insert. */
   transformFragment?: (
-    options: { fragment: TDescendant[] } & EditorInsertDataOptions &
-      PlatePluginContext<C>
+    options: { fragment: TDescendant[] } & ParserOptions & PlatePluginContext<C>
   ) => TDescendant[];
 };
 
@@ -546,19 +550,47 @@ export type WithOverride<C extends AnyPluginConfig = PluginConfig> = (
 export type TransformOptions<C extends AnyPluginConfig = PluginConfig> =
   BaseTransformOptions & PlatePluginContext<C>;
 
-export type DeserializeHtml<C extends AnyPluginConfig = PluginConfig> = {
-  /** Deserialize html element to slate node. */
-  getNode?: (
+// -----------------------------------------------------------------------------
+
+export type Deserializer<C extends AnyPluginConfig = PluginConfig> = {
+  parse?: (
+    options: { element: any } & PlatePluginContext<C>
+  ) => Partial<TDescendant> | undefined | void;
+
+  query?: (options: { element: any } & PlatePluginContext<C>) => boolean;
+} & BaseDeserializer;
+
+export type Serializer<C extends AnyPluginConfig = PluginConfig> = {
+  parser?: (options: { node: TDescendant } & PlatePluginContext<C>) => any;
+  query?: (options: { node: TDescendant } & PlatePluginContext<C>) => boolean;
+} & BaseSerializer;
+
+export type HtmlDeserializer<C extends AnyPluginConfig = PluginConfig> = {
+  parse?: (
     options: {
       element: HTMLElement;
       node: AnyObject;
     } & PlatePluginContext<C>
-  ) => AnyObject | undefined | void;
-
+  ) => Partial<TDescendant> | undefined | void;
   query?: (
     options: { element: HTMLElement } & PlatePluginContext<C>
   ) => boolean;
-} & BaseDeserializeHtml;
+} & BaseHtmlDeserializer;
+
+export type HtmlSerializer<C extends AnyPluginConfig = PluginConfig> = {
+  parse?: (options: { node: TDescendant } & PlatePluginContext<C>) => string;
+  query?: (options: { node: TDescendant } & PlatePluginContext<C>) => boolean;
+};
+
+export type HtmlReactSerializer<C extends AnyPluginConfig = PluginConfig> = {
+  parse?: React.FC<
+    PlateRenderElementProps<TElement, C> & PlateRenderLeafProps<TText, C>
+  >;
+
+  query?: (options: PlateRenderElementProps) => boolean;
+};
+
+// -----------------------------------------------------------------------------
 
 /**
  * Property used by Plate to decorate editor ranges. If the function returns
@@ -640,10 +672,6 @@ export type InjectComponentReturnType<
 export type InjectComponent<C extends AnyPluginConfig = PluginConfig> = (
   props: InjectComponentProps<C>
 ) => InjectComponentReturnType<C>;
-
-export type SerializeHtml<C extends AnyPluginConfig = PluginConfig> = React.FC<
-  PlateRenderElementProps<TElement, C> & PlateRenderLeafProps<TText, C>
->;
 
 /**
  * Function called whenever a change occurs in the editor. Return `false` to

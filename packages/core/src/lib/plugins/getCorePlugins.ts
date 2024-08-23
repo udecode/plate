@@ -5,14 +5,14 @@ import {
   createSlatePlugin,
   createTSlatePlugin,
 } from '../plugin/createSlatePlugin';
+import { AstPlugin } from './AstPlugin';
 import { DOMPlugin } from './DOMPlugin';
-import { DeserializeAstPlugin } from './DeserializeAstPlugin';
 import { HistoryPlugin } from './HistoryPlugin';
 import { InlineVoidPlugin } from './InlineVoidPlugin';
-import { InsertDataPlugin } from './InsertDataPlugin';
+import { ParserPlugin } from './ParserPlugin';
 import { type DebugErrorType, DebugPlugin, type LogLevel } from './debug';
 import { SlateNextPlugin } from './editor-protocol';
-import { DeserializeHtmlPlugin } from './html-deserializer';
+import { HtmlPlugin } from './html';
 import { LengthPlugin } from './length';
 import { ParagraphPlugin } from './paragraph';
 
@@ -43,14 +43,14 @@ export const getCorePlugins = ({
     DOMPlugin,
     HistoryPlugin,
     InlineVoidPlugin,
-    InsertDataPlugin,
+    ParserPlugin,
     maxLength
       ? LengthPlugin.configure({
           options: { maxLength },
         })
       : LengthPlugin,
-    DeserializeHtmlPlugin,
-    DeserializeAstPlugin,
+    HtmlPlugin,
+    AstPlugin,
     ParagraphPlugin,
   ];
 

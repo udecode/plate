@@ -102,25 +102,27 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
   type: string;
 } & Nullable<{}>;
 
-export type BaseDeserializeHtml = {
-  /** List of HTML attribute names to store their values in `node.attributes`. */
-  attributeNames?: string[];
+export type BaseSerializer = AnyObject;
 
+export type BaseDeserializer = {
   /**
-   * Deserialize an element. Use this instead of plugin.isElement if you don't
-   * want the plugin to renderElement.
+   * Deserialize an element. Overrides plugin.isElement.
    *
    * @default plugin.isElement
    */
   isElement?: boolean;
 
   /**
-   * Deserialize a leaf. Use this instead of plugin.isLeaf if you don't want the
-   * plugin to renderLeaf.
+   * Deserialize a leaf. Overrides plugin.isLeaf.
    *
    * @default plugin.isLeaf
    */
   isLeaf?: boolean;
+} & AnyObject;
+
+export type BaseHtmlDeserializer = {
+  /** List of HTML attribute names to store their values in `node.attributes`. */
+  attributeNames?: string[];
 
   rules?: {
     /**
@@ -148,7 +150,7 @@ export type BaseDeserializeHtml = {
 
   /** Whether or not to include deserialized children on this node */
   withoutChildren?: boolean;
-};
+} & BaseDeserializer;
 
 export type BaseInjectProps = {
   /**
@@ -224,7 +226,7 @@ export type InferTransforms<P> = P extends PluginConfig
   ? P['transforms']
   : never;
 
-export type EditorInsertDataOptions = {
+export type ParserOptions = {
   data: string;
   dataTransfer: DataTransfer;
 };

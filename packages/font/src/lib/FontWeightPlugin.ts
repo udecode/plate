@@ -8,15 +8,19 @@ export const FontWeightPlugin = createSlatePlugin({
   },
   key: 'fontWeight',
 }).extend(({ type }) => ({
-  deserializeHtml: {
-    getNode: ({ element }) => ({ [type]: element.style.fontWeight }),
-    isLeaf: true,
-    rules: [
-      {
-        validStyle: {
-          fontWeight: '*',
-        },
+  parsers: {
+    html: {
+      deserializer: {
+        isLeaf: true,
+        parse: ({ element }) => ({ [type]: element.style.fontWeight }),
+        rules: [
+          {
+            validStyle: {
+              fontWeight: '*',
+            },
+          },
+        ],
       },
-    ],
+    },
   },
 }));

@@ -6,7 +6,11 @@ import { createPlateUIEditor } from '../create-plate-ui-editor';
 describe('when there is no deserializer', () => {
   it('not serialize', () => {
     const plugin = ParagraphPlugin.extend({
-      serializeHtml: null,
+      parsers: {
+        htmlReact: {
+          serializer: null,
+        },
+      },
     });
 
     expect(

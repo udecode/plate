@@ -1,5 +1,5 @@
 import type { SlateEditor } from '../editor';
-import type { EditorInsertDataOptions } from '../plugin/BasePlugin';
+import type { ParserOptions } from '../plugin/BasePlugin';
 import type { AnyEditorPlugin } from '../plugin/SlatePlugin';
 
 import { getPluginContext } from '../plugin';
@@ -8,10 +8,10 @@ import { getPluginContext } from '../plugin';
 export const pipeTransformData = (
   editor: SlateEditor,
   plugins: Partial<AnyEditorPlugin>[],
-  { data, dataTransfer }: EditorInsertDataOptions
+  { data, dataTransfer }: ParserOptions
 ) => {
   plugins.forEach((p) => {
-    const transformData = p.editor?.insertData?.transformData;
+    const transformData = p.parser?.transformData;
 
     if (!transformData) return;
 

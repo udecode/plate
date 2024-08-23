@@ -31,20 +31,24 @@ describe('when element has class and attribute, and plugin has deserialize type,
         createPlateEditor({
           plugins: [
             createSlatePlugin({
-              deserializeHtml: {
-                getNode: ({ element }) => ({
-                  id: element.dataset.id,
-                  type: 'poll',
-                }),
-                isElement: true,
-                rules: [
-                  {
-                    validClassName: 'poll',
-                  },
-                ],
-                withoutChildren: true,
-              },
               key: 'a',
+              parsers: {
+                html: {
+                  deserializer: {
+                    isElement: true,
+                    parse: ({ element }) => ({
+                      id: element.dataset.id,
+                      type: 'poll',
+                    }),
+                    rules: [
+                      {
+                        validClassName: 'poll',
+                      },
+                    ],
+                    withoutChildren: true,
+                  },
+                },
+              },
               type: 'poll',
             }),
           ],
@@ -147,14 +151,18 @@ describe('when there is no plugins', () => {
   });
 });
 
-describe('when plugin has deserialize.attributeNames', () => {
+describe('when plugin has deserializer.attributeNames', () => {
   const html = `<html><body><img alt="removed" src="https://i.imgur.com/removed.png" /></body></html>`;
 
   const editor = createPlateEditor({
     plugins: [
       ImagePlugin.extend({
-        deserializeHtml: {
-          attributeNames: ['alt'],
+        parsers: {
+          html: {
+            deserializer: {
+              attributeNames: ['alt'],
+            },
+          },
         },
       }),
     ],
@@ -178,19 +186,23 @@ describe('when plugin has deserialize.attributeNames', () => {
   });
 });
 
-describe('when plugin has deserialize.getNode', () => {
+describe('when plugin has deserializer.parse', () => {
   const html = `<html><body><p><a href="http://google.com" target="_blank">a</a></p></body></html>`;
 
   const editor = createPlateEditor({
     plugins: [
       ParagraphPlugin,
       LinkPlugin.extend(() => ({
-        deserializeHtml: {
-          getNode: ({ element }) => ({
-            opener: element.getAttribute('target') === '_blank',
-            type: 'a',
-            url: element.getAttribute('href'),
-          }),
+        parsers: {
+          html: {
+            deserializer: {
+              parse: ({ element }) => ({
+                opener: element.getAttribute('target') === '_blank',
+                type: 'a',
+                url: element.getAttribute('href'),
+              }),
+            },
+          },
         },
       })),
     ],
@@ -213,14 +225,20 @@ describe('when plugin has deserialize.getNode', () => {
   });
 });
 
-describe('when plugin has deserialize.rules.validNodeName', () => {
+describe('when plugin has deserializer.rules.validNodeName', () => {
   const html = `<html><body><p><b>strong</b></p></body></html>`;
 
   const editor = createPlateEditor({
     plugins: [
       ParagraphPlugin,
       BoldPlugin.extend({
-        deserializeHtml: { rules: [{ validNodeName: ['B'] }] },
+        parsers: {
+          html: {
+            deserializer: {
+              rules: [{ validNodeName: ['B'] }],
+            },
+          },
+        },
       }),
     ],
   });

@@ -11,9 +11,7 @@ import {
   ColumnPlugin,
   CommentsPlugin,
   DeletePlugin,
-  DeserializeDocxPlugin,
-  DeserializeMdPlugin,
-  ExitBreakPlugin,
+  DocxPlugin,
   FontBackgroundColorPlugin,
   FontColorPlugin,
   FontSizePlugin,
@@ -49,12 +47,13 @@ import {
   UnderlinePlugin,
   createSlateEditor,
 } from '@udecode/plate';
+import { ExitBreakPlugin } from '@udecode/plate-break';
 import { CaptionPlugin } from '@udecode/plate-caption';
 import { EmojiPlugin } from '@udecode/plate-emoji';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw';
 import { JuicePlugin } from '@udecode/plate-juice';
 import { ResetNodePlugin } from '@udecode/plate-reset-node';
-import { serializeMd } from '@udecode/plate-serializer-md';
+import { MarkdownPlugin, serializeMd } from '@udecode/plate-serializer-md';
 
 import { Markdown } from '@/components/MemoizedReactMarkdownClient';
 import { Code } from '@/components/code';
@@ -211,8 +210,8 @@ export default function RSCPage() {
       CommentsPlugin,
 
       // Deserialization
-      DeserializeDocxPlugin,
-      DeserializeMdPlugin,
+      DocxPlugin,
+      MarkdownPlugin,
       JuicePlugin,
       ColumnPlugin,
     ],
@@ -257,7 +256,7 @@ export default function RSCPage() {
       <H3>Example: Generating Markdown in a React Server Component</H3>
       <P className="mb-8">
         Here's the output of Plate{' '}
-        <Link href="/docs/serializing-md">
+        <Link href="/docs/markdown">
           generating Markdown from a Slate value
         </Link>{' '}
         within a React Server Component:

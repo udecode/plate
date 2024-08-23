@@ -8,15 +8,19 @@ export const FontBackgroundColorPlugin = createSlatePlugin({
   },
   key: 'backgroundColor',
 }).extend(({ type }) => ({
-  deserializeHtml: {
-    getNode: ({ element }) => ({ [type]: element.style.backgroundColor }),
-    isLeaf: true,
-    rules: [
-      {
-        validStyle: {
-          backgroundColor: '*',
-        },
+  parsers: {
+    html: {
+      deserializer: {
+        isLeaf: true,
+        parse: ({ element }) => ({ [type]: element.style.backgroundColor }),
+        rules: [
+          {
+            validStyle: {
+              backgroundColor: '*',
+            },
+          },
+        ],
       },
-    ],
+    },
   },
 }));

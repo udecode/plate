@@ -35,8 +35,17 @@ export const leafToHtml = (
       ...getPluginContext(editor, plugin),
     };
 
+    const serializer = plugin.parsers.htmlReact?.serializer;
+
+    if (
+      serializer === null ||
+      (serializer?.query && !serializer.query(props as any))
+    ) {
+      return result;
+    }
+
     const serialized =
-      plugin.serializeHtml?.(props as any) ??
+      serializer?.parse?.(props as any) ??
       pluginRenderLeaf(editor, plugin)(props as any);
 
     if (serialized === children) return result;

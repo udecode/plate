@@ -39,15 +39,13 @@ describe('code block deserialization', () => {
           ParagraphPlugin,
           CodeBlockPlugin,
           createSlatePlugin({
-            editor: {
-              insertData: {
-                format: 'text/plain',
-                getFragment() {
-                  return [{ text: 'test' }];
-                },
-              },
-            },
             key: 'a',
+            parser: {
+              deserialize() {
+                return [{ text: 'test' }];
+              },
+              format: 'text/plain',
+            },
           }),
         ],
       });

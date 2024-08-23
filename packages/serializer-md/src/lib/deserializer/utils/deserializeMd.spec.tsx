@@ -4,14 +4,14 @@ import { createSlateEditor } from '@udecode/plate-common';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { DeserializeMdPlugin } from '../DeserializeMdPlugin';
+import { MarkdownPlugin } from '../../MarkdownPlugin';
 import { deserializeMd } from './deserializeMd';
 
 jsx;
 
 describe('deserializeMd', () => {
   const editor = createSlateEditor({
-    plugins: [DeserializeMdPlugin],
+    plugins: [MarkdownPlugin],
   });
 
   it('should deserialize paragraphs', () => {
@@ -306,7 +306,7 @@ describe('deserializeMd', () => {
 
 describe('deserializeMdIndentList', () => {
   const editor = createSlateEditor({
-    plugins: [DeserializeMdPlugin.configure({ options: { indentList: true } })],
+    plugins: [MarkdownPlugin.configure({ options: { indentList: true } })],
   });
 
   it('should deserialize unordered lists', () => {

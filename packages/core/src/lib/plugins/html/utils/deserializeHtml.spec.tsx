@@ -30,6 +30,8 @@ import { deserializeHtmlElement } from './deserializeHtmlElement';
 
 jsx;
 
+describe('type', () => {});
+
 describe('when collapseWhitespace is false', () => {
   const html = '<blockquote>test \n code</blockquote>';
   const element = getHtmlDocument(html).body.innerHTML;

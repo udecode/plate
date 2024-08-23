@@ -20,7 +20,7 @@ describe('HeadingPlugin', () => {
         const plugin = headingPlugin.plugins[index];
         expect(plugin.key).toBe(level);
         expect(plugin.isElement).toBe(true);
-        expect(plugin.deserializeHtml?.rules).toEqual([
+        expect(plugin.parsers.html.deserializer?.rules).toEqual([
           { validNodeName: `H${index + 1}` },
         ]);
       });
@@ -94,7 +94,7 @@ describe('HeadingPlugin', () => {
       headingPlugin.plugins.forEach((plugin, index) => {
         expect(plugin.isElement).toBe(true);
         expect(plugin.handlers?.onKeyDown).not.toBeDefined();
-        expect(plugin.deserializeHtml?.rules).toEqual([
+        expect(plugin.parsers.html.deserializer?.rules).toEqual([
           { validNodeName: `H${index + 1}` },
         ]);
       });
@@ -116,7 +116,7 @@ describe('HeadingPluginReact', () => {
         const plugin = headingPlugin.plugins[index];
         expect(plugin.key).toBe(level);
         expect(plugin.isElement).toBe(true);
-        expect(plugin.deserializeHtml?.rules).toEqual([
+        expect(plugin.parsers.html.deserializer?.rules).toEqual([
           { validNodeName: `H${index + 1}` },
         ]);
       });
@@ -190,7 +190,7 @@ describe('HeadingPluginReact', () => {
 
       headingPlugin.plugins.forEach((plugin, index) => {
         expect(plugin.isElement).toBe(true);
-        expect(plugin.deserializeHtml?.rules).toEqual([
+        expect(plugin.parsers.html.deserializer?.rules).toEqual([
           { validNodeName: `H${index + 1}` },
         ]);
       });

@@ -8,15 +8,19 @@ export const FontSizePlugin = createSlatePlugin({
   },
   key: 'fontSize',
 }).extend(({ type }) => ({
-  deserializeHtml: {
-    getNode: ({ element }) => ({ [type]: element.style.fontSize }),
-    isLeaf: true,
-    rules: [
-      {
-        validStyle: {
-          fontSize: '*',
-        },
+  parsers: {
+    html: {
+      deserializer: {
+        isLeaf: true,
+        parse: ({ element }) => ({ [type]: element.style.fontSize }),
+        rules: [
+          {
+            validStyle: {
+              fontSize: '*',
+            },
+          },
+        ],
       },
-    ],
+    },
   },
 }));

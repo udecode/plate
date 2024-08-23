@@ -1,5 +1,5 @@
 import {
-  DeserializeHtmlPlugin,
+  HtmlPlugin,
   type PluginConfig,
   createSlatePlugin,
   createTSlatePlugin,
@@ -34,19 +34,16 @@ export const CodeSyntaxPlugin = createSlatePlugin({
 });
 
 export const CodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
-  deserializeHtml: deserializeHtmlCodeBlock,
   inject: {
     plugins: {
-      [DeserializeHtmlPlugin.key]: {
-        editor: {
-          insertData: {
-            query: ({ editor }) => {
-              const codeLineType = editor.getType(CodeLinePlugin);
+      [HtmlPlugin.key]: {
+        parser: {
+          query: ({ editor }) => {
+            const codeLineType = editor.getType(CodeLinePlugin);
 
-              return !someNode(editor, {
-                match: { type: codeLineType },
-              });
-            },
+            return !someNode(editor, {
+              match: { type: codeLineType },
+            });
           },
         },
       },
@@ -58,6 +55,7 @@ export const CodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
     syntax: true,
     syntaxPopularFirst: false,
   },
+  parsers: { html: { deserializer: deserializeHtmlCodeBlock } },
   plugins: [CodeLinePlugin, CodeSyntaxPlugin],
   withOverrides: withCodeBlock,
 });

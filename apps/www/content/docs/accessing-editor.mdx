@@ -36,9 +36,9 @@ For example, suppose you had this code and wanted to access the **`editor`** ins
 ```ts showLineNumbers
 const MyPlugin = createSlatePlugin({
   key: 'my',
-  deserializeHtml: {
+  parsers: { html: {deserializer: {
     // Need editor here
-  },
+  }}},
 });
 ```
 
@@ -48,9 +48,9 @@ You would wrap the **`deserializeHtml`** option inside **`then`**.
 const MyPlugin = createSlatePlugin({
   key: 'my',
   then: (editor) => ({
-    deserializeHtml: {
+    parsers: { html: {deserializer: {
       // Do something with editor
-    },
+    },}}
   }),
 });
 ```

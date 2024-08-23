@@ -8,15 +8,19 @@ export const FontFamilyPlugin = createSlatePlugin({
   },
   key: 'fontFamily',
 }).extend(({ type }) => ({
-  deserializeHtml: {
-    getNode: ({ element }) => ({ [type]: element.style.fontFamily }),
-    isLeaf: true,
-    rules: [
-      {
-        validStyle: {
-          fontFamily: '*',
-        },
+  parsers: {
+    html: {
+      deserializer: {
+        isLeaf: true,
+        parse: ({ element }) => ({ [type]: element.style.fontFamily }),
+        rules: [
+          {
+            validStyle: {
+              fontFamily: '*',
+            },
+          },
+        ],
       },
-    ],
+    },
   },
 }));

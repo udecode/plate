@@ -103,9 +103,13 @@ describe('TPlateEditor core package', () => {
       const editor = createPlateEditor({
         plugins: [
           LinkPlugin.extend({
-            deserializeHtml: {
-              getNode: () => ({ test: true }),
-              withoutChildren: true,
+            parsers: {
+              html: {
+                deserializer: {
+                  parse: () => ({ test: true }),
+                  withoutChildren: true,
+                },
+              },
             },
           }),
         ],
@@ -195,19 +199,23 @@ describe('TPlateEditor core package', () => {
 
   describe('Plugin', () => {
     const BoldPlugin = createSlatePlugin<'bold'>({
-      deserializeHtml: {
-        query: ({ element }) =>
-          !someHtmlElement(
-            element,
-            (node) => node.style.fontWeight === 'normal'
-          ),
-        rules: [
-          { validNodeName: ['STRONG', 'B'] },
-          { validStyle: { fontWeight: ['600', '700', 'bold'] } },
-        ],
-      },
       isLeaf: true,
       key: 'bold',
+      parsers: {
+        html: {
+          deserializer: {
+            query: ({ element }) =>
+              !someHtmlElement(
+                element,
+                (node) => node.style.fontWeight === 'normal'
+              ),
+            rules: [
+              { validNodeName: ['STRONG', 'B'] },
+              { validStyle: { fontWeight: ['600', '700', 'bold'] } },
+            ],
+          },
+        },
+      },
     });
 
     it('should work with specific plugin types', () => {

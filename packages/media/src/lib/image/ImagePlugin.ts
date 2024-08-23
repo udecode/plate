@@ -33,15 +33,19 @@ export const ImagePlugin = createTSlatePlugin<ImageConfig>({
   key: 'img',
   withOverrides: withImage,
 }).extend(({ plugin }) => ({
-  deserializeHtml: {
-    getNode: ({ element }) => ({
-      type: plugin.type,
-      url: element.getAttribute('src'),
-    }),
-    rules: [
-      {
-        validNodeName: 'IMG',
+  parsers: {
+    html: {
+      deserializer: {
+        parse: ({ element }) => ({
+          type: plugin.type,
+          url: element.getAttribute('src'),
+        }),
+        rules: [
+          {
+            validNodeName: 'IMG',
+          },
+        ],
       },
-    ],
+    },
   },
 }));

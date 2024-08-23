@@ -3,7 +3,7 @@ title: Serializing HTML
 description: Copy paste from HTML to Slate.
 ---
 
-<ComponentPreview name="playground-demo" id="deserializehtml" />
+<ComponentPreview name="playground-demo" id="html" />
 
 <PackageInfo>
 
@@ -23,7 +23,7 @@ description: Copy paste from HTML to Slate.
 ## Installation
 
 ```bash
-npm install @udecode/plate-serializer-html
+npm install @udecode/plate-html
 ```
 
 ## Usage
@@ -39,7 +39,7 @@ An `editor` instance is required to serialize a Slate value to HTML. If you need
 ```tsx
 // ...
 import { createPlugins } from '@udecode/plate-common';
-import { serializeHtml } from '@udecode/plate-serializer-html';
+import { serializeHtml } from '@udecode/plate-html';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 

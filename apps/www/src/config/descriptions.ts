@@ -41,9 +41,9 @@ import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { ResetNodePlugin } from '@udecode/plate-reset-node';
 import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
-import { DeserializeCsvPlugin } from '@udecode/plate-serializer-csv';
-import { DeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
-import { DeserializeMdPlugin } from '@udecode/plate-serializer-md';
+import { CsvPlugin } from '@udecode/plate-serializer-csv';
+import { DocxPlugin } from '@udecode/plate-serializer-docx';
+import { MarkdownPlugin } from '@udecode/plate-serializer-md';
 import { TabbablePlugin } from '@udecode/plate-tabbable';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
@@ -59,12 +59,11 @@ export const descriptions: Record<string, string> = {
   [BoldPlugin.key]: 'Make your text stand out.',
   [CodePlugin.key]: 'Embed code into your text.',
   [CommentsPlugin.key]: 'Add comments to text as marks.',
+  [CsvPlugin.key]: 'Copy paste from CSV to Slate.',
   [DeletePlugin.key]:
     'Remove the current block if empty when pressing delete forward',
-  [DeserializeCsvPlugin.key]: 'Copy paste from CSV to Slate.',
-  [DeserializeDocxPlugin.key]: 'Copy paste from DOCX to Slate.',
-  [DeserializeMdPlugin.key]: 'Copy paste from MD to Slate.',
   [DndPlugin.key]: 'Move blocks within the editor.',
+  [DocxPlugin.key]: 'Copy paste from DOCX to Slate.',
   [DragOverCursorPlugin.key]: 'Customize the cursor when dragging.',
   [EmojiPlugin.key]: 'Enhance your text with emojis.',
   [ExcalidrawPlugin.key]: 'Create drawings and diagrams as block nodes.',
@@ -84,6 +83,7 @@ export const descriptions: Record<string, string> = {
   [KbdPlugin.key]: 'Indicate keyboard inputs or commands.',
   [LineHeightPlugin.key]: 'Adjust the height between lines of text.',
   [LinkPlugin.key]: 'Insert and manage hyperlinks.',
+  [MarkdownPlugin.key]: 'Copy paste from MD to Slate.',
   [MediaEmbedPlugin.key]:
     'Embed medias like videos or tweets into your document.',
   [MentionPlugin.key]: 'Enable autocompletion for user mentions.',

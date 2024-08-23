@@ -112,6 +112,8 @@ export function createSlatePlugin<
       key,
       options: {},
       override: {},
+      parser: {},
+      parsers: {},
       plugins: [],
       priority: 100,
       shortcuts: {},

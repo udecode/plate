@@ -12,7 +12,7 @@ import { JuicePlugin } from '@udecode/plate-juice';
 import { LineHeightPlugin } from '@udecode/plate-line-height';
 import { LinkPlugin } from '@udecode/plate-link';
 import { ImagePlugin } from '@udecode/plate-media';
-import { DeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
+import { DocxPlugin } from '@udecode/plate-serializer-docx';
 import { TablePlugin } from '@udecode/plate-table';
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -58,7 +58,7 @@ describe('when insertData disc and decimal from gdocs', () => {
         AlignPlugin.extend(injectConfig),
         IndentPlugin.extend(injectConfig),
         IndentListPlugin,
-        DeserializeDocxPlugin,
+        DocxPlugin,
         JuicePlugin,
       ],
     });

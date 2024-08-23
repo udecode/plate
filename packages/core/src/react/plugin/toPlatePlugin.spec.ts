@@ -40,13 +40,17 @@ type CodeBlockConfig2 = {
 
 describe('toPlatePlugin', () => {
   const BaseParagraphPlugin = createSlatePlugin({
-    deserializeHtml: {
-      query: ({ element }) => element.style.fontFamily !== 'Consolas',
-      rules: [{ validNodeName: 'P' }],
-    },
     isElement: true,
     key: 'p',
     options: { t: 1 },
+    parsers: {
+      html: {
+        deserializer: {
+          query: ({ element }) => element.style.fontFamily !== 'Consolas',
+          rules: [{ validNodeName: 'P' }],
+        },
+      },
+    },
   }).extendEditorApi(() => ({
     baseApiMethod: () => 'base',
   }));

@@ -5,13 +5,17 @@ import { createTSlatePlugin } from '@udecode/plate-common';
  * it for future reference.
  */
 export const HighlightPlugin = createTSlatePlugin({
-  deserializeHtml: {
-    rules: [
-      {
-        validNodeName: ['MARK'],
-      },
-    ],
-  },
   isLeaf: true,
   key: 'highlight',
+  parsers: {
+    html: {
+      deserializer: {
+        rules: [
+          {
+            validNodeName: ['MARK'],
+          },
+        ],
+      },
+    },
+  },
 });

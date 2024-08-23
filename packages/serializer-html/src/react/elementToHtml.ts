@@ -39,12 +39,16 @@ export const elementToHtml = (
 
   // Search for matching plugin based on element type
   editor.pluginList.some((plugin) => {
+    const serializer = plugin.parsers.htmlReact?.serializer;
+
     if (
       !plugin.isElement ||
-      plugin.serializeHtml === null ||
+      serializer === null ||
+      (serializer?.query && !serializer.query(props as any)) ||
       props.element.type !== plugin.type
-    )
+    ) {
       return false;
+    }
 
     // Render element using picked plugins renderElement function and ReactDOM
     html = decode(
@@ -53,7 +57,7 @@ export const elementToHtml = (
           {
             ...plateProps,
             children:
-              plugin.serializeHtml?.({
+              serializer?.parse?.({
                 ...props,
                 ...getPluginContext(editor, plugin),
               } as any) ??

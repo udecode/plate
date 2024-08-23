@@ -415,19 +415,31 @@ describe('applyPluginOverrides', () => {
         inject: {
           plugins: {
             plugin1: {
-              deserializeHtml: {
-                getNode: () => {},
+              parsers: {
+                html: {
+                  deserializer: {
+                    parse: () => {},
+                  },
+                },
               },
             },
             plugin3: {
-              deserializeHtml: {
-                getNode: () => {},
+              parsers: {
+                html: {
+                  deserializer: {
+                    parse: () => {},
+                  },
+                },
               },
             },
           },
           targetPluginToInject: ({ targetPlugin }) => ({
-            deserializeHtml: {
-              getNode: () => {},
+            parsers: {
+              html: {
+                deserializer: {
+                  parse: () => {},
+                },
+              },
             },
           }),
           targetPlugins: ['plugin1', 'plugin2'],
@@ -446,26 +458,29 @@ describe('applyPluginOverrides', () => {
 
       // Check merged result for plugin1
       expect(resolvedPlugin.inject!.plugins!.plugin1).toHaveProperty(
-        'deserializeHtml.getNode'
+        'parsers.html.deserializer.parse'
       );
       expect(
-        resolvedPlugin.inject!.plugins!.plugin1.deserializeHtml!.getNode
+        resolvedPlugin.inject!.plugins!.plugin1.parsers?.html?.deserializer!
+          .parse
       ).toBeDefined();
 
       // Check injected result for plugin2
       expect(resolvedPlugin.inject!.plugins!.plugin2).toHaveProperty(
-        'deserializeHtml.getNode'
+        'parsers.html.deserializer.parse'
       );
       expect(
-        resolvedPlugin.inject!.plugins!.plugin2.deserializeHtml!.getNode
+        resolvedPlugin.inject!.plugins!.plugin2.parsers?.html?.deserializer!
+          .parse
       ).toBeDefined();
 
       // Check existing result for plugin3 is preserved
       expect(resolvedPlugin.inject!.plugins!.plugin3).toHaveProperty(
-        'deserializeHtml.getNode'
+        'parsers.html.deserializer.parse'
       );
       expect(
-        resolvedPlugin.inject!.plugins!.plugin3.deserializeHtml!.getNode
+        resolvedPlugin.inject!.plugins!.plugin3.parsers?.html?.deserializer!
+          .parse
       ).toBeDefined();
     });
   });

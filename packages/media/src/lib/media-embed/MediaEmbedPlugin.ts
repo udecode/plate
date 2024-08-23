@@ -20,21 +20,25 @@ export const MediaEmbedPlugin = createTSlatePlugin<MediaEmbedConfig>({
     transformUrl: parseIframeUrl,
   },
 }).extend(({ type }) => ({
-  deserializeHtml: {
-    getNode: ({ element }) => {
-      const url = element.getAttribute('src');
+  parsers: {
+    html: {
+      deserializer: {
+        parse: ({ element }) => {
+          const url = element.getAttribute('src');
 
-      if (url) {
-        return {
-          type,
-          url,
-        };
-      }
-    },
-    rules: [
-      {
-        validNodeName: 'IFRAME',
+          if (url) {
+            return {
+              type,
+              url,
+            };
+          }
+        },
+        rules: [
+          {
+            validNodeName: 'IFRAME',
+          },
+        ],
       },
-    ],
+    },
   },
 }));

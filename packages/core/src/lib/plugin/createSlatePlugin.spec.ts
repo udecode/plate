@@ -483,9 +483,13 @@ describe('createSlatePlugin', () => {
       const editor = createPlateEditor({
         plugins: [
           LinkPlugin.extend(() => ({
-            deserializeHtml: {
-              getNode: () => ({ test: true }),
-              withoutChildren: true,
+            parsers: {
+              html: {
+                deserializer: {
+                  parse: () => ({ test: true }),
+                  withoutChildren: true,
+                },
+              },
             },
           })),
         ],
@@ -493,10 +497,10 @@ describe('createSlatePlugin', () => {
 
       const plugin = editor.getPlugin(LinkPlugin);
 
-      expect(plugin.deserializeHtml?.getNode?.({} as any)).toEqual({
+      expect(plugin.parsers.html?.deserializer?.parse?.({} as any)).toEqual({
         test: true,
       });
-      expect(plugin.deserializeHtml?.withoutChildren).toBeTruthy();
+      expect(plugin.parsers.html?.deserializer?.withoutChildren).toBeTruthy();
     });
   });
 
@@ -713,12 +717,16 @@ describe('createSlatePlugin', () => {
       expect(resolved.options.optionC).toEqual('1');
     });
 
-    it('should allow configuration of type and use it in deserializeHtml.getNode', () => {
+    it('should allow configuration of type and use it in deserializer.parse', () => {
       const TableCellPlugin = createSlatePlugin({
         key: 'td',
       }).extend(({ plugin }) => ({
-        deserializeHtml: {
-          getNode: () => ({ type: plugin.type }),
+        parsers: {
+          html: {
+            deserializer: {
+              parse: () => ({ type: plugin.type }),
+            },
+          },
         },
       }));
 
@@ -731,7 +739,9 @@ describe('createSlatePlugin', () => {
       const resolvedPlugin = resolvePluginTest(configuredPlugin);
 
       // Call getNode and check the type
-      const nodeResult = resolvedPlugin.deserializeHtml!.getNode!({} as any);
+      const nodeResult = resolvedPlugin.parsers?.html?.deserializer!.parse!(
+        {} as any
+      );
 
       expect(nodeResult).toEqual({ type: 'custom-td' });
     });

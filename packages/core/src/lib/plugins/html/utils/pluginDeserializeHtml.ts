@@ -4,7 +4,7 @@ import castArray from 'lodash/castArray.js';
 import type { SlateEditor } from '../../../editor';
 import type {
   AnyEditorPlugin,
-  DeserializeHtml,
+  HtmlDeserializer,
 } from '../../../plugin/SlatePlugin';
 import type { Nullable } from '../../../types';
 
@@ -19,15 +19,17 @@ export const pluginDeserializeHtml = (
     deserializeLeaf,
     element: el,
   }: { deserializeLeaf?: boolean; element: HTMLElement }
-): ({ node: AnyObject } & Nullable<DeserializeHtml>) | undefined => {
+): ({ node: AnyObject } & Nullable<HtmlDeserializer>) | undefined => {
   const {
-    deserializeHtml,
     isElement: isElementRoot,
     isLeaf: isLeafRoot,
+    parsers,
     type,
   } = plugin;
 
-  if (!deserializeHtml) return;
+  const deserializer = parsers?.html?.deserializer;
+
+  if (!deserializer) return;
 
   const {
     attributeNames,
@@ -35,8 +37,8 @@ export const pluginDeserializeHtml = (
     isLeaf: isLeafRule,
     query,
     rules,
-  } = deserializeHtml;
-  let { getNode } = deserializeHtml;
+  } = deserializer;
+  let { parse } = deserializer;
 
   const isElement = isElementRule || isElementRoot;
   const isLeaf = isLeafRule || isLeafRoot;
@@ -116,18 +118,18 @@ export const pluginDeserializeHtml = (
   ) {
     return;
   }
-  if (!getNode) {
+  if (!parse) {
     if (isElement) {
-      getNode = () => ({ type });
+      parse = () => ({ type });
     } else if (isLeaf) {
-      getNode = () => ({ [type]: true });
+      parse = () => ({ [type]: true });
     } else {
       return;
     }
   }
 
   let node =
-    getNode({
+    parse({
       ...(getPluginContext(editor, plugin) as any),
       element: el,
       node: {},
@@ -138,7 +140,7 @@ export const pluginDeserializeHtml = (
   const injectedPlugins = getInjectedPlugins(editor, plugin);
 
   injectedPlugins.forEach((injectedPlugin) => {
-    const res = injectedPlugin.deserializeHtml?.getNode?.({
+    const res = injectedPlugin.parsers?.html?.deserializer?.parse?.({
       ...(getPluginContext(editor, plugin) as any),
       element: el,
       node,
@@ -169,5 +171,5 @@ export const pluginDeserializeHtml = (
     }
   }
 
-  return { ...deserializeHtml, node };
+  return { ...deserializer, node };
 };

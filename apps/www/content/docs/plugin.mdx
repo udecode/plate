@@ -143,7 +143,7 @@ To enable your element or mark to be deserialized from HTML passed to **`deseria
 ```ts showLineNumbers
 const createBoldPlugin = createPluginFactory({
   // ...
-  deserializeHtml: {
+  parsers: { html: {deserializer: {
     rules: [
       { validNodeName: ['STRONG', 'B'] },
       {
@@ -152,7 +152,7 @@ const createBoldPlugin = createPluginFactory({
         },
       },
     ],
-  },
+  },}}
 });
 ```
 

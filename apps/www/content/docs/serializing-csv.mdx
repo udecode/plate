@@ -3,7 +3,7 @@ title: Serializing CSV
 description: Copy paste from CSV to Slate.
 ---
 
-<ComponentPreview name="playground-demo" id="deserializecsv" />
+<ComponentPreview name="playground-demo" id="csv" />
 
 <PackageInfo>
 
@@ -28,17 +28,17 @@ npm install @udecode/plate-serializer-csv
 ### CSV -> Slate
 
 ```tsx
-import { createDeserializeCsvPlugin } from '@udecode/plate-serializer-csv';
+import { createCsvPlugin } from '@udecode/plate-serializer-csv';
 
 const plugins = [
   // ...otherPlugins,
-  createDeserializeCsvPlugin(),
+  createCsvPlugin(),
 ];
 ```
 
 ## API
 
-### createDeserializeCsvPlugin
+### createCsvPlugin
 
 <APIOptions>
 

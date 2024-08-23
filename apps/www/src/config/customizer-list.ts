@@ -43,9 +43,9 @@ import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { ResetNodePlugin } from '@udecode/plate-reset-node';
 import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
-import { DeserializeCsvPlugin } from '@udecode/plate-serializer-csv';
-import { DeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
-import { DeserializeMdPlugin } from '@udecode/plate-serializer-md';
+import { CsvPlugin } from '@udecode/plate-serializer-csv';
+import { DocxPlugin } from '@udecode/plate-serializer-docx';
+import { MarkdownPlugin } from '@udecode/plate-serializer-md';
 import { TabbablePlugin } from '@udecode/plate-tabbable';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
@@ -131,9 +131,9 @@ export const customizerList = [
   },
   {
     children: [
-      customizerItems[DeserializeCsvPlugin.key],
-      customizerItems[DeserializeDocxPlugin.key],
-      customizerItems[DeserializeMdPlugin.key],
+      customizerItems[CsvPlugin.key],
+      customizerItems[DocxPlugin.key],
+      customizerItems[MarkdownPlugin.key],
       customizerItems[JuicePlugin.key],
     ],
     id: 'Deserialization',
@@ -198,9 +198,9 @@ export const orderedPluginKeys = [
   CommentsPlugin.key,
 
   // Deserialization
-  DeserializeDocxPlugin.key,
-  DeserializeCsvPlugin.key,
-  DeserializeMdPlugin.key,
+  DocxPlugin.key,
+  CsvPlugin.key,
+  MarkdownPlugin.key,
   JuicePlugin.key,
 ];
 

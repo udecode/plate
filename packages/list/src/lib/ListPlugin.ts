@@ -1,5 +1,5 @@
 import {
-  DeserializeHtmlPlugin,
+  HtmlPlugin,
   type OmitFirst,
   type PluginConfig,
   bindFirst,
@@ -34,36 +34,38 @@ export type ListConfig = PluginConfig<
 >;
 
 export const BulletedListPlugin = createSlatePlugin({
-  deserializeHtml: {
-    rules: [
-      {
-        validNodeName: 'UL',
-      },
-    ],
-  },
   isElement: true,
   key: 'ul',
+  parsers: {
+    html: {
+      deserializer: {
+        rules: [
+          {
+            validNodeName: 'UL',
+          },
+        ],
+      },
+    },
+  },
 });
 
 export const NumberedListPlugin = createSlatePlugin({
-  deserializeHtml: { rules: [{ validNodeName: 'OL' }] },
   isElement: true,
   key: 'ol',
+  parsers: { html: { deserializer: { rules: [{ validNodeName: 'OL' }] } } },
 });
 
 export const ListItemPlugin = createSlatePlugin({
-  deserializeHtml: { rules: [{ validNodeName: 'LI' }] },
   isElement: true,
   key: 'li',
+  parsers: { html: { deserializer: { rules: [{ validNodeName: 'LI' }] } } },
 }).extend(({ editor, type }) => ({
   inject: {
     plugins: {
-      [DeserializeHtmlPlugin.key]: {
-        editor: {
-          insertData: {
-            preInsert: () => {
-              return someNode(editor, { match: { type } });
-            },
+      [HtmlPlugin.key]: {
+        parser: {
+          preInsert: () => {
+            return someNode(editor, { match: { type } });
           },
         },
       },

@@ -19,8 +19,8 @@ import { ImagePlugin } from '@udecode/plate-media';
 import { TablePlugin } from '@udecode/plate-table';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { readTestFile } from '../../__tests__/readTestFile';
-import { DeserializeDocxPlugin } from '../DeserializeDocxPlugin';
+import { DocxPlugin } from '../DocxPlugin';
+import { readTestFile } from './readTestFile';
 
 jsx;
 
@@ -79,15 +79,13 @@ export const testDocxDeserializer = ({
         LineHeightPlugin.extend(() => injectConfig),
         AlignPlugin.extend(() => injectConfig),
         IndentPlugin.extend(() => injectConfig),
-        DeserializeDocxPlugin,
+        DocxPlugin,
         JuicePlugin,
       ],
     });
 
     actual.insertData(
-      createClipboardData(
-        readTestFile(`../deserializer/__tests__/${filename}.html`)
-      )
+      createClipboardData(readTestFile(`../__tests__/${filename}.html`))
     );
 
     expect(actual.children).toEqual(expected.children);

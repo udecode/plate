@@ -36,15 +36,19 @@ export const HeadingPlugin = createTSlatePlugin<HeadingConfig>({
 
   headingLevels.forEach((level) => {
     const plugin: SlatePlugin = createSlatePlugin({
-      deserializeHtml: {
-        rules: [
-          {
-            validNodeName: `H${level}`,
-          },
-        ],
-      },
       isElement: true,
       key: HEADING_LEVELS[level - 1],
+      parsers: {
+        html: {
+          deserializer: {
+            rules: [
+              {
+                validNodeName: `H${level}`,
+              },
+            ],
+          },
+        },
+      },
     });
 
     plugins.push(plugin);

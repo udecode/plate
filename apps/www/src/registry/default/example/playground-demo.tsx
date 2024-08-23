@@ -55,8 +55,8 @@ import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
-import { DeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
-import { DeserializeMdPlugin } from '@udecode/plate-serializer-md';
+import { DocxPlugin } from '@udecode/plate-serializer-docx';
+import { MarkdownPlugin } from '@udecode/plate-serializer-md';
 import { SlashPlugin } from '@udecode/plate-slash-command';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
@@ -285,8 +285,8 @@ export const usePlaygroundEditor = (id: any = '') => {
         CommentsPlugin,
 
         // Deserialization
-        DeserializeDocxPlugin,
-        DeserializeMdPlugin,
+        DocxPlugin,
+        MarkdownPlugin,
         JuicePlugin,
         ColumnPlugin,
       ],

@@ -26,9 +26,9 @@ import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { ResetNodePlugin } from '@udecode/plate-reset-node';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
-import { DeserializeCsvPlugin } from '@udecode/plate-serializer-csv';
-import { DeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
-import { DeserializeMdPlugin } from '@udecode/plate-serializer-md';
+import { CsvPlugin } from '@udecode/plate-serializer-csv';
+import { DocxPlugin } from '@udecode/plate-serializer-docx';
+import { MarkdownPlugin } from '@udecode/plate-serializer-md';
 import { TabbablePlugin } from '@udecode/plate-tabbable';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
@@ -135,6 +135,13 @@ export const customizerPlugins = {
     route: '/docs/comments',
     value: commentsValue,
   },
+  csv: {
+    id: 'csv',
+    label: 'Deserialize CSV',
+    plugins: [CsvPlugin.key],
+    route: '/docs/csv',
+    value: deserializeCsvValue,
+  },
   cursoroverlay: {
     id: 'cursoroverlay',
     label: 'Cursor Overlay',
@@ -142,40 +149,19 @@ export const customizerPlugins = {
     route: '/docs/cursor-overlay',
     value: cursorOverlayValue,
   },
-  deserializecsv: {
-    id: 'deserializecsv',
-    label: 'Deserialize CSV',
-    plugins: [DeserializeCsvPlugin.key],
-    route: '/docs/serializing-csv',
-    value: deserializeCsvValue,
-  },
-  deserializedocx: {
-    id: 'deserializedocx',
-    label: 'Deserialize DOCX',
-    plugins: [DeserializeDocxPlugin.key],
-    route: '/docs/serializing-docx',
-    value: deserializeDocxValue,
-  },
-  deserializehtml: {
-    id: 'deserializehtml',
-    label: 'Deserialize HTML',
-    plugins: [],
-    route: '/docs/serializing-html',
-    value: deserializeHtmlValue,
-  },
-  deserializemd: {
-    id: 'deserializemd',
-    label: 'Deserialize Markdown',
-    plugins: [DeserializeMdPlugin.key],
-    route: '/docs/serializing-md',
-    value: deserializeMdValue,
-  },
   dnd: {
     id: 'dnd',
     label: 'Drag & Drop',
     plugins: [DndPlugin.key],
     route: '/docs/components/draggable',
     value: [],
+  },
+  docx: {
+    id: 'docx',
+    label: 'Deserialize DOCX',
+    plugins: [DocxPlugin.key],
+    route: '/docs/docx',
+    value: deserializeDocxValue,
   },
   emoji: {
     id: 'emoji',
@@ -226,6 +212,13 @@ export const customizerPlugins = {
     route: '/docs/horizontal-rule',
     value: horizontalRuleValue,
   },
+  html: {
+    id: 'html',
+    label: 'HTML',
+    plugins: [],
+    route: '/docs/html',
+    value: deserializeHtmlValue,
+  },
   indent: {
     id: 'indent',
     label: 'Indent',
@@ -267,6 +260,13 @@ export const customizerPlugins = {
     plugins: ['list'],
     route: '/docs/list',
     value: listValue,
+  },
+  markdown: {
+    id: 'markdown',
+    label: 'Markdown',
+    plugins: [MarkdownPlugin.key],
+    route: '/docs/markdown',
+    value: deserializeMdValue,
   },
   media: {
     id: 'media',
