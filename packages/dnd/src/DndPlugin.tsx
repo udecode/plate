@@ -33,7 +33,7 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
         id && addSelectedRow(editor, id);
       }, 0);
 
-      return editor.isDragging as boolean;
+      return options.isDragging;
     },
   },
   key: 'dnd',

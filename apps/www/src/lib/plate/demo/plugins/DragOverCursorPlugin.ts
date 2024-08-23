@@ -1,23 +1,24 @@
-import { createPlatePlugin, findEventRange } from '@udecode/plate-common/react';
+import type { CursorData, CursorState } from '@udecode/plate-cursor';
 
-import { cursorStore } from '@/registry/default/plate-ui/cursor-overlay';
+import { createPlatePlugin, findEventRange } from '@udecode/plate-common/react';
+import { DndPlugin } from '@udecode/plate-dnd';
 
 export const DragOverCursorPlugin = createPlatePlugin({
   handlers: {
-    onDragEnd: () => {
-      cursorStore.set.cursors({});
+    onDragEnd: ({ editor, plugin }) => {
+      editor.setOption(plugin, 'cursors', {});
     },
-    onDragLeave: () => {
-      cursorStore.set.cursors({});
+    onDragLeave: ({ editor, plugin }) => {
+      editor.setOption(plugin, 'cursors', {});
     },
-    onDragOver: ({ editor, event }) => {
-      if (editor.isDragging) return;
+    onDragOver: ({ editor, event, plugin }) => {
+      if (editor.getOptions(DndPlugin).isDragging) return;
 
       const range = findEventRange(editor, event);
 
       if (!range) return;
 
-      cursorStore.set.cursors({
+      editor.setOption(plugin, 'cursors', {
         drag: {
           data: {
             style: {
@@ -30,9 +31,10 @@ export const DragOverCursorPlugin = createPlatePlugin({
         },
       });
     },
-    onDrop: () => {
-      cursorStore.set.cursors({});
+    onDrop: ({ editor, plugin }) => {
+      editor.setOption(plugin, 'cursors', {});
     },
   },
   key: 'dragOverCursor',
+  options: { cursors: {} as Record<string, CursorState<CursorData>> },
 });

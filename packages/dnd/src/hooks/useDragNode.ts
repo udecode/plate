@@ -16,12 +16,12 @@ export interface UseDragNodeOptions
  *
  * On drag start:
  *
- * - Set `editor.isDragging` to true
+ * - Set `isDragging` to true
  * - Add `dragging` class to `body`
  *
  * On drag end:
  *
- * - Set `editor.isDragging` to false
+ * - Set `isDragging` to false
  * - Remove `dragging` class to `body`
  *
  * Collect:
@@ -43,7 +43,6 @@ export const useDragNode = (
       },
       item(monitor) {
         editor.setOption(DndPlugin, 'isDragging', true);
-        editor.isDragging = true;
         document.body.classList.add('dragging');
 
         const _item = typeof item === 'function' ? item(monitor) : item;
