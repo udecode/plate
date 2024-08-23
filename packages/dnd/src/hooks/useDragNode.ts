@@ -1,10 +1,10 @@
 import { type DragSourceHookSpec, useDrag } from 'react-dnd';
 
-import type { TEditor } from '@udecode/plate-common';
+import type { PlateEditor } from '@udecode/plate-common/react';
 
 import type { DragItemNode } from '../types';
 
-import { dndStore } from '../dndStore';
+import { DndPlugin } from '../DndPlugin';
 
 export interface UseDragNodeOptions
   extends DragSourceHookSpec<DragItemNode, unknown, { isDragging: boolean }> {
@@ -29,7 +29,7 @@ export interface UseDragNodeOptions
  * - IsDragging: true if mouse is dragging the block
  */
 export const useDragNode = (
-  editor: TEditor,
+  editor: PlateEditor,
   { id, item, ...options }: UseDragNodeOptions
 ) => {
   return useDrag<DragItemNode, unknown, { isDragging: boolean }>(
@@ -38,12 +38,11 @@ export const useDragNode = (
         isDragging: monitor.isDragging(),
       }),
       end: () => {
-        dndStore.set.isDragging(false);
-        editor.isDragging = false;
+        editor.setOption(DndPlugin, 'isDragging', false);
         document.body.classList.remove('dragging');
       },
       item(monitor) {
-        dndStore.set.isDragging(true);
+        editor.setOption(DndPlugin, 'isDragging', true);
         editor.isDragging = true;
         document.body.classList.add('dragging');
 

@@ -4,7 +4,7 @@ import {
   useDrop,
 } from 'react-dnd';
 
-import type { TEditor } from '@udecode/plate-common';
+import type { PlateEditor } from '@udecode/plate-common/react';
 
 import type { DragItemNode, DropLineDirection } from '../types';
 
@@ -30,7 +30,7 @@ export interface UseDropNodeOptions
    * not called.
    */
   onDropHandler?: (
-    editor: TEditor,
+    editor: PlateEditor,
     props: {
       dragItem: DragItemNode;
       id: string;
@@ -62,7 +62,7 @@ export interface UseDropNodeOptions
  * - IsOver: true if mouse is over the block
  */
 export const useDropNode = (
-  editor: TEditor,
+  editor: PlateEditor,
   {
     dropLine,
     id,

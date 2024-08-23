@@ -3,7 +3,6 @@
  */
 
 export * from './DndPlugin';
-export * from './dndStore';
 export * from './types';
 export * from './components/index';
 export * from './hooks/index';

@@ -4,29 +4,30 @@ import { type PluginConfig, addSelectedRow } from '@udecode/plate-common';
 import { createTPlatePlugin } from '@udecode/plate-common/react';
 
 import { DndScroller, type ScrollerProps } from './components/Scroller';
-import { dndStore } from './dndStore';
 
 export type DndConfig = PluginConfig<
   'dnd',
   {
+    draggingId?: null | string;
     enableScroller?: boolean;
+    isDragging?: boolean;
     scrollerProps?: Partial<ScrollerProps>;
   }
 >;
 
 export const DndPlugin = createTPlatePlugin<DndConfig>({
   handlers: {
-    onDragEnd: () => {
-      return dndStore.set.isDragging(false);
+    onDragEnd: ({ editor, plugin }) => {
+      editor.setOption(plugin, 'isDragging', false);
     },
-    onDragStart: ({ event }) => {
+    onDragStart: ({ editor, event, plugin }) => {
       const id = (event.target as HTMLDivElement).dataset.key ?? null;
-      dndStore.set.DraggingId(id);
 
-      return dndStore.set.isDragging(true);
+      editor.setOption(plugin, 'draggingId', id);
+      editor.setOption(plugin, 'isDragging', true);
     },
-    onDrop: ({ editor }) => {
-      const id = dndStore.get.DraggingId();
+    onDrop: ({ editor, options }) => {
+      const id = options.draggingId;
 
       setTimeout(() => {
         id && addSelectedRow(editor, id);
@@ -36,6 +37,10 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
     },
   },
   key: 'dnd',
+  options: {
+    draggingId: null,
+    isDragging: false,
+  },
 }).extend(({ options }) => ({
   renderAfterEditable: options.enableScroller
     ? () => <DndScroller {...options?.scrollerProps} />
