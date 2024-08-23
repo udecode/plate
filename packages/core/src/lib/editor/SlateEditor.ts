@@ -1,6 +1,7 @@
 import type { TEditor, TRange, Value } from '@udecode/slate';
 import type { UnionToIntersection } from '@udecode/utils';
 import type { KeyboardEventLike } from 'is-hotkey';
+import type { SetImmerState, StoreApi } from 'zustand-x';
 
 import type {
   AnyPluginConfig,
@@ -36,6 +37,10 @@ export type BaseEditor = {
     plugin: WithRequiredKey<C>
   ) => C extends { type: any } ? C : EditorPlugin<C>;
 
+  getStore: <C extends AnyPluginConfig>(
+    plugin: WithRequiredKey<C>
+  ) => StoreApi<C['key'], InferOptions<C>>;
+
   getTransforms: <C extends AnyPluginConfig = PluginConfig>(
     plugin?: WithRequiredKey<C>
   ) => InferTransforms<C>;
@@ -59,6 +64,22 @@ export type BaseEditor = {
   plugins: Record<string, any>;
 
   prevSelection: TRange | null;
+
+  setOption: {
+    <C extends AnyPluginConfig, K extends keyof InferOptions<C>>(
+      plugin: WithRequiredKey<C>,
+      optionKey: K,
+      value: InferOptions<C>[K]
+    ): void;
+    <C extends AnyPluginConfig>(
+      plugin: WithRequiredKey<C>,
+      options: Parameters<SetImmerState<InferOptions<C>>>[0]
+    ): void;
+    <C extends AnyPluginConfig>(
+      plugin: WithRequiredKey<C>,
+      options: Partial<InferOptions<C>>
+    ): void;
+  };
 } & TEditor;
 
 export type SlateEditor = {

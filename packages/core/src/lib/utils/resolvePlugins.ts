@@ -1,4 +1,5 @@
 import { isDefined } from '@udecode/utils';
+import { createZustandStore } from 'zustand-x';
 
 import type { SlateEditor } from '../editor';
 
@@ -30,9 +31,11 @@ export const resolvePlugins = (
 
   mergePlugins(editor, resolvedPlugins);
 
-  applyPluginOverrides(editor);
+  resolvePluginOverrides(editor);
 
-  mergePluginApis(editor);
+  resolvePluginStores(editor);
+
+  resolvePluginApis(editor);
 
   // withOverrides
   editor.pluginList.forEach((plugin) => {
@@ -44,7 +47,14 @@ export const resolvePlugins = (
   return editor;
 };
 
-const mergePluginApis = (editor: SlateEditor) => {
+const resolvePluginStores = (editor: SlateEditor) => {
+  // Create zustand stores for each plugin
+  editor.pluginList.forEach((plugin) => {
+    plugin.store = createZustandStore(plugin.key)(plugin.options);
+  });
+};
+
+const resolvePluginApis = (editor: SlateEditor) => {
   const shortcutsByPriority: any[] = [];
 
   editor.pluginList.forEach((plugin: any) => {
@@ -228,7 +238,7 @@ export const mergePlugins = (editor: SlateEditor, plugins: SlatePlugins) => {
   );
 };
 
-export const applyPluginOverrides = (editor: SlateEditor) => {
+export const resolvePluginOverrides = (editor: SlateEditor) => {
   const applyOverrides = (plugins: SlatePlugin[]): SlatePlugin[] => {
     let overriddenPlugins = [...plugins];
 

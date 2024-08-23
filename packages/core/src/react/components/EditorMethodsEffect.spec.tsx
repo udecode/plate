@@ -1,9 +1,11 @@
 import React from 'react';
 
+import { render } from '@testing-library/react';
 import { renderHook } from '@testing-library/react-hooks';
+import { act } from 'react-dom/test-utils';
 
 import { createPlateEditor } from '../editor';
-import { EXPOSED_STORE_KEYS } from '../stores';
+import { usePlateStore } from '../stores';
 import { Plate } from './Plate';
 import { PlateContent } from './PlateContent';
 
@@ -67,7 +69,7 @@ describe('EditorMethodsEffect and redecorate', () => {
   //   expect(selectorsResult.current.versionDecorate()).toBe(initialVersion + 1);
   // });
 
-  it('should set plate.set methods on editor', () => {
+  it('should set setPlateState on editor', () => {
     const editor = createPlateEditor();
 
     const wrapper = () => (
@@ -78,11 +80,44 @@ describe('EditorMethodsEffect and redecorate', () => {
 
     renderHook(() => null, { wrapper });
 
-    expect(editor.api.setStoreState).toBeDefined();
+    expect(editor.setPlateState).toBeDefined();
+  });
 
-    // Check if all EXPOSED_STORE_KEYS are present in editor.api.plate.set
-    EXPOSED_STORE_KEYS.forEach((key) => {
-      expect(editor.api.setStoreState[key]).toBeDefined();
+  it('should set setPlateState on editor', () => {
+    const editor = createPlateEditor();
+
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <Plate editor={editor}>
+        <PlateContent />
+        {children}
+      </Plate>
+    );
+
+    renderHook(() => null, { wrapper });
+
+    expect(editor.setPlateState).toBeDefined();
+  });
+
+  it('should update allowed keys using setPlateState', () => {
+    const editor = createPlateEditor();
+
+    const TestComponent = () => {
+      const readOnly = usePlateStore().get.readOnly();
+
+      return <div data-testid="readOnly">{readOnly ? 'true' : 'false'}</div>;
+    };
+
+    const { getByTestId } = render(
+      <Plate editor={editor}>
+        <PlateContent />
+        <TestComponent />
+      </Plate>
+    );
+
+    act(() => {
+      editor.setPlateState('readOnly', true);
     });
+
+    expect(getByTestId('readOnly')).toHaveTextContent('true');
   });
 });

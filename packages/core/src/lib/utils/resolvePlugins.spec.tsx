@@ -7,7 +7,7 @@ import { createSlatePlugin } from '../plugin';
 import { DebugPlugin } from '../plugins';
 import { resolvePluginTest } from './resolveCreatePluginTest';
 import {
-  applyPluginOverrides,
+  resolvePluginOverrides,
   mergePlugins,
   resolveAndSortPlugins,
   resolvePlugins,
@@ -282,7 +282,7 @@ describe('applyPluginOverrides', () => {
       ],
     });
 
-    applyPluginOverrides(editor);
+    resolvePluginOverrides(editor);
 
     expect(editor.plugins.a.type).toBe('originalA');
     expect(editor.plugins.b.type).toBe('overriddenB');
@@ -331,7 +331,7 @@ describe('applyPluginOverrides', () => {
       ],
     });
 
-    applyPluginOverrides(editor);
+    resolvePluginOverrides(editor);
 
     expect(editor.plugins.c.type).toBe('overriddenByB');
   });
@@ -388,7 +388,7 @@ describe('applyPluginOverrides', () => {
       ],
     });
 
-    applyPluginOverrides(editor);
+    resolvePluginOverrides(editor);
 
     // Higher priority override
     expect(getPlugin(editor, { key: 'b' }).component).toBe(
@@ -555,7 +555,7 @@ describe('applyPluginOverrides', () => {
       ],
     });
 
-    applyPluginOverrides(editor);
+    resolvePluginOverrides(editor);
 
     expect(editor.plugins).toHaveProperty('a');
     expect(editor.plugins).not.toHaveProperty('b');
@@ -580,7 +580,7 @@ describe('applyPluginOverrides', () => {
       ],
     });
 
-    applyPluginOverrides(editor);
+    resolvePluginOverrides(editor);
 
     expect(editor.plugins).toHaveProperty('a');
     expect(editor.plugins).not.toHaveProperty('b');

@@ -1,5 +1,3 @@
-import type { EXPOSED_STORE_KEYS, PlateStoreState } from '../stores';
-
 import { createTPlatePlugin } from '../plugin';
 
 export const PlateApiPlugin = createTPlatePlugin({
@@ -12,10 +10,5 @@ export const PlateApiPlugin = createTPlatePlugin({
         `This may cause unexpected behavior. Please ensure that all required editor methods are properly defined.`,
       'OVERRIDE_MISSING'
     );
-  },
-  setStoreState: {} as {
-    [K in (typeof EXPOSED_STORE_KEYS)[number]]: (
-      value: PlateStoreState<any>[K]
-    ) => void;
   },
 }));

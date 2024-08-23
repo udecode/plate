@@ -1,4 +1,5 @@
 import type { AnyObject } from '@udecode/utils';
+import type { StoreApi } from 'zustand-x';
 
 import type { Nullable } from '../types';
 import type { GetInjectPropsOptions } from '../utils';
@@ -89,6 +90,8 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
    * @default 100
    */
   priority: number;
+
+  store: StoreApi<C['key'], C['options']>;
 
   /** Transforms (state-modifying operations) that can be applied to the editor. */
   transforms: InferTransforms<C>;

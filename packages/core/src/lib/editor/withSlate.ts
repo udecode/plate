@@ -112,10 +112,23 @@ export const withSlate = <
   editor.getApi = () => editor.api as any;
   editor.getTransforms = () => editor.transforms as any;
   editor.getPlugin = (plugin) => getSlatePlugin(editor, plugin) as any;
-  editor.getOptions = (plugin) => editor.getPlugin(plugin).options;
   editor.getType = (plugin) => editor.getPlugin<AnySlatePlugin>(plugin).type;
   editor.getInjectProps = (plugin) =>
     editor.getPlugin<AnySlatePlugin>(plugin).inject?.props ?? ({} as any);
+
+  editor.getStore = (plugin) => editor.getPlugin(plugin).store;
+  editor.getOptions = (plugin) => editor.getStore(plugin).get.state();
+  editor.setOption = (plugin: any, keyOrOptions: any, value?: any) => {
+    const store = editor.getStore(plugin);
+
+    if (typeof keyOrOptions === 'object') {
+      (store.set as any).mergeState(keyOrOptions);
+    } else if (typeof keyOrOptions === 'function') {
+      (store.set as any).state(keyOrOptions);
+    } else {
+      (store.set as any)[keyOrOptions]?.(value);
+    }
+  };
 
   const corePlugins = getCorePlugins({
     maxLength,

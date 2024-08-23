@@ -58,7 +58,23 @@ export const withPlate = <
   const editor = withSlate<V, P>(e, {
     ...options,
     plugins: [...getPlateCorePlugins(), ...plugins],
-  } as any) as any;
+  } as any) as unknown as TPlateEditor<V, InferPlugins<P[]>>;
+
+  editor.useStore = ((plugin: any, selector: any, equalityFn: any) => {
+    const store = editor.getStore(plugin);
+
+    return store.useStore(selector, equalityFn);
+  }) as any;
+
+  editor.useOption = (plugin, key, equalityFn) => {
+    const store = editor.getStore(plugin);
+
+    // if (!isDefined(store)) {
+    //   return store.useStore;
+    // }
+
+    return (store as any).use[key]?.(equalityFn);
+  };
 
   return editor;
 };

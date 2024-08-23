@@ -15,6 +15,7 @@ import type {
 } from '@udecode/slate';
 import type { TEditableProps } from '@udecode/slate-react';
 import type { AnyObject } from '@udecode/utils';
+import type { StoreApi } from 'zustand-x';
 
 import type {
   AnyPluginConfig,
@@ -129,6 +130,8 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
       };
 
   shortcuts: PlateShortcuts;
+
+  useStore: StoreApi<C['key'], C['options']>;
 } & BasePlugin<C> &
   Nullable<{
     /**
