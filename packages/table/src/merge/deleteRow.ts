@@ -19,13 +19,14 @@ import type {
   TablePlugin,
 } from '../types';
 
-import { ELEMENT_TABLE } from '../createTablePlugin';
+import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
 import { getTableColumnCount } from '../queries';
 import { getRowSpan } from '../queries/getRowSpan';
 import { getCellTypes } from '../utils';
 import { deleteRowWhenExpanded } from './deleteRowWhenExpanded';
 import { findCellByIndexes } from './findCellByIndexes';
 import { getCellIndices } from './getCellIndices';
+import { deleteTable } from '../transforms';
 
 export const deleteTableMergeRow = <V extends Value>(
   editor: PlateEditor<V>
@@ -110,6 +111,16 @@ export const deleteTableMergeRow = <V extends Value>(
       | TTableCellElement
       | undefined;
 
+    if (nextRow === undefined) {
+      const trEntry = getAboveNode(editor, {
+        match: { type: getPluginType(editor, ELEMENT_TR) },
+      });
+      if (trEntry && trEntry[0].children.length === 1) {
+        deleteTable(editor);
+
+        return
+      }
+    }
     if (nextRow) {
       moveToNextRowCells.forEach((cur, index) => {
         const curRowCell = cur as TTableCellElement;
