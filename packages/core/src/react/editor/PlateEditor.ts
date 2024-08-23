@@ -19,8 +19,6 @@ import type { PlateCorePlugin } from './withPlate';
 export type PlateEditor = {
   api: UnionToIntersection<InferApi<PlateCorePlugin>>;
 
-  currentKeyboardEvent?: React.KeyboardEvent | null;
-
   getPlugin: <C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
   ) => C extends { type: any } ? C : EditorPlatePlugin<C>;

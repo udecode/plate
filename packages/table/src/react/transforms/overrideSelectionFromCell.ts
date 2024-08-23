@@ -1,5 +1,3 @@
-import type { KeyboardEventLike } from 'is-hotkey';
-
 import {
   type SlateEditor,
   type TRange,
@@ -25,10 +23,7 @@ export const overrideSelectionFromCell = (
     !editor.currentKeyboardEvent ||
     !['up', 'down', 'shift+up', 'shift+right', 'shift+down', 'shift+left'].some(
       (key) => {
-        const valid = isHotkey(
-          key,
-          editor.currentKeyboardEvent as KeyboardEventLike
-        );
+        const valid = isHotkey(key, editor.currentKeyboardEvent!);
 
         if (valid) hotkey = key;
 

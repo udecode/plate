@@ -41,7 +41,7 @@ export const withCaption: WithOverride<CaptionConfig> = ({
 
       if (
         editor.currentKeyboardEvent &&
-        isHotkey('up', editor.currentKeyboardEvent as any) &&
+        isHotkey('up', editor.currentKeyboardEvent) &&
         newSelection &&
         isCollapsed(newSelection)
       ) {

@@ -1,5 +1,6 @@
 import type { TEditor, TRange, Value } from '@udecode/slate';
 import type { UnionToIntersection } from '@udecode/utils';
+import type { KeyboardEventLike } from 'is-hotkey';
 
 import type {
   AnyPluginConfig,
@@ -17,6 +18,8 @@ import type {
 import type { CorePlugin } from '../plugins';
 
 export type BaseEditor = {
+  currentKeyboardEvent: KeyboardEventLike | null;
+
   getApi: <C extends AnyPluginConfig = PluginConfig>(
     plugin?: WithRequiredKey<C>
   ) => InferApi<C>;
