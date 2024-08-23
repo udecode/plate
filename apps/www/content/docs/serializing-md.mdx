@@ -20,7 +20,7 @@ description: Copy paste from Markdown to Slate.
 ## Installation
 
 ```bash
-npm install @udecode/plate-serializer-md
+npm install @udecode/plate-markdown
 ```
 
 ## Usage
@@ -28,7 +28,7 @@ npm install @udecode/plate-serializer-md
 ### Markdown -> Slate
 
 ```tsx
-import { createMarkdownPlugin } from '@udecode/plate-serializer-md';
+import { createMarkdownPlugin } from '@udecode/plate-markdown';
 
 const plugins = [
   // ...otherPlugins,
@@ -41,7 +41,7 @@ const plugins = [
 Currently supported plugins: paragraph, link, list, heading, italic, bold and code.
 
 ```tsx
-import { serializeMd } from '@udecode/plate-serializer-md';
+import { serializeMd } from '@udecode/plate-markdown';
 
 const plugins = [
   // ...supportedPlugins,

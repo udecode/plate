@@ -52,8 +52,8 @@ import { CaptionPlugin } from '@udecode/plate-caption';
 import { EmojiPlugin } from '@udecode/plate-emoji';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw';
 import { JuicePlugin } from '@udecode/plate-juice';
+import { MarkdownPlugin, serializeMd } from '@udecode/plate-markdown';
 import { ResetNodePlugin } from '@udecode/plate-reset-node';
-import { MarkdownPlugin, serializeMd } from '@udecode/plate-serializer-md';
 
 import { Markdown } from '@/components/MemoizedReactMarkdownClient';
 import { Code } from '@/components/code';
