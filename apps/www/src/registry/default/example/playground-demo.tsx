@@ -429,10 +429,7 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
               }
             >
               <div
-                className={cn(
-                  'relative flex w-full overflow-x-auto',
-                  '[&_.slate-start-area-top]:!h-4'
-                )}
+                className={cn('relative flex w-full overflow-x-auto')}
                 ref={containerRef}
               >
                 <Editor

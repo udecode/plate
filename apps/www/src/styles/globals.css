@@ -106,9 +106,3 @@
 }
 
 
-.selection-area {
-  background: rgba(46, 115, 252, 0.11);
-  border: 1px solid rgba(98, 155, 255, 0.85);
-  border-radius: 0.15em;
-  z-index:  999;
-}
