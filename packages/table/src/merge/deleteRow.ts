@@ -105,21 +105,17 @@ export const deleteTableMergeRow = <V extends Value>(
       },
       { moveToNextRowCells: [], squizeRowSpanCells: [] }
     );
-
+    console.log(deletingRowIndex)
+    alert(deletingRowIndex)
     const nextRowIndex = deletingRowIndex + rowsDeleteNumber;
     const nextRow = table.children[nextRowIndex] as
       | TTableCellElement
       | undefined;
 
-    if (nextRow === undefined) {
-      const trEntry = getAboveNode(editor, {
-        match: { type: getPluginType(editor, ELEMENT_TR) },
-      });
-      if (trEntry && trEntry[0].children.length === 1) {
-        deleteTable(editor);
+    if (nextRow === undefined && deletingRowIndex === 0) {
+      deleteTable(editor);
 
-        return
-      }
+      return;
     }
     if (nextRow) {
       moveToNextRowCells.forEach((cur, index) => {
