@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 'use client';
+
 import type {
   AreaLocation,
   Coordinates,
@@ -77,10 +78,8 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
   private _targetRect?: DOMRect;
   private wheelTimer: NodeJS.Timeout | null = null;
 
-  /* eslint-disable no-invalid-this */
   disable = this._bindStartEvents.bind(this, false);
 
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   enable = this._bindStartEvents;
 
   constructor(opt: PartialSelectionOptions) {
@@ -130,7 +129,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     };
 
     // Bind locale functions to instance
-    /* eslint-disable @typescript-eslint/no-explicit-any */
+
     for (const key of Object.getOwnPropertyNames(Object.getPrototypeOf(this))) {
       if (typeof (this as any)[key] === 'function') {
         (this as any)[key] = (this as any)[key].bind(this);
@@ -175,10 +174,8 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     const { document, features } = this._options;
     const fn = activate ? on : off;
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     fn(document, 'mousedown', this._onTapStart);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     features.touch &&
       fn(document, 'touchstart', this._onTapStart, {
         passive: false,
@@ -191,19 +188,19 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
       document,
     } = this._options;
     const { x1, y1 } = this._areaLocation; // Coordinates of first "tap"
+    const { x1: clientX, y1: clientY } = this._areaClientLocation;
     const { x, y } = simplifyEvent(evt);
 
     // Check pixel threshold
     if (
       // Single number for both coordinates
       (typeof startThreshold === 'number' &&
-        abs(x + y - (x1 + y1)) >= startThreshold) ||
+        abs(x + y - (clientX + clientY)) >= startThreshold) ||
       // Different x and y threshold
       (typeof startThreshold === 'object' &&
         abs(x - x1) >= (startThreshold as Coordinates).x) ||
       abs(y - y1) >= (startThreshold as Coordinates).y
     ) {
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       off(document, ['mousemove', 'touchmove'], this._delayedTapMove, {
         passive: false,
       });
@@ -727,7 +724,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
 
   _setupSelectionArea(): void {
     const { _area, _targetElement } = this;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     const tr = (this._targetRect = _targetElement!.getBoundingClientRect());
 
     if (this._scrollAvailable) {

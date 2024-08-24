@@ -106,6 +106,7 @@ export const useResizable = ({
       } as React.CSSProperties,
     },
     wrapperProps: {
+      'data-plate-selectable': 'true',
       style: {
         position: 'relative',
       } as React.CSSProperties,

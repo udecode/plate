@@ -3,7 +3,7 @@ import {
   createPluginFactory,
 } from '@udecode/plate-common/server';
 
-import type { SelectionOptions } from './internal';
+import type { PartialSelectionOptions } from './internal';
 
 import { BlockSelectable } from './components/BlockSelectable';
 import {
@@ -18,7 +18,8 @@ import { withSelection } from './withSelection';
 export const KEY_BLOCK_SELECTION = 'blockSelection';
 
 export interface BlockSelectionPlugin {
-  areaOptions?: Partial<SelectionOptions>;
+  aboveClassNameMap?: Record<string, string>;
+  areaOptions?: PartialSelectionOptions;
   enableContextMenu?: boolean;
   onKeyDownSelecting?: (e: KeyboardEvent) => void;
   query?: QueryNodeOptions;
@@ -50,6 +51,16 @@ export const createBlockSelectionPlugin =
     },
     key: KEY_BLOCK_SELECTION,
     options: {
+      areaOptions: {
+        behaviour: {
+          startThreshold: 20,
+        },
+        features: {
+          singleTap: {
+            allow: false,
+          },
+        },
+      },
       enableContextMenu: false,
       query: {
         maxLevel: 1,
