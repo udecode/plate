@@ -723,6 +723,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
 
   _setupSelectionArea(): void {
     const { _area, _targetElement } = this;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const tr = (this._targetRect = _targetElement!.getBoundingClientRect());
 
     if (this._scrollAvailable) {

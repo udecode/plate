@@ -29,6 +29,7 @@ export const useSelectionArea = (
       document: window.document,
       ...areaOptions,
     })
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       .on('start', ({ event, store }) => {
         deselectEditor(editor);
 
@@ -50,5 +51,6 @@ export const useSelectionArea = (
 
         blockSelectionActions.setSelectedIds(changed);
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 };
