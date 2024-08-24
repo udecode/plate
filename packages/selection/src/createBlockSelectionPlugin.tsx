@@ -19,16 +19,9 @@ export const KEY_BLOCK_SELECTION = 'blockSelection';
 
 export interface BlockSelectionPlugin {
   areaOptions?: Partial<SelectionOptions>;
-  disableContextMenu?: boolean;
+  enableContextMenu?: boolean;
   onKeyDownSelecting?: (e: KeyboardEvent) => void;
   query?: QueryNodeOptions;
-  scrollContainerSelector?: string;
-  sizes?: {
-    bottom?: number;
-    left?: number;
-    right?: number;
-    top?: number;
-  };
 }
 
 export const createBlockSelectionPlugin =
@@ -57,14 +50,9 @@ export const createBlockSelectionPlugin =
     },
     key: KEY_BLOCK_SELECTION,
     options: {
+      enableContextMenu: false,
       query: {
         maxLevel: 1,
-      },
-      sizes: {
-        bottom: 4,
-        left: 4,
-        right: 4,
-        top: 4,
       },
     },
     useHooks: useHooksBlockSelection,

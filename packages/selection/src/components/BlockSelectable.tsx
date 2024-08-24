@@ -86,17 +86,20 @@ export const useBlockSelectable = ({
       onContextMenu: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         if (!editor) return;
 
-        const { disableContextMenu = true } =
-          getPluginOptions<BlockSelectionPlugin>(editor, KEY_BLOCK_SELECTION);
+        const { enableContextMenu } = getPluginOptions<BlockSelectionPlugin>(
+          editor,
+          KEY_BLOCK_SELECTION
+        );
 
-        if (disableContextMenu) return;
+        if (!enableContextMenu) return;
         if (editor.selection?.focus) {
           const nodeEntry = getAboveNode(editor);
 
           if (nodeEntry && Path.isCommon(path, nodeEntry[1])) {
             const isSelected = isNodeBlockSelected(nodeEntry[0] as TElement);
             const isOpenAlways =
-              (event.target as HTMLElement).dataset?.openContextMenu === 'true';
+              (event.target as HTMLElement).dataset?.plateOpenContextMenu ===
+              'true';
 
             /**
              * When "block selected or is void or has openContextMenu props",

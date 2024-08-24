@@ -292,11 +292,6 @@ export const usePlaygroundPlugins = ({
                 ],
                 selectionAreaClass: 'slate-selection-area',
               },
-              disableContextMenu: true,
-              sizes: {
-                bottom: 0,
-                top: 0,
-              },
             },
           }),
           createDndPlugin({

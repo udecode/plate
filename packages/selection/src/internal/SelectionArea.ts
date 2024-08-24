@@ -517,7 +517,11 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
 
     this._container = selectAll(container, document)[0];
 
-    if (target !== this._container) return;
+    if (
+      this._container.contains(target) &&
+      target.getAttribute('plate-selectable') !== 'true'
+    )
+      return;
 
     this._containerRect = this._container.getBoundingClientRect();
 
