@@ -105,8 +105,7 @@ export const deleteTableMergeRow = <V extends Value>(
       },
       { moveToNextRowCells: [], squizeRowSpanCells: [] }
     );
-    console.log(deletingRowIndex)
-    alert(deletingRowIndex)
+
     const nextRowIndex = deletingRowIndex + rowsDeleteNumber;
     const nextRow = table.children[nextRowIndex] as
       | TTableCellElement
