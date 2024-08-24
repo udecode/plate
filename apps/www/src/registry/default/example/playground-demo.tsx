@@ -429,7 +429,11 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
               }
             >
               <div
-                className={cn('relative flex w-full overflow-x-auto')}
+                className={cn(
+                  'relative flex w-full overflow-x-auto',
+                  // block selection area
+                  '[&_.slate-selected]:!bg-primary/20 [&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10'
+                )}
                 ref={containerRef}
               >
                 <Editor
