@@ -4,5 +4,6 @@
 
 export * from './createInlineDatePlugin';
 export * from './types';
+export * from './withInlineDate';
 export * from './transforms/index';
 export * from './utils/index';
