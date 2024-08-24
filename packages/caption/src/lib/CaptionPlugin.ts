@@ -1,6 +1,7 @@
 import {
   type PluginConfig,
   type TElement,
+  type TPath,
   createTSlatePlugin,
 } from '@udecode/plate-common';
 
@@ -16,8 +17,11 @@ export interface TCalloutElement extends TElement {
 export type CaptionConfig = PluginConfig<
   'caption',
   {
+    focusEndCaptionPath: TPath | null;
+    focusStartCaptionPath: TPath | null;
     /** Plugin keys to enable caption. */
     pluginKeys?: string[];
+    showCaptionId: null | string;
   }
 >;
 
@@ -25,7 +29,10 @@ export type CaptionConfig = PluginConfig<
 export const CaptionPlugin = createTSlatePlugin<CaptionConfig>({
   key: 'caption',
   options: {
+    focusEndCaptionPath: null,
+    focusStartCaptionPath: null,
     pluginKeys: [],
+    showCaptionId: null,
   },
   withOverrides: withCaption,
 });

@@ -19,11 +19,9 @@ import {
 import { Path } from 'slate';
 import { useReadOnly } from 'slate-react';
 
-import {
-  type TCaptionElement,
-  captionActions,
-  captionGlobalStore,
-} from '../../lib';
+import type { TCaptionElement } from '../../lib';
+
+import { CaptionPlugin } from '../CaptionPlugin';
 import { TextareaAutosize } from './TextareaAutosize';
 
 /** Focus textareaRef when focusCaptionPath is set to the image path. */
@@ -33,7 +31,10 @@ export const useCaptionTextareaFocus = (
   const editor = useEditorRef();
   const element = useElement<TCaptionElement>();
 
-  const focusCaptionPath = captionGlobalStore.use.focusEndCaptionPath();
+  const focusCaptionPath = editor.useOption(
+    CaptionPlugin,
+    'focusEndCaptionPath'
+  );
 
   React.useEffect(() => {
     if (focusCaptionPath && textareaRef.current) {
@@ -41,7 +42,7 @@ export const useCaptionTextareaFocus = (
 
       if (path && Path.equals(path, focusCaptionPath)) {
         textareaRef.current.focus();
-        captionGlobalStore.set.focusEndCaptionPath(null);
+        editor.setOption(CaptionPlugin, 'focusEndCaptionPath', null);
       }
     }
   }, [editor, element, focusCaptionPath, textareaRef]);
@@ -135,7 +136,7 @@ export const useCaptionTextarea = ({
     const currentValue = e.target.value;
 
     if (currentValue.length === 0) {
-      captionActions.showCaptionId(null);
+      editor.setOption(CaptionPlugin, 'showCaptionId', null);
     }
   };
 

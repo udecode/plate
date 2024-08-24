@@ -9,9 +9,7 @@ import {
   isHotkey,
 } from '@udecode/plate-common';
 
-import type { CaptionConfig } from './CaptionPlugin';
-
-import { captionGlobalStore } from './captionGlobalStore';
+import { type CaptionConfig, CaptionPlugin } from './CaptionPlugin';
 
 /** TODO: tests https://github.com/udecode/editor-protocol/issues/79 */
 
@@ -60,7 +58,7 @@ export const withCaption: WithOverride<CaptionConfig> = ({
             getNodeString({ children: node.caption } as any).length > 0
           ) {
             setTimeout(() => {
-              captionGlobalStore.set.focusEndCaptionPath(entry[1]);
+              editor.setOption(CaptionPlugin, 'focusEndCaptionPath', entry[1]);
             }, 0);
           }
         }

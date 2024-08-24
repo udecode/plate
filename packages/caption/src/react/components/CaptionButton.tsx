@@ -4,28 +4,26 @@ import {
   useElement,
 } from '@udecode/plate-common/react';
 
-import { captionActions, captionGlobalStore } from '../../lib';
+import { CaptionPlugin } from '../../lib';
 
 export const useCaptionButtonState = () => {
   const editor = useEditorRef();
   const element = useElement();
-  const setShowCaption = captionActions.showCaptionId;
 
-  return { editor, element, setShowCaption };
+  return { editor, element };
 };
 
 export const useCaptionButton = ({
   editor,
   element,
-  setShowCaption,
 }: ReturnType<typeof useCaptionButtonState>) => {
   return {
     props: {
       onClick: () => {
         const path = findNodePath(editor, element);
-        setShowCaption(element.id as string);
+        editor.setOption(CaptionPlugin, 'showCaptionId', element.id as string);
         setTimeout(() => {
-          path && captionGlobalStore.set.focusEndCaptionPath(path);
+          path && editor.setOption(CaptionPlugin, 'focusEndCaptionPath', path);
         }, 0);
       },
     },

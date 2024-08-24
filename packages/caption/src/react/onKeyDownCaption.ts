@@ -4,7 +4,7 @@ import { getBlockAbove, getPluginTypes, isHotkey } from '@udecode/plate-common';
 
 import type { CaptionConfig } from '../lib/CaptionPlugin';
 
-import { captionGlobalStore } from '../lib/captionGlobalStore';
+import { CaptionPlugin } from './CaptionPlugin';
 
 export const onKeyDownCaption: KeyboardHandler<CaptionConfig> = ({
   editor,
@@ -22,6 +22,6 @@ export const onKeyDownCaption: KeyboardHandler<CaptionConfig> = ({
 
     if (!entry) return;
 
-    captionGlobalStore.set.focusEndCaptionPath(entry[1]);
+    editor.setOption(CaptionPlugin, 'focusEndCaptionPath', entry[1]);
   }
 };
