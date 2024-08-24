@@ -284,6 +284,14 @@ export const usePlaygroundPlugins = ({
           createBlockSelectionPlugin({
             enabled: id === 'blockselection' || !!enabled.blockSelection,
             options: {
+              areaOptions: {
+                boundaries: ['#selection-demo  #scroll_container'],
+                container: ['#selection-demo #scroll_container'],
+                selectables: [
+                  '#selection-demo #scroll_container .slate-selectable',
+                ],
+                selectionAreaClass: 'slate-selection-area',
+              },
               disableContextMenu: true,
               sizes: {
                 bottom: 0,

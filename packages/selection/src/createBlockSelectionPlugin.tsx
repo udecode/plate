@@ -3,6 +3,8 @@ import {
   createPluginFactory,
 } from '@udecode/plate-common/server';
 
+import type { SelectionOptions } from './internal';
+
 import { BlockSelectable } from './components/BlockSelectable';
 import {
   blockContextMenuActions,
@@ -16,6 +18,7 @@ import { withSelection } from './withSelection';
 export const KEY_BLOCK_SELECTION = 'blockSelection';
 
 export interface BlockSelectionPlugin {
+  areaOptions?: Partial<SelectionOptions>;
   disableContextMenu?: boolean;
   onKeyDownSelecting?: (e: KeyboardEvent) => void;
   query?: QueryNodeOptions;
