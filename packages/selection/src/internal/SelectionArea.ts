@@ -519,7 +519,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
 
     if (
       this._container.contains(target) &&
-      target.getAttribute('plate-selectable') !== 'true'
+      target.dataset.plateSelectable !== 'true'
     )
       return;
 
