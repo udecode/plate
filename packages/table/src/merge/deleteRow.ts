@@ -19,7 +19,7 @@ import type {
   TablePlugin,
 } from '../types';
 
-import { ELEMENT_TABLE, ELEMENT_TR } from '../createTablePlugin';
+import { ELEMENT_TABLE } from '../createTablePlugin';
 import { getTableColumnCount } from '../queries';
 import { getRowSpan } from '../queries/getRowSpan';
 import { getCellTypes } from '../utils';
