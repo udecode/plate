@@ -52,6 +52,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
   // Is getting set on movement.
   private _scrollAvailable = true;
 
+  // The scroll distance of scrollElement (body or html) relative to the initial scroll position
   private _scrollDelta: Coordinates = { x: 0, y: 0 };
   private _scrollSpeed: Coordinates = { x: 0, y: 0 };
 
@@ -91,6 +92,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
       ...opt,
 
       behaviour: {
+        // TODO: not implemented
         intersect: 'touch',
         overlap: 'invert',
         triggers: [0],
