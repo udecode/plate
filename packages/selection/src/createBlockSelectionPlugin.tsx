@@ -53,7 +53,7 @@ export const createBlockSelectionPlugin =
     options: {
       areaOptions: {
         behaviour: {
-          startThreshold: 20,
+          startThreshold: 5,
         },
         features: {
           singleTap: {

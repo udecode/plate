@@ -17,7 +17,6 @@ import {
   type SelectAllSelectors,
   css,
   frames,
-  intersects,
   intersectsScroll,
   isSafariBrowser,
   isTouchDevice,
@@ -73,9 +72,6 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
 
   // It's a single-click until the user dragged the mouse.
   private _singleClick = true;
-  // Target container (element) and boundary (cached)
-  private _targetElement?: Element;
-  private _targetRect?: DOMRect;
   private wheelTimer: NodeJS.Timeout | null = null;
 
   disable = this._bindStartEvents.bind(this, false);
@@ -226,26 +222,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
       // An action is recognized as single-select until the user performed a multi-selection
       this._singleClick = false;
 
-      // Just saving the boundaries of this container for later
-      // this._targetRect = this._targetElement!.getBoundingClientRect();
-
-      // // Find container and check if it's scrollable
-      // this._scrollAvailable =
-      //     this._targetElement!.scrollHeight !== this._targetElement!.clientHeight ||
-      //     this._targetElement!.scrollWidth !== this._targetElement!.clientWidth;
-
-      // if (this._scrollAvailable) {
-
-      //     // Detect mouse scrolling
       on(this._container, 'wheel', this._manualScroll, { passive: true });
-      //     /**
-      //      * The selection-area will also cover other element which are
-      //      * out of the current scrollable parent. So find all elements
-      //      * which are in the current scrollable element. Later these are
-      //      * the only selectables instead of all.
-      //      */
-      //     this._selectables = this._selectables.filter(s => this._targetElement!.contains(s));
-      // }
 
       // Re-setup selection area and fire event
       this._setupSelectionArea();
@@ -526,7 +503,6 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     const Ry = y - this._containerRect.top + this._container.scrollTop;
 
     const { _options } = this;
-    const targetBoundingClientRect = target.getBoundingClientRect();
 
     if (
       evt instanceof MouseEvent &&
@@ -542,22 +518,11 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
       _options.document
     );
 
-    // Check in which container the user currently acts
-    this._targetElement = resolvedBoundaries.find((el) => {
-      return intersects(
-        el.getBoundingClientRect(),
-        targetBoundingClientRect,
-        _options.behaviour.intersect
-      );
-    });
-
-    this._targetElement = this._container;
-
     // Check if area starts in one of the start areas / boundaries
     const evtPath = evt.composedPath();
 
     if (
-      !this._targetElement ||
+      !this._container ||
       // eslint-disable-next-line unicorn/prefer-array-some
       !startAreas.find((el) => evtPath.includes(el)) ||
       // eslint-disable-next-line unicorn/prefer-array-some
@@ -722,41 +687,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     style.height = `${height}px`;
   }
 
-  _setupSelectionArea(): void {
-    const { _area, _targetElement } = this;
-
-    const tr = (this._targetRect = _targetElement!.getBoundingClientRect());
-
-    if (this._scrollAvailable) {
-      /**
-       * To clip the area, the selection area has a parent which has exact the
-       * same dimensions as the scrollable element. Now if the area exceeds
-       * these boundaries it will be cropped.
-       */
-      // css(_clippingElement, {
-      //     top: tr.top,
-      //     left: tr.left,
-      //     width: tr.width,
-      //     height: tr.height
-      // });
-      /**
-       * The area element is relative to the clipping element, but when this is
-       * moved or transformed we need to correct the positions via a negative
-       * margin.
-       */
-      // css(_area, {
-      //   marginTop: 0,
-      //   marginLeft: 0
-      // });
-    } else {
-      // "Reset" styles
-
-      css(_area, {
-        marginLeft: 0,
-        marginTop: 0,
-      });
-    }
-  }
+  _setupSelectionArea(): void {}
 
   _updateElementSelection(): void {
     const { _areaRect, _options, _selectables, _selection } = this;
