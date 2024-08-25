@@ -7,8 +7,8 @@ import {
   someNode,
 } from '@udecode/plate-common';
 import {
+  useEditorPlugin,
   useEditorReadOnly,
-  useEditorRef,
   useEditorVersion,
   useHotkeys,
 } from '@udecode/plate-common/react';
@@ -22,11 +22,6 @@ import type { LinkFloatingToolbarState } from './useFloatingLinkInsert';
 import { unwrapLink } from '../../../lib';
 import { LinkPlugin } from '../../LinkPlugin';
 import { triggerFloatingLinkEdit } from '../../utils/triggerFloatingLinkEdit';
-import {
-  floatingLinkActions,
-  floatingLinkSelectors,
-  useFloatingLinkSelectors,
-} from './floatingLinkStore';
 import { useFloatingLinkEnter } from './useFloatingLinkEnter';
 import { useFloatingLinkEscape } from './useFloatingLinkEscape';
 import { useVirtualFloatingLink } from './useVirtualFloatingLink';
@@ -34,17 +29,18 @@ import { useVirtualFloatingLink } from './useVirtualFloatingLink';
 export const useFloatingLinkEditState = ({
   floatingOptions,
 }: LinkFloatingToolbarState = {}) => {
-  const editor = useEditorRef();
-  const { triggerFloatingLinkHotkeys } = editor.getOptions(LinkPlugin);
+  const { editor, getOptions, type, useOption } = useEditorPlugin(LinkPlugin);
+
+  const { triggerFloatingLinkHotkeys } = getOptions();
   const readOnly = useEditorReadOnly();
-  const isEditing = useFloatingLinkSelectors().isEditing();
+  const isEditing = useOption('isEditing');
   const version = useEditorVersion();
-  const mode = useFloatingLinkSelectors().mode();
-  const open = useFloatingLinkSelectors().isOpen(editor.id);
+  const mode = useOption('mode');
+  const open = useOption('isOpen', editor.id);
 
   const getBoundingClientRect = React.useCallback(() => {
     const entry = getAboveNode(editor, {
-      match: { type: editor.getType(LinkPlugin) },
+      match: { type },
     });
 
     if (entry) {
@@ -57,7 +53,7 @@ export const useFloatingLinkEditState = ({
     }
 
     return getDefaultBoundingClientRect();
-  }, [editor]);
+  }, [editor, type]);
 
   const isOpen = open && mode === 'edit';
 
@@ -85,6 +81,8 @@ export const useFloatingLinkEdit = ({
   triggerFloatingLinkHotkeys,
   versionEditor,
 }: ReturnType<typeof useFloatingLinkEditState>) => {
+  const { api, getOptions } = useEditorPlugin(LinkPlugin);
+
   React.useEffect(() => {
     if (
       editor.selection &&
@@ -92,13 +90,13 @@ export const useFloatingLinkEdit = ({
         match: { type: editor.getType(LinkPlugin) },
       })
     ) {
-      floatingLinkActions.show('edit', editor.id);
+      api.floatingLink.show('edit', editor.id);
       floating.update();
 
       return;
     }
-    if (floatingLinkSelectors.mode() === 'edit') {
-      floatingLinkActions.hide();
+    if (getOptions().mode === 'edit') {
+      api.floatingLink.hide();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editor, versionEditor, floating.update]);
@@ -106,10 +104,7 @@ export const useFloatingLinkEdit = ({
   useHotkeys(
     triggerFloatingLinkHotkeys!,
     (e) => {
-      if (
-        floatingLinkSelectors.mode() === 'edit' &&
-        triggerFloatingLinkEdit(editor)
-      ) {
+      if (getOptions().mode === 'edit' && triggerFloatingLinkEdit(editor)) {
         e.preventDefault();
       }
     },

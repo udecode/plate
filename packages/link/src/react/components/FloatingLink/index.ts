@@ -5,7 +5,6 @@
 export * from './FloatingLinkNewTabInput';
 export * from './FloatingLinkUrlInput';
 export * from './LinkOpenButton';
-export * from './floatingLinkStore';
 export * from './useFloatingLinkEdit';
 export * from './useFloatingLinkEnter';
 export * from './useFloatingLinkEscape';

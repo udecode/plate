@@ -1,28 +1,27 @@
 import React from 'react';
 
-import { createPrimitiveComponent } from '@udecode/plate-common/react';
+import {
+  createPrimitiveComponent,
+  useEditorPlugin,
+} from '@udecode/plate-common/react';
 
 import { encodeUrlIfNeeded, safeDecodeUrl } from '../../../lib';
-import {
-  floatingLinkActions,
-  floatingLinkSelectors,
-  useFloatingLinkSelectors,
-} from './floatingLinkStore';
+import { LinkPlugin } from '../../LinkPlugin';
 
 export const useFloatingLinkUrlInputState = () => {
-  const updated = useFloatingLinkSelectors().updated();
+  const { getOptions, useOption } = useEditorPlugin(LinkPlugin);
+  const updated = useOption('updated');
   const ref = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
     if (ref.current && updated) {
       setTimeout(() => {
+        const url = getOptions().url;
         ref.current?.focus();
-        ref.current!.value = floatingLinkSelectors.url()
-          ? safeDecodeUrl(floatingLinkSelectors.url())
-          : '';
+        ref.current!.value = url ? safeDecodeUrl(url) : '';
       }, 0);
     }
-  }, [updated]);
+  }, [getOptions, updated]);
 
   return {
     ref,
@@ -32,15 +31,20 @@ export const useFloatingLinkUrlInputState = () => {
 export const useFloatingLinkUrlInput = (
   state: ReturnType<typeof useFloatingLinkUrlInputState>
 ) => {
+  const { getOptions, setOption } = useEditorPlugin(LinkPlugin);
+
   const onChange: React.ChangeEventHandler<HTMLInputElement> =
-    React.useCallback((e) => {
-      const url = encodeUrlIfNeeded(e.target.value);
-      floatingLinkActions.url(url);
-    }, []);
+    React.useCallback(
+      (e) => {
+        const url = encodeUrlIfNeeded(e.target.value);
+        setOption('url', url);
+      },
+      [setOption]
+    );
 
   return {
     props: {
-      defaultValue: floatingLinkSelectors.url(),
+      defaultValue: getOptions().url,
       onChange,
     },
     ref: state.ref,

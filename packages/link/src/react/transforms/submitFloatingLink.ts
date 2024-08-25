@@ -1,9 +1,8 @@
-import type { SlateEditor } from '@udecode/plate-common';
-
+import { type SlateEditor, getEditorPlugin } from '@udecode/plate-common';
 import { focusEditor } from '@udecode/plate-common/react';
 
-import { LinkPlugin, upsertLink, validateUrl } from '../../lib';
-import { floatingLinkActions, floatingLinkSelectors } from '../components';
+import { upsertLink, validateUrl } from '../../lib';
+import { LinkPlugin } from '../LinkPlugin';
 
 /**
  * Insert link if url is valid. Text is url if empty. Close floating link. Focus
@@ -12,17 +11,23 @@ import { floatingLinkActions, floatingLinkSelectors } from '../components';
 export const submitFloatingLink = (editor: SlateEditor) => {
   if (!editor.selection) return;
 
-  const { forceSubmit, transformInput } = editor.getOptions(LinkPlugin);
+  const { api, getOptions } = getEditorPlugin(editor, LinkPlugin);
 
-  const inputUrl = floatingLinkSelectors.url();
+  const {
+    forceSubmit,
+    newTab,
+    text,
+    transformInput,
+    url: inputUrl,
+  } = getOptions();
+
   const url = transformInput ? transformInput(inputUrl) ?? '' : inputUrl;
 
   if (!forceSubmit && !validateUrl(editor, url)) return;
 
-  const text = floatingLinkSelectors.text();
-  const target = floatingLinkSelectors.newTab() ? '_blank' : undefined;
+  const target = newTab ? '_blank' : undefined;
 
-  floatingLinkActions.hide();
+  api.floatingLink.hide();
 
   upsertLink(editor, {
     skipValidation: true,

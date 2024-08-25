@@ -1,17 +1,19 @@
+import { useEditorPlugin } from '@udecode/plate-common/react';
 import {
   type UseVirtualFloatingOptions,
   useVirtualFloating,
 } from '@udecode/plate-floating';
 
-import { floatingLinkActions } from './floatingLinkStore';
+import { LinkPlugin } from '../../LinkPlugin';
 
 export const useVirtualFloatingLink = ({
   editorId,
   ...floatingOptions
 }: { editorId: string } & UseVirtualFloatingOptions) => {
+  const { setOption } = useEditorPlugin(LinkPlugin);
+
   return useVirtualFloating({
-    onOpenChange: (open) =>
-      floatingLinkActions.openEditorId(open ? editorId : null),
+    onOpenChange: (open) => setOption('openEditorId', open ? editorId : null),
     ...floatingOptions,
   });
 };

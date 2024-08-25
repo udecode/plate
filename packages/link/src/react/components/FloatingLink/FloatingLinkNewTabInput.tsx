@@ -1,19 +1,17 @@
 import React from 'react';
 
-import { createPrimitiveComponent } from '@udecode/plate-common/react';
-
 import {
-  floatingLinkActions,
-  floatingLinkSelectors,
-  useFloatingLinkSelectors,
-} from './floatingLinkStore';
+  createPrimitiveComponent,
+  useEditorPlugin,
+} from '@udecode/plate-common/react';
+
+import { LinkPlugin } from '../../LinkPlugin';
 
 export const useFloatingLinkNewTabInputState = () => {
-  const updated = useFloatingLinkSelectors().updated();
+  const { getOptions, useOption } = useEditorPlugin(LinkPlugin);
+  const updated = useOption('updated');
   const ref = React.useRef<HTMLInputElement>(null);
-  const [checked, setChecked] = React.useState<boolean>(
-    floatingLinkSelectors.newTab()
-  );
+  const [checked, setChecked] = React.useState<boolean>(getOptions().newTab);
 
   React.useEffect(() => {
     if (ref.current && updated) {
@@ -35,13 +33,15 @@ export const useFloatingLinkNewTabInput = ({
   ref,
   setChecked,
 }: ReturnType<typeof useFloatingLinkNewTabInputState>) => {
+  const { setOption } = useEditorPlugin(LinkPlugin);
+
   const onChange: React.ChangeEventHandler<HTMLInputElement> =
     React.useCallback(
       (e) => {
         setChecked(e.target.checked);
-        floatingLinkActions.newTab(e.target.checked);
+        setOption('newTab', e.target.checked);
       },
-      [setChecked]
+      [setOption, setChecked]
     );
 
   return {

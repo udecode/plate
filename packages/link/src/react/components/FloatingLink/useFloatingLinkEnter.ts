@@ -1,12 +1,12 @@
-import { useEditorRef, useHotkeys } from '@udecode/plate-common/react';
+import { useEditorPlugin, useHotkeys } from '@udecode/plate-common/react';
 
+import { LinkPlugin } from '../../LinkPlugin';
 import { submitFloatingLink } from '../../transforms/submitFloatingLink';
-import { useFloatingLinkSelectors } from './floatingLinkStore';
 
 export const useFloatingLinkEnter = () => {
-  const editor = useEditorRef();
+  const { editor, useOption } = useEditorPlugin(LinkPlugin);
 
-  const open = useFloatingLinkSelectors().isOpen(editor.id);
+  const open = useOption('isOpen', editor.id);
 
   useHotkeys(
     '*',

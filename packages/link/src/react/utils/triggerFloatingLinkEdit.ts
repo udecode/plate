@@ -1,13 +1,17 @@
 import {
   type SlateEditor,
   findNode,
+  getEditorPlugin,
   getEditorString,
 } from '@udecode/plate-common';
 
-import { LinkPlugin, type TLinkElement } from '../../lib';
-import { floatingLinkActions } from '../components/FloatingLink/floatingLinkStore';
+import type { TLinkElement } from '../../lib';
+
+import { LinkPlugin } from '../LinkPlugin';
 
 export const triggerFloatingLinkEdit = (editor: SlateEditor) => {
+  const { setOption } = getEditorPlugin(editor, LinkPlugin);
+
   const entry = findNode<TLinkElement>(editor, {
     match: { type: editor.getType(LinkPlugin) },
   });
@@ -18,17 +22,15 @@ export const triggerFloatingLinkEdit = (editor: SlateEditor) => {
 
   let text = getEditorString(editor, path);
 
-  floatingLinkActions.url(link.url);
-
-  floatingLinkActions.newTab(link.target === '_blank');
+  setOption('url', link.url);
+  setOption('newTab', link.target === '_blank');
 
   if (text === link.url) {
     text = '';
   }
 
-  floatingLinkActions.text(text);
-
-  floatingLinkActions.isEditing(true);
+  setOption('text', text);
+  setOption('isEditing', true);
 
   return true;
 };

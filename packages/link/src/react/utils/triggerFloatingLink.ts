@@ -1,6 +1,6 @@
-import type { SlateEditor } from '@udecode/plate-common';
+import { type SlateEditor, getEditorPlugin } from '@udecode/plate-common';
 
-import { floatingLinkSelectors } from '../components';
+import { LinkPlugin } from '../LinkPlugin';
 import { triggerFloatingLinkEdit } from './triggerFloatingLinkEdit';
 import { triggerFloatingLinkInsert } from './triggerFloatingLinkInsert';
 
@@ -12,7 +12,9 @@ export const triggerFloatingLink = (
     focused?: boolean;
   } = {}
 ) => {
-  if (floatingLinkSelectors.mode() === 'edit') {
+  const { getOptions } = getEditorPlugin(editor, LinkPlugin);
+
+  if (getOptions().mode === 'edit') {
     triggerFloatingLinkEdit(editor);
 
     return;

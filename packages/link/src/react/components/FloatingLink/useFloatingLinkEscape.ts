@@ -1,41 +1,36 @@
 import {
   focusEditor,
-  useEditorRef,
+  useEditorPlugin,
   useHotkeys,
 } from '@udecode/plate-common/react';
 
-import {
-  floatingLinkActions,
-  floatingLinkSelectors,
-  useFloatingLinkSelectors,
-} from './floatingLinkStore';
+import { LinkPlugin } from '../../LinkPlugin';
 
 export const useFloatingLinkEscape = () => {
-  const editor = useEditorRef();
+  const { api, editor, getOptions, useOption } = useEditorPlugin(LinkPlugin);
 
-  const open = useFloatingLinkSelectors().isOpen(editor.id);
+  const open = useOption('isOpen', editor.id);
 
   useHotkeys(
     'escape',
     (e) => {
-      if (!floatingLinkSelectors.mode()) return;
+      const { isEditing, mode } = getOptions();
+
+      if (!mode) return;
 
       e.preventDefault();
 
-      if (
-        floatingLinkSelectors.mode() === 'edit' &&
-        floatingLinkSelectors.isEditing()
-      ) {
-        floatingLinkActions.show('edit', editor.id);
+      if (mode === 'edit' && isEditing) {
+        api.floatingLink.show('edit', editor.id);
         focusEditor(editor, editor.selection!);
 
         return;
       }
-      if (floatingLinkSelectors.mode() === 'insert') {
+      if (mode === 'insert') {
         focusEditor(editor, editor.selection!);
       }
 
-      floatingLinkActions.hide();
+      api.floatingLink.hide();
     },
     {
       enableOnContentEditable: true,

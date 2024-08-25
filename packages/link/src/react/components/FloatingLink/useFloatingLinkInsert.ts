@@ -3,8 +3,8 @@ import React from 'react';
 import {
   focusEditor,
   useComposedRef,
+  useEditorPlugin,
   useEditorReadOnly,
-  useEditorRef,
   useHotkeys,
   useOnClickOutside,
 } from '@udecode/plate-common/react';
@@ -16,11 +16,6 @@ import { useFocused } from 'slate-react';
 
 import { LinkPlugin } from '../../LinkPlugin';
 import { triggerFloatingLinkInsert } from '../../utils/triggerFloatingLinkInsert';
-import {
-  floatingLinkActions,
-  floatingLinkSelectors,
-  useFloatingLinkSelectors,
-} from './floatingLinkStore';
 import { useFloatingLinkEscape } from './useFloatingLinkEscape';
 import { useVirtualFloatingLink } from './useVirtualFloatingLink';
 
@@ -31,12 +26,13 @@ export type LinkFloatingToolbarState = {
 export const useFloatingLinkInsertState = ({
   floatingOptions,
 }: LinkFloatingToolbarState = {}) => {
-  const editor = useEditorRef();
-  const { triggerFloatingLinkHotkeys } = editor.getOptions(LinkPlugin);
+  const { editor, getOptions, useOption } = useEditorPlugin(LinkPlugin);
+
+  const { triggerFloatingLinkHotkeys } = getOptions();
   const readOnly = useEditorReadOnly();
   const focused = useFocused();
-  const mode = useFloatingLinkSelectors().mode();
-  const isOpen = useFloatingLinkSelectors().isOpen(editor.id);
+  const mode = useOption('mode');
+  const isOpen = useOption('isOpen', editor.id);
 
   const floating = useVirtualFloatingLink({
     editorId: editor.id,
@@ -47,7 +43,6 @@ export const useFloatingLinkInsertState = ({
   });
 
   return {
-    editor,
     floating,
     focused,
     isOpen,
@@ -57,22 +52,26 @@ export const useFloatingLinkInsertState = ({
 };
 
 export const useFloatingLinkInsert = ({
-  editor,
   floating,
   focused,
   isOpen,
   readOnly,
   triggerFloatingLinkHotkeys,
 }: ReturnType<typeof useFloatingLinkInsertState>) => {
+  const { api, editor, getOptions, setOption } = useEditorPlugin(LinkPlugin);
+
   const onChange: React.ChangeEventHandler<HTMLInputElement> =
-    React.useCallback((e) => {
-      floatingLinkActions.text(e.target.value);
-    }, []);
+    React.useCallback(
+      (e) => {
+        setOption('text', e.target.value);
+      },
+      [setOption]
+    );
 
   const ref = useOnClickOutside(
     () => {
-      if (floatingLinkSelectors.mode() === 'insert') {
-        floatingLinkActions.hide();
+      if (getOptions().mode === 'insert') {
+        api.floatingLink.hide();
         focusEditor(editor, editor.selection!);
       }
     },
@@ -85,9 +84,9 @@ export const useFloatingLinkInsert = ({
   React.useEffect(() => {
     if (isOpen) {
       floating.update();
-      floatingLinkActions.updated(true);
+      setOption('updated', true);
     } else {
-      floatingLinkActions.updated(false);
+      setOption('updated', false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, floating.update]);
@@ -107,14 +106,15 @@ export const useFloatingLinkInsert = ({
 
   useFloatingLinkEscape();
 
-  const updated = floatingLinkSelectors.updated();
+  const { text, updated } = getOptions();
+
   const updatedValue = React.useCallback(
     (el: HTMLInputElement) => {
       if (el && updated) {
-        el.value = floatingLinkSelectors.text();
+        el.value = getOptions().text;
       }
     },
-    [updated]
+    [getOptions, updated]
   );
 
   return {
@@ -127,7 +127,7 @@ export const useFloatingLinkInsert = ({
     },
     ref: useComposedRef<HTMLDivElement>(floating.refs.setFloating, ref),
     textInputProps: {
-      defaultValue: floatingLinkSelectors.text(),
+      defaultValue: text,
       onChange,
       ref: updatedValue,
     },
