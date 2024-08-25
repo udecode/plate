@@ -32,6 +32,7 @@ describe('when element has class and attribute, and plugin has deserialize type,
           plugins: [
             createSlatePlugin({
               key: 'a',
+              node: { type: 'poll' },
               parsers: {
                 html: {
                   deserializer: {
@@ -49,7 +50,6 @@ describe('when element has class and attribute, and plugin has deserialize type,
                   },
                 },
               },
-              type: 'poll',
             }),
           ],
         }),

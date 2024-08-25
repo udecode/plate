@@ -12,7 +12,7 @@ export type FindReplaceConfig = PluginConfig<
 
 export const FindReplacePlugin = createTSlatePlugin<FindReplaceConfig>({
   decorate: decorateFindReplace,
-  isLeaf: true,
   key: 'search_highlight',
+  node: { isLeaf: true },
   options: { search: '' },
 });

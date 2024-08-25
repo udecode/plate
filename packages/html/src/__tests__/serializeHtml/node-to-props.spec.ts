@@ -8,17 +8,21 @@ import { createPlateUIEditor } from '../create-plate-ui-editor';
 
 const plugins = [
   LinkPlugin.extend(() => ({
-    props: ({ element }) =>
-      /^https?:\/\/slatejs.org\/?/.test((element as any).url)
-        ? {}
-        : { target: '_blank' },
+    node: {
+      props: ({ element }) =>
+        /^https?:\/\/slatejs.org\/?/.test((element as any).url)
+          ? {}
+          : { target: '_blank' },
+    },
   })),
   CaptionPlugin,
   ImagePlugin.extend({
-    props: ({ element }) => ({
-      alt: (element as any).attributes?.alt,
-      width: (element as any).url.split('/').pop(),
-    }),
+    node: {
+      props: ({ element }) => ({
+        alt: (element as any).attributes?.alt,
+        width: (element as any).url.split('/').pop(),
+      }),
+    },
   }),
 ];
 

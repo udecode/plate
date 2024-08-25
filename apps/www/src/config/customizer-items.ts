@@ -269,7 +269,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
   [CsvPlugin.key]: {
     badges: [customizerBadges.handler],
     id: CsvPlugin.key,
-    label: 'Deserialize CSV',
+    label: 'CSV',
     npmPackage: '@udecode/plate-csv',
     pluginFactory: 'createCsvPlugin',
     route: customizerPlugins.csv.route,
@@ -309,7 +309,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     badges: [customizerBadges.handler],
     dependencies: [JuicePlugin.key],
     id: DocxPlugin.key,
-    label: 'Deserialize DOCX',
+    label: 'DOCX',
     npmPackage: '@udecode/plate-docx',
     pluginFactory: 'createDocxPlugin',
     route: customizerPlugins.docx.route,
@@ -571,10 +571,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
       {
         id: 'link-floating-toolbar',
         label: 'LinkFloatingToolbar',
-        plateImports: ['RenderAfterEditable'],
-        pluginOptions: [
-          `renderAfterEditable: LinkFloatingToolbar as RenderAfterEditable,`,
-        ],
+        pluginOptions: [`renderAfterEditable: LinkFloatingToolbar,`],
         route: customizerComponents.linkFloatingToolbar.href,
         usage: 'LinkFloatingToolbar',
       },

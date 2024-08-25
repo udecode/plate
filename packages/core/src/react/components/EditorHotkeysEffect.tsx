@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { useHotkeys } from '@udecode/react-hotkeys';
 import { isDefined } from '@udecode/utils';
 
-import type { PlateShortcut } from '../plugin';
+import type { Shortcut } from '../plugin';
 
 import { useEditorRef } from '../stores';
 
@@ -46,7 +46,7 @@ function HotkeyEffect({
   id,
 }: {
   editableRef: React.RefObject<HTMLDivElement>;
-  hotkeyConfig: PlateShortcut;
+  hotkeyConfig: Shortcut;
   id?: string;
 }) {
   const editor = useEditorRef(id);

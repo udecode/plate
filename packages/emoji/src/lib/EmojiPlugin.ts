@@ -10,10 +10,8 @@ import type { EmojiPluginOptions } from './types';
 export type EmojiInputConfig = PluginConfig<'emoji', EmojiPluginOptions>;
 
 export const EmojiInputPlugin = createSlatePlugin({
-  isElement: true,
-  isInline: true,
-  isVoid: true,
   key: 'emoji_input',
+  node: { isElement: true, isInline: true, isVoid: true },
 });
 
 export const EmojiPlugin = createTSlatePlugin<EmojiInputConfig>({

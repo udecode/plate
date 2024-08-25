@@ -27,8 +27,8 @@ import type {
   BasePluginContext,
   BaseSerializer,
   BaseTransformOptions,
-  GetInjectPropsOptions,
-  GetInjectPropsReturnType,
+  GetInjectNodePropsOptions,
+  GetInjectNodePropsReturnType,
   HandlerReturnType,
   InferApi,
   InferOptions,
@@ -46,7 +46,7 @@ import type { DOMHandlers } from './DOMHandlers';
 import type { PlateRenderElementProps } from './PlateRenderElementProps';
 import type { PlateRenderLeafProps } from './PlateRenderLeafProps';
 
-/** The `ReactPlatePlugin` interface is a React interface for all plugins. */
+/** The `PlatePlugin` interface is a React interface for all plugins. */
 export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
   /**
    * Handlers called whenever the corresponding event occurs in the editor.
@@ -62,18 +62,8 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
   >;
 
   /** Plugin injection. */
-  inject: {
-    /**
-     * Property used by Plate to inject a component above other plugins
-     * `component`.
-     */
-    aboveComponent?: InjectComponent<WithAnyKey<C>>;
-
-    /**
-     * Property used by Plate to inject a component below other plugins
-     * `component`, i.e. above its `children`.
-     */
-    belowComponent?: InjectComponent<WithAnyKey<C>>;
+  inject: Nullable<{
+    nodeProps?: InjectNodeProps<WithAnyKey<C>>;
 
     /**
      * Property that can be used by a plugin to allow other plugins to inject
@@ -85,9 +75,6 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
      */
     plugins?: Record<string, Partial<EditorPlatePlugin<AnyPluginConfig>>>;
 
-    /** Properties used by Plate to inject props into any node `component`. */
-    props?: InjectProps<WithAnyKey<C>>;
-
     /**
      * A function that returns a plugin config to be injected into other plugins
      * `inject.plugins` specified by targetPlugins.
@@ -95,32 +82,41 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
     targetPluginToInject?: (
       ctx: { targetPlugin: string } & PlatePluginContext<C>
     ) => Partial<PlatePlugin<AnyPluginConfig>>;
+  }>;
+
+  node: {
+    /** @see {@link NodeComponent} */
+    component?: NodeComponent | null;
+
+    /** @see {@link NodeProps} */
+    props?: NodeProps<WithAnyKey<C>>;
   };
 
   override: {
-    /** Replace plugin components by key. */
-    components?: Record<string, PlatePluginComponent>;
+    /** Replace plugin {@link NodeComponent} by key. */
+    components?: Record<string, NodeComponent>;
 
-    /** Extend plugins by key. */
+    /** Extend {@link PlatePlugin} by key. */
     plugins?: Record<string, Partial<EditorPlatePlugin<AnyPluginConfig>>>;
   };
 
-  /**
-   * Used by parser plugins like html to deserialize inserted data to a slate
-   * fragment. The fragment will be inserted to the editor if not empty.
-   */
+  /** @see {@link Parser} */
   parser: Nullable<Parser<WithAnyKey<C>>>;
 
   parsers:
     | ({
         [K in string]: {
+          /** @see {@link Deserializer} */
           deserializer?: Deserializer<WithAnyKey<C>>;
+          /** @see {@link Serializer} */
           serializer?: Serializer<WithAnyKey<C>>;
         };
       } & { html?: never; htmlReact?: never })
     | {
         html?: Nullable<{
+          /** @see {@link HtmlDeserializer} */
           deserializer?: HtmlDeserializer<WithAnyKey<C>>;
+          /** @see {@link HtmlSerializer} */
           serializer?: HtmlSerializer<WithAnyKey<C>>;
         }>;
 
@@ -130,55 +126,65 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
         }>;
       };
 
-  shortcuts: PlateShortcuts;
+  render: Nullable<{
+    /**
+     * Renders a component above the `Editable` component but within the `Slate`
+     * wrapper. Useful for adding UI elements that should appear above the
+     * editable area.
+     */
+    aboveEditable?: React.FC<{ children: React.ReactNode }>;
+
+    /**
+     * Renders a component above all other plugins' `node` components. Useful
+     * for wrapping or decorating nodes with additional UI elements.
+     */
+    aboveNodes?: NodeWrapperComponent<WithAnyKey<C>>;
+
+    /**
+     * Renders a component above the `Slate` wrapper. This is the outermost
+     * render position in the editor structure.
+     */
+    aboveSlate?: React.FC<{ children: React.ReactNode }>;
+
+    /**
+     * Renders a component after the `Editable` component. This is the last
+     * render position within the editor structure.
+     */
+    afterEditable?: EditableSiblingComponent;
+
+    /** Renders a component before the `Editable` component. */
+    beforeEditable?: EditableSiblingComponent;
+
+    /**
+     * Renders a component below all other plugins' `node` components, but above
+     * their `children`. This allows for injecting content or UI elements within
+     * nodes but before their child content.
+     */
+    belowNodes?: NodeWrapperComponent<WithAnyKey<C>>;
+
+    /** @see {@link NodeComponent} */
+    node?: NodeComponent;
+  }>;
+
+  /** @see {@link Shortcuts} */
+  shortcuts: Shortcuts;
 
   useOptionsStore: StoreApi<C['key'], C['options']>;
 } & BasePlugin<C> &
   Nullable<{
-    /**
-     * React component rendering a slate element or leaf.
-     *
-     * @default DefaultElement | DefaultLeaf
-     */
-    component?: PlatePluginComponent;
-
     /** @see {@link Decorate} */
     decorate?: Decorate<WithAnyKey<C>>;
 
-    /** Editor method overriders. */
+    /** @see {@link ExtendEditor} */
     extendEditor?: ExtendEditor<WithAnyKey<C>>;
 
-    /**
-     * Normalize initial value before passing it into the editor.
-     *
-     * @returns Normalized value
-     */
+    /** Normalize initial value before passing it into the editor. */
     normalizeInitialValue?: (
       ctx: { value: Value } & PlatePluginContext<WithAnyKey<C>>
     ) => Value;
 
-    /**
-     * Property used by Plate to override node `component` props. If function,
-     * its returning value will be shallow merged to the old props, with the old
-     * props as parameter. If object, its value will be shallow merged to the
-     * old props.
-     */
-    props?: PlatePluginProps<WithAnyKey<C>>;
-
-    /** Render a component above `Editable`. */
-    renderAboveEditable?: React.FC<{ children: React.ReactNode }>;
-
-    /** Render a component above `Slate`. */
-    renderAboveSlate?: React.FC<{ children: React.ReactNode }>;
-
-    /** Render a component after `Editable`. */
-    renderAfterEditable?: RenderAfterEditable;
-
-    /** Render a component before `Editable`. */
-    renderBeforeEditable?: RenderAfterEditable;
-
-    /** Hook called when the editor is initialized. */
-    useHooks?: PlateUseHooks<WithAnyKey<C>>;
+    /** @see {@link UseHooks} */
+    useHooks?: UseHooks<WithAnyKey<C>>;
   }> &
   PlatePluginMethods<C>;
 
@@ -472,12 +478,13 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   >;
 
   /**
-   * Set the component for the plugin.
+   * Set {@link NodeComponent} for the plugin.
    *
-   * @param component The React component to be used for rendering.
-   * @returns A new instance of the plugin with the updated component.
+   * @param component {@link NodeComponent}.
+   * @returns A new instance of the plugin with the updated
+   *   {@link NodeComponent}.
    */
-  withComponent: (component: PlatePluginComponent) => PlatePlugin<C>;
+  withComponent: (component: NodeComponent) => PlatePlugin<C>;
 };
 
 export type PlatePluginConfig<
@@ -489,9 +496,15 @@ export type PlatePluginConfig<
   EA = {},
   ET = {},
 > = Partial<
-  { api: EA; options: EO; transforms: ET } & Omit<
+  {
+    api: EA;
+    node: Partial<PlatePlugin<PluginConfig<K, O, A, T>>['node']>;
+    options: EO;
+    transforms: ET;
+  } & Omit<
     PlatePlugin<PluginConfig<K, Partial<O>, A, T>>,
     | 'api'
+    | 'node'
     | 'optionsStore'
     | 'transforms'
     | 'useOptionsStore'
@@ -543,6 +556,10 @@ export type PlatePluginContext<
 
 // -----------------------------------------------------------------------------
 
+/**
+ * Used by parser plugins like html to deserialize inserted data to a slate
+ * fragment. The fragment will be inserted to the editor if not empty.
+ */
 export type Parser<C extends AnyPluginConfig = PluginConfig> = {
   /** Deserialize data to fragment */
   deserialize?: (
@@ -637,12 +654,13 @@ export type Decorate<C extends AnyPluginConfig = PluginConfig> = (
   ctx: { entry: TNodeEntry } & PlatePluginContext<C>
 ) => TRange[] | undefined;
 
-export type InjectProps<C extends AnyPluginConfig = PluginConfig> = {
+/** Properties used by Plate to inject props into any {@link NodeComponent}. */
+export type InjectNodeProps<C extends AnyPluginConfig = PluginConfig> = {
   /** Whether to inject the props. If true, overrides all other checks. */
   query?: (
     options: {
-      nodeProps: GetInjectPropsOptions;
-    } & NonNullable<NonNullable<InjectProps>> &
+      nodeProps: GetInjectNodePropsOptions;
+    } & NonNullable<NonNullable<InjectNodeProps>> &
       PlatePluginContext<C>
   ) => boolean;
 
@@ -663,7 +681,7 @@ export type InjectProps<C extends AnyPluginConfig = PluginConfig> = {
   /** Transform the injected props. */
   transformProps?: (
     options: {
-      props: GetInjectPropsReturnType;
+      props: GetInjectNodePropsReturnType;
     } & TransformOptions<C>
   ) => AnyObject | undefined;
 
@@ -677,37 +695,49 @@ export type InjectProps<C extends AnyPluginConfig = PluginConfig> = {
 
 // -----------------------------------------------------------------------------
 
-/** The plate plugin component. */
-export type PlatePluginComponent<T = any> = React.FC<T>;
+/**
+ * Renders a component for Slate Nodes (elements if `isElement: true` or leaves
+ * if `isLeaf: true`) that match this plugin's type. This is the primary render
+ * method for plugin-specific node content.
+ *
+ * @default DefaultElement for elements, DefaultLeaf for leaves
+ */
+export type NodeComponent<T = any> = React.FC<T>;
 
-/** Props object or function returning props object. */
-export type PlatePluginProps<C extends AnyPluginConfig = PluginConfig> =
+/**
+ * Property used by Plate to override node `component` props. If function, its
+ * returning value will be shallow merged to the old props, with the old props
+ * as parameter. If object, its value will be shallow merged to the old props.
+ */
+export type NodeProps<C extends AnyPluginConfig = PluginConfig> =
   | ((
       props: PlateRenderElementProps<TElement, C> &
         PlateRenderLeafProps<TText, C>
     ) => AnyObject | undefined)
   | AnyObject;
 
-export type PlateUseHooks<C extends AnyPluginConfig = PluginConfig> = (
+/** Hook called when the editor is initialized. */
+export type UseHooks<C extends AnyPluginConfig = PluginConfig> = (
   ctx: PlatePluginContext<C>
 ) => void;
 
-export type RenderAfterEditable = (
+export type EditableSiblingComponent = (
   editableProps: TEditableProps
 ) => React.ReactElement | null;
 
-export interface InjectComponentProps<C extends AnyPluginConfig = PluginConfig>
-  extends PlateRenderElementProps<TElement, C> {
+export interface NodeWrapperComponentProps<
+  C extends AnyPluginConfig = PluginConfig,
+> extends PlateRenderElementProps<TElement, C> {
   key: string;
 }
 
-export type InjectComponentReturnType<
+export type NodeWrapperComponentReturnType<
   C extends AnyPluginConfig = PluginConfig,
 > = React.FC<PlateRenderElementProps<TElement, C>> | undefined;
 
-export type InjectComponent<C extends AnyPluginConfig = PluginConfig> = (
-  props: InjectComponentProps<C>
-) => InjectComponentReturnType<C>;
+export type NodeWrapperComponent<C extends AnyPluginConfig = PluginConfig> = (
+  props: NodeWrapperComponentProps<C>
+) => NodeWrapperComponentReturnType<C>;
 
 /**
  * Function called whenever a change occurs in the editor. Return `false` to
@@ -719,7 +749,7 @@ export type OnChange<C extends AnyPluginConfig = PluginConfig> = (
   ctx: { value: Value } & PlatePluginContext<C>
 ) => HandlerReturnType;
 
-export type PlateShortcut = {
+export type Shortcut = {
   handler?: (ctx: {
     editor: PlateEditor;
     event: KeyboardEvent;
@@ -729,4 +759,4 @@ export type PlateShortcut = {
   priority?: number;
 } & HotkeysOptions;
 
-export type PlateShortcuts = Record<string, PlateShortcut | null>;
+export type Shortcuts = Record<string, Shortcut | null>;

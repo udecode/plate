@@ -18,16 +18,16 @@ describe('resolvePlugin', () => {
           .extendPlugin(
             { key: 'aa' },
             {
-              type: 'ab',
+              node: { type: 'ab' },
             }
           )
           .extendPlugin(
             { key: 'aa' },
             {
-              type: 'ac',
+              node: { type: 'ac' },
             }
           )
-      ).plugins[0].type
+      ).plugins[0].node.type
     ).toBe('ac');
   });
 

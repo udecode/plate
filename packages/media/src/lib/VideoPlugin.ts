@@ -5,7 +5,6 @@ import type { TMediaElement } from '..';
 export interface TVideoElement extends TMediaElement {}
 
 export const VideoPlugin = createSlatePlugin({
-  isElement: true,
-  isVoid: true,
   key: 'video',
+  node: { isElement: true, isVoid: true },
 });

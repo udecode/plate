@@ -7,9 +7,9 @@ import { createSlatePlugin } from '../plugin';
 import { DebugPlugin } from '../plugins';
 import { resolvePluginTest } from './resolveCreatePluginTest';
 import {
-  resolvePluginOverrides,
   mergePlugins,
   resolveAndSortPlugins,
+  resolvePluginOverrides,
   resolvePlugins,
 } from './resolvePlugins';
 
@@ -66,19 +66,19 @@ describe('resolvePlugins', () => {
     const plugins = [
       createSlatePlugin({
         key: 'a',
+        node: { type: 'original' },
         override: {
           plugins: {
-            b: { type: 'overridden' },
+            b: { node: { type: 'overridden' } },
           },
         },
-        type: 'original',
       }),
-      createSlatePlugin({ key: 'b', type: 'original' }),
+      createSlatePlugin({ key: 'b', node: { type: 'original' } }),
     ];
 
     resolvePlugins(editor, plugins);
 
-    expect(editor.plugins.b.type).toBe('overridden');
+    expect(editor.plugins.b.node.type).toBe('overridden');
   });
 
   it('should merge all plugin APIs into editor.api', () => {
@@ -240,28 +240,30 @@ describe('mergePlugins', () => {
     const editor = createPlateEditor();
 
     const plugins = [
-      createSlatePlugin({ key: 'a', type: 'typeA' }),
-      createSlatePlugin({ key: 'b', type: 'typeB' }),
+      createSlatePlugin({ key: 'a', node: { type: 'typeA' } }),
+      createSlatePlugin({ key: 'b', node: { type: 'typeB' } }),
     ];
 
     mergePlugins(editor, plugins);
 
     expect(editor.pluginList).toHaveLength(2);
-    expect(editor.plugins.a.type).toBe('typeA');
-    expect(editor.plugins.b.type).toBe('typeB');
+    expect(editor.plugins.a.node.type).toBe('typeA');
+    expect(editor.plugins.b.node.type).toBe('typeB');
   });
 
   it('should update existing plugins', () => {
     const editor = createPlateEditor({
-      plugins: [createSlatePlugin({ key: 'a', type: 'oldType' })],
+      plugins: [createSlatePlugin({ key: 'a', node: { type: 'oldType' } })],
     });
 
-    const plugins = [createSlatePlugin({ key: 'a', type: 'newType' })];
+    const plugins = [
+      createSlatePlugin({ key: 'a', node: { type: 'newType' } }),
+    ];
 
     mergePlugins(editor, plugins);
 
     expect(editor.pluginList).toHaveLength(1);
-    expect(editor.plugins.a.type).toBe('newType');
+    expect(editor.plugins.a.node.type).toBe('newType');
   });
 });
 
@@ -271,21 +273,21 @@ describe('applyPluginOverrides', () => {
       plugins: [
         createSlatePlugin({
           key: 'a',
+          node: { type: 'originalA' },
           override: {
             plugins: {
-              b: { type: 'overriddenB' },
+              b: { node: { type: 'overriddenB' } },
             },
           },
-          type: 'originalA',
         }),
-        createSlatePlugin({ key: 'b', type: 'originalB' }),
+        createSlatePlugin({ key: 'b', node: { type: 'originalB' } }),
       ],
     });
 
     resolvePluginOverrides(editor);
 
-    expect(editor.plugins.a.type).toBe('originalA');
-    expect(editor.plugins.b.type).toBe('overriddenB');
+    expect(editor.plugins.a.node.type).toBe('originalA');
+    expect(editor.plugins.b.node.type).toBe('overriddenB');
   });
 
   it('should handle nested overrides', () => {
@@ -296,14 +298,16 @@ describe('applyPluginOverrides', () => {
         key: 'parent',
         override: {
           plugins: {
-            child: { type: 'overriddenChild' },
+            child: { node: { type: 'overriddenChild' } },
           },
         },
-        plugins: [createSlatePlugin({ key: 'child', type: 'originalChild' })],
+        plugins: [
+          createSlatePlugin({ key: 'child', node: { type: 'originalChild' } }),
+        ],
       }),
     ]);
 
-    expect(editor.plugins.child.type).toBe('overriddenChild');
+    expect(editor.plugins.child.node.type).toBe('overriddenChild');
   });
 
   it('should apply multiple overrides in correct order', () => {
@@ -311,29 +315,29 @@ describe('applyPluginOverrides', () => {
       plugins: [
         createSlatePlugin({
           key: 'a',
+          node: { type: 'originalA' },
           override: {
             plugins: {
-              c: { type: 'overriddenByA' },
+              c: { node: { type: 'overriddenByA' } },
             },
           },
-          type: 'originalA',
         }),
         createSlatePlugin({
           key: 'b',
+          node: { type: 'originalB' },
           override: {
             plugins: {
-              c: { type: 'overriddenByB' },
+              c: { node: { type: 'overriddenByB' } },
             },
           },
-          type: 'originalB',
         }),
-        createSlatePlugin({ key: 'c', type: 'originalC' }),
+        createSlatePlugin({ key: 'c', node: { type: 'originalC' } }),
       ],
     });
 
     resolvePluginOverrides(editor);
 
-    expect(editor.plugins.c.type).toBe('overriddenByB');
+    expect(editor.plugins.c.node.type).toBe('overriddenByB');
   });
 
   it('should override components based on priority only if target plugin has a component', () => {
@@ -357,18 +361,18 @@ describe('applyPluginOverrides', () => {
           priority: 2,
         }),
         createPlatePlugin({
-          component: OriginalComponent,
           key: 'b',
           priority: 3,
+          render: { node: OriginalComponent },
         }),
         createSlatePlugin({
           key: 'c',
           priority: 1,
         }),
         createPlatePlugin({
-          component: OriginalComponent,
           key: 'd',
           priority: 1,
+          render: { node: OriginalComponent },
         }),
         createPlatePlugin({
           key: 'e',
@@ -381,9 +385,9 @@ describe('applyPluginOverrides', () => {
           priority: 4,
         }),
         createPlatePlugin({
-          component: PreservedOriginalComponent,
           key: 'f',
           priority: 5,
+          render: { node: PreservedOriginalComponent },
         }),
       ],
     });
@@ -391,20 +395,20 @@ describe('applyPluginOverrides', () => {
     resolvePluginOverrides(editor);
 
     // Higher priority override
-    expect(getPlugin(editor, { key: 'b' }).component).toBe(
+    expect(getPlugin(editor, { key: 'b' }).render.node).toBe(
       HighPriorityComponent
     );
 
     // No initial component, so it gets set
-    expect(getPlugin(editor, { key: 'c' }).component).toBe(OverrideComponent);
+    expect(getPlugin(editor, { key: 'c' }).render.node).toBe(OverrideComponent);
 
     // Lower priority component gets overridden
-    expect(getPlugin(editor, { key: 'd' }).component).toBe(
+    expect(getPlugin(editor, { key: 'd' }).render.node).toBe(
       HighPriorityComponent
     );
 
     // Highest priority original component is preserved
-    expect(getPlugin(editor, { key: 'f' }).component).toBe(
+    expect(getPlugin(editor, { key: 'f' }).render.node).toBe(
       PreservedOriginalComponent
     );
   });

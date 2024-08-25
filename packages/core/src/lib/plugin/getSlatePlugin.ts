@@ -12,7 +12,7 @@ import { resolvePlugin } from '../utils';
 export function getSlatePlugin<C extends AnyPluginConfig = PluginConfig>(
   editor: SlateEditor,
   p: WithRequiredKey<C>
-): C extends { type: any } ? C : SlatePlugin<C> {
+): C extends { node: any } ? C : SlatePlugin<C> {
   const plugin = p as any;
 
   // if (!plugin.__resolved) {
@@ -35,7 +35,7 @@ export function getPluginType(
 ): string {
   const p = editor.getPlugin<AnySlatePlugin>(plugin);
 
-  return p.type ?? p.key ?? '';
+  return p.node.type ?? p.key ?? '';
 }
 
 /** Get editor plugin types by key. */

@@ -1,12 +1,12 @@
 import type { SlateEditor } from '../editor';
 
-import { pluginInjectProps } from './pluginInjectProps';
+import { pluginInjectNodeProps } from './pluginInjectNodeProps';
 
 /** Inject plugin props, editor. */
-export const pipeInjectProps = (editor: SlateEditor, nodeProps: any) => {
+export const pipeInjectNodeProps = (editor: SlateEditor, nodeProps: any) => {
   editor.pluginList.forEach((plugin) => {
-    if (plugin.inject.props) {
-      const props = pluginInjectProps(editor, plugin, nodeProps);
+    if (plugin.inject.nodeProps) {
+      const props = pluginInjectNodeProps(editor, plugin, nodeProps);
 
       if (props) {
         nodeProps = {

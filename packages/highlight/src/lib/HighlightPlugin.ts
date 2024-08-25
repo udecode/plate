@@ -5,8 +5,8 @@ import { createTSlatePlugin } from '@udecode/plate-common';
  * it for future reference.
  */
 export const HighlightPlugin = createTSlatePlugin({
-  isLeaf: true,
   key: 'highlight',
+  node: { isLeaf: true },
   parsers: {
     html: {
       deserializer: {

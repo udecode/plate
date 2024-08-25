@@ -5,8 +5,8 @@ import {
 
 /** Enables support for code formatting */
 export const CodePlugin = createSlatePlugin({
-  isLeaf: true,
   key: 'code',
+  node: { isLeaf: true },
   parsers: {
     html: {
       deserializer: {

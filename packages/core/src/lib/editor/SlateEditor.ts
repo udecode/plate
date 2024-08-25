@@ -14,7 +14,7 @@ import type {
 import type {
   AnyEditorPlugin,
   EditorPlugin,
-  InjectProps,
+  InjectNodeProps,
 } from '../plugin/SlatePlugin';
 import type { CorePlugin } from '../plugins';
 
@@ -27,7 +27,7 @@ export type BaseEditor = {
 
   getInjectProps: <C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
-  ) => InjectProps<C>;
+  ) => InjectNodeProps<C>;
 
   getOption: <
     C extends AnyPluginConfig,
@@ -49,7 +49,7 @@ export type BaseEditor = {
 
   getPlugin: <C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
-  ) => C extends { type: any } ? C : EditorPlugin<C>;
+  ) => C extends { node: any } ? C : EditorPlugin<C>;
 
   getTransforms: <C extends AnyPluginConfig = PluginConfig>(
     plugin?: WithRequiredKey<C>

@@ -92,9 +92,8 @@ export type LinkConfig = PluginConfig<
 /** Enables support for hyperlinks. */
 export const LinkPlugin = createTSlatePlugin<LinkConfig>({
   extendEditor: withLink,
-  isElement: true,
-  isInline: true,
   key: 'a',
+  node: { isElement: true, isInline: true },
   options: {
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],
     dangerouslySkipSanitization: false,

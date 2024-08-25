@@ -2,7 +2,7 @@ import { createSlatePlugin } from '@udecode/plate-common';
 
 export const FontFamilyPlugin = createSlatePlugin({
   inject: {
-    props: {
+    nodeProps: {
       nodeKey: 'fontFamily',
     },
   },

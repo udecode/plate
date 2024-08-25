@@ -1,3 +1,5 @@
+import type { Modify } from '@udecode/utils';
+
 import cloneDeep from 'lodash/cloneDeep.js';
 import merge from 'lodash/merge.js';
 
@@ -11,6 +13,30 @@ import type {
 
 import { mergeWithoutArray } from '../../internal/mergeWithoutArray';
 import { isFunction } from '../utils/misc/isFunction';
+
+type SlatePluginConfig<K extends string = any, O = {}, A = {}, T = {}> = Omit<
+  Partial<
+    Modify<
+      SlatePlugin<PluginConfig<K, O, A, T>>,
+      {
+        node?: Partial<SlatePlugin<PluginConfig<K, O, A, T>>['node']>;
+      }
+    >
+  >,
+  'optionsStore' | keyof SlatePluginMethods
+>;
+
+type TSlatePluginConfig<C extends AnyPluginConfig = PluginConfig> = Omit<
+  Partial<
+    Modify<
+      SlatePlugin<C>,
+      {
+        node?: Partial<SlatePlugin<C>['node']>;
+      }
+    >
+  >,
+  'optionsStore' | keyof SlatePluginMethods
+>;
 
 /**
  * Creates a new Plate plugin with the given configuration.
@@ -70,30 +96,17 @@ export function createSlatePlugin<
   T = {},
 >(
   config:
-    | ((
-        editor: SlateEditor
-      ) => Omit<
-        Partial<SlatePlugin<PluginConfig<K, O, A, T>>>,
-        'store' | keyof SlatePluginMethods
-      >)
-    | Omit<
-        Partial<SlatePlugin<PluginConfig<K, O, A, T>>>,
-        'store' | keyof SlatePluginMethods
-      > = {}
+    | ((editor: SlateEditor) => SlatePluginConfig<K, O, A, T>)
+    | SlatePluginConfig<K, O, A, T> = {}
 ): SlatePlugin<PluginConfig<K, O, A, T>> {
   let baseConfig: Partial<SlatePlugin<PluginConfig<K, O, A, T>>>;
-  let initialExtension:
-    | ((
-        editor: SlateEditor,
-        plugin: SlatePlugin<PluginConfig<K, O, A, T>>
-      ) => Partial<SlatePlugin<PluginConfig<K, O, A, T>>>)
-    | undefined;
+  let initialExtension: any;
 
   if (isFunction(config)) {
     baseConfig = { key: '' as K };
-    initialExtension = (editor) => config(editor);
+    initialExtension = (editor: any) => config(editor);
   } else {
-    baseConfig = config;
+    baseConfig = config as any;
   }
 
   const key = baseConfig.key ?? '';
@@ -111,15 +124,16 @@ export function createSlatePlugin<
       handlers: {},
       inject: {},
       key,
+      node: { type: key },
       options: {},
       override: {},
       parser: {},
       parsers: {},
       plugins: [],
       priority: 100,
+      render: {},
       shortcuts: {},
       transforms: {},
-      type: key,
     },
     cloneDeep(config)
   ) as unknown as SlatePlugin<PluginConfig<K, O, A, T>>;
@@ -316,10 +330,8 @@ export function createSlatePlugin<
  */
 export function createTSlatePlugin<C extends AnyPluginConfig = PluginConfig>(
   config:
-    | ((
-        editor: SlateEditor
-      ) => Omit<Partial<SlatePlugin<C>>, keyof SlatePluginMethods>)
-    | Omit<Partial<SlatePlugin<C>>, keyof SlatePluginMethods> = {}
+    | ((editor: SlateEditor) => TSlatePluginConfig<C>)
+    | TSlatePluginConfig<C> = {}
 ): SlatePlugin<C> {
   return createSlatePlugin(config as any) as any;
 }

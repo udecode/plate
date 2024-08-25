@@ -46,7 +46,9 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
     isDragging: false,
   },
 }).extend(({ getOptions }) => ({
-  renderAfterEditable: getOptions().enableScroller
-    ? () => <DndScroller {...getOptions()?.scrollerProps} />
-    : undefined,
+  render: {
+    afterEditable: getOptions().enableScroller
+      ? () => <DndScroller {...getOptions()?.scrollerProps} />
+      : undefined,
+  },
 }));

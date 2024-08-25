@@ -11,10 +11,8 @@ import { TabbableElement } from './TabbableElement';
 export const tabbablePlugin = TabbablePlugin.extend({
   plugins: [
     createPlatePlugin({
-      component: TabbableElement,
-      isElement: true,
-      isVoid: true,
       key: 'tabbable_element',
+      node: { component: TabbableElement, isElement: true, isVoid: true },
     }),
   ],
 }).configure(({ editor }) => ({

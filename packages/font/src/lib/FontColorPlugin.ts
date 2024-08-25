@@ -2,7 +2,7 @@ import { createSlatePlugin } from '@udecode/plate-common';
 
 export const FontColorPlugin = createSlatePlugin({
   inject: {
-    props: {
+    nodeProps: {
       defaultNodeValue: 'black',
       nodeKey: 'color',
     },

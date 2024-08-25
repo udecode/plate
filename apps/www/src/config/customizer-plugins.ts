@@ -137,7 +137,7 @@ export const customizerPlugins = {
   },
   csv: {
     id: 'csv',
-    label: 'Deserialize CSV',
+    label: 'CSV',
     plugins: [CsvPlugin.key],
     route: '/docs/csv',
     value: deserializeCsvValue,
@@ -158,7 +158,7 @@ export const customizerPlugins = {
   },
   docx: {
     id: 'docx',
-    label: 'Deserialize DOCX',
+    label: 'DOCX',
     plugins: [DocxPlugin.key],
     route: '/docs/docx',
     value: deserializeDocxValue,

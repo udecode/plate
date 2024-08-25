@@ -1,3 +1,5 @@
+import type { Modify } from '@udecode/utils';
+
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { PlatePlugin, PlatePluginMethods } from './PlatePlugin';
 
@@ -8,6 +10,30 @@ import {
 } from '../../lib';
 import { toPlatePlugin } from './toPlatePlugin';
 
+type PlatePluginConfig<K extends string = any, O = {}, A = {}, T = {}> = Omit<
+  Partial<
+    Modify<
+      PlatePlugin<PluginConfig<K, O, A, T>>,
+      {
+        node: Partial<PlatePlugin<PluginConfig<K, O, A, T>>['node']>;
+      }
+    >
+  >,
+  'optionsStore' | 'useOptionsStore' | keyof PlatePluginMethods
+>;
+
+type TPlatePluginConfig<C extends AnyPluginConfig = PluginConfig> = Omit<
+  Partial<
+    Modify<
+      PlatePlugin<C>,
+      {
+        node: Partial<PlatePlugin<C>['node']>;
+      }
+    >
+  >,
+  'optionsStore' | 'useOptionsStore' | keyof PlatePluginMethods
+>;
+
 export const createPlatePlugin = <
   K extends string = any,
   O = {},
@@ -15,16 +41,8 @@ export const createPlatePlugin = <
   T = {},
 >(
   config:
-    | ((
-        editor: PlateEditor
-      ) => Omit<
-        Partial<PlatePlugin<PluginConfig<K, O, A, T>>>,
-        'optionsStore' | 'useOptionsStore' | keyof PlatePluginMethods
-      >)
-    | Omit<
-        Partial<PlatePlugin<PluginConfig<K, O, A, T>>>,
-        'optionsStore' | 'useOptionsStore' | keyof PlatePluginMethods
-      > = {}
+    | ((editor: PlateEditor) => PlatePluginConfig<K, O, A, T>)
+    | PlatePluginConfig<K, O, A, T> = {}
 ): PlatePlugin<PluginConfig<K, O, A, T>> => {
   const plugin = createSlatePlugin(config as any);
 
@@ -42,10 +60,8 @@ export const createPlatePlugin = <
  */
 export function createTPlatePlugin<C extends AnyPluginConfig = PluginConfig>(
   config:
-    | ((
-        editor: PlateEditor
-      ) => Omit<Partial<PlatePlugin<C>>, keyof PlatePluginMethods>)
-    | Omit<Partial<PlatePlugin<C>>, keyof PlatePluginMethods> = {}
+    | ((editor: PlateEditor) => TPlatePluginConfig<C>)
+    | TPlatePluginConfig<C> = {}
 ): PlatePlugin<C> {
   return createPlatePlugin(config as any) as any;
 }

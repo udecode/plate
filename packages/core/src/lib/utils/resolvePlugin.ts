@@ -93,7 +93,7 @@ export const validatePlugin = <K extends string = any, O = {}, A = {}, T = {}>(
       'USE_CREATE_PLUGIN'
     );
   }
-  if (plugin.isElement && plugin.isLeaf) {
+  if (plugin.node.isElement && plugin.node.isLeaf) {
     editor.api.debug.error(
       `Plugin ${plugin.key} cannot be both an element and a leaf.`,
       'PLUGIN_NODE_TYPE'

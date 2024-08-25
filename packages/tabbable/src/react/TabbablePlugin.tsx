@@ -4,5 +4,5 @@ import { TabbablePlugin as BaseTabbablePlugin } from '../lib/TabbablePlugin';
 import { TabbableEffects } from './TabbableEffects';
 
 export const TabbablePlugin = toPlatePlugin(BaseTabbablePlugin, {
-  renderAfterEditable: TabbableEffects,
+  render: { afterEditable: TabbableEffects },
 });

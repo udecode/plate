@@ -1,8 +1,4 @@
-import type {
-  ExtendEditor,
-  PlatePlugin,
-  PlatePluginComponent,
-} from './PlatePlugin';
+import type { ExtendEditor, NodeComponent, PlatePlugin } from './PlatePlugin';
 
 import {
   type ExtendConfig,
@@ -40,8 +36,8 @@ type CodeBlockConfig2 = {
 
 describe('toPlatePlugin', () => {
   const BaseParagraphPlugin = createSlatePlugin({
-    isElement: true,
     key: 'p',
+    node: { isElement: true },
     options: { t: 1 },
     parsers: {
       html: {
@@ -55,15 +51,14 @@ describe('toPlatePlugin', () => {
     baseApiMethod: () => 'base',
   }));
 
-  const MockComponent: PlatePluginComponent = () => null;
-  const MockAboveComponent: PlatePluginComponent = () => null;
+  const MockComponent: NodeComponent = () => null;
+  const MockAboveComponent: NodeComponent = () => null;
 
   it('should extend a SlatePlugin with React-specific properties and API', () => {
     const ParagraphPlugin = toPlatePlugin(BaseParagraphPlugin, {
-      component: MockComponent,
       handlers: { onKeyDown: () => true },
       options: { hotkey: ['mod+opt+0', 'mod+shift+0'] },
-      renderAboveEditable: MockAboveComponent,
+      render: { aboveEditable: MockAboveComponent, node: MockComponent },
     }).extendEditorApi(() => ({
       someApiMethod: () => 'API method result',
     }));
@@ -71,8 +66,8 @@ describe('toPlatePlugin', () => {
     const editor = createPlateEditor({ plugins: [ParagraphPlugin] });
     const resolvedPlugin = editor.plugins.p;
 
-    expect(resolvedPlugin.component).toBe(MockComponent);
-    expect(resolvedPlugin.renderAboveEditable).toBe(MockAboveComponent);
+    expect(resolvedPlugin.render.node).toBe(MockComponent);
+    expect(resolvedPlugin.render.aboveEditable).toBe(MockAboveComponent);
     expect(resolvedPlugin.handlers).toHaveProperty('onKeyDown');
     expect(resolvedPlugin.options).toEqual({
       hotkey: ['mod+opt+0', 'mod+shift+0'],
@@ -86,8 +81,8 @@ describe('toPlatePlugin', () => {
     const ParagraphPlugin = toPlatePlugin(
       BaseParagraphPlugin,
       ({ editor }) => ({
-        component: MockComponent,
         options: { editorId: editor.id },
+        render: { node: MockComponent },
       })
     ).extendEditorApi(({ editor }) => ({
       getEditorId: () => editor.id,
@@ -96,7 +91,7 @@ describe('toPlatePlugin', () => {
     const editor = createPlateEditor({ plugins: [ParagraphPlugin] });
     const resolvedPlugin = editor.plugins.p;
 
-    expect(resolvedPlugin.component).toBe(MockComponent);
+    expect(resolvedPlugin.render.node).toBe(MockComponent);
     expect(resolvedPlugin.options).toHaveProperty('editorId');
     expect(resolvedPlugin.options.t).toBe(1);
     expect(resolvedPlugin.api.getEditorId()).toBe(editor.id);
@@ -127,7 +122,9 @@ describe('toPlatePlugin', () => {
     const NonExistentPlugin = { key: 'nonexistent' };
 
     expect(() => {
-      toPlatePlugin(NonExistentPlugin as any, { component: MockComponent });
+      toPlatePlugin(NonExistentPlugin as any, {
+        render: { node: MockComponent },
+      });
     }).toThrow();
   });
 
@@ -488,7 +485,7 @@ describe('toPlatePlugin with extendPlugin', () => {
         options: { bar: 42 },
       }),
       {
-        component: () => null, // Add a React-specific property
+        render: { node: () => null }, // Add a React-specific property
       }
     );
 
@@ -496,8 +493,8 @@ describe('toPlatePlugin with extendPlugin', () => {
       plugins: [ChildPlatePlugin],
     })
       .extendPlugin(ChildPlatePlugin, {
-        component: () => null, // Modify a React-specific property
         options: { bar: 100 },
+        render: { node: () => null }, // Modify a React-specific property
       })
       .configurePlugin(ChildPlatePlugin, () => ({
         options: { bar: 100 },
@@ -553,7 +550,7 @@ describe('toPlatePlugin with direct merge for object configs', () => {
   });
 
   it('should override an existing component', () => {
-    const NewComponent: PlatePluginComponent = () => null;
+    const NewComponent: NodeComponent = () => null;
 
     const basePlugin = createSlatePlugin({
       key: 'testPlugin',
@@ -564,6 +561,6 @@ describe('toPlatePlugin with direct merge for object configs', () => {
     const pluginWithNewComponent = plugin.withComponent(NewComponent);
     const resolvedPlugin = resolvePluginTest(pluginWithNewComponent);
 
-    expect(resolvedPlugin.component).toBe(NewComponent);
+    expect(resolvedPlugin.render.node).toBe(NewComponent);
   });
 });

@@ -29,15 +29,14 @@ export type ImageConfig = PluginConfig<
 /** Enables support for images. */
 export const ImagePlugin = createTSlatePlugin<ImageConfig>({
   extendEditor: withImage,
-  isElement: true,
-  isVoid: true,
   key: 'img',
+  node: { isElement: true, isVoid: true },
 }).extend(({ plugin }) => ({
   parsers: {
     html: {
       deserializer: {
         parse: ({ element }) => ({
-          type: plugin.type,
+          type: plugin.node.type,
           url: element.getAttribute('src'),
         }),
         rules: [

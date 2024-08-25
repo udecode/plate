@@ -16,42 +16,42 @@ import { getEditorPlugin } from '../plugin';
 export const getRenderNodeProps = ({
   attributes,
   editor,
-  nodeProps,
   plugin,
+  props,
 }: {
   attributes?: AnyObject;
   editor: PlateEditor;
-  nodeProps: PlateRenderNodeProps;
   plugin: AnyEditorPlatePlugin;
+  props: PlateRenderNodeProps;
 }): PlateRenderNodeProps => {
   let newProps: AnyObject = {};
 
-  if (plugin.props) {
+  if (plugin.node.props) {
     newProps =
-      (typeof plugin.props === 'function'
-        ? plugin.props(nodeProps as any)
-        : plugin.props) ?? {};
+      (typeof plugin.node.props === 'function'
+        ? plugin.node.props(props as any)
+        : plugin.node.props) ?? {};
   }
   if (!newProps.nodeProps && attributes) {
     newProps.nodeProps = attributes;
   }
 
-  nodeProps = { ...nodeProps, ...newProps };
+  props = { ...props, ...newProps };
 
-  if (nodeProps.nodeProps) {
+  if (props.nodeProps) {
     // remove attributes values that are undefined
-    Object.keys(nodeProps.nodeProps).forEach((key) => {
-      if (nodeProps.nodeProps?.[key] === undefined) {
-        delete nodeProps.nodeProps?.[key];
+    Object.keys(props.nodeProps).forEach((key) => {
+      if (props.nodeProps?.[key] === undefined) {
+        delete props.nodeProps?.[key];
       }
     });
   }
 
-  const { className } = nodeProps;
+  const { className } = props;
 
   return {
-    ...nodeProps,
-    className: clsx(getSlateClass(plugin.type), className),
+    ...props,
+    className: clsx(getSlateClass(plugin.node.type), className),
     ...(getEditorPlugin(editor, plugin) as any),
   };
 };

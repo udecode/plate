@@ -1,10 +1,11 @@
 import type { AnyObject } from '@udecode/utils';
 import type { SetImmerState, StoreApi } from 'zustand-x';
 
-import type { GetInjectPropsOptions } from '../utils';
-import type { EditorPlugin } from './SlatePlugin';
+import type { Nullable } from '../types';
+import type { GetInjectNodePropsOptions } from '../utils';
 
 export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
+  /** API methods provided by this plugin. */
   api: InferApi<C>;
 
   /**
@@ -13,62 +14,37 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
    */
   dependencies: string[];
 
-  /** Property used by Plate to enable/disable the plugin. */
+  /**
+   * Enables or disables the plugin. Used by Plate to determine if the plugin
+   * should be used.
+   */
   enabled?: boolean;
 
-  inject: {
+  inject: Nullable<{
     /**
-     * Plugin keys used by inject.props and inject.targetPluginToInject. For
-     * plugin injection by key, use inject.plugins.
+     * Plugin keys used by {@link InjectNodeProps} and the targetPluginToInject
+     * function. For plugin injection by key, use the inject.plugins property.
      *
      * @default [ParagraphPlugin.key]
      */
     targetPlugins?: string[];
-  };
+  }>;
 
-  /**
-   * Property used by Plate to render nodes of this `type` as elements, i.e.
-   * `renderElement`.
-   */
-  isElement?: boolean;
-
-  /**
-   * Property used by `inlineVoid` core plugin to set elements of this `type` as
-   * inline.
-   */
-  isInline?: boolean;
-
-  /**
-   * Property used by Plate to render nodes of this `type` as leaves, i.e.
-   * `renderLeaf`.
-   */
-  isLeaf?: boolean;
-
-  /**
-   * Property used by `isMarkableVoid` core plugin to set void elements of this
-   * `type` as markable.
-   */
-  isMarkableVoid?: boolean;
-
-  /**
-   * Property used by `inlineVoid` core plugin to set elements of this `type` as
-   * void.
-   */
-  isVoid?: boolean;
-
+  /** Unique identifier for this plugin. */
   key: C['key'];
+
+  /** Node-specific configuration for this plugin. */
+  node: BasePluginNode;
 
   /** Extended properties used by any plugin as options. */
   options: InferOptions<C>;
 
+  /** Store for managing plugin options. */
   optionsStore: StoreApi<C['key'], C['options']>;
 
   override: {
     /** Enable or disable plugins */
     enabled?: Partial<Record<string, boolean>>;
-
-    /** Extend plugins by key. */
-    plugins?: Record<string, Partial<EditorPlugin<AnyPluginConfig>>>;
   };
 
   /**
@@ -94,12 +70,56 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
 
   /** Transforms (state-modifying operations) that can be applied to the editor. */
   transforms: InferTransforms<C>;
+};
+
+export type BasePluginNode = {
+  /**
+   * Indicates if this plugin's nodes should be rendered as elements. Used by
+   * Plate for {@link NodeComponent} rendering as elements.
+   */
+  isElement?: boolean;
 
   /**
-   * Property used by Plate to render a node by type. It requires slate node
-   * properties to have a `type` property.
+   * Indicates if this plugin's elements should be treated as inline. Used by
+   * the inlineVoid core plugin.
+   */
+  isInline?: boolean;
+
+  /**
+   * Indicates if this plugin's nodes should be rendered as leaves. Used by
+   * Plate for {@link NodeComponent} rendering as leaves.
+   */
+  isLeaf?: boolean;
+
+  /**
+   * Indicates if this plugin's void elements should be markable. Used by the
+   * inlineVoid core plugin.
+   */
+  isMarkableVoid?: boolean;
+
+  /**
+   * Property used by `inlineVoid` core plugin to set elements of this `type` as
+   * void.
+   */
+  isVoid?: boolean;
+
+  /**
+   * Specifies the type identifier for this plugin's nodes.
    *
-   * @default key
+   * For elements (when {@link isElement} is `true`):
+   *
+   * - The {@link NodeComponent} will be used for any node where `node.type ===
+   *   type`.
+   *
+   * For leaves/marks (when {@link isLeaf} is `true`):
+   *
+   * - The {@link NodeComponent} will be used for any leaf where `node[type] ===
+   *   true`.
+   *
+   * This property is crucial for Plate to correctly match nodes to their
+   * respective plugins.
+   *
+   * @default plugin.key
    */
   type: string;
 };
@@ -184,7 +204,7 @@ export type BaseInjectProps = {
 export type BaseTransformOptions = {
   nodeValue?: any;
   value?: any;
-} & GetInjectPropsOptions;
+} & GetInjectNodePropsOptions;
 
 // -----------------------------------------------------------------------------
 

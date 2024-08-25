@@ -20,7 +20,7 @@ export type PlateLeafProps<
   TextProps;
 
 export const usePlateLeaf = (props: PlateLeafProps) => {
-  const { attributes, leaf, leafToAttributes, nodeProps, ...rootProps } =
+  const { attributes, leaf, leafToAttributes, nodeProps, text, ...rootProps } =
     omitPluginContext(props);
 
   return {

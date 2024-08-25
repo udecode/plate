@@ -166,7 +166,7 @@ export default function RSCPage() {
       }),
       LineHeightPlugin.extend({
         inject: {
-          props: {
+          nodeProps: {
             defaultNodeValue: 1.5,
             validNodeValues: [1, 1.2, 1.5, 2, 3],
           },
@@ -204,7 +204,7 @@ export default function RSCPage() {
       SingleLinePlugin,
       SoftBreakPlugin,
       TabbablePlugin,
-      TrailingBlockPlugin.configure({ type: ParagraphPlugin.key }),
+      TrailingBlockPlugin.configure({ options: { type: ParagraphPlugin.key } }),
 
       // Collaboration
       CommentsPlugin,

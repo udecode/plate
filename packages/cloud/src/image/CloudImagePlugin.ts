@@ -15,9 +15,8 @@ import {
 
 export const CloudImagePlugin = createPlatePlugin({
   dependencies: ['cloud'],
-  isElement: true,
-  isVoid: true,
   key: 'cloud_image',
+  node: { isElement: true, isVoid: true },
   options: {
     maxInitialHeight: 320,
     maxInitialWidth: 320,

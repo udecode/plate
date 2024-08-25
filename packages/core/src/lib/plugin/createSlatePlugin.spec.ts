@@ -10,21 +10,31 @@ import {
 } from '../index';
 
 describe('createSlatePlugin', () => {
-  const basePlugin = createSlatePlugin({ key: 'a', type: 'a' });
+  const basePlugin = createSlatePlugin({ key: 'a', node: { type: 'a' } });
 
   describe('when no extend', () => {
     it(' should be', () => {
-      const { key, type } = basePlugin;
+      const { key, node } = basePlugin;
 
-      expect({ key, type }).toEqual({ key: 'a', type: 'a' });
+      expect({ key, node }).toEqual({
+        key: 'a',
+        node: {
+          type: 'a',
+        },
+      });
     });
   });
 
   describe('when configure', () => {
     it(' should be', () => {
-      const { key, type } = basePlugin;
+      const { key, node } = basePlugin;
 
-      expect({ key, type }).toEqual({ key: 'a', type: 'a' });
+      expect({ key, node }).toEqual({
+        key: 'a',
+        node: {
+          type: 'a',
+        },
+      });
     });
   });
 
@@ -33,24 +43,24 @@ describe('createSlatePlugin', () => {
       const plugin = resolvePluginTest(
         basePlugin.extend({
           inject: {
-            props: {
+            nodeProps: {
               nodeKey: 'b',
             },
           },
+          node: { type: 'b' },
           options: {
             a: 1,
           },
-          type: 'b',
         })
       );
 
       expect({
         inject: plugin.inject,
         key: plugin.key,
-        type: plugin.type,
+        type: plugin.node.type,
       }).toEqual({
         inject: {
-          props: {
+          nodeProps: {
             nodeKey: 'b',
           },
         },
@@ -64,14 +74,14 @@ describe('createSlatePlugin', () => {
     it('should resolve correctly when mocked', () => {
       const pluginFn = (editor: any) => ({
         key: 'functionPlugin',
+        node: { type: 'function' },
         options: { editorId: editor.id },
-        type: 'function',
       });
 
       const plugin = resolveCreatePluginTest(pluginFn);
 
       expect(plugin.key).toBe('functionPlugin');
-      expect(plugin.type).toBe('function');
+      expect(plugin.node.type).toBe('function');
       expect(plugin.options).toHaveProperty('editorId');
     });
   });
@@ -81,22 +91,22 @@ describe('createSlatePlugin', () => {
       const plugin = resolvePluginTest(
         createSlatePlugin({
           key: 'a',
+          node: { type: 'a' },
           plugins: [
             createSlatePlugin({
               key: 'aa',
-              type: 'aa',
+              node: { type: 'aa' },
             }),
           ],
-          type: 'a',
         }).extendPlugin(
           { key: 'aa' },
           {
-            type: 'aaa',
+            node: { type: 'aaa' },
           }
         )
       );
 
-      expect(plugin.plugins[0].type).toBe('aaa');
+      expect(plugin.plugins[0].node.type).toBe('aaa');
     });
   });
 
@@ -105,29 +115,29 @@ describe('createSlatePlugin', () => {
       const plugin = resolvePluginTest(
         createSlatePlugin({
           key: 'a',
+          node: { type: 'a' },
           plugins: [
             createSlatePlugin({
               key: 'aa',
-              type: 'aa',
+              node: { type: 'aa' },
             }),
           ],
-          type: 'a',
         })
           .extendPlugin(
             { key: 'aa' },
             {
-              type: 'aaa',
+              node: { type: 'aaa' },
             }
           )
           .extendPlugin(
             { key: 'aa' },
             {
-              type: 'aab',
+              node: { type: 'aab' },
             }
           )
       );
 
-      expect(plugin.plugins[0].type).toBe('aab');
+      expect(plugin.plugins[0].node.type).toBe('aab');
     });
   });
 
@@ -137,25 +147,29 @@ describe('createSlatePlugin', () => {
         plugins: [
           createSlatePlugin({
             key: 'a',
+            node: { type: 'a' },
             plugins: [
               createSlatePlugin({
                 key: 'aa',
-                type: 'aa',
+                node: { type: 'aa' },
               }).extendPlugin(
                 { key: 'aaa' },
                 {
+                  node: { type: 'aaa' },
                   options: {
                     a: 1,
                     b: 1,
                   },
                   plugins: [
-                    createSlatePlugin({ key: 'bbb', options: {}, type: 'bbb' }),
+                    createSlatePlugin({
+                      key: 'bbb',
+                      node: { type: 'bbb' },
+                      options: {},
+                    }),
                   ],
-                  type: 'aaa',
                 }
               ),
             ],
-            type: 'a',
           }).extendPlugin(
             { key: 'aa' },
             {
@@ -235,6 +249,7 @@ describe('createSlatePlugin', () => {
               }).extendPlugin(
                 { key: 'child2' },
                 {
+                  node: { type: 'aaa' },
                   options: {
                     testOption: 1,
                   },
@@ -244,7 +259,6 @@ describe('createSlatePlugin', () => {
                       options: { testOption: 1 },
                     }),
                   ],
-                  type: 'aaa',
                 }
               ),
             ],
@@ -279,16 +293,16 @@ describe('createSlatePlugin', () => {
       const plugin = resolvePluginTest(
         createSlatePlugin({
           key: 'a',
-          type: 'a',
+          node: { type: 'a' },
         }).extendPlugin(
           { key: 'aa' },
           {
-            type: 'aaa',
+            node: { type: 'aaa' },
           }
         )
       );
 
-      expect(plugin.plugins[0].type).toBe('aaa');
+      expect(plugin.plugins[0].node.type).toBe('aaa');
     });
   });
 
@@ -297,23 +311,23 @@ describe('createSlatePlugin', () => {
       const plugin = resolvePluginTest(
         createSlatePlugin({
           key: 'a',
-          type: 'a',
+          node: { type: 'a' },
         })
           .extendPlugin(
             { key: 'aa' },
             {
-              type: 'aaa',
+              node: { type: 'aaa' },
             }
           )
           .extendPlugin(
             { key: 'aa' },
             {
-              type: 'aab',
+              node: { type: 'aab' },
             }
           )
       );
 
-      expect(plugin.plugins[0].type).toBe('aab');
+      expect(plugin.plugins[0].node.type).toBe('aab');
     });
   });
 
@@ -321,51 +335,51 @@ describe('createSlatePlugin', () => {
     it('should be', () => {
       const basePlugin = createSlatePlugin({
         key: 'a',
+        node: { type: 'a' },
         options: {
           a: 1,
         },
-        type: 'a',
       });
 
       const plugin = resolvePluginTest(
         basePlugin
           .extend({
             inject: {
-              props: {
+              nodeProps: {
                 nodeKey: 'b',
               },
             },
+            node: { type: 'b' },
             options: {
               b: 1,
             },
-            type: 'b',
           })
           .extend({
             inject: {
-              props: {
+              nodeProps: {
                 nodeKey: 'c',
               },
             },
+            node: { type: 'b' },
             options: {
               b: 1,
               c: 1,
             },
-            type: 'b',
           })
       );
 
       expect({
         inject: plugin.inject,
         key: plugin.key,
-        type: plugin.type,
+        node: { type: plugin.node.type },
       }).toEqual({
         inject: {
-          props: {
+          nodeProps: {
             nodeKey: 'c',
           },
         },
         key: 'a',
-        type: 'b',
+        node: { type: 'b' },
       });
     });
   });
@@ -374,8 +388,8 @@ describe('createSlatePlugin', () => {
     it('should directly merge object configs and use __extensions for function configs', () => {
       const basePlugin = createSlatePlugin({
         key: 'test',
+        node: { type: 'base' },
         options: { initial: true },
-        type: 'base',
       });
 
       const extendedWithFunction = basePlugin.extend(({ getOptions }) => ({
@@ -383,8 +397,8 @@ describe('createSlatePlugin', () => {
       }));
 
       const extendedWithObject = extendedWithFunction.extend({
+        node: { type: 'extended' },
         options: { extended: true, functional: false },
-        type: 'extended',
       });
 
       // Check object-based extension
@@ -393,7 +407,7 @@ describe('createSlatePlugin', () => {
         functional: false,
         initial: true,
       });
-      expect(extendedWithObject.type).toBe('extended');
+      expect(extendedWithObject.node.type).toBe('extended');
 
       // Check function-based extension
       expect(extendedWithFunction.__extensions).toHaveLength(1);
@@ -406,7 +420,7 @@ describe('createSlatePlugin', () => {
         functional: true,
         initial: true,
       });
-      expect(resolvedPlugin.type).toBe('extended');
+      expect(resolvedPlugin.node.type).toBe('extended');
     });
   });
 
@@ -416,10 +430,10 @@ describe('createSlatePlugin', () => {
         BasicElementsPlugin.extendPlugin(
           { key: 'heading' },
           {
+            node: { type: 'h' },
             options: {
               levels: 5,
             },
-            type: 'h',
           }
         )
       );
@@ -427,13 +441,13 @@ describe('createSlatePlugin', () => {
       const headingPlugin = plugin.plugins.find(
         (p: any) => p.key === 'heading'
       );
-      const { options, type } = headingPlugin!;
+      const { node, options } = headingPlugin!;
 
-      expect({ options, type }).toEqual({
+      expect({ node, options }).toEqual({
+        node: { type: 'h' },
         options: {
           levels: 5,
         },
-        type: 'h',
       });
     });
   });
@@ -443,32 +457,35 @@ describe('createSlatePlugin', () => {
       const plugin = resolvePluginTest(
         createSlatePlugin({
           key: 'a',
+          node: { type: 'a' },
           plugins: [
             createSlatePlugin({
               key: 'aa',
-              type: 'aa',
+              node: { type: 'aa' },
             }),
           ],
-          type: 'a',
         })
           .extend({
-            type: 'a_extend',
+            node: { type: 'a_extend' },
           })
           .extendPlugin(
             { key: 'aa' },
             {
+              node: { type: 'aa_extend' },
               options: {
                 levels: 5,
               },
-              type: 'aa_extend',
             }
           )
       );
 
       const headingPlugin = plugin.plugins.find((p) => p.key === 'aa');
-      const { options, type } = headingPlugin!;
+      const {
+        node: { type },
+        options,
+      } = headingPlugin!;
 
-      expect({ nestedType: type, options, type: plugin.type }).toEqual({
+      expect({ nestedType: type, options, type: plugin.node.type }).toEqual({
         nestedType: 'aa_extend',
         options: {
           levels: 5,
@@ -510,51 +527,51 @@ describe('createSlatePlugin', () => {
         plugins: [
           createSlatePlugin({
             key: 'a',
+            node: { type: 'a' },
             plugins: [
               createSlatePlugin({
                 key: 'aa',
-                type: 'aa',
+                node: { type: 'aa' },
               }),
             ],
-            type: 'a',
           })
             .extend({
-              type: 'athen',
+              node: { type: 'athen' },
             })
             .extendPlugin(
               { key: 'bb' },
               {
-                type: 'bb',
+                node: { type: 'bb' },
               }
             )
             .extendPlugin(
               { key: 'aa' },
               {
-                type: 'ab',
+                node: { type: 'ab' },
               }
             )
             .extendPlugin(
               { key: 'cc' },
               {
-                type: 'cc',
+                node: { type: 'cc' },
               }
             )
             .extend({
-              type: 'athen2',
+              node: { type: 'athen2' },
             })
             .extend({
-              type: 'a1',
+              node: { type: 'a1' },
             })
             .extendPlugin(
               { key: 'aa' },
               {
-                type: 'aa1',
+                node: { type: 'aa1' },
               }
             )
             .extendPlugin(
               { key: 'cc' },
               {
-                type: 'cc1',
+                node: { type: 'cc1' },
               }
             ),
         ],
@@ -566,16 +583,16 @@ describe('createSlatePlugin', () => {
       const cc = editor.getPlugin({ key: 'cc' });
 
       expect({
-        type: a.type,
+        type: a.node.type,
       }).toEqual({ type: 'a1' });
       expect({
-        type: aa.type,
+        type: aa.node.type,
       }).toEqual({ type: 'aa1' });
       expect({
-        type: bb.type,
+        type: bb.node.type,
       }).toEqual({ type: 'bb' });
       expect({
-        type: cc.type,
+        type: cc.node.type,
       }).toEqual({ type: 'cc1' });
     });
   });
@@ -724,7 +741,7 @@ describe('createSlatePlugin', () => {
         parsers: {
           html: {
             deserializer: {
-              parse: () => ({ type: plugin.type }),
+              parse: () => ({ type: plugin.node.type }),
             },
           },
         },
@@ -732,7 +749,7 @@ describe('createSlatePlugin', () => {
 
       // Configure the plugin to use a custom type
       const configuredPlugin = TableCellPlugin.configure({
-        type: 'custom-td',
+        node: { type: 'custom-td' },
       });
 
       // Resolve the plugin
@@ -750,19 +767,19 @@ describe('createSlatePlugin', () => {
       it('should use the configured type in extendEditor', () => {
         const basePlugin = createSlatePlugin({
           key: 'testPlugin',
-          type: 'defaultType',
+          node: { type: 'defaultType' },
         });
 
-        let type = basePlugin.type;
+        let type = basePlugin.node.type;
 
         const configuredPlugin = basePlugin
           .configure({
-            type: 'customType',
+            node: { type: 'customType' },
           })
           .extend({
             extendEditor: ({ editor, plugin }) => {
               editor.insertText = () => {
-                type = plugin.type;
+                type = plugin.node.type;
               };
 
               return editor;

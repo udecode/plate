@@ -14,7 +14,7 @@ import type { AnySlatePlugin } from '../plugin/SlatePlugin';
 import type { InferPlugins, SlateEditor, TSlateEditor } from './SlateEditor';
 
 import { createSlatePlugin } from '../plugin/createSlatePlugin';
-import { getSlatePlugin } from '../plugin/getSlatePlugin';
+import { getPluginType, getSlatePlugin } from '../plugin/getSlatePlugin';
 import { type CorePlugin, getCorePlugins } from '../plugins/getCorePlugins';
 import { pipeNormalizeInitialValue } from '../utils/pipeNormalizeInitialValue';
 import { resolvePlugins } from '../utils/resolvePlugins';
@@ -112,11 +112,15 @@ export const withSlate = <
   editor.getApi = () => editor.api as any;
   editor.getTransforms = () => editor.transforms as any;
   editor.getPlugin = (plugin) => getSlatePlugin(editor, plugin) as any;
-  editor.getType = (plugin) => editor.getPlugin<AnySlatePlugin>(plugin).type;
-  editor.getInjectProps = (plugin) =>
-    editor.getPlugin<AnySlatePlugin>(plugin).inject?.props ?? ({} as any);
-
-  editor.getOptionsStore = (plugin) => editor.getPlugin(plugin).optionsStore;
+  editor.getType = (plugin) => getPluginType(editor, plugin);
+  editor.getInjectProps = (plugin) => {
+    return (
+      editor.getPlugin<AnySlatePlugin>(plugin).inject?.nodeProps ?? ({} as any)
+    );
+  };
+  editor.getOptionsStore = (plugin) => {
+    return editor.getPlugin(plugin).optionsStore;
+  };
   editor.getOptions = (plugin) => {
     const store = editor.getOptionsStore(plugin);
 

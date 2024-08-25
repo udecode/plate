@@ -8,7 +8,7 @@ import type { EditorPlugin, TransformOptions } from '../plugin/SlatePlugin';
 import { getEditorPlugin } from '../plugin';
 import { getKeyByType } from './getKeysByTypes';
 
-export interface GetInjectPropsOptions {
+export interface GetInjectNodePropsOptions {
   /** Existing className. */
   className?: string;
 
@@ -22,7 +22,7 @@ export interface GetInjectPropsOptions {
   text?: TText;
 }
 
-export interface GetInjectPropsReturnType extends AnyObject {
+export interface GetInjectNodePropsReturnType extends AnyObject {
   className?: string;
   style?: CSSStyleDeclaration;
 }
@@ -34,13 +34,13 @@ export interface GetInjectPropsReturnType extends AnyObject {
  * override `className` with it. If `styleKey` is defined, override `style` with
  * `[styleKey]: value`.
  */
-export const pluginInjectProps = (
+export const pluginInjectNodeProps = (
   editor: SlateEditor,
   plugin: EditorPlugin,
-  nodeProps: GetInjectPropsOptions
-): GetInjectPropsReturnType | undefined => {
+  nodeProps: GetInjectNodePropsOptions
+): GetInjectNodePropsReturnType | undefined => {
   const {
-    inject: { props, targetPlugins },
+    inject: { nodeProps: injectNodeProps, targetPlugins },
     key,
   } = plugin;
 
@@ -49,7 +49,7 @@ export const pluginInjectProps = (
   const node = element ?? text;
 
   if (!node) return;
-  if (!props) return;
+  if (!injectNodeProps) return;
 
   const {
     classNames,
@@ -62,10 +62,10 @@ export const pluginInjectProps = (
     transformProps,
     transformStyle,
     validNodeValues,
-  } = props;
+  } = injectNodeProps;
 
   const queryResult = query?.({
-    ...props,
+    ...injectNodeProps,
     ...(getEditorPlugin(editor, plugin) as any),
     nodeProps,
   });
@@ -100,7 +100,7 @@ export const pluginInjectProps = (
   const value = transformNodeValue?.(transformOptions) ?? nodeValue;
   transformOptions.value = value;
 
-  let res: GetInjectPropsReturnType = {};
+  let res: GetInjectNodePropsReturnType = {};
 
   if (element) {
     res.className = clsx(className, `slate-${nodeKey}-${nodeValue}`);

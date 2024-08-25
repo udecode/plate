@@ -2,8 +2,8 @@ import { createSlatePlugin, someHtmlElement } from '@udecode/plate-common';
 
 /** Enables support for bold formatting */
 export const BoldPlugin = createSlatePlugin({
-  isLeaf: true,
   key: 'bold',
+  node: { isLeaf: true },
   parsers: {
     html: {
       deserializer: {

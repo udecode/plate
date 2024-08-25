@@ -5,6 +5,6 @@ export type TToggleElement = {
 };
 
 export const TogglePlugin = createTSlatePlugin({
-  isElement: true,
+  node: { isElement: true },
   key: 'toggle',
 });

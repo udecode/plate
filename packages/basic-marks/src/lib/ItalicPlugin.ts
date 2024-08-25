@@ -2,8 +2,8 @@ import { createSlatePlugin, someHtmlElement } from '@udecode/plate-common';
 
 /** Enables support for italic formatting. */
 export const ItalicPlugin = createSlatePlugin({
-  isLeaf: true,
   key: 'italic',
+  node: { isLeaf: true },
   parsers: {
     html: {
       deserializer: {

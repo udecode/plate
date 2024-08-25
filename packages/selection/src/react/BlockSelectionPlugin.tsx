@@ -72,17 +72,6 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
       if (event.button === 2) event.preventDefault();
     },
   },
-  inject: {
-    aboveComponent:
-      () =>
-      ({ children, element }) =>
-        BlockSelectable({
-          children,
-          options: {
-            element,
-          },
-        }),
-  },
   key: 'blockSelection',
   options: {
     isSelecting: false,
@@ -96,6 +85,17 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
       right: 4,
       top: 4,
     },
+  },
+  render: {
+    aboveNodes:
+      () =>
+      ({ children, element }) =>
+        BlockSelectable({
+          children,
+          options: {
+            element,
+          },
+        }),
   },
   useHooks: useHooksBlockSelection,
 })
@@ -159,33 +159,35 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
     })
   )
   .extend(({ getOptions }) => ({
-    renderAboveEditable: ({ children }) => (
-      <BlockSelectionArea>
-        <BlockStartArea
-          state={{
-            placement: 'left',
-            size: getOptions().sizes?.left,
-          }}
-        />
-        <BlockStartArea
-          state={{
-            placement: 'top',
-            size: getOptions().sizes?.top,
-          }}
-        />
-        <BlockStartArea
-          state={{
-            placement: 'right',
-            size: getOptions().sizes?.right,
-          }}
-        />
-        <BlockStartArea
-          state={{
-            placement: 'bottom',
-            size: getOptions().sizes?.bottom,
-          }}
-        />
-        {children}
-      </BlockSelectionArea>
-    ),
+    render: {
+      aboveEditable: ({ children }) => (
+        <BlockSelectionArea>
+          <BlockStartArea
+            state={{
+              placement: 'left',
+              size: getOptions().sizes?.left,
+            }}
+          />
+          <BlockStartArea
+            state={{
+              placement: 'top',
+              size: getOptions().sizes?.top,
+            }}
+          />
+          <BlockStartArea
+            state={{
+              placement: 'right',
+              size: getOptions().sizes?.right,
+            }}
+          />
+          <BlockStartArea
+            state={{
+              placement: 'bottom',
+              size: getOptions().sizes?.bottom,
+            }}
+          />
+          {children}
+        </BlockSelectionArea>
+      ),
+    },
   }));

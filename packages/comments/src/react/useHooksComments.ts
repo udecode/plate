@@ -1,9 +1,9 @@
 import { isExpanded } from '@udecode/plate-common';
-import { type PlateUseHooks, useHotkeys } from '@udecode/plate-common/react';
+import { type UseHooks, useHotkeys } from '@udecode/plate-common/react';
 
 import { useAddCommentMark, useCommentsActions } from './stores';
 
-export const useHooksComments: PlateUseHooks = ({ editor }) => {
+export const useHooksComments: UseHooks = ({ editor }) => {
   const addCommentMark = useAddCommentMark();
   const setFocusTextarea = useCommentsActions().focusTextarea();
 

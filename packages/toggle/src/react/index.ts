@@ -3,7 +3,7 @@
  */
 
 export * from './TogglePlugin';
-export * from './injectToggle';
+export * from './renderToggleAboveNodes';
 export * from './toggle-controller-store';
 export * from './withToggle';
 export * from './hooks/index';

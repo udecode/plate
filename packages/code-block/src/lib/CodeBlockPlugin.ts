@@ -24,13 +24,13 @@ export type CodeBlockConfig = PluginConfig<
 
 export const CodeLinePlugin = createSlatePlugin({
   decorate: decorateCodeLine,
-  isElement: true,
   key: 'code_line',
+  node: { isElement: true },
 });
 
 export const CodeSyntaxPlugin = createSlatePlugin({
-  isLeaf: true,
   key: 'code_syntax',
+  node: { isLeaf: true },
 });
 
 export const CodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
@@ -50,8 +50,8 @@ export const CodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
       },
     },
   },
-  isElement: true,
   key: 'code_block',
+  node: { isElement: true },
   options: {
     syntax: true,
     syntaxPopularFirst: false,

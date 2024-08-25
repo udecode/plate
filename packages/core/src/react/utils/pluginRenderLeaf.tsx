@@ -10,25 +10,28 @@ import { getRenderNodeProps } from './getRenderNodeProps';
 export type RenderLeaf = (props: PlateRenderLeafProps) => React.ReactElement;
 
 /**
- * Get a `Editable.renderLeaf` handler for `options.type`. If the type is equals
- * to the slate leaf type, render `options.component`. Else, return `children`.
+ * Get a `Editable.renderLeaf` handler for `plugin.node.type`. If the type is
+ * equals to the slate leaf type, render `plugin.render.node`. Else, return
+ * `children`.
  */
 export const pluginRenderLeaf = (
   editor: PlateEditor,
   plugin: AnyEditorPlatePlugin
 ): RenderLeaf =>
   function render(nodeProps) {
-    const { component } = plugin;
+    const {
+      render: { node },
+    } = plugin;
     const { children, leaf } = nodeProps;
 
-    if (leaf[plugin.type ?? plugin.key]) {
-      const Leaf = component ?? DefaultLeaf;
+    if (leaf[plugin.node.type ?? plugin.key]) {
+      const Leaf = node ?? DefaultLeaf;
 
       const ctxProps = getRenderNodeProps({
         attributes: leaf.attributes as any,
         editor,
-        nodeProps: nodeProps as any,
         plugin,
+        props: nodeProps as any,
       }) as any;
 
       return <Leaf {...ctxProps}>{children}</Leaf>;

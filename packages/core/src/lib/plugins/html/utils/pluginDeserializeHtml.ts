@@ -21,10 +21,8 @@ export const pluginDeserializeHtml = (
   }: { deserializeLeaf?: boolean; element: HTMLElement }
 ): ({ node: AnyObject } & Nullable<HtmlDeserializer>) | undefined => {
   const {
-    isElement: isElementRoot,
-    isLeaf: isLeafRoot,
+    node: { isElement: isElementRoot, isLeaf: isLeafRoot, type },
     parsers,
-    type,
   } = plugin;
 
   const deserializer = parsers?.html?.deserializer;
@@ -76,9 +74,9 @@ export const pluginDeserializeHtml = (
             // Ignore if el style value is falsy (for value *)
             if (value === '*' && !(el.style as any)[key]) return;
 
-            const defaultNodeValue = plugin.inject.props?.defaultNodeValue;
+            const defaultNodeValue = plugin.inject.nodeProps?.defaultNodeValue;
 
-            // Ignore if the style value = plugin.inject.props.defaultNodeValue
+            // Ignore if the style value = plugin.inject.nodeProps.defaultNodeValue
             if (
               defaultNodeValue &&
               defaultNodeValue === (el.style as any)[key]
@@ -120,9 +118,9 @@ export const pluginDeserializeHtml = (
   }
   if (!parse) {
     if (isElement) {
-      parse = () => ({ type });
+      parse = () => ({ type: type });
     } else if (isLeaf) {
-      parse = () => ({ [type]: true });
+      parse = () => ({ [type!]: true });
     } else {
       return;
     }

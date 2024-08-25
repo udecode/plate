@@ -14,14 +14,16 @@ export const serializeMd = (
   editor: SlateEditor,
   options?: Parameters<typeof serializeMdNodes>['1']
 ) => {
-  const plugins = editor.pluginList.filter((p) => p.isElement || p.isLeaf);
+  const plugins = editor.pluginList.filter(
+    (p) => p.node.isElement || p.node.isLeaf
+  );
 
   const nodes = plugins.reduce(
     (acc, plugin) => {
       (acc as any)[plugin.key] = {
-        isLeaf: plugin.isLeaf,
-        isVoid: plugin.isVoid,
-        type: plugin.type,
+        isLeaf: plugin.node.isLeaf,
+        isVoid: plugin.node.isVoid,
+        type: plugin.node.type,
       } as SerializeMdNodeOptions;
 
       return acc;

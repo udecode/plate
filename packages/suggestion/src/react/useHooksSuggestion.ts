@@ -1,13 +1,13 @@
 import React from 'react';
 
-import type { PlateUseHooks } from '@udecode/plate-common/react';
+import type { UseHooks } from '@udecode/plate-common/react';
 
 import { useEditorVersion } from '@udecode/plate-common/react';
 
 import { findSuggestionNode, getSuggestionId } from '../lib';
 import { useSetActiveSuggestionId } from './store/useSetActiveSuggestionId';
 
-export const useHooksSuggestion: PlateUseHooks = ({ editor }) => {
+export const useHooksSuggestion: UseHooks = ({ editor }) => {
   const version = useEditorVersion();
   const setActiveSuggestionId = useSetActiveSuggestionId();
 

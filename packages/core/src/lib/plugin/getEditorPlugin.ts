@@ -24,6 +24,6 @@ export function getEditorPlugin<
     setOption: ((keyOrOptions: any, value: any) =>
       editor.setOption(plugin, keyOrOptions, value)) as any,
     tf: editor.transforms,
-    type: plugin.type,
+    type: plugin.node.type,
   };
 }

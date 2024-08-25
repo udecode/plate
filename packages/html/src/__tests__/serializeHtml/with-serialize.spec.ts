@@ -84,15 +84,19 @@ describe('multiple custom leaf serializers', () => {
 
   it('serialization with the similar renderLeaf/serialize.left options of the same nodes should give the same result', () => {
     const pluginsWithoutSerializers: PlatePlugins = [
-      createPlatePlugin({ component: Bold as any, isLeaf: true, key: 'bold' }), // always bold
+      createPlatePlugin({
+        key: 'bold',
+        node: { isLeaf: true },
+        render: { node: Bold as any },
+      }), // always bold
     ];
 
     const pluginsWithSerializers: PlatePlugins = [
       createPlatePlugin({
-        component: Bold as any,
-        isLeaf: true,
         key: 'bold',
+        node: { isLeaf: true },
         parsers: { htmlReact: { serializer: { parse: Bold } } },
+        render: { node: Bold as any },
       }),
     ];
 

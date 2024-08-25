@@ -10,20 +10,15 @@ import type { MentionPluginOptions } from './types';
 export type MentionConfig = PluginConfig<'mention', MentionPluginOptions>;
 
 export const MentionInputPlugin = createSlatePlugin({
-  isElement: true,
-  isInline: true,
-  isVoid: true,
   key: 'mention_input',
+  node: { isElement: true, isInline: true, isVoid: true },
 });
 
 /** Enables support for autocompleting @mentions. */
 export const MentionPlugin = createTSlatePlugin<MentionConfig>({
   extendEditor: withTriggerCombobox,
-  isElement: true,
-  isInline: true,
-  isMarkableVoid: true,
-  isVoid: true,
   key: 'mention',
+  node: { isElement: true, isInline: true, isMarkableVoid: true, isVoid: true },
   options: {
     createComboboxInput: (trigger) => ({
       children: [{ text: '' }],

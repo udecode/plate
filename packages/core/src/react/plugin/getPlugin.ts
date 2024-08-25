@@ -8,7 +8,7 @@ import { createPlatePlugin } from './createPlatePlugin';
 export function getPlugin<C extends AnyPluginConfig = PluginConfig>(
   editor: PlateEditor,
   plugin: WithRequiredKey<C>
-): C extends { type: any } ? C : PlatePlugin<C> {
+): C extends { node: any } ? C : PlatePlugin<C> {
   return (
     (editor.plugins[plugin.key] as any) ??
     createPlatePlugin({ key: plugin.key })

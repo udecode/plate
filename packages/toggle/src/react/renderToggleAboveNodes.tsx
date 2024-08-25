@@ -1,12 +1,16 @@
 import React from 'react';
 
-import type { InjectComponentReturnType } from '@udecode/plate-common/react';
+import type { NodeWrapperComponentReturnType } from '@udecode/plate-common/react';
 
 import { useIsVisible } from './toggle-controller-store';
 
-export const injectToggle = (): InjectComponentReturnType => WithToggle;
+export const renderToggleAboveNodes = (): NodeWrapperComponentReturnType =>
+  ToggleAboveNodes;
 
-const WithToggle: InjectComponentReturnType = ({ children, element }) => {
+const ToggleAboveNodes: NodeWrapperComponentReturnType = ({
+  children,
+  element,
+}) => {
   const isVisible = useIsVisible(element.id as string);
 
   if (isVisible) return children;

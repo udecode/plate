@@ -17,10 +17,8 @@ const ExampleComboboxPlugin = createSlatePlugin<
   key: 'exampleCombobox',
   plugins: [
     createSlatePlugin({
-      isElement: true,
-      isInline: true,
-      isVoid: true,
       key: 'mention_input',
+      node: { isElement: true, isInline: true, isVoid: true },
     }),
   ],
 });

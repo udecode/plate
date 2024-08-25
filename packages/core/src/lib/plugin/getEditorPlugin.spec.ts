@@ -13,10 +13,10 @@ describe('getEditorPlugin', () => {
   beforeEach(() => {
     testPlugin = createSlatePlugin({
       key: 'test',
+      node: { type: 'test-type' },
       options: {
         testOption: 'testValue',
       },
-      type: 'test-type',
     });
 
     editor = createPlateEditor({
@@ -33,7 +33,10 @@ describe('getEditorPlugin', () => {
     expect(context).toMatchObject({
       api: editor.api,
       editor,
-      plugin: expect.objectContaining({ key: 'test', type: 'test-type' }),
+      plugin: expect.objectContaining({
+        key: 'test',
+        node: { type: 'test-type' },
+      }),
       tf: editor.transforms,
       type: 'test-type',
     });
@@ -48,10 +51,10 @@ describe('getEditorPlugin', () => {
     >;
     const plugin = createTSlatePlugin<Config>({
       key: 'test',
+      node: { type: 'test-type' },
       options: {
         testOption: 'testValue',
       },
-      type: 'test-type',
     });
 
     let a: SlatePluginContext<Config> = {} as any;
@@ -68,7 +71,10 @@ describe('getEditorPlugin', () => {
     expect(context).toMatchObject({
       api: editor.api,
       editor,
-      plugin: expect.objectContaining({ key: 'test', type: 'test-type' }),
+      plugin: expect.objectContaining({
+        key: 'test',
+        node: { type: 'test-type' },
+      }),
       tf: editor.transforms,
       type: 'test-type',
     });
@@ -77,10 +83,10 @@ describe('getEditorPlugin', () => {
   it('should resolve unresolved plugin', () => {
     const unresolvedPlugin = createSlatePlugin({
       key: 'unresolved',
+      node: { type: 'unresolved-type' },
       options: {
         unresolvedOption: 'unresolvedValue',
       },
-      type: 'unresolved-type',
     });
 
     const context = getEditorPlugin(editor, unresolvedPlugin);
@@ -90,7 +96,7 @@ describe('getEditorPlugin', () => {
       editor,
       plugin: expect.objectContaining({
         key: 'unresolved',
-        type: 'unresolved-type',
+        node: { type: 'unresolved-type' },
       }),
       tf: editor.transforms,
       type: 'unresolved-type',

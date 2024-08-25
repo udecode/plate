@@ -2,8 +2,8 @@ import { createSlatePlugin, someHtmlElement } from '@udecode/plate-common';
 
 /** Enables support for strikethrough formatting. */
 export const StrikethroughPlugin = createSlatePlugin({
-  isLeaf: true,
   key: 'strikethrough',
+  node: { isLeaf: true },
   parsers: {
     html: {
       deserializer: {

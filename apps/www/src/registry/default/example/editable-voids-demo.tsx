@@ -24,10 +24,12 @@ import { Editor } from '@/registry/default/plate-ui/editor';
 import { Input } from '@/registry/default/plate-ui/input';
 
 export const EditableVoidPlugin = createPlatePlugin({
-  component: EditableVoidElement,
-  isElement: true,
-  isVoid: true,
   key: 'editable-void',
+  node: {
+    component: EditableVoidElement,
+    isElement: true,
+    isVoid: true,
+  },
 });
 
 export function EditableVoidElement({

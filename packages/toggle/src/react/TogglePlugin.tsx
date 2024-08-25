@@ -6,7 +6,7 @@ import { toTPlatePlugin } from '@udecode/plate-common/react';
 
 import { TogglePlugin as BaseTogglePlugin } from '../lib/TogglePlugin';
 import { useHooksToggle } from './hooks/useHooksToggle';
-import { injectToggle } from './injectToggle';
+import { renderToggleAboveNodes } from './renderToggleAboveNodes';
 import {
   ToggleControllerProvider,
   type buildToggleIndex,
@@ -25,7 +25,9 @@ export type ToggleConfig = PluginConfig<
 /** Enables support for toggleable elements in the editor. */
 export const TogglePlugin = toTPlatePlugin<ToggleConfig>(BaseTogglePlugin, {
   extendEditor: withToggle,
-  inject: { aboveComponent: injectToggle },
-  renderAboveEditable: ToggleControllerProvider,
+  render: {
+    aboveEditable: ToggleControllerProvider,
+    aboveNodes: renderToggleAboveNodes,
+  },
   useHooks: useHooksToggle,
 });

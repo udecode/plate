@@ -12,8 +12,8 @@ import { getEmptyCellNode } from './utils';
 import { withTable } from './withTable';
 
 export const TableRowPlugin = createSlatePlugin({
-  isElement: true,
   key: 'tr',
+  node: { isElement: true },
   parsers: {
     html: {
       deserializer: {
@@ -24,8 +24,8 @@ export const TableRowPlugin = createSlatePlugin({
 });
 
 export const TableCellPlugin = createSlatePlugin({
-  isElement: true,
   key: 'td',
+  node: { isElement: true },
 }).extend(({ editor }) => ({
   parsers: {
     html: {
@@ -39,8 +39,8 @@ export const TableCellPlugin = createSlatePlugin({
 }));
 
 export const TableCellHeaderPlugin = createSlatePlugin({
-  isElement: true,
   key: 'th',
+  node: { isElement: true },
 }).extend(({ editor }) => ({
   parsers: {
     html: {
@@ -56,8 +56,8 @@ export const TableCellHeaderPlugin = createSlatePlugin({
 /** Enables support for tables. */
 export const TablePlugin = createTSlatePlugin<TableConfig>({
   extendEditor: withTable,
-  isElement: true,
   key: 'table',
+  node: { isElement: true },
   options: {
     _cellIndices: new WeakMap(),
     enableMerging: false,

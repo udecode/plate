@@ -4,7 +4,10 @@ import type { Range } from 'slate';
 
 import type { SlateEditor } from '../editor';
 import type { Nullable } from '../types/misc';
-import type { GetInjectPropsOptions, GetInjectPropsReturnType } from '../utils';
+import type {
+  GetInjectNodePropsOptions,
+  GetInjectNodePropsReturnType,
+} from '../utils';
 import type {
   AnyPluginConfig,
   BaseDeserializer,
@@ -25,34 +28,19 @@ import type { HandlerReturnType } from './HandlerReturnType';
 
 /** The `PlatePlugin` interface is a base interface for all plugins. */
 export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
-  handlers: {};
-  inject: {
+  handlers: Nullable<{}>;
+  inject: Nullable<{
+    nodeProps?: InjectNodeProps<WithAnyKey<C>>;
     plugins?: Record<string, Partial<EditorPlugin<AnyPluginConfig>>>;
-    props?: InjectProps<WithAnyKey<C>>;
     targetPluginToInject?: (
       ctx: { targetPlugin: string } & SlatePluginContext<C>
     ) => Partial<SlatePlugin<AnyPluginConfig>>;
-  };
+  }>;
   override: {
     plugins?: Record<string, Partial<EditorPlugin<AnyPluginConfig>>>;
   };
   parser: Nullable<Parser<WithAnyKey<C>>>;
 
-  // ast: Nullable<{
-  //   /** Function to deserialize AST to Slate nodes. */
-  //   deserialize?: DeserializeAst<WithAnyKey<C>>;
-  //   /** Function to serialize Slate nodes to AST. */
-  //   serialize?: SerializeAst<WithAnyKey<C>>;
-  // }>;
-  /** Markdown parser configuration. */
-  // markdown: Nullable<{
-  //   /** Function to deserialize Markdown to Slate nodes. */
-  //   deserialize?: DeserializeMarkdown<WithAnyKey<C>>;
-  //   /** Function to serialize Slate nodes to Markdown. */
-  //   serialize?: SerializeMarkdown<WithAnyKey<C>>;
-  // }>;
-
-  // Parsers
   parsers:
     | ({
         [K in string]: {
@@ -296,9 +284,14 @@ export type SlatePluginConfig<
   EA = {},
   ET = {},
 > = Partial<
-  { api: EA; options: EO; transforms: ET } & Omit<
+  {
+    api: EA;
+    node: Partial<SlatePlugin['node']>;
+    options: EO;
+    transforms: ET;
+  } & Omit<
     SlatePlugin<PluginConfig<K, Partial<O>, A, T>>,
-    'api' | 'optionsStore' | 'transforms' | keyof SlatePluginMethods
+    'api' | 'node' | 'optionsStore' | 'transforms' | keyof SlatePluginMethods
   >
 >;
 
@@ -397,18 +390,18 @@ export type Decorate<C extends AnyPluginConfig = PluginConfig> = (
   ctx: { entry: TNodeEntry } & SlatePluginContext<C>
 ) => Range[] | undefined;
 
-export type InjectProps<C extends AnyPluginConfig = PluginConfig> = {
+export type InjectNodeProps<C extends AnyPluginConfig = PluginConfig> = {
   query?: (
     options: {
-      nodeProps: GetInjectPropsOptions;
-    } & NonNullable<NonNullable<InjectProps>> &
+      nodeProps: GetInjectNodePropsOptions;
+    } & NonNullable<NonNullable<InjectNodeProps>> &
       SlatePluginContext<C>
   ) => boolean;
   transformClassName?: (options: TransformOptions<C>) => any;
   transformNodeValue?: (options: TransformOptions<C>) => any;
   transformProps?: (
     options: {
-      props: GetInjectPropsReturnType;
+      props: GetInjectNodePropsReturnType;
     } & TransformOptions<C>
   ) => AnyObject | undefined;
   transformStyle?: (options: TransformOptions<C>) => CSSStyleDeclaration;

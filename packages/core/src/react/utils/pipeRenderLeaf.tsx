@@ -5,7 +5,7 @@ import type { TEditableProps } from '@udecode/slate-react';
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { PlateRenderLeafProps } from '../plugin/PlateRenderLeafProps';
 
-import { pipeInjectProps } from '../../lib';
+import { pipeInjectNodeProps } from '../../lib';
 import { DefaultLeaf } from '../components';
 import { type RenderLeaf, pluginRenderLeaf } from './pluginRenderLeaf';
 
@@ -17,13 +17,16 @@ export const pipeRenderLeaf = (
   const renderLeafs: RenderLeaf[] = [];
 
   editor.pluginList.forEach((plugin) => {
-    if (plugin.isLeaf && plugin.key) {
+    if (plugin.node.isLeaf && plugin.key) {
       renderLeafs.push(pluginRenderLeaf(editor, plugin));
     }
   });
 
   return function render(nodeProps) {
-    const props = pipeInjectProps(editor, nodeProps) as PlateRenderLeafProps;
+    const props = pipeInjectNodeProps(
+      editor,
+      nodeProps
+    ) as PlateRenderLeafProps;
 
     renderLeafs.forEach((renderLeaf) => {
       const newChildren = renderLeaf(props as any);

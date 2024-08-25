@@ -6,14 +6,14 @@ export const getKeysByTypes = (
   types: string[]
 ): string[] => {
   return Object.values(editor.plugins)
-    .filter((plugin) => types.includes(plugin.type))
+    .filter((plugin) => types.includes(plugin.node.type))
     .map((plugin) => plugin.key);
 };
 
 /** Get plugin key by type */
 export const getKeyByType = (editor: SlateEditor, type: string): string => {
   const plugin = Object.values(editor.plugins).find(
-    (plugin) => plugin.type === type
+    (plugin) => plugin.node.type === type
   );
 
   return plugin?.key ?? type;

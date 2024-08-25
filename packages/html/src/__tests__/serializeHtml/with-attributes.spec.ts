@@ -9,9 +9,11 @@ import { createPlateUIEditor } from '../create-plate-ui-editor';
 it('serialize link to html with attributes', () => {
   const plugins = [
     LinkPlugin.extend(() => ({
-      props: {
-        rel: 'noopener nofollow',
-        target: '_blank',
+      node: {
+        props: {
+          rel: 'noopener nofollow',
+          target: '_blank',
+        },
       },
     })),
   ];

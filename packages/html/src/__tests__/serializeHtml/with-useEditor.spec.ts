@@ -13,13 +13,13 @@ it('serialize elements using useSlateStatic', () => {
   const plugins = [
     TodoListPlugin,
     ListPlugin.extendPlugin(ListItemPlugin, {
-      type: 'list-item',
+      node: { type: 'list-item' },
     })
       .extendPlugin(ListItemContentPlugin, {
-        type: 'list-item-child',
+        node: { type: 'list-item-child' },
       })
       .extendPlugin(BulletedListPlugin, {
-        type: 'unordered-list',
+        node: { type: 'unordered-list' },
       }),
   ];
   const editor = createPlateUIEditor({ plugins });

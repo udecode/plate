@@ -12,14 +12,14 @@ export const withInlineVoid: ExtendEditor = ({ editor }) => {
   const markableVoidTypes: string[] = [];
 
   editor.pluginList.forEach((plugin) => {
-    if (plugin.isInline) {
-      inlineTypes.push(plugin.type);
+    if (plugin.node.isInline) {
+      inlineTypes.push(plugin.node.type);
     }
-    if (plugin.isVoid) {
-      voidTypes.push(plugin.type);
+    if (plugin.node.isVoid) {
+      voidTypes.push(plugin.node.type);
     }
-    if (plugin.isMarkableVoid) {
-      markableVoidTypes.push(plugin.type);
+    if (plugin.node.isMarkableVoid) {
+      markableVoidTypes.push(plugin.node.type);
     }
   });
 

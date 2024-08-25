@@ -19,8 +19,8 @@ export type RenderElement = (
 ) => React.ReactElement | undefined;
 
 /**
- * Get a `Editable.renderElement` handler for `options.type`. If the type is
- * equals to the slate element type, render `options.component`. Else, return
+ * Get a `Editable.renderElement` handler for `plugin.node.type`. If the type is
+ * equals to the slate element type, render `plugin.render.node`. Else, return
  * `undefined` so the pipeline can check the next plugin.
  */
 export const pluginRenderElement = (
@@ -28,29 +28,32 @@ export const pluginRenderElement = (
   plugin: AnyEditorPlatePlugin
 ): RenderElement =>
   function render(nodeProps) {
-    const { component: _component, key } = plugin;
+    const {
+      key,
+      render: { node },
+    } = plugin;
     const { children: _children, element } = nodeProps;
 
-    if (element.type === plugin.type) {
-      const Element = _component ?? DefaultElement;
+    if (element.type === plugin.node.type) {
+      const Element = node ?? DefaultElement;
 
-      const injectAboveComponents = editor.pluginList.flatMap(
-        (o) => o.inject?.aboveComponent ?? []
+      const aboveNodes = editor.pluginList.flatMap(
+        (o) => o.render?.aboveNodes ?? []
       );
-      const injectBelowComponents = editor.pluginList.flatMap(
-        (o) => o.inject?.belowComponent ?? []
+      const belowNodes = editor.pluginList.flatMap(
+        (o) => o.render?.belowNodes ?? []
       );
 
       nodeProps = getRenderNodeProps({
         attributes: element.attributes as any,
         editor,
-        nodeProps: nodeProps as any,
         plugin,
+        props: nodeProps as any,
       }) as any;
 
       let children = _children;
 
-      injectBelowComponents.forEach((withHOC) => {
+      belowNodes.forEach((withHOC) => {
         const hoc = withHOC({ ...nodeProps, key } as any);
 
         if (hoc) {
@@ -62,7 +65,7 @@ export const pluginRenderElement = (
         <Element {...nodeProps}>{children}</Element>
       );
 
-      injectAboveComponents.forEach((withHOC) => {
+      aboveNodes.forEach((withHOC) => {
         const hoc = withHOC({ ...nodeProps, key } as any);
 
         if (hoc) {

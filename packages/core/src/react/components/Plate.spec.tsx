@@ -406,13 +406,15 @@ describe('Plate', () => {
     });
   });
 
-  describe('when renderAboveSlate renders null', () => {
+  describe('when render aboveSlate renders null', () => {
     it('should not normalize editor children', () => {
       const plugins: PlatePlugins = [
         createPlatePlugin({
           key: 'a',
-          renderAboveSlate: () => {
-            return null;
+          render: {
+            aboveSlate: () => {
+              return null;
+            },
           },
         }),
       ];

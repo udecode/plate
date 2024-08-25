@@ -149,8 +149,8 @@ describe('TPlateEditor', () => {
 
   describe('Plugin', () => {
     const BoldPlugin = createSlatePlugin<'bold'>({
-      isLeaf: true,
       key: 'bold',
+      node: { isLeaf: true },
       parsers: {
         html: {
           deserializer: {

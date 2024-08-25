@@ -6,7 +6,7 @@ import { DefaultElement } from 'slate-react';
 
 import type { PlateEditor } from '../editor/PlateEditor';
 
-import { pipeInjectProps } from '../../lib';
+import { pipeInjectNodeProps } from '../../lib';
 import { type RenderElement, pluginRenderElement } from './pluginRenderElement';
 
 /** @see {@link RenderElement} */
@@ -17,13 +17,13 @@ export const pipeRenderElement = (
   const renderElements: RenderElement[] = [];
 
   editor.pluginList.forEach((plugin) => {
-    if (plugin.isElement) {
+    if (plugin.node.isElement) {
       renderElements.push(pluginRenderElement(editor, plugin));
     }
   });
 
   return function render(nodeProps) {
-    const props = pipeInjectProps(editor, nodeProps);
+    const props = pipeInjectNodeProps(editor, nodeProps);
 
     let element;
 

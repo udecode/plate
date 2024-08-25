@@ -2,7 +2,7 @@ import type React from 'react';
 
 import type { TRenderElementProps } from '@udecode/slate-react';
 
-import { getEditorPlugin, pipeInjectProps } from '@udecode/plate-common';
+import { getEditorPlugin, pipeInjectNodeProps } from '@udecode/plate-common';
 import {
   type PlateEditor,
   type PlateProps,
@@ -35,17 +35,17 @@ export const elementToHtml = (
     return html;
   }
 
-  props = pipeInjectProps(editor, props);
+  props = pipeInjectNodeProps(editor, props);
 
   // Search for matching plugin based on element type
   editor.pluginList.some((plugin) => {
     const serializer = plugin.parsers.htmlReact?.serializer;
 
     if (
-      !plugin.isElement ||
+      !plugin.node.isElement ||
       serializer === null ||
       (serializer?.query && !serializer.query(props as any)) ||
-      props.element.type !== plugin.type
+      props.element.type !== plugin.node.type
     ) {
       return false;
     }

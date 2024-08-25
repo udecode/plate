@@ -1,9 +1,8 @@
 import { createSlatePlugin } from '@udecode/plate-common';
 
 export const HorizontalRulePlugin = createSlatePlugin({
-  isElement: true,
-  isVoid: true,
   key: 'hr',
+  node: { isElement: true, isVoid: true },
   parsers: {
     html: {
       deserializer: {

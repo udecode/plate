@@ -126,11 +126,11 @@ export const usePlaygroundEditor = (id: any = '') => {
         }),
         HorizontalRulePlugin,
         LinkPlugin.extend({
-          renderAfterEditable: () => <LinkFloatingToolbar />,
+          render: { afterEditable: () => <LinkFloatingToolbar /> },
         }),
         ListPlugin,
         ImagePlugin.extend({
-          renderAfterEditable: ImagePreview,
+          render: { afterEditable: ImagePreview },
         }),
         MediaEmbedPlugin,
         CaptionPlugin.configure({
@@ -231,7 +231,7 @@ export const usePlaygroundEditor = (id: any = '') => {
         }),
         LineHeightPlugin.extend({
           inject: {
-            props: {
+            nodeProps: {
               defaultNodeValue: 1.5,
               validNodeValues: [1, 1.2, 1.5, 2, 3],
             },
@@ -279,7 +279,9 @@ export const usePlaygroundEditor = (id: any = '') => {
         SingleLinePlugin,
         softBreakPlugin,
         tabbablePlugin,
-        TrailingBlockPlugin.configure({ type: ParagraphPlugin.key }),
+        TrailingBlockPlugin.configure({
+          options: { type: ParagraphPlugin.key },
+        }),
         DragOverCursorPlugin,
 
         // Collaboration

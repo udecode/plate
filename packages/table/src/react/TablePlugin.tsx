@@ -12,21 +12,25 @@ import { withTable } from './withTable';
 export const TableRowPlugin = toPlatePlugin(BaseTableRowPlugin);
 
 export const TableCellPlugin = toPlatePlugin(BaseTableCellPlugin, {
-  props: ({ element }) => ({
-    nodeProps: {
-      colSpan: (element?.attributes as any)?.colspan,
-      rowSpan: (element?.attributes as any)?.rowspan,
-    },
-  }),
+  node: {
+    props: ({ element }) => ({
+      nodeProps: {
+        colSpan: (element?.attributes as any)?.colspan,
+        rowSpan: (element?.attributes as any)?.rowspan,
+      },
+    }),
+  },
 });
 
 export const TableCellHeaderPlugin = toPlatePlugin(BaseTableCellHeaderPlugin, {
-  props: ({ element }) => ({
-    nodeProps: {
-      colSpan: (element?.attributes as any)?.colspan,
-      rowSpan: (element?.attributes as any)?.rowspan,
-    },
-  }),
+  node: {
+    props: ({ element }) => ({
+      nodeProps: {
+        colSpan: (element?.attributes as any)?.colspan,
+        rowSpan: (element?.attributes as any)?.rowspan,
+      },
+    }),
+  },
 });
 
 /** Enables support for tables with React-specific features. */

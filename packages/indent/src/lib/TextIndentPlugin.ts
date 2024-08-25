@@ -13,7 +13,7 @@ export type TextIndentConfig = PluginConfig<
 
 export const TextIndentPlugin = createTSlatePlugin<TextIndentConfig>({
   inject: {
-    props: {
+    nodeProps: {
       nodeKey: 'textIndent',
       styleKey: 'textIndent',
       transformNodeValue({ getOptions, nodeValue }) {

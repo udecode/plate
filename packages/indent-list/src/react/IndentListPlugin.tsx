@@ -9,8 +9,8 @@ import {
   type IndentListConfig as BaseIndentListConfig,
   IndentListPlugin as BaseIndentListPlugin,
 } from '../lib';
-import { injectIndentListComponent } from './injectIndentListComponent';
 import { onKeyDownIndentList } from './onKeyDownIndentList';
+import { renderIndentListBelowNodes } from './renderIndentListBelowNodes';
 
 export type IndentListConfig = ExtendConfig<
   BaseIndentListConfig,
@@ -34,8 +34,8 @@ export const IndentListPlugin = toTPlatePlugin<IndentListConfig>(
     handlers: {
       onKeyDown: onKeyDownIndentList,
     },
-    inject: {
-      belowComponent: injectIndentListComponent,
+    render: {
+      belowNodes: renderIndentListBelowNodes,
     },
   }
 );

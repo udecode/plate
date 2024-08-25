@@ -9,9 +9,8 @@ import { CloudPlugin, type FileEvent, type SuccessEvent } from '../cloud';
 
 export const CloudAttachmentPlugin = createPlatePlugin({
   dependencies: ['cloud'],
-  isElement: true,
-  isVoid: true,
   key: 'cloud_attachment',
+  node: { isElement: true, isVoid: true },
 }).extendApi(({ editor }) => {
   const { uploadStore } = editor.getOptions(CloudPlugin);
 

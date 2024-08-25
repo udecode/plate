@@ -26,8 +26,8 @@ export type PlateContentProps = {
  * - Decorate prop
  * - DOM handler props
  * - ReadOnly prop
- * - RenderAfterEditable
- * - RenderBeforeEditable
+ * - Render.afterEditable
+ * - Render.beforeEditable
  * - RenderElement prop
  * - RenderLeaf prop
  * - UseHooks
@@ -56,23 +56,25 @@ const PlateContent = React.forwardRef(
 
     editor.pluginList.forEach((plugin) => {
       const {
-        renderAfterEditable: RenderAfterEditable,
-        renderBeforeEditable: RenderBeforeEditable,
+        render: {
+          afterEditable: AfterEditable,
+          beforeEditable: BeforeEditable,
+        },
       } = plugin;
 
-      if (RenderAfterEditable) {
+      if (AfterEditable) {
         afterEditable = (
           <>
             {afterEditable}
-            <RenderAfterEditable {...editableProps} />
+            <AfterEditable {...editableProps} />
           </>
         );
       }
-      if (RenderBeforeEditable) {
+      if (BeforeEditable) {
         beforeEditable = (
           <>
             {beforeEditable}
-            <RenderBeforeEditable {...editableProps} />
+            <BeforeEditable {...editableProps} />
           </>
         );
       }
@@ -95,12 +97,12 @@ const PlateContent = React.forwardRef(
     );
 
     editor.pluginList.forEach((plugin) => {
-      const { renderAboveEditable: RenderAboveEditable } = plugin;
+      const {
+        render: { aboveEditable: AboveEditable },
+      } = plugin;
 
-      if (RenderAboveEditable)
-        aboveEditable = (
-          <RenderAboveEditable>{aboveEditable}</RenderAboveEditable>
-        );
+      if (AboveEditable)
+        aboveEditable = <AboveEditable>{aboveEditable}</AboveEditable>;
     });
 
     return <PlateSlate id={id}>{aboveEditable}</PlateSlate>;

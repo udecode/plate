@@ -1,8 +1,8 @@
 import React from 'react';
 
 import type {
-  InjectComponentProps,
-  InjectComponentReturnType,
+  NodeWrapperComponentProps,
+  NodeWrapperComponentReturnType,
 } from '@udecode/plate-common/react';
 
 import { clsx } from 'clsx';
@@ -11,9 +11,9 @@ import { INDENT_LIST_KEYS } from '../lib';
 import { ULIST_STYLE_TYPES } from '../lib/types';
 import { type IndentListConfig, IndentListPlugin } from './IndentListPlugin';
 
-export const injectIndentListComponent = (
-  injectProps: InjectComponentProps<IndentListConfig>
-): InjectComponentReturnType => {
+export const renderIndentListBelowNodes = (
+  injectProps: NodeWrapperComponentProps<IndentListConfig>
+): NodeWrapperComponentReturnType => {
   const { element } = injectProps;
 
   const listStyleType = element[IndentListPlugin.key] as string;

@@ -30,12 +30,12 @@ describe('when element is p and validNodeName is P', () => {
       pluginDeserializeHtml(
         createPlateEditor(),
         createSlatePlugin({
+          node: { type: ParagraphPlugin.key },
           parsers: {
             html: {
               deserializer,
             },
           },
-          type: ParagraphPlugin.key,
         }),
         { element: document.createElement('p') }
       )?.node
@@ -52,6 +52,7 @@ describe('when element is p, validAttribute', () => {
       pluginDeserializeHtml(
         createPlateEditor(),
         createSlatePlugin({
+          node: { type: ParagraphPlugin.key },
           parsers: {
             html: {
               deserializer: {
@@ -65,7 +66,6 @@ describe('when element is p, validAttribute', () => {
               },
             },
           },
-          type: ParagraphPlugin.key,
         }),
         { element }
       )?.node
@@ -79,6 +79,7 @@ describe('when element is p, validAttribute', () => {
       pluginDeserializeHtml(
         createPlateEditor(),
         createSlatePlugin({
+          node: { type: ParagraphPlugin.key },
           parsers: {
             html: {
               deserializer: {
@@ -92,7 +93,6 @@ describe('when element is p, validAttribute', () => {
               },
             },
           },
-          type: ParagraphPlugin.key,
         }),
         { element }
       )?.node
@@ -109,6 +109,7 @@ describe('when element is p with color and rule style is different', () => {
       pluginDeserializeHtml(
         createPlateEditor(),
         createSlatePlugin({
+          node: { type: ParagraphPlugin.key },
           parsers: {
             html: {
               deserializer: {
@@ -124,7 +125,6 @@ describe('when element is p with color and rule style is different', () => {
               },
             },
           },
-          type: ParagraphPlugin.key,
         }),
         { element }
       )?.node
@@ -141,6 +141,7 @@ describe('when element is p with same style color than rule', () => {
       pluginDeserializeHtml(
         createPlateEditor(),
         createSlatePlugin({
+          node: { type: ParagraphPlugin.key },
           parsers: {
             html: {
               deserializer: {
@@ -156,7 +157,6 @@ describe('when element is p with same style color than rule', () => {
               },
             },
           },
-          type: ParagraphPlugin.key,
         }),
         { element }
       )?.node
@@ -173,6 +173,7 @@ describe('when element has style color and rule style color is *', () => {
       pluginDeserializeHtml(
         createPlateEditor(),
         createSlatePlugin({
+          node: { type: ParagraphPlugin.key },
           parsers: {
             html: {
               deserializer: {
@@ -188,7 +189,6 @@ describe('when element has style color and rule style color is *', () => {
               },
             },
           },
-          type: ParagraphPlugin.key,
         }),
         { element }
       )?.node
@@ -205,7 +205,7 @@ describe('when element is strong and validNodeName is strong', () => {
       pluginDeserializeHtml(
         createPlateEditor(),
         createSlatePlugin({
-          isLeaf: true,
+          node: { isLeaf: true, type: BoldPlugin.key },
           parsers: {
             html: {
               deserializer: {
@@ -217,7 +217,6 @@ describe('when element is strong and validNodeName is strong', () => {
               },
             },
           },
-          type: BoldPlugin.key,
         }),
         { deserializeLeaf: true, element: el }
       )?.node

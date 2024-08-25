@@ -34,8 +34,8 @@ export type ListConfig = PluginConfig<
 >;
 
 export const BulletedListPlugin = createSlatePlugin({
-  isElement: true,
   key: 'ul',
+  node: { isElement: true },
   parsers: {
     html: {
       deserializer: {
@@ -50,14 +50,14 @@ export const BulletedListPlugin = createSlatePlugin({
 });
 
 export const NumberedListPlugin = createSlatePlugin({
-  isElement: true,
   key: 'ol',
+  node: { isElement: true },
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'OL' }] } } },
 });
 
 export const ListItemPlugin = createSlatePlugin({
-  isElement: true,
   key: 'li',
+  node: { isElement: true },
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'LI' }] } } },
 }).extend(({ editor, type }) => ({
   inject: {
@@ -74,8 +74,8 @@ export const ListItemPlugin = createSlatePlugin({
 }));
 
 export const ListItemContentPlugin = createSlatePlugin({
-  isElement: true,
   key: 'lic',
+  node: { isElement: true },
 });
 
 /** Enables support for bulleted, numbered and to-do lists. */

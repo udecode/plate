@@ -14,7 +14,6 @@ export type TocConfig = PluginConfig<
 >;
 
 export const TocPlugin = createTSlatePlugin<TocConfig>({
-  isElement: true,
-  isVoid: true,
   key: 'toc',
+  node: { isElement: true, isVoid: true },
 });

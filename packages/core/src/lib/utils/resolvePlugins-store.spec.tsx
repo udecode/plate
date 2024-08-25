@@ -108,15 +108,15 @@ describe('SlatePlugin store', () => {
   it('should preserve other plugin properties when updating store', () => {
     const p1 = createSlatePlugin({
       key: 'plugin1',
+      node: { type: 'test' },
       options: { value: 1 },
-      type: 'test',
     });
     const editor = createSlateEditor({ plugins: [p1] });
 
     editor.setOption(p1, 'value', 2);
 
     expect(editor.getOptions(p1)).toEqual({ value: 2 });
-    expect(editor.getPlugin(p1).type).toBe('test');
+    expect(editor.getPlugin(p1).node.type).toBe('test');
   });
 
   it('should allow getting the entire store', () => {

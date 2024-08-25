@@ -14,6 +14,6 @@ export type CalloutColor = {
 };
 
 export const CalloutPlugin = createSlatePlugin({
-  isElement: true,
   key: 'callout',
+  node: { isElement: true },
 });

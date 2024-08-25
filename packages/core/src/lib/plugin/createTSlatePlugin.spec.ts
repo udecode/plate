@@ -1,4 +1,4 @@
-import type { PlatePluginComponent } from '../../react';
+import type { NodeComponent } from '../../react';
 import type { PluginConfig } from './BasePlugin';
 
 import { createTPlatePlugin } from '../../react/plugin/createPlatePlugin';
@@ -19,11 +19,11 @@ describe('createTSlatePlugin', () => {
     const basePlugin = resolvePluginTest(
       createTPlatePlugin<PluginConfig<'testPlugin', TestOptions, TestApi>>({
         key: 'testPlugin',
+        node: { type: 'test' },
         options: {
           optionA: 'initial',
           optionB: 10,
         },
-        type: 'test',
       }).extendEditorApi(() => ({
         testMethod: () => {},
       }))
@@ -31,7 +31,7 @@ describe('createTSlatePlugin', () => {
 
     // Test basic plugin creation
     expect(basePlugin.key).toBe('testPlugin');
-    expect(basePlugin.type).toBe('test');
+    expect(basePlugin.node.type).toBe('test');
     expect(basePlugin.options).toEqual({ optionA: 'initial', optionB: 10 });
 
     // Test configure method
@@ -46,21 +46,21 @@ describe('createTSlatePlugin', () => {
 
     // Test extend method
     const extendedPlugin = basePlugin.extend({
+      node: { type: 'extended' },
       options: { optionB: 20 },
-      type: 'extended',
     });
     const resolvedExtended = resolvePluginTest(extendedPlugin);
-    expect(resolvedExtended.type).toBe('extended');
+    expect(resolvedExtended.node.type).toBe('extended');
     expect(resolvedExtended.options).toEqual({
       optionA: 'initial',
       optionB: 20,
     });
 
     // Test withComponent method
-    const MockComponent: PlatePluginComponent = () => null;
+    const MockComponent: NodeComponent = () => null;
     const pluginWithComponent = basePlugin.withComponent(MockComponent);
     const resolvedWithComponent = resolvePluginTest(pluginWithComponent);
-    expect(resolvedWithComponent.component).toBe(MockComponent);
+    expect(resolvedWithComponent.render.node).toBe(MockComponent);
 
     // Test nested plugins and extendPlugin
     const nestedPlugin = createTSlatePlugin<
@@ -114,13 +114,13 @@ describe('createTSlatePlugin', () => {
 
     // Test multiple extends and configurations
     const multiExtendedPlugin = basePlugin
-      .extend({ type: 'firstExtend' })
+      .extend({ node: { type: 'firstExtend' } })
       .configure({ options: { optionA: 'firstConfigure' } })
-      .extend({ type: 'secondExtend' })
+      .extend({ node: { type: 'secondExtend' } })
       .configure({ options: { optionB: 30 } });
 
     const resolvedMultiExtended = resolvePluginTest(multiExtendedPlugin);
-    expect(resolvedMultiExtended.type).toBe('secondExtend');
+    expect(resolvedMultiExtended.node.type).toBe('secondExtend');
     expect(resolvedMultiExtended.options).toEqual({
       optionA: 'initial',
       optionB: 30,

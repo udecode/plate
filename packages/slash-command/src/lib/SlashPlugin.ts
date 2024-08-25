@@ -17,10 +17,8 @@ export type SlashConfig = PluginConfig<
 >;
 
 export const SlashInputPlugin = createSlatePlugin({
-  isElement: true,
-  isInline: true,
-  isVoid: true,
   key: 'slash_input',
+  node: { isElement: true, isInline: true, isVoid: true },
 });
 
 export const SlashPlugin = createTSlatePlugin<SlashConfig>({

@@ -36,7 +36,7 @@ export type IndentConfig = PluginConfig<
 export const IndentPlugin = createTSlatePlugin<IndentConfig>({
   extendEditor: withIndent,
   inject: {
-    props: {
+    nodeProps: {
       nodeKey: 'indent',
       styleKey: 'marginLeft',
       transformNodeValue: ({ getOptions, nodeValue }) => {

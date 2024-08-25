@@ -14,6 +14,7 @@ import type {
 
 type PlatePluginConfig<C extends AnyPluginConfig, EO = {}, EA = {}, ET = {}> = {
   api?: EA & Partial<InferApi<C>>;
+  node?: Partial<PlatePlugin<C>['node']>;
   options?: EO & Partial<InferOptions<C>>;
   transforms?: ET & Partial<InferTransforms<C>>;
 } & Omit<
@@ -27,7 +28,7 @@ type PlatePluginConfig<C extends AnyPluginConfig, EO = {}, EA = {}, ET = {}> = {
       >
     >
   >,
-  'api' | 'options' | 'transforms' | keyof PlatePluginMethods
+  'api' | 'node' | 'options' | 'transforms' | keyof PlatePluginMethods
 >;
 
 const methodsToWrap: (keyof SlatePlugin)[] = [
@@ -85,7 +86,7 @@ export function toPlatePlugin<
   });
 
   plugin.withComponent = (component) => {
-    return plugin.extend({ component }) as any;
+    return plugin.extend({ render: { node: component } }) as any;
   };
 
   if (!extendConfig) return plugin as any;

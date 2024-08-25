@@ -14,7 +14,7 @@ import type {
 import type {
   AnyEditorPlatePlugin,
   EditorPlatePlugin,
-  PlateShortcuts,
+  Shortcuts,
 } from '../plugin/PlatePlugin';
 import type { EXPOSED_STORE_KEYS, PlateStoreState } from '../stores';
 import type { PlateCorePlugin } from './withPlate';
@@ -24,7 +24,7 @@ export type PlateEditor = {
 
   getPlugin: <C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
-  ) => C extends { type: any } ? C : EditorPlatePlugin<C>;
+  ) => C extends { node: any } ? C : EditorPlatePlugin<C>;
 
   pluginList: AnyEditorPlatePlugin[];
 
@@ -35,7 +35,7 @@ export type PlateEditor = {
     value: PlateStoreState[K]
   ) => void;
 
-  shortcuts: PlateShortcuts;
+  shortcuts: Shortcuts;
 
   // Alias for transforms
   tf: PlateEditor['transforms'];

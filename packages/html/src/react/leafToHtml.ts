@@ -1,6 +1,6 @@
 import type { TRenderLeafProps } from '@udecode/slate-react';
 
-import { getEditorPlugin, pipeInjectProps } from '@udecode/plate-common';
+import { getEditorPlugin, pipeInjectNodeProps } from '@udecode/plate-common';
 import {
   type PlateEditor,
   type PlateProps,
@@ -27,10 +27,10 @@ export const leafToHtml = (
   const { children } = props;
 
   return editor.pluginList.reduce((result, plugin) => {
-    if (!plugin.isLeaf) return result;
+    if (!plugin.node.isLeaf) return result;
 
     props = {
-      ...pipeInjectProps(editor, props),
+      ...pipeInjectNodeProps(editor, props),
       children: result,
       ...getEditorPlugin(editor, plugin),
     };

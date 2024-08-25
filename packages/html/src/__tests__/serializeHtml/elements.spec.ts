@@ -240,7 +240,7 @@ it('serialize align className to html', () => {
   const plugins = [
     ParagraphPlugin,
     toPlatePlugin(AlignPlugin, {
-      props: { classNames: { center: 'slate-align-center' } },
+      node: { props: { classNames: { center: 'slate-align-center' } } },
     }),
   ];
 

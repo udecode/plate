@@ -2,8 +2,8 @@ import { createSlatePlugin } from '@udecode/plate-common';
 
 /** Enables support for subscript formatting. */
 export const SubscriptPlugin = createSlatePlugin({
-  isLeaf: true,
   key: 'subscript',
+  node: { isLeaf: true },
   parsers: {
     html: {
       deserializer: {

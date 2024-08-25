@@ -4,12 +4,12 @@ import { withColumn } from './withColumn';
 
 export const ColumnItemPlugin = createSlatePlugin({
   extendEditor: withColumn,
-  isElement: true,
   key: 'column',
+  node: { isElement: true },
 });
 
 export const ColumnPlugin = createSlatePlugin({
-  isElement: true,
   key: 'column_group',
+  node: { isElement: true },
   plugins: [ColumnItemPlugin],
 });

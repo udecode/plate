@@ -23,13 +23,11 @@ export type LinkConfig = ExtendConfig<
     defaultLinkAttributes?: React.AnchorHTMLAttributes<HTMLAnchorElement>;
   },
   {
-    link: LinkApi;
+    link: {
+      getAttributes: OmitFirst<typeof getLinkAttributes>;
+    };
   }
 >;
-
-export type LinkApi = {
-  getAttributes: OmitFirst<typeof getLinkAttributes>;
-};
 
 /** Enables support for hyperlinks. */
 export const LinkPlugin = toTPlatePlugin<LinkConfig>(BaseLinkPlugin, {
@@ -44,7 +42,9 @@ export const LinkPlugin = toTPlatePlugin<LinkConfig>(BaseLinkPlugin, {
     },
   }))
   .extend(({ api }) => ({
-    props: ({ element }) => ({
-      nodeProps: api.link.getAttributes(element as TLinkElement),
-    }),
+    node: {
+      props: ({ element }) => ({
+        nodeProps: api.link.getAttributes(element as TLinkElement),
+      }),
+    },
   }));

@@ -13,9 +13,8 @@ export type MediaEmbedConfig = PluginConfig<'media_embed', MediaPluginOptions>;
  * Instagram posts and tweets or Google Maps.
  */
 export const MediaEmbedPlugin = createTSlatePlugin<MediaEmbedConfig>({
-  isElement: true,
-  isVoid: true,
   key: 'media_embed',
+  node: { isElement: true, isVoid: true },
   options: {
     transformUrl: parseIframeUrl,
   },

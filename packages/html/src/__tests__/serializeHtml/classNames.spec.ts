@@ -41,8 +41,10 @@ it('serialize with slate classNames: a+slate', () => {
   const editor = createPlateUIEditor({
     plugins: [
       ParagraphPlugin.extend({
-        props: {
-          className: 'a slate-test',
+        node: {
+          props: {
+            className: 'a slate-test',
+          },
         },
       }),
     ],
@@ -64,8 +66,10 @@ it('serialize with slate classNames: slate+b', () => {
   const editor = createPlateUIEditor({
     plugins: [
       ParagraphPlugin.extend({
-        props: {
-          className: 'slate-test b',
+        node: {
+          props: {
+            className: 'slate-test b',
+          },
         },
       }),
     ],
@@ -87,8 +91,10 @@ it('serialize with classNames: a+slate+b', () => {
   const editor = createPlateUIEditor({
     plugins: [
       ParagraphPlugin.extend({
-        props: {
-          className: 'a slate-test b',
+        node: {
+          props: {
+            className: 'a slate-test b',
+          },
         },
       }),
     ],
@@ -110,8 +116,10 @@ it('serialize with classNames: a+slate+b+slate', () => {
   const editor = createPlateUIEditor({
     plugins: [
       ParagraphPlugin.extend({
-        props: {
-          className: 'a slate-test b slate-cool',
+        node: {
+          props: {
+            className: 'a slate-test b slate-cool',
+          },
         },
       }),
     ],
@@ -135,8 +143,10 @@ it('serialize with slate classNames: multiple tags', () => {
   const editor = createPlateUIEditor({
     plugins: [
       ParagraphPlugin.extend({
-        props: {
-          className: 'a slate-test b',
+        node: {
+          props: {
+            className: 'a slate-test b',
+          },
         },
       }),
     ],
@@ -164,8 +174,10 @@ it('serialize with custom preserved classname: a+custom', () => {
   const editor = createPlateUIEditor({
     plugins: [
       ParagraphPlugin.extend({
-        props: {
-          className: 'a custom-align-center slate-test',
+        node: {
+          props: {
+            className: 'a custom-align-center slate-test',
+          },
         },
       }),
     ],
@@ -188,8 +200,10 @@ it('serialize without preserving classnames', () => {
   const editor = createPlateUIEditor({
     plugins: [
       ParagraphPlugin.extend({
-        props: {
-          className: 'a custom-align-center slate-test',
+        node: {
+          props: {
+            className: 'a custom-align-center slate-test',
+          },
         },
       }),
     ],
@@ -212,13 +226,17 @@ it('serialize nested with custom preserved classname: a+custom', () => {
   const editor = createPlateUIEditor({
     plugins: [
       ParagraphPlugin.extend({
-        props: {
-          className: 'a custom-align-center slate-test',
+        node: {
+          props: {
+            className: 'a custom-align-center slate-test',
+          },
         },
       }),
       BoldPlugin.extend({
-        props: {
-          className: 'custom-bold',
+        node: {
+          props: {
+            className: 'custom-bold',
+          },
         },
       }),
     ],
@@ -247,8 +265,10 @@ it('serialize with multiple custom classname: a+custom+slate', () => {
   const editor = createPlateUIEditor({
     plugins: [
       ParagraphPlugin.extend({
-        props: {
-          className: 'a custom-align-center slate-test',
+        node: {
+          props: {
+            className: 'a custom-align-center slate-test',
+          },
         },
       }),
     ],

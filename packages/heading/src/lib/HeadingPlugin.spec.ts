@@ -19,7 +19,7 @@ describe('HeadingPlugin', () => {
       HEADING_LEVELS.forEach((level, index) => {
         const plugin = headingPlugin.plugins[index];
         expect(plugin.key).toBe(level);
-        expect(plugin.isElement).toBe(true);
+        expect(plugin.node.isElement).toBe(true);
         expect(plugin.parsers.html.deserializer?.rules).toEqual([
           { validNodeName: `H${index + 1}` },
         ]);
@@ -92,7 +92,7 @@ describe('HeadingPlugin', () => {
       const headingPlugin = editor.getPlugin(HeadingPlugin);
 
       headingPlugin.plugins.forEach((plugin, index) => {
-        expect(plugin.isElement).toBe(true);
+        expect(plugin.node.isElement).toBe(true);
         expect(plugin.handlers?.onKeyDown).not.toBeDefined();
         expect(plugin.parsers.html.deserializer?.rules).toEqual([
           { validNodeName: `H${index + 1}` },
@@ -115,7 +115,7 @@ describe('HeadingPluginReact', () => {
       HEADING_LEVELS.forEach((level, index) => {
         const plugin = headingPlugin.plugins[index];
         expect(plugin.key).toBe(level);
-        expect(plugin.isElement).toBe(true);
+        expect(plugin.node.isElement).toBe(true);
         expect(plugin.parsers.html.deserializer?.rules).toEqual([
           { validNodeName: `H${index + 1}` },
         ]);
@@ -189,7 +189,7 @@ describe('HeadingPluginReact', () => {
       const headingPlugin = editor.getPlugin(ReactHeadingPlugin);
 
       headingPlugin.plugins.forEach((plugin, index) => {
-        expect(plugin.isElement).toBe(true);
+        expect(plugin.node.isElement).toBe(true);
         expect(plugin.parsers.html.deserializer?.rules).toEqual([
           { validNodeName: `H${index + 1}` },
         ]);

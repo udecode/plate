@@ -15,6 +15,6 @@ export type SuggestionConfig = PluginConfig<
 
 export const SuggestionPlugin = createTSlatePlugin<SuggestionConfig>({
   extendEditor: withSuggestion,
-  isLeaf: true,
   key: 'suggestion',
+  node: { isLeaf: true },
 });

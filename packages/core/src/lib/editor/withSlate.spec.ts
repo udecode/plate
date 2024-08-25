@@ -51,7 +51,9 @@ describe('withPlate', () => {
       expect(editor.history).toBeDefined();
       expect(editor.key).toBeDefined();
       expect(editor.pluginList.map((plugin) => plugin.key)).toEqual(coreKeys);
-      expect(editor.pluginList.map((plugin) => plugin.type)).toEqual(coreKeys);
+      expect(editor.pluginList.map((plugin) => plugin.node.type)).toEqual(
+        coreKeys
+      );
       expect(Object.keys(editor.plugins)).toEqual(coreKeys);
       expect(
         (editor.getPlugin(SlateNextPlugin).handlers as any).onKeyDown
@@ -93,13 +95,13 @@ describe('withPlate', () => {
     it('should correctly merge and extend nested plugins', () => {
       const parentPlugin = createSlatePlugin({
         key: 'parent',
+        node: { type: 'parentOriginal' },
         plugins: [
           createSlatePlugin({
             key: 'child',
-            type: 'childOriginal',
+            node: { type: 'childOriginal' },
           }),
         ],
-        type: 'parentOriginal',
       });
 
       const editor = withPlate(createTEditor(), {
@@ -107,18 +109,18 @@ describe('withPlate', () => {
         plugins: [
           parentPlugin
             .extend({
-              type: 'parentExtended',
+              node: { type: 'parentExtended' },
             })
             .extendPlugin(
               { key: 'child' },
               {
-                type: 'childExtended',
+                node: { type: 'childExtended' },
               }
             )
             .extendPlugin(
               { key: 'newChild' },
               {
-                type: 'newChildType',
+                node: { type: 'newChildType' },
               }
             ),
         ],
@@ -128,9 +130,9 @@ describe('withPlate', () => {
       const child = editor.getPlugin({ key: 'child' });
       const newChild = editor.getPlugin({ key: 'newChild' });
 
-      expect(parent.type).toBe('parentExtended');
-      expect(child.type).toBe('childExtended');
-      expect(newChild.type).toBe('newChildType');
+      expect(parent.node.type).toBe('parentExtended');
+      expect(child.node.type).toBe('childExtended');
+      expect(newChild.node.type).toBe('newChildType');
     });
   });
 
@@ -150,16 +152,16 @@ describe('withPlate', () => {
       });
 
       const h1Plugin = editor.getPlugin({ key: 'h1' });
-      expect(h1Plugin.component).toBe(customComponent);
+      expect(h1Plugin.render.node).toBe(customComponent);
     });
 
     it('should respect priority when overriding existing components', () => {
       const originalComponent = () => null;
       const overrideComponent = () => null;
       const HeadingPlugin = createPlatePlugin({
-        component: originalComponent,
         key: 'h1',
         priority: 100,
+        render: { node: originalComponent },
       });
 
       // Test with low priority override
@@ -169,7 +171,7 @@ describe('withPlate', () => {
       });
 
       let h1Plugin = editor.getPlugin(HeadingPlugin);
-      expect(h1Plugin.component).toBe(originalComponent);
+      expect(h1Plugin.render.node).toBe(originalComponent);
 
       // Test with high priority override
       editor = withPlate(createTEditor(), {
@@ -182,8 +184,8 @@ describe('withPlate', () => {
         plugins: [HeadingPlugin],
       });
 
-      h1Plugin = getPlugin<typeof h1Plugin>(editor, { key: 'h1' });
-      expect(h1Plugin.component).toBe(overrideComponent);
+      h1Plugin = getPlugin<typeof h1Plugin>(editor, { key: 'h1' }) as any;
+      expect(h1Plugin.render.node).toBe(overrideComponent);
     });
   });
 
@@ -191,7 +193,7 @@ describe('withPlate', () => {
     it('should override plugin properties', () => {
       const CustomPlugin = createSlatePlugin({
         key: 'custom',
-        type: 'originalType',
+        node: { type: 'originalType' },
       });
 
       const editor = withPlate(createTEditor(), {
@@ -199,7 +201,7 @@ describe('withPlate', () => {
         override: {
           plugins: {
             custom: {
-              type: 'overriddenType',
+              node: { type: 'overriddenType' },
             },
           },
         },
@@ -207,7 +209,7 @@ describe('withPlate', () => {
       });
 
       const customPlugin = editor.getPlugin({ key: 'custom' });
-      expect(customPlugin.type).toBe('overriddenType');
+      expect(customPlugin.node.type).toBe('overriddenType');
     });
   });
 
@@ -215,7 +217,7 @@ describe('withPlate', () => {
     it('should replace core plugins with custom plugins, maintain order, and add additional plugins', () => {
       const additionalPlugin = createSlatePlugin({
         key: 'additional',
-        type: 'additional',
+        node: { type: 'additional' },
       });
 
       const editor = withPlate(createTEditor(), {
@@ -224,16 +226,16 @@ describe('withPlate', () => {
       });
 
       const pluginKeys = editor.pluginList.map((plugin) => plugin.key);
-      const pluginTypes = editor.pluginList.map((plugin) => plugin.type);
+      const pluginTypes = editor.pluginList.map((plugin) => plugin.node.type);
       const slateNextPlugin = editor.getPlugin({ key: SlateNextPlugin.key });
 
       // Check if ReactPlugin replaced DOMPlugin
       expect(pluginKeys).toContain(ReactPlugin.key);
-      expect(pluginTypes).toContain(ReactPlugin.type);
+      expect(pluginTypes).toContain(ReactPlugin.node.type);
 
       // Check if ParagraphPlugin is present
       expect(pluginKeys).toContain(ParagraphPlugin.key);
-      expect(pluginTypes).toContain(ParagraphPlugin.type);
+      expect(pluginTypes).toContain(ParagraphPlugin.node.type);
 
       // Check if additional plugin is added
       expect(pluginKeys).toContain('additional');

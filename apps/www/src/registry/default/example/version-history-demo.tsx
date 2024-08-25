@@ -33,16 +33,13 @@ import { PlateUI } from '@/lib/plate/demo/plate-ui';
 import { Button } from '@/registry/default/plate-ui/button';
 
 const InlinePlugin = createPlatePlugin({
-  isElement: true,
-  isInline: true,
   key: 'inline',
+  node: { isElement: true, isInline: true },
 });
 
 const InlineVoidPlugin = createPlatePlugin({
-  isElement: true,
-  isInline: true,
-  isVoid: true,
   key: 'inline-void',
+  node: { isElement: true, isInline: true, isVoid: true },
 });
 
 const diffOperationColors: Record<DiffOperation['type'], string> = {
@@ -127,13 +124,12 @@ const InlineVoidElement = ({ children, ...props }: PlateElementProps) => {
 const DiffPlugin = toPlatePlugin(
   createSlatePlugin({
     extendEditor: withGetFragmentExcludeDiff,
-    isLeaf: true,
     key: 'diff',
+    node: { isLeaf: true },
   }),
   {
-    component: DiffLeaf,
-    inject: {
-      aboveComponent:
+    render: {
+      aboveNodes:
         () =>
         ({ children, editor, element }) => {
           if (!element.diff) return children;
@@ -164,6 +160,7 @@ const DiffPlugin = toPlatePlugin(
             </Component>
           );
         },
+      node: DiffLeaf,
     },
   }
 );

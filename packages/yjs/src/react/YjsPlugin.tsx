@@ -5,5 +5,5 @@ import { RenderAboveEditableYjs } from './RenderAboveEditableYjs';
 
 /** Enables support for real-time collaboration using Yjs. */
 export const YjsPlugin = toPlatePlugin(BaseYjsPlugin, {
-  renderAboveEditable: RenderAboveEditableYjs,
+  render: { aboveEditable: RenderAboveEditableYjs },
 });
