@@ -66,12 +66,12 @@ export type WithSlateOptions<
     Partial<AnySlatePlugin>,
     | 'api'
     | 'decorate'
+    | 'extendEditor'
     | 'inject'
     | 'normalizeInitialValue'
     | 'options'
     | 'override'
     | 'transforms'
-    | 'withOverrides'
   >;
 
 /**

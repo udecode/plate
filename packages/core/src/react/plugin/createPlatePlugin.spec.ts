@@ -53,15 +53,15 @@ describe('withComponent method', () => {
         toggleSyntax: () => {},
       }))
       .extend(() => ({
-        options: {
-          hotkey: ['mod+opt+8', 'mod+shift+8'],
-        },
-        withOverrides: ({ api, editor }) => {
+        extendEditor: ({ api, editor }) => {
           // No type error
           api.plugin.getSyntaxState();
           api.toggleSyntax();
 
           return editor;
+        },
+        options: {
+          hotkey: ['mod+opt+8', 'mod+shift+8'],
         },
       }));
 

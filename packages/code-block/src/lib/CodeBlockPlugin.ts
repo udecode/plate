@@ -34,6 +34,7 @@ export const CodeSyntaxPlugin = createSlatePlugin({
 });
 
 export const CodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
+  extendEditor: withCodeBlock,
   inject: {
     plugins: {
       [HtmlPlugin.key]: {
@@ -57,5 +58,4 @@ export const CodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
   },
   parsers: { html: { deserializer: deserializeHtmlCodeBlock } },
   plugins: [CodeLinePlugin, CodeSyntaxPlugin],
-  withOverrides: withCodeBlock,
 });

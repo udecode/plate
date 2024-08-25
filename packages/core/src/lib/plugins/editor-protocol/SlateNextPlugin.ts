@@ -9,8 +9,8 @@ import {
 import { type OmitFirst, bindFirst } from '@udecode/utils';
 
 import {
+  type ExtendEditor,
   type PluginConfig,
-  type WithOverride,
   createTSlatePlugin,
 } from '../../plugin';
 import { resetEditor, toggleBlock } from '../../transforms';
@@ -32,7 +32,7 @@ export type SlateNextConfig = PluginConfig<
   }
 >;
 
-export const withSlateNext: WithOverride<SlateNextConfig> = ({ editor }) => {
+export const withSlateNext: ExtendEditor<SlateNextConfig> = ({ editor }) => {
   const { apply, deleteBackward, deleteForward, deleteFragment } = editor;
 
   editor.prevSelection = null;
@@ -83,8 +83,8 @@ export const withSlateNext: WithOverride<SlateNextConfig> = ({ editor }) => {
 
 /** Opinionated extension of slate default behavior. */
 export const SlateNextPlugin = createTSlatePlugin<SlateNextConfig>({
+  extendEditor: withSlateNext,
   key: 'slateNext',
-  withOverrides: withSlateNext,
 })
   .extendEditorApi(({ editor }) => ({
     /** Default block fac tory. */

@@ -13,6 +13,7 @@ const ExampleComboboxPlugin = createSlatePlugin<
   string,
   TriggerComboboxPluginOptions
 >({
+  extendEditor: withTriggerCombobox,
   key: 'exampleCombobox',
   plugins: [
     createSlatePlugin({
@@ -22,7 +23,6 @@ const ExampleComboboxPlugin = createSlatePlugin<
       key: 'mention_input',
     }),
   ],
-  withOverrides: withTriggerCombobox,
 });
 
 const plugins = [

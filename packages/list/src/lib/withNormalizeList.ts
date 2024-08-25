@@ -1,7 +1,7 @@
 import {
+  type ExtendEditor,
   ParagraphPlugin,
   type TElement,
-  type WithOverride,
   getChildren,
   getNode,
   getParentNode,
@@ -25,7 +25,7 @@ import { getListTypes, isListRoot } from './queries';
 import { moveListItemsToList } from './transforms';
 
 /** Normalize list node to force the ul>li>p+ul structure. */
-export const withNormalizeList: WithOverride<ListConfig> = ({
+export const withNormalizeList: ExtendEditor<ListConfig> = ({
   editor,
   getOptions,
 }) => {

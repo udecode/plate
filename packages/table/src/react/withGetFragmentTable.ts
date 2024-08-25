@@ -1,12 +1,12 @@
 import type { TDescendant, TElement } from '@udecode/plate-common';
-import type { WithOverride } from '@udecode/plate-common/react';
+import type { ExtendEditor } from '@udecode/plate-common/react';
 
 import type { TTableRowElement, TableConfig } from '../lib/types';
 
 import { getTableGridAbove } from './queries/getTableGridAbove';
 
 /** If selection is in a table, get subtable above. */
-export const withGetFragmentTable: WithOverride<TableConfig> = ({
+export const withGetFragmentTable: ExtendEditor<TableConfig> = ({
   api,
   editor,
   type,

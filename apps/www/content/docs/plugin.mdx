@@ -213,7 +213,7 @@ A paragraph node affected by the above plugin would look like this:
 
 ### With Overrides (Advanced)
 
-Occasionally, you'll need to override the built-in editor methods provided by Slate to work around bugs or add complex functionality. To do this, you can use the **`withOverrides`** plugin option to directly mutate properties of the **`editor`** object after its creation.
+Occasionally, you'll need to override the built-in editor methods provided by Slate to work around bugs or add complex functionality. To do this, you can use the **`extendEditor`** plugin option to directly mutate properties of the **`editor`** object after its creation.
 
 One common application of this technique is to create custom [normalizers](https://docs.slatejs.org/concepts/11-normalizing).
 
@@ -239,7 +239,7 @@ const withCustomNormalizer = <
 
 const createCustomNormalizerPlugin = createPluginFactory({
   key: 'customNormalizer',
-  withOverrides: withCustomNormalizer,
+  extendEditor: withCustomNormalizer,
 });
 ```
 
@@ -297,7 +297,7 @@ const MyEditor = ({ username }: { username: string }) => {
 export default () => <MyEditor username="Marsha P. Johnson" />;
 ```
 
-As you can see from the above example, plugin options can be accessed anywhere that you have a reference to **`editor`** using **`getPluginOptions`**. Options are also exposed from a handful of other APIs, such as the second arguments to the **`then`** and **`withOverrides`** functions.
+As you can see from the above example, plugin options can be accessed anywhere that you have a reference to **`editor`** using **`getPluginOptions`**. Options are also exposed from a handful of other APIs, such as the second arguments to the **`then`** and **`extendEditor`** functions.
 
 ## See also
 

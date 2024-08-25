@@ -1,4 +1,4 @@
-import type { WithOverride } from '@udecode/plate-common/react';
+import type { ExtendEditor } from '@udecode/plate-common/react';
 
 import {
   getBlockAbove,
@@ -24,7 +24,7 @@ import { overrideSelectionFromCell } from './transforms/overrideSelectionFromCel
  * - If focus is in table, anchor in a block after: set focus to the point before
  *   start of table
  */
-export const withSelectionTable: WithOverride<TableConfig> = ({
+export const withSelectionTable: ExtendEditor<TableConfig> = ({
   editor,
   type,
 }) => {

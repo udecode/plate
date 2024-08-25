@@ -49,6 +49,7 @@ export type NodeIdConfig = PluginConfig<
 
 /** @see {@link withNodeId} */
 export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
+  extendEditor: withNodeId,
   key: 'nodeId',
   options: {
     filter: () => true,
@@ -56,5 +57,4 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
     idCreator: () => Math.random().toString(36).slice(2, 7),
     idKey: 'id',
   },
-  withOverrides: withNodeId,
 });

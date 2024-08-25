@@ -1,4 +1,4 @@
-import type { WithOverride } from '@udecode/plate-common/react';
+import type { ExtendEditor } from '@udecode/plate-common/react';
 
 import {
   type TElement,
@@ -13,7 +13,7 @@ import type { TableConfig } from '../lib';
 
 import { getTableGridAbove } from './queries';
 
-export const withMarkTable: WithOverride<TableConfig> = ({ editor }) => {
+export const withMarkTable: ExtendEditor<TableConfig> = ({ editor }) => {
   const { addMark, getMarks, removeMark } = editor;
 
   editor.addMark = (key: string, value: any) => {

@@ -24,8 +24,8 @@ export type ToggleConfig = PluginConfig<
 
 /** Enables support for toggleable elements in the editor. */
 export const TogglePlugin = toTPlatePlugin<ToggleConfig>(BaseTogglePlugin, {
+  extendEditor: withToggle,
   inject: { aboveComponent: injectToggle },
   renderAboveEditable: ToggleControllerProvider,
   useHooks: useHooksToggle,
-  withOverrides: withToggle,
 });

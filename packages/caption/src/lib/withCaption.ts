@@ -1,7 +1,7 @@
 import type { Range } from 'slate';
 
 import {
-  type WithOverride,
+  type ExtendEditor,
   getAboveNode,
   getNodeString,
   getPluginTypes,
@@ -22,7 +22,7 @@ import { type CaptionConfig, CaptionPlugin } from './CaptionPlugin';
  * - If focus is in table, anchor in a block after: set focus to the point before
  *   start of table
  */
-export const withCaption: WithOverride<CaptionConfig> = ({
+export const withCaption: ExtendEditor<CaptionConfig> = ({
   editor,
   getOptions,
 }) => {

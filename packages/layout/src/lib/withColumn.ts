@@ -1,5 +1,5 @@
 import {
-  type WithOverride,
+  type ExtendEditor,
   getAboveNode,
   isCollapsed,
   isElement,
@@ -9,7 +9,7 @@ import {
 import { ColumnItemPlugin } from './ColumnPlugin';
 import { normalizeColumn } from './normalizers/normalizedColumn';
 
-export const withColumn: WithOverride = ({ editor }) => {
+export const withColumn: ExtendEditor = ({ editor }) => {
   const { deleteBackward, isEmpty } = editor;
 
   editor.normalizeNode = normalizeColumn(editor);

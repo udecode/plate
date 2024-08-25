@@ -1,8 +1,8 @@
 import {
+  type ExtendEditor,
   type SlateEditor,
   type TElement,
   type TElementEntry,
-  type WithOverride,
   getBlockAbove,
   getChildren,
   getEditorString,
@@ -220,7 +220,7 @@ const selectionIsInAListHandler = (
   return false;
 };
 
-export const withDeleteForwardList: WithOverride<ListConfig> = ({ editor }) => {
+export const withDeleteForwardList: ExtendEditor<ListConfig> = ({ editor }) => {
   const { deleteForward } = editor;
 
   editor.deleteForward = (unit) => {

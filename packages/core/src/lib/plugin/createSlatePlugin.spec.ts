@@ -746,8 +746,8 @@ describe('createSlatePlugin', () => {
       expect(nodeResult).toEqual({ type: 'custom-td' });
     });
 
-    describe('when configure type and use in withOverrides', () => {
-      it('should use the configured type in withOverrides', () => {
+    describe('when configure type and use in extendEditor', () => {
+      it('should use the configured type in extendEditor', () => {
         const basePlugin = createSlatePlugin({
           key: 'testPlugin',
           type: 'defaultType',
@@ -760,7 +760,7 @@ describe('createSlatePlugin', () => {
             type: 'customType',
           })
           .extend({
-            withOverrides: ({ editor, plugin }) => {
+            extendEditor: ({ editor, plugin }) => {
               editor.insertText = () => {
                 type = plugin.type;
               };

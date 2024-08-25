@@ -1,6 +1,6 @@
 import {
+  type ExtendEditor,
   type TElement,
-  type WithOverride,
   getNode,
   insertElements,
   isElement,
@@ -9,7 +9,7 @@ import {
 
 import type { NormalizeTypesConfig } from './NormalizeTypesPlugin';
 
-export const withNormalizeTypes: WithOverride<NormalizeTypesConfig> = ({
+export const withNormalizeTypes: ExtendEditor<NormalizeTypesConfig> = ({
   editor,
   getOptions,
 }) => {

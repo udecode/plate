@@ -1,8 +1,8 @@
 import type { PathRef } from 'slate';
 
 import {
+  type ExtendEditor,
   type TElement,
-  type WithOverride,
   createPathRef,
   getNode,
 } from '@udecode/plate-common';
@@ -20,7 +20,7 @@ import { getPreviousIndentList } from './queries/getPreviousIndentList';
 import { ListStyleType } from './types';
 import { withNormalizeIndentList } from './withNormalizeIndentList';
 
-export const withIndentList: WithOverride<IndentListConfig> = ({
+export const withIndentList: ExtendEditor<IndentListConfig> = ({
   editor,
   ...ctx
 }) => {

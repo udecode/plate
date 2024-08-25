@@ -91,6 +91,7 @@ export type LinkConfig = PluginConfig<
 
 /** Enables support for hyperlinks. */
 export const LinkPlugin = createTSlatePlugin<LinkConfig>({
+  extendEditor: withLink,
   isElement: true,
   isInline: true,
   key: 'a',
@@ -105,7 +106,6 @@ export const LinkPlugin = createTSlatePlugin<LinkConfig>({
       skipInvalid: true,
     },
   },
-  withOverrides: withLink,
 }).extend(({ editor, type }) => ({
   parsers: {
     html: {

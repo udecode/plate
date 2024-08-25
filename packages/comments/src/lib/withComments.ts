@@ -1,10 +1,10 @@
-import { type WithOverride, unsetNodes } from '@udecode/plate-common';
+import { type ExtendEditor, unsetNodes } from '@udecode/plate-common';
 
 import { CommentsPlugin } from './CommentsPlugin';
 import { removeCommentMark } from './transforms/removeCommentMark';
 import { getCommentCount } from './utils';
 
-export const withComments: WithOverride = ({ editor }) => {
+export const withComments: ExtendEditor = ({ editor }) => {
   const { insertBreak, normalizeNode } = editor;
 
   editor.insertBreak = () => {

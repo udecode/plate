@@ -17,6 +17,7 @@ export const EmojiInputPlugin = createSlatePlugin({
 });
 
 export const EmojiPlugin = createTSlatePlugin<EmojiInputConfig>({
+  extendEditor: withTriggerCombobox,
   key: 'emoji',
   options: {
     createComboboxInput: () => ({
@@ -28,5 +29,4 @@ export const EmojiPlugin = createTSlatePlugin<EmojiInputConfig>({
     triggerPreviousCharPattern: /^\s?$/,
   },
   plugins: [EmojiInputPlugin],
-  withOverrides: withTriggerCombobox,
 });

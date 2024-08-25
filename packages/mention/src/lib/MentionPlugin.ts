@@ -18,6 +18,7 @@ export const MentionInputPlugin = createSlatePlugin({
 
 /** Enables support for autocompleting @mentions. */
 export const MentionPlugin = createTSlatePlugin<MentionConfig>({
+  extendEditor: withTriggerCombobox,
   isElement: true,
   isInline: true,
   isMarkableVoid: true,
@@ -34,5 +35,4 @@ export const MentionPlugin = createTSlatePlugin<MentionConfig>({
     triggerPreviousCharPattern: /^\s?$/,
   },
   plugins: [MentionInputPlugin],
-  withOverrides: withTriggerCombobox,
 });

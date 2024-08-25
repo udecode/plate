@@ -55,6 +55,7 @@ export const TableCellHeaderPlugin = createSlatePlugin({
 
 /** Enables support for tables. */
 export const TablePlugin = createTSlatePlugin<TableConfig>({
+  extendEditor: withTable,
   isElement: true,
   key: 'table',
   options: {
@@ -70,7 +71,6 @@ export const TablePlugin = createTSlatePlugin<TableConfig>({
     },
   },
   plugins: [TableRowPlugin, TableCellPlugin, TableCellHeaderPlugin],
-  withOverrides: withTable,
 })
   .extendApi<TableApi>(({ editor }) => ({
     cellFactory: bindFirst(getEmptyCellNode, editor),

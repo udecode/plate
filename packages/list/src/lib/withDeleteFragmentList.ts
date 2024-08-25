@@ -1,8 +1,8 @@
 import type { Range } from 'slate';
 
 import {
+  type ExtendEditor,
   type SlateEditor,
-  type WithOverride,
   createPathRef,
   deleteMerge,
   getAboveNode,
@@ -27,7 +27,7 @@ const getLiStart = (editor: SlateEditor) => {
   });
 };
 
-export const withDeleteFragmentList: WithOverride<ListConfig> = ({
+export const withDeleteFragmentList: ExtendEditor<ListConfig> = ({
   editor,
 }) => {
   const { deleteFragment } = editor;

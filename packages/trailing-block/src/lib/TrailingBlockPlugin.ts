@@ -20,11 +20,11 @@ export type TrailingBlockConfig = PluginConfig<
 
 /** @see {@link withTrailingBlock} */
 export const TrailingBlockPlugin = createTSlatePlugin<TrailingBlockConfig>({
+  extendEditor: withTrailingBlock,
   key: 'trailingBlock',
   options: {
     level: 0,
   },
-  withOverrides: withTrailingBlock,
 }).extend(({ editor }) => ({
   options: {
     type: editor.getType(ParagraphPlugin),

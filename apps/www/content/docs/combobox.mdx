@@ -31,7 +31,7 @@ Add the withTriggerCombobox override and specify default values for the required
 ```ts
 const MyPlugin = createSlatePlugin<O>({
   // ...
-  withOverrides: withTriggerCombobox,
+  extendEditor: withTriggerCombobox,
   options: {
     createComboboxInput: (trigger) => ({
       children: [{ text: '' }],

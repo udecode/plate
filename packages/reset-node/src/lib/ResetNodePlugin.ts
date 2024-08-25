@@ -24,7 +24,7 @@ export const ResetNodePlugin = createTSlatePlugin<ResetNodeConfig>({
   options: {
     rules: [],
   },
-  withOverrides: ({ editor, getOptions }) => {
+  extendEditor: ({ editor, getOptions }) => {
     const { deleteBackward, deleteFragment } = editor;
 
     editor.deleteFragment = (direction) => {

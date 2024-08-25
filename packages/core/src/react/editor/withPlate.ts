@@ -26,6 +26,7 @@ export type WithPlateOptions<
     Partial<AnyPlatePlugin>,
     | 'api'
     | 'decorate'
+    | 'extendEditor'
     | 'handlers'
     | 'inject'
     | 'normalizeInitialValue'
@@ -39,7 +40,6 @@ export type WithPlateOptions<
     | 'shortcuts'
     | 'transforms'
     | 'useHooks'
-    | 'withOverrides'
   >;
 
 /**

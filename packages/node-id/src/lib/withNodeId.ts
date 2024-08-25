@@ -1,8 +1,8 @@
 import {
+  type ExtendEditor,
   type TDescendant,
   type TNode,
   type TNodeEntry,
-  type WithOverride,
   applyDeepToNodes,
   defaultsDeepToNodes,
   isDefined,
@@ -15,7 +15,7 @@ import cloneDeep from 'lodash/cloneDeep.js';
 import type { NodeIdConfig } from './NodeIdPlugin';
 
 /** Enables support for inserting nodes with an id key. */
-export const withNodeId: WithOverride<NodeIdConfig> = ({
+export const withNodeId: ExtendEditor<NodeIdConfig> = ({
   editor,
   getOptions,
 }) => {

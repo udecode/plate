@@ -1,4 +1,4 @@
-import { type WithOverride, isCollapsed } from '@udecode/plate-common';
+import { type ExtendEditor, isCollapsed } from '@udecode/plate-common';
 
 import type { AutoformatConfig } from './AutoformatPlugin';
 
@@ -10,7 +10,7 @@ import { autoformatText } from './transforms/autoformatText';
  * Enables support for autoformatting actions. Once a match rule is validated,
  * it does not check the following rules.
  */
-export const withAutoformat: WithOverride<AutoformatConfig> = ({
+export const withAutoformat: ExtendEditor<AutoformatConfig> = ({
   editor,
   getOptions,
 }) => {

@@ -1,10 +1,10 @@
-import { type WithOverride, createSlatePlugin } from '../plugin';
+import { type ExtendEditor, createSlatePlugin } from '../plugin';
 
 /**
  * Merge and register all the inline types and void types from the plugins and
  * options, using `editor.isInline`, `editor.markableVoid` and `editor.isVoid`
  */
-export const withInlineVoid: WithOverride = ({ editor }) => {
+export const withInlineVoid: ExtendEditor = ({ editor }) => {
   const { isInline, isVoid, markableVoid } = editor;
 
   const voidTypes: string[] = [];
@@ -42,6 +42,6 @@ export const withInlineVoid: WithOverride = ({ editor }) => {
 
 /** @see {@link withInlineVoid} */
 export const InlineVoidPlugin = createSlatePlugin({
+  extendEditor: withInlineVoid,
   key: 'inlineVoid',
-  withOverrides: withInlineVoid,
 });

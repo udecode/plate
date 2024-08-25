@@ -1,4 +1,5 @@
 import {
+  type ExtendEditor,
   type TAncestor,
   type TAncestorEntry,
   type TDescendant,
@@ -6,7 +7,6 @@ import {
   type TElement,
   type TElementEntry,
   type TText,
-  type WithOverride,
   findNode,
   getCommonNode,
   getNode,
@@ -26,7 +26,7 @@ import {
 } from './ListPlugin';
 import { isListRoot } from './queries';
 
-export const withInsertFragmentList: WithOverride<ListConfig> = ({
+export const withInsertFragmentList: ExtendEditor<ListConfig> = ({
   editor,
 }) => {
   const { insertFragment } = editor;

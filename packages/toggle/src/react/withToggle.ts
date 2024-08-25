@@ -1,4 +1,4 @@
-import type { WithOverride } from '@udecode/plate-common/react';
+import type { ExtendEditor } from '@udecode/plate-common/react';
 
 import {
   type SlateEditor,
@@ -17,7 +17,7 @@ import {
 } from './transforms';
 
 // TODO react
-export const withToggle: WithOverride = ({ editor }) => {
+export const withToggle: ExtendEditor = ({ editor }) => {
   const { deleteBackward, deleteForward, insertBreak, isSelectable } = editor;
 
   editor.isSelectable = (element) => {

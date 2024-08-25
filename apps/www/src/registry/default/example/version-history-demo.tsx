@@ -126,9 +126,9 @@ const InlineVoidElement = ({ children, ...props }: PlateElementProps) => {
 
 const DiffPlugin = toPlatePlugin(
   createSlatePlugin({
+    extendEditor: withGetFragmentExcludeDiff,
     isLeaf: true,
     key: 'diff',
-    withOverrides: withGetFragmentExcludeDiff,
   }),
   {
     component: DiffLeaf,

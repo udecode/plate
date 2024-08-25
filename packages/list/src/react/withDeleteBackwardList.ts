@@ -12,7 +12,7 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 import {
-  type WithOverride,
+  type ExtendEditor,
   getEditorPlugin,
 } from '@udecode/plate-common/react';
 import { ResetNodePlugin } from '@udecode/plate-reset-node';
@@ -31,7 +31,7 @@ import { unwrapList } from '../lib/transforms';
 import { removeFirstListItem } from '../lib/transforms/removeFirstListItem';
 import { removeListItem } from '../lib/transforms/removeListItem';
 
-export const withDeleteBackwardList: WithOverride<ListConfig> = ({
+export const withDeleteBackwardList: ExtendEditor<ListConfig> = ({
   editor,
 }) => {
   const { deleteBackward } = editor;

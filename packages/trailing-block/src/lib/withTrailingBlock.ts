@@ -1,5 +1,5 @@
 import {
-  type WithOverride,
+  type ExtendEditor,
   getLastNodeByLevel,
   insertElements,
   queryNode,
@@ -12,7 +12,7 @@ import type { TrailingBlockConfig } from './TrailingBlockPlugin';
  * Add a trailing block when the last node type is not `type` and when the
  * editor has .
  */
-export const withTrailingBlock: WithOverride<TrailingBlockConfig> = ({
+export const withTrailingBlock: ExtendEditor<TrailingBlockConfig> = ({
   editor,
   getOptions,
 }) => {

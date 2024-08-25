@@ -1,8 +1,8 @@
 import {
+  type ExtendEditor,
   type PluginConfig,
   type SlateEditor,
   type TElement,
-  type WithOverride,
   getEditorString,
   getPointBefore,
   getRange,
@@ -10,7 +10,7 @@ import {
 
 import type { TriggerComboboxPluginOptions } from './types';
 
-export const withTriggerCombobox: WithOverride<
+export const withTriggerCombobox: ExtendEditor<
   PluginConfig<any, TriggerComboboxPluginOptions>
 > = ({ editor, getOptions, type }) => {
   const { insertText } = editor;

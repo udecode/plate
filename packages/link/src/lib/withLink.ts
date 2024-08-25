@@ -1,5 +1,5 @@
 import {
-  type WithOverride,
+  type ExtendEditor,
   collapseSelection,
   getAboveNode,
   getEditorPlugin,
@@ -35,7 +35,7 @@ import { upsertLink } from './transforms/index';
  * text but not its url.
  */
 
-export const withLink: WithOverride<LinkConfig> = ({
+export const withLink: ExtendEditor<LinkConfig> = ({
   editor,
   getOptions,
   type,

@@ -71,10 +71,10 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
 } & BasePlugin<C> &
   Nullable<{
     decorate?: Decorate<WithAnyKey<C>>;
+    extendEditor?: ExtendEditor<WithAnyKey<C>>;
     normalizeInitialValue?: (
       ctx: { value: Value } & SlatePluginContext<WithAnyKey<C>>
     ) => Value;
-    withOverrides?: WithOverride<WithAnyKey<C>>;
   }> &
   SlatePluginMethods<C>;
 
@@ -341,7 +341,7 @@ export type Parser<C extends AnyPluginConfig = PluginConfig> = {
 };
 
 /** Plate plugin overriding the `editor` methods. Naming convention is `with*`. */
-export type WithOverride<C extends AnyPluginConfig = PluginConfig> = (
+export type ExtendEditor<C extends AnyPluginConfig = PluginConfig> = (
   ctx: SlatePluginContext<C>
 ) => SlateEditor;
 

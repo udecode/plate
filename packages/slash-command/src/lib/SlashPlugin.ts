@@ -24,6 +24,7 @@ export const SlashInputPlugin = createSlatePlugin({
 });
 
 export const SlashPlugin = createTSlatePlugin<SlashConfig>({
+  extendEditor: withTriggerCombobox,
   key: 'slash_command',
   options: {
     createComboboxInput: () => ({
@@ -34,5 +35,4 @@ export const SlashPlugin = createTSlatePlugin<SlashConfig>({
     triggerPreviousCharPattern: /^\s?$/,
   },
   plugins: [SlashInputPlugin],
-  withOverrides: withTriggerCombobox,
 });

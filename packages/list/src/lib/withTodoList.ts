@@ -1,11 +1,11 @@
-import type { WithOverride } from '@udecode/plate-common';
+import type { ExtendEditor } from '@udecode/plate-common';
 
 import type { TodoListConfig } from './TodoListPlugin';
 
 import { getTodoListItemEntry } from './queries';
 import { insertTodoListItem } from './transforms';
 
-export const withTodoList: WithOverride<TodoListConfig> = ({
+export const withTodoList: ExtendEditor<TodoListConfig> = ({
   editor,
   getOptions,
 }) => {

@@ -17,9 +17,9 @@ export type SelectOnBackspaceConfig = PluginConfig<
 /** @see {@link withSelectOnBackspace} */
 export const SelectOnBackspacePlugin =
   createTSlatePlugin<SelectOnBackspaceConfig>({
+    extendEditor: withSelectOnBackspace,
     key: 'selectOnBackspace',
     options: {
       removeNodeIfEmpty: false,
     },
-    withOverrides: withSelectOnBackspace,
   });

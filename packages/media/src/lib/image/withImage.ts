@@ -1,4 +1,4 @@
-import type { WithOverride } from '@udecode/plate-common';
+import type { ExtendEditor } from '@udecode/plate-common';
 
 import type { ImageConfig } from './ImagePlugin';
 
@@ -9,7 +9,7 @@ import { withImageUpload } from './withImageUpload';
  * @see withImageUpload
  * @see withImageEmbed
  */
-export const withImage: WithOverride<ImageConfig> = ({ editor, ...ctx }) => {
+export const withImage: ExtendEditor<ImageConfig> = ({ editor, ...ctx }) => {
   editor = withImageUpload({ editor, ...ctx });
   editor = withImageEmbed({ editor, ...ctx });
 

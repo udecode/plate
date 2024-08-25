@@ -1,7 +1,7 @@
 import { withReact } from 'slate-react';
 
-import type { WithOverride } from '../../../lib';
+import type { ExtendEditor } from '../../../lib';
 
-export const withPlateReact: WithOverride = ({ editor }) => {
+export const withPlateReact: ExtendEditor = ({ editor }) => {
   return withReact(editor as any);
 };

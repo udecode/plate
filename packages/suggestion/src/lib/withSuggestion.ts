@@ -1,6 +1,6 @@
 import {
+  type ExtendEditor,
   type SlateEditor,
-  type WithOverride,
   getNode,
   getPointAfter,
   getPointBefore,
@@ -18,7 +18,7 @@ import { insertFragmentSuggestion } from './transforms/insertFragmentSuggestion'
 import { insertTextSuggestion } from './transforms/insertTextSuggestion';
 import { getSuggestionId, getSuggestionKeys } from './utils/index';
 
-export const withSuggestion: WithOverride = ({ editor: e }) => {
+export const withSuggestion: ExtendEditor = ({ editor: e }) => {
   const editor = e as unknown as SlateEditor & SuggestionEditorProps;
 
   const {

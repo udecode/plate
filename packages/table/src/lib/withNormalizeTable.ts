@@ -1,6 +1,6 @@
 import {
+  type ExtendEditor,
   type TElement,
-  type WithOverride,
   getBlockAbove,
   getParentNode,
   isElement,
@@ -20,7 +20,7 @@ import { getCellTypes } from './utils/index';
  *
  * - Wrap cell children in a paragraph if they are texts.
  */
-export const withNormalizeTable: WithOverride<TableConfig> = ({
+export const withNormalizeTable: ExtendEditor<TableConfig> = ({
   editor,
   getOptions,
   type,

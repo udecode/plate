@@ -1,4 +1,4 @@
-import type { WithOverride } from '@udecode/plate-common/react';
+import type { ExtendEditor } from '@udecode/plate-common/react';
 import type { Path } from 'slate';
 
 import {
@@ -28,7 +28,7 @@ import { TablePlugin } from './TablePlugin';
  * - Replace each cell above by the inserted table until out of bounds.
  * - Select the inserted cells.
  */
-export const withInsertFragmentTable: WithOverride<TableConfig> = ({
+export const withInsertFragmentTable: ExtendEditor<TableConfig> = ({
   api,
   editor,
   getOptions,

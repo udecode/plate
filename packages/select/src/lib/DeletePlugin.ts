@@ -16,11 +16,11 @@ export type DeleteConfig = PluginConfig<
 
 /** @see {@link withDelete} */
 export const DeletePlugin = createTSlatePlugin<DeleteConfig>({
+  extendEditor: withDelete,
   key: 'delete',
   options: {
     query: {
       allow: [ParagraphPlugin.key],
     },
   },
-  withOverrides: withDelete,
 });

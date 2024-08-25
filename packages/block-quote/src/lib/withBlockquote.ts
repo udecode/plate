@@ -1,8 +1,8 @@
-import type { TElement, WithOverride } from '@udecode/plate-common';
+import type { ExtendEditor, TElement } from '@udecode/plate-common';
 
 import { BlockquotePlugin } from './BlockquotePlugin';
 
-export const withBlockquote: WithOverride = ({ editor }) => {
+export const withBlockquote: ExtendEditor = ({ editor }) => {
   const { shouldMergeNodesRemovePrevNode } = editor;
 
   if (shouldMergeNodesRemovePrevNode) {

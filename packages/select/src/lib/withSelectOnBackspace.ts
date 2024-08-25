@@ -1,7 +1,7 @@
 import type Slate from 'slate';
 
 import {
-  type WithOverride,
+  type ExtendEditor,
   getNode,
   getNodeEntries,
   getNodeString,
@@ -16,7 +16,7 @@ import {
 import type { SelectOnBackspaceConfig } from './SelectOnBackspacePlugin';
 
 /** Set a list of element types to select on backspace */
-export const withSelectOnBackspace: WithOverride<SelectOnBackspaceConfig> = ({
+export const withSelectOnBackspace: ExtendEditor<SelectOnBackspaceConfig> = ({
   editor,
   getOptions,
 }) => {

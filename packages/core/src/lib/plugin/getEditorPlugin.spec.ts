@@ -39,7 +39,7 @@ describe('getEditorPlugin', () => {
     });
   });
 
-  it('should work withOverride', () => {
+  it('should work extendEditor', () => {
     type Config = PluginConfig<
       'test',
       {

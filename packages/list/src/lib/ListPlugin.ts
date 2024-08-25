@@ -82,7 +82,7 @@ export const ListItemContentPlugin = createSlatePlugin({
 export const ListPlugin = createTSlatePlugin<ListConfig>({
   key: 'list',
   // TODO react
-  // withOverrides: withList,
+  // extendEditor: withList,
   plugins: [
     BulletedListPlugin,
     NumberedListPlugin,

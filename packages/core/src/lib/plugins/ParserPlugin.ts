@@ -1,5 +1,5 @@
 import {
-  type WithOverride,
+  type ExtendEditor,
   createSlatePlugin,
   getEditorPlugin,
 } from '../plugin';
@@ -11,7 +11,7 @@ import {
   pipeTransformFragment,
 } from '../utils';
 
-export const withParser: WithOverride = ({ editor }) => {
+export const withParser: ExtendEditor = ({ editor }) => {
   const { insertData } = editor;
 
   editor.insertData = (dataTransfer) => {
@@ -86,6 +86,6 @@ export const withParser: WithOverride = ({ editor }) => {
 };
 
 export const ParserPlugin = createSlatePlugin({
+  extendEditor: withParser,
   key: 'parser',
-  withOverrides: withParser,
 });

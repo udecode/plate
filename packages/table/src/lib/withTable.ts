@@ -1,10 +1,10 @@
-import type { WithOverride } from '@udecode/plate-common';
+import type { ExtendEditor } from '@udecode/plate-common';
 
 import type { TableConfig } from './types';
 
 import { withNormalizeTable } from './withNormalizeTable';
 
-export const withTable: WithOverride<TableConfig> = ({ editor, ...ctx }) => {
+export const withTable: ExtendEditor<TableConfig> = ({ editor, ...ctx }) => {
   editor = withNormalizeTable({ editor, ...ctx });
   // TODO react
   // editor = withDeleteTable({ editor, ...ctx });

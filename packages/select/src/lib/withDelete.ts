@@ -1,5 +1,5 @@
 import {
-  type WithOverride,
+  type ExtendEditor,
   getAboveNode,
   isBlockAboveEmpty,
   isSelectionExpanded,
@@ -10,7 +10,7 @@ import {
 import type { DeleteConfig } from './DeletePlugin';
 
 /** Set a list of element types to select on backspace */
-export const withDelete: WithOverride<DeleteConfig> = ({
+export const withDelete: ExtendEditor<DeleteConfig> = ({
   editor,
   getOptions,
 }) => {

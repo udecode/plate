@@ -1,4 +1,4 @@
-import type { SlateEditor, WithOverride } from '@udecode/plate-common';
+import type { ExtendEditor, SlateEditor } from '@udecode/plate-common';
 
 import * as Y from 'yjs';
 
@@ -8,7 +8,7 @@ import { type PlateYjsEditorProps, withTCursors } from './withTCursors';
 import { withTYHistory } from './withTYHistory';
 import { withTYjs } from './withTYjs';
 
-export const withPlateYjs: WithOverride<YjsConfig> = ({
+export const withPlateYjs: ExtendEditor<YjsConfig> = ({
   editor: e,
   getOptions,
 }) => {

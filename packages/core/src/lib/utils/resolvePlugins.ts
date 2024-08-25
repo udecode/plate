@@ -37,10 +37,10 @@ export const resolvePlugins = (
 
   resolvePluginApis(editor);
 
-  // withOverrides
+  // extendEditor
   editor.pluginList.forEach((plugin) => {
-    if (plugin.withOverrides) {
-      editor = plugin.withOverrides(getEditorPlugin(editor, plugin) as any);
+    if (plugin.extendEditor) {
+      editor = plugin.extendEditor(getEditorPlugin(editor, plugin) as any);
     }
   });
 

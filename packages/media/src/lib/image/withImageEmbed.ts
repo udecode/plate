@@ -1,4 +1,4 @@
-import type { WithOverride } from '@udecode/plate-common';
+import type { ExtendEditor } from '@udecode/plate-common';
 
 import type { ImageConfig } from './ImagePlugin';
 
@@ -6,7 +6,7 @@ import { insertImage } from './transforms/insertImage';
 import { isImageUrl } from './utils/isImageUrl';
 
 /** If inserted text is image url, insert image instead. */
-export const withImageEmbed: WithOverride<ImageConfig> = ({
+export const withImageEmbed: ExtendEditor<ImageConfig> = ({
   editor,
   getOptions,
 }) => {

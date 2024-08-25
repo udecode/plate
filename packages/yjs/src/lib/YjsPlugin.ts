@@ -37,8 +37,8 @@ export type YjsPluginOptions<
 export type YjsConfig = PluginConfig<'yjs', YjsPluginOptions>;
 
 export const YjsPlugin = createTSlatePlugin<YjsConfig>({
+  extendEditor: withPlateYjs,
   key: 'yjs',
-  withOverrides: withPlateYjs,
 }).extend(({ getOptions }) => {
   const { hocuspocusProviderOptions } = getOptions();
 

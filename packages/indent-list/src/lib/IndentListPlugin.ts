@@ -32,6 +32,7 @@ export type IndentListConfig = PluginConfig<
 >;
 
 export const IndentListPlugin = createTSlatePlugin<IndentListConfig>({
+  extendEditor: withIndentList,
   inject: {
     plugins: {
       [HtmlPlugin.key]: {
@@ -92,5 +93,4 @@ export const IndentListPlugin = createTSlatePlugin<IndentListConfig>({
       },
     },
   },
-  withOverrides: withIndentList,
 });

@@ -6,7 +6,7 @@ import {
   isBlockAboveEmpty,
 } from '@udecode/plate-common';
 import {
-  type WithOverride,
+  type ExtendEditor,
   getEditorPlugin,
 } from '@udecode/plate-common/react';
 import {
@@ -20,7 +20,7 @@ import { insertListItem } from '../lib/transforms/insertListItem';
 import { moveListItemUp } from '../lib/transforms/moveListItemUp';
 import { unwrapList } from '../lib/transforms/unwrapList';
 
-export const withInsertBreakList: WithOverride<ListConfig> = ({ editor }) => {
+export const withInsertBreakList: ExtendEditor<ListConfig> = ({ editor }) => {
   const { insertBreak } = editor;
 
   editor.insertBreak = () => {

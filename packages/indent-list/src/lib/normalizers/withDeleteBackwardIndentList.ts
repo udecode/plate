@@ -1,5 +1,5 @@
 import {
-  type WithOverride,
+  type ExtendEditor,
   getAboveNode,
   getNodeString,
   isCollapsed,
@@ -9,7 +9,7 @@ import {
 import { type IndentListConfig, IndentListPlugin } from '../IndentListPlugin';
 import { outdentList } from '../transforms';
 
-export const withDeleteBackwardIndentList: WithOverride<IndentListConfig> = ({
+export const withDeleteBackwardIndentList: ExtendEditor<IndentListConfig> = ({
   editor,
 }) => {
   const { deleteBackward } = editor;

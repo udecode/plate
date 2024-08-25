@@ -28,10 +28,10 @@ export type ImageConfig = PluginConfig<
 
 /** Enables support for images. */
 export const ImagePlugin = createTSlatePlugin<ImageConfig>({
+  extendEditor: withImage,
   isElement: true,
   isVoid: true,
   key: 'img',
-  withOverrides: withImage,
 }).extend(({ plugin }) => ({
   parsers: {
     html: {

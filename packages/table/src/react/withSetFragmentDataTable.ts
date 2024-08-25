@@ -1,4 +1,4 @@
-import type { WithOverride } from '@udecode/plate-common/react';
+import type { ExtendEditor } from '@udecode/plate-common/react';
 
 import {
   type TElement,
@@ -18,7 +18,7 @@ import {
 import { TableCellHeaderPlugin } from './TablePlugin';
 import { getTableGridAbove } from './queries';
 
-export const withSetFragmentDataTable: WithOverride<TableConfig> = ({
+export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
   editor,
 }) => {
   const { setFragmentData } = editor;

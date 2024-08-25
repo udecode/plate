@@ -12,6 +12,6 @@ export type RemoveEmptyNodesConfig = PluginConfig<
 /** @see {@link withRemoveEmptyNodes} */
 export const RemoveEmptyNodesPlugin =
   createTSlatePlugin<RemoveEmptyNodesConfig>({
+    extendEditor: withRemoveEmptyNodes,
     key: 'removeEmptyNodes',
-    withOverrides: withRemoveEmptyNodes,
   });

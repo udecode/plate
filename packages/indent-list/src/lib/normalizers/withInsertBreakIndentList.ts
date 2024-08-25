@@ -1,7 +1,7 @@
 import {
+  type ExtendEditor,
   ParagraphPlugin,
   type TElement,
-  type WithOverride,
   getAboveNode,
   insertNodes,
   isDefined,
@@ -15,7 +15,7 @@ import {
   IndentListPlugin,
 } from '../IndentListPlugin';
 
-export const withInsertBreakIndentList: WithOverride<IndentListConfig> = ({
+export const withInsertBreakIndentList: ExtendEditor<IndentListConfig> = ({
   editor,
 }) => {
   const { insertBreak } = editor;

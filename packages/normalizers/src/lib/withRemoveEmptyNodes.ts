@@ -1,5 +1,5 @@
 import {
-  type WithOverride,
+  type ExtendEditor,
   getNodeString,
   isElement,
   removeNodes,
@@ -9,7 +9,7 @@ import castArray from 'lodash/castArray.js';
 import type { RemoveEmptyNodesConfig } from './RemoveEmptyNodesPlugin';
 
 /** Remove nodes with empty text. */
-export const withRemoveEmptyNodes: WithOverride<RemoveEmptyNodesConfig> = ({
+export const withRemoveEmptyNodes: ExtendEditor<RemoveEmptyNodesConfig> = ({
   editor,
   getOptions,
 }) => {

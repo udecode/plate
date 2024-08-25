@@ -1,4 +1,4 @@
-import type { WithOverride } from '@udecode/plate-common';
+import type { ExtendEditor } from '@udecode/plate-common';
 
 import type { CodeBlockConfig } from './CodeBlockPlugin';
 
@@ -7,7 +7,7 @@ import { normalizeCodeBlock } from './normalizers/normalizeCodeBlock';
 import { getCodeLineEntry, getIndentDepth } from './queries';
 import { indentCodeLine } from './transforms';
 
-export const withCodeBlock: WithOverride<CodeBlockConfig> = ({ editor }) => {
+export const withCodeBlock: ExtendEditor<CodeBlockConfig> = ({ editor }) => {
   const { insertBreak } = editor;
 
   const insertBreakCodeBlock = () => {

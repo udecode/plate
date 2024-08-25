@@ -1,6 +1,6 @@
 import {
+  type ExtendEditor,
   type TElement,
-  type WithOverride,
   withoutNormalizing,
 } from '@udecode/plate-common';
 
@@ -9,7 +9,7 @@ import type { IndentListConfig } from './IndentListPlugin';
 import { normalizeIndentListNotIndented } from './normalizers/normalizeIndentListNotIndented';
 import { normalizeIndentListStart } from './normalizers/normalizeIndentListStart';
 
-export const withNormalizeIndentList: WithOverride<IndentListConfig> = ({
+export const withNormalizeIndentList: ExtendEditor<IndentListConfig> = ({
   editor,
   getOptions,
 }) => {

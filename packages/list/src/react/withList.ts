@@ -1,4 +1,4 @@
-import type { PlateEditor, WithOverride } from '@udecode/plate-common/react';
+import type { ExtendEditor, PlateEditor } from '@udecode/plate-common/react';
 
 import type { ListConfig } from '../lib/ListPlugin';
 
@@ -9,7 +9,7 @@ import { withNormalizeList } from '../lib/withNormalizeList';
 import { withDeleteBackwardList } from './withDeleteBackwardList';
 import { withInsertBreakList } from './withInsertBreakList';
 
-export const withList: WithOverride<ListConfig> = ({ editor, ...ctx }) => {
+export const withList: ExtendEditor<ListConfig> = ({ editor, ...ctx }) => {
   editor = withInsertBreakList({ editor, ...ctx });
   editor = withDeleteBackwardList({ editor, ...ctx });
   editor = withDeleteForwardList({ editor, ...ctx } as any) as PlateEditor;

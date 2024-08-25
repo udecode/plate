@@ -1,6 +1,6 @@
 import { getKeyByType } from '@udecode/plate-common';
 import {
-  type WithOverride,
+  type ExtendEditor,
   setElements,
   unsetNodes,
 } from '@udecode/plate-common';
@@ -11,7 +11,7 @@ import type { IndentConfig, TIndentElement } from './IndentPlugin';
  * - `node.indent` can not exceed `indentMax`
  * - `node.indent` is unset if `node.type` is not in `types`
  */
-export const withIndent: WithOverride<IndentConfig> = ({
+export const withIndent: ExtendEditor<IndentConfig> = ({
   editor,
   getOptions,
   plugin: {

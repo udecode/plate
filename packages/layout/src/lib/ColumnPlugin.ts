@@ -3,9 +3,9 @@ import { createSlatePlugin } from '@udecode/plate-common';
 import { withColumn } from './withColumn';
 
 export const ColumnItemPlugin = createSlatePlugin({
+  extendEditor: withColumn,
   isElement: true,
   key: 'column',
-  withOverrides: withColumn,
 });
 
 export const ColumnPlugin = createSlatePlugin({

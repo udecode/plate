@@ -1,7 +1,7 @@
 import type {
+  ExtendEditor,
   PlatePlugin,
   PlatePluginComponent,
-  WithOverride,
 } from './PlatePlugin';
 
 import {
@@ -160,15 +160,15 @@ describe('toPlatePlugin type tests', () => {
     }));
 
     const CodeBlockPlugin = toPlatePlugin(BaseCodeBlockPlugin, {
-      handlers: {},
-      options: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
-      withOverrides: ({ api, editor }) => {
+      extendEditor: ({ api, editor }) => {
         api.plugin.getSyntaxState();
         // @ts-expect-error
         api.plugin.getLanguage();
 
         return editor;
       },
+      handlers: {},
+      options: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
     })
       .extendEditorApi(() => ({
         plugin: {
@@ -179,7 +179,7 @@ describe('toPlatePlugin type tests', () => {
         },
       }))
       .extend({
-        withOverrides: ({ api, editor }) => {
+        extendEditor: ({ api, editor }) => {
           api.plugin.getSyntaxState();
           api.plugin.getLanguage();
 
@@ -327,7 +327,7 @@ describe('toPlatePlugin type tests', () => {
 // Type tests for toTPlatePlugin
 describe('toTPlatePlugin type tests', () => {
   it('should work with CodeBlockConfig for toTPlatePlugin', () => {
-    type WithOverride2 = WithOverride<CodeBlockConfig2>;
+    type ExtendEditor2 = ExtendEditor<CodeBlockConfig2>;
 
     const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
       key: 'code_block',
@@ -356,7 +356,7 @@ describe('toTPlatePlugin type tests', () => {
         },
       }))
       .extend({
-        withOverrides: ({ api, editor }) => {
+        extendEditor: ({ api, editor }) => {
           api.plugin.getLanguage!();
 
           return editor;

@@ -1,9 +1,9 @@
-import type { TDescendant, WithOverride } from '@udecode/plate-common';
+import type { ExtendEditor, TDescendant } from '@udecode/plate-common';
 
 import cloneDeep from 'lodash/cloneDeep.js';
 
 // Uses BaseEditor to be compatible with non-Plate editors
-export const withGetFragmentExcludeDiff: WithOverride = ({ editor }) => {
+export const withGetFragmentExcludeDiff: ExtendEditor = ({ editor }) => {
   const { getFragment } = editor;
 
   editor.getFragment = () => {

@@ -538,7 +538,7 @@ export const docsConfig: DocsConfig = {
                 'then',
                 'type',
                 'useHooks',
-                'withOverrides',
+                'extendEditor',
               ],
               href: '/docs/api/core/plate-plugin',
               title: 'PlatePlugin',

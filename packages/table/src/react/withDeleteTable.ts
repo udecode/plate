@@ -1,4 +1,4 @@
-import type { WithOverride } from '@udecode/plate-common/react';
+import type { ExtendEditor } from '@udecode/plate-common/react';
 
 import {
   type SlateEditor,
@@ -74,7 +74,7 @@ export const preventDeleteTableCell = (
 };
 
 /** Prevent cell deletion. */
-export const withDeleteTable: WithOverride<TableConfig> = ({
+export const withDeleteTable: ExtendEditor<TableConfig> = ({
   editor,
   type,
 }) => {

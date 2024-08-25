@@ -2,9 +2,9 @@ import { getEditorString, withoutNormalizing } from '@udecode/slate';
 
 import type { LengthConfig } from '../getCorePlugins';
 
-import { type WithOverride, createTSlatePlugin } from '../../plugin';
+import { type ExtendEditor, createTSlatePlugin } from '../../plugin';
 
-export const withLength: WithOverride<LengthConfig> = ({
+export const withLength: ExtendEditor<LengthConfig> = ({
   editor,
   getOptions,
 }) => {
@@ -37,6 +37,6 @@ export const withLength: WithOverride<LengthConfig> = ({
 };
 
 export const LengthPlugin = createTSlatePlugin<LengthConfig>({
+  extendEditor: withLength,
   key: 'length',
-  withOverrides: withLength,
 });

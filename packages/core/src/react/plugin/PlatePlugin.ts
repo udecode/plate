@@ -145,6 +145,9 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
     /** @see {@link Decorate} */
     decorate?: Decorate<WithAnyKey<C>>;
 
+    /** Editor method overriders. */
+    extendEditor?: ExtendEditor<WithAnyKey<C>>;
+
     /**
      * Normalize initial value before passing it into the editor.
      *
@@ -176,9 +179,6 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
 
     /** Hook called when the editor is initialized. */
     useHooks?: PlateUseHooks<WithAnyKey<C>>;
-
-    /** Editor method overriders. */
-    withOverrides?: WithOverride<WithAnyKey<C>>;
   }> &
   PlatePluginMethods<C>;
 
@@ -579,7 +579,7 @@ export type Parser<C extends AnyPluginConfig = PluginConfig> = {
 };
 
 /** Plate plugin overriding the `editor` methods. Naming convention is `with*`. */
-export type WithOverride<C extends AnyPluginConfig = PluginConfig> = (
+export type ExtendEditor<C extends AnyPluginConfig = PluginConfig> = (
   ctx: PlatePluginContext<C>
 ) => PlateEditor;
 

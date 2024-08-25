@@ -33,13 +33,13 @@ export const ListItemPlugin = toPlatePlugin(BaseListItemPlugin);
  * features.
  */
 export const ListPlugin = toPlatePlugin(BaseListPlugin, {
+  extendEditor: withList,
   plugins: [
     BulletedListPlugin,
     NumberedListPlugin,
     ListItemPlugin,
     ListItemContentPlugin,
   ],
-  withOverrides: withList,
 }).extend(({ editor }) => ({
   shortcuts: {
     toggleBulletedList: {

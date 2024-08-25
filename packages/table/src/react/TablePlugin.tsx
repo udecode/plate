@@ -31,9 +31,9 @@ export const TableCellHeaderPlugin = toPlatePlugin(BaseTableCellHeaderPlugin, {
 
 /** Enables support for tables with React-specific features. */
 export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
+  extendEditor: withTable,
   handlers: {
     onKeyDown: onKeyDownTable,
   },
   plugins: [TableRowPlugin, TableCellPlugin, TableCellHeaderPlugin],
-  withOverrides: withTable,
 });
