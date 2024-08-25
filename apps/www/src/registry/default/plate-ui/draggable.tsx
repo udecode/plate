@@ -88,7 +88,7 @@ const DragHandle = () => {
 
             // if (element.id) {
             //   editor.getApi(BlockSelectionPlugin).blockSelection.addSelectedRow(element.id as string);
-            //   blockContextMenuActions.show(editor.id, event as any);
+            //   api.blockContextMenu.show(editor.id, event as any);
             // }
           }}
           onMouseDown={() => {
