@@ -425,17 +425,19 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
             >
               <div
                 className={cn(
-                  'relative flex w-full overflow-x-auto',
+                  'relative flex max-h-[800px] w-full overflow-x-auto',
                   // block selection area
                   '[&_.slate-selected]:!bg-primary/20 [&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10'
                 )}
+                data-plate-selectable
+                id="scroll_container"
                 ref={containerRef}
               >
                 <Editor
                   {...editableProps}
                   className={cn(
                     editableProps.className,
-                    'max-h-[800px] overflow-x-hidden px-[var(--editor-px)]',
+                    'overflow-x-hidden px-[var(--editor-px)]',
                     !id && 'pb-[20vh] pt-4',
                     id && 'pb-8 pt-2'
                   )}

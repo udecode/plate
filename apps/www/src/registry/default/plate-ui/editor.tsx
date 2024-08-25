@@ -77,7 +77,6 @@ const Editor = React.forwardRef<HTMLDivElement, EditorProps>(
           )}
           data-plate-selectable
           disableDefaultStyles
-          id="scroll_container"
           readOnly={disabled ?? readOnly}
           {...props}
         />

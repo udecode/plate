@@ -500,7 +500,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     this._container = selectAll(container, document)[0];
 
     if (
-      this._container.contains(target) &&
+      // this._container.contains(target) &&
       target.dataset.plateSelectable !== 'true'
     )
       return;
@@ -622,7 +622,16 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     const { x1, y1 } = _areaLocation;
     let { x2, y2 } = _areaLocation;
 
-    if (_areaClientLocation.x2 + this._scrollDelta.x < _containerRect!.left) {
+    const {
+      behaviour: {
+        scrolling: { startScrollMargins },
+      },
+    } = this._options;
+
+    if (
+      _areaClientLocation.x2 + this._scrollDelta.x <
+      _containerRect!.left + startScrollMargins.x
+    ) {
       _scrollSpeed.x = scrollLeft
         ? -abs(
             _containerRect!.left - _areaClientLocation.x2 - this._scrollDelta.x
@@ -631,7 +640,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
       x2 = max(x2, this._container!.scrollLeft);
     } else if (
       _areaClientLocation.x2 + this._scrollDelta.x >
-      _containerRect!.right
+      _containerRect!.right - startScrollMargins.x
     ) {
       _scrollSpeed.x =
         scrollWidth - scrollLeft - clientWidth
@@ -646,7 +655,10 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     } else {
       _scrollSpeed.x = 0;
     }
-    if (_areaClientLocation.y2 + this._scrollDelta.y < _containerRect!.top) {
+    if (
+      _areaClientLocation.y2 + this._scrollDelta.y <
+      _containerRect!.top + startScrollMargins.y
+    ) {
       _scrollSpeed.y = scrollTop
         ? -abs(
             _containerRect!.top - _areaClientLocation.y2 - this._scrollDelta.y
@@ -655,7 +667,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
       y2 = max(y2, this._container!.scrollTop);
     } else if (
       _areaClientLocation.y2 + this._scrollDelta.y >
-      _containerRect!.bottom
+      _containerRect!.bottom - startScrollMargins.y
     ) {
       _scrollSpeed.y =
         scrollHeight - scrollTop - clientHeight

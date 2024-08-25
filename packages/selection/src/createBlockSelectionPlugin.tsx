@@ -1,3 +1,5 @@
+import React, { type CSSProperties } from 'react';
+
 import {
   type QueryNodeOptions,
   createPluginFactory,
@@ -6,6 +8,7 @@ import {
 import type { PartialSelectionOptions } from './internal';
 
 import { BlockSelectable } from './components/BlockSelectable';
+import { BlockSelection } from './components/BlockSelection';
 import {
   blockContextMenuActions,
   blockContextMenuSelectors,
@@ -20,6 +23,7 @@ export const KEY_BLOCK_SELECTION = 'blockSelection';
 export interface BlockSelectionPlugin {
   aboveClassNameMap?: Record<string, string>;
   areaOptions?: PartialSelectionOptions;
+  editorPaddingRight?: CSSProperties['width'];
   enableContextMenu?: boolean;
   onKeyDownSelecting?: (e: KeyboardEvent) => void;
   query?: QueryNodeOptions;
@@ -53,6 +57,10 @@ export const createBlockSelectionPlugin =
     options: {
       areaOptions: {
         behaviour: {
+          scrolling: {
+            speedDivider: 5,
+            startScrollMargins: { x: 20, y: 0 },
+          },
           startThreshold: 5,
         },
         features: {
@@ -66,6 +74,10 @@ export const createBlockSelectionPlugin =
         maxLevel: 1,
       },
     },
+    renderAboveEditable: ({ children }) => (
+      <BlockSelection>{children}</BlockSelection>
+    ),
+
     useHooks: useHooksBlockSelection,
     withOverrides: withSelection,
   });
