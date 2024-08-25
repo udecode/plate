@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 36.5.8
+
+### Patch Changes
+
+- [#3463](https://github.com/udecode/plate/pull/3463) by [@beeant0512](https://github.com/beeant0512) – fixed the judgment logic of deleting the last row of the table
+
 ## 36.5.7
 
 ### Patch Changes
