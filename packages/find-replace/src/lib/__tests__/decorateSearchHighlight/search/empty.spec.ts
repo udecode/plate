@@ -1,6 +1,6 @@
 import type { Range } from 'slate';
 
-import { getPluginContext } from '@udecode/plate-common';
+import { getEditorPlugin } from '@udecode/plate-common';
 import { createSlateEditor } from '@udecode/plate-common';
 
 import { FindReplacePlugin } from '../../../FindReplacePlugin';
@@ -15,7 +15,7 @@ it('should be', () => {
 
   expect(
     decorateFindReplace({
-      ...getPluginContext(editor, FindReplacePlugin),
+      ...getEditorPlugin(editor, FindReplacePlugin),
       entry: [{ text: '' }, [0, 0]],
     })
   ).toEqual(output);

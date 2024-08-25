@@ -4,6 +4,7 @@ import {
   type TNodeEntry,
   collapseSelection,
   getBlockAbove,
+  getEditorPlugin,
   insertElements,
   isElementEmpty,
   removeNodes,
@@ -24,13 +25,13 @@ import { getTableGridAbove } from '../queries';
 
 /** Merges multiple selected cells into one. */
 export const mergeTableCells = (editor: SlateEditor) => {
-  withoutNormalizing(editor, () => {
-    const { _cellIndices } = editor.getOptions(TablePlugin);
-    const api = editor.getApi(TablePlugin);
+  const { api, getOptions, type } = getEditorPlugin(editor, TablePlugin);
+  const { _cellIndices } = getOptions();
 
+  withoutNormalizing(editor, () => {
     const tableEntry = getBlockAbove(editor, {
       at: editor.selection?.anchor.path,
-      match: { type: editor.getType(TablePlugin) },
+      match: { type },
     })!;
 
     const cellEntries = getTableGridAbove(editor, {

@@ -26,8 +26,6 @@ export const withIndentList: WithOverride<IndentListConfig> = ({
 }) => {
   const { apply } = editor;
 
-  const { getSiblingIndentListOptions } = ctx.options;
-
   editor = withNormalizeIndentList({ editor, ...ctx });
   editor = withDeleteBackwardIndentList({ editor, ...ctx });
   editor = withInsertBreakIndentList({ editor, ...ctx });
@@ -43,6 +41,7 @@ export const withIndentList: WithOverride<IndentListConfig> = ({
 
   editor.apply = (operation) => {
     const { path } = operation as any;
+    const { getSiblingIndentListOptions } = ctx.getOptions();
 
     let nodeBefore: TElement | null = null;
 

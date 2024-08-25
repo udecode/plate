@@ -12,20 +12,21 @@ export type TextIndentConfig = PluginConfig<
 >;
 
 export const TextIndentPlugin = createTSlatePlugin<TextIndentConfig>({
-  key: 'textIndent',
-  options: {
-    offset: 24,
-    unit: 'px',
-  },
-}).extend(({ options: { offset, unit } }) => ({
   inject: {
     props: {
       nodeKey: 'textIndent',
       styleKey: 'textIndent',
-      transformNodeValue({ nodeValue }) {
+      transformNodeValue({ getOptions, nodeValue }) {
+        const { offset, unit } = getOptions();
+
         return nodeValue * offset! + unit!;
       },
     },
     targetPlugins: [ParagraphPlugin.key],
   },
-}));
+  key: 'textIndent',
+  options: {
+    offset: 24,
+    unit: 'px',
+  },
+});

@@ -104,6 +104,7 @@ export function createSlatePlugin<
       __apiExtensions: [],
       __configuration: null,
       __extensions: initialExtension ? [initialExtension] : [],
+      __optionExtensions: [],
       api: {},
       dependencies: [],
       editor: {},
@@ -181,6 +182,16 @@ export function createSlatePlugin<
     newPlugin.__apiExtensions = [
       ...(newPlugin.__apiExtensions as any),
       { extension, isPluginSpecific: false },
+    ];
+
+    return createSlatePlugin(newPlugin) as any;
+  };
+
+  plugin.extendOptions = (extension) => {
+    const newPlugin = { ...plugin };
+    newPlugin.__optionExtensions = [
+      ...(newPlugin.__optionExtensions as any),
+      extension,
     ];
 
     return createSlatePlugin(newPlugin) as any;

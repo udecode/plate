@@ -7,7 +7,7 @@ import { mergeWithoutArray } from '../../internal/mergeWithoutArray';
 import {
   type SlatePlugin,
   type SlatePlugins,
-  getPluginContext,
+  getEditorPlugin,
 } from '../plugin';
 import { resolvePlugin } from './resolvePlugin';
 
@@ -40,7 +40,7 @@ export const resolvePlugins = (
   // withOverrides
   editor.pluginList.forEach((plugin) => {
     if (plugin.withOverrides) {
-      editor = plugin.withOverrides(getPluginContext(editor, plugin) as any);
+      editor = plugin.withOverrides(getEditorPlugin(editor, plugin) as any);
     }
   });
 
@@ -50,7 +50,21 @@ export const resolvePlugins = (
 const resolvePluginStores = (editor: SlateEditor) => {
   // Create zustand stores for each plugin
   editor.pluginList.forEach((plugin) => {
-    plugin.store = createZustandStore(plugin.key)(plugin.options);
+    let store = createZustandStore(plugin.key)(plugin.options);
+
+    // Apply option extensions
+    if (
+      (plugin as any).__optionExtensions &&
+      (plugin as any).__optionExtensions.length > 0
+    ) {
+      (plugin as any).__optionExtensions.forEach((extension: any) => {
+        const extendedOptions = extension(getEditorPlugin(editor, plugin));
+
+        store = store.extendSelectors(() => extendedOptions);
+      });
+    }
+
+    plugin.optionsStore = store;
   });
 };
 
@@ -68,7 +82,7 @@ const resolvePluginApis = (editor: SlateEditor) => {
       plugin.__apiExtensions.forEach(
         ({ extension, isPluginSpecific, isTransform }: any) => {
           const newExtensions = extension(
-            getPluginContext(editor, plugin) as any
+            getEditorPlugin(editor, plugin) as any
           );
 
           if (isTransform) {

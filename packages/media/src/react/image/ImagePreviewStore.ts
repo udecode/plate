@@ -1,16 +1,16 @@
 import { createZustandStore } from '@udecode/plate-common';
 
-export interface previewItem {
+export interface PreviewItem {
   url: string;
   id?: string;
 }
 
-export const imagePreviewStore = createZustandStore('imagePreview')({
+export const ImagePreviewStore = createZustandStore('imagePreview')({
   boundingClientRect: {} as DOMRect,
-  currentPreview: null as null | previewItem,
+  currentPreview: null as PreviewItem | null,
   isEditingScale: false,
   openEditorId: null as null | string,
-  previewList: [] as previewItem[],
+  previewList: [] as PreviewItem[],
   scale: 1 as number,
   translate: { x: 0, y: 0 },
 })
@@ -28,8 +28,8 @@ export const imagePreviewStore = createZustandStore('imagePreview')({
     isOpen: (editorId: string) => state.openEditorId === editorId,
   }));
 
-export const imagePreviewActions = imagePreviewStore.set;
+export const imagePreviewActions = ImagePreviewStore.set;
 
-export const imagePreviewSelectors = imagePreviewStore.get;
+export const imagePreviewSelectors = ImagePreviewStore.get;
 
-export const useImagePreviewSelectors = () => imagePreviewStore.use;
+export const useImagePreviewSelectors = () => ImagePreviewStore.use;

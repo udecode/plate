@@ -1,6 +1,6 @@
 import type { TRenderLeafProps } from '@udecode/slate-react';
 
-import { getPluginContext, pipeInjectProps } from '@udecode/plate-common';
+import { getEditorPlugin, pipeInjectProps } from '@udecode/plate-common';
 import {
   type PlateEditor,
   type PlateProps,
@@ -32,7 +32,7 @@ export const leafToHtml = (
     props = {
       ...pipeInjectProps(editor, props),
       children: result,
-      ...getPluginContext(editor, plugin),
+      ...getEditorPlugin(editor, plugin),
     };
 
     const serializer = plugin.parsers.htmlReact?.serializer;

@@ -1,7 +1,7 @@
 import {
   type WithOverride,
   createSlatePlugin,
-  getPluginContext,
+  getEditorPlugin,
 } from '../plugin';
 import {
   getInjectedPlugins,
@@ -50,7 +50,7 @@ export const withParser: WithOverride = ({ editor }) => {
         });
 
         let fragment = deserialize?.({
-          ...getPluginContext(editor, plugin),
+          ...getEditorPlugin(editor, plugin),
           data,
           dataTransfer,
         });

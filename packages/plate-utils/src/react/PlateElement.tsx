@@ -1,11 +1,12 @@
 import React from 'react';
 
-import type {
-  AnyPlatePlugin,
-  PlateRenderElementProps,
-} from '@udecode/plate-core/react';
 import type { TElement } from '@udecode/slate';
 
+import {
+  type AnyPlatePlugin,
+  type PlateRenderElementProps,
+  omitPluginContext,
+} from '@udecode/plate-core/react';
 import { Box, type BoxProps, useComposedRef } from '@udecode/react-utils';
 import { clsx } from 'clsx';
 
@@ -19,19 +20,8 @@ export type PlateElementProps<
   PlateRenderElementProps<N, P>;
 
 export const usePlateElement = (props: PlateElementProps) => {
-  const {
-    api,
-    attributes,
-    editor,
-    element,
-    elementToAttributes,
-    nodeProps,
-    options,
-    plugin,
-    tf,
-    type,
-    ...rootProps
-  } = props;
+  const { attributes, element, elementToAttributes, nodeProps, ...rootProps } =
+    omitPluginContext(props);
 
   return {
     props: {

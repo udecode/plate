@@ -1,5 +1,6 @@
 import { AlignPlugin } from '@udecode/plate-alignment';
 import { BlockquotePlugin } from '@udecode/plate-block-quote';
+import { CaptionPlugin } from '@udecode/plate-caption/react';
 import { htmlStringToDOMNode } from '@udecode/plate-common';
 import { ParagraphPlugin } from '@udecode/plate-common';
 import { toPlatePlugin } from '@udecode/plate-core/react';
@@ -150,7 +151,7 @@ it('serialize paragraph to html', () => {
 
 it('serialize image to html', () => {
   const editor = createPlateUIEditor({
-    plugins: [ImagePlugin],
+    plugins: [ImagePlugin, CaptionPlugin],
   });
 
   expect(
@@ -263,7 +264,7 @@ it('serialize align className to html', () => {
 });
 
 it('serialize image and paragraph to html', () => {
-  const plugins = [ParagraphPlugin, ImagePlugin];
+  const plugins = [ParagraphPlugin, ImagePlugin, CaptionPlugin];
   const render = serializeHtml(createPlateUIEditor({ plugins }), {
     nodes: [
       {

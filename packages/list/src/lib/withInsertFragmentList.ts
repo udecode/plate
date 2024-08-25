@@ -1,5 +1,4 @@
 import {
-  type SlateEditor,
   type TAncestor,
   type TAncestorEntry,
   type TDescendant,
@@ -7,6 +6,7 @@ import {
   type TElement,
   type TElementEntry,
   type TText,
+  type WithOverride,
   findNode,
   getCommonNode,
   getNode,
@@ -19,10 +19,16 @@ import {
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
-import { ListItemContentPlugin, ListItemPlugin } from './ListPlugin';
-import { isListRoot } from './queries/index';
+import {
+  type ListConfig,
+  ListItemContentPlugin,
+  ListItemPlugin,
+} from './ListPlugin';
+import { isListRoot } from './queries';
 
-export const insertFragmentList = (editor: SlateEditor) => {
+export const withInsertFragmentList: WithOverride<ListConfig> = ({
+  editor,
+}) => {
   const { insertFragment } = editor;
 
   const listItemType = editor.getType(ListItemPlugin);
@@ -178,7 +184,7 @@ export const insertFragmentList = (editor: SlateEditor) => {
     return { listItemNodes, textNode };
   };
 
-  return (fragment: TDescendant[]) => {
+  editor.insertFragment = (fragment) => {
     let liEntry = findNode<TElement>(editor, {
       match: { type: listItemType },
       mode: 'lowest',
@@ -234,4 +240,6 @@ export const insertFragmentList = (editor: SlateEditor) => {
       select: true,
     });
   };
+
+  return editor;
 };

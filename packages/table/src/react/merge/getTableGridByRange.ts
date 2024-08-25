@@ -5,6 +5,7 @@ import {
   type TElement,
   type TElementEntry,
   findNode,
+  getEditorPlugin,
 } from '@udecode/plate-common';
 import { findNodePath } from '@udecode/plate-common/react';
 
@@ -53,8 +54,9 @@ export const getTableMergeGridByRange = <T extends FormatType>(
   editor: SlateEditor,
   { at, format }: GetTableGridByRangeOptions<T>
 ): GetTableGridReturnType<T> => {
-  const { _cellIndices: cellIndices } = editor.getOptions(TablePlugin);
-  const api = editor.getApi(TablePlugin);
+  const { api, getOptions, type } = getEditorPlugin(editor, TablePlugin);
+
+  const { _cellIndices: cellIndices } = getOptions();
 
   const startCellEntry = findNode<TTableCellElement>(editor, {
     at: at.anchor.path,
@@ -73,7 +75,7 @@ export const getTableMergeGridByRange = <T extends FormatType>(
 
   const tableEntry = findNode<TTableElement>(editor, {
     at: tablePath,
-    match: { type: editor.getType(TablePlugin) },
+    match: { type },
   })!;
   const realTable = tableEntry[0];
 

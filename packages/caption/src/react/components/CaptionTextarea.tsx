@@ -31,10 +31,7 @@ export const useCaptionTextareaFocus = (
   const editor = useEditorRef();
   const element = useElement<TCaptionElement>();
 
-  const focusCaptionPath = editor.useOption(
-    CaptionPlugin,
-    'focusEndCaptionPath'
-  );
+  const focusCaptionPath = editor.useOption(CaptionPlugin, 'focusEndPath');
 
   React.useEffect(() => {
     if (focusCaptionPath && textareaRef.current) {
@@ -42,7 +39,7 @@ export const useCaptionTextareaFocus = (
 
       if (path && Path.equals(path, focusCaptionPath)) {
         textareaRef.current.focus();
-        editor.setOption(CaptionPlugin, 'focusEndCaptionPath', null);
+        editor.setOption(CaptionPlugin, 'focusEndPath', null);
       }
     }
   }, [editor, element, focusCaptionPath, textareaRef]);
@@ -136,7 +133,7 @@ export const useCaptionTextarea = ({
     const currentValue = e.target.value;
 
     if (currentValue.length === 0) {
-      editor.setOption(CaptionPlugin, 'showCaptionId', null);
+      editor.setOption(CaptionPlugin, 'visibleId', null);
     }
   };
 

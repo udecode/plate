@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { ParagraphPlugin } from '@udecode/plate-common';
-import { getPluginContext } from '@udecode/plate-common/react';
+import { getEditorPlugin } from '@udecode/plate-common/react';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import * as isHotkey from '@udecode/plate-core';
 import { IndentPlugin } from '@udecode/plate-indent';
@@ -39,7 +39,7 @@ describe('when indented list and empty', () => {
     });
 
     onKeyDownIndentList({
-      ...getPluginContext(editor, IndentListPlugin),
+      ...getEditorPlugin(editor, IndentListPlugin),
       event: event as any,
     });
 
@@ -88,7 +88,7 @@ describe('when indented and empty but not list', () => {
     });
 
     onKeyDownIndentList({
-      ...getPluginContext(editor, IndentListPlugin),
+      ...getEditorPlugin(editor, IndentListPlugin),
       event: event as any,
     });
 

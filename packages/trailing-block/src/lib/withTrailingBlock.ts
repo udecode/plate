@@ -14,11 +14,13 @@ import type { TrailingBlockConfig } from './TrailingBlockPlugin';
  */
 export const withTrailingBlock: WithOverride<TrailingBlockConfig> = ({
   editor,
-  options: { level, type, ...query },
+  getOptions,
 }) => {
   const { normalizeNode } = editor;
 
   editor.normalizeNode = ([currentNode, currentPath]) => {
+    const { level, type, ...query } = getOptions();
+
     if (currentPath.length === 0) {
       const lastChild = getLastNodeByLevel(editor, level!);
 

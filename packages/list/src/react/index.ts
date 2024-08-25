@@ -4,8 +4,8 @@
 
 export * from './ListPlugin';
 export * from './TodoListPlugin';
-export * from './deleteBackwardList';
-export * from './insertBreakList';
 export * from './onKeyDownList';
+export * from './withDeleteBackwardList';
+export * from './withInsertBreakList';
 export * from './withList';
 export * from './hooks/index';

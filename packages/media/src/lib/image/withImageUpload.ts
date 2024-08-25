@@ -14,14 +14,16 @@ import { insertImage } from './transforms/insertImage';
  */
 export const withImageUpload: WithOverride<ImageConfig> = ({
   editor,
+  getOptions,
   plugin,
 }) => {
-  const {
-    options: { uploadImage },
-  } = plugin;
   const { insertData } = editor;
 
   editor.insertData = (dataTransfer: DataTransfer) => {
+    if (getOptions().disableUploadInsert) {
+      return insertData(dataTransfer);
+    }
+
     const text = dataTransfer.getData('text/plain');
     const { files } = dataTransfer;
 
@@ -46,6 +48,8 @@ export const withImageUpload: WithOverride<ImageConfig> = ({
             if (!reader.result) {
               return;
             }
+
+            const uploadImage = getOptions().uploadImage;
 
             const uploadedUrl = uploadImage
               ? await uploadImage(reader.result)

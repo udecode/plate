@@ -24,13 +24,13 @@ import { type CaptionConfig, CaptionPlugin } from './CaptionPlugin';
  */
 export const withCaption: WithOverride<CaptionConfig> = ({
   editor,
-  options,
+  getOptions,
 }) => {
   const { apply } = editor;
 
-  const { pluginKeys } = options;
-
   editor.apply = (operation) => {
+    const { pluginKeys } = getOptions();
+
     if (operation.type === 'set_selection') {
       const newSelection = {
         ...editor.selection,
@@ -58,7 +58,7 @@ export const withCaption: WithOverride<CaptionConfig> = ({
             getNodeString({ children: node.caption } as any).length > 0
           ) {
             setTimeout(() => {
-              editor.setOption(CaptionPlugin, 'focusEndCaptionPath', entry[1]);
+              editor.setOption(CaptionPlugin, 'focusEndPath', entry[1]);
             }, 0);
           }
         }

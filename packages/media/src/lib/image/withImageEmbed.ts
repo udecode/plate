@@ -6,10 +6,17 @@ import { insertImage } from './transforms/insertImage';
 import { isImageUrl } from './utils/isImageUrl';
 
 /** If inserted text is image url, insert image instead. */
-export const withImageEmbed: WithOverride<ImageConfig> = ({ editor }) => {
+export const withImageEmbed: WithOverride<ImageConfig> = ({
+  editor,
+  getOptions,
+}) => {
   const { insertData } = editor;
 
   editor.insertData = (dataTransfer: DataTransfer) => {
+    if (getOptions().disableEmbedInsert) {
+      return insertData(dataTransfer);
+    }
+
     const text = dataTransfer.getData('text/plain');
 
     if (isImageUrl(text)) {

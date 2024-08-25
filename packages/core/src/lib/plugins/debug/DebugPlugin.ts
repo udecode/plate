@@ -7,6 +7,7 @@ export type DebugErrorType =
   | 'OPTION_UNDEFINED'
   | 'OVERRIDE_MISSING'
   | 'PLUGIN_DEPENDENCY_MISSING'
+  | 'PLUGIN_MISSING'
   | 'USE_CREATE_PLUGIN'
   | 'USE_ELEMENT_CONTEXT'
   | ({} & string);
@@ -41,7 +42,7 @@ export const DebugPlugin = createTSlatePlugin<DebugConfig>({
     },
     throwErrors: true,
   },
-}).extendEditorApi<DebugConfig['api']>(({ options }) => {
+}).extendEditorApi<DebugConfig['api']>(({ getOptions }) => {
   const logLevels: LogLevel[] = ['error', 'warn', 'info', 'log'];
 
   const log = (
@@ -50,6 +51,8 @@ export const DebugPlugin = createTSlatePlugin<DebugConfig>({
     type?: DebugErrorType,
     details?: any
   ) => {
+    const options = getOptions();
+
     if (options.isProduction && level === 'log') return;
     if (logLevels.indexOf(level) <= logLevels.indexOf(options.logLevel!)) {
       if (level === 'error' && options.throwErrors) {

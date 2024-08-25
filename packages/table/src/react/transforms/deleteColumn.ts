@@ -2,6 +2,7 @@ import {
   type SlateEditor,
   type TElement,
   getAboveNode,
+  getEditorPlugin,
   isExpanded,
   removeNodes,
   setNodes,
@@ -21,21 +22,22 @@ import { deleteTableMergeColumn } from '../merge/deleteColumn';
 import { deleteColumnWhenExpanded } from '../merge/deleteColumnWhenExpanded';
 
 export const deleteColumn = (editor: SlateEditor) => {
-  const { enableMerging } = editor.getOptions(TablePlugin);
+  const { getOptions, type } = getEditorPlugin(editor, TablePlugin);
+  const { enableMerging } = getOptions();
 
   if (enableMerging) {
     return deleteTableMergeColumn(editor);
   }
   if (
     !someNode(editor, {
-      match: { type: editor.getType(TablePlugin) },
+      match: { type },
     })
   ) {
     return;
   }
 
   const tableEntry = getAboveNode<TTableElement>(editor, {
-    match: { type: editor.getType(TablePlugin) },
+    match: { type },
   });
 
   if (!tableEntry) return;

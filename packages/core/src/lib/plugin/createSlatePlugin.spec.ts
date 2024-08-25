@@ -378,8 +378,8 @@ describe('createSlatePlugin', () => {
         type: 'base',
       });
 
-      const extendedWithFunction = basePlugin.extend(({ options }) => ({
-        options: { ...options, functional: true },
+      const extendedWithFunction = basePlugin.extend(({ getOptions }) => ({
+        options: { ...getOptions(), functional: true },
       }));
 
       const extendedWithObject = extendedWithFunction.extend({

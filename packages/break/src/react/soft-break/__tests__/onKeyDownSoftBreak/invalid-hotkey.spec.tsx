@@ -1,6 +1,9 @@
 /** @jsx jsx */
 
-import { getPluginContext } from '@udecode/plate-common/react';
+import {
+  createPlateEditor,
+  getEditorPlugin,
+} from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { SoftBreakPlugin } from '../../SoftBreakPlugin';
@@ -29,9 +32,11 @@ const output = (
 ) as any;
 
 it('should be', () => {
+  const editor = createPlateEditor({ editor: input });
+
   onKeyDownSoftBreak({
-    ...getPluginContext(input, SoftBreakPlugin),
+    ...getEditorPlugin(editor, SoftBreakPlugin),
     event,
   });
-  expect(input.children).toEqual(output.children);
+  expect(editor.children).toEqual(output.children);
 });

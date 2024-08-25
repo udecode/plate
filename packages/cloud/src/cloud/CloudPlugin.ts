@@ -36,36 +36,37 @@ export const CloudPlugin = createTPlatePlugin<CloudConfig>({
   key: 'cloud',
   options: {},
 })
-  .extend(
-    ({
-      editor,
-      options: { apiKey, apiOrigin, authToken, uploadStoreInitialValue },
-    }) => {
-      let client: portiveClient.Client;
+  .extend(({ editor, getOptions }) => {
+    let client: portiveClient.Client;
 
-      try {
-        client = portiveClient.createClient({ apiKey, apiOrigin, authToken });
-      } catch (error) {
-        editor.api.debug.error(error, 'PORTIVE_CLIENT');
-      }
+    const { apiKey, apiOrigin, authToken, uploadStoreInitialValue } =
+      getOptions();
 
-      return {
-        options: {
-          client: client!,
-          uploadStore: createUploadStore({
-            uploads: uploadStoreInitialValue || {},
-          }),
-        },
-      };
+    try {
+      client = portiveClient.createClient({ apiKey, apiOrigin, authToken });
+    } catch (error) {
+      editor.api.debug.error(error, 'PORTIVE_CLIENT');
     }
-  )
-  .extendApi(({ editor, options }) => {
+
+    return {
+      options: {
+        client: client!,
+        uploadStore: createUploadStore({
+          uploads: uploadStoreInitialValue || {},
+        }),
+      },
+    };
+  })
+  .extendApi(({ editor, getOptions }) => {
     return {
       finishUploads: async (options?: FinishUploadsOptions): Promise<void> => {
         return finishUploads(editor, options);
       },
       getSaveValue: (): Value => {
-        return getSaveValue(editor.children, options.uploadStore.get.uploads());
+        return getSaveValue(
+          editor.children,
+          getOptions().uploadStore.get.uploads()
+        );
       },
       uploadFiles: (files: Iterable<File>) => {
         uploadFiles(editor, files);

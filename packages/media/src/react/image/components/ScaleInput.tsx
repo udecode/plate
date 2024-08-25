@@ -5,7 +5,7 @@ import { isHotkey } from '@udecode/plate-common';
 import {
   imagePreviewActions,
   useImagePreviewSelectors,
-} from '../image-preview-store';
+} from '../ImagePreviewStore';
 
 export const useScaleInputState = () => {
   const scale = useImagePreviewSelectors().scale();

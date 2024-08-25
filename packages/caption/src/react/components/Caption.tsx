@@ -24,9 +24,10 @@ export const useCaptionState = (options: CaptionOptions = {}) => {
   const element = useElement();
   const captionString = useCaptionString();
 
-  const showCaption = editor.useStore(
+  const showCaption = editor.useOption(
     CaptionPlugin,
-    (state) => state.showCaptionId === element.id
+    'isVisible',
+    element.id as string
   );
 
   const selected = useSelected();

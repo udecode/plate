@@ -24,6 +24,7 @@ import type {
   BaseHtmlDeserializer,
   BaseInjectProps,
   BasePlugin,
+  BasePluginContext,
   BaseSerializer,
   BaseTransformOptions,
   GetInjectPropsOptions,
@@ -131,7 +132,7 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> = {
 
   shortcuts: PlateShortcuts;
 
-  useStore: StoreApi<C['key'], C['options']>;
+  useOptionsStore: StoreApi<C['key'], C['options']>;
 } & BasePlugin<C> &
   Nullable<{
     /**
@@ -185,6 +186,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   __apiExtensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
   __configuration: ((ctx: PlatePluginContext<AnyPluginConfig>) => any) | null;
   __extensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
+  __optionExtensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
   __resolved?: boolean;
 
   configure: (
@@ -391,6 +393,19 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
     >
   >;
 
+  extendOptions: <
+    EO extends Record<string, (...args: any[]) => any> = Record<string, never>,
+  >(
+    extension: (ctx: PlatePluginContext<C>) => EO
+  ) => PlatePlugin<
+    PluginConfig<
+      C['key'],
+      EO & InferOptions<C>,
+      InferApi<C>,
+      InferTransforms<C>
+    >
+  >;
+
   extendPlugin: <
     P extends AnyPlatePlugin | AnySlatePlugin,
     EO = {},
@@ -476,7 +491,11 @@ export type PlatePluginConfig<
 > = Partial<
   { api: EA; options: EO; transforms: ET } & Omit<
     PlatePlugin<PluginConfig<K, Partial<O>, A, T>>,
-    'api' | 'store' | 'transforms' | 'useStore' | keyof PlatePluginMethods
+    | 'api'
+    | 'optionsStore'
+    | 'transforms'
+    | 'useOptionsStore'
+    | keyof PlatePluginMethods
   >
 >;
 
@@ -499,14 +518,28 @@ export type InferConfig<P> = P extends
   ? C
   : never;
 
-export type PlatePluginContext<C extends AnyPluginConfig = PluginConfig> = {
-  api: C['api'];
-  editor: PlateEditor;
-  options: InferOptions<C>;
+export type PlatePluginContext<
+  C extends AnyPluginConfig = PluginConfig,
+  E extends PlateEditor = PlateEditor,
+> = {
+  editor: E;
   plugin: EditorPlatePlugin<C>;
-  tf: C['transforms'];
-  type: string;
-};
+
+  useOption: {
+    <
+      K extends keyof InferOptions<C>,
+      F extends InferOptions<C>[K],
+      Args extends Parameters<((...args: any[]) => any) & F>,
+    >(
+      optionKey: K,
+      ...args: Args
+    ): F extends (...args: any[]) => any ? ReturnType<F> : F;
+
+    <K extends keyof InferOptions<C>, F extends InferOptions<C>[K]>(
+      optionKey: K
+    ): F extends (...args: any[]) => any ? never : F;
+  };
+} & BasePluginContext<C>;
 
 // -----------------------------------------------------------------------------
 

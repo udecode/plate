@@ -39,7 +39,9 @@ export type YjsConfig = PluginConfig<'yjs', YjsPluginOptions>;
 export const YjsPlugin = createTSlatePlugin<YjsConfig>({
   key: 'yjs',
   withOverrides: withPlateYjs,
-}).extend(({ options: { hocuspocusProviderOptions } }) => {
+}).extend(({ getOptions }) => {
+  const { hocuspocusProviderOptions } = getOptions();
+
   if (!hocuspocusProviderOptions) {
     throw new Error('HocuspocusProvider configuration is required');
   }

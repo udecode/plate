@@ -18,12 +18,13 @@ import type { SelectOnBackspaceConfig } from './SelectOnBackspacePlugin';
 /** Set a list of element types to select on backspace */
 export const withSelectOnBackspace: WithOverride<SelectOnBackspaceConfig> = ({
   editor,
-  options: { query, removeNodeIfEmpty },
+  getOptions,
 }) => {
   const { deleteBackward } = editor;
 
   editor.deleteBackward = (unit: 'block' | 'character' | 'line' | 'word') => {
     const { selection } = editor;
+    const { query, removeNodeIfEmpty } = getOptions();
 
     if (unit === 'character' && isCollapsed(selection)) {
       const pointBefore = getPointBefore(editor, selection as Slate.Location, {

@@ -24,7 +24,7 @@ export const CloudImagePlugin = createPlatePlugin({
     maxResizeWidth: 640,
     minResizeWidth: 100,
   },
-}).extendApi(({ editor, options }) => {
+}).extendApi(({ editor, getOptions }) => {
   const { uploadStore } = editor.getOptions(CloudPlugin);
 
   /**
@@ -59,7 +59,10 @@ export const CloudImagePlugin = createPlatePlugin({
     onStart: (e: ImageFileEvent) => {
       const { height, width } = portiveClient.resizeIn(
         { height: e.height, width: e.width },
-        { height: options.maxInitialHeight, width: options.maxInitialWidth }
+        {
+          height: getOptions().maxInitialHeight,
+          width: getOptions().maxInitialWidth,
+        }
       );
       const node: TCloudImageElement = {
         bytes: e.file.size,

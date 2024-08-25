@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-import { addSelectedRow, isHotkey, setNodes } from '@udecode/plate-common';
+import { isHotkey, setNodes } from '@udecode/plate-common';
 import { useEditorRef, useElement } from '@udecode/plate-common/react';
 
 import type { TEquationElement } from '../../../lib/equation/types';
@@ -38,7 +38,10 @@ export const useEquationInput = ({
       onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (isHotkey('enter')(e) || isHotkey('escape')(e)) {
           e.preventDefault();
-          addSelectedRow(editor, element.id as string);
+
+          editor
+            .getApi({ key: 'blockSelection' })
+            .blockSelection?.addSelectedRow?.(element.id);
         }
       },
       onMouseEnter: () => {

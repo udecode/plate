@@ -19,11 +19,11 @@ export const createPlatePlugin = <
         editor: PlateEditor
       ) => Omit<
         Partial<PlatePlugin<PluginConfig<K, O, A, T>>>,
-        'store' | 'useStore' | keyof PlatePluginMethods
+        'optionsStore' | 'useOptionsStore' | keyof PlatePluginMethods
       >)
     | Omit<
         Partial<PlatePlugin<PluginConfig<K, O, A, T>>>,
-        'store' | 'useStore' | keyof PlatePluginMethods
+        'optionsStore' | 'useOptionsStore' | keyof PlatePluginMethods
       > = {}
 ): PlatePlugin<PluginConfig<K, O, A, T>> => {
   const plugin = createSlatePlugin(config as any);

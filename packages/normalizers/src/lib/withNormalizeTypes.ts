@@ -11,11 +11,13 @@ import type { NormalizeTypesConfig } from './NormalizeTypesPlugin';
 
 export const withNormalizeTypes: WithOverride<NormalizeTypesConfig> = ({
   editor,
-  options: { onError, rules },
+  getOptions,
 }) => {
   const { normalizeNode } = editor;
 
   editor.normalizeNode = ([currentNode, currentPath]) => {
+    const { onError, rules } = getOptions();
+
     if (currentPath.length === 0) {
       const endCurrentNormalizationPass = rules!.some(
         ({ path, strictType, type }) => {

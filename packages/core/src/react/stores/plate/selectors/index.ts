@@ -4,6 +4,7 @@
 
 export * from './useEditorId';
 export * from './useEditorMounted';
+export * from './useEditorPlugin';
 export * from './useEditorReadOnly';
 export * from './useEditorRef';
 export * from './useEditorSelection';

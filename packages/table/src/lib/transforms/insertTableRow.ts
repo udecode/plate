@@ -3,6 +3,7 @@ import {
   type TElement,
   findNode,
   getBlockAbove,
+  getEditorPlugin,
   insertElements,
   select,
   withoutNormalizing,
@@ -27,8 +28,9 @@ export const insertTableRow = (
     header?: boolean;
   } = {}
 ) => {
-  const { enableMerging } = editor.getOptions(TablePlugin);
-  const api = editor.getApi(TablePlugin);
+  const { api, getOptions, type } = getEditorPlugin(editor, TablePlugin);
+
+  const { enableMerging } = getOptions();
 
   if (enableMerging) {
     return insertTableMergeRow(editor, options);
@@ -51,7 +53,7 @@ export const insertTableRow = (
 
   const tableEntry = getBlockAbove(editor, {
     at: trPath,
-    match: { type: editor.getType(TablePlugin) },
+    match: { type },
   });
 
   if (!tableEntry) return;

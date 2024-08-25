@@ -7,9 +7,11 @@ import type { FindReplaceConfig } from './FindReplacePlugin';
 
 export const decorateFindReplace: Decorate<FindReplaceConfig> = ({
   entry: [node, path],
-  options: { search },
+  getOptions,
   type,
 }) => {
+  const { search } = getOptions();
+
   const ranges: SearchRange[] = [];
 
   if (!search || !isText(node)) {

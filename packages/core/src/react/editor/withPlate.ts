@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import { type TEditor, type Value, createTEditor } from '@udecode/slate';
 
 import type { AnyPlatePlugin } from '../plugin';
@@ -60,20 +61,39 @@ export const withPlate = <
     plugins: [...getPlateCorePlugins(), ...plugins],
   } as any) as unknown as TPlateEditor<V, InferPlugins<P[]>>;
 
-  editor.useStore = ((plugin: any, selector: any, equalityFn: any) => {
-    const store = editor.getStore(plugin);
+  editor.useOptionsStore = ((plugin: any, selector: any, equalityFn: any) => {
+    const store = editor.getOptionsStore(plugin);
+
+    if (!store) {
+      editor.api.debug.error(
+        `editor.useOptionsStore: ${plugin.key} plugin is missing`,
+        'PLUGIN_MISSING'
+      );
+    }
 
     return store.useStore(selector, equalityFn);
   }) as any;
 
-  editor.useOption = (plugin, key, equalityFn) => {
-    const store = editor.getStore(plugin);
+  editor.useOption = (plugin: any, key: any, ...args: any) => {
+    const store = editor.getOptionsStore(plugin);
 
-    // if (!isDefined(store)) {
-    //   return store.useStore;
-    // }
+    if (!store) {
+      editor.api.debug.error(
+        `editor.useOption: ${plugin.key} plugin is missing`,
+        'PLUGIN_MISSING'
+      );
+    }
 
-    return (store as any).use[key]?.(equalityFn);
+    const useState = (store as any)?.use[key];
+
+    if (useState) {
+      return useState(...args);
+    }
+
+    editor.api.debug.error(
+      `editor.useOption: ${key} option is not defined in plugin ${plugin.key}`,
+      'OPTION_UNDEFINED'
+    );
   };
 
   return editor;

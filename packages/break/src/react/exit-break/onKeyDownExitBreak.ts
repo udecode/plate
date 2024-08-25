@@ -9,8 +9,10 @@ import { exitBreak } from '../../lib/exit-break/transforms/exitBreak';
 export const onKeyDownExitBreak: KeyboardHandler<ExitBreakConfig> = ({
   editor,
   event,
-  options: { rules = [] },
+  getOptions,
 }) => {
+  const { rules = [] } = getOptions();
+
   if (event.defaultPrevented) return;
 
   const entry = getBlockAbove(editor);

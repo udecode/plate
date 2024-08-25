@@ -7,6 +7,7 @@ import {
   setNodes,
   withoutNormalizing,
 } from '@udecode/plate-common';
+import { getEditorPlugin } from '@udecode/plate-common';
 import { Path } from 'slate';
 
 import type {
@@ -43,7 +44,12 @@ export const insertTableMergeColumn = (
     header?: boolean;
   } = {}
 ) => {
-  const { _cellIndices: cellIndices } = editor.getOptions(TablePlugin);
+  const { api, getOptions, type } = getEditorPlugin(editor, TablePlugin);
+  const {
+    _cellIndices: cellIndices,
+    initialTableWidth,
+    minColumnWidth,
+  } = getOptions();
 
   const cellEntry = fromCell
     ? findNode(editor, {
@@ -61,13 +67,10 @@ export const insertTableMergeColumn = (
 
   const tableEntry = getBlockAbove<TTableElement>(editor, {
     at: cellPath,
-    match: { type: editor.getType(TablePlugin) },
+    match: { type },
   });
 
   if (!tableEntry) return;
-
-  const { initialTableWidth, minColumnWidth } = editor.getOptions(TablePlugin);
-  const api = editor.getApi(TablePlugin);
 
   const [tableNode, tablePath] = tableEntry;
 

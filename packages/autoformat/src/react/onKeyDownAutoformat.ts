@@ -15,8 +15,10 @@ import type { AutoformatRule, AutoformatTextRule } from '../lib/types';
 export const onKeyDownAutoformat: KeyboardHandler<AutoformatConfig> = ({
   editor,
   event,
-  options: { enableUndoOnDelete, rules },
+  getOptions,
 }) => {
+  const { enableUndoOnDelete, rules } = getOptions();
+
   if (event.defaultPrevented) return false;
   // Abort quicky if hotKey was not pressed.
   if (!isHotkey('backspace', { byKey: true }, event)) return false;

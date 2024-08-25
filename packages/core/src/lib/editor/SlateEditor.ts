@@ -29,17 +29,27 @@ export type BaseEditor = {
     plugin: WithRequiredKey<C>
   ) => InjectProps<C>;
 
+  getOption: <
+    C extends AnyPluginConfig,
+    K extends keyof InferOptions<C>,
+    F extends InferOptions<C>[K],
+  >(
+    plugin: WithRequiredKey<C>,
+    optionKey: K,
+    ...args: F extends (...args: infer A) => any ? A : never
+  ) => F extends (...args: any[]) => infer R ? R : F;
+
   getOptions: <C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
   ) => InferOptions<C>;
 
+  getOptionsStore: <C extends AnyPluginConfig>(
+    plugin: WithRequiredKey<C>
+  ) => StoreApi<C['key'], InferOptions<C>>;
+
   getPlugin: <C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
   ) => C extends { type: any } ? C : EditorPlugin<C>;
-
-  getStore: <C extends AnyPluginConfig>(
-    plugin: WithRequiredKey<C>
-  ) => StoreApi<C['key'], InferOptions<C>>;
 
   getTransforms: <C extends AnyPluginConfig = PluginConfig>(
     plugin?: WithRequiredKey<C>

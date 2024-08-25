@@ -11,13 +11,13 @@ import type { RemoveEmptyNodesConfig } from './RemoveEmptyNodesPlugin';
 /** Remove nodes with empty text. */
 export const withRemoveEmptyNodes: WithOverride<RemoveEmptyNodesConfig> = ({
   editor,
-  options: { types: _types },
+  getOptions,
 }) => {
-  const types = castArray(_types);
-
   const { normalizeNode } = editor;
 
   editor.normalizeNode = ([node, path]) => {
+    const types = castArray(getOptions().types ?? []);
+
     if (
       isElement(node) &&
       node.type &&

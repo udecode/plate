@@ -116,21 +116,46 @@ export const withSlate = <
   editor.getInjectProps = (plugin) =>
     editor.getPlugin<AnySlatePlugin>(plugin).inject?.props ?? ({} as any);
 
-  editor.getStore = (plugin) => editor.getPlugin(plugin).store;
-  editor.getOptions = (plugin) => editor.getStore(plugin).get.state();
-  editor.setOption = (plugin: any, keyOrOptions: any, value?: any) => {
-    const store = editor.getStore(plugin);
+  editor.getOptionsStore = (plugin) => editor.getPlugin(plugin).optionsStore;
+  editor.getOptions = (plugin) => {
+    const store = editor.getOptionsStore(plugin);
 
+    if (!store) return editor.getPlugin(plugin).options;
+
+    return editor.getOptionsStore(plugin).get.state();
+  };
+  editor.getOption = (plugin, key, ...args) => {
+    const store = editor.getOptionsStore(plugin);
+
+    if (!store) return editor.getPlugin(plugin).options[key];
+
+    const getter = (store.get as any)[key];
+
+    if (getter) {
+      return getter(...args);
+    }
+
+    editor.api.debug.error(
+      `editor.getOption: ${key as string} option is not defined in plugin ${plugin.key}.`,
+      'OPTION_UNDEFINED'
+    );
+  };
+  editor.setOption = (plugin: any, keyOrOptions: any, value?: any) => {
+    const store = editor.getOptionsStore(plugin);
+
+    if (!store) return;
     if (typeof keyOrOptions === 'object') {
       (store.set as any).mergeState(keyOrOptions);
     } else if (typeof keyOrOptions === 'function') {
       (store.set as any).state(keyOrOptions);
     } else {
-      if ((store.set as any)[keyOrOptions]) {
-        (store.set as any)[keyOrOptions]?.(value);
+      const setter = (store.set as any)[keyOrOptions];
+
+      if (setter) {
+        setter(value);
       } else {
         editor.api.debug.error(
-          `Option ${keyOrOptions} has undefined value in plugin ${plugin.key}, use null instead.`,
+          `editor.setOption: ${keyOrOptions} option is not defined in plugin ${plugin.key}.`,
           'OPTION_UNDEFINED'
         );
       }

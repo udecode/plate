@@ -15,7 +15,7 @@ import { ParagraphPlugin } from '@udecode/plate-common';
 import {
   createPlateEditor,
   createTPlatePlugin,
-  getPluginContext,
+  getEditorPlugin,
 } from '@udecode/plate-common/react';
 import * as isHotkey from '@udecode/plate-core';
 import { ListItemPlugin, unwrapList } from '@udecode/plate-list';
@@ -74,6 +74,7 @@ describe('onKeyDownResetNode', () => {
 
       const editor = createPlateEditor({
         editor: input,
+        plugins: [plugin],
       });
 
       jest
@@ -81,11 +82,11 @@ describe('onKeyDownResetNode', () => {
         .mockImplementation((hotkey) => hotkey === 'Enter');
 
       onKeyDownResetNode({
-        ...getPluginContext(editor, plugin),
+        ...getEditorPlugin(editor, plugin),
         event: new KeyboardEvent('keydown') as any,
       });
       onKeyDownResetNode({
-        ...getPluginContext(editor, plugin),
+        ...getEditorPlugin(editor, plugin),
         event: new KeyboardEvent('keydown') as any,
       });
 
@@ -113,6 +114,7 @@ describe('onKeyDownResetNode', () => {
 
       const editor = createPlateEditor({
         editor: input,
+        plugins: [plugin],
       });
 
       jest
@@ -120,7 +122,7 @@ describe('onKeyDownResetNode', () => {
         .mockImplementation((hotkey) => hotkey === 'Backspace');
 
       onKeyDownResetNode({
-        ...getPluginContext(editor, plugin),
+        ...getEditorPlugin(editor, plugin),
         event: new KeyboardEvent('keydown') as any,
       });
 
@@ -175,6 +177,7 @@ describe('onKeyDownResetNode', () => {
 
       const editor = createPlateEditor({
         editor: input,
+        plugins: [plugin],
       });
 
       jest
@@ -182,7 +185,7 @@ describe('onKeyDownResetNode', () => {
         .mockImplementation((hotkey) => hotkey === 'Enter');
 
       onKeyDownResetNode({
-        ...getPluginContext(editor, plugin),
+        ...getEditorPlugin(editor, plugin),
         event: new KeyboardEvent('keydown') as any,
       });
 
@@ -218,6 +221,7 @@ describe('onKeyDownResetNode', () => {
 
       const editor = createPlateEditor({
         editor: input,
+        plugins: [plugin],
       });
 
       jest
@@ -225,7 +229,7 @@ describe('onKeyDownResetNode', () => {
         .mockImplementation((hotkey) => hotkey === 'Enter');
 
       onKeyDownResetNode({
-        ...getPluginContext(editor, plugin),
+        ...getEditorPlugin(editor, plugin),
         event: new KeyboardEvent('keydown') as any,
       });
 
@@ -257,6 +261,7 @@ describe('onKeyDownResetNode', () => {
 
       const editor = createPlateEditor({
         editor: input,
+        plugins: [plugin],
       });
 
       jest
@@ -264,7 +269,7 @@ describe('onKeyDownResetNode', () => {
         .mockImplementation((hotkey) => hotkey === 'Backspace');
 
       onKeyDownResetNode({
-        ...getPluginContext(editor, plugin),
+        ...getEditorPlugin(editor, plugin),
         event: new KeyboardEvent('keydown') as any,
       });
 
@@ -300,6 +305,7 @@ describe('onKeyDownResetNode', () => {
 
       const editor = createPlateEditor({
         editor: input,
+        plugins: [plugin],
       });
 
       jest
@@ -307,7 +313,7 @@ describe('onKeyDownResetNode', () => {
         .mockImplementation((hotkey) => hotkey === 'Backspace');
 
       onKeyDownResetNode({
-        ...getPluginContext(editor, plugin),
+        ...getEditorPlugin(editor, plugin),
         event: new KeyboardEvent('keydown') as any,
       });
 
@@ -356,6 +362,7 @@ describe('onKeyDownResetNode', () => {
 
       const editor = createPlateEditor({
         editor: input,
+        plugins: [plugin],
       });
 
       jest
@@ -363,7 +370,7 @@ describe('onKeyDownResetNode', () => {
         .mockImplementation((hotkey) => hotkey === 'Enter');
 
       onKeyDownResetNode({
-        ...getPluginContext(editor, plugin),
+        ...getEditorPlugin(editor, plugin),
         event: new KeyboardEvent('keydown') as any,
       });
 
@@ -403,6 +410,7 @@ describe('onKeyDownResetNode', () => {
 
       const editor = createPlateEditor({
         editor: input,
+        plugins: [plugin],
       });
 
       jest
@@ -410,7 +418,7 @@ describe('onKeyDownResetNode', () => {
         .mockImplementation((hotkey) => hotkey === 'Backspace');
 
       onKeyDownResetNode({
-        ...getPluginContext(editor, plugin),
+        ...getEditorPlugin(editor, plugin),
         event: new KeyboardEvent('keydown') as any,
       });
 

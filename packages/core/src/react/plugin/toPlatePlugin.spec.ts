@@ -231,10 +231,10 @@ describe('toPlatePlugin type tests', () => {
 
     const CodeBlockPlugin = toPlatePlugin(
       BaseCodeBlockPlugin,
-      ({ options }) => {
+      ({ getOptions }) => {
         // Type check: should have access to base options
-        options.syntax;
-        options.syntaxPopularFirst;
+        getOptions().syntax;
+        getOptions().syntaxPopularFirst;
 
         return {
           options: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
@@ -242,7 +242,11 @@ describe('toPlatePlugin type tests', () => {
       }
     );
 
-    expect(resolvePluginTest(CodeBlockPlugin).options).toEqual({
+    expect(
+      createPlateEditor({ plugins: [CodeBlockPlugin] }).getOptions(
+        CodeBlockPlugin
+      )
+    ).toEqual({
       hotkey: ['mod+opt+8', 'mod+shift+8'],
       syntax: true,
       syntaxPopularFirst: false,
@@ -409,10 +413,10 @@ describe('toTPlatePlugin type tests', () => {
 
     const CodeBlockPlugin2 = toTPlatePlugin<CodeBlockConfig2, CodeBlockConfig>(
       BaseCodeBlockPlugin,
-      ({ options }) => {
+      ({ getOptions }) => {
         // @ts-expect-error
-        options.nonExisting;
-        options.syntax;
+        getOptions().nonExisting;
+        getOptions().syntax;
 
         return {
           options: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
@@ -420,7 +424,11 @@ describe('toTPlatePlugin type tests', () => {
       }
     );
 
-    expect(resolvePluginTest(CodeBlockPlugin2).options).toEqual({
+    expect(
+      createPlateEditor({ plugins: [CodeBlockPlugin2] }).getOptions(
+        CodeBlockPlugin2
+      )
+    ).toEqual({
       hotkey: ['mod+opt+8', 'mod+shift+8'],
       syntax: true,
       syntaxPopularFirst: false,

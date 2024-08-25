@@ -22,13 +22,14 @@ import { getCellTypes } from './utils/index';
  */
 export const withNormalizeTable: WithOverride<TableConfig> = ({
   editor,
-  options,
+  getOptions,
   type,
 }) => {
   const { normalizeNode } = editor;
-  const { initialTableWidth } = options;
 
   editor.normalizeNode = ([node, path]) => {
+    const { initialTableWidth } = getOptions();
+
     if (isElement(node)) {
       if (node.type === type) {
         const tableEntry = getBlockAbove(editor, {

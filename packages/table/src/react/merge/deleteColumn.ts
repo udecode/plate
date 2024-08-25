@@ -3,6 +3,7 @@ import type { Path } from 'slate';
 import {
   type SlateEditor,
   getAboveNode,
+  getEditorPlugin,
   isExpanded,
   removeNodes,
   setNodes,
@@ -24,15 +25,17 @@ import { TablePlugin } from '../TablePlugin';
 import { deleteColumnWhenExpanded } from './deleteColumnWhenExpanded';
 
 export const deleteTableMergeColumn = (editor: SlateEditor) => {
+  const { getOptions, type } = getEditorPlugin(editor, TablePlugin);
+
   if (
     someNode(editor, {
-      match: { type: editor.getType(TablePlugin) },
+      match: { type },
     })
   ) {
-    const { _cellIndices: cellIndices } = editor.getOptions(TablePlugin);
+    const { _cellIndices: cellIndices } = getOptions();
 
     const tableEntry = getAboveNode<TTableElement>(editor, {
-      match: { type: editor.getType(TablePlugin) },
+      match: { type },
     });
 
     if (!tableEntry) return;

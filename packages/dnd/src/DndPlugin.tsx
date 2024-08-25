@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { type PluginConfig, addSelectedRow } from '@udecode/plate-common';
+import type { PluginConfig } from '@udecode/plate-common';
+
 import { createTPlatePlugin } from '@udecode/plate-common/react';
 
 import { DndScroller, type ScrollerProps } from './components/Scroller';
@@ -26,14 +27,17 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
       editor.setOption(plugin, 'draggingId', id);
       editor.setOption(plugin, 'isDragging', true);
     },
-    onDrop: ({ editor, options }) => {
-      const id = options.draggingId;
+    onDrop: ({ editor, getOptions }) => {
+      const id = getOptions().draggingId;
 
       setTimeout(() => {
-        id && addSelectedRow(editor, id);
+        id &&
+          editor
+            .getApi({ key: 'blockSelection' })
+            .blockSelection?.addSelectedRow?.(id);
       }, 0);
 
-      return options.isDragging;
+      return getOptions().isDragging;
     },
   },
   key: 'dnd',
@@ -41,8 +45,8 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
     draggingId: null,
     isDragging: false,
   },
-}).extend(({ options }) => ({
-  renderAfterEditable: options.enableScroller
-    ? () => <DndScroller {...options?.scrollerProps} />
+}).extend(({ getOptions }) => ({
+  renderAfterEditable: getOptions().enableScroller
+    ? () => <DndScroller {...getOptions()?.scrollerProps} />
     : undefined,
 }));

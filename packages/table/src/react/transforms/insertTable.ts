@@ -2,6 +2,7 @@ import {
   type InsertNodesOptions,
   type SlateEditor,
   getBlockAbove,
+  getEditorPlugin,
   getStartPoint,
   insertNodes,
   someNode,
@@ -23,10 +24,12 @@ export const insertTable = <E extends SlateEditor>(
   { colCount = 2, header, rowCount = 2 }: GetEmptyTableNodeOptions = {},
   options: InsertNodesOptions<E> = {}
 ) => {
+  const { type } = getEditorPlugin(editor, TablePlugin);
+
   withoutNormalizing(editor, () => {
     if (
       !someNode(editor, {
-        match: { type: editor.getType(TablePlugin) },
+        match: { type },
       })
     ) {
       insertNodes<TTableElement>(
@@ -44,7 +47,7 @@ export const insertTable = <E extends SlateEditor>(
 
       if (editor.selection) {
         const tableEntry = getBlockAbove(editor, {
-          match: { type: editor.getType(TablePlugin) },
+          match: { type },
         });
 
         if (!tableEntry) return;

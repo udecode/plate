@@ -2,7 +2,7 @@ import type { Value } from '@udecode/slate';
 
 import type { PlateEditor } from '../editor/PlateEditor';
 
-import { getPluginContext } from '../plugin/getPluginContext';
+import { getEditorPlugin } from '../plugin/getEditorPlugin';
 
 export const pipeOnChange = (editor: PlateEditor, value: Value) => {
   return editor.pluginList.some((plugin) => {
@@ -15,7 +15,7 @@ export const pipeOnChange = (editor: PlateEditor, value: Value) => {
     // The custom event handler may return a boolean to specify whether the event
     // shall be treated as being handled or not.
     const shouldTreatEventAsHandled = handler({
-      ...(getPluginContext(editor, plugin) as any),
+      ...(getEditorPlugin(editor, plugin) as any),
       value,
     });
 

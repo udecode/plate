@@ -3,7 +3,7 @@
 import React from 'react';
 
 import { CloudPlugin } from '@udecode/plate-cloud';
-import { useEditorRef } from '@udecode/plate-common/react';
+import { useEditorPlugin } from '@udecode/plate-common/react';
 
 const buttonStyle: React.CSSProperties = {
   background: '#f0f0f0',
@@ -14,17 +14,15 @@ const buttonStyle: React.CSSProperties = {
 };
 
 export function CloudToolbarButtons() {
-  const editor = useEditorRef();
-
-  const cloudApi = editor.getApi(CloudPlugin);
+  const { api, editor } = useEditorPlugin(CloudPlugin);
 
   const getSaveValue = () => {
     console.info('editor.children', editor.children);
-    console.info('editor.cloud.getSaveValue()', cloudApi.cloud.getSaveValue());
+    console.info('editor.cloud.getSaveValue()', api.cloud.getSaveValue());
   };
 
   const finishUploads = async () => {
-    await cloudApi.cloud.finishUploads();
+    await api.cloud.finishUploads();
   };
 
   return (

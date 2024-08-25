@@ -18,7 +18,7 @@ export const serializeHtml = (
     convertNewLinesToHtmlBr = false,
     dndWrapper,
     nodes,
-    plateProps,
+    plateProps = {},
     preserveClassNames,
     stripDataAttributes = true,
     stripWhitespace = true,
@@ -37,7 +37,7 @@ export const serializeHtml = (
     nodes: TDescendant[];
 
     /** Slate props to provide if the rendering depends on plate/slate hooks */
-    plateProps?: Partial<PlateProps>;
+    plateProps?: Omit<Partial<PlateProps>, 'editor'>;
 
     /** List of className prefixes to preserve from being stripped out */
     preserveClassNames?: string[];
@@ -53,6 +53,8 @@ export const serializeHtml = (
     stripWhitespace?: boolean;
   }
 ): string => {
+  (plateProps as any).editor = editor;
+
   let result = nodes
     .map((node) => {
       if (isText(node)) {

@@ -2,6 +2,7 @@ import {
   type SlateEditor,
   findNode,
   getBlockAbove,
+  getEditorPlugin,
   getParentNode,
   insertElements,
   setNodes,
@@ -39,8 +40,8 @@ export const insertTableMergeRow = (
     header?: boolean;
   } = {}
 ) => {
-  const { _cellIndices: cellIndices } = editor.getOptions(TablePlugin);
-  const api = editor.getApi(TablePlugin);
+  const { api, getOptions, type } = getEditorPlugin(editor, TablePlugin);
+  const { _cellIndices: cellIndices } = getOptions();
 
   const trEntry = fromRow
     ? findNode(editor, {
@@ -57,7 +58,7 @@ export const insertTableMergeRow = (
 
   const tableEntry = getBlockAbove<TTableElement>(editor, {
     at: trPath,
-    match: { type: editor.getType(TablePlugin) },
+    match: { type },
   });
 
   if (!tableEntry) return;

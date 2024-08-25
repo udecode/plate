@@ -34,19 +34,22 @@ export type IndentConfig = PluginConfig<
 >;
 
 export const IndentPlugin = createTSlatePlugin<IndentConfig>({
+  inject: {
+    props: {
+      nodeKey: 'indent',
+      styleKey: 'marginLeft',
+      transformNodeValue: ({ getOptions, nodeValue }) => {
+        const { offset, unit } = getOptions();
+
+        return nodeValue * offset! + unit!;
+      },
+    },
+    targetPlugins: [ParagraphPlugin.key],
+  },
   key: 'indent',
   options: {
     offset: 24,
     unit: 'px',
   },
   withOverrides: withIndent,
-}).extend(({ options: { offset, unit } }) => ({
-  inject: {
-    props: {
-      nodeKey: 'indent',
-      styleKey: 'marginLeft',
-      transformNodeValue: ({ nodeValue }) => nodeValue * offset! + unit!,
-    },
-    targetPlugins: [ParagraphPlugin.key],
-  },
-}));
+});

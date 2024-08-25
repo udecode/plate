@@ -3,6 +3,7 @@ import {
   type TElement,
   findNode,
   getBlockAbove,
+  getEditorPlugin,
   insertElements,
   setNodes,
   withoutNormalizing,
@@ -30,7 +31,9 @@ export const insertTableColumn = (
     header?: boolean;
   } = {}
 ) => {
-  const { enableMerging } = editor.getOptions(TablePlugin);
+  const { api, getOptions, type } = getEditorPlugin(editor, TablePlugin);
+
+  const { enableMerging, initialTableWidth, minColumnWidth } = getOptions();
 
   if (enableMerging) {
     return insertTableMergeColumn(editor, options);
@@ -53,7 +56,7 @@ export const insertTableColumn = (
 
   const tableEntry = getBlockAbove<TTableElement>(editor, {
     at: cellPath,
-    match: { type: editor.getType(TablePlugin) },
+    match: { type },
   });
 
   if (!tableEntry) return;
@@ -72,9 +75,6 @@ export const insertTableColumn = (
   }
 
   const currentRowIndex = cellPath.at(-2);
-
-  const { initialTableWidth, minColumnWidth } = editor.getOptions(TablePlugin);
-  const api = editor.getApi(TablePlugin);
 
   withoutNormalizing(editor, () => {
     // for each row, insert a new cell

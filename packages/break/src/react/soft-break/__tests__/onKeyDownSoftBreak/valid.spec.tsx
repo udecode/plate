@@ -2,7 +2,7 @@
 
 import {
   createPlateEditor,
-  getPluginContext,
+  getEditorPlugin,
 } from '@udecode/plate-common/react';
 import * as isHotkey from '@udecode/plate-core';
 import { jsx } from '@udecode/plate-test-utils';
@@ -35,7 +35,7 @@ const output = (
 it('should be', () => {
   jest.spyOn(isHotkey, 'isHotkey').mockReturnValue(true);
   onKeyDownSoftBreak({
-    ...getPluginContext(
+    ...getEditorPlugin(
       createPlateEditor({ editor: input }),
       SoftBreakPlugin.configure({
         options: { rules: [{ hotkey: 'shift+enter' }] },

@@ -4,12 +4,17 @@ import type { LengthConfig } from '../getCorePlugins';
 
 import { type WithOverride, createTSlatePlugin } from '../../plugin';
 
-export const withLength: WithOverride<LengthConfig> = ({ editor, options }) => {
+export const withLength: WithOverride<LengthConfig> = ({
+  editor,
+  getOptions,
+}) => {
   const { apply } = editor;
 
   editor.apply = (operation) => {
     withoutNormalizing(editor, () => {
       apply(operation);
+
+      const options = getOptions();
 
       if (options.maxLength) {
         const length = getEditorString(editor, []).length;

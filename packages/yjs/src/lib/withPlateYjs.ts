@@ -10,9 +10,12 @@ import { withTYjs } from './withTYjs';
 
 export const withPlateYjs: WithOverride<YjsConfig> = ({
   editor: e,
-  options: { cursorOptions, disableCursors, provider, yjsOptions },
+  getOptions,
 }) => {
   const editor = e as unknown as PlateYjsEditorProps & SlateEditor;
+
+  // not reactive
+  const { cursorOptions, disableCursors, provider, yjsOptions } = getOptions();
 
   const sharedType = provider.document.get(
     'content',

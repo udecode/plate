@@ -4,7 +4,7 @@ import type { Range } from 'slate';
 
 import type { PlateEditor } from '../editor/PlateEditor';
 
-import { getPluginContext } from '../plugin';
+import { getEditorPlugin } from '../plugin';
 
 /**
  * @see {@link Decorate} .
@@ -30,7 +30,7 @@ export const pipeDecorate = (
     relevantPlugins.forEach((plugin) => {
       addRanges(
         plugin.decorate!({
-          ...(getPluginContext(editor, plugin) as any),
+          ...(getEditorPlugin(editor, plugin) as any),
           entry,
         })
       );

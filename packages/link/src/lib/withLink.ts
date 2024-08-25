@@ -2,9 +2,9 @@ import {
   type WithOverride,
   collapseSelection,
   getAboveNode,
+  getEditorPlugin,
   getEditorString,
   getNextNodeStartPoint,
-  getPluginContext,
   getPreviousNodeEndPoint,
   getRangeBefore,
   getRangeFromBlockStart,
@@ -37,12 +37,14 @@ import { upsertLink } from './transforms/index';
 
 export const withLink: WithOverride<LinkConfig> = ({
   editor,
-  options: { getUrlHref, isUrl, keepSelectedTextOnPaste, rangeBeforeOptions },
+  getOptions,
   type,
 }) => {
   const { apply, insertBreak, insertData, insertText, normalizeNode } = editor;
 
   const wrapLink = () => {
+    const { getUrlHref, isUrl, rangeBeforeOptions } = getOptions();
+
     withoutNormalizing(editor, () => {
       const selection = editor.selection!;
 
@@ -103,6 +105,8 @@ export const withLink: WithOverride<LinkConfig> = ({
   };
 
   editor.insertData = (data: DataTransfer) => {
+    const { getUrlHref, keepSelectedTextOnPaste } = getOptions();
+
     const text = data.getData('text/plain');
     const textHref = getUrlHref?.(text);
 
@@ -183,7 +187,7 @@ export const withLink: WithOverride<LinkConfig> = ({
   };
 
   editor = withRemoveEmptyNodes(
-    getPluginContext(
+    getEditorPlugin(
       editor,
       RemoveEmptyNodesPlugin.configure({
         options: { types: type },

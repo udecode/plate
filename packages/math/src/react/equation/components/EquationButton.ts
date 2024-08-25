@@ -1,4 +1,3 @@
-import { addSelectedRow } from '@udecode/plate-common';
 import { useEditorRef, useElement } from '@udecode/plate-common/react';
 
 import type { TEquationElement } from '../../../lib/equation/types';
@@ -17,7 +16,9 @@ export const useEquationButton = ({
   return {
     props: {
       onClick: () => {
-        addSelectedRow(editor, element.id as string);
+        editor
+          .getApi({ key: 'blockSelection' })
+          .blockSelection?.addSelectedRow?.(element.id);
       },
     },
   };

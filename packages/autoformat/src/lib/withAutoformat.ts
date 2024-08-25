@@ -12,14 +12,14 @@ import { autoformatText } from './transforms/autoformatText';
  */
 export const withAutoformat: WithOverride<AutoformatConfig> = ({
   editor,
-  options: { rules },
+  getOptions,
 }) => {
   const { insertText } = editor;
 
   editor.insertText = (text) => {
     if (!isCollapsed(editor.selection)) return insertText(text);
 
-    for (const rule of rules!) {
+    for (const rule of getOptions().rules!) {
       const { insertTrigger, mode = 'text', query } = rule;
 
       if (query && !query(editor as any, { ...rule, text })) continue;

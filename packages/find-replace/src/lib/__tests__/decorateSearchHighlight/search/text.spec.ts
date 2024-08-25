@@ -1,4 +1,4 @@
-import { getPluginContext } from '@udecode/plate-common';
+import { getEditorPlugin } from '@udecode/plate-common';
 import { createSlateEditor } from '@udecode/plate-common';
 
 import { FindReplacePlugin } from '../../../FindReplacePlugin';
@@ -14,7 +14,7 @@ it('should decorate matching text', () => {
 
   expect(
     plugin.decorate?.({
-      ...getPluginContext(editor, plugin),
+      ...getEditorPlugin(editor, plugin),
       entry: [{ text: 'test' }, [0, 0]],
     })
   ).toEqual([
@@ -44,7 +44,7 @@ it('should decorate matching text case-insensitively', () => {
 
   expect(
     plugin.decorate?.({
-      ...getPluginContext(editor, plugin),
+      ...getEditorPlugin(editor, plugin),
       entry: [{ text: 'test' }, [0, 0]],
     })
   ).toEqual([

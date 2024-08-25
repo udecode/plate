@@ -2,7 +2,7 @@
 
 import {
   createPlateEditor,
-  getPluginContext,
+  getEditorPlugin,
 } from '@udecode/plate-common/react';
 import * as isHotkey from '@udecode/plate-core';
 import { HEADING_KEYS } from '@udecode/plate-heading';
@@ -36,7 +36,7 @@ const output = (
 it('should be', () => {
   jest.spyOn(isHotkey, 'isHotkey').mockReturnValue(true);
   onKeyDownExitBreak({
-    ...getPluginContext(
+    ...getEditorPlugin(
       createPlateEditor({ editor: input }),
       ExitBreakPlugin.configure({
         options: {

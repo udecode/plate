@@ -6,9 +6,9 @@ import { CaptionPlugin } from '../CaptionPlugin';
 
 export const showCaption = (editor: SlateEditor, element: TElement) => {
   const path = findNodePath(editor, element);
-  editor.setOption(CaptionPlugin, 'showCaptionId', element.id as string);
+  editor.setOption(CaptionPlugin, 'visibleId', element.id as string);
 
   setTimeout(() => {
-    path && editor.setOption(CaptionPlugin, 'focusEndCaptionPath', path);
+    path && editor.setOption(CaptionPlugin, 'focusEndPath', path);
   }, 0);
 };

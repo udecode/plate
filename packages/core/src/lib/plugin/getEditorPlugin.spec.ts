@@ -4,9 +4,9 @@ import type { AnySlatePlugin, SlatePluginContext } from './SlatePlugin';
 
 import { createPlateEditor } from '../../react';
 import { createSlatePlugin, createTSlatePlugin } from './createSlatePlugin';
-import { getPluginContext } from './getPluginContext';
+import { getEditorPlugin } from './getEditorPlugin';
 
-describe('getPluginContext', () => {
+describe('getEditorPlugin', () => {
   let editor: SlateEditor;
   let testPlugin: AnySlatePlugin;
 
@@ -25,15 +25,14 @@ describe('getPluginContext', () => {
   });
 
   it('should get plugin context by plugin object', () => {
-    const context = getPluginContext(
+    const context = getEditorPlugin(
       editor,
       testPlugin.configure({ options: { testOption: 't' } })
     );
 
-    expect(context).toEqual({
+    expect(context).toMatchObject({
       api: editor.api,
       editor,
-      options: { testOption: 't' },
       plugin: expect.objectContaining({ key: 'test', type: 'test-type' }),
       tf: editor.transforms,
       type: 'test-type',
@@ -57,19 +56,18 @@ describe('getPluginContext', () => {
 
     let a: SlatePluginContext<Config> = {} as any;
 
-    const b = getPluginContext(editor, plugin);
+    const b = getEditorPlugin(editor, plugin);
     a = b;
 
     expect(a).toBeDefined();
   });
 
   it('should get plugin context by plugin key', () => {
-    const context = getPluginContext(editor, { key: 'test' });
+    const context = getEditorPlugin(editor, { key: 'test' });
 
-    expect(context).toEqual({
+    expect(context).toMatchObject({
       api: editor.api,
       editor,
-      options: testPlugin.options,
       plugin: expect.objectContaining({ key: 'test', type: 'test-type' }),
       tf: editor.transforms,
       type: 'test-type',
@@ -85,12 +83,11 @@ describe('getPluginContext', () => {
       type: 'unresolved-type',
     });
 
-    const context = getPluginContext(editor, unresolvedPlugin);
+    const context = getEditorPlugin(editor, unresolvedPlugin);
 
-    expect(context).toEqual({
+    expect(context).toMatchObject({
       api: editor.api,
       editor,
-      options: unresolvedPlugin.options,
       plugin: expect.objectContaining({
         key: 'unresolved',
         type: 'unresolved-type',

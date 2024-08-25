@@ -2,6 +2,7 @@ import {
   type SlateEditor,
   type TElement,
   type TElementEntry,
+  type WithOverride,
   getBlockAbove,
   getChildren,
   getEditorString,
@@ -15,6 +16,8 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { Path, type TextUnit } from 'slate';
+
+import type { ListConfig } from './ListPlugin';
 
 import { ListItemContentPlugin, ListItemPlugin } from './ListPlugin';
 import {
@@ -217,36 +220,44 @@ const selectionIsInAListHandler = (
   return false;
 };
 
-export const deleteForwardList = (
-  editor: SlateEditor,
-  defaultDelete: (unit: TextUnit) => void,
-  unit: TextUnit
-) => {
-  let skipDefaultDelete = false;
+export const withDeleteForwardList: WithOverride<ListConfig> = ({ editor }) => {
+  const { deleteForward } = editor;
 
-  if (!editor?.selection) {
-    return skipDefaultDelete;
-  }
-  if (!isSelectionAtBlockEnd(editor)) {
-    return skipDefaultDelete;
-  }
+  editor.deleteForward = (unit) => {
+    const deleteForwardList = () => {
+      let skipDefaultDelete = false;
 
-  withoutNormalizing(editor, () => {
-    const res = getListItemEntry(editor, {});
+      if (!editor?.selection) {
+        return skipDefaultDelete;
+      }
+      if (!isSelectionAtBlockEnd(editor)) {
+        return skipDefaultDelete;
+      }
 
-    if (!res) {
-      skipDefaultDelete = selectionIsNotInAListHandler(editor);
+      withoutNormalizing(editor, () => {
+        const res = getListItemEntry(editor, {});
 
-      return;
-    }
+        if (!res) {
+          skipDefaultDelete = selectionIsNotInAListHandler(editor);
 
-    skipDefaultDelete = selectionIsInAListHandler(
-      editor,
-      res,
-      defaultDelete,
-      unit
-    );
-  });
+          return;
+        }
 
-  return skipDefaultDelete;
+        skipDefaultDelete = selectionIsInAListHandler(
+          editor,
+          res,
+          deleteForward,
+          unit
+        );
+      });
+
+      return skipDefaultDelete;
+    };
+
+    if (deleteForwardList()) return;
+
+    deleteForward(unit);
+  };
+
+  return editor;
 };

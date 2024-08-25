@@ -7,8 +7,10 @@ import type { SoftBreakConfig } from '../../lib';
 export const onKeyDownSoftBreak: KeyboardHandler<SoftBreakConfig> = ({
   editor,
   event,
-  options: { rules = [] },
+  getOptions,
 }) => {
+  const { rules = [] } = getOptions();
+
   if (event.defaultPrevented) return;
 
   const entry = getBlockAbove(editor);

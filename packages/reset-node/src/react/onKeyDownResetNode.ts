@@ -17,15 +17,17 @@ export const SIMULATE_BACKSPACE: any = {
 export const onKeyDownResetNode: KeyboardHandler<ResetNodeConfig> = ({
   editor,
   event,
-  options: { rules },
+  getOptions,
 }) => {
+  const { rules = [] } = getOptions();
+
   if (event.defaultPrevented) return;
 
   let reset;
 
   if (!editor.selection) return;
   if (isCollapsed(editor.selection)) {
-    rules!.forEach(({ defaultType, hotkey, onReset, predicate, types }) => {
+    rules.forEach(({ defaultType, hotkey, onReset, predicate, types }) => {
       if (
         hotkey &&
         isHotkey(hotkey, event as any) &&

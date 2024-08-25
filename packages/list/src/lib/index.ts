@@ -4,10 +4,10 @@
 
 export * from './ListPlugin';
 export * from './TodoListPlugin';
-export * from './deleteForwardList';
-export * from './deleteFragmentList';
-export * from './insertBreakTodoList';
-export * from './insertFragmentList';
+export * from './withDeleteForwardList';
+export * from './withDeleteFragmentList';
+export * from './withInsertFragmentList';
+export * from './withNormalizeList';
 export * from './withTodoList';
 export * from './normalizers/index';
 export * from './queries/index';

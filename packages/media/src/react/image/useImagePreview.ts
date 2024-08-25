@@ -6,7 +6,7 @@ import { useEditorRef } from '@udecode/plate-common/react';
 import {
   imagePreviewActions,
   useImagePreviewSelectors,
-} from './image-preview-store';
+} from './ImagePreviewStore';
 import { useZoom } from './useZoom';
 
 export const useImagePreviewState = ({

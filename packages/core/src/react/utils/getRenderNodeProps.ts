@@ -7,7 +7,7 @@ import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 import type { PlateRenderNodeProps } from '../plugin/PlateRenderNodeProps';
 
 import { getSlateClass } from '../../lib';
-import { getPluginContext } from '../plugin';
+import { getEditorPlugin } from '../plugin';
 
 /**
  * Override node props with plugin props. `props.element.attributes` are passed
@@ -52,6 +52,6 @@ export const getRenderNodeProps = ({
   return {
     ...nodeProps,
     className: clsx(getSlateClass(plugin.type), className),
-    ...(getPluginContext(editor, plugin) as any),
+    ...(getEditorPlugin(editor, plugin) as any),
   };
 };

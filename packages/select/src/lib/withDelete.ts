@@ -12,11 +12,13 @@ import type { DeleteConfig } from './DeletePlugin';
 /** Set a list of element types to select on backspace */
 export const withDelete: WithOverride<DeleteConfig> = ({
   editor,
-  options: { query },
+  getOptions,
 }) => {
   const { deleteForward } = editor;
   editor.deleteForward = (unit) => {
     if (!editor.selection) return;
+
+    const { query } = getOptions();
 
     const isValidNode = !query || queryNode(getAboveNode(editor), query);
 

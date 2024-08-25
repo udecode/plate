@@ -12,19 +12,12 @@ import type { TriggerComboboxPluginOptions } from './types';
 
 export const withTriggerCombobox: WithOverride<
   PluginConfig<any, TriggerComboboxPluginOptions>
-> = ({
-  editor,
-  options: {
-    createComboboxInput,
-    trigger,
-    triggerPreviousCharPattern,
-    triggerQuery,
-  },
-  type,
-}) => {
+> = ({ editor, getOptions, type }) => {
   const { insertText } = editor;
 
   const matchesTrigger = (text: string) => {
+    const { trigger } = getOptions();
+
     if (trigger instanceof RegExp) {
       return trigger.test(text);
     }
@@ -36,6 +29,9 @@ export const withTriggerCombobox: WithOverride<
   };
 
   editor.insertText = (text) => {
+    const { createComboboxInput, triggerPreviousCharPattern, triggerQuery } =
+      getOptions();
+
     if (
       !editor.selection ||
       !matchesTrigger(text) ||

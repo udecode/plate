@@ -2,7 +2,7 @@
 
 import {
   createPlateEditor,
-  getPluginContext,
+  getEditorPlugin,
 } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -33,7 +33,7 @@ const output = (
 
 it('should be', () => {
   onKeyDownExitBreak({
-    ...getPluginContext(createPlateEditor({ editor: input }), ExitBreakPlugin),
+    ...getEditorPlugin(createPlateEditor({ editor: input }), ExitBreakPlugin),
     event,
   });
   expect(input.children).toEqual(output.children);

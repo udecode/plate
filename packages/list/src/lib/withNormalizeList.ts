@@ -1,8 +1,7 @@
 import {
   ParagraphPlugin,
-  type SlateEditor,
   type TElement,
-  type TNodeEntry,
+  type WithOverride,
   getChildren,
   getNode,
   getParentNode,
@@ -16,26 +15,27 @@ import {
 import { Path } from 'slate';
 
 import {
+  type ListConfig,
   ListItemContentPlugin,
   ListItemPlugin,
-  type ListPluginOptions,
-} from '../ListPlugin';
-import { getListTypes, isListRoot } from '../queries/index';
-import { moveListItemsToList } from '../transforms/index';
-import { normalizeListItem } from './normalizeListItem';
-import { normalizeNestedList } from './normalizeNestedList';
+} from './ListPlugin';
+import { normalizeListItem } from './normalizers/normalizeListItem';
+import { normalizeNestedList } from './normalizers/normalizeNestedList';
+import { getListTypes, isListRoot } from './queries';
+import { moveListItemsToList } from './transforms';
 
 /** Normalize list node to force the ul>li>p+ul structure. */
-export const normalizeList = (
-  editor: SlateEditor,
-  { validLiChildrenTypes }: ListPluginOptions
-) => {
+export const withNormalizeList: WithOverride<ListConfig> = ({
+  editor,
+  getOptions,
+}) => {
   const { normalizeNode } = editor;
-  const liType = editor.getType(ListItemPlugin);
-  const licType = editor.getType(ListItemContentPlugin);
-  const defaultType = editor.getType(ParagraphPlugin);
 
-  return ([node, path]: TNodeEntry) => {
+  editor.normalizeNode = ([node, path]) => {
+    const liType = editor.getType(ListItemPlugin);
+    const licType = editor.getType(ListItemContentPlugin);
+    const defaultType = editor.getType(ParagraphPlugin);
+
     if (!isElement(node)) {
       return normalizeNode([node, path]);
     }
@@ -91,7 +91,7 @@ export const normalizeList = (
       node.type === editor.getType(ListItemPlugin) &&
       normalizeListItem(editor, {
         listItem: [node, path],
-        validLiChildrenTypes,
+        validLiChildrenTypes: getOptions().validLiChildrenTypes,
       })
     ) {
       return;
@@ -109,4 +109,6 @@ export const normalizeList = (
 
     normalizeNode([node, path]);
   };
+
+  return editor;
 };

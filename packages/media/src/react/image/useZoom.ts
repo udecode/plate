@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import {
   imagePreviewActions,
   useImagePreviewSelectors,
-} from './image-preview-store';
+} from './ImagePreviewStore';
 
 export const useZoom = () => {
   const scale = useImagePreviewSelectors().scale();

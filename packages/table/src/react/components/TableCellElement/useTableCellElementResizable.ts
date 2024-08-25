@@ -2,7 +2,7 @@ import React from 'react';
 
 import {
   findNodePath,
-  useEditorRef,
+  useEditorPlugin,
   useElement,
 } from '@udecode/plate-common/react';
 import {
@@ -46,8 +46,8 @@ export const useTableCellElementResizableState = ({
   stepX = step,
   stepY = step,
 }: TableCellElementResizableOptions) => {
-  const editor = useEditorRef();
-  const { disableMarginLeft } = editor.getOptions(TablePlugin);
+  const { getOptions } = useEditorPlugin(TablePlugin);
+  const { disableMarginLeft } = getOptions();
 
   return {
     colIndex,
@@ -72,10 +72,10 @@ export const useTableCellElementResizable = ({
   leftProps: React.ComponentPropsWithoutRef<typeof ResizeHandle>;
   rightProps: React.ComponentPropsWithoutRef<typeof ResizeHandle>;
 } => {
-  const editor = useEditorRef();
+  const { editor, getOptions } = useEditorPlugin(TablePlugin);
   const element = useElement();
   const tableElement = useElement<TTableElement>(TablePlugin.key);
-  const { minColumnWidth = 0 } = editor.getOptions(TablePlugin);
+  const { minColumnWidth = 0 } = getOptions();
 
   let initialWidth: number | undefined;
 

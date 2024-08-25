@@ -11,7 +11,7 @@ import { normalizeIndentListStart } from './normalizers/normalizeIndentListStart
 
 export const withNormalizeIndentList: WithOverride<IndentListConfig> = ({
   editor,
-  options: { getSiblingIndentListOptions },
+  getOptions,
 }) => {
   const { normalizeNode } = editor;
 
@@ -22,7 +22,7 @@ export const withNormalizeIndentList: WithOverride<IndentListConfig> = ({
         normalizeIndentListStart(
           editor,
           [node as TElement, path],
-          getSiblingIndentListOptions
+          getOptions().getSiblingIndentListOptions
         )
       )
         return true;

@@ -74,16 +74,14 @@ export const IndentListPlugin = createTSlatePlugin<IndentListConfig>({
   options: {
     getListStyleType: (element) => element.style.listStyleType as ListStyleType,
   },
-  withOverrides: withIndentList,
-}).extend(({ editor, options }) => ({
   parsers: {
     html: {
       deserializer: {
         isElement: true,
-        parse: ({ element }) => ({
+        parse: ({ editor, element, getOptions }) => ({
           // gdoc uses aria-level attribute
           indent: Number(element.getAttribute('aria-level')),
-          listStyleType: options.getListStyleType?.(element),
+          listStyleType: getOptions().getListStyleType?.(element),
           type: editor.getType(ParagraphPlugin),
         }),
         rules: [
@@ -94,4 +92,5 @@ export const IndentListPlugin = createTSlatePlugin<IndentListConfig>({
       },
     },
   },
-}));
+  withOverrides: withIndentList,
+});

@@ -15,7 +15,7 @@ import { moveListItems } from '../lib/transforms/index';
 export const onKeyDownList: KeyboardHandler<ListConfig> = ({
   editor,
   event,
-  options: { enableResetOnShiftTab },
+  getOptions,
 }) => {
   if (event.defaultPrevented) return;
 
@@ -52,7 +52,7 @@ export const onKeyDownList: KeyboardHandler<ListConfig> = ({
       event.preventDefault();
       moveListItems(editor, {
         at: workRange,
-        enableResetOnShiftTab,
+        enableResetOnShiftTab: getOptions().enableResetOnShiftTab,
         increase: isTab,
       });
 

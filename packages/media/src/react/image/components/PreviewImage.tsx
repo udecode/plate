@@ -5,7 +5,7 @@ import { createPrimitiveComponent } from '@udecode/plate-common/react';
 import {
   imagePreviewActions,
   useImagePreviewSelectors,
-} from '../image-preview-store';
+} from '../ImagePreviewStore';
 import { useZoom } from '../useZoom';
 
 export const usePreviewImageState = () => {

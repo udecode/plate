@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 
-import { getPluginContext } from '../plugin';
+import { getEditorPlugin } from '../plugin';
 import { useEditorRef, usePlateActions, usePlateSelectors } from '../stores';
 
 export function EditorRefPluginEffect({
@@ -14,7 +14,7 @@ export function EditorRefPluginEffect({
 }) {
   const editor = useEditorRef(id);
 
-  plugin.useHooks?.(getPluginContext(editor, plugin) as any);
+  plugin.useHooks?.(getEditorPlugin(editor, plugin) as any);
 
   return null;
 }

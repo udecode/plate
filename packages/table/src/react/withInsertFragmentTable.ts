@@ -31,7 +31,7 @@ import { TablePlugin } from './TablePlugin';
 export const withInsertFragmentTable: WithOverride<TableConfig> = ({
   api,
   editor,
-  options: { disableExpandOnInsert },
+  getOptions,
   tf,
   type,
 }) => {
@@ -104,7 +104,7 @@ export const withInsertFragmentTable: WithOverride<TableConfig> = ({
                 cellPath[cellPath.length - 2] += 1;
 
                 if (!hasNode(editor, cellPath)) {
-                  if (disableExpandOnInsert) {
+                  if (getOptions().disableExpandOnInsert) {
                     return;
                   } else {
                     tf.insert.tableRow({
@@ -126,7 +126,7 @@ export const withInsertFragmentTable: WithOverride<TableConfig> = ({
                   cellPath[cellPath.length - 1] += 1;
 
                   if (!hasNode(editor, cellPath)) {
-                    if (disableExpandOnInsert) {
+                    if (getOptions().disableExpandOnInsert) {
                       return;
                     } else {
                       tf.insert.tableColumn({

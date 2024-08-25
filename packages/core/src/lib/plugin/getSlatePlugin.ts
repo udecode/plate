@@ -6,17 +6,26 @@ import type {
 } from './BasePlugin';
 import type { AnySlatePlugin, SlatePlugin } from './SlatePlugin';
 
-import { createSlatePlugin } from './createSlatePlugin';
+import { resolvePlugin } from '../utils';
 
 /** Get editor plugin by key or plugin object. */
 export function getSlatePlugin<C extends AnyPluginConfig = PluginConfig>(
   editor: SlateEditor,
-  plugin: WithRequiredKey<C>
+  p: WithRequiredKey<C>
 ): C extends { type: any } ? C : SlatePlugin<C> {
-  return (
-    (editor.plugins[plugin.key] as any) ??
-    createSlatePlugin({ key: plugin.key })
-  );
+  const plugin = p as any;
+
+  // if (!plugin.__resolved) {
+  //   return resolvePlugin(editor, plugin);
+  // }
+
+  const editorPlugin = editor.plugins[p.key] as any;
+
+  if (!editorPlugin) {
+    return plugin.__resolved ? p : resolvePlugin(editor, plugin);
+  }
+
+  return editorPlugin;
 }
 
 /** Get editor plugin type by key or plugin object. */

@@ -3,16 +3,19 @@
 import React from 'react';
 
 import type { ClassNames, TEditor } from '@udecode/plate-common';
-import type { PlateElementProps } from '@udecode/plate-common/react';
 import type { DropTargetMonitor } from 'react-dnd';
 
 import { cn, withRef } from '@udecode/cn';
+import {
+  type PlateElementProps,
+  useEditorRef,
+} from '@udecode/plate-common/react';
 import {
   type DragItemNode,
   useDraggable,
   useDraggableState,
 } from '@udecode/plate-dnd';
-import { blockSelectionActions } from '@udecode/plate-selection/react';
+import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 
 import { Icons } from '@/components/icons';
 
@@ -72,6 +75,8 @@ export interface DraggableProps
 }
 
 const DragHandle = () => {
+  const editor = useEditorRef();
+
   return (
     <Tooltip>
       <TooltipTrigger type="button">
@@ -82,12 +87,14 @@ const DragHandle = () => {
             event.preventDefault();
 
             // if (element.id) {
-            //   blockSelectionActions.addSelectedRow(element.id as string);
+            //   editor.getApi(BlockSelectionPlugin).blockSelection.addSelectedRow(element.id as string);
             //   blockContextMenuActions.show(editor.id, event as any);
             // }
           }}
           onMouseDown={() => {
-            blockSelectionActions.resetSelectedIds();
+            editor
+              .getApi(BlockSelectionPlugin)
+              .blockSelection.resetSelectedIds();
           }}
         />
       </TooltipTrigger>

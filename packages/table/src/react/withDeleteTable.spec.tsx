@@ -5,7 +5,7 @@ import type { SlateEditor } from '@udecode/plate-common';
 import {
   type PlateEditor,
   createPlateEditor,
-  getPluginContext,
+  getEditorPlugin,
 } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -61,7 +61,7 @@ describe('withDeleteTable', () => {
         plugins: [plugin],
       });
 
-      editor = withDeleteTable(getPluginContext(editor, plugin) as any) as any;
+      editor = withDeleteTable(getEditorPlugin(editor, plugin) as any) as any;
 
       editor.deleteBackward('character');
 
@@ -117,7 +117,7 @@ describe('withDeleteTable', () => {
         plugins: [plugin],
       });
 
-      editor = withDeleteTable(getPluginContext(editor, plugin)) as any;
+      editor = withDeleteTable(getEditorPlugin(editor, plugin)) as any;
 
       editor.deleteForward('character');
 
@@ -193,7 +193,7 @@ describe('withDeleteTable', () => {
         plugins: [plugin],
       });
 
-      editor = withDeleteTable(getPluginContext(editor, plugin));
+      editor = withDeleteTable(getEditorPlugin(editor, plugin));
 
       editor.deleteFragment();
     });

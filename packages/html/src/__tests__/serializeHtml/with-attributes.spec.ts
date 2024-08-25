@@ -1,3 +1,4 @@
+import { CaptionPlugin } from '@udecode/plate-caption/react';
 import { htmlStringToDOMNode } from '@udecode/plate-core';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { ImagePlugin } from '@udecode/plate-media';
@@ -39,7 +40,7 @@ it('serialize link to html with attributes', () => {
 });
 
 it('serialize image with alt to html', () => {
-  const plugins = [ImagePlugin];
+  const plugins = [ImagePlugin, CaptionPlugin];
 
   const element = {
     attributes: { alt: 'Never gonna give you up' },

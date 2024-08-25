@@ -11,7 +11,7 @@ import {
 
 export const useHooksToggle: PlateUseHooks<ToggleConfig> = ({
   editor,
-  options,
+  getOptions,
 }) => {
   const [openIds, setOpenIds] = useToggleControllerStore().use.openIds();
   const toggleIndex = useToggleIndex();
@@ -19,8 +19,8 @@ export const useHooksToggle: PlateUseHooks<ToggleConfig> = ({
   // This is hacky
   // TODO a JOTAI layer in plate-core instead of relying on plugin options
   useEffect(() => {
-    options.openIds = openIds;
-    options.setOpenIds = setOpenIds;
-    options.toggleIndex = toggleIndex;
-  }, [editor, openIds, options, setOpenIds, toggleIndex]);
+    getOptions().openIds = openIds;
+    getOptions().setOpenIds = setOpenIds;
+    getOptions().toggleIndex = toggleIndex;
+  }, [editor, openIds, getOptions, setOpenIds, toggleIndex]);
 };

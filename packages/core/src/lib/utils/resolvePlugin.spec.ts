@@ -1,5 +1,4 @@
-import { createTEditor } from '@udecode/slate';
-
+import { createSlateEditor } from '../editor';
 import { createSlatePlugin } from '../plugin';
 import { resolvePlugin } from './resolvePlugin';
 
@@ -7,7 +6,7 @@ describe('resolvePlugin', () => {
   it('should be', () => {
     expect(
       resolvePlugin(
-        createTEditor() as any,
+        createSlateEditor() as any,
         createSlatePlugin({
           key: 'a',
           plugins: [
@@ -33,7 +32,7 @@ describe('resolvePlugin', () => {
   });
 
   it('should create a deep clone of the plugin', () => {
-    const editor = createTEditor() as any;
+    const editor = createSlateEditor() as any;
     const originalPlugin = createSlatePlugin({
       key: 'test',
       options: {

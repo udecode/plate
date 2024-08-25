@@ -1,11 +1,12 @@
 import React from 'react';
 
-import type {
-  AnyPlatePlugin,
-  PlateRenderLeafProps,
-} from '@udecode/plate-core/react';
 import type { TText } from '@udecode/slate';
 
+import {
+  type AnyPlatePlugin,
+  type PlateRenderLeafProps,
+  omitPluginContext,
+} from '@udecode/plate-core/react';
 import { Text, type TextProps, useComposedRef } from '@udecode/react-utils';
 import { clsx } from 'clsx';
 
@@ -19,20 +20,8 @@ export type PlateLeafProps<
   TextProps;
 
 export const usePlateLeaf = (props: PlateLeafProps) => {
-  const {
-    api,
-    attributes,
-    editor,
-    leaf,
-    leafToAttributes,
-    nodeProps,
-    options,
-    plugin,
-    text,
-    tf,
-    type,
-    ...rootProps
-  } = props;
+  const { attributes, leaf, leafToAttributes, nodeProps, ...rootProps } =
+    omitPluginContext(props);
 
   return {
     props: {

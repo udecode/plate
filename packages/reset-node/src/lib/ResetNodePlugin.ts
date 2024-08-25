@@ -24,10 +24,10 @@ export const ResetNodePlugin = createTSlatePlugin<ResetNodeConfig>({
   options: {
     rules: [],
   },
-  withOverrides: ({ editor, options }) => {
+  withOverrides: ({ editor, getOptions }) => {
     const { deleteBackward, deleteFragment } = editor;
 
-    if (!options.disableEditorReset) {
+    editor.deleteFragment = (direction) => {
       const deleteFragmentPlugin = () => {
         const { selection } = editor;
 
@@ -50,14 +50,13 @@ export const ResetNodePlugin = createTSlatePlugin<ResetNodeConfig>({
         }
       };
 
-      editor.deleteFragment = (direction) => {
-        if (deleteFragmentPlugin()) return;
+      if (!getOptions().disableEditorReset && deleteFragmentPlugin()) return;
 
-        deleteFragment(direction);
-      };
-    }
-    if (!options.disableFirstBlockReset) {
-      editor.deleteBackward = (unit) => {
+      deleteFragment(direction);
+    };
+
+    editor.deleteBackward = (unit) => {
+      if (!getOptions().disableFirstBlockReset) {
         const { selection } = editor;
 
         if (selection && isCollapsed(selection)) {
@@ -77,10 +76,10 @@ export const ResetNodePlugin = createTSlatePlugin<ResetNodeConfig>({
             return;
           }
         }
+      }
 
-        deleteBackward(unit);
-      };
-    }
+      deleteBackward(unit);
+    };
 
     return editor;
   },

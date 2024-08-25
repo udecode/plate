@@ -41,18 +41,30 @@ export type PlateEditor = {
   tf: PlateEditor['transforms'];
 
   transforms: UnionToIntersection<InferTransforms<PlateCorePlugin>>;
-  // <C extends AnyPluginConfig>(
-  //   plugin: WithRequiredKey<C>,
-  //   selector: StoreApi<any, InferOptions<C>>['use']
-  // ): void;
 
-  useOption: <C extends AnyPluginConfig, K extends keyof InferOptions<C>>(
-    plugin: WithRequiredKey<C>,
-    optionKey: K,
-    equalityFn?: EqualityChecker<K>
-  ) => InferOptions<C>[K];
+  useOption: {
+    <
+      C extends AnyPluginConfig,
+      K extends keyof InferOptions<C>,
+      F extends InferOptions<C>[K],
+      Args extends Parameters<((...args: any[]) => any) & F>,
+    >(
+      plugin: WithRequiredKey<C>,
+      optionKey: K,
+      ...args: Args
+    ): F extends (...args: any[]) => any ? ReturnType<F> : F;
 
-  useStore: {
+    <
+      C extends AnyPluginConfig,
+      K extends keyof InferOptions<C>,
+      F extends InferOptions<C>[K],
+    >(
+      plugin: WithRequiredKey<C>,
+      optionKey: K
+    ): F extends (...args: any[]) => any ? never : F;
+  };
+
+  useOptionsStore: {
     <C extends AnyPluginConfig, U>(
       plugin: WithRequiredKey<C>,
       selector: (s: InferOptions<C>) => U,

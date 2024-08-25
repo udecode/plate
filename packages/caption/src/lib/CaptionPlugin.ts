@@ -17,22 +17,32 @@ export interface TCalloutElement extends TElement {
 export type CaptionConfig = PluginConfig<
   'caption',
   {
-    focusEndCaptionPath: TPath | null;
-    focusStartCaptionPath: TPath | null;
+    /** When defined, focus end of caption textarea with the same path. */
+    focusEndPath: TPath | null;
+    /** When defined, focus start of caption textarea with the same path. */
+    focusStartPath: TPath | null;
+    // isVisible?: (elementId: string) => boolean;
     /** Plugin keys to enable caption. */
-    pluginKeys?: string[];
-    showCaptionId: null | string;
-  }
+    pluginKeys: string[];
+
+    visibleId: null | string;
+  } & CaptionSelectors
 >;
+
+type CaptionSelectors = {
+  isVisible?: (elementId: string) => boolean;
+};
 
 /** Enables support for caption. */
 export const CaptionPlugin = createTSlatePlugin<CaptionConfig>({
   key: 'caption',
   options: {
-    focusEndCaptionPath: null,
-    focusStartCaptionPath: null,
+    focusEndPath: null,
+    focusStartPath: null,
     pluginKeys: [],
-    showCaptionId: null,
+    visibleId: null,
   },
   withOverrides: withCaption,
-});
+}).extendOptions<CaptionSelectors>(({ getOptions }) => ({
+  isVisible: (elementId) => getOptions().visibleId === elementId,
+}));

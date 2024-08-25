@@ -13,7 +13,7 @@ import type { IndentConfig, TIndentElement } from './IndentPlugin';
  */
 export const withIndent: WithOverride<IndentConfig> = ({
   editor,
-  options: { indentMax },
+  getOptions,
   plugin: {
     inject: { targetPlugins },
   },
@@ -21,6 +21,8 @@ export const withIndent: WithOverride<IndentConfig> = ({
   const { normalizeNode } = editor;
 
   editor.normalizeNode = ([node, path]) => {
+    const { indentMax } = getOptions();
+
     const element = node as TIndentElement;
     const { type } = element;
 

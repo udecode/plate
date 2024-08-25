@@ -1,6 +1,7 @@
 import {
   type SlateEditor,
   getAboveNode,
+  getEditorPlugin,
   insertElements,
   isExpanded,
   removeNodes,
@@ -23,15 +24,17 @@ import { TablePlugin } from '../TablePlugin';
 import { deleteRowWhenExpanded } from './deleteRowWhenExpanded';
 
 export const deleteTableMergeRow = (editor: SlateEditor) => {
+  const { getOptions, type } = getEditorPlugin(editor, TablePlugin);
+
   if (
     someNode(editor, {
-      match: { type: editor.getType(TablePlugin) },
+      match: { type },
     })
   ) {
-    const { _cellIndices: cellIndices } = editor.getOptions(TablePlugin);
+    const { _cellIndices: cellIndices } = getOptions();
 
     const currentTableItem = getAboveNode<TTableElement>(editor, {
-      match: { type: editor.getType(TablePlugin) },
+      match: { type },
     });
 
     if (!currentTableItem) return;

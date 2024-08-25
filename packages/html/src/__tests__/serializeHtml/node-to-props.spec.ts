@@ -1,7 +1,7 @@
+import { CaptionPlugin } from '@udecode/plate-caption/react';
 import { htmlStringToDOMNode } from '@udecode/plate-core';
-import { toPlatePlugin } from '@udecode/plate-core/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
-import { ImagePlugin } from '@udecode/plate-media';
+import { ImagePlugin } from '@udecode/plate-media/react';
 
 import { serializeHtml } from '../../react/serializeHtml';
 import { createPlateUIEditor } from '../create-plate-ui-editor';
@@ -13,7 +13,8 @@ const plugins = [
         ? {}
         : { target: '_blank' },
   })),
-  toPlatePlugin(ImagePlugin, {
+  CaptionPlugin,
+  ImagePlugin.extend({
     props: ({ element }) => ({
       alt: (element as any).attributes?.alt,
       width: (element as any).url.split('/').pop(),
@@ -21,11 +22,11 @@ const plugins = [
   }),
 ];
 
-const editor = createPlateUIEditor({
-  plugins,
-});
-
 it('serialize link to html with attributes', () => {
+  const editor = createPlateUIEditor({
+    plugins,
+  });
+
   expect(
     serializeHtml(editor, {
       nodes: [
@@ -51,6 +52,10 @@ it('serialize link to html with attributes', () => {
 });
 
 it('serialize image with alt to html', () => {
+  const editor = createPlateUIEditor({
+    plugins,
+  });
+
   expect(
     htmlStringToDOMNode(
       serializeHtml(editor, {

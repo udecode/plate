@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-import { addSelectedRow, getNode } from '@udecode/plate-common';
+import { getNode } from '@udecode/plate-common';
 import {
   toDOMNode,
   useEditorRef,
@@ -58,7 +58,9 @@ export const useTocElementState = ({
       }
 
       setTimeout(() => {
-        addSelectedRow(editor, id);
+        editor
+          .getApi({ key: 'blockSelection' })
+          .blockSelection?.addSelectedRow?.(id);
       }, 0);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps

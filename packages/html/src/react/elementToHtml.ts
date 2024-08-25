@@ -2,7 +2,7 @@ import type React from 'react';
 
 import type { TRenderElementProps } from '@udecode/slate-react';
 
-import { getPluginContext, pipeInjectProps } from '@udecode/plate-common';
+import { getEditorPlugin, pipeInjectProps } from '@udecode/plate-common';
 import {
   type PlateEditor,
   type PlateProps,
@@ -59,7 +59,7 @@ export const elementToHtml = (
             children:
               serializer?.parse?.({
                 ...props,
-                ...getPluginContext(editor, plugin),
+                ...getEditorPlugin(editor, plugin),
               } as any) ??
               pluginRenderElement(editor, plugin)({ ...props } as any),
           },

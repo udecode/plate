@@ -17,28 +17,25 @@ import type { NodeIdConfig } from './NodeIdPlugin';
 /** Enables support for inserting nodes with an id key. */
 export const withNodeId: WithOverride<NodeIdConfig> = ({
   editor,
-  options: {
-    allow,
-    disableInsertOverrides,
-    exclude,
-    filter,
-    filterText,
-    idCreator,
-    idKey = '',
-    reuseId,
-  },
+  getOptions,
 }) => {
   const { apply, insertNode, insertNodes } = editor;
 
-  const idPropsCreator = () => ({ [idKey]: idCreator!() });
+  const idPropsCreator = () => ({
+    [getOptions().idKey ?? '']: getOptions().idCreator!(),
+  });
 
   const filterNode = (nodeEntry: TNodeEntry) => {
+    const { filter, filterText } = getOptions();
+
     return (
       filter!(nodeEntry) && (!filterText || nodeEntry[0]?.type !== undefined)
     );
   };
 
   const removeIdFromNodeIfDuplicate = <N extends TDescendant>(node: N) => {
+    const { idKey = '', reuseId } = getOptions();
+
     if (
       !reuseId ||
       someNode(editor, { at: [], match: { [idKey]: node[idKey] } })
@@ -48,6 +45,8 @@ export const withNodeId: WithOverride<NodeIdConfig> = ({
   };
 
   const overrideIdIfSet = (node: TNode) => {
+    const { idKey = '' } = getOptions();
+
     if (isDefined(node._id)) {
       const id = node._id;
       delete node._id;
@@ -58,16 +57,12 @@ export const withNodeId: WithOverride<NodeIdConfig> = ({
     }
   };
 
-  const query = {
-    allow,
-    exclude,
-    filter: filterNode,
-  };
-
   editor.insertNodes = (_nodes, options) => {
     const nodes = castArray<TNode>(_nodes as any).filter((node) => !!node);
 
     if (nodes.length === 0) return;
+
+    const { disableInsertOverrides, idKey = '' } = getOptions();
 
     insertNodes(
       nodes.map((node) => {
@@ -82,6 +77,8 @@ export const withNodeId: WithOverride<NodeIdConfig> = ({
   };
 
   editor.insertNode = (node) => {
+    const { disableInsertOverrides, idKey = '' } = getOptions();
+
     if (!disableInsertOverrides && node[idKey]) {
       node._id = node[idKey];
     }
@@ -90,6 +87,21 @@ export const withNodeId: WithOverride<NodeIdConfig> = ({
   };
 
   editor.apply = (operation) => {
+    const {
+      allow,
+      disableInsertOverrides,
+      exclude,
+      idCreator,
+      idKey = '',
+      reuseId,
+    } = getOptions();
+
+    const query = {
+      allow,
+      exclude,
+      filter: filterNode,
+    };
+
     if (operation.type === 'insert_node') {
       // clone to be able to write (read-only)
       const node = cloneDeep(operation.node);

@@ -10,16 +10,8 @@ import { withImageUpload } from './withImageUpload';
  * @see withImageEmbed
  */
 export const withImage: WithOverride<ImageConfig> = ({ editor, ...ctx }) => {
-  const {
-    options: { disableEmbedInsert, disableUploadInsert },
-  } = ctx.plugin;
-
-  if (!disableUploadInsert) {
-    editor = withImageUpload({ editor, ...ctx });
-  }
-  if (!disableEmbedInsert) {
-    editor = withImageEmbed({ editor, ...ctx });
-  }
+  editor = withImageUpload({ editor, ...ctx });
+  editor = withImageEmbed({ editor, ...ctx });
 
   return editor;
 };

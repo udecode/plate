@@ -49,8 +49,8 @@ describe('extendEditorApi method', () => {
       },
     });
 
-    const extendedPlugin = customPlugin.extendEditorApi(({ options }) => ({
-      multiply: (factor) => options.baseValue * factor,
+    const extendedPlugin = customPlugin.extendEditorApi(({ getOptions }) => ({
+      multiply: (factor) => getOptions().baseValue * factor,
     }));
 
     const furtherExtendedPlugin = extendedPlugin.extendEditorApi(
@@ -89,8 +89,8 @@ describe('extendEditorApi method', () => {
           baseValue: 15,
         },
       })
-      .extendEditorApi(({ options }) => ({
-        sampleMethod: (inc: number) => options.baseValue + inc,
+      .extendEditorApi(({ getOptions }) => ({
+        sampleMethod: (inc: number) => getOptions().baseValue + inc,
       }))
       .extend({
         options: {
@@ -293,10 +293,10 @@ describe('extendEditorApi method', () => {
         baseValue: 10,
       },
     })
-      .extendEditorApi(({ options }) => ({
+      .extendEditorApi(({ getOptions }) => ({
         level1: {
-          method1: () => options.baseValue,
-          method2: (factor: number) => options.baseValue * factor,
+          method1: () => getOptions().baseValue,
+          method2: (factor: number) => getOptions().baseValue * factor,
         },
         standalone: () => 'base',
       }))
@@ -306,8 +306,8 @@ describe('extendEditorApi method', () => {
         },
         override: () => 'original',
       }))
-      .extendEditorTransforms(({ options }) => ({
-        transform1: (amount: number) => options.baseValue + amount,
+      .extendEditorTransforms(({ getOptions }) => ({
+        transform1: (amount: number) => getOptions().baseValue + amount,
       }))
       .extendEditorTransforms(({ plugin: { transforms } }) => ({
         transform2: () => transforms.transform1(5) * 2,
@@ -417,8 +417,8 @@ describe('extendApi method', () => {
       options: {
         baseValue: 10,
       },
-    }).extendApi(({ options }) => ({
-      getValue: () => options.baseValue,
+    }).extendApi(({ getOptions }) => ({
+      getValue: () => getOptions().baseValue,
     }));
 
     const editor = createPlateEditor({
@@ -502,8 +502,8 @@ describe('extendApi method', () => {
       .extendEditorApi(() => ({
         globalMethod: () => 'global',
       }))
-      .extendApi(({ options }) => ({
-        pluginMethod: () => options.baseValue,
+      .extendApi(({ getOptions }) => ({
+        pluginMethod: () => getOptions().baseValue,
       }))
       .extendEditorApi(({ api }) => ({
         combinedMethod: () =>

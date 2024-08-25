@@ -2,6 +2,7 @@ import {
   type SlateEditor,
   type TDescendant,
   findNode,
+  getEditorPlugin,
   getNode,
   insertElements,
   removeNodes,
@@ -22,10 +23,10 @@ import { TableCellHeaderPlugin, TablePlugin } from '../TablePlugin';
 import { getTableGridAbove } from '../queries';
 
 export const unmergeTableCells = (editor: SlateEditor) => {
-  withoutNormalizing(editor, () => {
-    const { _cellIndices: cellIndices } = editor.getOptions(TablePlugin);
-    const api = editor.getApi(TablePlugin);
+  const { api, getOptions, type } = getEditorPlugin(editor, TablePlugin);
+  const { _cellIndices: cellIndices } = getOptions();
 
+  withoutNormalizing(editor, () => {
     const cellEntries = getTableGridAbove(editor, { format: 'cell' });
     const [[cellElem, path]] = cellEntries;
 
@@ -106,7 +107,7 @@ export const unmergeTableCells = (editor: SlateEditor) => {
       const _rowPath = [...tablePath, currentRowPath];
       const rowEntry = findNode(editor, {
         at: _rowPath,
-        match: { type: editor.getType(TablePlugin) },
+        match: { type },
       });
 
       for (let j = 0; j < colPaths.length; j++) {

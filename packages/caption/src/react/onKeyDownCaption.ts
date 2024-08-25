@@ -9,12 +9,12 @@ import { CaptionPlugin } from './CaptionPlugin';
 export const onKeyDownCaption: KeyboardHandler<CaptionConfig> = ({
   editor,
   event,
-  options,
+  getOptions,
 }) => {
   if (event.defaultPrevented) return;
   // focus caption from image
   if (isHotkey('down', event)) {
-    const types = getPluginTypes(editor, options.pluginKeys!);
+    const types = getPluginTypes(editor, getOptions().pluginKeys!);
 
     const entry = getBlockAbove(editor, {
       match: { type: types },
@@ -22,6 +22,6 @@ export const onKeyDownCaption: KeyboardHandler<CaptionConfig> = ({
 
     if (!entry) return;
 
-    editor.setOption(CaptionPlugin, 'focusEndCaptionPath', entry[1]);
+    editor.setOption(CaptionPlugin, 'focusEndPath', entry[1]);
   }
 };

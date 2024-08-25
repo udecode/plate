@@ -11,6 +11,7 @@ import type {
   BaseHtmlDeserializer,
   BaseInjectProps,
   BasePlugin,
+  BasePluginContext,
   BaseSerializer,
   BaseTransformOptions,
   InferApi,
@@ -81,6 +82,7 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   __apiExtensions: ((ctx: SlatePluginContext<AnyPluginConfig>) => any)[];
   __configuration: ((ctx: SlatePluginContext<AnyPluginConfig>) => any) | null;
   __extensions: ((ctx: SlatePluginContext<AnyPluginConfig>) => any)[];
+  __optionExtensions: ((ctx: SlatePluginContext<AnyPluginConfig>) => any)[];
   __resolved?: boolean;
 
   configure: (
@@ -233,6 +235,19 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
     >
   >;
 
+  extendOptions: <
+    EO extends Record<string, (...args: any[]) => any> = Record<string, never>,
+  >(
+    extension: (ctx: SlatePluginContext<C>) => EO
+  ) => SlatePlugin<
+    PluginConfig<
+      C['key'],
+      EO & InferOptions<C>,
+      InferApi<C>,
+      InferTransforms<C>
+    >
+  >;
+
   extendPlugin: <P extends AnySlatePlugin, EO = {}, EA = {}, ET = {}>(
     plugin: Partial<P>,
     extendConfig:
@@ -283,7 +298,7 @@ export type SlatePluginConfig<
 > = Partial<
   { api: EA; options: EO; transforms: ET } & Omit<
     SlatePlugin<PluginConfig<K, Partial<O>, A, T>>,
-    'api' | 'store' | 'transforms' | keyof SlatePluginMethods
+    'api' | 'optionsStore' | 'transforms' | keyof SlatePluginMethods
   >
 >;
 
@@ -303,13 +318,9 @@ export type AnyEditorPlugin = EditorPlugin<AnyPluginConfig>;
 export type InferConfig<P> = P extends SlatePlugin<infer C> ? C : never;
 
 export type SlatePluginContext<C extends AnyPluginConfig = PluginConfig> = {
-  api: C['api'];
   editor: SlateEditor;
-  options: InferOptions<C>;
   plugin: EditorPlugin<C>;
-  tf: C['transforms'];
-  type: string;
-};
+} & BasePluginContext<C>;
 
 // -----------------------------------------------------------------------------
 

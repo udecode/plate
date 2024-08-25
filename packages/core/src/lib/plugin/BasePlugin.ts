@@ -1,5 +1,5 @@
 import type { AnyObject } from '@udecode/utils';
-import type { StoreApi } from 'zustand-x';
+import type { SetImmerState, StoreApi } from 'zustand-x';
 
 import type { GetInjectPropsOptions } from '../utils';
 import type { EditorPlugin } from './SlatePlugin';
@@ -61,6 +61,8 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
   /** Extended properties used by any plugin as options. */
   options: InferOptions<C>;
 
+  optionsStore: StoreApi<C['key'], C['options']>;
+
   override: {
     /** Enable or disable plugins */
     enabled?: Partial<Record<string, boolean>>;
@@ -89,8 +91,6 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
    * @default 100
    */
   priority: number;
-
-  store: StoreApi<C['key'], C['options']>;
 
   /** Transforms (state-modifying operations) that can be applied to the editor. */
   transforms: InferTransforms<C>;
@@ -231,4 +231,23 @@ export type InferTransforms<P> = P extends PluginConfig
 export type ParserOptions = {
   data: string;
   dataTransfer: DataTransfer;
+};
+
+export type BasePluginContext<C extends AnyPluginConfig = PluginConfig> = {
+  api: C['api'];
+  getOption: <K extends keyof InferOptions<C>, F extends InferOptions<C>[K]>(
+    optionKey: K,
+    ...args: F extends (...args: infer A) => any ? A : never
+  ) => F extends (...args: any[]) => infer R ? R : F;
+  getOptions: () => InferOptions<C>;
+  setOption: {
+    (options: Parameters<SetImmerState<InferOptions<C>>>[0]): void;
+    (options: Partial<InferOptions<C>>): void;
+    <K extends keyof InferOptions<C>>(
+      optionKey: K,
+      value: InferOptions<C>[K]
+    ): void;
+  };
+  tf: C['transforms'];
+  type: string;
 };

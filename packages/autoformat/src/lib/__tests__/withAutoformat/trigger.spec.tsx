@@ -7,7 +7,7 @@ import {
 } from '@udecode/plate-basic-marks';
 import {
   createPlateEditor,
-  getPluginContext,
+  getEditorPlugin,
 } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -107,7 +107,7 @@ describe('when undo is enabled', () => {
     }) as any;
 
     onKeyDownAutoformat({
-      ...getPluginContext(editor, AutoformatPlugin),
+      ...getEditorPlugin(editor, AutoformatPlugin),
       event: event as any,
     });
 
@@ -158,7 +158,7 @@ describe('when undo is disabled', () => {
     }) as any;
 
     onKeyDownAutoformat({
-      ...getPluginContext(editor, AutoformatPlugin),
+      ...getEditorPlugin(editor, AutoformatPlugin),
       editor,
       event: event as any,
     });

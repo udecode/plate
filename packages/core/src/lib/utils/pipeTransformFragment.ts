@@ -4,7 +4,7 @@ import type { SlateEditor } from '../editor';
 import type { ParserOptions } from '../plugin/BasePlugin';
 import type { AnyEditorPlugin } from '../plugin/SlatePlugin';
 
-import { getPluginContext } from '../plugin';
+import { getEditorPlugin } from '../plugin';
 
 /** Pipe editor.insertData.transformFragment */
 export const pipeTransformFragment = (
@@ -20,7 +20,7 @@ export const pipeTransformFragment = (
     fragment = transformFragment({
       fragment,
       ...options,
-      ...getPluginContext(editor, p as any),
+      ...getEditorPlugin(editor, p as any),
     });
   });
 

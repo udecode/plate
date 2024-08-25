@@ -1,49 +1,21 @@
-import type { WithOverride } from '@udecode/plate-common/react';
+import type { PlateEditor, WithOverride } from '@udecode/plate-common/react';
 
 import type { ListConfig } from '../lib/ListPlugin';
 
-import { deleteForwardList } from '../lib/deleteForwardList';
-import { deleteFragmentList } from '../lib/deleteFragmentList';
-import { insertFragmentList } from '../lib/insertFragmentList';
-import { normalizeList } from '../lib/normalizers';
-import { deleteBackwardList } from './deleteBackwardList';
-import { insertBreakList } from './insertBreakList';
+import { withDeleteForwardList } from '../lib/withDeleteForwardList';
+import { withDeleteFragmentList } from '../lib/withDeleteFragmentList';
+import { withInsertFragmentList } from '../lib/withInsertFragmentList';
+import { withNormalizeList } from '../lib/withNormalizeList';
+import { withDeleteBackwardList } from './withDeleteBackwardList';
+import { withInsertBreakList } from './withInsertBreakList';
 
-export const withList: WithOverride<ListConfig> = ({
-  editor,
-  options: { validLiChildrenTypes },
-}) => {
-  const { deleteBackward, deleteForward, deleteFragment, insertBreak } = editor;
-
-  editor.insertBreak = () => {
-    // TODO react
-    if (insertBreakList(editor as any)) return;
-
-    insertBreak();
-  };
-
-  editor.deleteBackward = (unit) => {
-    // TODO react
-    if (deleteBackwardList(editor, unit)) return;
-
-    deleteBackward(unit);
-  };
-
-  editor.deleteForward = (unit) => {
-    if (deleteForwardList(editor, deleteForward, unit)) return;
-
-    deleteForward(unit);
-  };
-
-  editor.deleteFragment = (direction) => {
-    if (deleteFragmentList(editor)) return;
-
-    deleteFragment(direction);
-  };
-
-  editor.insertFragment = insertFragmentList(editor);
-
-  editor.normalizeNode = normalizeList(editor, { validLiChildrenTypes });
+export const withList: WithOverride<ListConfig> = ({ editor, ...ctx }) => {
+  editor = withInsertBreakList({ editor, ...ctx });
+  editor = withDeleteBackwardList({ editor, ...ctx });
+  editor = withDeleteForwardList({ editor, ...ctx } as any) as PlateEditor;
+  editor = withDeleteFragmentList({ editor, ...ctx } as any) as PlateEditor;
+  editor = withInsertFragmentList({ editor, ...ctx } as any) as PlateEditor;
+  editor = withNormalizeList({ editor, ...ctx } as any) as PlateEditor;
 
   return editor;
 };

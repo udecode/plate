@@ -1,6 +1,6 @@
 import { createZustandStore } from '@udecode/plate-common';
 
-export const floatingMediaStore = createZustandStore('floatingMedia')({
+export const FloatingMediaStore = createZustandStore('floatingMedia')({
   isEditing: false,
   url: '',
 }).extendActions((set) => ({
@@ -10,8 +10,8 @@ export const floatingMediaStore = createZustandStore('floatingMedia')({
   },
 }));
 
-export const floatingMediaActions = floatingMediaStore.set;
+export const floatingMediaActions = FloatingMediaStore.set;
 
-export const floatingMediaSelectors = floatingMediaStore.get;
+export const floatingMediaSelectors = FloatingMediaStore.get;
 
-export const useFloatingMediaSelectors = () => floatingMediaStore.use;
+export const useFloatingMediaSelectors = () => FloatingMediaStore.use;
