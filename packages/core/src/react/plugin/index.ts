@@ -11,4 +11,5 @@ export * from './PlateRenderNodeProps';
 export * from './createPlatePlugin';
 export * from './getEditorPlugin';
 export * from './getPlugin';
+export * from './omitPluginContext';
 export * from './toPlatePlugin';

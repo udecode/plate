@@ -3,6 +3,6 @@
  */
 
 export * from './EventEditorPlugin';
-export * from './eventEditorStore';
+export * from './EventEditorStore';
 export * from './getEventPlateId';
 export * from './useFocusEditorEvents';

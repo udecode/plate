@@ -1,4 +1,4 @@
-import { eventEditorSelectors } from './eventEditorStore';
+import { eventEditorSelectors } from './EventEditorStore';
 
 export const getEventPlateId = (id?: string) => {
   if (id) return id;

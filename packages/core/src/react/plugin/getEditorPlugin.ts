@@ -1,6 +1,5 @@
 import type { PlateEditor } from '../editor';
 import type {
-  AnyPlatePlugin,
   InferConfig,
   PlatePlugin,
   PlatePluginContext,
@@ -24,22 +23,3 @@ export function getEditorPlugin<
       editor.useOption(plugin, key, ...args),
   };
 }
-
-export const omitPluginContext = <T extends PlatePluginContext<AnyPlatePlugin>>(
-  ctx: T
-) => {
-  const {
-    api,
-    editor,
-    getOption,
-    getOptions,
-    plugin,
-    setOption,
-    tf,
-    type,
-    useOption,
-    ...rest
-  } = ctx;
-
-  return rest;
-};

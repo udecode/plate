@@ -223,7 +223,7 @@ describe('PlatePlugin useOptionsStore', () => {
       });
       const editor = createPlateEditor({ plugins: [p1] });
 
-      editor.setOption(p1, { other: 'updated', value: 2 });
+      editor.setOptions(p1, { other: 'updated', value: 2 });
 
       expect(editor.getOptions(p1)).toEqual({
         other: 'updated',
@@ -239,7 +239,7 @@ describe('PlatePlugin useOptionsStore', () => {
       });
       const editor = createPlateEditor({ plugins: [p1] });
 
-      editor.setOption(p1, (draft) => {
+      editor.setOptions(p1, (draft) => {
         draft.other = 'updated';
       });
 
@@ -308,7 +308,7 @@ describe('PlatePlugin useOptionsStore', () => {
       expect(getByTestId('test-nested')).toHaveTextContent('initial');
 
       act(() => {
-        editor.setOption(p1, { nested: { subValue: 'updated' } });
+        editor.setOptions(p1, { nested: { subValue: 'updated' } });
       });
 
       expect(getByTestId('test-nested')).toHaveTextContent('updated');

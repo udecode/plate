@@ -10,14 +10,14 @@ export type EventEditorState = {
 };
 
 /** Store where the keys are event names and the values are editor ids. */
-export const eventEditorStore = createZustandStore('event-editor')({
+export const EventEditorStore = createZustandStore('event-editor')({
   blur: null,
   focus: null,
   last: null,
 } as EventEditorState);
 
-export const eventEditorActions = eventEditorStore.set;
+export const eventEditorActions = EventEditorStore.set;
 
-export const eventEditorSelectors = eventEditorStore.get;
+export const eventEditorSelectors = EventEditorStore.get;
 
-export const useEventEditorSelectors = eventEditorStore.use;
+export const useEventEditorSelectors = EventEditorStore.use;

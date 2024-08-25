@@ -23,6 +23,7 @@ export function getEditorPlugin<
     plugin: plugin as any,
     setOption: ((keyOrOptions: any, value: any) =>
       editor.setOption(plugin, keyOrOptions, value)) as any,
+    setOptions: ((options: any) => editor.setOptions(plugin, options)) as any,
     tf: editor.transforms,
     type: plugin.node.type,
   };

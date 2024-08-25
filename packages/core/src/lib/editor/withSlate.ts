@@ -144,25 +144,30 @@ export const withSlate = <
       'OPTION_UNDEFINED'
     );
   };
-  editor.setOption = (plugin: any, keyOrOptions: any, value?: any) => {
+  editor.setOption = (plugin: any, key: any, value: any) => {
     const store = editor.getOptionsStore(plugin);
 
     if (!store) return;
-    if (typeof keyOrOptions === 'object') {
-      (store.set as any).mergeState(keyOrOptions);
-    } else if (typeof keyOrOptions === 'function') {
-      (store.set as any).state(keyOrOptions);
-    } else {
-      const setter = (store.set as any)[keyOrOptions];
 
-      if (setter) {
-        setter(value);
-      } else {
-        editor.api.debug.error(
-          `editor.setOption: ${keyOrOptions} option is not defined in plugin ${plugin.key}.`,
-          'OPTION_UNDEFINED'
-        );
-      }
+    const setter = (store.set as any)[key];
+
+    if (setter) {
+      setter(value);
+    } else {
+      editor.api.debug.error(
+        `editor.setOption: ${key} option is not defined in plugin ${plugin.key}.`,
+        'OPTION_UNDEFINED'
+      );
+    }
+  };
+  editor.setOptions = (plugin: any, options: any) => {
+    const store = editor.getOptionsStore(plugin);
+
+    if (!store) return;
+    if (typeof options === 'object') {
+      (store.set as any).mergeState(options);
+    } else if (typeof options === 'function') {
+      (store.set as any).state(options);
     }
   };
 

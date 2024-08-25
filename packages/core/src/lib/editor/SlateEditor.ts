@@ -75,12 +75,12 @@ export type BaseEditor = {
 
   prevSelection: TRange | null;
 
-  setOption: {
-    <C extends AnyPluginConfig, K extends keyof InferOptions<C>>(
-      plugin: WithRequiredKey<C>,
-      optionKey: K,
-      value: InferOptions<C>[K]
-    ): void;
+  setOption: <C extends AnyPluginConfig, K extends keyof InferOptions<C>>(
+    plugin: WithRequiredKey<C>,
+    optionKey: K,
+    value: InferOptions<C>[K]
+  ) => void;
+  setOptions: {
     <C extends AnyPluginConfig>(
       plugin: WithRequiredKey<C>,
       options: Parameters<SetImmerState<InferOptions<C>>>[0]

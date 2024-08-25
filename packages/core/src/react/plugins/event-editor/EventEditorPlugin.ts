@@ -1,5 +1,5 @@
 import { createPlatePlugin } from '../../plugin';
-import { eventEditorActions, eventEditorSelectors } from './eventEditorStore';
+import { eventEditorActions, eventEditorSelectors } from './EventEditorStore';
 import { BLUR_EDITOR_EVENT, FOCUS_EDITOR_EVENT } from './useFocusEditorEvents';
 
 export const EventEditorPlugin = createPlatePlugin({

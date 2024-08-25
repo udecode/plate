@@ -260,13 +260,13 @@ export type BasePluginContext<C extends AnyPluginConfig = PluginConfig> = {
     ...args: F extends (...args: infer A) => any ? A : never
   ) => F extends (...args: any[]) => infer R ? R : F;
   getOptions: () => InferOptions<C>;
-  setOption: {
+  setOption: <K extends keyof InferOptions<C>>(
+    optionKey: K,
+    value: InferOptions<C>[K]
+  ) => void;
+  setOptions: {
     (options: Parameters<SetImmerState<InferOptions<C>>>[0]): void;
     (options: Partial<InferOptions<C>>): void;
-    <K extends keyof InferOptions<C>>(
-      optionKey: K,
-      value: InferOptions<C>[K]
-    ): void;
   };
   tf: C['transforms'];
   type: string;
