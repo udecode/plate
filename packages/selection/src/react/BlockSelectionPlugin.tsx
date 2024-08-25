@@ -12,15 +12,12 @@ import type { ChangedElements } from './components/SelectionArea';
 
 import { getAllSelectableDomNode, getSelectedDomNode } from '../lib';
 import { extractSelectableIds } from '../lib/extractSelectableIds';
+import { BlockContextMenuPlugin } from './BlockContextMenuPlugin';
 import { BlockSelectionArea, BlockStartArea } from './components';
 import { BlockSelectable } from './components/BlockSelectable';
-import {
-  blockContextMenuActions,
-  blockContextMenuSelectors,
-} from './context-menu';
 import { onKeyDownSelection } from './onKeyDownSelection';
 import { useHooksBlockSelection } from './useHooksBlockSelection';
-import { onCloseBlockSelection } from './utils';
+import { onChangeBlockSelection } from './utils';
 
 export type BlockSelectionConfig = PluginConfig<
   'blockSelection',
@@ -62,15 +59,8 @@ export type BlockSelectionApi = {
 
 export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
   handlers: {
-    onChange: onCloseBlockSelection,
+    onChange: onChangeBlockSelection,
     onKeyDown: onKeyDownSelection,
-    onMouseDown: ({ editor, event }) => {
-      if (event.button === 0 && blockContextMenuSelectors.isOpen(editor.id)) {
-        event.preventDefault();
-        blockContextMenuActions.hide();
-      }
-      if (event.button === 2) event.preventDefault();
-    },
   },
   key: 'blockSelection',
   options: {
@@ -86,6 +76,7 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
       top: 4,
     },
   },
+  plugins: [BlockContextMenuPlugin],
   render: {
     aboveNodes:
       () =>

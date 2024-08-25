@@ -12,11 +12,12 @@ import {
   type UseHooks,
   focusEditor,
   isEditorReadOnly,
+  useEditorPlugin,
 } from '@udecode/plate-common/react';
 
 import type { BlockSelectionConfig } from './BlockSelectionPlugin';
 
-import { useBlockContextMenuSelectors } from './context-menu';
+import { BlockContextMenuPlugin } from './BlockContextMenuPlugin';
 import { selectInsertedBlocks } from './utils';
 import { copySelectedBlocks } from './utils/copySelectedBlocks';
 import { pasteSelectedBlocks } from './utils/pasteSelectedBlocks';
@@ -30,7 +31,8 @@ export const useHooksBlockSelection: UseHooks<BlockSelectionConfig> = ({
 }) => {
   const isSelecting = useOption('isSelecting');
   const selectedIds = useOption('selectedIds');
-  const isOpen = useBlockContextMenuSelectors().isOpen(editor.id);
+  const blockContextMenu = useEditorPlugin(BlockContextMenuPlugin);
+  const isOpen = blockContextMenu.useOption('isOpen', editor.id);
 
   // TODO: test
   React.useEffect(() => {
@@ -154,5 +156,5 @@ export const useHooksBlockSelection: UseHooks<BlockSelectionConfig> = ({
       document.body.append(input);
       input.focus();
     }
-  }, [editor, isSelecting, selectedIds, isOpen, api]);
+  }, [editor, isSelecting, selectedIds, isOpen, api, getOptions, getOption]);
 };

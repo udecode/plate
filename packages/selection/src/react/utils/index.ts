@@ -3,7 +3,7 @@
  */
 
 export * from './copySelectedBlocks';
-export * from './onCloseBlockSelection';
+export * from './onChangeBlockSelection';
 export * from './openContextMenu';
 export * from './pasteSelectedBlocks';
 export * from './selectInsertedBlocks';
