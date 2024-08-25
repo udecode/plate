@@ -1,10 +1,13 @@
 import React from 'react';
 
-import type { NodeWrapperComponentReturnType } from '@udecode/plate-common/react';
+import type {
+  NodeWrapperComponent,
+  NodeWrapperComponentReturnType,
+} from '@udecode/plate-common/react';
 
-import { useIsVisible } from './toggle-controller-store';
+import { useIsVisible } from './toggleIndexAtom';
 
-export const renderToggleAboveNodes = (): NodeWrapperComponentReturnType =>
+export const renderToggleAboveNodes: NodeWrapperComponent<any> = () =>
   ToggleAboveNodes;
 
 const ToggleAboveNodes: NodeWrapperComponentReturnType = ({

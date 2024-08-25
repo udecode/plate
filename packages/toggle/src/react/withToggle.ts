@@ -8,16 +8,20 @@ import {
 } from '@udecode/plate-common';
 import { type TIndentElement, indent } from '@udecode/plate-indent';
 
+import type { ToggleConfig } from './TogglePlugin';
+
 import { TogglePlugin } from '../lib/TogglePlugin';
 import { getLastEntryEnclosedInToggle, isInClosedToggle } from './queries';
-import { isToggleOpen } from './toggle-controller-store';
 import {
   moveCurrentBlockAfterPreviousSelectable,
   moveNextSelectableAfterCurrentBlock,
 } from './transforms';
 
 // TODO react
-export const withToggle: ExtendEditor = ({ editor }) => {
+export const withToggle: ExtendEditor<ToggleConfig> = ({
+  editor,
+  getOption,
+}) => {
   const { deleteBackward, deleteForward, insertBreak, isSelectable } = editor;
 
   editor.isSelectable = (element) => {
@@ -59,7 +63,7 @@ export const withToggle: ExtendEditor = ({ editor }) => {
     }
 
     const toggleId = currentBlockEntry[0].id as string;
-    const isOpen = isToggleOpen(editor, toggleId);
+    const isOpen = getOption('isOpen', toggleId);
 
     editor.withoutNormalizing(() => {
       if (isOpen) {

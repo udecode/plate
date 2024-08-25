@@ -4,7 +4,8 @@
 
 export * from './TogglePlugin';
 export * from './renderToggleAboveNodes';
-export * from './toggle-controller-store';
+export * from './toggleIndexAtom';
+export * from './useHooksToggle';
 export * from './withToggle';
 export * from './hooks/index';
 export * from './queries/index';

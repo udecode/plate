@@ -1,6 +1,6 @@
 import type { TIndentElement } from '@udecode/plate-indent';
 
-import { buildToggleIndex } from '../toggle-controller-store';
+import { buildToggleIndex } from '../toggleIndexAtom';
 
 export const findElementIdsHiddenInToggle = (
   openToggleIds: Set<string>,

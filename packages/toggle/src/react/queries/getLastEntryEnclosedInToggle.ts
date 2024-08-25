@@ -2,7 +2,7 @@ import type { SlateEditor, TNodeEntry } from '@udecode/plate-common';
 
 import last from 'lodash/last.js';
 
-import { buildToggleIndex } from '../toggle-controller-store';
+import { buildToggleIndex } from '../toggleIndexAtom';
 
 export const getLastEntryEnclosedInToggle = (
   editor: SlateEditor,

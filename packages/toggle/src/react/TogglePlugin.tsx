@@ -1,33 +1,32 @@
-import type { SetStateAction } from 'react';
-
-import type { PluginConfig } from '@udecode/plate-common';
+import type { ExtendConfig } from '@udecode/plate-common';
 
 import { toTPlatePlugin } from '@udecode/plate-common/react';
 
-import { TogglePlugin as BaseTogglePlugin } from '../lib/TogglePlugin';
-import { useHooksToggle } from './hooks/useHooksToggle';
-import { renderToggleAboveNodes } from './renderToggleAboveNodes';
+import type { buildToggleIndex } from './toggleIndexAtom';
+
 import {
-  ToggleControllerProvider,
-  type buildToggleIndex,
-} from './toggle-controller-store';
+  type ToggleConfig as BaseToggleConfig,
+  TogglePlugin as BaseTogglePlugin,
+} from '../lib/TogglePlugin';
+import { renderToggleAboveNodes } from './renderToggleAboveNodes';
+import { useHooksToggle } from './useHooksToggle';
 import { withToggle } from './withToggle';
 
-export type ToggleConfig = PluginConfig<
-  'toggle',
+export type ToggleConfig = ExtendConfig<
+  BaseToggleConfig,
   {
-    openIds?: Set<string>;
-    setOpenIds?: (args_0: SetStateAction<Set<string>>) => void;
     toggleIndex?: ReturnType<typeof buildToggleIndex>;
   }
 >;
 
 /** Enables support for toggleable elements in the editor. */
 export const TogglePlugin = toTPlatePlugin<ToggleConfig>(BaseTogglePlugin, {
-  extendEditor: withToggle,
+  extendEditor: withToggle as any,
+  options: {
+    toggleIndex: new Map(),
+  },
   render: {
-    aboveEditable: ToggleControllerProvider,
     aboveNodes: renderToggleAboveNodes,
   },
-  useHooks: useHooksToggle,
+  useHooks: useHooksToggle as any,
 });

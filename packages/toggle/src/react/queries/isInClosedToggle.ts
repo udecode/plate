@@ -1,10 +1,13 @@
-import type { SlateEditor } from '@udecode/plate-common';
+import { type SlateEditor, getEditorPlugin } from '@udecode/plate-common';
 
-import { someToggleClosed } from '../toggle-controller-store';
+import { TogglePlugin } from '../TogglePlugin';
 import { getEnclosingToggleIds } from './getEnclosingToggleIds';
 
 export const isInClosedToggle = (editor: SlateEditor, elementId: string) => {
   const enclosingToggleIds = getEnclosingToggleIds(editor, elementId);
 
-  return someToggleClosed(editor, enclosingToggleIds);
+  return getEditorPlugin(editor, TogglePlugin).getOption(
+    'someClosed',
+    enclosingToggleIds
+  );
 };

@@ -1,12 +1,10 @@
-import { useEditorRef } from '@udecode/plate-common/react';
+import { useEditorPlugin } from '@udecode/plate-common/react';
 
-import {
-  toggleIds,
-  useToggleControllerStore,
-} from '../toggle-controller-store';
+import { TogglePlugin } from '../../lib';
 
 export const useToggleButtonState = (toggleId: string) => {
-  const [openIds] = useToggleControllerStore().use.openIds();
+  const { useOption } = useEditorPlugin(TogglePlugin);
+  const openIds = useOption('openIds')!;
 
   return {
     open: openIds.has(toggleId),
@@ -17,14 +15,14 @@ export const useToggleButtonState = (toggleId: string) => {
 export const useToggleButton = (
   state: ReturnType<typeof useToggleButtonState>
 ) => {
-  const editor = useEditorRef();
+  const { api } = useEditorPlugin(TogglePlugin);
 
   return {
     ...state,
     buttonProps: {
       onClick: (e: React.MouseEvent) => {
         e.preventDefault();
-        toggleIds(editor, [state.toggleId]);
+        api.toggle.toggleIds([state.toggleId]);
       },
       onMouseDown: (e: React.MouseEvent) => {
         e.preventDefault();
