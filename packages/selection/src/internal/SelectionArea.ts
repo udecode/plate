@@ -301,6 +301,9 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     const { x, y } = simplifyEvent(evt);
 
     this.wheelTimer = setTimeout(() => {
+      this._areaClientLocation.x2 = x;
+      this._areaClientLocation.y2 = y;
+
       const Ry = y - this._containerRect!.top;
       const Rx = x - this._containerRect!.left;
       this._areaLocation.x2 = Rx + this._container!.scrollLeft;
@@ -317,6 +320,9 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     const { x, y } = simplifyEvent(evt);
 
     this.wheelTimer = setTimeout(() => {
+      this._areaClientLocation.x2 = x;
+      this._areaClientLocation.y2 = y;
+
       const deltaY =
         y -
         this._containerRect!.top +

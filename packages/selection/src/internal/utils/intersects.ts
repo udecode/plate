@@ -3,6 +3,8 @@ export type Intersection = 'center' | 'cover' | 'touch';
 export function intersectsScroll(
   a: DOMRect,
   b: DOMRect,
+  // TODO
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   mode: Intersection = 'touch',
   container: HTMLElement
 ): boolean {
