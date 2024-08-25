@@ -11,7 +11,6 @@ import {
 import type { WithYjsOptions } from './withTYjs';
 
 import { withPlateYjs } from './withPlateYjs';
-import { yjsActions } from './yjsStore';
 
 export type YjsPluginOptions<
   TCursorData extends UnknownObject = UnknownObject,
@@ -28,6 +27,9 @@ export type YjsPluginOptions<
    */
   hocuspocusProviderOptions?: HocuspocusProviderConfiguration;
 
+  isConnected: boolean;
+
+  isSynced: boolean;
   provider: HocuspocusProvider;
 
   /** WithYjs options */
@@ -39,7 +41,12 @@ export type YjsConfig = PluginConfig<'yjs', YjsPluginOptions>;
 export const YjsPlugin = createTSlatePlugin<YjsConfig>({
   extendEditor: withPlateYjs,
   key: 'yjs',
-}).extend(({ getOptions }) => {
+  options: {
+    isConnected: false,
+    isSynced: false,
+    provider: {} as any,
+  },
+}).extend(({ getOptions, setOption }) => {
   const { hocuspocusProviderOptions } = getOptions();
 
   if (!hocuspocusProviderOptions) {
@@ -55,16 +62,16 @@ export const YjsPlugin = createTSlatePlugin<YjsConfig>({
     ...hocuspocusProviderOptions,
     onAwarenessChange() {},
     onConnect() {
-      yjsActions.isConnected(true);
+      setOption('isConnected', true);
       hocuspocusProviderOptions.onConnect?.();
     },
     onDisconnect(data) {
-      yjsActions.isConnected(false);
-      yjsActions.isSynced(false);
+      setOption('isConnected', false);
+      setOption('isSynced', false);
       hocuspocusProviderOptions.onDisconnect?.(data);
     },
     onSynced(data) {
-      yjsActions.isSynced(true);
+      setOption('isSynced', true);
       hocuspocusProviderOptions.onSynced?.(data);
     },
   });

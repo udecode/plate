@@ -1,20 +1,17 @@
 import React from 'react';
 
 import { YjsEditor } from '@slate-yjs/core';
-import { type PlateEditor, useEditorRef } from '@udecode/plate-common/react';
+import { useEditorPlugin } from '@udecode/plate-common/react';
 
-import type { YjsConfig } from '../lib/YjsPlugin';
-import type { PlateYjsEditorProps } from '../lib/withTCursors';
+import { type YjsConfig, YjsPlugin } from '../lib/YjsPlugin';
 
-import { useYjsSelectors } from '../lib/yjsStore';
-
-export const RenderAboveEditableYjs: React.FC<{
+export const YjsAboveEditable: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const editor = useEditorRef<PlateEditor & PlateYjsEditorProps>();
-  const { provider } = editor.getOptions<YjsConfig>({ key: 'yjs' });
+  const { editor, useOption } = useEditorPlugin<YjsConfig>(YjsPlugin);
 
-  const isSynced = useYjsSelectors.isSynced();
+  const provider = useOption('provider');
+  const isSynced = useOption('isSynced');
 
   React.useEffect(() => {
     void provider.connect();
