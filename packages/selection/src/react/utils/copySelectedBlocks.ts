@@ -1,6 +1,7 @@
 import {
   type SlateEditor,
   deselect,
+  getEditorPlugin,
   getEndPoint,
   getStartPoint,
   select,
@@ -8,15 +9,16 @@ import {
 } from '@udecode/plate-common';
 import copyToClipboard from 'copy-to-clipboard';
 
-import {
-  blockSelectionActions,
-  blockSelectionSelectors,
-} from '../blockSelectionStore';
-import { getSelectedBlocks } from '../queries/getSelectedBlocks';
+import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
 export const copySelectedBlocks = (editor: SlateEditor) => {
-  const selectedIds = blockSelectionSelectors.selectedIds();
-  const selectedEntries = getSelectedBlocks(editor);
+  const { api, getOptions, setOption } = getEditorPlugin(
+    editor,
+    BlockSelectionPlugin
+  );
+
+  const { selectedIds } = getOptions();
+  const selectedEntries = api.blockSelection.getSelectedBlocks();
   const selectedFragment = selectedEntries.map(([node]) => node);
 
   copyToClipboard(' ', {
@@ -50,7 +52,7 @@ export const copySelectedBlocks = (editor: SlateEditor) => {
 
         // deselect and select back selectedIds
         deselect(editor);
-        blockSelectionActions.selectedIds(selectedIds);
+        setOption('selectedIds', selectedIds);
       });
 
       data.setData('text/plain', textPlain);

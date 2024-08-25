@@ -1,8 +1,8 @@
 import React from 'react';
 
-import { deselectEditor, useEditorRef } from '@udecode/plate-common/react';
+import { deselectEditor, useEditorPlugin } from '@udecode/plate-common/react';
 
-import { blockSelectionActions } from '../blockSelectionStore';
+import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 import {
   SelectionArea,
   type SelectionAreaProps,
@@ -14,21 +14,21 @@ export interface BlockSelectionAreaProps extends Partial<SelectionAreaProps> {}
 export const useBlockSelectionArea = (
   props: BlockSelectionAreaProps
 ): SelectionAreaProps => {
-  const editor = useEditorRef();
+  const { api, editor } = useEditorPlugin(BlockSelectionPlugin);
 
   const onStart = ({ event, selection }: SelectionEvent) => {
     deselectEditor(editor);
 
     if (!event?.shiftKey) {
       selection.clearSelection();
-      blockSelectionActions.resetSelectedIds();
+      api.blockSelection.resetSelectedIds();
     }
   };
 
   const onMove = ({ store: { changed } }: SelectionEvent) => {
     if (changed.added.length === 0 && changed.removed.length === 0) return;
 
-    blockSelectionActions.setSelectedIds(changed);
+    api.blockSelection.setSelectedIds(changed);
   };
 
   return {

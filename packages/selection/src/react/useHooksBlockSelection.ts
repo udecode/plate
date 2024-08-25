@@ -16,22 +16,20 @@ import {
 
 import type { BlockSelectionConfig } from './BlockSelectionPlugin';
 
-import {
-  blockSelectionActions,
-  blockSelectionSelectors,
-  useBlockSelectionSelectors,
-} from './blockSelectionStore';
 import { useBlockContextMenuSelectors } from './context-menu';
 import { selectInsertedBlocks } from './utils';
 import { copySelectedBlocks } from './utils/copySelectedBlocks';
 import { pasteSelectedBlocks } from './utils/pasteSelectedBlocks';
 
 export const useHooksBlockSelection: PlateUseHooks<BlockSelectionConfig> = ({
+  api,
   editor,
-  options: { onKeyDownSelecting },
+  getOption,
+  getOptions,
+  useOption,
 }) => {
-  const isSelecting = useBlockSelectionSelectors().isSelecting();
-  const selectedIds = useBlockSelectionSelectors().selectedIds();
+  const isSelecting = useOption('isSelecting');
+  const selectedIds = useOption('selectedIds');
   const isOpen = useBlockContextMenuSelectors().isOpen(editor.id);
 
   // TODO: test
@@ -56,12 +54,12 @@ export const useHooksBlockSelection: PlateUseHooks<BlockSelectionConfig> = ({
       input.style.opacity = '0';
 
       input.addEventListener('keydown', (e) => {
-        onKeyDownSelecting?.(e);
+        getOptions().onKeyDownSelecting?.(e);
 
         // selecting commands
-        if (!blockSelectionSelectors.isSelecting()) return;
+        if (!getOptions().isSelecting) return;
         if (isHotkey('escape')(e)) {
-          blockSelectionActions.unselect();
+          api.blockSelection.unselect();
         }
         if (isHotkey('mod+z')(e)) {
           editor.undo();
@@ -72,12 +70,12 @@ export const useHooksBlockSelection: PlateUseHooks<BlockSelectionConfig> = ({
           selectInsertedBlocks(editor);
         }
         // selecting some commands
-        if (!blockSelectionSelectors.isSelectingSome()) return;
+        if (!getOption('isSelectingSome')) return;
         if (isHotkey('enter')(e)) {
           // get the first block in the selection
           const entry = findNode(editor, {
             at: [],
-            match: (n) => blockSelectionSelectors.selectedIds().has(n.id),
+            match: (n) => selectedIds!.has(n.id),
           });
 
           if (entry) {
@@ -91,12 +89,12 @@ export const useHooksBlockSelection: PlateUseHooks<BlockSelectionConfig> = ({
         if (isHotkey(['backspace', 'delete'])(e) && !isReadonly) {
           removeNodes(editor, {
             at: [],
-            match: (n) => blockSelectionSelectors.selectedIds().has(n.id),
+            match: (n) => selectedIds!.has(n.id),
           });
         }
         // TODO: skip toggle child
         if (isHotkey('up')(e)) {
-          const firstId = [...blockSelectionSelectors.selectedIds()][0];
+          const firstId = [...selectedIds!][0];
           const node = findNode(editor, {
             at: [],
             match: (n) => n.id === firstId,
@@ -106,10 +104,10 @@ export const useHooksBlockSelection: PlateUseHooks<BlockSelectionConfig> = ({
           });
 
           const prevId = prev?.[0].id;
-          blockSelectionActions.addSelectedRow(prevId);
+          api.blockSelection.addSelectedRow(prevId);
         }
         if (isHotkey('down')(e)) {
-          const lastId = [...blockSelectionSelectors.selectedIds()].pop();
+          const lastId = [...selectedIds!].pop();
           const node = findNode(editor, {
             at: [],
             match: (n) => n.id === lastId,
@@ -118,7 +116,7 @@ export const useHooksBlockSelection: PlateUseHooks<BlockSelectionConfig> = ({
             at: node?.[1],
           });
           const nextId = next?.[0].id;
-          blockSelectionActions.addSelectedRow(nextId);
+          api.blockSelection.addSelectedRow(nextId);
         }
       });
 
@@ -126,20 +124,20 @@ export const useHooksBlockSelection: PlateUseHooks<BlockSelectionConfig> = ({
       input.addEventListener('copy', (e) => {
         e.preventDefault();
 
-        if (blockSelectionSelectors.isSelectingSome()) {
+        if (getOption('isSelectingSome')) {
           copySelectedBlocks(editor);
         }
       });
       input.addEventListener('cut', (e) => {
         e.preventDefault();
 
-        if (blockSelectionSelectors.isSelectingSome()) {
+        if (getOption('isSelectingSome')) {
           copySelectedBlocks(editor);
 
           if (!isReadonly) {
             removeNodes(editor, {
               at: [],
-              match: (n) => blockSelectionSelectors.selectedIds().has(n.id),
+              match: (n) => selectedIds!.has(n.id),
             });
 
             focusEditor(editor);
@@ -156,5 +154,5 @@ export const useHooksBlockSelection: PlateUseHooks<BlockSelectionConfig> = ({
       document.body.append(input);
       input.focus();
     }
-  }, [editor, isSelecting, onKeyDownSelecting, selectedIds, isOpen]);
+  }, [editor, isSelecting, selectedIds, isOpen, api]);
 };

@@ -1,21 +1,23 @@
 import type { OnChange } from '@udecode/plate-common/react';
 
-import {
-  blockSelectionActions,
-  blockSelectionSelectors,
-} from '../blockSelectionStore';
+import type { BlockSelectionConfig } from '../BlockSelectionPlugin';
+
 import {
   blockContextMenuActions,
   blockContextMenuSelectors,
 } from '../context-menu';
 
-export const onCloseBlockSelection: OnChange = ({ editor }) => {
+export const onCloseBlockSelection: OnChange<BlockSelectionConfig> = ({
+  api,
+  editor,
+  getOptions,
+}) => {
   if (
     editor.selection &&
-    blockSelectionSelectors.isSelecting() &&
+    getOptions().isSelecting &&
     !blockContextMenuSelectors.isOpen(editor.id)
   ) {
-    blockSelectionActions.unselect();
+    api.blockSelection.unselect();
     blockContextMenuActions.hide();
   }
 };

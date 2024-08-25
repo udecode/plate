@@ -7,15 +7,10 @@ import {
   isVoid,
   queryNode,
 } from '@udecode/plate-common';
-import { findNodePath, useEditorRef } from '@udecode/plate-common/react';
+import { findNodePath, useEditorPlugin } from '@udecode/plate-common/react';
 import { Path } from 'slate';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
-import {
-  blockSelectionActions,
-  useBlockSelectionSelectors,
-} from '../blockSelectionStore';
-import { isNodeBlockSelected } from '../queries';
 
 export interface BlockSelectableOptions {
   element: TElement;
@@ -26,7 +21,8 @@ export const useBlockSelectableState = ({
   active,
   element,
 }: BlockSelectableOptions) => {
-  const editor = useEditorRef();
+  const { editor, getOptions } = useEditorPlugin(BlockSelectionPlugin);
+
   const ref = useRef<HTMLDivElement | null>(null);
 
   const path = React.useMemo(
@@ -40,7 +36,7 @@ export const useBlockSelectableState = ({
     };
   }
 
-  const { query } = editor.getOptions(BlockSelectionPlugin);
+  const { query } = getOptions();
 
   if (query && !queryNode([element, path], query)) {
     return {
@@ -50,7 +46,6 @@ export const useBlockSelectableState = ({
 
   return {
     active: active ?? true,
-    editor,
     element,
     path,
     ref,
@@ -58,13 +53,16 @@ export const useBlockSelectableState = ({
 };
 
 export const useBlockSelectable = ({
-  editor,
   element,
   path,
   ref,
 }: ReturnType<typeof useBlockSelectableState>) => {
+  const { api, editor, getOption, getOptions, useOption } =
+    useEditorPlugin(BlockSelectionPlugin);
+
   const id = element?.id as string | undefined;
-  const isSelected = useBlockSelectionSelectors().isSelected(id);
+
+  const isSelected = useOption('isSelected', id);
 
   const data = {
     'data-key': id,
@@ -77,17 +75,17 @@ export const useBlockSelectable = ({
         : 'slate-selectable',
       key: id,
       onContextMenu: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        if (!editor) return;
+        if (!element) return;
 
-        const { disableContextMenu = true } =
-          editor.getOptions(BlockSelectionPlugin);
+        const { disableContextMenu = true } = getOptions();
 
         if (disableContextMenu) return;
         if (editor.selection?.focus) {
           const nodeEntry = getAboveNode(editor);
 
           if (nodeEntry && Path.isCommon(path, nodeEntry[1])) {
-            const isSelected = isNodeBlockSelected(nodeEntry[0] as TElement);
+            const id = nodeEntry[0].id as string | undefined;
+            const isSelected = getOption('isSelected', id);
             const isOpenAlways =
               (event.target as HTMLElement).dataset?.openContextMenu === 'true';
 
@@ -103,7 +101,7 @@ export const useBlockSelectable = ({
         const aboveHtmlNode = ref.current;
 
         if (id && aboveHtmlNode) {
-          blockSelectionActions.addSelectedRow(id, {
+          api.blockSelection.addSelectedRow(id, {
             aboveHtmlNode,
             clear: !event?.shiftKey,
           });

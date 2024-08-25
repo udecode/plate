@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useEditorRef } from '@udecode/plate-common/react';
+import { useEditorPlugin } from '@udecode/plate-common/react';
 import VanillaSelectionArea, {
   type SelectionEvents,
   type SelectionOptions,
@@ -44,12 +44,12 @@ export function SelectionArea({
   startAreas,
   ...props
 }: SelectionAreaProps) {
-  const editor = useEditorRef();
+  const { getOptions } = useEditorPlugin(BlockSelectionPlugin);
   const ref = React.useRef<HTMLDivElement | null>(null);
   const areaBoundariesRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
-    const { scrollContainerSelector } = editor.getOptions(BlockSelectionPlugin);
+    const { scrollContainerSelector } = getOptions();
 
     if (scrollContainerSelector) {
       areaBoundariesRef.current = window.document.querySelector(

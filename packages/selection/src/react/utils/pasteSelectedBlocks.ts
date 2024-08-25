@@ -1,6 +1,7 @@
 import {
   type SlateEditor,
   deselect,
+  getEditorPlugin,
   getStartPoint,
   insertNodes,
   isElementEmpty,
@@ -8,11 +9,13 @@ import {
 import { focusEditor, insertData } from '@udecode/plate-common/react';
 import { Path } from 'slate';
 
-import { getSelectedBlocks } from '../queries/getSelectedBlocks';
+import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 import { selectInsertedBlocks } from './selectInsertedBlocks';
 
 export const pasteSelectedBlocks = (editor: SlateEditor, e: ClipboardEvent) => {
-  const entries = getSelectedBlocks(editor);
+  const { api } = getEditorPlugin(editor, BlockSelectionPlugin);
+
+  const entries = api.blockSelection.getSelectedBlocks();
 
   if (entries.length > 0) {
     const entry = entries.at(-1)!;

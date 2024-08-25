@@ -8,9 +8,13 @@ import {
   select,
 } from '@udecode/plate-common';
 
-import { blockSelectionActions } from './blockSelectionStore';
+import type { BlockSelectionConfig } from './BlockSelectionPlugin';
 
-export const onKeyDownSelection: KeyboardHandler = ({ editor, event }) => {
+export const onKeyDownSelection: KeyboardHandler<BlockSelectionConfig> = ({
+  api,
+  editor,
+  event,
+}) => {
   if (isHotkey('mod+a', event)) {
     const ancestorNode = getAncestorNode(editor);
 
@@ -19,11 +23,11 @@ export const onKeyDownSelection: KeyboardHandler = ({ editor, event }) => {
     const [, path] = ancestorNode;
 
     if (isSelectionCoverBlock(editor)) {
-      return blockSelectionActions.selectedAll();
+      return api.blockSelection.selectedAll();
     }
     // TODO： should select the blocks then selected all should exclude table and columns
     if (!isRangeInSameBlock(editor)) {
-      return blockSelectionActions.selectedAll();
+      return api.blockSelection.selectedAll();
     }
 
     select(editor, path);
@@ -35,7 +39,7 @@ export const onKeyDownSelection: KeyboardHandler = ({ editor, event }) => {
     const ancestorNode = getAncestorNode(editor);
     const id = ancestorNode?.[0].id;
 
-    blockSelectionActions.addSelectedRow(id);
+    api.blockSelection.addSelectedRow(id);
 
     event.preventDefault();
     event.stopPropagation();

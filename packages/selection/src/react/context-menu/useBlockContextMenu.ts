@@ -1,9 +1,8 @@
 import { useMemo } from 'react';
 
-import { useEditorRef } from '@udecode/plate-common/react';
+import { useEditorPlugin } from '@udecode/plate-common/react';
 
-import { useBlockSelectionSelectors } from '../blockSelectionStore';
-import { getSelectedBlocks } from '../queries';
+import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 import {
   blockContextMenuActions,
   blockContextMenuSelectors,
@@ -11,15 +10,15 @@ import {
 } from './blockContextMenuStore';
 
 export const useBlockContextMenuState = () => {
-  const editor = useEditorRef();
+  const { api, editor, useOption } = useEditorPlugin(BlockSelectionPlugin);
 
   const isOpen = useBlockContextMenuSelectors().isOpen(editor.id);
-  const selectedIds = useBlockSelectionSelectors().selectedIds();
+  const selectedIds = useOption('selectedIds');
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const action = useMemo(() => blockContextMenuSelectors.action(), [isOpen]);
   const setAction = blockContextMenuActions.action;
-  const selectedBlocks = getSelectedBlocks(editor);
+  const selectedBlocks = api.blockSelection.getSelectedBlocks();
 
   return {
     action,

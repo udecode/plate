@@ -1,16 +1,15 @@
-import { useEditorRef } from '@udecode/plate-common/react';
+import { useEditorPlugin } from '@udecode/plate-common/react';
 
-import { useBlockSelectionSelectors } from '../blockSelectionStore';
-import { getSelectedBlocks } from '../queries';
+import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 import { useBlockContextMenuSelectors } from './index';
 
 export const useBlockMenuItemsState = () => {
-  const editor = useEditorRef();
+  const { api, editor, useOption } = useEditorPlugin(BlockSelectionPlugin);
 
   const isOpen = useBlockContextMenuSelectors().isOpen(editor.id);
-  const selectedIds = useBlockSelectionSelectors().selectedIds();
+  const selectedIds = useOption('selectedIds');
 
-  const selectedBlocks = getSelectedBlocks(editor);
+  const selectedBlocks = api.blockSelection.getSelectedBlocks();
 
   return {
     isOpen,
