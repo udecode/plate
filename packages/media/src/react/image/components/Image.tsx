@@ -6,7 +6,7 @@ import {
 
 import type { TMediaElement } from '../../../lib/media';
 
-import { openImagePreView } from '../openImagePreView';
+import { openImagePreview } from '../openImagePreview';
 
 export const useImage = () => {
   const element = useElement<TMediaElement>();
@@ -16,7 +16,7 @@ export const useImage = () => {
     props: {
       draggable: true,
       onDoubleClickCapture: () => {
-        openImagePreView(editor, element);
+        openImagePreview(editor, element);
       },
       src: element.url,
     },

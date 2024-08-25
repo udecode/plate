@@ -3,7 +3,7 @@ import { type SlateEditor, getNodeEntries } from '@udecode/plate-common';
 import type { TMediaElement } from '../../index';
 
 import { ImagePlugin } from '../../lib/image/ImagePlugin';
-import { imagePreviewActions, type PreviewItem } from './ImagePreviewStore';
+import { type PreviewItem, imagePreviewActions } from './ImagePreviewStore';
 
 const getUrlList = (editor: SlateEditor) => {
   const enties = getNodeEntries(editor, {
@@ -17,7 +17,7 @@ const getUrlList = (editor: SlateEditor) => {
   })) as unknown as PreviewItem[];
 };
 
-export const openImagePreView = (
+export const openImagePreview = (
   editor: SlateEditor,
   element: TMediaElement
 ) => {

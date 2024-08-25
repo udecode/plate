@@ -3,7 +3,7 @@
  */
 
 export * from './ImagePreviewStore';
-export * from './openImagePreView';
+export * from './openImagePreview';
 export * from './useImagePreview';
 export * from './useZoom';
 export * from './components/index';
