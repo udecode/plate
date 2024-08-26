@@ -10,13 +10,13 @@ const baseLink = {
   type: 'a',
 };
 
-const defaultOptions: LinkConfig['options'] = {
+const defaultOptions: Partial<LinkConfig['options']> = {
   defaultLinkAttributes: {
     rel: 'noopener noreferrer',
   },
 };
 
-const createEditor = (options: LinkConfig['options'] = {}) =>
+const createEditor = (options: Partial<LinkConfig['options']> = {}) =>
   createPlateEditor({
     plugins: [
       LinkPlugin.configure({
