@@ -17,9 +17,9 @@ export const useFloatingLinkUrlInputState = () => {
     if (ref.current && updated) {
       setTimeout(() => {
         const input = ref.current;
-        
-                if (!input) return;
-        
+
+        if (!input) return;
+
         const url = getOptions().url;
         input.focus();
         input.value = url ? safeDecodeUrl(url) : '';
