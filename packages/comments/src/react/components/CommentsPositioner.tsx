@@ -3,16 +3,17 @@ import React from 'react';
 import {
   createPrimitiveComponent,
   toDOMNode,
-  useEditorRef,
+  useEditorPlugin,
 } from '@udecode/plate-common/react';
 
+import { CommentsPlugin } from '../CommentsPlugin';
 import { getCommentPosition } from '../queries';
-import { useCommentsSelectors } from '../stores/comments/CommentsProvider';
 import { useActiveCommentNode } from '../stores/comments/useActiveCommentNode';
 
 export const useCommentsPositionerState = () => {
-  const editor = useEditorRef();
-  let activeCommentId = useCommentsSelectors().activeCommentId();
+  const { editor, useOption } = useEditorPlugin(CommentsPlugin);
+
+  let activeCommentId = useOption('activeCommentId');
 
   const [position, setPosition] = React.useState<{ left: number; top: number }>(
     {

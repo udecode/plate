@@ -1,10 +1,10 @@
 import { type ExtendEditor, unsetNodes } from '@udecode/plate-common';
 
-import { CommentsPlugin } from './CommentsPlugin';
+import { type CommentsConfig, CommentsPlugin } from './CommentsPlugin';
 import { removeCommentMark } from './transforms/removeCommentMark';
 import { getCommentCount } from './utils';
 
-export const withComments: ExtendEditor = ({ editor }) => {
+export const withComments: ExtendEditor<CommentsConfig> = ({ editor }) => {
   const { insertBreak, normalizeNode } = editor;
 
   editor.insertBreak = () => {

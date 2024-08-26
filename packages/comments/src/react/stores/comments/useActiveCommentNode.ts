@@ -1,12 +1,12 @@
-import { useEditorRef } from '@udecode/plate-common/react';
+import { useEditorPlugin } from '@udecode/plate-common/react';
 
-import { findCommentNodeById } from '../../../lib/queries/index';
-import { useCommentsSelectors } from './CommentsProvider';
+import { findCommentNodeById } from '../../../lib';
+import { CommentsPlugin } from '../../CommentsPlugin';
 
 export const useActiveCommentNode = () => {
-  const editor = useEditorRef();
+  const { editor, useOption } = useEditorPlugin(CommentsPlugin);
 
-  const id = useCommentsSelectors().activeCommentId();
+  const id = useOption('activeCommentId');
 
   if (!id) return null;
 

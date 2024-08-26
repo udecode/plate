@@ -1,50 +1,47 @@
 import {
   createPrimitiveComponent,
-  useEditorRef,
+  useEditorPlugin,
 } from '@udecode/plate-common/react';
 
-import { unsetCommentNodesById } from '../../lib';
+import { type CommentsConfig, unsetCommentNodesById } from '../../lib';
+import { CommentsPlugin } from '../CommentsPlugin';
 import { useCommentSelectors } from '../stores/comment/CommentProvider';
-import {
-  useCommentsActions,
-  useCommentsSelectors,
-  useRemoveComment,
-} from '../stores/comments/CommentsProvider';
 
 export const useCommentDeleteButtonState = () => {
-  const activeCommentId = useCommentsSelectors().activeCommentId();
-  const onCommentDelete = useCommentsSelectors().onCommentDelete();
+  const { api, editor, setOption, useOption } = useEditorPlugin(CommentsPlugin);
+
+  const activeCommentId = useOption('activeCommentId');
+  const onCommentDelete = useOption(
+    'onCommentDelete'
+  ) as CommentsConfig['options']['onCommentDelete'];
   const id = useCommentSelectors().id();
-  const setActiveCommentId = useCommentsActions().activeCommentId();
-  const removeComment = useRemoveComment();
-  const editor = useEditorRef();
 
   return {
     activeCommentId,
+    api,
     editor,
     id,
     onCommentDelete,
-    removeComment,
-    setActiveCommentId,
+    setOption,
   };
 };
 
 export const useCommentDeleteButton = ({
   activeCommentId,
+  api,
   editor,
   id,
   onCommentDelete,
-  removeComment,
-  setActiveCommentId,
+  setOption,
 }: ReturnType<typeof useCommentDeleteButtonState>) => {
   return {
     props: {
       onClick: () => {
         if (activeCommentId === id) {
           unsetCommentNodesById(editor, { id });
-          setActiveCommentId(null);
+          setOption('activeCommentId', null);
         } else {
-          removeComment(id);
+          api.comment.removeComment(id);
         }
 
         onCommentDelete?.(id);

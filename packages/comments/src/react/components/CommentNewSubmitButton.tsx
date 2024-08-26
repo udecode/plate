@@ -1,61 +1,51 @@
 import { nanoid } from '@udecode/plate-common';
-import { createPrimitiveComponent } from '@udecode/plate-common/react';
+import {
+  createPrimitiveComponent,
+  useEditorPlugin,
+} from '@udecode/plate-common/react';
 
+import { CommentsPlugin } from '../CommentsPlugin';
 import {
   SCOPE_ACTIVE_COMMENT,
   useComment,
 } from '../stores/comment/CommentProvider';
-import {
-  useAddComment,
-  useCommentsSelectors,
-  useNewCommentText,
-  useResetNewCommentValue,
-} from '../stores/comments/CommentsProvider';
 
 export const useCommentNewSubmitButtonState = () => {
-  const onCommentAdd = useCommentsSelectors().onCommentAdd();
-  const activeCommentId = useCommentsSelectors().activeCommentId()!;
-  const comment = useComment(SCOPE_ACTIVE_COMMENT)!;
-  const newValue = useCommentsSelectors().newValue();
+  const { api, getOptions, useOption } = useEditorPlugin(CommentsPlugin);
+  const newText = useOption('newText');
 
-  const editingCommentText = useNewCommentText();
-  const resetNewCommentValue = useResetNewCommentValue();
-  const addComment = useAddComment();
+  const comment = useComment(SCOPE_ACTIVE_COMMENT)!;
 
   const isReplyComment = !!comment;
 
   const submitButtonText = isReplyComment ? 'Reply' : 'Comment';
 
   return {
-    activeCommentId,
-    addComment,
+    api,
     comment,
-    editingCommentText,
+    getOptions,
     isReplyComment,
-    newValue,
-    onCommentAdd,
-    resetNewCommentValue,
+    newText,
     submitButtonText,
   };
 };
 
 export const useCommentNewSubmitButton = ({
-  activeCommentId,
-  addComment,
+  api,
   comment,
-  editingCommentText,
+  getOptions,
   isReplyComment,
-  newValue,
-  onCommentAdd,
-  resetNewCommentValue,
+  newText,
   submitButtonText,
 }: ReturnType<typeof useCommentNewSubmitButtonState>) => {
   return {
     props: {
       children: submitButtonText,
-      disabled: !editingCommentText?.trim().length,
+      disabled: !newText?.trim().length,
       onClick: () => {
-        const newComment = addComment(
+        const { activeCommentId, newValue, onCommentAdd } = getOptions();
+
+        const newComment = api.comment.addComment(
           isReplyComment
             ? {
                 id: nanoid(),
@@ -63,14 +53,14 @@ export const useCommentNewSubmitButton = ({
                 value: newValue,
               }
             : {
-                id: activeCommentId,
+                id: activeCommentId!,
                 value: newValue,
               }
         );
 
         onCommentAdd?.(newComment);
 
-        resetNewCommentValue();
+        api.comment.resetNewCommentValue();
       },
       type: 'submit',
     },

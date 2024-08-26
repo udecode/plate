@@ -4,9 +4,10 @@ import React from 'react';
 
 import {
   CommentProvider,
-  useCommentById,
+  CommentsPlugin,
   useCommentItemContentState,
 } from '@udecode/plate-comments/react';
+import { useEditorPlugin } from '@udecode/plate-common/react';
 import { formatDistance } from 'date-fns';
 
 import { CommentAvatar } from './comment-avatar';
@@ -60,7 +61,8 @@ function CommentItemContent() {
 }
 
 export function CommentItem({ commentId }: PlateCommentProps) {
-  const comment = useCommentById(commentId);
+  const { useOption } = useEditorPlugin(CommentsPlugin);
+  const comment = useOption('commentById', commentId);
 
   if (!comment) return null;
 

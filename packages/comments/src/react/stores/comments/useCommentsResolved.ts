@@ -1,9 +1,13 @@
+import { useEditorPlugin } from '@udecode/plate-common/react';
+
 import type { TComment } from '../../../lib/types';
 
-import { useCommentsSelectors } from './CommentsProvider';
+import { CommentsPlugin } from '../../CommentsPlugin';
 
 export const useCommentsResolved = () => {
-  const comments = useCommentsSelectors().comments();
+  const { useOption } = useEditorPlugin(CommentsPlugin);
+
+  const comments = useOption('comments');
 
   const res: TComment[] = [];
 

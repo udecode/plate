@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useEditorRef } from '@udecode/plate-common/react';
+import { useEditorPlugin } from '@udecode/plate-common/react';
 
 import {
   type TCommentText,
@@ -8,14 +8,14 @@ import {
   isCommentKey,
   unsetCommentNodesById,
 } from '../../lib';
-import { useCommentsActions, useCommentsSelectors } from '../stores';
+import { CommentsPlugin } from '../CommentsPlugin';
 
 export const useCommentLeafState = ({ leaf }: { leaf: TCommentText }) => {
-  const editor = useEditorRef();
+  const { editor, setOption, useOption } = useEditorPlugin(CommentsPlugin);
+
   const [commentIds, setCommentIds] = React.useState<string[]>([]);
-  const activeCommentId = useCommentsSelectors().activeCommentId();
-  const setActiveCommentId = useCommentsActions().activeCommentId();
-  const comments = useCommentsSelectors().comments();
+  const activeCommentId = useOption('activeCommentId');
+  const comments = useOption('comments');
   const [commentCount, setCommentCount] = React.useState(1);
   const [isActive, setIsActive] = React.useState(false);
 
@@ -61,22 +61,22 @@ export const useCommentLeafState = ({ leaf }: { leaf: TCommentText }) => {
     commentCount,
     isActive,
     lastCommentId,
-    setActiveCommentId,
+    setOption,
   };
 };
 
 export const useCommentLeaf = ({
   lastCommentId,
-  setActiveCommentId,
+  setOption,
 }: ReturnType<typeof useCommentLeafState>) => {
   return {
     props: {
       onClick: React.useCallback(
         (e: MouseEvent) => {
           e.stopPropagation();
-          setActiveCommentId(lastCommentId);
+          setOption('activeCommentId', lastCommentId);
         },
-        [lastCommentId, setActiveCommentId]
+        [lastCommentId, setOption]
       ),
     },
   };

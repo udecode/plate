@@ -1,25 +1,23 @@
 import React from 'react';
 
-import {
-  useAddCommentMark,
-  useCommentsActions,
-  useCommentsSelectors,
-} from '../stores/index';
+import { useEditorPlugin } from '@udecode/plate-common/react';
+
+import { CommentsPlugin } from '../CommentsPlugin';
 
 export const useCommentAddButton = () => {
-  const addCommentMark = useAddCommentMark();
-  const setFocusTextarea = useCommentsActions().focusTextarea();
-  const myUserId = useCommentsSelectors().myUserId();
+  const { setOption, tf, useOption } = useEditorPlugin(CommentsPlugin);
+
+  const myUserId = useOption('myUserId');
 
   const onClick = React.useCallback<React.MouseEventHandler<HTMLSpanElement>>(
     (e) => {
       e.preventDefault();
       e.stopPropagation();
 
-      addCommentMark();
-      setFocusTextarea(true);
+      tf.insert.comment();
+      setOption('focusTextarea', true);
     },
-    [addCommentMark, setFocusTextarea]
+    [setOption, tf.insert]
   );
 
   return {

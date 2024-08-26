@@ -1,37 +1,33 @@
 import React from 'react';
 
-import { createPrimitiveComponent } from '@udecode/plate-common/react';
-
 import {
-  useCommentById,
-  useCommentsActions,
-  useCommentsSelectors,
-  useNewCommentText,
-} from '../stores/comments/CommentsProvider';
+  createPrimitiveComponent,
+  useEditorPlugin,
+} from '@udecode/plate-common/react';
+
+import { CommentsPlugin } from '../CommentsPlugin';
 
 export const useCommentNewTextareaState = () => {
-  const setNewValue = useCommentsActions().newValue();
-  const activeComment = useCommentById(
-    useCommentsSelectors().activeCommentId()
-  );
-  const value = useNewCommentText();
-  const focusTextarea = useCommentsSelectors().focusTextarea();
-  const setFocusTextarea = useCommentsActions().focusTextarea();
+  const { setOption, useOption } = useEditorPlugin(CommentsPlugin);
+
+  const activeComment = useOption('activeComment');
+  const value = useOption('newText');
+  const focusTextarea = useOption('focusTextarea');
 
   const textareaRef = React.useRef<HTMLTextAreaElement | null>(null);
 
   React.useEffect(() => {
     if (focusTextarea) {
       textareaRef.current?.focus();
-      setFocusTextarea(false);
+      setOption('focusTextarea', false);
     }
-  }, [focusTextarea, setFocusTextarea, textareaRef]);
+  }, [focusTextarea, setOption, textareaRef]);
 
   const placeholder = `${activeComment ? 'Reply...' : 'Add a comment...'}`;
 
   return {
     placeholder,
-    setNewValue,
+    setOption,
     textareaRef,
     value,
   };
@@ -39,14 +35,16 @@ export const useCommentNewTextareaState = () => {
 
 export const useCommentNewTextarea = ({
   placeholder,
-  setNewValue,
+  setOption,
   textareaRef,
   value,
 }: ReturnType<typeof useCommentNewTextareaState>) => {
   return {
     props: {
       onChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setNewValue([{ children: [{ text: event.target.value }], type: 'p' }]);
+        setOption('newValue', [
+          { children: [{ text: event.target.value }], type: 'p' },
+        ]);
       },
       placeholder,
       ref: textareaRef,

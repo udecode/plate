@@ -1,12 +1,13 @@
 import { isExpanded } from '@udecode/plate-common';
 import { type UseHooks, useHotkeys } from '@udecode/plate-common/react';
 
-import { useAddCommentMark, useCommentsActions } from './stores';
+import type { CommentsConfig } from './CommentsPlugin';
 
-export const useHooksComments: UseHooks = ({ editor }) => {
-  const addCommentMark = useAddCommentMark();
-  const setFocusTextarea = useCommentsActions().focusTextarea();
-
+export const useHooksComments: UseHooks<CommentsConfig> = ({
+  editor,
+  setOption,
+  tf,
+}) => {
   useHotkeys(
     editor.shortcuts.toggleComment!.keys!,
     (e) => {
@@ -18,8 +19,8 @@ export const useHooksComments: UseHooks = ({ editor }) => {
 
       if (!isExpanded(editor.selection)) return;
 
-      addCommentMark();
-      setFocusTextarea(true);
+      tf.insert.comment();
+      setOption('focusTextarea', true);
     },
     {
       enableOnContentEditable: true,

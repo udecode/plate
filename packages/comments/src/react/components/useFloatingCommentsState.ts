@@ -1,24 +1,17 @@
 import React from 'react';
 
 import { someNode } from '@udecode/plate-common';
-import { useEditorRef, useEditorVersion } from '@udecode/plate-common/react';
+import { useEditorPlugin, useEditorVersion } from '@udecode/plate-common/react';
 
 import { CommentsPlugin } from '../../lib/CommentsPlugin';
-import {
-  useCommentsActions,
-  useCommentsSelectors,
-  useResetNewCommentValue,
-} from '../stores/index';
 
 export const useFloatingCommentsState = () => {
-  const activeCommentId = useCommentsSelectors().activeCommentId();
-  const resetNewCommentValue = useResetNewCommentValue();
-  const setActiveCommentId = useCommentsActions().activeCommentId()!;
-  const editor = useEditorRef();
+  const { api, editor, setOption, useOption } = useEditorPlugin(CommentsPlugin);
   const version = useEditorVersion();
 
-  const [loaded, setLoaded] = React.useState(false);
+  const activeCommentId = useOption('activeCommentId');
 
+  const [loaded, setLoaded] = React.useState(false);
   const [active, setActive] = React.useState(false);
 
   React.useEffect(() => {
@@ -32,10 +25,10 @@ export const useFloatingCommentsState = () => {
       setActive(true);
     }
     if (!someNode(editor, { match: (n) => n[CommentsPlugin.key] })) {
-      setActiveCommentId(null);
+      setOption('activeCommentId', null);
       setActive(false);
     }
-  }, [active, activeCommentId, editor, version, setActiveCommentId]);
+  }, [active, activeCommentId, editor, setOption, version]);
 
   React.useEffect(() => {
     setLoaded(true);
@@ -44,9 +37,9 @@ export const useFloatingCommentsState = () => {
   // reset comment editing value when active comment id changes
   React.useEffect(() => {
     if (activeCommentId) {
-      resetNewCommentValue();
+      api.comment.resetNewCommentValue();
     }
-  }, [activeCommentId, resetNewCommentValue]);
+  }, [activeCommentId, api.comment]);
 
   return {
     activeCommentId,

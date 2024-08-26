@@ -1,17 +1,13 @@
-import { createPrimitiveComponent } from '@udecode/plate-common/react';
-
-import { useComment } from '../stores/comment/CommentProvider';
 import {
-  useCommentsActions,
-  useCommentsSelectors,
-  useUpdateComment,
-} from '../stores/comments/CommentsProvider';
+  createPrimitiveComponent,
+  useEditorPlugin,
+} from '@udecode/plate-common/react';
+
+import { CommentsPlugin } from '../CommentsPlugin';
+import { useComment } from '../stores/comment/CommentProvider';
 
 export const useCommentResolveButton = () => {
-  const onCommentUpdate = useCommentsSelectors().onCommentUpdate();
-  const activeCommentId = useCommentsSelectors().activeCommentId();
-  const setActiveCommentId = useCommentsActions().activeCommentId();
-  const updateComment = useUpdateComment(activeCommentId);
+  const { api, getOptions, setOption } = useEditorPlugin(CommentsPlugin);
 
   const comment = useComment()!;
 
@@ -24,7 +20,9 @@ export const useCommentResolveButton = () => {
           isResolved,
         };
 
-        updateComment(value);
+        const { activeCommentId, onCommentUpdate } = getOptions();
+
+        api.comment.updateComment(activeCommentId, value);
 
         onCommentUpdate?.({
           id: activeCommentId!,
@@ -32,7 +30,7 @@ export const useCommentResolveButton = () => {
         });
 
         if (isResolved) {
-          setActiveCommentId(null);
+          setOption('activeCommentId', null);
         }
       },
     },

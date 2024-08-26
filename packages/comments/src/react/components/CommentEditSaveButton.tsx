@@ -1,41 +1,42 @@
 import React from 'react';
 
-import { createPrimitiveComponent } from '@udecode/plate-common/react';
+import {
+  createPrimitiveComponent,
+  useEditorPlugin,
+} from '@udecode/plate-common/react';
 
+import { CommentsPlugin } from '../CommentsPlugin';
 import {
   useCommentActions,
   useCommentSelectors,
   useCommentText,
 } from '../stores/comment/CommentProvider';
-import {
-  useCommentsSelectors,
-  useUpdateComment,
-} from '../stores/comments/CommentsProvider';
 
 export const useCommentEditSaveButtonState = () => {
-  const onCommentUpdate = useCommentsSelectors().onCommentUpdate();
+  const { api, getOptions, setOption } = useEditorPlugin(CommentsPlugin);
+
+  const id = useCommentSelectors().id();
   const editingValue = useCommentSelectors().editingValue();
   const setEditingValue = useCommentActions().editingValue();
-  const id = useCommentSelectors().id();
-  const updateComment = useUpdateComment(id);
   const value = useCommentText();
 
   return {
+    api,
     editingValue,
+    getOptions,
     id,
-    onCommentUpdate,
     setEditingValue,
-    updateComment,
+    setOption,
     value,
   };
 };
 
 export const useCommentEditSaveButton = ({
+  api,
   editingValue,
+  getOptions,
   id,
-  onCommentUpdate,
   setEditingValue,
-  updateComment,
   value,
 }: ReturnType<typeof useCommentEditSaveButtonState>) => {
   return {
@@ -44,14 +45,14 @@ export const useCommentEditSaveButton = ({
       onClick: React.useCallback(() => {
         if (!editingValue) return;
 
-        updateComment({
+        api.comment.updateComment(id, {
           value: editingValue,
         });
 
         setEditingValue(null);
 
-        onCommentUpdate?.({ id, value: editingValue });
-      }, [editingValue, id, onCommentUpdate, setEditingValue, updateComment]),
+        getOptions().onCommentUpdate?.({ id, value: editingValue });
+      }, [api.comment, editingValue, getOptions, id, setEditingValue]),
     },
   };
 };

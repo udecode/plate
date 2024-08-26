@@ -68,7 +68,6 @@ import { PlaygroundFixedToolbarButtons } from '@/components/plate-ui/playground-
 import { PlaygroundFloatingToolbarButtons } from '@/components/plate-ui/playground-floating-toolbar-buttons';
 import { getAutoformatOptions } from '@/lib/plate/demo/plugins/autoformatOptions';
 import { createPlateUI } from '@/plate/create-plate-ui';
-import { CommentsProvider } from '@/plate/demo/comments/CommentsProvider';
 import { editableProps } from '@/plate/demo/editableProps';
 import { isEnabled } from '@/plate/demo/is-enabled';
 import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
@@ -76,6 +75,7 @@ import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
 import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin';
 import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
+import { commentsData, usersData } from '@/plate/demo/values/commentsValue';
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
 import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
 import { CursorOverlay } from '@/registry/default/plate-ui/cursor-overlay';
@@ -285,7 +285,13 @@ export const usePlaygroundEditor = (id: any = '') => {
         DragOverCursorPlugin,
 
         // Collaboration
-        CommentsPlugin,
+        CommentsPlugin.configure({
+          options: {
+            comments: commentsData,
+            myUserId: '1',
+            users: usersData,
+          },
+        }),
 
         // Deserialization
         DocxPlugin,
@@ -310,64 +316,62 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
     <DndProvider backend={HTML5Backend}>
       <div className="relative">
         <Plate editor={editor}>
-          <CommentsProvider>
-            {enabled['fixed-toolbar'] && (
-              <FixedToolbar className="no-scrollbar">
-                {enabled['fixed-toolbar-buttons'] && (
-                  <PlaygroundFixedToolbarButtons id={id} />
-                )}
-              </FixedToolbar>
-            )}
+          {enabled['fixed-toolbar'] && (
+            <FixedToolbar className="no-scrollbar">
+              {enabled['fixed-toolbar-buttons'] && (
+                <PlaygroundFixedToolbarButtons id={id} />
+              )}
+            </FixedToolbar>
+          )}
 
+          <div
+            className="flex w-full"
+            id="editor-playground"
+            style={
+              {
+                '--editor-px': 'max(5%,24px)',
+              } as any
+            }
+          >
             <div
-              className="flex w-full"
-              id="editor-playground"
-              style={
-                {
-                  '--editor-px': 'max(5%,24px)',
-                } as any
-              }
+              className={cn(
+                'relative flex w-full overflow-x-auto',
+                '[&_.slate-start-area-top]:!h-4',
+                '[&_.slate-start-area-left]:!w-[var(--editor-px)] [&_.slate-start-area-right]:!w-[var(--editor-px)]'
+              )}
+              ref={containerRef}
             >
-              <div
+              <Editor
+                {...editableProps}
                 className={cn(
-                  'relative flex w-full overflow-x-auto',
-                  '[&_.slate-start-area-top]:!h-4',
-                  '[&_.slate-start-area-left]:!w-[var(--editor-px)] [&_.slate-start-area-right]:!w-[var(--editor-px)]'
+                  editableProps.className,
+                  'max-h-[800px] overflow-x-hidden px-[var(--editor-px)]',
+                  !id && 'pb-[20vh] pt-4',
+                  id && 'pb-8 pt-2'
                 )}
-                ref={containerRef}
-              >
-                <Editor
-                  {...editableProps}
-                  className={cn(
-                    editableProps.className,
-                    'max-h-[800px] overflow-x-hidden px-[var(--editor-px)]',
-                    !id && 'pb-[20vh] pt-4',
-                    id && 'pb-8 pt-2'
+                focusRing={false}
+                placeholder=""
+                size="md"
+                variant="ghost"
+              />
+
+              {enabled['floating-toolbar'] && (
+                <FloatingToolbar>
+                  {enabled['floating-toolbar-buttons'] && (
+                    <PlaygroundFloatingToolbarButtons id={id} />
                   )}
-                  focusRing={false}
-                  placeholder=""
-                  size="md"
-                  variant="ghost"
-                />
+                </FloatingToolbar>
+              )}
 
-                {enabled['floating-toolbar'] && (
-                  <FloatingToolbar>
-                    {enabled['floating-toolbar-buttons'] && (
-                      <PlaygroundFloatingToolbarButtons id={id} />
-                    )}
-                  </FloatingToolbar>
-                )}
-
-                {isEnabled('cursoroverlay', id) && (
-                  <CursorOverlay containerRef={containerRef} />
-                )}
-              </div>
-
-              {isEnabled('comment', id, enabled['comments-popover']) && (
-                <CommentsPopover />
+              {isEnabled('cursoroverlay', id) && (
+                <CursorOverlay containerRef={containerRef} />
               )}
             </div>
-          </CommentsProvider>
+
+            {isEnabled('comment', id, enabled['comments-popover']) && (
+              <CommentsPopover />
+            )}
+          </div>
         </Plate>
       </div>
     </DndProvider>
