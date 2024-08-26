@@ -1,4 +1,4 @@
-import React, { type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 import type { UseEmojiPickerType } from '@udecode/plate-emoji';
 
@@ -14,11 +14,11 @@ export function EmojiPickerSearchBar({
 }: EmojiPickerSearchBarProps) {
   return (
     <div className="flex items-center px-2">
-      <div className="relative flex grow">
+      <div className="relative flex grow items-center">
         <input
           aria-label="Search"
           autoComplete="off"
-          className="block w-full appearance-none rounded-lg border-0 bg-gray-100 px-8 py-2 outline-none"
+          className="block w-full appearance-none rounded-full border-0 bg-accent px-10 py-2 text-sm outline-none placeholder:text-muted-foreground focus-visible:outline-none"
           onChange={(event) => setSearch(event.target.value)}
           placeholder={i18n.search}
           type="text"

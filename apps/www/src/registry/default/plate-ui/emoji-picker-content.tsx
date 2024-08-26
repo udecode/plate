@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from 'react';
+import { memo, useCallback } from 'react';
 
 import { cn } from '@udecode/cn';
 import {
@@ -37,7 +37,7 @@ const Button = memo(
     return (
       <button
         aria-label={emoji.skins[0].native}
-        className="group relative flex size-[36px] cursor-pointer items-center justify-center border-none bg-transparent text-2xl leading-none"
+        className="group relative flex size-9 cursor-pointer items-center justify-center border-none bg-transparent text-2xl leading-none"
         data-index={index}
         onClick={() => onSelect(emoji)}
         onMouseEnter={() => onMouseOver(emoji)}
@@ -47,7 +47,7 @@ const Button = memo(
       >
         <div
           aria-hidden="true"
-          className="absolute inset-0 rounded-full bg-[rgba(0,0,0,0.05)] opacity-0 group-hover:opacity-100"
+          className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100"
         />
         <span data-emoji-set="native" style={{ position: 'relative' }}>
           {emoji.skins[0].native}
@@ -112,7 +112,7 @@ export function EmojiPickerContent({
             ref={section.root}
             style={{ width: getRowWidth }}
           >
-            <div className="sticky -top-px z-[1] bg-background/90 p-1 backdrop-blur-sm">
+            <div className="sticky -top-px z-[1] bg-card/90 p-1 py-2 text-sm font-semibold backdrop-blur-sm">
               {i18n.categories[categoryId]}
             </div>
             <div
@@ -122,10 +122,10 @@ export function EmojiPickerContent({
               {isCategoryVisible(categoryId) &&
                 section
                   .getRows()
-                  .map((row: GridRow, index) => (
+                  .map((row: GridRow) => (
                     <RowOfButtons
                       emojiLibrary={emojiLibrary}
-                      key={index}
+                      key={row.id}
                       onMouseOver={onMouseOver}
                       onSelectEmoji={onSelectEmoji}
                       row={row}
@@ -148,7 +148,7 @@ export function EmojiPickerContent({
   const SearchList = useCallback(() => {
     return (
       <div data-id="search" style={{ width: getRowWidth }}>
-        <div className="sticky -top-px z-[1] bg-background/90 p-1 backdrop-blur-sm">
+        <div className="sticky -top-px z-[1] bg-card/90 p-1 py-2 font-semibold backdrop-blur-sm">
           {i18n.searchResult}
         </div>
         <div className="relative flex flex-wrap">
