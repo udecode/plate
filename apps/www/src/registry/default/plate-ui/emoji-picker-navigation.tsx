@@ -1,5 +1,3 @@
-import React from 'react';
-
 import type {
   EmojiCategoryList,
   IEmojiFloatingLibrary,
@@ -7,6 +5,8 @@ import type {
 } from '@udecode/plate-emoji';
 
 import { cn } from '@udecode/cn';
+
+import { Button } from './button';
 
 export type EmojiPickerNavigationProps = {
   onClick: (id: EmojiCategoryList) => void;
@@ -43,33 +43,33 @@ export function EmojiPickerNavigation({
 
   return (
     <nav
-      className="mb-2.5 border-0 border-b border-solid border-b-gray-100 p-3"
+      className="mb-2.5 border-0 border-b border-solid border-b-border p-3"
       id="emoji-nav"
     >
-      <div className="relative flex">
+      <div className="relative flex items-center">
         {emojiLibrary
           .getGrid()
           .sections()
           .map(({ id }) => (
-            <button
+            <Button
               aria-label={i18n.categories[id]}
               className={cn(
-                'flex grow cursor-pointer items-center justify-center border-none bg-transparent fill-current text-sm text-gray-500 hover:text-gray-800',
+                'size-6 grow fill-current text-muted-foreground hover:bg-transparent hover:text-foreground',
                 id === focusedCategory &&
-                  'pointer-events-none fill-current text-blue-600'
+                  'pointer-events-none fill-current text-primary'
               )}
               key={id}
               onClick={() => onClick(id)}
+              size="icon"
               title={i18n.categories[id]}
               type="button"
+              variant="ghost"
             >
-              <span style={{ height: '20px', width: '20px' }}>
-                {icons.categories[id].outline}
-              </span>
-            </button>
+              <span className="size-5">{icons.categories[id].outline}</span>
+            </Button>
           ))}
         <div
-          className="absolute -bottom-3 left-0 h-[3px] w-full rounded-t bg-blue-600 opacity-100 transition-transform duration-200"
+          className="absolute -bottom-3 left-0 h-0.5 w-full rounded-t-lg bg-primary opacity-100 transition-transform duration-200"
           style={{
             transform: `translateX(${position}%)`,
             visibility: `${focusedCategory ? 'visible' : 'hidden'}`,
