@@ -11,7 +11,7 @@ jsx;
 
 describe('withSuggestion', () => {
   describe('insertText', () => {
-    describe('when editor.isSuggesting is not defined', () => {
+    describe('when editor.getOptions(SuggestionPlugin).isSuggesting is not defined', () => {
       it('should not add marks', () => {
         const input = (
           <editor>
@@ -35,7 +35,7 @@ describe('withSuggestion', () => {
           editor: input,
           plugins: [SuggestionPlugin],
         });
-        editor.isSuggesting = false;
+        editor.setOption(SuggestionPlugin, 'isSuggesting', false);
 
         editor.insertText('test');
 
@@ -43,7 +43,7 @@ describe('withSuggestion', () => {
       });
     });
 
-    describe('when editor.isSuggesting is defined', () => {
+    describe('when editor.getOptions(SuggestionPlugin).isSuggesting is defined', () => {
       describe('when cursor is not in suggestion mark', () => {
         it('should add marks', () => {
           const input = (
@@ -68,7 +68,7 @@ describe('withSuggestion', () => {
             editor: input,
             plugins: [SuggestionPlugin],
           });
-          editor.isSuggesting = true;
+          editor.setOption(SuggestionPlugin, 'isSuggesting', true);
 
           editor.insertText('test');
 
@@ -109,7 +109,7 @@ describe('withSuggestion', () => {
       //       editor: input,
       //       plugins: [SuggestionPlugin],
       //     });
-      //     editor.isSuggesting = true;
+      //     editor.getOptions(SuggestionPlugin).isSuggesting = true;
       //
       //     editor.insertText('test');
       //
@@ -120,7 +120,7 @@ describe('withSuggestion', () => {
   });
 
   describe('deleteBackward', () => {
-    describe('when editor.isSuggesting is not defined', () => {
+    describe('when editor.getOptions(SuggestionPlugin).isSuggesting is not defined', () => {
       it('should not add marks', () => {
         const input = (
           <editor>
@@ -144,7 +144,7 @@ describe('withSuggestion', () => {
           editor: input,
           plugins: [SuggestionPlugin],
         });
-        editor.isSuggesting = false;
+        editor.setOption(SuggestionPlugin, 'isSuggesting', false);
 
         editor.deleteBackward('character');
 
@@ -152,7 +152,7 @@ describe('withSuggestion', () => {
       });
     });
 
-    describe('when editor.isSuggesting is true', () => {
+    describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => {
       describe('when there is no point before', () => {
         it('should not add a new suggestion id', () => {
           const input = (
@@ -181,7 +181,7 @@ describe('withSuggestion', () => {
             editor: input,
             plugins: [SuggestionPlugin],
           });
-          editor.isSuggesting = true;
+          editor.setOption(SuggestionPlugin, 'isSuggesting', true);
 
           editor.deleteBackward('character');
 
@@ -204,7 +204,7 @@ describe('withSuggestion', () => {
             editor: input,
             plugins: [SuggestionPlugin],
           });
-          editor.isSuggesting = true;
+          editor.setOption(SuggestionPlugin, 'isSuggesting', true);
 
           editor.deleteBackward('character');
 
@@ -236,7 +236,7 @@ describe('withSuggestion', () => {
             editor: input,
             plugins: [SuggestionPlugin],
           });
-          editor.isSuggesting = true;
+          editor.setOption(SuggestionPlugin, 'isSuggesting', true);
 
           editor.deleteBackward('character');
 
@@ -279,7 +279,7 @@ describe('withSuggestion', () => {
             editor: input,
             plugins: [SuggestionPlugin],
           });
-          editor.isSuggesting = true;
+          editor.setOption(SuggestionPlugin, 'isSuggesting', true);
 
           editor.deleteBackward('line');
 

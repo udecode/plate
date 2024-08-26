@@ -1,13 +1,9 @@
 import { type SlateEditor, nanoid } from '@udecode/plate-common';
 
-import type { SuggestionEditorProps } from '../types';
-
 import { SUGGESTION_KEYS, SuggestionPlugin } from '../SuggestionPlugin';
 import { findSuggestionId } from '../queries/findSuggestionId';
 
-export const addSuggestionMark = (
-  editor: SlateEditor & SuggestionEditorProps
-) => {
+export const addSuggestionMark = (editor: SlateEditor) => {
   if (!editor.selection) return;
 
   const id = findSuggestionId(editor, editor.selection) ?? nanoid();

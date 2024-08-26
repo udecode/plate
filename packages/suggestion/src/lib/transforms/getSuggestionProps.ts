@@ -6,7 +6,7 @@ import { getSuggestionKey } from '../utils/index';
 export const getSuggestionCurrentUserKey = (editor: SlateEditor) => {
   const { currentUserId } = editor.getOptions(SuggestionPlugin);
 
-  return getSuggestionKey(currentUserId);
+  return getSuggestionKey(currentUserId!);
 };
 
 export const getSuggestionProps = (

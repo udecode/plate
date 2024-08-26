@@ -1,9 +1,9 @@
 import { createAtomStore } from '@udecode/plate-common/react';
 
-type progresses = Record<string, number>;
-interface placeholderStore {
+type Progresses = Record<string, number>;
+interface PlaceholderStore {
   isUploading: boolean;
-  progresses: progresses;
+  progresses: Progresses;
   updatedFiles: File[];
 }
 
@@ -13,6 +13,6 @@ export const { PlaceholderProvider, placeholderStore, usePlaceholderStore } =
       isUploading: false,
       progresses: {},
       updatedFiles: [],
-    } as placeholderStore,
+    } as PlaceholderStore,
     { name: 'placeholder' }
   );

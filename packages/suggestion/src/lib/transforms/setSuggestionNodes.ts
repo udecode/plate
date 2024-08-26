@@ -10,12 +10,12 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 
-import type { SuggestionEditorProps, TSuggestionText } from '../types';
+import type { TSuggestionText } from '../types';
 
 import { getSuggestionProps } from './getSuggestionProps';
 
 export const setSuggestionNodes = (
-  editor: SlateEditor & SuggestionEditorProps,
+  editor: SlateEditor,
   options?: {
     suggestionDeletion?: boolean;
     suggestionId?: string;

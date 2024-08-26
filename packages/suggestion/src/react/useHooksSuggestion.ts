@@ -4,12 +4,17 @@ import type { UseHooks } from '@udecode/plate-common/react';
 
 import { useEditorVersion } from '@udecode/plate-common/react';
 
-import { findSuggestionNode, getSuggestionId } from '../lib';
-import { useSetActiveSuggestionId } from './store/useSetActiveSuggestionId';
+import {
+  type SuggestionConfig,
+  findSuggestionNode,
+  getSuggestionId,
+} from '../lib';
 
-export const useHooksSuggestion: UseHooks = ({ editor }) => {
+export const useHooksSuggestion: UseHooks<SuggestionConfig> = ({
+  editor,
+  setOption,
+}) => {
   const version = useEditorVersion();
-  const setActiveSuggestionId = useSetActiveSuggestionId();
 
   /**
    * Set the active suggestion to the selected suggestion (or the first such
@@ -20,7 +25,7 @@ export const useHooksSuggestion: UseHooks = ({ editor }) => {
     if (!editor.selection) return;
 
     const resetActiveSuggestion = () => {
-      setActiveSuggestionId(null);
+      setOption('activeSuggestionId', null);
     };
 
     const suggestionEntry = findSuggestionNode(editor);
@@ -33,6 +38,6 @@ export const useHooksSuggestion: UseHooks = ({ editor }) => {
 
     if (!id) return resetActiveSuggestion();
 
-    setActiveSuggestionId(id);
-  }, [editor, version, setActiveSuggestionId]);
+    setOption('activeSuggestionId', id);
+  }, [editor, version, setOption]);
 };

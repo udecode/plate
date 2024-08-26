@@ -1,6 +1,5 @@
 import {
   type ExtendEditor,
-  type SlateEditor,
   getNode,
   getPointAfter,
   getPointBefore,
@@ -9,18 +8,23 @@ import {
   unsetNodes,
 } from '@udecode/plate-common';
 
-import type { SuggestionEditorProps, TSuggestionText } from './types';
+import type { TSuggestionText } from './types';
 
-import { SUGGESTION_KEYS, SuggestionPlugin } from './SuggestionPlugin';
+import {
+  SUGGESTION_KEYS,
+  type SuggestionConfig,
+  SuggestionPlugin,
+} from './SuggestionPlugin';
 import { deleteFragmentSuggestion } from './transforms/deleteFragmentSuggestion';
 import { deleteSuggestion } from './transforms/deleteSuggestion';
 import { insertFragmentSuggestion } from './transforms/insertFragmentSuggestion';
 import { insertTextSuggestion } from './transforms/insertTextSuggestion';
 import { getSuggestionId, getSuggestionKeys } from './utils/index';
 
-export const withSuggestion: ExtendEditor = ({ editor: e }) => {
-  const editor = e as unknown as SlateEditor & SuggestionEditorProps;
-
+export const withSuggestion: ExtendEditor<SuggestionConfig> = ({
+  editor,
+  getOptions,
+}) => {
   const {
     deleteBackward,
     deleteForward,
@@ -31,10 +35,8 @@ export const withSuggestion: ExtendEditor = ({ editor: e }) => {
     normalizeNode,
   } = editor;
 
-  editor.isSuggesting = false;
-
   editor.insertBreak = () => {
-    if (editor.isSuggesting) {
+    if (getOptions().isSuggesting) {
       // TODO: split node
       insertTextSuggestion(editor, '\n');
 
@@ -45,7 +47,7 @@ export const withSuggestion: ExtendEditor = ({ editor: e }) => {
   };
 
   editor.insertText = (text) => {
-    if (editor.isSuggesting) {
+    if (getOptions().isSuggesting) {
       insertTextSuggestion(editor, text);
 
       return;
@@ -55,7 +57,7 @@ export const withSuggestion: ExtendEditor = ({ editor: e }) => {
   };
 
   editor.insertFragment = (fragment) => {
-    if (editor.isSuggesting) {
+    if (getOptions().isSuggesting) {
       insertFragmentSuggestion(editor, fragment, { insertFragment });
 
       return;
@@ -65,7 +67,7 @@ export const withSuggestion: ExtendEditor = ({ editor: e }) => {
   };
 
   editor.deleteFragment = (direction) => {
-    if (editor.isSuggesting) {
+    if (getOptions().isSuggesting) {
       deleteFragmentSuggestion(editor, { reverse: true });
 
       return;
@@ -75,7 +77,7 @@ export const withSuggestion: ExtendEditor = ({ editor: e }) => {
   };
 
   editor.deleteBackward = (unit) => {
-    if (editor.isSuggesting) {
+    if (getOptions().isSuggesting) {
       const selection = editor.selection!;
       const pointTarget = getPointBefore(editor, selection, {
         unit,
@@ -98,7 +100,7 @@ export const withSuggestion: ExtendEditor = ({ editor: e }) => {
   };
 
   editor.deleteForward = (unit) => {
-    if (editor.isSuggesting) {
+    if (getOptions().isSuggesting) {
       const selection = editor.selection!;
 
       const pointTarget = getPointAfter(editor, selection, { unit });
@@ -175,7 +177,7 @@ export const withSuggestion: ExtendEditor = ({ editor: e }) => {
 };
 
 // editor.apply = (op) => {
-//   if (editor.isSuggesting) {
+//   if (getOptions().isSuggesting) {
 //     if (op.type === 'insert_text') {
 //       const { text, path, offset } = op;
 //

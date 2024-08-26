@@ -4,4 +4,3 @@
 
 export * from './SuggestionPlugin';
 export * from './useHooksSuggestion';
-export * from './store/index';
