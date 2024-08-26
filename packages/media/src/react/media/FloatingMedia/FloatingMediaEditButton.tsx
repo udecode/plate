@@ -7,7 +7,7 @@ import {
 
 import type { TMediaElement } from '../../../lib/media/types';
 
-import { floatingMediaActions } from './FloatingMediaStore';
+import { floatingMediaActions } from './FloatingMediaStoree';
 
 export const useFloatingMediaEditButton = () => {
   const element = useElement<TMediaElement>();

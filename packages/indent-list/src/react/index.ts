@@ -3,6 +3,6 @@
  */
 
 export * from './IndentListPlugin';
-export * from './renderIndentListBelowNodes';
 export * from './onKeyDownIndentList';
+export * from './renderIndentListBelowNodes';
 export * from './hooks/index';
