@@ -1,5 +1,15 @@
 # @udecode/plate-link
 
+## 36.5.6
+
+## 36.4.0
+
+### Patch Changes
+
+- [`8342b6c2f333ee445c8b6be7e864857fd2a2584a`](https://github.com/udecode/plate/commit/8342b6c2f333ee445c8b6be7e864857fd2a2584a) by [@zbeyens](https://github.com/zbeyens) – fix: Potential uncaught error when immediately dismounting the floating link input after update
+
+## 36.3.8
+
 ## 36.3.2
 
 ## 36.3.0

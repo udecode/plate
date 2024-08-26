@@ -1,4 +1,5 @@
 export {
+  FloatingArrow,
   FloatingDelayGroup,
   FloatingFocusManager,
   FloatingNode,

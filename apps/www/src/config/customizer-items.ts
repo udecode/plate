@@ -608,6 +608,23 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.media.route,
   },
 
+  [DatePlugin.key]: {
+      badges: [customizerBadges.element],
+      components: [
+        {
+          id: 'inline-date-element',
+          label: 'InlineDateElement',
+          pluginKey: 'ELEMENT_INLINE_DATE',
+          route: customizerComponents.inlineDateElement.href,
+          usage: 'InlineDateElement',
+        },
+      ],
+      id: ELEMENT_INLINE_DATE,
+      label: 'InlineDate',
+      npmPackage: '@udecode/plate-date',
+      pluginFactory: 'createInlineDatePlugin',
+      route: customizerPlugins.inlinedate.route,
+    },
   [MentionPlugin.key]: {
     badges: [
       customizerBadges.element,
@@ -914,7 +931,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'createUnderlinePlugin',
     route: customizerPlugins.basicmarks.route,
   },
-
   column: {
     badges: [customizerBadges.element],
     components: [

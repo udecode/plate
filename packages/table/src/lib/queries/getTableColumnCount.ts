@@ -7,7 +7,7 @@ export const getTableColumnCount = (tableNode: TElement) => {
         (element) =>
           element.colSpan || (element?.attributes as any)?.colspan || 1
       )
-      .reduce((total: number, num: number) => total + num);
+      .reduce((total: number, num: number) => Number(total) + Number(num));
   }
 
   return 0;

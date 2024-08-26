@@ -69,7 +69,10 @@ export const ResetNodePlugin = createTSlatePlugin<ResetNodeConfig>({
 
             // replace props
             withoutNormalizing(editor, () => {
-              unsetNodes(editor, Object.keys(getNodeProps(node)), { at: [0] });
+              // missing id will cause block selection not working and other issues
+              const { id, ...nodeProps } = getNodeProps(node);
+
+              unsetNodes(editor, Object.keys(nodeProps), { at: [0] });
               setNodes(editor, props, { at: [0] });
             });
 

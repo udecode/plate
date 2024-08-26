@@ -58,6 +58,7 @@ export const descriptions: Record<string, string> = {
   [BlockquotePlugin.key]: 'Highlight important text or citations.',
   [BoldPlugin.key]: 'Make your text stand out.',
   [CodePlugin.key]: 'Embed code into your text.',
+  [InlineDatePlugin.key]: 'Add inline date plugins',
   [CommentsPlugin.key]: 'Add comments to text as marks.',
   [CsvPlugin.key]: 'Copy paste from CSV to Slate.',
   [DeletePlugin.key]:

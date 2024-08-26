@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-indent-list",
-  "version": "36.3.3",
+  "version": "36.5.2",
   "description": "Indent list plugin for Plate",
   "keywords": [
     "plate",
@@ -51,14 +51,14 @@
   },
   "dependencies": {
     "@udecode/plate-indent": "36.0.0",
-    "@udecode/plate-list": "36.0.0",
+    "@udecode/plate-list": "36.5.2",
     "clsx": "^1.2.1"
   },
   "devDependencies": {
     "@udecode/plate-common": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=36.3.4",
+    "@udecode/plate-common": ">=36.3.9",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.103.0",

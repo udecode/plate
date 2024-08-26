@@ -28,6 +28,7 @@ export const autoformatBlock = (
     allowSameTypeAbove = false,
     format,
     match: _match,
+    matchByRegex = false,
     preFormat,
     text,
     trigger,
@@ -60,9 +61,14 @@ export const autoformatBlock = (
 
       const textFromBlockStart = getEditorString(editor, matchRange);
 
-      if (end !== textFromBlockStart) continue;
+      const isMatched = matchByRegex
+        ? !!textFromBlockStart.match(end)
+        : end === textFromBlockStart;
+
+      if (!isMatched) continue;
     } else {
       matchRange = getRangeBefore(editor, editor.selection as Range, {
+        matchByRegex,
         matchString: end,
       });
 

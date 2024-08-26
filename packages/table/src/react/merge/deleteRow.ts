@@ -103,6 +103,11 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
       | TTableCellElement
       | undefined;
 
+    if (nextRow === undefined && deletingRowIndex === 0) {
+      deleteTable(editor);
+
+      return;
+    }
     if (nextRow) {
       moveToNextRowCells.forEach((cur, index) => {
         const curRowCell = cur as TTableCellElement;

@@ -16,9 +16,13 @@ export const useFloatingLinkUrlInputState = () => {
   React.useEffect(() => {
     if (ref.current && updated) {
       setTimeout(() => {
+        const input = ref.current;
+        
+                if (!input) return;
+        
         const url = getOptions().url;
-        ref.current?.focus();
-        ref.current!.value = url ? safeDecodeUrl(url) : '';
+        input.focus();
+        input.value = url ? safeDecodeUrl(url) : '';
       }, 0);
     }
   }, [getOptions, updated]);

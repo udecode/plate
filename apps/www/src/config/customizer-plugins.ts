@@ -233,6 +233,13 @@ export const customizerPlugins = {
     route: '/docs/indent-list',
     value: indentListValue,
   },
+  inlinedate: {
+    id: 'date',
+    label: 'Date',
+    plugins: [ELEMENT_INLINE_DATE],
+    route: '/docs/date',
+    value: dateValue,
+  },
   kbd: {
     id: 'kbd',
     label: 'Keyboard Input',

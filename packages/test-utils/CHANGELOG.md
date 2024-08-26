@@ -1,5 +1,23 @@
 # @udecode/plate-test-utils
 
+## 36.5.5
+
+### Patch Changes
+
+- [#3451](https://github.com/udecode/plate/pull/3451) by [@felixfeng33](https://github.com/felixfeng33) – Add equation jsx tag.
+
+## 36.5.4
+
+### Patch Changes
+
+- [#3448](https://github.com/udecode/plate/pull/3448) by [@felixfeng33](https://github.com/felixfeng33) – Add callout and toc jsx tag.
+
+## 36.5.0
+
+### Patch Changes
+
+- [#3436](https://github.com/udecode/plate/pull/3436) by [@felixfeng33](https://github.com/felixfeng33) – Add date plugin
+
 ## 30.5.3
 
 ### Patch Changes

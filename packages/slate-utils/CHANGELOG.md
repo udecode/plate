@@ -1,5 +1,11 @@
 # @udecode/slate-utils
 
+## 36.3.9
+
+### Patch Changes
+
+- [#3426](https://github.com/udecode/plate/pull/3426) by [@yf-yang](https://github.com/yf-yang) – feat: `getPointBeforeLocation` - Add `matchByRegex` option
+
 ## 36.3.4
 
 ### Patch Changes

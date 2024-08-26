@@ -40,7 +40,7 @@ npm install @udecode/plate slate slate-react slate-history slate-hyperscript rea
 Let's start with a minimal editor setup.
 
 ```tsx showLineNumbers {1,5-7}
-import { Plate } from '@udecode/plate-common';
+import { Plate, PlateContent } from '@udecode/plate-common';
 
 export default function BasicEditor() {
   return (
@@ -61,6 +61,7 @@ Let's give our editor some styles: [Editor](/docs/components/editor) is a styled
 
 ```tsx showLineNumbers {1,5-7}
 import { Plate } from '@udecode/plate-common';
+import { Editor } from '@/components/plate-ui/editor';
 
 export default function BasicEditor() {
   return (

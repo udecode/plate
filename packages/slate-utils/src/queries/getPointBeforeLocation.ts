@@ -31,6 +31,14 @@ export interface PointBeforeOptions extends BeforeOptions {
     beforeString: string;
   }) => boolean;
 
+  /**
+   * If true, `matchString` will be interpreted as regex expression(s).
+   * Otherwise, it will be compared by string equality.
+   *
+   * @default false
+   */
+  matchByRegex?: boolean;
+
   /** Lookup before the location for `matchString`. */
   matchString?: string | string[];
 
@@ -59,6 +67,8 @@ export const getPointBeforeLocation = (
   const matchStrings: string[] = options.matchString
     ? castArray(options.matchString)
     : [''];
+
+  const matchByRegex = options.matchByRegex ?? false;
 
   let point: any;
 
@@ -104,8 +114,13 @@ export const getPointBeforeLocation = (
 
         beforeStringToMatch = map(stack.slice(0, -1), 'text').join('');
       }
+
+      const isMatched = matchByRegex
+        ? !!matchString.match(beforeStringToMatch)
+        : beforeStringToMatch === matchString;
+
       if (
-        matchString === beforeStringToMatch ||
+        isMatched ||
         options.match?.({ at, beforePoint, beforeString: beforeStringToMatch })
       ) {
         if (options.afterMatch) {

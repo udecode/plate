@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-code-block",
-  "version": "36.0.0",
+  "version": "36.5.6",
   "description": "Code block plugin for Plate",
   "keywords": [
     "plate",
@@ -54,7 +54,7 @@
     "prismjs": "^1.29.0"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=36.3.4",
+    "@udecode/plate-common": ">=36.3.9",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.103.0",

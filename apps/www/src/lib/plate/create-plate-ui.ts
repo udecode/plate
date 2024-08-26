@@ -1,5 +1,4 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import type { PlatePluginComponent } from '@udecode/plate-common/react';
 
 import { withProps } from '@udecode/cn';
@@ -64,6 +63,7 @@ import { HeadingElement } from '@/registry/default/plate-ui/heading-element';
 import { HighlightLeaf } from '@/registry/default/plate-ui/highlight-leaf';
 import { HrElement } from '@/registry/default/plate-ui/hr-element';
 import { ImageElement } from '@/registry/default/plate-ui/image-element';
+import { InlineDateElement } from '@/registry/default/plate-ui/inline-date-element';
 import { KbdLeaf } from '@/registry/default/plate-ui/kbd-leaf';
 import { LinkElement } from '@/registry/default/plate-ui/link-element';
 import { ListElement } from '@/registry/default/plate-ui/list-element';
@@ -111,6 +111,7 @@ export const createPlateUI = ({
     [HighlightPlugin.key]: HighlightLeaf,
     [HorizontalRulePlugin.key]: HrElement,
     [ImagePlugin.key]: ImageElement,
+    [DatePlugin.key]: InlineDateElement,
     [ItalicPlugin.key]: withProps(PlateLeaf, { as: 'em' }),
     [KbdPlugin.key]: KbdLeaf,
     [LinkPlugin.key]: LinkElement,

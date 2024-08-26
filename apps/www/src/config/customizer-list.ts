@@ -73,6 +73,7 @@ export const customizerList = [
       customizerItems[ParagraphPlugin.key],
       customizerItems[TablePlugin.key],
       customizerItems[TodoListPlugin.key],
+      customizerItems[InlineDatePlugin.key],
     ],
     id: 'blocks',
     label: 'Nodes',

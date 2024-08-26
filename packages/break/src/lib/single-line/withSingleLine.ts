@@ -12,6 +12,8 @@ export const withSingleLine: ExtendEditor = ({ editor }) => {
         match: (node, path) => path.length === 1 && path[0] > 0,
         mode: 'highest',
       });
+
+      return;
     }
 
     normalizeNode(entry);

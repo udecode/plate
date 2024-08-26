@@ -25,7 +25,7 @@ export const insertEmptyCodeBlock = <E extends SlateEditor>(
   if (isExpanded(editor.selection) || !isBlockAboveEmpty(editor)) {
     insertElements(
       editor,
-      { children: [{ text: '' }], type: defaultType },
+      editor.blockFactory({ children: [{ text: '' }], type: defaultType }),
       {
         nextBlock: true,
         select: true,

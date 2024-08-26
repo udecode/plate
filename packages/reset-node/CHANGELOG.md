@@ -1,5 +1,11 @@
 # @udecode/plate-reset-node
 
+## 36.5.2
+
+### Patch Changes
+
+- [#3444](https://github.com/udecode/plate/pull/3444) by [@felixfeng33](https://github.com/felixfeng33) – Fix: missing id will cause block selection not working and other issues.
+
 ## 36.0.0
 
 ## 34.0.0

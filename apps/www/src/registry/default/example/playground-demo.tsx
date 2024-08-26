@@ -29,6 +29,7 @@ import {
   Plate,
   usePlateEditor,
 } from '@udecode/plate-common/react';
+import { InlineDatePlugin } from '@udecode/plate-date';
 import { DndPlugin } from '@udecode/plate-dnd';
 import { DocxPlugin } from '@udecode/plate-docx';
 import { EmojiPlugin } from '@udecode/plate-emoji';
@@ -138,6 +139,7 @@ export const usePlaygroundEditor = (id: any = '') => {
             plugins: [ImagePlugin, MediaEmbedPlugin],
           },
         }),
+        InlineDatePlugin,
         MentionPlugin.configure({
           options: {
             triggerPreviousCharPattern: /^$|^[\s"']$/,

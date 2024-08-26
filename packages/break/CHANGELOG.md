@@ -1,5 +1,17 @@
 # @udecode/plate-break
 
+## 36.5.6
+
+### Patch Changes
+
+- [#3457](https://github.com/udecode/plate/pull/3457) by [@nklhtv](https://github.com/nklhtv) – Use editor.blockFactory to create default elements
+
+## 36.3.8
+
+### Patch Changes
+
+- [#3427](https://github.com/udecode/plate/pull/3427) by [@yf-yang](https://github.com/yf-yang) – fix single line plugin normalization
+
 ## 36.0.0
 
 ## 34.0.0
