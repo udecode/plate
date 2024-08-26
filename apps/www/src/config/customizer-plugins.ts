@@ -8,6 +8,7 @@ import {
 import { CaptionPlugin } from '@udecode/plate-caption/react';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
 import { CsvPlugin } from '@udecode/plate-csv';
+import { DatePlugin } from '@udecode/plate-date';
 import { DndPlugin } from '@udecode/plate-dnd';
 import { DocxPlugin } from '@udecode/plate-docx';
 import { EmojiPlugin } from '@udecode/plate-emoji';
@@ -42,6 +43,7 @@ import { basicElementsValue } from '@/plate/demo/values/basicElementsValue';
 import { basicMarksValue } from '@/plate/demo/values/basicMarksValue';
 import { commentsValue } from '@/plate/demo/values/commentsValue';
 import { cursorOverlayValue } from '@/plate/demo/values/cursorOverlayValue';
+import { dateValue } from '@/plate/demo/values/dateValue';
 import { deserializeCsvValue } from '@/plate/demo/values/deserializeCsvValue';
 import { deserializeDocxValue } from '@/plate/demo/values/deserializeDocxValue';
 import { deserializeHtmlValue } from '@/plate/demo/values/deserializeHtmlValue';
@@ -149,6 +151,13 @@ export const customizerPlugins = {
     route: '/docs/cursor-overlay',
     value: cursorOverlayValue,
   },
+  date: {
+    id: 'date',
+    label: 'Date',
+    plugins: [DatePlugin.key],
+    route: '/docs/date',
+    value: dateValue,
+  },
   dnd: {
     id: 'dnd',
     label: 'Drag & Drop',
@@ -232,13 +241,6 @@ export const customizerPlugins = {
     plugins: [IndentListPlugin.key],
     route: '/docs/indent-list',
     value: indentListValue,
-  },
-  inlinedate: {
-    id: 'date',
-    label: 'Date',
-    plugins: [ELEMENT_INLINE_DATE],
-    route: '/docs/date',
-    value: dateValue,
   },
   kbd: {
     id: 'kbd',

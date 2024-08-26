@@ -72,7 +72,6 @@ export const testDocxDeserializer = ({
         ImagePlugin,
         HorizontalRulePlugin,
         LinkPlugin,
-        TablePlugin,
         BasicElementsPlugin,
         BasicMarksPlugin,
         TablePlugin,

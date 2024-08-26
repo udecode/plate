@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import type { PlateEditor } from '@udecode/plate-core';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -9,8 +9,8 @@ import { isPointNextToNode } from './isPointNextToNode';
 jsx;
 
 describe('isPointNextToNode', () => {
-  const createEditor = (input: JSX.Element): PlateEditor =>
-    input as any as PlateEditor;
+  const createEditor = (input: JSX.Element): SlateEditor =>
+    input as any as SlateEditor;
 
   describe('when point is next to a node of specified type', () => {
     it('should return true', () => {
@@ -19,14 +19,14 @@ describe('isPointNextToNode', () => {
           <hp>
             <htext>test</htext>
             <cursor />
-            <hinlinedate>
+            <hdate>
               <htext />
-            </hinlinedate>
+            </hdate>
           </hp>
         </editor>
       );
 
-      expect(isPointNextToNode(editor, 'inline_date')).toBe(true);
+      expect(isPointNextToNode(editor, { nodeType: 'date' })).toBe(true);
     });
   });
 
@@ -38,14 +38,14 @@ describe('isPointNextToNode', () => {
             <htext>test</htext>
             <cursor />
             <htext />
-            <hinlinedate>
+            <hdate>
               <htext />
-            </hinlinedate>
+            </hdate>
           </hp>
         </editor>
       );
 
-      expect(isPointNextToNode(editor, 'inline_date')).toBe(false);
+      expect(isPointNextToNode(editor, { nodeType: 'date' })).toBe(false);
     });
   });
 
@@ -54,18 +54,18 @@ describe('isPointNextToNode', () => {
       const editor = createEditor(
         <editor>
           <hp>
-            <hinlinedate>
+            <hdate>
               <htext />
-            </hinlinedate>
+            </hdate>
             <cursor />
             <htext>test</htext>
           </hp>
         </editor>
       );
 
-      expect(isPointNextToNode(editor, 'inline_date', { reverse: true })).toBe(
-        true
-      );
+      expect(
+        isPointNextToNode(editor, { nodeType: 'date', reverse: true })
+      ).toBe(true);
     });
   });
 
@@ -75,9 +75,9 @@ describe('isPointNextToNode', () => {
         <editor>
           <hp>
             <htext>test</htext>
-            <hinlinedate>
+            <hdate>
               <htext />
-            </hinlinedate>
+            </hdate>
             <htext> more text</htext>
           </hp>
         </editor>
@@ -85,7 +85,7 @@ describe('isPointNextToNode', () => {
 
       const at = { offset: 4, path: [0, 0] };
       expect(
-        isPointNextToNode(editor, 'inline_date', { at, reverse: false })
+        isPointNextToNode(editor, { at, nodeType: 'date', reverse: false })
       ).toBe(true);
     });
   });

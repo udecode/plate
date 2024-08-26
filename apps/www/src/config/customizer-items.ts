@@ -20,6 +20,7 @@ import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
 import { ParagraphPlugin } from '@udecode/plate-common';
 import { CsvPlugin } from '@udecode/plate-csv';
+import { DatePlugin } from '@udecode/plate-date';
 import { DndPlugin } from '@udecode/plate-dnd';
 import { DocxPlugin } from '@udecode/plate-docx';
 import { EmojiPlugin } from '@udecode/plate-emoji';
@@ -273,6 +274,23 @@ export const customizerItems: Record<string, SettingPlugin> = {
     npmPackage: '@udecode/plate-csv',
     pluginFactory: 'createCsvPlugin',
     route: customizerPlugins.csv.route,
+  },
+  [DatePlugin.key]: {
+    badges: [customizerBadges.element],
+    components: [
+      {
+        id: 'date-element',
+        label: 'dateElement',
+        pluginKey: 'DatePlugin.key',
+        route: customizerComponents.dateElement.href,
+        usage: 'dateElement',
+      },
+    ],
+    id: DatePlugin.key,
+    label: 'Date',
+    npmPackage: '@udecode/plate-date',
+    pluginFactory: 'DatePlugin',
+    route: customizerPlugins.date.route,
   },
   [DeletePlugin.key]: {
     badges: [customizerBadges.handler],
@@ -590,6 +608,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'createMarkdownPlugin',
     route: customizerPlugins.markdown.route,
   },
+
   [MediaEmbedPlugin.key]: {
     badges: [customizerBadges.element, customizerBadges.void],
     components: [
@@ -607,24 +626,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'createMediaEmbedPlugin',
     route: customizerPlugins.media.route,
   },
-
-  [DatePlugin.key]: {
-      badges: [customizerBadges.element],
-      components: [
-        {
-          id: 'inline-date-element',
-          label: 'InlineDateElement',
-          pluginKey: 'ELEMENT_INLINE_DATE',
-          route: customizerComponents.inlineDateElement.href,
-          usage: 'InlineDateElement',
-        },
-      ],
-      id: ELEMENT_INLINE_DATE,
-      label: 'InlineDate',
-      npmPackage: '@udecode/plate-date',
-      pluginFactory: 'createInlineDatePlugin',
-      route: customizerPlugins.inlinedate.route,
-    },
   [MentionPlugin.key]: {
     badges: [
       customizerBadges.element,

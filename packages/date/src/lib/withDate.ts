@@ -1,26 +1,16 @@
 import {
-  type PlateEditor,
+  type ExtendEditor,
   type TElement,
-  type Value,
   isSelectionExpanded,
-} from '@udecode/plate-common/server';
+} from '@udecode/plate-common';
 
-import { ELEMENT_INLINE_DATE } from './createInlineDatePlugin';
-import { isPointNextToNode } from './utils';
+import { isPointNextToNode } from './queries';
 
-export const withInlineDate = <
-  V extends Value = Value,
-  E extends PlateEditor<V> = PlateEditor<V>,
->(
-  editor: E
-) => {
+export const withDate: ExtendEditor = ({ editor, type }) => {
   const { isSelectable, move } = editor;
 
   editor.isSelectable = (element) => {
-    return (
-      (element as TElement).type !== ELEMENT_INLINE_DATE &&
-      isSelectable(element)
-    );
+    return (element as TElement).type !== type && isSelectable(element);
   };
 
   // check if cursor is next to a date node. if it is set the unit:'offset'
@@ -39,7 +29,8 @@ export const withInlineDate = <
       editor.selection &&
       !isSelectionExpanded(editor)
     ) {
-      const isNextDate = isPointNextToNode(editor, ELEMENT_INLINE_DATE, {
+      const isNextDate = isPointNextToNode(editor, {
+        nodeType: type,
         reverse,
       });
 

@@ -18,6 +18,7 @@ import {
 import { CommentsPlugin } from '@udecode/plate-comments/react';
 import { ParagraphPlugin } from '@udecode/plate-common';
 import { CsvPlugin } from '@udecode/plate-csv';
+import { DatePlugin } from '@udecode/plate-date';
 import { DndPlugin } from '@udecode/plate-dnd';
 import { DocxPlugin } from '@udecode/plate-docx';
 import { EmojiPlugin } from '@udecode/plate-emoji';
@@ -58,9 +59,9 @@ export const descriptions: Record<string, string> = {
   [BlockquotePlugin.key]: 'Highlight important text or citations.',
   [BoldPlugin.key]: 'Make your text stand out.',
   [CodePlugin.key]: 'Embed code into your text.',
-  [InlineDatePlugin.key]: 'Add inline date plugins',
   [CommentsPlugin.key]: 'Add comments to text as marks.',
   [CsvPlugin.key]: 'Copy paste from CSV to Slate.',
+  [DatePlugin.key]: 'Add inline date plugins',
   [DeletePlugin.key]:
     'Remove the current block if empty when pressing delete forward',
   [DndPlugin.key]: 'Move blocks within the editor.',

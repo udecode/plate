@@ -2,9 +2,9 @@ import React, { type ComponentType, type SVGProps } from 'react';
 
 import { withRef } from '@udecode/cn';
 import { type PlateEditor, PlateElement } from '@udecode/plate-common/react';
+import { DatePlugin } from '@udecode/plate-date';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { ListStyleType, toggleIndentList } from '@udecode/plate-indent-list';
-import { insertInlineDate } from '@udecode/plate-date';
 
 import { Icons } from '@/components/icons';
 
@@ -69,9 +69,9 @@ const rules: SlashCommandRule[] = [
     icon: Icons.add,
     keywords: ['inline', 'date'],
     onSelect: (editor) => {
-      insertInlineDate(editor);
+      editor.getTransforms(DatePlugin).insert.date();
     },
-    value: 'Inline date',
+    value: 'Date',
   },
 ];
 

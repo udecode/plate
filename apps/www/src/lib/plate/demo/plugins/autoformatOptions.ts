@@ -254,7 +254,8 @@ export const autoformatLists: AutoformatRule[] = [
   },
   {
     format: (editor) => formatList(editor, NumberedListPlugin.key),
-    match: ['1. ', '1) '],
+    match: ['^\\d+\\.$ ', '^\\d+\\)$ '],
+    matchByRegex: true,
     mode: 'block',
     preFormat,
     type: ListItemPlugin.key,
@@ -295,7 +296,8 @@ export const autoformatIndentLists: AutoformatRule[] = [
       toggleIndentList(editor, {
         listStyleType: ListStyleType.Decimal,
       }),
-    match: ['1. ', '1) '],
+    match: ['^\\d+\\.$ ', '^\\d+\\)$ '],
+    matchByRegex: true,
     mode: 'block',
     type: 'list',
   },

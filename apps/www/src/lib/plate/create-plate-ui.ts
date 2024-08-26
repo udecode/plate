@@ -1,6 +1,5 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-import type { PlatePluginComponent } from '@udecode/plate-common/react';
-
+// @ts-nocheck
 import { withProps } from '@udecode/cn';
 import {
   BoldPlugin,
@@ -19,7 +18,12 @@ import {
 } from '@udecode/plate-code-block/react';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
 import { ParagraphPlugin } from '@udecode/plate-common';
-import { PlateElement, PlateLeaf } from '@udecode/plate-common/react';
+import {
+  type NodeComponent,
+  PlateElement,
+  PlateLeaf,
+} from '@udecode/plate-common/react';
+import { DatePlugin } from '@udecode/plate-date';
 import { EmojiInputPlugin } from '@udecode/plate-emoji';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import { FindReplacePlugin } from '@udecode/plate-find-replace';
@@ -57,13 +61,13 @@ import { CodeSyntaxLeaf } from '@/registry/default/plate-ui/code-syntax-leaf';
 import { ColumnElement } from '@/registry/default/plate-ui/column-element';
 import { ColumnGroupElement } from '@/registry/default/plate-ui/column-group-element';
 import { CommentLeaf } from '@/registry/default/plate-ui/comment-leaf';
+import { DateElement } from '@/registry/default/plate-ui/date-element';
 import { EmojiInputElement } from '@/registry/default/plate-ui/emoji-input-element';
 import { ExcalidrawElement } from '@/registry/default/plate-ui/excalidraw-element';
 import { HeadingElement } from '@/registry/default/plate-ui/heading-element';
 import { HighlightLeaf } from '@/registry/default/plate-ui/highlight-leaf';
 import { HrElement } from '@/registry/default/plate-ui/hr-element';
 import { ImageElement } from '@/registry/default/plate-ui/image-element';
-import { InlineDateElement } from '@/registry/default/plate-ui/inline-date-element';
 import { KbdLeaf } from '@/registry/default/plate-ui/kbd-leaf';
 import { LinkElement } from '@/registry/default/plate-ui/link-element';
 import { ListElement } from '@/registry/default/plate-ui/list-element';
@@ -88,7 +92,7 @@ export const createPlateUI = ({
   draggable,
   placeholder,
 }: { draggable?: boolean; placeholder?: boolean } = {}) => {
-  let components: Record<string, PlatePluginComponent> = {
+  let components: Record<string, NodeComponent> = {
     [BlockquotePlugin.key]: BlockquoteElement,
     [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
     [BulletedListPlugin.key]: withProps(ListElement, { variant: 'ul' }),
@@ -99,6 +103,7 @@ export const createPlateUI = ({
     [ColumnItemPlugin.key]: ColumnElement,
     [ColumnPlugin.key]: ColumnGroupElement,
     [CommentsPlugin.key]: CommentLeaf,
+    [DatePlugin.key]: DateElement,
     [EmojiInputPlugin.key]: EmojiInputElement,
     [ExcalidrawPlugin.key]: ExcalidrawElement,
     [FindReplacePlugin.key]: SearchHighlightLeaf,
@@ -111,7 +116,6 @@ export const createPlateUI = ({
     [HighlightPlugin.key]: HighlightLeaf,
     [HorizontalRulePlugin.key]: HrElement,
     [ImagePlugin.key]: ImageElement,
-    [DatePlugin.key]: InlineDateElement,
     [ItalicPlugin.key]: withProps(PlateLeaf, { as: 'em' }),
     [KbdPlugin.key]: KbdLeaf,
     [LinkPlugin.key]: LinkElement,

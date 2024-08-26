@@ -1,11 +1,11 @@
 /** @jsx jsx */
 
-import type { PlateEditor } from '@udecode/plate-core';
+import type { PlateEditor } from '@udecode/plate-common/react';
 
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createPlateTestEditor } from '../../core/src/client/__tests__/createPlateTestEditor';
-import { createInlineDatePlugin } from './createInlineDatePlugin';
+import { createPlateTestEditor } from '../../../core/src/react/__tests__/createPlateTestEditor';
+import { DatePlugin } from './DatePlugin';
 
 jsx;
 
@@ -16,9 +16,9 @@ describe('On keydown', () => {
         <hp>
           <htext>test</htext>
           <cursor />
-          <hinlinedate date="2024-01-01">
+          <hdate date="2024-01-01">
             <htext />
-          </hinlinedate>
+          </hdate>
           <htext>test</htext>
         </hp>
       </editor>
@@ -28,9 +28,9 @@ describe('On keydown', () => {
       <editor>
         <hp>
           <htext>test</htext>
-          <hinlinedate date="2024-01-01">
+          <hdate date="2024-01-01">
             <htext />
-          </hinlinedate>
+          </hdate>
           <cursor />
           <htext>test</htext>
         </hp>
@@ -39,7 +39,7 @@ describe('On keydown', () => {
 
     const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
       editor: input,
-      plugins: [createInlineDatePlugin()],
+      plugins: [DatePlugin],
     });
 
     await triggerKeyboardEvent('ArrowRight');
@@ -52,9 +52,9 @@ describe('On keydown', () => {
       <editor>
         <hp>
           <htext>test</htext>
-          <hinlinedate date="2024-01-01">
+          <hdate date="2024-01-01">
             <htext />
-          </hinlinedate>
+          </hdate>
           <cursor />
           <htext>test</htext>
         </hp>
@@ -66,9 +66,9 @@ describe('On keydown', () => {
         <hp>
           <htext>test</htext>
           <cursor />
-          <hinlinedate date="2024-01-01">
+          <hdate date="2024-01-01">
             <htext />
-          </hinlinedate>
+          </hdate>
           <htext>test</htext>
         </hp>
       </editor>
@@ -76,7 +76,7 @@ describe('On keydown', () => {
 
     const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
       editor: input,
-      plugins: [createInlineDatePlugin()],
+      plugins: [DatePlugin],
     });
 
     await triggerKeyboardEvent('ArrowLeft');
@@ -90,13 +90,13 @@ describe('On keydown', () => {
         <hp>
           <htext>test</htext>
           <cursor />
-          <hinlinedate date="2024-01-01">
+          <hdate date="2024-01-01">
             <htext />
-          </hinlinedate>
+          </hdate>
           <htext />
-          <hinlinedate date="2024-01-01">
+          <hdate date="2024-01-01">
             <htext />
-          </hinlinedate>
+          </hdate>
           <htext>test</htext>
         </hp>
       </editor>
@@ -106,14 +106,14 @@ describe('On keydown', () => {
       <editor>
         <hp>
           <htext>test</htext>
-          <hinlinedate date="2024-01-01">
+          <hdate date="2024-01-01">
             <htext />
-          </hinlinedate>
+          </hdate>
           <cursor />
           <htext />
-          <hinlinedate date="2024-01-01">
+          <hdate date="2024-01-01">
             <htext />
-          </hinlinedate>
+          </hdate>
           <htext />
           <htext>test</htext>
         </hp>
@@ -122,7 +122,7 @@ describe('On keydown', () => {
 
     const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
       editor: input,
-      plugins: [createInlineDatePlugin()],
+      plugins: [DatePlugin],
     });
 
     await triggerKeyboardEvent('ArrowRight');

@@ -1,6 +1,5 @@
 import {
-  type PlateEditor,
-  type Value,
+  type SlateEditor,
   getNodeEntry,
   getRange,
   isEndPoint,
@@ -8,16 +7,16 @@ import {
 } from '@udecode/plate-common';
 import { Path, type Point } from 'slate';
 
-export const isPointNextToNode = <V extends Value>(
-  editor: PlateEditor<V>,
-  nodeType: string,
-  options?: {
+export const isPointNextToNode = (
+  editor: SlateEditor,
+  options: {
     at?: Point;
-    reverse: boolean;
+    nodeType: string;
+    reverse?: boolean;
   }
 ): boolean => {
   // eslint-disable-next-line prefer-const
-  let { at, reverse = false } = options ?? {};
+  let { at, nodeType, reverse = false } = options;
 
   if (!at) {
     at = editor.selection?.anchor;
@@ -72,9 +71,5 @@ export const isPointNextToNode = <V extends Value>(
 
   const nextNodeEntry = getNodeEntry(editor, adjacentPath) ?? null;
 
-  if (nextNodeEntry && nextNodeEntry[0].type === nodeType) {
-    return true;
-  }
-
-  return false;
+  return !!(nextNodeEntry && nextNodeEntry[0].type === nodeType);
 };

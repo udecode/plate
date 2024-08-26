@@ -67,7 +67,7 @@ export const docsConfig: DocsConfig = {
         customizerComponents.cursorOverlay,
         customizerComponents.columnGroupElement,
         customizerComponents.columnElement,
-        customizerComponents.inlineDateElement,
+        customizerComponents.dateElement,
         customizerComponents.dialog,
         customizerComponents.draggable,
         customizerComponents.dropdownMenu,

@@ -20,6 +20,7 @@ import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
 import { ParagraphPlugin } from '@udecode/plate-common';
 import { CsvPlugin } from '@udecode/plate-csv';
+import { DatePlugin } from '@udecode/plate-date';
 import { DndPlugin } from '@udecode/plate-dnd';
 import { DocxPlugin } from '@udecode/plate-docx';
 import { EmojiPlugin } from '@udecode/plate-emoji';
@@ -73,7 +74,7 @@ export const customizerList = [
       customizerItems[ParagraphPlugin.key],
       customizerItems[TablePlugin.key],
       customizerItems[TodoListPlugin.key],
-      customizerItems[InlineDatePlugin.key],
+      customizerItems[DatePlugin.key],
     ],
     id: 'blocks',
     label: 'Nodes',

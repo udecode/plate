@@ -13,7 +13,7 @@ import { VideoPlugin } from '../../VideoPlugin';
 import { ImagePlugin } from '../../image';
 import { PlaceholderPlugin } from '../PlaceholderPlugin';
 
-export const insertPlaceHolder = <E extends SlateEditor>(
+export const insertPlaceholder = <E extends SlateEditor>(
   editor: E,
   mediaType: string,
   options?: InsertNodesOptions<E>
@@ -34,19 +34,19 @@ export const insertPlaceHolder = <E extends SlateEditor>(
 export const insertImagePlaceholder = <E extends SlateEditor>(
   editor: E,
   options?: InsertNodesOptions<E>
-) => insertPlaceHolder(editor, ImagePlugin.key, options);
+) => insertPlaceholder(editor, ImagePlugin.key, options);
 
 export const insertVideoPlaceholder = <E extends SlateEditor>(
   editor: E,
   options?: InsertNodesOptions<E>
-) => insertPlaceHolder(editor, VideoPlugin.key, options);
+) => insertPlaceholder(editor, VideoPlugin.key, options);
 
-export const insertAudioPlaceholer = <E extends SlateEditor>(
+export const insertAudioPlaceholder = <E extends SlateEditor>(
   editor: E,
   options?: InsertNodesOptions<E>
-) => insertPlaceHolder(editor, AudioPlugin.key, options);
+) => insertPlaceholder(editor, AudioPlugin.key, options);
 
-export const insertFilePlaceholer = <E extends SlateEditor>(
+export const insertFilePlaceholder = <E extends SlateEditor>(
   editor: E,
   options?: InsertNodesOptions<E>
-) => insertPlaceHolder(editor, FilePlugin.key, options);
+) => insertPlaceholder(editor, FilePlugin.key, options);

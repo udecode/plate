@@ -48,9 +48,9 @@
   "dependencies": {
     "@udecode/plate-heading": "36.0.12",
     "@udecode/plate-indent": "36.0.0",
-    "@udecode/plate-indent-list": "36.3.3",
-    "@udecode/plate-media": "36.2.2",
-    "@udecode/plate-table": "36.3.5",
+    "@udecode/plate-indent-list": "36.5.2",
+    "@udecode/plate-media": "36.5.3",
+    "@udecode/plate-table": "36.5.8",
     "validator": "^13.11.0"
   },
   "devDependencies": {

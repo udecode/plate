@@ -1,25 +1,20 @@
 'use client';
-import React from 'react';
 
-import { cn } from '@udecode/cn';
-import {
-  PlateElement,
-  findNodePath,
-  setNodes,
-  withRef,
-} from '@udecode/plate-common';
+import { cn, withRef } from '@udecode/cn';
+import { setNodes } from '@udecode/plate-common';
+import { PlateElement, findNodePath } from '@udecode/plate-common/react';
 
 import { Calendar } from './calendar';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
 
-export const InlineDateElement = withRef<typeof PlateElement>(
-  ({ children, className, editor, element, ...props }, ref) => {
+export const DateElement = withRef<typeof PlateElement>(
+  ({ children, className, ...props }, ref) => {
+    const { editor, element } = props;
+
     return (
       <PlateElement
         className={cn('inline-block', className)}
         contentEditable={false}
-        editor={editor}
-        element={element}
         ref={ref}
         {...props}
       >

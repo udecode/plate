@@ -68,7 +68,7 @@ export const usePlaygroundValue = (id?: ValueId): MyValue => {
     if (enabled.kbd) value.push(...kbdValue);
     // Inline nodes
     if (enabled.mention) value.push(...mentionValue);
-    if (enabled.inline_date) value.push(...dateValue);
+    if (enabled.data) value.push(...dateValue);
     if (enabled.emoji) value.push(...emojiValue);
     // Nodes
     if (enabled.align) value.push(...alignValue);
@@ -132,7 +132,7 @@ export const usePlaygroundValue = (id?: ValueId): MyValue => {
     enabled.toggle,
     enabled.trailingBlock,
     enabled.column,
-    enabled.inline_date,
+    enabled.data,
     valueId,
   ]);
 };

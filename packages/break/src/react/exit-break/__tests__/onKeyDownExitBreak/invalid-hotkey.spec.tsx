@@ -32,7 +32,6 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  input.blockFactory = (node: any) => node;
   onKeyDownExitBreak({
     ...getEditorPlugin(createPlateEditor({ editor: input }), ExitBreakPlugin),
     event,

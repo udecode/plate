@@ -14,6 +14,7 @@ import {
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
+  deleteTable,
   findCellByIndexes,
   getCellIndices,
   getCellTypes,
