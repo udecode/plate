@@ -15,7 +15,7 @@ import type {
 import {
   floatingMediaActions,
   floatingMediaSelectors,
-} from './FloatingMediaStoree';
+} from './FloatingMediaStore';
 
 export const submitFloatingMedia = (
   editor: SlateEditor,

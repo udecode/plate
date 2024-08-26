@@ -15,7 +15,7 @@ import type { TMediaElement } from '../../../lib/media/types';
 import {
   floatingMediaActions,
   floatingMediaSelectors,
-} from './FloatingMediaStoree';
+} from './FloatingMediaStore';
 import { submitFloatingMedia } from './submitFloatingMedia';
 
 export const useFloatingMediaUrlInputState = ({

@@ -4,6 +4,6 @@
 
 export * from './FloatingMedia';
 export * from './FloatingMediaEditButton';
-export * from './FloatingMediaStoree';
+export * from './FloatingMediaStore';
 export * from './FloatingMediaUrlInput';
 export * from './submitFloatingMedia';
