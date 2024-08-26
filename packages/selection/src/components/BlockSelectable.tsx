@@ -77,18 +77,11 @@ export const useBlockSelectable = ({
     'data-key': id,
   };
 
-  const options =
-    editor &&
-    getPluginOptions<BlockSelectionPlugin>(editor, KEY_BLOCK_SELECTION);
-
-  const className =
-    (element?.type && options?.aboveClassNameMap?.[element.type]) ?? '';
-
   return {
     props: {
       className: isSelected
-        ? `slate-selected slate-selectable ${className}`
-        : `slate-selectable ${className}`,
+        ? `slate-selected slate-selectable`
+        : `slate-selectable`,
       key: id,
       onContextMenu: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         if (!editor) return;

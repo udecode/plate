@@ -21,7 +21,6 @@ import { withSelection } from './withSelection';
 export const KEY_BLOCK_SELECTION = 'blockSelection';
 
 export interface BlockSelectionPlugin {
-  aboveClassNameMap?: Record<string, string>;
   areaOptions?: PartialSelectionOptions;
   editorPaddingRight?: CSSProperties['width'];
   enableContextMenu?: boolean;

@@ -27,6 +27,7 @@ export const BlockSelection = ({ children }: any) => {
         data-plate-selectable
         style={{
           height: '100%',
+          pointerEvents: 'none',
           position: 'absolute',
           right: 0,
           top: 0,

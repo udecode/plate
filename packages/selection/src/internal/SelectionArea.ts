@@ -500,7 +500,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     this._container = selectAll(container, document)[0];
 
     if (
-      // this._container.contains(target) &&
+      this._container.contains(target) &&
       target.dataset.plateSelectable !== 'true'
     )
       return;
