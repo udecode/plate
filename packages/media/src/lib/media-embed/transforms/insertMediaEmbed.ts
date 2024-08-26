@@ -9,10 +9,7 @@ import { MediaEmbedPlugin, type TMediaEmbedElement } from '../MediaEmbedPlugin';
 
 export const insertMediaEmbed = <E extends SlateEditor>(
   editor: E,
-  {
-    key = MediaEmbedPlugin.key,
-    url = '',
-  }: { key?: string } & Partial<TMediaEmbedElement>,
+  { url = '' }: Partial<TMediaEmbedElement>,
   options: InsertNodesOptions<E> = {}
 ): void => {
   if (!editor.selection) return;
@@ -26,7 +23,7 @@ export const insertMediaEmbed = <E extends SlateEditor>(
     editor,
     {
       children: [{ text: '' }],
-      type: key,
+      type: editor.getType(MediaEmbedPlugin),
       url,
     },
     {

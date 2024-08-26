@@ -135,7 +135,7 @@ export const usePlaygroundEditor = (id: any = '') => {
         MediaEmbedPlugin,
         CaptionPlugin.configure({
           options: {
-            pluginKeys: [ImagePlugin.key, MediaEmbedPlugin.key],
+            plugins: [ImagePlugin, MediaEmbedPlugin],
           },
         }),
         MentionPlugin.configure({

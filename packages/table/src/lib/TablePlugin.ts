@@ -26,12 +26,12 @@ export const TableRowPlugin = createSlatePlugin({
 export const TableCellPlugin = createSlatePlugin({
   key: 'td',
   node: { isElement: true },
-}).extend(({ editor }) => ({
+}).extend(({ type }) => ({
   parsers: {
     html: {
       deserializer: {
         attributeNames: ['rowspan', 'colspan'],
-        parse: getParse(editor.getType({ key: 'td' })),
+        parse: getParse(type),
         rules: [{ validNodeName: 'TD' }],
       },
     },
@@ -41,12 +41,12 @@ export const TableCellPlugin = createSlatePlugin({
 export const TableCellHeaderPlugin = createSlatePlugin({
   key: 'th',
   node: { isElement: true },
-}).extend(({ editor }) => ({
+}).extend(({ type }) => ({
   parsers: {
     html: {
       deserializer: {
         attributeNames: ['rowspan', 'colspan'],
-        parse: getParse(editor.getType({ key: 'th' })),
+        parse: getParse(type),
         rules: [{ validNodeName: 'TH' }],
       },
     },

@@ -82,7 +82,7 @@ export default function RSCPage() {
       MediaEmbedPlugin,
       CaptionPlugin.configure({
         options: {
-          pluginKeys: [ImagePlugin.key, MediaEmbedPlugin.key],
+          plugins: [ImagePlugin, MediaEmbedPlugin],
         },
       }),
       MentionPlugin,

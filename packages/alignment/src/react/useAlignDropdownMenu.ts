@@ -51,7 +51,6 @@ export const useAlignDropdownMenu = ({
     radioGroupProps: {
       onValueChange: (newValue: string) => {
         setAlign(editor, {
-          key: AlignPlugin.key,
           value: newValue as Alignment,
         });
 

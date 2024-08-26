@@ -22,7 +22,7 @@ export const ImageElement = withHOC(
       const width = useResizableStore().get.width();
 
       return (
-        <MediaPopover pluginKey={ImagePlugin.key}>
+        <MediaPopover plugin={ImagePlugin}>
           <PlateElement
             className={cn('py-2.5', className)}
             ref={ref}

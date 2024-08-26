@@ -1,6 +1,9 @@
 import React, { useEffect } from 'react';
 
-import { isSelectionExpanded } from '@udecode/plate-common';
+import {
+  type WithRequiredKey,
+  isSelectionExpanded,
+} from '@udecode/plate-common';
 import {
   useEditorSelector,
   useElement,
@@ -23,10 +26,10 @@ import { Separator } from './separator';
 
 export interface MediaPopoverProps {
   children: React.ReactNode;
-  pluginKey: string;
+  plugin: WithRequiredKey;
 }
 
-export function MediaPopover({ children, pluginKey }: MediaPopoverProps) {
+export function MediaPopover({ children, plugin }: MediaPopoverProps) {
   const readOnly = useReadOnly();
   const selected = useSelected();
 
@@ -66,9 +69,7 @@ export function MediaPopover({ children, pluginKey }: MediaPopoverProps) {
 
               <FloatingMediaPrimitive.UrlInput
                 className={inputVariants({ h: 'sm', variant: 'ghost' })}
-                options={{
-                  pluginKey,
-                }}
+                options={{ plugin }}
                 placeholder="Paste the embed link..."
               />
             </div>

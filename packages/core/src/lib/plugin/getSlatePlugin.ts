@@ -39,5 +39,7 @@ export function getPluginType(
 }
 
 /** Get editor plugin types by key. */
-export const getPluginTypes = (editor: SlateEditor, keys: string[]) =>
-  keys.map((key) => editor.getType({ key }));
+export const getPluginTypes = (
+  editor: SlateEditor,
+  plugins: WithRequiredKey[]
+) => plugins.map((plugin) => editor.getType(plugin));

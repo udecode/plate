@@ -15,21 +15,17 @@ import { AlignPlugin } from '../AlignPlugin';
 export const setAlign = <E extends SlateEditor>(
   editor: E,
   {
-    key = AlignPlugin.key,
     setNodesOptions,
     value,
   }: {
-    key?: string;
     setNodesOptions?: SetNodesOptions<E>;
     value: Alignment;
   }
 ) => {
   const {
     inject: { targetPlugins },
-  } = editor.getPlugin({ key });
-  const { defaultNodeValue, nodeKey } = editor.getInjectProps({
-    key,
-  });
+  } = editor.getPlugin(AlignPlugin);
+  const { defaultNodeValue, nodeKey } = editor.getInjectProps(AlignPlugin);
 
   const match: TNodeMatch = (n) => {
     return (

@@ -29,7 +29,7 @@ export const withCaption: ExtendEditor<CaptionConfig> = ({
   const { apply } = editor;
 
   editor.apply = (operation) => {
-    const { pluginKeys } = getOptions();
+    const { plugins } = getOptions();
 
     if (operation.type === 'set_selection') {
       const newSelection = {
@@ -43,7 +43,7 @@ export const withCaption: ExtendEditor<CaptionConfig> = ({
         newSelection &&
         isCollapsed(newSelection)
       ) {
-        const types = getPluginTypes(editor, pluginKeys!);
+        const types = getPluginTypes(editor, plugins!);
 
         const entry = getAboveNode(editor, {
           at: newSelection,

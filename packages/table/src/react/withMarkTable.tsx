@@ -16,7 +16,7 @@ import { getTableGridAbove } from './queries';
 export const withMarkTable: ExtendEditor<TableConfig> = ({ editor }) => {
   const { addMark, getMarks, removeMark } = editor;
 
-  editor.addMark = (key: string, value: any) => {
+  editor.addMark = (key, value) => {
     const { selection } = editor;
 
     if (!selection || isCollapsed(selection)) return addMark(key, value);
@@ -41,7 +41,7 @@ export const withMarkTable: ExtendEditor<TableConfig> = ({ editor }) => {
     });
   };
 
-  editor.removeMark = (key: string) => {
+  editor.removeMark = (key) => {
     const { selection } = editor;
 
     if (!selection || isCollapsed(selection)) return removeMark(key);

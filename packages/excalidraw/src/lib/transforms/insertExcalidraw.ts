@@ -10,10 +10,7 @@ import { ExcalidrawPlugin, type TExcalidrawElement } from '../ExcalidrawPlugin';
 
 export const insertExcalidraw = <E extends SlateEditor>(
   editor: E,
-  {
-    key = ExcalidrawPlugin.key,
-    ...props
-  }: { key?: string } & TNodeProps<TExcalidrawElement> = {},
+  props: TNodeProps<TExcalidrawElement> = {},
   options: InsertNodesOptions<E> = {}
 ): void => {
   if (!editor.selection) return;
@@ -28,7 +25,7 @@ export const insertExcalidraw = <E extends SlateEditor>(
     editor,
     {
       children: [{ text: '' }],
-      type: key,
+      type: editor.getType(ExcalidrawPlugin),
       ...props,
     },
     { at: path, nextBlock: true, ...(options as any) }

@@ -1,5 +1,7 @@
 import React from 'react';
 
+import type { WithRequiredKey } from '@udecode/plate-common';
+
 import {
   createPrimitiveComponent,
   focusEditor,
@@ -17,9 +19,9 @@ import {
 import { submitFloatingMedia } from './submitFloatingMedia';
 
 export const useFloatingMediaUrlInputState = ({
-  pluginKey,
+  plugin,
 }: {
-  pluginKey: string;
+  plugin: WithRequiredKey;
 }) => {
   const editor = useEditorRef();
   const element = useElement<TMediaElement>();
@@ -27,7 +29,7 @@ export const useFloatingMediaUrlInputState = ({
   useHotkeys(
     'enter',
     (e) => {
-      if (submitFloatingMedia(editor, { element, pluginKey })) {
+      if (submitFloatingMedia(editor, { element, plugin })) {
         e.preventDefault();
       }
     },

@@ -1,6 +1,7 @@
 import {
   type PluginConfig,
   type SlateEditor,
+  type WithRequiredKey,
   isUrl,
   setNodes,
 } from '@udecode/plate-common';
@@ -20,10 +21,10 @@ export const submitFloatingMedia = (
   editor: SlateEditor,
   {
     element,
-    pluginKey,
+    plugin,
   }: {
     element: TMediaElement;
-    pluginKey: string;
+    plugin: WithRequiredKey;
   }
 ) => {
   let url = floatingMediaSelectors.url();
@@ -34,9 +35,8 @@ export const submitFloatingMedia = (
     return true;
   }
 
-  const { isUrl: _isUrl = isUrl, transformUrl } = editor.getOptions<
-    PluginConfig<any, MediaPluginOptions>
-  >({ key: pluginKey });
+  const { isUrl: _isUrl = isUrl, transformUrl } =
+    editor.getOptions<PluginConfig<any, MediaPluginOptions>>(plugin);
   const isValid = _isUrl(url);
 
   if (!isValid) return;

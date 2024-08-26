@@ -4,4 +4,4 @@ import { TableCellHeaderPlugin, TableCellPlugin } from '../TablePlugin';
 
 /** Get td and th types */
 export const getCellTypes = (editor: SlateEditor) =>
-  getPluginTypes(editor, [TableCellPlugin.key, TableCellHeaderPlugin.key]);
+  getPluginTypes(editor, [TableCellPlugin, TableCellHeaderPlugin]);

@@ -14,7 +14,7 @@ export const onKeyDownCaption: KeyboardHandler<CaptionConfig> = ({
   if (event.defaultPrevented) return;
   // focus caption from image
   if (isHotkey('down', event)) {
-    const types = getPluginTypes(editor, getOptions().pluginKeys!);
+    const types = getPluginTypes(editor, getOptions().plugins!);
 
     const entry = getBlockAbove(editor, {
       match: { type: types },

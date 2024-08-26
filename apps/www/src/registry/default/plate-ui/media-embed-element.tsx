@@ -35,7 +35,7 @@ export const MediaEmbedElement = withHOC(
     const provider = embed?.provider;
 
     return (
-      <MediaPopover pluginKey={MediaEmbedPlugin.key}>
+      <MediaPopover plugin={MediaEmbedPlugin}>
         <PlateElement
           className={cn('relative py-2.5', className)}
           ref={ref}

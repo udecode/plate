@@ -1,13 +1,13 @@
 import {
   type SlateEditor,
   getBlockAbove,
-  insertNodes,
+  getEditorPlugin,
   insertText,
   isEndPoint,
   moveSelection,
 } from '@udecode/plate-common';
 
-import type { TMentionElement, TMentionItemBase } from './types';
+import type { TMentionItemBase } from './types';
 
 import { type MentionConfig, MentionPlugin } from './MentionPlugin';
 
@@ -20,17 +20,12 @@ export const getMentionOnSelectItem =
     key = MentionPlugin.key,
   }: { key?: string } = {}): MentionOnSelectItem<TItem> =>
   (editor, item, search = '') => {
-    const { createMentionNode, insertSpaceAfterMention } =
-      editor.getOptions<MentionConfig>({ key: key as any });
-    const type = editor.getType({ key });
+    const { getOptions, tf } = getEditorPlugin<MentionConfig>(editor, {
+      key: key as any,
+    });
+    const { insertSpaceAfterMention } = getOptions();
 
-    const props = createMentionNode!(item, search);
-
-    insertNodes<TMentionElement>(editor, {
-      children: [{ text: '' }],
-      type,
-      ...props,
-    } as TMentionElement);
+    tf.insert.mention({ search, value: item.text });
 
     // move the selection after the element
     moveSelection(editor, { unit: 'offset' });
