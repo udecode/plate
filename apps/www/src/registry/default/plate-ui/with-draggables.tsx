@@ -7,6 +7,7 @@ import {
   type WithDraggableOptions,
   withDraggable as withDraggablePrimitive,
 } from '@udecode/plate-dnd';
+import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
 import {
   ELEMENT_H1,
   ELEMENT_H2,
@@ -15,8 +16,16 @@ import {
   ELEMENT_H5,
   ELEMENT_H6,
 } from '@udecode/plate-heading';
+import { ELEMENT_COLUMN_GROUP } from '@udecode/plate-layout';
 import { ELEMENT_OL, ELEMENT_UL } from '@udecode/plate-list';
+import {
+  ELEMENT_IMAGE,
+  ELEMENT_MEDIA_EMBED,
+  ELEMENT_PLACEHOLDER,
+} from '@udecode/plate-media';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
+import { ELEMENT_TABLE } from '@udecode/plate-table';
+import { ELEMENT_TOGGLE } from '@udecode/plate-toggle';
 
 import { Draggable, type DraggableProps } from './draggable';
 
@@ -99,10 +108,66 @@ export const withDraggables = (components: any) => {
     {
       draggableProps: {
         classNames: {
-          gutterLeft: 'pt-8 px-0 pb-0',
+          gutterLeft: 'pt-6 px-0 pb-0',
         },
       },
       key: ELEMENT_CODE_BLOCK,
+    },
+    {
+      draggableProps: {
+        classNames: {
+          gutterLeft: 'pt-0 px-0 pb-0',
+        },
+      },
+      key: ELEMENT_IMAGE,
+    },
+    {
+      draggableProps: {
+        classNames: {
+          gutterLeft: 'pt-0 px-0 pb-0',
+        },
+      },
+      key: ELEMENT_MEDIA_EMBED,
+    },
+    {
+      draggableProps: {
+        classNames: {
+          gutterLeft: 'pt-0 px-0 pb-0',
+        },
+      },
+      key: ELEMENT_EXCALIDRAW,
+    },
+    {
+      draggableProps: {
+        classNames: {
+          gutterLeft: 'pt-0 px-0 pb-0',
+        },
+      },
+      key: ELEMENT_TOGGLE,
+    },
+    {
+      draggableProps: {
+        classNames: {
+          gutterLeft: 'pt-0 px-0 pb-0',
+        },
+      },
+      key: ELEMENT_COLUMN_GROUP,
+    },
+    {
+      draggableProps: {
+        classNames: {
+          gutterLeft: 'pt-3 px-0 pb-0',
+        },
+      },
+      key: ELEMENT_PLACEHOLDER,
+    },
+    {
+      draggableProps: {
+        classNames: {
+          gutterLeft: 'pt-3 px-0 pb-0',
+        },
+      },
+      key: ELEMENT_TABLE,
     },
   ]);
 };

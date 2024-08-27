@@ -70,10 +70,14 @@ export const listValue: any = (
 export const todoListValue: any = (
   <fragment>
     <hp>Each block is a React component in which you can manage the state:</hp>
-    <htodoli checked>Create a "banana language" translation plugin</htodoli>
-    <htodoli checked>
+    <hp checked={true} indent={1} listStyleType="todo">
+      Create a "banana language" translation plugin
+    </hp>
+    <hp checked={true} indent={1} listStyleType="todo">
       Create a "detect sarcasm" plugin (good luck with that)
-    </htodoli>
-    <htodoli>Create an AI auto-complete plugin</htodoli>
+    </hp>
+    <hp checked={false} indent={1} listStyleType="todo">
+      Create an AI auto-complete plugin
+    </hp>
   </fragment>
 );
