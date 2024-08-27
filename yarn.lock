@@ -6092,7 +6092,6 @@ __metadata:
     lodash: "npm:^4.17.21"
     nanoid: "npm:^3.3.7"
     optics-ts: "npm:2.4.1"
-    ts-key-enum: "npm:3.0.13"
     use-deep-compare: "npm:^1.2.1"
     zustand: "npm:^4.5.2"
     zustand-x: "npm:^3.0.2"
@@ -20352,13 +20351,6 @@ __metadata:
   bin:
     ts-jest: cli.js
   checksum: 10c0/c2f51f0241f89d127d41392decbcb83b5dfd5e57ab9d50220aa7b7e2f9b3f3b07ccdbba33311284df1c41941879e4ddfad44b15a9d0da4b74bd1b98702b729df
-  languageName: node
-  linkType: hard
-
-"ts-key-enum@npm:3.0.13":
-  version: 3.0.13
-  resolution: "ts-key-enum@npm:3.0.13"
-  checksum: 10c0/904006b051016186431624587bbf318f96f33a791cecd36f4170932dc52921b064dac8070e1ccaa63e3553647ff2c2b0227f26e64eb8cf253b9bb75f8313d4a6
   languageName: node
   linkType: hard
 
