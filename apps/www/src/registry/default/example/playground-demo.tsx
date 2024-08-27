@@ -382,6 +382,10 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
   const initialValue = usePlaygroundValue(id);
   const key = useInitialValueVersion(initialValue);
 
+  useEffect(() => {
+    console.log(initialValue, 'fj');
+  }, []);
+
   const plugins = usePlaygroundPlugins({
     components: createPlateUI(
       {},

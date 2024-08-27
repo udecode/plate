@@ -23,17 +23,15 @@ export const tabbableValue: any = (
       <htext />
     </element>
     <hp>Place your cursor here and try pressing tab or shift+tab.</hp>
-    <hul>
-      <hli>
-        <hlic>List item 1</hlic>
-      </hli>
-      <hli>
-        <hlic>List item 2</hlic>
-      </hli>
-      <hli>
-        <hlic>List item 3</hlic>
-      </hli>
-    </hul>
+    <hp indent={1} listStyleType="disc">
+      List item 1
+    </hp>
+    <hp indent={1} listStyleType="disc">
+      List item 2
+    </hp>
+    <hp indent={1} listStyleType="disc">
+      List item 3
+    </hp>
     <hcodeblock lang="javascript">
       <hcodeline>if (true) {'{'}</hcodeline>
       <hcodeline>

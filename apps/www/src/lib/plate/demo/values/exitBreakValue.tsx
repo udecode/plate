@@ -2,7 +2,6 @@
 /** @jsx jsx */
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createList } from './createList';
 import { createTable } from './tableValue';
 
 jsx;
@@ -21,12 +20,17 @@ export const exitBreakValue: any = (
       Configure how exit breaks (line breaks between blocks) behave using simple
       rules:
     </hp>
-    {createList([
-      'hotkey – Use hotkeys like ⌘⏎ to move the cursor to the next block',
-      'query – Specify block types where exit breaks are allowed.',
-      'before – Choose whether the cursor exits to the next or previous block',
-    ])}
-    <hblockquote>Try here ⌘⏎</hblockquote>
+
+    <hp indent={1} listStyleType="disc">
+      hotkey – Use hotkeys like ⌘⏎ to move the cursor to the next block
+    </hp>
+    <hp indent={1} listStyleType="disc">
+      query – Specify block types where exit breaks are allowed.
+    </hp>
+    <hp indent={1} listStyleType="disc">
+      before – Choose whether the cursor exits to the next or previous block
+    </hp>
+
     <hcodeblock>
       <hcodeline>And in the middle ⌘⏎ of a block.</hcodeline>
     </hcodeblock>
