@@ -1,5 +1,5 @@
 ---
-'@udecode/test-utils': patch
+'@udecode/plate-test-utils': patch
 ---
 
 Refactor

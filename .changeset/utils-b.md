@@ -1,5 +1,5 @@
 ---
-'@udecode/test-utils': minor
+'@udecode/utils': minor
 ---
 
 - Add `bindFirst`
