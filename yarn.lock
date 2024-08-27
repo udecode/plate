@@ -6657,25 +6657,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-selection@npm:36.1.0":
-  version: 36.1.0
-  resolution: "@udecode/plate-selection@npm:36.1.0"
-  dependencies:
-    "@viselect/vanilla": "npm:3.2.5"
-    copy-to-clipboard: "npm:^3.3.3"
-  peerDependencies:
-    "@udecode/plate-common": ">=36.0.6"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate: ">=0.94.0"
-    slate-history: ">=0.93.0"
-    slate-hyperscript: ">=0.66.0"
-    slate-react: ">=0.99.0"
-  checksum: 10c0/f1e762f20ad73212eca09106404723e31166f6ee72ad9650fccb8c82730587d30935e49dc3744ec23fc3c6ac6dfdc820cfb35fe616c289be70be7ec807872e54
-  languageName: node
-  linkType: hard
-
-"@udecode/plate-selection@workspace:^, @udecode/plate-selection@workspace:packages/selection":
+"@udecode/plate-selection@npm:36.5.1, @udecode/plate-selection@workspace:^, @udecode/plate-selection@workspace:packages/selection":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-selection@workspace:packages/selection"
   dependencies:
@@ -6917,7 +6899,7 @@ __metadata:
     "@udecode/plate-reset-node": "npm:36.5.2"
     "@udecode/plate-resizable": "npm:36.0.0"
     "@udecode/plate-select": "npm:36.0.0"
-    "@udecode/plate-selection": "npm:36.1.0"
+    "@udecode/plate-selection": "npm:36.5.1"
     "@udecode/plate-slash-command": "npm:36.0.0"
     "@udecode/plate-suggestion": "npm:36.0.0"
     "@udecode/plate-tabbable": "npm:36.0.0"
