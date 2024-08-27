@@ -442,8 +442,8 @@ describe('withInsertFragmentTable', () => {
         editor: input,
         plugins: [
           TablePlugin.extendEditorApi(() => ({
-            table: {
-              cellFactory: () => ({
+            create: {
+              cell: () => ({
                 children: [{ text: '' }],
                 custom: true,
                 type: 'td',

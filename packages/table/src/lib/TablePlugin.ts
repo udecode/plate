@@ -72,9 +72,13 @@ export const TablePlugin = createTSlatePlugin<TableConfig>({
   },
   plugins: [TableRowPlugin, TableCellPlugin, TableCellHeaderPlugin],
 })
-  .extendApi<TableApi>(({ editor }) => ({
-    cellFactory: bindFirst(getEmptyCellNode, editor),
-    getCellChildren: (cell) => cell.children,
+  .extendEditorApi<TableApi>(({ editor }) => ({
+    create: {
+      cell: bindFirst(getEmptyCellNode, editor),
+    },
+    table: {
+      getCellChildren: (cell) => cell.children,
+    },
   }))
   .extendEditorTransforms(({ editor }) => ({
     insert: {

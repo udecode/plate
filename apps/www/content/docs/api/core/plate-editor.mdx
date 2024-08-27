@@ -7,13 +7,13 @@ A custom editor interface that extends the base **`TEditor`** interface and incl
 
 <APIParameters>
   <APIItem
-    name="blockFactory"
+    name="create.block"
     type="(node?: Partial<TElement>, path?: Path) => EElement"
   >
     A factory function that generates a default block, which by default is a
     block of type `ParagraphPlugin.key` with a single empty text child.
   </APIItem>
-  <APIItem name="childrenFactory" type="() => V">
+  <APIItem name="create.value" type="() => V">
     A factory function that generates the children of the editor, which by
     default is an array containing one default block.
   </APIItem>

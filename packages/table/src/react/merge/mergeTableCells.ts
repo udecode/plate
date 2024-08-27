@@ -111,7 +111,7 @@ export const mergeTableCells = (editor: SlateEditor) => {
     // Create a new cell to replace the merged cells, with
     // calculated colSpan and rowSpan attributes and combined content
     const mergedCell = {
-      ...api.table.cellFactory!({
+      ...api.create.cell!({
         children: mergingCellChildren,
         header:
           cellEntries[0][0].type === editor.getType(TableCellHeaderPlugin),

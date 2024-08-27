@@ -67,7 +67,7 @@ export const insertTableRow = (
           (n) => n.children[i].type === editor.getType(TableCellHeaderPlugin)
         );
 
-      return api.table.cellFactory!({
+      return api.create.cell!({
         header: header ?? isHeaderColumn,
       });
     }),

@@ -14,7 +14,7 @@ export const resetEditorChildren = <E extends SlateEditor = SlateEditor>(
 ) => {
   replaceNodeChildren<ElementOf<E>>(editor, {
     at: [],
-    nodes: editor.api.childrenFactory(),
+    nodes: editor.api.create.value(),
     ...options,
   } as any);
 };

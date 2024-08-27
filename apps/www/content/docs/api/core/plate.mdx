@@ -62,7 +62,7 @@ An uncontrolled **`editor`** ref.
 
 Initial editor value.
 
-- **Default:** **`editor.childrenFactory()`**
+- **Default:** **`editor.create.value()`**
 
 </APIItem>
 <APIItem name="maxLength" type="number" optional>
@@ -98,7 +98,7 @@ Controls whether the editor is considered active by default when used with a Pla
 
 Alias to **`initialValue`**. Stored in the store on each change (**`Editable.onChange`**). To update **`value`** with history support, use **[Slate transforms](https://docs.slatejs.org/concepts/04-transforms)**. To reset **`value`**, use `resetEditor`.
 
-- **Default:** **`editor.childrenFactory()`**
+- **Default:** **`editor.create.value()`**
 
 </APIItem>
 </APIParameters>

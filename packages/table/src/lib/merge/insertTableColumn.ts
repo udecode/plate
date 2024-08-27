@@ -146,7 +146,7 @@ export const insertTableMergeColumn = (
       const row = getParentNode(editor, currentCellPath)!;
       const rowElement = row[0] as TTableRowElement;
       const emptyCell = {
-        ...api.table.cellFactory!({ header, row: rowElement }),
+        ...api.create.cell!({ header, row: rowElement }),
         colSpan: 1,
         rowSpan: curRowSpan,
       };

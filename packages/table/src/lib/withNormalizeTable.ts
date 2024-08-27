@@ -96,7 +96,7 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
         if (isText(children[0])) {
           wrapNodeChildren<TElement>(
             editor,
-            editor.api.blockFactory({}, path),
+            editor.api.create.block({}, path),
             {
               at: path,
             }

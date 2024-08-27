@@ -96,7 +96,7 @@ export const insertTableColumn = (
 
       insertElements(
         editor,
-        api.table.cellFactory!({
+        api.create.cell!({
           header: isHeaderRow,
         }),
         {

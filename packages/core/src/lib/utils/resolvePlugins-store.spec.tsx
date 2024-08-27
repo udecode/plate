@@ -182,7 +182,7 @@ describe('SlatePlugin store', () => {
   });
 });
 
-describe('PlatePlugin useOptionsStore', () => {
+describe('PlatePlugin useOptions', () => {
   it('should re-render component when setOption is called', async () => {
     const p1 = createPlatePlugin({
       key: 'plugin1',
@@ -386,7 +386,7 @@ describe('PlatePlugin useOptionsStore', () => {
     });
   });
 
-  describe('useOptionsStore', () => {
+  describe('useOptions', () => {
     it('should allow access to the entire store', () => {
       const p1 = createSlatePlugin({
         key: 'plugin1',
@@ -395,7 +395,7 @@ describe('PlatePlugin useOptionsStore', () => {
       const editor = createPlateEditor({ plugins: [p1] });
 
       const TestHook = () => {
-        const { other, value } = editor.useOptionsStore(p1, (state) => ({
+        const { other, value } = editor.useOptions(p1, (state) => ({
           other: state.other,
           value: state.value,
         }));

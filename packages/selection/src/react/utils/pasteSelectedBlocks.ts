@@ -26,7 +26,7 @@ export const pasteSelectedBlocks = (editor: SlateEditor, e: ClipboardEvent) => {
     if (!isElementEmpty(editor, node as any)) {
       const at = Path.next(path);
 
-      insertNodes(editor, editor.api.blockFactory({}, at), {
+      insertNodes(editor, editor.api.create.block({}, at), {
         at,
         select: true,
       });

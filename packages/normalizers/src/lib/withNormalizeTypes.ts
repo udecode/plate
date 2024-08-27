@@ -25,7 +25,7 @@ export const withNormalizeTypes: ExtendEditor<NormalizeTypesConfig> = ({
 
           if (node) {
             if (strictType && isElement(node) && node.type !== strictType) {
-              const { children, ...props } = editor.api.blockFactory({
+              const { children, ...props } = editor.api.create.block({
                 type: strictType,
               });
               setElements(editor, props, {
@@ -38,7 +38,7 @@ export const withNormalizeTypes: ExtendEditor<NormalizeTypesConfig> = ({
             try {
               insertElements(
                 editor,
-                editor.api.blockFactory({ type: strictType ?? type! }),
+                editor.api.create.block({ type: strictType ?? type! }),
                 { at: path }
               );
 

@@ -123,13 +123,10 @@ describe('pipeNormalizeInitialValue', () => {
         ]);
       });
 
-      it('should use childrenFactory when children is empty', () => {
-        const childrenFactory = () => [
-          { children: [{ text: 'Factory' }], count: 0, type: 'p' },
-        ];
+      it('should use create.value when children is empty', () => {
         const editor = createPlateEditor({
           plugins,
-          value: childrenFactory(),
+          value: [{ children: [{ text: 'Factory' }], count: 0, type: 'p' }],
         });
 
         const wrapper = ({ children }: any) => (

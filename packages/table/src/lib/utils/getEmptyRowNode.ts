@@ -1,10 +1,10 @@
 import { type SlateEditor, getEditorPlugin } from '@udecode/plate-common';
 
-import type { CellFactoryOptions } from '../types';
+import type { CreateCellOptions } from '../types';
 
 import { TablePlugin, TableRowPlugin } from '../TablePlugin';
 
-export interface GetEmptyRowNodeOptions extends CellFactoryOptions {
+export interface GetEmptyRowNodeOptions extends CreateCellOptions {
   colCount?: number;
 }
 
@@ -17,7 +17,7 @@ export const getEmptyRowNode = (
   return {
     children: Array.from({ length: colCount })
       .fill(colCount)
-      .map(() => api.table.cellFactory!(cellOptions)),
+      .map(() => api.create.cell!(cellOptions)),
     type: editor.getType(TableRowPlugin),
   };
 };

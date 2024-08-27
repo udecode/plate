@@ -58,12 +58,12 @@ export const withPlate = <
     plugins: [...getPlateCorePlugins(), ...plugins],
   } as any) as unknown as TPlateEditor<V, InferPlugins<P[]>>;
 
-  editor.useOptionsStore = ((plugin: any, selector: any, equalityFn: any) => {
+  editor.useOptions = ((plugin: any, selector: any, equalityFn: any) => {
     const store = editor.getOptionsStore(plugin);
 
     if (!store) {
       editor.api.debug.error(
-        `editor.useOptionsStore: ${plugin.key} plugin is missing`,
+        `editor.useOptions: ${plugin.key} plugin is missing`,
         'PLUGIN_MISSING'
       );
     }

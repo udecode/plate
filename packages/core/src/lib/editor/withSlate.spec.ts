@@ -425,7 +425,7 @@ describe('withPlate', () => {
     // Test empty children
     const editorWithEmptyChildren = withSlate(createTEditor());
     expect(editorWithEmptyChildren.children).toEqual(
-      editorWithEmptyChildren.api.childrenFactory()
+      editorWithEmptyChildren.api.create.value()
     );
 
     // Test pipeNormalizeInitialValue and normalizeEditor

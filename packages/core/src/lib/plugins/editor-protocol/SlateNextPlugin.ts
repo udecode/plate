@@ -20,8 +20,10 @@ export type SlateNextConfig = PluginConfig<
   'slateNext',
   {},
   {
-    blockFactory: (node?: Partial<TElement>, path?: Path) => TElement;
-    childrenFactory: () => Value;
+    create: {
+      block: (node?: Partial<TElement>, path?: Path) => TElement;
+      value: () => Value;
+    };
     reset: () => void;
   },
   {
@@ -87,16 +89,20 @@ export const SlateNextPlugin = createTSlatePlugin<SlateNextConfig>({
   key: 'slateNext',
 })
   .extendEditorApi(({ editor }) => ({
-    /** Default block factory. */
-    blockFactory: (node?: Partial<TElement>, _path?: Path): TElement => ({
-      children: [{ text: '' }],
-      type: editor.getType(ParagraphPlugin),
-      ...node,
-    }),
+    create: {
+      /** Default block factory. */
+      block: (node?: Partial<TElement>, _path?: Path): TElement => ({
+        children: [{ text: '' }],
+        type: editor.getType(ParagraphPlugin),
+        ...node,
+      }),
+    },
   }))
   .extendEditorApi(({ api }) => ({
-    /** Editor children factory. */
-    childrenFactory: (): Value => [api.blockFactory()],
+    create: {
+      /** Editor children factory. */
+      value: (): Value => [api.create.block()],
+    },
   }))
   .extendEditorApi(({ editor }) => ({
     reset: () => {

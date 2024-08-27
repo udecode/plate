@@ -32,7 +32,7 @@ export const withTrailingBlock: ExtendEditor<TrailingBlockConfig> = ({
       ) {
         const at = lastChild ? Path.next(lastChild[1]) : [0];
 
-        insertElements(editor, editor.api.blockFactory({ type }, at), { at });
+        insertElements(editor, editor.api.create.block({ type }, at), { at });
 
         return;
       }

@@ -85,7 +85,7 @@ Disables the left resizer of the first column in the table.
 <APIItem name="enableUnsetSingleColSize" type="boolean" optional>
 Disables unsetting the width of the first column when the table has only one column. Set this to `true` if you want to resize the table width when there's only one column. Leave it `false` if you have a full-width table.
 </APIItem>
-<APIItem name="cellFactory" type="(options: { children?: TDescendant[]; header?: boolean; row?: TTableRowElement; }) => TTableCellElement" optional>
+<APIItem name="create.cell" type="(options: { children?: TDescendant[]; header?: boolean; row?: TTableRowElement; }) => TTableCellElement" optional>
 The cell node factory used each time a cell is created.
 
 - **Default:** `(options) => getEmptyCellNode(editor, options)`
@@ -214,7 +214,7 @@ Returns an empty cell node for a table.
 <APIItem name="editor" type="PlateEditor">
 The editor instance.
 </APIItem>
-<APIItem name="options" type="CellFactoryOptions">
+<APIItem name="options" type="CreateCellOptions">
 Options for creating the cell.
 <APISubList>
 <APISubListItem parent="options" name="header" type="boolean" optional>
@@ -231,7 +231,7 @@ The row element. If `header` is not specified, it will determine if the cell is 
 >
 The children of the new cell node.
 
-- **Default:** `[editor.api.blockFactory()]`
+- **Default:** `[editor.api.create.block()]`
 
 </APISubListItem>
 </APISubList>

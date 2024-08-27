@@ -127,7 +127,7 @@ describe('Plate', () => {
           wrapper,
         });
 
-        expect(result.current).toEqual(editor.api.childrenFactory());
+        expect(result.current).toEqual(editor.api.create.value());
       });
     });
   });

@@ -37,7 +37,7 @@ export const exitBreak = (
 
   insertElements(
     editor,
-    editor.api.blockFactory({ children: [{ text: '' }], type: defaultType }),
+    editor.api.create.block({ children: [{ text: '' }], type: defaultType }),
     {
       at: insertPath,
       select: !isStart,

@@ -105,7 +105,7 @@ export const withDeleteTable: ExtendEditor<TableConfig> = ({
           cellEntries.forEach(([, cellPath]) => {
             replaceNodeChildren<TElement>(editor, {
               at: cellPath,
-              nodes: editor.api.blockFactory(),
+              nodes: editor.api.create.block(),
             });
           });
 

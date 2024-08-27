@@ -476,8 +476,6 @@ export const docsConfig: DocsConfig = {
             },
             {
               headings: [
-                'blockFactory',
-                'childrenFactory',
                 'currentKeyboardEvent',
                 'key',
                 'plugins',

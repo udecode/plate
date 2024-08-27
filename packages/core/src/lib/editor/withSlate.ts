@@ -194,7 +194,7 @@ export const withSlate = <
     editor.children = value;
   }
   if (editor.children?.length === 0) {
-    editor.children = editor.api.childrenFactory();
+    editor.children = editor.api.create.value();
   }
   if (selection) {
     editor.selection = selection;

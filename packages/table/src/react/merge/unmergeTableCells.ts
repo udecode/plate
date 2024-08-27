@@ -33,7 +33,7 @@ export const unmergeTableCells = (editor: SlateEditor) => {
     // creating new object per iteration is essential here
     const createEmptyCell = (children?: TDescendant[]) => {
       return {
-        ...api.table.cellFactory!({
+        ...api.create.cell!({
           children,
           header: cellElem.type === editor.getType(TableCellHeaderPlugin),
         }),

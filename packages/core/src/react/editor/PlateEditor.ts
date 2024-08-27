@@ -64,7 +64,7 @@ export type PlateEditor = {
     ): F extends (...args: any[]) => any ? never : F;
   };
 
-  useOptionsStore: {
+  useOptions: {
     <C extends AnyPluginConfig, U>(
       plugin: WithRequiredKey<C>,
       selector: (s: InferOptions<C>) => U,

@@ -49,7 +49,7 @@ export type TableConfig = PluginConfig<
      */
     minColumnWidth?: number;
   },
-  { table: TableApi },
+  TableApi,
   {
     insert: {
       tableColumn: OmitFirst<typeof insertTableColumn>;
@@ -59,12 +59,16 @@ export type TableConfig = PluginConfig<
 >;
 
 export type TableApi = {
-  /** Cell node factory used each time a cell is created. */
-  cellFactory: (options?: CellFactoryOptions) => TTableCellElement;
-  getCellChildren: (cell: TTableCellElement) => TDescendant[];
+  create: {
+    /** Cell node factory used each time a cell is created. */
+    cell: (options?: CreateCellOptions) => TTableCellElement;
+  };
+  table: {
+    getCellChildren: (cell: TTableCellElement) => TDescendant[];
+  };
 };
 
-export type CellFactoryOptions = {
+export type CreateCellOptions = {
   children?: TDescendant[];
   header?: boolean;
   row?: TTableRowElement;
