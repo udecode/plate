@@ -253,11 +253,15 @@ export const usePlaygroundEditor = (id: any = '') => {
         AutoformatPlugin.configure({ options: autoformatOptions }),
         BlockSelectionPlugin.configure({
           options: {
-            disableContextMenu: true,
-            sizes: {
-              bottom: 0,
-              top: 0,
+            areaOptions: {
+              boundaries: ['#selection-demo  #scroll_container'],
+              container: ['#selection-demo #scroll_container'],
+              selectables: [
+                '#selection-demo #scroll_container .slate-selectable',
+              ],
+              selectionAreaClass: 'slate-selection-area',
             },
+            enableContextMenu: false,
           },
         }),
         DndPlugin.configure({ options: { enableScroller: true } }),
@@ -337,17 +341,19 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
           >
             <div
               className={cn(
-                'relative flex w-full overflow-x-auto',
-                '[&_.slate-start-area-top]:!h-4',
-                '[&_.slate-start-area-left]:!w-[var(--editor-px)] [&_.slate-start-area-right]:!w-[var(--editor-px)]'
+                'relative flex max-h-[800px] w-full overflow-x-auto',
+                // block selection area
+                '[&_.slate-selected]:!bg-primary/20 [&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10'
               )}
+              data-plate-selectable
+              id="scroll_container"
               ref={containerRef}
             >
               <Editor
                 {...editableProps}
                 className={cn(
                   editableProps.className,
-                  'max-h-[800px] overflow-x-hidden px-[var(--editor-px)]',
+                  ' overflow-x-hidden px-[var(--editor-px)]',
                   !id && 'pb-[20vh] pt-4',
                   id && 'pb-8 pt-2'
                 )}

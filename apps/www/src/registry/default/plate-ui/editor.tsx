@@ -75,6 +75,7 @@ const Editor = React.forwardRef<HTMLDivElement, EditorProps>(
             }),
             className
           )}
+          data-plate-selectable
           disableDefaultStyles
           readOnly={disabled ?? readOnly}
           {...props}
