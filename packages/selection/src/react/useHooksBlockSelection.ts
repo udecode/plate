@@ -18,6 +18,7 @@ import {
 import type { BlockSelectionConfig } from './BlockSelectionPlugin';
 
 import { BlockContextMenuPlugin } from './BlockContextMenuPlugin';
+import { useSelectionArea } from './useSelectionArea';
 import { selectInsertedBlocks } from './utils';
 import { copySelectedBlocks } from './utils/copySelectedBlocks';
 import { pasteSelectedBlocks } from './utils/pasteSelectedBlocks';
@@ -33,6 +34,8 @@ export const useHooksBlockSelection: UseHooks<BlockSelectionConfig> = ({
   const selectedIds = useOption('selectedIds');
   const blockContextMenu = useEditorPlugin(BlockContextMenuPlugin);
   const isOpen = blockContextMenu.useOption('isOpen', editor.id);
+
+  useSelectionArea();
 
   // TODO: test
   React.useEffect(() => {

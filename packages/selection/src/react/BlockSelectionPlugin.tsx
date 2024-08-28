@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type CSSProperties } from 'react';
 
 import {
   type PluginConfig,
@@ -8,12 +8,12 @@ import {
 } from '@udecode/plate-common';
 import { createTPlatePlugin } from '@udecode/plate-common/react';
 
-import type { ChangedElements } from './components/SelectionArea';
+import type { ChangedElements, PartialSelectionOptions } from '../internal';
 
 import { getAllSelectableDomNode, getSelectedDomNode } from '../lib';
 import { extractSelectableIds } from '../lib/extractSelectableIds';
 import { BlockContextMenuPlugin } from './BlockContextMenuPlugin';
-import { BlockSelectionArea, BlockStartArea } from './components';
+import { BlockSelection } from './components';
 import { BlockSelectable } from './components/BlockSelectable';
 import { onKeyDownSelection } from './onKeyDownSelection';
 import { useHooksBlockSelection } from './useHooksBlockSelection';
@@ -22,18 +22,13 @@ import { onChangeBlockSelection } from './utils';
 export type BlockSelectionConfig = PluginConfig<
   'blockSelection',
   {
-    disableContextMenu?: boolean;
+    areaOptions?: PartialSelectionOptions;
+    editorPaddingRight?: CSSProperties['width'];
+    enableContextMenu?: boolean;
     isSelecting?: boolean;
     onKeyDownSelecting?: (e: KeyboardEvent) => void;
     query?: QueryNodeOptions;
-    scrollContainerSelector?: string;
     selectedIds?: Set<string>;
-    sizes?: {
-      bottom?: number;
-      left?: number;
-      right?: number;
-      top?: number;
-    };
   } & BlockSelectionSelectors,
   {
     blockSelection: BlockSelectionApi;
@@ -64,17 +59,26 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
   },
   key: 'blockSelection',
   options: {
+    areaOptions: {
+      behaviour: {
+        scrolling: {
+          speedDivider: 5,
+          startScrollMargins: { x: 20, y: 0 },
+        },
+        startThreshold: 5,
+      },
+      features: {
+        singleTap: {
+          allow: false,
+        },
+      },
+    },
+    enableContextMenu: false,
     isSelecting: false,
     query: {
       maxLevel: 1,
     },
     selectedIds: new Set(),
-    sizes: {
-      bottom: 4,
-      left: 4,
-      right: 4,
-      top: 4,
-    },
   },
   plugins: [BlockContextMenuPlugin],
   render: {
@@ -149,36 +153,10 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
       },
     })
   )
-  .extend(({ getOptions }) => ({
+  .extend(() => ({
     render: {
       aboveEditable: ({ children }) => (
-        <BlockSelectionArea>
-          <BlockStartArea
-            state={{
-              placement: 'left',
-              size: getOptions().sizes?.left,
-            }}
-          />
-          <BlockStartArea
-            state={{
-              placement: 'top',
-              size: getOptions().sizes?.top,
-            }}
-          />
-          <BlockStartArea
-            state={{
-              placement: 'right',
-              size: getOptions().sizes?.right,
-            }}
-          />
-          <BlockStartArea
-            state={{
-              placement: 'bottom',
-              size: getOptions().sizes?.bottom,
-            }}
-          />
-          {children}
-        </BlockSelectionArea>
+        <BlockSelection>{children}</BlockSelection>
       ),
     },
   }));

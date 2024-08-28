@@ -77,9 +77,9 @@ export const useBlockSelectable = ({
       onContextMenu: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         if (!element) return;
 
-        const { disableContextMenu = true } = getOptions();
+        const { enableContextMenu } = getOptions();
 
-        if (disableContextMenu) return;
+        if (!enableContextMenu) return;
         if (editor.selection?.focus) {
           const nodeEntry = getAboveNode(editor);
 
