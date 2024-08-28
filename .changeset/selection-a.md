@@ -10,3 +10,5 @@
 - Rename `onCloseBlockSelection` to `onChangeBlockSelection`
 - Move `blockSelectionStore` to `BlockSelectionPlugin`
 - Move `blockContextMenuStore` to `BlockContextMenuPlugin`
+- Remove `@viselect/vanilla` package and fork to local, fix scroll bugs.
+- Remove `BlockStartArea` and `BlockSelectionArea` components using areaOption instead.

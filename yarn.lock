@@ -6662,7 +6662,6 @@ __metadata:
   resolution: "@udecode/plate-selection@workspace:packages/selection"
   dependencies:
     "@udecode/plate-common": "workspace:^"
-    "@viselect/vanilla": "npm:3.2.5"
     copy-to-clipboard: "npm:^3.3.3"
   peerDependencies:
     "@udecode/plate-common": ">=36.3.9"
@@ -7016,13 +7015,6 @@ __metadata:
     satori: "npm:0.10.9"
     yoga-wasm-web: "npm:0.3.3"
   checksum: 10c0/96a445c30c5aee3dd20c0db3763a518ffd343f752236bedb705137c3278af119992ddb24ae5418091216a91ac434170507c6f5e89d364eb77edb9cef2b872b5a
-  languageName: node
-  linkType: hard
-
-"@viselect/vanilla@npm:3.2.5":
-  version: 3.2.5
-  resolution: "@viselect/vanilla@npm:3.2.5"
-  checksum: 10c0/480fe934de0bc2fd788d20b0b3ace7e832ed8f491be1ecaee26e7b22acfcc6e3aee8abf7a465cb1c503929f17a7fd0bf6c7ee45676507aed60c81c0fbf7141b2
   languageName: node
   linkType: hard
 

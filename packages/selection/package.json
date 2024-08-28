@@ -50,7 +50,6 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@viselect/vanilla": "3.2.5",
     "copy-to-clipboard": "^3.3.3"
   },
   "devDependencies": {
