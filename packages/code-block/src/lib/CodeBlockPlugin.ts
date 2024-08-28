@@ -10,7 +10,7 @@ import type { Prism } from './types';
 
 import { withCodeBlock } from '../lib/withCodeBlock';
 import { decorateCodeLine } from './decorateCodeLine';
-import { deserializeHtmlCodeBlock } from './deserializeHtmlCodeBlock';
+import { htmlDeserializerCodeBlock } from './htmlDeserializerCodeBlock';
 
 export type CodeBlockConfig = PluginConfig<
   'code_block',
@@ -56,6 +56,6 @@ export const CodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
     syntax: true,
     syntaxPopularFirst: false,
   },
-  parsers: { html: { deserializer: deserializeHtmlCodeBlock } },
+  parsers: { html: { deserializer: htmlDeserializerCodeBlock } },
   plugins: [CodeLinePlugin, CodeSyntaxPlugin],
 });

@@ -2,7 +2,7 @@ import type { HtmlDeserializer } from '@udecode/plate-common';
 
 import { CodeBlockPlugin, CodeLinePlugin } from './CodeBlockPlugin';
 
-export const deserializeHtmlCodeBlock: HtmlDeserializer = {
+export const htmlDeserializerCodeBlock: HtmlDeserializer = {
   parse: ({ element }) => {
     const languageSelectorText =
       [...element.childNodes].find(
