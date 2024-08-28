@@ -10,6 +10,11 @@ export function Link({
   return (
     <LinkPrimitive
       className={cn('font-medium underline underline-offset-4', className)}
+      target={
+        typeof props.href === 'string' && props.href.startsWith('http')
+          ? '_blank'
+          : undefined
+      }
       {...props}
     />
   );

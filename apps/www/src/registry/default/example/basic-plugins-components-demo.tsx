@@ -10,16 +10,17 @@ import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 import { HeadingPlugin } from '@udecode/plate-heading/react';
+import Prism from 'prismjs';
 
-import { PlateUI } from '@/plate/demo/plate-ui';
+import { createPlateUI } from '@/lib/plate/create-plate-ui';
 import { Editor } from '@/registry/default/plate-ui/editor';
 
 export default function BasicPluginsComponentsDemo() {
   const editor = usePlateEditor({
-    override: { components: PlateUI },
+    override: { components: createPlateUI() },
     plugins: [
       BlockquotePlugin,
-      CodeBlockPlugin,
+      CodeBlockPlugin.configure({ options: { prism: Prism } }),
       HeadingPlugin,
       BoldPlugin,
       ItalicPlugin,

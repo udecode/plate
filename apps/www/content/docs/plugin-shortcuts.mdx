@@ -1,0 +1,207 @@
+---
+title: Plugin Shortcuts
+description: Learn how to configure and use keyboard shortcuts in Plate plugins.
+---
+
+This guide covers the configuration and usage of keyboard shortcuts in Plate plugins, allowing you to create custom hotkeys for various editor actions.
+
+## Plugin Shortcuts
+
+Plate provides a set of default shortcuts for common actions.
+
+### Text Formatting
+
+- **BoldPlugin**
+  - `toggleBold`: `Mod+B`
+
+- **ItalicPlugin**
+  - `toggleItalic`: `Mod+I`
+
+- **UnderlinePlugin**
+  - `toggleUnderline`: `Mod+U`
+
+- **StrikethroughPlugin**
+  - `toggleStrikethrough`: `Mod+Shift+X`
+
+- **CodePlugin**
+  - `toggleCode`: `Mod+E`
+
+- **SubscriptPlugin**
+  - `toggleSubscript`: `Mod+,`
+
+- **SuperscriptPlugin**
+  - `toggleSuperscript`: `Mod+.`
+
+- **HighlightPlugin**
+  - `toggleHighlight`: `Mod+Shift+H`
+
+## Block Formatting
+
+- **ParagraphPlugin**
+  - `toggleParagraph`: `Mod+Alt+0` or `Mod+Shift+0`
+
+- **BlockquotePlugin**
+  - `toggleBlockquote`: `Mod+Shift+.`
+
+- **HeadingPlugin**
+  - `toggleHeading1`: `Mod+Alt+1` or `Mod+Shift+1`
+  - `toggleHeading2`: `Mod+Alt+2` or `Mod+Shift+2`
+  - `toggleHeading3`: `Mod+Alt+3` or `Mod+Shift+3`
+
+- **CodeBlockPlugin**
+  - `toggleCodeBlock`: `Mod+Alt+8`
+
+## Lists
+
+- **ListPlugin**
+  - `toggleBulletedList`: `Mod+Alt+5`
+  - `toggleNumberedList`: `Mod+Alt+6`
+
+- **TodoListPlugin**
+  - `toggleTodoList`: `Mod+Alt+4` or `Mod+Shift+4`
+
+## Comments
+
+- **CommentsPlugin**
+  - `toggleComment`: `Mod+Shift+M`
+
+### Notes
+
+- `Mod` represents `Cmd` on macOS and `Ctrl` on Windows/Linux.
+- Shortcuts can be customized or extended as needed in your Plate configuration.
+
+## Adding Shortcuts to Plugins
+
+You can add shortcuts to your plugins using the `shortcuts` option. Each shortcut is defined with a unique key and an object containing the handler, keys, and other optional properties.
+
+Here's a basic example:
+
+```ts
+const ParagraphPlugin = createPlatePlugin({
+  key: 'p',
+  shortcuts: {
+    toggleParagraph: {
+      handler: ({ editor }) => {
+        editor.toggleBlock({ type: 'p' });
+      },
+      keys: ['mod+opt+0', 'mod+shift+0'],
+    },
+  },
+});
+```
+
+In this example, pressing `Cmd+Option+0` or `Cmd+Shift+0` (on Mac) or `Ctrl+Alt+0` or `Ctrl+Shift+0` (on Windows/Linux) will toggle the paragraph block.
+
+## Shortcut Properties
+
+Each shortcut can have the following properties:
+
+- `handler`: A function that is called when the shortcut is triggered.
+- `keys`: A string or array of strings representing the key combination(s).
+- `priority`: (Optional) A number indicating the priority of the shortcut.
+- `preventDefault`: (Optional) A boolean to prevent the default browser action.
+
+## Multiple Shortcuts
+
+You can define multiple shortcuts for a single plugin:
+
+```ts
+const FormattingPlugin = createPlatePlugin({
+  key: 'formatting',
+  shortcuts: {
+    toggleBold: {
+      handler: ({ editor }) => {
+        editor.toggleMark('bold');
+      },
+      keys: 'mod+b',
+    },
+    toggleItalic: {
+      handler: ({ editor }) => {
+        editor.toggleMark('italic');
+      },
+      keys: 'mod+i',
+    },
+  },
+});
+```
+
+## Shortcut Priority
+
+When multiple plugins define shortcuts with the same key combination, you can use the `priority` property to determine which one takes precedence:
+
+```ts
+const HighPriorityPlugin = createPlatePlugin({
+  key: 'highPriority',
+  shortcuts: {
+    myShortcut: {
+      handler: () => console.log('High priority'),
+      keys: 'mod+k',
+      priority: 100,
+    },
+  },
+});
+
+const LowPriorityPlugin = createPlatePlugin({
+  key: 'lowPriority',
+  shortcuts: {
+    myShortcut: {
+      handler: () => console.log('Low priority'),
+      keys: 'mod+k',
+      priority: 50,
+    },
+  },
+});
+```
+
+In this case, the `HighPriorityPlugin` shortcut will be triggered when `Cmd+K` (Mac) or `Ctrl+K` (Windows/Linux) is pressed.
+
+## Disabling Shortcuts
+
+You can disable a specific shortcut by setting its value to `null`:
+
+```ts
+const MyPlugin = ParagraphPlugin.configure({
+  shortcuts: {
+    myShortcut: null,
+  },
+});
+```
+
+## Extending Shortcuts
+
+You can extend or override shortcuts using the `extend` method:
+
+```ts
+const ExtendedPlugin = BasePlugin.extend({
+  shortcuts: {
+    newShortcut: {
+      handler: () => console.log('New shortcut'),
+      keys: 'mod+shift+n',
+    },
+  },
+});
+```
+
+## Root Plugin Shortcuts
+
+You can also define shortcuts at the root level when creating the editor:
+
+```ts
+const editor = createPlateEditor({
+  plugins: [/* your plugins */],
+  shortcuts: {
+    globalShortcut: {
+      handler: () => console.log('Global shortcut triggered'),
+      keys: 'mod+g',
+    },
+  },
+});
+```
+
+Root-level shortcuts have the highest priority by default.
+
+## Best Practices
+
+- Consider using the `preventDefault` option for shortcuts that might conflict with browser defaults.
+- Be mindful of existing shortcuts in your application to avoid conflicts.
+- Use the `priority` property when you need fine-grained control over which shortcut is triggered.

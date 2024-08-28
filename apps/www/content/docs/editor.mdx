@@ -1,0 +1,254 @@
+---
+title: Editor Configuration
+description: Learn how to configure and customize the Plate editor.
+---
+
+This guide covers the configuration options for the Plate editor, including basic setup, plugin management, and advanced configuration techniques.
+
+## Basic Editor Configuration
+
+To create a basic Plate editor, you can use the `createPlateEditor` function, or `usePlateEditor` in a React component:
+
+```ts
+import { createPlateEditor } from '@udecode/plate-common/react';
+
+const editor = createPlateEditor({
+  plugins: [ParagraphPlugin, HeadingPlugin],
+});
+```
+
+### Initial Value
+
+Set the initial content of the editor:
+
+```ts
+const editor = createPlateEditor({
+  plugins: [ParagraphPlugin],
+  value: [
+    {
+      type: 'p',
+      children: [{ text: 'Hello, Plate!' }],
+    },
+  ],
+});
+```
+
+### Adding Plugins
+
+You can add plugins to your editor by including them in the `plugins` array:
+
+```ts
+const editor = createPlateEditor({
+  plugins: [ParagraphPlugin, HeadingPlugin, ListPlugin],
+});
+```
+
+### Max Length
+
+Set the maximum length of the editor:
+
+```ts
+const editor = createPlateEditor({
+  plugins: [ParagraphPlugin],
+  maxLength: 100,
+});
+```
+
+## Advanced Configuration
+
+### Id
+
+Set a custom id for the editor:
+
+```ts
+const editor = createPlateEditor({
+  plugins: [ParagraphPlugin],
+  id: 'my-custom-editor-id',
+});
+```
+
+If defined, you should always pass the `id` as the first argument in any editor retrieval methods.
+
+### Normalization
+
+Control whether the editor should normalize its content on initialization:
+
+```ts
+const editor = createPlateEditor({
+  plugins: [ParagraphPlugin],
+  shouldNormalizeEditor: true,
+});
+```
+
+### Auto-selection
+
+Configure the editor to automatically select a range:
+
+```ts
+const editor = createPlateEditor({
+  plugins: [ParagraphPlugin],
+  autoSelect: 'end', // or 'start', or true
+});
+```
+
+This is not the same as auto-focus: you can select text without focusing the editor.
+
+### Component Overrides
+
+Override default components for plugins:
+
+```ts
+const editor = createPlateEditor({
+  plugins: [ParagraphPlugin, HeadingPlugin],
+  override: {
+    components: {
+      [ParagraphPlugin.key]: CustomParagraphComponent,
+      [HeadingPlugin.key]: CustomHeadingComponent,
+    },
+  },
+});
+```
+
+### Plugin Overrides
+
+Override specific plugin configurations:
+
+```ts
+const editor = createPlateEditor({
+  plugins: [ParagraphPlugin, HeadingPlugin],
+  override: {
+    plugins: {
+      [ParagraphPlugin.key]: {
+        options: {
+          customOption: true,
+        },
+      },
+    },
+  },
+});
+```
+
+### Disable Plugins
+
+Disable specific plugins:
+
+```ts
+const editor = createPlateEditor({
+  plugins: [ParagraphPlugin, HeadingPlugin, ListPlugin],
+  override: {
+    enabled: {
+      [HistoryPlugin.key]: false,
+    },
+  },
+});
+```
+
+### Overriding Plugins
+
+You can override core plugins or previously defined plugins by adding a plugin with the same key. The last plugin with a given key wins:
+
+```ts
+const CustomParagraphPlugin = createPlatePlugin({
+  key: 'p',
+  // Custom implementation
+});
+
+const editor = createPlateEditor({
+  plugins: [ParagraphPlugin, CustomParagraphPlugin],
+});
+```
+
+### Root Plugin
+
+From the root plugin, you can configure any plugin:
+
+```ts
+const editor = createPlateEditor({
+  plugins: [ParagraphPlugin, HeadingPlugin],
+  rootPlugin: (plugin) =>
+    plugin.configurePlugin(LengthPlugin, {
+    options: {
+        maxLength: 100,
+      },
+    }),
+});
+```
+
+## Typed Editor
+
+`createPlateEditor` will automatically infer the types for your editor from the value and the plugins you pass in. For explicit type creation, you can use `createTPlateEditor`:
+
+### Plugins Type
+
+```ts
+const editor = createTPlateEditor<Value, typeof TablePlugin | typeof LinkPlugin>({
+  plugins: [TablePlugin, LinkPlugin],
+});
+
+// Usage
+editor.tf.insert.tableRow()
+```
+
+### Value Type
+
+For more complex editors, you can define your types in a separate file (e.g., `plate-types.ts`):
+
+```ts
+import type { TElement, TText } from '@udecode/plate-common';
+import type { TPlateEditor } from '@udecode/plate-common/react';
+
+// Define custom element types
+interface ParagraphElement extends TElement {
+  align?: 'left' | 'center' | 'right' | 'justify';
+  children: RichText[];
+  type: typeof ParagraphPlugin.key;
+}
+
+interface ImageElement extends TElement {
+  children: [{ text: '' }]
+  type: typeof ImagePlugin.key;
+  url: string;
+}
+
+// Define custom text types
+interface FormattedText extends TText {
+  bold?: boolean;
+  italic?: boolean;
+}
+
+export type MyRootBlock = ParagraphElement | ImageElement;
+
+// Define the editor's value type
+export type MyValue = MyRootBlock[];
+
+// Define the custom editor type
+export type MyEditor = TPlateEditor<MyValue, typeof TablePlugin | typeof LinkPlugin>;
+
+export const useMyEditorRef = () => useEditorRef<MyEditor>();
+
+// Usage
+const value: MyValue = [{
+  type: 'p',
+  children: [{ text: 'Hello, Plate!' }],
+}]
+
+const editorInferred = createPlateEditor({
+  plugins: [TablePlugin, LinkPlugin],
+  value,
+});
+
+// or 
+const editorExplicit = createTPlateEditor<MyValue, typeof TablePlugin | typeof LinkPlugin>({
+  plugins: [TablePlugin, LinkPlugin],
+  value,
+});
+```
+
+### Benefits
+
+We strongly recommend using typed editors for the following reasons:
+
+1. **Type Safety**: The editor enforces the structure of your document, preventing invalid operations.
+2. **Autocomplete**: Your IDE can provide better autocomplete suggestions based on your custom types.
+3. **Refactoring**: Changing types in one place will highlight necessary changes throughout your codebase.
+4. **Documentation**: Types serve as a form of self-documentation for your editor's structure and capabilities.

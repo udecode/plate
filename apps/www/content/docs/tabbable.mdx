@@ -58,7 +58,7 @@ query: (editor) => !!findNode(editor, {
 
 ### Non-void Slate nodes
 
-One `TabbableEntry` will be created for each tabbable DOM element in the editor, as determined using the [`tabbable` NPM package](https://www.npmjs.com/package/tabbable). The list of tabbables is then filtered using `isTabbable`.
+One `TabbableEntry` will be created for each tabbable DOM element in the editor, as determined using the <Link href="https://www.npmjs.com/package/tabbable">tabbable</Link> NPM package. The list of tabbables is then filtered using `isTabbable`.
 
 By default, `isTabbable` only returns true for entries inside void Slate nodes. You can override `isTabbable` to add support for DOM elements contained in other types of Slate node.
 

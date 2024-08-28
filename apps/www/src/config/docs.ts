@@ -166,25 +166,48 @@ export const docsConfig: DocsConfig = {
       items: [
         {
           href: '/docs/plugin',
-          title: 'Custom Plugins',
+          label: 'New',
+          title: 'Plugin Configuration',
+        },
+        {
+          href: '/docs/plugin-methods',
+          label: 'New',
+          title: 'Plugin Methods',
+        },
+        {
+          href: '/docs/plugin-shortcuts',
+          label: 'New',
+          title: 'Plugin Shortcuts',
+        },
+        {
+          href: '/docs/plugin-context',
+          label: 'New',
+          title: 'Plugin Context',
         },
         {
           href: '/docs/plugin-components',
+          label: 'UI',
           title: 'Plugin Components',
         },
         {
-          href: '/docs/accessing-editor',
-          title: 'Accessing the Editor',
+          href: '/docs/editor',
+          label: 'New',
+          title: 'Editor Configuration',
         },
         {
-          href: '/docs/typescript',
-          title: 'Typescript',
+          href: '/docs/editor-methods',
+          label: 'New',
+          title: 'Editor Methods',
         },
         {
-          disabled: true,
-          href: '/docs/cli',
-          label: 'Soon',
-          title: 'CLI',
+          href: '/docs/html',
+          label: 'New',
+          title: 'HTML',
+        },
+        {
+          href: '/docs/debugging',
+          label: 'New',
+          title: 'Debugging',
         },
       ],
       title: 'Guides',
@@ -216,11 +239,6 @@ export const docsConfig: DocsConfig = {
         {
           href: '/docs/caption',
           title: 'Caption',
-        },
-        {
-          href: '/docs/cloud',
-          label: 'Element',
-          title: 'Cloud',
         },
         {
           href: '/docs/collaboration',
@@ -327,10 +345,6 @@ export const docsConfig: DocsConfig = {
         {
           href: '/docs/docx',
           title: 'DOCX',
-        },
-        {
-          href: '/docs/html',
-          title: 'HTML',
         },
         {
           href: '/docs/markdown',

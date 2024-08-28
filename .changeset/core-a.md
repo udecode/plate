@@ -356,6 +356,11 @@ NEW `createSlateEditor`:
 - NEW `rootPlugin?: (plugin: AnyPlatePlugin) => AnyPlatePlugin` to configure the root plugin. From here, you can for example call `configurePlugin` to configure any plugin.
 - NEW `api`, `decorate`, `extendEditor`, `handlers`, `inject`, `normalizeInitialValue`, `options`, `override`, `priority`, `render`, `shortcuts`, `transforms`, `useHooks`. These options will be passed to the very first `rootPlugin`.
 
+NEW `usePlateEditor()` hook to create a `PlateEditor` in a React component:
+
+- Uses `createPlateEditor` and `useMemo` to avoid re-creating the editor on every render.
+- Dependencies can be added to the hook to re-create the editor on demand. `id` option is always used as dependency.
+
 **Editor Methods**:
 
 `editor: PlateEditor`:

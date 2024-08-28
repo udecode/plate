@@ -1,0 +1,183 @@
+---
+title: Plugin Context
+description: Understanding and utilizing the Plugin Context in Plate plugins.
+---
+
+The Plugin Context is an object available in all plugin methods, providing access to the editor instance, plugin configuration, and utility functions.
+
+## Accessing Plugin Context
+
+### Plugin Methods
+
+The Plugin Context is available as the first parameter in all plugin methods:
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  handlers: {
+    onKeyDown: (ctx) => {
+      // ctx is the Plugin Context
+      console.log(ctx.editor, ctx.plugin);
+    },
+  },
+});
+```
+
+### getEditorPlugin
+
+This function is particularly useful when you need to access the context of another plugin. It allows for cross-plugin communication and interaction, enabling more complex and interconnected plugin behaviors.
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  handlers: {
+    onKeyDown: ({ editor }) => {
+      const linkCtx = getEditorPlugin(LinkPlugin);
+    },
+  },
+});
+```
+
+### useEditorPlugin
+
+In React components, you can use the `useEditorPlugin` hook to access the Plugin Context:
+
+```ts
+const MyComponent = () => {
+  const { editor, plugin, useOption, type } = useEditorPlugin(MyPlugin);
+  
+  return <div>{useOption('myOption')}</div>;
+};
+```
+
+## Plugin Context Properties
+
+### editor
+
+The current `PlateEditor` instance:
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  handlers: {
+    onChange: ({ editor }) => {
+      console.log('Editor value:', editor.children);
+    },
+  },
+});
+```
+
+### plugin
+
+The current plugin configuration:
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  handlers: {
+    onKeyDown: ({ plugin }) => {
+      console.log('Plugin key:', plugin.key);
+    },
+  },
+});
+```
+
+### getOption
+
+A function to get a specific option value for the plugin:
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  options: { myOption: 'default' },
+  handlers: {
+    onClick: ({ getOption }) => {
+      const myOption = getOption('myOption');
+      console.log('My option value:', myOption);
+    },
+  },
+});
+```
+
+### getOptions
+
+A function to get all options for the plugin:
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  options: { option1: 'value1', option2: 'value2' },
+  handlers: {
+    onClick: ({ getOptions }) => {
+      const options = getOptions();
+      console.log('All options:', options);
+    },
+  },
+});
+```
+
+### setOption
+
+A function to set a specific option value for the plugin:
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  options: { count: 0 },
+  handlers: {
+    onClick: ({ setOption }) => {
+      setOption('count', 1);
+    },
+  },
+});
+```
+
+### setOptions
+
+A function to set multiple options for the plugin:
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  options: { option1: 'value1', option2: 'value2' },
+  handlers: {
+    onClick: ({ setOptions }) => {
+      setOptions({
+        option1: 'newValue1',
+        option2: 'newValue2',
+      });
+    },
+  },
+});
+```
+
+### useOption
+
+A hook to subscribe to a specific option value in a React component:
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  options: { count: 0 },
+  useHooks: ({ useOption }) => {
+    const count = useOption('count');
+    return <div>Count: {count}</div>;
+  },
+});
+```
+
+### type
+
+The node type associated with the plugin:
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  node: { type: 'myNodeType' },
+  handlers: {
+    onKeyDown: ({ type }) => {
+      console.log('Node type:', type);
+    },
+  },
+});
+```

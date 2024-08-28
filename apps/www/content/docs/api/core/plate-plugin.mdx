@@ -5,6 +5,33 @@ description: API reference for Plate plugins.
 
 Plate plugins are objects passed to `Plate` [plugins](/docs/api/core/plate#plugins) prop.
 
+TODO: put these in the right API section
+
+## Plugin Dependencies
+
+You can specify dependencies for your plugin using the `dependencies` property:
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  dependencies: ['otherPlugin'],
+});
+```
+
+This ensures that the specified plugins are loaded before your plugin.
+
+## Plugin Priority
+
+You can set the priority of your plugin to control the order in which plugins are applied:
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  priority: 100,
+});
+```
+
+Plugins with higher priority values are applied first.
 
 ## Generic Types
 
@@ -119,7 +146,7 @@ Property used by Plate to decorate editor ranges.
 
 - If the function returns undefined then no ranges are modified.
 - If the function returns an array the returned ranges are merged with the ranges called by other plugins.
-- See https://docs.slatejs.org/concepts/09-rendering#decorations
+- See <Link href="https://docs.slatejs.org/concepts/09-rendering#decorations">Slate docs</Link>
 
 ```ts
 type Decorate = (ctx: { editor: PlateEditor, plugin: PlatePlugin, entry: TNodeEntry }) => Range[] | undefined;
@@ -548,7 +575,7 @@ An array of plugin keys that this plugin depends on.
 
 <APIItem name="extendEditor" type="ExtendEditor" optional>
 Editor method overriders.
-- See https://docs.slatejs.org/concepts/08-plugins
+- See <Link href="https://docs.slatejs.org/concepts/08-plugins">Slate docs</Link>
 
 ```tsx
 (ctx: PlatePluginContext) => void;
