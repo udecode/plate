@@ -5,18 +5,12 @@ import { deselectEditor, useEditorPlugin } from '@udecode/plate-common/react';
 import { SelectionArea } from '../internal';
 import { BlockSelectionPlugin } from './BlockSelectionPlugin';
 
-let called = false;
-
 export const useSelectionArea = () => {
   const { api, editor, getOptions } = useEditorPlugin(BlockSelectionPlugin);
 
   const { areaOptions } = getOptions();
 
   React.useEffect(() => {
-    if (called) return;
-
-    called = true;
-
     const selection = new SelectionArea({
       document: window.document,
       ...areaOptions,
@@ -43,6 +37,8 @@ export const useSelectionArea = () => {
 
         api.blockSelection.setSelectedIds(changed);
       });
+
+    return () => selection.destroy();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 };
