@@ -168,7 +168,7 @@ A paragraph node affected by the above plugin would look like this:
 
 Occasionally, you'll need to override the built-in editor methods provided by Slate to work around bugs or add complex functionality. To do this, you can use the `extendEditor` plugin option to directly mutate properties of the `editor` object after its creation.
 
-One common application of this technique is to create custom <Link href="/docs/normalization">normalizers</Link>.
+One common application of this technique is to create custom <Link href="https://docs.slatejs.org/concepts/11-normalizing">normalizers</Link>.
 
 ```ts showLineNumbers {20}
 const CustomNormalizerPlugin = createPlatePlugin({
