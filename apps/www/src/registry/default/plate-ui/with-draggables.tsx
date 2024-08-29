@@ -101,10 +101,66 @@ export const withDraggables = (components: any) => {
     {
       draggableProps: {
         classNames: {
-          gutterLeft: 'pt-8 px-0 pb-0',
+          gutterLeft: 'pt-6 px-0 pb-0',
         },
       },
       key: CodeBlockPlugin.key,
+    },
+    {
+      draggableProps: {
+        classNames: {
+          gutterLeft: 'pt-0 px-0 pb-0',
+        },
+      },
+      key: ELEMENT_IMAGE,
+    },
+    {
+      draggableProps: {
+        classNames: {
+          gutterLeft: 'pt-0 px-0 pb-0',
+        },
+      },
+      key: ELEMENT_MEDIA_EMBED,
+    },
+    {
+      draggableProps: {
+        classNames: {
+          gutterLeft: 'pt-0 px-0 pb-0',
+        },
+      },
+      key: ELEMENT_EXCALIDRAW,
+    },
+    {
+      draggableProps: {
+        classNames: {
+          gutterLeft: 'pt-0 px-0 pb-0',
+        },
+      },
+      key: ELEMENT_TOGGLE,
+    },
+    {
+      draggableProps: {
+        classNames: {
+          gutterLeft: 'pt-0 px-0 pb-0',
+        },
+      },
+      key: ELEMENT_COLUMN_GROUP,
+    },
+    {
+      draggableProps: {
+        classNames: {
+          gutterLeft: 'pt-3 px-0 pb-0',
+        },
+      },
+      key: ELEMENT_PLACEHOLDER,
+    },
+    {
+      draggableProps: {
+        classNames: {
+          gutterLeft: 'pt-3 px-0 pb-0',
+        },
+      },
+      key: ELEMENT_TABLE,
     },
   ]);
 };
