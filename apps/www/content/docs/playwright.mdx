@@ -25,7 +25,7 @@ In order for your Playwright tests to access and interact with the editor, you'l
 const editor = createPlateEditor({
   plugins: [
     // other plugins...
-    PlaywrightPlugin.configure({ enabled: process.env.NODE_ENV === 'test' }),
+    PlaywrightPlugin.configure({ enabled: process.env.NODE_ENV !== 'production' }),
   ]
 })
 ```
