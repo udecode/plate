@@ -42,7 +42,7 @@ export default function HomeTabs() {
         onValueChange={(value) => {
           settingsStore.set.homeTab(value);
         }}
-        value="installation"
+        value={homeTab}
       >
         <TabsList>
           <TabsTrigger value="playground">Playground</TabsTrigger>

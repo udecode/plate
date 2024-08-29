@@ -305,7 +305,9 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         ColumnPlugin,
 
         // Testing
-        PlaywrightPlugin,
+        PlaywrightPlugin.configure({
+          enabled: process.env.NODE_ENV !== 'production',
+        }),
       ],
       shouldNormalizeEditor: true,
       value: value,
