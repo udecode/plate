@@ -10,11 +10,20 @@ import {
   type WithDraggableOptions,
   withDraggable as withDraggablePrimitive,
 } from '@udecode/plate-dnd';
+import { ExcalidrawPlugin } from '@udecode/plate-excalidraw';
 import { HEADING_KEYS } from '@udecode/plate-heading';
+import { ColumnPlugin } from '@udecode/plate-layout';
 import {
   BulletedListPlugin,
   NumberedListPlugin,
 } from '@udecode/plate-list/react';
+import {
+  ImagePlugin,
+  MediaEmbedPlugin,
+  PlaceholderPlugin,
+} from '@udecode/plate-media';
+import { TablePlugin } from '@udecode/plate-table';
+import { TogglePlugin } from '@udecode/plate-toggle';
 
 import { Draggable, type DraggableProps } from './draggable';
 
@@ -112,7 +121,7 @@ export const withDraggables = (components: any) => {
           gutterLeft: 'pt-0 px-0 pb-0',
         },
       },
-      key: ELEMENT_IMAGE,
+      key: ImagePlugin.key,
     },
     {
       draggableProps: {
@@ -120,7 +129,7 @@ export const withDraggables = (components: any) => {
           gutterLeft: 'pt-0 px-0 pb-0',
         },
       },
-      key: ELEMENT_MEDIA_EMBED,
+      key: MediaEmbedPlugin.key,
     },
     {
       draggableProps: {
@@ -128,7 +137,7 @@ export const withDraggables = (components: any) => {
           gutterLeft: 'pt-0 px-0 pb-0',
         },
       },
-      key: ELEMENT_EXCALIDRAW,
+      key: ExcalidrawPlugin.key,
     },
     {
       draggableProps: {
@@ -136,7 +145,7 @@ export const withDraggables = (components: any) => {
           gutterLeft: 'pt-0 px-0 pb-0',
         },
       },
-      key: ELEMENT_TOGGLE,
+      key: TogglePlugin.key,
     },
     {
       draggableProps: {
@@ -144,7 +153,7 @@ export const withDraggables = (components: any) => {
           gutterLeft: 'pt-0 px-0 pb-0',
         },
       },
-      key: ELEMENT_COLUMN_GROUP,
+      key: ColumnPlugin.key,
     },
     {
       draggableProps: {
@@ -152,7 +161,7 @@ export const withDraggables = (components: any) => {
           gutterLeft: 'pt-3 px-0 pb-0',
         },
       },
-      key: ELEMENT_PLACEHOLDER,
+      key: PlaceholderPlugin.key,
     },
     {
       draggableProps: {
@@ -160,7 +169,7 @@ export const withDraggables = (components: any) => {
           gutterLeft: 'pt-3 px-0 pb-0',
         },
       },
-      key: ELEMENT_TABLE,
+      key: TablePlugin.key,
     },
   ]);
 };
