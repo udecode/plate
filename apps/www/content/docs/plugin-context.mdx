@@ -17,7 +17,7 @@ const MyPlugin = createPlatePlugin({
   handlers: {
     onKeyDown: (ctx) => {
       // ctx is the Plugin Context
-      console.log(ctx.editor, ctx.plugin);
+      console.info(ctx.editor, ctx.plugin);
     },
   },
 });
@@ -61,7 +61,7 @@ const MyPlugin = createPlatePlugin({
   key: 'myPlugin',
   handlers: {
     onChange: ({ editor }) => {
-      console.log('Editor value:', editor.children);
+      console.info('Editor value:', editor.children);
     },
   },
 });
@@ -76,7 +76,7 @@ const MyPlugin = createPlatePlugin({
   key: 'myPlugin',
   handlers: {
     onKeyDown: ({ plugin }) => {
-      console.log('Plugin key:', plugin.key);
+      console.info('Plugin key:', plugin.key);
     },
   },
 });
@@ -93,7 +93,7 @@ const MyPlugin = createPlatePlugin({
   handlers: {
     onClick: ({ getOption }) => {
       const myOption = getOption('myOption');
-      console.log('My option value:', myOption);
+      console.info('My option value:', myOption);
     },
   },
 });
@@ -110,7 +110,7 @@ const MyPlugin = createPlatePlugin({
   handlers: {
     onClick: ({ getOptions }) => {
       const options = getOptions();
-      console.log('All options:', options);
+      console.info('All options:', options);
     },
   },
 });
@@ -176,7 +176,7 @@ const MyPlugin = createPlatePlugin({
   node: { type: 'myNodeType' },
   handlers: {
     onKeyDown: ({ type }) => {
-      console.log('Node type:', type);
+      console.info('Node type:', type);
     },
   },
 });

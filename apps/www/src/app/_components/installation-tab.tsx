@@ -177,7 +177,6 @@ export default function InstallationTab() {
       // Handle pluginImports
       plugin.components?.forEach((component) => {
         component.pluginImports?.forEach((importItem) => {
-          console.log(importItem);
           grouped[plugin.npmPackage!].imports.add(importItem);
         });
       });

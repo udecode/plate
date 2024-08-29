@@ -134,7 +134,7 @@ const HighPriorityPlugin = createPlatePlugin({
   key: 'highPriority',
   shortcuts: {
     myShortcut: {
-      handler: () => console.log('High priority'),
+      handler: () => console.info('High priority'),
       keys: 'mod+k',
       priority: 100,
     },
@@ -145,7 +145,7 @@ const LowPriorityPlugin = createPlatePlugin({
   key: 'lowPriority',
   shortcuts: {
     myShortcut: {
-      handler: () => console.log('Low priority'),
+      handler: () => console.info('Low priority'),
       keys: 'mod+k',
       priority: 50,
     },
@@ -175,7 +175,7 @@ You can extend or override shortcuts using the `extend` method:
 const ExtendedPlugin = BasePlugin.extend({
   shortcuts: {
     newShortcut: {
-      handler: () => console.log('New shortcut'),
+      handler: () => console.info('New shortcut'),
       keys: 'mod+shift+n',
     },
   },
@@ -191,7 +191,7 @@ const editor = createPlateEditor({
   plugins: [/* your plugins */],
   shortcuts: {
     globalShortcut: {
-      handler: () => console.log('Global shortcut triggered'),
+      handler: () => console.info('Global shortcut triggered'),
       keys: 'mod+g',
     },
   },

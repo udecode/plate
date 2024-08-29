@@ -11,7 +11,7 @@ export const setSelection = async (
   await page.evaluate(
     ([editor, at]) => {
       const range = editor.range(at);
-      console.log(range);
+      console.info(range);
       editor.setSelection(range);
     },
     [editorHandle, at] as const
