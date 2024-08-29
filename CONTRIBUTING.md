@@ -141,18 +141,18 @@ Please ensure that the tests are passing when submitting a pull request. If you'
 
 ### Run Playwright Tests
 
-We use Playwright for our end-to-end (e2e) tests in headless browsers. The React app for these tests is located in **`/apps/e2e-examples`**.
+We use Playwright for our end-to-end (e2e) tests in headless browsers.
 
 To install Playwright's browsers and dependencies, use:
 
 ```bash
-yarn install:playwright # first time
+yarn playwright install # first time
 ```
 
 To run all tests:
 
 ```bash
-yarn playwright
+yarn e2e
 ```
 
 ## Release Guide

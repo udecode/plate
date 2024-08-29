@@ -62,6 +62,7 @@ import { SlashPlugin } from '@udecode/plate-slash-command';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
+import { PlatePlaywrightAdapter } from '@udecode/plate-playwright';
 import Prism from 'prismjs';
 
 import { settingsStore } from '@/components/context/settings-store';
@@ -326,6 +327,7 @@ export default function PlaygroundDemo({
     <DndProvider backend={HTML5Backend}>
       <div className="relative">
         <Plate editor={editor}>
+          <PlatePlaywrightAdapter />
           {enabled['fixed-toolbar'] && (
             <FixedToolbar className="no-scrollbar">
               {enabled['fixed-toolbar-buttons'] && (

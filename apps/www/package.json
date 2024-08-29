@@ -110,6 +110,7 @@
     "@udecode/plate-mention": "workspace:^",
     "@udecode/plate-node-id": "workspace:^",
     "@udecode/plate-normalizers": "workspace:^",
+    "@udecode/plate-playwright": "workspace:^",
     "@udecode/plate-reset-node": "workspace:^",
     "@udecode/plate-resizable": "workspace:^",
     "@udecode/plate-select": "workspace:^",

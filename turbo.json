@@ -49,10 +49,6 @@
       "outputs": [],
       "cache": true
     },
-    "e2e-examples#typecheck": {
-      "dependsOn": [],
-      "outputs": []
-    },
     "www#typecheck": {
       "dependsOn": [],
       "outputs": []
