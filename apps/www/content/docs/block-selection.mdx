@@ -40,12 +40,35 @@ const plugins = [
 ];
 ```
 
+Add data-plate-selectable to the container or the element you want to start block selection.
+
+Example:
+```tsx
+   <PlateContent
+    aria-disabled={disabled}
+    className={cn(
+      editorVariants({
+        disabled,
+        focusRing,
+        focused,
+        size,
+        variant,
+      }),
+      className
+    )}
+    data-plate-selectable
+    disableDefaultStyles
+    readOnly={disabled ?? readOnly}
+    {...props}
+    />
+```
+
 ### Styling
 
 You can style the selection area by adding this class to the container:
 
 ```js
-'[&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/20'
+'[&_.slate-selected]:!bg-primary/20 [&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10'
 ```
 
 ## Plugins
