@@ -128,8 +128,8 @@ const Resizable = React.forwardRef<
   const { context, props, wrapperProps, wrapperRef } = useResizable(state);
 
   return (
-    <div id="wrapper" ref={wrapperRef} {...wrapperProps}>
-      <div id="middle" ref={ref} {...props} {...rest}>
+    <div ref={wrapperRef} {...wrapperProps}>
+      <div ref={ref} {...props} {...rest}>
         <ResizeHandleProvider onResize={context.onResize}>
           {children}
         </ResizeHandleProvider>
