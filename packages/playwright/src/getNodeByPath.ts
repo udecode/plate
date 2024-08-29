@@ -20,7 +20,7 @@ export const getNodeByPath = async (
       if (!node)
         throw new Error(`getNodeByPath: node not found at path ${path}`);
 
-      return node as TNode;
+      return node;
     },
     [adapterHandle, editorHandle, path] as const
   );
