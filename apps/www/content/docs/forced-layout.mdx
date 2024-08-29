@@ -22,38 +22,64 @@ npm install @udecode/plate-normalizers @udecode/plate-trailing-block
 ## Usage
 
 ```tsx
-import { createNormalizeTypesPlugin } from '@udecode/plate-normalizers';
-import { createTrailingBlockPlugin } from '@udecode/plate-trailing-block';
+import { NormalizersPlugin } from '@udecode/plate-normalizers/react';
+import { TrailingBlockPlugin } from '@udecode/plate-trailing-block/react';
+import { ParagraphPlugin } from '@udecode/plate-paragraph/react';
+import { HEADING_KEYS } from '@udecode/plate-heading/react';
 
 const plugins = [
   // ...otherPlugins
-  createTrailingBlockPlugin({ options: { type: ParagraphPlugin.key } }),
-  createNormalizeTypesPlugin({
+  TrailingBlockPlugin.configure({ options: { type: ParagraphPlugin.key } }),
+  NormalizersPlugin.configure({
     options: {
-      rules: [{ path: [0], strictType: HEADING_KEYS.h1 }],
+      rules: [{ path: [0], strictType: 'h1' }],
     },
   }),
 ];
 ```
 
-## API
+## Plugins
 
-### createNormalizeTypesPlugin
+### TrailingBlockPlugin
+
+<APIOptions>
+<APIItem name="level" type="number" optional>
+Level where the trailing node should be, the first level being 0.
+
+- **Default:** `0`
+</APIItem>
+
+<APIItem name="type" type="string" optional>
+Type of the trailing block.
+
+- **Default:** `editor.getType(ParagraphPlugin)`
+</APIItem>
+</APIOptions>
+
+The `TrailingBlockPlugin` also extends `QueryNodeOptions`, which includes additional options for querying nodes.
+
+### NormalizeTypesPlugin
+
+<APIOptions>
+<APIItem name="rules" type="Rule[]" optional>
+An array of rule objects for normalizing types.
+
+- **Default:** `[]`
+</APIItem>
+</APIOptions>
+
+#### Rule
 
 <APIAttributes>
-  <APIItem name="rules" type="object[]" optional>
-    An array of rule objects.
-    <APISubList>
-      <APISubListItem parent="rules" name="strictType" type="string" optional>
-        Force the type of the node at the given path.
-      </APISubListItem>
-      <APISubListItem parent="rules" name="type" type="string" optional>
-        Type of the inserted node at the given path if `strictType` is not
-        provided.
-      </APISubListItem>
-      <APISubListItem parent="rules" name="path" type="Path">
-        Path where the rule applies.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
+<APIItem name="path" type="Path">
+Path where the rule applies.
+</APIItem>
+
+<APIItem name="strictType" type="string" optional>
+Force the type of the node at the given path.
+</APIItem>
+
+<APIItem name="type" type="string" optional>
+Type of the inserted node at the given path if `strictType` is not provided.
+</APIItem>
 </APIAttributes>

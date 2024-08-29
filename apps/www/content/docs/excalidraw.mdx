@@ -25,27 +25,27 @@ npm install @udecode/plate-excalidraw
 ## Usage
 
 ```tsx
-import {
-  createExcalidrawPlugin,
-  ExcalidrawPlugin,
-  ExcalidrawElement,
-} from '@udecode/plate-excalidraw';
-import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
+import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
+import { SelectOnBackspace } from '@udecode/plate-select';
 
 const plugins = [
   // ...otherPlugins
-  createExcalidrawPlugin(),
-  createSelectOnBackspacePlugin({
+  ExcalidrawPlugin,
+  SelectOnBackspace.configure({
     options: { query: { allow: [ExcalidrawPlugin.key] } },
   }),
 ];
 ```
 
+## Plugins
+
+### ExcalidrawPlugin
+
+Adds Excalidraw functionality to the editor.
+
 ## API
 
-### createExcalidrawPlugin
-
-### insertExcalidraw
+#### insertExcalidraw
 
 Inserts an Excalidraw element into the editor.
 
@@ -55,20 +55,10 @@ Inserts an Excalidraw element into the editor.
 </APIItem>
 <APIItem
   name="props"
-  type="TNodeProps<TExcalidrawElement> & { key: string }"
+  type="TNodeProps<TExcalidrawElement>"
   optional
 >
-The props and key for the Excalidraw element.
-<APISubList>
-<APISubListItem parent="props" name="key" type="string">
-The key for the Excalidraw element.
-
-- **Default:** `ExcalidrawPlugin.key`
-
-</APISubListItem>
-
-</APISubList>
-
+The props for the Excalidraw element.
 </APIItem>
 <APIItem name="options" type="InsertNodesOptions" optional>
   The options for inserting the Excalidraw element.

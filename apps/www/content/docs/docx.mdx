@@ -28,18 +28,18 @@ npm install @udecode/plate-docx @udecode/plate-juice
 ### DOCX -> Slate
 
 ```tsx
-import { createJuicePlugin } from '@udecode/plate-juice';
-import { createDocxPlugin } from '@udecode/plate-docx';
+import { JuicePlugin } from '@udecode/plate-juice';
+import { DocxPlugin } from '@udecode/plate-docx';
 
 const plugins = [
   // ...otherPlugins,
-  createDocxPlugin(),
-  createJuicePlugin(),
+  DocxPlugin,
+  JuicePlugin,
 ];
 ```
 
 Given pasted HTML, `@udecode/plate-juice` is used to inline CSS properties into the `style` attribute.
 
-## API
+## Plugins
 
-### createDocxPlugin
+### DocxPlugin

@@ -28,29 +28,28 @@ npm install @udecode/plate-yjs
 ### Usage
 
 ```tsx
-import { createComboboxPlugin } from '@udecode/plate-combobox';
-import { createMentionPlugin } from '@udecode/plate-mention';
+import { YjsPlugin } from '@udecode/plate-yjs/react';
 
-const plugins = [
-  // ...otherPlugins,
-  createYjsPlugin({
-    options: {
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    YjsPlugin.configure({
       hocuspocusProviderOptions: {
-        url, // hocuspocus url
-        name, // room name
+        url: 'https://hocuspocus.test/hocuspocus',
+        name: 'test',
       },
-    },
-  }),
-];
+    }),
+  ]
+});
 ```
 
 ## Backend
 
 Follow the backend instructions in <Link href="https://tiptap.dev/hocuspocus/getting-started">Hocuspocus docs</Link>.
 
-## API
+## Plugins
 
-### createYjsPlugin
+### YjsPlugin
 
 <APIOptions>
 <APIItem name="cursorOptions" type="WithCursorsOptions<TCursorData>" optional>
@@ -82,6 +81,8 @@ A flag indicating whether to disable the cursor feature in the editor.
 </APIItem>
 </APIOptions>
 
+## API
+
 ### useYjsStore
 
 <APIState>
@@ -97,15 +98,11 @@ A flag indicating whether to disable the cursor feature in the editor.
 
 Higher-order function that wraps a Plate editor with Yjs support, allowing for real-time collaborative editing.
 
-### CursorEditorProps
-
-Extends `YjsEditorProps` and <Link href="https://docs.slate-yjs.dev/api/slate-yjs-core/cursor-plugin#cursoreditor">CursorEditor</Link>.
-
 ### PlateYjsEditorProps
 
 <APIAttributes>
 
-Extends `CursorEditorProps`.
+Extends `YjsEditorProps` and <Link href="https://docs.slate-yjs.dev/api/slate-yjs-core/cursor-plugin#cursoreditor">CursorEditor</Link>.
 
 <APIItem name="yjs" type="object">
   

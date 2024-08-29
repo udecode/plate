@@ -53,11 +53,11 @@ const App = withHoc(PlateController, () => {
   
   return (
     <>
-      <Plate id="main">
+      <Plate editor={createPlateEditor({ id: 'main' })}>
         <PlateContent />
       </Plate>
     
-      <Plate id="secondary">
+      <Plate editor={createPlateEditor({ id: 'secondary' })}>
         <PlateContent />
       </Plate>
     </>
@@ -88,11 +88,11 @@ const App = withHoc(PlateController, () => {
     <main>
       <p>{message}</p>
       
-      <Plate id="main" primary={false}>
+      <Plate editor={createPlateEditor({ id: 'main', primary: false })}>
         <PlateContent />
       </Plate>
     
-      <Plate id="secondary" primary={false}>
+      <Plate editor={createPlateEditor({ id: 'secondary', primary: false })}>
         <PlateContent />
       </Plate>
     </main>
@@ -128,11 +128,11 @@ const App = withHoc(PlateController, () => {
         Bold
       </button>
       
-      <Plate id="main" primary={false}>
+      <Plate editor={createPlateEditor({ id: 'main', primary: false })}>
         <PlateContent />
       </Plate>
     
-      <Plate id="secondary" primary={false}>
+      <Plate editor={createPlateEditor({ id: 'secondary', primary: false })}>
         <PlateContent />
       </Plate>
     </main>
@@ -159,15 +159,14 @@ const App = withHoc(PlateController, () => {
         Bold
       </button>
       
-      <Plate id="main" primary={false}>
+      <Plate editor={createPlateEditor({ id: 'main', primary: false })}>
         <PlateContent />
       </Plate>
     
-      <Plate id="secondary" primary={false}>
+      <Plate editor={createPlateEditor({ id: 'secondary', primary: false })}>
         <PlateContent />
       </Plate>
     </main>
   );
 });
 ```
-

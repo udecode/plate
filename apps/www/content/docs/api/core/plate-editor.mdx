@@ -5,50 +5,140 @@ description: API reference for Plate editor.
 
 A custom editor interface that extends the base **`TEditor`** interface and includes additional properties and methods specific to the Plate library.
 
+## Core Properties
+
 <APIParameters>
-  <APIItem
-    name="create.block"
-    type="(node?: Partial<TElement>, path?: Path) => EElement"
-  >
-    A factory function that generates a default block, which by default is a
-    block of type `ParagraphPlugin.key` with a single empty text child.
-  </APIItem>
-  <APIItem name="create.value" type="() => V">
-    A factory function that generates the children of the editor, which by
-    default is an array containing one default block.
-  </APIItem>
-  <APIItem name="currentKeyboardEvent" type="KeyboardEventLike | null">
-    The current keyboard event being processed by the editor, or null if no
-    event is being processed.
+  <APIItem name="id" type="any">
+    A unique identifier for the editor.
   </APIItem>
   <APIItem name="key" type="any">
     A key that can be used to uniquely identify the editor.
   </APIItem>
-<APIItem name="plate.<key>.set" type="function">
-
-Sets the value of `<key>` in the Plate store. The following keys are currently supported:
-
-- `readOnly`
-- `plugins`
-- `onChange`
-- `decorate`
-- `renderElement`
-- `renderLeaf`
-
-</APIItem>
-  <APIItem name="pluginList" type="PlatePluginList">
-    An array of plugins that are currently being used by the editor.
+  <APIItem name="currentKeyboardEvent" type="KeyboardEventLike | null">
+    The current keyboard event being processed by the editor, or null if no event is being processed.
   </APIItem>
-  <APIItem name="plugins" type="Record<string, AnyPlatePlugin>">
-    A record of plugins indexed by their keys.
+  <APIItem name="isFallback" type="boolean">
+    Whether the editor is a fallback editor.
+    
+    - **Default:** `false`
   </APIItem>
   <APIItem name="prevSelection" type="TRange | null">
     The previous selection range in the editor.
   </APIItem>
-  <APIItem name="redecorate" type="function">
-    A function that redecorates the editor.
+  <APIItem name="pluginList" type="AnyEditorPlatePlugin[]">
+    An array of plugins that are currently being used by the editor.
   </APIItem>
-  <APIItem name="reset" type="function">
-    A function that resets the editor to its initial state.
+  <APIItem name="plugins" type="Record<string, AnyEditorPlatePlugin>">
+    A record of plugins indexed by their keys.
+  </APIItem>
+</APIParameters>
+
+## API Methods
+
+<APIParameters>
+  <APIItem name="getApi" type="<C extends AnyPluginConfig = PluginConfig>(plugin?: WithRequiredKey<C>) => InferApi<C>">
+    Retrieve the typed API for a plugin.
+  </APIItem>
+  <APIItem name="getTransforms" type="<C extends AnyPluginConfig = PluginConfig>(plugin?: WithRequiredKey<C>) => InferTransforms<C>">
+    Get the typed transforms for a plugin.
+  </APIItem>
+  <APIItem name="getPlugin" type="<C extends AnyPluginConfig = PluginConfig>(plugin: WithRequiredKey<C>) => C extends { node: any } ? C : EditorPlatePlugin<C>">
+    Retrieve the editor plugin instance by its key or base plugin.
+  </APIItem>
+  <APIItem name="getType" type="(plugin: WithRequiredKey) => string">
+    Get the node type associated with a plugin.
+  </APIItem>
+</APIParameters>
+
+## Option Methods
+
+<APIParameters>
+  <APIItem name="getOption" type="<C extends AnyPluginConfig, K extends keyof InferOptions<C>, F extends InferOptions<C>[K]>(plugin: WithRequiredKey<C>, optionKey: K, ...args: F extends (...args: infer A) => any ? A : never) => F extends (...args: any[]) => infer R ? R : F">
+    Get a specific option value for a plugin.
+  </APIItem>
+  <APIItem name="getOptions" type="<C extends AnyPluginConfig = PluginConfig>(plugin: WithRequiredKey<C>) => InferOptions<C>">
+    Get all options for a plugin.
+  </APIItem>
+  <APIItem name="setOption" type="<C extends AnyPluginConfig, K extends keyof InferOptions<C>>(plugin: WithRequiredKey<C>, optionKey: K, value: InferOptions<C>[K]) => void">
+    Set a specific option value for a plugin.
+  </APIItem>
+  <APIItem name="setOptions" type="<C extends AnyPluginConfig>(plugin: WithRequiredKey<C>, options: Parameters<SetImmerState<InferOptions<C>>>[0] | Partial<InferOptions<C>>) => void">
+    Set multiple options for a plugin.
+  </APIItem>
+  <APIItem name="getOptionsStore" type="<C extends AnyPluginConfig>(plugin: WithRequiredKey<C>) => StoreApi<C['key'], InferOptions<C>>">
+    Get the zustand-x options store for a plugin.
+  </APIItem>
+</APIParameters>
+
+## React Hooks
+
+<APIParameters>
+  <APIItem name="useOption" type="<C extends AnyPluginConfig, K extends keyof InferOptions<C>, F extends InferOptions<C>[K], Args extends Parameters<((...args: any[]) => any) & F>>(plugin: WithRequiredKey<C>, optionKey: K, ...args: Args) => F extends (...args: any[]) => any ? ReturnType<F> : F">
+    Subscribe to a specific option value in a React component.
+  </APIItem>
+  <APIItem name="useOptions" type="<C extends AnyPluginConfig, U>(plugin: WithRequiredKey<C>, selector?: (s: InferOptions<C>) => U, equalityFn?: EqualityChecker<U>) => U | InferOptions<C>">
+    Subscribe to plugin options or a derived value from options in a React component.
+  </APIItem>
+</APIParameters>
+
+## Plate Store Methods
+
+<APIParameters>
+  <APIItem name="setPlateState" type="<K extends (typeof EXPOSED_STORE_KEYS)[number]>(optionKey: K, value: PlateStoreState[K]) => void">
+    Update the global Plate state.
+  </APIItem>
+</APIParameters>
+
+## Core Plugin APIs
+
+### DebugPlugin
+
+<APIParameters>
+  <APIItem name="editor.api.debug.log" type="(...args: any[]) => void">
+    Log a message at the 'log' level.
+  </APIItem>
+  <APIItem name="editor.api.debug.info" type="(...args: any[]) => void">
+    Log a message at the 'info' level.
+  </APIItem>
+  <APIItem name="editor.api.debug.warn" type="(...args: any[]) => void">
+    Log a message at the 'warn' level.
+  </APIItem>
+  <APIItem name="editor.api.debug.error" type="(...args: any[]) => void">
+    Log a message at the 'error' level.
+  </APIItem>
+</APIParameters>
+
+### SlateNextPlugin
+
+<APIParameters>
+  <APIItem name="editor.tf.toggle.block" type="(options: ToggleBlockOptions) => void">
+    Toggle a block element.
+  </APIItem>
+  <APIItem name="editor.tf.toggle.mark" type="(options: ToggleMarkOptions) => void">
+    Toggle a mark on the selected text.
+  </APIItem>
+</APIParameters>
+
+### HtmlPlugin
+
+<APIParameters>
+  <APIItem name="editor.api.html.deserialize" type="(options: { element: HTMLElement }) => TDescendant[]">
+    Deserialize HTML content into Slate nodes.
+  </APIItem>
+</APIParameters>
+
+### ReactPlugin
+
+<APIParameters>
+  <APIItem name="editor.api.reset" type="() => void">
+    Reset the editor state while maintaining focus if the editor was focused.
+  </APIItem>
+</APIParameters>
+
+### PlateApiPlugin
+
+<APIParameters>
+  <APIItem name="editor.api.redecorate" type="() => void">
+    Redecorate the editor. This method should be overridden for proper functionality.
   </APIItem>
 </APIParameters>

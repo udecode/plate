@@ -22,11 +22,11 @@ npm install @udecode/plate-tabbable
 ## Usage
 
 ```tsx
-import { createTabbablePlugin } from '@udecode/plate-tabbable';
+import { TabbablePlugin } from '@udecode/plate-tabbable/react';
 
 const plugins = [
   // ...otherPlugins,
-  createTabbablePlugin(),
+  TabbablePlugin,
 ];
 ```
 
@@ -64,7 +64,7 @@ By default, `isTabbable` only returns true for entries inside void Slate nodes. 
 
 ```tsx
 // Enable tabbable DOM elements inside CUSTOM_ELEMENT
-isTabbable: (editor, tabbableEntry) => (
+isTabbable: (tabbableEntry) => (
   tabbableEntry.slateNode.type === CUSTOM_ELEMENT ||
   isVoid(editor, tabbableEntry.slateNode)
 ),
@@ -94,9 +94,9 @@ insertTabbableEntries: (editor) => {
 },
 ```
 
-## API
+## Plugins
 
-### createTabbablePlugin
+### TabbablePlugin
 
 <APIOptions>
 <APIItem name="query" type="(editor: PlateEditor<V>, event: KeyboardEvent) => boolean" optional>
@@ -117,13 +117,15 @@ Adds additional tabbable entries to the list of tabbable elements. Useful for ad
 - **Default:** **`() => []`**
 
 </APIItem>
-<APIItem name="isTabbable" type="(editor: PlateEditor<V>, tabbableEntry: TabbableEntry) => boolean" optional>
+<APIItem name="isTabbable" type="(tabbableEntry: TabbableEntry) => boolean" optional>
 Determines whether an element should be included in the tabbable list. Returns `true` if the tabbableEntry's slateNode is void.
 
-- **Default:** **`(editor, tabbableEntry) => isVoid(editor, tabbableEntry.slateNode)`**
+- **Default:** **`(tabbableEntry) => isVoid(editor, tabbableEntry.slateNode)`**
 
 </APIItem>
 </APIOptions>
+
+## API
 
 ### TabbableEntry
 

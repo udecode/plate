@@ -58,7 +58,11 @@ export const usePlaygroundValue = (id?: ValueId): MyValue => {
       return mapNodeId(tableMergeValue);
     }
     if (valueId !== customizerPlugins.playground.id) {
-      const newValue = (customizerPlugins as any)[valueId]?.value ?? value;
+      let newValue = (customizerPlugins as any)[valueId]?.value ?? value;
+
+      if (newValue.length === 0) {
+        newValue = value;
+      }
 
       return mapNodeId(newValue);
     }

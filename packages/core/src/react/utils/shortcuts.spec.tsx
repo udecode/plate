@@ -1,5 +1,52 @@
-import { createPlateEditor } from '../editor';
+/** @jsx jsx */
+
+import { BoldPlugin } from '@udecode/plate-basic-marks/react';
+import { jsx } from '@udecode/plate-test-utils';
+
+import { createPlateTestEditor } from '../__tests__/createPlateTestEditor';
+
+jsx;
+import { type PlateEditor, createPlateEditor } from '../editor';
 import { createPlatePlugin } from '../plugin';
+
+it('should use custom hotkey for bold', async () => {
+  const input = (
+    <editor>
+      <hp>
+        Hello <anchor />
+        world
+        <focus />
+      </hp>
+    </editor>
+  ) as any as PlateEditor;
+
+  const output = (
+    <editor>
+      <hp>
+        Hello <htext bold>world</htext>
+      </hp>
+    </editor>
+  ) as any as PlateEditor;
+
+  const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
+    editor: input,
+    plugins: [
+      BoldPlugin.configure({
+        handlers: {
+          onKeyDown: ({ editor, event }) => {
+            if (event.key === 'b' && event.ctrlKey) {
+              editor.tf.toggle.mark({ key: 'bold' });
+            }
+          },
+        },
+      }),
+    ],
+  });
+
+  await triggerKeyboardEvent('mod+b');
+
+  expect(editor.children).toEqual(output.children);
+});
 
 describe('extend method with shortcuts', () => {
   it('should add new shortcuts to a plugin', () => {

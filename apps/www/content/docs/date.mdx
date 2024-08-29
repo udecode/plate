@@ -23,69 +23,69 @@ docs:
 npm install @udecode/plate-date
 ```
 
-### Plugins
+## Usage
 
 ```tsx
-import { createInlineDatePlugin } from ' @udecode/plate-date';
+import { DatePlugin } from '@udecode/plate-date/react';
 
 const plugins = [
   // ...otherPlugins,
-  createInlineDatePlugin()
+  DatePlugin,
 ];
 ```
 
+## Plugins
+
+### DatePlugin
+
+Add Date Plugin to your document.
 
 ## API
 
-### insert.date
-
-<APIOptions>
-
-<APIItem name="editor" type="TEditor">
-
-    The editor instance.
-
-</APIItem>
-
-<APIItem name="date" type="string">
-
-The date string to insert, in the format 'YYYY-MM-DD' (e.g., '2024-04-22'). If not provided, the current date will be used as the default.
-
-</APIItem>
-
-<APIItem name="options" type="InsertNodesOptions">
-
-The options for inserting nodes.
-
-</APIItem>
-</APIOptions>
-
-
 ### isPointNextToNode
 
-<APIOptions>
+Check if a point is next to a specific node type.
 
-<APIItem name="editor" type="TEditor">
+<APIParameters>
 
-    The editor instance.
-
+<APIItem name="editor" type="PlateEditor">
+The editor instance.
 </APIItem>
 
 <APIItem name="nodeType" type="string">
-
-The type of node to check for adjacency. This should be a string representing the node type, such as 'data' for inline date elements.
-
+The type of node to check for adjacency. This should be a string representing the node type, such as 'date' for inline date elements.
 </APIItem>
 
-<APIItem name="options" type="{
-    at?: Point;
-    reverse: boolean;
-  }">
-
+<APIItem name="options" type="object">
 The options for checking adjacency:
 
-- `at`: An optional Point object specifying the position to check from. If not provided, the current selection anchor will be used.
-- `reverse`: A boolean indicating the direction to check. If true, checks the previous node; if false, checks the next node.
+<APISubList>
+<APISubListItem parent="options" name="at" type="Point" optional>
+An optional Point object specifying the position to check from. If not provided, the current selection anchor will be used.
+</APISubListItem>
+<APISubListItem parent="options" name="reverse" type="boolean">
+A boolean indicating the direction to check. If true, checks the previous node; if false, checks the next node.
+</APISubListItem>
+</APISubList>
 
 </APIItem>
-</APIOptions>
+
+</APIParameters>
+
+## Plugin Transforms
+
+### editor.insert.date
+
+Insert a date into the editor.
+
+<APIParameters>
+
+<APIItem name="date" type="string" optional>
+The date string to insert, in the format 'YYYY-MM-DD' (e.g., '2024-04-22'). If not provided, the current date will be used as the default.
+</APIItem>
+
+<APIItem name="options" type="InsertNodesOptions" optional>
+The options for inserting nodes.
+</APIItem>
+
+</APIParameters>

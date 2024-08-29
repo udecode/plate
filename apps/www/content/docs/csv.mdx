@@ -28,17 +28,17 @@ npm install @udecode/plate-csv
 ### CSV -> Slate
 
 ```tsx
-import { createCsvPlugin } from '@udecode/plate-csv';
+import { CsvPlugin } from '@udecode/plate-csv';
 
 const plugins = [
   // ...otherPlugins,
-  createCsvPlugin(),
+  CsvPlugin,
 ];
 ```
 
-## API
+## Plugins
 
-### createCsvPlugin
+### CsvPlugin
 
 <APIOptions>
 
@@ -60,7 +60,9 @@ Refer to <Link href="https://www.papaparse.com/docs#config">PapaParse documentat
 </APIItem>
 </APIOptions>
 
-### deserializeCsv
+## API
+
+### editor.api.csv.deserialize
 
 Takes a CSV (Comma Separated Values) string and converts it into a Slate compatible format. This function uses the `papaparse` library to parse the CSV data.
 

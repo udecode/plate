@@ -1,0 +1,262 @@
+---
+title: Testing Plate
+description: Learn how to test Plate editor and plugins.
+---
+
+This guide outlines best practices for testing Plate plugins and components using `@udecode/plate-test-utils`.
+
+## Installation
+
+```bash
+npm install @udecode/plate-test-utils slate-hyperscript
+```
+
+## Setting Up Tests
+
+Add the JSX pragma at the top of your test file:
+
+```typescript
+/** @jsx jsx */
+
+import { jsx } from '@udecode/plate-test-utils';
+
+jsx; // so ESLint doesn't complain
+```
+
+This allows you to use JSX syntax for creating editor values.
+
+## Creating Test Cases
+
+### Editor State Representation
+
+Use JSX to represent editor states:
+
+```typescript
+const input = (
+  <editor>
+    <hp>
+      Hello<cursor /> world
+    </hp>
+  </editor>
+) as any as PlateEditor;
+```
+
+Node elements like `<hp />`, `<hul />`, `<hli />` represent different types of nodes.
+
+Special elements like `<cursor />`, `<anchor />`, and `<focus />` represent selection states.
+
+### Testing Transforms
+
+1. Create an input state
+2. Define the expected output state
+3. Use `createPlateEditor` or `createPlateTestEditor` to set up the editor
+4. Apply the transform(s)
+5. Assert the editor's new state
+
+Example testing bold formatting:
+
+```typescript
+it('should use custom hotkey for bold', async () => {
+  const input = (
+    <editor>
+      <hp>
+        Hello <anchor />
+        world
+        <focus />
+      </hp>
+    </editor>
+  ) as any as PlateEditor;
+
+  const output = (
+    <editor>
+      <hp>
+        Hello <htext bold>world</htext>
+      </hp>
+    </editor>
+  ) as any as PlateEditor;
+
+  const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
+    editor: input,
+    plugins: [
+      BoldPlugin.configure({
+        handlers: {
+          onKeyDown: ({ editor, event }) => {
+            if (event.key === 'b' && event.ctrlKey) {
+              editor.tf.toggle.mark({ key: 'bold' });
+            }
+          },
+        },
+      }),
+    ],
+  });
+
+  await triggerKeyboardEvent('mod+b');
+
+  expect(editor.children).toEqual(output.children);
+});
+```
+
+### Testing Selection
+
+Test how operations affect the editor's selection:
+
+```typescript
+it('should collapse selection on backspace', async () => {
+  const input = (
+    <editor>
+      <hp>
+        He<anchor />llo wor<focus />ld
+      </hp>
+    </editor>
+  ) as any as PlateEditor;
+
+  const output = (
+    <editor>
+      <hp>
+        He<cursor />ld
+      </hp>
+    </editor>
+  ) as any as PlateEditor;
+
+  const [editor] = await createPlateTestEditor({
+    editor: input,
+  });
+
+  editor.deleteBackward('character');
+
+  expect(editor.children).toEqual(output.children);
+  expect(editor.selection).toEqual(output.selection);
+});
+```
+
+## Testing Key Events
+
+Use `triggerKeyboardEvent` from `createPlateTestEditor`:
+
+```typescript
+it('should extend selection on shift+ArrowRight', async () => {
+  const input = (
+    <editor>
+      <hp>
+        Hello <cursor />world
+      </hp>
+    </editor>
+  ) as any as PlateEditor;
+
+  const output = (
+    <editor>
+      <hp>
+        Hello <anchor />wor<focus />ld
+      </hp>
+    </editor>
+  ) as any as PlateEditor;
+
+  const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
+    editor: input,
+  });
+
+  await triggerKeyboardEvent('shift+ArrowRight');
+  await triggerKeyboardEvent('shift+ArrowRight');
+  await triggerKeyboardEvent('shift+ArrowRight');
+
+  expect(editor.selection).toEqual(output.selection);
+});
+```
+
+## Testing Complex Scenarios
+
+For complex plugins like tables, test various scenarios:
+
+```typescript
+describe('Table plugin', () => {
+  it('should add a row below on Tab in last cell', async () => {
+    const input = (
+      <editor>
+        <htable>
+          <htr>
+            <htd>Cell 1</htd>
+            <htd>
+              Cell 2<cursor />
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as any as PlateEditor;
+
+    const output = (
+      <editor>
+        <htable>
+          <htr>
+            <htd>Cell 1</htd>
+            <htd>Cell 2</htd>
+          </htr>
+          <htr>
+            <htd>
+              <cursor />
+            </htd>
+            <htd></htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as any as PlateEditor;
+
+    const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
+      editor: input,
+      plugins: [TablePlugin],
+    });
+
+    await triggerKeyboardEvent('Tab');
+
+    expect(editor.children).toEqual(output.children);
+    expect(editor.selection).toEqual(output.selection);
+  });
+});
+```
+
+## Testing Plugins with Options
+
+Test how different plugin options affect behavior:
+
+```typescript
+it('should use custom hotkey for bold', async () => {
+  const handler = jest.fn();
+  
+  const input = (
+    <editor>
+      <hp>
+        Hello <cursor />world
+      </hp>
+    </editor>
+  ) as any as PlateEditor;
+
+  const output = (
+    <editor>
+      <hp>
+        Hello <htext bold>world</htext>
+      </hp>
+    </editor>
+  ) as any as PlateEditor;
+
+  const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
+    editor: input,
+    plugins: [
+      BoldPlugin.configure({
+        shortcuts: {
+          toggleBold: {
+            handler,
+            keys: 'mod+shift+b',
+          },
+        },
+      }),
+    ],
+  });
+
+  await triggerKeyboardEvent('mod+shift+b');
+
+  expect(editor.children).toEqual(output.children);
+});
+```
+
+## Mocking vs. Real Transforms
+
+While mocking can be useful for isolating specific behaviors, Plate tests often assess actual editor children and selection after transforms. This approach ensures that plugins work correctly with the entire editor state.

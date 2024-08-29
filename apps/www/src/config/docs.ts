@@ -165,6 +165,15 @@ export const docsConfig: DocsConfig = {
     {
       items: [
         {
+          href: '/docs/migration/slate-to-plate',
+          title: 'From Slate to Plate',
+        },
+      ],
+      title: 'Migration',
+    },
+    {
+      items: [
+        {
           href: '/docs/plugin',
           label: 'New',
           title: 'Plugin Configuration',
@@ -208,6 +217,11 @@ export const docsConfig: DocsConfig = {
           href: '/docs/debugging',
           label: 'New',
           title: 'Debugging',
+        },
+        {
+          href: '/docs/testing',
+          label: 'New',
+          title: 'Testing',
         },
       ],
       title: 'Guides',
@@ -428,7 +442,6 @@ export const docsConfig: DocsConfig = {
             'createInsertDataPlugin',
             'createPlateEditor',
             'createSlatePlugin',
-            'createPlugins',
             'createPrevSelectionPlugin',
             'createPlatePlugin',
             'getPlugin',

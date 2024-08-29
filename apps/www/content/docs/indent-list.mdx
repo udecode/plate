@@ -30,26 +30,27 @@ npm install @udecode/plate-indent-list @udecode/plate-indent
 ## Usage
 
 ```tsx
-// ...
-import { createIndentPlugin } from '@udecode/plate-indent';
-import { createIndentListPlugin } from '@udecode/plate-indent-list';
+import { IndentPlugin } from '@udecode/plate-indent/react';
+import { IndentListPlugin } from '@udecode/plate-indent-list/react';
+import { HEADING_KEYS } from '@udecode/plate-heading';
+import { HeadingPlugin } from '@udecode/plate-heading/react';
+import { ParagraphPlugin } from '@udecode/plate-common/react';
 
 const plugins = [
   // ...otherPlugins,
-  createHeadingPlugin(),
-  createParagraphPlugin(),
-  createIndentPlugin({
+  HeadingPlugin,
+  IndentPlugin.configure({
     targetPlugins: [ParagraphPlugin.key, HEADING_KEYS.h1],
   }),
-  createIndentListPlugin({
+  IndentListPlugin.configure({
     targetPlugins: [ParagraphPlugin.key, HEADING_KEYS.h1],
   }),
 ];
 ```
 
-## API
+## Plugins
 
-### createIndentListPlugin
+### IndentListPlugin
 
 <APIOptions>
   <APIItem
@@ -66,12 +67,21 @@ const plugins = [
   >
     A function mapping HTML elements to list style types.
   </APIItem>
+  <APIItem
+    name="renderIndentListBelowNodes"
+    type="(editor: PlateEditor) => React.ReactNode"
+    optional
+  >
+    A function to render components below indent list nodes.
+  </APIItem>
 </APIOptions>
+
+## API
 
 ### getNextIndentList
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
   <APIItem name="entry" type="ElementEntryOf">
@@ -96,7 +106,7 @@ const plugins = [
 Gets the previous sibling entry with an indent list.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
   <APIItem name="entry" type="ElementEntryOf">

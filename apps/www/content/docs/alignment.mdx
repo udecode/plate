@@ -26,29 +26,32 @@ npm install @udecode/plate-alignment
 
 ```tsx
 // ...
-import { createAlignPlugin } from '@udecode/plate-alignment';
+import { createPlateEditor } from '@udecode/plate-common/react';
+import { AlignPlugin } from '@udecode/plate-alignment/react';
+import { ParagraphPlugin } from '@udecode/plate-paragraph/react';
+import { HeadingPlugin } from '@udecode/plate-heading/react';
 
-const plugins = [
-  // ...otherPlugins,
-  createAlignPlugin({
-    inject: {
-      targetPlugins: [
-        ParagraphPlugin.key,
-        HEADING_KEYS.h1,
-        HEADING_KEYS.h2,
-        HEADING_KEYS.h3,
-        HEADING_KEYS.h4,
-        HEADING_KEYS.h5,
-        HEADING_KEYS.h6,
-      ],
-    },
-  }),
-];
+const editor = createPlateEditor({
+  plugins: [
+    ParagraphPlugin,
+    HeadingPlugin,
+    AlignPlugin.configure({
+      inject: {
+        targetPlugins: [
+          ParagraphPlugin.key,
+          HeadingPlugin.key,
+        ],
+      },
+    }),
+  ],
+});
 ```
 
-## API
+## Plugins
 
-### createAlignPlugin
+### AlignPlugin
+
+## API
 
 ### setAlign
 
@@ -60,12 +63,6 @@ The editor instance.
 </APIItem>
 <APIItem name="options" type="object" optional>
 <APISubList>
-<APISubListItem parent="options" name="key" type="string" optional>
-The plugin key.
-
-- **Default:** `AlignPlugin.key`
-
-</APISubListItem>
 <APISubListItem parent="options" name="value" type="Alignment" optional>
 The alignment value.
 </APISubListItem>

@@ -17,89 +17,98 @@ description: API reference for Plate store.
 The PlateStoreState object stores the state of the Plate editor. It contains information about the editor's ID, its current value, its plugins, and other settings.
 
 <APIAttributes>
-<APIItem name="id" type="string">
-
-A unique ID used as a provider scope. Use it if you have multiple `Plate` in the same React tree.
-
-- **Default:** `PLATE_SCOPE`
-
-</APIItem>
-
 <APIItem name="editor" type="PlateEditor">
-
 Slate editor reference.
 
-- See [`editor`](/docs/api/core/plate#editor).
 - **Default:** `createPlateFallbackEditor()`
-
 </APIItem>
 
-<APIItem name="isMounted" type="boolean">
+<APIItem name="id" type="string">
+A unique ID used as a provider scope. Use it if you have multiple `Plate` in the same React tree.
 
-Whether the `PlateContent` is mounted.
-
+- **Default:** random id
 </APIItem>
 
-<APIItem name="readOnly" type="boolean">
+<APIItem name="decorate" type="function" optional>
+Function used to decorate ranges in the editor.
 
+``ts
+(options: { editor: PlateEditor; entry: TNodeEntry }) => Range[]
+``
+</APIItem>
+
+<APIItem name="isMounted" type="boolean" optional>
+Whether `Editable` is rendered so slate DOM is resolvable.
+</APIItem>
+
+<APIItem name="onChange" type="function" optional>
+Controlled callback called when the editor state changes.
+
+``ts
+(options: { editor: PlateEditor; value: ValueOf<PlateEditor> }) => void
+``
+</APIItem>
+
+<APIItem name="onSelectionChange" type="function" optional>
+Controlled callback called when the editor.selection changes.
+
+``ts
+(options: { editor: PlateEditor; selection: TSelection }) => void
+``
+</APIItem>
+
+<APIItem name="onValueChange" type="function" optional>
+Controlled callback called when the editor.children changes.
+
+``ts
+(options: { editor: PlateEditor; value: ValueOf<PlateEditor> }) => void
+``
+</APIItem>
+
+<APIItem name="primary" type="boolean" optional>
+Whether the editor is primary. If no editor is active, then PlateController will use the first-mounted primary editor.
+
+- **Default:** `true`
+</APIItem>
+
+<APIItem name="readOnly" type="boolean" optional>
 Whether the editor is read-only.
-
-- **Default:** `false`
-
 </APIItem>
 
-<APIItem name="plugins" type="PlatePlugin[]">
-
-Editor plugins.
-
-- See [`plugins`](/docs/api/core/plate#plugins).
-- **Default:** `[]`
-
+<APIItem name="renderElement" type="function" optional>
+Function to render elements in the editor.
 </APIItem>
 
-<APIItem name="value" type="Value">
-
-Value of the `editor`.
-
-- See [`value`](/docs/api/core/plate#value).
-- **Default:** `[{ type: 'p', children: [{ text: '' }]}]`
-
+<APIItem name="renderLeaf" type="function" optional>
+Function to render leaf nodes in the editor.
 </APIItem>
 
-<APIItem name="versionEditor" type="number">
-
-Version incremented on each `editor` change.
-
-</APIItem>
-
-<APIItem name="versionSelection" type="number">
-
-Version incremented on each `editor.selection` change.
-
-</APIItem>
-
-<APIItem name="versionDecorate" type="number">
-
+<APIItem name="versionDecorate" type="number" optional>
 Version incremented when calling `redecorate`. This is a dependency of the `decorate` function.
-
 </APIItem>
 
-<APIItem name="onChange" type="function">
-- See [`onChange`](/docs/api/core/plate#slate-onchange).
+<APIItem name="versionEditor" type="number" optional>
+Version incremented on each editor change.
 </APIItem>
 
-<APIItem name="decorate" type="function" >
-- See [`decorate`](/docs/api/core/plate#editable-decorate).
+<APIItem name="versionSelection" type="number" optional>
+Version incremented on each editor.selection change.
 </APIItem>
 
-<APIItem name="renderElement" type="function" >
-- See [`renderElement`](/docs/api/core/plate#editable-renderelement).
-</APIItem>
-
-<APIItem name="renderLeaf" type="function" >
-- See [`renderLeaf`](/docs/api/core/plate#editable-renderleaf).
+<APIItem name="versionValue" type="number" optional>
+Version incremented on each editor.children change.
 </APIItem>
 </APIAttributes>
+
+## Exposed Store Keys
+
+The following store keys are exposed in `editor.setPlateState`:
+
+- `readOnly`
+- `onChange`
+- `decorate`
+- `renderElement`
+- `renderLeaf`
 
 ## Selectors
 
@@ -123,18 +132,6 @@ Redecorate the editor.
   <APIItem name="id" type="string" optional>
     Editor ID.
   </APIItem>
-</APIParameters>
-
-### `useResetPlateEditor`
-
-Reset an editor with the same plugins.
-
-<APIParameters>
-  
-<APIItem name="id" type="string" optional>
-Editor ID.
-</APIItem>
-
 </APIParameters>
 
 ## Event Editor Store

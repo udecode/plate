@@ -14,6 +14,7 @@ docs:
 
 - Provides text marking tools for content review and referencing.
 - Uses inline `<mark>` elements supporting markers (background color).
+- Enables support for highlights, useful when reviewing content or highlighting it for future reference.
 
 </PackageInfo>
 
@@ -26,15 +27,15 @@ npm install @udecode/plate-highlight
 ## Usage
 
 ```tsx
-import { createHighlightPlugin } from '@udecode/plate-highlight';
+import { HighlightPlugin } from '@udecode/plate-highlight/react';
 
 const plugins = [
   // ...otherPlugins,
-  createHighlightPlugin(),
+  HighlightPlugin,
 ];
 ```
 
-## Keyboard Interactions
+## Keyboard Shortcuts
 
 <KeyTable>
   <KeyTableItem hotkey="Cmd + Shift + H">
@@ -42,17 +43,6 @@ const plugins = [
   </KeyTableItem>
 </KeyTable>
 
-## API
+## Plugins
 
-### createHighlightPlugin
-
-<APIOptions>
-<APIItem name="clear" type="string | string[]" optional>
-Node properties to delete.
-
-</APIItem>
-<APIItem name="hotkey" type="string | string[]" optional>
-Hotkey to toggle mark.
-
-</APIItem>
-</APIOptions>
+### HighlightPlugin

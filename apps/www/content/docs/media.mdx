@@ -32,13 +32,12 @@ docs:
 npm install @udecode/plate-media
 ```
 
-### Plugins
+## Usage
 
 ```tsx
 import { createCaptionPlugin } from '@udecode/plate-caption';
 import {
-  createImagePlugin,
-  createMediaEmbedPlugin,
+  MediaPlugin,
   ImagePlugin,
   MediaEmbedPlugin,
 } from '@udecode/plate-media';
@@ -46,12 +45,13 @@ import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
 
 const plugins = [
   // ...otherPlugins,
-  createCaptionPlugin({
-    options: { pluginKeys: [ImagePlugin.key, MediaEmbedPlugin.key] },
+  CaptionPlugin.configure({
+    options: { plugins: [ImagePlugin, MediaEmbedPlugin] },
   }),
-  createImagePlugin(),
-  createMediaEmbedPlugin(),
-  createSelectOnBackspacePlugin({
+  MediaPlugin,
+  ImagePlugin,
+  MediaEmbedPlugin,
+  SelectOnBackspacePlugin.configure({
     options: {
       query: {
         allow: [ImagePlugin.key, MediaEmbedPlugin.key],
@@ -60,6 +60,31 @@ const plugins = [
   }),
 ];
 ```
+
+## Plugins
+
+### ImagePlugin
+
+<APIOptions>
+
+Extends `MediaPluginOptions`.
+
+<APIItem name="uploadImage" type="(dataUrl: string | ArrayBuffer) => Promise<string | ArrayBuffer> | string | ArrayBuffer" optional>
+
+An optional method that will upload the image to a server. The method receives the base64 dataUrl of the uploaded image, and should return the URL of the uploaded image.
+
+</APIItem>
+<APIItem name="disableUploadInsert" type="boolean" optional>
+Disables file upload on data insertion if set to true.
+</APIItem>
+<APIItem name="disableEmbedInsert" type="boolean" optional>
+Disables URL embed on data insertion if set to true.
+</APIItem>
+</APIOptions>
+
+### MediaEmbedPlugin
+
+Options extends `MediaPluginOptions`.
 
 ## API Media
 
@@ -135,7 +160,7 @@ Submits the floating media element by setting its URL and performing necessary t
   </APIItem>
 </APIParameters>
 
-### MediaPlugin
+### MediaPluginOptions
 
 Common attributes shared by image and media embed plugins.
 
@@ -168,25 +193,6 @@ A type defining the data returned from parsing an embed URL.
 </APIAttributes>
 
 ## API Image
-
-### createImagePlugin
-
-<APIOptions>
-
-Extends `MediaPlugin`.
-
-<APIItem name="uploadImage" type="(dataUrl: string | ArrayBuffer) => Promise<string | ArrayBuffer> | string | ArrayBuffer" optional>
-
-An optional method that will upload the image to a server. The method receives the base64 dataUrl of the uploaded image, and should return the URL of the uploaded image.
-
-</APIItem>
-<APIItem name="disableUploadInsert" type="boolean" optional>
-Disables file upload on data insertion if set to true.
-</APIItem>
-<APIItem name="disableEmbedInsert" type="boolean" optional>
-Disables URL embed on data insertion if set to true.
-</APIItem>
-</APIOptions>
 
 ### insertImage
 
@@ -246,10 +252,6 @@ Enhances the editor to automatically insert an image when a URL is pasted.
 </APIParameters>
 
 ## API Media Embed
-
-### createMediaEmbedPlugin
-
-Options extends `MediaPlugin`.
 
 ### insertMediaEmbed
 

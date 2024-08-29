@@ -30,18 +30,17 @@ npm install @udecode/plate-emoji
 ## Usage
 
 ```tsx
-import { createComboboxPlugin } from '@udecode/plate-combobox';
-import { createEmojiPlugin } from '@udecode/plate-emoji';
+import { EmojiPlugin } from '@udecode/plate-emoji/react';
 
 const plugins = [
   // ...otherPlugins,
-  createEmojiPlugin(),
+  EmojiPlugin,
 ];
 ```
 
-## API
+## Plugins
 
-### createEmojiPlugin
+### EmojiPlugin
 
 Extends [TriggerComboboxPlugin](/docs/combobox#options)
 
@@ -50,3 +49,7 @@ Extends [TriggerComboboxPlugin](/docs/combobox#options)
   A function to specify the node inserted when an emoji is selected. The default behavior is to insert a text node containing the emoji as a Unicode character.
 </APIItem>
 </APIOptions>
+
+### EmojiInputPlugin
+
+Handles the input behavior for emoji insertion.

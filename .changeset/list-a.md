@@ -7,6 +7,7 @@
 - NEW `NumberedListPlugin`
 - NEW `ListItemPlugin`
 - NEW `ListItemContentPlugin`
+- NEW list transforms: `toggle.list`, `toggle.bulletedList`, `toggle.numberedList`
 - Remove type utils: `getListItemType`, `getUnorderedListType`, `getOrderedListType`, `getListItemContentType`
 - Replace `insertBreakList(editor)` with `withInsertBreakList(ctx)`
 - Replace `insertFragmentList(editor)` with `withInsertFragmentList(ctx)`

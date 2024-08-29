@@ -28,12 +28,16 @@ npm install @udecode/plate-markdown
 ### Markdown -> Slate
 
 ```tsx
-import { createMarkdownPlugin } from '@udecode/plate-markdown';
+import { MarkdownPlugin } from '@udecode/plate-markdown';
 
-const plugins = [
-  // ...otherPlugins,
-  createMarkdownPlugin(),
-];
+const editor = createPlateEditor({ 
+  plugins: [
+    // ...otherPlugins,
+    MarkdownPlugin,
+  ],
+});
+
+const value = editor.api.markdown.deserialize('**Hello world!**');
 ```
 
 ### Slate -> Markdown
@@ -41,18 +45,20 @@ const plugins = [
 Currently supported plugins: paragraph, link, list, heading, italic, bold and code.
 
 ```tsx
-import { serializeMd } from '@udecode/plate-markdown';
+const editor = createPlateEditor({ 
+  value,
+  plugins: [
+    // ...otherPlugins,
+    MarkdownPlugin,
+  ],
+});
 
-const plugins = [
-  // ...supportedPlugins,
-];
-
-serializeMd(editor, { nodes });
+const content = editor.api.markdown.serialize();
 ```
 
-## API
+## Plugins
 
-### createMarkdownPlugin
+### MarkdownPlugin
 
 <APIOptions>
 <APIItem name="elementRules" type="RemarkElementRules">
@@ -98,3 +104,41 @@ An optional function that takes a string (the Markdown text) as argument and ret
 </APISubList>
 </APIItem>
 </APIOptions>
+
+## API
+
+### editor.api.markdown.deserialize
+
+Converts a Markdown string to a Slate value.
+
+<APIParameters>
+<APIItem name="markdown" type="string">
+The Markdown string to be deserialized.
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+<APIItem type="TDescendant[]">
+An array of Slate nodes representing the deserialized Markdown content.
+</APIItem>
+</APIReturns>
+
+### editor.api.markdown.serialize
+
+Converts the current Slate value to a Markdown string.
+
+<APIParameters>
+<APIItem name="options" type="object" optional>
+<APISubList>
+<APISubListItem parent="options" name="nodes" type="TDescendant[]" optional>
+The Slate nodes to serialize. If not provided, the entire editor value will be used.
+</APISubListItem>
+</APISubList>
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+<APIItem type="string">
+A Markdown string representing the serialized Slate content.
+</APIItem>
+</APIReturns>

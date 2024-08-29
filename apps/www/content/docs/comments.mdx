@@ -31,15 +31,17 @@ npm install @udecode/plate-comments
 ## Usage
 
 ```tsx
-import { createCommentsPlugin } from '@udecode/plate-comments';
+import { CommentsPlugin } from '@udecode/plate-comments/react';
 
-const plugins = [
-  // ...otherPlugins,
-  createCommentsPlugin(),
-];
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    CommentsPlugin,
+  ],
+});
 ```
 
-## Keyboard Interactions
+## Keyboard Shortcuts
 
 <KeyTable>
   <KeyTableItem hotkey="Cmd + Shift + M">
@@ -47,18 +49,75 @@ const plugins = [
   </KeyTableItem>
 </KeyTable>
 
-## API
+## Plugins
 
-### createCommentsPlugin
+### CommentsPlugin
 
 <APIOptions>
 
-<APIItem name="hotkey" type="string" optional>
-
-The hotkey used to add a comment.
-
+<APIItem name="newText" type="string">
+The text for a new comment.
 </APIItem>
+
+<APIItem name="myUser" type="CommentUser">
+The current user's information.
+</APIItem>
+
+<APIItem name="userById" type="(id: string) => CommentUser">
+Function to get a user by their ID.
+</APIItem>
+
+<APIItem name="commentById" type="(id: string) => TComment">
+Function to get a comment by its ID.
+</APIItem>
+
+<APIItem name="activeComment" type="TComment">
+The currently active comment.
+</APIItem>
+
 </APIOptions>
+
+## API
+
+### editor.insert.comment
+
+Insert a new comment mark.
+
+### editor.api.comment.updateComment
+
+Updates an existing comment.
+
+### editor.api.comment.addRawComment
+
+Adds a new raw comment.
+
+### editor.api.comment.addComment
+
+Adds a new comment.
+
+### editor.api.comment.removeComment
+
+Removes a comment.
+
+### editor.api.comment.resetNewCommentValue
+
+Resets the value of a new comment.
+
+### CommentStoreState
+
+<APIState>
+  <APIItem name="id" type="string">
+    The unique ID of the comment.
+  </APIItem>
+  <APIItem name="isMenuOpen" type="boolean">
+    A flag indicating whether the menu associated with this comment is currently
+    open.
+  </APIItem>
+  <APIItem name="editingValue" type="Value | null">
+    The value currently being edited for this comment. If no editing is in
+    progress, this value is null.
+  </APIItem>
+</APIState>
 
 ### findCommentNode
 
@@ -258,65 +317,6 @@ An interface representing a user who can make comments.
   </APIItem>
 </APIParameters>
 
-### CommentStoreState
-
-<APIState>
-  <APIItem name="id" type="string">
-    The unique ID of the comment.
-  </APIItem>
-  <APIItem name="isMenuOpen" type="boolean">
-    A flag indicating whether the menu associated with this comment is currently
-    open.
-  </APIItem>
-  <APIItem name="editingValue" type="Value | null">
-    The value currently being edited for this comment. If no editing is in
-    progress, this value is null.
-  </APIItem>
-</APIState>
-
-### CommentsStoreState
-
-An interface representing the state of the comments store.
-
-<APIState>
-  <APIItem name="myUserId" type="string | null">
-    The unique ID of the currently logged in or active user.
-  </APIItem>
-  <APIItem name="users" type="Record&lt;string, CommentUser&gt;">
-    An object where each key is a user's unique ID and the corresponding value
-    is an instance of the `CommentUser` type, representing the user's data.
-  </APIItem>
-  <APIItem name="comments" type="Record&lt;string, TComment&gt;">
-    An object where each key is a comment's unique ID and the corresponding
-    value is an instance of the `TComment` type, representing the comment's
-    data.
-  </APIItem>
-  <APIItem name="activeCommentId" type="string | null">
-    The unique ID of the currently active or focused comment.
-  </APIItem>
-  <APIItem name="addingCommentId" type="string | null">
-    The unique ID of the comment that is currently being added.
-  </APIItem>
-  <APIItem name="newValue" type="Value">
-    The new value to be added to the comments.
-  </APIItem>
-  <APIItem name="focusTextarea" type="boolean">
-    Indicates whether the comment textarea is focused.
-  </APIItem>
-  <APIItem name="onCommentAdd" type="function">
-    A function that is invoked when a new comment is added. It accepts a partial
-    comment object, which must include the user's ID.
-  </APIItem>
-  <APIItem name="onCommentUpdate" type="function">
-    A function that is invoked when a comment is updated. It accepts a comment
-    object, which must include the comment's ID.
-  </APIItem>
-  <APIItem name="onCommentDelete" type="function">
-    A function that is invoked when a comment is deleted. It accepts the unique
-    ID of the comment to be deleted.
-  </APIItem>
-</APIState>
-
 ### TComment
 
 <APIAttributes>
@@ -350,43 +350,21 @@ Whether the comment is resolved.
     Indicates whether this is a comment. Multiple comments can be present in a
     single text node.
   </APIItem>
-
-[//]: # '  <APIItem name="comments" type="Record<string, boolean>" optional>'
-[//]: # "    Records of comments. Each record's key is a string and its value is a"
-[//]: # '    boolean.'
-[//]: # '  </APIItem>'
-
 </APIAttributes>
 
-## API Plugins
-
-### useHooksComments
-
-Plugin hook for handling comments functionality in the editor.
-
-<APIParameters>
-  <APIItem name="editor" type="E">
-    The editor instance.
-  </APIItem>
-  <APIItem name="plugin" type="PlatePlugin">
-    The comments plugin.
-  </APIItem>
-</APIParameters>
-
-### withComments
-
-Enhances the editor with comment-related functionality.
-
-<APIParameters>
-  <APIItem name="editor" type="E">
-    The editor instance.
-  </APIItem>
-  <APIItem name="plugin" type="PlatePlugin">
-    The comments plugin.
-  </APIItem>
-</APIParameters>
-
 ## API Components
+
+### CommentProvider
+
+A jotai provider for comment data.
+
+<APIProps>
+  Extends `CommentStoreState`.
+
+  <APIItem name="scope" type="Scope" optional>
+    The scope of the provider.
+  </APIItem>
+</APIProps>
 
 ### CommentDeleteButton
 
@@ -527,18 +505,6 @@ A textarea component for adding a new comment.
   </APIItem>
 </APIState>
 
-### CommentProvider
-
-A jotai provider for comment data.
-
-<APIProps>
-  Extends `CommentStoreState`.
-
-  <APIItem name="scope" type="Scope" optional>
-    The scope of the provider.
-  </APIItem>
-</APIProps>
-
 ### CommentResolveButton
 
 A button component for resolving/unresolving a comment.
@@ -571,14 +537,6 @@ A custom hook that retrieves the active comment node based on the active comment
 
 - If there is no active comment ID or the comment node is not found, it returns `null`.
 
-</APIReturns>
-
-### useAddCommentMark
-
-A custom hook that adds a comment mark to the selected text in the editor.
-
-<APIReturns>
-  A function that can be called to add a comment mark to the selected text.
 </APIReturns>
 
 ### useCommentAddButton

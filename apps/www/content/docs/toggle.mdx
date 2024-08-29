@@ -21,7 +21,7 @@ docs:
 ## Plugin dependencies
 
 - [Indent](/docs/indent)
-- [Node id](/docs/node-id)
+- [Node Id](/docs/node-id)
 
 </PackageInfo>
 
@@ -35,27 +35,56 @@ npm install @udecode/plate-indent @udecode/plate-node-id @udecode/plate-toggle
 
 ```tsx
 // ...
-import { createIndentPlugin } from '@udecode/plate-indent';
-import { createNodeIdPlugin } from '@udecode/plate-node-id';
-import { createTogglePlugin, TogglePlugin } from '@udecode/plate-toggle';
+import { ParagraphPlugin } from '@udecode/plate-common';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
+import { IndentPlugin } from '@udecode/plate-indent/react';
+import { TogglePlugin } from '@udecode/plate-toggle/react';
 
 const plugins = [
   // ...otherPlugins,
-  createHeadingPlugin(),
-  createParagraphPlugin(),
-  createIndentPlugin({
+  HeadingPlugin,
+  IndentPlugin.configure({
     inject: {
       targetPlugins: [TogglePlugin.key, ParagraphPlugin.key, HEADING_KEYS.h1],
     },
   }),
-  createNodeIdPlugin(),
-  createTogglePlugin(),
+  NodeIdPlugin,
+  TogglePlugin,
 ];
 ```
 
+## Plugins
+
+### TogglePlugin
+
+<APIOptions>
+<APIItem name="openIds" type="Set<string>" optional>
+A set of open toggle IDs.
+</APIItem>
+<APIItem name="isOpen" type="(toggleId: string) => boolean" optional>
+A function to determine if a toggle is open.
+</APIItem>
+<APIItem name="someClosed" type="(toggleIds: string[]) => boolean" optional>
+A function to determine if some toggles are closed.
+</APIItem>
+</APIOptions>
+
 ## API
 
-### createTogglePlugin
+### editor.api.toggle.toggleIds
+
+Toggles the open state of toggles.
+
+<APIParameters>
+  <APIItem name="ids" type="string[]">
+    An array of element ids.
+  </APIItem>
+  <APIItem name="force" type="boolean | null" optional>
+    Set to true if you want to expand all toggles regardless of their current
+    state. Set to false if you want to collapse all toggles regardless of their
+    current state. If null, it will toggle the current state.
+  </APIItem>
+</APIParameters>
 
 ### openNextToggles
 
@@ -65,24 +94,6 @@ Use this function right before inserting a block so that the toggle is expanded 
 <APIParameters>
   <APIItem name="editor" type="TEditor">
     The editor instance.
-  </APIItem>
-</APIParameters>
-
-### toggleIds
-
-Toggles the open state of toggles.
-
-<APIParameters>
-  <APIItem name="editor" type="TEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="toggleIds" type="string[]">
-    An array of element ids.
-  </APIItem>
-  <APIItem name="force" type="boolean" optional>
-    Set to true if you want to expand all toggles regardless of their current
-    state. Set to false if you want to collapse all toggles regardless of their
-    current state.
   </APIItem>
 </APIParameters>
 

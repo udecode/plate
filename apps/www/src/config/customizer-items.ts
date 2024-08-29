@@ -98,7 +98,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: AlignPlugin.key,
     label: 'Align',
     npmPackage: '@udecode/plate-alignment',
-    pluginFactory: 'createAlignPlugin',
+    pluginFactory: 'AlignPlugin',
     pluginOptions: [
       `inject: {`,
       `  targetPlugins: [`,
@@ -115,7 +115,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: AutoformatPlugin.key,
     label: 'Autoformat',
     npmPackage: '@udecode/plate-autoformat',
-    pluginFactory: 'createAutoformatPlugin',
+    pluginFactory: 'AutoformatPlugin',
     pluginOptions: [
       `options: {`,
       `  rules: [`,
@@ -132,7 +132,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: BlockSelectionPlugin.key,
     label: 'Block Selection',
     npmPackage: '@udecode/plate-selection',
-    pluginFactory: 'createBlockSelectionPlugin',
+    pluginFactory: 'BlockSelectionPlugin',
     pluginOptions: [
       `options: {`,
       `  sizes: {`,
@@ -157,7 +157,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: BlockquotePlugin.key,
     label: 'Blockquote',
     npmPackage: '@udecode/plate-block-quote',
-    pluginFactory: 'createBlockquotePlugin',
+    pluginFactory: 'BlockquotePlugin',
     route: customizerPlugins.basicnodes.route,
   },
   [BoldPlugin.key]: {
@@ -176,7 +176,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: BoldPlugin.key,
     label: 'Bold',
     npmPackage: '@udecode/plate-basic-marks',
-    pluginFactory: 'createBoldPlugin',
+    pluginFactory: 'BoldPlugin',
     route: customizerPlugins.basicmarks.route,
   },
   [CaptionPlugin.key]: {
@@ -184,7 +184,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: CaptionPlugin.key,
     label: 'Caption',
     npmPackage: '@udecode/plate-caption',
-    pluginFactory: 'createCaptionPlugin',
+    pluginFactory: 'CaptionPlugin',
     pluginOptions: [
       `options: {`,
       `  pluginKeys: [`,
@@ -222,7 +222,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: CodeBlockPlugin.key,
     label: 'Code block',
     npmPackage: '@udecode/plate-code-block',
-    pluginFactory: 'createCodeBlockPlugin',
+    pluginFactory: 'CodeBlockPlugin',
     route: customizerPlugins.basicnodes.route,
   },
   [CodePlugin.key]: {
@@ -239,7 +239,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: CodePlugin.key,
     label: 'Code',
     npmPackage: '@udecode/plate-basic-marks',
-    pluginFactory: 'createCodePlugin',
+    pluginFactory: 'CodePlugin',
     route: customizerPlugins.basicmarks.route,
   },
   [CommentsPlugin.key]: {
@@ -263,7 +263,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     label: 'Comments',
     npmPackage: '@udecode/plate-comments',
     packageImports: ['CommentsProvider'],
-    pluginFactory: 'createCommentsPlugin',
+    pluginFactory: 'CommentsPlugin',
     route: customizerPlugins.comment.route,
   },
   // Deserialization
@@ -272,7 +272,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: CsvPlugin.key,
     label: 'CSV',
     npmPackage: '@udecode/plate-csv',
-    pluginFactory: 'createCsvPlugin',
+    pluginFactory: 'CsvPlugin',
     route: customizerPlugins.csv.route,
   },
   [DatePlugin.key]: {
@@ -297,7 +297,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: DeletePlugin.key,
     label: 'Delete',
     npmPackage: '@udecode/plate-select',
-    pluginFactory: 'createDeletePlugin',
+    pluginFactory: 'DeletePlugin',
   },
   [DndPlugin.key]: {
     badges: [customizerBadges.handler, customizerBadges.ui],
@@ -319,7 +319,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: DndPlugin.key,
     label: 'Drag & Drop',
     npmPackage: '@udecode/plate-dnd',
-    pluginFactory: 'createDndPlugin',
+    pluginFactory: 'DndPlugin',
     pluginOptions: ['  options: { enableScroller: true },'],
     route: customizerPlugins.dnd.route,
   },
@@ -329,7 +329,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: DocxPlugin.key,
     label: 'DOCX',
     npmPackage: '@udecode/plate-docx',
-    pluginFactory: 'createDocxPlugin',
+    pluginFactory: 'DocxPlugin',
     route: customizerPlugins.docx.route,
   },
   [DragOverCursorPlugin.key]: {
@@ -352,7 +352,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: EmojiPlugin.key,
     label: 'Emoji',
     npmPackage: '@udecode/plate-emoji',
-    pluginFactory: 'createEmojiPlugin',
+    pluginFactory: 'EmojiPlugin',
     route: customizerPlugins.emoji.route,
   },
   [ExcalidrawPlugin.key]: {
@@ -369,7 +369,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: ExcalidrawPlugin.key,
     label: 'Excalidraw',
     npmPackage: '@udecode/plate-excalidraw',
-    pluginFactory: 'createExcalidrawPlugin',
+    pluginFactory: 'ExcalidrawPlugin',
     route: customizerPlugins.excalidraw.route,
   },
   [ExitBreakPlugin.key]: {
@@ -377,7 +377,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: ExitBreakPlugin.key,
     label: 'Exit Break',
     npmPackage: '@udecode/plate-break',
-    pluginFactory: 'createExitBreakPlugin',
+    pluginFactory: 'ExitBreakPlugin',
     pluginOptions: [
       `options: {`,
       `  rules: [`,
@@ -408,7 +408,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: FontBackgroundColorPlugin.key,
     label: 'Font Background',
     npmPackage: '@udecode/plate-font',
-    pluginFactory: 'createFontBackgroundColorPlugin',
+    pluginFactory: 'FontBackgroundColorPlugin',
     route: customizerPlugins.font.route,
   },
   [FontColorPlugin.key]: {
@@ -416,7 +416,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: FontColorPlugin.key,
     label: 'Font Color',
     npmPackage: '@udecode/plate-font',
-    pluginFactory: 'createFontColorPlugin',
+    pluginFactory: 'FontColorPlugin',
     route: customizerPlugins.font.route,
   },
   [FontSizePlugin.key]: {
@@ -424,7 +424,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: FontSizePlugin.key,
     label: 'Font Size',
     npmPackage: '@udecode/plate-font',
-    pluginFactory: 'createFontSizePlugin',
+    pluginFactory: 'FontSizePlugin',
     route: customizerPlugins.font.route,
   },
   [HighlightPlugin.key]: {
@@ -441,7 +441,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: HighlightPlugin.key,
     label: 'Highlight',
     npmPackage: '@udecode/plate-highlight',
-    pluginFactory: 'createHighlightPlugin',
+    pluginFactory: 'HighlightPlugin',
     route: customizerPlugins.highlight.route,
   },
   [HorizontalRulePlugin.key]: {
@@ -458,7 +458,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: HorizontalRulePlugin.key,
     label: 'Horizontal Rule',
     npmPackage: '@udecode/plate-horizontal-rule',
-    pluginFactory: 'createHorizontalRulePlugin',
+    pluginFactory: 'HorizontalRulePlugin',
     route: customizerPlugins.hr.route,
   },
   [ImagePlugin.key]: {
@@ -475,7 +475,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: ImagePlugin.key,
     label: 'Image',
     npmPackage: '@udecode/plate-media',
-    pluginFactory: 'createImagePlugin',
+    pluginFactory: 'ImagePlugin',
     route: customizerPlugins.media.route,
   },
   [IndentListPlugin.key]: {
@@ -485,7 +485,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: IndentListPlugin.key,
     label: 'Indent List',
     npmPackage: '@udecode/plate-indent-list',
-    pluginFactory: 'createIndentListPlugin',
+    pluginFactory: 'IndentListPlugin',
     pluginOptions: [
       `inject: {`,
       `  targetPlugins: [`,
@@ -501,7 +501,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: IndentPlugin.key,
     label: 'Indent',
     npmPackage: '@udecode/plate-indent',
-    pluginFactory: 'createIndentPlugin',
+    pluginFactory: 'IndentPlugin',
     pluginOptions: [
       `inject: {`,
       `  targetPlugins: [`,
@@ -528,7 +528,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: ItalicPlugin.key,
     label: 'Italic',
     npmPackage: '@udecode/plate-basic-marks',
-    pluginFactory: 'createItalicPlugin',
+    pluginFactory: 'ItalicPlugin',
     route: customizerPlugins.basicmarks.route,
   },
   [JuicePlugin.key]: {
@@ -536,7 +536,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: JuicePlugin.key,
     label: 'Juice',
     npmPackage: '@udecode/plate-juice',
-    pluginFactory: 'createJuicePlugin',
+    pluginFactory: 'JuicePlugin',
     route: customizerPlugins.docx.route,
   },
   [KbdPlugin.key]: {
@@ -553,7 +553,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: KbdPlugin.key,
     label: 'Keyboard Input',
     npmPackage: '@udecode/plate-kbd',
-    pluginFactory: 'createKbdPlugin',
+    pluginFactory: 'KbdPlugin',
     route: customizerPlugins.kbd.route,
   },
   [LineHeightPlugin.key]: {
@@ -561,7 +561,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: LineHeightPlugin.key,
     label: 'Line Height',
     npmPackage: '@udecode/plate-line-height',
-    pluginFactory: 'createLineHeightPlugin',
+    pluginFactory: 'LineHeightPlugin',
     pluginOptions: [
       `inject: {`,
       `  targetPlugins: [`,
@@ -597,7 +597,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: LinkPlugin.key,
     label: 'Link',
     npmPackage: '@udecode/plate-link',
-    pluginFactory: 'createLinkPlugin',
+    pluginFactory: 'LinkPlugin',
     route: customizerPlugins.link.route,
   },
   [MarkdownPlugin.key]: {
@@ -605,7 +605,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: MarkdownPlugin.key,
     label: 'Deserialize MD',
     npmPackage: '@udecode/plate-markdown',
-    pluginFactory: 'createMarkdownPlugin',
+    pluginFactory: 'MarkdownPlugin',
     route: customizerPlugins.markdown.route,
   },
 
@@ -623,7 +623,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: MediaEmbedPlugin.key,
     label: 'Media Embed',
     npmPackage: '@udecode/plate-media',
-    pluginFactory: 'createMediaEmbedPlugin',
+    pluginFactory: 'MediaEmbedPlugin',
     route: customizerPlugins.media.route,
   },
   [MentionPlugin.key]: {
@@ -651,7 +651,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: MentionPlugin.key,
     label: 'Mention',
     npmPackage: '@udecode/plate-mention',
-    pluginFactory: 'createMentionPlugin',
+    pluginFactory: 'MentionPlugin',
     route: customizerPlugins.mention.route,
   },
   [NodeIdPlugin.key]: {
@@ -659,7 +659,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: NodeIdPlugin.key,
     label: 'Id',
     npmPackage: '@udecode/plate-node-id',
-    pluginFactory: 'createNodeIdPlugin',
+    pluginFactory: 'NodeIdPlugin',
     // route: settingValues.nodeid.route,
   },
   [NormalizeTypesPlugin.key]: {
@@ -667,7 +667,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: NormalizeTypesPlugin.key,
     label: 'Normalize Types',
     npmPackage: '@udecode/plate-normalizers',
-    pluginFactory: 'createNormalizeTypesPlugin',
+    pluginFactory: 'NormalizeTypesPlugin',
     route: customizerPlugins.forcedlayout.route,
   },
   [ParagraphPlugin.key]: {
@@ -684,7 +684,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: ParagraphPlugin.key,
     label: 'Paragraph',
     npmPackage: '@udecode/plate-common',
-    pluginFactory: 'createParagraphPlugin',
+    pluginFactory: 'ParagraphPlugin',
     route: customizerPlugins.basicnodes.route,
   },
   [ResetNodePlugin.key]: {
@@ -692,7 +692,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: ResetNodePlugin.key,
     label: 'Reset Node',
     npmPackage: '@udecode/plate-reset-node',
-    pluginFactory: 'createResetNodePlugin',
+    pluginFactory: 'ResetNodePlugin',
     pluginOptions: [
       `options: {`,
       `  rules: [`,
@@ -707,7 +707,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: SelectOnBackspacePlugin.key,
     label: 'Select on Backspace',
     npmPackage: '@udecode/plate-select',
-    pluginFactory: 'createSelectOnBackspacePlugin',
+    pluginFactory: 'SelectOnBackspacePlugin',
     pluginOptions: [
       `options: {`,
       `  query: {`,
@@ -726,7 +726,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: SingleLinePlugin.key,
     label: 'Single Line',
     npmPackage: '@udecode/plate-break',
-    pluginFactory: 'createSingleLinePlugin',
+    pluginFactory: 'SingleLinePlugin',
     route: customizerPlugins.singleline.route,
   },
   [SoftBreakPlugin.key]: {
@@ -744,7 +744,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     //           },
     //         ],
     npmPackage: '@udecode/plate-break',
-    pluginFactory: 'createSoftBreakPlugin',
+    pluginFactory: 'SoftBreakPlugin',
     //       },
     pluginOptions: [
       `options: {`,
@@ -779,7 +779,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: StrikethroughPlugin.key,
     label: 'Strikethrough',
     npmPackage: '@udecode/plate-basic-marks',
-    pluginFactory: 'createStrikethroughPlugin',
+    pluginFactory: 'StrikethroughPlugin',
     route: customizerPlugins.basicmarks.route,
   },
   [SubscriptPlugin.key]: {
@@ -798,7 +798,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: SubscriptPlugin.key,
     label: 'Subscript',
     npmPackage: '@udecode/plate-basic-marks',
-    pluginFactory: 'createSubscriptPlugin',
+    pluginFactory: 'SubscriptPlugin',
     route: customizerPlugins.basicmarks.route,
   },
   [SuperscriptPlugin.key]: {
@@ -817,7 +817,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: SuperscriptPlugin.key,
     label: 'Superscript',
     npmPackage: '@udecode/plate-basic-marks',
-    pluginFactory: 'createSuperscriptPlugin',
+    pluginFactory: 'SuperscriptPlugin',
     route: customizerPlugins.basicmarks.route,
   },
   [TabbablePlugin.key]: {
@@ -825,7 +825,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: TabbablePlugin.key,
     label: 'Tabbable',
     npmPackage: '@udecode/plate-tabbable',
-    pluginFactory: 'createTabbablePlugin',
+    pluginFactory: 'TabbablePlugin',
     route: customizerPlugins.tabbable.route,
   },
   [TablePlugin.key]: {
@@ -865,7 +865,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: TablePlugin.key,
     label: 'Table',
     npmPackage: '@udecode/plate-table',
-    pluginFactory: 'createTablePlugin',
+    pluginFactory: 'TablePlugin',
     route: customizerPlugins.table.route,
   },
   [TodoListPlugin.key]: {
@@ -882,7 +882,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: TodoListPlugin.key,
     label: 'Todo List',
     npmPackage: '@udecode/plate-list',
-    pluginFactory: 'createTodoListPlugin',
+    pluginFactory: 'TodoListPlugin',
     route: customizerPlugins.todoli.route,
   },
   [TogglePlugin.key]: {
@@ -899,7 +899,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: TogglePlugin.key,
     label: 'Toggle',
     npmPackage: '@udecode/plate-toggle',
-    pluginFactory: 'createTogglePlugin',
+    pluginFactory: 'TogglePlugin',
     route: customizerPlugins.toggle.route,
   },
   [TrailingBlockPlugin.key]: {
@@ -909,7 +909,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: TrailingBlockPlugin.key,
     label: 'Trailing Block',
     npmPackage: '@udecode/plate-trailing-block',
-    pluginFactory: 'createTrailingBlockPlugin',
+    pluginFactory: 'TrailingBlockPlugin',
     pluginOptions: [`options: { type: ParagraphPlugin.key },`],
     route: customizerPlugins.trailingblock.route,
   },
@@ -929,7 +929,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: UnderlinePlugin.key,
     label: 'Underline',
     npmPackage: '@udecode/plate-basic-marks',
-    pluginFactory: 'createUnderlinePlugin',
+    pluginFactory: 'UnderlinePlugin',
     route: customizerPlugins.basicmarks.route,
   },
   column: {
@@ -953,7 +953,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: 'column',
     label: 'Column',
     npmPackage: '@udecode/plate-layout',
-    pluginFactory: 'createColumnPlugin',
+    pluginFactory: 'ColumnPlugin',
     route: customizerPlugins.column.route,
   },
   components: {
@@ -1067,7 +1067,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: 'heading',
     label: 'Heading',
     npmPackage: '@udecode/plate-heading',
-    pluginFactory: 'createHeadingPlugin',
+    pluginFactory: 'HeadingPlugin',
     route: customizerPlugins.basicnodes.route,
   },
   list: {
@@ -1109,7 +1109,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     id: 'list',
     label: 'List',
     npmPackage: '@udecode/plate-list',
-    pluginFactory: 'createListPlugin',
+    pluginFactory: 'ListPlugin',
     route: customizerPlugins.list.route,
   },
 };

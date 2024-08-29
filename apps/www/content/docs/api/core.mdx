@@ -5,32 +5,6 @@ description: API reference for @udecode/plate-core.
 
 ## API
 
-### `createPlugins`
-
-Creates a new array of plugins by overriding the plugins in the original array.
-
-<APIParameters>
-<APIItem name="plugins" type="PlatePlugin[]" optional>
-The original array of plugins.
-</APIItem>
-<APIItem name="options" type="object" optional>
-The options to override plugins.
-
-<APISubList>
-<APISubListItem parent="options" name="components" type="Record<string, React.FC>" optional>
-Components to override by plugin key.
-</APISubListItem>
-<APISubListItem parent="options" name="overrideByKey" type="Record<string, Partial<PlatePlugin>>" optional>
-Plugin attributes to override by plugin key.
-</APISubListItem>
-</APISubList>
-</APIItem>
-</APIParameters>
-
-<APIReturns>
-  An array of plugins with overridden components or attributes.
-</APIReturns>
-
 ### createAtomStore
 
 Creates an atom store from an initial value. Each property of the initial value will have a getter and setter.

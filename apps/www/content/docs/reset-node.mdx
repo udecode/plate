@@ -28,7 +28,7 @@ import {
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
 } from '@udecode/plate-common';
-import { createResetNodePlugin } from '@udecode/plate-reset-node';
+import { ResetNodePlugin } from '@udecode/plate-reset-node/react';
 
 const resetBlockTypesCommonRule = {
   types: [BlockquotePlugin.key, TodoListPlugin.key],
@@ -43,7 +43,7 @@ const resetBlockTypesCodeBlockRule = {
 
 const plugins = [
   // ...otherPlugins,
-  createResetNodePlugin({
+  ResetNodePlugin.configure({
     options: {
       rules: [
         {
@@ -72,9 +72,9 @@ const plugins = [
 ];
 ```
 
-## API
+## Plugins
 
-### createResetNodePlugin
+### ResetNodePlugin
 
 <APIOptions>
 
@@ -90,10 +90,10 @@ The default type to which the node should be reset.
 <APISubListItem parent="rules" name="types" type="string[]">
 The types of nodes where the rule applies.
 </APISubListItem>
-<APISubListItem parent="rules" name="predicate" type="(editor: E) => boolean">
+<APISubListItem parent="rules" name="predicate" type="(editor: PlateEditor) => boolean">
 An additional condition to the rule which should be a function taking the editor state and returning a boolean.
 </APISubListItem>
-<APISubListItem parent="rules" name="onReset" type="(editor: E) => void" optional>
+<APISubListItem parent="rules" name="onReset" type="(editor: PlateEditor) => void" optional>
 A callback function that is called when the reset operation is performed.
 </APISubListItem>
 </APISubList>

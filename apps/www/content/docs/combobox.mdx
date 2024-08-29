@@ -3,9 +3,7 @@ title: Combobox
 description: Utilities for adding comboboxes to your editor.
 ---
 
-## TriggerComboboxPluginOptions
-
-The TriggerComboboxPluginOptions mixin configures your plugin to insert a combobox input element when the user types a specified trigger character is typed.
+The `TriggerComboboxPluginOptions` mixin configures your plugin to insert a combobox input element when the user types a specified trigger character.
 
 For example, the [Mention](/docs/mention) plugin uses TriggerComboboxPluginOptions to insert an `MentionInputPlugin.key` whenever the user types `@`.
 
@@ -14,22 +12,12 @@ For example, the [Mention](/docs/mention) plugin uses TriggerComboboxPluginOptio
 <Steps>
 
 <Step>
-Extend your plugin options type with TriggerComboboxPluginOptions.
+Extend the editor using `withTriggerCombobox` and specify default values for the required options. (See below for the full list of options).
 
 ```ts
-type O = TriggerComboboxPluginOptions
+import { withTriggerCombobox } from '@udecode/plate-combobox';
 
-const MyPlugin = createSlatePlugin<O>({
-  // ...
-});
-```
-</Step>
-
-<Step>
-Add the withTriggerCombobox override and specify default values for the required options. (See below for the full list of options).
-
-```ts
-const MyPlugin = createSlatePlugin<O>({
+const MyPlugin = createPlatePlugin({
   // ...
   extendEditor: withTriggerCombobox,
   options: {
@@ -40,7 +28,7 @@ const MyPlugin = createSlatePlugin<O>({
     }),
     trigger: '@',
     triggerPreviousCharPattern: /^\s?$/,
-  },
+  } as TriggerComboboxPluginOptions,
 });
 ```
 </Step>
@@ -49,15 +37,17 @@ const MyPlugin = createSlatePlugin<O>({
 Define your input element as an inline void element. It's often useful to do this inside a nested plugin.
 
 ```ts
-const MyPlugin = createSlatePlugin<O>({
+const MyPlugin = createPlatePlugin({
   // ...
   plugins: [
-    {
-      isElement: true,
-      isInline: true,
-      isVoid: true,
+    createPlatePlugin({
       key: 'input',
-    },
+      node: {
+        isElement: true,
+        isInline: true,
+        isVoid: true,
+      },
+    }),
   ],
 });
 ```

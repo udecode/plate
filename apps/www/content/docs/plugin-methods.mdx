@@ -251,7 +251,7 @@ While there is currently no core difference between API and Transforms in Plate,
 - **Transforms:** 
   - Store all Slate transforms and editor operations here. Structured to potentially support middlewares in the future, allowing for more complex transform pipelines and devtools.
   - Typically used for operations that modify the editor state, such as inserting, deleting, or transforming content.
-  - Example: `editor.tf.toggle.block()`, `editor.tf.toggle.bold()`
+  - Example: `editor.tf.toggle.block()`, `editor.tf.toggle.mark({ key: 'bold' })`
 
 - **API:** 
   - Store all queries, utility functions, and other methods that don't directly modify the editor state.

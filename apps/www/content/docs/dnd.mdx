@@ -25,21 +25,21 @@ npm install @udecode/plate-dnd @udecode/plate-node-id react-dnd react-dnd-html5-
 ## Usage
 
 ```tsx
-import { createDndPlugin } from '@udecode/plate-dnd';
-import { createNodeIdPlugin } from '@udecode/plate-node-id';
+import { DndPlugin } from '@udecode/plate-dnd/react';
+import { NodeId } from '@udecode/plate-node-id';
 
 const plugins = [
   // ...otherPlugins,
-  createNodeIdPlugin(),
-  createDndPlugin(),
+  NodeId,
+  DndPlugin,
 ];
 ```
 
 Then, wrap your plugin components with [Draggable](/docs/components/draggable).
 
-## API
+## Plugins
 
-### createDndPlugin
+### DndPlugin
 
 <APIOptions>
 <APIItem name="enableScroller" type="boolean" optional>
@@ -52,12 +52,14 @@ Props for the `Scroller` component.
 </APIItem>
 </APIOptions>
 
+## API
+
 ### focusBlockStartById
 
 Selects the start of a block by ID and focuses the editor.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
   <APIItem name="id" type="string">
@@ -70,7 +72,7 @@ Selects the start of a block by ID and focuses the editor.
 Returns an array of blocks that have an ID.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
   <APIItem name="options" type="GetNodeEntriesOptions">
@@ -80,7 +82,7 @@ Returns an array of blocks that have an ID.
 
 <APIReturns>
 
-<APIItem type="TNodeEntry[]">
+<APIItem type="NodeEntry[]">
 
 An array of blocks that have an ID.
 
@@ -91,7 +93,7 @@ An array of blocks that have an ID.
 ### selectBlockById
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
   <APIItem name="id" type="string">
@@ -125,7 +127,7 @@ Enhances a component with draggable behavior.
       <APISubListItem
         parent="options"
         name="filter"
-        type="(editor: TEditor, path: Path) => boolean"
+        type="(editor: PlateEditor, path: Path) => boolean"
         optional
       >
         A function that returns whether the component should be draggable.
@@ -248,7 +250,7 @@ A custom hook that combines the `useDragNode` and `useDropNode` hooks to enable 
 A custom hook that enables dragging of a block node from the editor. It internally uses the `useDragNode` hook.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
   <APIItem name="id" type="string">
@@ -261,7 +263,7 @@ A custom hook that enables dragging of a block node from the editor. It internal
 A custom hook that enables dragging of a node from the editor using the `useDrag` hook from `react-dnd`.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
   <APIItem name="options" type="UseDragNodeOptions">
@@ -342,7 +344,7 @@ A custom hook that provides the necessary properties and event handlers for maki
 A custom hook that enables dropping a block into the editor. It internally uses the `useDropNode` hook to handle the drop behavior.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
   <APIItem name="options" type="Omit<UseDropNodeOptions, 'accept'>"></APIItem>
@@ -353,7 +355,7 @@ A custom hook that enables dropping a block into the editor. It internally uses 
 A custom hook that enables dropping a node on the editor. It uses the `useDrop` hook from `react-dnd` to handle the drop behavior.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
   <APIItem name="options" type="UseDropNodeOptions">
