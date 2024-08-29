@@ -2,13 +2,20 @@
 '@udecode/plate-selection': major
 ---
 
-- `createSelectionPlugin` -> `BlockSelectionPlugin`
-- NEW `BlockContextMenuPlugin`, used by `BlockSelectionPlugin` so you don't need to add it manually
-- Remove `isNodeBlockSelected`, `isBlockSelected`, `hasBlockSelected`, `useBlockSelected`, use `editor.getOptions(BlockSelectionPlugin)` or `editor.useOptions(BlockSelectionPlugin)` instead
-- Remove `addSelectedRow`, use `editor.api.blockSelection.addSelectedRow` instead
-- Remove `withSelection`
+- Rename `createSelectionPlugin` to `BlockSelectionPlugin`
+- Remove `isNodeBlockSelected`, `isBlockSelected`, `hasBlockSelected`, `useBlockSelected` functions
+  - Use `editor.getOptions(BlockSelectionPlugin)` or `editor.useOptions(BlockSelectionPlugin)` instead
+- Remove `addSelectedRow` function
+  - Use `editor.api.blockSelection.addSelectedRow` instead
+- Remove `withSelection` HOC
 - Rename `onCloseBlockSelection` to `onChangeBlockSelection`
-- Move `blockSelectionStore` to `BlockSelectionPlugin`
-- Move `blockContextMenuStore` to `BlockContextMenuPlugin`
-- Remove `@viselect/vanilla` package and fork to local, fix scroll bugs.
-- Remove `BlockStartArea` and `BlockSelectionArea` components using areaOption instead.
+- Moved `blockSelectionStore` to `BlockSelectionPlugin`
+- Moved `blockContextMenuStore` to `BlockContextMenuPlugin`
+- Remove `BlockStartArea` and `BlockSelectionArea` components
+  - Use `areaOptions` in `BlockSelectionPlugin` for configuration instead
+- Remove dependency on `@viselect/vanilla` package
+  - Forked and integrated selection functionality locally
+- Add `BlockContextMenuPlugin`, which is now used by `BlockSelectionPlugin`
+  - No need to add it manually
+- Fix scroll-related bugs in the selection functionality
+- Improve performance and reliability of block selection

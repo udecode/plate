@@ -42,7 +42,7 @@ const plugins = [
 
 ### Styling
 
-You can style the selection area by adding this class to `body`, selecting `slate-selection-area`.
+You can style the selection area by adding this class to the container:
 
 ```js
 '[&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/20'
@@ -53,8 +53,27 @@ You can style the selection area by adding this class to `body`, selecting `slat
 ### BlockSelectionPlugin
 
 <APIOptions>
-<APIItem name="disableContextMenu" type="boolean" optional>
-Disables the context menu for block selection.
+<APIItem name="areaOptions" type="PartialSelectionOptions" optional>
+Options for the selection area. Example:
+
+```ts
+{
+  boundaries: ['#selection-demo #scroll_container'],
+  container: ['#selection-demo #scroll_container'],
+  selectables: ['#selection-demo #scroll_container .slate-selectable'],
+  selectionAreaClass: 'slate-selection-area',
+}
+```
+</APIItem>
+
+<APIItem name="editorPaddingRight" type="CSSProperties['width']" optional>
+The padding-right of the editor.
+</APIItem>
+
+<APIItem name="enableContextMenu" type="boolean" optional>
+Enables or disables the context menu for block selection.
+
+- **Default:** `false`
 </APIItem>
 
 <APIItem name="isSelecting" type="boolean" optional>
@@ -73,49 +92,10 @@ Options for querying nodes during block selection.
 - **Default:** `{ maxLevel: 1 }`
 </APIItem>
 
-<APIItem name="scrollContainerSelector" type="string" optional>
-A CSS selector for the scrollable container of the editor.
-</APIItem>
-
 <APIItem name="selectedIds" type="Set<string>" optional>
 A set of IDs for the currently selected blocks.
 
 - **Default:** `new Set()`
-</APIItem>
-
-<APIItem name="sizes" type="Object" optional>
-The dimensions of the selection area.
-
-<APISubList>
-<APISubListItem parent="sizes" name="left" type="number" optional>
-The left size of the selection area.
-
-- **Default:** `4`
-</APISubListItem>
-<APISubListItem parent="sizes" name="top" type="number" optional>
-The top size of the selection area.
-
-- **Default:** `4`
-</APISubListItem>
-<APISubListItem parent="sizes" name="right" type="number" optional>
-The right size of the selection area.
-
-- **Default:** `4`
-</APISubListItem>
-<APISubListItem parent="sizes" name="bottom" type="number" optional>
-The bottom size of the selection area.
-
-- **Default:** `4`
-</APISubListItem>
-</APISubList>
-</APIItem>
-
-<APIItem name="isSelected" type="(id?: string) => boolean" optional>
-A function to determine if a block with the given ID is selected.
-</APIItem>
-
-<APIItem name="isSelectingSome" type="() => boolean" optional>
-A function to determine if any blocks are currently selected.
 </APIItem>
 </APIOptions>
 
@@ -185,39 +165,6 @@ Sets the selected IDs based on added and removed elements.
 
 Unselects all blocks and sets the `isSelecting` flag to false.
 
-### copySelectedBlocks
-
-Copies the selected blocks in the editor to the clipboard.
-
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-</APIParameters>
-
-### pasteSelectedBlocks
-
-Pastes the selected blocks from the clipboard into the editor.
-
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="e" type="ClipboardEvent">
-    The clipboard event containing the clipboard data.
-  </APIItem>
-</APIParameters>
-
-### selectInsertedBlocks
-
-Selects the inserted blocks from the last editor insert operations.
-
-<APIParameters>
-  <APIItem name="editor" type="TEditor">
-    The editor instance.
-  </APIItem>
-</APIParameters>
-
 ## API Components
 
 ### BlockSelectable
@@ -228,14 +175,6 @@ Selects the inserted blocks from the last editor insert operations.
       <APISubListItem parent="options" name="element" type="TElement">
         The element to render the block selectable.
       </APISubListItem>
-      <APISubListItem
-        parent="options"
-        name="selectedColor"
-        type="string"
-        optional
-      >
-        The color of the selected block.
-      </APISubListItem>
       <APISubListItem parent="options" name="active" type="boolean" optional>
         Whether the selection is active.
       </APISubListItem>
@@ -243,75 +182,43 @@ Selects the inserted blocks from the last editor insert operations.
   </APIItem>
 </APIProps>
 
-### BlockStartArea
+### BlockSelection
 
-A primitive component for rendering the start area of a block.
+A wrapper component that adds block selection functionality to its children.
 
 <APIProps>
-<APIItem name="placement" type="'top' | 'bottom' | 'left' | 'right" optional>
-The placement of the start area.
-
-- **Default:** `'left'`
-
-</APIItem>
-<APIItem name="size" type="string | number" optional>
-The size of the start area.
-
-- **Default:** `'auto'`
-
-</APIItem>
+  <APIItem name="children" type="React.ReactNode">
+    The content to be wrapped with block selection functionality.
+  </APIItem>
 </APIProps>
 
+## Hooks
+
+### useBlockSelectableState
+
 <APIReturns>
-  <APIItem name="props" type="object">
-    <APISubList>
-      <APISubListItem parent="props" name="className" type="string">
-        The class name of the start area.
-      </APISubListItem>
-      <APISubListItem parent="props" name="style" type="object">
-        The style of the start area.
-      </APISubListItem>
-    </APISubList>
+  <APIItem name="active" type="boolean">
+    Whether the block is active for selection.
+  </APIItem>
+  <APIItem name="element" type="TElement" optional>
+    The element associated with the block.
+  </APIItem>
+  <APIItem name="path" type="Path" optional>
+    The path of the block in the editor.
+  </APIItem>
+  <APIItem name="ref" type="React.RefObject<HTMLDivElement>" optional>
+    A ref to the block's DOM element.
   </APIItem>
 </APIReturns>
 
-### useBlockSelectionArea
-
-The behavior hook for the `BlockSelectionArea` component.
+### useBlockSelectable
 
 <APIReturns>
   <APIItem name="props" type="object">
-    <APISubList>
-      <APISubListItem parent="props" name="className" type="string">
-        The class name of the start area.
-      </APISubListItem>
-      <APISubListItem parent="props" name="style" type="object">
-        The style of the start area.
-      </APISubListItem>
-    </APISubList>
+    Props to be spread on the block's wrapper element.
   </APIItem>
 </APIReturns>
 
-### SelectionArea
+### useSelectionArea
 
-<APIProps>
-  <APIItem name="onBeforeStart" type="SelectionEvents['beforestart']" optional>
-    The callback to execute before the selection starts.
-  </APIItem>
-  <APIItem name="onStart" type="SelectionEvents['start']" optional>
-    The callback to execute when the selection starts.
-  </APIItem>
-  <APIItem name="onMove" type="SelectionEvents['move']" optional>
-    The callback to execute when the selection moves.
-  </APIItem>
-  <APIItem name="onStop" type="SelectionEvents['stop']" optional>
-    The callback to execute when the selection stops.
-  </APIItem>
-  <APIItem
-    name="getBoundaries"
-    type="(boundaries: SelectionOptions['boundaries']) => SelectionOptions['boundaries']"
-    optional
-  >
-    Function to calculate the boundaries of the selection area.
-  </APIItem>
-</APIProps>
+A hook that initializes and manages the selection area functionality.
