@@ -1,10 +1,9 @@
 import {
-  type EElement,
+  type ElementOf,
   type QueryNodeOptions,
   type TEditor,
   type TElement,
   type TNodeEntry,
-  type Value,
   findNode,
   getNodeEntries,
   getPreviousNode,
@@ -17,10 +16,10 @@ import {
  * and return [null, its previous path]
  */
 export const getPreviousBlockById = <
-  N extends EElement<V>,
-  V extends Value = Value,
+  N extends ElementOf<E>,
+  E extends TEditor = TEditor,
 >(
-  editor: TEditor<V>,
+  editor: TEditor,
   id: string,
   query?: QueryNodeOptions
 ): TNodeEntry<N> | undefined => {

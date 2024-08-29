@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { cn } from '@udecode/cn';
-import { createZustandStore } from '@udecode/plate-common';
+import { useEditorRef } from '@udecode/plate-core/react';
 import {
   type CursorData,
   CursorOverlay as CursorOverlayPrimitive,
@@ -9,9 +9,7 @@ import {
   type CursorProps,
 } from '@udecode/plate-cursor';
 
-export const cursorStore = createZustandStore('cursor')({
-  cursors: {},
-});
+import { DragOverCursorPlugin } from '@/lib/plate/demo/plugins/DragOverCursorPlugin';
 
 export function Cursor({
   caretPosition,
@@ -53,7 +51,8 @@ export function Cursor({
 }
 
 export function CursorOverlay({ cursors, ...props }: CursorOverlayProps) {
-  const dynamicCursors = cursorStore.use.cursors();
+  const editor = useEditorRef();
+  const dynamicCursors = editor.useOption(DragOverCursorPlugin, 'cursors');
 
   const allCursors = { ...cursors, ...dynamicCursors };
 

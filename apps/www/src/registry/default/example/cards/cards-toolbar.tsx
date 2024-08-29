@@ -1,15 +1,18 @@
 'use client';
 
 import {
-  MARK_BOLD,
-  MARK_CODE,
-  MARK_ITALIC,
-  MARK_STRIKETHROUGH,
-  MARK_UNDERLINE,
-} from '@udecode/plate-basic-marks';
-import { MARK_BG_COLOR, MARK_COLOR } from '@udecode/plate-font';
+  BoldPlugin,
+  CodePlugin,
+  ItalicPlugin,
+  StrikethroughPlugin,
+  UnderlinePlugin,
+} from '@udecode/plate-basic-marks/react';
+import {
+  FontBackgroundColorPlugin,
+  FontColorPlugin,
+} from '@udecode/plate-font';
 import { ListStyleType } from '@udecode/plate-indent-list';
-import { ELEMENT_IMAGE } from '@udecode/plate-media';
+import { ImagePlugin } from '@udecode/plate-media/react';
 
 import { Icons, iconVariants } from '@/components/icons';
 import { AlignDropdownMenu } from '@/registry/default/plate-ui/align-dropdown-menu';
@@ -48,36 +51,42 @@ export function CardsToolbar() {
           </ToolbarGroup>
 
           <ToolbarGroup>
-            <MarkToolbarButton nodeType={MARK_BOLD} tooltip="Bold (⌘+B)">
+            <MarkToolbarButton nodeType={BoldPlugin.key} tooltip="Bold (⌘+B)">
               <Icons.bold />
             </MarkToolbarButton>
-            <MarkToolbarButton nodeType={MARK_ITALIC} tooltip="Italic (⌘+I)">
+            <MarkToolbarButton
+              nodeType={ItalicPlugin.key}
+              tooltip="Italic (⌘+I)"
+            >
               <Icons.italic />
             </MarkToolbarButton>
             <MarkToolbarButton
-              nodeType={MARK_UNDERLINE}
+              nodeType={UnderlinePlugin.key}
               tooltip="Underline (⌘+U)"
             >
               <Icons.underline />
             </MarkToolbarButton>
 
             <MarkToolbarButton
-              nodeType={MARK_STRIKETHROUGH}
+              nodeType={StrikethroughPlugin.key}
               tooltip="Strikethrough (⌘+⇧+M)"
             >
               <Icons.strikethrough />
             </MarkToolbarButton>
-            <MarkToolbarButton nodeType={MARK_CODE} tooltip="Code (⌘+E)">
+            <MarkToolbarButton nodeType={CodePlugin.key} tooltip="Code (⌘+E)">
               <Icons.code />
             </MarkToolbarButton>
           </ToolbarGroup>
 
           <ToolbarGroup>
-            <ColorDropdownMenu nodeType={MARK_COLOR} tooltip="Text Color">
+            <ColorDropdownMenu
+              nodeType={FontColorPlugin.key}
+              tooltip="Text Color"
+            >
               <Icons.color className={iconVariants({ variant: 'toolbar' })} />
             </ColorDropdownMenu>
             <ColorDropdownMenu
-              nodeType={MARK_BG_COLOR}
+              nodeType={FontBackgroundColorPlugin.key}
               tooltip="Highlight Color"
             >
               <Icons.bg className={iconVariants({ variant: 'toolbar' })} />
@@ -101,7 +110,7 @@ export function CardsToolbar() {
 
             <ToggleToolbarButton />
 
-            <MediaToolbarButton nodeType={ELEMENT_IMAGE} />
+            <MediaToolbarButton nodeType={ImagePlugin.key} />
 
             <TableDropdownMenu />
 

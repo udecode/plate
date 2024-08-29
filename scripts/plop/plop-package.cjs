@@ -6,49 +6,49 @@ module.exports = (_plop) => {
   const plop = _plop;
 
   plop.setGenerator('package', {
+    actions: [
+      {
+        path: '../../packages/{{name}}/.npmignore',
+        templateFile: 'templates/package/.npmignore.hbs',
+        type: 'add',
+      },
+      {
+        path: '../../packages/{{name}}/README.md',
+        templateFile: 'templates/package/README.md.hbs',
+        type: 'add',
+      },
+      {
+        path: '../../packages/{{name}}/tsconfig.json',
+        templateFile: 'templates/package/tsconfig.json.hbs',
+        type: 'add',
+      },
+      {
+        data: {
+          coreVersion: packageJsonPlateCore.version,
+          plateVersion: packageJsonPlate.version,
+        },
+        path: '../../packages/{{name}}/package.json',
+        templateFile: 'templates/package/package.json.hbs',
+        type: 'add',
+      },
+    ],
     description: 'New package',
     prompts: [
       {
-        type: 'input',
-        name: 'name',
         message: 'Package name set after @udecode/plate-',
-      },
-      {
+        name: 'name',
         type: 'input',
-        name: 'description',
-        message: 'Package description',
+      },
+      {
         default: 'Plate plugin',
+        message: 'Package description',
+        name: 'description',
+        type: 'input',
       },
       {
-        type: 'confirm',
-        name: 'createPlugin',
         message: 'Create a plate plugin?',
-      },
-    ],
-    actions: [
-      {
-        type: 'add',
-        path: '../../packages/{{name}}/.npmignore',
-        templateFile: 'templates/package/.npmignore.hbs',
-      },
-      {
-        type: 'add',
-        path: '../../packages/{{name}}/README.md',
-        templateFile: 'templates/package/README.md.hbs',
-      },
-      {
-        type: 'add',
-        path: '../../packages/{{name}}/tsconfig.json',
-        templateFile: 'templates/package/tsconfig.json.hbs',
-      },
-      {
-        type: 'add',
-        path: '../../packages/{{name}}/package.json',
-        templateFile: 'templates/package/package.json.hbs',
-        data: {
-          plateVersion: packageJsonPlate.version,
-          coreVersion: packageJsonPlateCore.version,
-        },
+        name: 'createSlatePlugin',
+        type: 'confirm',
       },
     ],
   });

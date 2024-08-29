@@ -1,6 +1,6 @@
 import React, { type CSSProperties } from 'react';
 
-import type { PlateElementProps } from '@udecode/plate-common';
+import type { PlateElementProps } from '@udecode/plate-common/react';
 
 import { useFocused, useSelected } from 'slate-react';
 

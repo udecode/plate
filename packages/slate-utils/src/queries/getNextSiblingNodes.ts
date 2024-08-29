@@ -1,4 +1,4 @@
-import type { EAncestorEntry, EElementOrText, Value } from '@udecode/slate';
+import type { AncestorEntryOf, ElementOrTextOf, TEditor } from '@udecode/slate';
 import type { Path } from 'slate';
 
 /**
@@ -7,16 +7,16 @@ import type { Path } from 'slate';
  * @param ancestorEntry Ancestor of the sibling nodes
  * @param path Path of the reference node
  */
-export const getNextSiblingNodes = <V extends Value>(
-  ancestorEntry: EAncestorEntry<V>,
+export const getNextSiblingNodes = <E extends TEditor>(
+  ancestorEntry: AncestorEntryOf<E>,
   path: Path
-): EElementOrText<V>[] => {
+): ElementOrTextOf<E>[] => {
   const [ancestor, ancestorPath] = ancestorEntry;
 
   const leafIndex = path[ancestorPath.length];
 
-  const siblings: EElementOrText<V>[] = [];
-  const ancestorChildren = ancestor.children as EElementOrText<V>[];
+  const siblings: ElementOrTextOf<E>[] = [];
+  const ancestorChildren = ancestor.children as ElementOrTextOf<E>[];
 
   if (leafIndex + 1 < ancestor.children.length) {
     for (let i = leafIndex + 1; i < ancestor.children.length; i++) {

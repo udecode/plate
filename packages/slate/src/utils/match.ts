@@ -1,5 +1,5 @@
-import type { TEditor, Value } from '../interfaces/editor/TEditor';
-import type { ENode, TNode } from '../interfaces/node/TNode';
+import type { TEditor } from '../interfaces/editor/TEditor';
+import type { NodeOf, TNode } from '../interfaces/node/TNode';
 import type { TPath } from '../types/interfaces';
 
 import { isBlock } from '../interfaces/editor/isBlock';
@@ -44,8 +44,8 @@ export const match = <T extends TNode>(
  *   node value. Example: { type: ['1', '2'] } will match the nodes having one
  *   of these 2 types.
  */
-export const getQueryOptions = <V extends Value>(
-  editor: TEditor<V>,
+export const getQueryOptions = <E extends TEditor>(
+  editor: E,
   options: any = {}
 ) => {
   const { block, match: _match } = options;
@@ -54,7 +54,7 @@ export const getQueryOptions = <V extends Value>(
     ...options,
     match:
       _match || block
-        ? (n: ENode<V>, path: TPath) =>
+        ? (n: NodeOf<E>, path: TPath) =>
             match(n, path, _match) && (!block || isBlock(editor, n))
         : undefined,
   };
@@ -62,7 +62,7 @@ export const getQueryOptions = <V extends Value>(
 
 export type ENodeMatch<N extends TNode> = Predicate<N>;
 
-export interface ENodeMatchOptions<V extends Value = Value> {
+export interface ENodeMatchOptions<E extends TEditor = TEditor> {
   block?: boolean;
-  match?: ENodeMatch<ENode<V>>;
+  match?: ENodeMatch<NodeOf<E>>;
 }

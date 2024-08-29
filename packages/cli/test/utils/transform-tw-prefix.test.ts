@@ -7,66 +7,66 @@ import stone from '../fixtures/colors/stone.json';
 test('transform tailwind prefix', async () => {
   expect(
     await transform({
+      baseColor: 'stone' as any,
+      config: {
+        aliases: {
+          components: '@/components',
+        },
+        tailwind: {
+          baseColor: 'stone',
+          prefix: 'tw-',
+        },
+      } as any,
       filename: 'test.ts',
       raw: `import * as React from "react"
             export function Foo() {
                 return <div className="bg-background hover:bg-muted text-primary-foreground sm:focus:text-accent-foreground">foo</div>
             }
         `,
-      config: {
-        tailwind: {
-          baseColor: 'stone',
-          prefix: 'tw-',
-        },
-        aliases: {
-          components: '@/components',
-        },
-      },
-      baseColor: 'stone',
     })
   ).toMatchSnapshot();
 
   expect(
     await transform({
+      baseColor: stone,
+      config: {
+        aliases: {
+          components: '@/components',
+        },
+        tailwind: {
+          baseColor: 'stone',
+          cssVariables: false,
+          prefix: 'tw-',
+        },
+      } as any,
       filename: 'test.ts',
       raw: `import * as React from "react"
 export function Foo() {
 	return <div className="bg-background hover:bg-muted text-primary-foreground sm:focus:text-accent-foreground">foo</div>
 }
     `,
-      config: {
-        tailwind: {
-          baseColor: 'stone',
-          cssVariables: false,
-          prefix: 'tw-',
-        },
-        aliases: {
-          components: '@/components',
-        },
-      },
-      baseColor: stone,
     })
   ).toMatchSnapshot();
 
   expect(
     await transform({
+      baseColor: stone,
+      config: {
+        aliases: {
+          components: '@/components',
+        },
+        tailwind: {
+          baseColor: 'stone',
+          cssVariables: false,
+          prefix: 'tw-',
+        },
+      } as any,
       filename: 'test.ts',
       raw: `import * as React from "react"
 export function Foo() {
 	return <div className={cn('bg-background hover:bg-muted', true && 'text-primary-foreground sm:focus:text-accent-foreground')}>foo</div>
 }
     `,
-      config: {
-        tailwind: {
-          baseColor: 'stone',
-          cssVariables: false,
-          prefix: 'tw-',
-        },
-        aliases: {
-          components: '@/components',
-        },
-      },
-      baseColor: stone,
     })
   ).toMatchSnapshot();
 

@@ -4,14 +4,14 @@ import { Path, Transforms, removeNodes, withoutNormalizing } from 'slate';
 
 import type { QueryNodeOptions } from '../../types';
 import type { NodeMatchOption } from '../../types/NodeMatchOption';
-import type { TEditor, Value } from '../editor/TEditor';
-import type { EElementOrText } from '../element/TElement';
+import type { TEditor } from '../editor/TEditor';
+import type { ElementOrTextOf } from '../element/TElement';
 
 import { queryNode } from '../../utils';
 import { getAboveNode, getEndPoint, isInline } from '../editor';
 import { type TDescendant, getNodeString } from '../node';
 
-export type InsertNodesOptions<V extends Value = Value> = {
+export type InsertNodesOptions<E extends TEditor = TEditor> = {
   /**
    * Insert the nodes after the currect block. Does not apply if the removeEmpty
    * option caused the current block to be removed.
@@ -26,17 +26,17 @@ export type InsertNodesOptions<V extends Value = Value> = {
   removeEmpty?: QueryNodeOptions | boolean;
 } & Modify<
   NonNullable<Parameters<typeof Transforms.insertNodes>[2]>,
-  NodeMatchOption<V>
+  NodeMatchOption<E>
 >;
 
 /** Insert nodes at a specific location in the Editor. */
 export const insertNodes = <
-  N extends EElementOrText<V>,
-  V extends Value = Value,
+  N extends ElementOrTextOf<E>,
+  E extends TEditor = TEditor,
 >(
-  editor: TEditor<V>,
+  editor: E,
   nodes: N | N[],
-  { nextBlock, removeEmpty, ...options }: InsertNodesOptions<V> = {}
+  { nextBlock, removeEmpty, ...options }: InsertNodesOptions<E> = {}
 ) => {
   withoutNormalizing(editor as any, () => {
     if (removeEmpty) {

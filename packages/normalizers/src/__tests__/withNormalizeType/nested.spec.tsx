@@ -1,11 +1,11 @@
 /** @jsx jsx */
 
-import { createPlateEditor } from '@udecode/plate-common';
-import { ELEMENT_H1 } from '@udecode/plate-heading';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
+import { ParagraphPlugin } from '@udecode/plate-common';
+import { createSlateEditor } from '@udecode/plate-common';
+import { HEADING_KEYS } from '@udecode/plate-heading';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createNormalizeTypesPlugin } from '../../createNormalizeTypesPlugin';
+import { NormalizeTypesPlugin } from '../../lib/NormalizeTypesPlugin';
 
 jsx;
 
@@ -29,17 +29,17 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  const editor = createPlateEditor({
+  const editor = createSlateEditor({
     editor: input,
     plugins: [
-      createNormalizeTypesPlugin({
+      NormalizeTypesPlugin.configure({
         options: {
           rules: [
             {
               path: [0, 0],
-              strictType: ELEMENT_H1,
+              strictType: HEADING_KEYS.h1,
             },
-            { path: [0, 1], type: ELEMENT_PARAGRAPH },
+            { path: [0, 1], type: ParagraphPlugin.key },
           ],
         },
       }),

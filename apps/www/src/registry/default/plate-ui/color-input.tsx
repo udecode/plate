@@ -3,8 +3,8 @@
 import React from 'react';
 
 import { cn, withRef } from '@udecode/cn';
-import { useComposedRef } from '@udecode/plate-common';
-import { useColorInput } from '@udecode/plate-font';
+import { useComposedRef } from '@udecode/plate-common/react';
+import { useColorInput } from '@udecode/plate-font/react';
 
 export const ColorInput = withRef<'input'>(
   ({ children, className, value = '#000000', ...props }, ref) => {

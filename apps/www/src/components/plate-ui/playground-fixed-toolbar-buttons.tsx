@@ -3,17 +3,24 @@ import React from 'react';
 import type { ValueId } from '@/config/customizer-plugins';
 
 import {
-  MARK_BOLD,
-  MARK_CODE,
-  MARK_ITALIC,
-  MARK_STRIKETHROUGH,
-  MARK_UNDERLINE,
-} from '@udecode/plate-basic-marks';
-import { useEditorReadOnly } from '@udecode/plate-common';
-import { MARK_BG_COLOR, MARK_COLOR } from '@udecode/plate-font';
-import { KEY_LIST_STYLE_TYPE, ListStyleType } from '@udecode/plate-indent-list';
-import { ELEMENT_OL, ELEMENT_UL } from '@udecode/plate-list';
-import { ELEMENT_IMAGE } from '@udecode/plate-media';
+  BoldPlugin,
+  CodePlugin,
+  ItalicPlugin,
+  StrikethroughPlugin,
+  UnderlinePlugin,
+} from '@udecode/plate-basic-marks/react';
+import { useEditorReadOnly } from '@udecode/plate-common/react';
+import {
+  FontBackgroundColorPlugin,
+  FontColorPlugin,
+} from '@udecode/plate-font';
+import { ListStyleType } from '@udecode/plate-indent-list';
+import { IndentListPlugin } from '@udecode/plate-indent-list/react';
+import {
+  BulletedListPlugin,
+  NumberedListPlugin,
+} from '@udecode/plate-list/react';
+import { ImagePlugin } from '@udecode/plate-media/react';
 
 import { settingsStore } from '@/components/context/settings-store';
 import { Icons, iconVariants } from '@/components/icons';
@@ -42,7 +49,7 @@ import { PlaygroundTurnIntoDropdownMenu } from './playground-turn-into-dropdown-
 
 export function PlaygroundFixedToolbarButtons({ id }: { id?: ValueId }) {
   const readOnly = useEditorReadOnly();
-  const indentList = settingsStore.use.checkedId(KEY_LIST_STYLE_TYPE);
+  const indentList = settingsStore.use.checkedId(IndentListPlugin.key);
 
   return (
     <div className="w-full">
@@ -63,14 +70,17 @@ export function PlaygroundFixedToolbarButtons({ id }: { id?: ValueId }) {
             </ToolbarGroup>
 
             <ToolbarGroup>
-              <MarkToolbarButton nodeType={MARK_BOLD} tooltip="Bold (⌘+B)">
+              <MarkToolbarButton nodeType={BoldPlugin.key} tooltip="Bold (⌘+B)">
                 <Icons.bold />
               </MarkToolbarButton>
-              <MarkToolbarButton nodeType={MARK_ITALIC} tooltip="Italic (⌘+I)">
+              <MarkToolbarButton
+                nodeType={ItalicPlugin.key}
+                tooltip="Italic (⌘+I)"
+              >
                 <Icons.italic />
               </MarkToolbarButton>
               <MarkToolbarButton
-                nodeType={MARK_UNDERLINE}
+                nodeType={UnderlinePlugin.key}
                 tooltip="Underline (⌘+U)"
               >
                 <Icons.underline />
@@ -79,12 +89,15 @@ export function PlaygroundFixedToolbarButtons({ id }: { id?: ValueId }) {
               {isEnabled('basicnodes', id) && (
                 <>
                   <MarkToolbarButton
-                    nodeType={MARK_STRIKETHROUGH}
+                    nodeType={StrikethroughPlugin.key}
                     tooltip="Strikethrough (⌘+⇧+M)"
                   >
                     <Icons.strikethrough />
                   </MarkToolbarButton>
-                  <MarkToolbarButton nodeType={MARK_CODE} tooltip="Code (⌘+E)">
+                  <MarkToolbarButton
+                    nodeType={CodePlugin.key}
+                    tooltip="Code (⌘+E)"
+                  >
                     <Icons.code />
                   </MarkToolbarButton>
                 </>
@@ -92,13 +105,16 @@ export function PlaygroundFixedToolbarButtons({ id }: { id?: ValueId }) {
 
               {isEnabled('font', id) && (
                 <>
-                  <ColorDropdownMenu nodeType={MARK_COLOR} tooltip="Text Color">
+                  <ColorDropdownMenu
+                    nodeType={FontColorPlugin.key}
+                    tooltip="Text Color"
+                  >
                     <Icons.color
                       className={iconVariants({ variant: 'toolbar' })}
                     />
                   </ColorDropdownMenu>
                   <ColorDropdownMenu
-                    nodeType={MARK_BG_COLOR}
+                    nodeType={FontBackgroundColorPlugin.key}
                     tooltip="Highlight Color"
                   >
                     <Icons.bg
@@ -124,8 +140,8 @@ export function PlaygroundFixedToolbarButtons({ id }: { id?: ValueId }) {
 
               {isEnabled('list', id) && !indentList && (
                 <>
-                  <ListToolbarButton nodeType={ELEMENT_UL} />
-                  <ListToolbarButton nodeType={ELEMENT_OL} />
+                  <ListToolbarButton nodeType={BulletedListPlugin.key} />
+                  <ListToolbarButton nodeType={NumberedListPlugin.key} />
                 </>
               )}
 
@@ -145,7 +161,7 @@ export function PlaygroundFixedToolbarButtons({ id }: { id?: ValueId }) {
               {isEnabled('toggle', id) && <ToggleToolbarButton />}
 
               {isEnabled('media', id) && (
-                <MediaToolbarButton nodeType={ELEMENT_IMAGE} />
+                <MediaToolbarButton nodeType={ImagePlugin.key} />
               )}
 
               {(isEnabled('table', id) || isEnabled('tableMerge', id)) && (

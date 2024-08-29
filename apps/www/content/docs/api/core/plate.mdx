@@ -10,96 +10,37 @@ description: API reference for Plate component.
 ## Plate Props
 
 <APIParameters>
-<APIItem name="id" type="string" optional>
-A unique ID to store the editor state by ID. This is mandatory when nesting **`Plate`** instances but optional otherwise.
-
-- **Default:** `'plate'`.
-
-</APIItem>
-<APIItem name="children" type="ReactNode" optional>
-
+<APIItem name="children" type="ReactNode">
 Children components have access to the plate store. 
-
 </APIItem>
-<APIItem name="decorate" type="(entry: TNodeEntry) => Range[]" optional>
-
-See [decorations](https://docs.slatejs.org/concepts/09-rendering#decorations).
-
+<APIItem name="editor" type="PlateEditor">
+A controlled `editor` instance. This prop is required.
 </APIItem>
-<APIItem name="disableCorePlugins" type="object | boolean | undefined" optional>
-
-Can be **`true`** to disable all core plugins, an object to selectively disable core plugins, or **`undefined`**.
-
-<APISubList>
-<APISubListItem parent="disableCorePlugins" name="deserializeAst" type="boolean" optional/>
-<APISubListItem parent="disableCorePlugins" name="deserializeHtml" type="boolean" optional/>
-<APISubListItem parent="disableCorePlugins" name="editorProtocol" type="boolean" optional/>
-<APISubListItem parent="disableCorePlugins" name="eventEditor" type="boolean" optional/>
-<APISubListItem parent="disableCorePlugins" name="history" type="boolean" optional/>
-<APISubListItem parent="disableCorePlugins" name="inlineVoid" type="boolean" optional/>
-<APISubListItem parent="disableCorePlugins" name="insertData" type="boolean" optional/>
-<APISubListItem parent="disableCorePlugins" name="length" type="boolean" optional/>
-<APISubListItem parent="disableCorePlugins" name="nodeFactory" type="boolean" optional/>
-<APISubListItem parent="disableCorePlugins" name="react" type="boolean" optional/>
-<APISubListItem parent="disableCorePlugins" name="selection" type="boolean" optional/>
-</APISubList>
+<APIItem name="decorate" type="(ctx: SlatePluginContext<C>) => Range[]" optional>
+See <Link href="https://docs.slatejs.org/concepts/09-rendering#decorations">Slate docs</Link>.
 </APIItem>
-<APIItem name="editor" type="PlateEditor" optional>
-
-A controlled **`editor`**.
-
-- **Default:** **`createPlateEditor({ id, plugins, disableCorePlugins })`**
-
-</APIItem>
-<APIItem name="editorRef" type="ForwardedRef<PlateEditor>" optional>
-
-An uncontrolled **`editor`** ref.
-
-- **Default:** **`createPlateEditor({ id, plugins, disableCorePlugins })`**
-
-</APIItem>
-<APIItem name="initialValue" type="Value" optional>
-
-Initial editor value.
-
-- **Default:** **`editor.childrenFactory()`**
-
-</APIItem>
-<APIItem name="maxLength" type="number" optional>
-
-Specifies the maximum number of characters allowed in the editor.
-
-</APIItem>
-<APIItem name="normalizeInitialValue" type="boolean" optional>
-
-If **`true`**, normalizes the initial **`editor`** value upon creation. This is useful for applying normalization rules on existing content.
-
-- **Default:** **`false`**
-
-</APIItem>
-<APIItem name="onChange" type="function" optional>
-
+<APIItem name="onChange" type="({ value, editor }: { value: Value; editor: PlateEditor }) => void" optional>
 Controlled callback called when the editor state changes.
-
 </APIItem>
-<APIItem name="plugins" type="PlatePlugin[]" optional>
-
-Plate plugins. See [Plugin](/docs/plugin) guide.
-
+<APIItem name="onSelectionChange" type="(selection: Range | null) => void" optional>
+Callback called when the editor selection changes.
+</APIItem>
+<APIItem name="onValueChange" type="(value: Value) => void" optional>
+Callback called when the editor value changes.
 </APIItem>
 <APIItem name="primary" type="boolean" optional>
+Controls whether the editor is considered active by default when used with a PlateController.
 
-Controls whether the editor is considered active by default when used with a PlateController. See [Accessing the Editor](/docs/accessing-editor#from-a-sibling-or-ancestor-of-plate).
-
-- **Default:** **`true`**
-
+- **Default:** `true`
 </APIItem>
-<APIItem name="value" type="Value" optional>
-
-Alias to **`initialValue`**. Stored in the store on each change (**`Editable.onChange`**). To update **`value`** with history support, use **[Slate transforms](https://docs.slatejs.org/concepts/04-transforms)**. To reset **`value`**, use `resetEditor`.
-
-- **Default:** **`editor.childrenFactory()`**
-
+<APIItem name="readOnly" type="boolean" optional>
+If true, the editor is in read-only mode.
+</APIItem>
+<APIItem name="renderElement" type="FC<TRenderElementProps>" optional>
+Custom render function for elements.
+</APIItem>
+<APIItem name="renderLeaf" type="FC<TRenderLeafProps>" optional>
+Custom render function for leaf nodes.
 </APIItem>
 </APIParameters>
 
@@ -109,109 +50,34 @@ Props for the [Editable](https://docs.slatejs.org/libraries/slate-react/editable
 
 <APIProps>
 <APIItem name="renderEditable" type="(editable: ReactNode) => ReactNode" optional>
+Custom `Editable` node.
 
-Custom **`Editable`** node.
-
-- **Default:** **`<Editable {...props} />`**
-
+- **Default:** `<Editable {...props} />`
 </APIItem>
-<APIItem
-  name="as"
-  type="React.ElementType"
-  optional
-/>
-<APIItem
-  name="autoFocus"
-  type="boolean"
-  optional
-/>
-<APIItem
-  name="decorate"
-  type="(entry: TNodeEntry) => Range[]"
-  optional
-/>
-<APIItem
-  name="disableDefaultStyles"
-  type="boolean"
-  optional
-/>
-<APIItem
-  name="onDOMBeforeInput"
-  type="(event: Event) => void"
-  optional
-/>
-<APIItem
-  name="onKeyDown"
-  type="(event: KeyboardEvent) => void"
-  optional
-/>
-<APIItem
-  name="placeholder"
-  type="string"
-  optional
-/>
-<APIItem
-  name="readOnly"
-  type="boolean"
-  optional
-/>
-<APIItem
-  name="renderElement"
-  type="FC<TRenderElementProps>"
-  optional
-/>
-<APIItem
-  name="renderLeaf"
-  type="FC<TRenderLeafProps>"
-  optional
-/>
-<APIItem
-  name="renderPlaceholder"
-  type="FC<RenderPlaceholderProps>"
-  optional
-/>
+<APIItem name="as" type="React.ElementType" optional />
+<APIItem name="autoFocus" type="boolean" optional />
+<APIItem name="decorate" type="(ctx: SlatePluginContext<C>) => Range[]" optional />
+<APIItem name="disableDefaultStyles" type="boolean" optional />
+<APIItem name="onDOMBeforeInput" type="(event: Event) => void" optional />
+<APIItem name="onKeyDown" type="(event: KeyboardEvent) => void" optional />
+<APIItem name="placeholder" type="string" optional />
+<APIItem name="readOnly" type="boolean" optional />
+<APIItem name="renderElement" type="FC<TRenderElementProps>" optional />
+<APIItem name="renderLeaf" type="FC<TRenderLeafProps>" optional />
+<APIItem name="renderPlaceholder" type="FC<RenderPlaceholderProps>" optional />
 <APIItem name="role" type="string" optional />
-<APIItem
-  name="scrollSelectionIntoView"
-  type="(editor: ReactEditor, domRange: DOMRange) => void"
-  optional
-/>
-<APIItem
-  name="style"
-  type="CSSProperties"
-  optional
-/>
+<APIItem name="scrollSelectionIntoView" type="(editor: ReactEditor, domRange: DOMRange) => void" optional />
+<APIItem name="style" type="CSSProperties" optional />
 </APIProps>
 
 ## How Plate Works
 
-**`Plate`** computes the **`Slate`** props: **`key`**, **`editor`**, **`onChange`**.
+`Plate` requires an `editor` prop, which should be an instance of `PlateEditor`. If `editor` is `null`, `Plate` will not render anything.
 
-**`Plate`** also computes **`Editable`** props if **`editor`** is defined:
+The `Plate` component does not handle the creation of the editor or the management of plugins. These responsibilities are handled by `createPlateEditor`.
 
-### decorate
+`Plate` provides a store for the editor state and renders its children. It uses `PlateStoreProvider` to make the editor state and related functions available to its children components.
 
-This prop integrates **`decorate`** plugins. If a **`decorate`** prop is defined, it will be added.
+The rendering logic for elements and leaves is primarily handled by the plugins system, with `renderElement` and `renderLeaf` props serving as fallbacks if no plugin is found for a specific node type.
 
-### renderElement
-
-When a plugin's **`isElement`** is **`true`** and its **`type`** matches **`props.element.type`**, an element is rendered with specific plugin properties:
-
-- **`inject.props`** are used to inject rendering props.
-- **`component`** is used to render the element itself.
-- **`inject.aboveComponent`** and **`inject.belowComponent`** can inject components above and below **`component`**, respectively.
-
-If no suitable plugin is found for a node type, **`renderElement`** prop is used (if defined). In the absence of this prop, **`DefaultElement`** (a plain **`div`**) is used.
-
-### renderLeaf
-
-If a plugin's **`isLeaf`** is **`true`** and its **`type`** matches **`props.leaf.type`**, a leaf node is rendered with specific plugin properties:
-
-- **`inject.props`** are used to inject rendering props.
-- **`component`** is used to render the leaf.
-
-If no plugin is found for a node type, **`renderLeaf`** prop is used (if defined). If this is also not defined, **`DefaultLeaf`** (a plain **`span`**) is used.
-
-### Handlers
-
-This integrates DOM handlers plugins, such as **`onDOMBeforeInput`**, **`onKeyDown`**, etc.
+For more details on creating and configuring the editor, refer to the [Editor Configuration](/docs/editor) guide.

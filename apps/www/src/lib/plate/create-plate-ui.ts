@@ -1,58 +1,57 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import { withProps } from '@udecode/cn';
 import {
-  MARK_BOLD,
-  MARK_CODE,
-  MARK_ITALIC,
-  MARK_STRIKETHROUGH,
-  MARK_SUBSCRIPT,
-  MARK_SUPERSCRIPT,
-  MARK_UNDERLINE,
-} from '@udecode/plate-basic-marks';
-import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
+  BoldPlugin,
+  CodePlugin,
+  ItalicPlugin,
+  StrikethroughPlugin,
+  SubscriptPlugin,
+  SuperscriptPlugin,
+  UnderlinePlugin,
+} from '@udecode/plate-basic-marks/react';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import {
-  ELEMENT_CODE_BLOCK,
-  ELEMENT_CODE_LINE,
-  ELEMENT_CODE_SYNTAX,
-} from '@udecode/plate-code-block';
-import { MARK_COMMENT } from '@udecode/plate-comments';
+  CodeBlockPlugin,
+  CodeLinePlugin,
+  CodeSyntaxPlugin,
+} from '@udecode/plate-code-block/react';
+import { CommentsPlugin } from '@udecode/plate-comments/react';
+import { ParagraphPlugin } from '@udecode/plate-common';
 import {
+  type NodeComponent,
   PlateElement,
   PlateLeaf,
-  type PlatePluginComponent,
-} from '@udecode/plate-common';
-import { ELEMENT_INLINE_DATE } from '@udecode/plate-date';
-import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
-import { MARK_SEARCH_HIGHLIGHT } from '@udecode/plate-find-replace';
+} from '@udecode/plate-common/react';
+import { DatePlugin } from '@udecode/plate-date';
+import { EmojiInputPlugin } from '@udecode/plate-emoji';
+import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
+import { FindReplacePlugin } from '@udecode/plate-find-replace';
+import { HEADING_KEYS } from '@udecode/plate-heading';
+import { HighlightPlugin } from '@udecode/plate-highlight/react';
+import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
+import { KbdPlugin } from '@udecode/plate-kbd/react';
+import { ColumnItemPlugin, ColumnPlugin } from '@udecode/plate-layout/react';
+import { LinkPlugin } from '@udecode/plate-link/react';
 import {
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_H3,
-  ELEMENT_H4,
-  ELEMENT_H5,
-  ELEMENT_H6,
-} from '@udecode/plate-heading';
-import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
-import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
-import { MARK_KBD } from '@udecode/plate-kbd';
-import { ELEMENT_COLUMN, ELEMENT_COLUMN_GROUP } from '@udecode/plate-layout';
-import { ELEMENT_LINK } from '@udecode/plate-link';
+  BulletedListPlugin,
+  ListItemPlugin,
+  NumberedListPlugin,
+  TodoListPlugin,
+} from '@udecode/plate-list/react';
+import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
 import {
-  ELEMENT_LI,
-  ELEMENT_OL,
-  ELEMENT_TODO_LI,
-  ELEMENT_UL,
-} from '@udecode/plate-list';
-import { ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from '@udecode/plate-media';
-import { ELEMENT_MENTION, ELEMENT_MENTION_INPUT } from '@udecode/plate-mention';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
-import { ELEMENT_SLASH_INPUT } from '@udecode/plate-slash-command';
+  MentionInputPlugin,
+  MentionPlugin,
+} from '@udecode/plate-mention/react';
+import { SlashInputPlugin } from '@udecode/plate-slash-command';
 import {
-  ELEMENT_TABLE,
-  ELEMENT_TD,
-  ELEMENT_TH,
-  ELEMENT_TR,
-} from '@udecode/plate-table';
-import { ELEMENT_TOGGLE } from '@udecode/plate-toggle';
+  TableCellHeaderPlugin,
+  TableCellPlugin,
+  TablePlugin,
+  TableRowPlugin,
+} from '@udecode/plate-table/react';
+import { TogglePlugin } from '@udecode/plate-toggle/react';
 
 import { BlockquoteElement } from '@/registry/default/plate-ui/blockquote-element';
 import { CodeBlockElement } from '@/registry/default/plate-ui/code-block-element';
@@ -62,13 +61,13 @@ import { CodeSyntaxLeaf } from '@/registry/default/plate-ui/code-syntax-leaf';
 import { ColumnElement } from '@/registry/default/plate-ui/column-element';
 import { ColumnGroupElement } from '@/registry/default/plate-ui/column-group-element';
 import { CommentLeaf } from '@/registry/default/plate-ui/comment-leaf';
+import { DateElement } from '@/registry/default/plate-ui/date-element';
 import { EmojiInputElement } from '@/registry/default/plate-ui/emoji-input-element';
 import { ExcalidrawElement } from '@/registry/default/plate-ui/excalidraw-element';
 import { HeadingElement } from '@/registry/default/plate-ui/heading-element';
 import { HighlightLeaf } from '@/registry/default/plate-ui/highlight-leaf';
 import { HrElement } from '@/registry/default/plate-ui/hr-element';
 import { ImageElement } from '@/registry/default/plate-ui/image-element';
-import { InlineDateElement } from '@/registry/default/plate-ui/inline-date-element';
 import { KbdLeaf } from '@/registry/default/plate-ui/kbd-leaf';
 import { LinkElement } from '@/registry/default/plate-ui/link-element';
 import { ListElement } from '@/registry/default/plate-ui/list-element';
@@ -89,66 +88,56 @@ import { TodoListElement } from '@/registry/default/plate-ui/todo-list-element';
 import { ToggleElement } from '@/registry/default/plate-ui/toggle-element';
 import { withDraggables } from '@/registry/default/plate-ui/with-draggables';
 
-import { ELEMENT_EMOJI_INPUT } from '../../../../../packages/emoji/dist';
-
-export const createPlateUI = (
-  overrideByKey?: Partial<Record<string, PlatePluginComponent>>,
-  {
-    draggable,
-    placeholder,
-  }: { draggable?: boolean; placeholder?: boolean } = {}
-) => {
-  let components: Record<string, PlatePluginComponent> = {
-    [ELEMENT_BLOCKQUOTE]: BlockquoteElement,
-    [ELEMENT_CODE_BLOCK]: CodeBlockElement,
-    [ELEMENT_CODE_LINE]: CodeLineElement,
-    [ELEMENT_CODE_SYNTAX]: CodeSyntaxLeaf,
-    [ELEMENT_COLUMN]: ColumnElement,
-    [ELEMENT_COLUMN_GROUP]: ColumnGroupElement,
-    [ELEMENT_EMOJI_INPUT]: EmojiInputElement,
-    [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
-    [ELEMENT_H1]: withProps(HeadingElement, { variant: 'h1' }),
-    [ELEMENT_H2]: withProps(HeadingElement, { variant: 'h2' }),
-    [ELEMENT_H3]: withProps(HeadingElement, { variant: 'h3' }),
-    [ELEMENT_H4]: withProps(HeadingElement, { variant: 'h4' }),
-    [ELEMENT_H5]: withProps(HeadingElement, { variant: 'h5' }),
-    [ELEMENT_H6]: withProps(HeadingElement, { variant: 'h6' }),
-    [ELEMENT_HR]: HrElement,
-    [ELEMENT_IMAGE]: ImageElement,
-    [ELEMENT_INLINE_DATE]: InlineDateElement,
-    [ELEMENT_LI]: withProps(PlateElement, { as: 'li' }),
-    [ELEMENT_LINK]: LinkElement,
-    [ELEMENT_MEDIA_EMBED]: MediaEmbedElement,
-    [ELEMENT_MENTION]: MentionElement,
-    [ELEMENT_MENTION_INPUT]: MentionInputElement,
-    [ELEMENT_OL]: withProps(ListElement, { variant: 'ol' }),
-    [ELEMENT_PARAGRAPH]: ParagraphElement,
-    [ELEMENT_SLASH_INPUT]: SlashInputElement,
-    [ELEMENT_TABLE]: TableElement,
-    [ELEMENT_TD]: TableCellElement,
-    [ELEMENT_TH]: TableCellHeaderElement,
-    [ELEMENT_TODO_LI]: TodoListElement,
-    [ELEMENT_TOGGLE]: ToggleElement,
-    [ELEMENT_TR]: TableRowElement,
-    [ELEMENT_UL]: withProps(ListElement, { variant: 'ul' }),
-    [MARK_BOLD]: withProps(PlateLeaf, { as: 'strong' }),
-    [MARK_CODE]: CodeLeaf,
-    [MARK_COMMENT]: CommentLeaf,
-    [MARK_HIGHLIGHT]: HighlightLeaf,
-    [MARK_ITALIC]: withProps(PlateLeaf, { as: 'em' }),
-    [MARK_KBD]: KbdLeaf,
-    [MARK_SEARCH_HIGHLIGHT]: SearchHighlightLeaf,
-    [MARK_STRIKETHROUGH]: withProps(PlateLeaf, { as: 's' }),
-    [MARK_SUBSCRIPT]: withProps(PlateLeaf, { as: 'sub' }),
-    [MARK_SUPERSCRIPT]: withProps(PlateLeaf, { as: 'sup' }),
-    [MARK_UNDERLINE]: withProps(PlateLeaf, { as: 'u' }),
+export const createPlateUI = ({
+  draggable,
+  placeholder,
+}: { draggable?: boolean; placeholder?: boolean } = {}) => {
+  let components: Record<string, NodeComponent> = {
+    [BlockquotePlugin.key]: BlockquoteElement,
+    [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
+    [BulletedListPlugin.key]: withProps(ListElement, { variant: 'ul' }),
+    [CodeBlockPlugin.key]: CodeBlockElement,
+    [CodeLinePlugin.key]: CodeLineElement,
+    [CodePlugin.key]: CodeLeaf,
+    [CodeSyntaxPlugin.key]: CodeSyntaxLeaf,
+    [ColumnItemPlugin.key]: ColumnElement,
+    [ColumnPlugin.key]: ColumnGroupElement,
+    [CommentsPlugin.key]: CommentLeaf,
+    [DatePlugin.key]: DateElement,
+    [EmojiInputPlugin.key]: EmojiInputElement,
+    [ExcalidrawPlugin.key]: ExcalidrawElement,
+    [FindReplacePlugin.key]: SearchHighlightLeaf,
+    [HEADING_KEYS.h1]: withProps(HeadingElement, { variant: 'h1' }),
+    [HEADING_KEYS.h2]: withProps(HeadingElement, { variant: 'h2' }),
+    [HEADING_KEYS.h3]: withProps(HeadingElement, { variant: 'h3' }),
+    [HEADING_KEYS.h4]: withProps(HeadingElement, { variant: 'h4' }),
+    [HEADING_KEYS.h5]: withProps(HeadingElement, { variant: 'h5' }),
+    [HEADING_KEYS.h6]: withProps(HeadingElement, { variant: 'h6' }),
+    [HighlightPlugin.key]: HighlightLeaf,
+    [HorizontalRulePlugin.key]: HrElement,
+    [ImagePlugin.key]: ImageElement,
+    [ItalicPlugin.key]: withProps(PlateLeaf, { as: 'em' }),
+    [KbdPlugin.key]: KbdLeaf,
+    [LinkPlugin.key]: LinkElement,
+    [ListItemPlugin.key]: withProps(PlateElement, { as: 'li' }),
+    [MediaEmbedPlugin.key]: MediaEmbedElement,
+    [MentionInputPlugin.key]: MentionInputElement,
+    [MentionPlugin.key]: MentionElement,
+    [NumberedListPlugin.key]: withProps(ListElement, { variant: 'ol' }),
+    [ParagraphPlugin.key]: ParagraphElement,
+    [SlashInputPlugin.key]: SlashInputElement,
+    [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: 's' }),
+    [SubscriptPlugin.key]: withProps(PlateLeaf, { as: 'sub' }),
+    [SuperscriptPlugin.key]: withProps(PlateLeaf, { as: 'sup' }),
+    [TableCellHeaderPlugin.key]: TableCellHeaderElement,
+    [TableCellPlugin.key]: TableCellElement,
+    [TablePlugin.key]: TableElement,
+    [TableRowPlugin.key]: TableRowElement,
+    [TodoListPlugin.key]: TodoListElement,
+    [TogglePlugin.key]: ToggleElement,
+    [UnderlinePlugin.key]: withProps(PlateLeaf, { as: 'u' }),
   };
 
-  if (overrideByKey) {
-    Object.keys(overrideByKey).forEach((key) => {
-      (components as any)[key] = (overrideByKey as any)[key];
-    });
-  }
   if (placeholder) {
     components = withPlaceholders(components);
   }

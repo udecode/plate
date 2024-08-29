@@ -320,11 +320,7 @@ export const ui: Registry = [
     type: 'components:plate-ui',
   },
   {
-    dependencies: [
-      '@udecode/plate-block-quote',
-      '@udecode/plate-heading',
-      '@udecode/plate-paragraph',
-    ],
+    dependencies: ['@udecode/plate-block-quote', '@udecode/plate-heading'],
     files: ['plate-ui/insert-dropdown-menu.tsx'],
     name: 'insert-dropdown-menu',
     registryDependencies: ['dropdown-menu', 'toolbar'],
@@ -447,7 +443,6 @@ export const ui: Registry = [
     type: 'components:plate-ui',
   },
   {
-    dependencies: ['@udecode/plate-paragraph'],
     files: ['plate-ui/paragraph-element.tsx'],
     name: 'paragraph-element',
     registryDependencies: [],
@@ -553,11 +548,7 @@ export const ui: Registry = [
     type: 'components:plate-ui',
   },
   {
-    dependencies: [
-      '@udecode/plate-block-quote',
-      '@udecode/plate-heading',
-      '@udecode/plate-paragraph',
-    ],
+    dependencies: ['@udecode/plate-block-quote', '@udecode/plate-heading'],
     files: ['plate-ui/turn-into-dropdown-menu.tsx'],
     name: 'turn-into-dropdown-menu',
     registryDependencies: ['dropdown-menu', 'toolbar'],

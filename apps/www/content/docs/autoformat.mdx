@@ -21,20 +21,19 @@ docs:
 - Enables quick content formatting via shortcodes.
 - Offers markdown-like inline codes for real-time typing.
 - Enhances and simplifies editing by avoiding toolbar buttons and shortcuts for common formatting.
-- Auto conversion feature (e.g., **`#`** to H1).
+- Auto conversion feature (e.g., `#` to H1).
 - Provides predefined formatting rules.
 
 **Formatting shortcodes:**
 
-- **`text*`** for bold text.
-- **`_text_`** for italicized text.
-- **`~~text~~`** for strikethrough text.
+- `text*` for bold text.
+- `_text_` for italicized text.
+- `~~text~~` for strikethrough text.
 - ... and more.
 
 </PackageInfo>
 
 ## Installation
-
 ```bash
 npm install @udecode/plate-autoformat
 ```
@@ -42,11 +41,11 @@ npm install @udecode/plate-autoformat
 ## Usage
 
 ```tsx
-import { createAutoformatPlugin } from '@udecode/plate-autoformat';
+import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 
 const plugins = [
   // ...otherPlugins,
-  createAutoformatPlugin({
+  AutoformatPlugin.configure({
     options: {
       rules: autoformatRules,
       enableUndoOnDelete: true,
@@ -87,9 +86,7 @@ If using the [List plugin](/docs/list), you can use the following rules:
 
 ## API
 
-### createAutoformatPlugin
-
-[//]: # '- **`key: KEY_AUTOFORMAT`**'
+### AutoformatPlugin
 
 <APIOptions>
 
@@ -114,8 +111,8 @@ You can import the following rules:
 
 | Name                           | Description                          |
 | :----------------------------- | :----------------------------------- |
-| `autoformatSmartQuotes`        | Converts `"text"` to `“text”`.       |
-|                                | Converts `'text'` to `‘text’`.       |
+| `autoformatSmartQuotes`        | Converts `"text"` to `"text"`.       |
+|                                | Converts `'text'` to `'text'`.       |
 | `autoformatPunctuation`        | Converts `--` to `—`.                |
 |                                | Converts `...` to `…`.               |
 |                                | Converts `>>` to `»`.                |
@@ -219,13 +216,13 @@ If true, insert the triggering character after autoformatting.
 </APIItem>
 <APIItem
   name="query"
-  type="(editor: TEditor<V>, options: AutoformatQueryOptions) => boolean"
+  type="(editor: PlateEditor, options: AutoformatQueryOptions) => boolean"
   optional
 >
 
 A query function to allow autoformat.
 
-- `AutoformatQueryOptions` extends `Omit<AutoformatCommonRule<V, E>, 'query'>`:
+- `AutoformatQueryOptions` extends `Omit<AutoformatCommonRule, 'query'>`:
 
 <APISubList>
 <APISubListItem parent="options" name="text" type="string">
@@ -276,13 +273,13 @@ the selected block.
 - **Default:** `false`
 
 </APIItem>
-<APIItem name="preFormat" type="(editor: TEditor<V>) => void" optional>
+<APIItem name="preFormat" type="(editor: PlateEditor) => void" optional>
 
 Function called just before `format`. Generally used to reset the selected
 block.
 
 </APIItem>
-<APIItem name="format" type="(editor: TEditor<V>) => void" optional>
+<APIItem name="format" type="(editor: PlateEditor) => void" optional>
 
 Custom formatting function.
 
@@ -326,7 +323,7 @@ The mode is 'text'.
 A pattern to match for the autoformat rule to apply.
 
 </APIItem>
-<APIItem name="format" type="string | string[] | ((editor: TEditor<V>, options: GetMatchPointsReturnType) => void)">
+<APIItem name="format" type="string | string[] | ((editor: PlateEditor, options: GetMatchPointsReturnType) => void)">
 
 The matched text is replaced by that string, the matched texts are replaced by these strings, or a function called when there is a match.
 

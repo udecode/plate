@@ -2,7 +2,6 @@ import type { Point } from 'slate';
 
 import {
   type TEditor,
-  type Value,
   getEditorString,
   getPointBefore,
   getRange,
@@ -13,8 +12,8 @@ import { escapeRegExp } from '@udecode/utils';
  * Is the word at the point after a trigger (punctuation character)
  * https://github.com/ianstormtaylor/slate/blob/main/packages/slate/src/utils/string.ts#L6
  */
-export const isWordAfterTrigger = <V extends Value>(
-  editor: TEditor<V>,
+export const isWordAfterTrigger = (
+  editor: TEditor,
   { at, trigger }: { at: Point; trigger: string }
 ) => {
   // Point at the start of previous word (excluding punctuation)

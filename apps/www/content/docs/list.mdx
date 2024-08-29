@@ -31,11 +31,11 @@ npm install @udecode/plate-list
 ## Usage
 
 ```tsx
-import { createListPlugin } from '@udecode/plate-list';
+import { ListPlugin } from '@udecode/plate-list/react';
 
 const plugins = [
   // ...otherPlugins,
-  createListPlugin(),
+  ListPlugin,
 ];
 ```
 
@@ -52,31 +52,31 @@ npm install @udecode/plate-list
 ## Usage Todo List
 
 ```tsx
-import { createTodoListPlugin } from '@udecode/plate-list';
+import { TodoListPlugin } from '@udecode/plate-list/react';
 
 const plugins = [
   // ...otherPlugins,
-  createTodoListPlugin(),
+  TodoListPlugin,
 ];
 ```
 
-## Keyboard Interactions
+## Keyboard Shortcuts
 
 <KeyTable>
   <KeyTableItem hotkey="Cmd + Opt + 4">Insert a numbered list.</KeyTableItem>
   <KeyTableItem hotkey="Cmd + Shift + 4">Insert a numbered list.</KeyTableItem>
 </KeyTable>
 
-## API
+## Plugins
 
-### createListPlugin
+### ListPlugin
 
 - `key: 'list'`
 - Contains the following element plugins:
-  - `ELEMENT_UL`: plugin options below.
-  - `ELEMENT_OL`: plugin options below.
-  - `ELEMENT_LI`
-  - `ELEMENT_LIC`
+  - `BulletedListPlugin`
+  - `NumberedListPlugin`
+  - `ListItemPlugin`
+  - `ListItemContentPlugin`
 
 <APIOptions>
   <APIItem name="validLiChildrenTypes" type="string[]" optional>
@@ -87,6 +87,39 @@ const plugins = [
     Determines whether pressing Shift+Tab should reset the list indent level.
   </APIItem>
 </APIOptions>
+
+### BulletedListPlugin
+
+Plugin for unordered (bulleted) lists.
+
+### NumberedListPlugin
+
+Plugin for ordered (numbered) lists.
+
+### ListItemPlugin
+
+Plugin for list items.
+
+### ListItemContentPlugin
+
+Plugin for list item content.
+
+## API
+
+### editor.tf.toggle.list
+
+Toggles a list in the editor.
+
+<APIParameters>
+<APIItem name="options" type="object">
+<APISubList>
+<APISubListItem parent="options" name="type" type="string">
+The type of the list to toggle.
+</APISubListItem>
+</APISubList>
+
+</APIItem>
+</APIParameters>
 
 ### getHighestEmptyList
 
@@ -660,30 +693,6 @@ Checks if the current selection is inside a list of a specific type.
   </APIItem>
 </APIReturns>
 
-### toggleList
-
-Toggles a list in the editor.
-
-<APIParameters>
-<APIItem name="editor" type="PlateEditor">
-The editor instance.
-</APIItem>
-<APIItem name="options" type="object">
-<APISubList>
-<APISubListItem parent="options" name="type" type="string">
-The type of the list to toggle.
-</APISubListItem>
-<APISubListItem parent="options" name="pluginKey" type="string" optional>
-The key of the plugin associated with the list.
-
-- **Default:** `type`
-
-</APISubListItem>
-</APISubList>
-
-</APIItem>
-</APIParameters>
-
 ### unindentListItems
 
 Decreases the indentation level of the list items in the editor.
@@ -730,7 +739,7 @@ The pressed state of the button.
 <APIItem name="nodeType" type="string">
 The node type of the list.
 
-- **Default:** `ELEMENT_UL`
+- **Default:** `BulletedListPlugin.key`
 
 </APIItem>
 </APIState>

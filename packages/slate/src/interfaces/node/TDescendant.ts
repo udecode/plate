@@ -1,4 +1,4 @@
-import type { TEditor, Value } from '../editor/TEditor';
+import type { TEditor } from '../editor/TEditor';
 import type { ElementOf, TElement } from '../element/TElement';
 import type { TText, TextOf } from '../text/TText';
 import type { TNode } from './TNode';
@@ -12,9 +12,6 @@ import { isText } from '../text/isText';
  * further than the more generic `Node` union.
  */
 export type TDescendant = TElement | TText;
-
-/** Descendant of an editor. */
-export type EDescendant<V extends Value> = DescendantOf<TEditor<V>>;
 
 /** A utility type to get all the descendant node types from a root node type. */
 export type DescendantOf<N extends TNode> = N extends TEditor

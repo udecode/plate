@@ -1,16 +1,16 @@
-import type { TElement } from '@udecode/slate';
+import type { PlateRenderElementProps } from '@udecode/plate-common/react';
 
 import { cn } from '@udecode/cn';
 import {
-  type LiFC,
-  type MarkerFC,
   useIndentTodoListElement,
   useIndentTodoListElementState,
-} from '@udecode/plate-indent-list';
+} from '@udecode/plate-indent-list/react';
 
 import { Checkbox } from './checkbox';
 
-export const TodoMarker: MarkerFC = ({ element }: { element: TElement }) => {
+export const TodoMarker = ({
+  element,
+}: Omit<PlateRenderElementProps, 'children'>) => {
   const state = useIndentTodoListElementState({ element });
   const { checkboxProps } = useIndentTodoListElement(state);
 
@@ -24,7 +24,7 @@ export const TodoMarker: MarkerFC = ({ element }: { element: TElement }) => {
   );
 };
 
-export const TodoLi: LiFC = (props) => {
+export const TodoLi = (props: PlateRenderElementProps) => {
   const { children, element } = props;
 
   return (

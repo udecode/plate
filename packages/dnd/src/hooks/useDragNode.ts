@@ -1,10 +1,10 @@
 import { type DragSourceHookSpec, useDrag } from 'react-dnd';
 
-import type { TEditor, Value } from '@udecode/plate-common/server';
+import type { PlateEditor } from '@udecode/plate-common/react';
 
 import type { DragItemNode } from '../types';
 
-import { dndStore } from '../dndStore';
+import { DndPlugin } from '../DndPlugin';
 
 export interface UseDragNodeOptions
   extends DragSourceHookSpec<DragItemNode, unknown, { isDragging: boolean }> {
@@ -16,20 +16,20 @@ export interface UseDragNodeOptions
  *
  * On drag start:
  *
- * - Set `editor.isDragging` to true
+ * - Set `isDragging` to true
  * - Add `dragging` class to `body`
  *
  * On drag end:
  *
- * - Set `editor.isDragging` to false
+ * - Set `isDragging` to false
  * - Remove `dragging` class to `body`
  *
  * Collect:
  *
  * - IsDragging: true if mouse is dragging the block
  */
-export const useDragNode = <V extends Value>(
-  editor: TEditor<V>,
+export const useDragNode = (
+  editor: PlateEditor,
   { id, item, ...options }: UseDragNodeOptions
 ) => {
   return useDrag<DragItemNode, unknown, { isDragging: boolean }>(
@@ -38,13 +38,11 @@ export const useDragNode = <V extends Value>(
         isDragging: monitor.isDragging(),
       }),
       end: () => {
-        dndStore.set.isDragging(false);
-        editor.isDragging = false;
+        editor.setOption(DndPlugin, 'isDragging', false);
         document.body.classList.remove('dragging');
       },
       item(monitor) {
-        dndStore.set.isDragging(true);
-        editor.isDragging = true;
+        editor.setOption(DndPlugin, 'isDragging', true);
         document.body.classList.add('dragging');
 
         const _item = typeof item === 'function' ? item(monitor) : item;

@@ -1,5 +1,5 @@
-import { type TEditor, type Value, isExpanded } from '@udecode/slate';
+import { type TEditor, isExpanded } from '@udecode/slate';
 
 /** Is the selection expanded. */
-export const isSelectionExpanded = <V extends Value>(editor: TEditor<V>) =>
+export const isSelectionExpanded = (editor: TEditor) =>
   isExpanded(editor.selection);

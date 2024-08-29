@@ -2,9 +2,8 @@
 
 import React from 'react';
 
-import type { PlateCloudEditor } from '@udecode/plate-cloud';
-
-import { type Value, useEditorRef } from '@udecode/plate-common';
+import { CloudPlugin } from '@udecode/plate-cloud';
+import { useEditorPlugin } from '@udecode/plate-common/react';
 
 const buttonStyle: React.CSSProperties = {
   background: '#f0f0f0',
@@ -15,14 +14,15 @@ const buttonStyle: React.CSSProperties = {
 };
 
 export function CloudToolbarButtons() {
-  const editor = useEditorRef<Value, PlateCloudEditor>();
+  const { api, editor } = useEditorPlugin(CloudPlugin);
+
   const getSaveValue = () => {
     console.info('editor.children', editor.children);
-    console.info('editor.cloud.getSaveValue()', editor.cloud.getSaveValue());
+    console.info('editor.cloud.getSaveValue()', api.cloud.getSaveValue());
   };
 
   const finishUploads = async () => {
-    await editor.cloud.finishUploads();
+    await api.cloud.finishUploads();
   };
 
   return (

@@ -1,20 +1,22 @@
-import type { SoftBreakPlugin } from '@udecode/plate-break';
-import type { PlatePlugin } from '@udecode/plate-common';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+import { SoftBreakPlugin } from '@udecode/plate-break/react';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+import { TableCellPlugin } from '@udecode/plate-table/react';
 
-import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
-import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
-import { ELEMENT_TD } from '@udecode/plate-table';
-
-export const softBreakPlugin: Partial<PlatePlugin<SoftBreakPlugin>> = {
+export const softBreakPlugin = SoftBreakPlugin.configure({
   options: {
     rules: [
       { hotkey: 'shift+enter' },
       {
         hotkey: 'enter',
         query: {
-          allow: [ELEMENT_CODE_BLOCK, ELEMENT_BLOCKQUOTE, ELEMENT_TD],
+          allow: [
+            CodeBlockPlugin.key,
+            BlockquotePlugin.key,
+            TableCellPlugin.key,
+          ],
         },
       },
     ],
   },
-};
+});

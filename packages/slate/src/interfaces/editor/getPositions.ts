@@ -1,6 +1,6 @@
 import { Editor, type EditorPositionsOptions } from 'slate';
 
-import type { TEditor, Value } from './TEditor';
+import type { TEditor } from './TEditor';
 
 /**
  * Iterate through all of the positions in the document where a `Point` can be
@@ -14,7 +14,7 @@ import type { TEditor, Value } from './TEditor';
  * not happen inside their content unless you pass in true for the voids option,
  * then iteration will occur.
  */
-export const getPositions = <V extends Value>(
-  editor: TEditor<V>,
+export const getPositions = (
+  editor: TEditor,
   options?: EditorPositionsOptions
 ) => Editor.positions(editor as any, options);

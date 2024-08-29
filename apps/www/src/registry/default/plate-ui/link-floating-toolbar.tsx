@@ -3,7 +3,7 @@
 import React from 'react';
 
 import { cn } from '@udecode/cn';
-import { useFormInputProps } from '@udecode/plate-common';
+import { useFormInputProps } from '@udecode/plate-common/react';
 import {
   type UseVirtualFloatingOptions,
   flip,
@@ -17,7 +17,7 @@ import {
   useFloatingLinkEditState,
   useFloatingLinkInsert,
   useFloatingLinkInsertState,
-} from '@udecode/plate-link';
+} from '@udecode/plate-link/react';
 
 import { Icons } from '@/components/icons';
 

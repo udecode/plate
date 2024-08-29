@@ -25,25 +25,52 @@ npm install @udecode/plate-caption
 ## Usage
 
 ```tsx
-import { createCaptionPlugin } from '@udecode/plate-caption';
+import { CaptionPlugin } from '@udecode/plate-caption/react';
+import { ImagePlugin } from '@udecode/plate-media/react';
+import { MediaEmbedPlugin } from '@udecode/plate-media-embed/react';
 
 const plugins = [
   // ...otherPlugins,
-  createCaptionPlugin({
-    options: { pluginKeys: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED] },
-  }),
+  CaptionPlugin,
+  ImagePlugin,
+  MediaEmbedPlugin,
 ];
+
+const editor = createPlateEditor({
+  plugins,
+  override: {
+    plugins: {
+      [CaptionPlugin.key]: {
+        plugins: [ImagePlugin.key, MediaEmbedPlugin.key],
+      },
+    },
+  },
+});
 ```
 
-## API
+## Plugins
 
-### createCaptionPlugin
+### CaptionPlugin
 
 <APIOptions>
-  <APIItem name="pluginKeys" type="string[]" required>
-    The plugin key of the blocks that have caption.
+  <APIItem name="plugins" type="string[]" required>
+    The plugin keys of the blocks that have caption.
+  </APIItem>
+  <APIItem name="focusEndPath" type="Path" optional>
+    Path to focus at the end of the caption.
+  </APIItem>
+  <APIItem name="focusStartPath" type="Path" optional>
+    Path to focus at the start of the caption.
+  </APIItem>
+  <APIItem name="visibleId" type="string" optional>
+    ID of the visible caption.
+  </APIItem>
+  <APIItem name="isVisible" type="boolean" optional>
+    Whether the caption is visible.
   </APIItem>
 </APIOptions>
+
+## API
 
 ### TCaptionElement
 

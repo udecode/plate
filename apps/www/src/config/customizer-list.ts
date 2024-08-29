@@ -1,105 +1,109 @@
-import { KEY_ALIGN } from '@udecode/plate-alignment';
-import { KEY_AUTOFORMAT } from '@udecode/plate-autoformat';
+import { AlignPlugin } from '@udecode/plate-alignment';
+import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
-  MARK_BOLD,
-  MARK_CODE,
-  MARK_ITALIC,
-  MARK_STRIKETHROUGH,
-  MARK_SUBSCRIPT,
-  MARK_SUPERSCRIPT,
-  MARK_UNDERLINE,
-} from '@udecode/plate-basic-marks';
-import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
+  BoldPlugin,
+  CodePlugin,
+  ItalicPlugin,
+  StrikethroughPlugin,
+  SubscriptPlugin,
+  SuperscriptPlugin,
+  UnderlinePlugin,
+} from '@udecode/plate-basic-marks/react';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import {
-  KEY_EXIT_BREAK,
-  KEY_SINGLE_LINE,
-  KEY_SOFT_BREAK,
-} from '@udecode/plate-break';
-import { KEY_CAPTION } from '@udecode/plate-caption';
-import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
-import { MARK_COMMENT } from '@udecode/plate-comments';
-import { ELEMENT_INLINE_DATE } from '@udecode/plate-date';
-import { KEY_DND } from '@udecode/plate-dnd';
-import { KEY_EMOJI } from '@udecode/plate-emoji';
-import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
-import { MARK_BG_COLOR, MARK_COLOR, MARK_FONT_SIZE } from '@udecode/plate-font';
-import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
-import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
-import { KEY_INDENT } from '@udecode/plate-indent';
-import { KEY_LIST_STYLE_TYPE } from '@udecode/plate-indent-list';
-import { KEY_JUICE } from '@udecode/plate-juice';
-import { MARK_KBD } from '@udecode/plate-kbd';
-import { KEY_LINE_HEIGHT } from '@udecode/plate-line-height';
-import { ELEMENT_LINK } from '@udecode/plate-link';
-import { ELEMENT_TODO_LI } from '@udecode/plate-list';
-import { ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from '@udecode/plate-media';
-import { ELEMENT_MENTION } from '@udecode/plate-mention';
-import { KEY_NODE_ID } from '@udecode/plate-node-id';
-import { KEY_NORMALIZE_TYPES } from '@udecode/plate-normalizers';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
-import { KEY_RESET_NODE } from '@udecode/plate-reset-node';
-import { KEY_DELETE, KEY_SELECT_ON_BACKSPACE } from '@udecode/plate-select';
-import { KEY_BLOCK_SELECTION } from '@udecode/plate-selection';
-import { KEY_DESERIALIZE_CSV } from '@udecode/plate-serializer-csv';
-import { KEY_DESERIALIZE_DOCX } from '@udecode/plate-serializer-docx';
-import { KEY_DESERIALIZE_MD } from '@udecode/plate-serializer-md';
-import { KEY_TABBABLE } from '@udecode/plate-tabbable';
-import { ELEMENT_TABLE } from '@udecode/plate-table';
-import { ELEMENT_TOGGLE } from '@udecode/plate-toggle';
-import { KEY_TRAILING_BLOCK } from '@udecode/plate-trailing-block';
+  ExitBreakPlugin,
+  SingleLinePlugin,
+  SoftBreakPlugin,
+} from '@udecode/plate-break/react';
+import { CaptionPlugin } from '@udecode/plate-caption/react';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+import { CommentsPlugin } from '@udecode/plate-comments/react';
+import { ParagraphPlugin } from '@udecode/plate-common';
+import { CsvPlugin } from '@udecode/plate-csv';
+import { DatePlugin } from '@udecode/plate-date';
+import { DndPlugin } from '@udecode/plate-dnd';
+import { DocxPlugin } from '@udecode/plate-docx';
+import { EmojiPlugin } from '@udecode/plate-emoji';
+import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
+import {
+  FontBackgroundColorPlugin,
+  FontColorPlugin,
+  FontSizePlugin,
+} from '@udecode/plate-font';
+import { HighlightPlugin } from '@udecode/plate-highlight/react';
+import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
+import { IndentPlugin } from '@udecode/plate-indent/react';
+import { IndentListPlugin } from '@udecode/plate-indent-list/react';
+import { JuicePlugin } from '@udecode/plate-juice';
+import { KbdPlugin } from '@udecode/plate-kbd/react';
+import { LineHeightPlugin } from '@udecode/plate-line-height';
+import { LinkPlugin } from '@udecode/plate-link/react';
+import { TodoListPlugin } from '@udecode/plate-list/react';
+import { MarkdownPlugin } from '@udecode/plate-markdown';
+import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
+import { MentionPlugin } from '@udecode/plate-mention/react';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
+import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
+import { ResetNodePlugin } from '@udecode/plate-reset-node';
+import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
+import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import { TabbablePlugin } from '@udecode/plate-tabbable';
+import { TablePlugin } from '@udecode/plate-table/react';
+import { TogglePlugin } from '@udecode/plate-toggle/react';
+import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import { uniqBy } from 'lodash';
 
 import { customizerItems } from '@/config/customizer-items';
-import { KEY_DRAG_OVER_CURSOR } from '@/plate/demo/plugins/dragOverCursorPlugin';
+import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
 
 export const customizerList = [
   {
     children: [
-      customizerItems[ELEMENT_BLOCKQUOTE],
-      customizerItems[ELEMENT_CODE_BLOCK],
-      customizerItems[ELEMENT_EXCALIDRAW],
-      customizerItems[ELEMENT_HR],
-      customizerItems[ELEMENT_IMAGE],
-      customizerItems[ELEMENT_LINK],
-      customizerItems[ELEMENT_TOGGLE],
+      customizerItems[BlockquotePlugin.key],
+      customizerItems[CodeBlockPlugin.key],
+      customizerItems[ExcalidrawPlugin.key],
+      customizerItems[HorizontalRulePlugin.key],
+      customizerItems[ImagePlugin.key],
+      customizerItems[LinkPlugin.key],
+      customizerItems[TogglePlugin.key],
       customizerItems.column,
       customizerItems.heading,
       customizerItems.list,
-      customizerItems[ELEMENT_MEDIA_EMBED],
-      customizerItems[ELEMENT_MENTION],
-      customizerItems[ELEMENT_PARAGRAPH],
-      customizerItems[ELEMENT_TABLE],
-      customizerItems[ELEMENT_TODO_LI],
-      customizerItems[ELEMENT_INLINE_DATE],
+      customizerItems[MediaEmbedPlugin.key],
+      customizerItems[MentionPlugin.key],
+      customizerItems[ParagraphPlugin.key],
+      customizerItems[TablePlugin.key],
+      customizerItems[TodoListPlugin.key],
+      customizerItems[DatePlugin.key],
     ],
     id: 'blocks',
     label: 'Nodes',
   },
   {
     children: [
-      customizerItems[MARK_BOLD],
-      customizerItems[MARK_CODE],
-      customizerItems[MARK_COMMENT],
-      customizerItems[MARK_BG_COLOR],
-      customizerItems[MARK_COLOR],
-      customizerItems[MARK_FONT_SIZE],
-      customizerItems[MARK_HIGHLIGHT],
-      customizerItems[MARK_ITALIC],
-      customizerItems[MARK_KBD],
-      customizerItems[MARK_STRIKETHROUGH],
-      customizerItems[MARK_SUBSCRIPT],
-      customizerItems[MARK_SUPERSCRIPT],
-      customizerItems[MARK_UNDERLINE],
+      customizerItems[BoldPlugin.key],
+      customizerItems[CodePlugin.key],
+      customizerItems[CommentsPlugin.key],
+      customizerItems[FontBackgroundColorPlugin.key],
+      customizerItems[FontColorPlugin.key],
+      customizerItems[FontSizePlugin.key],
+      customizerItems[HighlightPlugin.key],
+      customizerItems[ItalicPlugin.key],
+      customizerItems[KbdPlugin.key],
+      customizerItems[StrikethroughPlugin.key],
+      customizerItems[SubscriptPlugin.key],
+      customizerItems[SuperscriptPlugin.key],
+      customizerItems[UnderlinePlugin.key],
     ],
     id: 'marks',
     label: 'Marks',
   },
   {
     children: [
-      customizerItems[KEY_ALIGN],
-      customizerItems[KEY_INDENT],
-      customizerItems[KEY_LIST_STYLE_TYPE],
-      customizerItems[KEY_LINE_HEIGHT],
+      customizerItems[AlignPlugin.key],
+      customizerItems[IndentPlugin.key],
+      customizerItems[IndentListPlugin.key],
+      customizerItems[LineHeightPlugin.key],
     ],
     id: 'style',
     label: 'Block Style',
@@ -107,32 +111,32 @@ export const customizerList = [
   {
     children: [
       customizerItems.components,
-      customizerItems[KEY_AUTOFORMAT],
-      customizerItems[KEY_BLOCK_SELECTION],
-      customizerItems[KEY_CAPTION],
-      customizerItems[KEY_DND],
-      customizerItems[KEY_DRAG_OVER_CURSOR],
-      customizerItems[KEY_EMOJI],
-      customizerItems[KEY_EXIT_BREAK],
-      customizerItems[KEY_NODE_ID],
-      customizerItems[KEY_NORMALIZE_TYPES],
-      customizerItems[KEY_RESET_NODE],
-      customizerItems[KEY_SELECT_ON_BACKSPACE],
-      customizerItems[KEY_DELETE],
-      customizerItems[KEY_SINGLE_LINE],
-      customizerItems[KEY_SOFT_BREAK],
-      customizerItems[KEY_TABBABLE],
-      customizerItems[KEY_TRAILING_BLOCK],
+      customizerItems[AutoformatPlugin.key],
+      customizerItems[BlockSelectionPlugin.key],
+      customizerItems[CaptionPlugin.key],
+      customizerItems[DndPlugin.key],
+      customizerItems[DragOverCursorPlugin.key],
+      customizerItems[EmojiPlugin.key],
+      customizerItems[ExitBreakPlugin.key],
+      customizerItems[NodeIdPlugin.key],
+      customizerItems[NormalizeTypesPlugin.key],
+      customizerItems[ResetNodePlugin.key],
+      customizerItems[SelectOnBackspacePlugin.key],
+      customizerItems[DeletePlugin.key],
+      customizerItems[SingleLinePlugin.key],
+      customizerItems[SoftBreakPlugin.key],
+      customizerItems[TabbablePlugin.key],
+      customizerItems[TrailingBlockPlugin.key],
     ],
     id: 'functionality',
     label: 'Functionality',
   },
   {
     children: [
-      customizerItems[KEY_DESERIALIZE_CSV],
-      customizerItems[KEY_DESERIALIZE_DOCX],
-      customizerItems[KEY_DESERIALIZE_MD],
-      customizerItems[KEY_JUICE],
+      customizerItems[CsvPlugin.key],
+      customizerItems[DocxPlugin.key],
+      customizerItems[MarkdownPlugin.key],
+      customizerItems[JuicePlugin.key],
     ],
     id: 'Deserialization',
     label: 'Deserialization',
@@ -140,66 +144,66 @@ export const customizerList = [
 ];
 
 export const orderedPluginKeys = [
-  ELEMENT_PARAGRAPH,
+  ParagraphPlugin.key,
   'heading',
-  ELEMENT_BLOCKQUOTE,
-  ELEMENT_CODE_BLOCK,
-  ELEMENT_HR,
-  ELEMENT_LINK,
+  BlockquotePlugin.key,
+  CodeBlockPlugin,
+  HorizontalRulePlugin.key,
+  LinkPlugin.key,
   'list',
-  ELEMENT_IMAGE,
-  ELEMENT_MEDIA_EMBED,
-  KEY_CAPTION,
-  ELEMENT_MENTION,
-  ELEMENT_TABLE,
-  ELEMENT_TODO_LI,
-  ELEMENT_EXCALIDRAW,
+  ImagePlugin.key,
+  MediaEmbedPlugin.key,
+  CaptionPlugin.key,
+  MentionPlugin.key,
+  TablePlugin.key,
+  TodoListPlugin.key,
+  ExcalidrawPlugin.key,
 
   // Marks
-  MARK_BOLD,
-  MARK_ITALIC,
-  MARK_UNDERLINE,
-  MARK_STRIKETHROUGH,
-  MARK_CODE,
-  MARK_SUBSCRIPT,
-  MARK_SUPERSCRIPT,
-  MARK_COLOR,
-  MARK_BG_COLOR,
-  MARK_FONT_SIZE,
-  MARK_HIGHLIGHT,
-  MARK_KBD,
+  BoldPlugin.key,
+  ItalicPlugin.key,
+  UnderlinePlugin.key,
+  StrikethroughPlugin.key,
+  CodePlugin.key,
+  SubscriptPlugin.key,
+  SuperscriptPlugin.key,
+  FontColorPlugin.key,
+  FontBackgroundColorPlugin.key,
+  FontSizePlugin.key,
+  HighlightPlugin.key,
+  KbdPlugin.key,
 
   // Block Style
-  KEY_ALIGN,
-  KEY_INDENT,
-  KEY_LIST_STYLE_TYPE,
-  KEY_LINE_HEIGHT,
+  AlignPlugin.key,
+  IndentPlugin.key,
+  IndentListPlugin.key,
+  LineHeightPlugin.key,
 
   // Functionality
-  KEY_AUTOFORMAT,
-  KEY_BLOCK_SELECTION,
-  KEY_DND,
-  KEY_EMOJI,
-  KEY_EXIT_BREAK,
-  KEY_NODE_ID,
-  KEY_NORMALIZE_TYPES,
-  KEY_RESET_NODE,
-  KEY_SELECT_ON_BACKSPACE,
-  KEY_DELETE,
-  KEY_SINGLE_LINE,
-  KEY_SOFT_BREAK,
-  KEY_TABBABLE,
-  KEY_TRAILING_BLOCK,
-  KEY_DRAG_OVER_CURSOR,
+  AutoformatPlugin.key,
+  BlockSelectionPlugin.key,
+  DndPlugin.key,
+  EmojiPlugin.key,
+  ExitBreakPlugin.key,
+  NodeIdPlugin.key,
+  NormalizeTypesPlugin.key,
+  ResetNodePlugin.key,
+  SelectOnBackspacePlugin.key,
+  DeletePlugin.key,
+  SingleLinePlugin.key,
+  SoftBreakPlugin.key,
+  TabbablePlugin.key,
+  TrailingBlockPlugin.key,
+  DragOverCursorPlugin.key,
 
   // Collaboration
-  MARK_COMMENT,
+  CommentsPlugin.key,
 
   // Deserialization
-  KEY_DESERIALIZE_DOCX,
-  KEY_DESERIALIZE_CSV,
-  KEY_DESERIALIZE_MD,
-  KEY_JUICE,
+  DocxPlugin.key,
+  CsvPlugin.key,
+  MarkdownPlugin.key,
+  JuicePlugin.key,
 ];
 
 export const allPlugins = customizerList.flatMap((group) => group.children);

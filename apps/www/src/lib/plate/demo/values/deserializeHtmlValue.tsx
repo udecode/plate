@@ -6,7 +6,7 @@ jsx;
 
 export const deserializeHtmlValue: any = (
   <fragment>
-    <hh2>Deserialize HTML</hh2>
+    <hh2>HTML</hh2>
     <hp>
       By default, when you paste content into the Slate editor, it will utilize
       the clipboard's <htext code>'text/plain'</htext>

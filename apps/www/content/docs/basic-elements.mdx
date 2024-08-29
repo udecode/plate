@@ -12,8 +12,6 @@ docs:
     title: Code Syntax Leaf
   - route: /docs/components/heading-element
     title: Heading Element
-  - route: /docs/components/paragraph-element
-    title: Paragraph Element
 ---
 
 <ComponentPreview name="playground-demo" id="basicnodes" />
@@ -22,62 +20,58 @@ docs:
 
 ## Features
 
-- Includes commonly used block elements: blockquote, code block, headings, and paragraph.
+- Includes commonly used block elements: blockquote, code block, and headings.
 
 </PackageInfo>
 
 **Plugins:**
 
-- **`createBlockquotePlugin()`** for `blockquote` element
-- **`createCodeBlockPlugin()`** for `code_block` element
-- **`createHeadingPlugin()`** for `h1`, `h2`,... elements
-- **`createParagraphPlugin()`** for `p` element
+- `BlockquotePlugin` for `blockquote` element
+- `CodeBlockPlugin` for `code_block` element
+- `HeadingPlugin` for `h1`, `h2`,... elements
 
 ## Installation
 
 ```bash
 npm install @udecode/plate-basic-elements
 # or
-npm install @udecode/plate-block-quote @udecode/plate-code-block @udecode/plate-heading @udecode/plate-paragraph
+npm install @udecode/plate-block-quote @udecode/plate-code-block @udecode/plate-heading
 ```
 
 ## Usage
 
 ```tsx
-import { createBasicElementsPlugin } from '@udecode/plate-basic-elements';
+import { BasicElementsPlugin, CodeBlockPlugin } from '@udecode/plate-basic-elements/react';
+import Prism from 'prismjs';
 
 const plugins = [
   // ...otherPlugins,
-  createBasicElementsPlugin(),
+  BasicElementsPlugin.configurePlugin(CodeBlockPlugin, {
+    options: {
+      prism: Prism,
+    },
+  }),
 ];
 ```
 
-## Keyboard Interactions
+## Keyboard Shortcuts
 
 <KeyTable>
-  <KeyTableItem hotkey="Cmd + Opt + 0">Toggle paragraph block.</KeyTableItem>
   <KeyTableItem hotkey="Cmd + Opt + 1">Toggle heading 1 block.</KeyTableItem>
   <KeyTableItem hotkey="Cmd + Opt + 2">Toggle heading 2 block.</KeyTableItem>
   <KeyTableItem hotkey="Cmd + Opt + 3">Toggle heading 3 block.</KeyTableItem>
   <KeyTableItem hotkey="Cmd + Shift + .">
     Toggle the blockquote formatting for selected text.
   </KeyTableItem>
-  <KeyTableItem hotkey="Cmd + A">
-    Select all text in the code block.
-  </KeyTableItem>
 </KeyTable>
 
-## API
+## Plugins
 
-### createBasicElementsPlugin
+### BasicElementsPlugin
 
-## API Block Quote
+### BlockquotePlugin
 
-### createBlockquotePlugin
-
-## API Heading
-
-### createHeadingPlugin
+### HeadingPlugin
 
 <APIOptions>
 <APIItem name="levels" type="number" optional>
@@ -86,13 +80,7 @@ Specifies the heading levels supported, ranging from 1 to the specified levels.
 </APIItem>
 </APIOptions>
 
-## API Paragraph
-
-### createParagraphPlugin
-
-## API Code Block
-
-### createCodeBlockPlugin
+### CodeBlockPlugin
 
 <APIOptions>
 
@@ -108,11 +96,9 @@ Determines if popular syntax should be displayed first.
 Defines deserializers for the code block plugin.
 
 </APIItem>
-<APIItem name="hotkey" type="string | string[]" optional>
-Hotkeys to trigger a code block action.
-
-</APIItem>
 </APIOptions>
+
+## API Code Block
 
 ### isCodeBlockEmpty
 
@@ -152,7 +138,7 @@ Checks if the selection is at the start of the first code line in a code block.
 Indents the code line if the selection is expanded or there are no non-whitespace characters at left of the cursor. The indentation is 2 spaces by default.
 
 <APIParameters>
-<APIItem name="editor" type="TEditor">
+<APIItem name="editor" type="PlateEditor">
 The editor instance.
 </APIItem>
 <APIItem name="options" type="IndentCodeLineOptions">
@@ -211,7 +197,7 @@ Inserts a code line starting with the specified indentation depth.
 Outdents a code line, removing two whitespace characters if present.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
   <APIItem name="options" type="OutdentCodeLineOptions" optional>

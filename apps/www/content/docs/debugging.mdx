@@ -1,0 +1,210 @@
+---
+title: Debugging
+description: Debugging in Plate.
+---
+
+## Using the DebugPlugin
+
+The `DebugPlugin` is automatically included when you create a Plate editor. You can access its methods through the editor's API:
+
+```ts
+const editor = createPlateEditor({
+  plugins: [/* your plugins */],
+});
+
+editor.api.debug.log('This is a log message');
+editor.api.debug.info('This is an info message');
+editor.api.debug.warn('This is a warning');
+editor.api.debug.error('This is an error');
+```
+
+### Log Levels
+
+The `DebugPlugin` supports four log levels:
+
+1. `log`: For general logging
+2. `info`: For informational messages
+3. `warn`: For warnings
+4. `error`: For errors
+
+You can set the minimum log level to control which messages are displayed:
+
+```ts
+const editor = createPlateEditor({
+  plugins: [
+    DebugPlugin.configure({
+      options: {
+        logLevel: 'warn', // Only show warnings and errors
+      },
+    }),
+  ],
+});
+```
+
+### Configuration Options
+
+The `DebugPlugin` can be configured with the following options:
+
+- `isProduction`: Set to `true` to disable logging in production environments.
+- `logLevel`: Set the minimum log level (`'error'`, `'warn'`, `'info'`, or `'log'`).
+- `logger`: Provide custom logging functions for each log level.
+- `throwErrors`: Set to `true` to throw errors instead of logging them (default: `true`).
+
+Example configuration:
+
+```ts
+const editor = createPlateEditor({
+  plugins: [
+    DebugPlugin.configure({
+      options: {
+        isProduction: process.env.NODE_ENV === 'production',
+        logLevel: 'info',
+        logger: {
+          error: (message, type, details) => {
+            // Custom error logging
+            console.error(`Custom Error: ${message}`, type, details);
+          },
+          // ... custom loggers for other levels
+        },
+        throwErrors: false,
+      },
+    }),
+  ],
+});
+```
+
+### Error Handling
+
+By default, the `DebugPlugin` throws errors when `error` is called. You can catch these errors and handle them as needed:
+
+```ts
+try {
+  editor.api.debug.error('An error occurred', 'CUSTOM_ERROR', { details: 'Additional information' });
+} catch (error) {
+  if (error instanceof PlateError) {
+    console.log(error.type); // 'CUSTOM_ERROR'
+    console.log(error.message); // '[CUSTOM_ERROR] An error occurred'
+  }
+}
+```
+
+To log errors instead of throwing them, set `throwErrors` to `false` in the configuration.
+
+### Best Practices
+
+1. Use appropriate log levels for different types of messages.
+2. In production, set `isProduction` to `true` to disable non-essential logging.
+3. Use custom loggers to integrate with your preferred logging service.
+4. Include relevant details when logging to make debugging easier.
+5. Use error types to categorize and handle different error scenarios.
+
+## Additional Debugging Strategies
+
+Besides using the DebugPlugin, there are other effective ways to debug your Plate editor:
+
+### 1. Override Editor Methods with Logging
+
+You can use the `extendEditor` option to override editor methods and add logging:
+
+```ts
+const LoggingPlugin = createPlatePlugin({
+  key: 'logging',
+  extendEditor: (editor) => {
+    const { apply } = editor;
+
+    editor.apply = (operation) => {
+      console.log('Operation:', operation);
+      apply(operation);
+    };
+
+    return editor;
+  },
+});
+
+const editor = createPlateEditor({
+  plugins: [LoggingPlugin],
+});
+```
+
+This approach allows you to log operations, selections, or any other editor behavior you want to inspect.
+
+### 2. Remove Suspected Plugins
+
+If you're experiencing issues, try removing plugins one by one to isolate the problem:
+
+```ts
+const editor = createPlateEditor({
+  plugins: [
+    // Comment out or remove suspected plugins
+    // ParagraphPlugin,
+    // HeadingPlugin,
+    // BoldPlugin,
+    // ...other plugins
+  ],
+});
+```
+
+Gradually add plugins back until you identify the one causing the issue.
+
+### 3. Use React DevTools
+
+React DevTools can be invaluable for debugging Plate components:
+
+1. Install the React DevTools browser extension.
+2. Open your app and the DevTools.
+3. Navigate to the Components tab.
+4. Inspect Plate components, their props, and state.
+
+### 4. Use Browser DevTools Breakpoints
+
+Set breakpoints in your code using browser DevTools:
+
+1. Open your app in the browser and open DevTools.
+2. Navigate to the Sources tab.
+3. Find your source file and click on the line number where you want to set a breakpoint.
+4. Interact with your editor to trigger the breakpoint.
+5. Inspect variables and step through the code.
+
+### 5. Create Minimal Reproducible Examples
+
+If you're facing a complex issue:
+
+1. Pick a [template](docs/getting-started).
+2. Add only the essential plugins and components to reproduce the issue.
+3. If the issue persists, <Link href="https://github.com/udecode/plate/issues/new?assignees=&labels=bug&projects=&template=bug.yml">open an issue on GitHub</Link> or share your example on <Link href="https://discord.gg/mAZRuBzGM3">Discord</Link>.
+
+## Debug Error Types
+
+Plate uses several predefined error types to help identify specific issues during development. Here's a list of these error types and their descriptions:
+
+### DEFAULT
+
+A general error that doesn't fit into other specific categories. Used when no other error type is applicable to the situation.
+
+### OPTION_UNDEFINED
+
+Thrown when an attempt is made to access an undefined plugin option. This occurs when trying to use a plugin option that hasn't been set or is undefined.
+
+### OVERRIDE_MISSING
+
+Indicates that an expected override is missing in a plugin configuration. This happens when a plugin expects certain overrides to be provided, but they are not present in the configuration.
+
+### PLUGIN_DEPENDENCY_MISSING
+
+Occurs when a required plugin dependency is not found. This error is thrown when a plugin depends on another plugin that hasn't been registered or included in the editor configuration.
+
+### PLUGIN_MISSING
+
+Indicates an attempt to use a plugin that hasn't been registered. This happens when trying to access or use a plugin that is not part of the current editor configuration.
+
+### USE_CREATE_PLUGIN
+
+Thrown when a plugin wasn't created using `createSlatePlugin` or `createPlatePlugin` function. This error occurs when a plugin is added to the editor without being properly created using the designated function.
+
+### USE_ELEMENT_CONTEXT
+
+Indicates that the `useElement` hook is being used outside of the appropriate element context. This occurs when trying to access element-specific data or functionality outside of the correct component context.
+
+### PLUGIN_NODE_TYPE
+
+Thrown when a plugin is incorrectly configured as both an element and a leaf. This error occurs when a plugin's configuration contradicts itself by setting both `isElement` and `isLeaf` to true.

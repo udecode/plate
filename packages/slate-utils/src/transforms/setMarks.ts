@@ -1,17 +1,12 @@
-import {
-  type EMarks,
-  type TEditor,
-  type Value,
-  withoutNormalizing,
-} from '@udecode/slate';
+import { type MarksOf, type TEditor, withoutNormalizing } from '@udecode/slate';
 import castArray from 'lodash/castArray.js';
 
 import { removeMark } from './removeMark';
 
 /** Set marks to selected text. */
-export const setMarks = <V extends Value>(
-  editor: TEditor<V>,
-  marks: EMarks<V>,
+export const setMarks = <E extends TEditor>(
+  editor: E,
+  marks: MarksOf<E>,
   clear: string | string[] = []
 ) => {
   if (!editor.selection) return;

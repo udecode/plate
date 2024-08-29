@@ -1,12 +1,10 @@
-import { type Value, getEndPoint, getStartPoint } from '@udecode/slate';
-
-import type { TReactEditor } from '../types/index';
+import { type TEditor, getEndPoint, getStartPoint } from '@udecode/slate';
 
 import { focusEditor } from '../react-editor/index';
 
 /** Focus an editor edge. */
-export const focusEditorEdge = <V extends Value>(
-  editor: TReactEditor<V>,
+export const focusEditorEdge = (
+  editor: TEditor,
   {
     edge = 'start',
   }: {

@@ -1,0 +1,45 @@
+---
+title: Serializing Docx
+description: Copy paste from DOCX to Slate.
+---
+
+<ComponentPreview name="playground-demo" id="docx" />
+
+<PackageInfo>
+
+## Features
+
+- Convert DOCX content to a Slate value.
+
+<Callout className="my-4">
+  **Note**: Converting a Slate value to DOCX is not yet supported.
+</Callout>
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-docx @udecode/plate-juice
+```
+
+## Usage
+
+### DOCX -> Slate
+
+```tsx
+import { JuicePlugin } from '@udecode/plate-juice';
+import { DocxPlugin } from '@udecode/plate-docx';
+
+const plugins = [
+  // ...otherPlugins,
+  DocxPlugin,
+  JuicePlugin,
+];
+```
+
+Given pasted HTML, `@udecode/plate-juice` is used to inline CSS properties into the `style` attribute.
+
+## Plugins
+
+### DocxPlugin

@@ -1,9 +1,9 @@
 import type { UnknownObject } from '@udecode/utils';
 
-import type { TEditor, Value } from '../editor/TEditor';
+import type { TEditor } from '../editor/TEditor';
 import type { TDescendant } from '../node/TDescendant';
 import type { TNode } from '../node/TNode';
-import type { EText } from '../text/TText';
+import type { TextOf } from '../text/TText';
 
 /**
  * `Element` objects are a type of node in a Slate document that contain other
@@ -15,11 +15,8 @@ export type TElement = {
   type: string;
 } & UnknownObject;
 
-/** Element of an editor. */
-export type EElement<V extends Value> = ElementOf<TEditor<V>>;
-
-/** Element or text of an editor. Differs from EDescendant<V>. */
-export type EElementOrText<V extends Value> = EElement<V> | EText<V>;
+/** Element or text of an editor. */
+export type ElementOrTextOf<E extends TEditor> = ElementOf<E> | TextOf<E>;
 
 /**
  * `ElementEntry` objects refer to an `Element` and the `Path` where it can be

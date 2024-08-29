@@ -1,4 +1,4 @@
-import type { UnknownObject } from '@udecode/plate-common/server';
+import type { UnknownObject } from '@udecode/plate-common';
 
 import type { CursorOverlayProps } from '../components';
 import type { CursorOverlayState, SelectionRect } from '../types';

@@ -2,23 +2,18 @@ import React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
+import { someNode } from '@udecode/plate-common';
+import { focusEditor, useEditorSelector } from '@udecode/plate-common/react';
+import { deleteTable, insertTableRow } from '@udecode/plate-table';
 import {
-  focusEditor,
-  someNode,
-  useEditorRef,
-  useEditorSelector,
-} from '@udecode/plate-common';
-import {
-  ELEMENT_TABLE,
+  TablePlugin,
   deleteColumn,
   deleteRow,
-  deleteTable,
   insertTable,
-  insertTableColumn,
-  insertTableRow,
-} from '@udecode/plate-table';
+} from '@udecode/plate-table/react';
 
 import { Icons, iconVariants } from '@/components/icons';
+import { useMyEditorRef } from '@/types/plate-types';
 
 import {
   DropdownMenu,
@@ -34,11 +29,11 @@ import { ToolbarButton } from './toolbar';
 
 export function TableDropdownMenu(props: DropdownMenuProps) {
   const tableSelected = useEditorSelector(
-    (editor) => someNode(editor, { match: { type: ELEMENT_TABLE } }),
+    (editor) => someNode(editor, { match: { type: TablePlugin.key } }),
     []
   );
 
-  const editor = useEditorRef();
+  const editor = useMyEditorRef();
   const openState = useOpenState();
 
   return (
@@ -93,7 +88,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
               className="min-w-[180px]"
               disabled={!tableSelected}
               onSelect={() => {
-                insertTableColumn(editor);
+                editor.tf.insert.tableColumn();
                 focusEditor(editor);
               }}
             >

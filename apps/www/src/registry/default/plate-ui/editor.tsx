@@ -1,10 +1,10 @@
 import React from 'react';
 
-import type { PlateContentProps } from '@udecode/plate-common';
+import type { PlateContentProps } from '@udecode/plate-common/react';
 import type { VariantProps } from 'class-variance-authority';
 
 import { cn } from '@udecode/cn';
-import { PlateContent } from '@udecode/plate-common';
+import { PlateContent } from '@udecode/plate-common/react';
 import { cva } from 'class-variance-authority';
 
 const editorVariants = cva(
@@ -75,6 +75,7 @@ const Editor = React.forwardRef<HTMLDivElement, EditorProps>(
             }),
             className
           )}
+          data-plate-selectable
           disableDefaultStyles
           readOnly={disabled ?? readOnly}
           {...props}

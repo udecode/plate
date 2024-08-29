@@ -73,7 +73,7 @@ jobs:
         run: yarn lint
 
       - name: 🕵️ Typecheck
-        run: yarn typecheck && yarn g:typecheck:apps
+        run: yarn typecheck:all
 
   notify-lint-typecheck-failure:
     name: Discord Notification

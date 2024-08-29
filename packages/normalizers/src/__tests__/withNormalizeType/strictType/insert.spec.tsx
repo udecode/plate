@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
-import { createPlateEditor } from '@udecode/plate-common';
-import { ELEMENT_H2 } from '@udecode/plate-heading';
+import { createSlateEditor } from '@udecode/plate-common';
+import { HEADING_KEYS } from '@udecode/plate-heading';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createNormalizeTypesPlugin } from '../../../createNormalizeTypesPlugin';
+import { NormalizeTypesPlugin } from '../../../lib/NormalizeTypesPlugin';
 
 jsx;
 
@@ -24,12 +24,12 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  const editor = createPlateEditor({
+  const editor = createSlateEditor({
     editor: input,
     plugins: [
-      createNormalizeTypesPlugin({
+      NormalizeTypesPlugin.configure({
         options: {
-          rules: [{ path: [1], strictType: ELEMENT_H2 }],
+          rules: [{ path: [1], strictType: HEADING_KEYS.h2 }],
         },
       }),
     ],

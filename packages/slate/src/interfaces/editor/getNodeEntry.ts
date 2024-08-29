@@ -1,12 +1,12 @@
 import { Editor, type EditorNodeOptions, type Location } from 'slate';
 
-import type { ENode } from '../node/TNode';
+import type { NodeOf } from '../node/TNode';
 import type { TNodeEntry } from '../node/TNodeEntry';
-import type { TEditor, Value } from './TEditor';
+import type { TEditor } from './TEditor';
 
 /** Get the node at a location. */
-export const getNodeEntry = <N extends ENode<V>, V extends Value = Value>(
-  editor: TEditor<V>,
+export const getNodeEntry = <N extends NodeOf<E>, E extends TEditor = TEditor>(
+  editor: E,
   at: Location,
   options?: EditorNodeOptions
 ): TNodeEntry<N> | undefined => {

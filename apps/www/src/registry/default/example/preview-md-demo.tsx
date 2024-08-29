@@ -2,19 +2,17 @@
 import React from 'react';
 
 import { cn } from '@udecode/cn';
+import { BasicElementsPlugin } from "@udecode/plate-basic-elements";
+import { BasicMarksPlugin } from "@udecode/plate-basic-marks";
 import {
-  Plate,
-  type TRenderLeafProps,
-  type TText,
-  type Value,
-  createPluginFactory, isText
+  type Decorate,
+  type TText, createSlatePlugin, isText
 } from "@udecode/plate-common";
-import { createPlugins } from "@udecode/plate-core";
+import { Plate, type TRenderLeafProps , usePlateEditor } from "@udecode/plate-common/react";
 import Prism from 'prismjs';
 
 import { editableProps } from '@/plate/demo/editableProps';
-import { plateUI } from '@/plate/demo/plateUI';
-import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
+import { PlateUI } from '@/plate/demo/plate-ui';
 import { previewMdValue } from '@/plate/demo/values/previewMdValue';
 import { Editor } from '@/registry/default/plate-ui/editor';
 
@@ -23,9 +21,8 @@ import 'prismjs/components/prism-markdown';
 /**
  * Decorate texts with markdown preview.
  */
-const decoratePreview =
-  () =>
-  ([node, path]: any) => {
+const decoratePreview: Decorate =
+  ({entry: [node, path]}) => {
     const ranges: any[] = [];
 
     if (!isText(node)) {
@@ -64,21 +61,11 @@ const decoratePreview =
     return ranges;
   };
 
-const createPreviewPlugin = createPluginFactory({
-  decorate: decoratePreview,
-  key: 'preview-md',
-});
-
-const plugins = createPlugins([...basicNodesPlugins, createPreviewPlugin()], {
-  components: plateUI,
-});
-
 function PreviewLeaf({
   attributes,
   children,
   leaf,
 }: TRenderLeafProps<
-  Value,
   {
     blockquote?: boolean;
     bold?: boolean;
@@ -116,9 +103,18 @@ const _editableProps = {
 };
 
 export default function PreviewMdDemo() {
+  const editor = usePlateEditor({
+    override: { components: PlateUI },
+    plugins: [BasicElementsPlugin, BasicMarksPlugin, createSlatePlugin({
+      decorate: decoratePreview,
+      key: 'preview-md',
+    })],
+    value: previewMdValue,
+  })
+  
   return (
     <div className="p-10">
-      <Plate initialValue={previewMdValue} plugins={plugins}>
+      <Plate editor={editor}>
         <Editor {..._editableProps} />
       </Plate>
     </div>

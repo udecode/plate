@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import type { PlateEditor } from '@udecode/plate-core';
+import type { SlateEditor } from '@udecode/plate-core';
 
 import { jsx } from '@udecode/plate-test-utils';
 import { findNode } from '@udecode/slate';
@@ -29,7 +29,7 @@ const input = (
       </hli>
     </hul>
   </editor>
-) as any as PlateEditor;
+) as any as SlateEditor;
 
 const output = (
   <editor>
@@ -51,7 +51,7 @@ const output = (
       <htext />
     </hul>
   </editor>
-) as any as PlateEditor;
+) as any as SlateEditor;
 
 it('should be', () => {
   const atPath = findNode(input, { match: { id: '2' } })?.[1];

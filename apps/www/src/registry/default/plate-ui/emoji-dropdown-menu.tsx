@@ -3,7 +3,7 @@ import React from 'react';
 import {
   type EmojiDropdownMenuOptions,
   useEmojiDropdownMenuState,
-} from '@udecode/plate-emoji';
+} from '@udecode/plate-emoji/react';
 
 import { Icons } from '@/components/icons';
 

@@ -30,41 +30,47 @@ npm install @udecode/plate-mention
 ## Usage
 
 ```tsx
-import { createMentionPlugin } from '@udecode/plate-mention';
+import { MentionPlugin } from '@udecode/plate-mention/react';
 
 const plugins = [
   // ...otherPlugins,
-  createMentionPlugin(),
+  MentionPlugin,
 ];
 ```
 
-## API
+## Plugins
 
-### createMentionPlugin
+### MentionPlugin
 
 Extends [TriggerComboboxPlugin](/docs/combobox#options)
 
 <APIOptions>
-<APIItem name="createMentionNode" type="(item: TComboboxItem<TData>, meta: CreateMentionNodeMeta) => TNodeProps<TMentionElement>" optional>
-  A function to create the mention node.
-</APIItem>
-
 <APIItem name="insertSpaceAfterMention" type="boolean" optional>
   Whether to insert a space after the mention.
 </APIItem>
 </APIOptions>
+
+### MentionInputPlugin
+
+Plugin for mention input functionality.
+
+## API
+
+### editor.api.insert.mention
+
+Override this API method to customize how mentions are inserted.
 
 ### getMentionOnSelectItem
 
 Gets the handler for selecting an item in the mention combobox.
 
 <APIParameters>
-<APIItem name="options" type="PlatePluginKey" optional>
+<APIItem name="options" type="object" optional>
 <APISubList>
 <APISubListItem parent="options" name="key" type="string" optional>
 The plugin key of the mention plugin.
 
-- **Default:** `ELEMENT_MENTION`
+- **Default:** `MentionPlugin.key`
 
 </APISubListItem>
 </APISubList>

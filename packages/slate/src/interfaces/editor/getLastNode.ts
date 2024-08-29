@@ -1,10 +1,10 @@
 import { Editor, type Location } from 'slate';
 
-import type { ENodeEntry } from '../node/TNodeEntry';
-import type { TEditor, Value } from './TEditor';
+import type { NodeEntryOf } from '../node/TNodeEntry';
+import type { TEditor } from './TEditor';
 
 /** Get the last node at a location. */
-export const getLastNode = <V extends Value>(
-  editor: TEditor<V>,
+export const getLastNode = <E extends TEditor>(
+  editor: E,
   at: Location
-): ENodeEntry<V> => Editor.last(editor as any, at) as any;
+): NodeEntryOf<E> => Editor.last(editor as any, at) as any;

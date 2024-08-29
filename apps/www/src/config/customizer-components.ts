@@ -67,6 +67,11 @@ export const customizerComponents = {
     href: '/docs/components/cursor-overlay',
     title: 'Cursor Overlay',
   },
+  dateElement: {
+    href: '/docs/components/date-element',
+    label: 'Element',
+    title: 'Date',
+  },
   dialog: { href: '/docs/components/dialog', title: 'Dialog' },
   draggable: { href: '/docs/components/draggable', title: 'Draggable' },
   dropdownMenu: {
@@ -142,11 +147,6 @@ export const customizerComponents = {
   inlineCombobox: {
     href: '/docs/components/inline-combobox',
     title: 'Inline Combobox',
-  },
-  inlineDateElement: {
-    href: '/docs/components/inline-date-element',
-    label: 'Element',
-    title: 'Inline Date',
   },
   input: { href: '/docs/components/input', title: 'Input' },
   insertDropdownMenu: {

@@ -6,7 +6,7 @@ import { cn } from '@udecode/cn';
 import {
   CommentEditActions,
   CommentEditTextarea,
-} from '@udecode/plate-comments';
+} from '@udecode/plate-comments/react';
 
 import { buttonVariants } from './button';
 import { inputVariants } from './input';

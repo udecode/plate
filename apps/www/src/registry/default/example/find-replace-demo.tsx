@@ -1,13 +1,14 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 
-import { Plate } from '@udecode/plate-common';
-import { createPlugins } from '@udecode/plate-core';
-import { createFindReplacePlugin } from '@udecode/plate-find-replace';
+import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
+import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
+import { Plate } from '@udecode/plate-common/react';
+import { usePlateEditor } from '@udecode/plate-core/react';
+import { FindReplacePlugin } from '@udecode/plate-find-replace';
 
 import { Icons } from '@/components/icons';
 import { editableProps } from '@/plate/demo/editableProps';
-import { plateUI } from '@/plate/demo/plateUI';
-import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
+import { PlateUI } from '@/plate/demo/plate-ui';
 import { findReplaceValue } from '@/plate/demo/values/findReplaceValue';
 import { Editor } from '@/registry/default/plate-ui/editor';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
@@ -62,17 +63,18 @@ export function SearchHighlightToolbar({
 export default function FindReplaceDemo() {
   const [search, setSearch] = useState('');
 
-  const plugins = useMemo(
-    () =>
-      createPlugins(
-        [
-          ...basicNodesPlugins,
-          createFindReplacePlugin({ options: { search } }),
-        ],
-        {
-          components: plateUI,
-        }
-      ),
+  const editor = usePlateEditor(
+    {
+      override: {
+        components: PlateUI,
+      },
+      plugins: [
+        BasicElementsPlugin,
+        BasicMarksPlugin,
+        FindReplacePlugin.configure({ options: { search } }),
+      ],
+      value: findReplaceValue,
+    },
     [search]
   );
 
@@ -80,7 +82,7 @@ export default function FindReplaceDemo() {
     <>
       <SearchHighlightToolbar icon={Icons.search} setSearch={setSearch} />
 
-      <Plate initialValue={findReplaceValue} plugins={plugins}>
+      <Plate editor={editor}>
         <Editor {...editableProps} />
       </Plate>
     </>

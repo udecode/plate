@@ -3,8 +3,8 @@
 import React from 'react';
 
 import { cn, withRef } from '@udecode/cn';
-import { useCodeBlockElementState } from '@udecode/plate-code-block';
-import { PlateElement } from '@udecode/plate-common';
+import { useCodeBlockElementState } from '@udecode/plate-code-block/react';
+import { PlateElement } from '@udecode/plate-common/react';
 
 import { CodeBlockCombobox } from './code-block-combobox';
 

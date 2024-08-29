@@ -1,6 +1,5 @@
 import * as z from 'zod';
 
-// TODO: Extract this to a shared package.
 export const registryItemSchema = z.object({
   dependencies: z.array(z.string()).optional(),
   devDependencies: z.array(z.string()).optional(),

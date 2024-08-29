@@ -1,17 +1,9 @@
 import type { Path } from 'slate';
 
-import {
-  type TEditor,
-  type Value,
-  getNextNode,
-  getStartPoint,
-} from '@udecode/slate';
+import { type TEditor, getNextNode, getStartPoint } from '@udecode/slate';
 
 /** Get the start point of the next node. */
-export const getNextNodeStartPoint = <V extends Value = Value>(
-  editor: TEditor<V>,
-  at: Path
-) => {
+export const getNextNodeStartPoint = (editor: TEditor, at: Path) => {
   const nextEntry = getNextNode(editor, {
     at,
   });

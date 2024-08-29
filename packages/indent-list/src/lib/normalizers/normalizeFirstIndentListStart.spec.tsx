@@ -1,0 +1,40 @@
+/** @jsx jsx */
+
+import type { SlateEditor } from '@udecode/plate-common';
+
+import { ParagraphPlugin } from '@udecode/plate-common';
+import { createPlateEditor } from '@udecode/plate-common/react';
+import { IndentPlugin } from '@udecode/plate-indent';
+import { jsx } from '@udecode/plate-test-utils';
+
+import { IndentListPlugin } from '../IndentListPlugin';
+
+jsx;
+
+const input = (
+  <editor>
+    <hp>1</hp>
+    <hp indent={1} listStart={1} listStyleType="disc">
+      2
+    </hp>
+  </editor>
+) as any as SlateEditor;
+
+const output = (
+  <editor>
+    <hp>1</hp>
+    <hp indent={1} listStyleType="disc">
+      2
+    </hp>
+  </editor>
+) as any as SlateEditor;
+
+it('should be', async () => {
+  const editor = createPlateEditor({
+    editor: input,
+    plugins: [ParagraphPlugin, IndentPlugin, IndentListPlugin],
+    shouldNormalizeEditor: true,
+  });
+
+  expect(editor.children).toEqual(output.children);
+});

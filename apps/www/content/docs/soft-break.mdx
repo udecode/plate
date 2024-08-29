@@ -22,19 +22,21 @@ npm install @udecode/plate-break
 ## Usage
 
 ```tsx
-// ...
-import { createSoftBreakPlugin } from '@udecode/plate-break';
+import { SoftBreakPlugin } from '@udecode/plate-break/react';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+import { TablePlugin } from '@udecode/plate-table/react';
 
 const plugins = [
   // ...otherPlugins,
-  createSoftBreakPlugin({
+  SoftBreakPlugin.configure({
     options: {
       rules: [
         { hotkey: 'shift+enter' },
         {
           hotkey: 'enter',
           query: {
-            allow: [ELEMENT_CODE_BLOCK, ELEMENT_BLOCKQUOTE, ELEMENT_TD],
+            allow: [CodeBlockPlugin.key, BlockquotePlugin.key, TablePlugin.key],
           },
         },
       ],
@@ -43,7 +45,7 @@ const plugins = [
 ];
 ```
 
-## Keyboard Interactions
+## Keyboard Shortcuts
 
 <KeyTable>
   <KeyTableItem hotkey="Shift + Enter">
@@ -51,9 +53,9 @@ const plugins = [
   </KeyTableItem>
 </KeyTable>
 
-## API
+## Plugins
 
-### createSoftBreakPlugin
+### SoftBreakPlugin
 
 <APIOptions>
 

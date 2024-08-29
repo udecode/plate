@@ -7,7 +7,7 @@ import {
   type Span,
 } from 'slate';
 
-import type { TEditor, Value } from './TEditor';
+import type { TEditor } from './TEditor';
 
 export type UnhangRangeOptions = {
   unhang?: boolean;
@@ -20,10 +20,10 @@ export type UnhangRangeOptions = {
  * - `at` (default: selection) is a range.
  */
 export const unhangRange = <
-  V extends Value,
+  E extends TEditor,
   R extends Path | Point | Range | Span | null | undefined,
 >(
-  editor: TEditor<V>,
+  editor: E,
   range: R,
   options: UnhangRangeOptions = {}
 ): R => {

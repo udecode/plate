@@ -3,13 +3,15 @@ import { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
 import {
   collapseSelection,
-  focusEditor,
   getNodeEntries,
   isBlock,
   toggleNodeType,
+} from '@udecode/plate-common';
+import {
+  focusEditor,
   useEditorRef,
   useEditorSelector,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/react';
 import { ELEMENT_H1, ELEMENT_H2, ELEMENT_H3 } from '@udecode/plate-heading';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 

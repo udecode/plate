@@ -1,14 +1,14 @@
 import { Editor } from 'slate';
 
-import type { EElementOrText } from '../element/TElement';
-import type { TEditor, Value } from './TEditor';
+import type { ElementOrTextOf } from '../element/TElement';
+import type { TEditor } from './TEditor';
 
 /**
  * Insert a node at the current selection.
  *
  * If the selection is currently expanded, it will be deleted first.
  */
-export const insertNode = <V extends Value>(
-  editor: TEditor<V>,
-  node: EElementOrText<V> | EElementOrText<V>[]
+export const insertNode = <E extends TEditor>(
+  editor: E,
+  node: ElementOrTextOf<E> | ElementOrTextOf<E>[]
 ) => Editor.insertNode(editor as any, node as any);

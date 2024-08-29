@@ -25,22 +25,24 @@ import {
   useComboboxStore,
 } from '@ariakit/react';
 import { cn } from '@udecode/cn';
+import { filterWords } from '@udecode/plate-combobox';
 import {
   type UseComboboxInputResult,
-  filterWords,
   useComboboxInput,
   useHTMLInputCursorState,
-} from '@udecode/plate-combobox';
+} from '@udecode/plate-combobox/react';
 import {
   type TElement,
   createPointRef,
-  findNodePath,
   getPointBefore,
   insertText,
   moveSelection,
+} from '@udecode/plate-common';
+import {
+  findNodePath,
   useComposedRef,
   useEditorRef,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/react';
 import { cva } from 'class-variance-authority';
 
 type FilterFn = (
@@ -176,8 +178,6 @@ const InlineCombobox = ({
   });
 
   const items = store.useState('items');
-
-  useEffect;
 
   /**
    * If there is no active ID and the list of items changes, select the first

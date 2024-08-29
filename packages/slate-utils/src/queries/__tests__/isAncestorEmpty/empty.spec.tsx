@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import type { PlateEditor } from '@udecode/plate-common';
+import type { SlateEditor } from '@udecode/plate-common';
 
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -12,7 +12,7 @@ const input = (
   <hp>
     <cursor />
   </hp>
-) as any as PlateEditor;
+) as any as SlateEditor;
 
 const output = true;
 

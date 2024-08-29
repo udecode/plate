@@ -25,11 +25,11 @@
       "module": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
-    "./server": {
-      "types": "./dist/server.d.ts",
-      "import": "./dist/server.mjs",
-      "module": "./dist/server.mjs",
-      "require": "./dist/server.js"
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.mjs",
+      "module": "./dist/react/index.mjs",
+      "require": "./dist/react/index.js"
     }
   },
   "main": "dist/index.js",
@@ -57,10 +57,10 @@
     "@udecode/plate-common": ">=36.3.9",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "slate": ">=0.94.0",
+    "slate": ">=0.103.0",
     "slate-history": ">=0.93.0",
     "slate-hyperscript": ">=0.66.0",
-    "slate-react": ">=0.99.0"
+    "slate-react": ">=0.108.0"
   },
   "publishConfig": {
     "access": "public"

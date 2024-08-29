@@ -1,8 +1,7 @@
 import { HistoryEditor } from 'slate-history';
 
-import type { Value } from '../editor/TEditor';
-import type { THistoryEditor } from './THistoryEditor';
+import type { TEditor } from '../editor';
 
 /** {@link HistoryEditor.isSaving} */
-export const isHistorySaving = <V extends Value>(editor: THistoryEditor<V>) =>
+export const isHistorySaving = (editor: TEditor) =>
   HistoryEditor.isSaving(editor as any);

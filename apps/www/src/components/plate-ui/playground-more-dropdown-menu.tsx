@@ -2,15 +2,14 @@ import React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { MARK_SUBSCRIPT, MARK_SUPERSCRIPT } from '@udecode/plate-basic-marks';
 import {
-  collapseSelection,
-  focusEditor,
-  toggleMark,
-  useEditorRef,
-} from '@udecode/plate-common';
-import { MARK_HIGHLIGHT } from '@udecode/plate-highlight';
-import { MARK_KBD } from '@udecode/plate-kbd';
+  SubscriptPlugin,
+  SuperscriptPlugin,
+} from '@udecode/plate-basic-marks/react';
+import { collapseSelection } from '@udecode/plate-common';
+import { focusEditor, useEditorRef } from '@udecode/plate-common/react';
+import { HighlightPlugin } from '@udecode/plate-highlight/react';
+import { KbdPlugin } from '@udecode/plate-kbd/react';
 
 import { Icons } from '@/components/icons';
 import {
@@ -40,9 +39,7 @@ export function PlaygroundMoreDropdownMenu(props: DropdownMenuProps) {
       >
         <DropdownMenuItem
           onSelect={() => {
-            toggleMark(editor, {
-              key: MARK_HIGHLIGHT,
-            });
+            editor.tf.toggle.mark({ key: HighlightPlugin.key });
             collapseSelection(editor, { edge: 'end' });
             focusEditor(editor);
           }}
@@ -53,9 +50,7 @@ export function PlaygroundMoreDropdownMenu(props: DropdownMenuProps) {
 
         <DropdownMenuItem
           onSelect={() => {
-            toggleMark(editor, {
-              key: MARK_KBD,
-            });
+            editor.tf.toggle.mark({ key: KbdPlugin.key });
             collapseSelection(editor, { edge: 'end' });
             focusEditor(editor);
           }}
@@ -66,9 +61,9 @@ export function PlaygroundMoreDropdownMenu(props: DropdownMenuProps) {
 
         <DropdownMenuItem
           onSelect={() => {
-            toggleMark(editor, {
-              clear: [MARK_SUBSCRIPT, MARK_SUPERSCRIPT],
-              key: MARK_SUPERSCRIPT,
+            editor.tf.toggle.mark({
+              clear: [SubscriptPlugin.key, SuperscriptPlugin.key],
+              key: SuperscriptPlugin.key,
             });
             focusEditor(editor);
           }}
@@ -79,9 +74,9 @@ export function PlaygroundMoreDropdownMenu(props: DropdownMenuProps) {
         </DropdownMenuItem>
         <DropdownMenuItem
           onSelect={() => {
-            toggleMark(editor, {
-              clear: [MARK_SUPERSCRIPT, MARK_SUBSCRIPT],
-              key: MARK_SUBSCRIPT,
+            editor.tf.toggle.mark({
+              clear: [SuperscriptPlugin.key, SubscriptPlugin.key],
+              key: SubscriptPlugin.key,
             });
             focusEditor(editor);
           }}

@@ -1,4 +1,4 @@
-import type { UseEmojiPickerType } from '@udecode/plate-emoji';
+import type { UseEmojiPickerType } from '@udecode/plate-emoji/react';
 
 import { cn } from '@udecode/cn';
 import { DeleteIcon, SearchIcon } from 'lucide-react';

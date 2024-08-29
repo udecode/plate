@@ -16,7 +16,7 @@
 
 - [#3168](https://github.com/udecode/plate/pull/3168) by [@12joan](https://github.com/12joan) –
   - Now uses the reworked combobox package
-  - `ELEMENT_MENTION_INPUT` is now an inline void element, and combobox functionality must now be handled in the component
+  - `MentionInputPlugin.key` is now an inline void element, and combobox functionality must now be handled in the component
   - Plugin options:
     - Now extends from `TriggerComboboxPlugin`
     - Renamed `query` to `triggerQuery` (provided by `TriggerComboboxPlugin`)

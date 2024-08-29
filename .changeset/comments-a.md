@@ -1,0 +1,21 @@
+---
+'@udecode/plate-comments': major
+---
+
+- `createCommentsPlugin` -> `CommentsPlugin`
+- Move `commentsStore` to `CommentsPlugin`
+- Remove `CommentsProvider` and its hooks
+- Remove `useCommentsStates` (replaced by direct option access)
+- Remove `useCommentsSelectors` (replaced by option selectors)
+- Remove `useCommentsActions` (replaced by api methods)
+- Replace `useUpdateComment` with `api.comment.updateComment`
+- Replace `useAddRawComment` with `api.comment.addRawComment`
+- Replace `useAddComment` with `api.comment.addComment`
+- Replace `useRemoveComment` with `api.comment.removeComment`
+- Replace `useResetNewCommentValue` with `api.comment.resetNewCommentValue`
+- Replace `useNewCommentText` with `options.newText`
+- Replace `useMyUser` with `options.myUser`
+- Replace `useUserById` with `options.userById`
+- Replace `useCommentById` with `options.commentById`
+- Replace `useActiveComment` with `options.activeComment`
+- Replace `useAddCommentMark` with `insert.comment`

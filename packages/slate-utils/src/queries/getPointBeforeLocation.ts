@@ -3,7 +3,6 @@ import type { Location, Point } from 'slate';
 
 import {
   type TEditor,
-  type Value,
   getEditorString,
   getPoint,
   getPointBefore,
@@ -54,8 +53,8 @@ export interface PointBeforeOptions extends BeforeOptions {
  * {@link getPointBefore} with additional options. TODO: support for sequence of
  * any characters.
  */
-export const getPointBeforeLocation = <V extends Value>(
-  editor: TEditor<V>,
+export const getPointBeforeLocation = (
+  editor: TEditor,
   at: Location,
   options?: PointBeforeOptions
 ) => {

@@ -2,23 +2,22 @@
   "name": "@udecode/plate-common",
   "version": "36.3.9",
   "description": "Plate common packages for plugins",
-  "license": "MIT",
+  "keywords": [
+    "plate",
+    "plugin",
+    "slate"
+  ],
   "homepage": "https://platejs.org",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
     "directory": "packages/common"
   },
-  "bugs": {
-    "url": "https://github.com/udecode/plate/issues"
-  },
+  "license": "MIT",
   "sideEffects": false,
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist/**/*"
-  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -26,17 +25,23 @@
       "module": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
-    "./server": {
-      "types": "./dist/server.d.ts",
-      "import": "./dist/server.mjs",
-      "module": "./dist/server.mjs",
-      "require": "./dist/server.js"
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.mjs",
+      "module": "./dist/react/index.mjs",
+      "require": "./dist/react/index.js"
     }
   },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
   "scripts": {
+    "brl": "yarn p:brl",
     "build": "yarn p:build",
     "build:watch": "yarn p:build:watch",
-    "brl": "yarn p:brl:below",
     "clean": "yarn p:clean",
     "lint": "yarn p:lint",
     "lint:fix": "yarn p:lint:fix",
@@ -47,6 +52,7 @@
   "dependencies": {
     "@udecode/plate-core": "36.3.9",
     "@udecode/plate-utils": "36.3.9",
+    "@udecode/react-hotkeys": "36.5.8",
     "@udecode/react-utils": "33.0.0",
     "@udecode/slate": "36.0.6",
     "@udecode/slate-react": "36.0.6",
@@ -56,16 +62,11 @@
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "slate": ">=0.94.0",
+    "slate": ">=0.103.0",
     "slate-history": ">=0.93.0",
     "slate-hyperscript": ">=0.66.0",
-    "slate-react": ">=0.99.0"
+    "slate-react": ">=0.108.0"
   },
-  "keywords": [
-    "plate",
-    "plugin",
-    "slate"
-  ],
   "publishConfig": {
     "access": "public"
   }

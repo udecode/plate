@@ -1,43 +1,38 @@
 // local import, not from npm
 import {
-  createBoldPlugin,
-  createCodePlugin,
-  createItalicPlugin,
-  createStrikethroughPlugin,
-  createUnderlinePlugin,
-} from '@udecode/plate-basic-marks';
-import { createBlockquotePlugin } from '@udecode/plate-block-quote';
-import { createCodeBlockPlugin } from '@udecode/plate-code-block';
-import { Plate, createPlugins } from '@udecode/plate-common';
-import { createHeadingPlugin } from '@udecode/plate-heading';
-import { createParagraphPlugin } from '@udecode/plate-paragraph';
+  BoldPlugin,
+  CodePlugin,
+  ItalicPlugin,
+  StrikethroughPlugin,
+  UnderlinePlugin,
+} from '@udecode/plate-basic-marks/react';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+import { Plate, usePlateEditor } from '@udecode/plate-common/react';
+import { HeadingPlugin } from '@udecode/plate-heading/react';
+import Prism from 'prismjs';
 
-import { createPlateUI } from '@/plate/create-plate-ui';
+import { createPlateUI } from '@/lib/plate/create-plate-ui';
 import { Editor } from '@/registry/default/plate-ui/editor';
 
-const plugins = createPlugins(
-  [
-    // Pick your plugins in https://platejs.org/?builder=true
-    createParagraphPlugin(),
-    createBlockquotePlugin(),
-    createCodeBlockPlugin(),
-    createHeadingPlugin(),
-
-    createBoldPlugin(),
-    createItalicPlugin(),
-    createUnderlinePlugin(),
-    createStrikethroughPlugin(),
-    createCodePlugin(),
-  ],
-  {
-    // Pick your components in https://platejs.org/?builder=true
-    components: createPlateUI(),
-  }
-);
-
 export default function BasicPluginsComponentsDemo() {
+  const editor = usePlateEditor({
+    override: { components: createPlateUI() },
+    plugins: [
+      BlockquotePlugin,
+      CodeBlockPlugin.configure({ options: { prism: Prism } }),
+      HeadingPlugin,
+      BoldPlugin,
+      ItalicPlugin,
+      UnderlinePlugin,
+      StrikethroughPlugin,
+      CodePlugin,
+    ],
+    value: basicEditorValue,
+  });
+
   return (
-    <Plate initialValue={basicEditorValue} plugins={plugins}>
+    <Plate editor={editor}>
       <Editor autoFocus={false} placeholder="Type..." spellCheck={false} />
     </Plate>
   );

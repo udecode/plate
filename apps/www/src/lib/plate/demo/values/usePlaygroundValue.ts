@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import type { Value } from '@udecode/plate-common';
+import type { MyValue } from '@/types/plate-types';
 
 import { settingsStore } from '@/components/context/settings-store';
 import { type ValueId, customizerPlugins } from '@/config/customizer-plugins';
@@ -37,7 +37,7 @@ import { tabbableValue } from './tabbableValue';
 import { tableMergeValue, tableValue } from './tableValue';
 import { toggleValue } from './toggleValue';
 
-export const usePlaygroundValue = (id?: ValueId) => {
+export const usePlaygroundValue = (id?: ValueId): MyValue => {
   let valueId = settingsStore.use.valueId();
 
   if (id) {
@@ -58,7 +58,11 @@ export const usePlaygroundValue = (id?: ValueId) => {
       return mapNodeId(tableMergeValue);
     }
     if (valueId !== customizerPlugins.playground.id) {
-      const newValue = (customizerPlugins as any)[valueId]?.value ?? value;
+      let newValue = (customizerPlugins as any)[valueId]?.value ?? value;
+
+      if (newValue.length === 0) {
+        newValue = value;
+      }
 
       return mapNodeId(newValue);
     }
@@ -68,7 +72,7 @@ export const usePlaygroundValue = (id?: ValueId) => {
     if (enabled.kbd) value.push(...kbdValue);
     // Inline nodes
     if (enabled.mention) value.push(...mentionValue);
-    if (enabled.inline_date) value.push(...dateValue);
+    if (enabled.data) value.push(...dateValue);
     if (enabled.emoji) value.push(...emojiValue);
     // Nodes
     if (enabled.align) value.push(...alignValue);
@@ -93,14 +97,14 @@ export const usePlaygroundValue = (id?: ValueId) => {
     // Deserialization
     value.push(...deserializeHtmlValue);
 
-    if (enabled.deserializeMd) value.push(...deserializeMdValue);
-    if (enabled.deserializeDocx) value.push(...deserializeDocxValue);
-    if (enabled.deserializeCsv) value.push(...deserializeCsvValue);
+    if (enabled.markdown) value.push(...deserializeMdValue);
+    if (enabled.docx) value.push(...deserializeDocxValue);
+    if (enabled.csv) value.push(...deserializeCsvValue);
     // Exceptions
     if (enabled.trailingBlock) value.push(...trailingBlockValue);
     if (enabled.excalidraw) value.push(...excalidrawValue);
 
-    return mapNodeId(value) as Value;
+    return mapNodeId(value);
   }, [
     enabled.a,
     enabled.action_item,
@@ -109,9 +113,9 @@ export const usePlaygroundValue = (id?: ValueId) => {
     enabled.backgroundColor,
     enabled.color,
     enabled.comment,
-    enabled.deserializeCsv,
-    enabled.deserializeDocx,
-    enabled.deserializeMd,
+    enabled.csv,
+    enabled.docx,
+    enabled.markdown,
     enabled.dragOverCursor,
     enabled.emoji,
     enabled.excalidraw,
@@ -132,7 +136,7 @@ export const usePlaygroundValue = (id?: ValueId) => {
     enabled.toggle,
     enabled.trailingBlock,
     enabled.column,
-    enabled.inline_date,
+    enabled.data,
     valueId,
   ]);
 };

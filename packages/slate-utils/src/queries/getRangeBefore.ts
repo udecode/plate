@@ -1,6 +1,6 @@
 import type { Location, Range } from 'slate';
 
-import { type TEditor, type Value, getPoint } from '@udecode/slate';
+import { type TEditor, getPoint } from '@udecode/slate';
 
 import {
   type PointBeforeOptions,
@@ -10,8 +10,8 @@ import {
 export interface RangeBeforeOptions extends PointBeforeOptions {}
 
 /** Get range from {@link getPointBeforeLocation} to the end point of `at`. */
-export const getRangeBefore = <V extends Value>(
-  editor: TEditor<V>,
+export const getRangeBefore = (
+  editor: TEditor,
   at: Location,
   options?: RangeBeforeOptions
 ): Range | undefined => {

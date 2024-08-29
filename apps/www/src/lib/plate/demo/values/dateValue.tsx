@@ -16,13 +16,13 @@ export const dateValue: any = (
     </hp>
     <hp>
       Try selecting{' '}
-      <hinlinedate date="2024-01-01">
+      <hdate date="2024-01-01">
         <htext />
-      </hinlinedate>{' '}
+      </hdate>{' '}
       or{' '}
-      <hinlinedate date={today}>
+      <hdate date={today}>
         <htext />
-      </hinlinedate>
+      </hdate>
       .
     </hp>
   </fragment>

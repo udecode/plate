@@ -1,13 +1,9 @@
 import React, { type ComponentType, type SVGProps } from 'react';
 
 import { withRef } from '@udecode/cn';
-import {
-  type PlateEditor,
-  PlateElement,
-  toggleNodeType,
-} from '@udecode/plate-common';
-import { insertInlineDate } from '@udecode/plate-date';
-import { ELEMENT_H1, ELEMENT_H2, ELEMENT_H3 } from '@udecode/plate-heading';
+import { type PlateEditor, PlateElement } from '@udecode/plate-common/react';
+import { DatePlugin } from '@udecode/plate-date';
+import { HEADING_KEYS } from '@udecode/plate-heading';
 import { ListStyleType, toggleIndentList } from '@udecode/plate-indent-list';
 
 import { Icons } from '@/components/icons';
@@ -31,21 +27,21 @@ const rules: SlashCommandRule[] = [
   {
     icon: Icons.h1,
     onSelect: (editor) => {
-      toggleNodeType(editor, { activeType: ELEMENT_H1 });
+      editor.tf.toggle.block({ type: HEADING_KEYS.h1 });
     },
     value: 'Heading 1',
   },
   {
     icon: Icons.h2,
     onSelect: (editor) => {
-      toggleNodeType(editor, { activeType: ELEMENT_H2 });
+      editor.tf.toggle.block({ type: HEADING_KEYS.h2 });
     },
     value: 'Heading 2',
   },
   {
     icon: Icons.h3,
     onSelect: (editor) => {
-      toggleNodeType(editor, { activeType: ELEMENT_H3 });
+      editor.tf.toggle.block({ type: HEADING_KEYS.h3 });
     },
     value: 'Heading 3',
   },
@@ -73,9 +69,9 @@ const rules: SlashCommandRule[] = [
     icon: Icons.add,
     keywords: ['inline', 'date'],
     onSelect: (editor) => {
-      insertInlineDate(editor);
+      editor.getTransforms(DatePlugin).insert.date();
     },
-    value: 'Inline date',
+    value: 'Date',
   },
 ];
 

@@ -6,12 +6,24 @@ import { type Options, defineConfig } from 'tsup';
 const silent = false;
 
 const PACKAGE_ROOT_PATH = process.cwd();
-const INPUT_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/index.ts');
-const INPUT_FILE = fs.existsSync(INPUT_FILE_PATH)
-  ? INPUT_FILE_PATH
-  : path.join(PACKAGE_ROOT_PATH, 'src/index.tsx');
 
-const SERVER_INPUT_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/server.ts');
+const INPUT_TS_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/index.ts');
+const INPUT_TSX_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/index.tsx');
+const INPUT_FILE = fs.existsSync(INPUT_TS_FILE_PATH)
+  ? INPUT_TS_FILE_PATH
+  : INPUT_TSX_FILE_PATH;
+
+const REACT_TS_INPUT_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/react/index.ts');
+const REACT_TSX_INPUT_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/react/index.tsx');
+const REACT_INPUT_FILE_PATH = fs.existsSync(REACT_TS_INPUT_FILE_PATH)
+  ? REACT_TS_INPUT_FILE_PATH
+  : REACT_TSX_INPUT_FILE_PATH;
+
+const entry = [INPUT_FILE]
+
+if (fs.existsSync(REACT_INPUT_FILE_PATH)) {
+  entry.push(REACT_INPUT_FILE_PATH)
+}
 
 export default defineConfig((opts) => {
   const options: Options = {
@@ -41,9 +53,7 @@ export default defineConfig((opts) => {
   return [
     {
       ...options,
-      entry: fs.existsSync(SERVER_INPUT_FILE_PATH)
-        ? [INPUT_FILE, SERVER_INPUT_FILE_PATH]
-        : [INPUT_FILE],
+      entry,
     },
   ];
 });

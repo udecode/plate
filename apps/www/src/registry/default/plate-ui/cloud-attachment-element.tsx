@@ -10,15 +10,14 @@ import {
 import {
   PlateElement,
   type PlateElementProps,
-  type Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/react';
 
 import { Icons } from '@/components/icons';
 
 import { StatusBar } from './cloud-status-bar';
 
 export interface CloudAttachmentElementProps
-  extends PlateElementProps<Value, TCloudAttachmentElement> {}
+  extends PlateElementProps<TCloudAttachmentElement> {}
 
 export function CloudAttachmentElement({
   className,

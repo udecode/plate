@@ -1,96 +1,51 @@
 import type React from 'react';
 
-import type { AutoformatRule } from '@udecode/plate-autoformat';
-import type { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
+import type { usePlaygroundEditor } from '@/registry/default/example/playground-demo';
+import type { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import type {
-  ELEMENT_CODE_BLOCK,
-  ELEMENT_CODE_LINE,
+  CodeBlockPlugin,
+  CodeLinePlugin,
 } from '@udecode/plate-code-block';
 import type { TCommentText } from '@udecode/plate-comments';
 import type {
-  ELEMENT_EXCALIDRAW,
-  TExcalidrawElement,
-} from '@udecode/plate-excalidraw';
+  ElementOf,
+  ParagraphPlugin,
+  TElement,
+  TText,
+} from '@udecode/plate-common';
+import type { TExcalidrawElement } from '@udecode/plate-excalidraw';
+import type { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
+import type { HEADING_KEYS } from '@udecode/plate-heading';
+import type { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
+import type { TLinkElement } from '@udecode/plate-link';
+import type { LinkPlugin } from '@udecode/plate-link/react';
+import type { TTodoListItemElement } from '@udecode/plate-list';
 import type {
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_H3,
-  ELEMENT_H4,
-  ELEMENT_H5,
-  ELEMENT_H6,
-} from '@udecode/plate-heading';
-import type { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
-import type { ELEMENT_LINK, TLinkElement } from '@udecode/plate-link';
+  BulletedListPlugin,
+  ListItemPlugin,
+  NumberedListPlugin,
+  TodoListPlugin,
+} from '@udecode/plate-list/react';
+import type { TImageElement, TMediaEmbedElement } from '@udecode/plate-media';
+import type { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
 import type {
-  ELEMENT_LI,
-  ELEMENT_OL,
-  ELEMENT_TODO_LI,
-  ELEMENT_UL,
-  TTodoListItemElement,
-} from '@udecode/plate-list';
-import type {
-  ELEMENT_IMAGE,
-  ELEMENT_MEDIA_EMBED,
-  TImageElement,
-  TMediaEmbedElement,
-} from '@udecode/plate-media';
-import type {
-  ELEMENT_MENTION,
-  ELEMENT_MENTION_INPUT,
   TMentionElement,
   TMentionInputElement,
 } from '@udecode/plate-mention';
-import type { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import type {
-  ELEMENT_TABLE,
-  ELEMENT_TD,
-  ELEMENT_TR,
-  TTableElement,
-} from '@udecode/plate-table';
-import type { ELEMENT_TOGGLE, TToggleElement } from '@udecode/plate-toggle';
-import type { TText } from '@udecode/slate';
+  MentionInputPlugin,
+  MentionPlugin,
+} from '@udecode/plate-mention/react';
+import type { TTableElement } from '@udecode/plate-table';
+import type {
+  TableCellPlugin,
+  TablePlugin,
+  TableRowPlugin,
+} from '@udecode/plate-table/react';
+import type { TToggleElement } from '@udecode/plate-toggle';
+import type { TogglePlugin } from '@udecode/plate-toggle/react';
 
-import {
-  type CreatePlateEditorOptions,
-  type DOMHandler,
-  type Decorate,
-  type DecorateEntry,
-  type EDescendant,
-  type EElement,
-  type EElementEntry,
-  type EElementOrText,
-  type EMarks,
-  type ENode,
-  type ENodeEntry,
-  type EText,
-  type ETextEntry,
-  type InjectComponent,
-  type InjectProps,
-  type KeyboardHandler,
-  type NoInfer,
-  type OnChange,
-  type OverrideByKey,
-  type PlateEditor,
-  type PlateId,
-  type PlatePlugin,
-  type PlatePluginComponent,
-  type PlatePluginInsertData,
-  type PlatePluginProps,
-  type PlateProps,
-  type PluginOptions,
-  type SerializeHtml,
-  type TElement,
-  type TNodeEntry,
-  type TReactEditor,
-  type WithOverride,
-  createPlateEditor,
-  createPluginFactory,
-  createPlugins,
-  createTEditor,
-  getTEditor,
-  useEditorRef,
-  useEditorState,
-} from '@udecode/plate-common';
+import { useEditorRef } from '@udecode/plate-common/react';
 
 /** Text */
 
@@ -121,17 +76,17 @@ export interface RichText extends TText, TCommentText {
 
 export interface MyLinkElement extends TLinkElement {
   children: RichText[];
-  type: typeof ELEMENT_LINK;
+  type: typeof LinkPlugin.key;
 }
 
 export interface MyMentionInputElement extends TMentionInputElement {
   children: [PlainText];
-  type: typeof ELEMENT_MENTION_INPUT;
+  type: typeof MentionInputPlugin.key;
 }
 
 export interface MyMentionElement extends TMentionElement {
   children: [EmptyText];
-  type: typeof ELEMENT_MENTION;
+  type: typeof MentionPlugin.key;
 }
 
 export type MyInlineElement =
@@ -167,132 +122,132 @@ export interface MyBlockElement
   extends TElement,
     MyIndentListProps,
     MyLineHeightProps {
-  id?: PlateId;
+  id?: string;
 }
 
 /** Blocks */
 
 export interface MyParagraphElement extends MyBlockElement {
   children: MyInlineChildren;
-  type: typeof ELEMENT_PARAGRAPH;
+  type: typeof ParagraphPlugin.key;
 }
 
 export interface MyH1Element extends MyBlockElement {
   children: MyInlineChildren;
-  type: typeof ELEMENT_H1;
+  type: typeof HEADING_KEYS.h1;
 }
 
 export interface MyH2Element extends MyBlockElement {
   children: MyInlineChildren;
-  type: typeof ELEMENT_H2;
+  type: typeof HEADING_KEYS.h2;
 }
 
 export interface MyH3Element extends MyBlockElement {
   children: MyInlineChildren;
-  type: typeof ELEMENT_H3;
+  type: typeof HEADING_KEYS.h3;
 }
 
 export interface MyH4Element extends MyBlockElement {
   children: MyInlineChildren;
-  type: typeof ELEMENT_H4;
+  type: typeof HEADING_KEYS.h4;
 }
 
 export interface MyH5Element extends MyBlockElement {
   children: MyInlineChildren;
-  type: typeof ELEMENT_H5;
+  type: typeof HEADING_KEYS.h5;
 }
 
 export interface MyH6Element extends MyBlockElement {
   children: MyInlineChildren;
-  type: typeof ELEMENT_H6;
+  type: typeof HEADING_KEYS.h6;
 }
 
 export interface MyBlockquoteElement extends MyBlockElement {
   children: MyInlineChildren;
-  type: typeof ELEMENT_BLOCKQUOTE;
+  type: typeof BlockquotePlugin.key;
 }
 
 export interface MyCodeBlockElement extends MyBlockElement {
   children: MyCodeLineElement[];
-  type: typeof ELEMENT_CODE_BLOCK;
+  type: typeof CodeBlockPlugin.key;
 }
 
 export interface MyCodeLineElement extends TElement {
   children: PlainText[];
-  type: typeof ELEMENT_CODE_LINE;
+  type: typeof CodeLinePlugin.key;
 }
 
 export interface MyTableElement extends TTableElement, MyBlockElement {
   children: MyTableRowElement[];
-  type: typeof ELEMENT_TABLE;
+  type: typeof TablePlugin.key;
 }
 
 export interface MyTableRowElement extends TElement {
   children: MyTableCellElement[];
-  type: typeof ELEMENT_TR;
+  type: typeof TableRowPlugin.key;
 }
 
 export interface MyTableCellElement extends TElement {
   children: MyNestableBlock[];
-  type: typeof ELEMENT_TD;
+  type: typeof TableCellPlugin.key;
 }
 
 export interface MyBulletedListElement extends TElement, MyBlockElement {
   children: MyListItemElement[];
-  type: typeof ELEMENT_UL;
+  type: typeof BulletedListPlugin.key;
 }
 
 export interface MyNumberedListElement extends TElement, MyBlockElement {
   children: MyListItemElement[];
-  type: typeof ELEMENT_OL;
+  type: typeof NumberedListPlugin.key;
 }
 
 export interface MyListItemElement extends TElement, MyBlockElement {
   children: MyInlineChildren;
-  type: typeof ELEMENT_LI;
+  type: typeof ListItemPlugin.key;
 }
 
 export interface MyTodoListElement
   extends TTodoListItemElement,
     MyBlockElement {
   children: MyInlineChildren;
-  type: typeof ELEMENT_TODO_LI;
+  type: typeof TodoListPlugin.key;
 }
 
 export interface MyToggleElement extends TToggleElement, MyBlockElement {
   children: MyInlineChildren;
-  type: typeof ELEMENT_TOGGLE;
+  type: typeof TogglePlugin.key;
 }
 
 export interface MyImageElement extends TImageElement, MyBlockElement {
   children: [EmptyText];
-  type: typeof ELEMENT_IMAGE;
+  type: typeof ImagePlugin.key;
 }
 
 export interface MyMediaEmbedElement
   extends TMediaEmbedElement,
     MyBlockElement {
   children: [EmptyText];
-  type: typeof ELEMENT_MEDIA_EMBED;
+  type: typeof MediaEmbedPlugin.key;
 }
 
 export interface MyHrElement extends MyBlockElement {
   children: [EmptyText];
-  type: typeof ELEMENT_HR;
+  type: typeof HorizontalRulePlugin.key;
 }
 
 export interface MyExcalidrawElement
   extends TExcalidrawElement,
     MyBlockElement {
   children: [EmptyText];
-  type: typeof ELEMENT_EXCALIDRAW;
+  type: typeof ExcalidrawPlugin.key;
 }
 
 export type MyNestableBlock = MyParagraphElement;
 
-export type MyBlock = Exclude<MyElement, MyInlineElement>;
+export type MyElement = ElementOf<MyEditor>;
 
-export type MyBlockEntry = TNodeEntry<MyBlock>;
+export type MyBlock = Exclude<MyElement, MyInlineElement>;
 
 export type MyRootBlock =
   | MyBlockquoteElement
@@ -314,102 +269,10 @@ export type MyRootBlock =
   | MyTodoListElement
   | MyToggleElement;
 
-export type MyValue = MyRootBlock[];
-
 /** Editor types */
 
-export type MyEditor = { isDragging?: boolean } & PlateEditor<MyValue>;
+export type MyValue = MyRootBlock[];
 
-export type MyReactEditor = TReactEditor<MyValue>;
+export type MyEditor = ReturnType<typeof usePlaygroundEditor>;
 
-export type MyNode = ENode<MyValue>;
-
-export type MyNodeEntry = ENodeEntry<MyValue>;
-
-export type MyElement = EElement<MyValue>;
-
-export type MyElementEntry = EElementEntry<MyValue>;
-
-export type MyText = EText<MyValue>;
-
-export type MyTextEntry = ETextEntry<MyValue>;
-
-export type MyElementOrText = EElementOrText<MyValue>;
-
-export type MyDescendant = EDescendant<MyValue>;
-
-export type MyMarks = EMarks<MyValue>;
-
-export type MyMark = keyof MyMarks;
-
-/** Plate types */
-
-export type MyDecorate<P = PluginOptions> = Decorate<P, MyValue, MyEditor>;
-
-export type MyDecorateEntry = DecorateEntry<MyValue>;
-
-export type MyDOMHandler<P = PluginOptions> = DOMHandler<P, MyValue, MyEditor>;
-
-export type MyInjectComponent = InjectComponent<MyValue>;
-
-export type MyInjectProps = InjectProps<MyValue>;
-
-export type MyKeyboardHandler<P = PluginOptions> = KeyboardHandler<
-  P,
-  MyValue,
-  MyEditor
->;
-
-export type MyOnChange<P = PluginOptions> = OnChange<P, MyValue, MyEditor>;
-
-export type MyOverrideByKey = OverrideByKey<MyValue, MyEditor>;
-
-export type MyPlatePlugin<P = PluginOptions> = PlatePlugin<
-  P,
-  MyValue,
-  MyEditor
->;
-
-export type MyPlatePluginInsertData = PlatePluginInsertData<MyValue>;
-
-export type MyPlatePluginProps = PlatePluginProps<MyValue>;
-
-export type MyPlateProps = PlateProps<MyValue, MyEditor>;
-
-export type MySerializeHtml = SerializeHtml<MyValue>;
-
-export type MyWithOverride<P = PluginOptions> = WithOverride<
-  P,
-  MyValue,
-  MyEditor
->;
-
-/** Plate store, Slate context */
-
-export const getMyEditor = (editor: MyEditor) =>
-  getTEditor<MyValue, MyEditor>(editor);
-
-export const useMyEditorRef = () => useEditorRef<MyValue, MyEditor>();
-
-export const useMyEditorState = () => useEditorState<MyValue, MyEditor>();
-
-/** Utils */
-export const createMyEditor = () => createTEditor() as MyEditor;
-
-export const createMyPlateEditor = (
-  options: CreatePlateEditorOptions<MyValue, MyEditor> = {}
-) => createPlateEditor<MyValue, MyEditor>(options);
-
-export const createMyPluginFactory = <P = PluginOptions>(
-  defaultPlugin: PlatePlugin<NoInfer<P>, MyValue, MyEditor>
-) => createPluginFactory(defaultPlugin);
-
-export const createMyPlugins = (
-  plugins: PlatePlugin[],
-  options?: {
-    components?: Record<string, PlatePluginComponent>;
-    overrideByKey?: OverrideByKey;
-  }
-) => createPlugins<MyValue, MyEditor>(plugins, options);
-
-export type MyAutoformatRule = AutoformatRule<MyValue, MyEditor>;
+export const useMyEditorRef = () => useEditorRef<MyEditor>();
