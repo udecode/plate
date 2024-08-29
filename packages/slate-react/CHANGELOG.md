@@ -1,5 +1,15 @@
 # @udecode/slate-react
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) – Types:
+
+  - Remove `TReactEditor` type, as it's now integrated into the main `TEditor` type in `@udecode/slate`. Use `TEditor` instead.
+  - Replace `V extends Value` with `E extends TEditor` for improved type inference
+  - NEW `TEditableProps`, `TRenderElementProps`
+
 ## 36.0.6
 
 ## 36.0.3

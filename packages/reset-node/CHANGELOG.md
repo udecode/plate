@@ -1,5 +1,12 @@
 # @udecode/plate-reset-node
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createResetNodePlugin` -> `ResetNodePlugin`
+
 ## 36.5.2
 
 ### Patch Changes

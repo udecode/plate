@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate",
-  "version": "36.0.6",
+  "version": "37.0.0",
   "description": "Slate extension",
   "keywords": [
     "slate"
@@ -42,7 +42,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/utils": "31.0.0"
+    "@udecode/utils": "37.0.0"
   },
   "peerDependencies": {
     "slate": ">=0.103.0",

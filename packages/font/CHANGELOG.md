@@ -1,5 +1,16 @@
 # @udecode/plate-font
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createFontBackgroundColorPlugin` -> `FontBackgroundColorPlugin`
+  - `createFontColorPlugin` -> `FontColorPlugin`
+  - `createFontSizePlugin` -> `FontSizePlugin`
+  - `createFontFamilyPlugin` -> `FontFamilyPlugin`
+  - `createFontWeightPlugin` -> `FontWeightPlugin`
+
 ## 36.0.0
 
 ## 34.0.0

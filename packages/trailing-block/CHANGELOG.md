@@ -1,5 +1,12 @@
 # @udecode/plate-trailing-block
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createTrailingBlockPlugin` -> `TrailingBlockPlugin`
+
 ## 36.0.0
 
 ## 34.0.0

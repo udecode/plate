@@ -1,5 +1,12 @@
 # @udecode/plate-date
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createDatePlugin` -> `DatePlugin`
+
 ## 36.5.0
 
 ### Minor Changes

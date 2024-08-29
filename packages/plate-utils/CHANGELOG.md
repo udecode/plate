@@ -1,5 +1,13 @@
 # @udecode/plate-utils
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - Remove `onKeyDownToggleElement`, use shortcuts instead.
+  - Remove `onKeyDownToggleMark`, use shortcuts instead.
+
 ## 36.3.9
 
 ## 36.3.7

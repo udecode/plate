@@ -1,5 +1,12 @@
 # @udecode/plate-md-serializer
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createDeserializeMdPlugin` -> `MarkdownPlugin`
+
 ## 36.4.0
 
 ### Patch Changes

@@ -1,5 +1,15 @@
 # @udecode/plate-code-block
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createCodeBlockPlugin` -> `CodeBlockPlugin`
+  - NEW `CodeLinePlugin`
+  - NEW `CodeSyntaxPlugin`
+  - Remove `getCodeLineType`, use `editor.getType(CodeLinePlugin)` instead
+
 ## 36.5.6
 
 ### Patch Changes

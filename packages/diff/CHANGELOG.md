@@ -1,5 +1,12 @@
 # @udecode/plate-diff
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createDiffPlugin` -> `DiffPlugin`
+
 ## 36.0.0
 
 ## 35.3.1

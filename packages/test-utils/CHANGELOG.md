@@ -1,5 +1,11 @@
 # @udecode/plate-test-utils
 
+## 37.0.0
+
+### Patch Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) – Refactor
+
 ## 36.5.5
 
 ### Patch Changes
