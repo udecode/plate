@@ -14,7 +14,7 @@ const platePlaywrightAdapter: TPlatePlaywrightAdapter = {
   toDOMNode,
 };
 
-export const PlatePlaywrightAdapter = () => {
+export const usePlaywrightAdapter = () => {
   const editor = useEditorRef();
 
   useEffect(() => {
