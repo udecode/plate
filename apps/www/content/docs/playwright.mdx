@@ -3,76 +3,66 @@ title: Playwright Testing
 description: Learn how to write Playwright tests that integrate with Plate.
 ---
 
-[Playwright](https://playwright.dev/) is a framework for writing end-to-end tests that run in headless browsers.
-
-This guide describes how you can write Playwright tests that integrate with Plate using `@udecode/plate-playwright` in order to interact with and interrogate the state of the editor.
+[Playwright](https://playwright.dev/) enables end-to-end testing in headless browsers. This guide covers integrating Playwright with Plate using `@udecode/plate-playwright`.
 
 ## Setup
 
 <Steps>
 
-### Install Playwright
+### Install Dependencies
 
 Follow [Playwright's guide](https://playwright.dev/docs/intro) to install Playwright in your app and ensure that you can write basic end-to-end tests.
 
-### Install `@udecode/plate-playwright`
-
 ```bash
-npm install @udecode/plate-playwright
+npm install @udecode/plate-playwright playwright
 ```
 
-### Add `<PlatePlaywrightAdapter />`
+### Add PlaywrightPlugin
 
-In order for your Playwright tests to access and interact with the editor, you'll need to render `<PlatePlaywrightAdapter />` as a child of `<Plate>`.
+In order for your Playwright tests to access and interact with the editor, you'll need to add `PlaywrightPlugin` to your editor:
 
 ```tsx
-<Plate editor={editor}>
-  <PlateContent placeholder="Type..." />
-  <PlatePlaywrightAdapter />
-</Plate>
+const editor = createPlateEditor({
+  plugins: [
+    // other plugins...
+    PlaywrightPlugin.configure({ enabled: process.env.NODE_ENV === 'test' }),
+  ]
+})
 ```
 
-This will expose various utilities on `window.platePlaywrightAdapter`. If you prefer, you can use custom logic to render `<PlatePlaywrightAdapter />` in your testing environment only.
+This exposes various utilities on `window.platePlaywrightAdapter`.
 
-### Get the editor handle
+### Get Editor Handle
 
 <Callout>
 
 **What is an editor handle?**
 
-Most code you write in your Playwight tests runs in a non-browser environment and interacts with Playwright's headless browser using Playwright's API.
+Most Playwright test code runs in a non-browser environment. Interacting with a Plate editor requires running JavaScript inside the browser context using Playwright's `evaluate` and `evaluateHandle` [APIs](https://playwright.dev/docs/evaluating).
 
-Interacting with a Plate editor from a Playwright test requires running JavaScript inside the context of the browser page, which can be done using Playwright's [`evaluate` and `evaluateHandle` APIs](https://playwright.dev/docs/evaluating). Most of this is handled for you by `@udecode/plate-playwright`.
-
-A [handle](https://playwright.dev/docs/handles) is an object that references a JavaScript object within the context of the browser. The editor handle references the `editor` instance used by your Plate editor, and has type `JSHandle<PlateEditor>`.
+A [handle](https://playwright.dev/docs/handles) references a JavaScript object within the browser. The editor handle refers to the `editor` instance of your Plate editor (`JSHandle<PlateEditor>`).
 
 </Callout>
 
-In your Playwright test, you'll need to get the editor handle before you can interact with Plate.
-
-If you only have one Plate editor on your page, you can use `getEditorHandle` to fetch it automatically.
+In your Playwright test, get the editor handle before interacting with Plate:
 
 ```ts
 const editorHandle = await getEditorHandle(page);
 // ...
 ```
 
-If there is more than one Plate editor, you'll need to specify the editable HTML element of the editor you want to interact with using a Playwright [locator](https://playwright.dev/docs/locators) as the second argument of `getEditorHandle`.
-
-The locator must reference exactly one HTML element matching `[data-slate-editor]`. You can use `getEditable` to locate a `[data-slate-editor]` inside an ancestor locator. 
+For multiple editors, specify the editable element:
 
 ```ts
-const editable = getEditable(
-  page.getByTestId('my-editor-container')
-);
-
+const editable = getEditable(page.getByTestId('my-editor-container'));
 const editorHandle = await getEditorHandle(page, editable);
-/...
 ```
 
-### Start writing tests
+The locator must match exactly one `[data-slate-editor]` element.
 
-Now that you've got the `editorHandle` for your editor, you can start writing Playwright tests that interact with the editor. See below for examples.
+### Start Writing Tests
+
+With the `editorHandle`, you can now write Playwright tests for your editor.
 
 </Steps>
 
@@ -156,6 +146,8 @@ The best workaround is to interact with the editor in the same way that a user w
 
 If this isn't practical, you can instead call a method on the `editor` object inside an `evaluate` or `evaluateHandle`. (Use `evaluateHandle` if you need to return a reference to a DOM node or a JavaScript object from the browser. Use `evaluate` if you need to return a serialized copy of a JavaScript object, or if you don't need to return any value.)
 
+Note that while these queries and transforms can't be directly used in Playwright tests, they are available when working with the editor instance in your application code. For more information on how to use these methods in your application, refer to the <Link href="/docs/editor-methods">Editor Methods</Link> documentation.
+
 See [Playwright's docs](https://playwright.dev/docs/evaluating) for more information about `evaluate` and `evaluateHandle`.
 
 ```ts
@@ -163,3 +155,141 @@ await editorHandle.evaluate((editor) => {
   editor.insertNodes(/* ... */);
 });
 ```
+
+## API
+
+### getEditorHandle
+
+Gets a handle to the Plate editor instance.
+
+<APIParameters>
+<APIItem name="page" type="Page">
+The Playwright page object.
+</APIItem>
+<APIItem name="editable" type="Locator" optional>
+A locator for the editable element. If not provided, it will look for the first [data-slate-editor] on the page.
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+<APIItem type="EditorHandle">
+A handle to the Plate editor instance.
+</APIItem>
+</APIReturns>
+
+### getNodeByPath
+
+Retrieves a node at the specified path.
+
+<APIParameters>
+<APIItem name="page" type="Page">
+The Playwright page object.
+</APIItem>
+<APIItem name="editorHandle" type="EditorHandle">
+The handle to the Plate editor instance.
+</APIItem>
+<APIItem name="path" type="Path">
+The path to the node.
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+<APIItem type="JSHandle<TNode>">
+A handle to the node at the specified path.
+</APIItem>
+</APIReturns>
+
+### getDOMNodeByPath
+
+Gets the DOM node for a Slate node at the given path.
+
+<APIParameters>
+<APIItem name="page" type="Page">
+The Playwright page object.
+</APIItem>
+<APIItem name="editorHandle" type="EditorHandle">
+The handle to the Plate editor instance.
+</APIItem>
+<APIItem name="path" type="Path">
+The path to the node.
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+<APIItem type="ElementHandle">
+An ElementHandle for the DOM node corresponding to the Slate node.
+</APIItem>
+</APIReturns>
+
+### clickAtPath
+
+Simulates a click on the node at the specified path.
+
+<APIParameters>
+<APIItem name="page" type="Page">
+The Playwright page object.
+</APIItem>
+<APIItem name="editorHandle" type="EditorHandle">
+The handle to the Plate editor instance.
+</APIItem>
+<APIItem name="path" type="Path">
+The path to the node to click.
+</APIItem>
+</APIParameters>
+
+### getSelection
+
+Retrieves the current editor selection.
+
+<APIParameters>
+<APIItem name="page" type="Page">
+The Playwright page object.
+</APIItem>
+<APIItem name="editorHandle" type="EditorHandle">
+The handle to the Plate editor instance.
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+<APIItem type="Selection">
+The current editor selection.
+</APIItem>
+</APIReturns>
+
+### setSelection
+
+Sets the editor selection to the specified range.
+
+<APIParameters>
+<APIItem name="page" type="Page">
+The Playwright page object.
+</APIItem>
+<APIItem name="editorHandle" type="EditorHandle">
+The handle to the Plate editor instance.
+</APIItem>
+<APIItem name="at" type="Location">
+The location to set the selection.
+</APIItem>
+</APIParameters>
+
+### getTypeAtPath
+
+Gets the type of the node at the specified path.
+
+<APIParameters>
+<APIItem name="page" type="Page">
+The Playwright page object.
+</APIItem>
+<APIItem name="editorHandle" type="EditorHandle">
+The handle to the Plate editor instance.
+</APIItem>
+<APIItem name="path" type="Path">
+The path to the node.
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+<APIItem type="string">
+The type of the node at the specified path.
+</APIItem>
+</APIReturns>
