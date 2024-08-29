@@ -1,5 +1,17 @@
 # @udecode/plate-table
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createTablePlugin` -> `TablePlugin`
+  - NEW `TableRowPlugin`, `TableCellPlugin`, `TableCellHeaderPlugin`
+  - Replace `insertTableColumn` with `editor.insert.tableColumn`
+  - Replace `insertTableRow` with `editor.insert.tableRow`
+  - Move `cellFactory` option to `create.cell` api
+  - Move `getCellChildren` option to `table.getCellChildren` api
+
 ## 36.5.8
 
 ### Patch Changes

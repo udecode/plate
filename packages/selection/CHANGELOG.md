@@ -1,5 +1,28 @@
 # @udecode/plate-selection
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - Rename `createSelectionPlugin` to `BlockSelectionPlugin`
+  - Remove `isNodeBlockSelected`, `isBlockSelected`, `hasBlockSelected`, `useBlockSelected` functions
+    - Use `editor.getOptions(BlockSelectionPlugin)` or `editor.useOptions(BlockSelectionPlugin)` instead
+  - Remove `addSelectedRow` function
+    - Use `editor.api.blockSelection.addSelectedRow` instead
+  - Remove `withSelection` HOC
+  - Rename `onCloseBlockSelection` to `onChangeBlockSelection`
+  - Moved `blockSelectionStore` to `BlockSelectionPlugin`
+  - Moved `blockContextMenuStore` to `BlockContextMenuPlugin`
+  - Remove `BlockStartArea` and `BlockSelectionArea` components
+    - Use `areaOptions` in `BlockSelectionPlugin` for configuration instead
+  - Remove dependency on `@viselect/vanilla` package
+    - Forked and integrated selection functionality locally
+  - Add `BlockContextMenuPlugin`, which is now used by `BlockSelectionPlugin`
+    - No need to add it manually
+  - Fix scroll-related bugs in the selection functionality
+  - Improve performance and reliability of block selection
+
 ## 36.5.1
 
 ### Patch Changes

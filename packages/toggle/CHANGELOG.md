@@ -1,5 +1,16 @@
 # @udecode/plate-toggle
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createTogglePlugin` -> `TogglePlugin`
+  - Move `toggleControllerStore` to `TogglePlugin`
+  - Remove `setOpenIds` option
+  - Replace `isToggleOpen` with option `isOpen`
+  - Rename `injectToggle` to `renderToggleAboveNodes`
+
 ## 36.3.6
 
 ## 36.0.0

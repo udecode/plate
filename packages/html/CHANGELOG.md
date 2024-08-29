@@ -1,5 +1,14 @@
 # @udecode/plate-serializer-html
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createDeserializeHtmlPlugin` -> `HtmlPlugin`
+  - Rename `deserializeHtml` plugin to `html`
+  - Rename `deserializeHtml.getNode` to `parse`
+
 ## 36.0.0
 
 ## 34.0.0

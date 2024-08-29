@@ -1,5 +1,13 @@
 # @udecode/plate-link
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createLinkPlugin` -> `LinkPlugin`
+  - Move `floatingLinkStore` to `LinkPlugin`
+
 ## 36.5.6
 
 ## 36.4.0

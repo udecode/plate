@@ -1,5 +1,13 @@
 # @udecode/plate-alignment
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createAlignPlugin` -> `AlignPlugin`
+  - `setAlign`: remove `key` option
+
 ## 36.0.11
 
 ### Patch Changes

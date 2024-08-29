@@ -1,5 +1,7 @@
 # @udecode/plate-callout
 
+## 37.0.0
+
 ## 36.0.0
 
 ## 34.0.0

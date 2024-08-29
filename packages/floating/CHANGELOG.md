@@ -1,5 +1,12 @@
 # @udecode/plate-floating
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - Remove unused generics
+
 ## 36.3.8
 
 ### Patch Changes

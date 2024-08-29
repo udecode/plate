@@ -1,5 +1,12 @@
 # @udecode/plate-normalizers
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createNormalizersPlugin` -> `NormalizersPlugin`
+
 ## 36.5.6
 
 ### Patch Changes

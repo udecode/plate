@@ -1,5 +1,20 @@
 # @udecode/plate-basic-marks
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createBasicMarksPlugins` -> `BasicMarksPlugin`
+  - `createBoldPlugin` -> `BoldPlugin`
+  - `createCodePlugin` -> `CodePlugin`
+  - `createItalicPlugin` -> `ItalicPlugin`
+  - `createStrikethroughPlugin` -> `StrikethroughPlugin`
+  - `createSubscriptPlugin` -> `SubscriptPlugin`
+  - `createSuperscriptPlugin` -> `SuperscriptPlugin`
+  - `createUnderlinePlugin` -> `UnderlinePlugin`
+  - All mark plugins removed `hotkey` option. Use `plugin.shortcuts` instead (see plate-core)
+
 ## 36.0.0
 
 ## 34.0.0

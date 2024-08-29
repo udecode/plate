@@ -1,5 +1,17 @@
 # @udecode/utils
 
+## 37.0.0
+
+### Minor Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add `bindFirst`
+
+  Types:
+
+  - Add `OmitFirst`, `PartialExcept`
+
 ## 31.0.0
 
 ### Minor Changes
