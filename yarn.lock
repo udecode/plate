@@ -6847,7 +6847,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate@workspace:packages/plate":
+"@udecode/plate@workspace:^, @udecode/plate@workspace:packages/plate":
   version: 0.0.0-use.local
   resolution: "@udecode/plate@workspace:packages/plate"
   dependencies:
@@ -21865,6 +21865,7 @@ __metadata:
     "@types/react-color": "npm:^3.0.12"
     "@types/react-syntax-highlighter": "npm:^15.5.11"
     "@udecode/cn": "workspace:^"
+    "@udecode/plate": "workspace:^"
     "@udecode/plate-alignment": "workspace:^"
     "@udecode/plate-autoformat": "workspace:^"
     "@udecode/plate-basic-elements": "workspace:^"

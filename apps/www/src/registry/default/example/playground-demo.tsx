@@ -56,13 +56,13 @@ import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
 import { MentionPlugin } from '@udecode/plate-mention/react';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
+import { PlaywrightPlugin } from '@udecode/plate-playwright';
 import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import { SlashPlugin } from '@udecode/plate-slash-command';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
-import { PlatePlaywrightAdapter } from '@udecode/plate-playwright';
 import Prism from 'prismjs';
 
 import { settingsStore } from '@/components/context/settings-store';
@@ -303,6 +303,9 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         MarkdownPlugin,
         JuicePlugin,
         ColumnPlugin,
+
+        // Testing
+        PlaywrightPlugin,
       ],
       shouldNormalizeEditor: true,
       value: value,
@@ -327,7 +330,6 @@ export default function PlaygroundDemo({
     <DndProvider backend={HTML5Backend}>
       <div className="relative">
         <Plate editor={editor}>
-          <PlatePlaywrightAdapter />
           {enabled['fixed-toolbar'] && (
             <FixedToolbar className="no-scrollbar">
               {enabled['fixed-toolbar-buttons'] && (
