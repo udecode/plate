@@ -219,9 +219,14 @@ export const docsConfig: DocsConfig = {
           title: 'Debugging',
         },
         {
-          href: '/docs/testing',
+          href: '/docs/unit-testing',
           label: 'New',
-          title: 'Testing',
+          title: 'Unit Testing',
+        },
+        {
+          href: '/docs/playwright',
+          label: 'New',
+          title: 'Playwright Testing',
         },
       ],
       title: 'Guides',
