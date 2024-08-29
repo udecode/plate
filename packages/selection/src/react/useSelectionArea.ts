@@ -11,6 +11,7 @@ export const useSelectionArea = () => {
   const { areaOptions } = getOptions();
 
   React.useEffect(() => {
+    console.log(areaOptions, 'fj');
     const selection = new SelectionArea({
       document: window.document,
       ...areaOptions,

@@ -96,7 +96,7 @@ import { LinkFloatingToolbar } from '@/registry/default/plate-ui/link-floating-t
 
 import { usePlaygroundEnabled } from './usePlaygroundEnabled';
 
-export const usePlaygroundEditor = (id: any = '') => {
+export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
   const enabled = settingsStore.use.checkedComponents();
   const overridePlugins = usePlaygroundEnabled(id);
   const autoformatOptions = getAutoformatOptions(id, enabled);
@@ -254,11 +254,9 @@ export const usePlaygroundEditor = (id: any = '') => {
         BlockSelectionPlugin.configure({
           options: {
             areaOptions: {
-              boundaries: ['#selection-demo  #scroll_container'],
-              container: ['#selection-demo #scroll_container'],
-              selectables: [
-                '#selection-demo #scroll_container .slate-selectable',
-              ],
+              boundaries: `#${scrollSelector}`,
+              container: `#${scrollSelector}`,
+              selectables: [`#${scrollSelector} .slate-selectable`],
               selectionAreaClass: 'slate-selection-area',
             },
             enableContextMenu: false,
@@ -312,11 +310,17 @@ export const usePlaygroundEditor = (id: any = '') => {
   );
 };
 
-export default function PlaygroundDemo({ id }: { id?: ValueId }) {
+export default function PlaygroundDemo({
+  id,
+  scrollSelector,
+}: {
+  id?: ValueId;
+  scrollSelector?: string;
+}) {
   const containerRef = useRef(null);
   const enabled = settingsStore.use.checkedComponents();
 
-  const editor = usePlaygroundEditor(id);
+  const editor = usePlaygroundEditor(id, scrollSelector);
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -346,7 +350,7 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
                 '[&_.slate-selected]:!bg-primary/20 [&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10'
               )}
               data-plate-selectable
-              id="scroll_container"
+              id={scrollSelector}
               ref={containerRef}
             >
               <Editor

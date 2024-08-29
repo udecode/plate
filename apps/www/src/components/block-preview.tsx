@@ -9,6 +9,7 @@ import type { ImperativePanelHandle } from 'react-resizable-panels';
 import { cn } from '@udecode/cn';
 
 import { useLiftMode } from '@/hooks/use-lift-mode';
+import PlaygroundDemo from '@/registry/default/example/playground-demo';
 
 import { BlockToolbar } from './block-toolbar';
 import {
@@ -58,7 +59,7 @@ export function BlockPreview({
         setFullScreen={setFullScreen}
       />
 
-      {fullScreen && children}
+      {fullScreen && <PlaygroundDemo scrollSelector="playground-full-screen" />}
 
       {!fullScreen && (
         <>
@@ -70,7 +71,7 @@ export function BlockPreview({
             )}
           >
             <div className="chunk-mode relative z-20 w-full bg-background">
-              {children}
+              <PlaygroundDemo scrollSelector="playground-preview-1" />
             </div>
           </div>
 
@@ -88,11 +89,8 @@ export function BlockPreview({
                 minSize={30}
                 ref={ref}
               >
-                <div
-                  className="chunk-mode relative z-20 w-full bg-background"
-                  id="selection-demo"
-                >
-                  {children}
+                <div className="chunk-mode relative z-20 w-full bg-background">
+                  <PlaygroundDemo scrollSelector="playground-preview-2" />
                 </div>
 
                 {/* {isLoading ? ( */}
