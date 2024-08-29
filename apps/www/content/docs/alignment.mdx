@@ -28,12 +28,11 @@ npm install @udecode/plate-alignment
 // ...
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
-import { ParagraphPlugin } from '@udecode/plate-paragraph/react';
+import { ParagraphPlugin } from '@udecode/plate-common/react';
 import { HeadingPlugin } from '@udecode/plate-heading/react';
 
 const editor = createPlateEditor({
   plugins: [
-    ParagraphPlugin,
     HeadingPlugin,
     AlignPlugin.configure({
       inject: {
