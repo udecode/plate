@@ -1,5 +1,11 @@
 # @udecode/plate-caption
 
+## 37.0.1
+
+### Patch Changes
+
+- [#3483](https://github.com/udecode/plate/pull/3483) by [@felixfeng33](https://github.com/felixfeng33) – Icorrect exoprt `TCalloutElement`
+
 ## 37.0.0
 
 ### Major Changes
