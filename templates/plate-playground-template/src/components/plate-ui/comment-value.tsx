@@ -5,7 +5,7 @@ import { cn } from '@udecode/cn';
 import {
   CommentEditActions,
   CommentEditTextarea,
-} from '@udecode/plate-comments';
+} from '@udecode/plate-comments/react';
 
 import { buttonVariants } from './button';
 import { inputVariants } from './input';
@@ -17,13 +17,13 @@ export function CommentValue() {
 
       <div className="flex space-x-2">
         <CommentEditActions.CancelButton
-          className={buttonVariants({ variant: 'outline', size: 'xs' })}
+          className={buttonVariants({ size: 'xs', variant: 'outline' })}
         >
           Cancel
         </CommentEditActions.CancelButton>
 
         <CommentEditActions.SaveButton
-          className={buttonVariants({ variant: 'default', size: 'xs' })}
+          className={buttonVariants({ size: 'xs', variant: 'default' })}
         >
           Save
         </CommentEditActions.SaveButton>
