@@ -49,6 +49,7 @@
     "@udecode/plate-indent-list": "^37.0.0",
     "@udecode/plate-juice": "^37.0.0",
     "@udecode/plate-kbd": "^37.0.0",
+    "@udecode/plate-layout": "^37.0.0",
     "@udecode/plate-line-height": "^37.0.0",
     "@udecode/plate-link": "^37.0.0",
     "@udecode/plate-list": "^37.0.0",
