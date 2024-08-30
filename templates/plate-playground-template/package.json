@@ -66,6 +66,7 @@
     "@udecode/plate-markdown": "^37.0.0",
     "@udecode/plate-tabbable": "^37.0.0",
     "@udecode/plate-table": "^37.0.0",
+    "@udecode/plate-toggle": "^37.0.0",
     "@udecode/plate-trailing-block": "^37.0.0",
     "class-variance-authority": "0.7.0",
     "cmdk": "1.0.0",
