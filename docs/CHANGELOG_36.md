@@ -1,3 +1,5 @@
+For newer changelogs, see https://github.com/udecode/plate/blob/main/BREAKING_CHANGES.md
+
 # 34.0.0
 
 ## @udecode/plate-selection@34.0.0

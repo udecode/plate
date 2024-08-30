@@ -1,4 +1,4 @@
-For older changelogs, visit https://github.com/udecode/plate/blob/main/apps/www/content/docs/changelogs
+For older changelogs, see https://github.com/udecode/plate/blob/main/docs
 
 # 37.0.0
 
