@@ -3,7 +3,11 @@ import React from 'react';
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 import { someNode } from '@udecode/plate-common';
-import { focusEditor, useEditorSelector } from '@udecode/plate-common/react';
+import {
+  focusEditor,
+  useEditorPlugin,
+  useEditorSelector,
+} from '@udecode/plate-common/react';
 import { deleteTable, insertTableRow } from '@udecode/plate-table';
 import {
   TablePlugin,
@@ -13,7 +17,6 @@ import {
 } from '@udecode/plate-table/react';
 
 import { Icons, iconVariants } from '@/components/icons';
-import { useMyEditorRef } from '@/types/plate-types';
 
 import {
   DropdownMenu,
@@ -33,7 +36,8 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
     []
   );
 
-  const editor = useMyEditorRef();
+  const { editor, tf } = useEditorPlugin(TablePlugin);
+
   const openState = useOpenState();
 
   return (
@@ -88,7 +92,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
               className="min-w-[180px]"
               disabled={!tableSelected}
               onSelect={() => {
-                editor.tf.insert.tableColumn();
+                tf.insert.tableColumn();
                 focusEditor(editor);
               }}
             >

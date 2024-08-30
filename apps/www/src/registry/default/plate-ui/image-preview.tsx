@@ -131,7 +131,7 @@ export const ImagePreview = () => {
             </div>
             {/* TODO: downLoad the image */}
             <button className={cn(toolButtonVariants())} type="button">
-              <Icons.downLoad className="size-4" />
+              <Icons.download className="size-4" />
             </button>
             <button
               {...closeProps}
