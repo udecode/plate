@@ -2,12 +2,12 @@
 
 import React from 'react';
 import { cn, withRef } from '@udecode/cn';
-import { useComposedRef } from '@udecode/plate-common';
-import { useColorInput } from '@udecode/plate-font';
+import { useComposedRef } from '@udecode/plate-common/react';
+import { useColorInput } from '@udecode/plate-font/react';
 
 export const ColorInput = withRef<'input'>(
-  ({ value = '#000000', children, className, ...props }, ref) => {
-    const { inputRef, childProps } = useColorInput();
+  ({ children, className, value = '#000000', ...props }, ref) => {
+    const { childProps, inputRef } = useColorInput();
 
     return (
       <div className="flex flex-col items-center">
@@ -18,8 +18,8 @@ export const ColorInput = withRef<'input'>(
         })}
 
         <input
-          ref={useComposedRef(ref, inputRef)}
           className={cn('size-0 overflow-hidden border-0 p-0', className)}
+          ref={useComposedRef(ref, inputRef)}
           type="color"
           value={value}
           {...props}

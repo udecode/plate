@@ -1,21 +1,20 @@
 'use client';
 
 import React from 'react';
-import { useUserById } from '@udecode/plate-comments';
+import { CommentsPlugin } from '@udecode/plate-comments/react';
+import { useEditorPlugin } from '@udecode/plate-common/react';
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from '@/components/plate-ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from './avatar';
 
-export function CommentAvatar({ userId }: { userId: string | null }) {
-  const user = useUserById(userId);
+export function CommentAvatar({ userId }: { userId: null | string }) {
+  const { useOption } = useEditorPlugin(CommentsPlugin);
+  const user = useOption('userById', userId);
+
   if (!user) return null;
 
   return (
     <Avatar className="size-5">
-      <AvatarImage src={user.avatarUrl} alt={user.name} />
+      <AvatarImage alt={user.name} src={user.avatarUrl} />
       <AvatarFallback>{user.name?.[0]}</AvatarFallback>
     </Avatar>
   );

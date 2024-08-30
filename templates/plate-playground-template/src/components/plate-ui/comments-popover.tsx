@@ -8,8 +8,8 @@ import {
   SCOPE_ACTIVE_COMMENT,
   useFloatingCommentsContentState,
   useFloatingCommentsState,
-} from '@udecode/plate-comments';
-import { PortalBody } from '@udecode/plate-common';
+} from '@udecode/plate-comments/react';
+import { PortalBody } from '@udecode/plate-common/react';
 
 import { CommentCreateForm } from './comment-create-form';
 import { CommentItem } from './comment-item';
@@ -23,19 +23,19 @@ export type FloatingCommentsContentProps = {
 export function CommentsPopoverContent(props: FloatingCommentsContentProps) {
   const { disableForm } = props;
 
-  const { ref, activeCommentId, hasNoComment, myUserId } =
+  const { activeCommentId, hasNoComment, myUserId, ref } =
     useFloatingCommentsContentState();
 
   return (
     <CommentProvider
+      id={activeCommentId!}
       key={activeCommentId}
-      id={activeCommentId}
       scope={SCOPE_ACTIVE_COMMENT}
     >
-      <div ref={ref} className={cn(popoverVariants(), 'relative w-[310px]')}>
+      <div className={cn(popoverVariants(), 'relative w-[310px]')} ref={ref}>
         {!hasNoComment && (
           <>
-            <CommentItem key={activeCommentId} commentId={activeCommentId} />
+            <CommentItem commentId={activeCommentId!} key={activeCommentId} />
 
             <CommentReplyItems />
           </>
@@ -48,7 +48,7 @@ export function CommentsPopoverContent(props: FloatingCommentsContentProps) {
 }
 
 export function CommentsPopover() {
-  const { loaded, activeCommentId } = useFloatingCommentsState();
+  const { activeCommentId, loaded } = useFloatingCommentsState();
 
   if (!loaded || !activeCommentId) return null;
 

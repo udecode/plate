@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@udecode/cn';
-import { EmojiSettings, UseEmojiPickerType } from '@udecode/plate-emoji';
+import { EmojiSettings } from '@udecode/plate-emoji';
 
 import { EmojiPickerContent } from './emoji-picker-content';
 import { EmojiPickerNavigation } from './emoji-picker-navigation';
@@ -8,65 +8,67 @@ import { EmojiPickerPreview } from './emoji-picker-preview';
 import { EmojiPickerSearchAndClear } from './emoji-picker-search-and-clear';
 import { EmojiPickerSearchBar } from './emoji-picker-search-bar';
 
+import type { UseEmojiPickerType } from '@udecode/plate-emoji/react';
+
 export function EmojiPicker({
+  clearSearch,
+  emoji,
+  emojiLibrary,
+  focusedCategory,
+  handleCategoryClick,
+  hasFound,
   i18n,
+  icons,
+  isSearching,
+  onMouseOver,
+  onSelectEmoji,
+  refs,
+  searchResult,
   searchValue,
   setSearch,
-  clearSearch,
-  isSearching,
-  hasFound,
-  searchResult,
-  emoji,
-  onSelectEmoji,
-  onMouseOver,
-  emojiLibrary,
-  icons,
-  handleCategoryClick,
-  focusedCategory,
-  visibleCategories,
-  refs,
   settings = EmojiSettings,
+  visibleCategories,
 }: UseEmojiPickerType) {
   return (
     <div
       className={cn(
-        'flex flex-col rounded bg-background',
-        'h-[350px] w-[316px] shadow-[rgb(15_15_15_/_5%)_0_0_0_1px,_rgb(15_15_15_/_10%)_0_3px_6px,_rgb(15_15_15_/_20%)_0_9px_24px]'
+        'flex flex-col rounded-xl bg-card',
+        'h-[23rem] w-80 border shadow-md'
       )}
     >
       <EmojiPickerNavigation
-        i18n={i18n}
         emojiLibrary={emojiLibrary}
-        icons={icons}
         focusedCategory={focusedCategory}
+        i18n={i18n}
+        icons={icons}
         onClick={handleCategoryClick}
       />
       <EmojiPickerSearchBar
         i18n={i18n}
-        setSearch={setSearch}
         searchValue={searchValue}
+        setSearch={setSearch}
       >
         <EmojiPickerSearchAndClear
-          i18n={i18n}
           clearSearch={clearSearch}
+          i18n={i18n}
           searchValue={searchValue}
         />
       </EmojiPickerSearchBar>
       <EmojiPickerContent
-        i18n={i18n}
         emojiLibrary={emojiLibrary}
+        i18n={i18n}
         isSearching={isSearching}
-        searchResult={searchResult}
-        visibleCategories={visibleCategories}
-        settings={settings}
-        onSelectEmoji={onSelectEmoji}
         onMouseOver={onMouseOver}
+        onSelectEmoji={onSelectEmoji}
         refs={refs}
+        searchResult={searchResult}
+        settings={settings}
+        visibleCategories={visibleCategories}
       />
       <EmojiPickerPreview
-        i18n={i18n}
         emoji={emoji}
         hasFound={hasFound}
+        i18n={i18n}
         isSearching={isSearching}
       />
     </div>

@@ -1,10 +1,10 @@
 import React from 'react';
 import { withRef } from '@udecode/cn';
 import {
-  ELEMENT_UL,
+  BulletedListPlugin,
   useListToolbarButton,
   useListToolbarButtonState,
-} from '@udecode/plate-list';
+} from '@udecode/plate-list/react';
 
 import { Icons } from '@/components/icons';
 
@@ -15,18 +15,20 @@ export const ListToolbarButton = withRef<
   {
     nodeType?: string;
   }
->(({ nodeType = ELEMENT_UL, ...rest }, ref) => {
+>(({ nodeType = BulletedListPlugin.key, ...rest }, ref) => {
   const state = useListToolbarButtonState({ nodeType });
   const { props } = useListToolbarButton(state);
 
   return (
     <ToolbarButton
       ref={ref}
-      tooltip={nodeType === ELEMENT_UL ? 'Bulleted List' : 'Numbered List'}
+      tooltip={
+        nodeType === BulletedListPlugin.key ? 'Bulleted List' : 'Numbered List'
+      }
       {...props}
       {...rest}
     >
-      {nodeType === ELEMENT_UL ? <Icons.ul /> : <Icons.ol />}
+      {nodeType === BulletedListPlugin.key ? <Icons.ul /> : <Icons.ol />}
     </ToolbarButton>
   );
 });

@@ -5,8 +5,11 @@ import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import { withCn, withProps } from '@udecode/cn';
 
 export const TooltipProvider = TooltipPrimitive.Provider;
+
 export const Tooltip = TooltipPrimitive.Root;
+
 export const TooltipTrigger = TooltipPrimitive.Trigger;
+
 export const TooltipPortal = TooltipPrimitive.Portal;
 
 export const TooltipContent = withCn(
@@ -21,7 +24,7 @@ export function withTooltip<
 >(Component: T) {
   return React.forwardRef<
     React.ElementRef<T>,
-    React.ComponentPropsWithoutRef<T> & {
+    {
       tooltip?: React.ReactNode;
       tooltipContentProps?: Omit<
         React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>,
@@ -31,7 +34,7 @@ export function withTooltip<
         React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Root>,
         'children'
       >;
-    }
+    } & React.ComponentPropsWithoutRef<T>
   >(function ExtendComponent(
     { tooltip, tooltipContentProps, tooltipProps, ...props },
     ref

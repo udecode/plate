@@ -1,24 +1,24 @@
 'use client';
 
-import { createPlugins, Plate } from '@udecode/plate-common';
+import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 
 import { Editor } from '@/components/plate-ui/editor';
 
-const plugins = createPlugins([], {
-  components: {},
-});
-
-const initialValue = [
-  {
-    id: 1,
-    type: 'p',
-    children: [{ text: '' }],
-  },
-];
-
 export function PlateEditor() {
+  const editor = usePlateEditor({
+    id: 'plate-editor',
+    plugins: [],
+    value: [
+      {
+        id: '1',
+        type: 'p',
+        children: [{ text: '' }],
+      },
+    ],
+  });
+
   return (
-    <Plate plugins={plugins} initialValue={initialValue}>
+    <Plate editor={editor}>
       <Editor placeholder="Type your message here." />
     </Plate>
   );
