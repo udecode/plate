@@ -1,19 +1,11 @@
 import {
   type PluginConfig,
-  type TElement,
   type TPath,
   type WithRequiredKey,
   createTSlatePlugin,
 } from '@udecode/plate-common';
 
 import { withCaption } from './withCaption';
-
-export interface TCalloutElement extends TElement {
-  backgroundColor?: string;
-  color?: string;
-  icon?: string;
-  variant?: 'info' | 'note' | 'tip' | 'warning';
-}
 
 export type CaptionConfig = PluginConfig<
   'caption',
