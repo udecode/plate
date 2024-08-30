@@ -2,6 +2,8 @@ For older changelogs, see https://github.com/udecode/plate/blob/main/docs
 
 # 37.0.0
 
+Migration example: https://github.com/udecode/plate/pull/3480
+
 ## @udecode/plate-alignment@37.0.0
 
 ### Major Changes
