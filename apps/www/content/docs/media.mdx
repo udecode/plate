@@ -35,20 +35,18 @@ npm install @udecode/plate-media
 ## Usage
 
 ```tsx
-import { createCaptionPlugin } from '@udecode/plate-caption';
+import { CaptionPlugin } from '@udecode/plate-caption/react';
 import {
-  MediaPlugin,
   ImagePlugin,
   MediaEmbedPlugin,
-} from '@udecode/plate-media';
-import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
+} from '@udecode/plate-media/react';
+import { SelectOnBackspacePlugin } from '@udecode/plate-select';
 
 const plugins = [
   // ...otherPlugins,
   CaptionPlugin.configure({
     options: { plugins: [ImagePlugin, MediaEmbedPlugin] },
   }),
-  MediaPlugin,
   ImagePlugin,
   MediaEmbedPlugin,
   SelectOnBackspacePlugin.configure({

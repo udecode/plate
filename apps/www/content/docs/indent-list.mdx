@@ -40,10 +40,14 @@ const plugins = [
   // ...otherPlugins,
   HeadingPlugin,
   IndentPlugin.configure({
-    targetPlugins: [ParagraphPlugin.key, HEADING_KEYS.h1],
+    inject: {
+      targetPlugins: [ParagraphPlugin.key, HEADING_KEYS.h1],
+    }
   }),
   IndentListPlugin.configure({
-    targetPlugins: [ParagraphPlugin.key, HEADING_KEYS.h1],
+    inject: {
+      targetPlugins: [ParagraphPlugin.key, HEADING_KEYS.h1],
+    }
   }),
 ];
 ```
