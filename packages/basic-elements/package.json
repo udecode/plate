@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-basic-elements",
-  "version": "37.0.0",
+  "version": "37.0.2",
   "description": "Basic elements plugin for Plate",
   "keywords": [
     "plate",
@@ -50,7 +50,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-block-quote": "37.0.0",
+    "@udecode/plate-block-quote": "37.0.2",
     "@udecode/plate-code-block": "37.0.0",
     "@udecode/plate-heading": "37.0.0"
   },

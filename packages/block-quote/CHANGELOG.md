@@ -1,5 +1,11 @@
 # @udecode/plate-block-quote
 
+## 37.0.2
+
+### Patch Changes
+
+- [`c85a72e94354d32a65f76af7fb2f225e9f1cb458`](https://github.com/udecode/plate/commit/c85a72e94354d32a65f76af7fb2f225e9f1cb458) by [@zbeyens](https://github.com/zbeyens) – Fixes #3488
+
 ## 37.0.0
 
 ### Major Changes
