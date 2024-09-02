@@ -12,7 +12,6 @@ import { useEditorReadOnly } from '@udecode/plate-common/react';
 import { Icons } from '@/components/icons';
 
 import { MarkToolbarButton } from './mark-toolbar-button';
-import { MoreDropdownMenu } from './more-dropdown-menu';
 import { TurnIntoDropdownMenu } from './turn-into-dropdown-menu';
 
 export function FloatingToolbarButtons() {
@@ -47,8 +46,6 @@ export function FloatingToolbarButtons() {
           </MarkToolbarButton>
         </>
       )}
-
-      <MoreDropdownMenu />
     </>
   );
 }

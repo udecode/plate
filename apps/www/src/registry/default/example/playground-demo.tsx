@@ -375,7 +375,9 @@ export default function PlaygroundDemo({
               />
 
               {enabled['floating-toolbar'] && (
-                <FloatingToolbar>
+                <FloatingToolbar
+                  state={{ showWhenReadOnly: isEnabled('comment', id) }}
+                >
                   {enabled['floating-toolbar-buttons'] && (
                     <PlaygroundFloatingToolbarButtons id={id} />
                   )}
