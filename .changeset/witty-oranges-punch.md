@@ -2,4 +2,5 @@
 '@udecode/plate-floating': patch
 ---
 
-Fix: add state.showWhenReadOnly prop to show the toolbar when read-only
+- Fixes #3492
+- Add `state.showWhenReadOnly` prop to show the toolbar when read-only
