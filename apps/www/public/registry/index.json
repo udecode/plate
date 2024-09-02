@@ -183,6 +183,17 @@
   },
   {
     "dependencies": [
+      "@udecode/plate-date"
+    ],
+    "files": [
+      "plate-ui/date-element.tsx"
+    ],
+    "name": "date-element",
+    "registryDependencies": [],
+    "type": "components:plate-ui"
+  },
+  {
+    "dependencies": [
       "@radix-ui/react-slot"
     ],
     "files": [

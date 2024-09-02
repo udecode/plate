@@ -308,6 +308,15 @@ export const Index: Record<string, any> = {
       subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/blockquote-element')),
     },
+    'date-element': {
+      name: 'date-element',
+      type: 'components:plate-ui',
+      registryDependencies: [],
+      files: ['registry/default/plate-ui/date-element.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
+      component: React.lazy(() => import('@/registry/default/plate-ui/date-element')),
+    },
     'button': {
       name: 'button',
       type: 'components:plate-ui',

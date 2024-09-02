@@ -319,10 +319,12 @@ export const resolvePluginOverrides = (editor: SlateEditor) => {
       // TODO react
       if (
         componentOverrides[p.key] &&
-        (!(p as any).render.node ||
+        ((!(p as any).render.node && !(p as any).node.component) ||
           componentOverrides[p.key].priority > p.priority)
       ) {
         (updatedPlugin as any).render.node =
+          componentOverrides[p.key].component;
+        (updatedPlugin as any).node.component =
           componentOverrides[p.key].component;
       }
 

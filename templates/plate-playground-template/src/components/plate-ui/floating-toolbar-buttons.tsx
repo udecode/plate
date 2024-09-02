@@ -53,7 +53,7 @@ export function FloatingToolbarButtons() {
 
       <CommentToolbarButton />
 
-      <MoreDropdownMenu />
+      {!readOnly && <MoreDropdownMenu />}
     </>
   );
 }

@@ -60,7 +60,7 @@ export function PlaygroundFloatingToolbarButtons({ id }: { id?: ValueId }) {
 
       {isEnabled('comment', id) && <CommentToolbarButton />}
 
-      <PlaygroundMoreDropdownMenu />
+      {!readOnly && <PlaygroundMoreDropdownMenu />}
     </>
   );
 }
