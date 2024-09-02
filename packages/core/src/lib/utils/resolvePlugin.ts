@@ -77,6 +77,10 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
   if (plugin.plugins) {
     plugin.plugins = plugin.plugins.map((p) => resolvePlugin(editor, p));
   }
+  // TODO React
+  if ((plugin as any).node?.component) {
+    (plugin as any).render.node = (plugin as any).node.component;
+  }
 
   validatePlugin(editor, plugin);
 
