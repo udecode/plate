@@ -81,6 +81,9 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
   if ((plugin as any).node?.component) {
     (plugin as any).render.node = (plugin as any).node.component;
   }
+  if ((plugin as any).render?.node) {
+    (plugin as any).node.component = (plugin as any).render.node;
+  }
 
   validatePlugin(editor, plugin);
 

@@ -28,6 +28,26 @@ describe('withComponent method', () => {
 
     expect(resolvedPlugin.render.node).not.toBe(OriginalComponent);
     expect(resolvedPlugin.render.node).toBe(NewComponent);
+    expect(resolvedPlugin.node.component).not.toBe(OriginalComponent);
+    expect(resolvedPlugin.node.component).toBe(NewComponent);
+  });
+
+  it('should override an existing component with node.component', () => {
+    const OriginalComponent: NodeComponent = () => null;
+    const NewComponent: NodeComponent = () => null;
+
+    const basePlugin = createPlatePlugin({
+      key: 'testPlugin',
+      node: { component: OriginalComponent },
+    });
+
+    const pluginWithNewComponent = basePlugin.withComponent(NewComponent);
+    const resolvedPlugin = resolvePluginTest(pluginWithNewComponent);
+
+    expect(resolvedPlugin.render.node).not.toBe(OriginalComponent);
+    expect(resolvedPlugin.render.node).toBe(NewComponent);
+    expect(resolvedPlugin.node.component).not.toBe(OriginalComponent);
+    expect(resolvedPlugin.node.component).toBe(NewComponent);
   });
 
   it('extendEditorApi', () => {
