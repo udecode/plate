@@ -1,4 +1,5 @@
 /* eslint-disable jest/no-conditional-expect */
+import { BoldPlugin } from '@udecode/plate-basic-marks';
 import {
   type Value,
   createTEditor,
@@ -227,7 +228,6 @@ describe('withPlate', () => {
 
       const pluginKeys = editor.pluginList.map((plugin) => plugin.key);
       const pluginTypes = editor.pluginList.map((plugin) => plugin.node.type);
-      const slateNextPlugin = editor.getPlugin({ key: SlateNextPlugin.key });
 
       // Check if ReactPlugin replaced DOMPlugin
       expect(pluginKeys).toContain(ReactPlugin.key);
@@ -444,5 +444,24 @@ describe('withPlate', () => {
         type: 'p',
       },
     ]);
+  });
+
+  describe('when value is a string', () => {
+    it('should deserialize HTML string into Slate value', () => {
+      const htmlString = '<p>Hello, <b>world!</b></p>';
+
+      const editor = withSlate(createTEditor(), {
+        id: '1',
+        plugins: [BoldPlugin],
+        value: htmlString,
+      });
+
+      expect(editor.children).toEqual([
+        {
+          children: [{ text: 'Hello, ' }, { bold: true, text: 'world!' }],
+          type: 'p',
+        },
+      ]);
+    });
   });
 });
