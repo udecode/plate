@@ -33,6 +33,17 @@ const editor = createPlateEditor({
 });
 ```
 
+You can also initialize the editor with an HTML string and the associated plugins:
+
+```ts
+const editor = createPlateEditor({
+  plugins: [BoldPlugin, ItalicPlugin],
+  value: '<p>This is <b>bold</b> and <i>italic</i> text!</p>',
+});
+```
+
+For a comprehensive list of plugins that support HTML string deserialization, refer to the [Plugin Deserialization Rules](/docs/html#plugin-deserialization-rules) section.
+
 ### Adding Plugins
 
 You can add plugins to your editor by including them in the `plugins` array:
@@ -176,12 +187,12 @@ const editor = createPlateEditor({
 
 ## Typed Editor
 
-`createPlateEditor` will automatically infer the types for your editor from the value and the plugins you pass in. For explicit type creation, you can use `createTPlateEditor`:
+`createPlateEditor` will automatically infer the types for your editor from the value and the plugins you pass in. For explicit type creation, use the generics:
 
 ### Plugins Type
 
 ```ts
-const editor = createTPlateEditor<Value, typeof TablePlugin | typeof LinkPlugin>({
+const editor = createPlateEditor<Value, typeof TablePlugin | typeof LinkPlugin>({
   plugins: [TablePlugin, LinkPlugin],
 });
 
@@ -238,7 +249,7 @@ const editorInferred = createPlateEditor({
 });
 
 // or 
-const editorExplicit = createTPlateEditor<MyValue, typeof TablePlugin | typeof LinkPlugin>({
+const editorExplicit = createPlateEditor<MyValue, typeof TablePlugin | typeof LinkPlugin>({
   plugins: [TablePlugin, LinkPlugin],
   value,
 });

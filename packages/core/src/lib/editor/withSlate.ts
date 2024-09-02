@@ -52,7 +52,7 @@ export type BaseWithSlateOptions<
    */
   shouldNormalizeEditor?: boolean;
 
-  value?: V;
+  value?: V | string;
 };
 
 export type WithSlateOptions<
@@ -190,7 +190,9 @@ export const withSlate = <
 
   resolvePlugins(editor, [rootPluginInstance]);
 
-  if (value) {
+  if (typeof value === 'string') {
+    editor.children = editor.api.html.deserialize({ element: value }) as Value;
+  } else if (value) {
     editor.children = value;
   }
   if (editor.children?.length === 0) {

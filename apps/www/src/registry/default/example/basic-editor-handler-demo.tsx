@@ -26,14 +26,20 @@ const value = [
 
 export default function BasicEditorHandlerDemo() {
   const [debugValue, setDebugValue] = useState<Value>(value);
-  const editor = usePlateEditor({ value });
+
+  const localValue =
+    typeof window !== 'undefined' && localStorage.getItem('editorContent');
+
+  const editor = usePlateEditor({
+    value: localValue ? JSON.parse(localValue) : value,
+  });
 
   return (
     <Plate
       editor={editor}
       onChange={({ value }) => {
+        localStorage.setItem('editorContent', JSON.stringify(value));
         setDebugValue(value);
-        // save newValue...
       }}
     >
       <Editor {...editableProps} />

@@ -109,21 +109,26 @@ export default function BasicEditor() {
 
 ### Implementing Change Handler
 
-At this stage, it's crucial to monitor editor modifications in order to store the values appropriately. The **`onChange`** prop will serve this purpose.
+At this stage, it's crucial to monitor editor modifications in order to store the values appropriately. The **`onChange`** prop will serve this purpose. You can also persist the editor's state by saving the value to local storage or a database and loading it back when needed.
 
-```tsx showLineNumbers {6-8}
+```tsx showLineNumbers {4-5,8,14-16}
 // ...
 
 export default function BasicEditor() {
+  const localValue =
+    typeof window !== 'undefined' && localStorage.getItem('editorContent');
+
   const editor = usePlateEditor({
-    value,
-    onChange: (newValue) => {
-      // save newValue...
-    },
+    value: localValue ? JSON.parse(localValue) : value,
   });
 
   return (
-    <Plate editor={editor}>
+    <Plate
+      editor={editor}
+      onChange={({ value }) => {
+        localStorage.setItem('editorContent', JSON.stringify(value));
+      }}
+    >
       <PlateContent />
     </Plate>
   );
@@ -229,6 +234,32 @@ export default function BasicEditor() {
 <ComponentSource src="src/lib/plate/create-plate-ui.ts" />
 
 <ComponentPreview name="basic-plugins-components-demo" padding="md" />
+
+### Initializing Editor's Value with HTML String
+
+You can also specify the initial content of the editor using an HTML string and the corresponding plugins.
+
+```tsx showLineNumbers {3,7}
+// ...
+
+const htmlValue = '<p>This is <b>bold</b> and <i>italic</i> text!</p>';
+
+export default function BasicEditor() {
+  const editor = usePlateEditor({
+    value: htmlValue,
+    plugins: [
+      BoldPlugin,
+      ItalicPlugin,
+    ],
+  });
+
+  return (
+    <Plate editor={editor}>
+      <PlateContent />
+    </Plate>
+  );
+}
+```
 
 ### That's it!
 

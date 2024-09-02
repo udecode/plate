@@ -13,9 +13,24 @@ Many Plate plugins include HTML deserialization rules. These rules define how HT
 
 ## HTML -> Slate
 
-Here's a comprehensive list of plugins that support HTML deserialization, along with their corresponding HTML elements and styles:
+### Usage
+
+The `editor.api.html.deserialize` function allows you to convert HTML content into Slate value:
+
+```typescript
+import { createPlateEditor } from '@udecode/plate-common/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // all plugins that you want to deserialize
+  ]
+})
+editor.children = editor.api.html.deserialize('<p>Hello, world!</p>')
+```
 
 ### Plugin Deserialization Rules
+
+Here's a comprehensive list of plugins that support HTML deserialization, along with their corresponding HTML elements and styles:
 
 #### Text Formatting
 
@@ -167,6 +182,32 @@ export const IndentListPlugin = createTSlatePlugin<IndentListConfig>({
   },
 });
 ```
+
+### API
+
+#### editor.api.html.deserialize
+
+Deserialize HTML string into Slate value.
+
+<APIParameters>
+<APISubListItem parent="options" name="element" type="HTMLElement | string">
+
+The HTML element or string to deserialize.
+
+</APISubListItem>
+<APISubListItem parent="options" name="collapseWhiteSpace" type="boolean" optional>
+
+Flag to enable or disable the removal of whitespace from the serialized HTML.
+
+- **Default:** `true` (Whitespace will be removed.)
+</APISubListItem>
+</APIParameters>
+<APIReturns>
+<APIItem type="TDescendant[]">
+
+The deserialized Slate value.
+</APIItem>
+</APIReturns>
 
 ## Slate -> React -> HTML
 
