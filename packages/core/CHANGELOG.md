@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 37.0.4
+
+### Patch Changes
+
+- [#3495](https://github.com/udecode/plate/pull/3495) by [@zbeyens](https://github.com/zbeyens) – Add string value support for `createSlateEditor`, `createPlateEditor`, `usePlateEditor`
+
 ## 37.0.3
 
 ### Patch Changes
