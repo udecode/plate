@@ -134,6 +134,13 @@ export const ui: Registry = [
     type: 'components:plate-ui',
   },
   {
+    dependencies: ['@udecode/plate-date'],
+    files: ['plate-ui/date-element.tsx'],
+    name: 'date-element',
+    registryDependencies: [],
+    type: 'components:plate-ui',
+  },
+  {
     dependencies: ['@radix-ui/react-slot'],
     files: ['plate-ui/button.tsx'],
     name: 'button',
