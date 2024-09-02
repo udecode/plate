@@ -1,5 +1,7 @@
 # @udecode/plate-common
 
+## 37.0.3
+
 ## 37.0.0
 
 ### Major Changes

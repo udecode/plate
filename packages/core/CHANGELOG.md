@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 37.0.3
+
+### Patch Changes
+
+- [#3493](https://github.com/udecode/plate/pull/3493) by [@zbeyens](https://github.com/zbeyens) – Fix plugin.node.component should work like plugin.render.node
+
 ## 37.0.0
 
 ### Major Changes
