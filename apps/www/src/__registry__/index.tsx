@@ -311,11 +311,20 @@ export const Index: Record<string, any> = {
     'date-element': {
       name: 'date-element',
       type: 'components:plate-ui',
-      registryDependencies: [],
+      registryDependencies: ["calendar"],
       files: ['registry/default/plate-ui/date-element.tsx'],
       category: "undefined",
       subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/date-element')),
+    },
+    'calendar': {
+      name: 'calendar',
+      type: 'components:plate-ui',
+      registryDependencies: ["button"],
+      files: ['registry/default/plate-ui/calendar.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
+      component: React.lazy(() => import('@/registry/default/plate-ui/calendar')),
     },
     'button': {
       name: 'button',

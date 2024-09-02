@@ -137,7 +137,14 @@ export const ui: Registry = [
     dependencies: ['@udecode/plate-date'],
     files: ['plate-ui/date-element.tsx'],
     name: 'date-element',
-    registryDependencies: [],
+    registryDependencies: ['calendar'],
+    type: 'components:plate-ui',
+  },
+  {
+    dependencies: ['react-day-picker', 'date-fns'],
+    files: ['plate-ui/calendar.tsx'],
+    name: 'calendar',
+    registryDependencies: ['button'],
     type: 'components:plate-ui',
   },
   {

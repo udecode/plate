@@ -9,6 +9,8 @@
     }
   ],
   "name": "date-element",
-  "registryDependencies": [],
+  "registryDependencies": [
+    "calendar"
+  ],
   "type": "components:plate-ui"
 }
