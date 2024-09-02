@@ -181,7 +181,7 @@ No software is without bugs. If you encounter a problem, please follow these ste
 
 ### Reproductions
 
-The best way to help us understand and fix your issue is to provide a minimal reproduction of the problem. You can do this using **[our CodeSandbox](https://codesandbox.io/s/github/udecode/plate-playground)**.
+The best way to help us understand and fix your issue is to provide a minimal reproduction of the problem. You can do this using **[our CodeSandbox](https://codesandbox.io/p/devbox/dgfyh7)**.
 
 ### Responding to questions
 
