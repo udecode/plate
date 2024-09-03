@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate",
-  "version": "37.0.5",
+  "version": "37.0.6",
   "description": "Plate – a plugin system for slate",
   "keywords": [
     "contentEditable",
@@ -91,7 +91,7 @@
     "@udecode/plate-reset-node": "37.0.0",
     "@udecode/plate-resizable": "37.0.0",
     "@udecode/plate-select": "37.0.0",
-    "@udecode/plate-selection": "37.0.0",
+    "@udecode/plate-selection": "37.0.6",
     "@udecode/plate-slash-command": "37.0.0",
     "@udecode/plate-suggestion": "37.0.0",
     "@udecode/plate-tabbable": "37.0.0",
