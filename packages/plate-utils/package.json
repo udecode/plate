@@ -65,7 +65,7 @@
     "slate": ">=0.103.0",
     "slate-history": ">=0.93.0",
     "slate-hyperscript": ">=0.66.0",
-    "slate-react": ">=0.108.0"
+    "slate-react": ">=0.110.0"
   },
   "publishConfig": {
     "access": "public"
