@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 37.0.5
+
+### Patch Changes
+
+- [`fd8ba6260022cfdc3ac370ad9e49cbeb2896fb71`](https://github.com/udecode/plate/commit/fd8ba6260022cfdc3ac370ad9e49cbeb2896fb71) by [@zbeyens](https://github.com/zbeyens) – Add id?: string in useEditorPlugin param
+
 ## 37.0.4
 
 ### Patch Changes
