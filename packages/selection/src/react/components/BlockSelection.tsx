@@ -10,10 +10,7 @@ export const BlockSelection = ({ children }: any) => {
   const { editorPaddingRight, rightSelectionAreaClassName } = getOptions();
 
   return (
-    <div
-      className={rightSelectionAreaClassName}
-      style={{ position: 'relative', width: '100%' }}
-    >
+    <div style={{ position: 'relative', width: '100%' }}>
       {/*
        *select text then move cursor to the very bottom will trigger the default browser behavior
        *this div is a workaround to prevent the default browser behavior (set userSelect: none)
@@ -22,6 +19,7 @@ export const BlockSelection = ({ children }: any) => {
 
       {/* TODO: click to focus the node */}
       <div
+        className={rightSelectionAreaClassName}
         data-plate-selectable
         style={{
           height: '100%',
