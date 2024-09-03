@@ -1,5 +1,11 @@
 # @udecode/plate-utils
 
+## 37.0.5
+
+### Patch Changes
+
+- [#3500](https://github.com/udecode/plate/pull/3500) by [@yf-yang](https://github.com/yf-yang) – Hide placeholder during composition
+
 ## 37.0.4
 
 ## 37.0.3
