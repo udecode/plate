@@ -7,7 +7,7 @@ import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 export const BlockSelection = ({ children }: any) => {
   const { getOptions } = useEditorPlugin(BlockSelectionPlugin);
 
-  const { editorPaddingRight } = getOptions();
+  const { editorPaddingRight, rightSelectionAreaClassName } = getOptions();
 
   return (
     <div style={{ position: 'relative', width: '100%' }}>
@@ -19,6 +19,7 @@ export const BlockSelection = ({ children }: any) => {
 
       {/* TODO: click to focus the node */}
       <div
+        className={rightSelectionAreaClassName}
         data-plate-selectable
         style={{
           height: '100%',

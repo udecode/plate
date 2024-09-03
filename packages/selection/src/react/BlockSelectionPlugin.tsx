@@ -28,6 +28,7 @@ export type BlockSelectionConfig = PluginConfig<
     isSelecting?: boolean;
     onKeyDownSelecting?: (e: KeyboardEvent) => void;
     query?: QueryNodeOptions;
+    rightSelectionAreaClassName?: string;
     selectedIds?: Set<string>;
   } & BlockSelectionSelectors,
   {
@@ -78,6 +79,7 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
     query: {
       maxLevel: 1,
     },
+    rightSelectionAreaClassName: 'slate-right-selection-area',
     selectedIds: new Set(),
   },
   plugins: [BlockContextMenuPlugin],
