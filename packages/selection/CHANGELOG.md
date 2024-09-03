@@ -1,5 +1,11 @@
 # @udecode/plate-selection
 
+## 37.0.6
+
+### Patch Changes
+
+- [#3499](https://github.com/udecode/plate/pull/3499) by [@felixfeng33](https://github.com/felixfeng33) – Add `rightSelectionAreaClassName` to the above component to control the width.
+
 ## 37.0.0
 
 ### Major Changes
