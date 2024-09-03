@@ -7,10 +7,13 @@ import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 export const BlockSelection = ({ children }: any) => {
   const { getOptions } = useEditorPlugin(BlockSelectionPlugin);
 
-  const { editorPaddingRight } = getOptions();
+  const { editorPaddingRight, rightSelectionAreaClassName } = getOptions();
 
   return (
-    <div style={{ position: 'relative', width: '100%' }}>
+    <div
+      className={rightSelectionAreaClassName}
+      style={{ position: 'relative', width: '100%' }}
+    >
       {/*
        *select text then move cursor to the very bottom will trigger the default browser behavior
        *this div is a workaround to prevent the default browser behavior (set userSelect: none)

@@ -28,6 +28,7 @@ export type BlockSelectionConfig = PluginConfig<
     isSelecting?: boolean;
     onKeyDownSelecting?: (e: KeyboardEvent) => void;
     query?: QueryNodeOptions;
+    rightSelectionAreaClassName?: string;
     selectedIds?: Set<string>;
   } & BlockSelectionSelectors,
   {
