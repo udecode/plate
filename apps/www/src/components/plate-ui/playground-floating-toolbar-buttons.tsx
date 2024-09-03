@@ -1,7 +1,5 @@
 import React from 'react';
 
-import type { ValueId } from '@/config/customizer-plugins';
-
 import {
   BoldPlugin,
   CodePlugin,
@@ -9,10 +7,12 @@ import {
   StrikethroughPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
+import { CommentsPlugin } from '@udecode/plate-comments';
 import { useEditorReadOnly } from '@udecode/plate-common/react';
+import { LinkPlugin } from '@udecode/plate-link';
 
+import { CheckPlugin } from '@/components/context/check-plugin';
 import { Icons } from '@/components/icons';
-import { isEnabled } from '@/plate/demo/is-enabled';
 import { CommentToolbarButton } from '@/registry/default/plate-ui/comment-toolbar-button';
 import { LinkToolbarButton } from '@/registry/default/plate-ui/link-toolbar-button';
 import { MarkToolbarButton } from '@/registry/default/plate-ui/mark-toolbar-button';
@@ -21,7 +21,7 @@ import { ToolbarSeparator } from '@/registry/default/plate-ui/toolbar';
 import { PlaygroundMoreDropdownMenu } from './playground-more-dropdown-menu';
 import { PlaygroundTurnIntoDropdownMenu } from './playground-turn-into-dropdown-menu';
 
-export function PlaygroundFloatingToolbarButtons({ id }: { id?: ValueId }) {
+export function PlaygroundFloatingToolbarButtons() {
   const readOnly = useEditorReadOnly();
 
   return (
@@ -54,11 +54,15 @@ export function PlaygroundFloatingToolbarButtons({ id }: { id?: ValueId }) {
 
           <ToolbarSeparator />
 
-          {isEnabled('link', id) && <LinkToolbarButton />}
+          <CheckPlugin id="link" plugin={LinkPlugin}>
+            <LinkToolbarButton />
+          </CheckPlugin>
         </>
       )}
 
-      {isEnabled('comment', id) && <CommentToolbarButton />}
+      <CheckPlugin id="comment" plugin={CommentsPlugin}>
+        <CommentToolbarButton />
+      </CheckPlugin>
 
       {!readOnly && <PlaygroundMoreDropdownMenu />}
     </>

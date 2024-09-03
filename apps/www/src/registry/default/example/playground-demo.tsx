@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import type { ValueId } from '@/config/customizer-plugins';
-import type { Value } from '@udecode/plate-common';
 
 import { cn } from '@udecode/cn';
 import { AlignPlugin } from '@udecode/plate-alignment';
@@ -65,6 +64,7 @@ import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import Prism from 'prismjs';
 
+import { CheckPlugin } from '@/components/context/check-plugin';
 import { settingsStore } from '@/components/context/settings-store';
 import { PlaygroundFixedToolbarButtons } from '@/components/plate-ui/playground-fixed-toolbar-buttons';
 import { PlaygroundFloatingToolbarButtons } from '@/components/plate-ui/playground-floating-toolbar-buttons';
@@ -98,12 +98,12 @@ import { LinkFloatingToolbar } from '@/registry/default/plate-ui/link-floating-t
 import { usePlaygroundEnabled } from './usePlaygroundEnabled';
 
 export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
-  const enabled = settingsStore.use.checkedComponents();
+  const enabledPlugins = settingsStore.use.checkedPlugins();
   const overridePlugins = usePlaygroundEnabled(id);
-  const autoformatOptions = getAutoformatOptions(id, enabled);
+  const autoformatOptions = getAutoformatOptions(id, enabledPlugins);
 
   const value = usePlaygroundValue(id);
-  const key = useInitialValueVersion(value);
+  const key = settingsStore.use.version();
 
   const editorId = id || 'playground-' + key;
 
@@ -330,95 +330,99 @@ export default function PlaygroundDemo({
   const editor = usePlaygroundEditor(id, scrollSelector);
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div className="relative">
-        <Plate editor={editor}>
-          {enabled['fixed-toolbar'] && (
-            <FixedToolbar className="no-scrollbar">
-              {enabled['fixed-toolbar-buttons'] && (
-                <PlaygroundFixedToolbarButtons id={id} />
-              )}
-            </FixedToolbar>
-          )}
+    <DemoId id={id}>
+      <DndProvider backend={HTML5Backend}>
+        <div className="relative">
+          <Plate editor={editor}>
+            <CheckPlugin componentId="fixed-toolbar">
+              <FixedToolbar className="no-scrollbar">
+                <CheckPlugin componentId="fixed-toolbar-buttons">
+                  <PlaygroundFixedToolbarButtons />
+                </CheckPlugin>
+              </FixedToolbar>
+            </CheckPlugin>
 
-          <div
-            className="flex w-full"
-            id="editor-playground"
-            style={
-              {
-                '--editor-px': 'max(5%,24px)',
-              } as any
-            }
-          >
             <div
-              className={cn(
-                'relative flex max-h-[800px] w-full overflow-x-auto',
-                // block selection area
-                '[&_.slate-selected]:!bg-primary/20 [&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10'
-              )}
-              data-plate-selectable
-              id={scrollSelector}
-              ref={containerRef}
+              className="flex w-full"
+              id="editor-playground"
+              style={
+                {
+                  '--editor-px': 'max(5%,24px)',
+                } as any
+              }
             >
-              <Editor
-                {...editableProps}
+              <div
                 className={cn(
-                  editableProps.className,
-                  ' overflow-x-hidden px-[var(--editor-px)]',
-                  !id && 'pb-[20vh] pt-4',
-                  id && 'pb-8 pt-2'
+                  'relative flex max-h-[800px] w-full overflow-x-auto',
+                  // block selection area
+                  '[&_.slate-selected]:!bg-primary/20 [&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10'
                 )}
-                focusRing={false}
-                placeholder=""
-                size="md"
-                variant="ghost"
-              />
-
-              {enabled['floating-toolbar'] && (
-                <FloatingToolbar
-                  state={{ showWhenReadOnly: isEnabled('comment', id) }}
-                >
-                  {enabled['floating-toolbar-buttons'] && (
-                    <PlaygroundFloatingToolbarButtons id={id} />
+                data-plate-selectable
+                id={scrollSelector}
+                ref={containerRef}
+              >
+                <Editor
+                  {...editableProps}
+                  className={cn(
+                    editableProps.className,
+                    ' overflow-x-hidden px-[var(--editor-px)]',
+                    !id && 'pb-[20vh] pt-4',
+                    id && 'pb-8 pt-2'
                   )}
-                </FloatingToolbar>
-              )}
+                  focusRing={false}
+                  placeholder=""
+                  size="md"
+                  variant="ghost"
+                />
 
-              {isEnabled('cursoroverlay', id) && (
-                <CursorOverlay containerRef={containerRef} />
-              )}
+                <CheckPlugin componentId="floating-toolbar">
+                  <FloatingToolbar
+                    state={{
+                      showWhenReadOnly: isEnabled(
+                        'comment',
+                        id,
+                        enabled[CommentsPlugin.key]
+                      ),
+                    }}
+                  >
+                    <CheckPlugin componentId="floating-toolbar-buttons">
+                      <PlaygroundFloatingToolbarButtons />
+                    </CheckPlugin>
+                  </FloatingToolbar>
+                </CheckPlugin>
+
+                <CheckPlugin id="cursoroverlay" plugin={DragOverCursorPlugin}>
+                  <CursorOverlay containerRef={containerRef} />
+                </CheckPlugin>
+              </div>
+
+              <CheckPlugin
+                componentId="comments-popover"
+                id="comment"
+                plugin={CommentsPlugin}
+              >
+                <CommentsPopover />
+              </CheckPlugin>
             </div>
-
-            {isEnabled('comment', id, enabled['comments-popover']) && (
-              <CommentsPopover />
-            )}
-          </div>
-        </Plate>
-      </div>
-    </DndProvider>
+          </Plate>
+        </div>
+      </DndProvider>
+    </DemoId>
   );
 }
 
-// reset editor when initialValue changes
-export const useInitialValueVersion = (initialValue: Value) => {
-  const enabled = settingsStore.use.checkedPlugins();
-  const [version, setVersion] = useState(1);
-  const prevEnabled = useRef(enabled);
-  const prevInitialValueRef = useRef(initialValue);
+const DemoIdContext = React.createContext<string | undefined>(undefined);
 
-  useEffect(() => {
-    if (enabled === prevEnabled.current) return;
+export function DemoId({
+  children,
+  id,
+}: {
+  children: React.ReactNode;
+  id?: string;
+}) {
+  return <DemoIdContext.Provider value={id}>{children}</DemoIdContext.Provider>;
+}
 
-    prevEnabled.current = enabled;
-    setVersion((v) => v + 1);
-  }, [enabled]);
-
-  useEffect(() => {
-    if (initialValue === prevInitialValueRef.current) return;
-
-    prevInitialValueRef.current = initialValue;
-    setVersion((v) => v + 1);
-  }, [initialValue]);
-
-  return version;
-};
+export function useDemoId() {
+  return React.useContext(DemoIdContext);
+}

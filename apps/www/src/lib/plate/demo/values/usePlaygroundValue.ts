@@ -44,11 +44,13 @@ export const usePlaygroundValue = (id?: ValueId): MyValue => {
     valueId = id;
   }
 
-  const enabled = settingsStore.use.checkedPlugins();
+  const version = settingsStore.use.version();
 
   return useMemo(() => {
+    const enabled = settingsStore.get.checkedPlugins();
     const value = [...basicElementsValue];
 
+    if (!version) return value;
     if (enabled.action_item) value.push(...todoListValue);
     if (enabled.a) value.push(...linkValue);
 
@@ -105,38 +107,5 @@ export const usePlaygroundValue = (id?: ValueId): MyValue => {
     if (enabled.excalidraw) value.push(...excalidrawValue);
 
     return mapNodeId(value);
-  }, [
-    enabled.a,
-    enabled.action_item,
-    enabled.align,
-    enabled.autoformat,
-    enabled.backgroundColor,
-    enabled.color,
-    enabled.comment,
-    enabled.csv,
-    enabled.docx,
-    enabled.markdown,
-    enabled.dragOverCursor,
-    enabled.emoji,
-    enabled.excalidraw,
-    enabled.exitBreak,
-    enabled.highlight,
-    enabled.hr,
-    enabled.img,
-    enabled.indent,
-    enabled.kbd,
-    enabled.lineHeight,
-    enabled.list,
-    enabled.listStyleType,
-    enabled.media_embed,
-    enabled.mention,
-    enabled.softBreak,
-    enabled.tabbable,
-    enabled.table,
-    enabled.toggle,
-    enabled.trailingBlock,
-    enabled.column,
-    enabled.data,
-    valueId,
-  ]);
+  }, [valueId, version]);
 };

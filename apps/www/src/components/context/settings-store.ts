@@ -4,9 +4,7 @@ import { SingleLinePlugin } from '@udecode/plate-break/react';
 import { createZustandStore } from '@udecode/plate-common';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { SelectOnBackspacePlugin } from '@udecode/plate-select';
-import { toast } from 'sonner';
 
-import { type SettingPlugin, customizerItems } from '@/config/customizer-items';
 import { customizerList } from '@/config/customizer-list';
 import { type ValueId, customizerPlugins } from '@/config/customizer-plugins';
 
@@ -55,6 +53,7 @@ export type SettingsStoreValue = {
   showComponents: boolean;
   showSettings: boolean;
   valueId: ValueId;
+  version: number;
 };
 
 const initialState: SettingsStoreValue = {
@@ -64,13 +63,14 @@ const initialState: SettingsStoreValue = {
   // homeTab: 'installation',
   customizerTab: 'plugins',
   homeTab: 'playground',
-
   loadingSettings: true,
 
   showComponents: true,
 
   showSettings: false,
+
   valueId: customizerPlugins.playground.id as ValueId,
+  version: 1,
 };
 
 export const settingsStore = createZustandStore('settings')(initialState)
@@ -94,10 +94,11 @@ export const settingsStore = createZustandStore('settings')(initialState)
       exclude?: string[];
     } = {}) => {
       set.state((draft) => {
-        draft.checkedPluginsNext = getDefaultCheckedPlugins();
-
+        // draft.checkedPluginsNext = getDefaultCheckedPlugins();
+        draft.checkedPlugins = getDefaultCheckedPlugins();
         exclude?.forEach((item) => {
-          draft.checkedPluginsNext[item] = false;
+          // draft.checkedPluginsNext[item] = false;
+          draft.checkedPlugins[item] = false;
         });
       });
     },
@@ -108,24 +109,26 @@ export const settingsStore = createZustandStore('settings')(initialState)
     },
     setCheckedIdNext: (id: string | string[], checked: boolean) => {
       set.state((draft) => {
-        draft.checkedPluginsNext = { ...draft.checkedPluginsNext };
+        draft.checkedPlugins[id as string] = checked;
 
-        const conflicts =
-          (customizerItems[id as string] as SettingPlugin)?.conflicts ?? [];
+        // draft.checkedPluginsNext = { ...draft.checkedPluginsNext };
 
-        conflicts.forEach((item) => {
-          if (!draft.checkedPluginsNext[item]) return;
+        // const conflicts =
+        //   (customizerItems[id as string] as SettingPlugin)?.conflicts ?? [];
 
-          draft.checkedPluginsNext[item] = false;
+        // conflicts.forEach((item) => {
+        //   if (!draft.checkedPluginsNext[item]) return;
 
-          const label = customizerItems[item]?.label;
+        //   draft.checkedPluginsNext[item] = false;
 
-          if (label) {
-            toast(`${label} plugin disabled.`);
-          }
-        });
+        //   const label = customizerItems[item]?.label;
 
-        draft.checkedPluginsNext[id as string] = checked;
+        //   if (label) {
+        //     toast(`${label} plugin disabled.`);
+        //   }
+        // });
+
+        // draft.checkedPluginsNext[id as string] = checked;
       });
     },
     syncChecked: () => {
@@ -135,7 +138,7 @@ export const settingsStore = createZustandStore('settings')(initialState)
     },
   }))
   .extendSelectors((get) => ({
-    checkedComponentId: (id: string) => get.checkedComponents[id],
+    checkedComponentId: (id?: string) => id && get.checkedComponents[id],
     checkedId: (id: string) => get.checkedPlugins[id],
     checkedIdNext: (id: string) => get.checkedPluginsNext[id],
   }));

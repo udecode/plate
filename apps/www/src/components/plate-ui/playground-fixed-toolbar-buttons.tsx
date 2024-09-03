@@ -1,7 +1,5 @@
 import React from 'react';
 
-import type { ValueId } from '@/config/customizer-plugins';
-
 import {
   BoldPlugin,
   CodePlugin,
@@ -9,22 +7,25 @@ import {
   StrikethroughPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
+import { CommentsPlugin } from '@udecode/plate-comments';
 import { useEditorReadOnly } from '@udecode/plate-common/react';
+import { EmojiPlugin } from '@udecode/plate-emoji';
 import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
 } from '@udecode/plate-font';
 import { ListStyleType } from '@udecode/plate-indent-list';
 import { IndentListPlugin } from '@udecode/plate-indent-list/react';
+import { ListPlugin } from '@udecode/plate-list';
 import {
   BulletedListPlugin,
   NumberedListPlugin,
 } from '@udecode/plate-list/react';
 import { ImagePlugin } from '@udecode/plate-media/react';
+import { TablePlugin } from '@udecode/plate-table';
 
-import { settingsStore } from '@/components/context/settings-store';
+import { CheckPlugin } from '@/components/context/check-plugin';
 import { Icons, iconVariants } from '@/components/icons';
-import { isEnabled } from '@/plate/demo/is-enabled';
 import { AlignDropdownMenu } from '@/registry/default/plate-ui/align-dropdown-menu';
 import { ColorDropdownMenu } from '@/registry/default/plate-ui/color-dropdown-menu';
 import { CommentToolbarButton } from '@/registry/default/plate-ui/comment-toolbar-button';
@@ -47,9 +48,8 @@ import { PlaygroundModeDropdownMenu } from './playground-mode-dropdown-menu';
 import { PlaygroundMoreDropdownMenu } from './playground-more-dropdown-menu';
 import { PlaygroundTurnIntoDropdownMenu } from './playground-turn-into-dropdown-menu';
 
-export function PlaygroundFixedToolbarButtons({ id }: { id?: ValueId }) {
+export function PlaygroundFixedToolbarButtons() {
   const readOnly = useEditorReadOnly();
-  const indentList = settingsStore.use.checkedId(IndentListPlugin.key);
 
   return (
     <div className="w-full">
@@ -64,9 +64,10 @@ export function PlaygroundFixedToolbarButtons({ id }: { id?: ValueId }) {
           <>
             <ToolbarGroup noSeparator>
               <PlaygroundInsertDropdownMenu />
-              {isEnabled('basicnodes', id) && (
+
+              <CheckPlugin id="basicnodes">
                 <PlaygroundTurnIntoDropdownMenu />
-              )}
+              </CheckPlugin>
             </ToolbarGroup>
 
             <ToolbarGroup>
@@ -86,89 +87,85 @@ export function PlaygroundFixedToolbarButtons({ id }: { id?: ValueId }) {
                 <Icons.underline />
               </MarkToolbarButton>
 
-              {isEnabled('basicnodes', id) && (
-                <>
-                  <MarkToolbarButton
-                    nodeType={StrikethroughPlugin.key}
-                    tooltip="Strikethrough (⌘+⇧+M)"
-                  >
-                    <Icons.strikethrough />
-                  </MarkToolbarButton>
-                  <MarkToolbarButton
-                    nodeType={CodePlugin.key}
-                    tooltip="Code (⌘+E)"
-                  >
-                    <Icons.code />
-                  </MarkToolbarButton>
-                </>
-              )}
+              <CheckPlugin id="basicnodes">
+                <MarkToolbarButton
+                  nodeType={StrikethroughPlugin.key}
+                  tooltip="Strikethrough (⌘+⇧+M)"
+                >
+                  <Icons.strikethrough />
+                </MarkToolbarButton>
+                <MarkToolbarButton
+                  nodeType={CodePlugin.key}
+                  tooltip="Code (⌘+E)"
+                >
+                  <Icons.code />
+                </MarkToolbarButton>
+              </CheckPlugin>
 
-              {isEnabled('font', id) && (
-                <>
-                  <ColorDropdownMenu
-                    nodeType={FontColorPlugin.key}
-                    tooltip="Text Color"
-                  >
-                    <Icons.color
-                      className={iconVariants({ variant: 'toolbar' })}
-                    />
-                  </ColorDropdownMenu>
-                  <ColorDropdownMenu
-                    nodeType={FontBackgroundColorPlugin.key}
-                    tooltip="Highlight Color"
-                  >
-                    <Icons.bg
-                      className={iconVariants({ variant: 'toolbar' })}
-                    />
-                  </ColorDropdownMenu>
-                </>
-              )}
+              <CheckPlugin id="font">
+                <ColorDropdownMenu
+                  nodeType={FontColorPlugin.key}
+                  tooltip="Text Color"
+                >
+                  <Icons.color
+                    className={iconVariants({ variant: 'toolbar' })}
+                  />
+                </ColorDropdownMenu>
+                <ColorDropdownMenu
+                  nodeType={FontBackgroundColorPlugin.key}
+                  tooltip="Highlight Color"
+                >
+                  <Icons.bg className={iconVariants({ variant: 'toolbar' })} />
+                </ColorDropdownMenu>
+              </CheckPlugin>
             </ToolbarGroup>
 
             <ToolbarGroup>
-              {isEnabled('align', id) && <AlignDropdownMenu />}
+              <CheckPlugin id="align">
+                <AlignDropdownMenu />
+              </CheckPlugin>
 
-              {isEnabled('lineheight', id) && <LineHeightDropdownMenu />}
+              <CheckPlugin id="lineheight">
+                <LineHeightDropdownMenu />
+              </CheckPlugin>
 
-              {isEnabled('indentlist', id) && indentList && (
-                <>
-                  <IndentListToolbarButton nodeType={ListStyleType.Disc} />
-                  <IndentListToolbarButton nodeType={ListStyleType.Decimal} />
-                  <IndentTodoToolbarButton />
-                </>
-              )}
+              <CheckPlugin id="indentlist" plugin={IndentListPlugin}>
+                <IndentListToolbarButton nodeType={ListStyleType.Disc} />
+                <IndentListToolbarButton nodeType={ListStyleType.Decimal} />
+                <IndentTodoToolbarButton />
+              </CheckPlugin>
 
-              {isEnabled('list', id) && !indentList && (
-                <>
-                  <ListToolbarButton nodeType={BulletedListPlugin.key} />
-                  <ListToolbarButton nodeType={NumberedListPlugin.key} />
-                </>
-              )}
+              <CheckPlugin id="list" plugin={ListPlugin}>
+                <ListToolbarButton nodeType={BulletedListPlugin.key} />
+                <ListToolbarButton nodeType={NumberedListPlugin.key} />
+              </CheckPlugin>
 
-              {(isEnabled('indent', id) ||
-                isEnabled('list', id) ||
-                isEnabled('indentlist', id)) && (
-                <>
-                  <OutdentToolbarButton />
-                  <IndentToolbarButton />
-                </>
-              )}
+              <CheckPlugin id={['indent', 'list', 'indentlist']}>
+                <OutdentToolbarButton />
+                <IndentToolbarButton />
+              </CheckPlugin>
             </ToolbarGroup>
 
             <ToolbarGroup>
-              {isEnabled('link', id) && <LinkToolbarButton />}
+              <CheckPlugin id="link">
+                <LinkToolbarButton />
+              </CheckPlugin>
 
-              {isEnabled('toggle', id) && <ToggleToolbarButton />}
+              <CheckPlugin id="toggle">
+                <ToggleToolbarButton />
+              </CheckPlugin>
 
-              {isEnabled('media', id) && (
+              <CheckPlugin id="media">
                 <MediaToolbarButton nodeType={ImagePlugin.key} />
-              )}
+              </CheckPlugin>
 
-              {(isEnabled('table', id) || isEnabled('tableMerge', id)) && (
+              <CheckPlugin id={['table', 'tableMerge']} plugin={TablePlugin}>
                 <TableDropdownMenu />
-              )}
+              </CheckPlugin>
 
-              {isEnabled('emoji', id) && <EmojiDropdownMenu />}
+              <CheckPlugin id="emoji" plugin={EmojiPlugin}>
+                <EmojiDropdownMenu />
+              </CheckPlugin>
 
               <PlaygroundMoreDropdownMenu />
             </ToolbarGroup>
@@ -178,7 +175,9 @@ export function PlaygroundFixedToolbarButtons({ id }: { id?: ValueId }) {
         <div className="grow" />
 
         <ToolbarGroup noSeparator>
-          {isEnabled('comment', id) && <CommentToolbarButton />}
+          <CheckPlugin id="comment" plugin={CommentsPlugin}>
+            <CommentToolbarButton />
+          </CheckPlugin>
           <PlaygroundModeDropdownMenu />
         </ToolbarGroup>
       </div>

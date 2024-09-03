@@ -62,7 +62,7 @@ export function PluginsTabContentLazy() {
 
   return (
     <div>
-      <SettingsEffect />
+      {/* <SettingsEffect /> */}
 
       <div className="flex items-center">
         <Checkbox
@@ -164,8 +164,11 @@ export function PluginsTabContent() {
 
             <Button
               onClick={() => {
-                settingsStore.set.homeTab('installation');
+                // settingsStore.set.homeTab('installation');
                 settingsStore.set.showSettings(false);
+                settingsStore.set.state((draft) => {
+                  draft.version = draft.version + 1;
+                });
               }}
             >
               Done
