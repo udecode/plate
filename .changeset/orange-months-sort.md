@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-utils': minor
+'@udecode/plate-utils': patch
 ---
 
 Hide placeholder during composition
