@@ -24,6 +24,11 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
   editor: SlateEditor,
   _plugin: P
 ): P => {
+  if (_plugin.key === 'p' && editor.id === 2) {
+    // Minimize the number of calls
+    console.log(editor.key, _plugin.key);
+  }
+
   // Create a deep clone of the plugin
   let plugin = createSlatePlugin(_plugin) as P;
 
@@ -51,7 +56,9 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
     plugin.__extensions = [];
   }
   if (plugin.plugins) {
-    plugin.plugins = plugin.plugins.map((p) => resolvePlugin(editor, p));
+    plugin.plugins = plugin.plugins.map((p) => {
+      return resolvePlugin(editor, p);
+    });
   }
 
   const targetPluginToInject = plugin.inject?.targetPluginToInject;

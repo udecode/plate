@@ -37,8 +37,17 @@ export function usePlateEditor<
   return React.useMemo(
     (): any => {
       if (options.enabled === false) return null;
+      if (options.id === 1) {
+        console.time('Editor');
+      }
 
-      return createPlateEditor(options);
+      const editor = createPlateEditor(options);
+
+      if (options.id === 1) {
+        console.timeEnd('Editor');
+      }
+
+      return editor;
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [options.id, options.enabled, ...deps]

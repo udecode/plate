@@ -179,21 +179,26 @@ const resolvePluginApis = (editor: SlateEditor) => {
   );
 };
 
-const flattenAndMergePlugins = (
+const flattenAndResolvePlugins = (
+  editor: SlateEditor,
   plugins: SlatePlugins
 ): Map<string, SlatePlugin> => {
   const pluginMap = new Map<string, SlatePlugin>();
 
   const processPlugin = (plugin: SlatePlugin) => {
-    const existingPlugin = pluginMap.get(plugin.key);
+    const resolvedPlugin = resolvePlugin(editor, plugin);
+    const existingPlugin = pluginMap.get(resolvedPlugin.key);
 
     if (existingPlugin) {
-      pluginMap.set(plugin.key, mergeWithoutArray({}, existingPlugin, plugin));
+      pluginMap.set(
+        resolvedPlugin.key,
+        mergeWithoutArray({}, existingPlugin, resolvedPlugin)
+      );
     } else {
-      pluginMap.set(plugin.key, plugin);
+      pluginMap.set(resolvedPlugin.key, resolvedPlugin);
     }
-    if (plugin.plugins && plugin.plugins.length > 0) {
-      plugin.plugins.forEach(processPlugin);
+    if (resolvedPlugin.plugins && resolvedPlugin.plugins.length > 0) {
+      resolvedPlugin.plugins.forEach(processPlugin);
     }
   };
 
@@ -207,19 +212,17 @@ export const resolveAndSortPlugins = (
   plugins: SlatePlugins
 ): SlatePlugins => {
   // Step 1: Resolve, flatten, and merge all plugins
-  const pluginMap = flattenAndMergePlugins(
-    plugins.map((plugin) => resolvePlugin(editor, plugin))
-  );
+  const pluginMap = flattenAndResolvePlugins(editor, plugins);
 
   // Step 2: Filter out disabled plugins
   const enabledPlugins = Array.from(pluginMap.values()).filter(
     (plugin) => plugin.enabled !== false
   );
 
-  // Step 4: Sort plugins by priority
+  // Step 3: Sort plugins by priority
   enabledPlugins.sort((a, b) => b.priority - a.priority);
 
-  // Step 5: Reorder based on dependencies
+  // Step 4: Reorder based on dependencies
   const orderedPlugins: SlatePlugins = [];
   const visited = new Set<string>();
 

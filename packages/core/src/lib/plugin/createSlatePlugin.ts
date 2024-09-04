@@ -1,8 +1,5 @@
 import type { Modify } from '@udecode/utils';
 
-import cloneDeep from 'lodash/cloneDeep.js';
-import merge from 'lodash/merge.js';
-
 import type { SlateEditor } from '../editor/SlateEditor';
 import type { AnyPluginConfig, PluginConfig } from './BasePlugin';
 import type {
@@ -111,8 +108,7 @@ export function createSlatePlugin<
 
   const key = baseConfig.key ?? '';
 
-  const plugin = merge(
-    {},
+  const plugin = mergeWithoutArray(
     {
       __apiExtensions: [],
       __configuration: null,
@@ -135,7 +131,7 @@ export function createSlatePlugin<
       shortcuts: {},
       transforms: {},
     },
-    cloneDeep(config)
+    config
   ) as unknown as SlatePlugin<PluginConfig<K, O, A, T>>;
 
   plugin.configure = (config) => {
