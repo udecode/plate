@@ -10,11 +10,12 @@ import {
   isBlock,
 } from '@udecode/plate-common';
 import { focusEditor, useEditorSelector } from '@udecode/plate-common/react';
-import { HEADING_KEYS } from '@udecode/plate-heading';
+import { HEADING_KEYS, HeadingPlugin } from '@udecode/plate-heading';
 import { toggleIndentList } from '@udecode/plate-indent-list';
 import { IndentListPlugin } from '@udecode/plate-indent-list/react';
-import { unwrapList } from '@udecode/plate-list';
+import { ListPlugin, unwrapList } from '@udecode/plate-list';
 
+import { CheckPlugin } from '@/components/context/check-plugin';
 import { settingsStore } from '@/components/context/settings-store';
 import { Icons } from '@/components/icons';
 import {
@@ -34,60 +35,70 @@ const items = [
     description: 'Paragraph',
     icon: Icons.paragraph,
     label: 'Paragraph',
+    plugin: HeadingPlugin,
     value: ParagraphPlugin.key,
   },
   {
     description: 'Heading 1',
     icon: Icons.h1,
     label: 'Heading 1',
+    plugin: HeadingPlugin,
     value: HEADING_KEYS.h1,
   },
   {
     description: 'Heading 2',
     icon: Icons.h2,
     label: 'Heading 2',
+    plugin: HeadingPlugin,
     value: HEADING_KEYS.h2,
   },
   {
     description: 'Heading 3',
     icon: Icons.h3,
     label: 'Heading 3',
+    plugin: HeadingPlugin,
     value: HEADING_KEYS.h3,
   },
   {
     description: 'Heading 4',
     icon: Icons.h4,
     label: 'Heading 4',
+    plugin: HeadingPlugin,
     value: HEADING_KEYS.h4,
   },
   {
     description: 'Heading 5',
     icon: Icons.h5,
     label: 'Heading 5',
+    plugin: HeadingPlugin,
     value: HEADING_KEYS.h5,
   },
   {
     description: 'Heading 6',
     icon: Icons.h6,
     label: 'Heading 6',
+    plugin: HeadingPlugin,
     value: HEADING_KEYS.h6,
   },
   {
     description: 'Bulleted list',
     icon: Icons.ul,
     label: 'Bulleted list',
+    plugin: ListPlugin,
     value: 'ul',
   },
   {
     description: 'Numbered list',
     icon: Icons.ol,
     label: 'Numbered list',
+    plugin: ListPlugin,
     value: 'ol',
   },
   {
     description: 'Quote (⌘+⇧+.)',
     icon: Icons.blockquote,
     label: 'Quote',
+    plugin: BlockquotePlugin,
     value: BlockquotePlugin.key,
   },
 ];
@@ -172,15 +183,16 @@ export function PlaygroundTurnIntoDropdownMenu(props: DropdownMenuProps) {
           }}
           value={value}
         >
-          {items.map(({ icon: Icon, label, value: itemValue }) => (
-            <DropdownMenuRadioItem
-              className="min-w-[180px]"
-              key={itemValue}
-              value={itemValue}
-            >
-              <Icon className="mr-2 size-5" />
-              {label}
-            </DropdownMenuRadioItem>
+          {items.map(({ icon: Icon, label, plugin, value: itemValue }) => (
+            <CheckPlugin key={itemValue} plugin={plugin}>
+              <DropdownMenuRadioItem
+                className="min-w-[180px]"
+                value={itemValue}
+              >
+                <Icon className="mr-2 size-5" />
+                {label}
+              </DropdownMenuRadioItem>
+            </CheckPlugin>
           ))}
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>

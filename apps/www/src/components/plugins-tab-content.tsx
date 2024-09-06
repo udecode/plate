@@ -46,7 +46,7 @@ export function SettingsEffect() {
 }
 
 export function PluginsTabContentLazy() {
-  const checkedPlugins = settingsStore.use.checkedPluginsNext();
+  const checkedPlugins = settingsStore.use.checkedPlugins();
   const checkedComponents = settingsStore.use.checkedComponents();
   const showComponents = settingsStore.use.showComponents();
 
@@ -70,7 +70,8 @@ export function PluginsTabContentLazy() {
           id="check-plugins"
           onCheckedChange={(_checked: boolean) => {
             if (somePluginChecked) {
-              settingsStore.set.checkedPluginsNext({} as any);
+              settingsStore.set.checkedPlugins({} as any);
+              // settingsStore.set.checkedPluginsNext({} as any);
             } else {
               settingsStore.set.resetPlugins();
             }

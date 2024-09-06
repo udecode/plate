@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { AlignPlugin } from '@udecode/plate-alignment';
 import {
   BoldPlugin,
   CodePlugin,
@@ -14,8 +15,11 @@ import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
 } from '@udecode/plate-font';
+import { IndentPlugin } from '@udecode/plate-indent';
 import { ListStyleType } from '@udecode/plate-indent-list';
 import { IndentListPlugin } from '@udecode/plate-indent-list/react';
+import { LineHeightPlugin } from '@udecode/plate-line-height';
+import { LinkPlugin } from '@udecode/plate-link';
 import { ListPlugin } from '@udecode/plate-list';
 import {
   BulletedListPlugin,
@@ -23,6 +27,7 @@ import {
 } from '@udecode/plate-list/react';
 import { ImagePlugin } from '@udecode/plate-media/react';
 import { TablePlugin } from '@udecode/plate-table';
+import { TogglePlugin } from '@udecode/plate-toggle';
 
 import { CheckPlugin } from '@/components/context/check-plugin';
 import { Icons, iconVariants } from '@/components/icons';
@@ -71,29 +76,43 @@ export function PlaygroundFixedToolbarButtons() {
             </ToolbarGroup>
 
             <ToolbarGroup>
-              <MarkToolbarButton nodeType={BoldPlugin.key} tooltip="Bold (⌘+B)">
-                <Icons.bold />
-              </MarkToolbarButton>
-              <MarkToolbarButton
-                nodeType={ItalicPlugin.key}
-                tooltip="Italic (⌘+I)"
-              >
-                <Icons.italic />
-              </MarkToolbarButton>
-              <MarkToolbarButton
-                nodeType={UnderlinePlugin.key}
-                tooltip="Underline (⌘+U)"
-              >
-                <Icons.underline />
-              </MarkToolbarButton>
+              <CheckPlugin id="basicnodes" plugin={BoldPlugin}>
+                <MarkToolbarButton
+                  nodeType={BoldPlugin.key}
+                  tooltip="Bold (⌘+B)"
+                >
+                  <Icons.bold />
+                </MarkToolbarButton>
+              </CheckPlugin>
 
-              <CheckPlugin id="basicnodes">
+              <CheckPlugin id="basicnodes" plugin={ItalicPlugin}>
+                <MarkToolbarButton
+                  nodeType={ItalicPlugin.key}
+                  tooltip="Italic (⌘+I)"
+                >
+                  <Icons.italic />
+                </MarkToolbarButton>
+              </CheckPlugin>
+
+              <CheckPlugin id="basicnodes" plugin={UnderlinePlugin}>
+                <MarkToolbarButton
+                  nodeType={UnderlinePlugin.key}
+                  tooltip="Underline (⌘+U)"
+                >
+                  <Icons.underline />
+                </MarkToolbarButton>
+              </CheckPlugin>
+
+              <CheckPlugin id="basicnodes" plugin={StrikethroughPlugin}>
                 <MarkToolbarButton
                   nodeType={StrikethroughPlugin.key}
                   tooltip="Strikethrough (⌘+⇧+M)"
                 >
                   <Icons.strikethrough />
                 </MarkToolbarButton>
+              </CheckPlugin>
+
+              <CheckPlugin id="basicnodes" plugin={CodePlugin}>
                 <MarkToolbarButton
                   nodeType={CodePlugin.key}
                   tooltip="Code (⌘+E)"
@@ -102,7 +121,7 @@ export function PlaygroundFixedToolbarButtons() {
                 </MarkToolbarButton>
               </CheckPlugin>
 
-              <CheckPlugin id="font">
+              <CheckPlugin id="font" plugin={FontColorPlugin}>
                 <ColorDropdownMenu
                   nodeType={FontColorPlugin.key}
                   tooltip="Text Color"
@@ -111,6 +130,9 @@ export function PlaygroundFixedToolbarButtons() {
                     className={iconVariants({ variant: 'toolbar' })}
                   />
                 </ColorDropdownMenu>
+              </CheckPlugin>
+
+              <CheckPlugin id="font" plugin={FontBackgroundColorPlugin}>
                 <ColorDropdownMenu
                   nodeType={FontBackgroundColorPlugin.key}
                   tooltip="Highlight Color"
@@ -121,11 +143,11 @@ export function PlaygroundFixedToolbarButtons() {
             </ToolbarGroup>
 
             <ToolbarGroup>
-              <CheckPlugin id="align">
+              <CheckPlugin id="align" plugin={AlignPlugin}>
                 <AlignDropdownMenu />
               </CheckPlugin>
 
-              <CheckPlugin id="lineheight">
+              <CheckPlugin id="lineheight" plugin={LineHeightPlugin}>
                 <LineHeightDropdownMenu />
               </CheckPlugin>
 
@@ -140,22 +162,25 @@ export function PlaygroundFixedToolbarButtons() {
                 <ListToolbarButton nodeType={NumberedListPlugin.key} />
               </CheckPlugin>
 
-              <CheckPlugin id={['indent', 'list', 'indentlist']}>
+              <CheckPlugin
+                id={['indent', 'list', 'indentlist']}
+                plugin={IndentPlugin}
+              >
                 <OutdentToolbarButton />
                 <IndentToolbarButton />
               </CheckPlugin>
             </ToolbarGroup>
 
             <ToolbarGroup>
-              <CheckPlugin id="link">
+              <CheckPlugin id="link" plugin={LinkPlugin}>
                 <LinkToolbarButton />
               </CheckPlugin>
 
-              <CheckPlugin id="toggle">
+              <CheckPlugin id="toggle" plugin={TogglePlugin}>
                 <ToggleToolbarButton />
               </CheckPlugin>
 
-              <CheckPlugin id="media">
+              <CheckPlugin id="media" plugin={ImagePlugin}>
                 <MediaToolbarButton nodeType={ImagePlugin.key} />
               </CheckPlugin>
 

@@ -23,6 +23,7 @@ import { insertMedia } from '@udecode/plate-media';
 import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
 import { TablePlugin, insertTable } from '@udecode/plate-table/react';
 
+import { CheckPlugin } from '@/components/context/check-plugin';
 import { settingsStore } from '@/components/context/settings-store';
 import { Icons } from '@/components/icons';
 import {
@@ -186,74 +187,77 @@ export function PlaygroundInsertDropdownMenu(props: DropdownMenuProps) {
             <DropdownMenuLabel>{label}</DropdownMenuLabel>
             {nestedItems.map(
               ({ icon: Icon, label: itemLabel, value: type }) => (
-                <DropdownMenuItem
-                  className="min-w-[180px]"
-                  key={type}
-                  onSelect={async () => {
-                    switch (type) {
-                      case ColumnPlugin.key: {
-                        insertColumnGroup(editor);
+                <CheckPlugin key={type} plugin={{ key: type }}>
+                  <DropdownMenuItem
+                    className="min-w-[180px]"
+                    onSelect={async () => {
+                      switch (type) {
+                        case ColumnPlugin.key: {
+                          insertColumnGroup(editor);
 
-                        break;
-                      }
-                      case CodeBlockPlugin.key: {
-                        insertEmptyCodeBlock(editor);
-
-                        break;
-                      }
-                      case ImagePlugin.key: {
-                        await insertMedia(editor, { type: ImagePlugin.key });
-
-                        break;
-                      }
-                      case MediaEmbedPlugin.key: {
-                        await insertMedia(editor, {
-                          type: MediaEmbedPlugin.key,
-                        });
-
-                        break;
-                      }
-                      case 'ul':
-                      case 'ol': {
-                        insertEmptyElement(editor, ParagraphPlugin.key, {
-                          nextBlock: true,
-                          select: true,
-                        });
-
-                        if (settingsStore.get.checkedId(IndentListPlugin.key)) {
-                          toggleIndentList(editor, {
-                            listStyleType: type === 'ul' ? 'disc' : 'decimal',
-                          });
-                        } else if (settingsStore.get.checkedId('list')) {
-                          editor.tf.toggle.list({ type });
+                          break;
                         }
+                        case CodeBlockPlugin.key: {
+                          insertEmptyCodeBlock(editor);
 
-                        break;
-                      }
-                      case TablePlugin.key: {
-                        insertTable(editor);
+                          break;
+                        }
+                        case ImagePlugin.key: {
+                          await insertMedia(editor, { type: ImagePlugin.key });
 
-                        break;
-                      }
-                      case LinkPlugin.key: {
-                        triggerFloatingLink(editor, { focused: true });
+                          break;
+                        }
+                        case MediaEmbedPlugin.key: {
+                          await insertMedia(editor, {
+                            type: MediaEmbedPlugin.key,
+                          });
 
-                        break;
-                      }
-                      default: {
-                        insertEmptyElement(editor, type, {
-                          nextBlock: true,
-                          select: true,
-                        });
-                      }
-                    }
+                          break;
+                        }
+                        case 'ul':
+                        case 'ol': {
+                          insertEmptyElement(editor, ParagraphPlugin.key, {
+                            nextBlock: true,
+                            select: true,
+                          });
 
-                    focusEditor(editor);
-                  }}
-                >
-                  <Icon className="mr-2 size-5" />
-                  {itemLabel}
-                </DropdownMenuItem>
+                          if (
+                            settingsStore.get.checkedId(IndentListPlugin.key)
+                          ) {
+                            toggleIndentList(editor, {
+                              listStyleType: type === 'ul' ? 'disc' : 'decimal',
+                            });
+                          } else if (settingsStore.get.checkedId('list')) {
+                            editor.tf.toggle.list({ type });
+                          }
+
+                          break;
+                        }
+                        case TablePlugin.key: {
+                          insertTable(editor);
+
+                          break;
+                        }
+                        case LinkPlugin.key: {
+                          triggerFloatingLink(editor, { focused: true });
+
+                          break;
+                        }
+                        default: {
+                          insertEmptyElement(editor, type, {
+                            nextBlock: true,
+                            select: true,
+                          });
+                        }
+                      }
+
+                      focusEditor(editor);
+                    }}
+                  >
+                    <Icon className="mr-2 size-5" />
+                    {itemLabel}
+                  </DropdownMenuItem>
+                </CheckPlugin>
               )
             )}
           </React.Fragment>
