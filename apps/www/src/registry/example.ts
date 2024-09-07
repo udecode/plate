@@ -50,6 +50,12 @@ export const example: Registry = [
     type: 'components:example',
   },
   {
+    files: ['example/controlled-demo.tsx'],
+    name: 'controlled-demo',
+    registryDependencies: [],
+    type: 'components:example',
+  },
+  {
     files: ['example/basic-editor-styling-demo.tsx'],
     name: 'basic-editor-styling-demo',
     registryDependencies: [],

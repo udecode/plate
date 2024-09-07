@@ -209,6 +209,11 @@ export const docsConfig: DocsConfig = {
           title: 'Editor Methods',
         },
         {
+          href: '/docs/controlled',
+          label: 'New',
+          title: 'Controlled Value',
+        },
+        {
           href: '/docs/html',
           label: 'New',
           title: 'HTML',

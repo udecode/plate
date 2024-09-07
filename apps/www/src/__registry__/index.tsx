@@ -929,6 +929,15 @@ export const Index: Record<string, any> = {
       subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/example/basic-editor-default-demo')),
     },
+    'controlled-demo': {
+      name: 'controlled-demo',
+      type: 'components:example',
+      registryDependencies: [],
+      files: ['registry/default/example/controlled-demo.tsx'],
+      category: "undefined",
+      subcategory: "undefined",
+      component: React.lazy(() => import('@/registry/default/example/controlled-demo')),
+    },
     'basic-editor-styling-demo': {
       name: 'basic-editor-styling-demo',
       type: 'components:example',

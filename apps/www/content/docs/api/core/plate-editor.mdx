@@ -130,7 +130,7 @@ A custom editor interface that extends the base **`TEditor`** interface and incl
 ### ReactPlugin
 
 <APIParameters>
-  <APIItem name="editor.api.reset" type="() => void">
+  <APIItem name="editor.tf.reset" type="() => void">
     Reset the editor state while maintaining focus if the editor was focused.
   </APIItem>
 </APIParameters>
@@ -140,5 +140,11 @@ A custom editor interface that extends the base **`TEditor`** interface and incl
 <APIParameters>
   <APIItem name="editor.api.redecorate" type="() => void">
     Redecorate the editor. This method should be overridden for proper functionality.
+  </APIItem>
+</APIParameters>
+
+<APIParameters>
+  <APIItem name="editor.tf.setValue" type="(value: Value) => void">
+    Replace the editor value. See [Controlled Value](/docs/controlled) for more information.
   </APIItem>
 </APIParameters>

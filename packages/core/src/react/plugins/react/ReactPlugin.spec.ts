@@ -25,7 +25,7 @@ describe('ReactPlugin', () => {
     // Mock isEditorFocused to return true
     (isEditorFocused as jest.Mock).mockReturnValue(true);
 
-    editor.api.reset();
+    editor.tf.reset();
 
     expect(focusEditorEdge).toHaveBeenCalledWith(editor, { edge: 'start' });
   });
@@ -34,7 +34,7 @@ describe('ReactPlugin', () => {
     // Mock isEditorFocused to return false
     (isEditorFocused as jest.Mock).mockReturnValue(false);
 
-    editor.api.reset();
+    editor.tf.reset();
 
     expect(focusEditorEdge).not.toHaveBeenCalled();
   });
