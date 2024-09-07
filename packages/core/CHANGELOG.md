@@ -1,5 +1,13 @@
 # @udecode/plate-core
 
+## 37.0.8
+
+### Patch Changes
+
+- [#3512](https://github.com/udecode/plate/pull/3512) by [@zbeyens](https://github.com/zbeyens) –
+  - Add `editor.tf.setValue` to replace the editor value
+  - Fix: move `editor.api.reset` to `editor.tf.reset`
+
 ## 37.0.7
 
 ### Patch Changes
