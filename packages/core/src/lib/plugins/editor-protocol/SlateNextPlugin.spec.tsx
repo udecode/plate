@@ -98,3 +98,51 @@ describe('delete marked text at block start', () => {
     expect(editor.children).toEqual(output.children);
   });
 });
+
+describe('editor.tf.setValue', () => {
+  it('should set the editor value correctly', () => {
+    const input = (
+      <editor>
+        <hp>existing content</hp>
+      </editor>
+    ) as any;
+
+    const output = (
+      <editor>
+        <hp>new content</hp>
+      </editor>
+    ) as any;
+
+    const editor = createPlateEditor({
+      editor: input,
+    });
+
+    editor.tf.setValue('<p>new content</p>');
+
+    expect(editor.children).toEqual(output.children);
+  });
+
+  it('should set empty value when no argument is provided', () => {
+    const input = (
+      <editor>
+        <hp>existing content</hp>
+      </editor>
+    ) as any;
+
+    const output = (
+      <editor>
+        <hp>
+          <htext />
+        </hp>
+      </editor>
+    ) as any;
+
+    const editor = createPlateEditor({
+      editor: input,
+    });
+
+    editor.tf.setValue();
+
+    expect(editor.children).toEqual(output.children);
+  });
+});

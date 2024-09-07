@@ -1,9 +1,10 @@
-import type { TElement, TRange, Value } from '@udecode/slate';
+import type { TDescendant, TElement, TRange, Value } from '@udecode/slate';
 import type { Path } from 'slate';
 
 import {
   isSelectionAtBlockStart,
   removeSelectionMark,
+  replaceNodeChildren,
   toggleMark,
 } from '@udecode/slate-utils';
 import { type OmitFirst, bindFirst } from '@udecode/utils';
@@ -104,12 +105,26 @@ export const SlateNextPlugin = createTSlatePlugin<SlateNextConfig>({
       value: (): Value => [api.create.block()],
     },
   }))
-  .extendEditorApi(({ editor }) => ({
+  .extendEditorTransforms(({ editor }) => ({
     reset: () => {
       resetEditor(editor);
     },
-  }))
-  .extendEditorTransforms(({ editor }) => ({
+    setValue: <V extends Value>(value?: V | string) => {
+      let children: TDescendant[] = value as any;
+
+      if (typeof value === 'string') {
+        children = editor.api.html.deserialize({
+          element: value,
+        });
+      } else if (!value || value.length === 0) {
+        children = editor.api.create.value();
+      }
+
+      replaceNodeChildren(editor, {
+        at: [],
+        nodes: children,
+      });
+    },
     toggle: {
       block: bindFirst(toggleBlock, editor),
       mark: bindFirst(toggleMark, editor),

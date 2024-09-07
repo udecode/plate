@@ -497,7 +497,7 @@ Migration example: https://github.com/udecode/plate/pull/3480
   `editor: PlateEditor`:
 
   - Move `redecorate` to `editor.api.redecorate`
-  - Move `reset` to `editor.api.reset`
+  - Move `reset` to `editor.tf.reset`
   - Move `plate.set` to `editor.setPlateState`
   - Move `blockFactory` to `editor.api.create.block`
   - Move `childrenFactory` to `editor.api.create.value`
