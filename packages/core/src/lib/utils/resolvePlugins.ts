@@ -1,15 +1,55 @@
-import { isDefined } from '@udecode/utils';
+import { type AnyObject, isDefined } from '@udecode/utils';
 import { createZustandStore } from 'zustand-x';
 
 import type { SlateEditor } from '../editor';
 
-import { mergeWithoutArray } from '../../internal/mergeWithoutArray';
 import {
   type SlatePlugin,
   type SlatePlugins,
   getEditorPlugin,
 } from '../plugin';
 import { resolvePlugin } from './resolvePlugin';
+
+export function mergeLevel<T extends AnyObject>(
+  target: T,
+  source: Partial<T>,
+  levels = 1
+): T {
+  if (!target) {
+    target = {} as T;
+  }
+
+  function mergeLevel(
+    targetObj: AnyObject,
+    sourceObj: AnyObject,
+    currentLevel: number
+  ) {
+    for (const key in sourceObj) {
+      if (Object.prototype.hasOwnProperty.call(sourceObj, key)) {
+        if (
+          typeof sourceObj[key] === 'object' &&
+          sourceObj[key] !== null &&
+          !Array.isArray(sourceObj[key]) &&
+          // TODO: levels should be used instead of 5
+          currentLevel < 10
+        ) {
+          if (currentLevel === 5) {
+            console.log('mergeLevel', sourceObj, key, currentLevel);
+          }
+
+          targetObj[key] = targetObj[key] || {};
+          mergeLevel(targetObj[key], sourceObj[key], currentLevel + 1);
+        } else {
+          targetObj[key] = sourceObj[key];
+        }
+      }
+    }
+  }
+
+  mergeLevel(target, source, 1);
+
+  return target;
+}
 
 /**
  * Initialize and configure the editor's plugin system. This function sets up
@@ -100,18 +140,20 @@ const resolvePluginApis = (editor: SlateEditor) => {
                 (plugin.transforms as any)[plugin.key] = {};
               }
 
-              mergeWithoutArray(
+              mergeLevel(
                 (editor.transforms as any)[plugin.key],
-                newExtensions
+                newExtensions,
+                2
               );
-              mergeWithoutArray(
+              mergeLevel(
                 (plugin.transforms as any)[plugin.key],
-                newExtensions
+                newExtensions,
+                2
               );
             } else {
               // Editor-wide transform
-              mergeWithoutArray(editor.transforms, newExtensions);
-              mergeWithoutArray(plugin.transforms, newExtensions);
+              mergeLevel(editor.transforms, newExtensions, 2);
+              mergeLevel(plugin.transforms, newExtensions, 2);
             }
           } else {
             // Handle APIs
@@ -124,12 +166,12 @@ const resolvePluginApis = (editor: SlateEditor) => {
                 (plugin.api as any)[plugin.key] = {};
               }
 
-              mergeWithoutArray((editor.api as any)[plugin.key], newExtensions);
-              mergeWithoutArray((plugin.api as any)[plugin.key], newExtensions);
+              mergeLevel((editor.api as any)[plugin.key], newExtensions, 2);
+              mergeLevel((plugin.api as any)[plugin.key], newExtensions, 2);
             } else {
               // Editor-wide API
-              mergeWithoutArray(editor.api, newExtensions);
-              mergeWithoutArray(plugin.api, newExtensions);
+              mergeLevel(editor.api, newExtensions, 2);
+              mergeLevel(plugin.api, newExtensions, 2);
             }
           }
         }
@@ -192,7 +234,8 @@ const flattenAndResolvePlugins = (
     if (existingPlugin) {
       pluginMap.set(
         resolvedPlugin.key,
-        mergeWithoutArray({}, existingPlugin, resolvedPlugin)
+        mergeLevel(existingPlugin, resolvedPlugin, 3)
+        // resolvedPlugin
       );
     } else {
       pluginMap.set(resolvedPlugin.key, resolvedPlugin);
@@ -273,7 +316,7 @@ export const resolvePluginOverrides = (editor: SlateEditor) => {
     // Collect all overrides
     for (const plugin of plugins) {
       if (plugin.override.enabled) {
-        mergeWithoutArray(enabledOverrides, plugin.override.enabled);
+        Object.assign(enabledOverrides, plugin.override.enabled);
       }
       // TODO react
       if ((plugin.override as any).components) {
@@ -293,10 +336,10 @@ export const resolvePluginOverrides = (editor: SlateEditor) => {
       }
       if (plugin.override.plugins) {
         Object.entries(plugin.override.plugins).forEach(([key, value]) => {
-          pluginOverrides[key] = mergeWithoutArray(
-            {},
-            pluginOverrides[key],
-            value
+          pluginOverrides[key] = mergeLevel(
+            pluginOverrides[key] ?? {},
+            value,
+            3
           );
 
           if (value.enabled !== undefined) {
@@ -312,11 +355,7 @@ export const resolvePluginOverrides = (editor: SlateEditor) => {
 
       // Apply plugin overrides
       if (pluginOverrides[p.key]) {
-        updatedPlugin = mergeWithoutArray(
-          {},
-          updatedPlugin,
-          pluginOverrides[p.key]
-        );
+        updatedPlugin = mergeLevel(updatedPlugin, pluginOverrides[p.key], 3);
       }
       // Apply component overrides
       // TODO react
@@ -352,9 +391,9 @@ export const resolvePluginOverrides = (editor: SlateEditor) => {
   editor.pluginList = applyOverrides(editor.pluginList as any);
 
   // Final pass: ensure all plugins are properly resolved after overrides
-  editor.pluginList = editor.pluginList.map((plugin) =>
-    resolvePlugin(editor, plugin as any)
-  );
+  // editor.pluginList = editor.pluginList.map((plugin) =>
+  //   resolvePlugin(editor, plugin as any)
+  // );
   editor.plugins = Object.fromEntries(
     editor.pluginList.map((plugin) => [plugin.key, plugin])
   );

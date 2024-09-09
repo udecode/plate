@@ -1,9 +1,11 @@
+import { cloneDeep } from 'lodash';
+
 import type { SlateEditor } from '../editor';
 import type { PluginConfig } from '../plugin/BasePlugin';
 import type { AnySlatePlugin, SlatePlugin } from '../plugin/SlatePlugin';
 
-import { mergeWithoutArray } from '../../internal/mergeWithoutArray';
-import { createSlatePlugin, getEditorPlugin } from '../plugin';
+import { getEditorPlugin } from '../plugin';
+import { mergeLevel } from './resolvePlugins';
 
 /**
  * Resolves and finalizes a plugin configuration for use in a Plate editor.
@@ -24,13 +26,38 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
   editor: SlateEditor,
   _plugin: P
 ): P => {
-  if (_plugin.key === 'p' && editor.id === 2) {
-    // Minimize the number of calls
-    console.log(editor.key, _plugin.key);
-  }
+  // if (_plugin.key === 'p') {
+  //   // Minimize the number of calls
+  //   console.log(editor.key, _plugin.key);
+  // }
 
   // Create a deep clone of the plugin
-  let plugin = createSlatePlugin(_plugin) as P;
+  let plugin = {
+    __apiExtensions: [],
+    __configuration: null,
+    __extensions: [],
+    __optionExtensions: [],
+    dependencies: [],
+    editor: {},
+    handlers: {},
+    inject: {},
+    node: {},
+    override: {},
+    parser: {},
+    parsers: {},
+    plugins: [],
+    priority: 100,
+    render: {},
+    shortcuts: {},
+    transforms: {},
+    ...(_plugin as any),
+  } as P;
+
+  plugin.node = { type: plugin.key, ...(_plugin.node as any) };
+  // plugin.api = mergeOneLevel(plugin.api, _plugin.api);
+  // plugin.options = mergeOneLevel(plugin.options, _plugin.options);
+  plugin.api = cloneDeep(_plugin.api);
+  plugin.options = cloneDeep(_plugin.options);
 
   plugin.__resolved = true;
 
@@ -40,25 +67,25 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
       getEditorPlugin(editor, plugin as any)
     );
 
-    plugin = mergeWithoutArray({}, plugin, configResult);
+    plugin = mergeLevel(plugin, configResult, 3);
 
     delete (plugin as any).__configuration;
   }
   // Apply all stored extensions
   if (plugin.__extensions && plugin.__extensions.length > 0) {
     plugin.__extensions.forEach((extension) => {
-      plugin = mergeWithoutArray(
-        {},
+      plugin = mergeLevel(
         plugin,
-        extension(getEditorPlugin(editor, plugin as any))
+        extension(getEditorPlugin(editor, plugin as any)),
+        3
       );
     });
     plugin.__extensions = [];
   }
   if (plugin.plugins) {
-    plugin.plugins = plugin.plugins.map((p) => {
-      return resolvePlugin(editor, p);
-    });
+    // plugin.plugins = plugin.plugins.map((p) => {
+    //   return resolvePlugin(editor, p);
+    // });
   }
 
   const targetPluginToInject = plugin.inject?.targetPluginToInject;
@@ -66,9 +93,8 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
 
   if (targetPluginToInject && targetPlugins && targetPlugins.length > 0) {
     plugin.inject = plugin.inject || {};
-    plugin.inject.plugins = mergeWithoutArray(
-      {},
-      plugin.inject.plugins,
+    plugin.inject.plugins = mergeLevel(
+      plugin.inject.plugins ?? {},
       Object.fromEntries(
         targetPlugins.map((targetPlugin) => {
           const injectedPlugin = targetPluginToInject({
@@ -78,11 +104,13 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
 
           return [targetPlugin, injectedPlugin];
         })
-      )
+      ),
+      4
     );
   }
+  // PERF
   if (plugin.plugins) {
-    plugin.plugins = plugin.plugins.map((p) => resolvePlugin(editor, p));
+    // plugin.plugins = plugin.plugins.map((p) => resolvePlugin(editor, p));
   }
   // TODO React
   if ((plugin as any).node?.component) {

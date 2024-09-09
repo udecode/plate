@@ -36,16 +36,13 @@ export function usePlateEditor<
     : TPlateEditor<V, P> | null {
   return React.useMemo(
     (): any => {
+      console.time('createPlateEditor');
+
       if (options.enabled === false) return null;
-      if (options.id === 1) {
-        console.time('Editor');
-      }
 
       const editor = createPlateEditor(options);
 
-      if (options.id === 1) {
-        console.timeEnd('Editor');
-      }
+      console.timeEnd('createPlateEditor');
 
       return editor;
     },
