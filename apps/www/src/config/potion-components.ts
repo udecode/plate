@@ -1,4 +1,4 @@
-export const PRO_HOST = 'http://localhost:3000';
+export const PRO_HOST = 'https://pro.platejs.org';
 
 export const potionComponents = {
   aiMenu: {

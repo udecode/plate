@@ -839,23 +839,14 @@ export const Index: Record<string, any> = {
       subcategory: "undefined",
       component: React.lazy(() => import('@/registry/default/plate-ui/resizable')),
     },
-    'toolbar-pro-demo': {
-      name: 'toolbar-pro-demo',
+    'pro-iframe-demo': {
+      name: 'pro-iframe-demo',
       type: 'components:example',
       registryDependencies: [],
-      files: ['registry/default/example/toolbar-pro-demo.tsx'],
+      files: ['registry/default/example/pro-iframe-demo.tsx'],
       category: "undefined",
       subcategory: "undefined",
-      component: React.lazy(() => import('@/registry/default/example/toolbar-pro-demo')),
-    },
-    'image-pro-demo': {
-      name: 'image-pro-demo',
-      type: 'components:example',
-      registryDependencies: [],
-      files: ['registry/default/example/image-pro-demo.tsx'],
-      category: "undefined",
-      subcategory: "undefined",
-      component: React.lazy(() => import('@/registry/default/example/image-pro-demo')),
+      component: React.lazy(() => import('@/registry/default/example/pro-iframe-demo')),
     },
     'editor-default': {
       name: 'editor-default',
