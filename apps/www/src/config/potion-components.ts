@@ -43,19 +43,12 @@ export const potionComponents = {
     pro: true,
     title: 'Slash Menu',
   },
-  tocElement: {
-    href: `${PRO_HOST}/docs/components/toc-element`,
+  toc: {
+    href: `${PRO_HOST}/docs/components/toc`,
     isExternalLink: true,
     new: true,
     pro: true,
-    title: 'TOC Element',
-  },
-  tocSideBar: {
-    href: `${PRO_HOST}/docs/components/toc-sidebar`,
-    isExternalLink: true,
-    new: true,
-    pro: true,
-    title: 'TOC Sidebar',
+    title: 'Table of contents',
   },
   toolbar: {
     href: `${PRO_HOST}/docs/components/toolbar`,
