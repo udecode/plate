@@ -5,29 +5,30 @@ import { resolvePlugin } from './resolvePlugin';
 describe('resolvePlugin', () => {
   it('should be', () => {
     expect(
-      resolvePlugin(
-        createSlateEditor() as any,
-        createSlatePlugin({
-          key: 'a',
-          plugins: [
-            createSlatePlugin({
-              key: 'aa',
-            }),
-          ],
-        })
-          .extendPlugin(
-            { key: 'aa' },
-            {
-              node: { type: 'ab' },
-            }
-          )
-          .extendPlugin(
-            { key: 'aa' },
-            {
-              node: { type: 'ac' },
-            }
-          )
-      ).plugins[0].node.type
+      createSlateEditor({
+        plugins: [
+          createSlatePlugin({
+            key: 'a',
+            plugins: [
+              createSlatePlugin({
+                key: 'aa',
+              }),
+            ],
+          })
+            .extendPlugin(
+              { key: 'aa' },
+              {
+                node: { type: 'ab' },
+              }
+            )
+            .extendPlugin(
+              { key: 'aa' },
+              {
+                node: { type: 'ac' },
+              }
+            ),
+        ],
+      }).plugins.aa.node.type
     ).toBe('ac');
   });
 

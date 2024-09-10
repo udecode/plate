@@ -34,10 +34,6 @@ export function mergeLevel<T extends AnyObject>(
           // TODO: levels should be used instead of 5
           currentLevel < 10
         ) {
-          if (currentLevel === 5) {
-            console.log('mergeLevel', sourceObj, key, currentLevel);
-          }
-
           targetObj[key] = targetObj[key] || {};
           mergeLevel(targetObj[key], sourceObj[key], currentLevel + 1);
         } else {

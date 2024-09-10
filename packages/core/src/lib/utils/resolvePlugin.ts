@@ -83,9 +83,9 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
     plugin.__extensions = [];
   }
   if (plugin.plugins) {
-    plugin.plugins = plugin.plugins.map((p) => {
-      return resolvePlugin(editor, p);
-    });
+    // plugin.plugins = plugin.plugins.map((p) => {
+    //   return resolvePlugin(editor, p);
+    // });
   }
 
   const targetPluginToInject = plugin.inject?.targetPluginToInject;

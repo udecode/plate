@@ -4,6 +4,7 @@ import { LinkPlugin } from '@udecode/plate-link';
 import { createPlateEditor } from '../../react';
 import {
   type PluginConfig,
+  createSlateEditor,
   createSlatePlugin,
   resolveCreatePluginTest,
   resolvePluginTest,
@@ -88,25 +89,27 @@ describe('createSlatePlugin', () => {
 
   describe('when extendPlugin', () => {
     it('should be', () => {
-      const plugin = resolvePluginTest(
-        createSlatePlugin({
-          key: 'a',
-          node: { type: 'a' },
-          plugins: [
-            createSlatePlugin({
-              key: 'aa',
-              node: { type: 'aa' },
-            }),
-          ],
-        }).extendPlugin(
-          { key: 'aa' },
-          {
-            node: { type: 'aaa' },
-          }
-        )
-      );
+      const editor = createSlateEditor({
+        plugins: [
+          createSlatePlugin({
+            key: 'a',
+            node: { type: 'a' },
+            plugins: [
+              createSlatePlugin({
+                key: 'aa',
+                node: { type: 'aa' },
+              }),
+            ],
+          }).extendPlugin(
+            { key: 'aa' },
+            {
+              node: { type: 'aaa' },
+            }
+          ),
+        ],
+      });
 
-      expect(plugin.plugins[0].node.type).toBe('aaa');
+      expect(editor.plugins.aa.node.type).toBe('aaa');
     });
   });
 
@@ -454,32 +457,35 @@ describe('createSlatePlugin', () => {
 
   describe('when extend + extendPlugin', () => {
     it('should be', () => {
-      const plugin = resolvePluginTest(
-        createSlatePlugin({
-          key: 'a',
-          node: { type: 'a' },
-          plugins: [
-            createSlatePlugin({
-              key: 'aa',
-              node: { type: 'aa' },
-            }),
-          ],
-        })
-          .extend({
-            node: { type: 'a_extend' },
+      const editor = createSlateEditor({
+        plugins: [
+          createSlatePlugin({
+            key: 'a',
+            node: { type: 'a' },
+            plugins: [
+              createSlatePlugin({
+                key: 'aa',
+                node: { type: 'aa' },
+              }),
+            ],
           })
-          .extendPlugin(
-            { key: 'aa' },
-            {
-              node: { type: 'aa_extend' },
-              options: {
-                levels: 5,
-              },
-            }
-          )
-      );
+            .extend({
+              node: { type: 'a_extend' },
+            })
+            .extendPlugin(
+              { key: 'aa' },
+              {
+                node: { type: 'aa_extend' },
+                options: {
+                  levels: 5,
+                },
+              }
+            ),
+        ],
+      });
 
-      const headingPlugin = plugin.plugins.find((p) => p.key === 'aa');
+      const plugin = editor.plugins.a;
+      const headingPlugin = editor.plugins.aa;
       const {
         node: { type },
         options,
