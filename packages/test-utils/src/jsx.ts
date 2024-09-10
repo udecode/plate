@@ -42,6 +42,7 @@ const voidChildren = [{ text: '' }];
 
 const elements: HyperscriptShorthands = {
   ha: { type: 'a' },
+  haudio: { children: voidChildren, type: 'audio' },
   hblockquote: { type: 'blockquote' },
   hcallout: { type: 'callout' },
   hcodeblock: { type: 'code_block' },
@@ -52,7 +53,8 @@ const elements: HyperscriptShorthands = {
   hdefault: { type: 'p' },
   hequation: { type: 'equation' },
   hexcalidraw: { type: 'excalidraw' },
-    hh1: { type: 'h1' },
+  hfile: { children: voidChildren, type: 'file' },
+  hh1: { type: 'h1' },
   hh2: { type: 'h2' },
   hh3: { type: 'h3' },
   hh4: { type: 'h4' },
@@ -68,6 +70,7 @@ const elements: HyperscriptShorthands = {
   hnli: { type: 'nli' },
   hol: { type: 'ol' },
   hp: { type: 'p' },
+  hplaceholder: { children: voidChildren ,type: 'placeholder'},
   htable: { type: 'table' },
   htd: { type: 'td' },
   hth: { type: 'th' },
@@ -76,6 +79,7 @@ const elements: HyperscriptShorthands = {
   htoggle: { type: 'toggle' },
   htr: { type: 'tr' },
   hul: { type: 'ul' },
+  hvideo: { children: voidChildren, type: 'video' },
 };
 
 export const jsx = createHyperscript({
