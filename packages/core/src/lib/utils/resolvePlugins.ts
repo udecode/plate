@@ -13,8 +13,8 @@ import { resolvePlugin } from './resolvePlugin';
 
 export function mergeLevel<T extends AnyObject>(
   target: T,
-  source: Partial<T>,
-  levels = 1
+  source: Partial<T>
+  // levels = 1
 ): T {
   if (!target) {
     target = {} as T;
@@ -229,8 +229,7 @@ const flattenAndResolvePlugins = (
     if (existingPlugin) {
       pluginMap.set(
         resolvedPlugin.key,
-        mergeLevel(existingPlugin, resolvedPlugin, 3)
-        // resolvedPlugin
+        mergeWithoutArray(existingPlugin, resolvedPlugin)
       );
     } else {
       pluginMap.set(resolvedPlugin.key, resolvedPlugin);
@@ -350,7 +349,10 @@ export const resolvePluginOverrides = (editor: SlateEditor) => {
 
       // Apply plugin overrides
       if (pluginOverrides[p.key]) {
-        updatedPlugin = mergeLevel(updatedPlugin, pluginOverrides[p.key], 3);
+        updatedPlugin = mergeWithoutArray(
+          updatedPlugin,
+          pluginOverrides[p.key]
+        );
       }
       // Apply component overrides
       // TODO react
