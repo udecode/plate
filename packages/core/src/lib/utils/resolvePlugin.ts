@@ -54,8 +54,6 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
   } as P;
 
   plugin.node = { type: plugin.key, ...(_plugin.node as any) };
-  // plugin.api = mergeOneLevel(plugin.api, _plugin.api);
-  // plugin.options = mergeOneLevel(plugin.options, _plugin.options);
   plugin.api = cloneDeep(_plugin.api);
   plugin.transforms = cloneDeep(_plugin.transforms);
   plugin.options = { ..._plugin.options };
@@ -82,11 +80,6 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
     });
     plugin.__extensions = [];
   }
-  if (plugin.plugins) {
-    // plugin.plugins = plugin.plugins.map((p) => {
-    //   return resolvePlugin(editor, p);
-    // });
-  }
 
   const targetPluginToInject = plugin.inject?.targetPluginToInject;
   const targetPlugins = plugin.inject?.targetPlugins;
@@ -105,13 +98,8 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
 
           return [targetPlugin, injectedPlugin];
         })
-      ),
-      4
+      )
     );
-  }
-  // PERF
-  if (plugin.plugins) {
-    plugin.plugins = plugin.plugins.map((p) => resolvePlugin(editor, p));
   }
   // TODO React
   if ((plugin as any).node?.component) {

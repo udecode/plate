@@ -115,32 +115,34 @@ describe('createSlatePlugin', () => {
 
   describe('when extendPlugin twice', () => {
     it('should be', () => {
-      const plugin = resolvePluginTest(
-        createSlatePlugin({
-          key: 'a',
-          node: { type: 'a' },
-          plugins: [
-            createSlatePlugin({
-              key: 'aa',
-              node: { type: 'aa' },
-            }),
-          ],
-        })
-          .extendPlugin(
-            { key: 'aa' },
-            {
-              node: { type: 'aaa' },
-            }
-          )
-          .extendPlugin(
-            { key: 'aa' },
-            {
-              node: { type: 'aab' },
-            }
-          )
-      );
+      const editor = createSlateEditor({
+        plugins: [
+          createSlatePlugin({
+            key: 'a',
+            node: { type: 'a' },
+            plugins: [
+              createSlatePlugin({
+                key: 'aa',
+                node: { type: 'aa' },
+              }),
+            ],
+          })
+            .extendPlugin(
+              { key: 'aa' },
+              {
+                node: { type: 'aaa' },
+              }
+            )
+            .extendPlugin(
+              { key: 'aa' },
+              {
+                node: { type: 'aab' },
+              }
+            ),
+        ],
+      });
 
-      expect(plugin.plugins[0].node.type).toBe('aab');
+      expect(editor.plugins.aa.node.type).toBe('aab');
     });
   });
 
@@ -293,44 +295,48 @@ describe('createSlatePlugin', () => {
 
   describe('when new extendPlugin', () => {
     it('should be', () => {
-      const plugin = resolvePluginTest(
-        createSlatePlugin({
-          key: 'a',
-          node: { type: 'a' },
-        }).extendPlugin(
-          { key: 'aa' },
-          {
-            node: { type: 'aaa' },
-          }
-        )
-      );
+      const plugin = createSlateEditor({
+        plugins: [
+          createSlatePlugin({
+            key: 'a',
+            node: { type: 'a' },
+          }).extendPlugin(
+            { key: 'aa' },
+            {
+              node: { type: 'aaa' },
+            }
+          ),
+        ],
+      });
 
-      expect(plugin.plugins[0].node.type).toBe('aaa');
+      expect(plugin.plugins.aa.node.type).toBe('aaa');
     });
   });
 
   describe('when new extendPlugin twice', () => {
     it('should be', () => {
-      const plugin = resolvePluginTest(
-        createSlatePlugin({
-          key: 'a',
-          node: { type: 'a' },
-        })
-          .extendPlugin(
-            { key: 'aa' },
-            {
-              node: { type: 'aaa' },
-            }
-          )
-          .extendPlugin(
-            { key: 'aa' },
-            {
-              node: { type: 'aab' },
-            }
-          )
-      );
+      const editor = createSlateEditor({
+        plugins: [
+          createSlatePlugin({
+            key: 'a',
+            node: { type: 'a' },
+          })
+            .extendPlugin(
+              { key: 'aa' },
+              {
+                node: { type: 'aaa' },
+              }
+            )
+            .extendPlugin(
+              { key: 'aa' },
+              {
+                node: { type: 'aab' },
+              }
+            ),
+        ],
+      });
 
-      expect(plugin.plugins[0].node.type).toBe('aab');
+      expect(editor.plugins.aa.node.type).toBe('aab');
     });
   });
 
@@ -429,21 +435,21 @@ describe('createSlatePlugin', () => {
 
   describe('when extend plugins', () => {
     it('should be', () => {
-      const plugin = resolvePluginTest(
-        BasicElementsPlugin.extendPlugin(
-          { key: 'heading' },
-          {
-            node: { type: 'h' },
-            options: {
-              levels: 5,
-            },
-          }
-        )
-      );
+      const editor = createSlateEditor({
+        plugins: [
+          BasicElementsPlugin.extendPlugin(
+            { key: 'heading' },
+            {
+              node: { type: 'h' },
+              options: {
+                levels: 5,
+              },
+            }
+          ),
+        ],
+      });
 
-      const headingPlugin = plugin.plugins.find(
-        (p: any) => p.key === 'heading'
-      );
+      const headingPlugin = editor.plugins.heading;
       const { node, options } = headingPlugin!;
 
       expect({ node, options }).toEqual({
@@ -865,18 +871,20 @@ describe('createSlatePlugin', () => {
         options: { another: 'b', initialValue: 'aa' },
       });
 
-      const plugin = resolvePluginTest(
-        createSlatePlugin({
-          key: 'a',
-          plugins: [aa],
-        }).configurePlugin(aa, {
-          options: {
-            initialValue: 'aaa',
-          },
-        })
-      );
+      const editor = createSlateEditor({
+        plugins: [
+          createSlatePlugin({
+            key: 'a',
+            plugins: [aa],
+          }).configurePlugin(aa, {
+            options: {
+              initialValue: 'aaa',
+            },
+          }),
+        ],
+      });
 
-      expect(plugin.plugins[0].options).toEqual({
+      expect(editor.plugins.aa.options).toEqual({
         another: 'b',
         initialValue: 'aaa',
       });
@@ -893,16 +901,18 @@ describe('createSlatePlugin', () => {
         ],
       });
 
-      const configuredPlugin = resolvePluginTest(
-        basePlugin.configurePlugin(
-          { key: 'bb' },
-          { options: { newOption: 'new' } }
-        )
-      );
+      const editor = createSlateEditor({
+        plugins: [
+          basePlugin.configurePlugin(
+            { key: 'bb' },
+            { options: { newOption: 'new' } }
+          ),
+        ],
+      });
 
-      expect(configuredPlugin.plugins).toHaveLength(1);
-      expect(configuredPlugin.plugins[0].key).toBe('aa');
-      expect(configuredPlugin.plugins[0].options).toEqual({
+      expect(editor.plugins.aa.key).toBe('aa');
+      expect(editor.plugins.bb).toBeUndefined();
+      expect(editor.plugins.aa.options).toEqual({
         initialValue: 'aa',
       });
     });
@@ -923,11 +933,11 @@ describe('createSlatePlugin', () => {
         plugins: [b],
       });
 
-      const plugin = resolvePluginTest(
-        a.configurePlugin(c, { options: { initialValue: 'cc' } })
-      );
+      const editor = createSlateEditor({
+        plugins: [a.configurePlugin(c, { options: { initialValue: 'cc' } })],
+      });
 
-      expect(plugin.plugins[0].plugins[0].options).toEqual({
+      expect(editor.plugins.c.options).toEqual({
         initialValue: 'cc',
       });
     });

@@ -15,33 +15,9 @@ export function getSlatePlugin<C extends AnyPluginConfig = PluginConfig>(
 ): C extends { node: any } ? C : SlatePlugin<C> {
   const plugin = p as any;
 
-  // if (!plugin.__resolved) {
-  //   return resolvePlugin(editor, plugin);
-  // }
-
   const editorPlugin = editor.plugins[p.key] as any;
 
   if (!editorPlugin) {
-    // return {
-    //   __apiExtensions: [],
-    //   __configuration: null,
-    //   __extensions: [],
-    //   __optionExtensions: [],
-    //   dependencies: [],
-    //   editor: {},
-    //   handlers: {},
-    //   inject: {},
-    //   node: {},
-    //   override: {},
-    //   parser: {},
-    //   parsers: {},
-    //   plugins: [],
-    //   priority: 100,
-    //   render: {},
-    //   shortcuts: {},
-    //   transforms: {},
-    //   ...plugin,
-    // };
     return plugin.__resolved ? p : resolvePlugin(editor, plugin);
   }
 

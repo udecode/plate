@@ -384,11 +384,6 @@ export const resolvePluginOverrides = (editor: SlateEditor) => {
   };
 
   editor.pluginList = applyOverrides(editor.pluginList as any);
-
-  // Final pass: ensure all plugins are properly resolved after overrides
-  editor.pluginList = editor.pluginList.map((plugin) =>
-    resolvePlugin(editor, plugin as any)
-  );
   editor.plugins = Object.fromEntries(
     editor.pluginList.map((plugin) => [plugin.key, plugin])
   );
