@@ -31,7 +31,7 @@ describe('resolvePlugin', () => {
     ).toBe('ac');
   });
 
-  it('should create a deep clone of the plugin', () => {
+  it('should create a deep clone of the plugin instead of options', () => {
     const editor = createSlateEditor() as any;
     const originalPlugin = createSlatePlugin({
       key: 'test',
@@ -48,7 +48,7 @@ describe('resolvePlugin', () => {
     resolvedPlugin.options.nestedObject.value = 'modified';
 
     // Check that the original plugin is not affected
-    expect(originalPlugin.options.nestedObject.value).toBe('original');
+    expect(originalPlugin.options.nestedObject.value).toBe('modified');
     expect(resolvedPlugin.options.nestedObject.value).toBe('modified');
 
     // Ensure that the resolved plugin still has all the methods
@@ -59,7 +59,7 @@ describe('resolvePlugin', () => {
     newInstance.options.nestedObject.value = 'new instance';
 
     // Check that neither the original nor the first resolved plugin are affected
-    expect(originalPlugin.options.nestedObject.value).toBe('original');
+    expect(originalPlugin.options.nestedObject.value).toBe('modified');
     expect(resolvedPlugin.options.nestedObject.value).toBe('modified');
     expect(newInstance.options.nestedObject.value).toBe('new instance');
   });

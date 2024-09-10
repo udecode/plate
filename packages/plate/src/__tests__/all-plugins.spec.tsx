@@ -7,6 +7,7 @@ import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
 import { BlockquotePlugin } from '@udecode/plate-block-quote';
 import { ExitBreakPlugin, SoftBreakPlugin } from '@udecode/plate-break';
+import { CodeBlockPlugin } from '@udecode/plate-code-block';
 import {
   Plate,
   PlateContent,
@@ -24,6 +25,7 @@ import { ResetNodePlugin } from '@udecode/plate-reset-node';
 import { SelectOnBackspacePlugin } from '@udecode/plate-select';
 import { TablePlugin } from '@udecode/plate-table';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
+import Prism from 'prismjs';
 
 function PlateContainer() {
   const editor = usePlateEditor({
@@ -31,6 +33,7 @@ function PlateContainer() {
       BlockquotePlugin,
       TodoListPlugin,
       HeadingPlugin.configure({ options: { levels: 5 } }),
+      CodeBlockPlugin.configure({ options: { prism: Prism } }),
       BasicElementsPlugin,
       BasicMarksPlugin,
       TodoListPlugin,
