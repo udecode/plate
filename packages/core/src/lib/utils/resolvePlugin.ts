@@ -1,11 +1,11 @@
-import { cloneDeep } from 'lodash';
+import { cloneDeep, merge } from 'lodash';
 
 import type { SlateEditor } from '../editor';
 import type { PluginConfig } from '../plugin/BasePlugin';
 import type { AnySlatePlugin, SlatePlugin } from '../plugin/SlatePlugin';
 
-import { mergeWithoutArray } from '../../internal/mergeWithoutArray';
 import { getEditorPlugin } from '../plugin';
+import {mergePlugins} from '../../internal/mergePlugins';
 
 /**
  * Resolves and finalizes a plugin configuration for use in a Plate editor.
@@ -66,14 +66,14 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
       getEditorPlugin(editor, plugin as any)
     );
 
-    plugin = mergeWithoutArray({}, plugin, configResult);
+    plugin = mergePlugins(plugin, configResult);
 
     delete (plugin as any).__configuration;
   }
   // Apply all stored extensions
   if (plugin.__extensions && plugin.__extensions.length > 0) {
     plugin.__extensions.forEach((extension) => {
-      plugin = mergeWithoutArray(
+      plugin = mergePlugins(
         plugin,
         extension(getEditorPlugin(editor, plugin as any))
       );
@@ -86,7 +86,7 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
 
   if (targetPluginToInject && targetPlugins && targetPlugins.length > 0) {
     plugin.inject = plugin.inject || {};
-    plugin.inject.plugins = mergeWithoutArray(
+    plugin.inject.plugins = merge(
       {},
       plugin.inject.plugins,
       Object.fromEntries(

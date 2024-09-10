@@ -105,7 +105,7 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       | SlatePluginConfig<any, InferOptions<P>, InferApi<P>, InferTransforms<P>>
   ) => SlatePlugin<C>;
 
-  create: () => SlatePlugin<C>;
+  clone: () => SlatePlugin<C>;
 
   extend: <EO = {}, EA = {}, ET = {}>(
     extendConfig:

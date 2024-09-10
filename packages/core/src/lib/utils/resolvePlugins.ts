@@ -3,13 +3,14 @@ import { createZustandStore } from 'zustand-x';
 
 import type { SlateEditor } from '../editor';
 
-import { mergeWithoutArray } from '../../internal/mergeWithoutArray';
 import {
   type SlatePlugin,
   type SlatePlugins,
   getEditorPlugin,
 } from '../plugin';
 import { resolvePlugin } from './resolvePlugin';
+import {merge} from 'lodash';
+import {mergePlugins} from '../../internal/mergePlugins';
 
 export function mergeLevel<T extends AnyObject>(
   target: T,
@@ -66,7 +67,7 @@ export const resolvePlugins = (
 
   const resolvedPlugins = resolveAndSortPlugins(editor, plugins);
 
-  mergePlugins(editor, resolvedPlugins);
+  applyPluginsToEditor(editor, resolvedPlugins);
 
   resolvePluginOverrides(editor);
 
@@ -137,18 +138,18 @@ const resolvePluginApis = (editor: SlateEditor) => {
                 (plugin.transforms as any)[plugin.key] = {};
               }
 
-              mergeWithoutArray(
+              merge(
                 (editor.transforms as any)[plugin.key],
                 newExtensions
               );
-              mergeWithoutArray(
+              merge(
                 (plugin.transforms as any)[plugin.key],
                 newExtensions
               );
             } else {
               // Editor-wide transform
-              mergeWithoutArray(editor.transforms, newExtensions);
-              mergeWithoutArray(plugin.transforms, newExtensions);
+              merge(editor.transforms, newExtensions);
+              merge(plugin.transforms, newExtensions);
             }
           } else {
             // Handle APIs
@@ -161,12 +162,12 @@ const resolvePluginApis = (editor: SlateEditor) => {
                 (plugin.api as any)[plugin.key] = {};
               }
 
-              mergeWithoutArray((editor.api as any)[plugin.key], newExtensions);
-              mergeWithoutArray((plugin.api as any)[plugin.key], newExtensions);
+              merge((editor.api as any)[plugin.key], newExtensions);
+              merge((plugin.api as any)[plugin.key], newExtensions);
             } else {
               // Editor-wide API
-              mergeWithoutArray(editor.api, newExtensions);
-              mergeWithoutArray(plugin.api, newExtensions);
+              merge(editor.api, newExtensions);
+              merge(plugin.api, newExtensions);
             }
           }
         }
@@ -229,7 +230,7 @@ const flattenAndResolvePlugins = (
     if (existingPlugin) {
       pluginMap.set(
         resolvedPlugin.key,
-        mergeWithoutArray(existingPlugin, resolvedPlugin)
+        mergePlugins(existingPlugin, resolvedPlugin)
       );
     } else {
       pluginMap.set(resolvedPlugin.key, resolvedPlugin);
@@ -289,7 +290,7 @@ export const resolveAndSortPlugins = (
   return orderedPlugins;
 };
 
-export const mergePlugins = (editor: SlateEditor, plugins: SlatePlugins) => {
+export const applyPluginsToEditor = (editor: SlateEditor, plugins: SlatePlugins) => {
   editor.pluginList = plugins;
   editor.plugins = Object.fromEntries(
     plugins.map((plugin) => [plugin.key, plugin])
@@ -330,8 +331,7 @@ export const resolvePluginOverrides = (editor: SlateEditor) => {
       }
       if (plugin.override.plugins) {
         Object.entries(plugin.override.plugins).forEach(([key, value]) => {
-          pluginOverrides[key] = mergeWithoutArray(
-            {},
+          pluginOverrides[key] = mergePlugins(
             pluginOverrides[key],
             value
           );
@@ -349,7 +349,7 @@ export const resolvePluginOverrides = (editor: SlateEditor) => {
 
       // Apply plugin overrides
       if (pluginOverrides[p.key]) {
-        updatedPlugin = mergeWithoutArray(
+        updatedPlugin = mergePlugins(
           updatedPlugin,
           pluginOverrides[p.key]
         );

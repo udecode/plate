@@ -7,7 +7,7 @@ import { createSlatePlugin } from '../plugin';
 import { DebugPlugin } from '../plugins';
 import { resolvePluginTest } from './resolveCreatePluginTest';
 import {
-  mergePlugins,
+  applyPluginsToEditor,
   resolveAndSortPlugins,
   resolvePluginOverrides,
   resolvePlugins,
@@ -235,7 +235,7 @@ describe('resolveAndSortPlugins', () => {
   });
 });
 
-describe('mergePlugins', () => {
+describe('applyPluginsToEditor', () => {
   it('should merge plugins correctly', () => {
     const editor = createPlateEditor();
 
@@ -244,7 +244,7 @@ describe('mergePlugins', () => {
       createSlatePlugin({ key: 'b', node: { type: 'typeB' } }),
     ];
 
-    mergePlugins(editor, plugins);
+    applyPluginsToEditor(editor, plugins);
 
     expect(editor.pluginList).toHaveLength(2);
     expect(editor.plugins.a.node.type).toBe('typeA');
@@ -260,7 +260,7 @@ describe('mergePlugins', () => {
       createSlatePlugin({ key: 'a', node: { type: 'newType' } }),
     ];
 
-    mergePlugins(editor, plugins);
+    applyPluginsToEditor(editor, plugins);
 
     expect(editor.pluginList).toHaveLength(1);
     expect(editor.plugins.a.node.type).toBe('newType');
