@@ -14,15 +14,12 @@ export function OpenInPlus({ className }: { className?: string }) {
       )}
     >
       <div className="text-balance text-lg font-semibold leading-tight group-hover:underline">
-        Get all-access to Plate Plus for AI and Backend Support
+        Build your editor even faster
       </div>
-      <div>Enhance your editing experience with advanced features.</div>
-      <div>
-        Plate Plus offers AI-powered assistance and robust backend solutions to
-        elevate your content creation.
-      </div>
+      <div>Complete, deployable AI-powered template with backend.</div>
+      <div>All components included. Customizable and extensible.</div>
       <Button className="mt-2 w-fit" size="sm">
-        Get All-Access Now
+        Get all-access
       </Button>
       <Link
         className="absolute inset-0"
@@ -30,7 +27,7 @@ export function OpenInPlus({ className }: { className?: string }) {
         rel="noreferrer"
         target="_blank"
       >
-        <span className="sr-only">Get all-access to Plate Plus</span>
+        <span className="sr-only">Get all-access</span>
       </Link>
     </div>
   );

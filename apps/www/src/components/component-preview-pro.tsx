@@ -93,7 +93,8 @@ export function ComponentPreviewPro({
                   'group relative flex justify-start gap-2 overflow-hidden whitespace-pre rounded-sm',
                   'dark:bg-muted dark:text-foreground',
                   'hover:ring-2 hover:ring-primary hover:ring-offset-2',
-                  'transition-all duration-300 ease-out'
+                  'transition-all duration-300 ease-out',
+                  'mb-2 h-8'
                 )}
                 href={`${siteConfig.links.platePlus}/pricing`}
                 target="_blank"
