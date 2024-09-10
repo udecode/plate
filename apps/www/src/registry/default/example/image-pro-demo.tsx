@@ -1,10 +1,10 @@
-import { PRO_HOST } from '../../../config/potion-components';
+import { siteConfig } from '../../../config/site';
 
 export default function ImageProDemo() {
   return (
     <iframe
       className="size-full h-[350px]"
-      src={`${PRO_HOST}/iframe/media-controller`}
+      src={`${siteConfig.links.platePlus}/iframe/media-controller`}
       title="media-controller"
     ></iframe>
   );
