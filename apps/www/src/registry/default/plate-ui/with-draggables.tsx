@@ -1,22 +1,29 @@
 import type { FC } from 'react';
 
-import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
-import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
-import { createNodesWithHOC } from '@udecode/plate-common';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+import {
+  ParagraphPlugin,
+  createNodesWithHOC,
+} from '@udecode/plate-common/react';
 import {
   type WithDraggableOptions,
   withDraggable as withDraggablePrimitive,
 } from '@udecode/plate-dnd';
+import { ExcalidrawPlugin } from '@udecode/plate-excalidraw';
+import { HEADING_KEYS } from '@udecode/plate-heading';
+import { ColumnPlugin } from '@udecode/plate-layout';
 import {
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_H3,
-  ELEMENT_H4,
-  ELEMENT_H5,
-  ELEMENT_H6,
-} from '@udecode/plate-heading';
-import { ELEMENT_OL, ELEMENT_UL } from '@udecode/plate-list';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
+  BulletedListPlugin,
+  NumberedListPlugin,
+} from '@udecode/plate-list/react';
+import {
+  ImagePlugin,
+  MediaEmbedPlugin,
+  PlaceholderPlugin,
+} from '@udecode/plate-media';
+import { TablePlugin } from '@udecode/plate-table';
+import { TogglePlugin } from '@udecode/plate-toggle';
 
 import { Draggable, type DraggableProps } from './draggable';
 
@@ -33,7 +40,11 @@ export const withDraggablesPrimitive = createNodesWithHOC(withDraggable);
 export const withDraggables = (components: any) => {
   return withDraggablesPrimitive(components, [
     {
-      keys: [ELEMENT_PARAGRAPH, ELEMENT_UL, ELEMENT_OL],
+      keys: [
+        ParagraphPlugin.key,
+        BulletedListPlugin.key,
+        NumberedListPlugin.key,
+      ],
       level: 0,
     },
     {
@@ -43,7 +54,7 @@ export const withDraggables = (components: any) => {
           gutterLeft: 'px-0 pb-1 text-[1.875em]',
         },
       },
-      key: ELEMENT_H1,
+      key: HEADING_KEYS.h1,
     },
     {
       draggableProps: {
@@ -52,7 +63,7 @@ export const withDraggables = (components: any) => {
           gutterLeft: 'px-0 pb-1 text-[1.5em]',
         },
       },
-      key: ELEMENT_H2,
+      key: HEADING_KEYS.h2,
     },
     {
       draggableProps: {
@@ -61,7 +72,7 @@ export const withDraggables = (components: any) => {
           gutterLeft: 'pt-[2px] px-0 pb-1 text-[1.25em]',
         },
       },
-      key: ELEMENT_H3,
+      key: HEADING_KEYS.h3,
     },
     {
       draggableProps: {
@@ -70,7 +81,7 @@ export const withDraggables = (components: any) => {
           gutterLeft: 'pt-[3px] px-0 pb-0 text-[1.1em]',
         },
       },
-      keys: [ELEMENT_H4, ELEMENT_H5],
+      keys: [HEADING_KEYS.h4, HEADING_KEYS.h5],
     },
     {
       draggableProps: {
@@ -78,7 +89,7 @@ export const withDraggables = (components: any) => {
           gutterLeft: 'pt-[3px] px-0 pb-0',
         },
       },
-      keys: [ELEMENT_PARAGRAPH],
+      keys: [ParagraphPlugin.key],
     },
     {
       draggableProps: {
@@ -86,7 +97,7 @@ export const withDraggables = (components: any) => {
           gutterLeft: 'px-0 pb-0',
         },
       },
-      keys: [ELEMENT_H6, ELEMENT_UL, ELEMENT_OL],
+      keys: [HEADING_KEYS.h6, BulletedListPlugin.key, NumberedListPlugin.key],
     },
     {
       draggableProps: {
@@ -94,15 +105,71 @@ export const withDraggables = (components: any) => {
           gutterLeft: 'px-0 pb-0',
         },
       },
-      key: ELEMENT_BLOCKQUOTE,
+      key: BlockquotePlugin.key,
     },
     {
       draggableProps: {
         classNames: {
-          gutterLeft: 'pt-8 px-0 pb-0',
+          gutterLeft: 'pt-6 px-0 pb-0',
         },
       },
-      key: ELEMENT_CODE_BLOCK,
+      key: CodeBlockPlugin.key,
+    },
+    {
+      draggableProps: {
+        classNames: {
+          gutterLeft: 'pt-0 px-0 pb-0',
+        },
+      },
+      key: ImagePlugin.key,
+    },
+    {
+      draggableProps: {
+        classNames: {
+          gutterLeft: 'pt-0 px-0 pb-0',
+        },
+      },
+      key: MediaEmbedPlugin.key,
+    },
+    {
+      draggableProps: {
+        classNames: {
+          gutterLeft: 'pt-0 px-0 pb-0',
+        },
+      },
+      key: ExcalidrawPlugin.key,
+    },
+    {
+      draggableProps: {
+        classNames: {
+          gutterLeft: 'pt-0 px-0 pb-0',
+        },
+      },
+      key: TogglePlugin.key,
+    },
+    {
+      draggableProps: {
+        classNames: {
+          gutterLeft: 'pt-0 px-0 pb-0',
+        },
+      },
+      key: ColumnPlugin.key,
+    },
+    {
+      draggableProps: {
+        classNames: {
+          gutterLeft: 'pt-3 px-0 pb-0',
+        },
+      },
+      key: PlaceholderPlugin.key,
+    },
+    {
+      draggableProps: {
+        classNames: {
+          gutterLeft: 'pt-3 px-0 pb-0',
+        },
+      },
+      key: TablePlugin.key,
     },
   ]);
 };

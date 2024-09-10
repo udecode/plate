@@ -1,9 +1,7 @@
-import type { ExitBreakPlugin } from '@udecode/plate-break';
-import type { PlatePlugin } from '@udecode/plate-common';
+import { ExitBreakPlugin } from '@udecode/plate-break/react';
+import { HEADING_LEVELS } from '@udecode/plate-heading';
 
-import { KEYS_HEADING } from '@udecode/plate-heading';
-
-export const exitBreakPlugin: Partial<PlatePlugin<ExitBreakPlugin>> = {
+export const exitBreakPlugin = ExitBreakPlugin.configure({
   options: {
     rules: [
       {
@@ -17,7 +15,7 @@ export const exitBreakPlugin: Partial<PlatePlugin<ExitBreakPlugin>> = {
         hotkey: 'enter',
         level: 1,
         query: {
-          allow: KEYS_HEADING,
+          allow: HEADING_LEVELS,
           end: true,
           start: true,
         },
@@ -25,4 +23,4 @@ export const exitBreakPlugin: Partial<PlatePlugin<ExitBreakPlugin>> = {
       },
     ],
   },
-};
+});

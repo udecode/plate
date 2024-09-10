@@ -1,5 +1,13 @@
 # @udecode/plate-tabbable
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createTabbablePlugin` -> `TabbablePlugin`
+  - `TabbablePlugin` option `isTabbable`: remove first `editor` parameter
+
 ## 36.0.0
 
 ## 34.0.0

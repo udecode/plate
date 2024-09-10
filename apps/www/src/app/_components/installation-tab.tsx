@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useMemo, useState } from 'react';
 
-import { KEY_DND } from '@udecode/plate-dnd';
+import { DndPlugin } from '@udecode/plate-dnd';
 import { uniqBy } from 'lodash';
 
 import {
@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/accordion';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { customizerItems } from '@/config/customizer-items';
 import { allPlugins, orderedPluginKeys } from '@/config/customizer-list';
 import { useMounted } from '@/hooks/use-mounted';
 
@@ -161,37 +162,32 @@ export default function InstallationTab() {
   }, [components]);
 
   const groupedImportsByPackage = useMemo(() => {
-    const grouped = {} as Record<string, Set<string>>;
+    const grouped = {} as Record<string, { imports: Set<string>; plugin: any }>;
 
     // Add pluginFactory and pluginKey from plugins
     plugins.forEach((plugin) => {
       if (!plugin.npmPackage) return;
       if (!grouped[plugin.npmPackage]) {
-        grouped[plugin.npmPackage] = new Set();
+        grouped[plugin.npmPackage] = { imports: new Set(), plugin };
       }
       if (plugin.pluginFactory) {
-        grouped[plugin.npmPackage].add(plugin.pluginFactory);
+        grouped[plugin.npmPackage].imports.add(plugin.pluginFactory);
       }
 
-      plugin.packageImports?.forEach((packageImport) => {
-        if (plugin.npmPackage) {
-          grouped[plugin.npmPackage].add(packageImport);
-        }
+      // Handle pluginImports
+      plugin.components?.forEach((component) => {
+        component.pluginImports?.forEach((importItem) => {
+          grouped[plugin.npmPackage!].imports.add(importItem);
+        });
       });
 
-      plugin.components?.forEach((component) => {
-        if (
-          plugin.npmPackage &&
-          component.pluginKey &&
-          componentsWithPluginKey.includes(component)
-        ) {
-          grouped[plugin.npmPackage].add(component.pluginKey);
-        }
+      plugin.packageImports?.forEach((packageImport) => {
+        grouped[plugin.npmPackage!].imports.add(packageImport);
       });
     });
 
     return grouped;
-  }, [componentsWithPluginKey, plugins]);
+  }, [plugins]);
 
   const customImports = useMemo(() => {
     const res: string[] = [];
@@ -212,8 +208,13 @@ export default function InstallationTab() {
 
   const importsCode = useMemo(() => {
     const importsGroups = Object.entries(groupedImportsByPackage).map(
-      ([packageName, imports]) =>
-        `import { ${Array.from(imports).join(', ')} } from '${packageName}';`
+      ([packageName, { imports, plugin }]) => {
+        const importPath = plugin.reactImport
+          ? `${packageName}/react`
+          : packageName;
+
+        return `import { ${Array.from(imports).join(', ')} } from '${importPath}';`;
+      }
     );
     const componentImportsGroup = Object.entries(componentImports).map(
       ([componentId, importValues]) =>
@@ -227,9 +228,9 @@ export default function InstallationTab() {
         cnImports.length > 0
           ? `import { ${cnImports} } from '@udecode/cn';\n`
           : ''
-      }import { createPlugins, Plate${hasEditor ? '' : ', PlateContent'}${
+      }import { createPlateEditor, Plate${hasEditor ? '' : ', PlateContent'}${
         plateImports.length > 0 ? ', ' + plateImports : ''
-      } } from '@udecode/plate-common';`,
+      } } from '@udecode/plate-common/react';`,
       ...importsGroups,
       ...customImports,
       '',
@@ -256,58 +257,80 @@ export default function InstallationTab() {
 
   const pluginsCode: string[] = [];
 
-  plugins.forEach(
-    ({ components: pluginComponents, pluginFactory, pluginOptions }) => {
-      if (!pluginFactory) return;
+  plugins.forEach(({ id, pluginFactory, pluginOptions }) => {
+    if (!pluginFactory) return;
 
-      let componentOptions = '';
-      pluginComponents?.forEach((component) => {
-        if (component.pluginOptions && components.includes(component)) {
-          componentOptions = [
-            `${component.pluginOptions
-              .map((option) => `${option}`)
-              .join('\n      ')}`,
-          ].join('\n');
-        }
-      });
+    const customizerItem = customizerItems[id];
+    let optionsString = '';
 
-      let options = '';
-
-      if (pluginOptions) {
-        options = pluginOptions.map((option) => `${option}`).join('\n      ');
-      }
-
-      let allOptions: string[] = [];
-
-      if (componentOptions || pluginOptions) {
-        allOptions = [`{`, `      ${options}${componentOptions}`, `    }`];
-      }
-
-      pluginsCode.push(`    ${pluginFactory}(${allOptions.join('\n')}),`);
+    // Use plugin-level options if available
+    if (customizerItem?.pluginOptions) {
+      optionsString = customizerItem.pluginOptions.join('\n');
     }
-  );
+
+    // Add component-level options
+    customizerItem?.components?.forEach((component) => {
+      if (component.pluginOptions) {
+        const componentOptions = component.pluginOptions.join('\n');
+
+        if (!optionsString.includes(componentOptions)) {
+          optionsString += (optionsString ? '\n' : '') + componentOptions;
+        }
+      }
+    });
+
+    // If there are additional pluginOptions, append them only if they're different
+    if (pluginOptions) {
+      const additionalOptions = pluginOptions.filter(
+        (option) => !optionsString.includes(option)
+      );
+
+      if (additionalOptions.length > 0) {
+        optionsString +=
+          (optionsString ? '\n' : '') + additionalOptions.join('\n');
+      }
+    }
+
+    let formattedPlugin = `    ${pluginFactory}`;
+
+    if (optionsString) {
+      // Add 3 tabs (6 spaces) to each line inside configure
+      const indentedOptions = optionsString
+        .split('\n')
+        .map((line) => `      ${line}`)
+        .join('\n');
+      formattedPlugin += `.configure({\n${indentedOptions}\n    })`;
+    }
+
+    pluginsCode.push(formattedPlugin + ',');
+  });
 
   const hasDraggable = components.some((comp) => comp.id === 'draggable');
   const hasPlaceholder = components.some((comp) => comp.id === 'placeholder');
 
   const usageCode = [
-    'const plugins = createPlugins(',
-    '  [',
+    'const editor = createPlateEditor({',
+    '  plugins: [',
     pluginsCode.join('\n'),
     '  ],',
-    '  {',
-    `    components: ${hasDraggable ? 'withDraggables(' : ''}${
-      hasPlaceholder ? 'withPlaceholders(' : ''
-    }{`,
+    '  override: {',
+    `    components: ${hasDraggable ? 'withDraggables(' : ''}${hasPlaceholder ? 'withPlaceholders(' : ''}({`,
     ...componentsWithPluginKey.map(
       ({ pluginKey, usage }) => `      [${pluginKey}]: ${usage},`
     ),
-    `    }${hasPlaceholder ? ')' : ''}${hasDraggable ? ')' : ''},`,
-    `  }`,
-    ');',
+    `    })${hasPlaceholder ? ')' : ''}${hasDraggable ? ')' : ''},`,
+    '  },',
+    '  value: [',
+    '    {',
+    '      id: "1",',
+    '      type: "p",',
+    '      children: [{ text: "Hello, World!" }],',
+    '    },',
+    '  ],',
+    '});',
   ].join('\n');
 
-  const hasDnd = plugins.some((plugin) => plugin.id === KEY_DND);
+  const hasDnd = plugins.some((plugin) => plugin.id === DndPlugin.key);
 
   const hasCommentsPopover = components.some(
     (comp) => comp.id === 'comments-popover'
@@ -329,7 +352,6 @@ export default function InstallationTab() {
   );
 
   let indentLevel = 0;
-  const jsxCode: string[] = [];
 
   const addLine = (line: string, opensBlock = false, closesBlock = false) => {
     if (closesBlock && indentLevel > 0) {
@@ -344,17 +366,16 @@ export default function InstallationTab() {
     }
   };
 
+  const jsxCode: string[] = [];
+
   if (isManual) {
     addLine(`<TooltipProvider>`, true);
   }
   if (hasDnd) {
     addLine(`<DndProvider backend={HTML5Backend}>`, true);
   }
-  if (hasCommentsPopover) {
-    addLine(`<CommentsProvider users={{}} myUserId="1">`, true);
-  }
 
-  addLine(`<Plate plugins={plugins} initialValue={initialValue}>`, true);
+  addLine(`<Plate editor={editor}>`, true);
 
   if (hasFixedToolbar) {
     addLine(`<FixedToolbar>`, true);
@@ -388,9 +409,6 @@ export default function InstallationTab() {
 
   addLine(`</Plate>`, false, true);
 
-  if (hasCommentsPopover) {
-    addLine(`</CommentsProvider>`, false, true);
-  }
   if (hasDnd) {
     addLine(`</DndProvider>`, false, true);
   }
@@ -399,14 +417,6 @@ export default function InstallationTab() {
   }
 
   const plateCode = [
-    `const initialValue = [`,
-    `  {`,
-    `    id: '1',`,
-    `    type: 'p',`,
-    `    children: [{ text: 'Hello, World!' }],`,
-    `  },`,
-    `];`,
-    ``,
     `export function PlateEditor() {`,
     `  return (`,
     `    ${jsxCode.join('\n    ')}`,
@@ -414,9 +424,9 @@ export default function InstallationTab() {
     `}`,
   ].join('\n');
 
-  const fullCode = [`'use client';`, importsCode, usageCode, plateCode].join(
-    '\n\n'
-  );
+  const fullCode = [`'use client';`, importsCode, usageCode, plateCode]
+    .filter(Boolean)
+    .join('\n\n');
 
   if (!mounted) return null;
 

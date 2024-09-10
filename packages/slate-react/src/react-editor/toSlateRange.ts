@@ -1,12 +1,10 @@
-import type { Value } from '@udecode/slate';
+import type { TEditor } from '@udecode/slate';
 
 import { ReactEditor } from 'slate-react';
 
-import type { TReactEditor } from '../types/TReactEditor';
-
 /** {@link ReactEditor.toSlateRange} */
-export const toSlateRange = <V extends Value>(
-  editor: TReactEditor<V>,
+export const toSlateRange = (
+  editor: TEditor,
   domRange: Parameters<typeof ReactEditor.toSlateRange>[1],
   options: Parameters<typeof ReactEditor.toSlateRange>[2]
 ) => {

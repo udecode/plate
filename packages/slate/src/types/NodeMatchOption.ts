@@ -1,6 +1,6 @@
-import type { Value } from '../interfaces/editor/TEditor';
-import type { ENode, TNodeMatch } from '../interfaces/node/TNode';
+import type { TEditor } from '../interfaces';
+import type { NodeOf, TNodeMatch } from '../interfaces/node/TNode';
 
-export interface NodeMatchOption<V extends Value> {
-  match?: TNodeMatch<ENode<V>>;
+export interface NodeMatchOption<E extends TEditor> {
+  match?: TNodeMatch<NodeOf<E>>;
 }

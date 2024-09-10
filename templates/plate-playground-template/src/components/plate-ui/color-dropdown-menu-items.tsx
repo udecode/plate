@@ -1,49 +1,50 @@
 'use client';
 
 import React from 'react';
-import { DropdownMenuItemProps } from '@radix-ui/react-dropdown-menu';
 import { cn } from '@udecode/cn';
 
 import { Icons } from '@/components/icons';
 
 import { buttonVariants } from './button';
-import { TColor } from './color-dropdown-menu';
 import { DropdownMenuItem } from './dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
 
+import type { TColor } from './color-dropdown-menu';
+import type { DropdownMenuItemProps } from '@radix-ui/react-dropdown-menu';
+
 type ColorDropdownMenuItemProps = {
-  value: string;
   isBrightColor: boolean;
   isSelected: boolean;
-  updateColor: (color: string) => void;
   name?: string;
+  updateColor: (color: string) => void;
+  value: string;
 } & DropdownMenuItemProps;
 
 export function ColorDropdownMenuItem({
-  name,
-  value,
+  className,
   isBrightColor,
   isSelected,
+  name,
   updateColor,
-  className,
+  value,
   ...props
 }: ColorDropdownMenuItemProps) {
   const content = (
     <DropdownMenuItem
       className={cn(
         buttonVariants({
-          variant: 'outline',
           isMenu: true,
+          variant: 'outline',
         }),
         'size-6 border border-solid border-muted p-0',
         !isBrightColor && 'border-transparent text-white',
         className
       )}
-      style={{ backgroundColor: value }}
       onSelect={(e) => {
         e.preventDefault();
         updateColor(value);
       }}
+      style={{ backgroundColor: value }}
       {...props}
     >
       {isSelected ? <Icons.check /> : null}
@@ -67,10 +68,10 @@ type ColorDropdownMenuItemsProps = {
 } & React.HTMLAttributes<HTMLDivElement>;
 
 export function ColorDropdownMenuItems({
+  className,
   color,
   colors,
   updateColor,
-  className,
   ...props
 }: ColorDropdownMenuItemsProps) {
   return (
@@ -78,14 +79,14 @@ export function ColorDropdownMenuItems({
       className={cn('grid grid-cols-[repeat(10,1fr)] gap-1', className)}
       {...props}
     >
-      {colors.map(({ name, value, isBrightColor }) => (
+      {colors.map(({ isBrightColor, name, value }) => (
         <ColorDropdownMenuItem
-          key={name ?? value}
-          name={name}
-          value={value}
           isBrightColor={isBrightColor}
           isSelected={color === value}
+          key={name ?? value}
+          name={name}
           updateColor={updateColor}
+          value={value}
         />
       ))}
     </div>

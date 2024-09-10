@@ -1,0 +1,240 @@
+---
+title: Editor Methods
+description: Explore the various methods available for interacting with and customizing the Plate editor.
+---
+
+This guide covers the various methods available on the Plate editor instance.
+
+## Accessing the Editor
+
+How you access the editor instance depends on the context in which you need it.
+
+### Below Plate
+
+Use one of these hooks:
+
+- `useEditorRef`: Never re-render.
+- `useEditorSelector`: Re-render only when a specific editor property changes.
+- `useEditorState`: Re-render on every change.
+
+```ts
+import { useEditorRef, useEditorSelector, useEditorState } from '@udecode/plate-common/react';
+
+const MyComponent = () => {
+  const editor = useEditorRef();
+  const hasSelection = useEditorSelector((editor) => !!editor.selection, []);
+  const editorState = useEditorState();
+  
+  // ...
+};
+```
+
+#### useEditorRef
+
+- Use a reference to editor that never gets replaced. This should be the default choice.
+- Since editor is a mutable object that gets updated by reference, `useEditorRef` is always sufficient for accessing the editor inside callbacks.
+- `useEditorRef` will never cause your component to re-render, so it's the best choice for performance.
+
+#### useEditorSelector
+
+- Subscribe to a specific selector based on editor. This is the most performant option for subscribing to state changes.
+- Example usage: `const hasSelection = useEditorSelector((editor) => !!editor.selection, []);`
+- When you want your component to re-render in response to a specific change that you're interested in, you can use `useEditorSelector` to access the relevant property.
+- The selector function is called every time the editor changes (i.e. on every keystroke or selection change), but the component only re-renders when the return value changes.
+- For this to work properly, you should make sure that the return value can be compared using `===`. In most cases, this means returning a primitive value, like a number, string or boolean.
+- You can provide a custom `equalityFn` in the options to `useEditorSelector` for cases where `===` isn't sufficient.
+- If the selector function depends on any locally scoped variables, you should include these in the dependency list.
+
+#### useEditorState
+
+- Re-render every time the editor changes.
+- Using `useEditorState` will cause your component to re-render every time the user presses a key or changes the selection.
+- This may cause performance issues for large documents, or when re-rendering is particularly expensive.
+
+### Outside Plate
+
+To access the editor outside the `Plate` component or work with multiple editors, use the `PlateController` component:
+
+```ts
+import { PlateController } from '@udecode/plate-common/react';
+
+const App = () => (
+  <PlateController>
+    <Toolbar />
+    <MyEditor />
+  </PlateController>
+);
+
+const Toolbar = () => {
+  const editor = useEditorState();
+  const isMounted = useEditorMounted();
+  // Use editor methods here
+};
+```
+
+`PlateController` manages active editors:
+- The first mounted editor is active by default (override with `primary={false}` on `Plate`).
+- Focus changes the active editor.
+- An editor remains active until another is focused or it unmounts.
+
+Hooks like `useEditorRef` and `useEditorSelector` work with the active editor inside `PlateController`. If no editor is active, they return a fallback editor, which:
+- Provides default values for queries.
+- Cannot be mutated.
+- Throws errors on state-changing operations.
+
+Fallback editor scenarios:
+- No mounted `Plate` components.
+- All `Plate` components are non-primary.
+- During `PlateContent` mounting.
+
+You can check if any editor is mounted using `useEditorMounted`:
+
+```ts
+const Toolbar = () => {
+  const editor = useEditorState();
+  const isMounted = useEditorMounted();
+  
+  if (!isMounted) {
+    return <div>Editor not ready</div>;
+  }
+  
+  return <div>{/* Toolbar content */}</div>;
+};
+```
+
+You can also use `editor.isFallback` to check if the editor is a fallback instance.
+
+## API Methods
+
+### getApi
+
+Retrieve the typed API for the editor:
+
+```ts
+const api = editor.getApi(TablePlugin);
+api.api.create.cell(); // Type-safe API method
+```
+
+### getTransforms
+
+Get the typed transforms for the editor:
+
+```ts
+const tf = editor.getTransforms(TablePlugin);
+tf.insert.tableRow(); // Type-safe transform method
+```
+
+## Plugin Methods
+
+### getPlugin
+
+Retrieve the editor plugin instance by its key or base plugin:
+
+```ts
+const paragraphPlugin = editor.getPlugin(ParagraphPlugin);
+const headingPlugin = editor.getPlugin({ key: 'heading' });
+```
+
+### getType
+
+Get the node type associated with a plugin:
+
+```ts
+const paragraphType = editor.getType(ParagraphPlugin);
+```
+
+## Option Methods
+
+### getOption
+
+Get a specific option value for a plugin:
+
+```ts
+const search = editor.getOption(FindReplacePlugin, 'search');
+```
+
+### getOptions
+
+Get all options for a plugin:
+
+```ts
+const linkOptions = editor.getOptions(LinkPlugin);
+```
+
+### setOption
+
+Set a specific option value for a plugin:
+
+```ts
+editor.setOption(FindReplacePlugin, 'search', 'hello');
+```
+
+### setOptions
+
+Set multiple options for a plugin:
+
+```ts
+editor.setOptions(FindReplacePlugin, {
+  search: 'hello',
+  caseSensitive: true,
+});
+```
+
+You can also use a function to update options using Immer:
+
+```ts
+editor.setOptions(FindReplacePlugin, (draft) => {
+  draft.search = 'hello';
+  draft.caseSensitive = true;
+});
+```
+
+### getOptionsStore
+
+Get the <Link href="https://github.com/udecode/zustand-x">zustand-x</Link> options store for a plugin:
+
+```ts
+const store = editor.getOptionsStore(FindReplacePlugin);
+```
+
+## React Hooks
+
+### useOption
+
+Subscribe to a specific option value in a React component:
+
+```ts
+const MyComponent = () => {
+  const search = editor.useOption(FindReplacePlugin, 'search');
+  return <div>Current search: {search}</div>;
+};
+```
+
+### useOptions
+
+You can also use a selector function to subscribe to specific parts of the options:
+
+```ts
+const MyComponent = () => {
+  const search = editor.useOptions(FindReplacePlugin, (options) => options.search);
+  return <div>Current search: {search}</div>;
+};
+```
+
+### useOptionsStore
+
+Get the <Link href="https://github.com/udecode/zustand-x">zustand-x</Link> store hook for a plugin:
+
+```ts
+const store = editor.useOptionsStore(FindReplacePlugin);
+```
+
+## Plate Store
+
+### setPlateState
+
+Update the global Plate state:
+
+```ts
+editor.setPlateState('readOnly', true);
+```

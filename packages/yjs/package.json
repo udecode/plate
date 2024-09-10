@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-yjs",
-  "version": "36.0.2",
+  "version": "37.0.0",
   "description": "Yjs plugin for Plate",
   "keywords": [
     "plate",
@@ -25,6 +25,12 @@
       "import": "./dist/index.mjs",
       "module": "./dist/index.mjs",
       "require": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.mjs",
+      "module": "./dist/react/index.mjs",
+      "require": "./dist/react/index.js"
     }
   },
   "main": "dist/index.js",
@@ -53,13 +59,13 @@
     "@udecode/plate-common": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=36.3.7",
+    "@udecode/plate-common": ">=37.0.8",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "slate": ">=0.94.0",
+    "slate": ">=0.103.0",
     "slate-history": ">=0.93.0",
     "slate-hyperscript": ">=0.66.0",
-    "slate-react": ">=0.99.0"
+    "slate-react": ">=0.108.0"
   },
   "publishConfig": {
     "access": "public"

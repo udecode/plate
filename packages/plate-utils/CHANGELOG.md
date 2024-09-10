@@ -1,5 +1,29 @@
 # @udecode/plate-utils
 
+## 37.0.8
+
+## 37.0.7
+
+## 37.0.5
+
+### Patch Changes
+
+- [#3500](https://github.com/udecode/plate/pull/3500) by [@yf-yang](https://github.com/yf-yang) – Hide placeholder during composition
+
+## 37.0.4
+
+## 37.0.3
+
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - Remove `onKeyDownToggleElement`, use shortcuts instead.
+  - Remove `onKeyDownToggleMark`, use shortcuts instead.
+
+## 36.3.9
+
 ## 36.3.7
 
 ## 36.3.4

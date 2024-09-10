@@ -1,5 +1,5 @@
 import React, { CSSProperties } from 'react';
-import { PlateElementProps } from '@udecode/plate-common';
+import { PlateElementProps } from '@udecode/plate-common/react';
 import { useFocused, useSelected } from 'slate-react';
 
 const boxStyle: CSSProperties = {

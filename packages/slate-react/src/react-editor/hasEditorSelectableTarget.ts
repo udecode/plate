@@ -1,12 +1,10 @@
-import type { Value } from '@udecode/slate';
+import type { TEditor } from '@udecode/slate';
 
 import { ReactEditor } from 'slate-react';
 
-import type { TReactEditor } from '../types/TReactEditor';
-
 /** Check if the target can be selectable. */
-export const hasEditorSelectableTarget = <V extends Value>(
-  editor: TReactEditor<V>,
+export const hasEditorSelectableTarget = (
+  editor: TEditor,
   target: EventTarget | null
 ) => {
   try {

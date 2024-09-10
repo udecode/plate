@@ -4,41 +4,26 @@ import React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import {
-  ELEMENT_CODE_BLOCK,
+  CodeBlockPlugin,
   insertEmptyCodeBlock,
 } from '@udecode/plate-code-block';
-import {
-  focusEditor,
-  insertEmptyElement,
-  useEditorRef,
-} from '@udecode/plate-common';
-import { ELEMENT_EXCALIDRAW } from '@udecode/plate-excalidraw';
-import {
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_H3,
-  ELEMENT_H4,
-  ELEMENT_H5,
-  ELEMENT_H6,
-} from '@udecode/plate-heading';
-import { ELEMENT_HR } from '@udecode/plate-horizontal-rule';
-import {
-  KEY_LIST_STYLE_TYPE,
-  toggleIndentList,
-} from '@udecode/plate-indent-list';
-import { ELEMENT_COLUMN_GROUP, insertColumnGroup } from '@udecode/plate-layout';
-import { ELEMENT_LINK, triggerFloatingLink } from '@udecode/plate-link';
-import { toggleList } from '@udecode/plate-list';
-import {
-  ELEMENT_IMAGE,
-  ELEMENT_MEDIA_EMBED,
-  insertMedia,
-} from '@udecode/plate-media';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
-import { ELEMENT_TABLE, insertTable } from '@udecode/plate-table';
+import { ParagraphPlugin, insertEmptyElement } from '@udecode/plate-common';
+import { focusEditor } from '@udecode/plate-common/react';
+import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
+import { HEADING_KEYS } from '@udecode/plate-heading';
+import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
+import { toggleIndentList } from '@udecode/plate-indent-list';
+import { IndentListPlugin } from '@udecode/plate-indent-list/react';
+import { insertColumnGroup } from '@udecode/plate-layout';
+import { ColumnPlugin } from '@udecode/plate-layout/react';
+import { LinkPlugin, triggerFloatingLink } from '@udecode/plate-link/react';
+import { insertMedia } from '@udecode/plate-media';
+import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
+import { TablePlugin, insertTable } from '@udecode/plate-table/react';
 
+import { CheckPlugin } from '@/components/context/check-plugin';
 import { settingsStore } from '@/components/context/settings-store';
 import { Icons } from '@/components/icons';
 import {
@@ -51,6 +36,7 @@ import {
   useOpenState,
 } from '@/registry/default/plate-ui/dropdown-menu';
 import { ToolbarButton } from '@/registry/default/plate-ui/toolbar';
+import { useMyEditorRef } from '@/types/plate-types';
 
 const items = [
   {
@@ -59,49 +45,49 @@ const items = [
         description: 'Paragraph',
         icon: Icons.paragraph,
         label: 'Paragraph',
-        value: ELEMENT_PARAGRAPH,
+        value: ParagraphPlugin.key,
       },
       {
         description: 'Heading 1',
         icon: Icons.h1,
         label: 'Heading 1',
-        value: ELEMENT_H1,
+        value: HEADING_KEYS.h1,
       },
       {
         description: 'Heading 2',
         icon: Icons.h2,
         label: 'Heading 2',
-        value: ELEMENT_H2,
+        value: HEADING_KEYS.h2,
       },
       {
         description: 'Heading 3',
         icon: Icons.h3,
         label: 'Heading 3',
-        value: ELEMENT_H3,
+        value: HEADING_KEYS.h3,
       },
       {
         description: 'Heading 4',
         icon: Icons.h4,
         label: 'Heading 4',
-        value: ELEMENT_H4,
+        value: HEADING_KEYS.h4,
       },
       {
         description: 'Heading 5',
         icon: Icons.h5,
         label: 'Heading 5',
-        value: ELEMENT_H5,
+        value: HEADING_KEYS.h5,
       },
       {
         description: 'Heading 6',
         icon: Icons.h6,
         label: 'Heading 6',
-        value: ELEMENT_H6,
+        value: HEADING_KEYS.h6,
       },
       {
         description: 'Table',
         icon: Icons.table,
         label: 'Table',
-        value: ELEMENT_TABLE,
+        value: TablePlugin.key,
       },
       {
         description: 'Bulleted list',
@@ -119,19 +105,19 @@ const items = [
         description: 'Quote (⌘+⇧+.)',
         icon: Icons.blockquote,
         label: 'Quote',
-        value: ELEMENT_BLOCKQUOTE,
+        value: BlockquotePlugin.key,
       },
       {
         description: 'Divider (---)',
         icon: Icons.hr,
         label: 'Divider',
-        value: ELEMENT_HR,
+        value: HorizontalRulePlugin.key,
       },
       {
         description: 'Columns',
         icon: Icons.LayoutIcon,
         label: 'Columns',
-        value: ELEMENT_COLUMN_GROUP,
+        value: ColumnPlugin.key,
       },
     ],
     label: 'Basic blocks',
@@ -142,25 +128,25 @@ const items = [
         description: 'Code (```)',
         icon: Icons.codeblock,
         label: 'Code',
-        value: ELEMENT_CODE_BLOCK,
+        value: CodeBlockPlugin.key,
       },
       {
         description: 'Image',
         icon: Icons.image,
         label: 'Image',
-        value: ELEMENT_IMAGE,
+        value: ImagePlugin.key,
       },
       {
         description: 'Embed',
         icon: Icons.embed,
         label: 'Embed',
-        value: ELEMENT_MEDIA_EMBED,
+        value: MediaEmbedPlugin.key,
       },
       {
         description: 'Excalidraw',
         icon: Icons.excalidraw,
         label: 'Excalidraw',
-        value: ELEMENT_EXCALIDRAW,
+        value: ExcalidrawPlugin.key,
       },
     ],
     label: 'Media',
@@ -171,7 +157,7 @@ const items = [
         description: 'Link',
         icon: Icons.link,
         label: 'Link',
-        value: ELEMENT_LINK,
+        value: LinkPlugin.key,
       },
     ],
     label: 'Inline',
@@ -179,7 +165,7 @@ const items = [
 ];
 
 export function PlaygroundInsertDropdownMenu(props: DropdownMenuProps) {
-  const editor = useEditorRef();
+  const editor = useMyEditorRef();
   const openState = useOpenState();
 
   return (
@@ -201,74 +187,77 @@ export function PlaygroundInsertDropdownMenu(props: DropdownMenuProps) {
             <DropdownMenuLabel>{label}</DropdownMenuLabel>
             {nestedItems.map(
               ({ icon: Icon, label: itemLabel, value: type }) => (
-                <DropdownMenuItem
-                  className="min-w-[180px]"
-                  key={type}
-                  onSelect={async () => {
-                    switch (type) {
-                      case ELEMENT_COLUMN_GROUP: {
-                        insertColumnGroup(editor);
+                <CheckPlugin key={type} plugin={{ key: type }}>
+                  <DropdownMenuItem
+                    className="min-w-[180px]"
+                    onSelect={async () => {
+                      switch (type) {
+                        case ColumnPlugin.key: {
+                          insertColumnGroup(editor);
 
-                        break;
-                      }
-                      case ELEMENT_CODE_BLOCK: {
-                        insertEmptyCodeBlock(editor);
-
-                        break;
-                      }
-                      case ELEMENT_IMAGE: {
-                        await insertMedia(editor, { type: ELEMENT_IMAGE });
-
-                        break;
-                      }
-                      case ELEMENT_MEDIA_EMBED: {
-                        await insertMedia(editor, {
-                          type: ELEMENT_MEDIA_EMBED,
-                        });
-
-                        break;
-                      }
-                      case 'ul':
-                      case 'ol': {
-                        insertEmptyElement(editor, ELEMENT_PARAGRAPH, {
-                          nextBlock: true,
-                          select: true,
-                        });
-
-                        if (settingsStore.get.checkedId(KEY_LIST_STYLE_TYPE)) {
-                          toggleIndentList(editor, {
-                            listStyleType: type === 'ul' ? 'disc' : 'decimal',
-                          });
-                        } else if (settingsStore.get.checkedId('list')) {
-                          toggleList(editor, { type });
+                          break;
                         }
+                        case CodeBlockPlugin.key: {
+                          insertEmptyCodeBlock(editor);
 
-                        break;
-                      }
-                      case ELEMENT_TABLE: {
-                        insertTable(editor);
+                          break;
+                        }
+                        case ImagePlugin.key: {
+                          await insertMedia(editor, { type: ImagePlugin.key });
 
-                        break;
-                      }
-                      case ELEMENT_LINK: {
-                        triggerFloatingLink(editor, { focused: true });
+                          break;
+                        }
+                        case MediaEmbedPlugin.key: {
+                          await insertMedia(editor, {
+                            type: MediaEmbedPlugin.key,
+                          });
 
-                        break;
-                      }
-                      default: {
-                        insertEmptyElement(editor, type, {
-                          nextBlock: true,
-                          select: true,
-                        });
-                      }
-                    }
+                          break;
+                        }
+                        case 'ul':
+                        case 'ol': {
+                          insertEmptyElement(editor, ParagraphPlugin.key, {
+                            nextBlock: true,
+                            select: true,
+                          });
 
-                    focusEditor(editor);
-                  }}
-                >
-                  <Icon className="mr-2 size-5" />
-                  {itemLabel}
-                </DropdownMenuItem>
+                          if (
+                            settingsStore.get.checkedId(IndentListPlugin.key)
+                          ) {
+                            toggleIndentList(editor, {
+                              listStyleType: type === 'ul' ? 'disc' : 'decimal',
+                            });
+                          } else if (settingsStore.get.checkedId('list')) {
+                            editor.tf.toggle.list({ type });
+                          }
+
+                          break;
+                        }
+                        case TablePlugin.key: {
+                          insertTable(editor);
+
+                          break;
+                        }
+                        case LinkPlugin.key: {
+                          triggerFloatingLink(editor, { focused: true });
+
+                          break;
+                        }
+                        default: {
+                          insertEmptyElement(editor, type, {
+                            nextBlock: true,
+                            select: true,
+                          });
+                        }
+                      }
+
+                      focusEditor(editor);
+                    }}
+                  >
+                    <Icon className="mr-2 size-5" />
+                    {itemLabel}
+                  </DropdownMenuItem>
+                </CheckPlugin>
               )
             )}
           </React.Fragment>

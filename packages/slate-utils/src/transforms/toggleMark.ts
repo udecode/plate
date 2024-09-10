@@ -1,23 +1,20 @@
-import { type TEditor, type Value, withoutNormalizing } from '@udecode/slate';
+import { type TEditor, withoutNormalizing } from '@udecode/slate';
 import castArray from 'lodash/castArray.js';
 
 import { isMarkActive } from '../queries';
 import { removeMark } from './removeMark';
 
 export interface ToggleMarkOptions {
+  /** The mark key to toggle. */
   key: string;
+
+  /** Mark keys to clear when adding the mark. */
   clear?: string | string[];
 }
 
-/**
- * Add/remove marks in the selection.
- *
- * @param editor
- * @param key Mark to toggle
- * @param clear Marks to clear when adding mark
- */
-export const toggleMark = <V extends Value = Value>(
-  editor: TEditor<V>,
+/** Add or remove marks in the selection. */
+export const toggleMark = (
+  editor: TEditor,
   { clear, key }: ToggleMarkOptions
 ) => {
   if (!editor.selection) return;

@@ -1,3 +1,4 @@
+const path = require('path');
 const prettierConfig = require('./prettier.config.js');
 
 module.exports = {
@@ -11,7 +12,7 @@ module.exports = {
   plugins: ['tailwindcss', 'unused-imports', 'prettier'],
   rules: {
     '@next/next/no-html-link-for-pages': 'off',
-    'prettier/prettier': ['warn', prettierConfig],
+    'prettier/prettier': ['warn', { ...prettierConfig }],
     'react/jsx-key': 'off',
     'tailwindcss/classnames-order': 'warn',
     'tailwindcss/no-custom-classname': 'error',
@@ -30,7 +31,7 @@ module.exports = {
   settings: {
     tailwindcss: {
       callees: ['cn', 'cva', 'withCn'],
-      config: 'tailwind.config.js',
+      config: path.join(__dirname, './tailwind.config.js'),
     },
     next: {
       rootDir: ['./'],

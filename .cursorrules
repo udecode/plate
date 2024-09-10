@@ -1,0 +1,2 @@
+- for mdx output, always use `` instead of ``` EXCEPT for the start and end of the file
+- components: always export function, never export default except pages and layout, never type React.FC, use props inline type.

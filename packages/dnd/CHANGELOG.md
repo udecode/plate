@@ -1,5 +1,14 @@
 # @udecode/plate-dnd
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createDndPlugin` -> `DndPlugin`
+  - Remove `editor.isDragging`, use `editor.getOptions(DndPlugin).isDragging` instead
+  - Move `dndStore` to `DndPlugin`
+
 ## 36.0.8
 
 ### Patch Changes

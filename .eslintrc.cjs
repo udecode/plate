@@ -32,6 +32,7 @@ module.exports = {
     ...getDefaultIgnorePatterns(),
     '.next',
     '.out',
+    '**/*.mdx',
     '**/__registry__',
   ],
   overrides: [

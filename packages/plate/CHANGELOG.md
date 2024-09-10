@@ -1,5 +1,44 @@
 # @udecode/plate
 
+## 37.0.8
+
+## 37.0.7
+
+## 37.0.6
+
+## 37.0.5
+
+## 37.0.4
+
+## 37.0.3
+
+## 37.0.2
+
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - NEW `@udecode/plate-layout`
+  - NEW `/react` exports `@udecode/react-hotkeys`
+  - Split build into `@udecode/plate` and `@udecode/plate/react`.
+  - Remove `@udecode/plate-paragraph`
+  - All stores now start with a capital letter
+
+## 36.5.8
+
+## 36.5.7
+
+## 36.5.6
+
+## 36.5.3
+
+## 36.5.2
+
+## 36.4.0
+
+## 36.3.9
+
 ## 36.3.8
 
 ## 36.3.7

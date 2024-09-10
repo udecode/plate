@@ -1,5 +1,19 @@
 # @udecode/slate-utils
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) – Types:
+
+  - Replace `V extends Value` with `E extends TEditor` for improved type inference
+
+## 36.3.9
+
+### Patch Changes
+
+- [#3426](https://github.com/udecode/plate/pull/3426) by [@yf-yang](https://github.com/yf-yang) – feat: `getPointBeforeLocation` - Add `matchByRegex` option
+
 ## 36.3.4
 
 ### Patch Changes

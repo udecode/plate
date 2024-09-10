@@ -1,1597 +1,1028 @@
-# 34.0.0
+For older changelogs, see https://github.com/udecode/plate/blob/main/docs
 
-## @udecode/plate-selection@34.0.0
-- Breaking Change: The `selectedColor` option for `BlockSelectable` has been deprecated. Please use `useBlockSelected` to customize the style of each node component.
+# 37.0.0
 
-- [#3241](https://github.com/udecode/plate/pull/3241) by [@felixfeng33](https://github.com/felixfeng33) – Add logic for the `block-context-menu` and improved the user experience for `block-selection`, such as interactions related to keyboard shortcuts, bug fixes.
-- Starting from this version, a single Cmd+A will no longer select the entire document but will select the entire block instead. Double Cmd+A will use the blockSelection plugin to select all blocks. To disable this behavior, pass handlers: { onKeyDown: null }.
+Migration example: https://github.com/udecode/plate/pull/3480
 
-# 33.0.0
-
-## @udecode/plate-serializer-md@33.0.0
+## @udecode/plate-alignment@37.0.0
 
 ### Major Changes
 
-- [#3125](https://github.com/udecode/plate/pull/3125) by [@zbeyens](https://github.com/zbeyens) –
-  - `serializeMd`: remove `nodes` option. `editor.children` is now serialized
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createAlignPlugin` -> `AlignPlugin`
+  - `setAlign`: remove `key` option
 
-# 32.0.0
-
-None (CI release issue)
-
-# 31.0.0
-
-None (CI release issue)
-
-# 30.0.0
-
-## @udecode/plate-table@30.0.0
+## @udecode/plate-autoformat@37.0.0
 
 ### Major Changes
 
-- [#2867](https://github.com/udecode/plate/pull/2867) by [@12joan](https://github.com/12joan) – Fix: in v28, `TableProvider` was incorrectly shared by all tables in the editor. `TableProvider` must now be rendered as part of `TableElement`.
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createAutoformatPlugin` -> `AutoformatPlugin`
 
-# 29.0.0
-
-## @udecode/plate-utils@29.0.0
-
-### Major Changes
-
-- [#2829](https://github.com/udecode/plate/pull/2829) by [@zbeyens](https://github.com/zbeyens) –
-  - Moved `withProps` to `@udecode/cn`
-  - Moved `PortalBody`, `Text`, `Box`, `createPrimitiveComponent`, `createSlotComponent`, `withProviders` to `@udecode/react-utils`
-  - Removed `getRootProps` (unused)
-
-# 28.0.0
-
-## @udecode/plate-core@28.0.0
+## @udecode/plate-basic-elements@37.0.0
 
 ### Major Changes
 
-- [`822f6f56b`](https://github.com/udecode/plate/commit/822f6f56be526a6e26f904b9e767c0bc09f1e28b) by [@12joan](https://github.com/12joan) –
-  - Remove `{ fn: ... }` workaround for jotai stores that contain functions
-  - Breaking change: `usePlateSelectors`, `usePlateActions` and `usePlateStates` no longer accept generic type arguments. If custom types are required, cast the resulting values at the point of use, or use hooks like `useEditorRef` that still provide generics.
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createBasicElementPlugins` -> `BasicElementsPlugin`
+  - `createBlockquotePlugin` -> `BlockquotePlugin`
+  - `createCodeBlockPlugin` -> `CodeBlockPlugin`
+  - `createHeadingPlugin` -> `HeadingPlugin`
+  - Move paragraph plugin to `@udecode/plate-core`
 
-# 27.0.0
-
-## @udecode/plate-comments@27.0.0
-
-### Major Changes
-
-- [#2763](https://github.com/udecode/plate/pull/2763) by [@12joan](https://github.com/12joan) –
-  - Migrate store to `jotai@2`
-  - Revert the breaking changes to `@udecode/plate-comments` made in 26.0.0
-
-## @udecode/plate-core@27.0.0
+## @udecode/plate-basic-marks@37.0.0
 
 ### Major Changes
 
-- [#2763](https://github.com/udecode/plate/pull/2763) by [@12joan](https://github.com/12joan) –
-  - Migrate store from `jotai@1` to `jotai@2`
-    - New dependency: `jotai-x`. See <https://github.com/udecode/jotai-x>
-    - Accessing a store without an explicit provider component is no longer supported. Attempting to do so will result in a warning in the console: `Tried to access jotai store '${storeName}' outside of a matching provider.`
-  - Upgraded from `zustand@3` to `zustand@4`
-    - See <https://github.com/udecode/zustand-x>
-  - Rename `zustand-x` exports
-    - `StateActions` -> `ZustandStateActions`
-    - `StoreApi` -> `ZustandStoreApi`
-    - `createStore` -> `createZustandStore`
-    - Note that these exports are deprecated and should not be used in new code. They may be removed in a future version of Plate.
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createBasicMarksPlugins` -> `BasicMarksPlugin`
+  - `createBoldPlugin` -> `BoldPlugin`
+  - `createCodePlugin` -> `CodePlugin`
+  - `createItalicPlugin` -> `ItalicPlugin`
+  - `createStrikethroughPlugin` -> `StrikethroughPlugin`
+  - `createSubscriptPlugin` -> `SubscriptPlugin`
+  - `createSuperscriptPlugin` -> `SuperscriptPlugin`
+  - `createUnderlinePlugin` -> `UnderlinePlugin`
+  - All mark plugins removed `hotkey` option. Use `plugin.shortcuts` instead (see plate-core)
 
-## @udecode/plate-resizable@27.0.0
-
-### Major Changes
-
-- [#2763](https://github.com/udecode/plate/pull/2763) by [@12joan](https://github.com/12joan) –
-  - Migrate store to `jotai@2`
-  - Resizable components must now be wrapped inside a `ResizableProvider`
-
-# 26.0.0
-
-## @udecode/plate-comments@26.0.0
+## @udecode/plate-block-quote@37.0.0
 
 ### Major Changes
 
-- [#2760](https://github.com/udecode/plate/pull/2760) by [@12joan](https://github.com/12joan) –
-  - Renamed the `comments` prop on CommentsProvider to `initialComments` to reflect the fact that updating its value after the initial render has no effect
-  - Removed the following props from CommentsProvider, since they represent the internal state of the comments plugin and should not be controlled externally:
-    - `activeCommentId`
-    - `addingCommentId`
-    - `newValue`
-    - `focusTextarea`
-  - The following props on CommentsProvider can now be updated after the initial render (whereas prior to this version, doing so had no effect):
-    - `myUserId`
-    - `users`
-    - `onCommentAdd`
-    - `onCommentUpdate`
-    - `onCommentDelete`
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createBlockquotePlugin` -> `BlockquotePlugin`
 
-## @udecode/plate-serializer-html@26.0.0
+## @udecode/plate-break@37.0.0
 
 ### Major Changes
 
-- [#2733](https://github.com/udecode/plate/pull/2733) by [@dimaanj](https://github.com/dimaanj) –
-  - [Breaking] `serializeHtml`: replaced option `slateProps` by `plateProps`.
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createSoftBreakPlugin` -> `SoftBreakPlugin`
+  - `createExitBreakPlugin` -> `ExitBreakPlugin`
+  - `createSingleLinePlugin` -> `SingleLinePlugin`
 
-# 25.0.1
-
-## @udecode/plate-core@25.0.1
-
-### Major Changes
-
-- [#2729](https://github.com/udecode/plate/pull/2729) by [@12joan](https://github.com/12joan) – **This is a breaking change meant to be part of v25, hence the patch.**
-  On `deserializeHtml`, replace `stripWhitespace` with `collapseWhiteSpace`, defaulting to true. The `collapseWhiteSpace` option aims to parse white space in HTML according to the HTML specification, ensuring greater accuracy when pasting HTML from browsers.
-
-## @udecode/plate-comments@25.0.0
+## @udecode/plate-caption@37.0.0
 
 ### Major Changes
 
-- [#2725](https://github.com/udecode/plate/pull/2725) by [@EandrewJones](https://github.com/EandrewJones) – Remove `useCommentValue`, which was redundant with the hooks applied automatically in `CommentEditTextarea.tsx`.
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createCaptionPlugin` -> `CaptionPlugin`
+  - `CaptionPlugin` options:
+    - Rename `pluginKeys` to `plugins`
+    - Rename `focusEndCaptionPath` to `focusEndPath`
+    - Rename `focusStartCaptionPath` to `focusStartPath`
+    - Rename `showCaptionId` to `visibleId`
+    - Rename `isShow` to `isVisible`
+  - Move `captionGlobalStore` to `CaptionPlugin`
 
-# 24.0.0
-
-## @udecode/plate-core@24.0.0
-
-### Major Changes
-
-- [#2629](https://github.com/udecode/plate/pull/2629) by [@zbeyens](https://github.com/zbeyens) –
-
-  - [**Breaking**] Rename `Plate` to `PlateContent`.
-  - [**Breaking**] Rename `PlateProvider` to `Plate`.
-  - [**Breaking**] Rendering `PlateContent` is now required in `Plate`. This allows you to choose where to render the editor next to other components like toolbar. Example:
-
-  ```tsx
-  // Before
-  <Plate />
-  // or
-  <PlateProvider>
-    <Plate />
-  </PlateProvider>
-
-  // After
-  <Plate>
-    <PlateContent />
-  </Plate>
-  ```
-
-  - [**Breaking**] Remove provider props such as `plugins` from `PlateContent`. These props should be passed to `Plate`.
-  - [**Breaking**] Remove `editableProps` prop from `PlateContent`. Move these as`PlateContent` props.
-  - [**Breaking**] Remove `children` prop from `PlateContent`. Render instead these components after `PlateContent`.
-  - [**Breaking**] Remove `firstChildren` prop from `PlateContent`. Render instead these components before `PlateContent`.
-  - [**Breaking**] Remove `editableRef` prop from `PlateContent`. Use `ref` instead.
-  - [**Breaking**] Remove `withPlateProvider`.
-  - [**Breaking**] Rename `usePlateEditorRef` to `useEditorRef`.
-  - [**Breaking**] Rename `usePlateEditorState` to `useEditorState`.
-  - [**Breaking**] Rename `usePlateReadOnly` to `useEditorReadOnly`. This hook can be used below `Plate` while `useReadOnly` can only be used in node components.
-  - [**Breaking**] Rename `usePlateSelection` to `useEditorSelection`.
-  - [**Breaking**] Rename store attributes `keyDecorate`, `keyEditor` and `keySelection` to `versionDecorate`, `versionEditor` and `versionSelection`. These are now numbers incremented on each change.
-  - [**Breaking**] Rename store attribute `isRendered` to `isMounted`.
-
-# 23.0.0
-
-## @udecode/plate-media@23.0.0
+## @udecode/plate-cloud@37.0.0
 
 ### Major Changes
 
-- [#2537](https://github.com/udecode/plate/pull/2537) by [@haydencarlson](https://github.com/haydencarlson) – `MediaEmbedElement` is now more headless with a smaller bundle size.
-  Update the following components:
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createCloudPlugin` -> `CloudPlugin`
 
-  - `npx @udecode/plate-ui@latest add media-embed-element`
-    - now uses `react-lite-youtube-embed` for YouTube videos.
-    - now uses `react-tweet` for Twitter tweets.
-  - `npx @udecode/plate-ui@latest add image-element`
+## @udecode/plate-code-block@37.0.0
 
-  Breaking changes:
+### Major Changes
 
-  - Moved `Resizable` to `@udecode/plate-resizable`
-  - Moved `Caption`, `CaptionTextarea` to `@udecode/plate-caption`
-  - Removed `useMediaEmbed`, `MediaEmbedVideo`, `MediaEmbedTweet`, `Tweet`, `parseMediaUrl`, `mediaStore`
-  - Removed `@udecode/resizable`, `scriptjs`, `react-textarea-autosize` dependencies
-  - `MediaPlugin`
-    - removed `rules`. Use `parsers` option instead.
-    - removed `disableCaption`. Use `createCaptionPlugin` instead.
-  - Caption is now a separate plugin. Install `@udecode/plate-caption` and add it to your plugins:
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createCodeBlockPlugin` -> `CodeBlockPlugin`
+  - NEW `CodeLinePlugin`
+  - NEW `CodeSyntaxPlugin`
+  - Remove `getCodeLineType`, use `editor.getType(CodeLinePlugin)` instead
 
-  ```ts
-  import { ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from '@udecode/plate-media';
+## @udecode/plate-combobox@37.0.0
 
-  createCaptionPlugin({
-    options: { pluginKeys: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED] },
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - Split build into `@udecode/plate-combobox` and `@udecode/plate-combobox/react`.
+
+## @udecode/plate-comments@37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createCommentsPlugin` -> `CommentsPlugin`
+  - Move `commentsStore` to `CommentsPlugin`
+  - Remove `CommentsProvider` and its hooks
+  - Remove `useCommentsStates` (replaced by direct option access)
+  - Remove `useCommentsSelectors` (replaced by option selectors)
+  - Remove `useCommentsActions` (replaced by api methods)
+  - Replace `useUpdateComment` with `api.comment.updateComment`
+  - Replace `useAddRawComment` with `api.comment.addRawComment`
+  - Replace `useAddComment` with `api.comment.addComment`
+  - Replace `useRemoveComment` with `api.comment.removeComment`
+  - Replace `useResetNewCommentValue` with `api.comment.resetNewCommentValue`
+  - Replace `useNewCommentText` with `options.newText`
+  - Replace `useMyUser` with `options.myUser`
+  - Replace `useUserById` with `options.userById`
+  - Replace `useCommentById` with `options.commentById`
+  - Replace `useActiveComment` with `options.activeComment`
+  - Replace `useAddCommentMark` with `insert.comment`
+
+## @udecode/plate-common@37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - Split build into `@udecode/plate-common` and `@udecode/plate-common/react`.
+  - NEW `/react` exports `@udecode/react-hotkeys`
+
+## @udecode/plate-core@37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) – **Plugin System**:
+
+  Decoupling React in all packages:
+
+  - Split build into `@udecode/plate-core` and `@udecode/plate-core/react`
+  - NEW `SlatePlugin` as the foundation for all plugins
+  - `PlatePlugin` extends `SlatePlugin` with React-specific plugin features
+
+  **Plugin Creation**:
+
+  - Remove `createPluginFactory`
+  - NEW `createSlatePlugin`: vanilla
+  - NEW `createTSlatePlugin`: vanilla explicitly typed
+  - NEW `createPlatePlugin`: React
+  - NEW `createTPlatePlugin`: React explicitly typed
+  - NEW `toPlatePlugin`: extend a vanilla plugin into a React plugin
+  - NEW `toTPlatePlugin`: extend a vanilla plugin into a React plugin explicitly typed
+  - Rename all plugins starting with `createNamePlugin()` to `NamePlugin`
+
+  Before:
+
+  ```typescript
+  const MyPluginFactory = createPluginFactory({
+    key: 'myPlugin',
+    isElement: true,
+    component: MyComponent,
   });
+  const plugin = MyPluginFactory();
   ```
 
-## @udecode/plate-resizable@23.0.0
-
-### Major Changes
-
-- [#2541](https://github.com/udecode/plate/pull/2541) by [@zbeyens](https://github.com/zbeyens) –
-  - Package renamed to `@udecode/plate-resizable`.
-  - `ResizeHandle` is now fully headless: no style is applied by default. Add your own `Resizable`, `ResizeHandle` components:
-    - `npx @udecode/plate-ui@latest add resizable`
-
-## @udecode/plate-table@23.0
-
-### Major Changes
-
-- Removed `TableCellElementResizable`. Use `useTableCellElementResizableState` and `useTableCellElementResizable` instead.
-
-# 22.0.0
-
-Headless UI.
-
-## @udecode/plate-ui@22.0.0
-
-### Major Changes
-
-- [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – This package is now a CLI to generate components. Install it as a dev dependency. See <https://platejs.org/docs/components/cli>.
-
-Migration:
-
-- [Manual installation](https://platejs.org/docs/components/installation/manual).
-- For each unresolved import not listed in the following major changes (components from `@udecode/plate-ui-x`), generate the component using the [CLI](https://platejs.org/docs/components/cli).
-
-## @udecode/plate-comments@22.0.0
-
-### Major Changes
-
-- [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Removed:
-  - `AccountCircleIcon`
-  - `CheckIcon`
-  - `MoreVertIcon`
-  - `RefreshIcon`
-  - `AvatarImage`
-  - `CommentLinkButton`
-  - `CommentLinkDialog`
-  - `CommentLinkDialogCloseButton`
-  - `CommentLinkDialogCopyLink`
-  - `CommentLinkDialogInput`
-  - `PlateCommentLeaf` for `useCommentLeafState`
-
-## @udecode/plate-dnd@22.0.0
-
-### Major Changes
-
-- [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Removed:
-  - `Draggable`
-  - `DraggableBlock`
-  - `DraggableBlockToolbar`
-  - `DraggableBlockToolbarWrapper`
-  - `DraggableDropline`
-  - `DraggableGutterLeftProps`
-  - `DraggableRoot`
-  - `DragHandle`
-
-## @udecode/plate-link@22.0.0
-
-### Major Changes
-
-- [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Removed:
-  - `FloatingLink`
-  - `FloatingLinkEditButton`
-  - `FloatingLinkTextInput`
-  - `UnlinkButton`
-  - `LaunchIcon`
-  - `Link`
-  - `LinkIcon`
-  - `LinkOffIcon`
-  - `ShortTextIcon`
-
-## @udecode/plate-media@22.0.0
-
-### Major Changes
-
-- [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Removed:
-  - `MediaEmbed`
-
-## @udecode/plate@22.0.0
-
-### Major Changes
-
-- [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Plate 2.0 – Headless UI.
-  Read the docs about the new UI pattern: <https://platejs.org/docs/components>.
-
-  - Removed `@udecode/plate-ui` dependency.
-  - Removed `@udecode/plate-emoji` dependency. You can install it separately.
-  - Removed `styled-components` peerDependency.
-
-  Replaced `@udecode/plate-headless` dependency (deprecated) by:
-
-  - `@udecode/plate-alignment`
-  - `@udecode/plate-autoformat`
-  - `@udecode/plate-basic-elements`
-  - `@udecode/plate-basic-marks`
-  - `@udecode/plate-block-quote`
-  - `@udecode/plate-break`
-  - `@udecode/plate-code-block`
-  - `@udecode/plate-combobox`
-  - `@udecode/plate-comments`
-  - `@udecode/plate-common`
-  - `@udecode/plate-find-replace`
-  - `@udecode/plate-floating`
-  - `@udecode/plate-font`
-  - `@udecode/plate-heading`
-  - `@udecode/plate-highlight`
-  - `@udecode/plate-horizontal-rule`
-  - `@udecode/plate-indent`
-  - `@udecode/plate-indent-list`
-  - `@udecode/plate-kbd`
-  - `@udecode/plate-line-height`
-  - `@udecode/plate-link`
-  - `@udecode/plate-list`
-  - `@udecode/plate-media`
-  - `@udecode/plate-mention`
-  - `@udecode/plate-node-id`
-  - `@udecode/plate-normalizers`
-  - `@udecode/plate-paragraph`
-  - `@udecode/plate-reset-node`
-  - `@udecode/plate-select`
-  - `@udecode/plate-serializer-csv`
-  - `@udecode/plate-serializer-docx`
-  - `@udecode/plate-serializer-html`
-  - `@udecode/plate-serializer-md`
-  - `@udecode/plate-suggestion`
-  - `@udecode/plate-tabbable`
-  - `@udecode/plate-table`
-  - `@udecode/plate-trailing-block`
-  - `@udecode/resizable`
-
-## @udecode/plate-utils@22.0.0
-
-### Major Changes
-
-- [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Upgraded peer dependencies:
-  - `slate-react: >=0.95.0`
-    Removed:
-  - `useElementPrpos`
-  - `useWrapElement`
-  - `createComponentAs`
-  - `createElementAs`
-
-## @udecode/plate-table@22.0.0
-
-### Major Changes
-
-- [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Removed:
-  - `TableCellElement`
-  - `TableCellElementResizableWrapper`
-  - `TableCellElementRoot`
-  - `TableElement`
-  - `TableElementCol`
-  - `TableElementColGroup`
-  - `TableElementRoot`
-  - `TableElementTBody`
-  - `TableRowElement`
-  - `ArrowDropDownCircleIcon`
-  - `BorderAllIcon`
-  - `BorderBottomIcon`
-  - `BorderLeftIcon`
-  - `BorderNoneIcon`
-  - `BorderOuterIcon`
-  - `BorderRightIcon`
-  - `BorderTopIcon`
-
-# 21.0.0
-
-## @udecode/slate@21.0.0
-
-### Major Changes
-
-- [#2369](https://github.com/udecode/plate/pull/2369) by [@zbeyens](https://github.com/zbeyens) – Support `slate@0.94.0`, `slate-react@0.94.0` and `slate-history@0.93.0` by upgrading the peer dependencies.
-
-# 20.0.0
-
-## @udecode/plate-core@20.0.0
-
-### Major Changes
-
-- [`0077402`](https://github.com/udecode/plate/commit/00774029236d37737abdadf49b074e613e290792) by [@zbeyens](https://github.com/zbeyens) –
-  - This package has been split into multiple packages for separation of concerns and decoupled versioning:
-    - `@udecode/utils` is a collection of miscellaneous utilities. Can be used by any project.
-    - `@udecode/slate` is a collection of `slate` experimental features and bug fixes that may be moved into `slate` one day. It's essentially composed of the generic types. Can be used by vanilla `slate` consumers without plate.
-    - `@udecode/slate-react` is a collection of `slate-react` experimental features and bug fixes that that may be moved into `slate-react` one day. It's essentially composed of the generic types. Can be used by vanilla `slate-react` consumers without plate.
-    - `@udecode/plate-core` is the minimalistic core of plate. It essentially includes `Plate`, `PlateProvider` and their dependencies. Note this package is not dependent on the `*-utils` packages.
-    - `@udecode/slate-utils` is a collection of utils depending on `@udecode/slate`. Can be used by vanilla `slate` consumers without plate.
-    - `@udecode/plate-utils` is a collection of utils depending on `@udecode/slate-react` and `@udecode/plate-core`
-    - `@udecode/plate-common` re-exports the 6 previous packages and is a dependency of all the other packages. It's basically replacing `@udecore/plate-core` as a bundle.
-  - Removed `getPreventDefaultHandler` since it is no longer needed.
-    **Migration**:
-    - If using `@udecode/plate` or `@udecode/plate-headless`: none
-    - Else: find & replace `@udecode/plate-core` by `@udecode/plate-common`
-
-## @udecode/plate-link@20.0.0
-
-### Major Changes
-
-- [#2240](https://github.com/udecode/plate/pull/2240) by [@OliverWales](https://github.com/OliverWales) –
-  - Add `allowedSchemes` plugin option
-    - Any URL schemes other than `http(s)`, `mailto` and `tel` must be added to `allowedSchemes`, otherwise they will not be included in links
-
-## @udecode/plate-table@20.0.0
-
-### Major Changes
-
-- [#2251](https://github.com/udecode/plate/pull/2251) by [@zbeyens](https://github.com/zbeyens) –
-  - `TablePlugin` option `disableUnsetSingleColSize` has been renamed and inverted into `enableUnsetSingleColSize`. New default is disabled. **Migration**:
-    - if using `disableUnsetSingleColSize: true`, the option can be removed
-    - if using `disableUnsetSingleColSize: false`, use `enableUnsetSingleColSize: true`
-  - `getTableColumnIndex` second parameter type is now: `cellNode: TElement`
-
-## @udecode/plate-ui-dnd@20.0.0
-
-### Major Changes
-
-- [#2237](https://github.com/udecode/plate/pull/2237) by [@tmorane](https://github.com/tmorane) – Unstyled logic has been moved to `@udecode/plate-dnd`
-
-  ```ts
-  // before
-  import { createDndPlugin } from '@udecode/plate-ui-dnd';
-
-  // after
-  import { createDndPlugin } from '@udecode/plate-dnd';
-  ```
-
-  Only `withPlateDraggable`, `withPlateDraggables` and `PlateDraggable` are left in `@udecode/plate-ui-dnd`.
-  Renamed:
-
-  - `withDraggables` -> `withPlateDraggables`. In the second parameter, draggable props options have been moved under `draggableProps`:
-
-  ```tsx
-  // before
-  {
-    onRenderDragHandle: () => {}
-    styles,
-  }
-
-  // after
-  {
-    draggableProps: {
-      onRenderDragHandle: () => {}
-      styles,
-    },
-  }
-  ```
-
-## @udecode/plate-ui-table@20.0.0
-
-### Major Changes
-
-- [#2251](https://github.com/udecode/plate/pull/2251) by [@zbeyens](https://github.com/zbeyens) – Headless components and hooks moved to `@udecode/plate-table`, so the following components have been renamed:
-  - `TableElement` -> `PlateTableElement`
-    - removed table border to set it at the cell level
-    - `margin-left: 1px` to support cell borders
-    - if all columns have a fixed size, the table will have a dynamic width instead of always 100%
-  - `TableRowElement` -> `PlateTableRowElement`
-  - `TableCellElement` -> `PlateTableCellElement`
-    - removed td border in favor of td::before. The latter is responsible of having the border and the selected background color.
-    - z-index: td is 0, td::before is 10, td::before in selected state is 20, handle is 30, handle resize is 40.
-    - removed `selectedCell` div in favor of `::before`
-  - `TablePopover` -> `PlateTablePopover`
-    Styled props have been removed.
-
-# 19.0.0
-
-## @udecode/plate-core@19.0.0
-
-### Major Changes
-
-- [#2097](https://github.com/udecode/plate/pull/2097) by [@zbeyens](https://github.com/zbeyens) –
-  - upgrade deps, including typescript support for the new editor methods:
-  ```json
-  // from
-  "slate": "0.78.0",
-  "slate-history": "0.66.0",
-  "slate-react": "0.79.0"
-  // to
-  "slate": "0.87.0",
-  "slate-history": "0.86.0",
-  "slate-react": "0.88.0"
-  ```
-
-## @udecode/plate@19.0.0
-
-### Major Changes
-
-- [#2097](https://github.com/udecode/plate/pull/2097) by [@zbeyens](https://github.com/zbeyens) –
-  - due to esm issues, dnd plugin is not part of plate package anymore. To use it, install `@udecode/plate-ui-dnd`
-  ```ts
-  // before
-  import { createDndPlugin } from '@udecode/plate';
-  // after
-  import { createDndPlugin } from '@udecode/plate-ui-dnd';
-  ```
-  - upgrade peerDeps:
-  ```json
-  // from
-  "slate": ">=0.78.0",
-  "slate-history": ">=0.66.0",
-  "slate-react": ">=0.79.0"
-  // to
-  "slate": ">=0.87.0",
-  "slate-history": ">=0.86.0",
-  "slate-react": ">=0.88.0"
-  ```
-
-# 18.0.0
-
-## @udecode/plate-headless@18.0.0
-
-### Major Changes
-
-- [#1889](https://github.com/udecode/plate/pull/1889) by [@zbeyens](https://github.com/zbeyens) –
-  - `@udecode/plate-selection` package moved out from `@udecode/plate` because of <https://github.com/Simonwep/selection/issues/124>
-  - Migration:
-    - If not using `createBlockSelectionPlugin`, no migration is needed.
-    - Otherwise, install `@udecode/plate-selection` and import `createBlockSelectionPlugin` from that package.
-
-# 17.0.0
-
-## @udecode/plate-core@17.0.0
-
-### Major Changes
-
-- [#1871](https://github.com/udecode/plate/pull/1871) by [@zbeyens](https://github.com/zbeyens) –
-
-  - `usePlateStore`:
-    - Plate no longer has a global store containing all the editor states (zustand). Each editor store is now defined in a React context tree ([jotai](https://github.com/pmndrs/jotai)). If you need to access all the editor states at once (as you could do before), you'll need to build that layer yourself.
-    - Plate store is now accessible only below `PlateProvider` or `Plate` (provider-less mode). It means it's no longer accessible outside of a Plate React tree. If you have such use-case, you'll need to build your own layer to share the state between your components.
-    - You can nest many `PlateProvider` with different scopes (`id` prop). Default scope is `PLATE_SCOPE`
-    - Hook usage:
-      - `const value = usePlateSelectors(id).value()`
-      - `const setValue = usePlateActions(id).value()`
-      - `const [value, setValue] = usePlateStates(id).value()`
-    - removed from the store:
-      - `editableProps`, use the props instead
-      - `enabled`, use conditional rendering instead
-      - `isReady`, no point anymore as it's now directly ready
-    - `useEventPlateId` is still used to get the last focused editor id.
-    - Functions are stored in an object `{ fn: <here> }`
-      - `const setOnChange = usePlateActions(id).onChange()`
-      - `setOnChange({ fn: newOnChange })`
-  - `Plate`
-    - if rendered below `PlateProvider`, it will render `PlateSlate > PlateEditable`
-    - if rendered without `PlateProvider`, it will render `PlateProvider > PlateSlate > PlateEditable`
-    - default `id` is no longer `main`, it's now `PLATE_SCOPE`
-  - `PlateProvider`
-    - Each provider has an optional `scope`, so you can have multiple providers in the same React tree and use the plate hooks with the corresponding `scope`.
-    - Plate effects are now run in `PlateProvider`
-      - `initialValue, value, editor, normalizeInitialValue, normalizeEditor` are no longer defined in an effect (SSR support)
-    - Props:
-      - now extends the previous `Plate` props
-      - if using `PlateProvider`, set the provider props on it instead of `Plate`. `Plate` would only need `editableProps` and `PlateEditableExtendedProps`
-      - if not using it, set the provider props on `Plate`
-
-  ```tsx
-  // Before
-  <PlateProvider>
-    <Toolbar>
-      <AlignToolbarButtons />
-    </Toolbar>
-
-    <Plate<MyValue> editableProps={editableProps} <MyValue> initialValue={alignValue} plugins={plugins} />
-  </PlateProvider>
-
-  // After
-  <PlateProvider<MyValue> initialValue={alignValue} plugins={plugins}>
-    <Toolbar>
-      <AlignToolbarButtons />
-    </Toolbar>
-
-    <Plate<MyValue> editableProps={editableProps} />
-  </PlateProvider>
-
-  // After (provider-less mode)
-  <Plate<MyValue> editableProps={editableProps} initialValue={alignValue} plugins={plugins} />
-  ```
-
-  - types:
-    - store `editor` is no longer nullable
-    - store `value` is no longer nullable
-    - `id` type is now `PlateId`
-  - renamed:
-    - `SCOPE_PLATE` to `PLATE_SCOPE`
-    - `getEventEditorId` to `getEventPlateId`
-    - `getPlateActions().resetEditor` to `useResetPlateEditor()`
-  - removed:
-    - `plateIdAtom`
-    - `usePlateId` for `usePlateSelectors().id()`
-    - `EditablePlugins` for `PlateEditable`
-    - `SlateChildren`
-    - `PlateEventProvider` for `PlateProvider`
-    - `withPlateEventProvider` for `withPlateProvider`
-    - `usePlate`
-    - `usePlatesStoreEffect`
-    - `useEventEditorId` for `useEventPlateId`
-    - `platesStore, platesActions, platesSelectors, usePlatesSelectors`
-    - `getPlateActions` for `usePlateActions`
-    - `getPlateSelectors` for `usePlateSelectors`
-    - `getPlateEditorRef` for `usePlateEditorRef`
-    - `getPlateStore, usePlateStore`
-    - `EditorId` for `PlateId`
-
-## @udecode/plate-code-block@17.0.0
-
-### Major Changes
-
-- [#1871](https://github.com/udecode/plate/pull/1871) by [@zbeyens](https://github.com/zbeyens) –
-  - Removed these imports because of build errors:
-    - `prismjs/components/prism-django`
-    - `prismjs/components/prism-ejs`
-    - `prismjs/components/prism-php`
-
-## @udecode/plate-ui@17.0.0
-
-### Major Changes
-
-- [#1871](https://github.com/udecode/plate/pull/1871) by [@zbeyens](https://github.com/zbeyens) –
-  - Removed `[ELEMENT_CODE_BLOCK]: CodeBlockElement` from Plate UI. You can define it in your app.
-
-# 16.0.0
-
-## @udecode/plate@16.0.0
-
-## @udecode/plate-headless@16.0.0
-
-### Major Changes
-
-- [#1721](https://github.com/udecode/plate/pull/1721) by [@zbeyens](https://github.com/zbeyens) –
-  - deprecate `@udecode/plate-image` and `@udecode/plate-media-embed`, those got merged into `@udecode/plate-media`
-
-## @udecode/plate-media@16.0.0
-
-### Major Changes
-
-- [#1721](https://github.com/udecode/plate/pull/1721) by [@zbeyens](https://github.com/zbeyens) –
-  - removed:
-    - `useImageElement` for `useElement`
-    - `MediaEmbedUrlInput` for `FloatingMediaUrlInput`
-    - `parseEmbedUrl` for `parseMediaUrl`
-    - `EmbedProviders`
-  - renamed:
-    - `ImageImg` to `Image`
-    - `ImageCaptionTextarea` to `CaptionTextarea`
-    - `useImageCaptionString` to `useCaptionString`
-    - `ImageResizable` to `Resizable`
-
-## @udecode/plate-ui-table@16.0.0
-
-### Major Changes
-
-- [#1721](https://github.com/udecode/plate/pull/1721) by [@zbeyens](https://github.com/zbeyens) –
-- `TableElementBase` props:
-  - replace `onRenderContainer` by `floatingOptions` or by replacing `ELEMENT_TABLE` in the `createPlateUI` function.
-- `TablePopover` is now a floating instead of tippy
-- deps:
-  - replaced `plate-ui-popover` by `plate-floating`
-
-## @udecode/plate-ui@16.0.0
-
-### Major Changes
-
-- [#1721](https://github.com/udecode/plate/pull/1721) by [@zbeyens](https://github.com/zbeyens) –
-- deprecate `@udecode/plate-ui-popover` for `@udecode/plate-floating`
-
-# 15.0.0
-
-## @udecode/plate-combobox@15.0.0
-
-### Major Changes
-
-- [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
-  - deps:
-    - replaced `@udecode/plate-ui-popper` by `@udecode/plate-floating`
-  - `comboboxStore`:
-    - removed `popperContainer`, use `floatingOptions` instead
-    - removed `popperOptions`, use `floatingOptions` instead
-
-## @udecode/plate-link@15.0.0
-
-### Major Changes
-
-- [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
-  - `createLinkPlugin`
-    - removed `onKeyDownLink` for floating link
-    - removed `hotkey` for `triggerFloatingLinkHotkeys`
-  - removed:
-    - `getAndUpsertLink` for `upsertLink`
-    - `upsertLinkAtSelection` for `upsertLink`
-  - `LinkToolbarButton`:
-    - `onClick` now calls `triggerFloatingLink`
-
-## @udecode/plate-table@15.0.0
-
-### Major Changes
-
-- [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
-- remove `addRow` for `insertTableRow`
-- remove `addColumn` for `insertTableColumn`
-
-## @udecode/plate@15.0.0
-
-### Major Changes
-
-- [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
-  - remove `@udecode/plate-ui-popper` dep for `@udecode/plate-floating`
-
-## @udecode/plate-ui-button@15.0.0
-
-### Major Changes
-
-- [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
-  - moved `Button` to `@udecode/plate-button`
-  - `Button` is now unstyled
-
-## @udecode/plate-ui-popper@15.0.0
-
-### Major Changes
-
-- [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
-- deprecated, use instead `@udecode/plate-floating`
-
-## @udecode/plate-ui-toolbar@15.0.0
-
-### Major Changes
-
-- [#1677](https://github.com/udecode/plate/pull/1677) by [@zbeyens](https://github.com/zbeyens) –
-- remove `@udecode/plate-ui-popper` and `react-popper` deps for `@udecode/plate-floating`
-- `BalloonToolbarProps`:
-  - removed `popperOptions` for `floatingOptions`
-- remove `useBalloonToolbarPopper` for `useFloatingToolbar`
-
-# 14.0.0
-
-## @udecode/plate-core@14.0.0
-
-### Major Changes
-
-- [#1633](https://github.com/udecode/plate/pull/1633) by [@tjramage](https://github.com/tjramage) – Moved `serializeHtml` and its utils to `@udecode/plate-serializer-html` as it has a new dependency: [html-entities](https://www.npmjs.com/package/html-entities).
-  - If you're using `@udecode/plate`, no migration is needed
-  - Otherwise, import it from `@udecode/plate-serializer-html`
-
-# 13.0.0
-
-## @udecode/plate-core@13.1.0
-
-### Major Changes
-
-- `Plate` children are now rendered as last children of `Slate` (previously first children). To reproduce the previous behavior, move `children` to `firstChildren`
-
-## @udecode/plate@13.0.0
-
-## @udecode/plate-headless@13.0.0
-
-### Major Changes
-
-- [#1585](https://github.com/udecode/plate/pull/1585) by [@zbeyens](https://github.com/zbeyens) – Removed `@udecode/plate-juice` from `@udecode/plate`. Install it if using `@udecode/plate-serializer-docx`:
-  ```bash
-  yarn install @udecode/plate-juice
-  ```
-
-## @udecode/plate@13.0.0
-
-## @udecode/plate-ui@13.0.0
-
-## @udecode/plate-ui-dnd@13.0.0
-
-### Major Changes
-
-- [#1585](https://github.com/udecode/plate/pull/1585) by [@zbeyens](https://github.com/zbeyens) – Moved `react-dnd react-dnd-html5-backend` deps to peer-dependencies. Install these if using `@udecode/plate-ui-dnd`:
-  ```bash
-  yarn install react-dnd react-dnd-html5-backend
-  ```
-
-# 12.0.0
-
-## @udecode/plate-ui-dnd@12.0.0
-
-### Major Changes
-
-- [#1579](https://github.com/udecode/plate/pull/1579) by [@zbeyens](https://github.com/zbeyens) – renamed:
-- `useDndBlock` options:
-  - `blockRef` -> `nodeRef`
-  - `removePreview` -> `preview.disable`
-- `useDropBlockOnEditor` -> `useDropBlock`
-- `useDropBlock` options:
-  - `blockRef` -> `nodeRef`
-  - `setDropLine` -> `onChangeDropLine`
-    signature change:
-- `getHoverDirection`:
-
-```tsx
-// before
-(
-  dragItem: DragItemBlock,
-  monitor: DropTargetMonitor,
-  ref: any,
-  hoverId: string
-)
-// after
-{
-  dragItem,
-  id,
-  monitor,
-  nodeRef,
-}: GetHoverDirectionOptions
-```
-
-# 11.0.0
-
-## @udecode/plate-core@11.0.6
-
-### Major Changes
-
-- [#1500](https://github.com/udecode/plate/pull/1500) by [@zbeyens](https://github.com/zbeyens) – Thanks @ianstormtaylor for the initial work on https://github.com/ianstormtaylor/slate/pull/4177.
-
-  This release includes major changes to plate and slate types:
-
-  - Changing the `TEditor` type to be `TEditor<V>` where `V` represents the "value" being edited by Slate. In the most generic editor, `V` would be equivalent to `TElement[]` (since that is what is accepted as children of the editor). But in a custom editor, you might have `TEditor<Array<Paragraph | Quote>>`.
-  - Other `TEditor`-and-`TNode`-related methods have been also made generic, so for example if you use `getLeafNode(editor, path)` it knows that the return value is a `TText` node. But more specifically, it knows that it is the text node of the type you've defined in your custom elements (with any marks you've defined).
-  - This replaces the declaration merging approach, and provides some benefits. One of the drawbacks to declaration merging was that it was impossible to know whether you were dealing with an "unknown" or "known" element, since the underlying type was changed. Similarly, having two editors on the page with different schemas wasn't possible to represent. Hopefully this approach with generics will be able to smoothly replace the declaration merging approach. (While being easy to migrate to, since you can pass those same custom element definitions into `TEditor` still.)
-
-**Define your custom types**
-
-- Follow https://platejs.org/docs/typescript example.
-
-**Slate types**
-
-Those Slate types should be replaced by the new types:
-
-- `Editor` -> `TEditor<V extends Value = Value>`
-  - Note that `TEditor` methods are not typed based on `Value` as it would introduce a circular dependency. You can use `getTEditor(editor)` to get the editor with typed methods.
-- `ReactEditor` -> `TReactEditor<V extends Value = Value>`
-- `HistoryEditor` -> `THistoryEditor<V extends Value = Value>`
-- `EditableProps` -> `TEditableProps<V extends Value = Value>`
-- `Node` -> `TNode`
-- `Element` -> `TElement`
-- `Text` -> `TText`
-- `NodeEntry` -> `TNodeEntry`
-- `NodeProps` -> `TNodeProps`
-
-**Slate functions**
-
-Those Slate functions should be replaced by the new typed ones:
-
-- As the new editor type is not matching the slate ones, all `Transforms`, `Editor`, `Node`, `Element`, `Text`, `HistoryEditor`, `ReactEditor` functions should be replaced: The whole API has been typed into Plate core. See https://github.com/udecode/plate/packages/core/src/slate
-- `createEditor` -> `createTEditor`
-- `withReact` -> `withTReact`
-- `withHistory` -> `withTHistory`
-
-**Generic types**
-
-- `<T = {}>` could be used to extend the editor type. It is now replaced by `<E extends PlateEditor<V> = PlateEditor<V>>` to customize the whole editor type.
-- When the plugin type is customizable, these generics are used: `<P = PluginOptions, V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>`, where `P` is the plugin options type.
-- `Editor` functions are using `<V extends Value>` generic, where `V` can be a custom editor value type used in `PlateEditor<V>`.
-- `Editor` functions returning a node are using `<N extends ENode<V>, V extends Value = Value>` generics, where `N` can be a custom returned node type.
-- `Editor` callbacks (e.g. a plugin option) are using `<V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>` generics, where `E` can be a custom editor type.
-- `Node` functions returning a node are using `<N extends Node, R extends TNode = TNode>` generics.
-- These generics are used by `<V extends Value, K extends keyof EMarks<V>>`: `getMarks`, `isMarkActive`, `removeMark`, `setMarks`, `ToggleMarkPlugin`, `addMark`, `removeEditorMark`
-- `WithOverride` is a special type case as it can return a new editor type:
-
-  ```tsx
-  // before
-  export type WithOverride<T = {}, P = {}> = (
-    editor: PlateEditor<T>,
-    plugin: WithPlatePlugin<T, P>
-  ) => PlateEditor<T>;
-
-  // after - where E is the Editor type (input), and EE is the Extended Editor type (output)
-  export type WithOverride<
-    P = PluginOptions,
-    V extends Value = Value,
-    E extends PlateEditor<V> = PlateEditor<V>,
-    EE extends E = E,
-  > = (editor: E, plugin: WithPlatePlugin<P, V, E>) => EE;
-  ```
-
-- `type TEditor<V extends Value>`
-- `type PlateEditor<V extends Value>`
-
-**Renamed functions**
-
-- `getAbove` -> `getAboveNode`
-- `getParent` -> `getParentNode`
-- `getText` -> `getEditorString`
-- `getLastNode` -> `getLastNodeByLevel`
-- `getPointBefore` -> `getPointBeforeLocation`
-- `getNodes` -> `getNodeEntries`
-- `isStart` -> `isStartPoint`
-- `isEnd` -> `isEndPoint`
-
-**Replaced types**
-
-Removing node props types in favor of element types (same props + extends `TElement`). You can use `TNodeProps` to get the node data (props).
-
-- `LinkNodeData` -> `TLinkElement`
-- `ImageNodeData` -> `TImageElement`
-- `TableNodeData` -> `TTableElement`
-- `MentionNodeData` -> `TMentionElement`
-- `MentionNode` -> `TMentionElement`
-- `MentionInputNodeData` -> `TMentionInputElement`
-- `MentionInputNode` -> `TMentionInputElement`
-- `CodeBlockNodeData` -> `TCodeBlockElement`
-- `MediaEmbedNodeData` -> `TMediaEmbedElement`
-- `TodoListItemNodeData` -> `TTodoListItemElement`
-- `ExcalidrawNodeData` -> `TExcalidrawElement`
-
-**Utils**
-
-- `match` signature change:
-
-```
-<T extends TNode>(
-  obj: T,
-  path: TPath,
-  predicate?: Predicate<T>
-)
-```
-
-- `deleteFragment` is now using `Editor.deleteFragment`
-
-## @udecode/plate-table@11.0.0
-
-- `getEmptyTableNode` default options changed. Migration:
-
-```tsx
-// From (0 row count and col count, previously it was 2)
-getEmptyTableNode(editor);
-// To
-getEmptyTableNode(editor, { rowCount: 2, colCount: 2 });
-```
-
-## @udecode/plate-styled-components@11.0.0
-
-**Generic types**
-
-- `type StyledElementProps<V extends Value, N extends TElement = EElement<V>, TStyles = {}>`
-
-# 10.0.0
-
-## @udecode/plate-ui-toolbar@10.0.0
-
-### Major Changes
-
-- [#1377](https://github.com/udecode/plate/pull/1377) by [@zbeyens](https://github.com/zbeyens) – Before, `BalloonToolbar` could be outside `Plate`. Now, `BallonToolbar` should be a child of `Plate` to support multiple editors.
-
-# 9.0.0
-
-## @udecode/plate-core@9.0.0
-
-- [#1303](https://github.com/udecode/plate/pull/1303) by [@zbeyens](https://github.com/zbeyens) –
-  - `Plate`
-    - `editor` prop can now be fully controlled: Plate is not applying `withPlate` on it anymore
-  - `PlatePlugin.deserializeHtml`
-    - can't be an array anymore
-    - moved `validAttribute`, `validClassName`, `validNodeName`, `validStyle` to `deserializeHtml.rules` property
-  - renamed `plateStore` to `platesStore`
-  - `platesStore` is now a zustood store
-  - `eventEditorStore` is now a zustood store
-  - `getPlateId` now gets the last editor id if not focused or blurred
-    - used by `usePlateEditorRef` and `usePlateEditorState`
-  - removed:
-    - `usePlateEnabled` for `usePlateSelectors(id).enabled()`
-    - `usePlateValue` for `usePlateSelectors(id).value()`
-    - `usePlateActions`:
-      - `resetEditor` for `getPlateActions(id).resetEditor()`
-      - `clearState` for `platesActions.unset()`
-      - `setInitialState` for `platesActions.set(id)`
-      - `setEditor` for `getPlateActions(id).editor(value)`
-      - `setEnabled` for `getPlateActions(id).enabled(value)`
-      - `setValue` for `getPlateActions(id).value(value)`
-    - `getPlateState`
-    - `usePlateState`
-    - `usePlateKey`
-
-## @udecode/plate@9.0.0
-
-- [#1303](https://github.com/udecode/plate/pull/1303) by [@zbeyens](https://github.com/zbeyens) –
-- renamed `plate-x-ui` to `plate-ui-x`: all packages depending on `styled-components` has `plate-ui` prefix
-- renamed `plate-x-serializer` to `plate-serializer-x`
-- is now exporting only these (new) packages:
-  - `@udecode/plate-headless`: all unstyled packages
-  - `@udecode/plate-ui`: all styled packages
-- renamed `PlateState` to `PlateStoreState`
-
-# 8.0.0
-
-## @udecode/plate-indent-list@8.0.0
-
-- [#1234](https://github.com/udecode/plate/pull/1234) by [@zbeyens](https://github.com/zbeyens) – Removed:
-
-  - `IndentListPluginOptions` for `PlatePlugin`
-
-  Rename:
-
-  - `getIndentListInjectComponent` to `injectIndentListComponent`
-
-## @udecode/plate-core@8.0.0
-
-- [#1234](https://github.com/udecode/plate/pull/1234) by [@zbeyens](https://github.com/zbeyens) – Breaking changes:
-
-  ### `Plate`
-
-  - removed `components` prop:
-
-  ```tsx
-  // Before
-  <Plate plugins={plugins} components={components} />;
-
-  // After
-  // option 1: use the plugin factory
-  let plugins = [
-    createParagraphPlugin({
-      component: ParagraphElement,
-    }),
-  ];
-
-  // option 2: use createPlugins
-  plugins = createPlugins(plugins, {
-    components: {
-      [ELEMENT_PARAGRAPH]: ParagraphElement,
+  After:
+
+  ```typescript
+  const plugin = createSlatePlugin({
+    key: 'myPlugin',
+    node: {
+      isElement: true,
+      component: MyComponent,
     },
   });
-
-  <Plate plugins={plugins} />;
+  const reactPlugin = toPlatePlugin(plugin);
   ```
 
-  - removed `options` prop:
+  **Plugin Configuration**:
 
-  ```tsx
-  // Before
-  <Plate plugins={plugins} options={options} />;
+  - Remove all `NamePlugin` option types, use `NameConfig` instead.
+  - `NameConfig` as the new naming convention for plugin configurations.
 
-  // After
-  // option 1: use the plugin factory
-  let plugins = [
-    createParagraphPlugin({
-      type: 'paragraph',
-    }),
-  ];
+  Before:
 
-  // option 2: use createPlugins
-  plugins = createPlugins(plugins, {
-    overrideByKey: {
-      [ELEMENT_PARAGRAPH]: {
-        type: 'paragraph',
+  ```typescript
+  createPluginFactory<HotkeyPlugin>({
+    handlers: {
+      onKeyDown: onKeyDownToggleElement,
+    },
+    options: {
+      hotkey: ['mod+opt+0', 'mod+shift+0'],
+    },
+  });
+  ```
+
+  After:
+
+  ```typescript
+  export const ParagraphPlugin = createPlatePlugin({
+    key: 'p',
+    node: { isElement: true },
+  }).extend({ editor, type }) => ({
+    shortcuts: {
+      toggleParagraph: {
+        handler: () => {
+          editor.tf.toggle.block({ type });
+        },
+        keys: [
+          [Key.Mod, Key.Alt, '0'],
+          [Key.Mod, Key.Shift, '0'],
+        ],
+        preventDefault: true,
       },
     },
+  })
+  ```
+
+  - `toggleParagraph` is now a shortcut for `editor.tf.toggle.block({ type: 'p' })` for the given keys
+  - Multiple shortcuts can be defined per plugin, and any shortcut can be disabled by setting `shortcuts.toggleParagraph = null`
+  - Note the typing support using `Key`
+
+  **Plugin Properties**:
+
+  Rename `SlatePlugin` / `PlatePlugin` properties:
+
+  - `type` -> `node.type`
+  - `isElement` -> `node.isElement`
+  - `isLeaf` -> `node.isLeaf`
+  - `isInline` -> `node.isInline`
+  - `isMarkableVoid` -> `node.isMarkableVoid`
+  - `isVoid` -> `node.isVoid`
+  - `component` -> `node.component` or `render.node`
+  - `props` -> `node.props`
+  - `overrideByKey` -> `override.plugins`
+  - `renderAboveEditable` -> `render.aboveEditable`
+  - `renderAboveSlate` -> `render.aboveSlate`
+  - `renderAfterEditable` -> `render.afterEditable`
+  - `renderBeforeEditable` -> `render.beforeEditable`
+  - `inject.props` -> `inject.nodeProps`
+  - `inject.props.validTypes` -> `inject.targetPlugins`
+  - `inject.aboveComponent` -> `render.aboveNodes`
+  - `inject.belowComponent` -> `render.belowNodes`
+  - `inject.pluginsByKey` -> `inject.plugins`
+  - `editor.insertData` -> `parser`
+    - NEW `parser.format` now supports `string[]`
+    - NEW `parser.mimeTypes: string[]`
+  - `deserializeHtml` -> `parsers.html.deserializer`
+  - `deserializeHtml.getNode` -> `parsers.html.deserializer.parse`
+  - `serializeHtml` -> `parsers.htmlReact.serializer`
+  - `withOverride` -> `extendEditor`
+  - All methods now have a single parameter: `SlatePluginContext<C>` or `PlatePluginContext<C>`, in addition to the method specific options. Some of the affected methods are:
+    - `decorate`
+    - `handlers`, including `onChange`. Returns `({ event, ...ctx }) => void` instead of `(editor, plugin) => (event) => void`
+    - `handlers.onChange`: `({ value, ...ctx }) => void` instead of `(editor, plugin) => (value) => void`
+    - `normalizeInitialValue`
+    - `editor.insertData.preInsert`
+    - `editor.insertData.transformData`
+    - `editor.insertData.transformFragment`
+    - `deserializeHtml.getNode`
+    - `deserializeHtml.query`
+    - `inject.props.query`
+    - `inject.props.transformProps`
+    - `useHooks`
+    - `withOverrides`
+
+  NEW `SlatePlugin` properties:
+
+  - `api`: API methods provided by this plugin
+  - `dependencies`: An array of plugin keys that this plugin depends on
+  - `node`: Node-specific configuration for this plugin
+  - `parsers`: Now accept `string` keys to add custom parsers
+  - `priority`: Plugin priority for registration and execution order
+  - `shortcuts`: Plugin-specific hotkeys
+  - `inject.targetPluginToInject`: Function to inject plugin config into other plugins specified by `inject.targetPlugins`
+
+  Before:
+
+  ```typescript
+  export const createAlignPlugin = createPluginFactory({
+    key: KEY_ALIGN,
+    inject: {
+      props: {
+        defaultNodeValue: 'start',
+        nodeKey: KEY_ALIGN,
+        styleKey: 'textAlign',
+        validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
+        validTypes: ['p'],
+      },
+    },
+    then: (_, plugin) =>
+      mapInjectPropsToPlugin(editor, plugin, {
+        deserializeHtml: {
+          getNode: (el, node) => {
+            if (el.style.textAlign) {
+              node[plugin.key] = el.style.textAlign;
+            }
+          },
+        },
+      }),
   });
-
-  <Plate plugins={plugins} />;
   ```
 
-  ### `PlatePlugin`
+  After:
 
-  - `key`
-    - replacing `pluginKey`
-    - is now required: each plugin needs a key to be retrieved by key.
-  - all handlers have `plugin` as a second parameter:
-
-  ```tsx
-  // Before
-  export type X<T = {}> = (editor: PlateEditor<T>) => Y;
-
-  // After
-  export type X<T = {}, P = {}> = (
-    editor: PlateEditor<T>,
-    plugin: WithPlatePlugin<T, P>
-  ) => Y;
+  ```typescript
+  export const AlignPlugin = createSlatePlugin({
+    inject: {
+      nodeProps: {
+        defaultNodeValue: 'start',
+        nodeKey: 'align',
+        styleKey: 'textAlign',
+        validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
+      },
+      targetPluginToInject: ({ editor, plugin }) => ({
+        parsers: {
+          html: {
+            deserializer: {
+              parse: ({ element, node }) => {
+                if (element.style.textAlign) {
+                  node[editor.getType(plugin)] = element.style.textAlign;
+                }
+              },
+            },
+          },
+        },
+      }),
+      targetPlugins: [ParagraphPlugin.key],
+    },
+    key: 'align',
+  });
   ```
 
-  - `serialize` no longer has `element` and `leaf` properties:
+  **Plugin Shortcuts**:
 
-  ```ts
-  type SerializeHtml = RenderFunction<
-    PlateRenderElementProps | PlateRenderLeafProps
-  >;
-  ```
+  - NEW `shortcuts` to add custom hotkeys to a plugin.
+  - Remove `hotkey` option from all plugins
 
-  Renamed:
+  Before:
 
-  - `injectParentComponent` to `inject.aboveComponent`
-  - `injectChildComponent` to `inject.belowComponent`
-  - `overrideProps` to `inject.props`
-    - `transformClassName`, `transformNodeValue`, `transformStyle` first parameter is no longer `editor` as it's provided by `then` if needed.
-    - the previously `getOverrideProps` is now the core behavior if `inject.props` is defined.
-  - `serialize` to `serializeHtml`
-  - `deserialize` to `deserializeHtml`
-    - can be an array
-    - the old deserializer options are merged to `deserializeHtml`
-
-  ```tsx
-  type DeserializeHtml = {
-    /** List of HTML attribute names to store their values in `node.attributes`. */
-    attributeNames?: string[];
-
-    /**
-     * Deserialize an element. Use this instead of plugin.isElement if you don't
-     * want the plugin to renderElement.
-     *
-     * @default plugin.isElement
-     */
-    isElement?: boolean;
-
-    /**
-     * Deserialize a leaf. Use this instead of plugin.isLeaf if you don't want the
-     * plugin to renderLeaf.
-     *
-     * @default plugin.isLeaf
-     */
-    isLeaf?: boolean;
-
-    /** Deserialize html element to slate node. */
-    getNode?: (element: HTMLElement) => AnyObject | undefined;
-
-    query?: (element: HTMLElement) => boolean;
-
-    /**
-     * Deserialize an element:
-     *
-     * - If this option (string) is in the element attribute names.
-     * - If this option (object) values match the element attributes.
-     */
-    validAttribute?: string | { [key: string]: string | string[] };
-
-    /** Valid element `className`. */
-    validClassName?: string;
-
-    /** Valid element `nodeName`. Set '*' to allow any node name. */
-    validNodeName?: string | string[];
-
-    /**
-     * Valid element style values. Can be a list of string (only one match is
-     * needed).
-     */
-    validStyle?: Partial<
-      Record<keyof CSSStyleDeclaration, string | string[] | undefined>
-    >;
-
-    /** Whether or not to include deserialized children on this node */
-    withoutChildren?: boolean;
+  ```typescript
+  type LinkPlugin = {
+    hotkey?: string;
   };
   ```
 
-  - handlers starting by `on...` are moved to `handlers` property.
+  After:
 
-  ```ts
-  // Before
-  onDrop: handler;
-
-  // After
-  handlers: {
-    onDrop: handler;
-  }
+  ```typescript
+  type LinkConfig = PluginConfig<
+    // key
+    'p',
+    // options
+    { defaultLinkAttributes?: any },
+    // api
+    { link: { getAttributes: (editor: PlateEditor) => LinkAttributes } },
+    // transforms
+    { floatingLink: { hide: () => void } }
+  >;
   ```
 
-  Removed:
+  Shortcuts API:
 
-  - `renderElement` is favor of:
-    - `isElement` is a boolean that enables element rendering.
-    - the previously `getRenderElement` is now the core behavior.
-  - `renderLeaf` is favor of:
-    - `isLeaf` is a boolean that enables leaf rendering.
-    - the previously `getRenderLeaf` is now the core behavior.
-  - `inlineTypes` and `voidTypes` for:
-    - `isInline` is a boolean that enables inline rendering.
-    - `isVoid` is a boolean that enables void rendering.
+  - `handler` is called with the editor, event, and event details.
+  - `keys` is an array of keys to trigger the shortcut.
+  - `priority` is the priority of the shortcut over other shortcuts.
+  - `...HotkeysOptions` from `@udecode/react-hotkeys`
 
-  ### General
+  **Plugin Types**:
 
-  - the following plugins are now part of the core plugins, so you need to remove these from your `plugins` prop:
+  - Update `SlatePlugin`, `PlatePlugin` generics. `P, V, E` -> `C extends AnyPluginConfig = PluginConfig`
+  - Remove `PluginOptions`
+  - Remove `PlatePluginKey`
+  - Remove `HotkeyPlugin`, `ToggleMarkPlugin` in favor of `plugin.shortcuts`
+  - `WithPlatePlugin` -> `EditorPlugin`, `EditorPlatePlugin`
+  - `PlatePluginComponent` -> `NodeComponent`
+  - `InjectComponent*` -> `NodeWrapperComponent*`
+  - `PlatePluginInsertData` -> `Parser`
+  - `PlatePluginProps` -> `NodeProps`
+  - `RenderAfterEditable` -> `EditableSiblingComponent`
+  - `WithOverride` -> `ExtendEditor`
+  - `SerializeHtml` -> `HtmlReactSerializer`
+
+  **Plugin Store**:
+
+  - NEW each plugin has its own store, accessible via `plugin.optionsStore` and `plugin.useOptionsStore`
+  - `editor` has many methods to get, set and subscribe to plugin options
+
+  **Plugin Methods**:
+
+  - All plugin methods return a new plugin instance with the extended types.
+  - Remove `then`, use `extend` instead
+  - NEW `extend` method to deep merge a plugin configuration
+    - If you pass an object, it will be directly merged with the plugin config.
+    - If you pass a function, it will be called with the plugin config once the editor is resolved and should return the new plugin config.
+    - Object extensions always have the priority over function extensions.
+    - Extend multiple times to derive from the result of the previous extension.
+  - NEW `configure` method to configure the properties of existing plugins. The difference with `extend` is that `configure` with not add new properties to the plugin, it will only modify existing ones.
+  - NEW `extendPlugin` method to extend a nested plugin configuration.
+  - NEW `configurePlugin` method to configure the properties of a nested plugin.
+  - NEW `extendApi` method to extend the plugin API. The API is then merged into `editor.api[plugin.key]`.
+  - NEW `extendTransforms` method to extend the plugin transforms. The transforms is then merged into `editor.transforms[plugin.key]`.
+  - NEW `extendEditorApi` method to extend the editor API. The API is then merged into `editor.api`. Use this to add or override top-level methods to the editor.
+  - NEW `extendEditorTransforms` method to extend the editor transforms. The transforms is then merged into `editor.transforms`.
+  - NEW `extendOptions` method to extend the plugin options with selectors. Use `editor.useOption(plugin, 'optionKey')` to subscribe to an (extended) option.
+  - NEW `withComponent` to replace `plugin.node.component`
+
+  **Plugin Context**
+
+  Each plugin method now receive the plugin context created with `getEditorPlugin(editor, plugin)` as parameter:
+
+  - `api`
+  - `editor`
+  - `getOption`
+  - `getOptions`
+  - `plugin`
+  - `setOption`
+  - `setOptions`
+  - `tf`
+  - `type`
+  - `useOption`
+
+  **Core Plugins**:
+
+  - NEW `ParagraphPlugin` is now part of `core`
+  - NEW `DebugPlugin` is now part of `core`
+    - NEW `api.debug.log`, `api.debug.info`, `api.debug.warn`, `api.debug.error` methods
+    - `options.isProduction` to control logging in production environments
+    - `options.logLevel` to set the minimum log level
+    - `options.logger` to customize logging behavior
+    - `options.throwErrors` to control error throwing behavior, by default a `PlateError` will be thrown on `api.debug.error`
+  - NEW - You can now override a core plugin by adding it to `editor.plugins`. Last plugin wins.
+  - `createDeserializeHtmlPlugin` -> `HtmlPlugin`
+    - NEW `api.html.deserialize`
+  - `createEventEditorPlugin` -> `EventEditorPlugin`
+    - `eventEditorStore` -> `EventEditorStore`
+  - `createDeserializeAstPlugin` -> `AstPlugin`
+  - `createEditorProtocolPlugin` -> `SlateNextPlugin`
+    - NEW `editor.tf.toggle.block`
+    - NEW `editor.tf.toggle.mark`
+    - Remove `createNodeFactoryPlugin`, included in `SlateNextPlugin`.
+    - Remove `createPrevSelectionPlugin`, included in `SlateNextPlugin`.
+  - `createHistoryPlugin` -> `HistoryPlugin`
+  - `createInlineVoidPlugin` -> `InlineVoidPlugin`
+  - `createInsertDataPlugin` -> `ParserPlugin`
+  - `createLengthPlugin` -> `LengthPlugin`
+  - `createReactPlugin` -> `ReactPlugin`
+
+  **Editor Creation**:
+
+  NEW `withSlate`:
+
+  - Extends an editor into a vanilla Plate editor
+  - NEW `rootPlugin` option for configuring the root plugin
+
+  NEW `withPlate`:
+
+  - Extends an editor into a React Plate editor
+  - Now extends `withSlate` with React-specific enhancements
+  - NEW `useOptions` and `useOption` methods to the editor
+
+  NEW `createSlateEditor`:
+
+  - Create a vanilla Plate editor with server-side support
+
+  `createPlateEditor`:
+
+  - Plugin replacement mechanism: using `plugins`, any plugin with the same key that a previous plugin will **replace** it. That means you can now override core plugins that way, like `ReactPlugin`
+  - `root` plugin is now created from `createPlateEditor` option as a quicker way to configure the editor than passing `plugins`. Since plugins can have nested plugins (think as a recursive tree), `plugins` option will be passed to `root` plugin `plugins` option.
+  - Centralized editor resolution. Before, both `createPlateEditor` and `Plate` component were resolving the editor. Now, only `createPlateEditor` takes care of that. That means `id`, `value`, and other options are now controlled by `createPlateEditor`.
+  - Remove `createPlugins`, pass plugins directly:
+
+    - `components` -> `override.components`
+    - `overrideByKey` -> `override.plugins`
+
+  `createPlateEditor` options:
+
+  - Rename `normalizeInitialValue` option to `shouldNormalizeEditor`
+  - Move `components` to `override.components` to override components by key
+  - Move `overrideByKey` to `override.plugins` to override plugins by key
+  - Remove `disableCorePlugins`, use `override.enabled` instead
+  - NEW `value` to set the initial value of the editor.
+  - NEW `autoSelect?: 'end' | 'start' | boolean` to auto select the start of end of the editor. This is decoupled from `autoFocus`.
+  - NEW `selection` to control the initial selection.
+  - NEW `override.enabled` to disable plugins by key
+  - NEW `rootPlugin?: (plugin: AnyPlatePlugin) => AnyPlatePlugin` to configure the root plugin. From here, you can for example call `configurePlugin` to configure any plugin.
+  - NEW `api`, `decorate`, `extendEditor`, `handlers`, `inject`, `normalizeInitialValue`, `options`, `override`, `priority`, `render`, `shortcuts`, `transforms`, `useHooks`. These options will be passed to the very first `rootPlugin`.
+
+  NEW `usePlateEditor()` hook to create a `PlateEditor` in a React component:
+
+  - Uses `createPlateEditor` and `useMemo` to avoid re-creating the editor on every render.
+  - Dependencies can be added to the hook to re-create the editor on demand. `id` option is always used as dependency.
+
+  **Editor Methods**:
+
+  `editor: PlateEditor`:
+
+  - Move `redecorate` to `editor.api.redecorate`
+  - Move `reset` to `editor.tf.reset`
+  - Move `plate.set` to `editor.setPlateState`
+  - Move `blockFactory` to `editor.api.create.block`
+  - Move `childrenFactory` to `editor.api.create.value`
+  - Rename `plugins` to `pluginList`
+  - Rename `pluginsByKey` to `plugins`
+  - NEW `getApi()` to get the editor API
+  - NEW `getTransforms()` to get the editor transforms
+  - Remove `getPlugin(editor, key)`, use `editor.getPlugin(plugin) or editor.getPlugin({ key })`
+  - Remove `getPluginType`, use `editor.getType(plugin)` to get node type
+  - Remove `getPluginInjectProps(editor, key)`, use `editor.getPlugin(plugin).inject.props`
+  - NEW `getOptionsStore()` to get a plugin options store
+  - Remove `getPluginOptions`, use `getOptions()`
+  - NEW `getOption()` to get a plugin option
+  - NEW `setOption()` to set a plugin option
+  - NEW `setOptions()` to set multiple plugin options. Pass a function to use Immer. Pass an object to merge the options.
+  - NEW `useOption` to subscribe to a plugin option in a React component
+  - NEW `useOptions` to subscribe to a plugin options store in a React component
+  - Remove `getPlugins`, use `editor.pluginList`
+  - Remove `getPluginsByKey`, use `editor.plugins`
+  - Remove `mapInjectPropsToPlugin`
+
+  **Editor Types**:
+
+  The new generic types are:
+
+  - `V extends Value = Value`, `P extends AnyPluginConfig = PlateCorePlugin`
+  - That means this function will **infer all plugin configurations** from the options passed to it:
+    - `key`
+    - `options`
+    - `api`
+    - `transforms`
+  - Can't infer for some reason? Use `createTPlateEditor` for explicit typing.
 
   ```ts
-  const corePlugins = [
-    createReactPlugin(),
-    createHistoryPlugin(),
-    createEventEditorPlugin(),
-    createInlineVoidPlugin(),
-    createInsertDataPlugin(),
-    createDeserializeAstPlugin(),
-    createDeserializeHtmlPlugin(),
-  ];
+  const editor = createPlateEditor({ plugins: [TablePlugin] });
+  editor.api.htmlReact.serialize(); // core plugin is automatically inferred
+  editor.tf.insert.tableRow(); // table plugin is automatically inferred
   ```
 
-  - `plugins` is not a parameter anymore as it can be retrieved in `editor.plugins`
-  - `withInlineVoid` is now using plugins `isInline` and `isVoid` plugin properties.
-
-  Renamed:
-
-  - `getPlatePluginType` to `getPluginType`
-  - `getEditorOptions` to `getPlugins`
-  - `getPlatePluginOptions` to `getPlugin`
-  - `pipeOverrideProps` to `pipeInjectProps`
-  - `getOverrideProps` to `pluginInjectProps`
-  - `serializeHTMLFromNodes` to `serializeHtml`
-    - `getLeaf` to `leafToHtml`
-    - `getNode` to `elementToHtml`
-  - `xDeserializerId` to `KEY_DESERIALIZE_X`
-  - `deserializeHTMLToText` to `htmlTextNodeToString`
-  - `deserializeHTMLToMarks` to `htmlElementToLeaf` and `pipeDeserializeHtmlLeaf`
-  - `deserializeHTMLToElement` to `htmlElementToElement` and `pipeDeserializeHtmlElement`
-  - `deserializeHTMLToFragment` to `htmlBodyToFragment`
-  - `deserializeHTMLToDocumentFragment` to `deserializeHtml`
-  - `deserializeHTMLToBreak` to `htmlBrToNewLine`
-  - `deserializeHTMLNode` to `deserializeHtmlNode`
-  - `deserializeHTMLElement` to `deserializeHtmlElement`
-
-  Removed:
-
-  - `usePlateKeys`, `getPlateKeys`
-  - `usePlateOptions` for `getPlugin`
-  - `getPlateSelection` for `getPlateEditorRef().selection`
-  - `flatMapByKey`
-  - `getEditableRenderElement` and `getRenderElement` for `pipeRenderElement` and `pluginRenderElement`
-  - `getEditableRenderLeaf` and `getRenderLeaf` for `pipeRenderLeaf` and `pluginRenderLeaf`
-  - `getInlineTypes`
-  - `getVoidTypes`
-  - `getPlatePluginTypes`
-  - `getPlatePluginWithOverrides`
-  - `mapPlatePluginKeysToOptions`
-  - `withDeserializeX` for `PlatePlugin.editor.insertData`
-
-  Changed types:
-
-  - `PlateEditor`:
-    - removed `options` for `pluginsByKey`
-  - `WithOverride` is not returning an extended editor anymore (input and output editors are assumed to be the same types for simplicity).
-  - `PlateState`
-    - renamed `keyChange` to `keyEditor`
-    - removed `plugins` for `editor.plugins`
-    - removed `pluginKeys`
-    - removed `selection` for `editor.selection`
-    - actions:
-      - removed `setSelection`, `setPlugins`, `setPluginKeys`
-      - removed `incrementKeyChange` for
-
-  Renamed types:
-
-  - `XHTMLY` to `XHtmlY`
-  - `Deserialize` to `DeseralizeHtml`
-
-  Removed types:
-
-  - `PlatePluginOptions`:
-    - `type` to `PlatePlugin.type`
-    - `component` to `PlatePlugin.component`
-    - `deserialize` to `PlatePlugin.deserializeHtml`
-    - `getNodeProps` to `PlatePlugin.props.nodeProps`
-    - `hotkey` to `HotkeyPlugin`
-    - `clear` to `ToggleMarkPlugin`
-    - `defaultType` is hardcoded to `p.type`
-  - `OverrideProps` for `PlatePlugin.inject.props`
-  - `Serialize` for `PlatePlugin.serializeHtml`
-  - `NodeProps` for `AnyObject`
-  - `OnKeyDownElementOptions` for `HotkeyPlugin`
-  - `OnKeyDownMarkOptions` for `ToggleMarkPlugin`
-  - `WithInlineVoidOptions`
-  - `GetNodeProps` for `PlatePluginProps`
-  - `DeserializeOptions`, `GetLeafDeserializerOptions`, `GetElementDeserializerOptions`, `GetNodeDeserializerOptions`, `GetNodeDeserializerRule`, `DeserializeNode` for `PlatePlugin.deserializeHtml`
-  - `PlateOptions`
-  - `RenderNodeOptions`
-  - `DeserializedHTMLElement`
-
-## @udecode/plate-find-replace@8.0.0
-
-- [#1234](https://github.com/udecode/plate/pull/1234) by [@zbeyens](https://github.com/zbeyens) – Removed:
-  - `useFindReplacePlugin` for `createFindReplacePlugin`
-
-## @udecode/plate-alignment@8.0.0
-
-- [#1234](https://github.com/udecode/plate/pull/1234) by [@zbeyens](https://github.com/zbeyens) –
-  - `setAlign`
-    - moved param 3 to param 2 as `setNodesOptions`
-
-## @udecode/plate-basic-elements@8.0.0
-
-- [#1234](https://github.com/udecode/plate/pull/1234) by [@zbeyens](https://github.com/zbeyens) –
-  - renamed `createBasicElementPlugins` to `createBasicElementsPlugin`
-
-## @udecode/plate-code-block@8.0.0
-
-- [#1234](https://github.com/udecode/plate/pull/1234) by [@zbeyens](https://github.com/zbeyens) – Removed:
-  - `getCodeBlockPluginOptions` for `getPlugin`
-  - `getCodeLinePluginOptions` for `getPlugin`
-
-## @udecode/plate-heading@8.0.0
+  **Plate Component**
 
-- [#1234](https://github.com/udecode/plate/pull/1234) by [@zbeyens](https://github.com/zbeyens) – Renamed:
-  - `HeadingPluginOptions` to `HeadingsPlugin`
+  `PlateProps`:
 
-## @udecode/plate-mention@8.0.0
+  - `editor` is now required. If `null`, `Plate` will not render anything. As before, `Plate` remounts on `id` change.
+  - Remove `id`, `plugins`, `maxLength`, pass these to `createPlateEditor` instead
+  - Remove `initialValue`, `value`, pass `value` to `createPlateEditor` instead
+  - Remove `editorRef`
+  - Remove `disableCorePlugins`, override `plugins` in `createPlateEditor` instead
 
-- [#1234](https://github.com/udecode/plate/pull/1234) by [@zbeyens](https://github.com/zbeyens) – Removed:
-  - `getMentionInputPluginOptions` for `getPlugin`
-  - `getMentionInputType` for `getPluginType`
-  - `COMBOBOX_TRIGGER_MENTION`
+  Utils:
 
-## @udecode/plate-basic-marks@8.0.0
+  - Remove `useReplaceEditor` since `editor` is now always controlled
+  - NEW `useEditorPlugin` to get the editor and the plugin context.
 
-- [#1234](https://github.com/udecode/plate/pull/1234) by [@zbeyens](https://github.com/zbeyens) –
-  - renamed `createBasicMarkPlugins` to `createBasicMarksPlugin`
+  Types:
 
-## @udecode/plate@8.0.0
+  - `PlateRenderElementProps`, `PlateRenderLeafProps` generics: `V, N` -> `N, C`
 
-- [#1234](https://github.com/udecode/plate/pull/1234) by [@zbeyens](https://github.com/zbeyens) – Breaking changes:
+  **Plate Store**:
 
-  - all plugins options are now defined in the plugin itself
-  - plugins which now have nested plugins instead of array:
-    - `createBasicElementsPlugin`
-    - `createCodeBlockPlugin`
-    - `createHeadingPlugin`
-    - `createListPlugin`
-    - `createTablePlugin`
-    - `createBasicMarksPlugin`
+  - Remove `plugins` and `rawPlugins`, use `useEditorRef().plugins` instead, or listen to plugin changes with `editor.useOption(plugin, <optionKey>)`
+  - Remove `value`, use `useEditorValue()` instead
+  - Remove `editorRef`, use `useEditorRef()` instead
 
-  Removed:
+  **Miscellaneous Changes**
 
-  - `createEditorPlugins` for `createPlateEditor` (without components) and `createPlateEditorUI` (with Plate components)
-  - `createPlateOptions` for `createPlugins`
-  - all `DEFAULTS_X`: these are defined in the plugins
-  - all `getXDeserialize`: these are defined in the plugins
-  - all `WithXOptions` for extended plugins
-  - all `getXRenderElement`
-  - some plugin option types are removed for `PlatePlugin`
+  - `slate >=0.103.0` peer dependency
+  - `slate-react >=0.108.0` peer dependency
+  - New dependency `@udecode/react-hotkeys`
+  - Remove `ELEMENT_`, `MARK_` and `KEY_` constants. Use `NamePlugin.key` instead.
+  - Replace `ELEMENT_DEFAULT` with `ParagraphPlugin.key`.
+  - Remove `getTEditor`
+  - Rename `withTReact` to `withPlateReact`
+  - Rename `withTHistory` to `withPlateHistory`
+  - Rename `usePlateId` to `useEditorId`
+  - Remove `usePlateSelectors().id()`, `usePlateSelectors().value()`, `usePlateSelectors().plugins()`, use instead `useEditorRef().<key>`
+  - Rename `toggleNodeType` to `toggleBlock`
+  - `toggleBlock` options:
+    - Rename `activeType` to `type`
+    - Rename `inactiveType` to `defaultType`
+  - Remove `react-hotkeys-hook` re-exports. Use `@udecode/react-hotkeys` instead.
 
-  Renamed:
+  Types:
 
-  - `createPlateComponents` to `createPlateUI`
-  - all `getXY` handlers to `yX` (e.g. `getXOnKeyDown` to `onKeyDownX`)
-  - all `XPluginOptions` to `XPlugin`
-  - all `pluginKey` parameter to `key` except in components
+  - Move `TEditableProps`, `TRenderElementProps` to `@udecode/slate-react`
+  - Remove `<V extends Value>` generic in all functions where not used
+  - Remove `PlatePluginKey`
+  - Remove `OverrideByKey`
+  - Remove `PlateId`
 
-  Renamed types:
+## @udecode/plate-csv@37.0.0
 
-  - `DecorateSearchHighlightOptions` to `FindReplacePlugin`
+### Major Changes
 
-  Updated deps:
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createDeserializeCsvPlugin` -> `CsvPlugin`
 
-  - `"slate": "0.70.0"`
-  - `"slate-react": "0.70.1"`
+## @udecode/plate-cursor@37.0.0
 
-  Removed deps (merged to core):
+### Major Changes
 
-  - `plate-common`
-  - `plate-ast-serializer`
-  - `plate-html-serializer`
-  - `plate-serializer`
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createCursorPlugin` -> `CursorPlugin`
 
-## @udecode/plate-serializer-csv@8.0.0
+## @udecode/plate-date@37.0.0
 
-- [#1234](https://github.com/udecode/plate/pull/1234) by [@zbeyens](https://github.com/zbeyens) – Renamed:
-  - `createDeserializeCSVPlugin` to `createDeserializeCsvPlugin`
-  - `deserializeCSV` to `deserializeCsv`
+### Major Changes
 
-## @udecode/plate-serializer-md@8.0.0
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createDatePlugin` -> `DatePlugin`
 
-- [#1234](https://github.com/udecode/plate/pull/1234) by [@zbeyens](https://github.com/zbeyens) –
+## @udecode/plate-diff@37.0.0
 
-  - `createDeserializeMdPlugin`:
-    - is now disabled if there is html data in the data transfer.
+### Major Changes
 
-  Renamed:
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createDiffPlugin` -> `DiffPlugin`
 
-  - `createDeserializeMDPlugin` to `createDeserializeMdPlugin`
-  - `deserializeMD` to `deserializeMd`
+## @udecode/plate-dnd@37.0.0
 
-# 7.0.0
+### Major Changes
 
-## `@udecode/plate-core`
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createDndPlugin` -> `DndPlugin`
+  - Remove `editor.isDragging`, use `editor.getOptions(DndPlugin).isDragging` instead
+  - Move `dndStore` to `DndPlugin`
 
-- renamed:
-  - `SPEditor` to `PEditor` (note that `PlateEditor` is the new default)
-  - `SPRenderNodeProps` to `PlateRenderNodeProps`
-  - `SPRenderElementProps` to `PlateRenderElementProps`
-  - `SPRenderLeafProps` to `PlateRenderLeafProps`
-  - `useEventEditorId` to `usePlateEventId`
-  - `useStoreEditorOptions` to `usePlateOptions`
-  - `useStoreEditorRef` to `usePlateEditorRef`
-  - `useStoreEditorSelection` to `usePlateSelection`
-  - `useStoreEditorState` to `usePlateEditorState`
-  - `useStoreEditorValue` to `usePlateValue`
-  - `useStoreEnabled` to `usePlateEnabled`
-  - `useStorePlate` to `usePlatePlugins`
-  - `useStorePlatePluginKeys` to `usePlateKeys`
-  - `useStoreState` to `usePlateState`
-- `getPlateId`: Get the last focused editor id, else get the last blurred editor id, else get the first editor id, else `null`
-- `getPlateState`:
-  - removed first parameter `state`
-  - previously when giving no parameter, it was returning the first editor. Now it's returning the editor with id = `getPlateId()`. It means `useEventEditorId('focus')` is no longer needed for
-    - `usePlateEditorRef`
-    - `usePlateEditorState`
-    - `usePlateX`...
+## @udecode/plate-docx@37.0.0
 
-## `@udecode/plate-alignment`
+### Major Changes
 
-- `setAlign`: option `align` renamed to `value`
-- removed `getAlignOverrideProps()` in favor of `getOverrideProps(KEY_ALIGN)`
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createDeserializeDocxPlugin` -> `DocxPlugin`
 
-## `@udecode/plate-indent`
+## @udecode/plate-emoji@37.0.0
 
-- removed `getIndentOverrideProps()` in favor of `getOverrideProps(KEY_INDENT)`
-- rename `onKeyDownHandler` to `getIndentOnKeyDown()`
-- `IndentPluginOptions`
-  - rename `types` to `validTypes`
-  - rename `cssPropName` to `styleKey`
-  - rename `transformCssValue` to `transformNodeValue`
-
-## `@udecode/plate-line-height`
+### Major Changes
 
-- `setLineHeight`: option `lineHeight` renamed to `value`
-- removed `getLineHeightOverrideProps` in favor of `getOverrideProps(KEY_LINE_HEIGHT)`
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createEmojiPlugin` -> `EmojiPlugin`
+  - NEW `EmojiInputPlugin`
 
-## `@udecode/plate-mention`
+## @udecode/plate-excalidraw@37.0.0
 
-- `getMentionOnSelectItem`:
-  - removed `createMentionNode` in favor of plugin options
-  - removed `insertSpaceAfterMention` in favor of plugin options
-
-## `@udecode/plate-mention-ui`
+### Major Changes
 
-- `MentionCombobox` props:
-  - removed `trigger` in favor of plugin options
-  - removed `insertSpaceAfterMention` in favor of plugin options
-  - removed `createMentionNode` in favor of plugin options
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createExcalidrawPlugin` -> `ExcalidrawPlugin`
+  - `insertExcalidraw` remove `key` option
 
-## `@udecode/plate-x-ui`
+## @udecode/plate-find-replace@37.0.0
 
-- renamed `ToolbarAlign` to `AlignToolbarButton`
-- renamed `ToolbarCodeBlock` to `CodeBlockToolbarButton`
-- renamed `ToolbarElement` to `BlockToolbarButton`
-- renamed `ToolbarImage` to `ImageToolbarButton`
-- renamed `ToolbarLink` to `LinkToolbarButton`
-- renamed `ToolbarList` to `ListToolbarButton`
-- renamed `ToolbarLineHeight` to `LineHeightToolbarDropdown`
-- renamed `ToolbarMark` to `MarkToolbarButton`
-- renamed `ToolbarMediaEmbed` to `MediaEmbedToolbarButton`
-- renamed `ToolbarSearchHighlight` to `SearchHighlightToolbar`
-- renamed `ToolbarTable` to `TableToolbarButton`
+### Major Changes
 
-# 6.0.0
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createFindReplacePlugin` -> `FindReplacePlugin`
 
-## `@udecode/plate-alignment`
+## @udecode/plate-floating@37.0.0
 
-The align plugin is no longer wrapping a block, but instead setting an `align` property to an existing block.
+### Major Changes
 
-- `createAlignPlugin`:
-  - removed `pluginKeys`, `renderElement` and `deserialize`
-- removed:
-  - `ELEMENT_ALIGN_LEFT`
-  - `ELEMENT_ALIGN_CENTER`
-  - `ELEMENT_ALIGN_RIGHT`
-  - `ELEMENT_ALIGN_JUSTIFY`
-  - `KEYS_ALIGN` in favor of `KEY_ALIGN`
-  - `getAlignDeserialize`
-  - `upsertAlign` in favor of `setAlign`
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - Remove unused generics
 
-Migration (normalizer):
+## @udecode/plate-font@37.0.0
 
-- for each node:
-  - run `parent = getParent(editor, path)`, if `parent[0].type` is one of the alignment values:
-    - run `setAlign(editor, { align }, { at: path })`
-    - run `unwrapNodes(editor, { at: path })`
+### Major Changes
 
-## `@udecode/plate-alignment-ui`
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createFontBackgroundColorPlugin` -> `FontBackgroundColorPlugin`
+  - `createFontColorPlugin` -> `FontColorPlugin`
+  - `createFontSizePlugin` -> `FontSizePlugin`
+  - `createFontFamilyPlugin` -> `FontFamilyPlugin`
+  - `createFontWeightPlugin` -> `FontWeightPlugin`
 
-- `ToolbarAlignProps`:
-  - removed `type` in favor of `align`
-  - removed `unwrapTypes`
-  - added `align`
+## @udecode/plate-heading@37.0.0
 
-# 5.0.0
+### Major Changes
 
-## `@udecode/plate-mention`
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createHeadingPlugin` -> `HeadingPlugin`
+  - Replace `ELEMENT_H1` with `HEADING_KEYS.H1`
+  - Replace `KEYS_HEADING` with `HEADING_LEVELS`
 
-The mention plugin is now using the combobox.
+## @udecode/plate-highlight@37.0.0
 
-- removed `useMentionPlugin` in favor of `createMentionPlugin`
-  - migration: replace `useMentionPlugin().plugin` by `createMentionPlugin()`
-- removed options:
-  - `mentionableSearchPattern`
-  - `insertSpaceAfterMention`
-  - `maxSuggestions`: moved to `comboboxStore`
-  - `trigger`: moved to `comboboxStore`
-  - `mentionables`: moved to `items` in `comboboxStore`
-  - `mentionableFilter`: moved to `filter` in `comboboxStore`
-- removed `matchesTriggerAndPattern` in favor of `getTextFromTrigger`
-- removed `MentionNodeData` in favor of `ComboboxItemData`
+### Major Changes
 
-```ts
-export interface ComboboxItemData {
-  /** Unique key. */
-  key: string;
-  /** Item text. */
-  text: any;
-  /**
-   * Whether the item is disabled.
-   *
-   * @default false
-   */
-  disabled?: boolean;
-  /** Data available to `onRenderItem`. */
-  data?: unknown;
-}
-```
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createHighlightPlugin` -> `HighlightPlugin`
 
-## `@udecode/plate-mention-ui`
+## @udecode/plate-horizontal-rule@37.0.0
 
-- removed `MentionSelect` in favor of `MentionCombobox`
+### Major Changes
 
-## `@udecode/plate-toolbar`
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createHorizontalRulePlugin` -> `HorizontalRulePlugin`
 
-- removed `setPositionAtSelection` in favor of `useBalloonToolbarPopper`
-- removed `useBalloonMove` in favor of `useBalloonToolbarPopper`
-- removed `usePopupPosition` in favor of `useBalloonToolbarPopper`
-- removed `useBalloonShow` in favor of `useBalloonToolbarPopper`
-  `BalloonToolbar` props:
-- removed `direction` in favor of `popperOptions.placement`
-- renamed `scrollContainer` to `popperContainer`
+## @udecode/plate-html@37.0.0
 
-# 4.0.0
+### Major Changes
 
-## `@udecode/plate-toolbar`
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createDeserializeHtmlPlugin` -> `HtmlPlugin`
+  - Rename `deserializeHtml` plugin to `html`
+  - Rename `deserializeHtml.getNode` to `parse`
 
-- `BalloonToolbar`: removed `hiddenDelay` prop.
+## @udecode/plate-indent@37.0.0
 
-# 3.0.0
+### Major Changes
 
-## All UI packages
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createIndentPlugin` -> `IndentPlugin`
 
-There was multiple instances of `styled-components` across all the packages.
-So we moved `styled-components` from dependencies to peer dependencies.
+## @udecode/plate-indent-list@37.0.0
 
-### Before
+### Major Changes
 
-`styled-components` was not listed in your dependencies
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createIndentListPlugin` -> `IndentListPlugin`
+  - Rename `injectIndentListComponent` to `renderIndentListBelowNodes`
+  - Replace `normalizeIndentList` with `withNormalizeIndentList`
+  - Replace `deleteBackwardIndentList` with `withDeleteBackwardIndentList`
+  - Replace `insertBreakIndentList` with `withInsertBreakIndentList`
+  - Remove types: `LiFC` (use `PlateRenderElementProps`), `MarkerFC` (use `Omit<PlateRenderElementProps, 'children'>`)
 
-### After
+## @udecode/plate-juice@37.0.0
 
-Add `styled-components` to your dependencies
+### Major Changes
 
-# 2.0.0
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createJuicePlugin` -> `JuicePlugin`
 
-## `@udecode/plate-autoformat`
+## @udecode/plate-kbd@37.0.0
 
-- `autoformatBlock`:
-  - signatude changed
+### Major Changes
 
-```ts
-// Before
-(
-  editor: TEditor,
-  type: string,
-  at: Location,
-  options: Pick<AutoformatRule, 'preFormat' | 'format'>
-)
-```
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createKbdPlugin` -> `KbdPlugin`
 
-```ts
-// After
-(editor: TEditor, options: AutoformatBlockOptions)
-```
+## @udecode/plate-layout@37.0.0
 
-- moved the checks from `withAutoformat`
-- `autoformatInline`:
-  - renamed to `autoformatMark`
-  - signatured changed
+### Major Changes
 
-```ts
-// Before
-(
-  editor: TEditor,
-  options: Pick<AutoformatRule, 'type' | 'between' | 'markup' | 'ignoreTrim'>
-)
-```
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createColumnPlugin` -> `ColumnPlugin`
+  - NEW `ColumnItemPlugin`
 
-```ts
-// After
-(
-  editor: TEditor,
-  options: AutoformatMarkOptions
-)
-```
+## @udecode/plate-line-height@37.0.0
 
-- `AutoformatRule` is now `AutoformatBlockRule
-| AutoformatMarkRule
-| AutoformatTextRule;`
-  - `mode: 'inline'` renamed to `mode: 'mark'`
-  - `markup` and `between` have been replaced by `match: string | string[] | MatchRange | MatchRange[]`: The rule applies when the trigger and the text just before the cursor matches. For `mode: 'block'`: lookup for the end match(es) before the cursor. For `mode: 'text'`: lookup for the end match(es) before the cursor. If `format` is an array, also lookup for the start match(es). For `mode: 'mark'`: lookup for the start and end matches. Note: `'_*'`, `['_*']` and `{ start: '_*', end: '*_' }` are equivalent.
-  - `trigger` now defaults to the last character of `match` or `match.end` (previously `' '`)
-- the plugin now checks that there is no character before the start match to apply autoformatting. For example, nothing will happen by typing `a*text*`.
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createLineHeightPlugin` -> `LineHeightPlugin`
+
+## @udecode/plate-link@37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createLinkPlugin` -> `LinkPlugin`
+  - Move `floatingLinkStore` to `LinkPlugin`
+
+## @udecode/plate-list@37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createListPlugin` -> `ListPlugin`
+  - NEW `BulletedListPlugin`
+  - NEW `NumberedListPlugin`
+  - NEW `ListItemPlugin`
+  - NEW `ListItemContentPlugin`
+  - NEW list transforms: `toggle.list`, `toggle.bulletedList`, `toggle.numberedList`
+  - Remove type utils: `getListItemType`, `getUnorderedListType`, `getOrderedListType`, `getListItemContentType`
+  - Replace `insertBreakList(editor)` with `withInsertBreakList(ctx)`
+  - Replace `insertFragmentList(editor)` with `withInsertFragmentList(ctx)`
+  - Replace `insertBreakTodoList(editor)` with `withInsertBreakTodoList(ctx)`
+  - Replace `deleteForwardList(editor)` with `withdeleteForwardList(ctx)`
+  - Replace `deleteBackwardList(editor)` with `withdeleteBackwardList(ctx)`
+  - Move list options from `ul` and `ol` to `list` plugin
+  - `toggleList` options are now `{ type: string }`
+
+## @udecode/plate-markdown@37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createDeserializeMdPlugin` -> `MarkdownPlugin`
+
+## @udecode/plate-math@37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createMathPlugin` -> `MathPlugin`
+
+## @udecode/plate-media@37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createMediaPlugin` -> `MediaPlugin`
+  - `FloatingMediaUrlInput`, `submitFloatingMedia` rename option `pluginKey` -> `plugin`
+  - `insertMediaEmbed` remove `key` option
+
+## @udecode/plate-mention@37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createMentionPlugin` -> `MentionPlugin`
+  - NEW `MentionInputPlugin`
+  - Remove `createMentionNode` option, override `api.insert.mention` instead
+
+## @udecode/plate-node-id@37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createNodeIdPlugin` -> `NodeIdPlugin`
+
+## @udecode/plate-normalizers@37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createNormalizersPlugin` -> `NormalizersPlugin`
+
+## @udecode/plate@37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - NEW `@udecode/plate-layout`
+  - NEW `/react` exports `@udecode/react-hotkeys`
+  - Split build into `@udecode/plate` and `@udecode/plate/react`.
+  - Remove `@udecode/plate-paragraph`
+  - All stores now start with a capital letter
+
+## @udecode/plate-utils@37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - Remove `onKeyDownToggleElement`, use shortcuts instead.
+  - Remove `onKeyDownToggleMark`, use shortcuts instead.
+
+## @udecode/plate-playwright@37.0.0
+
+### Major Changes
+
+- [#3473](https://github.com/udecode/plate/pull/3473) by [@12joan](https://github.com/12joan) – New package for integrating Plate with Playwright tests
+
+## @udecode/plate-reset-node@37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createResetNodePlugin` -> `ResetNodePlugin`
+
+## @udecode/plate-resizable@37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - Peer dependencies updated
+
+## @udecode/plate-select@37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createSelectOnBackspacePlugin` -> `SelectOnBackspacePlugin`
+  - `createDeletePlugin` -> `DeletePlugin`
+
+## @udecode/plate-selection@37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - Rename `createSelectionPlugin` to `BlockSelectionPlugin`
+  - Remove `isNodeBlockSelected`, `isBlockSelected`, `hasBlockSelected`, `useBlockSelected` functions
+    - Use `editor.getOptions(BlockSelectionPlugin)` or `editor.useOptions(BlockSelectionPlugin)` instead
+  - Remove `addSelectedRow` function
+    - Use `editor.api.blockSelection.addSelectedRow` instead
+  - Remove `withSelection` HOC
+  - Rename `onCloseBlockSelection` to `onChangeBlockSelection`
+  - Moved `blockSelectionStore` to `BlockSelectionPlugin`
+  - Moved `blockContextMenuStore` to `BlockContextMenuPlugin`
+  - Remove `BlockStartArea` and `BlockSelectionArea` components
+    - Use `areaOptions` in `BlockSelectionPlugin` for configuration instead
+  - Remove dependency on `@viselect/vanilla` package
+    - Forked and integrated selection functionality locally
+  - Add `BlockContextMenuPlugin`, which is now used by `BlockSelectionPlugin`
+    - No need to add it manually
+  - Fix scroll-related bugs in the selection functionality
+  - Improve performance and reliability of block selection
+
+## @udecode/plate-slash-command@37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createSlashPlugin` -> `SlashPlugin`
+  - NEW `SlashInputPlugin`
+
+## @udecode/slate@37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) – `createTEditor`:
+
+  - Implement default methods for `slate-react` and `slate-history` in `createTEditor`
+  - Add `noop` function to provide default implementations for unimplemented editor methods
+
+  Types:
+
+  - Merge `ReactEditor` and `HistoryEditor` interfaces into `TEditor`, removing `TReactEditor` and `THistoryEditor`
+  - Remove `Value` generic type parameter from function signatures and type definitions
+  - Replace `V extends Value` with `E extends TEditor` for improved type inference
+  - Simplify `TEditor<V>` to `TEditor` in many places
+  - Refactor element-related types, where `E extends TEditor` in all cases:
+    - `EElement<V>` to `ElementOf<E>`
+    - `EText<V>` to `TextOf<E>`
+    - `ENode<V>` to `NodeOf<E>`
+    - `EDescendant<V>` to `DescendantOf<E>`
+    - `EAncestor<V>` to `AncestorOf<E>`
+    - `EElementOrText<V>` to `ElementOrTextOf<E>`
+  - Update `TNodeEntry` related types:
+    - `ENodeEntry<V>` to `NodeEntryOf<E>`
+    - `EElementEntry<V>` to `ElementEntryOf<E>`
+    - `ETextEntry<V>` to `TextEntryOf<E>`
+    - `EAncestorEntry<V>` to `AncestorEntryOf<E>`
+    - `EDescendantEntry<V>` to `DescendantEntryOf<E>`
+  - Remove unused types:
+    - `EElementEntry<V>`
+    - `ETextEntry<V>`
+    - `EDescendantEntry<V>`
+
+## @udecode/slate-react@37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) – Types:
+
+  - Remove `TReactEditor` type, as it's now integrated into the main `TEditor` type in `@udecode/slate`. Use `TEditor` instead.
+  - Replace `V extends Value` with `E extends TEditor` for improved type inference
+  - NEW `TEditableProps`, `TRenderElementProps`
+
+## @udecode/slate-utils@37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) – Types:
+
+  - Replace `V extends Value` with `E extends TEditor` for improved type inference
+
+## @udecode/plate-suggestion@37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createSuggestionPlugin` -> `SuggestionPlugin`
+  - Move `suggestionStore` to `SuggestionPlugin`
+  - Remove `SuggestionProvider` and its hooks
+  - Remove `useSuggestionStates` (replaced by direct option access)
+  - Remove `useSuggestionSelectors` (replaced by option selectors)
+  - Remove `useSuggestionActions` (replaced by api methods)
+  - Replace `useUpdateSuggestion` with `api.suggestion.updateSuggestion`
+  - Replace `useAddSuggestion` with `api.suggestion.addSuggestion`
+  - Replace `useRemoveSuggestion` with `api.suggestion.removeSuggestion`
+  - Replace `useSuggestionById` with `options.suggestionById`
+  - Replace `useSuggestionUserById` with `options.suggestionUserById`
+  - Replace `useCurrentSuggestionUser` with `options.currentSuggestionUser`
+  - Remove `editor.activeSuggestionId`, use plugin option
+  - Remove `useSetIsSuggesting`, use `editor.setOption`
+  - Remove `useSetActiveSuggestionId`, use `editor.setOption`
+  - Remove `editor.isSuggesting`, use plugin option
+  - Remove `SuggestionEditorProps` type
+
+## @udecode/plate-tabbable@37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createTabbablePlugin` -> `TabbablePlugin`
+  - `TabbablePlugin` option `isTabbable`: remove first `editor` parameter
+
+## @udecode/plate-table@37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createTablePlugin` -> `TablePlugin`
+  - NEW `TableRowPlugin`, `TableCellPlugin`, `TableCellHeaderPlugin`
+  - Replace `insertTableColumn` with `editor.insert.tableColumn`
+  - Replace `insertTableRow` with `editor.insert.tableRow`
+  - Move `cellFactory` option to `create.cell` api
+  - Move `getCellChildren` option to `table.getCellChildren` api
+
+## @udecode/plate-toggle@37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createTogglePlugin` -> `TogglePlugin`
+  - Move `toggleControllerStore` to `TogglePlugin`
+  - Remove `setOpenIds` option
+  - Replace `isToggleOpen` with option `isOpen`
+  - Rename `injectToggle` to `renderToggleAboveNodes`
+
+## @udecode/plate-trailing-block@37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createTrailingBlockPlugin` -> `TrailingBlockPlugin`
+
+## @udecode/plate-yjs@37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createYjsPlugin` -> `YjsPlugin`
+  - Move `yjsStore` to `YjsPlugin`
+  - Move `editor.yjs.provider` to `options.provider`
+  - Rename `RenderAboveEditableYjs` to `YjsAboveEditable`

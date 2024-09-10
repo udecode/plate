@@ -1,5 +1,25 @@
 # @udecode/plate-common
 
+## 37.0.8
+
+## 37.0.7
+
+## 37.0.5
+
+## 37.0.4
+
+## 37.0.3
+
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - Split build into `@udecode/plate-common` and `@udecode/plate-common/react`.
+  - NEW `/react` exports `@udecode/react-hotkeys`
+
+## 36.3.9
+
 ## 36.3.7
 
 ## 36.3.4

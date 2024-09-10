@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 
+import type { Value } from '@udecode/plate-common';
+
 import {
-  createBoldPlugin,
-  createCodePlugin,
-  createItalicPlugin,
-  createStrikethroughPlugin,
-  createUnderlinePlugin,
-} from '@udecode/plate-basic-marks';
-import { createBlockquotePlugin } from '@udecode/plate-block-quote';
-import { createCodeBlockPlugin } from '@udecode/plate-code-block';
-import { Plate, type PlatePlugin, type Value } from '@udecode/plate-common';
-import { createHeadingPlugin } from '@udecode/plate-heading';
-import { createParagraphPlugin } from '@udecode/plate-paragraph';
+  BoldPlugin,
+  CodePlugin,
+  ItalicPlugin,
+  StrikethroughPlugin,
+  UnderlinePlugin,
+} from '@udecode/plate-basic-marks/react';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+import { Plate, usePlateEditor } from '@udecode/plate-common/react';
+import { HeadingPlugin } from '@udecode/plate-heading/react';
 
 import {
   Accordion,
@@ -24,30 +25,29 @@ import { Editor } from '@/registry/default/plate-ui/editor';
 
 import { basicEditorValue } from './basic-plugins-components-demo';
 
-const plugins: PlatePlugin[] = [
-  createParagraphPlugin(),
-  createBlockquotePlugin(),
-  createCodeBlockPlugin(),
-  createHeadingPlugin(),
-
-  createBoldPlugin(),
-  createItalicPlugin(),
-  createUnderlinePlugin(),
-  createStrikethroughPlugin(),
-  createCodePlugin(),
-];
-
 export default function BasicPluginsDefaultDemo() {
   const [debugValue, setDebugValue] = useState<Value>(basicEditorValue);
+  const editor = usePlateEditor({
+    plugins: [
+      BlockquotePlugin,
+      CodeBlockPlugin,
+      HeadingPlugin,
+      BoldPlugin,
+      ItalicPlugin,
+      UnderlinePlugin,
+      StrikethroughPlugin,
+      CodePlugin,
+    ],
+    value: basicEditorValue,
+  });
 
   return (
     <Plate
-      initialValue={basicEditorValue}
-      onChange={(newValue) => {
-        setDebugValue(newValue);
+      editor={editor}
+      onChange={({ value }) => {
+        setDebugValue(value);
         // save newValue...
       }}
-      plugins={plugins}
     >
       <Editor {...editableProps} />
 

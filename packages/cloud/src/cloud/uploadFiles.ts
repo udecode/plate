@@ -1,7 +1,13 @@
-import * as portiveClient from '@portive/client';
-import { type Value, nanoid } from '@udecode/plate-common/server';
+import type { SlateEditor } from '@udecode/plate-common';
 
-import type { FileEvent, PlateCloudEditor, ProgressEvent } from './types';
+import * as portiveClient from '@portive/client';
+import { nanoid } from '@udecode/plate-common';
+
+import type { FileEvent, ProgressEvent } from './types';
+
+import { CloudAttachmentPlugin } from '../attachment';
+import { CloudImagePlugin } from '../image';
+import { CloudPlugin } from './CloudPlugin';
 
 const createFileEvent = (
   id: string,
@@ -26,12 +32,13 @@ const createFileEvent = (
   };
 };
 
-export const uploadFile = <V extends Value = Value>(
-  editor: PlateCloudEditor<V>,
-  file: File
-) => {
+export const uploadFile = (editor: SlateEditor, file: File) => {
+  const { client } = editor.getOptions(CloudPlugin);
+  const apiImage = editor.getApi(CloudImagePlugin);
+  const apiAttachment = editor.getApi(CloudAttachmentPlugin);
+
   const id = `#${nanoid()}`;
-  const { client } = editor.cloud;
+
   void portiveClient.uploadFile({
     client,
     file,
@@ -39,24 +46,24 @@ export const uploadFile = <V extends Value = Value>(
       const fileEvent = createFileEvent(id, e.clientFile);
 
       if (fileEvent.type === 'image') {
-        editor.cloud.imageFileHandlers?.onStart?.(fileEvent);
+        apiImage.cloud_image?.onStart?.(fileEvent);
       } else {
-        editor.cloud.genericFileHandlers?.onStart?.(fileEvent);
+        apiAttachment.cloud_attachment?.onStart?.(fileEvent);
       }
     },
     onError(e) {
       const fileEvent = createFileEvent(id, e.clientFile);
 
       if (fileEvent.type === 'image') {
-        editor.cloud.imageFileHandlers?.onError?.({
+        apiImage.cloud_image?.onError?.({
           ...fileEvent,
           message: e.message,
         });
       } else {
-        editor.cloud.genericFileHandlers?.onError?.({
+        apiAttachment.cloud_attachment?.onError?.({
           ...fileEvent,
           message: e.message,
-        });
+        } as any);
       }
     },
     onProgress(e) {
@@ -67,15 +74,15 @@ export const uploadFile = <V extends Value = Value>(
       };
 
       if (fileEvent.type === 'image') {
-        editor.cloud.imageFileHandlers?.onProgress?.({
+        apiImage.cloud_image?.onProgress?.({
           ...fileEvent,
           ...progressEvent,
         });
       } else {
-        editor.cloud.genericFileHandlers?.onProgress?.({
+        apiAttachment.cloud_attachment?.onProgress?.({
           ...fileEvent,
           ...progressEvent,
-        });
+        } as any);
       }
     },
     onSuccess(e) {
@@ -83,18 +90,18 @@ export const uploadFile = <V extends Value = Value>(
       const { url } = e.hostedFile;
 
       if (fileEvent.type === 'image') {
-        editor.cloud.imageFileHandlers?.onSuccess?.({ ...fileEvent, url });
+        apiImage.cloud_image?.onSuccess?.({ ...fileEvent, url });
       } else {
-        editor.cloud.genericFileHandlers?.onSuccess?.({ ...fileEvent, url });
+        apiAttachment.cloud_attachment?.onSuccess?.({
+          ...fileEvent,
+          url,
+        });
       }
     },
   });
 };
 
-export const uploadFiles = <V extends Value = Value>(
-  editor: PlateCloudEditor<V>,
-  files: Iterable<File>
-) => {
+export const uploadFiles = (editor: SlateEditor, files: Iterable<File>) => {
   for (const file of files) {
     uploadFile(editor, file);
   }

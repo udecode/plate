@@ -38,11 +38,11 @@ npm install @udecode/plate-table
 
 ```tsx
 // ...
-import { createTablePlugin } from '@udecode/plate-table';
+import { TablePlugin } from '@udecode/plate-table/react';
 
 const plugins = [
   // ...otherPlugins,
-  createTablePlugin({
+  TablePlugin.configure({
     options: {
       initialTableWidth: 600,
     },
@@ -50,29 +50,9 @@ const plugins = [
 ];
 ```
 
-## Keyboard Interactions
+## Plugins
 
-<KeyTable>
-  <KeyTableItem hotkey="Shift + ArrowUp">
-    Add the cell above to selection.
-  </KeyTableItem>
-  <KeyTableItem hotkey="Shift + ArrowDown">
-    Add the cell below to selection.
-  </KeyTableItem>
-  <KeyTableItem hotkey="Shift + ArrowLeft">
-    Add the left cell to selection.
-  </KeyTableItem>
-  <KeyTableItem hotkey="Shift + ArrowRight">
-    Add the right cell to selection.
-  </KeyTableItem>
-  <KeyTableItem hotkey="Shift + Tab">Select the previous cell.</KeyTableItem>
-  <KeyTableItem hotkey="Tab">Select the next cell.</KeyTableItem>
-  <KeyTableItem hotkey="Cmd + A">Select all the table cells.</KeyTableItem>
-</KeyTable>
-
-## API
-
-### createTablePlugin
+### TablePlugin
 
 <APIOptions>
 
@@ -85,24 +65,6 @@ Disables the left resizer of the first column in the table.
 <APIItem name="enableUnsetSingleColSize" type="boolean" optional>
 Disables unsetting the width of the first column when the table has only one column. Set this to `true` if you want to resize the table width when there's only one column. Leave it `false` if you have a full-width table.
 </APIItem>
-<APIItem name="cellFactory" type="(options: { children?: TDescendant[]; header?: boolean; row?: TTableRowElement; }) => TTableCellElement" optional>
-The cell node factory used each time a cell is created.
-
-- **Default:** `(options) => getEmptyCellNode(editor, options)`
-
-</APIItem>
-<APIItem name="insertColumn" type="(editor: PlateEditor, options: { fromCell: Path; }) => void" optional>
-The function to insert a new column into the table.
-
-- **Default:** **`insertTableColumn`**
-
-</APIItem>
-<APIItem name="insertRow" type="(editor: PlateEditor, options: { fromRow: Path; }) => void" optional>
-The function to insert a new row into the table.
-
-- **Default:** **`insertTableRow`**
-
-</APIItem>
 <APIItem name="initialTableWidth" type="number" optional>
 If defined, a normalizer will set each undefined table `colSizes` to this value divided by the number of columns. Note that merged cells are not yet supported.
 </APIItem>
@@ -113,6 +75,131 @@ The minimum width of a column in the table.
 
 </APIItem>
 </APIOptions>
+
+### TableRowPlugin
+
+Plugin for table rows.
+
+### TableCellPlugin
+
+Plugin for table cells.
+
+### TableCellHeaderPlugin
+
+Plugin for table header cells.
+
+## API
+
+### editor.api.create.cell
+
+Creates an empty cell node for a table.
+
+<APIParameters>
+<APIItem name="options" type="CreateCellOptions">
+Options for creating the cell.
+<APISubList>
+<APISubListItem parent="options" name="header" type="boolean" optional>
+Specify `true` if the cell is a header cell.
+</APISubListItem>
+<APISubListItem parent="options" name="row" type="TTableRowElement" optional>
+The row element. If `header` is not specified, it will determine if the cell is a header cell based on the row's children.
+</APISubListItem>
+<APISubListItem
+  parent="options"
+  name="children"
+  type="TDescendant[]"
+  optional
+>
+The children of the new cell node.
+</APISubListItem>
+</APISubList>
+
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+<APIItem type="TElement">
+
+The cell node.
+
+</APIItem>
+</APIReturns>
+
+### editor.api.table.getCellChildren
+
+Gets the children of a table cell.
+
+<APIParameters>
+<APIItem name="cell" type="TElement">
+The table cell element.
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+<APIItem type="TDescendant[]">
+
+The children of the table cell.
+
+</APIItem>
+</APIReturns>
+
+### editor.tf.insert.tableColumn
+
+Inserts a column into the table at the current selection or a specified cell path.
+
+<APIParameters>
+  <APIItem name="options" type="object" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="header" type="boolean" optional>
+        If true, the inserted column will be treated as a header column.
+      </APISubListItem>
+      <APISubListItem parent="options" name="fromCell" type="Path" optional>
+        The path of the cell to insert the column from.
+      </APISubListItem>
+      <APISubListItem parent="options" name="at" type="Path" optional>
+        The exact path of the cell to insert the column at. This overrules the
+        `fromCell` option.
+      </APISubListItem>
+      <APISubListItem
+        parent="options"
+        name="disableSelect"
+        type="boolean"
+        optional
+      >
+        If true, selection will be disabled after insertion.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### editor.tf.insert.tableRow
+
+Inserts a row into the table at the current selection or a specified row path.
+
+<APIParameters>
+  <APIItem name="options" type="object" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="header" type="boolean" optional>
+        If true, the inserted row will be treated as a header row.
+      </APISubListItem>
+      <APISubListItem parent="options" name="fromRow" type="Path" optional>
+        The path of the row to insert the new row from.
+      </APISubListItem>
+      <APISubListItem parent="options" name="at" type="Path" optional>
+        The exact path of the row to insert the new row at. This overrules the
+        `fromRow` option.
+      </APISubListItem>
+      <APISubListItem
+        parent="options"
+        name="disableSelect"
+        type="boolean"
+        optional
+      >
+        If true, selection will be disabled after insertion.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
 
 ### deleteColumn
 
@@ -214,7 +301,7 @@ Returns an empty cell node for a table.
 <APIItem name="editor" type="PlateEditor">
 The editor instance.
 </APIItem>
-<APIItem name="options" type="CellFactoryOptions">
+<APIItem name="options" type="CreateCellOptions">
 Options for creating the cell.
 <APISubList>
 <APISubListItem parent="options" name="header" type="boolean" optional>
@@ -231,7 +318,7 @@ The row element. If `header` is not specified, it will determine if the cell is 
 >
 The children of the new cell node.
 
-- **Default:** `[editor.blockFactory()]`
+- **Default:** `[editor.api.create.block()]`
 
 </APISubListItem>
 </APISubList>
@@ -431,7 +518,7 @@ The number of columns in the table.
 Gets the column index of a cell node within a table.
 
 <APIParameters>
-  <APIItem name="editor" type="TReactEditor">
+  <APIItem name="editor" type="TEditor">
     The editor instance.
   </APIItem>
   <APIItem name="cellNode" type="TElement">
@@ -569,7 +656,7 @@ Gets the column sizes of a table node, with overrides applied if provided.
 Gets the row index of a cell node within a table.
 
 <APIParameters>
-  <APIItem name="editor" type="TReactEditor">
+  <APIItem name="editor" type="TEditor">
     The editor instance.
   </APIItem>
   <APIItem name="cellNode" type="TElement">
@@ -880,7 +967,7 @@ Handles the keyboard events for tables.
   <APIItem name="editor" type="E">
     The editor instance.
   </APIItem>
-  <APIItem name="plugin" type="WithPlatePlugin">
+  <APIItem name="plugin" type="PlatePlugin">
     The plate plugin.
   </APIItem>
 </APIParameters>
@@ -922,7 +1009,7 @@ If inserting a table:
   <APIItem name="editor" type="E">
     The editor instance.
   </APIItem>
-  <APIItem name="plugin" type="WithPlatePlugin">
+  <APIItem name="plugin" type="PlatePlugin">
     The plate plugin.
   </APIItem>
 </APIParameters>
@@ -937,7 +1024,7 @@ If the selection is expanded:
   <APIItem name="editor" type="E">
     The editor instance.
   </APIItem>
-  <APIItem name="plugin" type="WithPlatePlugin">
+  <APIItem name="plugin" type="PlatePlugin">
     The plate plugin.
   </APIItem>
 </APIParameters>
@@ -1001,7 +1088,7 @@ Enhance the editor instance with table-related functionality by applying the fol
   <APIItem name="editor" type="E">
     The editor instance.
   </APIItem>
-  <APIItem name="plugin" type="WithPlatePlugin">
+  <APIItem name="plugin" type="PlatePlugin">
     The plate plugin.
   </APIItem>
 </APIParameters>

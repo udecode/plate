@@ -1,5 +1,25 @@
 # @udecode/plate-caption
 
+## 37.0.1
+
+### Patch Changes
+
+- [#3483](https://github.com/udecode/plate/pull/3483) by [@felixfeng33](https://github.com/felixfeng33) – Icorrect exoprt `TCalloutElement`
+
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createCaptionPlugin` -> `CaptionPlugin`
+  - `CaptionPlugin` options:
+    - Rename `pluginKeys` to `plugins`
+    - Rename `focusEndCaptionPath` to `focusEndPath`
+    - Rename `focusStartCaptionPath` to `focusStartPath`
+    - Rename `showCaptionId` to `visibleId`
+    - Rename `isShow` to `isVisible`
+  - Move `captionGlobalStore` to `CaptionPlugin`
+
 ## 36.0.0
 
 ## 34.1.0

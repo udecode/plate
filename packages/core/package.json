@@ -1,7 +1,7 @@
 {
   "name": "@udecode/plate-core",
-  "version": "36.3.7",
-  "description": "The core architecture of Plate – a plugin system for slate",
+  "version": "37.0.8",
+  "description": "The core of Plate – a plugin system for slate",
   "keywords": [
     "contentEditable",
     "editor",
@@ -31,11 +31,11 @@
       "module": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
-    "./server": {
-      "types": "./dist/server.d.ts",
-      "import": "./dist/server.mjs",
-      "module": "./dist/server.mjs",
-      "require": "./dist/server.js"
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.mjs",
+      "module": "./dist/react/index.mjs",
+      "require": "./dist/react/index.js"
     }
   },
   "main": "dist/index.js",
@@ -56,10 +56,12 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/slate": "36.0.6",
-    "@udecode/slate-react": "36.0.6",
-    "@udecode/slate-utils": "36.3.4",
-    "@udecode/utils": "31.0.0",
+    "@udecode/react-hotkeys": "37.0.0",
+    "@udecode/react-utils": "37.0.0",
+    "@udecode/slate": "37.0.0",
+    "@udecode/slate-react": "37.0.0",
+    "@udecode/slate-utils": "37.0.0",
+    "@udecode/utils": "37.0.0",
     "clsx": "^1.2.1",
     "is-hotkey": "^0.2.0",
     "jotai": "^2.7.1",
@@ -68,7 +70,6 @@
     "lodash": "^4.17.21",
     "nanoid": "^3.3.7",
     "optics-ts": "2.4.1",
-    "react-hotkeys-hook": "^4.5.0",
     "use-deep-compare": "^1.2.1",
     "zustand": "^4.5.2",
     "zustand-x": "^3.0.2"
@@ -76,10 +77,10 @@
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "slate": ">=0.94.0",
+    "slate": ">=0.103.0",
     "slate-history": ">=0.93.0",
     "slate-hyperscript": ">=0.66.0",
-    "slate-react": ">=0.99.0"
+    "slate-react": ">=0.108.0"
   },
   "publishConfig": {
     "access": "public"

@@ -1,16 +1,16 @@
-import type { GetAboveNodeOptions, TEditor, Value } from '@udecode/slate';
+import type { GetAboveNodeOptions, TEditor } from '@udecode/slate';
 
 import { Path, Range } from 'slate';
 
 import { getBlockAbove } from './getBlockAbove';
 
 /** Whether the range is in the same block. */
-export const isRangeInSameBlock = <V extends Value>(
-  editor: TEditor<V>,
+export const isRangeInSameBlock = <E extends TEditor>(
+  editor: E,
   {
     at,
     ...options
-  }: { at?: Range | null } & Omit<GetAboveNodeOptions<V>, 'at'> = {}
+  }: { at?: Range | null } & Omit<GetAboveNodeOptions<E>, 'at'> = {}
 ) => {
   if (!at) at = editor.selection;
   if (!at) return;

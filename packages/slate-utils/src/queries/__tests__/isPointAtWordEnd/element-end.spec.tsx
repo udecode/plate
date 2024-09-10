@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import type { PlateEditor } from '@udecode/plate-core';
+import type { SlateEditor } from '@udecode/plate-core';
 
 import { jsx } from '@udecode/plate-test-utils';
 import { Range } from 'slate';
@@ -16,7 +16,7 @@ const input = (
       <cursor />
     </hp>
   </editor>
-) as any as PlateEditor;
+) as any as SlateEditor;
 
 const at = Range.start(input.selection as Range);
 

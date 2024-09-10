@@ -1,0 +1,60 @@
+{
+  "name": "@udecode/plate-playwright",
+  "version": "37.0.0",
+  "description": "Interact with a Plate editor from inside a Playwright test",
+  "keywords": [
+    "plate",
+    "slate"
+  ],
+  "homepage": "https://platejs.org",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/playwright"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "module": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
+  "scripts": {
+    "brl": "yarn p:brl",
+    "build": "yarn p:build",
+    "build:watch": "yarn p:build:watch",
+    "clean": "yarn p:clean",
+    "lint": "yarn p:lint",
+    "lint:fix": "yarn p:lint:fix",
+    "test": "yarn p:test",
+    "test:watch": "yarn p:test:watch",
+    "typecheck": "yarn p:typecheck"
+  },
+  "devDependencies": {
+    "@udecode/plate-common": "workspace:^"
+  },
+  "peerDependencies": {
+    "@playwright/test": ">=1.42.1",
+    "@udecode/plate-common": ">=37.0.8",
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0",
+    "slate": ">=0.103.0",
+    "slate-history": ">=0.93.0",
+    "slate-hyperscript": ">=0.66.0",
+    "slate-react": ">=0.108.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,7 +1,11 @@
 import React from 'react';
 
-import { findNodePath, useEditorRef, useElement } from '@udecode/plate-common';
-import { select, setNodes } from '@udecode/plate-common/server';
+import { select, setNodes } from '@udecode/plate-common';
+import {
+  findNodePath,
+  useEditorRef,
+  useElement,
+} from '@udecode/plate-common/react';
 
 import type { ResizeEvent, ResizeLength } from '../types';
 import type { TResizableElement } from './TResizableElement';

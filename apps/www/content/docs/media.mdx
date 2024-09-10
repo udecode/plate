@@ -32,34 +32,57 @@ docs:
 npm install @udecode/plate-media
 ```
 
-### Plugins
+## Usage
 
 ```tsx
-import { createCaptionPlugin } from '@udecode/plate-caption';
+import { CaptionPlugin } from '@udecode/plate-caption/react';
 import {
-  createImagePlugin,
-  createMediaEmbedPlugin,
-  ELEMENT_IMAGE,
-  ELEMENT_MEDIA_EMBED,
-} from '@udecode/plate-media';
-import { createSelectOnBackspacePlugin } from '@udecode/plate-select';
+  ImagePlugin,
+  MediaEmbedPlugin,
+} from '@udecode/plate-media/react';
+import { SelectOnBackspacePlugin } from '@udecode/plate-select';
 
 const plugins = [
   // ...otherPlugins,
-  createCaptionPlugin({
-    options: { pluginKeys: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED] },
+  CaptionPlugin.configure({
+    options: { plugins: [ImagePlugin, MediaEmbedPlugin] },
   }),
-  createImagePlugin(),
-  createMediaEmbedPlugin(),
-  createSelectOnBackspacePlugin({
+  ImagePlugin,
+  MediaEmbedPlugin,
+  SelectOnBackspacePlugin.configure({
     options: {
       query: {
-        allow: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED],
+        allow: [ImagePlugin.key, MediaEmbedPlugin.key],
       },
     },
   }),
 ];
 ```
+
+## Plugins
+
+### ImagePlugin
+
+<APIOptions>
+
+Extends `MediaPluginOptions`.
+
+<APIItem name="uploadImage" type="(dataUrl: string | ArrayBuffer) => Promise<string | ArrayBuffer> | string | ArrayBuffer" optional>
+
+An optional method that will upload the image to a server. The method receives the base64 dataUrl of the uploaded image, and should return the URL of the uploaded image.
+
+</APIItem>
+<APIItem name="disableUploadInsert" type="boolean" optional>
+Disables file upload on data insertion if set to true.
+</APIItem>
+<APIItem name="disableEmbedInsert" type="boolean" optional>
+Disables URL embed on data insertion if set to true.
+</APIItem>
+</APIOptions>
+
+### MediaEmbedPlugin
+
+Options extends `MediaPluginOptions`.
 
 ## API Media
 
@@ -87,7 +110,7 @@ URL.
 The type of media to insert. Defaults to the editor's image element
 type.
 
-- **Default:** `getPluginType(editor, ELEMENT_IMAGE)`
+- **Default:** `editor.getType(ImagePlugin)`
 
 </APISubListItem>
 </APISubList>
@@ -135,7 +158,7 @@ Submits the floating media element by setting its URL and performing necessary t
   </APIItem>
 </APIParameters>
 
-### MediaPlugin
+### MediaPluginOptions
 
 Common attributes shared by image and media embed plugins.
 
@@ -168,25 +191,6 @@ A type defining the data returned from parsing an embed URL.
 </APIAttributes>
 
 ## API Image
-
-### createImagePlugin
-
-<APIOptions>
-
-Extends `MediaPlugin`.
-
-<APIItem name="uploadImage" type="(dataUrl: string | ArrayBuffer) => Promise<string | ArrayBuffer> | string | ArrayBuffer" optional>
-
-An optional method that will upload the image to a server. The method receives the base64 dataUrl of the uploaded image, and should return the URL of the uploaded image.
-
-</APIItem>
-<APIItem name="disableUploadInsert" type="boolean" optional>
-Disables file upload on data insertion if set to true.
-</APIItem>
-<APIItem name="disableEmbedInsert" type="boolean" optional>
-Disables URL embed on data insertion if set to true.
-</APIItem>
-</APIOptions>
 
 ### insertImage
 
@@ -227,7 +231,7 @@ Enhances the editor to support pasting images from the clipboard.
   <APIItem name="editor" type="E">
     The editor instance.
   </APIItem>
-  <APIItem name="plugin" type="WithPlatePlugin">
+  <APIItem name="plugin" type="PlatePlugin">
     The plate plugin.
   </APIItem>
 </APIParameters>
@@ -240,16 +244,12 @@ Enhances the editor to automatically insert an image when a URL is pasted.
   <APIItem name="editor" type="E">
     The editor instance.
   </APIItem>
-  <APIItem name="plugin" type="WithPlatePlugin">
+  <APIItem name="plugin" type="PlatePlugin">
     The plate plugin.
   </APIItem>
 </APIParameters>
 
 ## API Media Embed
-
-### createMediaEmbedPlugin
-
-Options extends `MediaPlugin`.
 
 ### insertMediaEmbed
 
@@ -259,7 +259,7 @@ Inserts a media embed element at the current selection.
 <APIItem name="editor" type="PlateEditor">
 The editor instance.
 </APIItem>
-<APIItem name="options" type="Partial<TMediaEmbedElement> & PlatePluginKey">
+<APIItem name="options" type="object">
 <APISubList>
 <APISubListItem parent="options" name="url" type="string" optional>
 The URL of the media embed.
@@ -275,7 +275,7 @@ The URL of the media embed.
 >
 The key of the media embed element.
 
-- **Default:** `ELEMENT_MEDIA_EMBED`
+- **Default:** `MediaEmbedPlugin.key`
 
 </APISubListItem>
 </APISubList>

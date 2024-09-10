@@ -1,7 +1,9 @@
 /** @jsx jsx */
 
-import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
-import { createLinkPlugin } from '@udecode/plate-link';
+import type { SlateEditor } from '@udecode/plate-common';
+
+import { createPlateEditor } from '@udecode/plate-common/react';
+import { LinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { isBlockTextEmptyAfterSelection } from '../../isBlockTextEmptyAfterSelection';
@@ -18,14 +20,14 @@ const input = (
       </ha>
     </hp>
   </editor>
-) as any as PlateEditor;
+) as any as SlateEditor;
 
 const output = true;
 
 it('should be', () => {
   const editor = createPlateEditor({
     editor: input,
-    plugins: [createLinkPlugin()],
+    plugins: [LinkPlugin],
   });
 
   expect(isBlockTextEmptyAfterSelection(editor)).toEqual(output);

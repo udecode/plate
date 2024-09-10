@@ -1,120 +1,84 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import type { ValueId } from '@/config/customizer-plugins';
 
 import { cn } from '@udecode/cn';
-import { createAlignPlugin } from '@udecode/plate-alignment';
-import { createAutoformatPlugin } from '@udecode/plate-autoformat';
+import { AlignPlugin } from '@udecode/plate-alignment';
+import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
-  createBoldPlugin,
-  createCodePlugin,
-  createItalicPlugin,
-  createStrikethroughPlugin,
-  createSubscriptPlugin,
-  createSuperscriptPlugin,
-  createUnderlinePlugin,
-} from '@udecode/plate-basic-marks';
+  BoldPlugin,
+  CodePlugin,
+  ItalicPlugin,
+  StrikethroughPlugin,
+  SubscriptPlugin,
+  SuperscriptPlugin,
+  UnderlinePlugin,
+} from '@udecode/plate-basic-marks/react';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+import { SingleLinePlugin } from '@udecode/plate-break/react';
+import { CaptionPlugin } from '@udecode/plate-caption/react';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+import { CommentsPlugin } from '@udecode/plate-comments/react';
 import {
-  ELEMENT_BLOCKQUOTE,
-  createBlockquotePlugin,
-} from '@udecode/plate-block-quote';
-import {
-  createExitBreakPlugin,
-  createSingleLinePlugin,
-  createSoftBreakPlugin,
-} from '@udecode/plate-break';
-import { createCaptionPlugin } from '@udecode/plate-caption';
-import {
-  ELEMENT_CODE_BLOCK,
-  createCodeBlockPlugin,
-} from '@udecode/plate-code-block';
-import { createCommentsPlugin } from '@udecode/plate-comments';
-import {
+  ParagraphPlugin,
   Plate,
-  type PlatePluginComponent,
-  type Value,
-  createPlugins,
-} from '@udecode/plate-common';
-import { createDndPlugin } from '@udecode/plate-dnd';
-import { createEmojiPlugin } from '@udecode/plate-emoji';
-import { createExcalidrawPlugin } from '@udecode/plate-excalidraw';
+  usePlateEditor,
+} from '@udecode/plate-common/react';
+import { DatePlugin } from '@udecode/plate-date';
+import { DndPlugin } from '@udecode/plate-dnd';
+import { DocxPlugin } from '@udecode/plate-docx';
+import { EmojiPlugin } from '@udecode/plate-emoji';
+import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import {
-  createFontBackgroundColorPlugin,
-  createFontColorPlugin,
-  createFontSizePlugin,
+  FontBackgroundColorPlugin,
+  FontColorPlugin,
+  FontSizePlugin,
 } from '@udecode/plate-font';
-import {
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_H3,
-  ELEMENT_H4,
-  ELEMENT_H5,
-  ELEMENT_H6,
-  createHeadingPlugin,
-} from '@udecode/plate-heading';
-import { createHighlightPlugin } from '@udecode/plate-highlight';
-import { createHorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
-import { createIndentPlugin } from '@udecode/plate-indent';
-import { createIndentListPlugin } from '@udecode/plate-indent-list';
-import { createJuicePlugin } from '@udecode/plate-juice';
-import { createKbdPlugin } from '@udecode/plate-kbd';
-import { createColumnPlugin } from '@udecode/plate-layout';
-import { createLineHeightPlugin } from '@udecode/plate-line-height';
-import { createLinkPlugin } from '@udecode/plate-link';
-import { createListPlugin, createTodoListPlugin } from '@udecode/plate-list';
-import {
-  createImagePlugin,
-  createMediaEmbedPlugin,
-} from '@udecode/plate-media';
-import { createMentionPlugin } from '@udecode/plate-mention';
-import { createNodeIdPlugin } from '@udecode/plate-node-id';
-import { createNormalizeTypesPlugin } from '@udecode/plate-normalizers';
-import {
-  ELEMENT_PARAGRAPH,
-  createParagraphPlugin,
-} from '@udecode/plate-paragraph';
-import { createResetNodePlugin } from '@udecode/plate-reset-node';
-import {
-  createDeletePlugin,
-  createSelectOnBackspacePlugin,
-} from '@udecode/plate-select';
-import { createBlockSelectionPlugin } from '@udecode/plate-selection';
-import { createDeserializeDocxPlugin } from '@udecode/plate-serializer-docx';
-import { createDeserializeMdPlugin } from '@udecode/plate-serializer-md';
-import { createSlashPlugin } from '@udecode/plate-slash-command';
-import { createTabbablePlugin } from '@udecode/plate-tabbable';
-import { createTablePlugin } from '@udecode/plate-table';
-import { ELEMENT_TOGGLE, createTogglePlugin } from '@udecode/plate-toggle';
-import { createTrailingBlockPlugin } from '@udecode/plate-trailing-block';
+import { HEADING_KEYS } from '@udecode/plate-heading';
+import { HeadingPlugin } from '@udecode/plate-heading/react';
+import { HighlightPlugin } from '@udecode/plate-highlight/react';
+import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
+import { IndentPlugin } from '@udecode/plate-indent/react';
+import { IndentListPlugin } from '@udecode/plate-indent-list/react';
+import { JuicePlugin } from '@udecode/plate-juice';
+import { KbdPlugin } from '@udecode/plate-kbd/react';
+import { ColumnPlugin } from '@udecode/plate-layout/react';
+import { LineHeightPlugin } from '@udecode/plate-line-height';
+import { LinkPlugin } from '@udecode/plate-link/react';
+import { ListPlugin, TodoListPlugin } from '@udecode/plate-list/react';
+import { MarkdownPlugin } from '@udecode/plate-markdown';
+import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
+import { MentionPlugin } from '@udecode/plate-mention/react';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
+import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
+import { PlaywrightPlugin } from '@udecode/plate-playwright';
+import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
+import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import { SlashPlugin } from '@udecode/plate-slash-command';
+import { TablePlugin } from '@udecode/plate-table/react';
+import { TogglePlugin } from '@udecode/plate-toggle/react';
+import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
+import Prism from 'prismjs';
 
+import { CheckPlugin } from '@/components/context/check-plugin';
 import { settingsStore } from '@/components/context/settings-store';
 import { PlaygroundFixedToolbarButtons } from '@/components/plate-ui/playground-fixed-toolbar-buttons';
 import { PlaygroundFloatingToolbarButtons } from '@/components/plate-ui/playground-floating-toolbar-buttons';
-import { captionPlugin } from '@/lib/plate/demo/plugins/captionPlugin';
+import { getAutoformatOptions } from '@/lib/plate/demo/plugins/autoformatOptions';
 import { createPlateUI } from '@/plate/create-plate-ui';
-import { CommentsProvider } from '@/plate/demo/comments/CommentsProvider';
 import { editableProps } from '@/plate/demo/editableProps';
 import { isEnabled } from '@/plate/demo/is-enabled';
-import { alignPlugin } from '@/plate/demo/plugins/alignPlugin';
-import { autoformatIndentLists } from '@/plate/demo/plugins/autoformatIndentLists';
-import { autoformatLists } from '@/plate/demo/plugins/autoformatLists';
-import { autoformatRules } from '@/plate/demo/plugins/autoformatRules';
-import { dragOverCursorPlugin } from '@/plate/demo/plugins/dragOverCursorPlugin';
+import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
 import { exitBreakPlugin } from '@/plate/demo/plugins/exitBreakPlugin';
-import { forcedLayoutPlugin } from '@/plate/demo/plugins/forcedLayoutPlugin';
-import { lineHeightPlugin } from '@/plate/demo/plugins/lineHeightPlugin';
-import { linkPlugin } from '@/plate/demo/plugins/linkPlugin';
 import { resetBlockTypePlugin } from '@/plate/demo/plugins/resetBlockTypePlugin';
-import { selectOnBackspacePlugin } from '@/plate/demo/plugins/selectOnBackspacePlugin';
 import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
-import { trailingBlockPlugin } from '@/plate/demo/plugins/trailingBlockPlugin';
+import { commentsData, usersData } from '@/plate/demo/values/commentsValue';
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
-import { Prism } from '@/registry/default/plate-ui/code-block-combobox';
 import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
 import { CursorOverlay } from '@/registry/default/plate-ui/cursor-overlay';
 import { Editor } from '@/registry/default/plate-ui/editor';
@@ -129,285 +93,254 @@ import {
   TodoLi,
   TodoMarker,
 } from '@/registry/default/plate-ui/indent-todo-marker-component';
+import { LinkFloatingToolbar } from '@/registry/default/plate-ui/link-floating-toolbar';
 
-export const usePlaygroundPlugins = ({
-  components = createPlateUI(),
-  id,
-}: {
-  components?: Record<string, PlatePluginComponent>;
-  id?: ValueId;
-} = {}) => {
-  const enabled = settingsStore.use.checkedPlugins();
+import { usePlaygroundEnabled } from './usePlaygroundEnabled';
 
-  const autoformatOptions = {
-    enableUndoOnDelete: true,
-    rules: [...autoformatRules],
-  };
+export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
+  const enabledPlugins = settingsStore.use.checkedPlugins();
+  const overridePlugins = usePlaygroundEnabled(id);
+  const autoformatOptions = getAutoformatOptions(id, enabledPlugins);
 
-  if (id === 'indentlist') {
-    autoformatOptions.rules.push(...autoformatIndentLists);
-  } else if (id === 'list') {
-    autoformatOptions.rules.push(...autoformatLists);
-  } else if (enabled.listStyleType) {
-    autoformatOptions.rules.push(...autoformatIndentLists);
-  } else if (enabled.list) {
-    autoformatOptions.rules.push(...autoformatLists);
-  }
+  const value = usePlaygroundValue(id);
+  const key = settingsStore.use.version();
 
-  return useMemo(
-    () => {
-      return createPlugins(
-        [
-          // Nodes
-          createParagraphPlugin({ enabled: !!enabled.p }),
-          createHeadingPlugin({ enabled: !!enabled.heading }),
-          createBlockquotePlugin({ enabled: !!enabled.blockquote }),
-          createCodeBlockPlugin({
-            enabled: !!enabled.code_block,
-            options: {
-              prism: Prism,
-            },
-          }),
-          createHorizontalRulePlugin({ enabled: !!enabled.hr }),
-          createLinkPlugin({ ...linkPlugin, enabled: !!enabled.a }),
-          createListPlugin({
-            enabled: id === 'list' || !!enabled.list,
-          }),
-          createImagePlugin({
-            enabled: !!enabled.img,
-            renderAfterEditable: ImagePreview,
-          }),
-          createMediaEmbedPlugin({ enabled: !!enabled.media_embed }),
-          createCaptionPlugin({ ...captionPlugin, enabled: !!enabled.caption }),
-          createMentionPlugin({
-            enabled: !!enabled.mention,
-            options: {
-              triggerPreviousCharPattern: /^$|^[\s"']$/,
-            },
-          }),
-          createSlashPlugin(),
-          createTablePlugin({
-            enabled: !!enabled.table,
-            options: {
-              enableMerging: id === 'tableMerge',
-            },
-          }),
-          createTodoListPlugin({ enabled: !!enabled.action_item }),
-          createTogglePlugin({ enabled: !!enabled.toggle }),
-          createExcalidrawPlugin({ enabled: !!enabled.excalidraw }),
+  const editorId = id || 'playground-' + key;
 
-          // Marks
-          createBoldPlugin({ enabled: !!enabled.bold }),
-          createItalicPlugin({ enabled: !!enabled.italic }),
-          createUnderlinePlugin({ enabled: !!enabled.underline }),
-          createStrikethroughPlugin({ enabled: !!enabled.strikethrough }),
-          createCodePlugin({ enabled: !!enabled.code }),
-          createSubscriptPlugin({ enabled: !!enabled.subscript }),
-          createSuperscriptPlugin({ enabled: !!enabled.superscript }),
-          createFontColorPlugin({ enabled: !!enabled.color }),
-          createFontBackgroundColorPlugin({
-            enabled: !!enabled.backgroundColor,
-          }),
-          createFontSizePlugin({ enabled: !!enabled.fontSize }),
-          createHighlightPlugin({ enabled: !!enabled.highlight }),
-          createKbdPlugin({ enabled: !!enabled.kbd }),
+  return usePlateEditor(
+    {
+      id: editorId,
+      override: {
+        components: createPlateUI({
+          draggable: isEnabled('dnd', id),
+          placeholder: isEnabled('placeholder', id),
+        }),
+        plugins: overridePlugins,
+      },
+      plugins: [
+        // Nodes
+        HeadingPlugin,
+        BlockquotePlugin,
+        CodeBlockPlugin.configure({
+          options: {
+            prism: Prism,
+          },
+        }),
+        HorizontalRulePlugin,
+        LinkPlugin.extend({
+          render: { afterEditable: () => <LinkFloatingToolbar /> },
+        }),
+        ListPlugin,
+        ImagePlugin.extend({
+          render: { afterEditable: ImagePreview },
+        }),
+        MediaEmbedPlugin,
+        CaptionPlugin.configure({
+          options: {
+            plugins: [ImagePlugin, MediaEmbedPlugin],
+          },
+        }),
+        DatePlugin,
+        MentionPlugin.configure({
+          options: {
+            triggerPreviousCharPattern: /^$|^[\s"']$/,
+          },
+        }),
+        SlashPlugin,
+        TablePlugin.configure({
+          options: {
+            enableMerging: id === 'tableMerge',
+          },
+        }),
+        TodoListPlugin,
+        TogglePlugin,
+        ExcalidrawPlugin,
 
-          // Block Style
-          createAlignPlugin({
-            ...alignPlugin,
-            enabled: !!enabled.align,
-          }),
-          createIndentPlugin({
-            enabled: !!enabled.indent,
-            inject: {
-              props: {
-                validTypes: [
-                  ELEMENT_PARAGRAPH,
-                  ELEMENT_H1,
-                  ELEMENT_H2,
-                  ELEMENT_H3,
-                  ELEMENT_H4,
-                  ELEMENT_H5,
-                  ELEMENT_H6,
-                  ELEMENT_BLOCKQUOTE,
-                  ELEMENT_CODE_BLOCK,
-                  ELEMENT_TOGGLE,
-                ],
+        // Marks
+        BoldPlugin,
+        ItalicPlugin,
+        UnderlinePlugin,
+        StrikethroughPlugin,
+        CodePlugin,
+        SubscriptPlugin,
+        SuperscriptPlugin,
+        FontColorPlugin,
+        FontBackgroundColorPlugin,
+        FontSizePlugin,
+        HighlightPlugin,
+        KbdPlugin,
+
+        // Block Style
+        AlignPlugin.extend({
+          inject: {
+            targetPlugins: [
+              ParagraphPlugin.key,
+              MediaEmbedPlugin.key,
+              HEADING_KEYS.h1,
+              HEADING_KEYS.h2,
+              HEADING_KEYS.h3,
+              HEADING_KEYS.h4,
+              HEADING_KEYS.h5,
+              ImagePlugin.key,
+              HEADING_KEYS.h6,
+            ],
+          },
+        }),
+        IndentPlugin.extend({
+          inject: {
+            targetPlugins: [
+              ParagraphPlugin.key,
+              HEADING_KEYS.h1,
+              HEADING_KEYS.h2,
+              HEADING_KEYS.h3,
+              HEADING_KEYS.h4,
+              HEADING_KEYS.h5,
+              HEADING_KEYS.h6,
+              BlockquotePlugin.key,
+              CodeBlockPlugin.key,
+              TogglePlugin.key,
+            ],
+          },
+        }),
+        IndentListPlugin.extend({
+          inject: {
+            targetPlugins: [
+              ParagraphPlugin.key,
+              HEADING_KEYS.h1,
+              HEADING_KEYS.h2,
+              HEADING_KEYS.h3,
+              HEADING_KEYS.h4,
+              HEADING_KEYS.h5,
+              HEADING_KEYS.h6,
+              BlockquotePlugin.key,
+              CodeBlockPlugin.key,
+              TogglePlugin.key,
+            ],
+          },
+          options: {
+            listStyleTypes: {
+              fire: {
+                liComponent: FireLiComponent,
+                markerComponent: FireMarker,
+                type: 'fire',
+              },
+              todo: {
+                liComponent: TodoLi,
+                markerComponent: TodoMarker,
+                type: 'todo',
               },
             },
-          }),
-          createIndentListPlugin({
-            enabled: id === 'indentlist' || !!enabled.listStyleType,
-            inject: {
-              props: {
-                validTypes: [
-                  ELEMENT_PARAGRAPH,
-                  ELEMENT_H1,
-                  ELEMENT_H2,
-                  ELEMENT_H3,
-                  ELEMENT_H4,
-                  ELEMENT_H5,
-                  ELEMENT_H6,
-                  ELEMENT_BLOCKQUOTE,
-                  ELEMENT_CODE_BLOCK,
-                  ELEMENT_TOGGLE,
-                ],
-              },
+          },
+        }),
+        LineHeightPlugin.extend({
+          inject: {
+            nodeProps: {
+              defaultNodeValue: 1.5,
+              validNodeValues: [1, 1.2, 1.5, 2, 3],
             },
-            options: {
-              listStyleTypes: {
-                fire: {
-                  liComponent: FireLiComponent,
-                  markerComponent: FireMarker,
-                  type: 'fire',
-                },
-                todo: {
-                  liComponent: TodoLi,
-                  markerComponent: TodoMarker,
-                  type: 'todo',
-                },
-              },
+            targetPlugins: [
+              ParagraphPlugin.key,
+              HEADING_KEYS.h1,
+              HEADING_KEYS.h2,
+              HEADING_KEYS.h3,
+              HEADING_KEYS.h4,
+              HEADING_KEYS.h5,
+              HEADING_KEYS.h6,
+            ],
+          },
+        }),
+
+        // Functionality
+        AutoformatPlugin.configure({ options: autoformatOptions }),
+        BlockSelectionPlugin.configure({
+          enabled: !!scrollSelector,
+          options: {
+            areaOptions: {
+              boundaries: `#${scrollSelector}`,
+              container: `#${scrollSelector}`,
+              selectables: [`#${scrollSelector} .slate-selectable`],
+              selectionAreaClass: 'slate-selection-area',
             },
-          }),
-          createLineHeightPlugin({
-            ...lineHeightPlugin,
-            enabled: !!enabled.lineHeight,
-          }),
-
-          // Functionality
-          createAutoformatPlugin({
-            enabled: !!enabled.autoformat,
-            options: autoformatOptions,
-          }),
-          createBlockSelectionPlugin({
-            enabled: id === 'blockselection' || !!enabled.blockSelection,
-            options: {
-              disableContextMenu: true,
-              sizes: {
-                bottom: 0,
-                top: 0,
-              },
+            enableContextMenu: false,
+          },
+        }),
+        DndPlugin.configure({ options: { enableScroller: true } }),
+        EmojiPlugin,
+        exitBreakPlugin,
+        NodeIdPlugin,
+        NormalizeTypesPlugin.configure({
+          options: {
+            rules: [{ path: [0], strictType: HEADING_KEYS.h1 }],
+          },
+        }),
+        resetBlockTypePlugin,
+        SelectOnBackspacePlugin.configure({
+          options: {
+            query: {
+              allow: [ImagePlugin.key, HorizontalRulePlugin.key],
             },
-          }),
-          createDndPlugin({
-            enabled: !!enabled.dnd,
-            options: { enableScroller: true },
-          }),
-          createEmojiPlugin({ enabled: !!enabled.emoji }),
-          createExitBreakPlugin({
-            ...exitBreakPlugin,
-            enabled: !!enabled.exitBreak,
-          }),
-          createNodeIdPlugin({ enabled: !!enabled.nodeId }),
-          createNormalizeTypesPlugin({
-            ...forcedLayoutPlugin,
-            enabled: !!enabled.normalizeTypes,
-          }),
-          createResetNodePlugin({
-            ...resetBlockTypePlugin,
-            enabled: !!enabled.resetNode,
-          }),
-          createSelectOnBackspacePlugin({
-            ...selectOnBackspacePlugin,
-            enabled: !!enabled.selectOnBackspace,
-          }),
-          createDeletePlugin({
-            enabled: !!enabled.delete,
-          }),
-          createSingleLinePlugin({
-            enabled: id === 'singleline' || !!enabled.singleLine,
-          }),
-          createSoftBreakPlugin({
-            ...softBreakPlugin,
-            enabled: !!enabled.softBreak,
-          }),
-          createTabbablePlugin({
-            ...tabbablePlugin,
-            enabled: !!enabled.tabbable,
-          }),
-          createTrailingBlockPlugin({
-            ...trailingBlockPlugin,
-            enabled: id !== 'singleline' && !!enabled.trailingBlock,
-          }),
-          { ...dragOverCursorPlugin, enabled: !!enabled.dragOverCursor },
+          },
+        }),
+        DeletePlugin,
+        SingleLinePlugin,
+        softBreakPlugin,
+        tabbablePlugin,
+        TrailingBlockPlugin.configure({
+          options: { type: ParagraphPlugin.key },
+        }),
+        DragOverCursorPlugin,
 
-          // Collaboration
-          createCommentsPlugin({ enabled: !!enabled.comment }),
+        // Collaboration
+        CommentsPlugin.configure({
+          options: {
+            comments: commentsData,
+            myUserId: '1',
+            users: usersData,
+          },
+        }),
 
-          // Deserialization
-          createDeserializeDocxPlugin({ enabled: !!enabled.deserializeDocx }),
-          createDeserializeMdPlugin({ enabled: !!enabled.deserializeMd }),
-          createJuicePlugin({ enabled: !!enabled.juice }),
-          createColumnPlugin({ enabled: !!enabled.column }),
-        ],
-        {
-          components,
-        }
-      );
+        // Deserialization
+        DocxPlugin,
+        MarkdownPlugin,
+        JuicePlugin,
+        ColumnPlugin,
+
+        // Testing
+        PlaywrightPlugin.configure({
+          enabled: process.env.NODE_ENV !== 'production',
+        }),
+      ],
+      shouldNormalizeEditor: true,
+      value: value,
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [enabled]
+    []
   );
 };
 
-// reset editor when initialValue changes
-export const useInitialValueVersion = (initialValue: Value) => {
-  const enabled = settingsStore.use.checkedPlugins();
-  const [version, setVersion] = useState(1);
-  const prevEnabled = useRef(enabled);
-  const prevInitialValueRef = useRef(initialValue);
-
-  useEffect(() => {
-    if (enabled === prevEnabled.current) return;
-
-    prevEnabled.current = enabled;
-    setVersion((v) => v + 1);
-  }, [enabled]);
-
-  useEffect(() => {
-    if (initialValue === prevInitialValueRef.current) return;
-
-    prevInitialValueRef.current = initialValue;
-    setVersion((v) => v + 1);
-  }, [initialValue]);
-
-  return version;
-};
-
-export default function PlaygroundDemo({ id }: { id?: ValueId }) {
+export default function PlaygroundDemo({
+  id,
+  scrollSelector,
+}: {
+  id?: ValueId;
+  scrollSelector?: string;
+}) {
   const containerRef = useRef(null);
   const enabled = settingsStore.use.checkedComponents();
-  const initialValue = usePlaygroundValue(id);
-  const key = useInitialValueVersion(initialValue);
 
-  const plugins = usePlaygroundPlugins({
-    components: createPlateUI(
-      {},
-      {
-        draggable: isEnabled('dnd', id),
-        placeholder: isEnabled('placeholder', id),
-      }
-    ),
-    id,
-  });
+  const editor = usePlaygroundEditor(id, scrollSelector);
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div className="relative">
-        <Plate
-          initialValue={initialValue}
-          key={key}
-          normalizeInitialValue
-          plugins={plugins}
-        >
-          <CommentsProvider>
-            {enabled['fixed-toolbar'] && (
+    <DemoId id={id}>
+      <DndProvider backend={HTML5Backend}>
+        <div className="relative">
+          <Plate editor={editor}>
+            <CheckPlugin componentId="fixed-toolbar">
               <FixedToolbar className="no-scrollbar">
-                {enabled['fixed-toolbar-buttons'] && (
-                  <PlaygroundFixedToolbarButtons id={id} />
-                )}
+                <CheckPlugin componentId="fixed-toolbar-buttons">
+                  <PlaygroundFixedToolbarButtons />
+                </CheckPlugin>
               </FixedToolbar>
-            )}
+            </CheckPlugin>
 
             <div
               className="flex w-full"
@@ -420,17 +353,19 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
             >
               <div
                 className={cn(
-                  'relative flex w-full overflow-x-auto',
-                  '[&_.slate-start-area-top]:!h-4',
-                  '[&_.slate-start-area-left]:!w-[var(--editor-px)] [&_.slate-start-area-right]:!w-[var(--editor-px)]'
+                  'relative flex max-h-[800px] w-full overflow-x-auto',
+                  // block selection area
+                  '[&_.slate-selected]:!bg-primary/20 [&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10'
                 )}
+                data-plate-selectable
+                id={scrollSelector}
                 ref={containerRef}
               >
                 <Editor
                   {...editableProps}
                   className={cn(
                     editableProps.className,
-                    'max-h-[800px] overflow-x-hidden px-[var(--editor-px)]',
+                    ' overflow-x-hidden px-[var(--editor-px)]',
                     !id && 'pb-[20vh] pt-4',
                     id && 'pb-8 pt-2'
                   )}
@@ -440,26 +375,54 @@ export default function PlaygroundDemo({ id }: { id?: ValueId }) {
                   variant="ghost"
                 />
 
-                {enabled['floating-toolbar'] && (
-                  <FloatingToolbar>
-                    {enabled['floating-toolbar-buttons'] && (
-                      <PlaygroundFloatingToolbarButtons id={id} />
-                    )}
+                <CheckPlugin componentId="floating-toolbar">
+                  <FloatingToolbar
+                    state={{
+                      showWhenReadOnly: isEnabled(
+                        'comment',
+                        id,
+                        enabled[CommentsPlugin.key]
+                      ),
+                    }}
+                  >
+                    <CheckPlugin componentId="floating-toolbar-buttons">
+                      <PlaygroundFloatingToolbarButtons />
+                    </CheckPlugin>
                   </FloatingToolbar>
-                )}
+                </CheckPlugin>
 
-                {isEnabled('cursoroverlay', id) && (
+                <CheckPlugin id="cursoroverlay" plugin={DragOverCursorPlugin}>
                   <CursorOverlay containerRef={containerRef} />
-                )}
+                </CheckPlugin>
               </div>
 
-              {isEnabled('comment', id, enabled['comments-popover']) && (
+              <CheckPlugin
+                componentId="comments-popover"
+                id="comment"
+                plugin={CommentsPlugin}
+              >
                 <CommentsPopover />
-              )}
+              </CheckPlugin>
             </div>
-          </CommentsProvider>
-        </Plate>
-      </div>
-    </DndProvider>
+          </Plate>
+        </div>
+      </DndProvider>
+    </DemoId>
   );
+}
+
+const DemoIdContext = React.createContext<string | undefined>(undefined);
+
+export function DemoId({
+  children,
+  id,
+}: {
+  children: React.ReactNode;
+  id?: string;
+}) {
+  return <DemoIdContext.Provider value={id}>{children}</DemoIdContext.Provider>;
+}
+
+export function useDemoId() {
+  return React.useContext(DemoIdContext);
 }

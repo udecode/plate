@@ -3,23 +3,28 @@ title: Introduction
 description: The rich-text editor framework for React.
 ---
 
-Plate is a powerful toolkit that makes it easier for you to develop with [Slate](https://docs.slatejs.org/), a popular framework for building text editors. Plate focuses on four main areas: **Core**, **Plugins**, **Primitives** and **Components**.
+Plate is a powerful toolkit that makes it easier for you to develop with <Link href="https://docs.slatejs.org/">Slate</Link>, a popular framework for building text editors. Plate focuses on four main areas: **Core**, **Plugins**, **Primitives** and **Components**.
 
 ## Core
 
-The heart of Plate is its plugin system, specially designed for **`slate-react`**. It helps keep your project organized and efficient by separating different functionalities and keeping things clean.
+The heart of Plate is its plugin system, designed for both **`slate`** and **`slate-react`**, with support for server-side rendering. It helps keep your project organized and efficient by separating different functionalities and keeping things clean. The core functionality is available in vanilla JavaScript, allowing for server-side rendering and non-React usage.
 
 ## Plugins
 
-Plate offers a wide range of plugin packages that enhance the behavior, hooks, serialization, normalization, and other features of the editor. These plugins are "headless," meaning they are unstyled by default.
+Plate offers a wide range of plugin packages that enhance the behavior, hooks, serialization, normalization, and other features of the editor. These plugins are "headless," meaning they are unstyled by default. The plugin system includes:
+
+- **State Management**: Each plugin has its own Zustand store.
+- **Shortcuts**: Define custom hotkeys for each plugin.
+- **API and Transforms**: Plugins can define their own API methods and transforms, accessible through `editor.api` and `editor.transforms`.
+- **TypeScript**: Powerful type inference for both plugins and editor.
 
 ## Primitives
 
-In addition to plugins, Plate provides unstyled and accessible components based on [Radix UI](https://www.radix-ui.com/). These components serve as the foundation for building high-quality design systems.
+In addition to plugins, Plate provides unstyled and accessible components based on <Link href="https://www.radix-ui.com/">Radix UI</Link>. These components serve as the foundation for building high-quality design systems.
 
 ## Components
 
-To help you get started with a visually appealing interface, Plate offers pre-built styled components you can own using our CLI. These components, based on [shadcn/ui](https://ui.shadcn.com/), can be used as a reference or starting point for your own component library, enabling you to create a unique, accessible, and visually pleasing user interface.
+To help you get started with a visually appealing interface, Plate offers pre-built styled components you can own using our CLI. These components, based on <Link href="https://ui.shadcn.com/">shadcn/ui</Link>, can be used as a reference or starting point for your own component library, enabling you to create a unique, accessible, and visually pleasing user interface.
 
 ## FAQ
 
@@ -31,7 +36,7 @@ Which frameworks are supported?
 </AccordionTrigger>
 <AccordionContent>
 
-[Slate](https://www.npmjs.com/package/slate) and [Slate React](https://www.npmjs.com/package/slate-react).
+<Link href="https://www.npmjs.com/package/slate">Slate</Link> and <Link href="https://www.npmjs.com/package/slate-react">Slate React</Link>.
 
 </AccordionContent>
 </AccordionItem>
@@ -41,7 +46,7 @@ Which frameworks are supported?
 	Can I use this in my project?
 	</AccordionTrigger>
 	<AccordionContent>
-Yes. Free to use for personal and commercial projects. No attribution required, but sharing your editor app [here](https://github.com/udecode/plate/issues/818) is appreciated!
+Yes. Free to use for personal and commercial projects. No attribution required, but sharing your editor app <Link href="https://github.com/udecode/plate/issues/818">here</Link> is appreciated!
 
     </AccordionContent>
 
@@ -51,8 +56,8 @@ Yes. Free to use for personal and commercial projects. No attribution required, 
 
 ## Credits
 
-- [shadcn/ui](https://ui.shadcn.com/) - For the UI, the docs and the CLI.
-- [Radix UI](https://radix-ui.com) - For the primitives.
-- [Vercel](https://vercel.com) - For hosting.
-- [Shu Ding](https://shud.in) - The typography style is adapted from his work on Nextra.
-- [cmdk](https://cmdk.paco.me) - For the `<Command />` component.
+- <Link href="https://ui.shadcn.com/">shadcn/ui</Link> - For the UI, the docs and the CLI.
+- <Link href="https://radix-ui.com">Radix UI</Link> - For the primitives.
+- <Link href="https://vercel.com">Vercel</Link> - For hosting.
+- <Link href="https://shud.in">Shu Ding</Link> - The typography style is adapted from his work on <Link href="https://nextra.site">Nextra</Link>.
+- <Link href="https://cmdk.paco.me">cmdk</Link> - For the `<Command />` component.

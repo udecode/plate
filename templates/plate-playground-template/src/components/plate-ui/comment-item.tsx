@@ -3,9 +3,10 @@
 import React from 'react';
 import {
   CommentProvider,
-  useCommentById,
+  CommentsPlugin,
   useCommentItemContentState,
-} from '@udecode/plate-comments';
+} from '@udecode/plate-comments/react';
+import { useEditorPlugin } from '@udecode/plate-common/react';
 import { formatDistance } from 'date-fns';
 
 import { CommentAvatar } from './comment-avatar';
@@ -20,11 +21,11 @@ type PlateCommentProps = {
 function CommentItemContent() {
   const {
     comment,
+    commentText,
+    editingValue,
     isMyComment,
     isReplyComment,
     user,
-    editingValue,
-    commentText,
   } = useCommentItemContentState();
 
   return (
@@ -59,11 +60,13 @@ function CommentItemContent() {
 }
 
 export function CommentItem({ commentId }: PlateCommentProps) {
-  const comment = useCommentById(commentId);
+  const { useOption } = useEditorPlugin(CommentsPlugin);
+  const comment = useOption('commentById', commentId);
+
   if (!comment) return null;
 
   return (
-    <CommentProvider key={commentId} id={commentId}>
+    <CommentProvider id={commentId} key={commentId}>
       <CommentItemContent />
     </CommentProvider>
   );

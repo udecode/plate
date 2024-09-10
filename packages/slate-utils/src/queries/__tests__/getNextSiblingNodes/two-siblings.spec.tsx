@@ -2,12 +2,9 @@
 
 import type { Range } from 'slate';
 
-import {
-  type PlateEditor,
-  createPlateEditor,
-  getBlockAbove,
-} from '@udecode/plate-common';
-import { createLinkPlugin } from '@udecode/plate-link';
+import { type SlateEditor, getBlockAbove } from '@udecode/plate-common';
+import { createPlateEditor } from '@udecode/plate-common/react';
+import { LinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { getNextSiblingNodes } from '../../getNextSiblingNodes';
@@ -26,14 +23,14 @@ const input = (
       <htext>last</htext>
     </hp>
   </editor>
-) as any as PlateEditor;
+) as any as SlateEditor;
 
 const output = [<htext />, <htext>last</htext>];
 
 it('should be', () => {
   const editor = createPlateEditor({
     editor: input,
-    plugins: [createLinkPlugin()],
+    plugins: [LinkPlugin],
   });
 
   const above = getBlockAbove(editor) as any;

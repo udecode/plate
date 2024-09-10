@@ -22,11 +22,11 @@ npm install @udecode/plate-break
 ## Usage
 
 ```tsx
-import { createExitBreakPlugin } from '@udecode/plate-break';
+import { ExitBreakPlugin } from '@udecode/plate-break/react';
 
 const plugins = [
   // ...otherPlugins,
-  createExitBreakPlugin({
+  ExitBreakPlugin.configure({
     options: {
       rules: [
         {
@@ -52,7 +52,7 @@ const plugins = [
 ];
 ```
 
-## Keyboard Interactions
+## Keyboard Shortcuts
 
 <KeyTable>
   <KeyTableItem hotkey="Cmd + Enter">
@@ -63,9 +63,9 @@ const plugins = [
   </KeyTableItem>
 </KeyTable>
 
-## API
+## Plugins
 
-### createExitBreakPlugin
+### ExitBreakPlugin
 
 <APIOptions>
 
@@ -115,6 +115,8 @@ The default type of the node to be inserted upon exit.
 </APIItem>
 </APIOptions>
 
+## API
+
 ### exitBreak
 
 Exit a large block using a shortcut.
@@ -141,7 +143,7 @@ If true, exit relative to the selection.
 <APISubListItem parent="options" name="defaultType" type="function" optional>
 The default type of the node to be inserted upon exit.
 
-- **Default:** `getPluginType(editor, ELEMENT_DEFAULT)`
+- **Default:** `editor.getType(ParagraphPlugin)`
 
 </APISubListItem>
 <APISubListItem parent="options" name="query" type="object" optional>
@@ -167,7 +169,7 @@ If true, exit before the selected block.
 Checks if the selection is at the edge of its parent block and performs an "exit break" operation if specified.
 
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
+  <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
   <APIItem name="options" type="object">

@@ -1,5 +1,24 @@
 # @udecode/plate-autoformat
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createAutoformatPlugin` -> `AutoformatPlugin`
+
+## 36.5.6
+
+### Patch Changes
+
+- [#3457](https://github.com/udecode/plate/pull/3457) by [@nklhtv](https://github.com/nklhtv) – Use editor.blockFactory to create default elements
+
+## 36.4.0
+
+### Minor Changes
+
+- [`8342b6c2f333ee445c8b6be7e864857fd2a2584a`](https://github.com/udecode/plate/commit/8342b6c2f333ee445c8b6be7e864857fd2a2584a) by [@zbeyens](https://github.com/zbeyens) – feat: `autoformatBlock` - Add `matchByRegex` option
+
 ## 36.0.0
 
 ## 34.0.0

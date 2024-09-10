@@ -1,7 +1,6 @@
 import {
   type GetAboveNodeOptions,
   type TEditor,
-  type Value,
   getStartPoint,
 } from '@udecode/slate';
 
@@ -12,9 +11,9 @@ import { getPointFromLocation } from './getPointFromLocation';
  * Get the range from the start of the block above a location (default:
  * selection) to the location.
  */
-export const getRangeFromBlockStart = <V extends Value>(
-  editor: TEditor<V>,
-  options: Omit<GetAboveNodeOptions<V>, 'match'> = {}
+export const getRangeFromBlockStart = <E extends TEditor>(
+  editor: E,
+  options: Omit<GetAboveNodeOptions<E>, 'match'> = {}
 ) => {
   const path = getBlockAbove(editor, options)?.[1];
 

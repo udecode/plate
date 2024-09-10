@@ -29,25 +29,89 @@ npm install @udecode/plate-link
 ## Usage
 
 ```tsx
-import { createLinkPlugin } from '@udecode/plate-link';
+import { LinkPlugin } from '@udecode/plate-link/react';
 
 const plugins = [
   // ...otherPlugins,
-  createLinkPlugin({
-    renderAfterEditable: LinkFloatingToolbar
+  LinkPlugin.configure({
+    render: { afterEditable: () => <LinkFloatingToolbar /> },
   }),
 ];
 ```
 
-## Keyboard Interactions
+## Keyboard Shortcuts
 
 <KeyTable>
   <KeyTableItem hotkey="Cmd + K">Add a link on the selected text.</KeyTableItem>
 </KeyTable>
 
-## API
+## Plugin Transforms
 
-### createLinkPlugin
+### editor.insert.link
+
+Inserts a link node into the editor.
+
+<APIParameters>
+<APIItem name="createLinkNodeOptions" type="CreateLinkNodeOptions">
+Options for creating the link node.
+</APIItem>
+<APIItem name="options" type="InsertNodesOptions" optional>
+Additional options for inserting nodes.
+</APIItem>
+</APIParameters>
+
+## Plugin API
+
+### editor.api.floatingLink.hide
+
+Hides the floating link and resets its state.
+
+### editor.api.floatingLink.reset
+
+Resets the floating link state without changing the openEditorId.
+
+### editor.api.floatingLink.show
+
+Shows the floating link for the specified mode and editor ID.
+
+<APIParameters>
+<APIItem name="mode" type="FloatingLinkMode">
+The mode to set for the floating link ('edit' or 'insert').
+</APIItem>
+<APIItem name="editorId" type="string">
+The ID of the editor where the floating link should be shown.
+</APIItem>
+</APIParameters>
+
+### editor.api.link.getAttributes
+
+Gets the attributes for a link element.
+
+<APIParameters>
+<APIItem name="element" type="TLinkElement">
+The link element for which to get attributes.
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+<APIItem type="React.AnchorHTMLAttributes<HTMLAnchorElement>">
+The HTML attributes for the link element.
+</APIItem>
+</APIReturns>
+
+### editor.api.link.submitFloatingLink
+
+Inserts a link if the URL is valid, closes the floating link, and focuses the editor.
+
+<APIReturns>
+<APIItem type="boolean">
+Returns `true` if the link was inserted successfully.
+</APIItem>
+</APIReturns>
+
+## Plugins
+
+### LinkPlugin
 
 <APIOptions>
 <APIItem name="forceSubmit" type="boolean" optional>
@@ -115,18 +179,7 @@ On keyboard shortcut or toolbar mousedown, this function is called to get the li
 
 </APIOptions>
 
-### getLinkAttributes
-
-Gets the attributes for a link element.
-
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="link" type="TLinkElement">
-    The link element.
-  </APIItem>
-</APIParameters>
+## API
 
 ### insertLink
 

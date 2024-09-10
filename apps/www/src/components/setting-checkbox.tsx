@@ -40,9 +40,9 @@ export function SettingCheckbox({
     throw new Error(`No description found for ${id}`);
   }
 
-  const checked = settingsStore.use.checkedIdNext(id);
+  // const checked = settingsStore.use.checkedIdNext(id);
+  const checked = settingsStore.use.checkedId(id);
   const showComponents = settingsStore.use.showComponents();
-  const checkedComponents = settingsStore.use.checkedComponents();
   const pluginHtmlId = `plugin-${id}`;
 
   return (
@@ -185,15 +185,9 @@ export function SettingCheckbox({
                     isLast={isLast}
                   />
 
-                  <Checkbox
-                    checked={checkedComponents[componentId]}
-                    id={componentHtmlId}
-                    onCheckedChange={(value) => {
-                      settingsStore.set.setCheckedComponentId(
-                        componentId,
-                        !!value
-                      );
-                    }}
+                  <SettingComponentCheckbox
+                    componentId={componentId}
+                    htmlId={componentHtmlId}
                   />
 
                   <Label className="flex p-2" htmlFor={componentHtmlId}>
@@ -220,5 +214,25 @@ export function SettingCheckbox({
           }
         )}
     </div>
+  );
+}
+
+export function SettingComponentCheckbox({
+  componentId,
+  htmlId,
+}: {
+  componentId: string;
+  htmlId: string;
+}) {
+  const checked = settingsStore.use.checkedComponentId(componentId);
+
+  return (
+    <Checkbox
+      checked={!!checked}
+      id={htmlId}
+      onCheckedChange={(value) => {
+        settingsStore.set.setCheckedComponentId(componentId, !!value);
+      }}
+    />
   );
 }

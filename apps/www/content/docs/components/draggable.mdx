@@ -1,6 +1,6 @@
 ---
 title: Draggables
-description: Allows movement of blocks, such as paragraph or tables, within the editor.
+description: Allows movement of blocks, such as paragraphs or tables, within the editor.
 component: true
 docs:
   - route: /docs/dnd
@@ -8,6 +8,8 @@ docs:
   - route: /docs/components/tooltip
     title: Tooltip
 ---
+
+<ComponentPreview name="playground-demo" id="dnd" />
 
 ## Installation
 
@@ -59,46 +61,49 @@ Update the import paths to match your project setup.
 
 </Tabs>
 
-## Examples
+## Usage
 
-<ComponentPreview name="playground-demo" id="dnd" />
+To use the Draggables component in your Plate editor, follow these steps:
+
+1. Import the necessary plugins and components:
 
 ```tsx
-import { createPlugins } from '@udecode/plate-common';
-import { createDndPlugin } from '@udecode/plate-dnd';
-import { createNodeIdPlugin } from '@udecode/plate-node-id';
+import { DndPlugin } from '@udecode/plate-dnd';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
 
+// local imports
 import { createPlateUI } from '@/lib/plate/create-plate-ui';
-
 import { withDraggables } from './withDraggables';
-
-const plugins = createPlugins(
-  [
-    // ...otherPlugins,
-    createNodeIdPlugin(),
-    createDndPlugin({ options: { enableScroller: true } }),
-  ],
-  {
-    components: withDraggables(createPlateUI()),
-  }
-);
 ```
 
-### Provider
+2. Create the editor with these plugins and use `withDraggables` to add a drag button next to each block:
 
-Wrap `Plate` with `DndProvider` from `react-dnd`.
+```tsx
+const plugins = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    NodeIdPlugin,
+    DndPlugin.configure({ options: { enableScroller: true } }),
+  ],
+  override: {
+    components: withDraggables(createPlateUI()),
+  }
+});
+```
+
+3. Wrap your `Plate` component with the `DndProvider` from `react-dnd`:
 
 ```tsx
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
 <DndProvider backend={HTML5Backend}>
-  <Plate plugins={plugins}>
+  <Plate editor={editor}>
     <PlateContent />
   </Plate>
-</DndProvider>;
+</DndProvider>
 ```
 
 ## Examples
 
-<ComponentSource src="../../templates/plate-playground-template/src/lib/plate/plate-plugins.ts" />
+<ComponentSource src="../../templates/plate-playground-template/src/components/plate-editor.tsx" />

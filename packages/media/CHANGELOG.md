@@ -1,5 +1,20 @@
 # @udecode/plate-media
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createMediaPlugin` -> `MediaPlugin`
+  - `FloatingMediaUrlInput`, `submitFloatingMedia` rename option `pluginKey` -> `plugin`
+  - `insertMediaEmbed` remove `key` option
+
+## 36.5.3
+
+### Patch Changes
+
+- [#3446](https://github.com/udecode/plate/pull/3446) by [@felixfeng33](https://github.com/felixfeng33) – fix: typo `insertFilePlaceholer` => `insertFilePlaceholder`.
+
 ## 36.2.2
 
 ### Patch Changes
@@ -38,9 +53,7 @@
 
 ### Minor Changes
 
-- [#3241](https://github.com/udecode/plate/pull/3241) by [@felixfeng33](https://github.com/felixfeng33) –
-  - Add plugins: `mediaPlaceholder`, `video`,`audio` and `file`
-  - Set the default align to 'left' in `useMediaState`
+- [#3241](https://github.com/udecode/plate/pull/3241) by [@felixfeng33](https://github.com/felixfeng33) – Add plugins: `mediaPlaceholder`, `video`,`audio` and `file`
 
 ## 33.0.2
 

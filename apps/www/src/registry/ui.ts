@@ -134,6 +134,20 @@ export const ui: Registry = [
     type: 'components:plate-ui',
   },
   {
+    dependencies: ['@udecode/plate-date'],
+    files: ['plate-ui/date-element.tsx'],
+    name: 'date-element',
+    registryDependencies: ['calendar'],
+    type: 'components:plate-ui',
+  },
+  {
+    dependencies: ['react-day-picker', 'date-fns'],
+    files: ['plate-ui/calendar.tsx'],
+    name: 'calendar',
+    registryDependencies: ['button'],
+    type: 'components:plate-ui',
+  },
+  {
     dependencies: ['@radix-ui/react-slot'],
     files: ['plate-ui/button.tsx'],
     name: 'button',
@@ -320,11 +334,7 @@ export const ui: Registry = [
     type: 'components:plate-ui',
   },
   {
-    dependencies: [
-      '@udecode/plate-block-quote',
-      '@udecode/plate-heading',
-      '@udecode/plate-paragraph',
-    ],
+    dependencies: ['@udecode/plate-block-quote', '@udecode/plate-heading'],
     files: ['plate-ui/insert-dropdown-menu.tsx'],
     name: 'insert-dropdown-menu',
     registryDependencies: ['dropdown-menu', 'toolbar'],
@@ -447,7 +457,6 @@ export const ui: Registry = [
     type: 'components:plate-ui',
   },
   {
-    dependencies: ['@udecode/plate-paragraph'],
     files: ['plate-ui/paragraph-element.tsx'],
     name: 'paragraph-element',
     registryDependencies: [],
@@ -553,11 +562,7 @@ export const ui: Registry = [
     type: 'components:plate-ui',
   },
   {
-    dependencies: [
-      '@udecode/plate-block-quote',
-      '@udecode/plate-heading',
-      '@udecode/plate-paragraph',
-    ],
+    dependencies: ['@udecode/plate-block-quote', '@udecode/plate-heading'],
     files: ['plate-ui/turn-into-dropdown-menu.tsx'],
     name: 'turn-into-dropdown-menu',
     registryDependencies: ['dropdown-menu', 'toolbar'],

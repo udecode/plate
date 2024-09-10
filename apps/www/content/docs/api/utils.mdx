@@ -257,7 +257,7 @@ Replaces the children of an editor with default blocks.
   </APIItem>
   <APIItem
     name="options"
-    type="Omit<ReplaceNodeChildrenOptions<EElement<V>, V>, 'at' | 'nodes'>"
+    type="Omit<ReplaceNodeChildrenOptions<ElementOf<E>, V>, 'at' | 'nodes'>"
     optional
   >
     Options for replacing the children of the node. Excludes `at` and `nodes`
@@ -270,7 +270,7 @@ Replaces the children of an editor with default blocks.
 Selects an editor at a target location or an edge (start, end).
 
 <APIParameters>
-  <APIItem name="editor" type="TReactEditor<V>">
+  <APIItem name="editor" type="TEditor<V>">
     The editor to be selected.
   </APIItem>
   <APIItem name="at" type="Location" optional>
@@ -300,11 +300,14 @@ Moves the selection by offset based on the keyboard arrow keys.
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
-  <APIItem name="options" type="MoveSelectionByOffsetOptions" optional>
+  <APIItem name="options" type="object" optional>
     Options for moving the selection by offset. This is an optional parameter.
     <APISubList>
       <APISubListItem parent="options" name="query" type="function" optional>
         A query function to enable the behavior.
+      </APISubListItem>
+      <APISubListItem parent="options" name="event" type="KeyboardEvent">
+        The keyboard event that triggered the move.
       </APISubListItem>
     </APISubList>
   </APIItem>
@@ -324,40 +327,4 @@ Recursively merges a source object into children nodes using a query.
 <APIReturns>
   No explicit return, but it modifies the children nodes based on the provided
   options.
-</APIReturns>
-
-### onKeyDownToggleElement
-
-A function that toggles the type of the node in the editor when a hotkey is pressed.
-
-<APIParameters>
-  <APIItem name="editor" type="E">
-    The PlateEditor instance.
-  </APIItem>
-  <APIItem name="options" type="{ type, options: { hotkey } }">
-    An object that contains the type of the node to be toggled and the hotkey(s)
-    that triggers the toggle.
-  </APIItem>
-</APIParameters>
-<APIReturns>
-  A keyboard handler function that toggles the node type when a specified hotkey
-  is pressed.
-</APIReturns>
-
-### onKeyDownToggleMark
-
-A function that toggles the mark of the node in the editor when a hotkey is pressed.
-
-<APIParameters>
-  <APIItem name="editor" type="E">
-    The PlateEditor instance.
-  </APIItem>
-  <APIItem name="options" type="{ type, options: { hotkey, clear } }">
-    An object that contains the type of the mark to be toggled, the hotkey that
-    triggers the toggle, and an option to clear existing marks.
-  </APIItem>
-</APIParameters>
-<APIReturns>
-  A keyboard handler function that toggles the mark when a specified hotkey is
-  pressed.
 </APIReturns>

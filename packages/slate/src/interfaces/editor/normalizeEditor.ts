@@ -1,9 +1,9 @@
 import { Editor, type EditorNormalizeOptions } from 'slate';
 
-import type { TEditor, Value } from './TEditor';
+import type { TEditor } from './TEditor';
 
 /** Normalize any dirty objects in the editor. */
-export const normalizeEditor = <V extends Value>(
-  editor: TEditor<V>,
+export const normalizeEditor = (
+  editor: TEditor,
   options?: EditorNormalizeOptions
 ) => Editor.normalize(editor as any, options);

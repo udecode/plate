@@ -1,5 +1,19 @@
 # @udecode/plate-indent-list
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createIndentListPlugin` -> `IndentListPlugin`
+  - Rename `injectIndentListComponent` to `renderIndentListBelowNodes`
+  - Replace `normalizeIndentList` with `withNormalizeIndentList`
+  - Replace `deleteBackwardIndentList` with `withDeleteBackwardIndentList`
+  - Replace `insertBreakIndentList` with `withInsertBreakIndentList`
+  - Remove types: `LiFC` (use `PlateRenderElementProps`), `MarkerFC` (use `Omit<PlateRenderElementProps, 'children'>`)
+
+## 36.5.2
+
 ## 36.3.3
 
 ### Patch Changes

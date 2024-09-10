@@ -1,13 +1,11 @@
 import type { Location } from 'slate';
 
-import type { TEditor, Value } from '../interfaces';
+import type { TEditor } from '../interfaces';
 import type { QueryNodeOptions } from './QueryNodeOptions';
 
 /** Query the editor state. */
-export interface QueryEditorOptions<
-  V extends Value = Value,
-  E extends TEditor<V> = TEditor<V>,
-> extends Pick<QueryNodeOptions, 'allow' | 'exclude'> {
+export interface QueryEditorOptions<E extends TEditor = TEditor>
+  extends Pick<QueryNodeOptions, 'allow' | 'exclude'> {
   /** Location from where to lookup the node types (bottom-up) */
   at?: Location;
 

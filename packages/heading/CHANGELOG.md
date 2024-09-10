@@ -1,5 +1,14 @@
 # @udecode/plate-heading
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createHeadingPlugin` -> `HeadingPlugin`
+  - Replace `ELEMENT_H1` with `HEADING_KEYS.H1`
+  - Replace `KEYS_HEADING` with `HEADING_LEVELS`
+
 ## 36.0.12
 
 ### Patch Changes

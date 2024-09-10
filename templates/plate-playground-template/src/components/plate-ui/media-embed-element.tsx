@@ -1,12 +1,8 @@
 import React from 'react';
 import { cn, withRef } from '@udecode/cn';
-import { PlateElement, withHOC } from '@udecode/plate-common';
-import {
-  ELEMENT_MEDIA_EMBED,
-  parseTwitterUrl,
-  parseVideoUrl,
-  useMediaState,
-} from '@udecode/plate-media';
+import { PlateElement, withHOC } from '@udecode/plate-common/react';
+import { parseTwitterUrl, parseVideoUrl } from '@udecode/plate-media';
+import { MediaEmbedPlugin, useMediaState } from '@udecode/plate-media/react';
 import { ResizableProvider, useResizableStore } from '@udecode/plate-resizable';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import { Tweet } from 'react-tweet';
@@ -21,16 +17,16 @@ import {
 
 export const MediaEmbedElement = withHOC(
   ResizableProvider,
-  withRef<typeof PlateElement>(({ className, children, ...props }, ref) => {
+  withRef<typeof PlateElement>(({ children, className, ...props }, ref) => {
     const {
       align = 'center',
-      focused,
-      readOnly,
-      selected,
       embed,
+      focused,
       isTweet,
       isVideo,
       isYoutube,
+      readOnly,
+      selected,
     } = useMediaState({
       urlParsers: [parseTwitterUrl, parseVideoUrl],
     });
@@ -38,10 +34,10 @@ export const MediaEmbedElement = withHOC(
     const provider = embed?.provider;
 
     return (
-      <MediaPopover pluginKey={ELEMENT_MEDIA_EMBED}>
+      <MediaPopover plugin={MediaEmbedPlugin}>
         <PlateElement
-          ref={ref}
           className={cn('relative py-2.5', className)}
+          ref={ref}
           {...props}
         >
           <figure className="group relative m-0 w-full" contentEditable={false}>
@@ -54,8 +50,8 @@ export const MediaEmbedElement = withHOC(
               }}
             >
               <ResizeHandle
-                options={{ direction: 'left' }}
                 className={mediaResizeHandleVariants({ direction: 'left' })}
+                options={{ direction: 'left' }}
               />
 
               {isVideo ? (
@@ -91,6 +87,7 @@ export const MediaEmbedElement = withHOC(
                     )}
                   >
                     <iframe
+                      allowFullScreen
                       className={cn(
                         'absolute left-0 top-0 size-full rounded-sm',
                         isVideo && 'border-0',
@@ -98,7 +95,6 @@ export const MediaEmbedElement = withHOC(
                       )}
                       src={embed!.url}
                       title="embed"
-                      allowFullScreen
                     />
                   </div>
                 )
@@ -118,8 +114,8 @@ export const MediaEmbedElement = withHOC(
               )}
 
               <ResizeHandle
-                options={{ direction: 'right' }}
                 className={mediaResizeHandleVariants({ direction: 'right' })}
+                options={{ direction: 'right' }}
               />
             </Resizable>
 

@@ -3,7 +3,7 @@ title: Block Selection
 description: Select and manipulate entire text blocks.
 ---
 
-<ComponentPreview name="playground-demo" id="blockselection" />
+<ComponentPreview name="playground-demo" id="blockselection" scrollSelector="block-selection-plugin" />
 
 <PackageInfo>
 
@@ -13,6 +13,11 @@ description: Select and manipulate entire text blocks.
 - To select an entire block, mouse down outside the text area and then move the cursor into the block. Once it is selected, you'll see a background color.
 - Keep moving down or up to select multiple blocks.
 - Once selected, the available actions are: copy, cut, and delete.
+- Keyboard shortcuts:
+  - `Cmd+A` (Mac) / `Ctrl+A` (Windows/Linux): 
+    - First press: Selects the current block
+    - Double press: Selects the whole document using block selection
+  - Note: This behavior can be disabled by setting `handlers.onKeyDown = null` when creating the plugin
 
 </PackageInfo>
 
@@ -25,118 +30,213 @@ npm install @udecode/plate-selection @udecode/plate-node-id
 ## Usage
 
 ```tsx
-import { createNodeIdPlugin } from '@udecode/plate-node-id';
-import { createBlockSelectionPlugin } from '@udecode/plate-selection';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
+import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 
 const plugins = [
   // ...otherPlugins,
-  createNodeIdPlugin(),
-  createBlockSelectionPlugin(),
+  NodeIdPlugin,
+  BlockSelectionPlugin,
 ];
+```
+
+## Set scrollable container
+
+To control the scrollable container, configure the `boundaries` and `container` options within `areaOptions`. These options accept CSS selectors, such as `#selection-demo #scroll_container`, which are used with `document.querySelector()`.
+
+For this to work effectively:
+
+1. Add an `id` or `className` to your scroll container.
+2. Use the appropriate selector in your configuration.
+
+Example configuration:
+
+```js
+{
+  areaOptions: {
+    boundaries: '#your-scroll-container-id',
+    container: '#your-scroll-container-id',
+    selectables: '#your-scroll-container-id .slate-selectable',
+    selectionAreaClass: 'slate-selection-area',
+  }
+}
+```
+
+This setup ensures that the block selection functionality is properly constrained within your designated scrollable area.
+
+## Set selectable element
+
+Add data-plate-selectable to the container or the element you want to start block selection.
+
+Example:
+```tsx
+   <PlateContent
+    aria-disabled={disabled}
+    className={cn(
+      editorVariants({
+        disabled,
+        focusRing,
+        focused,
+        size,
+        variant,
+      }),
+      className
+    )}
+    data-plate-selectable
+    disableDefaultStyles
+    readOnly={disabled ?? readOnly}
+    {...props}
+    />
 ```
 
 ### Styling
 
-You can style the selection area by adding this class to `body`, selecting `slate-selection-area`.
+
+#### Selection area
+You can style the selection area by adding this class to the container(.slate-selection-area can be changed in the plugin options):
 
 ```js
-'[&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/20'
+'[&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10'
 ```
 
-## API
+#### Selected element
 
-### createBlockSelectionPlugin
+You can style the selected element by adding this class to the container
+
+```js
+'[&]:!bg-primary/20'
+```
+
+
+
+
+### Disable browser default scroll behavior
+If we select some text and then move(keep pressed) the cursor to the very bottom of the page, the page will start scrolling to the bottom.
+
+This scroll is so fast and confilicts with `BlockSelectionPlugin` scroll behavior(After the selection area appears, move the mouse to the bottom of the scroll container).
+
+I don't find any way to disable this scroll behavior of browser.(if you find the way to disable it, please tell me that will so appreciate it)So the solution is add an empty `div` above the editer's right side(The right side is the easiest place to trigger this behavior.) and set `user-select: none` to it .
+
+If you find this issue occurring in your editor, please check the width of this div. You can use the option `editorPaddingRight` to set the width of this div or the class `rightSelectionAreaClassName` to style it.
+
+Make sure the width is the same with the editor's padding-right.
+
+## Plugins
+
+### BlockSelectionPlugin
 
 <APIOptions>
-<APIItem
-  name="query"
-  type="function"
-  optional
->
+<APIItem name="areaOptions" type="PartialSelectionOptions" optional>
+Options for the selection area. Example:
 
-A function to query block selections.
-
+```ts
+{
+  boundaries: ['#selection-demo #scroll_container'],
+  container: ['#selection-demo #scroll_container'],
+  selectables: ['#selection-demo #scroll_container .slate-selectable'],
+  selectionAreaClass: 'slate-selection-area',
+}
+```
 </APIItem>
-<APIItem
-  name="onKeyDownSelecting"
-  type="(e: KeyboardEvent) => void"
-  optional
->
 
+<APIItem name="editorPaddingRight" type="CSSProperties['width']" optional>
+The padding-right of the editor.
+</APIItem>
+
+<APIItem name="enableContextMenu" type="boolean" optional>
+Enables or disables the context menu for block selection.
+
+- **Default:** `false`
+</APIItem>
+
+<APIItem name="isSelecting" type="boolean" optional>
+Indicates whether block selection is currently active.
+
+- **Default:** `false`
+</APIItem>
+
+<APIItem name="onKeyDownSelecting" type="(e: KeyboardEvent) => void" optional>
 A function to handle the **`keydown`** event when selecting.
-
 </APIItem>
-<APIItem name="sizes" type="Object" optional>
 
-The dimensions of the selection.
+<APIItem name="query" type="QueryNodeOptions" optional>
+Options for querying nodes during block selection.
 
-<APISubList>
-<APISubListItem parent="sizes" name="left" type="number" optional>
+- **Default:** `{ maxLevel: 1 }`
+</APIItem>
 
-The left size of the selection.
+<APIItem name="selectedIds" type="Set<string>" optional>
+A set of IDs for the currently selected blocks.
 
-</APISubListItem>
-<APISubListItem parent="sizes" name="top" type="number" optional>
-
-The top size of the selection.
-
-</APISubListItem>
-<APISubListItem parent="sizes" name="bottom" type="number" optional>
-
-The bottom size of the selection.
-
-</APISubListItem>
-<APISubListItem parent="sizes" name="right" type="number" optional>
-
-The right size of the selection.
-
-</APISubListItem>
-</APISubList>
+- **Default:** `new Set()`
 </APIItem>
 </APIOptions>
 
-### copySelectedBlocks
+### BlockContextMenuPlugin
 
-Copies the selected blocks in the editor to the clipboard.
+This plugin is used by `BlockSelectionPlugin` and doesn't need to be added manually.
+
+## API
+
+### editor.api.blockSelection.addSelectedRow
+
+Adds a selected row to the block selection.
 
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
+  <APIItem name="id" type="string">
+    The ID of the row to be selected.
+  </APIItem>
+  <APIItem name="options" type="object" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="aboveHtmlNode" type="HTMLDivElement" optional>
+        The HTML node above which to add the selection.
+      </APISubListItem>
+      <APISubListItem parent="options" name="clear" type="boolean" optional>
+        Whether to clear existing selections before adding the new one.
+        - **Default:** `true`
+      </APISubListItem>
+    </APISubList>
   </APIItem>
 </APIParameters>
 
-### getSelectedBlocks
+### editor.api.blockSelection.getSelectedBlocks
 
 Gets the selected blocks in the editor.
 
+<APIReturns>
+  <APIItem type="TNodeEntry[]">
+    An array of selected block entries.
+  </APIItem>
+</APIReturns>
+
+### editor.api.blockSelection.resetSelectedIds
+
+Resets the set of selected IDs to an empty set.
+
+### editor.api.blockSelection.selectedAll
+
+Selects all selectable blocks in the editor.
+
+### editor.api.blockSelection.setSelectedIds
+
+Sets the selected IDs based on added and removed elements.
+
 <APIParameters>
-  <APIItem name="editor" type="TEditor">
-    The editor instance.
+  <APIItem name="options" type="ChangedElements">
+    <APISubList>
+      <APISubListItem parent="options" name="added" type="HTMLElement[]">
+        Array of HTML elements to be added to the selection.
+      </APISubListItem>
+      <APISubListItem parent="options" name="removed" type="HTMLElement[]">
+        Array of HTML elements to be removed from the selection.
+      </APISubListItem>
+    </APISubList>
   </APIItem>
 </APIParameters>
 
-### pasteSelectedBlocks
+### editor.api.blockSelection.unselect
 
-Pastes the selected blocks from the clipboard into the editor.
-
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="e" type="ClipboardEvent">
-    The clipboard event containing the clipboard data.
-  </APIItem>
-</APIParameters>
-
-### selectInsertedBlocks
-
-Selects the inserted blocks from the last editor insert operations.
-
-<APIParameters>
-  <APIItem name="editor" type="TEditor">
-    The editor instance.
-  </APIItem>
-</APIParameters>
+Unselects all blocks and sets the `isSelecting` flag to false.
 
 ## API Components
 
@@ -148,14 +248,6 @@ Selects the inserted blocks from the last editor insert operations.
       <APISubListItem parent="options" name="element" type="TElement">
         The element to render the block selectable.
       </APISubListItem>
-      <APISubListItem
-        parent="options"
-        name="selectedColor"
-        type="string"
-        optional
-      >
-        The color of the selected block.
-      </APISubListItem>
       <APISubListItem parent="options" name="active" type="boolean" optional>
         Whether the selection is active.
       </APISubListItem>
@@ -163,77 +255,43 @@ Selects the inserted blocks from the last editor insert operations.
   </APIItem>
 </APIProps>
 
-### BlockStartArea
+### BlockSelection
 
-A primitive component for rendering the start area of a block.
+A wrapper component that adds block selection functionality to its children.
 
 <APIProps>
-<APIItem name="placement" type="'top' | 'bottom' | 'left' | 'right" optional>
-The placement of the start area.
-
-- **Default:** `'left'`
-
-</APIItem>
-<APIItem name="size" type="string | number" optional>
-The size of the start area.
-
-- **Default:** `'auto'`
-
-</APIItem>
+  <APIItem name="children" type="React.ReactNode">
+    The content to be wrapped with block selection functionality.
+  </APIItem>
 </APIProps>
 
+## Hooks
+
+### useBlockSelectableState
+
 <APIReturns>
-  <APIItem name="props" type="object">
-    <APISubList>
-      <APISubListItem parent="props" name="className" type="string">
-        The class name of the start area.
-      </APISubListItem>
-      <APISubListItem parent="props" name="style" type="object">
-        The style of the start area.
-      </APISubListItem>
-    </APISubList>
+  <APIItem name="active" type="boolean">
+    Whether the block is active for selection.
+  </APIItem>
+  <APIItem name="element" type="TElement" optional>
+    The element associated with the block.
+  </APIItem>
+  <APIItem name="path" type="Path" optional>
+    The path of the block in the editor.
+  </APIItem>
+  <APIItem name="ref" type="React.RefObject<HTMLDivElement>" optional>
+    A ref to the block's DOM element.
   </APIItem>
 </APIReturns>
 
-### useBlockSelectionArea
-
-The behavior hook for the `BlockSelectionArea` component.
+### useBlockSelectable
 
 <APIReturns>
   <APIItem name="props" type="object">
-    <APISubList>
-      <APISubListItem parent="props" name="className" type="string">
-        The class name of the start area.
-      </APISubListItem>
-      <APISubListItem parent="props" name="style" type="object">
-        The style of the start area.
-      </APISubListItem>
-
-    </APISubList>
-
+    Props to be spread on the block's wrapper element.
   </APIItem>
 </APIReturns>
 
-### SelectionArea
+### useSelectionArea
 
-<APIProps>
-  <APIItem name="onBeforeStart" type="SelectionEvents['beforestart']" optional>
-    The callback to execute before the selection starts.
-  </APIItem>
-  <APIItem name="onStart" type="SelectionEvents['start']" optional>
-    The callback to execute when the selection starts.
-  </APIItem>
-  <APIItem name="onMove" type="SelectionEvents['move']" optional>
-    The callback to execute when the selection moves.
-  </APIItem>
-  <APIItem name="onStop" type="SelectionEvents['stop']" optional>
-    The callback to execute when the selection stops.
-  </APIItem>
-  <APIItem
-    name="getBoundaries"
-    type="(boundaries: SelectionOptions['boundaries']) => SelectionOptions['boundaries']"
-    optional
-  >
-    Function to calculate the boundaries of the selection area.
-  </APIItem>
-</APIProps>
+A hook that initializes and manages the selection area functionality.

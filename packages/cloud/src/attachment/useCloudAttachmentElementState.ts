@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { findNodePath, useEditorRef } from '@udecode/plate-common';
-import { isDefined, setNodes } from '@udecode/plate-common/server';
+import { isDefined, setNodes } from '@udecode/plate-common';
+import { findNodePath, useEditorRef } from '@udecode/plate-common/react';
 import { useFocused, useSelected } from 'slate-react';
 
 import { type TCloudAttachmentElement, useUpload } from '..';

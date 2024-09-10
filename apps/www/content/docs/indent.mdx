@@ -27,26 +27,25 @@ npm install @udecode/plate-indent
 ## Usage
 
 ```tsx
-// ...
-import { createIndentPlugin } from '@udecode/plate-indent';
+import { IndentPlugin } from '@udecode/plate-indent/react';
+import { HEADING_KEYS } from '@udecode/plate-heading';
+import { HeadingPlugin } from '@udecode/plate-heading/react';
+import { ParagraphPlugin } from '@udecode/plate-common/react';
 
 const plugins = [
   // ...otherPlugins,
-  createHeadingPlugin(),
-  createParagraphPlugin(),
-  createIndentPlugin({
+  HeadingPlugin,
+  IndentPlugin.configure({
     inject: {
-      props: {
-        validTypes: [ELEMENT_PARAGRAPH, ELEMENT_H1],
-      },
+      targetPlugins: [ParagraphPlugin.key, HEADING_KEYS.h1],
     },
   }),
 ];
 ```
 
-## API
+## Plugins
 
-### createIndentPlugin
+### IndentPlugin
 
 <APIOptions>
 <APIItem name="offset" type="number" optional>
@@ -66,7 +65,7 @@ The maximum number of indentations that can be applied to an element.
 </APIItem>
 </APIOptions>
 
-### createTextIndentPlugin
+## API
 
 ### indent
 

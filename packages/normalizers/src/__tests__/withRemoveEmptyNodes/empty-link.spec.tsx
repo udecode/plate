@@ -1,10 +1,12 @@
 /** @jsx jsx */
 
-import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
-import { ELEMENT_LINK } from '@udecode/plate-link';
+import type { SlateEditor } from '@udecode/plate-common';
+
+import { createSlateEditor } from '@udecode/plate-common';
+import { LinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { createRemoveEmptyNodesPlugin } from '../../createRemoveEmptyNodesPlugin';
+import { RemoveEmptyNodesPlugin } from '../../lib/RemoveEmptyNodesPlugin';
 
 jsx;
 
@@ -17,7 +19,7 @@ const input = (
       <cursor />
     </hp>
   </editor>
-) as any as PlateEditor;
+) as any as SlateEditor;
 
 const output = (
   <editor>
@@ -28,12 +30,12 @@ const output = (
 ) as any;
 
 it('should be', () => {
-  const editor = createPlateEditor({
+  const editor = createSlateEditor({
     editor: input,
     plugins: [
-      createRemoveEmptyNodesPlugin({
+      RemoveEmptyNodesPlugin.configure({
         options: {
-          types: ELEMENT_LINK,
+          types: LinkPlugin.key,
         },
       }),
     ],

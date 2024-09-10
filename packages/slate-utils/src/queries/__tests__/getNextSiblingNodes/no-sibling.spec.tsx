@@ -1,10 +1,11 @@
 /** @jsx jsx */
 
+import type { SlateEditor } from '@udecode/plate-common';
 import type { TDescendant } from '@udecode/slate';
 import type { Range } from 'slate';
 
-import { type PlateEditor, createPlateEditor } from '@udecode/plate-common';
-import { createLinkPlugin } from '@udecode/plate-link';
+import { createPlateEditor } from '@udecode/plate-common/react';
+import { LinkPlugin } from '@udecode/plate-link';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { getBlockAbove } from '../../getBlockAbove';
@@ -22,14 +23,14 @@ const input = (
       </ha>
     </hp>
   </editor>
-) as any as PlateEditor;
+) as any as SlateEditor;
 
 const output: TDescendant[] = [];
 
 it('should be', () => {
   const editor = createPlateEditor({
     editor: input,
-    plugins: [createLinkPlugin()],
+    plugins: [LinkPlugin],
   });
 
   const above = getBlockAbove(editor) as any;

@@ -7,7 +7,7 @@ import {
   useEditorReadOnly,
   useEditorRef,
   usePlateStore,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/react';
 
 import { Icons } from '@/components/icons';
 import {

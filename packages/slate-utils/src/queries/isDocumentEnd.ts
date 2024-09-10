@@ -1,12 +1,7 @@
-import {
-  type TEditor,
-  type Value,
-  getEndPoint,
-  isEndPoint,
-} from '@udecode/slate';
+import { type TEditor, getEndPoint, isEndPoint } from '@udecode/slate';
 import { Path } from 'slate';
 
-export const isDocumentEnd = <V extends Value = Value>(editor: TEditor<V>) => {
+export const isDocumentEnd = (editor: TEditor) => {
   if (editor.selection) {
     const point = editor.selection.focus;
     const endPoint = getEndPoint(editor, []);

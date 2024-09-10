@@ -1,7 +1,7 @@
 import { HistoryEditor } from 'slate-history';
 
-import type { THistoryEditor } from './THistoryEditor';
+import type { TEditor } from '../editor';
 
 /** {@link HistoryEditor.isHistoryEditor} */
-export const isHistoryEditor = (value: any): value is THistoryEditor =>
+export const isHistoryEditor = (value: any): value is TEditor =>
   HistoryEditor.isHistoryEditor(value as any);

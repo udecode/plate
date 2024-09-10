@@ -1,5 +1,14 @@
 # @udecode/plate-mention
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createMentionPlugin` -> `MentionPlugin`
+  - NEW `MentionInputPlugin`
+  - Remove `createMentionNode` option, override `api.insert.mention` instead
+
 ## 36.0.0
 
 ## 34.0.8
@@ -16,7 +25,7 @@
 
 - [#3168](https://github.com/udecode/plate/pull/3168) by [@12joan](https://github.com/12joan) –
   - Now uses the reworked combobox package
-  - `ELEMENT_MENTION_INPUT` is now an inline void element, and combobox functionality must now be handled in the component
+  - `MentionInputPlugin.key` is now an inline void element, and combobox functionality must now be handled in the component
   - Plugin options:
     - Now extends from `TriggerComboboxPlugin`
     - Renamed `query` to `triggerQuery` (provided by `TriggerComboboxPlugin`)

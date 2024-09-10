@@ -1,14 +1,14 @@
 import type { ClientRectObject } from '@floating-ui/core';
-import type { Value } from '@udecode/plate-common/server';
+import type { TEditor } from '@udecode/plate-common';
 import type { Range } from 'slate';
 
-import { type TReactEditor, toDOMRange } from '@udecode/plate-common';
+import { toDOMRange } from '@udecode/plate-common/react';
 
 import { getDefaultBoundingClientRect } from '../createVirtualElement';
 
 /** Get bounding client rect by slate range */
-export const getRangeBoundingClientRect = <V extends Value>(
-  editor: TReactEditor<V>,
+export const getRangeBoundingClientRect = (
+  editor: TEditor,
   at: Range | null
 ): ClientRectObject => {
   if (!at) return getDefaultBoundingClientRect();

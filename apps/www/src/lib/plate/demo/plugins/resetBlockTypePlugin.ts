@@ -1,32 +1,30 @@
-import type { ResetNodePlugin } from '@udecode/plate-reset-node';
-
-import { ELEMENT_BLOCKQUOTE } from '@udecode/plate-block-quote';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import {
-  ELEMENT_CODE_BLOCK,
+  CodeBlockPlugin,
   isCodeBlockEmpty,
   isSelectionAtCodeBlockStart,
   unwrapCodeBlock,
 } from '@udecode/plate-code-block';
 import {
-  type PlatePlugin,
+  ParagraphPlugin,
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
 } from '@udecode/plate-common';
-import { ELEMENT_TODO_LI } from '@udecode/plate-list';
-import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
+import { TodoListPlugin } from '@udecode/plate-list/react';
+import { ResetNodePlugin } from '@udecode/plate-reset-node';
 
 const resetBlockTypesCommonRule = {
-  defaultType: ELEMENT_PARAGRAPH,
-  types: [ELEMENT_BLOCKQUOTE, ELEMENT_TODO_LI],
+  defaultType: ParagraphPlugin.key,
+  types: [BlockquotePlugin.key, TodoListPlugin.key],
 };
 
 const resetBlockTypesCodeBlockRule = {
-  defaultType: ELEMENT_PARAGRAPH,
+  defaultType: ParagraphPlugin.key,
   onReset: unwrapCodeBlock,
-  types: [ELEMENT_CODE_BLOCK],
+  types: [CodeBlockPlugin.key],
 };
 
-export const resetBlockTypePlugin: Partial<PlatePlugin<ResetNodePlugin>> = {
+export const resetBlockTypePlugin = ResetNodePlugin.configure({
   options: {
     rules: [
       {
@@ -51,4 +49,4 @@ export const resetBlockTypePlugin: Partial<PlatePlugin<ResetNodePlugin>> = {
       },
     ],
   },
-};
+});

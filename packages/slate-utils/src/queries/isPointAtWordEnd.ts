@@ -2,7 +2,6 @@ import type { Point } from 'slate';
 
 import {
   type TEditor,
-  type Value,
   getEditorString,
   getPointAfter,
   getRange,
@@ -12,10 +11,7 @@ import {
 const AFTER_MATCH_REGEX = /^(?:\s|$)/;
 
 /** Is a point at the end of a word */
-export const isPointAtWordEnd = <V extends Value>(
-  editor: TEditor<V>,
-  { at }: { at: Point }
-) => {
+export const isPointAtWordEnd = (editor: TEditor, { at }: { at: Point }) => {
   // Point after at
   const after = getPointAfter(editor, at);
 

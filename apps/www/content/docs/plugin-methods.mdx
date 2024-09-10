@@ -1,0 +1,307 @@
+---
+title: Plugin Methods
+description: Explore the various methods available for extending Plate plugins.
+---
+
+## Configuration Methods
+
+### .configure
+
+The `.configure` method allows you to override the plugin's configuration.
+
+```ts
+const ConfiguredPlugin = MyPlugin.configure({
+  options: {
+    myOption: 'new value',
+  },
+});
+```
+
+You can also use a function to access the current configuration:
+
+```ts
+const ConfiguredPlugin = MyPlugin.configure(({ getOptions }) => ({
+  options: {
+    ...getOptions(),
+    myOption: `${getOptions().myOption} + extra`,
+  },
+}));
+```
+
+- It's used to modify existing properties of the plugin.
+- It doesn't add new properties to the plugin.
+- The last configuration applied is the one used by the editor.
+- It doesn't return an extended type, maintaining the original plugin type.
+
+### .configurePlugin
+
+The `.configurePlugin` method allows you to configure the properties of a nested plugin:
+
+```ts
+const TablePlugin = createPlatePlugin({
+  key: 'table',
+  plugins: [TableCellPlugin],
+}).configurePlugin(TableCellPlugin, {
+  options: {
+    cellOption: 'modified',
+  },
+});
+```
+
+- It's used to configure nested plugins within a parent plugin.
+- Like `.configure`, it modifies existing properties but doesn't add new ones.
+- It's useful for adjusting the behavior of sub-plugins without extending their types.
+
+
+### .extend
+
+The `.extend` method allows you to extend the plugin's configuration and functionality.
+
+```ts
+const ExtendedPlugin = MyPlugin.extend({
+  options: {
+    newOption: 'new value',
+  },
+});
+```
+
+You can also use a function to access the current configuration and editor:
+
+```ts
+const ExtendedPlugin = MyPlugin.extend(({ editor, plugin }) => ({
+  options: {
+    newOption: 'new value',
+  },
+  handlers: {
+    onKeyDown: () => {
+      // Custom key down logic
+    },
+  },
+}));
+```
+
+- It's used to add new properties or modify existing ones in the plugin.
+- It returns a new plugin instance with extended types.
+- It's chainable, allowing multiple extensions to be applied sequentially.
+
+### .extendPlugin
+
+The `.extendPlugin` method allows you to extend the configuration and functionality of a nested plugin:
+
+```ts
+const TablePlugin = createPlatePlugin({
+  key: 'table',
+  plugins: [TableCellPlugin],
+}).extendPlugin(TableCellPlugin, {
+  options: {
+    newCellOption: 'added',
+  },
+  handlers: {
+    onKeyDown: () => {
+      // Custom key down logic for table cells
+    },
+  },
+});
+```
+
+- It's used to extend nested plugins within a parent plugin.
+- It can add new properties and modify existing ones in the nested plugin.
+- It returns a new parent plugin instance with the extended nested plugin.
+
+
+### Difference between .configure and .extend
+
+While both methods can be used to modify plugin configuration, they have some key differences:
+
+1. Chaining: `.extend` is chainable, while `.configure` is not.
+2. Type extension: `.extend` returns a new plugin instance with extended types, while `.configure` maintains the original type.
+3. New properties: `.extend` can add new properties to the plugin configuration, while `.configure` only modifies existing ones.
+
+Choose the appropriate method based on whether you need to extend the plugin's type and functionality (use `.extend`) or simply modify existing configuration (use `.configure`).
+
+### .extendOptions
+
+The `extendOptions` method allows you to extend the plugin options with selectors.
+
+```ts
+const CounterPlugin = createPlatePlugin({
+  key: 'counter',
+  options: {
+    count: 0,
+  },
+}).extendOptions(({ getOptions }) => ({
+  doubleCount: () => getOptions().count * 2,
+  isEven: () => getOptions().count % 2 === 0,
+}));
+```
+
+You can then use these extended options in your components or other plugin methods:
+
+```tsx
+const CounterComponent = () => {
+  const { useOption } = useEditorPlugin(CounterPlugin);
+  
+  const count = useOption('count');
+  const doubleCount = useOption('doubleCount');
+  const isEven = useOption('isEven');
+
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <p>Double Count: {doubleCount}</p>
+      <p>Is Even: {isEven ? 'Yes' : 'No'}</p>
+    </div>
+  );
+};
+```
+
+- It allows you to create derived state or computed values from plugin options.
+- Extended options are accessible using the `getOption` and `useOption` methods, just like regular options.
+- Extended options are recomputed whenever the underlying options change.
+
+### .withComponent
+
+The `withComponent` method allows you to set or replace the component associated with a plugin.
+
+```ts
+const ParagraphPlugin = createPlatePlugin({
+  key: 'p',
+  node: {
+    isElement: true,
+    type: 'p',
+  },
+}).withComponent(ParagraphElement);
+```
+
+## API and Transforms
+
+Plugins can define their own API methods and transforms that will be merged into the editor's API and transforms. This is done using the `extendApi`, `extendEditorApi`, `extendTransforms`, and `extendEditorTransforms` methods.
+
+### .extendApi
+
+Use `extendApi` to add plugin-specific API methods:
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+}).extendApi(() => ({
+  pluginMethod: () => 'plugin method result',
+}));
+
+// Access the plugin's API
+editor.api.myPlugin.api.pluginMethod();
+```
+
+### .extendEditorApi
+
+Use `extendEditorApi` to add root-level API methods:
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+}).extendEditorApi(({ getOptions }) => ({
+  editorMethod: () => getOptions().someOption,
+}));
+
+// Access the plugin's API
+editor.api.editorMethod();
+```
+
+### .extendTransforms
+
+Use `extendTransforms` to add plugin-specific transform methods:
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+}).extendTransforms(() => ({
+  pluginTransform: () => {
+    // Custom transform logic
+  },
+}));
+
+// Access the plugin's transform
+editor.tf.myPlugin.pluginTransform();
+
+// NOTE: `editor.tf` in a short alias to `editor.transforms`
+editor.transforms.myPlugin.pluginTransform();
+```
+
+### .extendEditorTransforms
+
+Use `extendEditorTransforms` to add root-level transform methods:
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+}).extendEditorTransforms(({ editor }) => ({
+  editorTransform: () => {
+    // Custom editor transform logic
+  },
+}));
+
+// Access the plugin's transform
+editor.tf.editorTransform();
+```
+
+### Difference between API and Transforms
+
+While there is currently no core difference between API and Transforms in Plate, they serve distinct purposes and are designed with future extensibility in mind:
+
+- **Transforms:** 
+  - Store all Slate transforms and editor operations here. Structured to potentially support middlewares in the future, allowing for more complex transform pipelines and devtools.
+  - Typically used for operations that modify the editor state, such as inserting, deleting, or transforming content.
+  - Example: `editor.tf.toggle.block()`, `editor.tf.toggle.mark({ key: 'bold' })`
+
+- **API:** 
+  - Store all queries, utility functions, and other methods that don't directly modify the editor state.
+  - Example: `editor.api.save()`, `editor.api.debug.log()`
+
+### Chaining Extensions
+
+You can chain these methods to create a comprehensive plugin:
+
+```ts
+const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  options: {
+    baseValue: 5,
+  },
+})
+  .extendApi(() => ({
+    pluginMethod: () => 'plugin method',
+  }))
+  .extendEditorApi(({ getOptions }) => ({
+    multiply: (factor: number) => getOptions().baseValue * factor,
+  }))
+  .extendTransforms(() => ({
+    pluginTransform: () => {
+      // Plugin-specific transform
+    },
+  }))
+  .extendEditorTransforms(({ editor }) => ({
+    editorTransform: () => {
+      // Editor-specific transform
+    },
+  }));
+
+editor.api.myPlugin.api.pluginMethod();
+editor.api.multiply(3);
+editor.tf.myPlugin.pluginTransform();
+editor.tf.editorTransform();
+```
+
+## Convert a Slate Plugin to a Plate Plugin
+
+To convert a typed Slate plugin to a Plate plugin, you can use `toPlatePlugin`:
+
+```ts
+const CodeBlockPlugin = toPlatePlugin(createSlatePlugin({ key: 'code_block' }), {
+  extendEditor: ({ api, editor }) => {
+    api.plugin.getSyntaxState();
+    return editor;
+  },
+  handlers: {},
+  options: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
+});
+```

@@ -1,5 +1,46 @@
 # @udecode/plate-selection
 
+## 37.0.6
+
+### Patch Changes
+
+- [#3499](https://github.com/udecode/plate/pull/3499) by [@felixfeng33](https://github.com/felixfeng33) – Add `rightSelectionAreaClassName` to the above component to control the width.
+
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - Rename `createSelectionPlugin` to `BlockSelectionPlugin`
+  - Remove `isNodeBlockSelected`, `isBlockSelected`, `hasBlockSelected`, `useBlockSelected` functions
+    - Use `editor.getOptions(BlockSelectionPlugin)` or `editor.useOptions(BlockSelectionPlugin)` instead
+  - Remove `addSelectedRow` function
+    - Use `editor.api.blockSelection.addSelectedRow` instead
+  - Remove `withSelection` HOC
+  - Rename `onCloseBlockSelection` to `onChangeBlockSelection`
+  - Moved `blockSelectionStore` to `BlockSelectionPlugin`
+  - Moved `blockContextMenuStore` to `BlockContextMenuPlugin`
+  - Remove `BlockStartArea` and `BlockSelectionArea` components
+    - Use `areaOptions` in `BlockSelectionPlugin` for configuration instead
+  - Remove dependency on `@viselect/vanilla` package
+    - Forked and integrated selection functionality locally
+  - Add `BlockContextMenuPlugin`, which is now used by `BlockSelectionPlugin`
+    - No need to add it manually
+  - Fix scroll-related bugs in the selection functionality
+  - Improve performance and reliability of block selection
+
+## 36.5.1
+
+### Patch Changes
+
+- [#3440](https://github.com/udecode/plate/pull/3440) by [@felixfeng33](https://github.com/felixfeng33) – Add test to `onKeyDownSelection`
+
+## 36.4.1
+
+### Patch Changes
+
+- [#3437](https://github.com/udecode/plate/pull/3437) by [@felixfeng33](https://github.com/felixfeng33) – Add default `selectionContainerClass`
+
 ## 36.1.0
 
 ### Minor Changes

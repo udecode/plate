@@ -1,5 +1,15 @@
 # @udecode/plate-yjs
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createYjsPlugin` -> `YjsPlugin`
+  - Move `yjsStore` to `YjsPlugin`
+  - Move `editor.yjs.provider` to `options.provider`
+  - Rename `RenderAboveEditableYjs` to `YjsAboveEditable`
+
 ## 36.0.2
 
 ### Patch Changes

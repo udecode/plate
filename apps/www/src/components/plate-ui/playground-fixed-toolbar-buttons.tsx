@@ -1,23 +1,36 @@
 import React from 'react';
 
-import type { ValueId } from '@/config/customizer-plugins';
-
+import { AlignPlugin } from '@udecode/plate-alignment';
 import {
-  MARK_BOLD,
-  MARK_CODE,
-  MARK_ITALIC,
-  MARK_STRIKETHROUGH,
-  MARK_UNDERLINE,
-} from '@udecode/plate-basic-marks';
-import { useEditorReadOnly } from '@udecode/plate-common';
-import { MARK_BG_COLOR, MARK_COLOR } from '@udecode/plate-font';
-import { KEY_LIST_STYLE_TYPE, ListStyleType } from '@udecode/plate-indent-list';
-import { ELEMENT_OL, ELEMENT_UL } from '@udecode/plate-list';
-import { ELEMENT_IMAGE } from '@udecode/plate-media';
+  BoldPlugin,
+  CodePlugin,
+  ItalicPlugin,
+  StrikethroughPlugin,
+  UnderlinePlugin,
+} from '@udecode/plate-basic-marks/react';
+import { CommentsPlugin } from '@udecode/plate-comments';
+import { useEditorReadOnly } from '@udecode/plate-common/react';
+import { EmojiPlugin } from '@udecode/plate-emoji';
+import {
+  FontBackgroundColorPlugin,
+  FontColorPlugin,
+} from '@udecode/plate-font';
+import { IndentPlugin } from '@udecode/plate-indent';
+import { ListStyleType } from '@udecode/plate-indent-list';
+import { IndentListPlugin } from '@udecode/plate-indent-list/react';
+import { LineHeightPlugin } from '@udecode/plate-line-height';
+import { LinkPlugin } from '@udecode/plate-link';
+import { ListPlugin } from '@udecode/plate-list';
+import {
+  BulletedListPlugin,
+  NumberedListPlugin,
+} from '@udecode/plate-list/react';
+import { ImagePlugin } from '@udecode/plate-media/react';
+import { TablePlugin } from '@udecode/plate-table';
+import { TogglePlugin } from '@udecode/plate-toggle';
 
-import { settingsStore } from '@/components/context/settings-store';
+import { CheckPlugin } from '@/components/context/check-plugin';
 import { Icons, iconVariants } from '@/components/icons';
-import { isEnabled } from '@/plate/demo/is-enabled';
 import { AlignDropdownMenu } from '@/registry/default/plate-ui/align-dropdown-menu';
 import { ColorDropdownMenu } from '@/registry/default/plate-ui/color-dropdown-menu';
 import { CommentToolbarButton } from '@/registry/default/plate-ui/comment-toolbar-button';
@@ -40,9 +53,8 @@ import { PlaygroundModeDropdownMenu } from './playground-mode-dropdown-menu';
 import { PlaygroundMoreDropdownMenu } from './playground-more-dropdown-menu';
 import { PlaygroundTurnIntoDropdownMenu } from './playground-turn-into-dropdown-menu';
 
-export function PlaygroundFixedToolbarButtons({ id }: { id?: ValueId }) {
+export function PlaygroundFixedToolbarButtons() {
   const readOnly = useEditorReadOnly();
-  const indentList = settingsStore.use.checkedId(KEY_LIST_STYLE_TYPE);
 
   return (
     <div className="w-full">
@@ -57,102 +69,128 @@ export function PlaygroundFixedToolbarButtons({ id }: { id?: ValueId }) {
           <>
             <ToolbarGroup noSeparator>
               <PlaygroundInsertDropdownMenu />
-              {isEnabled('basicnodes', id) && (
+
+              <CheckPlugin id="basicnodes">
                 <PlaygroundTurnIntoDropdownMenu />
-              )}
+              </CheckPlugin>
             </ToolbarGroup>
 
             <ToolbarGroup>
-              <MarkToolbarButton nodeType={MARK_BOLD} tooltip="Bold (⌘+B)">
-                <Icons.bold />
-              </MarkToolbarButton>
-              <MarkToolbarButton nodeType={MARK_ITALIC} tooltip="Italic (⌘+I)">
-                <Icons.italic />
-              </MarkToolbarButton>
-              <MarkToolbarButton
-                nodeType={MARK_UNDERLINE}
-                tooltip="Underline (⌘+U)"
+              <CheckPlugin id="basicnodes" plugin={BoldPlugin}>
+                <MarkToolbarButton
+                  nodeType={BoldPlugin.key}
+                  tooltip="Bold (⌘+B)"
+                >
+                  <Icons.bold />
+                </MarkToolbarButton>
+              </CheckPlugin>
+
+              <CheckPlugin id="basicnodes" plugin={ItalicPlugin}>
+                <MarkToolbarButton
+                  nodeType={ItalicPlugin.key}
+                  tooltip="Italic (⌘+I)"
+                >
+                  <Icons.italic />
+                </MarkToolbarButton>
+              </CheckPlugin>
+
+              <CheckPlugin id="basicnodes" plugin={UnderlinePlugin}>
+                <MarkToolbarButton
+                  nodeType={UnderlinePlugin.key}
+                  tooltip="Underline (⌘+U)"
+                >
+                  <Icons.underline />
+                </MarkToolbarButton>
+              </CheckPlugin>
+
+              <CheckPlugin id="basicnodes" plugin={StrikethroughPlugin}>
+                <MarkToolbarButton
+                  nodeType={StrikethroughPlugin.key}
+                  tooltip="Strikethrough (⌘+⇧+M)"
+                >
+                  <Icons.strikethrough />
+                </MarkToolbarButton>
+              </CheckPlugin>
+
+              <CheckPlugin id="basicnodes" plugin={CodePlugin}>
+                <MarkToolbarButton
+                  nodeType={CodePlugin.key}
+                  tooltip="Code (⌘+E)"
+                >
+                  <Icons.code />
+                </MarkToolbarButton>
+              </CheckPlugin>
+
+              <CheckPlugin id="font" plugin={FontColorPlugin}>
+                <ColorDropdownMenu
+                  nodeType={FontColorPlugin.key}
+                  tooltip="Text Color"
+                >
+                  <Icons.color
+                    className={iconVariants({ variant: 'toolbar' })}
+                  />
+                </ColorDropdownMenu>
+              </CheckPlugin>
+
+              <CheckPlugin id="font" plugin={FontBackgroundColorPlugin}>
+                <ColorDropdownMenu
+                  nodeType={FontBackgroundColorPlugin.key}
+                  tooltip="Highlight Color"
+                >
+                  <Icons.bg className={iconVariants({ variant: 'toolbar' })} />
+                </ColorDropdownMenu>
+              </CheckPlugin>
+            </ToolbarGroup>
+
+            <ToolbarGroup>
+              <CheckPlugin id="align" plugin={AlignPlugin}>
+                <AlignDropdownMenu />
+              </CheckPlugin>
+
+              <CheckPlugin id="lineheight" plugin={LineHeightPlugin}>
+                <LineHeightDropdownMenu />
+              </CheckPlugin>
+
+              <CheckPlugin id="indentlist" plugin={IndentListPlugin}>
+                <IndentListToolbarButton nodeType={ListStyleType.Disc} />
+                <IndentListToolbarButton nodeType={ListStyleType.Decimal} />
+                <IndentTodoToolbarButton />
+              </CheckPlugin>
+
+              <CheckPlugin id="list" plugin={ListPlugin}>
+                <ListToolbarButton nodeType={BulletedListPlugin.key} />
+                <ListToolbarButton nodeType={NumberedListPlugin.key} />
+              </CheckPlugin>
+
+              <CheckPlugin
+                id={['indent', 'list', 'indentlist']}
+                plugin={IndentPlugin}
               >
-                <Icons.underline />
-              </MarkToolbarButton>
-
-              {isEnabled('basicnodes', id) && (
-                <>
-                  <MarkToolbarButton
-                    nodeType={MARK_STRIKETHROUGH}
-                    tooltip="Strikethrough (⌘+⇧+M)"
-                  >
-                    <Icons.strikethrough />
-                  </MarkToolbarButton>
-                  <MarkToolbarButton nodeType={MARK_CODE} tooltip="Code (⌘+E)">
-                    <Icons.code />
-                  </MarkToolbarButton>
-                </>
-              )}
-
-              {isEnabled('font', id) && (
-                <>
-                  <ColorDropdownMenu nodeType={MARK_COLOR} tooltip="Text Color">
-                    <Icons.color
-                      className={iconVariants({ variant: 'toolbar' })}
-                    />
-                  </ColorDropdownMenu>
-                  <ColorDropdownMenu
-                    nodeType={MARK_BG_COLOR}
-                    tooltip="Highlight Color"
-                  >
-                    <Icons.bg
-                      className={iconVariants({ variant: 'toolbar' })}
-                    />
-                  </ColorDropdownMenu>
-                </>
-              )}
+                <OutdentToolbarButton />
+                <IndentToolbarButton />
+              </CheckPlugin>
             </ToolbarGroup>
 
             <ToolbarGroup>
-              {isEnabled('align', id) && <AlignDropdownMenu />}
+              <CheckPlugin id="link" plugin={LinkPlugin}>
+                <LinkToolbarButton />
+              </CheckPlugin>
 
-              {isEnabled('lineheight', id) && <LineHeightDropdownMenu />}
+              <CheckPlugin id="toggle" plugin={TogglePlugin}>
+                <ToggleToolbarButton />
+              </CheckPlugin>
 
-              {isEnabled('indentlist', id) && indentList && (
-                <>
-                  <IndentListToolbarButton nodeType={ListStyleType.Disc} />
-                  <IndentListToolbarButton nodeType={ListStyleType.Decimal} />
-                  <IndentTodoToolbarButton />
-                </>
-              )}
+              <CheckPlugin id="media" plugin={ImagePlugin}>
+                <MediaToolbarButton nodeType={ImagePlugin.key} />
+              </CheckPlugin>
 
-              {isEnabled('list', id) && !indentList && (
-                <>
-                  <ListToolbarButton nodeType={ELEMENT_UL} />
-                  <ListToolbarButton nodeType={ELEMENT_OL} />
-                </>
-              )}
-
-              {(isEnabled('indent', id) ||
-                isEnabled('list', id) ||
-                isEnabled('indentlist', id)) && (
-                <>
-                  <OutdentToolbarButton />
-                  <IndentToolbarButton />
-                </>
-              )}
-            </ToolbarGroup>
-
-            <ToolbarGroup>
-              {isEnabled('link', id) && <LinkToolbarButton />}
-
-              {isEnabled('toggle', id) && <ToggleToolbarButton />}
-
-              {isEnabled('media', id) && (
-                <MediaToolbarButton nodeType={ELEMENT_IMAGE} />
-              )}
-
-              {(isEnabled('table', id) || isEnabled('tableMerge', id)) && (
+              <CheckPlugin id={['table', 'tableMerge']} plugin={TablePlugin}>
                 <TableDropdownMenu />
-              )}
+              </CheckPlugin>
 
-              {isEnabled('emoji', id) && <EmojiDropdownMenu />}
+              <CheckPlugin id="emoji" plugin={EmojiPlugin}>
+                <EmojiDropdownMenu />
+              </CheckPlugin>
 
               <PlaygroundMoreDropdownMenu />
             </ToolbarGroup>
@@ -162,7 +200,9 @@ export function PlaygroundFixedToolbarButtons({ id }: { id?: ValueId }) {
         <div className="grow" />
 
         <ToolbarGroup noSeparator>
-          {isEnabled('comment', id) && <CommentToolbarButton />}
+          <CheckPlugin id="comment" plugin={CommentsPlugin}>
+            <CommentToolbarButton />
+          </CheckPlugin>
           <PlaygroundModeDropdownMenu />
         </ToolbarGroup>
       </div>

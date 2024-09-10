@@ -3,48 +3,32 @@ title: Combobox
 description: Utilities for adding comboboxes to your editor.
 ---
 
-## TriggerComboboxPlugin
+The `TriggerComboboxPluginOptions` mixin configures your plugin to insert a combobox input element when the user types a specified trigger character.
 
-The TriggerComboboxPlugin mixin configures your plugin to insert a combobox input element when the user types a specified trigger character is typed.
-
-For example, the [Mention](/docs/mention) plugin uses TriggerComboboxPlugin to insert an `ELEMENT_MENTION_INPUT` whenever the user types `@`.
+For example, the [Mention](/docs/mention) plugin uses TriggerComboboxPluginOptions to insert an `MentionInputPlugin.key` whenever the user types `@`.
 
 ### Usage
 
 <Steps>
 
 <Step>
-Extend your plugin options type with TriggerComboboxPlugin.
+Extend the editor using `withTriggerCombobox` and specify default values for the required options. (See below for the full list of options).
 
 ```ts
-interface MyPlugin extends TriggerComboboxPlugin {}
-const createMyPlugin = createPluginFactory<MyPlugin>({
-  // ...
-});
+import { withTriggerCombobox } from '@udecode/plate-combobox';
 
-// Or simply:
-const createMyPlugin = createPluginFactory<TriggerComboboxPlugin>({
+const MyPlugin = createPlatePlugin({
   // ...
-});
-```
-</Step>
-
-<Step>
-Add the withTriggerCombobox override and specify default values for the required options. (See below for the full list of options).
-
-```ts
-const createMyPlugin = createPluginFactory<MyPlugin>({
-  // ...
-  withOverrides: withTriggerCombobox,
+  extendEditor: withTriggerCombobox,
   options: {
     createComboboxInput: (trigger) => ({
       children: [{ text: '' }],
       trigger,
-      type: ELEMENT_MY_INPUT,
+      type: 'input',
     }),
     trigger: '@',
     triggerPreviousCharPattern: /^\s?$/,
-  },
+  } as TriggerComboboxPluginOptions,
 });
 ```
 </Step>
@@ -53,15 +37,17 @@ const createMyPlugin = createPluginFactory<MyPlugin>({
 Define your input element as an inline void element. It's often useful to do this inside a nested plugin.
 
 ```ts
-const createMyPlugin = createPluginFactory<MyPlugin>({
+const MyPlugin = createPlatePlugin({
   // ...
   plugins: [
-    {
-      isElement: true,
-      isInline: true,
-      isVoid: true,
-      key: ELEMENT_MY_INPUT,
-    },
+    createPlatePlugin({
+      key: 'input',
+      node: {
+        isElement: true,
+        isInline: true,
+        isVoid: true,
+      },
+    }),
   ],
 });
 ```

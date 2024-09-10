@@ -1,96 +1,7 @@
 {
   "name": "@udecode/plate",
-  "version": "36.3.8",
+  "version": "37.0.8",
   "description": "Plate – a plugin system for slate",
-  "license": "MIT",
-  "homepage": "https://platejs.org",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/udecode/plate.git",
-    "directory": "packages/plate"
-  },
-  "bugs": {
-    "url": "https://github.com/udecode/plate/issues"
-  },
-  "installConfig": {
-    "hoistingLimits": "workspaces"
-  },
-  "sideEffects": false,
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist/**/*"
-  ],
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "module": "./dist/index.mjs",
-      "require": "./dist/index.js"
-    }
-  },
-  "scripts": {
-    "build": "yarn p:build",
-    "build:watch": "yarn p:build:watch",
-    "brl": "yarn p:brl:below",
-    "clean": "yarn p:clean",
-    "lint": "yarn p:lint",
-    "lint:fix": "yarn p:lint:fix",
-    "test": "yarn p:test",
-    "test:watch": "yarn p:test:watch",
-    "typecheck": "yarn p:typecheck"
-  },
-  "dependencies": {
-    "@udecode/plate-alignment": "36.0.11",
-    "@udecode/plate-autoformat": "36.0.0",
-    "@udecode/plate-basic-elements": "36.0.12",
-    "@udecode/plate-basic-marks": "36.0.0",
-    "@udecode/plate-block-quote": "36.0.0",
-    "@udecode/plate-break": "36.3.8",
-    "@udecode/plate-code-block": "36.0.0",
-    "@udecode/plate-combobox": "36.0.0",
-    "@udecode/plate-comments": "36.0.0",
-    "@udecode/plate-common": "36.3.7",
-    "@udecode/plate-diff": "36.0.0",
-    "@udecode/plate-find-replace": "36.0.0",
-    "@udecode/plate-floating": "36.3.8",
-    "@udecode/plate-font": "36.0.0",
-    "@udecode/plate-heading": "36.0.12",
-    "@udecode/plate-highlight": "36.0.0",
-    "@udecode/plate-horizontal-rule": "36.0.0",
-    "@udecode/plate-indent": "36.0.0",
-    "@udecode/plate-indent-list": "36.3.3",
-    "@udecode/plate-kbd": "36.0.0",
-    "@udecode/plate-line-height": "36.0.0",
-    "@udecode/plate-link": "36.3.8",
-    "@udecode/plate-list": "36.0.0",
-    "@udecode/plate-media": "36.2.2",
-    "@udecode/plate-mention": "36.0.0",
-    "@udecode/plate-node-id": "36.3.6",
-    "@udecode/plate-normalizers": "36.0.0",
-    "@udecode/plate-paragraph": "36.0.0",
-    "@udecode/plate-reset-node": "36.0.0",
-    "@udecode/plate-resizable": "36.0.0",
-    "@udecode/plate-select": "36.0.0",
-    "@udecode/plate-serializer-csv": "36.3.8",
-    "@udecode/plate-serializer-docx": "36.3.8",
-    "@udecode/plate-serializer-html": "36.0.0",
-    "@udecode/plate-serializer-md": "36.0.7",
-    "@udecode/plate-suggestion": "36.0.0",
-    "@udecode/plate-tabbable": "36.0.0",
-    "@udecode/plate-table": "36.3.8",
-    "@udecode/plate-toggle": "36.3.6",
-    "@udecode/plate-trailing-block": "36.0.0"
-  },
-  "peerDependencies": {
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0",
-    "slate": ">=0.94.0",
-    "slate-history": ">=0.93.0",
-    "slate-hyperscript": ">=0.66.0",
-    "slate-react": ">=0.99.0"
-  },
   "keywords": [
     "contentEditable",
     "editor",
@@ -102,8 +13,105 @@
     "slate",
     "wysiwyg"
   ],
+  "homepage": "https://platejs.org",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/plate"
+  },
+  "license": "MIT",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "module": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.mjs",
+      "module": "./dist/react/index.mjs",
+      "require": "./dist/react/index.js"
+    }
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
+  "scripts": {
+    "brl": "yarn p:brl",
+    "build": "yarn p:build",
+    "build:watch": "yarn p:build:watch",
+    "clean": "yarn p:clean",
+    "lint": "yarn p:lint",
+    "lint:fix": "yarn p:lint:fix",
+    "test": "yarn p:test",
+    "test:watch": "yarn p:test:watch",
+    "typecheck": "yarn p:typecheck"
+  },
+  "dependencies": {
+    "@udecode/plate-alignment": "37.0.0",
+    "@udecode/plate-autoformat": "37.0.0",
+    "@udecode/plate-basic-elements": "37.0.2",
+    "@udecode/plate-basic-marks": "37.0.0",
+    "@udecode/plate-block-quote": "37.0.2",
+    "@udecode/plate-break": "37.0.0",
+    "@udecode/plate-code-block": "37.0.0",
+    "@udecode/plate-combobox": "37.0.0",
+    "@udecode/plate-comments": "37.0.0",
+    "@udecode/plate-common": "37.0.8",
+    "@udecode/plate-csv": "37.0.0",
+    "@udecode/plate-diff": "37.0.0",
+    "@udecode/plate-docx": "37.0.0",
+    "@udecode/plate-find-replace": "37.0.0",
+    "@udecode/plate-floating": "37.0.3",
+    "@udecode/plate-font": "37.0.0",
+    "@udecode/plate-heading": "37.0.0",
+    "@udecode/plate-highlight": "37.0.0",
+    "@udecode/plate-horizontal-rule": "37.0.0",
+    "@udecode/plate-html": "37.0.0",
+    "@udecode/plate-indent": "37.0.0",
+    "@udecode/plate-indent-list": "37.0.0",
+    "@udecode/plate-kbd": "37.0.0",
+    "@udecode/plate-layout": "37.0.0",
+    "@udecode/plate-line-height": "37.0.0",
+    "@udecode/plate-link": "37.0.3",
+    "@udecode/plate-list": "37.0.0",
+    "@udecode/plate-markdown": "37.0.0",
+    "@udecode/plate-media": "37.0.0",
+    "@udecode/plate-mention": "37.0.0",
+    "@udecode/plate-node-id": "37.0.0",
+    "@udecode/plate-normalizers": "37.0.0",
+    "@udecode/plate-reset-node": "37.0.0",
+    "@udecode/plate-resizable": "37.0.0",
+    "@udecode/plate-select": "37.0.0",
+    "@udecode/plate-selection": "37.0.6",
+    "@udecode/plate-slash-command": "37.0.0",
+    "@udecode/plate-suggestion": "37.0.0",
+    "@udecode/plate-tabbable": "37.0.0",
+    "@udecode/plate-table": "37.0.0",
+    "@udecode/plate-toggle": "37.0.0",
+    "@udecode/plate-trailing-block": "37.0.0"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0",
+    "slate": ">=0.103.0",
+    "slate-history": ">=0.93.0",
+    "slate-hyperscript": ">=0.66.0",
+    "slate-react": ">=0.108.0"
+  },
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "9f660a54cbd931cd20a6ad99e9319dbebfc7e1af"
+  "gitHead": "9f660a54cbd931cd20a6ad99e9319dbebfc7e1af",
+  "installConfig": {
+    "hoistingLimits": "workspaces"
+  }
 }

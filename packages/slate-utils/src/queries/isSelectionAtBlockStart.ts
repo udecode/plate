@@ -1,7 +1,6 @@
 import {
   type GetAboveNodeOptions,
   type TEditor,
-  type Value,
   isExpanded,
   isStartPoint,
 } from '@udecode/slate';
@@ -13,9 +12,9 @@ import { getBlockAbove } from './getBlockAbove';
  *
  * Supports the same options provided by {@link getBlockAbove}.
  */
-export const isSelectionAtBlockStart = <V extends Value>(
-  editor: TEditor<V>,
-  options?: GetAboveNodeOptions<V>
+export const isSelectionAtBlockStart = <E extends TEditor>(
+  editor: E,
+  options?: GetAboveNodeOptions<E>
 ) => {
   const { selection } = editor;
 

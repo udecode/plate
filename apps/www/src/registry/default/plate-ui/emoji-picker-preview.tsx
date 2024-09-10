@@ -1,6 +1,4 @@
-import React from 'react';
-
-import type { UseEmojiPickerType } from '@udecode/plate-emoji';
+import type { UseEmojiPickerType } from '@udecode/plate-emoji/react';
 
 export type EmojiPickerPreviewProps = Pick<
   UseEmojiPickerType,
@@ -15,13 +13,13 @@ export type PickAnEmojiPreviewProps = NoEmojiPreviewProps;
 
 function EmojiPreview({ emoji }: EmojiPreviewProps) {
   return (
-    <div className="flex items-center border-t border-gray-100 p-2">
-      <div className="flex items-center justify-center text-3xl">
+    <div className="flex h-20 items-center border-t border-muted p-2">
+      <div className="flex items-center justify-center text-2xl">
         {emoji?.skins[0].native}
       </div>
       <div className="overflow-hidden pl-2">
-        <div className="truncate text-sm text-gray-600">{emoji?.name}</div>
-        <div className="truncate text-xs text-muted-foreground">{`:${emoji?.id}:`}</div>
+        <div className="truncate text-sm">{emoji?.name}</div>
+        <div className="truncate text-xs">{`:${emoji?.id}:`}</div>
       </div>
     </div>
   );
@@ -29,15 +27,13 @@ function EmojiPreview({ emoji }: EmojiPreviewProps) {
 
 function NoEmoji({ i18n }: NoEmojiPreviewProps) {
   return (
-    <div className="flex items-center border-t border-gray-100 p-2">
-      <div className="flex items-center justify-center text-3xl">😢</div>
+    <div className="flex h-20 items-center border-t border-muted p-2">
+      <div className="flex items-center justify-center text-2xl">😢</div>
       <div className="overflow-hidden pl-2">
-        <div className="truncate text-sm text-gray-600">
+        <div className="truncate text-sm font-semibold text-primary">
           {i18n.searchNoResultsTitle}
         </div>
-        <div className="truncate text-xs text-muted-foreground">
-          {i18n.searchNoResultsSubtitle}
-        </div>
+        <div className="truncate text-xs">{i18n.searchNoResultsSubtitle}</div>
       </div>
     </div>
   );
@@ -45,12 +41,10 @@ function NoEmoji({ i18n }: NoEmojiPreviewProps) {
 
 function PickAnEmoji({ i18n }: PickAnEmojiPreviewProps) {
   return (
-    <div className="flex items-center border-t border-gray-100 p-2">
-      <div className="flex items-center justify-center text-3xl">☝️</div>
+    <div className="flex h-20 items-center border-t border-muted p-2">
+      <div className="flex items-center justify-center text-2xl">☝️</div>
       <div className="overflow-hidden pl-2">
-        <div className="truncate text-lg text-muted-foreground">
-          {i18n.pick}
-        </div>
+        <div className="truncate text-sm font-semibold">{i18n.pick}</div>
       </div>
     </div>
   );

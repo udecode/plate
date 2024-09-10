@@ -1,5 +1,20 @@
 # @udecode/plate-break
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createSoftBreakPlugin` -> `SoftBreakPlugin`
+  - `createExitBreakPlugin` -> `ExitBreakPlugin`
+  - `createSingleLinePlugin` -> `SingleLinePlugin`
+
+## 36.5.6
+
+### Patch Changes
+
+- [#3457](https://github.com/udecode/plate/pull/3457) by [@nklhtv](https://github.com/nklhtv) – Use editor.blockFactory to create default elements
+
 ## 36.3.8
 
 ### Patch Changes

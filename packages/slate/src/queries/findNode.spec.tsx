@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import type { PlateEditor } from '@udecode/plate-core';
+import type { SlateEditor } from '@udecode/plate-core';
 
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -20,7 +20,7 @@ describe('when the cursor is in a list item paragraph', () => {
         </hli>
       </hul>
     </editor>
-  ) as any as PlateEditor;
+  ) as any as SlateEditor;
 
   const _listNode = (
     <hul>
@@ -61,7 +61,7 @@ describe('when the cursor is not in a list item and a path is provided instead',
         2<cursor />
       </hp>
     </editor>
-  ) as any as PlateEditor;
+  ) as any as SlateEditor;
 
   const _listNode = (
     <hul>

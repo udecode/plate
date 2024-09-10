@@ -303,7 +303,6 @@ export async function runInit(cwd: string, config: Config) {
   // Ensure all resolved paths directories exist.
   for (const [, resolvedPath] of Object.entries(config.resolvedPaths)) {
     // Determine if the path is a file or directory.
-    // TODO: is there a better way to do this?
     const dirname = path.extname(resolvedPath)
       ? path.dirname(resolvedPath)
       : resolvedPath;
@@ -356,7 +355,6 @@ export async function runInit(cwd: string, config: Config) {
   const dependenciesSpinner = ora(`Installing dependencies...`)?.start();
   const packageManager = await getPackageManager(cwd);
 
-  // TODO: add support for other icon libraries.
   const deps = [
     ...PROJECT_DEPENDENCIES,
     config.style === 'new-york' ? '@radix-ui/react-icons' : 'lucide-react',

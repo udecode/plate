@@ -7,7 +7,7 @@ import {
   useCommentDeleteButtonState,
   useCommentEditButton,
   useCommentEditButtonState,
-} from '@udecode/plate-comments';
+} from '@udecode/plate-comments/react';
 
 import { Icons } from '@/components/icons';
 
@@ -28,7 +28,7 @@ export function CommentMoreDropdown() {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className={cn('h-6 p-1 text-muted-foreground')}>
+        <Button className={cn('h-6 p-1 text-muted-foreground')} variant="ghost">
           <Icons.more className="size-4" />
         </Button>
       </DropdownMenuTrigger>

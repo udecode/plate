@@ -8,7 +8,7 @@ import {
   useCommentDeleteButtonState,
   useCommentEditButton,
   useCommentEditButtonState,
-} from '@udecode/plate-comments';
+} from '@udecode/plate-comments/react';
 
 import { Icons } from '@/components/icons';
 

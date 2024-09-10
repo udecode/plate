@@ -141,18 +141,18 @@ Please ensure that the tests are passing when submitting a pull request. If you'
 
 ### Run Playwright Tests
 
-We use Playwright for our end-to-end (e2e) tests in headless browsers. The React app for these tests is located in **`/apps/e2e-examples`**.
+We use Playwright for our end-to-end (e2e) tests in headless browsers.
 
 To install Playwright's browsers and dependencies, use:
 
 ```bash
-yarn install:playwright # first time
+yarn playwright install # first time
 ```
 
 To run all tests:
 
 ```bash
-yarn playwright
+yarn e2e
 ```
 
 ## Release Guide
@@ -181,7 +181,7 @@ No software is without bugs. If you encounter a problem, please follow these ste
 
 ### Reproductions
 
-The best way to help us understand and fix your issue is to provide a minimal reproduction of the problem. You can do this using **[our CodeSandbox](https://codesandbox.io/s/github/udecode/plate-playground)**.
+The best way to help us understand and fix your issue is to provide a minimal reproduction of the problem. You can do this using **[our CodeSandbox](https://codesandbox.io/p/github/udecode/plate-template/main)**.
 
 ### Responding to questions
 

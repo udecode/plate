@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import type { Value } from '@udecode/plate-common';
+import type { MyValue } from '@/types/plate-types';
 
 import { settingsStore } from '@/components/context/settings-store';
 import { type ValueId, customizerPlugins } from '@/config/customizer-plugins';
@@ -13,6 +13,7 @@ import { basicMarksValue } from './basicMarksValue';
 import { columnValue } from './columnValue';
 import { commentsValue } from './commentsValue';
 import { cursorOverlayValue } from './cursorOverlayValue';
+import { dateValue } from './dateValue';
 import { deserializeCsvValue } from './deserializeCsvValue';
 import { deserializeDocxValue } from './deserializeDocxValue';
 import { deserializeHtmlValue } from './deserializeHtmlValue';
@@ -36,18 +37,20 @@ import { tabbableValue } from './tabbableValue';
 import { tableMergeValue, tableValue } from './tableValue';
 import { toggleValue } from './toggleValue';
 
-export const usePlaygroundValue = (id?: ValueId) => {
+export const usePlaygroundValue = (id?: ValueId): MyValue => {
   let valueId = settingsStore.use.valueId();
 
   if (id) {
     valueId = id;
   }
 
-  const enabled = settingsStore.use.checkedPlugins();
+  const version = settingsStore.use.version();
 
   return useMemo(() => {
+    const enabled = settingsStore.get.checkedPlugins();
     const value = [...basicElementsValue];
 
+    if (!version) return value;
     if (enabled.action_item) value.push(...todoListValue);
     if (enabled.a) value.push(...linkValue);
 
@@ -57,7 +60,11 @@ export const usePlaygroundValue = (id?: ValueId) => {
       return mapNodeId(tableMergeValue);
     }
     if (valueId !== customizerPlugins.playground.id) {
-      const newValue = (customizerPlugins as any)[valueId]?.value ?? value;
+      let newValue = (customizerPlugins as any)[valueId]?.value ?? value;
+
+      if (newValue.length === 0) {
+        newValue = value;
+      }
 
       return mapNodeId(newValue);
     }
@@ -67,6 +74,7 @@ export const usePlaygroundValue = (id?: ValueId) => {
     if (enabled.kbd) value.push(...kbdValue);
     // Inline nodes
     if (enabled.mention) value.push(...mentionValue);
+    if (enabled.data) value.push(...dateValue);
     if (enabled.emoji) value.push(...emojiValue);
     // Nodes
     if (enabled.align) value.push(...alignValue);
@@ -91,45 +99,13 @@ export const usePlaygroundValue = (id?: ValueId) => {
     // Deserialization
     value.push(...deserializeHtmlValue);
 
-    if (enabled.deserializeMd) value.push(...deserializeMdValue);
-    if (enabled.deserializeDocx) value.push(...deserializeDocxValue);
-    if (enabled.deserializeCsv) value.push(...deserializeCsvValue);
+    if (enabled.markdown) value.push(...deserializeMdValue);
+    if (enabled.docx) value.push(...deserializeDocxValue);
+    if (enabled.csv) value.push(...deserializeCsvValue);
     // Exceptions
     if (enabled.trailingBlock) value.push(...trailingBlockValue);
     if (enabled.excalidraw) value.push(...excalidrawValue);
 
-    return mapNodeId(value) as Value;
-  }, [
-    enabled.a,
-    enabled.action_item,
-    enabled.align,
-    enabled.autoformat,
-    enabled.backgroundColor,
-    enabled.color,
-    enabled.comment,
-    enabled.deserializeCsv,
-    enabled.deserializeDocx,
-    enabled.deserializeMd,
-    enabled.dragOverCursor,
-    enabled.emoji,
-    enabled.excalidraw,
-    enabled.exitBreak,
-    enabled.highlight,
-    enabled.hr,
-    enabled.img,
-    enabled.indent,
-    enabled.kbd,
-    enabled.lineHeight,
-    enabled.list,
-    enabled.listStyleType,
-    enabled.media_embed,
-    enabled.mention,
-    enabled.softBreak,
-    enabled.tabbable,
-    enabled.table,
-    enabled.toggle,
-    enabled.trailingBlock,
-    enabled.column,
-    valueId,
-  ]);
+    return mapNodeId(value);
+  }, [valueId, version]);
 };

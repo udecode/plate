@@ -8,14 +8,13 @@ import React, {
   useState,
 } from 'react';
 
-import type {
-  PlateCloudEditor,
-  PlateCloudImageEditor,
-  TCloudImageElement,
-} from '@udecode/plate-cloud';
-
 import { resizeInWidth } from '@portive/client';
-import { findNodePath, setNodes, useEditorRef } from '@udecode/plate-common';
+import {
+  CloudImagePlugin,
+  type TCloudImageElement,
+} from '@udecode/plate-cloud';
+import { setNodes } from '@udecode/plate-common';
+import { findNodePath, useEditorRef } from '@udecode/plate-common/react';
 
 type ImageSize = { height: number; width: number };
 
@@ -110,10 +109,11 @@ export function ResizeControls({
   setSize: SetImageSize;
   size: ImageSize;
 }) {
-  const editor = useEditorRef() as PlateCloudEditor & PlateCloudImageEditor;
+  const editor = useEditorRef();
   const [isResizing, setIsResizing] = useState(false);
 
-  const { maxResizeWidth, minResizeWidth } = editor.cloudImage;
+  const { maxResizeWidth, minResizeWidth } =
+    editor.getOptions(CloudImagePlugin);
 
   const currentSizeRef = useRef<{ height: number; width: number }>();
 

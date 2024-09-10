@@ -1,5 +1,29 @@
 # @udecode/plate-table
 
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createTablePlugin` -> `TablePlugin`
+  - NEW `TableRowPlugin`, `TableCellPlugin`, `TableCellHeaderPlugin`
+  - Replace `insertTableColumn` with `editor.insert.tableColumn`
+  - Replace `insertTableRow` with `editor.insert.tableRow`
+  - Move `cellFactory` option to `create.cell` api
+  - Move `getCellChildren` option to `table.getCellChildren` api
+
+## 36.5.8
+
+### Patch Changes
+
+- [#3463](https://github.com/udecode/plate/pull/3463) by [@beeant0512](https://github.com/beeant0512) – fixed the judgment logic of deleting the last row of the table
+
+## 36.5.7
+
+### Patch Changes
+
+- [#3461](https://github.com/udecode/plate/pull/3461) by [@beeant0512](https://github.com/beeant0512) – fix delete last row will cause editor crash when `enableMerging: true`
+
 ## 36.3.8
 
 ### Patch Changes

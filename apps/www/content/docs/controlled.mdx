@@ -1,0 +1,71 @@
+---
+title: Controlled Editor Value
+description: How to control the editor value.
+---
+
+Implementing a fully controlled editor value in Plate (and Slate) is complex due to several factors:
+
+1. The editor state includes more than just the content (`editor.children`). It also includes `editor.selection` and `editor.history`.
+
+2. Directly replacing `editor.children` can break the selection and history, leading to unexpected behavior or crashes.
+
+3. All changes to the editor's value should ideally happen through [Transforms](https://docs.slatejs.org/api/transforms) to maintain consistency with selection and history.
+
+Given these challenges, it's generally recommended to use Plate as an uncontrolled input. However, if you need to make external changes to the editor's content, you can use `editor.tf.setValue(value)` function.
+
+<Callout className="my-4">
+  Using `editor.tf.setValue` will re-render all nodes on each call, so it
+  should be used carefully and sparingly. It may impact performance if used
+  frequently or with large documents.
+</Callout>
+
+Alternatively, you can use `editor.tf.reset()` to reset the editor state, which will reset the selection and history.
+
+```tsx
+function App() {
+  const editor = usePlateEditor({
+    value: 'Initial Value',
+    // Disable the editor if initial value is not yet ready
+    // enabled: !!value,
+  });
+
+  return (
+    <div>
+      <Plate editor={editor}>
+        <PlateContent />
+      </Plate>
+
+      <button
+        onClick={() => {
+          // Replace with HTML string
+          editor.tf.setValue('Replaced Value');
+
+          // Replace with JSON value
+          editor.tf.setValue([
+            {
+              type: 'p',
+              children: [{ text: 'Replaced Value' }],
+            },
+          ]);
+
+          // Replace with empty value
+          editor.tf.setValue();
+        }}
+      >
+        Replace Value
+      </button>
+      
+      <button
+        onClick={() => {
+          editor.tf.reset();
+        }}
+      >
+        Reset Editor
+      </button>
+    </div>
+  );
+}
+```
+
+<ComponentPreview name="controlled-demo" padding="md" />
+

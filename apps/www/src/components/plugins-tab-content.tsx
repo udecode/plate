@@ -46,7 +46,7 @@ export function SettingsEffect() {
 }
 
 export function PluginsTabContentLazy() {
-  const checkedPlugins = settingsStore.use.checkedPluginsNext();
+  const checkedPlugins = settingsStore.use.checkedPlugins();
   const checkedComponents = settingsStore.use.checkedComponents();
   const showComponents = settingsStore.use.showComponents();
 
@@ -62,7 +62,7 @@ export function PluginsTabContentLazy() {
 
   return (
     <div>
-      <SettingsEffect />
+      {/* <SettingsEffect /> */}
 
       <div className="flex items-center">
         <Checkbox
@@ -70,7 +70,8 @@ export function PluginsTabContentLazy() {
           id="check-plugins"
           onCheckedChange={(_checked: boolean) => {
             if (somePluginChecked) {
-              settingsStore.set.checkedPluginsNext({} as any);
+              settingsStore.set.checkedPlugins({} as any);
+              // settingsStore.set.checkedPluginsNext({} as any);
             } else {
               settingsStore.set.resetPlugins();
             }
@@ -164,8 +165,11 @@ export function PluginsTabContent() {
 
             <Button
               onClick={() => {
-                settingsStore.set.homeTab('installation');
+                // settingsStore.set.homeTab('installation');
                 settingsStore.set.showSettings(false);
+                settingsStore.set.state((draft) => {
+                  draft.version = draft.version + 1;
+                });
               }}
             >
               Done

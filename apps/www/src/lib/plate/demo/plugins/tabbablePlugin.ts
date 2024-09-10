@@ -1,43 +1,38 @@
-import type { TabbablePlugin } from '@udecode/plate-tabbable';
-
-import { ELEMENT_CODE_BLOCK } from '@udecode/plate-code-block';
-import {
-  type PlatePlugin,
-  isSelectionAtBlockStart,
-  someNode,
-} from '@udecode/plate-common';
-import { KEY_LIST_STYLE_TYPE } from '@udecode/plate-indent-list';
-import { ELEMENT_LI } from '@udecode/plate-list';
-import { ELEMENT_TABLE } from '@udecode/plate-table';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+import { isSelectionAtBlockStart, someNode } from '@udecode/plate-common';
+import { createPlatePlugin } from '@udecode/plate-common/react';
+import { IndentListPlugin } from '@udecode/plate-indent-list/react';
+import { ListItemPlugin } from '@udecode/plate-list/react';
+import { TabbablePlugin } from '@udecode/plate-tabbable';
+import { TablePlugin } from '@udecode/plate-table/react';
 
 import { TabbableElement } from './TabbableElement';
 
-const TABBABLE_ELEMENT = 'tabbable_element';
-
-export const tabbablePlugin: Partial<PlatePlugin<TabbablePlugin>> = {
+export const tabbablePlugin = TabbablePlugin.extend({
+  plugins: [
+    createPlatePlugin({
+      key: 'tabbable_element',
+      node: { component: TabbableElement, isElement: true, isVoid: true },
+    }),
+  ],
+}).configure(({ editor }) => ({
   options: {
-    query: (editor) => {
+    query: () => {
       if (isSelectionAtBlockStart(editor)) return false;
 
       return !someNode(editor, {
         match: (n) => {
           return !!(
             n.type &&
-            ([ELEMENT_CODE_BLOCK, ELEMENT_LI, ELEMENT_TABLE].includes(
-              n.type as string
-            ) ||
-              n[KEY_LIST_STYLE_TYPE])
+            ([
+              CodeBlockPlugin.key,
+              ListItemPlugin.key,
+              TablePlugin.key,
+            ].includes(n.type as any) ||
+              n[IndentListPlugin.key])
           );
         },
       });
     },
   },
-  plugins: [
-    {
-      component: TabbableElement,
-      isElement: true,
-      isVoid: true,
-      key: TABBABLE_ELEMENT,
-    },
-  ],
-};
+}));

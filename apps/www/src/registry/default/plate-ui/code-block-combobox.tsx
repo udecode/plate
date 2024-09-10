@@ -8,7 +8,7 @@ import { cn } from '@udecode/cn';
 import {
   useCodeBlockCombobox,
   useCodeBlockComboboxState,
-} from '@udecode/plate-code-block';
+} from '@udecode/plate-code-block/react';
 // Prism must be imported before all language files
 import Prism from 'prismjs';
 

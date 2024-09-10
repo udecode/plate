@@ -1,0 +1,312 @@
+---
+title: HTML Parser
+description: Copy paste from HTML to Slate.
+---
+
+<ComponentPreview name="playground-demo" id="html" />
+
+<PackageInfo>
+
+Many Plate plugins include HTML deserialization rules. These rules define how HTML elements and styles are mapped to Plate's node types and attributes.
+
+</PackageInfo>
+
+## HTML -> Slate
+
+### Usage
+
+The `editor.api.html.deserialize` function allows you to convert HTML content into Slate value:
+
+```typescript
+import { createPlateEditor } from '@udecode/plate-common/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // all plugins that you want to deserialize
+  ]
+})
+editor.children = editor.api.html.deserialize('<p>Hello, world!</p>')
+```
+
+### Plugin Deserialization Rules
+
+Here's a comprehensive list of plugins that support HTML deserialization, along with their corresponding HTML elements and styles:
+
+#### Text Formatting
+
+- **BoldPlugin**: `<strong>`, `<b>`, or `style="font-weight: 600|700|bold"`
+- **ItalicPlugin**: `<em>`, `<i>`, or `style="font-style: italic"`
+- **UnderlinePlugin**: `<u>` or `style="text-decoration: underline"`
+- **StrikethroughPlugin**: `<s>`, `<del>`, `<strike>`, or `style="text-decoration: line-through"`
+- **SubscriptPlugin**: `<sub>` or `style="vertical-align: sub"`
+- **SuperscriptPlugin**: `<sup>` or `style="vertical-align: super"`
+- **CodePlugin**: `<code>` or `style="font-family: Consolas"` (not within a `<pre>` tag)
+- **KbdPlugin**: `<kbd>`
+
+#### Paragraphs and Headings
+
+- **ParagraphPlugin**: `<p>`
+- **HeadingPlugin**: `<h1>`, `<h2>`, `<h3>`, `<h4>`, `<h5>`, `<h6>`
+
+#### Lists
+
+- **ListPlugin**:
+  - Unordered List: `<ul>`
+  - Ordered List: `<ol>`
+  - List Item: `<li>`
+- **IndentListPlugin**:
+  - List Item: `<li>`
+  - Parses `aria-level` attribute for indentation
+
+#### Blocks
+
+- **BlockquotePlugin**: `<blockquote>`
+- **CodeBlockPlugin**:
+  - Deserializes `<pre>` elements
+  - Deserializes `<p>` elements with `fontFamily: 'Consolas'` style
+  - Splits content into code lines
+  - Preserves language information if available
+- **HorizontalRulePlugin**: `<hr>`
+
+#### Links and Media
+
+- **LinkPlugin**: `<a>`
+- **ImagePlugin**: `<img>`
+- **MediaEmbedPlugin**: `<iframe>`
+
+#### Tables
+
+- **TablePlugin**:
+  - Table: `<table>`
+  - Table Row: `<tr>`
+  - Table Cell: `<td>`
+  - Table Header Cell: `<th>`
+
+#### Text Styling
+
+- **FontBackgroundColorPlugin**: `style="background-color: *"`
+- **FontColorPlugin**: `style="color: *"`
+- **FontFamilyPlugin**: `style="font-family: *"`
+- **FontSizePlugin**: `style="font-size: *"`
+- **FontWeightPlugin**: `style="font-weight: *"`
+- **HighlightPlugin**: `<mark>`
+
+#### Layout and Formatting
+
+- **AlignPlugin**: `style="text-align: *"`
+- **LineHeightPlugin**: `style="line-height: *"`
+
+### Deserialization Properties
+
+Plugins can define various properties to control HTML deserialization:
+
+- `parse`: A function to parse an HTML element into a Plate node
+- `query`: A function that determines if the deserializer should be applied
+- `rules`: An array of rule objects that define valid HTML elements and attributes
+- `isElement`: Indicates if the plugin deserializes elements
+- `isLeaf`: Indicates if the plugin deserializes leaf nodes
+- `attributeNames`: List of HTML attribute names to store in `node.attributes`
+- `withoutChildren`: Excludes child nodes from deserialization
+- `rules`: Array of rule objects for element matching
+  - `validAttribute`: Valid element attributes
+  - `validClassName`: Valid CSS class name
+  - `validNodeName`: Valid HTML tag names
+  - `validStyle`: Valid CSS styles
+
+### Extending Deserialization
+
+You can extend or customize the deserialization behavior of any plugin. Here's an example of how you might extend the `CodeBlockPlugin`:
+
+```typescript
+import { CodeBlockPlugin } from '@udecode/plate-code-block';
+
+const CustomCodeBlockPlugin = CodeBlockPlugin.extend({
+  parsers: {
+    html: {
+      deserializer: {
+        parse: ({ element }) => {
+          const language = element.getAttribute('data-language');
+          const textContent = element.textContent || '';
+          const lines = textContent.split('\n');
+          
+          return {
+            type: CodeBlockPlugin.key,
+            language,
+            children: lines.map((line) => ({
+              type: CodeLinePlugin.key,
+              children: [{ text: line }],
+            })),
+          };
+        },
+        rules: [
+          ...CodeBlockPlugin.parsers.html.deserializer.rules,
+          { validAttribute: 'data-language' },
+        ],
+      },
+    },
+  },
+});
+```
+
+This customization adds support for a `data-language` attribute in code block deserialization and preserves the language information.
+
+### Advanced Deserialization Example
+
+The `IndentListPlugin` provides a more complex deserialization process:
+
+1. It transforms HTML list structures into indented paragraphs.
+2. It handles nested lists by preserving the indentation level.
+3. It uses the `aria-level` attribute to determine the indentation level.
+
+Here's a simplified version of its deserialization logic:
+
+```typescript
+export const IndentListPlugin = createTSlatePlugin<IndentListConfig>({
+  // ... other configurations ...
+  parsers: {
+    html: {
+      deserializer: {
+        isElement: true,
+        parse: ({ editor, element, getOptions }) => ({
+          indent: Number(element.getAttribute('aria-level')),
+          listStyleType: element.style.listStyleType,
+          type: editor.getType(ParagraphPlugin),
+        }),
+        rules: [
+          {
+            validNodeName: 'LI',
+          },
+        ],
+      },
+    },
+  },
+});
+```
+
+### API
+
+#### editor.api.html.deserialize
+
+Deserialize HTML string into Slate value.
+
+<APIParameters>
+<APISubListItem parent="options" name="element" type="HTMLElement | string">
+
+The HTML element or string to deserialize.
+
+</APISubListItem>
+<APISubListItem parent="options" name="collapseWhiteSpace" type="boolean" optional>
+
+Flag to enable or disable the removal of whitespace from the serialized HTML.
+
+- **Default:** `true` (Whitespace will be removed.)
+</APISubListItem>
+</APIParameters>
+<APIReturns>
+<APIItem type="TDescendant[]">
+
+The deserialized Slate value.
+</APIItem>
+</APIReturns>
+
+## Slate -> React -> HTML
+
+### Installation
+
+```bash
+npm install @udecode/plate-html
+```
+
+### Usage
+
+```tsx
+// ...
+import { HtmlReactPlugin } from '@udecode/plate-html/react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+
+const editor = createPlateEditor({ 
+  plugins: [
+    HtmlReactPlugin
+    // all plugins that you want to serialize
+  ],
+  override: {
+    // do not forget to add your custom components, otherwise it won't work
+    components: createPlateUI(),
+  },
+});
+
+const html = editor.api.htmlReact.serialize({
+  nodes: editor.children,
+  // if you use @udecode/plate-dnd
+  dndWrapper: (props) => <DndProvider backend={HTML5Backend} {...props} />,
+});
+```
+
+<Callout className="my-4">
+  **Note**: Round-tripping is not yet supported: the HTML serializer will not
+  preserve all information from the Slate value when converting to HTML and
+  back.
+</Callout>
+
+### API
+
+#### editor.api.htmlReact.serialize
+
+Convert Slate Nodes into HTML string.
+
+<APIParameters>
+<APIItem name="options" type="object">
+
+Options to control the HTML serialization process.
+
+<APISubList>
+<APISubListItem parent="options" name="nodes" type="DescendantOf<E>[]">
+
+The Slate nodes to convert into HTML.
+
+</APISubListItem>
+<APISubListItem parent="options" name="stripDataAttributes" type="boolean" optional>
+
+Flag to enable or disable the removal of data attributes from the serialized HTML.
+
+- **Default:** `true` (Data attributes will be removed.)
+
+</APISubListItem>
+<APISubListItem parent="options" name="preserveClassNames" type="string[]" optional>
+
+A list of class name prefixes that should not be stripped out from the serialized HTML.
+
+</APISubListItem>
+<APISubListItem parent="options" name="slateProps" type="Partial<SlateProps>" optional>
+
+Additional Slate properties to provide, in case the rendering process depends on certain Slate hooks.
+
+</APISubListItem>
+<APISubListItem parent="options" name="stripWhitespace" type="boolean" optional>
+
+Flag to enable or disable the removal of whitespace from the serialized HTML.
+
+- **Default:** `true` (Whitespace will be removed.)
+
+</APISubListItem>
+<APISubListItem parent="options" name="convertNewLinesToHtmlBr" type="boolean" optional>
+
+Optionally convert newline characters (`\n`) to HTML `<br />` tags.
+
+- **Default:** `false` (Newline characters will not be converted.)
+
+</APISubListItem>
+<APISubListItem parent="options" name="dndWrapper" type="string | FunctionComponent | ComponentClass" optional>
+
+Specifies a component to be used for wrapping the rendered elements during a drag-and-drop operation.
+
+</APISubListItem>
+</APISubList>
+</APIItem>
+</APIParameters>
+<APIReturns>
+<APIItem type="string">
+A HTML string representing the Slate nodes.
+</APIItem>
+</APIReturns>

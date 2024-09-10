@@ -25,6 +25,7 @@ Object.keys(aliases).forEach((key) => {
   const value = aliases[key];
 
   modules[`^${key}$`] = `<rootDir>/packages/${value}/src`;
+  modules[`^${key}/react$`] = `<rootDir>/packages/${value}/src/react`;
 });
 
 /** @type {import('ts-jest').JestConfigWithTsJest} */
@@ -40,19 +41,19 @@ module.exports = {
     '!**/*stories*',
     '!**/*.development.*',
   ],
+  coveragePathIgnorePatterns: ['/node_modules/', '\\.d\\.ts$'],
   displayName: packageName,
   moduleDirectories: ['node_modules'],
   moduleFileExtensions: ['js', 'json', 'ts', 'tsx'],
   moduleNameMapper: {
     '\\.(css|less|sass|scss)$': '<rootDir>/scripts/styleMock.cjs',
     ...getTsConfigBasePaths(),
-    // '^@udecode/plate-core$': '<rootDir>/packages/core/src',
     ...modules,
   },
   preset: 'ts-jest',
   setupFilesAfterEnv: ['<rootDir>/scripts/setupTests.ts'],
   testEnvironment: 'jsdom',
-  testPathIgnorePatterns: ['/playwright/'],
+  testPathIgnorePatterns: ['/playwright/', '/packages/cli/'],
   testRegex: '(test|spec).tsx?$',
   transform: {
     '^.+\\.(t|j)sx?$': '@swc/jest',

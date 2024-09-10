@@ -40,67 +40,42 @@ declare global {
 
 const voidChildren = [{ text: '' }];
 
-const ELEMENT_BLOCKQUOTE = 'blockquote';
-const ELEMENT_CODE_BLOCK = 'code_block';
-const ELEMENT_CODE_LINE = 'code_line';
-const ELEMENT_EXCALIDRAW = 'excalidraw';
-const ELEMENT_H1 = 'h1';
-const ELEMENT_H2 = 'h2';
-const ELEMENT_H3 = 'h3';
-const ELEMENT_H4 = 'h4';
-const ELEMENT_H5 = 'h5';
-const ELEMENT_H6 = 'h6';
-const ELEMENT_IMAGE = 'img';
-const ELEMENT_LI = 'li';
-const ELEMENT_LIC = 'lic';
-const ELEMENT_LINK = 'a';
-const ELEMENT_MEDIA_EMBED = 'media_embed';
-const ELEMENT_MENTION = 'mention';
-const ELEMENT_MENTION_INPUT = 'mention_input';
-const ELEMENT_NLI = 'nli';
-const ELEMENT_OL = 'ol';
-const ELEMENT_PARAGRAPH = 'p';
-const ELEMENT_TABLE = 'table';
-const ELEMENT_TD = 'td';
-const ELEMENT_TH = 'th';
-const ELEMENT_TODO_LI = 'action_item';
-const ELEMENT_TOGGLE = 'toggle';
-const ELEMENT_TR = 'tr';
-const ELEMENT_UL = 'ul';
-const ELEMENT_COLUMN_GROUP = 'column_group';
-const ELEMENT_COLUMN = 'column';
-
 const elements: HyperscriptShorthands = {
-  ha: { type: ELEMENT_LINK },
-  hblockquote: { type: ELEMENT_BLOCKQUOTE },
-  hcodeblock: { type: ELEMENT_CODE_BLOCK },
-  hcodeline: { type: ELEMENT_CODE_LINE },
-  hcolumn: { type: ELEMENT_COLUMN },
-  hcolumngroup: { type: ELEMENT_COLUMN_GROUP },
-  hdefault: { type: ELEMENT_PARAGRAPH },
-  hexcalidraw: { type: ELEMENT_EXCALIDRAW },
-  hh1: { type: ELEMENT_H1 },
-  hh2: { type: ELEMENT_H2 },
-  hh3: { type: ELEMENT_H3 },
-  hh4: { type: ELEMENT_H4 },
-  hh5: { type: ELEMENT_H5 },
-  hh6: { type: ELEMENT_H6 },
-  himg: { children: voidChildren, type: ELEMENT_IMAGE },
-  hli: { type: ELEMENT_LI },
-  hlic: { type: ELEMENT_LIC },
-  hmediaembed: { children: voidChildren, type: ELEMENT_MEDIA_EMBED },
-  hmention: { children: voidChildren, type: ELEMENT_MENTION },
-  hmentioninput: { children: voidChildren, type: ELEMENT_MENTION_INPUT },
-  hnli: { type: ELEMENT_NLI },
-  hol: { type: ELEMENT_OL },
-  hp: { type: ELEMENT_PARAGRAPH },
-  htable: { type: ELEMENT_TABLE },
-  htd: { type: ELEMENT_TD },
-  hth: { type: ELEMENT_TH },
-  htodoli: { type: ELEMENT_TODO_LI },
-  htoggle: { type: ELEMENT_TOGGLE },
-  htr: { type: ELEMENT_TR },
-  hul: { type: ELEMENT_UL },
+  ha: { type: 'a' },
+  hblockquote: { type: 'blockquote' },
+  hcallout: { type: 'callout' },
+  hcodeblock: { type: 'code_block' },
+  hcodeline: { type: 'code_line' },
+  hcolumn: { type: 'column' },
+  hcolumngroup: { type: 'column_group' },
+  hdate: { children: voidChildren, type: 'date' },
+  hdefault: { type: 'p' },
+  hequation: { type: 'equation' },
+  hexcalidraw: { type: 'excalidraw' },
+    hh1: { type: 'h1' },
+  hh2: { type: 'h2' },
+  hh3: { type: 'h3' },
+  hh4: { type: 'h4' },
+  hh5: { type: 'h5' },
+  hh6: { type: 'h6' },
+  himg: { children: voidChildren, type: 'img' },
+  hinlineequation: { type: 'inline_equation' },
+  hli: { type: 'li' },
+  hlic: { type: 'lic' },
+  hmediaembed: { children: voidChildren, type: 'media_embed' },
+  hmention: { children: voidChildren, type: 'mention' },
+  hmentioninput: { children: voidChildren, type: 'mention_input' },
+  hnli: { type: 'nli' },
+  hol: { type: 'ol' },
+  hp: { type: 'p' },
+  htable: { type: 'table' },
+  htd: { type: 'td' },
+  hth: { type: 'th' },
+  htoc: { type: 'toc' },
+  htodoli: { type: 'action_item' },
+  htoggle: { type: 'toggle' },
+  htr: { type: 'tr' },
+  hul: { type: 'ul' },
 };
 
 export const jsx = createHyperscript({

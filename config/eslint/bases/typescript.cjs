@@ -3,10 +3,11 @@ const { filePatterns } = require('../constants/file-patterns.cjs');
 
 /**
  * Custom config base for projects using typescript / javascript.
+ *
  * @see https://github.com/belgattitude/nextjs-monorepo-example/tree/main/packages/eslint-config-bases
  */
 
-/** @type {import("eslint").Linter.Config} */
+/** @type {import('eslint').Linter.Config} */
 module.exports = {
   extends: ['eslint:recommended', 'plugin:import/recommended'],
   overrides: [
@@ -45,16 +46,18 @@ module.exports = {
           { fixStyle: 'inline-type-imports' },
         ],
         '@typescript-eslint/method-signature-style': ['error', 'property'],
+        // false positive
+        '@typescript-eslint/no-duplicate-type-constituents': 'off',
         '@typescript-eslint/no-empty-function': 'off',
         '@typescript-eslint/no-empty-interface': 'off',
         '@typescript-eslint/no-explicit-any': 'off',
         '@typescript-eslint/no-import-type-side-effects': 'error',
+        // Override stylistic-type-checked
+
         '@typescript-eslint/no-misused-promises': [
           2,
           { checksVoidReturn: false },
         ],
-        // Override stylistic-type-checked
-
         '@typescript-eslint/no-non-null-assertion': 'off',
         '@typescript-eslint/no-redundant-type-constituents': 'off',
         '@typescript-eslint/no-unnecessary-type-assertion': 'off',
@@ -62,9 +65,9 @@ module.exports = {
         '@typescript-eslint/no-unsafe-assignment': 'off',
         '@typescript-eslint/no-unsafe-call': 'off',
         '@typescript-eslint/no-unsafe-member-access': 'off',
-        '@typescript-eslint/no-unsafe-return': 'off',
         // Override strict-type-checked
 
+        '@typescript-eslint/no-unsafe-return': 'off',
         '@typescript-eslint/no-unused-vars': [
           'warn',
           {
@@ -75,6 +78,7 @@ module.exports = {
         '@typescript-eslint/non-nullable-type-assertion-style': 'off',
         '@typescript-eslint/prefer-nullish-coalescing': 'off',
         '@typescript-eslint/require-await': 'warn',
+
         '@typescript-eslint/restrict-template-expressions': 'off',
       },
     },
@@ -118,8 +122,8 @@ module.exports = {
       files: filePatterns.test,
       rules: {
         '@typescript-eslint/require-await': 'off',
-      }
-    }
+      },
+    },
   ],
   plugins: ['unused-imports'],
   rules: {
@@ -137,10 +141,10 @@ module.exports = {
     'import/no-named-as-default': ['warn'],
     'import/no-named-as-default-member': 'off',
     'linebreak-style': ['error', 'unix'],
-    'no-empty': ['error', { allowEmptyCatch: true }],
     'no-case-declarations': 'off',
     // will use 'import/no-duplicates'.
     'no-duplicate-imports': 'off',
+    'no-empty': ['error', { allowEmptyCatch: true }],
     'no-empty-function': 'off',
     'no-prototype-builtins': 'off',
     /** Remove unused imports */

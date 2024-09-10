@@ -10,6 +10,7 @@ export const customizerComponents = {
     title: 'Blockquote',
   },
   button: { href: '/docs/components/button', title: 'Button' },
+  calendar: { href: '/docs/components/calendar', title: 'Calendar' },
   caption: { href: '/docs/components/caption', title: 'Caption' },
   checkbox: { href: '/docs/components/checkbox', title: 'Checkbox' },
   cloud: { href: '/docs/components/cloud', title: 'Cloud' },
@@ -65,6 +66,11 @@ export const customizerComponents = {
   cursorOverlay: {
     href: '/docs/components/cursor-overlay',
     title: 'Cursor Overlay',
+  },
+  dateElement: {
+    href: '/docs/components/date-element',
+    label: 'Element',
+    title: 'Date',
   },
   dialog: { href: '/docs/components/dialog', title: 'Dialog' },
   draggable: { href: '/docs/components/draggable', title: 'Draggable' },

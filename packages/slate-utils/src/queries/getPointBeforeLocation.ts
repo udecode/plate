@@ -3,7 +3,6 @@ import type { Location, Point } from 'slate';
 
 import {
   type TEditor,
-  type Value,
   getEditorString,
   getPoint,
   getPointBefore,
@@ -32,6 +31,14 @@ export interface PointBeforeOptions extends BeforeOptions {
     beforeString: string;
   }) => boolean;
 
+  /**
+   * If true, `matchString` will be interpreted as regex expression(s).
+   * Otherwise, it will be compared by string equality.
+   *
+   * @default false
+   */
+  matchByRegex?: boolean;
+
   /** Lookup before the location for `matchString`. */
   matchString?: string | string[];
 
@@ -46,8 +53,8 @@ export interface PointBeforeOptions extends BeforeOptions {
  * {@link getPointBefore} with additional options. TODO: support for sequence of
  * any characters.
  */
-export const getPointBeforeLocation = <V extends Value>(
-  editor: TEditor<V>,
+export const getPointBeforeLocation = (
+  editor: TEditor,
   at: Location,
   options?: PointBeforeOptions
 ) => {
@@ -60,6 +67,8 @@ export const getPointBeforeLocation = <V extends Value>(
   const matchStrings: string[] = options.matchString
     ? castArray(options.matchString)
     : [''];
+
+  const matchByRegex = options.matchByRegex ?? false;
 
   let point: any;
 
@@ -105,8 +114,13 @@ export const getPointBeforeLocation = <V extends Value>(
 
         beforeStringToMatch = map(stack.slice(0, -1), 'text').join('');
       }
+
+      const isMatched = matchByRegex
+        ? !!matchString.match(beforeStringToMatch)
+        : beforeStringToMatch === matchString;
+
       if (
-        matchString === beforeStringToMatch ||
+        isMatched ||
         options.match?.({ at, beforePoint, beforeString: beforeStringToMatch })
       ) {
         if (options.afterMatch) {

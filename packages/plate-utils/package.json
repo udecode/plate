@@ -1,24 +1,23 @@
 {
   "name": "@udecode/plate-utils",
-  "version": "36.3.7",
+  "version": "37.0.8",
   "description": "Plate utils",
-  "license": "MIT",
+  "keywords": [
+    "plate",
+    "plugin",
+    "slate"
+  ],
   "homepage": "https://platejs.org",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
     "directory": "packages/utils"
   },
-  "bugs": {
-    "url": "https://github.com/udecode/plate/issues"
-  },
+  "license": "MIT",
   "sideEffects": false,
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist/**/*"
-  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -26,17 +25,23 @@
       "module": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
-    "./server": {
-      "types": "./dist/server.d.ts",
-      "import": "./dist/server.mjs",
-      "module": "./dist/server.mjs",
-      "require": "./dist/server.js"
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.mjs",
+      "module": "./dist/react/index.mjs",
+      "require": "./dist/react/index.js"
     }
   },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
   "scripts": {
+    "brl": "yarn p:brl",
     "build": "yarn p:build",
     "build:watch": "yarn p:build:watch",
-    "brl": "yarn p:brl",
     "clean": "yarn p:clean",
     "lint": "yarn p:lint",
     "lint:fix": "yarn p:lint:fix",
@@ -45,28 +50,23 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-core": "36.3.7",
-    "@udecode/react-utils": "33.0.0",
-    "@udecode/slate": "36.0.6",
-    "@udecode/slate-react": "36.0.6",
-    "@udecode/slate-utils": "36.3.4",
-    "@udecode/utils": "31.0.0",
+    "@udecode/plate-core": "37.0.8",
+    "@udecode/react-utils": "37.0.0",
+    "@udecode/slate": "37.0.0",
+    "@udecode/slate-react": "37.0.0",
+    "@udecode/slate-utils": "37.0.0",
+    "@udecode/utils": "37.0.0",
     "clsx": "^1.2.1",
     "lodash": "^4.17.21"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "slate": ">=0.94.0",
+    "slate": ">=0.103.0",
     "slate-history": ">=0.93.0",
     "slate-hyperscript": ">=0.66.0",
-    "slate-react": ">=0.99.0"
+    "slate-react": ">=0.110.0"
   },
-  "keywords": [
-    "plate",
-    "plugin",
-    "slate"
-  ],
   "publishConfig": {
     "access": "public"
   }

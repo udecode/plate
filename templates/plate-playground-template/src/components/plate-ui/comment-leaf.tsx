@@ -3,17 +3,19 @@
 import React from 'react';
 import { cn } from '@udecode/cn';
 import {
-  TCommentText,
   useCommentLeaf,
   useCommentLeafState,
-} from '@udecode/plate-comments';
-import { PlateLeaf, PlateLeafProps, Value } from '@udecode/plate-common';
+} from '@udecode/plate-comments/react';
+import { PlateLeaf } from '@udecode/plate-common/react';
+
+import type { TCommentText } from '@udecode/plate-comments';
+import type { PlateLeafProps } from '@udecode/plate-common/react';
 
 export function CommentLeaf({
   className,
   ...props
-}: PlateLeafProps<Value, TCommentText>) {
-  const { children, nodeProps, leaf } = props;
+}: PlateLeafProps<TCommentText>) {
+  const { children, leaf, nodeProps } = props;
 
   const state = useCommentLeafState({ leaf });
   const { props: rootProps } = useCommentLeaf(state);

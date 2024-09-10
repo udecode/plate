@@ -1,17 +1,18 @@
 import React from 'react';
 
+import type { TColumnElement } from '@udecode/plate-layout';
+
 import { cn, withRef } from '@udecode/cn';
 import {
   PlateElement,
   useElement,
   useRemoveNodeButton,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/react';
 import {
-  ELEMENT_COLUMN,
-  type TColumnElement,
+  ColumnItemPlugin,
   useColumnState,
   useDebouncePopoverOpen,
-} from '@udecode/plate-layout';
+} from '@udecode/plate-layout/react';
 import { useReadOnly } from 'slate-react';
 
 import { Icons } from '@/components/icons';
@@ -43,7 +44,7 @@ export function ColumnFloatingToolbar({ children }: React.PropsWithChildren) {
     setThreeColumn,
   } = useColumnState();
 
-  const element = useElement<TColumnElement>(ELEMENT_COLUMN);
+  const element = useElement<TColumnElement>(ColumnItemPlugin.key);
 
   const { props: buttonProps } = useRemoveNodeButton({ element });
 

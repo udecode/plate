@@ -1,7 +1,6 @@
 import {
   type QueryEditorOptions,
   type TEditor,
-  type Value,
   someNode,
 } from '@udecode/slate';
 import castArray from 'lodash/castArray.js';
@@ -10,10 +9,7 @@ import { isSelectionAtBlockEnd } from './isSelectionAtBlockEnd';
 import { isSelectionAtBlockStart } from './isSelectionAtBlockStart';
 
 /** Query the editor state. */
-export const queryEditor = <
-  V extends Value = Value,
-  E extends TEditor<V> = TEditor<V>,
->(
+export const queryEditor = <E extends TEditor>(
   editor: E,
   {
     allow,
@@ -22,7 +18,7 @@ export const queryEditor = <
     filter,
     selectionAtBlockEnd,
     selectionAtBlockStart,
-  }: QueryEditorOptions<V, E> = {}
+  }: QueryEditorOptions<E> = {}
 ) => {
   if (
     (filter && !filter(editor)) ||

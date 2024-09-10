@@ -1,13 +1,14 @@
 import React from 'react';
 
-import { createSoftBreakPlugin } from '@/../../../packages/break/dist';
-import { cn, withProps } from '@udecode/cn';
+import { cn } from '@udecode/cn';
+import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks/react';
+import { SoftBreakPlugin } from '@udecode/plate-break/react';
+import { type Value, createSlatePlugin, isInline } from '@udecode/plate-common';
 import {
-  MARK_BOLD,
-  MARK_ITALIC,
-  createBoldPlugin,
-  createItalicPlugin,
-} from '@udecode/plate-basic-marks';
+  ParagraphPlugin,
+  createPlatePlugin,
+  toPlatePlugin,
+} from '@udecode/plate-common/react';
 import {
   Plate,
   PlateContent,
@@ -16,42 +17,29 @@ import {
   PlateLeaf,
   type PlateLeafProps,
   type PlateProps,
-  type Value,
   createPlateEditor,
-  createPluginFactory,
-  createPlugins,
-  isInline,
-} from '@udecode/plate-common';
+  usePlateEditor,
+} from '@udecode/plate-common/react';
 import {
   type DiffOperation,
   type DiffUpdate,
   computeDiff,
   withGetFragmentExcludeDiff,
 } from '@udecode/plate-diff';
-import {
-  ELEMENT_PARAGRAPH,
-  createParagraphPlugin,
-} from '@udecode/plate-paragraph';
+import { cloneDeep } from 'lodash';
 import { useSelected } from 'slate-react';
 
+import { PlateUI } from '@/lib/plate/demo/plate-ui';
 import { Button } from '@/registry/default/plate-ui/button';
-import { ParagraphElement } from '@/registry/default/plate-ui/paragraph-element';
 
-const ELEMENT_INLINE = 'inline';
-
-const createInlinePlugin = createPluginFactory({
-  isElement: true,
-  isInline: true,
-  key: ELEMENT_INLINE,
+const InlinePlugin = createPlatePlugin({
+  key: 'inline',
+  node: { isElement: true, isInline: true },
 });
 
-const ELEMENT_INLINE_VOID = 'inlineVoid';
-
-const createInlineVoidPlugin = createPluginFactory({
-  isElement: true,
-  isInline: true,
-  isVoid: true,
-  key: ELEMENT_INLINE_VOID,
+const InlineVoidPlugin = createPlatePlugin({
+  key: 'inline-void',
+  node: { isElement: true, isInline: true, isVoid: true },
 });
 
 const diffOperationColors: Record<DiffOperation['type'], string> = {
@@ -133,53 +121,60 @@ const InlineVoidElement = ({ children, ...props }: PlateElementProps) => {
   );
 };
 
-const MARK_DIFF = 'diff';
+const DiffPlugin = toPlatePlugin(
+  createSlatePlugin({
+    extendEditor: withGetFragmentExcludeDiff,
+    key: 'diff',
+    node: { isLeaf: true },
+  }),
+  {
+    render: {
+      aboveNodes:
+        () =>
+        ({ children, editor, element }) => {
+          if (!element.diff) return children;
 
-const createDiffPlugin = createPluginFactory({
-  inject: {
-    aboveComponent:
-      () =>
-      ({ children, editor, element }) => {
-        if (!element.diff) return children;
+          const diffOperation = element.diffOperation as DiffOperation;
 
-        const diffOperation = element.diffOperation as DiffOperation;
+          const label = (
+            {
+              delete: 'deletion',
+              insert: 'insertion',
+              update: 'update',
+            } as any
+          )[diffOperation.type];
 
-        const label = {
-          delete: 'deletion',
-          insert: 'insertion',
-          update: 'update',
-        }[diffOperation.type];
+          const Component = isInline(editor, element) ? 'span' : 'div';
 
-        const Component = isInline(editor, element) ? 'span' : 'div';
-
-        return (
-          <Component
-            aria-label={label}
-            className={diffOperationColors[diffOperation.type]}
-            title={
-              diffOperation.type === 'update'
-                ? describeUpdate(diffOperation)
-                : undefined
-            }
-          >
-            {children}
-          </Component>
-        );
-      },
-  },
-  isLeaf: true,
-  key: MARK_DIFF,
-  withOverrides: withGetFragmentExcludeDiff,
-});
+          return (
+            <Component
+              aria-label={label}
+              className={diffOperationColors[diffOperation.type]}
+              title={
+                diffOperation.type === 'update'
+                  ? describeUpdate(diffOperation)
+                  : undefined
+              }
+            >
+              {children}
+            </Component>
+          );
+        },
+      node: DiffLeaf,
+    },
+  }
+);
 
 function DiffLeaf({ children, ...props }: PlateLeafProps) {
   const diffOperation = props.leaf.diffOperation as DiffOperation;
 
-  const Component = {
-    delete: 'del',
-    insert: 'ins',
-    update: 'span',
-  }[diffOperation.type] as any;
+  const Component = (
+    {
+      delete: 'del',
+      insert: 'ins',
+      update: 'span',
+    } as any
+  )[diffOperation.type];
 
   return (
     <PlateLeaf {...props} asChild>
@@ -197,32 +192,10 @@ function DiffLeaf({ children, ...props }: PlateLeafProps) {
   );
 }
 
-const plugins = createPlugins(
-  [
-    createParagraphPlugin(),
-    createInlinePlugin(),
-    createInlineVoidPlugin(),
-    createBoldPlugin(),
-    createItalicPlugin(),
-    createDiffPlugin(),
-    createSoftBreakPlugin(),
-  ],
-  {
-    components: {
-      [ELEMENT_INLINE]: InlineElement,
-      [ELEMENT_INLINE_VOID]: InlineVoidElement,
-      [ELEMENT_PARAGRAPH]: ParagraphElement,
-      [MARK_BOLD]: withProps(PlateLeaf, { as: 'strong' }),
-      [MARK_DIFF]: DiffLeaf,
-      [MARK_ITALIC]: withProps(PlateLeaf, { as: 'em' }),
-    },
-  }
-);
-
 const initialValue: Value = [
   {
     children: [{ text: 'This is a version history demo.' }],
-    type: ELEMENT_PARAGRAPH,
+    type: ParagraphPlugin.key,
   },
   {
     children: [
@@ -230,29 +203,38 @@ const initialValue: Value = [
       { bold: true, text: 'text and see what' },
       { text: ' happens.' },
     ],
-    type: ELEMENT_PARAGRAPH,
+    type: ParagraphPlugin.key,
   },
   {
     children: [
       { text: 'This is an ' },
-      { children: [{ text: '' }], type: ELEMENT_INLINE_VOID },
+      { children: [{ text: '' }], type: InlineVoidPlugin.key },
       { text: '. Try removing it.' },
     ],
-    type: ELEMENT_PARAGRAPH,
+    type: ParagraphPlugin.key,
   },
   {
     children: [
       { text: 'This is an ' },
-      { children: [{ text: 'editable inline' }], type: ELEMENT_INLINE },
+      { children: [{ text: 'editable inline' }], type: InlinePlugin.key },
       { text: '. Try editing it.' },
     ],
-    type: ELEMENT_PARAGRAPH,
+    type: ParagraphPlugin.key,
   },
 ];
 
-function VersionHistoryPlate(props: Omit<PlateProps, 'children' | 'plugins'>) {
+const plugins = [
+  InlinePlugin.withComponent(InlineElement),
+  InlineVoidPlugin.withComponent(InlineVoidElement),
+  BoldPlugin,
+  ItalicPlugin,
+  DiffPlugin,
+  SoftBreakPlugin,
+];
+
+function VersionHistoryPlate(props: Omit<PlateProps, 'children'>) {
   return (
-    <Plate {...props} plugins={plugins}>
+    <Plate {...props}>
       <PlateContent className="rounded-md border p-3" />
     </Plate>
   );
@@ -265,20 +247,31 @@ interface DiffProps {
 
 function Diff({ current, previous }: DiffProps) {
   const diffValue = React.useMemo(() => {
-    const editor = createPlateEditor({ plugins });
+    const editor = createPlateEditor({
+      plugins,
+    });
 
-    return computeDiff(previous, current, {
+    return computeDiff(previous, cloneDeep(current), {
       isInline: editor.isInline,
       lineBreakChar: '¶',
     }) as Value;
   }, [previous, current]);
 
+  const editor = usePlateEditor(
+    {
+      override: { components: PlateUI },
+      plugins,
+      value: diffValue,
+    },
+    [diffValue]
+  );
+
   return (
     <>
       <VersionHistoryPlate
+        editor={editor}
         key={JSON.stringify(diffValue)}
         readOnly
-        value={diffValue}
       />
 
       <pre>{JSON.stringify(diffValue, null, 2)}</pre>
@@ -301,11 +294,29 @@ export default function VersionHistoryDemo() {
     setRevisions([...revisions, value]);
   };
 
+  const editor = usePlateEditor({
+    override: { components: PlateUI },
+    plugins,
+    value: initialValue,
+  });
+
+  const editorRevision = usePlateEditor(
+    {
+      override: { components: PlateUI },
+      plugins,
+      value: selectedRevisionValue,
+    },
+    [selectedRevisionValue]
+  );
+
   return (
     <div className="flex flex-col gap-3 p-3">
       <Button onClick={saveRevision}>Save revision</Button>
 
-      <VersionHistoryPlate initialValue={initialValue} onChange={setValue} />
+      <VersionHistoryPlate
+        editor={editor}
+        onChange={({ value }) => setValue(value)}
+      />
 
       <label>
         Revision to compare:
@@ -325,7 +336,7 @@ export default function VersionHistoryDemo() {
         <div>
           <h2>Revision {selectedRevisionIndex + 1}</h2>
           <VersionHistoryPlate
-            initialValue={selectedRevisionValue}
+            editor={editorRevision}
             key={selectedRevisionIndex}
             readOnly
           />

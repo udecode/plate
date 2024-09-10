@@ -1,10 +1,9 @@
-import React from 'react';
-
-import type { UseEmojiPickerType } from '@udecode/plate-emoji';
+import type { UseEmojiPickerType } from '@udecode/plate-emoji/react';
 
 import { cn } from '@udecode/cn';
+import { DeleteIcon, SearchIcon } from 'lucide-react';
 
-import { Icons } from '@/components/icons';
+import { Button } from './button';
 
 export type EmojiPickerSearchAndClearProps = Pick<
   UseEmojiPickerType,
@@ -17,27 +16,29 @@ export function EmojiPickerSearchAndClear({
   searchValue,
 }: EmojiPickerSearchAndClearProps) {
   return (
-    <>
-      <span
+    <div className="flex items-center">
+      <div
         className={cn(
-          'absolute left-2 top-1/2 z-10 flex size-5 -translate-y-1/2'
+          'absolute left-3 top-1/2 z-10 flex size-5 -translate-y-1/2 items-center justify-center'
         )}
       >
-        <Icons.search />
-      </span>
+        <SearchIcon className="size-4" />
+      </div>
       {searchValue && (
-        <button
+        <Button
           aria-label="Clear"
           className={cn(
-            'absolute right-0 top-1/2 flex size-8 -translate-y-1/2 cursor-pointer border-none bg-transparent'
+            'absolute right-1 top-1/2 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center border-none bg-transparent'
           )}
           onClick={clearSearch}
+          size="icon"
           title={i18n.clear}
           type="button"
+          variant="ghost"
         >
-          <Icons.clear className="size-full" />
-        </button>
+          <DeleteIcon className="size-4" />
+        </Button>
       )}
-    </>
+    </div>
   );
 }

@@ -1,31 +1,16 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 
-import { Plate } from '@udecode/plate-common';
-import { createPlugins } from '@udecode/plate-core';
+import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
+import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
+import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 
 import { editableProps } from '@/plate/demo/editableProps';
-import { plateUI } from '@/plate/demo/plateUI';
-import { basicNodesPlugins } from '@/plate/demo/plugins/basicNodesPlugins';
+import { PlateUI } from '@/plate/demo/plate-ui';
 import { iframeValue } from '@/plate/demo/values/iframeValue';
 import { Editor } from '@/registry/default/plate-ui/editor';
 
-import {
-  EditableVoidElement,
-  createEditableVoidPlugin,
-} from './editable-voids-demo';
-
-const plugins = createPlugins(
-  [
-    ...basicNodesPlugins,
-    createEditableVoidPlugin({
-      component: EditableVoidElement,
-    }),
-  ],
-  {
-    components: plateUI,
-  }
-);
+import { EditableVoidPlugin } from './editable-voids-demo';
 
 export function IFrame({ children, ...props }: any) {
   const [contentRef, setContentRef] = useState<any>(null);
@@ -40,9 +25,15 @@ export function IFrame({ children, ...props }: any) {
 }
 
 export default function IframeDemo() {
+  const editor = usePlateEditor({
+    override: { components: PlateUI },
+    plugins: [BasicElementsPlugin, BasicMarksPlugin, EditableVoidPlugin],
+    value: iframeValue,
+  });
+
   return (
     <IFrame className="p-10">
-      <Plate initialValue={iframeValue} plugins={plugins}>
+      <Plate editor={editor}>
         <Editor {...editableProps} />
       </Plate>
     </IFrame>

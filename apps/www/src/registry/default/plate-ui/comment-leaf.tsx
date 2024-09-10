@@ -2,22 +2,19 @@
 
 import React from 'react';
 
+import type { TCommentText } from '@udecode/plate-comments';
+
 import { cn } from '@udecode/cn';
 import {
-  type TCommentText,
   useCommentLeaf,
   useCommentLeafState,
-} from '@udecode/plate-comments';
-import {
-  PlateLeaf,
-  type PlateLeafProps,
-  type Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-comments/react';
+import { PlateLeaf, type PlateLeafProps } from '@udecode/plate-common/react';
 
 export function CommentLeaf({
   className,
   ...props
-}: PlateLeafProps<Value, TCommentText>) {
+}: PlateLeafProps<TCommentText>) {
   const { children, leaf, nodeProps } = props;
 
   const state = useCommentLeafState({ leaf });

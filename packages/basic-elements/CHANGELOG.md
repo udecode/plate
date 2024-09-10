@@ -1,5 +1,20 @@
 # @udecode/plate-basic-elements
 
+## 37.0.2
+
+## 37.0.0
+
+### Major Changes
+
+- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
+  - `createBasicElementPlugins` -> `BasicElementsPlugin`
+  - `createBlockquotePlugin` -> `BlockquotePlugin`
+  - `createCodeBlockPlugin` -> `CodeBlockPlugin`
+  - `createHeadingPlugin` -> `HeadingPlugin`
+  - Move paragraph plugin to `@udecode/plate-core`
+
+## 36.5.6
+
 ## 36.0.12
 
 ## 36.0.9

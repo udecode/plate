@@ -6,7 +6,6 @@
     "../dist",
     "../**/dist",
     "../**/*.stories.*",
-    "../**/*.spec*",
     "../**/*fixture*",
     "../**/*template*"
   ]

@@ -18,13 +18,13 @@ docs:
 
 **Plugins:**
 
-- `createBoldPlugin()` for `bold` mark
-- `createItalicPlugin()` for `italic` mark
-- `createUnderlinePlugin()` for `underline` mark
-- `createStrikethroughPlugin()` for `strikethrough` mark
-- `createSubscriptPlugin()` for `subscript` mark
-- `createSuperscriptPlugin()` for `superscript` mark
-- `createCodePlugin()` for `code` mark
+- `BoldPlugin` for `bold` mark
+- `ItalicPlugin` for `italic` mark
+- `UnderlinePlugin` for `underline` mark
+- `StrikethroughPlugin` for `strikethrough` mark
+- `SubscriptPlugin` for `subscript` mark
+- `SuperscriptPlugin` for `superscript` mark
+- `CodePlugin` for `code` mark
 
 ## Installation
 
@@ -35,15 +35,15 @@ npm install @udecode/plate-basic-marks
 ## Usage
 
 ```tsx
-import { createBasicMarksPlugin } from '@udecode/plate-basic-marks';
+import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
 
 const plugins = [
   // ...otherPlugins,
-  createBasicMarksPlugin(),
+  BasicMarksPlugin,
 ];
 ```
 
-## Keyboard Interactions
+## Keyboard Shortcuts
 
 <KeyTable>
   <KeyTableItem hotkey="Cmd + B">
@@ -69,97 +69,69 @@ const plugins = [
   </KeyTableItem>
 </KeyTable>
 
-## API
+## Plugins
 
-### createBasicMarksPlugin
+### BasicMarksPlugin
 
-### createBoldPlugin
+### BoldPlugin
 
 <APIOptions>
 <APIItem name="clear" type="string | string[]" optional>
 Node properties to delete.
-
-</APIItem>
-<APIItem name="hotkey" type="string | string[]" optional>
-Hotkey to toggle mark.
 
 </APIItem>
 </APIOptions>
 
-### createCodePlugin
+### CodePlugin
 
 <APIOptions>
 <APIItem name="clear" type="string | string[]" optional>
 Node properties to delete.
-
-</APIItem>
-<APIItem name="hotkey" type="string | string[]" optional>
-Hotkey to toggle mark.
 
 </APIItem>
 </APIOptions>
 
-### createItalicPlugin
+### ItalicPlugin
 
 <APIOptions>
 <APIItem name="clear" type="string | string[]" optional>
 Node properties to delete.
-
-</APIItem>
-<APIItem name="hotkey" type="string | string[]" optional>
-Hotkey to toggle mark.
 
 </APIItem>
 </APIOptions>
 
-### createUnderlinePlugin
+### UnderlinePlugin
 
 <APIOptions>
 <APIItem name="clear" type="string | string[]" optional>
 Node properties to delete.
-
-</APIItem>
-<APIItem name="hotkey" type="string | string[]" optional>
-Hotkey to toggle mark.
 
 </APIItem>
 </APIOptions>
 
-### createStrikethroughPlugin
+### StrikethroughPlugin
 
 <APIOptions>
 <APIItem name="clear" type="string | string[]" optional>
 Node properties to delete.
-
-</APIItem>
-<APIItem name="hotkey" type="string | string[]" optional>
-Hotkey to toggle mark.
 
 </APIItem>
 </APIOptions>
 
-### createSubscriptPlugin
+### SubscriptPlugin
 
 <APIOptions>
 <APIItem name="clear" type="string | string[]" optional>
 Node properties to delete.
-
-</APIItem>
-<APIItem name="hotkey" type="string | string[]" optional>
-Hotkey to toggle mark.
 
 </APIItem>
 </APIOptions>
 
-### createSuperscriptPlugin
+### SuperscriptPlugin
 
 <APIOptions>
 <APIItem name="clear" type="string | string[]" optional>
 Node properties to delete.
-
-</APIItem>
-<APIItem name="hotkey" type="string | string[]" optional>
-Hotkey to toggle mark.
 
 </APIItem>
 </APIOptions>

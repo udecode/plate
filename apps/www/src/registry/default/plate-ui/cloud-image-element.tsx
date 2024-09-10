@@ -10,14 +10,13 @@ import {
 import {
   PlateElement,
   type PlateElementProps,
-  type Value,
-} from '@udecode/plate-common';
+} from '@udecode/plate-common/react';
 
 import { ResizeControls } from './cloud-resize-controls';
 import { StatusBar } from './cloud-status-bar';
 
 export interface CloudImageElementProps
-  extends PlateElementProps<Value, TCloudImageElement> {}
+  extends PlateElementProps<TCloudImageElement> {}
 
 export function CloudImageElement({
   className,
