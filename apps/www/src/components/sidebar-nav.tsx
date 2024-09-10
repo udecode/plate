@@ -73,20 +73,11 @@ export function DocsSidebarNavItems({
                 <span
                   className={cn(
                     'ml-2 rounded-md bg-secondary px-1.5 py-0.5 text-xs leading-none text-foreground no-underline group-hover:no-underline',
-                    item.label === 'New' && 'bg-[#adfa1d] dark:text-background'
+                    item.label === 'New' && 'bg-[#adfa1d] dark:text-background',
+                    item.label === 'Plus' && 'bg-primary text-background'
                   )}
                 >
                   {item.label}
-                </span>
-              )}
-              {item.new && (
-                <span className="ml-2 rounded-md bg-blue-500 px-1.5 py-0.5 text-xs leading-none text-white no-underline group-hover:no-underline">
-                  New
-                </span>
-              )}
-              {item.pro && (
-                <span className="ml-2 rounded-md bg-indigo-600 px-1.5 py-0.5 text-xs leading-none text-indigo-50 no-underline group-hover:no-underline">
-                  Pro
                 </span>
               )}
             </Link>

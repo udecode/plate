@@ -95,7 +95,7 @@ export function ComponentPreviewPro({
                   'hover:ring-2 hover:ring-primary hover:ring-offset-2',
                   'transition-all duration-300 ease-out'
                 )}
-                href={`${siteConfig.links.potion}/pricing`}
+                href={`${siteConfig.links.platePlus}/pricing`}
                 target="_blank"
               >
                 <span
