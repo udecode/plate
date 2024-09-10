@@ -4,6 +4,7 @@ export const siteConfig = {
   links: {
     discord: 'https://discord.gg/mAZRuBzGM3',
     github: 'https://github.com/udecode/plate',
+    potion: 'https://pro.platejs.org',
     profile: 'https://github.com/zbeyens',
     twitter: 'https://twitter.com/zbeyens',
   },

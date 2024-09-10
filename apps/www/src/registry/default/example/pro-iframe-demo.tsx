@@ -1,10 +1,10 @@
-import { PRO_HOST } from '../../../config/potion-components';
+import { siteConfig } from '../../../config/site';
 
 export default function ProIframeDemo({ component }: { component: string }) {
   return (
     <iframe
       className="size-full h-[350px]"
-      src={`${PRO_HOST}/iframe/${component}`}
+      src={`${siteConfig.links.potion}/iframe/${component}`}
       title={component}
     ></iframe>
   );

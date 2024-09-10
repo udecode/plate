@@ -3,11 +3,14 @@
 import * as React from 'react';
 
 import { cn } from '@udecode/cn';
+import Link from 'next/link';
 
 import { Index } from '@/__registry__';
 import { useConfig } from '@/hooks/use-config';
+import { buttonVariants } from '@/registry/default/plate-ui/button';
 import { styles } from '@/registry/styles';
 
+import { siteConfig } from '../config/site';
 import { CopyButton } from './copy-button';
 import { Icons } from './icons';
 import { StyleSwitcher } from './style-switcher';
@@ -77,19 +80,34 @@ export function ComponentPreviewPro({
       <Tabs className="relative mr-auto w-full" defaultValue="preview">
         <div className="flex items-center justify-between pb-3">
           {!hideCode && (
-            <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
+            <TabsList className="flex w-full items-center  justify-between  rounded-none border-b bg-transparent p-0">
               <TabsTrigger
                 className="relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
                 value="preview"
               >
                 Preview
               </TabsTrigger>
-              <TabsTrigger
-                className="relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
-                value="code"
+              <Link
+                className={cn(
+                  buttonVariants(),
+                  'group relative flex justify-start gap-2 overflow-hidden whitespace-pre rounded-sm',
+                  'dark:bg-muted dark:text-foreground',
+                  'hover:ring-2 hover:ring-primary hover:ring-offset-2',
+                  'transition-all duration-300 ease-out'
+                )}
+                href={`${siteConfig.links.potion}/pricing`}
+                target="_blank"
               >
-                Code
-              </TabsTrigger>
+                <span
+                  className={cn(
+                    'absolute right-0 -mt-12 h-32 w-8 translate-x-12 rotate-12',
+                    'bg-white opacity-10',
+                    'transition-all duration-1000 ease-out '
+                  )}
+                />
+                Get the code -&gt;
+              </Link>
+              {/* <Button className="mb-2 h-8"></Button> */}
             </TabsList>
           )}
         </div>

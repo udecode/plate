@@ -1,57 +1,57 @@
-export const PRO_HOST = 'https://pro.platejs.org';
+import { siteConfig } from './site';
 
 export const potionComponents = {
   aiMenu: {
-    href: `${PRO_HOST}/docs/components/ai-menu`,
+    href: `${siteConfig.links.potion}/docs/components/ai-menu`,
     isExternalLink: true,
     new: true,
     pro: true,
     title: 'AI Menu',
   },
   contextMenu: {
-    href: `${PRO_HOST}/docs/components/context-menu`,
+    href: `${siteConfig.links.potion}/docs/components/context-menu`,
     isExternalLink: true,
     new: true,
     pro: true,
     title: 'Context Menu',
   },
   equation: {
-    href: `${PRO_HOST}/docs/components/equation`,
+    href: `${siteConfig.links.potion}/docs/components/equation`,
     isExternalLink: true,
     new: true,
     pro: true,
     title: 'Equation',
   },
   inlineEquation: {
-    href: `${PRO_HOST}/docs/components/inline-equation`,
+    href: `${siteConfig.links.potion}/docs/components/inline-equation`,
     isExternalLink: true,
     new: true,
     pro: true,
     title: 'Inline Equation',
   },
   mediaController: {
-    href: `${PRO_HOST}/docs/components/media-controller`,
+    href: `${siteConfig.links.potion}/docs/components/media-controller`,
     isExternalLink: true,
     new: true,
     pro: true,
     title: 'Media Controller',
   },
   slashMenu: {
-    href: `${PRO_HOST}/docs/components/slash-menu`,
+    href: `${siteConfig.links.potion}/docs/components/slash-menu`,
     isExternalLink: true,
     new: true,
     pro: true,
     title: 'Slash Menu',
   },
   toc: {
-    href: `${PRO_HOST}/docs/components/toc`,
+    href: `${siteConfig.links.potion}/docs/components/toc`,
     isExternalLink: true,
     new: true,
     pro: true,
     title: 'Table of contents',
   },
   toolbar: {
-    href: `${PRO_HOST}/docs/components/toolbar`,
+    href: `${siteConfig.links.potion}/docs/components/toolbar`,
     isExternalLink: true,
     new: true,
     pro: true,
