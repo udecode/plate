@@ -1,5 +1,7 @@
 # @udecode/plate-excalidraw
 
+## 38.0.0
+
 ## 37.0.0
 
 ### Major Changes

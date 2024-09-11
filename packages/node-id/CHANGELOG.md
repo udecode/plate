@@ -1,5 +1,7 @@
 # @udecode/plate-node-id
 
+## 38.0.0
+
 ## 37.0.0
 
 ### Major Changes

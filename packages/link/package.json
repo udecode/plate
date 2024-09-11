@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-link",
-  "version": "37.0.3",
+  "version": "38.0.0",
   "description": "Link plugin for Plate",
   "keywords": [
     "plate",
@@ -50,14 +50,14 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-floating": "37.0.3",
-    "@udecode/plate-normalizers": "37.0.0"
+    "@udecode/plate-floating": "38.0.0",
+    "@udecode/plate-normalizers": "38.0.0"
   },
   "devDependencies": {
     "@udecode/plate-common": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=37.0.8",
+    "@udecode/plate-common": ">=38.0.0",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.103.0",
