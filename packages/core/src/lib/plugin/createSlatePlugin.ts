@@ -8,7 +8,7 @@ import type {
   SlatePlugins,
 } from './SlatePlugin';
 
-import { mergeWithoutArray } from '../../internal/mergeWithoutArray';
+import { mergePlugins } from '../../internal/mergePlugins';
 import { isFunction } from '../utils/misc/isFunction';
 
 type SlatePluginConfig<K extends string = any, O = {}, A = {}, T = {}> = Omit<
@@ -108,7 +108,7 @@ export function createSlatePlugin<
 
   const key = baseConfig.key ?? '';
 
-  const plugin = mergeWithoutArray(
+  const plugin = mergePlugins(
     {
       __apiExtensions: [],
       __configuration: null,
@@ -246,11 +246,13 @@ export function createSlatePlugin<
         extendConfig,
       ];
     } else {
-      newPlugin = mergeWithoutArray({}, newPlugin, extendConfig);
+      newPlugin = mergePlugins(newPlugin, extendConfig as any);
     }
 
     return createSlatePlugin(newPlugin) as any;
   };
+
+  plugin.clone = () => mergePlugins(plugin);
 
   plugin.extendPlugin = (p, extendConfig) => {
     const newPlugin = { ...plugin };

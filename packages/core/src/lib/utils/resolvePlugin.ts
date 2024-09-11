@@ -1,10 +1,10 @@
-import { cloneDeep } from 'lodash';
+import merge from 'lodash/merge.js';
 
 import type { SlateEditor } from '../editor';
 import type { PluginConfig } from '../plugin/BasePlugin';
 import type { AnySlatePlugin, SlatePlugin } from '../plugin/SlatePlugin';
 
-import { mergeWithoutArray } from '../../internal/mergeWithoutArray';
+import { mergePlugins } from '../../internal/mergePlugins';
 import { getEditorPlugin } from '../plugin';
 
 /**
@@ -14,8 +14,8 @@ import { getEditorPlugin } from '../plugin';
  * and resolving nested plugins. It prepares the plugin for integration into the
  * Plate editor system by:
  *
- * 1. Applying all stored extensions to the plugin
- * 2. Recursively resolving any nested plugins
+ * 1. Cloning the plugin to avoid mutating the original
+ * 2. Applying all stored extensions to the plugin
  * 3. Clearing the extensions array after application
  *
  * @example
@@ -26,37 +26,8 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
   editor: SlateEditor,
   _plugin: P
 ): P => {
-  // if (_plugin.key === 'p') {
-  //   // Minimize the number of calls
-  //   console.log(editor.key, _plugin.key);
-  // }
-
   // Create a deep clone of the plugin
-  let plugin = {
-    __apiExtensions: [],
-    __configuration: null,
-    __extensions: [],
-    __optionExtensions: [],
-    dependencies: [],
-    editor: {},
-    handlers: {},
-    inject: {},
-    node: {},
-    override: {},
-    parser: {},
-    parsers: {},
-    plugins: [],
-    priority: 100,
-    render: {},
-    shortcuts: {},
-    transforms: {},
-    ...(_plugin as any),
-  } as P;
-
-  plugin.node = { type: plugin.key, ...(_plugin.node as any) };
-  plugin.api = cloneDeep(_plugin.api);
-  plugin.transforms = cloneDeep(_plugin.transforms);
-  plugin.options = { ..._plugin.options };
+  let plugin = mergePlugins({}, _plugin) as P;
 
   plugin.__resolved = true;
 
@@ -66,14 +37,14 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
       getEditorPlugin(editor, plugin as any)
     );
 
-    plugin = mergeWithoutArray({}, plugin, configResult);
+    plugin = mergePlugins(plugin, configResult);
 
     delete (plugin as any).__configuration;
   }
   // Apply all stored extensions
   if (plugin.__extensions && plugin.__extensions.length > 0) {
     plugin.__extensions.forEach((extension) => {
-      plugin = mergeWithoutArray(
+      plugin = mergePlugins(
         plugin,
         extension(getEditorPlugin(editor, plugin as any))
       );
@@ -86,7 +57,7 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
 
   if (targetPluginToInject && targetPlugins && targetPlugins.length > 0) {
     plugin.inject = plugin.inject || {};
-    plugin.inject.plugins = mergeWithoutArray(
+    plugin.inject.plugins = merge(
       {},
       plugin.inject.plugins,
       Object.fromEntries(

@@ -36,13 +36,9 @@ export function usePlateEditor<
     : TPlateEditor<V, P> | null {
   return React.useMemo(
     (): any => {
-      console.time('createPlateEditor');
-
       if (options.enabled === false) return null;
 
       const editor = createPlateEditor(options);
-
-      console.timeEnd('createPlateEditor');
 
       return editor;
     },

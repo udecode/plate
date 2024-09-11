@@ -62,6 +62,7 @@ import { SlashPlugin } from '@udecode/plate-slash-command';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
+import Prism from 'prismjs';
 
 import { CheckPlugin } from '@/components/context/check-plugin';
 import { settingsStore } from '@/components/context/settings-store';
@@ -105,7 +106,6 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
   const key = settingsStore.use.version();
 
   const editorId = id || 'playground-' + key;
-  console.time('usePlaygroundEditor');
 
   const a = usePlateEditor(
     {
@@ -121,11 +121,11 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         // Nodes
         HeadingPlugin,
         BlockquotePlugin,
-        // CodeBlockPlugin.configure({
-        //   options: {
-        //     prism: Prism,
-        //   },
-        // }),
+        CodeBlockPlugin.configure({
+          options: {
+            prism: Prism,
+          },
+        }),
         HorizontalRulePlugin,
         LinkPlugin.extend({
           render: { afterEditable: () => <LinkFloatingToolbar /> },
@@ -310,12 +310,10 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
           enabled: process.env.NODE_ENV !== 'production',
         }),
       ],
-      shouldNormalizeEditor: true,
       value: value,
     },
     []
   );
-  console.timeEnd('usePlaygroundEditor');
 
   return a;
 };

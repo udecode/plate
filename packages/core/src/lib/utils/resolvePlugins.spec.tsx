@@ -7,7 +7,7 @@ import { createSlatePlugin } from '../plugin';
 import { DebugPlugin } from '../plugins';
 import { resolvePluginTest } from './resolveCreatePluginTest';
 import {
-  mergePlugins,
+  applyPluginsToEditor,
   resolveAndSortPlugins,
   resolvePluginOverrides,
   resolvePlugins,
@@ -235,7 +235,7 @@ describe('resolveAndSortPlugins', () => {
   });
 });
 
-describe('mergePlugins', () => {
+describe('applyPluginsToEditor', () => {
   it('should merge plugins correctly', () => {
     const editor = createPlateEditor();
 
@@ -244,7 +244,7 @@ describe('mergePlugins', () => {
       createSlatePlugin({ key: 'b', node: { type: 'typeB' } }),
     ];
 
-    mergePlugins(editor, plugins);
+    applyPluginsToEditor(editor, plugins);
 
     expect(editor.pluginList).toHaveLength(2);
     expect(editor.plugins.a.node.type).toBe('typeA');
@@ -260,7 +260,7 @@ describe('mergePlugins', () => {
       createSlatePlugin({ key: 'a', node: { type: 'newType' } }),
     ];
 
-    mergePlugins(editor, plugins);
+    applyPluginsToEditor(editor, plugins);
 
     expect(editor.pluginList).toHaveLength(1);
     expect(editor.plugins.a.node.type).toBe('newType');
@@ -589,5 +589,64 @@ describe('applyPluginOverrides', () => {
     expect(editor.plugins).toHaveProperty('a');
     expect(editor.plugins).not.toHaveProperty('b');
     expect(editor.plugins).toHaveProperty('c');
+  });
+});
+
+describe('mergePlugins behavior in resolvePlugins', () => {
+  it('should not deeply clone options object', () => {
+    const nestedOptions = { value: 'original' };
+    const plugin = createSlatePlugin({
+      key: 'test',
+      options: { nested: nestedOptions },
+    });
+
+    const editor = createPlateEditor({
+      plugins: [plugin],
+    });
+
+    // Modify the nested options
+    nestedOptions.value = 'modified';
+
+    // Check that the modification is reflected in the resolved plugin's options
+    expect(editor.plugins.test.options.nested.value).toBe('modified');
+  });
+
+  it('should shallow clone the options object', () => {
+    const plugin = createSlatePlugin({
+      key: 'test',
+      options: { value: 'original' },
+    });
+
+    const editor = createPlateEditor({
+      plugins: [plugin],
+    });
+
+    // Modify the top-level option
+    editor.plugins.test.options.value = 'modified';
+
+    // Check that the modification does not affect the original plugin
+    expect(plugin.options.value).toBe('original');
+  });
+
+  it('should be able to merge options', () => {
+    const plugin = createSlatePlugin({
+      key: 'test',
+      options: { value: 'original' },
+    }).extend(({ getOptions }) => ({
+      options: {
+        ...getOptions(),
+        value: 'modified',
+      },
+    }));
+
+    const editor = createPlateEditor({
+      plugins: [plugin],
+    });
+
+    // Modify the top-level option
+    editor.plugins.test.options.value = 'modified';
+
+    // Check that the modification does not affect the original plugin
+    expect(plugin.options.value).toBe('original');
   });
 });
