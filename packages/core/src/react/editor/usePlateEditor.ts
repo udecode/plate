@@ -38,7 +38,9 @@ export function usePlateEditor<
     (): any => {
       if (options.enabled === false) return null;
 
-      return createPlateEditor(options);
+      const editor = createPlateEditor(options);
+
+      return editor;
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [options.id, options.enabled, ...deps]

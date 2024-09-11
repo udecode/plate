@@ -8,7 +8,6 @@ import type { PlateEditor } from '../../editor/PlateEditor';
 import type { PlateStoreState } from './PlateStore';
 
 import { createAtomStore } from '../../libs';
-import { createPlateFallbackEditor } from '../../utils';
 import {
   usePlateControllerEditorStore,
   usePlateControllerExists,
@@ -20,7 +19,7 @@ export const GLOBAL_PLATE_SCOPE = Symbol('global-plate');
 
 export const createPlateStore = <E extends PlateEditor = PlateEditor>({
   decorate = null,
-  editor = createPlateFallbackEditor() as E,
+  editor,
   id,
   isMounted = false,
   onChange = null,

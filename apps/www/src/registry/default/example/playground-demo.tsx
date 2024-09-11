@@ -107,7 +107,7 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
 
   const editorId = id || 'playground-' + key;
 
-  return usePlateEditor(
+  const a = usePlateEditor(
     {
       id: editorId,
       override: {
@@ -310,11 +310,12 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
           enabled: process.env.NODE_ENV !== 'production',
         }),
       ],
-      shouldNormalizeEditor: true,
       value: value,
     },
     []
   );
+
+  return a;
 };
 
 export default function PlaygroundDemo({

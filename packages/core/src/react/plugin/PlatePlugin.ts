@@ -248,7 +248,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
             >)
   ) => PlatePlugin<C>;
 
-  create: () => PlatePlugin<C>;
+  clone: () => PlatePlugin<C>;
 
   extend: <EO = {}, EA = {}, ET = {}>(
     extendConfig:

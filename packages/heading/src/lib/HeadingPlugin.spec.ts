@@ -31,17 +31,15 @@ describe('HeadingPlugin', () => {
         plugins: [HeadingPlugin],
       });
 
-      const headingPlugin = editor.getPlugin(HeadingPlugin);
-
       for (let i = 0; i < 3; i++) {
-        const plugin = headingPlugin.plugins[i];
+        const plugin = editor.plugins['h' + (i + 1)];
         expect(
           plugin.shortcuts['toggleHeading' + (i + 1)].keys.at(-1).at(-1)
         ).toBe(String(i + 1));
       }
 
       for (let i = 3; i < 6; i++) {
-        const plugin = headingPlugin.plugins[i];
+        const plugin = editor.plugins['h' + (i + 1)];
         expect(plugin.options?.hotkey).toBeUndefined();
       }
     });
@@ -127,17 +125,15 @@ describe('HeadingPluginReact', () => {
         plugins: [ReactHeadingPlugin],
       });
 
-      const headingPlugin = editor.getPlugin(ReactHeadingPlugin);
-
       for (let i = 0; i < 3; i++) {
-        const plugin = headingPlugin.plugins[i];
+        const plugin = editor.plugins['h' + (i + 1)];
         expect(
           plugin.shortcuts['toggleHeading' + (i + 1)].keys.at(-1).at(-1)
         ).toBe(String(i + 1));
       }
 
       for (let i = 3; i < 6; i++) {
-        const plugin = headingPlugin.plugins[i];
+        const plugin = editor.plugins['h' + (i + 1)];
         expect(plugin.shortcuts['toggleHeading' + (i + 1)]).toBeUndefined();
       }
     });
@@ -172,11 +168,9 @@ describe('HeadingPluginReact', () => {
         ],
       });
 
-      const headingPlugin = editor.getPlugin(ReactHeadingPlugin);
-
-      expect(headingPlugin.plugins[0].shortcuts.toggleHeading1).toBeDefined();
-      expect(headingPlugin.plugins[1].shortcuts.toggleHeading3).toBeDefined();
-      expect(headingPlugin.plugins[2].shortcuts.toggleHeading5).toBeUndefined();
+      expect(editor.plugins.h1.shortcuts.toggleHeading1).toBeDefined();
+      expect(editor.plugins.h3.shortcuts.toggleHeading3).toBeDefined();
+      expect(editor.plugins.h5.shortcuts.toggleHeading5).toBeUndefined();
     });
   });
 
