@@ -1,5 +1,7 @@
 # @udecode/plate-block-quote
 
+## 38.0.0
+
 ## 37.0.2
 
 ### Patch Changes

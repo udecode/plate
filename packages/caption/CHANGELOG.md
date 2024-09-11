@@ -1,5 +1,7 @@
 # @udecode/plate-caption
 
+## 38.0.0
+
 ## 37.0.1
 
 ### Patch Changes
