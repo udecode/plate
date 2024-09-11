@@ -11,7 +11,7 @@ import {
   isSelectionAtBlockStart,
 } from '@udecode/plate-common';
 import { TodoListPlugin } from '@udecode/plate-list/react';
-import { ResetNodePlugin } from '@udecode/plate-reset-node';
+import { ResetNodePlugin } from '@udecode/plate-reset-node/react';
 
 const resetBlockTypesCommonRule = {
   defaultType: ParagraphPlugin.key,
