@@ -5,6 +5,8 @@ description: Explore the various methods available for extending Plate plugins.
 
 ## Configuration Methods
 
+When extending plugins, all properties are deeply merged by default, with two exceptions: arrays are replaced entirely, and the `options` object is shallow merged.
+
 ### .configure
 
 The `.configure` method allows you to override the plugin's configuration.

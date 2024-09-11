@@ -47,10 +47,14 @@ export const createTable = (spanning?: boolean): any => (
           </hp>
         </htd>
         <htd>
-          <hp></hp>
+          <hp>
+            <htext />
+          </hp>
         </htd>
         <htd>
-          <hp></hp>
+          <hp>
+            <htext />
+          </hp>
         </htd>
         <htd>
           <hp>No</hp>

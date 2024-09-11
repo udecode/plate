@@ -8,8 +8,8 @@ import type {
   SlatePlugins,
 } from './SlatePlugin';
 
+import { mergePlugins } from '../../internal/mergePlugins';
 import { isFunction } from '../utils/misc/isFunction';
-import {mergePlugins} from '../../internal/mergePlugins';
 
 type SlatePluginConfig<K extends string = any, O = {}, A = {}, T = {}> = Omit<
   Partial<
@@ -131,7 +131,7 @@ export function createSlatePlugin<
       shortcuts: {},
       transforms: {},
     },
-    config as any
+    config
   ) as unknown as SlatePlugin<PluginConfig<K, O, A, T>>;
 
   plugin.configure = (config) => {

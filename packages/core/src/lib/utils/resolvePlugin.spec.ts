@@ -1,6 +1,5 @@
 import { createSlateEditor } from '../editor';
 import { createSlatePlugin } from '../plugin';
-import { resolvePlugin } from './resolvePlugin';
 
 describe('resolvePlugin', () => {
   it('should be', () => {
@@ -33,7 +32,6 @@ describe('resolvePlugin', () => {
   });
 
   it('should create a deep clone of the plugin instead of options', () => {
-    const editor = createSlateEditor() as any;
     const originalPlugin = createSlatePlugin({
       key: 'test',
       options: {
@@ -43,7 +41,11 @@ describe('resolvePlugin', () => {
       },
     });
 
-    const resolvedPlugin = resolvePlugin(editor, originalPlugin);
+    const editor = createSlateEditor({
+      plugins: [originalPlugin],
+    }) as any;
+
+    const resolvedPlugin = editor.plugins.test;
 
     // Modify the resolved plugin
     resolvedPlugin.options.nestedObject.value = 'modified';
@@ -56,12 +58,26 @@ describe('resolvePlugin', () => {
     expect(typeof resolvedPlugin.extend).toBe('function');
 
     // Create a new instance from the resolved plugin and modify it
-    const newInstance = originalPlugin.extend({});
-    newInstance.options.nestedObject.value = 'new instance';
+    const newInstance = originalPlugin.extend({
+      options: {
+        nestedObject: {
+          value: 'new instance',
+        },
+      },
+    });
+
+    const editor2 = createSlateEditor({
+      plugins: [newInstance],
+    }) as any;
 
     // Check that neither the original nor the first resolved plugin are affected
     expect(originalPlugin.options.nestedObject.value).toBe('modified');
-    expect(resolvedPlugin.options.nestedObject.value).toBe('modified');
-    expect(newInstance.options.nestedObject.value).toBe('new instance');
+    expect(editor2.plugins.test.options.nestedObject.value).toBe(
+      'new instance'
+    );
+    expect(editor.plugins.test.options.nestedObject.value).toBe('modified');
+    expect(editor2.plugins.test.options.nestedObject.value).toBe(
+      'new instance'
+    );
   });
 });

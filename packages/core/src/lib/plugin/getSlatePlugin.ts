@@ -7,18 +7,25 @@ import type {
 import type { AnySlatePlugin, SlatePlugin } from './SlatePlugin';
 
 import { resolvePlugin } from '../utils';
+import { createSlatePlugin } from './createSlatePlugin';
 
 /** Get editor plugin by key or plugin object. */
 export function getSlatePlugin<C extends AnyPluginConfig = PluginConfig>(
   editor: SlateEditor,
   p: WithRequiredKey<C>
 ): C extends { node: any } ? C : SlatePlugin<C> {
-  const plugin = p as any;
+  let plugin = p as any;
 
   const editorPlugin = editor.plugins[p.key] as any;
 
   if (!editorPlugin) {
-    return plugin.__resolved ? p : resolvePlugin(editor, plugin);
+    // When passing only { key }
+    if (!plugin.node) {
+      plugin = createSlatePlugin(plugin);
+    }
+
+    // Resolve is need when passing an external plugin with extensions (e.g. in withLink)
+    return plugin.__resolved ? plugin : resolvePlugin(editor, plugin);
   }
 
   return editorPlugin;

@@ -920,7 +920,8 @@ describe('createSlatePlugin', () => {
     it('should configure a deeply nested plugin', () => {
       const c = createSlatePlugin({
         key: 'c',
-        options: { initialValue: 'c' },
+        node: { isElement: true },
+        options: { a: 1 },
       });
 
       const b = createSlatePlugin({
@@ -934,12 +935,16 @@ describe('createSlatePlugin', () => {
       });
 
       const editor = createSlateEditor({
-        plugins: [a.configurePlugin(c, { options: { initialValue: 'cc' } })],
+        plugins: [
+          a.configurePlugin(c, {
+            node: { isElement: false },
+            options: { a: 2 },
+          }),
+        ],
       });
 
-      expect(editor.plugins.c.options).toEqual({
-        initialValue: 'cc',
-      });
+      expect(editor.plugins.c.node.isElement).toBe(false);
+      expect(editor.plugins.c.options.a).toBe(2);
     });
   });
 });
