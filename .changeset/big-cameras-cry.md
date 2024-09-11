@@ -4,7 +4,7 @@
 
 - Change `plugin.options` merging behavior from deep merge to shallow merge.
 - This affects `.extend()`, `.configure()`, and other methods that modify plugin options.
-- This is an **important patch** to v37 that introduced a performance regression when creating an editor.
+- This update addresses a **performance regression** introduced in v37 that affected editor creation.
 
 Before:
 
