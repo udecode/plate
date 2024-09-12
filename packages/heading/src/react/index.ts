@@ -3,6 +3,7 @@
  */
 
 export * from './HeadingPlugin';
+export * from './TocPlugin';
 export * from './types';
 export * from './hooks/index';
 export * from './utils/index';

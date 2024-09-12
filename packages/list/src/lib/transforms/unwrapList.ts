@@ -1,7 +1,7 @@
 import type { Path } from 'slate';
 
 import {
-  ParagraphPlugin,
+  BaseParagraphPlugin,
   type SlateEditor,
   getAboveNode,
   getBlockAbove,
@@ -54,7 +54,7 @@ export const unwrapList = (editor: SlateEditor, { at }: { at?: Path } = {}) => {
       if (licEntry) {
         setElements(editor, {
           at,
-          type: editor.getType(ParagraphPlugin),
+          type: editor.getType(BaseParagraphPlugin),
         });
       }
 

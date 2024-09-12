@@ -2,7 +2,7 @@ import { toc } from 'mdast-util-toc';
 import { remark } from 'remark';
 import { visit } from 'unist-util-visit';
 
-const textTypes = new Set(['text', 'emphasis', 'strong', 'inlineCode']);
+const textTypes = new Set(['emphasis', 'inlineCode', 'strong', 'text']);
 
 function flattenNode(node: any) {
   const p: string[] = [];

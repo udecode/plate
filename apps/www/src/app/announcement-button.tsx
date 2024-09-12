@@ -11,14 +11,14 @@ import { Separator } from '@/registry/default/plate-ui/separator';
 export function AnnouncementButton() {
   return (
     <Button
+      variant="secondary"
       className="inline-flex items-center rounded-lg bg-muted px-3 py-1 text-sm font-medium"
       onClick={() => {
         settingsStore.set.showSettings(true);
         settingsStore.set.customizerTab('plugins');
       }}
-      variant="secondary"
     >
-      🎉 <Separator className="mx-2 h-4" orientation="vertical" /> Introducing
+      🎉 <Separator orientation="vertical" className="mx-2 h-4" /> Introducing
       the interactive builder.
       <ArrowRightIcon className="ml-1 size-4" />
     </Button>

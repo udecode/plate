@@ -19,10 +19,10 @@ export function SettingsToggle() {
     <Tooltip>
       <TooltipTrigger asChild>
         <Toggle
-          onPressedChange={(pressed) => settingsStore.set.showSettings(pressed)}
-          pressed={showSettings}
           size="circle"
           variant="floating"
+          onPressedChange={(pressed) => settingsStore.set.showSettings(pressed)}
+          pressed={showSettings}
         >
           <Icons.plugin className="size-6" />
         </Toggle>

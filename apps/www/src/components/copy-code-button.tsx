@@ -74,6 +74,7 @@ export function CopyCodeButton({
             <CustomizerCode />
             {activeTheme && (
               <Button
+                size="sm"
                 className="absolute right-4 top-4 bg-muted text-muted-foreground hover:bg-muted hover:text-muted-foreground"
                 onClick={() => {
                   copyToClipboardWithMeta(
@@ -88,7 +89,6 @@ export function CopyCodeButton({
                   );
                   setHasCopied(true);
                 }}
-                size="sm"
               >
                 {hasCopied ? (
                   <CheckIcon className="mr-2 size-4" />

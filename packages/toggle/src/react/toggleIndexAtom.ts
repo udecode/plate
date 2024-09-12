@@ -8,7 +8,7 @@ import {
   useEditorPlugin,
   usePlateStore,
 } from '@udecode/plate-common/react';
-import { IndentPlugin, type TIndentElement } from '@udecode/plate-indent';
+import { BaseIndentPlugin, type TIndentElement } from '@udecode/plate-indent';
 
 import { TogglePlugin } from './TogglePlugin';
 
@@ -20,10 +20,10 @@ export const buildToggleIndex = (elements: Value): Map<string, string[]> => {
   const result = new Map<string, string[]>();
   let currentEnclosingToggles: [string, number][] = []; // [toggleId, indent][]
   elements.forEach((element) => {
-    const elementIndent = (element[IndentPlugin.key] as number) || 0;
+    const elementIndent = (element[BaseIndentPlugin.key] as number) || 0;
     // For some reason, indent lists have a min indent of 1, even though they are not indented
     const elementIndentWithIndentListCorrection =
-      element[IndentListPluginKey] && element[IndentPlugin.key]
+      element[IndentListPluginKey] && element[BaseIndentPlugin.key]
         ? elementIndent - 1
         : elementIndent;
 

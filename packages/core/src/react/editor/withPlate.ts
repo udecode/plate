@@ -19,9 +19,7 @@ export type PlateCorePlugin = CorePlugin | typeof PlateApiPlugin;
 export type WithPlateOptions<
   V extends Value = Value,
   P extends AnyPluginConfig = PlateCorePlugin,
-> = {
-  rootPlugin?: (plugin: AnyPlatePlugin) => AnyPlatePlugin;
-} & BaseWithSlateOptions<V, P> &
+> = BaseWithSlateOptions<V, P> &
   Pick<
     Partial<AnyPlatePlugin>,
     | 'api'
@@ -37,7 +35,9 @@ export type WithPlateOptions<
     | 'shortcuts'
     | 'transforms'
     | 'useHooks'
-  >;
+  > & {
+    rootPlugin?: (plugin: AnyPlatePlugin) => AnyPlatePlugin;
+  };
 
 /**
  * Applies Plate-specific enhancements to an editor instance with ReactPlugin.
@@ -99,14 +99,14 @@ export const withPlate = <
 export type CreatePlateEditorOptions<
   V extends Value = Value,
   P extends AnyPluginConfig = PlateCorePlugin,
-> = {
+> = WithPlateOptions<V, P> & {
   /**
    * Initial editor to be extended with `withPlate`.
    *
    * @default createEditor()
    */
   editor?: TEditor;
-} & WithPlateOptions<V, P>;
+};
 
 /**
  * Creates a fully configured Plate editor with optional customizations.

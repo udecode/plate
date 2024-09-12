@@ -10,7 +10,7 @@ import { getEditorPlugin } from '../plugin';
 export const pipeTransformFragment = (
   editor: SlateEditor,
   plugins: Partial<AnyEditorPlugin>[],
-  { fragment, ...options }: { fragment: TDescendant[] } & ParserOptions
+  { fragment, ...options }: ParserOptions & { fragment: TDescendant[] }
 ) => {
   plugins.forEach((p) => {
     const transformFragment = p.parser?.transformFragment;

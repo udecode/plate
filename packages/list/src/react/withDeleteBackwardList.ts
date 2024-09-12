@@ -1,5 +1,5 @@
 import {
-  ParagraphPlugin,
+  BaseParagraphPlugin,
   type TElement,
   type TNodeEntry,
   deleteMerge,
@@ -15,7 +15,7 @@ import {
   type ExtendEditor,
   getEditorPlugin,
 } from '@udecode/plate-common/react';
-import { ResetNodePlugin } from '@udecode/plate-reset-node';
+import { BaseResetNodePlugin } from '@udecode/plate-reset-node';
 import {
   SIMULATE_BACKSPACE,
   onKeyDownResetNode,
@@ -65,11 +65,11 @@ export const withDeleteBackwardList: ExtendEditor<ListConfig> = ({
               onKeyDownResetNode({
                 ...getEditorPlugin(
                   editor,
-                  ResetNodePlugin.configure({
+                  BaseResetNodePlugin.configure({
                     options: {
                       rules: [
                         {
-                          defaultType: editor.getType(ParagraphPlugin),
+                          defaultType: editor.getType(BaseParagraphPlugin),
                           hotkey: 'backspace',
                           onReset: (e) => unwrapList(e),
                           predicate: () => isSelectionAtBlockStart(editor),

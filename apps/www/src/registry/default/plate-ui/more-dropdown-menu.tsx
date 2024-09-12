@@ -32,14 +32,14 @@ export function MoreDropdownMenu(props: DropdownMenuProps) {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        align="start"
         className="flex max-h-[500px] min-w-[180px] flex-col gap-0.5 overflow-y-auto"
+        align="start"
       >
         <DropdownMenuItem
           onSelect={() => {
             editor.tf.toggle.mark({
-              clear: [SubscriptPlugin.key, SuperscriptPlugin.key],
               key: SuperscriptPlugin.key,
+              clear: [SubscriptPlugin.key, SuperscriptPlugin.key],
             });
             focusEditor(editor);
           }}
@@ -51,8 +51,8 @@ export function MoreDropdownMenu(props: DropdownMenuProps) {
         <DropdownMenuItem
           onSelect={() => {
             editor.tf.toggle.mark({
-              clear: [SuperscriptPlugin.key, SubscriptPlugin.key],
               key: SubscriptPlugin.key,
+              clear: [SuperscriptPlugin.key, SubscriptPlugin.key],
             });
             focusEditor(editor);
           }}

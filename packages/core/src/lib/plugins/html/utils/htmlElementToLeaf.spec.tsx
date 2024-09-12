@@ -1,8 +1,8 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /** @jsx jsx */
 
-import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks';
-import { ListPlugin } from '@udecode/plate-list';
+import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks/react';
+import { ListPlugin } from '@udecode/plate-list/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { createPlateEditor } from '../../../../react';

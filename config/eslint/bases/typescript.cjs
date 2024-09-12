@@ -1,4 +1,5 @@
 const path = require('node:path');
+
 const { filePatterns } = require('../constants/file-patterns.cjs');
 
 /**
@@ -35,7 +36,6 @@ module.exports = {
           },
         ],
         '@typescript-eslint/ban-tslint-comment': ['error'],
-        '@typescript-eslint/ban-types': 'off',
         '@typescript-eslint/consistent-generic-constructors': 'error',
         '@typescript-eslint/consistent-indexed-object-style': 'error',
         '@typescript-eslint/consistent-type-definitions': 'off',
@@ -49,15 +49,15 @@ module.exports = {
         // false positive
         '@typescript-eslint/no-duplicate-type-constituents': 'off',
         '@typescript-eslint/no-empty-function': 'off',
-        '@typescript-eslint/no-empty-interface': 'off',
+        '@typescript-eslint/no-empty-object-type': 'off',
         '@typescript-eslint/no-explicit-any': 'off',
         '@typescript-eslint/no-import-type-side-effects': 'error',
-        // Override stylistic-type-checked
-
         '@typescript-eslint/no-misused-promises': [
           2,
           { checksVoidReturn: false },
         ],
+        // Override stylistic-type-checked
+
         '@typescript-eslint/no-non-null-assertion': 'off',
         '@typescript-eslint/no-redundant-type-constituents': 'off',
         '@typescript-eslint/no-unnecessary-type-assertion': 'off',
@@ -65,9 +65,10 @@ module.exports = {
         '@typescript-eslint/no-unsafe-assignment': 'off',
         '@typescript-eslint/no-unsafe-call': 'off',
         '@typescript-eslint/no-unsafe-member-access': 'off',
+        '@typescript-eslint/no-unsafe-return': 'off',
         // Override strict-type-checked
 
-        '@typescript-eslint/no-unsafe-return': 'off',
+        '@typescript-eslint/no-unused-expressions': 'off',
         '@typescript-eslint/no-unused-vars': [
           'warn',
           {
@@ -115,7 +116,7 @@ module.exports = {
         '@typescript-eslint/explicit-module-boundary-types': 'off',
         '@typescript-eslint/naming-convention': 'off',
         '@typescript-eslint/no-explicit-any': 'off',
-        '@typescript-eslint/no-var-requires': 'off',
+        '@typescript-eslint/no-require-imports': 'off',
       },
     },
     {
@@ -140,7 +141,7 @@ module.exports = {
     ],
     'import/no-named-as-default': ['warn'],
     'import/no-named-as-default-member': 'off',
-    'linebreak-style': ['error', 'unix'],
+    // 'linebreak-style': ['error', 'unix'],
     'no-case-declarations': 'off',
     // will use 'import/no-duplicates'.
     'no-duplicate-imports': 'off',
@@ -149,21 +150,21 @@ module.exports = {
     'no-prototype-builtins': 'off',
     /** Remove unused imports */
     'no-unused-vars': 'off', // or "@typescript-eslint/no-unused-vars": "off",
-    'spaced-comment': [
-      'error',
-      'always',
-      {
-        block: {
-          balanced: true,
-          exceptions: ['*'],
-          markers: ['!'],
-        },
-        line: {
-          exceptions: ['-', '+'],
-          markers: ['/'],
-        },
-      },
-    ],
+    // 'spaced-comment': [
+    //   'error',
+    //   'always',
+    //   {
+    //     block: {
+    //       balanced: true,
+    //       exceptions: ['*'],
+    //       markers: ['!'],
+    //     },
+    //     line: {
+    //       exceptions: ['-', '+'],
+    //       markers: ['/'],
+    //     },
+    //   },
+    // ],
     // No unused imports
     'unused-imports/no-unused-imports': 'error',
     // No unused variables

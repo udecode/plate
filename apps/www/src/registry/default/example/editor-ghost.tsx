@@ -18,7 +18,7 @@ export default function EditorGhost() {
   return (
     <div className="mt-[72px] p-10">
       <Plate editor={editor}>
-        <Editor placeholder="Type your message here." variant="ghost" />
+        <Editor variant="ghost" placeholder="Type your message here." />
 
         <FloatingToolbar>
           <FloatingToolbarButtons />

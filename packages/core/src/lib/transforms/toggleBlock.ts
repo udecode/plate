@@ -6,7 +6,7 @@ import {
 
 import type { SlateEditor } from '../editor';
 
-import { BaseParagraphPlugin, type ToggleBlockOptions } from '../plugins';
+import { type ToggleBlockOptions, BaseParagraphPlugin } from '../plugins';
 
 /**
  * Toggle the type of the selected block. If the block is not of the specified

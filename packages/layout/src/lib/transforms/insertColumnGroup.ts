@@ -1,5 +1,5 @@
 import {
-  ParagraphPlugin,
+  BaseParagraphPlugin,
   type SlateEditor,
   insertNodes,
   withoutNormalizing,
@@ -14,12 +14,16 @@ export const insertColumnGroup = (editor: SlateEditor) => {
     insertNodes<TColumnGroupElement>(editor, {
       children: [
         {
-          children: [{ children: [{ text: '' }], type: ParagraphPlugin.key }],
+          children: [
+            { children: [{ text: '' }], type: BaseParagraphPlugin.key },
+          ],
           type: BaseColumnItemPlugin.key,
           width: '50%',
         },
         {
-          children: [{ children: [{ text: '' }], type: ParagraphPlugin.key }],
+          children: [
+            { children: [{ text: '' }], type: BaseParagraphPlugin.key },
+          ],
           type: BaseColumnItemPlugin.key,
           width: '50%',
         },

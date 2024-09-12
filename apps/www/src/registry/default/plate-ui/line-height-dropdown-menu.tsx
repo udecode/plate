@@ -28,23 +28,23 @@ export function LineHeightDropdownMenu({ ...props }: DropdownMenuProps) {
     <DropdownMenu modal={false} {...openState} {...props}>
       <DropdownMenuTrigger asChild>
         <ToolbarButton
-          isDropdown
           pressed={openState.open}
           tooltip="Line height"
+          isDropdown
         >
           <Icons.lineHeight />
         </ToolbarButton>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="start" className="min-w-0">
+      <DropdownMenuContent className="min-w-0" align="start">
         <DropdownMenuRadioGroup
           className="flex flex-col gap-0.5"
           {...radioGroupProps}
         >
           {state.values.map((_value) => (
             <DropdownMenuRadioItem
-              className="min-w-[180px]"
               key={_value}
+              className="min-w-[180px]"
               value={_value}
             >
               {_value}

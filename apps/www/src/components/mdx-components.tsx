@@ -200,7 +200,7 @@ const components = {
 interface MdxProps {
   code: string;
   packageInfo?: {
-    gzip: null | string;
+    gzip: string | null;
   };
 }
 

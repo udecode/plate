@@ -27,7 +27,7 @@ export function usePlateEditor<
   P extends AnyPluginConfig = PlateCorePlugin,
   TEnabled extends boolean | undefined = undefined,
 >(
-  options: { enabled?: TEnabled } & CreatePlateEditorOptions<V, P> = {},
+  options: CreatePlateEditorOptions<V, P> & { enabled?: TEnabled } = {},
   deps: React.DependencyList = []
 ): TEnabled extends false
   ? null

@@ -51,12 +51,6 @@ export function ThemesButton() {
                           ? 'border-[--theme-primary]'
                           : 'border-transparent'
                       )}
-                      onClick={() =>
-                        setConfig({
-                          ...config,
-                          theme: theme.name,
-                        })
-                      }
                       style={
                         {
                           '--theme-primary': `hsl(${
@@ -65,6 +59,12 @@ export function ThemesButton() {
                             ]
                           })`,
                         } as React.CSSProperties
+                      }
+                      onClick={() =>
+                        setConfig({
+                          ...config,
+                          theme: theme.name,
+                        })
                       }
                       type="button"
                     >
@@ -81,8 +81,8 @@ export function ThemesButton() {
                     </button>
                   </TooltipTrigger>
                   <TooltipContent
-                    align="center"
                     className="rounded-[0.5rem] bg-slate-900 text-slate-50"
+                    align="center"
                   >
                     {theme.label}
                   </TooltipContent>
@@ -102,11 +102,11 @@ export function ThemesButton() {
       </div>
 
       <Button
+        variant="outline"
         onClick={() => {
           settingsStore.set.customizerTab('themes');
           settingsStore.set.showSettings(true);
         }}
-        variant="outline"
       >
         <Paintbrush className="mr-2 size-4" />
         Themes

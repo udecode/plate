@@ -1,7 +1,7 @@
 import type { Location } from 'slate';
 
 import {
-  ParagraphPlugin,
+  BaseParagraphPlugin,
   type SlateEditor,
   getChildren,
   getNodeEntries,
@@ -16,7 +16,7 @@ export const unwrapCodeBlock = (editor: SlateEditor) => {
   if (!editor.selection) return;
 
   const codeBlockType = editor.getType(BaseCodeBlockPlugin);
-  const defaultType = editor.getType(ParagraphPlugin);
+  const defaultType = editor.getType(BaseParagraphPlugin);
 
   withoutNormalizing(editor, () => {
     const codeBlockEntries = getNodeEntries(editor, {

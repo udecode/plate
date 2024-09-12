@@ -5,7 +5,7 @@ import {
   withTriggerCombobox,
 } from '@udecode/plate-combobox';
 import { createSlatePlugin } from '@udecode/plate-common';
-import { ParagraphPlugin } from '@udecode/plate-common';
+import { ParagraphPlugin } from '@udecode/plate-common/react';
 import { createSlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 

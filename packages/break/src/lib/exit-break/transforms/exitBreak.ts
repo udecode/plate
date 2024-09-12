@@ -1,5 +1,5 @@
 import {
-  ParagraphPlugin,
+  BaseParagraphPlugin,
   type SlateEditor,
   getPath,
   insertElements,
@@ -14,7 +14,7 @@ export const exitBreak = (
   editor: SlateEditor,
   {
     before,
-    defaultType = editor.getType(ParagraphPlugin),
+    defaultType = editor.getType(BaseParagraphPlugin),
     level = 0,
     query = {},
     relative = false,

@@ -1,5 +1,5 @@
 /* eslint-disable jest/no-conditional-expect */
-import { BoldPlugin } from '@udecode/plate-basic-marks';
+import { BoldPlugin } from '@udecode/plate-basic-marks/react';
 import {
   type Value,
   createTEditor,
@@ -13,6 +13,7 @@ import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';
 import { getPlugin } from '../../react/plugin/getPlugin';
 import { EventEditorPlugin } from '../../react/plugins/event-editor/EventEditorPlugin';
 import {
+  type SlatePlugin,
   AstPlugin,
   DOMPlugin,
   DebugPlugin,
@@ -22,7 +23,6 @@ import {
   LengthPlugin,
   ParserPlugin,
   SlateNextPlugin,
-  type SlatePlugin,
   createSlatePlugin,
   withSlate,
 } from '../index';
@@ -139,7 +139,7 @@ describe('withPlate', () => {
 
   describe('when using override', () => {
     it('should merge components', () => {
-      const HeadingPlugin = createSlatePlugin({ key: 'h1' });
+      const HeadingPlugin = createPlatePlugin({ key: 'h1' });
       const customComponent = () => null;
 
       const editor = withPlate(createTEditor(), {

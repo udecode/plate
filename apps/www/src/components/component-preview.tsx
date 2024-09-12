@@ -110,9 +110,9 @@ export function ComponentPreview({
                 {/*  /> */}
                 {/* ) : null} */}
                 <CopyButton
+                  variant="outline"
                   className="size-7 text-foreground opacity-100 hover:bg-muted hover:text-foreground [&_svg]:size-3.5"
                   value={codeString}
-                  variant="outline"
                 />
               </div>
             </div>

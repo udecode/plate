@@ -1,6 +1,6 @@
 import {
+  BaseParagraphPlugin,
   type ExtendEditor,
-  ParagraphPlugin,
   type TElement,
   getChildren,
   getNode,
@@ -34,7 +34,7 @@ export const withNormalizeList: ExtendEditor<ListConfig> = ({
   editor.normalizeNode = ([node, path]) => {
     const liType = editor.getType(BaseListItemPlugin);
     const licType = editor.getType(BaseListItemContentPlugin);
-    const defaultType = editor.getType(ParagraphPlugin);
+    const defaultType = editor.getType(BaseParagraphPlugin);
 
     if (!isElement(node)) {
       return normalizeNode([node, path]);

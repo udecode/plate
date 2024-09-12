@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import { BoldPlugin } from '@udecode/plate-basic-marks';
-import { LinkPlugin } from '@udecode/plate-link';
-import { ImagePlugin } from '@udecode/plate-media';
-import { TablePlugin } from '@udecode/plate-table';
+import { BoldPlugin } from '@udecode/plate-basic-marks/react';
+import { LinkPlugin } from '@udecode/plate-link/react';
+import { ImagePlugin } from '@udecode/plate-media/react';
+import { TablePlugin } from '@udecode/plate-table/react';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 
 import { createPlateEditor } from '../../../../react';
@@ -213,7 +213,7 @@ describe('when plugin has deserializer.parse', () => {
   const output = (
     <editor>
       <hp>
-        <ha opener url="http://google.com">
+        <ha url="http://google.com" opener>
           a
         </ha>
       </hp>

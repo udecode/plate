@@ -1,14 +1,13 @@
-import { AlignPlugin } from '@udecode/plate-alignment';
-import { BlockquotePlugin } from '@udecode/plate-block-quote';
+import { AlignPlugin } from '@udecode/plate-alignment/react';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { CaptionPlugin } from '@udecode/plate-caption/react';
 import { htmlStringToDOMNode } from '@udecode/plate-common';
-import { ParagraphPlugin } from '@udecode/plate-common';
-import { toPlatePlugin } from '@udecode/plate-core/react';
-import { HeadingPlugin } from '@udecode/plate-heading';
+import { ParagraphPlugin } from '@udecode/plate-common/react';
+import { HeadingPlugin } from '@udecode/plate-heading/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
-import { ListPlugin } from '@udecode/plate-list';
-import { ImagePlugin } from '@udecode/plate-media';
-import { TablePlugin } from '@udecode/plate-table';
+import { ListPlugin } from '@udecode/plate-list/react';
+import { ImagePlugin } from '@udecode/plate-media/react';
+import { TablePlugin } from '@udecode/plate-table/react';
 
 import { serializeHtml } from '../../react/serializeHtml';
 import { createPlateUIEditor } from '../create-plate-ui-editor';
@@ -239,7 +238,7 @@ it('serialize align style to html', () => {
 it('serialize align className to html', () => {
   const plugins = [
     ParagraphPlugin,
-    toPlatePlugin(AlignPlugin, {
+    AlignPlugin.configure({
       node: { props: { classNames: { center: 'slate-align-center' } } },
     }),
   ];

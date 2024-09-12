@@ -54,20 +54,20 @@ export function EditableVoidElement({
     <div {...attributes} contentEditable={false}>
       <div className="mt-2 grid gap-6 rounded-md border p-6 shadow">
         <Input
-          className="my-2"
           id="name"
+          className="my-2"
+          value={inputValue}
           onChange={(e) => {
             setInputValue(e.target.value);
           }}
           placeholder="Name"
           type="text"
-          value={inputValue}
         />
 
         <div className="grid w-full max-w-sm items-center gap-2">
           <Label htmlFor="handed">Left or right handed:</Label>
 
-          <RadioGroup defaultValue="r1" id="handed">
+          <RadioGroup id="handed" defaultValue="r1">
             <div className="flex items-center space-x-2">
               <RadioGroupItem id="r1" value="r1" />
               <Label htmlFor="r1">Left</Label>

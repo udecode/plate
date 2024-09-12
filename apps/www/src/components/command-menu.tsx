@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import * as React from 'react';
 
 import type { NavItemWithChildren, SidebarNavItem } from '@/types/nav';
-import type { DialogProps } from '@radix-ui/react-alert-dialog';
+import type { DialogProps } from '@radix-ui/react-dialog';
 
 import { cn } from '@udecode/cn';
 import { Circle, File, Laptop, Moon, SunMedium } from 'lucide-react';
@@ -27,9 +27,9 @@ export function CommandItems({
   item,
   runCommand,
 }: {
-  children?: ReactNode;
   item: NavItemWithChildren;
   runCommand: any;
+  children?: ReactNode;
 }) {
   const router = useRouter();
 
@@ -83,15 +83,15 @@ export function CommandMenuGroup({
       {group.items?.map((navItem) => {
         return (
           <CommandItems
-            item={navItem}
             key={navItem.title}
+            item={navItem}
             runCommand={runCommand}
           >
             {navItem?.items?.map((item) => {
               return (
                 <CommandItems
-                  item={item}
                   key={item.title}
+                  item={item}
                   runCommand={runCommand}
                 />
               );
@@ -138,11 +138,11 @@ export function CommandMenu({ ...props }: DialogProps) {
   return (
     <>
       <Button
+        variant="outline"
         className={cn(
           'relative flex h-8 w-full items-center justify-start rounded-[0.5rem] bg-muted/50 text-sm font-normal text-muted-foreground shadow-none sm:pr-12 md:w-40 lg:w-64'
         )}
         onClick={() => setOpen(true)}
-        variant="outline"
         {...props}
       >
         <span className="hidden lg:inline-flex">Search documentation...</span>
@@ -151,7 +151,7 @@ export function CommandMenu({ ...props }: DialogProps) {
           <span className="text-xs">⌘</span>K
         </kbd>
       </Button>
-      <CommandDialog onOpenChange={setOpen} open={open}>
+      <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput placeholder="Type a command or search..." />
         <CommandEmpty>No results found.</CommandEmpty>
         <CommandList>

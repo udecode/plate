@@ -17,8 +17,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
       >
         <TooltipProvider
           delayDuration={0}
-          disableHoverableContent
           skipDelayDuration={0}
+          disableHoverableContent
         >
           {children}
         </TooltipProvider>

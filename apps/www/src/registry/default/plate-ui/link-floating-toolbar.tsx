@@ -10,8 +10,8 @@ import {
   offset,
 } from '@udecode/plate-floating';
 import {
-  FloatingLinkUrlInput,
   type LinkFloatingToolbarState,
+  FloatingLinkUrlInput,
   LinkOpenButton,
   useFloatingLinkEdit,
   useFloatingLinkEditState,
@@ -142,16 +142,16 @@ export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
   return (
     <>
       <div
-        className={cn(popoverVariants(), 'w-auto p-1')}
         ref={insertRef}
+        className={cn(popoverVariants(), 'w-auto p-1')}
         {...insertProps}
       >
         {input}
       </div>
 
       <div
-        className={cn(popoverVariants(), 'w-auto p-1')}
         ref={editRef}
+        className={cn(popoverVariants(), 'w-auto p-1')}
         {...editProps}
       >
         {editContent}

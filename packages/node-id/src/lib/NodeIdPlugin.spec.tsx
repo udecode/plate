@@ -7,8 +7,8 @@ import {
   mergeNodes,
   splitNodes,
 } from '@udecode/plate-common';
-import { ParagraphPlugin } from '@udecode/plate-common';
-import { BulletedListPlugin, ListItemPlugin } from '@udecode/plate-list';
+import { ParagraphPlugin } from '@udecode/plate-common/react';
+import { BulletedListPlugin, ListItemPlugin } from '@udecode/plate-list/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { NodeIdPlugin } from './NodeIdPlugin';

@@ -15,9 +15,9 @@ import React, {
 import type { PointRef } from 'slate';
 
 import {
+  type ComboboxItemProps,
   Combobox,
   ComboboxItem,
-  type ComboboxItemProps,
   ComboboxPopover,
   ComboboxProvider,
   Portal,
@@ -46,7 +46,7 @@ import {
 import { cva } from 'class-variance-authority';
 
 type FilterFn = (
-  item: { keywords?: string[]; value: string },
+  item: { value: string; keywords?: string[] },
   search: string
 ) => boolean;
 
@@ -133,6 +133,7 @@ const InlineCombobox = ({
   const { props: inputProps, removeInput } = useComboboxInput({
     cancelInputOnBlur: false,
     cursorState,
+    ref: inputRef,
     onCancelInput: (cause) => {
       if (cause !== 'backspace') {
         insertText(editor, trigger + value, {
@@ -146,7 +147,6 @@ const InlineCombobox = ({
         });
       }
     },
-    ref: inputRef,
   });
 
   const [hasEmpty, setHasEmpty] = useState(false);
@@ -236,20 +236,20 @@ const InlineComboboxInput = forwardRef<
 
       <span className="relative min-h-[1lh]">
         <span
-          aria-hidden="true"
           className="invisible overflow-hidden text-nowrap"
+          aria-hidden="true"
         >
           {value || '\u200B'}
         </span>
 
         <Combobox
-          autoSelect
+          ref={ref}
           className={cn(
             'absolute left-0 top-0 size-full bg-transparent outline-none',
             className
           )}
-          ref={ref}
           value={value}
+          autoSelect
           {...inputProps}
           {...props}
         />

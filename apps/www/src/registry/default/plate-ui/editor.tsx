@@ -62,9 +62,8 @@ const Editor = React.forwardRef<HTMLDivElement, EditorProps>(
     ref
   ) => {
     return (
-      <div className="relative w-full" ref={ref}>
+      <div ref={ref} className="relative w-full">
         <PlateContent
-          aria-disabled={disabled}
           className={cn(
             editorVariants({
               disabled,
@@ -75,9 +74,10 @@ const Editor = React.forwardRef<HTMLDivElement, EditorProps>(
             }),
             className
           )}
+          readOnly={disabled ?? readOnly}
+          aria-disabled={disabled}
           data-plate-selectable
           disableDefaultStyles
-          readOnly={disabled ?? readOnly}
           {...props}
         />
       </div>

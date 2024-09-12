@@ -34,10 +34,10 @@ export const HeadingElement = withRef<typeof HeadingElementVariants>(
 
     return (
       <HeadingElementVariants
-        asChild
-        isFirstBlock={element === editor.children[0]}
         ref={ref}
+        asChild
         variant={variant}
+        isFirstBlock={element === editor.children[0]}
         {...props}
       >
         <Element>{children}</Element>

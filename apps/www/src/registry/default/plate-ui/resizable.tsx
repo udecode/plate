@@ -44,8 +44,8 @@ const ResizeHandleVariants = withVariants(
 export const ResizeHandle = withRef<typeof ResizeHandlePrimitive>(
   (props, ref) => (
     <ResizeHandleVariants
-      direction={props.options?.direction}
       ref={ref}
+      direction={props.options?.direction}
       {...props}
     />
   )

@@ -1,19 +1,19 @@
 /** @jsx jsx */
 
-import { AlignPlugin } from '@udecode/plate-alignment';
-import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
-import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
-import { ParagraphPlugin } from '@udecode/plate-common';
+import { AlignPlugin } from '@udecode/plate-alignment/react';
+import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
+import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
+import { ParagraphPlugin } from '@udecode/plate-common/react';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { DocxPlugin } from '@udecode/plate-docx';
 import { HEADING_KEYS } from '@udecode/plate-heading';
-import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
-import { IndentPlugin } from '@udecode/plate-indent';
+import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
+import { IndentPlugin } from '@udecode/plate-indent/react';
 import { JuicePlugin } from '@udecode/plate-juice';
-import { LineHeightPlugin } from '@udecode/plate-line-height';
-import { LinkPlugin } from '@udecode/plate-link';
-import { ImagePlugin } from '@udecode/plate-media';
-import { TablePlugin } from '@udecode/plate-table';
+import { LineHeightPlugin } from '@udecode/plate-line-height/react';
+import { LinkPlugin } from '@udecode/plate-link/react';
+import { ImagePlugin } from '@udecode/plate-media/react';
+import { TablePlugin } from '@udecode/plate-table/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { BaseIndentListPlugin } from './BaseIndentListPlugin';

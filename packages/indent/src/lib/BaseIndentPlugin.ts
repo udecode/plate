@@ -1,5 +1,5 @@
 import {
-  ParagraphPlugin,
+  BaseParagraphPlugin,
   type PluginConfig,
   type TElement,
   createTSlatePlugin,
@@ -45,7 +45,7 @@ export const BaseIndentPlugin = createTSlatePlugin<IndentConfig>({
         return nodeValue * offset! + unit!;
       },
     },
-    targetPlugins: [ParagraphPlugin.key],
+    targetPlugins: [BaseParagraphPlugin.key],
   },
   key: 'indent',
   options: {

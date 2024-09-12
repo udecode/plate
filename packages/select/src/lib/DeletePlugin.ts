@@ -1,5 +1,5 @@
 import {
-  ParagraphPlugin,
+  BaseParagraphPlugin,
   type PluginConfig,
   type QueryNodeOptions,
   createTSlatePlugin,
@@ -20,7 +20,7 @@ export const DeletePlugin = createTSlatePlugin<DeleteConfig>({
   key: 'delete',
   options: {
     query: {
-      allow: [ParagraphPlugin.key],
+      allow: [BaseParagraphPlugin.key],
     },
   },
 });

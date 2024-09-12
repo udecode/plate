@@ -3,6 +3,7 @@ import { eventEditorActions, eventEditorSelectors } from './EventEditorStore';
 import { BLUR_EDITOR_EVENT, FOCUS_EDITOR_EVENT } from './useFocusEditorEvents';
 
 export const EventEditorPlugin = createPlatePlugin({
+  key: 'eventEditor',
   handlers: {
     onBlur: ({ editor }) => {
       const focus = eventEditorSelectors.focus();
@@ -29,5 +30,4 @@ export const EventEditorPlugin = createPlatePlugin({
       );
     },
   },
-  key: 'eventEditor',
 });

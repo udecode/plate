@@ -66,8 +66,8 @@ export function PluginsTabContentLazy() {
 
       <div className="flex items-center">
         <Checkbox
-          checked={somePluginChecked}
           id="check-plugins"
+          checked={somePluginChecked}
           onCheckedChange={(_checked: boolean) => {
             if (somePluginChecked) {
               settingsStore.set.checkedPlugins({} as any);
@@ -86,8 +86,8 @@ export function PluginsTabContentLazy() {
         <TreeIcon className="mx-1" isFirst isLast />
 
         <Checkbox
-          checked={someComponentChecked}
           id="check-components"
+          checked={someComponentChecked}
           onCheckedChange={(_checked: boolean) => {
             if (someComponentChecked) {
               settingsStore.set.checkedComponents({} as any);
@@ -103,6 +103,8 @@ export function PluginsTabContentLazy() {
         </Label>
 
         <Button
+          size="xs"
+          variant="ghost"
           className="px-2"
           onClick={() => {
             if (showComponents) {
@@ -111,8 +113,6 @@ export function PluginsTabContentLazy() {
 
             settingsStore.set.showComponents(!showComponents);
           }}
-          size="xs"
-          variant="ghost"
         >
           {showComponents ? (
             <Eye className="size-4" />

@@ -8,8 +8,8 @@ import {
   useCloudImageElementState,
 } from '@udecode/plate-cloud';
 import {
-  PlateElement,
   type PlateElementProps,
+  PlateElement,
 } from '@udecode/plate-common/react';
 
 import { ResizeControls } from './cloud-resize-controls';
@@ -34,7 +34,6 @@ export function CloudImageElement({
       {...props}
     >
       <span
-        contentEditable={false}
         style={{
           display: 'inline-block',
           /**
@@ -61,6 +60,7 @@ export function CloudImageElement({
            */
           verticalAlign: 'top',
         }}
+        contentEditable={false}
       >
         {src === '' ? (
           <div
@@ -76,11 +76,11 @@ export function CloudImageElement({
           />
         ) : (
           <img
-            alt=""
             className={cn(
               'block rounded-lg',
               focused && selected && 'shadow-[0_0_1px_3px_#60a5fa]'
             )}
+            alt=""
             height={size.height}
             src={src}
             srcSet={srcSet}
@@ -91,7 +91,7 @@ export function CloudImageElement({
           <StatusBar upload={upload} />
         </div>
         {selected && focused && (
-          <ResizeControls element={element} setSize={setSize} size={size} />
+          <ResizeControls size={size} element={element} setSize={setSize} />
         )}
       </span>
       {children}

@@ -10,7 +10,7 @@ import { getEditorPlugin } from '../plugin';
 export const pipeInsertFragment = (
   editor: SlateEditor,
   injectedPlugins: Partial<AnyEditorPlugin>[],
-  { fragment, ...options }: { fragment: TDescendant[] } & ParserOptions
+  { fragment, ...options }: ParserOptions & { fragment: TDescendant[] }
 ) => {
   withoutNormalizing(editor, () => {
     injectedPlugins.some((p) => {

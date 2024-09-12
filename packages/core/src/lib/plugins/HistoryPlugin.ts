@@ -9,6 +9,6 @@ export const withPlateHistory: ExtendEditor = ({ editor }) =>
 
 /** @see {@link withHistory} */
 export const HistoryPlugin = createSlatePlugin({
-  extendEditor: withPlateHistory,
   key: 'history',
+  extendEditor: withPlateHistory,
 });

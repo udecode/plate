@@ -6,15 +6,14 @@ import {
   type PlatePlugins,
   createPlateEditor,
   createPlatePlugin,
-  toPlatePlugin,
 } from '@udecode/plate-core/react';
-import { ImagePlugin } from '@udecode/plate-media';
+import { ImagePlugin } from '@udecode/plate-media/react';
 
 import { serializeHtml } from '../../react/serializeHtml';
 import { createPlateUIEditor } from '../create-plate-ui-editor';
 
 const plugins = [
-  toPlatePlugin(ImagePlugin, {
+  ImagePlugin.configure({
     parsers: {
       htmlReact: {
         serializer: {

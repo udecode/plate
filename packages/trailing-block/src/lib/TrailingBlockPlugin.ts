@@ -1,5 +1,5 @@
 import {
-  ParagraphPlugin,
+  BaseParagraphPlugin,
   type PluginConfig,
   type QueryNodeOptions,
   createTSlatePlugin,
@@ -27,6 +27,6 @@ export const TrailingBlockPlugin = createTSlatePlugin<TrailingBlockConfig>({
   },
 }).extend(({ editor }) => ({
   options: {
-    type: editor.getType(ParagraphPlugin),
+    type: editor.getType(BaseParagraphPlugin),
   },
 }));

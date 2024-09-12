@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { ListItemPlugin } from '@udecode/plate-list';
+import { ListItemPlugin } from '@udecode/plate-list/react';
 import { jsx } from '@udecode/plate-test-utils';
 import { isDescendant } from '@udecode/slate';
 

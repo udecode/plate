@@ -4,6 +4,8 @@ import type { IconProps } from '@radix-ui/react-icons/dist/types';
 
 import { cva } from 'class-variance-authority';
 import {
+  type LucideIcon,
+  type LucideProps,
   AlignCenter,
   AlignJustify,
   AlignLeft,
@@ -47,8 +49,6 @@ import {
   List,
   ListOrdered,
   Loader2,
-  type LucideIcon,
-  type LucideProps,
   MessageSquare,
   MessageSquarePlus,
   Minus,

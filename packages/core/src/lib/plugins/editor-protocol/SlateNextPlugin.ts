@@ -86,8 +86,8 @@ export const withSlateNext: ExtendEditor<SlateNextConfig> = ({ editor }) => {
 
 /** Opinionated extension of slate default behavior. */
 export const SlateNextPlugin = createTSlatePlugin<SlateNextConfig>({
-  extendEditor: withSlateNext,
   key: 'slateNext',
+  extendEditor: withSlateNext,
 })
   .extendEditorApi(({ editor }) => ({
     create: {

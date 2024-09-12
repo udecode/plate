@@ -6,7 +6,7 @@ import type { Style } from '@/registry/styles';
 import { promises as fs } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { Project, ScriptKind, type SourceFile, SyntaxKind } from 'ts-morph';
+import { type SourceFile, Project, ScriptKind, SyntaxKind } from 'ts-morph';
 import { z } from 'zod';
 
 import { Index } from '@/__registry__';

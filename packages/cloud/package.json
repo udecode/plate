@@ -46,7 +46,7 @@
   "dependencies": {
     "@portive/client": "10.0.3",
     "delay": "5.0.0",
-    "p-defer": "^3.0.0"
+    "p-defer": "^4.0.1"
   },
   "devDependencies": {
     "@udecode/plate-common": "workspace:^"

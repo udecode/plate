@@ -4,7 +4,7 @@ import type { TEditableProps } from '@udecode/slate-react';
 
 import type { PlateEditor } from '../editor/PlateEditor';
 
-import { PlateStoreProvider, type PlateStoreState } from '../stores';
+import { type PlateStoreState, PlateStoreProvider } from '../stores';
 
 export interface PlateProps<E extends PlateEditor = PlateEditor>
   extends Partial<
@@ -31,23 +31,23 @@ function PlateInner({
   children,
   decorate,
   editor,
-  onChange,
-  onSelectionChange,
-  onValueChange,
   primary,
   readOnly,
   renderElement,
   renderLeaf,
+  onChange,
+  onSelectionChange,
+  onValueChange,
 }: PlateProps) {
   return (
     <PlateStoreProvider
-      decorate={decorate}
-      editor={editor!}
+      readOnly={readOnly}
       onChange={onChange}
       onSelectionChange={onSelectionChange}
       onValueChange={onValueChange}
+      decorate={decorate}
+      editor={editor!}
       primary={primary}
-      readOnly={readOnly}
       renderElement={renderElement}
       renderLeaf={renderLeaf}
       scope={editor!.id}

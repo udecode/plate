@@ -119,7 +119,7 @@ export default function InstallationTab() {
     return {
       components: `npx @udecode/plate-ui@latest add ${Array.from(
         components.reduce(
-          (uniqueFilenames, { filename, id, noImport, registry }) => {
+          (uniqueFilenames, { id, filename, noImport, registry }) => {
             if (noImport) return uniqueFilenames;
 
             uniqueFilenames.add(registry ?? filename ?? id);
@@ -447,10 +447,10 @@ export default function InstallationTab() {
       <Steps>
         <Step>Install Plate</Step>
         <RadioGroup
+          value={isManual ? 'manual' : 'template'}
           onValueChange={(value) => {
             setIsManual(value === 'manual');
           }}
-          value={isManual ? 'manual' : 'template'}
         >
           <div className="mt-4 flex items-center space-x-2">
             <RadioGroupItem id="r2" value="template" />
@@ -464,11 +464,11 @@ export default function InstallationTab() {
         {isManual ? (
           <div>
             <InstallationCode
-              bash
               code={[
                 `npm install react react-dom slate slate-react slate-history slate-hyperscript`,
                 `npm install @udecode/plate-common`,
               ].join('\n')}
+              bash
             >
               Install the peer dependencies and Plate:
             </InstallationCode>
@@ -497,7 +497,7 @@ export default function InstallationTab() {
         {somePlugins && (
           <>
             <Step>Install Plugins</Step>
-            <InstallationCode bash code={installCommands.plugins}>
+            <InstallationCode code={installCommands.plugins} bash>
               Install your selected plugins:
             </InstallationCode>
           </>
@@ -505,7 +505,7 @@ export default function InstallationTab() {
         {someComponents && (
           <>
             <Step>Add Components</Step>
-            <InstallationCode bash code={installCommands.components}>
+            <InstallationCode code={installCommands.components} bash>
               <Link href="/docs/components/installation" target="_blank">
                 Install the dependencies for the components
               </Link>{' '}
@@ -529,9 +529,9 @@ export default function InstallationTab() {
         <InstallationCode code={plateCode} />
 
         <Accordion
-          collapsible
           defaultValue=""
           type="single"
+          collapsible
           // onValueChange={setValue}
         >
           <AccordionItem className="" value="1">

@@ -2,58 +2,58 @@ import type { TCodeBlockElement } from '@udecode/plate-code-block';
 import type { TElement } from '@udecode/plate-common';
 
 import {
-  AlignPlugin,
-  AutoformatPlugin,
-  BlockquotePlugin,
-  BoldPlugin,
-  CodeBlockPlugin,
-  CodePlugin,
-  ColumnPlugin,
-  CommentsPlugin,
+  BaseAlignPlugin,
+  BaseAutoformatPlugin,
+  BaseBlockquotePlugin,
+  BaseBoldPlugin,
+  BaseCodeBlockPlugin,
+  BaseCodePlugin,
+  BaseColumnPlugin,
+  BaseCommentsPlugin,
+  BaseFontBackgroundColorPlugin,
+  BaseFontColorPlugin,
+  BaseFontSizePlugin,
+  BaseHeadingPlugin,
+  BaseHighlightPlugin,
+  BaseHorizontalRulePlugin,
+  BaseImagePlugin,
+  BaseIndentListPlugin,
+  BaseIndentPlugin,
+  BaseItalicPlugin,
+  BaseKbdPlugin,
+  BaseLineHeightPlugin,
+  BaseLinkPlugin,
+  BaseListPlugin,
+  BaseMediaEmbedPlugin,
+  BaseMentionPlugin,
+  BaseParagraphPlugin,
+  BaseSingleLinePlugin,
+  BaseSlashPlugin,
+  BaseSoftBreakPlugin,
+  BaseStrikethroughPlugin,
+  BaseSubscriptPlugin,
+  BaseSuperscriptPlugin,
+  BaseTabbablePlugin,
+  BaseTablePlugin,
+  BaseTodoListPlugin,
+  BaseTogglePlugin,
+  BaseUnderlinePlugin,
   DeletePlugin,
   DocxPlugin,
-  FontBackgroundColorPlugin,
-  FontColorPlugin,
-  FontSizePlugin,
   HEADING_KEYS,
-  HeadingPlugin,
-  HighlightPlugin,
-  HorizontalRulePlugin,
-  ImagePlugin,
-  IndentListPlugin,
-  IndentPlugin,
-  ItalicPlugin,
-  KbdPlugin,
-  LineHeightPlugin,
-  LinkPlugin,
-  ListPlugin,
-  MediaEmbedPlugin,
-  MentionPlugin,
   NodeIdPlugin,
   NormalizeTypesPlugin,
-  ParagraphPlugin,
   SelectOnBackspacePlugin,
-  SingleLinePlugin,
-  SlashPlugin,
-  SoftBreakPlugin,
-  StrikethroughPlugin,
-  SubscriptPlugin,
-  SuperscriptPlugin,
-  TabbablePlugin,
-  TablePlugin,
-  TodoListPlugin,
-  TogglePlugin,
   TrailingBlockPlugin,
-  UnderlinePlugin,
   createSlateEditor,
 } from '@udecode/plate';
-import { ExitBreakPlugin } from '@udecode/plate-break';
-import { CaptionPlugin } from '@udecode/plate-caption';
-import { EmojiPlugin } from '@udecode/plate-emoji';
-import { ExcalidrawPlugin } from '@udecode/plate-excalidraw';
+import { BaseExitBreakPlugin } from '@udecode/plate-break';
+import { BaseCaptionPlugin } from '@udecode/plate-caption';
+import { BaseEmojiPlugin } from '@udecode/plate-emoji';
+import { BaseExcalidrawPlugin } from '@udecode/plate-excalidraw';
 import { JuicePlugin } from '@udecode/plate-juice';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
-import { ResetNodePlugin } from '@udecode/plate-reset-node';
+import { BaseResetNodePlugin } from '@udecode/plate-reset-node';
 
 import { Markdown } from '@/components/MemoizedReactMarkdownClient';
 import { Code } from '@/components/code';
@@ -72,85 +72,86 @@ export default function RSCPage() {
 
   const editor = createSlateEditor({
     plugins: [
-      HeadingPlugin,
-      BlockquotePlugin,
-      CodeBlockPlugin,
-      HorizontalRulePlugin,
-      LinkPlugin,
-      ListPlugin,
-      ImagePlugin,
-      MediaEmbedPlugin,
-      CaptionPlugin.configure({
+      BaseHeadingPlugin,
+      BaseBlockquotePlugin,
+      BaseCodeBlockPlugin,
+      BaseHorizontalRulePlugin,
+      BaseLinkPlugin,
+      BaseListPlugin,
+      BaseImagePlugin,
+      BaseMediaEmbedPlugin,
+      BaseCaptionPlugin.configure({
         options: {
-          plugins: [ImagePlugin, MediaEmbedPlugin],
+          plugins: [BaseImagePlugin, BaseMediaEmbedPlugin],
         },
       }),
-      MentionPlugin,
-      SlashPlugin,
-      TablePlugin,
-      TodoListPlugin,
-      TogglePlugin,
-      ExcalidrawPlugin,
+      BaseMentionPlugin,
+      BaseSlashPlugin,
+      BaseTablePlugin,
+      BaseTodoListPlugin,
+      BaseTogglePlugin,
+      BaseExcalidrawPlugin,
+      BaseColumnPlugin,
 
       // Marks
-      BoldPlugin,
-      ItalicPlugin,
-      UnderlinePlugin,
-      StrikethroughPlugin,
-      CodePlugin,
-      SubscriptPlugin,
-      SuperscriptPlugin,
-      FontColorPlugin,
-      FontBackgroundColorPlugin,
-      FontSizePlugin,
-      HighlightPlugin,
-      KbdPlugin,
+      BaseBoldPlugin,
+      BaseItalicPlugin,
+      BaseUnderlinePlugin,
+      BaseStrikethroughPlugin,
+      BaseCodePlugin,
+      BaseSubscriptPlugin,
+      BaseSuperscriptPlugin,
+      BaseFontColorPlugin,
+      BaseFontBackgroundColorPlugin,
+      BaseFontSizePlugin,
+      BaseHighlightPlugin,
+      BaseKbdPlugin,
 
       // Block Style
-      AlignPlugin.extend({
+      BaseAlignPlugin.extend({
         inject: {
           targetPlugins: [
-            ParagraphPlugin.key,
-            MediaEmbedPlugin.key,
+            BaseParagraphPlugin.key,
+            BaseMediaEmbedPlugin.key,
             HEADING_KEYS.h1,
             HEADING_KEYS.h2,
             HEADING_KEYS.h3,
             HEADING_KEYS.h4,
             HEADING_KEYS.h5,
-            ImagePlugin.key,
+            BaseImagePlugin.key,
             HEADING_KEYS.h6,
           ],
         },
       }),
-      IndentPlugin.extend({
+      BaseIndentPlugin.extend({
         inject: {
           targetPlugins: [
-            ParagraphPlugin.key,
+            BaseParagraphPlugin.key,
             HEADING_KEYS.h1,
             HEADING_KEYS.h2,
             HEADING_KEYS.h3,
             HEADING_KEYS.h4,
             HEADING_KEYS.h5,
             HEADING_KEYS.h6,
-            BlockquotePlugin.key,
-            CodeBlockPlugin.key,
-            TogglePlugin.key,
+            BaseBlockquotePlugin.key,
+            BaseCodeBlockPlugin.key,
+            BaseTogglePlugin.key,
           ],
         },
       }),
-      IndentListPlugin.extend({
+      BaseIndentListPlugin.extend({
         inject: {
           targetPlugins: [
-            ParagraphPlugin.key,
+            BaseParagraphPlugin.key,
             HEADING_KEYS.h1,
             HEADING_KEYS.h2,
             HEADING_KEYS.h3,
             HEADING_KEYS.h4,
             HEADING_KEYS.h5,
             HEADING_KEYS.h6,
-            BlockquotePlugin.key,
-            CodeBlockPlugin.key,
-            TogglePlugin.key,
+            BaseBlockquotePlugin.key,
+            BaseCodeBlockPlugin.key,
+            BaseTogglePlugin.key,
           ],
         },
         options: {
@@ -164,14 +165,14 @@ export default function RSCPage() {
           },
         },
       }),
-      LineHeightPlugin.extend({
+      BaseLineHeightPlugin.extend({
         inject: {
           nodeProps: {
             defaultNodeValue: 1.5,
             validNodeValues: [1, 1.2, 1.5, 2, 3],
           },
           targetPlugins: [
-            ParagraphPlugin.key,
+            BaseParagraphPlugin.key,
             HEADING_KEYS.h1,
             HEADING_KEYS.h2,
             HEADING_KEYS.h3,
@@ -183,37 +184,38 @@ export default function RSCPage() {
       }),
 
       // Functionality
-      AutoformatPlugin,
-      EmojiPlugin,
-      ExitBreakPlugin,
+      BaseAutoformatPlugin,
+      BaseEmojiPlugin,
+      BaseExitBreakPlugin,
       NodeIdPlugin,
       NormalizeTypesPlugin.configure({
         options: {
           rules: [{ path: [0], strictType: HEADING_KEYS.h1 }],
         },
       }),
-      ResetNodePlugin,
+      BaseResetNodePlugin,
       SelectOnBackspacePlugin.configure({
         options: {
           query: {
-            allow: [ImagePlugin.key, HorizontalRulePlugin.key],
+            allow: [BaseImagePlugin.key, BaseHorizontalRulePlugin.key],
           },
         },
       }),
       DeletePlugin,
-      SingleLinePlugin,
-      SoftBreakPlugin,
-      TabbablePlugin,
-      TrailingBlockPlugin.configure({ options: { type: ParagraphPlugin.key } }),
+      BaseSingleLinePlugin,
+      BaseSoftBreakPlugin,
+      BaseTabbablePlugin,
+      TrailingBlockPlugin.configure({
+        options: { type: BaseParagraphPlugin.key },
+      }),
 
       // Collaboration
-      CommentsPlugin,
+      BaseCommentsPlugin,
 
       // Deserialization
       DocxPlugin,
       MarkdownPlugin,
       JuicePlugin,
-      ColumnPlugin,
     ],
     value: [...basicElementsValue, ...basicMarksValue],
   });

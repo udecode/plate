@@ -29,18 +29,18 @@ export const EmojiInputElement = withRef<typeof PlateElement>(
 
     return (
       <PlateElement
+        ref={ref}
         as="span"
         data-slate-value={element.value}
-        ref={ref}
         {...props}
       >
         <InlineCombobox
+          value={value}
           element={element}
           filter={false}
-          hideWhenNoValue
           setValue={setValue}
           trigger=":"
-          value={value}
+          hideWhenNoValue
         >
           <InlineComboboxInput />
 
@@ -52,8 +52,8 @@ export const EmojiInputElement = withRef<typeof PlateElement>(
             {filteredEmojis.map((emoji) => (
               <InlineComboboxItem
                 key={emoji.id}
-                onClick={() => insertEmoji(editor, emoji)}
                 value={emoji.name}
+                onClick={() => insertEmoji(editor, emoji)}
               >
                 {emoji.skins[0].native} {emoji.name}
               </InlineComboboxItem>

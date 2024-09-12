@@ -10,7 +10,7 @@ import { DOMPlugin } from './DOMPlugin';
 import { HistoryPlugin } from './HistoryPlugin';
 import { InlineVoidPlugin } from './InlineVoidPlugin';
 import { ParserPlugin } from './ParserPlugin';
-import { type DebugErrorType, DebugPlugin, type LogLevel } from './debug';
+import { type DebugErrorType, type LogLevel, DebugPlugin } from './debug';
 import { SlateNextPlugin } from './editor-protocol';
 import { HtmlPlugin } from './html';
 import { LengthPlugin } from './length';

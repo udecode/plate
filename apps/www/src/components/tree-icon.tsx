@@ -9,11 +9,11 @@ interface TreeIconProps {
 export function TreeIcon({ className, isFirst, isLast }: TreeIconProps) {
   return (
     <svg
-      aria-hidden="true"
       className={cn(
         'aspect-[1/2] w-5 fill-none stroke-slate-300 dark:stroke-slate-600',
         className
       )}
+      aria-hidden="true"
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={1.2}

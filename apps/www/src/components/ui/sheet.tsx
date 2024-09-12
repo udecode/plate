@@ -97,9 +97,9 @@ const SheetContent = React.forwardRef<
       className,
       hideClose,
       modal = true,
-      onClose,
       position,
       side,
+      onClose,
       ...props
     },
     ref
@@ -107,8 +107,8 @@ const SheetContent = React.forwardRef<
     <SheetPortal modal={modal} position={position}>
       {!modal && <SheetOverlay />}
       <SheetPrimitive.Content
-        className={cn(sheetVariants({ side }), className)}
         ref={ref}
+        className={cn(sheetVariants({ side }), className)}
         {...props}
       >
         {children}
@@ -160,8 +160,8 @@ const SheetTitle = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof SheetPrimitive.Title>
 >(({ className, ...props }, ref) => (
   <SheetPrimitive.Title
-    className={cn('text-lg font-semibold text-foreground', className)}
     ref={ref}
+    className={cn('text-lg font-semibold text-foreground', className)}
     {...props}
   />
 ));
@@ -172,8 +172,8 @@ const SheetDescription = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof SheetPrimitive.Description>
 >(({ className, ...props }, ref) => (
   <SheetPrimitive.Description
-    className={cn('text-sm text-muted-foreground', className)}
     ref={ref}
+    className={cn('text-sm text-muted-foreground', className)}
     {...props}
   />
 ));

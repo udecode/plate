@@ -10,7 +10,7 @@ export const pipeDeserializeHtmlElement = (
   editor: SlateEditor,
   element: HTMLElement
 ) => {
-  let result: ({ node: AnyObject } & Nullable<HtmlDeserializer>) | undefined;
+  let result: (Nullable<HtmlDeserializer> & { node: AnyObject }) | undefined;
 
   [...editor.pluginList].reverse().some((plugin) => {
     result = pluginDeserializeHtml(editor, plugin, { element });

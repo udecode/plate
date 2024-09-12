@@ -35,13 +35,13 @@ export const DropdownMenuSubTrigger = withRef<
   }
 >(({ children, className, inset, ...props }, ref) => (
   <DropdownMenuPrimitive.SubTrigger
+    ref={ref}
     className={cn(
       'flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent',
       'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       inset && 'pl-8',
       className
     )}
-    ref={ref}
     {...props}
   >
     {children}
@@ -93,12 +93,12 @@ export const DropdownMenuCheckboxItem = withRef<
   typeof DropdownMenuPrimitive.CheckboxItem
 >(({ children, className, ...props }, ref) => (
   <DropdownMenuPrimitive.CheckboxItem
+    ref={ref}
     className={cn(
       'relative flex select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       'cursor-pointer',
       className
     )}
-    ref={ref}
     {...props}
   >
     <span className="absolute left-2 flex size-3.5 items-center justify-center">
@@ -117,12 +117,12 @@ export const DropdownMenuRadioItem = withRef<
   }
 >(({ children, className, hideIcon, ...props }, ref) => (
   <DropdownMenuPrimitive.RadioItem
+    ref={ref}
     className={cn(
       'relative flex select-none items-center rounded-sm pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       'h-9 cursor-pointer px-2 data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground',
       className
     )}
-    ref={ref}
     {...props}
   >
     {!hideIcon && (
@@ -174,7 +174,7 @@ export const useOpenState = () => {
   );
 
   return {
-    onOpenChange,
     open,
+    onOpenChange,
   };
 };

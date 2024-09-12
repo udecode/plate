@@ -1,5 +1,5 @@
 import {
-  ParagraphPlugin,
+  BaseParagraphPlugin,
   type SlateEditor,
   type TElement,
   findNode,
@@ -59,7 +59,7 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
         wrapNodes<TElement>(editor, list);
 
         const _nodes = getNodeEntries(editor, {
-          match: { type: editor.getType(ParagraphPlugin) },
+          match: { type: editor.getType(BaseParagraphPlugin) },
         });
         const nodes = Array.from(_nodes);
 

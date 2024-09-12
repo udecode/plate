@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { CodeBlockPlugin } from '@udecode/plate-code-block';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { jsx } from '@udecode/plate-test-utils';
 import { toggleWrapNodes } from '@udecode/slate-utils';
 

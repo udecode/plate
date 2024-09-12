@@ -17,7 +17,7 @@ export function BadgePopover({
   return (
     <HoverCard>
       <HoverCardTrigger className="flex items-center gap-2">
-        <Badge className="cursor-pointer font-mono" variant="secondary">
+        <Badge variant="secondary" className="cursor-pointer font-mono">
           {name}
         </Badge>
       </HoverCardTrigger>

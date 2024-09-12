@@ -45,8 +45,8 @@ export function EmojiPickerNavigation({
 
   return (
     <nav
-      className="mb-2.5 border-0 border-b border-solid border-b-border p-3"
       id="emoji-nav"
+      className="mb-2.5 border-0 border-b border-solid border-b-border p-3"
     >
       <div className="relative flex items-center">
         {emojiLibrary
@@ -54,18 +54,18 @@ export function EmojiPickerNavigation({
           .sections()
           .map(({ id }) => (
             <Button
-              aria-label={i18n.categories[id]}
+              key={id}
+              size="icon"
+              variant="ghost"
               className={cn(
                 'size-6 grow fill-current text-muted-foreground hover:bg-transparent hover:text-foreground',
                 id === focusedCategory &&
                   'pointer-events-none fill-current text-primary'
               )}
-              key={id}
               onClick={() => onClick(id)}
-              size="icon"
               title={i18n.categories[id]}
+              aria-label={i18n.categories[id]}
               type="button"
-              variant="ghost"
             >
               <span className="size-5">{icons.categories[id].outline}</span>
             </Button>

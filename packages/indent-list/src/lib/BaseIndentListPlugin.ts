@@ -1,6 +1,6 @@
 import {
+  BaseParagraphPlugin,
   HtmlPlugin,
-  ParagraphPlugin,
   type PluginConfig,
   type TElement,
   createTSlatePlugin,
@@ -83,7 +83,7 @@ export const BaseIndentListPlugin = createTSlatePlugin<BaseIndentListConfig>({
           // gdoc uses aria-level attribute
           indent: Number(element.getAttribute('aria-level')),
           listStyleType: getOptions().getListStyleType?.(element),
-          type: editor.getType(ParagraphPlugin),
+          type: editor.getType(BaseParagraphPlugin),
         }),
         rules: [
           {

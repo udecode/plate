@@ -373,6 +373,7 @@ describe('Plate', () => {
       const plugins: SlatePlugins = memoize(
         (): SlatePlugins => [
           createSlatePlugin({
+            key: 'a',
             extendEditor: ({ editor }) => {
               const { normalizeNode } = editor;
               editor.normalizeNode = (n) => {
@@ -382,7 +383,6 @@ describe('Plate', () => {
 
               return editor;
             },
-            key: 'a',
           }),
         ]
       )();

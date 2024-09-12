@@ -4,7 +4,7 @@ import {
   unsetNodes,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import { IndentPlugin } from '@udecode/plate-indent';
+import { BaseIndentPlugin } from '@udecode/plate-indent';
 
 import {
   BaseIndentListPlugin,
@@ -30,7 +30,7 @@ export const setIndentListNodes = (
     entries.forEach((entry) => {
       const [node, path] = entry;
 
-      let indent = (node[IndentPlugin.key] as number) ?? 0;
+      let indent = (node[BaseIndentPlugin.key] as number) ?? 0;
       indent =
         node[BaseIndentListPlugin.key] ||
         node.hasOwnProperty(INDENT_LIST_KEYS.checked)

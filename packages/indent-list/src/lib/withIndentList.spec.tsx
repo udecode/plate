@@ -3,7 +3,7 @@
 import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { IndentPlugin } from '@udecode/plate-indent';
+import { IndentPlugin } from '@udecode/plate-indent/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { BaseIndentListPlugin } from './BaseIndentListPlugin';

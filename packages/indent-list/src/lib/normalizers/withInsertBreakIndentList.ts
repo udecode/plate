@@ -1,6 +1,6 @@
 import {
+  BaseParagraphPlugin,
   type ExtendEditor,
-  ParagraphPlugin,
   type TElement,
   getAboveNode,
   insertNodes,
@@ -41,7 +41,7 @@ export const withInsertBreakIndentList: ExtendEditor<BaseIndentListConfig> = ({
       checked: false,
       children: [{ text: '' }],
       indent: node.indent,
-      type: ParagraphPlugin.key,
+      type: BaseParagraphPlugin.key,
     });
   };
 

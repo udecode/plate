@@ -25,6 +25,6 @@ export async function BlockDisplay({ name }: { name: string }) {
   }
 
   return blocks.map((block) => (
-    <BlockPreview block={block} key={`${block.style}-${block.name}`} />
+    <BlockPreview key={`${block.style}-${block.name}`} block={block} />
   ));
 }

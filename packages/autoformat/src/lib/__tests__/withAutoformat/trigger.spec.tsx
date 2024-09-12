@@ -4,7 +4,7 @@ import {
   BoldPlugin,
   ItalicPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-marks';
+} from '@udecode/plate-basic-marks/react';
 import {
   createPlateEditor,
   getEditorPlugin,

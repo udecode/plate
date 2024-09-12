@@ -54,15 +54,15 @@ describe('extend method with shortcuts', () => {
       key: 'testPlugin',
       shortcuts: {
         bold: {
-          handler: () => {},
           keys: 'mod+b',
+          handler: () => {},
         },
       },
     }).extend({
       shortcuts: {
         italic: {
-          handler: () => {},
           keys: 'mod+i',
+          handler: () => {},
         },
       },
     });
@@ -83,15 +83,15 @@ describe('extend method with shortcuts', () => {
       key: 'testPlugin',
       shortcuts: {
         bold: {
-          handler: originalCallback,
           keys: 'mod+b',
+          handler: originalCallback,
         },
       },
     }).extend({
       shortcuts: {
         bold: {
-          handler: newCallback,
           keys: 'mod+b',
+          handler: newCallback,
         },
       },
     });
@@ -118,8 +118,8 @@ describe('extend method with shortcuts', () => {
       key: 'testPlugin',
       shortcuts: {
         bold: {
-          handler: originalCallback,
           keys: 'mod+b',
+          handler: originalCallback,
         },
       },
     }).configure({
@@ -142,12 +142,12 @@ describe('extend method with shortcuts', () => {
       key: 'testPlugin',
       shortcuts: {
         bold: {
-          handler: () => {},
           keys: 'mod+b',
+          handler: () => {},
         },
         italic: {
-          handler: () => {},
           keys: 'mod+i',
+          handler: () => {},
         },
       },
     }).extend({
@@ -169,16 +169,16 @@ describe('extend method with shortcuts', () => {
       key: 'testPlugin',
       shortcuts: {
         bold: {
-          handler: () => {},
           keys: 'mod+b',
+          handler: () => {},
         },
       },
     }).extend((ctx) => ({
       shortcuts: {
         bold: null,
         italic: {
-          handler: () => {},
           keys: ctx.plugin.shortcuts.bold?.keys ?? [],
+          handler: () => {},
         },
       },
     }));
@@ -196,14 +196,14 @@ describe('extend method with shortcuts', () => {
       key: 'lowPriorityHotkey',
       shortcuts: {
         bold: {
-          handler: () => {},
           keys: 'mod+b',
           priority: 50,
+          handler: () => {},
         },
         italic: {
-          handler: () => {},
           keys: 'mod+i',
           priority: 50,
+          handler: () => {},
         },
       },
     });
@@ -212,9 +212,9 @@ describe('extend method with shortcuts', () => {
       key: 'highPriorityHotkey',
       shortcuts: {
         bold: {
-          handler: () => {},
           keys: 'mod+shift+b',
           priority: 150,
+          handler: () => {},
         },
       },
     });
@@ -223,13 +223,13 @@ describe('extend method with shortcuts', () => {
       key: 'defaultPriorityHotkey',
       shortcuts: {
         bold: {
-          handler: () => {},
           keys: 'mod+alt+b',
+          handler: () => {},
           // No priority specified, should default to 100
         },
         italic: {
-          handler: () => {},
           keys: 'mod+alt+i',
+          handler: () => {},
           // No priority specified, should default to 100
         },
       },
@@ -252,9 +252,9 @@ describe('extend method with shortcuts', () => {
       key: 'firstPlugin',
       shortcuts: {
         bold: {
-          handler: () => {},
           keys: 'mod+b',
           priority: 100,
+          handler: () => {},
         },
       },
     });
@@ -263,9 +263,9 @@ describe('extend method with shortcuts', () => {
       key: 'secondPlugin',
       shortcuts: {
         bold: {
-          handler: () => {},
           keys: 'mod+shift+b',
           priority: 100,
+          handler: () => {},
         },
       },
     });
@@ -282,8 +282,8 @@ describe('extend method with shortcuts', () => {
       key: 'lowPriority',
       shortcuts: {
         bold: {
-          handler: () => {},
           keys: 'mod+b',
+          handler: () => {},
         },
       },
     });
@@ -292,8 +292,8 @@ describe('extend method with shortcuts', () => {
       plugins: [lowPriorityPlugin],
       shortcuts: {
         bold: {
-          handler: () => {},
           keys: 'mod+alt+b',
+          handler: () => {},
         },
       },
     });
@@ -309,9 +309,9 @@ describe('shortcut priority and plugin interaction', () => {
       priority: 50,
       shortcuts: {
         bold: {
-          handler: () => {},
           keys: 'mod+b',
           priority: 200, // High priority shortcut in a low priority plugin
+          handler: () => {},
         },
       },
     });
@@ -321,8 +321,8 @@ describe('shortcut priority and plugin interaction', () => {
       priority: 150,
       shortcuts: {
         bold: {
-          handler: () => {},
           keys: 'mod+shift+b',
+          handler: () => {},
           // No specific priority, should use plugin priority
         },
       },
@@ -341,8 +341,8 @@ describe('shortcut priority and plugin interaction', () => {
       priority: 50,
       shortcuts: {
         italic: {
-          handler: () => {},
           keys: 'mod+i',
+          handler: () => {},
           // No specific priority, should use plugin priority
         },
       },
@@ -353,8 +353,8 @@ describe('shortcut priority and plugin interaction', () => {
       priority: 150,
       shortcuts: {
         italic: {
-          handler: () => {},
           keys: 'mod+shift+i',
+          handler: () => {},
           // No specific priority, should use plugin priority
         },
       },
@@ -373,19 +373,19 @@ describe('shortcut priority and plugin interaction', () => {
       priority: 100,
       shortcuts: {
         bold: {
-          handler: () => {},
           keys: 'mod+b',
           priority: 150,
+          handler: () => {},
         },
         italic: {
-          handler: () => {},
           keys: 'mod+i',
+          handler: () => {},
           // No specific priority, should use plugin priority
         },
         underline: {
-          handler: () => {},
           keys: 'mod+u',
           priority: 50,
+          handler: () => {},
         },
       },
     });
@@ -395,18 +395,18 @@ describe('shortcut priority and plugin interaction', () => {
       priority: 120,
       shortcuts: {
         bold: {
-          handler: () => {},
           keys: 'mod+shift+b',
+          handler: () => {},
           // No specific priority, should use plugin priority
         },
         italic: {
-          handler: () => {},
           keys: 'mod+shift+i',
           priority: 200,
+          handler: () => {},
         },
         underline: {
-          handler: () => {},
           keys: 'mod+shift+u',
+          handler: () => {},
           // No specific priority, should use plugin priority
         },
       },
@@ -427,12 +427,12 @@ describe('shortcut priority and plugin interaction', () => {
       priority: 100,
       shortcuts: {
         bold: {
-          handler: () => {},
           keys: 'mod+b',
+          handler: () => {},
         },
         italic: {
-          handler: () => {},
           keys: 'mod+i',
+          handler: () => {},
         },
       },
     });
@@ -441,18 +441,18 @@ describe('shortcut priority and plugin interaction', () => {
       plugins: [testPlugin],
       shortcuts: {
         bold: {
-          handler: () => {},
           keys: 'mod+shift+b',
           priority: 50, // Lower than testPlugin
+          handler: () => {},
         },
         italic: {
-          handler: () => {},
           keys: 'mod+shift+i',
           priority: 200, // Higher than testPlugin
+          handler: () => {},
         },
         underline: {
-          handler: () => {},
           keys: 'mod+u',
+          handler: () => {},
           // No specific priority, should use root plugin priority (highest)
         },
       },

@@ -24,8 +24,8 @@ export const ImageElement = withHOC(
       return (
         <MediaPopover plugin={ImagePlugin}>
           <PlateElement
-            className={cn('py-2.5', className)}
             ref={ref}
+            className={cn('py-2.5', className)}
             {...props}
           >
             <figure className="group relative m-0" contentEditable={false}>
@@ -41,12 +41,12 @@ export const ImageElement = withHOC(
                   options={{ direction: 'left' }}
                 />
                 <Image
-                  alt=""
                   className={cn(
                     'block w-full max-w-full cursor-pointer object-cover px-0',
                     'rounded-sm',
                     focused && selected && 'ring-2 ring-ring ring-offset-2'
                   )}
+                  alt=""
                   {...nodeProps}
                 />
                 <ResizeHandle
@@ -57,10 +57,10 @@ export const ImageElement = withHOC(
                 />
               </Resizable>
 
-              <Caption align={align} style={{ width }}>
+              <Caption style={{ width }} align={align}>
                 <CaptionTextarea
-                  placeholder="Write a caption..."
                   readOnly={readOnly}
+                  placeholder="Write a caption..."
                 />
               </Caption>
             </figure>

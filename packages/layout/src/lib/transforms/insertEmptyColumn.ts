@@ -1,6 +1,6 @@
 import {
+  BaseParagraphPlugin,
   type InsertNodesOptions,
-  ParagraphPlugin,
   type SlateEditor,
   getQueryOptions,
   insertNodes,
@@ -19,7 +19,7 @@ export const insertEmptyColumn = <E extends SlateEditor>(
   insertNodes<TColumnElement>(
     editor,
     {
-      children: [{ children: [{ text: '' }], type: ParagraphPlugin.key }],
+      children: [{ children: [{ text: '' }], type: BaseParagraphPlugin.key }],
       type: BaseColumnItemPlugin.key,
       width,
     },

@@ -52,6 +52,8 @@ export function CopyButton({
 
   return (
     <Button
+      size="icon"
+      variant={variant}
       className={cn(
         'relative z-10 size-6 text-slate-50 hover:bg-slate-700 hover:text-slate-50 [&_svg]:size-3',
         className
@@ -70,8 +72,6 @@ export function CopyButton({
         );
         setHasCopied(true);
       }}
-      size="icon"
-      variant={variant}
       {...props}
     >
       <span className="sr-only">Copy</span>
@@ -108,12 +108,12 @@ export function CopyWithClassNames({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
+          size="icon"
+          variant="ghost"
           className={cn(
             'relative z-10 size-6 text-slate-50 hover:bg-slate-700 hover:text-slate-50',
             className
           )}
-          size="icon"
-          variant="ghost"
         >
           {hasCopied ? (
             <Icons.check className="size-3" />
@@ -171,12 +171,12 @@ export function CopyNpmCommandButton({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
+          size="icon"
+          variant="ghost"
           className={cn(
             'relative z-10 size-6 text-slate-50 hover:bg-slate-700 hover:text-slate-50',
             className
           )}
-          size="icon"
-          variant="ghost"
         >
           {hasCopied ? (
             <Icons.check className="size-3" />

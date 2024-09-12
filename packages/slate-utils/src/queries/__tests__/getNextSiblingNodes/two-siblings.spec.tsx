@@ -4,7 +4,7 @@ import type { Range } from 'slate';
 
 import { type SlateEditor, getBlockAbove } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { LinkPlugin } from '@udecode/plate-link';
+import { LinkPlugin } from '@udecode/plate-link/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { getNextSiblingNodes } from '../../getNextSiblingNodes';

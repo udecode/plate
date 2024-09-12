@@ -1,7 +1,7 @@
 import type { ResetNodeConfig } from '@udecode/plate-reset-node';
 
 import {
-  ParagraphPlugin,
+  BaseParagraphPlugin,
   createTSlatePlugin,
   isBlockAboveEmpty,
 } from '@udecode/plate-common';
@@ -52,7 +52,7 @@ export const withInsertBreakList: ExtendEditor<ListConfig> = ({ editor }) => {
             options: {
               rules: [
                 {
-                  defaultType: editor.getType(ParagraphPlugin),
+                  defaultType: editor.getType(BaseParagraphPlugin),
                   onReset: (_editor) => unwrapList(_editor),
                   predicate: () => !moved && isBlockAboveEmpty(editor),
                   types: [editor.getType(BaseListItemPlugin)],

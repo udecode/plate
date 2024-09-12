@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { BoldPlugin } from '@udecode/plate-basic-marks';
+import { BoldPlugin } from '@udecode/plate-basic-marks/react';
 import { jsx } from '@udecode/plate-test-utils';
 import { toggleMark } from '@udecode/slate-utils';
 

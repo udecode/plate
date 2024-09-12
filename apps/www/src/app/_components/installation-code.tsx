@@ -1,7 +1,7 @@
 // Pre is deeply coupled to Contentlayer, so we need a wrapper to make it work
 import * as React from 'react';
 import type { ReactNode } from 'react';
-import { Prism, type SyntaxHighlighterProps } from 'react-syntax-highlighter';
+import { type SyntaxHighlighterProps, Prism } from 'react-syntax-highlighter';
 
 import { cn } from '@udecode/cn';
 import { vscDarkPlus as theme } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -17,9 +17,9 @@ export function InstallationCode({
   children,
   code,
 }: {
+  code: string;
   bash?: boolean;
   children?: ReactNode;
-  code: string;
 }) {
   const npmCommand = code.startsWith('npm install');
 
@@ -30,9 +30,9 @@ export function InstallationCode({
       <div className="relative">
         <SyntaxHighlighter
           className="rounded-lg border !py-4"
+          style={theme}
           language={bash ? 'bash' : 'typescript'}
           showLineNumbers={false}
-          style={theme}
         >
           {code}
         </SyntaxHighlighter>

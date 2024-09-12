@@ -1,7 +1,7 @@
 import type { SlateEditor } from '@udecode/plate-common';
 
 import markdown from 'remark-parse';
-import unified from 'unified';
+import {unified} from 'unified';
 
 import { MarkdownPlugin } from '../../MarkdownPlugin';
 import {
@@ -37,7 +37,7 @@ export const deserializeMd = (editor: SlateEditor, data: string) => {
   Object.assign(textRules, options.textRules);
 
   const tree: any = unified()
-    .use(markdown)
+    .use(markdown as any)
     .use(remarkPlugin, {
       editor,
       elementRules,

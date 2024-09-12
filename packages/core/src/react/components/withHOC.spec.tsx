@@ -11,7 +11,7 @@ describe('withHOC', () => {
 
   const HOC = React.forwardRef<
     DummyRef,
-    { children: React.ReactNode } & DummyProps
+    DummyProps & { children: React.ReactNode }
   >(({ children, ...props }, ref) => (
     <div>
       {JSON.stringify(props)}
@@ -60,7 +60,7 @@ describe('withHOC', () => {
     const WithHOC = withHOC(HOC, Component);
 
     const { container } = render(
-      <WithHOC myProp="component-prop" ref={componentRef} />
+      <WithHOC ref={componentRef} myProp="component-prop" />
     );
 
     expect(container).toHaveTextContent('component-ref');

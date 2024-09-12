@@ -13,8 +13,8 @@ import { ToolbarButton } from './toolbar';
 export const MarkToolbarButton = withRef<
   typeof ToolbarButton,
   {
-    clear?: string | string[];
     nodeType: string;
+    clear?: string[] | string;
   }
 >(({ clear, nodeType, ...rest }, ref) => {
   const state = useMarkToolbarButtonState({ clear, nodeType });

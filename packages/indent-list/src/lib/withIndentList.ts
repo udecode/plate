@@ -6,7 +6,7 @@ import {
   createPathRef,
   getNode,
 } from '@udecode/plate-common';
-import { IndentPlugin } from '@udecode/plate-indent';
+import { BaseIndentPlugin } from '@udecode/plate-indent';
 
 import {
   type BaseIndentListConfig,
@@ -255,8 +255,8 @@ export const withIndentList: ExtendEditor<BaseIndentListConfig> = ({
         }
       }
 
-      const prevIndent = (operation.properties as any)[IndentPlugin.key];
-      const indent = (operation.newProperties as any)[IndentPlugin.key];
+      const prevIndent = (operation.properties as any)[BaseIndentPlugin.key];
+      const indent = (operation.newProperties as any)[BaseIndentPlugin.key];
 
       // Update indent
       if (prevIndent !== indent) {

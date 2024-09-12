@@ -12,8 +12,8 @@ import { useEditorRef } from '../stores/plate';
  * - RenderAboveSlate
  */
 export function PlateSlate({
-  children,
   id,
+  children,
 }: {
   children: React.ReactNode;
   id?: string;

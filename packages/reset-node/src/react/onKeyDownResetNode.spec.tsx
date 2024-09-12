@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import { BlockquotePlugin } from '@udecode/plate-block-quote';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import {
-  CodeBlockPlugin,
+  BaseCodeBlockPlugin,
   isCodeBlockEmpty,
   isSelectionAtCodeBlockStart,
   unwrapCodeBlock,
@@ -11,14 +11,14 @@ import {
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
 } from '@udecode/plate-common';
-import { ParagraphPlugin } from '@udecode/plate-common';
+import { ParagraphPlugin } from '@udecode/plate-common/react';
 import {
   createPlateEditor,
   createTPlatePlugin,
   getEditorPlugin,
 } from '@udecode/plate-common/react';
 import * as isHotkey from '@udecode/plate-core';
-import { ListItemPlugin, unwrapList } from '@udecode/plate-list';
+import { BaseListItemPlugin, unwrapList } from '@udecode/plate-list';
 import { jsx } from '@udecode/plate-test-utils';
 
 import type { ResetNodeConfig } from '../lib/BaseResetNodePlugin';
@@ -134,7 +134,7 @@ describe('onKeyDownResetNode', () => {
     const codeBlockRule = {
       defaultType: ParagraphPlugin.key,
       onReset: unwrapCodeBlock as any,
-      types: [CodeBlockPlugin.key],
+      types: [BaseCodeBlockPlugin.key],
     };
 
     const plugin = createTPlatePlugin({
@@ -325,7 +325,7 @@ describe('onKeyDownResetNode', () => {
     const listRule = {
       defaultType: ParagraphPlugin.key,
       onReset: unwrapList as any,
-      types: [ListItemPlugin.key],
+      types: [BaseListItemPlugin.key],
     };
 
     const plugin = createTPlatePlugin({

@@ -1,5 +1,5 @@
-import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
-import { LinkPlugin } from '@udecode/plate-link';
+import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
+import { LinkPlugin } from '@udecode/plate-link/react';
 
 import { createPlateEditor } from '../../react';
 import {
@@ -56,16 +56,16 @@ describe('createSlatePlugin', () => {
       );
 
       expect({
-        inject: plugin.inject,
         key: plugin.key,
+        inject: plugin.inject,
         type: plugin.node.type,
       }).toEqual({
+        key: 'a',
         inject: {
           nodeProps: {
             nodeKey: 'b',
           },
         },
-        key: 'a',
         type: 'b',
       });
     });
@@ -378,16 +378,16 @@ describe('createSlatePlugin', () => {
       );
 
       expect({
-        inject: plugin.inject,
         key: plugin.key,
+        inject: plugin.inject,
         node: { type: plugin.node.type },
       }).toEqual({
+        key: 'a',
         inject: {
           nodeProps: {
             nodeKey: 'c',
           },
         },
-        key: 'a',
         node: { type: 'b' },
       });
     });

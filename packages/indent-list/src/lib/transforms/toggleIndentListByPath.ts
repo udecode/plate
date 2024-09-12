@@ -1,11 +1,11 @@
 import {
-  ParagraphPlugin,
+  BaseParagraphPlugin,
   type SlateEditor,
   type TNodeEntry,
   setNodes,
   unsetNodes,
 } from '@udecode/plate-common';
-import { IndentPlugin } from '@udecode/plate-indent';
+import { BaseIndentPlugin } from '@udecode/plate-indent';
 
 import {
   BaseIndentListPlugin,
@@ -21,10 +21,10 @@ export const toggleIndentListByPath = (
     editor,
     {
       [BaseIndentListPlugin.key]: listStyleType,
+      [BaseIndentPlugin.key]: node.indent ?? 1,
       // TODO: normalized if not todo remove this property.
       [INDENT_LIST_KEYS.checked]: false,
-      [IndentPlugin.key]: node.indent ?? 1,
-      type: ParagraphPlugin.key,
+      type: BaseParagraphPlugin.key,
     },
     {
       at: path,
@@ -38,7 +38,7 @@ export const toggleIndentListByPathUnSet = (
 ) =>
   unsetNodes(
     editor,
-    [BaseIndentListPlugin.key, IndentPlugin.key, INDENT_LIST_KEYS.checked],
+    [BaseIndentListPlugin.key, BaseIndentPlugin.key, INDENT_LIST_KEYS.checked],
     {
       at: path,
     }
