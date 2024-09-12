@@ -2,10 +2,10 @@ import { BoldPlugin } from '@udecode/plate-basic-marks';
 
 import { createPlateEditor } from '../../../../react/editor/withPlate';
 import { type HtmlDeserializer, createSlatePlugin } from '../../../plugin';
-import { ParagraphPlugin } from '../../paragraph';
+import { BaseParagraphPlugin } from '../../paragraph';
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
 
-const parse = () => ({ type: ParagraphPlugin.key });
+const parse = () => ({ type: BaseParagraphPlugin.key });
 
 // describe('when type', () => {
 //   let deserializer: Deserializer = {};
@@ -30,7 +30,7 @@ describe('when element is p and validNodeName is P', () => {
       pluginDeserializeHtml(
         createPlateEditor(),
         createSlatePlugin({
-          node: { type: ParagraphPlugin.key },
+          node: { type: BaseParagraphPlugin.key },
           parsers: {
             html: {
               deserializer,
@@ -52,7 +52,7 @@ describe('when element is p, validAttribute', () => {
       pluginDeserializeHtml(
         createPlateEditor(),
         createSlatePlugin({
-          node: { type: ParagraphPlugin.key },
+          node: { type: BaseParagraphPlugin.key },
           parsers: {
             html: {
               deserializer: {
@@ -79,7 +79,7 @@ describe('when element is p, validAttribute', () => {
       pluginDeserializeHtml(
         createPlateEditor(),
         createSlatePlugin({
-          node: { type: ParagraphPlugin.key },
+          node: { type: BaseParagraphPlugin.key },
           parsers: {
             html: {
               deserializer: {
@@ -109,7 +109,7 @@ describe('when element is p with color and rule style is different', () => {
       pluginDeserializeHtml(
         createPlateEditor(),
         createSlatePlugin({
-          node: { type: ParagraphPlugin.key },
+          node: { type: BaseParagraphPlugin.key },
           parsers: {
             html: {
               deserializer: {
@@ -141,7 +141,7 @@ describe('when element is p with same style color than rule', () => {
       pluginDeserializeHtml(
         createPlateEditor(),
         createSlatePlugin({
-          node: { type: ParagraphPlugin.key },
+          node: { type: BaseParagraphPlugin.key },
           parsers: {
             html: {
               deserializer: {
@@ -173,7 +173,7 @@ describe('when element has style color and rule style color is *', () => {
       pluginDeserializeHtml(
         createPlateEditor(),
         createSlatePlugin({
-          node: { type: ParagraphPlugin.key },
+          node: { type: BaseParagraphPlugin.key },
           parsers: {
             html: {
               deserializer: {

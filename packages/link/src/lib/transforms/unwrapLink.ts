@@ -8,7 +8,7 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 
-import { LinkPlugin } from '../LinkPlugin';
+import { BaseLinkPlugin } from '../BaseLinkPlugin';
 
 /** Unwrap link node. */
 export const unwrapLink = (
@@ -21,14 +21,15 @@ export const unwrapLink = (
     if (options?.split) {
       const linkAboveAnchor = getAboveNode(editor, {
         at: editor.selection?.anchor,
-        match: { type: editor.getType(LinkPlugin) },
+        match: { type: editor.getType(BaseLinkPlugin) },
       });
 
       // anchor in link
       if (linkAboveAnchor) {
         splitNodes(editor, {
           at: editor.selection?.anchor,
-          match: (n) => isElement(n) && n.type === editor.getType(LinkPlugin),
+          match: (n) =>
+            isElement(n) && n.type === editor.getType(BaseLinkPlugin),
         });
         unwrapLink(editor, {
           at: editor.selection?.anchor,
@@ -39,14 +40,15 @@ export const unwrapLink = (
 
       const linkAboveFocus = getAboveNode(editor, {
         at: editor.selection?.focus,
-        match: { type: editor.getType(LinkPlugin) },
+        match: { type: editor.getType(BaseLinkPlugin) },
       });
 
       // focus in link
       if (linkAboveFocus) {
         splitNodes(editor, {
           at: editor.selection?.focus,
-          match: (n) => isElement(n) && n.type === editor.getType(LinkPlugin),
+          match: (n) =>
+            isElement(n) && n.type === editor.getType(BaseLinkPlugin),
         });
         unwrapLink(editor, {
           at: editor.selection?.focus,
@@ -57,7 +59,7 @@ export const unwrapLink = (
     }
 
     unwrapNodes(editor, {
-      match: { type: editor.getType(LinkPlugin) },
+      match: { type: editor.getType(BaseLinkPlugin) },
       ...options,
     });
   });

@@ -1,6 +1,6 @@
 import { Key, toPlatePlugin } from '@udecode/plate-common/react';
 
-import { SuperscriptPlugin as BaseSuperscriptPlugin } from '../lib/SuperscriptPlugin';
+import { BaseSuperscriptPlugin } from '../lib/BaseSuperscriptPlugin';
 import { SubscriptPlugin } from './SubscriptPlugin';
 
 export const SuperscriptPlugin = toPlatePlugin(

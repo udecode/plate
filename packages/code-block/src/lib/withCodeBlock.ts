@@ -1,6 +1,6 @@
 import type { ExtendEditor } from '@udecode/plate-common';
 
-import type { CodeBlockConfig } from './CodeBlockPlugin';
+import type { CodeBlockConfig } from './BaseCodeBlockPlugin';
 
 import { insertFragmentCodeBlock } from './insertFragmentCodeBlock';
 import { normalizeCodeBlock } from './normalizers/normalizeCodeBlock';

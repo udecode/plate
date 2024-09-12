@@ -14,7 +14,7 @@ import {
   onKeyDownResetNode,
 } from '@udecode/plate-reset-node/react';
 
-import { type ListConfig, ListItemPlugin } from '../lib/ListPlugin';
+import { BaseListItemPlugin, type ListConfig } from '../lib/BaseListPlugin';
 import { getListItemEntry } from '../lib/queries/getListItemEntry';
 import { insertListItem } from '../lib/transforms/insertListItem';
 import { moveListItemUp } from '../lib/transforms/moveListItemUp';
@@ -55,7 +55,7 @@ export const withInsertBreakList: ExtendEditor<ListConfig> = ({ editor }) => {
                   defaultType: editor.getType(ParagraphPlugin),
                   onReset: (_editor) => unwrapList(_editor),
                   predicate: () => !moved && isBlockAboveEmpty(editor),
-                  types: [editor.getType(ListItemPlugin)],
+                  types: [editor.getType(BaseListItemPlugin)],
                 },
               ],
             },

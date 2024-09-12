@@ -12,7 +12,7 @@ import {
 import { jsx } from '@udecode/plate-test-utils';
 
 import { onKeyDownAutoformat } from '../../../react/onKeyDownAutoformat';
-import { AutoformatPlugin } from '../../AutoformatPlugin';
+import { BaseAutoformatPlugin } from '../../BaseAutoformatPlugin';
 
 jsx;
 
@@ -39,7 +39,7 @@ describe('when trigger is defined', () => {
   it('should autoformat', () => {
     const editor = createPlateEditor({
       plugins: [
-        AutoformatPlugin.configure({
+        BaseAutoformatPlugin.configure({
           options: {
             rules: [
               {
@@ -84,7 +84,7 @@ describe('when undo is enabled', () => {
 
     const editor = createPlateEditor({
       plugins: [
-        AutoformatPlugin.configure({
+        BaseAutoformatPlugin.configure({
           options: {
             enableUndoOnDelete: true,
             rules: [
@@ -107,7 +107,7 @@ describe('when undo is enabled', () => {
     }) as any;
 
     onKeyDownAutoformat({
-      ...getEditorPlugin(editor, AutoformatPlugin),
+      ...getEditorPlugin(editor, BaseAutoformatPlugin),
       event: event as any,
     });
 
@@ -136,7 +136,7 @@ describe('when undo is disabled', () => {
 
     const editor = createPlateEditor({
       plugins: [
-        AutoformatPlugin.configure({
+        BaseAutoformatPlugin.configure({
           options: {
             rules: [
               {
@@ -158,7 +158,7 @@ describe('when undo is disabled', () => {
     }) as any;
 
     onKeyDownAutoformat({
-      ...getEditorPlugin(editor, AutoformatPlugin),
+      ...getEditorPlugin(editor, BaseAutoformatPlugin),
       editor,
       event: event as any,
     });

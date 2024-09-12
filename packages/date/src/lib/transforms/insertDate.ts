@@ -4,7 +4,7 @@ import {
   insertNodes,
 } from '@udecode/plate-common';
 
-import { DatePlugin, type TDateElement } from '../DatePlugin';
+import { BaseDatePlugin, type TDateElement } from '../BaseDatePlugin';
 
 export const insertDate = <E extends SlateEditor>(
   editor: SlateEditor,
@@ -16,7 +16,7 @@ export const insertDate = <E extends SlateEditor>(
       {
         children: [{ text: '' }],
         date: date ?? new Date().toDateString(),
-        type: editor.getType(DatePlugin),
+        type: editor.getType(BaseDatePlugin),
       },
       // FIXME: for not losing the editor focus
       {

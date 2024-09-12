@@ -5,16 +5,16 @@ import {
   someNode,
 } from '@udecode/plate-common';
 
-import { TablePlugin } from '../TablePlugin';
+import { BaseTablePlugin } from '../BaseTablePlugin';
 
 export const deleteTable = (editor: SlateEditor) => {
   if (
     someNode(editor, {
-      match: { type: editor.getType(TablePlugin) },
+      match: { type: editor.getType(BaseTablePlugin) },
     })
   ) {
     const tableItem = getAboveNode(editor, {
-      match: { type: editor.getType(TablePlugin) },
+      match: { type: editor.getType(BaseTablePlugin) },
     });
 
     if (tableItem) {

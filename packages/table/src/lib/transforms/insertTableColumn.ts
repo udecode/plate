@@ -12,7 +12,7 @@ import { Path } from 'slate';
 
 import type { TTableElement } from '../types';
 
-import { TableCellHeaderPlugin, TablePlugin } from '../TablePlugin';
+import { BaseTableCellHeaderPlugin, BaseTablePlugin } from '../BaseTablePlugin';
 import { insertTableMergeColumn } from '../merge/insertTableColumn';
 import { getCellTypes } from '../utils/index';
 
@@ -31,7 +31,7 @@ export const insertTableColumn = (
     header?: boolean;
   } = {}
 ) => {
-  const { api, getOptions, type } = getEditorPlugin(editor, TablePlugin);
+  const { api, getOptions, type } = getEditorPlugin(editor, BaseTablePlugin);
 
   const { enableMerging, initialTableWidth, minColumnWidth } = getOptions();
 
@@ -90,7 +90,7 @@ export const insertTableColumn = (
       const isHeaderRow =
         header === undefined
           ? (row as TElement).children.every(
-              (c) => c.type === editor.getType(TableCellHeaderPlugin)
+              (c) => c.type === editor.getType(BaseTableCellHeaderPlugin)
             )
           : header;
 

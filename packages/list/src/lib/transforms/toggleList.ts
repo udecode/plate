@@ -16,12 +16,12 @@ import {
 import { Range } from 'slate';
 
 import {
-  BulletedListPlugin,
-  ListItemContentPlugin,
-  ListItemPlugin,
-  ListPlugin,
-  NumberedListPlugin,
-} from '../ListPlugin';
+  BaseBulletedListPlugin,
+  BaseListItemContentPlugin,
+  BaseListItemPlugin,
+  BaseListPlugin,
+  BaseNumberedListPlugin,
+} from '../BaseListPlugin';
 import { getListItemEntry, getListTypes } from '../queries/index';
 import { unwrapList } from './unwrapList';
 
@@ -31,7 +31,7 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
       return;
     }
 
-    const { validLiChildrenTypes } = editor.getOptions(ListPlugin);
+    const { validLiChildrenTypes } = editor.getOptions(BaseListPlugin);
 
     if (isCollapsed(editor.selection) || !isRangeAcrossBlocks(editor)) {
       // selection is collapsed
@@ -69,13 +69,13 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
 
         if (!blockAbove) {
           setElements(editor, {
-            type: editor.getType(ListItemContentPlugin),
+            type: editor.getType(BaseListItemContentPlugin),
           });
         }
 
         const listItem = {
           children: [],
-          type: editor.getType(ListItemPlugin),
+          type: editor.getType(BaseListItemPlugin),
         };
 
         for (const [, path] of nodes) {
@@ -96,7 +96,7 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
 
       if (
         getListTypes(editor).includes(commonEntry[0].type) ||
-        (commonEntry[0] as TElement).type === editor.getType(ListItemPlugin)
+        (commonEntry[0] as TElement).type === editor.getType(BaseListItemPlugin)
       ) {
         if ((commonEntry[0] as TElement).type === type) {
           unwrapList(editor);
@@ -153,14 +153,14 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
             if (!validLiChildrenTypes?.includes(n[0].type)) {
               setElements(
                 editor,
-                { type: editor.getType(ListItemContentPlugin) },
+                { type: editor.getType(BaseListItemContentPlugin) },
                 { at: n[1] }
               );
             }
 
             const listItem = {
               children: [],
-              type: editor.getType(ListItemPlugin),
+              type: editor.getType(BaseListItemPlugin),
             };
             wrapNodes<TElement>(editor, listItem, {
               at: n[1],
@@ -175,7 +175,7 @@ export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
   });
 
 export const toggleBulletedList = (editor: SlateEditor) =>
-  toggleList(editor, { type: editor.getType(BulletedListPlugin) });
+  toggleList(editor, { type: editor.getType(BaseBulletedListPlugin) });
 
 export const toggleNumberedList = (editor: SlateEditor) =>
-  toggleList(editor, { type: editor.getType(NumberedListPlugin) });
+  toggleList(editor, { type: editor.getType(BaseNumberedListPlugin) });

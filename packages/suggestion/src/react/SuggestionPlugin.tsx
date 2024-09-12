@@ -1,6 +1,6 @@
 import { toPlatePlugin } from '@udecode/plate-common/react';
 
-import { SuggestionPlugin as BaseSuggestionPlugin } from '../lib/SuggestionPlugin';
+import { BaseSuggestionPlugin } from '../lib/BaseSuggestionPlugin';
 import { useHooksSuggestion } from './useHooksSuggestion';
 
 /** Enables support for suggestions in the editor. */

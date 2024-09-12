@@ -8,7 +8,7 @@ import { IndentPlugin } from '@udecode/plate-indent';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { indentListPluginPage } from '../../__tests__/indentListPluginPage';
-import { IndentListPlugin } from '../IndentListPlugin';
+import { BaseIndentListPlugin } from '../BaseIndentListPlugin';
 
 jsx;
 
@@ -89,7 +89,7 @@ describe('normalizeIndentListStart', () => {
     it('should be', async () => {
       const editor = createPlateEditor({
         editor: input,
-        plugins: [ParagraphPlugin, IndentPlugin, IndentListPlugin],
+        plugins: [ParagraphPlugin, IndentPlugin, BaseIndentListPlugin],
         shouldNormalizeEditor: true,
       });
 

@@ -6,14 +6,14 @@ import {
 
 import type { TCommentText } from '../types';
 
-import { CommentsPlugin } from '../CommentsPlugin';
+import { BaseCommentsPlugin } from '../BaseCommentsPlugin';
 
 export const findCommentNode = (
   editor: SlateEditor,
   options?: FindNodeOptions
 ) => {
   return findNode<TCommentText>(editor, {
-    match: (n) => n[CommentsPlugin.key],
+    match: (n) => n[BaseCommentsPlugin.key],
     ...options,
   });
 };

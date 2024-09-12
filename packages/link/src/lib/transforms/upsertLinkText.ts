@@ -9,7 +9,7 @@ import {
 import type { TLinkElement } from '../types';
 import type { UpsertLinkOptions } from './upsertLink';
 
-import { LinkPlugin } from '../LinkPlugin';
+import { BaseLinkPlugin } from '../BaseLinkPlugin';
 
 /**
  * If the text is different than the link above text, replace link children by a
@@ -20,7 +20,7 @@ export const upsertLinkText = (
   { text }: UpsertLinkOptions
 ) => {
   const newLink = getAboveNode<TLinkElement>(editor, {
-    match: { type: editor.getType(LinkPlugin) },
+    match: { type: editor.getType(BaseLinkPlugin) },
   });
 
   if (newLink) {

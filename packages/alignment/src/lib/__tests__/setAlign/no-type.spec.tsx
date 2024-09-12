@@ -5,7 +5,7 @@ import type { SlateEditor } from '@udecode/plate-common';
 import { createSlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { AlignPlugin } from '../../AlignPlugin';
+import { BaseAlignPlugin } from '../../BaseAlignPlugin';
 import { setAlign } from '../../transforms';
 
 jsx;
@@ -29,7 +29,7 @@ describe('when type (h1) is not in types', () => {
   it('should not align', () => {
     const editor = createSlateEditor({
       editor: input,
-      plugins: [AlignPlugin],
+      plugins: [BaseAlignPlugin],
     });
 
     setAlign(editor, { value: 'center' });

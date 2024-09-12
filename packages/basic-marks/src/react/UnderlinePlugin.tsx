@@ -1,6 +1,6 @@
 import { Key, toPlatePlugin } from '@udecode/plate-common/react';
 
-import { UnderlinePlugin as BaseUnderlinePlugin } from '../lib/UnderlinePlugin';
+import { BaseUnderlinePlugin } from '../lib/BaseUnderlinePlugin';
 
 export const UnderlinePlugin = toPlatePlugin(
   BaseUnderlinePlugin,

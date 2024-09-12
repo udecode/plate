@@ -5,7 +5,10 @@ import {
   insertNodes,
 } from '@udecode/plate-common';
 
-import { MediaEmbedPlugin, type TMediaEmbedElement } from '../MediaEmbedPlugin';
+import {
+  BaseMediaEmbedPlugin,
+  type TMediaEmbedElement,
+} from '../BaseMediaEmbedPlugin';
 
 export const insertMediaEmbed = <E extends SlateEditor>(
   editor: E,
@@ -23,7 +26,7 @@ export const insertMediaEmbed = <E extends SlateEditor>(
     editor,
     {
       children: [{ text: '' }],
-      type: editor.getType(MediaEmbedPlugin),
+      type: editor.getType(BaseMediaEmbedPlugin),
       url,
     },
     {

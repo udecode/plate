@@ -1,10 +1,10 @@
 import { Key, toPlatePlugin } from '@udecode/plate-common/react';
 
 import {
-  CodeBlockPlugin as BaseCodeBlockPlugin,
-  CodeLinePlugin as BaseCodeLinePlugin,
-  CodeSyntaxPlugin as BaseCodeSyntaxPlugin,
-} from '../lib/CodeBlockPlugin';
+  BaseCodeBlockPlugin,
+  BaseCodeLinePlugin,
+  BaseCodeSyntaxPlugin,
+} from '../lib/BaseCodeBlockPlugin';
 import { onKeyDownCodeBlock } from './onKeyDownCodeBlock';
 
 export const CodeLinePlugin = toPlatePlugin(BaseCodeLinePlugin);

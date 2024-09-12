@@ -3,7 +3,10 @@ import type { Path } from 'slate';
 import { type TEditor, setElements } from '@udecode/plate-common';
 import { IndentPlugin } from '@udecode/plate-indent';
 
-import { INDENT_LIST_KEYS, IndentListPlugin } from '../IndentListPlugin';
+import {
+  BaseIndentListPlugin,
+  INDENT_LIST_KEYS,
+} from '../BaseIndentListPlugin';
 import { ListStyleType } from '../types';
 
 export const setIndentListNode = (
@@ -22,7 +25,10 @@ export const setIndentListNode = (
 
   setElements(
     editor,
-    { [IndentListPlugin.key]: listStyleType, [IndentPlugin.key]: newIndent },
+    {
+      [BaseIndentListPlugin.key]: listStyleType,
+      [IndentPlugin.key]: newIndent,
+    },
     { at }
   );
 };
@@ -44,8 +50,8 @@ export const setIndentTodoNode = (
   setElements(
     editor,
     {
+      [BaseIndentListPlugin.key]: listStyleType,
       [INDENT_LIST_KEYS.checked]: false,
-      [IndentListPlugin.key]: listStyleType,
       [IndentPlugin.key]: newIndent,
     },
     { at }

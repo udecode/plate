@@ -10,7 +10,10 @@ import {
 
 import type { GetSiblingIndentListOptions } from '../queries/getSiblingIndentList';
 
-import { INDENT_LIST_KEYS, IndentListPlugin } from '../IndentListPlugin';
+import {
+  BaseIndentListPlugin,
+  INDENT_LIST_KEYS,
+} from '../BaseIndentListPlugin';
 import { getNextIndentList } from '../queries/getNextIndentList';
 import { getPreviousIndentList } from '../queries/getPreviousIndentList';
 import { normalizeFirstIndentListStart } from './normalizeFirstIndentListStart';
@@ -51,7 +54,7 @@ export const normalizeIndentListStart = <
 ) => {
   return withoutNormalizing(editor, () => {
     const [node] = entry;
-    const listStyleType = (node as any)[IndentListPlugin.key];
+    const listStyleType = (node as any)[BaseIndentListPlugin.key];
 
     if (!listStyleType) return;
 

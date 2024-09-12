@@ -1,6 +1,6 @@
 import { type SlateEditor, nanoid } from '@udecode/plate-common';
 
-import { SUGGESTION_KEYS, SuggestionPlugin } from '../SuggestionPlugin';
+import { BaseSuggestionPlugin, SUGGESTION_KEYS } from '../BaseSuggestionPlugin';
 import { findSuggestionId } from '../queries/findSuggestionId';
 
 export const addSuggestionMark = (editor: SlateEditor) => {
@@ -8,8 +8,8 @@ export const addSuggestionMark = (editor: SlateEditor) => {
 
   const id = findSuggestionId(editor, editor.selection) ?? nanoid();
 
-  if (!editor.marks?.[SuggestionPlugin.key]) {
-    editor.addMark(SuggestionPlugin.key, true);
+  if (!editor.marks?.[BaseSuggestionPlugin.key]) {
+    editor.addMark(BaseSuggestionPlugin.key, true);
   }
   if (!editor.marks?.[SUGGESTION_KEYS.id]) {
     editor.addMark(SUGGESTION_KEYS.id, id);

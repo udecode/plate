@@ -6,7 +6,10 @@ import {
 } from '@udecode/plate-common';
 import { IndentPlugin } from '@udecode/plate-indent';
 
-import { INDENT_LIST_KEYS, IndentListPlugin } from '../IndentListPlugin';
+import {
+  BaseIndentListPlugin,
+  INDENT_LIST_KEYS,
+} from '../BaseIndentListPlugin';
 
 /** Unset IndentListPlugin.key, listStart if IndentPlugin.key is not defined. */
 export const normalizeIndentListNotIndented = (
@@ -15,9 +18,9 @@ export const normalizeIndentListNotIndented = (
 ) => {
   if (
     !isDefined(node[IndentPlugin.key]) &&
-    (node[IndentListPlugin.key] || node[INDENT_LIST_KEYS.listStart])
+    (node[BaseIndentListPlugin.key] || node[INDENT_LIST_KEYS.listStart])
   ) {
-    unsetNodes(editor, [IndentListPlugin.key, INDENT_LIST_KEYS.listStart], {
+    unsetNodes(editor, [BaseIndentListPlugin.key, INDENT_LIST_KEYS.listStart], {
       at: path,
     });
 

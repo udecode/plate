@@ -11,7 +11,7 @@ import {
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
-import { ListItemPlugin } from '../ListPlugin';
+import { BaseListItemPlugin } from '../BaseListPlugin';
 import { hasListChild } from '../queries/hasListChild';
 import { moveListItemsToList } from './moveListItemsToList';
 import { unwrapList } from './unwrapList';
@@ -32,7 +32,7 @@ export const moveListItemUp = (
 
     const liParent = getAboveNode<TElement>(editor, {
       at: listPath,
-      match: { type: editor.getType(ListItemPlugin) },
+      match: { type: editor.getType(BaseListItemPlugin) },
     });
 
     if (!liParent) {

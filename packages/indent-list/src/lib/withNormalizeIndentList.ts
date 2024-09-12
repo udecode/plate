@@ -4,12 +4,12 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 
-import type { IndentListConfig } from './IndentListPlugin';
+import type { BaseIndentListConfig } from './BaseIndentListPlugin';
 
 import { normalizeIndentListNotIndented } from './normalizers/normalizeIndentListNotIndented';
 import { normalizeIndentListStart } from './normalizers/normalizeIndentListStart';
 
-export const withNormalizeIndentList: ExtendEditor<IndentListConfig> = ({
+export const withNormalizeIndentList: ExtendEditor<BaseIndentListConfig> = ({
   editor,
   getOptions,
 }) => {

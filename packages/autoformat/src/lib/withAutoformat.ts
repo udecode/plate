@@ -1,6 +1,6 @@
 import { type ExtendEditor, isCollapsed } from '@udecode/plate-common';
 
-import type { AutoformatConfig } from './AutoformatPlugin';
+import type { AutoformatConfig } from './BaseAutoformatPlugin';
 
 import { autoformatBlock } from './transforms/autoformatBlock';
 import { autoformatMark } from './transforms/autoformatMark';

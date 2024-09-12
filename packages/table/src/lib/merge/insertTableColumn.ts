@@ -16,7 +16,7 @@ import type {
   TTableRowElement,
 } from '../types';
 
-import { TablePlugin } from '../TablePlugin';
+import { BaseTablePlugin } from '../BaseTablePlugin';
 import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';
 import { getCellTypes } from '../utils';
@@ -44,7 +44,7 @@ export const insertTableMergeColumn = (
     header?: boolean;
   } = {}
 ) => {
-  const { api, getOptions, type } = getEditorPlugin(editor, TablePlugin);
+  const { api, getOptions, type } = getEditorPlugin(editor, BaseTablePlugin);
   const {
     _cellIndices: cellIndices,
     initialTableWidth,

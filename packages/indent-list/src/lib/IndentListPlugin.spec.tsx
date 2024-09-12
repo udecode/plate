@@ -16,7 +16,7 @@ import { ImagePlugin } from '@udecode/plate-media';
 import { TablePlugin } from '@udecode/plate-table';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { IndentListPlugin } from './IndentListPlugin';
+import { BaseIndentListPlugin } from './BaseIndentListPlugin';
 
 jsx;
 
@@ -57,7 +57,7 @@ describe('when insertData disc and decimal from gdocs', () => {
         LineHeightPlugin.extend(injectConfig),
         AlignPlugin.extend(injectConfig),
         IndentPlugin.extend(injectConfig),
-        IndentListPlugin,
+        BaseIndentListPlugin,
         DocxPlugin,
         JuicePlugin,
       ],

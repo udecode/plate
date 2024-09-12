@@ -1,11 +1,11 @@
 import { someNode } from '@udecode/plate-common';
 import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
 
-import { BulletedListPlugin } from '../../lib/index';
+import { BaseBulletedListPlugin } from '../../lib/index';
 import { ListPlugin } from '../ListPlugin';
 
 export const useListToolbarButtonState = ({
-  nodeType = BulletedListPlugin.key as string,
+  nodeType = BaseBulletedListPlugin.key as string,
 } = {}) => {
   const pressed = useEditorSelector(
     (editor) =>

@@ -2,7 +2,7 @@ import type { SlateEditor } from '@udecode/plate-common';
 
 import type { TTableElement } from '../types';
 
-import { TablePlugin } from '../TablePlugin';
+import { BaseTablePlugin } from '../BaseTablePlugin';
 import {
   type GetEmptyRowNodeOptions,
   getEmptyRowNode,
@@ -33,6 +33,6 @@ export const getEmptyTableNode = (
 
   return {
     children: rows,
-    type: editor.getType(TablePlugin),
+    type: editor.getType(BaseTablePlugin),
   };
 };

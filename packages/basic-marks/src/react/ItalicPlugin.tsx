@@ -1,6 +1,6 @@
 import { Key, toPlatePlugin } from '@udecode/plate-common/react';
 
-import { ItalicPlugin as BaseItalicPlugin } from '../lib/ItalicPlugin';
+import { BaseItalicPlugin } from '../lib/BaseItalicPlugin';
 
 export const ItalicPlugin = toPlatePlugin(
   BaseItalicPlugin,

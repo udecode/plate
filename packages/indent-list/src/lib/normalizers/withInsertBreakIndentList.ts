@@ -10,12 +10,12 @@ import {
 } from '@udecode/plate-common';
 
 import {
+  type BaseIndentListConfig,
+  BaseIndentListPlugin,
   INDENT_LIST_KEYS,
-  type IndentListConfig,
-  IndentListPlugin,
-} from '../IndentListPlugin';
+} from '../BaseIndentListPlugin';
 
-export const withInsertBreakIndentList: ExtendEditor<IndentListConfig> = ({
+export const withInsertBreakIndentList: ExtendEditor<BaseIndentListConfig> = ({
   editor,
 }) => {
   const { insertBreak } = editor;
@@ -28,8 +28,8 @@ export const withInsertBreakIndentList: ExtendEditor<IndentListConfig> = ({
     const [node] = nodeEntry;
 
     if (
-      !isDefined(node[IndentListPlugin.key]) ||
-      node[IndentListPlugin.key] !== INDENT_LIST_KEYS.todo ||
+      !isDefined(node[BaseIndentListPlugin.key]) ||
+      node[BaseIndentListPlugin.key] !== INDENT_LIST_KEYS.todo ||
       // https://github.com/udecode/plate/issues/3340
       isExpanded(editor.selection) ||
       !isEndPoint(editor, editor.selection?.focus, nodeEntry[1])
@@ -37,7 +37,7 @@ export const withInsertBreakIndentList: ExtendEditor<IndentListConfig> = ({
       return insertBreak();
 
     insertNodes<TElement>(editor, {
-      [IndentListPlugin.key]: INDENT_LIST_KEYS.todo,
+      [BaseIndentListPlugin.key]: INDENT_LIST_KEYS.todo,
       checked: false,
       children: [{ text: '' }],
       indent: node.indent,

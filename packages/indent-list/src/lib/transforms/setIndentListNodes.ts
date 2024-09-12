@@ -6,7 +6,10 @@ import {
 } from '@udecode/plate-common';
 import { IndentPlugin } from '@udecode/plate-indent';
 
-import { INDENT_LIST_KEYS, IndentListPlugin } from '../IndentListPlugin';
+import {
+  BaseIndentListPlugin,
+  INDENT_LIST_KEYS,
+} from '../BaseIndentListPlugin';
 import { ListStyleType } from '../types';
 import { setIndentListNode, setIndentTodoNode } from './setIndentListNode';
 
@@ -29,13 +32,13 @@ export const setIndentListNodes = (
 
       let indent = (node[IndentPlugin.key] as number) ?? 0;
       indent =
-        node[IndentListPlugin.key] ||
+        node[BaseIndentListPlugin.key] ||
         node.hasOwnProperty(INDENT_LIST_KEYS.checked)
           ? indent
           : indent + 1;
 
       if (listStyleType === 'todo') {
-        unsetNodes(editor as any, IndentListPlugin.key, { at: path });
+        unsetNodes(editor as any, BaseIndentListPlugin.key, { at: path });
         setIndentTodoNode(editor, {
           at: path,
           indent,

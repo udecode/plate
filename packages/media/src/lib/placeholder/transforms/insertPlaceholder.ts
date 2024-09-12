@@ -7,11 +7,11 @@ import {
 
 import type { TPlaceholderElement } from '../types';
 
-import { AudioPlugin } from '../../AudioPlugin';
-import { FilePlugin } from '../../FilePlugin';
-import { VideoPlugin } from '../../VideoPlugin';
-import { ImagePlugin } from '../../image';
-import { PlaceholderPlugin } from '../PlaceholderPlugin';
+import { BaseAudioPlugin } from '../../BaseAudioPlugin';
+import { BaseFilePlugin } from '../../BaseFilePlugin';
+import { BaseVideoPlugin } from '../../BaseVideoPlugin';
+import { BaseImagePlugin } from '../../image';
+import { BasePlaceholderPlugin } from '../BasePlaceholderPlugin';
 
 export const insertPlaceholder = <E extends SlateEditor>(
   editor: E,
@@ -24,7 +24,7 @@ export const insertPlaceholder = <E extends SlateEditor>(
       {
         children: [{ text: '' }],
         mediaType,
-        type: editor.getType(PlaceholderPlugin),
+        type: editor.getType(BasePlaceholderPlugin),
       },
       options as any
     )
@@ -34,19 +34,19 @@ export const insertPlaceholder = <E extends SlateEditor>(
 export const insertImagePlaceholder = <E extends SlateEditor>(
   editor: E,
   options?: InsertNodesOptions<E>
-) => insertPlaceholder(editor, ImagePlugin.key, options);
+) => insertPlaceholder(editor, BaseImagePlugin.key, options);
 
 export const insertVideoPlaceholder = <E extends SlateEditor>(
   editor: E,
   options?: InsertNodesOptions<E>
-) => insertPlaceholder(editor, VideoPlugin.key, options);
+) => insertPlaceholder(editor, BaseVideoPlugin.key, options);
 
 export const insertAudioPlaceholder = <E extends SlateEditor>(
   editor: E,
   options?: InsertNodesOptions<E>
-) => insertPlaceholder(editor, AudioPlugin.key, options);
+) => insertPlaceholder(editor, BaseAudioPlugin.key, options);
 
 export const insertFilePlaceholder = <E extends SlateEditor>(
   editor: E,
   options?: InsertNodesOptions<E>
-) => insertPlaceholder(editor, FilePlugin.key, options);
+) => insertPlaceholder(editor, BaseFilePlugin.key, options);

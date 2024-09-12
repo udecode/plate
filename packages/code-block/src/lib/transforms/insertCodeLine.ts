@@ -1,6 +1,6 @@
 import { type SlateEditor, insertElements } from '@udecode/plate-common';
 
-import { CodeLinePlugin } from '../CodeBlockPlugin';
+import { BaseCodeLinePlugin } from '../BaseCodeBlockPlugin';
 
 /** Insert a code line starting with indentation. */
 export const insertCodeLine = (editor: SlateEditor, indentDepth = 0) => {
@@ -9,7 +9,7 @@ export const insertCodeLine = (editor: SlateEditor, indentDepth = 0) => {
 
     insertElements(editor, {
       children: [{ text: indent }],
-      type: editor.getType(CodeLinePlugin),
+      type: editor.getType(BaseCodeLinePlugin),
     });
   }
 };

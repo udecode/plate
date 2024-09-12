@@ -13,7 +13,7 @@ import { tabbable } from 'tabbable';
 
 import type { TabbableEntry } from '../lib/types';
 
-import { TabbablePlugin } from '../lib/TabbablePlugin';
+import { BaseTabbablePlugin } from '../lib/BaseTabbablePlugin';
 import { findTabDestination } from '../lib/findTabDestination';
 
 export function TabbableEffects() {
@@ -24,7 +24,7 @@ export function TabbableEffects() {
     if (readOnly) return;
 
     const { globalEventListener, insertTabbableEntries, isTabbable, query } =
-      editor.getOptions(TabbablePlugin);
+      editor.getOptions(BaseTabbablePlugin);
 
     const editorDOMNode = toDOMNode(editor, editor);
 

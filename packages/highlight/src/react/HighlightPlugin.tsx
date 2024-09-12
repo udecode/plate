@@ -1,6 +1,6 @@
 import { Key, toPlatePlugin } from '@udecode/plate-common/react';
 
-import { HighlightPlugin as BaseHighlightPlugin } from '../lib/HighlightPlugin';
+import { BaseHighlightPlugin } from '../lib/BaseHighlightPlugin';
 
 export const HighlightPlugin = toPlatePlugin(
   BaseHighlightPlugin,

@@ -1,11 +1,11 @@
 import { Key, toPlatePlugin } from '@udecode/plate-common/react';
 
 import {
-  BulletedListPlugin as BaseBulletedListPlugin,
-  ListItemContentPlugin as BaseListItemContentPlugin,
-  ListItemPlugin as BaseListItemPlugin,
-  ListPlugin as BaseListPlugin,
-  NumberedListPlugin as BaseNumberedListPlugin,
+  BaseBulletedListPlugin,
+  BaseListItemContentPlugin,
+  BaseListItemPlugin,
+  BaseListPlugin,
+  BaseNumberedListPlugin,
 } from '../lib';
 import { onKeyDownList } from './onKeyDownList';
 import { withList } from './withList';

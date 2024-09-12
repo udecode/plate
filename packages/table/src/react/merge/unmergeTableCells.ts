@@ -10,10 +10,10 @@ import {
 } from '@udecode/plate-common';
 
 import {
+  BaseTableRowPlugin,
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
-  TableRowPlugin,
   computeCellIndices,
   getCellIndices,
   getColSpan,
@@ -69,7 +69,7 @@ export const unmergeTableCells = (editor: SlateEditor) => {
 
       const rowEntry = findNode(editor, {
         at: [...tablePath, row],
-        match: { type: editor.getType(TableRowPlugin) },
+        match: { type: editor.getType(BaseTableRowPlugin) },
       })!; // TODO: improve typing
 
       if (!rowEntry) {
@@ -134,7 +134,7 @@ export const unmergeTableCells = (editor: SlateEditor) => {
           editor,
           {
             children: newRowChildren,
-            type: editor.getType(TableRowPlugin),
+            type: editor.getType(BaseTableRowPlugin),
           },
           { at: _rowPath }
         );

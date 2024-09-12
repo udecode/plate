@@ -9,7 +9,7 @@ import {
 } from '@udecode/plate-common';
 import { IndentPlugin } from '@udecode/plate-indent';
 
-import { IndentListPlugin } from '../IndentListPlugin';
+import { BaseIndentListPlugin } from '../BaseIndentListPlugin';
 
 export interface GetSiblingIndentListOptions<
   N extends ElementOf<E>,
@@ -71,8 +71,8 @@ export const getSiblingIndentList = <
     if (
       breakOnEqIndentNeqListStyleType &&
       nextIndent === indent &&
-      (nextNode as any)[IndentListPlugin.key] !==
-        (node as any)[IndentListPlugin.key]
+      (nextNode as any)[BaseIndentListPlugin.key] !==
+        (node as any)[BaseIndentListPlugin.key]
     )
       return;
 

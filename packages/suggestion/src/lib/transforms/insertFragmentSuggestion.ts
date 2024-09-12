@@ -6,7 +6,7 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 
-import { SUGGESTION_KEYS, SuggestionPlugin } from '../SuggestionPlugin';
+import { BaseSuggestionPlugin, SUGGESTION_KEYS } from '../BaseSuggestionPlugin';
 import { findSuggestionId } from '../queries/findSuggestionId';
 import { getSuggestionKeys } from '../utils/index';
 import { deleteFragmentSuggestion } from './deleteFragmentSuggestion';
@@ -29,9 +29,9 @@ export const insertFragmentSuggestion = (
     fragment.forEach((node) => {
       applyDeepToNodes({
         apply: (n) => {
-          if (!n[SuggestionPlugin.key]) {
+          if (!n[BaseSuggestionPlugin.key]) {
             // Add suggestion mark
-            n[SuggestionPlugin.key] = true;
+            n[BaseSuggestionPlugin.key] = true;
           }
           if (n.suggestionDeletion) {
             // Remove suggestion deletion mark

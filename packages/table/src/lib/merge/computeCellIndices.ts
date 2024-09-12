@@ -6,7 +6,7 @@ import type {
   TTableRowElement,
 } from '../types';
 
-import { TablePlugin } from '../TablePlugin';
+import { BaseTablePlugin } from '../BaseTablePlugin';
 import { getColSpan } from '../queries';
 import { getRowSpan } from '../queries/getRowSpan';
 
@@ -15,7 +15,7 @@ export function computeCellIndices(
   tableEl: TTableElement,
   cellEl: TTableCellElement
 ) {
-  const options = editor.getOptions(TablePlugin);
+  const options = editor.getOptions(BaseTablePlugin);
 
   const tableNodes = tableEl.children;
 
@@ -79,7 +79,7 @@ export const computeAllCellIndices = (
   editor: SlateEditor,
   tableNode: TTableElement
 ) => {
-  const options = editor.getOptions(TablePlugin);
+  const options = editor.getOptions(BaseTablePlugin);
 
   // Iterate through the table rows
   for (const tableChild of tableNode.children) {

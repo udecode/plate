@@ -1,11 +1,11 @@
 import { toPlatePlugin } from '@udecode/plate-common/react';
 
 import {
-  TableCellHeaderPlugin as BaseTableCellHeaderPlugin,
-  TableCellPlugin as BaseTableCellPlugin,
-  TablePlugin as BaseTablePlugin,
-  TableRowPlugin as BaseTableRowPlugin,
-} from '../lib/TablePlugin';
+  BaseTableCellHeaderPlugin,
+  BaseTableCellPlugin,
+  BaseTablePlugin,
+  BaseTableRowPlugin,
+} from '../lib/BaseTablePlugin';
 import { onKeyDownTable } from './onKeyDownTable';
 import { withTable } from './withTable';
 

@@ -10,7 +10,7 @@ import {
 } from '@udecode/plate-common';
 import { Hotkeys, type KeyboardHandler } from '@udecode/plate-common/react';
 
-import { CodeLinePlugin } from '../lib';
+import { BaseCodeLinePlugin } from '../lib';
 import { getCodeLineEntry } from '../lib/queries/getCodeLineEntry';
 import { indentCodeLine } from '../lib/transforms/indentCodeLine';
 import { outdentCodeLine } from '../lib/transforms/outdentCodeLine';
@@ -27,7 +27,7 @@ export const onKeyDownCodeBlock: KeyboardHandler = ({ editor, event }) => {
 
   if (isTab || isUntab) {
     const _codeLines = getNodeEntries<TElement>(editor, {
-      match: { type: editor.getType(CodeLinePlugin) },
+      match: { type: editor.getType(BaseCodeLinePlugin) },
     });
     const codeLines = Array.from(_codeLines);
 

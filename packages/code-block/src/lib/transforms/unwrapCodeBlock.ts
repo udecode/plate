@@ -10,12 +10,12 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 
-import { CodeBlockPlugin } from '../CodeBlockPlugin';
+import { BaseCodeBlockPlugin } from '../BaseCodeBlockPlugin';
 
 export const unwrapCodeBlock = (editor: SlateEditor) => {
   if (!editor.selection) return;
 
-  const codeBlockType = editor.getType(CodeBlockPlugin);
+  const codeBlockType = editor.getType(BaseCodeBlockPlugin);
   const defaultType = editor.getType(ParagraphPlugin);
 
   withoutNormalizing(editor, () => {

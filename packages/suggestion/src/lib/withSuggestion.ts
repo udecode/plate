@@ -11,10 +11,10 @@ import {
 import type { TSuggestionText } from './types';
 
 import {
+  BaseSuggestionPlugin,
   SUGGESTION_KEYS,
   type SuggestionConfig,
-  SuggestionPlugin,
-} from './SuggestionPlugin';
+} from './BaseSuggestionPlugin';
 import { deleteFragmentSuggestion } from './transforms/deleteFragmentSuggestion';
 import { deleteSuggestion } from './transforms/deleteSuggestion';
 import { insertFragmentSuggestion } from './transforms/insertFragmentSuggestion';
@@ -121,7 +121,7 @@ export const withSuggestion: ExtendEditor<SuggestionConfig> = ({
   editor.normalizeNode = (entry) => {
     const [node, path] = entry;
 
-    if (node[SuggestionPlugin.key]) {
+    if (node[BaseSuggestionPlugin.key]) {
       const pointBefore = getPointBefore(editor, path);
 
       // Merge with previous suggestion
@@ -129,7 +129,7 @@ export const withSuggestion: ExtendEditor<SuggestionConfig> = ({
         const nodeBefore = getNode(editor, pointBefore.path);
 
         if (
-          (nodeBefore as any)?.[SuggestionPlugin.key] &&
+          (nodeBefore as any)?.[BaseSuggestionPlugin.key] &&
           (nodeBefore as any)[SUGGESTION_KEYS.id] !== node[SUGGESTION_KEYS.id]
         ) {
           setNodes<TSuggestionText>(
@@ -146,7 +146,7 @@ export const withSuggestion: ExtendEditor<SuggestionConfig> = ({
         const keys = getSuggestionKeys(node);
         unsetNodes(
           editor,
-          [SuggestionPlugin.key, 'suggestionDeletion', ...keys],
+          [BaseSuggestionPlugin.key, 'suggestionDeletion', ...keys],
           {
             at: path,
           }
@@ -158,7 +158,7 @@ export const withSuggestion: ExtendEditor<SuggestionConfig> = ({
       if (getSuggestionKeys(node).length === 0) {
         if (node.suggestionDeletion) {
           // Unset deletions
-          unsetNodes(editor, [SuggestionPlugin.key, SUGGESTION_KEYS.id], {
+          unsetNodes(editor, [BaseSuggestionPlugin.key, SUGGESTION_KEYS.id], {
             at: path,
           });
         } else {

@@ -7,7 +7,7 @@ import {
   someNode,
 } from '@udecode/plate-common';
 
-import type { ResetNodeConfig } from '../lib/ResetNodePlugin';
+import type { ResetNodeConfig } from '../lib/BaseResetNodePlugin';
 
 export const SIMULATE_BACKSPACE: any = {
   key: '',

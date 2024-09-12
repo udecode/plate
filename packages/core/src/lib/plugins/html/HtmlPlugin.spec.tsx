@@ -9,7 +9,7 @@ import { jsx } from '@udecode/plate-test-utils';
 import type { SlateEditor } from '../../editor';
 
 import { createPlateEditor } from '../../../react';
-import { ParagraphPlugin } from '../paragraph';
+import { BaseParagraphPlugin } from '../paragraph';
 
 jsx;
 
@@ -117,7 +117,7 @@ describe('when inserting html', () => {
       </editor>
     ) as any;
 
-    const plugins = [ParagraphPlugin];
+    const plugins = [BaseParagraphPlugin];
 
     const editor = createPlateEditor({
       editor: input,
@@ -242,7 +242,7 @@ describe('when inserting link with href', () => {
   ) as any;
 
   it('should insert the link with url', () => {
-    const plugins = [ParagraphPlugin, LinkPlugin];
+    const plugins = [BaseParagraphPlugin, LinkPlugin];
 
     const editor = createPlateEditor({
       editor: input,

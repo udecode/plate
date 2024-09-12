@@ -12,7 +12,7 @@ import {
 } from '@udecode/plate-common';
 import { Path, Range } from 'slate';
 
-import { type TodoListConfig, TodoListPlugin } from '../TodoListPlugin';
+import { BaseTodoListPlugin, type TodoListConfig } from '../BaseTodoListPlugin';
 
 /** Insert todo list item if selection in li>p. TODO: test */
 export const insertTodoListItem = (
@@ -22,7 +22,7 @@ export const insertTodoListItem = (
     inheritCheckStateOnLineStartBreak = false,
   }: TodoListConfig['options']
 ): boolean => {
-  const todoType = editor.getType(TodoListPlugin);
+  const todoType = editor.getType(BaseTodoListPlugin);
 
   if (!editor.selection) {
     return false;

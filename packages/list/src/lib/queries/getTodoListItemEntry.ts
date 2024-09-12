@@ -9,7 +9,7 @@ import {
 } from '@udecode/plate-common';
 import { type Location, type Path, Range } from 'slate';
 
-import { TodoListPlugin } from '../TodoListPlugin';
+import { BaseTodoListPlugin } from '../BaseTodoListPlugin';
 
 /**
  * Returns the nearest li and ul / ol wrapping node entries for a given path
@@ -19,7 +19,7 @@ export const getTodoListItemEntry = (
   editor: SlateEditor,
   { at = editor.selection }: { at?: Location | null } = {}
 ): { list: TElementEntry; listItem: TElementEntry } | undefined => {
-  const todoType = editor.getType(TodoListPlugin);
+  const todoType = editor.getType(BaseTodoListPlugin);
 
   let _at: Path;
 

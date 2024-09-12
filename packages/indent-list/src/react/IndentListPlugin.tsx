@@ -5,10 +5,7 @@ import {
   toTPlatePlugin,
 } from '@udecode/plate-common/react';
 
-import {
-  type IndentListConfig as BaseIndentListConfig,
-  IndentListPlugin as BaseIndentListPlugin,
-} from '../lib';
+import { type BaseIndentListConfig, BaseIndentListPlugin } from '../lib';
 import { onKeyDownIndentList } from './onKeyDownIndentList';
 import { renderIndentListBelowNodes } from './renderIndentListBelowNodes';
 

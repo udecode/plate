@@ -9,7 +9,7 @@ import {
 } from '@udecode/plate-common';
 import { Range } from 'slate';
 
-import type { AutoformatConfig } from '../lib/AutoformatPlugin';
+import type { AutoformatConfig } from '../lib/BaseAutoformatPlugin';
 import type { AutoformatRule, AutoformatTextRule } from '../lib/types';
 
 export const onKeyDownAutoformat: KeyboardHandler<AutoformatConfig> = ({

@@ -1,6 +1,6 @@
 import { toPlatePlugin } from '@udecode/plate-common/react';
 
-import { ResetNodePlugin as BaseResetNodePlugin } from '../lib/ResetNodePlugin';
+import { BaseResetNodePlugin } from '../lib/BaseResetNodePlugin';
 import { onKeyDownResetNode } from './onKeyDownResetNode';
 
 /**

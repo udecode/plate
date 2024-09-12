@@ -6,7 +6,7 @@ import {
   getAboveNode,
 } from '@udecode/plate-common';
 
-import { TablePlugin, TableRowPlugin } from '../TablePlugin';
+import { BaseTablePlugin, BaseTableRowPlugin } from '../BaseTablePlugin';
 import { getCellTypes } from '../utils';
 
 /**
@@ -32,7 +32,7 @@ export const getTableEntries = (
 
   const rowEntry = getAboveNode(editor, {
     at: cellPath,
-    match: { type: editor.getType(TableRowPlugin) },
+    match: { type: editor.getType(BaseTableRowPlugin) },
   });
 
   if (!rowEntry) return;
@@ -41,7 +41,7 @@ export const getTableEntries = (
 
   const tableEntry = getAboveNode(editor, {
     at: rowPath,
-    match: { type: editor.getType(TablePlugin) },
+    match: { type: editor.getType(BaseTablePlugin) },
   });
 
   if (!tableEntry) return;

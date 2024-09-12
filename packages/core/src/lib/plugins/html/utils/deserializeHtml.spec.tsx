@@ -24,7 +24,7 @@ import { TablePlugin } from '@udecode/plate-table';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 
 import { createPlateEditor } from '../../../../react';
-import { ParagraphPlugin } from '../../paragraph';
+import { BaseParagraphPlugin } from '../../paragraph';
 import { deserializeHtml } from './deserializeHtml';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 
@@ -79,7 +79,7 @@ describe('when element is 2 p', () => {
     expect(
       deserializeHtml(
         createPlateEditor({
-          plugins: [ParagraphPlugin],
+          plugins: [BaseParagraphPlugin],
         }),
         {
           element: '<p>first</p><p>second</p>',
@@ -205,7 +205,7 @@ describe('when deserializing all plugins', () => {
             ImagePlugin,
             LinkPlugin,
             ListPlugin,
-            ParagraphPlugin,
+            BaseParagraphPlugin,
             CodeBlockPlugin,
             TablePlugin,
             MediaEmbedPlugin,

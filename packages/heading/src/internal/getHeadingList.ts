@@ -7,7 +7,7 @@ import {
 
 import type { Heading } from '../lib/types';
 
-import { TocPlugin } from '../lib';
+import { BaseTocPlugin } from '../lib';
 import { HEADING_KEYS } from '../lib/constants';
 import { isHeading } from '../lib/utils/isHeading';
 
@@ -21,7 +21,7 @@ const headingDepth: Record<string, number> = {
 };
 
 export const getHeadingList = (editor: SlateEditor) => {
-  const options = editor.getOptions(TocPlugin);
+  const options = editor.getOptions(BaseTocPlugin);
 
   if (options.queryHeading) {
     return options.queryHeading(editor);

@@ -4,8 +4,8 @@ import { type SlateEditor, normalizeEditor } from '@udecode/plate-common';
 import { createSlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { SUGGESTION_KEYS } from './SuggestionPlugin';
-import { SuggestionPlugin } from './SuggestionPlugin';
+import { SUGGESTION_KEYS } from './BaseSuggestionPlugin';
+import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
 
 jsx;
 
@@ -33,9 +33,9 @@ describe('withSuggestion', () => {
 
         const editor = createSlateEditor({
           editor: input,
-          plugins: [SuggestionPlugin],
+          plugins: [BaseSuggestionPlugin],
         });
-        editor.setOption(SuggestionPlugin, 'isSuggesting', false);
+        editor.setOption(BaseSuggestionPlugin, 'isSuggesting', false);
 
         editor.insertText('test');
 
@@ -66,14 +66,14 @@ describe('withSuggestion', () => {
 
           const editor = createSlateEditor({
             editor: input,
-            plugins: [SuggestionPlugin],
+            plugins: [BaseSuggestionPlugin],
           });
-          editor.setOption(SuggestionPlugin, 'isSuggesting', true);
+          editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
 
           editor.insertText('test');
 
           expect(
-            editor.children[0].children[1][SuggestionPlugin.key]
+            editor.children[0].children[1][BaseSuggestionPlugin.key]
           ).toBeTruthy();
           expect(
             editor.children[0].children[1][SUGGESTION_KEYS.id]
@@ -142,9 +142,9 @@ describe('withSuggestion', () => {
 
         const editor = createSlateEditor({
           editor: input,
-          plugins: [SuggestionPlugin],
+          plugins: [BaseSuggestionPlugin],
         });
-        editor.setOption(SuggestionPlugin, 'isSuggesting', false);
+        editor.setOption(BaseSuggestionPlugin, 'isSuggesting', false);
 
         editor.deleteBackward('character');
 
@@ -179,9 +179,9 @@ describe('withSuggestion', () => {
 
           const editor = createSlateEditor({
             editor: input,
-            plugins: [SuggestionPlugin],
+            plugins: [BaseSuggestionPlugin],
           });
-          editor.setOption(SuggestionPlugin, 'isSuggesting', true);
+          editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
 
           editor.deleteBackward('character');
 
@@ -202,14 +202,14 @@ describe('withSuggestion', () => {
 
           const editor = createSlateEditor({
             editor: input,
-            plugins: [SuggestionPlugin],
+            plugins: [BaseSuggestionPlugin],
           });
-          editor.setOption(SuggestionPlugin, 'isSuggesting', true);
+          editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
 
           editor.deleteBackward('character');
 
           expect(
-            editor.children[0].children[1][SuggestionPlugin.key]
+            editor.children[0].children[1][BaseSuggestionPlugin.key]
           ).toBeTruthy();
           expect(
             editor.children[0].children[1].suggestionDeletion
@@ -234,14 +234,14 @@ describe('withSuggestion', () => {
 
           const editor = createSlateEditor({
             editor: input,
-            plugins: [SuggestionPlugin],
+            plugins: [BaseSuggestionPlugin],
           });
-          editor.setOption(SuggestionPlugin, 'isSuggesting', true);
+          editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
 
           editor.deleteBackward('character');
 
           expect(
-            editor.children[0].children[1][SuggestionPlugin.key]
+            editor.children[0].children[1][BaseSuggestionPlugin.key]
           ).toBeTruthy();
           expect(
             editor.children[0].children[1].suggestionDeletion
@@ -277,14 +277,14 @@ describe('withSuggestion', () => {
 
           const editor = createSlateEditor({
             editor: input,
-            plugins: [SuggestionPlugin],
+            plugins: [BaseSuggestionPlugin],
           });
-          editor.setOption(SuggestionPlugin, 'isSuggesting', true);
+          editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
 
           editor.deleteBackward('line');
 
           expect(
-            editor.children[0].children[0][SuggestionPlugin.key]
+            editor.children[0].children[0][BaseSuggestionPlugin.key]
           ).toBeTruthy();
           expect(
             editor.children[0].children[0].suggestionDeletion
@@ -322,7 +322,7 @@ describe('withSuggestion', () => {
 
         const editor = createSlateEditor({
           editor: input,
-          plugins: [SuggestionPlugin],
+          plugins: [BaseSuggestionPlugin],
         });
 
         normalizeEditor(editor, {

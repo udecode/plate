@@ -2,7 +2,7 @@ import React from 'react';
 
 import { useEditorRef } from '@udecode/plate-common/react';
 
-import { CodeBlockPlugin, type TCodeBlockElement } from '../../lib';
+import { BaseCodeBlockPlugin, type TCodeBlockElement } from '../../lib';
 
 export const useCodeBlockElementState = ({
   element,
@@ -19,7 +19,7 @@ export const useCodeBlockElementState = ({
     setDomLoaded(true);
   }, []);
 
-  const { syntax } = editor.getOptions(CodeBlockPlugin);
+  const { syntax } = editor.getOptions(BaseCodeBlockPlugin);
 
   return {
     className: domLoaded && codeClassName,

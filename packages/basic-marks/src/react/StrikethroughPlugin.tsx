@@ -1,6 +1,6 @@
 import { Key, toPlatePlugin } from '@udecode/plate-common/react';
 
-import { StrikethroughPlugin as BaseStrikethroughPlugin } from '../lib/StrikethroughPlugin';
+import { BaseStrikethroughPlugin } from '../lib/BaseStrikethroughPlugin';
 
 export const StrikethroughPlugin = toPlatePlugin(
   BaseStrikethroughPlugin,

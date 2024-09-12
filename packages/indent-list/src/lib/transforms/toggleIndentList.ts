@@ -13,7 +13,10 @@ import { IndentPlugin } from '@udecode/plate-indent';
 
 import type { IndentListOptions } from './indentList';
 
-import { INDENT_LIST_KEYS, IndentListPlugin } from '../IndentListPlugin';
+import {
+  BaseIndentListPlugin,
+  INDENT_LIST_KEYS,
+} from '../BaseIndentListPlugin';
 import { areEqListStyleType } from '../queries/areEqListStyleType';
 import { setIndentListNodes } from './setIndentListNodes';
 import { setIndentListSiblingNodes } from './setIndentListSiblingNodes';
@@ -27,7 +30,8 @@ export const toggleIndentList = <E extends SlateEditor>(
 ) => {
   const { listStyleType } = options;
 
-  const { getSiblingIndentListOptions } = editor.getOptions(IndentListPlugin);
+  const { getSiblingIndentListOptions } =
+    editor.getOptions(BaseIndentListPlugin);
 
   if (isCollapsed(editor.selection)) {
     const entry = getBlockAbove<TElement>(editor);
@@ -62,7 +66,7 @@ export const toggleIndentList = <E extends SlateEditor>(
 
           const indent = node[IndentPlugin.key] as number;
 
-          unsetNodes(editor, IndentListPlugin.key, { at: path });
+          unsetNodes(editor, BaseIndentListPlugin.key, { at: path });
 
           if (indent > 1) {
             setElements(

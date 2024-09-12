@@ -18,7 +18,7 @@ import {
   preFormat,
 } from 'www/src/lib/plate/demo/plugins/autoformatOptions';
 
-import { AutoformatPlugin } from '../../../AutoformatPlugin';
+import { BaseAutoformatPlugin } from '../../../BaseAutoformatPlugin';
 
 jsx;
 
@@ -45,7 +45,7 @@ describe('when ``` at block start', () => {
 
     const editor = createSlateEditor({
       plugins: [
-        AutoformatPlugin.configure({ options: getAutoformatOptions() }),
+        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
       ],
       value: input,
     });
@@ -80,7 +80,7 @@ describe('when ``` at block start, but customising with query we get the most re
 
     const codeEditor = createSlateEditor({
       plugins: [
-        AutoformatPlugin.configure({
+        BaseAutoformatPlugin.configure({
           options: {
             rules: [
               {
@@ -148,7 +148,7 @@ describe('when ```', () => {
 
     const editor = createSlateEditor({
       plugins: [
-        AutoformatPlugin.configure({ options: getAutoformatOptions() }),
+        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
       ],
       value: input,
     });

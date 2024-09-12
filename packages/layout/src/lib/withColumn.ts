@@ -6,7 +6,7 @@ import {
   isStartPoint,
 } from '@udecode/plate-common';
 
-import { ColumnItemPlugin } from './ColumnPlugin';
+import { BaseColumnItemPlugin } from './BaseColumnPlugin';
 import { normalizeColumn } from './normalizers/normalizedColumn';
 
 export const withColumn: ExtendEditor = ({ editor }) => {
@@ -17,7 +17,7 @@ export const withColumn: ExtendEditor = ({ editor }) => {
   editor.deleteBackward = (unit) => {
     if (isCollapsed(editor.selection)) {
       const entry = getAboveNode(editor, {
-        match: (n) => isElement(n) && n.type === ColumnItemPlugin.key,
+        match: (n) => isElement(n) && n.type === BaseColumnItemPlugin.key,
       });
 
       if (entry) {
@@ -35,7 +35,7 @@ export const withColumn: ExtendEditor = ({ editor }) => {
   };
 
   editor.isEmpty = (element: any) => {
-    if (element?.type && element.type === ColumnItemPlugin.key) {
+    if (element?.type && element.type === BaseColumnItemPlugin.key) {
       return element.children.length === 1 && isEmpty(element.children[0]);
     }
 

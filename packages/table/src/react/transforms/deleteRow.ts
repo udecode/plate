@@ -7,7 +7,7 @@ import {
   someNode,
 } from '@udecode/plate-common';
 
-import { type TTableElement, TableRowPlugin } from '../../lib';
+import { BaseTableRowPlugin, type TTableElement } from '../../lib';
 import { TablePlugin } from '../TablePlugin';
 import { deleteRowWhenExpanded } from '../merge';
 import { deleteTableMergeRow } from '../merge/deleteRow';
@@ -33,7 +33,7 @@ export const deleteRow = (editor: SlateEditor) => {
       return deleteRowWhenExpanded(editor, currentTableItem);
 
     const currentRowItem = getAboveNode(editor, {
-      match: { type: editor.getType(TableRowPlugin) },
+      match: { type: editor.getType(BaseTableRowPlugin) },
     });
 
     if (

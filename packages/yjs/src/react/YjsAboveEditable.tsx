@@ -3,12 +3,12 @@ import React from 'react';
 import { YjsEditor } from '@slate-yjs/core';
 import { useEditorPlugin } from '@udecode/plate-common/react';
 
-import { type YjsConfig, YjsPlugin } from '../lib/YjsPlugin';
+import { BaseYjsPlugin, type YjsConfig } from '../lib/BaseYjsPlugin';
 
 export const YjsAboveEditable: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const { editor, useOption } = useEditorPlugin<YjsConfig>(YjsPlugin);
+  const { editor, useOption } = useEditorPlugin<YjsConfig>(BaseYjsPlugin);
 
   const provider = useOption('provider');
   const isSynced = useOption('isSynced');

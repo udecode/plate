@@ -6,7 +6,7 @@ import {
 
 import type { TInlineEquationElement } from '../types';
 
-import { InlineEquationPlugin } from '../InlineEquationPlugin';
+import { BaseInlineEquationPlugin } from '../BaseInlineEquationPlugin';
 
 export const insertInlineEquation = <E extends SlateEditor>(
   editor: E,
@@ -18,7 +18,7 @@ export const insertInlineEquation = <E extends SlateEditor>(
     {
       children: [{ text: '' }],
       texExpression: texExpression ?? '',
-      type: editor.getType(InlineEquationPlugin),
+      type: editor.getType(BaseInlineEquationPlugin),
     },
     options as any
   );

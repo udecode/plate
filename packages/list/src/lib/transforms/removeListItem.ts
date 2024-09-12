@@ -13,7 +13,10 @@ import {
 } from '@udecode/plate-common';
 import { Path } from 'slate';
 
-import { ListItemContentPlugin, ListItemPlugin } from '../ListPlugin';
+import {
+  BaseListItemContentPlugin,
+  BaseListItemPlugin,
+} from '../BaseListPlugin';
 import { hasListChild } from '../queries/hasListChild';
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 import { moveListItemsToList } from './moveListItemsToList';
@@ -64,10 +67,10 @@ export const removeListItem = (
           children: [
             {
               children: [{ text: '' }],
-              type: editor.getType(ListItemContentPlugin),
+              type: editor.getType(BaseListItemContentPlugin),
             },
           ],
-          type: editor.getType(ListItemPlugin),
+          type: editor.getType(BaseListItemPlugin),
         },
         { at: tempLiPath }
       );

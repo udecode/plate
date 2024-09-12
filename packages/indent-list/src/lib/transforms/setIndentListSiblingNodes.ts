@@ -9,7 +9,10 @@ import { IndentPlugin } from '@udecode/plate-indent';
 
 import type { GetSiblingIndentListOptions } from '../queries/getSiblingIndentList';
 
-import { INDENT_LIST_KEYS, IndentListPlugin } from '../IndentListPlugin';
+import {
+  BaseIndentListPlugin,
+  INDENT_LIST_KEYS,
+} from '../BaseIndentListPlugin';
 import { getIndentListSiblings } from '../queries/getIndentListSiblings';
 import { ListStyleType } from '../types';
 import { setIndentListNode, setIndentTodoNode } from './setIndentListNode';
@@ -38,7 +41,7 @@ export const setIndentListSiblingNodes = <
 
     siblings.forEach(([node, path]) => {
       if (listStyleType === INDENT_LIST_KEYS.todo) {
-        unsetNodes(editor as any, IndentListPlugin.key, { at: path });
+        unsetNodes(editor as any, BaseIndentListPlugin.key, { at: path });
         setIndentTodoNode(editor, {
           at: path,
           indent: node[IndentPlugin.key] as number,

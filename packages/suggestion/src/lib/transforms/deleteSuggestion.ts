@@ -19,7 +19,7 @@ import {
 } from '@udecode/plate-common';
 import { Point, type Range } from 'slate';
 
-import { SuggestionPlugin } from '../SuggestionPlugin';
+import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { findSuggestionId } from '../queries/findSuggestionId';
 import { findSuggestionNode } from '../queries/index';
 import { getSuggestionCurrentUserKey } from './getSuggestionProps';
@@ -103,7 +103,7 @@ export const deleteSuggestion = (
         at: pointCurrent,
         match: (n) =>
           isBlock(editor, n) &&
-          n[SuggestionPlugin.key] &&
+          n[BaseSuggestionPlugin.key] &&
           !n.suggestionDeletion &&
           n[getSuggestionCurrentUserKey(editor)],
       });

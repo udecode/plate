@@ -8,7 +8,7 @@ import {
 import { createSlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { AutoformatPlugin } from '../../AutoformatPlugin';
+import { BaseAutoformatPlugin } from '../../BaseAutoformatPlugin';
 
 jsx;
 
@@ -33,7 +33,7 @@ describe('when ignoreTrim is true', () => {
 
     const editor = createSlateEditor({
       plugins: [
-        AutoformatPlugin.configure({
+        BaseAutoformatPlugin.configure({
           options: {
             rules: [
               {
@@ -75,7 +75,7 @@ describe('when ignoreTrim is false', () => {
 
       const editor = createSlateEditor({
         plugins: [
-          AutoformatPlugin.configure({
+          BaseAutoformatPlugin.configure({
             options: {
               rules: [
                 {

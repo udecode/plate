@@ -11,10 +11,10 @@ import {
 import { Path } from 'slate';
 
 import {
-  TableCellHeaderPlugin,
-  TablePlugin,
-  TableRowPlugin,
-} from '../TablePlugin';
+  BaseTableCellHeaderPlugin,
+  BaseTablePlugin,
+  BaseTableRowPlugin,
+} from '../BaseTablePlugin';
 import { insertTableMergeRow } from '../merge/insertTableRow';
 import { getCellTypes } from '../utils/index';
 
@@ -28,7 +28,7 @@ export const insertTableRow = (
     header?: boolean;
   } = {}
 ) => {
-  const { api, getOptions, type } = getEditorPlugin(editor, TablePlugin);
+  const { api, getOptions, type } = getEditorPlugin(editor, BaseTablePlugin);
 
   const { enableMerging } = getOptions();
 
@@ -41,10 +41,10 @@ export const insertTableRow = (
   const trEntry = fromRow
     ? findNode(editor, {
         at: fromRow,
-        match: { type: editor.getType(TableRowPlugin) },
+        match: { type: editor.getType(BaseTableRowPlugin) },
       })
     : getBlockAbove(editor, {
-        match: { type: editor.getType(TableRowPlugin) },
+        match: { type: editor.getType(BaseTableRowPlugin) },
       });
 
   if (!trEntry) return;
@@ -64,14 +64,15 @@ export const insertTableRow = (
       const isHeaderColumn =
         !hasSingleRow &&
         (tableEntry[0].children as TElement[]).every(
-          (n) => n.children[i].type === editor.getType(TableCellHeaderPlugin)
+          (n) =>
+            n.children[i].type === editor.getType(BaseTableCellHeaderPlugin)
         );
 
       return api.create.cell!({
         header: header ?? isHeaderColumn,
       });
     }),
-    type: editor.getType(TableRowPlugin),
+    type: editor.getType(BaseTableRowPlugin),
   });
 
   withoutNormalizing(editor, () => {

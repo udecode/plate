@@ -4,7 +4,7 @@ import {
   toPlatePlugin,
 } from '@udecode/plate-common/react';
 
-import { HeadingPlugin as BaseHeadingPlugin } from '../lib/HeadingPlugin';
+import { BaseHeadingPlugin } from '../lib/BaseHeadingPlugin';
 
 export const HeadingPlugin = toPlatePlugin(BaseHeadingPlugin, ({ plugin }) => ({
   plugins: (plugin as unknown as PlatePlugin).plugins.map((p) =>

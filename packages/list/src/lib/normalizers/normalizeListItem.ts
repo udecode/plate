@@ -17,11 +17,11 @@ import {
 import { Path, type PathRef } from 'slate';
 
 import {
-  BulletedListPlugin,
-  ListItemContentPlugin,
+  BaseBulletedListPlugin,
+  BaseListItemContentPlugin,
+  BaseNumberedListPlugin,
   type ListPluginOptions,
-  NumberedListPlugin,
-} from '../ListPlugin';
+} from '../BaseListPlugin';
 import { getListTypes } from '../queries/index';
 import { moveListItemUp } from '../transforms/index';
 
@@ -70,9 +70,9 @@ export const normalizeListItem = (
   let changed = false;
 
   const allValidLiChildrenTypes = new Set([
-    editor.getType(BulletedListPlugin),
-    editor.getType(NumberedListPlugin),
-    editor.getType(ListItemContentPlugin),
+    editor.getType(BaseBulletedListPlugin),
+    editor.getType(BaseNumberedListPlugin),
+    editor.getType(BaseListItemContentPlugin),
     ...validLiChildrenTypes,
   ]);
 
@@ -89,7 +89,7 @@ export const normalizeListItem = (
 
   // If li has no child or inline child, insert lic
   if (!firstLiChild || !isBlock(editor, firstLiChildNode)) {
-    insertEmptyElement(editor, editor.getType(ListItemContentPlugin), {
+    insertEmptyElement(editor, editor.getType(BaseListItemContentPlugin), {
       at: liPath.concat([0]),
     });
 
@@ -99,7 +99,7 @@ export const normalizeListItem = (
   if (
     isBlock(editor, firstLiChildNode) &&
     !match(firstLiChildNode, [], {
-      type: editor.getType(ListItemContentPlugin),
+      type: editor.getType(BaseListItemContentPlugin),
     })
   ) {
     if (
@@ -130,7 +130,7 @@ export const normalizeListItem = (
     setElements(
       editor,
       {
-        type: editor.getType(ListItemContentPlugin),
+        type: editor.getType(BaseListItemContentPlugin),
       },
       {
         at: firstLiChildPath,

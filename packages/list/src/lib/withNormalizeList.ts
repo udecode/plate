@@ -15,10 +15,10 @@ import {
 import { Path } from 'slate';
 
 import {
+  BaseListItemContentPlugin,
+  BaseListItemPlugin,
   type ListConfig,
-  ListItemContentPlugin,
-  ListItemPlugin,
-} from './ListPlugin';
+} from './BaseListPlugin';
 import { normalizeListItem } from './normalizers/normalizeListItem';
 import { normalizeNestedList } from './normalizers/normalizeNestedList';
 import { getListTypes, isListRoot } from './queries';
@@ -32,8 +32,8 @@ export const withNormalizeList: ExtendEditor<ListConfig> = ({
   const { normalizeNode } = editor;
 
   editor.normalizeNode = ([node, path]) => {
-    const liType = editor.getType(ListItemPlugin);
-    const licType = editor.getType(ListItemContentPlugin);
+    const liType = editor.getType(BaseListItemPlugin);
+    const licType = editor.getType(BaseListItemContentPlugin);
     const defaultType = editor.getType(ParagraphPlugin);
 
     if (!isElement(node)) {
@@ -88,7 +88,7 @@ export const withNormalizeList: ExtendEditor<ListConfig> = ({
       }
     }
     if (
-      node.type === editor.getType(ListItemPlugin) &&
+      node.type === editor.getType(BaseListItemPlugin) &&
       normalizeListItem(editor, {
         listItem: [node, path],
         validLiChildrenTypes: getOptions().validLiChildrenTypes,

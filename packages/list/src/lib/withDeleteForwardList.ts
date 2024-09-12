@@ -17,9 +17,12 @@ import {
 } from '@udecode/plate-common';
 import { Path, type TextUnit } from 'slate';
 
-import type { ListConfig } from './ListPlugin';
+import type { ListConfig } from './BaseListPlugin';
 
-import { ListItemContentPlugin, ListItemPlugin } from './ListPlugin';
+import {
+  BaseListItemContentPlugin,
+  BaseListItemPlugin,
+} from './BaseListPlugin';
 import {
   getListItemEntry,
   getListRoot,
@@ -82,7 +85,7 @@ const selectionIsInAListHandler = (
 
   // if it has no children
   if (!hasListChild(editor, listItem[0])) {
-    const liType = editor.getType(ListItemPlugin);
+    const liType = editor.getType(BaseListItemPlugin);
     const _nodes = getNodeEntries(editor, {
       at: listItem[1],
       match: (node, path) => {
@@ -163,7 +166,7 @@ const selectionIsInAListHandler = (
     }
 
     // get closest lic ancestor of next selectable
-    const licType = editor.getType(ListItemContentPlugin);
+    const licType = editor.getType(BaseListItemContentPlugin);
     const _licNodes = getNodeEntries<TElement>(editor, {
       at: pointAfterListItem.path,
       match: (node) => node.type === licType,

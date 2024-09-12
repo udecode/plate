@@ -9,7 +9,7 @@ import type {
   AutoformatPluginOptions,
 } from '../../../types';
 
-import { AutoformatPlugin } from '../../../AutoformatPlugin';
+import { BaseAutoformatPlugin } from '../../../BaseAutoformatPlugin';
 
 jsx;
 
@@ -37,7 +37,7 @@ describe('when -space', () => {
 
     const editor = createSlateEditor({
       plugins: [
-        AutoformatPlugin.configure({ options: getAutoformatOptions() }),
+        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
       ],
       value: input,
     });
@@ -72,7 +72,7 @@ describe('when 1.space', () => {
 
     const editor = createSlateEditor({
       plugins: [
-        AutoformatPlugin.configure({ options: getAutoformatOptions() }),
+        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
       ],
       value: input,
     });
@@ -103,7 +103,7 @@ describe('when [].space', () => {
 
     const editor = createSlateEditor({
       plugins: [
-        AutoformatPlugin.configure({ options: getAutoformatOptions() }),
+        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
       ],
       value: input,
     });
@@ -134,7 +134,7 @@ describe('when [x].space', () => {
 
     const editor = createSlateEditor({
       plugins: [
-        AutoformatPlugin.configure({ options: getAutoformatOptions() }),
+        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
       ],
       value: input,
     });
@@ -182,7 +182,7 @@ describe('when +space', () => {
 
     const editor = createSlateEditor({
       plugins: [
-        AutoformatPlugin.configure({
+        BaseAutoformatPlugin.configure({
           options: autoformatPluginWitoutTogglePreformat,
         }),
       ],

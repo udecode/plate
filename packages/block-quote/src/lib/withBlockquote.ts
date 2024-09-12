@@ -1,6 +1,6 @@
 import type { ExtendEditor, TElement } from '@udecode/plate-common';
 
-import { BlockquotePlugin } from './BlockquotePlugin';
+import { BaseBlockquotePlugin } from './BaseBlockquotePlugin';
 
 export const withBlockquote: ExtendEditor = ({ editor }) => {
   const { shouldMergeNodesRemovePrevNode } = editor;
@@ -9,7 +9,7 @@ export const withBlockquote: ExtendEditor = ({ editor }) => {
     editor.shouldMergeNodesRemovePrevNode = (prevNodeEntry, curNodeEntry) => {
       const prevNode = prevNodeEntry[0] as TElement;
 
-      if (prevNode.type === BlockquotePlugin.key) return false;
+      if (prevNode.type === BaseBlockquotePlugin.key) return false;
 
       return shouldMergeNodesRemovePrevNode(prevNodeEntry, curNodeEntry);
     };

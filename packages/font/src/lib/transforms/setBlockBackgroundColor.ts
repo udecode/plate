@@ -4,7 +4,7 @@ import {
   setNodes,
 } from '@udecode/plate-common';
 
-import { FontBackgroundColorPlugin } from '../FontBackgroundColorPlugin';
+import { BaseFontBackgroundColorPlugin } from '../BaseFontBackgroundColorPlugin';
 
 export const setBlockBackgroundColor = (
   editor: SlateEditor,
@@ -13,7 +13,7 @@ export const setBlockBackgroundColor = (
 ) => {
   setNodes(
     editor,
-    { [FontBackgroundColorPlugin.key]: backgroundColor },
+    { [BaseFontBackgroundColorPlugin.key]: backgroundColor },
     { at: block[1] }
   );
 };

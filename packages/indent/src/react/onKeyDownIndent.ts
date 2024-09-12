@@ -2,7 +2,7 @@ import type { KeyboardHandler } from '@udecode/plate-common/react';
 
 import { Hotkeys } from '@udecode/plate-common/react';
 
-import type { IndentConfig } from '../lib/IndentPlugin';
+import type { IndentConfig } from '../lib/BaseIndentPlugin';
 
 import { indent, outdent } from '../lib/transforms/index';
 

@@ -15,7 +15,7 @@ import {
   createTSlatePlugin,
 } from '../../plugin';
 import { resetEditor, toggleBlock } from '../../transforms';
-import { ParagraphPlugin } from '../paragraph';
+import { BaseParagraphPlugin } from '../paragraph';
 
 export type SlateNextConfig = PluginConfig<
   'slateNext',
@@ -94,7 +94,7 @@ export const SlateNextPlugin = createTSlatePlugin<SlateNextConfig>({
       /** Default block factory. */
       block: (node?: Partial<TElement>, _path?: Path): TElement => ({
         children: [{ text: '' }],
-        type: editor.getType(ParagraphPlugin),
+        type: editor.getType(BaseParagraphPlugin),
         ...node,
       }),
     },

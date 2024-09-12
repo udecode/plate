@@ -4,7 +4,7 @@ import { ListItemPlugin } from '@udecode/plate-list';
 import { jsx } from '@udecode/plate-test-utils';
 import { isDescendant } from '@udecode/slate';
 
-import { ParagraphPlugin } from '../../../plugins';
+import { BaseParagraphPlugin } from '../../../plugins';
 import { mergeDeepToNodes } from '../../../utils';
 
 jsx;
@@ -24,7 +24,7 @@ const output = (
   <editor>
     <element a={1} type={ListItemPlugin.key}>
       <htext a={1}>test</htext>
-      <element a={1} type={ParagraphPlugin.key}>
+      <element a={1} type={BaseParagraphPlugin.key}>
         <htext a={1}>test</htext>
       </element>
       <htext a={1}>test</htext>

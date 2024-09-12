@@ -1,6 +1,6 @@
 import { Key, toPlatePlugin } from '@udecode/plate-common/react';
 
-import { BlockquotePlugin as BaseBlockquotePlugin } from '../lib/BlockquotePlugin';
+import { BaseBlockquotePlugin } from '../lib/BaseBlockquotePlugin';
 
 export const BlockquotePlugin = toPlatePlugin(
   BaseBlockquotePlugin,

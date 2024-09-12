@@ -7,7 +7,7 @@ import {
 
 import type { TColumnGroupElement } from '../types';
 
-import { ColumnItemPlugin, ColumnPlugin } from '../ColumnPlugin';
+import { BaseColumnItemPlugin, BaseColumnPlugin } from '../BaseColumnPlugin';
 
 export const insertColumnGroup = (editor: SlateEditor) => {
   withoutNormalizing(editor, () => {
@@ -15,17 +15,17 @@ export const insertColumnGroup = (editor: SlateEditor) => {
       children: [
         {
           children: [{ children: [{ text: '' }], type: ParagraphPlugin.key }],
-          type: ColumnItemPlugin.key,
+          type: BaseColumnItemPlugin.key,
           width: '50%',
         },
         {
           children: [{ children: [{ text: '' }], type: ParagraphPlugin.key }],
-          type: ColumnItemPlugin.key,
+          type: BaseColumnItemPlugin.key,
           width: '50%',
         },
       ],
       layout: [50, 50],
-      type: ColumnPlugin.key,
+      type: BaseColumnPlugin.key,
     });
   });
 };

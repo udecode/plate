@@ -20,10 +20,10 @@ import {
 import { Path } from 'slate';
 
 import {
+  BaseListItemContentPlugin,
+  BaseListItemPlugin,
   type ListConfig,
-  ListItemContentPlugin,
-  ListItemPlugin,
-} from './ListPlugin';
+} from './BaseListPlugin';
 import { isListRoot } from './queries';
 
 export const withInsertFragmentList: ExtendEditor<ListConfig> = ({
@@ -31,8 +31,8 @@ export const withInsertFragmentList: ExtendEditor<ListConfig> = ({
 }) => {
   const { insertFragment } = editor;
 
-  const listItemType = editor.getType(ListItemPlugin);
-  const listItemContentType = editor.getType(ListItemContentPlugin);
+  const listItemType = editor.getType(BaseListItemPlugin);
+  const listItemContentType = editor.getType(BaseListItemContentPlugin);
 
   const getFirstAncestorOfType = (
     root: TDescendant,

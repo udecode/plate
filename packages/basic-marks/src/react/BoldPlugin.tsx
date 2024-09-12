@@ -1,6 +1,6 @@
 import { Key, toPlatePlugin } from '@udecode/plate-common/react';
 
-import { BoldPlugin as BaseBoldPlugin } from '../lib/BoldPlugin';
+import { BaseBoldPlugin } from '../lib/BaseBoldPlugin';
 
 export const BoldPlugin = toPlatePlugin(BaseBoldPlugin, ({ editor, type }) => ({
   shortcuts: {

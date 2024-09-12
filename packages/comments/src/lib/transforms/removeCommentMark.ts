@@ -1,6 +1,6 @@
 import { type SlateEditor, withoutNormalizing } from '@udecode/plate-common';
 
-import { CommentsPlugin } from '../CommentsPlugin';
+import { BaseCommentsPlugin } from '../BaseCommentsPlugin';
 import { findCommentNode } from '../queries/index';
 import { getCommentKeys } from '../utils';
 
@@ -16,6 +16,6 @@ export const removeCommentMark = (editor: SlateEditor) => {
       editor.removeMark(key);
     });
 
-    editor.removeMark(CommentsPlugin.key);
+    editor.removeMark(BaseCommentsPlugin.key);
   });
 };

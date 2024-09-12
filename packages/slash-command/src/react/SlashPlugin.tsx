@@ -1,9 +1,6 @@
 import { toPlatePlugin } from '@udecode/plate-common/react';
 
-import {
-  SlashInputPlugin as BaseSlashInputPlugin,
-  SlashPlugin as BaseSlashPlugin,
-} from '../lib';
+import { BaseSlashInputPlugin, BaseSlashPlugin } from '../lib';
 
 export const SlashInputPlugin = toPlatePlugin(BaseSlashInputPlugin);
 

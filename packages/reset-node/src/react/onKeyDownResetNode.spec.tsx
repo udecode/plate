@@ -21,7 +21,7 @@ import * as isHotkey from '@udecode/plate-core';
 import { ListItemPlugin, unwrapList } from '@udecode/plate-list';
 import { jsx } from '@udecode/plate-test-utils';
 
-import type { ResetNodeConfig } from '../lib/ResetNodePlugin';
+import type { ResetNodeConfig } from '../lib/BaseResetNodePlugin';
 
 import { onKeyDownResetNode } from './onKeyDownResetNode';
 

@@ -8,7 +8,7 @@ import {
 
 import type { TColumnElement } from '../types';
 
-import { ColumnItemPlugin } from '../ColumnPlugin';
+import { BaseColumnItemPlugin } from '../BaseColumnPlugin';
 
 export const insertEmptyColumn = <E extends SlateEditor>(
   editor: E,
@@ -20,7 +20,7 @@ export const insertEmptyColumn = <E extends SlateEditor>(
     editor,
     {
       children: [{ children: [{ text: '' }], type: ParagraphPlugin.key }],
-      type: ColumnItemPlugin.key,
+      type: BaseColumnItemPlugin.key,
       width,
     },
     getQueryOptions(editor, options)

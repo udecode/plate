@@ -5,11 +5,7 @@ import {
 } from '@udecode/plate-common';
 import { toTPlatePlugin } from '@udecode/plate-common/react';
 
-import {
-  type LinkConfig as BaseLinkConfig,
-  LinkPlugin as BaseLinkPlugin,
-  type TLinkElement,
-} from '../lib';
+import { type BaseLinkConfig, BaseLinkPlugin, type TLinkElement } from '../lib';
 import { getLinkAttributes } from './utils';
 
 export type FloatingLinkMode = '' | 'edit' | 'insert';

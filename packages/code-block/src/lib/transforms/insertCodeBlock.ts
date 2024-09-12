@@ -9,7 +9,10 @@ import {
   wrapNodes,
 } from '@udecode/plate-common';
 
-import { CodeBlockPlugin, CodeLinePlugin } from '../CodeBlockPlugin';
+import {
+  BaseCodeBlockPlugin,
+  BaseCodeLinePlugin,
+} from '../BaseCodeBlockPlugin';
 
 /**
  * Insert a code block: set the node to code line and wrap it with a code block.
@@ -22,8 +25,8 @@ export const insertCodeBlock = <E extends SlateEditor>(
   if (!editor.selection || isExpanded(editor.selection)) return;
 
   const matchCodeElements = (node: TElement) =>
-    node.type === editor.getType(CodeBlockPlugin) ||
-    node.type === editor.getType(CodeLinePlugin);
+    node.type === editor.getType(BaseCodeBlockPlugin) ||
+    node.type === editor.getType(BaseCodeLinePlugin);
 
   if (
     someNode(editor, {
@@ -40,7 +43,7 @@ export const insertCodeBlock = <E extends SlateEditor>(
     editor,
     {
       children: [{ text: '' }],
-      type: editor.getType(CodeLinePlugin),
+      type: editor.getType(BaseCodeLinePlugin),
     },
     insertNodesOptions
   );
@@ -49,7 +52,7 @@ export const insertCodeBlock = <E extends SlateEditor>(
     editor,
     {
       children: [],
-      type: editor.getType(CodeBlockPlugin),
+      type: editor.getType(BaseCodeBlockPlugin),
     },
     insertNodesOptions
   );

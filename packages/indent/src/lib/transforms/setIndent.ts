@@ -10,7 +10,7 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 
-import { IndentPlugin } from '../IndentPlugin';
+import { BaseIndentPlugin } from '../BaseIndentPlugin';
 
 export interface SetIndentOptions<E extends TEditor = TEditor> {
   /** GetNodeEntries options */
@@ -40,7 +40,7 @@ export const setIndent = <E extends SlateEditor>(
     unsetNodesProps = [],
   }: SetIndentOptions<E>
 ) => {
-  const { nodeKey } = editor.getInjectProps(IndentPlugin);
+  const { nodeKey } = editor.getInjectProps(BaseIndentPlugin);
 
   const _nodes = getNodeEntries(editor, {
     block: true,

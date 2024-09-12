@@ -1,6 +1,9 @@
 import type { TEditor, TNodeEntry } from '@udecode/plate-common';
 
-import { INDENT_LIST_KEYS, IndentListPlugin } from '../IndentListPlugin';
+import {
+  BaseIndentListPlugin,
+  INDENT_LIST_KEYS,
+} from '../BaseIndentListPlugin';
 import { ListStyleType } from '../types';
 
 export const areEqListStyleType = (
@@ -27,8 +30,8 @@ export const areEqListStyleType = (
       continue;
     }
     if (
-      !block[IndentListPlugin.key] ||
-      block[IndentListPlugin.key] !== listStyleType
+      !block[BaseIndentListPlugin.key] ||
+      block[BaseIndentListPlugin.key] !== listStyleType
     ) {
       eqListStyleType = false;
 

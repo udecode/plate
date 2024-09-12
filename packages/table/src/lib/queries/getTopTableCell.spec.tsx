@@ -7,12 +7,12 @@ import {
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { TablePlugin } from '../TablePlugin';
+import { BaseTablePlugin } from '../BaseTablePlugin';
 import { getTopTableCell } from './getTopTableCell';
 
 jsx;
 
-const createTablePluginWithOptions = () => TablePlugin;
+const createTablePluginWithOptions = () => BaseTablePlugin;
 
 const createEditorInstance = (input: any) => {
   return createSlateEditor({

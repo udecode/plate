@@ -6,7 +6,7 @@ import {
 
 import type { TSuggestionText } from '../types';
 
-import { SuggestionPlugin } from '../SuggestionPlugin';
+import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 
 export const findSuggestionNode = <E extends SlateEditor>(
   editor: E,
@@ -14,6 +14,6 @@ export const findSuggestionNode = <E extends SlateEditor>(
 ) =>
   findNode<TSuggestionText>(editor, {
     match: (n, p) =>
-      n[SuggestionPlugin.key] && (!match || (match as any)(n, p)),
+      n[BaseSuggestionPlugin.key] && (!match || (match as any)(n, p)),
     ...options,
   });

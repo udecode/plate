@@ -8,7 +8,7 @@ import {
 } from '@udecode/plate-common';
 import { Path, type PathRef } from 'slate';
 
-import { ListItemContentPlugin } from '../ListPlugin';
+import { BaseListItemContentPlugin } from '../BaseListPlugin';
 import { isListNested } from '../queries/isListNested';
 import { moveListItemDown } from './moveListItemDown';
 import { moveListItemUp } from './moveListItemUp';
@@ -31,7 +31,7 @@ export const moveListItems = (
   const _nodes = getNodeEntries(editor, {
     at,
     match: {
-      type: editor.getType(ListItemContentPlugin),
+      type: editor.getType(BaseListItemContentPlugin),
     },
   });
 

@@ -8,7 +8,7 @@ import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 
 import { createPlateEditor } from '../../../../react';
 import { createSlatePlugin } from '../../../plugin';
-import { ParagraphPlugin } from '../../paragraph';
+import { BaseParagraphPlugin } from '../../paragraph';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 
 jsx;
@@ -191,7 +191,7 @@ describe('when plugin has deserializer.parse', () => {
 
   const editor = createPlateEditor({
     plugins: [
-      ParagraphPlugin,
+      BaseParagraphPlugin,
       LinkPlugin.extend(() => ({
         parsers: {
           html: {
@@ -230,7 +230,7 @@ describe('when plugin has deserializer.rules.validNodeName', () => {
 
   const editor = createPlateEditor({
     plugins: [
-      ParagraphPlugin,
+      BaseParagraphPlugin,
       BoldPlugin.extend({
         parsers: {
           html: {
