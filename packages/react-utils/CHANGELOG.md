@@ -1,5 +1,13 @@
 # @udecode/react-utils
 
+## 38.0.1
+
+### Patch Changes
+
+- [#3526](https://github.com/udecode/plate/pull/3526) by [@zbeyens](https://github.com/zbeyens) –
+  - `withRef` support `typescript@5.6.x`
+  - Upgrade dependencies
+
 ## 37.0.0
 
 ## 33.0.0
