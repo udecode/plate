@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 38.0.2
+
+### Patch Changes
+
+- [#3530](https://github.com/udecode/plate/pull/3530) by [@yf-yang](https://github.com/yf-yang) – Fix wrong typescript signature of `getOption`
+
 ## 38.0.1
 
 ### Patch Changes

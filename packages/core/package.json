@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-core",
-  "version": "38.0.1",
+  "version": "38.0.2",
   "description": "The core of Plate – a plugin system for slate",
   "keywords": [
     "contentEditable",
