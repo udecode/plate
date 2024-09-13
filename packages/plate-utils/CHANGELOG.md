@@ -1,5 +1,7 @@
 # @udecode/plate-utils
 
+## 38.0.2
+
 ## 38.0.1
 
 ### Patch Changes
