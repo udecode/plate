@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-core': minor
+'@udecode/plate-core': patch
 ---
 
-Fix wrong typescript signature of getOption
+Fix wrong typescript signature of `getOption`
