@@ -34,7 +34,7 @@ export function isKeyboardEventTriggeredByInput(ev: KeyboardEvent): boolean {
 
 export function isHotkeyEnabledOnTag(
   { target }: KeyboardEvent,
-  enabledOnTags: boolean | readonly FormTags[] = false
+  enabledOnTags: readonly FormTags[] | boolean = false
 ): boolean {
   const targetTagName = target && (target as HTMLElement).tagName;
 
@@ -76,8 +76,8 @@ export const isHotkeyMatchingKeyboardEvent = (
   hotkey: Hotkey,
   ignoreModifiers = false
 ): boolean => {
-  const { alt, ctrl, keys, meta, mod, shift, useKey } = hotkey;
-  const { altKey, code, ctrlKey, key: producedKey, metaKey, shiftKey } = e;
+  const { keys, alt, ctrl, meta, mod, shift, useKey } = hotkey;
+  const { key: producedKey, altKey, code, ctrlKey, metaKey, shiftKey } = e;
 
   const mappedCode = mapKey(code);
 

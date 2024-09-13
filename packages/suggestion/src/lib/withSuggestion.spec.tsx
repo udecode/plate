@@ -158,7 +158,7 @@ describe('withSuggestion', () => {
           const input = (
             <editor>
               <hp>
-                <htext suggestion suggestionId="1">
+                <htext suggestionId="1" suggestion>
                   <cursor />
                   test
                 </htext>
@@ -169,7 +169,7 @@ describe('withSuggestion', () => {
           const output = (
             <editor>
               <hp>
-                <htext suggestion suggestionId="1">
+                <htext suggestionId="1" suggestion>
                   <cursor />
                   test
                 </htext>

@@ -4,13 +4,13 @@ import {
   insertNodes,
 } from '@udecode/plate-common';
 
-import { BaseDatePlugin, type TDateElement } from '../BaseDatePlugin';
+import { type TDateElement, BaseDatePlugin } from '../BaseDatePlugin';
 
 export const insertDate = <E extends SlateEditor>(
   editor: SlateEditor,
   { date, ...options }: { date?: string } & InsertNodesOptions<E> = {}
 ) => {
-  insertNodes<{ text: string } | TDateElement>(
+  insertNodes<TDateElement | { text: string }>(
     editor,
     [
       {

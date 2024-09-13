@@ -5,16 +5,16 @@ import {
   withTriggerCombobox,
 } from '@udecode/plate-combobox';
 import { createSlatePlugin } from '@udecode/plate-common';
-import { ParagraphPlugin } from '@udecode/plate-common/react';
 import { createSlateEditor } from '@udecode/plate-common';
+import { ParagraphPlugin } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 const ExampleComboboxPlugin = createSlatePlugin<
   string,
   TriggerComboboxPluginOptions
 >({
-  extendEditor: withTriggerCombobox,
   key: 'exampleCombobox',
+  extendEditor: withTriggerCombobox,
   plugins: [
     createSlatePlugin({
       key: 'mention_input',

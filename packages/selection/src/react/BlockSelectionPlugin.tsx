@@ -26,10 +26,10 @@ export type BlockSelectionConfig = PluginConfig<
     editorPaddingRight?: CSSProperties['width'];
     enableContextMenu?: boolean;
     isSelecting?: boolean;
-    onKeyDownSelecting?: (e: KeyboardEvent) => void;
     query?: QueryNodeOptions;
     rightSelectionAreaClassName?: string;
     selectedIds?: Set<string>;
+    onKeyDownSelecting?: (e: KeyboardEvent) => void;
   } & BlockSelectionSelectors,
   {
     blockSelection: BlockSelectionApi;
@@ -54,10 +54,6 @@ export type BlockSelectionApi = {
 };
 
 export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
-  handlers: {
-    onChange: onChangeBlockSelection,
-    onKeyDown: onKeyDownSelection,
-  },
   key: 'blockSelection',
   options: {
     areaOptions: {
@@ -95,6 +91,10 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
         }),
   },
   useHooks: useHooksBlockSelection,
+  handlers: {
+    onChange: onChangeBlockSelection,
+    onKeyDown: onKeyDownSelection,
+  },
 })
   .extendOptions(({ getOptions }) => ({
     isSelected: (id?: string) => !!id && getOptions().selectedIds!.has(id),

@@ -4,10 +4,10 @@ import { useEditorRef, useElement } from '@udecode/plate-common/react';
 import { useReadOnly } from 'slate-react';
 
 import {
-  BaseTableRowPlugin,
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
+  BaseTableRowPlugin,
   computeCellIndices,
   getCellIndices,
   getColSpan,

@@ -20,6 +20,7 @@ export type ResetNodeConfig = PluginConfig<'resetNode', ResetNodePluginOptions>;
 
 /** Enables support for resetting block type from rules. */
 export const BaseResetNodePlugin = createTSlatePlugin<ResetNodeConfig>({
+  key: 'resetNode',
   extendEditor: ({ editor, getOptions }) => {
     const { deleteBackward, deleteFragment } = editor;
 
@@ -82,7 +83,6 @@ export const BaseResetNodePlugin = createTSlatePlugin<ResetNodeConfig>({
 
     return editor;
   },
-  key: 'resetNode',
   options: {
     rules: [],
   },

@@ -1,8 +1,8 @@
 import type { Path } from 'slate';
 
 export interface Heading {
-  depth: number;
   id: string;
+  depth: number;
   path: Path;
   title: string;
   type: string;

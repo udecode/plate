@@ -4,12 +4,12 @@ import type { PluginConfig } from '@udecode/plate-common';
 
 import { createTPlatePlugin } from '@udecode/plate-common/react';
 
-import { DndScroller, type ScrollerProps } from './components/Scroller';
+import { type ScrollerProps, DndScroller } from './components/Scroller';
 
 export type DndConfig = PluginConfig<
   'dnd',
   {
-    draggingId?: null | string;
+    draggingId?: string | null;
     enableScroller?: boolean;
     isDragging?: boolean;
     scrollerProps?: Partial<ScrollerProps>;
@@ -17,6 +17,11 @@ export type DndConfig = PluginConfig<
 >;
 
 export const DndPlugin = createTPlatePlugin<DndConfig>({
+  key: 'dnd',
+  options: {
+    draggingId: null,
+    isDragging: false,
+  },
   handlers: {
     onDragEnd: ({ editor, plugin }) => {
       editor.setOption(plugin, 'isDragging', false);
@@ -39,11 +44,6 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
 
       return getOptions().isDragging;
     },
-  },
-  key: 'dnd',
-  options: {
-    draggingId: null,
-    isDragging: false,
   },
 }).extend(({ getOptions }) => ({
   render: {

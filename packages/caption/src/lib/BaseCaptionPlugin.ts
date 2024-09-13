@@ -18,7 +18,7 @@ export type CaptionConfig = PluginConfig<
     /** Plugins to enable caption. */
     plugins: WithRequiredKey[];
 
-    visibleId: null | string;
+    visibleId: string | null;
   } & CaptionSelectors
 >;
 
@@ -28,8 +28,8 @@ type CaptionSelectors = {
 
 /** Enables support for caption. */
 export const BaseCaptionPlugin = createTSlatePlugin<CaptionConfig>({
-  extendEditor: withCaption,
   key: 'caption',
+  extendEditor: withCaption,
   options: {
     focusEndPath: null,
     focusStartPath: null,

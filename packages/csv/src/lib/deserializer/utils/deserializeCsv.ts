@@ -1,9 +1,9 @@
 import {
-  BaseParagraphPlugin,
   type SlateEditor,
   type TDescendant,
   type TElement,
   type TNode,
+  BaseParagraphPlugin,
 } from '@udecode/plate-common';
 import papaparse from 'papaparse';
 

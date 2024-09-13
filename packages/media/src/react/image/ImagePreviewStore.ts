@@ -9,7 +9,7 @@ export const ImagePreviewStore = createZustandStore('imagePreview')({
   boundingClientRect: {} as DOMRect,
   currentPreview: null as PreviewItem | null,
   isEditingScale: false,
-  openEditorId: null as null | string,
+  openEditorId: null as string | null,
   previewList: [] as PreviewItem[],
   scale: 1 as number,
   translate: { x: 0, y: 0 },

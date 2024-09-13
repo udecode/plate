@@ -1,7 +1,7 @@
 import {
-  BaseParagraphPlugin,
   type InsertNodesOptions,
   type SlateEditor,
+  BaseParagraphPlugin,
   getQueryOptions,
   insertNodes,
 } from '@udecode/plate-common';

@@ -35,7 +35,7 @@ export function ScrollArea({
   const ref = React.useRef<HTMLDivElement>();
 
   const scaleYRef = React.useRef(0);
-  const frameRef = React.useRef<null | number>(null);
+  const frameRef = React.useRef<number | null>(null);
 
   const direction = placement === 'top' ? -1 : 1;
 
@@ -130,14 +130,14 @@ export function ScrollArea({
   // Hide the element if not enabled, so it doesn't interfere with clicking things under it.
   return (
     <div
+      ref={ref as any}
+      // touchmove events don't seem to work across siblings, so we unfortunately
+      style={style}
       onDragEnd={stopScrolling}
       onDragLeave={stopScrolling}
       onDragOver={handleEvent}
       // would have to attach the listeners to the body
       onTouchMove={handleEvent}
-      ref={ref as any}
-      // touchmove events don't seem to work across siblings, so we unfortunately
-      style={style}
       {...scrollAreaProps}
     />
   );

@@ -24,7 +24,7 @@ export const withAutoformat: ExtendEditor<AutoformatConfig> = ({
 
       if (query && !query(editor as any, { ...rule, text })) continue;
 
-      const autoformatter: Record<typeof mode, Function> = {
+      const autoformatter: Record<typeof mode, any> = {
         block: autoformatBlock,
         mark: autoformatMark,
         text: autoformatText,

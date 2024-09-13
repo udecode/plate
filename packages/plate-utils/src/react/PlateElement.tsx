@@ -7,7 +7,7 @@ import {
   type PlateRenderElementProps,
   omitPluginContext,
 } from '@udecode/plate-core/react';
-import { Box, type BoxProps, useComposedRef } from '@udecode/react-utils';
+import { type BoxProps, Box, useComposedRef } from '@udecode/react-utils';
 import { clsx } from 'clsx';
 
 export type PlateElementProps<

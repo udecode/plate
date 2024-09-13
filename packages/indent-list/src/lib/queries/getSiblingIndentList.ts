@@ -15,17 +15,17 @@ export interface GetSiblingIndentListOptions<
   N extends ElementOf<E>,
   E extends TEditor = TEditor,
 > {
-  breakOnEqIndentNeqListStyleType?: boolean;
-  breakOnLowerIndent?: boolean;
-  breakQuery?: (siblingNode: TNode) => boolean | undefined;
-  /** Query to break lookup */
-  eqIndent?: boolean;
   getNextEntry?: (
     entry: TNodeEntry<ElementOrTextOf<E>>
   ) => TNodeEntry<N> | undefined;
   getPreviousEntry?: (
     entry: TNodeEntry<ElementOrTextOf<E>>
   ) => TNodeEntry<N> | undefined;
+  breakOnEqIndentNeqListStyleType?: boolean;
+  breakOnLowerIndent?: boolean;
+  breakQuery?: (siblingNode: TNode) => boolean | undefined;
+  /** Query to break lookup */
+  eqIndent?: boolean;
   /** Query to validate lookup. If false, check the next sibling. */
   query?: (siblingNode: TNode) => boolean | undefined;
 }

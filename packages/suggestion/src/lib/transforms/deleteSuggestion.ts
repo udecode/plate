@@ -17,7 +17,7 @@ import {
   unhangCharacterRange,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import { Point, type Range } from 'slate';
+import { type Range, Point } from 'slate';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { findSuggestionId } from '../queries/findSuggestionId';

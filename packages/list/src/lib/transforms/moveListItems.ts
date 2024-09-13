@@ -6,7 +6,7 @@ import {
   getParentNode,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import { Path, type PathRef } from 'slate';
+import { type PathRef, Path } from 'slate';
 
 import { BaseListItemContentPlugin } from '../BaseListPlugin';
 import { isListNested } from '../queries/isListNested';

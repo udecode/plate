@@ -8,16 +8,16 @@ import { CommentsPlugin } from '../../CommentsPlugin';
 export const SCOPE_ACTIVE_COMMENT = 'activeComment';
 
 export interface CommentStoreState {
-  editingValue: Value | null;
   id: string;
+  editingValue: Value | null;
   isMenuOpen: boolean;
 }
 
 export const { CommentProvider, commentStore, useCommentStore } =
   createAtomStore(
     {
-      editingValue: null,
       id: '',
+      editingValue: null,
       isMenuOpen: false,
     } as CommentStoreState,
     {

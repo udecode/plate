@@ -21,8 +21,8 @@ export const useDraggableState = (props: {
   onDropHandler?: (
     editor: TEditor,
     props: {
-      dragItem: DragItemNode;
       id: string;
+      dragItem: DragItemNode;
       monitor: DropTargetMonitor<DragItemNode, unknown>;
       nodeRef: any;
     }
@@ -60,7 +60,7 @@ export const useDraggable = (state: DraggableState) => {
     gutterLeftProps: {
       contentEditable: false,
     },
-    handleRef: state.dragRef,
     previewRef: state.nodeRef,
+    handleRef: state.dragRef,
   };
 };

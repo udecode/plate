@@ -9,7 +9,7 @@ import {
 import { Hotkeys } from '@udecode/plate-common/react';
 import { Range } from 'slate';
 
-import { BaseListItemPlugin, type ListConfig } from '../lib';
+import { type ListConfig, BaseListItemPlugin } from '../lib';
 import { moveListItems } from '../lib/transforms/index';
 
 export const onKeyDownList: KeyboardHandler<ListConfig> = ({

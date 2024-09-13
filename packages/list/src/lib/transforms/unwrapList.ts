@@ -1,8 +1,8 @@
 import type { Path } from 'slate';
 
 import {
-  BaseParagraphPlugin,
   type SlateEditor,
+  BaseParagraphPlugin,
   getAboveNode,
   getBlockAbove,
   getCommonNode,

@@ -3,26 +3,24 @@ import isEqual from 'lodash/isEqual.js';
 import uniqWith from 'lodash/uniqWith.js';
 import {
   type BaseEditor,
-  Editor,
   type InsertTextOperation,
   type MergeNodeOperation,
-  Node,
   type Operation,
-  Path,
-  Point,
   type PointRef,
-  Range,
   type RangeRef,
   type RemoveTextOperation,
   type SetNodeOperation,
   type SplitNodeOperation,
+  Editor,
+  Node,
+  Path,
+  Point,
+  Range,
 } from 'slate';
 
 import type { ComputeDiffOptions } from '../../lib/computeDiff';
 
 export interface ChangeTrackingEditor {
-  commitChangesToDiffs: () => void;
-
   insertedTexts: {
     node: TText;
     rangeRef: RangeRef;
@@ -34,11 +32,13 @@ export interface ChangeTrackingEditor {
     rangeRef: RangeRef;
   }[];
 
-  recordingOperations: boolean;
   removedTexts: {
     node: TText;
     pointRef: PointRef;
   }[];
+
+  commitChangesToDiffs: () => void;
+  recordingOperations: boolean;
 }
 
 export const withChangeTracking = <E extends BaseEditor>(

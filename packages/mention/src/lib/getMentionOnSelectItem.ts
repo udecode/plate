@@ -9,7 +9,7 @@ import {
 
 import type { TMentionItemBase } from './types';
 
-import { BaseMentionPlugin, type MentionConfig } from './BaseMentionPlugin';
+import { type MentionConfig, BaseMentionPlugin } from './BaseMentionPlugin';
 
 export type MentionOnSelectItem<
   TItem extends TMentionItemBase = TMentionItemBase,

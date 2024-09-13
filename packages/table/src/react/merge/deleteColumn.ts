@@ -12,9 +12,9 @@ import {
 } from '@udecode/plate-common';
 
 import {
-  BaseTableRowPlugin,
   type TTableCellElement,
   type TTableElement,
+  BaseTableRowPlugin,
   findCellByIndexes,
   getCellIndices,
   getCellPath,

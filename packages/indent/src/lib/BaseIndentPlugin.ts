@@ -1,7 +1,7 @@
 import {
-  BaseParagraphPlugin,
   type PluginConfig,
   type TElement,
+  BaseParagraphPlugin,
   createTSlatePlugin,
 } from '@udecode/plate-common';
 
@@ -34,6 +34,7 @@ export type IndentConfig = PluginConfig<
 >;
 
 export const BaseIndentPlugin = createTSlatePlugin<IndentConfig>({
+  key: 'indent',
   extendEditor: withIndent,
   inject: {
     nodeProps: {
@@ -47,7 +48,6 @@ export const BaseIndentPlugin = createTSlatePlugin<IndentConfig>({
     },
     targetPlugins: [BaseParagraphPlugin.key],
   },
-  key: 'indent',
   options: {
     offset: 24,
     unit: 'px',

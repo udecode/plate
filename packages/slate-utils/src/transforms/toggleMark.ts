@@ -9,13 +9,13 @@ export interface ToggleMarkOptions {
   key: string;
 
   /** Mark keys to clear when adding the mark. */
-  clear?: string | string[];
+  clear?: string[] | string;
 }
 
 /** Add or remove marks in the selection. */
 export const toggleMark = (
   editor: TEditor,
-  { clear, key }: ToggleMarkOptions
+  { key, clear }: ToggleMarkOptions
 ) => {
   if (!editor.selection) return;
 

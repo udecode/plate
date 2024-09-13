@@ -28,13 +28,13 @@ export const useListToolbarButton = (
 
   return {
     props: {
+      pressed: state.pressed,
       onClick: () => {
         tf.toggle.list({ type: state.nodeType });
       },
       onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
       },
-      pressed: state.pressed,
     },
   };
 };

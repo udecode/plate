@@ -1,4 +1,4 @@
-import { Editor, type EditorVoidOptions } from 'slate';
+import { type EditorVoidOptions, Editor } from 'slate';
 
 import type { ElementOf } from '../element/TElement';
 import type { TNodeEntry } from '../node/TNodeEntry';

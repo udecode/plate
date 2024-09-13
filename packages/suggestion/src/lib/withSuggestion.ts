@@ -11,9 +11,9 @@ import {
 import type { TSuggestionText } from './types';
 
 import {
+  type SuggestionConfig,
   BaseSuggestionPlugin,
   SUGGESTION_KEYS,
-  type SuggestionConfig,
 } from './BaseSuggestionPlugin';
 import { deleteFragmentSuggestion } from './transforms/deleteFragmentSuggestion';
 import { deleteSuggestion } from './transforms/deleteSuggestion';

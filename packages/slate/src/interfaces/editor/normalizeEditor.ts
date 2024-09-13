@@ -1,4 +1,4 @@
-import { Editor, type EditorNormalizeOptions } from 'slate';
+import { type EditorNormalizeOptions, Editor } from 'slate';
 
 import type { TEditor } from './TEditor';
 

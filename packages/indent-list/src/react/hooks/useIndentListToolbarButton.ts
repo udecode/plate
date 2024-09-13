@@ -25,6 +25,7 @@ export const useIndentListToolbarButton = ({
 
   return {
     props: {
+      pressed,
       onClick: () => {
         toggleIndentList(editor, {
           listStyleType: nodeType,
@@ -33,7 +34,6 @@ export const useIndentListToolbarButton = ({
       onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
       },
-      pressed,
     },
   };
 };

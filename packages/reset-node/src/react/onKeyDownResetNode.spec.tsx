@@ -133,8 +133,8 @@ describe('onKeyDownResetNode', () => {
   describe('when inside a code block', () => {
     const codeBlockRule = {
       defaultType: ParagraphPlugin.key,
-      onReset: unwrapCodeBlock as any,
       types: [BaseCodeBlockPlugin.key],
+      onReset: unwrapCodeBlock as any,
     };
 
     const plugin = createTPlatePlugin({
@@ -324,8 +324,8 @@ describe('onKeyDownResetNode', () => {
   describe('when inside a list', () => {
     const listRule = {
       defaultType: ParagraphPlugin.key,
-      onReset: unwrapList as any,
       types: [BaseListItemPlugin.key],
+      onReset: unwrapList as any,
     };
 
     const plugin = createTPlatePlugin({

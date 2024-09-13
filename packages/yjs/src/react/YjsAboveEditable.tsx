@@ -3,7 +3,7 @@ import React from 'react';
 import { YjsEditor } from '@slate-yjs/core';
 import { useEditorPlugin } from '@udecode/plate-common/react';
 
-import { BaseYjsPlugin, type YjsConfig } from '../lib/BaseYjsPlugin';
+import { type YjsConfig, BaseYjsPlugin } from '../lib/BaseYjsPlugin';
 
 export const YjsAboveEditable: React.FC<{
   children: React.ReactNode;

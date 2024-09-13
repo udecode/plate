@@ -7,10 +7,10 @@ export interface CommentUser {
 }
 
 export interface TComment {
+  id: string;
+
   /** @default Date.now() */
   createdAt: number;
-
-  id: string;
 
   /** Author id. */
   userId: string;

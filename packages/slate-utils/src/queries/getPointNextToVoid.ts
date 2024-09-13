@@ -4,7 +4,7 @@ import {
   getPointBefore,
   getVoidNode,
 } from '@udecode/slate';
-import { Path, type Point } from 'slate';
+import { type Point, Path } from 'slate';
 
 import { getBlockAbove } from './getBlockAbove';
 
@@ -18,9 +18,9 @@ export const getPointNextToVoid = (
     after,
     at,
   }: {
+    at: Point;
     /** Get the point after (instead of before) the void node. */
     after?: boolean;
-    at: Point;
   }
 ) => {
   const startVoid = getVoidNode(editor, { at, mode: 'highest' });

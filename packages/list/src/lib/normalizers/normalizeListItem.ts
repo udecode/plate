@@ -14,13 +14,13 @@ import {
   removeNodes,
   setElements,
 } from '@udecode/plate-common';
-import { Path, type PathRef } from 'slate';
+import { type PathRef, Path } from 'slate';
 
 import {
+  type ListPluginOptions,
   BaseBulletedListPlugin,
   BaseListItemContentPlugin,
   BaseNumberedListPlugin,
-  type ListPluginOptions,
 } from '../BaseListPlugin';
 import { getListTypes } from '../queries/index';
 import { moveListItemUp } from '../transforms/index';
@@ -71,8 +71,8 @@ export const normalizeListItem = (
 
   const allValidLiChildrenTypes = new Set([
     editor.getType(BaseBulletedListPlugin),
-    editor.getType(BaseNumberedListPlugin),
     editor.getType(BaseListItemContentPlugin),
+    editor.getType(BaseNumberedListPlugin),
     ...validLiChildrenTypes,
   ]);
 

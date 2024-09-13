@@ -11,7 +11,7 @@ import { Range } from 'slate';
 export interface RemoveMarkOptions<E extends TEditor>
   extends Omit<SetNodesOptions<E>, 'match' | 'split'> {
   /** Mark or the array of marks that will be removed */
-  key: string | string[];
+  key: string[] | string;
 
   /** Range where the mark(s) will be removed */
   at?: Range;
@@ -28,7 +28,7 @@ export interface RemoveMarkOptions<E extends TEditor>
 /** Remove mark and trigger `onChange` if collapsed selection. */
 export const removeMark = <E extends TEditor>(
   editor: E,
-  { at, key, shouldChange = true, ...rest }: RemoveMarkOptions<E>
+  { key, at, shouldChange = true, ...rest }: RemoveMarkOptions<E>
 ) => {
   const selection = at ?? editor.selection;
   key = castArray(key);

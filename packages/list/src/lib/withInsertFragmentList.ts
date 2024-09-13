@@ -20,9 +20,9 @@ import {
 import { Path } from 'slate';
 
 import {
+  type ListConfig,
   BaseListItemContentPlugin,
   BaseListItemPlugin,
-  type ListConfig,
 } from './BaseListPlugin';
 import { isListRoot } from './queries';
 

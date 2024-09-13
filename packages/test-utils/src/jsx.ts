@@ -12,17 +12,6 @@ declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
     interface IntrinsicElements {
-      [key: string]: any;
-
-      anchor: any;
-      cursor: any;
-      editor: any;
-      element: any;
-      focus: any;
-      fragment: any;
-      hli: any;
-      hol: any;
-      hp: any;
       htext: {
         [key: string]: any;
         // These optional params will show up in the autocomplete!
@@ -32,6 +21,17 @@ declare global {
         italic?: boolean;
         underline?: boolean;
       };
+
+      [key: string]: any;
+      anchor: any;
+      cursor: any;
+      editor: any;
+      element: any;
+      focus: any;
+      fragment: any;
+      hli: any;
+      hol: any;
+      hp: any;
       hul: any;
       selection: any;
     }

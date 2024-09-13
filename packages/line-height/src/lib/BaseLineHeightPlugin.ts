@@ -5,6 +5,7 @@ import { BaseParagraphPlugin, createSlatePlugin } from '@udecode/plate-common';
  * right and center it.
  */
 export const BaseLineHeightPlugin = createSlatePlugin({
+  key: 'lineHeight',
   inject: {
     nodeProps: {
       defaultNodeValue: 1.5,
@@ -25,5 +26,4 @@ export const BaseLineHeightPlugin = createSlatePlugin({
     }),
     targetPlugins: [BaseParagraphPlugin.key],
   },
-  key: 'lineHeight',
 });

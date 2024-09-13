@@ -2,7 +2,7 @@ import React from 'react';
 
 import { useEditorRef } from '@udecode/plate-common/react';
 
-import { BaseCodeBlockPlugin, type TCodeBlockElement } from '../../lib';
+import { type TCodeBlockElement, BaseCodeBlockPlugin } from '../../lib';
 
 export const useCodeBlockElementState = ({
   element,

@@ -1,6 +1,6 @@
 import type { EditorLeafOptions } from 'slate/dist/interfaces/editor';
 
-import { Editor, type Location } from 'slate';
+import { type Location, Editor } from 'slate';
 
 import type { TextEntryOf } from '../node/TNodeEntry';
 import type { TEditor } from './TEditor';

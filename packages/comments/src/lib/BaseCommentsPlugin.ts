@@ -14,18 +14,18 @@ import { withComments } from './withComments';
 export type BaseCommentsConfig = PluginConfig<
   'comment',
   {
-    activeCommentId: null | string;
-    addingCommentId: null | string;
+    activeCommentId: string | null;
+    addingCommentId: string | null;
     comments: Record<string, TComment>;
     focusTextarea: boolean;
-    myUserId: null | string;
+    myUserId: string | null;
     newValue: Value;
+    users: Record<string, CommentUser>;
     onCommentAdd: ((value: WithPartial<TComment, 'userId'>) => void) | null;
     onCommentDelete: ((id: string) => void) | null;
     onCommentUpdate:
       | ((value: Partial<Omit<TComment, 'id'>> & Pick<TComment, 'id'>) => void)
       | null;
-    users: Record<string, CommentUser>;
   } & CommentsSelectors,
   {
     comment: CommentsApi;
@@ -34,10 +34,10 @@ export type BaseCommentsConfig = PluginConfig<
 
 export type CommentsSelectors = {
   activeComment?: () => TComment | null;
-  commentById?: (id: null | string) => TComment | null;
+  commentById?: (id: string | null) => TComment | null;
   myUser?: () => CommentUser | null;
   newText?: () => string;
-  userById?: (id: null | string) => CommentUser | null;
+  userById?: (id: string | null) => CommentUser | null;
 };
 
 export type CommentsApi = {
@@ -45,14 +45,14 @@ export type CommentsApi = {
     value: WithPartial<TComment, 'createdAt' | 'id' | 'userId'>
   ) => WithPartial<TComment, 'userId'>;
   addRawComment: (id: string) => void;
-  removeComment: (id: null | string) => void;
+  removeComment: (id: string | null) => void;
   resetNewCommentValue: () => void;
-  updateComment: (id: null | string, value: Partial<TComment>) => void;
+  updateComment: (id: string | null, value: Partial<TComment>) => void;
 };
 
 export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
-  extendEditor: withComments,
   key: 'comment',
+  extendEditor: withComments,
   node: { isLeaf: true },
   options: {
     activeCommentId: null,
@@ -61,10 +61,10 @@ export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
     focusTextarea: false,
     myUserId: null,
     newValue: [{ children: [{ text: '' }], type: 'p' }],
+    users: {},
     onCommentAdd: null,
     onCommentDelete: null,
     onCommentUpdate: null,
-    users: {},
   },
 })
   .extendOptions<Partial<CommentsSelectors>>(({ getOptions }) => ({
@@ -101,8 +101,8 @@ export const BaseCommentsPlugin = createTSlatePlugin<BaseCommentsConfig>({
       const { myUserId } = getOptions();
       const id = value.id ?? nanoid();
       const newComment: WithPartial<TComment, 'userId'> = {
-        createdAt: Date.now(),
         id,
+        createdAt: Date.now(),
         userId: myUserId ?? undefined,
         ...value,
       };

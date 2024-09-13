@@ -7,7 +7,7 @@ import {
   someNode,
 } from '@udecode/plate-common';
 
-import { BaseTableRowPlugin, type TTableElement } from '../../lib';
+import { type TTableElement, BaseTableRowPlugin } from '../../lib';
 import { TablePlugin } from '../TablePlugin';
 import { deleteRowWhenExpanded } from '../merge';
 import { deleteTableMergeRow } from '../merge/deleteRow';

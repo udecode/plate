@@ -31,10 +31,10 @@ export const usePlaceholderPopoverState = () => {
   const setUpdatedFiles = usePlaceholderStore().set.updatedFiles();
 
   return {
+    id,
     editor,
     element,
     focused,
-    id,
     mediaType,
     readOnly,
     selected,

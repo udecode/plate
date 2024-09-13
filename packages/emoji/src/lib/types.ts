@@ -15,10 +15,10 @@ export type EmojiSettingsType = {
     value: number;
   };
   showFrequent: {
+    value: boolean;
     key?: string;
     limit?: number;
     prefix?: string;
-    value: boolean;
   };
 };
 
@@ -53,11 +53,11 @@ export type i18nProps = {
 };
 
 export type EmojiIconList<T = string> = {
-  categories: Record<EmojiCategoryList, { outline: T; solid: T }>;
   search: {
     delete: T;
     loupe: T;
   };
+  categories: Record<EmojiCategoryList, { outline: T; solid: T }>;
 };
 
 export type FrequentEmojis = Record<string, number>;

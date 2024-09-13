@@ -4,7 +4,7 @@ import type { TPath } from '../types/interfaces';
 
 import { isBlock } from '../interfaces/editor/isBlock';
 
-export type PredicateObj = Record<string, any | any[]>;
+export type PredicateObj = Record<string, any[] | any>;
 
 export type PredicateFn<T extends TNode> = (obj: T, path: TPath) => boolean;
 

@@ -32,7 +32,7 @@ export type BaseLinkConfig = PluginConfig<
      * this promise. The default behavior is to use the browser's native
      * `prompt`.
      */
-    getLinkUrl?: (prevUrl: null | string) => Promise<null | string>;
+    getLinkUrl?: (prevUrl: string | null) => Promise<string | null>;
 
     /**
      * Callback to optionally get the href for a url
@@ -85,14 +85,14 @@ export type BaseLinkConfig = PluginConfig<
      *
      * @default 'meta+k, ctrl+k'
      */
-    triggerFloatingLinkHotkeys?: string | string[];
+    triggerFloatingLinkHotkeys?: string[] | string;
   }
 >;
 
 /** Enables support for hyperlinks. */
 export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
-  extendEditor: withLink,
   key: 'a',
+  extendEditor: withLink,
   node: { isElement: true, isInline: true },
   options: {
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],

@@ -15,7 +15,7 @@ export const isPreviousCharacterEmpty = (editor: TEditor, at: Location) => {
     if (text) {
       const noWhiteSpaceRegex = new RegExp(`\\S+`);
 
-      return !text.match(noWhiteSpaceRegex);
+      return !noWhiteSpaceRegex.exec(text);
     }
   }
 

@@ -4,7 +4,7 @@ import {
   insertNodes,
 } from '@udecode/plate-common';
 
-import { BaseImagePlugin, type TImageElement } from '../BaseImagePlugin';
+import { type TImageElement, BaseImagePlugin } from '../BaseImagePlugin';
 
 export const insertImage = <E extends SlateEditor>(
   editor: E,

@@ -15,7 +15,7 @@ export const setLineHeight = <E extends SlateEditor>(
   {
     setNodesOptions,
     value,
-  }: { setNodesOptions?: SetNodesOptions<E>; value: number }
+  }: { value: number; setNodesOptions?: SetNodesOptions<E> }
 ): void => {
   const {
     inject: { targetPlugins },

@@ -8,7 +8,7 @@ import {
   useEditorPlugin,
   usePlateStore,
 } from '@udecode/plate-common/react';
-import { BaseIndentPlugin, type TIndentElement } from '@udecode/plate-indent';
+import { type TIndentElement, BaseIndentPlugin } from '@udecode/plate-indent';
 
 import { TogglePlugin } from './TogglePlugin';
 

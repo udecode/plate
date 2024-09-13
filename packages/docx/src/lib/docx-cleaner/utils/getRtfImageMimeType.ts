@@ -1,4 +1,4 @@
-export const getRtfImageMimeType = (imageData: string): null | string => {
+export const getRtfImageMimeType = (imageData: string): string | null => {
   const [bliptagMeta] = imageData.split('bliptag');
 
   if (bliptagMeta.includes('pngblip')) {

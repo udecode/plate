@@ -18,8 +18,8 @@ export const setAlign = <E extends SlateEditor>(
     setNodesOptions,
     value,
   }: {
-    setNodesOptions?: SetNodesOptions<E>;
     value: Alignment;
+    setNodesOptions?: SetNodesOptions<E>;
   }
 ) => {
   const {

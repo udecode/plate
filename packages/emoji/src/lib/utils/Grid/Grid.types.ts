@@ -1,8 +1,8 @@
 export type Unknown = unknown;
 
 export type GridRow = {
-  elements: string[];
   id: number;
+  elements: string[];
 };
 
 export type GridRows = GridRow[];
@@ -12,9 +12,9 @@ export type SectionId = string;
 export type SectionElements = string[];
 
 export interface IGridSection<R, T> {
+  id: T;
   addElements: (elements: SectionElements) => this;
   getRows: () => GridRows;
-  id: T;
   root: R;
   rowsNum: number;
   setIndexRowStart: (start: number) => this;

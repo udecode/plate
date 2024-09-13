@@ -1,23 +1,23 @@
 export const getTextListStyleType = (text: string): string | undefined => {
   text = text.trimStart();
 
-  if (text.match(/^\d+[.\\]/)?.[0]) {
+  if (/^\d+[.\\]/.exec(text)?.[0]) {
     if (text.startsWith('0')) {
       return 'decimal-leading-zero';
     }
 
     return 'decimal';
   }
-  if (text.match(/^[cdilmvx]+\./)?.[0]) {
+  if (/^[cdilmvx]+\./.exec(text)?.[0]) {
     return 'lower-roman';
   }
-  if (text.match(/^[a-z]+\./)?.[0]) {
+  if (/^[a-z]+\./.exec(text)?.[0]) {
     return 'lower-alpha';
   }
-  if (text.match(/^[CDILMVX]+\./)?.[0]) {
+  if (/^[CDILMVX]+\./.exec(text)?.[0]) {
     return 'upper-roman';
   }
-  if (text.match(/^[A-Z]+\./)?.[0]) {
+  if (/^[A-Z]+\./.exec(text)?.[0]) {
     return 'upper-alpha';
   }
 };

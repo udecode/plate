@@ -13,13 +13,11 @@ import { type UseDropNodeOptions, useDropNode } from './useDropNode';
 export interface UseDndNodeOptions
   extends Pick<UseDropNodeOptions, 'id' | 'nodeRef'>,
     Pick<UseDragNodeOptions, 'type'> {
-  drag?: UseDragNodeOptions;
-  drop?: UseDropNodeOptions;
   onDropHandler?: (
     editor: PlateEditor,
     props: {
-      dragItem: DragItemNode;
       id: string;
+      dragItem: DragItemNode;
       monitor: DropTargetMonitor<DragItemNode, unknown>;
       nodeRef: any;
     }
@@ -31,6 +29,8 @@ export interface UseDndNodeOptions
     /** The reference to the preview element. */
     ref?: any;
   };
+  drag?: UseDragNodeOptions;
+  drop?: UseDropNodeOptions;
 }
 
 /**
@@ -39,13 +39,13 @@ export interface UseDndNodeOptions
  * can be customized or removed. Returns the drag ref and drop line direction.
  */
 export const useDndNode = ({
+  id,
   drag: dragOptions,
   drop: dropOptions,
-  id,
   nodeRef,
-  onDropHandler,
   preview: previewOptions = {},
   type,
+  onDropHandler,
 }: UseDndNodeOptions) => {
   const editor = useEditorRef();
 
@@ -57,9 +57,9 @@ export const useDndNode = ({
     ...dragOptions,
   });
   const [{ isOver }, drop] = useDropNode(editor, {
+    id,
     accept: type,
     dropLine,
-    id,
     nodeRef,
     onChangeDropLine: setDropLine,
     onDropHandler,

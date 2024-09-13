@@ -1,8 +1,8 @@
 import {
-  BaseParagraphPlugin,
-  HtmlPlugin,
   type PluginConfig,
   type TElement,
+  BaseParagraphPlugin,
+  HtmlPlugin,
   createTSlatePlugin,
   isHtmlBlockElement,
   postCleanHtml,
@@ -32,6 +32,7 @@ export type BaseIndentListConfig = PluginConfig<
 >;
 
 export const BaseIndentListPlugin = createTSlatePlugin<BaseIndentListConfig>({
+  key: 'listStyleType',
   extendEditor: withIndentList,
   inject: {
     plugins: {
@@ -71,7 +72,6 @@ export const BaseIndentListPlugin = createTSlatePlugin<BaseIndentListConfig>({
       },
     },
   },
-  key: 'listStyleType',
   options: {
     getListStyleType: (element) => element.style.listStyleType as ListStyleType,
   },

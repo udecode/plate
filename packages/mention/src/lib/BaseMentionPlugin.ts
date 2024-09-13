@@ -30,8 +30,8 @@ export const BaseMentionInputPlugin = createSlatePlugin({
 
 /** Enables support for autocompleting @mentions. */
 export const BaseMentionPlugin = createSlatePlugin({
-  extendEditor: withTriggerCombobox,
   key: 'mention',
+  extendEditor: withTriggerCombobox,
   node: { isElement: true, isInline: true, isMarkableVoid: true, isVoid: true },
   options: {
     createComboboxInput: (trigger) => ({

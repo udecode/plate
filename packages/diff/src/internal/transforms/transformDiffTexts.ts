@@ -282,7 +282,7 @@ Also setting to undefined / false-ish for a *text* node property
 is equivalent to not having it regarding everything else.
 */
 
-function getKeysLength(obj: null | object | undefined): number {
+function getKeysLength(obj: object | null | undefined): number {
   if (obj == null) {
     return 0;
   }

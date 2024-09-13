@@ -8,14 +8,14 @@ export const SubscriptPlugin = toPlatePlugin(
   ({ editor, type }) => ({
     shortcuts: {
       toggleSubscript: {
-        handler: () => {
-          editor.tf.toggle.mark({
-            clear: editor.getType(SuperscriptPlugin),
-            key: type,
-          });
-        },
         keys: [[Key.Mod, ',']],
         preventDefault: true,
+        handler: () => {
+          editor.tf.toggle.mark({
+            key: type,
+            clear: editor.getType(SuperscriptPlugin),
+          });
+        },
       },
     },
   })

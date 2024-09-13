@@ -9,7 +9,7 @@ import {
   isHotkey,
 } from '@udecode/plate-common';
 
-import { BaseCaptionPlugin, type CaptionConfig } from './BaseCaptionPlugin';
+import { type CaptionConfig, BaseCaptionPlugin } from './BaseCaptionPlugin';
 
 /** TODO: tests https://github.com/udecode/editor-protocol/issues/79 */
 

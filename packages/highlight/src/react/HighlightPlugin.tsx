@@ -7,11 +7,11 @@ export const HighlightPlugin = toPlatePlugin(
   ({ editor, type }) => ({
     shortcuts: {
       toggleHighlight: {
+        keys: [[Key.Mod, Key.Shift, 'h']],
+        preventDefault: true,
         handler: () => {
           editor.tf.toggle.mark({ key: type });
         },
-        keys: [[Key.Mod, Key.Shift, 'h']],
-        preventDefault: true,
       },
     },
   })

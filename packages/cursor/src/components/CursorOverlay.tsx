@@ -19,12 +19,6 @@ export interface CursorProps<TCursorData extends UnknownObject = UnknownObject>
       caret: string;
       selectionRect: string;
     }> {
-  /** Whether to disable the caret. */
-  disableCaret?: boolean;
-
-  /** Whether to disable the selection rects. */
-  disableSelection?: boolean;
-
   /**
    * Custom caret component. For example, you could display a label next to the
    * caret.
@@ -41,6 +35,12 @@ export interface CursorProps<TCursorData extends UnknownObject = UnknownObject>
       selectionRect: SelectionRect;
     } & Pick<CursorProps<TCursorData>, 'data'>
   >;
+
+  /** Whether to disable the caret. */
+  disableCaret?: boolean;
+
+  /** Whether to disable the selection rects. */
+  disableSelection?: boolean;
 }
 
 export interface CursorOverlayProps<

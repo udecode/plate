@@ -13,7 +13,7 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 
-import { BaseListItemPlugin, type ListConfig } from './BaseListPlugin';
+import { type ListConfig, BaseListItemPlugin } from './BaseListPlugin';
 import { getHighestEmptyList } from './queries/getHighestEmptyList';
 import { hasListChild } from './queries/hasListChild';
 import { isAcrossListItems } from './queries/isAcrossListItems';

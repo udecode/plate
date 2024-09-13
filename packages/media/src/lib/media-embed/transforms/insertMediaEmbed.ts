@@ -6,8 +6,8 @@ import {
 } from '@udecode/plate-common';
 
 import {
-  BaseMediaEmbedPlugin,
   type TMediaEmbedElement,
+  BaseMediaEmbedPlugin,
 } from '../BaseMediaEmbedPlugin';
 
 export const insertMediaEmbed = <E extends SlateEditor>(

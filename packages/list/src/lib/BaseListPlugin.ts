@@ -1,7 +1,7 @@
 import {
-  HtmlPlugin,
   type OmitFirst,
   type PluginConfig,
+  HtmlPlugin,
   bindFirst,
   createSlatePlugin,
   createTSlatePlugin,

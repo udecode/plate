@@ -1,13 +1,13 @@
 import { createSlatePlugin } from '@udecode/plate-common';
 
 export const BaseFontColorPlugin = createSlatePlugin({
+  key: 'color',
   inject: {
     nodeProps: {
       defaultNodeValue: 'black',
       nodeKey: 'color',
     },
   },
-  key: 'color',
 }).extend(({ type }) => ({
   parsers: {
     html: {

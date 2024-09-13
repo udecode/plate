@@ -12,14 +12,14 @@ export interface TDateElement extends TElement {
 }
 
 export const BaseDatePlugin = createSlatePlugin({
-  extendEditor: withDate,
-  handlers: {},
   key: 'date',
+  extendEditor: withDate,
   node: {
     isElement: true,
     isInline: true,
     isVoid: true,
   },
+  handlers: {},
 }).extendEditorTransforms(({ editor }) => ({
   insert: {
     date: bindFirst(insertDate, editor),

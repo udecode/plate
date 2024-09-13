@@ -1,12 +1,12 @@
 import { createSlatePlugin } from '@udecode/plate-common';
 
 export const BaseFontSizePlugin = createSlatePlugin({
+  key: 'fontSize',
   inject: {
     nodeProps: {
       nodeKey: 'fontSize',
     },
   },
-  key: 'fontSize',
 }).extend(({ type }) => ({
   parsers: {
     html: {

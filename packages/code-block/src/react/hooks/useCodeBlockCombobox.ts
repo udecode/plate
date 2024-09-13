@@ -8,7 +8,7 @@ import {
 } from '@udecode/plate-common/react';
 import { useReadOnly } from 'slate-react';
 
-import { BaseCodeBlockPlugin, type TCodeBlockElement } from '../../lib';
+import { type TCodeBlockElement, BaseCodeBlockPlugin } from '../../lib';
 
 export const useCodeBlockComboboxState = () => {
   const editor = useEditorRef();

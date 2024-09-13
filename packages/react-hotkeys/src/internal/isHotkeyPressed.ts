@@ -44,7 +44,7 @@ export function isHotkeyPressed(
   );
 }
 
-export function pushToCurrentlyPressedKeys(key: string | string[]): void {
+export function pushToCurrentlyPressedKeys(key: string[] | string): void {
   const hotkeyArray = Array.isArray(key) ? key : [key];
 
   /*
@@ -64,7 +64,7 @@ export function pushToCurrentlyPressedKeys(key: string | string[]): void {
   );
 }
 
-export function removeFromCurrentlyPressedKeys(key: string | string[]): void {
+export function removeFromCurrentlyPressedKeys(key: string[] | string): void {
   const hotkeyArray = Array.isArray(key) ? key : [key];
 
   /*

@@ -59,7 +59,7 @@ export const renderIndentListBelowNodes = (
       } = listOptions;
 
       return (
-        <List className={className} start={listStart} style={style}>
+        <List className={className} style={style} start={listStart}>
           <Marker {...props} />
 
           <Li {...props}>{children}</Li>

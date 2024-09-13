@@ -7,11 +7,11 @@ export const ItalicPlugin = toPlatePlugin(
   ({ editor, type }) => ({
     shortcuts: {
       toggleItalic: {
+        keys: [[Key.Mod, 'i']],
+        preventDefault: true,
         handler: () => {
           editor.tf.toggle.mark({ key: type });
         },
-        keys: [[Key.Mod, 'i']],
-        preventDefault: true,
       },
     },
   })

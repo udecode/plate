@@ -7,11 +7,11 @@ export const StrikethroughPlugin = toPlatePlugin(
   ({ editor, type }) => ({
     shortcuts: {
       toggleStrikethrough: {
+        keys: [[Key.Mod, Key.Shift, 'x']],
+        preventDefault: true,
         handler: () => {
           editor.tf.toggle.mark({ key: type });
         },
-        keys: [[Key.Mod, Key.Shift, 'x']],
-        preventDefault: true,
       },
     },
   })

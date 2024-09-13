@@ -1,6 +1,6 @@
 import {
-  BaseParagraphPlugin,
   type SlateEditor,
+  BaseParagraphPlugin,
   getPath,
   insertElements,
 } from '@udecode/plate-common';

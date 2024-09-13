@@ -23,6 +23,9 @@ export const serializeHtml = (
     stripDataAttributes = true,
     stripWhitespace = true,
   }: {
+    /** Slate nodes to convert to HTML. */
+    nodes: TDescendant[];
+
     /**
      * Optionally convert new line chars (\n) to HTML <br /> tags
      *
@@ -32,9 +35,6 @@ export const serializeHtml = (
 
     /** Drag and drop component */
     dndWrapper?: React.ComponentClass | React.FC | string;
-
-    /** Slate nodes to convert to HTML. */
-    nodes: TDescendant[];
 
     /** Slate props to provide if the rendering depends on plate/slate hooks */
     plateProps?: Omit<Partial<PlateProps>, 'editor'>;

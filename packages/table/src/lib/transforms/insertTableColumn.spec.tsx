@@ -12,9 +12,9 @@ import { insertTableColumn } from './insertTableColumn';
 jsx;
 
 type MakeTableWithColsOptions = {
+  rowCols: string[][];
   colSizes?: number[];
   cursorPath?: [number, number];
-  rowCols: string[][];
 };
 
 const makeTableWithCols = ({

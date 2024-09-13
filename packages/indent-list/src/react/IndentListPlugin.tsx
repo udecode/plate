@@ -15,10 +15,10 @@ export type IndentListConfig = ExtendConfig<
     listStyleTypes?: Record<
       string,
       {
+        type: string;
         isOrdered?: boolean;
         liComponent?: React.FC<PlateRenderElementProps>;
         markerComponent?: React.FC<Omit<PlateRenderElementProps, 'children'>>;
-        type: string;
       }
     >;
   }
@@ -28,11 +28,11 @@ export type IndentListConfig = ExtendConfig<
 export const IndentListPlugin = toTPlatePlugin<IndentListConfig>(
   BaseIndentListPlugin,
   {
-    handlers: {
-      onKeyDown: onKeyDownIndentList,
-    },
     render: {
       belowNodes: renderIndentListBelowNodes,
+    },
+    handlers: {
+      onKeyDown: onKeyDownIndentList,
     },
   }
 );

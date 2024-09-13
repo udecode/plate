@@ -5,7 +5,7 @@ import {
 } from '@udecode/plate-common';
 import { toTPlatePlugin } from '@udecode/plate-common/react';
 
-import { type BaseLinkConfig, BaseLinkPlugin, type TLinkElement } from '../lib';
+import { type BaseLinkConfig, type TLinkElement, BaseLinkPlugin } from '../lib';
 import { getLinkAttributes } from './utils';
 
 export type FloatingLinkMode = '' | 'edit' | 'insert';
@@ -13,21 +13,21 @@ export type FloatingLinkMode = '' | 'edit' | 'insert';
 export type LinkConfig = ExtendConfig<
   BaseLinkConfig,
   {
+    isEditing: boolean;
+    mode: FloatingLinkMode;
+    mouseDown: boolean;
+    newTab: boolean;
+    openEditorId: string | null;
+    text: string;
+    updated: boolean;
+    url: string;
     /**
      * Default HTML attributes for link elements.
      *
      * @default { }
      */
     defaultLinkAttributes?: React.AnchorHTMLAttributes<HTMLAnchorElement>;
-    isEditing: boolean;
-    mode: FloatingLinkMode;
-    mouseDown: boolean;
-    newTab: boolean;
-    openEditorId: null | string;
-    text: string;
     triggerFloatingLinkHotkeys?: string;
-    updated: boolean;
-    url: string;
   } & LinkSelectors,
   {
     floatingLink: {

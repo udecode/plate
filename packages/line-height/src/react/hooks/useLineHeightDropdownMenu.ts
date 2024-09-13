@@ -43,13 +43,13 @@ export const useLineHeightDropdownMenu = ({
 
   return {
     radioGroupProps: {
+      value,
       onValueChange: (newValue: string) => {
         setLineHeight(editor, {
           value: Number(newValue),
         });
         focusEditor(editor);
       },
-      value,
     },
   };
 };

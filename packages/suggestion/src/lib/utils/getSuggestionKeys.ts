@@ -18,7 +18,7 @@ export const getSuggestionKeys = (node: TNode) => {
   return keys;
 };
 
-export const getSuggestionUserIdByKey = (key?: null | string) =>
+export const getSuggestionUserIdByKey = (key?: string | null) =>
   isDefined(key) ? key.split(`${BaseSuggestionPlugin.key}_`)[1] : null;
 
 export const getSuggestionUserIds = (node: TNode) => {

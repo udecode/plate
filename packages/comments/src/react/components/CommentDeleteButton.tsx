@@ -17,22 +17,22 @@ export const useCommentDeleteButtonState = () => {
   const id = useCommentSelectors().id();
 
   return {
+    id,
     activeCommentId,
     api,
     editor,
-    id,
-    onCommentDelete,
     setOption,
+    onCommentDelete,
   };
 };
 
 export const useCommentDeleteButton = ({
+  id,
   activeCommentId,
   api,
   editor,
-  id,
-  onCommentDelete,
   setOption,
+  onCommentDelete,
 }: ReturnType<typeof useCommentDeleteButtonState>) => {
   return {
     props: {

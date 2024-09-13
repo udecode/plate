@@ -16,7 +16,7 @@ export const withNormalizeTypes: ExtendEditor<NormalizeTypesConfig> = ({
   const { normalizeNode } = editor;
 
   editor.normalizeNode = ([currentNode, currentPath]) => {
-    const { onError, rules } = getOptions();
+    const { rules, onError } = getOptions();
 
     if (currentPath.length === 0) {
       const endCurrentNormalizationPass = rules!.some(

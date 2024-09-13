@@ -14,8 +14,8 @@ import { heightToTop } from '../utils';
 
 export type useTocElementStateProps = {
   isScroll: boolean;
-  scrollContainerSelector?: string;
   topOffset: number;
+  scrollContainerSelector?: string;
 };
 
 export const useTocElementState = ({

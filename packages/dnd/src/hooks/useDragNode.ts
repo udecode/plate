@@ -48,8 +48,8 @@ export const useDragNode = (
         const _item = typeof item === 'function' ? item(monitor) : item;
 
         return {
-          editorId: editor.id,
           id,
+          editorId: editor.id,
           ..._item,
         };
       },

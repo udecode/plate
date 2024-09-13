@@ -7,11 +7,11 @@ export const UnderlinePlugin = toPlatePlugin(
   ({ editor, type }) => ({
     shortcuts: {
       toggleUnderline: {
+        keys: [[Key.Mod, 'u']],
+        preventDefault: true,
         handler: () => {
           editor.tf.toggle.mark({ key: type });
         },
-        keys: [[Key.Mod, 'u']],
-        preventDefault: true,
       },
     },
   })

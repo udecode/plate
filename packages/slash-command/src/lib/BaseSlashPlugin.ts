@@ -22,8 +22,8 @@ export const BaseSlashInputPlugin = createSlatePlugin({
 });
 
 export const BaseSlashPlugin = createTSlatePlugin<SlashConfig>({
-  extendEditor: withTriggerCombobox,
   key: 'slash_command',
+  extendEditor: withTriggerCombobox,
   options: {
     createComboboxInput: () => ({
       children: [{ text: '' }],

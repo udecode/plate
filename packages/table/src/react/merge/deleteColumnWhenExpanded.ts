@@ -5,9 +5,9 @@ import {
   getAboveNode,
   removeNodes,
 } from '@udecode/plate-common';
-import { Node, type PathRef, Range } from 'slate';
+import { type PathRef, Node, Range } from 'slate';
 
-import { BaseTableRowPlugin, type TTableCellElement } from '../../lib';
+import { type TTableCellElement, BaseTableRowPlugin } from '../../lib';
 import { getTableGridAbove } from '../queries';
 
 export const deleteColumnWhenExpanded = (

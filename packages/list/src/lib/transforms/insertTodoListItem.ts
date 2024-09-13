@@ -12,7 +12,7 @@ import {
 } from '@udecode/plate-common';
 import { Path, Range } from 'slate';
 
-import { BaseTodoListPlugin, type TodoListConfig } from '../BaseTodoListPlugin';
+import { type TodoListConfig, BaseTodoListPlugin } from '../BaseTodoListPlugin';
 
 /** Insert todo list item if selection in li>p. TODO: test */
 export const insertTodoListItem = (

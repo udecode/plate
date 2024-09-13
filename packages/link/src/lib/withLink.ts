@@ -20,7 +20,7 @@ import {
   RemoveEmptyNodesPlugin,
   withRemoveEmptyNodes,
 } from '@udecode/plate-normalizers';
-import { Path, type Point, type Range } from 'slate';
+import { type Point, type Range, Path } from 'slate';
 
 import type { BaseLinkConfig } from './BaseLinkPlugin';
 

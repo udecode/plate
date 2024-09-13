@@ -1,6 +1,6 @@
 import {
-  HtmlPlugin,
   type PluginConfig,
+  HtmlPlugin,
   createSlatePlugin,
   createTSlatePlugin,
   someNode,
@@ -23,8 +23,8 @@ export type CodeBlockConfig = PluginConfig<
 >;
 
 export const BaseCodeLinePlugin = createSlatePlugin({
-  decorate: decorateCodeLine,
   key: 'code_line',
+  decorate: decorateCodeLine,
   node: { isElement: true },
 });
 
@@ -34,6 +34,7 @@ export const BaseCodeSyntaxPlugin = createSlatePlugin({
 });
 
 export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
+  key: 'code_block',
   extendEditor: withCodeBlock,
   inject: {
     plugins: {
@@ -50,7 +51,6 @@ export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
       },
     },
   },
-  key: 'code_block',
   node: { isElement: true },
   options: {
     syntax: true,

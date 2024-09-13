@@ -7,8 +7,8 @@ import {
 } from '@udecode/plate-common';
 
 import {
-  BaseExcalidrawPlugin,
   type TExcalidrawElement,
+  BaseExcalidrawPlugin,
 } from '../BaseExcalidrawPlugin';
 
 export const insertExcalidraw = <E extends SlateEditor>(

@@ -1,6 +1,6 @@
 import type { Modify } from '@udecode/utils';
 
-import { Node, type NodeElementsOptions } from 'slate';
+import { type NodeElementsOptions, Node } from 'slate';
 
 import type { ElementOf } from '../element/TElement';
 import type { TNode } from './TNode';

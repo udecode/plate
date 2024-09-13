@@ -15,9 +15,9 @@ const createFileEvent = (
 ): FileEvent => {
   if (clientFile.type === 'image') {
     return {
+      id,
       file: clientFile.file,
       height: clientFile.height,
-      id,
       type: 'image',
       url: clientFile.objectUrl,
       width: clientFile.width,
@@ -25,8 +25,8 @@ const createFileEvent = (
   }
 
   return {
-    file: clientFile.file,
     id,
+    file: clientFile.file,
     type: 'generic',
     url: clientFile.objectUrl,
   };

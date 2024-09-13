@@ -23,7 +23,7 @@ export const useMediaState = ({
   const selected = useSelected();
   const readOnly = useReadOnly();
 
-  const { align, id, isUpload, name, type, url } = element;
+  const { id, align, isUpload, name, type, url } = element;
 
   const embed = React.useMemo(() => {
     if (
@@ -42,10 +42,10 @@ export const useMediaState = ({
   const isYoutube = embed?.provider === 'youtube';
 
   return {
+    id,
     align,
     embed,
     focused,
-    id,
     isTweet,
     isUpload,
     isVideo,

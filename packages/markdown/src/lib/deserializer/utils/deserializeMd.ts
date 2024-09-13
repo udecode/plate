@@ -1,7 +1,7 @@
 import type { SlateEditor } from '@udecode/plate-common';
 
 import markdown from 'remark-parse';
-import {unified} from 'unified';
+import { unified } from 'unified';
 
 import { MarkdownPlugin } from '../../MarkdownPlugin';
 import {

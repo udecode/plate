@@ -43,18 +43,18 @@ export const ListPlugin = toPlatePlugin(BaseListPlugin, {
 }).extend(({ editor }) => ({
   shortcuts: {
     toggleBulletedList: {
+      keys: [[Key.Mod, Key.Alt, '5']],
+      preventDefault: true,
       handler: () => {
         editor.getTransforms(ListPlugin).toggle.bulletedList();
       },
-      keys: [[Key.Mod, Key.Alt, '5']],
-      preventDefault: true,
     },
     toggleNumberedList: {
+      keys: [[Key.Mod, Key.Alt, '6']],
+      preventDefault: true,
       handler: () => {
         editor.getTransforms(ListPlugin).toggle.numberedList();
       },
-      keys: [[Key.Mod, Key.Alt, '6']],
-      preventDefault: true,
     },
   },
 }));

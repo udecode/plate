@@ -1,7 +1,7 @@
 import {
-  BaseParagraphPlugin,
   type ExtendEditor,
   type TElement,
+  BaseParagraphPlugin,
   getChildren,
   getNode,
   getParentNode,
@@ -15,9 +15,9 @@ import {
 import { Path } from 'slate';
 
 import {
+  type ListConfig,
   BaseListItemContentPlugin,
   BaseListItemPlugin,
-  type ListConfig,
 } from './BaseListPlugin';
 import { normalizeListItem } from './normalizers/normalizeListItem';
 import { normalizeNestedList } from './normalizers/normalizeNestedList';

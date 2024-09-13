@@ -8,7 +8,7 @@ import {
   select,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import { Hotkeys, type KeyboardHandler } from '@udecode/plate-common/react';
+import { type KeyboardHandler, Hotkeys } from '@udecode/plate-common/react';
 
 import { BaseCodeLinePlugin } from '../lib';
 import { getCodeLineEntry } from '../lib/queries/getCodeLineEntry';

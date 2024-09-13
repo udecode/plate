@@ -1,8 +1,8 @@
 import type { Range } from 'slate';
 
 import {
-  BaseParagraphPlugin,
   type SlateEditor,
+  BaseParagraphPlugin,
   deleteText,
   getEditorString,
   getRangeBefore,
@@ -36,7 +36,7 @@ export const autoformatBlock = (
     type = BaseParagraphPlugin.key,
   }: AutoformatBlockOptions
 ) => {
-  const matches = castArray(_match as string | string[]);
+  const matches = castArray(_match as string[] | string);
 
   for (const match of matches) {
     const { end, triggers } = getMatchRange({

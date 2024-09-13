@@ -1,6 +1,6 @@
 import type { Modify } from '@udecode/utils';
 
-import { Editor, type EditorNextOptions } from 'slate';
+import { type EditorNextOptions, Editor } from 'slate';
 
 import type { TDescendant } from '../node';
 import type { NodeOf, TNodeMatch } from '../node/TNode';

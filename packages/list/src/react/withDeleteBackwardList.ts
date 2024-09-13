@@ -1,7 +1,7 @@
 import {
-  BaseParagraphPlugin,
   type TElement,
   type TNodeEntry,
+  BaseParagraphPlugin,
   deleteMerge,
   getNodeEntries,
   getNodeEntry,
@@ -71,9 +71,9 @@ export const withDeleteBackwardList: ExtendEditor<ListConfig> = ({
                         {
                           defaultType: editor.getType(BaseParagraphPlugin),
                           hotkey: 'backspace',
-                          onReset: (e) => unwrapList(e),
                           predicate: () => isSelectionAtBlockStart(editor),
                           types: [editor.getType(BaseListItemPlugin)],
+                          onReset: (e) => unwrapList(e),
                         },
                       ],
                     },

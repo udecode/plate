@@ -1,8 +1,8 @@
 import type { Location } from 'slate';
 
 import {
-  BaseParagraphPlugin,
   type SlateEditor,
+  BaseParagraphPlugin,
   getChildren,
   getNodeEntries,
   setElements,

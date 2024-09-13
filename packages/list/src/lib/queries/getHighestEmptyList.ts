@@ -18,8 +18,8 @@ export const getHighestEmptyList = (
     diffListPath,
     liPath,
   }: {
-    diffListPath?: Path;
     liPath: Path;
+    diffListPath?: Path;
   }
 ): Path | undefined => {
   const list = getAboveNode(editor, {

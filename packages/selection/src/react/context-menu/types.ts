@@ -1,7 +1,7 @@
 export type CommandItem = {
-  shortcut?: string;
   title: string;
   value: string;
+  shortcut?: string;
 };
 
 export interface Menu {

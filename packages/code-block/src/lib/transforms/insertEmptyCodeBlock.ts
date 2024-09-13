@@ -1,6 +1,6 @@
 import {
-  BaseParagraphPlugin,
   type SlateEditor,
+  BaseParagraphPlugin,
   insertElements,
   isBlockAboveEmpty,
   isExpanded,

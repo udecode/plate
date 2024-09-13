@@ -1,4 +1,4 @@
-import { Node, type Range } from 'slate';
+import { type Range, Node } from 'slate';
 
 import type { ElementOf } from '../element/TElement';
 import type { TextOf } from '../text/TText';

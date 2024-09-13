@@ -1,12 +1,12 @@
 import { createSlatePlugin } from '@udecode/plate-common';
 
 export const BaseFontFamilyPlugin = createSlatePlugin({
+  key: 'fontFamily',
   inject: {
     nodeProps: {
       nodeKey: 'fontFamily',
     },
   },
-  key: 'fontFamily',
 }).extend(({ type }) => ({
   parsers: {
     html: {

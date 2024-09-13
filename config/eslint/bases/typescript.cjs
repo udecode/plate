@@ -73,6 +73,7 @@ module.exports = {
           'warn',
           {
             argsIgnorePattern: '^_',
+            caughtErrors: 'none',
             ignoreRestSiblings: true,
           },
         ],

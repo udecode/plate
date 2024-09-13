@@ -55,8 +55,8 @@ export const BaseTableCellHeaderPlugin = createSlatePlugin({
 
 /** Enables support for tables. */
 export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
-  extendEditor: withTable,
   key: 'table',
+  extendEditor: withTable,
   node: { isElement: true },
   options: {
     _cellIndices: new WeakMap(),

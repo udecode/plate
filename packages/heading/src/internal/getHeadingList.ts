@@ -41,7 +41,7 @@ export const getHeadingList = (editor: SlateEditor) => {
     const title = getNodeString(node);
     const depth = headingDepth[type];
     const id = node.id;
-    title && headingList.push({ depth, id, path, title, type });
+    title && headingList.push({ id, depth, path, title, type });
   });
 
   return headingList;

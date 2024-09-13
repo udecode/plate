@@ -15,7 +15,7 @@ import {
   removeNodes,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import { Path, type TextUnit } from 'slate';
+import { type TextUnit, Path } from 'slate';
 
 import type { ListConfig } from './BaseListPlugin';
 

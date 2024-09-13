@@ -28,7 +28,7 @@ export type NodeIdConfig = PluginConfig<
      *
      * @default () => Date.now()
      */
-    idCreator?: Function;
+    idCreator?: () => any;
 
     /**
      * Node key to store the id.
@@ -49,8 +49,8 @@ export type NodeIdConfig = PluginConfig<
 
 /** @see {@link withNodeId} */
 export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
-  extendEditor: withNodeId,
   key: 'nodeId',
+  extendEditor: withNodeId,
   options: {
     filter: () => true,
     filterText: true,

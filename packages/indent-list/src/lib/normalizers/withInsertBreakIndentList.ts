@@ -1,7 +1,7 @@
 import {
-  BaseParagraphPlugin,
   type ExtendEditor,
   type TElement,
+  BaseParagraphPlugin,
   getAboveNode,
   insertNodes,
   isDefined,

@@ -1,7 +1,7 @@
 import {
-  BaseParagraphPlugin,
   type SlateEditor,
   type TElement,
+  BaseParagraphPlugin,
   findNode,
   getBlockAbove,
   getCommonNode,
