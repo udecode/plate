@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-list",
-  "version": "38.0.0",
+  "version": "38.0.1",
   "description": "List plugin for Plate",
   "keywords": [
     "plate",
@@ -50,14 +50,14 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-reset-node": "38.0.0",
+    "@udecode/plate-reset-node": "38.0.1",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@udecode/plate-common": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=38.0.0",
+    "@udecode/plate-common": ">=38.0.1",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.103.0",
