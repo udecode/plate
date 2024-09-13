@@ -38,7 +38,7 @@ export type BaseEditor = TEditor & {
   >(
     plugin: WithRequiredKey<C>,
     optionKey: K,
-    ...args: F extends (...args: infer A) => any ? A : never
+    ...args: F extends (...args: infer A) => any ? A : never[]
   ) => F extends (...args: any[]) => infer R ? R : F;
 
   getOptions: <C extends AnyPluginConfig = PluginConfig>(
