@@ -1,6 +1,8 @@
 ### Dependencies
 
 - `@antfu/ni`: cli
+- `@changesets/cli`: to test
+- `@changesets/get-github-info`: to test
 - `@excalidraw/excalidraw`: breaking
 - `@types/diff`: cli
 - `@types/eslint@8`: will upgrade to 9 later
