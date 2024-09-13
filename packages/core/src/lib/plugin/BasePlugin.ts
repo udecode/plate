@@ -256,7 +256,7 @@ export type ParserOptions = {
 export type BasePluginContext<C extends AnyPluginConfig = PluginConfig> = {
   getOption: <K extends keyof InferOptions<C>, F extends InferOptions<C>[K]>(
     optionKey: K,
-    ...args: F extends (...args: infer A) => any ? A : never
+    ...args: F extends (...args: infer A) => any ? A : never[]
   ) => F extends (...args: any[]) => infer R ? R : F;
   setOption: <K extends keyof InferOptions<C>>(
     optionKey: K,
