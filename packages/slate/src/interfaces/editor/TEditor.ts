@@ -39,10 +39,6 @@ export type TEditor<V extends Value = Value> = {
   Editor,
   {
     id: any;
-    normalizeNode: <N extends TNode>(
-      entry: TNodeEntry<N>,
-      options?: { operation?: TOperation }
-    ) => void;
     apply: <N extends TDescendant>(operation: TOperation<N>) => void;
     children: V;
     getDirtyPaths: <N extends TDescendant>(operation: TOperation<N>) => Path[];
@@ -52,6 +48,11 @@ export type TEditor<V extends Value = Value> = {
     isInline: <N extends TElement>(element: N) => boolean;
     isVoid: <N extends TElement>(element: N) => boolean;
     markableVoid: <N extends TElement>(element: N) => boolean;
+    // eslint-disable-next-line perfectionist/sort-object-types
+    normalizeNode: <N extends TNode>(
+      entry: TNodeEntry<N>,
+      options?: { operation?: TOperation }
+    ) => void;
     marks: Record<string, any> | null;
     operations: TOperation[];
   }

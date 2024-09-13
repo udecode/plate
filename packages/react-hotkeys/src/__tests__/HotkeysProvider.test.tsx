@@ -63,7 +63,7 @@ it('should return multiple scopes if different scopes are activated', () => {
     result.current.enableScope('bar');
   });
 
-  expect(result.current.activeScopes).toEqual(['foo', 'bar']);
+  expect(result.current.activeScopes).toEqual(['bar', 'foo']);
 });
 
 it('should deactivate scope by calling disableScope', () => {
@@ -79,7 +79,7 @@ it('should deactivate scope by calling disableScope', () => {
     result.current.enableScope('bar');
   });
 
-  expect(result.current.activeScopes).toEqual(['foo', 'bar']);
+  expect(result.current.activeScopes).toEqual(['bar', 'foo']);
 
   act(() => {
     result.current.disableScope('foo');
@@ -237,7 +237,7 @@ it('should have no active scopes after deactivating all current scopes', () => {
   act(() => {
     result.current.enableScope('bar');
   });
-  expect(result.current.activeScopes).toEqual(['foo', 'bar']);
+  expect(result.current.activeScopes).toEqual(['bar', 'foo']);
   act(() => {
     result.current.disableScope('foo');
   });
