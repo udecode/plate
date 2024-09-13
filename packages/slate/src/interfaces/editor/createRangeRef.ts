@@ -1,6 +1,6 @@
 import type { EditorRangeRefOptions } from 'slate/dist/interfaces/editor';
 
-import { Editor, type Range } from 'slate';
+import { type Range, Editor } from 'slate';
 
 import type { TEditor } from './TEditor';
 

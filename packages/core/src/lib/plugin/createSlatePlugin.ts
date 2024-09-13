@@ -20,7 +20,7 @@ type SlatePluginConfig<K extends string = any, O = {}, A = {}, T = {}> = Omit<
       }
     >
   >,
-  'optionsStore' | keyof SlatePluginMethods
+  keyof SlatePluginMethods | 'optionsStore'
 >;
 
 type TSlatePluginConfig<C extends AnyPluginConfig = PluginConfig> = Omit<
@@ -32,7 +32,7 @@ type TSlatePluginConfig<C extends AnyPluginConfig = PluginConfig> = Omit<
       }
     >
   >,
-  'optionsStore' | keyof SlatePluginMethods
+  keyof SlatePluginMethods | 'optionsStore'
 >;
 
 /**
@@ -110,6 +110,7 @@ export function createSlatePlugin<
 
   const plugin = mergePlugins(
     {
+      key,
       __apiExtensions: [],
       __configuration: null,
       __extensions: initialExtension ? [initialExtension] : [],
@@ -117,9 +118,7 @@ export function createSlatePlugin<
       api: {},
       dependencies: [],
       editor: {},
-      handlers: {},
       inject: {},
-      key,
       node: { type: key },
       options: {},
       override: {},
@@ -130,6 +129,7 @@ export function createSlatePlugin<
       render: {},
       shortcuts: {},
       transforms: {},
+      handlers: {},
     },
     config
   ) as unknown as SlatePlugin<PluginConfig<K, O, A, T>>;
@@ -300,13 +300,13 @@ export function createSlatePlugin<
     if (!result.found) {
       newPlugin.plugins.push(
         createSlatePlugin({
+          key: p.key,
           __extensions: [
             (ctx: any) =>
               isFunction(extendConfig)
                 ? extendConfig(ctx as any)
                 : (extendConfig as any),
           ],
-          key: p.key,
         } as any)
       );
     }

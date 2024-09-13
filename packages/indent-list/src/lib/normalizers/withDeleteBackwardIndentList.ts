@@ -6,12 +6,15 @@ import {
   isDefined,
 } from '@udecode/plate-common';
 
-import { type IndentListConfig, IndentListPlugin } from '../IndentListPlugin';
+import {
+  type BaseIndentListConfig,
+  BaseIndentListPlugin,
+} from '../BaseIndentListPlugin';
 import { outdentList } from '../transforms';
 
-export const withDeleteBackwardIndentList: ExtendEditor<IndentListConfig> = ({
-  editor,
-}) => {
+export const withDeleteBackwardIndentList: ExtendEditor<
+  BaseIndentListConfig
+> = ({ editor }) => {
   const { deleteBackward } = editor;
 
   editor.deleteBackward = (unit) => {
@@ -23,7 +26,7 @@ export const withDeleteBackwardIndentList: ExtendEditor<IndentListConfig> = ({
 
     if (isCollapsed(editor.selection) && getNodeString(listNode))
       return deleteBackward(unit);
-    if (isDefined(listNode[IndentListPlugin.key])) {
+    if (isDefined(listNode[BaseIndentListPlugin.key])) {
       return outdentList(editor);
     }
 

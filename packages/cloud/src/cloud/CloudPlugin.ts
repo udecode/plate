@@ -29,12 +29,12 @@ export type CloudConfig = PluginConfig<
 >;
 
 export const CloudPlugin = createTPlatePlugin<CloudConfig>({
+  key: 'cloud',
+  options: {},
   handlers: {
     onDrop: ({ editor, event }) => onDropCloud(editor, event),
     onPaste: ({ editor, event }) => onPasteCloud(editor, event),
   },
-  key: 'cloud',
-  options: {},
 })
   .extend(({ editor, getOptions }) => {
     let client: portiveClient.Client;

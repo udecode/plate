@@ -4,7 +4,7 @@ import {
   getBlockAbove,
 } from '@udecode/plate-common';
 
-import { TablePlugin } from '../TablePlugin';
+import { BaseTablePlugin } from '../BaseTablePlugin';
 
 export const getTableAbove = <E extends SlateEditor>(
   editor: E,
@@ -12,7 +12,7 @@ export const getTableAbove = <E extends SlateEditor>(
 ) =>
   getBlockAbove(editor, {
     match: {
-      type: editor.getType(TablePlugin),
+      type: editor.getType(BaseTablePlugin),
     },
     ...options,
   });

@@ -42,6 +42,7 @@ export const useCommentNewSubmitButton = ({
     props: {
       children: submitButtonText,
       disabled: !newText?.trim().length,
+      type: 'submit',
       onClick: () => {
         const { activeCommentId, newValue, onCommentAdd } = getOptions();
 
@@ -62,7 +63,6 @@ export const useCommentNewSubmitButton = ({
 
         api.comment.resetNewCommentValue();
       },
-      type: 'submit',
     },
   };
 };

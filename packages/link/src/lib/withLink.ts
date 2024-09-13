@@ -20,9 +20,9 @@ import {
   RemoveEmptyNodesPlugin,
   withRemoveEmptyNodes,
 } from '@udecode/plate-normalizers';
-import { Path, type Point, type Range } from 'slate';
+import { type Point, type Range, Path } from 'slate';
 
-import type { LinkConfig } from './LinkPlugin';
+import type { BaseLinkConfig } from './BaseLinkPlugin';
 
 import { upsertLink } from './transforms/index';
 
@@ -35,7 +35,7 @@ import { upsertLink } from './transforms/index';
  * text but not its url.
  */
 
-export const withLink: ExtendEditor<LinkConfig> = ({
+export const withLink: ExtendEditor<BaseLinkConfig> = ({
   editor,
   getOptions,
   type,

@@ -34,7 +34,7 @@ export interface MergeListItemIntoListOptions {
   toList?: TElementEntry;
 
   /** List position where to move the list items. */
-  toListIndex?: null | number;
+  toListIndex?: number | null;
 }
 
 /**

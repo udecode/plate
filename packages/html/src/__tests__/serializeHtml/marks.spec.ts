@@ -1,7 +1,7 @@
-import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
+import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
 import { htmlStringToDOMNode } from '@udecode/plate-core';
-import { HighlightPlugin } from '@udecode/plate-highlight';
-import { KbdPlugin } from '@udecode/plate-kbd';
+import { HighlightPlugin } from '@udecode/plate-highlight/react';
+import { KbdPlugin } from '@udecode/plate-kbd/react';
 
 import { serializeHtml } from '../../react/serializeHtml';
 import { createPlateUIEditor } from '../create-plate-ui-editor';

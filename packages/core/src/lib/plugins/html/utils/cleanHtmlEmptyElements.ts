@@ -1,6 +1,6 @@
 import { traverseHtmlElements } from './traverseHtmlElements';
 
-const ALLOWED_EMPTY_ELEMENTS = new Set(['BR', 'IMG', 'TH', 'TD']);
+const ALLOWED_EMPTY_ELEMENTS = new Set(['BR', 'IMG', 'TD', 'TH']);
 
 const isEmpty = (element: Element): boolean => {
   return (

@@ -46,7 +46,7 @@ export const cleanHtmlTextNodes = (rootNode: Node): void => {
       ) {
         textNode.previousSibling.remove();
 
-        const matches = textNode.data.match(/^[\n\r]+/);
+        const matches = /^[\n\r]+/.exec(textNode.data);
         const offset = matches ? matches[0].length : 0;
 
         textNode.data = textNode.data

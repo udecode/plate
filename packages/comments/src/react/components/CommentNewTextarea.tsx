@@ -41,15 +41,15 @@ export const useCommentNewTextarea = ({
 }: ReturnType<typeof useCommentNewTextareaState>) => {
   return {
     props: {
+      placeholder,
+      ref: textareaRef,
+      rows: 1,
+      value: value ?? undefined,
       onChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         setOption('newValue', [
           { children: [{ text: event.target.value }], type: 'p' },
         ]);
       },
-      placeholder,
-      ref: textareaRef,
-      rows: 1,
-      value: value ?? undefined,
     },
   };
 };

@@ -1,6 +1,6 @@
 import { toPlatePlugin } from '@udecode/plate-common/react';
 
-import { SoftBreakPlugin as BaseSoftBreakPlugin } from '../../lib/soft-break/SoftBreakPlugin';
+import { BaseSoftBreakPlugin } from '../../lib/soft-break/BaseSoftBreakPlugin';
 import { onKeyDownSoftBreak } from './onKeyDownSoftBreak';
 
 export const SoftBreakPlugin = toPlatePlugin(BaseSoftBreakPlugin, {

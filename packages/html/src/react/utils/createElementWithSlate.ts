@@ -1,9 +1,9 @@
 import React from 'react';
 
 import {
+  type PlateProps,
   Plate,
   PlateContent,
-  type PlateProps,
 } from '@udecode/plate-common/react';
 
 /** Create a React element wrapped in a Plate provider. */

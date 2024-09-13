@@ -40,8 +40,8 @@ export const pluginInjectNodeProps = (
   nodeProps: GetInjectNodePropsOptions
 ): GetInjectNodePropsReturnType | undefined => {
   const {
-    inject: { nodeProps: injectNodeProps, targetPlugins },
     key,
+    inject: { nodeProps: injectNodeProps, targetPlugins },
   } = plugin;
 
   const { className, element, style, text } = nodeProps;

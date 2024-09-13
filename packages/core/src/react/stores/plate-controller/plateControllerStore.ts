@@ -12,7 +12,7 @@ export const {
   usePlateControllerStore,
 } = createAtomStore(
   {
-    activeId: atom(null as null | string),
+    activeId: atom(null as string | null),
     editorStores: atom({} as Record<string, JotaiStore | null>),
     primaryEditorIds: atom([] as string[]),
   },
@@ -43,7 +43,7 @@ export const usePlateControllerEditorStore = (
       atom((get) => {
         const editorStores = get(plateControllerStore.atom.editorStores);
 
-        const forId = (id: null | string): JotaiStore | null => {
+        const forId = (id: string | null): JotaiStore | null => {
           if (!id) return null;
 
           return editorStores[id] ?? null;

@@ -4,7 +4,7 @@ import {
   useElement,
 } from '@udecode/plate-common/react';
 
-import { CaptionPlugin } from '../../lib';
+import { BaseCaptionPlugin } from '../../lib';
 
 export const useCaptionButtonState = () => {
   const editor = useEditorRef();
@@ -21,9 +21,9 @@ export const useCaptionButton = ({
     props: {
       onClick: () => {
         const path = findNodePath(editor, element);
-        editor.setOption(CaptionPlugin, 'visibleId', element.id as string);
+        editor.setOption(BaseCaptionPlugin, 'visibleId', element.id as string);
         setTimeout(() => {
-          path && editor.setOption(CaptionPlugin, 'focusEndPath', path);
+          path && editor.setOption(BaseCaptionPlugin, 'focusEndPath', path);
         }, 0);
       },
     },

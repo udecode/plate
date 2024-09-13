@@ -1,8 +1,8 @@
 import React from 'react';
 
-type RefComponent<P, R> = {
+type RefComponent<P, R> = React.FC<P> & {
   ref?: React.Ref<R>;
-} & React.FC<P>;
+};
 
 /* eslint-disable react/display-name */
 export const withHOC = <ComponentProps, HOCProps, ComponentRef, HOCRef>(
@@ -13,6 +13,6 @@ export const withHOC = <ComponentProps, HOCProps, ComponentRef, HOCRef>(
 ) =>
   React.forwardRef<ComponentRef, ComponentProps>((props, componentRef) => (
     <HOC {...(hocProps as any)} ref={hocRef}>
-      <Component {...props} ref={componentRef} />
+      <Component {...(props as any)} ref={componentRef} />
     </HOC>
   ));

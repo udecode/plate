@@ -12,16 +12,16 @@ import {
 
 export interface UseEditorSelectorOptions<T>
   extends UsePlateEditorStoreOptions {
-  equalityFn?: (a: T, b: T) => boolean;
   id?: string;
+  equalityFn?: (a: T, b: T) => boolean;
 }
 
 export const useEditorSelector = <T, E extends PlateEditor = PlateEditor>(
   selector: (editor: E, prev?: T) => T,
   deps: React.DependencyList,
   {
-    equalityFn = (a: T, b: T) => a === b,
     id,
+    equalityFn = (a: T, b: T) => a === b,
     ...storeOptions
   }: UseEditorSelectorOptions<T> = {}
 ): T => {

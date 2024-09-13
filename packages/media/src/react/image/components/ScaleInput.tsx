@@ -47,6 +47,7 @@ export const useScaleInput = ({
 
   return {
     props: {
+      value: value,
       onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
         setValue(e.target.value);
       },
@@ -69,7 +70,6 @@ export const useScaleInput = ({
           setIsEditingScale(false);
         }
       },
-      value: value,
     },
     ref: inputRef,
   };

@@ -44,13 +44,13 @@ export const useSlateProps = ({
 
   return React.useMemo(() => {
     return {
+      key: editor.key,
       editor,
       initialValue: editor.children,
-      key: editor.key,
+      value: editor.children,
       onChange,
       onSelectionChange,
       onValueChange,
-      value: editor.children,
     };
   }, [editor, onChange, onSelectionChange, onValueChange]);
 };

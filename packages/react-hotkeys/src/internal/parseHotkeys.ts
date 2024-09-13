@@ -1,12 +1,12 @@
 import type { Hotkey, KeyboardModifiers } from './types';
 
 const reservedModifierKeywords = new Set([
-  'shift',
   'alt',
+  'control',
+  'ctrl',
   'meta',
   'mod',
-  'ctrl',
-  'control',
+  'shift',
 ]);
 
 const mappedKeys: Record<string, string> = {
@@ -66,7 +66,7 @@ export function parseHotkey(
 
   return {
     ...modifiers,
-    description,
     keys: singleCharKeys,
+    description,
   };
 }

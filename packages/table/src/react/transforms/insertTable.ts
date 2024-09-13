@@ -12,7 +12,7 @@ import { selectEditor } from '@udecode/plate-common/react';
 
 import type { TTableElement } from '../../lib/types';
 
-import { TablePlugin } from '../../lib/TablePlugin';
+import { BaseTablePlugin } from '../../lib/BaseTablePlugin';
 import {
   type GetEmptyTableNodeOptions,
   getEmptyTableNode,
@@ -24,7 +24,7 @@ export const insertTable = <E extends SlateEditor>(
   { colCount = 2, header, rowCount = 2 }: GetEmptyTableNodeOptions = {},
   options: InsertNodesOptions<E> = {}
 ) => {
-  const { type } = getEditorPlugin(editor, TablePlugin);
+  const { type } = getEditorPlugin(editor, BaseTablePlugin);
 
   withoutNormalizing(editor, () => {
     if (

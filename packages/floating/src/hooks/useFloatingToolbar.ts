@@ -31,7 +31,7 @@ export const useFloatingToolbarState = ({
   showWhenReadOnly,
 }: {
   editorId: string;
-  focusedEditorId: null | string;
+  focusedEditorId: string | null;
 } & FloatingToolbarState) => {
   const selectionExpanded = useEditorSelector(isSelectionExpanded, []);
   const selectionText = useEditorSelector(getSelectionText, []);
@@ -48,8 +48,8 @@ export const useFloatingToolbarState = ({
     mergeProps(
       {
         getBoundingClientRect: getSelectionBoundingClientRect,
-        onOpenChange: setOpen,
         open,
+        onOpenChange: setOpen,
       },
       floatingOptions
     )

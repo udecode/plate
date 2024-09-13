@@ -15,7 +15,7 @@ import {
   createTSlatePlugin,
 } from '../../plugin';
 import { resetEditor, toggleBlock } from '../../transforms';
-import { ParagraphPlugin } from '../paragraph';
+import { BaseParagraphPlugin } from '../paragraph';
 
 export type SlateNextConfig = PluginConfig<
   'slateNext',
@@ -86,15 +86,15 @@ export const withSlateNext: ExtendEditor<SlateNextConfig> = ({ editor }) => {
 
 /** Opinionated extension of slate default behavior. */
 export const SlateNextPlugin = createTSlatePlugin<SlateNextConfig>({
-  extendEditor: withSlateNext,
   key: 'slateNext',
+  extendEditor: withSlateNext,
 })
   .extendEditorApi(({ editor }) => ({
     create: {
       /** Default block factory. */
       block: (node?: Partial<TElement>, _path?: Path): TElement => ({
         children: [{ text: '' }],
-        type: editor.getType(ParagraphPlugin),
+        type: editor.getType(BaseParagraphPlugin),
         ...node,
       }),
     },

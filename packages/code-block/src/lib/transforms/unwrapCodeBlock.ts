@@ -1,8 +1,8 @@
 import type { Location } from 'slate';
 
 import {
-  ParagraphPlugin,
   type SlateEditor,
+  BaseParagraphPlugin,
   getChildren,
   getNodeEntries,
   setElements,
@@ -10,13 +10,13 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 
-import { CodeBlockPlugin } from '../CodeBlockPlugin';
+import { BaseCodeBlockPlugin } from '../BaseCodeBlockPlugin';
 
 export const unwrapCodeBlock = (editor: SlateEditor) => {
   if (!editor.selection) return;
 
-  const codeBlockType = editor.getType(CodeBlockPlugin);
-  const defaultType = editor.getType(ParagraphPlugin);
+  const codeBlockType = editor.getType(BaseCodeBlockPlugin);
+  const defaultType = editor.getType(BaseParagraphPlugin);
 
   withoutNormalizing(editor, () => {
     const codeBlockEntries = getNodeEntries(editor, {

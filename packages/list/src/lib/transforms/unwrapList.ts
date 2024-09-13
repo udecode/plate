@@ -1,8 +1,8 @@
 import type { Path } from 'slate';
 
 import {
-  ParagraphPlugin,
   type SlateEditor,
+  BaseParagraphPlugin,
   getAboveNode,
   getBlockAbove,
   getCommonNode,
@@ -13,11 +13,11 @@ import {
 } from '@udecode/plate-common';
 
 import {
-  BulletedListPlugin,
-  ListItemContentPlugin,
-  ListItemPlugin,
-  NumberedListPlugin,
-} from '../ListPlugin';
+  BaseBulletedListPlugin,
+  BaseListItemContentPlugin,
+  BaseListItemPlugin,
+  BaseNumberedListPlugin,
+} from '../BaseListPlugin';
 import { getListTypes } from '../queries/index';
 
 export const unwrapList = (editor: SlateEditor, { at }: { at?: Path } = {}) => {
@@ -48,19 +48,19 @@ export const unwrapList = (editor: SlateEditor, { at }: { at?: Path } = {}) => {
     do {
       const licEntry = getBlockAbove(editor, {
         at,
-        match: { type: editor.getType(ListItemContentPlugin) },
+        match: { type: editor.getType(BaseListItemContentPlugin) },
       });
 
       if (licEntry) {
         setElements(editor, {
           at,
-          type: editor.getType(ParagraphPlugin),
+          type: editor.getType(BaseParagraphPlugin),
         });
       }
 
       unwrapNodes(editor, {
         at,
-        match: { type: editor.getType(ListItemPlugin) },
+        match: { type: editor.getType(BaseListItemPlugin) },
         split: true,
       });
 
@@ -68,8 +68,8 @@ export const unwrapList = (editor: SlateEditor, { at }: { at?: Path } = {}) => {
         at,
         match: {
           type: [
-            editor.getType(BulletedListPlugin),
-            editor.getType(NumberedListPlugin),
+            editor.getType(BaseBulletedListPlugin),
+            editor.getType(BaseNumberedListPlugin),
           ],
         },
         split: true,

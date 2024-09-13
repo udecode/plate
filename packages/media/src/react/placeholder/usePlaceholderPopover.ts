@@ -8,7 +8,7 @@ import { useFocused, useReadOnly, useSelected } from 'slate-react';
 
 import type { TPlaceholderElement } from '../../lib/placeholder/types';
 
-import { PlaceholderPlugin } from '../../lib/placeholder/PlaceholderPlugin';
+import { BasePlaceholderPlugin } from '../../lib/placeholder/BasePlaceholderPlugin';
 import { usePlaceholderStore } from './placeholderStore';
 
 export const usePlaceholderPopoverState = () => {
@@ -23,7 +23,7 @@ export const usePlaceholderPopoverState = () => {
     []
   );
 
-  const element = useElement<TPlaceholderElement>(PlaceholderPlugin.key);
+  const element = useElement<TPlaceholderElement>(BasePlaceholderPlugin.key);
   const { id, mediaType } = element;
 
   const setProgresses = usePlaceholderStore().set.progresses();
@@ -31,10 +31,10 @@ export const usePlaceholderPopoverState = () => {
   const setUpdatedFiles = usePlaceholderStore().set.updatedFiles();
 
   return {
+    id,
     editor,
     element,
     focused,
-    id,
     mediaType,
     readOnly,
     selected,

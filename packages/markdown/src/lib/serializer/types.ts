@@ -23,10 +23,10 @@ export type MdNodeTypes = {
 
 type NodeType = {
   parent?: {
+    type: string;
     index?: number;
     isList?: boolean;
     length?: number;
-    type: string;
   };
 };
 

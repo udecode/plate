@@ -112,7 +112,7 @@ describe('ElementProvider', () => {
   const TypeConsumer = ({
     label = '',
     type,
-  }: { type?: 'age' | 'name' } & ConsumerProps) => {
+  }: ConsumerProps & { type?: 'age' | 'name' }) => {
     const element = useElement(type);
 
     return <div>{label + element.type}</div>;
@@ -121,7 +121,7 @@ describe('ElementProvider', () => {
   const JsonConsumer = ({
     label = '',
     type,
-  }: { type?: 'age' | 'name' } & ConsumerProps) => {
+  }: ConsumerProps & { type?: 'age' | 'name' }) => {
     const element = useElement(type);
 
     return <div>{label + JSON.stringify(element)}</div>;
@@ -186,17 +186,17 @@ describe('ElementProvider', () => {
     expect(getByText('Age 1: 20')).toBeInTheDocument();
     expect(getByText('Age 2: 140')).toBeInTheDocument();
 
-    act(() => getByText('updateAge1').click());
+    void act(() => getByText('updateAge1').click());
 
     expect(getByText('Age 1: 30')).toBeInTheDocument();
     expect(getByText('Age 2: 140')).toBeInTheDocument();
 
-    act(() => getByText('updateAge2').click());
+    void act(() => getByText('updateAge2').click());
 
     expect(getByText('Age 1: 30')).toBeInTheDocument();
     expect(getByText('Age 2: 150')).toBeInTheDocument();
 
-    act(() => getByText('updateAge1').click());
+    void act(() => getByText('updateAge1').click());
 
     expect(getByText('Age 1: 40')).toBeInTheDocument();
     expect(getByText('Age 2: 150')).toBeInTheDocument();

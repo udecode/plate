@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { AlignPlugin } from '@udecode/plate-alignment';
+import { AlignPlugin } from '@udecode/plate-alignment/react';
 import {
   BoldPlugin,
   CodePlugin,
@@ -8,26 +8,26 @@ import {
   StrikethroughPlugin,
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
-import { CommentsPlugin } from '@udecode/plate-comments';
+import { CommentsPlugin } from '@udecode/plate-comments/react';
 import { useEditorReadOnly } from '@udecode/plate-common/react';
-import { EmojiPlugin } from '@udecode/plate-emoji';
+import { EmojiPlugin } from '@udecode/plate-emoji/react';
 import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
-} from '@udecode/plate-font';
-import { IndentPlugin } from '@udecode/plate-indent';
+} from '@udecode/plate-font/react';
+import { IndentPlugin } from '@udecode/plate-indent/react';
 import { ListStyleType } from '@udecode/plate-indent-list';
 import { IndentListPlugin } from '@udecode/plate-indent-list/react';
-import { LineHeightPlugin } from '@udecode/plate-line-height';
-import { LinkPlugin } from '@udecode/plate-link';
-import { ListPlugin } from '@udecode/plate-list';
+import { LineHeightPlugin } from '@udecode/plate-line-height/react';
+import { LinkPlugin } from '@udecode/plate-link/react';
 import {
   BulletedListPlugin,
+  ListPlugin,
   NumberedListPlugin,
 } from '@udecode/plate-list/react';
 import { ImagePlugin } from '@udecode/plate-media/react';
-import { TablePlugin } from '@udecode/plate-table';
-import { TogglePlugin } from '@udecode/plate-toggle';
+import { TablePlugin } from '@udecode/plate-table/react';
+import { TogglePlugin } from '@udecode/plate-toggle/react';
 
 import { CheckPlugin } from '@/components/context/check-plugin';
 import { Icons, iconVariants } from '@/components/icons';

@@ -33,10 +33,10 @@ export function CommentsPopoverContent(props: FloatingCommentsContentProps) {
       key={activeCommentId}
       scope={SCOPE_ACTIVE_COMMENT}
     >
-      <div className={cn(popoverVariants(), 'relative w-[310px]')} ref={ref}>
+      <div ref={ref} className={cn(popoverVariants(), 'relative w-[310px]')}>
         {!hasNoComment && (
           <>
-            <CommentItem commentId={activeCommentId!} key={activeCommentId} />
+            <CommentItem key={activeCommentId} commentId={activeCommentId!} />
 
             <CommentReplyItems />
           </>

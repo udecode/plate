@@ -11,10 +11,10 @@ export function CustomizerTabs() {
   return (
     <div className="flex w-full flex-col space-y-4 pt-4 md:space-y-6 md:pt-0">
       <Tabs
+        value={customizerTab}
         onValueChange={(value) => {
           settingsStore.set.customizerTab(value);
         }}
-        value={customizerTab}
       >
         <div className="flex justify-center">
           <TabsList className="">

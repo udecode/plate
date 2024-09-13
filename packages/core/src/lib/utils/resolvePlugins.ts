@@ -155,7 +155,7 @@ const resolvePluginApis = (editor: SlateEditor) => {
             shortcutsByPriority.splice(existingIndex, 1);
           }
 
-          shortcutsByPriority.push({ hotkey, key, priority });
+          shortcutsByPriority.push({ key, hotkey, priority });
         }
       }
     });
@@ -166,7 +166,7 @@ const resolvePluginApis = (editor: SlateEditor) => {
 
   // After processing all plugins, set the final shortcuts on the editor
   editor.shortcuts = Object.fromEntries(
-    shortcutsByPriority.map(({ hotkey, key }) => {
+    shortcutsByPriority.map(({ key, hotkey }) => {
       const { priority, ...hotkeyWithoutPriority } = hotkey;
 
       return [key, hotkeyWithoutPriority];

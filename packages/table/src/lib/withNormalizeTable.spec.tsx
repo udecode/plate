@@ -7,7 +7,7 @@ import {
 } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { TablePlugin } from './TablePlugin';
+import { BaseTablePlugin } from './BaseTablePlugin';
 
 jsx;
 
@@ -46,7 +46,7 @@ describe('withNormalizeTable', () => {
       ) as any as Value;
 
       const editor = createSlateEditor({
-        plugins: [TablePlugin],
+        plugins: [BaseTablePlugin],
         value: input,
       });
 
@@ -127,7 +127,7 @@ describe('withNormalizeTable', () => {
 
       const editor = createSlateEditor({
         plugins: [
-          TablePlugin.configure({
+          BaseTablePlugin.configure({
             options: {
               initialTableWidth: 90,
             },
@@ -213,7 +213,7 @@ describe('withNormalizeTable', () => {
 
       const editor = createSlateEditor({
         plugins: [
-          TablePlugin.configure({
+          BaseTablePlugin.configure({
             options: {
               initialTableWidth: 90,
             },
@@ -299,7 +299,7 @@ describe('withNormalizeTable', () => {
 
       const editor = createSlateEditor({
         plugins: [
-          TablePlugin.configure({
+          BaseTablePlugin.configure({
             options: {
               initialTableWidth: 90,
             },
@@ -355,7 +355,7 @@ describe('withNormalizeTable', () => {
       ) as any as Value;
 
       const editor = createSlateEditor({
-        plugins: [TablePlugin],
+        plugins: [BaseTablePlugin],
         value: input,
       });
 

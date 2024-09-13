@@ -3,10 +3,10 @@ import type { DropTargetMonitor, XYCoord } from 'react-dnd';
 import type { DragItemNode, DropDirection } from '../types';
 
 export interface GetHoverDirectionOptions {
-  dragItem: DragItemNode;
-
   /** Hovering node id. */
   id: string;
+
+  dragItem: DragItemNode;
 
   monitor: DropTargetMonitor;
 
@@ -19,8 +19,8 @@ export interface GetHoverDirectionOptions {
  * relative to node B.
  */
 export const getHoverDirection = ({
-  dragItem,
   id,
+  dragItem,
   monitor,
   nodeRef,
 }: GetHoverDirectionOptions): DropDirection => {

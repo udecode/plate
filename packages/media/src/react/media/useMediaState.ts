@@ -5,12 +5,12 @@ import { useFocused, useReadOnly, useSelected } from 'slate-react';
 
 import type { TMediaElement } from '../../lib/media/types';
 
-import { VideoPlugin } from '../../lib';
+import { BaseVideoPlugin } from '../../lib';
 import {
   type EmbedUrlParser,
   parseMediaUrl,
 } from '../../lib/media/parseMediaUrl';
-import { MediaEmbedPlugin, VIDEO_PROVIDERS } from '../../lib/media-embed';
+import { BaseMediaEmbedPlugin, VIDEO_PROVIDERS } from '../../lib/media-embed';
 
 export const useMediaState = ({
   urlParsers,
@@ -23,13 +23,13 @@ export const useMediaState = ({
   const selected = useSelected();
   const readOnly = useReadOnly();
 
-  const { align, id, isUpload, name, type, url } = element;
+  const { id, align, isUpload, name, type, url } = element;
 
   const embed = React.useMemo(() => {
     if (
       !urlParsers ||
-      (type !== editor.getType(VideoPlugin) &&
-        type !== editor.getType(MediaEmbedPlugin))
+      (type !== editor.getType(BaseVideoPlugin) &&
+        type !== editor.getType(BaseMediaEmbedPlugin))
     )
       return;
 
@@ -42,10 +42,10 @@ export const useMediaState = ({
   const isYoutube = embed?.provider === 'youtube';
 
   return {
+    id,
     align,
     embed,
     focused,
-    id,
     isTweet,
     isUpload,
     isVideo,

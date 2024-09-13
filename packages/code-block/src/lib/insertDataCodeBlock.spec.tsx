@@ -2,7 +2,7 @@
 
 import type { SlateEditor } from '@udecode/plate-common';
 
-import { ParagraphPlugin } from '@udecode/plate-common';
+import { BaseParagraphPlugin } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { createDataTransfer, jsx } from '@udecode/plate-test-utils';
 
@@ -11,7 +11,7 @@ import { CodeBlockPlugin } from '../react/CodeBlockPlugin';
 jsx;
 
 const editorTest = (input: any, data: DataTransfer, expected: any) => {
-  const plugins = [ParagraphPlugin, CodeBlockPlugin];
+  const plugins = [BaseParagraphPlugin, CodeBlockPlugin];
 
   const editor = createPlateEditor({
     editor: input,

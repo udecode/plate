@@ -1,4 +1,4 @@
-import { Editor, type EditorParentOptions, type Location } from 'slate';
+import { type EditorParentOptions, type Location, Editor } from 'slate';
 
 import type { AncestorOf } from '../node/TAncestor';
 import type { TNodeEntry } from '../node/TNodeEntry';

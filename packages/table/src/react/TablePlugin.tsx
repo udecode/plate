@@ -1,11 +1,11 @@
 import { toPlatePlugin } from '@udecode/plate-common/react';
 
 import {
-  TableCellHeaderPlugin as BaseTableCellHeaderPlugin,
-  TableCellPlugin as BaseTableCellPlugin,
-  TablePlugin as BaseTablePlugin,
-  TableRowPlugin as BaseTableRowPlugin,
-} from '../lib/TablePlugin';
+  BaseTableCellHeaderPlugin,
+  BaseTableCellPlugin,
+  BaseTablePlugin,
+  BaseTableRowPlugin,
+} from '../lib/BaseTablePlugin';
 import { onKeyDownTable } from './onKeyDownTable';
 import { withTable } from './withTable';
 
@@ -36,8 +36,8 @@ export const TableCellHeaderPlugin = toPlatePlugin(BaseTableCellHeaderPlugin, {
 /** Enables support for tables with React-specific features. */
 export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
   extendEditor: withTable,
+  plugins: [TableRowPlugin, TableCellPlugin, TableCellHeaderPlugin],
   handlers: {
     onKeyDown: onKeyDownTable,
   },
-  plugins: [TableRowPlugin, TableCellPlugin, TableCellHeaderPlugin],
 });

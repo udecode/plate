@@ -1,6 +1,6 @@
 import type { ExtendEditor } from '@udecode/plate-common';
 
-import type { TodoListConfig } from './TodoListPlugin';
+import type { TodoListConfig } from './BaseTodoListPlugin';
 
 import { getTodoListItemEntry } from './queries';
 import { insertTodoListItem } from './transforms';

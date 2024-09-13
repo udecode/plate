@@ -1,6 +1,6 @@
 import type { EditorPathRefOptions } from 'slate/dist/interfaces/editor';
 
-import { Editor, type Path } from 'slate';
+import { type Path, Editor } from 'slate';
 
 import type { TEditor } from './TEditor';
 

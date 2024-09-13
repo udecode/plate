@@ -24,7 +24,7 @@ export function DocsSidebarNav({ config }: DocsSidebarNavProps) {
   return items.length > 0 ? (
     <div className="w-full">
       {items.map((item, index) => (
-        <div className={cn('pb-4')} key={index}>
+        <div key={index} className={cn('pb-4')}>
           <h4 className="mb-1 rounded-md px-2 py-1 text-sm font-semibold">
             {item.title}
           </h4>
@@ -39,7 +39,7 @@ export function DocsSidebarNav({ config }: DocsSidebarNavProps) {
 
 interface DocsSidebarNavItemsProps {
   items: SidebarNavItem[];
-  pathname: null | string;
+  pathname: string | null;
 }
 
 export function DocsSidebarNavItems({
@@ -77,6 +77,7 @@ export function DocsSidebarNavItems({
             </Link>
             {item.items?.map((subItem, subIndex) => (
               <Link
+                key={subIndex}
                 className={cn(
                   'group flex w-full items-center rounded-md border border-transparent px-6 py-1 hover:underline',
                   subItem.disabled && 'cursor-not-allowed opacity-60',
@@ -85,7 +86,6 @@ export function DocsSidebarNavItems({
                     : 'text-muted-foreground'
                 )}
                 href={subItem.href!}
-                key={subIndex}
                 rel={subItem.external ? 'noreferrer' : ''}
                 target={subItem.external ? '_blank' : ''}
               >
@@ -106,11 +106,11 @@ export function DocsSidebarNavItems({
           </React.Fragment>
         ) : (
           <span
+            key={index}
             className={cn(
               'flex w-full cursor-not-allowed items-center rounded-md p-2 text-muted-foreground hover:underline',
               item.disabled && 'cursor-not-allowed opacity-60'
             )}
-            key={index}
           >
             <span className="whitespace-nowrap">{item.title}</span>
             {item.label && (

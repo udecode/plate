@@ -38,7 +38,7 @@ export const useFloatingLinkInsertState = ({
     editorId: editor.id,
     getBoundingClientRect: getSelectionBoundingClientRect,
     open: isOpen && mode === 'insert',
-    whileElementsMounted: () => {},
+    whileElementsMounted: () => () => {},
     ...floatingOptions,
   });
 
@@ -128,8 +128,8 @@ export const useFloatingLinkInsert = ({
     ref: useComposedRef<HTMLDivElement>(floating.refs.setFloating, ref),
     textInputProps: {
       defaultValue: text,
-      onChange,
       ref: updatedValue,
+      onChange,
     },
   };
 };

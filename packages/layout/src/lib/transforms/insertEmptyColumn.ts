@@ -1,14 +1,14 @@
 import {
   type InsertNodesOptions,
-  ParagraphPlugin,
   type SlateEditor,
+  BaseParagraphPlugin,
   getQueryOptions,
   insertNodes,
 } from '@udecode/plate-common';
 
 import type { TColumnElement } from '../types';
 
-import { ColumnItemPlugin } from '../ColumnPlugin';
+import { BaseColumnItemPlugin } from '../BaseColumnPlugin';
 
 export const insertEmptyColumn = <E extends SlateEditor>(
   editor: E,
@@ -19,8 +19,8 @@ export const insertEmptyColumn = <E extends SlateEditor>(
   insertNodes<TColumnElement>(
     editor,
     {
-      children: [{ children: [{ text: '' }], type: ParagraphPlugin.key }],
-      type: ColumnItemPlugin.key,
+      children: [{ children: [{ text: '' }], type: BaseParagraphPlugin.key }],
+      type: BaseColumnItemPlugin.key,
       width,
     },
     getQueryOptions(editor, options)

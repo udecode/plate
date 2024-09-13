@@ -1,7 +1,7 @@
 export interface DragItemNode {
-  [key: string]: unknown;
   /** Required to identify the node. */
   id: string;
+  [key: string]: unknown;
 }
 
 export type DropLineDirection = '' | 'bottom' | 'top';

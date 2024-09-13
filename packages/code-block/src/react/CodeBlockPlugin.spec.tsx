@@ -3,7 +3,7 @@
 import type { SlateEditor } from '@udecode/plate-common';
 
 import { createSlatePlugin } from '@udecode/plate-common';
-import { ParagraphPlugin } from '@udecode/plate-common';
+import { BaseParagraphPlugin } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
@@ -36,7 +36,7 @@ describe('code block deserialization', () => {
       const editor = createPlateEditor({
         editor: input,
         plugins: [
-          ParagraphPlugin,
+          BaseParagraphPlugin,
           CodeBlockPlugin,
           createSlatePlugin({
             key: 'a',
@@ -78,7 +78,7 @@ describe('code block deserialization', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [ParagraphPlugin, CodeBlockPlugin],
+        plugins: [BaseParagraphPlugin, CodeBlockPlugin],
       });
 
       editor.insertData({
@@ -118,7 +118,7 @@ describe('code block deserialization', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [ParagraphPlugin, CodeBlockPlugin],
+        plugins: [BaseParagraphPlugin, CodeBlockPlugin],
       });
 
       editor.deleteBackward('character');

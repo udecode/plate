@@ -23,7 +23,7 @@ export const setBorderSize = (
     border = 'all',
   }: {
     at?: Path;
-    border?: 'all' | BorderDirection;
+    border?: BorderDirection | 'all';
   } = {}
 ) => {
   const cellEntry = findNode<TTableCellElement>(editor, {

@@ -7,7 +7,7 @@ import {
   getPointBefore,
 } from '@udecode/plate-common';
 
-import { SUGGESTION_KEYS } from '../SuggestionPlugin';
+import { SUGGESTION_KEYS } from '../BaseSuggestionPlugin';
 import { findSuggestionNode } from './findSuggestionNode';
 
 /**

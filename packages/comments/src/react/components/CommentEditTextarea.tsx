@@ -37,15 +37,15 @@ export const useCommentEditTextarea = ({
 }: ReturnType<typeof useCommentEditTextareaState>) => {
   return {
     props: {
+      placeholder: 'Add a comment...',
+      ref: textareaRef,
+      rows: 1,
+      value: value ?? undefined,
       onChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         setEditingValue([
           { children: [{ text: event.target.value }], type: 'p' },
         ]);
       },
-      placeholder: 'Add a comment...',
-      ref: textareaRef,
-      rows: 1,
-      value: value ?? undefined,
     },
   };
 };

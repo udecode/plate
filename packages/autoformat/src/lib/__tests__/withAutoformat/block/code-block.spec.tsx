@@ -3,11 +3,11 @@
 import type { Range } from 'slate';
 
 import {
-  CodeBlockPlugin,
+  BaseCodeBlockPlugin,
   insertEmptyCodeBlock,
 } from '@udecode/plate-code-block';
 import {
-  ParagraphPlugin,
+  BaseParagraphPlugin,
   getEditorString,
   getRangeFromBlockStart,
 } from '@udecode/plate-common';
@@ -18,7 +18,7 @@ import {
   preFormat,
 } from 'www/src/lib/plate/demo/plugins/autoformatOptions';
 
-import { AutoformatPlugin } from '../../../AutoformatPlugin';
+import { BaseAutoformatPlugin } from '../../../BaseAutoformatPlugin';
 
 jsx;
 
@@ -45,7 +45,7 @@ describe('when ``` at block start', () => {
 
     const editor = createSlateEditor({
       plugins: [
-        AutoformatPlugin.configure({ options: getAutoformatOptions() }),
+        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
       ],
       value: input,
     });
@@ -80,13 +80,13 @@ describe('when ``` at block start, but customising with query we get the most re
 
     const codeEditor = createSlateEditor({
       plugins: [
-        AutoformatPlugin.configure({
+        BaseAutoformatPlugin.configure({
           options: {
             rules: [
               {
                 format: (editor) => {
                   insertEmptyCodeBlock(editor, {
-                    defaultType: editor.getType(ParagraphPlugin),
+                    defaultType: editor.getType(BaseParagraphPlugin),
                     insertNodesOptions: { select: true },
                   });
                 },
@@ -109,7 +109,7 @@ describe('when ``` at block start, but customising with query we get the most re
                   return rule.match === currentNodeText;
                 },
                 triggerAtBlockStart: false,
-                type: CodeBlockPlugin.key,
+                type: BaseCodeBlockPlugin.key,
               },
             ],
           },
@@ -148,7 +148,7 @@ describe('when ```', () => {
 
     const editor = createSlateEditor({
       plugins: [
-        AutoformatPlugin.configure({ options: getAutoformatOptions() }),
+        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
       ],
       value: input,
     });

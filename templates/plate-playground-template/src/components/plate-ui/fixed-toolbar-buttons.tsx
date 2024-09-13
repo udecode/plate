@@ -10,9 +10,9 @@ import { useEditorReadOnly } from '@udecode/plate-common/react';
 import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
-} from '@udecode/plate-font';
+} from '@udecode/plate-font/react';
 import { ListStyleType } from '@udecode/plate-indent-list';
-import { ImagePlugin } from '@udecode/plate-media';
+import { ImagePlugin } from '@udecode/plate-media/react';
 
 import { Icons, iconVariants } from '@/components/icons';
 import { AlignDropdownMenu } from '@/components/plate-ui/align-dropdown-menu';

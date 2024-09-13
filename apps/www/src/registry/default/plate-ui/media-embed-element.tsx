@@ -37,8 +37,8 @@ export const MediaEmbedElement = withHOC(
     return (
       <MediaPopover plugin={MediaEmbedPlugin}>
         <PlateElement
-          className={cn('relative py-2.5', className)}
           ref={ref}
+          className={cn('relative py-2.5', className)}
           {...props}
         >
           <figure className="group relative m-0 w-full" contentEditable={false}>
@@ -88,14 +88,14 @@ export const MediaEmbedElement = withHOC(
                     )}
                   >
                     <iframe
-                      allowFullScreen
                       className={cn(
                         'absolute left-0 top-0 size-full rounded-sm',
                         isVideo && 'border-0',
                         focused && selected && 'ring-2 ring-ring ring-offset-2'
                       )}
-                      src={embed!.url}
                       title="embed"
+                      src={embed!.url}
+                      allowFullScreen
                     />
                   </div>
                 )
@@ -120,7 +120,7 @@ export const MediaEmbedElement = withHOC(
               />
             </Resizable>
 
-            <Caption align={align} style={{ width }}>
+            <Caption style={{ width }} align={align}>
               <CaptionTextarea placeholder="Write a caption..." />
             </Caption>
           </figure>

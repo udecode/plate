@@ -5,7 +5,7 @@ import type { PlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { createPlateTestEditor } from '../../../core/src/react/__tests__/createPlateTestEditor';
-import { DatePlugin } from './DatePlugin';
+import { BaseDatePlugin } from './BaseDatePlugin';
 
 jsx;
 
@@ -39,7 +39,7 @@ describe('On keydown', () => {
 
     const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
       editor: input,
-      plugins: [DatePlugin],
+      plugins: [BaseDatePlugin],
     });
 
     await triggerKeyboardEvent('ArrowRight');
@@ -76,7 +76,7 @@ describe('On keydown', () => {
 
     const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
       editor: input,
-      plugins: [DatePlugin],
+      plugins: [BaseDatePlugin],
     });
 
     await triggerKeyboardEvent('ArrowLeft');
@@ -122,7 +122,7 @@ describe('On keydown', () => {
 
     const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
       editor: input,
-      plugins: [DatePlugin],
+      plugins: [BaseDatePlugin],
     });
 
     await triggerKeyboardEvent('ArrowRight');

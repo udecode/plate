@@ -4,7 +4,7 @@ import {
   ListItemPlugin,
   ListPlugin,
   TodoListPlugin,
-} from '@udecode/plate-list';
+} from '@udecode/plate-list/react';
 
 import { serializeHtml } from '../../react/serializeHtml';
 import { createPlateUIEditor } from '../create-plate-ui-editor';

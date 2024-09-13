@@ -9,7 +9,7 @@ const normalizeSpid = (spid: string): string => {
 export const getVShapeSpid = (
   document: Document,
   element: Element
-): null | string => {
+): string | null => {
   if (element.tagName === 'IMG') {
     const vShapeId = element.getAttribute('v:shapes');
     const vShapes = getVShapes(document);

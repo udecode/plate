@@ -4,7 +4,7 @@ import {
   pipeInsertDataQuery,
 } from '@udecode/plate-common';
 
-import type { ImageConfig } from './ImagePlugin';
+import type { ImageConfig } from './BaseImagePlugin';
 
 import { insertImage } from './transforms/insertImage';
 

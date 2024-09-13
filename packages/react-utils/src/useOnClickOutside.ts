@@ -36,7 +36,7 @@ export interface UseOnClickOutsideOptions {
   disabled?: boolean;
   eventTypes?: string[];
   excludeScrollbar?: boolean;
-  ignoreClass?: string | string[];
+  ignoreClass?: string[] | string;
   refs?: Refs;
 }
 
@@ -45,7 +45,7 @@ export type UseOnClickOutsideReturn = (element: El | null) => void;
 const checkClass = (el: HTMLElement, cl: string): boolean =>
   el.classList?.contains(cl);
 
-const hasIgnoreClass = (e: any, ignoreClass: string | string[]): boolean => {
+const hasIgnoreClass = (e: any, ignoreClass: string[] | string): boolean => {
   let el = e.target || e;
 
   while (el) {

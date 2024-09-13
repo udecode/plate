@@ -7,7 +7,7 @@ import {
   wrapNodes,
 } from '@udecode/plate-common';
 import { createSlateEditor } from '@udecode/plate-common';
-import { LinkPlugin } from '@udecode/plate-link';
+import { LinkPlugin } from '@udecode/plate-link/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 import type { AutoformatPluginOptions } from '../../../types';

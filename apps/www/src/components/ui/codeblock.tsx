@@ -100,10 +100,10 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
 
         <div className="flex items-center space-x-1">
           <Button
-            className="hover:bg-zinc-800 focus-visible:ring-1 focus-visible:ring-slate-700 focus-visible:ring-offset-0 hover:[&_svg]:text-muted-foreground"
-            onClick={downloadAsFile}
             size="sm"
             variant="ghost"
+            className="hover:bg-zinc-800 focus-visible:ring-1 focus-visible:ring-slate-700 focus-visible:ring-offset-0 hover:[&_svg]:text-muted-foreground"
+            onClick={downloadAsFile}
           >
             <Icons.download className="size-4" />
 
@@ -111,10 +111,10 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
           </Button>
 
           <Button
-            className="text-xs hover:bg-zinc-800 focus-visible:ring-1 focus-visible:ring-slate-700 focus-visible:ring-offset-0 hover:[&_svg]:text-muted-foreground"
-            onClick={onCopy}
             size="sm"
             variant="ghost"
+            className="text-xs hover:bg-zinc-800 focus-visible:ring-1 focus-visible:ring-slate-700 focus-visible:ring-offset-0 hover:[&_svg]:text-muted-foreground"
+            onClick={onCopy}
           >
             {isCopied ? (
               <Icons.check className="size-4" />
@@ -128,6 +128,7 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
       </div>
 
       <SyntaxHighlighter
+        style={coldarkDark}
         PreTag="div"
         codeTagProps={{
           style: {
@@ -146,7 +147,6 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
           userSelect: 'none',
         }}
         showLineNumbers
-        style={coldarkDark}
       >
         {value}
       </SyntaxHighlighter>

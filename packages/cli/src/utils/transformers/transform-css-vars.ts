@@ -106,12 +106,12 @@ export const transformCssVars: Transformer = async ({
 
 // Splits a className into variant-name-alpha.
 // eg. hover:bg-primary-100 -> [hover, bg-primary, 100]
-export function splitClassName(className: string): (null | string)[] {
+export function splitClassName(className: string): (string | null)[] {
   if (!className.includes('/') && !className.includes(':')) {
     return [null, className, null];
   }
 
-  const parts: (null | string)[] = [];
+  const parts: (string | null)[] = [];
   // First we split to find the alpha.
   const [rest, alpha] = className.split('/');
 

@@ -6,7 +6,7 @@ import {
   isDefined,
 } from '@udecode/plate-common';
 
-import { IndentListPlugin } from '../IndentListPlugin';
+import { BaseIndentListPlugin } from '../BaseIndentListPlugin';
 
 export const shouldMergeNodesRemovePrevNodeIndentList = (
   editor: SlateEditor
@@ -18,8 +18,8 @@ export const shouldMergeNodesRemovePrevNodeIndentList = (
     const curNode = curNodeEntry[0] as TElement;
 
     if (
-      isDefined(curNode[IndentListPlugin.key]) ||
-      isDefined(prevNode[IndentListPlugin.key])
+      isDefined(curNode[BaseIndentListPlugin.key]) ||
+      isDefined(prevNode[BaseIndentListPlugin.key])
     ) {
       return false;
     }

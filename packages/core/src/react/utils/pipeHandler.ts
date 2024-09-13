@@ -76,7 +76,7 @@ export const pipeHandler = <K extends keyof DOMHandlers>(
   {
     editableProps,
     handlerKey,
-  }: { editableProps?: Omit<TEditableProps, 'decorate'> | null; handlerKey: K }
+  }: { handlerKey: K; editableProps?: Omit<TEditableProps, 'decorate'> | null }
 ): ((event: any) => void) | undefined => {
   const propsHandler = editableProps?.[handlerKey] as (
     event: any

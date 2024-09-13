@@ -2,6 +2,7 @@ import { HtmlPlugin, createSlatePlugin } from '@udecode/plate-common';
 import juice from 'juice';
 
 export const JuicePlugin = createSlatePlugin({
+  key: 'juice',
   inject: {
     plugins: {
       [HtmlPlugin.key]: {
@@ -17,5 +18,4 @@ export const JuicePlugin = createSlatePlugin({
       },
     },
   },
-  key: 'juice',
 });

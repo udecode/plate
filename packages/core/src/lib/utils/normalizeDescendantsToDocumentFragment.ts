@@ -7,7 +7,7 @@ import {
 
 import type { SlateEditor } from '../editor';
 
-import { ParagraphPlugin } from '../plugins';
+import { BaseParagraphPlugin } from '../plugins';
 
 const isInlineNode =
   (editor: Pick<TEditor, 'isInline'>) => (node: TDescendant) =>
@@ -120,7 +120,7 @@ export const normalizeDescendantsToDocumentFragment = (
   { descendants }: { descendants: TDescendant[] }
 ): TDescendant[] => {
   const isInline = isInlineNode(editor);
-  const defaultType = editor.getType(ParagraphPlugin);
+  const defaultType = editor.getType(BaseParagraphPlugin);
   const makeDefaultBlock = makeBlockLazy(defaultType);
 
   return normalize(descendants, isInline, makeDefaultBlock as any);

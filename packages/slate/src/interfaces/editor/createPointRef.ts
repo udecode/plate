@@ -1,6 +1,6 @@
 import type { EditorPointRefOptions } from 'slate/dist/interfaces/editor';
 
-import { Editor, type Point } from 'slate';
+import { type Point, Editor } from 'slate';
 
 import type { TEditor } from './TEditor';
 

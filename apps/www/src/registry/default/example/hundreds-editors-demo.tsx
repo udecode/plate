@@ -53,7 +53,7 @@ export default function HundredsEditorsDemo() {
     <div className="flex flex-col">
       {values.map((value, idx) => {
         return (
-          <div className="p-10" key={idx}>
+          <div key={idx} className="p-10">
             <h3 className="mb-2 font-semibold">#{idx + 1}</h3>
             <WithPlate id={idx + 1} value={value} />
             {/* <WithoutPlate initialValue={initialValue} id={idx} /> */}

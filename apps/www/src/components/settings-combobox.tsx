@@ -83,11 +83,11 @@ export function SettingsCombobox() {
 
   return (
     <>
-      <Popover onOpenChange={setOpen} open={open}>
+      <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           {loaded && (
             <Button
-              aria-expanded={open}
+              variant="outline"
               className="min-w-fit justify-between md:w-[220px]"
               onClick={() => {
                 // quick fix: drawer is closing it
@@ -95,8 +95,8 @@ export function SettingsCombobox() {
                   setOpen(!open);
                 }, 0);
               }}
+              aria-expanded={open}
               role="combobox"
-              variant="outline"
             >
               {(customizerPlugins as any)[valueId]?.label ??
                 'Select a value...'}
@@ -104,18 +104,19 @@ export function SettingsCombobox() {
             </Button>
           )}
         </PopoverTrigger>
-        <PopoverContent align="start" className="z-[99999999] w-[220px] p-0">
+        <PopoverContent className="z-[99999999] w-[220px] p-0" align="start">
           <Command defaultValue={valueId}>
             <CommandInput placeholder="Search example..." />
             <CommandEmpty>No value found.</CommandEmpty>
 
             <CommandList>
               {categories.map((category) => (
-                <CommandGroup heading={category.label} key={category.value}>
+                <CommandGroup key={category.value} heading={category.label}>
                   {category.items.map((item) => {
                     return (
                       <CommandItem
                         key={item.id}
+                        value={item.id}
                         onSelect={(newId) => {
                           settingsStore.set.valueId(newId as ValueId);
 
@@ -137,7 +138,6 @@ export function SettingsCombobox() {
 
                           setOpen(false);
                         }}
-                        value={item.id}
                       >
                         <Check
                           className={cn(

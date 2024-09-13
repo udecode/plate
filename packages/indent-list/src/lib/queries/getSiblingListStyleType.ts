@@ -7,7 +7,7 @@ import type {
 
 import type { ListStyleType } from '../types';
 
-import { IndentListPlugin } from '../IndentListPlugin';
+import { BaseIndentListPlugin } from '../BaseIndentListPlugin';
 import {
   type GetIndentListSiblingsOptions,
   getIndentListSiblings,
@@ -42,7 +42,7 @@ export const getSiblingListStyleType = <E extends SlateEditor>(
 
   return (
     siblings.length > 0
-      ? siblings[0][0][IndentListPlugin.key]
-      : entry[0][IndentListPlugin.key]
+      ? siblings[0][0][BaseIndentListPlugin.key]
+      : entry[0][BaseIndentListPlugin.key]
   ) as ListStyleType;
 };

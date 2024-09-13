@@ -7,14 +7,17 @@ import {
   wrapNodes,
 } from '@udecode/plate-common';
 
-import { CodeBlockPlugin, CodeLinePlugin } from '../CodeBlockPlugin';
+import {
+  BaseCodeBlockPlugin,
+  BaseCodeLinePlugin,
+} from '../BaseCodeBlockPlugin';
 import { unwrapCodeBlock } from './unwrapCodeBlock';
 
 export const toggleCodeBlock = (editor: SlateEditor) => {
   if (!editor.selection) return;
 
-  const codeBlockType = editor.getType(CodeBlockPlugin);
-  const codeLineType = editor.getType(CodeLinePlugin);
+  const codeBlockType = editor.getType(BaseCodeBlockPlugin);
+  const codeLineType = editor.getType(BaseCodeLinePlugin);
 
   const isActive = someNode(editor, {
     match: { type: codeBlockType },

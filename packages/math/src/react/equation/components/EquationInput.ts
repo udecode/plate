@@ -30,6 +30,8 @@ export const useEquationInput = ({
 
   return {
     props: {
+      ref: inputRef,
+      value: element.texExpression,
       onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
         setNodes<TEquationElement>(editor, {
           texExpression: e.target.value,
@@ -47,8 +49,6 @@ export const useEquationInput = ({
       onMouseEnter: () => {
         inputRef.current?.focus();
       },
-      ref: inputRef,
-      value: element.texExpression,
     },
   };
 };

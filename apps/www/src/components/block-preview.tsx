@@ -36,6 +36,7 @@ export function BlockPreview({
 
   return (
     <div
+      id={block.name}
       className={cn(
         'relative w-full scroll-m-20',
         className,
@@ -44,7 +45,6 @@ export function BlockPreview({
         // fullScreen &&
         //   '[&_[data-slate-editor]]:mx-auto [&_[data-slate-editor]]:max-w-[1125px]'
       )}
-      id={block.name}
       style={
         {
           '--container-height': block.container?.height,
@@ -81,13 +81,13 @@ export function BlockPreview({
               direction="horizontal"
             >
               <ResizablePanel
+                ref={ref}
                 className={cn(
                   'relative rounded-lg border bg-background',
                   isLiftMode ? 'border-border/50' : 'border-border'
                 )}
                 defaultSize={100}
                 minSize={30}
-                ref={ref}
               >
                 <div className="chunk-mode relative z-20 w-full bg-background">
                   <PlaygroundDemo scrollSelector="playground-preview-2" />

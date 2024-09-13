@@ -16,12 +16,12 @@ import { checkIn } from '../utils';
 
 export const useTocSideBarState = ({
   containerRef,
-  onOpenChange,
   open = true,
   rootMargin = '0px 0px 0px 0px',
   showHeader = true,
   style,
   topOffset = 0,
+  onOpenChange,
 }: TocSideBarProps) => {
   const editor = useEditorRef();
   const headingList = useEditorSelector(getHeadingList, []);
@@ -51,25 +51,25 @@ export const useTocSideBarState = ({
     editor,
     headingList,
     mouseInToc,
-    onContentScroll,
-    onOpenChange,
     open,
     setIsObserve,
     setMouseInToc,
     showHeader,
     style,
     tocRef,
+    onContentScroll,
+    onOpenChange,
   };
 };
 
 export const useTocSideBar = ({
   editor,
   mouseInToc,
-  onContentScroll,
   open,
   setIsObserve,
   setMouseInToc,
   tocRef,
+  onContentScroll,
 }: ReturnType<typeof useTocSideBarState>) => {
   React.useEffect(() => {
     if (mouseInToc) {
@@ -96,7 +96,7 @@ export const useTocSideBar = ({
 
       if (!el) return;
 
-      onContentScroll({ behavior, el, id });
+      onContentScroll({ id, behavior, el });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
@@ -104,6 +104,7 @@ export const useTocSideBar = ({
 
   return {
     navProps: {
+      ref: tocRef,
       onMouseEnter: () => {
         !mouseInToc && open && setMouseInToc(true);
       },
@@ -115,7 +116,6 @@ export const useTocSideBar = ({
           isIn !== mouseInToc && setMouseInToc(isIn);
         }
       },
-      ref: tocRef,
     },
     onContentClick,
   };

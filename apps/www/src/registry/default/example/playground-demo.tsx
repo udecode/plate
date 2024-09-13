@@ -7,7 +7,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import type { ValueId } from '@/config/customizer-plugins';
 
 import { cn } from '@udecode/cn';
-import { AlignPlugin } from '@udecode/plate-alignment';
+import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
   BoldPlugin,
@@ -28,16 +28,16 @@ import {
   Plate,
   usePlateEditor,
 } from '@udecode/plate-common/react';
-import { DatePlugin } from '@udecode/plate-date';
+import { DatePlugin } from '@udecode/plate-date/react';
 import { DndPlugin } from '@udecode/plate-dnd';
 import { DocxPlugin } from '@udecode/plate-docx';
-import { EmojiPlugin } from '@udecode/plate-emoji';
+import { EmojiPlugin } from '@udecode/plate-emoji/react';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
   FontSizePlugin,
-} from '@udecode/plate-font';
+} from '@udecode/plate-font/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HeadingPlugin } from '@udecode/plate-heading/react';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
@@ -47,7 +47,7 @@ import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import { JuicePlugin } from '@udecode/plate-juice';
 import { KbdPlugin } from '@udecode/plate-kbd/react';
 import { ColumnPlugin } from '@udecode/plate-layout/react';
-import { LineHeightPlugin } from '@udecode/plate-line-height';
+import { LineHeightPlugin } from '@udecode/plate-line-height/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { ListPlugin, TodoListPlugin } from '@udecode/plate-list/react';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
@@ -58,7 +58,7 @@ import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { PlaywrightPlugin } from '@udecode/plate-playwright';
 import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
-import { SlashPlugin } from '@udecode/plate-slash-command';
+import { SlashPlugin } from '@udecode/plate-slash-command/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
@@ -344,8 +344,8 @@ export default function PlaygroundDemo({
             </CheckPlugin>
 
             <div
-              className="flex w-full"
               id="editor-playground"
+              className="flex w-full"
               style={
                 {
                   '--editor-px': 'max(5%,24px)',
@@ -353,27 +353,27 @@ export default function PlaygroundDemo({
               }
             >
               <div
+                id={scrollSelector}
+                ref={containerRef}
                 className={cn(
                   'relative flex max-h-[800px] w-full overflow-x-auto',
                   // block selection area
                   '[&_.slate-selected]:!bg-primary/20 [&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10'
                 )}
                 data-plate-selectable
-                id={scrollSelector}
-                ref={containerRef}
               >
                 <Editor
                   {...editableProps}
+                  size="md"
+                  variant="ghost"
                   className={cn(
                     editableProps.className,
                     ' overflow-x-hidden px-[var(--editor-px)]',
                     !id && 'pb-[20vh] pt-4',
                     id && 'pb-8 pt-2'
                   )}
-                  focusRing={false}
                   placeholder=""
-                  size="md"
-                  variant="ghost"
+                  focusRing={false}
                 />
 
                 <CheckPlugin componentId="floating-toolbar">
@@ -398,8 +398,8 @@ export default function PlaygroundDemo({
               </div>
 
               <CheckPlugin
-                componentId="comments-popover"
                 id="comment"
+                componentId="comments-popover"
                 plugin={CommentsPlugin}
               >
                 <CommentsPopover />
@@ -415,8 +415,8 @@ export default function PlaygroundDemo({
 const DemoIdContext = React.createContext<string | undefined>(undefined);
 
 export function DemoId({
-  children,
   id,
+  children,
 }: {
   children: React.ReactNode;
   id?: string;

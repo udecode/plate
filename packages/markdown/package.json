@@ -49,7 +49,7 @@
   "dependencies": {
     "lodash": "^4.17.21",
     "remark-parse": "^9.0.0",
-    "unified": "^9.2.2"
+    "unified": "^11.0.5"
   },
   "devDependencies": {
     "@udecode/plate-common": "workspace:^"

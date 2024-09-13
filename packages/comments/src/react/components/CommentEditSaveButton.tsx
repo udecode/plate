@@ -21,10 +21,10 @@ export const useCommentEditSaveButtonState = () => {
   const value = useCommentText();
 
   return {
+    id,
     api,
     editingValue,
     getOptions,
-    id,
     setEditingValue,
     setOption,
     value,
@@ -32,10 +32,10 @@ export const useCommentEditSaveButtonState = () => {
 };
 
 export const useCommentEditSaveButton = ({
+  id,
   api,
   editingValue,
   getOptions,
-  id,
   setEditingValue,
   value,
 }: ReturnType<typeof useCommentEditSaveButtonState>) => {

@@ -15,10 +15,10 @@ export const useImage = () => {
   return {
     props: {
       draggable: true,
+      src: element.url,
       onDoubleClickCapture: () => {
         openImagePreview(editor, element);
       },
-      src: element.url,
     },
   };
 };

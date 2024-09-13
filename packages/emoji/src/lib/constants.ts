@@ -1,9 +1,9 @@
 import {
-  EmojiCategory,
   type EmojiCategoryList,
   type EmojiSettingsType,
   type FrequentEmojis,
   type i18nProps,
+  EmojiCategory,
 } from './types';
 
 export const EMOJI_MAX_SEARCH_RESULT = 60;

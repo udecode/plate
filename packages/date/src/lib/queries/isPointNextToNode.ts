@@ -5,13 +5,13 @@ import {
   isEndPoint,
   isStartPoint,
 } from '@udecode/plate-common';
-import { Path, type Point } from 'slate';
+import { type Point, Path } from 'slate';
 
 export const isPointNextToNode = (
   editor: SlateEditor,
   options: {
-    at?: Point;
     nodeType: string;
+    at?: Point;
     reverse?: boolean;
   }
 ): boolean => {

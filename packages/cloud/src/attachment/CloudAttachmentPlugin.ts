@@ -5,11 +5,11 @@ import Defer from 'p-defer';
 import type { UploadError, UploadSuccess } from '../upload';
 import type { TCloudAttachmentElement } from './types';
 
-import { CloudPlugin, type FileEvent, type SuccessEvent } from '../cloud';
+import { type FileEvent, type SuccessEvent, CloudPlugin } from '../cloud';
 
 export const CloudAttachmentPlugin = createPlatePlugin({
-  dependencies: ['cloud'],
   key: 'cloud_attachment',
+  dependencies: ['cloud'],
   node: { isElement: true, isVoid: true },
 }).extendApi(({ editor }) => {
   const { uploadStore } = editor.getOptions(CloudPlugin);

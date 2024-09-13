@@ -27,8 +27,8 @@ export type FinishUploadsOptions = { maxTimeoutInMs?: number };
  * ImageFileEvent.
  */
 export type FileEventBase = {
-  file: File;
   id: string;
+  file: File;
   url: string;
 };
 

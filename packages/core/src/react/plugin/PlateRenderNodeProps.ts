@@ -4,9 +4,10 @@ import type { AnyPluginConfig, PluginConfig } from '../../lib';
 import type { PlatePluginContext } from './PlatePlugin';
 
 /** Node props passed by Plate */
-export type PlateRenderNodeProps<C extends AnyPluginConfig = PluginConfig> = {
-  className?: string;
+export type PlateRenderNodeProps<C extends AnyPluginConfig = PluginConfig> =
+  PlatePluginContext<C> & {
+    className?: string;
 
-  /** @see {@link NodeProps} */
-  nodeProps?: AnyObject;
-} & PlatePluginContext<C>;
+    /** @see {@link NodeProps} */
+    nodeProps?: AnyObject;
+  };

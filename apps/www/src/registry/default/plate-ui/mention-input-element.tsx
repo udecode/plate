@@ -21,17 +21,17 @@ export const MentionInputElement = withRef<typeof PlateElement>(
 
     return (
       <PlateElement
+        ref={ref}
         as="span"
         data-slate-value={element.value}
-        ref={ref}
         {...props}
       >
         <InlineCombobox
+          value={search}
           element={element}
           setValue={setSearch}
           showTrigger={false}
           trigger="@"
-          value={search}
         >
           <span
             className={cn(
@@ -48,8 +48,8 @@ export const MentionInputElement = withRef<typeof PlateElement>(
             {MENTIONABLES.map((item) => (
               <InlineComboboxItem
                 key={item.key}
-                onClick={() => onSelectItem(editor, item, search)}
                 value={item.text}
+                onClick={() => onSelectItem(editor, item, search)}
               >
                 {item.text}
               </InlineComboboxItem>

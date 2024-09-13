@@ -18,15 +18,10 @@ export type TEditor<V extends Value = Value> = {
     editor: TEditor<V>,
     target: EventTarget | null
   ) => target is Node;
-  hasRange: (editor: TEditor<V>, range: Range) => boolean;
   hasSelectableTarget: (
     editor: TEditor<V>,
     target: EventTarget | null
   ) => boolean;
-  hasTarget: (editor: TEditor<V>, target: EventTarget | null) => target is Node;
-  insertData: (data: DataTransfer) => void;
-  insertFragmentData: (data: DataTransfer) => boolean;
-  insertTextData: (data: DataTransfer) => boolean;
   isTargetInsideNonReadonlyVoid: (
     editor: TEditor<V>,
     target: EventTarget | null
@@ -35,24 +30,30 @@ export type TEditor<V extends Value = Value> = {
     data: DataTransfer,
     originEvent?: 'copy' | 'cut' | 'drag'
   ) => void;
+  hasRange: (editor: TEditor<V>, range: Range) => boolean;
+  hasTarget: (editor: TEditor<V>, target: EventTarget | null) => target is Node;
+  insertData: (data: DataTransfer) => void;
+  insertFragmentData: (data: DataTransfer) => boolean;
+  insertTextData: (data: DataTransfer) => boolean;
 } & Modify<
   Editor,
   {
+    id: any;
     apply: <N extends TDescendant>(operation: TOperation<N>) => void;
     children: V;
     getDirtyPaths: <N extends TDescendant>(operation: TOperation<N>) => Path[];
     getFragment: () => TDescendant[];
-    id: any;
     insertFragment: <N extends TDescendant>(fragment: N[]) => void;
     insertNode: <N extends TDescendant>(node: N) => void;
     isInline: <N extends TElement>(element: N) => boolean;
     isVoid: <N extends TElement>(element: N) => boolean;
     markableVoid: <N extends TElement>(element: N) => boolean;
-    marks: Record<string, any> | null;
+    // eslint-disable-next-line perfectionist/sort-object-types
     normalizeNode: <N extends TNode>(
       entry: TNodeEntry<N>,
       options?: { operation?: TOperation }
     ) => void;
+    marks: Record<string, any> | null;
     operations: TOperation[];
   }
 > &

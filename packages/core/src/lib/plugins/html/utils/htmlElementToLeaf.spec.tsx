@@ -1,13 +1,13 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /** @jsx jsx */
 
-import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks';
-import { ListPlugin } from '@udecode/plate-list';
+import { BoldPlugin, ItalicPlugin } from '@udecode/plate-basic-marks/react';
+import { ListPlugin } from '@udecode/plate-list/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { createPlateEditor } from '../../../../react';
 import { createSlatePlugin } from '../../../plugin';
-import { ParagraphPlugin } from '../../paragraph';
+import { BaseParagraphPlugin } from '../../paragraph';
 import { htmlElementToLeaf } from './htmlElementToLeaf';
 import { parseHtmlElement } from './parseHtmlElement';
 
@@ -63,7 +63,7 @@ describe('when there is a mark above multiple elements', () => {
     expect(
       htmlElementToLeaf(
         createPlateEditor({
-          plugins: [ParagraphPlugin, ListPlugin, BoldPlugin, ItalicPlugin],
+          plugins: [BaseParagraphPlugin, ListPlugin, BoldPlugin, ItalicPlugin],
         }),
         parseHtmlElement(`<strong><li><p>test</p>test</li></strong>`)
       )

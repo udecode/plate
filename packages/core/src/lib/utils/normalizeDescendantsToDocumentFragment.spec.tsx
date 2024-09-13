@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { LinkPlugin } from '@udecode/plate-link';
+import { LinkPlugin } from '@udecode/plate-link/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { createPlateEditor } from '../../react';

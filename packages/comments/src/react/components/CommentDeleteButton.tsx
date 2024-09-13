@@ -3,7 +3,7 @@ import {
   useEditorPlugin,
 } from '@udecode/plate-common/react';
 
-import { type CommentsConfig, unsetCommentNodesById } from '../../lib';
+import { type BaseCommentsConfig, unsetCommentNodesById } from '../../lib';
 import { CommentsPlugin } from '../CommentsPlugin';
 import { useCommentSelectors } from '../stores/comment/CommentProvider';
 
@@ -13,26 +13,26 @@ export const useCommentDeleteButtonState = () => {
   const activeCommentId = useOption('activeCommentId');
   const onCommentDelete = useOption(
     'onCommentDelete'
-  ) as CommentsConfig['options']['onCommentDelete'];
+  ) as BaseCommentsConfig['options']['onCommentDelete'];
   const id = useCommentSelectors().id();
 
   return {
+    id,
     activeCommentId,
     api,
     editor,
-    id,
-    onCommentDelete,
     setOption,
+    onCommentDelete,
   };
 };
 
 export const useCommentDeleteButton = ({
+  id,
   activeCommentId,
   api,
   editor,
-  id,
-  onCommentDelete,
   setOption,
+  onCommentDelete,
 }: ReturnType<typeof useCommentDeleteButtonState>) => {
   return {
     props: {

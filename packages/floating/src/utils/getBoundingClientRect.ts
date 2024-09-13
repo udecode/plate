@@ -1,6 +1,6 @@
 import { type TEditor, getRange } from '@udecode/plate-common';
 import { toDOMRange } from '@udecode/plate-common/react';
-import { type Location, Path, type Range } from 'slate';
+import { type Location, type Range, Path } from 'slate';
 
 import { mergeClientRects } from './mergeClientRects';
 

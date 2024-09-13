@@ -3,10 +3,10 @@
 import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { IndentPlugin } from '@udecode/plate-indent';
+import { IndentPlugin } from '@udecode/plate-indent/react';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { IndentListPlugin } from '../IndentListPlugin';
+import { BaseIndentListPlugin } from '../BaseIndentListPlugin';
 
 jsx;
 
@@ -29,7 +29,7 @@ describe('normalizeIndentList', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [IndentListPlugin, IndentPlugin],
+        plugins: [BaseIndentListPlugin, IndentPlugin],
         shouldNormalizeEditor: true,
       });
 

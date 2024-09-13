@@ -14,12 +14,12 @@ describe('useEditableProps', () => {
       const editor = createPlateEditor({
         plugins: [
           createSlatePlugin({
+            key: 'a',
             decorate: () => {
               decorate();
 
               return [];
             },
-            key: 'a',
           }),
         ],
       });

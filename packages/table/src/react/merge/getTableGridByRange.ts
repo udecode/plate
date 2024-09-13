@@ -15,7 +15,7 @@ import type {
   TTableRowElement,
 } from '../../lib/types';
 
-import { TablePlugin } from '../../lib/TablePlugin';
+import { BaseTablePlugin } from '../../lib/BaseTablePlugin';
 import { computeCellIndices } from '../../lib/merge/computeCellIndices';
 import { findCellByIndexes } from '../../lib/merge/findCellByIndexes';
 import { getCellIndices } from '../../lib/merge/getCellIndices';
@@ -54,7 +54,7 @@ export const getTableMergeGridByRange = <T extends FormatType>(
   editor: SlateEditor,
   { at, format }: GetTableGridByRangeOptions<T>
 ): GetTableGridReturnType<T> => {
-  const { api, getOptions, type } = getEditorPlugin(editor, TablePlugin);
+  const { api, getOptions, type } = getEditorPlugin(editor, BaseTablePlugin);
 
   const { _cellIndices: cellIndices } = getOptions();
 

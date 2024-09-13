@@ -6,9 +6,9 @@ import {
 import { Key, toPlatePlugin } from '@udecode/plate-common/react';
 
 import {
-  type CommentsConfig as BaseCommentsConfig,
-  CommentsPlugin as BaseCommentsPlugin,
-} from '../lib/CommentsPlugin';
+  type BaseCommentsConfig,
+  BaseCommentsPlugin,
+} from '../lib/BaseCommentsPlugin';
 import { insertComment } from './transforms';
 import { useHooksComments } from './useHooksComments';
 

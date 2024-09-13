@@ -56,7 +56,7 @@
     "@udecode/slate-react": "37.0.0",
     "@udecode/slate-utils": "37.0.0",
     "@udecode/utils": "37.0.0",
-    "clsx": "^1.2.1",
+    "clsx": "^2.1.1",
     "lodash": "^4.17.21"
   },
   "peerDependencies": {

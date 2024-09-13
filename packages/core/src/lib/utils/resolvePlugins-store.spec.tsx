@@ -33,10 +33,10 @@ const TestComponentNested = ({
   editor,
   plugin,
 }: {
-  editor: ReturnType<typeof createPlateEditor>;
   plugin: PlatePlugin<
-    PluginConfig<any, { nested?: { subValue: string }; value: number }>
+    PluginConfig<any, { value: number; nested?: { subValue: string } }>
   >;
+  editor: ReturnType<typeof createPlateEditor>;
 }) => {
   const value = editor.useOption(plugin, 'value');
   const nestedValue = editor.useOption(plugin, 'nested');

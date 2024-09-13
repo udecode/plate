@@ -1,7 +1,7 @@
 import {
   type ExtendEditor,
-  ParagraphPlugin,
   type TElement,
+  BaseParagraphPlugin,
   getChildren,
   getNode,
   getParentNode,
@@ -16,9 +16,9 @@ import { Path } from 'slate';
 
 import {
   type ListConfig,
-  ListItemContentPlugin,
-  ListItemPlugin,
-} from './ListPlugin';
+  BaseListItemContentPlugin,
+  BaseListItemPlugin,
+} from './BaseListPlugin';
 import { normalizeListItem } from './normalizers/normalizeListItem';
 import { normalizeNestedList } from './normalizers/normalizeNestedList';
 import { getListTypes, isListRoot } from './queries';
@@ -32,9 +32,9 @@ export const withNormalizeList: ExtendEditor<ListConfig> = ({
   const { normalizeNode } = editor;
 
   editor.normalizeNode = ([node, path]) => {
-    const liType = editor.getType(ListItemPlugin);
-    const licType = editor.getType(ListItemContentPlugin);
-    const defaultType = editor.getType(ParagraphPlugin);
+    const liType = editor.getType(BaseListItemPlugin);
+    const licType = editor.getType(BaseListItemContentPlugin);
+    const defaultType = editor.getType(BaseParagraphPlugin);
 
     if (!isElement(node)) {
       return normalizeNode([node, path]);
@@ -88,7 +88,7 @@ export const withNormalizeList: ExtendEditor<ListConfig> = ({
       }
     }
     if (
-      node.type === editor.getType(ListItemPlugin) &&
+      node.type === editor.getType(BaseListItemPlugin) &&
       normalizeListItem(editor, {
         listItem: [node, path],
         validLiChildrenTypes: getOptions().validLiChildrenTypes,

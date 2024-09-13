@@ -5,8 +5,8 @@ import type { SlateEditor } from '@udecode/plate-common';
 import { createSlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { SUGGESTION_KEYS } from '../SuggestionPlugin';
-import { SuggestionPlugin } from '../SuggestionPlugin';
+import { SUGGESTION_KEYS } from '../BaseSuggestionPlugin';
+import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { addSuggestionMark } from './addSuggestionMark';
 
 jsx;
@@ -51,7 +51,7 @@ describe('addSuggestionMark', () => {
         });
 
         addSuggestionMark(editor);
-        expect(editor.marks?.[SuggestionPlugin.key]).toBeTruthy();
+        expect(editor.marks?.[BaseSuggestionPlugin.key]).toBeTruthy();
         expect(editor.marks?.[SUGGESTION_KEYS.id]).toBeTruthy();
       });
     });

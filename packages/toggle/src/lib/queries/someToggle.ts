@@ -1,12 +1,12 @@
 import { type SlateEditor, someNode } from '@udecode/plate-common';
 
-import { TogglePlugin } from '../TogglePlugin';
+import { BaseTogglePlugin } from '../BaseTogglePlugin';
 
 export const someToggle = (editor: SlateEditor) => {
   return (
     !!editor.selection &&
     someNode(editor, {
-      match: (n) => n.type === TogglePlugin.key,
+      match: (n) => n.type === BaseTogglePlugin.key,
     })
   );
 };

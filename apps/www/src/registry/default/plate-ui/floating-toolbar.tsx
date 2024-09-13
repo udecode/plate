@@ -63,10 +63,10 @@ export const FloatingToolbar = withRef<
   return (
     <PortalBody>
       <Toolbar
+        ref={ref}
         className={cn(
           'absolute z-50 whitespace-nowrap border bg-popover px-1 opacity-100 shadow-md print:hidden'
         )}
-        ref={ref}
         {...rootProps}
         {...props}
       >

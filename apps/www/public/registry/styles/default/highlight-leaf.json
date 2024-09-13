@@ -4,7 +4,7 @@
   ],
   "files": [
     {
-      "content": "import React from 'react';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { PlateLeaf } from '@udecode/plate-common/react';\n\nexport const HighlightLeaf = withRef<typeof PlateLeaf>(\n  ({ children, className, ...props }, ref) => (\n    <PlateLeaf\n      asChild\n      className={cn('bg-primary/20 text-inherit dark:bg-primary/40', className)}\n      ref={ref}\n      {...props}\n    >\n      <mark>{children}</mark>\n    </PlateLeaf>\n  )\n);\n",
+      "content": "import React from 'react';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { PlateLeaf } from '@udecode/plate-common/react';\n\nexport const HighlightLeaf = withRef<typeof PlateLeaf>(\n  ({ children, className, ...props }, ref) => (\n    <PlateLeaf\n      ref={ref}\n      asChild\n      className={cn('bg-primary/20 text-inherit dark:bg-primary/40', className)}\n      {...props}\n    >\n      <mark>{children}</mark>\n    </PlateLeaf>\n  )\n);\n",
       "name": "highlight-leaf.tsx"
     }
   ],

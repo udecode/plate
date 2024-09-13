@@ -10,7 +10,7 @@ import {
 import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
-} from '@udecode/plate-font';
+} from '@udecode/plate-font/react';
 import { ListStyleType } from '@udecode/plate-indent-list';
 import { ImagePlugin } from '@udecode/plate-media/react';
 

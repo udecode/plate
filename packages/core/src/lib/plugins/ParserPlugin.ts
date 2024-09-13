@@ -86,6 +86,6 @@ export const withParser: ExtendEditor = ({ editor }) => {
 };
 
 export const ParserPlugin = createSlatePlugin({
-  extendEditor: withParser,
   key: 'parser',
+  extendEditor: withParser,
 });

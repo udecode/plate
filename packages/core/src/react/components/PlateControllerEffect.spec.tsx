@@ -120,9 +120,9 @@ describe('PlateControllerEffect', () => {
       it('registers and unregisters the store', () => {
         const { getByText } = render(children);
         expect(getByText('test: non-null')).toBeInTheDocument();
-        act(() => getByText('unmountPlate').click());
+        void act(() => getByText('unmountPlate').click());
         expect(getByText('test: null')).toBeInTheDocument();
-        act(() => getByText('mountPlate').click());
+        void act(() => getByText('mountPlate').click());
         expect(getByText('test: non-null')).toBeInTheDocument();
       });
 
@@ -150,7 +150,7 @@ describe('PlateControllerEffect', () => {
         );
 
         expect(getByText('activeId: null')).toBeInTheDocument();
-        act(() => getByText('focus').click());
+        void act(() => getByText('focus').click());
         expect(getByText('activeId: test')).toBeInTheDocument();
       });
     });
@@ -172,11 +172,11 @@ describe('PlateControllerEffect', () => {
       expect(queryByText('primaryEditorId: 1')).toBeInTheDocument();
       expect(queryByText('primaryEditorId: 2')).toBeInTheDocument();
       expect(queryByText('primaryEditorId: 3')).not.toBeInTheDocument();
-      act(() => getByText('mountPlate').click());
+      void act(() => getByText('mountPlate').click());
       expect(queryByText('primaryEditorId: 1')).toBeInTheDocument();
       expect(queryByText('primaryEditorId: 2')).toBeInTheDocument();
       expect(queryByText('primaryEditorId: 3')).toBeInTheDocument();
-      act(() => getByText('unmountPlate').click());
+      void act(() => getByText('unmountPlate').click());
       expect(queryByText('primaryEditorId: 1')).toBeInTheDocument();
       expect(queryByText('primaryEditorId: 2')).toBeInTheDocument();
       expect(queryByText('primaryEditorId: 3')).not.toBeInTheDocument();

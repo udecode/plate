@@ -19,10 +19,10 @@ export const getRenderNodeProps = ({
   plugin,
   props,
 }: {
-  attributes?: AnyObject;
   editor: PlateEditor;
   plugin: AnyEditorPlatePlugin;
   props: PlateRenderNodeProps;
+  attributes?: AnyObject;
 }): PlateRenderNodeProps => {
   let newProps: AnyObject = {};
 

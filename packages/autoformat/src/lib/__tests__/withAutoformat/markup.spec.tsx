@@ -4,11 +4,11 @@ import {
   BoldPlugin,
   ItalicPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-marks';
+} from '@udecode/plate-basic-marks/react';
 import { createSlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { AutoformatPlugin } from '../../AutoformatPlugin';
+import { BaseAutoformatPlugin } from '../../BaseAutoformatPlugin';
 
 jsx;
 
@@ -35,7 +35,7 @@ describe('when match is an array', () => {
 
     const editor = createSlateEditor({
       plugins: [
-        AutoformatPlugin.configure({
+        BaseAutoformatPlugin.configure({
           options: {
             rules: [
               {
@@ -80,7 +80,7 @@ describe('when match is a string', () => {
 
     const editor = createSlateEditor({
       plugins: [
-        AutoformatPlugin.configure({
+        BaseAutoformatPlugin.configure({
           options: {
             rules: [
               {

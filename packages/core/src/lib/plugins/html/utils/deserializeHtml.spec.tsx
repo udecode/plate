@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { AlignPlugin } from '@udecode/plate-alignment';
+import { AlignPlugin } from '@udecode/plate-alignment/react';
 import {
   BoldPlugin,
   CodePlugin,
@@ -9,22 +9,22 @@ import {
   SubscriptPlugin,
   SuperscriptPlugin,
   UnderlinePlugin,
-} from '@udecode/plate-basic-marks';
-import { BlockquotePlugin } from '@udecode/plate-block-quote';
-import { SoftBreakPlugin } from '@udecode/plate-break';
+} from '@udecode/plate-basic-marks/react';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+import { SoftBreakPlugin } from '@udecode/plate-break/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { FindReplacePlugin } from '@udecode/plate-find-replace';
-import { HeadingPlugin } from '@udecode/plate-heading';
-import { HighlightPlugin } from '@udecode/plate-highlight';
-import { KbdPlugin } from '@udecode/plate-kbd';
-import { LinkPlugin } from '@udecode/plate-link';
-import { ListPlugin } from '@udecode/plate-list';
-import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media';
-import { TablePlugin } from '@udecode/plate-table';
+import { HeadingPlugin } from '@udecode/plate-heading/react';
+import { HighlightPlugin } from '@udecode/plate-highlight/react';
+import { KbdPlugin } from '@udecode/plate-kbd/react';
+import { LinkPlugin } from '@udecode/plate-link/react';
+import { ListPlugin } from '@udecode/plate-list/react';
+import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
+import { TablePlugin } from '@udecode/plate-table/react';
 import { getHtmlDocument, jsx } from '@udecode/plate-test-utils';
 
 import { createPlateEditor } from '../../../../react';
-import { ParagraphPlugin } from '../../paragraph';
+import { BaseParagraphPlugin } from '../../paragraph';
 import { deserializeHtml } from './deserializeHtml';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 
@@ -79,7 +79,7 @@ describe('when element is 2 p', () => {
     expect(
       deserializeHtml(
         createPlateEditor({
-          plugins: [ParagraphPlugin],
+          plugins: [BaseParagraphPlugin],
         }),
         {
           element: '<p>first</p><p>second</p>',
@@ -205,7 +205,7 @@ describe('when deserializing all plugins', () => {
             ImagePlugin,
             LinkPlugin,
             ListPlugin,
-            ParagraphPlugin,
+            BaseParagraphPlugin,
             CodeBlockPlugin,
             TablePlugin,
             MediaEmbedPlugin,

@@ -14,11 +14,11 @@ import { EditorStateEffect } from './EditorStateEffect';
 import { PlateControllerEffect } from './PlateControllerEffect';
 import { PlateSlate } from './PlateSlate';
 
-export type PlateContentProps = {
+export type PlateContentProps = Omit<TEditableProps, 'decorate'> & {
   decorate?: PlateStoreState['decorate'];
   /** R enders the editable content. */
   renderEditable?: (editable: React.ReactElement) => React.ReactNode;
-} & Omit<TEditableProps, 'decorate'>;
+};
 
 /**
  * Editable with plugins.
@@ -87,7 +87,7 @@ const PlateContent = React.forwardRef(
         {renderEditable ? renderEditable(editable) : editable}
 
         <EditorMethodsEffect id={id} />
-        <EditorHotkeysEffect editableRef={editableRef} id={id} />
+        <EditorHotkeysEffect id={id} editableRef={editableRef} />
         <EditorStateEffect id={id} />
         <EditorRefEffect id={id} />
         <PlateControllerEffect id={id} />

@@ -33,8 +33,8 @@ export type NormalizeTypesConfig = PluginConfig<
 
 /** @see {@link withNormalizeTypes} */
 export const NormalizeTypesPlugin = createTSlatePlugin<NormalizeTypesConfig>({
-  extendEditor: withNormalizeTypes,
   key: 'normalizeTypes',
+  extendEditor: withNormalizeTypes,
   options: {
     rules: [],
   },

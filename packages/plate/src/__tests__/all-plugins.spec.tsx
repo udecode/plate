@@ -1,29 +1,29 @@
 import React from 'react';
 
 import { render } from '@testing-library/react';
-import { AlignPlugin } from '@udecode/plate-alignment';
-import { AutoformatPlugin } from '@udecode/plate-autoformat';
-import { BasicElementsPlugin } from '@udecode/plate-basic-elements';
-import { BasicMarksPlugin } from '@udecode/plate-basic-marks';
-import { BlockquotePlugin } from '@udecode/plate-block-quote';
-import { ExitBreakPlugin, SoftBreakPlugin } from '@udecode/plate-break';
-import { CodeBlockPlugin } from '@udecode/plate-code-block';
+import { AlignPlugin } from '@udecode/plate-alignment/react';
+import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
+import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
+import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+import { ExitBreakPlugin, SoftBreakPlugin } from '@udecode/plate-break/react';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import {
   Plate,
   PlateContent,
   usePlateEditor,
 } from '@udecode/plate-common/react';
-import { HeadingPlugin } from '@udecode/plate-heading';
-import { HighlightPlugin } from '@udecode/plate-highlight';
-import { LinkPlugin } from '@udecode/plate-link';
-import { ListPlugin, TodoListPlugin } from '@udecode/plate-list';
-import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media';
-import { MentionPlugin } from '@udecode/plate-mention';
+import { HeadingPlugin } from '@udecode/plate-heading/react';
+import { HighlightPlugin } from '@udecode/plate-highlight/react';
+import { LinkPlugin } from '@udecode/plate-link/react';
+import { ListPlugin, TodoListPlugin } from '@udecode/plate-list/react';
+import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
+import { MentionPlugin } from '@udecode/plate-mention/react';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
-import { ResetNodePlugin } from '@udecode/plate-reset-node';
+import { ResetNodePlugin } from '@udecode/plate-reset-node/react';
 import { SelectOnBackspacePlugin } from '@udecode/plate-select';
-import { TablePlugin } from '@udecode/plate-table';
+import { TablePlugin } from '@udecode/plate-table/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import Prism from 'prismjs';
 

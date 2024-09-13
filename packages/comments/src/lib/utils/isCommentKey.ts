@@ -1,4 +1,4 @@
-import { CommentsPlugin } from '../CommentsPlugin';
+import { BaseCommentsPlugin } from '../BaseCommentsPlugin';
 
 export const isCommentKey = (key: string) =>
-  key.startsWith(`${CommentsPlugin.key}_`);
+  key.startsWith(`${BaseCommentsPlugin.key}_`);

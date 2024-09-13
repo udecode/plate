@@ -1,7 +1,7 @@
 import {
   type HtmlDeserializer,
-  HtmlPlugin,
   type SlatePlugin,
+  HtmlPlugin,
   createSlatePlugin,
 } from '@udecode/plate-common';
 
@@ -47,6 +47,7 @@ const getParse =
   };
 
 export const DocxPlugin = createSlatePlugin({
+  key: 'docx',
   inject: {
     plugins: {
       [HtmlPlugin.key]: {
@@ -60,7 +61,6 @@ export const DocxPlugin = createSlatePlugin({
       },
     },
   },
-  key: 'docx',
 }).extend(({ editor }) => {
   return {
     override: {

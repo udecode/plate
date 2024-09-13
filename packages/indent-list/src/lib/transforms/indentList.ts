@@ -3,7 +3,10 @@ import type { Location } from 'slate';
 
 import { type SetIndentOptions, setIndent } from '@udecode/plate-indent';
 
-import { INDENT_LIST_KEYS, IndentListPlugin } from '../IndentListPlugin';
+import {
+  BaseIndentListPlugin,
+  INDENT_LIST_KEYS,
+} from '../BaseIndentListPlugin';
 import { ListStyleType } from '../types';
 
 export interface IndentListOptions<E extends TEditor>
@@ -20,7 +23,7 @@ export const indentList = <E extends SlateEditor>(
   setIndent(editor, {
     offset: 1,
     setNodesProps: () => ({
-      [IndentListPlugin.key]: listStyleType,
+      [BaseIndentListPlugin.key]: listStyleType,
     }),
     ...options,
   });
@@ -33,8 +36,8 @@ export const indentTodo = <E extends SlateEditor>(
   setIndent(editor, {
     offset: 1,
     setNodesProps: () => ({
+      [BaseIndentListPlugin.key]: listStyleType,
       [INDENT_LIST_KEYS.checked]: false,
-      [IndentListPlugin.key]: listStyleType,
     }),
     ...options,
   });

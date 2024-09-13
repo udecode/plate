@@ -47,8 +47,8 @@ export function BlockToolbar({
                 Lift Mode
               </Label>
               <Switch
-                checked={isLiftMode}
                 id={`lift-mode-${block.name}`}
+                checked={isLiftMode}
                 onCheckedChange={(value) => {
                   resizablePanelRef.current?.resize(100);
                   toggleLiftMode(block.name);
@@ -65,8 +65,8 @@ export function BlockToolbar({
               />
             </div>
             <Separator
-              className="mx-2 hidden h-4 lg:inline-flex"
               orientation="vertical"
+              className="mx-2 hidden h-4 lg:inline-flex"
             />
           </>
         )}
@@ -114,14 +114,14 @@ export function BlockToolbar({
         {block.code && (
           <>
             <Separator
-              className="mx-2 hidden h-4 md:flex"
               orientation="vertical"
+              className="mx-2 hidden h-4 md:flex"
             />
             <BlockCopyButton
-              code={block.code}
-              disabled={isLiftMode}
-              event="copy_block_code"
               name={block.name}
+              disabled={isLiftMode}
+              code={block.code}
+              event="copy_block_code"
             />
           </>
         )}

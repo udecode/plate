@@ -2,13 +2,13 @@
 import React from 'react';
 
 import { cn } from '@udecode/cn';
-import { BasicElementsPlugin } from "@udecode/plate-basic-elements";
-import { BasicMarksPlugin } from "@udecode/plate-basic-marks";
+import { BasicElementsPlugin } from "@udecode/plate-basic-elements/react";
+import { BasicMarksPlugin } from "@udecode/plate-basic-marks/react";
 import {
   type Decorate,
   type TText, createSlatePlugin, isText
 } from "@udecode/plate-common";
-import { Plate, type TRenderLeafProps , usePlateEditor } from "@udecode/plate-common/react";
+import { type TRenderLeafProps, Plate , usePlateEditor } from "@udecode/plate-common/react";
 import Prism from 'prismjs';
 
 import { editableProps } from '@/plate/demo/editableProps';
@@ -16,7 +16,7 @@ import { PlateUI } from '@/plate/demo/plate-ui';
 import { previewMdValue } from '@/plate/demo/values/previewMdValue';
 import { Editor } from '@/registry/default/plate-ui/editor';
 
-import 'prismjs/components/prism-markdown';
+import 'prismjs/components/prism-markdown.js';
 
 /**
  * Decorate texts with markdown preview.
@@ -106,8 +106,8 @@ export default function PreviewMdDemo() {
   const editor = usePlateEditor({
     override: { components: PlateUI },
     plugins: [BasicElementsPlugin, BasicMarksPlugin, createSlatePlugin({
-      decorate: decoratePreview,
       key: 'preview-md',
+      decorate: decoratePreview,
     })],
     value: previewMdValue,
   })

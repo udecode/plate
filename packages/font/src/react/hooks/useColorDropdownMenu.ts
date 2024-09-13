@@ -13,10 +13,10 @@ export const useColorDropdownMenuState = ({
   customColors,
   nodeType,
 }: {
-  closeOnSelect?: boolean;
   colors: { isBrightColor: boolean; name: string; value: string }[];
   customColors: { isBrightColor: boolean; name: string; value: string }[];
   nodeType: string;
+  closeOnSelect?: boolean;
 }) => {
   const editor = useEditorRef();
 
@@ -88,25 +88,25 @@ export const useColorDropdownMenuState = ({
     color,
     colors,
     customColors,
-    onToggle,
     open,
     selectedColor,
     updateColor,
     updateColorAndClose,
+    onToggle,
   };
 };
 
 export const useColorDropdownMenu = ({
-  onToggle,
   open,
+  onToggle,
 }: ReturnType<typeof useColorDropdownMenuState>) => {
   return {
     buttonProps: {
       pressed: open,
     },
     menuProps: {
-      onOpenChange: onToggle,
       open,
+      onOpenChange: onToggle,
     },
   };
 };

@@ -43,7 +43,7 @@ export function DashboardTableOfContents({ toc }: TocProps) {
 }
 
 function useActiveItem(itemIds: string[]) {
-  const [activeId, setActiveId] = React.useState<null | string>(null);
+  const [activeId, setActiveId] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     const observer = new IntersectionObserver(
@@ -92,7 +92,7 @@ function Tree({ activeItem, level = 1, tree }: TreeProps) {
     <ul className={cn('m-0 list-none', { 'pl-4': level !== 1 })}>
       {tree.items.map((item, index) => {
         return (
-          <li className={cn('mt-0 pt-2')} key={index}>
+          <li key={index} className={cn('mt-0 pt-2')}>
             <a
               className={cn(
                 'inline-block no-underline transition-colors hover:text-foreground',

@@ -13,7 +13,7 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 
-import { type ListConfig, ListItemPlugin } from './ListPlugin';
+import { type ListConfig, BaseListItemPlugin } from './BaseListPlugin';
 import { getHighestEmptyList } from './queries/getHighestEmptyList';
 import { hasListChild } from './queries/hasListChild';
 import { isAcrossListItems } from './queries/isAcrossListItems';
@@ -23,7 +23,7 @@ const getLiStart = (editor: SlateEditor) => {
 
   return getAboveNode(editor, {
     at: start,
-    match: { type: editor.getType(ListItemPlugin) },
+    match: { type: editor.getType(BaseListItemPlugin) },
   });
 };
 
@@ -47,7 +47,7 @@ export const withDeleteFragmentList: ExtendEditor<ListConfig> = ({
         const end = getEndPoint(editor, editor.selection as Range);
         const liEnd = getAboveNode(editor, {
           at: end,
-          match: { type: editor.getType(ListItemPlugin) },
+          match: { type: editor.getType(BaseListItemPlugin) },
         });
         const liEndCanBeDeleted = liEnd && !hasListChild(editor, liEnd[0]);
         const liEndPathRef = liEndCanBeDeleted

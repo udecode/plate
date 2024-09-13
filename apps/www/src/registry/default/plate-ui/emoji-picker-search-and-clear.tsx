@@ -26,15 +26,15 @@ export function EmojiPickerSearchAndClear({
       </div>
       {searchValue && (
         <Button
-          aria-label="Clear"
+          size="icon"
+          variant="ghost"
           className={cn(
             'absolute right-1 top-1/2 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center border-none bg-transparent'
           )}
           onClick={clearSearch}
-          size="icon"
           title={i18n.clear}
+          aria-label="Clear"
           type="button"
-          variant="ghost"
         >
           <DeleteIcon className="size-4" />
         </Button>

@@ -2,24 +2,27 @@
   "name": "@udecode/plate-ui",
   "version": "34.0.2",
   "description": "Add Plate components to your apps.",
-  "license": "MIT",
+  "keywords": [
+    "components",
+    "plate",
+    "slate",
+    "ui",
+    "tailwind",
+    "radix-ui",
+    "shadcn"
+  ],
   "homepage": "https://platejs.org",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
     "directory": "packages/cli"
   },
-  "bugs": {
-    "url": "https://github.com/udecode/plate/issues"
-  },
-  "type": "module",
+  "license": "MIT",
   "sideEffects": false,
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist/**/*"
-  ],
+  "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -28,7 +31,13 @@
       "require": "./dist/index.js"
     }
   },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "bin": "./dist/index.js",
+  "files": [
+    "dist/**/*"
+  ],
   "scripts": {
     "build": "yarn tsup",
     "build:watch": "yarn tsup --watch",
@@ -67,15 +76,6 @@
     "type-fest": "^4.13.1",
     "vitest": "^0.32.4"
   },
-  "keywords": [
-    "components",
-    "plate",
-    "slate",
-    "ui",
-    "tailwind",
-    "radix-ui",
-    "shadcn"
-  ],
   "publishConfig": {
     "access": "public"
   }

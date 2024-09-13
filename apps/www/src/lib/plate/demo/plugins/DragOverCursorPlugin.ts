@@ -4,6 +4,8 @@ import { createPlatePlugin, findEventRange } from '@udecode/plate-common/react';
 import { DndPlugin } from '@udecode/plate-dnd';
 
 export const DragOverCursorPlugin = createPlatePlugin({
+  key: 'dragOverCursor',
+  options: { cursors: {} as Record<string, CursorState<CursorData>> },
   handlers: {
     onDragEnd: ({ editor, plugin }) => {
       editor.setOption(plugin, 'cursors', {});
@@ -20,13 +22,13 @@ export const DragOverCursorPlugin = createPlatePlugin({
 
       editor.setOption(plugin, 'cursors', {
         drag: {
+          key: 'drag',
           data: {
             style: {
               backgroundColor: 'hsl(222.2 47.4% 11.2%)',
               width: 3,
             },
           },
-          key: 'drag',
           selection: range,
         },
       });
@@ -35,6 +37,4 @@ export const DragOverCursorPlugin = createPlatePlugin({
       editor.setOption(plugin, 'cursors', {});
     },
   },
-  key: 'dragOverCursor',
-  options: { cursors: {} as Record<string, CursorState<CursorData>> },
 });

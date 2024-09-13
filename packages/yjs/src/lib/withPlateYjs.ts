@@ -2,7 +2,7 @@ import type { ExtendEditor, SlateEditor } from '@udecode/plate-common';
 
 import * as Y from 'yjs';
 
-import type { YjsConfig } from './YjsPlugin';
+import type { YjsConfig } from './BaseYjsPlugin';
 
 import { type PlateYjsEditorProps, withTCursors } from './withTCursors';
 import { withTYHistory } from './withTYHistory';

@@ -20,7 +20,6 @@ export const BlockSelection = ({ children }: any) => {
       {/* TODO: click to focus the node */}
       <div
         className={rightSelectionAreaClassName}
-        data-plate-selectable
         style={{
           height: '100%',
           position: 'absolute',
@@ -30,6 +29,7 @@ export const BlockSelection = ({ children }: any) => {
           width: editorPaddingRight ?? 'max(5%, 24px)',
           zIndex: 1,
         }}
+        data-plate-selectable
       />
       {children}
     </div>

@@ -1,9 +1,9 @@
 import { useStableMemo } from '@udecode/plate-common/react';
 
 import {
+  type EmojiSettingsType,
   EmojiFloatingIndexSearch,
   EmojiSettings,
-  type EmojiSettingsType,
 } from '../../lib';
 import { FrequentEmojiStorage } from '../storage';
 import { EmojiFloatingLibrary } from '../utils';

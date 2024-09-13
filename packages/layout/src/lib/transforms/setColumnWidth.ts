@@ -10,7 +10,7 @@ import {
 
 import type { TColumnElement, TColumnGroupElement } from '../types';
 
-import { ColumnItemPlugin } from '../ColumnPlugin';
+import { BaseColumnItemPlugin } from '../BaseColumnPlugin';
 
 export const setColumnWidth = (
   editor: SlateEditor,
@@ -37,7 +37,7 @@ export const setColumnWidth = (
       { width: width },
       {
         at: item,
-        match: (n) => isElement(n) && n.type === ColumnItemPlugin.key,
+        match: (n) => isElement(n) && n.type === BaseColumnItemPlugin.key,
       }
     );
   });

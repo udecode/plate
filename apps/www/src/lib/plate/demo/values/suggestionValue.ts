@@ -3,31 +3,31 @@ import type { SuggestionUser, TSuggestion } from '@udecode/plate-suggestion';
 
 export const usersData: Record<string, SuggestionUser> = {
   1: {
+    id: '1',
     avatarUrl: 'https://avatars.githubusercontent.com/u/1863771?v=4',
     hue: Math.floor(Math.random() * 360),
-    id: '1',
     isOwner: true,
     name: 'Alice',
   },
   2: {
-    hue: Math.floor(Math.random() * 360),
     id: '2',
+    hue: Math.floor(Math.random() * 360),
     name: 'Bob',
   },
 };
 
 export const suggestionsData: Record<string, TSuggestion> = {
   1: {
-    createdAt: 1_663_453_625_129,
     id: '1',
+    createdAt: 1_663_453_625_129,
   },
   2: {
-    createdAt: 1_663_453_729_191,
     id: '2',
+    createdAt: 1_663_453_729_191,
   },
   3: {
-    createdAt: 1_663_453_740_180,
     id: '3',
+    createdAt: 1_663_453_740_180,
   },
 };
 

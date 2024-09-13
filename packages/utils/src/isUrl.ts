@@ -15,8 +15,8 @@ export const isUrl = (string: any) => {
     return false;
   }
 
-  const generalMatch = string.match(protocolAndDomainRE);
-  const emailLinkMatch = string.match(emailLintRE);
+  const generalMatch = protocolAndDomainRE.exec(string);
+  const emailLinkMatch = emailLintRE.exec(string);
 
   const match = generalMatch || emailLinkMatch;
 

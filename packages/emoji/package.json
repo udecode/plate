@@ -50,7 +50,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@emoji-mart/data": "^1.1.2",
+    "@emoji-mart/data": "^1.2.1",
     "@udecode/plate-combobox": "38.0.0"
   },
   "devDependencies": {

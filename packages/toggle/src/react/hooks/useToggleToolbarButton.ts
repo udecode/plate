@@ -24,6 +24,7 @@ export const useToggleToolbarButton = ({
 
   return {
     props: {
+      pressed,
       onClick: () => {
         openNextToggles(editor);
         editor.tf.toggle.block({ type: TogglePlugin.key });
@@ -33,7 +34,6 @@ export const useToggleToolbarButton = ({
       onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
       },
-      pressed,
     },
   };
 };

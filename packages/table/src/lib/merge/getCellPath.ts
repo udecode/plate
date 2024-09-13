@@ -6,7 +6,7 @@ import type {
   TTableRowElement,
 } from '../types';
 
-import { TablePlugin } from '../TablePlugin';
+import { BaseTablePlugin } from '../BaseTablePlugin';
 import { getCellIndices } from './getCellIndices';
 
 export const getCellPath = (
@@ -15,7 +15,7 @@ export const getCellPath = (
   curRowIndex: number,
   curColIndex: number
 ) => {
-  const { _cellIndices: cellIndices } = editor.getOptions(TablePlugin);
+  const { _cellIndices: cellIndices } = editor.getOptions(BaseTablePlugin);
   const [tableNode, tablePath] = tableEntry;
 
   const rowElem = tableNode.children[curRowIndex] as TTableRowElement;

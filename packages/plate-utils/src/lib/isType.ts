@@ -6,7 +6,7 @@ import castArray from 'lodash/castArray.js';
 export const isType = (
   editor: SlateEditor,
   node: any,
-  key?: string | string[]
+  key?: string[] | string
 ) => {
   const keys = castArray(key);
   const types: string[] = [];

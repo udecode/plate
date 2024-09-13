@@ -33,7 +33,7 @@ export const useTableElementState = ({
 
   const marginLeft = disableMarginLeft
     ? 0
-    : marginLeftOverride ?? element.marginLeft ?? 0;
+    : (marginLeftOverride ?? element.marginLeft ?? 0);
 
   let colSizes = useTableColSizes(element);
 

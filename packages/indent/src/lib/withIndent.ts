@@ -5,7 +5,7 @@ import {
   unsetNodes,
 } from '@udecode/plate-common';
 
-import type { IndentConfig, TIndentElement } from './IndentPlugin';
+import type { IndentConfig, TIndentElement } from './BaseIndentPlugin';
 
 /**
  * - `node.indent` can not exceed `indentMax`

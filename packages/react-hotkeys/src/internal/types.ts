@@ -29,8 +29,8 @@ export type KeyboardModifiers = {
 };
 
 export type Hotkey = {
-  description?: string;
   keys?: readonly string[];
+  description?: string;
   scopes?: Scopes;
 } & KeyboardModifiers;
 
@@ -55,7 +55,7 @@ export type Options = {
   // Enable hotkeys on tags with contentEditable props. (Default: false)
   enableOnContentEditable?: boolean;
   // Enable hotkeys on a list of tags. (Default: false)
-  enableOnFormTags?: boolean | readonly FormTags[];
+  enableOnFormTags?: readonly FormTags[] | boolean;
   // Main setting that determines if the hotkey is enabled or not. (Default: true)
   enabled?: Trigger;
   // Ignore evenets based on a condition (Default: undefined)

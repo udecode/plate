@@ -1,27 +1,27 @@
 import React from 'react';
 
 import { type CreatePlateEditorOptions, createPlateEditor } from '../editor';
-import { Plate, type PlateProps } from './Plate';
-import { PlateContent, type PlateContentProps } from './PlateContent';
+import { type PlateProps, Plate } from './Plate';
+import { type PlateContentProps, PlateContent } from './PlateContent';
 
 export function PlateTest({
   editableProps,
   shouldNormalizeEditor,
   variant = 'wordProcessor',
   ...props
-}: {
-  editableProps?: PlateContentProps;
-  variant?: 'comment' | 'wordProcessor';
-} & CreatePlateEditorOptions &
-  PlateProps) {
-  const { editor: _editor, id, plugins } = props;
+}: CreatePlateEditorOptions &
+  PlateProps & {
+    editableProps?: PlateContentProps;
+    variant?: 'comment' | 'wordProcessor';
+  }) {
+  const { id, editor: _editor, plugins } = props;
 
   let editor = _editor;
 
   if (editor && !editor.pluginList) {
     editor = createPlateEditor({
-      editor,
       id,
+      editor,
       plugins,
       shouldNormalizeEditor,
     });
@@ -30,9 +30,9 @@ export function PlateTest({
   return (
     <Plate {...props} editor={editor}>
       <PlateContent
-        autoFocus
         data-testid="slate-content-editable"
         data-variant={variant}
+        autoFocus
         {...editableProps}
       />
     </Plate>

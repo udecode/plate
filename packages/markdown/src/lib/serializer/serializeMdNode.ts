@@ -13,10 +13,20 @@ type MarkFormats = Record<
   | 'italic'
   | 'strikethrough'
   | 'underline',
-  null | string | string[]
+  string[] | string | null
 >;
 
 export type SerializeMdNodeOptions = {
+  /** The type of the node. */
+  type: string;
+
+  /** Serialize node to markdown. */
+  serialize?: (
+    children: string,
+    node: MdNodeType,
+    opts: SerializeMdOptions
+  ) => string;
+
   /**
    * Whether the node is enabled. If false, the node will be considered as
    * paragraph.
@@ -31,18 +41,8 @@ export type SerializeMdNodeOptions = {
    */
   isVoid?: boolean;
 
-  /** Serialize node to markdown. */
-  serialize?: (
-    children: string,
-    node: MdNodeType,
-    opts: SerializeMdOptions
-  ) => string;
-
   /** Whether the node should be skipped (serialized to empty string). */
   skip?: boolean;
-
-  /** The type of the node. */
-  type: string;
 };
 
 export interface SerializeMdOptions {
@@ -284,7 +284,7 @@ export function serializeMdNode(
 // bring the whitespace back. So our returned string looks like this: "   **foo**   "
 export function retainWhitespaceAndFormat(
   string: string,
-  format: string | string[]
+  format: string[] | string
 ) {
   const formats = Array.isArray(format) ? format : [format];
   const start = formats[0];

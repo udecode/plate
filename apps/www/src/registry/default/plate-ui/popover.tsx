@@ -20,11 +20,11 @@ export const PopoverContent = withRef<typeof PopoverPrimitive.Content>(
   ({ align = 'center', className, sideOffset = 4, style, ...props }, ref) => (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Content
-        align={align}
-        className={cn(popoverVariants(), className)}
         ref={ref}
-        sideOffset={sideOffset}
+        className={cn(popoverVariants(), className)}
         style={{ zIndex: 1000, ...style }}
+        align={align}
+        sideOffset={sideOffset}
         {...props}
       />
     </PopoverPrimitive.Portal>

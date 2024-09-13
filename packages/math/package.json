@@ -50,7 +50,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "katex": "0.16.10"
+    "katex": "0.16.11"
   },
   "devDependencies": {
     "@types/katex": "0.16.7",

@@ -59,7 +59,10 @@ module.exports = {
     '^.+\\.(t|j)sx?$': '@swc/jest',
   },
   transformIgnorePatterns: [
-    '/node_modules/(?!(react-dnd|dnd-core|@react-dnd|react-dnd-html5-backend|react-tweet)/)',
+    '/node_modules/(?!(react-dnd|dnd-core|@react-dnd|react-dnd-html5-backend|react-tweet|unified' +
+    '|remark-parse|bail|devlop|is-plain-obj|trough|vfile|vfile-message|is-reference|is-buffer|@types/unist' +
+    '|unist-util-stringify-position|mdast-util-from-markdown|mdast-util-to-string' +
+    ')/)',
   ],
   watchman: false,
 };

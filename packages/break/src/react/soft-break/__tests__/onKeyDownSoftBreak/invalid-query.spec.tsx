@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { CodeBlockPlugin } from '@udecode/plate-code-block';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import {
   createPlateEditor,
   getEditorPlugin,

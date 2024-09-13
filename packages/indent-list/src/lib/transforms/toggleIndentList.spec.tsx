@@ -3,11 +3,11 @@
 import type { SlateEditor } from '@udecode/plate-common';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { IndentPlugin } from '@udecode/plate-indent';
+import { IndentPlugin } from '@udecode/plate-indent/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { indentListPluginPage } from '../../__tests__/indentListPluginPage';
-import { IndentListPlugin } from '../IndentListPlugin';
+import { BaseIndentListPlugin } from '../BaseIndentListPlugin';
 import { toggleIndentList } from './toggleIndentList';
 
 jsx;
@@ -33,7 +33,7 @@ describe('toggleIndentList', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [IndentListPlugin, IndentPlugin],
+        plugins: [BaseIndentListPlugin, IndentPlugin],
       });
 
       toggleIndentList(editor, { listStyleType: 'disc' });
@@ -61,7 +61,7 @@ describe('toggleIndentList', () => {
 
         const editor = createPlateEditor({
           editor: input,
-          plugins: [IndentListPlugin, IndentPlugin],
+          plugins: [BaseIndentListPlugin, IndentPlugin],
         });
 
         toggleIndentList(editor, { listStyleType: 'disc' });
@@ -91,7 +91,7 @@ describe('toggleIndentList', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [IndentListPlugin, IndentPlugin],
+        plugins: [BaseIndentListPlugin, IndentPlugin],
       });
 
       toggleIndentList(editor, { listStyleType: 'disc' });
@@ -170,7 +170,7 @@ describe('toggleIndentList', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [IndentListPlugin, IndentPlugin],
+        plugins: [BaseIndentListPlugin, IndentPlugin],
       });
 
       toggleIndentList(editor, { listStyleType: 'decimal' });
@@ -214,7 +214,7 @@ describe('toggleIndentList', () => {
 
         const editor = createPlateEditor({
           editor: input,
-          plugins: [IndentListPlugin, IndentPlugin],
+          plugins: [BaseIndentListPlugin, IndentPlugin],
         });
 
         toggleIndentList(editor, { listStyleType: 'disc' });
@@ -257,7 +257,7 @@ describe('toggleIndentList', () => {
 
         const editor = createPlateEditor({
           editor: input,
-          plugins: [IndentListPlugin, IndentPlugin],
+          plugins: [BaseIndentListPlugin, IndentPlugin],
         });
 
         toggleIndentList(editor, { listStyleType: 'decimal' });
@@ -300,7 +300,7 @@ describe('toggleIndentList', () => {
 
         const editor = createPlateEditor({
           editor: input,
-          plugins: [IndentListPlugin, IndentPlugin],
+          plugins: [BaseIndentListPlugin, IndentPlugin],
         });
 
         toggleIndentList(editor, { listStyleType: 'disc' });

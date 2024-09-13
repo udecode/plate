@@ -2,13 +2,13 @@ import { type SlateEditor, getNodeEntries } from '@udecode/plate-common';
 
 import type { TMediaElement } from '../../index';
 
-import { ImagePlugin } from '../../lib/image/ImagePlugin';
+import { BaseImagePlugin } from '../../lib/image/BaseImagePlugin';
 import { type PreviewItem, imagePreviewActions } from './ImagePreviewStore';
 
 const getUrlList = (editor: SlateEditor) => {
   const enties = getNodeEntries(editor, {
     at: [],
-    match: (n) => n.type === ImagePlugin.key,
+    match: (n) => n.type === BaseImagePlugin.key,
   });
 
   return Array.from(enties, (item) => ({

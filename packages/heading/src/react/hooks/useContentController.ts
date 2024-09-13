@@ -46,13 +46,13 @@ export const useContentController = ({
   const [activeContentId, setActiveContentId] = React.useState(activeId);
 
   const onContentScroll = ({
+    id,
     behavior = 'instant',
     el,
-    id,
   }: {
-    behavior?: ScrollBehavior;
-    el: HTMLElement;
     id: string;
+    el: HTMLElement;
+    behavior?: ScrollBehavior;
   }) => {
     setActiveContentId(id);
 

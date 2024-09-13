@@ -47,8 +47,8 @@ export const useFloatingLinkNewTabInput = ({
   return {
     props: {
       checked,
-      onChange,
       type: 'checkbox',
+      onChange,
     },
     ref,
   };

@@ -1,7 +1,7 @@
 import {
-  Editor,
   type Location,
   type Node,
+  Editor,
   Path,
   Range,
   Text,

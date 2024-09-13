@@ -1,6 +1,6 @@
 import { Key, toPlatePlugin } from '@udecode/plate-common/react';
 
-import { SubscriptPlugin as BaseSubscriptPlugin } from '../lib/SubscriptPlugin';
+import { BaseSubscriptPlugin } from '../lib/BaseSubscriptPlugin';
 import { SuperscriptPlugin } from './SuperscriptPlugin';
 
 export const SubscriptPlugin = toPlatePlugin(
@@ -8,14 +8,14 @@ export const SubscriptPlugin = toPlatePlugin(
   ({ editor, type }) => ({
     shortcuts: {
       toggleSubscript: {
-        handler: () => {
-          editor.tf.toggle.mark({
-            clear: editor.getType(SuperscriptPlugin),
-            key: type,
-          });
-        },
         keys: [[Key.Mod, ',']],
         preventDefault: true,
+        handler: () => {
+          editor.tf.toggle.mark({
+            key: type,
+            clear: editor.getType(SuperscriptPlugin),
+          });
+        },
       },
     },
   })

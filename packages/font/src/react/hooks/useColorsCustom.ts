@@ -8,10 +8,10 @@ export const useColorsCustomState = ({
   customColors,
   updateCustomColor,
 }: {
-  color?: string;
   colors: any[];
   customColors: any[];
   updateCustomColor: (color: string) => void;
+  color?: string;
 }) => {
   const [customColor, setCustomColor] = React.useState<string>();
 
@@ -65,11 +65,11 @@ export const useColorsCustom = ({
 
   return {
     inputProps: {
+      value,
       onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
         setValue(e.target.value);
         updateCustomColorDebounced(e.target.value);
       },
-      value,
     },
     menuItemProps: {
       onSelect: (e: Event) => {

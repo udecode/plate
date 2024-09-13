@@ -8,9 +8,9 @@ import type {
 import type { PlatePluginContext } from './PlatePlugin';
 
 export type DOMHandler<C extends AnyPluginConfig = PluginConfig, EV = {}> = (
-  ctx: {
+  ctx: PlatePluginContext<C> & {
     event: EV;
-  } & PlatePluginContext<C>
+  }
 ) => HandlerReturnType;
 
 export interface DOMHandlers<C extends AnyPluginConfig = PluginConfig> {

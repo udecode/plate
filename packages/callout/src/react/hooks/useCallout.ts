@@ -25,8 +25,8 @@ export const useCalloutState = () => {
   );
 
   return {
-    icon: element.icon,
     id: element.id,
+    icon: element.icon,
     setCalloutState,
     variant: element.variant,
   };
@@ -56,11 +56,11 @@ export const useCalloutEmojiPick = ({
     },
     props: {
       isOpen,
+      setIsOpen,
       onSelectEmoji: (emojiValue: any) => {
         setCalloutState({ icon: emojiValue.skins[0].native });
         setIsOpen(false);
       },
-      setIsOpen,
     },
   };
 };

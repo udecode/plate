@@ -21,8 +21,8 @@ export const useMediaController = ({
 
 export const useMediaControllerDropDownMenu = (props: {
   openState: {
-    onOpenChange: (_value?: boolean) => void;
     open: boolean;
+    onOpenChange: (_value?: boolean) => void;
   };
   setAlignOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {

@@ -13,7 +13,7 @@ export function ProgressBar({
 }: {
   upload: UploadProgress;
 } & HTMLAttributes<HTMLDivElement>) {
-  const [width, setWidth] = useState<null | number>(null);
+  const [width, setWidth] = useState<number | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -39,8 +39,8 @@ export function ProgressBar({
 
   return (
     <div
-      className={cn('h-4 rounded-lg bg-gray-100 shadow-md', className)}
       ref={ref}
+      className={cn('h-4 rounded-lg bg-gray-100 shadow-md', className)}
       {...props}
     >
       <div
@@ -69,8 +69,8 @@ export function FailBar({
 }
 
 export function StatusBar(props: {
-  children?: React.ReactNode;
   upload: Upload;
+  children?: React.ReactNode;
 }) {
   const { children, upload } = props;
 

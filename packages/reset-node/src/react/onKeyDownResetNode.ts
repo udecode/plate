@@ -7,7 +7,7 @@ import {
   someNode,
 } from '@udecode/plate-common';
 
-import type { ResetNodeConfig } from '../lib/ResetNodePlugin';
+import type { ResetNodeConfig } from '../lib/BaseResetNodePlugin';
 
 export const SIMULATE_BACKSPACE: any = {
   key: '',
@@ -27,7 +27,7 @@ export const onKeyDownResetNode: KeyboardHandler<ResetNodeConfig> = ({
 
   if (!editor.selection) return;
   if (isCollapsed(editor.selection)) {
-    rules.forEach(({ defaultType, hotkey, onReset, predicate, types }) => {
+    rules.forEach(({ defaultType, hotkey, predicate, types, onReset }) => {
       if (
         hotkey &&
         isHotkey(hotkey, event as any) &&

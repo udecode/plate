@@ -1,9 +1,6 @@
 import { toPlatePlugin } from '@udecode/plate-common/react';
 
-import {
-  MentionInputPlugin as BaseMentionInputPlugin,
-  MentionPlugin as BaseMentionPlugin,
-} from '../lib';
+import { BaseMentionInputPlugin, BaseMentionPlugin } from '../lib';
 
 export const MentionPlugin = toPlatePlugin(BaseMentionPlugin);
 

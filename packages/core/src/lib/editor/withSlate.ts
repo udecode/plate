@@ -23,6 +23,8 @@ export type BaseWithSlateOptions<
   V extends Value = Value,
   P extends AnyPluginConfig = CorePlugin,
 > = {
+  id?: any;
+
   /**
    * Select the editor after initialization.
    *
@@ -32,9 +34,7 @@ export type BaseWithSlateOptions<
    * - `false`: Do not select anything
    * - `'start'`: Select the start of the editor
    */
-  autoSelect?: 'end' | 'start' | boolean;
-
-  id?: any;
+  autoSelect?: boolean | 'end' | 'start';
 
   /** Specifies the maximum number of characters allowed in the editor. */
   maxLength?: number;
@@ -58,10 +58,7 @@ export type BaseWithSlateOptions<
 export type WithSlateOptions<
   V extends Value = Value,
   P extends AnyPluginConfig = CorePlugin,
-> = {
-  /** Function to configure the root plugin */
-  rootPlugin?: (plugin: AnySlatePlugin) => AnySlatePlugin;
-} & BaseWithSlateOptions<V, P> &
+> = BaseWithSlateOptions<V, P> &
   Pick<
     Partial<AnySlatePlugin>,
     | 'api'
@@ -72,7 +69,10 @@ export type WithSlateOptions<
     | 'options'
     | 'override'
     | 'transforms'
-  >;
+  > & {
+    /** Function to configure the root plugin */
+    rootPlugin?: (plugin: AnySlatePlugin) => AnySlatePlugin;
+  };
 
 /**
  * Applies Plate enhancements to an editor instance (non-React version).
@@ -91,8 +91,8 @@ export const withSlate = <
 >(
   e: TEditor,
   {
-    autoSelect,
     id,
+    autoSelect,
     maxLength,
     plugins = [],
     rootPlugin,
@@ -219,14 +219,14 @@ export const withSlate = <
 export type CreateSlateEditorOptions<
   V extends Value = Value,
   P extends AnyPluginConfig = CorePlugin,
-> = {
+> = WithSlateOptions<V, P> & {
   /**
    * Initial editor to be extended with `withPlate`.
    *
    * @default createEditor()
    */
   editor?: TEditor;
-} & WithSlateOptions<V, P>;
+};
 
 /**
  * Creates a Slate editor without React-specific enhancements.

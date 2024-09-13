@@ -46,7 +46,7 @@ export function ThemesTabContent() {
           </div>
         </div>
 
-        <CopyCodeButton className="[&_svg]:hidden" size="sm" variant="ghost" />
+        <CopyCodeButton size="sm" variant="ghost" className="[&_svg]:hidden" />
       </div>
       <div className="flex flex-1 flex-col space-y-4 md:space-y-6">
         <div className="space-y-1.5">
@@ -58,9 +58,9 @@ export function ThemesTabContent() {
                 <span className="sr-only">About styles</span>
               </PopoverTrigger>
               <PopoverContent
+                className="space-y-3 rounded-[0.5rem] text-sm"
                 align="start"
                 alignOffset={-20}
-                className="space-y-3 rounded-[0.5rem] text-sm"
                 side="right"
               >
                 <p className="font-medium">What is a style?</p>
@@ -79,17 +79,19 @@ export function ThemesTabContent() {
           </div>
           <div className="flex justify-between">
             <Button
+              size="sm"
+              variant="outline"
               className={cn(
                 config.style === 'default' && 'border-2 border-primary'
               )}
               onClick={() => setConfig({ ...config, style: 'default' })}
-              size="sm"
-              variant="outline"
             >
               Default
             </Button>
 
             <Button
+              size="icon"
+              variant="ghost"
               className="ml-auto rounded-[0.5rem]"
               onClick={() => {
                 setConfig({
@@ -98,8 +100,6 @@ export function ThemesTabContent() {
                   theme: 'slate',
                 });
               }}
-              size="icon"
-              variant="ghost"
             >
               <ResetIcon />
               <span className="sr-only">Reset</span>
@@ -114,18 +114,13 @@ export function ThemesTabContent() {
 
               return mounted ? (
                 <Button
+                  key={theme.name}
+                  size="sm"
+                  variant="outline"
                   className={cn(
                     'justify-start',
                     isActive && 'border-2 border-primary'
                   )}
-                  key={theme.name}
-                  onClick={() => {
-                    setConfig({
-                      ...config,
-                      theme: theme.name,
-                    });
-                  }}
-                  size="sm"
                   style={
                     {
                       '--theme-primary': `hsl(${
@@ -133,7 +128,12 @@ export function ThemesTabContent() {
                       })`,
                     } as React.CSSProperties
                   }
-                  variant="outline"
+                  onClick={() => {
+                    setConfig({
+                      ...config,
+                      theme: theme.name,
+                    });
+                  }}
                 >
                   <span
                     className={cn(
@@ -145,7 +145,7 @@ export function ThemesTabContent() {
                   {theme.label}
                 </Button>
               ) : (
-                <Skeleton className="h-8 w-full" key={theme.name} />
+                <Skeleton key={theme.name} className="h-8 w-full" />
               );
             })}
           </div>
@@ -156,19 +156,19 @@ export function ThemesTabContent() {
             {['0', '0.3', '0.5', '0.75', '1.0'].map((value) => {
               return (
                 <Button
+                  key={value}
+                  size="sm"
+                  variant="outline"
                   className={cn(
                     config.radius === Number.parseFloat(value) &&
                       'border-2 border-primary'
                   )}
-                  key={value}
                   onClick={() => {
                     setConfig({
                       ...config,
                       radius: Number.parseFloat(value),
                     });
                   }}
-                  size="sm"
-                  variant="outline"
                 >
                   {value}
                 </Button>
@@ -182,19 +182,19 @@ export function ThemesTabContent() {
             {mounted ? (
               <>
                 <Button
-                  className={cn(mode === 'light' && 'border-2 border-primary')}
-                  onClick={() => setMode('light')}
                   size="sm"
                   variant="outline"
+                  className={cn(mode === 'light' && 'border-2 border-primary')}
+                  onClick={() => setMode('light')}
                 >
                   <SunIcon className="mr-1 -translate-x-1" />
                   Light
                 </Button>
                 <Button
-                  className={cn(mode === 'dark' && 'border-2 border-primary')}
-                  onClick={() => setMode('dark')}
                   size="sm"
                   variant="outline"
+                  className={cn(mode === 'dark' && 'border-2 border-primary')}
+                  onClick={() => setMode('dark')}
                 >
                   <MoonIcon className="mr-1 -translate-x-1" />
                   Dark

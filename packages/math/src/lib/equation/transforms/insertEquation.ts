@@ -6,7 +6,7 @@ import {
 
 import type { TEquationElement } from '../types';
 
-import { EquationPlugin } from '../EquationPlugin';
+import { BaseEquationPlugin } from '../BaseEquationPlugin';
 
 export const insertEquation = <E extends SlateEditor>(
   editor: E,
@@ -17,7 +17,7 @@ export const insertEquation = <E extends SlateEditor>(
     {
       children: [{ text: '' }],
       texExpression: '',
-      type: editor.getType(EquationPlugin),
+      type: editor.getType(BaseEquationPlugin),
     },
     options as any
   );

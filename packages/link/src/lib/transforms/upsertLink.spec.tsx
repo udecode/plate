@@ -3,7 +3,7 @@
 import { createSlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { type LinkConfig, LinkPlugin } from '../LinkPlugin';
+import { type BaseLinkConfig, BaseLinkPlugin } from '../BaseLinkPlugin';
 import { upsertLink } from './upsertLink';
 
 jsx;
@@ -11,10 +11,10 @@ jsx;
 const url = 'http://google.com';
 const urlOutput = 'http://output.com';
 
-const createEditor = (editor: any, options?: LinkConfig['options']) =>
+const createEditor = (editor: any, options?: BaseLinkConfig['options']) =>
   createSlateEditor({
     editor,
-    plugins: [LinkPlugin.configure({ options })],
+    plugins: [BaseLinkPlugin.configure({ options })],
   });
 
 describe('upsertLink', () => {

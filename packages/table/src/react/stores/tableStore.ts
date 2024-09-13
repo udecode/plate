@@ -9,8 +9,8 @@ import type { TableStoreSizeOverrides } from '../../lib';
 export const { TableProvider, tableStore, useTableStore } = createAtomStore(
   {
     colSizeOverrides: atom(new Map() as TableStoreSizeOverrides),
-    hoveredColIndex: null as null | number,
-    marginLeftOverride: null as null | number,
+    hoveredColIndex: null as number | null,
+    marginLeftOverride: null as number | null,
     rowSizeOverrides: atom(new Map() as TableStoreSizeOverrides),
     selectedCells: null as TElement[] | null,
     selectedTable: null as TElement[] | null,
@@ -24,7 +24,7 @@ const useOverrideSizeFactory = (
   ) => void
 ) =>
   React.useCallback(
-    (index: number, size: null | number) => {
+    (index: number, size: number | null) => {
       setOverrides((overrides) => {
         const newOverrides = new Map(overrides);
 

@@ -3,5 +3,5 @@ import type { ExcalidrawElement } from '@excalidraw/excalidraw/types/element/typ
 
 export interface ExcalidrawDataState
   extends Omit<ImportedDataState, 'elements'> {
-  elements?: null | readonly Partial<ExcalidrawElement>[];
+  elements?: readonly Partial<ExcalidrawElement>[] | null;
 }

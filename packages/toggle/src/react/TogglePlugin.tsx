@@ -5,9 +5,9 @@ import { toTPlatePlugin } from '@udecode/plate-common/react';
 import type { buildToggleIndex } from './toggleIndexAtom';
 
 import {
-  type ToggleConfig as BaseToggleConfig,
-  TogglePlugin as BaseTogglePlugin,
-} from '../lib/TogglePlugin';
+  type BaseToggleConfig,
+  BaseTogglePlugin,
+} from '../lib/BaseTogglePlugin';
 import { renderToggleAboveNodes } from './renderToggleAboveNodes';
 import { useHooksToggle } from './useHooksToggle';
 import { withToggle } from './withToggle';

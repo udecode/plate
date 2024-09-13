@@ -94,7 +94,7 @@ export function CountingNumbers({
   );
 
   return (
-    <p className={className} ref={ref}>
+    <p ref={ref} className={className}>
       {formattedNumber}
     </p>
   );

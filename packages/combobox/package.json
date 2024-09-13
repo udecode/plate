@@ -49,9 +49,6 @@
     "test:watch": "yarn p:test:watch",
     "typecheck": "yarn p:typecheck"
   },
-  "dependencies": {
-    "downshift": "^6.1.12"
-  },
   "devDependencies": {
     "@udecode/plate-common": "workspace:^"
   },

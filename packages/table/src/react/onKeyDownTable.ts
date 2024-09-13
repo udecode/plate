@@ -4,11 +4,11 @@ import {
   isHotkey,
   select,
 } from '@udecode/plate-common';
-import { Hotkeys, type KeyboardHandler } from '@udecode/plate-common/react';
+import { type KeyboardHandler, Hotkeys } from '@udecode/plate-common/react';
 
 import {
-  KEY_SHIFT_EDGES,
   type TableConfig,
+  KEY_SHIFT_EDGES,
   getNextTableCell,
   getPreviousTableCell,
   getTableEntries,

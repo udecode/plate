@@ -7,7 +7,7 @@ import {
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
-  TableRowPlugin,
+  BaseTableRowPlugin,
   computeCellIndices,
   getCellIndices,
   getColSpan,
@@ -55,7 +55,7 @@ export const useTableCellElementState = ({
   const selectedCells = useTableStore().get.selectedCells();
 
   const tableElement = useElement<TTableElement>(TablePlugin.key);
-  const rowElement = useElement<TTableRowElement>(TableRowPlugin.key);
+  const rowElement = useElement<TTableRowElement>(BaseTableRowPlugin.key);
   const rowSizeOverrides = useTableStore().get.rowSizeOverrides();
 
   const { _cellIndices, enableMerging } = editor.getOptions(TablePlugin);

@@ -17,12 +17,15 @@ import {
 } from '@udecode/plate-common';
 import { Path, Range } from 'slate';
 
-import { ListItemContentPlugin, ListItemPlugin } from '../ListPlugin';
+import {
+  BaseListItemContentPlugin,
+  BaseListItemPlugin,
+} from '../BaseListPlugin';
 
 /** Insert list item if selection in li>p. TODO: test */
 export const insertListItem = (editor: SlateEditor): boolean => {
-  const liType = editor.getType(ListItemPlugin);
-  const licType = editor.getType(ListItemContentPlugin);
+  const liType = editor.getType(BaseListItemPlugin);
+  const licType = editor.getType(BaseListItemContentPlugin);
 
   if (!editor.selection) {
     return false;

@@ -360,37 +360,37 @@ const fixtures: Record<string, ComputeDiffFixture> = {
   changeIdBlock: {
     expected: [
       {
-        children: [{ text: 'PingCode' }],
         id: '1',
+        children: [{ text: 'PingCode' }],
         type: 'paragraph',
       },
       {
-        children: [{ text: 'Worktile' }],
         id: '3',
+        children: [{ text: 'Worktile' }],
         type: 'paragraph',
       },
     ],
     input1: [
       {
-        children: [{ text: 'PingCode' }],
         id: '1',
+        children: [{ text: 'PingCode' }],
         type: 'paragraph',
       },
       {
-        children: [{ text: 'Worktile' }],
         id: '2',
+        children: [{ text: 'Worktile' }],
         type: 'paragraph',
       },
     ],
     input2: [
       {
-        children: [{ text: 'PingCode' }],
         id: '1',
+        children: [{ text: 'PingCode' }],
         type: 'paragraph',
       },
       {
-        children: [{ text: 'Worktile' }],
         id: '3',
+        children: [{ text: 'Worktile' }],
         type: 'paragraph',
       },
     ],
@@ -401,7 +401,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         children: [
           { id: '1', text: 'PingCode' },
-          { children: [{ text: '' }], id: '4', type: type },
+          { id: '4', children: [{ text: '' }], type: type },
           { id: '3', text: 'Worktile' },
         ],
         type: 'paragraph',
@@ -411,7 +411,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         children: [
           { id: '1', text: 'PingCode' },
-          { children: [{ text: '' }], id: '2', type: type },
+          { id: '2', children: [{ text: '' }], type: type },
           { id: '3', text: 'Worktile' },
         ],
         type: 'paragraph',
@@ -421,7 +421,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         children: [
           { id: '1', text: 'PingCode' },
-          { children: [{ text: '' }], id: '4', type: type },
+          { id: '4', children: [{ text: '' }], type: type },
           { id: '3', text: 'Worktile' },
         ],
         type: 'paragraph',
@@ -656,20 +656,21 @@ const fixtures: Record<string, ComputeDiffFixture> = {
   insertUpdateParagraph: {
     expected: [
       {
-        children: [{ text: 'This is the first paragraph.' }],
         key: '1',
+        children: [{ text: 'This is the first paragraph.' }],
         type: 'paragraph',
       },
       {
+        key: '2',
         children: [{ text: 'This is the second paragraph.' }],
         diff: true,
         diffOperation: {
           type: 'insert',
         },
-        key: '2',
         type: 'paragraph',
       },
       {
+        key: '3',
         children: [
           { text: 'This is the third paragraph' },
           {
@@ -683,44 +684,44 @@ const fixtures: Record<string, ComputeDiffFixture> = {
             text: '.',
           },
         ],
-        key: '3',
         type: 'paragraph',
       },
       {
-        children: [{ text: 'This is the fourth paragraph.' }],
         key: '4',
+        children: [{ text: 'This is the fourth paragraph.' }],
         type: 'paragraph',
       },
     ],
     input1: [
       {
-        children: [{ text: 'This is the first paragraph.' }],
         key: '1',
+        children: [{ text: 'This is the first paragraph.' }],
         type: 'paragraph',
       },
       {
-        children: [{ text: 'This is the third paragraph.' }],
         key: '3',
+        children: [{ text: 'This is the third paragraph.' }],
         type: 'paragraph',
       },
       {
-        children: [{ text: 'This is the fourth paragraph.' }],
         key: '4',
+        children: [{ text: 'This is the fourth paragraph.' }],
         type: 'paragraph',
       },
     ],
     input2: [
       {
-        children: [{ text: 'This is the first paragraph.' }],
         key: '1',
+        children: [{ text: 'This is the first paragraph.' }],
         type: 'paragraph',
       },
       {
-        children: [{ text: 'This is the second paragraph.' }],
         key: '2',
+        children: [{ text: 'This is the second paragraph.' }],
         type: 'paragraph',
       },
       {
+        key: '3',
         children: [
           { text: 'This is the third paragraph' },
           {
@@ -730,12 +731,11 @@ const fixtures: Record<string, ComputeDiffFixture> = {
             text: '.',
           },
         ],
-        key: '3',
         type: 'paragraph',
       },
       {
-        children: [{ text: 'This is the fourth paragraph.' }],
         key: '4',
+        children: [{ text: 'This is the fourth paragraph.' }],
         type: 'paragraph',
       },
     ],
@@ -744,18 +744,19 @@ const fixtures: Record<string, ComputeDiffFixture> = {
   insertUpdateTwoParagraphs: {
     expected: [
       {
-        children: [{ text: 'This is the first paragraph.' }],
         key: '1',
+        children: [{ text: 'This is the first paragraph.' }],
         type: 'paragraph',
       },
       {
+        key: '2',
         children: [{ text: 'This is the second paragraph.' }],
         diff: true,
         diffOperation: { type: 'insert' },
-        key: '2',
         type: 'paragraph',
       },
       {
+        key: '3',
         children: [
           { text: 'This is the third paragraph' },
           {
@@ -767,17 +768,17 @@ const fixtures: Record<string, ComputeDiffFixture> = {
             text: '.',
           },
         ],
-        key: '3',
         type: 'paragraph',
       },
       {
+        key: '5',
         children: [{ text: 'This is the fifth paragraph.' }],
         diff: true,
         diffOperation: { type: 'insert' },
-        key: '5',
         type: 'paragraph',
       },
       {
+        key: '4',
         children: [
           { text: 'This is the fourth paragraph' },
           {
@@ -789,39 +790,39 @@ const fixtures: Record<string, ComputeDiffFixture> = {
             text: '.',
           },
         ],
-        key: '4',
         type: 'paragraph',
       },
     ],
     input1: [
       {
-        children: [{ text: 'This is the first paragraph.' }],
         key: '1',
+        children: [{ text: 'This is the first paragraph.' }],
         type: 'paragraph',
       },
       {
-        children: [{ text: 'This is the third paragraph.' }],
         key: '3',
+        children: [{ text: 'This is the third paragraph.' }],
         type: 'paragraph',
       },
       {
-        children: [{ text: 'This is the fourth paragraph.' }],
         key: '4',
+        children: [{ text: 'This is the fourth paragraph.' }],
         type: 'paragraph',
       },
     ],
     input2: [
       {
-        children: [{ text: 'This is the first paragraph.' }],
         key: '1',
+        children: [{ text: 'This is the first paragraph.' }],
         type: 'paragraph',
       },
       {
-        children: [{ text: 'This is the second paragraph.' }],
         key: '2',
+        children: [{ text: 'This is the second paragraph.' }],
         type: 'paragraph',
       },
       {
+        key: '3',
         children: [
           { text: 'This is the third paragraph' },
           {
@@ -831,15 +832,15 @@ const fixtures: Record<string, ComputeDiffFixture> = {
             text: '.',
           },
         ],
-        key: '3',
         type: 'paragraph',
       },
       {
-        children: [{ text: 'This is the fifth paragraph.' }],
         key: '5',
+        children: [{ text: 'This is the fifth paragraph.' }],
         type: 'paragraph',
       },
       {
+        key: '4',
         children: [
           { text: 'This is the fourth paragraph' },
           {
@@ -849,7 +850,6 @@ const fixtures: Record<string, ComputeDiffFixture> = {
             text: '.',
           },
         ],
-        key: '4',
         type: 'paragraph',
       },
     ],

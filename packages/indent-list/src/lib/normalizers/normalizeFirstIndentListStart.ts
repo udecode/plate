@@ -5,7 +5,7 @@ import {
   unsetNodes,
 } from '@udecode/plate-common';
 
-import { INDENT_LIST_KEYS } from '../IndentListPlugin';
+import { INDENT_LIST_KEYS } from '../BaseIndentListPlugin';
 
 /**
  * If there is no previous list item and node list start is defined, unset list

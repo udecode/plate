@@ -17,8 +17,8 @@ import {
   MediaEmbedPlugin,
   PlaceholderPlugin,
 } from '@udecode/plate-media';
-import { TablePlugin } from '@udecode/plate-table';
-import { TogglePlugin } from '@udecode/plate-toggle';
+import { TablePlugin } from '@udecode/plate-table/react';
+import { TogglePlugin } from '@udecode/plate-toggle/react';
 
 import { Draggable } from './draggable';
 

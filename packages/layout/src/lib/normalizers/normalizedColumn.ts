@@ -9,7 +9,7 @@ import {
 
 import type { TColumnGroupElement } from '../types';
 
-import { ColumnPlugin } from '../ColumnPlugin';
+import { BaseColumnPlugin } from '../BaseColumnPlugin';
 import { moveMiddleColumn } from '../transforms';
 import { insertEmptyColumn } from '../transforms/insertEmptyColumn';
 import { setColumnWidth } from '../transforms/setColumnWidth';
@@ -18,7 +18,7 @@ export const normalizeColumn = <N extends TNode>(editor: SlateEditor) => {
   const { normalizeNode } = editor;
 
   return function (entry: TNodeEntry<N>) {
-    if (isElement(entry[0]) && entry[0].type === ColumnPlugin.key) {
+    if (isElement(entry[0]) && entry[0].type === BaseColumnPlugin.key) {
       return normalizeColumnHelper(
         editor,
         entry as unknown as TNodeEntry<TColumnGroupElement>

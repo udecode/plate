@@ -17,10 +17,10 @@ describe('DebugPlugin', () => {
           },
         }),
         createSlatePlugin({
+          key: 'sample',
           api: {
             sampleMethod: () => {},
           },
-          key: 'sample',
         }),
       ],
     });

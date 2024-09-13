@@ -1,10 +1,10 @@
 import {
-  Key,
   type PlatePlugin,
+  Key,
   toPlatePlugin,
 } from '@udecode/plate-common/react';
 
-import { HeadingPlugin as BaseHeadingPlugin } from '../lib/HeadingPlugin';
+import { BaseHeadingPlugin } from '../lib/BaseHeadingPlugin';
 
 export const HeadingPlugin = toPlatePlugin(BaseHeadingPlugin, ({ plugin }) => ({
   plugins: (plugin as unknown as PlatePlugin).plugins.map((p) =>
@@ -16,14 +16,14 @@ export const HeadingPlugin = toPlatePlugin(BaseHeadingPlugin, ({ plugin }) => ({
       return {
         shortcuts: {
           ['toggleHeading' + level]: {
-            handler: () => {
-              editor.tf.toggle.block({ type });
-            },
             keys: [
               [Key.Mod, Key.Alt, level],
               [Key.Mod, Key.Shift, level],
             ],
             preventDefault: true,
+            handler: () => {
+              editor.tf.toggle.block({ type });
+            },
           },
         },
       };

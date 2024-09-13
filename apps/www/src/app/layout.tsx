@@ -4,7 +4,6 @@ import type { Metadata, Viewport } from 'next';
 
 import { cn } from '@udecode/cn';
 
-import { Analytics } from '@/components/analytics';
 import { Body } from '@/components/body';
 import { Providers } from '@/components/context/providers';
 import { SiteFooter } from '@/components/site-footer';
@@ -105,7 +104,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
           </div>
         </Providers>
         <TailwindIndicator />
-        <Analytics />
 
         <Toaster />
       </Body>

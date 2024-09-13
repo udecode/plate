@@ -5,7 +5,7 @@ import type { SlateEditor } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { TablePlugin } from '../TablePlugin';
+import { BaseTablePlugin } from '../BaseTablePlugin';
 import { setBorderSize } from './setBorderSize';
 
 jsx;
@@ -15,7 +15,7 @@ jsx;
 // sets the border size for the given border,
 // and then checks if the output matches the expected output.
 describe('setBorderSize', () => {
-  const createTablePluginWithOptions = () => TablePlugin;
+  const createTablePluginWithOptions = () => BaseTablePlugin;
 
   const createEditorInstance = (input: any) => {
     return createPlateEditor({

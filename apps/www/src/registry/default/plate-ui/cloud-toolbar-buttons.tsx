@@ -27,10 +27,10 @@ export function CloudToolbarButtons() {
 
   return (
     <>
-      <button onClick={getSaveValue} style={buttonStyle} type="button">
+      <button style={buttonStyle} onClick={getSaveValue} type="button">
         Get Save Value
       </button>
-      <button onClick={finishUploads} style={buttonStyle} type="button">
+      <button style={buttonStyle} onClick={finishUploads} type="button">
         Await Finish Uploads
       </button>
       <span>

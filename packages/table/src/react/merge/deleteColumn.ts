@@ -14,7 +14,7 @@ import {
 import {
   type TTableCellElement,
   type TTableElement,
-  TableRowPlugin,
+  BaseTableRowPlugin,
   findCellByIndexes,
   getCellIndices,
   getCellPath,
@@ -134,7 +134,7 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
     });
 
     const trEntry = getAboveNode(editor, {
-      match: { type: editor.getType(TableRowPlugin) },
+      match: { type: editor.getType(BaseTableRowPlugin) },
     });
 
     /** Remove cells */

@@ -9,9 +9,9 @@ import path from 'path';
 import type { Config } from '../get-config';
 
 import {
+  type registryItemWithContentSchema,
   registryBaseColorSchema,
   registryIndexSchema,
-  type registryItemWithContentSchema,
   registryWithContentSchema,
   stylesSchema,
 } from './schema';

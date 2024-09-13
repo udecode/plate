@@ -1,11 +1,11 @@
 import { toPlatePlugin } from '@udecode/plate-common/react';
 
 import {
-  AudioPlugin as BaseAudioPlugin,
-  FilePlugin as BaseFilePlugin,
-  ImagePlugin as BaseImagePlugin,
-  MediaEmbedPlugin as BaseMediaEmbedPlugin,
-  VideoPlugin as BaseVideoPlugin,
+  BaseAudioPlugin,
+  BaseFilePlugin,
+  BaseImagePlugin,
+  BaseMediaEmbedPlugin,
+  BaseVideoPlugin,
 } from '../lib';
 
 export const ImagePlugin = toPlatePlugin(BaseImagePlugin);

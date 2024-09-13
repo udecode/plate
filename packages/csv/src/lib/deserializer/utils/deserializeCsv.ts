@@ -1,9 +1,9 @@
 import {
-  ParagraphPlugin,
   type SlateEditor,
   type TDescendant,
   type TElement,
   type TNode,
+  BaseParagraphPlugin,
 } from '@udecode/plate-common';
 import papaparse from 'papaparse';
 
@@ -57,7 +57,7 @@ export const deserializeCsv = (
     )
       return;
 
-    const paragraph = editor.getType(ParagraphPlugin);
+    const paragraph = editor.getType(BaseParagraphPlugin);
     const table = editor.getType({ key: 'table' });
     const th = editor.getType({ key: 'th' });
     const tr = editor.getType({ key: 'tr' });

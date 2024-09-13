@@ -6,7 +6,7 @@ import {
   FontFamilyPlugin,
   FontSizePlugin,
   FontWeightPlugin,
-} from '@udecode/plate-font';
+} from '@udecode/plate-font/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
@@ -40,8 +40,8 @@ describe(getDocxTestName(name), () => {
             background{' '}
           </htext>
           <htext
-            backgroundColor="yellow"
             color="red"
+            backgroundColor="yellow"
             fontFamily="'Cambria',serif"
             fontSize="12.0pt"
           >
@@ -69,10 +69,10 @@ describe(getDocxTestName(name), () => {
         </hp>
         <hp>
           <htext
-            bold
             fontFamily="'Cambria', serif"
             fontSize="12.0pt"
             fontWeight="bold"
+            bold
           >
             Definition Term
           </htext>

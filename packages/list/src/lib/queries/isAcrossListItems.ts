@@ -5,7 +5,7 @@ import {
   someNode,
 } from '@udecode/plate-common';
 
-import { ListItemPlugin } from '../ListPlugin';
+import { BaseListItemPlugin } from '../BaseListPlugin';
 
 /** Is selection across blocks with list items */
 export const isAcrossListItems = (editor: SlateEditor) => {
@@ -20,6 +20,6 @@ export const isAcrossListItems = (editor: SlateEditor) => {
   if (!isAcrossBlocks) return false;
 
   return someNode(editor, {
-    match: { type: editor.getType(ListItemPlugin) },
+    match: { type: editor.getType(BaseListItemPlugin) },
   });
 };

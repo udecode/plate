@@ -13,16 +13,16 @@ import {
 import type { TTableElement } from '../../lib/types';
 
 import {
-  TableCellHeaderPlugin,
-  TableCellPlugin,
-  TablePlugin,
-  TableRowPlugin,
-} from '../../lib/TablePlugin';
+  BaseTableCellHeaderPlugin,
+  BaseTableCellPlugin,
+  BaseTablePlugin,
+  BaseTableRowPlugin,
+} from '../../lib/BaseTablePlugin';
 import { deleteTableMergeColumn } from '../merge/deleteColumn';
 import { deleteColumnWhenExpanded } from '../merge/deleteColumnWhenExpanded';
 
 export const deleteColumn = (editor: SlateEditor) => {
-  const { getOptions, type } = getEditorPlugin(editor, TablePlugin);
+  const { getOptions, type } = getEditorPlugin(editor, BaseTablePlugin);
   const { enableMerging } = getOptions();
 
   if (enableMerging) {
@@ -47,13 +47,13 @@ export const deleteColumn = (editor: SlateEditor) => {
   const tdEntry = getAboveNode(editor, {
     match: {
       type: [
-        editor.getType(TableCellPlugin),
-        editor.getType(TableCellHeaderPlugin),
+        editor.getType(BaseTableCellPlugin),
+        editor.getType(BaseTableCellHeaderPlugin),
       ],
     },
   });
   const trEntry = getAboveNode(editor, {
-    match: { type: editor.getType(TableRowPlugin) },
+    match: { type: editor.getType(BaseTableRowPlugin) },
   });
 
   if (

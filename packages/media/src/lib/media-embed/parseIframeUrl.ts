@@ -4,7 +4,7 @@ export const parseIframeUrl = (url: string) => {
     const regexMatchSrc = /src=".*?"/;
     const regexGroupQuotes = /"([^"]*)"/;
 
-    const src = url.match(regexMatchSrc)?.[0];
+    const src = regexMatchSrc.exec(url)?.[0];
     const returnString = src?.match(regexGroupQuotes)?.[1];
 
     if (returnString) {

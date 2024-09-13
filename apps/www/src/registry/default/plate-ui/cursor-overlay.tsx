@@ -8,10 +8,10 @@ import {
 } from '@udecode/plate-common/react';
 import {
   type CursorData,
-  CursorOverlay as CursorOverlayPrimitive,
   type CursorOverlayProps,
   type CursorProps,
   type CursorState,
+  CursorOverlay as CursorOverlayPrimitive,
 } from '@udecode/plate-cursor';
 import { DndPlugin } from '@udecode/plate-dnd';
 
@@ -30,11 +30,11 @@ export function Cursor({
       {!disableSelection &&
         selectionRects.map((position, i) => (
           <div
+            key={i}
             className={cn(
               'pointer-events-none absolute z-10 opacity-30',
               classNames?.selectionRect
             )}
-            key={i}
             style={{
               ...selectionStyle,
               ...position,
@@ -63,13 +63,15 @@ export function CursorOverlay({ cursors, ...props }: CursorOverlayProps) {
   return (
     <CursorOverlayPrimitive
       {...props}
-      cursors={allCursors}
       onRenderCursor={Cursor}
+      cursors={allCursors}
     />
   );
 }
 
 const DragOverCursorPlugin = createPlatePlugin({
+  key: 'dragOverCursor',
+  options: { cursors: {} as Record<string, CursorState<CursorData>> },
   handlers: {
     onDragEnd: ({ editor, plugin }) => {
       editor.setOption(plugin, 'cursors', {});
@@ -86,13 +88,13 @@ const DragOverCursorPlugin = createPlatePlugin({
 
       editor.setOption(plugin, 'cursors', {
         drag: {
+          key: 'drag',
           data: {
             style: {
               backgroundColor: 'hsl(222.2 47.4% 11.2%)',
               width: 3,
             },
           },
-          key: 'drag',
           selection: range,
         },
       });
@@ -101,6 +103,4 @@ const DragOverCursorPlugin = createPlatePlugin({
       editor.setOption(plugin, 'cursors', {});
     },
   },
-  key: 'dragOverCursor',
-  options: { cursors: {} as Record<string, CursorState<CursorData>> },
 });

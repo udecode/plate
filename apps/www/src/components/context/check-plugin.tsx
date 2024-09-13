@@ -9,14 +9,14 @@ import { useDemoId } from '@/registry/default/example/playground-demo';
 import { settingsStore } from './settings-store';
 
 export const CheckPlugin = ({
+  // id,
   children,
   componentId,
-  id,
   plugin,
 }: {
   children: React.ReactNode;
+  id?: string[] | string;
   componentId?: string;
-  id?: string | string[];
   plugin?: WithRequiredKey;
 }) => {
   const editor = useEditorRef();

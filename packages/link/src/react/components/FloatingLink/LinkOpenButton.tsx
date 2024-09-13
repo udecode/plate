@@ -51,10 +51,10 @@ export const useLinkOpenButton = ({ element }: { element?: TLinkElement }) => {
     props: {
       ...linkAttributes,
       'aria-label': 'Open link in a new tab',
+      target: '_blank',
       onMouseOver: (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
         e.stopPropagation();
       },
-      target: '_blank',
     },
   };
 };

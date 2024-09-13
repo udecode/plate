@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { BlockquotePlugin } from '@udecode/plate-block-quote';
+import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 import type { SlateEditor } from '../../../editor';

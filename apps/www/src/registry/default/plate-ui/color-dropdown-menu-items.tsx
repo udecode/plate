@@ -17,9 +17,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
 type ColorDropdownMenuItemProps = {
   isBrightColor: boolean;
   isSelected: boolean;
-  name?: string;
   updateColor: (color: string) => void;
   value: string;
+  name?: string;
 } & DropdownMenuItemProps;
 
 export function ColorDropdownMenuItem({
@@ -42,11 +42,11 @@ export function ColorDropdownMenuItem({
         !isBrightColor && 'border-transparent text-white',
         className
       )}
+      style={{ backgroundColor: value }}
       onSelect={(e) => {
         e.preventDefault();
         updateColor(value);
       }}
-      style={{ backgroundColor: value }}
       {...props}
     >
       {isSelected ? <Icons.check /> : null}
@@ -64,9 +64,9 @@ export function ColorDropdownMenuItem({
 }
 
 type ColorDropdownMenuItemsProps = {
-  color?: string;
   colors: TColor[];
   updateColor: (color: string) => void;
+  color?: string;
 } & React.HTMLAttributes<HTMLDivElement>;
 
 export function ColorDropdownMenuItems({
@@ -83,12 +83,12 @@ export function ColorDropdownMenuItems({
     >
       {colors.map(({ isBrightColor, name, value }) => (
         <ColorDropdownMenuItem
+          name={name}
+          key={name ?? value}
+          value={value}
           isBrightColor={isBrightColor}
           isSelected={color === value}
-          key={name ?? value}
-          name={name}
           updateColor={updateColor}
-          value={value}
         />
       ))}
     </div>
