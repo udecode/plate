@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-utils",
-  "version": "38.0.2",
+  "version": "38.0.3",
   "description": "Plate utils",
   "keywords": [
     "plate",
@@ -50,11 +50,11 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-core": "38.0.2",
+    "@udecode/plate-core": "38.0.3",
     "@udecode/react-utils": "38.0.1",
-    "@udecode/slate": "37.0.0",
-    "@udecode/slate-react": "38.0.1",
-    "@udecode/slate-utils": "37.0.0",
+    "@udecode/slate": "38.0.3",
+    "@udecode/slate-react": "38.0.3",
+    "@udecode/slate-utils": "38.0.3",
     "@udecode/utils": "37.0.0",
     "clsx": "^2.1.1",
     "lodash": "^4.17.21"
