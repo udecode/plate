@@ -1,5 +1,11 @@
 # @udecode/plate-utils
 
+## 38.0.3
+
+### Patch Changes
+
+- [#3536](https://github.com/udecode/plate/pull/3536) by [@yf-yang](https://github.com/yf-yang) – Suppress all placeholders when element is composing
+
 ## 38.0.2
 
 ## 38.0.1
