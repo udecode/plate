@@ -1,7 +1,7 @@
 import type { AnyObject } from '@udecode/utils';
 
 import { clsx } from 'clsx';
-import { pick } from 'lodash';
+import pick from 'lodash/pick.js';
 
 import type { PlateEditor } from '../editor';
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
