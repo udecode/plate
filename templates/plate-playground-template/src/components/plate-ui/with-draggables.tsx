@@ -5,9 +5,9 @@ import {
   ParagraphPlugin,
 } from '@udecode/plate-common/react';
 import { withDraggable as withDraggablePrimitive } from '@udecode/plate-dnd';
-import { ExcalidrawPlugin } from '@udecode/plate-excalidraw';
+import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
-import { ColumnPlugin } from '@udecode/plate-layout';
+import { ColumnPlugin } from '@udecode/plate-layout/react';
 import {
   BulletedListPlugin,
   NumberedListPlugin,
@@ -16,7 +16,7 @@ import {
   ImagePlugin,
   MediaEmbedPlugin,
   PlaceholderPlugin,
-} from '@udecode/plate-media';
+} from '@udecode/plate-media/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 

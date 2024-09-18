@@ -4,10 +4,10 @@ import {
   collapseSelection,
   getNodeEntries,
   isBlock,
-  ParagraphPlugin,
 } from '@udecode/plate-common';
 import {
   focusEditor,
+  ParagraphPlugin,
   useEditorRef,
   useEditorSelector,
 } from '@udecode/plate-common/react';

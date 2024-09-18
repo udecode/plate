@@ -1,7 +1,7 @@
 import React from 'react';
 import { withRef } from '@udecode/cn';
 import { PlateElement } from '@udecode/plate-common/react';
-import { DatePlugin } from '@udecode/plate-date';
+import { DatePlugin } from '@udecode/plate-date/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { ListStyleType, toggleIndentList } from '@udecode/plate-indent-list';
 

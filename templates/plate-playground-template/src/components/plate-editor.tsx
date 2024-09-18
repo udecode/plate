@@ -46,7 +46,7 @@ import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
   FontSizePlugin,
-} from '@udecode/plate-font';
+} from '@udecode/plate-font/react';
 import { HEADING_KEYS, HEADING_LEVELS } from '@udecode/plate-heading';
 import { HeadingPlugin } from '@udecode/plate-heading/react';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
