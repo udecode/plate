@@ -1,6 +1,7 @@
 import type { AnyObject } from '@udecode/utils';
 
 import { clsx } from 'clsx';
+import { pick } from 'lodash';
 
 import type { PlateEditor } from '../editor';
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
@@ -10,8 +11,9 @@ import { getSlateClass } from '../../lib';
 import { getEditorPlugin } from '../plugin';
 
 /**
- * Override node props with plugin props. `props.element.attributes` are passed
- * as `nodeProps`. Extend the class name with the node type.
+ * Override node props with plugin props. Allowed properties in
+ * `props.element.attributes` are passed as `nodeProps`. Extend the class name
+ * with the node type.
  */
 export const getRenderNodeProps = ({
   attributes,
@@ -33,7 +35,17 @@ export const getRenderNodeProps = ({
         : plugin.node.props) ?? {};
   }
   if (!newProps.nodeProps && attributes) {
-    newProps.nodeProps = attributes;
+    /**
+     * WARNING: Improper use of `dangerouslyAllowElementAttributes` WILL make
+     * your application vulnerable to cross-site scripting (XSS) or information
+     * exposure attacks.
+     *
+     * @see {@link BasePluginNode.dangerouslyAllowElementAttributes}
+     */
+    newProps.nodeProps = pick(
+      attributes,
+      plugin.node.dangerouslyAllowElementAttributes ?? []
+    );
   }
 
   props = { ...props, ...newProps };

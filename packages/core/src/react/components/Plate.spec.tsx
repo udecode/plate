@@ -6,7 +6,7 @@ import { type Value, isBlock, setNodes } from '@udecode/slate';
 import isEqual from 'lodash/isEqual';
 import memoize from 'lodash/memoize';
 
-import type { PlatePlugins } from '../plugin';
+import type { PlatePlugins, PlateRenderElementProps } from '../plugin';
 
 import { type SlatePlugins, createSlatePlugin } from '../../lib';
 import { createPlateEditor, usePlateEditor } from '../editor';
@@ -468,6 +468,87 @@ describe('Plate', () => {
       // Rerender with a different dependency
       rerender(<TestComponent dep={2} />);
       expect(mountCount).toBe(2);
+    });
+  });
+
+  describe('User-defined attributes', () => {
+    const ParagraphElement = ({
+      attributes,
+      children,
+      nodeProps,
+    }: PlateRenderElementProps) => (
+      <p {...attributes} {...nodeProps}>
+        {children}
+      </p>
+    );
+
+    const paragraphPlugin = (dangerouslyAllowElementAttributes: boolean) =>
+      createPlatePlugin({
+        key: 'p',
+        node: {
+          component: ParagraphElement,
+          dangerouslyAllowElementAttributes: dangerouslyAllowElementAttributes
+            ? ['data-my-attribute']
+            : undefined,
+          isElement: true,
+        },
+      });
+
+    const initialValue = [
+      {
+        attributes: {
+          'data-my-attribute': 'hello',
+          'data-unpermitted-attribute': 'world',
+        },
+        children: [{ text: 'My paragraph' }],
+        type: 'p',
+      },
+    ];
+
+    const Editor = ({
+      dangerouslyAllowElementAttributes,
+    }: {
+      dangerouslyAllowElementAttributes: boolean;
+    }) => {
+      const editor = usePlateEditor({
+        plugins: [paragraphPlugin(dangerouslyAllowElementAttributes)],
+        value: initialValue,
+      });
+
+      return (
+        <Plate editor={editor}>
+          <PlateContent />
+        </Plate>
+      );
+    };
+
+    it('renders no user-defined attributes by default', () => {
+      const { container } = render(
+        <Editor dangerouslyAllowElementAttributes={false} />
+      );
+
+      // eslint-disable-next-line testing-library/no-container
+      const paragraphEl = container.querySelector(
+        '[data-slate-node=element]'
+      ) as HTMLElement;
+
+      expect(Object.keys(paragraphEl.dataset)).toEqual(['slateNode']);
+    });
+
+    it('renders allowed user-defined attributes', () => {
+      const { container } = render(
+        <Editor dangerouslyAllowElementAttributes={true} />
+      );
+
+      // eslint-disable-next-line testing-library/no-container
+      const paragraphEl = container.querySelector(
+        '[data-slate-node=element]'
+      ) as HTMLElement;
+
+      expect(Object.keys(paragraphEl.dataset)).toEqual([
+        'slateNode',
+        'myAttribute',
+      ]);
     });
   });
 });
