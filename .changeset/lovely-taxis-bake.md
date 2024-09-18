@@ -2,4 +2,7 @@
 '@udecode/plate-media': patch
 ---
 
-Add the `alt` attribute to `dangerouslyAllowAttributes`
+Add the following attributes to `dangerouslyAllowAttributes`:
+
+- ImagePlugin: `alt`, `width`, `height`
+- VideoPlugin: `width`, `height`

@@ -25,7 +25,10 @@ export const BaseTableRowPlugin = createSlatePlugin({
 
 export const BaseTableCellPlugin = createSlatePlugin({
   key: 'td',
-  node: { isElement: true },
+  node: {
+    dangerouslyAllowAttributes: ['colspan', 'rowspan'],
+    isElement: true,
+  },
 }).extend(({ type }) => ({
   parsers: {
     html: {
@@ -40,7 +43,10 @@ export const BaseTableCellPlugin = createSlatePlugin({
 
 export const BaseTableCellHeaderPlugin = createSlatePlugin({
   key: 'th',
-  node: { isElement: true },
+  node: {
+    dangerouslyAllowAttributes: ['colspan', 'rowspan'],
+    isElement: true,
+  },
 }).extend(({ type }) => ({
   parsers: {
     html: {

@@ -31,7 +31,7 @@ export const BaseImagePlugin = createTSlatePlugin<ImageConfig>({
   key: 'img',
   extendEditor: withImage,
   node: {
-    dangerouslyAllowAttributes: ['alt'],
+    dangerouslyAllowAttributes: ['alt', 'width', 'height'],
     isElement: true,
     isVoid: true,
   },
