@@ -6,7 +6,11 @@ import { type Value, isBlock, setNodes } from '@udecode/slate';
 import isEqual from 'lodash/isEqual';
 import memoize from 'lodash/memoize';
 
-import type { PlatePlugins, PlateRenderElementProps } from '../plugin';
+import type {
+  PlatePlugins,
+  PlateRenderElementProps,
+  PlateRenderLeafProps,
+} from '../plugin';
 
 import { type SlatePlugins, createSlatePlugin } from '../../lib';
 import { createPlateEditor, usePlateEditor } from '../editor';
@@ -477,41 +481,75 @@ describe('Plate', () => {
       children,
       nodeProps,
     }: PlateRenderElementProps) => (
-      <p {...attributes} {...nodeProps}>
+      <p {...attributes} {...nodeProps} data-testid="paragraph">
         {children}
       </p>
     );
 
-    const paragraphPlugin = (dangerouslyAllowElementAttributes: boolean) =>
+    const BoldLeaf = ({
+      attributes,
+      children,
+      nodeProps,
+    }: PlateRenderLeafProps) => (
+      <strong {...attributes} {...nodeProps} data-testid="bold">
+        {children}
+      </strong>
+    );
+
+    const getParagraphPlugin = (dangerouslyAllowAttributes: boolean) =>
       createPlatePlugin({
         key: 'p',
         node: {
           component: ParagraphElement,
-          dangerouslyAllowElementAttributes: dangerouslyAllowElementAttributes
-            ? ['data-my-attribute']
+          dangerouslyAllowAttributes: dangerouslyAllowAttributes
+            ? ['data-my-paragraph-attribute']
             : undefined,
           isElement: true,
+        },
+      });
+
+    const getBoldPlugin = (dangerouslyAllowAttributes: boolean) =>
+      createPlatePlugin({
+        key: 'bold',
+        node: {
+          component: BoldLeaf,
+          dangerouslyAllowAttributes: dangerouslyAllowAttributes
+            ? ['data-my-bold-attribute']
+            : undefined,
+          isLeaf: true,
         },
       });
 
     const initialValue = [
       {
         attributes: {
-          'data-my-attribute': 'hello',
-          'data-unpermitted-attribute': 'world',
+          'data-my-paragraph-attribute': 'hello',
+          'data-unpermitted-paragraph-attribute': 'world',
         },
-        children: [{ text: 'My paragraph' }],
+        children: [
+          {
+            attributes: {
+              'data-my-bold-attribute': 'hello',
+              'data-unpermitted-bold-attribute': 'world',
+            },
+            bold: true,
+            text: 'My bold paragraph',
+          },
+        ],
         type: 'p',
       },
     ];
 
     const Editor = ({
-      dangerouslyAllowElementAttributes,
+      dangerouslyAllowAttributes,
     }: {
-      dangerouslyAllowElementAttributes: boolean;
+      dangerouslyAllowAttributes: boolean;
     }) => {
       const editor = usePlateEditor({
-        plugins: [paragraphPlugin(dangerouslyAllowElementAttributes)],
+        plugins: [
+          getParagraphPlugin(dangerouslyAllowAttributes),
+          getBoldPlugin(dangerouslyAllowAttributes),
+        ],
         value: initialValue,
       });
 
@@ -523,31 +561,34 @@ describe('Plate', () => {
     };
 
     it('renders no user-defined attributes by default', () => {
-      const { container } = render(
-        <Editor dangerouslyAllowElementAttributes={false} />
+      const { getByTestId } = render(
+        <Editor dangerouslyAllowAttributes={false} />
       );
 
-      // eslint-disable-next-line testing-library/no-container
-      const paragraphEl = container.querySelector(
-        '[data-slate-node=element]'
-      ) as HTMLElement;
+      const paragraphEl = getByTestId('paragraph');
+      expect(Object.keys(paragraphEl.dataset)).toEqual(['slateNode', 'testid']);
 
-      expect(Object.keys(paragraphEl.dataset)).toEqual(['slateNode']);
+      const boldEl = getByTestId('bold');
+      expect(Object.keys(boldEl.dataset)).toEqual(['slateLeaf', 'testid']);
     });
 
     it('renders allowed user-defined attributes', () => {
-      const { container } = render(
-        <Editor dangerouslyAllowElementAttributes={true} />
+      const { getByTestId } = render(
+        <Editor dangerouslyAllowAttributes={true} />
       );
 
-      // eslint-disable-next-line testing-library/no-container
-      const paragraphEl = container.querySelector(
-        '[data-slate-node=element]'
-      ) as HTMLElement;
-
+      const paragraphEl = getByTestId('paragraph');
       expect(Object.keys(paragraphEl.dataset)).toEqual([
         'slateNode',
-        'myAttribute',
+        'myParagraphAttribute',
+        'testid',
+      ]);
+
+      const boldEl = getByTestId('bold');
+      expect(Object.keys(boldEl.dataset)).toEqual([
+        'slateLeaf',
+        'myBoldAttribute',
+        'testid',
       ]);
     });
   });

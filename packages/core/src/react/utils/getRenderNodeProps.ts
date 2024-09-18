@@ -36,15 +36,15 @@ export const getRenderNodeProps = ({
   }
   if (!newProps.nodeProps && attributes) {
     /**
-     * WARNING: Improper use of `dangerouslyAllowElementAttributes` WILL make
-     * your application vulnerable to cross-site scripting (XSS) or information
+     * WARNING: Improper use of `dangerouslyAllowAttributes` WILL make your
+     * application vulnerable to cross-site scripting (XSS) or information
      * exposure attacks.
      *
-     * @see {@link BasePluginNode.dangerouslyAllowElementAttributes}
+     * @see {@link BasePluginNode.dangerouslyAllowAttributes}
      */
     newProps.nodeProps = pick(
       attributes,
-      plugin.node.dangerouslyAllowElementAttributes ?? []
+      plugin.node.dangerouslyAllowAttributes ?? []
     );
   }
 

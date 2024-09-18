@@ -122,7 +122,7 @@ export type BasePluginNode = {
    *
    * @default [ ]
    */
-  dangerouslyAllowElementAttributes?: string[];
+  dangerouslyAllowAttributes?: string[];
 
   /**
    * Indicates if this plugin's nodes should be rendered as elements. Used by
