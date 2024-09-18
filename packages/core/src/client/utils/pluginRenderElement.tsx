@@ -18,7 +18,13 @@ import { ElementProvider } from '../stores/element/useElementStore';
  */
 export const pluginRenderElement = <V extends Value>(
   editor: PlateEditor<V>,
-  { component: _component, key, props, type }: PlatePlugin<{}, V>
+  {
+    component: _component,
+    dangerouslyAllowAttributes,
+    key,
+    props,
+    type,
+  }: PlatePlugin<{}, V>
 ): RenderElement =>
   function render(nodeProps) {
     const { children: _children, element } = nodeProps;
@@ -35,6 +41,7 @@ export const pluginRenderElement = <V extends Value>(
 
       nodeProps = getRenderNodeProps({
         attributes: element.attributes as any,
+        dangerouslyAllowAttributes,
         nodeProps: nodeProps as any,
         props,
         type: type!,

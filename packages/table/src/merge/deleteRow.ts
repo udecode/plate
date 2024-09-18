@@ -22,11 +22,11 @@ import type {
 import { ELEMENT_TABLE } from '../createTablePlugin';
 import { getTableColumnCount } from '../queries';
 import { getRowSpan } from '../queries/getRowSpan';
+import { deleteTable } from '../transforms';
 import { getCellTypes } from '../utils';
 import { deleteRowWhenExpanded } from './deleteRowWhenExpanded';
 import { findCellByIndexes } from './findCellByIndexes';
 import { getCellIndices } from './getCellIndices';
-import { deleteTable } from '../transforms';
 
 export const deleteTableMergeRow = <V extends Value>(
   editor: PlateEditor<V>

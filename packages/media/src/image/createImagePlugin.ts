@@ -8,6 +8,7 @@ export const ELEMENT_IMAGE = 'img';
 
 /** Enables support for images. */
 export const createImagePlugin = createPluginFactory<ImagePlugin>({
+  dangerouslyAllowAttributes: ['alt', 'width', 'height'],
   isElement: true,
   isVoid: true,
   key: ELEMENT_IMAGE,
