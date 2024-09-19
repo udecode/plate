@@ -6,14 +6,10 @@ import type { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import type {
   CodeBlockPlugin,
   CodeLinePlugin,
-} from '@udecode/plate-code-block';
+} from '@udecode/plate-code-block/react';
 import type { TCommentText } from '@udecode/plate-comments';
-import type {
-  ElementOf,
-  ParagraphPlugin,
-  TElement,
-  TText,
-} from '@udecode/plate-common';
+import type { ElementOf, TElement, TText } from '@udecode/plate-common';
+import type { ParagraphPlugin } from '@udecode/plate-common/react';
 import type { TExcalidrawElement } from '@udecode/plate-excalidraw';
 import type { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import type { HEADING_KEYS } from '@udecode/plate-heading';
