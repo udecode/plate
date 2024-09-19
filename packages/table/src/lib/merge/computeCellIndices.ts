@@ -12,88 +12,44 @@ import { getRowSpan } from '../queries/getRowSpan';
 
 export function computeCellIndices(
   editor: SlateEditor,
-  tableEl: TTableElement,
-  cellEl: TTableCellElement
+  tableNode: TTableElement,
+  cellNode?: TTableCellElement
 ) {
   const options = editor.getOptions(BaseTablePlugin);
 
-  const tableNodes = tableEl.children;
+  const skipCells: boolean[][] = [];
+  let targetIndices: { col: number; row: number } | null = null;
 
-  let rowIndex = -1;
-  let colIndex = -1;
+  for (let rowIndex = 0; rowIndex < tableNode.children.length; rowIndex++) {
+    const row = tableNode.children[rowIndex] as TTableRowElement;
+    let colIndex = 0;
 
-  for (let r = 0; r < tableNodes.length; r++) {
-    const row = tableNodes[r] as TTableRowElement;
-
-    let cIndex = 0;
-
-    for (const item of row.children) {
-      const cell = item as TTableCellElement;
-
-      if (cellEl === cell) {
-        colIndex = cIndex;
-        rowIndex = r;
-
-        break;
+    for (const cellElement of row.children as TTableCellElement[]) {
+      while (skipCells[rowIndex]?.[colIndex]) {
+        colIndex++;
       }
 
-      cIndex += getColSpan(cell);
-    }
-  }
+      const currentIndices = { col: colIndex, row: rowIndex };
+      options._cellIndices?.set(cellElement, currentIndices);
 
-  tableNodes.slice(0, rowIndex).forEach((pR, _rowIndex) => {
-    const prevRow = pR as TTableRowElement;
-    prevRow.children.forEach((pC) => {
-      const prevCell = pC as TTableCellElement;
-      const prevIndices = options?._cellIndices?.get(prevCell);
-      const _rowSpan = getRowSpan(prevCell);
+      if (cellElement === cellNode) {
+        targetIndices = currentIndices;
+      }
 
-      if (prevIndices) {
-        const { col: prevColIndex } = prevIndices;
+      const colSpan = getColSpan(cellElement);
+      const rowSpan = getRowSpan(cellElement);
 
-        if (
-          // colIndex affects
-          prevColIndex <= colIndex &&
-          // rowSpan affects
-          _rowSpan &&
-          _rowSpan > 1 &&
-          rowIndex - _rowIndex < _rowSpan
-        ) {
-          colIndex += getColSpan(prevCell);
+      for (let r = 0; r < rowSpan; r++) {
+        skipCells[rowIndex + r] = skipCells[rowIndex + r] || [];
+
+        for (let c = 0; c < colSpan; c++) {
+          skipCells[rowIndex + r][colIndex + c] = true;
         }
       }
-    });
-  });
 
-  if (rowIndex === -1 || colIndex === -1) {
-    return null;
-  }
-
-  const indices = { col: colIndex, row: rowIndex };
-  options?._cellIndices?.set(cellEl, indices);
-
-  return indices;
-}
-
-export const computeAllCellIndices = (
-  editor: SlateEditor,
-  tableNode: TTableElement
-) => {
-  const options = editor.getOptions(BaseTablePlugin);
-
-  // Iterate through the table rows
-  for (const tableChild of tableNode.children) {
-    const row = tableChild as TTableRowElement;
-
-    // Iterate through the row cells
-    for (const rowChild of row.children) {
-      const cell = rowChild as TTableCellElement;
-
-      const indices = computeCellIndices(editor, tableNode, cell);
-
-      if (indices) {
-        options._cellIndices?.set(cell, indices);
-      }
+      colIndex += colSpan;
     }
   }
-};
+
+  return targetIndices;
+}

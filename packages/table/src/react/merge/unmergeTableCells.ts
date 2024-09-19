@@ -1,3 +1,5 @@
+import type { Path } from 'slate';
+
 import {
   type SlateEditor,
   type TDescendant,
@@ -8,6 +10,7 @@ import {
   removeNodes,
   withoutNormalizing,
 } from '@udecode/plate-common';
+import { findNodePath } from '@udecode/plate-common/react';
 
 import {
   type TTableCellElement,
@@ -19,12 +22,17 @@ import {
   getColSpan,
   getRowSpan,
 } from '../../lib';
-import { TableCellHeaderPlugin, TablePlugin } from '../TablePlugin';
+import {
+  TableCellHeaderPlugin,
+  TablePlugin,
+  TableRowPlugin,
+} from '../TablePlugin';
 import { getTableGridAbove } from '../queries';
 
 export const unmergeTableCells = (editor: SlateEditor) => {
-  const { api, getOptions, type } = getEditorPlugin(editor, TablePlugin);
+  const { api, getOptions } = getEditorPlugin(editor, TablePlugin);
   const { _cellIndices: cellIndices } = getOptions();
+  const tableRowType = editor.getType(TableRowPlugin);
 
   withoutNormalizing(editor, () => {
     const cellEntries = getTableGridAbove(editor, { format: 'cell' });
@@ -64,50 +72,56 @@ export const unmergeTableCells = (editor: SlateEditor) => {
       cellElem as TTableCellElement
     )!;
 
-    const getColPathForRow = (row: number) => {
-      let newColPath = 0;
-
+    const getClosestColPathForRow = (row: number, targetCol: number) => {
       const rowEntry = findNode(editor, {
         at: [...tablePath, row],
-        match: { type: editor.getType(BaseTableRowPlugin) },
-      })!; // TODO: improve typing
+        match: { type: tableRowType },
+      });
 
       if (!rowEntry) {
-        return newColPath;
+        return 0;
       }
 
       const rowEl = rowEntry[0] as TTableRowElement;
+      let closestColPath: Path = [];
+      let smallestDiff = Number.POSITIVE_INFINITY;
+      let isDirectionLeft = false;
 
-      for (const item of rowEl.children) {
-        const { col: c } = getCellIndices(
-          cellIndices!,
-          item as TTableCellElement
-        )!;
+      rowEl.children.forEach((cell) => {
+        const cellElement = cell as TTableCellElement;
+        const { col: cellCol } = getCellIndices(cellIndices!, cellElement)!;
 
-        if (c === col - 1) {
-          newColPath = rowEl.children.indexOf(item) + 1;
+        const diff = Math.abs(cellCol - targetCol);
 
-          break;
+        if (diff < smallestDiff) {
+          smallestDiff = diff;
+          closestColPath = findNodePath(editor, cellElement)!;
+          isDirectionLeft = cellCol < targetCol;
         }
-        if (col + getColSpan(cellElem as TTableCellElement) === c - 1) {
-          newColPath = rowEl.children.indexOf(item);
+      });
 
-          break;
+      if (closestColPath.length > 0) {
+        const lastIndex = closestColPath.at(-1)!;
+
+        if (isDirectionLeft) {
+          return lastIndex + 1;
         }
+
+        return lastIndex;
       }
 
-      return newColPath;
+      return 1;
     };
 
     // Generate an array of cell paths from the row and col spans and then insert empty cells at those paths
     for (let i = 0; i < rowSpan; i++) {
       const currentRowPath = rowPath + i;
-      const pathForNextRows = getColPathForRow(currentRowPath);
+      const pathForNextRows = getClosestColPathForRow(currentRowPath, col);
       const newRowChildren: TTableRowElement[] = [];
       const _rowPath = [...tablePath, currentRowPath];
       const rowEntry = findNode(editor, {
         at: _rowPath,
-        match: { type },
+        match: { type: tableRowType },
       });
 
       for (let j = 0; j < colPaths.length; j++) {
