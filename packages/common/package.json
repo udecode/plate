@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@udecode/plate-core": "36.5.9",
-    "@udecode/plate-utils": "36.3.9",
+    "@udecode/plate-utils": "36.5.9",
     "@udecode/react-utils": "33.0.0",
     "@udecode/slate": "36.0.6",
     "@udecode/slate-react": "36.0.6",
