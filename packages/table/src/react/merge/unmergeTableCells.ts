@@ -5,7 +5,6 @@ import {
   type TDescendant,
   findNode,
   getEditorPlugin,
-  getNode,
   insertElements,
   removeNodes,
   withoutNormalizing,
@@ -156,25 +155,12 @@ export const unmergeTableCells = (editor: SlateEditor) => {
     }
 
     // Recalculate the split cells
-    const needComputeCells: number[][] = [];
-    const cols = [];
-    const maxCol = colPath + colSpan;
-    const maxRow = rowPath + rowSpan;
+    const tableElement = findNode<TTableElement>(editor, {
+      at: tablePath,
+    })?.[0];
 
-    for (let col = colPath; col < maxCol; col++) {
-      cols.push(col);
+    if (tableElement) {
+      computeCellIndices(editor, tableElement);
     }
-
-    for (let row = rowPath; row < maxRow; row++) {
-      cols.forEach((col) => {
-        needComputeCells.push([...tablePath, row, col]);
-      });
-    }
-
-    const tableElement = getNode(editor, tablePath) as TTableElement;
-    needComputeCells.forEach((path) => {
-      const cell = getNode(editor, path);
-      computeCellIndices(editor, tableElement, cell as TTableCellElement);
-    });
   });
 };
