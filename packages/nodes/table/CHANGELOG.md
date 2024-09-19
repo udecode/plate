@@ -1,5 +1,9 @@
 # @udecode/plate-table
 
+## 21.5.1
+
+- Add the `colspan` and `rowspan` attributes to `dangerouslyAllowAttributes` for TD and TH plugins
+
 ## 21.5.0
 
 ## 21.4.3

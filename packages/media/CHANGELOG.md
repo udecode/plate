@@ -1,5 +1,11 @@
 # @udecode/plate-media
 
+## 21.5.1
+
+- Add the following attributes to `dangerouslyAllowAttributes`:
+  - `createImagePlugin`: `alt`, `width`, `height`
+  - `createMediaEmbedPlugin`: `width`, `height`
+
 ## 21.5.0
 
 ## 21.4.2

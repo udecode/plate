@@ -1,6 +1,7 @@
 import { Value } from '@udecode/slate';
 import { AnyObject } from '@udecode/utils';
 import clsx from 'clsx';
+import { pick } from 'lodash';
 import { PlateRenderNodeProps } from '../types/PlateRenderNodeProps';
 import { WithPlatePlugin } from '../types/plugin/PlatePlugin';
 import { getSlateClass } from './misc/getSlateClass';
@@ -12,11 +13,13 @@ import { getSlateClass } from './misc/getSlateClass';
  */
 export const getRenderNodeProps = <V extends Value>({
   attributes,
+  dangerouslyAllowAttributes,
   nodeProps,
   props,
   type,
 }: Pick<WithPlatePlugin<V>, 'type' | 'props'> & {
   attributes?: AnyObject;
+  dangerouslyAllowAttributes?: string[];
   nodeProps: PlateRenderNodeProps<V>;
 }): PlateRenderNodeProps<V> => {
   let newProps: AnyObject = {};
@@ -27,7 +30,14 @@ export const getRenderNodeProps = <V extends Value>({
   }
 
   if (!newProps.nodeProps && attributes) {
-    newProps.nodeProps = attributes;
+    /**
+     * WARNING: Improper use of `dangerouslyAllowAttributes` WILL make your
+     * application vulnerable to cross-site scripting (XSS) or information
+     * exposure attacks.
+     *
+     * @see {@link PlatePlugin.dangerouslyAllowAttributes}
+     */
+    newProps.nodeProps = pick(attributes, dangerouslyAllowAttributes ?? []);
   }
 
   nodeProps = { ...nodeProps, ...newProps };

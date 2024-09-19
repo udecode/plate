@@ -80,6 +80,7 @@ export const createLinkPlugin = createPluginFactory<LinkPlugin>({
   key: ELEMENT_LINK,
   isElement: true,
   isInline: true,
+  dangerouslyAllowAttributes: ['target'],
   withOverrides: withLink,
   options: {
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],
