@@ -18,7 +18,7 @@ export function computeCellIndices(
   const options = editor.getOptions(BaseTablePlugin);
 
   const skipCells: boolean[][] = [];
-  let targetIndices: { col: number; row: number } | null = null;
+  let targetIndices: { col: number; row: number } | undefined;
 
   for (let rowIndex = 0; rowIndex < tableNode.children.length; rowIndex++) {
     const row = tableNode.children[rowIndex] as TTableRowElement;
@@ -34,6 +34,8 @@ export function computeCellIndices(
 
       if (cellElement === cellNode) {
         targetIndices = currentIndices;
+
+        break;
       }
 
       const colSpan = getColSpan(cellElement);
@@ -49,6 +51,8 @@ export function computeCellIndices(
 
       colIndex += colSpan;
     }
+
+    if (targetIndices) break;
   }
 
   return targetIndices;
