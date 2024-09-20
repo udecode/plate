@@ -1,5 +1,13 @@
 # @udecode/plate-table
 
+## 38.0.5
+
+### Patch Changes
+
+- [#3552](https://github.com/udecode/plate/pull/3552) by [@natamox](https://github.com/natamox) – Fix unmerge & compute cell indices
+
+  Remove computeAllCellIndices, use computeCellIndices instead
+
 ## 38.0.1
 
 ### Patch Changes
