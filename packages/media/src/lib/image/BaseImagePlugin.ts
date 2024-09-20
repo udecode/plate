@@ -30,7 +30,11 @@ export type ImageConfig = PluginConfig<
 export const BaseImagePlugin = createTSlatePlugin<ImageConfig>({
   key: 'img',
   extendEditor: withImage,
-  node: { isElement: true, isVoid: true },
+  node: {
+    dangerouslyAllowAttributes: ['alt', 'width', 'height'],
+    isElement: true,
+    isVoid: true,
+  },
 }).extend(({ plugin }) => ({
   parsers: {
     html: {
