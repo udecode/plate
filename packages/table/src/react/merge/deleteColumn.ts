@@ -10,6 +10,7 @@ import {
   someNode,
   withoutNormalizing,
 } from '@udecode/plate-common';
+import cloneDeep from 'lodash/cloneDeep';
 
 import {
   type TTableCellElement,
@@ -125,12 +126,14 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
         endingColIndex
       );
       const colsNumberAffected = curCellEndingColIndex - deletingColIndex + 1;
+      const colSpan = curColSpan - colsNumberAffected;
+      const newCell = cloneDeep({ ...curCell, colSpan });
 
-      setNodes<TTableCellElement>(
-        editor,
-        { ...curCell, colSpan: curColSpan - colsNumberAffected },
-        { at: curCellPath }
-      );
+      if (newCell.attributes?.colspan) {
+        newCell.attributes.colspan = colSpan.toString();
+      }
+
+      setNodes<TTableCellElement>(editor, newCell, { at: curCellPath });
     });
 
     const trEntry = getAboveNode(editor, {
