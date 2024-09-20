@@ -12,6 +12,7 @@ export const createImagePlugin = createPluginFactory<ImagePlugin>({
   key: ELEMENT_IMAGE,
   isElement: true,
   isVoid: true,
+  dangerouslyAllowAttributes: ['alt', 'width', 'height'],
   withOverrides: withImage,
   handlers: {
     onKeyDown: getOnKeyDownCaption(ELEMENT_IMAGE),

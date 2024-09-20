@@ -16,6 +16,7 @@ export const createMediaEmbedPlugin = createPluginFactory<MediaPlugin>({
   key: ELEMENT_MEDIA_EMBED,
   isElement: true,
   isVoid: true,
+  dangerouslyAllowAttributes: ['width', 'height'],
   handlers: {
     onKeyDown: getOnKeyDownCaption(ELEMENT_MEDIA_EMBED),
   },

@@ -48,6 +48,7 @@ export const createTablePlugin = createPluginFactory<TablePlugin>({
     {
       key: ELEMENT_TD,
       isElement: true,
+      dangerouslyAllowAttributes: ['colspan', 'rowspan'],
       deserializeHtml: {
         attributeNames: ['rowspan', 'colspan'],
         rules: [{ validNodeName: 'TD' }],
@@ -62,6 +63,7 @@ export const createTablePlugin = createPluginFactory<TablePlugin>({
     {
       key: ELEMENT_TH,
       isElement: true,
+      dangerouslyAllowAttributes: ['colspan', 'rowspan'],
       deserializeHtml: {
         attributeNames: ['rowspan', 'colspan'],
         rules: [{ validNodeName: 'TH' }],
