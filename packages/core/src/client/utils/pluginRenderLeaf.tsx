@@ -15,7 +15,13 @@ import { getRenderNodeProps } from '../../shared/utils/getRenderNodeProps';
  */
 export const pluginRenderLeaf = <V extends Value>(
   editor: PlateEditor<V>,
-  { component, key, props, type = key }: PlatePlugin<{}, V>
+  {
+    component,
+    dangerouslyAllowAttributes,
+    key,
+    props,
+    type = key,
+  }: PlatePlugin<{}, V>
 ): RenderLeaf =>
   function render(nodeProps) {
     const { children, leaf } = nodeProps;
@@ -25,6 +31,7 @@ export const pluginRenderLeaf = <V extends Value>(
 
       nodeProps = getRenderNodeProps({
         attributes: leaf.attributes as any,
+        dangerouslyAllowAttributes,
         nodeProps: nodeProps as any,
         props,
         type,

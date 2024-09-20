@@ -97,6 +97,7 @@ export interface LinkPlugin {
 
 /** Enables support for hyperlinks. */
 export const createLinkPlugin = createPluginFactory<LinkPlugin>({
+  dangerouslyAllowAttributes: ['target'],
   isElement: true,
   isInline: true,
   key: ELEMENT_LINK,

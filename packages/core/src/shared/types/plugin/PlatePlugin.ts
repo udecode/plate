@@ -25,6 +25,37 @@ export type PlatePlugin<
   V extends Value = Value,
   E extends PlateEditor<V> = PlateEditor<V>,
 > = {
+  /**
+   * Controls which (if any) attribute names in the `attributes` property of an
+   * element will be passed as `nodeProps` to the {@link NodeComponent}, and
+   * subsequently rendered as DOM attributes.
+   *
+   * WARNING: If used improperly, this property WILL make your application
+   * vulnerable to cross-site scripting (XSS) or information exposure attacks.
+   *
+   * For example, if the `href` attribute is allowed and the component passes
+   * `nodeProps` to an `<a>` element, then attackers can direct users to open a
+   * document containing a malicious link element:
+   *
+   * { type: 'link', url: 'https://safesite.com/', attributes: { href:
+   * 'javascript:alert("xss")' }, children: [{ text: 'Click me' }], }
+   *
+   * The same is true of the `src` attribute when passed to certain HTML
+   * elements, such as `<iframe>`.
+   *
+   * If the `style` attribute (or another attribute that can load URLs, such as
+   * `background`) is allowed, then attackers can direct users to open a
+   * document that will send a HTTP request to an arbitrary URL. This can leak
+   * the victim's IP address or confirm to the attacker that the victim opened
+   * the document.
+   *
+   * Before allowing any attribute name, ensure that you thoroughly research and
+   * assess any potential risks associated with it.
+   *
+   * @default [ ]
+   */
+  dangerouslyAllowAttributes?: string[];
+
   editor?: Nullable<{
     /**
      * Properties used by the `insertData` core plugin to deserialize inserted

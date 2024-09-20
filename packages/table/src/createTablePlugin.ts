@@ -74,6 +74,7 @@ export const createTablePlugin = createPluginFactory<TablePlugin>({
       key: ELEMENT_TR,
     },
     {
+      dangerouslyAllowAttributes: ['colspan', 'rowspan'],
       isElement: true,
       key: ELEMENT_TD,
       props: ({ element }) => ({
@@ -91,6 +92,7 @@ export const createTablePlugin = createPluginFactory<TablePlugin>({
       }),
     },
     {
+      dangerouslyAllowAttributes: ['colspan', 'rowspan'],
       isElement: true,
       key: ELEMENT_TH,
       props: ({ element }) => ({

@@ -1,14 +1,20 @@
 import React from 'react';
 
+import { render } from '@testing-library/react';
 import { renderHook } from '@testing-library/react-hooks';
 import {
+  type PlateRenderElementProps,
   createPlateEditor,
+  createPluginFactory,
   useEditorRef,
   usePlateSelectors,
 } from '@udecode/plate-common';
 
+import type { PlateRenderLeafProps } from '../../shared';
+
 import { PlateController, usePlateEditorStore } from '../stores';
 import { Plate } from './Plate';
+import { PlateContent } from './PlateContent';
 
 describe('Plate', () => {
   describe('useEditorRef()', () => {
@@ -342,6 +348,117 @@ describe('Plate', () => {
           expect(() => getStore(wrapper)).toThrow();
         });
       });
+    });
+  });
+
+  describe('User-defined attributes', () => {
+    const ParagraphElement = ({
+      attributes,
+      children,
+      nodeProps,
+    }: PlateRenderElementProps) => (
+      <p {...attributes} {...nodeProps} data-testid="paragraph">
+        {children}
+      </p>
+    );
+
+    const BoldLeaf = ({
+      attributes,
+      children,
+      nodeProps,
+    }: PlateRenderLeafProps) => (
+      <strong {...attributes} {...nodeProps} data-testid="bold">
+        {children}
+      </strong>
+    );
+
+    const getParagraphPlugin = (dangerouslyAllowAttributes: boolean) =>
+      createPluginFactory({
+        component: ParagraphElement,
+        dangerouslyAllowAttributes: dangerouslyAllowAttributes
+          ? ['data-my-paragraph-attribute']
+          : undefined,
+        isElement: true,
+        key: 'p',
+      });
+
+    const getBoldPlugin = (dangerouslyAllowAttributes: boolean) =>
+      createPluginFactory({
+        component: BoldLeaf,
+        dangerouslyAllowAttributes: dangerouslyAllowAttributes
+          ? ['data-my-bold-attribute']
+          : undefined,
+        isLeaf: true,
+        key: 'bold',
+      });
+
+    const initialValue = [
+      {
+        attributes: {
+          'data-my-paragraph-attribute': 'hello',
+          'data-unpermitted-paragraph-attribute': 'world',
+        },
+        children: [
+          {
+            attributes: {
+              'data-my-bold-attribute': 'hello',
+              'data-unpermitted-bold-attribute': 'world',
+            },
+            bold: true,
+            text: 'My bold paragraph',
+          },
+        ],
+        type: 'p',
+      },
+    ];
+
+    const Editor = ({
+      dangerouslyAllowAttributes,
+    }: {
+      dangerouslyAllowAttributes: boolean;
+    }) => {
+      const plugins = [
+        getParagraphPlugin(dangerouslyAllowAttributes)(),
+        getBoldPlugin(dangerouslyAllowAttributes)(),
+      ];
+
+      return (
+        <Plate initialValue={initialValue} plugins={plugins}>
+          <PlateContent />
+        </Plate>
+      );
+    };
+
+    it('renders no user-defined attributes by default', () => {
+      const { getByTestId } = render(
+        <Editor dangerouslyAllowAttributes={false} />
+      );
+
+      const paragraphEl = getByTestId('paragraph');
+      expect(Object.keys(paragraphEl.dataset)).toEqual(['slateNode', 'testid']);
+
+      const boldEl = getByTestId('bold');
+      expect(Object.keys(boldEl.dataset)).toEqual(['slateLeaf', 'testid']);
+    });
+
+    it('renders allowed user-defined attributes', () => {
+      const { getByTestId } = render(
+        <Editor dangerouslyAllowAttributes={true} />
+      );
+
+      const paragraphEl = getByTestId('paragraph');
+      expect(Object.keys(paragraphEl.dataset)).toEqual([
+        'slateNode',
+        'myParagraphAttribute',
+        'testid',
+      ]);
+
+      const boldEl = getByTestId('bold');
+      expect(Object.keys(boldEl.dataset)).toEqual([
+        'slateLeaf',
+        'myBoldAttribute',
+        'testid',
+      ]);
     });
   });
 });
