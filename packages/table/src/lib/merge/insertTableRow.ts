@@ -8,6 +8,7 @@ import {
   setNodes,
   withoutNormalizing,
 } from '@udecode/plate-common';
+import cloneDeep from 'lodash/cloneDeep';
 import { Path } from 'slate';
 
 import type {
@@ -134,12 +135,15 @@ export const insertTableMergeRow = (
     const endCurI = curRowIndex + curRowSpan - 1;
 
     if (endCurI >= nextRowIndex && !firstRow) {
+      const rowSpan = curRowSpan + 1;
+      const newCell = cloneDeep({ ...curCell, rowSpan });
+
+      if (newCell.attributes?.rowspan) {
+        newCell.attributes.rowspan = rowSpan.toString();
+      }
+
       // make higher
-      setNodes<TTableCellElement>(
-        editor,
-        { ...curCell, rowSpan: curRowSpan + 1 },
-        { at: currentCellPath }
-      );
+      setNodes<TTableCellElement>(editor, newCell, { at: currentCellPath });
     } else {
       // add new
       const row = getParentNode(editor, currentCellPath)!;

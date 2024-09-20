@@ -9,6 +9,7 @@ import {
   someNode,
 } from '@udecode/plate-common';
 import { findNodePath } from '@udecode/plate-common/react';
+import cloneDeep from 'lodash/cloneDeep';
 
 import {
   type TTableCellElement,
@@ -110,12 +111,10 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
       return;
     }
     if (nextRow) {
-      moveToNextRowCells.forEach((cur, index) => {
-        const curRowCell = cur as TTableCellElement;
-        const { col: curRowCellColIndex } = getCellIndices(
-          cellIndices!,
-          curRowCell
-        )!;
+      for (let index = 0; index < moveToNextRowCells.length; index++) {
+        const curRowCell = moveToNextRowCells[index] as TTableCellElement;
+        const { col: curRowCellColIndex, row: curRowCellRowIndex } =
+          getCellIndices(cellIndices!, curRowCell)!;
         const curRowCellRowSpan = getRowSpan(curRowCell);
 
         // search for anchor cell where to place current cell
@@ -125,6 +124,28 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
 
           return curColIndex >= curRowCellColIndex;
         });
+
+        if (startingCellIndex === -1) {
+          const startingCell = nextRow.children.at(-1) as TTableCellElement;
+          const startingCellPath = findNodePath(editor, startingCell)!;
+          const tablePath = startingCellPath.slice(0, -2);
+          const colPath = startingCellPath.at(-1)! + index + 1;
+          const nextRowStartCellPath = [...tablePath, nextRowIndex, colPath];
+
+          const rowsNumberAffected = endingRowIndex - curRowCellRowIndex + 1;
+          const rowSpan = curRowCellRowSpan - rowsNumberAffected;
+          const newCell = cloneDeep({ ...curRowCell, rowSpan });
+
+          if (newCell.attributes?.rowspan) {
+            newCell.attributes.rowspan = rowSpan.toString();
+          }
+
+          insertElements(editor, newCell, {
+            at: nextRowStartCellPath,
+          });
+
+          continue;
+        }
 
         const startingCell = nextRow.children[
           startingCellIndex
@@ -152,16 +173,18 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
           colPath + incrementBy,
         ];
 
-        const rowsNumberAffected = endingRowIndex - curRowCellColIndex + 1;
+        const rowsNumberAffected = endingRowIndex - curRowCellRowIndex + 1;
+        const rowSpan = curRowCellRowSpan - rowsNumberAffected;
+        const newCell = cloneDeep({ ...curRowCell, rowSpan });
 
-        // TODO: consider make deep clone here
-        // making cell smaller and moving it to next row
-        const newCell = {
-          ...curRowCell,
-          rowSpan: curRowCellRowSpan - rowsNumberAffected,
-        };
-        insertElements(editor, newCell, { at: nextRowStartCellPath });
-      });
+        if (newCell.attributes?.rowspan) {
+          newCell.attributes.rowspan = rowSpan.toString();
+        }
+
+        insertElements(editor, newCell, {
+          at: nextRowStartCellPath,
+        });
+      }
     }
 
     squizeRowSpanCells.forEach((cur) => {
@@ -179,12 +202,14 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
         endingRowIndex
       );
       const rowsNumberAffected = curCellEndingRowIndex - deletingRowIndex + 1;
+      const rowSpan = curRowCellRowSpan - rowsNumberAffected;
+      const newCell = cloneDeep({ ...curRowCell, rowSpan });
 
-      setNodes<TTableCellElement>(
-        editor,
-        { ...curRowCell, rowSpan: curRowCellRowSpan - rowsNumberAffected },
-        { at: curCellPath }
-      );
+      if (newCell.attributes?.rowspan) {
+        newCell.attributes.rowspan = rowSpan.toString();
+      }
+
+      setNodes<TTableCellElement>(editor, newCell, { at: curCellPath });
     });
 
     const rowToDelete = table.children[deletingRowIndex] as TTableRowElement;
