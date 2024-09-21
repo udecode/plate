@@ -154,12 +154,12 @@ export const examples: Registry = [
     external: true,
     files: ['styles/globals.css'],
     name: 'globals',
-    type: 'components:component',
+    type: 'registry:style',
   },
   {
     external: true,
     files: ['types/plate-types.ts'],
     name: 'plate-types',
-    type: 'components:component',
+    type: 'registry:lib',
   },
 ];

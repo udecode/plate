@@ -1,5 +1,5 @@
 import { getBlock } from '@/lib/_blocks';
-import { styles } from '@/registry/styles';
+import { styles } from '@/registry/registry-styles';
 
 import { BlockPreview } from './block-preview';
 

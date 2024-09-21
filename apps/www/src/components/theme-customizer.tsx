@@ -34,6 +34,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/registry/default/plate-ui/tooltip';
+import { type BaseColor, baseColors } from '@/registry/registry-base-colors';
 
 import { copyToClipboardWithMeta } from './copy-button';
 import { ThemeWrapper } from './theme-wrapper';

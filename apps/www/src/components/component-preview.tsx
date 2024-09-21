@@ -6,7 +6,7 @@ import { cn } from '@udecode/cn';
 
 import { Index } from '@/__registry__';
 import { useConfig } from '@/hooks/use-config';
-import { styles } from '@/registry/styles';
+import { styles } from '@/registry/registry-styles';
 
 import { CopyButton } from './copy-button';
 import { Icons } from './icons';

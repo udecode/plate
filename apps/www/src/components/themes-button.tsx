@@ -14,7 +14,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/registry/default/plate-ui/tooltip';
-import { themes } from '@/registry/themes';
+import { baseColors } from '@/registry/registry-base-colors';
 
 import { settingsStore } from './context/settings-store';
 import { Skeleton } from './ui/skeleton';
@@ -34,7 +34,7 @@ export function ThemesButton() {
         {mounted ? (
           <>
             {['slate', 'rose', 'blue', 'green', 'orange'].map((color) => {
-              const theme = themes.find((th) => th.name === color);
+              const theme = baseColors.find((th) => th.name === color);
               const isActive = config.theme === color;
 
               if (!theme) {

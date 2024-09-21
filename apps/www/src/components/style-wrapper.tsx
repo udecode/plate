@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { Style } from '@/registry/styles';
+import type { Style } from '@/registry/registry-styles';
 
 import { useConfig } from '@/hooks/use-config';
 

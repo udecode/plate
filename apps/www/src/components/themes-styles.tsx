@@ -1,5 +1,7 @@
 'use client';
 
+import { useThemesConfig } from '@/hooks/use-themes-config';
+
 export function ThemesStyle() {
   const { themesConfig } = useThemesConfig();
 

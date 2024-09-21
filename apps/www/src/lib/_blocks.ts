@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/require-await */
 'use server';
 
-import type { Style } from '@/registry/styles';
+import type { Style } from '@/registry/registry-styles';
 
 import { promises as fs } from 'node:fs';
 import { tmpdir } from 'node:os';

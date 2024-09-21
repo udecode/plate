@@ -633,4 +633,4 @@ export const baseColors = [
   },
 ] as const;
 
-export type BaseTheme = (typeof baseColors)[number];
+export type BaseColor = (typeof baseColors)[number];

@@ -19,7 +19,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/registry/default/plate-ui/popover';
-import { themes } from '@/registry/themes';
+import { baseColors } from '@/registry/registry-base-colors';
 
 import { CopyCodeButton } from './copy-code-button';
 import { Label } from './ui/label';
@@ -109,7 +109,7 @@ export function ThemesTabContent() {
         <div className="space-y-1.5">
           <Label className="text-xs">Color</Label>
           <div className="grid grid-cols-3 gap-2">
-            {themes.map((theme) => {
+            {baseColors.map((theme) => {
               const isActive = config.theme === theme.name;
 
               return mounted ? (

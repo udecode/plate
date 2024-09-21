@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import type { Event } from '@/lib/events';
-import type { Style } from '@/registry/styles';
+import type { Style } from '@/registry/registry-styles';
 import type { NpmCommands } from '@/types/unist';
 
 import { cn } from '@udecode/cn';

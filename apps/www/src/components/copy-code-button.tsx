@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/registry/default/plate-ui/dialog';
-import { type Theme, themes } from '@/registry/themes';
+import { type BaseColor, baseColors } from '@/registry/registry-base-colors';
 
 import { copyToClipboardWithMeta } from './copy-button';
 
@@ -23,7 +23,7 @@ export function CopyCodeButton({
   ...props
 }: React.ComponentProps<typeof Button>) {
   const [config] = useConfig();
-  const activeTheme = themes.find((theme) => theme.name === config.theme);
+  const activeTheme = baseColors.find((theme) => theme.name === config.theme);
   const [hasCopied, setHasCopied] = React.useState(false);
 
   React.useEffect(() => {
@@ -107,7 +107,7 @@ export function CopyCodeButton({
 
 function CustomizerCode() {
   const [config] = useConfig();
-  const activeTheme = themes.find((theme) => theme.name === config.theme);
+  const activeTheme = baseColors.find((theme) => theme.name === config.theme);
 
   return (
     <div className="relative space-y-4">
@@ -230,7 +230,7 @@ function CustomizerCode() {
   );
 }
 
-function getThemeCode(theme: Theme, radius: number) {
+function getThemeCode(theme: BaseColor, radius: number) {
   if (!theme) {
     return '';
   }
