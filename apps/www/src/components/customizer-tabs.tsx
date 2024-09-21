@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { settingsStore } from './context/settings-store';
 import { PluginsTabContent } from './plugins-tab-content';
-import { ThemesTabContent } from './themes-tab-content';
+import { ThemeCustomizer } from './theme-customizer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 export function CustomizerTabs() {
@@ -33,7 +33,7 @@ export function CustomizerTabs() {
           className="h-[calc(85vh-90px)] overflow-y-auto overflow-x-hidden overscroll-contain pt-2 md:h-[calc(100vh-64px)]"
           value="themes"
         >
-          <ThemesTabContent />
+          <ThemeCustomizer />
         </TabsContent>
       </Tabs>
     </div>
