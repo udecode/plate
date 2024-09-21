@@ -33,7 +33,7 @@ export function BlockToolbar({
   return (
     <div
       className={cn(
-        'flex flex-col items-center gap-4 sm:flex-row',
+        'flex items-center gap-4',
         'absolute right-0 z-[60]',
         !fullScreen && '-top-4 -translate-y-full',
         fullScreen && 'bottom-4'

@@ -132,7 +132,7 @@ export default makeSource({
         {
           getHighlighter: async () => {
             const theme = await loadTheme(
-              path.join(process.cwd(), '/src/lib/themes/dark.json')
+              path.join(process.cwd(), '/src/lib/highlighter-theme.json')
             );
 
             return await getHighlighter({ theme });

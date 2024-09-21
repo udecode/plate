@@ -1,4 +1,4 @@
-export const themes = [
+export const baseColors = [
   {
     activeColor: {
       dark: '240 5.2% 33.9%',
@@ -633,4 +633,4 @@ export const themes = [
   },
 ] as const;
 
-export type Theme = (typeof themes)[number];
+export type BaseTheme = (typeof baseColors)[number];

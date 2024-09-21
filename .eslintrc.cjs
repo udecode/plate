@@ -1,7 +1,7 @@
+const { filePatterns } = require('./config/eslint/constants/file-patterns.cjs');
 const {
   getDefaultIgnorePatterns,
 } = require('./config/eslint/helpers/getDefaultIgnorePatterns.cjs');
-const { filePatterns } = require('./config/eslint/constants/file-patterns.cjs');
 
 /** @type {import('eslint').Linter.Config} */
 module.exports = {
@@ -34,6 +34,7 @@ module.exports = {
     '.out',
     '**/*.mdx',
     '**/__registry__',
+    '**/scripts/build-registry.mts',
   ],
   overrides: [
     {
