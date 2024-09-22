@@ -152,13 +152,7 @@ export const examples: Registry = [
   },
   {
     external: true,
-    files: ['styles/globals.css'],
-    name: 'globals',
-    type: 'registry:style',
-  },
-  {
-    external: true,
-    files: ['types/plate-types.ts'],
+    files: ['lib/plate-types.ts'],
     name: 'plate-types',
     type: 'registry:lib',
   },

@@ -210,7 +210,7 @@ export const Index: Record<string, any> = {
             const targetFile = file.replace(item.name, `${chunkName}`)
             const targetFilePath = path.join(
               cwd(),
-              `registry/${style.name}/${type}/${chunkName}.tsx`
+              `src/registry/${style.name}/${type}/${chunkName}.tsx`
             )
 
             // Write component file.
@@ -230,7 +230,7 @@ export const Index: Record<string, any> = {
         )
 
         // // Write the source file for blocks only.
-        sourceFilename = `__registry__/${style.name}/${type}/${item.name}.tsx`
+        sourceFilename = `src/__registry__/${style.name}/${type}/${item.name}.tsx`
 
         if (item.files) {
           const files = item.files.map((file) =>
@@ -239,7 +239,7 @@ export const Index: Record<string, any> = {
               : file
           )
           if (files?.length) {
-            sourceFilename = `__registry__/${style.name}/${files[0].path}`
+            sourceFilename = `src/__registry__/${style.name}/${files[0].path}`
           }
         }
 
@@ -326,9 +326,13 @@ export const Index: Record<string, any> = {
     "utf8"
   )
 
+  
   // Write style index.
-  rimraf.sync(path.join(process.cwd(), "__registry__/index.tsx"))
-  await fs.writeFile(path.join(process.cwd(), "__registry__/index.tsx"), index)
+  if (!existsSync(path.join(process.cwd(), "src/__registry__"))) {
+    await fs.mkdir(path.join(process.cwd(), "src/__registry__"), { recursive: true })
+  }
+  rimraf.sync(path.join(process.cwd(), "src/__registry__/index.tsx"))
+  await fs.writeFile(path.join(process.cwd(), "src/__registry__/index.tsx"), index)
 }
 
 // ----------------------------------------------------------------------------
@@ -363,7 +367,7 @@ async function buildStyles(registry: Registry) {
                 : _file
 
             const content = await fs.readFile(
-              path.join(process.cwd(), "registry", style.name, file.path),
+              path.join(process.cwd(), "src/registry", style.name, file.path),
               "utf8"
             )
 

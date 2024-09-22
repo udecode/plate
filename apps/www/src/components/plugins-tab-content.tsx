@@ -6,7 +6,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowUpRight, Eye, EyeOff } from 'lucide-react';
 
 import { customizerList } from '@/config/customizer-list';
-import { useDebounce } from '@/hooks/use-debounce';
+import { useDebounce } from '@/registry/default/hooks/use-debounce';
 import { Button } from '@/registry/default/plate-ui/button';
 import { Checkbox } from '@/registry/default/plate-ui/checkbox';
 

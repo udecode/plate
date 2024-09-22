@@ -23,6 +23,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipPortal,
+  TooltipProvider,
   TooltipTrigger,
 } from './tooltip';
 
@@ -78,30 +79,32 @@ const DragHandle = () => {
   const editor = useEditorRef();
 
   return (
-    <Tooltip>
-      <TooltipTrigger type="button">
-        <Icons.dragHandle
-          className="size-4 text-muted-foreground"
-          onClick={(event) => {
-            event.stopPropagation();
-            event.preventDefault();
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger type="button">
+          <Icons.dragHandle
+            className="size-4 text-muted-foreground"
+            onClick={(event) => {
+              event.stopPropagation();
+              event.preventDefault();
 
-            // if (element.id) {
-            //   editor.getApi(BlockSelectionPlugin).blockSelection.addSelectedRow(element.id as string);
-            //   api.blockContextMenu.show(editor.id, event as any);
-            // }
-          }}
-          onMouseDown={() => {
-            editor
-              .getApi(BlockSelectionPlugin)
-              .blockSelection.resetSelectedIds();
-          }}
-        />
-      </TooltipTrigger>
-      <TooltipPortal>
-        <TooltipContent>Drag to move</TooltipContent>
-      </TooltipPortal>
-    </Tooltip>
+              // if (element.id) {
+              //   editor.getApi(BlockSelectionPlugin).blockSelection.addSelectedRow(element.id as string);
+              //   api.blockContextMenu.show(editor.id, event as any);
+              // }
+            }}
+            onMouseDown={() => {
+              editor
+                .getApi(BlockSelectionPlugin)
+                .blockSelection.resetSelectedIds();
+            }}
+          />
+        </TooltipTrigger>
+        <TooltipPortal>
+          <TooltipContent>Drag to move</TooltipContent>
+        </TooltipPortal>
+      </Tooltip>
+    </TooltipProvider>
   );
 };
 

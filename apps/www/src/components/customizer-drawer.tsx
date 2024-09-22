@@ -51,7 +51,7 @@ export default function CustomizerDrawer() {
           }}
           shouldScaleBackground={false}
         >
-          <DrawerContent className="p-6 pt-0">
+          <DrawerContent className="pb-6 pt-0">
             <CustomizerTabs />
           </DrawerContent>
         </Drawer>
@@ -66,7 +66,7 @@ export default function CustomizerDrawer() {
           modal={false}
         >
           <SheetContent
-            className="hidden min-w-[450px] rounded-[0.5rem] bg-background px-6 py-3 md:flex"
+            className="hidden min-w-[450px] rounded-[0.5rem] bg-background px-0 py-3 md:flex"
             modal={false}
             hideClose
           >

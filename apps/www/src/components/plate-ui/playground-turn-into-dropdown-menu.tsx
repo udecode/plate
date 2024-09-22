@@ -23,6 +23,7 @@ import { ListPlugin } from '@udecode/plate-list/react';
 import { CheckPlugin } from '@/components/context/check-plugin';
 import { settingsStore } from '@/components/context/settings-store';
 import { Icons } from '@/components/icons';
+import { useMyEditorRef } from '@/registry/default/lib/plate-types';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,7 +34,6 @@ import {
   useOpenState,
 } from '@/registry/default/plate-ui/dropdown-menu';
 import { ToolbarButton } from '@/registry/default/plate-ui/toolbar';
-import { useMyEditorRef } from '@/types/plate-types';
 
 const items = [
   {

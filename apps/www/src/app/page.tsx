@@ -30,16 +30,14 @@ export default function IndexPage() {
           <AnnouncementButton />
 
           <div className="flex w-full items-center justify-between">
-            <PageHeaderHeading>Build your rich-text editor.</PageHeaderHeading>
-            <div className="hidden md:block">
-              <ThemesButton />
-            </div>
+            <PageHeaderHeading>Build your rich-text editor</PageHeaderHeading>
+            <ThemesButton />
           </div>
           <PageHeaderDescription>
             Plugin system & primitive component library. <br />
             CLI for styled components. Customizable. Open Source.
           </PageHeaderDescription>
-          <section className="flex w-full items-center space-x-4 py-4 md:pb-10">
+          <section className="flex w-full items-center space-x-4 py-2">
             <Button asChild size="sm">
               <Link href="/docs">Get Started</Link>
             </Button>

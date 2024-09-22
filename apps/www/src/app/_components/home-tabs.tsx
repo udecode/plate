@@ -9,7 +9,6 @@ import { parseAsBoolean, useQueryState } from 'nuqs';
 
 import { BlockPreview } from '@/components/block-preview';
 import { settingsStore } from '@/components/context/settings-store';
-import { ThemeWrapper } from '@/components/theme-wrapper';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/registry/default/plate-ui/button';
 
@@ -69,9 +68,7 @@ export default function HomeTabs() {
         </Button>
 
         <TabsContent className="pt-2" value="playground">
-          <ThemeWrapper>
-            <BlockPreview className="max-w-[1336px]" />
-          </ThemeWrapper>
+          <BlockPreview className="max-w-[1336px]" />
         </TabsContent>
 
         <TabsContent className="pt-2" value="installation">

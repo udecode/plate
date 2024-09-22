@@ -279,7 +279,7 @@ const InlineComboboxContent: typeof ComboboxPopover = ({
 };
 
 const comboboxItemVariants = cva(
-  'relative flex h-9 select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none',
+  'relative flex h-9 select-none items-center rounded-sm px-2 py-1.5 text-sm text-foreground outline-none',
   {
     defaultVariants: {
       interactive: true,

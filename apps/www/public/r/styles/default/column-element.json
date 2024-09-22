@@ -1,0 +1,25 @@
+{
+  "dependencies": [
+    "@udecode/plate-layout"
+  ],
+  "files": [
+    {
+      "content": "import React from 'react';\n\nimport type { TColumnElement } from '@udecode/plate-layout';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { PlateElement, useElement, withHOC } from '@udecode/plate-common/react';\nimport { ResizableProvider } from '@udecode/plate-resizable';\nimport { useReadOnly } from 'slate-react';\n\nexport const ColumnElement = withHOC(\n  ResizableProvider,\n  withRef<typeof PlateElement>(({ children, className, ...props }, ref) => {\n    const readOnly = useReadOnly();\n    const { width } = useElement<TColumnElement>();\n\n    return (\n      <PlateElement\n        ref={ref}\n        className={cn(\n          className,\n          !readOnly && 'rounded-lg border border-dashed p-1.5'\n        )}\n        style={{ width }}\n        {...props}\n      >\n        {children}\n      </PlateElement>\n    );\n  })\n);\n",
+      "path": "plate-ui/column-element.tsx",
+      "target": "",
+      "type": "registry:ui"
+    },
+    {
+      "content": "import React from 'react';\n\nimport type { TColumnElement } from '@udecode/plate-layout';\n\nimport { cn, withRef } from '@udecode/cn';\nimport {\n  PlateElement,\n  useElement,\n  useRemoveNodeButton,\n} from '@udecode/plate-common/react';\nimport {\n  ColumnItemPlugin,\n  useColumnState,\n  useDebouncePopoverOpen,\n} from '@udecode/plate-layout/react';\nimport { useReadOnly } from 'slate-react';\n\nimport { Icons } from '@/components/icons';\n\nimport { Button } from './button';\nimport { Popover, PopoverAnchor, PopoverContent } from './popover';\nimport { Separator } from './separator';\n\nexport const ColumnGroupElement = withRef<typeof PlateElement>(\n  ({ children, className, ...props }, ref) => {\n    return (\n      <PlateElement ref={ref} className={cn(className, 'my-2')} {...props}>\n        <ColumnFloatingToolbar>\n          <div className={cn('flex size-full gap-4 rounded')}>{children}</div>\n        </ColumnFloatingToolbar>\n      </PlateElement>\n    );\n  }\n);\n\nexport function ColumnFloatingToolbar({ children }: React.PropsWithChildren) {\n  const readOnly = useReadOnly();\n\n  const {\n    setDoubleColumn,\n    setDoubleSideDoubleColumn,\n    setLeftSideDoubleColumn,\n    setRightSideDoubleColumn,\n    setThreeColumn,\n  } = useColumnState();\n\n  const element = useElement<TColumnElement>(ColumnItemPlugin.key);\n\n  const { props: buttonProps } = useRemoveNodeButton({ element });\n\n  const isOpen = useDebouncePopoverOpen();\n\n  if (readOnly) return <>{children}</>;\n\n  return (\n    <Popover open={isOpen} modal={false}>\n      <PopoverAnchor>{children}</PopoverAnchor>\n      <PopoverContent\n        className=\"w-auto p-1\"\n        onOpenAutoFocus={(e) => e.preventDefault()}\n        align=\"center\"\n        side=\"top\"\n        sideOffset={10}\n      >\n        <div className=\"box-content flex h-9 items-center gap-1 [&_svg]:size-4 [&_svg]:text-muted-foreground\">\n          <Button size=\"sms\" variant=\"ghost\" onClick={setDoubleColumn}>\n            <Icons.doubleColumn />\n          </Button>\n          <Button size=\"sms\" variant=\"ghost\" onClick={setThreeColumn}>\n            <Icons.threeColumn />\n          </Button>\n          <Button size=\"sms\" variant=\"ghost\" onClick={setRightSideDoubleColumn}>\n            <Icons.rightSideDoubleColumn />\n          </Button>\n          <Button size=\"sms\" variant=\"ghost\" onClick={setLeftSideDoubleColumn}>\n            <Icons.leftSideDoubleColumn />\n          </Button>\n          <Button\n            size=\"sms\"\n            variant=\"ghost\"\n            onClick={setDoubleSideDoubleColumn}\n          >\n            <Icons.doubleSideDoubleColumn />\n          </Button>\n\n          <Separator orientation=\"vertical\" className=\"my-1\" />\n          <Button size=\"sms\" variant=\"ghost\" {...buttonProps}>\n            <Icons.delete />\n          </Button>\n        </div>\n      </PopoverContent>\n    </Popover>\n  );\n}\n",
+      "path": "plate-ui/column-group-element.tsx",
+      "target": "",
+      "type": "registry:ui"
+    }
+  ],
+  "name": "column-element",
+  "registryDependencies": [
+    "command",
+    "resizable"
+  ],
+  "type": "registry:ui"
+}

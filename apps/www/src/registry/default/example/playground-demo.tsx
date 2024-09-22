@@ -320,9 +320,11 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
 
 export default function PlaygroundDemo({
   id,
+  className,
   scrollSelector,
 }: {
   id?: ValueId;
+  className?: string;
   scrollSelector?: string;
 }) {
   const containerRef = useRef(null);
@@ -333,80 +335,79 @@ export default function PlaygroundDemo({
   return (
     <DemoId id={id}>
       <DndProvider backend={HTML5Backend}>
-        <div className="relative">
-          <Plate editor={editor}>
-            <CheckPlugin componentId="fixed-toolbar">
-              <FixedToolbar className="no-scrollbar">
-                <CheckPlugin componentId="fixed-toolbar-buttons">
-                  <PlaygroundFixedToolbarButtons />
-                </CheckPlugin>
-              </FixedToolbar>
-            </CheckPlugin>
+        <Plate editor={editor}>
+          <CheckPlugin componentId="fixed-toolbar">
+            <FixedToolbar className="no-scrollbar">
+              <CheckPlugin componentId="fixed-toolbar-buttons">
+                <PlaygroundFixedToolbarButtons />
+              </CheckPlugin>
+            </FixedToolbar>
+          </CheckPlugin>
 
+          <div
+            id="editor-playground"
+            className="flex w-full"
+            style={
+              {
+                '--editor-px': 'max(5%,24px)',
+              } as any
+            }
+          >
             <div
-              id="editor-playground"
-              className="flex w-full"
-              style={
-                {
-                  '--editor-px': 'max(5%,24px)',
-                } as any
-              }
+              id={scrollSelector}
+              ref={containerRef}
+              className={cn(
+                'relative flex max-h-[800px] w-full overflow-x-auto',
+                // block selection area
+                '[&_.slate-selected]:!bg-primary/20 [&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10',
+                className
+              )}
+              data-plate-selectable
             >
-              <div
-                id={scrollSelector}
-                ref={containerRef}
+              <Editor
+                {...editableProps}
+                size="md"
+                variant="ghost"
                 className={cn(
-                  'relative flex max-h-[800px] w-full overflow-x-auto',
-                  // block selection area
-                  '[&_.slate-selected]:!bg-primary/20 [&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10'
+                  editableProps.className,
+                  ' overflow-x-hidden rounded-none px-[var(--editor-px)]',
+                  !id && 'pb-[20vh] pt-4',
+                  id && 'pb-8 pt-2'
                 )}
-                data-plate-selectable
-              >
-                <Editor
-                  {...editableProps}
-                  size="md"
-                  variant="ghost"
-                  className={cn(
-                    editableProps.className,
-                    ' overflow-x-hidden px-[var(--editor-px)]',
-                    !id && 'pb-[20vh] pt-4',
-                    id && 'pb-8 pt-2'
-                  )}
-                  placeholder=""
-                  focusRing={false}
-                />
+                placeholder=""
+                focusRing={false}
+              />
 
-                <CheckPlugin componentId="floating-toolbar">
-                  <FloatingToolbar
-                    state={{
-                      showWhenReadOnly: isEnabled(
-                        'comment',
-                        id,
-                        enabled[CommentsPlugin.key]
-                      ),
-                    }}
-                  >
-                    <CheckPlugin componentId="floating-toolbar-buttons">
-                      <PlaygroundFloatingToolbarButtons />
-                    </CheckPlugin>
-                  </FloatingToolbar>
-                </CheckPlugin>
+              <CheckPlugin componentId="floating-toolbar">
+                <FloatingToolbar
+                  state={{
+                    showWhenReadOnly: isEnabled(
+                      'comment',
+                      id,
+                      enabled[CommentsPlugin.key]
+                    ),
+                  }}
+                >
+                  <CheckPlugin componentId="floating-toolbar-buttons">
+                    <PlaygroundFloatingToolbarButtons />
+                  </CheckPlugin>
+                </FloatingToolbar>
+              </CheckPlugin>
 
-                <CheckPlugin id="cursoroverlay" plugin={DragOverCursorPlugin}>
-                  <CursorOverlay containerRef={containerRef} />
-                </CheckPlugin>
-              </div>
-
-              <CheckPlugin
-                id="comment"
-                componentId="comments-popover"
-                plugin={CommentsPlugin}
-              >
-                <CommentsPopover />
+              <CheckPlugin id="cursoroverlay" plugin={DragOverCursorPlugin}>
+                <CursorOverlay containerRef={containerRef} />
               </CheckPlugin>
             </div>
-          </Plate>
-        </div>
+
+            <CheckPlugin
+              id="comment"
+              componentId="comments-popover"
+              plugin={CommentsPlugin}
+            >
+              <CommentsPopover />
+            </CheckPlugin>
+          </div>
+        </Plate>
       </DndProvider>
     </DemoId>
   );

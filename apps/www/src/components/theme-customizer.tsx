@@ -3,7 +3,6 @@
 import * as React from 'react';
 
 import {
-  CheckIcon,
   InfoCircledIcon,
   MoonIcon,
   ResetIcon,
@@ -13,31 +12,37 @@ import { cn } from '@udecode/cn';
 import { useTheme } from 'next-themes';
 
 import { useConfig } from '@/hooks/use-config';
+import { useMounted } from '@/hooks/use-mounted';
+import { useThemesConfig } from '@/hooks/use-themes-config';
+import { THEMES } from '@/lib/themes';
 import { Button } from '@/registry/default/plate-ui/button';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/registry/default/plate-ui/popover';
-import { baseColors } from '@/registry/registry-base-colors';
+import { Separator } from '@/registry/default/plate-ui/separator';
 
-import { CopyCodeButton } from './copy-code-button';
+import { CopyCodeButton, getThemeCode } from './copy-code-button';
+import { ThemesSwitcher } from './themes-selector-mini';
 import { Label } from './ui/label';
 import { Skeleton } from './ui/skeleton';
 
 export function ThemeCustomizer() {
-  const [mounted, setMounted] = React.useState(false);
+  const mounted = useMounted();
   const [config, setConfig] = useConfig();
+  const { setThemesConfig, themesConfig } = useThemesConfig();
+  const activeTheme = themesConfig.activeTheme ?? THEMES['default-shadcn'];
   const { resolvedTheme: mode, setTheme: setMode } = useTheme();
 
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
+  const themeCode = React.useMemo(() => {
+    return getThemeCode(activeTheme, config.radius);
+  }, [activeTheme, config.radius]);
 
   return (
-    <>
+    <div className="flex h-full flex-col space-y-4 md:space-y-6">
       <div className="flex items-start justify-between">
-        <div className="space-y-1 pr-2">
+        <div className="space-y-1 px-6 pr-2">
           <div className="font-semibold leading-none tracking-tight">
             Customize
           </div>
@@ -45,11 +50,9 @@ export function ThemeCustomizer() {
             Pick a style and color for your components.
           </div>
         </div>
-
-        <CopyCodeButton size="sm" variant="ghost" className="[&_svg]:hidden" />
       </div>
-      <div className="flex flex-1 flex-col space-y-4 md:space-y-6">
-        <div className="space-y-1.5">
+      <div className="flex flex-col space-y-4 md:space-y-6">
+        <div className="space-y-1.5 px-6">
           <div className="flex w-full items-center">
             <Label className="text-xs">Style</Label>
             <Popover>
@@ -95,9 +98,12 @@ export function ThemeCustomizer() {
               className="ml-auto rounded-[0.5rem]"
               onClick={() => {
                 setConfig({
-                  ...config,
                   radius: 0.5,
+                  style: 'default',
                   theme: 'slate',
+                });
+                setThemesConfig({
+                  activeTheme: THEMES['default-shadcn'],
                 });
               }}
             >
@@ -106,51 +112,11 @@ export function ThemeCustomizer() {
             </Button>
           </div>
         </div>
-        <div className="space-y-1.5">
-          <Label className="text-xs">Color</Label>
-          <div className="grid grid-cols-3 gap-2">
-            {baseColors.map((theme) => {
-              const isActive = config.theme === theme.name;
-
-              return mounted ? (
-                <Button
-                  key={theme.name}
-                  size="sm"
-                  variant="outline"
-                  className={cn(
-                    'justify-start',
-                    isActive && 'border-2 border-primary'
-                  )}
-                  style={
-                    {
-                      '--theme-primary': `hsl(${
-                        theme?.activeColor[mode === 'dark' ? 'dark' : 'light']
-                      })`,
-                    } as React.CSSProperties
-                  }
-                  onClick={() => {
-                    setConfig({
-                      ...config,
-                      theme: theme.name,
-                    });
-                  }}
-                >
-                  <span
-                    className={cn(
-                      'mr-1 flex size-5 shrink-0 -translate-x-1 items-center justify-center rounded-full bg-[--theme-primary]'
-                    )}
-                  >
-                    {isActive && <CheckIcon className="size-4 text-white" />}
-                  </span>
-                  {theme.label}
-                </Button>
-              ) : (
-                <Skeleton key={theme.name} className="h-8 w-full" />
-              );
-            })}
-          </div>
+        <div className="space-y-1.5 px-6">
+          <Label className="text-xs">Theme</Label>
+          <ThemesSwitcher />
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 px-6">
           <Label className="text-xs">Radius</Label>
           <div className="grid grid-cols-5 gap-2">
             {['0', '0.3', '0.5', '0.75', '1.0'].map((value) => {
@@ -176,7 +142,7 @@ export function ThemeCustomizer() {
             })}
           </div>
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 px-6">
           <Label className="text-xs">Mode</Label>
           <div className="grid grid-cols-3 gap-2">
             {mounted ? (
@@ -208,7 +174,30 @@ export function ThemeCustomizer() {
             )}
           </div>
         </div>
+
+        <Separator className="w-full" />
+
+        <div className="relative grow space-y-1.5 px-4">
+          <div className="h-full flex-1 flex-col overflow-hidden data-[state=active]:flex">
+            <div
+              className="relative h-full overflow-auto rounded-lg bg-black py-6"
+              data-rehype-pretty-code-fragment
+            >
+              <pre className="bg-black font-mono text-sm leading-relaxed">
+                <code data-line-numbers="">
+                  <span className="line text-zinc-700">{`/* ${themesConfig.activeTheme.name} */`}</span>
+                  {themeCode.split('\n').map((line, index) => (
+                    <span key={index} className="line">
+                      {line}
+                    </span>
+                  ))}
+                </code>
+              </pre>
+            </div>
+          </div>
+          <CopyCodeButton className="absolute right-4 top-4" compact />
+        </div>
       </div>
-    </>
+    </div>
   );
 }
