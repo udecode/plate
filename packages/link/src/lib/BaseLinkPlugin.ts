@@ -93,7 +93,11 @@ export type BaseLinkConfig = PluginConfig<
 export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
   key: 'a',
   extendEditor: withLink,
-  node: { isElement: true, isInline: true },
+  node: {
+    dangerouslyAllowAttributes: ['target'],
+    isElement: true,
+    isInline: true,
+  },
   options: {
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],
     dangerouslySkipSanitization: false,

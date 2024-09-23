@@ -1,5 +1,19 @@
 # @udecode/plate-table
 
+## 38.0.6
+
+### Patch Changes
+
+- [`f26ed56053b14e697fea2e6a7e33a73ce28593e4`](https://github.com/udecode/plate/commit/f26ed56053b14e697fea2e6a7e33a73ce28593e4) by [@12joan](https://github.com/12joan) – Add the `colspan` and `rowspan` attributes to `dangerouslyAllowAttributes` for TableCellPlugin and TableCellHeaderPlugin
+
+## 38.0.5
+
+### Patch Changes
+
+- [#3552](https://github.com/udecode/plate/pull/3552) by [@natamox](https://github.com/natamox) – Fix unmerge & compute cell indices
+
+  Remove computeAllCellIndices, use computeCellIndices instead
+
 ## 38.0.1
 
 ### Patch Changes

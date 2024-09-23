@@ -21,6 +21,10 @@
 - `ora`: cli
 - `react-day-picker@8.10.1`: shadcn
 - `react-resizable-panels@0.0.55`: shadcn
+- `rehype@12.0.1`: shadcn
+- `rehype-autolink-headings@6.1.0`: shadcn
+- `rehype-pretty-code@0.6.0`: shadcn
+- `rehype-slug@5.1.0`: shadcn
 - `remark@14`: UnexpectedMDXError
 - `remark-parse@10`: jest
 - `ts-morph`: shadcn

@@ -1,5 +1,3 @@
-import type { ExtendEditor } from '@udecode/plate-common/react';
-
 import {
   type TElement,
   findNode,
@@ -8,7 +6,7 @@ import {
   select,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import { Path } from 'slate';
+import { type ExtendEditor, findNodePath } from '@udecode/plate-common/react';
 
 import {
   type TTableCellElement,
@@ -44,21 +42,11 @@ export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
       return;
     }
 
-    const selectionStart =
-      Path.compare(initialSelection.anchor.path, initialSelection.focus.path) <
-      1
-        ? initialSelection.anchor
-        : initialSelection.focus;
-
-    const [tableNode, tablePath] = tableEntry;
+    const [tableNode] = tableEntry;
     const tableRows = tableNode.children as TElement[];
-
-    const tableSelectionStart = selectionStart.path.slice(
-      tablePath.length,
-      tablePath.length + 2
+    tableNode.children = tableNode.children.filter(
+      (v) => (v as TTableCellElement).children.length > 0
     );
-
-    const [y, x] = tableSelectionStart;
 
     let textCsv = '';
     let textTsv = '';
@@ -82,9 +70,8 @@ export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
     }
 
     withoutNormalizing(editor, () => {
-      tableRows.forEach((row, rowIndex) => {
+      tableRows.forEach((row) => {
         const rowCells = row.children as TTableCellElement[];
-        const rowPath = tablePath.concat(y + rowIndex);
 
         const cellStrings: string[] = [];
         const rowElement =
@@ -92,11 +79,11 @@ export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
             ? document.createElement('th')
             : document.createElement('tr');
 
-        rowCells.forEach((cell, cellIndex) => {
+        rowCells.forEach((cell) => {
           // need to clean data before every iteration
           data.clearData();
 
-          const cellPath = rowPath.concat(x + cellIndex);
+          const cellPath = findNodePath(editor, cell)!;
 
           // select cell by cell
           select(editor, {
