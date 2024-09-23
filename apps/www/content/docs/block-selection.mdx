@@ -107,6 +107,19 @@ You can style the selected element by adding this class to the container
 '[&_.slate-selected]:!bg-primary/20 '
 ```
 
+### Disable browser default scroll behavior
+If we select some text and then move(keep pressed) the cursor to the very bottom of the page, the page will start scrolling to the bottom.
+
+Sometimes this scroll is so fast and confilicts with `BlockSelectionPlugin` scroll behavior(After the selection area appears, move the mouse to the bottom of the scroll container).
+
+I don't find any way to disable this scroll behavior of browser.(if you find the way to disable it, please tell me that will so appreciate it)
+
+So the solution is add an empty `div` above the editer's right side(The right side is the easiest place to trigger this behavior.) and set `user-select: none` to it .
+
+This will make configuration and maintenance cumbersome so we remove this div from plate.
+
+If you encounter this issue, you might consider disabling it in this way.
+
 ## Plugins
 
 ### BlockSelectionPlugin
