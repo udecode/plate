@@ -74,7 +74,6 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
     query: {
       maxLevel: 1,
     },
-    rightSelectionAreaClassName: 'slate-right-selection-area',
     selectedIds: new Set(),
   },
   plugins: [BlockContextMenuPlugin],
