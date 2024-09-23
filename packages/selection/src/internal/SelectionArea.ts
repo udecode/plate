@@ -102,16 +102,16 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
           speedDivider: 10,
           ...opt.behaviour?.scrolling,
           startScrollMargins: {
-            x: 0,
-            y: 0,
+            x: 20,
+            y: 20,
             ...opt.behaviour?.scrolling?.startScrollMargins,
           },
         },
         startThreshold: opt.behaviour?.startThreshold
           ? typeof opt.behaviour.startThreshold === 'number'
             ? opt.behaviour.startThreshold
-            : { x: 10, y: 10, ...opt.behaviour.startThreshold }
-          : { x: 10, y: 10 },
+            : { x: 20, y: 20, ...opt.behaviour.startThreshold }
+          : { x: 20, y: 20 },
       },
 
       features: {
