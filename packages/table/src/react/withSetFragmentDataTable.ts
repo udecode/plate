@@ -20,6 +20,7 @@ import { getTableGridAbove } from './queries';
 
 export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
   editor,
+  plugin,
 }) => {
   const { setFragmentData } = editor;
 
@@ -124,7 +125,10 @@ export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
 
         if (realTable.attributes != null) {
           Object.entries(realTable.attributes).forEach(([key, value]) => {
-            if (value != null) {
+            if (
+              value != null &&
+              plugin.node.dangerouslyAllowAttributes?.includes(key)
+            ) {
               tableElement.setAttribute(key, String(value));
             }
           });
