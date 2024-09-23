@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-csv",
-  "version": "38.0.6",
+  "version": "38.0.8",
   "description": "CSV serializer plugin for Plate",
   "keywords": [
     "csv",
@@ -46,7 +46,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-table": "38.0.6",
+    "@udecode/plate-table": "38.0.8",
     "papaparse": "^5.4.1"
   },
   "devDependencies": {

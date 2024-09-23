@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 38.0.8
+
+### Patch Changes
+
+- [#3550](https://github.com/udecode/plate/pull/3550) by [@oleg-orlov-quantori](https://github.com/oleg-orlov-quantori) – Fix table attributes disappear during copying
+
 ## 38.0.6
 
 ### Patch Changes
