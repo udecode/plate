@@ -1,5 +1,11 @@
 # @udecode/plate-selection
 
+## 38.0.7
+
+### Patch Changes
+
+- [#3566](https://github.com/udecode/plate/pull/3566) by [@felixfeng33](https://github.com/felixfeng33) – Fix width issues caused by hover scrollbars.
+
 ## 38.0.0
 
 ## 37.0.6
