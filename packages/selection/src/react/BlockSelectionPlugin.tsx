@@ -1,4 +1,4 @@
-import React, { type CSSProperties } from 'react';
+import type { CSSProperties } from 'react';
 
 import {
   type PluginConfig,
@@ -13,7 +13,6 @@ import type { ChangedElements, PartialSelectionOptions } from '../internal';
 import { getAllSelectableDomNode, getSelectedDomNode } from '../lib';
 import { extractSelectableIds } from '../lib/extractSelectableIds';
 import { BlockContextMenuPlugin } from './BlockContextMenuPlugin';
-import { BlockSelection } from './components';
 import { BlockSelectable } from './components/BlockSelectable';
 import { onKeyDownSelection } from './onKeyDownSelection';
 import { useHooksBlockSelection } from './useHooksBlockSelection';
@@ -154,11 +153,4 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
         });
       },
     })
-  )
-  .extend(() => ({
-    render: {
-      aboveEditable: ({ children }) => (
-        <BlockSelection>{children}</BlockSelection>
-      ),
-    },
-  }));
+  );
