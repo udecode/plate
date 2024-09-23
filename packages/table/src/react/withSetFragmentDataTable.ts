@@ -43,7 +43,7 @@ export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
       return;
     }
 
-    const [tableNode] = tableEntry;
+    const [tableNode, tablePath] = tableEntry;
     const tableRows = tableNode.children as TElement[];
     tableNode.children = tableNode.children.filter(
       (v) => (v as TTableCellElement).children.length > 0
