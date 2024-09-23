@@ -1,16 +1,19 @@
-import React from 'react';
+---
+'@udecode/plate-selection': patch
+---
 
-import { useEditorPlugin } from '@udecode/plate-common/react';
+Remove the Div rendered above the editor.
 
-import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
+This div is to solve the issue of the browser's default scrolling behavior being too fast.
 
-export const BlockSelection = ({ children }: any) => {
-  const { getOptions } = useEditorPlugin(BlockSelectionPlugin);
+However, it caused some other issues and complicated configurations, such as being unable to focus on the editor when clicking the padding-right area.
 
-  const { editorPaddingRight, rightSelectionAreaClassName } = getOptions();
-
-  return (
-    <div style={{ position: 'relative', width: '100%' }}>
+If you think this issue is more important, you refer to the flowing code.
+```tsx
+  BlockSelectionPlugin.configure({
+    render: {
+      aboveEditable: ({ children }) => {
+    return ( <div style={{ position: 'relative', width: '100%' }}>
       {/*
        *select text then move cursor to the very bottom will trigger the default browser behavior
        *this div is a workaround to prevent the default browser behavior (set userSelect: none)
@@ -19,7 +22,6 @@ export const BlockSelection = ({ children }: any) => {
 
       {/* TODO: click to focus the node */}
       <div
-        className={rightSelectionAreaClassName}
         style={{
           height: '100%',
           position: 'absolute',
@@ -32,6 +34,8 @@ export const BlockSelection = ({ children }: any) => {
         data-plate-selectable
       />
       {children}
-    </div>
-  );
-};
+      </div>)
+  },
+    },
+  }),
+```
