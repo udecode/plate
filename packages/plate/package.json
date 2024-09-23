@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate",
-  "version": "38.0.7",
+  "version": "38.0.8",
   "description": "Plate – a plugin system for slate",
   "keywords": [
     "contentEditable",
@@ -66,9 +66,9 @@
     "@udecode/plate-combobox": "38.0.1",
     "@udecode/plate-comments": "38.0.1",
     "@udecode/plate-common": "38.0.6",
-    "@udecode/plate-csv": "38.0.6",
+    "@udecode/plate-csv": "38.0.8",
     "@udecode/plate-diff": "38.0.0",
-    "@udecode/plate-docx": "38.0.6",
+    "@udecode/plate-docx": "38.0.8",
     "@udecode/plate-find-replace": "38.0.0",
     "@udecode/plate-floating": "38.0.1",
     "@udecode/plate-font": "38.0.1",
@@ -95,7 +95,7 @@
     "@udecode/plate-slash-command": "38.0.1",
     "@udecode/plate-suggestion": "38.0.1",
     "@udecode/plate-tabbable": "38.0.1",
-    "@udecode/plate-table": "38.0.6",
+    "@udecode/plate-table": "38.0.8",
     "@udecode/plate-toggle": "38.0.1",
     "@udecode/plate-trailing-block": "38.0.1"
   },
