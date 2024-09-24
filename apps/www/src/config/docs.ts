@@ -53,7 +53,6 @@ export const docsConfig: DocsConfig = {
         customizerComponents.caption,
         customizerComponents.calendar,
         customizerComponents.checkbox,
-        customizerComponents.cloud,
         customizerComponents.codeBlockElement,
         customizerComponents.codeLeaf,
         customizerComponents.codeLineElement,

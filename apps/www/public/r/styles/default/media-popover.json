@@ -1,0 +1,21 @@
+{
+  "dependencies": [
+    "@udecode/plate-media"
+  ],
+  "files": [
+    {
+      "content": "import React, { useEffect } from 'react';\n\nimport {\n  type WithRequiredKey,\n  isSelectionExpanded,\n} from '@udecode/plate-common';\nimport {\n  useEditorSelector,\n  useElement,\n  useRemoveNodeButton,\n} from '@udecode/plate-common/react';\nimport {\n  FloatingMedia as FloatingMediaPrimitive,\n  floatingMediaActions,\n  useFloatingMediaSelectors,\n} from '@udecode/plate-media/react';\nimport { useReadOnly, useSelected } from 'slate-react';\n\nimport { Icons } from '@/components/icons';\n\nimport { Button, buttonVariants } from './button';\nimport { CaptionButton } from './caption';\nimport { inputVariants } from './input';\nimport { Popover, PopoverAnchor, PopoverContent } from './popover';\nimport { Separator } from './separator';\n\nexport interface MediaPopoverProps {\n  children: React.ReactNode;\n  plugin: WithRequiredKey;\n}\n\nexport function MediaPopover({ children, plugin }: MediaPopoverProps) {\n  const readOnly = useReadOnly();\n  const selected = useSelected();\n\n  const selectionCollapsed = useEditorSelector(\n    (editor) => !isSelectionExpanded(editor),\n    []\n  );\n  const isOpen = !readOnly && selected && selectionCollapsed;\n  const isEditing = useFloatingMediaSelectors().isEditing();\n\n  useEffect(() => {\n    if (!isOpen && isEditing) {\n      floatingMediaActions.isEditing(false);\n    }\n    // eslint-disable-next-line react-hooks/exhaustive-deps\n  }, [isOpen]);\n\n  const element = useElement();\n  const { props: buttonProps } = useRemoveNodeButton({ element });\n\n  if (readOnly) return <>{children}</>;\n\n  return (\n    <Popover open={isOpen} modal={false}>\n      <PopoverAnchor>{children}</PopoverAnchor>\n\n      <PopoverContent\n        className=\"w-auto p-1\"\n        onOpenAutoFocus={(e) => e.preventDefault()}\n      >\n        {isEditing ? (\n          <div className=\"flex w-[330px] flex-col\">\n            <div className=\"flex items-center\">\n              <div className=\"flex items-center pl-3 text-muted-foreground\">\n                <Icons.link className=\"size-4\" />\n              </div>\n\n              <FloatingMediaPrimitive.UrlInput\n                className={inputVariants({ h: 'sm', variant: 'ghost' })}\n                placeholder=\"Paste the embed link...\"\n                options={{ plugin }}\n              />\n            </div>\n          </div>\n        ) : (\n          <div className=\"box-content flex h-9 items-center gap-1\">\n            <FloatingMediaPrimitive.EditButton\n              className={buttonVariants({ size: 'sm', variant: 'ghost' })}\n            >\n              Edit link\n            </FloatingMediaPrimitive.EditButton>\n\n            <CaptionButton variant=\"ghost\">Caption</CaptionButton>\n\n            <Separator orientation=\"vertical\" className=\"my-1\" />\n\n            <Button size=\"sms\" variant=\"ghost\" {...buttonProps}>\n              <Icons.delete className=\"size-4\" />\n            </Button>\n          </div>\n        )}\n      </PopoverContent>\n    </Popover>\n  );\n}\n",
+      "path": "plate-ui/media-popover.tsx",
+      "target": "",
+      "type": "registry:ui"
+    }
+  ],
+  "name": "media-popover",
+  "registryDependencies": [
+    "button",
+    "input",
+    "popover",
+    "separator"
+  ],
+  "type": "registry:ui"
+}

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import type { MyValue } from '@/types/plate-types';
+import type { MyValue } from '@/registry/default/lib/plate-types';
 
 import { settingsStore } from '@/components/context/settings-store';
 import { type ValueId, customizerPlugins } from '@/config/customizer-plugins';

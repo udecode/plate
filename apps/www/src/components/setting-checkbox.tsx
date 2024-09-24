@@ -15,6 +15,7 @@ import {
 import {
   Tooltip,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger,
 } from '@/registry/default/plate-ui/tooltip';
 
@@ -50,26 +51,28 @@ export function SettingCheckbox({
       <div className="flex w-full items-center justify-between">
         <div className="overflow-hidden text-left">
           <div className="flex items-center">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex items-center">
-                  <Checkbox
-                    id={id}
-                    checked={checked}
-                    onCheckedChange={(_checked: boolean) => {
-                      settingsStore.set.setCheckedIdNext(id, _checked);
-                    }}
-                  />
-                  <Label className="flex p-2" htmlFor={id}>
-                    {label}
-                  </Label>
-                </div>
-              </TooltipTrigger>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center">
+                    <Checkbox
+                      id={id}
+                      checked={checked}
+                      onCheckedChange={(_checked: boolean) => {
+                        settingsStore.set.setCheckedIdNext(id, _checked);
+                      }}
+                    />
+                    <Label className="flex p-2" htmlFor={id}>
+                      {label}
+                    </Label>
+                  </div>
+                </TooltipTrigger>
 
-              <TooltipContent className="max-w-[200px]">
-                {description}
-              </TooltipContent>
-            </Tooltip>
+                <TooltipContent className="max-w-[200px]">
+                  {description}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
 
             <div className="flex flex-wrap gap-1">
               {badges?.map((badge) => (

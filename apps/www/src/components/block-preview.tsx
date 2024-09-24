@@ -12,6 +12,7 @@ import { useLiftMode } from '@/hooks/use-lift-mode';
 import PlaygroundDemo from '@/registry/default/example/playground-demo';
 
 import { BlockToolbar } from './block-toolbar';
+import { ThemeWrapper } from './theme-wrapper';
 import {
   ResizableHandle,
   ResizablePanel,
@@ -59,7 +60,14 @@ export function BlockPreview({
         setFullScreen={setFullScreen}
       />
 
-      {fullScreen && <PlaygroundDemo scrollSelector="playground-full-screen" />}
+      {fullScreen && (
+        <ThemeWrapper className="h-full">
+          <PlaygroundDemo
+            className="max-h-none"
+            scrollSelector="playground-full-screen"
+          />
+        </ThemeWrapper>
+      )}
 
       {!fullScreen && (
         <>
@@ -71,7 +79,9 @@ export function BlockPreview({
             )}
           >
             <div className="chunk-mode relative z-20 w-full bg-background">
-              <PlaygroundDemo scrollSelector="playground-preview-1" />
+              <ThemeWrapper>
+                <PlaygroundDemo scrollSelector="playground-preview-1" />
+              </ThemeWrapper>
             </div>
           </div>
 
@@ -90,7 +100,9 @@ export function BlockPreview({
                 minSize={30}
               >
                 <div className="chunk-mode relative z-20 w-full bg-background">
-                  <PlaygroundDemo scrollSelector="playground-preview-2" />
+                  <ThemeWrapper>
+                    <PlaygroundDemo scrollSelector="playground-preview-2" />
+                  </ThemeWrapper>
                 </div>
 
                 {/* {isLoading ? ( */}

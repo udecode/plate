@@ -1,0 +1,18 @@
+{
+  "dependencies": [
+    "@udecode/plate-basic-marks"
+  ],
+  "files": [
+    {
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { withRef } from '@udecode/cn';\nimport {\n  useMarkToolbarButton,\n  useMarkToolbarButtonState,\n} from '@udecode/plate-common/react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport const MarkToolbarButton = withRef<\n  typeof ToolbarButton,\n  {\n    nodeType: string;\n    clear?: string[] | string;\n  }\n>(({ clear, nodeType, ...rest }, ref) => {\n  const state = useMarkToolbarButtonState({ clear, nodeType });\n  const { props } = useMarkToolbarButton(state);\n\n  return <ToolbarButton ref={ref} {...props} {...rest} />;\n});\n",
+      "path": "plate-ui/mark-toolbar-button.tsx",
+      "target": "",
+      "type": "registry:ui"
+    }
+  ],
+  "name": "mark-toolbar-button",
+  "registryDependencies": [
+    "toolbar"
+  ],
+  "type": "registry:ui"
+}

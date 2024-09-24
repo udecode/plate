@@ -20,7 +20,6 @@
 - `next-contentlayer2`: see contentlayer2
 - `ora`: cli
 - `react-day-picker@8.10.1`: shadcn
-- `react-resizable-panels@0.0.55`: shadcn
 - `rehype@12.0.1`: shadcn
 - `rehype-autolink-headings@6.1.0`: shadcn
 - `rehype-pretty-code@0.6.0`: shadcn
@@ -30,6 +29,7 @@
 - `ts-morph`: shadcn
 - `tsup`: cli
 - `type-fest`: cli
+- `vaul`: shadcn
 - `vitest`: nip
 - `zod`: cli
 

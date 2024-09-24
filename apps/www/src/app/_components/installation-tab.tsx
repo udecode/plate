@@ -368,9 +368,6 @@ export default function InstallationTab() {
 
   const jsxCode: string[] = [];
 
-  if (isManual) {
-    addLine(`<TooltipProvider>`, true);
-  }
   if (hasDnd) {
     addLine(`<DndProvider backend={HTML5Backend}>`, true);
   }
@@ -411,9 +408,6 @@ export default function InstallationTab() {
 
   if (hasDnd) {
     addLine(`</DndProvider>`, false, true);
-  }
-  if (isManual) {
-    addLine(`</TooltipProvider>`, false, true);
   }
 
   const plateCode = [

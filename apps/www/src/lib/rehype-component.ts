@@ -7,7 +7,7 @@ import { u } from 'unist-builder';
 import { visit } from 'unist-util-visit';
 
 import { Index } from '../__registry__';
-import { styles } from '../registry/styles';
+import { styles } from '../registry/registry-styles';
 
 // NOTE: shadcn fork
 export function rehypeComponent() {

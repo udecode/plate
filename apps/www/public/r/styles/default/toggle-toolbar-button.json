@@ -1,0 +1,18 @@
+{
+  "dependencies": [
+    "@udecode/plate-toggle"
+  ],
+  "files": [
+    {
+      "content": "import React from 'react';\n\nimport { withRef } from '@udecode/cn';\nimport {\n  useToggleToolbarButton,\n  useToggleToolbarButtonState,\n} from '@udecode/plate-toggle/react';\n\nimport { Icons } from '@/components/icons';\n\nimport { ToolbarButton } from './toolbar';\n\nexport const ToggleToolbarButton = withRef<typeof ToolbarButton>(\n  (rest, ref) => {\n    const state = useToggleToolbarButtonState();\n    const { props } = useToggleToolbarButton(state);\n\n    return (\n      <ToolbarButton ref={ref} tooltip=\"Toggle\" {...props} {...rest}>\n        <Icons.chevronDown />\n      </ToolbarButton>\n    );\n  }\n);\n",
+      "path": "plate-ui/toggle-toolbar-button.tsx",
+      "target": "",
+      "type": "registry:ui"
+    }
+  ],
+  "name": "toggle-toolbar-button",
+  "registryDependencies": [
+    "toolbar"
+  ],
+  "type": "registry:ui"
+}

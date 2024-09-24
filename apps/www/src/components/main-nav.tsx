@@ -30,7 +30,9 @@ export function MainNav() {
         <Link
           className={cn(
             'transition-colors hover:text-foreground/80',
-            pathname === '/docs' ? 'text-foreground' : 'text-foreground/60'
+            pathname === '/docs'
+              ? 'font-medium text-foreground'
+              : 'text-foreground/60'
           )}
           href="/docs"
         >
@@ -40,7 +42,7 @@ export function MainNav() {
           className={cn(
             'transition-colors hover:text-foreground/80',
             pathname?.startsWith('/docs/components')
-              ? 'text-foreground'
+              ? 'font-medium text-foreground'
               : 'text-foreground/60'
           )}
           href="/docs/components"

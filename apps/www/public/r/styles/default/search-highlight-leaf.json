@@ -1,0 +1,16 @@
+{
+  "dependencies": [
+    "@udecode/plate-find-replace"
+  ],
+  "files": [
+    {
+      "content": "import { withCn } from '@udecode/cn';\nimport { PlateLeaf } from '@udecode/plate-common/react';\n\nexport const SearchHighlightLeaf = withCn(PlateLeaf, 'bg-yellow-100');\n",
+      "path": "plate-ui/search-highlight-leaf.tsx",
+      "target": "",
+      "type": "registry:ui"
+    }
+  ],
+  "name": "search-highlight-leaf",
+  "registryDependencies": [],
+  "type": "registry:ui"
+}

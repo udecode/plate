@@ -1,0 +1,16 @@
+{
+  "dependencies": [
+    "@udecode/plate-highlight"
+  ],
+  "files": [
+    {
+      "content": "import React from 'react';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { PlateLeaf } from '@udecode/plate-common/react';\n\nexport const HighlightLeaf = withRef<typeof PlateLeaf>(\n  ({ children, className, ...props }, ref) => (\n    <PlateLeaf\n      ref={ref}\n      asChild\n      className={cn('bg-primary/20 text-inherit dark:bg-primary/40', className)}\n      {...props}\n    >\n      <mark>{children}</mark>\n    </PlateLeaf>\n  )\n);\n",
+      "path": "plate-ui/highlight-leaf.tsx",
+      "target": "",
+      "type": "registry:ui"
+    }
+  ],
+  "name": "highlight-leaf",
+  "registryDependencies": [],
+  "type": "registry:ui"
+}
