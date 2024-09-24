@@ -16,6 +16,8 @@ export const onKeyDownSelection: KeyboardHandler<BlockSelectionConfig> = ({
   event,
 }) => {
   if (isHotkey('mod+a', event)) {
+    if (event.defaultPrevented) return;
+
     const ancestorNode = getAncestorNode(editor);
 
     if (!ancestorNode) return;
@@ -36,6 +38,8 @@ export const onKeyDownSelection: KeyboardHandler<BlockSelectionConfig> = ({
     event.stopPropagation();
   }
   if (isHotkey('escape', event)) {
+    if (event.defaultPrevented) return;
+
     const ancestorNode = getAncestorNode(editor);
     const id = ancestorNode?.[0].id;
 
