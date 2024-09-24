@@ -4,11 +4,10 @@
   "dependencies": [
     "tailwindcss-animate",
     "class-variance-authority",
-    "lucide-react"
+    "lucide-react",
+    "@udecode/cn"
   ],
-  "registryDependencies": [
-    "utils"
-  ],
+  "registryDependencies": [],
   "tailwind": {
     "config": {
       "plugins": [

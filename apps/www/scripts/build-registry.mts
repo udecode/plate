@@ -434,6 +434,7 @@ async function buildStylesIndex() {
       "tailwindcss-animate",
       "class-variance-authority",
       "lucide-react",
+      "@udecode/cn"
     ]
 
     // TODO: Remove this when we migrate to lucide-react.
@@ -445,7 +446,8 @@ async function buildStylesIndex() {
       name: style.name,
       type: "registry:style",
       dependencies,
-      registryDependencies: ["utils"],
+      // registryDependencies: ["utils"],
+      registryDependencies: [],
       tailwind: {
         config: {
           plugins: [`require("tailwindcss-animate")`],
