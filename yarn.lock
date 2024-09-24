@@ -6126,13 +6126,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-csv@npm:38.0.6, @udecode/plate-csv@workspace:^, @udecode/plate-csv@workspace:packages/csv":
+"@udecode/plate-csv@npm:38.0.8, @udecode/plate-csv@workspace:^, @udecode/plate-csv@workspace:packages/csv":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-csv@workspace:packages/csv"
   dependencies:
     "@types/papaparse": "npm:^5.3.14"
     "@udecode/plate-common": "workspace:^"
-    "@udecode/plate-table": "npm:38.0.6"
+    "@udecode/plate-table": "npm:38.0.8"
     papaparse: "npm:^5.4.1"
   peerDependencies:
     "@udecode/plate-common": ">=38.0.6"
@@ -6215,7 +6215,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-docx@npm:38.0.6, @udecode/plate-docx@workspace:^, @udecode/plate-docx@workspace:packages/docx":
+"@udecode/plate-docx@npm:38.0.8, @udecode/plate-docx@workspace:^, @udecode/plate-docx@workspace:packages/docx":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-docx@workspace:packages/docx"
   dependencies:
@@ -6224,7 +6224,7 @@ __metadata:
     "@udecode/plate-indent": "npm:38.0.1"
     "@udecode/plate-indent-list": "npm:38.0.1"
     "@udecode/plate-media": "npm:38.0.6"
-    "@udecode/plate-table": "npm:38.0.6"
+    "@udecode/plate-table": "npm:38.0.8"
     validator: "npm:^13.12.0"
   peerDependencies:
     "@udecode/plate-common": ">=38.0.6"
@@ -6695,7 +6695,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-selection@npm:38.0.0, @udecode/plate-selection@workspace:^, @udecode/plate-selection@workspace:packages/selection":
+"@udecode/plate-selection@npm:38.0.9, @udecode/plate-selection@workspace:^, @udecode/plate-selection@workspace:packages/selection":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-selection@workspace:packages/selection"
   dependencies:
@@ -6764,7 +6764,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-table@npm:38.0.6, @udecode/plate-table@workspace:^, @udecode/plate-table@workspace:packages/table":
+"@udecode/plate-table@npm:38.0.8, @udecode/plate-table@workspace:^, @udecode/plate-table@workspace:packages/table":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-table@workspace:packages/table"
   dependencies:
@@ -6911,9 +6911,9 @@ __metadata:
     "@udecode/plate-combobox": "npm:38.0.1"
     "@udecode/plate-comments": "npm:38.0.1"
     "@udecode/plate-common": "npm:38.0.6"
-    "@udecode/plate-csv": "npm:38.0.6"
+    "@udecode/plate-csv": "npm:38.0.8"
     "@udecode/plate-diff": "npm:38.0.0"
-    "@udecode/plate-docx": "npm:38.0.6"
+    "@udecode/plate-docx": "npm:38.0.8"
     "@udecode/plate-find-replace": "npm:38.0.0"
     "@udecode/plate-floating": "npm:38.0.1"
     "@udecode/plate-font": "npm:38.0.1"
@@ -6936,11 +6936,11 @@ __metadata:
     "@udecode/plate-reset-node": "npm:38.0.1"
     "@udecode/plate-resizable": "npm:38.0.0"
     "@udecode/plate-select": "npm:38.0.1"
-    "@udecode/plate-selection": "npm:38.0.0"
+    "@udecode/plate-selection": "npm:38.0.9"
     "@udecode/plate-slash-command": "npm:38.0.1"
     "@udecode/plate-suggestion": "npm:38.0.1"
     "@udecode/plate-tabbable": "npm:38.0.1"
-    "@udecode/plate-table": "npm:38.0.6"
+    "@udecode/plate-table": "npm:38.0.8"
     "@udecode/plate-toggle": "npm:38.0.1"
     "@udecode/plate-trailing-block": "npm:38.0.1"
   peerDependencies:

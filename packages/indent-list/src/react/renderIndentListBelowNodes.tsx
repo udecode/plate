@@ -59,6 +59,7 @@ export const renderIndentListBelowNodes = (
       return (
         <List className={className} style={style} start={listStart}>
           <Marker {...props} />
+          {/* FIX: cursor position issue */}
           {Li ? <Li {...props}>{children}</Li> : <li>{children}</li>}
         </List>
       );
