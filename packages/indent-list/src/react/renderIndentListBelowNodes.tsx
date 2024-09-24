@@ -59,7 +59,7 @@ export const renderIndentListBelowNodes = (
       return (
         <List className={className} style={style} start={listStart}>
           <Marker {...props} />
-          {Li ? <Li {...props}>{children}</Li> : <li {...props}>{children}</li>}
+          {Li ? <Li {...props}>{children}</Li> : <li>{children}</li>}
         </List>
       );
     };
