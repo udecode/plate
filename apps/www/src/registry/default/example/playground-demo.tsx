@@ -370,7 +370,7 @@ export default function PlaygroundDemo({
                 variant="ghost"
                 className={cn(
                   editableProps.className,
-                  ' overflow-x-hidden rounded-none px-[var(--editor-px)]',
+                  'overflow-x-auto rounded-none px-[var(--editor-px)]',
                   !id && 'pb-[20vh] pt-4',
                   id && 'pb-8 pt-2'
                 )}
