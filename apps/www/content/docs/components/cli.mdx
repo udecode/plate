@@ -3,6 +3,12 @@ title: CLI
 description: Use the CLI to add components to your project.
 ---
 
+<Callout>
+
+**Note:** We are now using the `shadcn` CLI.
+
+</Callout>
+
 ## init
 
 Use the `init` command to initialize configuration and dependencies for a new project.
@@ -13,40 +19,64 @@ The `init` command installs dependencies, adds the `cn` util, configures `tailwi
 npx @udecode/plate-ui@latest init
 ```
 
-You will be asked a few questions to configure `plate-components.json`:
+You will be asked a few questions to configure `components.json`:
 
 ```txt showLineNumbers
 Which style would you like to use? › Default
 Which color would you like to use as base color? › Slate
-Where is your global CSS file? › src/style/globals.css
-Do you want to use CSS variables for colors? › no / yes
-Are you using a custom tailwind prefix eg. tw-? (Leave blank if not) ...
-Where is your tailwind.config.js located? › tailwind.config.js
-Configure the import alias for components: › @/components
-Configure the import alias for ui: › @/components/plate-ui
-Are you using React Server Components? › no / yes
+Do you want to use CSS variables for colors? › yes
+```
+
+To have the same look than Plate UI, you should:
+
+- Pick "Default" for the style. Plate does not have the "New York" style.
+- Pick "Slate" for the base color.
+- Pick "Yes" for using CSS variables.
+
+You should get something like this:
+
+```txt
+npx shadcn@latest init
+Need to install the following packages:
+shadcn@2.0.7
+Ok to proceed? (y) y
+
+✔ Preflight checks.
+✔ Verifying framework. Found Next.js.
+✔ Validating Tailwind CSS.
+✔ Validating import alias.
+✔ Which style would you like to use? › Default
+✔ Which color would you like to use as the base color? › Slate
+✔ Would you like to use CSS variables for theming? … no / yes
+✔ Writing components.json.
+✔ Checking registry.
+✔ Updating tailwind.config.js
+✔ Updating src/styles/globals.css
+✔ Installing dependencies.
+✔ Created 1 file:
+  - src/lib/utils.ts
+
+Success! Project initialization completed.
+You may now add components.
 ```
 
 ### Options
 
 ```txt
-Usage: @udecode/plate-ui init [options]
+Usage: shadcn init [options] [components...]
 
 initialize your project and install dependencies
 
+Arguments:
+  components         the components to add or a url to the component.
+
 Options:
-  -y, --yes        skip confirmation prompt. (default: false)
-  -c, --cwd <cwd>  the working directory. defaults to the current directory.
+  -d, --defaults    use default values i.e new-york, zinc and css variables. (default: false)
+  -f, --force       force overwrite of existing components.json. (default: false)
+  -y, --yes         skip confirmation prompt. (default: false)
+  -c, --cwd <cwd>   the working directory. defaults to the current directory.
   -h, --help       display help for command
 ```
-
-### Add icons
-
-Add the icons you'll use in `components/icons.tsx`:
-
-<ComponentSource src="../../templates/plate-playground-template/src/components/icons.tsx" />
-
-We use icons from <Link href="https://lucide.dev">Lucide</Link>. You can use any icon library you want.
 
 ## add
 
