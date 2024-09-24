@@ -1,5 +1,11 @@
 # @udecode/plate-selection
 
+## 38.0.11
+
+### Patch Changes
+
+- [#3578](https://github.com/udecode/plate/pull/3578) by [@felixfeng33](https://github.com/felixfeng33) – If `defaultPrevented` is true stop keydown handlers.
+
 ## 38.0.9
 
 ### Patch Changes
