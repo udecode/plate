@@ -1,0 +1,115 @@
+---
+title: AI
+description: allows you to select from a list of AI commands. 
+docs:
+  - route: https://pro.platejs.org/docs/components/ai
+    title: AIMenu
+---
+
+<ComponentPreviewPro name="pro-iframe-demo" id="pro-toolbar" component="toolbar" />
+
+<PackageInfo>
+
+## Features
+
+- Provides an AI-powered menu.
+- Offers a selection of AI commands to enhance content creation and editing.
+- Seamlessly integrates AI assistance within the editor interface.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-ai
+```
+
+## Usage
+
+```tsx
+// ...
+import { AIPlugin } from '@/registry/default/plate-pro/ai/ai/src/react/AIPlugin';
+
+const editor = usePlateEditor({
+  id: 'ai-demo',
+  override: {
+    components: PlateUI,
+  },
+  plugins: [
+    ...commonPlugins,
+    SelectionOverlayPlugin,
+    MarkdownPlugin.configure({ options: { indentList: true } }),
+    AIPlugin.configure({
+      options: {
+        scrollContainerSelector: '#scroll_container',
+      },
+      render: { aboveEditable: AIMenu },
+    }),
+  ],
+  value: aiValue,
+});
+```
+
+## Plugins
+
+### AlignPlugin
+
+## API
+
+### setAlign
+
+Sets the alignment for the specified block elements in the editor.
+
+<APIParameters>
+<APIItem name="editor" type="PlateEditor">
+The editor instance.
+</APIItem>
+<APIItem name="options" type="object" optional>
+<APISubList>
+<APISubListItem parent="options" name="value" type="Alignment" optional>
+The alignment value.
+</APISubListItem>
+
+</APISubList>
+</APIItem>
+</APIParameters>
+
+## API Components
+
+### useAlignDropdownMenuState
+
+<APIReturns>
+  <APIItem name="value" type="'left' | 'center' | 'right' | 'justify'">
+    The alignment value.
+  </APIItem>
+</APIReturns>
+
+### useAlignDropdownMenu
+
+<APIState>
+  <APIItem name="value" type="'left' | 'center' | 'right' | 'justify'">
+    The alignment value.
+  </APIItem>
+</APIState>
+
+<APIReturns>
+  <APIItem name="radioGroupProps" type="object">
+    Props for the radio group.
+    <APISubList>
+      <APISubListItem
+        parent="radioGroupProps"
+        name="value"
+        type="'left' | 'center' | 'right' | 'justify'"
+      >
+        The alignment value.
+      </APISubListItem>
+      <APISubListItem
+        parent="radioGroupProps"
+        name="onValueChange"
+        type="function"
+      >
+        Callback to set the alignment value.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>

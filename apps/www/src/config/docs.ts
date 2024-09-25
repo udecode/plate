@@ -249,6 +249,10 @@ export const docsConfig: DocsConfig = {
     {
       items: [
         {
+          href: '/docs/ai',
+          title: 'AI',
+        },
+        {
           href: '/docs/alignment',
           title: 'Alignment',
         },
