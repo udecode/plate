@@ -4,7 +4,6 @@
 
 export * from './CopilotPlugin';
 export * from './generateCopilotText';
-export * from './getCopilotSystem';
 export * from './injectCopilot';
 export * from './onKeyDownCopilot';
 export * from './utils/index';

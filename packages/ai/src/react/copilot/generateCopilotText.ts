@@ -9,7 +9,7 @@ import {
   isExpanded,
 } from '@udecode/plate-common';
 // TODO:AI
-import { debounce } from 'lodash';
+import debounce from 'lodash/debounce';
 
 import { AIPlugin } from '../ai';
 import { CopilotPlugin } from './CopilotPlugin';
