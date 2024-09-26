@@ -1,11 +1,17 @@
-import { siteConfig } from '../../../config/site';
+import { siteConfig } from '@/config/site';
+import { cn } from '@/registry/default/lib/utils';
 
-export default function ProIframeDemo({ component }: { component: string }) {
+export default function ProIframeDemo({
+  component,
+}: {
+  component: string;
+  height: string;
+}) {
   return (
     <iframe
-      className="size-full h-[350px]"
-      src={`${siteConfig.links.platePlus}/iframe/${component}`}
+      className={cn(`size-full h-[520px]`)}
       title={component}
-    ></iframe>
+      src={`${siteConfig.links.platePlus}/iframe/${component}`}
+    />
   );
 }

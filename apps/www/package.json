@@ -69,6 +69,7 @@
     "@radix-ui/react-tooltip": "^1.1.2",
     "@udecode/cn": "workspace:^",
     "@udecode/plate": "workspace:^",
+    "@udecode/plate-ai": "workspace:^",
     "@udecode/plate-alignment": "workspace:^",
     "@udecode/plate-autoformat": "workspace:^",
     "@udecode/plate-basic-elements": "workspace:^",

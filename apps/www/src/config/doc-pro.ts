@@ -1,52 +1,47 @@
 export const docPro = [
   {
     href: '/docs/ai',
-    new: true,
+    label: 'New',
     title: 'AI',
   },
   {
     href: '/docs/copilot',
-    new: true,
+    label: 'New',
     title: 'Copilot',
   },
   {
     href: '/docs/callout',
-    new: true,
+    label: 'Plus',
     title: 'Callout',
   },
   {
     href: '/docs/context-menu',
-    new: true,
+    label: 'Plus',
     title: 'Context Menu',
   },
   {
     href: '/docs/equation',
-    new: true,
+    label: 'Plus',
     title: 'Equation',
   },
   {
     href: '/docs/media-toolbar',
-    new: true,
+    label: 'Plus',
     title: 'Media Toolbar',
   },
   {
     href: '/docs/slash-menu',
-    new: true,
+    label: 'New',
     title: 'Slash Menu',
   },
   {
     href: '/docs/toc',
-    new: true,
+    label: 'Plus',
     title: 'Table of Contents',
   },
   {
-    href: '/docs/toolbar',
-    new: true,
-    title: 'Toolbar',
-  },
-  {
     href: '/docs/upload',
-    new: true,
+    label: 'Plus',
     title: 'Upload',
   },
 ];

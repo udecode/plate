@@ -75,7 +75,8 @@ export function DocsSidebarNavItems({
                     'ml-2 rounded-md bg-secondary px-1.5 py-0.5 text-xs leading-none text-foreground no-underline group-hover:no-underline',
                     item.label === 'New' && 'bg-[#adfa1d] dark:text-background',
                     item.label === 'Plus' &&
-                      'bg-primary text-primary-foreground'
+                      'bg-primary text-primary-foreground',
+                    item.label === 'Free' && 'bg-emerald-500 text-white'
                   )}
                 >
                   {item.label}

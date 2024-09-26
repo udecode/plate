@@ -5883,6 +5883,22 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@udecode/plate-ai@workspace:^, @udecode/plate-ai@workspace:packages/ai":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-ai@workspace:packages/ai"
+  dependencies:
+    lodash: "npm:^4.17.21"
+  peerDependencies:
+    "@udecode/plate-common": ">=38.0.6"
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.103.0"
+    slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
+    slate-react: ">=0.108.0"
+  languageName: unknown
+  linkType: soft
+
 "@udecode/plate-alignment@npm:38.0.1, @udecode/plate-alignment@workspace:^, @udecode/plate-alignment@workspace:packages/alignment":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-alignment@workspace:packages/alignment"
@@ -21604,6 +21620,7 @@ __metadata:
     "@types/react-syntax-highlighter": "npm:^15.5.13"
     "@udecode/cn": "workspace:^"
     "@udecode/plate": "workspace:^"
+    "@udecode/plate-ai": "workspace:^"
     "@udecode/plate-alignment": "workspace:^"
     "@udecode/plate-autoformat": "workspace:^"
     "@udecode/plate-basic-elements": "workspace:^"

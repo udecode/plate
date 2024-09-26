@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { Index } from '@/__registry__';
 import { useConfig } from '@/hooks/use-config';
 import { buttonVariants } from '@/registry/default/plate-ui/button';
-import { styles } from '@/registry/styles';
+import { styles } from '@/registry/registry-styles';
 
 import { siteConfig } from '../config/site';
 import { CopyButton } from './copy-button';
@@ -129,9 +129,9 @@ export function ComponentPreviewPro({
                 {/*  /> */}
                 {/* ) : null} */}
                 <CopyButton
+                  variant="outline"
                   className="size-7 text-foreground opacity-100 hover:bg-muted hover:text-foreground [&_svg]:size-3.5"
                   value={codeString}
-                  variant="outline"
                 />
               </div>
             </div>

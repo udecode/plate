@@ -69,6 +69,7 @@ import { settingsStore } from '@/components/context/settings-store';
 import { PlaygroundFixedToolbarButtons } from '@/components/plate-ui/playground-fixed-toolbar-buttons';
 import { PlaygroundFloatingToolbarButtons } from '@/components/plate-ui/playground-floating-toolbar-buttons';
 import { getAutoformatOptions } from '@/lib/plate/demo/plugins/autoformatOptions';
+import { copilotPlugin } from '@/lib/plate/demo/plugins/copilotPlugin';
 import { createPlateUI } from '@/plate/create-plate-ui';
 import { editableProps } from '@/plate/demo/editableProps';
 import { isEnabled } from '@/plate/demo/is-enabled';
@@ -118,6 +119,8 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         plugins: overridePlugins,
       },
       plugins: [
+        //ai
+        copilotPlugin,
         // Nodes
         HeadingPlugin,
         BlockquotePlugin,
@@ -155,7 +158,6 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         TodoListPlugin,
         TogglePlugin,
         ExcalidrawPlugin,
-
         // Marks
         BoldPlugin,
         ItalicPlugin,
