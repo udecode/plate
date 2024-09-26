@@ -4,7 +4,7 @@ export const examples: Registry = [
   {
     files: ['example/pro-iframe-demo.tsx'],
     name: 'pro-iframe-demo',
-    type: 'components:example',
+    type: 'registry:example',
   },
   {
     files: ['example/editor-default.tsx'],
