@@ -2,6 +2,7 @@ import type { MainNavItem, SidebarNavItem } from '@/types/nav';
 
 import { customizerComponents } from '@/config/customizer-components';
 
+import { docPro } from './doc-pro';
 import { potionComponents } from './potion-components';
 
 export interface DocsConfig {
@@ -248,10 +249,7 @@ export const docsConfig: DocsConfig = {
     },
     {
       items: [
-        {
-          href: '/docs/ai',
-          title: 'AI',
-        },
+        ...docPro,
         {
           href: '/docs/alignment',
           title: 'Alignment',
