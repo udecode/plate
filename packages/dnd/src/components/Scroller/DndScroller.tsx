@@ -3,7 +3,7 @@ import React from 'react';
 import { useEditorRef } from '@udecode/plate-common/react';
 
 import { DndPlugin } from '../../DndPlugin';
-import { Scroller, type ScrollerProps } from './Scroller';
+import { type ScrollerProps, Scroller } from './Scroller';
 
 export function DndScroller(props: Partial<ScrollerProps>) {
   const editor = useEditorRef();

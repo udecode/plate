@@ -19,9 +19,9 @@ export type CaretPosition = {
 };
 
 export type CursorState<TCursorData extends UnknownObject = UnknownObject> = {
-  data?: TCursorData;
-  key?: any;
   selection: Range | null;
+  key?: any;
+  data?: TCursorData;
 };
 
 export interface CursorOverlayState<TCursorData extends Record<string, unknown>>

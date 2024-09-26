@@ -1,4 +1,4 @@
-import { Editor, type EditorPositionsOptions } from 'slate';
+import { type EditorPositionsOptions, Editor } from 'slate';
 
 import type { TEditor } from './TEditor';
 

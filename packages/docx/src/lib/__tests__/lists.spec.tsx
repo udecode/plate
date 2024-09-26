@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { IndentListPlugin } from '@udecode/plate-indent-list';
+import { BaseIndentListPlugin } from '@udecode/plate-indent-list';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
@@ -48,6 +48,6 @@ describe(getDocxTestName(name), () => {
       </editor>
     ),
     filename: name,
-    plugins: [IndentListPlugin],
+    plugins: [BaseIndentListPlugin],
   });
 });

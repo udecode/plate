@@ -3,14 +3,14 @@ import type { DebugConfig } from '../getCorePlugins';
 import { createTSlatePlugin } from '../../plugin';
 
 export type DebugErrorType =
+  | (string & {})
   | 'DEFAULT'
   | 'OPTION_UNDEFINED'
   | 'OVERRIDE_MISSING'
   | 'PLUGIN_DEPENDENCY_MISSING'
   | 'PLUGIN_MISSING'
   | 'USE_CREATE_PLUGIN'
-  | 'USE_ELEMENT_CONTEXT'
-  | ({} & string);
+  | 'USE_ELEMENT_CONTEXT';
 
 export class PlateError extends Error {
   constructor(

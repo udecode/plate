@@ -1,6 +1,6 @@
 import { type ExtendEditor, isCollapsed } from '@udecode/plate-common';
 
-import type { AutoformatConfig } from './AutoformatPlugin';
+import type { AutoformatConfig } from './BaseAutoformatPlugin';
 
 import { autoformatBlock } from './transforms/autoformatBlock';
 import { autoformatMark } from './transforms/autoformatMark';
@@ -24,7 +24,7 @@ export const withAutoformat: ExtendEditor<AutoformatConfig> = ({
 
       if (query && !query(editor as any, { ...rule, text })) continue;
 
-      const autoformatter: Record<typeof mode, Function> = {
+      const autoformatter: Record<typeof mode, any> = {
         block: autoformatBlock,
         mark: autoformatMark,
         text: autoformatText,

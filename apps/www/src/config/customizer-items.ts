@@ -1,4 +1,4 @@
-import { AlignPlugin } from '@udecode/plate-alignment';
+import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
   BoldPlugin,
@@ -22,25 +22,25 @@ import {
   CodeSyntaxPlugin,
 } from '@udecode/plate-code-block/react';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
-import { ParagraphPlugin } from '@udecode/plate-common';
+import { ParagraphPlugin } from '@udecode/plate-common/react';
 import { CsvPlugin } from '@udecode/plate-csv';
-import { DatePlugin } from '@udecode/plate-date';
+import { DatePlugin } from '@udecode/plate-date/react';
 import { DndPlugin } from '@udecode/plate-dnd';
 import { DocxPlugin } from '@udecode/plate-docx';
-import { EmojiPlugin } from '@udecode/plate-emoji';
+import { EmojiPlugin } from '@udecode/plate-emoji/react';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
   FontSizePlugin,
-} from '@udecode/plate-font';
+} from '@udecode/plate-font/react';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import { JuicePlugin } from '@udecode/plate-juice';
 import { KbdPlugin } from '@udecode/plate-kbd/react';
-import { LineHeightPlugin } from '@udecode/plate-line-height';
+import { LineHeightPlugin } from '@udecode/plate-line-height/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { TodoListPlugin } from '@udecode/plate-list/react';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
@@ -51,10 +51,10 @@ import {
 } from '@udecode/plate-mention/react';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
-import { ResetNodePlugin } from '@udecode/plate-reset-node';
+import { ResetNodePlugin } from '@udecode/plate-reset-node/react';
 import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
-import { TabbablePlugin } from '@udecode/plate-tabbable';
+import { TabbablePlugin } from '@udecode/plate-tabbable/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
@@ -68,15 +68,15 @@ import { customizerPlugins } from '@/config/customizer-plugins';
 import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
 
 export type SettingPlugin = {
-  badges?: CustomizerBadge[];
-  cnImports?: string[];
+  id: string;
   components?: {
+    id: string; // e.g. 'blockquote-element'
+    label: string; // e.g. 'Blockquote'
+    usage: string; // e.g. 'BlockquoteElement'
     cnImports?: string[];
     customImports?: string[];
     filename?: string; // e.g. 'blockquote-element' (default: id)
-    id: string; // e.g. 'blockquote-element'
     import?: string;
-    label: string; // e.g. 'Blockquote'
     noImport?: boolean;
     plateImports?: string[];
     pluginImports?: string[];
@@ -84,13 +84,13 @@ export type SettingPlugin = {
     pluginOptions?: string[];
     registry?: string;
     route?: string;
-    usage: string; // e.g. 'BlockquoteElement'
   }[];
+  badges?: CustomizerBadge[];
+  cnImports?: string[];
   conflicts?: string[];
   customImports?: string[];
   dependencies?: string[];
   disablePlugins?: string[];
-  id: string;
   label?: string;
   npmPackage?: string;
   packageImports?: string[];
@@ -103,8 +103,8 @@ export type SettingPlugin = {
 
 export const customizerItems: Record<string, SettingPlugin> = {
   [AlignPlugin.key]: {
-    badges: [customizerBadges.style],
     id: AlignPlugin.key,
+    badges: [customizerBadges.style],
     label: 'Align',
     npmPackage: '@udecode/plate-alignment',
     pluginFactory: 'AlignPlugin',
@@ -113,8 +113,8 @@ export const customizerItems: Record<string, SettingPlugin> = {
   },
   // Functionality
   [AutoformatPlugin.key]: {
-    badges: [customizerBadges.handler],
     id: AutoformatPlugin.key,
+    badges: [customizerBadges.handler],
     label: 'Autoformat',
     npmPackage: '@udecode/plate-autoformat',
     pluginFactory: 'AutoformatPlugin',
@@ -130,9 +130,9 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.autoformat.route,
   },
   [BlockSelectionPlugin.key]: {
+    id: BlockSelectionPlugin.key,
     badges: [customizerBadges.ui],
     dependencies: [NodeIdPlugin.key],
-    id: BlockSelectionPlugin.key,
     label: 'Block Selection',
     npmPackage: '@udecode/plate-selection',
     pluginFactory: 'BlockSelectionPlugin',
@@ -148,6 +148,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.blockselection.route,
   },
   [BlockquotePlugin.key]: {
+    id: BlockquotePlugin.key,
     badges: [customizerBadges.element],
     components: [
       {
@@ -158,7 +159,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: 'BlockquoteElement',
       },
     ],
-    id: BlockquotePlugin.key,
     label: 'Blockquote',
     npmPackage: '@udecode/plate-block-quote',
     pluginFactory: 'BlockquotePlugin',
@@ -166,11 +166,12 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.basicnodes.route,
   },
   [BoldPlugin.key]: {
+    id: BoldPlugin.key,
     badges: [customizerBadges.leaf],
     components: [
       {
-        cnImports: ['withProps'],
         id: 'bold',
+        cnImports: ['withProps'],
         label: 'BoldLeaf',
         noImport: true,
         plateImports: ['PlateLeaf'],
@@ -178,7 +179,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: `withProps(PlateLeaf, { as: 'strong' })`,
       },
     ],
-    id: BoldPlugin.key,
     label: 'Bold',
     npmPackage: '@udecode/plate-basic-marks',
     pluginFactory: 'BoldPlugin',
@@ -186,8 +186,8 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.basicmarks.route,
   },
   [CaptionPlugin.key]: {
-    badges: [customizerBadges.handler],
     id: CaptionPlugin.key,
+    badges: [customizerBadges.handler],
     label: 'Caption',
     npmPackage: '@udecode/plate-caption',
     pluginFactory: 'CaptionPlugin',
@@ -196,6 +196,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.media.route,
   },
   [CodeBlockPlugin.key]: {
+    id: CodeBlockPlugin.key,
     badges: [customizerBadges.element],
     components: [
       {
@@ -222,7 +223,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: 'CodeSyntaxLeaf',
       },
     ],
-    id: CodeBlockPlugin.key,
     label: 'Code block',
     npmPackage: '@udecode/plate-code-block',
     pluginFactory: 'CodeBlockPlugin',
@@ -237,6 +237,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     reactImport: true,
   },
   [CodePlugin.key]: {
+    id: CodePlugin.key,
     badges: [customizerBadges.leaf],
     components: [
       {
@@ -247,7 +248,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: `CodeLeaf`,
       },
     ],
-    id: CodePlugin.key,
     label: 'Code',
     npmPackage: '@udecode/plate-basic-marks',
     pluginFactory: 'CodePlugin',
@@ -262,6 +262,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     reactImport: true,
   },
   [CommentsPlugin.key]: {
+    id: CommentsPlugin.key,
     badges: [customizerBadges.leaf],
     components: [
       {
@@ -278,7 +279,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: 'CommentsPopover',
       },
     ],
-    id: CommentsPlugin.key,
     label: 'Comments',
     npmPackage: '@udecode/plate-comments',
     pluginFactory: 'CommentsPlugin',
@@ -287,14 +287,15 @@ export const customizerItems: Record<string, SettingPlugin> = {
   },
   // Deserialization
   [CsvPlugin.key]: {
-    badges: [customizerBadges.handler],
     id: CsvPlugin.key,
+    badges: [customizerBadges.handler],
     label: 'CSV',
     npmPackage: '@udecode/plate-csv',
     pluginFactory: 'CsvPlugin',
     route: customizerPlugins.csv.route,
   },
   [DatePlugin.key]: {
+    id: DatePlugin.key,
     badges: [customizerBadges.element],
     components: [
       {
@@ -305,7 +306,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: 'DateElement',
       },
     ],
-    id: DatePlugin.key,
     label: 'Date',
     npmPackage: '@udecode/plate-date',
     pluginFactory: 'DatePlugin',
@@ -313,18 +313,19 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.date.route,
   },
   [DeletePlugin.key]: {
-    badges: [customizerBadges.handler],
     id: DeletePlugin.key,
+    badges: [customizerBadges.handler],
     label: 'Delete',
     npmPackage: '@udecode/plate-select',
     pluginFactory: 'DeletePlugin',
   },
   [DndPlugin.key]: {
+    id: DndPlugin.key,
     badges: [customizerBadges.handler, customizerBadges.ui],
     components: [
       {
-        filename: 'with-draggables',
         id: 'draggable',
+        filename: 'with-draggables',
         label: 'Draggable',
         registry: 'draggable',
         route: customizerComponents.draggable.href,
@@ -336,7 +337,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
       `import { HTML5Backend } from 'react-dnd-html5-backend';`,
     ],
     dependencies: [NodeIdPlugin.key],
-    id: DndPlugin.key,
     label: 'Drag & Drop',
     npmPackage: '@udecode/plate-dnd',
     pluginFactory: 'DndPlugin',
@@ -344,23 +344,24 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.dnd.route,
   },
   [DocxPlugin.key]: {
+    id: DocxPlugin.key,
     badges: [customizerBadges.handler],
     dependencies: [JuicePlugin.key],
-    id: DocxPlugin.key,
     label: 'DOCX',
     npmPackage: '@udecode/plate-docx',
     pluginFactory: 'DocxPlugin',
     route: customizerPlugins.docx.route,
   },
   [DragOverCursorPlugin.key]: {
-    badges: [customizerBadges.handler, customizerBadges.ui],
     id: DragOverCursorPlugin.key,
+    badges: [customizerBadges.handler, customizerBadges.ui],
     // npmPackage: '@udecode/plate-cursor',
     label: 'Drag Cursor',
     reactImport: true,
     route: customizerPlugins.cursoroverlay.route,
   },
   [EmojiPlugin.key]: {
+    id: EmojiPlugin.key,
     badges: [customizerBadges.handler],
     components: [
       {
@@ -370,7 +371,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: 'EmojiInputElement',
       },
     ],
-    id: EmojiPlugin.key,
     label: 'Emoji',
     npmPackage: '@udecode/plate-emoji',
     pluginFactory: 'EmojiPlugin',
@@ -378,6 +378,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.emoji.route,
   },
   [ExcalidrawPlugin.key]: {
+    id: ExcalidrawPlugin.key,
     badges: [customizerBadges.element, customizerBadges.void],
     components: [
       {
@@ -388,7 +389,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: 'ExcalidrawElement',
       },
     ],
-    id: ExcalidrawPlugin.key,
     label: 'Excalidraw',
     npmPackage: '@udecode/plate-excalidraw',
     pluginFactory: 'ExcalidrawPlugin',
@@ -396,8 +396,8 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.excalidraw.route,
   },
   [ExitBreakPlugin.key]: {
-    badges: [customizerBadges.handler],
     id: ExitBreakPlugin.key,
+    badges: [customizerBadges.handler],
     label: 'Exit Break',
     npmPackage: '@udecode/plate-break',
     pluginFactory: 'ExitBreakPlugin',
@@ -428,30 +428,31 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.exitbreak.route,
   },
   [FontBackgroundColorPlugin.key]: {
-    badges: [customizerBadges.style],
     id: FontBackgroundColorPlugin.key,
+    badges: [customizerBadges.style],
     label: 'Font Background',
     npmPackage: '@udecode/plate-font',
     pluginFactory: 'FontBackgroundColorPlugin',
     route: customizerPlugins.font.route,
   },
   [FontColorPlugin.key]: {
-    badges: [customizerBadges.style],
     id: FontColorPlugin.key,
+    badges: [customizerBadges.style],
     label: 'Font Color',
     npmPackage: '@udecode/plate-font',
     pluginFactory: 'FontColorPlugin',
     route: customizerPlugins.font.route,
   },
   [FontSizePlugin.key]: {
-    badges: [customizerBadges.style],
     id: FontSizePlugin.key,
+    badges: [customizerBadges.style],
     label: 'Font Size',
     npmPackage: '@udecode/plate-font',
     pluginFactory: 'FontSizePlugin',
     route: customizerPlugins.font.route,
   },
   [HighlightPlugin.key]: {
+    id: HighlightPlugin.key,
     badges: [customizerBadges.leaf],
     components: [
       {
@@ -462,7 +463,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: 'HighlightLeaf',
       },
     ],
-    id: HighlightPlugin.key,
     label: 'Highlight',
     npmPackage: '@udecode/plate-highlight',
     pluginFactory: 'HighlightPlugin',
@@ -470,6 +470,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.highlight.route,
   },
   [HorizontalRulePlugin.key]: {
+    id: HorizontalRulePlugin.key,
     badges: [customizerBadges.element, customizerBadges.void],
     components: [
       {
@@ -480,7 +481,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: 'HrElement',
       },
     ],
-    id: HorizontalRulePlugin.key,
     label: 'Horizontal Rule',
     npmPackage: '@udecode/plate-horizontal-rule',
     pluginFactory: 'HorizontalRulePlugin',
@@ -488,6 +488,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.hr.route,
   },
   [ImagePlugin.key]: {
+    id: ImagePlugin.key,
     badges: [customizerBadges.element, customizerBadges.void],
     components: [
       {
@@ -498,7 +499,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: 'ImageElement',
       },
     ],
-    id: ImagePlugin.key,
     label: 'Image',
     npmPackage: '@udecode/plate-media',
     pluginFactory: 'ImagePlugin',
@@ -506,10 +506,10 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.media.route,
   },
   [IndentListPlugin.key]: {
+    id: IndentListPlugin.key,
     badges: [customizerBadges.style],
     conflicts: ['list'],
     dependencies: [IndentPlugin.key],
-    id: IndentListPlugin.key,
     label: 'Indent List',
     npmPackage: '@udecode/plate-indent-list',
     pluginFactory: 'IndentListPlugin',
@@ -518,8 +518,8 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.indentlist.route,
   },
   [IndentPlugin.key]: {
-    badges: [customizerBadges.style],
     id: IndentPlugin.key,
+    badges: [customizerBadges.style],
     label: 'Indent',
     npmPackage: '@udecode/plate-indent',
     pluginFactory: 'IndentPlugin',
@@ -528,11 +528,12 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.indent.route,
   },
   [ItalicPlugin.key]: {
+    id: ItalicPlugin.key,
     badges: [customizerBadges.leaf],
     components: [
       {
-        cnImports: ['withProps'],
         id: 'italic',
+        cnImports: ['withProps'],
         label: 'ItalicLeaf',
         noImport: true,
         plateImports: ['PlateLeaf'],
@@ -540,7 +541,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: `withProps(PlateLeaf, { as: 'em' })`,
       },
     ],
-    id: ItalicPlugin.key,
     label: 'Italic',
     npmPackage: '@udecode/plate-basic-marks',
     pluginFactory: 'ItalicPlugin',
@@ -548,14 +548,15 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.basicmarks.route,
   },
   [JuicePlugin.key]: {
-    badges: [customizerBadges.handler],
     id: JuicePlugin.key,
+    badges: [customizerBadges.handler],
     label: 'Juice',
     npmPackage: '@udecode/plate-juice',
     pluginFactory: 'JuicePlugin',
     route: customizerPlugins.docx.route,
   },
   [KbdPlugin.key]: {
+    id: KbdPlugin.key,
     badges: [customizerBadges.leaf],
     components: [
       {
@@ -566,7 +567,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: 'KbdLeaf',
       },
     ],
-    id: KbdPlugin.key,
     label: 'Keyboard Input',
     npmPackage: '@udecode/plate-kbd',
     pluginFactory: 'KbdPlugin',
@@ -574,8 +574,8 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.kbd.route,
   },
   [LineHeightPlugin.key]: {
-    badges: [customizerBadges.style],
     id: LineHeightPlugin.key,
+    badges: [customizerBadges.style],
     label: 'Line Height',
     npmPackage: '@udecode/plate-line-height',
     pluginFactory: 'LineHeightPlugin',
@@ -591,6 +591,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.lineheight.route,
   },
   [LinkPlugin.key]: {
+    id: LinkPlugin.key,
     badges: [customizerBadges.element, customizerBadges.inline],
     components: [
       {
@@ -610,7 +611,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: 'LinkFloatingToolbar',
       },
     ],
-    id: LinkPlugin.key,
     label: 'Link',
     npmPackage: '@udecode/plate-link',
     pluginFactory: 'LinkPlugin',
@@ -618,8 +618,8 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.link.route,
   },
   [MarkdownPlugin.key]: {
-    badges: [customizerBadges.handler],
     id: MarkdownPlugin.key,
+    badges: [customizerBadges.handler],
     label: 'Deserialize MD',
     npmPackage: '@udecode/plate-markdown',
     pluginFactory: 'MarkdownPlugin',
@@ -627,6 +627,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
   },
 
   [MediaEmbedPlugin.key]: {
+    id: MediaEmbedPlugin.key,
     badges: [customizerBadges.element, customizerBadges.void],
     components: [
       {
@@ -637,7 +638,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: 'MediaEmbedElement',
       },
     ],
-    id: MediaEmbedPlugin.key,
     label: 'Media Embed',
     npmPackage: '@udecode/plate-media',
     pluginFactory: 'MediaEmbedPlugin',
@@ -652,6 +652,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     reactImport: true,
   },
   [MentionPlugin.key]: {
+    id: MentionPlugin.key,
     badges: [
       customizerBadges.element,
       customizerBadges.inline,
@@ -674,7 +675,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: 'MentionInputElement',
       },
     ],
-    id: MentionPlugin.key,
     label: 'Mention',
     npmPackage: '@udecode/plate-mention',
     pluginFactory: 'MentionPlugin',
@@ -682,22 +682,23 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.mention.route,
   },
   [NodeIdPlugin.key]: {
-    badges: [customizerBadges.normalizer],
     id: NodeIdPlugin.key,
+    badges: [customizerBadges.normalizer],
     label: 'Id',
     npmPackage: '@udecode/plate-node-id',
     pluginFactory: 'NodeIdPlugin',
     // route: settingValues.nodeid.route,
   },
   [NormalizeTypesPlugin.key]: {
-    badges: [customizerBadges.normalizer],
     id: NormalizeTypesPlugin.key,
+    badges: [customizerBadges.normalizer],
     label: 'Normalize Types',
     npmPackage: '@udecode/plate-normalizers',
     pluginFactory: 'NormalizeTypesPlugin',
     route: customizerPlugins.forcedlayout.route,
   },
   [ParagraphPlugin.key]: {
+    id: ParagraphPlugin.key,
     badges: [customizerBadges.element],
     components: [
       {
@@ -708,7 +709,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: 'ParagraphElement',
       },
     ],
-    id: ParagraphPlugin.key,
     label: 'Paragraph',
     plateImports: ['ParagraphPlugin'],
     // npmPackage: '@udecode/plate-common',
@@ -717,8 +717,8 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.basicnodes.route,
   },
   [ResetNodePlugin.key]: {
-    badges: [customizerBadges.handler],
     id: ResetNodePlugin.key,
+    badges: [customizerBadges.handler],
     label: 'Reset Node',
     npmPackage: '@udecode/plate-reset-node',
     pluginFactory: 'ResetNodePlugin',
@@ -733,8 +733,8 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.resetnode.route,
   },
   [SelectOnBackspacePlugin.key]: {
-    badges: [customizerBadges.handler],
     id: SelectOnBackspacePlugin.key,
+    badges: [customizerBadges.handler],
     label: 'Select on Backspace',
     npmPackage: '@udecode/plate-select',
     pluginFactory: 'SelectOnBackspacePlugin',
@@ -750,10 +750,10 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.media.route,
   },
   [SingleLinePlugin.key]: {
+    id: SingleLinePlugin.key,
     badges: [customizerBadges.normalizer],
     conflicts: [TrailingBlockPlugin.key],
     disablePlugins: [TrailingBlockPlugin.key],
-    id: SingleLinePlugin.key,
     label: 'Single Line',
     npmPackage: '@udecode/plate-break',
     pluginFactory: 'SingleLinePlugin',
@@ -761,8 +761,8 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.singleline.route,
   },
   [SoftBreakPlugin.key]: {
-    badges: [customizerBadges.handler],
     id: SoftBreakPlugin.key,
+    badges: [customizerBadges.handler],
     label: 'Soft Break',
     npmPackage: '@udecode/plate-break',
     pluginFactory: 'SoftBreakPlugin',
@@ -783,11 +783,12 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.softbreak.route,
   },
   [StrikethroughPlugin.key]: {
+    id: StrikethroughPlugin.key,
     badges: [customizerBadges.leaf],
     components: [
       {
-        cnImports: ['withProps'],
         id: 'strikethrough',
+        cnImports: ['withProps'],
         label: 'StrikethroughLeaf',
         noImport: true,
         plateImports: ['PlateLeaf'],
@@ -795,7 +796,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: `withProps(PlateLeaf, { as: 's' })`,
       },
     ],
-    id: StrikethroughPlugin.key,
     label: 'Strikethrough',
     npmPackage: '@udecode/plate-basic-marks',
     pluginFactory: 'StrikethroughPlugin',
@@ -803,11 +803,12 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.basicmarks.route,
   },
   [SubscriptPlugin.key]: {
+    id: SubscriptPlugin.key,
     badges: [customizerBadges.leaf],
     components: [
       {
-        cnImports: ['withProps'],
         id: 'subscript',
+        cnImports: ['withProps'],
         label: 'SubscriptLeaf',
         noImport: true,
         plateImports: ['PlateLeaf'],
@@ -815,7 +816,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: `withProps(PlateLeaf, { as: 'sub' })`,
       },
     ],
-    id: SubscriptPlugin.key,
     label: 'Subscript',
     npmPackage: '@udecode/plate-basic-marks',
     pluginFactory: 'SubscriptPlugin',
@@ -823,11 +823,12 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.basicmarks.route,
   },
   [SuperscriptPlugin.key]: {
+    id: SuperscriptPlugin.key,
     badges: [customizerBadges.leaf],
     components: [
       {
-        cnImports: ['withProps'],
         id: 'superscript',
+        cnImports: ['withProps'],
         label: 'SuperscriptLeaf',
         noImport: true,
         plateImports: ['PlateLeaf'],
@@ -835,7 +836,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: `withProps(PlateLeaf, { as: 'sup' })`,
       },
     ],
-    id: SuperscriptPlugin.key,
     label: 'Superscript',
     npmPackage: '@udecode/plate-basic-marks',
     pluginFactory: 'SuperscriptPlugin',
@@ -843,8 +843,8 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.basicmarks.route,
   },
   [TabbablePlugin.key]: {
-    badges: [customizerBadges.handler],
     id: TabbablePlugin.key,
+    badges: [customizerBadges.handler],
     label: 'Tabbable',
     npmPackage: '@udecode/plate-tabbable',
     pluginFactory: 'TabbablePlugin',
@@ -852,6 +852,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.tabbable.route,
   },
   [TablePlugin.key]: {
+    id: TablePlugin.key,
     badges: [customizerBadges.element],
     components: [
       {
@@ -870,8 +871,8 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: 'TableRowElement',
       },
       {
-        filename: 'table-cell-element',
         id: 'td',
+        filename: 'table-cell-element',
         label: 'TableCellElement',
         pluginImports: ['TableCellPlugin'],
         pluginKey: 'TableCellPlugin.key',
@@ -879,8 +880,8 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: 'TableCellElement',
       },
       {
-        filename: 'table-cell-element',
         id: 'th',
+        filename: 'table-cell-element',
         label: 'TableCellHeaderElement',
         pluginImports: ['TableCellHeaderPlugin'],
         pluginKey: 'TableCellHeaderPlugin.key',
@@ -888,7 +889,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: 'TableCellHeaderElement',
       },
     ],
-    id: TablePlugin.key,
     label: 'Table',
     npmPackage: '@udecode/plate-table',
     pluginFactory: 'TablePlugin',
@@ -896,6 +896,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.table.route,
   },
   [TodoListPlugin.key]: {
+    id: TodoListPlugin.key,
     badges: [customizerBadges.element],
     components: [
       {
@@ -906,7 +907,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: 'TodoListElement',
       },
     ],
-    id: TodoListPlugin.key,
     label: 'Todo List',
     npmPackage: '@udecode/plate-list',
     pluginFactory: 'TodoListPlugin',
@@ -914,6 +914,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.todoli.route,
   },
   [TogglePlugin.key]: {
+    id: TogglePlugin.key,
     badges: [customizerBadges.element],
     components: [
       {
@@ -924,7 +925,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: 'ToggleElement',
       },
     ],
-    id: TogglePlugin.key,
     label: 'Toggle',
     npmPackage: '@udecode/plate-toggle',
     pluginFactory: 'TogglePlugin',
@@ -932,10 +932,10 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.toggle.route,
   },
   [TrailingBlockPlugin.key]: {
+    id: TrailingBlockPlugin.key,
     badges: [customizerBadges.normalizer],
     conflicts: [SingleLinePlugin.key],
     disablePlugins: [SingleLinePlugin.key],
-    id: TrailingBlockPlugin.key,
     label: 'Trailing Block',
     npmPackage: '@udecode/plate-trailing-block',
     pluginFactory: 'TrailingBlockPlugin',
@@ -943,11 +943,12 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.trailingblock.route,
   },
   [UnderlinePlugin.key]: {
+    id: UnderlinePlugin.key,
     badges: [customizerBadges.leaf],
     components: [
       {
-        cnImports: ['withProps'],
         id: 'underline',
+        cnImports: ['withProps'],
         label: 'UnderlineLeaf',
         noImport: true,
         plateImports: ['PlateLeaf'],
@@ -955,7 +956,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: `withProps(PlateLeaf, { as: 'u' })`,
       },
     ],
-    id: UnderlinePlugin.key,
     label: 'Underline',
     npmPackage: '@udecode/plate-basic-marks',
     pluginFactory: 'UnderlinePlugin',
@@ -963,6 +963,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.basicmarks.route,
   },
   column: {
+    id: 'column',
     badges: [customizerBadges.element],
     components: [
       {
@@ -981,7 +982,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: 'ColumnElement',
       },
     ],
-    id: 'column',
     label: 'Column',
     npmPackage: '@udecode/plate-layout',
     pluginFactory: 'ColumnPlugin',
@@ -989,6 +989,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.column.route,
   },
   components: {
+    id: 'components',
     badges: [customizerBadges.ui],
     components: [
       {
@@ -1029,16 +1030,16 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: 'withPlaceholders',
       },
     ],
-    id: 'components',
     label: 'Components',
   },
   heading: {
+    id: 'heading',
     badges: [customizerBadges.element],
     components: [
       {
+        id: 'h1',
         cnImports: ['withProps'],
         filename: 'heading-element',
-        id: 'h1',
         import: 'HeadingElement',
         label: 'H1Element',
         pluginKey: 'HEADING_KEYS.h1',
@@ -1046,9 +1047,9 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: `withProps(HeadingElement, { variant: 'h1' })`,
       },
       {
+        id: 'h2',
         cnImports: ['withProps'],
         filename: 'heading-element',
-        id: 'h2',
         import: 'HeadingElement',
         label: 'H2Element',
         pluginKey: 'HEADING_KEYS.h2',
@@ -1056,9 +1057,9 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: `withProps(HeadingElement, { variant: 'h2' })`,
       },
       {
+        id: 'h3',
         cnImports: ['withProps'],
         filename: 'heading-element',
-        id: 'h3',
         import: 'HeadingElement',
         label: 'H3Element',
         pluginKey: 'HEADING_KEYS.h3',
@@ -1066,9 +1067,9 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: `withProps(HeadingElement, { variant: 'h3' })`,
       },
       {
+        id: 'h4',
         cnImports: ['withProps'],
         filename: 'heading-element',
-        id: 'h4',
         import: 'HeadingElement',
         label: 'H4Element',
         pluginKey: 'HEADING_KEYS.h4',
@@ -1076,9 +1077,9 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: `withProps(HeadingElement, { variant: 'h4' })`,
       },
       {
+        id: 'h5',
         cnImports: ['withProps'],
         filename: 'heading-element',
-        id: 'h5',
         import: 'HeadingElement',
         label: 'H5Element',
         pluginKey: 'HEADING_KEYS.h5',
@@ -1086,9 +1087,9 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: `withProps(HeadingElement, { variant: 'h5' })`,
       },
       {
+        id: 'h6',
         cnImports: ['withProps'],
         filename: 'heading-element',
-        id: 'h6',
         import: 'HeadingElement',
         label: 'H6Element',
         pluginKey: 'HEADING_KEYS.h6',
@@ -1097,7 +1098,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
       },
     ],
     customImports: [`import { HEADING_KEYS } from '@udecode/plate-heading';`],
-    id: 'heading',
     label: 'Heading',
     npmPackage: '@udecode/plate-heading',
     pluginFactory: 'HeadingPlugin',
@@ -1105,12 +1105,13 @@ export const customizerItems: Record<string, SettingPlugin> = {
     route: customizerPlugins.basicnodes.route,
   },
   list: {
+    id: 'list',
     badges: [customizerBadges.element],
     components: [
       {
+        id: 'ul',
         cnImports: ['withProps'],
         filename: 'list-element',
-        id: 'ul',
         import: 'ListElement',
         label: 'BulletedListElement',
         pluginImports: ['BulletedListPlugin'],
@@ -1119,9 +1120,9 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: `withProps(ListElement, { variant: 'ul' })`,
       },
       {
+        id: 'ol',
         cnImports: ['withProps'],
         filename: 'list-element',
-        id: 'ol',
         import: 'ListElement',
         label: 'NumberedListElement',
         noImport: true,
@@ -1131,9 +1132,9 @@ export const customizerItems: Record<string, SettingPlugin> = {
         usage: `withProps(ListElement, { variant: 'ol' })`,
       },
       {
+        id: 'li',
         cnImports: ['withProps'],
         filename: 'list-element',
-        id: 'li',
         label: 'ListItemElement',
         noImport: true,
         plateImports: ['PlateElement'],
@@ -1143,7 +1144,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
       },
     ],
     conflicts: [IndentListPlugin.key],
-    id: 'list',
     label: 'List',
     npmPackage: '@udecode/plate-list',
     pluginFactory: 'ListPlugin',

@@ -1,17 +1,17 @@
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import {
-  CodeBlockPlugin,
   isCodeBlockEmpty,
   isSelectionAtCodeBlockStart,
   unwrapCodeBlock,
 } from '@udecode/plate-code-block';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import {
-  ParagraphPlugin,
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
 } from '@udecode/plate-common';
+import { ParagraphPlugin } from '@udecode/plate-common/react';
 import { TodoListPlugin } from '@udecode/plate-list/react';
-import { ResetNodePlugin } from '@udecode/plate-reset-node';
+import { ResetNodePlugin } from '@udecode/plate-reset-node/react';
 
 const resetBlockTypesCommonRule = {
   defaultType: ParagraphPlugin.key,
@@ -20,8 +20,8 @@ const resetBlockTypesCommonRule = {
 
 const resetBlockTypesCodeBlockRule = {
   defaultType: ParagraphPlugin.key,
-  onReset: unwrapCodeBlock,
   types: [CodeBlockPlugin.key],
+  onReset: unwrapCodeBlock,
 };
 
 export const resetBlockTypePlugin = ResetNodePlugin.configure({

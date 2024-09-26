@@ -7,7 +7,7 @@ export const formatHTML = (html: string) => {
   const pre: Record<string, string>[] = [];
 
   html = html
-    .replace(new RegExp('<pre>(?:.|[\\n\\r])*</pre>'), (x) => {
+    .replace(new RegExp(String.raw`<pre>(?:.|[\n\r])*</pre>`), (x) => {
       pre.push({ indent: '', tag: x });
 
       return '<--TEMPPRE' + i++ + '/-->';
@@ -15,7 +15,7 @@ export const formatHTML = (html: string) => {
     .replaceAll(new RegExp('<[^<>]+>[^<]?', 'g'), (x) => {
       let ret;
       const tag = new RegExp(`<\\/?([^\\s/>]+)`).exec(x)?.[1];
-      const p = new RegExp('<--TEMPPRE(\\d+)/-->').exec(x);
+      const p = new RegExp(String.raw`<--TEMPPRE(\d+)/-->`).exec(x);
 
       if (p) pre[Number(p[1])].indent = indent;
       if (

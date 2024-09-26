@@ -1,9 +1,11 @@
+import merge from 'lodash/merge.js';
+
 import type { SlateEditor } from '../editor';
 import type { PluginConfig } from '../plugin/BasePlugin';
 import type { AnySlatePlugin, SlatePlugin } from '../plugin/SlatePlugin';
 
-import { mergeWithoutArray } from '../../internal/mergeWithoutArray';
-import { createSlatePlugin, getEditorPlugin } from '../plugin';
+import { mergePlugins } from '../../internal/mergePlugins';
+import { getEditorPlugin } from '../plugin';
 
 /**
  * Resolves and finalizes a plugin configuration for use in a Plate editor.
@@ -12,8 +14,8 @@ import { createSlatePlugin, getEditorPlugin } from '../plugin';
  * and resolving nested plugins. It prepares the plugin for integration into the
  * Plate editor system by:
  *
- * 1. Applying all stored extensions to the plugin
- * 2. Recursively resolving any nested plugins
+ * 1. Cloning the plugin to avoid mutating the original
+ * 2. Applying all stored extensions to the plugin
  * 3. Clearing the extensions array after application
  *
  * @example
@@ -25,7 +27,7 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
   _plugin: P
 ): P => {
   // Create a deep clone of the plugin
-  let plugin = createSlatePlugin(_plugin) as P;
+  let plugin = mergePlugins({}, _plugin) as P;
 
   plugin.__resolved = true;
 
@@ -35,23 +37,19 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
       getEditorPlugin(editor, plugin as any)
     );
 
-    plugin = mergeWithoutArray({}, plugin, configResult);
+    plugin = mergePlugins(plugin, configResult);
 
     delete (plugin as any).__configuration;
   }
   // Apply all stored extensions
   if (plugin.__extensions && plugin.__extensions.length > 0) {
     plugin.__extensions.forEach((extension) => {
-      plugin = mergeWithoutArray(
-        {},
+      plugin = mergePlugins(
         plugin,
         extension(getEditorPlugin(editor, plugin as any))
       );
     });
     plugin.__extensions = [];
-  }
-  if (plugin.plugins) {
-    plugin.plugins = plugin.plugins.map((p) => resolvePlugin(editor, p));
   }
 
   const targetPluginToInject = plugin.inject?.targetPluginToInject;
@@ -59,7 +57,7 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
 
   if (targetPluginToInject && targetPlugins && targetPlugins.length > 0) {
     plugin.inject = plugin.inject || {};
-    plugin.inject.plugins = mergeWithoutArray(
+    plugin.inject.plugins = merge(
       {},
       plugin.inject.plugins,
       Object.fromEntries(
@@ -73,9 +71,6 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
         })
       )
     );
-  }
-  if (plugin.plugins) {
-    plugin.plugins = plugin.plugins.map((p) => resolvePlugin(editor, p));
   }
   // TODO React
   if ((plugin as any).node?.component) {

@@ -24,7 +24,7 @@ import { Separator } from './separator';
 export const ColumnGroupElement = withRef<typeof PlateElement>(
   ({ children, className, ...props }, ref) => {
     return (
-      <PlateElement className={cn(className, 'my-2')} ref={ref} {...props}>
+      <PlateElement ref={ref} className={cn(className, 'my-2')} {...props}>
         <ColumnFloatingToolbar>
           <div className={cn('flex size-full gap-4 rounded')}>{children}</div>
         </ColumnFloatingToolbar>
@@ -53,37 +53,37 @@ export function ColumnFloatingToolbar({ children }: React.PropsWithChildren) {
   if (readOnly) return <>{children}</>;
 
   return (
-    <Popover modal={false} open={isOpen}>
+    <Popover open={isOpen} modal={false}>
       <PopoverAnchor>{children}</PopoverAnchor>
       <PopoverContent
-        align="center"
         className="w-auto p-1"
         onOpenAutoFocus={(e) => e.preventDefault()}
+        align="center"
         side="top"
         sideOffset={10}
       >
         <div className="box-content flex h-9 items-center gap-1 [&_svg]:size-4 [&_svg]:text-muted-foreground">
-          <Button onClick={setDoubleColumn} size="sms" variant="ghost">
+          <Button size="sms" variant="ghost" onClick={setDoubleColumn}>
             <Icons.doubleColumn />
           </Button>
-          <Button onClick={setThreeColumn} size="sms" variant="ghost">
+          <Button size="sms" variant="ghost" onClick={setThreeColumn}>
             <Icons.threeColumn />
           </Button>
-          <Button onClick={setRightSideDoubleColumn} size="sms" variant="ghost">
+          <Button size="sms" variant="ghost" onClick={setRightSideDoubleColumn}>
             <Icons.rightSideDoubleColumn />
           </Button>
-          <Button onClick={setLeftSideDoubleColumn} size="sms" variant="ghost">
+          <Button size="sms" variant="ghost" onClick={setLeftSideDoubleColumn}>
             <Icons.leftSideDoubleColumn />
           </Button>
           <Button
-            onClick={setDoubleSideDoubleColumn}
             size="sms"
             variant="ghost"
+            onClick={setDoubleSideDoubleColumn}
           >
             <Icons.doubleSideDoubleColumn />
           </Button>
 
-          <Separator className="my-1" orientation="vertical" />
+          <Separator orientation="vertical" className="my-1" />
           <Button size="sms" variant="ghost" {...buttonProps}>
             <Icons.delete />
           </Button>

@@ -25,8 +25,8 @@ const Alert = React.forwardRef<
   React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof alertVariants>
 >(({ className, variant, ...props }, ref) => (
   <div
-    className={cn(alertVariants({ variant }), className)}
     ref={ref}
+    className={cn(alertVariants({ variant }), className)}
     role="alert"
     {...props}
   />
@@ -38,8 +38,8 @@ const AlertTitle = React.forwardRef<
   React.HTMLAttributes<HTMLHeadingElement>
 >(({ className, ...props }, ref) => (
   <h5
-    className={cn('mb-1 font-medium leading-none tracking-tight', className)}
     ref={ref}
+    className={cn('mb-1 font-medium leading-none tracking-tight', className)}
     {...props}
   />
 ));
@@ -50,8 +50,8 @@ const AlertDescription = React.forwardRef<
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
   <div
-    className={cn('text-sm [&_p]:leading-relaxed', className)}
     ref={ref}
+    className={cn('text-sm [&_p]:leading-relaxed', className)}
     {...props}
   />
 ));

@@ -61,8 +61,8 @@ export function ComponentExample({
           {extractedClassNames ? (
             <CopyWithClassNames
               className="absolute right-4 top-20"
-              classNames={extractedClassNames}
               value={codeString}
+              classNames={extractedClassNames}
             />
           ) : (
             codeString && (

@@ -10,7 +10,7 @@ import {
 
 export const getOnSelectTableBorderFactory =
   (editor: SlateEditor, selectedCells: TElement[] | null) =>
-  (border: 'none' | 'outer' | BorderDirection) =>
+  (border: BorderDirection | 'none' | 'outer') =>
   () => {
     if (selectedCells) return;
     if (border === 'none') {

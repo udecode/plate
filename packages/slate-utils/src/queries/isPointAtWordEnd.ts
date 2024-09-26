@@ -20,5 +20,5 @@ export const isPointAtWordEnd = (editor: TEditor, { at }: { at: Point }) => {
   const afterText = getEditorString(editor, afterRange);
 
   // Match regex on after text
-  return !!afterText.match(AFTER_MATCH_REGEX);
+  return !!AFTER_MATCH_REGEX.exec(afterText);
 };

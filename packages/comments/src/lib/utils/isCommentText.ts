@@ -2,8 +2,8 @@ import type { TNode } from '@udecode/plate-common';
 
 import type { TCommentText } from '../types';
 
-import { CommentsPlugin } from '../CommentsPlugin';
+import { BaseCommentsPlugin } from '../BaseCommentsPlugin';
 
 export const isCommentText = (node: TNode): node is TCommentText => {
-  return !!node[CommentsPlugin.key];
+  return !!node[BaseCommentsPlugin.key];
 };

@@ -2,7 +2,7 @@ import type { KeyboardHandler } from '@udecode/plate-common/react';
 
 import { getBlockAbove, getPluginTypes, isHotkey } from '@udecode/plate-common';
 
-import type { CaptionConfig } from '../lib/CaptionPlugin';
+import type { CaptionConfig } from '../lib/BaseCaptionPlugin';
 
 import { CaptionPlugin } from './CaptionPlugin';
 

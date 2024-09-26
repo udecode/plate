@@ -33,7 +33,7 @@ export const ToolbarSeparator = withCn(
 
 const toolbarButtonVariants = cva(
   cn(
-    'inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+    'inline-flex items-center justify-center rounded-md text-sm font-medium text-foreground ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
     '[&_svg:not([data-icon])]:size-5'
   ),
   {
@@ -77,10 +77,11 @@ const ToolbarButton = withTooltip(
       return typeof pressed === 'boolean' ? (
         <ToolbarToggleGroup
           disabled={props.disabled}
-          type="single"
           value="single"
+          type="single"
         >
           <ToolbarToggleItem
+            ref={ref}
             className={cn(
               toolbarButtonVariants({
                 size,
@@ -89,7 +90,6 @@ const ToolbarButton = withTooltip(
               isDropdown && 'my-1 justify-between pr-1',
               className
             )}
-            ref={ref}
             value={pressed ? 'single' : ''}
             {...props}
           >
@@ -107,6 +107,7 @@ const ToolbarButton = withTooltip(
         </ToolbarToggleGroup>
       ) : (
         <ToolbarPrimitive.Button
+          ref={ref}
           className={cn(
             toolbarButtonVariants({
               size,
@@ -115,7 +116,6 @@ const ToolbarButton = withTooltip(
             isDropdown && 'pr-1',
             className
           )}
-          ref={ref}
           {...props}
         >
           {children}
@@ -145,7 +145,7 @@ export const ToolbarGroup = withRef<
   if (!childArr || childArr.length === 0) return null;
 
   return (
-    <div className={cn('flex', className)} ref={ref}>
+    <div ref={ref} className={cn('flex', className)}>
       {!noSeparator && (
         <div className="h-full py-1">
           <Separator orientation="vertical" />

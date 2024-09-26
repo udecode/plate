@@ -1,2 +1,2 @@
 export const IS_APPLE =
-  typeof navigator !== 'undefined' && /Mac OS X/.test(navigator.userAgent);
+  typeof navigator !== 'undefined' && navigator.userAgent.includes('Mac OS X');

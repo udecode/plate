@@ -5,20 +5,8 @@ import type { Nullable } from '../types';
 import type { GetInjectNodePropsOptions } from '../utils';
 
 export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
-  /** API methods provided by this plugin. */
-  api: InferApi<C>;
-
-  /**
-   * An array of plugin keys that this plugin depends on. These plugins will be
-   * loaded before this plugin.
-   */
-  dependencies: string[];
-
-  /**
-   * Enables or disables the plugin. Used by Plate to determine if the plugin
-   * should be used.
-   */
-  enabled?: boolean;
+  /** Unique identifier for this plugin. */
+  key: C['key'];
 
   inject: Nullable<{
     /**
@@ -30,8 +18,19 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
     targetPlugins?: string[];
   }>;
 
-  /** Unique identifier for this plugin. */
-  key: C['key'];
+  override: {
+    /** Enable or disable plugins */
+    enabled?: Partial<Record<string, boolean>>;
+  };
+
+  /** API methods provided by this plugin. */
+  api: InferApi<C>;
+
+  /**
+   * An array of plugin keys that this plugin depends on. These plugins will be
+   * loaded before this plugin.
+   */
+  dependencies: string[];
 
   /** Node-specific configuration for this plugin. */
   node: BasePluginNode;
@@ -41,11 +40,6 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
 
   /** Store for managing plugin options. */
   optionsStore: StoreApi<C['key'], C['options']>;
-
-  override: {
-    /** Enable or disable plugins */
-    enabled?: Partial<Record<string, boolean>>;
-  };
 
   /**
    * Recursive plugin support to allow having multiple plugins in a single
@@ -70,9 +64,66 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
 
   /** Transforms (state-modifying operations) that can be applied to the editor. */
   transforms: InferTransforms<C>;
+
+  /**
+   * Enables or disables the plugin. Used by Plate to determine if the plugin
+   * should be used.
+   */
+  enabled?: boolean;
 };
 
 export type BasePluginNode = {
+  /**
+   * Specifies the type identifier for this plugin's nodes.
+   *
+   * For elements (when {@link isElement} is `true`):
+   *
+   * - The {@link NodeComponent} will be used for any node where `node.type ===
+   *   type`.
+   *
+   * For leaves/marks (when {@link isLeaf} is `true`):
+   *
+   * - The {@link NodeComponent} will be used for any leaf where `node[type] ===
+   *   true`.
+   *
+   * This property is crucial for Plate to correctly match nodes to their
+   * respective plugins.
+   *
+   * @default plugin.key
+   */
+  type: string;
+
+  /**
+   * Controls which (if any) attribute names in the `attributes` property of an
+   * element will be passed as `nodeProps` to the {@link NodeComponent}, and
+   * subsequently rendered as DOM attributes.
+   *
+   * WARNING: If used improperly, this property WILL make your application
+   * vulnerable to cross-site scripting (XSS) or information exposure attacks.
+   *
+   * For example, if the `href` attribute is allowed and the component passes
+   * `nodeProps` to an `<a>` element, then attackers can direct users to open a
+   * document containing a malicious link element:
+   *
+   * { type: 'link', url: 'https://safesite.com/', attributes: { href:
+   * 'javascript:alert("xss")' }, children: [{ text: 'Click me' }], }
+   *
+   * The same is true of the `src` attribute when passed to certain HTML
+   * elements, such as `<iframe>`.
+   *
+   * If the `style` attribute (or another attribute that can load URLs, such as
+   * `background`) is allowed, then attackers can direct users to open a
+   * document that will send a HTTP request to an arbitrary URL. This can leak
+   * the victim's IP address or confirm to the attacker that the victim opened
+   * the document.
+   *
+   * Before allowing any attribute name, ensure that you thoroughly research and
+   * assess any potential risks associated with it.
+   *
+   * @default [ ]
+   */
+  dangerouslyAllowAttributes?: string[];
+
   /**
    * Indicates if this plugin's nodes should be rendered as elements. Used by
    * Plate for {@link NodeComponent} rendering as elements.
@@ -102,31 +153,11 @@ export type BasePluginNode = {
    * void.
    */
   isVoid?: boolean;
-
-  /**
-   * Specifies the type identifier for this plugin's nodes.
-   *
-   * For elements (when {@link isElement} is `true`):
-   *
-   * - The {@link NodeComponent} will be used for any node where `node.type ===
-   *   type`.
-   *
-   * For leaves/marks (when {@link isLeaf} is `true`):
-   *
-   * - The {@link NodeComponent} will be used for any leaf where `node[type] ===
-   *   true`.
-   *
-   * This property is crucial for Plate to correctly match nodes to their
-   * respective plugins.
-   *
-   * @default plugin.key
-   */
-  type: string;
 };
 
 export type BaseSerializer = AnyObject;
 
-export type BaseDeserializer = {
+export type BaseDeserializer = AnyObject & {
   /**
    * Deserialize an element. Overrides plugin.isElement.
    *
@@ -140,39 +171,39 @@ export type BaseDeserializer = {
    * @default plugin.isLeaf
    */
   isLeaf?: boolean;
-} & AnyObject;
+};
 
-export type BaseHtmlDeserializer = {
-  /** List of HTML attribute names to store their values in `node.attributes`. */
-  attributeNames?: string[];
-
+export type BaseHtmlDeserializer = BaseDeserializer & {
   rules?: {
+    /**
+     * Valid element style values. Can be a list of string (only one match is
+     * needed).
+     */
+    validStyle?: Partial<
+      Record<keyof CSSStyleDeclaration, string[] | string | undefined>
+    >;
+
     /**
      * Deserialize an element:
      *
      * - If this option (string) is in the element attribute names.
      * - If this option (object) values match the element attributes.
      */
-    validAttribute?: Record<string, string | string[]> | string;
+    validAttribute?: Record<string, string[] | string> | string;
 
     /** Valid element `className`. */
     validClassName?: string;
 
     /** Valid element `nodeName`. Set '*' to allow any node name. */
-    validNodeName?: string | string[];
-
-    /**
-     * Valid element style values. Can be a list of string (only one match is
-     * needed).
-     */
-    validStyle?: Partial<
-      Record<keyof CSSStyleDeclaration, string | string[] | undefined>
-    >;
+    validNodeName?: string[] | string;
   }[];
+
+  /** List of HTML attribute names to store their values in `node.attributes`. */
+  attributeNames?: string[];
 
   /** Whether or not to include deserialized children on this node */
   withoutChildren?: boolean;
-} & BaseDeserializer;
+};
 
 export type BaseInjectProps = {
   /**
@@ -201,30 +232,30 @@ export type BaseInjectProps = {
   validNodeValues?: any[];
 };
 
-export type BaseTransformOptions = {
+export type BaseTransformOptions = GetInjectNodePropsOptions & {
   nodeValue?: any;
   value?: any;
-} & GetInjectNodePropsOptions;
+};
 
 // -----------------------------------------------------------------------------
 
 export type PluginConfig<K extends string = any, O = {}, A = {}, T = {}> = {
-  api: A;
   key: K;
+  api: A;
   options: O;
   transforms: T;
 };
 
 export type ExtendConfig<C extends PluginConfig, EO = {}, EA = {}, ET = {}> = {
-  api: C['api'] & EA;
   key: C['key'];
+  api: C['api'] & EA;
   options: C['options'] & EO;
   transforms: C['transforms'] & ET;
 };
 
 export type AnyPluginConfig = {
-  api: any;
   key: any;
+  api: any;
   options: any;
   transforms: any;
 };
@@ -237,8 +268,8 @@ export type WithAnyKey<C extends AnyPluginConfig = PluginConfig> = PluginConfig<
 >;
 
 export type WithRequiredKey<P = {}> =
-  | { key: string }
-  | (P extends { key: string } ? P : never);
+  | (P extends { key: string } ? P : never)
+  | { key: string };
 
 export type InferOptions<P> = P extends PluginConfig ? P['options'] : never;
 
@@ -254,12 +285,10 @@ export type ParserOptions = {
 };
 
 export type BasePluginContext<C extends AnyPluginConfig = PluginConfig> = {
-  api: C['api'];
   getOption: <K extends keyof InferOptions<C>, F extends InferOptions<C>[K]>(
     optionKey: K,
-    ...args: F extends (...args: infer A) => any ? A : never
+    ...args: F extends (...args: infer A) => any ? A : never[]
   ) => F extends (...args: any[]) => infer R ? R : F;
-  getOptions: () => InferOptions<C>;
   setOption: <K extends keyof InferOptions<C>>(
     optionKey: K,
     value: InferOptions<C>[K]
@@ -268,6 +297,8 @@ export type BasePluginContext<C extends AnyPluginConfig = PluginConfig> = {
     (options: Parameters<SetImmerState<InferOptions<C>>>[0]): void;
     (options: Partial<InferOptions<C>>): void;
   };
+  api: C['api'];
+  getOptions: () => InferOptions<C>;
   tf: C['transforms'];
   type: string;
 };

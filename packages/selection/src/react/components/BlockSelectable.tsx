@@ -70,10 +70,11 @@ export const useBlockSelectable = ({
 
   return {
     props: {
+      key: id,
       className: isSelected
         ? 'slate-selected slate-selectable'
         : 'slate-selectable',
-      key: id,
+      ref,
       onContextMenu: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         if (!element) return;
 
@@ -107,7 +108,6 @@ export const useBlockSelectable = ({
           });
         }
       },
-      ref,
       // style: isSelected
       //   ? {
       //       backgroundColor: selectedColor,

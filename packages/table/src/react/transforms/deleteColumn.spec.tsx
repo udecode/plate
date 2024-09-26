@@ -5,7 +5,7 @@ import type { SlateEditor } from '@udecode/plate-common';
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { TablePlugin } from '../../lib/TablePlugin';
+import { BaseTablePlugin } from '../../lib/BaseTablePlugin';
 import { deleteColumn } from './deleteColumn';
 
 jsx;
@@ -58,7 +58,7 @@ describe('deleteColumn', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [TablePlugin],
+        plugins: [BaseTablePlugin],
       });
 
       deleteColumn(editor);
@@ -111,7 +111,7 @@ describe('deleteColumn', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [TablePlugin],
+        plugins: [BaseTablePlugin],
       });
 
       deleteColumn(editor);
@@ -164,7 +164,7 @@ describe('deleteColumn', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [TablePlugin],
+        plugins: [BaseTablePlugin],
       });
 
       deleteColumn(editor);
@@ -223,7 +223,7 @@ describe('deleteColumn', () => {
 
       const editor = createPlateEditor({
         editor: input,
-        plugins: [TablePlugin],
+        plugins: [BaseTablePlugin],
       });
 
       deleteColumn(editor);

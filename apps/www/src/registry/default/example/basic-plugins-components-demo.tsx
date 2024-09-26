@@ -33,40 +33,41 @@ export default function BasicPluginsComponentsDemo() {
 
   return (
     <Plate editor={editor}>
-      <Editor autoFocus={false} placeholder="Type..." spellCheck={false} />
+      <Editor placeholder="Type..." autoFocus={false} spellCheck={false} />
     </Plate>
   );
 }
 
 export const basicEditorValue = [
   {
+    id: '1',
     children: [
       {
         text: '🌳 Blocks',
       },
     ],
-    id: '1',
     type: 'h1',
   },
   {
+    id: '2',
     children: [
       {
         text: 'Easily create headings of various levels, from H1 to H6, to structure your content and make it more organized.',
       },
     ],
-    id: '2',
     type: 'p',
   },
   {
+    id: '3',
     children: [
       {
         text: 'Create blockquotes to emphasize important information or highlight quotes from external sources.',
       },
     ],
-    id: '3',
     type: 'blockquote',
   },
   {
+    id: '4',
     children: [
       {
         children: [
@@ -101,29 +102,29 @@ export const basicEditorValue = [
         type: 'code_line',
       },
     ],
-    id: '4',
     lang: 'javascript',
     type: 'code_block',
   },
   {
+    id: '1',
     children: [
       {
         text: '🌱 Marks',
       },
     ],
-    id: '1',
     type: 'h1',
   },
   {
+    id: '2',
     children: [
       {
         text: 'Add style and emphasis to your text using the mark plugins, which offers a variety of formatting options.',
       },
     ],
-    id: '2',
     type: 'p',
   },
   {
+    id: '3',
     children: [
       {
         text: 'Make text ',
@@ -159,10 +160,10 @@ export const basicEditorValue = [
         text: ' of these styles for a visually striking effect.',
       },
     ],
-    id: '3',
     type: 'p',
   },
   {
+    id: '4',
     children: [
       {
         text: 'Add ',
@@ -175,10 +176,10 @@ export const basicEditorValue = [
         text: ' to indicate deleted or outdated content.',
       },
     ],
-    id: '4',
     type: 'p',
   },
   {
+    id: '5',
     children: [
       {
         text: 'Write code snippets with inline ',
@@ -191,10 +192,10 @@ export const basicEditorValue = [
         text: ' formatting for easy readability.',
       },
     ],
-    id: '5',
     type: 'p',
   },
   {
+    id: '6',
     children: [
       {
         text: 'Press ',
@@ -214,7 +215,6 @@ export const basicEditorValue = [
         text: ' for italic mark.',
       },
     ],
-    id: '6',
     type: 'p',
   },
 ];

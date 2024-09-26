@@ -8,19 +8,20 @@ import {
   unsetNodes,
 } from '@udecode/plate-common';
 
-import { LineHeightPlugin } from '../LineHeightPlugin';
+import { BaseLineHeightPlugin } from '../BaseLineHeightPlugin';
 
 export const setLineHeight = <E extends SlateEditor>(
   editor: E,
   {
     setNodesOptions,
     value,
-  }: { setNodesOptions?: SetNodesOptions<E>; value: number }
+  }: { value: number; setNodesOptions?: SetNodesOptions<E> }
 ): void => {
   const {
     inject: { targetPlugins },
-  } = editor.getPlugin(LineHeightPlugin);
-  const { defaultNodeValue, nodeKey } = editor.getInjectProps(LineHeightPlugin);
+  } = editor.getPlugin(BaseLineHeightPlugin);
+  const { defaultNodeValue, nodeKey } =
+    editor.getInjectProps(BaseLineHeightPlugin);
 
   const match: TNodeMatch = (n) =>
     isBlock(editor, n) &&

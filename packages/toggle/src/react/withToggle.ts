@@ -10,7 +10,7 @@ import { type TIndentElement, indent } from '@udecode/plate-indent';
 
 import type { ToggleConfig } from './TogglePlugin';
 
-import { TogglePlugin } from '../lib/TogglePlugin';
+import { BaseTogglePlugin } from '../lib/BaseTogglePlugin';
 import { getLastEntryEnclosedInToggle, isInClosedToggle } from './queries';
 import {
   moveCurrentBlockAfterPreviousSelectable,
@@ -58,7 +58,10 @@ export const withToggle: ExtendEditor<ToggleConfig> = ({
     // Note: We are relying on the default behaviour of `insertBreak` which inserts a toggle right after the current toggle with the same indent
     const currentBlockEntry = getBlockAbove<TIndentElement>(editor);
 
-    if (!currentBlockEntry || currentBlockEntry[0].type !== TogglePlugin.key) {
+    if (
+      !currentBlockEntry ||
+      currentBlockEntry[0].type !== BaseTogglePlugin.key
+    ) {
       return insertBreak();
     }
 
@@ -68,7 +71,7 @@ export const withToggle: ExtendEditor<ToggleConfig> = ({
     editor.withoutNormalizing(() => {
       if (isOpen) {
         insertBreak();
-        editor.tf.toggle.block({ type: TogglePlugin.key });
+        editor.tf.toggle.block({ type: BaseTogglePlugin.key });
         indent(editor);
       } else {
         const lastEntryEnclosedInToggle = getLastEntryEnclosedInToggle(

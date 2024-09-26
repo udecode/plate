@@ -7,7 +7,7 @@ import { removeMark } from './removeMark';
 export const setMarks = <E extends TEditor>(
   editor: E,
   marks: MarksOf<E>,
-  clear: string | string[] = []
+  clear: string[] | string = []
 ) => {
   if (!editor.selection) return;
 

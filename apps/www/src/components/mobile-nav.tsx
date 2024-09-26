@@ -22,11 +22,11 @@ export function MobileNav() {
   const [open, setOpen] = React.useState(false);
 
   return (
-    <Sheet onOpenChange={setOpen} open={open}>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button
-          className="mr-2 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
           variant="ghost"
+          className="mr-2 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
         >
           <svg
             className="size-5"
@@ -64,8 +64,8 @@ export function MobileNav() {
       <SheetContent className="pr-0" side="left">
         <MobileLink
           className="flex items-center"
-          href="/"
           onOpenChange={setOpen}
+          href="/"
         >
           <Logo className="mr-2 size-4" />
           <span className="font-bold">{siteConfig.name}</span>
@@ -76,9 +76,9 @@ export function MobileNav() {
               return (
                 item.href && (
                   <MobileLink
-                    href={item.href}
                     key={item.href}
                     onOpenChange={setOpen}
+                    href={item.href}
                   >
                     {item.title}
                     {item.label && (
@@ -93,7 +93,7 @@ export function MobileNav() {
           </div>
           <div className="flex flex-col space-y-2">
             {navItems.map((item, index) => (
-              <div className="flex flex-col space-y-3 pt-6" key={index}>
+              <div key={index} className="flex flex-col space-y-3 pt-6">
                 <h4 className="font-medium">{item.title}</h4>
                 {item?.items?.length &&
                   item.items.map((_item) => (
@@ -102,8 +102,8 @@ export function MobileNav() {
                         (_item.href ? (
                           <MobileLink
                             className="text-muted-foreground"
-                            href={_item.href}
                             onOpenChange={setOpen}
+                            href={_item.href}
                           >
                             {_item.title}
                             {item.label && (
@@ -144,12 +144,12 @@ function MobileLink({
   return (
     <Link
       className={cn(className)}
-      href={href}
       onClick={() => {
         // eslint-disable-next-line @typescript-eslint/no-base-to-string
         router.push(href.toString());
         onOpenChange?.(false);
       }}
+      href={href}
       {...props}
     >
       {children}

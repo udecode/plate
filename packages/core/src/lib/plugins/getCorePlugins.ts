@@ -10,11 +10,11 @@ import { DOMPlugin } from './DOMPlugin';
 import { HistoryPlugin } from './HistoryPlugin';
 import { InlineVoidPlugin } from './InlineVoidPlugin';
 import { ParserPlugin } from './ParserPlugin';
-import { type DebugErrorType, DebugPlugin, type LogLevel } from './debug';
+import { type DebugErrorType, type LogLevel, DebugPlugin } from './debug';
 import { SlateNextPlugin } from './editor-protocol';
 import { HtmlPlugin } from './html';
 import { LengthPlugin } from './length';
-import { ParagraphPlugin } from './paragraph';
+import { BaseParagraphPlugin } from './paragraph';
 
 // Somehow needed to avoid cyclic dependency
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -51,7 +51,7 @@ export const getCorePlugins = ({
       : LengthPlugin,
     HtmlPlugin,
     AstPlugin,
-    ParagraphPlugin,
+    BaseParagraphPlugin,
   ];
 
   // Create a map for quick lookup of custom plugins

@@ -42,6 +42,6 @@ export const withInlineVoid: ExtendEditor = ({ editor }) => {
 
 /** @see {@link withInlineVoid} */
 export const InlineVoidPlugin = createSlatePlugin({
-  extendEditor: withInlineVoid,
   key: 'inlineVoid',
+  extendEditor: withInlineVoid,
 });

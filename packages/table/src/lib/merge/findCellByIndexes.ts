@@ -2,7 +2,7 @@ import type { SlateEditor } from '@udecode/plate-common';
 
 import type { TTableCellElement, TTableElement } from '../types';
 
-import { TablePlugin } from '../TablePlugin';
+import { BaseTablePlugin } from '../BaseTablePlugin';
 import { getCellIndices } from '../merge/getCellIndices';
 import { computeCellIndices } from './computeCellIndices';
 import { getCellIndicesWithSpans } from './getCellIndicesWithSpans';
@@ -13,7 +13,7 @@ export const findCellByIndexes = (
   searchRowIndex: number,
   searchColIndex: number
 ) => {
-  const { _cellIndices: cellIndices } = editor.getOptions(TablePlugin);
+  const { _cellIndices: cellIndices } = editor.getOptions(BaseTablePlugin);
 
   const allCells = table.children.flatMap(
     (current) => current.children

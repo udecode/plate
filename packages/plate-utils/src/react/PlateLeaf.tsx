@@ -7,7 +7,7 @@ import {
   type PlateRenderLeafProps,
   omitPluginContext,
 } from '@udecode/plate-core/react';
-import { Text, type TextProps, useComposedRef } from '@udecode/react-utils';
+import { type TextProps, Text, useComposedRef } from '@udecode/react-utils';
 import { clsx } from 'clsx';
 
 export type PlateLeafProps<

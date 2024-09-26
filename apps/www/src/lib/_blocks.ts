@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/require-await */
 'use server';
 
-import type { Style } from '@/registry/styles';
+import type { Style } from '@/registry/registry-styles';
 
 import { promises as fs } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { Project, ScriptKind, type SourceFile, SyntaxKind } from 'ts-morph';
+import { type SourceFile, Project, ScriptKind, SyntaxKind } from 'ts-morph';
 import { z } from 'zod';
 
 import { Index } from '@/__registry__';
@@ -27,7 +27,7 @@ const project = new Project({
 export async function getAllBlockIds(
   style: Style['name'] = DEFAULT_BLOCKS_STYLE
 ) {
-  const blocks = _getAllBlocks(style);
+  const blocks = await _getAllBlocks(style);
 
   return blocks.map((block) => block.name);
 }
@@ -76,15 +76,15 @@ export async function getBlock(
     ...entry,
     ...content,
     chunks,
-    type: 'components:block',
+    type: 'registry:block',
   });
 }
 
-function _getAllBlocks(style: Style['name'] = DEFAULT_BLOCKS_STYLE) {
+async function _getAllBlocks(style: Style['name'] = DEFAULT_BLOCKS_STYLE) {
   const index = z.record(registryEntrySchema).parse(Index[style]);
 
   return Object.values(index).filter(
-    (block) => block.type === 'components:block'
+    (block) => block.type === ('registry:block' as any)
   );
 }
 
@@ -93,6 +93,13 @@ async function _getBlockCode(
   style: Style['name'] = DEFAULT_BLOCKS_STYLE
 ) {
   const entry = Index[style][name];
+
+  if (!entry) {
+    console.error(`Block ${name} not found in style ${style}`);
+
+    return '';
+  }
+
   const block = registryEntrySchema.parse(entry);
 
   if (!block.source) {
@@ -123,7 +130,6 @@ async function _getBlockContent(name: string, style: Style['name']) {
   });
 
   // Extract meta.
-  const description = _extractVariable(sourceFile, 'description');
   const iframeHeight = _extractVariable(sourceFile, 'iframeHeight');
   const containerClassName = _extractVariable(sourceFile, 'containerClassName');
 
@@ -138,7 +144,6 @@ async function _getBlockContent(name: string, style: Style['name']) {
       className: containerClassName,
       height: iframeHeight,
     },
-    description,
   };
 }
 

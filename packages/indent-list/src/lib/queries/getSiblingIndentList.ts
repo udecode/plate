@@ -7,25 +7,25 @@ import {
   type TNodeEntry,
   isDefined,
 } from '@udecode/plate-common';
-import { IndentPlugin } from '@udecode/plate-indent';
+import { BaseIndentPlugin } from '@udecode/plate-indent';
 
-import { IndentListPlugin } from '../IndentListPlugin';
+import { BaseIndentListPlugin } from '../BaseIndentListPlugin';
 
 export interface GetSiblingIndentListOptions<
   N extends ElementOf<E>,
   E extends TEditor = TEditor,
 > {
-  breakOnEqIndentNeqListStyleType?: boolean;
-  breakOnLowerIndent?: boolean;
-  breakQuery?: (siblingNode: TNode) => boolean | undefined;
-  /** Query to break lookup */
-  eqIndent?: boolean;
   getNextEntry?: (
     entry: TNodeEntry<ElementOrTextOf<E>>
   ) => TNodeEntry<N> | undefined;
   getPreviousEntry?: (
     entry: TNodeEntry<ElementOrTextOf<E>>
   ) => TNodeEntry<N> | undefined;
+  breakOnEqIndentNeqListStyleType?: boolean;
+  breakOnLowerIndent?: boolean;
+  breakQuery?: (siblingNode: TNode) => boolean | undefined;
+  /** Query to break lookup */
+  eqIndent?: boolean;
   /** Query to validate lookup. If false, check the next sibling. */
   query?: (siblingNode: TNode) => boolean | undefined;
 }
@@ -62,8 +62,8 @@ export const getSiblingIndentList = <
 
     const [nextNode, nextPath] = nextEntry;
 
-    const indent = (node as any)[IndentPlugin.key] as number;
-    const nextIndent = (nextNode as any)[IndentPlugin.key] as number;
+    const indent = (node as any)[BaseIndentPlugin.key] as number;
+    const nextIndent = (nextNode as any)[BaseIndentPlugin.key] as number;
 
     if (!isDefined(nextIndent)) return;
     if (breakQuery?.(nextNode)) return;
@@ -71,8 +71,8 @@ export const getSiblingIndentList = <
     if (
       breakOnEqIndentNeqListStyleType &&
       nextIndent === indent &&
-      (nextNode as any)[IndentListPlugin.key] !==
-        (node as any)[IndentListPlugin.key]
+      (nextNode as any)[BaseIndentListPlugin.key] !==
+        (node as any)[BaseIndentListPlugin.key]
     )
       return;
 

@@ -5,8 +5,8 @@ import { withPlateReact } from './withPlateReact';
 
 /** @see {@link withReact} */
 export const ReactPlugin = createSlatePlugin({
-  extendEditor: withPlateReact,
   key: 'dom',
+  extendEditor: withPlateReact,
 }).extendEditorTransforms(({ editor }) => {
   const { reset } = editor.tf;
 

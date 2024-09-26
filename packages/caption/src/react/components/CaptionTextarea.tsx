@@ -139,11 +139,11 @@ export const useCaptionTextarea = ({
 
   return {
     props: {
+      readOnly,
+      value: captionValue,
       onBlur,
       onChange,
       onKeyDown,
-      readOnly,
-      value: captionValue,
     },
     ref: textareaRef,
   };

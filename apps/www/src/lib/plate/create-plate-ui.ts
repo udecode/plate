@@ -17,14 +17,14 @@ import {
   CodeSyntaxPlugin,
 } from '@udecode/plate-code-block/react';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
-import { ParagraphPlugin } from '@udecode/plate-common';
+import { ParagraphPlugin } from '@udecode/plate-common/react';
 import {
   type NodeComponent,
   PlateElement,
   PlateLeaf,
 } from '@udecode/plate-common/react';
-import { DatePlugin } from '@udecode/plate-date';
-import { EmojiInputPlugin } from '@udecode/plate-emoji';
+import { DatePlugin } from '@udecode/plate-date/react';
+import { EmojiInputPlugin } from '@udecode/plate-emoji/react';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import { FindReplacePlugin } from '@udecode/plate-find-replace';
 import { HEADING_KEYS } from '@udecode/plate-heading';
@@ -44,7 +44,7 @@ import {
   MentionInputPlugin,
   MentionPlugin,
 } from '@udecode/plate-mention/react';
-import { SlashInputPlugin } from '@udecode/plate-slash-command';
+import { SlashInputPlugin } from '@udecode/plate-slash-command/react';
 import {
   TableCellHeaderPlugin,
   TableCellPlugin,

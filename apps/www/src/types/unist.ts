@@ -4,17 +4,17 @@ export interface UnistNode extends Node {
   type: string;
   attributes?: {
     name: string;
-    type?: string;
     value: unknown;
+    type?: string;
   }[];
-  children?: UnistNode[];
-  name?: string;
   properties?: {
     [key: string]: unknown;
     __className__?: string;
     __event__?: string;
     __rawString__?: string;
   } & NpmCommands;
+  children?: UnistNode[];
+  name?: string;
   tagName?: string;
   value?: string;
 }

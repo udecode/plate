@@ -4,6 +4,8 @@ import { withRef } from '@udecode/cn';
 import { PlateElement } from '@udecode/plate-common/react';
 import { EmojiInlineIndexSearch, insertEmoji } from '@udecode/plate-emoji';
 
+import { useDebounce } from '@/registry/default/hooks/use-debounce';
+
 import {
   InlineCombobox,
   InlineComboboxContent,
@@ -29,18 +31,18 @@ export const EmojiInputElement = withRef<typeof PlateElement>(
 
     return (
       <PlateElement
+        ref={ref}
         as="span"
         data-slate-value={element.value}
-        ref={ref}
         {...props}
       >
         <InlineCombobox
+          value={value}
           element={element}
           filter={false}
-          hideWhenNoValue
           setValue={setValue}
           trigger=":"
-          value={value}
+          hideWhenNoValue
         >
           <InlineComboboxInput />
 
@@ -52,8 +54,8 @@ export const EmojiInputElement = withRef<typeof PlateElement>(
             {filteredEmojis.map((emoji) => (
               <InlineComboboxItem
                 key={emoji.id}
-                onClick={() => insertEmoji(editor, emoji)}
                 value={emoji.name}
+                onClick={() => insertEmoji(editor, emoji)}
               >
                 {emoji.skins[0].native} {emoji.name}
               </InlineComboboxItem>
@@ -66,20 +68,3 @@ export const EmojiInputElement = withRef<typeof PlateElement>(
     );
   }
 );
-
-const useDebounce = (value: any, delay = 500) => {
-  const [debouncedValue, setDebouncedValue] = React.useState(value);
-
-  React.useEffect(() => {
-    const handler: NodeJS.Timeout = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    // Cancel the timeout if value changes (also on delay change or unmount)
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
-};

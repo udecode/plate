@@ -1,6 +1,6 @@
 import type { EditorStringOptions } from 'slate/dist/interfaces/editor';
 
-import { Editor, type Location } from 'slate';
+import { type Location, Editor } from 'slate';
 
 import type { TEditor } from './TEditor';
 
@@ -19,7 +19,7 @@ export const getEditorString = (
 
   try {
     return Editor.string(editor as any, at, options);
-  } catch (error) {
+  } catch {
     return '';
   }
 };

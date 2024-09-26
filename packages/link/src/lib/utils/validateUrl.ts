@@ -1,10 +1,10 @@
 import { type SlateEditor, sanitizeUrl } from '@udecode/plate-common';
 
-import { LinkPlugin } from '../LinkPlugin';
+import { BaseLinkPlugin } from '../BaseLinkPlugin';
 
 export const validateUrl = (editor: SlateEditor, url: string): boolean => {
   const { allowedSchemes, dangerouslySkipSanitization, isUrl } =
-    editor.getOptions(LinkPlugin);
+    editor.getOptions(BaseLinkPlugin);
 
   if (isUrl && !isUrl(url)) return false;
   if (

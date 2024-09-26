@@ -18,18 +18,18 @@ export interface BeforeOptions {
 }
 
 export interface PointBeforeOptions extends BeforeOptions {
-  /**
-   * If true, get the point after the matching point. If false, get the matching
-   * point.
-   */
-  afterMatch?: boolean;
-
   /** Lookup before the location until this predicate is true */
   match?: (value: {
     at: Location;
     beforePoint: Point;
     beforeString: string;
   }) => boolean;
+
+  /**
+   * If true, get the point after the matching point. If false, get the matching
+   * point.
+   */
+  afterMatch?: boolean;
 
   /**
    * If true, `matchString` will be interpreted as regex expression(s).
@@ -40,7 +40,7 @@ export interface PointBeforeOptions extends BeforeOptions {
   matchByRegex?: boolean;
 
   /** Lookup before the location for `matchString`. */
-  matchString?: string | string[];
+  matchString?: string[] | string;
 
   /**
    * If true, lookup until the start of the editor value. If false, lookup until

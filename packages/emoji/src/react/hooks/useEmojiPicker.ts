@@ -9,15 +9,15 @@ import {
   type EmojiCategoryList,
   type EmojiIconList,
   type EmojiSettingsType,
-  i18n,
   type i18nProps,
+  i18n,
   insertEmoji,
 } from '../../lib';
 import {
-  EmojiPickerState,
   type IEmojiFloatingLibrary,
   type MapEmojiCategoryList,
   type SetFocusedAndVisibleSectionsType,
+  EmojiPickerState,
   observeCategories,
 } from '../utils';
 
@@ -36,25 +36,25 @@ export type UseEmojiPickerType<
   T extends React.ReactElement = React.ReactElement,
 > = {
   clearSearch: () => void;
-  emoji?: Emoji;
   emojiLibrary: IEmojiFloatingLibrary;
-  focusedCategory?: EmojiCategoryList;
-  handleCategoryClick: (id: EmojiCategoryList) => void;
   hasFound: boolean;
   i18n: i18nProps;
   icons: EmojiIconList<T>;
   isOpen: boolean;
   isSearching: boolean;
-  onMouseOver: (emoji?: Emoji) => void;
-  onSelectEmoji: (emoji: Emoji) => void;
   refs: MutableRefs;
   searchResult: Emoji[];
   searchValue: string;
   setIsOpen: (isOpen: boolean) => void;
   setSearch: (value: string) => void;
+  visibleCategories: MapEmojiCategoryList;
+  handleCategoryClick: (id: EmojiCategoryList) => void;
+  onMouseOver: (emoji?: Emoji) => void;
+  onSelectEmoji: (emoji: Emoji) => void;
+  emoji?: Emoji;
+  focusedCategory?: EmojiCategoryList;
   settings?: EmojiSettingsType;
   styles?: any;
-  visibleCategories: MapEmojiCategoryList;
 };
 
 export const useEmojiPicker = ({
@@ -214,13 +214,13 @@ export const useEmojiPicker = ({
     clearSearch,
     emoji: state.emoji,
     emojiLibrary,
-    handleCategoryClick,
     i18n,
-    onMouseOver,
-    onSelectEmoji,
     refs,
     setIsOpen,
     setSearch,
+    handleCategoryClick,
+    onMouseOver,
+    onSelectEmoji,
     ...state,
   };
 };

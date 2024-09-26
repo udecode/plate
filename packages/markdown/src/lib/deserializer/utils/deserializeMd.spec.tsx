@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { createSlateEditor } from '@udecode/plate-common';
-import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule';
+import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { MarkdownPlugin } from '../../MarkdownPlugin';

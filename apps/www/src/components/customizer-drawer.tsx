@@ -45,13 +45,13 @@ export default function CustomizerDrawer() {
     <div className="flex items-center space-x-2">
       {width <= 768 && (
         <Drawer
+          open={open}
           onOpenChange={(value) => {
             setOpen(value);
           }}
-          open={open}
           shouldScaleBackground={false}
         >
-          <DrawerContent className="p-6 pt-0">
+          <DrawerContent className="pb-6 pt-0">
             <CustomizerTabs />
           </DrawerContent>
         </Drawer>
@@ -59,21 +59,21 @@ export default function CustomizerDrawer() {
 
       <div className="hidden md:flex">
         <Sheet
-          modal={false}
+          open={open}
           onOpenChange={(value) => {
             if (value) setOpen(true);
           }}
-          open={open}
+          modal={false}
         >
           <SheetContent
-            className="hidden min-w-[450px] rounded-[0.5rem] bg-background px-6 py-3 md:flex"
-            hideClose
+            className="hidden min-w-[450px] rounded-[0.5rem] bg-background px-0 py-3 md:flex"
             modal={false}
+            hideClose
           >
             <SheetPrimitive.Close asChild onClick={() => setOpen(false)}>
               <Button
-                className="absolute left-4 top-4 size-8 p-0 px-1.5"
                 variant="ghost"
+                className="absolute left-4 top-4 size-8 p-0 px-1.5"
               >
                 <ChevronsRight className="size-5" />
                 <span className="sr-only">Close</span>

@@ -37,6 +37,6 @@ export const withLength: ExtendEditor<LengthConfig> = ({
 };
 
 export const LengthPlugin = createTSlatePlugin<LengthConfig>({
-  extendEditor: withLength,
   key: 'length',
+  extendEditor: withLength,
 });

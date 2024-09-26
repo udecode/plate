@@ -25,7 +25,7 @@ const createHOC = <T,>(withHOC: any) => {
     const optionsList = castArray<CreateHOCOptions<T>>(options);
 
     optionsList.forEach(({ key, keys, ...opt }) => {
-      const _keys: string[] = key ? [key] : keys ?? Object.keys(_components);
+      const _keys: string[] = key ? [key] : (keys ?? Object.keys(_components));
 
       _keys.forEach((_key) => {
         optionsByKey[_key] = merge(optionsByKey[_key], opt);

@@ -1,8 +1,59 @@
 For older changelogs, see https://github.com/udecode/plate/blob/main/docs
 
+# 38.0.1
+
+## @udecode/plate-core@38.0.1
+
+### Major Changes
+
+- [#3506](https://github.com/udecode/plate/pull/3506) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Change `plugin.options` merging behavior from deep merge to shallow merge.
+  - This affects `.extend()`, `.configure()`, and other methods that modify plugin options.
+  - This update addresses a **performance regression** introduced in v37 that affected editor creation.
+
+  Before:
+
+  ```ts
+  const plugin = createSlatePlugin({
+    key: 'test',
+    options: { nested: { a: 1 } },
+  }).extend({
+    options: { nested: { b: 1 } },
+  });
+
+  // Result: { nested: { a: 1, b: 1 } }
+  ```
+
+  After:
+
+  ```ts
+  const plugin = createSlatePlugin({
+    key: 'test',
+    options: { nested: { a: 1 } },
+  }).extend(({ getOptions }) => ({
+    options: {
+      ...getOptions(),
+      nested: { ...getOptions().nested, b: 1 },
+    },
+  }));
+
+  // Result: { nested: { a: 1, b: 1 } }
+  ```
+
+  Migration:
+
+  - If you're using nested options and want to preserve the previous behavior, you need to manually spread both the top-level options and the nested objects.
+  - If you're not using nested options, no changes are required.
+
+- Rename all base plugins that have a React plugin counterpart to be prefixed with `Base`. This change improves clarity and distinguishes base implementations from potential React extensions. Use base plugins only for server-side environments or to extend your own DOM layer.
+- Import the following plugins from `/react` entry: `AlignPlugin`, `CalloutPlugin`, `EquationPlugin`, `FontBackgroundColorPlugin`, `FontColorPlugin`, `FontFamilyPlugin`, `FontSizePlugin`, `FontWeightPlugin`, `InlineEquationPlugin`, `LineHeightPlugin`, `TextIndentPlugin`, `TocPlugin`
+
 # 37.0.0
 
 Migration example: https://github.com/udecode/plate/pull/3480
+
+We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
 ## @udecode/plate-alignment@37.0.0
 

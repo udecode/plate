@@ -3,7 +3,7 @@ import { useFocused, useReadOnly, useSelected } from 'slate-react';
 
 import type { TPlaceholderElement } from '../../lib/placeholder/types';
 
-import { PlaceholderPlugin } from '../../lib/placeholder/PlaceholderPlugin';
+import { BasePlaceholderPlugin } from '../../lib/placeholder/BasePlaceholderPlugin';
 import { usePlaceholderStore } from './placeholderStore';
 
 export const usePlaceholderElementState = () => {
@@ -17,7 +17,9 @@ export const usePlaceholderElementState = () => {
   const isUploading = usePlaceholderStore().get.isUploading();
   const updatedFiles = usePlaceholderStore().get.updatedFiles();
 
-  const { mediaType } = useElement<TPlaceholderElement>(PlaceholderPlugin.key);
+  const { mediaType } = useElement<TPlaceholderElement>(
+    BasePlaceholderPlugin.key
+  );
 
   const progressing = updatedFiles.length > 0 && isUploading;
 

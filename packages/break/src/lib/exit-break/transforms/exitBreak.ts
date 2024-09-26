@@ -1,6 +1,6 @@
 import {
-  ParagraphPlugin,
   type SlateEditor,
+  BaseParagraphPlugin,
   getPath,
   insertElements,
 } from '@udecode/plate-common';
@@ -14,7 +14,7 @@ export const exitBreak = (
   editor: SlateEditor,
   {
     before,
-    defaultType = editor.getType(ParagraphPlugin),
+    defaultType = editor.getType(BaseParagraphPlugin),
     level = 0,
     query = {},
     relative = false,

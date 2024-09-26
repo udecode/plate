@@ -10,13 +10,13 @@ import {
   toPlatePlugin,
 } from '@udecode/plate-common/react';
 import {
+  type PlateElementProps,
+  type PlateLeafProps,
+  type PlateProps,
   Plate,
   PlateContent,
   PlateElement,
-  type PlateElementProps,
   PlateLeaf,
-  type PlateLeafProps,
-  type PlateProps,
   createPlateEditor,
   usePlateEditor,
 } from '@udecode/plate-common/react';
@@ -123,8 +123,8 @@ const InlineVoidElement = ({ children, ...props }: PlateElementProps) => {
 
 const DiffPlugin = toPlatePlugin(
   createSlatePlugin({
-    extendEditor: withGetFragmentExcludeDiff,
     key: 'diff',
+    extendEditor: withGetFragmentExcludeDiff,
     node: { isLeaf: true },
   }),
   {
@@ -148,13 +148,13 @@ const DiffPlugin = toPlatePlugin(
 
           return (
             <Component
-              aria-label={label}
               className={diffOperationColors[diffOperation.type]}
               title={
                 diffOperation.type === 'update'
                   ? describeUpdate(diffOperation)
                   : undefined
               }
+              aria-label={label}
             >
               {children}
             </Component>
@@ -269,9 +269,9 @@ function Diff({ current, previous }: DiffProps) {
   return (
     <>
       <VersionHistoryPlate
-        editor={editor}
         key={JSON.stringify(diffValue)}
         readOnly
+        editor={editor}
       />
 
       <pre>{JSON.stringify(diffValue, null, 2)}</pre>
@@ -314,8 +314,8 @@ export default function VersionHistoryDemo() {
       <Button onClick={saveRevision}>Save revision</Button>
 
       <VersionHistoryPlate
-        editor={editor}
         onChange={({ value }) => setValue(value)}
+        editor={editor}
       />
 
       <label>
@@ -336,9 +336,9 @@ export default function VersionHistoryDemo() {
         <div>
           <h2>Revision {selectedRevisionIndex + 1}</h2>
           <VersionHistoryPlate
-            editor={editorRevision}
             key={selectedRevisionIndex}
             readOnly
+            editor={editorRevision}
           />
         </div>
 

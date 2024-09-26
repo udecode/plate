@@ -23,7 +23,7 @@ export async function getPackageData(name: string) {
   // sometimes we get an empty response body
   try {
     return (await bundlephobiaResponse.json()) as any;
-  } catch (error) {
+  } catch {
     return {};
   }
 }

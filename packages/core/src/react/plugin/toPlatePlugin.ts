@@ -12,12 +12,12 @@ import type {
   PlatePluginMethods,
 } from './PlatePlugin';
 
-type PlatePluginConfig<C extends AnyPluginConfig, EO = {}, EA = {}, ET = {}> = {
-  api?: EA & Partial<InferApi<C>>;
-  node?: Partial<PlatePlugin<C>['node']>;
-  options?: EO & Partial<InferOptions<C>>;
-  transforms?: ET & Partial<InferTransforms<C>>;
-} & Omit<
+type PlatePluginConfig<
+  C extends AnyPluginConfig,
+  EO = {},
+  EA = {},
+  ET = {},
+> = Omit<
   Partial<
     PlatePlugin<
       PluginConfig<
@@ -28,8 +28,13 @@ type PlatePluginConfig<C extends AnyPluginConfig, EO = {}, EA = {}, ET = {}> = {
       >
     >
   >,
-  'api' | 'node' | 'options' | 'transforms' | keyof PlatePluginMethods
->;
+  keyof PlatePluginMethods | 'api' | 'node' | 'options' | 'transforms'
+> & {
+  api?: EA & Partial<InferApi<C>>;
+  node?: Partial<PlatePlugin<C>['node']>;
+  options?: EO & Partial<InferOptions<C>>;
+  transforms?: ET & Partial<InferTransforms<C>>;
+};
 
 const methodsToWrap: (keyof SlatePlugin)[] = [
   'configure',

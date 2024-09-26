@@ -17,12 +17,12 @@ import { Card } from './ui/card';
 
 type Item = {
   children: ReactNode;
+  name: string;
+  type: string;
   default?: boolean | string;
   description?: string;
-  name: string;
   optional?: boolean;
   required?: boolean;
-  type: string;
   value?: string;
 };
 
@@ -37,14 +37,14 @@ export function APIItem({
   return (
     <AccordionItem className="select-text" value={value ?? name}>
       <AccordionTrigger className="group hover:no-underline">
-        <li className="scroll-mt-[56px]" id={name}>
+        <li id={name} className="scroll-mt-[56px]">
           <h4 className="relative py-2 text-start font-semibold leading-none tracking-tight">
             <a
               className={cn(
                 'opacity-0 hover:opacity-100 group-hover:opacity-100'
               )}
-              href={`#${name}`}
               onClick={(e) => e.stopPropagation()}
+              href={`#${name}`}
             >
               <div className="absolute -left-5 top-2 pr-1 leading-none">
                 <Icons.pragma className="size-4 text-muted-foreground" />
@@ -178,9 +178,9 @@ export function APIList({
             {hasItems ? (
               <Accordion
                 className="w-full"
+                value={values}
                 onValueChange={setValues}
                 type="multiple"
-                value={values}
               >
                 {React.Children.map(children, (child, i) => {
                   return React.cloneElement(child as any, {
@@ -213,10 +213,10 @@ export function APISubListItem({
 }: {
   children: ReactNode;
   name: string;
-  optional?: boolean;
   parent: string;
-  required?: boolean;
   type: string;
+  optional?: boolean;
+  required?: boolean;
 }) {
   return (
     <div className="border-t border-t-border p-3">
@@ -262,10 +262,10 @@ export function APISubList({
     <Card className="my-2">
       <Accordion
         className="w-full"
-        collapsible
         defaultValue={open ? '1' : ''}
         onValueChange={setValue}
         type="single"
+        collapsible
       >
         <AccordionItem className="border-none" value="1">
           <AccordionTrigger className="group px-3" iconVariant="plus">

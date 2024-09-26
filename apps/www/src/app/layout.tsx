@@ -4,8 +4,6 @@ import type { Metadata, Viewport } from 'next';
 
 import { cn } from '@udecode/cn';
 
-import { Analytics } from '@/components/analytics';
-import { Body } from '@/components/body';
 import { Providers } from '@/components/context/providers';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
@@ -87,12 +85,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
-      <Body
+      <body
         className={cn(
           'min-h-screen bg-background font-sans antialiased',
           fontSans.variable
         )}
-        defaultTheme="slate"
         suppressHydrationWarning
       >
         <Providers>
@@ -105,10 +102,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
           </div>
         </Providers>
         <TailwindIndicator />
-        <Analytics />
 
         <Toaster />
-      </Body>
+      </body>
     </html>
   );
 }

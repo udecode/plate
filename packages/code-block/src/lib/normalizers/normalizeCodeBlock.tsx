@@ -7,12 +7,15 @@ import {
   setNodes,
 } from '@udecode/plate-common';
 
-import { CodeBlockPlugin, CodeLinePlugin } from '../CodeBlockPlugin';
+import {
+  BaseCodeBlockPlugin,
+  BaseCodeLinePlugin,
+} from '../BaseCodeBlockPlugin';
 
 /** Normalize code block node to force the pre>code>div.codeline structure. */
 export const normalizeCodeBlock = (editor: SlateEditor) => {
-  const codeBlockType = editor.getType(CodeBlockPlugin);
-  const codeLineType = editor.getType(CodeLinePlugin);
+  const codeBlockType = editor.getType(BaseCodeBlockPlugin);
+  const codeLineType = editor.getType(BaseCodeLinePlugin);
 
   const { normalizeNode } = editor;
 

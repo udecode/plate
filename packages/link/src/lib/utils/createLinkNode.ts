@@ -2,7 +2,7 @@ import type { SlateEditor, TText } from '@udecode/plate-common';
 
 import type { TLinkElement } from '../types';
 
-import { LinkPlugin } from '../LinkPlugin';
+import { BaseLinkPlugin } from '../BaseLinkPlugin';
 
 export interface CreateLinkNodeOptions {
   url: string;
@@ -15,7 +15,7 @@ export const createLinkNode = (
   editor: SlateEditor,
   { children, target, text = '', url }: CreateLinkNodeOptions
 ): TLinkElement => {
-  const type = editor.getType(LinkPlugin);
+  const type = editor.getType(BaseLinkPlugin);
 
   return {
     children: children ?? [{ text }],

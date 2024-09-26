@@ -1,8 +1,8 @@
 import type { Value } from '@udecode/slate';
 
 import {
-  DebugPlugin,
   type InferPlugins,
+  DebugPlugin,
   createSlateEditor,
   createSlatePlugin,
   someHtmlElement,
@@ -12,40 +12,40 @@ import { LinkPlugin } from '@udecode/plate-link/react';
 
 describe('TPlateEditor core package', () => {
   const MyCustomPlugin = createSlatePlugin({
-    api: { myCustomMethod: () => {} },
     key: 'myCustom',
+    api: { myCustomMethod: () => {} },
   });
 
   const TextFormattingPlugin = createSlatePlugin({
+    key: 'textFormatting',
     api: {
       bold: () => {},
       italic: () => {},
       underline: () => {},
     },
-    key: 'textFormatting',
   });
 
   const ListPlugin = createSlatePlugin({
+    key: 'list',
     api: {
       createBulletedList: () => {},
     },
-    key: 'list',
   });
 
   const TablePlugin = createSlatePlugin({
+    key: 'table',
     api: {
       addRow: () => {},
       insertTable: () => {},
     },
-    key: 'table',
   });
 
   const ImagePlugin = createSlatePlugin({
+    key: 'image',
     api: {
       insertImage: () => {},
       resizeImage: () => {},
     },
-    key: 'image',
   });
 
   describe('Core Plugins', () => {
@@ -176,11 +176,11 @@ describe('TPlateEditor core package', () => {
 
     it('should handle plugins with overlapping api names', () => {
       const OverlappingPlugin = createSlatePlugin({
+        key: 'overlapping',
         api: {
           bold: (_: number) => {},
           insertImage: (_: number) => {},
         },
-        key: 'overlapping',
       });
 
       const editor = createPlateEditor({

@@ -2,7 +2,7 @@
 
 import React, { useRef } from 'react';
 import { cn, withProps } from '@udecode/cn';
-import { AlignPlugin } from '@udecode/plate-alignment';
+import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
   BoldPlugin,
@@ -46,7 +46,7 @@ import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
   FontSizePlugin,
-} from '@udecode/plate-font';
+} from '@udecode/plate-font/react';
 import { HEADING_KEYS, HEADING_LEVELS } from '@udecode/plate-heading';
 import { HeadingPlugin } from '@udecode/plate-heading/react';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
@@ -55,7 +55,7 @@ import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { JuicePlugin } from '@udecode/plate-juice';
 import { KbdPlugin } from '@udecode/plate-kbd/react';
-import { LineHeightPlugin } from '@udecode/plate-line-height';
+import { LineHeightPlugin } from '@udecode/plate-line-height/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { TodoListPlugin } from '@udecode/plate-list/react';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
@@ -101,6 +101,10 @@ import { HeadingElement } from '@/components/plate-ui/heading-element';
 import { HighlightLeaf } from '@/components/plate-ui/highlight-leaf';
 import { HrElement } from '@/components/plate-ui/hr-element';
 import { ImageElement } from '@/components/plate-ui/image-element';
+import {
+  TodoLi,
+  TodoMarker,
+} from '@/components/plate-ui/indent-todo-marker-component';
 import { KbdLeaf } from '@/components/plate-ui/kbd-leaf';
 import { LinkElement } from '@/components/plate-ui/link-element';
 import { LinkFloatingToolbar } from '@/components/plate-ui/link-floating-toolbar';
@@ -224,6 +228,15 @@ export const useMyEditor = () => {
             CodeBlockPlugin.key,
             ...HEADING_LEVELS,
           ],
+        },
+        options: {
+          listStyleTypes: {
+            todo: {
+              liComponent: TodoLi,
+              markerComponent: TodoMarker,
+              type: 'todo',
+            },
+          },
         },
       }),
       LineHeightPlugin.configure({

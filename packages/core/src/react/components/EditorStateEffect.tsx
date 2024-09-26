@@ -1,7 +1,7 @@
 /* eslint-disable react/display-name */
 import React from 'react';
 
-import { Range, type Selection } from 'slate';
+import { type Selection, Range } from 'slate';
 import { useSlate } from 'slate-react';
 
 import { useIncrementVersion } from '../stores';

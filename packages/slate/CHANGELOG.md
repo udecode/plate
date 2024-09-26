@@ -1,5 +1,17 @@
 # @udecode/slate
 
+## 38.0.4
+
+### Patch Changes
+
+- [#3537](https://github.com/udecode/plate/pull/3537) by [@felixfeng33](https://github.com/felixfeng33) – Missing export
+
+## 38.0.3
+
+### Patch Changes
+
+- [#3534](https://github.com/udecode/plate/pull/3534) by [@felixfeng33](https://github.com/felixfeng33) – Sync slate add `withMerging`
+
 ## 37.0.0
 
 ### Major Changes

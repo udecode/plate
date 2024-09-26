@@ -1,8 +1,5 @@
 import type { Modify } from '@udecode/utils';
 
-import cloneDeep from 'lodash/cloneDeep.js';
-import merge from 'lodash/merge.js';
-
 import type { SlateEditor } from '../editor/SlateEditor';
 import type { AnyPluginConfig, PluginConfig } from './BasePlugin';
 import type {
@@ -11,7 +8,7 @@ import type {
   SlatePlugins,
 } from './SlatePlugin';
 
-import { mergeWithoutArray } from '../../internal/mergeWithoutArray';
+import { mergePlugins } from '../../internal/mergePlugins';
 import { isFunction } from '../utils/misc/isFunction';
 
 type SlatePluginConfig<K extends string = any, O = {}, A = {}, T = {}> = Omit<
@@ -23,7 +20,7 @@ type SlatePluginConfig<K extends string = any, O = {}, A = {}, T = {}> = Omit<
       }
     >
   >,
-  'optionsStore' | keyof SlatePluginMethods
+  keyof SlatePluginMethods | 'optionsStore'
 >;
 
 type TSlatePluginConfig<C extends AnyPluginConfig = PluginConfig> = Omit<
@@ -35,7 +32,7 @@ type TSlatePluginConfig<C extends AnyPluginConfig = PluginConfig> = Omit<
       }
     >
   >,
-  'optionsStore' | keyof SlatePluginMethods
+  keyof SlatePluginMethods | 'optionsStore'
 >;
 
 /**
@@ -111,9 +108,9 @@ export function createSlatePlugin<
 
   const key = baseConfig.key ?? '';
 
-  const plugin = merge(
-    {},
+  const plugin = mergePlugins(
     {
+      key,
       __apiExtensions: [],
       __configuration: null,
       __extensions: initialExtension ? [initialExtension] : [],
@@ -121,9 +118,7 @@ export function createSlatePlugin<
       api: {},
       dependencies: [],
       editor: {},
-      handlers: {},
       inject: {},
-      key,
       node: { type: key },
       options: {},
       override: {},
@@ -134,8 +129,9 @@ export function createSlatePlugin<
       render: {},
       shortcuts: {},
       transforms: {},
+      handlers: {},
     },
-    cloneDeep(config)
+    config
   ) as unknown as SlatePlugin<PluginConfig<K, O, A, T>>;
 
   plugin.configure = (config) => {
@@ -250,11 +246,13 @@ export function createSlatePlugin<
         extendConfig,
       ];
     } else {
-      newPlugin = mergeWithoutArray({}, newPlugin, extendConfig);
+      newPlugin = mergePlugins(newPlugin, extendConfig as any);
     }
 
     return createSlatePlugin(newPlugin) as any;
   };
+
+  plugin.clone = () => mergePlugins(plugin);
 
   plugin.extendPlugin = (p, extendConfig) => {
     const newPlugin = { ...plugin };
@@ -302,13 +300,13 @@ export function createSlatePlugin<
     if (!result.found) {
       newPlugin.plugins.push(
         createSlatePlugin({
+          key: p.key,
           __extensions: [
             (ctx: any) =>
               isFunction(extendConfig)
                 ? extendConfig(ctx as any)
                 : (extendConfig as any),
           ],
-          key: p.key,
         } as any)
       );
     }

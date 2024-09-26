@@ -9,7 +9,7 @@ import {
 
 import type { TMentionItemBase } from './types';
 
-import { type MentionConfig, MentionPlugin } from './MentionPlugin';
+import { type MentionConfig, BaseMentionPlugin } from './BaseMentionPlugin';
 
 export type MentionOnSelectItem<
   TItem extends TMentionItemBase = TMentionItemBase,
@@ -17,7 +17,7 @@ export type MentionOnSelectItem<
 
 export const getMentionOnSelectItem =
   <TItem extends TMentionItemBase = TMentionItemBase>({
-    key = MentionPlugin.key,
+    key = BaseMentionPlugin.key,
   }: { key?: string } = {}): MentionOnSelectItem<TItem> =>
   (editor, item, search = '') => {
     const { getOptions, tf } = getEditorPlugin<MentionConfig>(editor, {

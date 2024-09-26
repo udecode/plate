@@ -15,11 +15,11 @@ import { ColorInput } from './color-input';
 import { DropdownMenuItem } from './dropdown-menu';
 
 type ColorsCustomProps = {
-  color?: string;
   colors: TColor[];
   customColors: TColor[];
   updateColor: (color: string) => void;
   updateCustomColor: (color: string) => void;
+  color?: string;
 };
 
 export function ColorsCustom({

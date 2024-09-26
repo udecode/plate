@@ -13,25 +13,58 @@ export const blockChunkSchema = z.object({
   name: z.string(),
 });
 
+export const registryItemTypeSchema = z.enum([
+  'registry:style',
+  'registry:lib',
+  'registry:example',
+  'registry:block',
+  'registry:component',
+  'registry:ui',
+  'registry:hook',
+  'registry:theme',
+  'registry:page',
+]);
+
+export const registryItemFileSchema = z.union([
+  z.string(),
+  z.object({
+    content: z.string().optional(),
+    path: z.string(),
+    target: z.string().optional(),
+    type: registryItemTypeSchema,
+  }),
+]);
+
+export const registryItemTailwindSchema = z.object({
+  config: z.object({
+    content: z.array(z.string()).optional(),
+    plugins: z.array(z.string()).optional(),
+    theme: z.record(z.string(), z.any()).optional(),
+  }),
+});
+
+export const registryItemCssVarsSchema = z.object({
+  dark: z.record(z.string(), z.string()).optional(),
+  light: z.record(z.string(), z.string()).optional(),
+});
+
 export const registryEntrySchema = z.object({
   category: z.string().optional(),
   chunks: z.array(blockChunkSchema).optional(),
+  cssVars: registryItemCssVarsSchema.optional(),
   dependencies: z.array(z.string()).optional(),
   description: z.string().optional(),
   devDependencies: z.array(z.string()).optional(),
+  docs: z.string().optional(),
   external: z.boolean().optional(),
-  files: z.array(z.string()),
+  files: z.array(registryItemFileSchema).optional(),
   items: z.array(z.string()).optional(),
   name: z.string(),
   registryDependencies: z.array(z.string()).optional(),
   source: z.string().optional(),
   subcategory: z.string().optional(),
-  type: z.enum([
-    'components:plate-ui',
-    'components:component',
-    'components:example',
-    'components:block',
-  ]),
+  tailwind: registryItemTailwindSchema.optional(),
+  type: registryItemTypeSchema,
 });
 
 export const registrySchema = z.array(registryEntrySchema);
@@ -51,7 +84,7 @@ export const blockSchema = registryEntrySchema.extend({
     .optional(),
   highlightedCode: z.string(),
   style: z.enum(['default', 'new-york']),
-  type: z.literal('components:block'),
+  type: z.literal('registry:block'),
 });
 
 export type Block = z.infer<typeof blockSchema>;

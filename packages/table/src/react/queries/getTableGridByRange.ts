@@ -9,7 +9,7 @@ import {
 
 import type { TTableElement } from '../../lib/types';
 
-import { TablePlugin } from '../../lib/TablePlugin';
+import { BaseTablePlugin } from '../../lib/BaseTablePlugin';
 import { getEmptyTableNode } from '../../lib/utils';
 import { getTableMergeGridByRange } from '../merge/getTableGridByRange';
 
@@ -30,7 +30,7 @@ export const getTableGridByRange = (
   editor: SlateEditor,
   { at, format = 'table' }: GetTableGridByRangeOptions
 ): TElementEntry[] => {
-  const { enableMerging } = editor.getOptions(TablePlugin);
+  const { enableMerging } = editor.getOptions(BaseTablePlugin);
 
   if (enableMerging) {
     return getTableMergeGridByRange(editor, { at, format });

@@ -1,5 +1,15 @@
 # @udecode/plate-yjs
 
+## 38.0.1
+
+### Patch Changes
+
+- [#3526](https://github.com/udecode/plate/pull/3526) by [@zbeyens](https://github.com/zbeyens) – Prefix base plugin with `Base`
+
+- [#3526](https://github.com/udecode/plate/pull/3526) by [@zbeyens](https://github.com/zbeyens) – Upgrade `yjs`, `@hocuspocus/provider`
+
+## 38.0.0
+
 ## 37.0.0
 
 ### Major Changes

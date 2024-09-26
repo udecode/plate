@@ -1,5 +1,7 @@
 'use client';
 
+import remarkGfm from 'remark-gfm';
+
 import { MemoizedReactMarkdown } from './markdown';
 import { CodeBlock } from './ui/codeblock';
 
@@ -14,8 +16,8 @@ export function Markdown({ children }: { children: string }) {
           return match ? (
             <CodeBlock
               key={Math.random()}
-              language={match?.[1] || ''}
               value={String(children).replace(/\n$/, '')}
+              language={match?.[1] || ''}
               {...props}
             />
           ) : (
@@ -28,7 +30,7 @@ export function Markdown({ children }: { children: string }) {
           return <p className="mb-2 last:mb-0">{children}</p>;
         },
       }}
-      remarkPlugins={[]}
+      remarkPlugins={[remarkGfm]}
     >
       {children}
     </MemoizedReactMarkdown>

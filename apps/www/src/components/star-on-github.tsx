@@ -44,8 +44,8 @@ export function StarOnGithub({ count }: { count: number }) {
           {count > 0 && (
             <CountingNumbers
               className="font-medium text-background dark:text-foreground"
-              noAnimation
               value={count}
+              noAnimation
             />
           )}
         </div>

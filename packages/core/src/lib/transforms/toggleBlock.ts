@@ -6,7 +6,7 @@ import {
 
 import type { SlateEditor } from '../editor';
 
-import { ParagraphPlugin, type ToggleBlockOptions } from '../plugins';
+import { type ToggleBlockOptions, BaseParagraphPlugin } from '../plugins';
 
 /**
  * Toggle the type of the selected block. If the block is not of the specified
@@ -18,7 +18,7 @@ export const toggleBlock = <E extends SlateEditor = SlateEditor>(
   options: ToggleBlockOptions,
   editorNodesOptions?: Omit<GetNodeEntriesOptions<E>, 'match'>
 ) => {
-  const { defaultType = editor.getType(ParagraphPlugin), type } = options;
+  const { defaultType = editor.getType(BaseParagraphPlugin), type } = options;
 
   const at = editorNodesOptions?.at ?? editor.selection;
 

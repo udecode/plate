@@ -7,7 +7,7 @@ import type { SelectTriggerProps } from '@radix-ui/react-select';
 import { cn } from '@udecode/cn';
 
 import { useConfig } from '@/hooks/use-config';
-import { type Style, styles } from '@/registry/styles';
+import { type Style, styles } from '@/registry/registry-styles';
 
 import {
   Select,
@@ -22,13 +22,13 @@ export function StyleSwitcher({ className, ...props }: SelectTriggerProps) {
 
   return (
     <Select
+      value={config.style}
       onValueChange={(value: Style['name']) =>
         setConfig({
           ...config,
           style: value,
         })
       }
-      value={config.style}
     >
       <SelectTrigger
         className={cn('h-7 w-[145px] text-xs [&_svg]:size-4', className)}
@@ -39,7 +39,7 @@ export function StyleSwitcher({ className, ...props }: SelectTriggerProps) {
       </SelectTrigger>
       <SelectContent>
         {styles.map((style) => (
-          <SelectItem className="text-xs" key={style.name} value={style.name}>
+          <SelectItem key={style.name} className="text-xs" value={style.name}>
             {style.label}
           </SelectItem>
         ))}

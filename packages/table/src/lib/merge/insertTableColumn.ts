@@ -8,6 +8,7 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 import { getEditorPlugin } from '@udecode/plate-common';
+import cloneDeep from 'lodash/cloneDeep';
 import { Path } from 'slate';
 
 import type {
@@ -16,7 +17,7 @@ import type {
   TTableRowElement,
 } from '../types';
 
-import { TablePlugin } from '../TablePlugin';
+import { BaseTablePlugin } from '../BaseTablePlugin';
 import { getColSpan } from '../queries/getColSpan';
 import { getRowSpan } from '../queries/getRowSpan';
 import { getCellTypes } from '../utils';
@@ -44,7 +45,7 @@ export const insertTableMergeColumn = (
     header?: boolean;
   } = {}
 ) => {
-  const { api, getOptions, type } = getEditorPlugin(editor, TablePlugin);
+  const { api, getOptions, type } = getEditorPlugin(editor, BaseTablePlugin);
   const {
     _cellIndices: cellIndices,
     initialTableWidth,
@@ -131,12 +132,15 @@ export const insertTableMergeColumn = (
     const endCurI = curColIndex + curColSpan - 1;
 
     if (endCurI >= nextColIndex && !firstCol) {
+      const colSpan = curColSpan + 1;
+      const newCell = cloneDeep({ ...curCell, colSpan });
+
+      if (newCell.attributes?.colspan) {
+        newCell.attributes.colspan = colSpan.toString();
+      }
+
       // make wider
-      setNodes<TTableCellElement>(
-        editor,
-        { ...curCell, colSpan: curColSpan + 1 },
-        { at: currentCellPath }
-      );
+      setNodes<TTableCellElement>(editor, newCell, { at: currentCellPath });
     } else {
       // add new
       const curRowPath = currentCellPath.slice(0, -1);

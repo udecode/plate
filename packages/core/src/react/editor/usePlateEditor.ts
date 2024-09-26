@@ -27,7 +27,7 @@ export function usePlateEditor<
   P extends AnyPluginConfig = PlateCorePlugin,
   TEnabled extends boolean | undefined = undefined,
 >(
-  options: { enabled?: TEnabled } & CreatePlateEditorOptions<V, P> = {},
+  options: CreatePlateEditorOptions<V, P> & { enabled?: TEnabled } = {},
   deps: React.DependencyList = []
 ): TEnabled extends false
   ? null
@@ -38,7 +38,9 @@ export function usePlateEditor<
     (): any => {
       if (options.enabled === false) return null;
 
-      return createPlateEditor(options);
+      const editor = createPlateEditor(options);
+
+      return editor;
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [options.id, options.enabled, ...deps]

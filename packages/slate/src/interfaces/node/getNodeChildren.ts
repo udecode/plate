@@ -1,4 +1,4 @@
-import { Node, type NodeChildrenOptions, type Path } from 'slate';
+import { type NodeChildrenOptions, type Path, Node } from 'slate';
 
 import type { ChildOf } from './TDescendant';
 import type { TNode } from './TNode';

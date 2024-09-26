@@ -1,10 +1,13 @@
 import type { SlateEditor } from '@udecode/plate-common';
 
-import { BulletedListPlugin, NumberedListPlugin } from '../ListPlugin';
+import {
+  BaseBulletedListPlugin,
+  BaseNumberedListPlugin,
+} from '../BaseListPlugin';
 
 export const getListTypes = (editor: SlateEditor) => {
   return [
-    editor.getType(NumberedListPlugin),
-    editor.getType(BulletedListPlugin),
+    editor.getType(BaseNumberedListPlugin),
+    editor.getType(BaseBulletedListPlugin),
   ];
 };

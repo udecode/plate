@@ -1,4 +1,4 @@
-import { Editor, type EditorNodeOptions, type Location } from 'slate';
+import { type EditorNodeOptions, type Location, Editor } from 'slate';
 
 import type { NodeOf } from '../node/TNode';
 import type { TNodeEntry } from '../node/TNodeEntry';

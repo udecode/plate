@@ -5,10 +5,7 @@ import {
   toTPlatePlugin,
 } from '@udecode/plate-common/react';
 
-import {
-  type IndentListConfig as BaseIndentListConfig,
-  IndentListPlugin as BaseIndentListPlugin,
-} from '../lib';
+import { type BaseIndentListConfig, BaseIndentListPlugin } from '../lib';
 import { onKeyDownIndentList } from './onKeyDownIndentList';
 import { renderIndentListBelowNodes } from './renderIndentListBelowNodes';
 
@@ -18,10 +15,10 @@ export type IndentListConfig = ExtendConfig<
     listStyleTypes?: Record<
       string,
       {
+        type: string;
         isOrdered?: boolean;
         liComponent?: React.FC<PlateRenderElementProps>;
         markerComponent?: React.FC<Omit<PlateRenderElementProps, 'children'>>;
-        type: string;
       }
     >;
   }
@@ -31,11 +28,11 @@ export type IndentListConfig = ExtendConfig<
 export const IndentListPlugin = toTPlatePlugin<IndentListConfig>(
   BaseIndentListPlugin,
   {
-    handlers: {
-      onKeyDown: onKeyDownIndentList,
-    },
     render: {
       belowNodes: renderIndentListBelowNodes,
+    },
+    handlers: {
+      onKeyDown: onKeyDownIndentList,
     },
   }
 );

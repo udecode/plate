@@ -1,6 +1,6 @@
 import { toPlatePlugin } from '@udecode/plate-common/react';
 
-import { AutoformatPlugin as BaseAutoformatPlugin } from '../lib/AutoformatPlugin';
+import { BaseAutoformatPlugin } from '../lib/BaseAutoformatPlugin';
 import { onKeyDownAutoformat } from './onKeyDownAutoformat';
 
 export const AutoformatPlugin = toPlatePlugin(BaseAutoformatPlugin, {

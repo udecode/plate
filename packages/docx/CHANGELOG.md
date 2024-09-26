@@ -1,5 +1,21 @@
 # @udecode/plate-docx-serializer
 
+## 38.0.10
+
+## 38.0.8
+
+## 38.0.6
+
+## 38.0.5
+
+## 38.0.1
+
+### Patch Changes
+
+- [#3526](https://github.com/udecode/plate/pull/3526) by [@zbeyens](https://github.com/zbeyens) – Prefix base plugin with `Base`
+
+## 38.0.0
+
 ## 37.0.0
 
 ### Major Changes

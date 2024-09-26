@@ -9,7 +9,7 @@ import {
 } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { TablePlugin } from '../lib/TablePlugin';
+import { BaseTablePlugin } from '../lib/BaseTablePlugin';
 import { withDeleteTable } from './withDeleteTable';
 
 jsx;
@@ -55,7 +55,7 @@ describe('withDeleteTable', () => {
         </editor>
       ) as any as PlateEditor;
 
-      const plugin = TablePlugin;
+      const plugin = BaseTablePlugin;
       let editor = createPlateEditor({
         editor: input,
         plugins: [plugin],
@@ -111,7 +111,7 @@ describe('withDeleteTable', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const plugin = TablePlugin;
+      const plugin = BaseTablePlugin;
       let editor = createPlateEditor({
         editor: input,
         plugins: [plugin],
@@ -187,7 +187,7 @@ describe('withDeleteTable', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const plugin = TablePlugin;
+      const plugin = BaseTablePlugin;
       editor = createPlateEditor({
         editor: input,
         plugins: [plugin],

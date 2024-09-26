@@ -13,7 +13,7 @@ export const AstPlugin = createSlatePlugin({
 
       try {
         parsed = JSON.parse(decoded);
-      } catch (error) {
+      } catch {
         /* empty */
       }
 

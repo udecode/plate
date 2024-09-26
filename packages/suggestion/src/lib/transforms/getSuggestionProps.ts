@@ -1,10 +1,10 @@
 import type { SlateEditor } from '@udecode/plate-common';
 
-import { SUGGESTION_KEYS, SuggestionPlugin } from '../SuggestionPlugin';
+import { BaseSuggestionPlugin, SUGGESTION_KEYS } from '../BaseSuggestionPlugin';
 import { getSuggestionKey } from '../utils/index';
 
 export const getSuggestionCurrentUserKey = (editor: SlateEditor) => {
-  const { currentUserId } = editor.getOptions(SuggestionPlugin);
+  const { currentUserId } = editor.getOptions(BaseSuggestionPlugin);
 
   return getSuggestionKey(currentUserId!);
 };
@@ -21,8 +21,8 @@ export const getSuggestionProps = (
   } = {}
 ) => {
   const res = {
+    [BaseSuggestionPlugin.key]: true,
     [SUGGESTION_KEYS.id]: id,
-    [SuggestionPlugin.key]: true,
     [getSuggestionCurrentUserKey(editor)]: true,
   };
 

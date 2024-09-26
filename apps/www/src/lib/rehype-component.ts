@@ -7,7 +7,7 @@ import { u } from 'unist-builder';
 import { visit } from 'unist-util-visit';
 
 import { Index } from '../__registry__';
-import { styles } from '../registry/styles';
+import { styles } from '../registry/registry-styles';
 
 // NOTE: shadcn fork
 export function rehypeComponent() {
@@ -175,7 +175,7 @@ export function rehypeComponent() {
             ) {
               // Extract className from string
               // For now, a simple regex should do.
-              const values = source.match(/className="(.*)"/);
+              const values = /className="(.*)"/.exec(source);
               const className = values ? values[1] : '';
 
               // Add the className as a jsx prop so we can pass it to the copy button.

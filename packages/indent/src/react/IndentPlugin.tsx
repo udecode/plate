@@ -1,6 +1,6 @@
 import { toPlatePlugin } from '@udecode/plate-common/react';
 
-import { IndentPlugin as BaseIndentPlugin } from '../lib/IndentPlugin';
+import { BaseIndentPlugin } from '../lib/BaseIndentPlugin';
 import { onKeyDownIndent } from './onKeyDownIndent';
 
 export const IndentPlugin = toPlatePlugin(BaseIndentPlugin, {

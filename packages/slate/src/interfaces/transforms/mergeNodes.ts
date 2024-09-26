@@ -1,12 +1,12 @@
 import type { Modify } from '@udecode/utils';
 
 import {
-  Editor,
   type Element,
-  Path,
-  Range,
   type Text,
   type Transforms,
+  Editor,
+  Path,
+  Range,
 } from 'slate';
 
 import type { NodeMatchOption } from '../../types/NodeMatchOption';

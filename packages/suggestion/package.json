@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-suggestion",
-  "version": "37.0.0",
+  "version": "38.0.1",
   "description": "Plate plugin for suggestions",
   "keywords": [
     "plate",
@@ -49,14 +49,14 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-diff": "37.0.0",
+    "@udecode/plate-diff": "38.0.0",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@udecode/plate-common": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=37.0.8",
+    "@udecode/plate-common": ">=38.0.6",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.103.0",

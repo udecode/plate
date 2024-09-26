@@ -1,5 +1,5 @@
 import { getBlock } from '@/lib/_blocks';
-import { styles } from '@/registry/styles';
+import { styles } from '@/registry/registry-styles';
 
 import { BlockPreview } from './block-preview';
 
@@ -25,6 +25,6 @@ export async function BlockDisplay({ name }: { name: string }) {
   }
 
   return blocks.map((block) => (
-    <BlockPreview block={block} key={`${block.style}-${block.name}`} />
+    <BlockPreview key={`${block.style}-${block.name}`} block={block} />
   ));
 }

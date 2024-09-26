@@ -1,3 +1,3 @@
-import { CommentsPlugin } from '../CommentsPlugin';
+import { BaseCommentsPlugin } from '../BaseCommentsPlugin';
 
-export const getCommentKey = (id: string) => `${CommentsPlugin.key}_${id}`;
+export const getCommentKey = (id: string) => `${BaseCommentsPlugin.key}_${id}`;

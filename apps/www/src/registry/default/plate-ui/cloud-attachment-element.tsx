@@ -8,8 +8,8 @@ import {
   useCloudAttachmentElementState,
 } from '@udecode/plate-cloud';
 import {
-  PlateElement,
   type PlateElementProps,
+  PlateElement,
 } from '@udecode/plate-common/react';
 
 import { Icons } from '@/components/icons';

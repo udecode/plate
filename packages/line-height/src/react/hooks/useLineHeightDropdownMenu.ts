@@ -9,12 +9,12 @@ import {
   useEditorSelector,
 } from '@udecode/plate-common/react';
 
-import { LineHeightPlugin, setLineHeight } from '../../index';
+import { BaseLineHeightPlugin, setLineHeight } from '../../index';
 
 export const useLineHeightDropdownMenuState = () => {
   const editor = useEditorRef();
   const { defaultNodeValue, validNodeValues: values = [] } =
-    editor.getInjectProps(LineHeightPlugin);
+    editor.getInjectProps(BaseLineHeightPlugin);
 
   // eslint-disable-next-line @typescript-eslint/no-shadow
   const value: string | undefined = useEditorSelector((editor) => {
@@ -23,7 +23,7 @@ export const useLineHeightDropdownMenuState = () => {
 
       if (entry) {
         return (
-          values.find((item) => item === entry[0][LineHeightPlugin.key]) ??
+          values.find((item) => item === entry[0][BaseLineHeightPlugin.key]) ??
           defaultNodeValue
         );
       }
@@ -43,13 +43,13 @@ export const useLineHeightDropdownMenu = ({
 
   return {
     radioGroupProps: {
+      value,
       onValueChange: (newValue: string) => {
         setLineHeight(editor, {
           value: Number(newValue),
         });
         focusEditor(editor);
       },
-      value,
     },
   };
 };

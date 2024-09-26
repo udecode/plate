@@ -12,14 +12,19 @@ import type { TColor } from './color-dropdown-menu';
 
 import { buttonVariants } from './button';
 import { DropdownMenuItem } from './dropdown-menu';
-import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from './tooltip';
 
 type ColorDropdownMenuItemProps = {
   isBrightColor: boolean;
   isSelected: boolean;
-  name?: string;
   updateColor: (color: string) => void;
   value: string;
+  name?: string;
 } & DropdownMenuItemProps;
 
 export function ColorDropdownMenuItem({
@@ -42,11 +47,11 @@ export function ColorDropdownMenuItem({
         !isBrightColor && 'border-transparent text-white',
         className
       )}
+      style={{ backgroundColor: value }}
       onSelect={(e) => {
         e.preventDefault();
         updateColor(value);
       }}
-      style={{ backgroundColor: value }}
       {...props}
     >
       {isSelected ? <Icons.check /> : null}
@@ -64,9 +69,9 @@ export function ColorDropdownMenuItem({
 }
 
 type ColorDropdownMenuItemsProps = {
-  color?: string;
   colors: TColor[];
   updateColor: (color: string) => void;
+  color?: string;
 } & React.HTMLAttributes<HTMLDivElement>;
 
 export function ColorDropdownMenuItems({
@@ -81,16 +86,18 @@ export function ColorDropdownMenuItems({
       className={cn('grid grid-cols-[repeat(10,1fr)] gap-1', className)}
       {...props}
     >
-      {colors.map(({ isBrightColor, name, value }) => (
-        <ColorDropdownMenuItem
-          isBrightColor={isBrightColor}
-          isSelected={color === value}
-          key={name ?? value}
-          name={name}
-          updateColor={updateColor}
-          value={value}
-        />
-      ))}
+      <TooltipProvider>
+        {colors.map(({ isBrightColor, name, value }) => (
+          <ColorDropdownMenuItem
+            name={name}
+            key={name ?? value}
+            value={value}
+            isBrightColor={isBrightColor}
+            isSelected={color === value}
+            updateColor={updateColor}
+          />
+        ))}
+      </TooltipProvider>
     </div>
   );
 }

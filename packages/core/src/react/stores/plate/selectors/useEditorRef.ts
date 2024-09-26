@@ -1,5 +1,6 @@
 import type { PlateEditor } from '../../../editor/PlateEditor';
 
+import { createPlateFallbackEditor } from '../../../utils';
 import {
   type UsePlateEditorStoreOptions,
   usePlateSelectors,
@@ -9,8 +10,11 @@ import {
 export const useEditorRef = <E extends PlateEditor = PlateEditor>(
   id?: string,
   options: UsePlateEditorStoreOptions = {}
-): E =>
-  usePlateSelectors(id, {
-    debugHookName: 'useEditorRef',
-    ...options,
-  }).editor() as any;
+): E => {
+  return (
+    (usePlateSelectors(id, {
+      debugHookName: 'useEditorRef',
+      ...options,
+    }).editor() as E) ?? createPlateFallbackEditor()
+  );
+};

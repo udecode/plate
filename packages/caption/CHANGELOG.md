@@ -1,5 +1,13 @@
 # @udecode/plate-caption
 
+## 38.0.1
+
+### Patch Changes
+
+- [#3526](https://github.com/udecode/plate/pull/3526) by [@zbeyens](https://github.com/zbeyens) – Prefix base plugin with `Base`
+
+## 38.0.0
+
 ## 37.0.1
 
 ### Patch Changes

@@ -39,10 +39,10 @@ export default function HomeTabs() {
   return (
     <div>
       <Tabs
+        value={homeTab}
         onValueChange={(value) => {
           settingsStore.set.homeTab(value);
         }}
-        value={homeTab}
       >
         <TabsList>
           <TabsTrigger value="playground">Playground</TabsTrigger>
@@ -50,6 +50,7 @@ export default function HomeTabs() {
         </TabsList>
 
         <Button
+          variant="outline"
           className={cn(
             'ml-2 translate-y-[3px]',
             active && 'border-2 border-primary'
@@ -62,7 +63,6 @@ export default function HomeTabs() {
               settingsStore.set.showSettings(true);
             }
           }}
-          variant="outline"
         >
           <Settings2 className="mr-2 size-4" /> Customize
         </Button>

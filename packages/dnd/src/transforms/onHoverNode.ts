@@ -16,9 +16,9 @@ import { getHoverDirection, getNewDirection } from '../utils';
 export const onHoverNode = (
   editor: TEditor,
   {
+    id,
     dragItem,
     dropLine,
-    id,
     monitor,
     nodeRef,
     onChangeDropLine,
@@ -31,8 +31,8 @@ export const onHoverNode = (
   >
 ) => {
   const direction = getHoverDirection({
-    dragItem,
     id,
+    dragItem,
     monitor,
     nodeRef,
   });

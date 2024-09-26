@@ -7,9 +7,9 @@ import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
 import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 import { createEditor } from 'slate';
 import {
-  Editable,
   type ReactEditor,
   type RenderElementProps,
+  Editable,
   Slate,
   withReact,
 } from 'slate-react';
@@ -54,9 +54,9 @@ function WithoutPlate() {
 
   return (
     <Slate
+      onChange={onChange as any}
       editor={editor}
       initialValue={initialValue}
-      onChange={onChange as any}
     >
       <Editable renderElement={renderElement} {...(editableProps as any)} />
     </Slate>

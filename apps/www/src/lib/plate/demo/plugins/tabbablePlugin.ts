@@ -3,7 +3,7 @@ import { isSelectionAtBlockStart, someNode } from '@udecode/plate-common';
 import { createPlatePlugin } from '@udecode/plate-common/react';
 import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import { ListItemPlugin } from '@udecode/plate-list/react';
-import { TabbablePlugin } from '@udecode/plate-tabbable';
+import { TabbablePlugin } from '@udecode/plate-tabbable/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 
 import { TabbableElement } from './TabbableElement';

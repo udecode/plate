@@ -1,6 +1,6 @@
 {
   "name": "@udecode/react-utils",
-  "version": "37.0.0",
+  "version": "38.0.1",
   "description": "Udecode React utils",
   "license": "MIT",
   "repository": {
@@ -38,9 +38,9 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@radix-ui/react-slot": "^1.0.2",
+    "@radix-ui/react-slot": "^1.1.0",
     "@udecode/utils": "37.0.0",
-    "clsx": "^1.2.1"
+    "clsx": "^2.1.1"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

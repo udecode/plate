@@ -52,7 +52,7 @@ export const HotkeysProvider = ({
         return [scope];
       }
 
-      return Array.from(new Set([...prev, scope]));
+      return Array.from(new Set([scope, ...prev]));
     });
   }, []);
 
@@ -71,7 +71,7 @@ export const HotkeysProvider = ({
           return [scope];
         }
 
-        return Array.from(new Set([...prev, scope]));
+        return Array.from(new Set([scope, ...prev]));
       }
     });
   }, []);

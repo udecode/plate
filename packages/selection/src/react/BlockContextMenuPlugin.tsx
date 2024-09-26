@@ -6,11 +6,11 @@ export type BlockContextMenuConfig = PluginConfig<
   'blockContextMenu',
   {
     action: {
-      group: null | string;
-      value: null | string;
+      group: string | null;
+      value: string | null;
     } | null;
     anchorRect: { x: number; y: number };
-    openEditorId: null | string;
+    openEditorId: string | null;
     store: any | null;
   },
   {
@@ -19,12 +19,12 @@ export type BlockContextMenuConfig = PluginConfig<
 >;
 
 export type BlockContextMenuApi = {
-  hide: () => void;
-  reset: () => void;
   show: (
     editorId: string,
     event: React.MouseEvent<HTMLDivElement, MouseEvent>
   ) => void;
+  hide: () => void;
+  reset: () => void;
 };
 
 export const BlockContextMenuPlugin =

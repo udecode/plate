@@ -1,5 +1,11 @@
 # @udecode/plate-test-utils
 
+## 37.0.9
+
+### Patch Changes
+
+- [#3518](https://github.com/udecode/plate/pull/3518) by [@felixfeng33](https://github.com/felixfeng33) – Add media nodes
+
 ## 37.0.0
 
 ### Patch Changes

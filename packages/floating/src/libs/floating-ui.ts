@@ -80,7 +80,7 @@ export type {
   SizeOptions,
   Strategy,
   UseFloatingData,
-  UseFloatingProps,
+  UseFloatingOptions,
   UseFloatingReturn,
   VirtualElement,
 } from '@floating-ui/react';

@@ -1,7 +1,7 @@
 import { CaptionPlugin } from '@udecode/plate-caption/react';
 import { htmlStringToDOMNode } from '@udecode/plate-core';
 import { LinkPlugin } from '@udecode/plate-link/react';
-import { ImagePlugin } from '@udecode/plate-media';
+import { ImagePlugin } from '@udecode/plate-media/react';
 
 import { serializeHtml } from '../../react/serializeHtml';
 import { createPlateUIEditor } from '../create-plate-ui-editor';

@@ -4,8 +4,8 @@ type Method = 'addEventListener' | 'removeEventListener';
 type AnyFunction = (...arg: any) => any;
 
 export type EventBindingArgs = [
-  (EventTarget | undefined)[] | (EventTarget | undefined),
-  string | string[],
+  (EventTarget | undefined) | (EventTarget | undefined)[],
+  string[] | string,
   AnyFunction,
   Record<string, unknown>?,
 ];
@@ -14,8 +14,8 @@ export type EventBindingArgs = [
 const eventListener =
   (method: Method) =>
   (
-    items: (EventTarget | undefined)[] | (EventTarget | undefined),
-    events: string | string[],
+    items: (EventTarget | undefined) | (EventTarget | undefined)[],
+    events: string[] | string,
     fn: AnyFunction,
     options = {}
   ): EventBindingArgs => {

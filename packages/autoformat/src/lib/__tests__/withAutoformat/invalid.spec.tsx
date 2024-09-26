@@ -4,7 +4,7 @@ import { createSlateEditor } from '@udecode/plate-common';
 import { jsx } from '@udecode/plate-test-utils';
 import { getAutoformatOptions } from 'www/src/lib/plate/demo/plugins/autoformatOptions';
 
-import { AutoformatPlugin } from '../../AutoformatPlugin';
+import { BaseAutoformatPlugin } from '../../BaseAutoformatPlugin';
 
 jsx;
 
@@ -27,7 +27,7 @@ describe('when the start match is not present and the end match is present', () 
 
     const editor = createSlateEditor({
       plugins: [
-        AutoformatPlugin.configure({ options: getAutoformatOptions() }),
+        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
       ],
       value: input,
     });
@@ -57,7 +57,7 @@ describe('when there is a character before match', () => {
 
     const editor = createSlateEditor({
       plugins: [
-        AutoformatPlugin.configure({ options: getAutoformatOptions() }),
+        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
       ],
       value: input,
     });
@@ -88,7 +88,7 @@ describe('when there is a character before match', () => {
 
     const editor = createSlateEditor({
       plugins: [
-        AutoformatPlugin.configure({ options: getAutoformatOptions() }),
+        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
       ],
       value: input,
     });
@@ -116,7 +116,7 @@ describe('when selection is null', () => {
 
     const editor = createSlateEditor({
       plugins: [
-        AutoformatPlugin.configure({ options: getAutoformatOptions() }),
+        BaseAutoformatPlugin.configure({ options: getAutoformatOptions() }),
       ],
       value: input,
     });

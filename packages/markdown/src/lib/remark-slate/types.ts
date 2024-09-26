@@ -61,6 +61,6 @@ export type RemarkTextRules = {
 export type RemarkPluginOptions = {
   editor: SlateEditor;
   elementRules: RemarkElementRules;
-  indentList?: boolean;
   textRules: RemarkTextRules;
+  indentList?: boolean;
 };

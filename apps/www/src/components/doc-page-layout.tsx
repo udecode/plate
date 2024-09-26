@@ -69,6 +69,7 @@ export function DocPageLayout({
             )}
             {doc.docs?.map((item: any) => (
               <Link
+                key={item.route}
                 className={cn(
                   badgeVariants({
                     variant: item.route?.includes('components')
@@ -77,7 +78,6 @@ export function DocPageLayout({
                   })
                 )}
                 href={item.route as any}
-                key={item.route}
               >
                 {item.title}
               </Link>

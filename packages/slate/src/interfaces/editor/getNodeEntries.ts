@@ -1,6 +1,6 @@
 import type { Modify } from '@udecode/utils';
 
-import { Editor, type EditorNodesOptions } from 'slate';
+import { type EditorNodesOptions, Editor } from 'slate';
 
 import type { NodeOf, TNode } from '../node/TNode';
 import type { TNodeEntry } from '../node/TNodeEntry';

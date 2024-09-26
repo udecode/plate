@@ -8,7 +8,6 @@ import type { PlateEditor } from '../../editor/PlateEditor';
 import type { PlateStoreState } from './PlateStore';
 
 import { createAtomStore } from '../../libs';
-import { createPlateFallbackEditor } from '../../utils';
 import {
   usePlateControllerEditorStore,
   usePlateControllerExists,
@@ -19,13 +18,10 @@ export const PLATE_SCOPE = 'plate';
 export const GLOBAL_PLATE_SCOPE = Symbol('global-plate');
 
 export const createPlateStore = <E extends PlateEditor = PlateEditor>({
-  decorate = null,
-  editor = createPlateFallbackEditor() as E,
   id,
+  decorate = null,
+  editor,
   isMounted = false,
-  onChange = null,
-  onSelectionChange = null,
-  onValueChange = null,
   primary = true,
   readOnly = null,
   renderElement = null,
@@ -34,6 +30,9 @@ export const createPlateStore = <E extends PlateEditor = PlateEditor>({
   versionEditor = 1,
   versionSelection = 1,
   versionValue = 1,
+  onChange = null,
+  onSelectionChange = null,
+  onValueChange = null,
   ...state
 }: Partial<PlateStoreState<E>> = {}) =>
   createAtomStore(
@@ -41,9 +40,6 @@ export const createPlateStore = <E extends PlateEditor = PlateEditor>({
       decorate,
       editor,
       isMounted,
-      onChange,
-      onSelectionChange,
-      onValueChange,
       primary,
       readOnly,
       renderElement,
@@ -52,6 +48,9 @@ export const createPlateStore = <E extends PlateEditor = PlateEditor>({
       versionEditor,
       versionSelection,
       versionValue,
+      onChange,
+      onSelectionChange,
+      onValueChange,
       ...state,
     } as PlateStoreState<E>,
     {

@@ -22,7 +22,7 @@ export const ListElement = withRef<typeof ListElementVariants>(
     const Component = variant!;
 
     return (
-      <ListElementVariants asChild ref={ref} variant={variant} {...props}>
+      <ListElementVariants ref={ref} asChild variant={variant} {...props}>
         <Component>{children}</Component>
       </ListElementVariants>
     );

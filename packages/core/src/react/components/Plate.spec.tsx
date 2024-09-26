@@ -6,7 +6,11 @@ import { type Value, isBlock, setNodes } from '@udecode/slate';
 import isEqual from 'lodash/isEqual';
 import memoize from 'lodash/memoize';
 
-import type { PlatePlugins } from '../plugin';
+import type {
+  PlatePlugins,
+  PlateRenderElementProps,
+  PlateRenderLeafProps,
+} from '../plugin';
 
 import { type SlatePlugins, createSlatePlugin } from '../../lib';
 import { createPlateEditor, usePlateEditor } from '../editor';
@@ -373,6 +377,7 @@ describe('Plate', () => {
       const plugins: SlatePlugins = memoize(
         (): SlatePlugins => [
           createSlatePlugin({
+            key: 'a',
             extendEditor: ({ editor }) => {
               const { normalizeNode } = editor;
               editor.normalizeNode = (n) => {
@@ -382,7 +387,6 @@ describe('Plate', () => {
 
               return editor;
             },
-            key: 'a',
           }),
         ]
       )();
@@ -468,6 +472,124 @@ describe('Plate', () => {
       // Rerender with a different dependency
       rerender(<TestComponent dep={2} />);
       expect(mountCount).toBe(2);
+    });
+  });
+
+  describe('User-defined attributes', () => {
+    const ParagraphElement = ({
+      attributes,
+      children,
+      nodeProps,
+    }: PlateRenderElementProps) => (
+      <p {...attributes} {...nodeProps} data-testid="paragraph">
+        {children}
+      </p>
+    );
+
+    const BoldLeaf = ({
+      attributes,
+      children,
+      nodeProps,
+    }: PlateRenderLeafProps) => (
+      <strong {...attributes} {...nodeProps} data-testid="bold">
+        {children}
+      </strong>
+    );
+
+    const getParagraphPlugin = (dangerouslyAllowAttributes: boolean) =>
+      createPlatePlugin({
+        key: 'p',
+        node: {
+          component: ParagraphElement,
+          dangerouslyAllowAttributes: dangerouslyAllowAttributes
+            ? ['data-my-paragraph-attribute']
+            : undefined,
+          isElement: true,
+        },
+      });
+
+    const getBoldPlugin = (dangerouslyAllowAttributes: boolean) =>
+      createPlatePlugin({
+        key: 'bold',
+        node: {
+          component: BoldLeaf,
+          dangerouslyAllowAttributes: dangerouslyAllowAttributes
+            ? ['data-my-bold-attribute']
+            : undefined,
+          isLeaf: true,
+        },
+      });
+
+    const initialValue = [
+      {
+        attributes: {
+          'data-my-paragraph-attribute': 'hello',
+          'data-unpermitted-paragraph-attribute': 'world',
+        },
+        children: [
+          {
+            attributes: {
+              'data-my-bold-attribute': 'hello',
+              'data-unpermitted-bold-attribute': 'world',
+            },
+            bold: true,
+            text: 'My bold paragraph',
+          },
+        ],
+        type: 'p',
+      },
+    ];
+
+    const Editor = ({
+      dangerouslyAllowAttributes,
+    }: {
+      dangerouslyAllowAttributes: boolean;
+    }) => {
+      const editor = usePlateEditor({
+        plugins: [
+          getParagraphPlugin(dangerouslyAllowAttributes),
+          getBoldPlugin(dangerouslyAllowAttributes),
+        ],
+        value: initialValue,
+      });
+
+      return (
+        <Plate editor={editor}>
+          <PlateContent />
+        </Plate>
+      );
+    };
+
+    it('renders no user-defined attributes by default', () => {
+      const { getByTestId } = render(
+        <Editor dangerouslyAllowAttributes={false} />
+      );
+
+      const paragraphEl = getByTestId('paragraph');
+      expect(Object.keys(paragraphEl.dataset)).toEqual(['slateNode', 'testid']);
+
+      const boldEl = getByTestId('bold');
+      expect(Object.keys(boldEl.dataset)).toEqual(['slateLeaf', 'testid']);
+    });
+
+    it('renders allowed user-defined attributes', () => {
+      const { getByTestId } = render(
+        <Editor dangerouslyAllowAttributes={true} />
+      );
+
+      const paragraphEl = getByTestId('paragraph');
+      expect(Object.keys(paragraphEl.dataset)).toEqual([
+        'slateNode',
+        'myParagraphAttribute',
+        'testid',
+      ]);
+
+      const boldEl = getByTestId('bold');
+      expect(Object.keys(boldEl.dataset)).toEqual([
+        'slateLeaf',
+        'myBoldAttribute',
+        'testid',
+      ]);
     });
   });
 });

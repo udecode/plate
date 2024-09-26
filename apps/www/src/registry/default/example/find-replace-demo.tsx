@@ -42,8 +42,6 @@ export function SearchHighlightToolbar({
         />
         <input
           data-testid="ToolbarSearchHighlightInput"
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search the text..."
           style={{
             background: '#fafafa',
             border: '2px solid #ddd',
@@ -53,6 +51,8 @@ export function SearchHighlightToolbar({
             paddingLeft: '2em',
             width: '100%',
           }}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search the text..."
           type="search"
         />
       </div>

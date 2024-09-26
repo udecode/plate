@@ -19,7 +19,7 @@ type PlatePluginConfig<K extends string = any, O = {}, A = {}, T = {}> = Omit<
       }
     >
   >,
-  'optionsStore' | 'useOptionsStore' | keyof PlatePluginMethods
+  keyof PlatePluginMethods | 'optionsStore' | 'useOptionsStore'
 >;
 
 type TPlatePluginConfig<C extends AnyPluginConfig = PluginConfig> = Omit<
@@ -31,7 +31,7 @@ type TPlatePluginConfig<C extends AnyPluginConfig = PluginConfig> = Omit<
       }
     >
   >,
-  'optionsStore' | 'useOptionsStore' | keyof PlatePluginMethods
+  keyof PlatePluginMethods | 'optionsStore' | 'useOptionsStore'
 >;
 
 export const createPlatePlugin = <

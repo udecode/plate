@@ -8,7 +8,7 @@ import {
 } from '@udecode/plate-common/react';
 import { useReadOnly } from 'slate-react';
 
-import { CodeBlockPlugin, type TCodeBlockElement } from '../../lib';
+import { type TCodeBlockElement, BaseCodeBlockPlugin } from '../../lib';
 
 export const useCodeBlockComboboxState = () => {
   const editor = useEditorRef();
@@ -16,7 +16,7 @@ export const useCodeBlockComboboxState = () => {
   const element = useElement<TCodeBlockElement>();
   const [value, setValue] = React.useState(element.lang ?? 'text');
 
-  const { syntaxPopularFirst } = editor.getOptions(CodeBlockPlugin);
+  const { syntaxPopularFirst } = editor.getOptions(BaseCodeBlockPlugin);
 
   React.useEffect(() => {
     setValue(element.lang ?? 'text');

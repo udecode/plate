@@ -22,7 +22,7 @@ export interface AutoformatCommonRule {
    * 'mark'`: lookup for the start and end matches. Note: `'_*'`, `['_*']` and
    * `{ start: '_*', end: '*_' }` are equivalent.
    */
-  match: MatchRange | MatchRange[] | string | string[];
+  match: MatchRange | MatchRange[] | string[] | string;
 
   /**
    * If true, insert the triggering character after autoformatting.
@@ -39,11 +39,11 @@ export interface AutoformatCommonRule {
    *
    * @default the last character of `match` or `match.end`
    */
-  trigger?: string | string[];
+  trigger?: string[] | string;
 }
 
 export interface AutoformatBlockRule extends AutoformatCommonRule {
-  match: string | string[];
+  match: string[] | string;
 
   /**
    * - Text: insert text.
@@ -101,7 +101,7 @@ export interface AutoformatMarkRule extends AutoformatCommonRule {
   mode: 'mark';
 
   /** Mark(s) to add. */
-  type: string | string[];
+  type: string[] | string;
 
   /** If false, do not format when the string can be trimmed. */
   ignoreTrim?: boolean;
@@ -115,10 +115,10 @@ export interface AutoformatTextRule extends AutoformatCommonRule {
    */
   format:
     | ((editor: SlateEditor, options: GetMatchPointsReturnType) => void)
-    | string
-    | string[];
+    | string[]
+    | string;
 
-  match: string | string[];
+  match: string[] | string;
 
   mode: 'text';
 }

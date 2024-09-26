@@ -4,20 +4,26 @@ import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import {
-  ParagraphPlugin,
   collapseSelection,
   getNodeEntries,
   isBlock,
 } from '@udecode/plate-common';
-import { focusEditor, useEditorSelector } from '@udecode/plate-common/react';
-import { HEADING_KEYS, HeadingPlugin } from '@udecode/plate-heading';
+import {
+  ParagraphPlugin,
+  focusEditor,
+  useEditorSelector,
+} from '@udecode/plate-common/react';
+import { HEADING_KEYS } from '@udecode/plate-heading';
+import { HeadingPlugin } from '@udecode/plate-heading/react';
 import { toggleIndentList } from '@udecode/plate-indent-list';
 import { IndentListPlugin } from '@udecode/plate-indent-list/react';
-import { ListPlugin, unwrapList } from '@udecode/plate-list';
+import { unwrapList } from '@udecode/plate-list';
+import { ListPlugin } from '@udecode/plate-list/react';
 
 import { CheckPlugin } from '@/components/context/check-plugin';
 import { settingsStore } from '@/components/context/settings-store';
 import { Icons } from '@/components/icons';
+import { useMyEditorRef } from '@/registry/default/lib/plate-types';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,7 +34,6 @@ import {
   useOpenState,
 } from '@/registry/default/plate-ui/dropdown-menu';
 import { ToolbarButton } from '@/registry/default/plate-ui/toolbar';
-import { useMyEditorRef } from '@/types/plate-types';
 
 const items = [
   {
@@ -146,9 +151,9 @@ export function PlaygroundTurnIntoDropdownMenu(props: DropdownMenuProps) {
       <DropdownMenuTrigger asChild>
         <ToolbarButton
           className="lg:min-w-[130px]"
-          isDropdown
           pressed={openState.open}
           tooltip="Turn into"
+          isDropdown
         >
           <SelectedItemIcon className="size-5 lg:hidden" />
           <span className="max-lg:hidden">{selectedItemLabel}</span>
@@ -156,14 +161,15 @@ export function PlaygroundTurnIntoDropdownMenu(props: DropdownMenuProps) {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        align="start"
         className="min-w-0"
         onCloseAutoFocus={onCloseAutoFocus}
+        align="start"
       >
         <DropdownMenuLabel>Turn into</DropdownMenuLabel>
 
         <DropdownMenuRadioGroup
           className="flex flex-col gap-0.5"
+          value={value}
           onValueChange={(type) => {
             if (type === 'ul' || type === 'ol') {
               if (settingsStore.get.checkedId(IndentListPlugin.key)) {
@@ -181,7 +187,6 @@ export function PlaygroundTurnIntoDropdownMenu(props: DropdownMenuProps) {
             collapseSelection(editor);
             focusEditor(editor);
           }}
-          value={value}
         >
           {items.map(({ icon: Icon, label, plugin, value: itemValue }) => (
             <CheckPlugin key={itemValue} plugin={plugin}>

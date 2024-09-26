@@ -1,6 +1,6 @@
 import type { Modify } from '@udecode/utils';
 
-import { Node, type NodeTextsOptions } from 'slate';
+import { type NodeTextsOptions, Node } from 'slate';
 
 import type { TextOf } from '../text/TText';
 import type { NodeOf, TNode } from './TNode';

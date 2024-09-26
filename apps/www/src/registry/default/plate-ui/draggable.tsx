@@ -23,6 +23,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipPortal,
+  TooltipProvider,
   TooltipTrigger,
 } from './tooltip';
 
@@ -66,8 +67,8 @@ export interface DraggableProps
   onDropHandler?: (
     editor: TEditor,
     props: {
-      dragItem: DragItemNode;
       id: string;
+      dragItem: DragItemNode;
       monitor: DropTargetMonitor<DragItemNode, unknown>;
       nodeRef: any;
     }
@@ -78,30 +79,32 @@ const DragHandle = () => {
   const editor = useEditorRef();
 
   return (
-    <Tooltip>
-      <TooltipTrigger type="button">
-        <Icons.dragHandle
-          className="size-4 text-muted-foreground"
-          onClick={(event) => {
-            event.stopPropagation();
-            event.preventDefault();
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger type="button">
+          <Icons.dragHandle
+            className="size-4 text-muted-foreground"
+            onClick={(event) => {
+              event.stopPropagation();
+              event.preventDefault();
 
-            // if (element.id) {
-            //   editor.getApi(BlockSelectionPlugin).blockSelection.addSelectedRow(element.id as string);
-            //   api.blockContextMenu.show(editor.id, event as any);
-            // }
-          }}
-          onMouseDown={() => {
-            editor
-              .getApi(BlockSelectionPlugin)
-              .blockSelection.resetSelectedIds();
-          }}
-        />
-      </TooltipTrigger>
-      <TooltipPortal>
-        <TooltipContent>Drag to move</TooltipContent>
-      </TooltipPortal>
-    </Tooltip>
+              // if (element.id) {
+              //   editor.getApi(BlockSelectionPlugin).blockSelection.addSelectedRow(element.id as string);
+              //   api.blockContextMenu.show(editor.id, event as any);
+              // }
+            }}
+            onMouseDown={() => {
+              editor
+                .getApi(BlockSelectionPlugin)
+                .blockSelection.resetSelectedIds();
+            }}
+          />
+        </TooltipTrigger>
+        <TooltipPortal>
+          <TooltipContent>Drag to move</TooltipContent>
+        </TooltipPortal>
+      </Tooltip>
+    </TooltipProvider>
   );
 };
 
@@ -115,19 +118,19 @@ export const Draggable = withRef<'div', DraggableProps>(
       droplineProps,
       groupProps,
       gutterLeftProps,
-      handleRef,
       previewRef,
+      handleRef,
     } = useDraggable(state);
 
     return (
       <div
+        ref={ref}
         className={cn(
           'relative',
           isDragging && 'opacity-50',
           'group',
           className
         )}
-        ref={ref}
         {...groupProps}
       >
         <div
@@ -145,9 +148,9 @@ export const Draggable = withRef<'div', DraggableProps>(
               )}
             >
               <div
+                ref={handleRef}
                 className="size-4"
                 data-key={element.id as string}
-                ref={handleRef}
               >
                 {isHovered && <DragHandle />}
               </div>
@@ -155,7 +158,7 @@ export const Draggable = withRef<'div', DraggableProps>(
           </div>
         </div>
 
-        <div className={classNames.blockWrapper} ref={previewRef}>
+        <div ref={previewRef} className={classNames.blockWrapper}>
           {children}
 
           {!!dropLine && (

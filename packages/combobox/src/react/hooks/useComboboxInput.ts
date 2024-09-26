@@ -51,8 +51,8 @@ export const useComboboxInput = ({
   cancelInputOnEscape = true,
   cursorState,
   forwardUndoRedoToEditor = true,
-  onCancelInput,
   ref,
+  onCancelInput,
 }: UseComboboxInputOptions): UseComboboxInputResult => {
   const editor = useEditorRef();
   const element = useElement();

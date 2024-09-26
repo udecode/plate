@@ -1,7 +1,7 @@
 import {
-  ParagraphPlugin,
   type TElement,
   type TNodeEntry,
+  BaseParagraphPlugin,
   deleteMerge,
   getNodeEntries,
   getNodeEntry,
@@ -15,16 +15,19 @@ import {
   type ExtendEditor,
   getEditorPlugin,
 } from '@udecode/plate-common/react';
-import { ResetNodePlugin } from '@udecode/plate-reset-node';
+import { BaseResetNodePlugin } from '@udecode/plate-reset-node';
 import {
   SIMULATE_BACKSPACE,
   onKeyDownResetNode,
 } from '@udecode/plate-reset-node/react';
 import { Path } from 'slate';
 
-import type { ListConfig } from '../lib/ListPlugin';
+import type { ListConfig } from '../lib/BaseListPlugin';
 
-import { ListItemContentPlugin, ListItemPlugin } from '../lib/ListPlugin';
+import {
+  BaseListItemContentPlugin,
+  BaseListItemPlugin,
+} from '../lib/BaseListPlugin';
 import { isAcrossListItems, isListNested } from '../lib/queries';
 import { getListItemEntry } from '../lib/queries/getListItemEntry';
 import { unwrapList } from '../lib/transforms';
@@ -47,7 +50,7 @@ export const withDeleteBackwardList: ExtendEditor<ListConfig> = ({
 
         if (
           isSelectionAtBlockStart(editor, {
-            match: (node) => node.type === editor.getType(ListItemPlugin),
+            match: (node) => node.type === editor.getType(BaseListItemPlugin),
           })
         ) {
           withoutNormalizing(editor, () => {
@@ -62,15 +65,15 @@ export const withDeleteBackwardList: ExtendEditor<ListConfig> = ({
               onKeyDownResetNode({
                 ...getEditorPlugin(
                   editor,
-                  ResetNodePlugin.configure({
+                  BaseResetNodePlugin.configure({
                     options: {
                       rules: [
                         {
-                          defaultType: editor.getType(ParagraphPlugin),
+                          defaultType: editor.getType(BaseParagraphPlugin),
                           hotkey: 'backspace',
-                          onReset: (e) => unwrapList(e),
                           predicate: () => isSelectionAtBlockStart(editor),
-                          types: [editor.getType(ListItemPlugin)],
+                          types: [editor.getType(BaseListItemPlugin)],
+                          onReset: (e) => unwrapList(e),
                         },
                       ],
                     },
@@ -103,7 +106,7 @@ export const withDeleteBackwardList: ExtendEditor<ListConfig> = ({
               })
             ) {
               // get closest lic ancestor of current selectable
-              const licType = editor.getType(ListItemContentPlugin);
+              const licType = editor.getType(BaseListItemContentPlugin);
               const _licNodes = getNodeEntries<TElement>(editor, {
                 at: listItem[1],
                 match: (node) => node.type === licType,

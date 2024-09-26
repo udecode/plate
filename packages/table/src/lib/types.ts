@@ -100,7 +100,6 @@ export interface TTableCellElement extends TElement {
     colspan?: string;
     rowspan?: string;
   };
-  background?: string;
   borders?: {
     /** Only the last row cells have a bottom border. */
     bottom?: BorderStyle;
@@ -111,6 +110,7 @@ export interface TTableCellElement extends TElement {
 
     top?: BorderStyle;
   };
+  background?: string;
   colSpan?: number;
   rowSpan?: number;
   size?: number;

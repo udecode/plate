@@ -1,6 +1,6 @@
 import {
-  ParagraphPlugin,
   type SlateEditor,
+  BaseParagraphPlugin,
   insertElements,
   isBlockAboveEmpty,
   isExpanded,
@@ -17,7 +17,7 @@ import { insertCodeBlock } from './insertCodeBlock';
 export const insertEmptyCodeBlock = <E extends SlateEditor>(
   editor: E,
   {
-    defaultType = editor.getType(ParagraphPlugin),
+    defaultType = editor.getType(BaseParagraphPlugin),
     insertNodesOptions,
   }: CodeBlockInsertOptions<E> = {}
 ) => {

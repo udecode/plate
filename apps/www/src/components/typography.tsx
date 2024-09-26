@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import type { Event } from '@/lib/events';
-import type { Style } from '@/registry/styles';
+import type { Style } from '@/registry/registry-styles';
 import type { NpmCommands } from '@/types/unist';
 
 import { cn } from '@udecode/cn';
@@ -144,7 +144,7 @@ export const Image = ({
   ...props
 }: React.ImgHTMLAttributes<HTMLImageElement>) => (
   // eslint-disable-next-line @next/next/no-img-element
-  <img alt={alt} className={cn('rounded-md', className)} {...props} />
+  <img className={cn('rounded-md', className)} alt={alt} {...props} />
 );
 
 export const HR = ({ ...props }: React.HTMLAttributes<HTMLHRElement>) => (
@@ -228,9 +228,9 @@ export const Pre = ({
       {__rawString__ && !__npmCommand__ && (
         <CopyButton
           className={cn('absolute right-4 top-4', __withMeta__ && 'top-16')}
+          value={__rawString__}
           event={__event__}
           src={__src__}
-          value={__rawString__}
         />
       )}
       {__npmCommand__ &&

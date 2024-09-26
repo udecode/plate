@@ -4,7 +4,7 @@ import {
   insertNodes,
 } from '@udecode/plate-common';
 
-import { CalloutPlugin, type TCalloutElement } from '../CalloutPlugin';
+import { type TCalloutElement, BaseCalloutPlugin } from '../BaseCalloutPlugin';
 
 export const insertCallout = <E extends SlateEditor>(
   editor: E,
@@ -14,7 +14,7 @@ export const insertCallout = <E extends SlateEditor>(
     editor,
     {
       children: [{ text: '' }],
-      type: editor.getType(CalloutPlugin),
+      type: editor.getType(BaseCalloutPlugin),
       variant: 'info',
     },
     options as any

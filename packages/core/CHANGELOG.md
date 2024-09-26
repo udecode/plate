@@ -1,5 +1,101 @@
 # @udecode/plate-core
 
+## 38.0.6
+
+### Patch Changes
+
+- [`d30471cb19577e53c20944ab66eab2a7ef3b3ad2`](https://github.com/udecode/plate/commit/d30471cb19577e53c20944ab66eab2a7ef3b3ad2) by [@12joan](https://github.com/12joan) – Mitigate XSS in `element.attributes` by requiring all attribute names to be allowlisted in the `node.dangerouslyAllowAttributes` plugin configuration option.
+
+  Migration:
+
+  For each plugin that needs to support passing DOM attributes using `element.attributes`, add the list of allowed attributes to the `node.dangerouslyAllowAttributes` option of the plugin.
+
+  ```ts
+  const ImagePlugin = createPlatePlugin({
+    key: 'image',
+    node: {
+      isElement: true,
+      isVoid: true,
+      dangerouslyAllowAttributes: ['alt'],
+    },
+  });
+  ```
+
+  To modify existing plugins, use the `extend` method as follows:
+
+  ```ts
+  const MyImagePlugin = ImagePlugin.extend({
+    node: {
+      dangerouslyAllowAttributes: ['alt'],
+    },
+  });
+  ```
+
+  WARNING: Improper use of `dangerouslyAllowAttributes` WILL make your application vulnerable to cross-site scripting (XSS) or information exposure attacks. Ensure you carefully research the security implications of any attribute before adding it. For example, the `src` and `href` attributes will allow attackers to execute arbitrary code, and the `style` and `background` attributes will allow attackers to leak users' IP addresses.
+
+## 38.0.4
+
+## 38.0.3
+
+## 38.0.2
+
+### Patch Changes
+
+- [#3530](https://github.com/udecode/plate/pull/3530) by [@yf-yang](https://github.com/yf-yang) – Fix wrong typescript signature of `getOption`
+
+## 38.0.1
+
+### Patch Changes
+
+- [#3526](https://github.com/udecode/plate/pull/3526) by [@zbeyens](https://github.com/zbeyens) –
+  - Rename all base plugins that have a React plugin counterpart to be prefixed with `Base`. This change improves clarity and distinguishes base implementations from potential React extensions. Use base plugins only for server-side environments or to extend your own DOM layer.
+  - Import the following plugins from `/react` entry: `AlignPlugin`, `CalloutPlugin`, `EquationPlugin`, `FontBackgroundColorPlugin`, `FontColorPlugin`, `FontFamilyPlugin`, `FontSizePlugin`, `FontWeightPlugin`, `InlineEquationPlugin`, `LineHeightPlugin`, `TextIndentPlugin`, `TocPlugin`
+  - Upgrade dependencies
+
+## 38.0.0
+
+### Major Changes
+
+- [#3506](https://github.com/udecode/plate/pull/3506) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Change `plugin.options` merging behavior from deep merge to shallow merge.
+  - This affects `.extend()`, `.configure()`, and other methods that modify plugin options.
+  - This update addresses a **performance regression** introduced in v37 that affected editor creation.
+
+  Before:
+
+  ```ts
+  const plugin = createSlatePlugin({
+    key: 'test',
+    options: { nested: { a: 1 } },
+  }).extend({
+    options: { nested: { b: 1 } },
+  });
+
+  // Result: { nested: { a: 1, b: 1 } }
+  ```
+
+  After:
+
+  ```ts
+  const plugin = createSlatePlugin({
+    key: 'test',
+    options: { nested: { a: 1 } },
+  }).extend(({ getOptions }) => ({
+    options: {
+      ...getOptions(),
+      nested: { ...getOptions().nested, b: 1 },
+    },
+  }));
+
+  // Result: { nested: { a: 1, b: 1 } }
+  ```
+
+  Migration:
+
+  - If you're using nested options and want to preserve the previous behavior, you need to manually spread both the top-level options and the nested objects.
+  - If you're not using nested options, no changes are required.
+
 ## 37.0.8
 
 ### Patch Changes

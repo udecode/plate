@@ -22,7 +22,7 @@ export const useInlineEquationInputState = ({
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   // if user press escape revert
-  const [originExpression, setOriginExpressin] = React.useState<null | string>(
+  const [originExpression, setOriginExpressin] = React.useState<string | null>(
     null
   );
 
@@ -64,6 +64,8 @@ export const useInlineEquationInput = ({
 
   return {
     props: {
+      ref: inputRef,
+      value: element.texExpression,
       onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
         setNodes<TInlineEquationElement>(
           editor,
@@ -113,8 +115,6 @@ export const useInlineEquationInput = ({
           setSelectionInlineEquation(editor, inlineEquationPath, 'right');
         }
       },
-      ref: inputRef,
-      value: element.texExpression,
     },
   };
 };

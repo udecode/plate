@@ -72,11 +72,11 @@ export function diffNodes(
 }
 
 export type NodeRelatedItem = {
+  originNode: TDescendant;
   childrenUpdated?: boolean;
   delete?: boolean;
   insert?: boolean;
   nodeUpdated?: boolean;
-  originNode: TDescendant;
   relatedNode?: TDescendant;
 };
 

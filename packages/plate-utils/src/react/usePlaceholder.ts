@@ -26,17 +26,13 @@ export const usePlaceholderState = ({
   const composing = useComposing();
   const editor = useEditorRef();
 
-  const isEmptyBlock = isElementEmpty(editor, element);
+  const isEmptyBlock = isElementEmpty(editor, element) && !composing;
 
   const enabled =
     isEmptyBlock &&
     (!query || queryNode([element, findNodePath(editor, element)!], query)) &&
     (!hideOnBlur ||
-      (isCollapsed(editor.selection) &&
-        hideOnBlur &&
-        focused &&
-        selected &&
-        !composing));
+      (isCollapsed(editor.selection) && hideOnBlur && focused && selected));
 
   return {
     enabled,

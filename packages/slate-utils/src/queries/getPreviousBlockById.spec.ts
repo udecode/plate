@@ -4,52 +4,52 @@ import { getPreviousBlockById } from './getPreviousBlockById';
 
 const nodesFixture5 = [
   {
-    children: [{ text: '' }],
     id: '1',
+    children: [{ text: '' }],
     type: 'p',
   },
   {
-    children: [{ text: '' }],
     id: '2',
+    children: [{ text: '' }],
     type: 'p',
   },
   {
-    children: [{ text: '' }],
     id: '3',
+    children: [{ text: '' }],
     type: 'p',
   },
 ];
 
 const nodesFixtureWithList = [
   {
-    children: [{ text: '' }],
     id: '1',
+    children: [{ text: '' }],
     type: 'p',
   },
   {
+    id: '2',
     children: [
       {
-        children: [{ children: [{ text: 'hi' }], id: '211', type: 'p' }],
         id: '21',
+        children: [{ id: '211', children: [{ text: 'hi' }], type: 'p' }],
         type: 'li',
       },
       {
-        children: [{ children: [{ text: 'hi' }], id: '221', type: 'p' }],
         id: '22',
+        children: [{ id: '221', children: [{ text: 'hi' }], type: 'p' }],
         type: 'li',
       },
       {
-        children: [{ children: [{ text: 'hi' }], id: '231', type: 'p' }],
         id: '23',
+        children: [{ id: '231', children: [{ text: 'hi' }], type: 'p' }],
         type: 'li',
       },
     ],
-    id: '2',
     type: 'ul',
   },
   {
-    children: [{ text: '' }],
     id: '3',
+    children: [{ text: '' }],
     type: 'p',
   },
 ];

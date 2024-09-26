@@ -1,6 +1,6 @@
 import type { ExtendEditor } from '@udecode/plate-common';
 
-import type { ImageConfig } from './ImagePlugin';
+import type { ImageConfig } from './BaseImagePlugin';
 
 import { withImageEmbed } from './withImageEmbed';
 import { withImageUpload } from './withImageUpload';

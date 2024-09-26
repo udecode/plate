@@ -21,7 +21,7 @@ export const submitFloatingLink = (editor: SlateEditor) => {
     url: inputUrl,
   } = getOptions();
 
-  const url = transformInput ? transformInput(inputUrl) ?? '' : inputUrl;
+  const url = transformInput ? (transformInput(inputUrl) ?? '') : inputUrl;
 
   if (!forceSubmit && !validateUrl(editor, url)) return;
 

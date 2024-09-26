@@ -15,11 +15,11 @@ export const ColumnElement = withHOC(
 
     return (
       <PlateElement
+        ref={ref}
         className={cn(
           className,
           !readOnly && 'rounded-lg border border-dashed p-1.5'
         )}
-        ref={ref}
         style={{ width }}
         {...props}
       >

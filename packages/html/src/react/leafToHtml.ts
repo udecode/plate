@@ -19,9 +19,9 @@ export const leafToHtml = (
     preserveClassNames,
     props,
   }: {
+    props: TRenderLeafProps;
     plateProps?: Partial<PlateProps>;
     preserveClassNames?: string[];
-    props: TRenderLeafProps;
   }
 ) => {
   const { children } = props;

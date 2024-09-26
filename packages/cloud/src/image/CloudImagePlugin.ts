@@ -6,16 +6,16 @@ import type { UploadError, UploadSuccess } from '../upload';
 import type { TCloudImageElement } from './types';
 
 import {
-  CloudPlugin,
   type ErrorEvent,
   type ImageFileEvent,
   type ProgressEvent,
   type SuccessEvent,
+  CloudPlugin,
 } from '../cloud';
 
 export const CloudImagePlugin = createPlatePlugin({
-  dependencies: ['cloud'],
   key: 'cloud_image',
+  dependencies: ['cloud'],
   node: { isElement: true, isVoid: true },
   options: {
     maxInitialHeight: 320,

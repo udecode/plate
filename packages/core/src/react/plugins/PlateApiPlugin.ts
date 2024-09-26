@@ -1,8 +1,8 @@
 import { createTPlatePlugin } from '../plugin';
 
 export const PlateApiPlugin = createTPlatePlugin({
-  dependencies: ['debug'],
   key: 'plateApi',
+  dependencies: ['debug'],
 }).extendEditorApi(({ editor }) => ({
   redecorate: () => {
     editor.api.debug.warn(

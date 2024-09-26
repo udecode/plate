@@ -10,8 +10,8 @@ import React, {
 
 import { resizeInWidth } from '@portive/client';
 import {
-  CloudImagePlugin,
   type TCloudImageElement,
+  CloudImagePlugin,
 } from '@udecode/plate-cloud';
 import { setNodes } from '@udecode/plate-common';
 import { findNodePath, useEditorRef } from '@udecode/plate-common/react';
@@ -67,7 +67,6 @@ function ResizeHandles({
     <>
       {/* Invisible Handle */}
       <div
-        onMouseDown={onMouseDown}
         style={{
           background: 'rgba(127,127,127,0.01)',
           bottom: 0,
@@ -77,6 +76,7 @@ function ResizeHandles({
           top: 0,
           width: 16,
         }}
+        onMouseDown={onMouseDown}
       >
         {/* Visible Handle */}
         <div

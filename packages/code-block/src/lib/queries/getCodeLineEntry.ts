@@ -11,7 +11,7 @@ import {
   someNode,
 } from '@udecode/plate-common';
 
-import { CodeLinePlugin } from '../CodeBlockPlugin';
+import { BaseCodeLinePlugin } from '../BaseCodeBlockPlugin';
 
 /** If at (default = selection) is in ul>li>p, return li and ul node entries. */
 export const getCodeLineEntry = <N extends ElementOf<E>, E extends SlateEditor>(
@@ -22,7 +22,7 @@ export const getCodeLineEntry = <N extends ElementOf<E>, E extends SlateEditor>(
     at &&
     someNode(editor, {
       at,
-      match: { type: editor.getType(CodeLinePlugin) },
+      match: { type: editor.getType(BaseCodeLinePlugin) },
     })
   ) {
     const selectionParent = getParentNode(editor, at);
@@ -34,7 +34,7 @@ export const getCodeLineEntry = <N extends ElementOf<E>, E extends SlateEditor>(
     const codeLine =
       getAboveNode<TElement>(editor, {
         at,
-        match: { type: editor.getType(CodeLinePlugin) },
+        match: { type: editor.getType(BaseCodeLinePlugin) },
       }) || getParentNode<N>(editor, parentPath);
 
     if (!codeLine) return;
@@ -43,7 +43,7 @@ export const getCodeLineEntry = <N extends ElementOf<E>, E extends SlateEditor>(
 
     if (
       isElement(codeLineNode) &&
-      codeLineNode.type !== editor.getType(CodeLinePlugin)
+      codeLineNode.type !== editor.getType(BaseCodeLinePlugin)
     )
       return;
 

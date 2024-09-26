@@ -7,7 +7,7 @@ import {
 
 import type { TSuggestionText } from '../types';
 
-import { SUGGESTION_KEYS, SuggestionPlugin } from '../SuggestionPlugin';
+import { BaseSuggestionPlugin, SUGGESTION_KEYS } from '../BaseSuggestionPlugin';
 import { type TSuggestionDescription, getSuggestionKey } from '../utils/index';
 
 export const acceptSuggestion = (
@@ -17,7 +17,7 @@ export const acceptSuggestion = (
   withoutNormalizing(editor as any, () => {
     const suggestionKey = getSuggestionKey(description.userId);
 
-    unsetNodes(editor as any, [SuggestionPlugin.key, suggestionKey], {
+    unsetNodes(editor as any, [BaseSuggestionPlugin.key, suggestionKey], {
       at: [],
       match: (n) => {
         const node = n as TSuggestionText;

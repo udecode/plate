@@ -1,11 +1,8 @@
 import React from 'react';
 
-import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
-import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
 import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 
 import { editableProps } from '@/plate/demo/editableProps';
-import { PlateUI } from '@/plate/demo/plate-ui';
 import { createMultiEditorsValue } from '@/plate/demo/values/createMultiEditorsValue';
 import { Editor } from '@/registry/default/plate-ui/editor';
 
@@ -14,8 +11,8 @@ const values = createMultiEditorsValue();
 function WithPlate({ id, value }: any) {
   const editor = usePlateEditor({
     id,
-    override: { components: PlateUI },
-    plugins: [BasicElementsPlugin, BasicMarksPlugin],
+    // override: { components: PlateUI },
+    // plugins: [BasicElementsPlugin, BasicMarksPlugin],
     value,
   });
 
@@ -56,7 +53,7 @@ export default function HundredsEditorsDemo() {
     <div className="flex flex-col">
       {values.map((value, idx) => {
         return (
-          <div className="p-10" key={idx}>
+          <div key={idx} className="p-10">
             <h3 className="mb-2 font-semibold">#{idx + 1}</h3>
             <WithPlate id={idx + 1} value={value} />
             {/* <WithoutPlate initialValue={initialValue} id={idx} /> */}

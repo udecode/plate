@@ -9,7 +9,7 @@ export interface ResetNodePluginRule {
 
   defaultType?: string;
 
-  hotkey?: string | string[];
+  hotkey?: string[] | string;
 
   /** Callback called when resetting. */
   onReset?: (editor: SlateEditor) => void;

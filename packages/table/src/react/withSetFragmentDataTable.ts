@@ -1,25 +1,26 @@
-import type { ExtendEditor } from '@udecode/plate-common/react';
-
 import {
   type TElement,
+  findNode,
   getEndPoint,
   getStartPoint,
   select,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import { Path } from 'slate';
+import { type ExtendEditor, findNodePath } from '@udecode/plate-common/react';
 
 import {
   type TTableCellElement,
+  type TTableElement,
   type TableConfig,
   getColSpan,
   getRowSpan,
 } from '../lib';
-import { TableCellHeaderPlugin } from './TablePlugin';
+import { TableCellHeaderPlugin, TablePlugin } from './TablePlugin';
 import { getTableGridAbove } from './queries';
 
 export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
   editor,
+  plugin,
 }) => {
   const { setFragmentData } = editor;
 
@@ -42,21 +43,11 @@ export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
       return;
     }
 
-    const selectionStart =
-      Path.compare(initialSelection.anchor.path, initialSelection.focus.path) <
-      1
-        ? initialSelection.anchor
-        : initialSelection.focus;
-
     const [tableNode, tablePath] = tableEntry;
     const tableRows = tableNode.children as TElement[];
-
-    const tableSelectionStart = selectionStart.path.slice(
-      tablePath.length,
-      tablePath.length + 2
+    tableNode.children = tableNode.children.filter(
+      (v) => (v as TTableCellElement).children.length > 0
     );
-
-    const [y, x] = tableSelectionStart;
 
     let textCsv = '';
     let textTsv = '';
@@ -80,9 +71,8 @@ export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
     }
 
     withoutNormalizing(editor, () => {
-      tableRows.forEach((row, rowIndex) => {
+      tableRows.forEach((row) => {
         const rowCells = row.children as TTableCellElement[];
-        const rowPath = tablePath.concat(y + rowIndex);
 
         const cellStrings: string[] = [];
         const rowElement =
@@ -90,11 +80,11 @@ export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
             ? document.createElement('th')
             : document.createElement('tr');
 
-        rowCells.forEach((cell, cellIndex) => {
+        rowCells.forEach((cell) => {
           // need to clean data before every iteration
           data.clearData();
 
-          const cellPath = rowPath.concat(x + cellIndex);
+          const cellPath = findNodePath(editor, cell)!;
 
           // select cell by cell
           select(editor, {
@@ -124,6 +114,26 @@ export const withSetFragmentDataTable: ExtendEditor<TableConfig> = ({
         textCsv += `${cellStrings.join(',')}\n`;
         textTsv += `${cellStrings.join('\t')}\n`;
       });
+
+      const _tableEntry = findNode<TTableElement>(editor, {
+        at: tablePath,
+        match: { type: TablePlugin.key },
+      });
+
+      if (_tableEntry != null && _tableEntry.length > 0) {
+        const realTable = _tableEntry[0];
+
+        if (realTable.attributes != null) {
+          Object.entries(realTable.attributes).forEach(([key, value]) => {
+            if (
+              value != null &&
+              plugin.node.dangerouslyAllowAttributes?.includes(key)
+            ) {
+              tableElement.setAttribute(key, String(value));
+            }
+          });
+        }
+      }
 
       // select back original cells
       select(editor, initialSelection!);

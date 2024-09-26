@@ -7,7 +7,7 @@ import {
 } from '@udecode/plate-common';
 import { deselectEditor } from '@udecode/plate-common/react';
 
-import { CommentsPlugin, getCommentKey } from '../../lib';
+import { BaseCommentsPlugin, getCommentKey } from '../../lib';
 
 export const insertComment = (editor: SlateEditor) => {
   const { selection } = editor;
@@ -33,7 +33,7 @@ export const insertComment = (editor: SlateEditor) => {
 
   setNodes(
     editor,
-    { [CommentsPlugin.key]: true, [getCommentKey(id)]: true },
+    { [BaseCommentsPlugin.key]: true, [getCommentKey(id)]: true },
     { match: isText, split: true }
   );
 
@@ -42,6 +42,6 @@ export const insertComment = (editor: SlateEditor) => {
   } catch {}
 
   setTimeout(() => {
-    editor.setOption(CommentsPlugin, 'activeCommentId', id);
+    editor.setOption(BaseCommentsPlugin, 'activeCommentId', id);
   }, 0);
 };

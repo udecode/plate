@@ -16,7 +16,7 @@ export function EmojiToolbarDropdown({
   setIsOpen,
 }: EmojiToolbarDropdownProps) {
   return (
-    <Popover.Root onOpenChange={setIsOpen} open={isOpen}>
+    <Popover.Root open={isOpen} onOpenChange={setIsOpen}>
       <Popover.Trigger asChild>{control}</Popover.Trigger>
 
       <Popover.Portal>

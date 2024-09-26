@@ -1,4 +1,4 @@
-import { Node, type Path } from 'slate';
+import { type Path, Node } from 'slate';
 
 import type { NodeOf, TNode } from './TNode';
 import type { TNodeEntry } from './TNodeEntry';

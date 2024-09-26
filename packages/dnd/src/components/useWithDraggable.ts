@@ -23,7 +23,7 @@ export interface WithDraggableOptions<T = any> {
    *
    * @default 0
    */
-  level?: null | number;
+  level?: number | null;
 }
 
 export const useWithDraggable = <T = any>({

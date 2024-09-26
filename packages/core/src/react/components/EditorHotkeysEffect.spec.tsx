@@ -23,7 +23,7 @@ const SimpleComponent = ({ id }: { id?: string }) => {
 
   return (
     <div ref={editableRef}>
-      <EditorHotkeysEffect editableRef={editableRef} id={id} />
+      <EditorHotkeysEffect id={id} editableRef={editableRef} />
     </div>
   );
 };
@@ -37,12 +37,12 @@ describe('EditorHotkeysEffect', () => {
     editor = createPlateEditor({
       shortcuts: {
         'mod+b': {
-          handler: hotkeyCallback,
           keys: 'mod+b',
+          handler: hotkeyCallback,
         },
         'mod+i': {
-          handler: jest.fn(),
           keys: 'mod+i',
+          handler: jest.fn(),
         },
       },
     });

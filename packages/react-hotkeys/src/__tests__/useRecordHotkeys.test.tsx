@@ -58,7 +58,7 @@ it('Should record modifiers', async () => {
     result.current[1].stop();
   });
 
-  expect(result.current[0]).toEqual(new Set(['shift', 'a']));
+  expect(result.current[0]).toEqual(new Set(['a', 'shift']));
 });
 
 it('Should record multiple keys only once', async () => {
@@ -154,5 +154,5 @@ it('Should record steps, no matter the produced key', async () => {
     result.current[1].stop();
   });
 
-  expect(result.current[0]).toEqual(new Set(['shift', '1']));
+  expect(result.current[0]).toEqual(new Set(['1', 'shift']));
 });

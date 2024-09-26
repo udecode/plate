@@ -5,7 +5,7 @@ import type { TDescendant } from '@udecode/slate';
 import type { Range } from 'slate';
 
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { LinkPlugin } from '@udecode/plate-link';
+import { LinkPlugin } from '@udecode/plate-link/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { getBlockAbove } from '../../getBlockAbove';

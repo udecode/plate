@@ -9,7 +9,7 @@ import { cva } from 'class-variance-authority';
 
 const editorVariants = cva(
   cn(
-    'relative overflow-x-auto whitespace-pre-wrap break-words',
+    'relative overflow-x-auto whitespace-pre-wrap break-words text-foreground',
     'min-h-[80px] w-full rounded-md bg-background px-6 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none',
     '[&_[data-slate-placeholder]]:text-muted-foreground [&_[data-slate-placeholder]]:!opacity-100',
     '[&_[data-slate-placeholder]]:top-[auto_!important]',
@@ -62,9 +62,8 @@ const Editor = React.forwardRef<HTMLDivElement, EditorProps>(
     ref
   ) => {
     return (
-      <div className="relative w-full" ref={ref}>
+      <div ref={ref} className="relative w-full">
         <PlateContent
-          aria-disabled={disabled}
           className={cn(
             editorVariants({
               disabled,
@@ -75,9 +74,10 @@ const Editor = React.forwardRef<HTMLDivElement, EditorProps>(
             }),
             className
           )}
+          readOnly={disabled ?? readOnly}
+          aria-disabled={disabled}
           data-plate-selectable
           disableDefaultStyles
-          readOnly={disabled ?? readOnly}
           {...props}
         />
       </div>

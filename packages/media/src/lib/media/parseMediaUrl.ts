@@ -7,7 +7,7 @@ export type EmbedUrlData = {
 export type EmbedUrlParser = (url: string) => EmbedUrlData | undefined;
 
 // Unlike the link plugin, there's no legitimate reason for non-HTTP source URLs
-const allowedProtocols = new Set(['https:', 'http:']);
+const allowedProtocols = new Set(['http:', 'https:']);
 
 export const parseMediaUrl = (
   url: string,

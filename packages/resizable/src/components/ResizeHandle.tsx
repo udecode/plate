@@ -110,27 +110,27 @@ export const useResizeHandleState = ({
     initialSize,
     isHorizontal,
     isResizing,
+    setInitialPosition,
+    setInitialSize,
+    setIsResizing,
     onHover,
     onHoverEnd,
     onMouseDown,
     onResize,
     onTouchStart,
-    setInitialPosition,
-    setInitialSize,
-    setIsResizing,
   };
 };
 
 export const useResizeHandle = ({
   isHorizontal,
   isResizing,
+  setInitialPosition,
+  setInitialSize,
+  setIsResizing,
   onHover,
   onHoverEnd,
   onMouseDown,
   onTouchStart,
-  setInitialPosition,
-  setInitialSize,
-  setIsResizing,
 }: ReturnType<typeof useResizeHandleState>) => {
   const handleMouseDown: React.MouseEventHandler = (event) => {
     const { clientX, clientY } = event;

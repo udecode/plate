@@ -5,12 +5,10 @@ import React from 'react';
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import {
-  CodeBlockPlugin,
-  insertEmptyCodeBlock,
-} from '@udecode/plate-code-block';
-import { ParagraphPlugin, insertEmptyElement } from '@udecode/plate-common';
-import { focusEditor } from '@udecode/plate-common/react';
+import { insertEmptyCodeBlock } from '@udecode/plate-code-block';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
+import { insertEmptyElement } from '@udecode/plate-common';
+import { ParagraphPlugin, focusEditor } from '@udecode/plate-common/react';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
@@ -26,6 +24,7 @@ import { TablePlugin, insertTable } from '@udecode/plate-table/react';
 import { CheckPlugin } from '@/components/context/check-plugin';
 import { settingsStore } from '@/components/context/settings-store';
 import { Icons } from '@/components/icons';
+import { useMyEditorRef } from '@/registry/default/lib/plate-types';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,7 +35,6 @@ import {
   useOpenState,
 } from '@/registry/default/plate-ui/dropdown-menu';
 import { ToolbarButton } from '@/registry/default/plate-ui/toolbar';
-import { useMyEditorRef } from '@/types/plate-types';
 
 const items = [
   {
@@ -171,14 +169,14 @@ export function PlaygroundInsertDropdownMenu(props: DropdownMenuProps) {
   return (
     <DropdownMenu modal={false} {...openState} {...props}>
       <DropdownMenuTrigger asChild>
-        <ToolbarButton isDropdown pressed={openState.open} tooltip="Insert">
+        <ToolbarButton pressed={openState.open} tooltip="Insert" isDropdown>
           <Icons.add />
         </ToolbarButton>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        align="start"
         className="flex max-h-[500px] min-w-0 flex-col gap-0.5 overflow-y-auto"
+        align="start"
       >
         {items.map(({ items: nestedItems, label }, index) => (
           <React.Fragment key={label}>

@@ -2,13 +2,13 @@
 
 import type { SlateEditor } from '@udecode/plate-common';
 
-import { ParagraphPlugin } from '@udecode/plate-common';
+import { ParagraphPlugin } from '@udecode/plate-common/react';
 import { createPlateEditor } from '@udecode/plate-common/react';
-import { IndentPlugin } from '@udecode/plate-indent';
+import { IndentPlugin } from '@udecode/plate-indent/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 import { indentListPluginPage } from '../../__tests__/indentListPluginPage';
-import { IndentListPlugin } from '../IndentListPlugin';
+import { BaseIndentListPlugin } from '../BaseIndentListPlugin';
 
 jsx;
 
@@ -89,7 +89,7 @@ describe('normalizeIndentListStart', () => {
     it('should be', async () => {
       const editor = createPlateEditor({
         editor: input,
-        plugins: [ParagraphPlugin, IndentPlugin, IndentListPlugin],
+        plugins: [ParagraphPlugin, IndentPlugin, BaseIndentListPlugin],
         shouldNormalizeEditor: true,
       });
 

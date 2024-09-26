@@ -98,8 +98,8 @@ export const createPrimitiveComponent = <
 
         return (
           <Comp
-            asChild={asChild}
             ref={_ref}
+            asChild={asChild}
             {...hookProps}
             className={className}
             style={style}

@@ -7,9 +7,6 @@ export const customizerBadges = {
     description: '',
     label: 'Element',
   },
-  handler: {
-    label: 'Handler',
-  },
   inline: {
     label: 'Inline',
   },
@@ -27,5 +24,8 @@ export const customizerBadges = {
   },
   void: {
     label: 'Void',
+  },
+  handler: {
+    label: 'Handler',
   },
 };

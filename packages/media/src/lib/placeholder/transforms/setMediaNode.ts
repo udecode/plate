@@ -5,10 +5,10 @@ import {
 } from '@udecode/plate-common';
 
 type props = {
-  isUpload?: boolean;
-  name?: string;
   type: string;
   url: string;
+  isUpload?: boolean;
+  name?: string;
   width?: number;
 };
 

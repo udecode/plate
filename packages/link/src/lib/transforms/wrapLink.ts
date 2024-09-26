@@ -7,7 +7,7 @@ import {
 
 import type { TLinkElement } from '../types';
 
-import { LinkPlugin } from '../LinkPlugin';
+import { BaseLinkPlugin } from '../BaseLinkPlugin';
 
 export interface WrapLinkOptions<E extends TEditor = TEditor>
   extends WrapNodesOptions<E> {
@@ -25,7 +25,7 @@ export const wrapLink = <E extends SlateEditor>(
     {
       children: [],
       target,
-      type: editor.getType(LinkPlugin),
+      type: editor.getType(BaseLinkPlugin),
       url,
     },
     { split: true, ...options } as any

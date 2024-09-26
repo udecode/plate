@@ -8,13 +8,13 @@ export const useCommentsShowResolvedButton = () => {
 
   return {
     props: {
+      pressed: isActive,
       onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(e.currentTarget);
       },
       onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
       },
-      pressed: isActive,
     },
   };
 };

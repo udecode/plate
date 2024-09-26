@@ -22,7 +22,7 @@ type CodeBlockConfig = PluginConfig<
   }
 >;
 
-type CodeBlockConfig2 = {
+type CodeBlockConfig2 = CodeBlockConfig & {
   api: {
     plugin: {
       getLanguage: () => string;
@@ -31,8 +31,8 @@ type CodeBlockConfig2 = {
       setLanguage: (lang: string) => void;
     };
   };
-  options: { hotkey: string | string[] };
-} & CodeBlockConfig;
+  options: { hotkey: string[] | string };
+};
 
 describe('toPlatePlugin', () => {
   const BaseParagraphPlugin = createSlatePlugin({
@@ -56,9 +56,9 @@ describe('toPlatePlugin', () => {
 
   it('should extend a SlatePlugin with React-specific properties and API', () => {
     const ParagraphPlugin = toPlatePlugin(BaseParagraphPlugin, {
-      handlers: { onKeyDown: () => true },
       options: { hotkey: ['mod+opt+0', 'mod+shift+0'] },
       render: { aboveEditable: MockAboveComponent, node: MockComponent },
+      handlers: { onKeyDown: () => true },
     }).extendEditorApi(() => ({
       someApiMethod: () => 'API method result',
     }));
@@ -164,8 +164,8 @@ describe('toPlatePlugin type tests', () => {
 
         return editor;
       },
-      handlers: {},
       options: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
+      handlers: {},
     })
       .extendEditorApi(() => ({
         plugin: {

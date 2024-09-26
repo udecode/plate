@@ -1,7 +1,11 @@
 import React from 'react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import { insertEmptyElement, ParagraphPlugin } from '@udecode/plate-common';
-import { focusEditor, useEditorRef } from '@udecode/plate-common/react';
+import { insertEmptyElement } from '@udecode/plate-common';
+import {
+  focusEditor,
+  ParagraphPlugin,
+  useEditorRef,
+} from '@udecode/plate-common/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 
 import { Icons } from '@/components/icons';

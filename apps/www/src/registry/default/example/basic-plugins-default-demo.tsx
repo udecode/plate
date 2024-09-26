@@ -43,15 +43,15 @@ export default function BasicPluginsDefaultDemo() {
 
   return (
     <Plate
-      editor={editor}
       onChange={({ value }) => {
         setDebugValue(value);
         // save newValue...
       }}
+      editor={editor}
     >
       <Editor {...editableProps} />
 
-      <Accordion collapsible type="single">
+      <Accordion type="single" collapsible>
         <AccordionItem value="manual-installation">
           <AccordionTrigger>Debug Value</AccordionTrigger>
           <AccordionContent>{JSON.stringify(debugValue)}</AccordionContent>

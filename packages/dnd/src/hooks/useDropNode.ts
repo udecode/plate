@@ -13,11 +13,11 @@ import { onHoverNode } from '../transforms/onHoverNode';
 
 export interface UseDropNodeOptions
   extends DropTargetHookSpec<DragItemNode, unknown, { isOver: boolean }> {
-  /** Current value of dropLine. */
-  dropLine: string;
-
   /** Id of the node. */
   id: string;
+
+  /** Current value of dropLine. */
+  dropLine: string;
 
   /** The reference to the node being dragged. */
   nodeRef: any;
@@ -32,8 +32,8 @@ export interface UseDropNodeOptions
   onDropHandler?: (
     editor: PlateEditor,
     props: {
-      dragItem: DragItemNode;
       id: string;
+      dragItem: DragItemNode;
       monitor: DropTargetMonitor<DragItemNode, unknown>;
       nodeRef: any;
     }
@@ -64,8 +64,8 @@ export interface UseDropNodeOptions
 export const useDropNode = (
   editor: PlateEditor,
   {
-    dropLine,
     id,
+    dropLine,
     nodeRef,
     onChangeDropLine,
     onDropHandler,
@@ -80,21 +80,21 @@ export const useDropNode = (
       const handled =
         !!onDropHandler &&
         onDropHandler(editor, {
-          dragItem,
           id,
+          dragItem,
           monitor,
           nodeRef,
         });
 
       if (handled) return;
 
-      onDropNode(editor, { dragItem, id, monitor, nodeRef });
+      onDropNode(editor, { id, dragItem, monitor, nodeRef });
     },
     hover(item: DragItemNode, monitor: DropTargetMonitor) {
       onHoverNode(editor, {
+        id,
         dragItem: item,
         dropLine,
-        id,
         monitor,
         nodeRef,
         onChangeDropLine,

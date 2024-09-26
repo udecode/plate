@@ -53,16 +53,14 @@ export const renderIndentListBelowNodes = (
 
       const List = isOrdered ? 'ol' : 'ul';
 
-      const {
-        liComponent: Li = (liProps) => <li>{liProps.children}</li>,
-        markerComponent: Marker = () => null,
-      } = listOptions;
+      const { liComponent: Li, markerComponent: Marker = () => null } =
+        listOptions;
 
       return (
-        <List className={className} start={listStart} style={style}>
+        <List className={className} style={style} start={listStart}>
           <Marker {...props} />
-
-          <Li {...props}>{children}</Li>
+          {/* FIX: cursor position issue */}
+          {Li ? <Li {...props}>{children}</Li> : <li>{children}</li>}
         </List>
       );
     };

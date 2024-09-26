@@ -7,11 +7,11 @@ import type {
 } from './EmojiFloatingLibrary.types';
 
 import {
-  EmojiCategory,
   type EmojiCategoryList,
-  EmojiInlineLibrary,
   type EmojiLibrary,
   type EmojiSettingsType,
+  EmojiCategory,
+  EmojiInlineLibrary,
   defaultCategories,
 } from '../../../lib';
 import { EmojiFloatingGridBuilder } from './EmojiFloatingGridBuilder';
@@ -20,11 +20,11 @@ export class EmojiFloatingLibrary
   extends EmojiInlineLibrary
   implements IEmojiFloatingLibrary
 {
-  private categories: EmojiCategoryList[] = defaultCategories;
+  private static instance?: EmojiFloatingLibrary;
 
+  private categories: EmojiCategoryList[] = defaultCategories;
   private emojis: Partial<Record<EmojiCategoryList, string[]>> = {};
   private grid: EmojiFloatingGridType;
-  private static instance?: EmojiFloatingLibrary;
 
   private constructor(
     protected settings: EmojiSettingsType,

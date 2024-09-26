@@ -15,6 +15,7 @@ import {
 import {
   Tooltip,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger,
 } from '@/registry/default/plate-ui/tooltip';
 
@@ -26,11 +27,11 @@ import { Badge } from './ui/badge';
 import { Label } from './ui/label';
 
 export function SettingCheckbox({
+  id,
   badges,
   components,
   conflicts,
   dependencies,
-  id,
   label,
   route,
 }: SettingPlugin) {
@@ -50,33 +51,35 @@ export function SettingCheckbox({
       <div className="flex w-full items-center justify-between">
         <div className="overflow-hidden text-left">
           <div className="flex items-center">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex items-center">
-                  <Checkbox
-                    checked={checked}
-                    id={id}
-                    onCheckedChange={(_checked: boolean) => {
-                      settingsStore.set.setCheckedIdNext(id, _checked);
-                    }}
-                  />
-                  <Label className="flex p-2" htmlFor={id}>
-                    {label}
-                  </Label>
-                </div>
-              </TooltipTrigger>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center">
+                    <Checkbox
+                      id={id}
+                      checked={checked}
+                      onCheckedChange={(_checked: boolean) => {
+                        settingsStore.set.setCheckedIdNext(id, _checked);
+                      }}
+                    />
+                    <Label className="flex p-2" htmlFor={id}>
+                      {label}
+                    </Label>
+                  </div>
+                </TooltipTrigger>
 
-              <TooltipContent className="max-w-[200px]">
-                {description}
-              </TooltipContent>
-            </Tooltip>
+                <TooltipContent className="max-w-[200px]">
+                  {description}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
 
             <div className="flex flex-wrap gap-1">
               {badges?.map((badge) => (
                 <Badge
-                  className="leading-none"
                   key={badge.label}
                   variant="secondary"
+                  className="leading-none"
                 >
                   {badge.label}
                 </Badge>
@@ -86,8 +89,8 @@ export function SettingCheckbox({
                 <Popover>
                   <PopoverTrigger asChild>
                     <Badge
-                      className="cursor-pointer leading-none"
                       variant="secondary"
+                      className="cursor-pointer leading-none"
                     >
                       {dependencies.length}
                       <Icons.dependency className="ml-1 size-2.5 text-muted-foreground" />
@@ -100,9 +103,9 @@ export function SettingCheckbox({
                       <div>
                         {dependencies.map((dependency) => (
                           <Badge
-                            className="inline leading-none"
                             key={dependency}
                             variant="secondary"
+                            className="inline leading-none"
                           >
                             {customizerItems[dependency].label}
                           </Badge>
@@ -117,8 +120,8 @@ export function SettingCheckbox({
                 <Popover>
                   <PopoverTrigger asChild>
                     <Badge
-                      className="cursor-pointer leading-none"
                       variant="secondary"
+                      className="cursor-pointer leading-none"
                     >
                       {conflicts.length}
                       <Icons.conflict className="ml-1 size-2.5 text-muted-foreground" />
@@ -133,9 +136,9 @@ export function SettingCheckbox({
                       <div>
                         {conflicts.map((conflict) => (
                           <Badge
-                            className="inline leading-none"
                             key={conflict}
                             variant="secondary"
+                            className="inline leading-none"
                           >
                             {customizerItems[conflict].label}
                           </Badge>
@@ -175,8 +178,8 @@ export function SettingCheckbox({
 
             return (
               <div
-                className="flex items-center justify-between"
                 key={componentId}
+                className="flex items-center justify-between"
               >
                 <div className="flex items-center">
                   <TreeIcon
@@ -228,8 +231,8 @@ export function SettingComponentCheckbox({
 
   return (
     <Checkbox
-      checked={!!checked}
       id={htmlId}
+      checked={!!checked}
       onCheckedChange={(value) => {
         settingsStore.set.setCheckedComponentId(componentId, !!value);
       }}

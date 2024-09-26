@@ -2,7 +2,7 @@ import React from 'react';
 
 export const useRequestReRender = () => {
   const [, setUpdateCounter] = React.useState(0);
-  const animationFrameRef = React.useRef<null | number>(null);
+  const animationFrameRef = React.useRef<number | null>(null);
 
   const requestReRender = React.useCallback((immediate = false) => {
     if (animationFrameRef.current && !immediate) {

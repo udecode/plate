@@ -8,8 +8,8 @@ import type { Shortcut } from '../plugin';
 import { useEditorRef } from '../stores';
 
 export function EditorHotkeysEffect({
-  editableRef,
   id,
+  editableRef,
 }: {
   editableRef: React.RefObject<HTMLDivElement>;
   id?: string;
@@ -29,10 +29,10 @@ export function EditorHotkeysEffect({
 
         return (
           <HotkeyEffect
-            editableRef={editableRef}
-            hotkeyConfig={hotkeyConfig}
             id={id}
             key={hotkeyString}
+            editableRef={editableRef}
+            hotkeyConfig={hotkeyConfig}
           />
         );
       })}
@@ -41,16 +41,16 @@ export function EditorHotkeysEffect({
 }
 
 function HotkeyEffect({
+  id,
   editableRef,
   hotkeyConfig,
-  id,
 }: {
   editableRef: React.RefObject<HTMLDivElement>;
   hotkeyConfig: Shortcut;
   id?: string;
 }) {
   const editor = useEditorRef(id);
-  const { handler, keys, ...options } = hotkeyConfig;
+  const { keys, handler, ...options } = hotkeyConfig;
 
   const setHotkeyRef = useHotkeys<HTMLDivElement>(
     keys!,

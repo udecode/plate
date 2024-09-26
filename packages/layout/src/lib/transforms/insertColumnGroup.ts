@@ -1,31 +1,35 @@
 import {
-  ParagraphPlugin,
   type SlateEditor,
+  BaseParagraphPlugin,
   insertNodes,
   withoutNormalizing,
 } from '@udecode/plate-common';
 
 import type { TColumnGroupElement } from '../types';
 
-import { ColumnItemPlugin, ColumnPlugin } from '../ColumnPlugin';
+import { BaseColumnItemPlugin, BaseColumnPlugin } from '../BaseColumnPlugin';
 
 export const insertColumnGroup = (editor: SlateEditor) => {
   withoutNormalizing(editor, () => {
     insertNodes<TColumnGroupElement>(editor, {
       children: [
         {
-          children: [{ children: [{ text: '' }], type: ParagraphPlugin.key }],
-          type: ColumnItemPlugin.key,
+          children: [
+            { children: [{ text: '' }], type: BaseParagraphPlugin.key },
+          ],
+          type: BaseColumnItemPlugin.key,
           width: '50%',
         },
         {
-          children: [{ children: [{ text: '' }], type: ParagraphPlugin.key }],
-          type: ColumnItemPlugin.key,
+          children: [
+            { children: [{ text: '' }], type: BaseParagraphPlugin.key },
+          ],
+          type: BaseColumnItemPlugin.key,
           width: '50%',
         },
       ],
       layout: [50, 50],
-      type: ColumnPlugin.key,
+      type: BaseColumnPlugin.key,
     });
   });
 };

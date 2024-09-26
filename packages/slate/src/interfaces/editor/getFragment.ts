@@ -1,4 +1,4 @@
-import { Editor, type Location } from 'slate';
+import { type Location, Editor } from 'slate';
 
 import type { ElementOrTextOf } from '../element/TElement';
 import type { TEditor } from './TEditor';

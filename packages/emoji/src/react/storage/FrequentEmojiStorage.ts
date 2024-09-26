@@ -4,7 +4,7 @@ import type {
 } from '../utils';
 
 import { DEFAULT_FREQUENTLY_USED_EMOJI } from '../../lib/constants';
-import { EmojiCategory, type FrequentEmojis } from '../../lib/types';
+import { type FrequentEmojis, EmojiCategory } from '../../lib/types';
 import { LocalStorage } from './LocalStorage';
 
 export class FrequentEmojiStorage implements IFrequentEmojiStorage {

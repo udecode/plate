@@ -14,8 +14,8 @@ export const deserializeHtml = (
     collapseWhiteSpace: shouldCollapseWhiteSpace = true,
     element,
   }: {
-    collapseWhiteSpace?: boolean;
     element: HTMLElement | string;
+    collapseWhiteSpace?: boolean;
   }
 ): TDescendant[] => {
   // for serializer

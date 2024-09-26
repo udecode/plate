@@ -102,12 +102,12 @@ export const settingsStore = createZustandStore('settings')(initialState)
         });
       });
     },
-    setCheckedComponentId: (id: string | string[], checked: boolean) => {
+    setCheckedComponentId: (id: string[] | string, checked: boolean) => {
       set.state((draft) => {
         draft.checkedComponents[id as string] = checked;
       });
     },
-    setCheckedIdNext: (id: string | string[], checked: boolean) => {
+    setCheckedIdNext: (id: string[] | string, checked: boolean) => {
       set.state((draft) => {
         draft.checkedPlugins[id as string] = checked;
 

@@ -6,9 +6,12 @@ import {
   createPathRef,
   getNode,
 } from '@udecode/plate-common';
-import { IndentPlugin } from '@udecode/plate-indent';
+import { BaseIndentPlugin } from '@udecode/plate-indent';
 
-import { type IndentListConfig, IndentListPlugin } from './IndentListPlugin';
+import {
+  type BaseIndentListConfig,
+  BaseIndentListPlugin,
+} from './BaseIndentListPlugin';
 import {
   shouldMergeNodesRemovePrevNodeIndentList,
   withDeleteBackwardIndentList,
@@ -20,7 +23,7 @@ import { getPreviousIndentList } from './queries/getPreviousIndentList';
 import { ListStyleType } from './types';
 import { withNormalizeIndentList } from './withNormalizeIndentList';
 
-export const withIndentList: ExtendEditor<IndentListConfig> = ({
+export const withIndentList: ExtendEditor<BaseIndentListConfig> = ({
   editor,
   ...ctx
 }) => {
@@ -51,7 +54,7 @@ export const withIndentList: ExtendEditor<IndentListConfig> = ({
     // If there is a previous indent list, the inserted indent list style type should be the same.
     // Only for lower-roman and upper-roman as it overlaps with lower-alpha and upper-alpha.
     if (operation.type === 'insert_node') {
-      const listStyleType = operation.node[IndentListPlugin.key];
+      const listStyleType = operation.node[BaseIndentListPlugin.key];
 
       if (
         listStyleType &&
@@ -68,18 +71,18 @@ export const withIndentList: ExtendEditor<IndentListConfig> = ({
         );
 
         if (prevNodeEntry) {
-          const prevListStyleType = prevNodeEntry[0][IndentListPlugin.key];
+          const prevListStyleType = prevNodeEntry[0][BaseIndentListPlugin.key];
 
           if (
             prevListStyleType === ListStyleType.LowerAlpha &&
             listStyleType === ListStyleType.LowerRoman
           ) {
-            operation.node[IndentListPlugin.key] = ListStyleType.LowerAlpha;
+            operation.node[BaseIndentListPlugin.key] = ListStyleType.LowerAlpha;
           } else if (
             prevListStyleType === ListStyleType.UpperAlpha &&
             listStyleType === ListStyleType.UpperRoman
           ) {
-            operation.node[IndentListPlugin.key] = ListStyleType.UpperAlpha;
+            operation.node[BaseIndentListPlugin.key] = ListStyleType.UpperAlpha;
           }
         }
       }
@@ -90,7 +93,7 @@ export const withIndentList: ExtendEditor<IndentListConfig> = ({
 
     if (
       operation.type === 'merge_node' &&
-      (operation.properties as any)[IndentListPlugin.key]
+      (operation.properties as any)[BaseIndentListPlugin.key]
     ) {
       const node = getNode<TElement>(editor, path);
 
@@ -112,7 +115,7 @@ export const withIndentList: ExtendEditor<IndentListConfig> = ({
     if (operation.type === 'merge_node') {
       const { properties } = operation;
 
-      if ((properties as any)[IndentListPlugin.key]) {
+      if ((properties as any)[BaseIndentListPlugin.key]) {
         const node = getNode<TElement>(editor, path);
 
         if (!node) return;
@@ -161,10 +164,10 @@ export const withIndentList: ExtendEditor<IndentListConfig> = ({
     }
     if (nodeBefore && operation.type === 'set_node') {
       const prevListStyleType = (operation.properties as any)[
-        IndentListPlugin.key
+        BaseIndentListPlugin.key
       ];
       const listStyleType = (operation.newProperties as any)[
-        IndentListPlugin.key
+        BaseIndentListPlugin.key
       ];
 
       // Remove list style type
@@ -252,8 +255,8 @@ export const withIndentList: ExtendEditor<IndentListConfig> = ({
         }
       }
 
-      const prevIndent = (operation.properties as any)[IndentPlugin.key];
-      const indent = (operation.newProperties as any)[IndentPlugin.key];
+      const prevIndent = (operation.properties as any)[BaseIndentPlugin.key];
+      const indent = (operation.newProperties as any)[BaseIndentPlugin.key];
 
       // Update indent
       if (prevIndent !== indent) {

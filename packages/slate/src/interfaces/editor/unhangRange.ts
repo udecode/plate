@@ -1,10 +1,10 @@
 import {
-  Editor,
   type EditorUnhangRangeOptions,
   type Path,
   type Point,
-  Range,
   type Span,
+  Editor,
+  Range,
 } from 'slate';
 
 import type { TEditor } from './TEditor';

@@ -4,12 +4,12 @@ import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import {
-  ParagraphPlugin,
   collapseSelection,
   getNodeEntries,
   isBlock,
 } from '@udecode/plate-common';
 import {
+  ParagraphPlugin,
   focusEditor,
   useEditorRef,
   useEditorSelector,
@@ -110,20 +110,21 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
       <DropdownMenuTrigger asChild>
         <ToolbarButton
           className="lg:min-w-[130px]"
-          isDropdown
           pressed={openState.open}
           tooltip="Turn into"
+          isDropdown
         >
           <SelectedItemIcon className="size-5 lg:hidden" />
           <span className="max-lg:hidden">{selectedItemLabel}</span>
         </ToolbarButton>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="start" className="min-w-0">
+      <DropdownMenuContent className="min-w-0" align="start">
         <DropdownMenuLabel>Turn into</DropdownMenuLabel>
 
         <DropdownMenuRadioGroup
           className="flex flex-col gap-0.5"
+          value={value}
           onValueChange={(type) => {
             // if (type === 'ul' || type === 'ol') {
             //   if (settingsStore.get.checkedId(IndentListPlugin.key)) {
@@ -141,12 +142,11 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
             collapseSelection(editor);
             focusEditor(editor);
           }}
-          value={value}
         >
           {items.map(({ icon: Icon, label, value: itemValue }) => (
             <DropdownMenuRadioItem
-              className="min-w-[180px]"
               key={itemValue}
+              className="min-w-[180px]"
               value={itemValue}
             >
               <Icon className="mr-2 size-5" />

@@ -5,12 +5,12 @@ export const excalidrawInitialData: TNodeProps<TExcalidrawElement> = {
   data: {
     elements: [
       {
+        id: 'oDVXy8D6rom3H1-LLH2-f',
         angle: 0,
         backgroundColor: 'transparent',
         fillStyle: 'hachure',
         groupIds: [],
         height: 141.976_562_5,
-        id: 'oDVXy8D6rom3H1-LLH2-f',
         isDeleted: false,
         opacity: 100,
         roughness: 1,
@@ -26,12 +26,12 @@ export const excalidrawInitialData: TNodeProps<TExcalidrawElement> = {
         y: 93.675_781_25,
       },
       {
+        id: '-xMIs_0jIFqvpx-R9UnaG',
         angle: 0,
         backgroundColor: 'transparent',
         fillStyle: 'hachure',
         groupIds: [],
         height: 129.511_718_75,
-        id: '-xMIs_0jIFqvpx-R9UnaG',
         isDeleted: false,
         opacity: 100,
         roughness: 1,

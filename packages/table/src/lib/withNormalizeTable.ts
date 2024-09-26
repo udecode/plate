@@ -12,7 +12,7 @@ import {
 
 import type { TTableElement, TableConfig } from './types';
 
-import { TableRowPlugin } from './TablePlugin';
+import { BaseTableRowPlugin } from './BaseTablePlugin';
 import { getCellTypes } from './utils/index';
 
 /**
@@ -70,7 +70,7 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
           }
         }
       }
-      if (node.type === editor.getType(TableRowPlugin)) {
+      if (node.type === editor.getType(BaseTableRowPlugin)) {
         const parentEntry = getParentNode(editor, path);
 
         if (parentEntry?.[0].type !== type) {
@@ -86,7 +86,7 @@ export const withNormalizeTable: ExtendEditor<TableConfig> = ({
 
         const parentEntry = getParentNode(editor, path);
 
-        if (parentEntry?.[0].type !== editor.getType(TableRowPlugin)) {
+        if (parentEntry?.[0].type !== editor.getType(BaseTableRowPlugin)) {
           unwrapNodes(editor, {
             at: path,
           });

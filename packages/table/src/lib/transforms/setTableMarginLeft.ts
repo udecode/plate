@@ -7,7 +7,7 @@ import {
 
 import type { TTableElement } from '../types';
 
-import { TablePlugin } from '../TablePlugin';
+import { BaseTablePlugin } from '../BaseTablePlugin';
 
 export const setTableMarginLeft = <E extends TEditor>(
   editor: E,
@@ -15,7 +15,7 @@ export const setTableMarginLeft = <E extends TEditor>(
   options: GetAboveNodeOptions<E> = {}
 ) => {
   const table = findNode<TTableElement>(editor, {
-    match: { type: TablePlugin.key },
+    match: { type: BaseTablePlugin.key },
     ...options,
   });
 

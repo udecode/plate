@@ -25,8 +25,8 @@ export abstract class AGridSection<R extends Unknown, T = SectionId>
     const start = lastPosition * this.perLine;
     const end = start + this.perLine;
     this.rows.push({
-      elements: elements.slice(start, end),
       id: this._indexRowStart + lastPosition,
+      elements: elements.slice(start, end),
     });
   }
 
@@ -37,6 +37,8 @@ export abstract class AGridSection<R extends Unknown, T = SectionId>
       this.addRow(elements, i++);
     }
   }
+
+  protected abstract createRootRef(): void;
 
   public addElements(elements: SectionElements) {
     this._rowsNum = Math.ceil(elements.length / this.perLine);
@@ -73,6 +75,4 @@ export abstract class AGridSection<R extends Unknown, T = SectionId>
   get rowsNum() {
     return this._rowsNum;
   }
-
-  protected abstract createRootRef(): void;
 }

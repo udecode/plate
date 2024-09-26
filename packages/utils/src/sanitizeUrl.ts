@@ -6,7 +6,7 @@ export interface SanitizeUrlOptions {
 export const sanitizeUrl = (
   url: string | undefined,
   { allowedSchemes, permitInvalid = false }: SanitizeUrlOptions
-): null | string => {
+): string | null => {
   if (!url) return null;
 
   let parsedUrl: URL | null = null;

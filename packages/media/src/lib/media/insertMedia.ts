@@ -5,8 +5,8 @@ import type {
 } from '@udecode/plate-common';
 
 import {
-  ImagePlugin,
-  MediaEmbedPlugin,
+  BaseImagePlugin,
+  BaseMediaEmbedPlugin,
   insertImage,
   insertMediaEmbed,
 } from '../..';
@@ -26,7 +26,7 @@ export const insertMedia = async <E extends SlateEditor>(
   editor: E,
   {
     getUrl,
-    type = editor.getType(ImagePlugin),
+    type = editor.getType(BaseImagePlugin),
     ...options
   }: InsertMediaOptions<E> = {}
 ) => {
@@ -34,12 +34,14 @@ export const insertMedia = async <E extends SlateEditor>(
     ? await getUrl()
     : window.prompt(
         `Enter the URL of the ${
-          type === ImagePlugin.key ? ImagePlugin.key : MediaEmbedPlugin.key
+          type === BaseImagePlugin.key
+            ? BaseImagePlugin.key
+            : BaseMediaEmbedPlugin.key
         }`
       );
 
   if (!url) return;
-  if (type === editor.getType(ImagePlugin)) {
+  if (type === editor.getType(BaseImagePlugin)) {
     insertImage(editor, url, options);
   } else {
     insertMediaEmbed(editor, { url }, options);

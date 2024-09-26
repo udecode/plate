@@ -16,11 +16,11 @@ export const ColorPickerContent = withRef<
   'div',
   {
     clearColor: () => void;
-    color?: string;
     colors: TColor[];
     customColors: TColor[];
     updateColor: (color: string) => void;
     updateCustomColor: (color: string) => void;
+    color?: string;
   }
 >(
   (
@@ -38,8 +38,8 @@ export const ColorPickerContent = withRef<
   ) => {
     return (
       <div
-        className={cn('flex flex-col gap-4 p-4', className)}
         ref={ref}
+        className={cn('flex flex-col gap-4 p-4', className)}
         {...props}
       >
         <ColorsCustom

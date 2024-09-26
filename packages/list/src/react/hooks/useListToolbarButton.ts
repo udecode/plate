@@ -1,11 +1,11 @@
 import { someNode } from '@udecode/plate-common';
 import { useEditorRef, useEditorSelector } from '@udecode/plate-common/react';
 
-import { BulletedListPlugin } from '../../lib/index';
+import { BaseBulletedListPlugin } from '../../lib/index';
 import { ListPlugin } from '../ListPlugin';
 
 export const useListToolbarButtonState = ({
-  nodeType = BulletedListPlugin.key as string,
+  nodeType = BaseBulletedListPlugin.key as string,
 } = {}) => {
   const pressed = useEditorSelector(
     (editor) =>
@@ -28,13 +28,13 @@ export const useListToolbarButton = (
 
   return {
     props: {
+      pressed: state.pressed,
       onClick: () => {
         tf.toggle.list({ type: state.nodeType });
       },
       onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
       },
-      pressed: state.pressed,
     },
   };
 };

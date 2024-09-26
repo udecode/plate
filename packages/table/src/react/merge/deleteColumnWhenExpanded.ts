@@ -5,9 +5,9 @@ import {
   getAboveNode,
   removeNodes,
 } from '@udecode/plate-common';
-import { Node, type PathRef, Range } from 'slate';
+import { type PathRef, Node, Range } from 'slate';
 
-import { type TTableCellElement, TableRowPlugin } from '../../lib';
+import { type TTableCellElement, BaseTableRowPlugin } from '../../lib';
 import { getTableGridAbove } from '../queries';
 
 export const deleteColumnWhenExpanded = (
@@ -23,12 +23,12 @@ export const deleteColumnWhenExpanded = (
 
   const firstSelectionRow = getAboveNode(editor, {
     at: start,
-    match: (n) => n.type === TableRowPlugin.key,
+    match: (n) => n.type === BaseTableRowPlugin.key,
   });
 
   const lastSelectionRow = getAboveNode(editor, {
     at: end,
-    match: (n) => n.type === TableRowPlugin.key,
+    match: (n) => n.type === BaseTableRowPlugin.key,
   });
 
   if (!firstSelectionRow || !lastSelectionRow) return;

@@ -1,5 +1,22 @@
 # @udecode/plate-media
 
+## 38.0.6
+
+### Patch Changes
+
+- [`d30471cb19577e53c20944ab66eab2a7ef3b3ad2`](https://github.com/udecode/plate/commit/d30471cb19577e53c20944ab66eab2a7ef3b3ad2) by [@12joan](https://github.com/12joan) – Add the following attributes to `dangerouslyAllowAttributes`:
+
+  - ImagePlugin: `alt`, `width`, `height`
+  - VideoPlugin: `width`, `height`
+
+## 38.0.1
+
+### Patch Changes
+
+- [#3526](https://github.com/udecode/plate/pull/3526) by [@zbeyens](https://github.com/zbeyens) – Prefix base plugin with `Base`
+
+## 38.0.0
+
 ## 37.0.0
 
 ### Major Changes

@@ -7,10 +7,10 @@ export interface SuggestionUser extends UnknownObject {
 }
 
 export interface TSuggestion extends UnknownObject {
+  id: string;
+
   /** @default Date.now() */
   createdAt: number;
-
-  id: string;
 
   isAccepted?: boolean;
 
@@ -25,6 +25,6 @@ export interface TSuggestionText extends TText {
 
 // TODO
 export interface SuggestionEditorProps {
-  activeSuggestionId?: null | string;
+  activeSuggestionId?: string | null;
   isSuggesting?: boolean;
 }

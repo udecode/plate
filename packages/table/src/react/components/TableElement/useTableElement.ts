@@ -3,7 +3,7 @@ import React from 'react';
 import { collapseSelection } from '@udecode/plate-common';
 import { useEditorRef, useElement } from '@udecode/plate-common/react';
 
-import { type TTableElement, computeAllCellIndices } from '../../../lib';
+import { type TTableElement, computeCellIndices } from '../../../lib';
 import { TablePlugin } from '../../TablePlugin';
 import { useTableStore } from '../../stores';
 import { useSelectedCells } from './useSelectedCells';
@@ -33,13 +33,13 @@ export const useTableElementState = ({
 
   const marginLeft = disableMarginLeft
     ? 0
-    : marginLeftOverride ?? element.marginLeft ?? 0;
+    : (marginLeftOverride ?? element.marginLeft ?? 0);
 
   let colSizes = useTableColSizes(element);
 
   React.useEffect(() => {
     if (enableMerging) {
-      computeAllCellIndices(editor, element);
+      computeCellIndices(editor, element);
     }
   }, [editor, element, enableMerging]);
 

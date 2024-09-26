@@ -9,8 +9,8 @@ export function EditorRefPluginEffect({
   id,
   plugin,
 }: {
-  id?: string;
   plugin: AnyEditorPlatePlugin;
+  id?: string;
 }) {
   const editor = useEditorRef(id);
 

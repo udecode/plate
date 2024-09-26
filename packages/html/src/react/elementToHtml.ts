@@ -22,10 +22,10 @@ export const elementToHtml = (
     preserveClassNames,
     props,
   }: {
+    props: TRenderElementProps;
     dndWrapper?: React.ComponentClass | React.FC | string;
     plateProps?: Partial<PlateProps>;
     preserveClassNames?: string[];
-    props: TRenderElementProps;
   }
 ) => {
   let html = `<div>${props.children}</div>`;

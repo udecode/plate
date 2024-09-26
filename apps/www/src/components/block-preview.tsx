@@ -12,6 +12,7 @@ import { useLiftMode } from '@/hooks/use-lift-mode';
 import PlaygroundDemo from '@/registry/default/example/playground-demo';
 
 import { BlockToolbar } from './block-toolbar';
+import { ThemeWrapper } from './theme-wrapper';
 import {
   ResizableHandle,
   ResizablePanel,
@@ -36,6 +37,7 @@ export function BlockPreview({
 
   return (
     <div
+      id={block.name}
       className={cn(
         'relative w-full scroll-m-20',
         className,
@@ -44,7 +46,6 @@ export function BlockPreview({
         // fullScreen &&
         //   '[&_[data-slate-editor]]:mx-auto [&_[data-slate-editor]]:max-w-[1125px]'
       )}
-      id={block.name}
       style={
         {
           '--container-height': block.container?.height,
@@ -59,7 +60,14 @@ export function BlockPreview({
         setFullScreen={setFullScreen}
       />
 
-      {fullScreen && <PlaygroundDemo scrollSelector="playground-full-screen" />}
+      {fullScreen && (
+        <ThemeWrapper className="h-full">
+          <PlaygroundDemo
+            className="max-h-none"
+            scrollSelector="playground-full-screen"
+          />
+        </ThemeWrapper>
+      )}
 
       {!fullScreen && (
         <>
@@ -71,7 +79,9 @@ export function BlockPreview({
             )}
           >
             <div className="chunk-mode relative z-20 w-full bg-background">
-              <PlaygroundDemo scrollSelector="playground-preview-1" />
+              <ThemeWrapper>
+                <PlaygroundDemo scrollSelector="playground-preview-1" />
+              </ThemeWrapper>
             </div>
           </div>
 
@@ -81,16 +91,18 @@ export function BlockPreview({
               direction="horizontal"
             >
               <ResizablePanel
+                ref={ref}
                 className={cn(
                   'relative rounded-lg border bg-background',
                   isLiftMode ? 'border-border/50' : 'border-border'
                 )}
                 defaultSize={100}
                 minSize={30}
-                ref={ref}
               >
                 <div className="chunk-mode relative z-20 w-full bg-background">
-                  <PlaygroundDemo scrollSelector="playground-preview-2" />
+                  <ThemeWrapper>
+                    <PlaygroundDemo scrollSelector="playground-preview-2" />
+                  </ThemeWrapper>
                 </div>
 
                 {/* {isLoading ? ( */}

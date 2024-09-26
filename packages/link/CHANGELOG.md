@@ -1,5 +1,19 @@
 # @udecode/plate-link
 
+## 38.0.6
+
+### Patch Changes
+
+- [`f26ed56053b14e697fea2e6a7e33a73ce28593e4`](https://github.com/udecode/plate/commit/f26ed56053b14e697fea2e6a7e33a73ce28593e4) by [@12joan](https://github.com/12joan) – Add the `target` attribute to `dangerouslyAllowAttributes` for LinkPlugin
+
+## 38.0.1
+
+### Patch Changes
+
+- [#3526](https://github.com/udecode/plate/pull/3526) by [@zbeyens](https://github.com/zbeyens) – Prefix base plugin with `Base`
+
+## 38.0.0
+
 ## 37.0.3
 
 ## 37.0.0

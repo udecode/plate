@@ -1,5 +1,25 @@
 # @udecode/plate-utils
 
+## 38.0.6
+
+## 38.0.4
+
+## 38.0.3
+
+### Patch Changes
+
+- [#3536](https://github.com/udecode/plate/pull/3536) by [@yf-yang](https://github.com/yf-yang) – Suppress all placeholders when element is composing
+
+## 38.0.2
+
+## 38.0.1
+
+### Patch Changes
+
+- [#3526](https://github.com/udecode/plate/pull/3526) by [@zbeyens](https://github.com/zbeyens) – Upgrade `clsx`
+
+## 38.0.0
+
 ## 37.0.8
 
 ## 37.0.7

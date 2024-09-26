@@ -36,15 +36,15 @@ export default function BasicEditorHandlerDemo() {
 
   return (
     <Plate
-      editor={editor}
       onChange={({ value }) => {
         localStorage.setItem('editorContent', JSON.stringify(value));
         setDebugValue(value);
       }}
+      editor={editor}
     >
       <Editor {...editableProps} />
 
-      <Accordion collapsible type="single">
+      <Accordion type="single" collapsible>
         <AccordionItem value="manual-installation">
           <AccordionTrigger>Debug Value</AccordionTrigger>
           <AccordionContent>{JSON.stringify(debugValue)}</AccordionContent>

@@ -3,7 +3,7 @@
 import { createPlateEditor } from '@udecode/plate-common/react';
 import { jsx } from '@udecode/plate-test-utils';
 
-import { LinkPlugin } from './LinkPlugin';
+import { BaseLinkPlugin } from './BaseLinkPlugin';
 
 jsx;
 
@@ -30,7 +30,7 @@ const url = 'http://google.com';
 const createEditor = (editor: any) =>
   createPlateEditor({
     editor,
-    plugins: [LinkPlugin],
+    plugins: [BaseLinkPlugin],
   });
 
 describe('withLink', () => {
@@ -396,7 +396,7 @@ describe('withLink', () => {
           const editor = createPlateEditor({
             editor: input,
             plugins: [
-              LinkPlugin.configure({
+              BaseLinkPlugin.configure({
                 options: {
                   getUrlHref: (_url) => {
                     return 'http://google.com';
@@ -504,7 +504,7 @@ describe('withLink', () => {
           createPlateEditor({
             editor,
             plugins: [
-              LinkPlugin.configure({
+              BaseLinkPlugin.configure({
                 options: { keepSelectedTextOnPaste: false },
               }),
             ],

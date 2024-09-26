@@ -15,10 +15,10 @@ import { transformRsc } from './transform-rsc';
 import { transformTwPrefixes } from './transform-tw-prefix';
 
 export type TransformOpts = {
-  baseColor?: z.infer<typeof registryBaseColorSchema>;
   config: Config;
   filename: string;
   raw: string;
+  baseColor?: z.infer<typeof registryBaseColorSchema>;
 };
 
 export type Transformer = (

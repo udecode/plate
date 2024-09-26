@@ -117,8 +117,8 @@ export const createSelection = (
   attributes: Record<string, any>,
   children: any[]
 ): Range => {
-  const anchor: AnchorToken = children.find((c) => c instanceof AnchorToken);
-  const focus: FocusToken = children.find((c) => c instanceof FocusToken);
+  const anchor: AnchorToken = children.find((c) => c instanceof AnchorToken)!;
+  const focus: FocusToken = children.find((c) => c instanceof FocusToken)!;
 
   if (!anchor?.offset || !anchor.path) {
     throw new Error(

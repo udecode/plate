@@ -2,7 +2,7 @@ import type { SlateEditor, TElement } from '@udecode/plate-common';
 
 export interface TriggerComboboxPluginOptions {
   createComboboxInput?: (trigger: string) => TElement;
-  trigger?: RegExp | string | string[];
+  trigger?: RegExp | string[] | string;
   triggerPreviousCharPattern?: RegExp;
   triggerQuery?: (editor: SlateEditor) => boolean;
 }

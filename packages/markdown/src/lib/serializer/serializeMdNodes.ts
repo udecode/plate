@@ -16,10 +16,10 @@ export const serializeMdNodes = (
   nodes: TDescendant[],
   options: Partial<
     {
-      customNodes?: Partial<Record<string, Partial<SerializeMdNodeOptions>>>;
       nodes?: Partial<
         Record<keyof MdNodeTypes, Partial<SerializeMdNodeOptions>>
       >;
+      customNodes?: Partial<Record<string, Partial<SerializeMdNodeOptions>>>;
     } & Omit<SerializeMdOptions, 'customNodes' | 'nodes'>
   > = {}
 ) => {

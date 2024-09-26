@@ -27,7 +27,7 @@ export function CodeBlockWrapper({
   const [isOpened, setIsOpened] = React.useState(open);
 
   return (
-    <Collapsible onOpenChange={setIsOpened} open={isOpened}>
+    <Collapsible open={isOpened} onOpenChange={setIsOpened}>
       <div className={cn('relative overflow-hidden', className)} {...props}>
         <CollapsibleContent
           className={cn('overflow-hidden', !isOpened && 'max-h-32')}
@@ -49,7 +49,7 @@ export function CodeBlockWrapper({
           )}
         >
           <CollapsibleTrigger asChild>
-            <Button className="h-8 text-xs" variant="secondary">
+            <Button variant="secondary" className="h-8 text-xs">
               {isOpened ? 'Collapse' : expandButtonTitle}
             </Button>
           </CollapsibleTrigger>

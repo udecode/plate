@@ -38,9 +38,9 @@ const wrapper =
   );
 
 type HookParameters = {
+  keys: Keys;
   callback?: HotkeyCallback;
   dependencies?: DependencyList;
-  keys: Keys;
   options?: Options;
 };
 
@@ -609,7 +609,7 @@ it("should ignore event when ignoreEventWhen's condition matches", async () => {
   }) => {
     useHotkeys<HTMLDivElement>('a', cb, { ignoreEventWhen });
 
-    return <button className="ignore" data-testid="test-button" />;
+    return <button data-testid="test-button" className="ignore" />;
   };
 
   const eventCondition = (e: KeyboardEvent) => {
@@ -644,7 +644,7 @@ it("shouldn't ignore event when ignoreEventWhen's condition doesn't match", asyn
   }) => {
     useHotkeys<HTMLDivElement>('a', cb, { ignoreEventWhen });
 
-    return <button className="dont-ignore" data-testid="test-button" />;
+    return <button data-testid="test-button" className="dont-ignore" />;
   };
 
   const eventCondition = (e: KeyboardEvent) => {
@@ -679,7 +679,7 @@ it('should call ignoreEventWhen callback only when event is a hotkey match', asy
   }) => {
     useHotkeys<HTMLDivElement>('a', cb, { ignoreEventWhen });
 
-    return <button className="ignore" data-testid="test-button" />;
+    return <button data-testid="test-button" className="ignore" />;
   };
 
   const { getByTestId } = render(
@@ -1040,9 +1040,9 @@ it('should pass keyboard event and hotkey object to callback', async () => {
 
   expect(callback).toHaveBeenCalledTimes(1);
   expect(callback).toHaveBeenCalledWith(expect.any(KeyboardEvent), {
+    keys: ['a'],
     alt: false,
     ctrl: false,
-    keys: ['a'],
     meta: false,
     mod: false,
     shift: false,
@@ -1060,9 +1060,9 @@ it('should set shift to true in hotkey object if listening to shift', async () =
 
   expect(callback).toHaveBeenCalledTimes(1);
   expect(callback).toHaveBeenCalledWith(expect.any(KeyboardEvent), {
+    keys: ['a'],
     alt: false,
     ctrl: false,
-    keys: ['a'],
     meta: false,
     mod: false,
     shift: true,
@@ -1080,9 +1080,9 @@ it('should set ctrl to true in hotkey object if listening to ctrl', async () => 
 
   expect(callback).toHaveBeenCalledTimes(1);
   expect(callback).toHaveBeenCalledWith(expect.any(KeyboardEvent), {
+    keys: ['a'],
     alt: false,
     ctrl: true,
-    keys: ['a'],
     meta: false,
     mod: false,
     shift: false,
@@ -1100,9 +1100,9 @@ it('should set alt to true in hotkey object if listening to alt', async () => {
 
   expect(callback).toHaveBeenCalledTimes(1);
   expect(callback).toHaveBeenCalledWith(expect.any(KeyboardEvent), {
+    keys: ['a'],
     alt: true,
     ctrl: false,
-    keys: ['a'],
     meta: false,
     mod: false,
     shift: false,
@@ -1120,9 +1120,9 @@ it('should set mod to true in hotkey object if listening to mod', async () => {
 
   expect(callback).toHaveBeenCalledTimes(1);
   expect(callback).toHaveBeenCalledWith(expect.any(KeyboardEvent), {
+    keys: ['a'],
     alt: false,
     ctrl: false,
-    keys: ['a'],
     meta: false,
     mod: true,
     shift: false,
@@ -1140,9 +1140,9 @@ it('should set meta to true in hotkey object if listening to meta', async () => 
 
   expect(callback).toHaveBeenCalledTimes(1);
   expect(callback).toHaveBeenCalledWith(expect.any(KeyboardEvent), {
+    keys: ['a'],
     alt: false,
     ctrl: false,
-    keys: ['a'],
     meta: true,
     mod: false,
     shift: false,
@@ -1160,9 +1160,9 @@ it('should set multiple modifiers to true in hotkey object if listening to multi
 
   expect(callback).toHaveBeenCalledTimes(1);
   expect(callback).toHaveBeenCalledWith(expect.any(KeyboardEvent), {
+    keys: ['a'],
     alt: false,
     ctrl: false,
-    keys: ['a'],
     meta: false,
     mod: true,
     shift: true,
@@ -1176,8 +1176,8 @@ it('should stop propagation when enabled function resolves to false', async () =
   renderHook(() => useHotkeys('a', callback, { enabled: () => false }));
 
   const keyDownEvent = createEvent.keyDown(document, {
-    code: 'KeyA',
     key: 'A',
+    code: 'KeyA',
   });
 
   fireEvent(document, keyDownEvent);
@@ -1191,8 +1191,8 @@ it('should reflect preventDefault option when set', async () => {
   renderHook(() => useHotkeys('a', callback, { preventDefault: true }));
 
   const keyDownEvent = createEvent.keyDown(document, {
-    code: 'KeyA',
     key: 'A',
+    code: 'KeyA',
   });
 
   fireEvent(document, keyDownEvent);
@@ -1207,8 +1207,8 @@ it('should not prevent default behavior when preventDefault option is not set', 
   renderHook(() => useHotkeys('a', callback));
 
   const keyDownEvent = createEvent.keyDown(document, {
-    code: 'KeyA',
     key: 'A',
+    code: 'KeyA',
   });
 
   fireEvent(document, keyDownEvent);
@@ -1223,8 +1223,8 @@ it('should prevent default behavior if preventDefault option is set to a functio
   renderHook(() => useHotkeys('a', callback, { preventDefault: () => true }));
 
   const keyDownEvent = createEvent.keyDown(document, {
-    code: 'KeyA',
     key: 'A',
+    code: 'KeyA',
   });
 
   fireEvent(document, keyDownEvent);
@@ -1239,8 +1239,8 @@ it('should not prevent default behavior if preventDefault option is set to a fun
   renderHook(() => useHotkeys('a', callback, { preventDefault: () => false }));
 
   const keyDownEvent = createEvent.keyDown(document, {
-    code: 'KeyA',
     key: 'A',
+    code: 'KeyA',
   });
 
   fireEvent(document, keyDownEvent);
@@ -1259,9 +1259,9 @@ it('should call preventDefault option function with hotkey and keyboard event', 
 
   expect(preventDefault).toHaveBeenCalledTimes(1);
   expect(preventDefault).toHaveBeenCalledWith(expect.any(KeyboardEvent), {
+    keys: ['a'],
     alt: false,
     ctrl: false,
-    keys: ['a'],
     meta: false,
     mod: false,
     shift: false,

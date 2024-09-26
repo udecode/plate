@@ -13,8 +13,8 @@ import { getHoverDirection } from '../utils';
 export const onDropNode = (
   editor: TEditor,
   {
-    dragItem,
     id,
+    dragItem,
     monitor,
     nodeRef,
   }: {
@@ -22,7 +22,7 @@ export const onDropNode = (
     monitor: DropTargetMonitor;
   } & Pick<UseDropNodeOptions, 'id' | 'nodeRef'>
 ) => {
-  const direction = getHoverDirection({ dragItem, id, monitor, nodeRef });
+  const direction = getHoverDirection({ id, dragItem, monitor, nodeRef });
 
   if (!direction) return;
 

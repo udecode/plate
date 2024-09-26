@@ -1,6 +1,6 @@
 import { toPlatePlugin } from '@udecode/plate-common/react';
 
-import { TabbablePlugin as BaseTabbablePlugin } from '../lib/TabbablePlugin';
+import { BaseTabbablePlugin } from '../lib/BaseTabbablePlugin';
 import { TabbableEffects } from './TabbableEffects';
 
 export const TabbablePlugin = toPlatePlugin(BaseTabbablePlugin, {

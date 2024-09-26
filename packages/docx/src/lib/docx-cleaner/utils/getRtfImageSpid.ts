@@ -11,7 +11,7 @@ const END_OF_ID_SEQUENCE_CHARACTERS = [
 export const getRtfImageSpid = (
   imageData: string,
   spidPrefix: string
-): null | string => {
+): string | null => {
   const indexes = END_OF_ID_SEQUENCE_CHARACTERS.map((character) =>
     imageData.indexOf(character)
   );

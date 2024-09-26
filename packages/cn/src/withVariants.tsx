@@ -36,8 +36,8 @@ export function withVariants<
 
     return (
       <ComponentWithClassName
-        className={cn(variants(props), className)}
         ref={ref}
+        className={cn(variants(props), className)}
         {...(rest as any)}
       />
     );

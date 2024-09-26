@@ -5,7 +5,7 @@ import {
   insertNodes,
 } from '@udecode/plate-common';
 
-import { TocPlugin } from '../TocPlugin';
+import { BaseTocPlugin } from '../BaseTocPlugin';
 
 export const insertToc = <E extends SlateEditor>(
   editor: E,
@@ -15,7 +15,7 @@ export const insertToc = <E extends SlateEditor>(
     editor,
     {
       children: [{ text: '' }],
-      type: editor.getType(TocPlugin),
+      type: editor.getType(BaseTocPlugin),
     },
     options as any
   );

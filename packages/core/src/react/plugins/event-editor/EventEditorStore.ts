@@ -2,11 +2,11 @@ import { createZustandStore } from '../../../lib';
 
 export type EventEditorState = {
   /** Last editor id that has been blurred. */
-  blur: null | string;
+  blur: string | null;
   /** Editor id that is currently being focused. */
-  focus: null | string;
+  focus: string | null;
   /** Last editor id. */
-  last: null | string;
+  last: string | null;
 };
 
 /** Store where the keys are event names and the values are editor ids. */

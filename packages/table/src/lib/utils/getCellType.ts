@@ -1,7 +1,10 @@
 import { type SlateEditor, getPluginTypes } from '@udecode/plate-common';
 
-import { TableCellHeaderPlugin, TableCellPlugin } from '../TablePlugin';
+import {
+  BaseTableCellHeaderPlugin,
+  BaseTableCellPlugin,
+} from '../BaseTablePlugin';
 
 /** Get td and th types */
 export const getCellTypes = (editor: SlateEditor) =>
-  getPluginTypes(editor, [TableCellPlugin, TableCellHeaderPlugin]);
+  getPluginTypes(editor, [BaseTableCellPlugin, BaseTableCellHeaderPlugin]);

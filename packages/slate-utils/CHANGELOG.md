@@ -1,5 +1,9 @@
 # @udecode/slate-utils
 
+## 38.0.4
+
+## 38.0.3
+
 ## 37.0.0
 
 ### Major Changes

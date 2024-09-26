@@ -2,25 +2,25 @@ import React from 'react';
 
 import type { Emoji } from '@emoji-mart/data';
 
-import { EmojiCategory, type EmojiCategoryList } from '../../lib';
+import { type EmojiCategoryList, EmojiCategory } from '../../lib';
 
 export type MapEmojiCategoryList = Map<EmojiCategoryList, boolean>;
 
 export type EmojiPickerStateProps = {
-  emoji?: Emoji;
-  focusedCategory?: EmojiCategoryList;
-  frequentEmoji?: string;
   hasFound: boolean;
   isOpen: boolean;
   isSearching: boolean;
   searchResult: Emoji[];
   searchValue: string;
   visibleCategories: MapEmojiCategoryList;
+  emoji?: Emoji;
+  focusedCategory?: EmojiCategoryList;
+  frequentEmoji?: string;
 };
 
 export type EmojiPickerStateDispatch = {
-  payload?: Partial<EmojiPickerStateProps>;
   type: string;
+  payload?: Partial<EmojiPickerStateProps>;
 };
 
 const initialState: EmojiPickerStateProps = {

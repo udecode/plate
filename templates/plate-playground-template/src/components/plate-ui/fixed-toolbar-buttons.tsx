@@ -10,9 +10,9 @@ import { useEditorReadOnly } from '@udecode/plate-common/react';
 import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
-} from '@udecode/plate-font';
+} from '@udecode/plate-font/react';
 import { ListStyleType } from '@udecode/plate-indent-list';
-import { ImagePlugin } from '@udecode/plate-media';
+import { ImagePlugin } from '@udecode/plate-media/react';
 
 import { Icons, iconVariants } from '@/components/icons';
 import { AlignDropdownMenu } from '@/components/plate-ui/align-dropdown-menu';
@@ -28,6 +28,7 @@ import { OutdentToolbarButton } from '@/components/plate-ui/outdent-toolbar-butt
 import { TableDropdownMenu } from '@/components/plate-ui/table-dropdown-menu';
 
 import { ColorDropdownMenu } from './color-dropdown-menu';
+import { IndentTodoToolbarButton } from './indent-todo-toolbar-button';
 import { InsertDropdownMenu } from './insert-dropdown-menu';
 import { MarkToolbarButton } from './mark-toolbar-button';
 import { ModeDropdownMenu } from './mode-dropdown-menu';
@@ -102,6 +103,7 @@ export function FixedToolbarButtons() {
 
               <IndentListToolbarButton nodeType={ListStyleType.Disc} />
               <IndentListToolbarButton nodeType={ListStyleType.Decimal} />
+              <IndentTodoToolbarButton />
 
               <OutdentToolbarButton />
               <IndentToolbarButton />

@@ -17,7 +17,7 @@ import {
 
 import type { TLinkElement } from '../types';
 
-import { LinkPlugin } from '../LinkPlugin';
+import { BaseLinkPlugin } from '../BaseLinkPlugin';
 import { type CreateLinkNodeOptions, validateUrl } from '../utils';
 import { insertLink } from './insertLink';
 import { unwrapLink } from './unwrapLink';
@@ -57,7 +57,7 @@ export const upsertLink = <E extends SlateEditor>(
 
   const linkAbove = getAboveNode<TLinkElement>(editor, {
     at,
-    match: { type: editor.getType(LinkPlugin) },
+    match: { type: editor.getType(BaseLinkPlugin) },
   });
 
   // anchor and focus in link -> insert text
@@ -91,7 +91,7 @@ export const upsertLink = <E extends SlateEditor>(
   // selection contains at one edge edge or between the edges
   const linkEntry = findNode<TLinkElement>(editor, {
     at,
-    match: { type: editor.getType(LinkPlugin) },
+    match: { type: editor.getType(BaseLinkPlugin) },
   });
 
   const [linkNode, linkPath] = linkEntry ?? [];

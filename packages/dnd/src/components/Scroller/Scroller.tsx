@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { ScrollArea, type ScrollAreaProps } from './ScrollArea';
+import { type ScrollAreaProps, ScrollArea } from './ScrollArea';
 
 export type ScrollerProps = Omit<ScrollAreaProps, 'placement'>;
 

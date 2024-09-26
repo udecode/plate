@@ -46,6 +46,7 @@ export const TableCellElement = withRef<
 
   return (
     <PlateElement
+      ref={ref}
       asChild
       className={cn(
         'relative h-full overflow-visible border-none bg-background p-0',
@@ -68,7 +69,6 @@ export const TableCellElement = withRef<
           ),
         className
       )}
-      ref={ref}
       {...cellProps}
       {...props}
       style={

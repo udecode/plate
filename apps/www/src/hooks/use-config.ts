@@ -1,5 +1,5 @@
-import type { Style } from '@/registry/styles';
-import type { Theme } from '@/registry/themes';
+import type { BaseColor } from '@/registry/registry-base-colors';
+import type { Style } from '@/registry/registry-styles';
 
 import { useAtom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
@@ -7,7 +7,7 @@ import { atomWithStorage } from 'jotai/utils';
 type Config = {
   radius: number;
   style: Style['name'];
-  theme: Theme['name'];
+  theme: BaseColor['name'];
 };
 
 const configAtom = atomWithStorage<Config>('config', {

@@ -16,20 +16,20 @@ import {
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+import { insertEmptyCodeBlock } from '@udecode/plate-code-block';
 import {
   CodeBlockPlugin,
   CodeLinePlugin,
-  insertEmptyCodeBlock,
-} from '@udecode/plate-code-block';
+} from '@udecode/plate-code-block/react';
 import {
   getParentNode,
   insertNodes,
   isBlock,
   isElement,
   isType,
-  ParagraphPlugin,
   setNodes,
 } from '@udecode/plate-common';
+import { ParagraphPlugin } from '@udecode/plate-common/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';

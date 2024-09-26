@@ -1,15 +1,15 @@
 /** @jsx jsx */
 
-import { BoldPlugin } from '@udecode/plate-basic-marks';
-import { HeadingPlugin } from '@udecode/plate-heading';
-import { LinkPlugin } from '@udecode/plate-link';
-import { MediaEmbedPlugin } from '@udecode/plate-media';
+import { BoldPlugin } from '@udecode/plate-basic-marks/react';
+import { HeadingPlugin } from '@udecode/plate-heading/react';
+import { LinkPlugin } from '@udecode/plate-link/react';
+import { MediaEmbedPlugin } from '@udecode/plate-media/react';
 import { jsx } from '@udecode/plate-test-utils';
 
 import type { SlateEditor } from '../../editor';
 
 import { createPlateEditor } from '../../../react';
-import { ParagraphPlugin } from '../paragraph';
+import { BaseParagraphPlugin } from '../paragraph';
 
 jsx;
 
@@ -117,7 +117,7 @@ describe('when inserting html', () => {
       </editor>
     ) as any;
 
-    const plugins = [ParagraphPlugin];
+    const plugins = [BaseParagraphPlugin];
 
     const editor = createPlateEditor({
       editor: input,
@@ -242,7 +242,7 @@ describe('when inserting link with href', () => {
   ) as any;
 
   it('should insert the link with url', () => {
-    const plugins = [ParagraphPlugin, LinkPlugin];
+    const plugins = [BaseParagraphPlugin, LinkPlugin];
 
     const editor = createPlateEditor({
       editor: input,

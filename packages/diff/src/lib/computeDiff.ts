@@ -12,13 +12,13 @@ import { dmp } from '../internal/utils/dmp';
 import { StringCharMapping } from '../internal/utils/string-char-mapping';
 
 export interface ComputeDiffOptions {
-  getDeleteProps: (node: TDescendant) => any;
-  getInsertProps: (node: TDescendant) => any;
   getUpdateProps: (
     node: TDescendant,
     properties: any,
     newProperties: any
   ) => any;
+  getDeleteProps: (node: TDescendant) => any;
+  getInsertProps: (node: TDescendant) => any;
   isInline: SlateEditor['isInline'];
   elementsAreRelated?: (
     element: TElement,
