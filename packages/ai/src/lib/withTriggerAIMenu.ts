@@ -1,12 +1,12 @@
 import type { ExtendEditor } from '@udecode/plate-core';
 
 import {
+  getAncestorNode,
   getEditorString,
   getNodeString,
   getPointBefore,
   getRange,
-} from '@udecode/slate';
-import { getAncestorNode } from '@udecode/slate-utils';
+} from '@udecode/plate-common';
 
 import type { BaseAIPluginConfig } from './BaseAIPlugin';
 
