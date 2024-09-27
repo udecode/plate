@@ -113,7 +113,7 @@ type CopilotState = 'idle' | 'completed';
 ```
 
 - `idle`: This is the default state. It indicates that the Copilot is not currently providing a suggestion or has finished processing the previous suggestion.
-- `completed`: This state indicates that the Copilot has generated a suggestion and it's ready to be inserted into the editor. You'll see this suggestion as gray text in the editor, which can be accepted by pressing the Tab key or rejected by continuing to type.
+- `completed`: This state indicates that the Copilot has generated a suggestion and it's ready to be inserted into the editor. You'll see this suggestion as gray text in the editor in this state.
 
 You can access the current state of the Copilot using:
 ```ts
