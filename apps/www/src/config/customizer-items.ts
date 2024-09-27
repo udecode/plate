@@ -1,3 +1,4 @@
+import { CopilotPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
@@ -111,7 +112,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginOptions: [`inject: { targetPlugins: ['p', 'h1', 'h2', 'h3'] },`],
     route: customizerPlugins.align.route,
   },
-  // Functionality
   [AutoformatPlugin.key]: {
     id: AutoformatPlugin.key,
     badges: [customizerBadges.handler],
@@ -284,6 +284,14 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'CommentsPlugin',
     reactImport: true,
     route: customizerPlugins.comment.route,
+  },
+  [CopilotPlugin.key]: {
+    id: CopilotPlugin.key,
+    badges: [customizerBadges.handler],
+    label: 'Copilot',
+    npmPackage: '@udecode/plate-ai',
+    pluginFactory: 'CopilotPlugin',
+    route: customizerPlugins.copilot.route,
   },
   // Deserialization
   [CsvPlugin.key]: {

@@ -12,6 +12,7 @@ import { basicElementsValue } from './basicElementsValue';
 import { basicMarksValue } from './basicMarksValue';
 import { columnValue } from './columnValue';
 import { commentsValue } from './commentsValue';
+import { copilotValue } from './copilotValue';
 import { cursorOverlayValue } from './cursorOverlayValue';
 import { dateValue } from './dateValue';
 import { deserializeCsvValue } from './deserializeCsvValue';
@@ -48,11 +49,13 @@ export const usePlaygroundValue = (id?: ValueId): MyValue => {
 
   return useMemo(() => {
     const enabled = settingsStore.get.checkedPlugins();
-    const value = [...basicElementsValue];
+    // AI
+    const value = [...copilotValue];
 
-    if (!version) return value;
-    if (enabled.action_item) value.push(...todoListValue);
+    if (!version) return [...basicElementsValue];
+    if (enabled.copilot) value.push(...basicElementsValue);
     if (enabled.a) value.push(...linkValue);
+    if (enabled.action_item) value.push(...todoListValue);
 
     value.push(...basicMarksValue);
 

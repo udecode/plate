@@ -1,3 +1,4 @@
+import { CopilotPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
@@ -128,6 +129,7 @@ export const customizerList = [
       customizerItems[SoftBreakPlugin.key],
       customizerItems[TabbablePlugin.key],
       customizerItems[TrailingBlockPlugin.key],
+      customizerItems[CopilotPlugin.key],
     ],
     label: 'Functionality',
   },
