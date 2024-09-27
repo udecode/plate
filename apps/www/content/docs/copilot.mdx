@@ -1,21 +1,21 @@
 ---
 title: Copilot
-description: allows you to select from a list of AI commands. 
+description: AI-powered assistant that provides intelligent suggestions and autocompletion for enhanced content creation.
 docs:
-  - route: https://pro.platejs.org/docs/components/copilot
-    title: Copilot
+  - route: https://pro.platejs.org/docs/components/copilot-free
+    title: Copilot Hover Card
 ---
 
-<ComponentPreviewPro  name="pro-iframe-demo" id="pro-copilot" component="copilot" />
+<ComponentPreview name="playground-demo" id="copilot" />
 
 <PackageInfo>
 
 ## Features
 
-- Provides an AI-powered menu.
-- Offers a selection of AI commands to enhance content creation and editing.
-- Seamlessly integrates AI assistance within the editor interface.
-
+- Offers intelligent autocompletion to enhance content creation and editing.
+- Provides two modes: **debounce** and **shortcut**.
+  1. Shortcut mode is the default, triggered by pressing `Control+Space`.
+  2. Debounce mode can be automatically triggered when the selection changes or during typing.
 </PackageInfo>
 
 ## Installation
@@ -28,7 +28,7 @@ npm install @udecode/plate-ai
 
 ```tsx
 // ...
-import { AIPlugin } from '@/registry/default/plate-pro/ai/ai/src/react/AIPlugin';
+import { CopilotPlugin } from '@udecode/plate-ai/react';
 
 const editor = usePlateEditor({
   id: 'ai-demo',
@@ -37,18 +37,260 @@ const editor = usePlateEditor({
   },
   plugins: [
     ...commonPlugins,
-    SelectionOverlayPlugin,
-    MarkdownPlugin.configure({ options: { indentList: true } }),
-    AIPlugin.configure({
-      options: {
-        scrollContainerSelector: '#scroll_container',
+    CopilotPlugin.configure({
+    options: {
+      fetchSuggestion: async ({ abortSignal, prompt }) => {
+
+        // Currently, we are using a mock function to simulate the api request
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve(MENTIONABLES[Math.floor(Math.random() * 41)].text);
+          }, 100);
+        });
       },
-      render: { aboveEditable: AIMenu },
-    }),
+      hoverCard: AiCopilotHoverCard,
+      query: {
+        allow: [
+          ParagraphPlugin.key,
+          BlockquotePlugin.key,
+          HEADING_KEYS.h1,
+          HEADING_KEYS.h2,
+          HEADING_KEYS.h3,
+          HEADING_KEYS.h4,
+          HEADING_KEYS.h5,
+          HEADING_KEYS.h6,
+        ],
+      },
+    },
+});
   ],
   value: aiValue,
 });
 ```
 
+## Integrate with your backend
+
+`options.fetchSuggestion` is an asynchronous function that you need to implement to fetch suggestions from your backend. This function is crucial for integrating the Copilot feature with your own AI model or service.
+
+The function receives an object with two properties:
+
+- `abortSignal`: An `AbortSignal` object that allows you to cancel the request if needed. This is particularly useful in debounce mode to abort the request if the user continues typing or changes the selection.
+- `prompt`: A string containing the text of the node where the user's cursor is currently positioned. This serves as the context for generating suggestions.
+
+The function should return a Promise that resolves to a string. This string will be the suggestion inserted into the editor.
+
+Here's a more detailed example of how you might implement this function:
+
+```ts
+
+ fetchSuggestion: async ({ abortSignal, prompt }) => {
+    const system = `Please continue writing a sentence based on the prompt.
+      Important Note: Please do not answer any questions. Directly provide the continuation
+      of the content without including any part of the prompt and don't write more than one sentence:
+      finish current sentence or write a new one`
+
+    const response = await fetch('https://your-api-endpoint.com/api/v1/generate-text', {
+      method: 'POST',
+      body: JSON.stringify({ prompt,system }),
+      // pass the abortSignal to the fetch request
+      signal: abortSignal,
+    });
+
+    const data = await response.json();
+
+
+    // data.suggestion should be a string
+    return data.suggestion;
+},
+
+```
+
+## Copilot state
+
+The Copilot plugin maintains its own state to manage the suggestion process. The state can be either 'idle' or 'completed'. Here's a breakdown of what each state means:
+```ts
+type CopilotState = 'idle' | 'completed';
+```
+
+- `idle`: This is the default state. It indicates that the Copilot is not currently providing a suggestion or has finished processing the previous suggestion.
+- `completed`: This state indicates that the Copilot has generated a suggestion and it's ready to be inserted into the editor. You'll see this suggestion as gray text in the editor, which can be accepted by pressing the Tab key or rejected by continuing to type.
+
+You can access the current state of the Copilot using:
+```ts
+const copilotState = editor.getOptions(CopilotPlugin).copilotState;
+```
+
+
+
+## Conflict with Tabbable Plugin
+
+When using both the [Tabbable Plugin](https://platejs.org/docs/tabbable) and the Copilot feature in your editor, you may encounter conflicts with the `Tab` key functionality. This is because both features utilize the same key binding.
+
+To resolve this conflict and ensure smooth operation of both features, you can configure the Tabbable Plugin to be disabled when the cursor is at the end of a paragraph. This allows the Copilot feature to function as intended when you press `Tab` at the end of a line.
+
+Here's how you can modify the Tabbable Plugin configuration:
+
+1. Visit the [Tabbable Plugin documentation](https://platejs.org/docs/tabbable#conflicts-with-other-plugins) for more details on handling conflicts.
+2. Implement the following configuration to disable the Tabbable Plugin when the cursor is at the end of a paragraph:
+
+```tsx
+TabbablePlugin.configure(({ editor }) => ({
+  options: {
+    query: () => {
+      // return false when cursor is in the end of the paragraph
+      if (isSelectionAtBlockStart(editor) || isSelectionAtBlockEnd(editor))
+        return false;
+
+      return !someNode(editor, {
+        match: (n) => {
+          return !!(
+            n.type &&
+            ([
+              CodeBlockPlugin.key,
+              ListItemPlugin.key,
+              TablePlugin.key,
+            ].includes(n.type as any) ||
+              n[IndentListPlugin.key])
+          );
+        },
+      });
+    },
+  },
+}));
+```
+
+
+
+## Plate Plus
+In Plate Plus, We using debounce mode by default. That's mean you will see the suggestion automatically without pressing `Control+Space`.
+
+We also provide a new style of hover card that is more user-friendly.You can hover on the suggestion to see the hover card.
+
+
+All of the backend setup is available in [Potion template](https://pro.platejs.org/docs/templates/potion).
+
+
+<ComponentPreviewPro
+  name="pro-iframe-demo"
+  id="pro-copilot"
+  component="copilot"
+/>
+
+<APIOptions>
+<APIItem name="areaOptions" type="PartialSelectionOptions" optional>
+Options for the selection area. Example:
+
+```ts
+{
+  boundaries: ['#selection-demo #scroll_container'],
+  container: ['#selection-demo #scroll_container'],
+  selectables: ['#selection-demo #scroll_container .slate-selectable'],
+  selectionAreaClass: 'slate-selection-area',
+}
+```
+</APIItem>
+
+<APIItem name="editorPaddingRight" type="CSSProperties['width']" optional>
+The padding-right of the editor.
+</APIItem>
+
+<APIItem name="enableContextMenu" type="boolean" optional>
+Enables or disables the context menu for block selection.
+
+- **Default:** `false`
+</APIItem>
+
+<APIItem name="isSelecting" type="boolean" optional>
+Indicates whether block selection is currently active.
+
+- **Default:** `false`
+</APIItem>
+
+<APIItem name="onKeyDownSelecting" type="(e: KeyboardEvent) => void" optional>
+A function to handle the **`keydown`** event when selecting.
+</APIItem>
+
+<APIItem name="query" type="QueryNodeOptions" optional>
+Options for querying nodes during block selection.
+
+- **Default:** `{ maxLevel: 1 }`
+</APIItem>
+
+<APIItem name="selectedIds" type="Set<string>" optional>
+A set of IDs for the currently selected blocks.
+
+- **Default:** `new Set()`
+</APIItem>
+</APIOptions>
+
+### BlockContextMenuPlugin
+
+This plugin is used by `BlockSelectionPlugin` and doesn't need to be added manually.
+
 ## API
 
+### editor.getApi(CopilotPlugin).copilot.abortCopilot();
+
+Aborts the ongoing API request and removes any suggestion text currently displayed.
+
+<APIReturns>
+  <APIItem type="void">
+    This function does not return a value.
+  </APIItem>
+</APIReturns>
+
+
+### editor.api.blockSelection.getSelectedBlocks
+
+Gets the selected blocks in the editor.
+
+<APIReturns>
+  <APIItem type="TNodeEntry[]">
+    An array of selected block entries.
+  </APIItem>
+</APIReturns>
+
+### editor.getApi(CopilotPlugin).copilot.setCopilot
+
+Sets the suggestion text to the editor.
+
+<APIParameters>
+  <APIItem name="id" type="string">
+    The ID of the node to set the suggestion text.
+  </APIItem>
+  <APIItem name="text" type="string">
+    The suggestion text to set.
+  </APIItem>
+</APIParameters>
+
+
+## Utils functions
+
+### withoutAbort
+Temporarily disables the abort functionality of the Copilot plugin,
+by default any apply will cause the Copilot to remove the suggestion text and abort the request.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The Plate editor instance.
+  </APIItem>
+  <APIItem name="fn" type="() => void">
+    The function to execute without abort.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="void">
+    This function does not return a value.
+  </APIItem>
+</APIReturns>
+
+Usage example:
+```ts
+import { withoutAbort } from '@udecode/plate-ai/react';
+
+withoutAbort(editor, () => {
+  // Perform operations without the risk of abort
+  // For example, setting copilot suggestions
+});
+```

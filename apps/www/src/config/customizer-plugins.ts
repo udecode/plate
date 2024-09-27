@@ -1,3 +1,4 @@
+import { CopilotPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
@@ -39,6 +40,7 @@ import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
 import { columnValue } from '@/lib/plate/demo/values/columnValue';
+import { copilotValue } from '@/lib/plate/demo/values/copilotValue';
 import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
 import { alignValue } from '@/plate/demo/values/alignValue';
 import { autoformatValue } from '@/plate/demo/values/autoformatValue';
@@ -139,6 +141,13 @@ export const customizerPlugins = {
     plugins: [CommentsPlugin.key],
     route: '/docs/comments',
     value: commentsValue,
+  },
+  copilot: {
+    id: 'copilot',
+    label: 'Copilot',
+    plugins: [CopilotPlugin.key],
+    route: '/docs/copilot',
+    value: copilotValue,
   },
   csv: {
     id: 'csv',
