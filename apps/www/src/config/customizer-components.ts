@@ -63,6 +63,11 @@ export const customizerComponents = {
     href: '/docs/components/comments-popover',
     title: 'Comments Popover',
   },
+  copilotHoverCard: {
+    href: '/docs/components/copilot-hover-card',
+    label: 'New',
+    title: 'Copilot Hover Card',
+  },
   cursorOverlay: {
     href: '/docs/components/cursor-overlay',
     title: 'Cursor Overlay',

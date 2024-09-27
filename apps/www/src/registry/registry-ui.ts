@@ -141,6 +141,13 @@ export const ui: Registry = [
     type: 'registry:ui',
   },
   {
+    dependencies: ['@udecode/plate-ai'],
+    files: ['plate-ui/copilot-hover-card.tsx'],
+    name: 'copilot-hover-card',
+    registryDependencies: [''],
+    type: 'registry:ui',
+  },
+  {
     dependencies: ['react-day-picker@8.10.1', 'date-fns'],
     files: ['plate-ui/calendar.tsx'],
     name: 'calendar',

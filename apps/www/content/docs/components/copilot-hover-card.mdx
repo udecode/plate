@@ -1,0 +1,69 @@
+---
+title: Copilot Hover Card
+description: Display AI-generated suggestions in a hover card.
+component: true
+docs:
+  - route: /docs/copilot
+    title: Copilot
+---
+
+## Installation
+
+<Tabs defaultValue="cli">
+
+<TabsList>
+<TabsTrigger value="cli">CLI</TabsTrigger>
+<TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx @udecode/plate-ui@latest add copilot-hover-card
+```
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps>
+
+<Step>
+
+Copy and paste the following code into your project.
+
+</Step>
+
+<ComponentSource name="copilot-hover-card" />
+
+<Step>
+
+Update the import paths to match your project setup.
+
+</Step>
+
+</Steps>
+
+</TabsContent>
+
+</Tabs>
+
+## Examples
+
+<ComponentPreview name="playground-demo" id="copilot" />
+
+<ComponentSource src="../../templates/plate-playground-template/src/components/plate-editor.tsx" />
+
+## Plus examples
+
+In Plate Plus, We using debounce mode by default. That's mean you will see the suggestion automatically without pressing `Control+Space`.
+
+We also provide a new style of hover card that is more user-friendly.You can hover on the suggestion to see the hover card.
+
+All of the backend setup is available in [Potion template](https://pro.platejs.org/docs/templates/potion).
+
+
+<ComponentPreviewPro
+  name="pro-iframe-demo"
+  id="pro-copilot"
+  component="copilot"
+/>

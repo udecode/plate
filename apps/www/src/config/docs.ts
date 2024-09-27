@@ -2,9 +2,6 @@ import type { MainNavItem, SidebarNavItem } from '@/types/nav';
 
 import { customizerComponents } from '@/config/customizer-components';
 
-import { docPro } from './doc-pro';
-import { potionComponents } from './potion-components';
-
 export interface DocsConfig {
   componentsNav: SidebarNavItem[];
   mainNav: MainNavItem[];
@@ -48,14 +45,15 @@ export const docsConfig: DocsConfig = {
     },
     {
       items: [
-        potionComponents.aiMenu,
-        potionComponents.contextMenu,
-        potionComponents.equation,
-        potionComponents.inlineEquation,
-        potionComponents.mediaController,
-        potionComponents.slashMenu,
-        potionComponents.toolbar,
-        potionComponents.toc,
+        // potionComponents.aiMenu,
+        // potionComponents.contextMenu,
+        // potionComponents.equation,
+        // potionComponents.inlineEquation,
+        // potionComponents.mediaController,
+        // potionComponents.slashMenu,
+        // potionComponents.toolbar,
+        // potionComponents.toc,
+        customizerComponents.copilotHoverCard,
         customizerComponents.editor,
         customizerComponents.alignDropdownMenu,
         customizerComponents.avatar,
@@ -248,7 +246,16 @@ export const docsConfig: DocsConfig = {
     },
     {
       items: [
-        ...docPro,
+        {
+          href: '/docs/ai',
+          label: 'New',
+          title: 'AI',
+        },
+        {
+          href: '/docs/copilot',
+          label: 'New',
+          title: 'Copilot',
+        },
         {
           href: '/docs/alignment',
           title: 'Alignment',
@@ -272,12 +279,22 @@ export const docsConfig: DocsConfig = {
           title: 'Block Selection',
         },
         {
+          href: '/docs/callout',
+          label: 'Plus',
+          title: 'Callout',
+        },
+        {
           href: '/docs/caption',
           title: 'Caption',
         },
         {
           href: '/docs/collaboration',
           title: 'Collaboration',
+        },
+        {
+          href: '/docs/column',
+          label: 'Element',
+          title: 'Column',
         },
         {
           href: '/docs/combobox',
@@ -289,9 +306,14 @@ export const docsConfig: DocsConfig = {
           title: 'Comments',
         },
         {
-          href: '/docs/column',
-          label: 'Element',
-          title: 'Column',
+          href: '/docs/context-menu',
+          label: 'Plus',
+          title: 'Context Menu',
+        },
+
+        {
+          href: '/docs/csv',
+          title: 'CSV',
         },
         {
           href: '/docs/date',
@@ -303,8 +325,17 @@ export const docsConfig: DocsConfig = {
           title: 'Drag & Drop',
         },
         {
+          href: '/docs/docx',
+          title: 'DOCX',
+        },
+        {
           href: '/docs/emoji',
           title: 'Emoji',
+        },
+        {
+          href: '/docs/equation',
+          label: 'Plus',
+          title: 'Equation',
         },
         {
           href: '/docs/excalidraw',
@@ -315,10 +346,6 @@ export const docsConfig: DocsConfig = {
           href: '/docs/exit-break',
           title: 'Exit Break',
         },
-        // {
-        //   title: 'Find',
-        //   href: '/docs/find-replace',
-        // },
         {
           href: '/docs/font',
           title: 'Font',
@@ -360,6 +387,10 @@ export const docsConfig: DocsConfig = {
           title: 'List',
         },
         {
+          href: '/docs/markdown',
+          title: 'Markdown',
+        },
+        {
           href: '/docs/media',
           label: 'Element',
           title: 'Media',
@@ -374,20 +405,13 @@ export const docsConfig: DocsConfig = {
           title: 'Reset Node',
         },
         {
-          href: '/docs/csv',
-          title: 'CSV',
-        },
-        {
-          href: '/docs/docx',
-          title: 'DOCX',
-        },
-        {
-          href: '/docs/markdown',
-          title: 'Markdown',
-        },
-        {
           href: '/docs/single-line',
           title: 'Single Line',
+        },
+        {
+          href: '/docs/slash-menu',
+          label: 'New',
+          title: 'Slash Menu',
         },
         {
           href: '/docs/soft-break',
@@ -403,9 +427,19 @@ export const docsConfig: DocsConfig = {
           title: 'Table',
         },
         {
+          href: '/docs/toc',
+          label: 'Plus',
+          title: 'Table of Contents',
+        },
+        {
           href: '/docs/toggle',
           label: 'Element',
           title: 'Toggle',
+        },
+        {
+          href: '/docs/upload',
+          label: 'Plus',
+          title: 'Upload',
         },
       ],
       title: 'Plugins',

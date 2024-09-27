@@ -3,7 +3,7 @@ import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { ParagraphPlugin } from '@udecode/plate-core/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 
-import { AiCopilotHoverCard } from '@/registry/default/plate-ui/ai-copilot-hover-card';
+import { copilotHoverCard } from '@/registry/default/plate-ui/copilot-hover-card';
 import { MENTIONABLES } from '@/registry/default/plate-ui/mention-input-element';
 
 export const copilotPlugin = CopilotPlugin.configure({
@@ -16,7 +16,7 @@ export const copilotPlugin = CopilotPlugin.configure({
         }, 100);
       });
     },
-    hoverCard: AiCopilotHoverCard,
+    hoverCard: copilotHoverCard,
     query: {
       allow: [
         ParagraphPlugin.key,
