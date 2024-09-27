@@ -8,7 +8,6 @@ import {
   isEndPoint,
   isExpanded,
 } from '@udecode/plate-common';
-// TODO:AI
 import debounce from 'lodash/debounce';
 
 import { AIPlugin } from '../ai';
@@ -26,7 +25,6 @@ export const generateCopilotText = async (
 
   if (copilotState === 'completed') return;
 
-  // TODO:AI
   const aiState = editor.getOption(AIPlugin, 'aiState');
 
   if (aiState !== 'idle') return;
