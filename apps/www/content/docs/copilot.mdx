@@ -176,57 +176,6 @@ All of the backend setup is available in [Potion template](https://pro.platejs.o
   component="copilot"
 />
 
-<APIOptions>
-<APIItem name="areaOptions" type="PartialSelectionOptions" optional>
-Options for the selection area. Example:
-
-```ts
-{
-  boundaries: ['#selection-demo #scroll_container'],
-  container: ['#selection-demo #scroll_container'],
-  selectables: ['#selection-demo #scroll_container .slate-selectable'],
-  selectionAreaClass: 'slate-selection-area',
-}
-```
-</APIItem>
-
-<APIItem name="editorPaddingRight" type="CSSProperties['width']" optional>
-The padding-right of the editor.
-</APIItem>
-
-<APIItem name="enableContextMenu" type="boolean" optional>
-Enables or disables the context menu for block selection.
-
-- **Default:** `false`
-</APIItem>
-
-<APIItem name="isSelecting" type="boolean" optional>
-Indicates whether block selection is currently active.
-
-- **Default:** `false`
-</APIItem>
-
-<APIItem name="onKeyDownSelecting" type="(e: KeyboardEvent) => void" optional>
-A function to handle the **`keydown`** event when selecting.
-</APIItem>
-
-<APIItem name="query" type="QueryNodeOptions" optional>
-Options for querying nodes during block selection.
-
-- **Default:** `{ maxLevel: 1 }`
-</APIItem>
-
-<APIItem name="selectedIds" type="Set<string>" optional>
-A set of IDs for the currently selected blocks.
-
-- **Default:** `new Set()`
-</APIItem>
-</APIOptions>
-
-### BlockContextMenuPlugin
-
-This plugin is used by `BlockSelectionPlugin` and doesn't need to be added manually.
-
 ## API
 
 ### editor.getApi(CopilotPlugin).copilot.abortCopilot();
@@ -239,16 +188,6 @@ Aborts the ongoing API request and removes any suggestion text currently display
   </APIItem>
 </APIReturns>
 
-
-### editor.api.blockSelection.getSelectedBlocks
-
-Gets the selected blocks in the editor.
-
-<APIReturns>
-  <APIItem type="TNodeEntry[]">
-    An array of selected block entries.
-  </APIItem>
-</APIReturns>
 
 ### editor.getApi(CopilotPlugin).copilot.setCopilot
 
