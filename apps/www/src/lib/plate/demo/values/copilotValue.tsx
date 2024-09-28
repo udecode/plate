@@ -23,7 +23,7 @@ export const copilotValue: any = (
       <htext>Accept the entire suggested completion</htext>
     </hp>
     <hp indent={2} listStyleType="disc">
-      <htext bold>Control + Right Arrow</htext>
+      <htext bold>Command + Right Arrow</htext>
       <htext>: Complete one character at a time</htext>
     </hp>
     <hp indent={2} listStyleType="disc">
