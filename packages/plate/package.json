@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate",
-  "version": "38.0.11",
+  "version": "38.0.12",
   "description": "Plate – a plugin system for slate",
   "keywords": [
     "contentEditable",
@@ -58,7 +58,7 @@
   "dependencies": {
     "@udecode/plate-alignment": "38.0.1",
     "@udecode/plate-autoformat": "38.0.1",
-    "@udecode/plate-basic-elements": "38.0.1",
+    "@udecode/plate-basic-elements": "38.0.12",
     "@udecode/plate-basic-marks": "38.0.1",
     "@udecode/plate-block-quote": "38.0.1",
     "@udecode/plate-break": "38.0.1",
@@ -68,11 +68,11 @@
     "@udecode/plate-common": "38.0.6",
     "@udecode/plate-csv": "38.0.8",
     "@udecode/plate-diff": "38.0.0",
-    "@udecode/plate-docx": "38.0.10",
+    "@udecode/plate-docx": "38.0.12",
     "@udecode/plate-find-replace": "38.0.0",
     "@udecode/plate-floating": "38.0.1",
     "@udecode/plate-font": "38.0.1",
-    "@udecode/plate-heading": "38.0.1",
+    "@udecode/plate-heading": "38.0.12",
     "@udecode/plate-highlight": "38.0.1",
     "@udecode/plate-horizontal-rule": "38.0.1",
     "@udecode/plate-html": "38.0.1",
