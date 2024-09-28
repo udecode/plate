@@ -294,12 +294,14 @@ const comboboxItemVariants = cva(
 );
 
 export type InlineComboboxItemProps = {
+  focusEditor?: boolean;
   keywords?: string[];
 } & ComboboxItemProps &
   Required<Pick<ComboboxItemProps, 'value'>>;
 
 const InlineComboboxItem = ({
   className,
+  focusEditor = true,
   keywords,
   onClick,
   ...props
@@ -324,7 +326,7 @@ const InlineComboboxItem = ({
     <ComboboxItem
       className={cn(comboboxItemVariants(), className)}
       onClick={(event) => {
-        removeInput(true);
+        removeInput(focusEditor);
         onClick?.(event);
       }}
       {...props}
