@@ -3,7 +3,6 @@ import React from 'react';
 interface UseTocObserver {
   activeId: string;
   isObserve: boolean;
-  showHeader: boolean;
   tocRef: React.RefObject<HTMLElement>;
 }
 

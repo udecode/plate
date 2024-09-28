@@ -6215,14 +6215,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-docx@npm:38.0.8, @udecode/plate-docx@workspace:^, @udecode/plate-docx@workspace:packages/docx":
+"@udecode/plate-docx@npm:38.0.10, @udecode/plate-docx@workspace:^, @udecode/plate-docx@workspace:packages/docx":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-docx@workspace:packages/docx"
   dependencies:
     "@udecode/plate-common": "workspace:^"
     "@udecode/plate-heading": "npm:38.0.1"
     "@udecode/plate-indent": "npm:38.0.1"
-    "@udecode/plate-indent-list": "npm:38.0.1"
+    "@udecode/plate-indent-list": "npm:38.0.10"
     "@udecode/plate-media": "npm:38.0.6"
     "@udecode/plate-table": "npm:38.0.8"
     validator: "npm:^13.12.0"
@@ -6389,7 +6389,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-indent-list@npm:38.0.1, @udecode/plate-indent-list@workspace:^, @udecode/plate-indent-list@workspace:packages/indent-list":
+"@udecode/plate-indent-list@npm:38.0.10, @udecode/plate-indent-list@workspace:^, @udecode/plate-indent-list@workspace:packages/indent-list":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-indent-list@workspace:packages/indent-list"
   dependencies:
@@ -6695,7 +6695,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-selection@npm:38.0.9, @udecode/plate-selection@workspace:^, @udecode/plate-selection@workspace:packages/selection":
+"@udecode/plate-selection@npm:38.0.11, @udecode/plate-selection@workspace:^, @udecode/plate-selection@workspace:packages/selection":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-selection@workspace:packages/selection"
   dependencies:
@@ -6913,7 +6913,7 @@ __metadata:
     "@udecode/plate-common": "npm:38.0.6"
     "@udecode/plate-csv": "npm:38.0.8"
     "@udecode/plate-diff": "npm:38.0.0"
-    "@udecode/plate-docx": "npm:38.0.8"
+    "@udecode/plate-docx": "npm:38.0.10"
     "@udecode/plate-find-replace": "npm:38.0.0"
     "@udecode/plate-floating": "npm:38.0.1"
     "@udecode/plate-font": "npm:38.0.1"
@@ -6922,7 +6922,7 @@ __metadata:
     "@udecode/plate-horizontal-rule": "npm:38.0.1"
     "@udecode/plate-html": "npm:38.0.1"
     "@udecode/plate-indent": "npm:38.0.1"
-    "@udecode/plate-indent-list": "npm:38.0.1"
+    "@udecode/plate-indent-list": "npm:38.0.10"
     "@udecode/plate-kbd": "npm:38.0.1"
     "@udecode/plate-layout": "npm:38.0.1"
     "@udecode/plate-line-height": "npm:38.0.1"
@@ -6936,7 +6936,7 @@ __metadata:
     "@udecode/plate-reset-node": "npm:38.0.1"
     "@udecode/plate-resizable": "npm:38.0.0"
     "@udecode/plate-select": "npm:38.0.1"
-    "@udecode/plate-selection": "npm:38.0.9"
+    "@udecode/plate-selection": "npm:38.0.11"
     "@udecode/plate-slash-command": "npm:38.0.1"
     "@udecode/plate-suggestion": "npm:38.0.1"
     "@udecode/plate-tabbable": "npm:38.0.1"

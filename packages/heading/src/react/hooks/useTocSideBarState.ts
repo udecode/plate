@@ -3,7 +3,7 @@ import React from 'react';
 import { getNode } from '@udecode/plate-common';
 import {
   toDOMNode,
-  useEditorRef,
+  useEditorPlugin,
   useEditorSelector,
 } from '@udecode/plate-common/react';
 
@@ -12,19 +12,25 @@ import type { TocSideBarProps } from '../types';
 
 import { useContentController, useTocController } from '.';
 import { getHeadingList } from '../../internal/getHeadingList';
+import { TocPlugin } from '../TocPlugin';
 import { checkIn } from '../utils';
 
 export const useTocSideBarState = ({
-  containerRef,
   open = true,
   rootMargin = '0px 0px 0px 0px',
-  showHeader = true,
-  style,
   topOffset = 0,
-  onOpenChange,
 }: TocSideBarProps) => {
-  const editor = useEditorRef();
+  const { editor, getOptions } = useEditorPlugin(TocPlugin);
+  const { scrollContainerSelector } = getOptions();
   const headingList = useEditorSelector(getHeadingList, []);
+  const scrollContainerRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    scrollContainerRef.current = document.querySelector(
+      scrollContainerSelector ?? '#scroll_container'
+    )!;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const tocRef = React.useRef<HTMLElement>(null);
 
@@ -33,7 +39,7 @@ export const useTocSideBarState = ({
   const [isObserve, setIsObserve] = React.useState(open);
 
   const { activeContentId, onContentScroll } = useContentController({
-    containerRef,
+    containerRef: scrollContainerRef,
     isObserve,
     rootMargin,
     topOffset,
@@ -42,7 +48,6 @@ export const useTocSideBarState = ({
   useTocController({
     activeId: activeContentId,
     isObserve,
-    showHeader,
     tocRef,
   });
 
@@ -54,11 +59,8 @@ export const useTocSideBarState = ({
     open,
     setIsObserve,
     setMouseInToc,
-    showHeader,
-    style,
     tocRef,
     onContentScroll,
-    onOpenChange,
   };
 };
 
