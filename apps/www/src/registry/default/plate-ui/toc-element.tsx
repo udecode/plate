@@ -22,13 +22,6 @@ const headingItemVariants = cva(
   }
 );
 
-// const options: useTocElementStateProps = {
-//   // if editor container have a fixed height set isScroll to TRUE.
-//   isScroll: true,
-//   scrollContainerSelector: '#scroll_container',
-//   topOffset: 80,
-// };
-
 export const TocElement = withRef<typeof PlateElement>(
   ({ children, className, ...props }, ref) => {
     const state = useTocElementState();

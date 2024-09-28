@@ -13,12 +13,6 @@ import { getHeadingList } from '../../internal/getHeadingList';
 import { TocPlugin } from '../TocPlugin';
 import { heightToTop } from '../utils';
 
-export type useTocElementStateProps = {
-  isScroll: boolean;
-  topOffset: number;
-  scrollContainerSelector?: string;
-};
-
 export const useTocElementState = () => {
   const { editor, getOptions } = useEditorPlugin(TocPlugin);
   const { isScroll, scrollContainerSelector, topOffset } = getOptions();

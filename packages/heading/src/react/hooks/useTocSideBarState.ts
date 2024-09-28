@@ -18,10 +18,7 @@ import { checkIn } from '../utils';
 export const useTocSideBarState = ({
   open = true,
   rootMargin = '0px 0px 0px 0px',
-  showHeader = true,
-  style,
   topOffset = 0,
-  onOpenChange,
 }: TocSideBarProps) => {
   const { editor, getOptions } = useEditorPlugin(TocPlugin);
   const { scrollContainerSelector } = getOptions();
@@ -51,7 +48,6 @@ export const useTocSideBarState = ({
   useTocController({
     activeId: activeContentId,
     isObserve,
-    showHeader,
     tocRef,
   });
 
@@ -63,11 +59,8 @@ export const useTocSideBarState = ({
     open,
     setIsObserve,
     setMouseInToc,
-    showHeader,
-    style,
     tocRef,
     onContentScroll,
-    onOpenChange,
   };
 };
 
