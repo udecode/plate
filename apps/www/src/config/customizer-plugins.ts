@@ -18,6 +18,7 @@ import {
   FontBackgroundColorPlugin,
   FontSizePlugin,
 } from '@udecode/plate-font/react';
+import { TocPlugin } from '@udecode/plate-heading/react';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
@@ -43,6 +44,7 @@ import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import { columnValue } from '@/lib/plate/demo/values/columnValue';
 import { copilotValue } from '@/lib/plate/demo/values/copilotValue';
 import { slashCommandValue } from '@/lib/plate/demo/values/slahMenuValue';
+import { tocValue } from '@/lib/plate/demo/values/tocValue';
 import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
 import { alignValue } from '@/plate/demo/values/alignValue';
 import { autoformatValue } from '@/plate/demo/values/autoformatValue';
@@ -358,6 +360,13 @@ export const customizerPlugins = {
     plugins: [TablePlugin.key],
     route: '/docs/table',
     value: tableValue,
+  },
+  toc: {
+    id: 'toc',
+    label: 'Table of Contents',
+    plugins: [TocPlugin.key],
+    route: '/docs/toc',
+    value: tocValue,
   },
   todoli: {
     id: 'todoli',

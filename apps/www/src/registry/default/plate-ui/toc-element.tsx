@@ -37,17 +37,25 @@ export const TocElement = withRef<typeof PlateElement>(
         {...props}
       >
         <nav contentEditable={false}>
-          {headingList.map((item) => (
-            <Button
-              key={item.id}
-              variant="ghost"
-              className={cn(headingItemVariants({ depth: item.depth as any }))}
-              onClick={(e) => btnProps.onClick(e, item, 'smooth')}
-              aria-current
-            >
-              {item.title}
-            </Button>
-          ))}
+          {headingList.length > 0 ? (
+            headingList.map((item) => (
+              <Button
+                key={item.id}
+                variant="ghost"
+                className={cn(
+                  headingItemVariants({ depth: item.depth as any })
+                )}
+                onClick={(e) => btnProps.onClick(e, item, 'smooth')}
+                aria-current
+              >
+                {item.title}
+              </Button>
+            ))
+          ) : (
+            <div className="text-sm text-gray-500">
+              Create a heading to display the table of contents.
+            </div>
+          )}
         </nav>
         {children}
       </PlateElement>

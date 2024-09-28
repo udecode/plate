@@ -31,6 +31,7 @@ import {
   FontColorPlugin,
   FontSizePlugin,
 } from '@udecode/plate-font/react';
+import { TocPlugin } from '@udecode/plate-heading/react';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
@@ -78,6 +79,7 @@ export const customizerList = [
       customizerItems[TablePlugin.key],
       customizerItems[TodoListPlugin.key],
       customizerItems[DatePlugin.key],
+      customizerItems[TocPlugin.key],
     ],
     label: 'Nodes',
   },

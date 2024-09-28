@@ -35,6 +35,7 @@ import {
   FontColorPlugin,
   FontSizePlugin,
 } from '@udecode/plate-font/react';
+import { TocPlugin } from '@udecode/plate-heading/react';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
@@ -652,7 +653,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
     reactImport: true,
     route: customizerPlugins.media.route,
   },
-
   [MentionInputPlugin.key]: {
     id: MentionInputPlugin.key,
     label: 'Mention Input',
@@ -660,6 +660,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'MentionInputPlugin',
     reactImport: true,
   },
+
   [MentionPlugin.key]: {
     id: MentionPlugin.key,
     badges: [
@@ -911,6 +912,14 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'TablePlugin',
     reactImport: true,
     route: customizerPlugins.table.route,
+  },
+  [TocPlugin.key]: {
+    id: TocPlugin.key,
+    badges: [customizerBadges.handler],
+    label: 'Table of Contents',
+    npmPackage: '@udecode/plate-heading',
+    pluginFactory: 'TocPlugin',
+    route: customizerPlugins.toc.route,
   },
   [TodoListPlugin.key]: {
     id: TodoListPlugin.key,

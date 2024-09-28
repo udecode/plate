@@ -37,6 +37,7 @@ import { slashCommandValue } from './slahMenuValue';
 import { softBreakValue } from './softBreakValue';
 import { tabbableValue } from './tabbableValue';
 import { tableMergeValue, tableValue } from './tableValue';
+import { tocValue } from './tocValue';
 import { toggleValue } from './toggleValue';
 
 export const usePlaygroundValue = (id?: ValueId): MyValue => {
@@ -71,6 +72,7 @@ export const usePlaygroundValue = (id?: ValueId): MyValue => {
       return mapNodeId(newValue);
     }
     //AI
+    if (enabled.toc) value.unshift(...tocValue);
     if (enabled.copilot) value.unshift(...copilotValue);
     // Marks
     if (enabled.color || enabled.backgroundColor) value.push(...fontValue);
