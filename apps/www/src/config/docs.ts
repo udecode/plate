@@ -45,14 +45,6 @@ export const docsConfig: DocsConfig = {
     },
     {
       items: [
-        // potionComponents.aiMenu,
-        // potionComponents.contextMenu,
-        // potionComponents.equation,
-        // potionComponents.inlineEquation,
-        // potionComponents.mediaController,
-        // potionComponents.slashMenu,
-        // potionComponents.toolbar,
-        // potionComponents.toc,
         customizerComponents.copilotHoverCard,
         customizerComponents.editor,
         customizerComponents.alignDropdownMenu,
@@ -429,7 +421,7 @@ export const docsConfig: DocsConfig = {
         },
         {
           href: '/docs/toc',
-          label: 'Plus',
+          label: 'New',
           title: 'Table of Contents',
         },
         {

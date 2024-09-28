@@ -1,21 +1,67 @@
 ---
 title: Table of Contents
-description: Automatically generates a table of contents for your document.
+description: A customizable table of contents component for your documentation.
 docs:
-  - route: https://pro.platejs.org/docs/components/toc
-    title: Table of Contents
+  - route: components/toc
+    title: Toc Element
 ---
 
-<ComponentPreviewPro name="pro-iframe-demo" id="pro-toc" component="toc" />
+<ComponentPreview name="playground-demo" id="toc" />
 
 <PackageInfo>
 
 ## Features
 
-- Automatically generates a table of contents based on document headings
-- Customizable depth and styling options
-- Clickable links for easy navigation within the document
+- Automatically generates a table of contents from your document headings
+- Customizable styles and depth levels
+- Smooth scrolling to sections
 
 </PackageInfo>
 
+
 ## Installation
+
+```bash
+npm install @udecode/plate-heading
+```
+
+## Usage
+
+```tsx
+// ...
+import { TocPlugin } from '@udecode/plate-heading/react';
+
+const editor = usePlateEditor({
+  id: 'toc-demo',
+  override: {
+    components: {
+      ...otherPlateComponents,
+      [TocPlugin.key]: TocElement,
+    },
+  },
+  plugins: [...otherPlatePlugins, TocPlugin],
+  value: tocValue,
+});
+```
+
+
+## Set scroll container
+
+In this plugin, you need to provide a **selector** to specify the scrollable container. This selector is used with `Document.querySelector` to locate the container element. You can use various selector formats, such as:
+
+- An ID: `#scrollable-container`
+- A class: `.content-wrapper`
+- A more specific selector: `body #main-content`
+
+
+
+
+
+
+## Plate Plus
+
+<ComponentPreviewPro
+  name="pro-iframe-demo"
+  id="pro-slash-menu"
+  component="slash-menu"
+/>
