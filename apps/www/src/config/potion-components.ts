@@ -31,12 +31,12 @@ export const potionComponents = {
     label: 'Plus',
     title: 'Media Controller',
   },
-  slashMenu: {
-    href: `${siteConfig.links.platePlus}/docs/components/slash-menu`,
-    isExternalLink: true,
-    label: 'Plus',
-    title: 'Slash Menu',
-  },
+  // slashMenu: {
+  //   href: `${siteConfig.links.platePlus}/docs/components/slash-menu`,
+  //   isExternalLink: true,
+  //   label: 'Plus',
+  //   title: 'Slash Menu',
+  // },
   toc: {
     href: `${siteConfig.links.platePlus}/docs/components/toc`,
     isExternalLink: true,

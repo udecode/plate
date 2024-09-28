@@ -116,6 +116,7 @@ export const docsConfig: DocsConfig = {
         customizerComponents.placeholder,
         customizerComponents.popover,
         customizerComponents.resizable,
+        customizerComponents.slashInputElement,
         customizerComponents.searchHighlightLeaf,
         customizerComponents.separator,
         customizerComponents.tableCellElement,
@@ -409,9 +410,9 @@ export const docsConfig: DocsConfig = {
           title: 'Single Line',
         },
         {
-          href: '/docs/slash-menu',
+          href: '/docs/slash-command',
           label: 'New',
-          title: 'Slash Menu',
+          title: 'Slash Command',
         },
         {
           href: '/docs/soft-break',

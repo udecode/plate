@@ -34,6 +34,7 @@ import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { ResetNodePlugin } from '@udecode/plate-reset-node/react';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import { SlashPlugin } from '@udecode/plate-slash-command/react';
 import { TabbablePlugin } from '@udecode/plate-tabbable/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
@@ -41,6 +42,7 @@ import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
 import { columnValue } from '@/lib/plate/demo/values/columnValue';
 import { copilotValue } from '@/lib/plate/demo/values/copilotValue';
+import { slashCommandValue } from '@/lib/plate/demo/values/slahMenuValue';
 import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
 import { alignValue } from '@/plate/demo/values/alignValue';
 import { autoformatValue } from '@/plate/demo/values/autoformatValue';
@@ -328,6 +330,13 @@ export const customizerPlugins = {
     plugins: [SingleLinePlugin.key],
     route: '/docs/single-line',
     value: singleLineValue,
+  },
+  slashCommand: {
+    id: 'slashCommand',
+    label: 'Slash Command',
+    plugins: [SlashPlugin.key],
+    route: '/docs/slash-command',
+    value: slashCommandValue,
   },
   softbreak: {
     id: 'softbreak',

@@ -240,6 +240,11 @@ export const customizerComponents = {
     title: 'Search Highlight',
   },
   separator: { href: '/docs/components/separator', title: 'Separator' },
+  slashInputElement: {
+    href: '/docs/components/slash-input-element',
+    label: 'New',
+    title: 'Slash Input',
+  },
   tableCellElement: {
     href: '/docs/components/table-cell-element',
     label: 'Element',

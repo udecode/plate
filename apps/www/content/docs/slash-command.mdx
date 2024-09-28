@@ -1,0 +1,153 @@
+---
+title: Slash Command
+description: Allows you to insert various elements into your editor using a slash command.
+docs:
+  - route: components/slash-input-element
+    title: Slash Input Element
+---
+
+<ComponentPreview name="playground-demo" id="slashCommand" />
+
+<PackageInfo>
+
+## Features
+
+- Quick insertion of various elements using slash commands
+- Customizable menu options and styles
+
+</PackageInfo>
+
+
+## Installation
+
+```bash
+npm install @udecode/plate-slash-command
+```
+
+## Usage
+
+```tsx
+// ...
+import { SlashPlugin } from '@udecode/plate-slash-command/react';
+
+const editor = usePlateEditor({
+  id: 'slash-demo',
+  override: {
+    components: {
+      ...otherPlateComponents,
+      [SlashInputPlugin.key]: SlashInputElement,
+    },
+  },
+  plugins: [...otherPlatePlugins, SlashPlugin],
+  value: slashValue,
+});
+```
+
+## Customization options
+
+Make sure to add the `SlashInputElement` component to your code.
+
+You can see the `rules` in this file. Feel free to configure the options you need
+
+```ts
+interface SlashCommandRule {
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
+  onSelect: (editor: PlateEditor) => void;
+  value: string;
+  focusEditor?: boolean;
+  keywords?: string[];
+}
+```
+
+Let's explore the configuration options for each slash command:
+
+- `icon`: React component
+  - Renders the icon displayed before the slash command option
+
+- `onSelect`: Function(editor: PlateEditor) => void
+  - Called when the option is selected
+  - Receives the `editor` as an argument for performing actions
+
+- `value`: string
+  - Display text for the slash command option in the menu
+  - Used for filtering when entering text
+
+- `focusEditor`: boolean (optional, default: true)
+  - Will explain this option in the next section
+
+- `keywords`: string[] (optional)
+  - Additional search terms for finding this option
+
+These configuration options provide flexibility in customizing the behavior and appearance of slash commands in your editor.
+
+
+## Focusing outside the editor
+
+By default, the editor maintains focus after selecting a slash command option. This behavior is generally desirable, as it allows users to seamlessly continue editing after inserting a new element. To achieve this, we automatically call `focusEditor(editor)` after the `onSelect` function is executed.
+
+This automatic focus mechanism ensures a smooth editing experience, enabling users to immediately type or make further edits after inserting an element via the slash menu.
+
+However, in certain scenarios, we may need to shift focus outside the editor to enhance the user experience. For instance:
+
+1. **AIPlugin**: When selecting an AI option, we might want to move focus to an input field where users can write their prompts.
+2. **EquationPlugin**: When inserting a math equation, focus may need to shift to a specialized input within a math popover.
+
+In such cases, we can set the `focusEditor` option to `false` for the specific slash command. This prevents the automatic refocusing of the editor, allowing us to manually control focus as needed.
+
+Here is an example: 
+```ts
+const rules: SlashCommandRule[] = [
+   ...otherSlashCommands,
+   {
+      focusEditor: false,
+      icon: Icons.ai,
+      keywords: ['ai', 'generate', 'help', 'chat'],
+      value: 'AI',
+      onSelect: (editor) => {
+        const nodeEntry = getAncestorNode(editor)!;
+        const dom = toDOMNode(editor, nodeEntry[0])!;
+
+        //We have encapsulated the logic for focusing the input in the show API
+        editor.getApi(AIPlugin).ai.show(editor.id, dom, nodeEntry);
+
+        editor.setOptions(AIPlugin, {
+          aiState: 'idle',
+          menuType: 'selection',
+        });
+
+        editor.getApi(AIPlugin).ai.show(editor.id, dom, nodeEntry);
+
+        setTimeout(() => {
+          editor
+            .getApi(BlockSelectionPlugin)
+            .blockSelection.addSelectedRow(nodeEntry[0].id as string);
+        }, 0);
+      },
+    }
+];
+```
+
+## Plate Plus
+We offer an enhanced user interface design and a more comprehensive set of options, including premium plugins such as Math Callout and Media Upload. 
+This provides a more robust and feature-rich editing experience for users who require advanced functionality.
+
+Some key improvements in Plate Plus include:
+
+- Refined UI design for better usability and aesthetics
+- Extended set of slash menu options
+- Integration of premium plugins like Math Upload for specialized editing needs
+- No need to worry about the focus issue mentioned above.
+- Support grouping and Carefully selected keyword.
+- Trigger slash menu by click the puls button on the left of the paragraph.
+
+
+You can try typing /``` to quickly insert a code block.
+
+Feel free to experiment with different commands to see how the slash menu enhances your editing experience!
+
+
+<ComponentPreviewPro
+  name="pro-iframe-demo"
+  id="pro-slash-menu"
+  component="slash-menu"
+/>

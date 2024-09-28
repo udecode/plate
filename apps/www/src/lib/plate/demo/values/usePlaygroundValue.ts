@@ -33,6 +33,7 @@ import { linkValue } from './linkValue';
 import { listValue, todoListValue } from './listValue';
 import { mediaValue } from './mediaValue';
 import { mentionValue } from './mentionValue';
+import { slashCommandValue } from './slahMenuValue';
 import { softBreakValue } from './softBreakValue';
 import { tabbableValue } from './tabbableValue';
 import { tableMergeValue, tableValue } from './tableValue';
@@ -49,13 +50,11 @@ export const usePlaygroundValue = (id?: ValueId): MyValue => {
 
   return useMemo(() => {
     const enabled = settingsStore.get.checkedPlugins();
-    // AI
-    const value = [...copilotValue];
+    const value = [...basicElementsValue];
 
-    if (!version) return [...basicElementsValue];
-    if (enabled.copilot) value.push(...basicElementsValue);
-    if (enabled.a) value.push(...linkValue);
+    if (!version) return value;
     if (enabled.action_item) value.push(...todoListValue);
+    if (enabled.a) value.push(...linkValue);
 
     value.push(...basicMarksValue);
 
@@ -71,6 +70,8 @@ export const usePlaygroundValue = (id?: ValueId): MyValue => {
 
       return mapNodeId(newValue);
     }
+    //AI
+    if (enabled.copilot) value.unshift(...copilotValue);
     // Marks
     if (enabled.color || enabled.backgroundColor) value.push(...fontValue);
     if (enabled.highlight) value.push(...highlightValue);
@@ -91,6 +92,7 @@ export const usePlaygroundValue = (id?: ValueId): MyValue => {
     if (enabled.column) value.push(...columnValue);
     if (enabled.toggle) value.push(...toggleValue);
     // Functionalities
+    if (enabled.slash_command) value.push(...slashCommandValue);
     if (enabled.autoformat) value.push(...autoformatValue);
     if (enabled.softBreak) value.push(...softBreakValue);
     if (enabled.exitBreak) value.push(...exitBreakValue);

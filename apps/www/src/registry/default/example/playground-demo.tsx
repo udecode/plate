@@ -337,7 +337,7 @@ export default function PlaygroundDemo({
   return (
     <DemoId id={id}>
       <DndProvider backend={HTML5Backend}>
-        <Plate editor={editor}>
+        <Plate onChange={(value) => console.log(value)} editor={editor}>
           <CheckPlugin componentId="fixed-toolbar">
             <FixedToolbar className="no-scrollbar">
               <CheckPlugin componentId="fixed-toolbar-buttons">
