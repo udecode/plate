@@ -28,6 +28,7 @@ import { EmojiInputPlugin } from '@udecode/plate-emoji/react';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import { FindReplacePlugin } from '@udecode/plate-find-replace';
 import { HEADING_KEYS } from '@udecode/plate-heading';
+import { TocPlugin } from '@udecode/plate-heading/react';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { KbdPlugin } from '@udecode/plate-kbd/react';
@@ -84,6 +85,7 @@ import {
 } from '@/registry/default/plate-ui/table-cell-element';
 import { TableElement } from '@/registry/default/plate-ui/table-element';
 import { TableRowElement } from '@/registry/default/plate-ui/table-row-element';
+import { TocElement } from '@/registry/default/plate-ui/toc-element';
 import { TodoListElement } from '@/registry/default/plate-ui/todo-list-element';
 import { ToggleElement } from '@/registry/default/plate-ui/toggle-element';
 import { withDraggables } from '@/registry/default/plate-ui/with-draggables';
@@ -133,6 +135,7 @@ export const createPlateUI = ({
     [TableCellPlugin.key]: TableCellElement,
     [TablePlugin.key]: TableElement,
     [TableRowPlugin.key]: TableRowElement,
+    [TocPlugin.key]: TocElement,
     [TodoListPlugin.key]: TodoListElement,
     [TogglePlugin.key]: ToggleElement,
     [UnderlinePlugin.key]: withProps(PlateLeaf, { as: 'u' }),

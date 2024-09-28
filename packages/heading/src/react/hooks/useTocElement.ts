@@ -3,13 +3,14 @@ import React, { useEffect } from 'react';
 import { getNode } from '@udecode/plate-common';
 import {
   toDOMNode,
-  useEditorRef,
+  useEditorPlugin,
   useEditorSelector,
 } from '@udecode/plate-common/react';
 
 import type { Heading } from '../../lib/types';
 
 import { getHeadingList } from '../../internal/getHeadingList';
+import { TocPlugin } from '../TocPlugin';
 import { heightToTop } from '../utils';
 
 export type useTocElementStateProps = {
@@ -18,12 +19,9 @@ export type useTocElementStateProps = {
   scrollContainerSelector?: string;
 };
 
-export const useTocElementState = ({
-  isScroll,
-  scrollContainerSelector,
-  topOffset,
-}: useTocElementStateProps) => {
-  const editor = useEditorRef();
+export const useTocElementState = () => {
+  const { editor, getOptions } = useEditorPlugin(TocPlugin);
+  const { isScroll, scrollContainerSelector, topOffset } = getOptions();
 
   const headingList = useEditorSelector(getHeadingList, []);
 

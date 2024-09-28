@@ -39,7 +39,7 @@ import {
   FontSizePlugin,
 } from '@udecode/plate-font/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
-import { HeadingPlugin } from '@udecode/plate-heading/react';
+import { HeadingPlugin, TocPlugin } from '@udecode/plate-heading/react';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
@@ -120,6 +120,13 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
       plugins: [
         // Nodes
         HeadingPlugin,
+        TocPlugin.configure({
+          options: {
+            isScroll: true,
+            scrollContainerSelector: `#${scrollSelector}`,
+            topOffset: 80,
+          },
+        }),
         BlockquotePlugin,
         CodeBlockPlugin.configure({
           options: {
