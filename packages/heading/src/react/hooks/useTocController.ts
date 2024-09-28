@@ -5,21 +5,18 @@ import { useTocObserver } from './useTocObserver';
 interface UseTocController {
   activeId: string;
   isObserve: boolean;
-  showHeader: boolean;
   tocRef: React.RefObject<HTMLElement>;
 }
 
 export const useTocController = ({
   activeId,
   isObserve,
-  showHeader,
   tocRef,
 }: UseTocController) => {
   const [activeTocId, setActiveTocId] = React.useState('');
   const { offset, visible } = useTocObserver({
     activeId: activeTocId,
     isObserve,
-    showHeader,
     tocRef,
   });
 
