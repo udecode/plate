@@ -18,7 +18,6 @@ docs:
 
 </PackageInfo>
 
-
 ## Installation
 
 ```bash
@@ -39,29 +38,92 @@ const editor = usePlateEditor({
       [TocPlugin.key]: TocElement,
     },
   },
-  plugins: [...otherPlatePlugins, TocPlugin],
+  plugins: [
+    ...otherPlatePlugins,
+    TocPlugin.configure({
+      options: {
+        scrollContainerSelector: `#your-scroll-container-id`,
+        topOffset: 80,
+      },
+    }),
+  ],
   value: tocValue,
 });
 ```
 
-
 ## Set scroll container
 
-In this plugin, you need to provide a **selector** to specify the scrollable container. This selector is used with `Document.querySelector` to locate the container element. You can use various selector formats, such as:
+In this plugin, you need to provide a **selector** to options.scrollContainerSelector to specify the scrollable container. This selector is used with `Document.querySelector` to locate the container element.
+You can use various selector formats, such as:
 
 - An ID: `#scrollable-container`
 - A class: `.content-wrapper`
 - A more specific selector: `body #main-content`
 
+You can set this id to `<Editor />` component or a div that wraps the `<Editor />` . It specifically depends on your use case.
 
+We recommend using the same id for both TocPlugin and BlockSelectionPlugin.
 
+## Configure options
 
+```ts
+type TocOptions = {
+  isScroll: boolean;
+  topOffset: number;
+  queryHeading?: (editor: SlateEditor) => Heading[];
+  scrollContainerSelector?: string;
+};
+```
 
+- `isScroll`: Set this to `false` if your editor doesn't have a fixed height.
+- `topOffset`: After scrolling to the specified element, scroll an additional distance.
+- `scrollContainerSelector`: explained above
+
+**queryHeading**: if you want to customize the heading selection logic, you can provide a function to query the headings.
+for example, you just want to use heading level 1 and 2, you can use this. by default, it will use all heading levels.
+
+## Toc Sidebar (Plus)
+
+Toc Sidebar has the following props you can configure it to match your needs:
+
+```tsx
+type TocSidebarProps = {
+  rootMargin?: string;
+  topOffset?: number;
+  maxShowCount?: number;
+};
+```
+- `rootMargin`: The margin around the viewport that should be considered when calculating the visibility of the target element.which is used in [IntersectionObserver](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API).
+- `topOffset`: After scrolling to the specified element, scroll an additional distance.
+- `maxShowCount`: The maximum number of items to show in the sidebar default is 20.
+
+here is an example of how to use the TocSidebar component:
+
+```tsx
+<Plate>
+
+  <Editor />
+
+  <TocSideBar
+    className="fixed right-8 top-24 ml-4 h-fit"
+    rootMargin="0px 0px 0px 0px"
+    topOffset={30}
+    maxShowCount={20}
+    />
+</Plate>
+```
 
 ## Plate Plus
+The TocSideBar component in Plate Plus offers the following features:
 
-<ComponentPreviewPro
-  name="pro-iframe-demo"
-  id="pro-slash-menu"
-  component="slash-menu"
-/>
+- Responsive design that adapts to different screen sizes
+- Dynamic highlighting of the corresponding thumbnail on the right side based on the current section
+- Hover thumbnail to see the preview of the section with smooth animation
+- Elegant transition effects when navigating between sections
+- Animated highlighting of the current section in the sidebar
+
+Here's an example of how to use the enhanced TocSideBar component in Plate Plus:
+
+
+
+<ComponentPreviewPro name="pro-iframe-demo"  id="pro-toc" component="toc" />

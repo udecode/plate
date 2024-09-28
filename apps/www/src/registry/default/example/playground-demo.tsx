@@ -125,7 +125,6 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         HeadingPlugin,
         TocPlugin.configure({
           options: {
-            isScroll: true,
             scrollContainerSelector: `#${scrollSelector}`,
             topOffset: 80,
           },
