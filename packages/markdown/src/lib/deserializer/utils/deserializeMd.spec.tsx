@@ -420,4 +420,63 @@ describe('deserializeMdIndentList', () => {
 
     expect(deserializeMd(editor, input)).toEqual(output);
   });
+
+  it('should deserialize list with indented block element', () => {
+    const input = `
+- 1
+- 2
+  - 2.1
+  \`\`\`
+  2.2 code
+  \`\`\`
+`.trim();
+    const output = [
+      {
+        children: [
+          {
+            text: '1',
+          },
+        ],
+        indent: 1,
+        listStyleType: 'disc',
+        type: 'p',
+      },
+      {
+        children: [
+          {
+            text: '2',
+          },
+        ],
+        indent: 1,
+        listStyleType: 'disc',
+        type: 'p',
+      },
+      {
+        children: [
+          {
+            text: '2.1',
+          },
+        ],
+        indent: 2,
+        listStyleType: 'disc',
+        type: 'p',
+      },
+      {
+        children: [
+          {
+            children: [
+              {
+                text: '2.2 code',
+              },
+            ],
+            type: 'code_line',
+          },
+        ],
+        indent: 2,
+        type: 'code_block',
+      },
+    ];
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
 });
