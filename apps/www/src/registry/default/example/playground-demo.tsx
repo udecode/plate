@@ -83,7 +83,10 @@ import { commentsData, usersData } from '@/plate/demo/values/commentsValue';
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
 import { AIMenu } from '@/registry/default/plate-ui/ai-menu';
 import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
-import { CursorOverlay } from '@/registry/default/plate-ui/cursor-overlay';
+import {
+  CursorOverlay,
+  SelectionOverlayPlugin,
+} from '@/registry/default/plate-ui/cursor-overlay';
 import { Editor } from '@/registry/default/plate-ui/editor';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
 import { FloatingToolbar } from '@/registry/default/plate-ui/floating-toolbar';
@@ -163,6 +166,7 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
             enableMerging: id === 'tableMerge',
           },
         }),
+        SelectionOverlayPlugin,
         AIPlugin.configure({
           options: {
             scrollContainerSelector: `#${scrollSelector}`,
