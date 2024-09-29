@@ -51,36 +51,36 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ariakit/core@npm:0.4.10":
-  version: 0.4.10
-  resolution: "@ariakit/core@npm:0.4.10"
-  checksum: 10c0/8eb6e31218d1c9d4e0daf02b4a031c07ce48a63c907d28be545104106ad30be73c7ba8247f84d4baff3b1bf47605b31e7e78e77289287c7989216e5418994830
+"@ariakit/core@npm:0.4.7":
+  version: 0.4.7
+  resolution: "@ariakit/core@npm:0.4.7"
+  checksum: 10c0/107f0cf197f2674c0e0b11660a8b5e4a966704914f49726f72ffa81c04ef6d8144c2df0a9f7ac23481b9598d1b10b73cf9e00f211c611172b4946ed024ee4460
   languageName: node
   linkType: hard
 
-"@ariakit/react-core@npm:0.4.11":
-  version: 0.4.11
-  resolution: "@ariakit/react-core@npm:0.4.11"
+"@ariakit/react-core@npm:0.4.7":
+  version: 0.4.7
+  resolution: "@ariakit/react-core@npm:0.4.7"
   dependencies:
-    "@ariakit/core": "npm:0.4.10"
+    "@ariakit/core": "npm:0.4.7"
     "@floating-ui/dom": "npm:^1.0.0"
     use-sync-external-store: "npm:^1.2.0"
   peerDependencies:
     react: ^17.0.0 || ^18.0.0 || ^19.0.0
     react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/e55c8c7f7e3cd75c7694c1159cb35d34c27c452299d8ab77ed67e99a2b2612c00a2e9beec07238b1ac388e688f407058173f598d626ac7ed58ecd9f3d3ea0bc7
+  checksum: 10c0/8cbd462bed3f328d523c05eee12424b2f70e35e585772d333d6c4513631f10bfab39cc0e36acca09afad4d3e50c44c2305fdbf917574e4e3ab084b425eb8a245
   languageName: node
   linkType: hard
 
-"@ariakit/react@npm:0.4.11":
-  version: 0.4.11
-  resolution: "@ariakit/react@npm:0.4.11"
+"@ariakit/react@npm:0.4.7":
+  version: 0.4.7
+  resolution: "@ariakit/react@npm:0.4.7"
   dependencies:
-    "@ariakit/react-core": "npm:0.4.11"
+    "@ariakit/react-core": "npm:0.4.7"
   peerDependencies:
     react: ^17.0.0 || ^18.0.0 || ^19.0.0
     react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/b64eaee58a82a416605488b0df0c3f74598d59cbbb7cbfdd6dce3dd2be9677b9e9a65045d519dfa99590af6ef75356683ff56d92918e2dd2d21a686ad423c87f
+  checksum: 10c0/9f919d72d3a57cc270747d83e10e3a0ef057cdaa038f2af07e16284892802bb365cff58fb0a287f6233ae24cf2d2f38c315411b16a68a6b4c212922b921a63cc
   languageName: node
   linkType: hard
 
@@ -466,6 +466,15 @@ __metadata:
   dependencies:
     regenerator-runtime: "npm:^0.14.0"
   checksum: 10c0/785aff96a3aa8ff97f90958e1e8a7b1d47f793b204b47c6455eaadc3f694f48c97cd5c0a921fe3596d818e71f18106610a164fb0f1c71fd68c622a58269d537c
+  languageName: node
+  linkType: hard
+
+"@babel/runtime@npm:^7.23.8":
+  version: 7.25.6
+  resolution: "@babel/runtime@npm:7.25.6"
+  dependencies:
+    regenerator-runtime: "npm:^0.14.0"
+  checksum: 10c0/d6143adf5aa1ce79ed374e33fdfd74fa975055a80bc6e479672ab1eadc4e4bfd7484444e17dd063a1d180e051f3ec62b357c7a2b817e7657687b47313158c3d2
   languageName: node
   linkType: hard
 
@@ -14322,6 +14331,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"match-sorter@npm:6.3.4":
+  version: 6.3.4
+  resolution: "match-sorter@npm:6.3.4"
+  dependencies:
+    "@babel/runtime": "npm:^7.23.8"
+    remove-accents: "npm:0.5.0"
+  checksum: 10c0/35d2a6b6df003c677d9ec87ecd4683657638f5bce856f43f9cf90b03e357ed2f09813ebbac759defa7e7438706936dd34dc2bfe1a18771f7d2541f14d639b4ad
+  languageName: node
+  linkType: hard
+
 "mdast-util-find-and-replace@npm:^3.0.0":
   version: 3.0.1
   resolution: "mdast-util-find-and-replace@npm:3.0.1"
@@ -18140,6 +18159,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"remove-accents@npm:0.5.0":
+  version: 0.5.0
+  resolution: "remove-accents@npm:0.5.0"
+  checksum: 10c0/a75321aa1b53d9abe82637115a492770bfe42bb38ed258be748bf6795871202bc8b4badff22013494a7029f5a241057ad8d3f72adf67884dbe15a9e37e87adc4
+  languageName: node
+  linkType: hard
+
 "repeat-string@npm:^1.6.1":
   version: 1.6.1
   resolution: "repeat-string@npm:1.6.1"
@@ -21583,7 +21609,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "www@workspace:apps/www"
   dependencies:
-    "@ariakit/react": "npm:0.4.11"
+    "@ariakit/react": "npm:0.4.7"
     "@radix-ui/colors": "npm:3.0.0"
     "@radix-ui/react-accessible-icon": "npm:^1.1.0"
     "@radix-ui/react-accordion": "npm:^1.2.0"
@@ -21693,6 +21719,7 @@ __metadata:
     glob: "npm:^11.0.0"
     lodash.template: "npm:^4.5.0"
     lucide-react: "npm:^0.441.0"
+    match-sorter: "npm:6.3.4"
     mdast-util-toc: "npm:^7.1.0"
     next: "npm:14.3.0-canary.43"
     next-contentlayer2: "npm:^0.4.6"
