@@ -1,4 +1,4 @@
-import { CopilotPlugin } from '@udecode/plate-ai/react';
+import { AIPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
@@ -105,6 +105,14 @@ export type SettingPlugin = {
 };
 
 export const customizerItems: Record<string, SettingPlugin> = {
+  [AIPlugin.key]: {
+    id: AIPlugin.key,
+    badges: [customizerBadges.handler],
+    label: 'AI',
+    npmPackage: '@udecode/plate-ai',
+    pluginFactory: 'AIPlugin',
+    route: customizerPlugins.ai.route,
+  },
   [AlignPlugin.key]: {
     id: AlignPlugin.key,
     badges: [customizerBadges.style],

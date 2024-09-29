@@ -6,7 +6,6 @@ import { settingsStore } from '@/components/context/settings-store';
 import { type ValueId, customizerPlugins } from '@/config/customizer-plugins';
 import { mapNodeId } from '@/plate/demo/mapNodeId';
 
-import { aiValue } from './aiValue';
 import { alignValue } from './alignValue';
 import { autoformatValue } from './autoformatValue';
 import { basicElementsValue } from './basicElementsValue';
@@ -76,7 +75,7 @@ export const usePlaygroundValue = (id?: ValueId): MyValue => {
     //AI
     if (enabled.copilot) value.unshift(...copilotValue);
 
-    value.unshift(...aiValue);
+    // value.unshift(...aiValue);
 
     // Marks
     if (enabled.color || enabled.backgroundColor) value.push(...fontValue);

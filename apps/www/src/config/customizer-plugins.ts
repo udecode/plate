@@ -1,4 +1,4 @@
-import { CopilotPlugin } from '@udecode/plate-ai/react';
+import { AIPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
@@ -41,6 +41,7 @@ import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
+import { aiValue } from '@/lib/plate/demo/values/aiValue';
 import { columnValue } from '@/lib/plate/demo/values/columnValue';
 import { copilotValue } from '@/lib/plate/demo/values/copilotValue';
 import { slashCommandValue } from '@/lib/plate/demo/values/slahMenuValue';
@@ -85,6 +86,13 @@ export type ValueId = keyof typeof customizerPlugins | 'tableMerge';
 
 // cmdk needs lowercase
 export const customizerPlugins = {
+  ai: {
+    id: 'ai',
+    label: 'AI',
+    plugins: [AIPlugin.key],
+    route: '/docs/ai',
+    value: aiValue,
+  },
   align: {
     id: 'align',
     label: 'Align',

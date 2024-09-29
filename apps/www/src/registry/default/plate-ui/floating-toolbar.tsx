@@ -3,12 +3,10 @@
 import React from 'react';
 
 import { cn, withRef } from '@udecode/cn';
-import { AIPlugin } from '@udecode/plate-ai/react';
 import {
   PortalBody,
   useComposedRef,
   useEditorId,
-  useEditorPlugin,
   useEventEditorSelectors,
 } from '@udecode/plate-common/react';
 import {
@@ -30,14 +28,9 @@ export const FloatingToolbar = withRef<
   const editorId = useEditorId();
   const focusedEditorId = useEventEditorSelectors.focus();
 
-  // FIXME: can not using isOpen
-  const { editor, useOption } = useEditorPlugin(AIPlugin);
-  const aiOpen = useOption('openEditorId') === editor.id;
-
   const floatingToolbarState = useFloatingToolbarState({
     editorId,
     focusedEditorId,
-    hideToolbar: aiOpen,
     ...state,
     floatingOptions: {
       middleware: [
