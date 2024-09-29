@@ -264,6 +264,11 @@ export const customizerComponents = {
     label: 'Element',
     title: 'Table Row',
   },
+  tocElement: {
+    href: '/docs/components/toc-element',
+    label: 'Element',
+    title: 'Table of Contents',
+  },
   todoListElement: {
     href: '/docs/components/todo-list-element',
     label: 'Element',

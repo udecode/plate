@@ -115,6 +115,7 @@ export const docsConfig: DocsConfig = {
         customizerComponents.tableDropdownMenu,
         customizerComponents.tableElement,
         customizerComponents.tableRowElement,
+        customizerComponents.tocElement,
         customizerComponents.todoListElement,
         customizerComponents.toggleElement,
         customizerComponents.toggleToolbarButton,
