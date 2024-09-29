@@ -108,6 +108,7 @@ Here's a more detailed example of how you might implement this function:
 ## Copilot state
 
 The Copilot plugin maintains its own state to manage the suggestion process. The state can be either 'idle' or 'completed'. Here's a breakdown of what each state means:
+
 ```ts
 type CopilotState = 'idle' | 'completed';
 ```
@@ -116,13 +117,93 @@ type CopilotState = 'idle' | 'completed';
 - `completed`: This state indicates that the Copilot has generated a suggestion and it's ready to be inserted into the editor. You'll see this suggestion as gray text in the editor in this state.
 
 You can access the current state of the Copilot using:
+
 ```ts
 const copilotState = editor.getOptions(CopilotPlugin).copilotState;
 ```
 
-
-
 ## Conflict with Other Plugins
+
+The Tab key is a popular and frequently used key in text editing, which can lead to conflicts.
+
+### Conflict with Indent Plugin
+
+Ideally, we should resolve conflicts within the plugins themselves. However, there isn't a straightforward method to do this for the Indent Plugin and Copilot Plugin conflict.
+As a workaround, you can place the Copilot Plugin before the Indent Plugin in your plugin configuration.
+
+Here's an example of how to order your plugins:
+
+```tsx
+const editor = usePlateEditor({
+  id: 'ai-demo',
+  override: {
+    components: PlateUI,
+  },
+  plugins: [
+    MarkdownPlugin.configure({ options: { indentList: true } }),
+    // CopilotPlugin should be before indent plugin
+    CopilotPlugin,
+    IndentPlugin.extend({
+      inject: {
+        targetPlugins: [
+          ParagraphPlugin.key,
+          HEADING_KEYS.h1,
+          HEADING_KEYS.h2,
+          HEADING_KEYS.h3,
+          HEADING_KEYS.h4,
+          HEADING_KEYS.h5,
+          HEADING_KEYS.h6,
+          BlockquotePlugin.key,
+          CodeBlockPlugin.key,
+          TogglePlugin.key,
+        ],
+      },
+    }),
+    IndentListPlugin.extend({
+      inject: {
+        targetPlugins: [
+          ParagraphPlugin.key,
+          HEADING_KEYS.h1,
+          HEADING_KEYS.h2,
+          HEADING_KEYS.h3,
+          HEADING_KEYS.h4,
+          HEADING_KEYS.h5,
+          HEADING_KEYS.h6,
+          BlockquotePlugin.key,
+          CodeBlockPlugin.key,
+          TogglePlugin.key,
+        ],
+      },
+      options: {
+        listStyleTypes: {
+          fire: {
+            liComponent: FireLiComponent,
+            markerComponent: FireMarker,
+            type: 'fire',
+          },
+          todo: {
+            liComponent: TodoLi,
+            markerComponent: TodoMarker,
+            type: 'todo',
+          },
+        },
+      },
+    }),
+    ...otherPlugins,
+  ],
+  value: copilotValue,
+});
+```
+
+It's important to note that when using `IndentListPlugin` instead of `ListPlugin`, you should configure the `MarkdownPlugin` with the `indentList: true` option. 
+
+This is necessary because the LLM generates Markdown, which needs to be converted to Plate nodes.If your LLM just generate the plain text, you can ignore this.
+
+Here's how you can set it up:
+
+```tsx
+MarkdownPlugin.configure({ options: { indentList: true } }),
+```
 
 
 ### Conflict with Tabbable Plugin
@@ -162,16 +243,13 @@ TabbablePlugin.configure(({ editor }) => ({
 }));
 ```
 
-
-
 ## Plate Plus
+
 In Plate Plus, We using debounce mode by default. That's mean you will see the suggestion automatically without pressing `Control+Space`.
 
 We also provide a new style of hover card that is more user-friendly.You can hover on the suggestion to see the hover card.
 
-
 All of the backend setup is available in [Potion template](https://pro.platejs.org/docs/templates/potion).
-
 
 <ComponentPreviewPro
   name="pro-iframe-demo"
@@ -186,11 +264,8 @@ All of the backend setup is available in [Potion template](https://pro.platejs.o
 Aborts the ongoing API request and removes any suggestion text currently displayed.
 
 <APIReturns>
-  <APIItem type="void">
-    This function does not return a value.
-  </APIItem>
+  <APIItem type="void">This function does not return a value.</APIItem>
 </APIReturns>
-
 
 ### editor.getApi(CopilotPlugin).copilot.setCopilot
 
@@ -205,10 +280,10 @@ Sets the suggestion text to the editor.
   </APIItem>
 </APIParameters>
 
-
 ## Utils functions
 
 ### withoutAbort
+
 Temporarily disables the abort functionality of the Copilot plugin,
 by default any apply will cause the Copilot to remove the suggestion text and abort the request.
 
@@ -222,12 +297,11 @@ by default any apply will cause the Copilot to remove the suggestion text and ab
 </APIParameters>
 
 <APIReturns>
-  <APIItem type="void">
-    This function does not return a value.
-  </APIItem>
+  <APIItem type="void">This function does not return a value.</APIItem>
 </APIReturns>
 
 Usage example:
+
 ```ts
 import { withoutAbort } from '@udecode/plate-ai/react';
 
