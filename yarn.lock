@@ -5904,14 +5904,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-basic-elements@npm:38.0.1, @udecode/plate-basic-elements@workspace:^, @udecode/plate-basic-elements@workspace:packages/basic-elements":
+"@udecode/plate-basic-elements@npm:38.0.12, @udecode/plate-basic-elements@workspace:^, @udecode/plate-basic-elements@workspace:packages/basic-elements":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-basic-elements@workspace:packages/basic-elements"
   dependencies:
     "@udecode/plate-block-quote": "npm:38.0.1"
     "@udecode/plate-code-block": "npm:38.0.1"
     "@udecode/plate-common": "workspace:^"
-    "@udecode/plate-heading": "npm:38.0.1"
+    "@udecode/plate-heading": "npm:38.0.12"
   peerDependencies:
     "@udecode/plate-common": ">=38.0.6"
     react: ">=16.8.0"
@@ -6215,12 +6215,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-docx@npm:38.0.10, @udecode/plate-docx@workspace:^, @udecode/plate-docx@workspace:packages/docx":
+"@udecode/plate-docx@npm:38.0.12, @udecode/plate-docx@workspace:^, @udecode/plate-docx@workspace:packages/docx":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-docx@workspace:packages/docx"
   dependencies:
     "@udecode/plate-common": "workspace:^"
-    "@udecode/plate-heading": "npm:38.0.1"
+    "@udecode/plate-heading": "npm:38.0.12"
     "@udecode/plate-indent": "npm:38.0.1"
     "@udecode/plate-indent-list": "npm:38.0.10"
     "@udecode/plate-media": "npm:38.0.6"
@@ -6323,7 +6323,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-heading@npm:38.0.1, @udecode/plate-heading@workspace:^, @udecode/plate-heading@workspace:packages/heading":
+"@udecode/plate-heading@npm:38.0.12, @udecode/plate-heading@workspace:^, @udecode/plate-heading@workspace:packages/heading":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-heading@workspace:packages/heading"
   dependencies:
@@ -6903,7 +6903,7 @@ __metadata:
   dependencies:
     "@udecode/plate-alignment": "npm:38.0.1"
     "@udecode/plate-autoformat": "npm:38.0.1"
-    "@udecode/plate-basic-elements": "npm:38.0.1"
+    "@udecode/plate-basic-elements": "npm:38.0.12"
     "@udecode/plate-basic-marks": "npm:38.0.1"
     "@udecode/plate-block-quote": "npm:38.0.1"
     "@udecode/plate-break": "npm:38.0.1"
@@ -6913,11 +6913,11 @@ __metadata:
     "@udecode/plate-common": "npm:38.0.6"
     "@udecode/plate-csv": "npm:38.0.8"
     "@udecode/plate-diff": "npm:38.0.0"
-    "@udecode/plate-docx": "npm:38.0.10"
+    "@udecode/plate-docx": "npm:38.0.12"
     "@udecode/plate-find-replace": "npm:38.0.0"
     "@udecode/plate-floating": "npm:38.0.1"
     "@udecode/plate-font": "npm:38.0.1"
-    "@udecode/plate-heading": "npm:38.0.1"
+    "@udecode/plate-heading": "npm:38.0.12"
     "@udecode/plate-highlight": "npm:38.0.1"
     "@udecode/plate-horizontal-rule": "npm:38.0.1"
     "@udecode/plate-html": "npm:38.0.1"
