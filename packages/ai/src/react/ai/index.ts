@@ -3,4 +3,5 @@
  */
 
 export * from './AIPlugin';
+export * from './stream/index';
 export * from './utils/index';

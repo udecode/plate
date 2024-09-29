@@ -2,7 +2,7 @@
 
 import type { PlateEditor } from '@udecode/plate-core/react';
 
-import { AIPlugin } from '@udecode/plate-ai/react';
+import { AIPlugin } from '../AIPlugin';
 
 interface StreamTraversalOptions {
   prompt: string;

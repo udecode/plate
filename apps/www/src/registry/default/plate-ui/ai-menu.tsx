@@ -12,13 +12,17 @@ import React, {
 } from 'react';
 
 import { cn } from '@udecode/cn';
-import { AIPlugin } from '@udecode/plate-ai/react';
+import {
+  AIPlugin,
+  getContent,
+  streamInsertText,
+  streamInsertTextSelection,
+} from '@udecode/plate-ai/react';
 import { useEditorPlugin } from '@udecode/plate-core/react';
 import { focusEditor } from '@udecode/slate-react';
 import isHotkey from 'is-hotkey';
 
 import { Icons } from '@/components/icons';
-import { Button } from '@/registry/default/plate-ui/button';
 
 import { useActionHandler } from './action-handler';
 import {
@@ -29,12 +33,13 @@ import {
   defaultValues,
 } from './ai-actions';
 import {
-  DefaultItems,
-  DefaultSuggestionItems,
-  SelectionItems,
-  SelectionSuggestionItems,
+  CursorCommands,
+  CursorSuggestions,
+  SelectionCommands,
+  SelectionSuggestions,
 } from './ai-menu-items';
 import { AIPreviewEditor } from './ai-previdew-editor';
+import { Button } from './button';
 import {
   type actionGroup,
   Ariakit,
@@ -43,8 +48,6 @@ import {
   filterAndBuildMenuTree,
   renderSearchMenuItems,
 } from './menu';
-import { streamInsertText, streamInsertTextSelection } from './stream';
-import { getContent } from './utils';
 
 // eslint-disable-next-line react/display-name
 export const AIMenu = memo(({ children }: React.PropsWithChildren) => {
@@ -140,13 +143,13 @@ export const AIMenu = memo(({ children }: React.PropsWithChildren) => {
   const [CurrentItems, CurrentActions] = React.useMemo(() => {
     if (aiState === 'done') {
       if (menuType === 'selection')
-        return [SelectionSuggestionItems, SelectionSuggestionActions];
+        return [SelectionSuggestions, SelectionSuggestionActions];
 
-      return [DefaultSuggestionItems, DefaultSuggestionActions];
+      return [CursorSuggestions, DefaultSuggestionActions];
     }
-    if (menuType === 'selection') return [SelectionItems, SelectionActions];
+    if (menuType === 'selection') return [SelectionCommands, SelectionActions];
 
-    return [DefaultItems, DefaultActions];
+    return [CursorCommands, DefaultActions];
   }, [aiState, menuType]);
 
   /** IME */

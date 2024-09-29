@@ -1,23 +1,19 @@
 import type { PlateEditor } from '@udecode/plate-common/react';
 
-import { AIPlugin } from '@udecode/plate-ai/react';
+import { getNodeEntries, isBlock } from '@udecode/plate-common';
 import { serializeMd, serializeMdNodes } from '@udecode/plate-markdown';
 import {
   type BlockSelectionConfig,
   BlockSelectionPlugin,
 } from '@udecode/plate-selection/react';
-import {
-  type GetNodeEntriesOptions,
-  getNodeEntries,
-  isBlock,
-  isElement,
-} from '@udecode/slate';
+
+import { AIPlugin } from '../AIPlugin';
 
 // If some content has already been generated using it to modify(improve) otherwise using the selection or block selected nodes.
 export const getContent = (editor: PlateEditor, aiEditor: PlateEditor) => {
   const aiState = editor.getOptions(AIPlugin).aiState;
 
-  if (aiState === 'done') return serializeAI(aiEditor);
+  if (aiState === 'done') return serializeMd(aiEditor);
   // Not Sure
   if (
     editor.getOption<BlockSelectionConfig, 'isSelecting', any>(
@@ -26,7 +22,10 @@ export const getContent = (editor: PlateEditor, aiEditor: PlateEditor) => {
       editor.id
     )
   ) {
-    const entries = getBlockSelectedEntries(editor);
+    const entries = editor
+      .getApi(BlockSelectionPlugin)
+      .blockSelection.getSelectedBlocks();
+
     const nodes = Array.from(entries, (entry) => entry[0]);
 
     return serializeMdNodes(nodes as any);
@@ -39,21 +38,4 @@ export const getContent = (editor: PlateEditor, aiEditor: PlateEditor) => {
   const nodes = Array.from(entries, (entry) => entry[0]);
 
   return serializeMdNodes(nodes as any);
-};
-
-export const serializeAI = (editor: PlateEditor) => {
-  return serializeMd(editor as any).trim();
-};
-
-export const getBlockSelectedEntries = (
-  editor: PlateEditor,
-  options?: GetNodeEntriesOptions
-) => {
-  const ids = editor.getOptions(BlockSelectionPlugin).selectedIds;
-
-  return getNodeEntries(editor, {
-    at: [],
-    match: (n) => isElement(n) && ids?.has(n.id as string),
-    ...options,
-  });
 };

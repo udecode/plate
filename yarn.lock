@@ -5897,6 +5897,8 @@ __metadata:
   resolution: "@udecode/plate-ai@workspace:packages/ai"
   dependencies:
     "@udecode/plate-combobox": "npm:38.0.1"
+    "@udecode/plate-markdown": "npm:38.0.1"
+    "@udecode/plate-selection": "npm:38.0.11"
     lodash: "npm:^4.17.21"
   peerDependencies:
     "@udecode/plate-common": ">=38.0.6"

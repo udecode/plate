@@ -1,7 +1,8 @@
 'use client';
-import { AIPlugin } from '@udecode/plate-ai/react';
+import { AIPlugin, streamInsertText } from '@udecode/plate-ai/react';
 import { type PlateEditor, ParagraphPlugin } from '@udecode/plate-core/react';
 import { serializeMdNodes } from '@udecode/plate-markdown';
+import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import { getEndPoint, setSelection, withMerging } from '@udecode/slate';
 import { focusEditor } from '@udecode/slate-react';
 import { insertEmptyElement } from '@udecode/slate-utils';
@@ -14,21 +15,19 @@ import {
   ACTION_SUGGESTION_MAKE_LONGER,
   ACTION_SUGGESTION_TRY_AGAIN,
 } from '@/registry/default/plate-ui/ai-actions';
-import { streamInsertText } from '@/registry/default/plate-ui/stream';
-import {
-  getBlockSelectedEntries,
-  getFirstBlockSelectedNode,
-} from '@/registry/default/plate-ui/utils';
 
 import type { ActionHandlerOptions } from './useActionHandler';
 
-export const defaultSuggestionActionHandler = (
+export const cursorSuggestionsHandler = (
   editor: PlateEditor,
   { group: _, value }: ActionHandlerOptions
 ) => {
   switch (value) {
     case ACTION_SUGGESTION_CONTINUE_WRITE: {
-      const entries = getBlockSelectedEntries(editor);
+      const entries = editor
+        .getApi(BlockSelectionPlugin)
+        .blockSelection.getSelectedBlocks();
+
       const nodes = Array.from(entries, (entry) => entry[0]);
 
       if (!nodes) return;
@@ -55,7 +54,11 @@ export const defaultSuggestionActionHandler = (
       break;
     }
     case ACTION_SUGGESTION_MAKE_LONGER: {
-      const first = getFirstBlockSelectedNode(editor);
+      const entries = editor
+        .getApi(BlockSelectionPlugin)
+        .blockSelection.getSelectedBlocks();
+
+      const first = Array.from(entries)[0];
 
       editor.setOptions(AIPlugin, { openEditorId: null });
       editor.undo();
@@ -75,7 +78,7 @@ export const defaultSuggestionActionHandler = (
     // BUG: first block focus
     case ACTION_SUGGESTION_DONE: {
       editor.getApi(AIPlugin).ai.hide();
-      clearBlockSelected(editor);
+      editor.getApi(BlockSelectionPlugin).blockSelection.resetSelectedIds();
       const curNodeEntry = editor.getOptions(AIPlugin).curNodeEntry;
 
       // set selection to last point
@@ -92,7 +95,7 @@ export const defaultSuggestionActionHandler = (
     // TODO:
     case ACTION_SUGGESTION_CLOSE: {
       editor.getApi(AIPlugin).ai.hide();
-      clearBlockSelected(editor);
+      editor.getApi(BlockSelectionPlugin).blockSelection.resetSelectedIds();
       setTimeout(() => {
         // set selection to last point
         focusEditor(editor);
@@ -101,7 +104,12 @@ export const defaultSuggestionActionHandler = (
       break;
     }
     case ACTION_SUGGESTION_TRY_AGAIN: {
-      const first = getFirstBlockSelectedNode(editor);
+      const entries = editor
+        .getApi(BlockSelectionPlugin)
+        .blockSelection.getSelectedBlocks();
+
+      const first = Array.from(entries)[0];
+
       editor.undo();
       editor.history.redos.pop();
 
@@ -116,13 +124,5 @@ export const defaultSuggestionActionHandler = (
 
       break;
     }
-  }
-};
-
-export const clearBlockSelected = (editor: PlateEditor) => {
-  const { blockSelectionStore } = editor as any;
-
-  if (blockSelectionStore) {
-    blockSelectionStore.set.resetSelectedIds();
   }
 };

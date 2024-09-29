@@ -1,18 +1,20 @@
 'use client';
-import { AIPlugin, updateMenuAnchorByPath } from '@udecode/plate-ai/react';
-import { type PlateEditor, ParagraphPlugin } from '@udecode/plate-core/react';
-import { deserializeMd } from '@udecode/plate-markdown';
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
-import { getEndPoint, insertText, withMerging } from '@udecode/slate';
 import {
   getAncestorNode,
+  getEndPoint,
   insertEmptyElement,
+  insertText,
   replaceNode,
-} from '@udecode/slate-utils';
+  withMerging,
+} from '@udecode/plate-common';
+import { type PlateEditor, ParagraphPlugin } from '@udecode/plate-common/react';
+import { deserializeMd } from '@udecode/plate-markdown';
+import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import { Path } from 'slate';
 
-import { getNextPathByNumber } from '@/registry/default/plate-ui/utils/getNextPathByNumber';
-
+import { AIPlugin } from '../AIPlugin';
+import { updateMenuAnchorByPath } from '../utils';
+import { getNextPathByNumber } from '../utils/getNextPathByNumber';
 import { getAISystem } from './getSystemMessage';
 import { streamTraversal } from './streamTraversal';
 

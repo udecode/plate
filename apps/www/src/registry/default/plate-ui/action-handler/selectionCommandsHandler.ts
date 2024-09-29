@@ -1,5 +1,7 @@
 import type { PlateEditor } from '@udecode/plate-core/react';
 
+import { getContent, streamInsertTextSelection } from '@udecode/plate-ai/react';
+
 import {
   ACTION_SELECTION_FIX_SPELLING,
   ACTION_SELECTION_IMPROVE_WRITING,
@@ -8,12 +10,10 @@ import {
   ACTION_SELECTION_SIMPLIFY_LANGUAGE,
   GROUP_SELECTION_LANGUAGES,
 } from '@/registry/default/plate-ui/ai-actions';
-import { streamInsertTextSelection } from '@/registry/default/plate-ui/stream';
-import { getContent } from '@/registry/default/plate-ui/utils';
 
 import type { ActionHandlerOptions } from './useActionHandler';
 
-export const selectionActionHandler = (
+export const selectionCommandsHandler = (
   editor: PlateEditor,
   aiEditor: PlateEditor,
   { group, value }: ActionHandlerOptions

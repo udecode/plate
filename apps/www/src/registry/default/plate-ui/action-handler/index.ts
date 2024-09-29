@@ -1,9 +1,9 @@
-export * from './defaultActionHandler';
+export * from './cursorCommandsHandler';
 
-export * from './defaultSuggestionActionHandler';
+export * from './cursorSuggestionsHandler';
 
-export * from './selectionActionHandler';
+export * from './selectionCommandsHandler';
 
-export * from './selectionSuggestionActionHandler';
+export * from './selectionSuggestionsHandler';
 
 export * from './useActionHandler';

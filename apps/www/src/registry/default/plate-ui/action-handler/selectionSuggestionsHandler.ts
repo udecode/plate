@@ -1,7 +1,11 @@
 'use client';
 import type { PlateEditor } from '@udecode/plate-core/react';
 
-import { AIPlugin } from '@udecode/plate-ai/react';
+import {
+  AIPlugin,
+  getContent,
+  streamInsertTextSelection,
+} from '@udecode/plate-ai/react';
 import { nanoid } from '@udecode/plate-core';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 import { insertNodes, isBlock, removeNodes, withMerging } from '@udecode/slate';
@@ -15,14 +19,10 @@ import {
   ACTION_SELECTION_SUGGESTION_REPLACE,
   ACTION_SELECTION_SUGGESTION_TRY_AGAIN,
 } from '@/registry/default/plate-ui/ai-actions';
-import { streamInsertTextSelection } from '@/registry/default/plate-ui/stream';
-import { getContent } from '@/registry/default/plate-ui/utils';
 
 import type { ActionHandlerOptions } from './useActionHandler';
 
-import { clearBlockSelected } from './defaultSuggestionActionHandler';
-
-export const selectionSuggestionActionHandler = (
+export const selectionSuggestionsHandler = (
   editor: PlateEditor,
   aiEditor: PlateEditor,
   { group: _, value }: ActionHandlerOptions
@@ -71,7 +71,7 @@ export const selectionSuggestionActionHandler = (
       });
 
       setTimeout(() => {
-        clearBlockSelected(editor);
+        editor.getApi(BlockSelectionPlugin).blockSelection.resetSelectedIds();
         ids.forEach((id) =>
           editor
             .getApi(BlockSelectionPlugin)
@@ -110,7 +110,7 @@ export const selectionSuggestionActionHandler = (
       insertNodes(editor, nodes, { at: path });
 
       setTimeout(() => {
-        clearBlockSelected(editor);
+        editor.getApi(BlockSelectionPlugin).blockSelection.resetSelectedIds();
         ids.forEach((id) =>
           editor
             .getApi(BlockSelectionPlugin)

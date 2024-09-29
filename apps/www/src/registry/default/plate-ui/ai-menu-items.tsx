@@ -12,7 +12,7 @@ import {
   renderMenuItems,
 } from './menu';
 
-export const DefaultItems = () => {
+export const CursorCommands = () => {
   return (
     <>
       <MenuGroup label="Write with AI">
@@ -33,7 +33,7 @@ export const DefaultItems = () => {
   );
 };
 
-export const DefaultSuggestionItems = () => {
+export const CursorSuggestions = () => {
   return (
     <>
       <MenuItem {...DefaultSuggestionActions.done} />
@@ -48,7 +48,7 @@ export const DefaultSuggestionItems = () => {
   );
 };
 
-export const SelectionItems = () => {
+export const SelectionCommands = () => {
   return (
     <>
       <MenuItem {...SelectionActions.improveWriting} />
@@ -71,7 +71,7 @@ export const SelectionItems = () => {
   );
 };
 
-export const SelectionSuggestionItems = () => {
+export const SelectionSuggestions = () => {
   return (
     <>
       <MenuItem preventClose {...SelectionSuggestionActions.replace} />

@@ -6,9 +6,9 @@ jsx;
 
 export const aiValue: any = (
   <fragment>
-    <hh1>✨ AI Assistant</hh1>
+    <hh1>✨ AI</hh1>
     <hp indent={1} listStyleType="decimal">
-      <htext>To trigger the AI assistant, you can:</htext>
+      <htext>To trigger the AI, you can:</htext>
     </hp>
     <hp indent={2} listStyleType="disc">
       <htext>Press the Space key on a new empty block</htext>
@@ -22,9 +22,7 @@ export const aiValue: any = (
       </htext>
     </hp>
     <hp indent={1} listStart={3} listStyleType="decimal">
-      <htext>
-        Press Enter to submit your prompt and generate AI-assisted content.
-      </htext>
+      <htext>Press Enter to submit your prompt and generate AI content.</htext>
     </hp>
     <hp indent={1} listStart={4} listStyleType="decimal">
       <htext>

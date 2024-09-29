@@ -5,10 +5,10 @@ import type { actionGroup } from '@/registry/default/plate-ui/menu';
 
 import { type PlateEditor, useEditorRef } from '@udecode/plate-core/react';
 
-import { defaultActionHandler } from './defaultActionHandler';
-import { defaultSuggestionActionHandler } from './defaultSuggestionActionHandler';
-import { selectionActionHandler } from './selectionActionHandler';
-import { selectionSuggestionActionHandler } from './selectionSuggestionActionHandler';
+import { cursorCommandsHandler } from './cursorCommandsHandler';
+import { cursorSuggestionsHandler } from './cursorSuggestionsHandler';
+import { selectionCommandsHandler } from './selectionCommandsHandler';
+import { selectionSuggestionsHandler } from './selectionSuggestionsHandler';
 
 export const useActionHandler = (
   action: actionGroup | null,
@@ -23,13 +23,13 @@ export const useActionHandler = (
 
     if (!value) return;
 
-    void defaultActionHandler(editor, { group, value });
+    void cursorCommandsHandler(editor, { group, value });
 
-    void defaultSuggestionActionHandler(editor, { group, value });
+    void cursorSuggestionsHandler(editor, { group, value });
 
-    void selectionActionHandler(editor, aiEditor, { group, value });
+    void selectionCommandsHandler(editor, aiEditor, { group, value });
 
-    void selectionSuggestionActionHandler(editor, aiEditor, {
+    void selectionSuggestionsHandler(editor, aiEditor, {
       group,
       value,
     });

@@ -1,13 +1,17 @@
 'use client';
-import { AIPlugin } from '@udecode/plate-ai/react';
-import { resetEditor } from '@udecode/plate-core';
-import { type PlateEditor, ParagraphPlugin } from '@udecode/plate-core/react';
+import {
+  getEndPoint,
+  insertEmptyElement,
+  insertText,
+  replaceNode,
+  resetEditor,
+  withMerging,
+} from '@udecode/plate-common';
+import { type PlateEditor, ParagraphPlugin } from '@udecode/plate-common/react';
 import { deserializeMd } from '@udecode/plate-markdown';
-import { getEndPoint, insertText, withMerging } from '@udecode/slate';
-import { insertEmptyElement, replaceNode } from '@udecode/slate-utils';
 
-import { getNextPathByNumber } from '@/registry/default/plate-ui/utils/getNextPathByNumber';
-
+import { AIPlugin } from '../AIPlugin';
+import { getNextPathByNumber } from '../utils/getNextPathByNumber';
 import { getSelectionMenuSystem } from './getSystemMessage';
 import { streamTraversal } from './streamTraversal';
 
