@@ -273,7 +273,6 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         // Functionality
         AutoformatPlugin.configure({ options: autoformatOptions }),
         BlockSelectionPlugin.configure({
-          enabled: !!scrollSelector,
           options: {
             areaOptions: {
               boundaries: `#${scrollSelector}`,
@@ -350,7 +349,10 @@ export default function PlaygroundDemo({
   const containerRef = useRef(null);
   const enabled = settingsStore.use.checkedComponents();
 
-  const editor = usePlaygroundEditor(id, scrollSelector);
+  const editor = usePlaygroundEditor(
+    id,
+    scrollSelector ?? `blockSelection-${id}`
+  );
 
   return (
     <DemoId id={id}>
@@ -374,7 +376,7 @@ export default function PlaygroundDemo({
             }
           >
             <div
-              id={scrollSelector}
+              id={scrollSelector ?? `blockSelection-${id}`}
               ref={containerRef}
               className={cn(
                 'relative flex max-h-[800px] w-full overflow-x-auto',
