@@ -338,6 +338,22 @@
   },
   {
     "dependencies": [
+      "@udecode/plate-heading"
+    ],
+    "files": [
+      {
+        "path": "plate-ui/toc-element.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "toc-element",
+    "registryDependencies": [
+      ""
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
       "react-day-picker@8.10.1",
       "date-fns"
     ],

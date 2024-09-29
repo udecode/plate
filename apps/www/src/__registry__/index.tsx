@@ -159,6 +159,17 @@ export const Index: Record<string, any> = {
       subcategory: "undefined",
       chunks: []
     },
+    "toc-element": {
+      name: "toc-element",
+      type: "registry:ui",
+      registryDependencies: [""],
+      files: ["registry/default/plate-ui/toc-element.tsx"],
+      component: React.lazy(() => import("@/registry/default/plate-ui/toc-element.tsx")),
+      source: "",
+      category: "undefined",
+      subcategory: "undefined",
+      chunks: []
+    },
     "calendar": {
       name: "calendar",
       type: "registry:ui",
