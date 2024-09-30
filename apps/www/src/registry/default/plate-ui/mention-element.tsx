@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import type { TMentionElement } from '@udecode/plate-mention';
 
 import { cn, withRef } from '@udecode/cn';
 import { getHandler } from '@udecode/plate-common';
 import { PlateElement, useElement } from '@udecode/plate-common/react';
+import { IS_APPLE } from '@udecode/utils';
 import { useFocused, useSelected } from 'slate-react';
 
 export const MentionElement = withRef<
@@ -18,6 +19,12 @@ export const MentionElement = withRef<
   const element = useElement<TMentionElement>();
   const selected = useSelected();
   const focused = useFocused();
+  const [isMacEnv, setIsMacEnv] = React.useState(false);
+
+  useEffect(() => {
+    // Avoid ssr hydration mismatch
+    setIsMacEnv(IS_APPLE);
+  }, []);
 
   return (
     <PlateElement
@@ -35,9 +42,21 @@ export const MentionElement = withRef<
       contentEditable={false}
       {...props}
     >
-      {prefix}
-      {renderLabel ? renderLabel(element) : element.value}
-      {children}
+      {isMacEnv ? (
+        // Mac OS IME https://github.com/ianstormtaylor/slate/issues/3490
+        <React.Fragment>
+          {children}
+          {prefix}
+          {renderLabel ? renderLabel(element) : element.value}
+        </React.Fragment>
+      ) : (
+        // Others like Android https://github.com/ianstormtaylor/slate/pull/5360
+        <React.Fragment>
+          {prefix}
+          {renderLabel ? renderLabel(element) : element.value}
+          {children}
+        </React.Fragment>
+      )}
     </PlateElement>
   );
 });
