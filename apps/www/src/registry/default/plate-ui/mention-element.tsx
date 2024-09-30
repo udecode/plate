@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import type { TMentionElement } from '@udecode/plate-mention';
 
@@ -7,6 +7,8 @@ import { getHandler } from '@udecode/plate-common';
 import { PlateElement, useElement } from '@udecode/plate-common/react';
 import { IS_APPLE } from '@udecode/utils';
 import { useFocused, useSelected } from 'slate-react';
+
+import { useMounted } from '@/hooks/use-mounted';
 
 export const MentionElement = withRef<
   typeof PlateElement,
@@ -19,12 +21,7 @@ export const MentionElement = withRef<
   const element = useElement<TMentionElement>();
   const selected = useSelected();
   const focused = useFocused();
-  const [isMacEnv, setIsMacEnv] = React.useState(false);
-
-  useEffect(() => {
-    // Avoid ssr hydration mismatch
-    setIsMacEnv(IS_APPLE);
-  }, []);
+  const mounted = useMounted();
 
   return (
     <PlateElement
@@ -42,7 +39,7 @@ export const MentionElement = withRef<
       contentEditable={false}
       {...props}
     >
-      {isMacEnv ? (
+      {mounted && IS_APPLE ? (
         // Mac OS IME https://github.com/ianstormtaylor/slate/issues/3490
         <React.Fragment>
           {children}
