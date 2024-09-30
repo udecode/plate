@@ -278,7 +278,7 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
           options: {
             areaOptions: {
               behaviour: {
-                startThreshold: 20,
+                startThreshold: 10,
               },
               boundaries: `#${scrollSelector}`,
               container: `#${scrollSelector}`,

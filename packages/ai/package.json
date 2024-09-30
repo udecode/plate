@@ -52,6 +52,7 @@
   "dependencies": {
     "@udecode/plate-combobox": "38.0.1",
     "@udecode/plate-markdown": "38.0.1",
+    "@udecode/plate-menu": "38.0.1",
     "@udecode/plate-selection": "38.0.11",
     "lodash": "^4.17.21"
   },

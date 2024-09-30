@@ -71,7 +71,7 @@ const comboboxListVariants = cva('rounded-sm', {
 type variant = 'ai' | 'default';
 
 type StyledMenuProps = MenuProps & {
-  variant: variant;
+  variant?: variant;
 };
 
 export const Menu = React.forwardRef<HTMLDivElement, StyledMenuProps>(
@@ -326,6 +326,7 @@ export function renderSearchMenuItems(
 ) {
   if (!matches) return null;
   if (matches.length === 0) {
+    // eslint-disable-next-line react/jsx-no-useless-fragment
     if (options?.hiddenOnEmpty) return <></>;
 
     return <div className={cn(menuItemVariants())}>No results</div>;

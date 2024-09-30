@@ -1,29 +1,10 @@
 /* eslint-disable tailwindcss/no-custom-classname */
 'use client';
 
-import React, {
-  type KeyboardEvent,
-  memo,
-  startTransition,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
-
-import type { actionGroup } from '@udecode/plate-menu';
+import React, { memo, useMemo } from 'react';
 
 import { cn } from '@udecode/cn';
-import {
-  AIPlugin,
-  getContent,
-  streamInsertText,
-  streamInsertTextSelection,
-} from '@udecode/plate-ai/react';
-import { useEditorPlugin } from '@udecode/plate-core/react';
-import { Ariakit, filterAndBuildMenuTree } from '@udecode/plate-menu';
-import { focusEditor } from '@udecode/slate-react';
-import isHotkey from 'is-hotkey';
+import { useAI } from '@udecode/plate-ai/react';
 
 import { Icons } from '@/components/icons';
 
@@ -47,138 +28,46 @@ import { Menu, comboboxVariants, renderSearchMenuItems } from './menu';
 
 // eslint-disable-next-line react/display-name
 export const AIMenu = memo(({ children }: React.PropsWithChildren) => {
-  const { api, editor, setOption, setOptions, useOption } =
-    useEditorPlugin(AIPlugin);
-
-  const isOpen = useOption('isOpen', editor.id);
-  const action = useOption('action');
-  const aiState = useOption('aiState');
-  const menuType = useOption('menuType');
-  const setAction = (action: actionGroup) => setOption('action', action);
-
-  const { aiEditor } = editor.useOptions(AIPlugin);
-
-  // init
-  const menu = Ariakit.useMenuStore();
-  useEffect(() => {
-    setOptions({
-      store: menu,
-    });
-    // eslint-disable-next`-line react-hooks/exhaustive-deps
-  }, [isOpen, menu, setOptions]);
-
-  const [values, setValues] = useState(defaultValues);
-  const [searchValue, setSearchValue] = useState('');
-
-  const streamInsert = useCallback(async () => {
-    if (!aiEditor) return;
-    if (menuType === 'selection') {
-      const content = getContent(editor, aiEditor);
-
-      await streamInsertTextSelection(editor, aiEditor, {
-        prompt: `user prompt is ${searchValue} the content is ${content}`,
-      });
-    } else if (menuType === 'space') {
-      await streamInsertText(editor, {
-        prompt: searchValue,
-      });
-    }
-  }, [aiEditor, editor, menuType, searchValue]);
-
-  const onInputKeyDown = async (e: KeyboardEvent<HTMLInputElement>) => {
-    if (isHotkey('backspace')(e) && searchValue.length === 0) {
-      e.preventDefault();
-      api.ai.hide();
-      focusEditor(editor);
-    }
-    if (isHotkey('enter')(e)) await streamInsert();
-  };
-
-  const onCloseMenu = useCallback(() => {
-    //  close menu if ai is not generating
-    if (aiState === 'idle' || aiState === 'done') {
-      api.ai.hide();
-      focusEditor(editor);
-    }
-    // abort if ai is generating
-    if (aiState === 'generating' || aiState === 'requesting') {
-      api.ai.abort();
-    }
-  }, [aiState, api.ai, editor]);
-
-  // close on escape
-  useEffect(() => {
-    const keydown = (e: any) => {
-      if (!isOpen || !isHotkey('escape')(e)) return;
-
-      onCloseMenu();
-    };
-
-    document.addEventListener('keydown', keydown);
-
-    return () => {
-      document.removeEventListener('keydown', keydown);
-    };
-  }, [aiState, api.ai, editor, isOpen, onCloseMenu]);
-
-  // block editor while generating
-  // const setReadOnly = usePlateStore().set.readOnly();
-  useEffect(() => {
-    if (aiState === 'generating') {
-      // setReadOnly(true);
-    }
-    if (aiState === 'done') {
-      // setReadOnly(false);
-      setSearchValue('');
-    }
-  }, [aiState, setSearchValue]);
+  const {
+    CurrentItems,
+    action,
+    aiEditor,
+    aiState,
+    comboboxProps,
+    menuProps,
+    menuType,
+    searchItems,
+    submitButtonProps,
+    onCloseMenu,
+  } = useAI({
+    aiActions: {
+      CursorCommandsActions,
+      CursorSuggestionActions,
+      SelectionCommandsActions,
+      SelectionSuggestionActions,
+    },
+    aiCommands: {
+      CursorCommands,
+      CursorSuggestions,
+      SelectionCommands,
+      SelectionSuggestions,
+    },
+    defaultValues,
+  });
 
   useActionHandler(action, aiEditor!);
 
-  const [CurrentItems, CurrentActions] = React.useMemo(() => {
-    if (aiState === 'done') {
-      if (menuType === 'selection')
-        return [SelectionSuggestions, SelectionSuggestionActions];
-
-      return [CursorSuggestions, CursorSuggestionActions];
-    }
-    if (menuType === 'selection')
-      return [SelectionCommands, SelectionCommandsActions];
-
-    return [CursorCommands, CursorCommandsActions];
-  }, [aiState, menuType]);
-
   /** IME */
-  const [isComposing, setIsComposing] = useState(false);
-
-  const searchItems = useMemo(() => {
-    return isComposing
-      ? []
-      : filterAndBuildMenuTree(Object.values(CurrentActions), searchValue);
-  }, [CurrentActions, isComposing, searchValue]);
 
   return (
     <>
       <Menu
         variant="ai"
-        loading={aiState === 'generating' || aiState === 'requesting'}
-        open={isOpen}
-        onClickOutside={() => {
-          return editor.getApi(AIPlugin).ai.hide();
-        }}
-        onValueChange={(value) => startTransition(() => setSearchValue(value))}
-        onValuesChange={(values: typeof defaultValues) => {
-          setValues(values);
-        }}
+        {...menuProps}
         combobox={
           <input
-            id="__potion_ai_menu_searchRef"
             className="flex-1 px-1"
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            onCompositionEnd={() => setIsComposing(false)}
-            onCompositionStart={() => setIsComposing(true)}
-            onKeyDown={onInputKeyDown}
+            {...comboboxProps}
             placeholder={
               aiState === 'done'
                 ? 'Tell AI what todo next'
@@ -199,10 +88,7 @@ export const AIMenu = memo(({ children }: React.PropsWithChildren) => {
             size="icon"
             variant="ghost"
             className="ml-2"
-            disabled={searchValue.trim().length === 0}
-            onClick={async () => {
-              await streamInsert();
-            }}
+            {...submitButtonProps}
           >
             <Icons.submit></Icons.submit>
           </Button>
@@ -233,9 +119,6 @@ export const AIMenu = memo(({ children }: React.PropsWithChildren) => {
             ></Icons.stop>
           </div>
         }
-        setAction={setAction}
-        store={menu}
-        values={values}
       >
         {renderSearchMenuItems(searchItems, { hiddenOnEmpty: true }) ?? (
           <CurrentItems />
