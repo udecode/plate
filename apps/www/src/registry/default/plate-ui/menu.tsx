@@ -2,8 +2,10 @@
 
 import * as React from 'react';
 
-import * as Ariakit from '@ariakit/react';
+import type { Action, MenuProps, setAction } from '@udecode/plate-menu';
+
 import { cn } from '@udecode/cn';
+import { Ariakit } from '@udecode/plate-menu';
 import { cva } from 'class-variance-authority';
 import { matchSorter } from 'match-sorter';
 
@@ -61,191 +63,157 @@ const comboboxListVariants = cva('rounded-sm', {
   },
 });
 
-export interface Action {
-  group?: string;
-  groupName?: string;
-  icon?: React.ReactNode;
-  items?: Action[];
-  keywords?: string[];
-  label?: string;
-  shortcut?: string;
-  value?: string;
-}
-
-export type actionGroup = {
-  group?: string;
-  value?: string;
-};
-
-export interface MenuProps extends Ariakit.MenuButtonProps<'div'> {
-  combobox?: Ariakit.ComboboxProps['render'];
-  comboboxClassName?: string;
-  comboboxListClassName?: string;
-  comboboxSubmitButton?: React.ReactElement;
-  dragButton?: Ariakit.MenuButtonProps['render'];
-  flip?: boolean;
-  getAnchorRect?: Ariakit.MenuProps['getAnchorRect'];
-  icon?: React.ReactNode;
-  injectAboveMenu?: React.ReactElement;
-  label?: React.ReactNode;
-  loading?: boolean;
-  loadingPlaceholder?: React.ReactNode;
-  onClickOutside?: (event: MouseEvent) => void;
-  onOpenChange?: (open: boolean) => void;
-  onRootMenuClose?: () => void;
-  onValueChange?: (value: string) => void;
-  onValuesChange?: Ariakit.MenuProviderProps['setValues'];
-  open?: boolean;
-  placement?: Ariakit.MenuProviderProps['placement'];
-  portal?: Ariakit.MenuProps['portal'];
-  searchValue?: string;
-  setAction?: setAction;
-  values?: Ariakit.MenuProviderProps['values'];
-  variant?: variant;
-}
-
 const SearchableContext = React.createContext(false);
 
-type setAction = (actionGroup: actionGroup) => void;
 const ActionContext = React.createContext<setAction | null>(null);
 
 type variant = 'ai' | 'default';
 
-export const Menu = React.forwardRef<HTMLDivElement, MenuProps>(function Menu(
-  {
-    children,
-    combobox,
-    comboboxClassName,
-    comboboxListClassName,
-    comboboxSubmitButton,
-    dragButton,
-    flip = true,
-    getAnchorRect,
-    icon,
-    injectAboveMenu,
-    label,
-    loading,
-    loadingPlaceholder,
-    open,
-    placement,
-    portal,
-    searchValue,
-    setAction,
-    store,
-    values,
-    variant,
-    onClickOutside,
-    onOpenChange,
-    onRootMenuClose,
-    onValueChange,
-    onValuesChange,
-    ...props
-  },
-  ref
-) {
-  const parent = Ariakit.useMenuContext();
-  const searchable = searchValue != null || !!onValueChange || !!combobox;
-  const ParentSetAction = React.useContext(ActionContext);
+type StyledMenuProps = MenuProps & {
+  variant: variant;
+};
 
-  const isRootMenu = !parent;
-  const isDraggleButtonMenu = !!dragButton;
-  const menuRef = React.useRef<HTMLDivElement | null>(null);
-
-  useOnClickOutside(menuRef, onClickOutside);
-
-  const menuProviderProps = {
-    open,
-    placement: isRootMenu ? placement : 'right',
-    setOpen: (v: boolean) => {
-      onOpenChange?.(v);
-
-      if (!v && !parent && !dragButton) onRootMenuClose?.();
+export const Menu = React.forwardRef<HTMLDivElement, StyledMenuProps>(
+  function Menu(
+    {
+      children,
+      combobox,
+      comboboxClassName,
+      comboboxListClassName,
+      comboboxSubmitButton,
+      dragButton,
+      flip = true,
+      getAnchorRect,
+      icon,
+      injectAboveMenu,
+      label,
+      loading,
+      loadingPlaceholder,
+      open,
+      placement,
+      portal,
+      searchValue,
+      setAction,
+      store,
+      values,
+      variant,
+      onClickOutside,
+      onOpenChange,
+      onRootMenuClose,
+      onValueChange,
+      onValuesChange,
+      ...props
     },
-    setValues: onValuesChange,
-    showTimeout: 100,
-    store,
-    values,
-  };
+    ref
+  ) {
+    const parent = Ariakit.useMenuContext();
+    const searchable = searchValue != null || !!onValueChange || !!combobox;
+    const ParentSetAction = React.useContext(ActionContext);
 
-  const menuButtonProps = {
-    ref,
-    ...props,
-    className: cn(isRootMenu && !isDraggleButtonMenu && 'hidden'),
-    render: isRootMenu ? dragButton : <MenuItem render={dragButton} />,
-  };
+    const isRootMenu = !parent;
+    const isDraggleButtonMenu = !!dragButton;
+    const menuRef = React.useRef<HTMLDivElement | null>(null);
 
-  const menuProps = {
-    className: cn(menuVariants({ variant }), props.className, searchable && ''),
-    flip,
-    getAnchorRect,
-    gutter: isRootMenu ? 0 : 4,
-    portal,
-    ref: isRootMenu ? menuRef : undefined,
-    unmountOnHide: true,
-  };
+    useOnClickOutside(menuRef, onClickOutside);
 
-  const menuContent = (
-    <Ariakit.MenuProvider {...menuProviderProps}>
-      <Ariakit.MenuButton {...menuButtonProps}>
-        {icon}
-        <span>{label}</span>
-        <Ariakit.MenuButtonArrow className="ml-auto text-muted-foreground" />
-      </Ariakit.MenuButton>
+    const menuProviderProps = {
+      open,
+      placement: isRootMenu ? placement : 'right',
+      setOpen: (v: boolean) => {
+        onOpenChange?.(v);
 
-      <Ariakit.Menu {...menuProps}>
-        {open && isRootMenu && injectAboveMenu}
-        <ActionContext.Provider value={setAction ?? ParentSetAction}>
-          <SearchableContext.Provider value={searchable}>
-            {searchable ? (
-              loading ? (
-                <React.Fragment>
-                  {loadingPlaceholder ?? <div>loading...</div>}
-                </React.Fragment>
+        if (!v && !parent && !dragButton) onRootMenuClose?.();
+      },
+      setValues: onValuesChange,
+      showTimeout: 100,
+      store,
+      values,
+    };
+
+    const menuButtonProps = {
+      ref,
+      ...props,
+      className: cn(isRootMenu && !isDraggleButtonMenu && 'hidden'),
+      render: isRootMenu ? dragButton : <MenuItem render={dragButton} />,
+    };
+
+    const menuProps = {
+      className: cn(
+        menuVariants({ variant }),
+        props.className,
+        searchable && ''
+      ),
+      flip,
+      getAnchorRect,
+      gutter: isRootMenu ? 0 : 4,
+      portal,
+      ref: isRootMenu ? menuRef : undefined,
+      unmountOnHide: true,
+    };
+
+    const menuContent = (
+      <Ariakit.MenuProvider {...menuProviderProps}>
+        <Ariakit.MenuButton {...menuButtonProps}>
+          {icon}
+          <span>{label}</span>
+          <Ariakit.MenuButtonArrow className="ml-auto text-muted-foreground" />
+        </Ariakit.MenuButton>
+
+        <Ariakit.Menu {...menuProps}>
+          {open && isRootMenu && injectAboveMenu}
+          <ActionContext.Provider value={setAction ?? ParentSetAction}>
+            <SearchableContext.Provider value={searchable}>
+              {searchable ? (
+                loading ? (
+                  <React.Fragment>
+                    {loadingPlaceholder ?? <div>loading...</div>}
+                  </React.Fragment>
+                ) : (
+                  <React.Fragment>
+                    <div
+                      className={cn(
+                        comboboxVariants({ variant }),
+                        comboboxClassName
+                      )}
+                    >
+                      <Ariakit.Combobox render={combobox} autoSelect />
+                      {comboboxSubmitButton && comboboxSubmitButton}
+                    </div>
+                    <Ariakit.ComboboxList
+                      className={cn(
+                        comboboxListVariants({ variant }),
+                        comboboxListClassName
+                      )}
+                    >
+                      {children}
+                    </Ariakit.ComboboxList>
+                  </React.Fragment>
+                )
               ) : (
-                <React.Fragment>
-                  <div
-                    className={cn(
-                      comboboxVariants({ variant }),
-                      comboboxClassName
-                    )}
-                  >
-                    <Ariakit.Combobox render={combobox} autoSelect />
-                    {comboboxSubmitButton && comboboxSubmitButton}
-                  </div>
-                  <Ariakit.ComboboxList
-                    className={cn(
-                      comboboxListVariants({ variant }),
-                      comboboxListClassName
-                    )}
-                  >
-                    {children}
-                  </Ariakit.ComboboxList>
-                </React.Fragment>
-              )
-            ) : (
-              children
-            )}
-          </SearchableContext.Provider>
-        </ActionContext.Provider>
-      </Ariakit.Menu>
-    </Ariakit.MenuProvider>
-  );
+                children
+              )}
+            </SearchableContext.Provider>
+          </ActionContext.Provider>
+        </Ariakit.Menu>
+      </Ariakit.MenuProvider>
+    );
 
-  const comboboxProviderProps = {
-    includesBaseElement: false,
-    resetValueOnHide: true,
-    setValue: onValueChange,
-    value: searchValue,
-  };
+    const comboboxProviderProps = {
+      includesBaseElement: false,
+      resetValueOnHide: true,
+      setValue: onValueChange,
+      value: searchValue,
+    };
 
-  return searchable ? (
-    <Ariakit.ComboboxProvider {...comboboxProviderProps}>
-      {menuContent}
-    </Ariakit.ComboboxProvider>
-  ) : (
-    menuContent
-  );
-});
+    return searchable ? (
+      <Ariakit.ComboboxProvider {...comboboxProviderProps}>
+        {menuContent}
+      </Ariakit.ComboboxProvider>
+    ) : (
+      menuContent
+    );
+  }
+);
 
 export interface MenuSeparatorProps extends Ariakit.MenuSeparatorProps {}
 
@@ -552,8 +520,6 @@ export function renderSearchMenuItems(
 
   return renderMenuItems({ items: matches });
 }
-
-export * as Ariakit from '@ariakit/react';
 
 // Utils ---------------------------------------------------------------
 

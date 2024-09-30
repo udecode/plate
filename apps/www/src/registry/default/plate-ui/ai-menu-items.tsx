@@ -1,7 +1,7 @@
 import {
-  DefaultActions,
-  DefaultSuggestionActions,
-  SelectionActions,
+  CursorCommandsActions,
+  CursorSuggestionActions,
+  SelectionCommandsActions,
   SelectionSuggestionActions,
 } from './ai-actions';
 import {
@@ -16,18 +16,18 @@ export const CursorCommands = () => {
   return (
     <>
       <MenuGroup label="Write with AI">
-        <MenuItem {...DefaultActions.continueWrite} />
+        <MenuItem {...CursorCommandsActions.continueWrite} />
       </MenuGroup>
       <MenuSeparator />
       <MenuGroup label="Generate from page">
-        <MenuItem {...DefaultActions.Summarize} />
+        <MenuItem {...CursorCommandsActions.Summarize} />
         <Menu
-          label={DefaultActions.translate.label}
-          icon={DefaultActions.translate.icon}
+          label={CursorCommandsActions.translate.label}
+          icon={CursorCommandsActions.translate.icon}
         >
-          {renderMenuItems(DefaultActions.translate)}
+          {renderMenuItems(CursorCommandsActions.translate)}
         </Menu>
-        <MenuItem {...DefaultActions.explain} />
+        <MenuItem {...CursorCommandsActions.explain} />
       </MenuGroup>
     </>
   );
@@ -36,14 +36,14 @@ export const CursorCommands = () => {
 export const CursorSuggestions = () => {
   return (
     <>
-      <MenuItem {...DefaultSuggestionActions.done} />
-      <MenuItem {...DefaultSuggestionActions.continueWrite} />
-      <MenuItem {...DefaultSuggestionActions.makeLonger} />
+      <MenuItem {...CursorSuggestionActions.done} />
+      <MenuItem {...CursorSuggestionActions.continueWrite} />
+      <MenuItem {...CursorSuggestionActions.makeLonger} />
 
       <MenuSeparator />
 
-      <MenuItem {...DefaultSuggestionActions.tryAgain} />
-      <MenuItem {...DefaultSuggestionActions.close} />
+      <MenuItem {...CursorSuggestionActions.tryAgain} />
+      <MenuItem {...CursorSuggestionActions.close} />
     </>
   );
 };
@@ -51,20 +51,20 @@ export const CursorSuggestions = () => {
 export const SelectionCommands = () => {
   return (
     <>
-      <MenuItem {...SelectionActions.improveWriting} />
-      <MenuItem {...SelectionActions.fixSpell} />
-      <MenuItem {...SelectionActions.makeShorter} />
-      <MenuItem {...SelectionActions.makeLonger} />
-      <MenuItem {...SelectionActions.simplifyLanguage} />
+      <MenuItem {...SelectionCommandsActions.improveWriting} />
+      <MenuItem {...SelectionCommandsActions.fixSpell} />
+      <MenuItem {...SelectionCommandsActions.makeShorter} />
+      <MenuItem {...SelectionCommandsActions.makeLonger} />
+      <MenuItem {...SelectionCommandsActions.simplifyLanguage} />
 
       <MenuSeparator />
 
       <MenuGroup label="Generate from selection">
         <Menu
-          label={SelectionActions.translate.label}
-          icon={SelectionActions.translate.icon}
+          label={SelectionCommandsActions.translate.label}
+          icon={SelectionCommandsActions.translate.icon}
         >
-          {renderMenuItems(SelectionActions.translate)}
+          {renderMenuItems(SelectionCommandsActions.translate)}
         </Menu>
       </MenuGroup>
     </>

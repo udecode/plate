@@ -8,12 +8,15 @@ import {
 } from '@udecode/plate-common/react';
 
 import { type BaseAIPluginConfig, BaseAIPlugin } from '../../lib';
+import { useAIHooks } from './useAIHook';
 
 export const KEY_AI = 'ai';
 
-export interface AIPlugin {
-  scrollContainerSelector?: string;
+interface ExposeOptions {
+  createAIEditor: () => PlateEditor;
+  scrollContainerSelector: string;
   trigger?: RegExp | string[] | string;
+
   triggerPreviousCharPattern?: RegExp;
 }
 
@@ -50,9 +53,9 @@ export type AIPluginConfig = ExtendConfig<
     lastWorkPath: Path | null;
     menuType: 'selection' | 'space' | null;
     openEditorId: string | null;
-    scrollContainerSelector: string;
     store: any | null;
-  } & AIApi &
+  } & ExposeOptions &
+    AIApi &
     AISelectors,
   {
     ai: AIApi;
@@ -182,4 +185,5 @@ export const AIPlugin = toTPlatePlugin<AIPluginConfig>(BaseAIPlugin, {
         });
       },
     },
+    useHooks: useAIHooks,
   }));

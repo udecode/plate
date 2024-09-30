@@ -27,7 +27,7 @@ export const GROUP_ALIGN = 'group_align';
 
 export const ACTION_CAPTION = 'action_cation';
 
-export const DefaultActions = {
+export const CursorCommandsActions = {
   Summarize: {
     icon: <Icons.summarize />,
     label: 'Summarize',
@@ -68,7 +68,7 @@ export const ACTION_SUGGESTION_MAKE_LONGER = 'action_longer';
 
 export const ACTION_SUGGESTION_TRY_AGAIN = 'action_try_again';
 
-export const DefaultSuggestionActions = {
+export const CursorSuggestionActions = {
   close: {
     icon: <Icons.close />,
     label: 'Close',
@@ -110,7 +110,7 @@ export const ACTION_SELECTION_SIMPLIFY_LANGUAGE = 'action_simplify_language';
 
 export const GROUP_SELECTION_LANGUAGES = 'group_selection_languages';
 
-export const SelectionActions = {
+export const SelectionCommandsActions = {
   fixSpell: {
     icon: <Icons.check />,
     label: 'Fix spelling & grammar',

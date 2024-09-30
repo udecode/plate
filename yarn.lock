@@ -6636,6 +6636,25 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@udecode/plate-menu@workspace:^, @udecode/plate-menu@workspace:packages/menu":
+  version: 0.0.0-use.local
+  resolution: "@udecode/plate-menu@workspace:packages/menu"
+  dependencies:
+    "@ariakit/react": "npm:0.4.7"
+    "@udecode/plate-common": "workspace:^"
+    "@udecode/plate-reset-node": "npm:38.0.1"
+    lodash: "npm:^4.17.21"
+  peerDependencies:
+    "@udecode/plate-common": ">=38.0.6"
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    slate: ">=0.103.0"
+    slate-history: ">=0.93.0"
+    slate-hyperscript: ">=0.66.0"
+    slate-react: ">=0.108.0"
+  languageName: unknown
+  linkType: soft
+
 "@udecode/plate-node-id@npm:38.0.1, @udecode/plate-node-id@workspace:^, @udecode/plate-node-id@workspace:packages/node-id":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-node-id@workspace:packages/node-id"
@@ -21611,7 +21630,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "www@workspace:apps/www"
   dependencies:
-    "@ariakit/react": "npm:0.4.7"
     "@radix-ui/colors": "npm:3.0.0"
     "@radix-ui/react-accessible-icon": "npm:^1.1.0"
     "@radix-ui/react-accordion": "npm:^1.2.0"
@@ -21689,6 +21707,7 @@ __metadata:
     "@udecode/plate-markdown": "workspace:^"
     "@udecode/plate-media": "workspace:^"
     "@udecode/plate-mention": "workspace:^"
+    "@udecode/plate-menu": "workspace:^"
     "@udecode/plate-node-id": "workspace:^"
     "@udecode/plate-normalizers": "workspace:^"
     "@udecode/plate-playwright": "workspace:^"

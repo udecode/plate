@@ -68,6 +68,7 @@ import Prism from 'prismjs';
 import { CheckPlugin } from '@/components/context/check-plugin';
 import { settingsStore } from '@/components/context/settings-store';
 import { PlaygroundFixedToolbarButtons } from '@/components/plate-ui/playground-fixed-toolbar-buttons';
+import { PlaygroundFloatingToolbar } from '@/components/plate-ui/playground-floating-toolbar';
 import { PlaygroundFloatingToolbarButtons } from '@/components/plate-ui/playground-floating-toolbar-buttons';
 import { getAutoformatOptions } from '@/lib/plate/demo/plugins/autoformatOptions';
 import { copilotPlugin } from '@/lib/plate/demo/plugins/copilotPlugin';
@@ -82,6 +83,7 @@ import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
 import { commentsData, usersData } from '@/plate/demo/values/commentsValue';
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
 import { AIMenu } from '@/registry/default/plate-ui/ai-menu';
+import { createAIEditor } from '@/registry/default/plate-ui/ai-previdew-editor';
 import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
 import {
   CursorOverlay,
@@ -89,7 +91,6 @@ import {
 } from '@/registry/default/plate-ui/cursor-overlay';
 import { Editor } from '@/registry/default/plate-ui/editor';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
-import { FloatingToolbar } from '@/registry/default/plate-ui/floating-toolbar';
 import { ImagePreview } from '@/registry/default/plate-ui/image-preview';
 import {
   FireLiComponent,
@@ -169,6 +170,7 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         SelectionOverlayPlugin,
         AIPlugin.configure({
           options: {
+            createAIEditor: createAIEditor,
             scrollContainerSelector: `#${scrollSelector}`,
           },
           render: { aboveEditable: AIMenu },
@@ -275,6 +277,9 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         BlockSelectionPlugin.configure({
           options: {
             areaOptions: {
+              behaviour: {
+                startThreshold: 20,
+              },
               boundaries: `#${scrollSelector}`,
               container: `#${scrollSelector}`,
               selectables: [`#${scrollSelector} .slate-selectable`],
@@ -357,7 +362,7 @@ export default function PlaygroundDemo({
   return (
     <DemoId id={id}>
       <DndProvider backend={HTML5Backend}>
-        <Plate onChange={(value) => console.log(value)} editor={editor}>
+        <Plate editor={editor}>
           <CheckPlugin componentId="fixed-toolbar">
             <FixedToolbar className="no-scrollbar">
               <CheckPlugin componentId="fixed-toolbar-buttons">
@@ -401,8 +406,9 @@ export default function PlaygroundDemo({
               />
 
               <CheckPlugin componentId="floating-toolbar">
-                <FloatingToolbar
+                <PlaygroundFloatingToolbar
                   state={{
+                    // hideToolbar: aiOpen,
                     showWhenReadOnly: isEnabled(
                       'comment',
                       id,
@@ -413,7 +419,7 @@ export default function PlaygroundDemo({
                   <CheckPlugin componentId="floating-toolbar-buttons">
                     <PlaygroundFloatingToolbarButtons />
                   </CheckPlugin>
-                </FloatingToolbar>
+                </PlaygroundFloatingToolbar>
               </CheckPlugin>
 
               <CheckPlugin id="cursoroverlay" plugin={DragOverCursorPlugin}>

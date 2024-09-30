@@ -11,6 +11,8 @@ import React, {
   useState,
 } from 'react';
 
+import type { actionGroup } from '@udecode/plate-menu';
+
 import { cn } from '@udecode/cn';
 import {
   AIPlugin,
@@ -19,6 +21,7 @@ import {
   streamInsertTextSelection,
 } from '@udecode/plate-ai/react';
 import { useEditorPlugin } from '@udecode/plate-core/react';
+import { Ariakit } from '@udecode/plate-menu';
 import { focusEditor } from '@udecode/slate-react';
 import isHotkey from 'is-hotkey';
 
@@ -26,9 +29,9 @@ import { Icons } from '@/components/icons';
 
 import { useActionHandler } from './action-handler';
 import {
-  DefaultActions,
-  DefaultSuggestionActions,
-  SelectionActions,
+  CursorCommandsActions,
+  CursorSuggestionActions,
+  SelectionCommandsActions,
   SelectionSuggestionActions,
   defaultValues,
 } from './ai-actions';
@@ -41,8 +44,6 @@ import {
 import { AIPreviewEditor } from './ai-previdew-editor';
 import { Button } from './button';
 import {
-  type actionGroup,
-  Ariakit,
   Menu,
   comboboxVariants,
   filterAndBuildMenuTree,
@@ -62,7 +63,6 @@ export const AIMenu = memo(({ children }: React.PropsWithChildren) => {
 
   const { aiEditor } = editor.useOptions(AIPlugin);
 
-  const isModalOpenRef = React.useRef(false);
   // init
   const menu = Ariakit.useMenuStore();
   useEffect(() => {
@@ -145,11 +145,12 @@ export const AIMenu = memo(({ children }: React.PropsWithChildren) => {
       if (menuType === 'selection')
         return [SelectionSuggestions, SelectionSuggestionActions];
 
-      return [CursorSuggestions, DefaultSuggestionActions];
+      return [CursorSuggestions, CursorSuggestionActions];
     }
-    if (menuType === 'selection') return [SelectionCommands, SelectionActions];
+    if (menuType === 'selection')
+      return [SelectionCommands, SelectionCommandsActions];
 
-    return [CursorCommands, DefaultActions];
+    return [CursorCommands, CursorCommandsActions];
   }, [aiState, menuType]);
 
   /** IME */
@@ -167,27 +168,8 @@ export const AIMenu = memo(({ children }: React.PropsWithChildren) => {
         variant="ai"
         loading={aiState === 'generating' || aiState === 'requesting'}
         open={isOpen}
-        onClickOutside={(e) => {
-          if (aiState === 'idle') return editor.getApi(AIPlugin).ai.hide();
-          if (isModalOpenRef.current) return;
-
-          e.preventDefault();
-          isModalOpenRef.current = true;
-
-          // pushModal('Discard', {
-          //   onCancel: () => {
-          //     setTimeout(() => {
-          //       editor.getApi(AIPlugin).ai.focusMenu();
-          //     }, 0);
-          //   },
-          //   onConfirm: () => {
-          //     // TODO: cancel stream
-          //     editor.getApi(AIPlugin).ai.hide();
-          //   },
-          //   onSettled: () => {
-          //     isModalOpenRef.current = false;
-          //   },
-          // });
+        onClickOutside={() => {
+          return editor.getApi(AIPlugin).ai.hide();
         }}
         onValueChange={(value) => startTransition(() => setSearchValue(value))}
         onValuesChange={(values: typeof defaultValues) => {
