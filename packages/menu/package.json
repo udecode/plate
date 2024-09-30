@@ -52,7 +52,8 @@
   "dependencies": {
     "@ariakit/react": "0.4.7",
     "@udecode/plate-reset-node": "38.0.1",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "match-sorter": "6.3.4"
   },
   "devDependencies": {
     "@udecode/plate-common": "workspace:^"

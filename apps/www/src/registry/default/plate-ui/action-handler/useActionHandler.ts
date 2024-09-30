@@ -1,7 +1,7 @@
 'use client';
 import { useEffect } from 'react';
 
-import type { actionGroup } from '@/registry/default/plate-ui/menu';
+import type { actionGroup } from '@udecode/plate-menu';
 
 import { type PlateEditor, useEditorRef } from '@udecode/plate-core/react';
 

@@ -21,7 +21,7 @@ import {
   streamInsertTextSelection,
 } from '@udecode/plate-ai/react';
 import { useEditorPlugin } from '@udecode/plate-core/react';
-import { Ariakit } from '@udecode/plate-menu';
+import { Ariakit, filterAndBuildMenuTree } from '@udecode/plate-menu';
 import { focusEditor } from '@udecode/slate-react';
 import isHotkey from 'is-hotkey';
 
@@ -43,12 +43,7 @@ import {
 } from './ai-menu-items';
 import { AIPreviewEditor } from './ai-previdew-editor';
 import { Button } from './button';
-import {
-  Menu,
-  comboboxVariants,
-  filterAndBuildMenuTree,
-  renderSearchMenuItems,
-} from './menu';
+import { Menu, comboboxVariants, renderSearchMenuItems } from './menu';
 
 // eslint-disable-next-line react/display-name
 export const AIMenu = memo(({ children }: React.PropsWithChildren) => {

@@ -1,6 +1,6 @@
-import { Icons } from '@/components/icons';
+import type { Action } from '@udecode/plate-menu';
 
-import type { Action } from './menu';
+import { Icons } from '@/components/icons';
 
 /** Common */
 const ACTION_CHINESE = 'action_chinese';

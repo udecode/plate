@@ -2,12 +2,17 @@
 
 import * as React from 'react';
 
-import type { Action, MenuProps, setAction } from '@udecode/plate-menu';
+import type { Action, MenuItemProps, MenuProps } from '@udecode/plate-menu';
 
 import { cn } from '@udecode/cn';
-import { Ariakit } from '@udecode/plate-menu';
+import {
+  ActionContext,
+  Ariakit,
+  SearchableContext,
+  useMenu,
+  useMenuItem,
+} from '@udecode/plate-menu';
 import { cva } from 'class-variance-authority';
-import { matchSorter } from 'match-sorter';
 
 const menuVariants = cva(
   'z-50 overflow-auto text-popover-foreground outline-none',
@@ -63,10 +68,6 @@ const comboboxListVariants = cva('rounded-sm', {
   },
 });
 
-const SearchableContext = React.createContext(false);
-
-const ActionContext = React.createContext<setAction | null>(null);
-
 type variant = 'ai' | 'default';
 
 type StyledMenuProps = MenuProps & {
@@ -74,136 +75,84 @@ type StyledMenuProps = MenuProps & {
 };
 
 export const Menu = React.forwardRef<HTMLDivElement, StyledMenuProps>(
-  function Menu(
-    {
-      children,
-      combobox,
-      comboboxClassName,
-      comboboxListClassName,
-      comboboxSubmitButton,
-      dragButton,
-      flip = true,
-      getAnchorRect,
-      icon,
-      injectAboveMenu,
-      label,
-      loading,
-      loadingPlaceholder,
-      open,
-      placement,
-      portal,
-      searchValue,
-      setAction,
-      store,
-      values,
-      variant,
-      onClickOutside,
-      onOpenChange,
-      onRootMenuClose,
-      onValueChange,
-      onValuesChange,
-      ...props
-    },
-    ref
-  ) {
-    const parent = Ariakit.useMenuContext();
-    const searchable = searchValue != null || !!onValueChange || !!combobox;
-    const ParentSetAction = React.useContext(ActionContext);
-
-    const isRootMenu = !parent;
-    const isDraggleButtonMenu = !!dragButton;
-    const menuRef = React.useRef<HTMLDivElement | null>(null);
-
-    useOnClickOutside(menuRef, onClickOutside);
-
-    const menuProviderProps = {
-      open,
-      placement: isRootMenu ? placement : 'right',
-      setOpen: (v: boolean) => {
-        onOpenChange?.(v);
-
-        if (!v && !parent && !dragButton) onRootMenuClose?.();
-      },
-      setValues: onValuesChange,
-      showTimeout: 100,
-      store,
-      values,
-    };
-
-    const menuButtonProps = {
+  function BaseMenu({ variant, ...props }, ref) {
+    const {
+      ParentSetAction,
+      comboboxProviderProps,
+      isDraggleButtonMenu,
+      isRootMenu,
+      menuButtonProps,
+      menuProps,
+      menuProviderProps,
+      searchable,
+    } = useMenu({
       ref,
       ...props,
-      className: cn(isRootMenu && !isDraggleButtonMenu && 'hidden'),
-      render: isRootMenu ? dragButton : <MenuItem render={dragButton} />,
-    };
-
-    const menuProps = {
-      className: cn(
-        menuVariants({ variant }),
-        props.className,
-        searchable && ''
-      ),
-      flip,
-      getAnchorRect,
-      gutter: isRootMenu ? 0 : 4,
-      portal,
-      ref: isRootMenu ? menuRef : undefined,
-      unmountOnHide: true,
-    };
+    });
 
     const menuContent = (
       <Ariakit.MenuProvider {...menuProviderProps}>
-        <Ariakit.MenuButton {...menuButtonProps}>
-          {icon}
-          <span>{label}</span>
+        <Ariakit.MenuButton
+          className={cn(isRootMenu && !isDraggleButtonMenu && 'hidden')}
+          render={
+            isRootMenu ? (
+              props.dragButton
+            ) : (
+              <MenuItem render={props.dragButton} />
+            )
+          }
+          {...menuButtonProps}
+        >
+          {props.icon}
+          <span>{props.label}</span>
           <Ariakit.MenuButtonArrow className="ml-auto text-muted-foreground" />
         </Ariakit.MenuButton>
 
-        <Ariakit.Menu {...menuProps}>
-          {open && isRootMenu && injectAboveMenu}
-          <ActionContext.Provider value={setAction ?? ParentSetAction}>
+        <Ariakit.Menu
+          className={cn(
+            menuVariants({ variant }),
+            props.className,
+            searchable && ''
+          )}
+          {...menuProps}
+        >
+          {props.open && isRootMenu && props.injectAboveMenu}
+          <ActionContext.Provider value={props.setAction ?? ParentSetAction}>
             <SearchableContext.Provider value={searchable}>
               {searchable ? (
-                loading ? (
+                props.loading ? (
                   <React.Fragment>
-                    {loadingPlaceholder ?? <div>loading...</div>}
+                    {props.loadingPlaceholder ?? <div>loading...</div>}
                   </React.Fragment>
                 ) : (
                   <React.Fragment>
                     <div
                       className={cn(
                         comboboxVariants({ variant }),
-                        comboboxClassName
+                        props.comboboxClassName
                       )}
                     >
-                      <Ariakit.Combobox render={combobox} autoSelect />
-                      {comboboxSubmitButton && comboboxSubmitButton}
+                      <Ariakit.Combobox render={props.combobox} autoSelect />
+                      {props.comboboxSubmitButton && props.comboboxSubmitButton}
                     </div>
                     <Ariakit.ComboboxList
                       className={cn(
                         comboboxListVariants({ variant }),
-                        comboboxListClassName
+                        props.comboboxListClassName
                       )}
                     >
-                      {children}
+                      {props.children}
                     </Ariakit.ComboboxList>
                   </React.Fragment>
                 )
               ) : (
-                children
+                props.children
               )}
             </SearchableContext.Provider>
           </ActionContext.Provider>
         </Ariakit.Menu>
       </Ariakit.MenuProvider>
     );
-
-    const comboboxProviderProps = {
-      includesBaseElement: false,
-      resetValueOnHide: true,
-      setValue: onValueChange,
-      value: searchValue,
-    };
 
     return searchable ? (
       <Ariakit.ComboboxProvider {...comboboxProviderProps}>
@@ -270,97 +219,40 @@ export const MenuShortcut = React.forwardRef<
   );
 });
 
-export interface MenuItemProps
-  extends Omit<Ariakit.ComboboxItemProps, 'store'> {
-  group?: string;
-  icon?: React.ReactNode;
-  label?: string;
-  name?: string;
-  parentGroup?: string;
-  preventClose?: boolean;
-  shortcut?: string;
-  value?: string;
-}
-
 export const MenuItem = React.forwardRef<HTMLDivElement, MenuItemProps>(
-  function MenuItem(
-    {
-      className,
-      group,
-      icon,
-      label,
-      name,
-      parentGroup,
-      preventClose,
-      shortcut,
-      value,
-      ...props
-    },
-    ref
-  ) {
-    const menu = Ariakit.useMenuContext();
-
-    if (!menu) throw new Error('MenuItem should be used inside a Menu');
-
-    const setAction = React.useContext(ActionContext);
-
-    const searchable = React.useContext(SearchableContext);
-
-    const baseOnClick = (
-      event: React.MouseEvent<HTMLDivElement, MouseEvent>
-    ) => {
-      props.onClick?.(event);
-
-      if (event.isDefaultPrevented()) return;
-      if (setAction === null)
-        console.warn('Did you forget to pass the setAction prop?');
-
-      setAction?.({ group, value });
-    };
-
-    const baseProps: MenuItemProps = {
-      blurOnHoverEnd: false,
-      focusOnHover: true,
-      label,
-      ref,
+  function MenuItem({ className, ...props }, ref) {
+    const {
+      baseProps,
+      comboboxProps,
+      isCheckable,
+      isChecked,
+      isRadio,
+      radioProps,
+      searchable,
+    } = useMenuItem({
       ...props,
-      className: cn(
-        menuItemVariants(),
-        shortcut && 'justify-between',
-        className
-      ),
-      group: parentGroup,
-      name: group,
-      value: value || label,
-      onClick: baseOnClick,
-    };
-
-    const isCheckable = menu.useState((state) => {
-      if (!group) return false;
-      if (value == null) return false;
-
-      return state.values[group] != null;
+      ref,
     });
 
-    const isChecked = menu.useState((state) => {
-      if (!group) return false;
-
-      return state.values[group] === value;
-    });
+    const baseClassName = cn(
+      menuItemVariants(),
+      props.shortcut && 'justify-between',
+      className
+    );
 
     baseProps.children = (
       <>
         <div className="flex items-center gap-2">
-          {icon}
-          {baseProps.children ?? label}
+          {props.icon}
+          {baseProps.children ?? props.label}
         </div>
 
-        {(shortcut || isCheckable) && (
+        {(props.shortcut || isCheckable) && (
           <div className="flex items-center">
             {isCheckable && (
               <Ariakit.MenuItemCheck className="ml-2" checked={isChecked} />
             )}
-            {shortcut && <MenuShortcut>{shortcut}</MenuShortcut>}
+            {props.shortcut && <MenuShortcut>{props.shortcut}</MenuShortcut>}
             {isCheckable && searchable && (
               <Ariakit.VisuallyHidden>
                 {isChecked ? 'checked' : 'not checked'}
@@ -372,101 +264,22 @@ export const MenuItem = React.forwardRef<HTMLDivElement, MenuItemProps>(
     );
 
     if (!searchable) {
-      if (name != null && value != null) {
-        const radioProps = { ...baseProps, hideOnClick: true, name, value };
-
-        return <Ariakit.MenuItemRadio {...radioProps} />;
-      }
-
-      return <Ariakit.MenuItem {...baseProps} />;
+      return isRadio ? (
+        <Ariakit.MenuItemRadio className={baseClassName} {...radioProps} />
+      ) : (
+        <Ariakit.MenuItem className={baseClassName} {...baseProps} />
+      );
     }
-
-    const hideOnClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
-      const expandable = event.currentTarget.hasAttribute('aria-expanded');
-
-      if (expandable) return false;
-      if (preventClose) return false;
-
-      menu.hideAll();
-
-      return false;
-    };
-
-    const selectValueOnClick = () => {
-      if (name == null || value == null) return false;
-
-      menu.setValue(name, value);
-
-      return true;
-    };
 
     return (
       <Ariakit.ComboboxItem
+        className={baseClassName}
         {...baseProps}
-        value={isCheckable ? value : undefined}
-        hideOnClick={hideOnClick}
-        selectValueOnClick={selectValueOnClick}
-        setValueOnClick={false}
+        {...comboboxProps}
       />
     );
   }
 );
-
-export function filterAndBuildMenuTree(
-  actions: Action[],
-  searchValue: string
-): Action[] | null {
-  if (!searchValue) return null;
-
-  const options = flattenMenuTree(actions);
-
-  const matches = matchSorter(options, searchValue, {
-    keys: ['label', 'group', 'value', 'keywords'],
-  });
-
-  return buildMenuTree(matches.slice(0, 15));
-}
-
-export function flattenMenuTree(actions: Action[]): Action[] {
-  return actions.flatMap((item) => {
-    if (item.items) {
-      const parentGroup = item.group ?? item.label;
-      const groupName = item.label;
-
-      return flattenMenuTree(
-        item.items.map(({ group, ...item }) => ({
-          ...item,
-          group: group ?? parentGroup,
-          groupName,
-        }))
-      );
-    }
-
-    return item;
-  });
-}
-
-export function buildMenuTree(actions: Action[] | null) {
-  if (!actions) return null;
-
-  return actions.reduce<Action[]>((actions, option) => {
-    if (option.groupName) {
-      const groupName = actions.find(
-        (action) => action.label === option.groupName
-      );
-
-      if (groupName) {
-        groupName.items!.push(option);
-      } else {
-        actions.push({ items: [option], label: option.groupName });
-      }
-    } else {
-      actions.push(option);
-    }
-
-    return actions;
-  }, []);
-}
 
 export function renderMenuItems({
   group,
@@ -520,126 +333,3 @@ export function renderSearchMenuItems(
 
   return renderMenuItems({ items: matches });
 }
-
-// Utils ---------------------------------------------------------------
-
-import { useEffect, useLayoutEffect, useRef } from 'react';
-
-/**
- * Determines the appropriate effect hook to use based on the environment. If
- * the code is running on the client-side (browser), it uses the
- * `useLayoutEffect` hook, otherwise, it uses the `useEffect` hook.
- */
-export const useIsomorphicLayoutEffect =
-  typeof window === 'undefined' ? useEffect : useLayoutEffect;
-
-// MediaQueryList Event based useEventListener interface
-function useEventListener<K extends keyof MediaQueryListEventMap>(
-  eventName: K,
-  handler: (event: MediaQueryListEventMap[K]) => void,
-  element: React.RefObject<MediaQueryList>,
-  options?: AddEventListenerOptions | boolean
-): void;
-
-// Window Event based useEventListener interface
-function useEventListener<K extends keyof WindowEventMap>(
-  eventName: K,
-  handler: (event: WindowEventMap[K]) => void,
-  element?: undefined,
-  options?: AddEventListenerOptions | boolean
-): void;
-
-// Element Event based useEventListener interface
-function useEventListener<
-  K extends keyof HTMLElementEventMap,
-  T extends HTMLElement = HTMLDivElement,
->(
-  eventName: K,
-  handler: (event: HTMLElementEventMap[K]) => void,
-  element: React.RefObject<T>,
-  options?: AddEventListenerOptions | boolean
-): void;
-
-// Document Event based useEventListener interface
-function useEventListener<K extends keyof DocumentEventMap>(
-  eventName: K,
-  handler: (event: DocumentEventMap[K]) => void,
-  element: React.RefObject<Document>,
-  options?: AddEventListenerOptions | boolean
-): void;
-
-// https://usehooks-ts.com/react-hook/use-event-listener
-function useEventListener<
-  KW extends keyof WindowEventMap,
-  KH extends keyof HTMLElementEventMap,
-  KM extends keyof MediaQueryListEventMap,
-  T extends HTMLElement | MediaQueryList | void = void,
->(
-  eventName: KH | KM | KW,
-  handler: (
-    event:
-      | Event
-      | HTMLElementEventMap[KH]
-      | MediaQueryListEventMap[KM]
-      | WindowEventMap[KW]
-  ) => void,
-  element?: React.RefObject<T>,
-  options?: AddEventListenerOptions | boolean
-) {
-  // Create a ref that stores handler
-  const savedHandler = useRef(handler);
-
-  useIsomorphicLayoutEffect(() => {
-    savedHandler.current = handler;
-  }, [handler]);
-
-  useEffect(() => {
-    // Define the listening target
-    const targetElement: T | Window = element?.current ?? window;
-
-    if (!(targetElement && targetElement.addEventListener)) return;
-
-    // Create event listener that calls handler function stored in ref
-    const listener: typeof handler = (event) => savedHandler.current(event);
-
-    targetElement.addEventListener(eventName, listener, options);
-
-    // Remove event listener on cleanup
-    return () => {
-      targetElement.removeEventListener(eventName, listener, options);
-    };
-  }, [eventName, element, options]);
-}
-
-type Handler = (event: MouseEvent) => void;
-
-/**
- * Attaches an event listener to detect clicks that occur outside a given
- * element.
- *
- * @template T - The type of HTMLElement that the ref is referring to.
- * @param {RefObject<T>} ref - A React ref object that points to the element to
- *   listen for clicks outside of.
- * @param {Handler} handler - The callback function to be executed when a click
- *   occurs outside the element.
- * @param {string} [mouseEvent='mousedown'] - The type of mouse event to listen
- *   for (e.g., 'mousedown', 'mouseup'). Default is `'mousedown'`
- */
-export const useOnClickOutside = <T extends HTMLElement = HTMLElement>(
-  ref: React.RefObject<T>,
-  handler?: Handler,
-  mouseEvent: 'mousedown' | 'mouseup' = 'mousedown'
-): void => {
-  useEventListener(mouseEvent, (event) => {
-    if (!handler) return;
-
-    const el = ref?.current;
-
-    // Do nothing if clicking ref's element or descendent elements
-    if (!el || el.contains(event.target as Node)) {
-      return;
-    }
-
-    handler(event);
-  });
-};

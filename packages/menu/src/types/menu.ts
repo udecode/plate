@@ -1,24 +1,5 @@
-import type React from 'react';
-
-import type * as Ariakit from '@ariakit/react';
-
-export interface Action {
-  group?: string;
-  groupName?: string;
-  icon?: React.ReactNode;
-  items?: Action[];
-  keywords?: string[];
-  label?: string;
-  shortcut?: string;
-  value?: string;
-}
-
-export type actionGroup = {
-  group?: string;
-  value?: string;
-};
-
-export type setAction = (actionGroup: actionGroup) => void;
+import type { Ariakit } from '../lib';
+import type { setAction } from './action';
 
 export interface MenuProps extends Ariakit.MenuButtonProps<'div'> {
   combobox?: Ariakit.ComboboxProps['render'];
