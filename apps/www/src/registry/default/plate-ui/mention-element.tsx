@@ -5,7 +5,10 @@ import type { TMentionElement } from '@udecode/plate-mention';
 import { cn, withRef } from '@udecode/cn';
 import { getHandler } from '@udecode/plate-common';
 import { PlateElement, useElement } from '@udecode/plate-common/react';
+import { IS_APPLE } from '@udecode/utils';
 import { useFocused, useSelected } from 'slate-react';
+
+import { useMounted } from '@/hooks/use-mounted';
 
 export const MentionElement = withRef<
   typeof PlateElement,
@@ -18,6 +21,7 @@ export const MentionElement = withRef<
   const element = useElement<TMentionElement>();
   const selected = useSelected();
   const focused = useFocused();
+  const mounted = useMounted();
 
   return (
     <PlateElement
@@ -35,9 +39,21 @@ export const MentionElement = withRef<
       contentEditable={false}
       {...props}
     >
-      {prefix}
-      {renderLabel ? renderLabel(element) : element.value}
-      {children}
+      {mounted && IS_APPLE ? (
+        // Mac OS IME https://github.com/ianstormtaylor/slate/issues/3490
+        <React.Fragment>
+          {children}
+          {prefix}
+          {renderLabel ? renderLabel(element) : element.value}
+        </React.Fragment>
+      ) : (
+        // Others like Android https://github.com/ianstormtaylor/slate/pull/5360
+        <React.Fragment>
+          {prefix}
+          {renderLabel ? renderLabel(element) : element.value}
+          {children}
+        </React.Fragment>
+      )}
     </PlateElement>
   );
 });
