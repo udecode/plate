@@ -38,6 +38,12 @@ module.exports = {
         },
         background: 'hsl(var(--background))',
         border: 'hsl(var(--border))',
+        brand: {
+          DEFAULT: 'hsl(var(--brand))',
+          active: 'hsl(var(--brand-active))',
+          foreground: 'hsl(var(--brand-foreground))',
+          hover: 'hsl(var(--brand-hover))',
+        },
         card: {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
@@ -47,6 +53,10 @@ module.exports = {
           foreground: 'hsl(var(--destructive-foreground) / <alpha-value>)',
         },
         foreground: 'hsl(var(--foreground))',
+        highlight: {
+          DEFAULT: 'hsl(var(--highlight))',
+          foreground: 'hsl(var(--highlight-foreground))',
+        },
         input: 'hsl(var(--input))',
         muted: {
           DEFAULT: 'hsl(var(--muted))',
