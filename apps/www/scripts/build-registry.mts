@@ -779,7 +779,7 @@ try {
   await buildStylesIndex()
   await buildThemes()
 
-  console.log("✅ Done!")
+  console.info("✅ Done!")
 } catch (error) {
   console.error(error)
   process.exit(1)

@@ -3145,7 +3145,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-compose-refs@npm:1.1.0":
+"@radix-ui/react-compose-refs@npm:1.1.0, @radix-ui/react-compose-refs@npm:^1.1.0":
   version: 1.1.0
   resolution: "@radix-ui/react-compose-refs@npm:1.1.0"
   peerDependencies:
@@ -6966,6 +6966,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/react-utils@workspace:packages/react-utils"
   dependencies:
+    "@radix-ui/react-compose-refs": "npm:^1.1.0"
     "@radix-ui/react-slot": "npm:^1.1.0"
     "@udecode/utils": "npm:37.0.0"
     clsx: "npm:^2.1.1"
