@@ -62,12 +62,11 @@ export function SettingCheckbox({
                         settingsStore.set.setCheckedIdNext(id, _checked);
                       }}
                     />
-                    <Label className="flex p-2" htmlFor={id}>
+                    <Label className="flex px-2" htmlFor={id}>
                       {label}
                     </Label>
                   </div>
                 </TooltipTrigger>
-
                 <TooltipContent className="max-w-[200px]">
                   {description}
                 </TooltipContent>
@@ -193,7 +192,7 @@ export function SettingCheckbox({
                     htmlId={componentHtmlId}
                   />
 
-                  <Label className="flex p-2" htmlFor={componentHtmlId}>
+                  <Label className="flex px-2" htmlFor={componentHtmlId}>
                     <Code>{componentLabel}</Code>
                   </Label>
                 </div>
