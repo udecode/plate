@@ -128,8 +128,12 @@ The Tab key is a popular and frequently used key in text editing, which can lead
 
 ### Conflict with Indent Plugin
 
-Ideally, we should resolve conflicts within the plugins themselves. However, there isn't a straightforward method to do this for the Indent Plugin and Copilot Plugin conflict.
-As a workaround, you can place the Copilot Plugin before the Indent Plugin in your plugin configuration.
+The **IndentPlugin** and **IndentListPlugin**  have a similar conflict with **Copilot Plugin**.
+
+As a workaround, you can place the Copilot Plugin before the these two plugins in your plugin configuration.
+
+Or set the priority of Copilot Plugin to a higher value than Indent Plugin see [priority](https://platejs.org/docs/plugin#plugin-priority).
+
 
 Here's an example of how to order your plugins:
 
