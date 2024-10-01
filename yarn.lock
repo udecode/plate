@@ -5896,13 +5896,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@udecode/plate-ai@workspace:packages/ai"
   dependencies:
-    "@udecode/plate-combobox": "npm:38.0.1"
-    "@udecode/plate-markdown": "npm:38.0.1"
-    "@udecode/plate-menu": "npm:38.0.1"
-    "@udecode/plate-selection": "npm:38.0.11"
+    "@udecode/plate-combobox": "npm:39.0.0"
+    "@udecode/plate-markdown": "npm:39.0.0"
+    "@udecode/plate-menu": "npm:39.0.0"
+    "@udecode/plate-selection": "npm:39.0.0"
     lodash: "npm:^4.17.21"
   peerDependencies:
-    "@udecode/plate-common": ">=38.0.6"
+    "@udecode/plate-common": ">=39.0.0"
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
     slate: ">=0.103.0"
@@ -6080,21 +6080,6 @@ __metadata:
     slate-react: ">=0.108.0"
   languageName: unknown
   linkType: soft
-
-"@udecode/plate-combobox@npm:38.0.1":
-  version: 38.0.1
-  resolution: "@udecode/plate-combobox@npm:38.0.1"
-  peerDependencies:
-    "@udecode/plate-common": ">=38.0.1"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate: ">=0.103.0"
-    slate-history: ">=0.93.0"
-    slate-hyperscript: ">=0.66.0"
-    slate-react: ">=0.108.0"
-  checksum: 10c0/3fbbce2bd454ce5777a8dcada8cfc6b46c141b9ebf3a8b431f3c11e5fb08b30cabb2752bc90cb1db49cedcd67f33e4cc4cd615f68c91983ad221c80e77a6f625
-  languageName: node
-  linkType: hard
 
 "@udecode/plate-combobox@npm:39.0.0, @udecode/plate-combobox@workspace:^, @udecode/plate-combobox@workspace:packages/combobox":
   version: 0.0.0-use.local
@@ -6581,25 +6566,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-markdown@npm:38.0.1":
-  version: 38.0.1
-  resolution: "@udecode/plate-markdown@npm:38.0.1"
-  dependencies:
-    lodash: "npm:^4.17.21"
-    remark-parse: "npm:^9.0.0"
-    unified: "npm:^11.0.5"
-  peerDependencies:
-    "@udecode/plate-common": ">=38.0.1"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate: ">=0.103.0"
-    slate-history: ">=0.93.0"
-    slate-hyperscript: ">=0.66.0"
-    slate-react: ">=0.108.0"
-  checksum: 10c0/0198a4cce86408e7389c0878668d79b6b78db8ab98b0d93aa9fe9601298b7bc2ae5cd1b41037691738bcb482ad10871163a4fb94dde2df03bdd09f7b4539a9b0
-  languageName: node
-  linkType: hard
-
 "@udecode/plate-markdown@npm:39.0.0, @udecode/plate-markdown@workspace:^, @udecode/plate-markdown@workspace:packages/markdown":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-markdown@workspace:packages/markdown"
@@ -6671,7 +6637,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-menu@npm:38.0.1, @udecode/plate-menu@workspace:^, @udecode/plate-menu@workspace:packages/menu":
+"@udecode/plate-menu@npm:39.0.0, @udecode/plate-menu@workspace:^, @udecode/plate-menu@workspace:packages/menu":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-menu@workspace:packages/menu"
   dependencies:
@@ -6681,7 +6647,7 @@ __metadata:
     lodash: "npm:^4.17.21"
     match-sorter: "npm:6.3.4"
   peerDependencies:
-    "@udecode/plate-common": ">=38.0.6"
+    "@udecode/plate-common": ">=39.0.0"
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
     slate: ">=0.103.0"
@@ -6804,23 +6770,6 @@ __metadata:
     slate-react: ">=0.108.0"
   languageName: unknown
   linkType: soft
-
-"@udecode/plate-selection@npm:38.0.11":
-  version: 38.0.11
-  resolution: "@udecode/plate-selection@npm:38.0.11"
-  dependencies:
-    copy-to-clipboard: "npm:^3.3.3"
-  peerDependencies:
-    "@udecode/plate-common": ">=38.0.6"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate: ">=0.103.0"
-    slate-history: ">=0.93.0"
-    slate-hyperscript: ">=0.66.0"
-    slate-react: ">=0.108.0"
-  checksum: 10c0/7343d4179590c8af60a3e7333756d79660c0a7d32fb92fa16f2d377800f22f43dc5babebd3aa565b09fa8375f5713c89339b93d7f7eb37e30c0bb9f1ea7cd790
-  languageName: node
-  linkType: hard
 
 "@udecode/plate-selection@npm:39.0.0, @udecode/plate-selection@workspace:^, @udecode/plate-selection@workspace:packages/selection":
   version: 0.0.0-use.local

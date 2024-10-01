@@ -173,16 +173,20 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
             createAIEditor: createAIEditor,
             // eslint-disable-next-line @typescript-eslint/require-await, @typescript-eslint/no-unused-vars
             fetchSuggestion: async ({ abortSignal, prompt, system }) => {
-              const response = await fetch('/api/stream', {
-                body: JSON.stringify({ prompt, system }),
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                method: 'POST',
-                signal: abortSignal.signal,
-              }).catch((error) => {
+              const response = await fetch(
+                'https://pro.platejs.org/api/ai/command',
+                {
+                  body: JSON.stringify({ prompt, system }),
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  method: 'POST',
+                  signal: abortSignal.signal,
+                }
+              ).catch((error) => {
                 console.error(error);
               });
+              console.log(response, 'fj');
 
               if (!response || !response.body) {
                 throw new Error('Response or response body is null or abort');
