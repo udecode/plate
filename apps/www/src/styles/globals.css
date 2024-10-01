@@ -26,10 +26,7 @@
     --radius: 0.5rem;
     
     --brand: 217.2 91.2% 59.8%;
-    --brand-foreground: 0 0% 100%;
-    --brand-hover: 217.2 91.2% 65%;
-    --brand-active: 217.2 91.2% 55%;
-    --highlight: 52.8 98.3% 76.9%;
+    --highlight: 47.9 95.8% 53.1%;
   }
 
   .dark {
@@ -52,6 +49,9 @@
     --border: 240 3.7% 25%;
     --input: 240 3.7% 25%;
     --ring: 240 3.7% 25%;
+    
+    --brand: 213.3 93.9% 67.8%;
+    --highlight: 48 96% 53%;
   }
 }
 
