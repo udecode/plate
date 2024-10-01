@@ -40,9 +40,7 @@ module.exports = {
         border: 'hsl(var(--border))',
         brand: {
           DEFAULT: 'hsl(var(--brand))',
-          active: 'hsl(var(--brand-active))',
           foreground: 'hsl(var(--brand-foreground))',
-          hover: 'hsl(var(--brand-hover))',
         },
         card: {
           DEFAULT: 'hsl(var(--card))',

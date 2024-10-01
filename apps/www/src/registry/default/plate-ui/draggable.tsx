@@ -142,7 +142,7 @@ const DragHandle = React.memo(() => {
             onMouseDown={() => {
               editor
                 .getApi(BlockSelectionPlugin)
-                .blockSelection.resetSelectedIds();
+                .blockSelection?.resetSelectedIds();
             }}
           />
         </TooltipTrigger>

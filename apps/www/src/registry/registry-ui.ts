@@ -93,6 +93,7 @@ export const ui: Registry = [
   {
     dependencies: [
       '@udecode/plate-dnd',
+      '@udecode/plate-selection',
       'react-dnd',
       'react-dnd-html5-backend',
     ],
