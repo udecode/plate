@@ -8,7 +8,7 @@ import {
   setNodes,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import cloneDeep from 'lodash/cloneDeep';
+import cloneDeep from 'lodash/cloneDeep.js';
 import { Path } from 'slate';
 
 import type {
