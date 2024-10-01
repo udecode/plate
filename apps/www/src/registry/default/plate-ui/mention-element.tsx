@@ -8,7 +8,7 @@ import { useElement } from '@udecode/plate-common/react';
 import { IS_APPLE } from '@udecode/utils';
 import { useFocused, useSelected } from 'slate-react';
 
-import { useMounted } from '@/hooks/use-mounted';
+import { useMounted } from '@/registry/default/hooks/use-mounted';
 
 import { PlateElement } from './plate-element';
 

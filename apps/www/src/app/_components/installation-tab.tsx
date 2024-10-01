@@ -23,7 +23,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { customizerItems } from '@/config/customizer-items';
 import { allPlugins, orderedPluginKeys } from '@/config/customizer-list';
-import { useMounted } from '@/hooks/use-mounted';
+import { useMounted } from '@/registry/default/hooks/use-mounted';
 
 import { InstallationCode } from './installation-code';
 

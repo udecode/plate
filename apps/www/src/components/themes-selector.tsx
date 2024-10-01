@@ -5,9 +5,9 @@ import * as React from 'react';
 import { useTheme } from 'next-themes';
 
 import { useMediaQuery } from '@/hooks/use-media-query';
-import { useMounted } from '@/hooks/use-mounted';
 import { useThemesConfig } from '@/hooks/use-themes-config';
 import { type Theme, THEME_LIST } from '@/lib/themes';
+import { useMounted } from '@/registry/default/hooks/use-mounted';
 import { cn } from '@/registry/default/lib/utils';
 import {
   Tooltip,
