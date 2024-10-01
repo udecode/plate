@@ -6,7 +6,8 @@ import { SelectionArea } from '../internal';
 import { BlockSelectionPlugin } from './BlockSelectionPlugin';
 
 export const useSelectionArea = () => {
-  const { api, editor, getOptions } = useEditorPlugin(BlockSelectionPlugin);
+  const { api, editor, getOptions, setOption } =
+    useEditorPlugin(BlockSelectionPlugin);
 
   const { areaOptions } = getOptions();
 
@@ -15,8 +16,9 @@ export const useSelectionArea = () => {
       document: window.document,
       ...areaOptions,
     })
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      .on('start', ({ event, store }) => {
+      .on('start', ({ event }) => {
+        setOption('isSelectionAreaVisible', true);
+
         deselectEditor(editor);
 
         if (!event?.shiftKey) {
@@ -25,17 +27,15 @@ export const useSelectionArea = () => {
         }
       })
       .on('move', ({ store: { changed } }) => {
+        if (!getOptions().isSelectionAreaVisible) {
+          setOption('isSelectionAreaVisible', true);
+        }
         if (changed.added.length === 0 && changed.removed.length === 0) return;
 
-        for (const el of changed.added) {
-          el.classList.add('selected');
-        }
-
-        for (const el of changed.removed) {
-          el.classList.remove('selected');
-        }
-
         api.blockSelection.setSelectedIds(changed);
+      })
+      .on('stop', () => {
+        setOption('isSelectionAreaVisible', false);
       });
 
     return () => selection.destroy();
