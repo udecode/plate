@@ -23,7 +23,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { customizerItems } from '@/config/customizer-items';
 import { allPlugins, orderedPluginKeys } from '@/config/customizer-list';
-import { useMounted } from '@/hooks/use-mounted';
+import { useMounted } from '@/registry/default/hooks/use-mounted';
 
 import { InstallationCode } from './installation-code';
 
@@ -368,9 +368,6 @@ export default function InstallationTab() {
 
   const jsxCode: string[] = [];
 
-  if (isManual) {
-    addLine(`<TooltipProvider>`, true);
-  }
   if (hasDnd) {
     addLine(`<DndProvider backend={HTML5Backend}>`, true);
   }
@@ -411,9 +408,6 @@ export default function InstallationTab() {
 
   if (hasDnd) {
     addLine(`</DndProvider>`, false, true);
-  }
-  if (isManual) {
-    addLine(`</TooltipProvider>`, false, true);
   }
 
   const plateCode = [

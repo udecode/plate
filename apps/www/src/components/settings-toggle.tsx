@@ -5,6 +5,7 @@ import React from 'react';
 import {
   Tooltip,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger,
 } from '@/registry/default/plate-ui/tooltip';
 
@@ -16,19 +17,25 @@ export function SettingsToggle() {
   const showSettings = settingsStore.use.showSettings();
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Toggle
-          size="circle"
-          variant="floating"
-          onPressedChange={(pressed) => settingsStore.set.showSettings(pressed)}
-          pressed={showSettings}
-        >
-          <Icons.plugin className="size-6" />
-        </Toggle>
-      </TooltipTrigger>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Toggle
+            size="circle"
+            variant="floating"
+            onPressedChange={(pressed) =>
+              settingsStore.set.showSettings(pressed)
+            }
+            pressed={showSettings}
+          >
+            <Icons.plugin className="size-6" />
+          </Toggle>
+        </TooltipTrigger>
 
-      <TooltipContent>{showSettings ? 'Hide' : 'Show'} settings</TooltipContent>
-    </Tooltip>
+        <TooltipContent>
+          {showSettings ? 'Hide' : 'Show'} settings
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

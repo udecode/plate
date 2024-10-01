@@ -5,7 +5,11 @@ import React from 'react';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import { withCn, withProps } from '@udecode/cn';
 
-export const TooltipProvider = TooltipPrimitive.Provider;
+export const TooltipProvider = withProps(TooltipPrimitive.Provider, {
+  delayDuration: 0,
+  disableHoverableContent: true,
+  skipDelayDuration: 0,
+});
 
 export const Tooltip = TooltipPrimitive.Root;
 
@@ -17,7 +21,7 @@ export const TooltipContent = withCn(
   withProps(TooltipPrimitive.Content, {
     sideOffset: 4,
   }),
-  'z-50 overflow-hidden rounded-md border bg-popover px-3 py-1.5 text-sm text-popover-foreground shadow-md'
+  'z-50 overflow-hidden rounded-md bg-black px-3 py-1.5 text-sm font-semibold text-white shadow-md'
 );
 
 export function withTooltip<
@@ -35,9 +39,18 @@ export function withTooltip<
         'children'
       >;
       tooltip?: React.ReactNode;
-    } & React.ComponentPropsWithoutRef<T>
+    } & React.ComponentPropsWithoutRef<T> &
+      Omit<TooltipPrimitive.TooltipProviderProps, 'children'>
   >(function ExtendComponent(
-    { tooltip, tooltipContentProps, tooltipProps, ...props },
+    {
+      delayDuration = 0,
+      disableHoverableContent = true,
+      skipDelayDuration = 0,
+      tooltip,
+      tooltipContentProps,
+      tooltipProps,
+      ...props
+    },
     ref
   ) {
     const [mounted, setMounted] = React.useState(false);
@@ -50,13 +63,21 @@ export function withTooltip<
 
     if (tooltip && mounted) {
       return (
-        <Tooltip {...tooltipProps}>
-          <TooltipTrigger asChild>{component}</TooltipTrigger>
+        <TooltipProvider
+          delayDuration={delayDuration}
+          disableHoverableContent={disableHoverableContent}
+          skipDelayDuration={skipDelayDuration}
+        >
+          <Tooltip {...tooltipProps}>
+            <TooltipTrigger asChild>{component}</TooltipTrigger>
 
-          <TooltipPortal>
-            <TooltipContent {...tooltipContentProps}>{tooltip}</TooltipContent>
-          </TooltipPortal>
-        </Tooltip>
+            <TooltipPortal>
+              <TooltipContent {...tooltipContentProps}>
+                {tooltip}
+              </TooltipContent>
+            </TooltipPortal>
+          </Tooltip>
+        </TooltipProvider>
       );
     }
 

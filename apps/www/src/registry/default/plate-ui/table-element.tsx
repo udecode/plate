@@ -7,7 +7,6 @@ import { PopoverAnchor } from '@radix-ui/react-popover';
 import { cn, withRef } from '@udecode/cn';
 import { isSelectionExpanded } from '@udecode/plate-common';
 import {
-  PlateElement,
   useEditorRef,
   useEditorSelector,
   useElement,
@@ -35,6 +34,7 @@ import {
   DropdownMenuPortal,
   DropdownMenuTrigger,
 } from './dropdown-menu';
+import { PlateElement } from './plate-element';
 import { Popover, PopoverContent, popoverVariants } from './popover';
 import { Separator } from './separator';
 
@@ -209,7 +209,7 @@ export const TableElement = withHOC(
         <div style={{ paddingLeft: marginLeft }}>
           <PlateElement
             ref={ref}
-            asChild
+            as="table"
             className={cn(
               'my-4 ml-px mr-0 table h-px w-full table-fixed border-collapse',
               isSelectingCell && '[&_*::selection]:bg-none',
@@ -218,21 +218,19 @@ export const TableElement = withHOC(
             {...tableProps}
             {...props}
           >
-            <table>
-              <colgroup {...colGroupProps}>
-                {colSizes.map((width, index) => (
-                  <col
-                    key={index}
-                    style={{
-                      minWidth: minColumnWidth,
-                      width: width || undefined,
-                    }}
-                  />
-                ))}
-              </colgroup>
+            <colgroup {...colGroupProps}>
+              {colSizes.map((width, index) => (
+                <col
+                  key={index}
+                  style={{
+                    minWidth: minColumnWidth,
+                    width: width || undefined,
+                  }}
+                />
+              ))}
+            </colgroup>
 
-              <tbody className="min-w-full">{children}</tbody>
-            </table>
+            <tbody className="min-w-full">{children}</tbody>
           </PlateElement>
         </div>
       </TableFloatingToolbar>

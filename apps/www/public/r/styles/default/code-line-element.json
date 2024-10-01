@@ -1,0 +1,18 @@
+{
+  "dependencies": [
+    "@udecode/plate-code-block"
+  ],
+  "files": [
+    {
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { withRef } from '@udecode/cn';\nimport { PlateElement } from './plate-element';\n\nexport const CodeLineElement = withRef<typeof PlateElement>((props, ref) => (\n  <PlateElement ref={ref} {...props} />\n));\n",
+      "path": "plate-ui/code-line-element.tsx",
+      "target": "",
+      "type": "registry:ui"
+    }
+  ],
+  "name": "code-line-element",
+  "registryDependencies": [
+    "plate-element"
+  ],
+  "type": "registry:ui"
+}

@@ -1,6 +1,6 @@
 {
   "name": "@udecode/slate-react",
-  "version": "38.0.4",
+  "version": "39.0.0",
   "description": "Slate extension",
   "keywords": [
     "slate"
@@ -42,7 +42,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/react-utils": "38.0.1",
+    "@udecode/react-utils": "39.0.0",
     "@udecode/slate": "38.0.4",
     "@udecode/utils": "37.0.0"
   },

@@ -3,9 +3,11 @@ import React from 'react';
 import type { TColumnElement } from '@udecode/plate-layout';
 
 import { cn, withRef } from '@udecode/cn';
-import { PlateElement, useElement, withHOC } from '@udecode/plate-common/react';
+import { useElement, withHOC } from '@udecode/plate-common/react';
 import { ResizableProvider } from '@udecode/plate-resizable';
 import { useReadOnly } from 'slate-react';
+
+import { PlateElement } from './plate-element';
 
 export const ColumnElement = withHOC(
   ResizableProvider,

@@ -7,7 +7,7 @@ import type { SelectTriggerProps } from '@radix-ui/react-select';
 import { cn } from '@udecode/cn';
 
 import { useConfig } from '@/hooks/use-config';
-import { type Style, styles } from '@/registry/styles';
+import { type Style, styles } from '@/registry/registry-styles';
 
 import {
   Select,

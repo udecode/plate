@@ -3,6 +3,7 @@ import type { TDescendant, TElement, TText } from '@udecode/plate-common';
 import type { MdastNode, RemarkElementRules } from './types';
 
 import { remarkTransformElementChildren } from './remarkTransformElementChildren';
+import { remarkTransformNode } from './remarkTransformNode';
 
 // FIXME: underline, subscript superscript not yet supported by remark-slate
 export const remarkDefaultElementRules: RemarkElementRules = {
@@ -82,7 +83,21 @@ export const remarkDefaultElementRules: RemarkElementRules = {
             });
 
             subLists.forEach((subList) => {
-              parseListItems(subList, listItems, indent + 1);
+              if (subList.type === 'list') {
+                parseListItems(subList, listItems, indent + 1);
+              } else {
+                const result = remarkTransformNode(subList, options) as
+                  | TElement
+                  | TElement[];
+
+                if (Array.isArray(result)) {
+                  listItems.push(
+                    ...result.map((v) => ({ ...v, indent: indent + 1 }))
+                  );
+                } else {
+                  listItems.push({ ...result, indent: indent + 1 });
+                }
+              }
             });
           });
 

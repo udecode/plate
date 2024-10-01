@@ -2,15 +2,16 @@ import * as React from 'react';
 
 import { settingsStore } from './context/settings-store';
 import { PluginsTabContent } from './plugins-tab-content';
-import { ThemesTabContent } from './themes-tab-content';
+import { ThemeCustomizer } from './theme-customizer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 export function CustomizerTabs() {
   const customizerTab = settingsStore.use.customizerTab();
 
   return (
-    <div className="flex w-full flex-col space-y-4 pt-4 md:space-y-6 md:pt-0">
+    <div className="flex size-full flex-col space-y-4 pt-4 md:space-y-6 md:pt-0">
       <Tabs
+        className="flex h-full flex-col"
         value={customizerTab}
         onValueChange={(value) => {
           settingsStore.set.customizerTab(value);
@@ -23,17 +24,11 @@ export function CustomizerTabs() {
           </TabsList>
         </div>
 
-        <TabsContent
-          className="h-[calc(85vh-90px)] overflow-y-auto overflow-x-hidden overscroll-contain pt-2 md:h-[calc(100vh-64px)]"
-          value="plugins"
-        >
+        <TabsContent className="grow overflow-auto px-6 py-2" value="plugins">
           <PluginsTabContent />
         </TabsContent>
-        <TabsContent
-          className="h-[calc(85vh-90px)] overflow-y-auto overflow-x-hidden overscroll-contain pt-2 md:h-[calc(100vh-64px)]"
-          value="themes"
-        >
-          <ThemesTabContent />
+        <TabsContent className="grow overflow-auto py-2" value="themes">
+          <ThemeCustomizer />
         </TabsContent>
       </Tabs>
     </div>

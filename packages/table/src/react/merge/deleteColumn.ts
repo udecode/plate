@@ -10,7 +10,7 @@ import {
   someNode,
   withoutNormalizing,
 } from '@udecode/plate-common';
-import cloneDeep from 'lodash/cloneDeep';
+import cloneDeep from 'lodash/cloneDeep.js';
 
 import {
   type TTableCellElement,

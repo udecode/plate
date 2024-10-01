@@ -12,7 +12,12 @@ import type { TColor } from './color-dropdown-menu';
 
 import { buttonVariants } from './button';
 import { DropdownMenuItem } from './dropdown-menu';
-import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from './tooltip';
 
 type ColorDropdownMenuItemProps = {
   isBrightColor: boolean;
@@ -81,16 +86,18 @@ export function ColorDropdownMenuItems({
       className={cn('grid grid-cols-[repeat(10,1fr)] gap-1', className)}
       {...props}
     >
-      {colors.map(({ isBrightColor, name, value }) => (
-        <ColorDropdownMenuItem
-          name={name}
-          key={name ?? value}
-          value={value}
-          isBrightColor={isBrightColor}
-          isSelected={color === value}
-          updateColor={updateColor}
-        />
-      ))}
+      <TooltipProvider>
+        {colors.map(({ isBrightColor, name, value }) => (
+          <ColorDropdownMenuItem
+            name={name}
+            key={name ?? value}
+            value={value}
+            isBrightColor={isBrightColor}
+            isSelected={color === value}
+            updateColor={updateColor}
+          />
+        ))}
+      </TooltipProvider>
     </div>
   );
 }

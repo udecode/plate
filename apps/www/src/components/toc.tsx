@@ -6,8 +6,6 @@ import type { TableOfContents } from '@/lib/toc';
 
 import { cn } from '@udecode/cn';
 
-import { useMounted } from '@/hooks/use-mounted';
-
 interface TocProps {
   toc: TableOfContents;
 }
@@ -28,9 +26,8 @@ export function DashboardTableOfContents({ toc }: TocProps) {
     [toc]
   );
   const activeHeading = useActiveItem(itemIds);
-  const mounted = useMounted();
 
-  if (!toc?.items || !mounted) {
+  if (!toc?.items?.length) {
     return null;
   }
 

@@ -1,5 +1,13 @@
 # @udecode/plate-md-serializer
 
+## 39.0.0
+
+## 38.0.13
+
+### Patch Changes
+
+- [#3591](https://github.com/udecode/plate/pull/3591) by [@depressedX](https://github.com/depressedX) – Fix @udecode/plate-markdown deserializing list with indented block element
+
 ## 38.0.1
 
 ### Patch Changes

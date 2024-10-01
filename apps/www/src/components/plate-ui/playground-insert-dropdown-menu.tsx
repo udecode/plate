@@ -10,7 +10,8 @@ import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { insertEmptyElement } from '@udecode/plate-common';
 import { ParagraphPlugin, focusEditor } from '@udecode/plate-common/react';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
-import { HEADING_KEYS } from '@udecode/plate-heading';
+import { HEADING_KEYS, insertToc } from '@udecode/plate-heading';
+import { TocPlugin } from '@udecode/plate-heading/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { toggleIndentList } from '@udecode/plate-indent-list';
 import { IndentListPlugin } from '@udecode/plate-indent-list/react';
@@ -24,6 +25,7 @@ import { TablePlugin, insertTable } from '@udecode/plate-table/react';
 import { CheckPlugin } from '@/components/context/check-plugin';
 import { settingsStore } from '@/components/context/settings-store';
 import { Icons } from '@/components/icons';
+import { useMyEditorRef } from '@/registry/default/lib/plate-types';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,7 +36,6 @@ import {
   useOpenState,
 } from '@/registry/default/plate-ui/dropdown-menu';
 import { ToolbarButton } from '@/registry/default/plate-ui/toolbar';
-import { useMyEditorRef } from '@/types/plate-types';
 
 const items = [
   {
@@ -116,6 +117,12 @@ const items = [
         icon: Icons.LayoutIcon,
         label: 'Columns',
         value: ColumnPlugin.key,
+      },
+      {
+        description: 'Table of Contents',
+        icon: Icons.h3,
+        label: 'Table of Contents',
+        value: TocPlugin.key,
       },
     ],
     label: 'Basic blocks',
@@ -238,6 +245,11 @@ export function PlaygroundInsertDropdownMenu(props: DropdownMenuProps) {
                         }
                         case LinkPlugin.key: {
                           triggerFloatingLink(editor, { focused: true });
+
+                          break;
+                        }
+                        case TocPlugin.key: {
+                          insertToc(editor);
 
                           break;
                         }

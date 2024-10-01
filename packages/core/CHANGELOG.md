@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 39.0.0
+
+### Patch Changes
+
+- [#3597](https://github.com/udecode/plate/pull/3597) by [@zbeyens](https://github.com/zbeyens) – `useOptions`, `useOption` missing plugins now warn instead of erroring.
+
 ## 38.0.6
 
 ### Patch Changes

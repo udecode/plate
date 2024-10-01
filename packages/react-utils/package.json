@@ -1,23 +1,20 @@
 {
   "name": "@udecode/react-utils",
-  "version": "38.0.1",
+  "version": "39.0.0",
   "description": "Udecode React utils",
-  "license": "MIT",
+  "keywords": [
+    "utils"
+  ],
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
     "directory": "packages/react-utils"
   },
-  "bugs": {
-    "url": "https://github.com/udecode/plate/issues"
-  },
+  "license": "MIT",
   "sideEffects": false,
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist/**/*"
-  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -26,10 +23,16 @@
       "require": "./dist/index.js"
     }
   },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
   "scripts": {
+    "brl": "yarn p:brl",
     "build": "yarn p:build",
     "build:watch": "yarn p:build:watch",
-    "brl": "yarn p:brl",
     "clean": "yarn p:clean",
     "lint": "yarn p:lint",
     "lint:fix": "yarn p:lint:fix",
@@ -46,9 +49,6 @@
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0"
   },
-  "keywords": [
-    "utils"
-  ],
   "publishConfig": {
     "access": "public"
   }

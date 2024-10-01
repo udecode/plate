@@ -1,5 +1,13 @@
 # @udecode/plate-heading
 
+## 39.0.0
+
+## 38.0.12
+
+### Patch Changes
+
+- [#3586](https://github.com/udecode/plate/pull/3586) by [@felixfeng33](https://github.com/felixfeng33) – Remove useless props move config from `useTocElementState` to TocPlugin `options`
+
 ## 38.0.1
 
 ### Patch Changes

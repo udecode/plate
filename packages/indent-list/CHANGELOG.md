@@ -1,5 +1,13 @@
 # @udecode/plate-indent-list
 
+## 39.0.0
+
+## 38.0.10
+
+### Patch Changes
+
+- [#3576](https://github.com/udecode/plate/pull/3576) by [@felixfeng33](https://github.com/felixfeng33) – Fix cursor possition issue.
+
 ## 38.0.1
 
 ### Patch Changes

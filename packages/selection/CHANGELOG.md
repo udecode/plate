@@ -1,5 +1,28 @@
 # @udecode/plate-selection
 
+## 39.0.0
+
+### Major Changes
+
+- [#3597](https://github.com/udecode/plate/pull/3597) by [@zbeyens](https://github.com/zbeyens) – The following changes were made to improve performance:
+
+  - Removed `useHooksBlockSelection` in favor of `BlockSelectionAfterEditable`
+  - Removed `slate-selected` class from `BlockSelectable`. You can do it on your components using `useBlockSelected()` instead, or by using our new `block-selection.tsx` component.
+  - Introduced `useBlockSelectableStore` for managing selectable state.
+
+### Minor Changes
+
+- [#3597](https://github.com/udecode/plate/pull/3597) by [@zbeyens](https://github.com/zbeyens) –
+  - `BlockSelectableProvider`, `useBlockSelectableStore` to store `selectable` state.
+  - Introduced `isSelectionAreaVisible` option in `BlockSelectionPlugin` config. Useful to hide some UI when `true`.
+  - New `useBlockSelected` hook for checking if a block is selected.
+
+## 38.0.11
+
+### Patch Changes
+
+- [#3578](https://github.com/udecode/plate/pull/3578) by [@felixfeng33](https://github.com/felixfeng33) – If `defaultPrevented` is true stop keydown handlers.
+
 ## 38.0.9
 
 ### Patch Changes

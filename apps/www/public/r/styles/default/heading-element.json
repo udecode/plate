@@ -1,0 +1,18 @@
+{
+  "dependencies": [
+    "@udecode/plate-heading"
+  ],
+  "files": [
+    {
+      "content": "import React from 'react';\n\nimport { withRef, withVariants } from '@udecode/cn';\nimport { cva } from 'class-variance-authority';\n\nimport { PlateElement } from './plate-element';\n\nconst headingVariants = cva('relative mb-1', {\n  variants: {\n    variant: {\n      h1: 'mt-[1.6em] pb-1 font-heading text-4xl font-bold',\n      h2: 'mt-[1.4em] pb-px font-heading text-2xl font-semibold tracking-tight',\n      h3: 'mt-[1em] pb-px font-heading text-xl font-semibold tracking-tight',\n      h4: 'mt-[0.75em] font-heading text-lg font-semibold tracking-tight',\n      h5: 'mt-[0.75em] text-lg font-semibold tracking-tight',\n      h6: 'mt-[0.75em] text-base font-semibold tracking-tight',\n    },\n  },\n});\n\nconst blockVariants = cva('', {\n  variants: {\n    isFirstBlock: {\n      false: '',\n      true: 'mt-0',\n    },\n  },\n});\n\nconst HeadingElementVariants = withVariants(\n  withVariants(PlateElement, headingVariants, ['variant']),\n  blockVariants,\n  ['isFirstBlock']\n);\n\nexport const HeadingElement = withRef<typeof HeadingElementVariants>(\n  ({ children, isFirstBlock, variant = 'h1', ...props }, ref) => {\n    const { editor, element } = props;\n\n    return (\n      <HeadingElementVariants\n        ref={ref}\n        as={variant!}\n        variant={variant}\n        isFirstBlock={element === editor.children[0]}\n        {...props}\n      >\n        {children}\n      </HeadingElementVariants>\n    );\n  }\n);\n",
+      "path": "plate-ui/heading-element.tsx",
+      "target": "",
+      "type": "registry:ui"
+    }
+  ],
+  "name": "heading-element",
+  "registryDependencies": [
+    "plate-element"
+  ],
+  "type": "registry:ui"
+}

@@ -1,0 +1,11 @@
+{
+  "files": [
+    {
+      "content": "import * as React from 'react';\n\nexport function useMounted() {\n  const [mounted, setMounted] = React.useState(false);\n\n  React.useEffect(() => {\n    setMounted(true);\n  }, []);\n\n  return mounted;\n}\n",
+      "path": "hooks/use-mounted.ts",
+      "type": "registry:hook"
+    }
+  ],
+  "name": "use-mounted",
+  "type": "registry:hook"
+}

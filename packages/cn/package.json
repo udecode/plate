@@ -1,6 +1,6 @@
 {
   "name": "@udecode/cn",
-  "version": "38.0.1",
+  "version": "39.0.0",
   "description": "React cn utils",
   "keywords": [
     "utils"
@@ -41,7 +41,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/react-utils": "38.0.1"
+    "@udecode/react-utils": "39.0.0"
   },
   "peerDependencies": {
     "class-variance-authority": ">=0.7.0",
