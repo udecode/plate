@@ -11,4 +11,14 @@ export const hooks: Registry = [
     name: 'use-debounce',
     type: 'registry:hook',
   },
+  {
+    files: [
+      {
+        path: 'hooks/use-mounted.ts',
+        type: 'registry:hook',
+      },
+    ],
+    name: 'use-mounted',
+    type: 'registry:hook',
+  },
 ];

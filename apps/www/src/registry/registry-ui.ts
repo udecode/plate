@@ -9,6 +9,20 @@ export const ui: Registry = [
     type: 'registry:ui',
   },
   {
+    dependencies: ['@udecode/plate-selection'],
+    files: ['plate-ui/block-selection.tsx'],
+    name: 'block-selection',
+    registryDependencies: [],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: [],
+    files: ['plate-ui/plate-element.tsx'],
+    name: 'plate-element',
+    registryDependencies: ['block-selection'],
+    type: 'registry:ui',
+  },
+  {
     dependencies: ['@udecode/plate-cloud'],
     files: [
       'plate-ui/cloud.tsx',
@@ -30,14 +44,14 @@ export const ui: Registry = [
       'plate-ui/code-block-combobox.tsx',
     ],
     name: 'code-block-element',
-    registryDependencies: ['command'],
+    registryDependencies: ['command', 'plate-element'],
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-layout'],
     files: ['plate-ui/column-element.tsx', 'plate-ui/column-group-element.tsx'],
     name: 'column-element',
-    registryDependencies: ['command', 'resizable'],
+    registryDependencies: ['command', 'resizable', 'plate-element'],
     type: 'registry:ui',
   },
   {
@@ -79,6 +93,7 @@ export const ui: Registry = [
   {
     dependencies: [
       '@udecode/plate-dnd',
+      '@udecode/plate-selection',
       'react-dnd',
       'react-dnd-html5-backend',
     ],
@@ -109,7 +124,7 @@ export const ui: Registry = [
     dependencies: ['@udecode/plate-emoji'],
     files: ['plate-ui/emoji-input-element.tsx'],
     name: 'emoji-input-element',
-    registryDependencies: ['inline-combobox'],
+    registryDependencies: ['inline-combobox', 'plate-element', 'use-debounce'],
     type: 'registry:ui',
   },
   {
@@ -130,14 +145,14 @@ export const ui: Registry = [
     dependencies: ['@udecode/plate-block-quote'],
     files: ['plate-ui/blockquote-element.tsx'],
     name: 'blockquote-element',
-    registryDependencies: [],
+    registryDependencies: ['plate-element'],
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-date'],
     files: ['plate-ui/date-element.tsx'],
     name: 'date-element',
-    registryDependencies: ['calendar'],
+    registryDependencies: ['calendar', 'plate-element'],
     type: 'registry:ui',
   },
   {
@@ -179,7 +194,7 @@ export const ui: Registry = [
     dependencies: ['@udecode/plate-code-block'],
     files: ['plate-ui/code-line-element.tsx'],
     name: 'code-line-element',
-    registryDependencies: [],
+    registryDependencies: ['plate-element'],
     type: 'registry:ui',
   },
   {
@@ -236,7 +251,7 @@ export const ui: Registry = [
     dependencies: ['@udecode/plate-excalidraw'],
     files: ['plate-ui/excalidraw-element.tsx'],
     name: 'excalidraw-element',
-    registryDependencies: [],
+    registryDependencies: ['plate-element'],
     type: 'registry:ui',
   },
   {
@@ -281,7 +296,7 @@ export const ui: Registry = [
     dependencies: ['@udecode/plate-heading'],
     files: ['plate-ui/heading-element.tsx'],
     name: 'heading-element',
-    registryDependencies: [],
+    registryDependencies: ['plate-element'],
     type: 'registry:ui',
   },
   {
@@ -295,14 +310,19 @@ export const ui: Registry = [
     dependencies: ['@udecode/plate-horizontal-rule'],
     files: ['plate-ui/hr-element.tsx'],
     name: 'hr-element',
-    registryDependencies: [],
+    registryDependencies: ['plate-element'],
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-media'],
     files: ['plate-ui/image-element.tsx'],
     name: 'image-element',
-    registryDependencies: ['media-popover', 'caption', 'resizable'],
+    registryDependencies: [
+      'media-popover',
+      'caption',
+      'resizable',
+      'plate-element',
+    ],
     type: 'registry:ui',
   },
   {
@@ -358,7 +378,7 @@ export const ui: Registry = [
     dependencies: ['@udecode/plate-link'],
     files: ['plate-ui/link-element.tsx'],
     name: 'link-element',
-    registryDependencies: [],
+    registryDependencies: ['plate-element'],
     type: 'registry:ui',
   },
   {
@@ -379,7 +399,7 @@ export const ui: Registry = [
     dependencies: ['@udecode/plate-list'],
     files: ['plate-ui/list-element.tsx'],
     name: 'list-element',
-    registryDependencies: [],
+    registryDependencies: ['plate-element'],
     type: 'registry:ui',
   },
   {
@@ -404,7 +424,12 @@ export const ui: Registry = [
     ],
     files: ['plate-ui/media-embed-element.tsx'],
     name: 'media-embed-element',
-    registryDependencies: ['media-popover', 'caption', 'resizable'],
+    registryDependencies: [
+      'media-popover',
+      'caption',
+      'resizable',
+      'plate-element',
+    ],
     type: 'registry:ui',
   },
   {
@@ -425,14 +450,14 @@ export const ui: Registry = [
     dependencies: ['@udecode/plate-mention'],
     files: ['plate-ui/mention-element.tsx'],
     name: 'mention-element',
-    registryDependencies: [],
+    registryDependencies: ['plate-element', 'use-mounted'],
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-mention'],
     files: ['plate-ui/mention-input-element.tsx'],
     name: 'mention-input-element',
-    registryDependencies: ['inline-combobox'],
+    registryDependencies: ['inline-combobox', 'plate-element'],
     type: 'registry:ui',
   },
   {
@@ -459,7 +484,7 @@ export const ui: Registry = [
   {
     files: ['plate-ui/paragraph-element.tsx'],
     name: 'paragraph-element',
-    registryDependencies: [],
+    registryDependencies: ['plate-element'],
     type: 'registry:ui',
   },
   {
@@ -494,14 +519,14 @@ export const ui: Registry = [
     dependencies: ['@udecode/plate-heading', '@udecode/plate-indent-list'],
     files: ['plate-ui/slash-input-element.tsx'],
     name: 'slash-input-element',
-    registryDependencies: ['inline-combobox'],
+    registryDependencies: ['inline-combobox', 'plate-element'],
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-table'],
     files: ['plate-ui/table-cell-element.tsx'],
     name: 'table-cell-element',
-    registryDependencies: ['resizable'],
+    registryDependencies: ['resizable', 'plate-element'],
     type: 'registry:ui',
   },
   {
@@ -516,28 +541,28 @@ export const ui: Registry = [
     dependencies: ['@udecode/plate-table'],
     files: ['plate-ui/table-element.tsx'],
     name: 'table-element',
-    registryDependencies: ['dropdown-menu'],
+    registryDependencies: ['dropdown-menu', 'plate-element'],
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-table'],
     files: ['plate-ui/table-row-element.tsx'],
     name: 'table-row-element',
-    registryDependencies: [],
+    registryDependencies: ['plate-element'],
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-list'],
     files: ['plate-ui/todo-list-element.tsx'],
     name: 'todo-list-element',
-    registryDependencies: ['checkbox'],
+    registryDependencies: ['checkbox', 'plate-element'],
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-toggle'],
     files: ['plate-ui/toggle-element.tsx'],
     name: 'toggle-element',
-    registryDependencies: [],
+    registryDependencies: ['plate-element'],
     type: 'registry:ui',
   },
   {

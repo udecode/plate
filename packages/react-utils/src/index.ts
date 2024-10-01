@@ -5,6 +5,7 @@
 export * from './Box';
 export * from './PortalBody';
 export * from './Text';
+export * from './MemoizedChildren';
 export * from './composeEventHandlers';
 export * from './createPrimitiveComponent';
 export * from './createPrimitiveElement';

@@ -12,9 +12,9 @@ import { cn } from '@udecode/cn';
 import { useTheme } from 'next-themes';
 
 import { useConfig } from '@/hooks/use-config';
-import { useMounted } from '@/hooks/use-mounted';
 import { useThemesConfig } from '@/hooks/use-themes-config';
 import { THEMES } from '@/lib/themes';
+import { useMounted } from '@/registry/default/hooks/use-mounted';
 import { Button } from '@/registry/default/plate-ui/button';
 import {
   Popover,

@@ -366,7 +366,7 @@ export default function PlaygroundDemo({
               className={cn(
                 'relative flex max-h-[800px] w-full overflow-x-auto',
                 // block selection area
-                '[&_.slate-selected]:!bg-primary/20 [&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10',
+                '[&_.slate-selection-area]:border [&_.slate-selection-area]:border-brand/25 [&_.slate-selection-area]:bg-brand/15',
                 className
               )}
               data-plate-selectable

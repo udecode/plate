@@ -7,10 +7,22 @@ import {
   isVoid,
   queryNode,
 } from '@udecode/plate-common';
-import { findNodePath, useEditorPlugin } from '@udecode/plate-common/react';
+import {
+  createAtomStore,
+  findNodePath,
+  useEditorPlugin,
+} from '@udecode/plate-common/react';
 import { Path } from 'slate';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
+
+export const { BlockSelectableProvider, useBlockSelectableStore } =
+  createAtomStore(
+    {
+      selectable: false,
+    },
+    { name: 'blockSelectable' }
+  );
 
 export interface BlockSelectableOptions {
   element: TElement;
@@ -53,30 +65,24 @@ export const useBlockSelectableState = ({
 };
 
 export const useBlockSelectable = ({
+  active,
   element,
   path,
   ref,
 }: ReturnType<typeof useBlockSelectableState>) => {
-  const { api, editor, getOption, getOptions, useOption } =
+  const { api, editor, getOption, getOptions } =
     useEditorPlugin(BlockSelectionPlugin);
 
   const id = element?.id as string | undefined;
 
-  const isSelected = useOption('isSelected', id);
-
-  const data = {
-    'data-key': id,
-  };
+  const data = { 'data-key': id };
 
   return {
     props: {
-      key: id,
-      className: isSelected
-        ? 'slate-selected slate-selectable'
-        : 'slate-selectable',
+      className: 'slate-selectable',
       ref,
       onContextMenu: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        if (!element) return;
+        if (!element || !active) return;
 
         const { enableContextMenu } = getOptions();
 
@@ -108,11 +114,6 @@ export const useBlockSelectable = ({
           });
         }
       },
-      // style: isSelected
-      //   ? {
-      //       backgroundColor: selectedColor,
-      //     }
-      //   : undefined,
       ...data,
     },
   };
@@ -124,13 +125,16 @@ export function BlockSelectable({
   ...props
 }: { options: BlockSelectableOptions } & React.HTMLAttributes<HTMLDivElement>) {
   const state = useBlockSelectableState(options);
-  const { props: rootProps } = useBlockSelectable(state);
+  const blockSelectable = useBlockSelectable(state);
 
-  if (!state.active) return <>{children}</>;
+  if (!state.active)
+    return <BlockSelectableProvider>{children}</BlockSelectableProvider>;
 
   return (
-    <div {...rootProps} {...props}>
-      {children}
-    </div>
+    <BlockSelectableProvider selectable>
+      <div {...blockSelectable.props} {...props}>
+        {children}
+      </div>
+    </BlockSelectableProvider>
   );
 }

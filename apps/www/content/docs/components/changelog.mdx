@@ -8,15 +8,37 @@ Since Plate UI is not a component library, a changelog is maintained here.
 
 Use the [CLI](https://platejs.org/docs/components/cli) to install the latest version of the components.
 
+
 ## October 2024 #15
 
-### October 1 2024 #15.1
+### October 1 #15.1
 
+- New `block-selection.tsx` component for visual selection feedback
+- New `plate-element.tsx` component for rendering the plate element with `BlockSelection`
+- Updated `paragraph-element.tsx` and all block elements to use `plate-element.tsx`
+- `draggable.tsx`:
+  - Refactored to use new hooks: `useDraggableGutter` and `useDropLine`
+  - Removed `classNames` prop in favor of a single `className`
+  - Added `DraggableProvider` wrapper
+  - Introduced `Gutter` and `DropLine` as separate components
+- `with-draggables.tsx`:
+  - Updated to use new className format for draggable props
 - fix `mention-element`: prevent IME input interruption on MacOS
+
+Use `--highlight` color for the following components:
+
+- `comment-leaf.tsx`
+- `highlight-leaf.tsx`
+
+Use `--brand` color for the following components:
+
+- `block-selection.tsx`
+- `draggable.tsx`
+
 
 ## September 2024 #14
 
-### September 29 2024 #14.3
+### September 29 #14.3
 
 - fix `heading-element`: if the heading is the first block, it should not have a top margin
 

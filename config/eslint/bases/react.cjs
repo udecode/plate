@@ -61,13 +61,14 @@ module.exports = {
         'jsx-a11y/no-static-element-interactions': 'off',
         'mdx/no-unescaped-entities': 'off',
         'mdx/no-unused-expressions': 'off',
-
         'react/button-has-type': [
           'error',
           {
             reset: true,
           },
         ],
+
+        'react/display-name': 'off',
         'react/jsx-curly-brace-presence': [
           'warn',
           { children: 'never', props: 'never' },

@@ -149,6 +149,16 @@ Enhances a component with draggable behavior.
 
 ## API Components
 
+### DraggableProvider
+
+A new component that provides context for managing draggable state.
+
+<APIProps>
+  <APIItem name="children" type="React.ReactNode">
+    The child components to be wrapped with the draggable context.
+  </APIItem>
+</APIProps>
+
 ### DndScroller
 
 A wrapper component for the `Scroller` component that is conditionally rendered based on the dragging state.
@@ -290,10 +300,6 @@ A custom hook that enables dragging of a node from the editor using the `useDrag
 A custom hook that provides the necessary properties and event handlers for making an element draggable.
 
 <APIState>
-  <APIItem name="DropLine" type="'' | 'top' | 'bottom'">
-    The direction of the drop line, indicating the position where the node can
-    be dropped.
-  </APIItem>
   <APIItem name="isDragging" type="boolean">
     Indicates whether the node is currently being dragged.
   </APIItem>
@@ -307,35 +313,10 @@ A custom hook that provides the necessary properties and event handlers for maki
 
 <APIReturns>
   <APIItem name="previewRef" type="React.RefObject">
-    A reference to the HTML `div` element that serves as the preview during
-    drag.
+    A reference to the HTML `div` element that serves as the preview during drag.
   </APIItem>
   <APIItem name="handleRef" type="ConnectDragSource">
     A reference to the drag source connector provided by `react-dnd`.
-  </APIItem>
-  <APIItem name="droplineProps" type="object">
-    Additional props to be applied to the dropline element.
-    <APISubList>
-      <APISubListItem
-        parent="droplineProps"
-        name="contentEditable"
-        type="boolean"
-      >
-        Indicates whether the dropline element should be editable.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-  <APIItem name="gutterLeftProps" type="object">
-    Additional props to be applied to the left gutter element.
-    <APISubList>
-      <APISubListItem
-        parent="gutterLeftProps"
-        name="contentEditable"
-        type="boolean"
-      >
-        Indicates whether the dropline element should be editable.
-      </APISubListItem>
-    </APISubList>
   </APIItem>
 </APIReturns>
 
@@ -347,7 +328,9 @@ A custom hook that enables dropping a block into the editor. It internally uses 
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
-  <APIItem name="options" type="Omit<UseDropNodeOptions, 'accept'>"></APIItem>
+  <APIItem name="options" type="Omit<UseDropNodeOptions, 'accept'>">
+    Options for the drop behavior.
+  </APIItem>
 </APIParameters>
 
 ### useDropNode
@@ -385,3 +368,36 @@ A custom hook that enables dropping a node on the editor. It uses the `useDrop` 
 
   </APIItem>
 </APIParameters>
+
+### useDraggableGutter
+
+Returns props for the draggable gutter.
+
+<APIReturns>
+  <APIItem name="props" type="object">
+    Props to be spread on the gutter element.
+  </APIItem>
+</APIReturns>
+
+### useDropLine
+
+Returns the current drop line state and props.
+
+<APIReturns>
+  <APIItem name="dropLine" type="'top' | 'bottom' | null">
+    The current direction of the drop line.
+  </APIItem>
+  <APIItem name="props" type="object">
+    Props to be spread on the drop line element.
+  </APIItem>
+</APIReturns>
+
+### useDraggableStore
+
+Draggable store.
+
+<APIState>
+  <APIItem name="dropLine" type="'top' | 'bottom' | null">
+    The current direction of the drop line.
+  </APIItem>
+</APIState>

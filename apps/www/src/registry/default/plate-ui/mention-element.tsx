@@ -4,11 +4,13 @@ import type { TMentionElement } from '@udecode/plate-mention';
 
 import { cn, withRef } from '@udecode/cn';
 import { getHandler } from '@udecode/plate-common';
-import { PlateElement, useElement } from '@udecode/plate-common/react';
+import { useElement } from '@udecode/plate-common/react';
 import { IS_APPLE } from '@udecode/utils';
 import { useFocused, useSelected } from 'slate-react';
 
-import { useMounted } from '@/hooks/use-mounted';
+import { useMounted } from '@/registry/default/hooks/use-mounted';
+
+import { PlateElement } from './plate-element';
 
 export const MentionElement = withRef<
   typeof PlateElement,

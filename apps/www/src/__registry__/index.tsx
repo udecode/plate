@@ -16,6 +16,28 @@ export const Index: Record<string, any> = {
       subcategory: "undefined",
       chunks: []
     },
+    "block-selection": {
+      name: "block-selection",
+      type: "registry:ui",
+      registryDependencies: [],
+      files: ["registry/default/plate-ui/block-selection.tsx"],
+      component: React.lazy(() => import("@/registry/default/plate-ui/block-selection.tsx")),
+      source: "",
+      category: "undefined",
+      subcategory: "undefined",
+      chunks: []
+    },
+    "plate-element": {
+      name: "plate-element",
+      type: "registry:ui",
+      registryDependencies: ["block-selection"],
+      files: ["registry/default/plate-ui/plate-element.tsx"],
+      component: React.lazy(() => import("@/registry/default/plate-ui/plate-element.tsx")),
+      source: "",
+      category: "undefined",
+      subcategory: "undefined",
+      chunks: []
+    },
     "cloud": {
       name: "cloud",
       type: "registry:ui",
@@ -30,7 +52,7 @@ export const Index: Record<string, any> = {
     "code-block-element": {
       name: "code-block-element",
       type: "registry:ui",
-      registryDependencies: ["command"],
+      registryDependencies: ["command","plate-element"],
       files: ["registry/default/plate-ui/code-block-element.tsx","registry/default/plate-ui/code-block-element.css","registry/default/plate-ui/code-block-combobox.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/code-block-element.tsx")),
       source: "",
@@ -41,7 +63,7 @@ export const Index: Record<string, any> = {
     "column-element": {
       name: "column-element",
       type: "registry:ui",
-      registryDependencies: ["command","resizable"],
+      registryDependencies: ["command","resizable","plate-element"],
       files: ["registry/default/plate-ui/column-element.tsx","registry/default/plate-ui/column-group-element.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/column-element.tsx")),
       source: "",
@@ -96,7 +118,7 @@ export const Index: Record<string, any> = {
     "emoji-input-element": {
       name: "emoji-input-element",
       type: "registry:ui",
-      registryDependencies: ["inline-combobox"],
+      registryDependencies: ["inline-combobox","plate-element","use-debounce"],
       files: ["registry/default/plate-ui/emoji-input-element.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/emoji-input-element.tsx")),
       source: "",
@@ -129,7 +151,7 @@ export const Index: Record<string, any> = {
     "blockquote-element": {
       name: "blockquote-element",
       type: "registry:ui",
-      registryDependencies: [],
+      registryDependencies: ["plate-element"],
       files: ["registry/default/plate-ui/blockquote-element.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/blockquote-element.tsx")),
       source: "",
@@ -140,7 +162,7 @@ export const Index: Record<string, any> = {
     "date-element": {
       name: "date-element",
       type: "registry:ui",
-      registryDependencies: ["calendar"],
+      registryDependencies: ["calendar","plate-element"],
       files: ["registry/default/plate-ui/date-element.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/date-element.tsx")),
       source: "",
@@ -206,7 +228,7 @@ export const Index: Record<string, any> = {
     "code-line-element": {
       name: "code-line-element",
       type: "registry:ui",
-      registryDependencies: [],
+      registryDependencies: ["plate-element"],
       files: ["registry/default/plate-ui/code-line-element.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/code-line-element.tsx")),
       source: "",
@@ -294,7 +316,7 @@ export const Index: Record<string, any> = {
     "excalidraw-element": {
       name: "excalidraw-element",
       type: "registry:ui",
-      registryDependencies: [],
+      registryDependencies: ["plate-element"],
       files: ["registry/default/plate-ui/excalidraw-element.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/excalidraw-element.tsx")),
       source: "",
@@ -349,7 +371,7 @@ export const Index: Record<string, any> = {
     "heading-element": {
       name: "heading-element",
       type: "registry:ui",
-      registryDependencies: [],
+      registryDependencies: ["plate-element"],
       files: ["registry/default/plate-ui/heading-element.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/heading-element.tsx")),
       source: "",
@@ -371,7 +393,7 @@ export const Index: Record<string, any> = {
     "hr-element": {
       name: "hr-element",
       type: "registry:ui",
-      registryDependencies: [],
+      registryDependencies: ["plate-element"],
       files: ["registry/default/plate-ui/hr-element.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/hr-element.tsx")),
       source: "",
@@ -382,7 +404,7 @@ export const Index: Record<string, any> = {
     "image-element": {
       name: "image-element",
       type: "registry:ui",
-      registryDependencies: ["media-popover","caption","resizable"],
+      registryDependencies: ["media-popover","caption","resizable","plate-element"],
       files: ["registry/default/plate-ui/image-element.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/image-element.tsx")),
       source: "",
@@ -470,7 +492,7 @@ export const Index: Record<string, any> = {
     "link-element": {
       name: "link-element",
       type: "registry:ui",
-      registryDependencies: [],
+      registryDependencies: ["plate-element"],
       files: ["registry/default/plate-ui/link-element.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/link-element.tsx")),
       source: "",
@@ -503,7 +525,7 @@ export const Index: Record<string, any> = {
     "list-element": {
       name: "list-element",
       type: "registry:ui",
-      registryDependencies: [],
+      registryDependencies: ["plate-element"],
       files: ["registry/default/plate-ui/list-element.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/list-element.tsx")),
       source: "",
@@ -536,7 +558,7 @@ export const Index: Record<string, any> = {
     "media-embed-element": {
       name: "media-embed-element",
       type: "registry:ui",
-      registryDependencies: ["media-popover","caption","resizable"],
+      registryDependencies: ["media-popover","caption","resizable","plate-element"],
       files: ["registry/default/plate-ui/media-embed-element.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/media-embed-element.tsx")),
       source: "",
@@ -569,7 +591,7 @@ export const Index: Record<string, any> = {
     "mention-element": {
       name: "mention-element",
       type: "registry:ui",
-      registryDependencies: [],
+      registryDependencies: ["plate-element","use-mounted"],
       files: ["registry/default/plate-ui/mention-element.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/mention-element.tsx")),
       source: "",
@@ -580,7 +602,7 @@ export const Index: Record<string, any> = {
     "mention-input-element": {
       name: "mention-input-element",
       type: "registry:ui",
-      registryDependencies: ["inline-combobox"],
+      registryDependencies: ["inline-combobox","plate-element"],
       files: ["registry/default/plate-ui/mention-input-element.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/mention-input-element.tsx")),
       source: "",
@@ -624,7 +646,7 @@ export const Index: Record<string, any> = {
     "paragraph-element": {
       name: "paragraph-element",
       type: "registry:ui",
-      registryDependencies: [],
+      registryDependencies: ["plate-element"],
       files: ["registry/default/plate-ui/paragraph-element.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/paragraph-element.tsx")),
       source: "",
@@ -679,7 +701,7 @@ export const Index: Record<string, any> = {
     "slash-input-element": {
       name: "slash-input-element",
       type: "registry:ui",
-      registryDependencies: ["inline-combobox"],
+      registryDependencies: ["inline-combobox","plate-element"],
       files: ["registry/default/plate-ui/slash-input-element.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/slash-input-element.tsx")),
       source: "",
@@ -690,7 +712,7 @@ export const Index: Record<string, any> = {
     "table-cell-element": {
       name: "table-cell-element",
       type: "registry:ui",
-      registryDependencies: ["resizable"],
+      registryDependencies: ["resizable","plate-element"],
       files: ["registry/default/plate-ui/table-cell-element.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/table-cell-element.tsx")),
       source: "",
@@ -712,7 +734,7 @@ export const Index: Record<string, any> = {
     "table-element": {
       name: "table-element",
       type: "registry:ui",
-      registryDependencies: ["dropdown-menu"],
+      registryDependencies: ["dropdown-menu","plate-element"],
       files: ["registry/default/plate-ui/table-element.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/table-element.tsx")),
       source: "",
@@ -723,7 +745,7 @@ export const Index: Record<string, any> = {
     "table-row-element": {
       name: "table-row-element",
       type: "registry:ui",
-      registryDependencies: [],
+      registryDependencies: ["plate-element"],
       files: ["registry/default/plate-ui/table-row-element.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/table-row-element.tsx")),
       source: "",
@@ -734,7 +756,7 @@ export const Index: Record<string, any> = {
     "todo-list-element": {
       name: "todo-list-element",
       type: "registry:ui",
-      registryDependencies: ["checkbox"],
+      registryDependencies: ["checkbox","plate-element"],
       files: ["registry/default/plate-ui/todo-list-element.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/todo-list-element.tsx")),
       source: "",
@@ -745,7 +767,7 @@ export const Index: Record<string, any> = {
     "toggle-element": {
       name: "toggle-element",
       type: "registry:ui",
-      registryDependencies: [],
+      registryDependencies: ["plate-element"],
       files: ["registry/default/plate-ui/toggle-element.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/toggle-element.tsx")),
       source: "",
@@ -1111,6 +1133,17 @@ export const Index: Record<string, any> = {
       registryDependencies: undefined,
       files: ["registry/default/hooks/use-debounce.ts"],
       component: React.lazy(() => import("@/registry/default/hooks/use-debounce.ts")),
+      source: "",
+      category: "undefined",
+      subcategory: "undefined",
+      chunks: []
+    },
+    "use-mounted": {
+      name: "use-mounted",
+      type: "registry:hook",
+      registryDependencies: undefined,
+      files: ["registry/default/hooks/use-mounted.ts"],
+      component: React.lazy(() => import("@/registry/default/hooks/use-mounted.ts")),
       source: "",
       category: "undefined",
       subcategory: "undefined",

@@ -1,7 +1,8 @@
 import React from 'react';
 
 import { cn, withRef } from '@udecode/cn';
-import { PlateElement } from '@udecode/plate-common/react';
+
+import { PlateElement } from './plate-element';
 
 export const TableRowElement = withRef<
   typeof PlateElement,
@@ -12,11 +13,11 @@ export const TableRowElement = withRef<
   return (
     <PlateElement
       ref={ref}
-      asChild
+      as="tr"
       className={cn('h-full', hideBorder && 'border-none')}
       {...props}
     >
-      <tr>{children}</tr>
+      {children}
     </PlateElement>
   );
 });
