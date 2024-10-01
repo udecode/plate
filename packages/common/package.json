@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-common",
-  "version": "38.0.6",
+  "version": "39.0.0",
   "description": "Plate common packages for plugins",
   "keywords": [
     "plate",
@@ -50,12 +50,12 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-core": "38.0.6",
-    "@udecode/plate-utils": "38.0.6",
+    "@udecode/plate-core": "39.0.0",
+    "@udecode/plate-utils": "39.0.0",
     "@udecode/react-hotkeys": "37.0.0",
-    "@udecode/react-utils": "38.0.1",
+    "@udecode/react-utils": "39.0.0",
     "@udecode/slate": "38.0.4",
-    "@udecode/slate-react": "38.0.4",
+    "@udecode/slate-react": "39.0.0",
     "@udecode/slate-utils": "38.0.4",
     "@udecode/utils": "37.0.0"
   },
