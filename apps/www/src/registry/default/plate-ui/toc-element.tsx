@@ -1,5 +1,5 @@
 import { cn } from '@udecode/cn';
-import { PlateElement } from '@udecode/plate-common/react';
+import { PlateElement } from './plate-element';
 import {
   useTocElement,
   useTocElementState,

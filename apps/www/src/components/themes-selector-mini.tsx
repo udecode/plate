@@ -4,9 +4,9 @@ import * as React from 'react';
 
 import { useTheme } from 'next-themes';
 
-import { useMounted } from '@/hooks/use-mounted';
 import { useThemesConfig } from '@/hooks/use-themes-config';
 import { type Theme, THEME_LIST, THEMES } from '@/lib/themes';
+import { useMounted } from '@/registry/default/hooks/use-mounted';
 import { cn } from '@/registry/default/lib/utils';
 import {
   Tooltip,

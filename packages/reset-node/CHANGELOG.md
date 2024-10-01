@@ -1,5 +1,7 @@
 # @udecode/plate-reset-node
 
+## 39.0.0
+
 ## 38.0.1
 
 ### Patch Changes

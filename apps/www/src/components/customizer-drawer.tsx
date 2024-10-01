@@ -6,8 +6,8 @@ import * as React from 'react';
 import * as SheetPrimitive from '@radix-ui/react-dialog';
 import { ChevronsRight } from 'lucide-react';
 
-import { useMounted } from '@/hooks/use-mounted';
 import { useViewport } from '@/hooks/use-viewport';
+import { useMounted } from '@/registry/default/hooks/use-mounted';
 import { Button } from '@/registry/default/plate-ui/button';
 
 import { settingsStore } from './context/settings-store';

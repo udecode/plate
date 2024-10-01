@@ -3,11 +3,7 @@ import React from 'react';
 import type { TColumnElement } from '@udecode/plate-layout';
 
 import { cn, withRef } from '@udecode/cn';
-import {
-  PlateElement,
-  useElement,
-  useRemoveNodeButton,
-} from '@udecode/plate-common/react';
+import { useElement, useRemoveNodeButton } from '@udecode/plate-common/react';
 import {
   ColumnItemPlugin,
   useColumnState,
@@ -18,6 +14,7 @@ import { useReadOnly } from 'slate-react';
 import { Icons } from '@/components/icons';
 
 import { Button } from './button';
+import { PlateElement } from './plate-element';
 import { Popover, PopoverAnchor, PopoverContent } from './popover';
 import { Separator } from './separator';
 

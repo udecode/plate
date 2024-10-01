@@ -3,17 +3,23 @@ import React from 'react';
 import type { TEditor, TElement } from '@udecode/plate-common';
 import type { DropTargetMonitor } from 'react-dnd';
 
+import { createAtomStore } from '@udecode/plate-common/react';
+
 import { type DragItemNode, type DropLineDirection, useDndBlock } from '..';
+
+export const { DraggableProvider, useDraggableStore } = createAtomStore(
+  {
+    dropLine: '' as DropLineDirection,
+  },
+  { name: 'draggable' }
+);
 
 export type DraggableState = {
   dragRef: (
     elementOrNode: Element | React.ReactElement | React.RefObject<any> | null
   ) => void;
-  dropLine: DropLineDirection;
   isDragging: boolean;
-  isHovered: boolean;
   nodeRef: React.RefObject<HTMLDivElement>;
-  setIsHovered: (isHovered: boolean) => void;
 };
 
 export const useDraggableState = (props: {
@@ -31,8 +37,7 @@ export const useDraggableState = (props: {
   const { element, onDropHandler } = props;
 
   const nodeRef = React.useRef<HTMLDivElement>(null);
-  const [isHovered, setIsHovered] = React.useState(false);
-  const { dragRef, dropLine, isDragging } = useDndBlock({
+  const { dragRef, isDragging } = useDndBlock({
     id: element.id as string,
     nodeRef,
     onDropHandler,
@@ -40,27 +45,33 @@ export const useDraggableState = (props: {
 
   return {
     dragRef,
-    dropLine,
     isDragging,
-    isHovered,
     nodeRef,
-    setIsHovered,
   };
 };
 
 export const useDraggable = (state: DraggableState) => {
   return {
-    droplineProps: {
-      contentEditable: false,
-    },
-    groupProps: {
-      onPointerEnter: () => state.setIsHovered(true),
-      onPointerLeave: () => state.setIsHovered(false),
-    },
-    gutterLeftProps: {
-      contentEditable: false,
-    },
     previewRef: state.nodeRef,
     handleRef: state.dragRef,
+  };
+};
+
+export const useDraggableGutter = () => {
+  return {
+    props: {
+      contentEditable: false,
+    },
+  };
+};
+
+export const useDropLine = () => {
+  const dropLine = useDraggableStore().get.dropLine();
+
+  return {
+    dropLine,
+    props: {
+      contentEditable: false,
+    },
   };
 };

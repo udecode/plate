@@ -7,17 +7,19 @@ description: Select and manipulate entire text blocks.
 
 <PackageInfo>
 
+The Block Selection feature allows users to select and manipulate entire text blocks, as opposed to individual words or characters. This powerful functionality enhances the editing experience by providing efficient ways to manage large sections of content.
+
 ## Features
 
-- Select entire blocks, as opposed to individual words or characters.
-- To select an entire block, mouse down outside the text area and then move the cursor into the block. Once it is selected, you'll see a background color.
-- Keep moving down or up to select multiple blocks.
-- Once selected, the available actions are: copy, cut, and delete.
-- Keyboard shortcuts:
-  - `Cmd+A` (Mac) / `Ctrl+A` (Windows/Linux): 
-    - First press: Selects the current block
-    - Double press: Selects the whole document using block selection
-  - Note: This behavior can be disabled by setting `handlers.onKeyDown = null` when creating the plugin
+- Select entire blocks with a single action
+- Multi-block selection
+- Copy, cut, and delete operations on selected blocks
+- Keyboard shortcuts for quick selection:
+  - `Cmd+A`:
+    - First press: select the current block
+    - Double press: select all blocks
+  - Arrow keys: select the block above or below
+- Customizable styling for selected blocks
 
 </PackageInfo>
 
@@ -40,7 +42,9 @@ const plugins = [
 ];
 ```
 
-## Set scrollable container
+## Configuration
+
+### Set scrollable container
 
 To control the scrollable container, configure the `boundaries` and `container` options within `areaOptions`. These options accept CSS selectors, such as `#selection-demo #scroll_container`, which are used with `document.querySelector()`.
 
@@ -64,7 +68,7 @@ Example configuration:
 
 This setup ensures that the block selection functionality is properly constrained within your designated scrollable area.
 
-## Set selectable element
+### Set selectable element
 
 Add data-plate-selectable to the container or the element you want to start block selection.
 
@@ -89,36 +93,48 @@ Example:
     />
 ```
 
-### Styling
+## Styling
 
+### Selection area
 
-#### Selection area
-You can style the selection area by adding this class to the container(.slate-selection-area can be changed in the plugin options):
+Style the selection area using `.slate-selection-area` class. For example:
 
 ```js
 '[&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10'
 ```
 
-#### Selected element
+### Selected element
 
-You can style the selected element by adding this class to the container
+To determine if an element is selected, use the new `useBlockSelected` hook. You can render a visual indicator around selected blocks using our `BlockSelection` component or create your own:
 
-```js
-'[&_.slate-selected]:!bg-primary/20 '
+```tsx
+import React from 'react';
+import { useBlockSelected } from '@udecode/plate-selection/react';
+
+export function BlockSelection() {
+  const isBlockSelected = useBlockSelected();
+
+  return (
+    <div
+      className={`pointer-events-none absolute inset-0 z-10 bg-primary/15 ${
+        isBlockSelected ? 'opacity-100' : 'opacity-0'
+      }`}
+    />
+  );
+}
 ```
 
+This component should be rendered inside each block element for consistent selection feedback. Plate UI is doing it in `plate-element.tsx`.
+
 ### Disable browser default scroll behavior
-If we select some text and then move(keep pressed) the cursor to the very bottom of the page, the page will start scrolling to the bottom.
 
-Sometimes this scroll is so fast and confilicts with `BlockSelectionPlugin` scroll behavior(After the selection area appears, move the mouse to the bottom of the scroll container).
+When selecting text and moving the cursor to the bottom of the page, the browser's default scroll behavior can conflict with the `BlockSelectionPlugin`. To mitigate this, you can add a non-selectable area to the right side of the editor:
 
-I don't find any way to disable this scroll behavior of browser.(if you find the way to disable it, please tell me that will so appreciate it)
+```tsx
+<div className="absolute right-0 top-0 h-full w-4 select-none" />
+```
 
-So the solution is add an empty `div` above the editer's right side(The right side is the easiest place to trigger this behavior.) and set `user-select: none` to it .
-
-This will make configuration and maintenance cumbersome so we remove this div from plate.
-
-If you encounter this issue, you might consider disabling it in this way.
+This helps prevent unexpected scrolling during selection operations.
 
 ## Plugins
 
@@ -265,6 +281,10 @@ A wrapper component that adds block selection functionality to its children.
 </APIProps>
 
 ## Hooks
+
+### useBlockSelected
+
+Returns true if context block is selected.
 
 ### useBlockSelectableState
 

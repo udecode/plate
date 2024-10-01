@@ -13,9 +13,9 @@ import type { ChangedElements, PartialSelectionOptions } from '../internal';
 import { getAllSelectableDomNode, getSelectedDomNode } from '../lib';
 import { extractSelectableIds } from '../lib/extractSelectableIds';
 import { BlockContextMenuPlugin } from './BlockContextMenuPlugin';
+import { BlockSelectionAfterEditable } from './BlockSelectionAfterEditable';
 import { BlockSelectable } from './components/BlockSelectable';
 import { onKeyDownSelection } from './onKeyDownSelection';
-import { useHooksBlockSelection } from './useHooksBlockSelection';
 import { onChangeBlockSelection } from './utils';
 
 export type BlockSelectionConfig = PluginConfig<
@@ -25,6 +25,7 @@ export type BlockSelectionConfig = PluginConfig<
     editorPaddingRight?: CSSProperties['width'];
     enableContextMenu?: boolean;
     isSelecting?: boolean;
+    isSelectionAreaVisible?: boolean;
     query?: QueryNodeOptions;
     rightSelectionAreaClassName?: string;
     selectedIds?: Set<string>;
@@ -71,6 +72,7 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
     },
     enableContextMenu: false,
     isSelecting: false,
+    isSelectionAreaVisible: false,
     query: {
       maxLevel: 1,
     },
@@ -87,8 +89,8 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
             element,
           },
         }),
+    afterEditable: BlockSelectionAfterEditable,
   },
-  useHooks: useHooksBlockSelection,
   handlers: {
     onChange: onChangeBlockSelection,
     onKeyDown: onKeyDownSelection,

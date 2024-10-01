@@ -1,5 +1,25 @@
 # @udecode/plate-dnd
 
+## 39.0.0
+
+### Major Changes
+
+- [#3597](https://github.com/udecode/plate/pull/3597) by [@zbeyens](https://github.com/zbeyens) – The following changes were made to improve performance:
+
+  - Refactored `useDraggable` hook to focus on core dragging functionality:
+    - Removed `dropLine`. Use `useDropLine().dropLine` instead.
+    - Removed `groupProps` from the returned object – `isHovered`, and `setIsHovered` from the returned state. Use CSS instead.
+    - Removed `droplineProps`, and `gutterLeftProps` from the returned object. Use `useDropLine().props`, `useDraggableGutter().props` instead.
+
+### Minor Changes
+
+- [#3597](https://github.com/udecode/plate/pull/3597) by [@zbeyens](https://github.com/zbeyens) –
+  - New hooks:
+    - `useDraggableGutter`: Returns props for the draggable gutter.
+    - `useDropLine`: Returns the current drop line state and props.
+  - Added `DraggableProvider` and `useDraggableStore` for managing draggable state:
+    - `dropLine`: The direction of the drop line.
+
 ## 38.0.0
 
 ## 37.0.0

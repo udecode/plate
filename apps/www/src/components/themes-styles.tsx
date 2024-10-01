@@ -1,8 +1,8 @@
 'use client';
 
 import { useConfig } from '@/hooks/use-config';
-import { useMounted } from '@/hooks/use-mounted';
 import { useThemesConfig } from '@/hooks/use-themes-config';
+import { useMounted } from '@/registry/default/hooks/use-mounted';
 
 export function ThemesStyle() {
   const [config] = useConfig();

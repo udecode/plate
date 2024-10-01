@@ -62,10 +62,12 @@ export const withPlate = <
     const store = editor.getOptionsStore(plugin);
 
     if (!store) {
-      editor.api.debug.error(
+      editor.api.debug.warn(
         `editor.useOptions: ${plugin.key} plugin is missing`,
         'PLUGIN_MISSING'
       );
+
+      return {};
     }
 
     return store.useStore(selector, equalityFn);
@@ -75,10 +77,12 @@ export const withPlate = <
     const store = editor.getOptionsStore(plugin);
 
     if (!store) {
-      editor.api.debug.error(
+      editor.api.debug.warn(
         `editor.useOption: ${plugin.key} plugin is missing`,
         'PLUGIN_MISSING'
       );
+
+      return;
     }
 
     const useState = (store as any)?.use[key];

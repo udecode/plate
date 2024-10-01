@@ -35,10 +35,6 @@ export const CheckPlugin = ({
   // }
   // enable if plugin is enabled
   if (plugin && !editor?.plugins[plugin.key]) {
-    if (plugin.key === 'bold') {
-      console.log('bold', editor?.plugins[plugin.key]);
-    }
-
     isEnabled = false;
   }
   if (!isEnabled) {

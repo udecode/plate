@@ -1,5 +1,7 @@
 # @udecode/plate-slash-command
 
+## 39.0.0
+
 ## 38.0.1
 
 ### Patch Changes

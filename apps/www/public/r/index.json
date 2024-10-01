@@ -13,6 +13,34 @@
   },
   {
     "dependencies": [
+      "@udecode/plate-selection"
+    ],
+    "files": [
+      {
+        "path": "plate-ui/block-selection.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "block-selection",
+    "registryDependencies": [],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [],
+    "files": [
+      {
+        "path": "plate-ui/plate-element.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "plate-element",
+    "registryDependencies": [
+      "block-selection"
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
       "@udecode/plate-cloud"
     ],
     "files": [
@@ -65,7 +93,8 @@
     ],
     "name": "code-block-element",
     "registryDependencies": [
-      "command"
+      "command",
+      "plate-element"
     ],
     "type": "registry:ui"
   },
@@ -86,7 +115,8 @@
     "name": "column-element",
     "registryDependencies": [
       "command",
-      "resizable"
+      "resizable",
+      "plate-element"
     ],
     "type": "registry:ui"
   },
@@ -176,6 +206,7 @@
   {
     "dependencies": [
       "@udecode/plate-dnd",
+      "@udecode/plate-selection",
       "react-dnd",
       "react-dnd-html5-backend"
     ],
@@ -255,7 +286,9 @@
     ],
     "name": "emoji-input-element",
     "registryDependencies": [
-      "inline-combobox"
+      "inline-combobox",
+      "plate-element",
+      "use-debounce"
     ],
     "type": "registry:ui"
   },
@@ -301,7 +334,9 @@
       }
     ],
     "name": "blockquote-element",
-    "registryDependencies": [],
+    "registryDependencies": [
+      "plate-element"
+    ],
     "type": "registry:ui"
   },
   {
@@ -316,7 +351,8 @@
     ],
     "name": "date-element",
     "registryDependencies": [
-      "calendar"
+      "calendar",
+      "plate-element"
     ],
     "type": "registry:ui"
   },
@@ -436,7 +472,9 @@
       }
     ],
     "name": "code-line-element",
-    "registryDependencies": [],
+    "registryDependencies": [
+      "plate-element"
+    ],
     "type": "registry:ui"
   },
   {
@@ -546,7 +584,9 @@
       }
     ],
     "name": "excalidraw-element",
-    "registryDependencies": [],
+    "registryDependencies": [
+      "plate-element"
+    ],
     "type": "registry:ui"
   },
   {
@@ -628,7 +668,9 @@
       }
     ],
     "name": "heading-element",
-    "registryDependencies": [],
+    "registryDependencies": [
+      "plate-element"
+    ],
     "type": "registry:ui"
   },
   {
@@ -656,7 +698,9 @@
       }
     ],
     "name": "hr-element",
-    "registryDependencies": [],
+    "registryDependencies": [
+      "plate-element"
+    ],
     "type": "registry:ui"
   },
   {
@@ -673,7 +717,8 @@
     "registryDependencies": [
       "media-popover",
       "caption",
-      "resizable"
+      "resizable",
+      "plate-element"
     ],
     "type": "registry:ui"
   },
@@ -796,7 +841,9 @@
       }
     ],
     "name": "link-element",
-    "registryDependencies": [],
+    "registryDependencies": [
+      "plate-element"
+    ],
     "type": "registry:ui"
   },
   {
@@ -845,7 +892,9 @@
       }
     ],
     "name": "list-element",
-    "registryDependencies": [],
+    "registryDependencies": [
+      "plate-element"
+    ],
     "type": "registry:ui"
   },
   {
@@ -896,7 +945,8 @@
     "registryDependencies": [
       "media-popover",
       "caption",
-      "resizable"
+      "resizable",
+      "plate-element"
     ],
     "type": "registry:ui"
   },
@@ -946,7 +996,10 @@
       }
     ],
     "name": "mention-element",
-    "registryDependencies": [],
+    "registryDependencies": [
+      "plate-element",
+      "use-mounted"
+    ],
     "type": "registry:ui"
   },
   {
@@ -961,7 +1014,8 @@
     ],
     "name": "mention-input-element",
     "registryDependencies": [
-      "inline-combobox"
+      "inline-combobox",
+      "plate-element"
     ],
     "type": "registry:ui"
   },
@@ -1021,7 +1075,9 @@
       }
     ],
     "name": "paragraph-element",
-    "registryDependencies": [],
+    "registryDependencies": [
+      "plate-element"
+    ],
     "type": "registry:ui"
   },
   {
@@ -1095,7 +1151,8 @@
     ],
     "name": "slash-input-element",
     "registryDependencies": [
-      "inline-combobox"
+      "inline-combobox",
+      "plate-element"
     ],
     "type": "registry:ui"
   },
@@ -1111,7 +1168,8 @@
     ],
     "name": "table-cell-element",
     "registryDependencies": [
-      "resizable"
+      "resizable",
+      "plate-element"
     ],
     "type": "registry:ui"
   },
@@ -1144,7 +1202,8 @@
     ],
     "name": "table-element",
     "registryDependencies": [
-      "dropdown-menu"
+      "dropdown-menu",
+      "plate-element"
     ],
     "type": "registry:ui"
   },
@@ -1159,7 +1218,9 @@
       }
     ],
     "name": "table-row-element",
-    "registryDependencies": [],
+    "registryDependencies": [
+      "plate-element"
+    ],
     "type": "registry:ui"
   },
   {
@@ -1174,7 +1235,8 @@
     ],
     "name": "todo-list-element",
     "registryDependencies": [
-      "checkbox"
+      "checkbox",
+      "plate-element"
     ],
     "type": "registry:ui"
   },
@@ -1189,7 +1251,9 @@
       }
     ],
     "name": "toggle-element",
-    "registryDependencies": [],
+    "registryDependencies": [
+      "plate-element"
+    ],
     "type": "registry:ui"
   },
   {

@@ -1,7 +1,8 @@
 import React, { type ComponentType, type SVGProps } from 'react';
 
+import type { PlateEditor } from '@udecode/plate-common/react';
+
 import { withRef } from '@udecode/cn';
-import { type PlateEditor, PlateElement } from '@udecode/plate-common/react';
 import { DatePlugin } from '@udecode/plate-date/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { ListStyleType, toggleIndentList } from '@udecode/plate-indent-list';
@@ -15,6 +16,7 @@ import {
   InlineComboboxInput,
   InlineComboboxItem,
 } from './inline-combobox';
+import { PlateElement } from './plate-element';
 
 interface SlashCommandRule {
   icon: ComponentType<SVGProps<SVGSVGElement>>;

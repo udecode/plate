@@ -1,5 +1,11 @@
 # @udecode/react-utils
 
+## 39.0.0
+
+### Patch Changes
+
+- [#3597](https://github.com/udecode/plate/pull/3597) by [@zbeyens](https://github.com/zbeyens) – New component: MemoizedChildren
+
 ## 38.0.1
 
 ### Patch Changes
