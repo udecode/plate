@@ -123,7 +123,7 @@ export const ui: Registry = [
     dependencies: ['@udecode/plate-emoji'],
     files: ['plate-ui/emoji-input-element.tsx'],
     name: 'emoji-input-element',
-    registryDependencies: ['inline-combobox', 'plate-element'],
+    registryDependencies: ['inline-combobox', 'plate-element', 'use-debounce'],
     type: 'registry:ui',
   },
   {
@@ -449,7 +449,7 @@ export const ui: Registry = [
     dependencies: ['@udecode/plate-mention'],
     files: ['plate-ui/mention-element.tsx'],
     name: 'mention-element',
-    registryDependencies: ['plate-element'],
+    registryDependencies: ['plate-element', 'use-mounted'],
     type: 'registry:ui',
   },
   {
