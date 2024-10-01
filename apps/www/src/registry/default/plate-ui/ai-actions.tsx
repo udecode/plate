@@ -195,3 +195,10 @@ export const SelectionSuggestionActions = {
     value: ACTION_SELECTION_SUGGESTION_TRY_AGAIN,
   },
 };
+
+export const aiActions = {
+  CursorCommandsActions,
+  CursorSuggestionActions,
+  SelectionCommandsActions,
+  SelectionSuggestionActions,
+};

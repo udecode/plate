@@ -86,3 +86,10 @@ export const SelectionSuggestions = () => {
     </>
   );
 };
+
+export const aiCommands = {
+  CursorCommands,
+  CursorSuggestions,
+  SelectionCommands,
+  SelectionSuggestions,
+};

@@ -171,6 +171,25 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         AIPlugin.configure({
           options: {
             createAIEditor: createAIEditor,
+            // eslint-disable-next-line @typescript-eslint/require-await, @typescript-eslint/no-unused-vars
+            fetchSuggestion: async ({ abortSignal, prompt, system }) => {
+              const response = await fetch('/api/stream', {
+                body: JSON.stringify({ prompt, system }),
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                method: 'POST',
+                signal: abortSignal.signal,
+              }).catch((error) => {
+                console.error(error);
+              });
+
+              if (!response || !response.body) {
+                throw new Error('Response or response body is null or abort');
+              }
+
+              return response.body;
+            },
             scrollContainerSelector: `#${scrollSelector}`,
           },
           render: { aboveEditable: AIMenu },

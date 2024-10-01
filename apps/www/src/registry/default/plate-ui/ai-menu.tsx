@@ -9,19 +9,8 @@ import { useAI } from '@udecode/plate-ai/react';
 import { Icons } from '@/components/icons';
 
 import { useActionHandler } from './action-handler';
-import {
-  CursorCommandsActions,
-  CursorSuggestionActions,
-  SelectionCommandsActions,
-  SelectionSuggestionActions,
-  defaultValues,
-} from './ai-actions';
-import {
-  CursorCommands,
-  CursorSuggestions,
-  SelectionCommands,
-  SelectionSuggestions,
-} from './ai-menu-items';
+import { aiActions, defaultValues } from './ai-actions';
+import { aiCommands } from './ai-menu-items';
 import { AIPreviewEditor } from './ai-previdew-editor';
 import { Button } from './button';
 import { Menu, comboboxVariants, renderSearchMenuItems } from './menu';
@@ -40,24 +29,12 @@ export const AIMenu = memo(({ children }: React.PropsWithChildren) => {
     submitButtonProps,
     onCloseMenu,
   } = useAI({
-    aiActions: {
-      CursorCommandsActions,
-      CursorSuggestionActions,
-      SelectionCommandsActions,
-      SelectionSuggestionActions,
-    },
-    aiCommands: {
-      CursorCommands,
-      CursorSuggestions,
-      SelectionCommands,
-      SelectionSuggestions,
-    },
+    aiActions: aiActions,
+    aiCommands: aiCommands,
     defaultValues,
   });
 
   useActionHandler(action, aiEditor!);
-
-  /** IME */
 
   return (
     <>

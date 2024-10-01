@@ -97,7 +97,6 @@ export const useAI = ({
     if (isHotkey('enter')(e)) await streamInsert();
   };
 
-  // TODO: move to API
   const onCloseMenu = useCallback(() => {
     //  close menu if ai is not generating
     if (aiState === 'idle' || aiState === 'done') {

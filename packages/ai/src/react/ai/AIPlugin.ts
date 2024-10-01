@@ -13,9 +13,16 @@ import { useAIHooks } from './useAIHook';
 
 export const KEY_AI = 'ai';
 
+export interface FetchAISuggestionProps {
+  abortSignal: AbortController;
+  prompt: string;
+  system?: string;
+}
+
 interface ExposeOptions {
   createAIEditor: () => PlateEditor;
   scrollContainerSelector: string;
+  fetchSuggestion?: (props: FetchAISuggestionProps) => Promise<ReadableStream>;
   trigger?: RegExp | string[] | string;
 
   triggerPreviousCharPattern?: RegExp;

@@ -17,28 +17,15 @@ export const streamTraversal = async (
   const abortController = new AbortController();
   editor.setOptions(AIPlugin, { abortController });
 
-  const response = await fetch('/api/ai/command', {
-    body: JSON.stringify({ prompt, system }),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    method: 'POST',
-    signal: abortController.signal,
-  }).catch((error) => {
-    console.error(error);
+  const fetchSuggestion = editor.getOptions(AIPlugin).fetchSuggestion!;
+
+  const response = await fetchSuggestion({
+    abortSignal: abortController,
+    prompt,
+    system,
   });
 
-  if (response?.status === 429) {
-    return fn(
-      'Rate limit exceeded. You have made too many requests. Please try again later.',
-      true
-    );
-  }
-  if (!response || !response.body) {
-    throw new Error('Response or response body is null or abort');
-  }
-
-  const reader = response.body.getReader();
+  const reader = response.getReader();
   const decoder = new TextDecoder();
 
   // eslint-disable-next-line no-constant-condition
