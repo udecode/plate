@@ -1,5 +1,7 @@
 # @udecode/plate-serializer-html
 
+## 39.0.0
+
 ## 38.0.1
 
 ### Patch Changes
