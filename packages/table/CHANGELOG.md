@@ -1,5 +1,11 @@
 # @udecode/plate-table
 
+## 39.0.1
+
+### Patch Changes
+
+- [`aa3456425606bc7680f51bc64412e3cb5aaabe8a`](https://github.com/udecode/plate/commit/aa3456425606bc7680f51bc64412e3cb5aaabe8a) by [@zbeyens](https://github.com/zbeyens) – fix lodash imports
+
 ## 39.0.0
 
 ## 38.0.8
