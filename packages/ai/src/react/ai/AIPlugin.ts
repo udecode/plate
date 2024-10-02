@@ -59,7 +59,7 @@ export type AIPluginConfig = ExtendConfig<
     lastGenerate: string | null;
     lastPrompt: string | null;
     lastWorkPath: Path | null;
-    menuType: 'selection' | 'space' | null;
+    menuType: 'cursor' | 'selection' | null;
     openEditorId: string | null;
     store: AriakitTypes.MenuStore | null;
   } & ExposeOptions &
@@ -189,7 +189,7 @@ export const AIPlugin = toTPlatePlugin<AIPluginConfig>(BaseAIPlugin, {
         api.ai.show(editor.id, dom, [node, path]);
         setOptions({
           aiState: 'idle',
-          menuType: 'space',
+          menuType: 'cursor',
         });
       },
     },
