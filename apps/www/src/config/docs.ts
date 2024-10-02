@@ -274,7 +274,8 @@ export const docsConfig: DocsConfig = {
         },
         {
           href: '/docs/callout',
-          label: 'Plus',
+          label: 'WIP',
+          new: true,
           title: 'Callout',
         },
         {
@@ -301,7 +302,8 @@ export const docsConfig: DocsConfig = {
         },
         {
           href: '/docs/context-menu',
-          label: 'Plus',
+          label: 'WIP',
+          new: true,
           title: 'Context Menu',
         },
 
@@ -328,7 +330,8 @@ export const docsConfig: DocsConfig = {
         },
         {
           href: '/docs/equation',
-          label: 'Plus',
+          label: 'WIP',
+          new: true,
           title: 'Equation',
         },
         {
@@ -430,11 +433,6 @@ export const docsConfig: DocsConfig = {
           label: 'Element',
           title: 'Toggle',
         },
-        {
-          href: '/docs/upload',
-          label: 'Plus',
-          title: 'Upload',
-        },
       ],
       title: 'Plugins',
     },
@@ -468,6 +466,11 @@ export const docsConfig: DocsConfig = {
           href: '/docs/examples/server',
           label: 'New',
           title: 'Server-Side',
+        },
+        {
+          href: '/docs/upload',
+          new: true,
+          title: 'Upload',
         },
       ],
       title: 'Examples',
