@@ -80,7 +80,7 @@ export const useAI = ({
       await streamInsertTextSelection(editor, aiEditor, {
         prompt: `user prompt is ${searchValue} the content is ${content}`,
       });
-    } else if (menuType === 'space') {
+    } else if (menuType === 'cursor') {
       await streamInsertText(editor, {
         prompt: searchValue,
       });
