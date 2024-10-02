@@ -163,6 +163,7 @@ export function PlaygroundTurnIntoDropdownMenu(props: DropdownMenuProps) {
       <DropdownMenuContent
         className="min-w-0"
         onCloseAutoFocus={onCloseAutoFocus}
+        data-plate-prevent-overlay
         align="start"
       >
         <DropdownMenuLabel>Turn into</DropdownMenuLabel>

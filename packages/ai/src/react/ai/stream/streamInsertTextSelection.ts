@@ -12,7 +12,7 @@ import { deserializeMd } from '@udecode/plate-markdown';
 
 import { AIPlugin } from '../AIPlugin';
 import { getNextPathByNumber } from '../utils/getNextPathByNumber';
-import { getSelectionMenuSystem } from './getSystemMessage';
+import { getAISystem } from './getSystemMessage';
 import { streamTraversal } from './streamTraversal';
 
 interface StreamInsertTextSelectionOptions {
@@ -23,10 +23,7 @@ interface StreamInsertTextSelectionOptions {
 export const streamInsertTextSelection = async (
   editor: PlateEditor,
   aiEditor: PlateEditor,
-  {
-    prompt,
-    system = getSelectionMenuSystem(),
-  }: StreamInsertTextSelectionOptions
+  { prompt, system = getAISystem() }: StreamInsertTextSelectionOptions
 ) => {
   editor.setOptions(AIPlugin, {
     aiState: 'requesting',

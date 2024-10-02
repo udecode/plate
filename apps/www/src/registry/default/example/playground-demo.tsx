@@ -171,8 +171,7 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         AIPlugin.configure({
           options: {
             createAIEditor: createAIEditor,
-            // eslint-disable-next-line @typescript-eslint/require-await, @typescript-eslint/no-unused-vars
-            fetchSuggestion: async ({ abortSignal, prompt, system }) => {
+            fetchStream: async ({ abortSignal, prompt, system }) => {
               const response = await fetch(
                 'https://pro.platejs.org/api/ai/command',
                 {

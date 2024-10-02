@@ -22,7 +22,7 @@ export interface FetchAISuggestionProps {
 interface ExposeOptions {
   createAIEditor: () => PlateEditor;
   scrollContainerSelector: string;
-  fetchSuggestion?: (props: FetchAISuggestionProps) => Promise<ReadableStream>;
+  fetchStream?: (props: FetchAISuggestionProps) => Promise<ReadableStream>;
   trigger?: RegExp | string[] | string;
 
   triggerPreviousCharPattern?: RegExp;

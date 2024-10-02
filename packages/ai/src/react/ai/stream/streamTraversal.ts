@@ -17,9 +17,9 @@ export const streamTraversal = async (
   const abortController = new AbortController();
   editor.setOptions(AIPlugin, { abortController });
 
-  const fetchSuggestion = editor.getOptions(AIPlugin).fetchSuggestion!;
+  const fetchStream = editor.getOptions(AIPlugin).fetchStream!;
 
-  const response = await fetchSuggestion({
+  const response = await fetchStream({
     abortSignal: abortController,
     prompt,
     system,
