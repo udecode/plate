@@ -185,7 +185,6 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
               ).catch((error) => {
                 console.error(error);
               });
-              console.log(response, 'fj');
 
               if (!response || !response.body) {
                 throw new Error('Response or response body is null or abort');

@@ -382,17 +382,91 @@ such as the AI menu or math equation plugins.
 * `fetchStream`
   - The function to fetch the stream from your backend.Introdue in the [Integrate with your backend](#integrate-with-your-backend) section.
 
+## Plus
+In the [Potion template](https://potion.platejs.org/), we have meticulously configured all settings for the AI plugin, providing you with:
+
+- A comprehensive, full-stack AI integration
+- Seamless handling of editor focus issues mentioned earlier
+- Optimized configuration for peak performance
+- Context menu to open the ai menu
+- Slash command to open the ai menu
+- debounce mode copilot
+
+This template serves as an excellent starting point for your AI-enhanced editing projects, 
+allowing you to leverage advanced features without the need for extensive setup.
+
+<div className="mt-10">
+  <iframe src="https://potion.platejs.org" title="Potion" width="100%" height="700px" />
+</div>
+
 
 ## API
 
+### editor.getApi(AIPlugin).ai.abort()
 
+Aborts the ongoing AI request and sets the AI state to idle.
 
+<APIReturns>
+  <APIItem type="void">This function does not return a value.</APIItem>
+</APIReturns>
 
+### editor.getApi(AIPlugin).ai.clearLast()
 
+Clears the last generated content, prompt, and work path.
 
+<APIReturns>
+  <APIItem type="void">This function does not return a value.</APIItem>
+</APIReturns>
 
+### editor.getApi(AIPlugin).ai.focusMenu()
 
+Focuses the input element of AI menu, setting auto-focus and initial focus on the first item.
 
+<APIReturns>
+  <APIItem type="void">This function does not return a value.</APIItem>
+</APIReturns>
+
+### editor.getApi(AIPlugin).ai.hide()
+
+Hides the AI menu by setting the open editor ID to null and removing the anchor element.
+
+<APIReturns>
+  <APIItem type="void">This function does not return a value.</APIItem>
+</APIReturns>
+
+### editor.getApi(AIPlugin).ai.setAnchorElement(dom: HTMLElement)
+
+Sets the anchor element for the AI menu.
+
+<APIParameters>
+  <APIItem name="dom" type="HTMLElement">
+    The DOM element to set as the anchor for the AI menu.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="void">This function does not return a value.</APIItem>
+</APIReturns>
+
+### editor.getApi(AIPlugin).ai.show(editorId: string, dom: HTMLElement, nodeEntry: NodeEntry)
+
+Shows the AI menu for the specified editor, DOM element, and node entry.
+
+<APIParameters>
+  <APIItem name="editorId" type="string">
+    The ID of the editor to show the AI menu for.
+  </APIItem>
+  <APIItem name="dom" type="HTMLElement">
+    The DOM element to anchor the AI menu to.
+  </APIItem>
+  <APIItem name="nodeEntry" type="NodeEntry">
+    The node entry associated with the AI menu.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="void">This function does not return a value.</APIItem>
+</APIReturns>
 
 
 
