@@ -9,7 +9,7 @@ import {
   someNode,
 } from '@udecode/plate-common';
 import { findNodePath } from '@udecode/plate-common/react';
-import cloneDeep from 'lodash/cloneDeep';
+import cloneDeep from 'lodash/cloneDeep.js';
 
 import {
   type TTableCellElement,

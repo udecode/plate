@@ -5898,7 +5898,7 @@ __metadata:
   dependencies:
     "@udecode/plate-combobox": "npm:39.0.0"
     "@udecode/plate-markdown": "npm:39.0.0"
-    "@udecode/plate-menu": "npm:39.0.0"
+    "@udecode/plate-menu": "npm:39.1.0"
     "@udecode/plate-selection": "npm:39.0.0"
     lodash: "npm:^4.17.21"
   peerDependencies:
@@ -6167,13 +6167,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-csv@npm:39.0.0, @udecode/plate-csv@workspace:^, @udecode/plate-csv@workspace:packages/csv":
+"@udecode/plate-csv@npm:39.0.1, @udecode/plate-csv@workspace:^, @udecode/plate-csv@workspace:packages/csv":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-csv@workspace:packages/csv"
   dependencies:
     "@types/papaparse": "npm:^5.3.14"
     "@udecode/plate-common": "workspace:^"
-    "@udecode/plate-table": "npm:39.0.0"
+    "@udecode/plate-table": "npm:39.0.1"
     papaparse: "npm:^5.4.1"
   peerDependencies:
     "@udecode/plate-common": ">=39.0.0"
@@ -6256,7 +6256,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-docx@npm:39.0.0, @udecode/plate-docx@workspace:^, @udecode/plate-docx@workspace:packages/docx":
+"@udecode/plate-docx@npm:39.0.1, @udecode/plate-docx@workspace:^, @udecode/plate-docx@workspace:packages/docx":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-docx@workspace:packages/docx"
   dependencies:
@@ -6265,7 +6265,7 @@ __metadata:
     "@udecode/plate-indent": "npm:39.0.0"
     "@udecode/plate-indent-list": "npm:39.0.0"
     "@udecode/plate-media": "npm:39.0.0"
-    "@udecode/plate-table": "npm:39.0.0"
+    "@udecode/plate-table": "npm:39.0.1"
     validator: "npm:^13.12.0"
   peerDependencies:
     "@udecode/plate-common": ">=39.0.0"
@@ -6637,14 +6637,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-menu@npm:39.0.0, @udecode/plate-menu@workspace:^, @udecode/plate-menu@workspace:packages/menu":
+"@udecode/plate-menu@npm:39.1.0, @udecode/plate-menu@workspace:^, @udecode/plate-menu@workspace:packages/menu":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-menu@workspace:packages/menu"
   dependencies:
     "@ariakit/react": "npm:0.4.7"
     "@udecode/plate-common": "workspace:^"
-    "@udecode/plate-reset-node": "npm:38.0.1"
-    lodash: "npm:^4.17.21"
     match-sorter: "npm:6.3.4"
   peerDependencies:
     "@udecode/plate-common": ">=39.0.0"
@@ -6707,21 +6705,6 @@ __metadata:
     slate-react: ">=0.108.0"
   languageName: unknown
   linkType: soft
-
-"@udecode/plate-reset-node@npm:38.0.1":
-  version: 38.0.1
-  resolution: "@udecode/plate-reset-node@npm:38.0.1"
-  peerDependencies:
-    "@udecode/plate-common": ">=38.0.1"
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    slate: ">=0.103.0"
-    slate-history: ">=0.93.0"
-    slate-hyperscript: ">=0.66.0"
-    slate-react: ">=0.108.0"
-  checksum: 10c0/13db73f040d82388b270318f9cfecc60e28e9383e33c1a1cd771bec21348553ceccbe4fd1ddaf58529fe5b6b75cb0b1e11e27cddc3c80cb0bcd187d1bb71fd72
-  languageName: node
-  linkType: hard
 
 "@udecode/plate-reset-node@npm:39.0.0, @udecode/plate-reset-node@workspace:^, @udecode/plate-reset-node@workspace:packages/reset-node":
   version: 0.0.0-use.local
@@ -6840,7 +6823,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-table@npm:39.0.0, @udecode/plate-table@workspace:^, @udecode/plate-table@workspace:packages/table":
+"@udecode/plate-table@npm:39.0.1, @udecode/plate-table@workspace:^, @udecode/plate-table@workspace:packages/table":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-table@workspace:packages/table"
   dependencies:
@@ -6987,9 +6970,9 @@ __metadata:
     "@udecode/plate-combobox": "npm:39.0.0"
     "@udecode/plate-comments": "npm:39.0.0"
     "@udecode/plate-common": "npm:39.0.0"
-    "@udecode/plate-csv": "npm:39.0.0"
+    "@udecode/plate-csv": "npm:39.0.1"
     "@udecode/plate-diff": "npm:39.0.0"
-    "@udecode/plate-docx": "npm:39.0.0"
+    "@udecode/plate-docx": "npm:39.0.1"
     "@udecode/plate-find-replace": "npm:39.0.0"
     "@udecode/plate-floating": "npm:39.0.0"
     "@udecode/plate-font": "npm:39.0.0"
@@ -7016,7 +6999,7 @@ __metadata:
     "@udecode/plate-slash-command": "npm:39.0.0"
     "@udecode/plate-suggestion": "npm:39.0.0"
     "@udecode/plate-tabbable": "npm:39.0.0"
-    "@udecode/plate-table": "npm:39.0.0"
+    "@udecode/plate-table": "npm:39.0.1"
     "@udecode/plate-toggle": "npm:39.0.0"
     "@udecode/plate-trailing-block": "npm:39.0.0"
   peerDependencies:

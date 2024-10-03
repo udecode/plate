@@ -8,7 +8,7 @@ import {
   isEndPoint,
   isExpanded,
 } from '@udecode/plate-common';
-import debounce from 'lodash/debounce';
+import debounce from 'lodash/debounce.js';
 
 import { AIPlugin } from '../ai';
 import { CopilotPlugin } from './CopilotPlugin';

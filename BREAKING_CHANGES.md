@@ -1,5 +1,28 @@
 For older changelogs, see https://github.com/udecode/plate/blob/main/docs
 
+# 39.0.0
+
+## @udecode/plate-dnd@39.0.0
+
+### Major Changes
+
+- [#3597](https://github.com/udecode/plate/pull/3597) by [@zbeyens](https://github.com/zbeyens) – The following changes were made to improve performance:
+
+  - Refactored `useDraggable` hook to focus on core dragging functionality:
+    - Removed `dropLine`. Use `useDropLine().dropLine` instead.
+    - Removed `groupProps` from the returned object – `isHovered`, and `setIsHovered` from the returned state. Use CSS instead.
+    - Removed `droplineProps`, and `gutterLeftProps` from the returned object. Use `useDropLine().props`, `useDraggableGutter().props` instead.
+
+## @udecode/plate-selection@39.0.0
+
+### Major Changes
+
+- [#3597](https://github.com/udecode/plate/pull/3597) by [@zbeyens](https://github.com/zbeyens) – The following changes were made to improve performance:
+
+  - Removed `useHooksBlockSelection` in favor of `BlockSelectionAfterEditable`
+  - Removed `slate-selected` class from `BlockSelectable`. You can do it on your components using `useBlockSelected()` instead, or by using our new `block-selection.tsx` component.
+  - Introduced `useBlockSelectableStore` for managing selectable state.
+
 # 38.0.1
 
 ## @udecode/plate-core@38.0.1
