@@ -5919,7 +5919,7 @@ __metadata:
   dependencies:
     "@udecode/plate-combobox": "npm:39.0.0"
     "@udecode/plate-markdown": "npm:39.0.0"
-    "@udecode/plate-menu": "npm:39.0.0"
+    "@udecode/plate-menu": "npm:39.1.0"
     "@udecode/plate-selection": "npm:39.0.0"
     lodash: "npm:^4.17.21"
   peerDependencies:
@@ -6658,7 +6658,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-menu@npm:39.0.0, @udecode/plate-menu@workspace:packages/menu":
+"@udecode/plate-menu@npm:39.1.0, @udecode/plate-menu@workspace:packages/menu":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-menu@workspace:packages/menu"
   dependencies:
