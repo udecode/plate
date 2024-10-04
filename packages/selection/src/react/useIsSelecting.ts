@@ -1,5 +1,6 @@
 import { isSelectionExpanded } from '@udecode/plate-common';
 import {
+  type PlateEditor,
   isEditorFocused,
   useEditorPlugin,
   useEditorSelector,

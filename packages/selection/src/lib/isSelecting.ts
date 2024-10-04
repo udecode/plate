@@ -1,3 +1,5 @@
+import type { PlateEditor } from '@udecode/plate-common/react';
+
 import { isSelectionExpanded } from '@udecode/plate-common';
 
 import { BlockSelectionPlugin } from '../react';
