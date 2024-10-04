@@ -1,5 +1,7 @@
 # @udecode/plate-ai
 
+## 39.1.2
+
 ## 39.1.0
 
 ### Minor Changes
