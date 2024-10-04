@@ -1,5 +1,11 @@
 # @udecode/plate-link
 
+## 39.1.1
+
+### Patch Changes
+
+- [#3609](https://github.com/udecode/plate/pull/3609) by [@sakshikale14](https://github.com/sakshikale14) – Fixed floating link issue #3609
+
 ## 39.0.0
 
 ## 38.0.6
