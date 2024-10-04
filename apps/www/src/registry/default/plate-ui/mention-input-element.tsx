@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 
 import { cn, withRef } from '@udecode/cn';
-import { PlateElement } from './plate-element';
 import { getMentionOnSelectItem } from '@udecode/plate-mention';
 
 import {
@@ -11,6 +10,7 @@ import {
   InlineComboboxInput,
   InlineComboboxItem,
 } from './inline-combobox';
+import { PlateElement } from './plate-element';
 
 const onSelectItem = getMentionOnSelectItem();
 

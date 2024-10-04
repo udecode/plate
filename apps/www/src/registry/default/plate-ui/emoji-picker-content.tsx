@@ -109,7 +109,7 @@ export function EmojiPickerContent({
             style={{ width: getRowWidth }}
             data-id={categoryId}
           >
-            <div className="sticky -top-px z-[1] bg-card/90 p-1 py-2 text-sm font-semibold backdrop-blur-sm">
+            <div className="sticky -top-px z-[1] bg-popover/90 p-1 py-2 text-sm font-semibold backdrop-blur-sm">
               {i18n.categories[categoryId]}
             </div>
             <div
@@ -145,7 +145,7 @@ export function EmojiPickerContent({
   const SearchList = useCallback(() => {
     return (
       <div style={{ width: getRowWidth }} data-id="search">
-        <div className="sticky -top-px z-[1] bg-card/90 p-1 py-2 font-semibold backdrop-blur-sm">
+        <div className="sticky -top-px z-[1] bg-popover/90 p-1 py-2 text-sm font-semibold text-card-foreground backdrop-blur-sm">
           {i18n.searchResult}
         </div>
         <div className="relative flex flex-wrap">
@@ -174,12 +174,11 @@ export function EmojiPickerContent({
     <div
       ref={refs.current.contentRoot}
       className={cn(
-        'h-full min-h-[50%] overflow-y-auto overflow-x-hidden px-3',
+        'h-full min-h-[50%] overflow-y-auto overflow-x-hidden px-2',
         '[&::-webkit-scrollbar]:w-4',
         '[&::-webkit-scrollbar-button]:hidden [&::-webkit-scrollbar-button]:size-0',
-        ':hover:[&::-webkit-scrollbar-thumb]:bg-[#f3f4f6]',
-        '[&::-webkit-scrollbar-thumb]:min-h-[65px] [&::-webkit-scrollbar-thumb]:rounded-2xl [&::-webkit-scrollbar-thumb]:border-4 [&::-webkit-scrollbar-thumb]:border-white',
-        '[&::-webkit-scrollbar-track]:border-0'
+        '[&::-webkit-scrollbar-thumb]:min-h-11 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted [&::-webkit-scrollbar-thumb]:hover:bg-muted-foreground/25',
+        '[&::-webkit-scrollbar-thumb]:border-4 [&::-webkit-scrollbar-thumb]:border-solid [&::-webkit-scrollbar-thumb]:border-popover [&::-webkit-scrollbar-thumb]:bg-clip-padding'
       )}
       data-id="scroll"
     >
