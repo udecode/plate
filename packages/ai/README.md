@@ -1,6 +1,6 @@
-# Plate alignment
+# Plate ai
 
-Visit https://platejs.org/docs/alignment to view the documentation.
+Visit https://platejs.org/docs/ai to view the documentation.
 
 ## License
 
