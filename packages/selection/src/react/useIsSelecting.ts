@@ -1,5 +1,6 @@
 import { isSelectionExpanded } from '@udecode/plate-common';
 import {
+  isEditorFocused,
   useEditorPlugin,
   useEditorSelector,
 } from '@udecode/plate-common/react';
