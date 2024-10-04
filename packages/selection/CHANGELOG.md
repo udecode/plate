@@ -1,5 +1,13 @@
 # @udecode/plate-selection
 
+## 39.1.2
+
+### Patch Changes
+
+- [`a5a8e1eb6eb0d769f0560cb8d595eb0a1b4c7b12`](https://github.com/udecode/plate/commit/a5a8e1eb6eb0d769f0560cb8d595eb0a1b4c7b12) by [@zbeyens](https://github.com/zbeyens) –
+  - Add `isSelecting`, `isSelectingOrFocused`, `useIsSelecting`
+  - Add `ids` option to `api.blockSelection.setSelectedIds` as an alternative way to set selected ids
+
 ## 39.0.0
 
 ### Major Changes
