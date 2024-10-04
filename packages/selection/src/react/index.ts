@@ -10,4 +10,5 @@ export * from './useSelectionArea';
 export * from './components/index';
 export * from './context-menu/index';
 export * from './useBlockSelected';
+export * from './useIsSelecting';
 export * from './utils/index';

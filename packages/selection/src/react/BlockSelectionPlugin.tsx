@@ -49,7 +49,7 @@ export type BlockSelectionApi = {
   getSelectedBlocks: () => TNodeEntry[];
   resetSelectedIds: () => void;
   selectedAll: () => void;
-  setSelectedIds: (options: ChangedElements) => void;
+  setSelectedIds: (options: ChangedElements & { ids?: string[] }) => void;
   unselect: () => void;
 };
 
@@ -104,13 +104,19 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
     resetSelectedIds: () => {
       setOption('selectedIds', new Set());
     },
-    setSelectedIds: ({ added, removed }) => {
-      const { selectedIds: prev } = getOptions();
-      const next = new Set(prev);
-      extractSelectableIds(added).forEach((id) => next.add(id));
-      extractSelectableIds(removed).forEach((id) => next.delete(id));
+    setSelectedIds: ({ added, ids, removed }) => {
+      if (ids) {
+        setOption('selectedIds', new Set(ids));
+      }
+      if (added || removed) {
+        const { selectedIds: prev } = getOptions();
+        const next = new Set(prev);
+        extractSelectableIds(added).forEach((id) => next.add(id));
+        extractSelectableIds(removed).forEach((id) => next.delete(id));
 
-      setOption('selectedIds', next);
+        setOption('selectedIds', next);
+      }
+
       setOption('isSelecting', true);
     },
     unselect: () => {
