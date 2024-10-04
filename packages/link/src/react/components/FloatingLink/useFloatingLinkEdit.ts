@@ -13,8 +13,8 @@ import {
   useHotkeys,
 } from '@udecode/plate-common/react';
 import {
-  getDefaultBoundingClientRect,
   getRangeBoundingClientRect,
+  getSelectionBoundingClientRect,
 } from '@udecode/plate-floating';
 
 import type { LinkFloatingToolbarState } from './useFloatingLinkInsert';
@@ -52,7 +52,7 @@ export const useFloatingLinkEditState = ({
       });
     }
 
-    return getDefaultBoundingClientRect();
+    return getSelectionBoundingClientRect();
   }, [editor, type]);
 
   const isOpen = open && mode === 'edit';
