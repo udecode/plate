@@ -113,6 +113,32 @@ here is an example of how to use the TocSidebar component:
 </Plate>
 ```
 
+If you find TocSideBar is not highlight the correct heading, please make sure you have added the `element.id` to the `heading-element`.
+
+For example:
+
+```tsx
+export const HeadingElement = withRef<typeof HeadingElementVariants>(
+  ({ children, isFirstBlock, variant = 'h1', ...props }, ref) => {
+    const { editor, element } = props;
+
+    return (
+      <HeadingElementVariants
+        // Add id to the heading element
+        id={element.id as string}
+        ref={ref}
+        as={variant!}
+        variant={variant}
+        isFirstBlock={element === editor.children[0]}
+        {...props}
+      >
+        {children}
+      </HeadingElementVariants>
+    );
+  }
+);
+```
+
 ## Plate Plus
 The TocSideBar component in Plate Plus offers the following features:
 

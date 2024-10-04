@@ -50,8 +50,9 @@ To control the scrollable container, configure the `boundaries` and `container` 
 
 For this to work effectively:
 
-1. Add an `id` or `className` to your scroll container.
+1. Add an `id` or `className` to your scroll container.If you not sure about the container, you can add it to the `<Editor />` component.
 2. Use the appropriate selector in your configuration.
+3. Don't forget to set `position: relative` to your scroll container.
 
 Example configuration:
 
@@ -91,6 +92,46 @@ Example:
     readOnly={disabled ?? readOnly}
     {...props}
     />
+```
+
+### Set scroll speed
+
+useing `options.areaOptions.behaviour.scrolling.speedDivider` to set the scroll speed.
+
+The value of `1.5` is our recommended speed.Since it's same with the default speed of the browser.
+
+
+```ts
+  areaOptions: {
+      behaviour: {
+        scrolling: {
+          speedDivider: 1.5,
+        },
+      },
+  },
+```
+
+Full configuration recommended:
+
+```ts
+options: {
+  areaOptions: {
+    behaviour: {
+      scrolling: {
+        speedDivider: 1.5,
+      },
+      // The distance needed to move for the selection area to appear.
+      // If it’s too small, it may cause the mouse click event to be blocked. 30 is a good default.
+      startThreshold: 30,
+    },
+    boundaries: '#your-scroll-container-id',
+    container: '#your-scroll-container-id',
+    selectables: '#your-scroll-container-id .slate-selectable',
+    selectionAreaClass: 'slate-selection-area',
+  },
+  // if not using plate-ui context menu, set it to false
+  enableContextMenu: true,
+},
 ```
 
 ## Styling
