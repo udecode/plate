@@ -4,6 +4,7 @@ import { cn } from '@udecode/cn';
 import { ChevronRight, ExternalLinkIcon } from 'lucide-react';
 import Link from 'next/link';
 
+import { OpenInPlus } from './open-in-plus';
 import { DocsPager } from './pager';
 import { DashboardTableOfContents } from './toc';
 import { badgeVariants } from './ui/badge';
@@ -95,6 +96,7 @@ export function DocPageLayout({
             <ScrollArea className="h-full pb-10">
               <div className="sticky top-16 -mt-10 h-[calc(100vh-3.5rem)] py-12">
                 <DashboardTableOfContents toc={toc} />
+                <OpenInPlus className="mt-6 max-w-[80%]" />
               </div>
             </ScrollArea>
           </div>

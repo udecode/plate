@@ -35,7 +35,6 @@
     "react-dom": "^18.3.1"
   },
   "dependencies": {
-    "@ariakit/react": "0.4.11",
     "@radix-ui/colors": "3.0.0",
     "@radix-ui/react-accessible-icon": "^1.1.0",
     "@radix-ui/react-accordion": "^1.2.0",
@@ -69,6 +68,7 @@
     "@radix-ui/react-tooltip": "^1.1.2",
     "@udecode/cn": "workspace:^",
     "@udecode/plate": "workspace:^",
+    "@udecode/plate-ai": "workspace:^",
     "@udecode/plate-alignment": "workspace:^",
     "@udecode/plate-autoformat": "workspace:^",
     "@udecode/plate-basic-elements": "workspace:^",
@@ -108,6 +108,7 @@
     "@udecode/plate-markdown": "workspace:^",
     "@udecode/plate-media": "workspace:^",
     "@udecode/plate-mention": "workspace:^",
+    "@udecode/plate-menu": "workspace:^",
     "@udecode/plate-node-id": "workspace:^",
     "@udecode/plate-normalizers": "workspace:^",
     "@udecode/plate-playwright": "workspace:^",
@@ -137,6 +138,7 @@
     "framer-motion": "^11.5.4",
     "lodash.template": "^4.5.0",
     "lucide-react": "^0.441.0",
+    "match-sorter": "6.3.4",
     "next": "14.3.0-canary.43",
     "next-contentlayer2": "^0.4.6",
     "next-themes": "^0.3.0",

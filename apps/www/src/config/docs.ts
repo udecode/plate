@@ -45,6 +45,7 @@ export const docsConfig: DocsConfig = {
     },
     {
       items: [
+        customizerComponents.copilotHoverCard,
         customizerComponents.editor,
         customizerComponents.alignDropdownMenu,
         customizerComponents.avatar,
@@ -107,12 +108,14 @@ export const docsConfig: DocsConfig = {
         customizerComponents.placeholder,
         customizerComponents.popover,
         customizerComponents.resizable,
+        customizerComponents.slashInputElement,
         customizerComponents.searchHighlightLeaf,
         customizerComponents.separator,
         customizerComponents.tableCellElement,
         customizerComponents.tableDropdownMenu,
         customizerComponents.tableElement,
         customizerComponents.tableRowElement,
+        customizerComponents.tocElement,
         customizerComponents.todoListElement,
         customizerComponents.toggleElement,
         customizerComponents.toggleToolbarButton,
@@ -238,6 +241,16 @@ export const docsConfig: DocsConfig = {
     {
       items: [
         {
+          href: '/docs/ai',
+          label: 'New',
+          title: 'AI',
+        },
+        {
+          href: '/docs/copilot',
+          label: 'New',
+          title: 'Copilot',
+        },
+        {
           href: '/docs/alignment',
           title: 'Alignment',
         },
@@ -260,12 +273,23 @@ export const docsConfig: DocsConfig = {
           title: 'Block Selection',
         },
         {
+          href: '/docs/callout',
+          label: 'WIP',
+          new: true,
+          title: 'Callout',
+        },
+        {
           href: '/docs/caption',
           title: 'Caption',
         },
         {
           href: '/docs/collaboration',
           title: 'Collaboration',
+        },
+        {
+          href: '/docs/column',
+          label: 'Element',
+          title: 'Column',
         },
         {
           href: '/docs/combobox',
@@ -277,9 +301,15 @@ export const docsConfig: DocsConfig = {
           title: 'Comments',
         },
         {
-          href: '/docs/column',
-          label: 'Element',
-          title: 'Column',
+          href: '/docs/context-menu',
+          label: 'WIP',
+          new: true,
+          title: 'Context Menu',
+        },
+
+        {
+          href: '/docs/csv',
+          title: 'CSV',
         },
         {
           href: '/docs/date',
@@ -291,8 +321,18 @@ export const docsConfig: DocsConfig = {
           title: 'Drag & Drop',
         },
         {
+          href: '/docs/docx',
+          title: 'DOCX',
+        },
+        {
           href: '/docs/emoji',
           title: 'Emoji',
+        },
+        {
+          href: '/docs/equation',
+          label: 'WIP',
+          new: true,
+          title: 'Equation',
         },
         {
           href: '/docs/excalidraw',
@@ -303,10 +343,6 @@ export const docsConfig: DocsConfig = {
           href: '/docs/exit-break',
           title: 'Exit Break',
         },
-        // {
-        //   title: 'Find',
-        //   href: '/docs/find-replace',
-        // },
         {
           href: '/docs/font',
           title: 'Font',
@@ -348,6 +384,10 @@ export const docsConfig: DocsConfig = {
           title: 'List',
         },
         {
+          href: '/docs/markdown',
+          title: 'Markdown',
+        },
+        {
           href: '/docs/media',
           label: 'Element',
           title: 'Media',
@@ -362,20 +402,13 @@ export const docsConfig: DocsConfig = {
           title: 'Reset Node',
         },
         {
-          href: '/docs/csv',
-          title: 'CSV',
-        },
-        {
-          href: '/docs/docx',
-          title: 'DOCX',
-        },
-        {
-          href: '/docs/markdown',
-          title: 'Markdown',
-        },
-        {
           href: '/docs/single-line',
           title: 'Single Line',
+        },
+        {
+          href: '/docs/slash-command',
+          label: 'New',
+          title: 'Slash Command',
         },
         {
           href: '/docs/soft-break',
@@ -389,6 +422,11 @@ export const docsConfig: DocsConfig = {
           href: '/docs/table',
           label: 'Element',
           title: 'Table',
+        },
+        {
+          href: '/docs/toc',
+          label: 'New',
+          title: 'Table of Contents',
         },
         {
           href: '/docs/toggle',
@@ -428,6 +466,11 @@ export const docsConfig: DocsConfig = {
           href: '/docs/examples/server',
           label: 'New',
           title: 'Server-Side',
+        },
+        {
+          href: '/docs/upload',
+          new: true,
+          title: 'Upload',
         },
       ],
       title: 'Examples',

@@ -17,7 +17,7 @@ import {
 
 import type { AIActions, AICommands } from '../types';
 
-import { type AIActionGroup, AIPlugin } from '../AIPlugin';
+import { type AIActionGroup, AIPlugin, INPUT_ELEMENT_ID } from '../AIPlugin';
 import { streamInsertText, streamInsertTextSelection } from '../stream';
 import { getContent } from '../utils';
 
@@ -170,7 +170,7 @@ export const useAI = ({
 
   const comboboxProps = useMemo(() => {
     return {
-      id: '__potion_ai_menu_searchRef',
+      id: INPUT_ELEMENT_ID,
       value: searchValue,
       onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
         setSearchValue(e.target.value),

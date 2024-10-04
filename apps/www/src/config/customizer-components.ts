@@ -63,6 +63,11 @@ export const customizerComponents = {
     href: '/docs/components/comments-popover',
     title: 'Comments Popover',
   },
+  copilotHoverCard: {
+    href: '/docs/components/copilot-hover-card',
+    label: 'New',
+    title: 'Copilot Hover Card',
+  },
   cursorOverlay: {
     href: '/docs/components/cursor-overlay',
     title: 'Cursor Overlay',
@@ -110,6 +115,7 @@ export const customizerComponents = {
   },
   floatingToolbar: {
     href: '/docs/components/floating-toolbar',
+    new: true,
     title: 'Floating Toolbar',
   },
   floatingToolbarButtons: {
@@ -134,6 +140,7 @@ export const customizerComponents = {
   imageElement: {
     href: '/docs/components/image-element',
     label: 'Element',
+    new: true,
     title: 'Image',
   },
   indentListToolbarButton: {
@@ -233,6 +240,11 @@ export const customizerComponents = {
     title: 'Search Highlight',
   },
   separator: { href: '/docs/components/separator', title: 'Separator' },
+  slashInputElement: {
+    href: '/docs/components/slash-input-element',
+    label: 'New',
+    title: 'Slash Input',
+  },
   tableCellElement: {
     href: '/docs/components/table-cell-element',
     label: 'Element',
@@ -251,6 +263,11 @@ export const customizerComponents = {
     href: '/docs/components/table-row-element',
     label: 'Element',
     title: 'Table Row',
+  },
+  tocElement: {
+    href: '/docs/components/toc-element',
+    label: 'Element',
+    title: 'Table of Contents',
   },
   todoListElement: {
     href: '/docs/components/todo-list-element',
