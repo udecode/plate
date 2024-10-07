@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 39.1.3
+
+### Patch Changes
+
+- [#3613](https://github.com/udecode/plate/pull/3613) by [@zbeyens](https://github.com/zbeyens) – Fix `useEditorPlugin` type
+
 ## 39.0.0
 
 ### Patch Changes
