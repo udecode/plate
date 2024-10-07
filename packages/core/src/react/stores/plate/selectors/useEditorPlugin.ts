@@ -1,11 +1,8 @@
-import type {
-  AnyPluginConfig,
-  InferConfig,
-  WithRequiredKey,
-} from '../../../../lib';
+import type { AnyPluginConfig, WithRequiredKey } from '../../../../lib';
 import type { PlateEditor } from '../../../editor';
 
 import {
+  type InferConfig,
   type PlatePlugin,
   type PlatePluginContext,
   getEditorPlugin,
