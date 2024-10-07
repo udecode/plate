@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate",
-  "version": "39.1.2",
+  "version": "39.1.3",
   "description": "Plate – a plugin system for slate",
   "keywords": [
     "contentEditable",
@@ -65,7 +65,7 @@
     "@udecode/plate-code-block": "39.0.0",
     "@udecode/plate-combobox": "39.0.0",
     "@udecode/plate-comments": "39.0.0",
-    "@udecode/plate-common": "39.0.0",
+    "@udecode/plate-common": "39.1.3",
     "@udecode/plate-csv": "39.0.1",
     "@udecode/plate-diff": "39.0.0",
     "@udecode/plate-docx": "39.0.1",
