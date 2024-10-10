@@ -14,6 +14,46 @@ describe('deserializeMd', () => {
     plugins: [MarkdownPlugin],
   });
 
+  it('should deserialize >>> to blockquote', () => {
+    const input = '>>>a';
+
+    const output = (
+      <fragment>
+        <hblockquote>
+          <htext>a</htext>
+        </hblockquote>
+      </fragment>
+    );
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
+
+  it('should deserialize empty blockquotes', () => {
+    const input = '>';
+
+    const output = (
+      <fragment>
+        <hblockquote>
+          <htext />
+        </hblockquote>
+      </fragment>
+    );
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
+
+  it('should deserialize "> " as blockquotes', () => {
+    const input = '> Blockquote content';
+
+    const output = (
+      <fragment>
+        <hblockquote>Blockquote content</hblockquote>
+      </fragment>
+    );
+
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
+
   it('should deserialize paragraphs', () => {
     const input =
       'Paragraph 1 line 1\nParagraph 1 line 2\n\nParagraph 2 line 1';
@@ -411,7 +451,7 @@ describe('deserializeMdIndentList', () => {
         type: 'p',
       },
       {
-        children: [],
+        children: [{ text: '' }],
         indent: 1,
         listStyleType: 'disc',
         type: 'p',
