@@ -137,7 +137,10 @@ export const useFloatingLinkEdit = ({
         zIndex: 50,
       },
     },
-    ref: useComposedRef(floating.refs.setFloating, clickOutsideRef),
+    ref: useComposedRef<HTMLElement | null>(
+      floating.refs.setFloating,
+      clickOutsideRef
+    ),
     unlinkButtonProps: {
       onClick: () => {
         unwrapLink(editor);
