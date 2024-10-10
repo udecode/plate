@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-selection': minor
+'@udecode/plate-selection': patch
 ---
 
 - Add `useBlockSelectionNodes`, `useBlockSelectionFragment`, `useBlockSelectionFragmentProp`
