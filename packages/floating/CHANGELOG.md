@@ -1,5 +1,14 @@
 # @udecode/plate-floating
 
+## 39.1.4
+
+### Patch Changes
+
+- [#3616](https://github.com/udecode/plate/pull/3616) by [@zbeyens](https://github.com/zbeyens) –
+  - `getSelectionBoundingClientRect` is now returning the bounding client rect of the editor selection instead of the dom selection. This is more robust for cases like floating toolbar.
+  - Update floating toolbar position on value change, in addition to selection change.
+  - Return `clickOutsideRef` from `useFloatingToolbar` so it can be used to close the toolbar when clicking outside of it. Use `ignore-click-outside/toolbar` class to ignore clicks outside of the toolbar.
+
 ## 39.0.0
 
 ## 38.0.1

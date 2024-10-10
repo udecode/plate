@@ -1,5 +1,11 @@
 # @udecode/plate-link
 
+## 39.1.4
+
+### Patch Changes
+
+- [#3616](https://github.com/udecode/plate/pull/3616) by [@zbeyens](https://github.com/zbeyens) – Floating patch
+
 ## 39.1.1
 
 ### Patch Changes

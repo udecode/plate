@@ -9,10 +9,19 @@ import { remarkTransformNode } from './remarkTransformNode';
 export const remarkDefaultElementRules: RemarkElementRules = {
   blockquote: {
     transform: (node, options) => {
+      const children = node.children?.length
+        ? node.children.flatMap((paragraph) =>
+            remarkTransformElementChildren(paragraph, options)
+          )
+        : [{ text: '' }];
+
+      // Flatten nested blockquotes (e.g. >>>)
+      const flattenedChildren = children.flatMap((child: any) =>
+        child.type ? child.children : [child]
+      );
+
       return {
-        children: node.children!.flatMap((paragraph) =>
-          remarkTransformElementChildren(paragraph, options)
-        ),
+        children: flattenedChildren,
         type: options.editor.getType({ key: 'blockquote' }),
       };
     },

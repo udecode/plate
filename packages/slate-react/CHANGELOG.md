@@ -1,5 +1,12 @@
 # @udecode/slate-react
 
+## 39.1.4
+
+### Patch Changes
+
+- [#3616](https://github.com/udecode/plate/pull/3616) by [@zbeyens](https://github.com/zbeyens) –
+  - Add `setNode`
+
 ## 39.0.0
 
 ## 38.0.4
