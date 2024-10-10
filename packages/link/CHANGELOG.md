@@ -1,5 +1,11 @@
 # @udecode/plate-link
 
+## 39.1.7
+
+### Patch Changes
+
+- [`847741091a554231db7bd98d4ed1d75557e68a38`](https://github.com/udecode/plate/commit/847741091a554231db7bd98d4ed1d75557e68a38) by [@zbeyens](https://github.com/zbeyens) – Fix type
+
 ## 39.1.6
 
 ### Patch Changes
