@@ -5876,7 +5876,7 @@ __metadata:
   resolution: "@udecode/plate-ai@workspace:packages/ai"
   dependencies:
     "@udecode/plate-combobox": "npm:39.0.0"
-    "@udecode/plate-markdown": "npm:39.0.0"
+    "@udecode/plate-markdown": "npm:39.1.5"
     "@udecode/plate-selection": "npm:39.1.4"
     lodash: "npm:^4.17.21"
   peerDependencies:
@@ -6544,7 +6544,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-markdown@npm:39.0.0, @udecode/plate-markdown@workspace:^, @udecode/plate-markdown@workspace:packages/markdown":
+"@udecode/plate-markdown@npm:39.1.5, @udecode/plate-markdown@workspace:^, @udecode/plate-markdown@workspace:packages/markdown":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-markdown@workspace:packages/markdown"
   dependencies:
@@ -6947,7 +6947,7 @@ __metadata:
     "@udecode/plate-line-height": "npm:39.0.0"
     "@udecode/plate-link": "npm:39.1.4"
     "@udecode/plate-list": "npm:39.0.0"
-    "@udecode/plate-markdown": "npm:39.0.0"
+    "@udecode/plate-markdown": "npm:39.1.5"
     "@udecode/plate-media": "npm:39.0.0"
     "@udecode/plate-mention": "npm:39.0.0"
     "@udecode/plate-node-id": "npm:39.0.0"
