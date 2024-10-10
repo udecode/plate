@@ -6,6 +6,7 @@ import { cn, withRef } from '@udecode/cn';
 import {
   useComposedRef,
   useEditorId,
+  useEditorRef,
   useEventEditorSelectors,
 } from '@udecode/plate-common/react';
 import {
@@ -15,6 +16,7 @@ import {
   useFloatingToolbar,
   useFloatingToolbarState,
 } from '@udecode/plate-floating';
+import { LinkPlugin } from '@udecode/plate-link/react';
 
 import { Toolbar } from './toolbar';
 
@@ -24,12 +26,15 @@ export const FloatingToolbar = withRef<
     state?: FloatingToolbarState;
   }
 >(({ children, state, ...props }, componentRef) => {
+  const editor = useEditorRef();
   const editorId = useEditorId();
   const focusedEditorId = useEventEditorSelectors.focus();
+  const isFloatingLinkOpen = !!editor.useOption(LinkPlugin, 'mode');
 
   const floatingToolbarState = useFloatingToolbarState({
     editorId,
     focusedEditorId,
+    hideToolbar: isFloatingLinkOpen,
     ...state,
     floatingOptions: {
       middleware: [

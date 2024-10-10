@@ -4,7 +4,7 @@
 
 export * from './createVirtualRef';
 export * from './getBoundingClientRect';
-export * from './getDOMSelectionBoundingClientRect copy';
+export * from './getDOMSelectionBoundingClientRect';
 export * from './getRangeBoundingClientRect';
 export * from './getSelectionBoundingClientRect';
 export * from './makeClientRect';

@@ -6,6 +6,7 @@ import {
   createAtomStore,
   createPrimitiveComponent,
 } from '@udecode/plate-common/react';
+import { useReadOnly } from 'slate-react';
 
 import type { ResizeDirection, ResizeEvent } from '../types';
 
@@ -43,6 +44,7 @@ export const useResizeHandleState = ({
   onResize: onResizeProp,
   onTouchStart,
 }: ResizeHandleOptions) => {
+  const readOnly = useReadOnly();
   const onResizeStore = useResizeHandleStore().get.onResize();
   const onResize = onResizeProp ?? onResizeStore;
 
@@ -110,6 +112,7 @@ export const useResizeHandleState = ({
     initialSize,
     isHorizontal,
     isResizing,
+    readOnly,
     setInitialPosition,
     setInitialSize,
     setIsResizing,
@@ -124,6 +127,7 @@ export const useResizeHandleState = ({
 export const useResizeHandle = ({
   isHorizontal,
   isResizing,
+  readOnly,
   setInitialPosition,
   setInitialSize,
   setIsResizing,
@@ -167,6 +171,7 @@ export const useResizeHandle = ({
   };
 
   return {
+    hidden: readOnly,
     props: {
       onMouseDown: handleMouseDown,
       onMouseOut: handleMouseOut,
