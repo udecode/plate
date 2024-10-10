@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-link",
-  "version": "39.1.4",
+  "version": "39.1.6",
   "description": "Link plugin for Plate",
   "keywords": [
     "plate",
@@ -50,7 +50,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-floating": "39.1.4",
+    "@udecode/plate-floating": "39.1.6",
     "@udecode/plate-normalizers": "39.0.0"
   },
   "devDependencies": {
