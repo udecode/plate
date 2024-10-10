@@ -1,16 +1,18 @@
 import type { ClientRectObject } from '@floating-ui/core';
+import type { PlateEditor } from '@udecode/plate-common/react';
+
+import { isSelectionExpanded } from '@udecode/plate-common';
 
 import { getDefaultBoundingClientRect } from '../createVirtualElement';
+import { getRangeBoundingClientRect } from './getRangeBoundingClientRect';
 
-/** Get bounding client rect of the window selection */
-export const getSelectionBoundingClientRect = (): ClientRectObject => {
-  const domSelection = window.getSelection();
-
-  if (!domSelection || domSelection.rangeCount < 1) {
-    return getDefaultBoundingClientRect();
+/** Get bounding client rect of the editor selection */
+export const getSelectionBoundingClientRect = (
+  editor: PlateEditor
+): ClientRectObject => {
+  if (isSelectionExpanded(editor)) {
+    return getRangeBoundingClientRect(editor, editor.selection);
   }
 
-  const domRange = domSelection.getRangeAt(0);
-
-  return domRange.getBoundingClientRect();
+  return getDefaultBoundingClientRect();
 };

@@ -16,6 +16,7 @@ import { PlateSlate } from './PlateSlate';
 
 export type PlateContentProps = Omit<TEditableProps, 'decorate'> & {
   decorate?: PlateStoreState['decorate'];
+  disabled?: boolean;
   /** R enders the editable content. */
   renderEditable?: (editable: React.ReactElement) => React.ReactNode;
 };

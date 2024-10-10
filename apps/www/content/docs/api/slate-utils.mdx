@@ -45,6 +45,23 @@ Returns the block above the specified location.
 
 </APIReturns>
 
+### getBlocks
+
+Retrieves block-level node entries from the editor.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor to search for block-level nodes.
+  </APIItem>
+  <APIItem name="options" type="GetNodeEntriesOptions<E>" optional>
+    Options for getting node entries.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  An array of block-level node entries.
+</APIReturns>
+
 ### getChildren
 
 Returns the children node entries of a node entry.
@@ -77,6 +94,40 @@ Returns the edge blocks above a specified location.
 <APIReturns>
   Returns an array containing the start block and end block above the specified
   location, or `null` if not found.
+</APIReturns>
+
+### getFragmentProp
+
+Retrieves a consistent property value from a fragment of nodes.
+
+<APIParameters>
+  <APIItem name="fragment" type="TElement[]">
+    The fragment of nodes to search for the property.
+  </APIItem>
+  <APIItem name="options" type="GetFragmentPropOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="key" type="string" optional>
+        The key of the property to extract from each node.
+      </APISubListItem>
+      <APISubListItem parent="options" name="defaultValue" type="string" optional>
+        The default value to return if no valid prop is found.
+      </APISubListItem>
+      <APISubListItem parent="options" name="getProp" type="(node: TElement | TText) => any" optional>
+        Custom function to extract the prop value from a node.
+      </APISubListItem>
+      <APISubListItem parent="options" name="mode" type="'all' | 'block' | 'text'" optional>
+        Determines how to traverse the fragment:
+        - 'all': Check both block and text nodes
+        - 'block': Only check block nodes
+        - 'text': Only check text nodes
+        Default is 'block'.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  The consistent property value found in the fragment, or undefined if no consistent value is found.
 </APIReturns>
 
 ### getLastChild
@@ -354,6 +405,27 @@ Gets the range from the start of the block above a location to the location.
 <APIReturns>
   The range from the start of the block above the location to the location, or
   `undefined` if no such block exists.
+</APIReturns>
+
+### getSelectionFragment
+
+Retrieves the fragment of the current selection, optionally unwrapping structural nodes.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor to get the selection fragment from.
+  </APIItem>
+  <APIItem name="options" type="GetSelectionFragmentOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="structuralTypes" type="string[]" optional>
+        Array of structural types to unwrap from the fragment.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  An array of `TElement` representing the fragment of the current selection. Returns an empty array if the selection is not expanded or if no fragment is found.
 </APIReturns>
 
 ### getSelectionText
@@ -635,6 +707,19 @@ Queries the editor state.
 
 ## Transforms
 
+### duplicateBlocks
+
+Duplicates the given blocks and inserts them after the last block in the selection.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="blocks" type="TNodeEntry[]">
+    An array of node entries representing the blocks to duplicate.
+  </APIItem>
+</APIParameters>
+
 ### insertElements
 
 Inserts nodes at a location in the document.
@@ -747,6 +832,67 @@ Selects the end point of the block above the selection.
 <APIParameters>
   <APIItem name="editor" type="TEditor">
     The editor instance.
+  </APIItem>
+</APIParameters>
+
+### selectNodes
+
+Selects the range encompassing the given nodes.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="nodes" type="TNodeEntry[]">
+    An array of node entries to select.
+  </APIItem>
+</APIParameters>
+
+### setBlockAboveNode
+
+Sets properties on the block above the current selection.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="props" type="Partial<TNodeProps<N>>">
+    The properties to set on the block.
+  </APIItem>
+  <APIItem name="options" type="Omit<SetNodesOptions<E>, 'at'>" optional>
+    Options for setting nodes, excluding the 'at' property.
+  </APIItem>
+</APIParameters>
+
+### setBlockAboveTexts
+
+Sets properties on the lowest-level nodes within the block above the current selection.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="props" type="Partial<TNodeProps<N>>">
+    The properties to set on the text nodes.
+  </APIItem>
+  <APIItem name="options" type="Omit<SetNodesOptions<E>, 'at'>" optional>
+    Options for setting nodes, excluding the 'at' property.
+  </APIItem>
+</APIParameters>
+
+### setBlockNodes
+
+Sets properties on all block nodes that match the given options.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="props" type="Partial<TNodeProps<N>>">
+    The properties to set on the matching block nodes.
+  </APIItem>
+  <APIItem name="options" type="GetNodeEntriesOptions<E>" optional>
+    Options for getting node entries to update.
   </APIItem>
 </APIParameters>
 
