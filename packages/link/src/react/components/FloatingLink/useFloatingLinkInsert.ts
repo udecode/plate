@@ -10,7 +10,7 @@ import {
 } from '@udecode/plate-common/react';
 import {
   type UseVirtualFloatingOptions,
-  getSelectionBoundingClientRect,
+  getDOMSelectionBoundingClientRect,
 } from '@udecode/plate-floating';
 import { useFocused } from 'slate-react';
 
@@ -36,7 +36,7 @@ export const useFloatingLinkInsertState = ({
 
   const floating = useVirtualFloatingLink({
     editorId: editor.id,
-    getBoundingClientRect: () => getSelectionBoundingClientRect(editor),
+    getBoundingClientRect: getDOMSelectionBoundingClientRect,
     open: isOpen && mode === 'insert',
     whileElementsMounted: () => () => {},
     ...floatingOptions,
