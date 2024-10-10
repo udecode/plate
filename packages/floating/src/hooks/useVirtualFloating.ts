@@ -4,7 +4,10 @@ import type { ClientRectObject } from '@floating-ui/core';
 
 import { useIsomorphicLayoutEffect } from '@udecode/plate-common/react';
 
-import { createVirtualElement } from '../createVirtualElement';
+import {
+  createVirtualElement,
+  getDefaultBoundingClientRect,
+} from '../createVirtualElement';
 import {
   type ReferenceType,
   type UseFloatingOptions,
@@ -13,7 +16,6 @@ import {
   autoUpdate,
   useFloating,
 } from '../libs/floating-ui';
-import { getSelectionBoundingClientRect } from '../utils/index';
 
 export interface UseVirtualFloatingOptions extends Partial<UseFloatingOptions> {
   getBoundingClientRect?: () => ClientRectObject;
@@ -49,7 +51,7 @@ export interface UseVirtualFloatingReturn<
  * @see https://floating-ui.com/docs/react-dom#virtual-element
  */
 export const useVirtualFloating = <RT extends ReferenceType = ReferenceType>({
-  getBoundingClientRect = getSelectionBoundingClientRect,
+  getBoundingClientRect = getDefaultBoundingClientRect,
   ...floatingOptions
 }: UseVirtualFloatingOptions): UseVirtualFloatingReturn<RT> => {
   const virtualElementRef = React.useRef<RT>(createVirtualElement() as RT);

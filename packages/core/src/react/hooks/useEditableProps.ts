@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { TEditableProps } from '@udecode/slate-react';
 
-import { isDefined } from '@udecode/utils';
+import clsx from 'clsx';
 import omit from 'lodash/omit.js';
 import { useDeepCompareMemo } from 'use-deep-compare';
 
@@ -15,16 +15,18 @@ import { pipeHandler } from '../utils/pipeHandler';
 import { pipeRenderElement } from '../utils/pipeRenderElement';
 import { pipeRenderLeaf } from '../utils/pipeRenderLeaf';
 
-export const useEditableProps = (
-  editableProps: Omit<TEditableProps, 'decorate'> &
-    Pick<PlateProps, 'decorate'> = {}
-): TEditableProps => {
+export const useEditableProps = ({
+  disabled,
+  readOnly: readOnlyProp,
+  ...editableProps
+}: Omit<TEditableProps, 'decorate'> &
+  Pick<PlateProps, 'decorate'> = {}): TEditableProps => {
   const { id } = editableProps;
 
   const editor = useEditorRef(id);
   const selectors = usePlateSelectors(id);
   const versionDecorate = selectors.versionDecorate();
-  const readOnly = selectors.readOnly();
+  const storeReadOnly = selectors.readOnly();
   const storeDecorate = selectors.decorate();
   const storeRenderLeaf = selectors.renderLeaf();
   const storeRenderElement = selectors.renderElement();
@@ -57,10 +59,6 @@ export const useEditableProps = (
       renderLeaf,
     };
 
-    if (isDefined(readOnly)) {
-      _props.readOnly = readOnly!;
-    }
-
     DOM_HANDLERS.forEach((handlerKey) => {
       const handler = pipeHandler(editor, {
         editableProps,
@@ -73,7 +71,9 @@ export const useEditableProps = (
     });
 
     return _props;
-  }, [decorate, editableProps, renderElement, renderLeaf, readOnly]);
+  }, [decorate, editableProps, renderElement, renderLeaf]);
+
+  const readOnly = storeReadOnly || readOnlyProp || disabled;
 
   return useDeepCompareMemo(
     () => ({
@@ -84,7 +84,15 @@ export const useEditableProps = (
         'decorate',
       ]),
       ...props,
+      'aria-disabled': disabled,
+      className: clsx(
+        'slate-editor',
+        'ignore-click-outside/toolbar',
+        editableProps.className
+      ),
+      'data-readonly': readOnly,
+      readOnly,
     }),
-    [editableProps, props]
+    [editableProps, props, readOnly]
   );
 };

@@ -1,10 +1,8 @@
-import type { Action } from '@udecode/plate-menu';
-
 export interface AIActions {
-  CursorCommandsActions: Record<string, Action>;
-  CursorSuggestionActions: Record<string, Action>;
-  SelectionCommandsActions: Record<string, Action>;
-  SelectionSuggestionActions: Record<string, Action>;
+  CursorCommandsActions: Record<string, any>;
+  CursorSuggestionActions: Record<string, any>;
+  SelectionCommandsActions: Record<string, any>;
+  SelectionSuggestionActions: Record<string, any>;
 }
 
 export interface AICommands {

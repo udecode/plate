@@ -9,11 +9,6 @@ import React, {
 
 import { isHotkey } from '@udecode/plate-common';
 import { focusEditor, useEditorPlugin } from '@udecode/plate-common/react';
-import {
-  type Action,
-  Ariakit,
-  filterAndBuildMenuTree,
-} from '@udecode/plate-menu';
 
 import type { AIActions, AICommands } from '../types';
 
@@ -28,7 +23,7 @@ interface UseAIStateProps {
   defaultValues: Record<string, string>;
 }
 
-export type AICommandsAction = Record<string, Action>;
+export type AICommandsAction = Record<string, any>;
 
 export const useAI = ({
   aiActions,
@@ -49,8 +44,7 @@ export const useAI = ({
     SelectionSuggestions,
   } = aiCommands;
 
-  const { api, editor, setOption, setOptions, useOption } =
-    useEditorPlugin(AIPlugin);
+  const { api, editor, setOption, useOption } = useEditorPlugin(AIPlugin);
 
   const isOpen = useOption('isOpen', editor.id);
   const action = useOption('action');
@@ -61,13 +55,13 @@ export const useAI = ({
 
   const { aiEditor } = editor.useOptions(AIPlugin);
 
-  const menu = Ariakit.useMenuStore();
-  useEffect(() => {
-    setOptions({
-      store: menu,
-    });
-    // eslint-disable-next`-line react-hooks/exhaustive-deps
-  }, [isOpen, menu, setOptions]);
+  // const menu = Ariakit.useMenuStore();
+  // useEffect(() => {
+  //   setOptions({
+  //     store: menu,
+  //   });
+  //   // eslint-disable-next`-line react-hooks/exhaustive-deps
+  // }, [isOpen, menu, setOptions]);
 
   const [values, setValues] = useState(defaultValues);
   const [searchValue, setSearchValue] = useState('');
@@ -141,11 +135,11 @@ export const useAI = ({
   /** IME */
   const [isComposing, setIsComposing] = useState(false);
 
-  const searchItems = useMemo(() => {
-    return isComposing
-      ? []
-      : filterAndBuildMenuTree(Object.values(CurrentActions), searchValue);
-  }, [CurrentActions, isComposing, searchValue]);
+  // const searchItems = useMemo(() => {
+  //   return isComposing
+  //     ? []
+  //     : filterAndBuildMenuTree(Object.values(CurrentActions), searchValue);
+  // }, [CurrentActions, isComposing, searchValue]);
 
   /** Props */
 
@@ -155,7 +149,7 @@ export const useAI = ({
       loading: aiState === 'generating' || aiState === 'requesting',
       open: isOpen,
       setAction: setAction,
-      store: menu,
+      // store: menu,
       values: values,
       onClickOutside: () => {
         return editor.getApi(AIPlugin).ai.hide();
@@ -166,7 +160,7 @@ export const useAI = ({
         setValues(values);
       },
     };
-  }, [aiState, editor, isOpen, menu, setAction, values]);
+  }, [aiState, editor, isOpen, setAction, values]);
 
   const comboboxProps = useMemo(() => {
     return {
@@ -197,7 +191,7 @@ export const useAI = ({
     comboboxProps,
     menuProps,
     menuType,
-    searchItems,
+    // searchItems,
     submitButtonProps,
     onCloseMenu,
   };

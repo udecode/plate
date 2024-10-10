@@ -308,6 +308,91 @@ Get the version of the editor selection. That version is incremented on each sel
 </APIParameters>
 <APIReturns>The current version of the editor selection.</APIReturns>
 
+### useSelectionCollapsed
+
+Returns whether the current selection is collapsed (i.e., the selection is a single point).
+
+<APIReturns>
+  A boolean value indicating if the selection is collapsed.
+</APIReturns>
+
+### useSelectionExpanded
+
+Returns whether the current selection is expanded (i.e., the selection has a non-zero range).
+
+<APIReturns>
+  A boolean value indicating if the selection is expanded.
+</APIReturns>
+
+### useSelectionWithinBlock
+
+Returns whether the current selection is within a single block.
+
+<APIReturns>
+  A boolean value indicating if the selection is within a single block.
+</APIReturns>
+
+### useSelectionAcrossBlocks
+
+Returns whether the current selection spans across multiple blocks.
+
+<APIReturns>
+  A boolean value indicating if the selection spans across multiple blocks.
+</APIReturns>
+
+### useSelectionFragment
+
+Returns the fragment of the current selection, optionally unwrapping structural nodes.
+
+<APIParameters>
+  <APIItem name="options" type="GetSelectionFragmentOptions" optional>
+    Options for getting the selection fragment.
+    <APISubList>
+      <APISubListItem parent="options" name="structuralTypes" type="string[]" optional>
+        Array of structural types to unwrap from the fragment.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  An array of `TElement` representing the fragment of the current selection. Returns an empty array if the selection is not expanded or if no fragment is found.
+</APIReturns>
+
+### useSelectionFragmentProp
+
+Returns a prop value derived from the current selection fragment.
+
+<APIParameters>
+  <APIItem name="options" type="GetSelectionFragmentOptions & GetFragmentPropOptions" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="structuralTypes" type="string[]" optional>
+        Array of structural types to unwrap from the fragment.
+      </APISubListItem>
+      <APISubListItem parent="options" name="key" type="string" optional>
+        The key of the property to extract from each node.
+      </APISubListItem>
+      <APISubListItem parent="options" name="defaultValue" type="string" optional>
+        The default value to return if no valid prop is found.
+      </APISubListItem>
+      <APISubListItem parent="options" name="getProp" type="(node: TElement | TText) => any" optional>
+        Custom function to extract the prop value from a node.
+      </APISubListItem>
+      <APISubListItem parent="options" name="mode" type="'all' | 'block' | 'text'" optional>
+        Determines how to traverse the fragment:
+        - 'all': Check both block and text nodes
+        - 'block': Only check block nodes
+        - 'text': Only check text nodes
+        Default is 'block'.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  A value derived from the fragment nodes, or undefined if no consistent value is found across the specified nodes.
+</APIReturns>
+
 ## Core plugins
 
 ### DebugPlugin

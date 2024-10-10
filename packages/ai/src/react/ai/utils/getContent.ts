@@ -24,7 +24,7 @@ export const getContent = (editor: PlateEditor, aiEditor: PlateEditor) => {
   ) {
     const entries = editor
       .getApi(BlockSelectionPlugin)
-      .blockSelection.getSelectedBlocks();
+      .blockSelection.getNodes();
 
     const nodes = Array.from(entries, (entry) => entry[0]);
 

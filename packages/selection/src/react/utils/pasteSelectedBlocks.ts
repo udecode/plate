@@ -15,7 +15,7 @@ import { selectInsertedBlocks } from './selectInsertedBlocks';
 export const pasteSelectedBlocks = (editor: SlateEditor, e: ClipboardEvent) => {
   const { api } = getEditorPlugin(editor, BlockSelectionPlugin);
 
-  const entries = api.blockSelection.getSelectedBlocks();
+  const entries = api.blockSelection.getNodes();
 
   if (entries.length > 0) {
     const entry = entries.at(-1)!;

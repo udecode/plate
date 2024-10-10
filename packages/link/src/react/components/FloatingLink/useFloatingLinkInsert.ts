@@ -36,7 +36,7 @@ export const useFloatingLinkInsertState = ({
 
   const floating = useVirtualFloatingLink({
     editorId: editor.id,
-    getBoundingClientRect: getSelectionBoundingClientRect,
+    getBoundingClientRect: () => getSelectionBoundingClientRect(editor),
     open: isOpen && mode === 'insert',
     whileElementsMounted: () => () => {},
     ...floatingOptions,

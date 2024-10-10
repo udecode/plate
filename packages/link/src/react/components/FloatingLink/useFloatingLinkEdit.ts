@@ -52,7 +52,7 @@ export const useFloatingLinkEditState = ({
       });
     }
 
-    return getSelectionBoundingClientRect();
+    return getSelectionBoundingClientRect(editor);
   }, [editor, type]);
 
   const isOpen = open && mode === 'edit';

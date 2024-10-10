@@ -4,9 +4,11 @@ import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import {
-  collapseSelection,
+  type TElement,
   getNodeEntries,
   isBlock,
+  setNodes,
+  unsetNodes,
 } from '@udecode/plate-common';
 import {
   ParagraphPlugin,
@@ -15,13 +17,12 @@ import {
 } from '@udecode/plate-common/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HeadingPlugin } from '@udecode/plate-heading/react';
-import { toggleIndentList } from '@udecode/plate-indent-list';
+import { ListStyleType, toggleIndentList } from '@udecode/plate-indent-list';
 import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import { unwrapList } from '@udecode/plate-list';
 import { ListPlugin } from '@udecode/plate-list/react';
 
 import { CheckPlugin } from '@/components/context/check-plugin';
-import { settingsStore } from '@/components/context/settings-store';
 import { Icons } from '@/components/icons';
 import { useMyEditorRef } from '@/registry/default/lib/plate-types';
 import {
@@ -65,27 +66,6 @@ const items = [
     value: HEADING_KEYS.h3,
   },
   {
-    description: 'Heading 4',
-    icon: Icons.h4,
-    label: 'Heading 4',
-    plugin: HeadingPlugin,
-    value: HEADING_KEYS.h4,
-  },
-  {
-    description: 'Heading 5',
-    icon: Icons.h5,
-    label: 'Heading 5',
-    plugin: HeadingPlugin,
-    value: HEADING_KEYS.h5,
-  },
-  {
-    description: 'Heading 6',
-    icon: Icons.h6,
-    label: 'Heading 6',
-    plugin: HeadingPlugin,
-    value: HEADING_KEYS.h6,
-  },
-  {
     description: 'Bulleted list',
     icon: Icons.ul,
     label: 'Bulleted list',
@@ -98,6 +78,20 @@ const items = [
     label: 'Numbered list',
     plugin: ListPlugin,
     value: 'ol',
+  },
+  {
+    description: 'Bulleted list',
+    icon: Icons.ul,
+    label: 'Bulleted list',
+    plugin: IndentListPlugin,
+    value: ListStyleType.Disc,
+  },
+  {
+    description: 'Numbered list',
+    icon: Icons.ol,
+    label: 'Numbered list',
+    plugin: IndentListPlugin,
+    value: ListStyleType.Decimal,
   },
   {
     description: 'Quote (⌘+⇧+.)',
@@ -139,13 +133,6 @@ export function PlaygroundTurnIntoDropdownMenu(props: DropdownMenuProps) {
     items.find((item) => item.value === value) ?? defaultItem;
   const { icon: SelectedItemIcon, label: selectedItemLabel } = selectedItem;
 
-  const onCloseAutoFocus = React.useCallback((e: Event) => {
-    focusEditor(editor);
-
-    return e.preventDefault();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <DropdownMenu modal={false} {...openState} {...props}>
       <DropdownMenuTrigger asChild>
@@ -161,8 +148,7 @@ export function PlaygroundTurnIntoDropdownMenu(props: DropdownMenuProps) {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className="min-w-0"
-        onCloseAutoFocus={onCloseAutoFocus}
+        className="ignore-click-outside/toolbar min-w-0"
         align="start"
       >
         <DropdownMenuLabel>Turn into</DropdownMenuLabel>
@@ -170,21 +156,20 @@ export function PlaygroundTurnIntoDropdownMenu(props: DropdownMenuProps) {
         <DropdownMenuRadioGroup
           className="flex flex-col gap-0.5"
           value={value}
-          onValueChange={(type) => {
-            if (type === 'ul' || type === 'ol') {
-              if (settingsStore.get.checkedId(IndentListPlugin.key)) {
-                toggleIndentList(editor, {
-                  listStyleType: type === 'ul' ? 'disc' : 'decimal',
-                });
-              } else if (settingsStore.get.checkedId('list')) {
-                editor.tf.toggle.list({ type });
-              }
+          onValueChange={(type: any) => {
+            if (type === ListStyleType.Disc || type === ListStyleType.Decimal) {
+              setNodes(editor, { type: 'p' });
+              toggleIndentList(editor, {
+                listStyleType: type,
+              });
+            } else if (type === 'ul' || type === 'ol') {
+              editor.tf.toggle.list({ type });
             } else {
               unwrapList(editor);
+              unsetNodes<TElement>(editor, ['indent', 'listStyleType']);
               editor.tf.toggle.block({ type });
             }
 
-            collapseSelection(editor);
             focusEditor(editor);
           }}
         >

@@ -65,7 +65,13 @@ export const DropdownMenuContent = withRef<
   typeof DropdownMenuPrimitive.Content
 >(({ ...props }, ref) => (
   <DropdownMenuPrimitive.Portal>
-    <DropdownMenuContentVariants ref={ref} {...props} />
+    <DropdownMenuContentVariants
+      ref={ref}
+      onCloseAutoFocus={(e) => {
+        e.preventDefault();
+      }}
+      {...props}
+    />
   </DropdownMenuPrimitive.Portal>
 ));
 

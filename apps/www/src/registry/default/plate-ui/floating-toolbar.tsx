@@ -4,7 +4,6 @@ import React from 'react';
 
 import { cn, withRef } from '@udecode/cn';
 import {
-  PortalBody,
   useComposedRef,
   useEditorId,
   useEventEditorSelectors,
@@ -51,6 +50,7 @@ export const FloatingToolbar = withRef<
   });
 
   const {
+    clickOutsideRef,
     hidden,
     props: rootProps,
     ref: floatingRef,
@@ -61,7 +61,7 @@ export const FloatingToolbar = withRef<
   if (hidden) return null;
 
   return (
-    <PortalBody>
+    <div ref={clickOutsideRef}>
       <Toolbar
         ref={ref}
         className={cn(
@@ -72,6 +72,6 @@ export const FloatingToolbar = withRef<
       >
         {children}
       </Toolbar>
-    </PortalBody>
+    </div>
   );
 });
