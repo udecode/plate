@@ -1,5 +1,11 @@
 # @udecode/plate-resizable
 
+## 39.1.6
+
+### Patch Changes
+
+- [#3622](https://github.com/udecode/plate/pull/3622) by [@zbeyens](https://github.com/zbeyens) – Hide ResizeHandle when read-only
+
 ## 39.0.0
 
 ## 38.0.0

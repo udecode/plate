@@ -1,5 +1,11 @@
 # @udecode/plate-floating
 
+## 39.1.6
+
+### Patch Changes
+
+- [#3622](https://github.com/udecode/plate/pull/3622) by [@zbeyens](https://github.com/zbeyens) – Add `getDOMSelectionBoundingClientRect`
+
 ## 39.1.4
 
 ### Patch Changes
