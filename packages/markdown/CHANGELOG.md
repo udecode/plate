@@ -1,5 +1,11 @@
 # @udecode/plate-md-serializer
 
+## 39.1.5
+
+### Patch Changes
+
+- [#3619](https://github.com/udecode/plate/pull/3619) by [@zbeyens](https://github.com/zbeyens) – Critical fix(`deserializeMd`): input `>`, `>>`, `>>>` should be deserialized to a single `blockquote` with empty text node.
+
 ## 39.0.0
 
 ## 38.0.13
