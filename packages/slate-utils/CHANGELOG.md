@@ -1,5 +1,14 @@
 # @udecode/slate-utils
 
+## 39.1.4
+
+### Patch Changes
+
+- [#3616](https://github.com/udecode/plate/pull/3616) by [@zbeyens](https://github.com/zbeyens) –
+  - Add queries `getBlocks`, `getFragmentProp`, `getSelectionFragment`
+  - Add transforms `duplicateBlocks`, `removeEmptyPreviousBlock`, `selectNodes`, `setBlockAboveNode`, `setBlockNodes`
+  - Add utils `unwrapStructuralNodes`
+
 ## 38.0.4
 
 ## 38.0.3
