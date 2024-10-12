@@ -13,7 +13,7 @@ import { LinkPlugin } from '@udecode/plate-link/react';
 
 import { CheckPlugin } from '@/components/context/check-plugin';
 import { Icons } from '@/components/icons';
-import { AIToolbarButton } from '@/registry/default/plate-ui/ai-toolbar-button';
+// import { AIToolbarButton } from '@/registry/default/plate-ui/ai-toolbar-button';
 import { CommentToolbarButton } from '@/registry/default/plate-ui/comment-toolbar-button';
 import { LinkToolbarButton } from '@/registry/default/plate-ui/link-toolbar-button';
 import { MarkToolbarButton } from '@/registry/default/plate-ui/mark-toolbar-button';
@@ -33,10 +33,10 @@ export function PlaygroundFloatingToolbarButtons() {
       {!readOnly && (
         <>
           <ToolbarGroup noSeparator>
-            <AIToolbarButton>
+            {/* <AIToolbarButton>
               <Icons.ai />
               Ask AI
-            </AIToolbarButton>
+            </AIToolbarButton> */}
           </ToolbarGroup>
           <PlaygroundTurnIntoDropdownMenu />
 

@@ -31,7 +31,7 @@ import { TogglePlugin } from '@udecode/plate-toggle/react';
 
 import { CheckPlugin } from '@/components/context/check-plugin';
 import { Icons, iconVariants } from '@/components/icons';
-import { AIToolbarButton } from '@/registry/default/plate-ui/ai-toolbar-button';
+// import { AIToolbarButton } from '@/registry/default/plate-ui/ai-toolbar-button';
 import { AlignDropdownMenu } from '@/registry/default/plate-ui/align-dropdown-menu';
 import { ColorDropdownMenu } from '@/registry/default/plate-ui/color-dropdown-menu';
 import { CommentToolbarButton } from '@/registry/default/plate-ui/comment-toolbar-button';
@@ -69,9 +69,9 @@ export function PlaygroundFixedToolbarButtons() {
         {!readOnly && (
           <>
             <ToolbarGroup noSeparator>
-              <AIToolbarButton>
+              {/* <AIToolbarButton>
                 <Icons.ai />
-              </AIToolbarButton>
+              </AIToolbarButton> */}
 
               <PlaygroundInsertDropdownMenu />
 
