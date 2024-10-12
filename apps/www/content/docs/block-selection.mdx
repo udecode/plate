@@ -228,9 +228,7 @@ A set of IDs for the currently selected blocks.
 </APIItem>
 </APIOptions>
 
-### BlockContextMenuPlugin
-
-This plugin is used by `BlockSelectionPlugin` and doesn't need to be added manually.
+### BlockMenuPlugin
 
 ## API
 
@@ -255,7 +253,7 @@ Adds a selected row to the block selection.
   </APIItem>
 </APIParameters>
 
-### editor.api.blockSelection.getSelectedBlocks
+### editor.api.blockSelection.getNodes
 
 Gets the selected blocks in the editor.
 
@@ -293,6 +291,52 @@ Sets the selected IDs based on added and removed elements.
 ### editor.api.blockSelection.unselect
 
 Unselects all blocks and sets the `isSelecting` flag to false.
+
+## Transforms
+
+### editor.tf.blockSelection.duplicate
+
+Duplicates the selected blocks.
+
+<APIParameters>
+  <APIItem name="blocks" type="TNodeEntry[]">
+    An array of node entries to duplicate.
+  </APIItem>
+</APIParameters>
+
+### editor.tf.blockSelection.removeNodes
+
+Removes the selected nodes from the editor.
+
+### editor.tf.blockSelection.select
+
+Selects the nodes returned by `getNodes()` and resets the selected IDs.
+
+### editor.tf.blockSelection.setNodes
+
+Sets properties on the selected nodes.
+
+<APIParameters>
+  <APIItem name="props" type="Partial<TNodeProps<TElement>>">
+    The properties to set on the selected nodes.
+  </APIItem>
+  <APIItem name="options" type="SetNodesOptions" optional>
+    Options for setting nodes.
+  </APIItem>
+</APIParameters>
+
+### editor.tf.blockSelection.setTexts
+
+Sets text properties on the selected nodes.
+
+<APIParameters>
+  <APIItem name="props" type="Partial<TNodeProps<TText>>">
+    The text properties to set on the selected nodes.
+  </APIItem>
+  <APIItem name="options" type="Omit<SetNodesOptions, 'at'>" optional>
+    Options for setting text nodes, excluding the 'at' property.
+  </APIItem>
+</APIParameters>
 
 ## API Components
 
@@ -355,3 +399,15 @@ Returns true if context block is selected.
 ### useSelectionArea
 
 A hook that initializes and manages the selection area functionality.
+
+### useBlockSelectionNodes
+
+Returns an array of node entries for the currently selected blocks.
+
+### useBlockSelectionFragment
+
+Returns an array of nodes for the currently selected blocks.
+
+### useBlockSelectionFragmentProp
+
+Returns fragment prop for the currently selected blocks.

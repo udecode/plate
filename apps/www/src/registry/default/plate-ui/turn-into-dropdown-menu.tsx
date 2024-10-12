@@ -3,11 +3,7 @@ import React from 'react';
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import {
-  collapseSelection,
-  getNodeEntries,
-  isBlock,
-} from '@udecode/plate-common';
+import { getNodeEntries, isBlock } from '@udecode/plate-common';
 import {
   ParagraphPlugin,
   focusEditor,
@@ -15,6 +11,7 @@ import {
   useEditorSelector,
 } from '@udecode/plate-common/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
+import { ListStyleType, toggleIndentList } from '@udecode/plate-indent-list';
 
 import { Icons } from '@/components/icons';
 
@@ -60,18 +57,18 @@ const items = [
     label: 'Quote',
     value: BlockquotePlugin.key,
   },
-  // {
-  //   value: 'ul',
-  //   label: 'Bulleted list',
-  //   description: 'Bulleted list',
-  //   icon: Icons.ul,
-  // },
-  // {
-  //   value: 'ol',
-  //   label: 'Numbered list',
-  //   description: 'Numbered list',
-  //   icon: Icons.ol,
-  // },
+  {
+    description: 'Bulleted list',
+    icon: Icons.ul,
+    label: 'Bulleted list',
+    value: ListStyleType.Disc,
+  },
+  {
+    description: 'Numbered list',
+    icon: Icons.ol,
+    label: 'Numbered list',
+    value: ListStyleType.Decimal,
+  },
 ];
 
 const defaultItem = items.find((item) => item.value === ParagraphPlugin.key)!;
@@ -102,6 +99,7 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
   const openState = useOpenState();
 
   const selectedItem =
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
     items.find((item) => item.value === value) ?? defaultItem;
   const { icon: SelectedItemIcon, label: selectedItemLabel } = selectedItem;
 
@@ -119,27 +117,24 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
         </ToolbarButton>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="min-w-0" align="start">
+      <DropdownMenuContent
+        className="ignore-click-outside/toolbar min-w-0"
+        align="start"
+      >
         <DropdownMenuLabel>Turn into</DropdownMenuLabel>
 
         <DropdownMenuRadioGroup
           className="flex flex-col gap-0.5"
           value={value}
-          onValueChange={(type) => {
-            // if (type === 'ul' || type === 'ol') {
-            //   if (settingsStore.get.checkedId(IndentListPlugin.key)) {
-            //     toggleIndentList(editor, {
-            //       listStyleType: type === 'ul' ? 'disc' : 'decimal',
-            //     });
-            //   } else if (settingsStore.get.checkedId('list')) {
-            //     toggleList(editor, { type });
-            //   }
-            // } else {
-            //   unwrapList(editor);
-            editor.tf.toggle.block({ type });
-            // }
+          onValueChange={(type: any) => {
+            if (type === ListStyleType.Disc || type === ListStyleType.Decimal) {
+              toggleIndentList(editor, {
+                listStyleType: type,
+              });
+            }
 
-            collapseSelection(editor);
+            editor.tf.toggle.block({ type });
+
             focusEditor(editor);
           }}
         >

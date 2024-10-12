@@ -2,8 +2,8 @@ import React from 'react';
 
 import { deselectEditor, useEditorPlugin } from '@udecode/plate-common/react';
 
-import { SelectionArea } from '../internal';
-import { BlockSelectionPlugin } from './BlockSelectionPlugin';
+import { SelectionArea } from '../../internal';
+import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
 export const useSelectionArea = () => {
   const { api, editor, getOptions, setOption } =

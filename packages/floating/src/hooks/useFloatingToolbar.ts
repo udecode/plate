@@ -7,7 +7,9 @@ import {
 } from '@udecode/plate-common';
 import {
   useEditorReadOnly,
+  useEditorRef,
   useEditorSelector,
+  useOnClickOutside,
 } from '@udecode/plate-common/react';
 import { useFocused } from 'slate-react';
 
@@ -33,6 +35,7 @@ export const useFloatingToolbarState = ({
   editorId: string;
   focusedEditorId: string | null;
 } & FloatingToolbarState) => {
+  const editor = useEditorRef();
   const selectionExpanded = useEditorSelector(isSelectionExpanded, []);
   const selectionText = useEditorSelector(getSelectionText, []);
   const readOnly = useEditorReadOnly();
@@ -47,7 +50,7 @@ export const useFloatingToolbarState = ({
   const floating = useVirtualFloating(
     mergeProps(
       {
-        getBoundingClientRect: getSelectionBoundingClientRect,
+        getBoundingClientRect: () => getSelectionBoundingClientRect(editor),
         open,
         onOpenChange: setOpen,
       },
@@ -153,15 +156,21 @@ export const useFloatingToolbar = ({
 
   const { update } = floating;
 
-  const selectionTextLength = selectionText?.length ?? 0;
+  useEditorSelector(() => {
+    update?.();
+  }, [update])
 
-  React.useEffect(() => {
-    if (selectionTextLength > 0) {
-      update?.();
+  const clickOutsideRef = useOnClickOutside(
+    () => {
+      setOpen(false);
+    },
+    {
+      ignoreClass: 'ignore-click-outside/toolbar',
     }
-  }, [selectionTextLength, update]);
+  );
 
   return {
+    clickOutsideRef,
     hidden: !open,
     props: {
       style: floating.style,

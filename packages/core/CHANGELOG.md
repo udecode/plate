@@ -1,5 +1,21 @@
 # @udecode/plate-core
 
+## 39.1.4
+
+### Patch Changes
+
+- [#3616](https://github.com/udecode/plate/pull/3616) by [@zbeyens](https://github.com/zbeyens) – `PlateContent`:
+
+  - When `disabled=true`, `readOnly` should be `true`
+  - Add prop `aria-disabled=true` and `data-readonly=true` when `readOnly=true`
+  - Add class `slate-editor`, `ignore-click-outside/toolbar` (used by floating toolbar)
+
+## 39.1.3
+
+### Patch Changes
+
+- [#3613](https://github.com/udecode/plate/pull/3613) by [@zbeyens](https://github.com/zbeyens) – Fix `useEditorPlugin` type
+
 ## 39.0.0
 
 ### Patch Changes

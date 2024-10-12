@@ -1,5 +1,32 @@
 # @udecode/plate-selection
 
+## 39.1.4
+
+### Patch Changes
+
+- [#3616](https://github.com/udecode/plate/pull/3616) by [@zbeyens](https://github.com/zbeyens) –
+  - Add `useBlockSelectionNodes`, `useBlockSelectionFragment`, `useBlockSelectionFragmentProp`
+  - `BlockSelectionPlugin`:
+    - Make `setSelectedIds` options optional
+    - Rename option `getSelectedBlocks` -> `getNodes`
+    - Extend api: `duplicate`, `removeNodes`, `select`, `setNodes`, `setTexts`
+  - Rename `BlockContextMenuPlugin` to `BlockMenuPlugin`
+  - `BlockMenuPlugin` options:
+    - `position`
+    - `openId`
+  - `BlockMenuPlugin` api:
+    - `hide`
+    - `show`
+    - `showContextMenu`
+
+## 39.1.2
+
+### Patch Changes
+
+- [`a5a8e1eb6eb0d769f0560cb8d595eb0a1b4c7b12`](https://github.com/udecode/plate/commit/a5a8e1eb6eb0d769f0560cb8d595eb0a1b4c7b12) by [@zbeyens](https://github.com/zbeyens) –
+  - Add `isSelecting`, `isSelectingOrFocused`, `useIsSelecting`
+  - Add `ids` option to `api.blockSelection.setSelectedIds` as an alternative way to set selected ids
+
 ## 39.0.0
 
 ### Major Changes

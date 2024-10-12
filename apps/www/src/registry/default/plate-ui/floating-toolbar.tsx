@@ -4,9 +4,9 @@ import React from 'react';
 
 import { cn, withRef } from '@udecode/cn';
 import {
-  PortalBody,
   useComposedRef,
   useEditorId,
+  useEditorRef,
   useEventEditorSelectors,
 } from '@udecode/plate-common/react';
 import {
@@ -16,6 +16,7 @@ import {
   useFloatingToolbar,
   useFloatingToolbarState,
 } from '@udecode/plate-floating';
+import { LinkPlugin } from '@udecode/plate-link/react';
 
 import { Toolbar } from './toolbar';
 
@@ -25,12 +26,15 @@ export const FloatingToolbar = withRef<
     state?: FloatingToolbarState;
   }
 >(({ children, state, ...props }, componentRef) => {
+  const editor = useEditorRef();
   const editorId = useEditorId();
   const focusedEditorId = useEventEditorSelectors.focus();
+  const isFloatingLinkOpen = !!editor.useOption(LinkPlugin, 'mode');
 
   const floatingToolbarState = useFloatingToolbarState({
     editorId,
     focusedEditorId,
+    hideToolbar: isFloatingLinkOpen,
     ...state,
     floatingOptions: {
       middleware: [
@@ -51,6 +55,7 @@ export const FloatingToolbar = withRef<
   });
 
   const {
+    clickOutsideRef,
     hidden,
     props: rootProps,
     ref: floatingRef,
@@ -61,7 +66,7 @@ export const FloatingToolbar = withRef<
   if (hidden) return null;
 
   return (
-    <PortalBody>
+    <div ref={clickOutsideRef}>
       <Toolbar
         ref={ref}
         className={cn(
@@ -72,6 +77,6 @@ export const FloatingToolbar = withRef<
       >
         {children}
       </Toolbar>
-    </PortalBody>
+    </div>
   );
 });

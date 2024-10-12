@@ -58,3 +58,44 @@ Find the corresponding documentation in the <Link href="https://docs.slatejs.org
 ### `toSlatePoint`
 
 ### `toSlateRange`
+
+## Transforms
+
+### focusEditorEdge
+
+Focuses the editor at a specified edge (start or end).
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="object" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="edge" type="'start' | 'end'" optional>
+        The edge to focus on. 
+        - 'start': Focus at the beginning of the editor.
+        - 'end': Focus at the end of the editor.
+        Default is 'start'.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### setNode
+
+Sets properties on a specific node in the editor.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="node" type="NodeOf<E>">
+    The node to update.
+  </APIItem>
+  <APIItem name="props" type="Partial<TNodeProps<N>>">
+    The properties to set on the node.
+  </APIItem>
+  <APIItem name="options" type="Omit<SetNodesOptions<E>, 'at'>" optional>
+    Options for setting nodes, excluding the 'at' property.
+  </APIItem>
+</APIParameters>

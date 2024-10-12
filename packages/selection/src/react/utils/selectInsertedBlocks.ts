@@ -19,7 +19,6 @@ export const selectInsertedBlocks = (editor: SlateEditor) => {
   });
 
   setTimeout(() => {
-    setOption('isSelecting', true);
     setOption('selectedIds', ids);
   }, 0);
 };

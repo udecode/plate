@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ai",
-  "version": "39.1.0",
+  "version": "39.1.5",
   "description": "Text AI plugin for Plate",
   "keywords": [
     "plate",
@@ -51,13 +51,12 @@
   },
   "dependencies": {
     "@udecode/plate-combobox": "39.0.0",
-    "@udecode/plate-markdown": "39.0.0",
-    "@udecode/plate-menu": "39.1.0",
-    "@udecode/plate-selection": "39.0.0",
+    "@udecode/plate-markdown": "39.1.5",
+    "@udecode/plate-selection": "39.1.4",
     "lodash": "^4.17.21"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=39.0.0",
+    "@udecode/plate-common": ">=39.1.4",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.103.0",

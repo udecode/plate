@@ -501,6 +501,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
 
     if (
       this._container.contains(target) &&
+      target.dataset.slateEditor !== 'true' &&
       target.dataset.plateSelectable !== 'true'
     )
       return;

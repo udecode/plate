@@ -7,13 +7,15 @@ import {
   someNode,
 } from '@udecode/plate-common';
 import {
+  useComposedRef,
   useEditorPlugin,
   useEditorReadOnly,
   useEditorVersion,
   useHotkeys,
+  useOnClickOutside,
 } from '@udecode/plate-common/react';
 import {
-  getDefaultBoundingClientRect,
+  getDOMSelectionBoundingClientRect,
   getRangeBoundingClientRect,
 } from '@udecode/plate-floating';
 
@@ -29,7 +31,8 @@ import { useVirtualFloatingLink } from './useVirtualFloatingLink';
 export const useFloatingLinkEditState = ({
   floatingOptions,
 }: LinkFloatingToolbarState = {}) => {
-  const { editor, getOptions, type, useOption } = useEditorPlugin(LinkPlugin);
+  const { api, editor, getOptions, type, useOption } =
+    useEditorPlugin(LinkPlugin);
 
   const { triggerFloatingLinkHotkeys } = getOptions();
   const readOnly = useEditorReadOnly();
@@ -52,7 +55,7 @@ export const useFloatingLinkEditState = ({
       });
     }
 
-    return getDefaultBoundingClientRect();
+    return getDOMSelectionBoundingClientRect();
   }, [editor, type]);
 
   const isOpen = open && mode === 'edit';
@@ -118,6 +121,10 @@ export const useFloatingLinkEdit = ({
 
   useFloatingLinkEscape();
 
+  const clickOutsideRef = useOnClickOutside(() => {
+    api.floatingLink.hide();
+  });
+
   return {
     editButtonProps: {
       onClick: () => {
@@ -130,7 +137,10 @@ export const useFloatingLinkEdit = ({
         zIndex: 50,
       },
     },
-    ref: floating.refs.setFloating,
+    ref: useComposedRef<HTMLElement | null>(
+      floating.refs.setFloating,
+      clickOutsideRef
+    ),
     unlinkButtonProps: {
       onClick: () => {
         unwrapLink(editor);

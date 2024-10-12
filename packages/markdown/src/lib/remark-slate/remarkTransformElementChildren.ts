@@ -10,7 +10,9 @@ export const remarkTransformElementChildren = (
 ): TDescendant[] => {
   const { children } = node;
 
-  if (!children) return [];
+  if (!children || children.length === 0) {
+    return [{ text: '' }];
+  }
 
   return children.flatMap((child) => remarkTransformNode(child, options));
 };

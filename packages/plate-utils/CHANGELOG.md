@@ -1,5 +1,16 @@
 # @udecode/plate-utils
 
+## 39.1.4
+
+### Patch Changes
+
+- [#3616](https://github.com/udecode/plate/pull/3616) by [@zbeyens](https://github.com/zbeyens) –
+  - Update `useMarkToolbarButton().props.onClick`: focus editor after toggle mark
+  - Add `useSelectionCollapsed`, `useSelectionExpanded`, `useSelectionWithinBlock`, `useSelectionAcrossBlocks`
+  - Add `useSelectionFragment`, `useSelectionFragmentProp`
+
+## 39.1.3
+
 ## 39.0.0
 
 ## 38.0.6

@@ -203,17 +203,23 @@ export function PlaygroundInsertDropdownMenu(props: DropdownMenuProps) {
                           break;
                         }
                         case CodeBlockPlugin.key: {
-                          insertEmptyCodeBlock(editor);
+                          insertEmptyCodeBlock(editor, {
+                            insertNodesOptions: { select: true },
+                          });
 
                           break;
                         }
                         case ImagePlugin.key: {
-                          await insertMedia(editor, { type: ImagePlugin.key });
+                          await insertMedia(editor, {
+                            select: true,
+                            type: ImagePlugin.key,
+                          });
 
                           break;
                         }
                         case MediaEmbedPlugin.key: {
                           await insertMedia(editor, {
+                            select: true,
                             type: MediaEmbedPlugin.key,
                           });
 
@@ -239,7 +245,7 @@ export function PlaygroundInsertDropdownMenu(props: DropdownMenuProps) {
                           break;
                         }
                         case TablePlugin.key: {
-                          insertTable(editor);
+                          insertTable(editor, {}, { select: true });
 
                           break;
                         }

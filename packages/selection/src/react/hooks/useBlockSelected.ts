@@ -1,6 +1,6 @@
 import { useEditorPlugin, useElement } from '@udecode/plate-common/react';
 
-import { BlockSelectionPlugin } from './BlockSelectionPlugin';
+import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
 export const useBlockSelected = (_id?: string) => {
   const { useOption } = useEditorPlugin(BlockSelectionPlugin);

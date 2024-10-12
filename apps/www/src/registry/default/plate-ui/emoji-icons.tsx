@@ -6,7 +6,6 @@ import {
   AppleIcon,
   ClockIcon,
   CompassIcon,
-  DeleteIcon,
   FlagIcon,
   LeafIcon,
   LightbulbIcon,
@@ -14,11 +13,15 @@ import {
   SearchIcon,
   SmileIcon,
   StarIcon,
+  XIcon,
 } from 'lucide-react';
 
 export const emojiCategoryIcons: Record<
   EmojiCategoryList,
-  { outline: React.ReactElement; solid: React.ReactElement }
+  {
+    outline: React.ReactElement;
+    solid: React.ReactElement; // Needed to add another solid variant - outline will be used for now
+  }
 > = {
   activity: {
     outline: (
@@ -38,7 +41,6 @@ export const emojiCategoryIcons: Record<
         <path d="M21.9 10.6a10.1 10.1 0 0 0-11.3 11.3" />
       </svg>
     ),
-    // Needed to add another solid variant - outline will be used for now
     solid: (
       <svg
         className="size-full"
@@ -60,61 +62,51 @@ export const emojiCategoryIcons: Record<
 
   custom: {
     outline: <StarIcon className="size-full" />,
-    // Needed to add another solid variant - outline will be used for now
     solid: <StarIcon className="size-full" />,
   },
 
   flags: {
     outline: <FlagIcon className="size-full" />,
-    // Needed to add another solid variant - outline will be used for now
     solid: <FlagIcon className="size-full" />,
   },
 
   foods: {
     outline: <AppleIcon className="size-full" />,
-    // Needed to add another solid variant - outline will be used for now
     solid: <AppleIcon className="size-full" />,
   },
 
   frequent: {
     outline: <ClockIcon className="size-full" />,
-    // Needed to add another solid variant - outline will be used for now
     solid: <ClockIcon className="size-full" />,
   },
 
   nature: {
     outline: <LeafIcon className="size-full" />,
-    // Needed to add another solid variant - outline will be used for now
     solid: <LeafIcon className="size-full" />,
   },
 
   objects: {
     outline: <LightbulbIcon className="size-full" />,
-    // Needed to add another solid variant - outline will be used for now
     solid: <LightbulbIcon className="size-full" />,
   },
 
   people: {
     outline: <SmileIcon className="size-full" />,
-    // Needed to add another solid variant - outline will be used for now
     solid: <SmileIcon className="size-full" />,
   },
 
   places: {
     outline: <CompassIcon className="size-full" />,
-    // Needed to add another solid variant - outline will be used for now
     solid: <CompassIcon className="size-full" />,
   },
 
   symbols: {
     outline: <MusicIcon className="size-full" />,
-    // Needed to add another solid variant - outline will be used for now
     solid: <MusicIcon className="size-full" />,
   },
 };
 
 export const emojiSearchIcons = {
-  delete: <DeleteIcon className="size-4" />,
-
-  loupe: <SearchIcon className="size-4" />,
+  delete: <XIcon className="size-4 text-current" />,
+  loupe: <SearchIcon className="size-4 text-current" />,
 };

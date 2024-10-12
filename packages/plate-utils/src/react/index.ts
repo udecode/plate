@@ -11,3 +11,5 @@ export * from './useFormInputProps';
 export * from './useMarkToolbarButton';
 export * from './usePlaceholder';
 export * from './useRemoveNodeButton';
+export * from './useSelection';
+export * from './useSelectionFragment';

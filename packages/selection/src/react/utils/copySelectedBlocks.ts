@@ -1,7 +1,6 @@
 import {
   type SlateEditor,
   deselect,
-  getEditorPlugin,
   getEndPoint,
   getStartPoint,
   select,
@@ -12,13 +11,10 @@ import copyToClipboard from 'copy-to-clipboard';
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
 export const copySelectedBlocks = (editor: SlateEditor) => {
-  const { api, getOptions, setOption } = getEditorPlugin(
-    editor,
-    BlockSelectionPlugin
-  );
-
-  const { selectedIds } = getOptions();
-  const selectedEntries = api.blockSelection.getSelectedBlocks();
+  const { selectedIds } = editor.getOptions(BlockSelectionPlugin);
+  const selectedEntries = editor
+    .getApi(BlockSelectionPlugin)
+    .blockSelection.getNodes();
   const selectedFragment = selectedEntries.map(([node]) => node);
 
   copyToClipboard(' ', {
@@ -52,7 +48,7 @@ export const copySelectedBlocks = (editor: SlateEditor) => {
 
         // deselect and select back selectedIds
         deselect(editor);
-        setOption('selectedIds', selectedIds);
+        editor.setOption(BlockSelectionPlugin, 'selectedIds', selectedIds);
       });
 
       data.setData('text/plain', textPlain);

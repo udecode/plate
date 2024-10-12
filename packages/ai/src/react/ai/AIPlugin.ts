@@ -1,5 +1,4 @@
 import type { ExtendConfig } from '@udecode/plate-core';
-import type { AriakitTypes } from '@udecode/plate-menu';
 import type { NodeEntry, Path } from 'slate';
 
 import {
@@ -61,7 +60,7 @@ export type AIPluginConfig = ExtendConfig<
     lastWorkPath: Path | null;
     menuType: 'cursor' | 'selection' | null;
     openEditorId: string | null;
-    store: AriakitTypes.MenuStore | null;
+    store: any | null;
   } & ExposeOptions &
     AIApi &
     AISelectors,

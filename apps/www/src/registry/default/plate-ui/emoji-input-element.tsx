@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 
 import { withRef } from '@udecode/cn';
-import { PlateElement } from './plate-element';
 import { EmojiInlineIndexSearch, insertEmoji } from '@udecode/plate-emoji';
 
 import { useDebounce } from '@/registry/default/hooks/use-debounce';
@@ -13,6 +12,7 @@ import {
   InlineComboboxInput,
   InlineComboboxItem,
 } from './inline-combobox';
+import { PlateElement } from './plate-element';
 
 export const EmojiInputElement = withRef<typeof PlateElement>(
   ({ className, ...props }, ref) => {

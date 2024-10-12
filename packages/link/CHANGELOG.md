@@ -1,5 +1,31 @@
 # @udecode/plate-link
 
+## 39.1.7
+
+### Patch Changes
+
+- [`847741091a554231db7bd98d4ed1d75557e68a38`](https://github.com/udecode/plate/commit/847741091a554231db7bd98d4ed1d75557e68a38) by [@zbeyens](https://github.com/zbeyens) – Fix type
+
+## 39.1.6
+
+### Patch Changes
+
+- [#3622](https://github.com/udecode/plate/pull/3622) by [@zbeyens](https://github.com/zbeyens) –
+  - Fix floating link insert
+  - Hide floating link edit when clicking outside
+
+## 39.1.4
+
+### Patch Changes
+
+- [#3616](https://github.com/udecode/plate/pull/3616) by [@zbeyens](https://github.com/zbeyens) – Floating patch
+
+## 39.1.1
+
+### Patch Changes
+
+- [#3609](https://github.com/udecode/plate/pull/3609) by [@sakshikale14](https://github.com/sakshikale14) – Fixed floating link issue #3609
+
 ## 39.0.0
 
 ## 38.0.6

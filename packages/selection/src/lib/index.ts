@@ -4,3 +4,4 @@
 
 export * from './extractSelectableIds';
 export * from './getAboveDomNode';
+export * from './isSelecting';
