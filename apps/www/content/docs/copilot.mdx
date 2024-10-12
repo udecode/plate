@@ -110,7 +110,7 @@ Here's a more detailed example of how you might implement this function:
 The Copilot plugin maintains its own state to manage the suggestion process. The state can be either 'idle' or 'completed'. Here's a breakdown of what each state means:
 
 ```ts
-type CopilotState = 'idle' | 'completed';
+type CopilotState = 'error' | 'idle' | 'pending' | 'success';
 ```
 
 - `idle`: This is the default state. It indicates that the Copilot is not currently providing a suggestion or has finished processing the previous suggestion.

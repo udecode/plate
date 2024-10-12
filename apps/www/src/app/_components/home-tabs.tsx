@@ -13,6 +13,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/registry/default/plate-ui/button';
 
 const InstallationTab = dynamic(() => import('./installation-tab'));
+const PotionTab = dynamic(() => import('./potion-tab'), {
+  loading: () => <div>Loading...</div>,
+});
 
 export default function HomeTabs() {
   const active = settingsStore.use.showSettings();
@@ -47,6 +50,7 @@ export default function HomeTabs() {
         <TabsList>
           <TabsTrigger value="playground">Playground</TabsTrigger>
           <TabsTrigger value="installation">Installation</TabsTrigger>
+          <TabsTrigger value="potion">Potion Template</TabsTrigger>
         </TabsList>
 
         <Button
@@ -75,6 +79,10 @@ export default function HomeTabs() {
           <div className="max-w-[1136px] p-4">
             <InstallationTab />
           </div>
+        </TabsContent>
+
+        <TabsContent className="pt-2" value="potion">
+          <PotionTab />
         </TabsContent>
       </Tabs>
     </div>
