@@ -19,8 +19,8 @@ export const BasePlaceholderPlugin = createTSlatePlugin<PlaceholderConfig>({
   key: 'placeholder',
   node: { isElement: true, isVoid: true },
 }).extendTransforms(({ editor }) => ({
-  insertAudio: bindFirst(insertAudioPlaceholder, editor),
-  insertFile: bindFirst(insertFilePlaceholder, editor),
-  insertImage: bindFirst(insertImagePlaceholder, editor),
-  insertVideo: bindFirst(insertVideoPlaceholder, editor),
+  insertAudioPlaceholder: bindFirst(insertAudioPlaceholder, editor),
+  insertFilePlaceholder: bindFirst(insertFilePlaceholder, editor),
+  insertImagePlaceholder: bindFirst(insertImagePlaceholder, editor),
+  insertVideoPlaceholder: bindFirst(insertVideoPlaceholder, editor),
 }));
