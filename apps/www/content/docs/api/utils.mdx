@@ -327,11 +327,11 @@ Selects a point from the previous or next sibling node of the specified node.
       <APISubListItem parent="options" name="at" type="Path" optional>
         The path of the reference node. If not provided, `node` must be specified.
       </APISubListItem>
-      <APISubListItem parent="options" name="position" type="'previous' | 'next'" optional>
-        Which sibling node to select from.
-        - `'previous'`: Select the end point of the previous sibling node.
-        - `'next'`: Select the start point of the next sibling node.
-        - **Default:** `'next'`
+      <APISubListItem parent="options" name="reverse" type="boolean" optional>
+        Whether to select the previous sibling instead of the next.
+        - `false`: Select the start point of the next sibling node.
+        - `true`: Select the end point of the previous sibling node.
+        - **Default:** `false`
       </APISubListItem>
       <APISubListItem parent="options" name="focus" type="boolean" optional>
         Whether to focus the editor after selection.

@@ -89,7 +89,10 @@ export const useEquationInput = ({
             selectionEnd === 0 &&
             isHotkey('ArrowLeft')(e)
           ) {
-            selectSiblingNodePoint(editor, { edge: 'start', node: element });
+            selectSiblingNodePoint(editor, {
+              node: element,
+              reverse: true,
+            });
           }
           // at the right edge
           if (

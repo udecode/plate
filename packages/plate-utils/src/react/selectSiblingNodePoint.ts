@@ -13,12 +13,12 @@ export const selectSiblingNodePoint = (
     at,
     focus = true,
     node,
-    position = 'after',
+    reverse,
   }: {
     at?: Path;
     focus?: boolean;
     node?: TNode;
-    position?: 'after' | 'before';
+    reverse?: boolean;
   } = {}
 ) => {
   if (node) {
@@ -26,10 +26,9 @@ export const selectSiblingNodePoint = (
   }
   if (!at) return;
 
-  const point =
-    position === 'before'
-      ? getPreviousNodeEndPoint(editor, at)
-      : getNextNodeStartPoint(editor, at);
+  const point = reverse
+    ? getPreviousNodeEndPoint(editor, at)
+    : getNextNodeStartPoint(editor, at);
 
   if (!point) return;
 
