@@ -1,15 +1,31 @@
-import type React from 'react';
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
-import { isHotkey, setNodes } from '@udecode/plate-common';
-import { useEditorRef, useElement } from '@udecode/plate-common/react';
+import { isHotkey } from '@udecode/plate-common';
+import {
+  selectAroundNode,
+  setNode,
+  useEditorRef,
+  useElement,
+} from '@udecode/plate-common/react';
 
 import type { TEquationElement } from '../../lib';
 
-export const useEquationInput = ({ open }: { open?: boolean }) => {
+export const useEquationInput = ({
+  isInline,
+  open,
+  onClose,
+}: {
+  isInline?: boolean;
+  open?: boolean;
+  onClose?: () => void;
+}) => {
   const editor = useEditorRef();
   const element = useElement<TEquationElement>();
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  const [initialExpression, setInitialExpression] = React.useState<
+    string | null
+  >(null);
 
   useEffect(() => {
     if (open) {
@@ -17,35 +33,77 @@ export const useEquationInput = ({ open }: { open?: boolean }) => {
         if (inputRef.current) {
           inputRef.current.focus();
           inputRef.current.select();
+
+          if (isInline) {
+            setInitialExpression(element.texExpression);
+          }
         }
       }, 0);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
+
+  const onSubmit = () => {
+    onClose?.();
+  };
+
+  const onDismiss = () => {
+    if (isInline) {
+      setNode(editor, element, {
+        texExpression: initialExpression ?? '',
+      });
+    }
+
+    onClose?.();
+  };
 
   return {
     props: {
       value: element.texExpression,
       onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setNodes<TEquationElement>(editor, {
+        setNode<TEquationElement>(editor, element, {
           texExpression: e.target.value,
         });
       },
       onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (isHotkey('enter', e) || isHotkey('escape', e)) {
+        if (isHotkey('enter')(e)) {
           e.preventDefault();
-
-          editor
-            .getApi({ key: 'blockSelection' })
-            .blockSelection?.addSelectedRow?.(element.id);
-        } else if (isHotkey('meta+z', e)) {
+          onSubmit();
+        } else if (isHotkey('escape')(e)) {
+          e.preventDefault();
+          onDismiss();
+        } else if (isHotkey('meta+z')(e)) {
           e.preventDefault();
           editor.undo();
-        } else if (isHotkey('meta+y', e) || isHotkey('meta+shift+z', e)) {
+        } else if (isHotkey('meta+y')(e) || isHotkey('meta+shift+z')(e)) {
           e.preventDefault();
           editor.redo();
+        }
+        if (isInline) {
+          const { selectionEnd, selectionStart, value } =
+            e.target as HTMLInputElement;
+
+          // at the left edge
+          if (
+            selectionStart === 0 &&
+            selectionEnd === 0 &&
+            isHotkey('ArrowLeft')(e)
+          ) {
+            selectAroundNode(editor, { edge: 'start', node: element });
+          }
+          // at the right edge
+          if (
+            selectionEnd === value.length &&
+            selectionStart === value.length &&
+            isHotkey('ArrowRight')(e)
+          ) {
+            selectAroundNode(editor, { node: element });
+          }
         }
       },
     },
     ref: inputRef,
+    onDismiss,
+    onSubmit,
   };
 };

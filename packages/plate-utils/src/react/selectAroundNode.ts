@@ -1,20 +1,18 @@
 import type { Path } from 'slate';
 
+import { type TEditor, type TNode, setSelection } from '@udecode/slate';
+import { findNodePath, focusEditor } from '@udecode/slate-react';
 import {
-  type SlateEditor,
-  type TNode,
   getNextNodeStartPoint,
   getPreviousNodeEndPoint,
-  setSelection,
-} from '@udecode/plate-common';
-import { findNodePath, focusEditor } from '@udecode/plate-common/react';
+} from '@udecode/slate-utils';
 
 export const selectAroundNode = (
-  editor: SlateEditor,
+  editor: TEditor,
   {
     at,
     edge = 'end',
-    focus,
+    focus = true,
     node,
   }: {
     at?: Path;
