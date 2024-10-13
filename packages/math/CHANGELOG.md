@@ -1,5 +1,11 @@
 # @udecode/plate-math
 
+## 39.1.8
+
+### Patch Changes
+
+- [`52b590477c5376f871f88a862ca521d9c35149e4`](https://github.com/udecode/plate/commit/52b590477c5376f871f88a862ca521d9c35149e4) by [@zbeyens](https://github.com/zbeyens) – Prerelease 2
+
 ## 39.0.0
 
 ## 38.0.1
