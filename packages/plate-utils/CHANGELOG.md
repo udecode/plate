@@ -1,5 +1,11 @@
 # @udecode/plate-utils
 
+## 39.1.8
+
+### Patch Changes
+
+- [#3626](https://github.com/udecode/plate/pull/3626) by [@zbeyens](https://github.com/zbeyens) – Add selectSiblingNodePoint
+
 ## 39.1.4
 
 ### Patch Changes
