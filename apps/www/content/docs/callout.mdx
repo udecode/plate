@@ -1,54 +1,65 @@
 ---
 title: Callout
-description: allows you to select from a list of AI commands. 
+description: Callout is a block that allows you to highlight text or add additional information to a block.
 docs:
-  - route: https://pro.platejs.org/docs/components/callout
-    title: Callout
+  - route: https://pro.platejs.org/docs/components/callout-element
+    title: Callout Element
 ---
 
-<ComponentPreviewPro name="pro-iframe-demo" id="pro-callout" component="callout" />
+<ComponentPreviewPro
+  name="pro-iframe-demo"
+  id="callout"
+  component="callout"
+/>
 
 <PackageInfo>
 
 ## Features
 
-- Provides an AI-powered menu.
-- Offers a selection of AI commands to enhance content creation and editing.
-- Seamlessly integrates AI assistance within the editor interface.
+- Provides quick transform for a single block.
+- Allows you to perform actions on blocks such as duplicating, deleting, or moving.
+- Customizable menu items and actions.
+- Accessible via right-click or a dedicated button like drag-handle.
+- Supports keyboard navigation for improved accessibility.
 
 </PackageInfo>
 
 ## Installation
 
+
 ```bash
-npm install @udecode/plate-ai
+npm install @udecode/plate-callout
 ```
 
 ## Usage
 
 ```tsx
 // ...
-import { AIPlugin } from '@/registry/default/plate-pro/ai/ai/src/react/AIPlugin';
+import { CalloutPlugin } from '@udecode/plate-callout/react';
 
 const editor = usePlateEditor({
-  id: 'ai-demo',
+  id: 'callout-demo',
   override: {
-    components: PlateUI,
+    components: {
+      ...otherComponents,
+      [CalloutPlugin.key]: CalloutElement,
+    },
   },
   plugins: [
-    ...commonPlugins,
-    SelectionOverlayPlugin,
-    MarkdownPlugin.configure({ options: { indentList: true } }),
-    AIPlugin.configure({
-      options: {
-        scrollContainerSelector: '#scroll_container',
-      },
-      render: { aboveEditable: AIMenu },
-    }),
+    ...otherPlugins,
+    CalloutPlugin,
   ],
-  value: aiValue,
+  value: calloutValue,
 });
 ```
 
-## API
+## Transforms
 
+### editor.tf.callout.insert
+
+Inserts a callout.
+<APIParameters>
+  <APIItem name="options" type="InsertNodesOptions">
+    Options for the insert nodes transform.
+  </APIItem>
+</APIParameters>

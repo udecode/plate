@@ -1,0 +1,107 @@
+---
+title: Media Placeholder
+description: A placeholder component for inserting various types of media content into the editor.
+docs:
+  - route: /docs/components/placeholder
+    title: Placeholder Element
+---
+
+
+<ComponentPreviewPro
+  name="pro-iframe-demo"
+  id="upload"
+  component="upload"
+/>
+
+
+<PackageInfo>
+
+## Features
+
+- Displays placeholder for media elements (image, video, audio, file).
+- Allows typing URLs or uploading local files directly in the placeholder.
+- Customizable placeholder text and styles for different media types.
+- Automatically converts to the appropriate media element when URL is entered or file is uploaded.
+- Improves user experience by providing a seamless way to insert media content.
+- Supports drag and drop functionality for easy file uploads.
+- Automatically validates URLs and file types for each media category.
+
+</PackageInfo>
+
+## Installation
+
+
+```bash
+npm install @udecode/plate-callout
+```
+
+## Usage
+
+```tsx
+// ...
+import {
+  AudioPlugin,
+  FilePlugin,
+  ImagePlugin,
+  MediaEmbedPlugin,
+  PlaceholderPlugin,
+  VideoPlugin,
+} from '@udecode/plate-media/react';
+
+const editor = usePlateEditor({
+  id: 'callout-demo',
+  override: {
+    components: {
+      ...otherComponents,
+      [PlaceholderPlugin.key]: MediaPlaceholderElement,
+    },
+  },
+  plugins: [
+    ...otherPlugins,
+    PlaceholderPlugin,
+  ],
+  value: calloutValue,
+});
+```
+
+## Transforms
+
+### editor.tf.placeholder.insertAudio
+
+Inserts a placeholder. Converts to an audio element when completed.
+<APIParameters>
+  <APIItem name="options" type="InsertNodesOptions">
+    Options for the insert nodes transform.
+  </APIItem>
+</APIParameters>
+
+
+
+### editor.tf.placeholder.insertFile
+
+Inserts a placeholder. Converts to a file element when completed.
+<APIParameters>
+  <APIItem name="options" type="InsertNodesOptions">
+    Options for the insert nodes transform.
+  </APIItem>
+</APIParameters>
+
+
+### editor.tf.placeholder.insertImage
+
+Inserts a placeholder. Converts to an image element when completed.
+<APIParameters>
+  <APIItem name="options" type="InsertNodesOptions">
+    Options for the insert nodes transform.
+  </APIItem>
+</APIParameters>
+
+### editor.tf.placeholder.insertVideo
+
+Inserts a placeholder. Converts to a video element when completed.
+<APIParameters>
+  <APIItem name="options" type="InsertNodesOptions">
+    Options for the insert nodes transform.
+  </APIItem>
+</APIParameters>
+

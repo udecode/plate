@@ -1,0 +1,185 @@
+---
+title: Block Menu
+description: Allows you to perform a series of custom operations on the block.
+docs:
+  - route: https://pro.platejs.org/docs/components/block-menu
+    title: Block Menu
+
+  - route: https://pro.platejs.org/docs/components/block-context-menu
+    title: Block Context Menu
+---
+
+<ComponentPreviewPro
+  name="pro-iframe-demo"
+  id="context-menu"
+  component="context-menu"
+/>
+
+<PackageInfo>
+
+## Features
+
+- Provides quick transform for a single block.
+- Allows you to perform actions on blocks such as duplicating, deleting, or moving.
+- Customizable menu items and actions.
+- Accessible via right-click or a dedicated button like drag-handle.
+- Supports keyboard navigation for improved accessibility.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-selection
+```
+
+## Usage
+
+We recommend installing the [BlockSelection](/docs/block-selection) plugin.When you want to use the block menu
+
+Block Selection provides a visual effect to indicate which block the user is about to interact with
+
+```tsx
+// ...
+import { BlockMenuPlugin } from '@udecode/plate-selection/react';
+
+const editor = usePlateEditor({
+  id: 'context-menu-demo',
+  override: {
+    components: createPotionUI(),
+  },
+  plugins: [
+    ...otherPlugins,
+    NodeIdPlugin,
+    BlockSelectionPlugin.configure({
+      options: {
+        areaOptions: {
+          behaviour: {
+            scrolling: {
+              speedDivider: 1.5,
+            },
+            startThreshold: 10,
+          },
+          boundaries: '#scroll_container',
+          container: '#scroll_container',
+          selectables: '#scroll_container .slate-selectable',
+          selectionAreaClass: 'slate-selection-area',
+        },
+        enableContextMenu: true,
+      },
+    }),
+    BlockMenuPlugin.configure({
+      render: { aboveEditable: BlockContextMenu },
+    }),
+  ],
+  value: contextMenuValue,
+});
+```
+
+## Custom Block Menu
+
+### Customize Items
+
+The `block-menu-items.tsx` file contains the `blockMenuItems` object, which defines the configuration for each menu option. You can customize this object to suit your needs. Here's a breakdown of the key properties:
+
+```ts
+type BlockMenuItem = {
+  component: React.JSX.Element;
+  icon: React.JSX.Element;
+  keywords: string[];
+  label: string;
+  shortcut?: string;
+  // Only use in submenu
+  items?: BlockMenuItem[];
+  filterItems?: boolean;
+};
+```
+
+- `component`: Specifies the React component to render for the menu item. Configure the handler here as well.Only use in the submenu.
+- `filterItems`: A boolean flag indicating whether the item should be included in search results.
+- `icon`: Defines the icon to be displayed alongside the menu item.
+- `keywords`: An array of search terms associated with the menu item, used for filtering.
+- `label`: The text label shown for the menu item in the menu.
+- `shortcut`: Shortcut text displayed in the menu.You need to configure the shortcut key handler elsewhere.
+- `items`: An array of submenu items.
+
+### Customize Items Order
+
+Similarly, in this file, you can find an array called `orderedMenuItems`.
+
+```ts
+const orderedMenuItems = [
+  // Group 1
+  {
+    items: [blockMenuItems.comment],
+  },
+  // Group 2
+  {
+    items: [
+      blockMenuItems.askAI,
+      blockMenuItems.delete,
+      blockMenuItems.duplicate,
+      // Submenu
+      blockMenuItems[GROUP.TURN_INTO],
+    ],
+  },
+  // Group 3
+  {
+    items: [blockMenuItems[GROUP.COLOR]],
+  },
+];
+```
+
+This array determines the order and grouping of items in the block menu. Each object in the array represents a group, and the `items` property within each group contains the menu items for that group. You can rearrange the items, add new ones, or remove existing ones to customize the menu structure according to your preferences.
+
+### Styling
+
+You can customize the block menu's appearance in `menu.tsx` file.It is important to be careful not to affect the style of the AI menu.
+
+## Prevent opening of the right-click menu
+
+To control the opening of the right-click menu for specific elements, you can use the `data-open-context-menu` attribute:
+
+Generally, we only need to prevent right-clicking on the padding of the `<Editor />`.
+
+If you have a special plugin that needs to prevent the right-click menu from opening, you can use this property.
+
+Example usage:
+
+```tsx
+<PlateElement data-plate-open-context-menu={false} {...props}>
+  {children}
+</PlateElement>
+```
+
+## API
+
+### editor.api.blockMenu.hide
+
+Hides the block menu.
+
+### editor.api.blockMenu.show
+
+Shows the block menu for a specific block.
+
+<APIParameters>
+  <APIItem name="id" type="string">
+    The ID of the block to show the menu for.
+  </APIItem>
+  <APIItem name="position" type="{ x: number; y: number }" optional>
+    The position to show the menu at.
+  </APIItem>
+</APIParameters>
+
+### editor.api.blockMenu.showContextMenu
+
+Shows the context menu for a specific block.
+
+<APIParameters>
+  <APIItem name="blockId" type="string">
+    The ID of the block to show the context menu for.
+  </APIItem>
+  <APIItem name="position" type="{ x: number; y: number }">
+    The position to show the context menu at.
+  </APIItem>
+</APIParameters>

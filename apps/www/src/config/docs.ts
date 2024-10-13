@@ -259,6 +259,11 @@ export const docsConfig: DocsConfig = {
           title: 'Autoformat',
         },
         {
+          href: '/docs/block-menu',
+          label: 'Plus',
+          title: 'Block Menu',
+        },
+        {
           href: '/docs/basic-elements',
           label: 'Element',
           title: 'Basic Elements',
@@ -274,8 +279,7 @@ export const docsConfig: DocsConfig = {
         },
         {
           href: '/docs/callout',
-          label: 'WIP',
-          new: true,
+          label: 'Plus',
           title: 'Callout',
         },
         {
@@ -300,13 +304,6 @@ export const docsConfig: DocsConfig = {
           label: 'Leaf',
           title: 'Comments',
         },
-        {
-          href: '/docs/context-menu',
-          label: 'WIP',
-          new: true,
-          title: 'Context Menu',
-        },
-
         {
           href: '/docs/csv',
           title: 'CSV',
@@ -396,6 +393,11 @@ export const docsConfig: DocsConfig = {
           href: '/docs/mention',
           label: 'Element',
           title: 'Mention',
+        },
+        {
+          href: '/docs/media-placeholder',
+          label: 'Plus',
+          title: 'Media Placeholder',
         },
         {
           href: '/docs/reset-node',
