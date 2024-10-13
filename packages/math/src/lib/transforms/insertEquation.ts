@@ -4,9 +4,10 @@ import {
   insertNodes,
 } from '@udecode/plate-common';
 
-import type { TEquationElement } from '../types';
-
-import { BaseEquationPlugin } from '../BaseEquationPlugin';
+import {
+  type TEquationElement,
+  BaseEquationPlugin,
+} from '../BaseEquationPlugin';
 
 export const insertEquation = <E extends SlateEditor>(
   editor: E,

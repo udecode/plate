@@ -2,19 +2,17 @@ import React from 'react';
 
 import katex, { type KatexOptions } from 'katex';
 
-import type { TEquationElement } from '../../../lib/equation/types';
+import type { TEquationElement } from '../../lib';
 
-export interface useEquationState {
-  element: TEquationElement;
-  katexRef: React.MutableRefObject<HTMLDivElement | null>;
-  options?: KatexOptions;
-}
-
-export const useEquationState = ({
+export const useEquationElement = ({
   element,
   katexRef,
   options,
-}: useEquationState) => {
+}: {
+  element: TEquationElement;
+  katexRef: React.MutableRefObject<HTMLDivElement | null>;
+  options?: KatexOptions;
+}) => {
   React.useEffect(() => {
     if (!katexRef.current) return;
 
@@ -22,5 +20,3 @@ export const useEquationState = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [element.texExpression]);
 };
-
-export const useEquationElement = () => {};

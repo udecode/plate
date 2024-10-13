@@ -3,3 +3,4 @@
  */
 
 export * from './useEquationElement';
+export * from './useEquationInput';

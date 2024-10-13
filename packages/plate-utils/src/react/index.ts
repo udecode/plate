@@ -6,6 +6,7 @@ export * from './PlateElement';
 export * from './PlateLeaf';
 export * from './createNodeHOC';
 export * from './createNodesHOC';
+export * from './selectSiblingNodePoint';
 export * from './selectEditor';
 export * from './useFormInputProps';
 export * from './useMarkToolbarButton';
