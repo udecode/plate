@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 
 import { isHotkey } from '@udecode/plate-common';
 import {
-  selectAroundNode,
+  selectSiblingNodePoint,
   setNode,
   useEditorRef,
   useElement,
@@ -89,7 +89,7 @@ export const useEquationInput = ({
             selectionEnd === 0 &&
             isHotkey('ArrowLeft')(e)
           ) {
-            selectAroundNode(editor, { edge: 'start', node: element });
+            selectSiblingNodePoint(editor, { edge: 'start', node: element });
           }
           // at the right edge
           if (
@@ -97,7 +97,7 @@ export const useEquationInput = ({
             selectionStart === value.length &&
             isHotkey('ArrowRight')(e)
           ) {
-            selectAroundNode(editor, { node: element });
+            selectSiblingNodePoint(editor, { node: element });
           }
         }
       },

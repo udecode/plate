@@ -313,6 +313,37 @@ Moves the selection by offset based on the keyboard arrow keys.
   </APIItem>
 </APIParameters>
 
+### selectSiblingNodePoint
+
+Selects a point from the previous or next sibling node of the specified node.
+
+<APIParameters>
+  <APIItem name="editor" type="TEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="object" optional>
+    Options for selecting a sibling node's point.
+    <APISubList>
+      <APISubListItem parent="options" name="at" type="Path" optional>
+        The path of the reference node. If not provided, `node` must be specified.
+      </APISubListItem>
+      <APISubListItem parent="options" name="position" type="'previous' | 'next'" optional>
+        Which sibling node to select from.
+        - `'previous'`: Select the end point of the previous sibling node.
+        - `'next'`: Select the start point of the next sibling node.
+        - **Default:** `'next'`
+      </APISubListItem>
+      <APISubListItem parent="options" name="focus" type="boolean" optional>
+        Whether to focus the editor after selection.
+        - **Default:** `true`
+      </APISubListItem>
+      <APISubListItem parent="options" name="node" type="TNode" optional>
+        The reference node. Used to find the path if `at` is not provided.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
 ## Utils
 
 ### defaultsDeepToNodes

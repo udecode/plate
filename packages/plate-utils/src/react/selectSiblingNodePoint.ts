@@ -7,18 +7,18 @@ import {
   getPreviousNodeEndPoint,
 } from '@udecode/slate-utils';
 
-export const selectAroundNode = (
+export const selectSiblingNodePoint = (
   editor: TEditor,
   {
     at,
-    edge = 'end',
     focus = true,
     node,
+    position = 'after',
   }: {
     at?: Path;
-    edge?: 'end' | 'start';
     focus?: boolean;
     node?: TNode;
+    position?: 'after' | 'before';
   } = {}
 ) => {
   if (node) {
@@ -27,7 +27,7 @@ export const selectAroundNode = (
   if (!at) return;
 
   const point =
-    edge === 'start'
+    position === 'before'
       ? getPreviousNodeEndPoint(editor, at)
       : getNextNodeStartPoint(editor, at);
 
