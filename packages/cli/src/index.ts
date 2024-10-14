@@ -1,29 +1,27 @@
 #!/usr/bin/env node
-import { Command } from 'commander';
+import { add } from "@/src/commands/add"
+import { diff } from "@/src/commands/diff"
+import { init } from "@/src/commands/init"
+import { Command } from "commander"
 
-import { add } from './commands/add';
-import { diff } from './commands/diff';
-import { init } from './commands/init';
-import { getPackageInfo } from './utils/get-package-info';
+import packageJson from "../package.json"
 
-process.on('SIGINT', () => process.exit(0));
-process.on('SIGTERM', () => process.exit(0));
+process.on("SIGINT", () => process.exit(0))
+process.on("SIGTERM", () => process.exit(0))
 
-function main() {
-  const packageInfo = getPackageInfo();
-
+async function main() {
   const program = new Command()
-    .name('plate-ui')
-    .description('add components and dependencies to your project')
+    .name("shadcn")
+    .description("add components and dependencies to your project")
     .version(
-      packageInfo.version || '1.0.0',
-      '-v, --version',
-      'display the version number'
-    );
+      packageJson.version || "1.0.0",
+      "-v, --version",
+      "display the version number"
+    )
 
-  program.addCommand(init).addCommand(add).addCommand(diff);
+  program.addCommand(init).addCommand(add).addCommand(diff)
 
-  program.parse();
+  program.parse()
 }
 
-main();
+main()
