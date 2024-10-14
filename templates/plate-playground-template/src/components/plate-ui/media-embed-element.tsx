@@ -1,18 +1,20 @@
 import React from 'react';
-import { cn, withRef } from '@udecode/cn';
-import { PlateElement, withHOC } from '@udecode/plate-common/react';
-import { parseTwitterUrl, parseVideoUrl } from '@udecode/plate-media';
-import { MediaEmbedPlugin, useMediaState } from '@udecode/plate-media/react';
-import { ResizableProvider, useResizableStore } from '@udecode/plate-resizable';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import { Tweet } from 'react-tweet';
 
+import { cn, withRef } from '@udecode/cn';
+import { withHOC } from '@udecode/plate-common/react';
+import { parseTwitterUrl, parseVideoUrl } from '@udecode/plate-media';
+import { MediaEmbedPlugin, useMediaState } from '@udecode/plate-media/react';
+import { ResizableProvider, useResizableStore } from '@udecode/plate-resizable';
+
 import { Caption, CaptionTextarea } from './caption';
 import { MediaPopover } from './media-popover';
+import { PlateElement } from './plate-element';
 import {
-  mediaResizeHandleVariants,
   Resizable,
   ResizeHandle,
+  mediaResizeHandleVariants,
 } from './resizable';
 
 export const MediaEmbedElement = withHOC(
@@ -36,8 +38,8 @@ export const MediaEmbedElement = withHOC(
     return (
       <MediaPopover plugin={MediaEmbedPlugin}>
         <PlateElement
-          className={cn('relative py-2.5', className)}
           ref={ref}
+          className={cn('relative py-2.5', className)}
           {...props}
         >
           <figure className="group relative m-0 w-full" contentEditable={false}>
@@ -87,14 +89,14 @@ export const MediaEmbedElement = withHOC(
                     )}
                   >
                     <iframe
-                      allowFullScreen
                       className={cn(
                         'absolute left-0 top-0 size-full rounded-sm',
                         isVideo && 'border-0',
                         focused && selected && 'ring-2 ring-ring ring-offset-2'
                       )}
-                      src={embed!.url}
                       title="embed"
+                      src={embed!.url}
+                      allowFullScreen
                     />
                   </div>
                 )
@@ -119,7 +121,7 @@ export const MediaEmbedElement = withHOC(
               />
             </Resizable>
 
-            <Caption align={align} style={{ width }}>
+            <Caption style={{ width }} align={align}>
               <CaptionTextarea placeholder="Write a caption..." />
             </Caption>
           </figure>

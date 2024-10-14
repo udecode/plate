@@ -256,7 +256,22 @@ export const useMyEditor = () => {
           enableUndoOnDelete: true,
         },
       }),
-      BlockSelectionPlugin,
+      BlockSelectionPlugin.configure({
+        options: {
+          areaOptions: {
+            behaviour: {
+              scrolling: {
+                startScrollMargins: { x: 0, y: 0 },
+              },
+            },
+            boundaries: '#scroll_container',
+            container: '#scroll_container',
+            selectables: '#scroll_container .slate-selectable',
+            selectionAreaClass: 'slate-selection-area',
+          },
+          enableContextMenu: true,
+        },
+      }),
       DndPlugin.configure({
         options: { enableScroller: true },
       }),

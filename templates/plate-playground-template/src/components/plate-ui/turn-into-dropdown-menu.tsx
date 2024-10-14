@@ -1,17 +1,17 @@
 import React from 'react';
+
+import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
+
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+import { getNodeEntries, isBlock } from '@udecode/plate-common';
 import {
-  collapseSelection,
-  getNodeEntries,
-  isBlock,
-} from '@udecode/plate-common';
-import {
-  focusEditor,
   ParagraphPlugin,
+  focusEditor,
   useEditorRef,
   useEditorSelector,
 } from '@udecode/plate-common/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
+import { ListStyleType, toggleIndentList } from '@udecode/plate-indent-list';
 
 import { Icons } from '@/components/icons';
 
@@ -25,8 +25,6 @@ import {
   useOpenState,
 } from './dropdown-menu';
 import { ToolbarButton } from './toolbar';
-
-import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 const items = [
   {
@@ -59,18 +57,18 @@ const items = [
     label: 'Quote',
     value: BlockquotePlugin.key,
   },
-  // {
-  //   value: 'ul',
-  //   label: 'Bulleted list',
-  //   description: 'Bulleted list',
-  //   icon: Icons.ul,
-  // },
-  // {
-  //   value: 'ol',
-  //   label: 'Numbered list',
-  //   description: 'Numbered list',
-  //   icon: Icons.ol,
-  // },
+  {
+    description: 'Bulleted list',
+    icon: Icons.ul,
+    label: 'Bulleted list',
+    value: ListStyleType.Disc,
+  },
+  {
+    description: 'Numbered list',
+    icon: Icons.ol,
+    label: 'Numbered list',
+    value: ListStyleType.Decimal,
+  },
 ];
 
 const defaultItem = items.find((item) => item.value === ParagraphPlugin.key)!;
@@ -101,6 +99,7 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
   const openState = useOpenState();
 
   const selectedItem =
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
     items.find((item) => item.value === value) ?? defaultItem;
   const { icon: SelectedItemIcon, label: selectedItemLabel } = selectedItem;
 
@@ -109,43 +108,40 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
       <DropdownMenuTrigger asChild>
         <ToolbarButton
           className="lg:min-w-[130px]"
-          isDropdown
           pressed={openState.open}
           tooltip="Turn into"
+          isDropdown
         >
           <SelectedItemIcon className="size-5 lg:hidden" />
           <span className="max-lg:hidden">{selectedItemLabel}</span>
         </ToolbarButton>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="start" className="min-w-0">
+      <DropdownMenuContent
+        className="ignore-click-outside/toolbar min-w-0"
+        align="start"
+      >
         <DropdownMenuLabel>Turn into</DropdownMenuLabel>
 
         <DropdownMenuRadioGroup
           className="flex flex-col gap-0.5"
-          onValueChange={(type) => {
-            // if (type === 'ul' || type === 'ol') {
-            //   if (settingsStore.get.checkedId(IndentListPlugin.key)) {
-            //     toggleIndentList(editor, {
-            //       listStyleType: type === 'ul' ? 'disc' : 'decimal',
-            //     });
-            //   } else if (settingsStore.get.checkedId('list')) {
-            //     toggleList(editor, { type });
-            //   }
-            // } else {
-            //   unwrapList(editor);
-            editor.tf.toggle.block({ type });
-            // }
+          value={value}
+          onValueChange={(type: any) => {
+            if (type === ListStyleType.Disc || type === ListStyleType.Decimal) {
+              toggleIndentList(editor, {
+                listStyleType: type,
+              });
+            }
 
-            collapseSelection(editor);
+            editor.tf.toggle.block({ type });
+
             focusEditor(editor);
           }}
-          value={value}
         >
           {items.map(({ icon: Icon, label, value: itemValue }) => (
             <DropdownMenuRadioItem
-              className="min-w-[180px]"
               key={itemValue}
+              className="min-w-[180px]"
               value={itemValue}
             >
               <Icon className="mr-2 size-5" />

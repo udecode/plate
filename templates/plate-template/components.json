@@ -13,8 +13,9 @@
   "aliases": {
     "components": "@/components",
     "utils": "@/lib/utils",
-    "ui": "@/components/ui",
+    "ui": "@/components/plate-ui",
     "lib": "@/lib",
     "hooks": "@/hooks"
-  }
+  },
+  "url": "https://platejs.org/r"
 }

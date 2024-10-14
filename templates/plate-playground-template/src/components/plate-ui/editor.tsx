@@ -61,7 +61,7 @@ const Editor = React.forwardRef<HTMLDivElement, EditorProps>(
     ref
   ) => {
     return (
-      <div className="relative w-full" ref={ref}>
+      <div id="scroll_container" className="ignore-click-outside/toolbar relative w-full" ref={ref}>
         <PlateContent
           aria-disabled={disabled}
           className={cn(

@@ -1,4 +1,7 @@
 import React from 'react';
+
+import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
+
 import { someNode } from '@udecode/plate-common';
 import {
   focusEditor,
@@ -7,10 +10,10 @@ import {
 } from '@udecode/plate-common/react';
 import { deleteTable, insertTableRow } from '@udecode/plate-table';
 import {
+  TablePlugin,
   deleteColumn,
   deleteRow,
   insertTable,
-  TablePlugin,
 } from '@udecode/plate-table/react';
 
 import { Icons, iconVariants } from '@/components/icons';
@@ -27,8 +30,6 @@ import {
 } from './dropdown-menu';
 import { ToolbarButton } from './toolbar';
 
-import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
-
 export function TableDropdownMenu(props: DropdownMenuProps) {
   const tableSelected = useEditorSelector(
     (editor) => someNode(editor, { match: { type: TablePlugin.key } }),
@@ -42,14 +43,14 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
   return (
     <DropdownMenu modal={false} {...openState} {...props}>
       <DropdownMenuTrigger asChild>
-        <ToolbarButton isDropdown pressed={openState.open} tooltip="Table">
+        <ToolbarButton pressed={openState.open} tooltip="Table" isDropdown>
           <Icons.table />
         </ToolbarButton>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        align="start"
         className="flex w-[180px] min-w-0 flex-col gap-0.5"
+        align="start"
       >
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
@@ -60,7 +61,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
             <DropdownMenuItem
               className="min-w-[180px]"
               onSelect={() => {
-                insertTable(editor);
+                insertTable(editor, {}, { select: true });
                 focusEditor(editor);
               }}
             >

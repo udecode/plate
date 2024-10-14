@@ -1,10 +1,15 @@
+import type { FC } from 'react';
+
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import {
-  createNodesWithHOC,
   ParagraphPlugin,
+  createNodesWithHOC,
 } from '@udecode/plate-common/react';
-import { withDraggable as withDraggablePrimitive } from '@udecode/plate-dnd';
+import {
+  type WithDraggableOptions,
+  withDraggable as withDraggablePrimitive,
+} from '@udecode/plate-dnd';
 import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { ColumnPlugin } from '@udecode/plate-layout/react';
@@ -20,11 +25,7 @@ import {
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 
-import { Draggable } from './draggable';
-
-import type { DraggableProps } from './draggable';
-import type { FC } from 'react';
-import type { WithDraggableOptions } from '@udecode/plate-dnd';
+import { type DraggableProps, Draggable } from './draggable';
 
 export const withDraggable = (
   Component: FC,
@@ -47,128 +48,107 @@ export const withDraggables = (components: any) => {
       level: 0,
     },
     {
-      draggableProps: {
-        classNames: {
-          blockToolbarWrapper: 'h-[1.3em]',
-          gutterLeft: 'px-0 pb-1 text-[1.875em]',
-        },
-      },
       key: HEADING_KEYS.h1,
+      draggableProps: {
+        className:
+          '[&_.slate-blockToolbarWrapper]:h-[1.3em] [&_.slate-gutterLeft]:px-0 [&_.slate-gutterLeft]:pb-1 [&_.slate-gutterLeft]:text-[1.875em]',
+      },
     },
     {
-      draggableProps: {
-        classNames: {
-          blockToolbarWrapper: 'h-[1.3em]',
-          gutterLeft: 'px-0 pb-1 text-[1.5em]',
-        },
-      },
       key: HEADING_KEYS.h2,
+      draggableProps: {
+        className:
+          '[&_.slate-blockToolbarWrapper]:h-[1.3em] [&_.slate-gutterLeft]:px-0 [&_.slate-gutterLeft]:pb-1 [&_.slate-gutterLeft]:text-[1.5em]',
+      },
     },
     {
-      draggableProps: {
-        classNames: {
-          blockToolbarWrapper: 'h-[1.3em]',
-          gutterLeft: 'pt-[2px] px-0 pb-1 text-[1.25em]',
-        },
-      },
       key: HEADING_KEYS.h3,
+      draggableProps: {
+        className:
+          '[&_.slate-blockToolbarWrapper]:h-[1.3em] [&_.slate-gutterLeft]:pt-[2px] [&_.slate-gutterLeft]:px-0 [&_.slate-gutterLeft]:pb-1 [&_.slate-gutterLeft]:text-[1.25em]',
+      },
     },
     {
-      draggableProps: {
-        classNames: {
-          blockToolbarWrapper: 'h-[1.3em]',
-          gutterLeft: 'pt-[3px] px-0 pb-0 text-[1.1em]',
-        },
-      },
       keys: [HEADING_KEYS.h4, HEADING_KEYS.h5],
+      draggableProps: {
+        className:
+          '[&_.slate-blockToolbarWrapper]:h-[1.3em] [&_.slate-gutterLeft]:pt-[3px] [&_.slate-gutterLeft]:px-0 [&_.slate-gutterLeft]:pb-0 [&_.slate-gutterLeft]:text-[1.1em]',
+      },
     },
     {
-      draggableProps: {
-        classNames: {
-          gutterLeft: 'pt-[3px] px-0 pb-0',
-        },
-      },
       keys: [ParagraphPlugin.key],
+      draggableProps: {
+        className:
+          '[&_.slate-gutterLeft]:pt-[3px] [&_.slate-gutterLeft]:px-0 [&_.slate-gutterLeft]:pb-0',
+      },
     },
     {
-      draggableProps: {
-        classNames: {
-          gutterLeft: 'px-0 pb-0',
-        },
-      },
       keys: [HEADING_KEYS.h6, BulletedListPlugin.key, NumberedListPlugin.key],
+      draggableProps: {
+        className: '[&_.slate-gutterLeft]:px-0 [&_.slate-gutterLeft]:pb-0',
+      },
     },
     {
-      draggableProps: {
-        classNames: {
-          gutterLeft: 'px-0 pb-0',
-        },
-      },
       key: BlockquotePlugin.key,
+      draggableProps: {
+        className: '[&_.slate-gutterLeft]:px-0 [&_.slate-gutterLeft]:pb-0',
+      },
     },
     {
-      draggableProps: {
-        classNames: {
-          gutterLeft: 'pt-6 px-0 pb-0',
-        },
-      },
       key: CodeBlockPlugin.key,
+      draggableProps: {
+        className:
+          '[&_.slate-gutterLeft]:pt-6 [&_.slate-gutterLeft]:px-0 [&_.slate-gutterLeft]:pb-0',
+      },
     },
     {
-      draggableProps: {
-        classNames: {
-          gutterLeft: 'pt-0 px-0 pb-0',
-        },
-      },
       key: ImagePlugin.key,
+      draggableProps: {
+        className:
+          '[&_.slate-gutterLeft]:pt-0 [&_.slate-gutterLeft]:px-0 [&_.slate-gutterLeft]:pb-0',
+      },
     },
     {
-      draggableProps: {
-        classNames: {
-          gutterLeft: 'pt-0 px-0 pb-0',
-        },
-      },
       key: MediaEmbedPlugin.key,
+      draggableProps: {
+        className:
+          '[&_.slate-gutterLeft]:pt-0 [&_.slate-gutterLeft]:px-0 [&_.slate-gutterLeft]:pb-0',
+      },
     },
     {
-      draggableProps: {
-        classNames: {
-          gutterLeft: 'pt-0 px-0 pb-0',
-        },
-      },
       key: ExcalidrawPlugin.key,
+      draggableProps: {
+        className:
+          '[&_.slate-gutterLeft]:pt-0 [&_.slate-gutterLeft]:px-0 [&_.slate-gutterLeft]:pb-0',
+      },
     },
     {
-      draggableProps: {
-        classNames: {
-          gutterLeft: 'pt-0 px-0 pb-0',
-        },
-      },
       key: TogglePlugin.key,
+      draggableProps: {
+        className:
+          '[&_.slate-gutterLeft]:pt-0 [&_.slate-gutterLeft]:px-0 [&_.slate-gutterLeft]:pb-0',
+      },
     },
     {
-      draggableProps: {
-        classNames: {
-          gutterLeft: 'pt-0 px-0 pb-0',
-        },
-      },
       key: ColumnPlugin.key,
+      draggableProps: {
+        className:
+          '[&_.slate-gutterLeft]:pt-0 [&_.slate-gutterLeft]:px-0 [&_.slate-gutterLeft]:pb-0',
+      },
     },
     {
-      draggableProps: {
-        classNames: {
-          gutterLeft: 'pt-3 px-0 pb-0',
-        },
-      },
       key: PlaceholderPlugin.key,
+      draggableProps: {
+        className:
+          '[&_.slate-gutterLeft]:pt-3 [&_.slate-gutterLeft]:px-0 [&_.slate-gutterLeft]:pb-0',
+      },
     },
     {
-      draggableProps: {
-        classNames: {
-          gutterLeft: 'pt-3 px-0 pb-0',
-        },
-      },
       key: TablePlugin.key,
+      draggableProps: {
+        className:
+          '[&_.slate-gutterLeft]:pt-3 [&_.slate-gutterLeft]:px-0 [&_.slate-gutterLeft]:pb-0',
+      },
     },
   ]);
 };
