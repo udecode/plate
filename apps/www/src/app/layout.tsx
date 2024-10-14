@@ -13,6 +13,7 @@ import { siteConfig } from '@/config/site';
 import { fontSans } from '@/lib/fonts';
 
 import '@/styles/globals.css';
+import { GA } from '@/components/analytics/ga';
 
 export const metadata: Metadata = {
   authors: [
@@ -103,6 +104,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         </Providers>
         <TailwindIndicator />
 
+        <GA />
         <Toaster />
       </body>
     </html>
