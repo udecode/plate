@@ -9,7 +9,10 @@ import {
 } from '@udecode/plate-common';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 
-import { BaseIndentListPlugin } from '../BaseIndentListPlugin';
+import {
+  BaseIndentListPlugin,
+  INDENT_LIST_KEYS,
+} from '../BaseIndentListPlugin';
 
 export interface GetSiblingIndentListOptions<
   N extends ElementOf<E>,
@@ -21,13 +24,14 @@ export interface GetSiblingIndentListOptions<
   getPreviousEntry?: (
     entry: TNodeEntry<ElementOrTextOf<E>>
   ) => TNodeEntry<N> | undefined;
+  breakOnListRestart?: boolean;
   breakOnEqIndentNeqListStyleType?: boolean;
   breakOnLowerIndent?: boolean;
-  breakQuery?: (siblingNode: TNode) => boolean | undefined;
+  breakQuery?: (siblingNode: TNode, currentNode: TNode) => boolean | undefined;
   /** Query to break lookup */
   eqIndent?: boolean;
   /** Query to validate lookup. If false, check the next sibling. */
-  query?: (siblingNode: TNode) => boolean | undefined;
+  query?: (siblingNode: TNode, currentNode: TNode) => boolean | undefined;
 }
 
 /**
@@ -42,6 +46,7 @@ export const getSiblingIndentList = <
   [node, path]: ElementEntryOf<E>,
   {
     breakOnEqIndentNeqListStyleType = true,
+    breakOnListRestart = false,
     breakOnLowerIndent = true,
     breakQuery,
     eqIndent = true,
@@ -65,8 +70,16 @@ export const getSiblingIndentList = <
     const indent = (node as any)[BaseIndentPlugin.key] as number;
     const nextIndent = (nextNode as any)[BaseIndentPlugin.key] as number;
 
+    if (breakQuery?.(nextNode, node)) return;
     if (!isDefined(nextIndent)) return;
-    if (breakQuery?.(nextNode)) return;
+    if (breakOnListRestart) {
+      if (getPreviousEntry && (node as any)[INDENT_LIST_KEYS.listRestart]) {
+        return;
+      }
+      if (getNextEntry && (nextNode as any)[INDENT_LIST_KEYS.listRestart]) {
+        return;
+      }
+    }
     if (breakOnLowerIndent && nextIndent < indent) return;
     if (
       breakOnEqIndentNeqListStyleType &&
@@ -76,7 +89,7 @@ export const getSiblingIndentList = <
     )
       return;
 
-    let valid = !query || query(nextNode as TNode);
+    let valid = !query || query(nextNode, node);
 
     if (valid) {
       valid = !eqIndent || nextIndent === indent;
