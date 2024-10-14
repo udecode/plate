@@ -11,6 +11,7 @@ import { BaseIndentPlugin } from '@udecode/plate-indent';
 import {
   type BaseIndentListConfig,
   BaseIndentListPlugin,
+  INDENT_LIST_KEYS,
 } from './BaseIndentListPlugin';
 import {
   shouldMergeNodesRemovePrevNodeIndentList,
@@ -110,7 +111,52 @@ export const withIndentList: ExtendEditor<BaseIndentListConfig> = ({
       }
     }
 
+    // When inserting a line break, normalize listStart if the node has a listRestart property
+    if (
+      operation.type === 'split_node' &&
+      (operation.properties as any)[BaseIndentListPlugin.key] &&
+      (operation.properties as any)[INDENT_LIST_KEYS.listRestart]
+    ) {
+      const listReStart = (operation.properties as any)[
+        INDENT_LIST_KEYS.listRestart
+      ];
+
+      (operation.properties as any)[INDENT_LIST_KEYS.listStart] =
+        listReStart + 1;
+      (operation.properties as any)[INDENT_LIST_KEYS.listRestart] = undefined;
+
+      const node = getNode<TElement>(editor, path);
+
+      if (node) {
+        const nextNodeEntryBefore = getNextIndentList<TElement>(
+          editor,
+          [node, path],
+          getSiblingIndentListOptions
+        );
+
+        if (nextNodeEntryBefore) {
+          nextIndentListPathRef = createPathRef(editor, nextNodeEntryBefore[1]);
+        }
+      }
+    }
+
     apply(operation);
+
+    if (operation.type === 'split_node' && nextIndentListPathRef) {
+      const nextPath = nextIndentListPathRef.unref();
+
+      if (nextPath) {
+        const nextNode = getNode<TElement>(editor, nextPath);
+
+        if (nextNode) {
+          normalizeIndentListStart<TElement>(
+            editor,
+            [nextNode, nextPath],
+            getSiblingIndentListOptions
+          );
+        }
+      }
+    }
 
     if (operation.type === 'merge_node') {
       const { properties } = operation;
