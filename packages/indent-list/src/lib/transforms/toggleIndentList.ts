@@ -1,6 +1,6 @@
 import {
-  ElementEntryOf,
-  ElementOf,
+  type ElementEntryOf,
+  type ElementOf,
   type SlateEditor,
   type TElement,
   getBlockAbove,
@@ -13,6 +13,7 @@ import {
 } from '@udecode/plate-common';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 
+import type { GetSiblingIndentListOptions } from '../queries';
 import type { IndentListOptions } from './indentList';
 
 import {
@@ -24,7 +25,6 @@ import { setIndentListNodes } from './setIndentListNodes';
 import { setIndentListSiblingNodes } from './setIndentListSiblingNodes';
 import { toggleIndentListSet } from './toggleIndentListSet';
 import { toggleIndentListUnset } from './toggleIndentListUnset';
-import { GetSiblingIndentListOptions } from '../queries';
 
 /** Toggle indent list. */
 export const toggleIndentList = <
@@ -52,8 +52,10 @@ export const toggleIndentList = <
     }
 
     setIndentListSiblingNodes(editor, entry as ElementEntryOf<E>, {
-      ..._getSiblingIndentListOptions,
-      ...getSiblingIndentListOptions,
+      getSiblingIndentListOptions: {
+        ..._getSiblingIndentListOptions,
+        ...getSiblingIndentListOptions,
+      } as GetSiblingIndentListOptions<ElementOf<E>, E>,
       listStyleType,
     });
 
