@@ -122,6 +122,8 @@ export const useFloatingLinkEdit = ({
   useFloatingLinkEscape();
 
   const clickOutsideRef = useOnClickOutside(() => {
+    if (!getOptions().isEditing) return;
+
     api.floatingLink.hide();
   });
 
