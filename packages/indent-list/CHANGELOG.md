@@ -1,5 +1,11 @@
 # @udecode/plate-indent-list
 
+## 39.1.10
+
+### Patch Changes
+
+- [#3632](https://github.com/udecode/plate/pull/3632) by [@natamox](https://github.com/natamox) – Fix the problem that the sequence number does not continue when inserting a line break in the listRestart node.
+
 ## 39.0.0
 
 ## 38.0.10
