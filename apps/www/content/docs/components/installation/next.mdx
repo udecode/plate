@@ -16,24 +16,24 @@ A <Link href="https://github.com/udecode/plate/tree/main/templates/plate-templat
 Run the `init` command to create a new Next.js project or to setup an existing one:
 
 ```bash
-npx @udecode/plate-ui@latest init
+npx shadcx@latest init -u https://platejs.org/r -n plate-ui
 ```
 
-### Configure plate-components.json
+If you want to use <Link href="https://ui.shadcn.com/">shadcn/ui</Link> combined with Plate UI, run instead:
 
-You will be asked a few questions to configure `plate-components.json`:
+```bash
+npx shadcx@latest init
+npx shadcx@latest init -u https://platejs.org/r -n plate-ui
+```
+
+### Configure components.json
+
+You will be asked a few questions to configure `components.json`:
 
 ```txt showLineNumbers
-Which style would you like to use? › Default
 Which color would you like to use as base color? › Slate
 Do you want to use CSS variables for colors? › no / yes
 ```
-
-### Add TooltipProvider
-
-Wrap your editor with `TooltipProvider`. Here's an example:
-
-<ComponentSource src="../../templates/plate-template/src/app/layout.tsx" />
 
 ### Add icons
 
@@ -48,25 +48,13 @@ We use icons from <Link href="https://lucide.dev">Lucide</Link>. You can use any
 You can now start adding components to your project.
 
 ```bash
-npx @udecode/plate-ui@latest add button
+npx shadcx@latest add paragraph-element -r plate-ui
 ```
 
-The command above will add the `Button` component to your project. You can then import it like this:
-
-```tsx {1,6} showLineNumbers
-import { Button } from '@/components/plate-ui/button';
-
-export default function Home() {
-  return (
-    <div>
-      <Button>Click me</Button>
-    </div>
-  );
-}
-```
+The command above will add the `ParagraphElement` component to your project.
 
 ### Register components
 
-To add the components to your plugins, see [Plugin Components](/docs/plugin-components#register-components).
+To add more components to your plugins, see [Plugin Components](/docs/plugin-components#register-components).
 
 </Steps>

@@ -211,10 +211,10 @@ None (CI release issue)
 - [#2537](https://github.com/udecode/plate/pull/2537) by [@haydencarlson](https://github.com/haydencarlson) – `MediaEmbedElement` is now more headless with a smaller bundle size.
   Update the following components:
 
-  - `npx @udecode/plate-ui@latest add media-embed-element`
+  - `npx shadcx@latest add media-embed-element`
     - now uses `react-lite-youtube-embed` for YouTube videos.
     - now uses `react-tweet` for Twitter tweets.
-  - `npx @udecode/plate-ui@latest add image-element`
+  - `npx shadcx@latest add image-element`
 
   Breaking changes:
 
@@ -242,7 +242,7 @@ None (CI release issue)
 - [#2541](https://github.com/udecode/plate/pull/2541) by [@zbeyens](https://github.com/zbeyens) –
   - Package renamed to `@udecode/plate-resizable`.
   - `ResizeHandle` is now fully headless: no style is applied by default. Add your own `Resizable`, `ResizeHandle` components:
-    - `npx @udecode/plate-ui@latest add resizable`
+    - `npx shadcx@latest add resizable`
 
 ## @udecode/plate-table@23.0
 

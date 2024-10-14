@@ -3,47 +3,44 @@ title: components.json
 description: Configuration for your project.
 ---
 
-<Callout className="mt-6">
-WIP – We're migrating to <Link href="https://ui.shadcn.com/docs/components-json">shadcn's components.json</Link>.
-</Callout>
-
-{/* The `plate-components.json` file holds configuration for your project.
+The `components.json` file holds configuration for your project.
 
 We use it to understand how your project is set up and how to generate components customized for your project.
 
 <Callout className="mt-6">
-  Note: The `plate-components.json` file is optional and **only required if you're
+  Note: The `components.json` file is optional and **only required if you're
   using the CLI** to add components to your project. If you're using the copy
   and paste method, you don't need this file.
 </Callout>
 
-You can create a `plate-components.json` file in your project by running the following command:
+You can create a `components.json` file in your project by running the following command:
 
 ```bash
-npx @udecode/plate-ui@latest init
+npx shadcx@latest init
 ```
 
-Or you could extend <Link href="https://ui.shadcn.com/docs/components-json">shadcn's `components.json`</Link> if you don't have any conflict.
+For Plate UI components, you have two options:
 
-See the <Link href="/docs/components/cli">CLI section</Link> for more information.
+1. Initialize both <Link href="https://ui.shadcn.com/">shadcn/ui</Link> and Plate UI:
+   ```bash
+   npx shadcx@latest init
+   npx shadcx@latest init -u https://platejs.org/r -n plate-ui
+   ```
+
+2. Initialize only Plate UI:
+   ```bash
+   npx shadcx@latest init -u https://platejs.org/r -n plate-ui
+   ```
+
+See the <Link href="/docs/cli">CLI section</Link> for more information.
 
 ## $schema
 
-You can see the JSON Schema for `plate-components.json` <Link href="https://platejs.org/schema.json">here</Link>.
+You can see the JSON Schema for `components.json` [here](https://ui.shadcn.com/schema.json).
 
-```json title="plate-components.json"
+```json title="components.json"
 {
-  "$schema": "https://platejs.org/schema.json"
-}
-```
-
-## style
-
-The style for your components. **This cannot be changed after initialization.**
-
-```json title="plate-components.json"
-{
-  "style": "default"
+  "$schema": "https://ui.shadcn.com/schema.json"
 }
 ```
 
@@ -51,13 +48,13 @@ The style for your components. **This cannot be changed after initialization.**
 
 Configuration to help the CLI understand how Tailwind CSS is set up in your project.
 
-See the <Link href="/docs/installation">installation section</Link> for how to set up Tailwind CSS.
+See the <Link href="/docs/components/installation">installation section</Link> for how to set up Tailwind CSS.
 
 ### tailwind.config
 
 Path to where your `tailwind.config.js` file is located.
 
-```json title="plate-components.json"
+```json title="components.json"
 {
   "tailwind": {
     "config": "tailwind.config.js" | "tailwind.config.ts"
@@ -69,10 +66,10 @@ Path to where your `tailwind.config.js` file is located.
 
 Path to the CSS file that imports Tailwind CSS into your project.
 
-```json title="plate-components.json"
+```json title="components.json"
 {
   "tailwind": {
-    "css": "src/styles/globals.css"
+    "css": "styles/global.css"
   }
 }
 ```
@@ -81,10 +78,10 @@ Path to the CSS file that imports Tailwind CSS into your project.
 
 This is used to generate the default color palette for your components. **This cannot be changed after initialization.**
 
-```json title="plate-components.json"
+```json title="components.json"
 {
   "tailwind": {
-    "baseColor": "slate" | "gray" | "neutral" | "stone" | "zinc"
+    "baseColor": "slate" |"gray" | "neutral" | "stone" | "zinc"
   }
 }
 ```
@@ -95,7 +92,7 @@ You can choose between using CSS variables or Tailwind CSS utility classes for t
 
 To use utility classes for theming set `tailwind.cssVariables` to `false`. For CSS variables, set `tailwind.cssVariables` to `true`.
 
-```json title="plate-components.json"
+```json title="components.json"
 {
   "tailwind": {
     "cssVariables": `true` | `false`
@@ -103,7 +100,7 @@ To use utility classes for theming set `tailwind.cssVariables` to `false`. For C
 }
 ```
 
-For more information, see the <Link href="/docs/theming">theming docs</Link>.
+For more information, see the <Link href="/docs/components/theming">theming docs</Link>.
 
 **This cannot be changed after initialization.** To switch between CSS variables and utility classes, you'll have to delete and re-install your components.
 
@@ -111,42 +108,42 @@ For more information, see the <Link href="/docs/theming">theming docs</Link>.
 
 The prefix to use for your Tailwind CSS utility classes. Components will be added with this prefix.
 
-```json title="plate-components.json"
+```json title="components.json"
 {
   "tailwind": {
-    "prefix": "tw-"
+    "prefix": "plate-"
   }
-}
-```
-
-## rsc
-
-Whether or not to enable support for React Server Components.
-
-The CLI automatically adds a `use client` directive to client components when set to `true`.
-
-```json title="plate-components.json"
-{
-  "rsc": `true` | `false`
 }
 ```
 
 ## aliases
 
-The CLI uses these values and the `paths` config from your `tsconfig.json` file to place generated components in the correct location.
+The CLI uses these values and the `paths` config from your `tsconfig.json` or `jsconfig.json` file to place generated components in the correct location.
 
-Path aliases have to be set up in your `tsconfig.json` file.
+Path aliases have to be set up in your `tsconfig.json` or `jsconfig.json` file.
 
 <Callout className="mt-6">
   **Important:** If you're using the `src` directory, make sure it is included
-  under `paths` in your `tsconfig.json` file.
+  under `paths` in your `tsconfig.json` or `jsconfig.json` file.
 </Callout>
+
+### aliases.utils
+
+Import alias for your utility functions.
+
+```json title="components.json"
+{
+  "aliases": {
+    "utils": "@/lib/utils"
+  }
+}
+```
 
 ### aliases.components
 
 Import alias for your components.
 
-```json title="plate-components.json"
+```json title="components.json"
 {
   "aliases": {
     "components": "@/components"
@@ -154,17 +151,77 @@ Import alias for your components.
 }
 ```
 
+### aliases.ui
 
-### aliases.plate-ui
+Import alias for `ui` components.
 
-Import alias for `plate-ui` components. If not defined, uses `aliases.ui`, or `aliases.components`. 
+The CLI will use the `aliases.ui` value to determine where to place your `ui` components. Use this config if you want to customize the installation directory for your `ui` components.
 
-The CLI will use this value to determine where to place your UI components. Use this config if you want to customize the installation directory for your UI components.
-
-```json title="plate-components.json"
+```json title="components.json"
 {
   "aliases": {
-    "plate-ui": "@/components/plate-ui"
+    "ui": "@/components/plate-ui"
   }
 }
-``` */}
+```
+
+### aliases.lib
+
+Import alias for `lib` functions such as `format-date` or `generate-id`.
+
+```json title="components.json"
+{
+  "aliases": {
+    "lib": "@/lib"
+  }
+}
+```
+
+### aliases.hooks
+
+Import alias for `hooks` such as `use-media-query` or `use-toast`.
+
+```json title="components.json"
+{
+  "aliases": {
+    "hooks": "@/hooks"
+  }
+}
+```
+
+## registries
+
+The `registries` section allows you to configure multiple component registries for your project. This is particularly useful when working with Plate UI components alongside the <Link href="https://ui.shadcn.com/">shadcn/ui</Link> components.
+
+```json title="components.json"
+{
+  "registries": {
+    "plate-ui": {
+      "url": "https://platejs.org/r",
+      "style": "default",
+      "aliases": {
+        "ui": "@/components/plate-ui"
+      }
+    }
+  }
+}
+```
+
+### registries.[name].url
+
+The URL of the registry. For Plate UI, this is `https://platejs.org/r`.
+
+### registries.[name].style
+
+The style to use for components from this registry. Plate UI has only one style: `default`.
+
+### registries.[name].aliases
+
+Custom aliases for this registry. This allows you to specify a different location for UI components from this registry.
+
+<Callout>
+  When using multiple registries, you can use the `-r` or `--registry` option with the `add` command to specify which registry to use:
+  ```bash
+  npx shadcx@latest add button -r plate-ui
+  ```
+</Callout>

@@ -1,26 +1,22 @@
-/* eslint-disable no-console */
-import chalk from 'chalk';
+import { highlighter } from "@/src/utils/highlighter"
 
-/**
- * This is a simple logging utility, which wraps console.log and prefixes
- * messages with colored severity levels. This can be used throughout the
- * project to log informative, warning, error, and success messages in a
- * consistent way.
- */
 export const logger = {
-  break() {
-    console.info('');
-  },
   error(...args: unknown[]) {
-    console.info(chalk.red(...args));
-  },
-  info(...args: unknown[]) {
-    console.info(chalk.cyan(...args));
-  },
-  success(...args: unknown[]) {
-    console.info(chalk.green(...args));
+    console.log(highlighter.error(args.join(" ")))
   },
   warn(...args: unknown[]) {
-    console.info(chalk.yellow(...args));
+    console.log(highlighter.warn(args.join(" ")))
   },
-};
+  info(...args: unknown[]) {
+    console.log(highlighter.info(args.join(" ")))
+  },
+  success(...args: unknown[]) {
+    console.log(highlighter.success(args.join(" ")))
+  },
+  log(...args: unknown[]) {
+    console.log(args.join(" "))
+  },
+  break() {
+    console.log("")
+  },
+}
