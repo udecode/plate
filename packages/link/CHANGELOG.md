@@ -1,5 +1,11 @@
 # @udecode/plate-link
 
+## 39.1.9
+
+### Patch Changes
+
+- [#3630](https://github.com/udecode/plate/pull/3630) by [@natamox](https://github.com/natamox) – Fixed the problem that the LinkFloatingToolbar disappears when clicking anywhere when inserting a link
+
 ## 39.1.7
 
 ### Patch Changes
