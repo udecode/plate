@@ -6528,14 +6528,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-docx@npm:39.1.6, @udecode/plate-docx@workspace:^, @udecode/plate-docx@workspace:packages/docx":
+"@udecode/plate-docx@npm:39.1.10, @udecode/plate-docx@workspace:^, @udecode/plate-docx@workspace:packages/docx":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-docx@workspace:packages/docx"
   dependencies:
     "@udecode/plate-common": "workspace:^"
     "@udecode/plate-heading": "npm:39.0.0"
     "@udecode/plate-indent": "npm:39.0.0"
-    "@udecode/plate-indent-list": "npm:39.0.0"
+    "@udecode/plate-indent-list": "npm:39.1.10"
     "@udecode/plate-media": "npm:39.0.0"
     "@udecode/plate-table": "npm:39.1.6"
     validator: "npm:^13.12.0"
@@ -6702,7 +6702,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-indent-list@npm:39.0.0, @udecode/plate-indent-list@workspace:^, @udecode/plate-indent-list@workspace:packages/indent-list":
+"@udecode/plate-indent-list@npm:39.1.10, @udecode/plate-indent-list@workspace:^, @udecode/plate-indent-list@workspace:packages/indent-list":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-indent-list@workspace:packages/indent-list"
   dependencies:
@@ -7195,7 +7195,7 @@ __metadata:
     "@udecode/plate-common": "npm:39.1.8"
     "@udecode/plate-csv": "npm:39.1.6"
     "@udecode/plate-diff": "npm:39.0.0"
-    "@udecode/plate-docx": "npm:39.1.6"
+    "@udecode/plate-docx": "npm:39.1.10"
     "@udecode/plate-find-replace": "npm:39.0.0"
     "@udecode/plate-floating": "npm:39.1.6"
     "@udecode/plate-font": "npm:39.0.0"
@@ -7204,7 +7204,7 @@ __metadata:
     "@udecode/plate-horizontal-rule": "npm:39.0.0"
     "@udecode/plate-html": "npm:39.0.0"
     "@udecode/plate-indent": "npm:39.0.0"
-    "@udecode/plate-indent-list": "npm:39.0.0"
+    "@udecode/plate-indent-list": "npm:39.1.10"
     "@udecode/plate-kbd": "npm:39.0.0"
     "@udecode/plate-layout": "npm:39.0.0"
     "@udecode/plate-line-height": "npm:39.0.0"
