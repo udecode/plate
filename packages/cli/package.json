@@ -43,11 +43,7 @@
     "build:watch": "yarn tsup --watch",
     "clean": "yarn p:clean && rimraf components",
     "dev": "COMPONENTS_REGISTRY_URL=http://localhost:3000 node dist/index.js",
-    "lint": "yarn p:lint",
-    "lint:fix": "yarn p:lint:fix",
     "start": "node dist/index.js",
-    "test": "vitest run",
-    "test:watch": "yarn p:test:watch",
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
