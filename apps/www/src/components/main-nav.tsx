@@ -8,8 +8,7 @@ import { usePathname } from 'next/navigation';
 
 import { siteConfig } from '@/config/site';
 
-import { Logo } from './icons/Logo';
-import { Badge } from './ui/badge';
+import { Icons } from './icons';
 
 export function MainNav() {
   const pathname = usePathname();
@@ -18,12 +17,9 @@ export function MainNav() {
   return (
     <div className="mr-4 hidden md:flex">
       <Link className="mr-4 flex items-center space-x-2 lg:mr-6" href="/">
-        <Logo className="size-6" />
+        <Icons.minus className="size-6" />
         <span className="hidden items-center font-bold lg:inline-flex">
-          {siteConfig.name}
-          <div className="flex w-8 items-center">
-            {isUI && <Badge className="ml-1">UI</Badge>}
-          </div>
+          {siteConfig.name} {isUI && 'UI'}
         </span>
       </Link>
       <nav className="flex items-center gap-4 text-sm lg:gap-6">

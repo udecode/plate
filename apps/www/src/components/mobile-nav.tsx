@@ -10,7 +10,7 @@ import { docsConfig } from '@/config/docs';
 import { siteConfig } from '@/config/site';
 import { Button } from '@/registry/default/plate-ui/button';
 
-import { Logo } from './icons/Logo';
+import { Icons } from './icons';
 import { ScrollArea } from './ui/scroll-area';
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
 
@@ -67,7 +67,7 @@ export function MobileNav() {
           onOpenChange={setOpen}
           href="/"
         >
-          <Logo className="mr-2 size-4" />
+          <Icons.minus className="mr-2 size-4" />
           <span className="font-bold">{siteConfig.name}</span>
         </MobileLink>
         <ScrollArea className="my-4 h-[calc(100vh-8rem)] pb-10 pl-6">

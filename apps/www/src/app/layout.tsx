@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from 'next';
 
 import { cn } from '@udecode/cn';
 
+import { GA } from '@/components/analytics/ga';
 import { Providers } from '@/components/context/providers';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
@@ -13,7 +14,6 @@ import { siteConfig } from '@/config/site';
 import { fontSans } from '@/lib/fonts';
 
 import '@/styles/globals.css';
-import { GA } from '@/components/analytics/ga';
 
 export const metadata: Metadata = {
   authors: [
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   icons: {
     apple: '/apple-touch-icon.png',
     icon: '/favicon.ico',
-    shortcut: '/favicon-16x16.png',
+    shortcut: '/favicon-48x48.png',
   },
   keywords: [
     'Plate',
