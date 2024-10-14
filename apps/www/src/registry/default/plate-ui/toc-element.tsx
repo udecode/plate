@@ -1,9 +1,8 @@
-import { cn } from '@udecode/cn';
+import { cn, withRef } from '@udecode/cn';
 import {
   useTocElement,
   useTocElementState,
 } from '@udecode/plate-heading/react';
-import { withRef } from '@udecode/react-utils';
 import { cva } from 'class-variance-authority';
 
 import { Button } from './button';
