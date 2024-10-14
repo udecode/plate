@@ -1,9 +1,5 @@
 import React from 'react';
-
-import {
-  type EmojiDropdownMenuOptions,
-  useEmojiDropdownMenuState,
-} from '@udecode/plate-emoji/react';
+import { useEmojiDropdownMenuState } from '@udecode/plate-emoji/react';
 
 import { Icons } from '@/components/icons';
 
@@ -11,6 +7,8 @@ import { emojiCategoryIcons, emojiSearchIcons } from './emoji-icons';
 import { EmojiPicker } from './emoji-picker';
 import { EmojiToolbarDropdown } from './emoji-toolbar-dropdown';
 import { ToolbarButton } from './toolbar';
+
+import type { EmojiDropdownMenuOptions } from '@udecode/plate-emoji/react';
 
 type EmojiDropdownMenuProps = {
   options?: EmojiDropdownMenuOptions;

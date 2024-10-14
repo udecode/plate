@@ -1,5 +1,4 @@
 import React from 'react';
-
 import { cn, withRef } from '@udecode/cn';
 import { useFocused, useSelected } from 'slate-react';
 

@@ -1,12 +1,9 @@
 import React from 'react';
-
-import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
-
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { getNodeEntries, isBlock } from '@udecode/plate-common';
 import {
-  ParagraphPlugin,
   focusEditor,
+  ParagraphPlugin,
   useEditorRef,
   useEditorSelector,
 } from '@udecode/plate-common/react';
@@ -25,6 +22,8 @@ import {
   useOpenState,
 } from './dropdown-menu';
 import { ToolbarButton } from './toolbar';
+
+import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 const items = [
   {
@@ -99,7 +98,6 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
   const openState = useOpenState();
 
   const selectedItem =
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
     items.find((item) => item.value === value) ?? defaultItem;
   const { icon: SelectedItemIcon, label: selectedItemLabel } = selectedItem;
 

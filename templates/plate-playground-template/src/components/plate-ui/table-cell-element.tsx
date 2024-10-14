@@ -1,5 +1,4 @@
 import React from 'react';
-
 import { cn, withProps, withRef } from '@udecode/cn';
 import {
   useTableCellElement,

@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-
 import { cn, withRef } from '@udecode/cn';
 import {
   useComposedRef,
@@ -10,7 +9,6 @@ import {
   useEventEditorSelectors,
 } from '@udecode/plate-common/react';
 import {
-  type FloatingToolbarState,
   flip,
   offset,
   useFloatingToolbar,
@@ -19,6 +17,8 @@ import {
 import { LinkPlugin } from '@udecode/plate-link/react';
 
 import { Toolbar } from './toolbar';
+
+import type { FloatingToolbarState } from '@udecode/plate-floating';
 
 export const FloatingToolbar = withRef<
   typeof Toolbar,

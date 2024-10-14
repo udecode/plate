@@ -1,11 +1,4 @@
 import { useMemo } from 'react';
-
-import type { EmojiCategoryList } from '@udecode/plate-emoji';
-import type {
-  IEmojiFloatingLibrary,
-  UseEmojiPickerType,
-} from '@udecode/plate-emoji/react';
-
 import { cn } from '@udecode/cn';
 
 import { Button } from './button';
@@ -15,6 +8,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from './tooltip';
+
+import type { EmojiCategoryList } from '@udecode/plate-emoji';
+import type {
+  IEmojiFloatingLibrary,
+  UseEmojiPickerType,
+} from '@udecode/plate-emoji/react';
 
 export type EmojiPickerNavigationProps = {
   onClick: (id: EmojiCategoryList) => void;
