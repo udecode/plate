@@ -340,6 +340,20 @@ export const ui: Registry = [
     type: 'registry:ui',
   },
   {
+    dependencies: ['@udecode/plate-indent-list'],
+    files: ['plate-ui/indent-todo-toolbar-button.tsx'],
+    name: 'indent-todo-toolbar-button',
+    registryDependencies: ['toolbar'],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@udecode/plate-indent-list'],
+    files: ['plate-ui/indent-todo-marker-component.tsx'],
+    name: 'indent-todo-marker-component',
+    registryDependencies: ['checkbox'],
+    type: 'registry:ui',
+  },
+  {
     dependencies: ['@ariakit/react', '@udecode/plate-combobox'],
     files: ['plate-ui/inline-combobox.tsx'],
     name: 'inline-combobox',

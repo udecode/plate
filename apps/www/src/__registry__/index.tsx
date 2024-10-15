@@ -434,6 +434,28 @@ export const Index: Record<string, any> = {
       subcategory: "undefined",
       chunks: []
     },
+    "indent-todo-toolbar-button": {
+      name: "indent-todo-toolbar-button",
+      type: "registry:ui",
+      registryDependencies: ["toolbar"],
+      files: ["registry/default/plate-ui/indent-todo-toolbar-button.tsx"],
+      component: React.lazy(() => import("@/registry/default/plate-ui/indent-todo-toolbar-button.tsx")),
+      source: "",
+      category: "undefined",
+      subcategory: "undefined",
+      chunks: []
+    },
+    "indent-todo-marker-component": {
+      name: "indent-todo-marker-component",
+      type: "registry:ui",
+      registryDependencies: ["checkbox"],
+      files: ["registry/default/plate-ui/indent-todo-marker-component.tsx"],
+      component: React.lazy(() => import("@/registry/default/plate-ui/indent-todo-marker-component.tsx")),
+      source: "",
+      category: "undefined",
+      subcategory: "undefined",
+      chunks: []
+    },
     "inline-combobox": {
       name: "inline-combobox",
       type: "registry:ui",

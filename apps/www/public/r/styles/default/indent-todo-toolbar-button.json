@@ -1,0 +1,18 @@
+{
+  "dependencies": [
+    "@udecode/plate-indent-list"
+  ],
+  "files": [
+    {
+      "content": "import { withRef } from '@udecode/cn';\nimport {\n  useIndentTodoToolBarButton,\n  useIndentTodoToolBarButtonState,\n} from '@udecode/plate-indent-list/react';\n\nimport { Icons } from '@/components/icons';\n\nimport { ToolbarButton } from './toolbar';\n\nexport const IndentTodoToolbarButton = withRef<typeof ToolbarButton>(\n  (rest, ref) => {\n    const state = useIndentTodoToolBarButtonState({ nodeType: 'todo' });\n    const { props } = useIndentTodoToolBarButton(state);\n\n    return (\n      <ToolbarButton ref={ref} tooltip=\"Todo\" {...props} {...rest}>\n        <Icons.todo />\n      </ToolbarButton>\n    );\n  }\n);\n",
+      "path": "plate-ui/indent-todo-toolbar-button.tsx",
+      "target": "",
+      "type": "registry:ui"
+    }
+  ],
+  "name": "indent-todo-toolbar-button",
+  "registryDependencies": [
+    "toolbar"
+  ],
+  "type": "registry:ui"
+}

@@ -724,6 +724,38 @@
   },
   {
     "dependencies": [
+      "@udecode/plate-indent-list"
+    ],
+    "files": [
+      {
+        "path": "plate-ui/indent-todo-toolbar-button.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "indent-todo-toolbar-button",
+    "registryDependencies": [
+      "toolbar"
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
+      "@udecode/plate-indent-list"
+    ],
+    "files": [
+      {
+        "path": "plate-ui/indent-todo-marker-component.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "indent-todo-marker-component",
+    "registryDependencies": [
+      "checkbox"
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
       "@ariakit/react",
       "@udecode/plate-combobox"
     ],
