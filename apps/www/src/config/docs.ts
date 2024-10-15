@@ -59,7 +59,6 @@ export const docsConfig: DocsConfig = {
         customizerComponents.codeLineElement,
         customizerComponents.codeSyntaxLeaf,
         customizerComponents.colorDropdownMenu,
-        customizerComponents.combobox,
         customizerComponents.command,
         customizerComponents.commentLeaf,
         customizerComponents.commentToolbarButton,
