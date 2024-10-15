@@ -470,7 +470,7 @@ export const docsConfig: DocsConfig = {
         },
         {
           href: '/docs/upload',
-          new: true,
+          label: 'Plus',
           title: 'Upload',
         },
       ],
