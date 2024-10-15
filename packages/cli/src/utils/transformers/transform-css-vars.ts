@@ -1,15 +1,13 @@
-import type * as z from 'zod';
+import type { registryBaseColorSchema } from '@/src/utils/registry/schema';
+import type { Transformer } from '@/src/utils/transformers';
+import type { z } from 'zod';
 
 import { SyntaxKind } from 'ts-morph';
-
-import type { registryBaseColorSchema } from '../registry/schema';
-import type { Transformer } from '../transformers';
 
 export const transformCssVars: Transformer = async ({
   baseColor,
   config,
   sourceFile,
-  // eslint-disable-next-line @typescript-eslint/require-await
 }) => {
   // No transform if using css variables.
   if (config.tailwind?.cssVariables || !baseColor?.inlineColors) {
@@ -18,6 +16,7 @@ export const transformCssVars: Transformer = async ({
 
   // Find jsx attributes with the name className.
   // const openingElements = sourceFile.getDescendantsOfKind(SyntaxKind.JsxElement)
+  // console.log(openingElements)
   // const jsxAttributes = sourceFile
   //   .getDescendantsOfKind(SyntaxKind.JsxAttribute)
   //   .filter((node) => node.getName() === "className")
@@ -40,6 +39,7 @@ export const transformCssVars: Transformer = async ({
         value.replace(/'/g, '').replace(/"/g, ''),
         baseColor.inlineColors
       );
+      // node.replaceWithText(`"${valueWithColorMapping.trim()}"`);
       node.replaceWithText(`'${valueWithColorMapping.trim()}'`);
     }
   });
@@ -63,6 +63,7 @@ export const transformCssVars: Transformer = async ({
 //       if (node?.value?.type) {
 //         if (node.value.type === "StringLiteral") {
 //           node.value.value = applyColorMapping(node.value.value)
+//           console.log(node.value.value)
 //         }
 
 //         if (
@@ -153,7 +154,7 @@ export function applyColorMapping(
 
   for (const className of classNames) {
     const [variant, value, modifier] = splitClassName(className);
-    const prefix = PREFIXES.find((pre) => value?.startsWith(pre));
+    const prefix = PREFIXES.find((prefix) => value?.startsWith(prefix));
 
     if (!prefix) {
       if (!lightMode.has(className)) {

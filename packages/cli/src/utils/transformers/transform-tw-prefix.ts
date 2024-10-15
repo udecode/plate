@@ -1,13 +1,12 @@
-import { SyntaxKind } from 'ts-morph';
+import type { Transformer } from '@/src/utils/transformers';
 
-import type { Transformer } from '../transformers';
+import { SyntaxKind } from 'ts-morph';
 
 import { splitClassName } from './transform-css-vars';
 
 export const transformTwPrefixes: Transformer = async ({
   config,
   sourceFile,
-  // eslint-disable-next-line @typescript-eslint/require-await
 }) => {
   if (!config.tailwind?.prefix) {
     return sourceFile;
@@ -25,7 +24,7 @@ export const transformTwPrefixes: Transformer = async ({
         if (defaultClassNames) {
           defaultClassNames.replaceWithText(
             `'${applyPrefix(
-              defaultClassNames.getText()?.replace(/'/g, '').replace(/"/g, ''),
+              defaultClassNames.getText()?.replace(/"|'/g, ''),
               config.tailwind.prefix
             )}'`
           );
@@ -49,7 +48,7 @@ export const transformTwPrefixes: Transformer = async ({
                 if (classNames) {
                   classNames?.replaceWithText(
                     `'${applyPrefix(
-                      classNames.getText()?.replace(/'/g, '').replace(/"/g, ''),
+                      classNames.getText()?.replace(/"|'/g, ''),
                       config.tailwind.prefix
                     )}'`
                   );
@@ -62,14 +61,14 @@ export const transformTwPrefixes: Transformer = async ({
   // Find all jsx attributes with the name className.
   sourceFile.getDescendantsOfKind(SyntaxKind.JsxAttribute).forEach((node) => {
     if (node.getName() === 'className') {
-      // className='...'
+      // className="..."
       if (node.getInitializer()?.isKind(SyntaxKind.StringLiteral)) {
         const value = node.getInitializer();
 
         if (value) {
           value.replaceWithText(
             `'${applyPrefix(
-              value.getText()?.replace(/'/g, '').replace(/"/g, ''),
+              value.getText()?.replace(/"|'/g, ''),
               config.tailwind.prefix
             )}'`
           );
@@ -95,7 +94,7 @@ export const transformTwPrefixes: Transformer = async ({
                 .forEach((node) => {
                   node.replaceWithText(
                     `'${applyPrefix(
-                      node.getText()?.replace(/'/g, '').replace(/"/g, ''),
+                      node.getText()?.replace(/"|'/g, ''),
                       config.tailwind.prefix
                     )}'`
                   );
@@ -104,7 +103,7 @@ export const transformTwPrefixes: Transformer = async ({
             if (node.isKind(SyntaxKind.StringLiteral)) {
               node.replaceWithText(
                 `'${applyPrefix(
-                  node.getText()?.replace(/'/g, '').replace(/"/g, ''),
+                  node.getText()?.replace(/"|'/g, ''),
                   config.tailwind.prefix
                 )}'`
               );
@@ -135,7 +134,7 @@ export const transformTwPrefixes: Transformer = async ({
                     .forEach((node) => {
                       node.replaceWithText(
                         `'${applyPrefix(
-                          node.getText()?.replace(/'/g, '').replace(/"/g, ''),
+                          node.getText()?.replace(/"|'/g, ''),
                           config.tailwind.prefix
                         )}'`
                       );
@@ -144,7 +143,7 @@ export const transformTwPrefixes: Transformer = async ({
                 if (arg.isKind(SyntaxKind.StringLiteral)) {
                   arg.replaceWithText(
                     `'${applyPrefix(
-                      arg.getText()?.replace(/'/g, '').replace(/"/g, ''),
+                      arg.getText()?.replace(/"|'/g, ''),
                       config.tailwind.prefix
                     )}'`
                   );
@@ -161,7 +160,7 @@ export const transformTwPrefixes: Transformer = async ({
             if (classNames) {
               classNames.replaceWithText(
                 `'${applyPrefix(
-                  classNames.getText()?.replace(/'/g, '').replace(/"/g, ''),
+                  classNames.getText()?.replace(/"|'/g, ''),
                   config.tailwind.prefix
                 )}'`
               );

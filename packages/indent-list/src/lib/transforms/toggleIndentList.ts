@@ -1,4 +1,6 @@
 import {
+  type ElementEntryOf,
+  type ElementOf,
   type SlateEditor,
   type TElement,
   getBlockAbove,
@@ -11,6 +13,7 @@ import {
 } from '@udecode/plate-common';
 import { BaseIndentPlugin } from '@udecode/plate-indent';
 
+import type { GetSiblingIndentListOptions } from '../queries';
 import type { IndentListOptions } from './indentList';
 
 import {
@@ -24,13 +27,17 @@ import { toggleIndentListSet } from './toggleIndentListSet';
 import { toggleIndentListUnset } from './toggleIndentListUnset';
 
 /** Toggle indent list. */
-export const toggleIndentList = <E extends SlateEditor>(
+export const toggleIndentList = <
+  N extends ElementOf<E>,
+  E extends SlateEditor = SlateEditor,
+>(
   editor: E,
-  options: IndentListOptions<E>
+  options: IndentListOptions<E>,
+  getSiblingIndentListOptions?: GetSiblingIndentListOptions<N, E>
 ) => {
   const { listStyleType } = options;
 
-  const { getSiblingIndentListOptions } =
+  const { getSiblingIndentListOptions: _getSiblingIndentListOptions } =
     editor.getOptions(BaseIndentListPlugin);
 
   if (isCollapsed(editor.selection)) {
@@ -44,8 +51,11 @@ export const toggleIndentList = <E extends SlateEditor>(
       return;
     }
 
-    setIndentListSiblingNodes(editor, entry, {
-      getSiblingIndentListOptions,
+    setIndentListSiblingNodes(editor, entry as ElementEntryOf<E>, {
+      getSiblingIndentListOptions: {
+        ..._getSiblingIndentListOptions,
+        ...getSiblingIndentListOptions,
+      } as GetSiblingIndentListOptions<ElementOf<E>, E>,
       listStyleType,
     });
 

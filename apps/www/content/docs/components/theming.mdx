@@ -3,21 +3,17 @@ title: Theming
 description: Using CSS Variables or Tailwind CSS for theming.
 ---
 
-<Callout className="mt-6">
-WIP – We're migrating to <Link href="https://ui.shadcn.com/docs/theming">npx shadcn</Link>.
-</Callout>
-
-{/* You can choose between using CSS variables or Tailwind CSS utility classes for theming.
+You can choose between using CSS variables or Tailwind CSS utility classes for theming.
 
 ## Utility classes
 
 ```tsx /bg-zinc-950/ /text-zinc-50/ /dark:bg-white/ /dark:text-zinc-950/
-<div className="bg-slate-950 dark:bg-white" />
+<div className="bg-zinc-950 dark:bg-white" />
 ```
 
-To use utility classes for theming set `tailwind.cssVariables` to `false` in your `plate-components.json` file.
+To use utility classes for theming set `tailwind.cssVariables` to `false` in your `components.json` file.
 
-```json {8} title="plate-components.json"
+```json {8} title="components.json"
 {
   "style": "default",
   "rsc": true,
@@ -28,7 +24,8 @@ To use utility classes for theming set `tailwind.cssVariables` to `false` in you
     "cssVariables": false
   },
   "aliases": {
-    "components": "@/components"
+    "components": "@/components",
+    "utils": "@/lib/utils"
   }
 }
 ```
@@ -39,9 +36,9 @@ To use utility classes for theming set `tailwind.cssVariables` to `false` in you
 <div className="bg-background text-foreground" />
 ```
 
-To use CSS variables for theming set `tailwind.cssVariables` to `true` in your `plate-components.json` file.
+To use CSS variables for theming set `tailwind.cssVariables` to `true` in your `components.json` file.
 
-```json {8} title="plate-components.json"
+```json {8} title="components.json"
 {
   "style": "default",
   "rsc": true,
@@ -52,7 +49,8 @@ To use CSS variables for theming set `tailwind.cssVariables` to `true` in your `
     "cssVariables": true
   },
   "aliases": {
-    "components": "@/components"
+    "components": "@/components",
+    "utils": "@/lib/utils"
   }
 }
 ```
@@ -82,7 +80,7 @@ The `background` color of the following component will be `hsl(var(--primary))` 
 
 <Callout>
 
-**CSS variables must be defined without color space function**. See the <Link href="https://tailwindcss.com/docs/customizing-colors#using-css-variables">Tailwind CSS documentation</Link> for more information.
+**CSS variables must be defined without color space function**. See the [Tailwind CSS documentation](https://tailwindcss.com/docs/customizing-colors#using-css-variables) for more information.
 
 </Callout>
 
@@ -97,7 +95,7 @@ Here's the list of variables available for customization:
 --foreground: 222.2 47.4% 11.2%;
 ```
 
-```css title="Muted backgrounds such as <CodeLeaf />, <MentionElement /> and <HrElement />"
+```css title="Muted backgrounds such as <TabsList />, <Skeleton /> and <Switch />"
 --muted: 210 40% 96.1%;
 --muted-foreground: 215.4 16.3% 46.9%;
 ```
@@ -107,7 +105,7 @@ Here's the list of variables available for customization:
 --card-foreground: 222.2 47.4% 11.2%;
 ```
 
-```css title="Background color for popovers such as <DropdownMenu />, <Toolbar />, <Popover />"
+```css title="Background color for popovers such as <DropdownMenu />, <HoverCard />, <Popover />"
 --popover: 0 0% 100%;
 --popover-foreground: 222.2 47.4% 11.2%;
 ```
@@ -140,7 +138,7 @@ Here's the list of variables available for customization:
 --destructive-foreground: 210 40% 98%;
 ```
 
-```css title="Used for focus ring, resize handle...etc"
+```css title="Used for focus ring"
 --ring: 215 20.2% 65.1%;
 ```
 
@@ -171,12 +169,12 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        warning: 'hsl(var(--warning))',
-        'warning-foreground': 'hsl(var(--warning-foreground))',
+        warning: "hsl(var(--warning))",
+        "warning-foreground": "hsl(var(--warning-foreground))",
       },
     },
   },
-};
+}
 ```
 
 You can now use the `warning` utility class in your components.
@@ -187,6 +185,6 @@ You can now use the `warning` utility class in your components.
 
 ### Other color formats
 
-We recommend using <Link href="https://www.smashingmagazine.com/2021/07/hsl-colors-css/">HSL colors</Link> for theming but you can also use other color formats if you prefer.
+I recommend using [HSL colors](https://www.smashingmagazine.com/2021/07/hsl-colors-css/) for theming but you can also use other color formats if you prefer.
 
-See the <Link href="https://tailwindcss.com/docs/customizing-colors#using-css-variables">Tailwind CSS documentation</Link> for more information on using `rgb`, `rgba` or `hsl` colors. */}
+See the [Tailwind CSS documentation](https://tailwindcss.com/docs/customizing-colors#using-css-variables) for more information on using `rgb`, `rgba` or `hsl` colors.

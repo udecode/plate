@@ -16,10 +16,15 @@ import { cva } from 'class-variance-authority';
 import { Icons } from '@/components/icons';
 
 export const DropdownMenu = DropdownMenuPrimitive.Root;
+
 export const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
+
 export const DropdownMenuGroup = DropdownMenuPrimitive.Group;
+
 export const DropdownMenuPortal = DropdownMenuPrimitive.Portal;
+
 export const DropdownMenuSub = DropdownMenuPrimitive.Sub;
+
 export const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
 
 export const DropdownMenuSubTrigger = withRef<
@@ -27,7 +32,7 @@ export const DropdownMenuSubTrigger = withRef<
   {
     inset?: boolean;
   }
->(({ className, inset, children, ...props }, ref) => (
+>(({ children, className, inset, ...props }, ref) => (
   <DropdownMenuPrimitive.SubTrigger
     ref={ref}
     className={cn(
@@ -49,17 +54,23 @@ export const DropdownMenuSubContent = withCn(
 );
 
 const DropdownMenuContentVariants = withProps(DropdownMenuPrimitive.Content, {
-  sideOffset: 4,
   className: cn(
     'z-50 min-w-32 overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2'
   ),
+  sideOffset: 4,
 });
 
 export const DropdownMenuContent = withRef<
   typeof DropdownMenuPrimitive.Content
 >(({ ...props }, ref) => (
   <DropdownMenuPrimitive.Portal>
-    <DropdownMenuContentVariants ref={ref} {...props} />
+    <DropdownMenuContentVariants
+      ref={ref}
+      onCloseAutoFocus={(e) => {
+        e.preventDefault();
+      }}
+      {...props}
+    />
   </DropdownMenuPrimitive.Portal>
 ));
 
@@ -85,7 +96,7 @@ export const DropdownMenuItem = withVariants(
 
 export const DropdownMenuCheckboxItem = withRef<
   typeof DropdownMenuPrimitive.CheckboxItem
->(({ className, children, ...props }, ref) => (
+>(({ children, className, ...props }, ref) => (
   <DropdownMenuPrimitive.CheckboxItem
     ref={ref}
     className={cn(
@@ -109,7 +120,7 @@ export const DropdownMenuRadioItem = withRef<
   {
     hideIcon?: boolean;
   }
->(({ className, children, hideIcon, ...props }, ref) => (
+>(({ children, className, hideIcon, ...props }, ref) => (
   <DropdownMenuPrimitive.RadioItem
     ref={ref}
     className={cn(

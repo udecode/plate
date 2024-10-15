@@ -1,93 +1,55 @@
 ---
 title: CLI
-description: Use the CLI to add components to your project.
+description: Use the CLI to add Plate UI components to your project.
 ---
-
-<Callout className="mt-6">
-WIP – We're migrating to <Link href="https://ui.shadcn.com/docs/cli">npx shadcn</Link>.
-</Callout>
-
-{/* <Callout>
-
-**Note:** We are now using the `shadcn` CLI.
-
-</Callout>
 
 ## init
 
-Use the `init` command to initialize configuration and dependencies for a new project.
+Use the `init` command to initialize configuration and dependencies for a new project with Plate UI.
 
 The `init` command installs dependencies, adds the `cn` util, configures `tailwind.config.js`, and CSS variables for the project.
 
 ```bash
-npx @udecode/plate-ui@latest init
+npx shadcx@latest init -u https://platejs.org/r -n plate-ui
+```
+
+If you also want to use <Link href="https://ui.shadcn.com/">shadcn/ui</Link> in your project, you can use the following command:
+
+```bash
+npx shadcx@latest init
+npx shadcx@latest init -u https://platejs.org/r -n plate-ui
 ```
 
 You will be asked a few questions to configure `components.json`:
 
 ```txt showLineNumbers
-Which style would you like to use? › Default
 Which color would you like to use as base color? › Slate
 Do you want to use CSS variables for colors? › yes
-```
-
-To have the same look than Plate UI, you should:
-
-- Pick "Default" for the style. Plate does not have the "New York" style.
-- Pick "Slate" for the base color.
-- Pick "Yes" for using CSS variables.
-
-You should get something like this:
-
-```txt
-npx shadcn@latest init
-Need to install the following packages:
-shadcn@2.0.7
-Ok to proceed? (y) y
-
-✔ Preflight checks.
-✔ Verifying framework. Found Next.js.
-✔ Validating Tailwind CSS.
-✔ Validating import alias.
-✔ Which style would you like to use? › Default
-✔ Which color would you like to use as the base color? › Slate
-✔ Would you like to use CSS variables for theming? … no / yes
-✔ Writing components.json.
-✔ Checking registry.
-✔ Updating tailwind.config.js
-✔ Updating src/styles/globals.css
-✔ Installing dependencies.
-✔ Created 1 file:
-  - src/lib/utils.ts
-
-Success! Project initialization completed.
-You may now add components.
 ```
 
 ### Options
 
 ```txt
-Usage: shadcn init [options] [components...]
+Usage: shadcx init [options]
 
 initialize your project and install dependencies
 
-Arguments:
-  components         the components to add or a url to the component.
-
 Options:
-  -d, --defaults    use default values i.e new-york, zinc and css variables. (default: false)
+  -d, --defaults    use default values i.e slate and css variables. (default: false)
   -f, --force       force overwrite of existing components.json. (default: false)
   -y, --yes         skip confirmation prompt. (default: false)
   -c, --cwd <cwd>   the working directory. defaults to the current directory.
-  -h, --help       display help for command
+  -u, --url <url>   custom registry URL. (default: https://platejs.org/r)
+  -n, --name <name> registry name. (default: plate-ui)
+  -h, --help        display help for command
 ```
 
 ## add
 
-Use the `add` command to add components and dependencies to your project.
+Use the `add` command to add Plate UI components and dependencies to your project.
 
 ```bash
-npx @udecode/plate-ui@latest add [component]
+npx shadcx@latest add [component]
 ```
 
 You will be presented with a list of components to choose from:
@@ -107,73 +69,63 @@ Enter to submit.
 ◯  combobox
 ```
 
-<Callout className="my-4">
-  Pick the components you want in our <Link href="/?builder=true" target="_blank">interactive builder</Link> to generate the bulk add command to run.
-</Callout>
-
 ### Options
 
 ```txt
-Usage: @udecode/plate-ui add [options] [components...]
+Usage: shadcx add [options] [components...]
 
 add a component to your project
 
 Arguments:
-  components         the components to add
+  components         the components to add.
 
 Options:
-  -y, --yes          skip confirmation prompt. (default: false)
-  -o, --overwrite    overwrite existing files. (default: false)
-  -c, --cwd <cwd>    the working directory. defaults to the current directory.
-  -p, --path <path>  the path to add the component to.
-  -h, --help         display help for command
+  -y, --yes         skip confirmation prompt. (default: false)
+  -o, --overwrite   overwrite existing files. (default: false)
+  -c, --cwd <cwd>   the working directory. defaults to the current directory.
+  -p, --path <path> the path to add the component to.
+  -h, --help        display help for command
 ```
 
-## diff (experimental)
+## Monorepo
 
-You can use the diff command to check for updates against the registry.
-
-Run the following command to get a list of components that have updates available:
+In a monorepo, you can specify the path to your workspace with the `-c` or `--cwd` option.
 
 ```bash
-npx @udecode/plate-ui@latest diff
+npx shadcx@latest init -u https://platejs.org/r -n plate-ui -c ./apps/www
 ```
 
-```txt
-The following components have updates available:
-- blockquote-element
-  - /path/to/my-app/components/ui/blockquote-element.tsx
-- button
-  - /path/to/my-app/components/ui/button.tsx
-- combobox
-  - /path/to/my-app/components/ui/combobox.ts
-```
-
-Then run `diff [component]` to see the changes:
+or
 
 ```bash
-npx @udecode/plate-ui@latest diff blockquote-element
+npx shadcx@latest add align-dropdown-menu -c ./apps/www
 ```
 
-```diff /pl-6/
-      ref={ref}
-    - className={cn('my-1 border-l-2 pl-4 italic', className)}
-    + className={cn('my-1 border-l-2 pl-6 italic', className)}
-      {...props}
+## Example components.json
+
+Here's an example `components.json` file configured for <Link href="https://ui.shadcn.com/">shadcn/ui</Link> and Plate UI:
+
+```json
+{
+  "style": "default",
+  "tailwind": {
+    "config": "tailwind.config.js",
+    "css": "app/globals.css",
+    "baseColor": "slate",
+    "cssVariables": true
+  },
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils"
+  },
+  "registries": {
+    "plate-ui": {
+      "url": "https://platejs.org/r",
+      "style": "default",
+      "aliases": {
+        "ui": "@/components/plate-ui"
+      }
+    }
+  }
+}
 ```
-
-### Options
-
-```txt
-Usage: @udecode/plate-ui diff [options] [component]
-
-check for updates against the registry
-
-Arguments:
-  component        the component name
-
-Options:
-  -y, --yes        skip confirmation prompt. (default: false)
-  -c, --cwd <cwd>  the working directory. defaults to the current directory.
-  -h, --help       display help for command
-``` */}

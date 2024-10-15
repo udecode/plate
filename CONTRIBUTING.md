@@ -111,7 +111,7 @@ When adding or modifying components, please ensure that you update the documenta
 
 ## CLI
 
-The `@udecode/plate-ui` package is a CLI for adding components to your project. You can find the documentation for the CLI [here](https://platejs.org/docs/components/cli).
+The `shadcx` package is a CLI for adding components to your project. You can find the documentation for the CLI [here](https://platejs.org/docs/components/cli).
 
 Any changes to the CLI should be made in the `packages/plate-ui` directory. If you can, it would be great if you could add tests for your changes.
 

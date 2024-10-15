@@ -42,14 +42,14 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
   return (
     <DropdownMenu modal={false} {...openState} {...props}>
       <DropdownMenuTrigger asChild>
-        <ToolbarButton isDropdown pressed={openState.open} tooltip="Table">
+        <ToolbarButton pressed={openState.open} tooltip="Table" isDropdown>
           <Icons.table />
         </ToolbarButton>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        align="start"
         className="flex w-[180px] min-w-0 flex-col gap-0.5"
+        align="start"
       >
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
@@ -60,7 +60,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
             <DropdownMenuItem
               className="min-w-[180px]"
               onSelect={() => {
-                insertTable(editor);
+                insertTable(editor, {}, { select: true });
                 focusEditor(editor);
               }}
             >

@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from 'next';
 
 import { cn } from '@udecode/cn';
 
+import { GA } from '@/components/analytics/ga';
 import { Providers } from '@/components/context/providers';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
   icons: {
     apple: '/apple-touch-icon.png',
     icon: '/favicon.ico',
-    shortcut: '/favicon-16x16.png',
+    shortcut: '/favicon-48x48.png',
   },
   keywords: [
     'Plate',
@@ -103,6 +104,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         </Providers>
         <TailwindIndicator />
 
+        <GA />
         <Toaster />
       </body>
     </html>

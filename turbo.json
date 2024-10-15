@@ -11,6 +11,7 @@
       "env": [
         "COMPONENTS_BASE_URL",
         "NEXT_PUBLIC_APP_URL",
+        "NEXT_PUBLIC_GA_MEASUREMENT_ID",
         "NODE_ENV",
         "npm_config_user_agent",
         "https_proxy"

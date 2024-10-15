@@ -1,8 +1,7 @@
+import type { Transformer } from '@/src/utils/transformers';
+
 import { SyntaxKind } from 'ts-morph';
 
-import type { Transformer } from '.';
-
-// eslint-disable-next-line @typescript-eslint/require-await
 export const transformRsc: Transformer = async ({ config, sourceFile }) => {
   if (config.rsc) {
     return sourceFile;
@@ -11,7 +10,10 @@ export const transformRsc: Transformer = async ({ config, sourceFile }) => {
   // Remove "use client" from the top of the file.
   const first = sourceFile.getFirstChildByKind(SyntaxKind.ExpressionStatement);
 
-  if (first?.getText() === `'use client'`) {
+  if (
+    first?.getText() === `"use client"` ||
+    first?.getText() === `'use client'`
+  ) {
     first.remove();
   }
 

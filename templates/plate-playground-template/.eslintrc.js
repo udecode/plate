@@ -14,8 +14,14 @@ module.exports = {
     '@next/next/no-html-link-for-pages': 'off',
     'prettier/prettier': ['warn', { ...prettierConfig }],
     'react/jsx-key': 'off',
+    'react/display-name': 'off',
     'tailwindcss/classnames-order': 'warn',
-    'tailwindcss/no-custom-classname': 'error',
+    'tailwindcss/no-custom-classname': [
+      'error',
+      {
+        whitelist: ['ignore-click-outside/toolbar'],
+      },
+    ],
     'unused-imports/no-unused-imports': 'warn',
     'unused-imports/no-unused-vars': [
       'warn',

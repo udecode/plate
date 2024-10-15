@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-link",
-  "version": "39.1.7",
+  "version": "39.1.9",
   "description": "Link plugin for Plate",
   "keywords": [
     "plate",
@@ -57,7 +57,7 @@
     "@udecode/plate-common": "workspace:^"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=39.1.4",
+    "@udecode/plate-common": ">=39.1.8",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.103.0",
