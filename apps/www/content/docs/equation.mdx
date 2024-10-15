@@ -1,52 +1,77 @@
 ---
 title: Equation
-description: allows you to select from a list of AI commands. 
+description: Enables the insertion and rendering of LaTeX equations in your editor.
 docs:
-  - route: https://pro.platejs.org/docs/components/equation
-    title: Equation
+  - route: https://pro.platejs.org/docs/components/equation-element
+    title: Equation Element
+  - route: https://pro.platejs.org/docs/components/inline-equation-element
+    title: Inline Equation Element
+  - route: https://pro.platejs.org/docs/components/inline-equation-toolbar-button
+    title: Inline Equation Toolbar Button
 ---
 
-<ComponentPreviewPro name="pro-iframe-demo" id="pro-equation" component="equation" />
+<ComponentPreviewPro
+  name="pro-iframe-demo"
+  id="pro-equation"
+  component="equation"
+/>
 
 <PackageInfo>
 
 ## Features
 
-- Allows you to insert equations into your editor.
+- Allows you to insert inline LaTeX equations (e.g., `$E=mc^2$`) and block equations (e.g., `$$\int_a^b f(x) dx$$`) into your editor.
+- Renders both inline and block equations using KaTeX for high-quality mathematical typesetting.
+- Supports a wide range of LaTeX commands and symbols for complex mathematical expressions.
 
 </PackageInfo>
 
 ## Installation
 
 ```bash
-npm install @udecode/plate-ai
+npm install @udecode/plate-math
 ```
 
 ## Usage
 
 ```tsx
 // ...
-import { AIPlugin } from '@/registry/default/plate-pro/ai/ai/src/react/AIPlugin';
+import { InlineEquationPlugin, EquationPlugin } from '@udecode/plate-math';
 
 const editor = usePlateEditor({
-  id: 'ai-demo',
+  id: 'equation-demo',
   override: {
-    components: PlateUI,
+    components: {
+      ...otherComponents,
+      [EquationPlugin.key]: EquationElement,
+      [InlineEquationPlugin.key]: InlineEquationElement,
+    },
   },
-  plugins: [
-    ...commonPlugins,
-    SelectionOverlayPlugin,
-    MarkdownPlugin.configure({ options: { indentList: true } }),
-    AIPlugin.configure({
-      options: {
-        scrollContainerSelector: '#scroll_container',
-      },
-      render: { aboveEditable: AIMenu },
-    }),
-  ],
-  value: aiValue,
+  plugins: [...commonPlugins, InlineEquationPlugin, EquationPlugin],
+  value: equationValue,
 });
 ```
+## Transforms
 
-## API
+### editor.tf.equation.insertEquation
 
+Inserts a empty block equation.
+<APIParameters>
+  <APIItem name="options" type="InsertNodesOptions">
+    Options for the insert nodes transform.
+  </APIItem>
+</APIParameters>
+
+
+
+### editor.tf.inline_equation.insertInlineEquation
+
+Inserts an inline equation.
+<APIParameters>
+  <APIItem name="texExpression" type="string" optional>
+    The LaTeX expression to insert. If not provided, an empty equation will be inserted.
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions" optional>
+    Options for the insert nodes transform.
+  </APIItem>
+</APIParameters>

@@ -327,8 +327,7 @@ export const docsConfig: DocsConfig = {
         },
         {
           href: '/docs/equation',
-          label: 'WIP',
-          new: true,
+          label: 'Plus',
           title: 'Equation',
         },
         {
