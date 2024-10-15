@@ -15,6 +15,8 @@ export interface TEquationElement extends TElement {
 export const BaseEquationPlugin = createSlatePlugin({
   key: 'equation',
   node: { isElement: true, isVoid: true },
-}).extendTransforms(({ editor }) => ({
-  insertEquation: bindFirst(insertEquation, editor),
+}).extendEditorTransforms(({ editor }) => ({
+  insert: {
+    equation: bindFirst(insertEquation, editor),
+  },
 }));
