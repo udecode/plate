@@ -7,6 +7,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import type { ValueId } from '@/config/customizer-plugins';
 
 import { cn } from '@udecode/cn';
+import { AIPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
@@ -57,7 +58,10 @@ import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { PlaywrightPlugin } from '@udecode/plate-playwright';
 import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import {
+  BlockMenuPlugin,
+  BlockSelectionPlugin,
+} from '@udecode/plate-selection/react';
 import { SlashPlugin } from '@udecode/plate-slash-command/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
@@ -81,6 +85,7 @@ import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
 import { commentsData, usersData } from '@/plate/demo/values/commentsValue';
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
+import { BlockContextMenu } from '@/registry/default/plate-ui/block-context-menu';
 import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
 import {
   CursorOverlay,
@@ -165,34 +170,8 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
           },
         }),
         SelectionOverlayPlugin,
-        // AIPlugin.configure({
-        //   options: {
-        //     createAIEditor: createAIEditor,
-        //     fetchStream: async ({ abortSignal, prompt, system }) => {
-        //       const response = await fetch(
-        //         'https://pro.platejs.org/api/ai/command',
-        //         {
-        //           body: JSON.stringify({ prompt, system }),
-        //           headers: {
-        //             'Content-Type': 'application/json',
-        //           },
-        //           method: 'POST',
-        //           signal: abortSignal.signal,
-        //         }
-        //       ).catch((error) => {
-        //         console.error(error);
-        //       });
 
-        //       if (!response || !response.body) {
-        //         throw new Error('Response or response body is null or abort');
-        //       }
-
-        //       return response.body;
-        //     },
-        //     scrollContainerSelector: `#${scrollSelector}`,
-        //   },
-        //   render: { aboveEditable: AIMenu },
-        // }),
+        AIPlugin,
         TodoListPlugin,
         TogglePlugin,
         ExcalidrawPlugin,
@@ -306,9 +285,22 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
               selectables: [`#${scrollSelector} .slate-selectable`],
               selectionAreaClass: 'slate-selection-area',
             },
-            enableContextMenu: false,
+            enableContextMenu: true,
           },
         }),
+        BlockMenuPlugin.configure({
+          render: { aboveEditable: BlockContextMenu },
+        }).extend(({ api }) => ({
+          handlers: {
+            onMouseDown: ({ event, getOptions }) => {
+              if (event.button === 0 && getOptions().openId) {
+                // event.preventDefault();
+                api.blockMenu.hide();
+              }
+              if (event.button === 2) event.preventDefault();
+            },
+          },
+        })),
         DndPlugin.configure({ options: { enableScroller: true } }),
         EmojiPlugin,
         exitBreakPlugin,
