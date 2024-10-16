@@ -1,8 +1,7 @@
 import React from 'react';
 import { cn, withRef } from '@udecode/cn';
-import { getHandler } from '@udecode/plate-common';
+import { getHandler, IS_APPLE } from '@udecode/plate-common';
 import { useElement } from '@udecode/plate-common/react';
-import { IS_APPLE } from '@udecode/utils';
 import { useFocused, useSelected } from 'slate-react';
 
 import { useMounted } from '@/hooks/use-mounted';
