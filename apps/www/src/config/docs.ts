@@ -374,17 +374,13 @@ export const docsConfig: DocsConfig = {
         {
           href: '/docs/media',
           label: 'Element',
+          new: true,
           title: 'Media',
         },
         {
           href: '/docs/mention',
           label: 'Element',
           title: 'Mention',
-        },
-        {
-          href: '/docs/media-placeholder',
-          label: 'New',
-          title: 'Media Placeholder',
         },
         {
           href: '/docs/reset-node',
