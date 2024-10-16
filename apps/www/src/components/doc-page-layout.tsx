@@ -18,6 +18,12 @@ interface DocPageLayoutProps {
   isUI: boolean;
   toc: any; // Replace 'any' with the actual type of your table of contents
 }
+const getItemVariant = (item: any) => {
+  if (item.route?.includes('pro.platejs.org')) return 'plus';
+  if (item.route?.includes('components')) return 'default';
+
+  return 'secondary';
+};
 
 export function DocPageLayout({
   children,
@@ -72,9 +78,7 @@ export function DocPageLayout({
                 key={item.route}
                 className={cn(
                   badgeVariants({
-                    variant: item.route?.includes('components')
-                      ? 'default'
-                      : 'secondary',
+                    variant: getItemVariant(item),
                   })
                 )}
                 href={item.route as any}

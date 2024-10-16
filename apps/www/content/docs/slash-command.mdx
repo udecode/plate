@@ -4,6 +4,10 @@ description: Allows you to insert various elements into your editor using a slas
 docs:
   - route: components/slash-input-element
     title: Slash Input Element
+  - route: https://pro.platejs.org/docs/components/slash-input-element
+    title: Slash Input Element
+
+
 ---
 
 <ComponentPreview name="playground-demo" id="slashCommand" />
@@ -16,7 +20,6 @@ docs:
 - Customizable menu options and styles
 
 </PackageInfo>
-
 
 ## Installation
 
@@ -62,24 +65,27 @@ interface SlashCommandRule {
 Let's explore the configuration options for each slash command:
 
 - `icon`: React component
+
   - Renders the icon displayed before the slash command option
 
 - `onSelect`: Function(editor: PlateEditor) => void
+
   - Called when the option is selected
   - Receives the `editor` as an argument for performing actions
 
 - `value`: string
+
   - Display text for the slash command option in the menu
   - Used for filtering when entering text
 
 - `focusEditor`: boolean (optional, default: true)
+
   - Will explain this option in the next section
 
 - `keywords`: string[] (optional)
   - Additional search terms for finding this option
 
 These configuration options provide flexibility in customizing the behavior and appearance of slash commands in your editor.
-
 
 ## Focusing outside the editor
 
@@ -94,41 +100,43 @@ However, in certain scenarios, we may need to shift focus outside the editor to 
 
 In such cases, we can set the `focusEditor` option to `false` for the specific slash command. This prevents the automatic refocusing of the editor, allowing us to manually control focus as needed.
 
-Here is an example: 
+Here is an example:
+
 ```ts
 const rules: SlashCommandRule[] = [
-   ...otherSlashCommands,
-   {
-      focusEditor: false,
-      icon: Icons.ai,
-      keywords: ['ai', 'generate', 'help', 'chat'],
-      value: 'AI',
-      onSelect: (editor) => {
-        const nodeEntry = getAncestorNode(editor)!;
-        const dom = toDOMNode(editor, nodeEntry[0])!;
+  ...otherSlashCommands,
+  {
+    focusEditor: false,
+    icon: Icons.ai,
+    keywords: ['ai', 'generate', 'help', 'chat'],
+    value: 'AI',
+    onSelect: (editor) => {
+      const nodeEntry = getAncestorNode(editor)!;
+      const dom = toDOMNode(editor, nodeEntry[0])!;
 
-        //We have encapsulated the logic for focusing the input in the show API
-        editor.getApi(AIPlugin).ai.show(editor.id, dom, nodeEntry);
+      //We have encapsulated the logic for focusing the input in the show API
+      editor.getApi(AIPlugin).ai.show(editor.id, dom, nodeEntry);
 
-        editor.setOptions(AIPlugin, {
-          aiState: 'idle',
-          menuType: 'selection',
-        });
+      editor.setOptions(AIPlugin, {
+        aiState: 'idle',
+        menuType: 'selection',
+      });
 
-        editor.getApi(AIPlugin).ai.show(editor.id, dom, nodeEntry);
+      editor.getApi(AIPlugin).ai.show(editor.id, dom, nodeEntry);
 
-        setTimeout(() => {
-          editor
-            .getApi(BlockSelectionPlugin)
-            .blockSelection.addSelectedRow(nodeEntry[0].id as string);
-        }, 0);
-      },
-    }
+      setTimeout(() => {
+        editor
+          .getApi(BlockSelectionPlugin)
+          .blockSelection.addSelectedRow(nodeEntry[0].id as string);
+      }, 0);
+    },
+  },
 ];
 ```
 
 ## Plate Plus
-We offer an enhanced user interface design and a more comprehensive set of options, including premium plugins such as Math Callout and Media Upload. 
+
+We offer an enhanced user interface design and a more comprehensive set of options, including premium plugins such as Math Callout and Media Upload.
 This provides a more robust and feature-rich editing experience for users who require advanced functionality.
 
 Some key improvements in Plate Plus include:
@@ -140,11 +148,9 @@ Some key improvements in Plate Plus include:
 - Support grouping and carefully selected keyword.
 - Trigger slash menu by click the puls button on the left of the paragraph.
 
-
 You can try typing /``` to quickly insert a code block.
 
 Feel free to experiment with different commands to see how the slash menu enhances your editing experience!
-
 
 <ComponentPreviewPro
   name="pro-iframe-demo"

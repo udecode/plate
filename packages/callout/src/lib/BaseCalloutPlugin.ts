@@ -22,6 +22,6 @@ export type CalloutColor = {
 export const BaseCalloutPlugin = createSlatePlugin({
   key: 'callout',
   node: { isElement: true },
-}).extendTransforms(({ editor }) => ({
-  insert: bindFirst(insertCallout, editor),
+}).extendEditorTransforms(({ editor }) => ({
+  insert: { callout: bindFirst(insertCallout, editor) },
 }));

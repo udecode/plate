@@ -176,22 +176,18 @@ export const docsConfig: DocsConfig = {
       items: [
         {
           href: '/docs/plugin',
-          label: 'New',
           title: 'Plugin Configuration',
         },
         {
           href: '/docs/plugin-methods',
-          label: 'New',
           title: 'Plugin Methods',
         },
         {
           href: '/docs/plugin-shortcuts',
-          label: 'New',
           title: 'Plugin Shortcuts',
         },
         {
           href: '/docs/plugin-context',
-          label: 'New',
           title: 'Plugin Context',
         },
         {
@@ -201,37 +197,30 @@ export const docsConfig: DocsConfig = {
         },
         {
           href: '/docs/editor',
-          label: 'New',
           title: 'Editor Configuration',
         },
         {
           href: '/docs/editor-methods',
-          label: 'New',
           title: 'Editor Methods',
         },
         {
           href: '/docs/controlled',
-          label: 'New',
           title: 'Controlled Value',
         },
         {
           href: '/docs/html',
-          label: 'New',
           title: 'HTML',
         },
         {
           href: '/docs/debugging',
-          label: 'New',
           title: 'Debugging',
         },
         {
           href: '/docs/unit-testing',
-          label: 'New',
           title: 'Unit Testing',
         },
         {
           href: '/docs/playwright',
-          label: 'New',
           title: 'Playwright Testing',
         },
       ],
@@ -259,7 +248,7 @@ export const docsConfig: DocsConfig = {
         },
         {
           href: '/docs/block-menu',
-          label: 'Plus',
+          label: 'New',
           title: 'Block Menu',
         },
         {
@@ -278,7 +267,7 @@ export const docsConfig: DocsConfig = {
         },
         {
           href: '/docs/callout',
-          label: 'Plus',
+          label: 'New',
           title: 'Callout',
         },
         {
@@ -326,7 +315,7 @@ export const docsConfig: DocsConfig = {
         },
         {
           href: '/docs/equation',
-          label: 'Plus',
+          label: 'New',
           title: 'Equation',
         },
         {
@@ -394,7 +383,7 @@ export const docsConfig: DocsConfig = {
         },
         {
           href: '/docs/media-placeholder',
-          label: 'Plus',
+          label: 'New',
           title: 'Media Placeholder',
         },
         {
@@ -464,7 +453,6 @@ export const docsConfig: DocsConfig = {
         },
         {
           href: '/docs/examples/server',
-          label: 'New',
           title: 'Server-Side',
         },
         {
