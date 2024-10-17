@@ -19,13 +19,16 @@ interface DocPageLayoutProps {
   toc: any; // Replace 'any' with the actual type of your table of contents
 }
 const getItemVariant = (item: any) => {
-  let allowedHosts = ['pro.platejs.org'];
+  const allowedHosts = ['pro.platejs.org'];
+
   try {
-    let url = new URL(item.route);
+    const url = new URL(item.route);
+
     if (allowedHosts.includes(url.hostname)) return 'plus';
-  } catch (e) {
-    // Handle invalid URL
+  } catch (error) {
+    console.error('Invalid URL:', item.route, error);
   }
+
   if (item.route?.includes('components')) return 'default';
 
   return 'secondary';
