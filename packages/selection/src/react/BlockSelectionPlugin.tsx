@@ -39,6 +39,7 @@ import { duplicateBlockSelectionNodes } from './transforms/duplicateBlockSelecti
 import { removeBlockSelectionNodes } from './transforms/removeBlockSelectionNodes';
 import { selectBlockSelectionNodes } from './transforms/selectBlockSelectionNodes';
 import {
+  setBlockSelectionIndent,
   setBlockSelectionNodes,
   setBlockSelectionTexts,
 } from './transforms/setBlockSelectionNodes';
@@ -371,6 +372,7 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
     duplicate: bindFirst(duplicateBlockSelectionNodes, editor),
     removeNodes: bindFirst(removeBlockSelectionNodes, editor),
     select: bindFirst(selectBlockSelectionNodes, editor),
+    setIndent: bindFirst(setBlockSelectionIndent, editor),
     setNodes: bindFirst(setBlockSelectionNodes, editor),
     setTexts: bindFirst(setBlockSelectionTexts, editor),
   }));

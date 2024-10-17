@@ -69,6 +69,8 @@ export type AIPluginConfig = ExtendConfig<
   }
 >;
 
+export const INPUT_ELEMENT_ID = '__potion_ai_menu_searchRef';
+
 export const AIPlugin = toTPlatePlugin<AIPluginConfig>(BaseAIPlugin, {
   options: {
     abortController: null,
@@ -110,7 +112,7 @@ export const AIPlugin = toTPlatePlugin<AIPluginConfig>(BaseAIPlugin, {
 
       setTimeout(() => {
         const searchInput = document.querySelector(
-          '#__potion_ai_menu_searchRef'
+          `#${INPUT_ELEMENT_ID}`
         ) as HTMLInputElement;
 
         if (store) {
@@ -141,7 +143,11 @@ export const AIPlugin = toTPlatePlugin<AIPluginConfig>(BaseAIPlugin, {
       },
       hide: () => {
         setOption('openEditorId', null);
-        getOptions().store?.setAnchorElement(null);
+        setTimeout(() => {
+          getOptions().store?.setAnchorElement(null);
+          // Because sometimes we need transition animations, 200 milliseconds is the assumed duration of the animation.
+          // otherwise the menu will be lose its position during the animation
+        }, 200);
       },
       show: (editorId: string, dom: HTMLElement, nodeEntry: NodeEntry) => {
         const { store } = getOptions();
@@ -158,7 +164,6 @@ export const AIPlugin = toTPlatePlugin<AIPluginConfig>(BaseAIPlugin, {
   .extend(({ api, getOptions, setOptions }) => ({
     options: {
       onOpenAI(editor, [node, path]) {
-        // NOTE: toDOMNode is dependent on the React make it to an options if want to support other frame.
         const dom = toDOMNode(editor, node);
 
         if (!dom) return;
@@ -179,6 +184,7 @@ export const AIPlugin = toTPlatePlugin<AIPluginConfig>(BaseAIPlugin, {
           const distanceToBottom = windowHeight - rect.bottom;
 
           // 261 is height of the menu.
+          // TODO: make it dynamic
           if (distanceToBottom < 261) {
             // TODO: scroll animation
             scrollContainer.scrollTop += 261 - distanceToBottom;

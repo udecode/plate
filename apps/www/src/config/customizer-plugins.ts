@@ -1,3 +1,4 @@
+import { AIPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
@@ -17,6 +18,7 @@ import {
   FontBackgroundColorPlugin,
   FontSizePlugin,
 } from '@udecode/plate-font/react';
+import { TocPlugin } from '@udecode/plate-heading/react';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
@@ -33,12 +35,17 @@ import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { ResetNodePlugin } from '@udecode/plate-reset-node/react';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import { SlashPlugin } from '@udecode/plate-slash-command/react';
 import { TabbablePlugin } from '@udecode/plate-tabbable/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
+import { aiValue } from '@/lib/plate/demo/values/aiValue';
 import { columnValue } from '@/lib/plate/demo/values/columnValue';
+import { copilotValue } from '@/lib/plate/demo/values/copilotValue';
+import { slashCommandValue } from '@/lib/plate/demo/values/slahMenuValue';
+import { tocValue } from '@/lib/plate/demo/values/tocValue';
 import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
 import { alignValue } from '@/plate/demo/values/alignValue';
 import { autoformatValue } from '@/plate/demo/values/autoformatValue';
@@ -79,6 +86,13 @@ export type ValueId = keyof typeof customizerPlugins | 'tableMerge';
 
 // cmdk needs lowercase
 export const customizerPlugins = {
+  ai: {
+    id: 'ai',
+    label: 'AI',
+    plugins: [AIPlugin.key],
+    route: '/docs/ai',
+    value: aiValue,
+  },
   align: {
     id: 'align',
     label: 'Align',
@@ -139,6 +153,13 @@ export const customizerPlugins = {
     plugins: [CommentsPlugin.key],
     route: '/docs/comments',
     value: commentsValue,
+  },
+  copilot: {
+    id: 'copilot',
+    label: 'Copilot',
+    plugins: [CopilotPlugin.key],
+    route: '/docs/copilot',
+    value: copilotValue,
   },
   csv: {
     id: 'csv',
@@ -320,6 +341,13 @@ export const customizerPlugins = {
     route: '/docs/single-line',
     value: singleLineValue,
   },
+  slashCommand: {
+    id: 'slashCommand',
+    label: 'Slash Command',
+    plugins: [SlashPlugin.key],
+    route: '/docs/slash-command',
+    value: slashCommandValue,
+  },
   softbreak: {
     id: 'softbreak',
     label: 'Soft Break',
@@ -340,6 +368,13 @@ export const customizerPlugins = {
     plugins: [TablePlugin.key],
     route: '/docs/table',
     value: tableValue,
+  },
+  toc: {
+    id: 'toc',
+    label: 'Table of Contents',
+    plugins: [TocPlugin.key],
+    route: '/docs/toc',
+    value: tocValue,
   },
   todoli: {
     id: 'todoli',

@@ -6,12 +6,14 @@ import { settingsStore } from '@/components/context/settings-store';
 import { type ValueId, customizerPlugins } from '@/config/customizer-plugins';
 import { mapNodeId } from '@/plate/demo/mapNodeId';
 
+import { aiValue } from './aiValue';
 import { alignValue } from './alignValue';
 import { autoformatValue } from './autoformatValue';
 import { basicElementsValue } from './basicElementsValue';
 import { basicMarksValue } from './basicMarksValue';
 import { columnValue } from './columnValue';
 import { commentsValue } from './commentsValue';
+import { copilotValue } from './copilotValue';
 import { cursorOverlayValue } from './cursorOverlayValue';
 import { dateValue } from './dateValue';
 import { deserializeCsvValue } from './deserializeCsvValue';
@@ -32,9 +34,11 @@ import { linkValue } from './linkValue';
 import { listValue, todoListValue } from './listValue';
 import { mediaValue } from './mediaValue';
 import { mentionValue } from './mentionValue';
+import { slashCommandValue } from './slahMenuValue';
 import { softBreakValue } from './softBreakValue';
 import { tabbableValue } from './tabbableValue';
 import { tableMergeValue, tableValue } from './tableValue';
+import { tocValue } from './tocValue';
 import { toggleValue } from './toggleValue';
 
 export const usePlaygroundValue = (id?: ValueId): MyValue => {
@@ -68,6 +72,10 @@ export const usePlaygroundValue = (id?: ValueId): MyValue => {
 
       return mapNodeId(newValue);
     }
+    if (enabled.toc) value.unshift(...tocValue);
+    //AI
+    if (enabled.copilot) value.unshift(...copilotValue);
+    if (enabled.ai) value.unshift(...aiValue);
     // Marks
     if (enabled.color || enabled.backgroundColor) value.push(...fontValue);
     if (enabled.highlight) value.push(...highlightValue);
@@ -88,6 +96,7 @@ export const usePlaygroundValue = (id?: ValueId): MyValue => {
     if (enabled.column) value.push(...columnValue);
     if (enabled.toggle) value.push(...toggleValue);
     // Functionalities
+    if (enabled.slash_command) value.push(...slashCommandValue);
     if (enabled.autoformat) value.push(...autoformatValue);
     if (enabled.softBreak) value.push(...softBreakValue);
     if (enabled.exitBreak) value.push(...exitBreakValue);

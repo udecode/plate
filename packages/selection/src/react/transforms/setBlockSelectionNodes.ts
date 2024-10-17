@@ -30,6 +30,33 @@ export const setBlockSelectionNodes = (
   });
 };
 
+export const setBlockSelectionIndent = (
+  editor: PlateEditor,
+  indent: number,
+  options?: SetNodesOptions
+) => {
+  withoutNormalizing(editor, () => {
+    const blocks = editor
+      .getApi(BlockSelectionPlugin)
+      .blockSelection.getNodes();
+
+    blocks.forEach(([node, path]) => {
+      const prevIndent = (node as any).indent ?? 0;
+
+      const currentIndent = prevIndent + indent;
+
+      setNodes<TElement & { id: string }>(
+        editor,
+        { indent: currentIndent < 0 ? 0 : currentIndent },
+        {
+          ...options,
+          at: path,
+        }
+      );
+    });
+  });
+};
+
 export const setBlockSelectionTexts = (
   editor: PlateEditor,
   props: Partial<TNodeProps<TText>>,

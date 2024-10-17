@@ -57,15 +57,22 @@ export const generateCopilotText = async (
 
   editor.setOptions(CopilotPlugin, { abortController });
 
-  const suggestion = await fetchSuggestion?.({
+  if (!fetchSuggestion) {
+    throw new Error('fetchSuggestion is not defined');
+  }
+
+  const suggestion = await fetchSuggestion({
     abortSignal: abortController,
     prompt,
   });
 
-  return setCopilot(
-    node.id,
-    suggestion ?? 'Can not get suggestion did you config fetchSuggestion?'
-  );
+  if (!suggestion) {
+    console.warn('No suggestion was generated for the given prompt.');
+
+    return;
+  }
+
+  return setCopilot(node.id, suggestion);
 };
 
 export const generateCopilotTextDebounce = debounce(generateCopilotText, 500);

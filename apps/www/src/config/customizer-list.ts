@@ -1,3 +1,4 @@
+import { AIPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
@@ -30,6 +31,7 @@ import {
   FontColorPlugin,
   FontSizePlugin,
 } from '@udecode/plate-font/react';
+import { TocPlugin } from '@udecode/plate-heading/react';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
@@ -47,6 +49,7 @@ import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { ResetNodePlugin } from '@udecode/plate-reset-node/react';
 import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import { SlashPlugin } from '@udecode/plate-slash-command/react';
 import { TabbablePlugin } from '@udecode/plate-tabbable/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
@@ -76,6 +79,7 @@ export const customizerList = [
       customizerItems[TablePlugin.key],
       customizerItems[TodoListPlugin.key],
       customizerItems[DatePlugin.key],
+      customizerItems[TocPlugin.key],
     ],
     label: 'Nodes',
   },
@@ -128,6 +132,9 @@ export const customizerList = [
       customizerItems[SoftBreakPlugin.key],
       customizerItems[TabbablePlugin.key],
       customizerItems[TrailingBlockPlugin.key],
+      customizerItems[CopilotPlugin.key],
+      customizerItems[SlashPlugin.key],
+      customizerItems[AIPlugin.key],
     ],
     label: 'Functionality',
   },
