@@ -156,6 +156,27 @@ export const ui: Registry = [
     type: 'registry:ui',
   },
   {
+    dependencies: ['@radix-ui/react-context-menu'],
+    files: ['plate-ui/block-context-menu.tsx'],
+    name: 'block-context-menu',
+    registryDependencies: ['calendar', 'plate-element'],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@udecode/plate-ai'],
+    files: ['plate-ui/ghost-text.tsx'],
+    name: 'ghost-text',
+    registryDependencies: [''],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@udecode/plate-heading'],
+    files: ['plate-ui/toc-element.tsx'],
+    name: 'toc-element',
+    registryDependencies: [''],
+    type: 'registry:ui',
+  },
+  {
     dependencies: ['react-day-picker@8.10.1', 'date-fns'],
     files: ['plate-ui/calendar.tsx'],
     name: 'calendar',

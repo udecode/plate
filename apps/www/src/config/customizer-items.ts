@@ -1,3 +1,4 @@
+import { AIPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
@@ -34,6 +35,7 @@ import {
   FontColorPlugin,
   FontSizePlugin,
 } from '@udecode/plate-font/react';
+import { TocPlugin } from '@udecode/plate-heading/react';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
@@ -53,7 +55,11 @@ import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { ResetNodePlugin } from '@udecode/plate-reset-node/react';
 import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import {
+  BlockMenuPlugin,
+  BlockSelectionPlugin,
+} from '@udecode/plate-selection/react';
+import { SlashPlugin } from '@udecode/plate-slash-command/react';
 import { TabbablePlugin } from '@udecode/plate-tabbable/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
@@ -102,6 +108,14 @@ export type SettingPlugin = {
 };
 
 export const customizerItems: Record<string, SettingPlugin> = {
+  [AIPlugin.key]: {
+    id: AIPlugin.key,
+    badges: [customizerBadges.handler],
+    label: 'AI',
+    npmPackage: '@udecode/plate-ai',
+    pluginFactory: 'AIPlugin',
+    route: customizerPlugins.ai.route,
+  },
   [AlignPlugin.key]: {
     id: AlignPlugin.key,
     badges: [customizerBadges.style],
@@ -111,7 +125,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginOptions: [`inject: { targetPlugins: ['p', 'h1', 'h2', 'h3'] },`],
     route: customizerPlugins.align.route,
   },
-  // Functionality
   [AutoformatPlugin.key]: {
     id: AutoformatPlugin.key,
     badges: [customizerBadges.handler],
@@ -128,6 +141,15 @@ export const customizerItems: Record<string, SettingPlugin> = {
     ],
     reactImport: true,
     route: customizerPlugins.autoformat.route,
+  },
+  [BlockMenuPlugin.key]: {
+    id: BlockMenuPlugin.key,
+    badges: [customizerBadges.ui],
+    dependencies: [BlockSelectionPlugin.key],
+    label: 'Block Menu',
+    npmPackage: '@udecode/plate-selection',
+    pluginFactory: 'BlockMenuPlugin',
+    route: customizerPlugins.blockmenu.route,
   },
   [BlockSelectionPlugin.key]: {
     id: BlockSelectionPlugin.key,
@@ -284,6 +306,14 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'CommentsPlugin',
     reactImport: true,
     route: customizerPlugins.comment.route,
+  },
+  [CopilotPlugin.key]: {
+    id: CopilotPlugin.key,
+    badges: [customizerBadges.handler],
+    label: 'Copilot',
+    npmPackage: '@udecode/plate-ai',
+    pluginFactory: 'CopilotPlugin',
+    route: customizerPlugins.copilot.route,
   },
   // Deserialization
   [CsvPlugin.key]: {
@@ -625,7 +655,6 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'MarkdownPlugin',
     route: customizerPlugins.markdown.route,
   },
-
   [MediaEmbedPlugin.key]: {
     id: MediaEmbedPlugin.key,
     badges: [customizerBadges.element, customizerBadges.void],
@@ -651,6 +680,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'MentionInputPlugin',
     reactImport: true,
   },
+
   [MentionPlugin.key]: {
     id: MentionPlugin.key,
     badges: [
@@ -759,6 +789,14 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'SingleLinePlugin',
     reactImport: true,
     route: customizerPlugins.singleline.route,
+  },
+  [SlashPlugin.key]: {
+    id: SlashPlugin.key,
+    badges: [customizerBadges.handler],
+    label: 'Slash Command',
+    npmPackage: '@udecode/plate-slash-command',
+    pluginFactory: 'SlashPlugin',
+    route: customizerPlugins.slashCommand.route,
   },
   [SoftBreakPlugin.key]: {
     id: SoftBreakPlugin.key,
@@ -894,6 +932,14 @@ export const customizerItems: Record<string, SettingPlugin> = {
     pluginFactory: 'TablePlugin',
     reactImport: true,
     route: customizerPlugins.table.route,
+  },
+  [TocPlugin.key]: {
+    id: TocPlugin.key,
+    badges: [customizerBadges.handler],
+    label: 'Table of Contents',
+    npmPackage: '@udecode/plate-heading',
+    pluginFactory: 'TocPlugin',
+    route: customizerPlugins.toc.route,
   },
   [TodoListPlugin.key]: {
     id: TodoListPlugin.key,

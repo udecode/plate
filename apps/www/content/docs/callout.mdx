@@ -1,0 +1,65 @@
+---
+title: Callout
+description: Callout is a block that allows you to highlight text or add additional information to a block.
+docs:
+  - route: https://pro.platejs.org/docs/components/callout-element
+    title: Callout Element
+---
+
+<ComponentPreviewPro
+  name="pro-iframe-demo"
+  id="callout"
+  component="callout"
+/>
+
+<PackageInfo>
+
+## Features
+
+- Provides quick transform for a single block.
+- Allows you to perform actions on blocks such as duplicating, deleting, or moving.
+- Customizable menu items and actions.
+- Accessible via right-click or a dedicated button like drag-handle.
+- Supports keyboard navigation for improved accessibility.
+
+</PackageInfo>
+
+## Installation
+
+
+```bash
+npm install @udecode/plate-callout
+```
+
+## Usage
+
+```tsx
+// ...
+import { CalloutPlugin } from '@udecode/plate-callout/react';
+
+const editor = usePlateEditor({
+  id: 'callout-demo',
+  override: {
+    components: {
+      ...otherComponents,
+      [CalloutPlugin.key]: CalloutElement,
+    },
+  },
+  plugins: [
+    ...otherPlugins,
+    CalloutPlugin,
+  ],
+  value: calloutValue,
+});
+```
+
+## Transforms
+
+### editor.tf.insert.callout
+
+Inserts a callout.
+<APIParameters>
+  <APIItem name="options" type="InsertNodesOptions">
+    Options for the insert nodes transform.
+  </APIItem>
+</APIParameters>

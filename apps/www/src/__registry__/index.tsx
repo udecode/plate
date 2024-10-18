@@ -170,6 +170,39 @@ export const Index: Record<string, any> = {
       subcategory: "undefined",
       chunks: []
     },
+    "block-context-menu": {
+      name: "block-context-menu",
+      type: "registry:ui",
+      registryDependencies: ["calendar","plate-element"],
+      files: ["registry/default/plate-ui/block-context-menu.tsx"],
+      component: React.lazy(() => import("@/registry/default/plate-ui/block-context-menu.tsx")),
+      source: "",
+      category: "undefined",
+      subcategory: "undefined",
+      chunks: []
+    },
+    "ghost-text": {
+      name: "ghost-text",
+      type: "registry:ui",
+      registryDependencies: [""],
+      files: ["registry/default/plate-ui/ghost-text.tsx"],
+      component: React.lazy(() => import("@/registry/default/plate-ui/ghost-text.tsx")),
+      source: "",
+      category: "undefined",
+      subcategory: "undefined",
+      chunks: []
+    },
+    "toc-element": {
+      name: "toc-element",
+      type: "registry:ui",
+      registryDependencies: [""],
+      files: ["registry/default/plate-ui/toc-element.tsx"],
+      component: React.lazy(() => import("@/registry/default/plate-ui/toc-element.tsx")),
+      source: "",
+      category: "undefined",
+      subcategory: "undefined",
+      chunks: []
+    },
     "calendar": {
       name: "calendar",
       type: "registry:ui",
@@ -847,6 +880,17 @@ export const Index: Record<string, any> = {
       registryDependencies: [],
       files: ["registry/default/plate-ui/resizable.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/resizable.tsx")),
+      source: "",
+      category: "undefined",
+      subcategory: "undefined",
+      chunks: []
+    },
+    "pro-iframe-demo": {
+      name: "pro-iframe-demo",
+      type: "registry:example",
+      registryDependencies: undefined,
+      files: ["registry/default/example/pro-iframe-demo.tsx"],
+      component: React.lazy(() => import("@/registry/default/example/pro-iframe-demo.tsx")),
       source: "",
       category: "undefined",
       subcategory: "undefined",

@@ -1,0 +1,82 @@
+---
+title: Block Context Menu
+description: Display a context menu for blocks.
+component: true
+docs:
+  - route: /docs/block-menu
+    title: Block Menu
+
+  - route: https://pro.platejs.org/docs/components/block-context-menu
+    title: Block Context Menu
+---
+
+## Installation
+
+<Tabs defaultValue="cli">
+
+<TabsList>
+<TabsTrigger value="cli">CLI</TabsTrigger>
+<TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx @udecode/plate-ui@latest add block-context-menu
+```
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps>
+
+<Step>
+
+Install the following dependencies:
+
+```bash
+npm install @radix-ui/react-context-menu
+```
+
+</Step>
+
+<Step>
+
+Copy and paste the following code into your project.
+
+</Step>
+
+<ComponentSource name="block-context-menu" />
+
+<Step>
+
+Update the import paths to match your project setup.
+
+</Step>
+
+</Steps>
+
+</TabsContent>
+
+</Tabs>
+
+## Examples
+
+<ComponentPreview name="playground-demo" id="blockmenu" />
+
+<ComponentSource name="block-context-menu" />
+
+## Plus
+
+In Plate Plus, We have provided a more advanced menu.
+
+1. More advanced menu items.
+2. Supports search functionality and carefully designed shortcuts.
+3. More refined styles and animations.
+4. You can open this menu in various ways, such as through the drag button.
+
+<ComponentPreviewPro
+  name="pro-iframe-demo"
+  id="pro-context-menu"
+  component="context-menu"
+/>

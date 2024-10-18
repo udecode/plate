@@ -3,7 +3,7 @@
  */
 
 export * from './CopilotPlugin';
-export * from './generateCopilotText';
-export * from './injectCopilot';
-export * from './onKeyDownCopilot';
+export * from './renderCopilotBelowNodes';
+export * from './withCopilot';
+export * from './transforms/index';
 export * from './utils/index';

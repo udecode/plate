@@ -70,7 +70,7 @@ export const BlockMenuPlugin = createTPlatePlugin<BlockMenuConfig>({
     handlers: {
       onMouseDown: ({ event, getOptions }) => {
         if (event.button === 0 && getOptions().openId) {
-          event.preventDefault();
+          // event.preventDefault();
           api.blockMenu.hide();
         }
         if (event.button === 2) event.preventDefault();

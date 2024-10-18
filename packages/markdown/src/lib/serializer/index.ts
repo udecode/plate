@@ -3,6 +3,7 @@
  */
 
 export * from './defaultSerializeMdNodesOptions';
+export * from './serializeInlineMd';
 export * from './serializeMd';
 export * from './serializeMdNode';
 export * from './serializeMdNodes';
