@@ -64,9 +64,9 @@ export const customizerComponents = {
     title: 'Comments Popover',
   },
   copilotHoverCard: {
-    href: '/docs/components/copilot-hover-card',
+    href: '/docs/components/ghost-text',
     label: 'New',
-    title: 'Copilot Hover Card',
+    title: 'Ghost Text',
   },
   cursorOverlay: {
     href: '/docs/components/cursor-overlay',

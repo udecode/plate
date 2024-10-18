@@ -1,33 +1,47 @@
-import { CopilotPlugin } from '@udecode/plate-ai/react';
-import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import { ParagraphPlugin } from '@udecode/plate-core/react';
-import { HEADING_KEYS } from '@udecode/plate-heading';
+import { CopilotPlugin, stripMarkdownBlocks } from '@udecode/plate-ai/react';
+import { type TElement, getAncestorNode } from '@udecode/plate-common';
+import { serializeMdNodes } from '@udecode/plate-markdown';
 
-import { copilotHoverCard } from '@/registry/default/plate-ui/copilot-hover-card';
-import { MENTIONABLES } from '@/registry/default/plate-ui/mention-input-element';
+import { GhostText } from '@/registry/default/plate-ui/ghost-text';
 
-export const copilotPlugin = CopilotPlugin.configure({
+export const copilotPlugin = CopilotPlugin.configure(({ api }) => ({
   options: {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    fetchSuggestion: async ({ abortSignal, prompt }) => {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve(MENTIONABLES[Math.floor(Math.random() * 41)].text);
-        }, 100);
-      });
+    completeOptions: {
+      api: 'https://pro.platejs.org/api/ai/copilot',
+      body: {
+        system: `You are an advanced AI writing assistant, similar to VSCode Copilot but for general text. Your task is to predict and generate the next part of the text based on the given context.
+
+Rules:
+- Continue the text naturally up to the next punctuation mark (., ,, ;, :, ?, or !).
+- Maintain style and tone. Don't repeat given text.
+- For unclear context, provide the most likely continuation.
+- Handle code snippets, lists, or structured text if needed.
+- Don't include """ in your response.
+- CRITICAL: Always end with a punctuation mark.
+- CRITICAL: Avoid starting a new block. Do not use block formatting like >, #, 1., 2., -, etc. The suggestion should continue in the same block as the context.
+- If no context is provided or you can't generate a continuation, return "0" without explanation.`,
+      },
+      onFinish: (_, completion) => {
+        if (completion === '0') return;
+
+        api.copilot.setBlockSuggestion({
+          text: stripMarkdownBlocks(completion),
+        });
+      },
     },
-    hoverCard: copilotHoverCard,
-    query: {
-      allow: [
-        ParagraphPlugin.key,
-        BlockquotePlugin.key,
-        HEADING_KEYS.h1,
-        HEADING_KEYS.h2,
-        HEADING_KEYS.h3,
-        HEADING_KEYS.h4,
-        HEADING_KEYS.h5,
-        HEADING_KEYS.h6,
-      ],
+    debounceDelay: 500,
+    getPrompt: ({ editor }) => {
+      const contextEntry = getAncestorNode(editor);
+
+      if (!contextEntry) return '';
+
+      const prompt = serializeMdNodes([contextEntry[0] as TElement]);
+
+      return `Continue the text up to the next punctuation mark:
+"""
+${prompt}
+"""`;
     },
+    renderGhostText: GhostText,
   },
-});
+}));

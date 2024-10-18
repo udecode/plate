@@ -157,8 +157,8 @@ export const ui: Registry = [
   },
   {
     dependencies: ['@udecode/plate-ai'],
-    files: ['plate-ui/copilot-hover-card.tsx'],
-    name: 'copilot-hover-card',
+    files: ['plate-ui/ghost-text.tsx'],
+    name: 'ghost-text',
     registryDependencies: [''],
     type: 'registry:ui',
   },

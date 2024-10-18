@@ -362,11 +362,11 @@
     ],
     "files": [
       {
-        "path": "plate-ui/copilot-hover-card.tsx",
+        "path": "plate-ui/ghost-text.tsx",
         "type": "registry:ui"
       }
     ],
-    "name": "copilot-hover-card",
+    "name": "ghost-text",
     "registryDependencies": [
       ""
     ],

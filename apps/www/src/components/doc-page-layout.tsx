@@ -26,7 +26,7 @@ const getItemVariant = (item: any) => {
 
     if (allowedHosts.includes(url.hostname)) return 'plus';
   } catch (error) {
-    console.error('Invalid URL:', item.route, error);
+    // console.error('Invalid URL:', item.route, error);
   }
 
   if (item.route?.includes('components')) return 'default';

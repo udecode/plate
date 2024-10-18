@@ -170,12 +170,12 @@ export const Index: Record<string, any> = {
       subcategory: "undefined",
       chunks: []
     },
-    "copilot-hover-card": {
-      name: "copilot-hover-card",
+    "ghost-text": {
+      name: "ghost-text",
       type: "registry:ui",
       registryDependencies: [""],
-      files: ["registry/default/plate-ui/copilot-hover-card.tsx"],
-      component: React.lazy(() => import("@/registry/default/plate-ui/copilot-hover-card.tsx")),
+      files: ["registry/default/plate-ui/ghost-text.tsx"],
+      component: React.lazy(() => import("@/registry/default/plate-ui/ghost-text.tsx")),
       source: "",
       category: "undefined",
       subcategory: "undefined",

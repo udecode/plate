@@ -7,7 +7,6 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import type { ValueId } from '@/config/customizer-plugins';
 
 import { cn } from '@udecode/cn';
-import { AIPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
@@ -171,7 +170,6 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         }),
         SelectionOverlayPlugin,
 
-        AIPlugin,
         TodoListPlugin,
         TogglePlugin,
         ExcalidrawPlugin,

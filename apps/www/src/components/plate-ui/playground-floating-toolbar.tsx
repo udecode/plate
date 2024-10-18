@@ -3,7 +3,6 @@
 import React from 'react';
 
 import { cn, withRef } from '@udecode/cn';
-import { AIPlugin } from '@udecode/plate-ai/react';
 import {
   PortalBody,
   useComposedRef,
@@ -31,12 +30,12 @@ export const PlaygroundFloatingToolbar = withRef<
   const editorId = useEditorId();
   const focusedEditorId = useEventEditorSelectors.focus();
 
-  const aiOpen = editor.useOptions(AIPlugin).openEditorId === editor.id;
+  // const aiOpen = editor.useOptions(AIPlugin).openEditorId === editor.id;
 
   const floatingToolbarState = useFloatingToolbarState({
     editorId,
     focusedEditorId,
-    hideToolbar: aiOpen,
+    // hideToolbar: aiOpen,
     ...state,
     floatingOptions: {
       middleware: [
