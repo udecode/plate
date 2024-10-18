@@ -6,7 +6,6 @@ docs:
     title: Ghost Text
   - route: https://pro.platejs.org/docs/components/ghost-text
     title: Ghost Text
- 
 ---
 
 <ComponentPreview name="playground-demo" id="copilot" />
@@ -17,113 +16,72 @@ docs:
 
 - Offers intelligent autocompletion to enhance content creation and editing.
 - Provides two modes: **debounce** and **shortcut**.
-  1. Shortcut mode is the default, triggered by pressing `Control+Space`.
-  2. Debounce mode can be automatically triggered when the selection changes or during typing.
+  1. Shortcut mode is triggered anywhere by pressing `Control+Space`.
+  2. Debounce mode is automatically triggered at the end of paragraphs.
 </PackageInfo>
 
 ## Installation
 
 ```bash
-npm install @udecode/plate-ai
+npm install @udecode/plate-ai @udecode/plate-markdown
 ```
 
 ## Usage
 
 ```tsx
 // ...
-import { CopilotPlugin } from '@udecode/plate-ai/react';
+import { CopilotPlugin, stripMarkdown } from '@udecode/plate-ai/react';
+import { type TElement, getAncestorNode } from '@udecode/plate-common';
+import { serializeMdNodes } from '@udecode/plate-markdown';
 
-const editor = usePlateEditor({
-  id: 'ai-demo',
-  override: {
-    components: PlateUI,
-  },
-  plugins: [
-    ...commonPlugins,
-    CopilotPlugin.configure({
-    options: {
-      fetchSuggestion: async ({ abortSignal, prompt }) => {
+MarkdownPlugin.configure({ options: { indentList: true } });
+CopilotPlugin.configure(({ api }) => ({
+  options: {
+    completeOptions: {
+      api: '/api/your-api-endpoint',
+      body: {
+        system: `You are an advanced AI writing assistant, similar to VSCode Copilot but for general text. Your task is to predict and generate the next part of the text based on the given context.
 
-        // Currently, we are using a mock function to simulate the api request
-        return new Promise((resolve) => {
-          setTimeout(() => {
-            resolve(MENTIONABLES[Math.floor(Math.random() * 41)].text);
-          }, 100);
+Rules:
+- Continue the text naturally up to the next punctuation mark (., ,, ;, :, ?, or !).
+- Maintain style and tone. Don't repeat given text.
+- For unclear context, provide the most likely continuation.
+- Handle code snippets, lists, or structured text if needed.
+- Don't include """ in your response.
+- CRITICAL: Always end with a punctuation mark.
+- CRITICAL: Avoid starting a new block. Do not use block formatting like >, #, 1., 2., -, etc. The suggestion should continue in the same block as the context.
+- If no context is provided or you can't generate a continuation, return "0" without explanation.`,
+      },
+      onFinish: (_, completion) => {
+        if (completion === '0') return;
+
+        api.copilot.setBlockSuggestion({
+          //stripMarkdownBlocks in plus GhostText
+          text: stripMarkdown(completion),
         });
       },
-      hoverCard: AiCopilotHoverCard,
-      query: {
-        allow: [
-          ParagraphPlugin.key,
-          BlockquotePlugin.key,
-          HEADING_KEYS.h1,
-          HEADING_KEYS.h2,
-          HEADING_KEYS.h3,
-          HEADING_KEYS.h4,
-          HEADING_KEYS.h5,
-          HEADING_KEYS.h6,
-        ],
-      },
     },
-});
-  ],
-  value: aiValue,
-});
+    debounceDelay: 500,
+    getPrompt: ({ editor }) => {
+      const contextEntry = getAncestorNode(editor);
+
+      if (!contextEntry) return '';
+
+      const prompt = serializeMdNodes([contextEntry[0] as TElement]);
+
+      return `Continue the text up to the next punctuation mark:
+"""
+${prompt}
+"""`;
+    },
+    renderGhostText: GhostText,
+  },
+}));
 ```
 
 ## Integrate with your backend
 
-`options.fetchSuggestion` is an asynchronous function that you need to implement to fetch suggestions from your backend. This function is crucial for integrating the Copilot feature with your own AI model or service.
-
-The function receives an object with two properties:
-
-- `abortSignal`: An `AbortSignal` object that allows you to cancel the request if needed. This is particularly useful in debounce mode to abort the request if the user continues typing or changes the selection.
-- `prompt`: A string containing the text of the node where the user's cursor is currently positioned. This serves as the context for generating suggestions.
-
-The function should return a Promise that resolves to a string. This string will be the suggestion inserted into the editor.
-
-Here's a more detailed example of how you might implement this function:
-
-```ts
-
- fetchSuggestion: async ({ abortSignal, prompt }) => {
-    const system = `Please continue writing a sentence based on the prompt.
-      Important Note: Please do not answer any questions. Directly provide the continuation
-      of the content without including any part of the prompt and don't write more than one sentence:
-      finish current sentence or write a new one`
-
-    const response = await fetch('https://your-api-endpoint.com/api/v1/generate-text', {
-      method: 'POST',
-      body: JSON.stringify({ prompt,system }),
-      // pass the abortSignal to the fetch request
-      signal: abortSignal,
-    });
-
-    const data = await response.json();
-
-
-    // data.suggestion should be a string
-    return data.suggestion;
-},
-
-```
-
-## Copilot state
-
-The Copilot plugin maintains its own state to manage the suggestion process. The state can be either 'idle' or 'completed'. Here's a breakdown of what each state means:
-
-```ts
-type CopilotState = 'error' | 'idle' | 'pending' | 'success';
-```
-
-- `idle`: This is the default state. It indicates that the Copilot is not currently providing a suggestion or has finished processing the previous suggestion.
-- `completed`: This state indicates that the Copilot has generated a suggestion and it's ready to be inserted into the editor. You'll see this suggestion as gray text in the editor in this state.
-
-You can access the current state of the Copilot using:
-
-```ts
-const copilotState = editor.getOptions(CopilotPlugin).copilotState;
-```
+`options.completeOptions` allows you to configure the AI completion options. For a comprehensive list of available parameters, refer to the [AI SDK UI useCompletion Parameters](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-completion#parameters) documentation.
 
 ## Conflict with Other Plugins
 
@@ -131,12 +89,11 @@ The Tab key is a popular and frequently used key in text editing, which can lead
 
 ### Conflict with Indent Plugin
 
-The **IndentPlugin** and **IndentListPlugin**  have a similar conflict with **Copilot Plugin**.
+The **IndentPlugin** and **IndentListPlugin** have a similar conflict with **Copilot Plugin**.
 
 As a workaround, you can place the Copilot Plugin before the these two plugins in your plugin configuration.
 
 Or set the priority of Copilot Plugin to a higher value than Indent Plugin see [priority](https://platejs.org/docs/plugin#plugin-priority).
-
 
 Here's an example of how to order your plugins:
 
@@ -202,7 +159,7 @@ const editor = usePlateEditor({
 });
 ```
 
-It's important to note that when using `IndentListPlugin` instead of `ListPlugin`, you should configure the `MarkdownPlugin` with the `indentList: true` option. 
+It's important to note that when using `IndentListPlugin` instead of `ListPlugin`, you should configure the `MarkdownPlugin` with the `indentList: true` option.
 
 This is necessary because the LLM generates Markdown, which needs to be converted to Plate nodes.If your LLM just generate the plain text, you can ignore this.
 
@@ -211,7 +168,6 @@ Here's how you can set it up:
 ```tsx
 MarkdownPlugin.configure({ options: { indentList: true } }),
 ```
-
 
 ### Conflict with Tabbable Plugin
 
@@ -252,9 +208,11 @@ TabbablePlugin.configure(({ editor }) => ({
 
 ## Plate Plus
 
-In Plate Plus, We using debounce mode by default. That's mean you will see the suggestion automatically without pressing `Control+Space`.
+In Plate Plus, we provides more advanced styles and complete backend setup
 
-We also provide a new style of hover card that is more user-friendly.You can hover on the suggestion to see the hover card.
+1. Hover card: a new style of hover card that is more user-friendly. You can **hover** over the ghost text to see the hover card.
+2. Marks: support for marks like bold, italic, underline, etc.This means you can see bold text and **links** in the ghost text
+3. Backend: complete backend setup.
 
 All of the backend setup is available in [Potion template](https://pro.platejs.org/docs/templates/potion).
 
@@ -263,29 +221,6 @@ All of the backend setup is available in [Potion template](https://pro.platejs.o
   id="pro-copilot"
   component="copilot"
 />
-
-## API
-
-### editor.getApi(CopilotPlugin).copilot.abortCopilot();
-
-Aborts the ongoing API request and removes any suggestion text currently displayed.
-
-<APIReturns>
-  <APIItem type="void">This function does not return a value.</APIItem>
-</APIReturns>
-
-### editor.getApi(CopilotPlugin).copilot.setCopilot
-
-Sets the suggestion text to the editor.
-
-<APIParameters>
-  <APIItem name="id" type="string">
-    The ID of the node to set the suggestion text.
-  </APIItem>
-  <APIItem name="text" type="string">
-    The suggestion text to set.
-  </APIItem>
-</APIParameters>
 
 ## Utils functions
 
@@ -317,3 +252,61 @@ withoutAbort(editor, () => {
   // For example, setting copilot suggestions
 });
 ```
+
+## API
+
+### editor.getApi(CopilotPlugin).copilot.accept()
+
+Accepts the current suggestion and inserts it into the editor.
+
+<APIReturns>
+  <APIItem type="void">This function does not return a value.</APIItem>
+</APIReturns>
+
+### editor.getApi(CopilotPlugin).copilot.acceptNextWord()
+
+Accepts the next word of the current suggestion and inserts it into the editor.
+
+<APIReturns>
+  <APIItem type="void">This function does not return a value.</APIItem>
+</APIReturns>
+
+### editor.getApi(CopilotPlugin).copilot.setBlockSuggestion
+
+Sets the suggestion text for a specific block in the editor.
+
+<APIParameters>
+  <APIItem name="options" type="object">
+    <APIItem name="id" type="string | undefined">
+      The ID of the node to set the suggestion text. If not provided, it uses
+      the ID of the block above the current selection.
+    </APIItem>
+    <APIItem name="text" type="string">
+      The suggestion text to set.
+    </APIItem>
+  </APIItem>
+</APIParameters>
+
+### editor.getApi(CopilotPlugin).copilot.stop()
+
+Stops the ongoing API request for suggestions.
+
+<APIReturns>
+  <APIItem type="void">This function does not return a value.</APIItem>
+</APIReturns>
+
+### editor.getApi(CopilotPlugin).copilot.triggerSuggestion()
+
+Triggers a new suggestion request.
+
+<APIReturns>
+  <APIItem type="void">This function does not return a value.</APIItem>
+</APIReturns>
+
+### editor.getApi(CopilotPlugin).copilot.reset()
+
+Resets the Copilot plugin state, stopping any ongoing requests and clearing suggestions.
+
+<APIReturns>
+  <APIItem type="void">This function does not return a value.</APIItem>
+</APIReturns>

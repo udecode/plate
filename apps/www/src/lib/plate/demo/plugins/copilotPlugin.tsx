@@ -1,4 +1,4 @@
-import { CopilotPlugin, stripMarkdownBlocks } from '@udecode/plate-ai/react';
+import { CopilotPlugin, stripMarkdown } from '@udecode/plate-ai/react';
 import { type TElement, getAncestorNode } from '@udecode/plate-common';
 import { serializeMdNodes } from '@udecode/plate-markdown';
 
@@ -25,7 +25,8 @@ Rules:
         if (completion === '0') return;
 
         api.copilot.setBlockSuggestion({
-          text: stripMarkdownBlocks(completion),
+          //stripMarkdownBlocks in plus GhostText
+          text: stripMarkdown(completion),
         });
       },
     },
