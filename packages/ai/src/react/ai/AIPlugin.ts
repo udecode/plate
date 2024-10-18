@@ -6,13 +6,13 @@ import {
   bindFirst,
 } from '@udecode/plate-common';
 import { toTPlatePlugin } from '@udecode/plate-common/react';
+import { stripMarkdown } from '@udecode/plate-markdown';
 
 import { type BaseAIPluginConfig, BaseAIPlugin } from '../../lib';
 import { streamAINodes } from '../ai-chat/transforms/streamAINodes';
 import { removeAIMarks } from './transforms';
 import { insertAINodes } from './transforms/insertAINodes';
 import { removeAINodes } from './transforms/removeAINodes';
-import { stripMarkdown } from './utils';
 import { streamText } from './utils/streamText';
 
 export interface AIStreamProps {

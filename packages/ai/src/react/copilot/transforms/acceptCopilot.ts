@@ -1,8 +1,8 @@
 import type { PlateEditor } from '@udecode/plate-common/react';
 
-import type { CopilotPluginConfig } from '../CopilotPlugin';
+import { deserializeInlineMd } from '@udecode/plate-markdown';
 
-import { deserializeInlineMd } from '../utils/deserializeInlineMd';
+import type { CopilotPluginConfig } from '../CopilotPlugin';
 
 export const acceptCopilot = (editor: PlateEditor) => {
   const { suggestionText } = editor.getOptions<CopilotPluginConfig>({

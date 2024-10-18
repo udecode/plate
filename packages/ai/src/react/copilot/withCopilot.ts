@@ -2,11 +2,11 @@ import type { ExtendEditor, PlateEditor } from '@udecode/plate-common/react';
 import type { BaseOperation } from 'slate';
 
 import { withoutMergingHistory } from '@udecode/plate-common';
+import { serializeInlineMd } from '@udecode/plate-markdown';
 import debounce from 'lodash/debounce.js';
 
 import type { CopilotPluginConfig } from './CopilotPlugin';
 
-import { serializeInlineMd } from './utils/deserializeInlineMd';
 import { withoutAbort } from './utils/withoutAbort';
 
 type CopilotBatch = PlateEditor['history']['undos'][number] & {

@@ -2,4 +2,6 @@
 '@udecode/plate-selection': patch
 ---
 
-Add `tf.setBlockSelectionIndent`
+BlockSelectionPlugin: New `tf.setBlockSelectionIndent` 
+
+BlockMenuPlugin: Now when the left mouse button is clicked and the menu is open, the default event will not be prevented.

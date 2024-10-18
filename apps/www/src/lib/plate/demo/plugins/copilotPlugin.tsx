@@ -1,6 +1,6 @@
-import { CopilotPlugin, stripMarkdown } from '@udecode/plate-ai/react';
+import { CopilotPlugin } from '@udecode/plate-ai/react';
 import { type TElement, getAncestorNode } from '@udecode/plate-common';
-import { serializeMdNodes } from '@udecode/plate-markdown';
+import { serializeMdNodes, stripMarkdown } from '@udecode/plate-markdown';
 
 import { GhostText } from '@/registry/default/plate-ui/ghost-text';
 

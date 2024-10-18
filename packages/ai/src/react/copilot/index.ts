@@ -3,6 +3,7 @@
  */
 
 export * from './CopilotPlugin';
-export * from './utils/triggerCopilotSuggestion';
 export * from './renderCopilotBelowNodes';
+export * from './withCopilot';
+export * from './transforms/index';
 export * from './utils/index';

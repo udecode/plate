@@ -30,9 +30,9 @@ npm install @udecode/plate-ai @udecode/plate-markdown
 
 ```tsx
 // ...
-import { CopilotPlugin, stripMarkdown } from '@udecode/plate-ai/react';
+import { CopilotPlugin } from '@udecode/plate-ai/react';
 import { type TElement, getAncestorNode } from '@udecode/plate-common';
-import { serializeMdNodes } from '@udecode/plate-markdown';
+import { serializeMdNodes, stripMarkdown } from '@udecode/plate-markdown';
 
 MarkdownPlugin.configure({ options: { indentList: true } });
 CopilotPlugin.configure(({ api }) => ({

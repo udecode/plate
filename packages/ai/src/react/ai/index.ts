@@ -3,6 +3,5 @@
  */
 
 export * from './AIPlugin';
-export * from '../ai-chat/useAIChatHook';
-export * from '../ai-chat/hooks/index';
+export * from './transforms/index';
 export * from './utils/index';
