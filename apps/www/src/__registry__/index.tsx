@@ -170,6 +170,17 @@ export const Index: Record<string, any> = {
       subcategory: "undefined",
       chunks: []
     },
+    "block-context-menu": {
+      name: "block-context-menu",
+      type: "registry:ui",
+      registryDependencies: ["calendar","plate-element"],
+      files: ["registry/default/plate-ui/block-context-menu.tsx"],
+      component: React.lazy(() => import("@/registry/default/plate-ui/block-context-menu.tsx")),
+      source: "",
+      category: "undefined",
+      subcategory: "undefined",
+      chunks: []
+    },
     "ghost-text": {
       name: "ghost-text",
       type: "registry:ui",

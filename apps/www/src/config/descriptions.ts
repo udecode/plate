@@ -1,4 +1,4 @@
-import { CopilotPlugin } from '@udecode/plate-ai/react';
+import { AIPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
@@ -46,7 +46,10 @@ import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { ResetNodePlugin } from '@udecode/plate-reset-node/react';
 import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import {
+  BlockMenuPlugin,
+  BlockSelectionPlugin,
+} from '@udecode/plate-selection/react';
 import { SlashPlugin } from '@udecode/plate-slash-command/react';
 import { TabbablePlugin } from '@udecode/plate-tabbable/react';
 import { TablePlugin } from '@udecode/plate-table/react';
@@ -56,8 +59,10 @@ import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
 
 export const descriptions: Record<string, string> = {
+  [AIPlugin.key]: 'Add AI Menu to your document.',
   [AlignPlugin.key]: 'Align your content to different positions.',
   [AutoformatPlugin.key]: 'Apply formatting automatically using shortcodes.',
+  [BlockMenuPlugin.key]: 'Add a block menu to your document.',
   [BlockSelectionPlugin.key]: 'Select and manipulate entire text blocks.',
   [BlockquotePlugin.key]: 'Highlight important text or citations.',
   [BoldPlugin.key]: 'Make your text stand out.',

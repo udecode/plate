@@ -34,7 +34,10 @@ import { MentionPlugin } from '@udecode/plate-mention/react';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { ResetNodePlugin } from '@udecode/plate-reset-node/react';
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import {
+  BlockMenuPlugin,
+  BlockSelectionPlugin,
+} from '@udecode/plate-selection/react';
 import { SlashPlugin } from '@udecode/plate-slash-command/react';
 import { TabbablePlugin } from '@udecode/plate-tabbable/react';
 import { TablePlugin } from '@udecode/plate-table/react';
@@ -42,6 +45,8 @@ import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 
 import { aiValue } from '@/lib/plate/demo/values/aiValue';
+import { blockMenuValue } from '@/lib/plate/demo/values/blockMenuValue';
+import { blockSelectionValue } from '@/lib/plate/demo/values/blockSelectionValue';
 import { columnValue } from '@/lib/plate/demo/values/columnValue';
 import { copilotValue } from '@/lib/plate/demo/values/copilotValue';
 import { slashCommandValue } from '@/lib/plate/demo/values/slahMenuValue';
@@ -121,6 +126,13 @@ export const customizerPlugins = {
     route: '/docs/basic-elements',
     value: [...basicElementsValue, ...basicMarksValue],
   },
+  blockmenu: {
+    id: 'blockmenu',
+    label: 'Block Menu',
+    plugins: [BlockMenuPlugin.key],
+    route: '/docs/block-menu',
+    value: blockMenuValue,
+  },
   blockselection: {
     id: 'blockselection',
     label: 'Block Selection',
@@ -131,7 +143,7 @@ export const customizerPlugins = {
       MediaEmbedPlugin.key,
     ],
     route: '/docs/block-selection',
-    value: mediaValue,
+    value: blockSelectionValue,
   },
   caption: {
     id: 'caption',

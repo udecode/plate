@@ -48,7 +48,10 @@ import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { ResetNodePlugin } from '@udecode/plate-reset-node/react';
 import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import {
+  BlockMenuPlugin,
+  BlockSelectionPlugin,
+} from '@udecode/plate-selection/react';
 import { SlashPlugin } from '@udecode/plate-slash-command/react';
 import { TabbablePlugin } from '@udecode/plate-tabbable/react';
 import { TablePlugin } from '@udecode/plate-table/react';
@@ -118,6 +121,7 @@ export const customizerList = [
       customizerItems.components,
       customizerItems[AutoformatPlugin.key],
       customizerItems[BlockSelectionPlugin.key],
+      customizerItems[BlockMenuPlugin.key],
       customizerItems[CaptionPlugin.key],
       customizerItems[DndPlugin.key],
       customizerItems[DragOverCursorPlugin.key],

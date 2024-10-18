@@ -11,6 +11,8 @@ import { alignValue } from './alignValue';
 import { autoformatValue } from './autoformatValue';
 import { basicElementsValue } from './basicElementsValue';
 import { basicMarksValue } from './basicMarksValue';
+import { blockMenuValue } from './blockMenuValue';
+import { blockSelectionValue } from './blockSelectionValue';
 import { columnValue } from './columnValue';
 import { commentsValue } from './commentsValue';
 import { copilotValue } from './copilotValue';
@@ -65,6 +67,7 @@ export const usePlaygroundValue = (id?: ValueId): MyValue => {
     }
     if (valueId !== customizerPlugins.playground.id) {
       let newValue = (customizerPlugins as any)[valueId]?.value ?? value;
+      console.log('🚀 ~ returnuseMemo ~ newValue:', newValue);
 
       if (newValue.length === 0) {
         newValue = value;
@@ -72,10 +75,8 @@ export const usePlaygroundValue = (id?: ValueId): MyValue => {
 
       return mapNodeId(newValue);
     }
-    if (enabled.toc) value.unshift(...tocValue);
-    //AI
-    if (enabled.copilot) value.unshift(...copilotValue);
-    if (enabled.ai) value.unshift(...aiValue);
+    // Top
+    if (enabled.toc) value.unshift(...tocValue, ...aiValue, ...copilotValue);
     // Marks
     if (enabled.color || enabled.backgroundColor) value.push(...fontValue);
     if (enabled.highlight) value.push(...highlightValue);
@@ -97,6 +98,8 @@ export const usePlaygroundValue = (id?: ValueId): MyValue => {
     if (enabled.toggle) value.push(...toggleValue);
     // Functionalities
     if (enabled.slash_command) value.push(...slashCommandValue);
+    if (enabled.blockSelection) value.push(...blockSelectionValue);
+    if (enabled.blockMenu) value.push(...blockMenuValue);
     if (enabled.autoformat) value.push(...autoformatValue);
     if (enabled.softBreak) value.push(...softBreakValue);
     if (enabled.exitBreak) value.push(...exitBreakValue);

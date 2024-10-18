@@ -156,6 +156,13 @@ export const ui: Registry = [
     type: 'registry:ui',
   },
   {
+    dependencies: ['@radix-ui/react-context-menu'],
+    files: ['plate-ui/block-context-menu.tsx'],
+    name: 'block-context-menu',
+    registryDependencies: ['calendar', 'plate-element'],
+    type: 'registry:ui',
+  },
+  {
     dependencies: ['@udecode/plate-ai'],
     files: ['plate-ui/ghost-text.tsx'],
     name: 'ghost-text',

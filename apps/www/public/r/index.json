@@ -358,6 +358,23 @@
   },
   {
     "dependencies": [
+      "@radix-ui/react-context-menu"
+    ],
+    "files": [
+      {
+        "path": "plate-ui/block-context-menu.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "block-context-menu",
+    "registryDependencies": [
+      "calendar",
+      "plate-element"
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
       "@udecode/plate-ai"
     ],
     "files": [

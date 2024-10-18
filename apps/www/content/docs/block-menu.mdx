@@ -7,13 +7,12 @@ docs:
 
   - route: https://pro.platejs.org/docs/components/block-context-menu
     title: Block Context Menu
+
+  - route: /docs/components/block-context-menu
+    title: Block Context Menu
 ---
 
-<ComponentPreviewPro
-  name="pro-iframe-demo"
-  id="context-menu"
-  component="context-menu"
-/>
+<ComponentPreview name="playground-demo" id="blockmenu" />
 
 <PackageInfo>
 
@@ -76,7 +75,6 @@ const editor = usePlateEditor({
 });
 ```
 
-
 ## Prevent opening of the right-click menu
 
 To control the opening of the right-click menu for specific elements, you can use the `data-open-context-menu` attribute:
@@ -92,6 +90,21 @@ Example usage:
   {children}
 </PlateElement>
 ```
+
+## Plus
+
+In Plate Plus, We have provided a more advanced menu.
+
+1. More advanced menu items.
+2. Supports search functionality and carefully designed shortcuts.
+3. More refined styles and animations.
+4. You can open this menu in various ways, such as through the drag button.
+
+<ComponentPreviewPro
+  name="pro-iframe-demo"
+  id="pro-context-menu"
+  component="context-menu"
+/>
 
 ## API
 

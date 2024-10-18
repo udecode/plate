@@ -45,10 +45,11 @@ export const docsConfig: DocsConfig = {
     },
     {
       items: [
-        customizerComponents.copilotHoverCard,
+        customizerComponents.ghostText,
         customizerComponents.editor,
         customizerComponents.alignDropdownMenu,
         customizerComponents.avatar,
+        customizerComponents.blockContextMenu,
         customizerComponents.blockquoteElement,
         customizerComponents.button,
         customizerComponents.caption,
@@ -267,7 +268,7 @@ export const docsConfig: DocsConfig = {
         },
         {
           href: '/docs/callout',
-          label: 'New',
+          label: 'Plus',
           title: 'Callout',
         },
         {
@@ -315,7 +316,7 @@ export const docsConfig: DocsConfig = {
         },
         {
           href: '/docs/equation',
-          label: 'New',
+          label: 'Plus',
           title: 'Equation',
         },
         {

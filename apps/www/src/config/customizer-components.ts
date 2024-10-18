@@ -4,6 +4,11 @@ export const customizerComponents = {
     title: 'Align Dropdown Menu',
   },
   avatar: { href: '/docs/components/avatar', title: 'Avatar' },
+  blockContextMenu: {
+    href: '/docs/components/block-context-menu',
+    label: 'New',
+    title: 'Block Context Menu',
+  },
   blockquoteElement: {
     href: '/docs/components/blockquote-element',
     label: 'Element',
@@ -63,11 +68,6 @@ export const customizerComponents = {
     href: '/docs/components/comments-popover',
     title: 'Comments Popover',
   },
-  copilotHoverCard: {
-    href: '/docs/components/ghost-text',
-    label: 'New',
-    title: 'Ghost Text',
-  },
   cursorOverlay: {
     href: '/docs/components/cursor-overlay',
     title: 'Cursor Overlay',
@@ -121,6 +121,11 @@ export const customizerComponents = {
   floatingToolbarButtons: {
     href: '/docs/components/floating-toolbar-buttons',
     title: 'Floating Toolbar Buttons',
+  },
+  ghostText: {
+    href: '/docs/components/ghost-text',
+    label: 'New',
+    title: 'Ghost Text',
   },
   headingElement: {
     href: '/docs/components/heading-element',

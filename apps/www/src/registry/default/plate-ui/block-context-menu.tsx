@@ -132,7 +132,7 @@ export const BlockContextMenu = (props: { children: React.ReactNode }) => {
               .blockSelection.setIndent(1)
           }
         >
-          Increase indent
+          Indent
         </ContextMenuCheckboxItem>
         <ContextMenuCheckboxItem
           onClick={() =>
@@ -141,7 +141,7 @@ export const BlockContextMenu = (props: { children: React.ReactNode }) => {
               .blockSelection.setIndent(-1)
           }
         >
-          Decrease indent
+          Outdent
         </ContextMenuCheckboxItem>
         <ContextMenuSub>
           <ContextMenuSubTrigger inset>Align</ContextMenuSubTrigger>
