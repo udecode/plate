@@ -53,6 +53,7 @@
     "@udecode/plate-combobox": "39.0.0",
     "@udecode/plate-markdown": "39.1.5",
     "@udecode/plate-selection": "39.1.4",
+    "ai": "^3.4.10",
     "lodash": "^4.17.21"
   },
   "peerDependencies": {
