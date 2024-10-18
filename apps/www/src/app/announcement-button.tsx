@@ -4,27 +4,28 @@ import * as React from 'react';
 
 import { ArrowRightIcon } from 'lucide-react';
 
-import { settingsStore } from '@/components/context/settings-store';
 import { Button } from '@/registry/default/plate-ui/button';
 import { Separator } from '@/registry/default/plate-ui/separator';
 
 export function AnnouncementButton() {
   return (
     <Button
-      size="none"
+      size="lg"
       variant="link"
-      className="group inline-flex items-center rounded-lg px-0.5 text-sm font-medium hover:no-underline"
+      className="group inline-flex items-center rounded-lg px-2 text-lg font-medium hover:no-underline"
       onClick={() => {
-        settingsStore.set.showSettings(true);
-        settingsStore.set.customizerTab('plugins');
+        window.open('https://pro.platejs.org', '_blank');
       }}
     >
-      <span className="">🎉 </span>
-      <Separator orientation="vertical" className="mx-2 h-4" />
+      <span className="text-xl">🎉 </span>
+      <Separator orientation="vertical" className="mx-3 h-6" />
       <span className="underline-offset-4 group-hover:underline">
-        Introducing the interactive builder
+        <span>Introducing the&nbsp;</span>
+        <span className="bg-gradient-to-r from-[#6EB6F2] via-[#a855f7] to-[#eab308] bg-clip-text text-transparent">
+          Plate Plus
+        </span>
       </span>
-      <ArrowRightIcon className="ml-1 size-4" />
+      <ArrowRightIcon className="ml-2 size-6" />
     </Button>
   );
 }

@@ -13,9 +13,14 @@ export const copilotValue: any = (
       <htext>where you want to add or modify text.</htext>
     </hp>
     <hp indent={1} listStart={2} listStyleType="decimal">
-      <htext>Press Control + Space to trigger Copilot.</htext>
+      <htext>Press Control + Space to trigger Copilot</htext>
     </hp>
     <hp indent={1} listStart={3} listStyleType="decimal">
+      <htext>Copilot will</htext>
+      <htext bold> automatically</htext>
+      <htext> suggest completions as you type.</htext>
+    </hp>
+    <hp indent={1} listStart={4} listStyleType="decimal">
       <htext>Choose from the suggested completions:</htext>
     </hp>
     <hp indent={2} listStyleType="disc">

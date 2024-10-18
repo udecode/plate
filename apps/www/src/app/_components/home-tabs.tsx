@@ -50,7 +50,7 @@ export default function HomeTabs() {
         <TabsList>
           <TabsTrigger value="playground">Playground</TabsTrigger>
           <TabsTrigger value="installation">Installation</TabsTrigger>
-          <TabsTrigger value="potion">Potion Template</TabsTrigger>
+          {/* <TabsTrigger value="potion">Potion Template</TabsTrigger> */}
         </TabsList>
 
         <Button
