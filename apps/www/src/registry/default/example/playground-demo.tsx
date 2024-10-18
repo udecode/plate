@@ -288,17 +288,7 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         }),
         BlockMenuPlugin.configure({
           render: { aboveEditable: BlockContextMenu },
-        }).extend(({ api }) => ({
-          handlers: {
-            onMouseDown: ({ event, getOptions }) => {
-              if (event.button === 0 && getOptions().openId) {
-                // event.preventDefault();
-                api.blockMenu.hide();
-              }
-              if (event.button === 2) event.preventDefault();
-            },
-          },
-        })),
+        }),
         DndPlugin.configure({ options: { enableScroller: true } }),
         EmojiPlugin,
         exitBreakPlugin,
