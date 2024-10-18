@@ -25,12 +25,9 @@ export function GhostTextContent() {
   });
 
   const suggestionText = useOption('suggestionText');
-  const hasLeadingSpace = suggestionText?.startsWith(' ');
 
   return (
     <span className="text-muted-foreground" contentEditable={false}>
-      {hasLeadingSpace && <span> </span>}
-
       {suggestionText && suggestionText}
     </span>
   );
