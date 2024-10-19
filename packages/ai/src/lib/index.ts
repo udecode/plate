@@ -3,4 +3,4 @@
  */
 
 export * from './BaseAIPlugin';
-export * from './withTriggerAIMenu';
+export * from './transforms/index';

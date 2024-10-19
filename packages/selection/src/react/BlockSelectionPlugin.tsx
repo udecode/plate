@@ -36,9 +36,11 @@ import { BlockSelectable } from './components/BlockSelectable';
 import { useSelectionArea } from './hooks/useSelectionArea';
 import { onKeyDownSelection } from './onKeyDownSelection';
 import { duplicateBlockSelectionNodes } from './transforms/duplicateBlockSelectionNodes';
+import { insertBlocksAndSelect } from './transforms/insertBlocksAndSelect';
 import { removeBlockSelectionNodes } from './transforms/removeBlockSelectionNodes';
 import { selectBlockSelectionNodes } from './transforms/selectBlockSelectionNodes';
 import {
+  setBlockSelectionIndent,
   setBlockSelectionNodes,
   setBlockSelectionTexts,
 } from './transforms/setBlockSelectionNodes';
@@ -369,8 +371,10 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
   }))
   .extendTransforms(({ editor }) => ({
     duplicate: bindFirst(duplicateBlockSelectionNodes, editor),
+    insertBlocksAndSelect: bindFirst(insertBlocksAndSelect, editor),
     removeNodes: bindFirst(removeBlockSelectionNodes, editor),
     select: bindFirst(selectBlockSelectionNodes, editor),
+    setIndent: bindFirst(setBlockSelectionIndent, editor),
     setNodes: bindFirst(setBlockSelectionNodes, editor),
     setTexts: bindFirst(setBlockSelectionTexts, editor),
   }));

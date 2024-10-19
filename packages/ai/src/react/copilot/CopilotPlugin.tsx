@@ -1,214 +1,262 @@
-import React from 'react';
+'use client';
 
-import type { InsertTextOperation } from 'slate';
+import type React from 'react';
+
+import type { DebouncedFunc } from 'lodash';
 
 import {
+  type OmitFirst,
   type PluginConfig,
-  type QueryNodeOptions,
-  withoutMergingHistory,
+  type TElement,
+  bindFirst,
+  getAncestorNode,
+  getBlockAbove,
+  getNodeString,
+  isBlockAboveEmpty,
+  isExpanded,
+  isSelectionAtBlockEnd,
 } from '@udecode/plate-common';
 import {
-  ParagraphPlugin,
+  type PlateEditor,
+  Key,
   createTPlatePlugin,
 } from '@udecode/plate-common/react';
+import { serializeMdNodes } from '@udecode/plate-markdown';
 
-import { generateCopilotTextDebounce } from './generateCopilotText';
-import { InjectCopilot } from './injectCopilot';
-import { onKeyDownCopilot } from './onKeyDownCopilot';
-import { withoutAbort } from './utils/withoutAbort';
+import type { CompleteOptions } from './utils/callCompletionApi';
 
-export interface CopilotHoverCardProps {
-  suggestionText: string;
-}
+import { renderCopilotBelowNodes } from './renderCopilotBelowNodes';
+import { acceptCopilot } from './transforms/acceptCopilot';
+import { acceptCopilotNextWord } from './transforms/acceptCopilotNextWord';
+import { triggerCopilotSuggestion } from './utils/triggerCopilotSuggestion';
+import { withCopilot } from './withCopilot';
 
-export interface FetchCopilotSuggestionProps {
-  abortSignal: AbortController;
-  prompt: string;
-}
+type CompletionState = {
+  abortController?: AbortController | null;
+  // The current text completion.
+  completion?: string | null;
+  // The error thrown during the completion process, if any.
+  error?: Error | null;
+  // Boolean flag indicating whether a fetch operation is currently in progress.
+  isLoading?: boolean;
+};
 
 export type CopilotPluginConfig = PluginConfig<
   'copilot',
-  {
-    hoverCard: (props: CopilotHoverCardProps) => JSX.Element;
-    abortController?: AbortController | null;
-    completedNodeId?: string | null;
-    copilotState?: 'completed' | 'idle';
-    enableDebounce?: boolean;
-    enableShortCut?: boolean;
-    fetchSuggestion?: (props: FetchCopilotSuggestionProps) => Promise<string>;
-    query?: QueryNodeOptions;
+  CompletionState & {
+    /** Get the next word to be inserted. */
+    getNextWord?: (options: { text: string }) => {
+      firstWord: string;
+      remainingText: string;
+    };
+    /**
+     * Conditions to auto trigger copilot, used in addition to triggerQuery.
+     * Disabling defaults to:
+     *
+     * - Block above is empty
+     * - Block above ends with a space
+     * - There is already a suggestion
+     */
+    autoTriggerQuery?: (options: { editor: PlateEditor }) => boolean;
+    /**
+     * AI completion options. See:
+     * {@link https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-completion#parameters | AI SDK UI useCompletion Parameters}
+     */
+    completeOptions?: Partial<CompleteOptions>;
+    /**
+     * Debounce delay for auto triggering AI completion.
+     *
+     * @default 0
+     */
+    debounceDelay?: number;
+    /**
+     * Get the prompt for AI completion.
+     *
+     * @default serializeMdNodes(getAncestorNode(editor))
+     */
+    getPrompt?: (options: { editor: PlateEditor }) => string;
+    /** Render the ghost text. */
+    renderGhostText?: (() => React.ReactNode) | null;
     shouldAbort?: boolean;
+    /** The node id where the suggestion is located. */
+    suggestionNodeId?: string | null;
+    /** The text of the suggestion. */
     suggestionText?: string | null;
-  } & CopilotApi &
-    CopilotSelectors
+    /**
+     * Conditions to trigger copilot. Disabling defaults to:
+     *
+     * - Selection is expanded
+     * - Selection is not at the end of block
+     */
+    triggerQuery?: (options: { editor: PlateEditor }) => boolean;
+    // query?: QueryEditorOptions;
+  } & CopilotSelectors,
+  {
+    copilot: CopilotApi;
+  }
 >;
 
 type CopilotSelectors = {
-  isCompleted?: (id: string) => boolean;
+  isSuggested?: (id: string) => boolean;
 };
 
 type CopilotApi = {
-  abortCopilot?: () => void;
-  setCopilot?: (id: string, text: string) => void;
+  accept: OmitFirst<typeof acceptCopilot>;
+  acceptNextWord: OmitFirst<typeof acceptCopilotNextWord>;
+  // Function to abort the current API request and reset the completion state.
+  reset: () => void;
+  setBlockSuggestion: (options: { text: string; id?: string }) => void;
+  // Function to abort the current API request.
+  stop: () => void;
+  triggerSuggestion: OmitFirst<typeof triggerCopilotSuggestion>;
 };
 
 export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
   key: 'copilot',
   options: {
-    copilotState: 'idle',
-    enableDebounce: false,
-    hoverCard: (props) => <span>{props.suggestionText}</span>,
-    query: {
-      allow: [ParagraphPlugin.key],
+    abortController: null,
+    autoTriggerQuery: ({ editor }) => {
+      if (
+        editor.getOptions<CopilotPluginConfig>({ key: 'copilot' })
+          .suggestionText
+      ) {
+        return false;
+      }
+
+      const isEmpty = isBlockAboveEmpty(editor);
+
+      if (isEmpty) return false;
+
+      const blockAbove = getBlockAbove(editor);
+
+      if (!blockAbove) return false;
+
+      const blockString = getNodeString(blockAbove[0]);
+
+      return blockString.at(-1) === ' ';
     },
+    completeOptions: {},
+    completion: '',
+    debounceDelay: 0,
+    error: null,
+    getNextWord: ({ text }) => {
+      const firstWord = /^\s*\S+/.exec(text)?.[0] || '';
+      const remainingText = text.slice(firstWord.length);
+
+      return { firstWord, remainingText };
+    },
+    getPrompt: ({ editor }) => {
+      const contextEntry = getAncestorNode(editor);
+
+      if (!contextEntry) return '';
+
+      return serializeMdNodes([contextEntry[0] as TElement]);
+    },
+    isLoading: false,
+    renderGhostText: null,
     shouldAbort: true,
+    suggestionNodeId: null,
+    suggestionText: null,
+    triggerQuery: ({ editor }) => {
+      if (isExpanded(editor.selection)) return false;
+
+      const isEnd = isSelectionAtBlockEnd(editor);
+
+      if (!isEnd) return false;
+
+      return true;
+    },
+  },
+  handlers: {
+    onBlur: ({ api }) => {
+      api.copilot.reset();
+    },
   },
 })
   .extendOptions<Required<CopilotSelectors>>(({ getOptions }) => ({
-    isCompleted: (id) => getOptions().completedNodeId === id,
+    isSuggested: (id) => getOptions().suggestionNodeId === id,
   }))
-  .extendApi<Required<CopilotApi>>(({ getOptions, setOptions }) => ({
-    abortCopilot: () => {
-      const { abortController } = getOptions();
+  .extendApi<Omit<CopilotApi, 'reset'>>(
+    ({ api, editor, getOptions, setOption, setOptions }) => ({
+      accept: bindFirst(acceptCopilot, editor),
+      acceptNextWord: bindFirst(acceptCopilotNextWord, editor),
+      setBlockSuggestion: ({ id = getOptions().suggestionNodeId, text }) => {
+        if (!id) {
+          id = getBlockAbove(editor)![0].id;
+        }
 
-      abortController?.abort();
+        setOptions({
+          suggestionNodeId: id,
+          suggestionText: text,
+        });
+      },
+      stop: () => {
+        const { abortController } = getOptions();
+
+        (api.copilot.triggerSuggestion as DebouncedFunc<any>)?.cancel();
+
+        if (abortController) {
+          abortController.abort();
+          setOption('abortController', null);
+        }
+      },
+      triggerSuggestion: bindFirst(triggerCopilotSuggestion, editor),
+    })
+  )
+  .extendApi(({ api, setOptions }) => ({
+    reset: () => {
+      api.copilot.stop();
 
       setOptions({
-        abortController: null,
-        completedNodeId: null,
-        copilotState: 'idle',
-      });
-    },
-    setCopilot: (id, text) => {
-      setOptions({
-        completedNodeId: id,
-        copilotState: 'completed',
-        suggestionText: text,
+        completion: null,
+        suggestionNodeId: null,
+        suggestionText: null,
       });
     },
   }))
   .extend({
-    extendEditor: ({ api, editor, getOptions, setOptions }) => {
-      type CopilotBatch = (typeof editor.history.undos)[number] & {
-        shouldAbort: boolean;
-      };
-
-      const { apply, insertText, redo, setSelection, undo, writeHistory } =
-        editor;
-
-      editor.undo = () => {
-        if (getOptions().copilotState === 'idle') return undo();
-
-        const topUndo = editor.history.undos.at(-1) as CopilotBatch;
-        const oldText = getOptions().suggestionText;
-
-        if (
-          topUndo &&
-          topUndo.shouldAbort === false &&
-          topUndo.operations[0].type === 'insert_text' &&
-          oldText
-        ) {
-          withoutAbort(editor, () => {
-            const shouldInsertText = (
-              topUndo.operations[0] as InsertTextOperation
-            ).text;
-
-            const newText = shouldInsertText + oldText;
-            setOptions({ suggestionText: newText });
-
-            undo();
-          });
-
-          return;
-        }
-
-        return undo();
-      };
-
-      editor.redo = () => {
-        if (getOptions().copilotState === 'idle') return redo();
-
-        const topRedo = editor.history.redos.at(-1) as CopilotBatch;
-        const oldText = getOptions().suggestionText;
-
-        if (
-          topRedo &&
-          topRedo.shouldAbort === false &&
-          topRedo.operations[0].type === 'insert_text' &&
-          oldText
-        ) {
-          withoutAbort(editor, () => {
-            const shouldRemoveText = (
-              topRedo.operations[0] as InsertTextOperation
-            ).text;
-
-            const newText = oldText.slice(shouldRemoveText.length);
-            setOptions({ suggestionText: newText });
-
-            redo();
-          });
-
-          return;
-        }
-
-        return redo();
-      };
-
-      editor.writeHistory = (stacks, batch) => {
-        if (getOptions().copilotState === 'idle')
-          return writeHistory(stacks, batch);
-
-        const { shouldAbort } = getOptions();
-        batch.shouldAbort = shouldAbort;
-
-        return writeHistory(stacks, batch);
-      };
-
-      editor.insertText = (text) => {
-        if (getOptions().copilotState === 'idle') return insertText(text);
-
-        const oldText = getOptions().suggestionText;
-
-        if (text.length === 1 && text === oldText?.at(0)) {
-          withoutAbort(editor, () => {
-            withoutMergingHistory(editor, () => {
-              const newText = oldText?.slice(1);
-              setOptions({ suggestionText: newText });
-              insertText(text);
-            });
-          });
-
-          return;
-        }
-
-        insertText(text);
-      };
-
-      editor.apply = (operation) => {
-        const { shouldAbort } = getOptions();
-
-        if (shouldAbort) {
-          api.copilot.abortCopilot();
-        }
-
-        apply(operation);
-      };
-
-      editor.setSelection = (selection) => {
-        if (getOptions().enableDebounce) {
-          void generateCopilotTextDebounce(editor, { isDebounce: true });
-        }
-
-        return setSelection(selection);
-      };
-
-      return editor;
-    },
+    extendEditor: withCopilot,
     render: {
-      // TODO: type
-      belowNodes: InjectCopilot as any,
+      belowNodes: renderCopilotBelowNodes,
     },
-    handlers: {
-      onKeyDown: onKeyDownCopilot as any,
-    },
+  })
+  .extend(({ api, getOptions }) => {
+    return {
+      shortcuts: {
+        acceptCopilot: {
+          keys: [[Key.Tab]],
+          handler: ({ event }) => {
+            if (!getOptions().suggestionText?.length) return;
+
+            event.preventDefault();
+            api.copilot.accept();
+          },
+        },
+        acceptCopilotNextWord: {
+          keys: [[Key.Meta, Key.ArrowRight]],
+          handler: ({ event }) => {
+            if (!getOptions().suggestionText?.length) return;
+
+            event.preventDefault();
+            api.copilot.acceptNextWord();
+          },
+        },
+        hideCopilot: {
+          keys: [[Key.Escape]],
+          handler: ({ event }) => {
+            if (!getOptions().suggestionText?.length) return;
+
+            event.preventDefault();
+            api.copilot.reset();
+          },
+        },
+        triggerCopilot: {
+          keys: [[Key.Control, 'space']],
+          preventDefault: true,
+          handler: () => {
+            void api.copilot.triggerSuggestion();
+          },
+        },
+      },
+    };
   });

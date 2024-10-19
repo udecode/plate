@@ -94,7 +94,8 @@ export const useBlockSelectable = ({
             const id = nodeEntry[0].id as string | undefined;
             const isSelected = getOption('isSelected', id);
             const isOpenAlways =
-              (event.target as HTMLElement).dataset?.openContextMenu === 'true';
+              (event.target as HTMLElement).dataset?.plateOpenContextMenu ===
+              'true';
 
             /**
              * When "block selected or is void or has openContextMenu props",
