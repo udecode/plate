@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-markdown': patch
+'@udecode/plate-markdown': minor
 ---
 
-New `deserializeInlineMd` `serializeInlineMd` `stripMarkdownBlocks` `stripMarkdownInline`
+Add `deserializeInlineMd`, `serializeInlineMd`, `stripMarkdownBlocks`, `stripMarkdownInline`

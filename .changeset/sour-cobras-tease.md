@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-ai': patch
+'@udecode/plate-ai': minor
 ---
 
- `CopilotPlugin`, `AIPlugin` is ready from this version.
+Add `AIPlugin`, `CopilotPlugin`

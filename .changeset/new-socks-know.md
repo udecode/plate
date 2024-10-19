@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-callout': patch
+'@udecode/plate-callout': minor
 ---
 
-New `editor.tf.insert.callout`
+Add `editor.tf.insert.callout`

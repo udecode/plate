@@ -1,5 +1,5 @@
 ---
-'@udecode/plate-math': patch
+'@udecode/plate-math': minor
 ---
 
-New `editor.tf.insert.equation` `editor.tf.insert.inlineEquation`
+Add `editor.tf.insert.equation`, `editor.tf.insert.inlineEquation`
