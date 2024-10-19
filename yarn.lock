@@ -6572,7 +6572,6 @@ __metadata:
     "@udecode/utils": "npm:37.0.0"
     clsx: "npm:^2.1.1"
     is-hotkey: "npm:^0.2.0"
-    is-plain-object: "npm:^5.0.0"
     jotai: "npm:~2.8.4"
     jotai-optics: "npm:0.4.0"
     jotai-x: "npm:1.2.4"
@@ -7444,6 +7443,7 @@ __metadata:
   resolution: "@udecode/slate@workspace:packages/slate"
   dependencies:
     "@udecode/utils": "npm:37.0.0"
+    is-plain-object: "npm:^5.0.0"
   peerDependencies:
     slate: ">=0.103.0"
     slate-history: ">=0.93.0"

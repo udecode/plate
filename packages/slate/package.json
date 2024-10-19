@@ -42,7 +42,8 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/utils": "37.0.0"
+    "@udecode/utils": "37.0.0",
+    "is-plain-object": "^5.0.0"
   },
   "peerDependencies": {
     "slate": ">=0.103.0",
