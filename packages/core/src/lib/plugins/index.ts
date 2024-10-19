@@ -13,4 +13,3 @@ export * from './editor-protocol/index';
 export * from './html/index';
 export * from './length/index';
 export * from './paragraph/index';
-export * from './slate-history/index';
