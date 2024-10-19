@@ -1,5 +1,11 @@
 # @udecode/plate-ai
 
+## 39.2.0
+
+### Minor Changes
+
+- [#3644](https://github.com/udecode/plate/pull/3644) by [@felixfeng33](https://github.com/felixfeng33) – Add `AIPlugin`, `CopilotPlugin`
+
 ## 39.1.5
 
 ## 39.1.4

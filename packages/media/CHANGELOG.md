@@ -1,5 +1,11 @@
 # @udecode/plate-media
 
+## 39.2.0
+
+### Minor Changes
+
+- [#3644](https://github.com/udecode/plate/pull/3644) by [@felixfeng33](https://github.com/felixfeng33) – Add `editor.tf.insert.audioPlaceholder`, `editor.tf.insert.filePlaceholder`, `editor.tf.insert.imagePlaceholder`, `editor.tf.insert.videoPlaceholder`
+
 ## 39.0.0
 
 ## 38.0.6
