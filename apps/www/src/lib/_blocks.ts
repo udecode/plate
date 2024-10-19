@@ -32,6 +32,7 @@ export async function getAllBlockIds(
   return blocks.map((block) => block.name);
 }
 
+// TODO: sync
 export async function getBlock(
   name: string,
   style: Style['name'] = DEFAULT_BLOCKS_STYLE

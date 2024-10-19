@@ -21,6 +21,7 @@ interface ComponentPreviewProps extends React.HTMLAttributes<HTMLDivElement> {
   extractedClassNames?: string;
   hideCode?: boolean;
   padding?: 'md';
+  type?: 'block' | 'component' | 'example';
 }
 
 export function ComponentPreview({
@@ -33,6 +34,7 @@ export function ComponentPreview({
   hideCode = false,
   name,
   padding,
+  type,
   ...props
 }: ComponentPreviewProps) {
   const [config] = useConfig();
@@ -68,6 +70,19 @@ export function ComponentPreview({
       return Button?.props?.value || Button?.props?.__rawString__ || null;
     }
   }, [Code]);
+
+  // if (type === 'block') {
+  //   return (
+  //     <div className="relative aspect-[4/2.5] w-full overflow-hidden rounded-md border">
+  //                <div className="absolute inset-0 hidden w-[1600px] bg-background md:block">
+  //         <iframe
+  //           className="size-full"
+  //           src={`/blocks/${config.style}/${name}`}
+  //         />
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div

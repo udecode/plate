@@ -157,7 +157,10 @@ export const Table = ({
 }: React.HTMLAttributes<HTMLTableElement>) => (
   <div className="my-6 w-full overflow-y-auto rounded-lg">
     <table
-      className={cn('w-full overflow-hidden rounded-lg', className)}
+      className={cn(
+        'relative w-full overflow-hidden text-sm after:absolute after:inset-0 after:rounded-lg after:ring-1 after:ring-border',
+        className
+      )}
       {...props}
     />
   </div>
@@ -167,7 +170,7 @@ export const TR = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLTableRowElement>) => (
-  <tr className={cn('m-0 border-t p-0', className)} {...props} />
+  <tr className={cn('m-0 border-t', className)} {...props} />
 );
 
 export const TH = ({

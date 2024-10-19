@@ -26,6 +26,10 @@ export function CodeBlockWrapper({
 }: CodeBlockProps) {
   const [isOpened, setIsOpened] = React.useState(open);
 
+  React.useEffect(() => {
+    setIsOpened(open);
+  }, [open]);
+
   return (
     <Collapsible open={isOpened} onOpenChange={setIsOpened}>
       <div className={cn('relative overflow-hidden', className)} {...props}>

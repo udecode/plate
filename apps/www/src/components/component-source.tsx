@@ -1,8 +1,12 @@
+/* eslint-disable jsx-a11y/interactive-supports-focus */
 'use client';
 
 import * as React from 'react';
 
 import { cn } from '@udecode/cn';
+
+import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
+import { Button } from '@/registry/default/plate-ui/button';
 
 import { CodeBlockWrapper } from './code-block-wrapper';
 
@@ -10,21 +14,44 @@ interface ComponentSourceProps extends React.HTMLAttributes<HTMLDivElement> {
   src: string;
   name?: string;
   open?: boolean;
+  title?: string;
 }
 
 export function ComponentSource({
   children,
   className,
   name,
+  title,
   ...props
 }: ComponentSourceProps) {
+  const displaySrc = title ?? props.src?.split('/').pop() ?? name + '.tsx';
+  const { copyToClipboard } = useCopyToClipboard();
+  const [open, setOpen] = React.useState(false);
+
   return (
-    <CodeBlockWrapper
-      className={cn('my-6 overflow-hidden rounded-md', className)}
-      expandButtonTitle={name || 'Expand'}
-      {...props}
-    >
-      {children}
-    </CodeBlockWrapper>
+    <div className="mb-6 mt-4">
+      {displaySrc && (
+        <Button
+          size="none"
+          variant="ghost"
+          className="mb-1 w-fit select-auto px-4 py-1 text-sm font-medium text-foreground"
+          onClick={() => {
+            copyToClipboard(displaySrc);
+            setOpen((prev) => !prev);
+          }}
+        >
+          {displaySrc}
+        </Button>
+      )}
+
+      <CodeBlockWrapper
+        className={cn('overflow-hidden rounded-md', className)}
+        open={open}
+        expandButtonTitle="Expand"
+        {...props}
+      >
+        {children}
+      </CodeBlockWrapper>
+    </div>
   );
 }

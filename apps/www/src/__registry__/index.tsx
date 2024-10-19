@@ -7,6 +7,7 @@ export const Index: Record<string, any> = {
   "default": {
     "editor": {
       name: "editor",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: [],
       files: ["registry/default/plate-ui/editor.tsx"],
@@ -18,6 +19,7 @@ export const Index: Record<string, any> = {
     },
     "block-selection": {
       name: "block-selection",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: [],
       files: ["registry/default/plate-ui/block-selection.tsx"],
@@ -29,6 +31,7 @@ export const Index: Record<string, any> = {
     },
     "plate-element": {
       name: "plate-element",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["block-selection"],
       files: ["registry/default/plate-ui/plate-element.tsx"],
@@ -38,19 +41,9 @@ export const Index: Record<string, any> = {
       subcategory: "undefined",
       chunks: []
     },
-    "cloud": {
-      name: "cloud",
-      type: "registry:ui",
-      registryDependencies: [],
-      files: ["registry/default/plate-ui/cloud.tsx","registry/default/plate-ui/cloud-attachment-element.tsx","registry/default/plate-ui/cloud-image-element.tsx","registry/default/plate-ui/cloud-resize-controls.tsx","registry/default/plate-ui/cloud-status-bar.tsx","registry/default/plate-ui/cloud-toolbar-buttons.tsx"],
-      component: React.lazy(() => import("@/registry/default/plate-ui/cloud.tsx")),
-      source: "",
-      category: "undefined",
-      subcategory: "undefined",
-      chunks: []
-    },
     "code-block-element": {
       name: "code-block-element",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["command","plate-element"],
       files: ["registry/default/plate-ui/code-block-element.tsx","registry/default/plate-ui/code-block-element.css","registry/default/plate-ui/code-block-combobox.tsx"],
@@ -62,6 +55,7 @@ export const Index: Record<string, any> = {
     },
     "column-element": {
       name: "column-element",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["command","resizable","plate-element"],
       files: ["registry/default/plate-ui/column-element.tsx","registry/default/plate-ui/column-group-element.tsx"],
@@ -73,6 +67,7 @@ export const Index: Record<string, any> = {
     },
     "color-dropdown-menu": {
       name: "color-dropdown-menu",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["dropdown-menu","toolbar","separator","button","tooltip"],
       files: ["registry/default/plate-ui/color-dropdown-menu.tsx","registry/default/plate-ui/color-constants.ts","registry/default/plate-ui/color-dropdown-menu-items.tsx","registry/default/plate-ui/color-input.tsx","registry/default/plate-ui/color-picker.tsx","registry/default/plate-ui/colors-custom.tsx"],
@@ -84,6 +79,7 @@ export const Index: Record<string, any> = {
     },
     "comments-popover": {
       name: "comments-popover",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["popover","avatar"],
       files: ["registry/default/plate-ui/comments-popover.tsx","registry/default/plate-ui/comment-avatar.tsx","registry/default/plate-ui/comment-create-form.tsx","registry/default/plate-ui/comment-item.tsx","registry/default/plate-ui/comment-more-dropdown.tsx","registry/default/plate-ui/comment-reply-items.tsx","registry/default/plate-ui/comment-resolve-button.tsx","registry/default/plate-ui/comment-value.tsx"],
@@ -95,6 +91,7 @@ export const Index: Record<string, any> = {
     },
     "draggable": {
       name: "draggable",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["tooltip"],
       files: ["registry/default/plate-ui/draggable.tsx","registry/default/plate-ui/with-draggables.tsx"],
@@ -106,6 +103,7 @@ export const Index: Record<string, any> = {
     },
     "emoji-dropdown-menu": {
       name: "emoji-dropdown-menu",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["toolbar"],
       files: ["registry/default/plate-ui/emoji-dropdown-menu.tsx","registry/default/plate-ui/emoji-toolbar-dropdown.tsx","registry/default/plate-ui/emoji-icons.tsx","registry/default/plate-ui/emoji-picker.tsx","registry/default/plate-ui/emoji-picker-content.tsx","registry/default/plate-ui/emoji-picker-navigation.tsx","registry/default/plate-ui/emoji-picker-preview.tsx","registry/default/plate-ui/emoji-picker-search-and-clear.tsx","registry/default/plate-ui/emoji-picker-search-bar.tsx"],
@@ -117,6 +115,7 @@ export const Index: Record<string, any> = {
     },
     "emoji-input-element": {
       name: "emoji-input-element",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["inline-combobox","plate-element","use-debounce"],
       files: ["registry/default/plate-ui/emoji-input-element.tsx"],
@@ -128,6 +127,7 @@ export const Index: Record<string, any> = {
     },
     "align-dropdown-menu": {
       name: "align-dropdown-menu",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["dropdown-menu","toolbar"],
       files: ["registry/default/plate-ui/align-dropdown-menu.tsx"],
@@ -139,6 +139,7 @@ export const Index: Record<string, any> = {
     },
     "avatar": {
       name: "avatar",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: [],
       files: ["registry/default/plate-ui/avatar.tsx"],
@@ -150,6 +151,7 @@ export const Index: Record<string, any> = {
     },
     "blockquote-element": {
       name: "blockquote-element",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["plate-element"],
       files: ["registry/default/plate-ui/blockquote-element.tsx"],
@@ -161,6 +163,7 @@ export const Index: Record<string, any> = {
     },
     "date-element": {
       name: "date-element",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["calendar","plate-element"],
       files: ["registry/default/plate-ui/date-element.tsx"],
@@ -172,6 +175,7 @@ export const Index: Record<string, any> = {
     },
     "calendar": {
       name: "calendar",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["button"],
       files: ["registry/default/plate-ui/calendar.tsx"],
@@ -183,6 +187,7 @@ export const Index: Record<string, any> = {
     },
     "button": {
       name: "button",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: [],
       files: ["registry/default/plate-ui/button.tsx"],
@@ -194,6 +199,7 @@ export const Index: Record<string, any> = {
     },
     "caption": {
       name: "caption",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: [],
       files: ["registry/default/plate-ui/caption.tsx"],
@@ -205,6 +211,7 @@ export const Index: Record<string, any> = {
     },
     "checkbox": {
       name: "checkbox",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: [],
       files: ["registry/default/plate-ui/checkbox.tsx"],
@@ -216,6 +223,7 @@ export const Index: Record<string, any> = {
     },
     "code-leaf": {
       name: "code-leaf",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: [],
       files: ["registry/default/plate-ui/code-leaf.tsx"],
@@ -227,6 +235,7 @@ export const Index: Record<string, any> = {
     },
     "code-line-element": {
       name: "code-line-element",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["plate-element"],
       files: ["registry/default/plate-ui/code-line-element.tsx"],
@@ -238,6 +247,7 @@ export const Index: Record<string, any> = {
     },
     "code-syntax-leaf": {
       name: "code-syntax-leaf",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: [],
       files: ["registry/default/plate-ui/code-syntax-leaf.tsx"],
@@ -249,6 +259,7 @@ export const Index: Record<string, any> = {
     },
     "command": {
       name: "command",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["dialog"],
       files: ["registry/default/plate-ui/command.tsx"],
@@ -260,6 +271,7 @@ export const Index: Record<string, any> = {
     },
     "comment-leaf": {
       name: "comment-leaf",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: [],
       files: ["registry/default/plate-ui/comment-leaf.tsx"],
@@ -271,6 +283,7 @@ export const Index: Record<string, any> = {
     },
     "comment-toolbar-button": {
       name: "comment-toolbar-button",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: [],
       files: ["registry/default/plate-ui/comment-toolbar-button.tsx"],
@@ -282,6 +295,7 @@ export const Index: Record<string, any> = {
     },
     "cursor-overlay": {
       name: "cursor-overlay",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: [],
       files: ["registry/default/plate-ui/cursor-overlay.tsx"],
@@ -293,6 +307,7 @@ export const Index: Record<string, any> = {
     },
     "dialog": {
       name: "dialog",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: [],
       files: ["registry/default/plate-ui/dialog.tsx"],
@@ -304,6 +319,7 @@ export const Index: Record<string, any> = {
     },
     "dropdown-menu": {
       name: "dropdown-menu",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: [],
       files: ["registry/default/plate-ui/dropdown-menu.tsx"],
@@ -315,6 +331,7 @@ export const Index: Record<string, any> = {
     },
     "excalidraw-element": {
       name: "excalidraw-element",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["plate-element"],
       files: ["registry/default/plate-ui/excalidraw-element.tsx"],
@@ -326,6 +343,7 @@ export const Index: Record<string, any> = {
     },
     "fixed-toolbar": {
       name: "fixed-toolbar",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["toolbar"],
       files: ["registry/default/plate-ui/fixed-toolbar.tsx"],
@@ -337,6 +355,7 @@ export const Index: Record<string, any> = {
     },
     "fixed-toolbar-buttons": {
       name: "fixed-toolbar-buttons",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["toolbar","insert-dropdown-menu","mark-toolbar-button","mode-dropdown-menu","turn-into-dropdown-menu"],
       files: ["registry/default/plate-ui/fixed-toolbar-buttons.tsx"],
@@ -348,6 +367,7 @@ export const Index: Record<string, any> = {
     },
     "floating-toolbar": {
       name: "floating-toolbar",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["toolbar"],
       files: ["registry/default/plate-ui/floating-toolbar.tsx"],
@@ -359,6 +379,7 @@ export const Index: Record<string, any> = {
     },
     "floating-toolbar-buttons": {
       name: "floating-toolbar-buttons",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["mark-toolbar-button","more-dropdown-menu","turn-into-dropdown-menu"],
       files: ["registry/default/plate-ui/floating-toolbar-buttons.tsx"],
@@ -370,6 +391,7 @@ export const Index: Record<string, any> = {
     },
     "heading-element": {
       name: "heading-element",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["plate-element"],
       files: ["registry/default/plate-ui/heading-element.tsx"],
@@ -381,6 +403,7 @@ export const Index: Record<string, any> = {
     },
     "highlight-leaf": {
       name: "highlight-leaf",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: [],
       files: ["registry/default/plate-ui/highlight-leaf.tsx"],
@@ -392,6 +415,7 @@ export const Index: Record<string, any> = {
     },
     "hr-element": {
       name: "hr-element",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["plate-element"],
       files: ["registry/default/plate-ui/hr-element.tsx"],
@@ -403,6 +427,7 @@ export const Index: Record<string, any> = {
     },
     "image-element": {
       name: "image-element",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["media-popover","caption","resizable","plate-element"],
       files: ["registry/default/plate-ui/image-element.tsx"],
@@ -414,6 +439,7 @@ export const Index: Record<string, any> = {
     },
     "indent-list-toolbar-button": {
       name: "indent-list-toolbar-button",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["toolbar"],
       files: ["registry/default/plate-ui/indent-list-toolbar-button.tsx"],
@@ -425,6 +451,7 @@ export const Index: Record<string, any> = {
     },
     "indent-toolbar-button": {
       name: "indent-toolbar-button",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["toolbar"],
       files: ["registry/default/plate-ui/indent-toolbar-button.tsx"],
@@ -436,6 +463,7 @@ export const Index: Record<string, any> = {
     },
     "indent-todo-toolbar-button": {
       name: "indent-todo-toolbar-button",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["toolbar"],
       files: ["registry/default/plate-ui/indent-todo-toolbar-button.tsx"],
@@ -447,6 +475,7 @@ export const Index: Record<string, any> = {
     },
     "indent-todo-marker-component": {
       name: "indent-todo-marker-component",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["checkbox"],
       files: ["registry/default/plate-ui/indent-todo-marker-component.tsx"],
@@ -458,6 +487,7 @@ export const Index: Record<string, any> = {
     },
     "inline-combobox": {
       name: "inline-combobox",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: [],
       files: ["registry/default/plate-ui/inline-combobox.tsx"],
@@ -469,6 +499,7 @@ export const Index: Record<string, any> = {
     },
     "input": {
       name: "input",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: [],
       files: ["registry/default/plate-ui/input.tsx"],
@@ -480,6 +511,7 @@ export const Index: Record<string, any> = {
     },
     "insert-dropdown-menu": {
       name: "insert-dropdown-menu",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["dropdown-menu","toolbar"],
       files: ["registry/default/plate-ui/insert-dropdown-menu.tsx"],
@@ -491,6 +523,7 @@ export const Index: Record<string, any> = {
     },
     "kbd-leaf": {
       name: "kbd-leaf",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: [],
       files: ["registry/default/plate-ui/kbd-leaf.tsx"],
@@ -502,6 +535,7 @@ export const Index: Record<string, any> = {
     },
     "line-height-dropdown-menu": {
       name: "line-height-dropdown-menu",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["toolbar","dropdown-menu"],
       files: ["registry/default/plate-ui/line-height-dropdown-menu.tsx"],
@@ -513,6 +547,7 @@ export const Index: Record<string, any> = {
     },
     "link-element": {
       name: "link-element",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["plate-element"],
       files: ["registry/default/plate-ui/link-element.tsx"],
@@ -524,6 +559,7 @@ export const Index: Record<string, any> = {
     },
     "link-floating-toolbar": {
       name: "link-floating-toolbar",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["button","input","popover","separator"],
       files: ["registry/default/plate-ui/link-floating-toolbar.tsx"],
@@ -535,6 +571,7 @@ export const Index: Record<string, any> = {
     },
     "link-toolbar-button": {
       name: "link-toolbar-button",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["toolbar"],
       files: ["registry/default/plate-ui/link-toolbar-button.tsx"],
@@ -546,6 +583,7 @@ export const Index: Record<string, any> = {
     },
     "list-element": {
       name: "list-element",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["plate-element"],
       files: ["registry/default/plate-ui/list-element.tsx"],
@@ -557,6 +595,7 @@ export const Index: Record<string, any> = {
     },
     "list-toolbar-button": {
       name: "list-toolbar-button",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["toolbar"],
       files: ["registry/default/plate-ui/list-toolbar-button.tsx"],
@@ -568,6 +607,7 @@ export const Index: Record<string, any> = {
     },
     "mark-toolbar-button": {
       name: "mark-toolbar-button",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["toolbar"],
       files: ["registry/default/plate-ui/mark-toolbar-button.tsx"],
@@ -579,6 +619,7 @@ export const Index: Record<string, any> = {
     },
     "media-embed-element": {
       name: "media-embed-element",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["media-popover","caption","resizable","plate-element"],
       files: ["registry/default/plate-ui/media-embed-element.tsx"],
@@ -590,6 +631,7 @@ export const Index: Record<string, any> = {
     },
     "media-popover": {
       name: "media-popover",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["button","input","popover","separator"],
       files: ["registry/default/plate-ui/media-popover.tsx"],
@@ -601,6 +643,7 @@ export const Index: Record<string, any> = {
     },
     "media-toolbar-button": {
       name: "media-toolbar-button",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["toolbar"],
       files: ["registry/default/plate-ui/media-toolbar-button.tsx"],
@@ -612,6 +655,7 @@ export const Index: Record<string, any> = {
     },
     "mention-element": {
       name: "mention-element",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["plate-element","use-mounted"],
       files: ["registry/default/plate-ui/mention-element.tsx"],
@@ -623,6 +667,7 @@ export const Index: Record<string, any> = {
     },
     "mention-input-element": {
       name: "mention-input-element",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["inline-combobox","plate-element"],
       files: ["registry/default/plate-ui/mention-input-element.tsx"],
@@ -634,6 +679,7 @@ export const Index: Record<string, any> = {
     },
     "mode-dropdown-menu": {
       name: "mode-dropdown-menu",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["dropdown-menu","toolbar"],
       files: ["registry/default/plate-ui/mode-dropdown-menu.tsx"],
@@ -645,6 +691,7 @@ export const Index: Record<string, any> = {
     },
     "more-dropdown-menu": {
       name: "more-dropdown-menu",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["dropdown-menu","toolbar"],
       files: ["registry/default/plate-ui/more-dropdown-menu.tsx"],
@@ -656,6 +703,7 @@ export const Index: Record<string, any> = {
     },
     "outdent-toolbar-button": {
       name: "outdent-toolbar-button",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["toolbar"],
       files: ["registry/default/plate-ui/outdent-toolbar-button.tsx"],
@@ -667,6 +715,7 @@ export const Index: Record<string, any> = {
     },
     "paragraph-element": {
       name: "paragraph-element",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["plate-element"],
       files: ["registry/default/plate-ui/paragraph-element.tsx"],
@@ -678,6 +727,7 @@ export const Index: Record<string, any> = {
     },
     "placeholder": {
       name: "placeholder",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["paragraph-element"],
       files: ["registry/default/plate-ui/placeholder.tsx"],
@@ -689,6 +739,7 @@ export const Index: Record<string, any> = {
     },
     "popover": {
       name: "popover",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: [],
       files: ["registry/default/plate-ui/popover.tsx"],
@@ -700,6 +751,7 @@ export const Index: Record<string, any> = {
     },
     "search-highlight-leaf": {
       name: "search-highlight-leaf",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: [],
       files: ["registry/default/plate-ui/search-highlight-leaf.tsx"],
@@ -711,6 +763,7 @@ export const Index: Record<string, any> = {
     },
     "separator": {
       name: "separator",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: [],
       files: ["registry/default/plate-ui/separator.tsx"],
@@ -722,6 +775,7 @@ export const Index: Record<string, any> = {
     },
     "slash-input-element": {
       name: "slash-input-element",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["inline-combobox","plate-element"],
       files: ["registry/default/plate-ui/slash-input-element.tsx"],
@@ -733,6 +787,7 @@ export const Index: Record<string, any> = {
     },
     "table-cell-element": {
       name: "table-cell-element",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["resizable","plate-element"],
       files: ["registry/default/plate-ui/table-cell-element.tsx"],
@@ -744,6 +799,7 @@ export const Index: Record<string, any> = {
     },
     "table-dropdown-menu": {
       name: "table-dropdown-menu",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["dropdown-menu","toolbar"],
       files: ["registry/default/plate-ui/table-dropdown-menu.tsx"],
@@ -755,6 +811,7 @@ export const Index: Record<string, any> = {
     },
     "table-element": {
       name: "table-element",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["dropdown-menu","plate-element"],
       files: ["registry/default/plate-ui/table-element.tsx"],
@@ -766,6 +823,7 @@ export const Index: Record<string, any> = {
     },
     "table-row-element": {
       name: "table-row-element",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["plate-element"],
       files: ["registry/default/plate-ui/table-row-element.tsx"],
@@ -777,6 +835,7 @@ export const Index: Record<string, any> = {
     },
     "todo-list-element": {
       name: "todo-list-element",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["checkbox","plate-element"],
       files: ["registry/default/plate-ui/todo-list-element.tsx"],
@@ -788,6 +847,7 @@ export const Index: Record<string, any> = {
     },
     "toggle-element": {
       name: "toggle-element",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["plate-element"],
       files: ["registry/default/plate-ui/toggle-element.tsx"],
@@ -799,6 +859,7 @@ export const Index: Record<string, any> = {
     },
     "toggle-toolbar-button": {
       name: "toggle-toolbar-button",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["toolbar"],
       files: ["registry/default/plate-ui/toggle-toolbar-button.tsx"],
@@ -810,6 +871,7 @@ export const Index: Record<string, any> = {
     },
     "toolbar": {
       name: "toolbar",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["tooltip","separator"],
       files: ["registry/default/plate-ui/toolbar.tsx"],
@@ -821,6 +883,7 @@ export const Index: Record<string, any> = {
     },
     "tooltip": {
       name: "tooltip",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: [],
       files: ["registry/default/plate-ui/tooltip.tsx"],
@@ -832,6 +895,7 @@ export const Index: Record<string, any> = {
     },
     "turn-into-dropdown-menu": {
       name: "turn-into-dropdown-menu",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: ["dropdown-menu","toolbar"],
       files: ["registry/default/plate-ui/turn-into-dropdown-menu.tsx"],
@@ -843,6 +907,7 @@ export const Index: Record<string, any> = {
     },
     "resizable": {
       name: "resizable",
+      title: "undefined",
       type: "registry:ui",
       registryDependencies: [],
       files: ["registry/default/plate-ui/resizable.tsx"],
@@ -854,6 +919,7 @@ export const Index: Record<string, any> = {
     },
     "editor-default": {
       name: "editor-default",
+      title: "undefined",
       type: "registry:example",
       registryDependencies: [],
       files: ["registry/default/example/editor-default.tsx"],
@@ -865,6 +931,7 @@ export const Index: Record<string, any> = {
     },
     "editor-disabled": {
       name: "editor-disabled",
+      title: "undefined",
       type: "registry:example",
       registryDependencies: [],
       files: ["registry/default/example/editor-disabled.tsx"],
@@ -876,6 +943,7 @@ export const Index: Record<string, any> = {
     },
     "editor-ghost": {
       name: "editor-ghost",
+      title: "undefined",
       type: "registry:example",
       registryDependencies: [],
       files: ["registry/default/example/editor-ghost.tsx"],
@@ -887,6 +955,7 @@ export const Index: Record<string, any> = {
     },
     "editor-label": {
       name: "editor-label",
+      title: "undefined",
       type: "registry:example",
       registryDependencies: [],
       files: ["registry/default/example/editor-label.tsx"],
@@ -898,6 +967,7 @@ export const Index: Record<string, any> = {
     },
     "editor-text": {
       name: "editor-text",
+      title: "undefined",
       type: "registry:example",
       registryDependencies: [],
       files: ["registry/default/example/editor-text.tsx"],
@@ -909,6 +979,7 @@ export const Index: Record<string, any> = {
     },
     "editor-button": {
       name: "editor-button",
+      title: "undefined",
       type: "registry:example",
       registryDependencies: [],
       files: ["registry/default/example/editor-button.tsx"],
@@ -920,6 +991,7 @@ export const Index: Record<string, any> = {
     },
     "editor-form": {
       name: "editor-form",
+      title: "undefined",
       type: "registry:example",
       registryDependencies: [],
       files: ["registry/default/example/editor-form.tsx"],
@@ -931,6 +1003,7 @@ export const Index: Record<string, any> = {
     },
     "basic-editor-default-demo": {
       name: "basic-editor-default-demo",
+      title: "undefined",
       type: "registry:example",
       registryDependencies: [],
       files: ["registry/default/example/basic-editor-default-demo.tsx"],
@@ -942,6 +1015,7 @@ export const Index: Record<string, any> = {
     },
     "controlled-demo": {
       name: "controlled-demo",
+      title: "undefined",
       type: "registry:example",
       registryDependencies: [],
       files: ["registry/default/example/controlled-demo.tsx"],
@@ -953,6 +1027,7 @@ export const Index: Record<string, any> = {
     },
     "basic-editor-styling-demo": {
       name: "basic-editor-styling-demo",
+      title: "undefined",
       type: "registry:example",
       registryDependencies: [],
       files: ["registry/default/example/basic-editor-styling-demo.tsx"],
@@ -964,6 +1039,7 @@ export const Index: Record<string, any> = {
     },
     "basic-editor-handler-demo": {
       name: "basic-editor-handler-demo",
+      title: "undefined",
       type: "registry:example",
       registryDependencies: [],
       files: ["registry/default/example/basic-editor-handler-demo.tsx"],
@@ -975,6 +1051,7 @@ export const Index: Record<string, any> = {
     },
     "basic-editor-value-demo": {
       name: "basic-editor-value-demo",
+      title: "undefined",
       type: "registry:example",
       registryDependencies: [],
       files: ["registry/default/example/basic-editor-value-demo.tsx"],
@@ -986,6 +1063,7 @@ export const Index: Record<string, any> = {
     },
     "basic-plugins-components-demo": {
       name: "basic-plugins-components-demo",
+      title: "undefined",
       type: "registry:example",
       registryDependencies: [],
       files: ["registry/default/example/basic-plugins-components-demo.tsx"],
@@ -997,6 +1075,7 @@ export const Index: Record<string, any> = {
     },
     "basic-plugins-default-demo": {
       name: "basic-plugins-default-demo",
+      title: "undefined",
       type: "registry:example",
       registryDependencies: [],
       files: ["registry/default/example/basic-plugins-default-demo.tsx"],
@@ -1006,19 +1085,9 @@ export const Index: Record<string, any> = {
       subcategory: "undefined",
       chunks: []
     },
-    "cloud-demo": {
-      name: "cloud-demo",
-      type: "registry:example",
-      registryDependencies: [],
-      files: ["registry/default/example/cloud-demo.tsx"],
-      component: React.lazy(() => import("@/registry/default/example/cloud-demo.tsx")),
-      source: "",
-      category: "undefined",
-      subcategory: "undefined",
-      chunks: []
-    },
     "editable-voids-demo": {
       name: "editable-voids-demo",
+      title: "undefined",
       type: "registry:example",
       registryDependencies: [],
       files: ["registry/default/example/editable-voids-demo.tsx"],
@@ -1030,6 +1099,7 @@ export const Index: Record<string, any> = {
     },
     "find-replace-demo": {
       name: "find-replace-demo",
+      title: "undefined",
       type: "registry:example",
       registryDependencies: [],
       files: ["registry/default/example/find-replace-demo.tsx"],
@@ -1041,6 +1111,7 @@ export const Index: Record<string, any> = {
     },
     "hundreds-blocks-demo": {
       name: "hundreds-blocks-demo",
+      title: "undefined",
       type: "registry:example",
       registryDependencies: [],
       files: ["registry/default/example/hundreds-blocks-demo.tsx"],
@@ -1052,6 +1123,7 @@ export const Index: Record<string, any> = {
     },
     "hundreds-editors-demo": {
       name: "hundreds-editors-demo",
+      title: "undefined",
       type: "registry:example",
       registryDependencies: [],
       files: ["registry/default/example/hundreds-editors-demo.tsx"],
@@ -1063,6 +1135,7 @@ export const Index: Record<string, any> = {
     },
     "iframe-demo": {
       name: "iframe-demo",
+      title: "undefined",
       type: "registry:example",
       registryDependencies: [],
       files: ["registry/default/example/iframe-demo.tsx"],
@@ -1074,6 +1147,7 @@ export const Index: Record<string, any> = {
     },
     "mode-toggle": {
       name: "mode-toggle",
+      title: "undefined",
       type: "registry:example",
       registryDependencies: undefined,
       files: ["registry/default/example/mode-toggle.tsx"],
@@ -1085,6 +1159,7 @@ export const Index: Record<string, any> = {
     },
     "multiple-editors-demo": {
       name: "multiple-editors-demo",
+      title: "undefined",
       type: "registry:example",
       registryDependencies: [],
       files: ["registry/default/example/multiple-editors-demo.tsx"],
@@ -1096,6 +1171,7 @@ export const Index: Record<string, any> = {
     },
     "version-history-demo": {
       name: "version-history-demo",
+      title: "undefined",
       type: "registry:example",
       registryDependencies: [],
       files: ["registry/default/example/version-history-demo.tsx"],
@@ -1107,6 +1183,7 @@ export const Index: Record<string, any> = {
     },
     "playground-demo": {
       name: "playground-demo",
+      title: "undefined",
       type: "registry:example",
       registryDependencies: [],
       files: ["registry/default/example/playground-demo.tsx"],
@@ -1118,6 +1195,7 @@ export const Index: Record<string, any> = {
     },
     "preview-md-demo": {
       name: "preview-md-demo",
+      title: "undefined",
       type: "registry:example",
       registryDependencies: [],
       files: ["registry/default/example/preview-md-demo.tsx"],
@@ -1129,6 +1207,7 @@ export const Index: Record<string, any> = {
     },
     "plate-types": {
       name: "plate-types",
+      title: "undefined",
       type: "registry:lib",
       registryDependencies: undefined,
       files: ["registry/default/lib/plate-types.ts"],
@@ -1140,6 +1219,7 @@ export const Index: Record<string, any> = {
     },
     "utils": {
       name: "utils",
+      title: "undefined",
       type: "registry:lib",
       registryDependencies: undefined,
       files: ["registry/default/lib/utils.ts"],
@@ -1151,6 +1231,7 @@ export const Index: Record<string, any> = {
     },
     "use-debounce": {
       name: "use-debounce",
+      title: "undefined",
       type: "registry:hook",
       registryDependencies: undefined,
       files: ["registry/default/hooks/use-debounce.ts"],
@@ -1162,6 +1243,7 @@ export const Index: Record<string, any> = {
     },
     "use-mounted": {
       name: "use-mounted",
+      title: "undefined",
       type: "registry:hook",
       registryDependencies: undefined,
       files: ["registry/default/hooks/use-mounted.ts"],

@@ -23,20 +23,6 @@ export const ui: Registry = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-cloud'],
-    files: [
-      'plate-ui/cloud.tsx',
-      'plate-ui/cloud-attachment-element.tsx',
-      'plate-ui/cloud-image-element.tsx',
-      'plate-ui/cloud-resize-controls.tsx',
-      'plate-ui/cloud-status-bar.tsx',
-      'plate-ui/cloud-toolbar-buttons.tsx',
-    ],
-    name: 'cloud',
-    registryDependencies: [],
-    type: 'registry:ui',
-  },
-  {
     dependencies: ['@udecode/plate-code-block'],
     files: [
       'plate-ui/code-block-element.tsx',
