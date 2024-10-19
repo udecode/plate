@@ -2,4 +2,4 @@
 '@udecode/plate-ai': patch
 ---
 
-Refactor `CopilotPlugin`, `AIPlugin` is wip.
+ `CopilotPlugin`, `AIPlugin` is ready from this version.
