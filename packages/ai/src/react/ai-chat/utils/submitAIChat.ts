@@ -31,11 +31,7 @@ export const submitAIChat = (
     prompt = chat.input;
   }
   if (!mode) {
-    if (isSelecting(editor)) {
-      mode = 'chat';
-    } else {
-      mode = 'insert';
-    }
+    mode = isSelecting(editor) ? 'chat' : 'insert';
   }
   if (chat.messages.length > 0) {
     editor.getTransforms(AIChatPlugin).aiChat.undoAI();
