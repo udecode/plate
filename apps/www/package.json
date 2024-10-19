@@ -178,6 +178,7 @@
     "glob": "^11.0.0",
     "mdast-util-toc": "^7.1.0",
     "postcss": "^8.4.45",
+    "puppeteer": "^23.6.0",
     "rehype": "^12.0.1",
     "rehype-autolink-headings": "^6.1.1",
     "rehype-pretty-code": "^0.6.0",

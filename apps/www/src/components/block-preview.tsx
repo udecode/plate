@@ -23,6 +23,7 @@ const block: any = {
   name: 'playground',
 };
 
+// TODO: sync
 export function BlockPreview({
   children,
   className,

@@ -6,7 +6,7 @@
     {
       "content": "'use client';\n\nimport React from 'react';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { PlateLeaf } from '@udecode/plate-common/react';\n\nexport const CodeLeaf = withRef<typeof PlateLeaf>(\n  ({ children, className, ...props }, ref) => {\n    return (\n      <PlateLeaf\n        ref={ref}\n        asChild\n        className={cn(\n          'whitespace-pre-wrap rounded-md bg-muted px-[0.3em] py-[0.2em] font-mono text-sm',\n          className\n        )}\n        {...props}\n      >\n        <code>{children}</code>\n      </PlateLeaf>\n    );\n  }\n);\n",
       "path": "plate-ui/code-leaf.tsx",
-      "target": "",
+      "target": "components/plate-ui/code-leaf.tsx",
       "type": "registry:ui"
     }
   ],

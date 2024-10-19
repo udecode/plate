@@ -6,7 +6,7 @@
     {
       "content": "import React from 'react';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { useFocused, useSelected } from 'slate-react';\n\nimport { PlateElement } from './plate-element';\n\nexport const HrElement = withRef<typeof PlateElement>(\n  ({ className, nodeProps, ...props }, ref) => {\n    const { children } = props;\n\n    const selected = useSelected();\n    const focused = useFocused();\n\n    return (\n      <PlateElement ref={ref} {...props}>\n        <div className=\"py-6\" contentEditable={false}>\n          <hr\n            {...nodeProps}\n            className={cn(\n              'h-0.5 cursor-pointer rounded-sm border-none bg-muted bg-clip-content',\n              selected && focused && 'ring-2 ring-ring ring-offset-2',\n              className\n            )}\n          />\n        </div>\n        {children}\n      </PlateElement>\n    );\n  }\n);\n",
       "path": "plate-ui/hr-element.tsx",
-      "target": "",
+      "target": "components/plate-ui/hr-element.tsx",
       "type": "registry:ui"
     }
   ],
