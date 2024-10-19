@@ -26,7 +26,6 @@ export function ComponentSource({
 }: ComponentSourceProps) {
   const displaySrc = title ?? props.src?.split('/').pop() ?? name + '.tsx';
   const { copyToClipboard } = useCopyToClipboard();
-  const [open, setOpen] = React.useState(false);
 
   return (
     <div className="mb-6 mt-4">
@@ -36,8 +35,9 @@ export function ComponentSource({
           variant="ghost"
           className="mb-1 w-fit select-auto px-4 py-1 text-sm font-medium text-foreground"
           onClick={() => {
-            copyToClipboard(displaySrc);
-            setOpen((prev) => !prev);
+            copyToClipboard(displaySrc, {
+              tooltip: 'Copied to clipboard',
+            });
           }}
         >
           {displaySrc}
@@ -46,7 +46,6 @@ export function ComponentSource({
 
       <CodeBlockWrapper
         className={cn('overflow-hidden rounded-md', className)}
-        open={open}
         expandButtonTitle="Expand"
         {...props}
       >
