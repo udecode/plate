@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-selection",
-  "version": "39.1.4",
+  "version": "39.2.0",
   "description": "Plate React plugin to add a visual way of selecting blocks",
   "keywords": [
     "plate",

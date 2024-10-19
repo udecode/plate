@@ -1,5 +1,11 @@
 # @udecode/plate-math
 
+## 39.2.0
+
+### Minor Changes
+
+- [#3644](https://github.com/udecode/plate/pull/3644) by [@felixfeng33](https://github.com/felixfeng33) – Add `editor.tf.insert.equation`, `editor.tf.insert.inlineEquation`
+
 ## 39.1.8
 
 ### Patch Changes

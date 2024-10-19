@@ -1,5 +1,13 @@
 # @udecode/plate-selection
 
+## 39.2.0
+
+### Minor Changes
+
+- [#3644](https://github.com/udecode/plate/pull/3644) by [@felixfeng33](https://github.com/felixfeng33) –
+  - Add `editor.tf.setBlockSelectionIndent` `editor.tf.insertBlocksAndSelect`
+  - `BlockMenuPlugin`: Now when the left mouse button is clicked and the menu is open, the default event will not be prevented.
+
 ## 39.1.4
 
 ### Patch Changes
