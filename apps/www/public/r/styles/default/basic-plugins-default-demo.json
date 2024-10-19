@@ -1,0 +1,13 @@
+{
+  "files": [
+    {
+      "content": "import React, { useState } from 'react';\n\nimport type { Value } from '@udecode/plate-common';\n\nimport {\n  BoldPlugin,\n  CodePlugin,\n  ItalicPlugin,\n  StrikethroughPlugin,\n  UnderlinePlugin,\n} from '@udecode/plate-basic-marks/react';\nimport { BlockquotePlugin } from '@udecode/plate-block-quote/react';\nimport { CodeBlockPlugin } from '@udecode/plate-code-block/react';\nimport { Plate, usePlateEditor } from '@udecode/plate-common/react';\nimport { HeadingPlugin } from '@udecode/plate-heading/react';\n\nimport {\n  Accordion,\n  AccordionContent,\n  AccordionItem,\n  AccordionTrigger,\n} from '@/components/ui/accordion';\nimport { editableProps } from '@/plate/demo/editableProps';\nimport { Editor } from '@/components/plate-ui/editor';\n\nimport { basicEditorValue } from './basic-plugins-components-demo';\n\nexport default function BasicPluginsDefaultDemo() {\n  const [debugValue, setDebugValue] = useState<Value>(basicEditorValue);\n  const editor = usePlateEditor({\n    plugins: [\n      BlockquotePlugin,\n      CodeBlockPlugin,\n      HeadingPlugin,\n      BoldPlugin,\n      ItalicPlugin,\n      UnderlinePlugin,\n      StrikethroughPlugin,\n      CodePlugin,\n    ],\n    value: basicEditorValue,\n  });\n\n  return (\n    <Plate\n      onChange={({ value }) => {\n        setDebugValue(value);\n        // save newValue...\n      }}\n      editor={editor}\n    >\n      <Editor {...editableProps} />\n\n      <Accordion type=\"single\" collapsible>\n        <AccordionItem value=\"manual-installation\">\n          <AccordionTrigger>Debug Value</AccordionTrigger>\n          <AccordionContent>{JSON.stringify(debugValue)}</AccordionContent>\n        </AccordionItem>\n      </Accordion>\n    </Plate>\n  );\n}\n",
+      "path": "example/basic-plugins-default-demo.tsx",
+      "target": "components/basic-plugins-default-demo.tsx",
+      "type": "registry:example"
+    }
+  ],
+  "name": "basic-plugins-default-demo",
+  "registryDependencies": [],
+  "type": "registry:example"
+}

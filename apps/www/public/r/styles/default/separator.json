@@ -6,7 +6,7 @@
     {
       "content": "'use client';\n\nimport * as SeparatorPrimitive from '@radix-ui/react-separator';\nimport { withProps, withVariants } from '@udecode/cn';\nimport { cva } from 'class-variance-authority';\n\nconst separatorVariants = cva('shrink-0 bg-border', {\n  defaultVariants: {\n    orientation: 'horizontal',\n  },\n  variants: {\n    orientation: {\n      horizontal: 'h-px w-full',\n      vertical: 'h-full w-px',\n    },\n  },\n});\n\nexport const Separator = withVariants(\n  withProps(SeparatorPrimitive.Root, {\n    decorative: true,\n    orientation: 'horizontal',\n  }),\n  separatorVariants\n);\n",
       "path": "plate-ui/separator.tsx",
-      "target": "",
+      "target": "components/plate-ui/separator.tsx",
       "type": "registry:ui"
     }
   ],

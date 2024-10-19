@@ -413,7 +413,7 @@ async function buildStyles(registry: Registry) {
                 target = `components/${fileName}`
               }
               if (file.type === "registry:ui") {
-                target = `components/ui/${fileName}`
+                target = `components/plate-ui/${fileName}`
               }
               if (file.type === "registry:hook") {
                 target = `hooks/${fileName}`

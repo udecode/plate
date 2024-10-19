@@ -6,7 +6,7 @@
     {
       "content": "'use client';\n\nimport React from 'react';\n\nimport { cn, withRef } from '@udecode/cn';\n\nimport { PlateElement } from './plate-element';\n\nexport const BlockquoteElement = withRef<typeof PlateElement>(\n  ({ children, className, ...props }, ref) => {\n    return (\n      <PlateElement\n        ref={ref}\n        as=\"blockquote\"\n        className={cn('my-1 border-l-2 pl-6 italic', className)}\n        {...props}\n      >\n        {children}\n      </PlateElement>\n    );\n  }\n);\n",
       "path": "plate-ui/blockquote-element.tsx",
-      "target": "",
+      "target": "components/plate-ui/blockquote-element.tsx",
       "type": "registry:ui"
     }
   ],
