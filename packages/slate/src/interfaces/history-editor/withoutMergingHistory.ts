@@ -1,6 +1,6 @@
 import type { TEditor } from '../editor';
 
-import { HistoryEditor } from './slate-history';
+import { HistoryEditor } from '../../slate-history';
 
 /** {@link HistoryEditor.withoutMerging} */
 export const withoutMergingHistory = (editor: TEditor, fn: () => void) =>
