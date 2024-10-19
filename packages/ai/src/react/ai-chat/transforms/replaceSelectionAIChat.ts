@@ -1,6 +1,6 @@
 import type { PlateEditor } from '@udecode/plate-common/react';
 
-import { isEditorEmpty, withMerging } from '@udecode/plate-common';
+import { isEditorEmpty, withNewBatch } from '@udecode/plate-common';
 import { focusEditor } from '@udecode/plate-common/react';
 import {
   BlockSelectionPlugin,
@@ -31,7 +31,7 @@ export const replaceSelectionAIChat = (
     editor.withoutNormalizing(() => {
       removeBlockSelectionNodes(editor);
 
-      withMerging(editor, () => {
+      withNewBatch(editor, () => {
         editor
           .getTransforms(BlockSelectionPlugin)
           .blockSelection.insertBlocksAndSelect(

@@ -6,8 +6,7 @@ import {
   collapseSelection,
   getEndPoint,
   insertNodes,
-  withMerging,
-  withoutMergingHistory,
+  withNewBatch,
 } from '@udecode/plate-common';
 
 import { AIPlugin } from '../../react/ai/AIPlugin';
@@ -16,10 +15,10 @@ export const insertAINodes = (
   editor: SlateEditor,
   nodes: TDescendant[],
   {
-    history = 'default',
+    splitHistory = false,
     target,
   }: {
-    history?: 'default' | 'merge' | 'withoutMerge';
+    splitHistory?: boolean;
     target?: Path;
   } = {}
 ) => {
@@ -38,21 +37,9 @@ export const insertAINodes = (
     collapseSelection(editor, { edge: 'end' });
   };
 
-  switch (history) {
-    case 'default': {
-      insert();
-
-      break;
-    }
-    case 'merge': {
-      withMerging(editor, insert);
-
-      break;
-    }
-    case 'withoutMerge': {
-      withoutMergingHistory(editor, insert);
-
-      break;
-    }
+  if (splitHistory) {
+    withNewBatch(editor, insert);
+  } else {
+    insert();
   }
 };

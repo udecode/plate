@@ -13,9 +13,9 @@ export const useAIChatHooks = () => {
   const mode = useOption('mode');
 
   useChatChunk({
-    onChunk: ({ isFirst, nodes }) => {
+    onChunk: ({ nodes }) => {
       if (mode === 'insert' && nodes.length > 0) {
-        tf.ai.insertNodes(nodes, { history: isFirst ? 'default' : 'merge' });
+        tf.ai.insertNodes(nodes, { splitHistory: true });
       }
     },
     onFinish: ({ content }) => {
@@ -28,11 +28,11 @@ export const useAIChatHooks = () => {
       editor.undo();
       editor.history.redos.pop();
 
-      setTimeout(() => {
-        const nodes = deserializeInlineMd(editor, content);
+      // setTimeout(() => {
+      const nodes = deserializeInlineMd(editor, content);
 
-        tf.ai.insertNodes(nodes);
-      }, 0);
+      tf.ai.insertNodes(nodes, { splitHistory: true });
+      // }, 0);
     },
   });
 };
