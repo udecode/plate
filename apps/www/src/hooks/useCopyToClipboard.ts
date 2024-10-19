@@ -43,7 +43,6 @@ export const useCopyToClipboard = ({
     });
 
     if (tooltip) {
-      console.log('a');
       toast.success(tooltip, data);
     }
   };
