@@ -14,12 +14,6 @@ import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 
 import { AIChatPlugin } from '../AIChatPlugin';
 
-export type EditorChatState =
-  | 'cursorCommand'
-  | 'cursorSuggestion'
-  | 'selectionCommand'
-  | 'selectionSuggestion';
-
 export type UseEditorChatOptions = {
   chat: UseChatHelpers;
   onOpenBlockSelection?: (blocks: TNodeEntry[]) => void;
@@ -58,13 +52,19 @@ export const useEditorChat = ({
 
         if (isBlockSelecting) {
           onOpenBlockSelection(blockSelectionApi.getNodes());
+
+          return;
         }
       }
       if (onOpenCursor && isCollapsed(editor.selection)) {
         onOpenCursor();
+
+        return;
       }
       if (onOpenSelection && isSelectionExpanded(editor)) {
         onOpenSelection();
+
+        return;
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

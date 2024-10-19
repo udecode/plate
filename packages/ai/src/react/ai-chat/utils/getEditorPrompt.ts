@@ -33,7 +33,7 @@ const replacePlaceholders = (
     prompt?: string;
   }
 ): string => {
-  let result = text;
+  let result = text.replace('{prompt}', prompt || '');
 
   const placeholders: Record<string, MarkdownType> = {
     '{block}': 'block',
@@ -42,12 +42,10 @@ const replacePlaceholders = (
   };
 
   Object.entries(placeholders).forEach(([placeholder, type]) => {
-    if (text.includes(placeholder)) {
+    if (result.includes(placeholder)) {
       result = result.replace(placeholder, getMarkdown(editor, type));
     }
   });
-
-  result = result.replace('{prompt}', prompt || '');
 
   return result;
 };
@@ -59,9 +57,9 @@ const createPromptFromConfig = (
   const { isBlockSelecting, isSelecting } = params;
 
   if (isBlockSelecting && config.blockSelecting) {
-    return config.blockSelecting;
+    return config.blockSelecting ?? config.default;
   } else if (isSelecting && config.selecting) {
-    return config.selecting;
+    return config.selecting ?? config.default;
   } else {
     return config.default;
   }

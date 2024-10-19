@@ -3,4 +3,6 @@
  */
 
 export * from './acceptAIChat';
-export * from './streamAINodes';
+export * from './insertBelowAIChat';
+export * from './replaceSelectionAIChat';
+export * from './undoAI';

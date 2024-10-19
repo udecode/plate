@@ -3,5 +3,3 @@
  */
 
 export * from './AIPlugin';
-export * from './transforms/index';
-export * from './utils/index';

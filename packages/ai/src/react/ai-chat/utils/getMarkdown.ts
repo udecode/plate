@@ -8,6 +8,7 @@ import {
 import { serializeMd, serializeMdNodes } from '@udecode/plate-markdown';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 
+// Internal
 export const getMarkdown = (
   editor: PlateEditor,
   type: 'block' | 'editor' | 'selection'

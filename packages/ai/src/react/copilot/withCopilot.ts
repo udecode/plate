@@ -1,7 +1,11 @@
-import type { ExtendEditor, PlateEditor } from '@udecode/plate-common/react';
 import type { BaseOperation } from 'slate';
 
 import { withoutMergingHistory } from '@udecode/plate-common';
+import {
+  type ExtendEditor,
+  type PlateEditor,
+  isEditorFocused,
+} from '@udecode/plate-common/react';
 import { serializeInlineMd } from '@udecode/plate-markdown';
 import debounce from 'lodash/debounce.js';
 
@@ -101,6 +105,7 @@ export const withCopilot: ExtendEditor<CopilotPluginConfig> = ({
   };
 
   editor.apply = (operation) => {
+    // console.log('🚀 ~ operation:', operation);
     const { shouldAbort } = getOptions();
 
     if (shouldAbort) {
@@ -129,7 +134,7 @@ export const withCopilot: ExtendEditor<CopilotPluginConfig> = ({
   };
 
   editor.setSelection = (selection) => {
-    if (getOptions().autoTriggerQuery!({ editor })) {
+    if (getOptions().autoTriggerQuery!({ editor }) && isEditorFocused(editor)) {
       void api.copilot.triggerSuggestion();
     }
 

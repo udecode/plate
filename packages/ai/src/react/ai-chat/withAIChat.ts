@@ -11,12 +11,15 @@ import {
 
 import type { AIChatPluginConfig } from './AIChatPlugin';
 
-export const withTriggerAIChat: ExtendEditor<AIChatPluginConfig> = ({
+import { AIPlugin } from '../ai/AIPlugin';
+
+export const withAIChat: ExtendEditor<AIChatPluginConfig> = ({
   api,
   editor,
   getOptions,
 }) => {
-  const { insertText } = editor;
+  const tf = editor.getTransforms(AIPlugin);
+  const { insertText, normalizeNode } = editor;
 
   const matchesTrigger = (text: string) => {
     const { trigger } = getOptions();
@@ -29,6 +32,18 @@ export const withTriggerAIChat: ExtendEditor<AIChatPluginConfig> = ({
     }
 
     return text === trigger;
+  };
+
+  editor.normalizeNode = (entry) => {
+    const [node, path] = entry;
+
+    if (node[AIPlugin.key] && !getOptions().open) {
+      tf.ai.removeMarks({ at: path });
+
+      return;
+    }
+
+    return normalizeNode(entry);
   };
 
   editor.insertText = (text) => {

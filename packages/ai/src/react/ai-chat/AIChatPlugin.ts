@@ -5,32 +5,39 @@ import {
   type OmitFirst,
   type PluginConfig,
   bindFirst,
-  someNode,
-  withMerging,
 } from '@udecode/plate-common';
 import {
   type PlateEditor,
   createPlateEditor,
   createTPlatePlugin,
+  focusEditor,
 } from '@udecode/plate-common/react';
+import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 
-import { AIPlugin } from '../ai/AIPlugin';
+import { acceptAIChat } from './transforms/acceptAIChat';
+import { insertBelowAIChat } from './transforms/insertBelowAIChat';
+import { replaceSelectionAIChat } from './transforms/replaceSelectionAIChat';
+import { undoAI } from './transforms/undoAI';
+import { useAIChatHooks } from './useAIChatHook';
 import {
-  type EditorPrompt,
   type EditorPromptParams,
   getEditorPrompt,
-} from '../ai/utils/getEditorPrompt';
-import {
-  acceptAIChat,
-  insertBelowAIChat,
-  replaceSelectionAIChat,
-} from './transforms/acceptAIChat';
-import { useAIChatHooks } from './useAIChatHook';
-import { withTriggerAIChat } from './withTriggerAIChat';
+} from './utils/getEditorPrompt';
+import { resetAIChat } from './utils/resetAIChat';
+import { submitAIChat } from './utils/submitAIChat';
+import { withAIChat } from './withAIChat';
 
 export type AIChatOptions = {
   chat: UseChatHelpers;
   createAIEditor: () => PlateEditor;
+  /**
+   * Specifies how the assistant message is handled:
+   *
+   * - 'insert': Directly inserts content into the editor without preview.
+   * - 'chat': Initiates an interactive session to review and refine content
+   *   before insertion.
+   */
+  mode: 'chat' | 'insert';
   open: boolean;
   /**
    * Template function for generating the user prompt. Supports the following
@@ -53,10 +60,10 @@ export type AIChatOptions = {
 export type AIChatApi = {
   hide: () => void;
   reload: () => void;
-  reset: () => void;
+  reset: OmitFirst<typeof resetAIChat>;
   show: () => void;
   stop: () => void;
-  submit: (options?: { prompt?: EditorPrompt; system?: EditorPrompt }) => void;
+  submit: OmitFirst<typeof submitAIChat>;
 };
 
 export type AIChatTransforms = {
@@ -75,13 +82,14 @@ export type AIChatPluginConfig = PluginConfig<
 export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
   key: 'aiChat',
   dependencies: ['ai'],
-  extendEditor: withTriggerAIChat,
+  extendEditor: withAIChat,
   options: {
     chat: { messages: [] } as any,
     createAIEditor: () =>
       createPlateEditor({
         id: 'ai',
       }),
+    mode: 'chat',
     open: false,
     promptTemplate: () => '{prompt}',
     scrollContainerSelector: '#scroll_container',
@@ -89,13 +97,17 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     trigger: ' ',
     triggerPreviousCharPattern: /^\s?$/,
   },
-  useHooks: useAIChatHooks,
 })
-  .extendApi<Pick<AIChatApi, 'stop' | 'submit'>>(
-    ({ editor, getOptions, setOption }) => {
+  .extend(() => ({
+    useHooks: useAIChatHooks,
+  }))
+  .extendApi<Pick<AIChatApi, 'reset' | 'stop' | 'submit'>>(
+    ({ editor, getOptions }) => {
       return {
         reload: () => {
           const { chat } = getOptions();
+
+          editor.getTransforms(AIChatPlugin).aiChat.undoAI();
 
           void chat.reload({
             body: {
@@ -105,76 +117,29 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
             },
           });
         },
+        reset: bindFirst(resetAIChat, editor),
         stop: () => {
           getOptions().chat.stop();
         },
-        submit: ({ prompt, system } = {}) => {
-          const { chat } = getOptions();
-
-          if (!prompt && chat.input.length === 0) {
-            return;
-          }
-          if (!prompt) {
-            prompt = chat.input;
-          }
-
-          chat.setInput('');
-
-          void chat.append(
-            {
-              content: getEditorPrompt(editor, { prompt }) ?? '',
-              role: 'user',
-            },
-            {
-              body: {
-                system: getEditorPrompt(editor, {
-                  prompt: system,
-                  promptTemplate: getOptions().systemTemplate,
-                }),
-              },
-            }
-          );
-        },
+        submit: bindFirst(submitAIChat, editor),
       };
     }
   )
-  .extendApi(({ api, editor, getOptions }) => ({
-    reset: () => {
-      api.aiChat.stop();
-
-      const chat = getOptions().chat;
-
-      if (chat.messages.length > 0) {
-        chat.setMessages([]);
-      }
-
-      const someAINodes = someNode(editor, {
-        match: (n) => !!n[AIPlugin.key],
-      });
-
-      if (!someAINodes) return;
-
-      withMerging(editor, () => {
-        editor.getTransforms(AIPlugin).ai.removeNodes();
-        // editor.getTransforms(AIPlugin).ai.removeMarks();
-      });
-
-      editor.history.undos.pop();
-    },
-  }))
-  .extendApi(({ api, getOptions, setOption }) => ({
+  .extendApi(({ api, editor, getOptions, setOption }) => ({
     hide: () => {
       api.aiChat.reset();
+
       setOption('open', false);
-      // focusEditor(editor);
+
+      if (editor.getOption(BlockSelectionPlugin, 'isSelectingSome')) {
+        // TODO
+        // editor.getApi(BlockSelectionPlugin).blockSelection.focus();
+      } else {
+        focusEditor(editor);
+      }
     },
     show: () => {
       api.aiChat.reset();
-
-      // const ancestor = getAncestorNode(editor);
-      // if (ancestor) {
-      //   aiPlugin.setOption('startPath', ancestor[1]);
-      // }
 
       getOptions().chat.setMessages([]);
 
@@ -185,4 +150,5 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     accept: bindFirst(acceptAIChat, editor),
     insertBelow: bindFirst(insertBelowAIChat, editor),
     replaceSelection: bindFirst(replaceSelectionAIChat, editor),
+    undoAI: bindFirst(undoAI, editor),
   }));

@@ -2,6 +2,8 @@
 
 import type React from 'react';
 
+import type { DebouncedFunc } from 'lodash';
+
 import {
   type OmitFirst,
   type PluginConfig,
@@ -165,12 +167,17 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
       return true;
     },
   },
+  handlers: {
+    onBlur: ({ api }) => {
+      api.copilot.reset();
+    },
+  },
 })
   .extendOptions<Required<CopilotSelectors>>(({ getOptions }) => ({
     isSuggested: (id) => getOptions().suggestionNodeId === id,
   }))
   .extendApi<Omit<CopilotApi, 'reset'>>(
-    ({ editor, getOptions, setOption, setOptions }) => ({
+    ({ api, editor, getOptions, setOption, setOptions }) => ({
       accept: bindFirst(acceptCopilot, editor),
       acceptNextWord: bindFirst(acceptCopilotNextWord, editor),
       setBlockSuggestion: ({ id = getOptions().suggestionNodeId, text }) => {
@@ -185,6 +192,8 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
       },
       stop: () => {
         const { abortController } = getOptions();
+
+        (api.copilot.triggerSuggestion as DebouncedFunc<any>)?.cancel();
 
         if (abortController) {
           abortController.abort();
