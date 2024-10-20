@@ -1,5 +1,11 @@
 # @udecode/plate-ai
 
+## 39.2.1
+
+### Patch Changes
+
+- [`a17b84f1aa09ac5bcc019823b5d0dfea581ada57`](https://github.com/udecode/plate/commit/a17b84f1aa09ac5bcc019823b5d0dfea581ada57) by [@zbeyens](https://github.com/zbeyens) – Fix lodash imports
+
 ## 39.2.0
 
 ### Minor Changes

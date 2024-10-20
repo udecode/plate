@@ -1,6 +1,6 @@
 {
   "name": "@udecode/plate-ai",
-  "version": "39.2.0",
+  "version": "39.2.1",
   "description": "Text AI plugin for Plate",
   "keywords": [
     "plate",
@@ -59,7 +59,7 @@
     "ai": "^3.4.10"
   },
   "peerDependencies": {
-    "@udecode/plate-common": ">=39.1.4",
+    "@udecode/plate-common": ">=39.2.1",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "slate": ">=0.103.0",
