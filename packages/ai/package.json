@@ -50,11 +50,13 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/plate-combobox": "39.0.0",
     "@udecode/plate-markdown": "39.2.0",
     "@udecode/plate-selection": "39.2.0",
-    "ai": "^3.4.10",
     "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "@udecode/plate-combobox": "39.0.0",
+    "ai": "^3.4.10"
   },
   "peerDependencies": {
     "@udecode/plate-common": ">=39.1.4",

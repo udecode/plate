@@ -6,7 +6,7 @@ import {
   BlockSelectionPlugin,
   removeBlockSelectionNodes,
 } from '@udecode/plate-selection/react';
-import { cloneDeep } from 'lodash';
+import cloneDeep from 'lodash/cloneDeep.js';
 
 import type { AIChatPluginConfig } from '../AIChatPlugin';
 
