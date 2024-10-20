@@ -1,5 +1,11 @@
 # @udecode/plate-ai
 
+## 39.2.2
+
+### Patch Changes
+
+- [`b6ab2cf4ef9ecad4ccc54b6626d571f8c51c6cff`](https://github.com/udecode/plate/commit/b6ab2cf4ef9ecad4ccc54b6626d571f8c51c6cff) by [@zbeyens](https://github.com/zbeyens) – Fix insert mode
+
 ## 39.2.1
 
 ### Patch Changes
