@@ -6,7 +6,7 @@
     {
       "content": "'use client';\n\nimport * as AvatarPrimitive from '@radix-ui/react-avatar';\nimport { withCn } from '@udecode/cn';\n\nexport const Avatar = withCn(\n  AvatarPrimitive.Root,\n  'relative flex size-10 shrink-0 overflow-hidden rounded-full'\n);\n\nexport const AvatarImage = withCn(\n  AvatarPrimitive.Image,\n  'aspect-square size-full'\n);\n\nexport const AvatarFallback = withCn(\n  AvatarPrimitive.Fallback,\n  'flex size-full items-center justify-center rounded-full bg-muted'\n);\n",
       "path": "plate-ui/avatar.tsx",
-      "target": "",
+      "target": "components/plate-ui/avatar.tsx",
       "type": "registry:ui"
     }
   ],

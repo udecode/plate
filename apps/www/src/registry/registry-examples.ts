@@ -91,12 +91,6 @@ export const examples: Registry = [
     type: 'registry:example',
   },
   {
-    files: ['example/cloud-demo.tsx'],
-    name: 'cloud-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
     files: ['example/editable-voids-demo.tsx'],
     name: 'editable-voids-demo',
     registryDependencies: [],

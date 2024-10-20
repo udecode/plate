@@ -1,0 +1,18 @@
+{
+  "dependencies": [
+    "@udecode/plate-indent-list"
+  ],
+  "files": [
+    {
+      "content": "import type { PlateRenderElementProps } from '@udecode/plate-common/react';\n\nimport { cn } from '@udecode/cn';\nimport {\n  useIndentTodoListElement,\n  useIndentTodoListElementState,\n} from '@udecode/plate-indent-list/react';\n\nimport { Checkbox } from './checkbox';\n\nexport const TodoMarker = ({\n  element,\n}: Omit<PlateRenderElementProps, 'children'>) => {\n  const state = useIndentTodoListElementState({ element });\n  const { checkboxProps } = useIndentTodoListElement(state);\n\n  return (\n    <div contentEditable={false}>\n      <Checkbox\n        style={{ left: -24, position: 'absolute', top: 4 }}\n        {...checkboxProps}\n      />\n    </div>\n  );\n};\n\nexport const TodoLi = (props: PlateRenderElementProps) => {\n  const { children, element } = props;\n\n  return (\n    <span\n      className={cn(\n        (element.checked as boolean) && 'text-muted-foreground line-through'\n      )}\n    >\n      {children}\n    </span>\n  );\n};\n",
+      "path": "plate-ui/indent-todo-marker-component.tsx",
+      "target": "components/plate-ui/indent-todo-marker-component.tsx",
+      "type": "registry:ui"
+    }
+  ],
+  "name": "indent-todo-marker-component",
+  "registryDependencies": [
+    "checkbox"
+  ],
+  "type": "registry:ui"
+}

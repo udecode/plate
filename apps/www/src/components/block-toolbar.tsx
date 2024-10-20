@@ -17,6 +17,7 @@ import { BlockCopyButton } from './block-copy-button';
 import { Label } from './ui/label';
 import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
 
+// TODO: sync
 export function BlockToolbar({
   block,
   fullScreen,

@@ -3,6 +3,7 @@
     {
       "content": "import * as React from 'react';\n\nexport const useDebounce = <T>(value: T, delay = 500) => {\n  const [debouncedValue, setDebouncedValue] = React.useState(value);\n\n  React.useEffect(() => {\n    const handler: NodeJS.Timeout = setTimeout(() => {\n      setDebouncedValue(value);\n    }, delay);\n\n    // Cancel the timeout if value changes (also on delay change or unmount)\n    return () => {\n      clearTimeout(handler);\n    };\n  }, [value, delay]);\n\n  return debouncedValue;\n};\n",
       "path": "hooks/use-debounce.ts",
+      "target": "hooks/use-debounce.ts",
       "type": "registry:hook"
     }
   ],

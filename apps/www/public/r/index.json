@@ -41,40 +41,6 @@
   },
   {
     "dependencies": [
-      "@udecode/plate-cloud"
-    ],
-    "files": [
-      {
-        "path": "plate-ui/cloud.tsx",
-        "type": "registry:ui"
-      },
-      {
-        "path": "plate-ui/cloud-attachment-element.tsx",
-        "type": "registry:ui"
-      },
-      {
-        "path": "plate-ui/cloud-image-element.tsx",
-        "type": "registry:ui"
-      },
-      {
-        "path": "plate-ui/cloud-resize-controls.tsx",
-        "type": "registry:ui"
-      },
-      {
-        "path": "plate-ui/cloud-status-bar.tsx",
-        "type": "registry:ui"
-      },
-      {
-        "path": "plate-ui/cloud-toolbar-buttons.tsx",
-        "type": "registry:ui"
-      }
-    ],
-    "name": "cloud",
-    "registryDependencies": [],
-    "type": "registry:ui"
-  },
-  {
-    "dependencies": [
       "@udecode/plate-code-block"
     ],
     "files": [
@@ -768,6 +734,38 @@
     "name": "indent-toolbar-button",
     "registryDependencies": [
       "toolbar"
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
+      "@udecode/plate-indent-list"
+    ],
+    "files": [
+      {
+        "path": "plate-ui/indent-todo-toolbar-button.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "indent-todo-toolbar-button",
+    "registryDependencies": [
+      "toolbar"
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
+      "@udecode/plate-indent-list"
+    ],
+    "files": [
+      {
+        "path": "plate-ui/indent-todo-marker-component.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "indent-todo-marker-component",
+    "registryDependencies": [
+      "checkbox"
     ],
     "type": "registry:ui"
   },

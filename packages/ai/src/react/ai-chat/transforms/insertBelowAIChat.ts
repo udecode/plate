@@ -2,7 +2,7 @@ import type { PlateEditor } from '@udecode/plate-common/react';
 
 import { isEditorEmpty } from '@udecode/plate-common';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
-import { cloneDeep } from 'lodash';
+import cloneDeep from 'lodash/cloneDeep.js';
 import { Path, Range } from 'slate';
 
 import type { AIChatPluginConfig } from '../AIChatPlugin';

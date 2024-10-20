@@ -23,20 +23,6 @@ export const ui: Registry = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@udecode/plate-cloud'],
-    files: [
-      'plate-ui/cloud.tsx',
-      'plate-ui/cloud-attachment-element.tsx',
-      'plate-ui/cloud-image-element.tsx',
-      'plate-ui/cloud-resize-controls.tsx',
-      'plate-ui/cloud-status-bar.tsx',
-      'plate-ui/cloud-toolbar-buttons.tsx',
-    ],
-    name: 'cloud',
-    registryDependencies: [],
-    type: 'registry:ui',
-  },
-  {
     dependencies: ['@udecode/plate-code-block'],
     files: [
       'plate-ui/code-block-element.tsx',
@@ -358,6 +344,20 @@ export const ui: Registry = [
     files: ['plate-ui/indent-toolbar-button.tsx'],
     name: 'indent-toolbar-button',
     registryDependencies: ['toolbar'],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@udecode/plate-indent-list'],
+    files: ['plate-ui/indent-todo-toolbar-button.tsx'],
+    name: 'indent-todo-toolbar-button',
+    registryDependencies: ['toolbar'],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@udecode/plate-indent-list'],
+    files: ['plate-ui/indent-todo-marker-component.tsx'],
+    name: 'indent-todo-marker-component',
+    registryDependencies: ['checkbox'],
     type: 'registry:ui',
   },
   {

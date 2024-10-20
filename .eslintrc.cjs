@@ -34,7 +34,7 @@ module.exports = {
     '.out',
     '**/*.mdx',
     '**/__registry__',
-    '**/scripts/build-registry.mts',
+    '**/scripts/*.mts',
   ],
   overrides: [
     {

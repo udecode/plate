@@ -6,7 +6,7 @@
     {
       "content": "import React from 'react';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { PlateLeaf } from '@udecode/plate-common/react';\n\nexport const HighlightLeaf = withRef<typeof PlateLeaf>(\n  ({ children, className, ...props }, ref) => (\n    <PlateLeaf\n      ref={ref}\n      asChild\n      className={cn('bg-highlight/30 text-inherit', className)}\n      {...props}\n    >\n      <mark>{children}</mark>\n    </PlateLeaf>\n  )\n);\n",
       "path": "plate-ui/highlight-leaf.tsx",
-      "target": "",
+      "target": "components/plate-ui/highlight-leaf.tsx",
       "type": "registry:ui"
     }
   ],

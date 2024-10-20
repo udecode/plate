@@ -1,10 +1,9 @@
-import { getHighlighter, loadTheme } from '@shikijs/compat';
+import { getHighlighter } from '@shikijs/compat';
 import {
   defineDocumentType,
   defineNestedType,
   makeSource,
 } from 'contentlayer2/source-files';
-import path from 'node:path';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypePrettyCode from 'rehype-pretty-code';
 import rehypeSlug from 'rehype-slug';
@@ -130,13 +129,8 @@ export default makeSource({
       [
         rehypePrettyCode,
         {
-          getHighlighter: async () => {
-            const theme = await loadTheme(
-              path.join(process.cwd(), '/src/lib/highlighter-theme.json')
-            );
-
-            return await getHighlighter({ theme });
-          },
+          getHighlighter,
+          theme: 'github-dark',
           onVisitHighlightedLine(node) {
             node.properties.className.push('line--highlighted');
           },

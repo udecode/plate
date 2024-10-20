@@ -8,3 +8,4 @@ export * from './isHistorySaving';
 export * from './withMerging';
 export * from './withoutMergingHistory';
 export * from './withoutSavingHistory';
+export * from './withNewBatch';

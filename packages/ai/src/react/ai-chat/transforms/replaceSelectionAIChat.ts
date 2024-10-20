@@ -1,12 +1,12 @@
 import type { PlateEditor } from '@udecode/plate-common/react';
 
-import { isEditorEmpty, withMerging } from '@udecode/plate-common';
+import { isEditorEmpty, withNewBatch } from '@udecode/plate-common';
 import { focusEditor } from '@udecode/plate-common/react';
 import {
   BlockSelectionPlugin,
   removeBlockSelectionNodes,
 } from '@udecode/plate-selection/react';
-import { cloneDeep } from 'lodash';
+import cloneDeep from 'lodash/cloneDeep.js';
 
 import type { AIChatPluginConfig } from '../AIChatPlugin';
 
@@ -31,7 +31,7 @@ export const replaceSelectionAIChat = (
     editor.withoutNormalizing(() => {
       removeBlockSelectionNodes(editor);
 
-      withMerging(editor, () => {
+      withNewBatch(editor, () => {
         editor
           .getTransforms(BlockSelectionPlugin)
           .blockSelection.insertBlocksAndSelect(
