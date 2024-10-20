@@ -5,6 +5,7 @@ import { deserializeInlineMd } from '@udecode/plate-markdown';
 import type { AIPluginConfig } from '../ai/AIPlugin';
 import type { AIChatPluginConfig } from './AIChatPlugin';
 
+import { withAIBatch } from '../../lib';
 import { useChatChunk } from './hooks/useChatChunk';
 
 export const useAIChatHooks = () => {
@@ -13,9 +14,15 @@ export const useAIChatHooks = () => {
   const mode = useOption('mode');
 
   useChatChunk({
-    onChunk: ({ nodes }) => {
+    onChunk: ({ isFirst, nodes }) => {
       if (mode === 'insert' && nodes.length > 0) {
-        tf.ai.insertNodes(nodes, { splitHistory: true });
+        withAIBatch(
+          editor,
+          () => {
+            tf.ai.insertNodes(nodes);
+          },
+          { split: isFirst }
+        );
       }
     },
     onFinish: ({ content }) => {
@@ -28,11 +35,11 @@ export const useAIChatHooks = () => {
       editor.undo();
       editor.history.redos.pop();
 
-      // setTimeout(() => {
       const nodes = deserializeInlineMd(editor, content);
 
-      tf.ai.insertNodes(nodes, { splitHistory: true });
-      // }, 0);
+      withAIBatch(editor, () => {
+        tf.ai.insertNodes(nodes);
+      });
     },
   });
 };
