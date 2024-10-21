@@ -114,7 +114,7 @@ export const useImagePreview = ({
 
   const onClose = useCallback(() => {
     imagePreviewActions.close();
-    document.documentElement.style.overflowY = 'scroll';
+    // document.documentElement.style.overflowY = 'scroll';
   }, []);
 
   const [prevDisabled, nextDisabled] = useMemo(
