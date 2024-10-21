@@ -18,12 +18,12 @@ export function OpenInPlus({ className }: { className?: string }) {
       </div>
       <div>Complete, deployable AI-powered template with backend.</div>
       <div>All components included. Customizable and extensible.</div>
-      <Button className="mt-2 w-fit" size="sm">
+      <Button size="sm" className="mt-2 w-fit">
         Get all-access
       </Button>
       <Link
         className="absolute inset-0"
-        href={`${siteConfig.links.platePlus}/docs`}
+        href={`${siteConfig.links.platePro}`}
         rel="noreferrer"
         target="_blank"
       >

@@ -96,7 +96,7 @@ export function ComponentPreviewPro({
                   'transition-all duration-300 ease-out',
                   'mb-2 h-8'
                 )}
-                href={`${siteConfig.links.platePlus}/pricing`}
+                href={`${siteConfig.links.platePro}/pricing`}
                 target="_blank"
               >
                 <span

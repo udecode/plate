@@ -4,7 +4,7 @@ export default function ImageProDemo() {
   return (
     <iframe
       className="size-full h-[350px]"
-      src={`${siteConfig.links.platePlus}/iframe/media-controller`}
+      src={`${siteConfig.links.platePro}/iframe/media-controller`}
       title="media-controller"
     ></iframe>
   );

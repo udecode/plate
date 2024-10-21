@@ -29,9 +29,10 @@ const getItemVariant = (item: any) => {
     // console.error('Invalid URL:', item.route, error);
   }
 
-  if (item.route?.includes('components')) return 'default';
+  // if (item.route?.includes('components')) return 'default';
+  if (item.route?.includes('components')) return 'secondary';
 
-  return 'secondary';
+  return 'outline';
 };
 
 export function DocPageLayout({
@@ -91,6 +92,8 @@ export function DocPageLayout({
                   })
                 )}
                 href={item.route as any}
+                rel={item.route?.includes('https') ? 'noreferrer' : undefined}
+                target={item.route?.includes('https') ? '_blank' : undefined}
               >
                 {item.title}
               </Link>
