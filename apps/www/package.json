@@ -10,7 +10,7 @@
     "build:contentlayer": "contentlayer2 build",
     "build:registry": "tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/build-registry.mts",
     "dev": "concurrently \"contentlayer2 dev\" \"NODE_OPTIONS=--max-old-space-size=16192 next dev\"",
-    "dev:quick": "NODE_OPTIONS=--max-old-space-size=16192 next dev",
+    "devt": "concurrently \"contentlayer2 dev\" \"next dev --turbo\"",
     "lint": "npx eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:debug": "TIMING=1 DEBUG=eslint:cli-engine yarn lint:fix",
     "lint:fix": "yarn lint --fix",

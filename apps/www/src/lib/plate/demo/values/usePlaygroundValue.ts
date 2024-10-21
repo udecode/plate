@@ -23,7 +23,6 @@ import { deserializeDocxValue } from './deserializeDocxValue';
 import { deserializeHtmlValue } from './deserializeHtmlValue';
 import { deserializeMdValue } from './deserializeMdValue';
 import { emojiValue } from './emojiValue';
-import { excalidrawValue } from './excalidrawValue';
 import { exitBreakValue, trailingBlockValue } from './exitBreakValue';
 import { fontValue } from './fontValue';
 import { highlightValue } from './highlightValue';
@@ -40,7 +39,7 @@ import { slashCommandValue } from './slashCommandValue';
 import { softBreakValue } from './softBreakValue';
 import { tabbableValue } from './tabbableValue';
 import { tableMergeValue, tableValue } from './tableValue';
-import { tocValue } from './tocValue';
+import { tocPlaygroundValue } from './tocValue';
 import { toggleValue } from './toggleValue';
 
 export const usePlaygroundValue = (id?: ValueId): MyValue => {
@@ -74,7 +73,7 @@ export const usePlaygroundValue = (id?: ValueId): MyValue => {
     value.push({ children: [{ text: 'Playground' }], type: 'h1' });
 
     // TOC
-    if (enabled.toc) value.push(...tocValue);
+    if (enabled.toc) value.push(...tocPlaygroundValue);
     // AI
     if (enabled.ai) value.push(...aiValue);
     if (enabled.copilot) value.push(...copilotValue);
@@ -121,6 +120,7 @@ export const usePlaygroundValue = (id?: ValueId): MyValue => {
     if (enabled.exitBreak) value.push(...exitBreakValue);
     if (enabled.dragOverCursor) value.push(...cursorOverlayValue);
     if (enabled.tabbable) value.push(...tabbableValue);
+    if (enabled.trailingBlock) value.push(...trailingBlockValue);
 
     // Deserialization
     value.push({ children: [{ text: 'Deserialization' }], type: 'h1' });
@@ -129,12 +129,6 @@ export const usePlaygroundValue = (id?: ValueId): MyValue => {
     if (enabled.markdown) value.push(...deserializeMdValue);
     if (enabled.docx) value.push(...deserializeDocxValue);
     if (enabled.csv) value.push(...deserializeCsvValue);
-
-    // Exceptions
-    value.push({ children: [{ text: 'Miscellaneous' }], type: 'h1' });
-
-    if (enabled.trailingBlock) value.push(...trailingBlockValue);
-    if (enabled.excalidraw) value.push(...excalidrawValue);
 
     return mapNodeId(value);
   }, [valueId, version]);

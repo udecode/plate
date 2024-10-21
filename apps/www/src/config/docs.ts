@@ -250,17 +250,37 @@ export const docsConfig: DocsConfig = {
           title: 'Copilot',
         },
         {
+          href: '/docs/block-menu',
+          label: 'New',
+          title: 'Block Menu',
+        },
+        {
+          href: '/docs/callout',
+          label: 'New',
+          title: 'Callout',
+        },
+        {
+          href: '/docs/equation',
+          label: 'New',
+          title: 'Equation',
+        },
+        {
+          href: '/docs/slash-command',
+          label: 'New',
+          title: 'Slash Command',
+        },
+        {
+          href: '/docs/toc',
+          label: 'New',
+          title: 'Table of Contents',
+        },
+        {
           href: '/docs/alignment',
           title: 'Alignment',
         },
         {
           href: '/docs/autoformat',
           title: 'Autoformat',
-        },
-        {
-          href: '/docs/block-menu',
-          label: 'New',
-          title: 'Block Menu',
         },
         {
           href: '/docs/basic-elements',
@@ -275,11 +295,6 @@ export const docsConfig: DocsConfig = {
         {
           href: '/docs/block-selection',
           title: 'Block Selection',
-        },
-        {
-          href: '/docs/callout',
-          label: 'Plus',
-          title: 'Callout',
         },
         {
           href: '/docs/caption',
@@ -323,11 +338,6 @@ export const docsConfig: DocsConfig = {
         {
           href: '/docs/emoji',
           title: 'Emoji',
-        },
-        {
-          href: '/docs/equation',
-          label: 'Plus',
-          title: 'Equation',
         },
         {
           href: '/docs/excalidraw',
@@ -402,11 +412,6 @@ export const docsConfig: DocsConfig = {
           title: 'Single Line',
         },
         {
-          href: '/docs/slash-command',
-          label: 'New',
-          title: 'Slash Command',
-        },
-        {
           href: '/docs/soft-break',
           title: 'Soft Break',
         },
@@ -420,11 +425,6 @@ export const docsConfig: DocsConfig = {
           title: 'Table',
         },
         {
-          href: '/docs/toc',
-          label: 'New',
-          title: 'Table of Contents',
-        },
-        {
           href: '/docs/toggle',
           label: 'Element',
           title: 'Toggle',
@@ -434,6 +434,11 @@ export const docsConfig: DocsConfig = {
     },
     {
       items: [
+        {
+          href: '/docs/upload',
+          label: 'New',
+          title: 'Upload',
+        },
         {
           href: '/docs/examples/editable-voids',
           title: 'Editable Voids',
@@ -461,11 +466,6 @@ export const docsConfig: DocsConfig = {
         {
           href: '/docs/examples/server',
           title: 'Server-Side',
-        },
-        {
-          href: '/docs/upload',
-          label: 'Plus',
-          title: 'Upload',
         },
       ],
       title: 'Examples',

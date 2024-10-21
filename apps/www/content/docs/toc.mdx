@@ -1,6 +1,6 @@
 ---
 title: Table of Contents
-description: A customizable table of contents component for your documentation.
+description: Renders a table of contents element with clickable links to headings in the document.
 docs:
   - route: components/toc-element
     title: Toc Element
@@ -14,34 +14,37 @@ docs:
 
 ## Features
 
-- Automatically generates a table of contents from your document headings
-- Customizable styles and depth levels
-- Smooth scrolling to sections
+- Automatically generates a table of contents from document headings
+- Smooth scrolling to headings
 
 </PackageInfo>
 
 ## Installation
 
 ```bash
-npm install @udecode/plate-heading
+npm install @udecode/plate-heading @udecode/plate-node-id
 ```
 
 ## Usage
 
 ```tsx
-// ...
-import { TocPlugin } from '@udecode/plate-heading/react';
+import { TocPlugin, HeadingPlugin } from '@udecode/plate-heading/react';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
+```
 
+```tsx
 const editor = usePlateEditor({
-  id: 'toc-demo',
+  // value
   override: {
     components: {
-      ...otherPlateComponents,
+      // ...components,
       [TocPlugin.key]: TocElement,
     },
   },
   plugins: [
-    ...otherPlatePlugins,
+    // ...plugins,
+    HeadingPlugin,
+    NodeIdPlugin,
     TocPlugin.configure({
       options: {
         scrollContainerSelector: `#your-scroll-container-id`,
@@ -49,11 +52,10 @@ const editor = usePlateEditor({
       },
     }),
   ],
-  value: tocValue,
 });
 ```
 
-## Set scroll container
+### Set scroll container
 
 In this plugin, you need to provide a **selector** to options.scrollContainerSelector to specify the scrollable container. This selector is used with `Document.querySelector` to locate the container element.
 You can use various selector formats, such as:
@@ -84,22 +86,14 @@ type TocOptions = {
 **queryHeading**: if you want to customize the heading selection logic, you can provide a function to query the headings.
 for example, you just want to use heading level 1 and 2, you can use this. by default, it will use all heading levels.
 
-## Toc Sidebar (Plus)
+### Wire up the UI
 
-Toc Sidebar has the following props you can configure it to match your needs:
+- [`TocElement`](/docs/components/toc-element)
 
-```tsx
-type TocSidebarProps = {
-  rootMargin?: string;
-  topOffset?: number;
-  maxShowCount?: number;
-};
-```
-- `rootMargin`: The margin around the viewport that should be considered when calculating the visibility of the target element.which is used in [IntersectionObserver](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API).
-- `topOffset`: After scrolling to the specified element, scroll an additional distance.
-- `maxShowCount`: The maximum number of items to show in the sidebar default is 20.
+## Examples
 
-here is an example of how to use the TocSidebar component:
+### Plate Plus
+
 
 ```tsx
 <Plate>
@@ -145,10 +139,10 @@ export const HeadingElement = withRef<typeof HeadingElementVariants>(
 The TocSideBar component in Plate Plus offers the following features:
 
 - Responsive design that adapts to different screen sizes
-- Dynamic highlighting of the corresponding thumbnail on the right side based on the current section
-- Hover thumbnail to see the preview of the section with smooth animation
-- Elegant transition effects when navigating between sections
-- Animated highlighting of the current section in the sidebar
+- Dynamic highlighting of the corresponding thumbnail on the right side based on the current heading
+- Hover thumbnail to see the preview of the heading with smooth animation
+- Elegant transition effects when navigating between headings
+- Animated highlighting of the current heading in the sidebar
 
 Here's an example of how to use the enhanced TocSideBar component in Plate Plus:
 
