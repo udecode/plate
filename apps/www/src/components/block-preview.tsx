@@ -21,6 +21,49 @@ export function BlockPreview({
 }) {
   const ref = React.useRef<ImperativePanelHandle>(null);
 
+  const [scrollPosition, setScrollPosition] = React.useState(window.scrollY);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY === 0) return;
+      setScrollPosition(window.scrollY);
+    };
+
+    document.addEventListener('scroll', handleScroll);
+
+    return () => {
+      document.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+    React.useEffect(() => {
+      const handleMessage = (event: MessageEvent) => {
+      if (event.data === 'iframe_selection_area_added') {
+        if (scrollPosition <= 0) return;
+        document.body.style.overflow = 'hidden';
+        document.body.style.position = 'fixed';
+        document.body.style.top = `-${scrollPosition}px`;
+        document.body.style.width = '100%';
+      }
+
+      if (event.data === 'iframe_selection_area_removed') {
+
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+
+        window.scrollTo(0, scrollPosition);
+      }
+    };
+    window.addEventListener('message', handleMessage);
+
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+  }, [scrollPosition]);
+
+
   return (
     <div
       id={block.name}

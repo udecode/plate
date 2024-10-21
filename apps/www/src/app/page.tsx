@@ -64,7 +64,7 @@ export default function IndexPage() {
           block={{
             description: 'A Notion-like AI template',
             name: 'potion',
-            src: 'https://potion.platejs.org/ai-menu/?iframe-blank=true',
+            src: 'https://potion.platejs.org/ai-menu/?iframe=true',
           }}
         />
       </div>

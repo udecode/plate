@@ -50,7 +50,7 @@ export default function PotionTab() {
       className="h-[800px] w-full rounded-lg border"
       id="potion_iframe"
       title="potion"
-      src="https://potion.platejs.org/ai-menu/?iframe-blank=true"
+      src="https://potion.platejs.org/ai-menu/?iframe=true"
     />
   );
 }
