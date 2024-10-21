@@ -46,7 +46,7 @@ export function SiteHeader() {
           </Link>
           <Link
             className="text-foreground/60 transition-colors hover:text-foreground/80"
-            href="/#potion"
+            href={siteConfig.links.potion}
           >
             Potion
           </Link>

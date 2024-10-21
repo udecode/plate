@@ -62,6 +62,16 @@ export default function IndexPage() {
       <div className="relative mt-12 scroll-m-20 md:mt-24 lg:mt-48 ">
         <BlockPreview
           block={{
+            description: 'A shadcn/ui template',
+            name: 'potion',
+            src: '/blocks/playground',
+          }}
+        />
+      </div>
+
+      <div className="relative mt-12 scroll-m-20 md:mt-24 lg:mt-48 ">
+        <BlockPreview
+          block={{
             description: 'A Notion-like AI template',
             name: 'potion',
             src: 'https://potion.platejs.org/ai-menu/?iframe=true',
