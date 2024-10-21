@@ -385,7 +385,7 @@ export default function PlaygroundDemo({
               id={scrollSelector ?? `blockSelection-${id}`}
               ref={containerRef}
               className={cn(
-                'relative flex max-h-[800px] w-full overflow-x-auto',
+                'relative flex w-full overflow-x-auto',
                 // block selection area
                 '[&_.slate-selection-area]:border [&_.slate-selection-area]:border-brand/25 [&_.slate-selection-area]:bg-brand/15',
                 className
@@ -395,10 +395,10 @@ export default function PlaygroundDemo({
               <Editor
                 {...editableProps}
                 size="md"
-                variant="ghost"
+                variant="demo"
                 className={cn(
                   editableProps.className,
-                  'overflow-x-auto rounded-none px-[var(--editor-px)]',
+                  'overflow-x-auto rounded-none',
                   !id && 'pb-[20vh] pt-4',
                   id && 'pb-8 pt-2'
                 )}

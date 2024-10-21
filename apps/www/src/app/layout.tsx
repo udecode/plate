@@ -6,8 +6,6 @@ import { cn } from '@udecode/cn';
 
 import { GA } from '@/components/analytics/ga';
 import { Providers } from '@/components/context/providers';
-import { SiteFooter } from '@/components/site-footer';
-import { SiteHeader } from '@/components/site-header';
 import { TailwindIndicator } from '@/components/tailwind-indicator';
 import { Toaster } from '@/components/ui/sonner';
 import { siteConfig } from '@/config/site';
@@ -96,9 +94,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <Providers>
           <div vaul-drawer-wrapper="">
             <div className="relative flex min-h-screen flex-col bg-background">
-              <SiteHeader />
-              <main className="flex-1">{children}</main>
-              <SiteFooter />
+              {children}
             </div>
           </div>
         </Providers>

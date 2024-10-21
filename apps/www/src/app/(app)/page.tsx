@@ -13,9 +13,9 @@ import { ThemesButton } from '@/components/themes-button';
 import { siteConfig } from '@/config/site';
 import { Button } from '@/registry/default/plate-ui/button';
 
-import { AnnouncementButton } from './announcement-button';
+import { AnnouncementButton } from './_components/announcement-button';
 
-import '../../public/r/themes.css';
+import '../../../public/r/themes.css';
 
 const HomeTabs = dynamic(() => import('./_components/home-tabs'));
 const CustomizerDrawer = dynamic(

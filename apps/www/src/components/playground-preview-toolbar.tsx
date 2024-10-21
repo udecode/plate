@@ -6,32 +6,33 @@ import type { Block } from '@/registry/schema';
 import type { ImperativePanelHandle } from 'react-resizable-panels';
 
 import { cn } from '@udecode/cn';
-import { Maximize, Monitor, Smartphone, Tablet } from 'lucide-react';
+import { Fullscreen, Monitor, Smartphone, Tablet } from 'lucide-react';
+import Link from 'next/link';
 
+import { Button } from '@/registry/default/plate-ui/button';
 import { Separator } from '@/registry/default/plate-ui/separator';
 
 import { BlockCopyButton } from './block-copy-button';
 import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
 
-// TODO: sync
 export function PlaygroundPreviewToolbar({
   block,
-  fullScreen,
   resizablePanelRef,
-  setFullScreen,
+  // fullScreen,
+  // setFullScreen,
 }: {
   block: { hasLiftMode: boolean } & Block;
-  fullScreen: boolean;
   resizablePanelRef: React.RefObject<ImperativePanelHandle>;
-  setFullScreen: React.Dispatch<React.SetStateAction<boolean>>;
+  // fullScreen: boolean;
+  // setFullScreen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   return (
     <div
       className={cn(
         'flex items-center gap-4',
-        'absolute right-0 z-[60]',
-        !fullScreen && '-top-4 -translate-y-full',
-        fullScreen && 'bottom-4'
+        'absolute right-0 z-50',
+        '-top-4 -translate-y-full'
+        // fullScreen && 'bottom-4'
       )}
     >
       <div className="flex items-center gap-2 pr-[14px] sm:ml-auto">
@@ -39,14 +40,14 @@ export function PlaygroundPreviewToolbar({
           <ToggleGroup
             defaultValue="100"
             onValueChange={(value) => {
-              if (value === 'full') {
-                setFullScreen(true);
+              // if (value === 'full') {
+              //   setFullScreen(true);
 
-                return;
-              }
-              if (fullScreen) {
-                setFullScreen(false);
-              }
+              //   return;
+              // }
+              // if (fullScreen) {
+              //   setFullScreen(false);
+              // }
 
               setTimeout(() => {
                 if (resizablePanelRef.current) {
@@ -56,12 +57,12 @@ export function PlaygroundPreviewToolbar({
             }}
             type="single"
           >
-            <ToggleGroupItem
+            {/* <ToggleGroupItem
               className="size-[22px] rounded-sm p-0"
               value="full"
             >
               <Maximize className="!size-3.5" />
-            </ToggleGroupItem>
+            </ToggleGroupItem> */}
             <ToggleGroupItem className="size-[22px] rounded-sm p-0" value="100">
               <Monitor className="!size-3.5" />
             </ToggleGroupItem>
@@ -71,6 +72,19 @@ export function PlaygroundPreviewToolbar({
             <ToggleGroupItem className="size-[22px] rounded-sm p-0" value="30">
               <Smartphone className="!size-3.5" />
             </ToggleGroupItem>
+            <Separator orientation="vertical" className="h-4" />
+            <Button
+              asChild
+              size="icon"
+              variant="ghost"
+              className="size-[22px] rounded-sm p-0"
+              title="Open in New Tab"
+            >
+              <Link href={`/blocks/${block.name}`} target="_blank">
+                <span className="sr-only">Open in New Tab</span>
+                <Fullscreen className="size-3.5" />
+              </Link>
+            </Button>
           </ToggleGroup>
         </div>
 
