@@ -59,10 +59,10 @@ export default function IndexPage() {
         <CustomizerDrawer />
       </section>
 
-      <div className="relative mt-12 scroll-m-20 md:mt-24 lg:mt-48 ">
+      <div className="relative mt-12 scroll-m-20 md:mt-24 lg:mt-36 ">
         <BlockPreview
           block={{
-            description: 'A shadcn/ui template',
+            description: 'https://next.platejs.org/docs/block-selection',
             name: 'potion',
             src: 'https://next.platejs.org/docs/block-selection',
             // src: '/docs/block-selection',
@@ -70,21 +70,44 @@ export default function IndexPage() {
           }}
         />
       </div>
+      <div className="relative mt-12 scroll-m-20 md:mt-24 lg:mt-36 ">
+        <BlockPreview
+          block={{
+            description: '/docs/block-selection',
+            name: 'potion',
+            src: '/docs/block-selection',
+            // src: '/docs/block-selection',
+            // src: '/blocks/playground',
+          }}
+        />
+      </div>
+      <div className="relative mt-12 scroll-m-20 md:mt-24 lg:mt-36 ">
+        <BlockPreview
+          block={{
+            description: 'https://pro.platejs.org/docs/examples/ai',
+            name: 'potion',
+            src: 'https://pro.platejs.org/docs/examples/ai',
+            // src: '/docs/block-selection',
+            // src: '/blocks/playground',
+          }}
+        />
+      </div>
 
-      <div className="relative mt-12 scroll-m-20 md:mt-24 lg:mt-48 ">
-        {/* <BlockPreview
+      <div className="relative mt-12 scroll-m-20 md:mt-24 lg:mt-36 ">
+        <BlockPreview
           block={{
             description: 'A Notion-like AI template',
             name: 'potion',
             src: 'https://potion.platejs.org/ai-menu/?iframe=true',
-          }} */}
-        <BlockPreview
+          }}
+        />
+        {/* <BlockPreview
           block={{
             description: 'A Notion-like AI template',
             name: 'potion',
             src: 'https://pro.platejs.org/docs/examples/ai',
           }}
-        />
+        /> */}
       </div>
     </div>
   );
