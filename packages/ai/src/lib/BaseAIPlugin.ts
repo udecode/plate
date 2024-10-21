@@ -32,16 +32,3 @@ export const BaseAIPlugin = createTSlatePlugin({
     removeMarks: bindFirst(removeAIMarks, editor),
     removeNodes: bindFirst(removeAINodes, editor),
   }))
-  .extend({
-    extendEditor: ({ editor }) => {
-      const { apply } = editor;
-
-      editor.apply = (op) => {
-        // console.log('🚀 ~ editor.apply= ~ op:', op);
-        // console.log('history', editor.history.undos);
-        apply(op);
-      };
-
-      return editor;
-    },
-  });

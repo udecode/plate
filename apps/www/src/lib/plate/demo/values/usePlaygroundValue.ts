@@ -67,7 +67,6 @@ export const usePlaygroundValue = (id?: ValueId): MyValue => {
     }
     if (valueId !== customizerPlugins.playground.id) {
       let newValue = (customizerPlugins as any)[valueId]?.value ?? value;
-      console.log('🚀 ~ returnuseMemo ~ newValue:', newValue);
 
       if (newValue.length === 0) {
         newValue = value;

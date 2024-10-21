@@ -83,7 +83,7 @@ export const blockSchema = registryEntrySchema.extend({
     })
     .optional(),
   highlightedCode: z.string(),
-  style: z.enum(['default', 'new-york']),
+  src: z.string().optional(),
   type: z.literal('registry:block'),
 });
 

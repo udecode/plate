@@ -3,7 +3,7 @@ import * as React from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 
-import { Icons } from '@/components/icons';
+import { BlockPreview } from '@/components/block-preview';
 import {
   PageHeader,
   PageHeaderDescription,
@@ -34,20 +34,18 @@ export default function IndexPage() {
             <ThemesButton />
           </div>
           <PageHeaderDescription>
-            Plugin system & primitive component library. <br />
-            CLI for styled components. Customizable. Open Source.
+            Framework · Plugins · Components
           </PageHeaderDescription>
-          <section className="flex w-full items-center space-x-4 py-2">
-            <Button asChild size="sm">
+          <section className="flex w-full items-center space-x-2 py-2">
+            <Button asChild size="xs">
               <Link href="/docs">Get Started</Link>
             </Button>
-            <Button asChild size="sm" variant="outline">
+            <Button asChild size="xs" variant="ghost">
               <Link
                 href={siteConfig.links.github}
                 rel="noreferrer"
                 target="_blank"
               >
-                <Icons.gitHub className="mr-2 size-4" />
                 GitHub
               </Link>
             </Button>
@@ -60,6 +58,16 @@ export default function IndexPage() {
 
         <CustomizerDrawer />
       </section>
+
+      <div className="relative mt-12 scroll-m-20 md:mt-24 lg:mt-48 ">
+        <BlockPreview
+          block={{
+            description: 'A Notion-like AI template',
+            name: 'potion',
+            src: 'https://potion.platejs.org/ai-menu/?iframe-blank=true',
+          }}
+        />
+      </div>
     </div>
   );
 }

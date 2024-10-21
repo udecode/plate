@@ -2,6 +2,8 @@ import type { MainNavItem, SidebarNavItem } from '@/types/nav';
 
 import { customizerComponents } from '@/config/customizer-components';
 
+import { siteConfig } from './site';
+
 export interface DocsConfig {
   componentsNav: SidebarNavItem[];
   mainNav: MainNavItem[];
@@ -158,8 +160,12 @@ export const docsConfig: DocsConfig = {
           title: 'Getting Started',
         },
         {
-          href: '/',
+          href: '/#playground',
           title: 'Playground',
+        },
+        {
+          href: siteConfig.links.platePro,
+          title: 'Plate Plus',
         },
       ],
       title: 'Overview',

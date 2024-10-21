@@ -6,18 +6,12 @@ jsx;
 
 export const tocValue: any = (
   <fragment>
-    <hh1>🔥 Table of Contents</hh1>
+    <hh1>Table of Contents</hh1>
     <hp>
-      <htext>
-        Click on any Table of Contents (TOC) entry to automatically scroll to
-        the corresponding section in the document.
-      </htext>
+      <htext>Click to scroll to heading.</htext>
     </hp>
     <htoc>
       <htext></htext>
     </htoc>
-    <hp>
-      <htext></htext>
-    </hp>
   </fragment>
 );

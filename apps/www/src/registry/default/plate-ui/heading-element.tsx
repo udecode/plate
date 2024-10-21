@@ -22,7 +22,7 @@ const blockVariants = cva('', {
   variants: {
     isFirstBlock: {
       false: '',
-      true: 'mt-0',
+      // true: 'mt-0',
     },
   },
 });

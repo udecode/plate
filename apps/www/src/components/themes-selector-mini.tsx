@@ -32,7 +32,7 @@ export function ThemesSwitcher({
     return (
       <div
         className={cn(
-          'flex items-center justify-center gap-0.5 py-2 lg:justify-start lg:gap-1',
+          'flex items-center justify-center gap-0.5 py-0 lg:justify-start lg:gap-1',
           className
         )}
       >
@@ -51,7 +51,7 @@ export function ThemesSwitcher({
   return (
     <ToggleGroup
       className={cn(
-        'flex items-center justify-center gap-0.5 py-2 lg:justify-start lg:gap-1',
+        'flex items-center justify-center gap-0.5 py-0 lg:justify-start lg:gap-1',
         className
       )}
       value={activeTheme.name}
