@@ -37,7 +37,7 @@ const editorVariants = cva(
         sm: 'text-sm',
       },
       variant: {
-        demo: 'min-h-full w-full px-16 pb-72 text-base sm:px-[max(64px,calc(50%-350px))]',
+        demo: 'max-h-[650px] min-h-full w-full px-16 pb-72 text-base sm:px-[max(64px,calc(50%-350px))]',
         ghost: '',
         outline: 'border border-input',
       },

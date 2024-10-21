@@ -25,21 +25,23 @@ export function BlockPreview({
   //   typeof window === 'undefined' ? 0 : window.scrollY
   // );
 
-  // React.useEffect(() => {
-  //   if (typeof window === 'undefined') return;
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
 
-  //   const handleScroll = () => {
-  //     if (window.scrollY === 0) return;
+    // console.log(window.frameElement.ownerDocument);
 
-  //     setScrollPosition(window.scrollY);
-  //   };
+    // const handleScroll = () => {
+    //   if (window.scrollY === 0) return;
 
-  //   document.addEventListener('scroll', handleScroll);
+    //   setScrollPosition(window.scrollY);
+    // };
 
-  //   return () => {
-  //     document.removeEventListener('scroll', handleScroll);
-  //   };
-  // }, []);
+    // document.addEventListener('scroll', handleScroll);
+
+    // return () => {
+    //   document.removeEventListener('scroll', handleScroll);
+    // };
+  }, []);
 
   // React.useEffect(() => {
   //   if (typeof window === 'undefined') return;
