@@ -175,35 +175,38 @@ export const Index: Record<string, any> = {
     },
     "block-context-menu": {
       name: "block-context-menu",
+      description: "",
       type: "registry:ui",
       registryDependencies: ["calendar","plate-element"],
       files: ["registry/default/plate-ui/block-context-menu.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/block-context-menu.tsx")),
       source: "",
-      category: "undefined",
-      subcategory: "undefined",
+      category: "",
+      subcategory: "",
       chunks: []
     },
     "ghost-text": {
       name: "ghost-text",
+      description: "",
       type: "registry:ui",
       registryDependencies: [""],
       files: ["registry/default/plate-ui/ghost-text.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/ghost-text.tsx")),
       source: "",
-      category: "undefined",
-      subcategory: "undefined",
+      category: "",
+      subcategory: "",
       chunks: []
     },
     "toc-element": {
       name: "toc-element",
+      description: "",
       type: "registry:ui",
       registryDependencies: [""],
       files: ["registry/default/plate-ui/toc-element.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/toc-element.tsx")),
       source: "",
-      category: "undefined",
-      subcategory: "undefined",
+      category: "",
+      subcategory: "",
       chunks: []
     },
     "calendar": {
@@ -952,13 +955,14 @@ export const Index: Record<string, any> = {
     },
     "pro-iframe-demo": {
       name: "pro-iframe-demo",
+      description: "",
       type: "registry:example",
       registryDependencies: undefined,
       files: ["registry/default/example/pro-iframe-demo.tsx"],
       component: React.lazy(() => import("@/registry/default/example/pro-iframe-demo.tsx")),
       source: "",
-      category: "undefined",
-      subcategory: "undefined",
+      category: "",
+      subcategory: "",
       chunks: []
     },
     "editor-default": {

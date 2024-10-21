@@ -17,64 +17,17 @@ import {
 export function BlockPreview({
   block,
 }: {
-  block: Pick<Block, 'container' | 'description' | 'name' | 'src'>;
+  block: Pick<
+    Block,
+    'container' | 'description' | 'descriptionSrc' | 'name' | 'src'
+  >;
 }) {
   const ref = React.useRef<ImperativePanelHandle>(null);
-
-  // const [scrollPosition, setScrollPosition] = React.useState(
-  //   typeof window === 'undefined' ? 0 : window.scrollY
-  // );
-
-  React.useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    // console.log(window.frameElement.ownerDocument);
-
-    // const handleScroll = () => {
-    //   if (window.scrollY === 0) return;
-
-    //   setScrollPosition(window.scrollY);
-    // };
-
-    // document.addEventListener('scroll', handleScroll);
-
-    // return () => {
-    //   document.removeEventListener('scroll', handleScroll);
-    // };
-  }, []);
-
-  // React.useEffect(() => {
-  //   if (typeof window === 'undefined') return;
-
-  //   const handleMessage = (event: MessageEvent) => {
-  //     if (event.data === 'iframe_selection_area_added') {
-  //       if (scrollPosition <= 0) return;
-
-  //       document.body.style.overflow = 'hidden';
-  //       document.body.style.position = 'fixed';
-  //       document.body.style.top = `-${scrollPosition}px`;
-  //       document.body.style.width = '100%';
-  //     }
-  //     if (event.data === 'iframe_selection_area_removed') {
-  //       document.body.style.overflow = '';
-  //       document.body.style.position = '';
-  //       document.body.style.top = '';
-  //       document.body.style.width = '';
-
-  //       window.scrollTo(0, scrollPosition);
-  //     }
-  //   };
-  //   window.addEventListener('message', handleMessage);
-
-  //   return () => {
-  //     window.removeEventListener('message', handleMessage);
-  //   };
-  // }, [scrollPosition]);
 
   return (
     <div
       id={block.name}
-      className="relative grid w-full scroll-m-20 gap-4"
+      className="relative grid w-full scroll-m-14 gap-4"
       style={
         {
           '--container-height': block.container?.height,
@@ -86,7 +39,7 @@ export function BlockPreview({
         <ResizablePanel
           ref={ref}
           className={cn(
-            'relative aspect-[4/2.5] rounded-lg border bg-background md:aspect-auto'
+            'relative rounded-lg border bg-background max-sm:w-full max-sm:!flex-auto'
           )}
           defaultSize={100}
           minSize={30}
@@ -110,7 +63,7 @@ export function BlockPreview({
           <iframe
             className={cn('chunk-mode relative z-20 w-full bg-background')}
             title={block.name}
-            height={block.container?.height ?? 800}
+            height={block.container?.height ?? 700}
             src={block.src ?? `/blocks/${block.name}`}
           />
         </ResizablePanel>

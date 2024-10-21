@@ -37,7 +37,7 @@ export function SiteHeader() {
         <MainNav />
         <MobileNav />
 
-        <nav className="flex items-center gap-4 text-sm lg:gap-6">
+        <nav className="hidden items-center gap-4 text-sm md:flex lg:gap-6">
           <Link
             className="text-foreground/60 transition-colors hover:text-foreground/80"
             href="/#playground"
@@ -46,7 +46,8 @@ export function SiteHeader() {
           </Link>
           <Link
             className="text-foreground/60 transition-colors hover:text-foreground/80"
-            href={siteConfig.links.potion}
+            href="/#potion"
+            // href={siteConfig.links.potion}
           >
             Potion
           </Link>

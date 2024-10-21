@@ -2,8 +2,8 @@ const _THEMES = {
   ayu: {
     id: 'ayu',
     colors: {
-      accent: '35 100% 50%', // #FF9940
-      accentForeground: '0 0% 100%', // #FFFFFF
+      accent: '35 100% 50% / 0.3', // Semi-transparent version of brand
+      accentForeground: '0 0% 9%',
       background: '38 100% 99%', // #FAFAFA
       border: '44 17% 88%', // #E7E8E9
       brand: '35 100% 50%', // #FF9940
@@ -25,8 +25,8 @@ const _THEMES = {
       secondaryForeground: '0 0% 9%', // #171717
     },
     colorsDark: {
-      accent: '35 100% 50%', // #FF9940
-      accentForeground: '0 0% 100%', // #FFFFFF
+      accent: '35 100% 50% / 0.2', // Semi-transparent version of brand
+      accentForeground: '0 0% 9%',
       background: '220 27% 18%', // #1F2430
       border: '220 13% 26%', // #33415E
       brand: '35 100% 50%', // #FF9940
@@ -63,51 +63,50 @@ const _THEMES = {
   catppuccin: {
     id: 'catppuccin',
     colors: {
-      accent: '220 23% 80%',
-      accentForeground: '220 23% 20%',
-      background: '220 23% 95%',
-      border: '220 13% 90%',
-      brand: '266 85% 58%', // Same as primary
-      card: '220 23% 93%',
-      cardForeground: '234 16% 30%',
-      destructive: '3 87% 37%',
-      destructiveForeground: '3 87% 97%',
-      foreground: '234 16% 35%',
-      highlight: '266 30% 75%', // Same as secondary
-      input: '220 13% 87%',
-      muted: '220 12% 90%',
-      mutedForeground: '220 12% 30%',
-      popover: '220 23% 92%',
-      popoverForeground: '234 16% 25%',
-      primary: '266 85% 58%',
-      primaryForeground: '0 0% 100%',
-      ring: '266 85% 58%',
-      secondary: '266 30% 75%',
-      secondaryForeground: '266 30% 15%',
+      accent: '266 85% 58% / 0.2', // Mauve with opacity
+      accentForeground: '234 16% 35%', // Text
+      background: '220 23% 95%', // Base
+      border: '225 14% 77%', // Surface1
+      brand: '266 85% 58%', // Mauve
+      card: '220 23% 95%', // Base
+      cardForeground: '234 16% 35%', // Text
+      destructive: '347 87% 44%', // Red
+      destructiveForeground: '220 23% 95%', // Base
+      foreground: '234 16% 35%', // Text
+      highlight: '231 97% 72%', // Lavender
+      input: '227 12% 71%', // Surface2
+      muted: '223 16% 83%', // Surface0
+      mutedForeground: '233 10% 47%', // Subtext0
+      popover: '220 23% 95%', // Base
+      popoverForeground: '234 16% 35%', // Text
+      primary: '266 85% 58%', // Mauve
+      primaryForeground: '220 23% 95%', // Base
+      ring: '266 85% 58%', // Mauve
+      secondary: '231 97% 72%', // Lavender
+      secondaryForeground: '234 16% 35%', // Text
     },
-    // Catppuccin Mocha
     colorsDark: {
-      accent: '240 21% 30%',
-      'accent-foreground': '240 21% 90%',
-      background: '240 21% 15%',
-      border: '240 11% 20%',
-      brand: '267 84% 81%', // Same as primary
-      card: '240 21% 13%',
-      'card-foreground': '226 64% 93%',
-      destructive: '8 96% 56%',
-      destructiveForeground: '0 0% 100%',
-      foreground: '226 64% 88%',
-      highlight: '267 30% 25%', // Same as secondary
-      input: '240 11% 23%',
-      muted: '240 12% 19%',
-      'muted-foreground': '240 12% 69%',
-      popover: '240 21% 12%',
-      'popover-foreground': '226 64% 98%',
-      primary: '267 84% 81%',
-      primaryForeground: '267 84% 21%',
-      ring: '267 84% 81%',
-      secondary: '267 30% 25%',
-      secondaryForeground: '267 30% 85%',
+      accent: '267 83% 80% / 0.2', // Mauve with opacity
+      accentForeground: '227 68% 88%', // Text
+      background: '232 23% 18%', // Base
+      border: '231 16% 34%', // Surface1
+      brand: '267 83% 80%', // Mauve
+      card: '232 23% 18%', // Base
+      cardForeground: '227 68% 88%', // Text
+      destructive: '351 74% 73%', // Red
+      destructiveForeground: '227 68% 88%', // Text
+      foreground: '227 68% 88%', // Text
+      highlight: '234 82% 85%', // Lavender
+      input: '230 14% 41%', // Surface2
+      muted: '230 19% 26%', // Surface0
+      mutedForeground: '228 39% 80%', // Subtext1
+      popover: '232 23% 18%', // Base
+      popoverForeground: '227 68% 88%', // Text
+      primary: '267 83% 80%', // Mauve
+      primaryForeground: '232 23% 18%', // Base
+      ring: '267 83% 80%', // Mauve
+      secondary: '234 82% 85%', // Lavender
+      secondaryForeground: '227 68% 88%', // Text
     },
     fontFamily: {
       body: {
@@ -180,7 +179,7 @@ const _THEMES = {
         type: 'sans-serif',
       },
     },
-    name: 'Catppuccin',
+    name: 'Default Palette',
     radius: 0.5,
   },
   'default-shadcn': {
@@ -247,8 +246,8 @@ const _THEMES = {
   dune: {
     id: 'dune',
     colors: {
-      accent: '36 33% 75%',
-      accentForeground: '36 45% 25%',
+      accent: '36 33% 75% / 0.2',
+      accentForeground: '39 14% 22%',
       background: '43 47% 92%',
       border: '43 27% 84%',
       brand: '39 14% 22%', // #3D3A34
@@ -270,8 +269,8 @@ const _THEMES = {
       secondaryForeground: '39 14% 22%',
     },
     colorsDark: {
-      accent: '36 33% 25%',
-      accentForeground: '36 45% 75%',
+      accent: '36 33% 75% / 0.3',
+      accentForeground: '39 14% 22%',
       background: '39 14% 12%',
       border: '43 27% 16%',
       brand: '43 47% 88%', // #EBE6D5
@@ -307,8 +306,8 @@ const _THEMES = {
   everforest: {
     id: 'everforest',
     colors: {
-      accent: '142 40% 46%', // #8da101
-      accentForeground: '44 96% 98%', // #fdf6e3
+      accent: '142 40% 46% / 0.2',
+      accentForeground: '151 17% 39%',
       background: '44 96% 98%', // #fdf6e3
       border: '44 24% 83%', // #e0dcc7
       brand: '142 40% 46%', // #8DA101
@@ -320,7 +319,7 @@ const _THEMES = {
       highlight: '88 23% 63%', // #A7C080
       input: '44 24% 83%', // #e0dcc7
       muted: '44 24% 95%', // #f4f0d9
-      mutedForeground: '151 9% 63%', // #939f91
+      mutedForeground: '151 9% 43%',
       popover: '44 96% 98%', // #fdf6e3
       popoverForeground: '151 17% 39%', // #5c6a72
       primary: '142 40% 46%', // #8da101
@@ -330,8 +329,8 @@ const _THEMES = {
       secondaryForeground: '151 17% 39%',
     },
     colorsDark: {
-      accent: '165 23% 61%',
-      'accent-foreground': '220 17% 20%',
+      accent: '88 23% 63% / 0.2',
+      accentForeground: '39 14% 74%',
       background: '220 17% 20%',
       border: '210 9% 33%',
       brand: '88 23% 63%', // #A7C080
@@ -368,8 +367,8 @@ const _THEMES = {
   github: {
     id: 'github',
     colors: {
-      accent: '212 12% 45%',
-      accentForeground: '0 0% 100%',
+      accent: '215 69% 43% / 0.2',
+      accentForeground: '215 14% 34%',
       background: '0 0% 100%',
       border: '210 18% 87%',
       brand: '215 69% 43%', // #2F81F7
@@ -391,7 +390,7 @@ const _THEMES = {
       secondaryForeground: '215 14% 34%',
     },
     colorsDark: {
-      accent: '213 14% 33%',
+      accent: '212 92% 45% / 0.2',
       accentForeground: '210 14% 93%',
       background: '215 28% 17%',
       border: '215 14% 25%',
@@ -429,8 +428,8 @@ const _THEMES = {
   horizon: {
     id: 'horizon',
     colors: {
-      accent: '344 96% 92%', // #fceae5
-      accentForeground: '345 6% 30%', // #52484e
+      accent: '345 80% 70% / 0.2',
+      accentForeground: '345 6% 30%',
       background: '345 6% 95%', // #fdf0ed
       border: '345 6% 85%', // #e4d8d4
       brand: '345 80% 70%', // #F075B5
@@ -452,8 +451,8 @@ const _THEMES = {
       secondaryForeground: '345 6% 30%', // #52484e
     },
     colorsDark: {
-      accent: '344 96% 92%', // #fceae5
-      accentForeground: '345 6% 30%', // #52484e
+      accent: '345 80% 70% / 0.2',
+      accentForeground: '345 6% 80%',
       background: '345 6% 15%', // #1c1e26
       border: '345 6% 25%', // #3d3741
       brand: '345 80% 70%', // #F075B5

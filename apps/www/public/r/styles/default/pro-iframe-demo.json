@@ -1,0 +1,12 @@
+{
+  "files": [
+    {
+      "content": "import { siteConfig } from '@/config/site';\nimport { cn } from '@/lib/utils';\n\nexport default function ProIframeDemo({\n  component,\n}: {\n  component: string;\n  height: string;\n}) {\n  return (\n    <iframe\n      className={cn(`size-full h-[520px]`)}\n      title={component}\n      src={`${siteConfig.links.platePro}/iframe/${component}`}\n    />\n  );\n}\n",
+      "path": "example/pro-iframe-demo.tsx",
+      "target": "components/pro-iframe-demo.tsx",
+      "type": "registry:example"
+    }
+  ],
+  "name": "pro-iframe-demo",
+  "type": "registry:example"
+}

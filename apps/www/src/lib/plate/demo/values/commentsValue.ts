@@ -54,7 +54,7 @@ export const commentsData: Record<string, TComment> = {
 
 export const commentsValue: Value = [
   {
-    children: [{ text: '💬 Comments' }],
+    children: [{ text: 'Comments' }],
     type: 'h2',
   },
   {

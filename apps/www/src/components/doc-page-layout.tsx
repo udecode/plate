@@ -109,10 +109,10 @@ export function DocPageLayout({
       {doc.toc && (
         <div className="hidden text-sm xl:block">
           <div className="sticky top-16 -mt-10 pt-4">
-            <ScrollArea className="h-full pb-10">
-              <div className="sticky top-16 -mt-10 h-[calc(100vh-3.5rem)] py-12">
+            <ScrollArea className="relative h-full pb-10">
+              <div className="sticky top-16 -mt-10 flex h-[calc(100vh-3.5rem)] w-[300px] flex-col py-12">
                 <DashboardTableOfContents toc={toc} />
-                <OpenInPlus className="mt-6 max-w-[80%]" />
+                <OpenInPlus className="mt-6" />
               </div>
             </ScrollArea>
           </div>

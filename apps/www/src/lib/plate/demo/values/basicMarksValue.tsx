@@ -6,7 +6,7 @@ jsx;
 
 export const basicMarksValue: any = (
   <fragment>
-    <hh1>🌱 Marks</hh1>
+    <hh2>Marks</hh2>
     <hp>
       Add style and emphasis to your text using the mark plugins, which offers a
       variety of formatting options.

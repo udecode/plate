@@ -17,7 +17,11 @@ export function OpenInPlus({ className }: { className?: string }) {
         Build your editor even faster
       </div>
       <div>Complete, deployable AI-powered template with backend.</div>
-      <div>All components included. Customizable and extensible.</div>
+      <div>
+        All components included.
+        <br />
+        Customizable and extensible.
+      </div>
       <Button size="sm" className="mt-2 w-fit">
         Get all-access
       </Button>

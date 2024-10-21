@@ -6,7 +6,7 @@ jsx;
 
 export const blockMenuValue: any = (
   <fragment>
-    <hh2>📝 Block Menu</hh2>
+    <hh2>Block Menu</hh2>
     <hp>
       <htext>
         The Block Menu provides quick access to actions for individual blocks.

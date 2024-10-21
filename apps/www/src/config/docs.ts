@@ -138,6 +138,14 @@ export const docsConfig: DocsConfig = {
       title: 'Components',
     },
     {
+      href: '/#playground',
+      title: 'Playground',
+    },
+    {
+      href: '/#potion',
+      title: 'Potion',
+    },
+    {
       external: true,
       href: 'https://github.com/udecode/plate',
       title: 'GitHub',
@@ -146,6 +154,10 @@ export const docsConfig: DocsConfig = {
       external: true,
       href: 'https://discord.gg/mAZRuBzGM3',
       title: 'Discord',
+    },
+    {
+      href: siteConfig.links.platePro,
+      title: 'Plate Plus',
     },
   ],
   sidebarNav: [
@@ -158,14 +170,6 @@ export const docsConfig: DocsConfig = {
         {
           href: '/docs/getting-started',
           title: 'Getting Started',
-        },
-        {
-          href: '/#playground',
-          title: 'Playground',
-        },
-        {
-          href: siteConfig.links.platePro,
-          title: 'Plate Plus',
         },
       ],
       title: 'Overview',

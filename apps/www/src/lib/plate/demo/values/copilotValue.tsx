@@ -6,7 +6,7 @@ jsx;
 
 export const copilotValue: any = (
   <fragment>
-    <hh1>🐱 Copilot</hh1>
+    <hh2>Copilot</hh2>
     <hp indent={1} listStyleType="decimal">
       <htext>Position your cursor at the</htext>
       <htext bold> end of a paragraph </htext>

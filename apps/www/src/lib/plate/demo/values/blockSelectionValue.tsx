@@ -6,7 +6,7 @@ jsx;
 
 export const blockSelectionValue: any = (
   <fragment>
-    <hh2>🌟 Block Selection</hh2>
+    <hh2>Block Selection</hh2>
     <hp>
       <htext>
         Block selection allows you to select multiple blocks at once.You can

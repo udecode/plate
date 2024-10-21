@@ -54,6 +54,7 @@ export const registryEntrySchema = z.object({
   cssVars: registryItemCssVarsSchema.optional(),
   dependencies: z.array(z.string()).optional(),
   description: z.string().optional(),
+  descriptionSrc: z.string().optional(),
   devDependencies: z.array(z.string()).optional(),
   docs: z.string().optional(),
   external: z.boolean().optional(),

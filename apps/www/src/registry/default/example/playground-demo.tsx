@@ -387,7 +387,7 @@ export default function PlaygroundDemo({
               className={cn(
                 'relative flex w-full overflow-x-auto',
                 // block selection area
-                '[&_.slate-selection-area]:border [&_.slate-selection-area]:border-brand/25 [&_.slate-selection-area]:bg-brand/15',
+                'max-h-[650px] [&_.slate-selection-area]:border [&_.slate-selection-area]:border-brand/25 [&_.slate-selection-area]:bg-brand/15',
                 className
               )}
               data-plate-selectable

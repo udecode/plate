@@ -6,9 +6,10 @@ jsx;
 
 export const aiValue: any = (
   <fragment>
-    <hh1>✨ AI</hh1>
+    <hh1>AI</hh1>
+    <hh2>AI Menu</hh2>
     <hp indent={1} listStyleType="decimal">
-      <htext>To trigger the AI, you can:</htext>
+      <htext>To trigger the AI menu, you can:</htext>
     </hp>
     <hp indent={2} listStyleType="disc">
       <htext>Press the Space key on a new empty block</htext>
@@ -37,9 +38,6 @@ export const aiValue: any = (
     </hp>
     <hp indent={2} listStyleType="disc">
       <htext>Regenerate the content with a different prompt</htext>
-    </hp>
-    <hp>
-      <htext></htext>
     </hp>
   </fragment>
 );

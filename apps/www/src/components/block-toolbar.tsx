@@ -17,16 +17,21 @@ export function BlockToolbar({
   block,
   resizablePanelRef,
 }: {
-  block: Pick<Block, 'container' | 'description' | 'name' | 'src'>;
+  block: Pick<
+    Block,
+    'container' | 'description' | 'descriptionSrc' | 'name' | 'src'
+  >;
   resizablePanelRef: React.RefObject<ImperativePanelHandle>;
 }) {
+  const src = block.descriptionSrc ?? block.src;
+
   return (
     <div className="flex items-center gap-2 md:gap-4">
       <Button asChild variant="link" className="whitespace-normal px-1 md:px-2">
         <a
-          href={block.src ?? `#${block.name}`}
-          rel={block.src ? 'noreferrer' : undefined}
-          target={block.src ? '_blank' : undefined}
+          href={src ?? `#${block.name}`}
+          rel={src ? 'noreferrer' : undefined}
+          target={src ? '_blank' : undefined}
         >
           {block.description}
         </a>
@@ -87,7 +92,7 @@ export function BlockToolbar({
                 href={block.src ?? `/blocks/${block.name}`}
                 rel={block.src ? 'noreferrer' : undefined}
                 target="_blank"
-              >
+              >  
                 <span className="sr-only">Open in New Tab</span>
                 <Fullscreen className="size-3.5" />
               </Link>

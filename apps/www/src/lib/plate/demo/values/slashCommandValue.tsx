@@ -6,7 +6,7 @@ jsx;
 
 export const slashCommandValue: any = (
   <fragment>
-    <hh2>⚡ Slash Command</hh2>
+    <hh2>Slash Command</hh2>
     <hp>
       <htext>
         The slash command provides quick access to various formatting options

@@ -49,7 +49,7 @@ import { blockMenuValue } from '@/lib/plate/demo/values/blockMenuValue';
 import { blockSelectionValue } from '@/lib/plate/demo/values/blockSelectionValue';
 import { columnValue } from '@/lib/plate/demo/values/columnValue';
 import { copilotValue } from '@/lib/plate/demo/values/copilotValue';
-import { slashCommandValue } from '@/lib/plate/demo/values/slahMenuValue';
+import { slashCommandValue } from '@/lib/plate/demo/values/slashCommandValue';
 import { tocValue } from '@/lib/plate/demo/values/tocValue';
 import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
 import { alignValue } from '@/plate/demo/values/alignValue';

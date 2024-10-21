@@ -8,6 +8,7 @@ import dynamic from 'next/dynamic';
 import { parseAsBoolean, useQueryState } from 'nuqs';
 
 import { settingsStore } from '@/components/context/settings-store';
+import { PlaygroundPreview } from '@/components/playground-preview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/registry/default/plate-ui/button';
 
@@ -46,7 +47,6 @@ export default function HomeTabs() {
         <TabsList>
           <TabsTrigger value="playground">Playground</TabsTrigger>
           <TabsTrigger value="installation">Installation</TabsTrigger>
-          <TabsTrigger value="potion">Potion Template</TabsTrigger>
         </TabsList>
 
         <Button
@@ -69,7 +69,7 @@ export default function HomeTabs() {
         </Button>
 
         <TabsContent className="pt-2" value="playground">
-          {/* <PlaygroundPreview className="max-w-[1336px]" /> */}
+          <PlaygroundPreview className="max-w-[1336px]" />
         </TabsContent>
 
         <TabsContent className="pt-2" value="installation">

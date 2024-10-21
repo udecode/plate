@@ -34,7 +34,7 @@ export default function IndexPage() {
             <ThemesButton />
           </div>
           <PageHeaderDescription>
-            Framework · Plugins · Components
+            Framework · Plugins · Components · Themes
           </PageHeaderDescription>
           <section className="flex w-full items-center space-x-2 py-2">
             <Button asChild size="xs">
@@ -59,55 +59,15 @@ export default function IndexPage() {
         <CustomizerDrawer />
       </section>
 
-      <div className="relative mt-12 scroll-m-20 md:mt-24 lg:mt-36 ">
-        <BlockPreview
-          block={{
-            description: 'https://next.platejs.org/docs/block-selection',
-            name: 'potion',
-            src: 'https://next.platejs.org/docs/block-selection',
-            // src: '/docs/block-selection',
-            // src: '/blocks/playground',
-          }}
-        />
-      </div>
-      <div className="relative mt-12 scroll-m-20 md:mt-24 lg:mt-36 ">
-        <BlockPreview
-          block={{
-            description: '/docs/block-selection',
-            name: 'potion',
-            src: '/docs/block-selection',
-            // src: '/docs/block-selection',
-            // src: '/blocks/playground',
-          }}
-        />
-      </div>
-      <div className="relative mt-12 scroll-m-20 md:mt-24 lg:mt-36 ">
-        <BlockPreview
-          block={{
-            description: 'https://pro.platejs.org/docs/examples/ai',
-            name: 'potion',
-            src: 'https://pro.platejs.org/docs/examples/ai',
-            // src: '/docs/block-selection',
-            // src: '/blocks/playground',
-          }}
-        />
-      </div>
-
-      <div className="relative mt-12 scroll-m-20 md:mt-24 lg:mt-36 ">
+      <div className="relative mt-12 scroll-m-16 pb-48 md:mt-24 lg:mt-36 ">
         <BlockPreview
           block={{
             description: 'A Notion-like AI template',
+            descriptionSrc: siteConfig.links.potionTemplate,
             name: 'potion',
-            src: 'https://potion.platejs.org/ai-menu/?iframe=true',
+            src: siteConfig.links.potionIframe,
           }}
         />
-        {/* <BlockPreview
-          block={{
-            description: 'A Notion-like AI template',
-            name: 'potion',
-            src: 'https://pro.platejs.org/docs/examples/ai',
-          }}
-        /> */}
       </div>
     </div>
   );

@@ -6,12 +6,14 @@ jsx;
 
 export const tocValue: any = (
   <fragment>
-    <hh1>Table of Contents</hh1>
-    <hp>
-      <htext>Click to scroll to heading.</htext>
-    </hp>
     <htoc>
       <htext></htext>
     </htoc>
+    <hp>
+      <htext>
+        Click on any heading in the table of contents to smoothly scroll to that
+        section.
+      </htext>
+    </hp>
   </fragment>
 );

@@ -7,7 +7,6 @@ import {
   PortalBody,
   useComposedRef,
   useEditorId,
-  useEditorRef,
   useEventEditorSelectors,
 } from '@udecode/plate-common/react';
 import {
@@ -26,7 +25,6 @@ export const PlaygroundFloatingToolbar = withRef<
     state?: FloatingToolbarState;
   }
 >(({ children, state, ...props }, componentRef) => {
-  const editor = useEditorRef();
   const editorId = useEditorId();
   const focusedEditorId = useEventEditorSelectors.focus();
 

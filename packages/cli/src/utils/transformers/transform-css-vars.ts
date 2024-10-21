@@ -79,7 +79,7 @@ export const transformCssVars: Transformer = async ({
 
 //               if (
 //                 arg.type === "LogicalExpression" &&
-//                 arg.right.type === "StringLiteral"
+//                 arg.right.type Ee=== "StringLiteral"
 //               ) {
 //                 arg.right.value = applyColorMapping(arg.right.value)
 //               }
