@@ -105,7 +105,6 @@ export const withCopilot: ExtendEditor<CopilotPluginConfig> = ({
   };
 
   editor.apply = (operation) => {
-    // console.log('🚀 ~ operation:', operation);
     const { shouldAbort } = getOptions();
 
     if (shouldAbort) {

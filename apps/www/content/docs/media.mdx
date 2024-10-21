@@ -10,6 +10,8 @@ docs:
     title: Media Popover
   - route: /docs/components/media-toolbar-button
     title: Media Toolbar Button
+  - route: https://pro.platejs.org/docs/components/media-toolbar
+    title: Media Toolbar
 ---
 
 <ComponentPreview name="playground-demo" id="media" />
@@ -36,10 +38,7 @@ npm install @udecode/plate-media
 
 ```tsx
 import { CaptionPlugin } from '@udecode/plate-caption/react';
-import {
-  ImagePlugin,
-  MediaEmbedPlugin,
-} from '@udecode/plate-media/react';
+import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
 import { SelectOnBackspacePlugin } from '@udecode/plate-select';
 
 const plugins = [
@@ -83,6 +82,48 @@ Disables URL embed on data insertion if set to true.
 ### MediaEmbedPlugin
 
 Options extends `MediaPluginOptions`.
+
+## API Placeholder
+
+### editor.tf.insert.audioPlaceholder
+
+Inserts a placeholder. Converts to an audio element when completed.
+<APIParameters>
+  <APIItem name="options" type="InsertNodesOptions">
+    Options for the insert nodes transform.
+  </APIItem>
+</APIParameters>
+
+
+
+### editor.tf.insert.filePlaceholder
+
+Inserts a placeholder. Converts to a file element when completed.
+<APIParameters>
+  <APIItem name="options" type="InsertNodesOptions">
+    Options for the insert nodes transform.
+  </APIItem>
+</APIParameters>
+
+
+### editor.tf.insert.imagePlaceholder
+
+Inserts a placeholder. Converts to an image element when completed.
+<APIParameters>
+  <APIItem name="options" type="InsertNodesOptions">
+    Options for the insert nodes transform.
+  </APIItem>
+</APIParameters>
+
+### editor.tf.insert.videoPlaceholder
+
+Inserts a placeholder. Converts to a video element when completed.
+<APIParameters>
+  <APIItem name="options" type="InsertNodesOptions">
+    Options for the insert nodes transform.
+  </APIItem>
+</APIParameters>
+
 
 ## API Media
 

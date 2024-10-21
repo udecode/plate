@@ -7,7 +7,6 @@ import { Settings2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { parseAsBoolean, useQueryState } from 'nuqs';
 
-import { BlockPreview } from '@/components/block-preview';
 import { settingsStore } from '@/components/context/settings-store';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/registry/default/plate-ui/button';
@@ -47,6 +46,7 @@ export default function HomeTabs() {
         <TabsList>
           <TabsTrigger value="playground">Playground</TabsTrigger>
           <TabsTrigger value="installation">Installation</TabsTrigger>
+          <TabsTrigger value="potion">Potion Template</TabsTrigger>
         </TabsList>
 
         <Button
@@ -64,11 +64,12 @@ export default function HomeTabs() {
             }
           }}
         >
-          <Settings2 className="mr-2 size-4" /> Customize
+          <Settings2 className="size-4" />
+          Customize
         </Button>
 
         <TabsContent className="pt-2" value="playground">
-          <BlockPreview className="max-w-[1336px]" />
+          {/* <PlaygroundPreview className="max-w-[1336px]" /> */}
         </TabsContent>
 
         <TabsContent className="pt-2" value="installation">

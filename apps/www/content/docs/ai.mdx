@@ -1,0 +1,336 @@
+---
+title: AI
+description: AI menu with commands, streaming responses in a preview or directly into the editor.
+docs:
+  - route: https://pro.platejs.org/docs/examples/ai
+    title: Potion
+---
+
+<PackageInfo>
+
+## Features
+
+- Provides an AI-powered menu.
+- Offers a selection of AI commands to enhance content creation and editing.
+- Seamlessly integrates AI assistance within the editor interface.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-ai @udecode/plate-selection @udecode/plate-markdown @udecode/plate-basic-marks 
+```
+
+## Usage
+
+### Plugins
+
+```tsx title="ai-plugins.tsx"
+import { withProps } from '@udecode/cn';
+import { AIChatPlugin, AIPlugin } from '@udecode/plate-ai/react';
+import {
+  BoldPlugin,
+  CodePlugin,
+  ItalicPlugin,
+  StrikethroughPlugin,
+  UnderlinePlugin,
+} from '@udecode/plate-basic-marks/react';
+import { PlateLeaf, createPlateEditor } from '@udecode/plate-common/react';
+import { LinkPlugin } from '@udecode/plate-link/react';
+import { MarkdownPlugin } from '@udecode/plate-markdown';
+
+import { AIMenu } from '@/registry/default/potion-ui/ai-menu';
+import { CodeLeaf } from '@/registry/default/potion-ui/code-leaf';
+import { LinkElement } from '@/registry/default/potion-ui/link-element';
+
+export const createAIEditor = () => {
+  const editor = createPlateEditor({
+    id: 'ai',
+    override: {
+      components: {
+        [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
+        [CodePlugin.key]: CodeLeaf,
+        [ItalicPlugin.key]: withProps(PlateLeaf, { as: 'em' }),
+        [LinkPlugin.key]: LinkElement,
+        [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: 's' }),
+        [UnderlinePlugin.key]: withProps(PlateLeaf, { as: 'u' }),
+      },
+    },
+    plugins: [
+      BoldPlugin,
+      ItalicPlugin,
+      UnderlinePlugin,
+      StrikethroughPlugin,
+      CodePlugin,
+    ],
+    value: [{ children: [{ text: '' }], type: 'p' }],
+  });
+
+  return editor;
+};
+
+const systemCommon = `\
+You are an advanced AI-powered note-taking assistant, designed to enhance productivity and creativity in note management.
+Respond directly to user prompts with clear, concise, and relevant content. Maintain a neutral, helpful tone.
+
+Rules:
+- <Document> is the entire note the user is working on.
+- <Reminder> is a reminder of how you should reply to INSTRUCTIONS. It does not apply to questions.
+- Anything else is the user prompt.
+- Your response should be tailored to the user's prompt, providing precise assistance to optimize note management.
+- For INSTRUCTIONS: Follow the <Reminder> exactly. Provide ONLY the content to be inserted or replaced. No explanations or comments.
+- For QUESTIONS: Provide a helpful and concise answer. You may include brief explanations if necessary.
+- CRITICAL: Distinguish between INSTRUCTIONS and QUESTIONS. Instructions typically ask you to modify or add content. Questions ask for information or clarification.
+`;
+
+const systemDefault = `\
+${systemCommon}
+- <Block> is the current block of text the user is working on.
+- Ensure your output can seamlessly fit into the existing <Block> structure.
+- CRITICAL: Provide only a single block of text. DO NOT create multiple paragraphs or separate blocks.
+<Block>
+{block}
+</Block>
+`;
+
+const systemSelecting = `\
+${systemCommon}
+- <Block> is the block of text containing the user's selection, providing context.
+- Ensure your output can seamlessly fit into the existing <Block> structure.
+- <Selection> is the specific text the user has selected in the block and wants to modify or ask about.
+- Consider the context provided by <Block>, but only modify <Selection>. Your response should be a direct replacement for <Selection>.
+<Block>
+{block}
+</Block>
+<Selection>
+{selection}
+</Selection>
+`;
+
+const systemBlockSelecting = `\
+${systemCommon}
+- <Selection> represents the full blocks of text the user has selected and wants to modify or ask about.
+- Your response should be a direct replacement for the entire <Selection>.
+- Maintain the overall structure and formatting of the selected blocks, unless explicitly instructed otherwise.
+- CRITICAL: Provide only the content to replace <Selection>. Do not add additional blocks or change the block structure unless specifically requested.
+<Selection>
+{block}
+</Selection>
+`;
+
+const userDefault = `<Reminder>
+CRITICAL: DO NOT use block formatting. You can only use inline formatting.
+CRITICAL: DO NOT start new lines or paragraphs.
+NEVER write <Block>.
+</Reminder>
+{prompt}`;
+
+const userSelecting = `<Reminder>
+If this is a question, provide a helpful and concise answer about <Selection>.
+If this is an instruction, provide ONLY the text to replace <Selection>. No explanations.
+Ensure it fits seamlessly within <Block>. If <Block> is empty, write ONE random sentence.
+NEVER write <Block> or <Selection>.
+</Reminder>
+{prompt} about <Selection>`;
+
+const userBlockSelecting = `<Reminder>
+If this is a question, provide a helpful and concise answer about <Selection>.
+If this is an instruction, provide ONLY the content to replace the entire <Selection>. No explanations.
+Maintain the overall structure unless instructed otherwise.
+NEVER write <Block> or <Selection>.
+</Reminder>
+{prompt} about <Selection>`;
+
+export const PROMPT_TEMPLATES = {
+  systemBlockSelecting,
+  systemDefault,
+  systemSelecting,
+  userBlockSelecting,
+  userDefault,
+  userSelecting,
+};
+
+export const aiPlugins = [
+  MarkdownPlugin.configure({ options: { indentList: true } }),
+  AIPlugin,
+  AIChatPlugin.configure({
+    options: {
+      createAIEditor,
+      promptTemplate: ({ isBlockSelecting, isSelecting }) => {
+        return isBlockSelecting
+          ? PROMPT_TEMPLATES.userBlockSelecting
+          : isSelecting
+            ? PROMPT_TEMPLATES.userSelecting
+            : PROMPT_TEMPLATES.userDefault;
+      },
+      scrollContainerSelector: '#scroll_container',
+      systemTemplate: ({ isBlockSelecting, isSelecting }) => {
+        return isBlockSelecting
+          ? PROMPT_TEMPLATES.systemBlockSelecting
+          : isSelecting
+            ? PROMPT_TEMPLATES.systemSelecting
+            : PROMPT_TEMPLATES.systemDefault;
+      },
+    },
+    render: { afterEditable: () => <AIMenu /> },
+  }),
+] as const;
+```
+
+### AI SDK
+
+Plate AI is depending on the [ai](https://npmjs.com/package/ai) package:
+
+- Setup your [api](https://sdk.vercel.ai/docs/getting-started/nextjs-app-router#create-a-route-handler) using [streamText](https://sdk.vercel.ai/docs/ai-sdk-core/generating-text#streamtext).
+- Wire up [useChat](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat) in your [AI menu](#ai-menu) component.
+
+## Wire up the UI
+
+### AI Menu
+
+Work in progress.
+
+{/* ## AI Menu Items
+
+Before learning how to create custom commands, you need to know that the ai plugin will provide three modes for opening the ai menu:
+
+1. Cursor mode: open the AI menu at the end of a block.
+2. Selection mode: select some texts and open the AI menu.
+3. Block selection mode: select some blocks and open the AI menu. 
+4. After the AI completes the first generation, we don't close the AI menu but instead modify the commands. We call it **Suggestion** mode.
+
+Due to the special nature of Suggestion mode: whether Cursor mode or Selection mode ends, it will switch to Suggestion mode. 
+To distinguish between these two sets of commands, we need to maintain four different menus in total.
+
+The following is all the commands you can see in the `ai-menu-items.tsx` file.
+menuState (draft doc)
+  - Show when you open the ai menu by `space` at the end of a block.
+  - Show when you open the ai menu by `space` and then complete the first generation.
+  - Show when you open the ai menu with selected text.
+  - Show when you open the ai menu with selected blocks, then complete the first generation.
+
+If you want to modify the AI Menu style, you should check the [menu](/docs/components/menu) component docs. */}
+
+
+## Examples
+
+### Plate UI
+
+Work in progress.
+
+### Plate Plus
+
+<div className="my-6 border rounded-md overflow-hidden">
+  <iframe src="https://potion.platejs.org/ai-menu?hidden-sidebar=true&iframe-blank=true" title="Potion" width="100%" height="700px" />
+</div>
+
+- Context menu to open the ai menu
+- Slash command to open the ai menu
+- Beautifully designed components
+
+
+## Plugins
+
+### AIPlugin
+
+Extends the editor with AI transforms.
+
+### AIChatPlugin
+
+Enables chat operations and streaming text generation in the editor.
+
+<APIOptions>
+<APIItem name="mode" type="string" optional def>
+Internal state. Specifies how the assistant message is handled:
+
+- `'insert'`: Directly inserts content into the editor without preview.
+- `'chat'`: Initiates an interactive session to review and refine content
+  before insertion (default).
+
+</APIItem>
+</APIOptions>
+
+// todo: add 
+- `scrollContainerSelector`
+  - The selector of the scroll container.When we trigger the menu in the very bottom of the page, 
+  we need this option to make the scroll container scroll up to show the menu completely.
+- `createAIEditor`
+  - When we use selection mode, we render a read-only editor on the AI menu, and the plugins used by this editor are provided by this option
+
+## API
+
+### editor.aiChat.hide()
+
+Hides the AI menu by setting the open editor ID to null and removing the anchor element.
+
+### editor.aiChat.show()
+
+Shows the AI menu for the specified editor, DOM element, and node entry.
+
+<APIParameters>
+  <APIItem name="editorId" type="string">
+    The ID of the editor to show the AI menu for.
+  </APIItem>
+  <APIItem name="dom" type="HTMLElement">
+    The DOM element to anchor the AI menu to.
+  </APIItem>
+  <APIItem name="nodeEntry" type="NodeEntry">
+    The node entry associated with the AI menu.
+  </APIItem>
+</APIParameters>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{/* ## Selection Overlay
+
+**SelectionOverlayPlugin** is part of the [CursorOverlayPlugin](/docs/components/cursor-overlay) Make sure you have installed it.
+
+The `SelectionOverlayPlugin` is used to display a selection overlay on the editor. It enhances the visual feedback for users:
+
+When the editor loses focus (blur event): It maintains a visual representation of the last selection.
+
+So this plugin is userful when we open the ai menu. for example: 
+
+We selected two paragraphs of text. and then using floating toolbar open the ai menu
+Normally, these two paragraphs wouldn’t display a blue background. 
+because our focus has already moved to the input box editor is blurred.
+
+<Image src="/ai-selection.png" alt="AI selection overlay" width={1920} height={1080} className="w-full" />
+
+Sometimes we want to keep lose the selection highlight.In this case, You can use `data-plate-prevent-overlay` attribute add to the button which trigger the blur event.
+
+For example, in the turn into dropdown menu:
+We’ve already prevented the default event so that clicking the ‘Turn Into’ menu doesn’t cause the editor to lose focus. 
+Therefore, there’s no need to enable the SelectionOverlayPlugin functionality; otherwise, two layers of selection would appear, 
+which would look visually unappealing.
+
+```tsx
+
+      <DropdownMenuContent
+        className="min-w-0"
+        onCloseAutoFocus={onCloseAutoFocus}
+        data-plate-prevent-overlay
+        align="start"
+      >
+      ...
+      </DropdownMenuContent>
+```
+
+
+
+Therefore, just remember one rule: only use this plugin when you need to move the focus to an external input element, 
+such as the AI menu or math equation plugins. */}

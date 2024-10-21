@@ -1,0 +1,140 @@
+---
+title: Block Menu
+description: Allows you to perform a series of custom operations on the block.
+docs:
+  - route: /docs/components/block-context-menu
+    title: Block Context Menu
+    
+  - route: https://pro.platejs.org/docs/components/block-menu
+    title: Block Menu
+
+  - route: https://pro.platejs.org/docs/components/block-context-menu
+    title: Block Context Menu
+
+---
+
+<ComponentPreview name="playground-demo" id="blockmenu" />
+
+<PackageInfo>
+
+## Features
+
+- Provides quick transform for a single block.
+- Allows you to perform actions on blocks such as duplicating, deleting, or moving.
+- Customizable menu items and actions.
+- Accessible via right-click or a dedicated button like drag-handle.
+- Supports keyboard navigation for improved accessibility.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-selection
+```
+
+## Usage
+
+We recommend installing the [BlockSelection](/docs/block-selection) plugin.When you want to use the block menu
+
+Block Selection provides a visual effect to indicate which block the user is about to interact with
+
+```tsx
+// ...
+import { BlockMenuPlugin } from '@udecode/plate-selection/react';
+
+const editor = usePlateEditor({
+  id: 'context-menu-demo',
+  override: {
+    components: createPotionUI(),
+  },
+  plugins: [
+    ...otherPlugins,
+    NodeIdPlugin,
+    BlockSelectionPlugin.configure({
+      options: {
+        areaOptions: {
+          behaviour: {
+            scrolling: {
+              speedDivider: 1.5,
+            },
+            startThreshold: 10,
+          },
+          boundaries: '#scroll_container',
+          container: '#scroll_container',
+          selectables: '#scroll_container .slate-selectable',
+          selectionAreaClass: 'slate-selection-area',
+        },
+        enableContextMenu: true,
+      },
+    }),
+    BlockMenuPlugin.configure({
+      render: { aboveEditable: BlockContextMenu },
+    }),
+  ],
+  value: contextMenuValue,
+});
+```
+
+## Prevent opening of the right-click menu
+
+To control the opening of the right-click menu for specific elements, you can use the `data-open-context-menu` attribute:
+
+Generally, we only need to prevent right-clicking on the padding of the `<Editor />`.
+
+If you have a special plugin that needs to prevent the right-click menu from opening, you can use this property.
+
+Example usage:
+
+```tsx
+<PlateElement data-plate-open-context-menu={false} {...props}>
+  {children}
+</PlateElement>
+```
+
+## Plus
+
+In Plate Plus, We have provided a more advanced menu.
+
+1. More advanced menu items.
+2. Supports search functionality and carefully designed shortcuts.
+3. More refined styles and animations.
+4. You can open this menu in various ways, such as through the drag button.
+
+<ComponentPreviewPro
+  name="pro-iframe-demo"
+  id="pro-context-menu"
+  component="context-menu"
+/>
+
+## API
+
+### editor.api.blockMenu.hide
+
+Hides the block menu.
+
+### editor.api.blockMenu.show
+
+Shows the block menu for a specific block.
+
+<APIParameters>
+  <APIItem name="id" type="string">
+    The ID of the block to show the menu for.
+  </APIItem>
+  <APIItem name="position" type="{ x: number; y: number }" optional>
+    The position to show the menu at.
+  </APIItem>
+</APIParameters>
+
+### editor.api.blockMenu.showContextMenu
+
+Shows the context menu for a specific block.
+
+<APIParameters>
+  <APIItem name="blockId" type="string">
+    The ID of the block to show the context menu for.
+  </APIItem>
+  <APIItem name="position" type="{ x: number; y: number }">
+    The position to show the context menu at.
+  </APIItem>
+</APIParameters>

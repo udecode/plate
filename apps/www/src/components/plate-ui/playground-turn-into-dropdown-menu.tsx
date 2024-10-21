@@ -149,6 +149,7 @@ export function PlaygroundTurnIntoDropdownMenu(props: DropdownMenuProps) {
 
       <DropdownMenuContent
         className="ignore-click-outside/toolbar min-w-0"
+        data-plate-prevent-overlay
         align="start"
       >
         <DropdownMenuLabel>Turn into</DropdownMenuLabel>

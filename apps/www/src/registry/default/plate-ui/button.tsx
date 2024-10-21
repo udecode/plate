@@ -22,7 +22,7 @@ export const buttonVariants = cva(
         none: '',
         sm: 'h-9 rounded-md px-3',
         sms: 'size-9 rounded-md px-0',
-        xs: 'h-8 rounded-md px-3',
+        xs: 'h-8 rounded-md px-3 text-xs',
       },
       variant: {
         default: 'bg-primary text-primary-foreground hover:bg-primary/90',

@@ -2,6 +2,11 @@ import type { Registry } from './schema';
 
 export const examples: Registry = [
   {
+    files: ['example/pro-iframe-demo.tsx'],
+    name: 'pro-iframe-demo',
+    type: 'registry:example',
+  },
+  {
     files: ['example/editor-default.tsx'],
     name: 'editor-default',
     registryDependencies: [],

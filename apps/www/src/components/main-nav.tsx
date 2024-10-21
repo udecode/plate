@@ -45,6 +45,14 @@ export function MainNav() {
         >
           Components
         </Link>
+        <Link
+          className={cn(
+            'text-foreground/60 transition-colors hover:text-foreground/80'
+          )}
+          href={siteConfig.links.platePro}
+        >
+          Templates
+        </Link>
       </nav>
     </div>
   );

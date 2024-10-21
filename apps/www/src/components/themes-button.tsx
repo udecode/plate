@@ -22,7 +22,7 @@ export function ThemesButton() {
 
       <Button
         variant="outline"
-        className="hidden md:flex"
+        className="hidden h-9 md:flex"
         onClick={() => {
           settingsStore.set.customizerTab('themes');
           settingsStore.set.showSettings(true);

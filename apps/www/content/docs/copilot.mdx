@@ -1,0 +1,312 @@
+---
+title: Copilot
+description: AI-powered assistant that provides intelligent suggestions and autocompletion for enhanced content creation.
+docs:
+  - route: /docs/components/ghost-text
+    title: Ghost Text
+  - route: https://pro.platejs.org/docs/components/ghost-text
+    title: Ghost Text
+---
+
+<ComponentPreview name="playground-demo" id="copilot" />
+
+<PackageInfo>
+
+## Features
+
+- Offers intelligent autocompletion to enhance content creation and editing.
+- Provides two modes: **debounce** and **shortcut**.
+  1. Shortcut mode is triggered anywhere by pressing `Control+Space`.
+  2. Debounce mode is automatically triggered at the end of paragraphs.
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-ai @udecode/plate-markdown
+```
+
+## Usage
+
+```tsx
+// ...
+import { CopilotPlugin } from '@udecode/plate-ai/react';
+import { type TElement, getAncestorNode } from '@udecode/plate-common';
+import { serializeMdNodes, stripMarkdown } from '@udecode/plate-markdown';
+
+MarkdownPlugin.configure({ options: { indentList: true } });
+CopilotPlugin.configure(({ api }) => ({
+  options: {
+    completeOptions: {
+      api: '/api/your-api-endpoint',
+      body: {
+        system: `You are an advanced AI writing assistant, similar to VSCode Copilot but for general text. Your task is to predict and generate the next part of the text based on the given context.
+
+Rules:
+- Continue the text naturally up to the next punctuation mark (., ,, ;, :, ?, or !).
+- Maintain style and tone. Don't repeat given text.
+- For unclear context, provide the most likely continuation.
+- Handle code snippets, lists, or structured text if needed.
+- Don't include """ in your response.
+- CRITICAL: Always end with a punctuation mark.
+- CRITICAL: Avoid starting a new block. Do not use block formatting like >, #, 1., 2., -, etc. The suggestion should continue in the same block as the context.
+- If no context is provided or you can't generate a continuation, return "0" without explanation.`,
+      },
+      onFinish: (_, completion) => {
+        if (completion === '0') return;
+
+        api.copilot.setBlockSuggestion({
+          //stripMarkdownBlocks in plus GhostText
+          text: stripMarkdown(completion),
+        });
+      },
+    },
+    debounceDelay: 500,
+    getPrompt: ({ editor }) => {
+      const contextEntry = getAncestorNode(editor);
+
+      if (!contextEntry) return '';
+
+      const prompt = serializeMdNodes([contextEntry[0] as TElement]);
+
+      return `Continue the text up to the next punctuation mark:
+"""
+${prompt}
+"""`;
+    },
+    renderGhostText: GhostText,
+  },
+}));
+```
+
+## Integrate with your backend
+
+`options.completeOptions` allows you to configure the AI completion options. For a comprehensive list of available parameters, refer to the [AI SDK UI useCompletion Parameters](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-completion#parameters) documentation.
+
+## Conflict with Other Plugins
+
+The Tab key is a popular and frequently used key in text editing, which can lead to conflicts.
+
+### Conflict with Indent Plugin
+
+The **IndentPlugin** and **IndentListPlugin** have a similar conflict with **Copilot Plugin**.
+
+As a workaround, you can place the Copilot Plugin before the these two plugins in your plugin configuration.
+
+Or set the priority of Copilot Plugin to a higher value than Indent Plugin see [priority](https://platejs.org/docs/plugin#plugin-priority).
+
+Here's an example of how to order your plugins:
+
+```tsx
+const editor = usePlateEditor({
+  id: 'ai-demo',
+  override: {
+    components: PlateUI,
+  },
+  plugins: [
+    MarkdownPlugin.configure({ options: { indentList: true } }),
+    // CopilotPlugin should be before indent plugin
+    CopilotPlugin,
+    IndentPlugin.extend({
+      inject: {
+        targetPlugins: [
+          ParagraphPlugin.key,
+          HEADING_KEYS.h1,
+          HEADING_KEYS.h2,
+          HEADING_KEYS.h3,
+          HEADING_KEYS.h4,
+          HEADING_KEYS.h5,
+          HEADING_KEYS.h6,
+          BlockquotePlugin.key,
+          CodeBlockPlugin.key,
+          TogglePlugin.key,
+        ],
+      },
+    }),
+    IndentListPlugin.extend({
+      inject: {
+        targetPlugins: [
+          ParagraphPlugin.key,
+          HEADING_KEYS.h1,
+          HEADING_KEYS.h2,
+          HEADING_KEYS.h3,
+          HEADING_KEYS.h4,
+          HEADING_KEYS.h5,
+          HEADING_KEYS.h6,
+          BlockquotePlugin.key,
+          CodeBlockPlugin.key,
+          TogglePlugin.key,
+        ],
+      },
+      options: {
+        listStyleTypes: {
+          fire: {
+            liComponent: FireLiComponent,
+            markerComponent: FireMarker,
+            type: 'fire',
+          },
+          todo: {
+            liComponent: TodoLi,
+            markerComponent: TodoMarker,
+            type: 'todo',
+          },
+        },
+      },
+    }),
+    ...otherPlugins,
+  ],
+  value: copilotValue,
+});
+```
+
+It's important to note that when using `IndentListPlugin` instead of `ListPlugin`, you should configure the `MarkdownPlugin` with the `indentList: true` option.
+
+This is necessary because the LLM generates Markdown, which needs to be converted to Plate nodes.If your LLM just generate the plain text, you can ignore this.
+
+Here's how you can set it up:
+
+```tsx
+MarkdownPlugin.configure({ options: { indentList: true } }),
+```
+
+### Conflict with Tabbable Plugin
+
+When using both the [Tabbable Plugin](https://platejs.org/docs/tabbable) and the Copilot feature in your editor, you may encounter conflicts with the `Tab` key functionality. This is because both features utilize the same key binding.
+
+To resolve this conflict and ensure smooth operation of both features, you can configure the Tabbable Plugin to be disabled when the cursor is at the end of a paragraph. This allows the Copilot feature to function as intended when you press `Tab` at the end of a line.
+
+Here's how you can modify the Tabbable Plugin configuration:
+
+1. Visit the [Tabbable Plugin documentation](https://platejs.org/docs/tabbable#conflicts-with-other-plugins) for more details on handling conflicts.
+2. Implement the following configuration to disable the Tabbable Plugin when the cursor is at the end of a paragraph:
+
+```tsx
+TabbablePlugin.configure(({ editor }) => ({
+  options: {
+    query: () => {
+      // return false when cursor is in the end of the paragraph
+      if (isSelectionAtBlockStart(editor) || isSelectionAtBlockEnd(editor))
+        return false;
+
+      return !someNode(editor, {
+        match: (n) => {
+          return !!(
+            n.type &&
+            ([
+              CodeBlockPlugin.key,
+              ListItemPlugin.key,
+              TablePlugin.key,
+            ].includes(n.type as any) ||
+              n[IndentListPlugin.key])
+          );
+        },
+      });
+    },
+  },
+}));
+```
+
+## Plate Plus
+
+In Plate Plus, we provides more advanced styles and complete backend setup
+
+1. Hover card: a new style of hover card that is more user-friendly. You can **hover** over the ghost text to see the hover card.
+2. Marks: support for marks like bold, italic, underline, etc.This means you can see bold text and **links** in the ghost text
+3. Backend: complete backend setup.
+
+All of the backend setup is available in [Potion template](https://pro.platejs.org/docs/templates/potion).
+
+<ComponentPreviewPro
+  name="pro-iframe-demo"
+  id="pro-copilot"
+  component="copilot"
+/>
+
+## Utils functions
+
+### withoutAbort
+
+Temporarily disables the abort functionality of the Copilot plugin,
+by default any apply will cause the Copilot to remove the suggestion text and abort the request.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The Plate editor instance.
+  </APIItem>
+  <APIItem name="fn" type="() => void">
+    The function to execute without abort.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem type="void">This function does not return a value.</APIItem>
+</APIReturns>
+
+Usage example:
+
+```ts
+import { withoutAbort } from '@udecode/plate-ai/react';
+
+withoutAbort(editor, () => {
+  // Perform operations without the risk of abort
+  // For example, setting copilot suggestions
+});
+```
+
+## API
+
+### editor.getApi(CopilotPlugin).copilot.accept()
+
+Accepts the current suggestion and inserts it into the editor.
+
+<APIReturns>
+  <APIItem type="void">This function does not return a value.</APIItem>
+</APIReturns>
+
+### editor.getApi(CopilotPlugin).copilot.acceptNextWord()
+
+Accepts the next word of the current suggestion and inserts it into the editor.
+
+<APIReturns>
+  <APIItem type="void">This function does not return a value.</APIItem>
+</APIReturns>
+
+### editor.getApi(CopilotPlugin).copilot.setBlockSuggestion
+
+Sets the suggestion text for a specific block in the editor.
+
+<APIParameters>
+  <APIItem name="options" type="object">
+    <APIItem name="id" type="string | undefined">
+      The ID of the node to set the suggestion text. If not provided, it uses
+      the ID of the block above the current selection.
+    </APIItem>
+    <APIItem name="text" type="string">
+      The suggestion text to set.
+    </APIItem>
+  </APIItem>
+</APIParameters>
+
+### editor.getApi(CopilotPlugin).copilot.stop()
+
+Stops the ongoing API request for suggestions.
+
+<APIReturns>
+  <APIItem type="void">This function does not return a value.</APIItem>
+</APIReturns>
+
+### editor.getApi(CopilotPlugin).copilot.triggerSuggestion()
+
+Triggers a new suggestion request.
+
+<APIReturns>
+  <APIItem type="void">This function does not return a value.</APIItem>
+</APIReturns>
+
+### editor.getApi(CopilotPlugin).copilot.reset()
+
+Resets the Copilot plugin state, stopping any ongoing requests and clearing suggestions.
+
+<APIReturns>
+  <APIItem type="void">This function does not return a value.</APIItem>
+</APIReturns>
