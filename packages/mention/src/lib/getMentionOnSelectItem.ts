@@ -25,7 +25,7 @@ export const getMentionOnSelectItem =
     });
     const { insertSpaceAfterMention } = getOptions();
 
-    tf.insert.mention({ search, value: item.text });
+    tf.insert.mention({ key: item.key, search, value: item.text });
 
     // move the selection after the element
     moveSelection(editor, { unit: 'offset' });
