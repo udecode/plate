@@ -21,11 +21,16 @@ export function BlockPreview({
 }) {
   const ref = React.useRef<ImperativePanelHandle>(null);
 
-  const [scrollPosition, setScrollPosition] = React.useState(window.scrollY);
+  const [scrollPosition, setScrollPosition] = React.useState(
+    typeof window === 'undefined' ? 0 : window.scrollY
+  );
 
   React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+
     const handleScroll = () => {
       if (window.scrollY === 0) return;
+
       setScrollPosition(window.scrollY);
     };
 
@@ -36,18 +41,19 @@ export function BlockPreview({
     };
   }, []);
 
-    React.useEffect(() => {
-      const handleMessage = (event: MessageEvent) => {
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleMessage = (event: MessageEvent) => {
       if (event.data === 'iframe_selection_area_added') {
         if (scrollPosition <= 0) return;
+
         document.body.style.overflow = 'hidden';
         document.body.style.position = 'fixed';
         document.body.style.top = `-${scrollPosition}px`;
         document.body.style.width = '100%';
       }
-
       if (event.data === 'iframe_selection_area_removed') {
-
         document.body.style.overflow = '';
         document.body.style.position = '';
         document.body.style.top = '';
@@ -62,7 +68,6 @@ export function BlockPreview({
       window.removeEventListener('message', handleMessage);
     };
   }, [scrollPosition]);
-
 
   return (
     <div
