@@ -1,5 +1,11 @@
 # @udecode/plate-selection
 
+## 39.2.3
+
+### Patch Changes
+
+- [`0842bf3c81c88d154510cd46d0b57d16570c8ec3`](https://github.com/udecode/plate/commit/0842bf3c81c88d154510cd46d0b57d16570c8ec3) by [@zbeyens](https://github.com/zbeyens) – Fix: prevent scroll on block selection
+
 ## 39.2.0
 
 ### Minor Changes
