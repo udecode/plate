@@ -11,12 +11,12 @@ import { getTableOfContents } from '@/lib/toc';
 import '@/styles/mdx.css';
 
 interface DocPageProps {
-  params: {
+  params: Promise<{
     slug: string[];
-  };
+  }>;
 }
 
-function getDocFromParams({ params }: DocPageProps) {
+function getDocFromParams({ params }: { params: { slug: string[] } }) {
   const slug = params.slug?.join('/') || '';
   const doc = allDocs.find((_doc) => _doc.slugAsParams === slug);
 
@@ -63,7 +63,7 @@ function getDocFromParams({ params }: DocPageProps) {
 //   };
 // }
 
-export function generateStaticParams(): DocPageProps['params'][] {
+export function generateStaticParams() {
   const docs = allDocs.map((doc) => ({
     slug: doc.slugAsParams.split('/'),
   }));
@@ -71,7 +71,8 @@ export function generateStaticParams(): DocPageProps['params'][] {
   return docs;
 }
 
-export default async function DocPage({ params }: DocPageProps) {
+export default async function DocPage(props: DocPageProps) {
+  const params = await props.params;
   const name = params.slug?.[0];
 
   const isUI = name === 'components';

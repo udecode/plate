@@ -53,7 +53,7 @@ type FilterFn = (
 interface InlineComboboxContextValue {
   filter: FilterFn | false;
   inputProps: UseComboboxInputResult['props'];
-  inputRef: RefObject<HTMLInputElement>;
+  inputRef: RefObject<HTMLInputElement | null>;
   removeInput: UseComboboxInputResult['removeInput'];
   setHasEmpty: (hasEmpty: boolean) => void;
   showTrigger: boolean;

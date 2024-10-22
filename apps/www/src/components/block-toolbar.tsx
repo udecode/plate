@@ -21,7 +21,7 @@ export function BlockToolbar({
     Block,
     'container' | 'description' | 'descriptionSrc' | 'name' | 'src'
   >;
-  resizablePanelRef: React.RefObject<ImperativePanelHandle>;
+  resizablePanelRef: React.RefObject<ImperativePanelHandle | null>;
 }) {
   const src = block.descriptionSrc ?? block.src;
 

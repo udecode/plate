@@ -144,7 +144,7 @@ export const Image = ({
   ...props
 }: React.ImgHTMLAttributes<HTMLImageElement>) => (
   // eslint-disable-next-line @next/next/no-img-element
-  <img className={cn('rounded-md', className)} alt={alt} {...props} />
+  (<img className={cn('rounded-md', className)} alt={alt} {...props} />)
 );
 
 export const HR = ({ ...props }: React.HTMLAttributes<HTMLHRElement>) => (

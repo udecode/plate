@@ -22,7 +22,7 @@ export function PlaygroundPreviewToolbar({
   // setFullScreen,
 }: {
   block: { hasLiftMode: boolean } & Block;
-  resizablePanelRef: React.RefObject<ImperativePanelHandle>;
+  resizablePanelRef: React.RefObject<ImperativePanelHandle | null>;
   // fullScreen: boolean;
   // setFullScreen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
