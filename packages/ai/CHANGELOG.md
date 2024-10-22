@@ -1,5 +1,11 @@
 # @udecode/plate-ai
 
+## 39.2.5
+
+### Patch Changes
+
+- [`fbf96019bcec698be20f3ab00c645edcd7a2db15`](https://github.com/udecode/plate/commit/fbf96019bcec698be20f3ab00c645edcd7a2db15) by [@zbeyens](https://github.com/zbeyens) – Fix undo on submit and reload
+
 ## 39.2.3
 
 ## 39.2.2
