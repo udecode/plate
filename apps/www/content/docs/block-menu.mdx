@@ -43,37 +43,30 @@ Block Selection provides a visual effect to indicate which block the user is abo
 // ...
 import { BlockMenuPlugin } from '@udecode/plate-selection/react';
 
-const editor = usePlateEditor({
-  id: 'context-menu-demo',
-  override: {
-    components: createPotionUI(),
-  },
-  plugins: [
-    ...otherPlugins,
-    NodeIdPlugin,
-    BlockSelectionPlugin.configure({
-      options: {
-        areaOptions: {
-          behaviour: {
-            scrolling: {
-              speedDivider: 1.5,
-            },
-            startThreshold: 10,
+const plugins = [
+  // ...otherPlugins,
+  NodeIdPlugin,
+  BlockSelectionPlugin.configure({
+    options: {
+      areaOptions: {
+        behaviour: {
+          scrolling: {
+            speedDivider: 1.5,
           },
-          boundaries: '#scroll_container',
-          container: '#scroll_container',
-          selectables: '#scroll_container .slate-selectable',
-          selectionAreaClass: 'slate-selection-area',
+          startThreshold: 10,
         },
-        enableContextMenu: true,
+        boundaries: '#scroll_container',
+        container: '#scroll_container',
+        selectables: '#scroll_container .slate-selectable',
+        selectionAreaClass: 'slate-selection-area',
       },
-    }),
-    BlockMenuPlugin.configure({
-      render: { aboveEditable: BlockContextMenu },
-    }),
-  ],
-  value: contextMenuValue,
-});
+      enableContextMenu: true,
+    },
+  }),
+  BlockMenuPlugin.configure({
+    render: { aboveEditable: BlockContextMenu },
+  }),
+]
 ```
 
 ## Prevent opening of the right-click menu

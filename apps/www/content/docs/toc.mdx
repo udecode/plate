@@ -27,6 +27,8 @@ npm install @udecode/plate-heading @udecode/plate-node-id
 
 ## Usage
 
+### Plugins
+
 ```tsx
 import { TocPlugin, HeadingPlugin } from '@udecode/plate-heading/react';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
@@ -34,7 +36,6 @@ import { NodeIdPlugin } from '@udecode/plate-node-id';
 
 ```tsx
 const editor = usePlateEditor({
-  // value
   override: {
     components: {
       // ...components,
@@ -52,41 +53,33 @@ const editor = usePlateEditor({
       },
     }),
   ],
+  // value: tocValue,
 });
 ```
 
 ### Set scroll container
 
-In this plugin, you need to provide a **selector** to options.scrollContainerSelector to specify the scrollable container. This selector is used with `Document.querySelector` to locate the container element.
-You can use various selector formats, such as:
+The `TocPlugin` requires a scroll container selector to function properly. This selector is used to identify the scrollable area containing your content.
 
-- An ID: `#scrollable-container`
-- A class: `.content-wrapper`
-- A more specific selector: `body #main-content`
-
-You can set this id to `<Editor />` component or a div that wraps the `<Editor />` . It specifically depends on your use case.
-
-We recommend using the same id for both TocPlugin and BlockSelectionPlugin.
-
-## Configure options
-
-```ts
-type TocOptions = {
-  isScroll: boolean;
-  topOffset: number;
-  queryHeading?: (editor: SlateEditor) => Heading[];
-  scrollContainerSelector?: string;
-};
+```tsx
+TocPlugin.configure({
+  options: {
+    scrollContainerSelector: '#your-scroll-container-id',
+  },
+})
 ```
 
-- `isScroll`: Set this to `false` if your editor doesn't have a fixed height.
-- `topOffset`: After scrolling to the specified element, scroll an additional distance.
-- `scrollContainerSelector`: explained above
+You can use any valid CSS selector:
 
-**queryHeading**: if you want to customize the heading selection logic, you can provide a function to query the headings.
-for example, you just want to use heading level 1 and 2, you can use this. by default, it will use all heading levels.
+- ID: `#scrollable-container`
+- Class: `.content-wrapper`
+- Nested selector: `body #main-content`
 
-### Wire up the UI
+Apply this selector to your `<Editor />` component or a wrapper `<div>` around it, depending on your layout.
+
+For consistency, use the same container for both `TocPlugin` and `BlockSelectionPlugin`.
+
+### Components
 
 - [`TocElement`](/docs/components/toc-element)
 
@@ -94,58 +87,188 @@ for example, you just want to use heading level 1 and 2, you can use this. by de
 
 ### Plate Plus
 
-
-```tsx
-<Plate>
-
-  <Editor />
-
-  <TocSideBar
-    className="fixed right-8 top-24 ml-4 h-fit"
-    rootMargin="0px 0px 0px 0px"
-    topOffset={30}
-    maxShowCount={20}
-    />
-</Plate>
-```
-
-If you find TocSideBar is not highlight the correct heading, please make sure you have added the `element.id` to the `heading-element`.
-
-For example:
-
-```tsx
-export const HeadingElement = withRef<typeof HeadingElementVariants>(
-  ({ children, isFirstBlock, variant = 'h1', ...props }, ref) => {
-    const { editor, element } = props;
-
-    return (
-      <HeadingElementVariants
-        // Add id to the heading element
-        id={element.id as string}
-        ref={ref}
-        as={variant!}
-        variant={variant}
-        isFirstBlock={element === editor.children[0]}
-        {...props}
-      >
-        {children}
-      </HeadingElementVariants>
-    );
-  }
-);
-```
-
-## Plate Plus
-The TocSideBar component in Plate Plus offers the following features:
-
-- Responsive design that adapts to different screen sizes
-- Dynamic highlighting of the corresponding thumbnail on the right side based on the current heading
-- Hover thumbnail to see the preview of the heading with smooth animation
-- Elegant transition effects when navigating between headings
-- Animated highlighting of the current heading in the sidebar
-
-Here's an example of how to use the enhanced TocSideBar component in Plate Plus:
-
-
+- Sticky TOC sidebar
+- Hover-to-expand: Opens automatically when you move your mouse over it
+- Interactive navigation: Click on items to smoothly scroll to the corresponding heading
+- Visual feedback: Highlights the current section in the sidebar
+- Beautifully crafted UI
 
 <ComponentPreviewPro name="pro-iframe-demo"  id="pro-toc" component="toc" />
+
+
+## Plugins
+
+### TocPlugin
+
+<APIOptions>
+<APIItem name="isScroll" type="boolean" optional>
+Whether to use scrolling behavior.
+
+- **Default:** `true`
+</APIItem>
+
+<APIItem name="topOffset" type="number" optional>
+The top offset to apply when scrolling to a heading.
+
+- **Default:** `80`
+</APIItem>
+
+<APIItem name="queryHeading" type="(editor: SlateEditor) => Heading[]" optional>
+A custom function to query headings from the editor.
+</APIItem>
+
+<APIItem name="scrollContainerSelector" type="string" optional>
+The CSS selector for the scrollable container. Required to use scrolling behavior.
+
+- **Default:** `'#scroll_container'`
+</APIItem>
+</APIOptions>
+
+## Transforms
+
+### insertToc
+
+Inserts a table of contents element into the editor.
+
+<APIParameters>
+  <APIItem name="editor" type="SlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions<SlateEditor>" optional>
+    Options for inserting the TOC node.
+  </APIItem>
+</APIParameters>
+
+## Hooks
+
+### useTocElementState
+
+<APIReturns>
+  <APIItem name="editor" type="SlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="headingList" type="Heading[]">
+    An array of heading objects in the document.
+  </APIItem>
+  <APIItem name="onContentScroll" type="(el: HTMLElement, id: string, behavior: ScrollBehavior) => void">
+    A function to handle scrolling to a specific heading.
+  </APIItem>
+</APIReturns>
+
+### useTocElement
+
+<APIParameters>
+  <APIItem name="editor" type="SlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="onContentScroll" type="(el: HTMLElement, id: string, behavior: ScrollBehavior) => void">
+    The scroll handler function from `useTocElementState`.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="props" type="object">
+    <APISubList>
+      <APISubListItem parent="props" name="onClick" type="(e: React.MouseEvent, item: Heading, behavior: ScrollBehavior) => void">
+        A click handler for TOC items.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+
+### useTocSideBarState
+
+This hook manages the state for the TOC sidebar.
+
+<APIParameters>
+  <APIItem name="open" type="boolean" optional>
+    Whether the TOC sidebar is open.
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="rootMargin" type="string" optional>
+    Root margin for the Intersection Observer.
+    - **Default:** `'0px 0px 0px 0px'`
+  </APIItem>
+  <APIItem name="topOffset" type="number" optional>
+    Top offset for scrolling.
+    - **Default:** `0`
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="activeContentId" type="string">
+    ID of the currently active content section.
+  </APIItem>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="headingList" type="Heading[]">
+    List of headings in the document.
+  </APIItem>
+  <APIItem name="mouseInToc" type="boolean">
+    Whether the mouse is currently over the TOC.
+  </APIItem>
+  <APIItem name="open" type="boolean">
+    Whether the TOC sidebar is open.
+  </APIItem>
+  <APIItem name="setIsObserve" type="React.Dispatch<React.SetStateAction<boolean>>">
+    Function to set the observation state.
+  </APIItem>
+  <APIItem name="setMouseInToc" type="React.Dispatch<React.SetStateAction<boolean>>">
+    Function to set whether the mouse is over the TOC.
+  </APIItem>
+  <APIItem name="tocRef" type="React.RefObject<HTMLElement>">
+    Ref for the TOC element.
+  </APIItem>
+  <APIItem name="onContentScroll" type="(options: { id: string; behavior?: ScrollBehavior; el: HTMLElement }) => void">
+    Function to handle content scrolling.
+  </APIItem>
+</APIReturns>
+
+### useTocSideBar
+
+This hook provides props and handlers for the TOC sidebar component.
+
+<APIParameters>
+  <APIItem name="editor" type="PlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="mouseInToc" type="boolean">
+    Whether the mouse is currently over the TOC.
+  </APIItem>
+  <APIItem name="open" type="boolean">
+    Whether the TOC sidebar is open.
+  </APIItem>
+  <APIItem name="setIsObserve" type="React.Dispatch<React.SetStateAction<boolean>>">
+    Function to set the observation state.
+  </APIItem>
+  <APIItem name="setMouseInToc" type="React.Dispatch<React.SetStateAction<boolean>>">
+    Function to set whether the mouse is over the TOC.
+  </APIItem>
+  <APIItem name="tocRef" type="React.RefObject<HTMLElement>">
+    Ref for the TOC element.
+  </APIItem>
+  <APIItem name="onContentScroll" type="(options: { id: string; behavior?: ScrollBehavior; el: HTMLElement }) => void">
+    Function to handle content scrolling.
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="navProps" type="object">
+    Props for the TOC navigation element.
+    <APISubList>
+      <APISubListItem parent="navProps" name="ref" type="React.RefObject<HTMLElement>">
+        Ref for the TOC element.
+      </APISubListItem>
+      <APISubListItem parent="navProps" name="onMouseEnter" type="() => void">
+        Handler for mouse enter event.
+      </APISubListItem>
+      <APISubListItem parent="navProps" name="onMouseLeave" type="(e: React.MouseEvent<HTMLElement, MouseEvent>) => void">
+        Handler for mouse leave event.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  <APIItem name="onContentClick" type="(e: React.MouseEvent<HTMLElement, MouseEvent>, item: Heading, behavior?: ScrollBehavior) => void">
+    Handler for clicking on a TOC item.
+  </APIItem>
+</APIReturns>

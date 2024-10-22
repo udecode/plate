@@ -10,19 +10,14 @@ docs:
     title: Inline Equation Toolbar Button
 ---
 
-<ComponentPreviewPro
-  name="pro-iframe-demo"
-  id="pro-equation"
-  component="equation"
-/>
-
 <PackageInfo>
 
 ## Features
 
-- Allows you to insert inline LaTeX equations (e.g., `$E=mc^2$`) and block equations (e.g., `$$\int_a^b f(x) dx$$`) into your editor.
-- Renders both inline and block equations using KaTeX for high-quality mathematical typesetting.
-- Supports a wide range of LaTeX commands and symbols for complex mathematical expressions.
+- LaTeX syntax support for complex mathematical expressions
+- Both inline and block equation formats
+- Real-time rendering of equations using KaTeX
+- Easy editing and navigation within equations
 
 </PackageInfo>
 
@@ -34,35 +29,79 @@ npm install @udecode/plate-math
 
 ## Usage
 
-```tsx
-// ...
-import { InlineEquationPlugin, EquationPlugin } from '@udecode/plate-math';
+### Plugins
 
-const editor = usePlateEditor({
-  id: 'equation-demo',
-  override: {
-    components: {
-      ...otherComponents,
-      [EquationPlugin.key]: EquationElement,
-      [InlineEquationPlugin.key]: InlineEquationElement,
-    },
-  },
-  plugins: [...commonPlugins, InlineEquationPlugin, EquationPlugin],
-  value: equationValue,
-});
+```tsx
+import { EquationPlugin, InlineEquationPlugin } from '@udecode/plate-math/react';
 ```
+
+```tsx
+const plugins = [
+  // ...plugins,
+  EquationPlugin,
+  InlineEquationPlugin,
+]
+```
+
+```tsx
+const components = {
+  // ...otherComponents,
+  [EquationPlugin.key]: EquationElement,
+  [InlineEquationPlugin.key]: InlineEquationElement,
+}
+```
+
+### Components
+
+- [EquationElement](https://pro.platejs.org/docs/components/equation-element) (Plus)
+- [InlineEquationElement](https://pro.platejs.org/docs/components/inline-equation-element) (Plus)
+
+
+{/* ### How to use
+
+1. Use the slash command `/equation` to insert a block equation.
+2. Use the slash command `/inline equation` to insert an inline equation.
+3. Click on any equation to edit it. Press Escape to close the editor without saving changes.
+4. Navigate through the equation using arrow keys. */}
+
+## Examples
+
+### Plate UI
+
+Work in progress.
+
+### Plate Plus
+
+- Mark as equation from the toolbar
+- Insert equation from slash command
+- Beautifully crafted UI
+
+<ComponentPreviewPro
+  name="pro-iframe-demo"
+  id="pro-equation"
+  component="equation"
+/>
+
+## Plugins
+
+### EquationPlugin
+
+Block equation element plugin.
+
+### InlineEquationPlugin
+
+Inline equation element plugin.
+
 ## Transforms
 
 ### editor.tf.insert.equation
 
-Inserts a empty block equation.
+Inserts an empty block equation.
 <APIParameters>
   <APIItem name="options" type="InsertNodesOptions">
     Options for the insert nodes transform.
   </APIItem>
 </APIParameters>
-
-
 
 ### editor.tf.insert.inlineEquation
 
@@ -75,3 +114,13 @@ Inserts an inline equation.
     Options for the insert nodes transform.
   </APIItem>
 </APIParameters>
+
+## Types
+
+### TEquationElement
+
+```typescript
+interface TEquationElement extends TElement {
+  texExpression: string;
+}
+```

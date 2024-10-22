@@ -9,7 +9,7 @@ export default function ProIframeDemo({
 }) {
   return (
     <iframe
-      className={cn(`size-full h-[520px]`)}
+      className={cn(`size-full h-[520px] pr-px`)}
       title={component}
       src={`${siteConfig.links.platePro}/iframe/${component}`}
     />

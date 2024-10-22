@@ -98,65 +98,58 @@ Or set the priority of Copilot Plugin to a higher value than Indent Plugin see [
 Here's an example of how to order your plugins:
 
 ```tsx
-const editor = usePlateEditor({
-  id: 'ai-demo',
-  override: {
-    components: PlateUI,
-  },
-  plugins: [
-    MarkdownPlugin.configure({ options: { indentList: true } }),
-    // CopilotPlugin should be before indent plugin
-    CopilotPlugin,
-    IndentPlugin.extend({
-      inject: {
-        targetPlugins: [
-          ParagraphPlugin.key,
-          HEADING_KEYS.h1,
-          HEADING_KEYS.h2,
-          HEADING_KEYS.h3,
-          HEADING_KEYS.h4,
-          HEADING_KEYS.h5,
-          HEADING_KEYS.h6,
-          BlockquotePlugin.key,
-          CodeBlockPlugin.key,
-          TogglePlugin.key,
-        ],
-      },
-    }),
-    IndentListPlugin.extend({
-      inject: {
-        targetPlugins: [
-          ParagraphPlugin.key,
-          HEADING_KEYS.h1,
-          HEADING_KEYS.h2,
-          HEADING_KEYS.h3,
-          HEADING_KEYS.h4,
-          HEADING_KEYS.h5,
-          HEADING_KEYS.h6,
-          BlockquotePlugin.key,
-          CodeBlockPlugin.key,
-          TogglePlugin.key,
-        ],
-      },
-      options: {
-        listStyleTypes: {
-          fire: {
-            liComponent: FireLiComponent,
-            markerComponent: FireMarker,
-            type: 'fire',
-          },
-          todo: {
-            liComponent: TodoLi,
-            markerComponent: TodoMarker,
-            type: 'todo',
-          },
+const plugins = [
+  // ...otherPlugins,
+  MarkdownPlugin.configure({ options: { indentList: true } }),
+  // CopilotPlugin should be before indent plugin
+  CopilotPlugin,
+  IndentPlugin.extend({
+    inject: {
+      targetPlugins: [
+        ParagraphPlugin.key,
+        HEADING_KEYS.h1,
+        HEADING_KEYS.h2,
+        HEADING_KEYS.h3,
+        HEADING_KEYS.h4,
+        HEADING_KEYS.h5,
+        HEADING_KEYS.h6,
+        BlockquotePlugin.key,
+        CodeBlockPlugin.key,
+        TogglePlugin.key,
+      ],
+    },
+  }),
+  IndentListPlugin.extend({
+    inject: {
+      targetPlugins: [
+        ParagraphPlugin.key,
+        HEADING_KEYS.h1,
+        HEADING_KEYS.h2,
+        HEADING_KEYS.h3,
+        HEADING_KEYS.h4,
+        HEADING_KEYS.h5,
+        HEADING_KEYS.h6,
+        BlockquotePlugin.key,
+        CodeBlockPlugin.key,
+        TogglePlugin.key,
+      ],
+    },
+    options: {
+      listStyleTypes: {
+        fire: {
+          liComponent: FireLiComponent,
+          markerComponent: FireMarker,
+          type: 'fire',
+        },
+        todo: {
+          liComponent: TodoLi,
+          markerComponent: TodoMarker,
+          type: 'todo',
         },
       },
-    }),
-    ...otherPlugins,
-  ],
-  value: copilotValue,
-});
+    },
+  }),
+]
 ```
 
 It's important to note that when using `IndentListPlugin` instead of `ListPlugin`, you should configure the `MarkdownPlugin` with the `indentList: true` option.

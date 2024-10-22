@@ -6,29 +6,45 @@ jsx;
 
 export const slashCommandValue: any = (
   <fragment>
-    <hh2>Slash Command</hh2>
+    <hh2>
+      <htext>Slash Menu</htext>
+    </hh2>
     <hp>
       <htext>
-        The slash command provides quick access to various formatting options
-        and content types. To use it, type '/' anywhere in your document and
-        explore the available options.
+        The slash menu provides quick access to various formatting options and
+        content types.
       </htext>
     </hp>
-    <hp>Key features of the slash command:</hp>
+    <hp>How to use the slash menu:</hp>
     <hp indent={1} listStyleType="disc">
-      <htext>Quick insertion of various block types</htext>
+      <htext>Type '/' anywhere in your document to open the slash menu.</htext>
     </hp>
     <hp indent={1} listStyleType="disc">
-      <htext>Easy access to inline formatting options</htext>
+      <htext>
+        Start typing to filter options or use arrow keys to navigate.
+      </htext>
     </hp>
     <hp indent={1} listStyleType="disc">
-      <htext>Integration with AI-assisted writing</htext>
+      <htext>Press Enter or click to select an option.</htext>
     </hp>
     <hp indent={1} listStyleType="disc">
-      <htext>Can be triggered anywhere in the document</htext>
+      <htext>Press Escape to close the menu without selecting.</htext>
+    </hp>
+    <hp>Available options include:</hp>
+    <hp indent={1} listStyleType="disc">
+      <htext>Headings: Heading 1, Heading 2, Heading 3</htext>
     </hp>
     <hp indent={1} listStyleType="disc">
-      <htext>Keyboard navigation support</htext>
+      <htext>Lists: Bulleted list, Numbered list</htext>
     </hp>
+    <hp indent={1} listStyleType="disc">
+      <htext>Inline Elements: Date</htext>
+    </hp>
+    {/* <hcallout variant="info" icon="💡">
+      <htext>
+        Use keywords to quickly find options. For example, type '/h1' for
+        Heading 1, '/ul' for Bulleted list, or '/date' for Date insertion.
+      </htext>
+    </hcallout> */}
   </fragment>
 );

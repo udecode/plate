@@ -265,6 +265,11 @@ export const docsConfig: DocsConfig = {
           title: 'Equation',
         },
         {
+          href: '/docs/media-placeholder',
+          label: 'New',
+          title: 'Media Placeholder',
+        },
+        {
           href: '/docs/slash-command',
           label: 'New',
           title: 'Slash Command',

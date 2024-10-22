@@ -111,7 +111,7 @@ export const UL = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLUListElement>) => (
-  <ul className={cn('my-4 ml-6 list-disc', className)} {...props} />
+  <ul className={cn('my-4 ml-6 list-disc [&_ul]:my-2', className)} {...props} />
 );
 
 export const OL = ({

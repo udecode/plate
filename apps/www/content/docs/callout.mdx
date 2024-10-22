@@ -34,24 +34,21 @@ npm install @udecode/plate-callout
 ## Usage
 
 ```tsx
-// ...
 import { CalloutPlugin } from '@udecode/plate-callout/react';
-
-const editor = usePlateEditor({
-  id: 'callout-demo',
-  override: {
-    components: {
-      ...otherComponents,
-      [CalloutPlugin.key]: CalloutElement,
-    },
-  },
-  plugins: [
-    ...otherPlugins,
-    CalloutPlugin,
-  ],
-  value: calloutValue,
-});
 ```
+
+```tsx
+const plugins = [
+  // ...otherPlugins,
+  CalloutPlugin,
+]
+```
+
+```tsx
+const components = {
+  // ...otherComponents,
+  [CalloutPlugin.key]: CalloutElement,
+}
 
 ## Transforms
 

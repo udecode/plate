@@ -372,15 +372,7 @@ export default function PlaygroundDemo({
             </FixedToolbar>
           </CheckPlugin>
 
-          <div
-            id="editor-playground"
-            className="flex w-full"
-            style={
-              {
-                '--editor-px': 'max(5%,24px)',
-              } as any
-            }
-          >
+          <div id="editor-playground" className="flex w-full">
             <div
               id={scrollSelector ?? `blockSelection-${id}`}
               ref={containerRef}

@@ -9,7 +9,7 @@ export function OpenInPlus({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'group relative flex flex-col gap-2 rounded-lg border p-4 text-sm',
+        'group relative flex flex-col gap-2 rounded-lg border bg-card p-4 text-sm',
         className
       )}
     >

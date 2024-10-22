@@ -32,9 +32,9 @@ A unique ID used as a provider scope. Use it if you have multiple `Plate` in the
 <APIItem name="decorate" type="function" optional>
 Function used to decorate ranges in the editor.
 
-``ts
+```ts
 (options: { editor: PlateEditor; entry: TNodeEntry }) => Range[]
-``
+```
 </APIItem>
 
 <APIItem name="isMounted" type="boolean" optional>
@@ -44,25 +44,25 @@ Whether `Editable` is rendered so slate DOM is resolvable.
 <APIItem name="onChange" type="function" optional>
 Controlled callback called when the editor state changes.
 
-``ts
+```ts
 (options: { editor: PlateEditor; value: ValueOf<PlateEditor> }) => void
-``
+```
 </APIItem>
 
 <APIItem name="onSelectionChange" type="function" optional>
 Controlled callback called when the editor.selection changes.
 
-``ts
+```ts
 (options: { editor: PlateEditor; selection: TSelection }) => void
-``
+```
 </APIItem>
 
 <APIItem name="onValueChange" type="function" optional>
 Controlled callback called when the editor.children changes.
 
-``ts
+```ts
 (options: { editor: PlateEditor; value: ValueOf<PlateEditor> }) => void
-``
+```
 </APIItem>
 
 <APIItem name="primary" type="boolean" optional>
