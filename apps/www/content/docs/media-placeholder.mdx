@@ -1,28 +1,17 @@
 ---
 title: Media Placeholder
-description: A placeholder component for inserting various types of media content into the editor.
+description: Media placeholders to be used as clickable placeholders for various media types (image, video, audio, file).
 docs:
   - route: https://pro.platejs.org/docs/components/media-placeholder-element
-    title: Placeholder Element
+    title: Placeholder Plugin
 ---
-
-<ComponentPreviewPro
-  name="pro-iframe-demo"
-  id="upload"
-  component="upload"
-/>
 
 <PackageInfo>
 
 ## Features
 
-- Displays placeholder for media elements (image, video, audio, file).
-- Allows typing URLs or uploading local files directly in the placeholder.
-- Customizable placeholder text and styles for different media types.
-- Automatically converts to the appropriate media element when URL is entered or file is uploaded.
-- Improves user experience by providing a seamless way to insert media content.
-- Supports drag and drop functionality for easy file uploads.
-- Automatically validates URLs and file types for each media category.
+- Supports multiple media types: image, video, audio, and file
+- Transforms for inserting different types of media placeholders
 
 </PackageInfo>
 
@@ -34,8 +23,6 @@ npm install @udecode/plate-media
 ```
 
 ## Usage
-
-### Plugins
 
 ```tsx
 import {
@@ -55,8 +42,6 @@ const plugins = [
 ];
 ```
 
-### Components
-
 ```tsx
 const components = {
   // ...otherComponents,
@@ -64,7 +49,30 @@ const components = {
 };
 ```
 
-- [MediaPlaceholderElement](https://pro.platejs.org/docs/components/media-placeholder-element)
+- [MediaPlaceholderElement](https://pro.platejs.org/docs/components/media-placeholder-element) (Plus)
+
+## Examples
+
+### Plate UI
+
+Work in progress.
+
+### Plate Plus
+
+- Displays clickable placeholders for various media types (image, video, audio, file)
+- Opens a popover with two tabs when the placeholder is clicked:
+  - Upload tab: Allows uploading local files directly
+  - Embed tab: Enables pasting embed links for media content
+- Automatically converts the placeholder to the appropriate media element (image, video, audio, file) once the upload or embed is submitted
+- Validates URLs and file types for each media category
+- Beautifully crafted UI
+
+{/* TODO: Add placeholder example */}
+<ComponentPreviewPro
+  name="pro-iframe-demo"
+  id="upload"
+  component="upload"
+/>
 
 ## Plugins
 

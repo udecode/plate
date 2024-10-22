@@ -14,9 +14,8 @@ docs:
 
 ## Features
 
-- Quick access to various formatting options and content types
+- Quick access to various editor commands
 - Keyboard navigation and filtering
-- Wide range of content insertion options
   {/* - AI assistance integration */}
 
 </PackageInfo>
@@ -29,10 +28,8 @@ npm install @udecode/plate-slash-command
 
 ## Usage
 
-### Plugins
-
 ```tsx
-import { SlashPlugin } from '@udecode/plate-slash-command/react';
+import { SlashPlugin, SlashInputPlugin } from '@udecode/plate-slash-command/react';
 ```
 
 ```tsx
@@ -49,11 +46,9 @@ const components = {
 };
 ```
 
-### Components
-
 - [SlashInputElement](/components/slash-input-element)
 
-### How to use
+How to use:
 
 1. Type `/` anywhere in your document to open the slash menu.
 2. Start typing to filter options or use arrow keys to navigate.
@@ -66,15 +61,20 @@ Available options include:
 - Lists
 
 <Callout>
-  💡 Use keywords to quickly find options. For example, type '/h1' for Heading 1
-  or '/ul' for Bulleted List.
+  💡 Use keywords to quickly find options. For example, type '/ul' for Bulleted List.
 </Callout>
 
-## Plate Plus
+## Examples
+
+### Plate UI
+
+Refer to the preview above.
+
+### Plate Plus
 
 - Extended set of slash menu options like "Ask AI"
 - Trigger slash menu by click the + button on the left gutter.
-- Item groups for better organization
+- Item groups
 - Beautifully crafted UI
 
 <ComponentPreviewPro
@@ -108,13 +108,13 @@ Extends [TriggerComboboxPlugin](/docs/combobox#options)
   The character that triggers the slash command combobox.
 
 - **Default:** `'/'`
-  </APIItem>
+</APIItem>
 
 <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>
   Regular expression to match the character before the trigger.
 
 - **Default:** `/^\s?$/`
-  </APIItem>
+</APIItem>
 </APIOptions>
 
 ### SlashInputPlugin

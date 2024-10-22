@@ -8,14 +8,19 @@ import { type TCalloutElement, BaseCalloutPlugin } from '../BaseCalloutPlugin';
 
 export const insertCallout = <E extends SlateEditor>(
   editor: E,
-  options?: InsertNodesOptions<E>
+  {
+    variant,
+    ...options
+  }: InsertNodesOptions<E> & {
+    variant?: (string & {}) | TCalloutElement['variant'];
+  } = {}
 ) => {
   insertNodes<TCalloutElement>(
     editor,
     {
       children: [{ text: '' }],
       type: editor.getType(BaseCalloutPlugin),
-      variant: 'info',
+      variant,
     },
     options as any
   );

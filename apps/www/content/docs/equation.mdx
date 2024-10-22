@@ -29,15 +29,13 @@ npm install @udecode/plate-math
 
 ## Usage
 
-### Plugins
-
 ```tsx
 import { EquationPlugin, InlineEquationPlugin } from '@udecode/plate-math/react';
 ```
 
 ```tsx
 const plugins = [
-  // ...plugins,
+  // ...otherPlugins,
   EquationPlugin,
   InlineEquationPlugin,
 ]
@@ -50,8 +48,6 @@ const components = {
   [InlineEquationPlugin.key]: InlineEquationElement,
 }
 ```
-
-### Components
 
 - [EquationElement](https://pro.platejs.org/docs/components/equation-element) (Plus)
 - [InlineEquationElement](https://pro.platejs.org/docs/components/inline-equation-element) (Plus)
@@ -72,7 +68,7 @@ Work in progress.
 
 ### Plate Plus
 
-- Mark as equation from the toolbar
+- Mark text as equation from the toolbar
 - Insert equation from slash command
 - Beautifully crafted UI
 

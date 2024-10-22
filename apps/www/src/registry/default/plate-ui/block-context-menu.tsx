@@ -74,7 +74,7 @@ export const BlockContextMenu = (props: { children: React.ReactNode }) => {
         {children}
       </ContextMenuTrigger>
       <ContextMenuContent className="w-64">
-        <ContextMenuItem inset>Ask AI</ContextMenuItem>
+        {/* <ContextMenuItem inset>Ask AI</ContextMenuItem> */}
         <ContextMenuItem
           onClick={() => {
             editor

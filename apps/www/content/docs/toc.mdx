@@ -27,35 +27,33 @@ npm install @udecode/plate-heading @udecode/plate-node-id
 
 ## Usage
 
-### Plugins
-
 ```tsx
 import { TocPlugin, HeadingPlugin } from '@udecode/plate-heading/react';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
 ```
 
 ```tsx
-const editor = usePlateEditor({
-  override: {
-    components: {
-      // ...components,
-      [TocPlugin.key]: TocElement,
+const plugins = [
+  // ...otherPlugins,
+  HeadingPlugin,
+  NodeIdPlugin,
+  TocPlugin.configure({
+    options: {
+      scrollContainerSelector: `#your-scroll-container-id`,
+      topOffset: 80,
     },
-  },
-  plugins: [
-    // ...plugins,
-    HeadingPlugin,
-    NodeIdPlugin,
-    TocPlugin.configure({
-      options: {
-        scrollContainerSelector: `#your-scroll-container-id`,
-        topOffset: 80,
-      },
-    }),
-  ],
-  // value: tocValue,
-});
+  }),
+];
 ```
+
+```tsx
+const components = {
+  // ...otherComponents,
+  [TocPlugin.key]: TocElement,
+};
+```
+
+- [`TocElement`](/docs/components/toc-element)
 
 ### Set scroll container
 
@@ -84,6 +82,10 @@ For consistency, use the same container for both `TocPlugin` and `BlockSelection
 - [`TocElement`](/docs/components/toc-element)
 
 ## Examples
+
+### Plate UI
+
+Refer to the preview above.
 
 ### Plate Plus
 

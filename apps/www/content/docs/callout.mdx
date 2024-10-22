@@ -1,6 +1,6 @@
 ---
 title: Callout
-description: Callout is a block that allows you to highlight text or add additional information to a block.
+description: Highlight important information or add special notes.
 docs:
   - route: https://pro.platejs.org/docs/components/callout-element
     title: Callout Element
@@ -16,11 +16,9 @@ docs:
 
 ## Features
 
-- Provides quick transform for a single block.
-- Allows you to perform actions on blocks such as duplicating, deleting, or moving.
-- Customizable menu items and actions.
-- Accessible via right-click or a dedicated button like drag-handle.
-- Supports keyboard navigation for improved accessibility.
+- Customizable callout blocks for highlighting important information
+- Support for different callout variants (e.g., info, warning, error)
+- Ability to set custom icons or emojis for callouts
 
 </PackageInfo>
 
@@ -49,14 +47,112 @@ const components = {
   // ...otherComponents,
   [CalloutPlugin.key]: CalloutElement,
 }
+```
+
+- [CalloutElement](https://pro.platejs.org/docs/components/callout-element) (Plus)
+
+## Examples
+
+### Plate UI
+
+Work in progress.
+
+### Plate Plus
+
+- Insert callouts using the slash command
+- Ability to change the callout emoji
+- Beautifully crafted UI
+
+<ComponentPreviewPro
+  name="pro-iframe-demo"
+  id="callout"
+  component="callout"
+/>
+
+## Plugins
+
+### CalloutPlugin
+
+Callout element plugin.
 
 ## Transforms
 
 ### editor.tf.insert.callout
 
-Inserts a callout.
+Inserts a callout element into the editor.
+
 <APIParameters>
-  <APIItem name="options" type="InsertNodesOptions">
-    Options for the insert nodes transform.
+  <APIItem name="editor" type="SlateEditor">
+    The editor instance.
+  </APIItem>
+  <APIItem name="options" type="object" optional>
+    Options for inserting the callout.
+    <APISubList>
+      <APISubListItem parent="options" name="variant" type="string" optional>
+        The variant of the callout to insert.
+      </APISubListItem>
+      <APISubListItem parent="options" name="...InsertNodesOptions" type="InsertNodesOptions<E>">
+        Other options from `InsertNodesOptions`.
+      </APISubListItem>
+    </APISubList>
   </APIItem>
 </APIParameters>
+
+## Hooks
+
+### useCalloutEmojiPicker
+
+This hook manages the emoji picker functionality for callouts.
+
+<APIParameters>
+  <APIItem name="options" type="UseCalloutEmojiPickerOptions">
+    Options for the callout emoji picker.
+    <APISubList>
+      <APISubListItem parent="options" name="isOpen" type="boolean">
+        Whether the emoji picker is open.
+      </APISubListItem>
+      <APISubListItem parent="options" name="setIsOpen" type="(isOpen: boolean) => void">
+        Function to set the open state of the emoji picker.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+<APIReturns>
+  <APIItem name="emojiToolbarDropdownProps" type="object">
+    Props for the emoji toolbar dropdown.
+    <APISubList>
+      <APISubListItem parent="emojiToolbarDropdownProps" name="isOpen" type="boolean">
+        Whether the emoji picker is open.
+      </APISubListItem>
+      <APISubListItem parent="emojiToolbarDropdownProps" name="setIsOpen" type="(v: boolean) => void">
+        Function to set the open state of the emoji picker, respecting read-only mode.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+  <APIItem name="props" type="object">
+    Props for the emoji picker component.
+    <APISubList>
+      <APISubListItem parent="props" name="isOpen" type="boolean">
+        Whether the emoji picker is open.
+      </APISubListItem>
+      <APISubListItem parent="props" name="setIsOpen" type="(isOpen: boolean) => void">
+        Function to set the open state of the emoji picker.
+      </APISubListItem>
+      <APISubListItem parent="props" name="onSelectEmoji" type="(options: { emojiValue?: any; icon?: any }) => void">
+        Function called when an emoji is selected. It updates the callout's icon and closes the picker.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIReturns>
+
+## Types
+
+### TCalloutElement
+
+```typescript
+interface TCalloutElement extends TElement {
+  variant?: string;
+  icon?: string;
+}
+```

@@ -1,6 +1,6 @@
 ---
 title: Block Menu
-description: Allows you to perform a series of custom operations on the block.
+description: Provides quick access to block-specific actions.
 docs:
   - route: /docs/components/block-context-menu
     title: Block Context Menu
@@ -19,30 +19,27 @@ docs:
 
 ## Features
 
-- Provides quick transform for a single block.
-- Allows you to perform actions on blocks such as duplicating, deleting, or moving.
+- Right-click on a block to open the menu.
+- Allows you to perform actions on blocks such as turn into, duplicating or deleting.
 - Customizable menu items and actions.
-- Accessible via right-click or a dedicated button like drag-handle.
-- Supports keyboard navigation for improved accessibility.
+- Keyboard navigation
 
 </PackageInfo>
 
 ## Installation
 
 ```bash
-npm install @udecode/plate-selection
+npm install @udecode/plate-selection @udecode/plate-node-id
 ```
 
 ## Usage
 
-We recommend installing the [BlockSelection](/docs/block-selection) plugin.When you want to use the block menu
-
-Block Selection provides a visual effect to indicate which block the user is about to interact with
+```tsx
+import { BlockMenuPlugin } from '@udecode/plate-selection/react';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
+```
 
 ```tsx
-// ...
-import { BlockMenuPlugin } from '@udecode/plate-selection/react';
-
 const plugins = [
   // ...otherPlugins,
   NodeIdPlugin,
@@ -69,15 +66,9 @@ const plugins = [
 ]
 ```
 
-## Prevent opening of the right-click menu
+- [`BlockContextMenu`](/docs/components/block-context-menu)
 
-To control the opening of the right-click menu for specific elements, you can use the `data-open-context-menu` attribute:
-
-Generally, we only need to prevent right-clicking on the padding of the `<Editor />`.
-
-If you have a special plugin that needs to prevent the right-click menu from opening, you can use this property.
-
-Example usage:
+To control the opening of the context menu for specific elements, you can use the `data-plate-open-context-menu` attribute:
 
 ```tsx
 <PlateElement data-plate-open-context-menu={false} {...props}>
@@ -85,20 +76,33 @@ Example usage:
 </PlateElement>
 ```
 
-## Plus
+Generally, we only need to prevent right-clicking on the padding of the `<Editor />`.
 
-In Plate Plus, We have provided a more advanced menu.
+## Examples
 
-1. More advanced menu items.
-2. Supports search functionality and carefully designed shortcuts.
-3. More refined styles and animations.
-4. You can open this menu in various ways, such as through the drag button.
+### Plate UI
+
+Refer to the preview above.
+
+### Plate Plus
+
+- Open the menu via the drag button or the three-dot menu on specific blocks (e.g. images)
+- Includes a combobox that filters options as you type
+- Supports nested menu options
+- Advanced actions such as "Ask AI", colors, and commenting
+- Beautifully crafted UI
 
 <ComponentPreviewPro
   name="pro-iframe-demo"
   id="pro-context-menu"
   component="context-menu"
 />
+
+## Plugins
+
+### BlockMenuPlugin
+
+Block menu state management.
 
 ## API
 
@@ -111,7 +115,7 @@ Hides the block menu.
 Shows the block menu for a specific block.
 
 <APIParameters>
-  <APIItem name="id" type="string">
+  <APIItem name="id" type="'context' | string">
     The ID of the block to show the menu for.
   </APIItem>
   <APIItem name="position" type="{ x: number; y: number }" optional>

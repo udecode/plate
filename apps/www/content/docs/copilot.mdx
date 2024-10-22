@@ -199,9 +199,24 @@ TabbablePlugin.configure(({ editor }) => ({
 }));
 ```
 
-## Plate Plus
+## Examples
 
-In Plate Plus, we provides more advanced styles and complete backend setup
+### Plate UI
+
+Refer to the preview above.
+
+### Plate Plus
+
+- Automatic AI inline suggestions as you write
+- Manually trigger AI auto-completion with `Ctrl+Space`
+- Press `Ctrl+Space` again for alternative AI suggestions
+- Accept suggestions with Tab (entire suggestion) or `Cmd+→` (word by word)
+- Ghost text remains visible while typing matching letters
+
+- Undo/redo support
+- Hover card with additional information and options
+- Beautifully crafted UI
+
 
 1. Hover card: a new style of hover card that is more user-friendly. You can **hover** over the ghost text to see the hover card.
 2. Marks: support for marks like bold, italic, underline, etc.This means you can see bold text and **links** in the ghost text
@@ -248,7 +263,7 @@ withoutAbort(editor, () => {
 
 ## API
 
-### editor.getApi(CopilotPlugin).copilot.accept()
+### editor.api.copilot.accept()
 
 Accepts the current suggestion and inserts it into the editor.
 
@@ -256,7 +271,7 @@ Accepts the current suggestion and inserts it into the editor.
   <APIItem type="void">This function does not return a value.</APIItem>
 </APIReturns>
 
-### editor.getApi(CopilotPlugin).copilot.acceptNextWord()
+### editor.api.copilot.acceptNextWord()
 
 Accepts the next word of the current suggestion and inserts it into the editor.
 
@@ -264,7 +279,7 @@ Accepts the next word of the current suggestion and inserts it into the editor.
   <APIItem type="void">This function does not return a value.</APIItem>
 </APIReturns>
 
-### editor.getApi(CopilotPlugin).copilot.setBlockSuggestion
+### editor.api.copilot.setBlockSuggestion
 
 Sets the suggestion text for a specific block in the editor.
 
@@ -280,7 +295,7 @@ Sets the suggestion text for a specific block in the editor.
   </APIItem>
 </APIParameters>
 
-### editor.getApi(CopilotPlugin).copilot.stop()
+### editor.api.copilot.stop()
 
 Stops the ongoing API request for suggestions.
 
@@ -288,7 +303,7 @@ Stops the ongoing API request for suggestions.
   <APIItem type="void">This function does not return a value.</APIItem>
 </APIReturns>
 
-### editor.getApi(CopilotPlugin).copilot.triggerSuggestion()
+### editor.api.copilot.triggerSuggestion()
 
 Triggers a new suggestion request.
 
@@ -296,7 +311,7 @@ Triggers a new suggestion request.
   <APIItem type="void">This function does not return a value.</APIItem>
 </APIReturns>
 
-### editor.getApi(CopilotPlugin).copilot.reset()
+### editor.api.copilot.reset()
 
 Resets the Copilot plugin state, stopping any ongoing requests and clearing suggestions.
 
