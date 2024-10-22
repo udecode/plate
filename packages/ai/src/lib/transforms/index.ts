@@ -5,4 +5,5 @@
 export * from './insertAINodes';
 export * from './removeAIMarks';
 export * from './removeAINodes';
+export * from './undoAI';
 export * from './withAIBatch';
