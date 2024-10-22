@@ -5,7 +5,7 @@ import {
   createTSlatePlugin,
 } from '@udecode/plate-common';
 
-import { removeAIMarks } from './transforms';
+import { removeAIMarks, undoAI } from './transforms';
 import { insertAINodes } from './transforms/insertAINodes';
 import { removeAINodes } from './transforms/removeAINodes';
 
@@ -31,4 +31,5 @@ export const BaseAIPlugin = createTSlatePlugin({
     insertNodes: bindFirst(insertAINodes, editor),
     removeMarks: bindFirst(removeAIMarks, editor),
     removeNodes: bindFirst(removeAINodes, editor),
+    undo: bindFirst(undoAI, editor),
   }))

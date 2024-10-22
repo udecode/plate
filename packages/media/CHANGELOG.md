@@ -1,5 +1,11 @@
 # @udecode/plate-media
 
+## 39.2.4
+
+### Patch Changes
+
+- [#3653](https://github.com/udecode/plate/pull/3653) by [@felixfeng33](https://github.com/felixfeng33) – Fix scrollbar issue.
+
 ## 39.2.0
 
 ### Minor Changes

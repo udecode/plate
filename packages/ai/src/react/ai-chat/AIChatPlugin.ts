@@ -14,10 +14,10 @@ import {
 } from '@udecode/plate-common/react';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 
+import { AIPlugin } from '../ai/AIPlugin';
 import { acceptAIChat } from './transforms/acceptAIChat';
 import { insertBelowAIChat } from './transforms/insertBelowAIChat';
 import { replaceSelectionAIChat } from './transforms/replaceSelectionAIChat';
-import { undoAI } from './transforms/undoAI';
 import { useAIChatHooks } from './useAIChatHook';
 import {
   type EditorPromptParams,
@@ -105,9 +105,11 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     ({ editor, getOptions }) => {
       return {
         reload: () => {
-          const { chat } = getOptions();
+          const { chat, mode } = getOptions();
 
-          editor.getTransforms(AIChatPlugin).aiChat.undoAI();
+          if (mode === 'insert') {
+            editor.getTransforms(AIPlugin).ai.undo();
+          }
 
           void chat.reload({
             body: {
@@ -150,5 +152,4 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     accept: bindFirst(acceptAIChat, editor),
     insertBelow: bindFirst(insertBelowAIChat, editor),
     replaceSelection: bindFirst(replaceSelectionAIChat, editor),
-    undoAI: bindFirst(undoAI, editor),
   }));

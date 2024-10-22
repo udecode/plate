@@ -6343,7 +6343,7 @@ __metadata:
   dependencies:
     "@udecode/plate-combobox": "npm:39.0.0"
     "@udecode/plate-markdown": "npm:39.2.0"
-    "@udecode/plate-selection": "npm:39.2.0"
+    "@udecode/plate-selection": "npm:39.2.3"
     ai: "npm:^3.4.10"
     lodash: "npm:^4.17.21"
   peerDependencies:
@@ -6701,7 +6701,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-docx@npm:39.2.0, @udecode/plate-docx@workspace:^, @udecode/plate-docx@workspace:packages/docx":
+"@udecode/plate-docx@npm:39.2.4, @udecode/plate-docx@workspace:^, @udecode/plate-docx@workspace:packages/docx":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-docx@workspace:packages/docx"
   dependencies:
@@ -6709,7 +6709,7 @@ __metadata:
     "@udecode/plate-heading": "npm:39.0.0"
     "@udecode/plate-indent": "npm:39.0.0"
     "@udecode/plate-indent-list": "npm:39.1.10"
-    "@udecode/plate-media": "npm:39.2.0"
+    "@udecode/plate-media": "npm:39.2.4"
     "@udecode/plate-table": "npm:39.1.6"
     validator: "npm:^13.12.0"
   peerDependencies:
@@ -7048,7 +7048,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-media@npm:39.2.0, @udecode/plate-media@workspace:^, @udecode/plate-media@workspace:packages/media":
+"@udecode/plate-media@npm:39.2.4, @udecode/plate-media@workspace:^, @udecode/plate-media@workspace:packages/media":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-media@workspace:packages/media"
   dependencies:
@@ -7181,7 +7181,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@udecode/plate-selection@npm:39.2.0, @udecode/plate-selection@workspace:^, @udecode/plate-selection@workspace:packages/selection":
+"@udecode/plate-selection@npm:39.2.3, @udecode/plate-selection@workspace:^, @udecode/plate-selection@workspace:packages/selection":
   version: 0.0.0-use.local
   resolution: "@udecode/plate-selection@workspace:packages/selection"
   dependencies:
@@ -7368,7 +7368,7 @@ __metadata:
     "@udecode/plate-common": "npm:39.2.1"
     "@udecode/plate-csv": "npm:39.1.6"
     "@udecode/plate-diff": "npm:39.0.0"
-    "@udecode/plate-docx": "npm:39.2.0"
+    "@udecode/plate-docx": "npm:39.2.4"
     "@udecode/plate-find-replace": "npm:39.0.0"
     "@udecode/plate-floating": "npm:39.1.6"
     "@udecode/plate-font": "npm:39.0.0"
@@ -7384,14 +7384,14 @@ __metadata:
     "@udecode/plate-link": "npm:39.1.9"
     "@udecode/plate-list": "npm:39.0.0"
     "@udecode/plate-markdown": "npm:39.2.0"
-    "@udecode/plate-media": "npm:39.2.0"
+    "@udecode/plate-media": "npm:39.2.4"
     "@udecode/plate-mention": "npm:39.0.0"
     "@udecode/plate-node-id": "npm:39.0.0"
     "@udecode/plate-normalizers": "npm:39.0.0"
     "@udecode/plate-reset-node": "npm:39.0.0"
     "@udecode/plate-resizable": "npm:39.1.6"
     "@udecode/plate-select": "npm:39.0.0"
-    "@udecode/plate-selection": "npm:39.2.0"
+    "@udecode/plate-selection": "npm:39.2.3"
     "@udecode/plate-slash-command": "npm:39.0.0"
     "@udecode/plate-suggestion": "npm:39.0.0"
     "@udecode/plate-tabbable": "npm:39.0.0"
