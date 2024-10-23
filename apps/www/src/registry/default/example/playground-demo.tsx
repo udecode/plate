@@ -7,6 +7,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import type { ValueId } from '@/config/customizer-plugins';
 
 import { cn } from '@udecode/cn';
+import { AIChatPlugin, AIPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
@@ -84,6 +85,7 @@ import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
 import { commentsData, usersData } from '@/plate/demo/values/commentsValue';
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
+import { renderAIAboveNodes } from '@/registry/default/plate-ui/ai-menu';
 import { BlockContextMenu } from '@/registry/default/plate-ui/block-context-menu';
 import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
 import {
@@ -127,6 +129,12 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
       },
       plugins: [
         //ai
+        AIPlugin,
+        AIChatPlugin.configure({
+          render: {
+            aboveNodes: renderAIAboveNodes,
+          },
+        }),
         copilotPlugin,
         // Nodes
         HeadingPlugin,
