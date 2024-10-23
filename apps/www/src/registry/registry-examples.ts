@@ -7,6 +7,11 @@ export const examples: Registry = [
     type: 'registry:example',
   },
   {
+    files: ['example/potion-iframe-demo.tsx'],
+    name: 'potion-iframe-demo',
+    type: 'registry:example',
+  },
+  {
     files: ['example/editor-default.tsx'],
     name: 'editor-default',
     registryDependencies: [],

@@ -181,7 +181,8 @@ export default makeSource({
         {
           properties: {
             ariaLabel: 'Link to section',
-            className: ['subheading-anchor'],
+            className: ['subheading-anchor group/subheading'],
+            'data-empty': 'true',
           },
         },
       ],

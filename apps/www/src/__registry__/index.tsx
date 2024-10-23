@@ -965,6 +965,18 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
+    "potion-iframe-demo": {
+      name: "potion-iframe-demo",
+      description: "",
+      type: "registry:example",
+      registryDependencies: undefined,
+      files: ["registry/default/example/potion-iframe-demo.tsx"],
+      component: React.lazy(() => import("@/registry/default/example/potion-iframe-demo.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
     "editor-default": {
       name: "editor-default",
       description: "",

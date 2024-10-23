@@ -400,7 +400,6 @@ export const docsConfig: DocsConfig = {
         {
           href: '/docs/media',
           label: 'Element',
-          new: true,
           title: 'Media',
         },
         {
@@ -445,6 +444,11 @@ export const docsConfig: DocsConfig = {
           title: 'Upload',
         },
         {
+          href: '/docs/examples/version-history',
+          label: 'New',
+          title: 'Version History',
+        },
+        {
           href: '/docs/examples/editable-voids',
           title: 'Editable Voids',
         },
@@ -463,10 +467,6 @@ export const docsConfig: DocsConfig = {
         {
           href: '/docs/examples/preview-markdown',
           title: 'Preview Markdown',
-        },
-        {
-          href: '/docs/examples/version-history',
-          title: 'Version History',
         },
         {
           href: '/docs/examples/server',

@@ -125,7 +125,6 @@ const components = {
       </TableRow>
     );
   },
-  Link,
   LinkedCard: ({ className, ...props }: React.ComponentProps<typeof Link>) => (
     <Link
       className={cn(
@@ -177,7 +176,7 @@ const components = {
       {...props}
     />
   ),
-  a: Typography.A,
+  a: Link,
   blockquote: Typography.Blockquote,
   code: Code,
   h1: Typography.H1,

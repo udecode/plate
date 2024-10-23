@@ -38,6 +38,10 @@ export const pipeRenderElement = (
       return renderElementProp(props);
     }
 
-    return <DefaultElement {...props} />;
+    return (
+      <DefaultElement attributes={props.attributes} element={props.element}>
+        {props.children}
+      </DefaultElement>
+    );
   };
 };

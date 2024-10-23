@@ -108,7 +108,6 @@ export function ComponentPreviewPro({
                 />
                 Get the code -&gt;
               </Link>
-              {/* <Button className="mb-2 h-8"></Button> */}
             </TabsList>
           )}
         </div>
@@ -118,16 +117,6 @@ export function ComponentPreviewPro({
               <StyleSwitcher />
 
               <div className="flex items-center gap-2">
-                {/* {config.style === "default" && description ? ( */}
-                {/*  <V0Button */}
-                {/*    block={{ */}
-                {/*      code: codeString, */}
-                {/*      name, */}
-                {/*      style: config.style, */}
-                {/*      description, */}
-                {/*    }} */}
-                {/*  /> */}
-                {/* ) : null} */}
                 <CopyButton
                   variant="outline"
                   className="size-7 text-foreground opacity-100 hover:bg-muted hover:text-foreground [&_svg]:size-3.5"
@@ -158,13 +147,6 @@ export function ComponentPreviewPro({
               <div className="size-full grow">{Preview}</div>
             </div>
           </React.Suspense>
-        </TabsContent>
-        <TabsContent value="code">
-          <div className="flex flex-col space-y-4">
-            <div className="w-full rounded-md [&_pre]:my-0 [&_pre]:max-h-[350px] [&_pre]:overflow-auto">
-              <div className="min-h-[350px] ">Upgrade to Pro</div>
-            </div>
-          </div>
         </TabsContent>
       </Tabs>
     </div>

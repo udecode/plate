@@ -1,0 +1,12 @@
+{
+  "files": [
+    {
+      "content": "import { siteConfig } from '@/config/site';\nimport { cn } from '@/lib/utils';\n\nexport default function PotionIframeDemo() {\n  return (\n    <iframe\n      id=\"potion_iframe\"\n      className=\"h-[800px] w-full rounded-lg border\"\n      title=\"potion\"\n      src=\"https://potion.platejs.org?iframe=true\"\n    />\n  );\n}\n",
+      "path": "example/potion-iframe-demo.tsx",
+      "target": "components/potion-iframe-demo.tsx",
+      "type": "registry:example"
+    }
+  ],
+  "name": "potion-iframe-demo",
+  "type": "registry:example"
+}

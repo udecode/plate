@@ -3,7 +3,7 @@ title: Store
 description: API reference for Plate store.
 ---
 
-`Plate` is using <Link href="https://github.com/pmndrs/jotai">jotai</Link> to store the state of the editor.
+`Plate` is using [jotai](https://github.com/pmndrs/jotai) to store the state of the editor.
 
 <Callout className="my-4">
   **Note**: To use the store hooks in a component, it needs to be rendered
@@ -115,14 +115,14 @@ The following store keys are exposed in `editor.setPlateState`:
 Use `usePlateSelectors(id).<state property>()` when you need to subscribe to a value.
 
 - **Example:** `const value = usePlateSelectors(id).value()` will subscribe to `value` changes.
-- It's using <Link href="https://jotai.org/docs/utils/use-atom-value">useAtomValue</Link> under the hood.
+- It's using [useAtomValue](https://jotai.org/docs/utils/use-atom-value) under the hood.
 
 ## Actions
 
 Use `usePlateStates(id).<state property>()` when you need both the value and the setter of a store property.
 
 - **Example:** `const [value, setValue] = usePlateStates(id).value()`
-- It's using <Link href="https://jotai.org/docs/basics/primitives#use-atom">useAtom</Link> under the hood.
+- It's using [useAtom](https://jotai.org/docs/basics/primitives#use-atom) under the hood.
 
 ### `useRedecorate`
 

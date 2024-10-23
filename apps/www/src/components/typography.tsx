@@ -5,6 +5,7 @@ import type { Style } from '@/registry/registry-styles';
 import type { NpmCommands } from '@/types/unist';
 
 import { cn } from '@udecode/cn';
+import { ArrowUpRight } from 'lucide-react';
 
 import { CopyButton, CopyNpmCommandButton } from './copy-button';
 import { StyleWrapper } from './style-wrapper';
@@ -28,7 +29,7 @@ export const H2 = ({
 }: React.HTMLAttributes<HTMLHeadingElement>) => (
   <h2
     className={cn(
-      'mt-12 scroll-m-20 pb-2 font-heading text-2xl font-semibold tracking-tight first:mt-0',
+      'mt-12 scroll-m-20 border-b pb-2 font-heading text-2xl font-semibold tracking-tight first:mt-0',
       className
     )}
     {...props}
@@ -87,21 +88,6 @@ export const H6 = ({
   />
 );
 
-export const A = ({
-  className,
-  ...props
-}: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
-  <a
-    className={cn('font-medium underline underline-offset-4', className)}
-    target={
-      typeof props.href === 'string' && props.href.startsWith('http')
-        ? '_blank'
-        : undefined
-    }
-    {...props}
-  />
-);
-
 export const P = ({
   className,
   ...props
@@ -116,7 +102,7 @@ export const UL = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLUListElement>) => (
-  <ul className={cn('my-4 ml-6 list-disc [&_ul]:my-2', className)} {...props} />
+  <ul className={cn('my-4 ml-6 list-disc', className)} {...props} />
 );
 
 export const OL = ({
@@ -160,14 +146,8 @@ export const Table = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLTableElement>) => (
-  <div className="my-6 w-full overflow-y-auto rounded-lg">
-    <table
-      className={cn(
-        'relative w-full overflow-hidden text-sm after:absolute after:inset-0 after:rounded-lg after:ring-1 after:ring-border',
-        className
-      )}
-      {...props}
-    />
+  <div className="my-6 w-full overflow-y-auto">
+    <table className={cn('relative w-full text-sm', className)} {...props} />
   </div>
 );
 

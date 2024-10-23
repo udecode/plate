@@ -47,11 +47,12 @@ export function MainNav() {
         </Link>
         <Link
           className={cn(
-            'text-foreground/60 transition-colors hover:text-foreground/80'
+            'relative text-foreground/60 transition-colors hover:text-foreground/80'
           )}
           href={siteConfig.links.platePro}
         >
           Templates
+          <Icons.arrowUpRight className="absolute -right-3 top-0 size-2.5 text-muted-foreground" />
         </Link>
       </nav>
     </div>

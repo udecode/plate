@@ -4,7 +4,7 @@ description: A quick tutorial to get you up and running with Plate.
 ---
 
 <Callout className="my-4">
-  Use our <Link href="/?builder=true" target="_blank">interactive builder</Link> to generate _personalized_ installation steps.
+  Use our [interactive builder](/?builder=true) to generate _personalized_ installation steps.
 </Callout>
 
 <Steps>
@@ -13,12 +13,12 @@ description: A quick tutorial to get you up and running with Plate.
 
 You can choose one of the following templates to get started:
 
-| Option                                                                                                             | NextJS |  Plate | Plugins | AI & Backend |
-| ------------------------------------------------------------------------------------------------------------------ | ------ |  ----- | ------- | --- |
-| <Link target="_blank" href="https://pro.platejs.org/docs/templates/potion">Notion clone template</Link>     | ✅      | ✅    | ✅   | ✅  |✅ |
-| <Link target="_blank" href="https://github.com/udecode/plate-playground-template">Plate playground template</Link> | ✅      | ✅    | ✅  |  |
-| <Link target="_blank" href="https://github.com/udecode/plate-template">Plate minimal template</Link>               | ✅      | ✅    |    |   |  
-| <Link target="_blank" href="/docs/components/installation/next">NextJS template</Link>                             | ✅      |       |    |  |
+| Option                                                                            | NextJS | Plate | Plugins | AI & Backend |
+| --------------------------------------------------------------------------------- | ------ | ----- | ------- | ------------ |
+| [Notion clone template](https://pro.platejs.org/docs/templates/potion)            | ✅     | ✅    | ✅      | ✅           |
+| [Plate playground template](https://github.com/udecode/plate-playground-template) | ✅     | ✅    | ✅      |              |
+| [Plate minimal template](https://github.com/udecode/plate-template)               | ✅     | ✅    |         |              |
+| [NextJS template](/docs/components/installation/next)                             | ✅     |       |         |              |
 
 For an existing project, jump to the next step.
 
@@ -40,8 +40,12 @@ npm install @udecode/plate slate slate-react slate-history slate-hyperscript rea
 
 Let's start with a minimal editor setup.
 
-```tsx showLineNumbers {4,7-9}
-import { usePlateEditor, Plate, PlateContent } from '@udecode/plate-common/react';
+```tsx showLineNumbers {1-5,11-13}
+import {
+  usePlateEditor,
+  Plate,
+  PlateContent,
+} from '@udecode/plate-common/react';
 
 export default function BasicEditor() {
   const editor = usePlateEditor();
@@ -65,7 +69,10 @@ Let's give our editor some styles: [Editor](/docs/components/editor) is a styled
 <ComponentPreview name="basic-editor-styling-demo" padding="md" />
 
 <Callout className="mt-4">
-  **Note**: `Editor` is just an example of a styled editor using Tailwind, and if you're using it, make sure to follow the installation steps in the [Manual Installation](/docs/components/installation/manual) guide. You can create your own styled version of `PlateContent`.
+  **Note**: `Editor` is just an example of a styled editor using Tailwind, and
+  if you're using it, make sure to follow the installation steps in the [Manual
+  Installation](/docs/components/installation/manual) guide. You can create your
+  own styled version of `PlateContent`.
   <ComponentSource name="editor" />
 </Callout>
 
@@ -140,15 +147,20 @@ export default function BasicEditor() {
 ### Plugins
 
 <Callout className="my-4">
-  Use our <Link href="/?builder=true" target="_blank">interactive builder</Link> to pick your plugins.
+  Use our [interactive builder](/?builder=true) to pick your plugins.
 </Callout>
 
 Let's use the basic plugins for a rich-text editor.
 
-```tsx showLineNumbers {15-23}
+```tsx showLineNumbers {20-28}
 // ...
 
-import { BoldPlugin, ItalicPlugin, UnderlinePlugin, CodePlugin } from '@udecode/plate-basic-marks/react';
+import {
+  BoldPlugin,
+  ItalicPlugin,
+  UnderlinePlugin,
+  CodePlugin,
+} from '@udecode/plate-basic-marks/react';
 import { HeadingPlugin } from '@udecode/plate-heading/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
@@ -185,7 +197,8 @@ The plugins are functioning correctly. However, since we haven't specified any c
 
 <Callout className="mt-4">
   **Note**: You don't need to add core plugins such as **`ReactPlugin`**,
-  **`HistoryPlugin`** and **`ParagraphPlugin`** as **`usePlateEditor`** already does it.
+  **`HistoryPlugin`** and **`ParagraphPlugin`** as **`usePlateEditor`** already
+  does it.
 </Callout>
 
 ### Components
@@ -193,7 +206,7 @@ The plugins are functioning correctly. However, since we haven't specified any c
 <Callout className="mt-4">
   **Note**: Plate plugins are packaged unstyled, implying that you have complete
   control over markup and styling, hence you can integrate your own design
-  system or [Plate UI](/docs/components). If using the latter, use our <Link href="/?builder=true" target="_blank">interactive builder</Link> to pick your components.
+  system or [Plate UI](/docs/components). If using the latter, use our [interactive builder](/?builder=true) to pick your components.
 </Callout>
 
 To plug-in all the components in one place, we can use the **`override.components`** option in **`usePlateEditor`**:
@@ -247,10 +260,7 @@ const htmlValue = '<p>This is <b>bold</b> and <i>italic</i> text!</p>';
 export default function BasicEditor() {
   const editor = usePlateEditor({
     value: htmlValue,
-    plugins: [
-      BoldPlugin,
-      ItalicPlugin,
-    ],
+    plugins: [BoldPlugin, ItalicPlugin],
   });
 
   return (
@@ -263,6 +273,6 @@ export default function BasicEditor() {
 
 ### That's it!
 
-You can now play around with the <Link href="/#playground">Playground</Link> and start building your own editor.
+You can now play around with the [Playground](/#playground) and start building your own editor.
 
 </Steps>
