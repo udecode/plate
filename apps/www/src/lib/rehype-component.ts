@@ -17,9 +17,7 @@ export function rehypeComponent() {
         const name = getNodeAttributeByName(node, 'name')?.value as
           | string
           | undefined;
-        const src = getNodeAttributeByName(node, 'src')?.value as
-          | string
-          | undefined;
+        let src = getNodeAttributeByName(node, 'src')?.value as string;
 
         if (name && !src) {
           if (node.name === 'ComponentSource' && !src) {
@@ -27,13 +25,13 @@ export function rehypeComponent() {
               for (const style of styles) {
                 const component = Index[style.name][name];
 
-                if (!component && !src) {
+                if (!component) {
                   throw new Error(
                     `Component ${name} not found in ${style.name}`
                   );
                 }
 
-                const src = component.files[0];
+                src = component.files[0];
 
                 // Read the source file.
                 const filePath = path.join(process.cwd(), 'src', src);

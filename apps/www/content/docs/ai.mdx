@@ -3,30 +3,37 @@ title: AI
 description: AI menu with commands, streaming responses in a preview or directly into the editor.
 docs:
   - route: https://pro.platejs.org/docs/examples/ai
-    title: Potion
+    title: AI Menu
 ---
+
+<ComponentPreviewPro name="pro-iframe-demo" id="pro-ai" component="ai" />
 
 <PackageInfo>
 
 ## Features
 
-- Provides an AI-powered menu.
-- Offers a selection of AI commands to enhance content creation and editing.
-- Seamlessly integrates AI assistance within the editor interface.
+- AI-powered menu with predefined commands
+- Three trigger modes:
+  - Cursor mode: trigger at block end
+  - Selection mode: trigger with selected text
+  - Block selection mode: trigger with selected blocks
+- Streaming responses in preview or direct editor insertion
+- Markdown support
+- Built-in support for Vercel AI SDK chat API
 
 </PackageInfo>
 
 ## Installation
 
 ```bash
-npm install @udecode/plate-ai @udecode/plate-selection @udecode/plate-markdown @udecode/plate-basic-marks 
+npm install @udecode/plate-ai @udecode/plate-selection @udecode/plate-markdown @udecode/plate-basic-marks
 ```
 
 ## Usage
 
 ### Plugins
 
-```tsx title="ai-plugins.tsx"
+```tsx
 import { withProps } from '@udecode/cn';
 import { AIChatPlugin, AIPlugin } from '@udecode/plate-ai/react';
 import {
@@ -39,11 +46,9 @@ import {
 import { PlateLeaf, createPlateEditor } from '@udecode/plate-common/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
+```
 
-import { AIMenu } from '@/registry/default/potion-ui/ai-menu';
-import { CodeLeaf } from '@/registry/default/potion-ui/code-leaf';
-import { LinkElement } from '@/registry/default/potion-ui/link-element';
-
+```tsx
 export const createAIEditor = () => {
   const editor = createPlateEditor({
     id: 'ai',
@@ -151,7 +156,8 @@ export const PROMPT_TEMPLATES = {
   userSelecting,
 };
 
-export const aiPlugins = [
+const plugins = [
+  // ...otherPlugins,
   MarkdownPlugin.configure({ options: { indentList: true } }),
   AIPlugin,
   AIChatPlugin.configure({
@@ -175,43 +181,70 @@ export const aiPlugins = [
     },
     render: { afterEditable: () => <AIMenu /> },
   }),
-] as const;
+  SelectionOverlayPlugin,
+];
 ```
+
+- [`AIMenu`](https://pro.platejs.org/docs/components/ai-menu) (Plus)
+
+The [`SelectionOverlayPlugin`](https://pro.platejs.org/docs/components/cursor-overlay):
+
+- Maintains selection highlight when editor loses focus
+- Essential for AI menu and other external input interactions
+- Prevents double selection with `data-plate-prevent-overlay` attribute
+
+<Image
+  src="/ai-selection.png"
+  alt="AI selection overlay"
+  width={1920}
+  height={1080}
+  className="w-full"
+/>
 
 ### AI SDK
 
-Plate AI is depending on the [ai](https://npmjs.com/package/ai) package:
+This plugin is depending on the [ai](https://npmjs.com/package/ai) package:
 
-- Setup your [api](https://sdk.vercel.ai/docs/getting-started/nextjs-app-router#create-a-route-handler) using [streamText](https://sdk.vercel.ai/docs/ai-sdk-core/generating-text#streamtext).
+- Setup a [route handler](https://sdk.vercel.ai/docs/getting-started/nextjs-app-router#create-a-route-handler) using [streamText](https://sdk.vercel.ai/docs/ai-sdk-core/generating-text#streamtext).
 - Wire up [useChat](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat) in your [AI menu](#ai-menu) component.
-
-## Wire up the UI
 
 ### AI Menu
 
 Work in progress.
 
-{/* ## AI Menu Items
+{/* ## AI Menu Items */}
 
-Before learning how to create custom commands, you need to know that the ai plugin will provide three modes for opening the ai menu:
+{/* Before learning how to create custom commands, you need to know that the ai plugin will provide three modes for opening the ai menu: */}
 
-1. Cursor mode: open the AI menu at the end of a block.
-2. Selection mode: select some texts and open the AI menu.
-3. Block selection mode: select some blocks and open the AI menu. 
-4. After the AI completes the first generation, we don't close the AI menu but instead modify the commands. We call it **Suggestion** mode.
+{/* 1. Cursor mode: open the AI menu at the end of a block. */}
+{/* 2. Selection mode: select some texts and open the AI menu. */}
+{/* 3. Block selection mode: select some blocks and open the AI menu. */}
+{/* 4. After the AI completes the first generation, we don't close the AI menu but instead modify the commands. We call it **Suggestion** mode. */}
 
-Due to the special nature of Suggestion mode: whether Cursor mode or Selection mode ends, it will switch to Suggestion mode. 
-To distinguish between these two sets of commands, we need to maintain four different menus in total.
+{/* Due to the special nature of Suggestion mode: whether Cursor mode or Selection mode ends, it will switch to Suggestion mode. */}
+{/* To distinguish between these two sets of commands, we need to maintain four different menus in total. */}
 
-The following is all the commands you can see in the `ai-menu-items.tsx` file.
-menuState (draft doc)
-  - Show when you open the ai menu by `space` at the end of a block.
-  - Show when you open the ai menu by `space` and then complete the first generation.
-  - Show when you open the ai menu with selected text.
-  - Show when you open the ai menu with selected blocks, then complete the first generation.
+{/* The following is all the commands you can see in the `ai-menu-items.tsx` file. */}
+{/* menuState (draft doc) */}
 
-If you want to modify the AI Menu style, you should check the [menu](/docs/components/menu) component docs. */}
+{/* - Show when you open the ai menu by `space` at the end of a block. */}
+{/* - Show when you open the ai menu by `space` and then complete the first generation. */}
+{/* - Show when you open the ai menu with selected text. */}
+{/* - Show when you open the ai menu with selected blocks, then complete the first generation. */}
 
+{/* If you want to modify the AI Menu style, you should check the [menu](/docs/components/menu) component docs. \ \ */}
+
+## Keyboard Shortcuts
+
+<KeyTable>
+  <KeyTableItem hotkey="Space">
+    Open AI menu in empty block (cursor mode)
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + J">
+    Open AI menu (cursor or selection mode)
+  </KeyTableItem>
+  <KeyTableItem hotkey="Escape">Close AI menu</KeyTableItem>
+</KeyTable>
 
 ## Examples
 
@@ -221,12 +254,16 @@ Work in progress.
 
 ### Plate Plus
 
-<div className="my-6 border rounded-md overflow-hidden">
-  <iframe src="https://potion.platejs.org/ai-menu?hidden-sidebar=true&iframe-blank=true" title="Potion" width="100%" height="700px" />
-</div>
+Refer to the preview above.
 
-- Context menu to open the ai menu
-- Slash command to open the ai menu
+- AI chat powered by AI SDK (OpenAI) with history persistence.
+- Combobox menu with:
+  - Predefined commands
+  - Free-form prompt input
+- Multiple ways to trigger:
+  - Block menu button
+  - Slash command menu
+  - Keyboard shortcuts
 - Beautifully crafted UI
 
 ## Plugins
@@ -240,96 +277,190 @@ Extends the editor with AI transforms.
 Enables chat operations and streaming text generation in the editor.
 
 <APIOptions>
-<APIItem name="mode" type="string" optional def>
-Internal state. Specifies how the assistant message is handled:
+<APIItem name="chat" type="UseChatHelpers">
+  Chat helpers returned by [useChat](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat).
+</APIItem>
 
-- `'insert'`: Directly inserts content into the editor without preview.
-- `'chat'`: Initiates an interactive session to review and refine content
-  before insertion (default).
+<APIItem name="createAIEditor" type="() => PlateEditor" optional>
+  
+Function to create editor instance for preview mode.
+
+- **Default:** Creates a basic editor with id 'ai'
+
+</APIItem>
+
+<APIItem name="mode" type="'chat' | 'insert'" optional>
+
+Specifies how assistant messages are handled:
+
+- `'chat'`: Shows preview with accept/reject options (default)
+- `'insert'`: Directly inserts content into editor
+- **Default:** `'chat'`
+
+</APIItem>
+
+<APIItem name="open" type="boolean" optional>
+
+Whether the AI chat is open.
+
+- **Default:** `false`
+
+</APIItem>
+
+<APIItem name="promptTemplate" type="(props: EditorPromptParams) => string" optional>
+  
+Template for generating prompts. Supports placeholders:
+
+- `{block}`: Markdown of blocks in selection
+- `{editor}`: Markdown of entire editor content
+- `{selection}`: Markdown of current selection
+- `{prompt}`: Actual user prompt
+- **Default:** `'{prompt}'`
+
+</APIItem>
+
+<APIItem name="scrollContainerSelector" type="string" optional>
+
+CSS selector for scrollable container.
+
+- **Default:** `'#scroll_container'`
+
+</APIItem>
+
+<APIItem name="systemTemplate" type="(props: EditorPromptParams) => string | void" optional>
+
+Template for system messages. Supports same placeholders as `promptTemplate`.
+
+- **Default:** `undefined`
 
 </APIItem>
 </APIOptions>
 
-// todo: add 
-- `scrollContainerSelector`
-  - The selector of the scroll container.When we trigger the menu in the very bottom of the page, 
-  we need this option to make the scroll container scroll up to show the menu completely.
-- `createAIEditor`
-  - When we use selection mode, we render a read-only editor on the AI menu, and the plugins used by this editor are provided by this option
-
 ## API
 
-### editor.aiChat.hide()
+### editor.aiChat.accept()
 
-Hides the AI menu by setting the open editor ID to null and removing the anchor element.
+Accepts the current AI suggestion:
 
-### editor.aiChat.show()
+- Removes AI marks from the content
+- Hides the AI chat interface
+- Focuses the editor
 
-Shows the AI menu for the specified editor, DOM element, and node entry.
+### editor.aiChat.insertBelow()
+
+Inserts AI content below the current block.
 
 <APIParameters>
-  <APIItem name="editorId" type="string">
-    The ID of the editor to show the AI menu for.
-  </APIItem>
-  <APIItem name="dom" type="HTMLElement">
-    The DOM element to anchor the AI menu to.
-  </APIItem>
-  <APIItem name="nodeEntry" type="NodeEntry">
-    The node entry associated with the AI menu.
+  <APIItem name="sourceEditor" type="PlateEditor">
+    Editor containing the content to insert.
   </APIItem>
 </APIParameters>
 
+Handles both block selection and normal selection modes:
 
+- In block selection: Inserts after the last selected block
+- In normal selection: Inserts after the current block
 
+### editor.aiChat.replaceSelection()
 
+Replaces the current selection with AI content.
 
+<APIParameters>
+  <APIItem name="sourceEditor" type="PlateEditor">
+    Editor containing the content to replace with.
+  </APIItem>
+</APIParameters>
 
+Handles both block selection and normal selection modes:
 
+- In block selection: Replaces all selected blocks
+- In normal selection: Replaces the current selection
 
+### editor.aiChat.reset()
 
+Resets the chat state:
 
+- Stops any ongoing generation
+- Clears chat messages
+- Removes all AI nodes from the editor
 
+### editor.aiChat.submit()
 
+Submits a prompt to generate AI content.
 
-
-
-
-{/* ## Selection Overlay
-
-**SelectionOverlayPlugin** is part of the [CursorOverlayPlugin](/docs/components/cursor-overlay) Make sure you have installed it.
-
-The `SelectionOverlayPlugin` is used to display a selection overlay on the editor. It enhances the visual feedback for users:
-
-When the editor loses focus (blur event): It maintains a visual representation of the last selection.
-
-So this plugin is userful when we open the ai menu. for example: 
-
-We selected two paragraphs of text. and then using floating toolbar open the ai menu
-Normally, these two paragraphs wouldn’t display a blue background. 
-because our focus has already moved to the input box editor is blurred.
-
-<Image src="/ai-selection.png" alt="AI selection overlay" width={1920} height={1080} className="w-full" />
-
-Sometimes we want to keep lose the selection highlight.In this case, You can use `data-plate-prevent-overlay` attribute add to the button which trigger the blur event.
-
-For example, in the turn into dropdown menu:
-We’ve already prevented the default event so that clicking the ‘Turn Into’ menu doesn’t cause the editor to lose focus. 
-Therefore, there’s no need to enable the SelectionOverlayPlugin functionality; otherwise, two layers of selection would appear, 
-which would look visually unappealing.
-
-```tsx
-
-      <DropdownMenuContent
-        className="min-w-0"
-        onCloseAutoFocus={onCloseAutoFocus}
-        data-plate-prevent-overlay
-        align="start"
+<APIParameters>
+  <APIItem name="options" type="object" optional>
+    <APISubList>
+      <APISubListItem
+        parent="options"
+        name="mode"
+        type="'chat' | 'insert'"
+        optional
       >
-      ...
-      </DropdownMenuContent>
-```
+        Mode to use. Defaults to 'chat' for selection, 'insert' otherwise.
+      </APISubListItem>
+      <APISubListItem parent="options" name="prompt" type="string" optional>
+        Custom prompt. Uses chat input if not provided.
+      </APISubListItem>
+      <APISubListItem parent="options" name="system" type="string" optional>
+        Custom system message.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
 
+In insert mode, undoes previous AI changes before submitting.
 
+## Transforms
 
-Therefore, just remember one rule: only use this plugin when you need to move the focus to an external input element, 
-such as the AI menu or math equation plugins. */}
+### editor.ai.insertNodes()
+
+Inserts AI-generated nodes with the AI mark.
+
+<APIParameters>
+  <APIItem name="nodes" type="TDescendant[]">
+    Nodes to insert with AI mark.
+  </APIItem>
+  <APIItem name="options" type="object" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="target" type="Path" optional>
+        Target path. Defaults to current selection.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### editor.ai.removeMarks()
+
+Removes AI marks from nodes in the specified location.
+
+<APIParameters>
+  <APIItem name="options" type="object" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="at" type="Location" optional>
+        Location to remove marks from. Defaults to entire document.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### editor.ai.removeNodes()
+
+Removes nodes that have the AI mark.
+
+<APIParameters>
+  <APIItem name="options" type="object" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="at" type="Path" optional>
+        Path to remove nodes from. Defaults to entire document.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### editor.ai.undo()
+
+Special undo operation for AI changes:
+
+- Undoes the last operation if it was AI-generated
+- Removes the redo stack entry to prevent redoing AI operations

@@ -93,6 +93,11 @@ export const A = ({
 }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
   <a
     className={cn('font-medium underline underline-offset-4', className)}
+    target={
+      typeof props.href === 'string' && props.href.startsWith('http')
+        ? '_blank'
+        : undefined
+    }
     {...props}
   />
 );
@@ -144,7 +149,7 @@ export const Image = ({
   ...props
 }: React.ImgHTMLAttributes<HTMLImageElement>) => (
   // eslint-disable-next-line @next/next/no-img-element
-  (<img className={cn('rounded-md', className)} alt={alt} {...props} />)
+  <img className={cn('rounded-md', className)} alt={alt} {...props} />
 );
 
 export const HR = ({ ...props }: React.HTMLAttributes<HTMLHRElement>) => (
