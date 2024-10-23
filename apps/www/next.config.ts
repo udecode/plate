@@ -1,18 +1,9 @@
+import type { NextConfig } from 'next';
+
 import { globSync } from 'glob';
 
-const nextConfig = async (phase, { defaultConfig }) => {
-  /** @type {import('next').NextConfig} */
-  const config = {
-    // Enable React strict mode.
-    // Enable experimental features.
-    experimental: {
-      esmExternals: false,
-      // Specify external packages that should be excluded from server-side rendering.
-      // https://beta.nextjs.org/docs/api-reference/next-config#servercomponentsexternalpackages
-      serverComponentsExternalPackages: ['@prisma/client'],
-    },
-
-    // Configure domains to allow for optimized image loading.
+const nextConfig = async (phase: string) => {
+  const config: NextConfig = {
     // https://nextjs.org/docs/basic-features/image-optimization#domains
     images: {
       remotePatterns: [
@@ -35,6 +26,10 @@ const nextConfig = async (phase, { defaultConfig }) => {
       ],
     },
 
+    // Configure domains to allow for optimized image loading.
+    // https://nextjs.org/docs/api-reference/next.config.js/react-strict-mod
+    reactStrictMode: true,
+
     // typescript: {
     //   ignoreBuildErrors: true,
     // },
@@ -42,8 +37,7 @@ const nextConfig = async (phase, { defaultConfig }) => {
     //   ignoreDuringBuilds: true,
     // },
 
-    // https://nextjs.org/docs/api-reference/next.config.js/react-strict-mod
-    reactStrictMode: true,
+    serverExternalPackages: ['@prisma/client'],
 
     staticPageGenerationTimeout: 1200,
 
@@ -86,8 +80,8 @@ const nextConfig = async (phase, { defaultConfig }) => {
   if (phase === 'phase-development-server') {
     const fs = await import('node:fs');
 
-    const packageNames = new globSync('../../packages/**/package.json')
-      .map((file) => {
+    const packageNames = globSync('../../packages/**/package.json')
+      .map((file: any) => {
         try {
           const packageJson = JSON.parse(fs.readFileSync(file, 'utf8'));
 

@@ -14,15 +14,20 @@ export function rehypeComponent() {
   return (tree: UnistTree) => {
     visit(tree as any, (node: UnistNode) => {
       if (node.name === 'ComponentSource' || node.name === 'ComponentPreview') {
-        const name = getNodeAttributeByName(node, 'name')?.value as string;
+        const name = getNodeAttributeByName(node, 'name')?.value as
+          | string
+          | undefined;
+        const src = getNodeAttributeByName(node, 'src')?.value as
+          | string
+          | undefined;
 
-        if (name) {
-          if (node.name === 'ComponentSource') {
+        if (name && !src) {
+          if (node.name === 'ComponentSource' && !src) {
             try {
               for (const style of styles) {
                 const component = Index[style.name][name];
 
-                if (!component) {
+                if (!component && !src) {
                   throw new Error(
                     `Component ${name} not found in ${style.name}`
                   );
@@ -136,8 +141,6 @@ export function rehypeComponent() {
         const source = getComponentSourceFileContent(node);
 
         if (source) {
-          const { value: src } = getNodeAttributeByName(node, 'src') || {};
-
           if (node.name === 'ComponentPreview') {
             // Replace the Example component with a pre element.
             node.children?.push(
