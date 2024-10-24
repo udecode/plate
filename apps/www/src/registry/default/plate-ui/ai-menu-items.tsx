@@ -265,7 +265,10 @@ export const AIMenuItems = ({
               className="[&_svg]:mr-2 [&_svg]:size-4"
               value={menuItem.value}
               onSelect={() => {
-                menuItem.onSelect?.({ aiEditor: aiEditorRef.current!, editor });
+                menuItem.onSelect?.({
+                  aiEditor: aiEditorRef.current!,
+                  editor: editor,
+                });
               }}
             >
               {menuItem.icon}

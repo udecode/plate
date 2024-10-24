@@ -36,6 +36,7 @@ export function AIMenu() {
     id: 'editor',
     api: 'api/ai',
   });
+
   const { input, isLoading, messages, setInput } = chat;
   const [anchorElement, setAnchorElement] = React.useState<HTMLElement | null>(
     null

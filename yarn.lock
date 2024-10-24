@@ -12,6 +12,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ai-sdk/openai@npm:^0.0.67":
+  version: 0.0.67
+  resolution: "@ai-sdk/openai@npm:0.0.67"
+  dependencies:
+    "@ai-sdk/provider": "npm:0.0.24"
+    "@ai-sdk/provider-utils": "npm:1.0.20"
+  peerDependencies:
+    zod: ^3.0.0
+  checksum: 10c0/265e1ba5ba1ab31fbade80d275043c800e3bbc42fc4f1e220cdcf7ccb260b5ab8cc05fc3981ffa0aa233c7e29ffccc8fe273965fb2cff0698fe7fc7e9cad4484
+  languageName: node
+  linkType: hard
+
 "@ai-sdk/provider-utils@npm:1.0.20":
   version: 1.0.20
   resolution: "@ai-sdk/provider-utils@npm:1.0.20"
@@ -21791,6 +21803,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "www@workspace:apps/www"
   dependencies:
+    "@ai-sdk/openai": "npm:^0.0.67"
     "@ariakit/react": "npm:0.4.11"
     "@faker-js/faker": "npm:^9.0.2"
     "@next/third-parties": "npm:15.0.0"

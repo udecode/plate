@@ -34,6 +34,7 @@
     "react-dom": "^18.3.1"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^0.0.67",
     "@ariakit/react": "0.4.11",
     "@faker-js/faker": "^9.0.2",
     "@next/third-parties": "15.0.0",
