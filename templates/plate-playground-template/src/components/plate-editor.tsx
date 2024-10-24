@@ -33,10 +33,10 @@ import {
   someNode,
 } from '@udecode/plate-common';
 import {
-  createPlateEditor,
   ParagraphPlugin,
   Plate,
   PlateLeaf,
+  usePlateEditor,
 } from '@udecode/plate-common/react';
 import { DndPlugin } from '@udecode/plate-dnd';
 import { DocxPlugin } from '@udecode/plate-docx';
@@ -164,7 +164,7 @@ export default function PlateEditor() {
 }
 
 export const useMyEditor = () => {
-  const editor = createPlateEditor({
+  return usePlateEditor({
     plugins: [
       // Nodes
       HeadingPlugin,
@@ -450,6 +450,4 @@ export const useMyEditor = () => {
       },
     ],
   });
-
-  return editor;
 };
