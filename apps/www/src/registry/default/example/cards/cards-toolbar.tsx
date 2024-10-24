@@ -45,7 +45,7 @@ export function CardsToolbar() {
             transform: 'translateX(calc(-1px))',
           }}
         >
-          <ToolbarGroup noSeparator>
+          <ToolbarGroup>
             <InsertDropdownMenu />
             <TurnIntoDropdownMenu />
           </ToolbarGroup>
@@ -121,7 +121,7 @@ export function CardsToolbar() {
 
           <div className="grow" />
 
-          <ToolbarGroup noSeparator>
+          <ToolbarGroup>
             <CommentToolbarButton />
             <ModeDropdownMenu />
           </ToolbarGroup>

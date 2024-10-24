@@ -1,11 +1,17 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { AIChatPlugin, AIPlugin } from '@udecode/plate-ai/react';
-import { type PlateEditor, useEditorPlugin } from '@udecode/plate-core/react';
+import {
+  getAncestorNode,
+  getEndPoint,
+  getNodeString,
+} from '@udecode/plate-common';
+import {
+  type PlateEditor,
+  focusEditor,
+  useEditorPlugin,
+} from '@udecode/plate-common/react';
 import { useIsSelecting } from '@udecode/plate-selection/react';
-import { getEndPoint, getNodeString } from '@udecode/slate';
-import { focusEditor } from '@udecode/slate-react';
-import { getAncestorNode } from '@udecode/slate-utils';
 import {
   Album,
   BadgeHelp,
@@ -68,7 +74,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     },
   },
   explain: {
-    icon: <BadgeHelp className="mr-2 size-4" />,
+    icon: <BadgeHelp className="size-4" />,
     label: 'Explain',
     value: 'explain',
     onSelect: ({ editor }) => {
@@ -147,7 +153,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     },
   },
   summarize: {
-    icon: <Album className="mr-2 size-4" />,
+    icon: <Album className="size-4" />,
     label: 'Add a summary',
     value: 'summarize',
     onSelect: ({ editor }) => {
@@ -234,26 +240,34 @@ const menuStateItems: Record<
 
 export const AIMenuItems = ({
   aiEditorRef,
+  setValue,
 }: {
   aiEditorRef: React.MutableRefObject<PlateEditor | null>;
+  setValue: (value: string) => void;
 }) => {
   const { editor, useOption } = useEditorPlugin(AIChatPlugin);
   const { messages } = useOption('chat');
   const isSelecting = useIsSelecting();
 
   const menuState = useMemo(() => {
-    if (messages.length > 0) {
+    if (messages && messages.length > 0) {
       return isSelecting ? 'selectionSuggestion' : 'cursorSuggestion';
     }
 
     return isSelecting ? 'selectionCommand' : 'cursorCommand';
-  }, [isSelecting, messages.length]);
+  }, [isSelecting, messages]);
 
   const menuGroups = useMemo(() => {
     const items = menuStateItems[menuState];
 
     return items;
   }, [menuState]);
+
+  useEffect(() => {
+    if (menuGroups.length > 0 && menuGroups[0].items.length > 0) {
+      setValue(menuGroups[0].items[0].value);
+    }
+  }, [menuGroups, setValue]);
 
   return (
     <>
@@ -262,7 +276,7 @@ export const AIMenuItems = ({
           {group.items.map((menuItem) => (
             <CommandItem
               key={menuItem.value}
-              className="[&_svg]:mr-2 [&_svg]:size-4"
+              className="gap-2 [&_svg]:size-4 [&_svg]:text-muted-foreground"
               value={menuItem.value}
               onSelect={() => {
                 menuItem.onSelect?.({

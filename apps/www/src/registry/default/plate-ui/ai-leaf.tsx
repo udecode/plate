@@ -11,7 +11,7 @@ export const AILeaf = withRef<typeof PlateLeaf>(
       <PlateLeaf
         ref={ref}
         className={cn(
-          'border-b-2 border-b-brand/10 bg-brand/5 text-[rgb(17,96,174)]',
+          'border-b-2 border-b-purple-100 bg-purple-50 text-purple-800',
           'transition-all duration-200 ease-in-out',
           className
         )}

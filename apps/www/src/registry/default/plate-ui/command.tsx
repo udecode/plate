@@ -4,12 +4,19 @@ import * as React from 'react';
 
 import type { DialogProps } from '@radix-ui/react-dialog';
 
-import { cn, createPrimitiveElement, withCn, withRef } from '@udecode/cn';
+import {
+  cn,
+  createPrimitiveElement,
+  withCn,
+  withRef,
+  withVariants,
+} from '@udecode/cn';
 import { Command as CommandPrimitive } from 'cmdk';
 
 import { Icons } from '@/components/icons';
 
-import { Dialog, DialogContent } from './dialog';
+import { Dialog, DialogContent, DialogTitle } from './dialog';
+import { inputVariants } from './input';
 
 export const Command = withCn(
   CommandPrimitive,
@@ -20,6 +27,7 @@ export function CommandDialog({ children, ...props }: DialogProps) {
   return (
     <Dialog {...props}>
       <DialogContent className="overflow-hidden p-0 shadow-lg">
+        <DialogTitle className="sr-only">Command Dialog</DialogTitle>
         <Command className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:size-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:size-5">
           {children}
         </Command>
@@ -42,6 +50,12 @@ export const CommandInput = withRef<typeof CommandPrimitive.Input>(
       />
     </div>
   )
+);
+
+export const InputCommand = withVariants(
+  CommandPrimitive.Input,
+  inputVariants,
+  ['variant']
 );
 
 export const CommandList = withCn(

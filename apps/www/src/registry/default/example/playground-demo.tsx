@@ -72,9 +72,9 @@ import { settingsStore } from '@/components/context/settings-store';
 import { PlaygroundFixedToolbarButtons } from '@/components/plate-ui/playground-fixed-toolbar-buttons';
 import { PlaygroundFloatingToolbar } from '@/components/plate-ui/playground-floating-toolbar';
 import { PlaygroundFloatingToolbarButtons } from '@/components/plate-ui/playground-floating-toolbar-buttons';
-import { aiPlugins } from '@/lib/plate/demo/plugins/aiPlugin';
+import { aiPlugins } from '@/lib/plate/demo/plugins/ai-plugins';
 import { getAutoformatOptions } from '@/lib/plate/demo/plugins/autoformatOptions';
-import { copilotPlugin } from '@/lib/plate/demo/plugins/copilotPlugin';
+import { copilotPlugins } from '@/lib/plate/demo/plugins/copilotPlugin';
 import { createPlateUI } from '@/plate/create-plate-ui';
 import { editableProps } from '@/plate/demo/editableProps';
 import { isEnabled } from '@/plate/demo/is-enabled';
@@ -116,7 +116,7 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
 
   const editorId = id || 'playground-' + key;
 
-  const a = usePlateEditor(
+  return usePlateEditor(
     {
       id: editorId,
       override: {
@@ -127,9 +127,8 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         plugins: overridePlugins,
       },
       plugins: [
-        //ai
         ...aiPlugins,
-        copilotPlugin,
+        ...copilotPlugins,
         // Nodes
         HeadingPlugin,
         TocPlugin.configure({
@@ -328,7 +327,7 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
 
         // Deserialization
         DocxPlugin,
-        MarkdownPlugin,
+        MarkdownPlugin.configure({ options: { indentList: true } }),
         JuicePlugin,
         ColumnPlugin,
 
@@ -341,8 +340,6 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
     },
     []
   );
-
-  return a;
 };
 
 export default function PlaygroundDemo({

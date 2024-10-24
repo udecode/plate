@@ -1,91 +1,26 @@
 import { faker } from '@faker-js/faker';
-interface FakeStreamTextProps {
+
+interface Chunk {
+  delay: number;
   texts: string;
-  delay?: number;
 }
 
-export const fakerText = [
-  {
-    delay: 100,
-    texts: faker.lorem.words(1) + ' ',
-  },
-  {
-    delay: 80,
-    texts: faker.lorem.words(1) + ' ',
-  },
-  {
-    delay: 70,
-    texts: faker.lorem.words(1) + ' ',
-  },
-  {
-    delay: 90,
-    texts: faker.lorem.words(1) + ' ',
-  },
-  {
-    delay: 75,
-    texts: faker.lorem.words(1) + ' ',
-  },
-  {
-    delay: 85,
-    texts: faker.lorem.words(1) + ' ',
-  },
-  {
-    delay: 80,
-    texts: faker.lorem.words(1) + ' ',
-  },
-  {
-    delay: 70,
-    texts: faker.lorem.words(1) + ' ',
-  },
-  {
-    delay: 75,
-    texts: faker.lorem.words(1) + ' ',
-  },
-  {
-    delay: 80,
-    texts: faker.lorem.words(1) + ' ',
-  },
-  {
-    delay: 90,
-    texts: faker.lorem.words(1) + ' ',
-  },
-  {
-    delay: 75,
-    texts: faker.lorem.words(1) + ' ',
-  },
-  {
-    delay: 70,
-    texts: faker.lorem.words(1) + ' ',
-  },
-  {
-    delay: 85,
-    texts: faker.lorem.words(1) + ' ',
-  },
-  {
-    delay: 80,
-    texts: faker.lorem.words(1) + ' ',
-  },
-  {
-    delay: 90,
-    texts: faker.lorem.words(1) + ' ',
-  },
-  {
-    delay: 75,
-    texts: faker.lorem.words(1) + ' ',
-  },
-  {
-    delay: 70,
-    texts: faker.lorem.words(1) + ' ',
-  },
-];
+function getRandomChunks(count = 15): Chunk[] {
+  return Array.from({ length: count }, () => ({
+    delay: faker.number.int({ max: 150, min: 50 }),
+    texts: faker.lorem.words({ max: 3, min: 1 }) + ' ',
+  }));
+}
 
 export const fakeStreamText = ({
-  chunks = fakerText,
+  chunkCount = 15,
   streamProtocol = 'text',
 }: {
-  chunks?: FakeStreamTextProps[];
+  chunkCount?: number;
   streamProtocol?: 'data' | 'text';
 } = {}) => {
+  const chunks = getRandomChunks(chunkCount);
+
   return new ReadableStream({
     async start(controller) {
       for (const chunk of chunks) {

@@ -6,38 +6,81 @@ jsx;
 
 export const aiValue: any = (
   <fragment>
-    <hh1>AI</hh1>
     <hh2>AI Menu</hh2>
+    <hp>
+      The AI Menu provides powerful AI-assisted writing and editing
+      capabilities.
+    </hp>
+    <hp>Ways to access the AI Menu:</hp>
     <hp indent={1} listStyleType="decimal">
-      <htext>To trigger the AI menu, you can:</htext>
-    </hp>
-    <hp indent={2} listStyleType="disc">
-      <htext>Press the Space key on a new empty block</htext>
-    </hp>
-    <hp indent={2} listStyleType="disc">
-      <htext>Select text then click the AI icon in the floating toolbar</htext>
+      <htext>
+        Press space in an empty block or select text to see "Ask AI" in the
+        floating toolbar.
+      </htext>
     </hp>
     <hp indent={1} listStart={2} listStyleType="decimal">
-      <htext>
-        Type your prompt or question in the input field that appears.
-      </htext>
+      <htext>Press "⌘ + J".</htext>
     </hp>
     <hp indent={1} listStart={3} listStyleType="decimal">
-      <htext>Press Enter to submit your prompt and generate AI content.</htext>
+      <htext>Select text to access AI options for the selection.</htext>
     </hp>
-    <hp indent={1} listStart={4} listStyleType="decimal">
+    <hp>Using the AI Menu:</hp>
+    <hp indent={1} listStyleType="disc">
       <htext>
-        The AI will generate content based on your prompt. You can then:
+        Ask anything in the search bar or choose from preset options:
       </htext>
+      <hp indent={2} listStyleType="circle">
+        <htext>Continue writing</htext>
+      </hp>
+      <hp indent={2} listStyleType="circle">
+        <htext>Add a summary</htext>
+      </hp>
+      <hp indent={2} listStyleType="circle">
+        <htext>Explain</htext>
+      </hp>
     </hp>
-    <hp indent={2} listStyleType="disc">
-      <htext>Edit the generated content as needed</htext>
+    <hp indent={1} listStyleType="disc">
+      <htext>For generated content, you can:</htext>
+      <hp indent={2} listStyleType="circle">
+        <htext>Accept it (inserts directly into the editor)</htext>
+      </hp>
+      <hp indent={2} listStyleType="circle">
+        <htext>Discard it</htext>
+      </hp>
+      <hp indent={2} listStyleType="circle">
+        <htext>Try again for another suggestion</htext>
+      </hp>
     </hp>
-    <hp indent={2} listStyleType="disc">
-      <htext>Accept the content as is</htext>
+    <hp>AI options for selected text:</hp>
+    <hp indent={1} listStyleType="disc">
+      <htext>Improve writing</htext>
     </hp>
-    <hp indent={2} listStyleType="disc">
-      <htext>Regenerate the content with a different prompt</htext>
+    <hp indent={1} listStyleType="disc">
+      <htext>Make it longer or shorter</htext>
     </hp>
+    <hp indent={1} listStyleType="disc">
+      <htext>Fix spelling & grammar</htext>
+    </hp>
+    <hp indent={1} listStyleType="disc">
+      <htext>Simplify language</htext>
+    </hp>
+    <hp>For AI suggestions on selected text, you can:</hp>
+    <hp indent={1} listStyleType="disc">
+      <htext>Replace the selection</htext>
+    </hp>
+    <hp indent={1} listStyleType="disc">
+      <htext>Insert below</htext>
+    </hp>
+    <hp indent={1} listStyleType="disc">
+      <htext>Discard</htext>
+    </hp>
+    <hp indent={1} listStyleType="disc">
+      <htext>Try again</htext>
+    </hp>
+    <hcallout variant="info" icon="💡">
+      <htext>
+        Press Escape to close the AI menu or stop the AI generation process.
+      </htext>
+    </hcallout>
   </fragment>
 );

@@ -211,6 +211,7 @@ export const PROMPT_TEMPLATES = {
 
 export const aiPlugins = [
   SelectionOverlayPlugin,
+  MarkdownPlugin.configure({ options: { indentList: true } }),
   AIPlugin,
   AIChatPlugin.configure({
     options: {

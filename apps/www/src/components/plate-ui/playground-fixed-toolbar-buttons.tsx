@@ -68,7 +68,7 @@ export function PlaygroundFixedToolbarButtons() {
       >
         {!readOnly && (
           <>
-            <ToolbarGroup noSeparator>
+            <ToolbarGroup>
               {/* <AIToolbarButton>
                 <Icons.ai />
               </AIToolbarButton> */}
@@ -204,7 +204,7 @@ export function PlaygroundFixedToolbarButtons() {
 
         <div className="grow" />
 
-        <ToolbarGroup noSeparator>
+        <ToolbarGroup>
           <CheckPlugin id="comment" plugin={CommentsPlugin}>
             <CommentToolbarButton />
           </CheckPlugin>

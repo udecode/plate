@@ -47,7 +47,7 @@ export const AIChatEditor = memo(
 
     return (
       <Plate editor={aiEditor}>
-        <Editor readOnly />
+        <Editor variant="aiChat" readOnly />
       </Plate>
     );
   }

@@ -2,6 +2,14 @@ import * as React from 'react';
 
 import { AIChatPlugin, useEditorChat } from '@udecode/plate-ai/react';
 import {
+  type TElement,
+  type TNodeEntry,
+  getAncestorNode,
+  getBlocks,
+  isElementEmpty,
+  isSelectionAtBlockEnd,
+} from '@udecode/plate-common';
+import {
   type PlateEditor,
   toDOMNode,
   useEditorPlugin,
@@ -11,17 +19,12 @@ import {
   BlockSelectionPlugin,
   useIsSelecting,
 } from '@udecode/plate-selection/react';
-import { type TElement, type TNodeEntry, isElementEmpty } from '@udecode/slate';
-import {
-  getAncestorNode,
-  getBlocks,
-  isSelectionAtBlockEnd,
-} from '@udecode/slate-utils';
 import { useChat } from 'ai/react';
+import { Loader2Icon } from 'lucide-react';
 
 import { AIChatEditor } from './ai-chat-editor';
 import { AIMenuItems } from './ai-menu-items';
-import { Command, CommandInput, CommandList } from './command';
+import { Command, CommandList, InputCommand } from './command';
 import { Popover, PopoverAnchor, PopoverContent } from './popover';
 
 export function AIMenu() {
@@ -31,10 +34,11 @@ export function AIMenu() {
   const isSelecting = useIsSelecting();
 
   const aiEditorRef = React.useRef<PlateEditor | null>(null);
+  const [value, setValue] = React.useState('');
 
   const chat = useChat({
     id: 'editor',
-    api: 'api/ai',
+    api: '/api/ai',
   });
 
   const { input, isLoading, messages, setInput } = chat;
@@ -103,34 +107,42 @@ export function AIMenu() {
       <PopoverAnchor virtualRef={{ current: anchorElement }} />
 
       <PopoverContent
-        className="w-fit border-none p-0"
-        onEscapeKeyDown={() => {
-          api.aiChat.hide();
+        className="border-none bg-transparent p-0 shadow-none"
+        style={{
+          width: anchorElement?.offsetWidth,
         }}
-        onFocusOutside={() => {
-          api.aiChat.hide();
-        }}
-        align="start"
+        align="center"
         avoidCollisions={false}
-        contentEditable={false}
         side="bottom"
       >
-        <Command className="rounded-lg border shadow-md md:min-w-[450px]">
+        <Command
+          className="w-full rounded-lg border shadow-md"
+          value={value}
+          onValueChange={setValue}
+        >
           {mode === 'chat' && isSelecting && messages.length > 0 && (
             <AIChatEditor aiEditorRef={aiEditorRef} />
           )}
 
           {isLoading ? (
-            <div className="flex grow select-none items-center gap-2 py-2 text-muted-foreground">
-              {messages.length > 1 ? 'Editing' : 'Thinking'}
+            <div className="flex grow select-none items-center gap-2 p-2 text-sm text-muted-foreground">
+              <Loader2Icon className="size-4 animate-spin" />
+              {messages.length > 1 ? 'Editing...' : 'Thinking...'}
             </div>
           ) : (
-            <CommandInput placeholder="Type a command or search..." />
+            <InputCommand
+              variant="ghost"
+              className="rounded-none border-b border-solid border-border [&_svg]:hidden"
+              value={input}
+              onValueChange={setInput}
+              placeholder="Ask AI anything..."
+              autoFocus
+            />
           )}
 
           {!isLoading && (
             <CommandList>
-              <AIMenuItems aiEditorRef={aiEditorRef} />
+              <AIMenuItems aiEditorRef={aiEditorRef} setValue={setValue} />
             </CommandList>
           )}
         </Command>

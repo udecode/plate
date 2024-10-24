@@ -21838,6 +21838,7 @@ __metadata:
     "@radix-ui/react-toggle-group": "npm:^1.1.0"
     "@radix-ui/react-toolbar": "npm:^1.1.0"
     "@radix-ui/react-tooltip": "npm:^1.1.2"
+    "@radix-ui/react-visually-hidden": "npm:1.1.0"
     "@shikijs/compat": "npm:^1.17.5"
     "@types/lodash.template": "npm:^4.5.3"
     "@types/react-color": "npm:^3.0.12"

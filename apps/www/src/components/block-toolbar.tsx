@@ -6,11 +6,11 @@ import type { Block } from '@/registry/schema';
 import type { ImperativePanelHandle } from 'react-resizable-panels';
 
 import { Monitor, Smartphone, Tablet } from 'lucide-react';
+import Link from 'next/link';
 
 import { Button } from '@/registry/default/plate-ui/button';
 import { Separator } from '@/registry/default/plate-ui/separator';
 
-import { Link } from './link';
 import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
 
 export function BlockToolbar({

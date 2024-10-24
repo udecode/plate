@@ -1,5 +1,6 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
+import { AIChatPlugin } from '@udecode/plate-ai/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { ParagraphPlugin, useEditorPlugin } from '@udecode/plate-core/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
@@ -14,7 +15,6 @@ import { focusEditor } from '@udecode/slate-react';
 
 import {
   ContextMenu,
-  ContextMenuCheckboxItem,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuSeparator,
@@ -25,10 +25,11 @@ import {
   ContextMenuTrigger,
 } from './context-menu';
 
-export const BlockContextMenu = (props: { children: React.ReactNode }) => {
-  const { api, editor } = useEditorPlugin(BlockMenuPlugin);
+type Value = 'askAI' | null;
 
-  const { children } = props;
+export function BlockContextMenu({ children }: { children: React.ReactNode }) {
+  const { api, editor } = useEditorPlugin(BlockMenuPlugin);
+  const [value, setValue] = useState<Value>(null);
 
   const handleTurnInto = useCallback(
     (type: string) => {
@@ -56,7 +57,7 @@ export const BlockContextMenu = (props: { children: React.ReactNode }) => {
   );
 
   return (
-    <ContextMenu>
+    <ContextMenu modal={false}>
       <ContextMenuTrigger
         onContextMenu={(event) => {
           const dataset = (event.target as HTMLElement).dataset;
@@ -73,8 +74,25 @@ export const BlockContextMenu = (props: { children: React.ReactNode }) => {
       >
         {children}
       </ContextMenuTrigger>
-      <ContextMenuContent className="w-64">
-        {/* <ContextMenuItem inset>Ask AI</ContextMenuItem> */}
+      <ContextMenuContent
+        className="w-64"
+        onCloseAutoFocus={(e) => {
+          e.preventDefault();
+
+          if (value === 'askAI') {
+            editor.getApi(AIChatPlugin).aiChat.show();
+          }
+
+          setValue(null);
+        }}
+      >
+        <ContextMenuItem
+          onClick={() => {
+            setValue('askAI');
+          }}
+        >
+          Ask AI
+        </ContextMenuItem>
         <ContextMenuItem
           onClick={() => {
             editor
@@ -82,7 +100,6 @@ export const BlockContextMenu = (props: { children: React.ReactNode }) => {
               .blockSelection.removeNodes();
             focusEditor(editor);
           }}
-          inset
         >
           Delete
         </ContextMenuItem>
@@ -94,13 +111,12 @@ export const BlockContextMenu = (props: { children: React.ReactNode }) => {
                 editor.getApi(BlockSelectionPlugin).blockSelection.getNodes()
               );
           }}
-          inset
         >
           Duplicate
           <ContextMenuShortcut>⌘ + D</ContextMenuShortcut>
         </ContextMenuItem>
         <ContextMenuSub>
-          <ContextMenuSubTrigger inset>Turn into</ContextMenuSubTrigger>
+          <ContextMenuSubTrigger>Turn into</ContextMenuSubTrigger>
           <ContextMenuSubContent className="w-48">
             <ContextMenuItem
               onClick={() => handleTurnInto(ParagraphPlugin.key)}
@@ -125,7 +141,7 @@ export const BlockContextMenu = (props: { children: React.ReactNode }) => {
           </ContextMenuSubContent>
         </ContextMenuSub>
         <ContextMenuSeparator />
-        <ContextMenuCheckboxItem
+        <ContextMenuItem
           onClick={() =>
             editor
               .getTransforms(BlockSelectionPlugin)
@@ -133,8 +149,8 @@ export const BlockContextMenu = (props: { children: React.ReactNode }) => {
           }
         >
           Indent
-        </ContextMenuCheckboxItem>
-        <ContextMenuCheckboxItem
+        </ContextMenuItem>
+        <ContextMenuItem
           onClick={() =>
             editor
               .getTransforms(BlockSelectionPlugin)
@@ -142,9 +158,9 @@ export const BlockContextMenu = (props: { children: React.ReactNode }) => {
           }
         >
           Outdent
-        </ContextMenuCheckboxItem>
+        </ContextMenuItem>
         <ContextMenuSub>
-          <ContextMenuSubTrigger inset>Align</ContextMenuSubTrigger>
+          <ContextMenuSubTrigger>Align</ContextMenuSubTrigger>
           <ContextMenuSubContent className="w-48">
             <ContextMenuItem onClick={() => handleAlign('left')}>
               Left
@@ -160,4 +176,4 @@ export const BlockContextMenu = (props: { children: React.ReactNode }) => {
       </ContextMenuContent>
     </ContextMenu>
   );
-};
+}

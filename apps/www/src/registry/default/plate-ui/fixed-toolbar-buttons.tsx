@@ -30,7 +30,7 @@ export function FixedToolbarButtons() {
       >
         {!readOnly && (
           <>
-            <ToolbarGroup noSeparator>
+            <ToolbarGroup>
               <InsertDropdownMenu />
               <TurnIntoDropdownMenu />
             </ToolbarGroup>
@@ -67,7 +67,7 @@ export function FixedToolbarButtons() {
 
         <div className="grow" />
 
-        <ToolbarGroup noSeparator>
+        <ToolbarGroup>
           <ModeDropdownMenu />
         </ToolbarGroup>
       </div>

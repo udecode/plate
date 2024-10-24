@@ -9,6 +9,28 @@ export const ui: Registry = [
     type: 'registry:ui',
   },
   {
+    dependencies: [
+      '@udecode/plate-ai',
+      '@udecode/plate-markdown',
+      '@udecode/plate-selection',
+    ],
+    files: [
+      'plate-ui/ai-menu.tsx',
+      'plate-ui/ai-chat-editor.tsx',
+      'plate-ui/ai-menu-items.tsx',
+    ],
+    name: 'ai-menu',
+    registryDependencies: ['button', 'menu', 'textarea', 'editor'],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: [],
+    files: ['plate-ui/ai-toolbar-button.tsx'],
+    name: 'ai-toolbar-button',
+    registryDependencies: ['toolbar'],
+    type: 'registry:ui',
+  },
+  {
     dependencies: ['@udecode/plate-selection'],
     files: ['plate-ui/block-selection.tsx'],
     name: 'block-selection',
@@ -240,7 +262,7 @@ export const ui: Registry = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@radix-ui/react-dialog'],
+    dependencies: ['@radix-ui/react-dialog', '@radix-ui/react-visually-hidden'],
     files: ['plate-ui/dialog.tsx'],
     name: 'dialog',
     registryDependencies: [],
