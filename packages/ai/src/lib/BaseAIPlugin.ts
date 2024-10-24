@@ -25,19 +25,6 @@ export type BaseAIPluginConfig = PluginConfig<
 
 export const BaseAIPlugin = createTSlatePlugin({
   key: 'ai',
-  extendEditor: ({ editor }) => {
-    const { apply } = editor;
-
-    editor.apply = (op) => {
-      console.log(op);
-
-      console.log(editor.history);
-
-      apply(op);
-    };
-
-    return editor;
-  },
   node: { isLeaf: true },
 }).extendTransforms(({ editor }) => ({
   insertNodes: bindFirst(insertAINodes, editor),
