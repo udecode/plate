@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "@ariakit/react": "0.4.11",
+    "@faker-js/faker": "^9.0.2",
     "@next/third-parties": "15.0.0",
     "@radix-ui/colors": "3.0.0",
     "@radix-ui/react-accessible-icon": "^1.1.0",

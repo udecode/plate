@@ -7,7 +7,6 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import type { ValueId } from '@/config/customizer-plugins';
 
 import { cn } from '@udecode/cn';
-import { AIChatPlugin, AIPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
@@ -73,6 +72,7 @@ import { settingsStore } from '@/components/context/settings-store';
 import { PlaygroundFixedToolbarButtons } from '@/components/plate-ui/playground-fixed-toolbar-buttons';
 import { PlaygroundFloatingToolbar } from '@/components/plate-ui/playground-floating-toolbar';
 import { PlaygroundFloatingToolbarButtons } from '@/components/plate-ui/playground-floating-toolbar-buttons';
+import { aiPlugins } from '@/lib/plate/demo/plugins/aiPlugin';
 import { getAutoformatOptions } from '@/lib/plate/demo/plugins/autoformatOptions';
 import { copilotPlugin } from '@/lib/plate/demo/plugins/copilotPlugin';
 import { createPlateUI } from '@/plate/create-plate-ui';
@@ -85,7 +85,6 @@ import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
 import { commentsData, usersData } from '@/plate/demo/values/commentsValue';
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
-import { AIMenu } from '@/registry/default/plate-ui/ai-menu';
 import { BlockContextMenu } from '@/registry/default/plate-ui/block-context-menu';
 import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
 import {
@@ -129,10 +128,7 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
       },
       plugins: [
         //ai
-        AIPlugin,
-        AIChatPlugin.configure({
-          render: { afterEditable: () => <AIMenu /> },
-        }),
+        ...aiPlugins,
         copilotPlugin,
         // Nodes
         HeadingPlugin,

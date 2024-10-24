@@ -2,11 +2,15 @@ import * as React from 'react';
 
 import { AIChatPlugin, useEditorChat } from '@udecode/plate-ai/react';
 import {
+  type PlateEditor,
   toDOMNode,
   useEditorPlugin,
   useHotkeys,
 } from '@udecode/plate-common/react';
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import {
+  BlockSelectionPlugin,
+  useIsSelecting,
+} from '@udecode/plate-selection/react';
 import { type TElement, type TNodeEntry, isElementEmpty } from '@udecode/slate';
 import {
   getAncestorNode,
@@ -14,34 +18,23 @@ import {
   isSelectionAtBlockEnd,
 } from '@udecode/slate-utils';
 import { useChat } from 'ai/react';
-import {
-  Calculator,
-  Calendar,
-  CreditCard,
-  Settings,
-  Smile,
-  User,
-} from 'lucide-react';
 
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-  CommandShortcut,
-} from './command';
+import { AIChatEditor } from './ai-chat-editor';
+import { AIMenuItems } from './ai-menu-items';
+import { Command, CommandInput, CommandList } from './command';
 import { Popover, PopoverAnchor, PopoverContent } from './popover';
 
 export function AIMenu() {
   const { api, editor, useOption } = useEditorPlugin(AIChatPlugin);
   const open = useOption('open');
+  const mode = useOption('mode');
+  const isSelecting = useIsSelecting();
+
+  const aiEditorRef = React.useRef<PlateEditor | null>(null);
 
   const chat = useChat({
     id: 'editor',
-    api: 'https://pro.platejs.org/api/ai/command',
+    api: 'api/ai',
   });
   const { input, isLoading, messages, setInput } = chat;
   const [anchorElement, setAnchorElement] = React.useState<HTMLElement | null>(
@@ -109,48 +102,26 @@ export function AIMenu() {
       <PopoverAnchor virtualRef={{ current: anchorElement }} />
 
       <PopoverContent
-        className="w-[200px] bg-popover p-0"
+        className="w-fit border-none p-0"
+        onEscapeKeyDown={(e) => {
+          api.aiChat.hide();
+        }}
+        onFocusOutside={(e) => {
+          api.aiChat.hide();
+        }}
         align="start"
         avoidCollisions={false}
         contentEditable={false}
         side="bottom"
       >
         <Command className="rounded-lg border shadow-md md:min-w-[450px]">
+          {mode === 'chat' && isSelecting && messages.length > 0 && (
+            <AIChatEditor aiEditorRef={aiEditorRef} />
+          )}
+
           <CommandInput placeholder="Type a command or search..." />
           <CommandList>
-            <CommandEmpty>No results found.</CommandEmpty>
-            <CommandGroup heading="Suggestions">
-              <CommandItem>
-                <Calendar className="mr-2 size-4" />
-                <span>Calendar</span>
-              </CommandItem>
-              <CommandItem>
-                <Smile className="mr-2 size-4" />
-                <span>Search Emoji</span>
-              </CommandItem>
-              <CommandItem disabled>
-                <Calculator className="mr-2 size-4" />
-                <span>Calculator</span>
-              </CommandItem>
-            </CommandGroup>
-            <CommandSeparator />
-            <CommandGroup heading="Settings">
-              <CommandItem>
-                <User className="mr-2 size-4" />
-                <span>Profile</span>
-                <CommandShortcut>⌘P</CommandShortcut>
-              </CommandItem>
-              <CommandItem>
-                <CreditCard className="mr-2 size-4" />
-                <span>Billing</span>
-                <CommandShortcut>⌘B</CommandShortcut>
-              </CommandItem>
-              <CommandItem>
-                <Settings className="mr-2 size-4" />
-                <span>Settings</span>
-                <CommandShortcut>⌘S</CommandShortcut>
-              </CommandItem>
-            </CommandGroup>
+            <AIMenuItems aiEditorRef={aiEditorRef} />
           </CommandList>
         </Command>
       </PopoverContent>

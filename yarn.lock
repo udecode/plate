@@ -1688,6 +1688,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@faker-js/faker@npm:^9.0.2":
+  version: 9.0.3
+  resolution: "@faker-js/faker@npm:9.0.3"
+  checksum: 10c0/fde52946e7042e6273cf2ea3726a8a4b794c5b0fa8ac22cb9edcc5c436aec1b07fcb925e13abd663e86cd35d0286be0c65639d429b21bcd458205edaaa6394d0
+  languageName: node
+  linkType: hard
+
 "@fal-works/esbuild-plugin-global-externals@npm:^2.1.2":
   version: 2.1.2
   resolution: "@fal-works/esbuild-plugin-global-externals@npm:2.1.2"
@@ -21785,6 +21792,7 @@ __metadata:
   resolution: "www@workspace:apps/www"
   dependencies:
     "@ariakit/react": "npm:0.4.11"
+    "@faker-js/faker": "npm:^9.0.2"
     "@next/third-parties": "npm:15.0.0"
     "@radix-ui/colors": "npm:3.0.0"
     "@radix-ui/react-accessible-icon": "npm:^1.1.0"
