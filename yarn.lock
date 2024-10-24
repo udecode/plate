@@ -16173,14 +16173,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nuqs@npm:^1.19.1":
-  version: 1.20.0
-  resolution: "nuqs@npm:1.20.0"
+"nuqs@npm:^2.0.3":
+  version: 2.0.3
+  resolution: "nuqs@npm:2.0.3"
   dependencies:
     mitt: "npm:^3.0.1"
   peerDependencies:
-    next: ">=13.4 <14.0.2 || ^14.0.3"
-  checksum: 10c0/8e1b67a96c6fda21023924db03b31f3eecf387097ee23685f35fbd1118ff202d1f8f3efd5e1e45bb5736e701a13da0d6cefc98cbe813315dc6462c2e38e2c93f
+    "@remix-run/react": ">= 2"
+    next: ">= 14.2.0"
+    react: ">= 18.2.0"
+    react-router-dom: ">= 6"
+  peerDependenciesMeta:
+    "@remix-run/react":
+      optional: true
+    next:
+      optional: true
+    react-router-dom:
+      optional: true
+  checksum: 10c0/d37b95e10738d58351209518d19ba72a1e08733405b39dbcd64e9b28092ca627983506aa4a9f8504f51c2c729323c8fdfc3bf00cc8360e9b1e9bc85fcb44fba0
   languageName: node
   linkType: hard
 
@@ -21891,7 +21901,7 @@ __metadata:
     next: "npm:15.0.0"
     next-contentlayer2: "npm:^0.4.6"
     next-themes: "npm:^0.3.0"
-    nuqs: "npm:^1.19.1"
+    nuqs: "npm:^2.0.3"
     postcss: "npm:^8.4.45"
     prismjs: "npm:^1.29.0"
     puppeteer: "npm:^23.6.0"

@@ -3,6 +3,7 @@ import React from 'react';
 import type { Metadata, Viewport } from 'next';
 
 import { cn } from '@udecode/cn';
+import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
 import { GA } from '@/components/analytics/ga';
 import { Providers } from '@/components/context/providers';
@@ -91,13 +92,16 @@ export default function RootLayout({ children }: RootLayoutProps) {
         )}
         suppressHydrationWarning
       >
-        <Providers>
-          <div vaul-drawer-wrapper="">
-            <div className="relative flex min-h-screen flex-col bg-background">
-              {children}
+        <NuqsAdapter>
+          <Providers>
+            <div vaul-drawer-wrapper="">
+              <div className="relative flex min-h-screen flex-col bg-background">
+                {children}
+              </div>
             </div>
-          </div>
-        </Providers>
+          </Providers>
+        </NuqsAdapter>
+
         <TailwindIndicator />
 
         <GA />

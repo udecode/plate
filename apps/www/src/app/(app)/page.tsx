@@ -54,7 +54,9 @@ export default function IndexPage() {
       </div>
 
       <section className="relative">
-        <HomeTabs />
+        <React.Suspense fallback={null}>
+          <HomeTabs />
+        </React.Suspense>
 
         <CustomizerDrawer />
       </section>
