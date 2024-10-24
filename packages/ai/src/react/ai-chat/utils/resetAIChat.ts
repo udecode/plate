@@ -13,8 +13,8 @@ export const resetAIChat = (editor: PlateEditor) => {
 
   const chat = getOptions().chat;
 
-  if (chat.messages.length > 0) {
-    chat.setMessages([]);
+  if (chat.messages && chat.messages.length > 0) {
+    chat.setMessages?.([]);
   }
 
   editor.getTransforms(AIPlugin).ai.removeNodes();

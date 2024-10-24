@@ -13,5 +13,5 @@ export function useLastAssistantMessage() {
 
   const chat = editor.useOption(AIChatPlugin, 'chat');
 
-  return chat.messages.findLast((message) => message.role === 'assistant');
+  return chat.messages?.findLast((message) => message.role === 'assistant');
 }

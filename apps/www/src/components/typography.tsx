@@ -5,7 +5,6 @@ import type { Style } from '@/registry/registry-styles';
 import type { NpmCommands } from '@/types/unist';
 
 import { cn } from '@udecode/cn';
-import { ArrowUpRight } from 'lucide-react';
 
 import { CopyButton, CopyNpmCommandButton } from './copy-button';
 import { StyleWrapper } from './style-wrapper';

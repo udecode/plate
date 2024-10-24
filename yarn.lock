@@ -21875,6 +21875,7 @@ __metadata:
     "@udecode/slate-utils": "workspace:^"
     "@udecode/utils": "workspace:^"
     "@vercel/og": "npm:^0.6.2"
+    ai: "npm:^3.4.10"
     autoprefixer: "npm:^10.4.20"
     class-variance-authority: "npm:^0.7.0"
     cmdk: "npm:^1.0.0"

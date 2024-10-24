@@ -1,87 +1,117 @@
 import * as React from 'react';
 
-import {
-  type NodeWrapperComponent,
-  useEditorPlugin,
-  useElement,
-} from '@udecode/plate-common/react';
-
-export const renderAIAboveNodes: NodeWrapperComponent<any> = () => AIPopover;
-
 import { AIChatPlugin, useEditorChat } from '@udecode/plate-ai/react';
-import { getAncestorNode } from '@udecode/plate-common';
 import {
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-} from 'cmdk';
+  toDOMNode,
+  useEditorPlugin,
+  useHotkeys,
+} from '@udecode/plate-common/react';
+import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import { type TElement, type TNodeEntry, isElementEmpty } from '@udecode/slate';
+import {
+  getAncestorNode,
+  getBlocks,
+  isSelectionAtBlockEnd,
+} from '@udecode/slate-utils';
+import { useChat } from 'ai/react';
 import {
   Calculator,
   Calendar,
-  Command,
   CreditCard,
   Settings,
   Smile,
   User,
 } from 'lucide-react';
 
-import { CommandShortcut } from './command';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+  CommandShortcut,
+} from './command';
 import { Popover, PopoverAnchor, PopoverContent } from './popover';
 
-const AIPopover = ({ children, element }: { children: React.ReactNode, element: any }) => {
+export function AIMenu() {
   const { api, editor, useOption } = useEditorPlugin(AIChatPlugin);
-  const isOpen = useOption('open');
-  console.log("🚀 ~ AIPopover ~ isOpen:", isOpen)
+  const open = useOption('open');
 
+  const chat = useChat({
+    id: 'editor',
+    api: 'https://pro.platejs.org/api/ai/command',
+  });
+  const { input, isLoading, messages, setInput } = chat;
+  const [anchorElement, setAnchorElement] = React.useState<HTMLElement | null>(
+    null
+  );
 
-  // const chat = useChat({
-  //   id: 'editor',
-  //   api: '/api/ai/command',
-  // });
-  // const { input, isLoading, messages, setInput } = chat;
+  const setOpen = (open: boolean) => {
+    if (open) {
+      api.aiChat.show();
+    } else {
+      api.aiChat.hide();
+    }
+  };
 
+  const show = (anchorElement: HTMLElement) => {
+    setAnchorElement(anchorElement);
+    setOpen(true);
+  };
 
-  // useEditorChat({
-  //   chat,
-  //   onOpenBlockSelection: (blocks: TNodeEntry[]) => {
-  //   },
-  //   onOpenChange: (open) => {
-  //   },
-  //   onOpenCursor: () => {
-  //   },
-  //   onOpenSelection: () => {
-  //   },
-  // });
+  useEditorChat({
+    chat,
+    onOpenBlockSelection: (blocks: TNodeEntry[]) => {
+      show(toDOMNode(editor, blocks.at(-1)![0])!);
+    },
+    onOpenChange: (open) => {
+      if (!open) {
+        setAnchorElement(null);
+        setInput('');
+      }
+    },
+    onOpenCursor: () => {
+      const ancestor = getAncestorNode(editor)?.[0] as TElement;
 
+      if (!isSelectionAtBlockEnd(editor) && !isElementEmpty(editor, ancestor)) {
+        editor
+          .getApi(BlockSelectionPlugin)
+          .blockSelection.addSelectedRow(ancestor.id as string);
+      }
 
-  const anchorId = React.useMemo(() => {
-    if (!isOpen) return null;
+      show(toDOMNode(editor, ancestor)!);
+    },
+    onOpenSelection: () => {
+      show(toDOMNode(editor, getBlocks(editor).at(-1)![0])!);
+    },
+  });
 
-    const ancestorNode = getAncestorNode(editor)!;
-    // console.log('🚀 ~ anchorId ~ ancestorNode:', ancestorNode);
+  useHotkeys(
+    'meta+j',
+    () => {
+      api.aiChat.show();
+    },
+    { enableOnContentEditable: true, enableOnFormTags: true }
+  );
 
-    return ancestorNode?.[0]?.id;
-  }, [editor, isOpen]);
-
-  console.log('🚀 ~ anchorId:', anchorId);
-
-  if (anchorId !== element.id) return children;
+  useHotkeys('escape', () => {
+    if (isLoading) {
+      api.aiChat.stop();
+    } else {
+      api.aiChat.hide();
+    }
+  });
 
   return (
-    <Popover open={isOpen} modal={false}>
-      <PopoverAnchor>{children}</PopoverAnchor>
+    <Popover open={open} onOpenChange={setOpen} modal={false}>
+      <PopoverAnchor virtualRef={{ current: anchorElement }} />
+
       <PopoverContent
-        className="w-[200px] p-0"
-        onEscapeKeyDown={() => {
-          // api.ai.dismiss();
-        }}
-        onFocusOutside={() => {
-          // api.ai.dismiss();
-        }}
+        className="w-[200px] bg-popover p-0"
         align="start"
+        avoidCollisions={false}
         contentEditable={false}
         side="bottom"
       >
@@ -126,4 +156,4 @@ const AIPopover = ({ children, element }: { children: React.ReactNode, element: 
       </PopoverContent>
     </Popover>
   );
-};
+}

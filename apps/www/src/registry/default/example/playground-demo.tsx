@@ -85,7 +85,7 @@ import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
 import { commentsData, usersData } from '@/plate/demo/values/commentsValue';
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
-import { renderAIAboveNodes } from '@/registry/default/plate-ui/ai-menu';
+import { AIMenu } from '@/registry/default/plate-ui/ai-menu';
 import { BlockContextMenu } from '@/registry/default/plate-ui/block-context-menu';
 import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
 import {
@@ -131,9 +131,7 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         //ai
         AIPlugin,
         AIChatPlugin.configure({
-          render: {
-            aboveNodes: renderAIAboveNodes,
-          },
+          render: { afterEditable: () => <AIMenu /> },
         }),
         copilotPlugin,
         // Nodes

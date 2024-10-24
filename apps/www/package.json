@@ -131,6 +131,7 @@
     "@udecode/slate-utils": "workspace:^",
     "@udecode/utils": "workspace:^",
     "@vercel/og": "^0.6.2",
+    "ai": "^3.4.10",
     "class-variance-authority": "^0.7.0",
     "cmdk": "^1.0.0",
     "contentlayer2": "^0.4.6",
