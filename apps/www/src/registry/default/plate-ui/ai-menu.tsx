@@ -104,10 +104,10 @@ export function AIMenu() {
 
       <PopoverContent
         className="w-fit border-none p-0"
-        onEscapeKeyDown={(e) => {
+        onEscapeKeyDown={() => {
           api.aiChat.hide();
         }}
-        onFocusOutside={(e) => {
+        onFocusOutside={() => {
           api.aiChat.hide();
         }}
         align="start"
@@ -120,10 +120,19 @@ export function AIMenu() {
             <AIChatEditor aiEditorRef={aiEditorRef} />
           )}
 
-          <CommandInput placeholder="Type a command or search..." />
-          <CommandList>
-            <AIMenuItems aiEditorRef={aiEditorRef} />
-          </CommandList>
+          {isLoading ? (
+            <div className="flex grow select-none items-center gap-2 py-2 text-muted-foreground">
+              {messages.length > 1 ? 'Editing' : 'Thinking'}
+            </div>
+          ) : (
+            <CommandInput placeholder="Type a command or search..." />
+          )}
+
+          {!isLoading && (
+            <CommandList>
+              <AIMenuItems aiEditorRef={aiEditorRef} />
+            </CommandList>
+          )}
         </Command>
       </PopoverContent>
     </Popover>

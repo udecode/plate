@@ -24,7 +24,10 @@ export const submitAIChat = (
       key: 'aiChat',
     }
   );
+
   const { chat, promptTemplate, systemTemplate } = getOptions();
+
+  console.log('🚀 ~ mode:', mode);
 
   if (!prompt && chat.input?.length === 0) {
     return;
