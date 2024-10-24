@@ -25,11 +25,23 @@ export type BaseAIPluginConfig = PluginConfig<
 
 export const BaseAIPlugin = createTSlatePlugin({
   key: 'ai',
+  extendEditor: ({ editor }) => {
+    const { apply } = editor;
+
+    editor.apply = (op) => {
+      console.log(op);
+
+      console.log(editor.history);
+
+      apply(op);
+    };
+
+    return editor;
+  },
   node: { isLeaf: true },
-})
-  .extendTransforms(({ editor }) => ({
-    insertNodes: bindFirst(insertAINodes, editor),
-    removeMarks: bindFirst(removeAIMarks, editor),
-    removeNodes: bindFirst(removeAINodes, editor),
-    undo: bindFirst(undoAI, editor),
-  }))
+}).extendTransforms(({ editor }) => ({
+  insertNodes: bindFirst(insertAINodes, editor),
+  removeMarks: bindFirst(removeAIMarks, editor),
+  removeNodes: bindFirst(removeAINodes, editor),
+  undo: bindFirst(undoAI, editor),
+}));
