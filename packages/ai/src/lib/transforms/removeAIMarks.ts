@@ -1,6 +1,6 @@
 import type { Location } from 'slate';
 
-import { type SlateEditor, getRange, removeMark } from '@udecode/plate-common';
+import { type SlateEditor, unsetNodes } from '@udecode/plate-common';
 
 import { AIPlugin } from '../../react/ai/AIPlugin';
 
@@ -8,8 +8,8 @@ export const removeAIMarks = (
   editor: SlateEditor,
   { at = [] }: { at?: Location } = {}
 ) => {
-  removeMark(editor, {
-    key: AIPlugin.key,
-    at: getRange(editor, at),
+  unsetNodes(editor, AIPlugin.key, {
+    at,
+    match: (n) => (n as any)[AIPlugin.key],
   });
 };
