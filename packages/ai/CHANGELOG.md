@@ -1,5 +1,11 @@
 # @udecode/plate-ai
 
+## 39.2.8
+
+### Patch Changes
+
+- [`1953d4173ce99b111c707a4efbe53a73bd99c823`](https://github.com/udecode/plate/commit/1953d4173ce99b111c707a4efbe53a73bd99c823) by [@zbeyens](https://github.com/zbeyens) – fix
+
 ## 39.2.7
 
 ### Patch Changes
