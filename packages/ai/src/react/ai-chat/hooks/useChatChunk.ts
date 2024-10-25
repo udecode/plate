@@ -39,12 +39,12 @@ export const useChatChunk = ({
     }
 
     const chunk = content.slice(insertedTextRef.current.length);
-    const isFirst = insertedTextRef.current === '';
-    insertedTextRef.current = content;
 
     const nodes: TText[] = [];
 
     if (chunk) {
+      const isFirst = insertedTextRef.current === '';
+
       nodes.push({ text: chunk });
       onChunk({
         isFirst,
@@ -53,6 +53,7 @@ export const useChatChunk = ({
       });
     }
 
+    insertedTextRef.current = content;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [content]);
 };
