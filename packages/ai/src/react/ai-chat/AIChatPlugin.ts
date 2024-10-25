@@ -14,6 +14,8 @@ import {
 } from '@udecode/plate-common/react';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 
+import type { AIBatch } from '../../lib';
+
 import { AIPlugin } from '../ai/AIPlugin';
 import { acceptAIChat } from './transforms/acceptAIChat';
 import { insertBelowAIChat } from './transforms/insertBelowAIChat';
@@ -138,6 +140,12 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
         // editor.getApi(BlockSelectionPlugin).blockSelection.focus();
       } else {
         focusEditor(editor);
+      }
+
+      const lastBatch = editor.history.undos.at(-1) as AIBatch;
+
+      if (lastBatch?.ai) {
+        delete lastBatch.ai;
       }
     },
     show: () => {

@@ -1,5 +1,17 @@
 # @udecode/plate-ai
 
+## 39.2.7
+
+### Patch Changes
+
+- [`6a2b3af07b2e14a7906e838dbd843fe3490fd82c`](https://github.com/udecode/plate/commit/6a2b3af07b2e14a7906e838dbd843fe3490fd82c) by [@zbeyens](https://github.com/zbeyens) – Fix undo after accept
+
+## 39.2.6
+
+### Patch Changes
+
+- [`b5dfdc1c3f4cb760685b61e3925e82ff894cf4ab`](https://github.com/udecode/plate/commit/b5dfdc1c3f4cb760685b61e3925e82ff894cf4ab) by [@zbeyens](https://github.com/zbeyens) – fix accept + undo
+
 ## 39.2.5
 
 ### Patch Changes

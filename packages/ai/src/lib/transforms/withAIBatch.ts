@@ -1,8 +1,11 @@
 import {
+  type History,
   type SlateEditor,
   withMerging,
   withNewBatch,
 } from '@udecode/plate-common';
+
+export type AIBatch = History['undos'][number] & { ai?: boolean };
 
 export const withAIBatch = (
   editor: SlateEditor,
@@ -13,15 +16,15 @@ export const withAIBatch = (
     split?: boolean;
   } = {}
 ) => {
-  if (!split && (editor.history.undos?.at(-1) as any)?.ai) {
+  const lastBatch = editor.history.undos?.at(-1) as AIBatch | undefined;
+
+  if (!split && lastBatch?.ai) {
     withMerging(editor, fn);
   } else {
     withNewBatch(editor, fn);
 
-    const batch = editor.history.undos?.at(-1) as any;
-
-    if (batch) {
-      batch.ai = true;
+    if (lastBatch) {
+      lastBatch.ai = true;
     }
   }
 };
