@@ -1,5 +1,11 @@
 # @udecode/plate-cursor
 
+## 39.2.11
+
+### Patch Changes
+
+- [#3666](https://github.com/udecode/plate/pull/3666) by [@felixfeng33](https://github.com/felixfeng33) – Fix overlay position when there a fixed height of editor.
+
 ## 39.0.0
 
 ## 38.0.0
