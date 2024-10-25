@@ -2,6 +2,7 @@
 
 import React, { useRef } from 'react';
 import { cn, withProps } from '@udecode/cn';
+import { AIPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
@@ -132,6 +133,7 @@ import { TableRowElement } from '@/components/plate-ui/table-row-element';
 import { TodoListElement } from '@/components/plate-ui/todo-list-element';
 import { withDraggables } from '@/components/plate-ui/with-draggables';
 
+import { AILeaf } from './plate-ui/ai-leaf';
 import { BlockContextMenu } from './plate-ui/block-context-menu';
 import { DateElement } from './plate-ui/date-element';
 import { SlashInputElement } from './plate-ui/slash-input-element';
@@ -435,6 +437,7 @@ export const useMyEditor = () => {
     override: {
       components: withDraggables(
         withPlaceholders({
+          [AIPlugin.key]: AILeaf,
           [DatePlugin.key]: DateElement,
           [SlashInputPlugin.key]: SlashInputElement,
           [TogglePlugin.key]: ToggleElement,
