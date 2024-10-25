@@ -44,7 +44,7 @@ export function AIMenu() {
     // Mock the API response. Remove it when you implement the route /api/ai
     fetch: async () => {
       await new Promise((resolve) => setTimeout(resolve, 400));
-      
+
       const stream = fakeStreamText();
 
       return new Response(stream, {
@@ -109,14 +109,6 @@ export function AIMenu() {
     { enableOnContentEditable: true, enableOnFormTags: true }
   );
 
-  useHotkeys('escape', () => {
-    if (isLoading) {
-      api.aiChat.stop();
-    } else {
-      api.aiChat.hide();
-    }
-  });
-
   return (
     <Popover open={open} onOpenChange={setOpen} modal={false}>
       <PopoverAnchor virtualRef={{ current: anchorElement }} />
@@ -125,6 +117,15 @@ export function AIMenu() {
         className="border-none bg-transparent p-0 shadow-none"
         style={{
           width: anchorElement?.offsetWidth,
+        }}
+        onEscapeKeyDown={(e) => {
+          e.preventDefault();
+
+          if (isLoading) {
+            api.aiChat.stop();
+          } else {
+            api.aiChat.hide();
+          }
         }}
         align="center"
         avoidCollisions={false}
