@@ -190,6 +190,7 @@ export function InsertDropdownMenu(props: DropdownMenuProps) {
             {nestedItems.map(
               ({ icon: Icon, label: itemLabel, value: type }) => (
                 <DropdownMenuItem
+                  key={itemLabel}
                   className="min-w-[180px]"
                   onSelect={async () => {
                     switch (type) {
