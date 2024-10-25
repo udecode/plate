@@ -16,15 +16,15 @@ export const withAIBatch = (
     split?: boolean;
   } = {}
 ) => {
+  if (split) {
+    withNewBatch(editor, fn);
+  } else {
+    withMerging(editor, fn);
+  }
+
   const lastBatch = editor.history.undos?.at(-1) as AIBatch | undefined;
 
-  if (!split && lastBatch?.ai) {
-    withMerging(editor, fn);
-  } else {
-    withNewBatch(editor, fn);
-
-    if (lastBatch) {
-      lastBatch.ai = true;
-    }
+  if (lastBatch) {
+    lastBatch.ai = true;
   }
 };
