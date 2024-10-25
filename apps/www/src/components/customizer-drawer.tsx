@@ -9,6 +9,7 @@ import { ChevronsRight } from 'lucide-react';
 import { useViewport } from '@/hooks/use-viewport';
 import { useMounted } from '@/registry/default/hooks/use-mounted';
 import { Button } from '@/registry/default/plate-ui/button';
+import { DialogTitle } from '@/registry/default/plate-ui/dialog';
 
 import { settingsStore } from './context/settings-store';
 import { CustomizerTabs } from './customizer-tabs';
@@ -70,6 +71,8 @@ export default function CustomizerDrawer() {
             modal={false}
             hideClose
           >
+            <DialogTitle className="sr-only">Customizer</DialogTitle>
+
             <SheetPrimitive.Close asChild onClick={() => setOpen(false)}>
               <Button
                 variant="ghost"

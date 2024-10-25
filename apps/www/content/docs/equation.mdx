@@ -1,0 +1,122 @@
+---
+title: Equation
+description: Enables the insertion and rendering of LaTeX equations in your editor.
+docs:
+  - route: https://pro.platejs.org/docs/components/equation-element
+    title: Equation Element
+  - route: https://pro.platejs.org/docs/components/inline-equation-element
+    title: Inline Equation Element
+  - route: https://pro.platejs.org/docs/components/inline-equation-toolbar-button
+    title: Inline Equation Toolbar Button
+---
+
+<PackageInfo>
+
+## Features
+
+- LaTeX syntax support for complex mathematical expressions
+- Both inline and block equation formats
+- Real-time rendering of equations using KaTeX
+- Easy editing and navigation within equations
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-math
+```
+
+## Usage
+
+```tsx
+import { EquationPlugin, InlineEquationPlugin } from '@udecode/plate-math/react';
+```
+
+```tsx
+const plugins = [
+  // ...otherPlugins,
+  EquationPlugin,
+  InlineEquationPlugin,
+]
+```
+
+```tsx
+const components = {
+  // ...otherComponents,
+  [EquationPlugin.key]: EquationElement,
+  [InlineEquationPlugin.key]: InlineEquationElement,
+}
+```
+
+- [EquationElement](https://pro.platejs.org/docs/components/equation-element) (Plus)
+- [InlineEquationElement](https://pro.platejs.org/docs/components/inline-equation-element) (Plus)
+
+
+{/* ### How to use
+
+1. Use the slash command `/equation` to insert a block equation.
+2. Use the slash command `/inline equation` to insert an inline equation.
+3. Click on any equation to edit it. Press Escape to close the editor without saving changes.
+4. Navigate through the equation using arrow keys. */}
+
+## Examples
+
+### Plate UI
+
+Work in progress.
+
+### Plate Plus
+
+- Mark text as equation from the toolbar
+- Insert equation from slash command
+- Beautifully crafted UI
+
+<ComponentPreviewPro
+  name="pro-iframe-demo"
+  id="pro-equation"
+  component="equation"
+/>
+
+## Plugins
+
+### EquationPlugin
+
+Block equation element plugin.
+
+### InlineEquationPlugin
+
+Inline equation element plugin.
+
+## Transforms
+
+### editor.tf.insert.equation
+
+Inserts an empty block equation.
+<APIParameters>
+  <APIItem name="options" type="InsertNodesOptions">
+    Options for the insert nodes transform.
+  </APIItem>
+</APIParameters>
+
+### editor.tf.insert.inlineEquation
+
+Inserts an inline equation.
+<APIParameters>
+  <APIItem name="texExpression" type="string" optional>
+    The LaTeX expression to insert. If not provided, an empty equation will be inserted.
+  </APIItem>
+  <APIItem name="options" type="InsertNodesOptions" optional>
+    Options for the insert nodes transform.
+  </APIItem>
+</APIParameters>
+
+## Types
+
+### TEquationElement
+
+```typescript
+interface TEquationElement extends TElement {
+  texExpression: string;
+}
+```

@@ -4,4 +4,4 @@ export const isEnabled = (
   id: ValueId,
   currentId?: ValueId,
   componentId?: boolean
-) => (!currentId && componentId !== false) || currentId === id;
+) => !!id || (!currentId && componentId !== false) || currentId === id;

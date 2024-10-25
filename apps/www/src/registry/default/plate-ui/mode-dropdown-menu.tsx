@@ -50,7 +50,6 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
     <DropdownMenu modal={false} {...openState} {...props}>
       <DropdownMenuTrigger asChild>
         <ToolbarButton
-          className="min-w-[auto] lg:min-w-[130px]"
           pressed={openState.open}
           tooltip="Editing mode"
           isDropdown

@@ -13,10 +13,10 @@ try {
     },
   })
 
-  console.log("☀️ Capturing screenshots for light theme")
+  console.info("☀️ Capturing screenshots for light theme")
   for (const block of BLOCKS) {
     const pageUrl = `http://localhost:3000/blocks/default/${block}`
-    console.log(`- ${block}`)
+    console.info(`- ${block}`)
 
     const page = await browser.newPage()
     await page.goto(pageUrl, {
@@ -36,10 +36,10 @@ try {
     })
   }
 
-  console.log("🌙 Capturing screenshots for dark theme")
+  console.info("🌙 Capturing screenshots for dark theme")
   for (const block of BLOCKS) {
     const pageUrl = `http://localhost:3000/blocks/default/${block}`
-    console.log(`- ${block}`)
+    console.info(`- ${block}`)
 
     const page = await browser.newPage()
     await page.goto(pageUrl, {
@@ -65,7 +65,7 @@ try {
   }
 
   await browser.close()
-  console.log("✅ Done!")
+  console.info("✅ Done!")
 } catch (error) {
   console.error(error)
   process.exit(1)

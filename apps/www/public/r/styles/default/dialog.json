@@ -1,6 +1,7 @@
 {
   "dependencies": [
-    "@radix-ui/react-dialog"
+    "@radix-ui/react-dialog",
+    "@radix-ui/react-visually-hidden"
   ],
   "files": [
     {

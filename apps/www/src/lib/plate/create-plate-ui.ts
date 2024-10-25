@@ -1,6 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import { withProps } from '@udecode/cn';
+import { AIPlugin } from '@udecode/plate-ai/react';
 import {
   BoldPlugin,
   CodePlugin,
@@ -54,6 +55,7 @@ import {
 } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
 
+import { AILeaf } from '@/registry/default/plate-ui/ai-leaf';
 import { BlockquoteElement } from '@/registry/default/plate-ui/blockquote-element';
 import { CodeBlockElement } from '@/registry/default/plate-ui/code-block-element';
 import { CodeLeaf } from '@/registry/default/plate-ui/code-leaf';
@@ -95,6 +97,7 @@ export const createPlateUI = ({
   placeholder,
 }: { draggable?: boolean; placeholder?: boolean } = {}) => {
   let components: Record<string, NodeComponent> = {
+    [AIPlugin.key]: AILeaf,
     [BlockquotePlugin.key]: BlockquoteElement,
     [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
     [BulletedListPlugin.key]: withProps(ListElement, { variant: 'ul' }),

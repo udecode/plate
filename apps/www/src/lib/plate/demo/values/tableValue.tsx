@@ -98,7 +98,7 @@ export const createTable = (spanning?: boolean): any => (
 
 export const tableValue: any = (
   <fragment>
-    <hh2>🏓 Table</hh2>
+    <hh2>Table</hh2>
     <hp>
       Create customizable tables with resizable columns and rows, allowing you
       to design structured layouts.

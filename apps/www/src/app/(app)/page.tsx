@@ -3,7 +3,7 @@ import * as React from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 
-import { Icons } from '@/components/icons';
+import { BlockPreview } from '@/components/block-preview';
 import {
   PageHeader,
   PageHeaderDescription,
@@ -13,9 +13,9 @@ import { ThemesButton } from '@/components/themes-button';
 import { siteConfig } from '@/config/site';
 import { Button } from '@/registry/default/plate-ui/button';
 
-import { AnnouncementButton } from './announcement-button';
+import { AnnouncementButton } from './_components/announcement-button';
 
-import '../../public/r/themes.css';
+import '../../../public/r/themes.css';
 
 const HomeTabs = dynamic(() => import('./_components/home-tabs'));
 const CustomizerDrawer = dynamic(
@@ -34,20 +34,18 @@ export default function IndexPage() {
             <ThemesButton />
           </div>
           <PageHeaderDescription>
-            Plugin system & primitive component library. <br />
-            CLI for styled components. Customizable. Open Source.
+            Framework · Plugins · Components · Themes
           </PageHeaderDescription>
-          <section className="flex w-full items-center space-x-4 py-2">
-            <Button asChild size="sm">
+          <section className="flex w-full items-center space-x-2 py-2">
+            <Button asChild size="xs">
               <Link href="/docs">Get Started</Link>
             </Button>
-            <Button asChild size="sm" variant="outline">
+            <Button asChild size="xs" variant="ghost">
               <Link
                 href={siteConfig.links.github}
                 rel="noreferrer"
                 target="_blank"
               >
-                <Icons.gitHub className="mr-2 size-4" />
                 GitHub
               </Link>
             </Button>
@@ -56,10 +54,23 @@ export default function IndexPage() {
       </div>
 
       <section className="relative">
-        <HomeTabs />
+        <React.Suspense fallback={null}>
+          <HomeTabs />
+        </React.Suspense>
 
         <CustomizerDrawer />
       </section>
+
+      <div className="relative mt-12 scroll-m-16 pb-48 md:mt-24 lg:mt-36 ">
+        <BlockPreview
+          block={{
+            description: 'A Notion-like AI template',
+            descriptionSrc: siteConfig.links.potionTemplate,
+            name: 'potion',
+            src: siteConfig.links.potionIframe,
+          }}
+        />
+      </div>
     </div>
   );
 }

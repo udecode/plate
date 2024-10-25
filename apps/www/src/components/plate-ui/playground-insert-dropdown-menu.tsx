@@ -197,15 +197,15 @@ export function PlaygroundInsertDropdownMenu(props: DropdownMenuProps) {
                     className="min-w-[180px]"
                     onSelect={async () => {
                       switch (type) {
-                        case ColumnPlugin.key: {
-                          insertColumnGroup(editor);
-
-                          break;
-                        }
                         case CodeBlockPlugin.key: {
                           insertEmptyCodeBlock(editor, {
                             insertNodesOptions: { select: true },
                           });
+
+                          break;
+                        }
+                        case ColumnPlugin.key: {
+                          insertColumnGroup(editor);
 
                           break;
                         }
@@ -217,6 +217,11 @@ export function PlaygroundInsertDropdownMenu(props: DropdownMenuProps) {
 
                           break;
                         }
+                        case LinkPlugin.key: {
+                          triggerFloatingLink(editor, { focused: true });
+
+                          break;
+                        }
                         case MediaEmbedPlugin.key: {
                           await insertMedia(editor, {
                             select: true,
@@ -225,8 +230,18 @@ export function PlaygroundInsertDropdownMenu(props: DropdownMenuProps) {
 
                           break;
                         }
-                        case 'ul':
-                        case 'ol': {
+                        case TablePlugin.key: {
+                          insertTable(editor, {}, { select: true });
+
+                          break;
+                        }
+                        case TocPlugin.key: {
+                          insertToc(editor);
+
+                          break;
+                        }
+                        case 'ol':
+                        case 'ul': {
                           insertEmptyElement(editor, ParagraphPlugin.key, {
                             nextBlock: true,
                             select: true,
@@ -241,21 +256,6 @@ export function PlaygroundInsertDropdownMenu(props: DropdownMenuProps) {
                           } else if (settingsStore.get.checkedId('list')) {
                             editor.tf.toggle.list({ type });
                           }
-
-                          break;
-                        }
-                        case TablePlugin.key: {
-                          insertTable(editor, {}, { select: true });
-
-                          break;
-                        }
-                        case LinkPlugin.key: {
-                          triggerFloatingLink(editor, { focused: true });
-
-                          break;
-                        }
-                        case TocPlugin.key: {
-                          insertToc(editor);
 
                           break;
                         }

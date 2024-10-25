@@ -6,9 +6,10 @@ import {
 } from '@udecode/plate-common/react';
 import { useFocused, useReadOnly, useSelected } from 'slate-react';
 
-import type { TPlaceholderElement } from '../../lib/placeholder/types';
-
-import { BasePlaceholderPlugin } from '../../lib/placeholder/BasePlaceholderPlugin';
+import {
+  type TPlaceholderElement,
+  BasePlaceholderPlugin,
+} from '../../lib/placeholder/BasePlaceholderPlugin';
 import { usePlaceholderStore } from './placeholderStore';
 
 export const usePlaceholderPopoverState = () => {

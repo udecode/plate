@@ -54,6 +54,7 @@ export const registryEntrySchema = z.object({
   cssVars: registryItemCssVarsSchema.optional(),
   dependencies: z.array(z.string()).optional(),
   description: z.string().optional(),
+  descriptionSrc: z.string().optional(),
   devDependencies: z.array(z.string()).optional(),
   docs: z.string().optional(),
   external: z.boolean().optional(),
@@ -83,7 +84,7 @@ export const blockSchema = registryEntrySchema.extend({
     })
     .optional(),
   highlightedCode: z.string(),
-  style: z.enum(['default', 'new-york']),
+  src: z.string().optional(),
   type: z.literal('registry:block'),
 });
 

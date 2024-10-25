@@ -6,7 +6,7 @@ jsx;
 
 export const autoformatValue: any = (
   <fragment>
-    <hh2>🏃‍♀️ Autoformat</hh2>
+    <hh2>Autoformat</hh2>
     <hp>
       Empower your writing experience by enabling autoformatting features. Add
       Markdown-like shortcuts that automatically apply formatting as you type.

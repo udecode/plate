@@ -18,31 +18,17 @@ const headingVariants = cva('relative mb-1', {
   },
 });
 
-const blockVariants = cva('', {
-  variants: {
-    isFirstBlock: {
-      false: '',
-      true: 'mt-0',
-    },
-  },
-});
-
-const HeadingElementVariants = withVariants(
-  withVariants(PlateElement, headingVariants, ['variant']),
-  blockVariants,
-  ['isFirstBlock']
-);
+const HeadingElementVariants = withVariants(PlateElement, headingVariants, [
+  'variant',
+]);
 
 export const HeadingElement = withRef<typeof HeadingElementVariants>(
-  ({ children, isFirstBlock, variant = 'h1', ...props }, ref) => {
-    const { editor, element } = props;
-
+  ({ children, variant = 'h1', ...props }, ref) => {
     return (
       <HeadingElementVariants
         ref={ref}
         as={variant!}
         variant={variant}
-        isFirstBlock={element === editor.children[0]}
         {...props}
       >
         {children}

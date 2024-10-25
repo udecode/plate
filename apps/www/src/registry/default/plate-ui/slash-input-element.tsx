@@ -22,6 +22,7 @@ interface SlashCommandRule {
   icon: ComponentType<SVGProps<SVGSVGElement>>;
   onSelect: (editor: PlateEditor) => void;
   value: string;
+  focusEditor?: boolean;
   keywords?: string[];
 }
 

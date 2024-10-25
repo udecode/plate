@@ -6,7 +6,7 @@ jsx;
 
 export const mentionValue: any = (
   <fragment>
-    <hh2>＠ Mention</hh2>
+    <hh2>Mention</hh2>
     <hp>
       Mention and reference other users or entities within your text using
       @-mentions.

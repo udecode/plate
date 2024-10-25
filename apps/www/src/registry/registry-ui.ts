@@ -9,6 +9,28 @@ export const ui: Registry = [
     type: 'registry:ui',
   },
   {
+    dependencies: [
+      '@udecode/plate-ai',
+      '@udecode/plate-markdown',
+      '@udecode/plate-selection',
+    ],
+    files: [
+      'plate-ui/ai-menu.tsx',
+      'plate-ui/ai-chat-editor.tsx',
+      'plate-ui/ai-menu-items.tsx',
+    ],
+    name: 'ai-menu',
+    registryDependencies: ['button', 'menu', 'textarea', 'editor'],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: [],
+    files: ['plate-ui/ai-toolbar-button.tsx'],
+    name: 'ai-toolbar-button',
+    registryDependencies: ['toolbar'],
+    type: 'registry:ui',
+  },
+  {
     dependencies: ['@udecode/plate-selection'],
     files: ['plate-ui/block-selection.tsx'],
     name: 'block-selection',
@@ -142,6 +164,27 @@ export const ui: Registry = [
     type: 'registry:ui',
   },
   {
+    dependencies: ['@radix-ui/react-context-menu'],
+    files: ['plate-ui/block-context-menu.tsx'],
+    name: 'block-context-menu',
+    registryDependencies: ['calendar', 'plate-element'],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@udecode/plate-ai'],
+    files: ['plate-ui/ghost-text.tsx'],
+    name: 'ghost-text',
+    registryDependencies: [''],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@udecode/plate-heading'],
+    files: ['plate-ui/toc-element.tsx'],
+    name: 'toc-element',
+    registryDependencies: [''],
+    type: 'registry:ui',
+  },
+  {
     dependencies: ['react-day-picker@8.10.1', 'date-fns'],
     files: ['plate-ui/calendar.tsx'],
     name: 'calendar',
@@ -219,7 +262,7 @@ export const ui: Registry = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@radix-ui/react-dialog'],
+    dependencies: ['@radix-ui/react-dialog', '@radix-ui/react-visually-hidden'],
     files: ['plate-ui/dialog.tsx'],
     name: 'dialog',
     registryDependencies: [],

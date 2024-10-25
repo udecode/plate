@@ -5,13 +5,14 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 
-import type { TPlaceholderElement } from '../types';
-
 import { BaseAudioPlugin } from '../../BaseAudioPlugin';
 import { BaseFilePlugin } from '../../BaseFilePlugin';
 import { BaseVideoPlugin } from '../../BaseVideoPlugin';
 import { BaseImagePlugin } from '../../image';
-import { BasePlaceholderPlugin } from '../BasePlaceholderPlugin';
+import {
+  type TPlaceholderElement,
+  BasePlaceholderPlugin,
+} from '../BasePlaceholderPlugin';
 
 export const insertPlaceholder = <E extends SlateEditor>(
   editor: E,
