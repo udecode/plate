@@ -7,8 +7,11 @@ import { cn, createPrimitiveElement, withCn, withRef } from '@udecode/cn';
 import { Icons } from '@/components/icons';
 
 export const Dialog = DialogPrimitive.Root;
+
 export const DialogTrigger = DialogPrimitive.Trigger;
+
 export const DialogPortal = DialogPrimitive.Portal;
+
 export const DialogClose = DialogPrimitive.Close;
 
 export const DialogOverlay = withCn(
@@ -17,7 +20,7 @@ export const DialogOverlay = withCn(
 );
 
 export const DialogContent = withRef<typeof DialogPrimitive.Content>(
-  ({ className, children, ...props }, ref) => (
+  ({ children, className, ...props }, ref) => (
     <DialogPortal>
       <DialogOverlay />
       <DialogPrimitive.Content

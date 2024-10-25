@@ -6,7 +6,9 @@ import { cn, withRef } from '@udecode/cn';
 import { cva } from 'class-variance-authority';
 
 export const Popover = PopoverPrimitive.Root;
+
 export const PopoverTrigger = PopoverPrimitive.Trigger;
+
 export const PopoverAnchor = PopoverPrimitive.Anchor;
 
 export const popoverVariants = cva(
@@ -14,14 +16,14 @@ export const popoverVariants = cva(
 );
 
 export const PopoverContent = withRef<typeof PopoverPrimitive.Content>(
-  ({ className, style, align = 'center', sideOffset = 4, ...props }, ref) => (
+  ({ align = 'center', className, sideOffset = 4, style, ...props }, ref) => (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Content
         ref={ref}
-        align={align}
-        sideOffset={sideOffset}
         className={cn(popoverVariants(), className)}
         style={{ zIndex: 1000, ...style }}
+        align={align}
+        sideOffset={sideOffset}
         {...props}
       />
     </PopoverPrimitive.Portal>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { withRef } from '@udecode/cn';
+import { AIChatPlugin } from '@udecode/plate-ai/react';
 import { DatePlugin } from '@udecode/plate-date/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { ListStyleType, toggleIndentList } from '@udecode/plate-indent-list';
@@ -22,10 +23,20 @@ interface SlashCommandRule {
   icon: ComponentType<SVGProps<SVGSVGElement>>;
   onSelect: (editor: PlateEditor) => void;
   value: string;
+  className?: string;
+  focusEditor?: boolean;
   keywords?: string[];
 }
 
 const rules: SlashCommandRule[] = [
+  {
+    focusEditor: false,
+    icon: Icons.ai,
+    value: 'AI',
+    onSelect: (editor) => {
+      editor.getApi(AIChatPlugin).aiChat.show();
+    },
+  },
   {
     icon: Icons.h1,
     value: 'Heading 1',
@@ -96,17 +107,20 @@ export const SlashInputElement = withRef<typeof PlateElement>(
               No matching commands found
             </InlineComboboxEmpty>
 
-            {rules.map(({ icon: Icon, keywords, value, onSelect }) => (
-              <InlineComboboxItem
-                key={value}
-                value={value}
-                onClick={() => onSelect(editor)}
-                keywords={keywords}
-              >
-                <Icon className="mr-2 size-4" aria-hidden />
-                {value}
-              </InlineComboboxItem>
-            ))}
+            {rules.map(
+              ({ focusEditor, icon: Icon, keywords, value, onSelect }) => (
+                <InlineComboboxItem
+                  key={value}
+                  value={value}
+                  onClick={() => onSelect(editor)}
+                  focusEditor={focusEditor}
+                  keywords={keywords}
+                >
+                  <Icon className="mr-2 size-4" aria-hidden />
+                  {value}
+                </InlineComboboxItem>
+              )
+            )}
           </InlineComboboxContent>
         </InlineCombobox>
 

@@ -49,18 +49,18 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
     <DropdownMenu modal={false} {...openState} {...props}>
       <DropdownMenuTrigger asChild>
         <ToolbarButton
-          className="min-w-[auto] lg:min-w-[130px]"
-          isDropdown
           pressed={openState.open}
           tooltip="Editing mode"
+          isDropdown
         >
           {item[value]}
         </ToolbarButton>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="start" className="min-w-[180px]">
+      <DropdownMenuContent className="min-w-[180px]" align="start">
         <DropdownMenuRadioGroup
           className="flex flex-col gap-0.5"
+          value={value}
           onValueChange={(newValue) => {
             if (newValue !== 'viewing') {
               setReadOnly(false);
@@ -76,7 +76,6 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
               return;
             }
           }}
-          value={value}
         >
           <DropdownMenuRadioItem value="editing">
             {item.editing}

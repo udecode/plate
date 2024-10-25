@@ -1,13 +1,24 @@
+'use client';
+
 import React from 'react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
+import { insertEmptyCodeBlock } from '@udecode/plate-code-block';
+import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
 import { insertEmptyElement } from '@udecode/plate-common';
-import {
-  focusEditor,
-  ParagraphPlugin,
-  useEditorRef,
-} from '@udecode/plate-common/react';
-import { HEADING_KEYS } from '@udecode/plate-heading';
+import { focusEditor, ParagraphPlugin } from '@udecode/plate-common/react';
+import { ExcalidrawPlugin } from '@udecode/plate-excalidraw/react';
+import { HEADING_KEYS, insertToc } from '@udecode/plate-heading';
+import { TocPlugin } from '@udecode/plate-heading/react';
+import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
+import { toggleIndentList } from '@udecode/plate-indent-list';
+import { insertColumnGroup } from '@udecode/plate-layout';
+import { ColumnPlugin } from '@udecode/plate-layout/react';
+import { LinkPlugin, triggerFloatingLink } from '@udecode/plate-link/react';
+import { insertMedia } from '@udecode/plate-media';
+import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
+import { insertTable, TablePlugin } from '@udecode/plate-table/react';
 
+import { useMyEditorRef } from '@/lib/plate/plate-types';
 import { Icons } from '@/components/icons';
 
 import {
@@ -51,95 +62,125 @@ const items = [
         value: HEADING_KEYS.h3,
       },
       {
+        description: 'Heading 4',
+        icon: Icons.h4,
+        label: 'Heading 4',
+        value: HEADING_KEYS.h4,
+      },
+      {
+        description: 'Heading 5',
+        icon: Icons.h5,
+        label: 'Heading 5',
+        value: HEADING_KEYS.h5,
+      },
+      {
+        description: 'Heading 6',
+        icon: Icons.h6,
+        label: 'Heading 6',
+        value: HEADING_KEYS.h6,
+      },
+      {
+        description: 'Table',
+        icon: Icons.table,
+        label: 'Table',
+        value: TablePlugin.key,
+      },
+      {
+        description: 'Bulleted list',
+        icon: Icons.ul,
+        label: 'Bulleted list',
+        value: 'ul',
+      },
+      {
+        description: 'Numbered list',
+        icon: Icons.ol,
+        label: 'Numbered list',
+        value: 'ol',
+      },
+      {
         description: 'Quote (⌘+⇧+.)',
         icon: Icons.blockquote,
         label: 'Quote',
         value: BlockquotePlugin.key,
       },
-      // {
-      //   value: TablePlugin.key,
-      //   label: 'Table',
-      //   description: 'Table',
-      //   icon: Icons.table,
-      // },
-      // {
-      //   value: 'ul',
-      //   label: 'Bulleted list',
-      //   description: 'Bulleted list',
-      //   icon: Icons.ul,
-      // },
-      // {
-      //   value: 'ol',
-      //   label: 'Numbered list',
-      //   description: 'Numbered list',
-      //   icon: Icons.ol,
-      // },
-      // {
-      //   value: HorizontalRulePlugin.key,
-      //   label: 'Divider',
-      //   description: 'Divider (---)',
-      //   icon: Icons.hr,
-      // },
+      {
+        description: 'Divider (---)',
+        icon: Icons.hr,
+        label: 'Divider',
+        value: HorizontalRulePlugin.key,
+      },
+      {
+        description: 'Columns',
+        icon: Icons.LayoutIcon,
+        label: 'Columns',
+        value: ColumnPlugin.key,
+      },
+      {
+        description: 'Table of Contents',
+        icon: Icons.h3,
+        label: 'Table of Contents',
+        value: TocPlugin.key,
+      },
     ],
     label: 'Basic blocks',
   },
-  // {
-  //   label: 'Media',
-  //   items: [
-  //     {
-  //       value: CodeBlockPlugin.key,
-  //       label: 'Code',
-  //       description: 'Code (```)',
-  //       icon: Icons.codeblock,
-  //     },
-  //     {
-  //       value: ImagePlugin.key,
-  //       label: 'Image',
-  //       description: 'Image',
-  //       icon: Icons.image,
-  //     },
-  //     {
-  //       value: MediaEmbedPlugin.key,
-  //       label: 'Embed',
-  //       description: 'Embed',
-  //       icon: Icons.embed,
-  //     },
-  //     {
-  //       value: ExcalidrawPlugin.key,
-  //       label: 'Excalidraw',
-  //       description: 'Excalidraw',
-  //       icon: Icons.excalidraw,
-  //     },
-  //   ],
-  // },
-  // {
-  //   label: 'Inline',
-  //   items: [
-  //     {
-  //       value: LinkPlugin.key,
-  //       label: 'Link',
-  //       description: 'Link',
-  //       icon: Icons.link,
-  //     },
-  //   ],
-  // },
+  {
+    items: [
+      {
+        description: 'Code (```)',
+        icon: Icons.codeblock,
+        label: 'Code',
+        value: CodeBlockPlugin.key,
+      },
+      {
+        description: 'Image',
+        icon: Icons.image,
+        label: 'Image',
+        value: ImagePlugin.key,
+      },
+      {
+        description: 'Embed',
+        icon: Icons.embed,
+        label: 'Embed',
+        value: MediaEmbedPlugin.key,
+      },
+      {
+        description: 'Excalidraw',
+        icon: Icons.excalidraw,
+        label: 'Excalidraw',
+        value: ExcalidrawPlugin.key,
+      },
+    ],
+    label: 'Media',
+  },
+  {
+    items: [
+      {
+        description: 'Link',
+        icon: Icons.link,
+        label: 'Link',
+        value: LinkPlugin.key,
+      },
+    ],
+    label: 'Inline',
+  },
 ];
 
 export function InsertDropdownMenu(props: DropdownMenuProps) {
-  const editor = useEditorRef();
+  const editor = useMyEditorRef();
   const openState = useOpenState();
 
   return (
     <DropdownMenu modal={false} {...openState} {...props}>
       <DropdownMenuTrigger asChild>
-        <ToolbarButton isDropdown pressed={openState.open} tooltip="Insert">
+        <ToolbarButton pressed={openState.open} tooltip="Insert" isDropdown>
           <Icons.add />
         </ToolbarButton>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        align="start"
         className="flex max-h-[500px] min-w-0 flex-col gap-0.5 overflow-y-auto"
+        align="start"
       >
         {items.map(({ items: nestedItems, label }, index) => (
           <React.Fragment key={label}>
@@ -150,53 +191,64 @@ export function InsertDropdownMenu(props: DropdownMenuProps) {
               ({ icon: Icon, label: itemLabel, value: type }) => (
                 <DropdownMenuItem
                   className="min-w-[180px]"
-                  key={type}
-                  onSelect={() => {
+                  onSelect={async () => {
                     switch (type) {
-                      // case CodeBlockPlugin.key: {
-                      //   insertEmptyCodeBlock(editor);
-                      //
-                      //   break;
-                      // }
-                      // case ImagePlugin.key: {
-                      //   await insertMedia(editor, { type: ImagePlugin.key });
-                      //
-                      //   break;
-                      // }
-                      // case MediaEmbedPlugin.key: {
-                      //   await insertMedia(editor, {
-                      //     type: MediaEmbedPlugin.key,
-                      //   });
-                      //
-                      //   break;
-                      // }
-                      // case 'ul':
-                      // case 'ol': {
-                      //   insertEmptyElement(editor, ParagraphPlugin.key, {
-                      //     select: true,
-                      //     nextBlock: true,
-                      //   });
-                      //
-                      //   if (settingsStore.get.checkedId(IndentListPlugin.key)) {
-                      //     toggleIndentList(editor, {
-                      //       listStyleType: type === 'ul' ? 'disc' : 'decimal',
-                      //     });
-                      //   } else if (settingsStore.get.checkedId('list')) {
-                      //     toggleList(editor, { type });
-                      //   }
-                      //
-                      //   break;
-                      // }
-                      // case TablePlugin.key: {
-                      //   insertTable(editor);
-                      //
-                      //   break;
-                      // }
-                      // case LinkPlugin.key: {
-                      //   triggerFloatingLink(editor, { focused: true });
-                      //
-                      //   break;
-                      // }
+                      case CodeBlockPlugin.key: {
+                        insertEmptyCodeBlock(editor, {
+                          insertNodesOptions: { select: true },
+                        });
+
+                        break;
+                      }
+                      case ColumnPlugin.key: {
+                        insertColumnGroup(editor);
+
+                        break;
+                      }
+                      case ImagePlugin.key: {
+                        await insertMedia(editor, {
+                          select: true,
+                          type: ImagePlugin.key,
+                        });
+
+                        break;
+                      }
+                      case LinkPlugin.key: {
+                        triggerFloatingLink(editor, { focused: true });
+
+                        break;
+                      }
+                      case MediaEmbedPlugin.key: {
+                        await insertMedia(editor, {
+                          select: true,
+                          type: MediaEmbedPlugin.key,
+                        });
+
+                        break;
+                      }
+                      case TablePlugin.key: {
+                        insertTable(editor, {}, { select: true });
+
+                        break;
+                      }
+                      case TocPlugin.key: {
+                        insertToc(editor);
+
+                        break;
+                      }
+                      case 'ol':
+                      case 'ul': {
+                        insertEmptyElement(editor, ParagraphPlugin.key, {
+                          nextBlock: true,
+                          select: true,
+                        });
+
+                        toggleIndentList(editor, {
+                          listStyleType: type === 'ul' ? 'disc' : 'decimal',
+                        });
+
+                        break;
+                      }
                       default: {
                         insertEmptyElement(editor, type, {
                           nextBlock: true,

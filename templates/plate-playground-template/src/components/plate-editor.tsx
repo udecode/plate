@@ -38,6 +38,7 @@ import {
   PlateLeaf,
   usePlateEditor,
 } from '@udecode/plate-common/react';
+import { DatePlugin } from '@udecode/plate-date/react';
 import { DndPlugin } from '@udecode/plate-dnd';
 import { DocxPlugin } from '@udecode/plate-docx';
 import { EmojiPlugin } from '@udecode/plate-emoji/react';
@@ -48,7 +49,7 @@ import {
   FontSizePlugin,
 } from '@udecode/plate-font/react';
 import { HEADING_KEYS, HEADING_LEVELS } from '@udecode/plate-heading';
-import { HeadingPlugin } from '@udecode/plate-heading/react';
+import { HeadingPlugin, TocPlugin } from '@udecode/plate-heading/react';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { IndentListPlugin } from '@udecode/plate-indent-list/react';
@@ -67,7 +68,14 @@ import {
 import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { ResetNodePlugin } from '@udecode/plate-reset-node/react';
 import { SelectOnBackspacePlugin } from '@udecode/plate-select';
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import {
+  BlockMenuPlugin,
+  BlockSelectionPlugin,
+} from '@udecode/plate-selection/react';
+import {
+  SlashInputPlugin,
+  SlashPlugin,
+} from '@udecode/plate-slash-command/react';
 import { TabbablePlugin } from '@udecode/plate-tabbable/react';
 import {
   TableCellHeaderPlugin,
@@ -75,6 +83,7 @@ import {
   TablePlugin,
   TableRowPlugin,
 } from '@udecode/plate-table/react';
+import { TogglePlugin } from '@udecode/plate-toggle/react';
 import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -90,6 +99,7 @@ import { CommentsPopover } from '@/components/plate-ui/comments-popover';
 import {
   CursorOverlay,
   DragOverCursorPlugin,
+  SelectionOverlayPlugin,
 } from '@/components/plate-ui/cursor-overlay';
 import { Editor } from '@/components/plate-ui/editor';
 import { ExcalidrawElement } from '@/components/plate-ui/excalidraw-element';
@@ -122,6 +132,14 @@ import { TableRowElement } from '@/components/plate-ui/table-row-element';
 import { TodoListElement } from '@/components/plate-ui/todo-list-element';
 import { withDraggables } from '@/components/plate-ui/with-draggables';
 
+import { BlockContextMenu } from './plate-ui/block-context-menu';
+import { DateElement } from './plate-ui/date-element';
+import { SlashInputElement } from './plate-ui/slash-input-element';
+import { TocElement } from './plate-ui/toc-element';
+import { ToggleElement } from './plate-ui/toggle-element';
+import { aiPlugins } from './plugins/ai-plugins';
+import { copilotPlugins } from './plugins/copilot-plugins';
+
 export default function PlateEditor() {
   const containerRef = useRef(null);
 
@@ -131,6 +149,7 @@ export default function PlateEditor() {
     <DndProvider backend={HTML5Backend}>
       <Plate editor={editor}>
         <div
+          id="scroll_container"
           ref={containerRef}
           className={cn(
             'relative',
@@ -166,8 +185,12 @@ export default function PlateEditor() {
 export const useMyEditor = () => {
   return usePlateEditor({
     plugins: [
+      // AI
+      ...aiPlugins,
+      ...copilotPlugins,
       // Nodes
       HeadingPlugin,
+      TocPlugin,
       BlockquotePlugin,
       CodeBlockPlugin,
       CodeLinePlugin,
@@ -205,6 +228,8 @@ export const useMyEditor = () => {
       KbdPlugin,
 
       // Block Style
+      DatePlugin,
+      TogglePlugin,
       AlignPlugin.configure({
         inject: {
           targetPlugins: [ParagraphPlugin.key, ...HEADING_LEVELS],
@@ -250,6 +275,7 @@ export const useMyEditor = () => {
       }),
 
       // Functionality
+      SlashPlugin,
       AutoformatPlugin.configure({
         options: {
           rules: autoformatRules,
@@ -271,6 +297,9 @@ export const useMyEditor = () => {
           },
           enableContextMenu: true,
         },
+      }),
+      BlockMenuPlugin.configure({
+        render: { aboveEditable: BlockContextMenu },
       }),
       DndPlugin.configure({
         options: { enableScroller: true },
@@ -381,8 +410,8 @@ export const useMyEditor = () => {
       TrailingBlockPlugin.configure({
         options: { type: ParagraphPlugin.key },
       }),
+      SelectionOverlayPlugin,
       DragOverCursorPlugin,
-
       // Collaboration
       CommentsPlugin.configure({
         options: {
@@ -406,9 +435,13 @@ export const useMyEditor = () => {
     override: {
       components: withDraggables(
         withPlaceholders({
+          [DatePlugin.key]: DateElement,
+          [SlashInputPlugin.key]: SlashInputElement,
+          [TogglePlugin.key]: ToggleElement,
           [BlockquotePlugin.key]: BlockquoteElement,
           [CodeBlockPlugin.key]: CodeBlockElement,
           [CodeLinePlugin.key]: CodeLineElement,
+          [TocPlugin.key]: TocElement,
           [CodeSyntaxPlugin.key]: CodeSyntaxLeaf,
           [HorizontalRulePlugin.key]: HrElement,
           [HEADING_KEYS.h1]: withProps(HeadingElement, { variant: 'h1' }),

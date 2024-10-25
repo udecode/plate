@@ -51,7 +51,7 @@ export function MediaPopover({ children, plugin }: MediaPopoverProps) {
   if (readOnly) return <>{children}</>;
 
   return (
-    <Popover modal={false} open={isOpen}>
+    <Popover open={isOpen} modal={false}>
       <PopoverAnchor>{children}</PopoverAnchor>
 
       <PopoverContent
@@ -67,8 +67,8 @@ export function MediaPopover({ children, plugin }: MediaPopoverProps) {
 
               <FloatingMediaPrimitive.UrlInput
                 className={inputVariants({ h: 'sm', variant: 'ghost' })}
-                options={{ plugin }}
                 placeholder="Paste the embed link..."
+                options={{ plugin }}
               />
             </div>
           </div>
@@ -82,7 +82,7 @@ export function MediaPopover({ children, plugin }: MediaPopoverProps) {
 
             <CaptionButton variant="ghost">Caption</CaptionButton>
 
-            <Separator className="my-1" orientation="vertical" />
+            <Separator orientation="vertical" className="my-1" />
 
             <Button size="sms" variant="ghost" {...buttonProps}>
               <Icons.delete className="size-4" />
