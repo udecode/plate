@@ -1,21 +1,43 @@
-import { openai } from '@ai-sdk/openai';
+import { NextResponse } from 'next/server';
+import { createOpenAI } from '@ai-sdk/openai';
 import { convertToCoreMessages, streamText } from 'ai';
-
-import { limitTotalCharacters } from '../utils/limitTotalCharacters';
-import { truncateSystemPrompt } from '../utils/truncateSystemPrompt';
 
 import type { NextRequest } from 'next/server';
 
 export async function POST(req: NextRequest) {
-  const { messages, system } = await req.json();
-  const limitedMessages = limitTotalCharacters(messages, 8000);
+  const {
+    messages,
+    system,
+    apiKey: key,
+    model = 'gpt-4o-mini',
+  } = await req.json();
 
-  const result = await streamText({
-    maxTokens: 2048,
-    messages: convertToCoreMessages(limitedMessages),
-    model: openai('gpt-4o-mini'),
-    system: system ? truncateSystemPrompt(system, 12_000) : undefined,
-  });
+  const apiKey = key || process.env.OPENAI_API_KEY;
 
-  return result.toDataStreamResponse();
+  if (!apiKey) {
+    return NextResponse.json(
+      { error: 'Missing OpenAI API key.' },
+      { status: 401 }
+    );
+  }
+
+  const openai = createOpenAI({ apiKey });
+
+  console.log('model', model);
+
+  try {
+    const result = await streamText({
+      maxTokens: 2048,
+      messages: convertToCoreMessages(messages),
+      model: openai(model),
+      system: system,
+    });
+
+    return result.toDataStreamResponse();
+  } catch {
+    return NextResponse.json(
+      { error: 'Failed to process AI request' },
+      { status: 500 }
+    );
+  }
 }

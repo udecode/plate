@@ -134,6 +134,7 @@ import { TodoListElement } from '@/components/plate-ui/todo-list-element';
 import { withDraggables } from '@/components/plate-ui/with-draggables';
 
 import { AILeaf } from './plate-ui/ai-leaf';
+import { SettingsDialog } from './openai/settings-dialog';
 import { BlockContextMenu } from './plate-ui/block-context-menu';
 import { DateElement } from './plate-ui/date-element';
 import { SlashInputElement } from './plate-ui/slash-input-element';
@@ -163,13 +164,7 @@ export default function PlateEditor() {
             <FixedToolbarButtons />
           </FixedToolbar>
 
-          <Editor
-            className="px-[96px] py-16"
-            autoFocus
-            focusRing={false}
-            variant="ghost"
-            size="md"
-          />
+          <Editor autoFocus focusRing={false} variant="demo" size="md" />
 
           <FloatingToolbar>
             <FloatingToolbarButtons />
@@ -179,6 +174,8 @@ export default function PlateEditor() {
 
           <CursorOverlay containerRef={containerRef} />
         </div>
+
+        <SettingsDialog />
       </Plate>
     </DndProvider>
   );
@@ -481,8 +478,19 @@ export const useMyEditor = () => {
     value: [
       {
         id: '1',
+        type: 'h1',
+        children: [{ text: 'Playground' }],
+      },
+      {
+        id: '2',
         type: ParagraphPlugin.key,
-        children: [{ text: 'Hello, World!' }],
+        children: [
+          { text: 'A rich-text editor with AI capabilities. Try the ' },
+          { text: 'AI commands', bold: true },
+          { text: ' or use ' },
+          { text: 'Cmd+J', kbd: true },
+          { text: ' to open the AI menu.' },
+        ],
       },
     ],
   });

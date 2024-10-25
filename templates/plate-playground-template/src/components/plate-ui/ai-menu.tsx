@@ -18,7 +18,9 @@ import {
 } from '@udecode/plate-selection/react';
 import { useChat } from 'ai/react';
 import { Loader2Icon } from 'lucide-react';
+import { toast } from 'sonner';
 
+import { useOpenAI } from '../openai/openai-context';
 import { AIChatEditor } from './ai-chat-editor';
 import { AIMenuItems } from './ai-menu-items';
 import { Command, CommandList, InputCommand } from './command';
@@ -38,10 +40,18 @@ export function AIMenu() {
 
   const chat = useChat({
     id: 'editor',
-    // API to be implemented
     api: '/api/ai/command',
+    body: {
+      apiKey: useOpenAI().apiKey,
+      model: useOpenAI().model.value,
+    },
     onError: (error) => {
-      throw error;
+      if (error.message.includes('API key')) {
+        toast.error('OpenAI API key required');
+      } else {
+        toast.error('Invalid OpenAI API key');
+      }
+      api.aiChat.hide();
     },
   });
 

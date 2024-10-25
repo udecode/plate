@@ -10,7 +10,6 @@ export const copilotPlugins = [
   CopilotPlugin.configure(({ api }) => ({
     options: {
       completeOptions: {
-        // API to be implemented
         api: '/api/ai/copilot',
         body: {
           system: `You are an advanced AI writing assistant, similar to VSCode Copilot but for general text. Your task is to predict and generate the next part of the text based on the given context.
@@ -34,7 +33,17 @@ export const copilotPlugins = [
           });
         },
         onError: (error) => {
-          throw error;
+          let text = '';
+
+          if (error.message.includes('API key')) {
+            text = 'Set your OpenAI API key for real AI suggestions';
+          } else {
+            text = 'Try with a valid OpenAI API key for real AI suggestions';
+          }
+
+          api.copilot.setBlockSuggestion({
+            text: stripMarkdown(text),
+          });
         },
       },
       debounceDelay: 500,

@@ -1,10 +1,24 @@
-import { openai } from '@ai-sdk/openai';
+import { NextResponse } from 'next/server';
+import { createOpenAI } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 
 import type { NextRequest } from 'next/server';
 
 export async function POST(req: NextRequest) {
-  const { prompt, system } = await req.json();
+  const { prompt, system, apiKey: key } = await req.json();
+
+  const apiKey = key || process.env.OPENAI_API_KEY;
+
+  if (!apiKey) {
+    return NextResponse.json(
+      { error: 'Missing OpenAI API key.' },
+      { status: 401 }
+    );
+  }
+
+  console.log(apiKey);
+
+  const openai = createOpenAI({ apiKey });
 
   try {
     const result = await generateText({
@@ -16,17 +30,15 @@ export async function POST(req: NextRequest) {
       temperature: 0.7,
     });
 
-    return new Response(JSON.stringify(result), {
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return NextResponse.json(result);
   } catch (error: any) {
     if (error.name === 'AbortError') {
-      return new Response(null, { status: 408 });
+      return NextResponse.json(null, { status: 408 });
     }
 
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return NextResponse.json(
+      { error: 'Failed to process AI request' },
+      { status: 500 }
+    );
   }
 }

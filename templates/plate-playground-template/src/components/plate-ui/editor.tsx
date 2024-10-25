@@ -38,7 +38,7 @@ const editorVariants = cva(
       variant: {
         aiChat:
           'max-h-[min(70vh,320px)] w-full overflow-y-auto rounded-none border-b px-3 py-2 text-sm',
-        demo: 'min-h-full w-full px-16 pb-72 text-base sm:px-[max(64px,calc(50%-350px))]',
+        demo: 'min-h-full w-full px-12 pb-72 text-base sm:px-16 md:px-[max(64px,calc(50%-350px))]',
         ghost: '',
         outline: 'border border-input',
       },

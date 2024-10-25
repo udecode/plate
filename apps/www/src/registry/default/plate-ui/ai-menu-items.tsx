@@ -59,7 +59,7 @@ export const aiChatItems = {
 {editor}
 </Document>
 Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
-          : 'Continue writing at the end of <Block> ONLY ONE SENTENCE',
+          : 'Continue writing AFTER <Block> ONLY ONE SENTENCE. DONT REPEAT THE TEXT.',
       });
     },
   },
