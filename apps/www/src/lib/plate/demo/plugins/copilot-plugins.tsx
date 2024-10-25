@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker';
 import { CopilotPlugin } from '@udecode/plate-ai/react';
 import { type TElement, getAncestorNode } from '@udecode/plate-common';
 import { serializeMdNodes, stripMarkdown } from '@udecode/plate-markdown';
@@ -8,7 +9,8 @@ export const copilotPlugins = [
   CopilotPlugin.configure(({ api }) => ({
     options: {
       completeOptions: {
-        api: 'https://pro.platejs.org/api/ai/copilot',
+        // API to be implemented
+        api: '/api/ai/copilot',
         body: {
           system: `You are an advanced AI writing assistant, similar to VSCode Copilot but for general text. Your task is to predict and generate the next part of the text based on the given context.
   
@@ -21,6 +23,16 @@ export const copilotPlugins = [
   - CRITICAL: Always end with a punctuation mark.
   - CRITICAL: Avoid starting a new block. Do not use block formatting like >, #, 1., 2., -, etc. The suggestion should continue in the same block as the context.
   - If no context is provided or you can't generate a continuation, return "0" without explanation.`,
+        },
+        // Mock the API response. Remove it when you implement the route /api/ai/copilot
+        fetch: async () => {
+          const text = await new Promise<string>((resolve) =>
+            setTimeout(() => resolve(faker.lorem.sentence()), 100)
+          );
+
+          return new Response(JSON.stringify({ text }), {
+            headers: { 'Content-Type': 'application/json' },
+          });
         },
         onFinish: (_, completion) => {
           if (completion === '0') return;

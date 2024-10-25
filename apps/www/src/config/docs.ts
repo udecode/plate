@@ -203,7 +203,6 @@ export const docsConfig: DocsConfig = {
         },
         {
           href: '/docs/plugin-components',
-          label: 'UI',
           title: 'Plugin Components',
         },
         {

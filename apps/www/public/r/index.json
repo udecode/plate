@@ -13,6 +13,49 @@
   },
   {
     "dependencies": [
+      "@udecode/plate-ai",
+      "@udecode/plate-markdown",
+      "@udecode/plate-selection"
+    ],
+    "files": [
+      {
+        "path": "plate-ui/ai-menu.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/ai-chat-editor.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/ai-menu-items.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "ai-menu",
+    "registryDependencies": [
+      "button",
+      "menu",
+      "textarea",
+      "editor"
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [],
+    "files": [
+      {
+        "path": "plate-ui/ai-toolbar-button.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "ai-toolbar-button",
+    "registryDependencies": [
+      "toolbar"
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
       "@udecode/plate-selection"
     ],
     "files": [
@@ -530,7 +573,8 @@
   },
   {
     "dependencies": [
-      "@radix-ui/react-dialog"
+      "@radix-ui/react-dialog",
+      "@radix-ui/react-visually-hidden"
     ],
     "files": [
       {

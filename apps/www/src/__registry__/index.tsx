@@ -17,6 +17,30 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
+    "ai-menu": {
+      name: "ai-menu",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: ["button","menu","textarea","editor"],
+      files: ["registry/default/plate-ui/ai-menu.tsx","registry/default/plate-ui/ai-chat-editor.tsx","registry/default/plate-ui/ai-menu-items.tsx"],
+      component: React.lazy(() => import("@/registry/default/plate-ui/ai-menu.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
+    "ai-toolbar-button": {
+      name: "ai-toolbar-button",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: ["toolbar"],
+      files: ["registry/default/plate-ui/ai-toolbar-button.tsx"],
+      component: React.lazy(() => import("@/registry/default/plate-ui/ai-toolbar-button.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
     "block-selection": {
       name: "block-selection",
       description: "",

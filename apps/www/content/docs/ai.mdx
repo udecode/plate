@@ -8,13 +8,13 @@ docs:
 
 <ComponentPreview name="playground-demo" id="ai" />
 
-<ComponentPreviewPro name="pro-iframe-demo" id="pro-ai" component="ai" />
-
 <PackageInfo>
 
 ## Features
 
-- AI-powered menu with predefined commands
+- Combobox menu with predefined commands:
+  - Generate: continue writing, add summary, explain
+  - Edit: improve writing, make it longer or shorter, fix spelling & grammar, simplify language
 - Three trigger modes:
   - Cursor mode: trigger at block end
   - Selection mode: trigger with selected text
@@ -187,7 +187,7 @@ const plugins = [
 ];
 ```
 
-- [AIMenu](https://pro.platejs.org/docs/components/ai-menu) (Plus)
+- [AIMenu](/docs/components/ai-menu)
 
 The [SelectionOverlayPlugin](https://pro.platejs.org/docs/components/cursor-overlay):
 
@@ -195,46 +195,13 @@ The [SelectionOverlayPlugin](https://pro.platejs.org/docs/components/cursor-over
 - Essential for AI menu and other external input interactions
 - Prevents double selection with `data-plate-prevent-overlay` attribute
 
-<Image
-  src="/ai-selection.png"
-  alt="AI selection overlay"
-  width={1920}
-  height={1080}
-  className="w-full"
-/>
-
 ### AI SDK
 
 This plugin is depending on the [ai](https://npmjs.com/package/ai) package:
 
 - Setup a [route handler](https://sdk.vercel.ai/docs/getting-started/nextjs-app-router#create-a-route-handler) using [streamText](https://sdk.vercel.ai/docs/ai-sdk-core/generating-text#streamtext).
-- Wire up [useChat](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat) in your [AI menu](#ai-menu) component.
+- Wire up [useChat](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat) in your [AI menu](/docs/components/ai-menu) component.
 
-### AI Menu
-
-Work in progress.
-
-{/* ## AI Menu Items */}
-
-{/* Before learning how to create custom commands, you need to know that the ai plugin will provide three modes for opening the ai menu: */}
-
-{/* 1. Cursor mode: open the AI menu at the end of a block. */}
-{/* 2. Selection mode: select some texts and open the AI menu. */}
-{/* 3. Block selection mode: select some blocks and open the AI menu. */}
-{/* 4. After the AI completes the first generation, we don't close the AI menu but instead modify the commands. We call it **Suggestion** mode. */}
-
-{/* Due to the special nature of Suggestion mode: whether Cursor mode or Selection mode ends, it will switch to Suggestion mode. */}
-{/* To distinguish between these two sets of commands, we need to maintain four different menus in total. */}
-
-{/* The following is all the commands you can see in the `ai-menu-items.tsx` file. */}
-{/* menuState (draft doc) */}
-
-{/* - Show when you open the ai menu by `space` at the end of a block. */}
-{/* - Show when you open the ai menu by `space` and then complete the first generation. */}
-{/* - Show when you open the ai menu with selected text. */}
-{/* - Show when you open the ai menu with selected blocks, then complete the first generation. */}
-
-{/* If you want to modify the AI Menu style, you should check the [menu](/docs/components/menu) component docs. \ \ */}
 
 ## Keyboard Shortcuts
 
@@ -252,21 +219,18 @@ Work in progress.
 
 ### Plate UI
 
-Work in progress.
+Refer to the preview above.
 
 ### Plate Plus
 
-Refer to the preview above.
-
-- AI chat powered by AI SDK (OpenAI) with history persistence.
-- Combobox menu with:
-  - Predefined commands
-  - Free-form prompt input
-- Multiple ways to trigger:
+- Combobox menu with free-form prompt input
+- Additional trigger methods:
   - Block menu button
   - Slash command menu
-  - Keyboard shortcuts
 - Beautifully crafted UI
+
+<ComponentPreviewPro name="pro-iframe-demo" id="pro-ai" component="ai" />
+
 
 ## Plugins
 

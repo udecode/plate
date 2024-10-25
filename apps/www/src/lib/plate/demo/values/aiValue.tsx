@@ -7,51 +7,57 @@ jsx;
 export const aiValue: any = (
   <fragment>
     <hh2>AI Menu</hh2>
-    <hp>
-      The AI Menu provides powerful AI-assisted writing and editing
-      capabilities.
-    </hp>
-    <hp>Ways to access the AI Menu:</hp>
+    <hp>Generate and refine content with AI.</hp>
+    <hp>Access the AI menu in many ways:</hp>
     <hp indent={1} listStyleType="decimal">
-      <htext>
-        Press space in an empty block or select text to see "Ask AI" in the
-        floating toolbar.
-      </htext>
-    </hp>
-    <hp indent={1} listStart={2} listStyleType="decimal">
       <htext>Press "⌘ + J".</htext>
     </hp>
+    <hp indent={1} listStart={2} listStyleType="decimal">
+      <htext>Select text and click "Ask AI" in the floating toolbar</htext>
+    </hp>
     <hp indent={1} listStart={3} listStyleType="decimal">
-      <htext>Select text to access AI options for the selection.</htext>
+      <htext>Right-click a block and select "Ask AI"</htext>
     </hp>
-    <hp>Using the AI Menu:</hp>
+    <hp indent={1} listStart={4} listStyleType="decimal">
+      <htext>Press space in an empty block. Try it out:</htext>
+    </hp>
+    <hp indent={2} listStyleType="disc">
+      <htext />
+    </hp>
+    <hp>Once opened, you can:</hp>
     <hp indent={1} listStyleType="disc">
-      <htext>
-        Ask anything in the search bar or choose from preset options:
-      </htext>
-      <hp indent={2} listStyleType="circle">
-        <htext>Continue writing</htext>
-      </hp>
-      <hp indent={2} listStyleType="circle">
-        <htext>Add a summary</htext>
-      </hp>
-      <hp indent={2} listStyleType="circle">
-        <htext>Explain</htext>
-      </hp>
+      <htext>Search commands in the input field:</htext>
     </hp>
     <hp indent={1} listStyleType="disc">
-      <htext>For generated content, you can:</htext>
-      <hp indent={2} listStyleType="circle">
-        <htext>Accept it (inserts directly into the editor)</htext>
-      </hp>
-      <hp indent={2} listStyleType="circle">
-        <htext>Discard it</htext>
-      </hp>
-      <hp indent={2} listStyleType="circle">
-        <htext>Try again for another suggestion</htext>
-      </hp>
+      <htext>Use arrow keys to navigate, Enter to select</htext>
     </hp>
-    <hp>AI options for selected text:</hp>
+    <hp>
+      <htext>Generating commands:</htext>
+    </hp>
+    <hp indent={1} listStyleType="disc">
+      <htext>Continue writing</htext>
+    </hp>
+    <hp indent={1} listStyleType="disc">
+      <htext>Add a summary</htext>
+    </hp>
+    <hp indent={1} listStyleType="disc">
+      <htext>Explain</htext>
+    </hp>
+    <hp>
+      <htext>Generating suggestions:</htext>
+    </hp>
+    <hp indent={1} listStyleType="disc">
+      <htext>Accept</htext>
+    </hp>
+    <hp indent={1} listStyleType="disc">
+      <htext>Discard</htext>
+    </hp>
+    <hp indent={1} listStyleType="disc">
+      <htext>Try again</htext>
+    </hp>
+    <hp>
+      <htext>Editing commands:</htext>
+    </hp>
     <hp indent={1} listStyleType="disc">
       <htext>Improve writing</htext>
     </hp>
@@ -64,7 +70,7 @@ export const aiValue: any = (
     <hp indent={1} listStyleType="disc">
       <htext>Simplify language</htext>
     </hp>
-    <hp>For AI suggestions on selected text, you can:</hp>
+    <hp>Editing suggestions:</hp>
     <hp indent={1} listStyleType="disc">
       <htext>Replace the selection</htext>
     </hp>
@@ -77,10 +83,8 @@ export const aiValue: any = (
     <hp indent={1} listStyleType="disc">
       <htext>Try again</htext>
     </hp>
-    <hcallout variant="info" icon="💡">
-      <htext>
-        Press Escape to close the AI menu or stop the AI generation process.
-      </htext>
-    </hcallout>
+    <hp>
+      <htext>Note: chat history is preserved until the menu is closed.</htext>
+    </hp>
   </fragment>
 );

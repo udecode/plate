@@ -74,7 +74,7 @@ import { PlaygroundFloatingToolbar } from '@/components/plate-ui/playground-floa
 import { PlaygroundFloatingToolbarButtons } from '@/components/plate-ui/playground-floating-toolbar-buttons';
 import { aiPlugins } from '@/lib/plate/demo/plugins/ai-plugins';
 import { getAutoformatOptions } from '@/lib/plate/demo/plugins/autoformatOptions';
-import { copilotPlugins } from '@/lib/plate/demo/plugins/copilotPlugin';
+import { copilotPlugins } from '@/lib/plate/demo/plugins/copilot-plugins';
 import { createPlateUI } from '@/plate/create-plate-ui';
 import { editableProps } from '@/plate/demo/editableProps';
 import { isEnabled } from '@/plate/demo/is-enabled';
@@ -128,7 +128,7 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
       },
       plugins: [
         ...aiPlugins,
-        ...copilotPlugins,
+        ...(id === 'copilot' ? copilotPlugins : []),
         // Nodes
         HeadingPlugin,
         TocPlugin.configure({
@@ -147,7 +147,7 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         LinkPlugin.extend({
           render: { afterEditable: () => <LinkFloatingToolbar /> },
         }),
-        ListPlugin,
+        ...(id === 'list' ? [ListPlugin] : []),
         ImagePlugin.extend({
           render: { afterEditable: ImagePreview },
         }),

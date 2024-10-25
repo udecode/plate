@@ -101,14 +101,28 @@ export const UL = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLUListElement>) => (
-  <ul className={cn('my-4 ml-6 list-disc', className)} {...props} />
+  <ul
+    className={cn(
+      'group my-4 ml-6 list-disc group-data-[list]:my-2',
+      className
+    )}
+    data-list
+    {...props}
+  />
 );
 
 export const OL = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLOListElement>) => (
-  <ol className={cn('my-4 ml-6 list-decimal', className)} {...props} />
+  <ol
+    className={cn(
+      'group my-4 ml-6 list-decimal group-data-[list]:my-2',
+      className
+    )}
+    data-list
+    {...props}
+  />
 );
 
 export const LI = ({
