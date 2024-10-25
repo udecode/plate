@@ -61,6 +61,7 @@ export function SettingsDialog() {
       body: {
         ...completeOptions.body,
         apiKey: tempKey,
+        model: model.value,
       },
     });
   };
@@ -184,7 +185,7 @@ export function SettingsDialog() {
           </Popover>
 
           <Button type="submit" className="w-full">
-            Set API Key
+            Save
           </Button>
         </form>
         <p className="mt-4 text-sm text-muted-foreground">

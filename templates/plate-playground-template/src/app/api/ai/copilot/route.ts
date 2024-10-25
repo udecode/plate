@@ -5,7 +5,12 @@ import { generateText } from 'ai';
 import type { NextRequest } from 'next/server';
 
 export async function POST(req: NextRequest) {
-  const { prompt, system, apiKey: key } = await req.json();
+  const {
+    prompt,
+    system,
+    apiKey: key,
+    model = 'gpt-4o-mini',
+  } = await req.json();
 
   const apiKey = key || process.env.OPENAI_API_KEY;
 
@@ -16,15 +21,13 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  console.log(apiKey);
-
   const openai = createOpenAI({ apiKey });
 
   try {
     const result = await generateText({
       abortSignal: req.signal,
       maxTokens: 50,
-      model: openai('gpt-4o-mini'),
+      model: openai(model),
       prompt: prompt,
       system,
       temperature: 0.7,
