@@ -188,7 +188,8 @@
     ],
     "name": "draggable",
     "registryDependencies": [
-      "tooltip"
+      "tooltip",
+      "use-mounted"
     ],
     "type": "registry:ui"
   },

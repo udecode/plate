@@ -93,7 +93,7 @@ export const Index: Record<string, any> = {
       name: "draggable",
       description: "",
       type: "registry:ui",
-      registryDependencies: ["tooltip"],
+      registryDependencies: ["tooltip","use-mounted"],
       files: ["registry/default/plate-ui/draggable.tsx","registry/default/plate-ui/with-draggables.tsx"],
       component: React.lazy(() => import("@/registry/default/plate-ui/draggable.tsx")),
       source: "",

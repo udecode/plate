@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import {
   type TElement,
@@ -73,9 +73,15 @@ export const useBlockSelectable = ({
   const { api, editor, getOption, getOptions } =
     useEditorPlugin(BlockSelectionPlugin);
 
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const id = element?.id as string | undefined;
 
-  const data = { 'data-key': id };
+  const data = mounted ? { 'data-key': id } : {};
 
   return {
     props: {
