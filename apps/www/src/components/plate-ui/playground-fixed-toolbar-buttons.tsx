@@ -28,9 +28,11 @@ import {
 import { ImagePlugin } from '@udecode/plate-media/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
+import { SparklesIcon } from 'lucide-react';
 
 import { CheckPlugin } from '@/components/context/check-plugin';
 import { Icons, iconVariants } from '@/components/icons';
+import { AIToolbarButton } from '@/registry/default/plate-ui/ai-toolbar-button';
 // import { AIToolbarButton } from '@/registry/default/plate-ui/ai-toolbar-button';
 import { AlignDropdownMenu } from '@/registry/default/plate-ui/align-dropdown-menu';
 import { ColorDropdownMenu } from '@/registry/default/plate-ui/color-dropdown-menu';
@@ -69,9 +71,15 @@ export function PlaygroundFixedToolbarButtons() {
         {!readOnly && (
           <>
             <ToolbarGroup>
-              {/* <AIToolbarButton>
-                <Icons.ai />
-              </AIToolbarButton> */}
+              <ToolbarGroup>
+                <AIToolbarButton
+                  className="text-purple-500 hover:text-purple-600"
+                  tooltip="Edit, generate, and more"
+                >
+                  <SparklesIcon className="mr-1.5 !size-3.5" />
+                  Ask AI
+                </AIToolbarButton>
+              </ToolbarGroup>
 
               <PlaygroundInsertDropdownMenu />
 

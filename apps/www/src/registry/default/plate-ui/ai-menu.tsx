@@ -8,6 +8,7 @@ import {
   getAncestorNode,
   getBlocks,
   isElementEmpty,
+  isHotkey,
   isSelectionAtBlockEnd,
 } from '@udecode/plate-common';
 import {
@@ -150,6 +151,16 @@ export function AIMenu() {
               variant="ghost"
               className="rounded-none border-b border-solid border-border [&_svg]:hidden"
               value={input}
+              onKeyDown={(e) => {
+                if (isHotkey('backspace')(e) && input.length === 0) {
+                  e.preventDefault();
+                  api.aiChat.hide();
+                }
+                if (isHotkey('enter')(e) && !e.shiftKey && !value) {
+                  e.preventDefault();
+                  void api.aiChat.submit();
+                }
+              }}
               onValueChange={setInput}
               placeholder="Ask AI anything..."
               autoFocus
