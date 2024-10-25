@@ -2,7 +2,7 @@ import type { Path } from 'slate';
 
 import { type SlateEditor, isText, removeNodes } from '@udecode/plate-common';
 
-import { AIPlugin } from '../../react/ai/AIPlugin';
+import { BaseAIPlugin } from '../BaseAIPlugin';
 
 export const removeAINodes = (
   editor: SlateEditor,
@@ -10,6 +10,6 @@ export const removeAINodes = (
 ) => {
   removeNodes(editor, {
     at,
-    match: (n) => isText(n) && !!n[AIPlugin.key],
+    match: (n) => isText(n) && !!n[BaseAIPlugin.key],
   });
 };
