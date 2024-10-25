@@ -23,8 +23,6 @@ export async function POST(req: NextRequest) {
 
   const openai = createOpenAI({ apiKey });
 
-  console.log('model', model);
-
   try {
     const result = await streamText({
       maxTokens: 2048,
