@@ -9,8 +9,6 @@ import {
   withoutNormalizing,
 } from '@udecode/plate-common';
 
-import { AIPlugin } from '../../react/ai/AIPlugin';
-
 export const insertAINodes = (
   editor: SlateEditor,
   nodes: TDescendant[],
@@ -24,7 +22,7 @@ export const insertAINodes = (
 
   const aiNodes = nodes.map((node) => ({
     ...node,
-    [AIPlugin.key]: true,
+    ai: true,
   }));
 
   withoutNormalizing(editor, () => {
