@@ -1,0 +1,233 @@
+---
+title: Copilot
+description: Render AI suggestions ghost text as you type.
+docs:
+  - route: /docs/components/ghost-text
+    title: Ghost Text
+  - route: https://pro.platejs.org/docs/components/ghost-text
+    title: Ghost Text
+---
+
+<ComponentPreview name="playground-demo" id="copilot" />
+
+<PackageInfo>
+
+## Features
+
+- Renders ghost text suggestions as you type
+- Two trigger modes:
+  - Shortcut (`Ctrl+Space`). Press again for alternative suggestions.
+  - Debounce mode: automatically triggers after a space at paragraph ends
+- Accept suggestions with Tab or word-by-word with `Cmd+→`
+- Built-in support for Vercel AI SDK completion API
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-ai @udecode/plate-markdown
+```
+
+## Usage
+
+```tsx
+import { CopilotPlugin } from '@udecode/plate-ai/react';
+import {
+  MarkdownPlugin,
+  serializeMdNodes,
+  stripMarkdown,
+} from '@udecode/plate-markdown';
+```
+
+```tsx
+const plugins = [
+  // ...otherPlugins,
+  MarkdownPlugin.configure({ options: { indentList: true } }),
+  CopilotPlugin.configure(({ api }) => ({
+    options: {
+    completeOptions: {
+      api: '/api/your-api-endpoint',
+      body: {
+        system: `You are an advanced AI writing assistant, similar to VSCode Copilot but for general text. Your task is to predict and generate the next part of the text based on the given context.
+
+Rules:
+- Continue the text naturally up to the next punctuation mark (., ,, ;, :, ?, or !).
+- Maintain style and tone. Don't repeat given text.
+- For unclear context, provide the most likely continuation.
+- Handle code snippets, lists, or structured text if needed.
+- Don't include """ in your response.
+- CRITICAL: Always end with a punctuation mark.
+- CRITICAL: Avoid starting a new block. Do not use block formatting like >, #, 1., 2., -, etc. The suggestion should continue in the same block as the context.
+- If no context is provided or you can't generate a continuation, return "0" without explanation.`,
+      },
+      onFinish: (_, completion) => {
+        if (completion === '0') return;
+
+        api.copilot.setBlockSuggestion({
+          //stripMarkdownBlocks in plus GhostText
+          text: stripMarkdown(completion),
+        });
+      },
+    },
+    debounceDelay: 500,
+    getPrompt: ({ editor }) => {
+      const contextEntry = getAncestorNode(editor);
+
+      if (!contextEntry) return '';
+
+      const prompt = serializeMdNodes([contextEntry[0] as TElement]);
+
+      return `Continue the text up to the next punctuation mark:
+"""
+${prompt}
+"""`;
+    },
+    renderGhostText: GhostText,
+  },
+}));
+```
+
+- [GhostText](/docs/components/ghost-text)
+
+## Tab Key Handling
+
+The Copilot plugin uses the Tab key to accept suggestions. To avoid conflicts with other plugins that use Tab (like `IndentPlugin` or `TabbablePlugin`), ensure `CopilotPlugin` is placed before them in your plugin configuration. This allows Copilot to handle Tab key events first when suggestions are present.
+
+```tsx
+const plugins = [
+  // ...otherPlugins,
+  CopilotPlugin,
+  // Place tab-using plugins after Copilot
+  IndentPlugin,
+  TabbablePlugin,
+];
+```
+
+## Examples
+
+### Plate UI
+
+Refer to the preview above.
+
+### Plate Plus
+
+- Automatic AI inline suggestions powered by AI SDK (OpenAI). Code available in [Potion template](https://pro.platejs.org/docs/templates/potion)
+- Rich text suggestions including marks and links
+- Hover card with additional information
+- Beautifully crafted UI
+
+<ComponentPreviewPro
+  name="pro-iframe-demo"
+  id="pro-copilot"
+  component="copilot"
+/>
+
+## Keyboard Shortcuts
+
+<KeyTable>
+  <KeyTableItem hotkey="Ctrl + Space">
+    Trigger suggestion. Press again for alternative suggestions.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Tab">Accept the entire suggestion.</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + →">
+    Accept the next word of the suggestion.
+  </KeyTableItem>
+  <KeyTableItem hotkey="Escape">Dismiss the current suggestion.</KeyTableItem>
+</KeyTable>
+
+## Plugins
+
+### CopilotPlugin
+
+<APIOptions>
+<APIItem name="autoTriggerQuery" type="(options: { editor: PlateEditor }) => boolean" optional>
+  Additional conditions to auto trigger copilot. Default checks:
+  - Block above is not empty
+  - Block above ends with a space
+  - No existing suggestion
+</APIItem>
+
+<APIItem name="completeOptions" type="Partial<CompleteOptions>">
+  AI completion configuration options. See [AI SDK useCompletion
+  Parameters](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-completion#parameters).
+</APIItem>
+
+<APIItem name="debounceDelay" type="number" optional>
+  Delay for debouncing auto-triggered suggestions. **Default:** `0`
+</APIItem>
+
+<APIItem
+  name="getNextWord"
+  type="(options: { text: string }) => { firstWord: string; remainingText: string }"
+  optional
+>
+  Function to extract the next word from suggestion text.
+</APIItem>
+
+<APIItem
+  name="getPrompt"
+  type="(options: { editor: PlateEditor }) => string"
+  optional
+>
+  Function to generate the prompt for AI completion. **Default:** Uses markdown
+  serialization of ancestor node
+</APIItem>
+
+<APIItem name="renderGhostText" type="(() => React.ReactNode) | null" optional>
+  Component to render ghost text suggestions.
+</APIItem>
+
+<APIItem name="triggerQuery" type="(options: { editor: PlateEditor }) => boolean" optional>
+  Conditions to trigger copilot. Default checks:
+  - Selection is not expanded
+  - Selection is at block end
+</APIItem>
+</APIOptions>
+
+## API
+
+### editor.api.copilot.accept()
+
+Accepts the current suggestion.
+
+### editor.api.copilot.acceptNextWord()
+
+Accepts the next word of the suggestion.
+
+### editor.api.copilot.reset()
+
+Resets the plugin state:
+
+- Aborts any ongoing API request
+- Clears the current completion
+- Clears suggestion node ID and text
+
+### editor.api.copilot.setBlockSuggestion()
+
+Sets suggestion text for a block.
+
+<APIParameters>
+  <APIItem name="options" type="object">
+    <APISubList>
+      <APISubListItem parent="options" name="text" type="string">
+        The suggestion text to set.
+      </APISubListItem>
+      <APISubListItem parent="options" name="id" type="string" optional>
+        Target block ID. Defaults to current block if not provided.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### editor.api.copilot.stop()
+
+Stops ongoing suggestion requests:
+
+- Cancels debounced trigger calls
+- Aborts current API request
+- Resets abort controller
+
+### editor.api.copilot.triggerSuggestion()
+
+Triggers a new suggestion request. Can be debounced based on plugin configuration.

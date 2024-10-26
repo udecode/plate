@@ -6,6 +6,7 @@ jsx;
 
 export const fontValue: any = (
   <fragment>
+    <hh2>Colors</hh2>
     <hp>
       Add{' '}
       <htext color="white" backgroundColor="#df4538">

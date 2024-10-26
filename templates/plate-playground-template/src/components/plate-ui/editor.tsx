@@ -8,7 +8,7 @@ import type { VariantProps } from 'class-variance-authority';
 
 const editorVariants = cva(
   cn(
-    'relative overflow-x-auto whitespace-pre-wrap break-words',
+    'relative overflow-x-auto whitespace-pre-wrap break-words text-foreground',
     'min-h-[80px] w-full rounded-md bg-background px-6 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none',
     '[&_[data-slate-placeholder]]:text-muted-foreground [&_[data-slate-placeholder]]:!opacity-100',
     '[&_[data-slate-placeholder]]:top-[auto_!important]',
@@ -36,6 +36,9 @@ const editorVariants = cva(
         sm: 'text-sm',
       },
       variant: {
+        aiChat:
+          'max-h-[min(70vh,320px)] w-full overflow-y-auto rounded-none border-b px-3 py-2 text-sm',
+        demo: 'min-h-full w-full px-12 pb-72 text-base sm:px-16 md:px-[max(64px,calc(50%-350px))]',
         ghost: '',
         outline: 'border border-input',
       },
@@ -61,13 +64,8 @@ const Editor = React.forwardRef<HTMLDivElement, EditorProps>(
     ref
   ) => {
     return (
-      <div
-        id="scroll_container"
-        className="ignore-click-outside/toolbar relative w-full"
-        ref={ref}
-      >
+      <div ref={ref} className="relative w-full">
         <PlateContent
-          aria-disabled={disabled}
           className={cn(
             editorVariants({
               disabled,
@@ -78,9 +76,10 @@ const Editor = React.forwardRef<HTMLDivElement, EditorProps>(
             }),
             className
           )}
+          readOnly={disabled ?? readOnly}
+          aria-disabled={disabled}
           data-plate-selectable
           disableDefaultStyles
-          readOnly={disabled ?? readOnly}
           {...props}
         />
       </div>

@@ -13,6 +13,49 @@
   },
   {
     "dependencies": [
+      "@udecode/plate-ai",
+      "@udecode/plate-markdown",
+      "@udecode/plate-selection"
+    ],
+    "files": [
+      {
+        "path": "plate-ui/ai-menu.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/ai-chat-editor.tsx",
+        "type": "registry:ui"
+      },
+      {
+        "path": "plate-ui/ai-menu-items.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "ai-menu",
+    "registryDependencies": [
+      "button",
+      "menu",
+      "textarea",
+      "editor"
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [],
+    "files": [
+      {
+        "path": "plate-ui/ai-toolbar-button.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "ai-toolbar-button",
+    "registryDependencies": [
+      "toolbar"
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
       "@udecode/plate-selection"
     ],
     "files": [
@@ -325,6 +368,71 @@
   },
   {
     "dependencies": [
+      "@radix-ui/react-context-menu"
+    ],
+    "files": [
+      {
+        "path": "plate-ui/block-context-menu.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "block-context-menu",
+    "registryDependencies": [
+      "calendar",
+      "plate-element"
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
+      "@udecode/plate-ai"
+    ],
+    "files": [
+      {
+        "path": "plate-ui/ghost-text.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "ghost-text",
+    "registryDependencies": [
+      ""
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
+      "@udecode/plate-ai"
+    ],
+    "files": [
+      {
+        "path": "plate-ui/ai-leaf.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "ai-leaf",
+    "registryDependencies": [
+      ""
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
+      "@udecode/plate-heading"
+    ],
+    "files": [
+      {
+        "path": "plate-ui/toc-element.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "toc-element",
+    "registryDependencies": [
+      ""
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
       "react-day-picker@8.10.1",
       "date-fns"
     ],
@@ -482,7 +590,8 @@
   },
   {
     "dependencies": [
-      "@radix-ui/react-dialog"
+      "@radix-ui/react-dialog",
+      "@radix-ui/react-visually-hidden"
     ],
     "files": [
       {
@@ -711,11 +820,11 @@
     ],
     "files": [
       {
-        "path": "plate-ui/indent-todo-marker-component.tsx",
+        "path": "plate-ui/indent-todo-marker.tsx",
         "type": "registry:ui"
       }
     ],
-    "name": "indent-todo-marker-component",
+    "name": "indent-todo-marker",
     "registryDependencies": [
       "checkbox"
     ],

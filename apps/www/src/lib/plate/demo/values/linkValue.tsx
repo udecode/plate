@@ -6,7 +6,7 @@ jsx;
 
 export const linkValue: any = (
   <fragment>
-    <hh2>🔗 Link</hh2>
+    <hh2>Link</hh2>
     <hp>
       Add <ha url="https://en.wikipedia.org/wiki/Hypertext">hyperlinks</ha>{' '}
       within your text to reference external sources or provide additional

@@ -1,7 +1,7 @@
 import { getBlock } from '@/lib/_blocks';
 import { styles } from '@/registry/registry-styles';
 
-import { BlockPreview } from './block-preview';
+import { PlaygroundPreview } from './playground-preview';
 
 export async function BlockDisplay({ name }: { name: string }) {
   const blocks = await Promise.all(
@@ -25,6 +25,6 @@ export async function BlockDisplay({ name }: { name: string }) {
   }
 
   return blocks.map((block) => (
-    <BlockPreview key={`${block.style}-${block.name}`} block={block} />
+    <PlaygroundPreview key={`${block.name}`} block={block} />
   ));
 }

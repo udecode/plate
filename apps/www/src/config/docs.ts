@@ -2,6 +2,8 @@ import type { MainNavItem, SidebarNavItem } from '@/types/nav';
 
 import { customizerComponents } from '@/config/customizer-components';
 
+import { siteConfig } from './site';
+
 export interface DocsConfig {
   componentsNav: SidebarNavItem[];
   mainNav: MainNavItem[];
@@ -45,9 +47,14 @@ export const docsConfig: DocsConfig = {
     },
     {
       items: [
+        customizerComponents.aiLeaf,
+        customizerComponents.aiMenu,
+        customizerComponents.aiToolbarButton,
+        customizerComponents.ghostText,
         customizerComponents.editor,
         customizerComponents.alignDropdownMenu,
         customizerComponents.avatar,
+        customizerComponents.blockContextMenu,
         customizerComponents.blockquoteElement,
         customizerComponents.button,
         customizerComponents.caption,
@@ -58,7 +65,7 @@ export const docsConfig: DocsConfig = {
         customizerComponents.codeLineElement,
         customizerComponents.codeSyntaxLeaf,
         customizerComponents.colorDropdownMenu,
-        customizerComponents.combobox,
+        customizerComponents.contextMenu,
         customizerComponents.command,
         customizerComponents.commentLeaf,
         customizerComponents.commentToolbarButton,
@@ -84,6 +91,7 @@ export const docsConfig: DocsConfig = {
         customizerComponents.imageElement,
         customizerComponents.indentListToolbarButton,
         customizerComponents.indentToolbarButton,
+        customizerComponents.indentTodoMarker,
         customizerComponents.inlineCombobox,
         customizerComponents.input,
         customizerComponents.insertDropdownMenu,
@@ -107,12 +115,14 @@ export const docsConfig: DocsConfig = {
         customizerComponents.placeholder,
         customizerComponents.popover,
         customizerComponents.resizable,
+        customizerComponents.slashInputElement,
         customizerComponents.searchHighlightLeaf,
         customizerComponents.separator,
         customizerComponents.tableCellElement,
         customizerComponents.tableDropdownMenu,
         customizerComponents.tableElement,
         customizerComponents.tableRowElement,
+        customizerComponents.tocElement,
         customizerComponents.todoListElement,
         customizerComponents.toggleElement,
         customizerComponents.toggleToolbarButton,
@@ -133,6 +143,14 @@ export const docsConfig: DocsConfig = {
       title: 'Components',
     },
     {
+      href: '/#playground',
+      title: 'Playground',
+    },
+    {
+      href: '/#potion',
+      title: 'Potion',
+    },
+    {
       external: true,
       href: 'https://github.com/udecode/plate',
       title: 'GitHub',
@@ -141,6 +159,10 @@ export const docsConfig: DocsConfig = {
       external: true,
       href: 'https://discord.gg/mAZRuBzGM3',
       title: 'Discord',
+    },
+    {
+      href: siteConfig.links.platePro,
+      title: 'Plate Plus',
     },
   ],
   sidebarNav: [
@@ -153,10 +175,6 @@ export const docsConfig: DocsConfig = {
         {
           href: '/docs/getting-started',
           title: 'Getting Started',
-        },
-        {
-          href: '/',
-          title: 'Playground',
         },
       ],
       title: 'Overview',
@@ -174,62 +192,50 @@ export const docsConfig: DocsConfig = {
       items: [
         {
           href: '/docs/plugin',
-          label: 'New',
           title: 'Plugin Configuration',
         },
         {
           href: '/docs/plugin-methods',
-          label: 'New',
           title: 'Plugin Methods',
         },
         {
           href: '/docs/plugin-shortcuts',
-          label: 'New',
           title: 'Plugin Shortcuts',
         },
         {
           href: '/docs/plugin-context',
-          label: 'New',
           title: 'Plugin Context',
         },
         {
           href: '/docs/plugin-components',
-          label: 'UI',
           title: 'Plugin Components',
         },
         {
           href: '/docs/editor',
-          label: 'New',
           title: 'Editor Configuration',
         },
         {
           href: '/docs/editor-methods',
-          label: 'New',
           title: 'Editor Methods',
         },
         {
           href: '/docs/controlled',
-          label: 'New',
           title: 'Controlled Value',
         },
         {
           href: '/docs/html',
-          label: 'New',
           title: 'HTML',
         },
         {
           href: '/docs/debugging',
-          label: 'New',
           title: 'Debugging',
         },
         {
           href: '/docs/unit-testing',
-          label: 'New',
           title: 'Unit Testing',
         },
         {
           href: '/docs/playwright',
-          label: 'New',
           title: 'Playwright Testing',
         },
       ],
@@ -237,6 +243,46 @@ export const docsConfig: DocsConfig = {
     },
     {
       items: [
+        {
+          href: '/docs/ai',
+          label: 'New',
+          title: 'AI',
+        },
+        {
+          href: '/docs/copilot',
+          label: 'New',
+          title: 'Copilot',
+        },
+        {
+          href: '/docs/block-menu',
+          label: 'New',
+          title: 'Block Menu',
+        },
+        {
+          href: '/docs/callout',
+          label: 'New',
+          title: 'Callout',
+        },
+        {
+          href: '/docs/equation',
+          label: 'New',
+          title: 'Equation',
+        },
+        {
+          href: '/docs/media-placeholder',
+          label: 'New',
+          title: 'Media Placeholder',
+        },
+        {
+          href: '/docs/slash-command',
+          label: 'New',
+          title: 'Slash Command',
+        },
+        {
+          href: '/docs/toc',
+          label: 'New',
+          title: 'Table of Contents',
+        },
         {
           href: '/docs/alignment',
           title: 'Alignment',
@@ -268,6 +314,11 @@ export const docsConfig: DocsConfig = {
           title: 'Collaboration',
         },
         {
+          href: '/docs/column',
+          label: 'Element',
+          title: 'Column',
+        },
+        {
           href: '/docs/combobox',
           title: 'Combobox',
         },
@@ -277,9 +328,8 @@ export const docsConfig: DocsConfig = {
           title: 'Comments',
         },
         {
-          href: '/docs/column',
-          label: 'Element',
-          title: 'Column',
+          href: '/docs/csv',
+          title: 'CSV',
         },
         {
           href: '/docs/date',
@@ -289,6 +339,10 @@ export const docsConfig: DocsConfig = {
         {
           href: '/docs/dnd',
           title: 'Drag & Drop',
+        },
+        {
+          href: '/docs/docx',
+          title: 'DOCX',
         },
         {
           href: '/docs/emoji',
@@ -303,10 +357,6 @@ export const docsConfig: DocsConfig = {
           href: '/docs/exit-break',
           title: 'Exit Break',
         },
-        // {
-        //   title: 'Find',
-        //   href: '/docs/find-replace',
-        // },
         {
           href: '/docs/font',
           title: 'Font',
@@ -333,6 +383,7 @@ export const docsConfig: DocsConfig = {
           href: '/docs/indent-list',
           title: 'Indent List',
         },
+
         {
           href: '/docs/line-height',
           title: 'Line Height',
@@ -348,6 +399,10 @@ export const docsConfig: DocsConfig = {
           title: 'List',
         },
         {
+          href: '/docs/markdown',
+          title: 'Markdown',
+        },
+        {
           href: '/docs/media',
           label: 'Element',
           title: 'Media',
@@ -360,18 +415,6 @@ export const docsConfig: DocsConfig = {
         {
           href: '/docs/reset-node',
           title: 'Reset Node',
-        },
-        {
-          href: '/docs/csv',
-          title: 'CSV',
-        },
-        {
-          href: '/docs/docx',
-          title: 'DOCX',
-        },
-        {
-          href: '/docs/markdown',
-          title: 'Markdown',
         },
         {
           href: '/docs/single-line',
@@ -401,6 +444,16 @@ export const docsConfig: DocsConfig = {
     {
       items: [
         {
+          href: '/docs/upload',
+          label: 'New',
+          title: 'Upload',
+        },
+        {
+          href: '/docs/examples/version-history',
+          label: 'New',
+          title: 'Version History',
+        },
+        {
           href: '/docs/examples/editable-voids',
           title: 'Editable Voids',
         },
@@ -421,12 +474,7 @@ export const docsConfig: DocsConfig = {
           title: 'Preview Markdown',
         },
         {
-          href: '/docs/examples/version-history',
-          title: 'Version History',
-        },
-        {
           href: '/docs/examples/server',
-          label: 'New',
           title: 'Server-Side',
         },
       ],

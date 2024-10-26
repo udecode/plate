@@ -7,4 +7,4 @@ export * from './useContentObserver';
 export * from './useTocController';
 export * from './useTocElement';
 export * from './useTocObserver';
-export * from './useTocSideBarState';
+export * from './useTocSideBar';

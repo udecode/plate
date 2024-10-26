@@ -1,21 +1,32 @@
-# Playground Template
+## Getting Started
 
-A comprehensive playground template for building rich-text editors with [Plate](https://platejs.org/) and Next.js 14.
+### Requirements
 
-## Usage
+- Node.js
+- pnpm
+
+### Environment Variables
+
+Copy the example env file:
+
+```bash
+cp .env.example .env.local
+```
+
+Set up your environment variables:
+
+- `OPENAI_API_KEY` – OpenAI API key ([get one here](https://platform.openai.com/account/api-keys))
+
+### Development
+
+1. Install dependencies:
 
 ```bash
 pnpm install
-pnpm dev
 ```
 
-## Features
+2. Start the development server:
 
-- Next.js 14 App Directory
-- [Plate](https://platejs.org/) Editor
-- [shadcn/ui](https://ui.shadcn.com/)
-- Radix UI Primitives
-- Tailwind CSS
-- Icons from [Lucide](https://lucide.dev)
-- Dark mode with `next-themes`
-- Tailwind CSS class sorting, merging and linting.
+```bash
+pnpm dev
+```

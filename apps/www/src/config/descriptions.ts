@@ -1,3 +1,4 @@
+import { AIPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
@@ -28,6 +29,7 @@ import {
   FontColorPlugin,
   FontSizePlugin,
 } from '@udecode/plate-font/react';
+import { TocPlugin } from '@udecode/plate-heading/react';
 import { HighlightPlugin } from '@udecode/plate-highlight/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
@@ -44,7 +46,11 @@ import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { ResetNodePlugin } from '@udecode/plate-reset-node/react';
 import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import {
+  BlockMenuPlugin,
+  BlockSelectionPlugin,
+} from '@udecode/plate-selection/react';
+import { SlashPlugin } from '@udecode/plate-slash-command/react';
 import { TabbablePlugin } from '@udecode/plate-tabbable/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
@@ -53,13 +59,16 @@ import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
 
 export const descriptions: Record<string, string> = {
+  [AIPlugin.key]: 'Add AI Menu to your document.',
   [AlignPlugin.key]: 'Align your content to different positions.',
   [AutoformatPlugin.key]: 'Apply formatting automatically using shortcodes.',
+  [BlockMenuPlugin.key]: 'Add a block menu to your document.',
   [BlockSelectionPlugin.key]: 'Select and manipulate entire text blocks.',
   [BlockquotePlugin.key]: 'Highlight important text or citations.',
   [BoldPlugin.key]: 'Make your text stand out.',
   [CodePlugin.key]: 'Embed code into your text.',
   [CommentsPlugin.key]: 'Add comments to text as marks.',
+  [CopilotPlugin.key]: 'AI Copilot',
   [CsvPlugin.key]: 'Copy paste from CSV to Slate.',
   [DatePlugin.key]: 'Add inline date plugins',
   [DeletePlugin.key]:
@@ -98,6 +107,7 @@ export const descriptions: Record<string, string> = {
   [SelectOnBackspacePlugin.key]:
     'Select the preceding block instead of deleting when pressing backspace.',
   [SingleLinePlugin.key]: 'Restrict the editor to a single block.',
+  [SlashPlugin.key]: 'Slash commands',
   [SoftBreakPlugin.key]:
     'Insert line breaks within a block of text without starting a new block.',
   [StrikethroughPlugin.key]:
@@ -108,6 +118,7 @@ export const descriptions: Record<string, string> = {
     'Maintain a consistent tab order for tabbable elements.',
   [TablePlugin.key]:
     'Organize and display data in a structured and resizable tabular format.',
+  [TocPlugin.key]: 'Add a table of contents to your document.',
   [TodoListPlugin.key]: 'Manage tasks within your document.',
   [TogglePlugin.key]: 'Add toggles to your document.',
   [TrailingBlockPlugin.key]:

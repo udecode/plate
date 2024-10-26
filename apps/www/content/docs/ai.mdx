@@ -1,0 +1,432 @@
+---
+title: AI
+description: AI menu with commands, streaming responses in a preview or directly into the editor.
+docs:
+  - route: https://pro.platejs.org/docs/examples/ai
+    title: AI Menu
+---
+
+<ComponentPreview name="playground-demo" id="ai" />
+
+<PackageInfo>
+
+## Features
+
+- Combobox menu with predefined commands:
+  - Generate: continue writing, add summary, explain
+  - Edit: improve writing, make it longer or shorter, fix spelling & grammar, simplify language
+- Three trigger modes:
+  - Cursor mode: trigger at block end
+  - Selection mode: trigger with selected text
+  - Block selection mode: trigger with selected blocks
+- Streaming responses in preview or direct editor insertion
+- Markdown support
+- Built-in support for Vercel AI SDK chat API
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npm install @udecode/plate-ai @udecode/plate-selection @udecode/plate-markdown @udecode/plate-basic-marks
+```
+
+## Usage
+
+### Plugins
+
+```tsx
+import { withProps } from '@udecode/cn';
+import { AIChatPlugin, AIPlugin } from '@udecode/plate-ai/react';
+import {
+  BoldPlugin,
+  CodePlugin,
+  ItalicPlugin,
+  StrikethroughPlugin,
+  UnderlinePlugin,
+} from '@udecode/plate-basic-marks/react';
+import { PlateLeaf, createPlateEditor } from '@udecode/plate-common/react';
+import { LinkPlugin } from '@udecode/plate-link/react';
+import { MarkdownPlugin } from '@udecode/plate-markdown';
+```
+
+```tsx
+export const createAIEditor = () => {
+  const editor = createPlateEditor({
+    id: 'ai',
+    override: {
+      components: {
+        [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
+        [CodePlugin.key]: CodeLeaf,
+        [ItalicPlugin.key]: withProps(PlateLeaf, { as: 'em' }),
+        [LinkPlugin.key]: LinkElement,
+        [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: 's' }),
+        [UnderlinePlugin.key]: withProps(PlateLeaf, { as: 'u' }),
+      },
+    },
+    plugins: [
+      BoldPlugin,
+      ItalicPlugin,
+      UnderlinePlugin,
+      StrikethroughPlugin,
+      CodePlugin,
+    ],
+    value: [{ children: [{ text: '' }], type: 'p' }],
+  });
+
+  return editor;
+};
+
+const systemCommon = `\
+You are an advanced AI-powered note-taking assistant, designed to enhance productivity and creativity in note management.
+Respond directly to user prompts with clear, concise, and relevant content. Maintain a neutral, helpful tone.
+
+Rules:
+- <Document> is the entire note the user is working on.
+- <Reminder> is a reminder of how you should reply to INSTRUCTIONS. It does not apply to questions.
+- Anything else is the user prompt.
+- Your response should be tailored to the user's prompt, providing precise assistance to optimize note management.
+- For INSTRUCTIONS: Follow the <Reminder> exactly. Provide ONLY the content to be inserted or replaced. No explanations or comments.
+- For QUESTIONS: Provide a helpful and concise answer. You may include brief explanations if necessary.
+- CRITICAL: Distinguish between INSTRUCTIONS and QUESTIONS. Instructions typically ask you to modify or add content. Questions ask for information or clarification.
+`;
+
+const systemDefault = `\
+${systemCommon}
+- <Block> is the current block of text the user is working on.
+- Ensure your output can seamlessly fit into the existing <Block> structure.
+- CRITICAL: Provide only a single block of text. DO NOT create multiple paragraphs or separate blocks.
+<Block>
+{block}
+</Block>
+`;
+
+const systemSelecting = `\
+${systemCommon}
+- <Block> is the block of text containing the user's selection, providing context.
+- Ensure your output can seamlessly fit into the existing <Block> structure.
+- <Selection> is the specific text the user has selected in the block and wants to modify or ask about.
+- Consider the context provided by <Block>, but only modify <Selection>. Your response should be a direct replacement for <Selection>.
+<Block>
+{block}
+</Block>
+<Selection>
+{selection}
+</Selection>
+`;
+
+const systemBlockSelecting = `\
+${systemCommon}
+- <Selection> represents the full blocks of text the user has selected and wants to modify or ask about.
+- Your response should be a direct replacement for the entire <Selection>.
+- Maintain the overall structure and formatting of the selected blocks, unless explicitly instructed otherwise.
+- CRITICAL: Provide only the content to replace <Selection>. Do not add additional blocks or change the block structure unless specifically requested.
+<Selection>
+{block}
+</Selection>
+`;
+
+const userDefault = `<Reminder>
+CRITICAL: DO NOT use block formatting. You can only use inline formatting.
+CRITICAL: DO NOT start new lines or paragraphs.
+NEVER write <Block>.
+</Reminder>
+{prompt}`;
+
+const userSelecting = `<Reminder>
+If this is a question, provide a helpful and concise answer about <Selection>.
+If this is an instruction, provide ONLY the text to replace <Selection>. No explanations.
+Ensure it fits seamlessly within <Block>. If <Block> is empty, write ONE random sentence.
+NEVER write <Block> or <Selection>.
+</Reminder>
+{prompt} about <Selection>`;
+
+const userBlockSelecting = `<Reminder>
+If this is a question, provide a helpful and concise answer about <Selection>.
+If this is an instruction, provide ONLY the content to replace the entire <Selection>. No explanations.
+Maintain the overall structure unless instructed otherwise.
+NEVER write <Block> or <Selection>.
+</Reminder>
+{prompt} about <Selection>`;
+
+export const PROMPT_TEMPLATES = {
+  systemBlockSelecting,
+  systemDefault,
+  systemSelecting,
+  userBlockSelecting,
+  userDefault,
+  userSelecting,
+};
+
+const plugins = [
+  // ...otherPlugins,
+  MarkdownPlugin.configure({ options: { indentList: true } }),
+  AIPlugin,
+  AIChatPlugin.configure({
+    options: {
+      createAIEditor,
+      promptTemplate: ({ isBlockSelecting, isSelecting }) => {
+        return isBlockSelecting
+          ? PROMPT_TEMPLATES.userBlockSelecting
+          : isSelecting
+            ? PROMPT_TEMPLATES.userSelecting
+            : PROMPT_TEMPLATES.userDefault;
+      },
+      scrollContainerSelector: '#scroll_container',
+      systemTemplate: ({ isBlockSelecting, isSelecting }) => {
+        return isBlockSelecting
+          ? PROMPT_TEMPLATES.systemBlockSelecting
+          : isSelecting
+            ? PROMPT_TEMPLATES.systemSelecting
+            : PROMPT_TEMPLATES.systemDefault;
+      },
+    },
+    render: { afterEditable: () => <AIMenu /> },
+  }),
+  SelectionOverlayPlugin,
+];
+```
+
+- [AIMenu](/docs/components/ai-menu)
+
+The [SelectionOverlayPlugin](https://pro.platejs.org/docs/components/cursor-overlay):
+
+- Maintains selection highlight when editor loses focus
+- Essential for AI menu and other external input interactions
+- Prevents double selection with `data-plate-prevent-overlay` attribute
+
+### AI SDK
+
+This plugin is depending on the [ai](https://npmjs.com/package/ai) package:
+
+- Setup a [route handler](https://sdk.vercel.ai/docs/getting-started/nextjs-app-router#create-a-route-handler) using [streamText](https://sdk.vercel.ai/docs/ai-sdk-core/generating-text#streamtext).
+- Wire up [useChat](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat) in your [AI menu](/docs/components/ai-menu) component.
+
+
+## Keyboard Shortcuts
+
+<KeyTable>
+  <KeyTableItem hotkey="Space">
+    Open AI menu in empty block (cursor mode)
+  </KeyTableItem>
+  <KeyTableItem hotkey="Cmd + J">
+    Open AI menu (cursor or selection mode)
+  </KeyTableItem>
+  <KeyTableItem hotkey="Escape">Close AI menu</KeyTableItem>
+</KeyTable>
+
+## Examples
+
+### Plate UI
+
+Refer to the preview above.
+
+### Plate Plus
+
+- Combobox menu with free-form prompt input
+- Additional trigger methods:
+  - Block menu button
+  - Slash command menu
+- Beautifully crafted UI
+
+<ComponentPreviewPro name="pro-iframe-demo" id="pro-ai" component="ai" />
+
+
+## Plugins
+
+### AIPlugin
+
+Extends the editor with AI transforms.
+
+### AIChatPlugin
+
+Enables chat operations and streaming text generation in the editor.
+
+<APIOptions>
+<APIItem name="chat" type="UseChatHelpers">
+  Chat helpers returned by [useChat](https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat).
+</APIItem>
+
+<APIItem name="createAIEditor" type="() => PlateEditor" optional>
+  
+Function to create editor instance for preview mode.
+
+- **Default:** Creates a basic editor with id 'ai'
+
+</APIItem>
+
+<APIItem name="mode" type="'chat' | 'insert'" optional>
+
+Specifies how assistant messages are handled:
+
+- `'chat'`: Shows preview with accept/reject options (default)
+- `'insert'`: Directly inserts content into editor
+- **Default:** `'chat'`
+
+</APIItem>
+
+<APIItem name="open" type="boolean" optional>
+
+Whether the AI chat is open.
+
+- **Default:** `false`
+
+</APIItem>
+
+<APIItem name="promptTemplate" type="(props: EditorPromptParams) => string" optional>
+  
+Template for generating prompts. Supports placeholders:
+
+- `{block}`: Markdown of blocks in selection
+- `{editor}`: Markdown of entire editor content
+- `{selection}`: Markdown of current selection
+- `{prompt}`: Actual user prompt
+- **Default:** `'{prompt}'`
+
+</APIItem>
+
+<APIItem name="scrollContainerSelector" type="string" optional>
+
+CSS selector for scrollable container.
+
+- **Default:** `'#scroll_container'`
+
+</APIItem>
+
+<APIItem name="systemTemplate" type="(props: EditorPromptParams) => string | void" optional>
+
+Template for system messages. Supports same placeholders as `promptTemplate`.
+
+- **Default:** `undefined`
+
+</APIItem>
+</APIOptions>
+
+## API
+
+### editor.aiChat.accept()
+
+Accepts the current AI suggestion:
+
+- Removes AI marks from the content
+- Hides the AI chat interface
+- Focuses the editor
+
+### editor.aiChat.insertBelow()
+
+Inserts AI content below the current block.
+
+<APIParameters>
+  <APIItem name="sourceEditor" type="PlateEditor">
+    Editor containing the content to insert.
+  </APIItem>
+</APIParameters>
+
+Handles both block selection and normal selection modes:
+
+- In block selection: Inserts after the last selected block
+- In normal selection: Inserts after the current block
+
+### editor.aiChat.replaceSelection()
+
+Replaces the current selection with AI content.
+
+<APIParameters>
+  <APIItem name="sourceEditor" type="PlateEditor">
+    Editor containing the content to replace with.
+  </APIItem>
+</APIParameters>
+
+Handles both block selection and normal selection modes:
+
+- In block selection: Replaces all selected blocks
+- In normal selection: Replaces the current selection
+
+### editor.aiChat.reset()
+
+Resets the chat state:
+
+- Stops any ongoing generation
+- Clears chat messages
+- Removes all AI nodes from the editor
+
+### editor.aiChat.submit()
+
+Submits a prompt to generate AI content.
+
+<APIParameters>
+  <APIItem name="options" type="object" optional>
+    <APISubList>
+      <APISubListItem
+        parent="options"
+        name="mode"
+        type="'chat' | 'insert'"
+        optional
+      >
+        Mode to use. Defaults to 'chat' for selection, 'insert' otherwise.
+      </APISubListItem>
+      <APISubListItem parent="options" name="prompt" type="string" optional>
+        Custom prompt. Uses chat input if not provided.
+      </APISubListItem>
+      <APISubListItem parent="options" name="system" type="string" optional>
+        Custom system message.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+In insert mode, undoes previous AI changes before submitting.
+
+## Transforms
+
+### editor.ai.insertNodes()
+
+Inserts AI-generated nodes with the AI mark.
+
+<APIParameters>
+  <APIItem name="nodes" type="TDescendant[]">
+    Nodes to insert with AI mark.
+  </APIItem>
+  <APIItem name="options" type="object" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="target" type="Path" optional>
+        Target path. Defaults to current selection.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### editor.ai.removeMarks()
+
+Removes AI marks from nodes in the specified location.
+
+<APIParameters>
+  <APIItem name="options" type="object" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="at" type="Location" optional>
+        Location to remove marks from. Defaults to entire document.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### editor.ai.removeNodes()
+
+Removes nodes that have the AI mark.
+
+<APIParameters>
+  <APIItem name="options" type="object" optional>
+    <APISubList>
+      <APISubListItem parent="options" name="at" type="Path" optional>
+        Path to remove nodes from. Defaults to entire document.
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
+</APIParameters>
+
+### editor.ai.undo()
+
+Special undo operation for AI changes:
+
+- Undoes the last operation if it was AI-generated
+- Removes the redo stack entry to prevent redoing AI operations

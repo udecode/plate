@@ -29,6 +29,7 @@ import { Code } from './code';
 import { CodeBlockWrapper } from './code-block-wrapper';
 import { ComponentExample } from './component-example';
 import { ComponentPreview } from './component-preview';
+import { ComponentPreviewPro } from './component-preview-pro';
 import { ComponentSource } from './component-source';
 import { HydrateAtoms } from './context/hydrate-atoms';
 import { FrameworkDocs } from './framework-docs';
@@ -80,6 +81,7 @@ const components = {
   ),
   ComponentExample,
   ComponentPreview,
+  ComponentPreviewPro,
   ComponentSource,
   FrameworkDocs: ({
     className,
@@ -123,7 +125,6 @@ const components = {
       </TableRow>
     );
   },
-  Link,
   LinkedCard: ({ className, ...props }: React.ComponentProps<typeof Link>) => (
     <Link
       className={cn(
@@ -175,7 +176,7 @@ const components = {
       {...props}
     />
   ),
-  a: Typography.A,
+  a: Link,
   blockquote: Typography.Blockquote,
   code: Code,
   h1: Typography.H1,

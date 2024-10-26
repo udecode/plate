@@ -9,6 +9,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { docsConfig } from '@/config/docs';
 import { siteConfig } from '@/config/site';
 import { Button } from '@/registry/default/plate-ui/button';
+import { DialogTitle } from '@/registry/default/plate-ui/dialog';
 
 import { Icons } from './icons';
 import { ScrollArea } from './ui/scroll-area';
@@ -62,6 +63,8 @@ export function MobileNav() {
         </Button>
       </SheetTrigger>
       <SheetContent className="pr-0" side="left">
+        <DialogTitle className="sr-only">Mobile Nav</DialogTitle>
+
         <MobileLink
           className="flex items-center"
           onOpenChange={setOpen}

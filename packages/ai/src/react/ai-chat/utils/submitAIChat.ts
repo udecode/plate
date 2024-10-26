@@ -24,9 +24,10 @@ export const submitAIChat = (
       key: 'aiChat',
     }
   );
+
   const { chat, promptTemplate, systemTemplate } = getOptions();
 
-  if (!prompt && chat.input.length === 0) {
+  if (!prompt && chat.input?.length === 0) {
     return;
   }
   if (!prompt) {
@@ -41,9 +42,9 @@ export const submitAIChat = (
 
   setOption('mode', mode);
 
-  chat.setInput('');
+  chat.setInput?.('');
 
-  void chat.append(
+  void chat.append?.(
     {
       content:
         getEditorPrompt(editor, {

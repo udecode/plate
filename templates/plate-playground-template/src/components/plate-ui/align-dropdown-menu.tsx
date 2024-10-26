@@ -51,18 +51,18 @@ export function AlignDropdownMenu({ children, ...props }: DropdownMenuProps) {
   return (
     <DropdownMenu modal={false} {...openState} {...props}>
       <DropdownMenuTrigger asChild>
-        <ToolbarButton isDropdown pressed={openState.open} tooltip="Align">
+        <ToolbarButton pressed={openState.open} tooltip="Align" isDropdown>
           <IconValue />
         </ToolbarButton>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="start" className="min-w-0">
+      <DropdownMenuContent className="min-w-0" align="start">
         <DropdownMenuRadioGroup
           className="flex flex-col gap-0.5"
           {...radioGroupProps}
         >
           {items.map(({ icon: Icon, value: itemValue }) => (
-            <DropdownMenuRadioItem hideIcon key={itemValue} value={itemValue}>
+            <DropdownMenuRadioItem key={itemValue} value={itemValue} hideIcon>
               <Icon className={iconVariants({ variant: 'toolbar' })} />
             </DropdownMenuRadioItem>
           ))}

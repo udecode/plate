@@ -30,7 +30,7 @@ import { submitAIChat } from './utils/submitAIChat';
 import { withAIChat } from './withAIChat';
 
 export type AIChatOptions = {
-  chat: UseChatHelpers;
+  chat: Partial<UseChatHelpers>;
   createAIEditor: () => PlateEditor;
   /**
    * Specifies how the assistant message is handled:
@@ -113,7 +113,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
             editor.getTransforms(AIPlugin).ai.undo();
           }
 
-          void chat.reload({
+          void chat.reload?.({
             body: {
               system: getEditorPrompt(editor, {
                 promptTemplate: getOptions().systemTemplate,
@@ -123,7 +123,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
         },
         reset: bindFirst(resetAIChat, editor),
         stop: () => {
-          getOptions().chat.stop();
+          getOptions().chat.stop?.();
         },
         submit: bindFirst(submitAIChat, editor),
       };
@@ -151,7 +151,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     show: () => {
       api.aiChat.reset();
 
-      getOptions().chat.setMessages([]);
+      getOptions().chat.setMessages?.([]);
 
       setOption('open', true);
     },

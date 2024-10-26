@@ -14,7 +14,7 @@ export function CommentReplyItems() {
   return (
     <>
       {Object.keys(commentReplies).map((id) => (
-        <CommentItem commentId={id} key={id} />
+        <CommentItem key={id} commentId={id} />
       ))}
     </>
   );

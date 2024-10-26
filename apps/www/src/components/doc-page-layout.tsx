@@ -4,6 +4,7 @@ import { cn } from '@udecode/cn';
 import { ChevronRight, ExternalLinkIcon } from 'lucide-react';
 import Link from 'next/link';
 
+import { OpenInPlus } from './open-in-plus';
 import { DocsPager } from './pager';
 import { DashboardTableOfContents } from './toc';
 import { badgeVariants } from './ui/badge';
@@ -17,6 +18,22 @@ interface DocPageLayoutProps {
   isUI: boolean;
   toc: any; // Replace 'any' with the actual type of your table of contents
 }
+const getItemVariant = (item: any) => {
+  const allowedHosts = ['pro.platejs.org'];
+
+  try {
+    const url = new URL(item.route);
+
+    if (allowedHosts.includes(url.hostname)) return 'plus';
+  } catch (error) {
+    // console.error('Invalid URL:', item.route, error);
+  }
+
+  // if (item.route?.includes('components')) return 'default';
+  if (item.route?.includes('components')) return 'secondary';
+
+  return 'outline';
+};
 
 export function DocPageLayout({
   children,
@@ -71,12 +88,12 @@ export function DocPageLayout({
                 key={item.route}
                 className={cn(
                   badgeVariants({
-                    variant: item.route?.includes('components')
-                      ? 'default'
-                      : 'secondary',
+                    variant: getItemVariant(item),
                   })
                 )}
                 href={item.route as any}
+                rel={item.route?.includes('https') ? 'noreferrer' : undefined}
+                target={item.route?.includes('https') ? '_blank' : undefined}
               >
                 {item.title}
               </Link>
@@ -92,11 +109,14 @@ export function DocPageLayout({
       {doc.toc && (
         <div className="hidden text-sm xl:block">
           <div className="sticky top-16 -mt-10 pt-4">
-            <ScrollArea className="h-full pb-10">
-              <div className="sticky top-16 -mt-10 h-[calc(100vh-3.5rem)] py-12">
+            <ScrollArea className="relative">
+              <div className="sticky top-16 -mt-10 flex max-h-[calc(75vh-3.5rem)] w-[300px] flex-col py-12">
                 <DashboardTableOfContents toc={toc} />
               </div>
             </ScrollArea>
+            <div className="mt-2">
+              <OpenInPlus />
+            </div>
           </div>
         </div>
       )}

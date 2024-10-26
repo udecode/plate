@@ -18,6 +18,7 @@
     "deps:update": "npx npm-check-updates@latest --configFileName config/ncurc.yml -u --workspaces --root --mergeConfig",
     "dev": "turbo --filter=www dev",
     "dev:cli": "yarn workspace shadcx dev",
+    "devt": "yarn workspace www devt",
     "docs:build": "cd docs && yarn && yarn build",
     "docs:start": "cd docs && yarn && yarn start",
     "e2e": "yarn playwright test",

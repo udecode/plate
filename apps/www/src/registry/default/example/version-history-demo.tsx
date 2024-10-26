@@ -274,7 +274,7 @@ function Diff({ current, previous }: DiffProps) {
         editor={editor}
       />
 
-      <pre>{JSON.stringify(diffValue, null, 2)}</pre>
+      {/* <pre>{JSON.stringify(diffValue, null, 2)}</pre> */}
     </>
   );
 }

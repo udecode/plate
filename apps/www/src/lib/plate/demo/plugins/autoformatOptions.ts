@@ -246,14 +246,24 @@ export const autoformatRules: AutoformatRule[] = [
 
 export const autoformatLists: AutoformatRule[] = [
   {
-    format: (editor) => formatList(editor, BulletedListPlugin.key),
+    format: (editor) =>
+      editor.plugins.list
+        ? formatList(editor, BulletedListPlugin.key)
+        : toggleIndentList(editor, {
+            listStyleType: ListStyleType.Disc,
+          }),
     match: ['* ', '- '],
     mode: 'block',
     preFormat,
     type: ListItemPlugin.key,
   },
   {
-    format: (editor) => formatList(editor, NumberedListPlugin.key),
+    format: (editor) =>
+      editor.plugins.list
+        ? formatList(editor, NumberedListPlugin.key)
+        : toggleIndentList(editor, {
+            listStyleType: ListStyleType.Decimal,
+          }),
     match: [String.raw`^\d+\.$ `, String.raw`^\d+\)$ `],
     matchByRegex: true,
     mode: 'block',

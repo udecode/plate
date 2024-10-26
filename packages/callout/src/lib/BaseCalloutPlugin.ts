@@ -7,17 +7,17 @@ import {
 import { insertCallout } from './transforms';
 
 export interface TCalloutElement extends TElement {
+  variant?:
+    | (string & {})
+    | 'error'
+    | 'info'
+    | 'note'
+    | 'success'
+    | 'tip'
+    | 'warning';
   backgroundColor?: string;
-  color?: string;
   icon?: string;
-  variant?: 'info' | 'note' | 'tip' | 'warning';
 }
-
-export type CalloutColor = {
-  bgColor: string;
-  borderColor: string;
-  textColor: string;
-};
 
 export const BaseCalloutPlugin = createSlatePlugin({
   key: 'callout',

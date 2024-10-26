@@ -57,7 +57,10 @@ import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { NormalizeTypesPlugin } from '@udecode/plate-normalizers';
 import { PlaywrightPlugin } from '@udecode/plate-playwright';
 import { DeletePlugin, SelectOnBackspacePlugin } from '@udecode/plate-select';
-import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
+import {
+  BlockMenuPlugin,
+  BlockSelectionPlugin,
+} from '@udecode/plate-selection/react';
 import { SlashPlugin } from '@udecode/plate-slash-command/react';
 import { TablePlugin } from '@udecode/plate-table/react';
 import { TogglePlugin } from '@udecode/plate-toggle/react';
@@ -67,8 +70,11 @@ import Prism from 'prismjs';
 import { CheckPlugin } from '@/components/context/check-plugin';
 import { settingsStore } from '@/components/context/settings-store';
 import { PlaygroundFixedToolbarButtons } from '@/components/plate-ui/playground-fixed-toolbar-buttons';
+import { PlaygroundFloatingToolbar } from '@/components/plate-ui/playground-floating-toolbar';
 import { PlaygroundFloatingToolbarButtons } from '@/components/plate-ui/playground-floating-toolbar-buttons';
+import { aiPlugins } from '@/lib/plate/demo/plugins/ai-plugins';
 import { getAutoformatOptions } from '@/lib/plate/demo/plugins/autoformatOptions';
+import { copilotPlugins } from '@/lib/plate/demo/plugins/copilot-plugins';
 import { createPlateUI } from '@/plate/create-plate-ui';
 import { editableProps } from '@/plate/demo/editableProps';
 import { isEnabled } from '@/plate/demo/is-enabled';
@@ -79,20 +85,23 @@ import { softBreakPlugin } from '@/plate/demo/plugins/softBreakPlugin';
 import { tabbablePlugin } from '@/plate/demo/plugins/tabbablePlugin';
 import { commentsData, usersData } from '@/plate/demo/values/commentsValue';
 import { usePlaygroundValue } from '@/plate/demo/values/usePlaygroundValue';
+import { BlockContextMenu } from '@/registry/default/plate-ui/block-context-menu';
 import { CommentsPopover } from '@/registry/default/plate-ui/comments-popover';
-import { CursorOverlay } from '@/registry/default/plate-ui/cursor-overlay';
+import {
+  CursorOverlay,
+  SelectionOverlayPlugin,
+} from '@/registry/default/plate-ui/cursor-overlay';
 import { Editor } from '@/registry/default/plate-ui/editor';
 import { FixedToolbar } from '@/registry/default/plate-ui/fixed-toolbar';
-import { FloatingToolbar } from '@/registry/default/plate-ui/floating-toolbar';
 import { ImagePreview } from '@/registry/default/plate-ui/image-preview';
 import {
   FireLiComponent,
   FireMarker,
-} from '@/registry/default/plate-ui/indent-fire-marker-component';
+} from '@/registry/default/plate-ui/indent-fire-marker';
 import {
   TodoLi,
   TodoMarker,
-} from '@/registry/default/plate-ui/indent-todo-marker-component';
+} from '@/registry/default/plate-ui/indent-todo-marker';
 import { LinkFloatingToolbar } from '@/registry/default/plate-ui/link-floating-toolbar';
 
 import { usePlaygroundEnabled } from './usePlaygroundEnabled';
@@ -107,7 +116,7 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
 
   const editorId = id || 'playground-' + key;
 
-  const a = usePlateEditor(
+  return usePlateEditor(
     {
       id: editorId,
       override: {
@@ -118,11 +127,12 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         plugins: overridePlugins,
       },
       plugins: [
+        ...aiPlugins,
+        ...(id === 'copilot' ? copilotPlugins : []),
         // Nodes
         HeadingPlugin,
         TocPlugin.configure({
           options: {
-            isScroll: true,
             scrollContainerSelector: `#${scrollSelector}`,
             topOffset: 80,
           },
@@ -137,7 +147,7 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         LinkPlugin.extend({
           render: { afterEditable: () => <LinkFloatingToolbar /> },
         }),
-        ListPlugin,
+        ...(id === 'list' ? [ListPlugin] : []),
         ImagePlugin.extend({
           render: { afterEditable: ImagePreview },
         }),
@@ -159,10 +169,11 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
             enableMerging: id === 'tableMerge',
           },
         }),
+        SelectionOverlayPlugin,
+
         TodoListPlugin,
         TogglePlugin,
         ExcalidrawPlugin,
-
         // Marks
         BoldPlugin,
         ItalicPlugin,
@@ -260,16 +271,24 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         // Functionality
         AutoformatPlugin.configure({ options: autoformatOptions }),
         BlockSelectionPlugin.configure({
-          enabled: !!scrollSelector,
           options: {
             areaOptions: {
+              behaviour: {
+                scrolling: {
+                  speedDivider: 1.5,
+                },
+                startThreshold: 10,
+              },
               boundaries: `#${scrollSelector}`,
               container: `#${scrollSelector}`,
               selectables: [`#${scrollSelector} .slate-selectable`],
               selectionAreaClass: 'slate-selection-area',
             },
-            enableContextMenu: false,
+            enableContextMenu: true,
           },
+        }),
+        BlockMenuPlugin.configure({
+          render: { aboveEditable: BlockContextMenu },
         }),
         DndPlugin.configure({ options: { enableScroller: true } }),
         EmojiPlugin,
@@ -308,7 +327,7 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
 
         // Deserialization
         DocxPlugin,
-        MarkdownPlugin,
+        MarkdownPlugin.configure({ options: { indentList: true } }),
         JuicePlugin,
         ColumnPlugin,
 
@@ -321,8 +340,6 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
     },
     []
   );
-
-  return a;
 };
 
 export default function PlaygroundDemo({
@@ -337,7 +354,10 @@ export default function PlaygroundDemo({
   const containerRef = useRef(null);
   const enabled = settingsStore.use.checkedComponents();
 
-  const editor = usePlaygroundEditor(id, scrollSelector);
+  const editor = usePlaygroundEditor(
+    id,
+    scrollSelector ?? `blockSelection-${id}`
+  );
 
   return (
     <DemoId id={id}>
@@ -351,22 +371,14 @@ export default function PlaygroundDemo({
             </FixedToolbar>
           </CheckPlugin>
 
-          <div
-            id="editor-playground"
-            className="flex w-full"
-            style={
-              {
-                '--editor-px': 'max(5%,24px)',
-              } as any
-            }
-          >
+          <div id="editor-playground" className="flex w-full">
             <div
-              id={scrollSelector}
+              id={scrollSelector ?? `blockSelection-${id}`}
               ref={containerRef}
               className={cn(
-                'relative flex max-h-[800px] w-full overflow-x-auto',
+                'relative flex w-full overflow-x-auto',
                 // block selection area
-                '[&_.slate-selection-area]:border [&_.slate-selection-area]:border-brand/25 [&_.slate-selection-area]:bg-brand/15',
+                'max-h-[650px] [&_.slate-selection-area]:border [&_.slate-selection-area]:border-brand/25 [&_.slate-selection-area]:bg-brand/15',
                 className
               )}
               data-plate-selectable
@@ -374,10 +386,10 @@ export default function PlaygroundDemo({
               <Editor
                 {...editableProps}
                 size="md"
-                variant="ghost"
+                variant="demo"
                 className={cn(
                   editableProps.className,
-                  'overflow-x-auto rounded-none px-[var(--editor-px)]',
+                  'overflow-x-auto rounded-none',
                   !id && 'pb-[20vh] pt-4',
                   id && 'pb-8 pt-2'
                 )}
@@ -386,8 +398,9 @@ export default function PlaygroundDemo({
               />
 
               <CheckPlugin componentId="floating-toolbar">
-                <FloatingToolbar
+                <PlaygroundFloatingToolbar
                   state={{
+                    // hideToolbar: aiOpen,
                     showWhenReadOnly: isEnabled(
                       'comment',
                       id,
@@ -398,7 +411,7 @@ export default function PlaygroundDemo({
                   <CheckPlugin componentId="floating-toolbar-buttons">
                     <PlaygroundFloatingToolbarButtons />
                   </CheckPlugin>
-                </FloatingToolbar>
+                </PlaygroundFloatingToolbar>
               </CheckPlugin>
 
               <CheckPlugin id="cursoroverlay" plugin={DragOverCursorPlugin}>

@@ -9,6 +9,8 @@ import { cn } from '@udecode/cn';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { Icons } from './icons';
+
 export interface DocsSidebarNavProps {
   config: DocsConfig;
 }
@@ -64,14 +66,30 @@ export function DocsSidebarNavItems({
               target={item.external ? '_blank' : ''}
             >
               <span className="whitespace-nowrap">{item.title}</span>
+              {item.isExternalLink && (
+                <Icons.externalLink className=" ml-1 size-4" />
+              )}
               {item.label && (
                 <span
                   className={cn(
                     'ml-2 rounded-md bg-secondary px-1.5 py-0.5 text-xs leading-none text-foreground no-underline group-hover:no-underline',
-                    item.label === 'New' && 'bg-[#adfa1d] dark:text-background'
+                    item.label === 'New' && 'bg-[#adfa1d] dark:text-background',
+                    item.label === 'Plus' &&
+                      'bg-primary text-primary-foreground',
+                    item.label === 'Free' && 'bg-emerald-500 text-white'
                   )}
                 >
                   {item.label}
+                </span>
+              )}
+              {item.new && (
+                <span
+                  className={cn(
+                    'ml-2 rounded-md px-1.5 py-0.5 text-xs leading-none text-foreground no-underline group-hover:no-underline',
+                    'bg-[#adfa1d] dark:text-background'
+                  )}
+                >
+                  New
                 </span>
               )}
             </Link>

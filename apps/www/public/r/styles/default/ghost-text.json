@@ -1,0 +1,18 @@
+{
+  "dependencies": [
+    "@udecode/plate-ai"
+  ],
+  "files": [
+    {
+      "content": "'use client';\n\nimport React from 'react';\n\nimport type { CopilotPluginConfig } from '@udecode/plate-ai/react';\n\nimport { useEditorPlugin, useElement } from '@udecode/plate-common/react';\n\nexport const GhostText = () => {\n  const { useOption } = useEditorPlugin<CopilotPluginConfig>({\n    key: 'copilot',\n  });\n  const element = useElement();\n\n  const isSuggested = useOption('isSuggested', element.id as string);\n\n  if (!isSuggested) return null;\n\n  return <GhostTextContent />;\n};\n\nexport function GhostTextContent() {\n  const { useOption } = useEditorPlugin<CopilotPluginConfig>({\n    key: 'copilot',\n  });\n\n  const suggestionText = useOption('suggestionText');\n\n  return (\n    <span className=\"text-muted-foreground\" contentEditable={false}>\n      {suggestionText && suggestionText}\n    </span>\n  );\n}\n",
+      "path": "plate-ui/ghost-text.tsx",
+      "target": "components/plate-ui/ghost-text.tsx",
+      "type": "registry:ui"
+    }
+  ],
+  "name": "ghost-text",
+  "registryDependencies": [
+    ""
+  ],
+  "type": "registry:ui"
+}

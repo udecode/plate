@@ -37,16 +37,16 @@ export const withPlaceholdersPrimitive = createNodesHOC(Placeholder);
 export const withPlaceholders = (components: any) =>
   withPlaceholdersPrimitive(components, [
     {
-      hideOnBlur: true,
       key: ParagraphPlugin.key,
+      hideOnBlur: true,
       placeholder: 'Type a paragraph',
       query: {
         maxLevel: 1,
       },
     },
     {
-      hideOnBlur: false,
       key: HEADING_KEYS.h1,
+      hideOnBlur: false,
       placeholder: 'Untitled',
     },
   ]);
