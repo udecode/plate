@@ -62,10 +62,10 @@ export const withPlate = <
     const store = editor.getOptionsStore(plugin);
 
     if (!store) {
-      editor.api.debug.warn(
-        `editor.useOptions: ${plugin.key} plugin is missing`,
-        'PLUGIN_MISSING'
-      );
+      // editor.api.debug.warn(
+      //   `editor.useOptions: ${plugin.key} plugin is missing`,
+      //   'PLUGIN_MISSING'
+      // );
 
       return {};
     }
@@ -77,10 +77,10 @@ export const withPlate = <
     const store = editor.getOptionsStore(plugin);
 
     if (!store) {
-      editor.api.debug.warn(
-        `editor.useOption: ${plugin.key} plugin is missing`,
-        'PLUGIN_MISSING'
-      );
+      // editor.api.debug.warn(
+      //   `editor.useOption: ${plugin.key} plugin is missing`,
+      //   'PLUGIN_MISSING'
+      // );
 
       return;
     }

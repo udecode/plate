@@ -83,6 +83,10 @@ export const customizerComponents = {
     href: '/docs/components/comments-popover',
     title: 'Comments Popover',
   },
+  contextMenu: {
+    href: '/docs/components/context-menu',
+    title: 'Context Menu',
+  },
   cursorOverlay: {
     href: '/docs/components/cursor-overlay',
     title: 'Cursor Overlay',

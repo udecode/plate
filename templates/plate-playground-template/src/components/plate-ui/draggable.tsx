@@ -18,6 +18,7 @@ import {
 } from '@udecode/plate-dnd';
 import { BlockSelectionPlugin } from '@udecode/plate-selection/react';
 
+import { useMounted } from '@/hooks/use-mounted';
 import { Icons } from '@/components/icons';
 
 import {
@@ -59,6 +60,7 @@ export const Draggable = withHOC(
       const state = useDraggableState({ element, onDropHandler });
       const { isDragging } = state;
       const { previewRef, handleRef } = useDraggable(state);
+      const mounted = useMounted();
 
       return (
         <div
@@ -81,7 +83,7 @@ export const Draggable = withHOC(
                 <div
                   ref={handleRef}
                   className="size-4"
-                  data-key={element.id as string}
+                  data-key={mounted ? (element.id as string) : undefined}
                 >
                   <DragHandle />
                 </div>

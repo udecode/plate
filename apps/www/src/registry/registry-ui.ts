@@ -109,7 +109,7 @@ export const uiComponents: Registry = [
     ],
     files: ['plate-ui/draggable.tsx', 'plate-ui/with-draggables.tsx'],
     name: 'draggable',
-    registryDependencies: ['tooltip'],
+    registryDependencies: ['tooltip', 'use-mounted'],
     type: 'registry:ui',
   },
   {

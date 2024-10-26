@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 39.2.12
+
+### Patch Changes
+
+- [`86487a3357dbe6005a0b4e37c2510c97f2ad4d96`](https://github.com/udecode/plate/commit/86487a3357dbe6005a0b4e37c2510c97f2ad4d96) by [@zbeyens](https://github.com/zbeyens) – Remove debug warning on missing plugin
+
 ## 39.2.1
 
 ### Patch Changes
