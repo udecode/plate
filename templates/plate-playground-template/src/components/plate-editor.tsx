@@ -57,6 +57,7 @@ import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import { IndentPlugin } from '@udecode/plate-indent/react';
 import { JuicePlugin } from '@udecode/plate-juice';
 import { KbdPlugin } from '@udecode/plate-kbd/react';
+import { ColumnItemPlugin, ColumnPlugin } from '@udecode/plate-layout/react';
 import { LineHeightPlugin } from '@udecode/plate-line-height/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
 import { TodoListPlugin } from '@udecode/plate-list/react';
@@ -133,6 +134,8 @@ import { withDraggables } from '@/components/plate-ui/with-draggables';
 import { SettingsDialog } from './openai/settings-dialog';
 import { AILeaf } from './plate-ui/ai-leaf';
 import { BlockContextMenu } from './plate-ui/block-context-menu';
+import { ColumnElement } from './plate-ui/column-element';
+import { ColumnGroupElement } from './plate-ui/column-group-element';
 import { DateElement } from './plate-ui/date-element';
 import { SlashInputElement } from './plate-ui/slash-input-element';
 import { TocElement } from './plate-ui/toc-element';
@@ -208,6 +211,8 @@ export const useMyEditor = () => {
       TableCellHeaderPlugin,
       TodoListPlugin,
       ExcalidrawPlugin,
+      ColumnPlugin,
+      ColumnItemPlugin,
 
       // Marks
       BoldPlugin,
@@ -439,6 +444,8 @@ export const useMyEditor = () => {
           [CodeBlockPlugin.key]: CodeBlockElement,
           [CodeLinePlugin.key]: CodeLineElement,
           [TocPlugin.key]: TocElement,
+          [ColumnItemPlugin.key]: ColumnElement,
+          [ColumnPlugin.key]: ColumnGroupElement,
           [CodeSyntaxPlugin.key]: CodeSyntaxLeaf,
           [HorizontalRulePlugin.key]: HrElement,
           [HEADING_KEYS.h1]: withProps(HeadingElement, { variant: 'h1' }),
