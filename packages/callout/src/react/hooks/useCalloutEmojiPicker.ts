@@ -32,15 +32,9 @@ export const useCalloutEmojiPicker = ({
     props: {
       isOpen,
       setIsOpen,
-      onSelectEmoji: ({
-        emojiValue,
-        icon,
-      }: {
-        emojiValue?: any;
-        icon?: any;
-      }) => {
+      onSelectEmoji: (emojiValue: any) => {
         setNode<TCalloutElement>(editor, element, {
-          icon: icon ?? emojiValue.skins?.[0]?.native,
+          icon: emojiValue.skins?.[0]?.native ?? emojiValue.icon,
         });
         setIsOpen(false);
       },
