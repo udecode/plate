@@ -1,5 +1,11 @@
 # @udecode/plate-media
 
+## 39.2.13
+
+### Patch Changes
+
+- [`03708f9823d240db78cd9ef9206bff98c6de0488`](https://github.com/udecode/plate/commit/03708f9823d240db78cd9ef9206bff98c6de0488) by [@zbeyens](https://github.com/zbeyens) – Remove `escape` handler
+
 ## 39.2.4
 
 ### Patch Changes
