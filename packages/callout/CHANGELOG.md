@@ -1,5 +1,11 @@
 # @udecode/plate-callout
 
+## 39.2.14
+
+### Patch Changes
+
+- [#3673](https://github.com/udecode/plate/pull/3673) by [@felixfeng33](https://github.com/felixfeng33) – Fix set icon.
+
 ## 39.2.13
 
 ### Patch Changes
