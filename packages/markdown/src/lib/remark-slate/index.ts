@@ -4,6 +4,7 @@
 
 export * from './remarkDefaultElementRules';
 export * from './remarkDefaultTextRules';
+export * from './remarkLineBreakCompiler';
 export * from './remarkPlugin';
 export * from './remarkTextTypes';
 export * from './remarkTransformElement';

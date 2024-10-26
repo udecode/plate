@@ -2,6 +2,8 @@
 
 import type { MdastNode, RemarkPluginOptions } from './types';
 
+import { MarkdownPlugin } from '../MarkdownPlugin';
+import { remarkLineBreakCompiler } from './remarkLineBreakCompiler';
 import { remarkTransformNode } from './remarkTransformNode';
 
 export function remarkPlugin(options: RemarkPluginOptions) {
@@ -12,5 +14,7 @@ export function remarkPlugin(options: RemarkPluginOptions) {
   };
 
   // @ts-ignore
-  this.Compiler = compiler;
+  this.Compiler = options.editor.getOptions(MarkdownPlugin).keepLineBreak
+    ? remarkLineBreakCompiler
+    : compiler;
 }

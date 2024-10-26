@@ -2,6 +2,7 @@ import type { TDescendant, TElement, TText } from '@udecode/plate-common';
 
 import type { MdastNode, RemarkElementRules } from './types';
 
+import { MarkdownPlugin } from '../MarkdownPlugin';
 import { remarkTransformElementChildren } from './remarkTransformElementChildren';
 import { remarkTransformNode } from './remarkTransformNode';
 
@@ -148,6 +149,9 @@ export const remarkDefaultElementRules: RemarkElementRules = {
   },
   paragraph: {
     transform: (node, options) => {
+      const isKeepLineBreak =
+        options.editor.getOptions(MarkdownPlugin).keepLineBreak;
+
       const children = remarkTransformElementChildren(node, options);
 
       const paragraphType = options.editor.getType({ key: 'p' });
@@ -173,6 +177,23 @@ export const remarkDefaultElementRules: RemarkElementRules = {
         if (type && splitBlockTypes.has(type as string)) {
           flushInlineNodes();
           elements.push(child as TElement);
+        } else if (
+          isKeepLineBreak &&
+          'text' in child &&
+          typeof child.text === 'string'
+        ) {
+          const textParts = child.text.split('\n');
+          textParts.forEach((part, index) => {
+            if (index > 0) {
+              flushInlineNodes();
+            }
+            if (part.length > 0) {
+              inlineNodes.push({ ...child, text: part });
+            }
+            if (index < textParts.length - 1) {
+              flushInlineNodes();
+            }
+          });
         } else {
           inlineNodes.push(child);
         }
