@@ -2,4 +2,5 @@
 '@udecode/plate-callout': patch
 ---
 
-useCalloutEmojiPicker
+- Refactor to `useCalloutEmojiPicker`
+- Remove default variant
