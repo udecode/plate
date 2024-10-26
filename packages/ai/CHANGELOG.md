@@ -1,5 +1,11 @@
 # @udecode/plate-ai
 
+## 39.2.13
+
+### Patch Changes
+
+- [#3469](https://github.com/udecode/plate/pull/3469) by [@felixfeng33](https://github.com/felixfeng33) – First stable version
+
 ## 39.2.12
 
 ## 39.2.10

@@ -1,5 +1,13 @@
 # @udecode/plate-callout
 
+## 39.2.13
+
+### Patch Changes
+
+- [#3469](https://github.com/udecode/plate/pull/3469) by [@felixfeng33](https://github.com/felixfeng33) –
+  - Refactor to `useCalloutEmojiPicker`
+  - Remove default variant
+
 ## 39.2.0
 
 ### Minor Changes
