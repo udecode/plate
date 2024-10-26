@@ -1,6 +1,8 @@
 import type { Registry } from './schema';
 
-export const ui: Registry = [
+export const uiNodes: Registry = [];
+
+export const uiComponents: Registry = [
   {
     dependencies: [],
     files: ['plate-ui/editor.tsx'],
@@ -143,13 +145,6 @@ export const ui: Registry = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@radix-ui/react-avatar'],
-    files: ['plate-ui/avatar.tsx'],
-    name: 'avatar',
-    registryDependencies: [],
-    type: 'registry:ui',
-  },
-  {
     dependencies: ['@udecode/plate-block-quote'],
     files: ['plate-ui/blockquote-element.tsx'],
     name: 'blockquote-element',
@@ -192,13 +187,6 @@ export const ui: Registry = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['react-day-picker@8.10.1', 'date-fns'],
-    files: ['plate-ui/calendar.tsx'],
-    name: 'calendar',
-    registryDependencies: ['button'],
-    type: 'registry:ui',
-  },
-  {
     dependencies: ['@radix-ui/react-slot'],
     files: ['plate-ui/button.tsx'],
     name: 'button',
@@ -209,14 +197,7 @@ export const ui: Registry = [
     dependencies: ['@udecode/plate-caption'],
     files: ['plate-ui/caption.tsx'],
     name: 'caption',
-    registryDependencies: [],
-    type: 'registry:ui',
-  },
-  {
-    dependencies: ['@radix-ui/react-checkbox'],
-    files: ['plate-ui/checkbox.tsx'],
-    name: 'checkbox',
-    registryDependencies: [],
+    registryDependencies: ['button'],
     type: 'registry:ui',
   },
   {
@@ -241,13 +222,6 @@ export const ui: Registry = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['cmdk'],
-    files: ['plate-ui/command.tsx'],
-    name: 'command',
-    registryDependencies: ['dialog'],
-    type: 'registry:ui',
-  },
-  {
     dependencies: ['@udecode/plate-comments'],
     files: ['plate-ui/comment-leaf.tsx'],
     name: 'comment-leaf',
@@ -268,21 +242,6 @@ export const ui: Registry = [
     registryDependencies: [],
     type: 'registry:ui',
   },
-  {
-    dependencies: ['@radix-ui/react-dialog', '@radix-ui/react-visually-hidden'],
-    files: ['plate-ui/dialog.tsx'],
-    name: 'dialog',
-    registryDependencies: [],
-    type: 'registry:ui',
-  },
-  {
-    dependencies: ['@radix-ui/react-dropdown-menu'],
-    files: ['plate-ui/dropdown-menu.tsx'],
-    name: 'dropdown-menu',
-    registryDependencies: [],
-    type: 'registry:ui',
-  },
-
   {
     dependencies: ['@udecode/plate-excalidraw'],
     files: ['plate-ui/excalidraw-element.tsx'],
@@ -393,13 +352,6 @@ export const ui: Registry = [
     dependencies: ['@ariakit/react', '@udecode/plate-combobox'],
     files: ['plate-ui/inline-combobox.tsx'],
     name: 'inline-combobox',
-    registryDependencies: [],
-    type: 'registry:ui',
-  },
-  {
-    dependencies: [],
-    files: ['plate-ui/input.tsx'],
-    name: 'input',
     registryDependencies: [],
     type: 'registry:ui',
   },
@@ -545,23 +497,9 @@ export const ui: Registry = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@radix-ui/react-popover'],
-    files: ['plate-ui/popover.tsx'],
-    name: 'popover',
-    registryDependencies: [],
-    type: 'registry:ui',
-  },
-  {
     dependencies: ['@udecode/plate-find-replace'],
     files: ['plate-ui/search-highlight-leaf.tsx'],
     name: 'search-highlight-leaf',
-    registryDependencies: [],
-    type: 'registry:ui',
-  },
-  {
-    dependencies: ['@radix-ui/react-separator'],
-    files: ['plate-ui/separator.tsx'],
-    name: 'separator',
     registryDependencies: [],
     type: 'registry:ui',
   },
@@ -630,13 +568,6 @@ export const ui: Registry = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@radix-ui/react-tooltip'],
-    files: ['plate-ui/tooltip.tsx'],
-    name: 'tooltip',
-    registryDependencies: [],
-    type: 'registry:ui',
-  },
-  {
     dependencies: ['@udecode/plate-block-quote', '@udecode/plate-heading'],
     files: ['plate-ui/turn-into-dropdown-menu.tsx'],
     name: 'turn-into-dropdown-menu',
@@ -651,3 +582,138 @@ export const ui: Registry = [
     type: 'registry:ui',
   },
 ];
+
+export const uiPrimitives: Registry = [
+  {
+    dependencies: ['@radix-ui/react-avatar'],
+    doc: {
+      description:
+        'Renders an avatar component with image support and fallback options.',
+    },
+    files: ['potion-ui/avatar.tsx'],
+    name: 'avatar',
+    registryDependencies: [],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@radix-ui/react-slot'],
+    doc: {
+      description:
+        'A versatile button component with various styles, sizes, and states.',
+    },
+    files: ['potion-ui/button.tsx'],
+    name: 'button',
+    registryDependencies: [],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['react-day-picker@8.10.1'],
+    doc: {
+      description:
+        'Displays a customizable calendar component for date selection.',
+    },
+    files: ['potion-ui/calendar.tsx'],
+    name: 'calendar',
+    registryDependencies: ['button'],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@radix-ui/react-checkbox'],
+    doc: {
+      description:
+        'Renders a customizable checkbox component with support for checked, unchecked, and indeterminate states.',
+    },
+    files: ['potion-ui/checkbox.tsx'],
+    name: 'checkbox',
+    registryDependencies: [],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@radix-ui/react-dialog', 'cmdk'],
+    doc: {
+      description:
+        'Implements a command palette interface for searching and executing actions.',
+    },
+    files: ['potion-ui/command.tsx'],
+    name: 'command',
+    registryDependencies: ['dialog', 'input'],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@radix-ui/react-dialog'],
+    doc: {
+      description:
+        'Implements a flexible dialog component with support for modal and drawer variants, customizable content, and responsive behavior.',
+    },
+    files: ['potion-ui/dialog.tsx'],
+    name: 'dialog',
+    registryDependencies: [],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@radix-ui/react-dropdown-menu'],
+    doc: {
+      description:
+        'Renders a customizable dropdown menu with support for items, checkboxes, radio buttons, and nested submenus.',
+    },
+    files: ['potion-ui/dropdown-menu.tsx'],
+    name: 'dropdown-menu',
+    registryDependencies: [],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: [],
+    doc: {
+      description:
+        'Provides a customizable input component with different variants and styling options.',
+    },
+    files: ['potion-ui/input.tsx'],
+    name: 'input',
+    registryDependencies: [],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@radix-ui/react-popover'],
+    doc: {
+      description: 'Displays rich content in a portal, triggered by a button.',
+    },
+    files: ['potion-ui/popover.tsx'],
+    name: 'popover',
+    registryDependencies: [],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@radix-ui/react-separator'],
+    doc: {
+      description: 'Visually or semantically separates content.',
+    },
+    files: ['potion-ui/separator.tsx'],
+    name: 'separator',
+    registryDependencies: [],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@radix-ui/react-toolbar'],
+    doc: {
+      description:
+        'A customizable toolbar component with various button styles and group',
+    },
+    files: ['potion-ui/toolbar.tsx'],
+    name: 'toolbar',
+    registryDependencies: ['tooltip', 'separator'],
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@radix-ui/react-tooltip'],
+    doc: {
+      description:
+        'A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.',
+    },
+    files: ['potion-ui/tooltip.tsx'],
+    name: 'tooltip',
+    registryDependencies: [],
+    type: 'registry:ui',
+  },
+];
+
+export const ui: Registry = [...uiNodes, ...uiPrimitives, ...uiComponents];

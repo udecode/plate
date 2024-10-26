@@ -56,6 +56,41 @@ export const registryEntrySchema = z.object({
   description: z.string().optional(),
   descriptionSrc: z.string().optional(),
   devDependencies: z.array(z.string()).optional(),
+  doc: z
+    .object({
+      description: z.string().optional(),
+      docs: z
+        .array(
+          z.object({
+            route: z.string().optional(),
+            title: z.string().optional(),
+          })
+        )
+        .optional(),
+      examples: z.array(z.string()).optional(),
+      keywords: z.array(z.string()).optional(),
+      links: z
+        .object({
+          api: z.string().optional(),
+          doc: z.string().optional(),
+        })
+        .optional(),
+      props: z
+        .array(
+          z.object({
+            default: z.any().optional(),
+            description: z.string().optional(),
+            name: z.string(),
+            type: z.string(),
+          })
+        )
+        .optional(),
+      slug: z.string().optional(),
+      title: z.string().optional(),
+      toc: z.boolean().optional(),
+      usage: z.array(z.string()).optional(),
+    })
+    .optional(),
   docs: z.string().optional(),
   external: z.boolean().optional(),
   files: z.array(registryItemFileSchema).optional(),
