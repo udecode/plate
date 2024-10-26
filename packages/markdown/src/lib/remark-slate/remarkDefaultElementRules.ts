@@ -79,7 +79,16 @@ export const remarkDefaultElementRules: RemarkElementRules = {
           indent = 1
         ) => {
           _node.children!.forEach((listItem) => {
-            const [paragraph, ...subLists] = listItem.children!;
+            if (!listItem.children) {
+              listItems.push({
+                children: remarkTransformElementChildren(listItem, options),
+                type: options.editor.getType({ key: 'p' }),
+              });
+
+              return listItems;
+            }
+
+            const [paragraph, ...subLists] = listItem.children;
 
             listItems.push({
               children: remarkTransformElementChildren(
