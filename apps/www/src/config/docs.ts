@@ -47,6 +47,9 @@ export const docsConfig: DocsConfig = {
     },
     {
       items: [
+        customizerComponents.aiLeaf,
+        customizerComponents.aiMenu,
+        customizerComponents.aiToolbarButton,
         customizerComponents.ghostText,
         customizerComponents.editor,
         customizerComponents.alignDropdownMenu,
@@ -87,6 +90,7 @@ export const docsConfig: DocsConfig = {
         customizerComponents.imageElement,
         customizerComponents.indentListToolbarButton,
         customizerComponents.indentToolbarButton,
+        customizerComponents.indentTodoMarker,
         customizerComponents.inlineCombobox,
         customizerComponents.input,
         customizerComponents.insertDropdownMenu,
@@ -378,6 +382,7 @@ export const docsConfig: DocsConfig = {
           href: '/docs/indent-list',
           title: 'Indent List',
         },
+
         {
           href: '/docs/line-height',
           title: 'Line Height',

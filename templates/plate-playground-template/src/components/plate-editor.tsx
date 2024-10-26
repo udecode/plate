@@ -112,10 +112,7 @@ import { HeadingElement } from '@/components/plate-ui/heading-element';
 import { HighlightLeaf } from '@/components/plate-ui/highlight-leaf';
 import { HrElement } from '@/components/plate-ui/hr-element';
 import { ImageElement } from '@/components/plate-ui/image-element';
-import {
-  TodoLi,
-  TodoMarker,
-} from '@/components/plate-ui/indent-todo-marker-component';
+import { TodoLi, TodoMarker } from '@/components/plate-ui/indent-todo-marker';
 import { KbdLeaf } from '@/components/plate-ui/kbd-leaf';
 import { LinkElement } from '@/components/plate-ui/link-element';
 import { LinkFloatingToolbar } from '@/components/plate-ui/link-floating-toolbar';
@@ -133,8 +130,8 @@ import { TableRowElement } from '@/components/plate-ui/table-row-element';
 import { TodoListElement } from '@/components/plate-ui/todo-list-element';
 import { withDraggables } from '@/components/plate-ui/with-draggables';
 
-import { AILeaf } from './plate-ui/ai-leaf';
 import { SettingsDialog } from './openai/settings-dialog';
+import { AILeaf } from './plate-ui/ai-leaf';
 import { BlockContextMenu } from './plate-ui/block-context-menu';
 import { DateElement } from './plate-ui/date-element';
 import { SlashInputElement } from './plate-ui/slash-input-element';

@@ -97,11 +97,11 @@ import { ImagePreview } from '@/registry/default/plate-ui/image-preview';
 import {
   FireLiComponent,
   FireMarker,
-} from '@/registry/default/plate-ui/indent-fire-marker-component';
+} from '@/registry/default/plate-ui/indent-fire-marker';
 import {
   TodoLi,
   TodoMarker,
-} from '@/registry/default/plate-ui/indent-todo-marker-component';
+} from '@/registry/default/plate-ui/indent-todo-marker';
 import { LinkFloatingToolbar } from '@/registry/default/plate-ui/link-floating-toolbar';
 
 import { usePlaygroundEnabled } from './usePlaygroundEnabled';

@@ -221,6 +221,18 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
+    "ai-leaf": {
+      name: "ai-leaf",
+      description: "",
+      type: "registry:ui",
+      registryDependencies: [""],
+      files: ["registry/default/plate-ui/ai-leaf.tsx"],
+      component: React.lazy(() => import("@/registry/default/plate-ui/ai-leaf.tsx")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
     "toc-element": {
       name: "toc-element",
       description: "",
@@ -533,13 +545,13 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
-    "indent-todo-marker-component": {
-      name: "indent-todo-marker-component",
+    "indent-todo-marker": {
+      name: "indent-todo-marker",
       description: "",
       type: "registry:ui",
       registryDependencies: ["checkbox"],
-      files: ["registry/default/plate-ui/indent-todo-marker-component.tsx"],
-      component: React.lazy(() => import("@/registry/default/plate-ui/indent-todo-marker-component.tsx")),
+      files: ["registry/default/plate-ui/indent-todo-marker.tsx"],
+      component: React.lazy(() => import("@/registry/default/plate-ui/indent-todo-marker.tsx")),
       source: "",
       category: "",
       subcategory: "",

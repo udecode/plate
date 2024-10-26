@@ -1,4 +1,19 @@
 export const customizerComponents = {
+  aiLeaf: {
+    href: '/docs/components/ai-leaf',
+    new: true,
+    title: 'AI Leaf',
+  },
+  aiMenu: {
+    href: '/docs/components/ai-menu',
+    new: true,
+    title: 'AI Menu',
+  },
+  aiToolbarButton: {
+    href: '/docs/components/ai-toolbar-button',
+    new: true,
+    title: 'AI Toolbar Button',
+  },
   alignDropdownMenu: {
     href: '/docs/components/align-dropdown-menu',
     title: 'Align Dropdown Menu',
@@ -152,6 +167,10 @@ export const customizerComponents = {
     href: '/docs/components/indent-list-toolbar-button',
     title: 'Indent List Toolbar Button',
   },
+  indentTodoMarker: {
+    href: '/docs/components/indent-todo-marker',
+    title: 'Indent Todo Marker',
+  },
   indentToolbarButton: {
     href: '/docs/components/indent-toolbar-button',
     title: 'Indent Toolbar Button',
@@ -272,6 +291,7 @@ export const customizerComponents = {
   tocElement: {
     href: '/docs/components/toc-element',
     label: 'Element',
+    new: true,
     title: 'Table of Contents',
   },
   todoListElement: {

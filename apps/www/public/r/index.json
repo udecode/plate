@@ -400,6 +400,22 @@
   },
   {
     "dependencies": [
+      "@udecode/plate-ai"
+    ],
+    "files": [
+      {
+        "path": "plate-ui/ai-leaf.tsx",
+        "type": "registry:ui"
+      }
+    ],
+    "name": "ai-leaf",
+    "registryDependencies": [
+      ""
+    ],
+    "type": "registry:ui"
+  },
+  {
+    "dependencies": [
       "@udecode/plate-heading"
     ],
     "files": [
@@ -803,11 +819,11 @@
     ],
     "files": [
       {
-        "path": "plate-ui/indent-todo-marker-component.tsx",
+        "path": "plate-ui/indent-todo-marker.tsx",
         "type": "registry:ui"
       }
     ],
-    "name": "indent-todo-marker-component",
+    "name": "indent-todo-marker",
     "registryDependencies": [
       "checkbox"
     ],

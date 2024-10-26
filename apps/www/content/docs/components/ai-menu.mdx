@@ -1,0 +1,84 @@
+---
+title: AI Menu
+description: AI-powered menu for generating and inserting content in the editor.
+component: true
+docs:
+  - route: /docs/ai
+    title: AI
+  - route: https://pro.platejs.org/docs/components/ai-menu
+    title: AI Menu
+---
+
+## Installation
+
+<Tabs defaultValue="cli">
+
+<TabsList>
+<TabsTrigger value="cli">CLI</TabsTrigger>
+<TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx @udecode/plate-ui@latest add ai-menu -r plate-ui
+```
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps>
+
+<Step>
+
+Install the following dependencies:
+
+```bash
+npm install ai sonner
+```
+
+- [AI](/docs/ai)
+- [Command](/docs/components/command)
+- [Popover](/docs/components/popover)
+
+
+</Step>
+
+<Step>
+
+Copy and paste the following code into your project.
+
+</Step>
+
+<ComponentSource src="../../templates/plate-playground-template/src/components/plate-ui/ai-menu.tsx" />
+<ComponentSource src="../../templates/plate-playground-template/src/components/plate-ui/ai-menu-items.tsx" />
+  
+<Step>
+
+Update the import paths to match your project setup.
+
+</Step>
+
+</Steps>
+
+</TabsContent>
+
+</Tabs>
+
+## Examples
+
+<ComponentPreview name="playground-demo" id="copilot" />
+
+<ComponentSource src="../../templates/plate-playground-template/src/components/plate-ui/ai-menu.tsx" />
+<ComponentSource src="../../templates/plate-playground-template/src/components/plate-ui/ai-menu-items.tsx" />
+## Plate Plus
+
+In Plate Plus, we provides more advanced styles and complete backend setup
+
+All of the backend setup is available in [Potion template](https://pro.platejs.org/docs/templates/potion).
+
+<ComponentPreviewPro
+  name="pro-iframe-demo"
+  id="pro-ai"
+  component="ai"
+/>

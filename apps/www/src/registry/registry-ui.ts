@@ -178,6 +178,13 @@ export const ui: Registry = [
     type: 'registry:ui',
   },
   {
+    dependencies: ['@udecode/plate-ai'],
+    files: ['plate-ui/ai-leaf.tsx'],
+    name: 'ai-leaf',
+    registryDependencies: [''],
+    type: 'registry:ui',
+  },
+  {
     dependencies: ['@udecode/plate-heading'],
     files: ['plate-ui/toc-element.tsx'],
     name: 'toc-element',
@@ -377,8 +384,8 @@ export const ui: Registry = [
   },
   {
     dependencies: ['@udecode/plate-indent-list'],
-    files: ['plate-ui/indent-todo-marker-component.tsx'],
-    name: 'indent-todo-marker-component',
+    files: ['plate-ui/indent-todo-marker.tsx'],
+    name: 'indent-todo-marker',
     registryDependencies: ['checkbox'],
     type: 'registry:ui',
   },
