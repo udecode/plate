@@ -1,34 +1,44 @@
 'use client';
 
-import React from 'react';
+import React, { type ComponentPropsWithoutRef } from 'react';
 
+import { cn } from '@udecode/cn';
 import {
   useColorsCustom,
   useColorsCustomState,
 } from '@udecode/plate-font/react';
 
-import type { TColor } from './color-dropdown-menu';
+import { Icons } from '@/components/icons';
 
 import { buttonVariants } from './button';
-import { ColorDropdownMenuItems } from './color-dropdown-menu-items';
+import {
+  type TColor,
+  ColorDropdownMenuItems,
+} from './color-dropdown-menu-items';
 import { ColorInput } from './color-input';
+
+// import { ColorInput } from './color-input';
 import { DropdownMenuItem } from './dropdown-menu';
 
-type ColorsCustomProps = {
+type ColorCustomProps = {
+  clearColor: () => void;
   colors: TColor[];
   customColors: TColor[];
   updateColor: (color: string) => void;
   updateCustomColor: (color: string) => void;
   color?: string;
-};
+} & ComponentPropsWithoutRef<'div'>;
 
-export function ColorsCustom({
+export function ColorCustom({
+  className,
+  clearColor,
   color,
   colors,
   customColors,
   updateColor,
   updateCustomColor,
-}: ColorsCustomProps) {
+  ...props
+}: ColorCustomProps) {
   const state = useColorsCustomState({
     color,
     colors,
@@ -38,24 +48,41 @@ export function ColorsCustom({
   const { inputProps, menuItemProps } = useColorsCustom(state);
 
   return (
-    <div className="flex flex-col gap-4">
-      <ColorInput {...inputProps}>
-        <DropdownMenuItem
-          className={buttonVariants({
-            isMenu: true,
-            variant: 'outline',
-          })}
-          {...menuItemProps}
-        >
-          CUSTOM
-        </DropdownMenuItem>
-      </ColorInput>
-
+    <div className={cn('relative flex flex-col gap-4', className)} {...props}>
       <ColorDropdownMenuItems
         color={color}
         colors={state.computedColors}
         updateColor={updateColor}
-      />
+      >
+        {color && (
+          <DropdownMenuItem
+            className={cn(
+              buttonVariants({ size: 'icon', variant: 'outline' }),
+              'size-7 rounded-full'
+            )}
+            onClick={clearColor}
+          >
+            <Icons.colorClear />
+          </DropdownMenuItem>
+        )}
+
+        <ColorInput {...inputProps}>
+          <DropdownMenuItem
+            className={cn(
+              buttonVariants({
+                isMenu: true,
+                size: 'icon',
+                variant: 'outline',
+              }),
+              'absolute bottom-2 right-2 top-1.5 flex size-7 items-center justify-center rounded-full'
+            )}
+            {...menuItemProps}
+          >
+            <span className="sr-only">Custom</span>
+            <Icons.add />
+          </DropdownMenuItem>
+        </ColorInput>
+      </ColorDropdownMenuItems>
     </div>
   );
 }

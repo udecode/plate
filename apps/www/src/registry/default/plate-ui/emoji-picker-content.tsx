@@ -46,7 +46,7 @@ const Button = memo(
           className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100"
           aria-hidden="true"
         />
-        <span style={{ position: 'relative' }} data-emoji-set="native">
+        <span className="relative font-['emoji']" data-emoji-set="native">
           {emoji.skins[0].native}
         </span>
       </button>
