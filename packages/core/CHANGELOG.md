@@ -1,5 +1,11 @@
 # @udecode/plate-core
 
+## 39.2.15
+
+### Patch Changes
+
+- [#3675](https://github.com/udecode/plate/pull/3675) by [@felixfeng33](https://github.com/felixfeng33) – Fix `DefaultLeaf` missing style attribute
+
 ## 39.2.13
 
 ### Patch Changes
