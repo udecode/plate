@@ -38,7 +38,7 @@
     "@udecode/plate-code-block": "^39.0.0",
     "@udecode/plate-combobox": "^39.0.0",
     "@udecode/plate-comments": "^39.0.0",
-    "@udecode/plate-common": "39.2.13",
+    "@udecode/plate-common": "39.2.15",
     "@udecode/plate-csv": "^39.1.6",
     "@udecode/plate-cursor": "^39.2.11",
     "@udecode/plate-date": "^39.0.0",
