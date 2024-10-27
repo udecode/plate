@@ -6,6 +6,7 @@ import { settingsStore } from '@/components/context/settings-store';
 import { type ValueId, customizerPlugins } from '@/config/customizer-plugins';
 import { mapNodeId } from '@/plate/demo/mapNodeId';
 
+import { aiValue } from './aiValue';
 import { alignValue } from './alignValue';
 import { autoformatValue } from './autoformatValue';
 import { basicElementsValue } from './basicElementsValue';
@@ -77,7 +78,7 @@ export const usePlaygroundValue = (id?: ValueId): MyValue => {
     // AI
     value.push({ children: [{ text: 'AI' }], type: 'h1' });
 
-    // if (enabled.ai) value.push(...aiValue);
+    if (enabled.ai) value.push(...aiValue);
     if (enabled.copilot) value.push(...copilotValue);
 
     // Standard Markdown nodes
