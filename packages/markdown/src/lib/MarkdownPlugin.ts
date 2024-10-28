@@ -26,7 +26,16 @@ export type MarkdownConfig = PluginConfig<
     /** Override element rules. */
     elementRules?: RemarkElementRules;
     indentList?: boolean;
-    /** Keep original line breaks. @default false */
+    /**
+     * When the text contains \n, split the text into a separate paragraph.
+     *
+     * Line breaks between paragraphs are also preserved.
+     *
+     * This means that if the text contains \n, the \n and the text before it
+     * are split into separate paragraphs.
+     *
+     * @default false
+     */
     keepLineBreak?: boolean;
 
     /** Override text rules. */
@@ -45,7 +54,6 @@ export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
   options: {
     elementRules: remarkDefaultElementRules,
     indentList: false,
-    // Keep original line breaks
     keepLineBreak: false,
     textRules: remarkDefaultTextRules,
   },
