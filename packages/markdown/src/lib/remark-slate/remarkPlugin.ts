@@ -15,6 +15,6 @@ export function remarkPlugin(options: RemarkPluginOptions) {
 
   // @ts-ignore
   this.Compiler = options.editor.getOptions(MarkdownPlugin).keepLineBreak
-    ? remarkLineBreakCompiler
+    ? (node: MdastNode) => remarkLineBreakCompiler(node, options)
     : compiler;
 }
