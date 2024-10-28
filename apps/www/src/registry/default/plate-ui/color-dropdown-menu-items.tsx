@@ -65,7 +65,7 @@ export function ColorDropdownMenuItem({
   return name ? (
     <Tooltip>
       <TooltipTrigger>{content}</TooltipTrigger>
-      <TooltipContent className="mb-2 capitalize">{name}</TooltipContent>
+      <TooltipContent className="mb-1 capitalize">{name}</TooltipContent>
     </Tooltip>
   ) : (
     content

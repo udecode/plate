@@ -21,7 +21,6 @@ import { ColorInput } from './color-input';
 import { DropdownMenuItem } from './dropdown-menu';
 
 type ColorCustomProps = {
-  clearColor: () => void;
   colors: TColor[];
   customColors: TColor[];
   updateColor: (color: string) => void;
@@ -31,7 +30,6 @@ type ColorCustomProps = {
 
 export function ColorCustom({
   className,
-  clearColor,
   color,
   colors,
   customColors,
@@ -54,18 +52,6 @@ export function ColorCustom({
         colors={state.computedColors}
         updateColor={updateColor}
       >
-        {color && (
-          <DropdownMenuItem
-            className={cn(
-              buttonVariants({ size: 'icon', variant: 'outline' }),
-              'size-7 rounded-full'
-            )}
-            onClick={clearColor}
-          >
-            <Icons.colorClear />
-          </DropdownMenuItem>
-        )}
-
         <ColorInput {...inputProps}>
           <DropdownMenuItem
             className={cn(

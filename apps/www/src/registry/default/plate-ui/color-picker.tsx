@@ -4,6 +4,9 @@ import React from 'react';
 
 import { cn, withRef } from '@udecode/cn';
 
+import { Icons } from '@/components/icons';
+
+import { buttonVariants } from './button';
 import {
   type TColor,
   ColorDropdownMenuItems,
@@ -11,6 +14,7 @@ import {
 import { ColorCustom } from './colors-custom';
 import {
   DropdownMenuGroup,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from './dropdown-menu';
@@ -41,8 +45,19 @@ export const ColorPickerContent = withRef<
   ) => {
     return (
       <div ref={ref} className={cn('flex flex-col', className)} {...props}>
+        <DropdownMenuLabel>Color Picker</DropdownMenuLabel>
         <DropdownMenuGroup>
-          <DropdownMenuLabel>Color Picker</DropdownMenuLabel>
+          <ColorCustom
+            color={color}
+            className="p-2"
+            colors={colors}
+            customColors={customColors}
+            updateColor={updateColor}
+            updateCustomColor={updateCustomColor}
+          />
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
           <ColorDropdownMenuItems
             color={color}
             className="p-2"
@@ -50,31 +65,27 @@ export const ColorPickerContent = withRef<
             updateColor={updateColor}
           />
         </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        {/* {color && (
-          <DropdownMenuItem
-          className={buttonVariants({
-              isMenu: true,
-              variant: 'outline',
-              })}
-              onClick={clearColor}
+        {color && (
+          <React.Fragment>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem
+                className={cn(
+                  buttonVariants({
+                    isMenu: false,
+                    size: 'sm',
+                    variant: 'ghost',
+                  }),
+                  'w-full justify-start'
+                )}
+                onClick={clearColor}
               >
-              Clear
+                <Icons.colorClear className="mr-2" />
+                <span>Clear</span>
               </DropdownMenuItem>
-              )} */}
-        <DropdownMenuGroup>
-          <DropdownMenuLabel>Custom</DropdownMenuLabel>
-
-          <ColorCustom
-            color={color}
-            className="p-2"
-            clearColor={clearColor}
-            colors={colors}
-            customColors={customColors}
-            updateColor={updateColor}
-            updateCustomColor={updateCustomColor}
-          />
-        </DropdownMenuGroup>
+            </DropdownMenuGroup>
+          </React.Fragment>
+        )}
       </div>
     );
   }
