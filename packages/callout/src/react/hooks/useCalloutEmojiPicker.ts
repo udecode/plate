@@ -5,7 +5,7 @@ import {
   useElement,
 } from '@udecode/plate-common/react';
 
-import type { TCalloutElement } from '../../lib';
+import { type TCalloutElement, CALLOUT_STORAGE_KEY } from '../../lib';
 
 export interface UseCalloutEmojiPickerOptions {
   isOpen: boolean;
@@ -33,9 +33,13 @@ export const useCalloutEmojiPicker = ({
       isOpen,
       setIsOpen,
       onSelectEmoji: (emojiValue: any) => {
+        const icon = emojiValue.skins?.[0]?.native ?? emojiValue.icon;
+
         setNode<TCalloutElement>(editor, element, {
-          icon: emojiValue.skins?.[0]?.native ?? emojiValue.icon,
+          icon,
         });
+
+        localStorage.setItem(CALLOUT_STORAGE_KEY, icon);
         setIsOpen(false);
       },
     },

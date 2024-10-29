@@ -4,10 +4,9 @@ import {
   insertNodes,
 } from '@udecode/plate-common';
 
-import { CalloutPlugin } from '../../react';
 import { type TCalloutElement, BaseCalloutPlugin } from '../BaseCalloutPlugin';
 
-export const CALLOUT_STORAGE_KEY = `plate-storage-${CalloutPlugin.key}`;
+export const CALLOUT_STORAGE_KEY = `plate-storage-callout`;
 
 export const insertCallout = <E extends SlateEditor>(
   editor: E,
@@ -30,6 +29,4 @@ export const insertCallout = <E extends SlateEditor>(
     },
     options as any
   );
-
-  icon && localStorage.setItem(CALLOUT_STORAGE_KEY, icon);
 };
