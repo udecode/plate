@@ -1,5 +1,11 @@
 # @udecode/plate-callout
 
+## 39.2.18
+
+### Patch Changes
+
+- [#3685](https://github.com/udecode/plate/pull/3685) by [@felixfeng33](https://github.com/felixfeng33) – Fix set local storage
+
 ## 39.2.17
 
 ### Patch Changes
