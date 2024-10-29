@@ -28,6 +28,7 @@ import type { CompleteOptions } from './utils/callCompletionApi';
 import { renderCopilotBelowNodes } from './renderCopilotBelowNodes';
 import { acceptCopilot } from './transforms/acceptCopilot';
 import { acceptCopilotNextWord } from './transforms/acceptCopilotNextWord';
+import { type GetNextWord, getNextWord } from './utils/getNextWord';
 import { triggerCopilotSuggestion } from './utils/triggerCopilotSuggestion';
 import { withCopilot } from './withCopilot';
 
@@ -44,11 +45,6 @@ type CompletionState = {
 export type CopilotPluginConfig = PluginConfig<
   'copilot',
   CompletionState & {
-    /** Get the next word to be inserted. */
-    getNextWord?: (options: { text: string }) => {
-      firstWord: string;
-      remainingText: string;
-    };
     /**
      * Conditions to auto trigger copilot, used in addition to triggerQuery.
      * Disabling defaults to:
@@ -69,6 +65,8 @@ export type CopilotPluginConfig = PluginConfig<
      * @default 0
      */
     debounceDelay?: number;
+    /** Get the next word to be inserted. */
+    getNextWord?: GetNextWord;
     /**
      * Get the prompt for AI completion.
      *
@@ -139,12 +137,7 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
     completion: '',
     debounceDelay: 0,
     error: null,
-    getNextWord: ({ text }) => {
-      const firstWord = /^\s*\S+/.exec(text)?.[0] || '';
-      const remainingText = text.slice(firstWord.length);
-
-      return { firstWord, remainingText };
-    },
+    getNextWord: getNextWord,
     getPrompt: ({ editor }) => {
       const contextEntry = getAncestorNode(editor);
 
