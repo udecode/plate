@@ -1,5 +1,13 @@
 # @udecode/plate-ai
 
+## 39.2.16
+
+### Patch Changes
+
+- [#3681](https://github.com/udecode/plate/pull/3681) by [@felixfeng33](https://github.com/felixfeng33) – Copilot:
+  - Fix the issue where `getNextWord` returns the entire sentence in Chinese/Korean/Japanese.
+  - When entering two characters using IME, the suggestion text should not be lost.
+
 ## 39.2.13
 
 ### Patch Changes
