@@ -4,7 +4,8 @@
     "description": "A base element with block selection support.",
     "examples": [
       "basic-demo"
-    ]
+    ],
+    "label": "New"
   },
   "files": [
     {

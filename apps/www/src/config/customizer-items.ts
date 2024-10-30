@@ -1,4 +1,4 @@
-import { AIPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
+import { AIChatPlugin, AIPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
@@ -108,9 +108,27 @@ export type SettingPlugin = {
 };
 
 export const customizerItems: Record<string, SettingPlugin> = {
+  [AIChatPlugin.key]: {
+    id: AIChatPlugin.key,
+    badges: [customizerBadges.handler],
+    dependencies: [AIPlugin.key],
+    label: 'AI Chat',
+    npmPackage: '@udecode/plate-ai',
+    pluginFactory: 'AIChatPlugin',
+    route: customizerPlugins.ai.route,
+  },
   [AIPlugin.key]: {
     id: AIPlugin.key,
     badges: [customizerBadges.handler],
+    components: [
+      {
+        id: 'ai-leaf',
+        label: 'AILeaf',
+        pluginKey: 'AIPlugin.key',
+        route: customizerComponents.aiLeaf.href,
+        usage: 'AILeaf',
+      },
+    ],
     label: 'AI',
     npmPackage: '@udecode/plate-ai',
     pluginFactory: 'AIPlugin',

@@ -1,12 +1,11 @@
 'use client';
 
 import React, { useRef } from 'react';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import type { ValueId } from '@/config/customizer-plugins';
 
 import { cn } from '@udecode/cn';
+import { AIChatPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
@@ -127,8 +126,11 @@ export const usePlaygroundEditor = (id: any = '', scrollSelector?: string) => {
         plugins: overridePlugins,
       },
       plugins: [
-        ...aiPlugins,
-        ...(id === 'copilot' ? copilotPlugins : []),
+        // AI
+        ...(id === 'ai' || enabledPlugins[AIChatPlugin.key] ? aiPlugins : []),
+        ...(id === 'copilot' || enabledPlugins[CopilotPlugin.key]
+          ? copilotPlugins
+          : []),
         // Nodes
         HeadingPlugin,
         TocPlugin.configure({
@@ -361,74 +363,72 @@ export default function PlaygroundDemo({
 
   return (
     <DemoId id={id}>
-      <DndProvider backend={HTML5Backend}>
-        <Plate editor={editor}>
-          <CheckPlugin componentId="fixed-toolbar">
-            <FixedToolbar className="no-scrollbar">
-              <CheckPlugin componentId="fixed-toolbar-buttons">
-                <PlaygroundFixedToolbarButtons />
-              </CheckPlugin>
-            </FixedToolbar>
-          </CheckPlugin>
+      <Plate editor={editor}>
+        <CheckPlugin componentId="fixed-toolbar">
+          <FixedToolbar className="no-scrollbar">
+            <CheckPlugin componentId="fixed-toolbar-buttons">
+              <PlaygroundFixedToolbarButtons />
+            </CheckPlugin>
+          </FixedToolbar>
+        </CheckPlugin>
 
-          <div id="editor-playground" className="flex w-full">
-            <div
-              id={scrollSelector ?? `blockSelection-${id}`}
-              ref={containerRef}
+        <div id="editor-playground" className="flex w-full">
+          <div
+            id={scrollSelector ?? `blockSelection-${id}`}
+            ref={containerRef}
+            className={cn(
+              'relative flex w-full overflow-x-auto',
+              // block selection area
+              'max-h-[500px] [&_.slate-selection-area]:border [&_.slate-selection-area]:border-brand/25 [&_.slate-selection-area]:bg-brand/15',
+              className
+            )}
+            data-plate-selectable
+          >
+            <Editor
+              {...editableProps}
+              size="md"
+              variant="demo"
               className={cn(
-                'relative flex w-full overflow-x-auto',
-                // block selection area
-                'max-h-[650px] [&_.slate-selection-area]:border [&_.slate-selection-area]:border-brand/25 [&_.slate-selection-area]:bg-brand/15',
-                className
+                editableProps.className,
+                'overflow-x-auto rounded-none',
+                !id && 'pb-[20vh] pt-4',
+                id && 'pb-8 pt-2'
               )}
-              data-plate-selectable
-            >
-              <Editor
-                {...editableProps}
-                size="md"
-                variant="demo"
-                className={cn(
-                  editableProps.className,
-                  'overflow-x-auto rounded-none',
-                  !id && 'pb-[20vh] pt-4',
-                  id && 'pb-8 pt-2'
-                )}
-                placeholder=""
-                focusRing={false}
-              />
+              placeholder=""
+              focusRing={false}
+            />
 
-              <CheckPlugin componentId="floating-toolbar">
-                <PlaygroundFloatingToolbar
-                  state={{
-                    // hideToolbar: aiOpen,
-                    showWhenReadOnly: isEnabled(
-                      'comment',
-                      id,
-                      enabled[CommentsPlugin.key]
-                    ),
-                  }}
-                >
-                  <CheckPlugin componentId="floating-toolbar-buttons">
-                    <PlaygroundFloatingToolbarButtons />
-                  </CheckPlugin>
-                </PlaygroundFloatingToolbar>
-              </CheckPlugin>
+            <CheckPlugin componentId="floating-toolbar">
+              <PlaygroundFloatingToolbar
+                state={{
+                  // hideToolbar: aiOpen,
+                  showWhenReadOnly: isEnabled(
+                    'comment',
+                    id,
+                    enabled[CommentsPlugin.key]
+                  ),
+                }}
+              >
+                <CheckPlugin componentId="floating-toolbar-buttons">
+                  <PlaygroundFloatingToolbarButtons />
+                </CheckPlugin>
+              </PlaygroundFloatingToolbar>
+            </CheckPlugin>
 
-              <CheckPlugin id="cursoroverlay" plugin={DragOverCursorPlugin}>
-                <CursorOverlay containerRef={containerRef} />
-              </CheckPlugin>
-            </div>
-
-            <CheckPlugin
-              id="comment"
-              componentId="comments-popover"
-              plugin={CommentsPlugin}
-            >
-              <CommentsPopover />
+            <CheckPlugin id="cursoroverlay" plugin={DragOverCursorPlugin}>
+              <CursorOverlay containerRef={containerRef} />
             </CheckPlugin>
           </div>
-        </Plate>
-      </DndProvider>
+
+          <CheckPlugin
+            id="comment"
+            componentId="comments-popover"
+            plugin={CommentsPlugin}
+          >
+            <CommentsPopover />
+          </CheckPlugin>
+        </div>
+      </Plate>
     </DemoId>
   );
 }

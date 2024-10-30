@@ -6,6 +6,7 @@
       "ai-demo",
       "floating-toolbar-demo"
     ],
+    "label": "New",
     "title": "AI Toolbar Button"
   },
   "files": [

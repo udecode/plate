@@ -53,7 +53,7 @@ export function DocContent({
     <main
       className={cn(
         'relative py-6 lg:gap-10 lg:py-8',
-        toc?.items?.length && 'xl:grid xl:grid-cols-[1fr_200px]'
+        'xl:grid xl:grid-cols-[1fr_200px]'
       )}
     >
       <div className="mx-auto w-full min-w-0">

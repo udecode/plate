@@ -1,4 +1,4 @@
-import { AIPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
+import { AIChatPlugin, AIPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
@@ -63,6 +63,15 @@ import { customizerItems } from '@/config/customizer-items';
 import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
 
 export const customizerList = [
+  {
+    id: 'ai',
+    children: [
+      customizerItems[AIPlugin.key],
+      customizerItems[AIChatPlugin.key],
+      customizerItems[CopilotPlugin.key],
+    ],
+    label: 'AI',
+  },
   {
     id: 'blocks',
     children: [
@@ -136,9 +145,7 @@ export const customizerList = [
       customizerItems[SoftBreakPlugin.key],
       customizerItems[TabbablePlugin.key],
       customizerItems[TrailingBlockPlugin.key],
-      customizerItems[CopilotPlugin.key],
       customizerItems[SlashPlugin.key],
-      customizerItems[AIPlugin.key],
     ],
     label: 'Functionality',
   },

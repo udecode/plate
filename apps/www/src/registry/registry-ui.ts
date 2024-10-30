@@ -669,13 +669,24 @@ export const uiNodes: Registry = [
     type: 'registry:ui',
   },
   {
+    dependencies: ['@udecode/plate-layout', '@udecode/plate-resizable'],
+    doc: {
+      description: 'A resizable column component for layout.',
+      examples: ['column-demo'],
+    },
+    files: ['plate-ui/column-element.tsx'],
+    name: 'column-element',
+    registryDependencies: ['resizable', 'plate-element'],
+    type: 'registry:ui',
+  },
+  {
     dependencies: ['@udecode/plate-layout'],
     doc: {
       description: 'A resizable column component for layout.',
       examples: ['column-demo'],
     },
-    files: ['plate-ui/column-element.tsx', 'plate-ui/column-group-element.tsx'],
-    name: 'column-element',
+    files: ['plate-ui/column-group-element.tsx'],
+    name: 'column-group-element',
     registryDependencies: ['command', 'resizable', 'plate-element'],
     type: 'registry:ui',
   },

@@ -7,7 +7,8 @@
     "description": "A command input component for inserting various elements.",
     "examples": [
       "slash-menu-demo"
-    ]
+    ],
+    "label": "New"
   },
   "files": [
     {

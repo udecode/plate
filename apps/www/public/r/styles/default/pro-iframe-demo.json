@@ -1,7 +1,7 @@
 {
   "files": [
     {
-      "content": "'use client';\n\nimport { siteConfig } from '@/config/site';\nimport { cn } from '@/lib/utils';\n\nexport default function ProIframeDemo({ id }: { id: string }) {\n  console.log(id);\n\n  return (\n    <iframe\n      className={cn(`size-full h-[520px] pr-px`)}\n      title={id}\n      src={`${siteConfig.links.plateProIframe}/${id}`}\n    />\n  );\n}\n",
+      "content": "'use client';\n\nimport { siteConfig } from '@/config/site';\nimport { cn } from '@/lib/utils';\n\nexport default function ProIframeDemo({ id }: { id: string }) {\n  return (\n    <iframe\n      className={cn(`size-full h-[520px] pr-px`)}\n      title={id}\n      src={`${siteConfig.links.plateProIframe}/${id}`}\n    />\n  );\n}\n",
       "path": "example/pro-iframe-demo.tsx",
       "target": "components/pro-iframe-demo.tsx",
       "type": "registry:example"

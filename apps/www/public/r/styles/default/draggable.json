@@ -9,6 +9,10 @@
     "description": "A drag handle for moving editor blocks.",
     "examples": [
       "dnd-demo"
+    ],
+    "usage": [
+      "import { DndPlugin } from '@udecode/plate-dnd';\nimport { NodeIdPlugin } from '@udecode/plate-node-id';\nimport { DndProvider } from 'react-dnd';\nimport { HTML5Backend } from 'react-dnd-html5-backend';\n\nimport { withDraggables } from './withDraggables';",
+      "export function MyEditor() {\n  const editor = usePlateEditor({\n    plugins: [\n      // ...otherPlugins,\n      NodeIdPlugin,\n      DndPlugin.configure({ options: { enableScroller: true } }),\n    ],\n    override: {\n      components: withDraggables({\n        // ...components\n      }),\n    }\n  });\n\n  return (\n    <DndProvider backend={HTML5Backend}>\n      <Plate editor={editor}>\n        <PlateContent />\n      </Plate>\n    </DndProvider>\n  );\n}"
     ]
   },
   "files": [

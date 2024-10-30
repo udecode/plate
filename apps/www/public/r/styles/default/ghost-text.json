@@ -4,7 +4,8 @@
   ],
   "doc": {
     "description": "A text suggestion system that displays AI-generated content after the cursor.",
-    "examples": []
+    "examples": [],
+    "label": "New"
   },
   "files": [
     {

@@ -6,7 +6,8 @@
     "description": "A context menu for block-level operations.",
     "examples": [
       "context-menu-demo"
-    ]
+    ],
+    "label": "New"
   },
   "files": [
     {

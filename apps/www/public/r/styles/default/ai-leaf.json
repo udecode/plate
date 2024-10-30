@@ -16,11 +16,9 @@
     ],
     "examples": [
       "ai-demo",
-      {
-        "isPro": true,
-        "name": "ai"
-      }
+      "ai-pro"
     ],
+    "label": "New",
     "title": "AI Leaf"
   },
   "files": [

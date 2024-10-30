@@ -17,11 +17,9 @@
       ],
       "examples": [
         "ai-demo",
-        {
-          "isPro": true,
-          "name": "ai"
-        }
+        "ai-pro"
       ],
+      "label": "New",
       "title": "AI Leaf"
     },
     "files": [
@@ -50,10 +48,7 @@
       ],
       "examples": [
         "basic-elements-demo",
-        {
-          "isPro": true,
-          "name": "basic-elements"
-        }
+        "basic-elements-pro"
       ]
     },
     "files": [
@@ -242,7 +237,8 @@
       ],
       "examples": [
         "date-demo"
-      ]
+      ],
+      "label": "New"
     },
     "files": [
       {
@@ -621,7 +617,8 @@
       "description": "A command input component for inserting various elements.",
       "examples": [
         "slash-menu-demo"
-      ]
+      ],
+      "label": "New"
     },
     "files": [
       {
@@ -728,6 +725,7 @@
       "examples": [
         "toc-demo"
       ],
+      "label": "New",
       "title": "TOC Element"
     },
     "files": [
@@ -980,16 +978,21 @@
     "dependencies": [
       "@udecode/plate-ai",
       "@udecode/plate-markdown",
-      "@udecode/plate-selection"
+      "@udecode/plate-selection",
+      "ai"
     ],
     "doc": {
       "description": "A menu for AI-powered content generation and insertion.",
-      "examples": [],
+      "examples": [
+        "ai-demo",
+        "ai-pro"
+      ],
+      "label": "New",
       "title": "AI Menu"
     },
     "files": [
       {
-        "path": "plate-ui/ai-chat-editor.tsx",
+        "path": "plate-ui/ai-menu.tsx",
         "type": "registry:ui"
       },
       {
@@ -997,15 +1000,14 @@
         "type": "registry:ui"
       },
       {
-        "path": "plate-ui/ai-menu.tsx",
+        "path": "plate-ui/ai-chat-editor.tsx",
         "type": "registry:ui"
       }
     ],
     "name": "ai-menu",
     "registryDependencies": [
-      "button",
-      "menu",
-      "textarea",
+      "command",
+      "popover",
       "editor"
     ],
     "type": "registry:ui"
@@ -1018,6 +1020,7 @@
         "ai-demo",
         "floating-toolbar-demo"
       ],
+      "label": "New",
       "title": "AI Toolbar Button"
     },
     "files": [
@@ -1063,7 +1066,8 @@
       "description": "A context menu for block-level operations.",
       "examples": [
         "context-menu-demo"
-      ]
+      ],
+      "label": "New"
     },
     "files": [
       {
@@ -1086,7 +1090,8 @@
       "description": "A visual overlay for selected blocks.",
       "examples": [
         "selection-demo"
-      ]
+      ],
+      "label": "New"
     },
     "files": [
       {
@@ -1263,6 +1268,10 @@
       "description": "A drag handle for moving editor blocks.",
       "examples": [
         "dnd-demo"
+      ],
+      "usage": [
+        "import { DndPlugin } from '@udecode/plate-dnd';\nimport { NodeIdPlugin } from '@udecode/plate-node-id';\nimport { DndProvider } from 'react-dnd';\nimport { HTML5Backend } from 'react-dnd-html5-backend';\n\nimport { withDraggables } from './withDraggables';",
+        "export function MyEditor() {\n  const editor = usePlateEditor({\n    plugins: [\n      // ...otherPlugins,\n      NodeIdPlugin,\n      DndPlugin.configure({ options: { enableScroller: true } }),\n    ],\n    override: {\n      components: withDraggables({\n        // ...components\n      }),\n    }\n  });\n\n  return (\n    <DndProvider backend={HTML5Backend}>\n      <Plate editor={editor}>\n        <PlateContent />\n      </Plate>\n    </DndProvider>\n  );\n}"
       ]
     },
     "files": [
@@ -1455,7 +1464,8 @@
     ],
     "doc": {
       "description": "A text suggestion system that displays AI-generated content after the cursor.",
-      "examples": []
+      "examples": [],
+      "label": "New"
     },
     "files": [
       {
@@ -1853,7 +1863,8 @@
       "description": "A base element with block selection support.",
       "examples": [
         "basic-demo"
-      ]
+      ],
+      "label": "New"
     },
     "files": [
       {

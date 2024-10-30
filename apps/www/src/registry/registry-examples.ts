@@ -553,12 +553,6 @@ export const examples: Registry = [
     type: 'registry:example',
   },
   {
-    files: ['example/find-replace-demo.tsx'],
-    name: 'find-replace-demo',
-    registryDependencies: [],
-    type: 'registry:example',
-  },
-  {
     files: ['example/hundreds-blocks-demo.tsx'],
     name: 'hundreds-blocks-demo',
     registryDependencies: [],

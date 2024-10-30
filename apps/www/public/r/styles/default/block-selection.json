@@ -6,7 +6,8 @@
     "description": "A visual overlay for selected blocks.",
     "examples": [
       "selection-demo"
-    ]
+    ],
+    "label": "New"
   },
   "files": [
     {

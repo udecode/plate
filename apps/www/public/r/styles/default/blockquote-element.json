@@ -14,10 +14,7 @@
     ],
     "examples": [
       "basic-elements-demo",
-      {
-        "isPro": true,
-        "name": "basic-elements"
-      }
+      "basic-elements-pro"
     ]
   },
   "files": [
