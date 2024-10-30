@@ -19,6 +19,7 @@ function registryToNav(registry: Registry): SidebarNavItem[] {
         ? {
             href: `/docs/${item.type.includes('registry:example') ? 'examples' : 'components'}/${item.name.replace('-demo', '')}`,
             keywords: item.doc.keywords,
+            label: item.doc.label,
             title: getRegistryTitle(item).replace(' Demo', ''),
           }
         : (null as never)

@@ -6,6 +6,7 @@ import { cn } from '@udecode/cn';
 
 import { Index } from '@/__registry__';
 import { useConfig } from '@/hooks/use-config';
+import { useMounted } from '@/registry/default/hooks/use-mounted';
 import { styles } from '@/registry/registry-styles';
 
 import { ComponentInstallation } from './component-installation';
@@ -74,7 +75,8 @@ export function ComponentPreview({
       );
     }
 
-    return <Component {...props} id={name} />;
+    // DIFF
+    return <Component {...props} id={props.id} />;
   }, [config.style, name, props]);
 
   const codeString = React.useMemo(() => {
@@ -98,6 +100,15 @@ export function ComponentPreview({
       setIsCodeLoaded(false);
     }
   };
+
+  const mounted = useMounted();
+
+  const loadingPreview = (
+    <div className="preview flex min-h-[350px] w-full items-center justify-center p-0 text-sm text-muted-foreground">
+      <Icons.spinner className="mr-2 size-4 animate-spin" />
+      Loading...
+    </div>
+  );
 
   return (
     <div
@@ -151,27 +162,24 @@ export function ComponentPreview({
               </div>
             </div>
           )}
-          <React.Suspense
-            fallback={
-              <div className="preview flex min-h-[350px] w-full items-center justify-center p-0 text-sm text-muted-foreground">
-                <Icons.spinner className="mr-2 size-4 animate-spin" />
-                Loading...
+          <React.Suspense fallback={loadingPreview}>
+            {mounted ? (
+              <div
+                className={cn(
+                  'preview relative flex size-full min-h-[350px] flex-col p-0',
+                  padding === 'md' && 'p-4',
+                  {
+                    'items-center': align === 'center',
+                    'items-end': align === 'end',
+                    'items-start': align === 'start',
+                  }
+                )}
+              >
+                <div className="size-full grow">{Preview}</div>
               </div>
-            }
-          >
-            <div
-              className={cn(
-                'preview relative flex size-full min-h-[350px] flex-col p-0',
-                padding === 'md' && 'p-4',
-                {
-                  'items-center': align === 'center',
-                  'items-end': align === 'end',
-                  'items-start': align === 'start',
-                }
-              )}
-            >
-              <div className="size-full grow">{Preview}</div>
-            </div>
+            ) : (
+              loadingPreview
+            )}
           </React.Suspense>
         </TabsContent>
         <TabsContent value="code">

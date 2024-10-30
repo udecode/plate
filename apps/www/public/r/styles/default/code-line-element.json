@@ -2,6 +2,12 @@
   "dependencies": [
     "@udecode/plate-code-block"
   ],
+  "doc": {
+    "description": "A line component for code blocks.",
+    "examples": [
+      "basic-elements-demo"
+    ]
+  },
   "files": [
     {
       "content": "'use client';\n\nimport React from 'react';\n\nimport { withRef } from '@udecode/cn';\n\nimport { PlateElement } from './plate-element';\n\nexport const CodeLineElement = withRef<typeof PlateElement>((props, ref) => (\n  <PlateElement ref={ref} {...props} />\n));\n",

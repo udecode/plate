@@ -73,7 +73,7 @@ export function PlaygroundFixedToolbarButtons() {
             <ToolbarGroup>
               <ToolbarGroup>
                 <AIToolbarButton
-                  className="text-purple-500 hover:text-purple-600"
+                  className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-500"
                   tooltip="Edit, generate, and more"
                 >
                   <SparklesIcon className="mr-1.5 !size-3.5" />
@@ -83,13 +83,13 @@ export function PlaygroundFixedToolbarButtons() {
 
               <PlaygroundInsertDropdownMenu />
 
-              <CheckPlugin id="basicnodes">
+              <CheckPlugin id="basic-nodes">
                 <PlaygroundTurnIntoDropdownMenu />
               </CheckPlugin>
             </ToolbarGroup>
 
             <ToolbarGroup>
-              <CheckPlugin id="basicnodes" plugin={BoldPlugin}>
+              <CheckPlugin id="basic-nodes" plugin={BoldPlugin}>
                 <MarkToolbarButton
                   nodeType={BoldPlugin.key}
                   tooltip="Bold (⌘+B)"
@@ -98,7 +98,7 @@ export function PlaygroundFixedToolbarButtons() {
                 </MarkToolbarButton>
               </CheckPlugin>
 
-              <CheckPlugin id="basicnodes" plugin={ItalicPlugin}>
+              <CheckPlugin id="basic-nodes" plugin={ItalicPlugin}>
                 <MarkToolbarButton
                   nodeType={ItalicPlugin.key}
                   tooltip="Italic (⌘+I)"
@@ -107,7 +107,7 @@ export function PlaygroundFixedToolbarButtons() {
                 </MarkToolbarButton>
               </CheckPlugin>
 
-              <CheckPlugin id="basicnodes" plugin={UnderlinePlugin}>
+              <CheckPlugin id="basic-nodes" plugin={UnderlinePlugin}>
                 <MarkToolbarButton
                   nodeType={UnderlinePlugin.key}
                   tooltip="Underline (⌘+U)"
@@ -116,7 +116,7 @@ export function PlaygroundFixedToolbarButtons() {
                 </MarkToolbarButton>
               </CheckPlugin>
 
-              <CheckPlugin id="basicnodes" plugin={StrikethroughPlugin}>
+              <CheckPlugin id="basic-nodes" plugin={StrikethroughPlugin}>
                 <MarkToolbarButton
                   nodeType={StrikethroughPlugin.key}
                   tooltip="Strikethrough (⌘+⇧+M)"
@@ -125,7 +125,7 @@ export function PlaygroundFixedToolbarButtons() {
                 </MarkToolbarButton>
               </CheckPlugin>
 
-              <CheckPlugin id="basicnodes" plugin={CodePlugin}>
+              <CheckPlugin id="basic-nodes" plugin={CodePlugin}>
                 <MarkToolbarButton
                   nodeType={CodePlugin.key}
                   tooltip="Code (⌘+E)"

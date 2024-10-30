@@ -185,7 +185,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     npmPackage: '@udecode/plate-block-quote',
     pluginFactory: 'BlockquotePlugin',
     reactImport: true,
-    route: customizerPlugins.basicnodes.route,
+    route: customizerPlugins['basic-nodes'].route,
   },
   [BoldPlugin.key]: {
     id: BoldPlugin.key,
@@ -205,7 +205,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     npmPackage: '@udecode/plate-basic-marks',
     pluginFactory: 'BoldPlugin',
     reactImport: true,
-    route: customizerPlugins.basicmarks.route,
+    route: customizerPlugins['basic-marks'].route,
   },
   [CaptionPlugin.key]: {
     id: CaptionPlugin.key,
@@ -249,7 +249,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     npmPackage: '@udecode/plate-code-block',
     pluginFactory: 'CodeBlockPlugin',
     reactImport: true,
-    route: customizerPlugins.basicnodes.route,
+    route: customizerPlugins['basic-nodes'].route,
   },
   [CodeLinePlugin.key]: {
     id: CodeLinePlugin.key,
@@ -274,7 +274,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     npmPackage: '@udecode/plate-basic-marks',
     pluginFactory: 'CodePlugin',
     reactImport: true,
-    route: customizerPlugins.basicmarks.route,
+    route: customizerPlugins['basic-marks'].route,
   },
   [CodeSyntaxPlugin.key]: {
     id: CodeSyntaxPlugin.key,
@@ -575,7 +575,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     npmPackage: '@udecode/plate-basic-marks',
     pluginFactory: 'ItalicPlugin',
     reactImport: true,
-    route: customizerPlugins.basicmarks.route,
+    route: customizerPlugins['basic-marks'].route,
   },
   [JuicePlugin.key]: {
     id: JuicePlugin.key,
@@ -744,7 +744,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     // npmPackage: '@udecode/plate-common',
     pluginFactory: 'ParagraphPlugin',
     reactImport: true,
-    route: customizerPlugins.basicnodes.route,
+    route: customizerPlugins['basic-nodes'].route,
   },
   [ResetNodePlugin.key]: {
     id: ResetNodePlugin.key,
@@ -838,7 +838,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     npmPackage: '@udecode/plate-basic-marks',
     pluginFactory: 'StrikethroughPlugin',
     reactImport: true,
-    route: customizerPlugins.basicmarks.route,
+    route: customizerPlugins['basic-marks'].route,
   },
   [SubscriptPlugin.key]: {
     id: SubscriptPlugin.key,
@@ -858,7 +858,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     npmPackage: '@udecode/plate-basic-marks',
     pluginFactory: 'SubscriptPlugin',
     reactImport: true,
-    route: customizerPlugins.basicmarks.route,
+    route: customizerPlugins['basic-marks'].route,
   },
   [SuperscriptPlugin.key]: {
     id: SuperscriptPlugin.key,
@@ -878,7 +878,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     npmPackage: '@udecode/plate-basic-marks',
     pluginFactory: 'SuperscriptPlugin',
     reactImport: true,
-    route: customizerPlugins.basicmarks.route,
+    route: customizerPlugins['basic-marks'].route,
   },
   [TabbablePlugin.key]: {
     id: TabbablePlugin.key,
@@ -1006,7 +1006,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     npmPackage: '@udecode/plate-basic-marks',
     pluginFactory: 'UnderlinePlugin',
     reactImport: true,
-    route: customizerPlugins.basicmarks.route,
+    route: customizerPlugins['basic-marks'].route,
   },
   column: {
     id: 'column',
@@ -1148,7 +1148,7 @@ export const customizerItems: Record<string, SettingPlugin> = {
     npmPackage: '@udecode/plate-heading',
     pluginFactory: 'HeadingPlugin',
     reactImport: true,
-    route: customizerPlugins.basicnodes.route,
+    route: customizerPlugins['basic-nodes'].route,
   },
   list: {
     id: 'list',

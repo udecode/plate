@@ -2,6 +2,17 @@
   "dependencies": [
     "@udecode/plate-code-block"
   ],
+  "doc": {
+    "description": "A syntax highlighting component for code blocks.",
+    "docs": [
+      {
+        "route": "/docs/comments"
+      }
+    ],
+    "examples": [
+      "basic-elements-demo"
+    ]
+  },
   "files": [
     {
       "content": "'use client';\n\nimport React from 'react';\n\nimport { withRef } from '@udecode/cn';\nimport { useCodeSyntaxLeaf } from '@udecode/plate-code-block/react';\nimport { PlateLeaf } from '@udecode/plate-common/react';\n\nexport const CodeSyntaxLeaf = withRef<typeof PlateLeaf>(\n  ({ children, ...props }, ref) => {\n    const { leaf } = props;\n\n    const { tokenProps } = useCodeSyntaxLeaf({ leaf });\n\n    return (\n      <PlateLeaf ref={ref} {...props}>\n        <span {...tokenProps}>{children}</span>\n      </PlateLeaf>\n    );\n  }\n);\n",

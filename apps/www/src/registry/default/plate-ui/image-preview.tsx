@@ -1,3 +1,5 @@
+'use client';
+
 import { cn, createPrimitiveComponent } from '@udecode/cn';
 import {
   PreviewImage,

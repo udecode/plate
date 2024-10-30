@@ -54,7 +54,7 @@ export const usePlaygroundValue = (id?: ValueId): MyValue => {
   return useMemo(() => {
     const enabled = settingsStore.get.checkedPlugins();
 
-    const value: any[] = [];
+    let value: any[] = [...basicElementsValue, ...basicMarksValue];
 
     if (!version) return value;
     if (valueId === 'tableMerge') {
@@ -70,7 +70,7 @@ export const usePlaygroundValue = (id?: ValueId): MyValue => {
       return mapNodeId(newValue);
     }
 
-    value.push({ children: [{ text: 'Playground' }], type: 'h1' });
+    value = [{ children: [{ text: 'Playground' }], type: 'h1' }];
 
     // TOC
     if (enabled.toc) value.push(...tocPlaygroundValue);

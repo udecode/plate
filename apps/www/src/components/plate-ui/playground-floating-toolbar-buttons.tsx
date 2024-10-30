@@ -33,7 +33,7 @@ export function PlaygroundFloatingToolbarButtons() {
         <>
           <ToolbarGroup>
             <AIToolbarButton
-              className="text-purple-500 hover:text-purple-600"
+              className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-500"
               tooltip="Edit, generate, and more"
             >
               <SparklesIcon className="mr-1.5 !size-3.5" />

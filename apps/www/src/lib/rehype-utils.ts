@@ -3,9 +3,8 @@ import type { UnistNode } from '@/types/unist';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { Index } from '../__registry__/';
 import { registry } from '../registry/registry';
-import { examples } from '../registry/registry-examples';
+import { examples, proExamples } from '../registry/registry-examples';
 import { styles } from '../registry/registry-styles';
 
 export function fixImport(content: string) {
@@ -134,13 +133,13 @@ export function getAllFiles(
   let processedFiles: ReturnType<typeof processFiles> = [];
 
   for (const style of styles) {
-    const styleComponent = Index[style.name][name];
+    // const styleComponent = Index[style.name][name];
 
-    if (!styleComponent) {
-      console.error(`Component ${name} not found in ${style.name}`);
+    // if (!styleComponent) {
+    //   console.error(`Component ${name} not found in ${style.name}`);
 
-      continue;
-    }
+    //   continue;
+    // }
 
     const files: string[] = [
       ...(component.files ?? []),
@@ -161,11 +160,14 @@ export function getAllFiles(
 
 export function getExampleCode(name?: string) {
   if (!name) return null;
+  if (name.endsWith('-pro')) {
+    return proExamples.find((ex) => ex.name === name);
+  }
 
-  const component = Index[styles[0].name][name];
+  // const component = Index[styles[0].name][name];
   const example = examples.find((ex) => ex.name === name);
 
-  if (!component || !example) {
+  if (!example) {
     throw new Error(`Component ${name} not found`);
   }
 

@@ -1,3 +1,5 @@
+'use client';
+
 import React, { type ComponentType, type SVGProps } from 'react';
 
 import type { PlateEditor } from '@udecode/plate-common/react';

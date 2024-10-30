@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useCallback, useMemo, useState } from 'react';
 
 import type { TElement, Value } from '@udecode/plate-common';

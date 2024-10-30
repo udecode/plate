@@ -14,6 +14,7 @@ export const blockChunkSchema = z.object({
 });
 
 export const registryItemTypeSchema = z.enum([
+  'registry:pro',
   'registry:style',
   'registry:lib',
   'registry:example',
@@ -69,6 +70,7 @@ export const registryEntrySchema = z.object({
         .optional(),
       examples: z.array(z.string()).optional(),
       keywords: z.array(z.string()).optional(),
+      label: z.union([z.array(z.string()), z.string()]).optional(),
       links: z
         .object({
           api: z.string().optional(),

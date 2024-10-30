@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 
 import type { DocsConfig } from '@/config/docs';
 import type { SidebarNavItem } from '@/types/nav';
@@ -10,7 +10,6 @@ import { castArray } from 'lodash';
 import { X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { parseAsString, useQueryState } from 'nuqs';
 
 import { Input } from '@/registry/default/plate-ui/input';
 
@@ -20,12 +19,7 @@ export interface DocsSidebarNavProps {
 
 export function DocsSidebarNav({ config }: DocsSidebarNavProps) {
   const pathname = usePathname();
-  const [filter, setFilter] = useQueryState(
-    'q',
-    parseAsString.withDefault('').withOptions({
-      clearOnDefault: true,
-    })
-  );
+  const [filter, setFilter] = useState('');
 
   const sidebarNav = pathname?.includes('/docs/components')
     ? config.componentsNav
@@ -63,7 +57,7 @@ export function DocsSidebarNav({ config }: DocsSidebarNavProps) {
         <div className="relative flex w-full items-center">
           <Input
             className={cn(
-              'h-8 w-full rounded-lg bg-muted/50 px-3 py-1 text-sm text-muted-foreground shadow-none'
+              'h-8 w-full rounded-lg bg-muted/50 px-3 py-1 text-sm text-muted-foreground shadow-none focus-visible:ring-transparent'
             )}
             value={filter}
             onChange={(e) => setFilter(e.target.value)}

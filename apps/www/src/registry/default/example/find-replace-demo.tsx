@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';

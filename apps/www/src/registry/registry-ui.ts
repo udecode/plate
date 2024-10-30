@@ -1,31 +1,36 @@
 import type { Registry } from './schema';
 
+import { siteConfig } from '../config/site';
+
 export const uiComponents: Registry = [
   {
     dependencies: [
       '@udecode/plate-ai',
       '@udecode/plate-markdown',
       '@udecode/plate-selection',
+      'ai',
     ],
     doc: {
-      description: 'AI-powered menu for generating and inserting content.',
-      examples: ['ai-demo'],
+      description: 'A menu for AI-powered content generation and insertion.',
+      examples: ['ai-demo', 'ai-pro'],
+      label: 'New',
       title: 'AI Menu',
     },
     files: [
-      'plate-ui/ai-chat-editor.tsx',
-      'plate-ui/ai-menu-items.tsx',
       'plate-ui/ai-menu.tsx',
+      'plate-ui/ai-menu-items.tsx',
+      'plate-ui/ai-chat-editor.tsx',
     ],
     name: 'ai-menu',
-    registryDependencies: ['button', 'menu', 'textarea', 'editor'],
+    registryDependencies: ['command', 'popover', 'editor'],
     type: 'registry:ui',
   },
   {
     dependencies: [],
     doc: {
-      description: 'AI menu opener from the toolbar.',
+      description: 'A toolbar button for accessing AI features.',
       examples: ['ai-demo', 'floating-toolbar-demo'],
+      label: 'New',
       title: 'AI Toolbar Button',
     },
     files: ['plate-ui/ai-toolbar-button.tsx'],
@@ -36,7 +41,7 @@ export const uiComponents: Registry = [
   {
     dependencies: ['@udecode/plate-alignment'],
     doc: {
-      description: 'Dropdown menu for text alignment options.',
+      description: 'A dropdown menu for text alignment controls.',
       examples: ['alignment-demo'],
     },
     files: ['plate-ui/align-dropdown-menu.tsx'],
@@ -47,8 +52,13 @@ export const uiComponents: Registry = [
   {
     dependencies: ['@radix-ui/react-context-menu'],
     doc: {
-      description: 'Context menu for block actions.',
+      description: 'A context menu for block-level operations.',
       examples: ['context-menu-demo'],
+      label: 'New',
+      //       1. More advanced menu items.
+      // 2. Supports search functionality and carefully designed shortcuts.
+      // 3. More refined styles and animations.
+      // 4. You can open this menu in various ways, such as through the drag button.
     },
     files: ['plate-ui/block-context-menu.tsx'],
     name: 'block-context-menu',
@@ -58,8 +68,9 @@ export const uiComponents: Registry = [
   {
     dependencies: ['@udecode/plate-selection'],
     doc: {
-      description: 'Visual feedback for selected blocks.',
+      description: 'A visual overlay for selected blocks.',
       examples: ['selection-demo'],
+      label: 'New',
     },
     files: ['plate-ui/block-selection.tsx'],
     name: 'block-selection',
@@ -69,7 +80,7 @@ export const uiComponents: Registry = [
   {
     dependencies: ['@udecode/plate-caption'],
     doc: {
-      description: 'Caption component for media elements.',
+      description: 'A text field for adding captions to media elements.',
       examples: ['upload-demo'],
     },
     files: ['plate-ui/caption.tsx'],
@@ -80,9 +91,10 @@ export const uiComponents: Registry = [
   {
     dependencies: [],
     doc: {
-      description:
-        'Color picker and dropdown menu for text and background colors.',
+      description: 'A color picker with text and background color controls.',
       examples: ['color-demo'],
+      //       1. Text color can be modified using the floating toolbar or block menu, providing more flexibility in formatting.
+      // 2. An improved color picker interface with custom color options and a color input field for precise color selection.
     },
     files: [
       'plate-ui/color-constants.ts',
@@ -105,8 +117,7 @@ export const uiComponents: Registry = [
   {
     dependencies: [],
     doc: {
-      description:
-        'Adds a toolbar button for inserting comments in the editor.',
+      description: 'A toolbar button for adding inline comments.',
       examples: ['comments-demo', 'floating-toolbar-demo'],
     },
     files: ['plate-ui/comment-toolbar-button.tsx'],
@@ -117,8 +128,7 @@ export const uiComponents: Registry = [
   {
     dependencies: ['@udecode/plate-comments'],
     doc: {
-      description:
-        'Displays a popover with comments and a form for adding new comments.',
+      description: 'A popover interface for managing comments and replies.',
       examples: ['comments-demo'],
     },
     files: [
@@ -138,8 +148,7 @@ export const uiComponents: Registry = [
   {
     dependencies: [],
     doc: {
-      description:
-        'Renders cursors and selection overlays for collaborative editing.',
+      description: 'A visual overlay for collaborative cursors and selections.',
       examples: ['collaboration-demo'],
     },
     files: ['plate-ui/cursor-overlay.tsx'],
@@ -155,8 +164,39 @@ export const uiComponents: Registry = [
       'react-dnd-html5-backend',
     ],
     doc: {
-      description: 'Implements draggable functionality for editor blocks.',
+      description: 'A drag handle for moving editor blocks.',
       examples: ['dnd-demo'],
+      usage: [
+        `import { DndPlugin } from '@udecode/plate-dnd';
+import { NodeIdPlugin } from '@udecode/plate-node-id';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+
+import { withDraggables } from './withDraggables';`,
+        `export function MyEditor() {
+  const editor = usePlateEditor({
+    plugins: [
+      // ...otherPlugins,
+      NodeIdPlugin,
+      DndPlugin.configure({ options: { enableScroller: true } }),
+    ],
+    override: {
+      components: withDraggables({
+        // ...components
+      }),
+    }
+  });
+
+  return (
+    <DndProvider backend={HTML5Backend}>
+      <Plate editor={editor}>
+        <PlateContent />
+      </Plate>
+    </DndProvider>
+  );
+}`,
+      ],
+      // Click the plus button next to the drag button to insert blocks
     },
     files: ['plate-ui/draggable.tsx', 'plate-ui/with-draggables.tsx'],
     name: 'draggable',
@@ -166,8 +206,15 @@ export const uiComponents: Registry = [
   {
     dependencies: [],
     doc: {
-      description: 'Core editor container and content components.',
-      examples: ['basic-demo'],
+      description: 'A container for the editor content and styling.',
+      examples: [
+        'editor-default',
+        'editor-disabled',
+        'editor-ghost',
+        'editor-label',
+        'editor-text',
+        'editor-button',
+      ],
     },
     files: ['plate-ui/editor.tsx'],
     name: 'editor',
@@ -177,7 +224,7 @@ export const uiComponents: Registry = [
   {
     dependencies: ['@radix-ui/react-popover'],
     doc: {
-      description: 'Emoji picker with search, categories, and preview.',
+      description: 'A dropdown menu for emoji selection and insertion.',
       examples: ['emoji-demo'],
     },
     files: [
@@ -198,7 +245,7 @@ export const uiComponents: Registry = [
   {
     dependencies: [],
     doc: {
-      description: 'Collection of commonly used toolbar buttons.',
+      description: 'A set of commonly used formatting buttons.',
       examples: ['toolbar-demo'],
     },
     files: ['plate-ui/fixed-toolbar-buttons.tsx'],
@@ -215,7 +262,7 @@ export const uiComponents: Registry = [
   {
     dependencies: [],
     doc: {
-      description: 'Fixed position toolbar for the editor.',
+      description: 'A fixed toolbar that stays at the top of the editor.',
       examples: ['toolbar-demo'],
     },
     files: ['plate-ui/fixed-toolbar.tsx'],
@@ -226,7 +273,7 @@ export const uiComponents: Registry = [
   {
     dependencies: ['@udecode/plate-basic-marks'],
     doc: {
-      description: 'Buttons for the floating toolbar.',
+      description: 'A set of formatting buttons for the floating toolbar.',
       examples: ['floating-toolbar-demo'],
     },
     files: ['plate-ui/floating-toolbar-buttons.tsx'],
@@ -241,7 +288,7 @@ export const uiComponents: Registry = [
   {
     dependencies: ['@udecode/plate-floating'],
     doc: {
-      description: 'Floating toolbar that appears above selected text.',
+      description: 'A contextual toolbar that appears over selected text.',
       examples: ['floating-toolbar-demo'],
     },
     files: ['plate-ui/floating-toolbar.tsx'],
@@ -253,18 +300,24 @@ export const uiComponents: Registry = [
     dependencies: ['@udecode/plate-ai'],
     doc: {
       description:
-        'Displays AI-generated text suggestions as ghost text at the cursor position.',
-      examples: ['ai-demo'],
+        'A text suggestion system that displays AI-generated content after the cursor.',
+      examples: [
+        // 'ai-demo'
+      ],
+      label: 'New',
+      //       1. Hover card: a new style of hover card that is more user-friendly. You can **hover** over the ghost text to see the hover card.
+      // 2. Marks: support for marks like bold, italic, underline, etc.This means you can see bold text and **links** in the ghost text
+      // 3. Backend: complete backend setup.
     },
     files: ['plate-ui/ghost-text.tsx'],
     name: 'ghost-text',
-    registryDependencies: [''],
+    registryDependencies: [],
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-indent-list'],
     doc: {
-      description: 'Toolbar button for indenting list items.',
+      description: 'A toolbar control for adjusting list indentation.',
       examples: ['list-demo'],
     },
     files: ['plate-ui/indent-list-toolbar-button.tsx'],
@@ -275,7 +328,7 @@ export const uiComponents: Registry = [
   {
     dependencies: ['@udecode/plate-indent-list'],
     doc: {
-      description: 'Checkbox marker for todo list items.',
+      description: 'A checkbox marker for interactive todo lists.',
       examples: ['list-demo'],
     },
     files: ['plate-ui/indent-todo-marker.tsx'],
@@ -286,7 +339,7 @@ export const uiComponents: Registry = [
   {
     dependencies: ['@udecode/plate-indent-list'],
     doc: {
-      description: 'Toolbar button for creating todo list items.',
+      description: 'A toolbar control for creating todo list items.',
       examples: ['list-demo'],
     },
     files: ['plate-ui/indent-todo-toolbar-button.tsx'],
@@ -297,7 +350,7 @@ export const uiComponents: Registry = [
   {
     dependencies: ['@udecode/plate-indent'],
     doc: {
-      description: 'Toolbar button for indenting blocks.',
+      description: 'A toolbar control for block indentation.',
       examples: ['indent-demo'],
     },
     files: ['plate-ui/indent-toolbar-button.tsx'],
@@ -308,7 +361,7 @@ export const uiComponents: Registry = [
   {
     dependencies: ['@ariakit/react', '@udecode/plate-combobox'],
     doc: {
-      description: 'Combobox for inline autocompletion and suggestions.',
+      description: 'A combobox for inline suggestions.',
       examples: ['combobox-demo'],
     },
     files: ['plate-ui/inline-combobox.tsx'],
@@ -319,7 +372,7 @@ export const uiComponents: Registry = [
   {
     dependencies: ['@udecode/plate-block-quote', '@udecode/plate-heading'],
     doc: {
-      description: 'Dropdown menu for inserting various block types.',
+      description: 'A menu for inserting different types of blocks.',
       examples: ['basic-demo'],
     },
     files: ['plate-ui/insert-dropdown-menu.tsx'],
@@ -330,7 +383,7 @@ export const uiComponents: Registry = [
   {
     dependencies: ['@udecode/plate-line-height'],
     doc: {
-      description: 'Dropdown menu for adjusting line height.',
+      description: 'A menu for controlling text line spacing.',
       examples: ['line-height-demo'],
     },
     files: ['plate-ui/line-height-dropdown-menu.tsx'],
@@ -341,7 +394,7 @@ export const uiComponents: Registry = [
   {
     dependencies: ['@udecode/plate-link'],
     doc: {
-      description: 'Floating toolbar for editing links.',
+      description: 'A floating interface for link editing.',
       examples: ['link-demo'],
     },
     files: ['plate-ui/link-floating-toolbar.tsx'],
@@ -352,7 +405,7 @@ export const uiComponents: Registry = [
   {
     dependencies: ['@udecode/plate-link'],
     doc: {
-      description: 'Toolbar button for inserting and editing links.',
+      description: 'A toolbar control for link management.',
       examples: ['link-demo'],
     },
     files: ['plate-ui/link-toolbar-button.tsx'],
@@ -363,7 +416,7 @@ export const uiComponents: Registry = [
   {
     dependencies: ['@udecode/plate-list'],
     doc: {
-      description: 'Toolbar button for creating and managing lists.',
+      description: 'A toolbar control for list creation and management.',
       examples: ['list-demo'],
     },
     files: ['plate-ui/list-toolbar-button.tsx'],
@@ -374,7 +427,7 @@ export const uiComponents: Registry = [
   {
     dependencies: ['@udecode/plate-basic-marks'],
     doc: {
-      description: 'Toolbar button for basic text formatting marks.',
+      description: 'A toolbar control for basic text formatting.',
       examples: ['basic-marks-demo'],
     },
     files: ['plate-ui/mark-toolbar-button.tsx'],
@@ -385,7 +438,7 @@ export const uiComponents: Registry = [
   {
     dependencies: ['@udecode/plate-media'],
     doc: {
-      description: 'Popover for editing media properties.',
+      description: 'A popover interface for media settings.',
       examples: ['media-demo'],
     },
     files: ['plate-ui/media-popover.tsx'],
@@ -396,7 +449,7 @@ export const uiComponents: Registry = [
   {
     dependencies: ['@udecode/plate-media'],
     doc: {
-      description: 'Toolbar button for inserting and managing media elements.',
+      description: 'Toolbar button for inserting and managing media.',
       examples: ['media-demo'],
     },
     files: ['plate-ui/media-toolbar-button.tsx'],
@@ -407,7 +460,7 @@ export const uiComponents: Registry = [
   {
     dependencies: [],
     doc: {
-      description: 'Dropdown menu for switching between editor modes.',
+      description: 'A menu for switching between editor modes.',
       examples: ['mode-demo'],
     },
     files: ['plate-ui/mode-dropdown-menu.tsx'],
@@ -418,7 +471,7 @@ export const uiComponents: Registry = [
   {
     dependencies: ['@udecode/plate-basic-marks'],
     doc: {
-      description: 'Additional formatting options in a dropdown menu.',
+      description: 'A menu for additional text formatting options.',
       examples: ['basic-marks-demo'],
     },
     files: ['plate-ui/more-dropdown-menu.tsx'],
@@ -429,7 +482,7 @@ export const uiComponents: Registry = [
   {
     dependencies: ['@udecode/plate-indent'],
     doc: {
-      description: 'Toolbar button for outdenting blocks.',
+      description: 'A toolbar button for decreasing block indentation.',
       examples: ['indent-demo'],
     },
     files: ['plate-ui/outdent-toolbar-button.tsx'],
@@ -440,7 +493,7 @@ export const uiComponents: Registry = [
   {
     dependencies: ['@udecode/plate-heading'],
     doc: {
-      description: 'Placeholder text for empty editor blocks.',
+      description: 'A text placeholder for empty editor blocks.',
       examples: ['placeholder-demo'],
     },
     files: ['plate-ui/placeholder.tsx'],
@@ -451,8 +504,9 @@ export const uiComponents: Registry = [
   {
     dependencies: [],
     doc: {
-      description: 'Base element with block selection.',
+      description: 'A base element with block selection support.',
       examples: ['basic-demo'],
+      label: 'New',
     },
     files: ['plate-ui/plate-element.tsx'],
     name: 'plate-element',
@@ -462,7 +516,7 @@ export const uiComponents: Registry = [
   {
     dependencies: ['@udecode/plate-resizable'],
     doc: {
-      description: 'Makes blocks resizable with drag handles.',
+      description: 'A resizable wrapper with resize handles.',
       examples: ['resizable-demo'],
     },
     files: ['plate-ui/resizable.tsx'],
@@ -473,7 +527,7 @@ export const uiComponents: Registry = [
   {
     dependencies: ['@udecode/plate-table'],
     doc: {
-      description: 'Dropdown menu for table operations.',
+      description: 'A menu for table manipulation and formatting.',
       examples: ['table-demo'],
     },
     files: ['plate-ui/table-dropdown-menu.tsx'],
@@ -484,7 +538,7 @@ export const uiComponents: Registry = [
   {
     dependencies: ['@udecode/plate-toggle'],
     doc: {
-      description: 'Toolbar button for toggling collapsible blocks.',
+      description: 'A toolbar button for expanding and collapsing blocks.',
       examples: ['toggle-demo'],
     },
     files: ['plate-ui/toggle-toolbar-button.tsx'],
@@ -495,7 +549,7 @@ export const uiComponents: Registry = [
   {
     dependencies: ['@udecode/plate-block-quote', '@udecode/plate-heading'],
     doc: {
-      description: 'Dropdown menu for converting between block types.',
+      description: 'A menu for converting between different block types.',
       examples: ['basic-demo'],
     },
     files: ['plate-ui/turn-into-dropdown-menu.tsx'],
@@ -509,23 +563,39 @@ export const uiNodes: Registry = [
   {
     dependencies: ['@udecode/plate-ai'],
     doc: {
-      description: 'AI-generated text highlighter.',
-      examples: ['ai-demo'],
+      description: 'A text highlighter for AI-generated content.',
+      docs: [
+        {
+          route: '/docs/ai',
+          title: 'AI',
+        },
+        {
+          route: siteConfig.links.plateProComponent('ai-leaf'),
+          title: 'AI Leaf',
+        },
+      ],
+      examples: ['ai-demo', 'ai-pro'],
+      label: 'New',
       title: 'AI Leaf',
     },
     files: ['plate-ui/ai-leaf.tsx'],
     name: 'ai-leaf',
-    registryDependencies: [''],
+    registryDependencies: [],
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-block-quote'],
     doc: {
-      description: 'Block quote element.',
-      examples: ['basic-nodes-demo'],
-      links: {
-        api: 'https://platejs.org/docs/basic-elements',
-      },
+      description: 'A quote component for block quotes.',
+      docs: [
+        {
+          route: '/docs/basic-elements',
+        },
+        {
+          route: siteConfig.links.plateProComponent('blockquote-element'),
+        },
+      ],
+      examples: ['basic-elements-demo', 'basic-elements-pro'],
     },
     files: ['plate-ui/blockquote-element.tsx'],
     name: 'blockquote-element',
@@ -536,11 +606,15 @@ export const uiNodes: Registry = [
     dependencies: ['@udecode/plate-code-block'],
     doc: {
       description:
-        'Code block with syntax highlighting, language selection, and copy functionality.',
-      examples: ['basic-nodes-demo'],
-      links: {
-        api: 'https://platejs.org/docs/basic-elements',
-      },
+        'A code block with syntax highlighting and language selection.',
+      docs: [
+        {
+          route: '/docs/basic-elements',
+        },
+      ],
+      examples: ['basic-elements-demo'],
+      //       1. A "Copy" button to easily copy the entire code snippet.
+      // 2. A "Block Menu" button to access additional options and actions.
     },
     files: [
       'plate-ui/code-block-element.tsx',
@@ -554,11 +628,13 @@ export const uiNodes: Registry = [
   {
     dependencies: ['@udecode/plate-basic-marks'],
     doc: {
-      description: 'Inline code snippets.',
-      examples: ['basic-nodes-demo'],
-      links: {
-        api: 'https://platejs.org/docs/comments',
-      },
+      description: 'An inline component for code snippets.',
+      docs: [
+        {
+          route: '/docs/comments',
+        },
+      ],
+      examples: ['basic-marks-demo'],
     },
     files: ['plate-ui/code-leaf.tsx'],
     name: 'code-leaf',
@@ -568,8 +644,8 @@ export const uiNodes: Registry = [
   {
     dependencies: ['@udecode/plate-code-block'],
     doc: {
-      description: 'Individual lines within a code block.',
-      examples: ['basic-nodes-demo'],
+      description: 'A line component for code blocks.',
+      examples: ['basic-elements-demo'],
     },
     files: ['plate-ui/code-line-element.tsx'],
     name: 'code-line-element',
@@ -579,11 +655,13 @@ export const uiNodes: Registry = [
   {
     dependencies: ['@udecode/plate-code-block'],
     doc: {
-      description: 'Syntax highlighting for code blocks.',
-      examples: ['basic-nodes-demo'],
-      links: {
-        api: 'https://platejs.org/docs/comments',
-      },
+      description: 'A syntax highlighting component for code blocks.',
+      docs: [
+        {
+          route: '/docs/comments',
+        },
+      ],
+      examples: ['basic-elements-demo'],
     },
     files: ['plate-ui/code-syntax-leaf.tsx'],
     name: 'code-syntax-leaf',
@@ -593,7 +671,7 @@ export const uiNodes: Registry = [
   {
     dependencies: ['@udecode/plate-layout'],
     doc: {
-      description: 'Column element with resizing in edit mode.',
+      description: 'A resizable column component for layout.',
       examples: ['column-demo'],
     },
     files: ['plate-ui/column-element.tsx', 'plate-ui/column-group-element.tsx'],
@@ -605,11 +683,13 @@ export const uiNodes: Registry = [
     dependencies: ['@udecode/plate-comments'],
     doc: {
       description:
-        'Commented text with visual indicators and hover interactions.',
+        'A text component for displaying comments with visual indicators.',
+      docs: [
+        {
+          route: '/docs/comments',
+        },
+      ],
       examples: ['comments-demo'],
-      links: {
-        api: 'https://platejs.org/docs/comments',
-      },
     },
     files: ['plate-ui/comment-leaf.tsx'],
     name: 'comment-leaf',
@@ -619,12 +699,14 @@ export const uiNodes: Registry = [
   {
     dependencies: ['@udecode/plate-date'],
     doc: {
-      description:
-        'Date element with calendar picker for selecting and displaying dates.',
+      description: 'A date field component with calendar picker.',
+      docs: [
+        {
+          route: '/docs/date',
+        },
+      ],
       examples: ['date-demo'],
-      links: {
-        api: 'https://platejs.org/docs/date',
-      },
+      label: 'New',
     },
     files: ['plate-ui/date-element.tsx'],
     name: 'date-element',
@@ -634,12 +716,13 @@ export const uiNodes: Registry = [
   {
     dependencies: ['@udecode/plate-emoji'],
     doc: {
-      description:
-        'Emoji input element with search functionality and emoji insertion.',
+      description: 'An input component for emoji search and insertion.',
+      docs: [
+        {
+          route: '/docs/emoji',
+        },
+      ],
       examples: ['emoji-demo'],
-      links: {
-        api: 'https://platejs.org/docs/emoji',
-      },
     },
     files: ['plate-ui/emoji-input-element.tsx'],
     name: 'emoji-input-element',
@@ -649,7 +732,7 @@ export const uiNodes: Registry = [
   {
     dependencies: ['@udecode/plate-excalidraw'],
     doc: {
-      description: 'Excalidraw drawing element.',
+      description: 'A drawing component powered by Excalidraw.',
       examples: ['excalidraw-demo'],
     },
     files: ['plate-ui/excalidraw-element.tsx'],
@@ -660,11 +743,13 @@ export const uiNodes: Registry = [
   {
     dependencies: ['@udecode/plate-heading'],
     doc: {
-      description: 'Heading elements.',
-      examples: ['basic-nodes-demo'],
-      links: {
-        api: 'https://platejs.org/docs/basic-elements',
-      },
+      description: 'A heading with multiple level support.',
+      docs: [
+        {
+          route: '/docs/basic-elements',
+        },
+      ],
+      examples: ['basic-elements-demo'],
     },
     files: ['plate-ui/heading-element.tsx'],
     name: 'heading-element',
@@ -674,7 +759,7 @@ export const uiNodes: Registry = [
   {
     dependencies: ['@udecode/plate-highlight'],
     doc: {
-      description: 'Text highlighting with customizable colors.',
+      description: 'A text highlighter with customizable colors.',
       examples: ['highlight-demo'],
     },
     files: ['plate-ui/highlight-leaf.tsx'],
@@ -685,11 +770,13 @@ export const uiNodes: Registry = [
   {
     dependencies: ['@udecode/plate-horizontal-rule'],
     doc: {
-      description: 'Horizontal rule element with focus states.',
+      description: 'A horizontal rule component with focus states.',
+      docs: [
+        {
+          route: '/docs/horizontal-rule',
+        },
+      ],
       examples: ['horizontal-rule-demo'],
-      links: {
-        api: 'https://platejs.org/docs/horizontal-rule',
-      },
       title: 'Horizontal Rule Element',
     },
     files: ['plate-ui/hr-element.tsx'],
@@ -702,10 +789,16 @@ export const uiNodes: Registry = [
     doc: {
       description:
         'Image element with lazy loading, resizing capabilities, and optional caption.',
-      examples: ['upload-demo', 'media-toolbar-demo'],
-      links: {
-        api: 'https://platejs.org/docs/media',
-      },
+      docs: [
+        {
+          route: '/docs/media',
+        },
+      ],
+      examples: ['media-demo'],
+      //       1. **Media Toolbar**: A convenient toolbar appears when hovering over an image, providing quick access to editing options.
+      // 2. **Full-Stack Backend Integration**: Seamlessly handle image uploads, storage, and retrieval with our robust backend integration.
+      // 3. **Image preview**: double click to see the image preview.
+      // 4. **Download image**: download the image to your local machine by media toolbar.
     },
     files: ['plate-ui/image-element.tsx'],
     name: 'image-element',
@@ -720,7 +813,7 @@ export const uiNodes: Registry = [
   {
     dependencies: ['@udecode/plate-kbd'],
     doc: {
-      description: 'Keyboard shortcut styling.',
+      description: 'A component for styling keyboard shortcuts.',
       examples: ['kbd-demo'],
     },
     files: ['plate-ui/kbd-leaf.tsx'],
@@ -731,11 +824,13 @@ export const uiNodes: Registry = [
   {
     dependencies: ['@udecode/plate-link'],
     doc: {
-      description: 'Hyperlink element.',
+      description: 'A component for rendering hyperlinks with hover states.',
+      docs: [
+        {
+          route: '/docs/link',
+        },
+      ],
       examples: ['link-demo'],
-      links: {
-        api: 'https://platejs.org/docs/link',
-      },
     },
     files: ['plate-ui/link-element.tsx'],
     name: 'link-element',
@@ -745,7 +840,7 @@ export const uiNodes: Registry = [
   {
     dependencies: ['@udecode/plate-list'],
     doc: {
-      description: 'List element for ordered and unordered lists.',
+      description: 'A list element for ordered and unordered items.',
       examples: ['list-demo'],
     },
     files: ['plate-ui/list-element.tsx'],
@@ -761,11 +856,13 @@ export const uiNodes: Registry = [
     ],
     doc: {
       description:
-        'Displays embedded media content such as videos or tweets with resizing capabilities and captions.',
-      examples: ['upload-demo', 'media-toolbar-demo'],
-      links: {
-        api: 'https://platejs.org/docs/media',
-      },
+        'A component for embedded media content with resizing and caption support.',
+      docs: [
+        {
+          route: '/docs/media',
+        },
+      ],
+      examples: ['media-demo'],
     },
     files: ['plate-ui/media-embed-element.tsx'],
     name: 'media-embed-element',
@@ -780,11 +877,13 @@ export const uiNodes: Registry = [
   {
     dependencies: ['@udecode/plate-mention'],
     doc: {
-      description: 'Mention element with customizable prefix and label.',
+      description: 'A mention element with customizable prefix and label.',
+      docs: [
+        {
+          route: '/docs/mention',
+        },
+      ],
       examples: ['mention-demo'],
-      links: {
-        api: 'https://platejs.org/docs/mention',
-      },
     },
     files: ['plate-ui/mention-element.tsx'],
     name: 'mention-element',
@@ -794,11 +893,13 @@ export const uiNodes: Registry = [
   {
     dependencies: ['@udecode/plate-mention'],
     doc: {
-      description: 'Input element for mentioning users with autocomplete.',
+      description: 'An input component for user mentions with autocomplete.',
+      docs: [
+        {
+          route: '/docs/mention',
+        },
+      ],
       examples: ['mention-demo'],
-      links: {
-        api: 'https://platejs.org/docs/mention',
-      },
     },
     files: ['plate-ui/mention-input-element.tsx'],
     name: 'mention-input-element',
@@ -808,11 +909,13 @@ export const uiNodes: Registry = [
   {
     dependencies: [],
     doc: {
-      description: 'Paragraph element with background color.',
-      examples: ['basic-nodes-demo'],
-      links: {
-        api: 'https://platejs.org/docs/basic-elements',
-      },
+      description: 'A paragraph block with background color support.',
+      docs: [
+        {
+          route: '/docs/basic-elements',
+        },
+      ],
+      examples: ['basic-elements-demo'],
     },
     files: ['plate-ui/paragraph-element.tsx'],
     name: 'paragraph-element',
@@ -822,8 +925,8 @@ export const uiNodes: Registry = [
   {
     dependencies: ['@udecode/plate-find-replace'],
     doc: {
-      description: 'Highlights search results in text.',
-      examples: ['find-replace-demo'],
+      description: 'A component that highlights search results in text.',
+      // examples: ['find-replace-demo'],
     },
     files: ['plate-ui/search-highlight-leaf.tsx'],
     name: 'search-highlight-leaf',
@@ -833,8 +936,15 @@ export const uiNodes: Registry = [
   {
     dependencies: ['@udecode/plate-heading', '@udecode/plate-indent-list'],
     doc: {
-      description: 'Slash command input for inserting various elements.',
+      description: 'A command input component for inserting various elements.',
       examples: ['slash-menu-demo'],
+      label: 'New',
+      //       - Refined UI design for better usability and aesthetics
+      // - Extended set of slash menu options
+      // - Integration of premium plugins like Math Upload for specialized editing needs
+      // - No need to worry about the focus issue mentioned above.
+      // - Support grouping and Carefully selected keyword.
+      // - Trigger slash menu by click the puls button on the left of the paragraph.
     },
     files: ['plate-ui/slash-input-element.tsx'],
     name: 'slash-input-element',
@@ -844,12 +954,13 @@ export const uiNodes: Registry = [
   {
     dependencies: ['@udecode/plate-table'],
     doc: {
-      description:
-        'Table cell with resizable borders and selection capabilities.',
+      description: 'A table cell with resizable borders and selection.',
+      docs: [
+        {
+          route: '/docs/table',
+        },
+      ],
       examples: ['table-demo'],
-      links: {
-        api: 'https://platejs.org/docs/table',
-      },
     },
     files: ['plate-ui/table-cell-element.tsx'],
     name: 'table-cell-element',
@@ -860,11 +971,13 @@ export const uiNodes: Registry = [
     dependencies: ['@udecode/plate-table'],
     doc: {
       description:
-        'Table element with floating toolbar and border customization options.',
+        'A table component with floating toolbar and border customization.',
+      docs: [
+        {
+          route: '/docs/table',
+        },
+      ],
       examples: ['table-demo'],
-      links: {
-        api: 'https://platejs.org/docs/table',
-      },
     },
     files: ['plate-ui/table-element.tsx'],
     name: 'table-element',
@@ -874,11 +987,13 @@ export const uiNodes: Registry = [
   {
     dependencies: ['@udecode/plate-table'],
     doc: {
-      description: 'Table row element with optional border hiding.',
+      description: 'A table row component with optional border hiding.',
+      docs: [
+        {
+          route: '/docs/table',
+        },
+      ],
       examples: ['table-demo'],
-      links: {
-        api: 'https://platejs.org/docs/table',
-      },
     },
     files: ['plate-ui/table-row-element.tsx'],
     name: 'table-row-element',
@@ -889,19 +1004,25 @@ export const uiNodes: Registry = [
     dependencies: ['@udecode/plate-heading'],
     doc: {
       description:
-        'Table of contents element with clickable links to headings in the document.',
+        'A table of contents component with links to document headings.',
       examples: ['toc-demo'],
+      label: 'New',
+      //       - Responsive design that adapts to different screen sizes
+      // - Dynamic highlighting of the corresponding thumbnail on the right side based on the current section
+      // - Hover thumbnail to see the preview of the section with smooth animation
+      // - Elegant transition effects when navigating between sections
+      // - Animated highlighting of the current section in the sidebar
       title: 'TOC Element',
     },
     files: ['plate-ui/toc-element.tsx'],
     name: 'toc-element',
-    registryDependencies: [''],
+    registryDependencies: [],
     type: 'registry:ui',
   },
   {
     dependencies: ['@udecode/plate-toggle'],
     doc: {
-      description: 'Collapsible toggle element.',
+      description: 'A collapsible component for toggling content visibility.',
       examples: ['toggle-demo'],
     },
     files: ['plate-ui/toggle-element.tsx'],
@@ -915,7 +1036,8 @@ export const uiPrimitives: Registry = [
   {
     dependencies: ['@radix-ui/react-avatar'],
     doc: {
-      description: 'Avatar component with image support and fallback options.',
+      description:
+        'An image element with a fallback for representing the user.',
     },
     files: ['plate-ui/avatar.tsx'],
     name: 'avatar',
@@ -925,7 +1047,10 @@ export const uiPrimitives: Registry = [
   {
     dependencies: ['@radix-ui/react-slot'],
     doc: {
-      description: 'Button component.',
+      description: 'Displays a button or a component that looks like a button.',
+      links: {
+        doc: 'https://ui.shadcn.com/docs/components/button',
+      },
     },
     files: ['plate-ui/button.tsx'],
     name: 'button',
@@ -935,7 +1060,8 @@ export const uiPrimitives: Registry = [
   {
     dependencies: ['react-day-picker@8.10.1'],
     doc: {
-      description: 'Calendar component for date selection.',
+      description:
+        'A date field component that allows users to enter and edit date.',
     },
     files: ['plate-ui/calendar.tsx'],
     name: 'calendar',
@@ -946,7 +1072,7 @@ export const uiPrimitives: Registry = [
     dependencies: ['@radix-ui/react-checkbox'],
     doc: {
       description:
-        'Checkbox component with support for checked, unchecked, and indeterminate states.',
+        'A control that allows the user to toggle between checked and not checked.',
     },
     files: ['plate-ui/checkbox.tsx'],
     name: 'checkbox',
@@ -956,8 +1082,7 @@ export const uiPrimitives: Registry = [
   {
     dependencies: ['@radix-ui/react-dialog', 'cmdk'],
     doc: {
-      description:
-        'Command palette interface for searching and executing actions.',
+      description: 'Fast, composable, unstyled command menu for React.',
     },
     files: ['plate-ui/command.tsx'],
     name: 'command',
@@ -967,7 +1092,8 @@ export const uiPrimitives: Registry = [
   {
     dependencies: ['@radix-ui/react-dialog'],
     doc: {
-      description: 'Dialog component with modal and drawer variants.',
+      description:
+        'A window overlaid on either the primary window or another dialog window, rendering the content underneath inert.',
     },
     files: ['plate-ui/dialog.tsx'],
     name: 'dialog',
@@ -978,7 +1104,7 @@ export const uiPrimitives: Registry = [
     dependencies: ['@radix-ui/react-dropdown-menu'],
     doc: {
       description:
-        'Dropdown menu component for items, checkboxes, radio buttons, and nested submenus.',
+        'Displays a menu to the user — such as a set of actions or functions — triggered by a button.',
     },
     files: ['plate-ui/dropdown-menu.tsx'],
     name: 'dropdown-menu',
@@ -988,7 +1114,8 @@ export const uiPrimitives: Registry = [
   {
     dependencies: [],
     doc: {
-      description: 'Input component.',
+      description:
+        'Displays a form input field or a component that looks like an input field.',
     },
     files: ['plate-ui/input.tsx'],
     name: 'input',
@@ -998,7 +1125,7 @@ export const uiPrimitives: Registry = [
   {
     dependencies: ['@radix-ui/react-popover'],
     doc: {
-      description: 'Rich content in a portal, triggered by a button.',
+      description: 'Displays rich content in a portal, triggered by a button.',
     },
     files: ['plate-ui/popover.tsx'],
     name: 'popover',

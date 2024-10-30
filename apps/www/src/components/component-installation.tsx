@@ -2,6 +2,9 @@
 
 import * as React from 'react';
 
+import type { RegistryEntry } from '@/registry/schema';
+
+import { ComponentPreviewPro } from '@/components/component-preview-pro';
 import { getRegistryTitle } from '@/lib/registry-utils';
 
 import { CodeBlock } from './codeblock';
@@ -17,7 +20,7 @@ interface ComponentInstallationProps {
   __previewFiles__?: string;
   codeTabs?: boolean;
   dependencies?: string[];
-  examples?: any[];
+  examples?: RegistryEntry[];
   files?: any[];
   name?: string;
   usage?: string[];
@@ -187,17 +190,36 @@ export function ComponentInstallation({
           <H2>Examples</H2>
 
           <div className="mb-12">
-            {examples.map((example) => (
-              <React.Fragment key={example.name}>
-                <H3>{getRegistryTitle(example)}</H3>
-                <ComponentPreview
-                  name={example.name}
-                  dependencies={example.dependencies}
-                  files={example.files}
-                  codeTabs
-                />
-              </React.Fragment>
-            ))}
+            {examples.map((example) => {
+              const isPro = example.name.endsWith('-pro');
+
+              if (isPro) {
+                return (
+                  <React.Fragment key={example.name}>
+                    <H3>Plate Plus</H3>
+
+                    <ComponentPreviewPro
+                      id={example.name}
+                      description={example.doc?.description}
+                    />
+                  </React.Fragment>
+                );
+              }
+
+              return (
+                <React.Fragment key={example.name}>
+                  <H3>{getRegistryTitle(example as any)}</H3>
+
+                  <ComponentPreview
+                    id={example.name.replace('-demo', '')}
+                    name={example.name}
+                    dependencies={example.dependencies}
+                    files={example.files}
+                    codeTabs
+                  />
+                </React.Fragment>
+              );
+            })}
           </div>
         </>
       )}

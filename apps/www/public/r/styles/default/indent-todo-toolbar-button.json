@@ -2,9 +2,15 @@
   "dependencies": [
     "@udecode/plate-indent-list"
   ],
+  "doc": {
+    "description": "A toolbar control for creating todo list items.",
+    "examples": [
+      "list-demo"
+    ]
+  },
   "files": [
     {
-      "content": "import { withRef } from '@udecode/cn';\nimport {\n  useIndentTodoToolBarButton,\n  useIndentTodoToolBarButtonState,\n} from '@udecode/plate-indent-list/react';\n\nimport { Icons } from '@/components/icons';\n\nimport { ToolbarButton } from './toolbar';\n\nexport const IndentTodoToolbarButton = withRef<typeof ToolbarButton>(\n  (rest, ref) => {\n    const state = useIndentTodoToolBarButtonState({ nodeType: 'todo' });\n    const { props } = useIndentTodoToolBarButton(state);\n\n    return (\n      <ToolbarButton ref={ref} tooltip=\"Todo\" {...props} {...rest}>\n        <Icons.todo />\n      </ToolbarButton>\n    );\n  }\n);\n",
+      "content": "'use client';\n\nimport { withRef } from '@udecode/cn';\nimport {\n  useIndentTodoToolBarButton,\n  useIndentTodoToolBarButtonState,\n} from '@udecode/plate-indent-list/react';\n\nimport { Icons } from '@/components/icons';\n\nimport { ToolbarButton } from './toolbar';\n\nexport const IndentTodoToolbarButton = withRef<typeof ToolbarButton>(\n  (rest, ref) => {\n    const state = useIndentTodoToolBarButtonState({ nodeType: 'todo' });\n    const { props } = useIndentTodoToolBarButton(state);\n\n    return (\n      <ToolbarButton ref={ref} tooltip=\"Todo\" {...props} {...rest}>\n        <Icons.todo />\n      </ToolbarButton>\n    );\n  }\n);\n",
       "path": "plate-ui/indent-todo-toolbar-button.tsx",
       "target": "components/plate-ui/indent-todo-toolbar-button.tsx",
       "type": "registry:ui"

@@ -55,10 +55,10 @@ import { JuicePlugin } from '@udecode/plate-juice';
 import { MarkdownPlugin } from '@udecode/plate-markdown';
 import { BaseResetNodePlugin } from '@udecode/plate-reset-node';
 
-import { Markdown } from '@/components/MemoizedReactMarkdownClient';
+import { DocContent } from '@/app/(app)/docs/[[...slug]]/doc-content';
 import { Code } from '@/components/code';
-import { DocPageLayout } from '@/components/doc-page-layout';
 import { Link } from '@/components/link';
+import { Markdown } from '@/components/markdown';
 import { H2, H3, P } from '@/components/typography';
 import { basicElementsValue } from '@/plate/demo/values/basicElementsValue';
 import { basicMarksValue } from '@/plate/demo/values/basicMarksValue';
@@ -238,7 +238,7 @@ export default function RSCPage() {
   });
 
   return (
-    <DocPageLayout doc={mockDoc} isUI={false} toc={[]}>
+    <DocContent doc={mockDoc} isUI={false} toc={{}}>
       <H2>Using Plate in a Server Environment</H2>
       <P>
         Plate can be utilized in server-side environments, enabling operations
@@ -264,7 +264,7 @@ export default function RSCPage() {
         within a React Server Component:
       </P>
 
-      <Markdown>{md}</Markdown>
-    </DocPageLayout>
+      <Markdown className="rounded-sm border p-4 py-6">{md}</Markdown>
+    </DocContent>
   );
 }

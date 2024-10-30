@@ -35,7 +35,7 @@ const categories = [
     items: [
       customizerPlugins.align,
       customizerPlugins.autoformat,
-      customizerPlugins.basicnodes,
+      customizerPlugins['basic-nodes'],
       customizerPlugins.blockselection,
       customizerPlugins.comment,
       customizerPlugins.cursoroverlay,

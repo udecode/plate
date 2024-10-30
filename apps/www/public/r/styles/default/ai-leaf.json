@@ -2,6 +2,27 @@
   "dependencies": [
     "@udecode/plate-ai"
   ],
+  "doc": {
+    "description": "A text highlighter for AI-generated content.",
+    "docs": [
+      {
+        "route": "/docs/ai",
+        "title": "AI"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/ai-leaf",
+        "title": "AI Leaf"
+      }
+    ],
+    "examples": [
+      "ai-demo",
+      {
+        "isPro": true,
+        "name": "ai"
+      }
+    ],
+    "title": "AI Leaf"
+  },
   "files": [
     {
       "content": "'use client';\n\nimport React from 'react';\n\nimport { cn, withRef } from '@udecode/cn';\nimport { PlateLeaf } from '@udecode/plate-common/react';\n\nexport const AILeaf = withRef<typeof PlateLeaf>(\n  ({ children, className, ...props }, ref) => {\n    return (\n      <PlateLeaf\n        ref={ref}\n        className={cn(\n          'border-b-2 border-b-purple-100 bg-purple-50 text-purple-800',\n          'transition-all duration-200 ease-in-out',\n          className\n        )}\n        {...props}\n      >\n        {children}\n      </PlateLeaf>\n    );\n  }\n);\n",
@@ -11,8 +32,6 @@
     }
   ],
   "name": "ai-leaf",
-  "registryDependencies": [
-    ""
-  ],
+  "registryDependencies": [],
   "type": "registry:ui"
 }

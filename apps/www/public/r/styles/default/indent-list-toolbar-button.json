@@ -2,9 +2,15 @@
   "dependencies": [
     "@udecode/plate-indent-list"
   ],
+  "doc": {
+    "description": "A toolbar control for adjusting list indentation.",
+    "examples": [
+      "list-demo"
+    ]
+  },
   "files": [
     {
-      "content": "import React from 'react';\n\nimport { withRef } from '@udecode/cn';\nimport { ListStyleType } from '@udecode/plate-indent-list';\nimport {\n  useIndentListToolbarButton,\n  useIndentListToolbarButtonState,\n} from '@udecode/plate-indent-list/react';\n\nimport { Icons } from '@/components/icons';\n\nimport { ToolbarButton } from './toolbar';\n\nexport const IndentListToolbarButton = withRef<\n  typeof ToolbarButton,\n  {\n    nodeType?: ListStyleType;\n  }\n>(({ nodeType = ListStyleType.Disc }, ref) => {\n  const state = useIndentListToolbarButtonState({ nodeType });\n  const { props } = useIndentListToolbarButton(state);\n\n  return (\n    <ToolbarButton\n      ref={ref}\n      tooltip={\n        nodeType === ListStyleType.Disc ? 'Bulleted List' : 'Numbered List'\n      }\n      {...props}\n    >\n      {nodeType === ListStyleType.Disc ? <Icons.ul /> : <Icons.ol />}\n    </ToolbarButton>\n  );\n});\n",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { withRef } from '@udecode/cn';\nimport { ListStyleType } from '@udecode/plate-indent-list';\nimport {\n  useIndentListToolbarButton,\n  useIndentListToolbarButtonState,\n} from '@udecode/plate-indent-list/react';\n\nimport { Icons } from '@/components/icons';\n\nimport { ToolbarButton } from './toolbar';\n\nexport const IndentListToolbarButton = withRef<\n  typeof ToolbarButton,\n  {\n    nodeType?: ListStyleType;\n  }\n>(({ nodeType = ListStyleType.Disc }, ref) => {\n  const state = useIndentListToolbarButtonState({ nodeType });\n  const { props } = useIndentListToolbarButton(state);\n\n  return (\n    <ToolbarButton\n      ref={ref}\n      tooltip={\n        nodeType === ListStyleType.Disc ? 'Bulleted List' : 'Numbered List'\n      }\n      {...props}\n    >\n      {nodeType === ListStyleType.Disc ? <Icons.ul /> : <Icons.ol />}\n    </ToolbarButton>\n  );\n});\n",
       "path": "plate-ui/indent-list-toolbar-button.tsx",
       "target": "components/plate-ui/indent-list-toolbar-button.tsx",
       "type": "registry:ui"

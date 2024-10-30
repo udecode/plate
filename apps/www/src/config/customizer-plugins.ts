@@ -112,18 +112,25 @@ export const customizerPlugins = {
     route: '/docs/autoformat',
     value: autoformatValue,
   },
-  basicmarks: {
-    id: 'basicmarks',
+  'basic-elements': {
+    id: 'basic-elements',
+    label: 'Basic Elements',
+    plugins: [],
+    route: '/docs/basic-elements',
+    value: basicElementsValue,
+  },
+  'basic-marks': {
+    id: 'basic-marks',
     label: 'Basic Marks',
     plugins: [],
     route: '/docs/basic-marks',
-    value: [...basicElementsValue, ...basicMarksValue],
+    value: basicMarksValue,
   },
-  basicnodes: {
-    id: 'basicnodes',
+  'basic-nodes': {
+    id: 'basic-nodes',
     label: 'Basic Nodes',
     plugins: [],
-    route: '/docs/basic-elements',
+    route: '/docs/basic-nodes',
     value: [...basicElementsValue, ...basicMarksValue],
   },
   blockmenu: {

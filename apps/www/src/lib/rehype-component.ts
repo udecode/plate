@@ -5,7 +5,7 @@ import { u } from 'unist-builder';
 import { visit } from 'unist-util-visit';
 
 import { Index } from '../__registry__';
-import { examples } from '../registry/registry-examples';
+import { examples, proExamples } from '../registry/registry-examples';
 import { styles } from '../registry/registry-styles';
 import {
   getAllDependencies,
@@ -21,6 +21,7 @@ export function rehypeComponent() {
       if (
         node.name === 'ComponentSource' ||
         node.name === 'ComponentPreview' ||
+        node.name === 'ComponentPreviewPro' ||
         node.name === 'ComponentInstallation'
       ) {
         const name = getNodeAttributeByName(node, 'name')?.value as string;
@@ -200,6 +201,27 @@ export function rehypeComponent() {
             } catch (error) {
               console.error(error);
             }
+          }
+        }
+        if (node.name === 'ComponentPreviewPro') {
+          try {
+            const component = proExamples.find((ex) => ex.name === name);
+
+            node.attributes = [
+              ...(node.attributes || []),
+              {
+                name: 'id',
+                type: 'mdxJsxAttribute',
+                value: name.replace('-pro', ''),
+              },
+              {
+                name: 'description',
+                type: 'mdxJsxAttribute',
+                value: component?.doc?.description || '',
+              },
+            ];
+          } catch (error) {
+            console.error(error);
           }
         }
 
