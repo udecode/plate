@@ -17,8 +17,16 @@ import {
   deleteRow,
   insertTable,
 } from '@udecode/plate-table/react';
+import {
+  Minus,
+  Plus,
+  RectangleHorizontal,
+  RectangleVertical,
+  Table,
+  Trash,
+} from 'lucide-react';
 
-import { Icons, iconVariants } from '@/components/icons';
+import { iconVariants } from '@/components/icons';
 
 import {
   DropdownMenu,
@@ -46,7 +54,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
     <DropdownMenu modal={false} {...openState} {...props}>
       <DropdownMenuTrigger asChild>
         <ToolbarButton pressed={openState.open} tooltip="Table" isDropdown>
-          <Icons.table />
+          <Table />
         </ToolbarButton>
       </DropdownMenuTrigger>
 
@@ -56,7 +64,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
       >
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
-            <Icons.table className={iconVariants({ variant: 'menuItem' })} />
+            <Table className={iconVariants({ variant: 'menuItem' })} />
             <span>Table</span>
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
@@ -67,7 +75,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
                 focusEditor(editor);
               }}
             >
-              <Icons.add className={iconVariants({ variant: 'menuItem' })} />
+              <Plus className={iconVariants({ variant: 'menuItem' })} />
               Insert table
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -78,7 +86,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
                 focusEditor(editor);
               }}
             >
-              <Icons.trash className={iconVariants({ variant: 'menuItem' })} />
+              <Trash className={iconVariants({ variant: 'menuItem' })} />
               Delete table
             </DropdownMenuItem>
           </DropdownMenuSubContent>
@@ -86,7 +94,9 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
 
         <DropdownMenuSub>
           <DropdownMenuSubTrigger disabled={!tableSelected}>
-            <Icons.column className={iconVariants({ variant: 'menuItem' })} />
+            <RectangleVertical
+              className={iconVariants({ variant: 'menuItem' })}
+            />
             <span>Column</span>
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
@@ -98,7 +108,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
                 focusEditor(editor);
               }}
             >
-              <Icons.add className={iconVariants({ variant: 'menuItem' })} />
+              <Plus className={iconVariants({ variant: 'menuItem' })} />
               Insert column after
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -109,7 +119,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
                 focusEditor(editor);
               }}
             >
-              <Icons.minus className={iconVariants({ variant: 'menuItem' })} />
+              <Minus className={iconVariants({ variant: 'menuItem' })} />
               Delete column
             </DropdownMenuItem>
           </DropdownMenuSubContent>
@@ -117,7 +127,9 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
 
         <DropdownMenuSub>
           <DropdownMenuSubTrigger disabled={!tableSelected}>
-            <Icons.row className={iconVariants({ variant: 'menuItem' })} />
+            <RectangleHorizontal
+              className={iconVariants({ variant: 'menuItem' })}
+            />
             <span>Row</span>
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
@@ -129,7 +141,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
                 focusEditor(editor);
               }}
             >
-              <Icons.add className={iconVariants({ variant: 'menuItem' })} />
+              <Plus className={iconVariants({ variant: 'menuItem' })} />
               Insert row after
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -140,7 +152,7 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
                 focusEditor(editor);
               }}
             >
-              <Icons.minus className={iconVariants({ variant: 'menuItem' })} />
+              <Minus className={iconVariants({ variant: 'menuItem' })} />
               Delete row
             </DropdownMenuItem>
           </DropdownMenuSubContent>

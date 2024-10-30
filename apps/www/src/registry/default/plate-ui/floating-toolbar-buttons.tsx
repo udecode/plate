@@ -10,8 +10,7 @@ import {
   UnderlinePlugin,
 } from '@udecode/plate-basic-marks/react';
 import { useEditorReadOnly } from '@udecode/plate-common/react';
-
-import { Icons } from '@/components/icons';
+import { Bold, Code, Italic, Strikethrough, Underline } from 'lucide-react';
 
 import { ToolbarGroup } from './toolbar';
 
@@ -40,28 +39,28 @@ export function FloatingToolbarButtons() {
             <TurnIntoDropdownMenu />
 
             <MarkToolbarButton nodeType={BoldPlugin.key} tooltip="Bold (⌘+B)">
-              <Icons.bold />
+              <Bold />
             </MarkToolbarButton>
             <MarkToolbarButton
               nodeType={ItalicPlugin.key}
               tooltip="Italic (⌘+I)"
             >
-              <Icons.italic />
+              <Italic />
             </MarkToolbarButton>
             <MarkToolbarButton
               nodeType={UnderlinePlugin.key}
               tooltip="Underline (⌘+U)"
             >
-              <Icons.underline />
+              <Underline />
             </MarkToolbarButton>
             <MarkToolbarButton
               nodeType={StrikethroughPlugin.key}
               tooltip="Strikethrough (⌘+⇧+M)"
             >
-              <Icons.strikethrough />
+              <Strikethrough />
             </MarkToolbarButton>
             <MarkToolbarButton nodeType={CodePlugin.key} tooltip="Code (⌘+E)">
-              <Icons.code />
+              <Code />
             </MarkToolbarButton>
           </ToolbarGroup>
         </>

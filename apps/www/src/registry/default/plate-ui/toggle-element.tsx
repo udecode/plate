@@ -4,8 +4,7 @@ import {
   useToggleButton,
   useToggleButtonState,
 } from '@udecode/plate-toggle/react';
-
-import { Icons } from '@/components/icons';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 
 import { PlateElement } from './plate-element';
 
@@ -26,7 +25,7 @@ export const ToggleElement = withRef<typeof PlateElement>(
           contentEditable={false}
           {...buttonProps}
         >
-          {open ? <Icons.chevronDown /> : <Icons.chevronRight />}
+          {open ? <ChevronDown /> : <ChevronRight />}
         </span>
         {children}
       </PlateElement>
