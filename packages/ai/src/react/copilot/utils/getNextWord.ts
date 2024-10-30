@@ -30,18 +30,36 @@ export const getNextWord: GetNextWord = ({ text }) => {
   let firstWord, remainingText;
 
   if (isCJKChar) {
-    // CJK characters: match leading spaces + first character + trailing spaces
+    // CJK characters: match leading spaces + first character + optional punctuation
     const match =
-      // eslint-disable-next-line regexp/no-unused-capturing-group
-      /^(\s*[\u1100-\u11FF\u3040-\u30FF\u3400-\u4DBF\u4E00-\u9FFF\uAC00-\uD7AF\uF900-\uFAFF]\s*)/.exec(
+      /^(\s*)([\u1100-\u11FF\u3040-\u30FF\u3400-\u4DBF\u4E00-\u9FFF\uAC00-\uD7AF\uF900-\uFAFF])([\u3000-\u303F\uFF00-\uFFEF])?/.exec(
         text
       );
-    firstWord = match?.[0] || '';
-    remainingText = text.slice(firstWord.length);
+
+    if (match) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const [fullMatch, spaces = '', char = '', punctuation = ''] = match;
+      firstWord = spaces + char + punctuation;
+      remainingText = text.slice(firstWord.length);
+    } else {
+      firstWord = '';
+      remainingText = text;
+    }
   } else {
-    // Other characters (e.g., English): use space-based word separation
-    firstWord = /^\s*\S+/.exec(text)?.[0] || '';
-    remainingText = text.slice(firstWord.length);
+    // For non-CJK text (including mixed content), match until space or CJK char
+    const match =
+      // eslint-disable-next-line regexp/no-unused-capturing-group
+      /^(\s*\S+?)(?=[\s\u1100-\u11FF\u3040-\u30FF\u3400-\u4DBF\u4E00-\u9FFF\uAC00-\uD7AF\uF900-\uFAFF]|$)/.exec(
+        text
+      );
+
+    if (match) {
+      firstWord = match[0];
+      remainingText = text.slice(firstWord.length);
+    } else {
+      firstWord = text;
+      remainingText = '';
+    }
   }
 
   return { firstWord, remainingText };
