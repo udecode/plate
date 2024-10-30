@@ -4,8 +4,7 @@ import React from 'react';
 
 import { withRef } from '@udecode/cn';
 import { useOutdentButton } from '@udecode/plate-indent/react';
-
-import { Icons } from '@/components/icons';
+import { Outdent } from 'lucide-react';
 
 import { ToolbarButton } from './toolbar';
 
@@ -15,7 +14,7 @@ export const OutdentToolbarButton = withRef<typeof ToolbarButton>(
 
     return (
       <ToolbarButton ref={ref} tooltip="Outdent" {...props} {...rest}>
-        <Icons.outdent />
+        <Outdent />
       </ToolbarButton>
     );
   }

@@ -12,8 +12,7 @@ import {
   withVariants,
 } from '@udecode/cn';
 import { Command as CommandPrimitive } from 'cmdk';
-
-import { Icons } from '@/components/icons';
+import { Search } from 'lucide-react';
 
 import { Dialog, DialogContent, DialogTitle } from './dialog';
 import { inputVariants } from './input';
@@ -39,7 +38,7 @@ export function CommandDialog({ children, ...props }: DialogProps) {
 export const CommandInput = withRef<typeof CommandPrimitive.Input>(
   ({ className, ...props }, ref) => (
     <div className="flex items-center border-b px-3" cmdk-input-wrapper="">
-      <Icons.search className="mr-2 size-4 shrink-0 opacity-50" />
+      <Search className="mr-2 size-4 shrink-0 opacity-50" />
       <CommandPrimitive.Input
         ref={ref}
         className={cn(

@@ -7,8 +7,7 @@ import {
   useToggleToolbarButton,
   useToggleToolbarButtonState,
 } from '@udecode/plate-toggle/react';
-
-import { Icons } from '@/components/icons';
+import { ChevronDown } from 'lucide-react';
 
 import { ToolbarButton } from './toolbar';
 
@@ -19,7 +18,7 @@ export const ToggleToolbarButton = withRef<typeof ToolbarButton>(
 
     return (
       <ToolbarButton ref={ref} tooltip="Toggle" {...props} {...rest}>
-        <Icons.chevronDown />
+        <ChevronDown />
       </ToolbarButton>
     );
   }

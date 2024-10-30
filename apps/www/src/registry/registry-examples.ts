@@ -81,6 +81,19 @@ export const proExamples: Registry = [
   },
   {
     doc: {
+      description: `- Thread-based commenting system
+- Comment markers in the editor margin
+- Collapsible comment threads
+- Reply functionality
+- Resolve/unresolve comments
+- Delete comments and replies
+- Beautifully crafted UI`,
+    },
+    name: 'comments-pro',
+    type: 'registry:pro',
+  },
+  {
+    doc: {
       description: `- Insert callouts using the slash command
 - Ability to change the callout emoji
 - Beautifully crafted UI`,
@@ -115,6 +128,139 @@ export const proExamples: Registry = [
 - Beautifully crafted UI`,
     },
     name: 'slash-menu-pro',
+    type: 'registry:pro',
+  },
+  {
+    doc: {
+      description: `- Enhanced drag and drop functionality
+- Drag handle on the left side of blocks
+- Visual feedback during drag operations
+- Smooth animations
+- Support for nested blocks
+- Beautifully crafted UI`,
+    },
+    name: 'dnd-pro',
+    type: 'registry:pro',
+  },
+  {
+    doc: {
+      description: `- Enhanced emoji picker with search functionality
+- Categorized emoji selection
+- Recent emojis section
+- Keyboard navigation support
+- Insert emojis via slash commands
+- Beautifully crafted UI`,
+    },
+    name: 'emoji-pro',
+    type: 'registry:pro',
+  },
+  {
+    doc: {
+      description: `- Enhanced floating toolbar with rich formatting options
+- Appears when text is selected
+- Support for advanced text styling
+- Quick access to formatting tools
+- Customizable toolbar options
+- Beautifully crafted UI`,
+    },
+    name: 'floating-toolbar-pro',
+    type: 'registry:pro',
+  },
+  {
+    doc: {
+      description: `- Enhanced link editing experience
+- Preview card with metadata
+- Custom link actions
+- Quick edit and remove options
+- Keyboard shortcuts support
+- Beautifully crafted UI`,
+    },
+    name: 'link-pro',
+    type: 'registry:pro',
+  },
+  {
+    doc: {
+      description: `- Enhanced basic nodes with advanced formatting
+- Rich text styling options
+- Advanced block elements
+- Customizable node configurations
+- Keyboard shortcut support
+- Beautifully crafted UI`,
+    },
+    name: 'basic-nodes-pro',
+    type: 'registry:pro',
+  },
+  {
+    doc: {
+      description: `- Enhanced media toolbar with advanced controls
+- Image resizing and alignment options
+- Caption editing interface
+- Quick media actions and transformations
+- Media-specific formatting tools
+- Beautifully crafted UI`,
+    },
+    name: 'media-toolbar-pro',
+    type: 'registry:pro',
+  },
+  {
+    doc: {
+      description: `- Enhanced table editing experience
+- Column and row management
+- Cell merging and splitting
+- Custom cell styling options
+- Resize columns with drag handles
+- Header row and column support
+- Beautifully crafted UI`,
+    },
+    name: 'table-pro',
+    type: 'registry:pro',
+  },
+  {
+    doc: {
+      description: `- Enhanced mention functionality
+- Real-time user search and filtering
+- Customizable mention triggers (@, #, etc.)
+- Rich preview cards for mentioned items
+- Keyboard navigation support
+- Beautifully crafted UI`,
+    },
+    name: 'mention-pro',
+    type: 'registry:pro',
+  },
+  {
+    doc: {
+      description: `- Enhanced horizontal rule customization
+- Multiple style presets
+- Custom spacing controls
+- Color and thickness options
+- Quick insertion via slash commands
+- Beautifully crafted UI`,
+    },
+    name: 'horizontal-rule-pro',
+    type: 'registry:pro',
+  },
+  {
+    doc: {
+      description: `- Enhanced date picker functionality
+- Multiple date formats support
+- Calendar interface for date selection
+- Keyboard navigation and shortcuts
+- Custom date formatting options
+- Beautifully crafted UI`,
+    },
+    name: 'date-pro',
+    type: 'registry:pro',
+  },
+  {
+    doc: {
+      description: `- Multi-column layout support
+- Flexible column width adjustment
+- Drag and drop between columns
+- Responsive column behavior
+- Column merging and splitting
+- Beautifully crafted UI`,
+    },
+    name: 'column-pro',
     type: 'registry:pro',
   },
 ];

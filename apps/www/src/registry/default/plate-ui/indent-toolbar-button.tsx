@@ -4,8 +4,7 @@ import React from 'react';
 
 import { withRef } from '@udecode/cn';
 import { useIndentButton } from '@udecode/plate-indent/react';
-
-import { Icons } from '@/components/icons';
+import { Indent } from 'lucide-react';
 
 import { ToolbarButton } from './toolbar';
 
@@ -15,7 +14,7 @@ export const IndentToolbarButton = withRef<typeof ToolbarButton>(
 
     return (
       <ToolbarButton ref={ref} tooltip="Indent" {...props} {...rest}>
-        <Icons.indent />
+        <Indent />
       </ToolbarButton>
     );
   }
