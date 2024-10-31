@@ -21,10 +21,31 @@ import { LinkPlugin, triggerFloatingLink } from '@udecode/plate-link/react';
 import { insertMedia } from '@udecode/plate-media';
 import { ImagePlugin, MediaEmbedPlugin } from '@udecode/plate-media/react';
 import { TablePlugin, insertTable } from '@udecode/plate-table/react';
+import {
+  Columns2Icon,
+  FileCodeIcon,
+  FilmIcon,
+  Heading1Icon,
+  Heading2Icon,
+  Heading3Icon,
+  Heading4Icon,
+  Heading5Icon,
+  Heading6Icon,
+  ImageIcon,
+  Link2Icon,
+  ListIcon,
+  ListOrderedIcon,
+  MinusIcon,
+  PenToolIcon,
+  PilcrowIcon,
+  PlusIcon,
+  QuoteIcon,
+  TableIcon,
+  TableOfContentsIcon,
+} from 'lucide-react';
 
 import { CheckPlugin } from '@/components/context/check-plugin';
 import { settingsStore } from '@/components/context/settings-store';
-import { Icons } from '@/components/icons';
 import { useMyEditorRef } from '@/registry/default/lib/plate-types';
 import {
   DropdownMenu,
@@ -42,85 +63,85 @@ const items = [
     items: [
       {
         description: 'Paragraph',
-        icon: Icons.paragraph,
+        icon: PilcrowIcon,
         label: 'Paragraph',
         value: ParagraphPlugin.key,
       },
       {
         description: 'Heading 1',
-        icon: Icons.h1,
+        icon: Heading1Icon,
         label: 'Heading 1',
         value: HEADING_KEYS.h1,
       },
       {
         description: 'Heading 2',
-        icon: Icons.h2,
+        icon: Heading2Icon,
         label: 'Heading 2',
         value: HEADING_KEYS.h2,
       },
       {
         description: 'Heading 3',
-        icon: Icons.h3,
+        icon: Heading3Icon,
         label: 'Heading 3',
         value: HEADING_KEYS.h3,
       },
       {
         description: 'Heading 4',
-        icon: Icons.h4,
+        icon: Heading4Icon,
         label: 'Heading 4',
         value: HEADING_KEYS.h4,
       },
       {
         description: 'Heading 5',
-        icon: Icons.h5,
+        icon: Heading5Icon,
         label: 'Heading 5',
         value: HEADING_KEYS.h5,
       },
       {
         description: 'Heading 6',
-        icon: Icons.h6,
+        icon: Heading6Icon,
         label: 'Heading 6',
         value: HEADING_KEYS.h6,
       },
       {
         description: 'Table',
-        icon: Icons.table,
+        icon: TableIcon,
         label: 'Table',
         value: TablePlugin.key,
       },
       {
         description: 'Bulleted list',
-        icon: Icons.ul,
+        icon: ListIcon,
         label: 'Bulleted list',
         value: 'ul',
       },
       {
         description: 'Numbered list',
-        icon: Icons.ol,
+        icon: ListOrderedIcon,
         label: 'Numbered list',
         value: 'ol',
       },
       {
         description: 'Quote (⌘+⇧+.)',
-        icon: Icons.blockquote,
+        icon: QuoteIcon,
         label: 'Quote',
         value: BlockquotePlugin.key,
       },
       {
         description: 'Divider (---)',
-        icon: Icons.hr,
+        icon: MinusIcon,
         label: 'Divider',
         value: HorizontalRulePlugin.key,
       },
       {
         description: 'Columns',
-        icon: Icons.LayoutIcon,
+        icon: Columns2Icon,
         label: 'Columns',
         value: ColumnPlugin.key,
       },
       {
         description: 'Table of Contents',
-        icon: Icons.h3,
+        icon: TableOfContentsIcon,
         label: 'Table of Contents',
         value: TocPlugin.key,
       },
@@ -131,25 +152,25 @@ const items = [
     items: [
       {
         description: 'Code (```)',
-        icon: Icons.codeblock,
+        icon: FileCodeIcon,
         label: 'Code',
         value: CodeBlockPlugin.key,
       },
       {
         description: 'Image',
-        icon: Icons.image,
+        icon: ImageIcon,
         label: 'Image',
         value: ImagePlugin.key,
       },
       {
         description: 'Embed',
-        icon: Icons.embed,
+        icon: FilmIcon,
         label: 'Embed',
         value: MediaEmbedPlugin.key,
       },
       {
         description: 'Excalidraw',
-        icon: Icons.excalidraw,
+        icon: PenToolIcon,
         label: 'Excalidraw',
         value: ExcalidrawPlugin.key,
       },
@@ -160,7 +181,7 @@ const items = [
     items: [
       {
         description: 'Link',
-        icon: Icons.link,
+        icon: Link2Icon,
         label: 'Link',
         value: LinkPlugin.key,
       },
@@ -177,7 +198,7 @@ export function PlaygroundInsertDropdownMenu(props: DropdownMenuProps) {
     <DropdownMenu modal={false} {...openState} {...props}>
       <DropdownMenuTrigger asChild>
         <ToolbarButton pressed={openState.open} tooltip="Insert" isDropdown>
-          <Icons.add />
+          <PlusIcon />
         </ToolbarButton>
       </DropdownMenuTrigger>
 
