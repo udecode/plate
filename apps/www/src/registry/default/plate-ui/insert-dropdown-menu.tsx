@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
@@ -10,6 +12,7 @@ import {
   useEditorRef,
 } from '@udecode/plate-common/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
+import { Plus } from 'lucide-react';
 
 import { Icons } from '@/components/icons';
 
@@ -134,7 +137,7 @@ export function InsertDropdownMenu(props: DropdownMenuProps) {
     <DropdownMenu modal={false} {...openState} {...props}>
       <DropdownMenuTrigger asChild>
         <ToolbarButton pressed={openState.open} tooltip="Insert" isDropdown>
-          <Icons.add />
+          <Plus />
         </ToolbarButton>
       </DropdownMenuTrigger>
 

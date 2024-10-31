@@ -1,9 +1,10 @@
+'use client';
+
 import React, { useState } from 'react';
 
 import { BasicElementsPlugin } from '@udecode/plate-basic-elements/react';
 import { BasicMarksPlugin } from '@udecode/plate-basic-marks/react';
-import { Plate } from '@udecode/plate-common/react';
-import { usePlateEditor } from '@udecode/plate-core/react';
+import { Plate, usePlateEditor } from '@udecode/plate-common/react';
 import { FindReplacePlugin } from '@udecode/plate-find-replace';
 
 import { Icons } from '@/components/icons';

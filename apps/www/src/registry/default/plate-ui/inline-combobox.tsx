@@ -1,3 +1,5 @@
+'use client';
+
 import React, {
   type HTMLAttributes,
   type ReactNode,

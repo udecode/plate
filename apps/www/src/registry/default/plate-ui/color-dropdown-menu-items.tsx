@@ -5,8 +5,7 @@ import React from 'react';
 import type { DropdownMenuItemProps } from '@radix-ui/react-dropdown-menu';
 
 import { cn } from '@udecode/cn';
-
-import { Icons } from '@/components/icons';
+import { Check } from 'lucide-react';
 
 import { buttonVariants } from './button';
 import { DropdownMenuItem } from './dropdown-menu';
@@ -58,7 +57,7 @@ export function ColorDropdownMenuItem({
       }}
       {...props}
     >
-      {isSelected ? <Icons.check className="size-3" /> : null}
+      {isSelected ? <Check className="size-3" /> : null}
     </DropdownMenuItem>
   );
 

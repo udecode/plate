@@ -1,4 +1,4 @@
-import { AIPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
+import { AIChatPlugin, AIPlugin, CopilotPlugin } from '@udecode/plate-ai/react';
 import { AlignPlugin } from '@udecode/plate-alignment/react';
 import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
@@ -59,7 +59,9 @@ import { TrailingBlockPlugin } from '@udecode/plate-trailing-block';
 import { DragOverCursorPlugin } from '@/plate/demo/plugins/DragOverCursorPlugin';
 
 export const descriptions: Record<string, string> = {
-  [AIPlugin.key]: 'Add AI Menu to your document.',
+  [AIChatPlugin.key]:
+    'AI menu with commands, streaming responses in a preview or directly into the editor.',
+  [AIPlugin.key]: 'AI transforms.',
   [AlignPlugin.key]: 'Align your content to different positions.',
   [AutoformatPlugin.key]: 'Apply formatting automatically using shortcodes.',
   [BlockMenuPlugin.key]: 'Add a block menu to your document.',
@@ -68,7 +70,7 @@ export const descriptions: Record<string, string> = {
   [BoldPlugin.key]: 'Make your text stand out.',
   [CodePlugin.key]: 'Embed code into your text.',
   [CommentsPlugin.key]: 'Add comments to text as marks.',
-  [CopilotPlugin.key]: 'AI Copilot',
+  [CopilotPlugin.key]: 'Render AI suggestions ghost text as you type.',
   [CsvPlugin.key]: 'Copy paste from CSV to Slate.',
   [DatePlugin.key]: 'Add inline date plugins',
   [DeletePlugin.key]:

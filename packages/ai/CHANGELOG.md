@@ -1,5 +1,11 @@
 # @udecode/plate-ai
 
+## 39.2.19
+
+### Patch Changes
+
+- [#3690](https://github.com/udecode/plate/pull/3690) by [@felixfeng33](https://github.com/felixfeng33) – Copilot: `getNextWord` when handle the case with mixed Chinese and English text.
+
 ## 39.2.16
 
 ### Patch Changes

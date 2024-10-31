@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
@@ -7,8 +9,7 @@ import {
   SuperscriptPlugin,
 } from '@udecode/plate-basic-marks/react';
 import { focusEditor, useEditorRef } from '@udecode/plate-common/react';
-
-import { Icons } from '@/components/icons';
+import { MoreHorizontal, Subscript, Superscript } from 'lucide-react';
 
 import {
   DropdownMenu,
@@ -27,7 +28,7 @@ export function MoreDropdownMenu(props: DropdownMenuProps) {
     <DropdownMenu modal={false} {...openState} {...props}>
       <DropdownMenuTrigger asChild>
         <ToolbarButton pressed={openState.open} tooltip="Insert">
-          <Icons.more />
+          <MoreHorizontal />
         </ToolbarButton>
       </DropdownMenuTrigger>
 
@@ -44,7 +45,7 @@ export function MoreDropdownMenu(props: DropdownMenuProps) {
             focusEditor(editor);
           }}
         >
-          <Icons.superscript className="mr-2 size-5" />
+          <Superscript className="mr-2 size-5" />
           Superscript
           {/* (⌘+,) */}
         </DropdownMenuItem>
@@ -57,7 +58,7 @@ export function MoreDropdownMenu(props: DropdownMenuProps) {
             focusEditor(editor);
           }}
         >
-          <Icons.subscript className="mr-2 size-5" />
+          <Subscript className="mr-2 size-5" />
           Subscript
           {/* (⌘+.) */}
         </DropdownMenuItem>

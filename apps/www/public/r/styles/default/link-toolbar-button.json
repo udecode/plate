@@ -2,9 +2,25 @@
   "dependencies": [
     "@udecode/plate-link"
   ],
+  "doc": {
+    "description": "A toolbar control for link management.",
+    "docs": [
+      {
+        "route": "/docs/link",
+        "title": "Link"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/link-toolbar-button"
+      }
+    ],
+    "examples": [
+      "link-demo",
+      "link-pro"
+    ]
+  },
   "files": [
     {
-      "content": "import React from 'react';\n\nimport { withRef } from '@udecode/cn';\nimport {\n  useLinkToolbarButton,\n  useLinkToolbarButtonState,\n} from '@udecode/plate-link/react';\n\nimport { Icons } from '@/components/icons';\n\nimport { ToolbarButton } from './toolbar';\n\nexport const LinkToolbarButton = withRef<typeof ToolbarButton>((rest, ref) => {\n  const state = useLinkToolbarButtonState();\n  const { props } = useLinkToolbarButton(state);\n\n  return (\n    <ToolbarButton ref={ref} tooltip=\"Link\" {...props} {...rest}>\n      <Icons.link />\n    </ToolbarButton>\n  );\n});\n",
+      "content": "'use client';\n\nimport React from 'react';\n\nimport { withRef } from '@udecode/cn';\nimport {\n  useLinkToolbarButton,\n  useLinkToolbarButtonState,\n} from '@udecode/plate-link/react';\nimport { Link } from 'lucide-react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport const LinkToolbarButton = withRef<typeof ToolbarButton>((rest, ref) => {\n  const state = useLinkToolbarButtonState();\n  const { props } = useLinkToolbarButton(state);\n\n  return (\n    <ToolbarButton ref={ref} tooltip=\"Link\" {...props} {...rest}>\n      <Link />\n    </ToolbarButton>\n  );\n});\n",
       "path": "plate-ui/link-toolbar-button.tsx",
       "target": "components/plate-ui/link-toolbar-button.tsx",
       "type": "registry:ui"

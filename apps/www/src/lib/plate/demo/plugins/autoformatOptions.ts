@@ -350,7 +350,7 @@ export const getAutoformatOptions = (
     rules: [...autoformatRules],
   };
 
-  if (id === 'indentlist') {
+  if (id === 'indent-list') {
     autoformatOptions.rules?.push(...autoformatIndentLists);
   }
 

@@ -1,3 +1,5 @@
+'use client';
+
 // local import, not from npm
 import {
   BoldPlugin,

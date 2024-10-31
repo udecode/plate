@@ -2,6 +2,15 @@
   "dependencies": [
     "@udecode/plate-excalidraw"
   ],
+  "doc": {
+    "description": "A drawing component powered by Excalidraw.",
+    "docs": [
+      {
+        "route": "/docs/excalidraw",
+        "title": "Excalidraw"
+      }
+    ]
+  },
   "files": [
     {
       "content": "'use client';\nimport React from 'react';\n\nimport { withRef } from '@udecode/cn';\nimport { useExcalidrawElement } from '@udecode/plate-excalidraw/react';\n\nimport { PlateElement } from './plate-element';\n\nexport const ExcalidrawElement = withRef<typeof PlateElement>(\n  ({ nodeProps, ...props }, ref) => {\n    const { children, element } = props;\n\n    const { Excalidraw, excalidrawProps } = useExcalidrawElement({\n      element,\n    });\n\n    return (\n      <PlateElement ref={ref} {...props}>\n        <div contentEditable={false}>\n          <div className=\"mx-auto aspect-video h-[600px] w-[min(100%,600px)] overflow-hidden rounded-sm border\">\n            {Excalidraw && (\n              <Excalidraw {...nodeProps} {...(excalidrawProps as any)} />\n            )}\n          </div>\n        </div>\n        {children}\n      </PlateElement>\n    );\n  }\n);\n",
