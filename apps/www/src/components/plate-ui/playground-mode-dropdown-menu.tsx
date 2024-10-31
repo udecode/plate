@@ -29,19 +29,19 @@ export function PlaygroundModeDropdownMenu(props: DropdownMenuProps) {
   const item = {
     editing: (
       <>
-        <PenIcon className="mr-2 size-5" />
+        <PenIcon />
         <span className="hidden lg:inline">Editing</span>
       </>
     ),
     suggesting: (
       <>
-        <PenLineIcon className="mr-2 size-5" />
+        <PenLineIcon />
         <span className="hidden lg:inline">Suggesting</span>
       </>
     ),
     viewing: (
       <>
-        <EyeIcon className="mr-2 size-5" />
+        <EyeIcon />
         <span className="hidden lg:inline">Viewing</span>
       </>
     ),
@@ -65,7 +65,6 @@ export function PlaygroundModeDropdownMenu(props: DropdownMenuProps) {
 
       <DropdownMenuContent className="min-w-[180px]" align="start">
         <DropdownMenuRadioGroup
-          className="flex flex-col gap-0.5"
           value={value}
           onValueChange={(newValue) => {
             if (newValue !== 'viewing') {
@@ -89,7 +88,7 @@ export function PlaygroundModeDropdownMenu(props: DropdownMenuProps) {
 
           <DropdownMenuRadioItem disabled value="suggesting">
             {item.suggesting}
-            <span className="ml-2 rounded-md bg-muted px-1.5 py-0.5 text-xs leading-none text-muted-foreground no-underline group-hover:no-underline">
+            <span className="rounded-md bg-muted px-1.5 py-0.5 text-xs leading-none text-muted-foreground no-underline group-hover:no-underline">
               Soon
             </span>
           </DropdownMenuRadioItem>

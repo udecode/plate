@@ -12,12 +12,7 @@ import {
   ColorDropdownMenuItems,
 } from './color-dropdown-menu-items';
 import { ColorCustom } from './colors-custom';
-import {
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from './dropdown-menu';
+import { DropdownMenuGroup, DropdownMenuItem } from './dropdown-menu';
 
 export const ColorPickerContent = withRef<
   'div',
@@ -45,8 +40,7 @@ export const ColorPickerContent = withRef<
   ) => {
     return (
       <div ref={ref} className={cn('flex flex-col', className)} {...props}>
-        <DropdownMenuLabel>Color Picker</DropdownMenuLabel>
-        <DropdownMenuGroup>
+        <DropdownMenuGroup label="Color picker">
           <ColorCustom
             color={color}
             className="p-2"
@@ -56,7 +50,6 @@ export const ColorPickerContent = withRef<
             updateCustomColor={updateCustomColor}
           />
         </DropdownMenuGroup>
-        <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <ColorDropdownMenuItems
             color={color}
@@ -66,25 +59,22 @@ export const ColorPickerContent = withRef<
           />
         </DropdownMenuGroup>
         {color && (
-          <React.Fragment>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem
-                className={cn(
-                  buttonVariants({
-                    isMenu: false,
-                    size: 'sm',
-                    variant: 'ghost',
-                  }),
-                  'w-full justify-start'
-                )}
-                onClick={clearColor}
-              >
-                <Icons.colorClear className="mr-2" />
-                <span>Clear</span>
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-          </React.Fragment>
+          <DropdownMenuGroup>
+            <DropdownMenuItem
+              className={cn(
+                buttonVariants({
+                  isMenu: false,
+                  size: 'sm',
+                  variant: 'ghost',
+                }),
+                'w-full justify-start'
+              )}
+              onClick={clearColor}
+            >
+              <Icons.colorClear />
+              <span>Clear</span>
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
         )}
       </div>
     );

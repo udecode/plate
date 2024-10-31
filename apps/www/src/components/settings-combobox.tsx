@@ -87,6 +87,7 @@ export function SettingsCombobox() {
         <PopoverTrigger asChild>
           {loaded && (
             <Button
+              size="md"
               variant="outline"
               className="min-w-fit justify-between md:w-[220px]"
               onClick={() => {
@@ -141,7 +142,6 @@ export function SettingsCombobox() {
                       >
                         <Check
                           className={cn(
-                            'mr-2 size-4',
                             valueId === item.id ? 'opacity-100' : 'opacity-0'
                           )}
                         />
@@ -159,7 +159,6 @@ export function SettingsCombobox() {
       {!!route && (
         <Link
           className={buttonVariants({
-            size: 'sms',
             variant: 'ghost',
           })}
           href={route}

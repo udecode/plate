@@ -24,9 +24,8 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
   useOpenState,
 } from './dropdown-menu';
@@ -147,14 +146,11 @@ export function InsertDropdownMenu(props: DropdownMenuProps) {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className="flex max-h-[500px] min-w-0 flex-col gap-0.5 overflow-y-auto"
+        className="flex max-h-[500px] min-w-0 flex-col overflow-y-auto"
         align="start"
       >
-        {items.map(({ items: nestedItems, label }, index) => (
-          <React.Fragment key={label}>
-            {index !== 0 && <DropdownMenuSeparator />}
-
-            <DropdownMenuLabel>{label}</DropdownMenuLabel>
+        {items.map(({ items: nestedItems, label }) => (
+          <DropdownMenuGroup key={label} label={label}>
             {nestedItems.map(
               ({ icon: Icon, label: itemLabel, value: type }) => (
                 <DropdownMenuItem
@@ -217,12 +213,12 @@ export function InsertDropdownMenu(props: DropdownMenuProps) {
                     focusEditor(editor);
                   }}
                 >
-                  <Icon className="mr-2 size-5" />
+                  <Icon />
                   {itemLabel}
                 </DropdownMenuItem>
               )
             )}
-          </React.Fragment>
+          </DropdownMenuGroup>
         ))}
       </DropdownMenuContent>
     </DropdownMenu>

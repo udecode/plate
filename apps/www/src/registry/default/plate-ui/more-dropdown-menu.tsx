@@ -14,6 +14,7 @@ import { MoreHorizontal, Subscript, Superscript } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
   useOpenState,
@@ -33,35 +34,37 @@ export function MoreDropdownMenu(props: DropdownMenuProps) {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className="flex max-h-[500px] min-w-[180px] flex-col gap-0.5 overflow-y-auto"
+        className="flex max-h-[500px] min-w-[180px] flex-col overflow-y-auto"
         align="start"
       >
-        <DropdownMenuItem
-          onSelect={() => {
-            editor.tf.toggle.mark({
-              key: SuperscriptPlugin.key,
-              clear: [SubscriptPlugin.key, SuperscriptPlugin.key],
-            });
-            focusEditor(editor);
-          }}
-        >
-          <Superscript className="mr-2 size-5" />
-          Superscript
-          {/* (⌘+,) */}
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onSelect={() => {
-            editor.tf.toggle.mark({
-              key: SubscriptPlugin.key,
-              clear: [SuperscriptPlugin.key, SubscriptPlugin.key],
-            });
-            focusEditor(editor);
-          }}
-        >
-          <Subscript className="mr-2 size-5" />
-          Subscript
-          {/* (⌘+.) */}
-        </DropdownMenuItem>
+        <DropdownMenuGroup>
+          <DropdownMenuItem
+            onSelect={() => {
+              editor.tf.toggle.mark({
+                key: SuperscriptPlugin.key,
+                clear: [SubscriptPlugin.key, SuperscriptPlugin.key],
+              });
+              focusEditor(editor);
+            }}
+          >
+            <Superscript />
+            Superscript
+            {/* (⌘+,) */}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onSelect={() => {
+              editor.tf.toggle.mark({
+                key: SubscriptPlugin.key,
+                clear: [SuperscriptPlugin.key, SubscriptPlugin.key],
+              });
+              focusEditor(editor);
+            }}
+          >
+            <Subscript />
+            Subscript
+            {/* (⌘+.) */}
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -38,10 +38,7 @@ export function LineHeightDropdownMenu({ ...props }: DropdownMenuProps) {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent className="min-w-0" align="start">
-        <DropdownMenuRadioGroup
-          className="flex flex-col gap-0.5"
-          {...radioGroupProps}
-        >
+        <DropdownMenuRadioGroup {...radioGroupProps}>
           {state.values.map((_value) => (
             <DropdownMenuRadioItem
               key={_value}

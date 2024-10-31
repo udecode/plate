@@ -77,7 +77,7 @@ export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
   const input = (
     <div className="flex w-[330px] flex-col" {...inputProps}>
       <div className="flex items-center">
-        <div className="flex items-center pl-3 text-muted-foreground">
+        <div className="flex items-center pl-2 pr-1 text-muted-foreground">
           <Link className="size-4" />
         </div>
 
@@ -86,9 +86,9 @@ export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
           placeholder="Paste link"
         />
       </div>
-      <Separator />
+      <Separator className="my-1" />
       <div className="flex items-center">
-        <div className="flex items-center pl-3 text-muted-foreground">
+        <div className="flex items-center pl-2 pr-1 text-muted-foreground">
           <Text className="size-4" />
         </div>
         <input
@@ -103,7 +103,7 @@ export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
   const editContent = editState.isEditing ? (
     input
   ) : (
-    <div className="box-content flex h-9 items-center gap-1">
+    <div className="box-content flex items-center">
       <button
         className={buttonVariants({ size: 'sm', variant: 'ghost' })}
         type="button"
@@ -116,7 +116,7 @@ export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
 
       <LinkOpenButton
         className={buttonVariants({
-          size: 'sms',
+          size: 'icon',
           variant: 'ghost',
         })}
       >
@@ -127,7 +127,7 @@ export function LinkFloatingToolbar({ state }: LinkFloatingToolbarProps) {
 
       <button
         className={buttonVariants({
-          size: 'sms',
+          size: 'icon',
           variant: 'ghost',
         })}
         type="button"

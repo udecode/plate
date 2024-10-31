@@ -36,7 +36,6 @@ import { useMyEditorRef } from '@/registry/default/lib/plate-types';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
@@ -145,20 +144,17 @@ export function PlaygroundTurnIntoDropdownMenu(props: DropdownMenuProps) {
     <DropdownMenu modal={false} {...openState} {...props}>
       <DropdownMenuTrigger asChild>
         <ToolbarButton pressed={openState.open} tooltip="Turn into" isDropdown>
-          <SelectedItemIcon className="size-5 lg:hidden" />
+          <SelectedItemIcon className="lg:hidden" />
           <span className="max-lg:hidden">{selectedItemLabel}</span>
         </ToolbarButton>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className="ignore-click-outside/toolbar min-w-0"
+        className="ignore-click-outside/toolbar min-w-0 p-0"
         data-plate-prevent-overlay
         align="start"
       >
-        <DropdownMenuLabel>Turn into</DropdownMenuLabel>
-
         <DropdownMenuRadioGroup
-          className="flex flex-col gap-0.5"
           value={value}
           onValueChange={(type: any) => {
             if (type === ListStyleType.Disc || type === ListStyleType.Decimal) {
@@ -176,6 +172,7 @@ export function PlaygroundTurnIntoDropdownMenu(props: DropdownMenuProps) {
 
             focusEditor(editor);
           }}
+          label="Turn into"
         >
           {items.map(({ icon: Icon, label, plugin, value: itemValue }) => (
             <CheckPlugin key={itemValue} plugin={plugin}>
@@ -183,7 +180,7 @@ export function PlaygroundTurnIntoDropdownMenu(props: DropdownMenuProps) {
                 className="min-w-[180px]"
                 value={itemValue}
               >
-                <Icon className="mr-2 size-5" />
+                <Icon />
                 {label}
               </DropdownMenuRadioItem>
             </CheckPlugin>

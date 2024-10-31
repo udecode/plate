@@ -1721,6 +1721,18 @@ export const Index: Record<string, any> = {
       subcategory: "",
       chunks: []
     },
+    "transforms": {
+      name: "transforms",
+      description: "",
+      type: "registry:lib",
+      registryDependencies: undefined,
+      files: ["registry/default/lib/transforms.ts"],
+      component: React.lazy(() => import("@/registry/default/lib/transforms.ts")),
+      source: "",
+      category: "",
+      subcategory: "",
+      chunks: []
+    },
     "use-debounce": {
       name: "use-debounce",
       description: "",

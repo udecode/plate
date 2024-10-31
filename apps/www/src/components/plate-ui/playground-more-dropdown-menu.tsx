@@ -21,6 +21,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
   useOpenState,
@@ -40,57 +41,59 @@ export function PlaygroundMoreDropdownMenu(props: DropdownMenuProps) {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className="ignore-click-outside/toolbar flex max-h-[500px] min-w-[180px] flex-col gap-0.5 overflow-y-auto"
+        className="ignore-click-outside/toolbar flex max-h-[500px] min-w-[180px] flex-col overflow-y-auto"
         align="start"
       >
-        <DropdownMenuItem
-          onSelect={() => {
-            editor.tf.toggle.mark({ key: HighlightPlugin.key });
-            collapseSelection(editor, { edge: 'end' });
-            focusEditor(editor);
-          }}
-        >
-          <HighlighterIcon className="mr-2 size-5" />
-          Highlight
-        </DropdownMenuItem>
+        <DropdownMenuGroup>
+          <DropdownMenuItem
+            onSelect={() => {
+              editor.tf.toggle.mark({ key: HighlightPlugin.key });
+              collapseSelection(editor, { edge: 'end' });
+              focusEditor(editor);
+            }}
+          >
+            <HighlighterIcon />
+            Highlight
+          </DropdownMenuItem>
 
-        <DropdownMenuItem
-          onSelect={() => {
-            editor.tf.toggle.mark({ key: KbdPlugin.key });
-            collapseSelection(editor, { edge: 'end' });
-            focusEditor(editor);
-          }}
-        >
-          <KeyboardIcon className="mr-2 size-5" />
-          Keyboard input
-        </DropdownMenuItem>
+          <DropdownMenuItem
+            onSelect={() => {
+              editor.tf.toggle.mark({ key: KbdPlugin.key });
+              collapseSelection(editor, { edge: 'end' });
+              focusEditor(editor);
+            }}
+          >
+            <KeyboardIcon />
+            Keyboard input
+          </DropdownMenuItem>
 
-        <DropdownMenuItem
-          onSelect={() => {
-            editor.tf.toggle.mark({
-              key: SuperscriptPlugin.key,
-              clear: [SubscriptPlugin.key, SuperscriptPlugin.key],
-            });
-            focusEditor(editor);
-          }}
-        >
-          <SuperscriptIcon className="mr-2 size-5" />
-          Superscript
-          {/* (⌘+,) */}
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onSelect={() => {
-            editor.tf.toggle.mark({
-              key: SubscriptPlugin.key,
-              clear: [SuperscriptPlugin.key, SubscriptPlugin.key],
-            });
-            focusEditor(editor);
-          }}
-        >
-          <SubscriptIcon className="mr-2 size-5" />
-          Subscript
-          {/* (⌘+.) */}
-        </DropdownMenuItem>
+          <DropdownMenuItem
+            onSelect={() => {
+              editor.tf.toggle.mark({
+                key: SuperscriptPlugin.key,
+                clear: [SubscriptPlugin.key, SuperscriptPlugin.key],
+              });
+              focusEditor(editor);
+            }}
+          >
+            <SuperscriptIcon />
+            Superscript
+            {/* (⌘+,) */}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onSelect={() => {
+              editor.tf.toggle.mark({
+                key: SubscriptPlugin.key,
+                clear: [SuperscriptPlugin.key, SubscriptPlugin.key],
+              });
+              focusEditor(editor);
+            }}
+          >
+            <SubscriptIcon />
+            Subscript
+            {/* (⌘+.) */}
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );

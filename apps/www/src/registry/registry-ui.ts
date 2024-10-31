@@ -1150,9 +1150,9 @@ export const uiNodes: Registry = [
   },
   {
     dependencies: [
-      '@udecode/plate-heading',
       '@udecode/plate-ai',
       '@udecode/plate-date',
+      '@udecode/plate-heading',
       '@udecode/plate-indent-list',
     ],
     doc: {
@@ -1177,12 +1177,6 @@ export const uiNodes: Registry = [
       ],
       examples: ['slash-command-demo', 'slash-menu-pro'],
       label: 'New',
-      //       - Refined UI design for better usability and aesthetics
-      // - Extended set of slash menu options
-      // - Integration of premium plugins like Math Upload for specialized editing needs
-      // - No need to worry about the focus issue mentioned above.
-      // - Support grouping and Carefully selected keyword.
-      // - Trigger slash menu by click the puls button on the left of the paragraph.
     },
     files: ['plate-ui/slash-input-element.tsx'],
     name: 'slash-input-element',

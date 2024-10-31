@@ -116,7 +116,7 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
     <DropdownMenu modal={false} {...openState} {...props}>
       <DropdownMenuTrigger asChild>
         <ToolbarButton pressed={openState.open} tooltip="Turn into" isDropdown>
-          <SelectedItemIcon className="size-5 lg:hidden" />
+          <SelectedItemIcon className="lg:hidden" />
           <span className="max-lg:hidden">{selectedItemLabel}</span>
         </ToolbarButton>
       </DropdownMenuTrigger>
@@ -128,7 +128,6 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
         <DropdownMenuLabel>Turn into</DropdownMenuLabel>
 
         <DropdownMenuRadioGroup
-          className="flex flex-col gap-0.5"
           value={value}
           onValueChange={(type: any) => {
             if (type === ListStyleType.Disc || type === ListStyleType.Decimal) {
@@ -148,7 +147,7 @@ export function TurnIntoDropdownMenu(props: DropdownMenuProps) {
               className="min-w-[180px]"
               value={itemValue}
             >
-              <Icon className="mr-2 size-5" />
+              <Icon />
               {label}
             </DropdownMenuRadioItem>
           ))}

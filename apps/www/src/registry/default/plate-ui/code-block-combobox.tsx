@@ -189,7 +189,6 @@ export function CodeBlockCombobox() {
               >
                 <Check
                   className={cn(
-                    'mr-2 size-4',
                     state.value === language.value ? 'opacity-100' : 'opacity-0'
                   )}
                 />

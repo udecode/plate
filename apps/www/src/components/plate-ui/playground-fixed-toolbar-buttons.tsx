@@ -81,10 +81,10 @@ export function PlaygroundFixedToolbarButtons() {
             <ToolbarGroup>
               <ToolbarGroup>
                 <AIToolbarButton
-                  className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-500"
+                  className="gap-1.5 text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-500"
                   tooltip="Edit, generate, and more"
                 >
-                  <SparklesIcon className="mr-1.5 !size-3.5" />
+                  <SparklesIcon className="!size-3.5" />
                   Ask AI
                 </AIToolbarButton>
               </ToolbarGroup>
@@ -147,7 +147,7 @@ export function PlaygroundFixedToolbarButtons() {
                   nodeType={FontColorPlugin.key}
                   tooltip="Text Color"
                 >
-                  <BaselineIcon className="size-5" />
+                  <BaselineIcon />
                 </ColorDropdownMenu>
               </CheckPlugin>
 
@@ -156,7 +156,7 @@ export function PlaygroundFixedToolbarButtons() {
                   nodeType={FontBackgroundColorPlugin.key}
                   tooltip="Highlight Color"
                 >
-                  <PaintBucketIcon className="size-5" />
+                  <PaintBucketIcon />
                 </ColorDropdownMenu>
               </CheckPlugin>
             </ToolbarGroup>

@@ -62,13 +62,10 @@ export function AlignDropdownMenu({ children, ...props }: DropdownMenuProps) {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent className="min-w-0" align="start">
-        <DropdownMenuRadioGroup
-          className="flex flex-col gap-0.5"
-          {...radioGroupProps}
-        >
+        <DropdownMenuRadioGroup {...radioGroupProps}>
           {items.map(({ icon: Icon, value: itemValue }) => (
             <DropdownMenuRadioItem key={itemValue} value={itemValue} hideIcon>
-              <Icon className="size-5" />
+              <Icon />
             </DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>

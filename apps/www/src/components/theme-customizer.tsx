@@ -82,7 +82,7 @@ export function ThemeCustomizer() {
           </div>
           <div className="flex justify-between">
             <Button
-              size="sm"
+              size="md"
               variant="outline"
               className={cn(
                 config.style === 'default' && 'border-2 border-primary'
@@ -123,7 +123,7 @@ export function ThemeCustomizer() {
               return (
                 <Button
                   key={value}
-                  size="sm"
+                  size="md"
                   variant="outline"
                   className={cn(
                     config.radius === Number.parseFloat(value) &&
@@ -144,25 +144,25 @@ export function ThemeCustomizer() {
         </div>
         <div className="space-y-1.5 px-6">
           <Label className="text-xs">Mode</Label>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="flex gap-2">
             {mounted ? (
               <>
                 <Button
-                  size="sm"
+                  size="md"
                   variant="outline"
                   className={cn(mode === 'light' && 'border-2 border-primary')}
                   onClick={() => setMode('light')}
                 >
-                  <SunIcon className="mr-1 -translate-x-1" />
+                  <SunIcon />
                   Light
                 </Button>
                 <Button
-                  size="sm"
+                  size="md"
                   variant="outline"
                   className={cn(mode === 'dark' && 'border-2 border-primary')}
                   onClick={() => setMode('dark')}
                 >
-                  <MoonIcon className="mr-1 -translate-x-1" />
+                  <MoonIcon />
                   Dark
                 </Button>
               </>

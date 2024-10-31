@@ -701,9 +701,9 @@
   },
   {
     "dependencies": [
-      "@udecode/plate-heading",
       "@udecode/plate-ai",
       "@udecode/plate-date",
+      "@udecode/plate-heading",
       "@udecode/plate-indent-list"
     ],
     "doc": {

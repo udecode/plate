@@ -13,8 +13,46 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ### October 31 #15.6
 
-- Fixed and modified some styles in emoji and color picker
+- Added `lib/transforms.ts`. Contains useful transforms for common operations.
 - Remove `Icons` file dependency. All icons are now imported from `lucide-react`.
+- Fixed and modified some styles in emoji and color picker.
+- Spacing and sizing update:
+  - `ai-menu-items.tsx`
+  - `align-dropdown-menu.tsx`
+  - `block-context-menu.tsx`
+  - `button.tsx`
+  - `code-block-combobox.tsx`
+  - `color-dropdown-menu-items.tsx`
+  - `color-picker.tsx`
+  - `column-group-element.tsx`
+  - `command.tsx`
+  - `comment-more-dropdown.tsx`
+  - `context-menu.tsx`
+  - `dropdown-menu.tsx`
+  - `emoji-dropdown-menu.tsx`
+  - `emoji-input-element.tsx`
+  - `image-preview.tsx`
+  - `inline-combobox.tsx`
+  - `input.tsx`
+  - `insert-dropdown-menu.tsx`
+  - `line-height-dropdown-menu.tsx`
+  - `link-floating-toolbar.tsx`
+  - `media-popover.tsx`
+  - `mention-input-element.tsx`
+  - `mode-dropdown-menu.tsx`
+  - `more-dropdown-menu.tsx`
+  - `popover.tsx`
+  - `slash-input-element.tsx`
+  - `table-dropdown-menu.tsx`
+  - `table-element.tsx`
+  - `toggle-element.tsx`
+  - `toggle-toolbar-button.tsx`
+  
+- Added `gap-2 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0` to `<DropdownMenuItem />` and `<DropdownMenuSubTrigger />` to automatically style icon inside.
+- Added `gap-2` to `<ToolbarButton />`.
+- Removed `h-9` from `<DropdownMenuItem />`, `<ToolbarButton />`, `<ColumnFloatingToolbar />`.
+- `<InlineComboboxItem />`: add `group` and `label` props. 
+- `<SlashInputElement />`: support groups.
 
 ### October 26 #15.5
 
