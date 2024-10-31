@@ -67,7 +67,8 @@
     "test:wa": "yarn g:test:wa",
     "test:watch": "yarn g:test:watch",
     "typecheck": "yarn g:typecheck",
-    "typecheck:all": "yarn g:typecheck:all"
+    "typecheck:all": "yarn g:typecheck:all",
+    "sync:plate": "node templates/plate-playground-template/scripts/sync-plate.cjs"
   },
   "resolutions": {
     "eslint-plugin-import": "2.27.5",

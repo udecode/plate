@@ -117,10 +117,11 @@ export const withCopilot: ExtendEditor<CopilotPluginConfig> = ({
   editor.insertText = (text) => {
     const suggestionText = getOptions().suggestionText;
 
-    if (suggestionText && text.length === 1 && text === suggestionText?.at(0)) {
+    // When using IME input, it’s possible to enter two characters at once.
+    if (suggestionText?.startsWith(text)) {
       withoutAbort(editor, () => {
         withoutMergingHistory(editor, () => {
-          const newText = suggestionText?.slice(1);
+          const newText = suggestionText?.slice(text.length);
           setOption('suggestionText', newText);
           insertText(text);
         });
